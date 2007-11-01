@@ -1,97 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756172AbXKASUF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757752AbXKASVF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756172AbXKASUF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 14:20:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbXKASTz
+	id S1757752AbXKASVF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 14:21:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbXKASUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 14:19:55 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:38602 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752824AbXKASTy (ORCPT
+	Thu, 1 Nov 2007 14:20:55 -0400
+Received: from wr-out-0506.google.com ([64.233.184.239]:3788 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752824AbXKASUy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 14:19:54 -0400
-X-Sasl-enc: 88/5G9fs/Cd8jgL3svudlaJzIhLqR5TAbkKoSmlcqsmU 1193941193
-Message-ID: <472A18D7.7020703@imap.cc>
-Date: Thu, 01 Nov 2007 19:20:07 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
+	Thu, 1 Nov 2007 14:20:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=S1+pDyOWKUu/8NFHPcQ58bv95BJuMynAG5y87NDq20247y4WumT1kxIu0pEMVNPWHiD/vWmazCK8rjGN676mPxZ6Ul1DZ6wWYMd+QmVUxKKEM8MclpAqQ5A7en9yAw84e0WZzv2S3pI+E7BOiXfsfK2JlDePrQkglHTfpVpnEMs=
+Message-ID: <64bb37e0711011120i63cdfe3ci18995d57b6649a8@mail.gmail.com>
+Date: Thu, 1 Nov 2007 19:20:51 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Fengguang Wu" <wfg@mail.ustc.edu.cn>
+Subject: Re: 100% iowait on one of cpus in current -git
+Cc: "Maxim Levitsky" <maximlevitsky@gmail.com>,
+       "Peter Zijlstra" <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <393903856.06449@ustc.edu.cn>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, gregkh@suse.de,
-       linux-usb-devel@lists.sourceforge.net, hjlipp@web.de, kkeil@suse.de,
-       i4ldeveloper@listserv.isdn4linux.de
-Subject: Re: [PATCH 1/2] usb_gigaset: suspend support [v2]
-References: <20071029185311.4C955FC04C@xenon.ts.pxnet.com>	<20071029214131.70EABFC043@xenon.ts.pxnet.com> <20071030140124.984aba58.akpm@linux-foundation.org>
-In-Reply-To: <20071030140124.984aba58.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.1
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig5CE5EA2FD04DAC3BF543D4E4"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200710220822.52370.maximlevitsky@gmail.com>
+	 <200710221421.21439.maximlevitsky@gmail.com>
+	 <393056632.00561@ustc.edu.cn>
+	 <200710221505.35397.maximlevitsky@gmail.com>
+	 <20071022131045.GA5357@mail.ustc.edu.cn> <393060478.03650@ustc.edu.cn>
+	 <64bb37e0710310822r5ca6b793p8fd97db2f72a8655@mail.gmail.com>
+	 <393903856.06449@ustc.edu.cn>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig5CE5EA2FD04DAC3BF543D4E4
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On 11/1/07, Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
+> On Wed, Oct 31, 2007 at 04:22:10PM +0100, Torsten Kaiser wrote:
+> > Since 2.6.23-mm1 I also experience strange hangs during heavy writeouts.
+> > Each time I noticed this I was using emerge (package util from the
+> > gentoo distribution) to install/upgrade a package. The last step,
+> > where this hang occurred, is moving the prepared files from a tmpfs
+> > partion to the main xfs filesystem.
+> > The hangs where not fatal, after a few second everything resumed
+> > normal, so I was not able to capture a good image of what was
+> > happening.
+>
+> Thank you for the detailed report.
+>
+> How severe was the hangs? Only writeouts stalled, all apps stalled, or
+> cannot type and run new commands?
 
-Am 30.10.2007 22:01 schrieb Andrew Morton:
-> On Mon, 29 Oct 2007 22:41:30 +0100 (CET)
-> Tilman Schmidt <tilman@imap.cc> wrote:
->=20
->> From: Tilman Schmidt <tilman@imap.cc>
->>
->> Add basic suspend/resume support to the usb_gigaset driver.
->> (Corrected version.)
->>
->=20
-> You're not a big fan of checkpatch, I see.
+Only writeout stalled. The emerge that was moving the files hung, but
+everything else worked normaly.
+I was able to run new commands, like coping the /proc/meminfo.
 
-Sorry. I promise to mend my ways.
+[snip]
+> > After this SysRq+W writeback resumed again. Possible that writing
+> > above into the syslog triggered that.
+>
+> Maybe. Are the log files on another disk/partition?
 
->> +static int gigaset_suspend(struct usb_interface *intf, pm_message_t m=
-essage)
->> +{
->> +	struct cardstate *cs;
->> +	struct usb_cardstate *ucs;
->> +
->> +	if ((cs =3D usb_get_intfdata(intf)) =3D=3D NULL ||
->> +	    (ucs =3D cs->hw.usb) =3D=3D NULL) {
->> +		err("%s: no cardstate", __func__);
->> +		return -EFAULT;
->> +	}
->=20
-> Is the above reeeeeely needed?  I bet it never happens.
+No, everything was going to /
 
-I'm a great believer in defensive programming. :-)
+What might be interesting is, that doing cat /proc/meminfo
+>~/stall/meminfo did not resume the writeback. So there might some
+threshold that only was broken with the additional write from
+syslog-ng. Or syslog-ng does some flushing, I dont now. (I'm using the
+syslog-ng package from gentoo:
+http://www.balabit.com/products/syslog_ng/ , version 2.0.5)
 
-Anyway, to be sure these checks aren't needed, I would need the
-assurance that the suspend and resume methods are serialized with
-the probe and disconnect methods. Are they?
+> > The source tmpfs is mounted with any special parameters, but the
+> > target xfs filesystem resides on a dm-crypt device that is on top a 3
+> > disk RAID5 md.
+> > During the hang all CPUs where idle.
+>
+> No iowaits? ;-)
 
-Thanks,
-Tilman
+No, I have a KSysGuard in my taskbar that showed no activity at all.
 
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+OK, the subject does not match for my case, but there was also a tmpfs
+involved. And I found no thread with stalls on xfs. :-)
 
+> > The system is x86_64 with CONFIG_NO_HZ=y, but was still receiving ~330
+> > interrupts per second because of the bttv driver. (But I was not using
+> > that device at this time.)
+> >
+> > I'm willing to test patches or more provide more information, but lack
+> > a good testcase to trigger this on demand.
+>
+> Thank you. Maybe we can start by the applied debug patch :-)
 
---------------enig5CE5EA2FD04DAC3BF543D4E4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Will applied it and try to recreate this.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+Thanks for looking into it.
 
-iD8DBQFHKhjnMdB4Whm86/kRAteYAJ0fO9MAIm0RVN6pEr89epJCd0/5WgCePm2h
-PZc/r29ua0pHr463lhh4a2I=
-=CcwU
------END PGP SIGNATURE-----
-
---------------enig5CE5EA2FD04DAC3BF543D4E4--
+Torsten
