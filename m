@@ -1,120 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761449AbXKAXLh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761015AbXKAXLx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761449AbXKAXLh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 19:11:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756521AbXKAXIp
+	id S1761015AbXKAXLx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 19:11:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756677AbXKAXIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 19:08:45 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:55002 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755985AbXKAXIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 19:08:46 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:42560 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753469AbXKAXIn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 1 Nov 2007 19:08:43 -0400
-Subject: [PATCH 10/27] r-o-bind-mounts-elevate-mount-count-for-extended-attributes
+Subject: [PATCH 01/27] do namei_flags calculation inside open_namei()
 To: akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, miklos@szeredi.hu, hch@infradead.org,
        Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Thu, 01 Nov 2007 16:08:39 -0700
+Date: Thu, 01 Nov 2007 16:08:27 -0700
 References: <20071101230826.9A4F6E00@kernel>
 In-Reply-To: <20071101230826.9A4F6E00@kernel>
-Message-Id: <20071101230839.D1B0DBB9@kernel>
+Message-Id: <20071101230827.CDE3D014@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This basically audits the callers of xattr_permission(), which calls
-permission() and can perform writes to the filesystem.
+My end goal here is to make sure all users of may_open()
+return filps.  This will ensure that we properly release
+mount write counts which were taken for the filp in
+may_open().
 
-Acked-by: Christoph Hellwig <hch@infradead.org>
+This patch moves the sys_open flags to namei flags
+calculation into fs/namei.c.  We'll shortly be moving
+the nameidata_to_filp() calls into namei.c, and this
+gets the sys_open flags to a place where we can get
+at them when we need them.
+
 Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- linux-2.6.git-dave/fs/nfsd/nfs4proc.c |    7 ++++++-
- linux-2.6.git-dave/fs/xattr.c         |   16 ++++++++++++++--
- 2 files changed, 20 insertions(+), 3 deletions(-)
+ linux-2.6.git-dave/fs/namei.c |   43 +++++++++++++++++++++++++++++++++---------
+ linux-2.6.git-dave/fs/open.c  |   22 +--------------------
+ 2 files changed, 36 insertions(+), 29 deletions(-)
 
-diff -puN fs/nfsd/nfs4proc.c~r-o-bind-mounts-elevate-mount-count-for-extended-attributes fs/nfsd/nfs4proc.c
---- linux-2.6.git/fs/nfsd/nfs4proc.c~r-o-bind-mounts-elevate-mount-count-for-extended-attributes	2007-11-01 14:46:11.000000000 -0700
-+++ linux-2.6.git-dave/fs/nfsd/nfs4proc.c	2007-11-01 14:46:11.000000000 -0700
-@@ -658,14 +658,19 @@ nfsd4_setattr(struct svc_rqst *rqstp, st
- 			return status;
- 		}
- 	}
-+	status = mnt_want_write(cstate->current_fh.fh_export->ex_mnt);
-+	if (status)
-+		return status;
- 	status = nfs_ok;
- 	if (setattr->sa_acl != NULL)
- 		status = nfsd4_set_nfs4_acl(rqstp, &cstate->current_fh,
- 					    setattr->sa_acl);
- 	if (status)
--		return status;
-+		goto out;
- 	status = nfsd_setattr(rqstp, &cstate->current_fh, &setattr->sa_iattr,
- 				0, (time_t)0);
-+out:
-+	mnt_drop_write(cstate->current_fh.fh_export->ex_mnt);
- 	return status;
+diff -puN fs/namei.c~do-namei_flags-calculation-inside-open_namei fs/namei.c
+--- linux-2.6.git/fs/namei.c~do-namei_flags-calculation-inside-open_namei	2007-11-01 14:46:04.000000000 -0700
++++ linux-2.6.git-dave/fs/namei.c	2007-11-01 14:46:04.000000000 -0700
+@@ -1674,7 +1674,12 @@ int may_open(struct nameidata *nd, int a
+ 	return 0;
  }
  
-diff -puN fs/xattr.c~r-o-bind-mounts-elevate-mount-count-for-extended-attributes fs/xattr.c
---- linux-2.6.git/fs/xattr.c~r-o-bind-mounts-elevate-mount-count-for-extended-attributes	2007-11-01 14:46:11.000000000 -0700
-+++ linux-2.6.git-dave/fs/xattr.c	2007-11-01 14:46:11.000000000 -0700
-@@ -11,6 +11,7 @@
- #include <linux/slab.h>
- #include <linux/file.h>
- #include <linux/xattr.h>
-+#include <linux/mount.h>
- #include <linux/namei.h>
- #include <linux/security.h>
- #include <linux/syscalls.h>
-@@ -32,8 +33,6 @@ xattr_permission(struct inode *inode, co
- 	 * filesystem  or on an immutable / append-only inode.
- 	 */
- 	if (mask & MAY_WRITE) {
--		if (IS_RDONLY(inode))
--			return -EROFS;
- 		if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
- 			return -EPERM;
- 	}
-@@ -235,7 +234,11 @@ sys_setxattr(char __user *path, char __u
- 	error = user_path_walk(path, &nd);
- 	if (error)
- 		return error;
-+	error = mnt_want_write(nd.mnt);
-+	if (error)
-+		return error;
- 	error = setxattr(nd.dentry, name, value, size, flags);
-+	mnt_drop_write(nd.mnt);
- 	path_release(&nd);
- 	return error;
+-static int open_namei_create(struct nameidata *nd, struct path *path,
++/*
++ * Be careful about ever adding any more callers of this
++ * function.  Its flags must be in the namei format, not
++ * what get passed to sys_open().
++ */
++static int __open_namei_create(struct nameidata *nd, struct path *path,
+ 				int flag, int mode)
+ {
+ 	int error;
+@@ -1693,26 +1698,46 @@ static int open_namei_create(struct name
  }
-@@ -250,7 +253,11 @@ sys_lsetxattr(char __user *path, char __
- 	error = user_path_walk_link(path, &nd);
- 	if (error)
- 		return error;
-+	error = mnt_want_write(nd.mnt);
-+	if (error)
-+		return error;
- 	error = setxattr(nd.dentry, name, value, size, flags);
-+	mnt_drop_write(nd.mnt);
- 	path_release(&nd);
- 	return error;
+ 
+ /*
++ * Note that while the flag value (low two bits) for sys_open means:
++ *	00 - read-only
++ *	01 - write-only
++ *	10 - read-write
++ *	11 - special
++ * it is changed into
++ *	00 - no permissions needed
++ *	01 - read-permission
++ *	10 - write-permission
++ *	11 - read-write
++ * for the internal routines (ie open_namei()/follow_link() etc)
++ * This is more logical, and also allows the 00 "no perm needed"
++ * to be used for symlinks (where the permissions are checked
++ * later).
++ *
++*/
++static inline int sys_open_flags_to_namei_flags(int flag)
++{
++	if ((flag+1) & O_ACCMODE)
++		flag++;
++	return flag;
++}
++
++/*
+  *	open_namei()
+  *
+  * namei for open - this is in fact almost the whole open-routine.
+  *
+  * Note that the low bits of "flag" aren't the same as in the open
+- * system call - they are 00 - no permissions needed
+- *			  01 - read permission needed
+- *			  10 - write permission needed
+- *			  11 - read/write permissions needed
+- * which is a lot more logical, and also allows the "no perm" needed
+- * for symlinks (where the permissions are checked later).
++ * system call.  See sys_open_flags_to_namei_flags().
+  * SMP-safe
+  */
+-int open_namei(int dfd, const char *pathname, int flag,
++int open_namei(int dfd, const char *pathname, int sys_open_flag,
+ 		int mode, struct nameidata *nd)
+ {
+ 	int acc_mode, error;
+ 	struct path path;
+ 	struct dentry *dir;
+ 	int count = 0;
++	int flag = sys_open_flags_to_namei_flags(sys_open_flag);
+ 
+ 	acc_mode = ACC_MODE(flag);
+ 
+@@ -1773,7 +1798,7 @@ do_last:
+ 
+ 	/* Negative dentry, just create the file */
+ 	if (!path.dentry->d_inode) {
+-		error = open_namei_create(nd, &path, flag, mode);
++		error = __open_namei_create(nd, &path, flag, mode);
+ 		if (error)
+ 			goto exit;
+ 		return 0;
+diff -puN fs/open.c~do-namei_flags-calculation-inside-open_namei fs/open.c
+--- linux-2.6.git/fs/open.c~do-namei_flags-calculation-inside-open_namei	2007-11-01 14:46:04.000000000 -0700
++++ linux-2.6.git-dave/fs/open.c	2007-11-01 14:46:04.000000000 -0700
+@@ -800,31 +800,13 @@ cleanup_file:
+ 	return ERR_PTR(error);
  }
-@@ -266,9 +273,14 @@ sys_fsetxattr(int fd, char __user *name,
- 	f = fget(fd);
- 	if (!f)
- 		return error;
-+	error = mnt_want_write(f->f_vfsmnt);
-+	if (error)
-+		goto out_fput;
- 	dentry = f->f_path.dentry;
- 	audit_inode(NULL, dentry);
- 	error = setxattr(dentry, name, value, size, flags);
-+	mnt_drop_write(f->f_vfsmnt);
-+out_fput:
- 	fput(f);
- 	return error;
- }
+ 
+-/*
+- * Note that while the flag value (low two bits) for sys_open means:
+- *	00 - read-only
+- *	01 - write-only
+- *	10 - read-write
+- *	11 - special
+- * it is changed into
+- *	00 - no permissions needed
+- *	01 - read-permission
+- *	10 - write-permission
+- *	11 - read-write
+- * for the internal routines (ie open_namei()/follow_link() etc). 00 is
+- * used by symlinks.
+- */
+ static struct file *do_filp_open(int dfd, const char *filename, int flags,
+ 				 int mode)
+ {
+-	int namei_flags, error;
++	int error;
+ 	struct nameidata nd;
+ 
+-	namei_flags = flags;
+-	if ((namei_flags+1) & O_ACCMODE)
+-		namei_flags++;
+-
+-	error = open_namei(dfd, filename, namei_flags, mode, &nd);
++	error = open_namei(dfd, filename, flags, mode, &nd);
+ 	if (!error)
+ 		return nameidata_to_filp(&nd, flags);
+ 
 _
