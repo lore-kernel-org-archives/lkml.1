@@ -1,105 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756310AbXKATzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759073AbXKATzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756310AbXKATzS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 15:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758213AbXKATyL
+	id S1759073AbXKATzl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 15:55:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759427AbXKATyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 15:54:11 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33335 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758104AbXKATyI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 15:54:08 -0400
-Date: Thu, 1 Nov 2007 20:53:58 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Theodore Tso <tytso@mit.edu>, Ulrich Drepper <drepper@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [patch] PID namespace design bug, workaround
-Message-ID: <20071101195358.GA15636@elte.hu>
-References: <20071101144307.GA29566@elte.hu> <4729E86A.9090705@redhat.com> <20071101150537.GC4044@elte.hu> <20071101185710.GA2387@thunk.org>
+	Thu, 1 Nov 2007 15:54:47 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:58246 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757194AbXKATyq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 15:54:46 -0400
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: Olaf Dietsche <olaf+list.linux-kernel@olafdietsche.de>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andrew Morgan <morgan@kernel.org>, Stephen Smalley <sds@epoch.ncsc.mil>,
+       Chris Wright <chrisw@osdl.org>
+Subject: Re: [PATCH] 2.6.23: Filesystem capabilities 0.17
+References: <871wbhc0zj.fsf@olafdietsche.de>
+	<20071031173606.GA27982@vino.hallyn.com>
+From: Olaf Dietsche <olaf+list.linux-kernel@olafdietsche.de>
+Date: Thu, 01 Nov 2007 20:54:09 +0100
+Message-ID: <87mytx91y6.fsf@olafdietsche.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071101185710.GA2387@thunk.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Provags-ID: V01U2FsdGVkX1+zxefaOS3R30IWfNetFQg29VYE+8Qz5Qe+gtz
+ TXxU46hRu3i5AiIZ2Y7yeUlotk+8IOj4aZ1iyP9PzGrVx2gZ+e
+ XcU6KEGZRNoxFiPgCIoRA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+"Serge E. Hallyn" <serge@hallyn.com> writes:
 
-* Theodore Tso <tytso@mit.edu> wrote:
+> Quoting Olaf Dietsche (olaf+list.linux-kernel@olafdietsche.de):
+>> This patch implements filesystem capabilities. It allows to
+>> run privileged executables without the need for suid root.
+>> 
+>> Changes:
+>> - updated to 2.6.23
+>> - fix const correctness
+>> - fix secureexec
+[...]
+> given that file capabilities are now in 2.6.23, could you explain the
+> benefits of this version?  Should we consider switching it out for
+> yours?
 
-> On Thu, Nov 01, 2007 at 04:05:37PM +0100, Ingo Molnar wrote:
-> > +	if (clone_flags & CLONE_NEWPID)
-> > +		return -ENOSYS;
-> 
-> I'd use EINVAL instead of ENOSYS...
+It's just another version, works without xattr and, most important:
+it's mine :-)
 
-ok, updated patch below.
+> If we stick with the current upstream file capabilities patch, should we
+> port your SECURE_HACK to it?  I actually thought that fixing
+> bprm_secure_exec() sufficed?
 
-	Ingo
+Fixing bprm_secure_exec() is sufficient. SECURE_HACK is just a
+leftover, when there was no AT_SECURE and accordingly libc (< 2.3.6)
+ignored bprm_secure_exec().
 
----------------->
-From: Ingo Molnar <mingo@elte.hu>
-Subject: PID namespaces: turn them off for now
-
-while checking recent commits to the kernel core i took a look at the 
-PID namespaces implementation, and it has a fatal flaw: it breaks 
-futexes and various libraries (and other stuff) that use PIDs as the 
-means of identifying tasks, by not providing any means of global 
-identification that works across PID namespaces. (PIDs _are_ a very 
-convenient and global way of identifying contexts.)
-
-i asked Ulrich about this and it turns out he has warned about this 
-early on:
-
-  http://www.nabble.com/Re%3A-question%3A-pid-space-semantics.-p3409990.html
-
-but this problem is still present in the code, and it has been recently 
-committed into mainline via:
-
-  commit 30e49c263e36341b60b735cbef5ca37912549264
-  Author: Pavel Emelyanov <xemul@openvz.org>
-  Date:   Thu Oct 18 23:40:10 2007 -0700
-
-      pid namespaces: allow cloning of new namespace
-
-without these problems having been resolved. A full-scale revert is 
-probably too intrusive, but at minimum we need to turn off user-space 
-access to this feature via this simple patch. Until this issue is 
-resolved properly the new PID namespace code needs to be turned off. 
-Letting this into 2.6.24 would be a disaster.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/fork.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
-
-Index: v/kernel/fork.c
-===================================================================
---- v.orig/kernel/fork.c
-+++ v/kernel/fork.c
-@@ -1420,6 +1420,15 @@ long do_fork(unsigned long clone_flags,
- 	int trace = 0;
- 	long nr;
- 
-+	/*
-+	 * PID namespaces are broken at the moment: they do not allow
-+	 * certain PID based syscalls (such as futexes) to be used
-+	 * across namespaces. This is broken and must not be allowed,
-+	 * so we keep this feature turned off until it's properly fixed.
-+	 */
-+	if (clone_flags & CLONE_NEWPID)
-+		return -EINVAL;
-+
- 	if (unlikely(current->ptrace)) {
- 		trace = fork_traceflag (clone_flags);
- 		if (trace)
+Regards, Olaf.
