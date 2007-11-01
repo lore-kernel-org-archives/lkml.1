@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761517AbXKAO5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761437AbXKAO6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761517AbXKAO5m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 10:57:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761034AbXKAO5c
+	id S1761437AbXKAO6W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 10:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754655AbXKAO6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 10:57:32 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:42339 "EHLO twin.jikos.cz"
+	Thu, 1 Nov 2007 10:58:13 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54177 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754571AbXKAO5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 10:57:31 -0400
-Date: Thu, 1 Nov 2007 15:57:24 +0100 (CET)
-From: Jiri Kosina <jikos@jikos.cz>
-To: =?ISO-8859-2?Q?Marcin_=A6lusarz?= <marcin.slusarz@gmail.com>
-cc: linux-kernel@vger.kernel.org, greg@kroah.com
-Subject: Re: usbserial.ko/option.ko on 2.6.23: Unable to handle kernel paging
- request && inconsistent lock state
-In-Reply-To: <4bacf17f0711010755w10f216f4lb059c181c76089ea@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0711011556270.4152@twin.jikos.cz>
-References: <4bacf17f0710291526l6be89bd9o33f02c33186d57b7@mail.gmail.com> 
- <Pine.LNX.4.64.0710300838280.18815@twin.jikos.cz> 
- <4bacf17f0711010259q52db983dqa7fc1f25e6a859d4@mail.gmail.com> 
- <Pine.LNX.4.64.0711011102090.4152@twin.jikos.cz>
- <4bacf17f0711010755w10f216f4lb059c181c76089ea@mail.gmail.com>
+	id S1756464AbXKAO6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 10:58:12 -0400
+Date: Thu, 1 Nov 2007 15:57:53 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Glauber de Oliveira Costa <gcosta@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
+       tglx@linutronix.de
+Subject: Re: [PATCH] show right output for cpuinfo
+Message-ID: <20071101145753.GA3767@elte.hu>
+References: <1193910960937-git-send-email-gcosta@redhat.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1747641777-1430853947-1193929044=:4152"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1193910960937-git-send-email-gcosta@redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----1747641777-1430853947-1193929044=:4152
-Content-Type: TEXT/PLAIN; charset=ISO-8859-2
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+* Glauber de Oliveira Costa <gcosta@redhat.com> wrote:
 
-On Thu, 1 Nov 2007, Marcin =A6lusarz wrote:
+> in x86_64 smp systems, a regression was introduced a few days after 
+> 2.6.23, on its way to 2.6.23. Bisection leads me to commit 
+> 92cb7612aee39642d109b8d935ad265e602c0563.
+> 
+> The problem is that the output of 'cat /proc/cpuinfo' shows 0 as the 
+> id of all cpus of a smp system. As far as I know, this only happens on 
+> x86_64 systems.
+> 
+> This problem was first noticed by Ravikiran. A simple patch follows
 
-> > What kernel version are you using? I should have already fixed this one=
- in
-> > current git -- commit acd2a847
-> I'm using 2.6.23
+oops, thanks for tracking this down!
 
-It got fixed after 2.6.24-rc1.
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
---=20
-Jiri Kosina
----1747641777-1430853947-1193929044=:4152--
+	Ingo
