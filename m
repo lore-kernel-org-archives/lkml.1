@@ -1,128 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbXKAVLE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754634AbXKAVLx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755606AbXKAVLE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 17:11:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbXKAVKy
+	id S1754634AbXKAVLx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 17:11:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbXKAVLp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 17:10:54 -0400
-Received: from ppp-111-237.adsl.restena.lu ([158.64.111.237]:44932 "EHLO
-	bonbons.gotdns.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751674AbXKAVKx (ORCPT
+	Thu, 1 Nov 2007 17:11:45 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:58846 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754232AbXKAVLo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 17:10:53 -0400
-X-Greylist: delayed 1507 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Nov 2007 17:10:52 EDT
-From: Bruno =?iso-8859-1?q?Pr=E9mont?= <bonbons@linux-vserver.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: 2.6.23: IPv6 router advertisments missed by kernel
-User-Agent: KMail/1.9.7
+	Thu, 1 Nov 2007 17:11:44 -0400
+Date: Thu, 1 Nov 2007 22:11:53 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Tim Bird <tim.bird@am.sony.com>, Matt Mackall <mpm@selenic.com>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@redhat.com>, Jon Smirl <jonsmirl@yahoo.com>
+Subject: Re: IRQ off latency of printk is very high
+Message-ID: <20071101211153.GA11074@elf.ucw.cz>
+References: <4720F21F.9090404@am.sony.com> <20071025222804.GA13954@Krystal> <47211E2C.90301@am.sony.com> <20071025231237.GT19691@waste.org> <472129C3.6040405@am.sony.com> <20071029185445.GA7742@ucw.cz> <20071101152714.GA2489@Krystal>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Length: 3264
-Date: Thu, 1 Nov 2007 21:45:42 +0100
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200711012145.43085.bonbons@linux-vserver.org>
-X-VirusProbe: ClamAV, clean
-X-SpamProbe: GOOD 0.0000300 c6233953f8ad35b650ae1eacf832f69a
+In-Reply-To: <20071101152714.GA2489@Krystal>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm seeing unexpected behavior on my laptop since I updated kernel to 2.6.23.1 
-from 2.6.22.1.
+Hi!
 
-My setup:
-  Cisco Router <--- [2 vlans] -----> Laptop
+> > > It seems draconian to drain the entire buffer with ints disabled.
+> > > Is it possible to break this up and send out smaller chunks
+> > > at a time?  Maybe by putting a chunk loop in release_console_sem()?
+> > 
+> > Well, I believe someone got
+> > 
+> > DDetetccctted ed 113223 HHzz CPUCPU
+> > 
+> > in his dmesg, and now we have this 'draconian' locking. How can we
+> > prevent mangled messages without it?
+> 
+> The main interest seems to be to protect from mixed printk output
+> between different CPUs in process context. I don't think it would be
+> that bad if interrupts come and output error messages in the middle of a
+> printk, isn't it ?
+> 
+> therefore, could we do something like :
+> 
+> 
+> if (!in_irq())
+>   spin_lock(&logbuf_lock);
+> ...
+> if (!in_irq())
+>   spin_unlock(&logbuf_lock);
+> 
+> ? (yes, this is a crazy idea)
 
-On the link two VLANs are active, native vlan is not used.
-Laptop nic is:
-   Tigon3 [partno(BCM95751m) rev 4201 PHY(5750)] (PCI Express)
-   10/100/1000Base-T Ethernet
-
-On laptop I have eth0.500 and eth0.658 as active interfaces (eth0 is just up - 
-no address manually assigned) with IPv4 address assigned. IPv6 is only 
-enabled on the router for one of both vlans (500).
-
-When booting with 2.6.23.1 the router advertisments coming from the router 
-(vlan 500) seem to get ignored by the kernel (they are detected by 2.6.22) 
-and only enabling promiscuous mode on eth0 makes the kernel detect the router 
-advertisments. (I'm doing "tcpdump icmp6" on the vlan interface)
-
-This looks like it could be caused by changes in regard to handling vlans with 
-Tigon3 nic.
-A different machine (other nic and no vlans) sees the router advertisments 
-correctly with 2.6.23.1. (So I don't expect the cause to be on IPv6 side)
-
-Bruno
-
-
-
-Probably relevant .config extract for 2.6.23.1:
-  CONFIG_PACKET=y
-  CONFIG_UNIX=y
-  CONFIG_INET=y
-  CONFIG_IP_MULTICAST=y
-  CONFIG_IP_ADVANCED_ROUTER=y
-  CONFIG_ASK_IP_FIB_HASH=y
-  CONFIG_IP_FIB_HASH=y
-  CONFIG_IP_MULTIPLE_TABLES=y
-  CONFIG_NET_IPGRE=m
-  CONFIG_SYN_COOKIES=y
-  CONFIG_INET_DIAG=y
-  CONFIG_INET_TCP_DIAG=y
-  CONFIG_TCP_CONG_CUBIC=y
-  CONFIG_DEFAULT_TCP_CONG="cubic"
-  CONFIG_IPV6=y
-  CONFIG_INET6_TUNNEL=m
-  CONFIG_IPV6_TUNNEL=m
-  CONFIG_IPV6_MULTIPLE_TABLES=y
-  CONFIG_IPV6_SUBTREES=y
-  CONFIG_NETFILTER=y
-
-  CONFIG_NETDEVICES=y
-  CONFIG_NETDEVICES_MULTIQUEUE=y
-  # CONFIG_MACVLAN is not set
-  CONFIG_TUN=m
-  CONFIG_PHYLIB=m
-  CONFIG_BROADCOM_PHY=m
-  CONFIG_NET_ETHERNET=y
-  CONFIG_MII=y
-  CONFIG_NET_PCI=y
-  CONFIG_B44=m
-  CONFIG_NETDEV_1000=y
-  CONFIG_TIGON3=m
-
-Same extract for 2.6.22.1:
-  CONFIG_PACKET=y
-  CONFIG_UNIX=y
-  CONFIG_INET=y
-  CONFIG_IP_MULTICAST=y
-  CONFIG_IP_ADVANCED_ROUTER=y
-  CONFIG_ASK_IP_FIB_HASH=y
-  CONFIG_IP_FIB_HASH=y
-  CONFIG_IP_MULTIPLE_TABLES=y
-  CONFIG_NET_IPGRE=m
-  CONFIG_SYN_COOKIES=y
-  CONFIG_INET_DIAG=y
-  CONFIG_INET_TCP_DIAG=y
-  CONFIG_TCP_CONG_CUBIC=y
-  CONFIG_DEFAULT_TCP_CONG="cubic"
-  CONFIG_IPV6=y
-  CONFIG_INET6_TUNNEL=m
-  CONFIG_IPV6_TUNNEL=m
-  CONFIG_IPV6_MULTIPLE_TABLES=y
-  CONFIG_IPV6_SUBTREES=y
-  CONFIG_NETFILTER=y
-
-  CONFIG_NETDEVICES=y
-  CONFIG_DUMMY=m
-  CONFIG_TUN=m
-  CONFIG_PHYLIB=m
-  CONFIG_BROADCOM_PHY=m
-  CONFIG_NET_ETHERNET=y
-  CONFIG_MII=y
-  CONFIG_NET_PCI=y
-  CONFIG_B44=m
-  CONFIG_NETDEV_1000=y
-  CONFIG_TIGON3=m
-
+Two messages in atomic sections on different cpus could still be mixed
+:-). But yes, something like this may be the way to go.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
