@@ -1,64 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757111AbXKAI25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758565AbXKAI3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757111AbXKAI25 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 04:28:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbXKAI2t
+	id S1758565AbXKAI3d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 04:29:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753729AbXKAI3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 04:28:49 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55919 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750812AbXKAI2s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 04:28:48 -0400
-Subject: Re: [v4l-dvb-maintainer] bttv build error (CONFIG_NET=n)
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Trent Piepho <xyzzy@speakeasy.org>, v4l-dvb-maintainer@linuxtv.org,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071031092350.91eae067.randy.dunlap@oracle.com>
-References: <20071030221508.3139ea5c.randy.dunlap@oracle.com>
-	 <Pine.LNX.4.58.0710310345160.19072@shell4.speakeasy.net>
-	 <20071031092350.91eae067.randy.dunlap@oracle.com>
-Content-Type: text/plain
-Date: Thu, 01 Nov 2007 06:28:29 -0200
-Message-Id: <1193905709.8587.24.camel@gaivota>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.1-1mdv2008.1 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 1 Nov 2007 04:29:24 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51260 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753611AbXKAI3X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 04:29:23 -0400
+Date: Thu, 1 Nov 2007 09:29:15 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, Mike Galbraith <efault@gmx.de>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: [PATCH 0/6] various scheduler patches
+Message-ID: <20071101082915.GA8459@elte.hu>
+References: <20071031211030.310581000@chello.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071031211030.310581000@chello.nl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.1.7-deb
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.0860]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy,
 
-> > The only reason the net stuff works, is because CONFIG_NET includes igmp.c,
-> > which can't be compiled as a module.  That means ip_compute_csum() will get
-> > pulled out of the lib.a file for igmp, and thus be present for the net modules
-> > that use it too.  If igmp could be turned off, made a module, or stopped using
-> > ip_compute_csum(), then the users of ip_compute_csum() that do depend on
-> > CONFIG_NET would have the same problem as bttv does.
-> 
-> Thanks for the analysis and summary.
-> (I'm still waiting for those lkml.org links to load... timed out)
-> 
-> > It seems a shame to create a new ip checksum function in the bttv driver when
-> > a perfectly good one already exists and will already be present in just about
-> > every kernel out there.  Honestly, how common is NET=n and VIDEO_BT848=m
-> > outside of randconfig?
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-This might happen on embedded devices, like a set top box or a PVR,
-using a bttv hardware.
+> My current scheduler queue, seems to work well on lappy
 
-> so just adding "depends on NET" should be OK then?
+nice stuff! Both the hrtimers-tick feature and the rtlimit looks pretty 
+good. I'm wondering how well it works on SMP?
 
-Seems very weird to have bttv module dependent on NET, just because a
-checksum calculus function is defined there. 
-
-One possible solution would be to move this function to another place
-and having both NET, BTTV and other places selecting it.
-
--- 
-Cheers,
-Mauro
-
+	Ingo
