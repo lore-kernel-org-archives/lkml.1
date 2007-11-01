@@ -1,108 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761481AbXKAP1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760963AbXKAP3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761481AbXKAP1d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 11:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbXKAP1Y
+	id S1760963AbXKAP3p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 11:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754625AbXKAP3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 11:27:24 -0400
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:39956 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755987AbXKAP1X (ORCPT
+	Thu, 1 Nov 2007 11:29:38 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:57013 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754138AbXKAP3h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 11:27:23 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAJqNKUdMQWvU/2dsb2JhbACBWw
-Date: Thu, 1 Nov 2007 11:27:14 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Tim Bird <tim.bird@am.sony.com>, Matt Mackall <mpm@selenic.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@redhat.com>, Jon Smirl <jonsmirl@yahoo.com>
-Subject: Re: IRQ off latency of printk is very high
-Message-ID: <20071101152714.GA2489@Krystal>
-References: <4720F21F.9090404@am.sony.com> <20071025222804.GA13954@Krystal> <47211E2C.90301@am.sony.com> <20071025231237.GT19691@waste.org> <472129C3.6040405@am.sony.com> <20071029185445.GA7742@ucw.cz>
-Mime-Version: 1.0
+	Thu, 1 Nov 2007 11:29:37 -0400
+Date: Thu, 1 Nov 2007 15:29:14 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: linux-kernel@vger.kernel.org
+Subject: CLOCK_TICK_RATE in NTP code
+Message-ID: <20071101152914.GA19732@linux-mips.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071029185445.GA7742@ucw.cz>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:23:46 up 94 days, 15:42,  2 users,  load average: 0.70, 0.84, 0.73
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Pavel Machek (pavel@ucw.cz) wrote:
-> Hi!
-> 
-> > > Hmm, I see this at the beginning of the post-BK era (2.6.12-rc2):
-> > > 
-> > > 	        spin_lock_irqsave(&logbuf_lock, flags);
-> > > 		...
-> > > 		spin_unlock(&logbuf_lock);
-> > > 		call_console_drivers(_con_start, _log_end);
-> > > 		local_irq_restore(flags);
-> > > 
-> > 
-> > Well, I need to do some more research.  This must be in
-> > release_console_sem().  I was looking at vprintk, through
-> > the ages.  At 2.6.16, it looked like this:
-> > 
-> >         spin_lock_irqsave(&logbuf_lock, flags);
-> >         ...
-> >               spin_unlock_irqrestore(&logbuf_lock, flags);
-> >               console_may_schedule = 0;
-> >               release_console_sem();
-> > 
-> > but the irq restore has been moving around to different places
-> > in that function over the last few years.  I suspect that in the
-> > common case the irqsave in vprintk is the one that disables
-> > ints.
-> > 
-> > It appears that formerly interrupts were enabled in vprintk but
-> > re-disabled immediately upon entering release_console_sem().
-> > As it is now, they're held during formatting, buffering,
-> > and output, which seems excessive.
-> > 
-> > It seems draconian to drain the entire buffer with ints disabled.
-> > Is it possible to break this up and send out smaller chunks
-> > at a time?  Maybe by putting a chunk loop in release_console_sem()?
-> 
-> Well, I believe someone got
-> 
-> DDetetccctted ed 113223 HHzz CPUCPU
-> 
-> in his dmesg, and now we have this 'draconian' locking. How can we
-> prevent mangled messages without it?
-> 							Pavel
+kernel/time/ntp.c contains the following piece of code:
 
+#define CLOCK_TICK_OVERFLOW     (LATCH * HZ - CLOCK_TICK_RATE)
+#define CLOCK_TICK_ADJUST       (((s64)CLOCK_TICK_OVERFLOW * NSEC_PER_SEC) / \
+                                        (s64)CLOCK_TICK_RATE)
 
-The main interest seems to be to protect from mixed printk output
-between different CPUs in process context. I don't think it would be
-that bad if interrupts come and output error messages in the middle of a
-printk, isn't it ?
+static void ntp_update_frequency(void)
+{
+        u64 second_length = (u64)(tick_usec * NSEC_PER_USEC * USER_HZ)
+                                << TICK_LENGTH_SHIFT;
+        second_length += (s64)CLOCK_TICK_ADJUST << TICK_LENGTH_SHIFT;
+        second_length += (s64)time_freq << (TICK_LENGTH_SHIFT - SHIFT_NSEC);
 
-therefore, could we do something like :
+        tick_length_base = second_length;
 
+        do_div(second_length, HZ);
+        tick_nsec = second_length >> TICK_LENGTH_SHIFT;
 
-if (!in_irq())
-  spin_lock(&logbuf_lock);
-...
-if (!in_irq())
-  spin_unlock(&logbuf_lock);
+        do_div(tick_length_base, NTP_INTERVAL_FREQ);
+}
 
-? (yes, this is a crazy idea)
+So it uses CLOCK_TICK_RATE which on many systems but not all is defined to
+the i8253 input clock.  But timekeeping on anything remotely modern makes
+little use of the i8253 so I wonder the intent was here.
 
-Mathieu
-
-
-> -- 
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+  Ralf
