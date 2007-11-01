@@ -1,62 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758123AbXKAIC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758706AbXKAIDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758123AbXKAIC7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 04:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbXKAICq
+	id S1758706AbXKAIDm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 04:03:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755555AbXKAIDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 04:02:46 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:44255 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752404AbXKAICp (ORCPT
+	Thu, 1 Nov 2007 04:03:30 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:60600 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752404AbXKAID2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 04:02:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CjAlrrrlx9eog5dB7cOSKGQ14o2+almX9SCb+QQGegYesA4uscGlNB/x/weYW747IJaefrqx30dA6ygneeUm/yAL4CrhbRESJ1uW7fC5Bl9sg3o9ymQGlWFgho9wYF+jCbfWl14dkoQbUDz9vhrNHulGlqjH9Hy5Y3QFa1dfDzk=
-Message-ID: <45a44e480711010102s6ef51f67wff4a796deab0910b@mail.gmail.com>
-Date: Thu, 1 Nov 2007 04:02:44 -0400
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-To: "Hugh Dickins" <hugh@veritas.com>
-Subject: Re: vm_ops.page_mkwrite() fails with vmalloc on 2.6.23
-Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Andrew Morton" <akpm@linux-foundation.org>, stefani@seibold.net,
-       linux-kernel@vger.kernel.org, "David Howells" <dhowells@redhat.com>,
-       linux-mm@kvack.org
-In-Reply-To: <Pine.LNX.4.64.0710301535270.9322@blonde.wat.veritas.com>
+	Thu, 1 Nov 2007 04:03:28 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=Ta9TCAoop3czzQn+jFH4gwgVjDregaR8oGIxPFWeWGVTz289qFEsldM51AhqRsKxD
+	0DW3YJak4Clt6qzmj34pg==
+Date: Thu, 1 Nov 2007 01:03:18 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Paul Jackson <pj@sgi.com>
+cc: Christoph Lameter <clameter@sgi.com>, Lee.Schermerhorn@hp.com,
+       linux-kernel@vger.kernel.org, ak@suse.de
+Subject: Re: [RFC] cpuset relative memory policies - second choice
+In-Reply-To: <20071031233352.959c32d0.pj@sgi.com>
+Message-ID: <alpine.DEB.0.9999.0711010055090.2973@chino.kir.corp.google.com>
+References: <20071031061729.18174.60384.sendpatchset@jackhammer.engr.sgi.com> <Pine.LNX.4.64.0710311157310.21799@schroedinger.engr.sgi.com> <20071031131949.b91bf383.pj@sgi.com> <Pine.LNX.4.64.0710311402300.22599@schroedinger.engr.sgi.com>
+ <20071031214719.81f8293a.pj@sgi.com> <Pine.LNX.4.64.0710312221140.26444@schroedinger.engr.sgi.com> <20071031233352.959c32d0.pj@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1193064057.16541.1.camel@matrix> <1193677302.27652.56.camel@twins>
-	 <45a44e480710291051s7ffbb582x64ea9524c197b48a@mail.gmail.com>
-	 <1193681839.27652.60.camel@twins> <1193696211.5644.100.camel@lappy>
-	 <45a44e480710291822w5864b3beofcf432930d3e68d3@mail.gmail.com>
-	 <1193738177.27652.69.camel@twins>
-	 <45a44e480710300616p34b0a159m87de78d0a4d43028@mail.gmail.com>
-	 <1193750751.27652.86.camel@twins>
-	 <Pine.LNX.4.64.0710301535270.9322@blonde.wat.veritas.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Oct 30, 2007 11:47 AM, Hugh Dickins <hugh@veritas.com> wrote:
->
-> I don't understand why you suggested an anon_vma, nor why Jaya is
-> suggesting a private list.  All vmas mapping /dev/fb0 will be kept
-> in the prio_tree rooted in its struct address_space (__vma_link_file
-> in mm/mmap.c).  And page_mkclean gets page_mkclean_file to walk that
-> very tree.  The missing part is just the setting of page->mapping to
-> point to that struct address_space (and clearing it before finally
-> freeing the pages), and the setting of page->index as you described.
-> Isn't it?
+On Wed, 31 Oct 2007, Paul Jackson wrote:
 
-Oops, sorry that I missed that. Now I understand. I think:
+>     David R - is your use of the mbind and *_mempolicy system calls
+>     via libnuma, or direct system calls?
+> 
 
-page->mapping = vma->vm_file->f_mapping
-page->index = ((addr - vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff
+I hope to be able to use libnuma exclusively once your fix is in place so 
+that the interleaving behaves the way we want while attached to a changing 
+cpuset.  (And it would be preferable to not have to use a special version 
+of it that is hacked to support the fix.)  It's just simpler to use as an 
+interface, but I wouldn't consider using the system calls directly an 
+error.
 
-at nopage time and then before the driver vfrees, I'll clear mapping
-for all those pages.
-
-Thanks,
-jaya
+		David
