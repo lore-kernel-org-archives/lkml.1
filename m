@@ -1,144 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762595AbXKAXS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762847AbXKAXSm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762595AbXKAXS1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 19:18:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760187AbXKAXJP
+	id S1762847AbXKAXSm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 19:18:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761902AbXKAXPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 19:09:15 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:38639 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755154AbXKAXJG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 19:09:06 -0400
-Subject: [PATCH 27/27] keep track of mnt_writer state of struct file
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, miklos@szeredi.hu, hch@infradead.org,
-       Dave Hansen <haveblue@us.ibm.com>
-From: Dave Hansen <haveblue@us.ibm.com>
-Date: Thu, 01 Nov 2007 16:09:02 -0700
-References: <20071101230826.9A4F6E00@kernel>
-In-Reply-To: <20071101230826.9A4F6E00@kernel>
-Message-Id: <20071101230902.F256608C@kernel>
+	Thu, 1 Nov 2007 19:15:38 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54412 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761584AbXKAXPf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 19:15:35 -0400
+Date: Thu, 1 Nov 2007 16:14:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Romano Giannetti <romanol@upcomillas.es>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: 2.6.24-rc1: OOPS at  acpi_battery_update
+Message-Id: <20071101161459.d5f9abc0.akpm@linux-foundation.org>
+In-Reply-To: <1193652664.22149.4.camel@localhost>
+References: <1193652664.22149.4.camel@localhost>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 29 Oct 2007 11:11:04 +0100
+Romano Giannetti <romanol@upcomillas.es> wrote:
 
-There have been a few oopses caused by 'struct file's with
-NULL f_vfsmnts.  There was also a set of potentially missed
-mnt_want_write()s from dentry_open() calls.
+> 
+> Hi,
+> 
+> 	sometime on resuming from s2ram my laptop spew the following oops.
+> Config, dmesg etc are at: 
+> 
+> http://www.dea.icai.upcomillas.es/romano/linux/info/2624rc1_6/
+> 
+> [    3.475386] Oops: 0000 [#1] SMP 
+> [    3.475602] Process kacpi_notify (pid: 50, ti=c2122000 task=c210c030 task.ti=c2122000)
+> [    3.475608] Stack: c35c5060 c02f2a58 00000046 00000000 6b6b6b6b c2b20298 c2123efc c02f29ac 
+> [    3.475626]        c02166cb f896f3ca 00000000 f896ff63 00000246 00000000 c2b20298 ffffa512 
+> [    3.475644]        c2123f04 c02f2a58 c2123f34 f896f3ed c2123f1c c34fbdb8 c2123f20 c02f3e22 
+> [    3.475662] Call Trace:
+> [    3.475667]  [show_trace_log_lvl+26/48] show_trace_log_lvl+0x1a/0x30
+> [    3.475678]  [show_stack_log_lvl+177/224] show_stack_log_lvl+0xb1/0xe0
+> [    3.475695]  [die+282/560] die+0x11a/0x230
+> [    3.475687]  [show_registers+193/464] show_registers+0xc1/0x1d0
+> [    3.475703]  [do_page_fault+415/1648] do_page_fault+0x19f/0x670
+> [    3.475713]  [error_code+114/120] error_code+0x72/0x78
+> [    3.475722]  [__mutex_unlock_slowpath+172/336] __mutex_unlock_slowpath+0xac/0x150
+> [    3.475731]  [mutex_unlock+8/16] mutex_unlock+0x8/0x10
+> [    3.475739]  [<f896f3ed>] acpi_battery_update+0x1ce/0x23c [battery]
+> [    3.475753]  [<f896f927>] acpi_battery_notify+0x21/0x78 [battery]
+> [    3.475764]  [acpi_ev_notify_dispatch+79/90] acpi_ev_notify_dispatch+0x4f/0x5a
+> [    3.475792]  [worker_thread+157/256] worker_thread+0x9d/0x100
+> [    3.475774]  [acpi_os_execute_notify+36/47] acpi_os_execute_notify+0x24/0x2f
+> [    3.475784]  [run_workqueue+288/464] run_workqueue+0x120/0x1d0
+> [    3.475809]  [kernel_thread_helper+7/16] kernel_thread_helper+0x7/0x10
+> [    3.475801]  [kthread+66/112] kthread+0x42/0x70
+> [    3.475821] Code: 8d b4 26 00 00 00 00 55 89 e5 83 ec 18 89 5d f8 89 c3 89 75 fc 0f b6 40 04 89 d6 84 c0 7f 24 8d 43 20 3b 43 20 0f 84 e4 00 00 00 <3b> 76 10 0f 85 93 00 00 00 3b 36 90 74 47 8b 5d f8 8b 75 fc 89 
+> [    3.475818]  =======================
+> [    3.475909] EIP: [debug_mutex_wake_waiter+36/352] debug_mutex_wake_waiter+0x24/0x160 SS:ESP 0068:c2123ebc
+> 
 
-This patch provides a very simple debugging framework to
-catch these kinds of bugs.  It will WARN_ON() them, but
-should stop us from having any oopses or mnt_writer
-count imbalances.
+Did any earlier kernels do this?  In other words, do you believe that this
+is a bug which we added after 2.6.23 was released?
 
-I'm quite convinced that this is a good thing because it
-found bugs in the stuff I was working on as soon as I
-wrote it.
-
-Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
----
-
- linux-2.6.git-dave/fs/file_table.c    |   21 +++++++++++++++++++--
- linux-2.6.git-dave/fs/open.c          |   14 +++++++++++++-
- linux-2.6.git-dave/include/linux/fs.h |    4 ++++
- 3 files changed, 36 insertions(+), 3 deletions(-)
-
-diff -puN fs/file_table.c~keep-track-of-mnt_writer-state-of-struct-file fs/file_table.c
---- linux-2.6.git/fs/file_table.c~keep-track-of-mnt_writer-state-of-struct-file	2007-11-01 14:46:22.000000000 -0700
-+++ linux-2.6.git-dave/fs/file_table.c	2007-11-01 14:46:22.000000000 -0700
-@@ -42,6 +42,12 @@ static inline void file_free_rcu(struct 
- static inline void file_free(struct file *f)
- {
- 	percpu_counter_dec(&nr_files);
-+	/*
-+	 * At this point, either both or neither of these bits
-+	 * should be set.
-+	 */
-+	WARN_ON(f->f_mnt_write_state == FILE_MNT_WRITE_TAKEN);
-+	WARN_ON(f->f_mnt_write_state == FILE_MNT_WRITE_RELEASED);
- 	call_rcu(&f->f_u.fu_rcuhead, file_free_rcu);
- }
- 
-@@ -201,6 +207,7 @@ int init_file(struct file *file, struct 
- 	 * that we can do debugging checks at __fput()e
- 	 */
- 	if ((mode & FMODE_WRITE) && !special_file(dentry->d_inode->i_mode)) {
-+		file->f_mnt_write_state = FILE_MNT_WRITE_TAKEN;
- 		error = mnt_want_write(mnt);
- 		WARN_ON(error);
- 	}
-@@ -243,8 +250,18 @@ void fastcall __fput(struct file *file)
- 	fops_put(file->f_op);
- 	if (file->f_mode & FMODE_WRITE) {
- 		put_write_access(inode);
--		if (!special_file(inode->i_mode))
--			mnt_drop_write(mnt);
-+		if (!special_file(inode->i_mode)) {
-+			if (file->f_mnt_write_state == FILE_MNT_WRITE_TAKEN) {
-+				mnt_drop_write(mnt);
-+				file->f_mnt_write_state |=
-+					FILE_MNT_WRITE_RELEASED;
-+			} else {
-+				printk(KERN_WARNING "__fput() of writeable "
-+						"file with no "
-+						"mnt_want_write()\n");
-+				WARN_ON(1);
-+			}
-+		}
- 	}
- 	put_pid(file->f_owner.pid);
- 	file_kill(file);
-diff -puN fs/open.c~keep-track-of-mnt_writer-state-of-struct-file fs/open.c
---- linux-2.6.git/fs/open.c~keep-track-of-mnt_writer-state-of-struct-file	2007-11-01 14:46:22.000000000 -0700
-+++ linux-2.6.git-dave/fs/open.c	2007-11-01 14:46:22.000000000 -0700
-@@ -810,6 +810,10 @@ static struct file *__dentry_open(struct
- 		error = __get_file_write_access(inode, mnt);
- 		if (error)
- 			goto cleanup_file;
-+		if (!special_file(inode->i_mode)) {
-+			WARN_ON(f->f_mnt_write_state != 0);
-+			f->f_mnt_write_state = FILE_MNT_WRITE_TAKEN;
-+		}
- 	}
- 
- 	f->f_mapping = inode->i_mapping;
-@@ -851,8 +855,16 @@ cleanup_all:
- 	fops_put(f->f_op);
- 	if (f->f_mode & FMODE_WRITE) {
- 		put_write_access(inode);
--		if (!special_file(inode->i_mode))
-+		if (!special_file(inode->i_mode)) {
-+			/*
-+			 * We don't consider this a real
-+			 * mnt_want/drop_write() pair
-+			 * because it all happenend right
-+			 * here, so just reset the state.
-+			 */
-+			f->f_mnt_write_state = 0;
- 			mnt_drop_write(mnt);
-+		}
- 	}
- 	file_kill(f);
- 	f->f_path.dentry = NULL;
-diff -puN include/linux/fs.h~keep-track-of-mnt_writer-state-of-struct-file include/linux/fs.h
---- linux-2.6.git/include/linux/fs.h~keep-track-of-mnt_writer-state-of-struct-file	2007-11-01 14:46:22.000000000 -0700
-+++ linux-2.6.git-dave/include/linux/fs.h	2007-11-01 14:46:22.000000000 -0700
-@@ -774,6 +774,9 @@ static inline int ra_has_index(struct fi
- 		index <  ra->start + ra->size);
- }
- 
-+#define FILE_MNT_WRITE_TAKEN	1
-+#define FILE_MNT_WRITE_RELEASED	2
-+
- struct file {
- 	/*
- 	 * fu_list becomes invalid after file_free is called and queued via
-@@ -808,6 +811,7 @@ struct file {
- 	spinlock_t		f_ep_lock;
- #endif /* #ifdef CONFIG_EPOLL */
- 	struct address_space	*f_mapping;
-+	unsigned long f_mnt_write_state;
- };
- extern spinlock_t files_lock;
- #define file_list_lock() spin_lock(&files_lock);
-_
+Thanks.
