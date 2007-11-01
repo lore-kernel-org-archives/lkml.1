@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759040AbXKARjs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756890AbXKARlp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759040AbXKARjs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 13:39:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758727AbXKARjf
+	id S1756890AbXKARlp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 13:41:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbXKARlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 13:39:35 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:38375 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758636AbXKARjd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 13:39:33 -0400
-Subject: Re: per-bdi-throttling: synchronous writepage doesn't work
-	correctly
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: jdike@addtoit.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <E1Indqb-00049a-00@dorka.pomaz.szeredi.hu>
-References: <E1IndEw-00046x-00@dorka.pomaz.szeredi.hu>
-	 <1193935886.27652.313.camel@twins>
-	 <E1IndPT-00047e-00@dorka.pomaz.szeredi.hu>
-	 <1193936949.27652.321.camel@twins>
-	 <E1Indqb-00049a-00@dorka.pomaz.szeredi.hu>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-tNPUnuLGMUTQ9uh1rASb"
-Date: Thu, 01 Nov 2007 18:39:30 +0100
-Message-Id: <1193938770.27652.328.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 1 Nov 2007 13:41:37 -0400
+Received: from gw.goop.org ([64.81.55.164]:51872 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752524AbXKARlh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 13:41:37 -0400
+Message-ID: <472A0FBF.6040907@goop.org>
+Date: Thu, 01 Nov 2007 10:41:19 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
+CC: Glauber de Oliveira Costa <gcosta@redhat.com>, lguest@ozlabs.org,
+       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       ak@suse.de, chrisw@sous-sol.org, tglx@linutronix.de,
+       anthony@codemonkey.ws, akpm@linux-foundation.org,
+       virtualization@lists.linux-foundation.org, mingo@elte.hu
+Subject: Re: [PATCH 3/16] read/write_crX, clts and wbinvd for 64-bit paravirt
+References: <C34FAA4C.17CA9%Keir.Fraser@cl.cam.ac.uk>
+In-Reply-To: <C34FAA4C.17CA9%Keir.Fraser@cl.cam.ac.uk>
+X-Enigmail-Version: 0.95.4
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Keir Fraser wrote:
+> volatile prevents the asm from being 'moved significantly', according to the
+> gcc manual. I take that to mean that reordering is not allowed.
+>   
 
---=-tNPUnuLGMUTQ9uh1rASb
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+That phrase doesn't appear in the gcc manual; in fact, it specifically
+says that reordering can happen:
 
-On Thu, 2007-11-01 at 18:28 +0100, Miklos Szeredi wrote:
-> > The page not having PG_writeback set on return is a hint, but not fool
-> > proof, it could be the device is just blazing fast.
->=20
-> Hmm, does it actually has to be foolproof though?  What will happen if
-> bdi_writeout_inc() is called twice for the page?  The device will get
-> twice the number of pages it deserves?  That's not all that bad,
-> especially since that is a really really fast device.
+    The `volatile' keyword indicates that the instruction has important
+    side-effects.  GCC will not delete a volatile `asm' if it is reachable.
+    (The instruction can still be deleted if GCC can prove that
+    control-flow will never reach the location of the instruction.)  Note
+    that even a volatile `asm' instruction can be moved relative to other
+    code, including across jump instructions.  For example, on many targets
+    there is a system register which can be set to control the rounding
+    mode of floating point operations.  You might try setting it with a
+    volatile `asm', like this PowerPC example:
 
-Basically, yes.
+                asm volatile("mtfsf 255,%0" : : "f" (fpenv));
+                sum = x + y;
 
-But then again, that would require auditing all ->writepage() callsites.
+    This will not work reliably, as the compiler may move the addition back
+    before the volatile `asm'.  To make it work you need to add an
+    artificial dependency to the `asm' referencing a variable in the code
+    you don't want moved, for example:
 
+             asm volatile ("mtfsf 255,%1" : "=X"(sum): "f"(fpenv));
+             sum = x + y;
 
+I take from this that it is not a good idea to assume "asm volatile" has
+any ordering effects at all.
 
---=-tNPUnuLGMUTQ9uh1rASb
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHKg9SXA2jU0ANEf4RAhxyAJwLeufXonQYVMeLHA7r+JcGfedEdgCfXvCL
-jdocEtAFn/AUW123WpFxQBU=
-=2axN
------END PGP SIGNATURE-----
-
---=-tNPUnuLGMUTQ9uh1rASb--
-
+    J
