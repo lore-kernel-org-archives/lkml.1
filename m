@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759496AbXKASsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759327AbXKASuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759496AbXKASsS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 14:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbXKASsA
+	id S1759327AbXKASuh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 14:50:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754783AbXKASu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 14:48:00 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:55602 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752461AbXKASr7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 14:47:59 -0400
-Message-ID: <472A1F5B.9060401@garzik.org>
-Date: Thu, 01 Nov 2007 14:47:55 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-CC: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       davej@redhat.com, ajax@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] e1000, e1000e valid-addr fixes
-References: <471E99E8.6030404@garzik.org>	<20071023.180744.115914004.davem@davemloft.net>	<471EABEE.8030900@garzik.org> <20071023.192313.115635750.davem@davemloft.net> <472A1526.8070208@intel.com>
-In-Reply-To: <472A1526.8070208@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 1 Nov 2007 14:50:29 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60285 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754692AbXKASu2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 14:50:28 -0400
+Date: Thu, 1 Nov 2007 11:45:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de,
+       linux-usb-devel@lists.sourceforge.net, hjlipp@web.de, kkeil@suse.de,
+       i4ldeveloper@listserv.isdn4linux.de, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/2] usb_gigaset: suspend support [v2]
+Message-Id: <20071101114537.0091c8d1.akpm@linux-foundation.org>
+In-Reply-To: <472A18D7.7020703@imap.cc>
+References: <20071029185311.4C955FC04C@xenon.ts.pxnet.com>
+	<20071029214131.70EABFC043@xenon.ts.pxnet.com>
+	<20071030140124.984aba58.akpm@linux-foundation.org>
+	<472A18D7.7020703@imap.cc>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kok, Auke wrote:
-> David Miller wrote:
->> From: Jeff Garzik <jeff@garzik.org>
->> Date: Tue, 23 Oct 2007 22:20:30 -0400
->>
->>> David Miller wrote:
->>>> From: Jeff Garzik <jeff@garzik.org>
->>>> Date: Tue, 23 Oct 2007 21:03:36 -0400
->>>>
->>>>> I'm wondering if there is a way to avoid adding
->>>>>
->>>>> 	if (!is_valid_ether_addr(dev->dev_addr))
->>>>> 		return -EINVAL;
->>>>>
->>>>> to every ethernet driver's ->open() hook.
->>>> The first idea I get is:
->>>>
->>>> 1) Create netdev->validate_dev_addr().
->>>>
->>>> 2) If it exists, invoke it before ->open(), abort
->>>>    and return if any errors signaled.
->>>>
->>>> etherdev init hooks up a function that does the above
->>>> check, which allows us to avoid editing every ethernet
->>>> driver
->>>>
->>>> What do you think?
->>> Seems sane to me.  Something like this (attached)?
->> Looks great:
->>
->> Acked-by: David S. Miller <davem@davemloft.net>
+On Thu, 01 Nov 2007 19:20:07 +0100
+Tilman Schmidt <tilman@imap.cc> wrote:
+
+> >> +static int gigaset_suspend(struct usb_interface *intf, pm_message_t message)
+> >> +{
+> >> +	struct cardstate *cs;
+> >> +	struct usb_cardstate *ucs;
+> >> +
+> >> +	if ((cs = usb_get_intfdata(intf)) == NULL ||
+> >> +	    (ucs = cs->hw.usb) == NULL) {
+> >> +		err("%s: no cardstate", __func__);
+> >> +		return -EFAULT;
+> >> +	}
+> > 
+> > Is the above reeeeeely needed?  I bet it never happens.
 > 
-> I like it.
+> I'm a great believer in defensive programming. :-)
 > 
-> Should I start sending patches to remove the checks from e1000/e1000e/ixgb/ixgbe
-> already (to David, I assume?)?
+> Anyway, to be sure these checks aren't needed, I would need the
+> assurance that the suspend and resume methods are serialized with
+> the probe and disconnect methods. Are they?
 
-Send the patches to me like normal...
-
-	Jeff
-
-
-
+dunno it beats me.  Not to my knowledge.  Perhaps Greg and Rafael would know?
