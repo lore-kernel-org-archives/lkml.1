@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757018AbXKAIW4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757111AbXKAI25@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757018AbXKAIW4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 04:22:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbXKAIWs
+	id S1757111AbXKAI25 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 04:28:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbXKAI2t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 04:22:48 -0400
-Received: from mail.sf-mail.de ([62.27.20.61]:38368 "EHLO mail.sf-mail.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753196AbXKAIWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 04:22:47 -0400
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: iwl3945 in 2.6.24-rc1 dies under load
-Date: Thu, 1 Nov 2007 09:22:11 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pavel Machek <pavel@ucw.cz>, linux-wireless@vger.kernel.org,
-       kernel list <linux-kernel@vger.kernel.org>,
-       ipw3945-devel@lists.sourceforge.net, yi.zhu@intel.com
-References: <20071031005202.GA1534@elf.ucw.cz> <200711010259.05315.rjw@sisk.pl>
-In-Reply-To: <200711010259.05315.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1673292.C95xu0QgPD";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Thu, 1 Nov 2007 04:28:49 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:55919 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750812AbXKAI2s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 04:28:48 -0400
+Subject: Re: [v4l-dvb-maintainer] bttv build error (CONFIG_NET=n)
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Trent Piepho <xyzzy@speakeasy.org>, v4l-dvb-maintainer@linuxtv.org,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071031092350.91eae067.randy.dunlap@oracle.com>
+References: <20071030221508.3139ea5c.randy.dunlap@oracle.com>
+	 <Pine.LNX.4.58.0710310345160.19072@shell4.speakeasy.net>
+	 <20071031092350.91eae067.randy.dunlap@oracle.com>
+Content-Type: text/plain
+Date: Thu, 01 Nov 2007 06:28:29 -0200
+Message-Id: <1193905709.8587.24.camel@gaivota>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.1-1mdv2008.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200711010922.19051.eike-kernel@sf-tec.de>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1673292.C95xu0QgPD
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Randy,
 
-Am Donnerstag, 1. November 2007 schrieb Rafael J. Wysocki:
-> On Wednesday, 31 October 2007 01:52, Pavel Machek wrote:
-> > Hi!
-> >
-> > ...does not seem to work too well :-(. It connects with the AP
-> > (good!), and survives some "normal" use, but it died at first big
-> > tcpspray (baaaad!).
->
-> Is this a regression from 2.6.23?
+> > The only reason the net stuff works, is because CONFIG_NET includes igmp.c,
+> > which can't be compiled as a module.  That means ip_compute_csum() will get
+> > pulled out of the lib.a file for igmp, and thus be present for the net modules
+> > that use it too.  If igmp could be turned off, made a module, or stopped using
+> > ip_compute_csum(), then the users of ip_compute_csum() that do depend on
+> > CONFIG_NET would have the same problem as bttv does.
+> 
+> Thanks for the analysis and summary.
+> (I'm still waiting for those lkml.org links to load... timed out)
+> 
+> > It seems a shame to create a new ip checksum function in the bttv driver when
+> > a perfectly good one already exists and will already be present in just about
+> > every kernel out there.  Honestly, how common is NET=n and VIDEO_BT848=m
+> > outside of randconfig?
 
-No, iwlwifi was merged after 2.6.23.
+This might happen on embedded devices, like a set top box or a PVR,
+using a bttv hardware.
 
-Eike
+> so just adding "depends on NET" should be OK then?
 
---nextPart1673292.C95xu0QgPD
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Seems very weird to have bttv module dependent on NET, just because a
+checksum calculus function is defined there. 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+One possible solution would be to move this function to another place
+and having both NET, BTTV and other places selecting it.
 
-iD8DBQBHKYy6XKSJPmm5/E4RAjrUAJ4oBX92H4G6Ed1V2zHMZb38LPJfiQCghHVN
-YdJ8QOH8ZiFuXwvsQegFxrg=
-=dumL
------END PGP SIGNATURE-----
+-- 
+Cheers,
+Mauro
 
---nextPart1673292.C95xu0QgPD--
