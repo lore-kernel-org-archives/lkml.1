@@ -1,54 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758356AbXKAIcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758824AbXKAIdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758356AbXKAIcR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 04:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbXKAIcI
+	id S1758824AbXKAIdm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 04:33:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753729AbXKAIdd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 04:32:08 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51528 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753414AbXKAIcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 04:32:06 -0400
-Date: Thu, 1 Nov 2007 09:31:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: Avi Kivity <avi@qumranet.com>, Jeff Garzik <jeff@garzik.org>,
-       Adrian Bunk <bunk@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] kvm: fix !SMP build error
-Message-ID: <20071101083139.GB8459@elte.hu>
-References: <tueoct232007613pm.likjasfdlkjdas987@havoc.gtf.org> <20071023223640.EADF31F81AC@havoc.gtf.org> <20071023224455.GY30533@stusta.de> <471E79E2.2090204@garzik.org> <471F03F5.7090608@qumranet.com> <20071024123258.GA28653@elte.hu> <20071024123650.GA31562@elte.hu> <20071024181107.GA15250@elte.hu> <20071031203442.7e161692.rdunlap@xenotime.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071031203442.7e161692.rdunlap@xenotime.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0001]
+	Thu, 1 Nov 2007 04:33:33 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57786 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753415AbXKAIdc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 04:33:32 -0400
+Date: Thu, 1 Nov 2007 01:32:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Gary Hade <gary.hade@us.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH] x86: check boundary in count/setup_resource called by
+ get_current_resources
+Message-Id: <20071101013239.992840bd.akpm@linux-foundation.org>
+In-Reply-To: <200711010120.30410.yinghai.lu@sun.com>
+References: <200711010120.30410.yinghai.lu@sun.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 01 Nov 2007 01:20:29 -0700 Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
 
-* Randy Dunlap <rdunlap@xenotime.net> wrote:
-
-> > > and this followup patch is needed too if my patch is applied.
-> > 
-> > plus the patch below is needed too in addition.
-> > 
-> > 	Ingo
+> [PATCH] x86: check boundary in count/setup_resource called by get_current_resources
 > 
-> Hi,
-> I'm still hitting this build error.  Are these 3 patches not yet
-> merged??
+> need to check info->res_num less than PCI_BUS_NUM_RESOURCES, so
+> info->bus->resource[info->res_num] = res will not beyond of bus resource array
+> when acpi resutrn too many resource entries.
+> 
 
-i thought we agreed it would go in via KVM. Can send it as part of the 
-scheduler git tree too, these patches are working fine for me. Avi?
+Isn't this a bit of a problem?  It sounds like PCI_BUS_NUM_RESOURCES is to
+small for that system?  If so, some sort of dynamic allocation might be
+needed.
 
-	Ingo
+> 
+> Index: linux-2.6/arch/x86/pci/acpi.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/pci/acpi.c
+> +++ linux-2.6/arch/x86/pci/acpi.c
+> @@ -77,9 +77,13 @@ count_resource(struct acpi_resource *acp
+>  	struct acpi_resource_address64 addr;
+>  	acpi_status status;
+>  
+> +	if (info->res_num >= PCI_BUS_NUM_RESOURCES)
+> +		return AE_OK;
+> +
+>  	status = resource_to_addr(acpi_res, &addr);
+>  	if (ACPI_SUCCESS(status))
+>  		info->res_num++;
+> +
+>  	return AE_OK;
+>  }
+
+grump.  I don't know why people like a blank line before `return': it's
+just a waste of screen space.  And the surrounding code in
+arch/x86/pci/acpi.c doesn't do this either.
+
+> @@ -93,6 +97,9 @@ setup_resource(struct acpi_resource *acp
+>  	unsigned long flags;
+>  	struct resource *root;
+>  
+> +	if (info->res_num >= PCI_BUS_NUM_RESOURCES)
+> +		return AE_OK;
+
+And should we really be silently ignoring this problem?  Should we at least
+report it?
+
+>  	status = resource_to_addr(acpi_res, &addr);
+>  	if (!ACPI_SUCCESS(status))
+>  		return AE_OK;
+>  
