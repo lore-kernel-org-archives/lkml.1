@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755985AbXKAVQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbXKAVWE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755985AbXKAVQU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 17:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbXKAVQJ
+	id S1755950AbXKAVWE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 17:22:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbXKAVVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 17:16:09 -0400
-Received: from il.qumranet.com ([82.166.9.18]:44563 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753889AbXKAVQH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 17:16:07 -0400
-Message-ID: <472A4229.60808@qumranet.com>
-Date: Thu, 01 Nov 2007 23:16:25 +0200
-From: Avi Kivity <avi@qumranet.com>
+	Thu, 1 Nov 2007 17:21:54 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:46588 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753399AbXKAVVx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 17:21:53 -0400
+Message-ID: <472A435A.5030508@zytor.com>
+Date: Thu, 01 Nov 2007 14:21:30 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Randy Dunlap <rdunlap@xenotime.net>, Jeff Garzik <jeff@garzik.org>,
-       Adrian Bunk <bunk@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] kvm: fix !SMP build error
-References: <20071023223640.EADF31F81AC@havoc.gtf.org> <20071023224455.GY30533@stusta.de> <471E79E2.2090204@garzik.org> <471F03F5.7090608@qumranet.com> <20071024123258.GA28653@elte.hu> <20071024123650.GA31562@elte.hu> <20071024181107.GA15250@elte.hu> <20071031203442.7e161692.rdunlap@xenotime.net> <20071101083139.GB8459@elte.hu> <4729D051.5040508@qumranet.com> <20071101145916.GA4044@elte.hu>
-In-Reply-To: <20071101145916.GA4044@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>
+Subject: Re: [PATCH/RFC] x86: unify Kconfig files
+References: <20071031215501.GA28556@uranus.ravnborg.org> <20071101211406.GA7891@uranus.ravnborg.org>
+In-Reply-To: <20071101211406.GA7891@uranus.ravnborg.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Avi Kivity <avi@qumranet.com> wrote:
->
->   
->> I thought you were handling it, as they aren't part of kvm proper.  
->> But I can send them, sure.
->>     
->
-> i've got them in my queue already so i'll send them in the next 
-> scheduler batch, ok?
->   
+Sam Ravnborg wrote:
+> On Wed, Oct 31, 2007 at 10:55:01PM +0100, Sam Ravnborg wrote:
+>> It has been requested that we should let x86 behave like
+>> other architectures so we at config time decide for 32 or 64 bit.
+>> The challenge here is to mere the Kconfig files and I have done
+>> an attempt to do so.
+> 
+> Just a heads up...
+> I have started to redo the patch below in smaller chunks and expect
+> to finish this tomorrow.
+> The cpufreq Kconfig file is done so no need for help here.
+> 
+> I hope to make the patches small enough so we can be confident to
+> apply them despite that we are heading -rc2.
+> It would be nice to get "make ARCH=x86" working before next
+> kernel release - and with the Kconfig files merged this is trivial.
+> I hope the x86 maintainers agree - but that yours decision.
+> 
 
-Thanks.
+I looked over your patch yesterday and it looked sane to me, but I would 
+definitely prefer if it was broken up for reviewability.
 
--- 
-Any sufficiently difficult bug is indistinguishable from a feature.
-
+	-hpa
