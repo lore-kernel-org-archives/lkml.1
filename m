@@ -1,90 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894AbXKBMGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbXKBMQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754894AbXKBMGQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 08:06:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbXKBMGD
+	id S1753878AbXKBMQR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 08:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753529AbXKBMQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 08:06:03 -0400
-Received: from fmmailgate05.web.de ([217.72.192.243]:55405 "EHLO
-	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751241AbXKBMGB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 08:06:01 -0400
-Date: Fri, 02 Nov 2007 13:05:59 +0100
-Message-Id: <2061698400@web.de>
-MIME-Version: 1.0
-From: devzero@web.de
+	Fri, 2 Nov 2007 08:16:07 -0400
+Received: (root@vger.kernel.org) by vger.kernel.org id S1753249AbXKBMQG
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 08:16:06 -0400
+Received: from smtpgpe.resot.net ([217.175.160.71]:42296 "EHLO smtpgpe.ool.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753946AbXKATJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 15:09:08 -0400
+From: "werner" <werner@copaya.yi.org>
+Subject: crash 2.6.24-rc1-git10
 To: linux-kernel@vger.kernel.org
-Cc: 12o3l@tiscali.nl, jdike@addtoit.com
-Subject: Re: build failure, missing libvdeplug.h?
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX18guLfjbyi3KpkI8XIwC9tJj5ztp2fILWsStyXmfaRHicw5w
- u4J6ssPSbpk50tdH1jc9Alk4z8E+NpEMuu/vzs/5LLmEt38WCg=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 7bit
+X-Originating-IP: 217.175.175.236
+X-Mailer: Usermin 1.300
+Message-Id: <1193943446.4959@copaya.yi.org>
+Date: Thu, 01 Nov 2007 15:57:27 -0300 (GFT)
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="bound1193943447"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+This is a multi-part message in MIME format.
 
-I tried 2.6.24-rc1-git11 with "allmodconfig ARCH=um" today.
+--bound1193943447
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-this gave at least two errors - i needed to set CONFIG_SMP=n and CONFIG_UML_NET_VDE=n to make it compile.
-
-not sure if options should be set to "n" automatically or being fixed differently, but if there is something broken or some header file missing,  from an "end-user`s" point of view errors like this may be hard to get around.
-
-it`s nothing against UML, it`s just the fact that i would expect "allmodconfig" or "allyesconfig" to work out of the box.
-one should be able to compile a kernel without the need to use google, imho.
-
-many automated cross-compile tests i have seen till now mostly show more broken than successful builds, as you can see at http://l4x.org/k , and issues like this don`t help making this better.
-
-minor issue, though......
-
-regards
-roland
-
-
-
-
-
-
-On Mon, Oct 29, 2007 at 04:24:54PM +0100, Roel Kluin wrote:
-> CC      arch/um/drivers/vde_user.o
-> /home/roel/dnld/src/kernel/git/linux-2.6/arch/um/drivers/vde_user.c:8:24: error: \
->                 libvdeplug.h: No such file or directory
-> /home/roel/dnld/src/kernel/git/linux-2.6/arch/um/drivers/vde_user.c: In function \
->                 'vde_user_init':
-> /home/roel/dnld/src/kernel/git/linux-2.6/arch/um/drivers/vde_user.c:18: error: \
->                 'VDECONN' undeclared (first use in this function)
-> ...
-> 
-> the file libvdeplug.h is missing and I can't find it neither in the tree or on
-> the net. 'git-grep VDECONN' shows that VDECONN isn't defined anywhere.
-
-This is an option which requires support on the host (in the form of
-vde being installed - pcap is another example of this).
-
-				Jeff
+Kernel Crash -- Details see below
+globc 2.7  glib2 2.14.2
+W.Landgraf
+www.copaya.yi.org
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+2.6.24-rc1-git10
+EIP 0600: <c0407284> EFLAGS 00010212 CPU 0
+EIUP is at xor_sse_2+0x34/0x200
+EAX: 10 EBX fffedb22 ECX c183f000 EDX c183c000 ESS 8005003b EDI c0929614 EBP c183f000 ESP c1823ef0   
+DS 7b ES 7b FS d8 GS 0 SS 68
+Process swapper  pid 1  ti: c182200  task c1820000 task.ti c=3D1822000
+Stack:  8x 0    8x 0   fffedb22  0  c04067b3  10  c0849b62  c1030780  c183f000  c183c000
+call trace
+c0 4067b3 do_xor_speed+0x53/0xd0
+   9a9582 calibrate_xor_blocks 0xe2/0x100 (or 1a0 ?)
+  191594  register_filesystem =3D0X44/0X70
+  991565 kernel_init+0x125/0x2f0
+   10420a  ret_from_fork +0x6/0x1c  (or 0xb ...)
+  991440 kernel_init+0x0/0x2f0
+       " again
+   c0104edf  kernel_thread_helper+0x7/0x18
+code  08 89 74 24 44 0f 20 cf 0f 06 (or 0b) 0f 11 04 24 0f 11 4c 34 10 0f 11 54 24 20 0f 11 5c 24 30 0f 18 82 00
+01 00 00 0f 18 82 20 01 00 00 <00> 20x 0
+EIP c0407284 xor_sse_2+0x34/0x200 SS ESP 068: c1823ef0
+kernel panic
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3DSystem.map=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
 
 
+--bound1193943447--
 
-> Roel Kluin wrote:
->> the file libvdeplug.h is missing
-> 
->> There is a reference to http://wiki.virtualsquare.org/index.php/Main_Page in
->> the Kconfig (also added by this commit).
->> After reverting this commit the build continues. possibly the header 
->> libvdeplug.h was forgotten?
-> 
-> Sorry for answering myself, but apparently it can be found here:
-> 
-> http://vde.sourceforge.net/
-> 
-> I think, however that there is a 'depends on' missing in kconfig - to prevent build
-> failure?
-
-
-______________________________________________________________________
-XXL-Speicher, PC-Virenschutz, Spartarife & mehr: Nur im WEB.DE Club!		
-Jetzt testen! http://produkte.web.de/club/?mc=021130
 
