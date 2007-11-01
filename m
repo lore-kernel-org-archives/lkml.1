@@ -1,139 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755037AbXKAWZz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760150AbXKAW0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755037AbXKAWZz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 18:25:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753821AbXKAWZo
+	id S1760150AbXKAW0m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 18:26:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754496AbXKAW0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 18:25:44 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:40641 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753079AbXKAWZn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 18:25:43 -0400
-Date: Thu, 1 Nov 2007 23:25:24 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>,
-       dbrownell@users.sourceforge.net, jgarzik@pobox.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [2.6 patch] let USB_USBNET always select MII
-Message-ID: <20071101222524.GB7227@stusta.de>
-References: <200711012024.57412.toralf.foerster@gmx.de>
+	Thu, 1 Nov 2007 18:26:33 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50697 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753821AbXKAW0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 18:26:32 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Russell King <rmk+lkml@arm.linux.org.uk>,
+       Rodolfo Giometti <giometti@enneenne.com>
+Subject: Re: [PATCH] PCMCIA: prevent auto insert during resume.
+Date: Thu, 1 Nov 2007 23:43:18 +0100
+User-Agent: KMail/1.9.5
+Cc: Pavel Machek <pavel@ucw.cz>, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org,
+       Dominik Brodowski <linux@dominikbrodowski.net>
+References: <20071026154705.GY19019@enneenne.com> <20071101183741.GA27621@flint.arm.linux.org.uk> <20071101185629.GA3136@flint.arm.linux.org.uk>
+In-Reply-To: <20071101185629.GA3136@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200711012024.57412.toralf.foerster@gmx.de>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200711012343.19861.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All this USB_USBNET_MII trickery is simply not worth it considering how 
-few code it saves.
+On Thursday, 1 November 2007 19:56, Russell King wrote:
+> On Thu, Nov 01, 2007 at 06:37:41PM +0000, Russell King wrote:
+> > On Thu, Nov 01, 2007 at 03:53:59PM +0100, Rodolfo Giometti wrote:
+> > > On Mon, Oct 29, 2007 at 07:24:15PM +0000, Pavel Machek wrote:
+> > > > On Fri 2007-10-26 19:18:57, Rodolfo Giometti wrote:
+> > > > > On Fri, Oct 26, 2007 at 06:00:31PM +0100, Russell King wrote:
+> > > > > 
+> > > > > > > > > Also if you didn't eject the socket, at resume the device will be
+> > > > > > > > > powered up again, my patch just prevents that a pre-powered off device
+> > > > > > > > > to be turned on at resume time.
+> > > > > > > > > 
+> > > > > > > > > However you should consider that some embedded systems have fixed
+> > > > > > > > > PCMCIA devices that can't be removed so there are no reasons to detect
+> > > > > > > > > them after resume, nobody can change them. :)
+> > > > > > > > > 
+> > > > > > > > > Also battery powered devices can go very frequently to sleep and the
+> > > > > > > > > current behavior force the user to switch off the unused device each
+> > > > > > > > > time the system resumes from sleep.
+> > > > > > > > 
+> > > > > > > > I realise that.  I do work on embedded devices, and this behaviour is
+> > > > > > > > explicitly there to support embedded devices.
+> > > > > > > > 
+> > > > > > > > I've suggested a workable solution to you which allows both of us to
+> > > > > > > > have the behaviour we both desire from the system.  That sounds like
+> > > > > > > > a negotiated solution to me...
+> > > > > > > 
+> > > > > > > Do you mean to switch off the socket from userland? It could be a
+> > > > > > > solution but in this case the device is powered on each time even if
+> > > > > > > for a short delay...
+> > > > > > 
+> > > > > > If it's a permanent device, and you've powered it down via pccardctl,
+> > > > > > then you've powered it down from userland.  So record that it's been
+> > > > > > powered down from userland.  Then, on resume, if it's been powered down
+> > > > > > from userland, don't try to re-power it on resume.
+> > > > > 
+> > > > > But the userland doesn't re-power it on resume... it's the kernel
+> > > > > itself whos re-powers the device on resume. So the userland can only
+> > > > > power down the device again.
+> > > > 
+> > > > I think Russell means: at a flag into kernel. If user powers down the
+> > > > device, set the flag. If flag is set during resume, avoid powering up
+> > > > the device.
+> > > 
+> > > That's exactly what my patch does! :)
+> > > 
+> > > If the user does 'eject' the device is not powered on at resume.
+> > > 
+> > > Currently, with out the patch, if you do an 'eject' to power down the
+> > > device, then you go to sleep and resume, the device is powered up
+> > > again and you have to do a new 'eject' to power it down.
+> > > 
+> > > My patch fixes this behaviour.
+> > 
+> > Let's be absolutely clear about this.  The patch in your original post
+> > does *NOT* do that.  It *completely* removes the possibility of powering
+> > up a device inserted into the PCMCIA slot before resuming without
+> > unplugging and replugging it by removing the code which detects an
+> > inserted card on resume.
+> > 
+> > And let's also be clear about something else.  You _were_ crystal clear
+> > on that aspect of it from your last mail on the subject since you were
+> > asking for names of attributes to set and clear such a flag.  I didn't
+> > respond because I'm not going to hold your hand with such obvious
+> > issues - if you need that level of support, it will be far faster for
+> > me to write the damned patch myself.
+> 
+> Oh, and I'd like to make another thing clear - let's get the roles of
+> responsibility right.
+> 
+> I'm the ex-PCMCIA maintainer who had a requirement for the current
+> behaviour on my embedded ARM devices with classical PCMCIA sockets.
+> 
+> Dominik is the current PCMCIA maintainer who gets to say what goes in,
+> how things should be designed, etc.
 
-As a side effect, this also fixes the following compile error reported 
-by Toralf Förster:
+Well, this is not what the MAINTAINERS file says, btw.
 
-<--  snip  -->
+> You're the guy coming along with a different requirement for a device
+> using the PCMCIA subsystem in a non-classical way (non-pluggable PCMCIA)
+> and finding that the subsystem doesn't work in a good way with that
+> setup, and suggesting we break classical PCMCIA setups to make it
+> work.
 
-...
-  LD      .tmp_vmlinux1
-drivers/built-in.o: In function `usbnet_set_settings':
-(.text+0xf1876): undefined reference to `mii_ethtool_sset'
-drivers/built-in.o: In function `usbnet_get_settings':
-(.text+0xf1836): undefined reference to `mii_ethtool_gset'
-drivers/built-in.o: In function `usbnet_get_link':
-(.text+0xf18d6): undefined reference to `mii_link_ok'
-drivers/built-in.o: In function `usbnet_nway_reset':
-(.text+0xf18f6): undefined reference to `mii_nway_restart'
-make: *** [.tmp_vmlinux1] Error 1
+OK
 
-<--  snip  -->
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
----
-
- drivers/net/usb/Kconfig  |    9 +--------
- drivers/net/usb/usbnet.c |    7 -------
- 2 files changed, 1 insertion(+), 15 deletions(-)
-
-3b7f6290c639b9042fead1698fdbe1c84132c953 
-diff --git a/drivers/net/usb/Kconfig b/drivers/net/usb/Kconfig
-index 5a96d74..a12c9c4 100644
---- a/drivers/net/usb/Kconfig
-+++ b/drivers/net/usb/Kconfig
-@@ -93,13 +93,9 @@ config USB_RTL8150
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called rtl8150.
- 
--config USB_USBNET_MII
--	tristate
--	default n
--
- config USB_USBNET
- 	tristate "Multi-purpose USB Networking Framework"
--	select MII if USB_USBNET_MII != n
-+	select MII
- 	---help---
- 	  This driver supports several kinds of network links over USB,
- 	  with "minidrivers" built around a common network driver core
-@@ -135,7 +131,6 @@ config USB_NET_AX8817X
- 	tristate "ASIX AX88xxx Based USB 2.0 Ethernet Adapters"
- 	depends on USB_USBNET && NET_ETHERNET
- 	select CRC32
--	select USB_USBNET_MII
- 	default y
- 	help
- 	  This option adds support for ASIX AX88xxx based USB 2.0
-@@ -190,7 +185,6 @@ config USB_NET_DM9601
- 	tristate "Davicom DM9601 based USB 1.1 10/100 ethernet devices"
- 	depends on USB_USBNET
- 	select CRC32
--	select USB_USBNET_MII
- 	help
- 	  This option adds support for Davicom DM9601 based USB 1.1
- 	  10/100 Ethernet adapters.
-@@ -225,7 +219,6 @@ config USB_NET_PLUSB
- config USB_NET_MCS7830
- 	tristate "MosChip MCS7830 based Ethernet adapters"
- 	depends on USB_USBNET
--	select USB_USBNET_MII
- 	help
- 	  Choose this option if you're using a 10/100 Ethernet USB2
- 	  adapter based on the MosChip 7830 controller. This includes
-diff --git a/drivers/net/usb/usbnet.c b/drivers/net/usb/usbnet.c
-index acd5f1c..8ed1fc5 100644
---- a/drivers/net/usb/usbnet.c
-+++ b/drivers/net/usb/usbnet.c
-@@ -683,9 +683,6 @@ done_nopm:
-  * they'll probably want to use this base set.
-  */
- 
--#if defined(CONFIG_MII) || defined(CONFIG_MII_MODULE)
--#define HAVE_MII
--
- int usbnet_get_settings (struct net_device *net, struct ethtool_cmd *cmd)
- {
- 	struct usbnet *dev = netdev_priv(net);
-@@ -744,8 +741,6 @@ int usbnet_nway_reset(struct net_device *net)
- }
- EXPORT_SYMBOL_GPL(usbnet_nway_reset);
- 
--#endif	/* HAVE_MII */
--
- void usbnet_get_drvinfo (struct net_device *net, struct ethtool_drvinfo *info)
- {
- 	struct usbnet *dev = netdev_priv(net);
-@@ -776,12 +771,10 @@ EXPORT_SYMBOL_GPL(usbnet_set_msglevel);
- 
- /* drivers may override default ethtool_ops in their bind() routine */
- static struct ethtool_ops usbnet_ethtool_ops = {
--#ifdef	HAVE_MII
- 	.get_settings		= usbnet_get_settings,
- 	.set_settings		= usbnet_set_settings,
- 	.get_link		= usbnet_get_link,
- 	.nway_reset		= usbnet_nway_reset,
--#endif
- 	.get_drvinfo		= usbnet_get_drvinfo,
- 	.get_msglevel		= usbnet_get_msglevel,
- 	.set_msglevel		= usbnet_set_msglevel,
+Can we CC all future messages regarding this patch to Dominik, please?
