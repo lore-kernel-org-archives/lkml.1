@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758085AbXKAKyN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760809AbXKAK5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758085AbXKAKyN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 06:54:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757063AbXKAKyA
+	id S1760809AbXKAK5q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 06:57:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757010AbXKAK5i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 06:54:00 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:7547 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756769AbXKAKx7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 06:53:59 -0400
-Date: Thu, 1 Nov 2007 11:51:09 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Alistair John Strachan <alistair@devzero.co.uk>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       lkml@ml.breakpoint.cc
-Subject: Re: 2.4.24-rc1-git: crash on shutdown/unmount?
-Message-ID: <20071101105108.GD5037@kernel.dk>
-References: <200710311917.21441.alistair@devzero.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710311917.21441.alistair@devzero.co.uk>
+	Thu, 1 Nov 2007 06:57:38 -0400
+Received: from [81.2.110.250] ([81.2.110.250]:34019 "EHLO the-village.bc.nu"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753882AbXKAK5h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 06:57:37 -0400
+Date: Thu, 1 Nov 2007 10:59:02 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] libata ATAPI transfer size cleanups
+Message-ID: <20071101105902.6e411c20@the-village.bc.nu>
+In-Reply-To: <4729A23E.7000601@garzik.org>
+References: <20071101090733.GA9258@havoc.gtf.org>
+	<20071101094344.6eb9d8bc@the-village.bc.nu>
+	<4729A23E.7000601@garzik.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 31 2007, Alistair John Strachan wrote:
-> Hi Jens,
+On Thu, 01 Nov 2007 05:54:06 -0400
+Jeff Garzik <jeff@garzik.org> wrote:
+
+> Alan Cox wrote:
+> > On Thu, 1 Nov 2007 05:07:33 -0400
+> > Jeff Garzik <jeff@garzik.org> wrote:
+> > 
+> >> This is purely for comment and testing, not for merging (yet?).
+> >>
+> >> A common recipe in several vendor drivers (either GPL'd, or I have NDA'd
+> >> access to use them as a documentation-like reference) for ATAPI was
+> >> slightly different from ours.  This recipe can be found in
+> >> atapi_tf_xfer_size(), and it's slightly different from Alan's.
+> > 
+> > Looks mostly good. Might cause breakage on one or two controllers by
+> > setting lbam/lbah to 0 for DMA but we can test that and find out.
 > 
-> I guessed from the oops that you might have an idea what's causing this oops 
-> on shutdown/unmount. The git version (describe), a screenshot showing the 
-> oops, a config, and dmesg for a booted kernel are available from:
-> 
-> http://devzero.co.uk/~alistair/oops-20071031/
-> 
-> I went back to -rc1 and it still happens there too. If you need any more 
-> information or want me to bisect it, please let me know.
+> DMA always zeroed lbam/lbah thanks to memset(), my patch merely made it 
+> explicit.
 
-Does this work for you?
+That would be a bug if so - need to try fixing that and see if it sorts
+out the remaining recalcitrant ALi chips.
 
-diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
-index 54fd385..75c98d5 100644
---- a/block/ll_rw_blk.c
-+++ b/block/ll_rw_blk.c
-@@ -3221,6 +3221,7 @@ static inline void __generic_make_request(struct bio *bio)
- 	sector_t old_sector;
- 	int ret, nr_sectors = bio_sectors(bio);
- 	dev_t old_dev;
-+	int err = -EIO;
- 
- 	might_sleep();
- 
-@@ -3248,7 +3249,7 @@ static inline void __generic_make_request(struct bio *bio)
- 				bdevname(bio->bi_bdev, b),
- 				(long long) bio->bi_sector);
- end_io:
--			bio_endio(bio, -EIO);
-+			bio_endio(bio, err);
- 			break;
- 		}
- 
-@@ -3283,6 +3284,10 @@ end_io:
- 
- 		if (bio_check_eod(bio, nr_sectors))
- 			goto end_io;
-+		if (bio_empty_barrier(bio) && !q->prepare_flush_fn) {
-+			err = -EOPNOTSUPP;
-+			goto end_io;
-+		}
- 
- 		ret = q->make_request_fn(q, bio);
- 	} while (ret);
-
--- 
-Jens Axboe
-
+Alan
