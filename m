@@ -1,86 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754594AbXKADau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755060AbXKADez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754594AbXKADau (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 23:30:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbXKADam
+	id S1755060AbXKADez (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 23:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752933AbXKADer
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 23:30:42 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:44253 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753219AbXKADal (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 23:30:41 -0400
-Message-ID: <472947F7.3040101@linux.vnet.ibm.com>
-Date: Thu, 01 Nov 2007 08:58:55 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
-MIME-Version: 1.0
-To: Thomas Meyer <thomas@m3y3r.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, shaw@vranix.com,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: WARNING: at fs/sysfs/dir.c:424 sysfs_add_one() with 4fa435018d740cb83d74c92306aa1f796da91ddd
-References: <471E1764.5040000@m3y3r.de> <471E17E6.6060304@m3y3r.de> <20071031231711.GB5704@gmail.com>
-In-Reply-To: <20071031231711.GB5704@gmail.com>
-Content-Type: text/plain; charset=us-ascii
+	Wed, 31 Oct 2007 23:34:47 -0400
+Received: from xenotime.net ([66.160.160.81]:35186 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752477AbXKADeq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 23:34:46 -0400
+Date: Wed, 31 Oct 2007 20:34:42 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Avi Kivity <avi@qumranet.com>, Jeff Garzik <jeff@garzik.org>,
+       Adrian Bunk <bunk@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] kvm: fix !SMP build error
+Message-Id: <20071031203442.7e161692.rdunlap@xenotime.net>
+In-Reply-To: <20071024181107.GA15250@elte.hu>
+References: <tueoct232007613pm.likjasfdlkjdas987@havoc.gtf.org>
+	<20071023223640.EADF31F81AC@havoc.gtf.org>
+	<20071023224455.GY30533@stusta.de>
+	<471E79E2.2090204@garzik.org>
+	<471F03F5.7090608@qumranet.com>
+	<20071024123258.GA28653@elte.hu>
+	<20071024123650.GA31562@elte.hu>
+	<20071024181107.GA15250@elte.hu>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shaw Vrana wrote:
-> Yeah, I get the same with 2.6.24-rc1.
+On Wed, 24 Oct 2007 20:11:07 +0200 Ingo Molnar wrote:
+
 > 
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> On Tue, Oct 23, 2007 at 05:48:54PM +0200, Thomas Meyer wrote:
->> Thomas Meyer schrieb:
->>> Oct 23 17:13:55 [kernel] usb 1-1: new high speed USB device using
->>> ehci_hcd and address 7
->>> Oct 23 17:13:55 [kernel] usb 1-1: configuration #1 chosen from 1 choice
->>> Oct 23 17:13:55 [kernel] hub 1-1:1.0: USB hub found
->>> Oct 23 17:13:55 [kernel] hub 1-1:1.0: 4 ports detected
->>> Oct 23 17:13:55 [kernel] sysfs: duplicate filename 'bInterfaceNumber'
->>> can not be created
->>> Oct 23 17:13:55 [kernel] WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
->>> Oct 23 17:13:55 [kernel]  [<c01a37f0>] sysfs_add_one+0x54/0xb8
->>> Oct 23 17:13:55 [kernel]  [<c01a332a>] sysfs_add_file+0x42/0x6a
->>> Oct 23 17:13:55 [kernel]  [<c01a4a01>] sysfs_create_group+0x84/0xe7
->>> Oct 23 17:13:55 [kernel]  [<c023e5ec>] device_add+0x44a/0x454
->>> Oct 23 17:13:55 [kernel]  [<f88e774c>]
->>> usb_create_sysfs_intf_files+0x24/0x98 [usbcore]
->>> Oct 23 17:13:55 [kernel]  [<f88e4181>] usb_set_configuration+0x48f/0x4a9
->>> [usbcore]
->>> Oct 23 17:13:55 [kernel]  [<f88eabf3>] generic_probe+0x50/0x91 [usbcore]
->>> Oct 23 17:13:55 [kernel]  [<f88e5817>] usb_probe_device+0x32/0x37 [usbcore]
->>> Oct 23 17:13:55 [kernel]  [<c023fc11>] driver_probe_device+0xc5/0x148
->>> Oct 23 17:13:55 [kernel]  [<c02d94bd>] klist_next+0x4b/0x6b
->>> Oct 23 17:13:55 [kernel]  [<c023f14a>] bus_for_each_drv+0x35/0x5c
->>> Oct 23 17:13:55 [kernel]  [<c023fd17>] device_attach+0x63/0x77
->>> Oct 23 17:13:55 [kernel]  [<c023fc94>] __device_attach+0x0/0x5
->>> Oct 23 17:13:55 [kernel]  [<c023f0c6>] bus_attach_device+0x26/0x75
->>> Oct 23 17:13:55 [kernel]  [<c023e43d>] device_add+0x29b/0x454
->>> Oct 23 17:13:55 [kernel]  [<f88dfc2e>] usb_new_device+0x4d/0x8a [usbcore]
->>> Oct 23 17:13:55 [kernel]  [<f88e1149>] hub_thread+0x6f5/0xae2 [usbcore]
->>> Oct 23 17:13:55 [kernel]  [<c02d9e72>] schedule+0x4b4/0x519
->>> Oct 23 17:13:55 [kernel]  [<c013a1e1>] autoremove_wake_function+0x0/0x33
->>> Oct 23 17:13:55 [kernel]  [<f88e0a54>] hub_thread+0x0/0xae2 [usbcore]
->>> Oct 23 17:13:55 [kernel]  [<c013a119>] kthread+0x38/0x5f
->>> Oct 23 17:13:55 [kernel]  [<c013a0e1>] kthread+0x0/0x5f
->>> Oct 23 17:13:55 [kernel]  [<c0107bb7>] kernel_thread_helper+0x7/0x10
->>> Oct 23 17:13:55 [kernel]  =======================
->>>
->>>
->>>
->>>   
->> Sorry. This happens with 0895e91d60ef9bdef426d1ce14bb94bd5875870d...
+> > * Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > i have triggered this and fixed it the right way - see the patch 
+> > > below. This fixes the 2.6.24-rc1 build error.
+> > 
+> > and this followup patch is needed too if my patch is applied.
+> 
+> plus the patch below is needed too in addition.
+> 
+> 	Ingo
 
 Hi,
+I'm still hitting this build error.  Are these 3 patches not yet
+merged??
 
-Similar sysfs_add_one() was reported at http://lkml.org/lkml/2007/10/16/25 and
-a patch is pointed in the discussion there, this might help you.
+Thanks.
 
-cc'ing greg kroah-hartman.
+> ------------->
+> Subject: x86: fix build error in arch/x86/kernel/nmi_32.c
+> From: Ingo Molnar <mingo@elte.hu>
+> 
+> nmi_cpu_busy() must be available on !SMP too.
+> 
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  arch/x86/kernel/nmi_32.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: linux/arch/x86/kernel/nmi_32.c
+> ===================================================================
+> --- linux.orig/arch/x86/kernel/nmi_32.c
+> +++ linux/arch/x86/kernel/nmi_32.c
+> @@ -53,13 +53,13 @@ static int unknown_nmi_panic_callback(st
+>  
+>  static int endflag __initdata = 0;
+>  
+> -#ifdef CONFIG_SMP
+>  /* The performance counters used by NMI_LOCAL_APIC don't trigger when
+>   * the CPU is idle. To make sure the NMI watchdog really ticks on all
+>   * CPUs during the test make them busy.
+>   */
+>  static __init void nmi_cpu_busy(void *data)
+>  {
+> +#ifdef CONFIG_SMP
+>  	local_irq_enable_in_hardirq();
+>  	/* Intentionally don't use cpu_relax here. This is
+>  	   to make sure that the performance counter really ticks,
+> @@ -69,8 +69,8 @@ static __init void nmi_cpu_busy(void *da
+>  	   care if they get somewhat less cycles. */
+>  	while (endflag == 0)
+>  		mb();
+> -}
+>  #endif
+> +}
+>  
+>  static int __init check_nmi_watchdog(void)
+>  {
+> -
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+---
+~Randy
