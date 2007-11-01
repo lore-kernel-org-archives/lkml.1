@@ -1,56 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbXKAVCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbXKAVLE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755448AbXKAVCR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 17:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754054AbXKAVCC
+	id S1755606AbXKAVLE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 17:11:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbXKAVKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 17:02:02 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:48427 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754121AbXKAVCA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 17:02:00 -0400
-Message-ID: <472A3EBF.1080403@garzik.org>
-Date: Thu, 01 Nov 2007 17:01:51 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Thu, 1 Nov 2007 17:10:54 -0400
+Received: from ppp-111-237.adsl.restena.lu ([158.64.111.237]:44932 "EHLO
+	bonbons.gotdns.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751674AbXKAVKx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 17:10:53 -0400
+X-Greylist: delayed 1507 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Nov 2007 17:10:52 EDT
+From: Bruno =?iso-8859-1?q?Pr=E9mont?= <bonbons@linux-vserver.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: 2.6.23: IPv6 router advertisments missed by kernel
+User-Agent: KMail/1.9.7
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Amit Shah <shahamit@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: sata_nv: ata2 errors
-References: <877aabc40710250048m41675163x81671097f44bba7f@mail.gmail.com> <20071101133102.1121bc28.akpm@linux-foundation.org>
-In-Reply-To: <20071101133102.1121bc28.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Disposition: inline
+X-Length: 3264
+Date: Thu, 1 Nov 2007 21:45:42 +0100
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Message-Id: <200711012145.43085.bonbons@linux-vserver.org>
+X-VirusProbe: ClamAV, clean
+X-SpamProbe: GOOD 0.0000300 c6233953f8ad35b650ae1eacf832f69a
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 25 Oct 2007 13:18:50 +0530
-> "Amit Shah" <shahamit@gmail.com> wrote:
-> 
->> On 2.6.24-rc1 (AMD Opteron 1216), my sata_nv driver produces this
->> output on bootup:
->>
->> ata2: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
->> ata2: SWNCQ:qc_active 0x1 defer_bits 0x0 last_issue_tag 0x0
->> ata2: ATA_REG 0x40 ERR_REG 0x0
->> ata2: tag : dhfis dmafis sdbfis sacitve
->> ata2: tag 0x0: 0 1 0 0
->> ata2.00: exception Emask 0x0 SAct 0x1 SErr 0x0 action 0x6 frozen
->> ...
->> ata2.00: status: { DRDY }
->>
-> 
-> Are any other problems observeable?
+I'm seeing unexpected behavior on my laptop since I updated kernel to 2.6.23.1 
+from 2.6.22.1.
+
+My setup:
+  Cisco Router <--- [2 vlans] -----> Laptop
+
+On the link two VLANs are active, native vlan is not used.
+Laptop nic is:
+   Tigon3 [partno(BCM95751m) rev 4201 PHY(5750)] (PCI Express)
+   10/100/1000Base-T Ethernet
+
+On laptop I have eth0.500 and eth0.658 as active interfaces (eth0 is just up - 
+no address manually assigned) with IPv4 address assigned. IPv6 is only 
+enabled on the router for one of both vlans (500).
+
+When booting with 2.6.23.1 the router advertisments coming from the router 
+(vlan 500) seem to get ignored by the kernel (they are detected by 2.6.22) 
+and only enabling promiscuous mode on eth0 makes the kernel detect the router 
+advertisments. (I'm doing "tcpdump icmp6" on the vlan interface)
+
+This looks like it could be caused by changes in regard to handling vlans with 
+Tigon3 nic.
+A different machine (other nic and no vlans) sees the router advertisments 
+correctly with 2.6.23.1. (So I don't expect the cause to be on IPv6 side)
+
+Bruno
 
 
-2.6.24-rc1 is missing the fix for this that is upstream,
-360737a982b1ae09e1659e0bb27085c03f02f404
 
-	Jeff
+Probably relevant .config extract for 2.6.23.1:
+  CONFIG_PACKET=y
+  CONFIG_UNIX=y
+  CONFIG_INET=y
+  CONFIG_IP_MULTICAST=y
+  CONFIG_IP_ADVANCED_ROUTER=y
+  CONFIG_ASK_IP_FIB_HASH=y
+  CONFIG_IP_FIB_HASH=y
+  CONFIG_IP_MULTIPLE_TABLES=y
+  CONFIG_NET_IPGRE=m
+  CONFIG_SYN_COOKIES=y
+  CONFIG_INET_DIAG=y
+  CONFIG_INET_TCP_DIAG=y
+  CONFIG_TCP_CONG_CUBIC=y
+  CONFIG_DEFAULT_TCP_CONG="cubic"
+  CONFIG_IPV6=y
+  CONFIG_INET6_TUNNEL=m
+  CONFIG_IPV6_TUNNEL=m
+  CONFIG_IPV6_MULTIPLE_TABLES=y
+  CONFIG_IPV6_SUBTREES=y
+  CONFIG_NETFILTER=y
 
+  CONFIG_NETDEVICES=y
+  CONFIG_NETDEVICES_MULTIQUEUE=y
+  # CONFIG_MACVLAN is not set
+  CONFIG_TUN=m
+  CONFIG_PHYLIB=m
+  CONFIG_BROADCOM_PHY=m
+  CONFIG_NET_ETHERNET=y
+  CONFIG_MII=y
+  CONFIG_NET_PCI=y
+  CONFIG_B44=m
+  CONFIG_NETDEV_1000=y
+  CONFIG_TIGON3=m
+
+Same extract for 2.6.22.1:
+  CONFIG_PACKET=y
+  CONFIG_UNIX=y
+  CONFIG_INET=y
+  CONFIG_IP_MULTICAST=y
+  CONFIG_IP_ADVANCED_ROUTER=y
+  CONFIG_ASK_IP_FIB_HASH=y
+  CONFIG_IP_FIB_HASH=y
+  CONFIG_IP_MULTIPLE_TABLES=y
+  CONFIG_NET_IPGRE=m
+  CONFIG_SYN_COOKIES=y
+  CONFIG_INET_DIAG=y
+  CONFIG_INET_TCP_DIAG=y
+  CONFIG_TCP_CONG_CUBIC=y
+  CONFIG_DEFAULT_TCP_CONG="cubic"
+  CONFIG_IPV6=y
+  CONFIG_INET6_TUNNEL=m
+  CONFIG_IPV6_TUNNEL=m
+  CONFIG_IPV6_MULTIPLE_TABLES=y
+  CONFIG_IPV6_SUBTREES=y
+  CONFIG_NETFILTER=y
+
+  CONFIG_NETDEVICES=y
+  CONFIG_DUMMY=m
+  CONFIG_TUN=m
+  CONFIG_PHYLIB=m
+  CONFIG_BROADCOM_PHY=m
+  CONFIG_NET_ETHERNET=y
+  CONFIG_MII=y
+  CONFIG_NET_PCI=y
+  CONFIG_B44=m
+  CONFIG_NETDEV_1000=y
+  CONFIG_TIGON3=m
 
