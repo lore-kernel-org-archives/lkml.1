@@ -1,87 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758160AbXKAFA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755890AbXKAFEF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758160AbXKAFA2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 01:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbXKAFAS
+	id S1755890AbXKAFEF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 01:04:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbXKAFDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 01:00:18 -0400
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:32361 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751756AbXKAFAQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 01:00:16 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=KE9ydvlw7UPppvv9j94zVjXPCcnauE8FGYJCzjc560RMn4P51yUZKseehF4XIOwTWL9yUev4jRMrvXV92sgziZtazOus4bP0mVvNKqegrlAlwbd6zxjf9oGwlFGHN62mE1pyknqC1cDSpESr2xl2daz7yaA2EZiIium2RsNZ/Js=  ;
-X-YMail-OSG: 1QwOMBwVM1n87q28Dfw03agtPBs9jkfV1ZbpxQIMs7X6bZA3ljxTCzbJ5WV_GAURYLBToNgRlQ--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH] firewire: fw-core: enforce write order when updating fw_device.generation
-Date: Thu, 1 Nov 2007 14:53:35 +1100
-User-Agent: KMail/1.9.5
-Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Kristian =?iso-8859-1?q?H=F8gsberg?= <krh@redhat.com>
-References: <tkrat.66a8b3070e07d80f@s5r6.in-berlin.de>
-In-Reply-To: <tkrat.66a8b3070e07d80f@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 1 Nov 2007 01:03:54 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47762 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752644AbXKAFDy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 01:03:54 -0400
+Date: Thu, 01 Nov 2007 14:03:46 +0900 (JST)
+Message-Id: <20071101.140346.264545041.jet@gyve.org>
+To: linux-kernel@vger.kernel.org
+Subject: [patch-resend] Show ioremap and vmap in /proc/meminfo
+From: Masatake YAMATO <jet@gyve.org>
+In-Reply-To: <20070925.003327.227852793.jet@gyve.org>
+References: <20070925.003327.227852793.jet@gyve.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1.50 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711011453.35268.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 01 November 2007 12:49, Stefan Richter wrote:
-> fw_device.node_id and fw_device.generation are accessed without mutexes.
-> We have to ensure that all readers will get to see node_id updates
-> before generation updates.
->
+Hi,
 
-Hi, a few points:
+The patch I posted has not got any response.
+Do you think ioremap and vmap information in /proc/meminfo is not useful?
+or are you just busy?
 
-- can change it to use spinlocks instead? This would be most
-  preferable.
+<the original message>
 
-- if not, you need comments.
+Hi,
 
-- you also seem to be missing rmb()s now. I see a couple in the
-  firewire directory, but nothing that seems to be ordering loads
-  of these particular fields.
+For long time I've been thought the following equation is correct:
 
-- use smp_*mb() if you are just ordering regular cacheable RAM
-  accesses.
+    The "MemUsage" is about "Active + Inactive + Slab + PageTables + VmallocUsed" in /proc/meminfo.
 
-Also, diffstat is a bit wrong... maybe you posted the wrong version?
+(I'm not only the person. See https://bugzilla.redhat.com/show_bug.cgi?id=243657.)
 
-> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> ---
->  drivers/firewire/fw-device.c   |    6 ++++++
->  drivers/firewire/fw-topology.c |    1 +
->  2 files changed, 7 insertions(+)
->
-> Index: linux/drivers/firewire/fw-device.c
-> ===================================================================
-> --- linux.orig/drivers/firewire/fw-device.c
-> +++ linux/drivers/firewire/fw-device.c
-> @@ -808,6 +813,7 @@ void fw_node_event(struct fw_card *card,
->
->  		device = node->data;
->  		device->node_id = node->node_id;
-> +		wmb();
->  		device->generation = card->generation;
->  		if (atomic_read(&device->state) == FW_DEVICE_RUNNING) {
->  			PREPARE_DELAYED_WORK(&device->work, fw_device_update);
-> Index: linux/drivers/firewire/fw-topology.c
-> ===================================================================
-> --- linux.orig/drivers/firewire/fw-topology.c
-> +++ linux/drivers/firewire/fw-topology.c
-> @@ -518,6 +518,7 @@ fw_core_handle_bus_reset(struct fw_card
->  		card->bm_retries = 0;
->
->  	card->node_id = node_id;
-> +	wmb();
->  	card->generation = generation;
->  	card->reset_jiffies = jiffies;
->  	schedule_delayed_work(&card->work, 0);
+However, some VmallocUsed doesn't really consume MemUsage: ioremap
+pages and vmap pages consume just virtual address spaces.
+
+It is a bit helpful for people who want to understand kernel memory
+usage to show the number of ioremap and vmap pages in /proc/meminfo.
+
+
+The following patch adds entries for ioremap and vmap to /proc/meminfo.
+
+Signed-off-by: Masatake YAMATO <jet@gyve.org>
+
+diff --git a/fs/proc/internal.h b/fs/proc/internal.h
+index b215c35..b888c59 100644
+--- a/fs/proc/internal.h
++++ b/fs/proc/internal.h
+@@ -19,6 +19,8 @@ static inline void proc_sys_init(void) { }
+ 
+ struct vmalloc_info {
+ 	unsigned long	used;
++	unsigned long   used_as_ioremap;
++	unsigned long   used_as_vmap;
+ 	unsigned long	largest_chunk;
+ };
+ 
+@@ -31,6 +33,8 @@ extern void get_vmalloc_info(struct vmalloc_info *vmi);
+ #define get_vmalloc_info(vmi)			\
+ do {						\
+ 	(vmi)->used = 0;			\
++	(vmi)->used_as_ioremap = 0;		\
++	(vmi)->used_as_vmap = 0;		\
+ 	(vmi)->largest_chunk = 0;		\
+ } while(0)
+ 
+diff --git a/fs/proc/mmu.c b/fs/proc/mmu.c
+index 25d2d9c..5297df2 100644
+--- a/fs/proc/mmu.c
++++ b/fs/proc/mmu.c
+@@ -38,7 +38,9 @@ void get_vmalloc_info(struct vmalloc_info *vmi)
+ 	unsigned long prev_end;
+ 
+ 	vmi->used = 0;
+-
++	vmi->used_as_ioremap = 0;
++	vmi->used_as_vmap = 0;
++       
+ 	if (!vmlist) {
+ 		vmi->largest_chunk = VMALLOC_TOTAL;
+ 	}
+@@ -51,6 +53,8 @@ void get_vmalloc_info(struct vmalloc_info *vmi)
+ 
+ 		for (vma = vmlist; vma; vma = vma->next) {
+ 			unsigned long addr = (unsigned long) vma->addr;
++			unsigned long flags;
++			unsigned long size;
+ 
+ 			/*
+ 			 * Some archs keep another range for modules in vmlist
+@@ -59,8 +63,15 @@ void get_vmalloc_info(struct vmalloc_info *vmi)
+ 				continue;
+ 			if (addr >= VMALLOC_END)
+ 				break;
+-
+-			vmi->used += vma->size;
++ 
++			size  = vma->size;
++			flags = vma->flags;
++ 
++			vmi->used += size;
++			if (flags & VM_IOREMAP)
++			  vmi->used_as_ioremap += size;
++			if (flags & VM_MAP)
++			  vmi->used_as_vmap += size;
+ 
+ 			free_area_size = addr - prev_end;
+ 			if (vmi->largest_chunk < free_area_size)
+diff --git a/fs/proc/proc_misc.c b/fs/proc/proc_misc.c
+index bee251c..d784c85 100644
+--- a/fs/proc/proc_misc.c
++++ b/fs/proc/proc_misc.c
+@@ -176,6 +176,8 @@ static int meminfo_read_proc(char *page, char **start, off_t off,
+ 		"Committed_AS: %8lu kB\n"
+ 		"VmallocTotal: %8lu kB\n"
+ 		"VmallocUsed:  %8lu kB\n"
++		"IORemapUsed:  %8lu kB\n"
++		"VmapUsed:     %8lu kB\n"
+ 		"VmallocChunk: %8lu kB\n",
+ 		K(i.totalram),
+ 		K(i.freeram),
+@@ -207,6 +209,8 @@ static int meminfo_read_proc(char *page, char **start, off_t off,
+ 		K(committed),
+ 		(unsigned long)VMALLOC_TOTAL >> 10,
+ 		vmi.used >> 10,
++		vmi.used_as_ioremap >> 10,
++		vmi.used_as_vmap >> 10,
+ 		vmi.largest_chunk >> 10
+ 		);
