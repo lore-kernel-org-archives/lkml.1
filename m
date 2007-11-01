@@ -1,118 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758638AbXKALTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759932AbXKALU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758638AbXKALTT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 07:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756473AbXKALTG
+	id S1759932AbXKALU2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 07:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756560AbXKALUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 07:19:06 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:58713 "EHLO e1.ny.us.ibm.com"
+	Thu, 1 Nov 2007 07:20:20 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:49295 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756306AbXKALTD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 07:19:03 -0400
-Date: Thu, 1 Nov 2007 17:01:38 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Mike Galbraith <efault@gmx.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [PATCH 2/6] sched: make sched_slice() group scheduling savvy
-Message-ID: <20071101113138.GA20788@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <20071031211030.310581000@chello.nl> <20071031211248.796653000@chello.nl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071031211248.796653000@chello.nl>
-User-Agent: Mutt/1.5.11
+	id S1756526AbXKALUS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 07:20:18 -0400
+Message-ID: <4729B670.7090403@garzik.org>
+Date: Thu, 01 Nov 2007 07:20:16 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org, kristen.c.accardi@intel.com,
+       linux-ide@vger.kernel.org
+Subject: Re: Suspend to ram regression (2.6.24-rc1-git)
+References: <20071031201308.GK11514@kernel.dk> <20071101084145.GA5037@kernel.dk> <20071101092155.GB5037@kernel.dk>
+In-Reply-To: <20071101092155.GB5037@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 31, 2007 at 10:10:32PM +0100, Peter Zijlstra wrote:
-> Currently the ideal slice length does not take group scheduling into account.
-> Change it so that it properly takes all the runnable tasks on this cpu into
-> account and caluclate the weight according to the grouping hierarchy.
+Jens Axboe wrote:
+> Reverting just the default AHCI flags makes it work again. IOW, with the
+> below patch I can suspend properly with current -git.
 > 
-> Also fixes a bug in vslice which missed a factor NICE_0_LOAD.
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> CC: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-> ---
->  kernel/sched_fair.c |   42 +++++++++++++++++++++++++++++++-----------
->  1 file changed, 31 insertions(+), 11 deletions(-)
-> 
-> Index: linux-2.6/kernel/sched_fair.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/sched_fair.c
-> +++ linux-2.6/kernel/sched_fair.c
-> @@ -331,10 +331,15 @@ static u64 __sched_period(unsigned long 
->   */
->  static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
->  {
-> -	u64 slice = __sched_period(cfs_rq->nr_running);
-> +	unsigned long nr_running = rq_of(cfs_rq)->nr_running;
-> +	u64 slice = __sched_period(nr_running);
-> 
-> -	slice *= se->load.weight;
-> -	do_div(slice, cfs_rq->load.weight);
-> +	for_each_sched_entity(se) {
-> +		cfs_rq = cfs_rq_of(se);
-> +
-> +		slice *= se->load.weight;
-> +		do_div(slice, cfs_rq->load.weight);
-> +	}
-> 
->  	return slice;
+> diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
+> index ed9b407..77f7631 100644
+> --- a/drivers/ata/ahci.c
+> +++ b/drivers/ata/ahci.c
+> @@ -190,8 +190,7 @@ enum {
+>  
+>  	AHCI_FLAG_COMMON		= ATA_FLAG_SATA | ATA_FLAG_NO_LEGACY |
+>  					  ATA_FLAG_MMIO | ATA_FLAG_PIO_DMA |
+> -					  ATA_FLAG_ACPI_SATA | ATA_FLAG_AN |
+> -					  ATA_FLAG_IPM,
+> +					  ATA_FLAG_ACPI_SATA | ATA_FLAG_AN,
+>  	AHCI_LFLAG_COMMON		= ATA_LFLAG_SKIP_D2H_BSY,
 
 
-Lets say we have two groups A and B on CPU0, of equal weight (1024).
+sounds like the easy thing to do, in light of this breakage, might be to 
+default it to off, add a module parameter turning it on by setting that 
+flag.
 
-Further,
-
-A has 1 task (A0)
-B has 1000 tasks (B0 .. B999) 
-
-Agreed its a extreme case, but illustrates the problem I have in mind
-for this patch.
-
-All tasks of same weight=1024.
-
-Before this patch
-=================
-
-	sched_slice(grp A) = 20ms * 1/2 = 10ms
-	sched_slice(A0) = 20ms
-
-	sched_slice(grp B) = 20ms * 1/2 = 10ms
-	sched_slice(B0) = (20ms * 1000/20) * 1 / 1000 = 1ms
-	sched_slice(B1) = ... = sched_slice(B99) = 1 ms
-
-Fairness between groups and tasks would be obtained as below:
-
-    A0       B0-B9     A0    B10-B19     A0     B20-B29
- |--------|--------|--------|--------|--------|--------|-----//--| 
- 0       10ms	   20ms	   30ms     40ms     50ms     60ms
-
-After this patch
-================
-
-	sched_slice(grp A) = (20ms * 1001/20) * 1/2 ~= 500ms
-	sched_slice(A0) = 500ms
-
-	sched_slice(grp B) = 500ms
-	sched_slice(B0) = 0.5ms 
-
-Fairness between groups and tasks would be obtained as below:
-
-	    A0		          B0 - B99  	            A0
- |-----------------------|-----------------------|-----------------------|
- 0		        500ms			1000ms 			1500ms
-
-Did I get it right? If so, I don't like the fact that group A is allowed to run 
-for a long time (500ms) before giving chance to group B.
-
-Can I know what real problem is being addressed by this change to
-sched_slice()?
-
--- 
-Regards,
-vatsa
