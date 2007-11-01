@@ -1,76 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760736AbXKAWRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759253AbXKAWTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760736AbXKAWRh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 18:17:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbXKAWR2
+	id S1759253AbXKAWTU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 18:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753757AbXKAWTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 18:17:28 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51769 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753485AbXKAWR1 (ORCPT
+	Thu, 1 Nov 2007 18:19:12 -0400
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:64020 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753160AbXKAWTL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 18:17:27 -0400
-Date: Thu, 1 Nov 2007 15:17:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: adaplas@gmail.com, linux-kernel@vger.kernel.org,
-       Thomas Winischhofer <thomas@winischhofer.net>
-Subject: Re: [2.6 patch] video/sis/: fix negative array index
-Message-Id: <20071101151711.3af1f6dc.akpm@linux-foundation.org>
-In-Reply-To: <20071027141946.GX30533@stusta.de>
-References: <20071027141946.GX30533@stusta.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 1 Nov 2007 18:19:11 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FADrtKUdMQWvU/2dsb2JhbACBWw
+Date: Thu, 1 Nov 2007 18:19:08 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Tim Bird <tim.bird@am.sony.com>, Matt Mackall <mpm@selenic.com>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@redhat.com>, Jon Smirl <jonsmirl@yahoo.com>
+Subject: Re: IRQ off latency of printk is very high
+Message-ID: <20071101221908.GE19700@Krystal>
+References: <4720F21F.9090404@am.sony.com> <20071025222804.GA13954@Krystal> <47211E2C.90301@am.sony.com> <20071025231237.GT19691@waste.org> <472129C3.6040405@am.sony.com> <20071029185445.GA7742@ucw.cz> <20071101152714.GA2489@Krystal> <20071101211153.GA11074@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20071101211153.GA11074@elf.ucw.cz>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 18:17:36 up 94 days, 22:36,  3 users,  load average: 0.27, 0.43, 0.61
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Oct 2007 16:19:46 +0200
-Adrian Bunk <bunk@kernel.org> wrote:
+* Pavel Machek (pavel@ucw.cz) wrote:
+> Hi!
+> 
+> > > > It seems draconian to drain the entire buffer with ints disabled.
+> > > > Is it possible to break this up and send out smaller chunks
+> > > > at a time?  Maybe by putting a chunk loop in release_console_sem()?
+> > > 
+> > > Well, I believe someone got
+> > > 
+> > > DDetetccctted ed 113223 HHzz CPUCPU
+> > > 
+> > > in his dmesg, and now we have this 'draconian' locking. How can we
+> > > prevent mangled messages without it?
+> > 
+> > The main interest seems to be to protect from mixed printk output
+> > between different CPUs in process context. I don't think it would be
+> > that bad if interrupts come and output error messages in the middle of a
+> > printk, isn't it ?
+> > 
+> > therefore, could we do something like :
+> > 
+> > 
+> > if (!in_irq())
+> >   spin_lock(&logbuf_lock);
+> > ...
+> > if (!in_irq())
+> >   spin_unlock(&logbuf_lock);
+> > 
+> > ? (yes, this is a crazy idea)
+> 
+> Two messages in atomic sections on different cpus could still be mixed
+> :-). But yes, something like this may be the way to go.
 
-> This patch fixes the possible usage of a negative value as an array 
-> index spotted by the Coverity checker.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> 
->  drivers/video/sis/sis_main.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> 9f63bf8c543710521e885b09d88271d1a308b158 
-> diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
-> index bc7d236..37bd24b 100644
-> --- a/drivers/video/sis/sis_main.c
-> +++ b/drivers/video/sis/sis_main.c
-> @@ -1245,24 +1245,25 @@ sisfb_do_set_var(struct fb_var_screeninfo *var, int isactive, struct fb_info *in
->  		ivideo->sisfb_mode_idx++;
->  	}
->  
->  	if(found_mode) {
->  		ivideo->sisfb_mode_idx = sisfb_validate_mode(ivideo,
->  				ivideo->sisfb_mode_idx, ivideo->currentvbflags);
-> -		ivideo->mode_no = sisbios_mode[ivideo->sisfb_mode_idx].mode_no[ivideo->mni];
->  	} else {
->  		ivideo->sisfb_mode_idx = -1;
->  	}
->  
->         	if(ivideo->sisfb_mode_idx < 0) {
->  		printk(KERN_ERR "sisfb: Mode %dx%dx%d not supported\n", var->xres,
->  		       var->yres, var->bits_per_pixel);
->  		ivideo->sisfb_mode_idx = old_mode;
->  		return -EINVAL;
->  	}
->  
-> +	ivideo->mode_no = sisbios_mode[ivideo->sisfb_mode_idx].mode_no[ivideo->mni];
-> +
->  	if(sisfb_search_refresh_rate(ivideo, ivideo->refresh_rate, ivideo->sisfb_mode_idx) == 0) {
->  		ivideo->rate_idx = sisbios_mode[ivideo->sisfb_mode_idx].rate_idx;
->  		ivideo->refresh_rate = 60;
->  	}
+Not in "preempt disable" sections though. Only in interrupt handlers.
+But yes, I assume here that messages coming from interrupt handlers can
+afford being interleaved.
 
-Well I spent a little time trying to work out what the actual bug is and
-gave up.  There doesn't appear to be any error in sisfb_do_set_var().
+Mathieu
 
-Better changelogs, please.
+> 									Pavel
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
