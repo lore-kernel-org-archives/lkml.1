@@ -1,76 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757389AbXKASni@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbXKASoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757389AbXKASni (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 14:43:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753680AbXKASn3
+	id S1754819AbXKASoA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 14:44:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758219AbXKASnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 14:43:29 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:61416 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753493AbXKASn1 (ORCPT
+	Thu, 1 Nov 2007 14:43:49 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:38660 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753680AbXKASns (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 14:43:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=rU/YZ5M2M3G906zkX8fSsXsVkLUNT8J25GUgkX8H2wYhU56mMK/gcA0X0roYne6XMKWHN0lISAK6eADlDqlQ8sOlNmke9YnO7WQhLPb08eDCECV8G4Yd7AT7x3UsSyHGzQ9f11lWcFrGvMxah5Jw6pJHSB0w1BR1+Y2QYVsfSRA=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [IDE] Fix build bug
-Date: Thu, 1 Nov 2007 18:43:16 +0000
-User-Agent: KMail/1.9.1
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-mips@linux-mips.org,
-       Martijn Uffing <mp3project@sarijopen.student.utwente.nl>
-References: <20071025135334.GA23272@linux-mips.org> <200710301134.30087.vda.linux@googlemail.com> <20071030124155.GA7582@linux-mips.org>
-In-Reply-To: <20071030124155.GA7582@linux-mips.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Nov 2007 14:43:48 -0400
+Date: Thu, 1 Nov 2007 18:37:41 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PCMCIA: prevent auto insert during resume.
+Message-ID: <20071101183741.GA27621@flint.arm.linux.org.uk>
+Mail-Followup-To: Rodolfo Giometti <giometti@enneenne.com>,
+	Pavel Machek <pavel@ucw.cz>, linux-pcmcia@lists.infradead.org,
+	linux-kernel@vger.kernel.org
+References: <20071026151141.GA4321@flint.arm.linux.org.uk> <20071026154705.GY19019@enneenne.com> <20071026160206.GC4321@flint.arm.linux.org.uk> <20071026162705.GZ19019@enneenne.com> <20071026163651.GD4321@flint.arm.linux.org.uk> <20071026165400.GA19019@enneenne.com> <20071026170030.GE4321@flint.arm.linux.org.uk> <20071026171857.GC19019@enneenne.com> <20071029192414.GC7742@ucw.cz> <20071101145359.GH5548@enneenne.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711011843.16894.vda.linux@googlemail.com>
+In-Reply-To: <20071101145359.GH5548@enneenne.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 30 October 2007 12:41, Ralf Baechle wrote:
-> On Tue, Oct 30, 2007 at 11:34:29AM +0000, Denys Vlasenko wrote:
-> 
-> > On Thursday 25 October 2007 22:41, Bartlomiej Zolnierkiewicz wrote:
-> > > > -static const struct ide_port_info generic_chipsets[] __devinitdata = {
-> > > > +static struct ide_port_info generic_chipsets[] __devinitdata = {
-> > > >  	/*  0 */ DECLARE_GENERIC_PCI_DEV("Unknown",	0),
-> > > >  
-> > > >  	{	/* 1 */
+On Thu, Nov 01, 2007 at 03:53:59PM +0100, Rodolfo Giometti wrote:
+> On Mon, Oct 29, 2007 at 07:24:15PM +0000, Pavel Machek wrote:
+> > On Fri 2007-10-26 19:18:57, Rodolfo Giometti wrote:
+> > > On Fri, Oct 26, 2007 at 06:00:31PM +0100, Russell King wrote:
 > > > 
-> > > I would prefer to not remove const from generic_chipsets[] so:
+> > > > > > > Also if you didn't eject the socket, at resume the device will be
+> > > > > > > powered up again, my patch just prevents that a pre-powered off device
+> > > > > > > to be turned on at resume time.
+> > > > > > > 
+> > > > > > > However you should consider that some embedded systems have fixed
+> > > > > > > PCMCIA devices that can't be removed so there are no reasons to detect
+> > > > > > > them after resume, nobody can change them. :)
+> > > > > > > 
+> > > > > > > Also battery powered devices can go very frequently to sleep and the
+> > > > > > > current behavior force the user to switch off the unused device each
+> > > > > > > time the system resumes from sleep.
+> > > > > > 
+> > > > > > I realise that.  I do work on embedded devices, and this behaviour is
+> > > > > > explicitly there to support embedded devices.
+> > > > > > 
+> > > > > > I've suggested a workable solution to you which allows both of us to
+> > > > > > have the behaviour we both desire from the system.  That sounds like
+> > > > > > a negotiated solution to me...
+> > > > > 
+> > > > > Do you mean to switch off the socket from userland? It could be a
+> > > > > solution but in this case the device is powered on each time even if
+> > > > > for a short delay...
+> > > > 
+> > > > If it's a permanent device, and you've powered it down via pccardctl,
+> > > > then you've powered it down from userland.  So record that it's been
+> > > > powered down from userland.  Then, on resume, if it's been powered down
+> > > > from userland, don't try to re-power it on resume.
 > > > 
-> > > [PATCH] drivers/ide/pci/generic: fix build for CONFIG_HOTPLUG=n
-> > > 
-> > > It turns out that const and __{dev}initdata cannot be mixed currently
-> > > and that generic IDE PCI host driver is also affected by the same issue:
-> > > 
-> > > On Thursday 25 October 2007, Ralf Baechle wrote:
-> > > >   CC      drivers/ide/pci/generic.o
-> > > > drivers/ide/pci/generic.c:52: error: __setup_str_ide_generic_all_on causes a
-> > > > +section type conflict
-> > > 
-> > > [ Also reported by Martijn Uffing <mp3project@sarijopen.student.utwente.nl>. ]
-> > > 
-> > > This patch workarounds the problem in a bit hackish way but without
-> > > removing const from generic_chipsets[] (it adds const to __setup() so
-> > > __setup_str_ide_generic_all becomes const).
+> > > But the userland doesn't re-power it on resume... it's the kernel
+> > > itself whos re-powers the device on resume. So the userland can only
+> > > power down the device again.
 > > 
-> > You wouldn't believe how much const data is not marked as const because
-> > we don't have __constinitdata etc. Literally megabytes.
+> > I think Russell means: at a flag into kernel. If user powers down the
+> > device, set the flag. If flag is set during resume, avoid powering up
+> > the device.
 > 
-> The gain from marking it const is very little and once any non-const
-> __initdata object is added to a compilation unit all other const declarations
-> will have to be removed.  Bad tradeoff.
+> That's exactly what my patch does! :)
+> 
+> If the user does 'eject' the device is not powered on at resume.
+> 
+> Currently, with out the patch, if you do an 'eject' to power down the
+> device, then you go to sleep and resume, the device is powered up
+> again and you have to do a new 'eject' to power it down.
+> 
+> My patch fixes this behaviour.
 
-We can intrduce new, ro sections or teach gcc that combining const objects into
-non-ro sections is not a crime. I wonder why it currently disallows that.
-(And it does it only _somethimes_, const pointers happily go into rw sections!)
---
-vda
+Let's be absolutely clear about this.  The patch in your original post
+does *NOT* do that.  It *completely* removes the possibility of powering
+up a device inserted into the PCMCIA slot before resuming without
+unplugging and replugging it by removing the code which detects an
+inserted card on resume.
+
+And let's also be clear about something else.  You _were_ crystal clear
+on that aspect of it from your last mail on the subject since you were
+asking for names of attributes to set and clear such a flag.  I didn't
+respond because I'm not going to hold your hand with such obvious
+issues - if you need that level of support, it will be far faster for
+me to write the damned patch myself.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
