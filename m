@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758550AbXKAR02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbXKAR3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758550AbXKAR02 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 13:26:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbXKAR0U
+	id S1755835AbXKAR3U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 13:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbXKAR3H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 13:26:20 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46389 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752920AbXKAR0T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 13:26:19 -0400
-Date: Thu, 1 Nov 2007 10:26:16 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: rientjes@google.com, Lee.Schermerhorn@hp.com, linux-kernel@vger.kernel.org,
-       ak@suse.de
-Subject: Re: [RFC] cpuset relative memory policies - second choice
-Message-Id: <20071101102616.826d45a1.pj@sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0711011006070.29468@schroedinger.engr.sgi.com>
-References: <20071031061729.18174.60384.sendpatchset@jackhammer.engr.sgi.com>
-	<Pine.LNX.4.64.0710311157310.21799@schroedinger.engr.sgi.com>
-	<20071031131949.b91bf383.pj@sgi.com>
-	<Pine.LNX.4.64.0710311402300.22599@schroedinger.engr.sgi.com>
-	<20071031214719.81f8293a.pj@sgi.com>
-	<Pine.LNX.4.64.0710312221140.26444@schroedinger.engr.sgi.com>
-	<20071031233352.959c32d0.pj@sgi.com>
-	<Pine.LNX.4.64.0711010604210.27666@schroedinger.engr.sgi.com>
-	<20071101090612.e0c86ddb.pj@sgi.com>
-	<Pine.LNX.4.64.0711011006070.29468@schroedinger.engr.sgi.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Thu, 1 Nov 2007 13:29:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42781 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752611AbXKAR3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 13:29:05 -0400
+Date: Thu, 1 Nov 2007 10:28:56 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: vitalivanov@gmail.com
+Cc: Oliver Neukum <oliver@neukum.org>, linux-usb-devel@lists.sourceforge.net,
+       greg@kroah.com, linux-kernel@vger.kernel.org, netwiz@crc.id.au,
+       zaitcev@redhat.com
+Subject: Re: USB: FIx locks and urb->status in adutux
+Message-Id: <20071101102856.4a597029.zaitcev@redhat.com>
+In-Reply-To: <1193907984.17349.5.camel@dell1.softservecom.com>
+References: <20071022203447.db6d7950.zaitcev@redhat.com>
+	<200710231138.38266.oliver@neukum.org>
+	<20071023185302.5ce9d187.zaitcev@redhat.com>
+	<1193234987.13750.21.camel@dell1.softservecom.com>
+	<20071024202555.4f1cd215.zaitcev@redhat.com>
+	<1193681097.20985.31.camel@dell1.softservecom.com>
+	<20071029212433.c9837c4b.zaitcev@redhat.com>
+	<1193749794.27085.15.camel@dell1.softservecom.com>
+	<20071030145421.f1f0aa53.zaitcev@redhat.com>
+	<1193831694.2226.35.camel@dell1.softservecom.com>
+	<20071031150107.206892a4.zaitcev@redhat.com>
+	<1193907984.17349.5.camel@dell1.softservecom.com>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph wrote:
-> The library interface can set flags to modify behavior.
+On Thu, 01 Nov 2007 11:06:24 +0200, Vitaliy Ivanov <vitalivanov@gmail.com> wrote:
 
-A library such as libnuma can set them, yes, but not everyone uses
-libnuma.  Basically everyone uses the standard C library, glibc, which
-has the system call wrappers, but these wrappers should not be setting
-optional flags.
+> > Do you still want to go ahead with a 2.4 backport?
+> 
+> Yep. Will do it asap. In latest 2.4 patch we had just a locks issue.
+> So do you think I should modify 2.4 patch with all modifications we done in 2.6 version included?
 
-We're going around in circles here, Christoph.
+Something like that, yes.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+-- Pete
