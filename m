@@ -1,110 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756662AbXKAUGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbXKAUJB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756662AbXKAUGR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 16:06:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbXKAUGA
+	id S1757482AbXKAUJB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 16:09:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbXKAUIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 16:06:00 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:47614 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752941AbXKAUF7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 16:05:59 -0400
-Date: Thu, 1 Nov 2007 16:05:58 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patches] net driver fixes
-Message-ID: <20071101200558.GA4108@havoc.gtf.org>
+	Thu, 1 Nov 2007 16:08:54 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:50949 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753418AbXKAUIx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 16:08:53 -0400
+Date: Thu, 1 Nov 2007 16:08:51 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Steven King <sfking@fdwdc.com>
+cc: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>,
+       <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] ti_usb_3410_5052 breakage in 2.6.24-rc1
+In-Reply-To: <200711011031.04620.sfking@fdwdc.com>
+Message-ID: <Pine.LNX.4.44L0.0711011547080.6180-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 1 Nov 2007, Steven King wrote:
 
-Please pull from 'upstream-linus' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-linus
+> > The real question is why 2.6.24-rc1 doesn't like the second
+> > configuration descriptor.  To answer it, you should see what shows up
+> > in the dmesg log when you first plug in the device on a kernel with
+> > CONFIG_USB_DEBUG enabled.
+> 
+> ?!? As I wrote at the top of the message you quoted, I rebuilt with 
+> CONFIG_USB_DEBUG enabled and loaded the modules with debug=1, thats how I was 
+> able to see the 'wrong number of endpoints' message.
 
-to receive the following updates:
+But you didn't post the log messages, so I haven't seen them.  
+In addition, that "wrong number of endpoints" message occurs long after 
+the underlying problem; it's probably not connected.
 
- drivers/net/Kconfig             |    4 +---
- drivers/net/fec_mpc52xx.c       |    4 ++--
- drivers/net/myri10ge/myri10ge.c |    6 +++---
- 3 files changed, 6 insertions(+), 8 deletions(-)
+> Given that the dongle works correctly with a stock 2.6.24-rc1 with commit 
+> 063a2da8f01806906f7d7b1a1424b9afddebc443 reversed,
 
-Andrew Gallatin (1):
-      Fix myri10ge NAPI oops & warnings
+Can you post the /proc/bus/usb/devices entry under that kernel?  Do
+both configurations show up?
 
-Grant Likely (2):
-      mpc5200: Fix Kconfig dependancies on MPC5200 FEC device driver
-      Fix region size check in mpc5200 FEC driver
+> I'm reasonably confident 
+> that with that commit in place, the usb core is working correctly (or atleast 
+> as expected) in initially parsing the device descriptor, then usb-serial 
+> attempts to match the interface descriptor on the first configuration, and 
+> using the new more strict matching code, fails when the device reports for 
+> the only interface on the first configuration it has only a single bulk_out 
+> endpoint while the ti_usb_3410_5052 driver is expecting an interrupt_in and a 
+> bulk_in.  It never gets to the second configuration descriptor.
 
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index 867cb73..5f800a6 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -1883,9 +1883,7 @@ config FEC2
- 
- config FEC_MPC52xx
- 	tristate "MPC52xx FEC driver"
--	depends on PPC_MPC52xx
--	select PPC_BESTCOMM
--	select PPC_BESTCOMM_FEC
-+	depends on PPC_MERGE && PPC_MPC52xx && PPC_BESTCOMM_FEC
- 	select CRC32
- 	select PHYLIB
- 	---help---
-diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
-index fc1cf0b..a8a0ee2 100644
---- a/drivers/net/fec_mpc52xx.c
-+++ b/drivers/net/fec_mpc52xx.c
-@@ -879,9 +879,9 @@ mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
- 				"Error while parsing device node resource\n" );
- 		return rv;
- 	}
--	if ((mem.end - mem.start + 1) != sizeof(struct mpc52xx_fec)) {
-+	if ((mem.end - mem.start + 1) < sizeof(struct mpc52xx_fec)) {
- 		printk(KERN_ERR DRIVER_NAME
--			" - invalid resource size (%lx != %x), check mpc52xx_devices.c\n",
-+			" - invalid resource size (%lx < %x), check mpc52xx_devices.c\n",
- 			(unsigned long)(mem.end - mem.start + 1), sizeof(struct mpc52xx_fec));
- 		return -EINVAL;
- 	}
-diff --git a/drivers/net/myri10ge/myri10ge.c b/drivers/net/myri10ge/myri10ge.c
-index 366e62a..0f306dd 100644
---- a/drivers/net/myri10ge/myri10ge.c
-+++ b/drivers/net/myri10ge/myri10ge.c
-@@ -1151,7 +1151,7 @@ static inline int myri10ge_clean_rx_done(struct myri10ge_priv *mgp, int budget)
- 	u16 length;
- 	__wsum checksum;
- 
--	while (rx_done->entry[idx].length != 0 && work_done++ < budget) {
-+	while (rx_done->entry[idx].length != 0 && work_done < budget) {
- 		length = ntohs(rx_done->entry[idx].length);
- 		rx_done->entry[idx].length = 0;
- 		checksum = csum_unfold(rx_done->entry[idx].checksum);
-@@ -1167,6 +1167,7 @@ static inline int myri10ge_clean_rx_done(struct myri10ge_priv *mgp, int budget)
- 		rx_bytes += rx_ok * (unsigned long)length;
- 		cnt++;
- 		idx = cnt & (myri10ge_max_intr_slots - 1);
-+		work_done++;
- 	}
- 	rx_done->idx = idx;
- 	rx_done->cnt = cnt;
-@@ -1233,13 +1234,12 @@ static int myri10ge_poll(struct napi_struct *napi, int budget)
- 	struct myri10ge_priv *mgp =
- 	    container_of(napi, struct myri10ge_priv, napi);
- 	struct net_device *netdev = mgp->dev;
--	struct myri10ge_rx_done *rx_done = &mgp->rx_done;
- 	int work_done;
- 
- 	/* process as many rx events as NAPI will allow */
- 	work_done = myri10ge_clean_rx_done(mgp, budget);
- 
--	if (rx_done->entry[rx_done->idx].length == 0 || !netif_running(netdev)) {
-+	if (work_done < budget || !netif_running(netdev)) {
- 		netif_rx_complete(netdev, napi);
- 		put_be32(htonl(3), mgp->irq_claim);
- 	}
+Why shouldn't the core ever get to parse the second configuration
+descriptor?  Config descriptor parsing happens before driver matching
+and binding.  It has to; otherwise the core wouldn't know which 
+configuration to install by default.
+
+In the "working" 2.6.23 kernel there were two configurations and Config
+#2 was installed.  What happens if you install Config #1 under that
+kernel (echo 1 >/sys/bus/usb/devices/.../bConfigurationValue)?
+
+Presumably if Config #2 was present and installed in the "non-working"  
+2.6.24-rc1 kernel, the driver would bind correctly.
+
+> for me the only question is whether ti_usb_3410_5052 should 
+> have .num_interrupt_in and .num_bulk_in set to NUM_DONT_CARE or set to 0.
+
+Then you're concerned about the wrong question.  It's more important to 
+find out why Config #2 disappeared under 2.6.24-rc1.  The commit you 
+are focused on would not have caused it.
+
+> Are there versions of the dongle that have different device descriptors?  
+> Before I bricked (sticked?) my TI eZ430-rf2500 dongle, it reported a 
+> different idProduct even though as far as I can tell they are almost the 
+> exact same hardware, so that shouldnt be a problem...
+
+I have no idea what versions of your dongle are available.  In fact, I 
+never heard of it before reading your email messages.  However if you 
+have had two different dongles that report different idProduct values, 
+it's a safe bet that _something_ has changed between them.  The 
+firmware, if nothing else.
+
+Alan Stern
+
