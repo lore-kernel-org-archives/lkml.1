@@ -1,69 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762847AbXKAXSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762346AbXKAXTD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762847AbXKAXSm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 19:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761902AbXKAXPi
+	id S1762346AbXKAXTD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 19:19:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762207AbXKAXSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 19:15:38 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54412 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761584AbXKAXPf (ORCPT
+	Thu, 1 Nov 2007 19:18:16 -0400
+Received: from mailgw2.3essentials.com ([66.179.153.59]:3674 "EHLO
+	mailgw2.3essentials.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762332AbXKAXSO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 19:15:35 -0400
-Date: Thu, 1 Nov 2007 16:14:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Romano Giannetti <romanol@upcomillas.es>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: 2.6.24-rc1: OOPS at  acpi_battery_update
-Message-Id: <20071101161459.d5f9abc0.akpm@linux-foundation.org>
-In-Reply-To: <1193652664.22149.4.camel@localhost>
-References: <1193652664.22149.4.camel@localhost>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 1 Nov 2007 19:18:14 -0400
+Message-ID: <472A5EBC.7030907@antonello.org>
+Date: Fri, 02 Nov 2007 00:18:20 +0100
+From: jack@antonello.org
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: linux-kernel@vger.kernel.org, rpurdie@rpsys.net
+Subject: Re: [PATCH] backlight dimmer
+References: <4724B48D.6090405@antonello.org> <20071030144838.GD7742@ucw.cz>
+In-Reply-To: <20071030144838.GD7742@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Oct 2007 11:11:04 +0100
-Romano Giannetti <romanol@upcomillas.es> wrote:
+Pavel Machek wrote:
+> On Sun 2007-10-28 17:10:53, jack@antonello.org wrote:
+>> Hello,
+>> this patch implements a macbook like backlight dimmer on 
+>> top of backlight.c.
+>>
+>> The dimmer is entirely in kernelspace and is suitable 
+>> for an embedded context in order to avoid the overhead 
+>> of a daemon controlling the backlight. Implementing this 
+>> functionality in userspace has other advantages and is a 
+>> perfectly reasonable alternative, so this patch is
+>> not the definitive solution.
+>>
+>> activate dimmer:
+>> echo 1 > /sys/devices/virtual/backlight/*/dimmer_control
+>>
+>> other attributes (britness levels & timeout):
+>> /sys/devices/virtual/backlight/*/dimmer_high_level
+>> /sys/devices/virtual/backlight/*/dimmer_low_level
+>> /sys/devices/virtual/backlight/*/dimmer_timeout
+> 
+> I'd say that userspace makes sense here. I'd want backlight to go down
+> slowly, for example.
+> 
+> But... maybe undimming should be done in kernel, so it keeps
+> low,latency?
+> 
+> Hmm, maybe existing screen blanking infrastructure can be reused?
+> 
+>> --- linux-2.6.23.1/include/linux/backlight.h 2007-10-12 
+>> 18:43:44.000000000 +0200
+>> +++ b/include/linux/backlight.h	2007-10-28 
+>> 13:45:21.000000000 +0100
+>> @@ -11,6 +11,7 @@
+>> #include <linux/device.h>
+>> #include <linux/mutex.h>
+>> #include <linux/notifier.h>
+>> +#include <linux/timeout.h>
+>>
+>> /* Notes on locking:
+> 
+> Your mail client damages patches?
+> 
 
-> 
-> Hi,
-> 
-> 	sometime on resuming from s2ram my laptop spew the following oops.
-> Config, dmesg etc are at: 
-> 
-> http://www.dea.icai.upcomillas.es/romano/linux/info/2624rc1_6/
-> 
-> [    3.475386] Oops: 0000 [#1] SMP 
-> [    3.475602] Process kacpi_notify (pid: 50, ti=c2122000 task=c210c030 task.ti=c2122000)
-> [    3.475608] Stack: c35c5060 c02f2a58 00000046 00000000 6b6b6b6b c2b20298 c2123efc c02f29ac 
-> [    3.475626]        c02166cb f896f3ca 00000000 f896ff63 00000246 00000000 c2b20298 ffffa512 
-> [    3.475644]        c2123f04 c02f2a58 c2123f34 f896f3ed c2123f1c c34fbdb8 c2123f20 c02f3e22 
-> [    3.475662] Call Trace:
-> [    3.475667]  [show_trace_log_lvl+26/48] show_trace_log_lvl+0x1a/0x30
-> [    3.475678]  [show_stack_log_lvl+177/224] show_stack_log_lvl+0xb1/0xe0
-> [    3.475695]  [die+282/560] die+0x11a/0x230
-> [    3.475687]  [show_registers+193/464] show_registers+0xc1/0x1d0
-> [    3.475703]  [do_page_fault+415/1648] do_page_fault+0x19f/0x670
-> [    3.475713]  [error_code+114/120] error_code+0x72/0x78
-> [    3.475722]  [__mutex_unlock_slowpath+172/336] __mutex_unlock_slowpath+0xac/0x150
-> [    3.475731]  [mutex_unlock+8/16] mutex_unlock+0x8/0x10
-> [    3.475739]  [<f896f3ed>] acpi_battery_update+0x1ce/0x23c [battery]
-> [    3.475753]  [<f896f927>] acpi_battery_notify+0x21/0x78 [battery]
-> [    3.475764]  [acpi_ev_notify_dispatch+79/90] acpi_ev_notify_dispatch+0x4f/0x5a
-> [    3.475792]  [worker_thread+157/256] worker_thread+0x9d/0x100
-> [    3.475774]  [acpi_os_execute_notify+36/47] acpi_os_execute_notify+0x24/0x2f
-> [    3.475784]  [run_workqueue+288/464] run_workqueue+0x120/0x1d0
-> [    3.475809]  [kernel_thread_helper+7/16] kernel_thread_helper+0x7/0x10
-> [    3.475801]  [kthread+66/112] kthread+0x42/0x70
-> [    3.475821] Code: 8d b4 26 00 00 00 00 55 89 e5 83 ec 18 89 5d f8 89 c3 89 75 fc 0f b6 40 04 89 d6 84 c0 7f 24 8d 43 20 3b 43 20 0f 84 e4 00 00 00 <3b> 76 10 0f 85 93 00 00 00 3b 36 90 74 47 8b 5d f8 8b 75 fc 89 
-> [    3.475818]  =======================
-> [    3.475909] EIP: [debug_mutex_wake_waiter+36/352] debug_mutex_wake_waiter+0x24/0x160 SS:ESP 0068:c2123ebc
-> 
+Hi,
+incremental dimming can be easily implemented on top of this patch. 
+It's just about posting the timeout repeatedly. I will post something 
+in the near future :).
 
-Did any earlier kernels do this?  In other words, do you believe that this
-is a bug which we added after 2.6.23 was released?
+I believe the userspace vs kernelspace argument is very arbitrary.
 
-Thanks.
+As i said, the dimmer can be completely coded in userspace. There are 
+good reasons for that. Userspace apps can work out better than the 
+kernel what the user is doing. If the user is watching a movie for 
+instance, the dimmer should be stopped.
+
+However, the patch is just a light addition to backlight.c. If the 
+dimmer is stopped/unused, just a few pointers and some code are wasted.
+
+Userspace apps can start, stop and change the timeout value for the 
+dimmer on the fly, as if they were doing the dimming themselves. In 
+this case, userspace only notifies the kernel to stop the dimmer 
+whenever such action is deemed right. Instead when the dimmer is on, 
+which is most of the time, no kernespace/userspace switch is necessary.
+
+Changing the brightness might occur every 10 seconds or so. IMHO this 
+is more of a realtime (and thus kernelspace) requirement rather than 
+userspace. This also saves us from having a whole (heavyweight) 
+dedicated process managing such a basic functionality.
+
+Finally, implementing the dimmer in kernelspace delivers this 
+functionality everywhere provided Linux is used. No additional 
+software is necessary. This latter would usually have to be tailored 
+to different audiences such as desktop, embedded, whatever.
+
+I don't think thunderbird is breaking the patch, since i was able to 
+apply it from my previous posts. However here is a web location for 
+it, just in case: http://www.antonello.org/dimmer/. Please let me know 
+if you can't test it!
+
+jacopo
+
