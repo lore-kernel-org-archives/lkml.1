@@ -1,67 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759246AbXKAM7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760325AbXKANBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759246AbXKAM7T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 08:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755079AbXKAM7I
+	id S1760325AbXKANBY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 09:01:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756597AbXKANBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 08:59:08 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47692 "EHLO
+	Thu, 1 Nov 2007 09:01:16 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56043 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754297AbXKAM7H (ORCPT
+	with ESMTP id S1756159AbXKANBP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 08:59:07 -0400
-Date: Thu, 1 Nov 2007 05:59:06 -0700 (PDT)
+	Thu, 1 Nov 2007 09:01:15 -0400
+Date: Thu, 1 Nov 2007 06:01:14 -0700 (PDT)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: akpm@linux-foundation.org, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [patch 1/7] allocpercpu: Make it a true per cpu allocator by
- allocating from a per cpu array
-In-Reply-To: <47297F42.4050603@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0711010557340.27666@schroedinger.engr.sgi.com>
-References: <20071101000211.970501947@sgi.com> <20071101000309.765254518@sgi.com>
- <47297F42.4050603@cosmosbay.com>
+To: David Miller <davem@davemloft.net>
+cc: dada1@cosmosbay.com, akpm@linux-foundation.org, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
+       penberg@cs.helsinki.fi
+Subject: Re: [patch 0/7] [RFC] SLUB: Improve allocpercpu to reduce per cpu
+ access overhead
+In-Reply-To: <20071101.005727.218970168.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0711010559300.27666@schroedinger.engr.sgi.com>
+References: <20071101000211.970501947@sgi.com> <47297DA6.5070904@cosmosbay.com>
+ <20071101.005727.218970168.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1700579579-1776251518-1193921946=:27666"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Thu, 1 Nov 2007, David Miller wrote:
 
----1700579579-1776251518-1193921946=:27666
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+> IA64 seems to use it universally for every __get_cpu_var()
+> access, so maybe it works out somehow :-)))
 
-On Thu, 1 Nov 2007, Eric Dumazet wrote:
+IA64 does not do that. It addds the local cpu offset
 
-> Christoph Lameter a =E9crit :
-> > +
-> > +enum unit_type { FREE, END, USED };
-> > +
-> > +static u8 cpu_alloc_map[UNITS_PER_CPU] =3D { 1, };
->=20
-> You mean END here instead of 1 :)
+#define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, 
+__ia64_per_cpu_var(local_per_cpu_offset)))
+#define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, 
+__ia64_per_cpu_var(local_per_cpu_offset)))
 
-Sigh. A leftover. This can be removed.
 
-> > +/*
-> > + * Allocate an object of a certain size
-> > + *
-> > + * Returns a per cpu pointer that must not be directly used.
-> > + */
-> > +static void *cpu_alloc(unsigned long size)
-> > +{
->=20
-> We might need to give an alignment constraint here. Some per_cpu users wo=
-uld
-> like to get a 64 bytes zone, siting in one cache line and not two :)
-
-Well not sure about that. Alignment is mostly useful on SMP with cacheline=
-=20
-contention. This is a per cpu area that should not be contended.
-
----1700579579-1776251518-1193921946=:27666--
