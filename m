@@ -1,609 +1,1186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755901AbXKAVsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758104AbXKAVsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755901AbXKAVsA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 17:48:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbXKAVrv
+	id S1758104AbXKAVsW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 17:48:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755394AbXKAVr7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 17:47:51 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:47689 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753469AbXKAVru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 17:47:50 -0400
-Date: Thu, 1 Nov 2007 17:47:16 -0400
-To: Jan Blunck <jblunck@suse.de>
-Cc: Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@lst.de>, Andreas Gruenbacher <agruen@suse.de>,
-       neilb@suse.de
-Subject: Re: [PATCH 7/7] Use struct path in struct svc_export
-Message-ID: <20071101214716.GF30151@fieldses.org>
-References: <20071029124120.528997881@weierstrass.suse.de> <20071029124121.956529923@weierstrass.suse.de>
+	Thu, 1 Nov 2007 17:47:59 -0400
+Received: from usermail.globalproof.net ([194.146.153.18]:52391 "EHLO
+	usermail.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754033AbXKAVr4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 17:47:56 -0400
+X-Greylist: delayed 1318 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Nov 2007 17:47:53 EDT
+From: "Denys" <denys@visp.net.lb>
+To: linux-kernel@vger.kernel.org
+Subject: SC1200 failure in 2.6.23 and 2.6.24-rc1-git10
+Date: Thu, 1 Nov 2007 23:25:44 +0200
+Message-Id: <20071101211501.M78043@visp.net.lb>
+X-Mailer: OpenWebMail 2.52 20060502
+X-OriginatingIP: 195.69.208.251 (denys@visp.net.lb)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071029124121.956529923@weierstrass.suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Type: text/plain;
+	charset=koi8-r
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 29, 2007 at 01:41:27PM +0100, Jan Blunck wrote:
-> I'm embedding struct path into struct svc_export.
+Hi
 
-Fine by me.... (For what it's worth:
+I tried to run WRAP board (exact model PC Engines WRAP.2C) with kernels 
+2.6.23 and 2.6.24.
+But seems driver is not functional with some old CF cards, and seems have 
+some issues even with new.
 
-Acked-by: J. Bruce Fields <bfields@citi.umich.edu>
+As soon as i never had running system here, i have only grub and kernel 
+there, so not much things i can do. If someone can give me idea how to debug 
+i will do that.
 
-)
+Old card, from board BIOS
+PC Engines WRAP.2B/2C v1.03
+640 KB Base Memory
+64512 KB Extended Memory
 
---b.
+01F0 Master 844A SanDisk SDP3B-16
+Phys C/H/S 490/2/32 Log C/H/S 490/2/32
 
-> 
-> Signed-off-by: Jan Blunck <jblunck@suse.de>
-> ---
->  fs/nfsd/export.c            |   69 +++++++++++++++++++++-----------------------
->  fs/nfsd/nfs3proc.c          |    2 -
->  fs/nfsd/nfs3xdr.c           |    4 +-
->  fs/nfsd/nfs4proc.c          |    4 +-
->  fs/nfsd/nfs4xdr.c           |   12 +++----
->  fs/nfsd/nfsfh.c             |   26 ++++++++--------
->  fs/nfsd/nfsproc.c           |    6 +--
->  fs/nfsd/nfsxdr.c            |    2 -
->  fs/nfsd/vfs.c               |   22 +++++++-------
->  include/linux/nfsd/export.h |    5 +--
->  10 files changed, 74 insertions(+), 78 deletions(-)
-> 
-> Index: b/fs/nfsd/export.c
-> ===================================================================
-> --- a/fs/nfsd/export.c
-> +++ b/fs/nfsd/export.c
-> @@ -332,10 +332,9 @@ static void nfsd4_fslocs_free(struct nfs
->  static void svc_export_put(struct kref *ref)
->  {
->  	struct svc_export *exp = container_of(ref, struct svc_export, h.ref);
-> -	dput(exp->ex_dentry);
-> -	mntput(exp->ex_mnt);
-> +	path_put(&exp->ex_path);
->  	auth_domain_put(exp->ex_client);
-> -	kfree(exp->ex_path);
-> +	kfree(exp->ex_pathname);
->  	nfsd4_fslocs_free(&exp->ex_fslocs);
->  	kfree(exp);
->  }
-> @@ -346,11 +345,10 @@ static void svc_export_request(struct ca
->  {
->  	/*  client path */
->  	struct svc_export *exp = container_of(h, struct svc_export, h);
-> -	struct path path = { .dentry = exp->ex_dentry, .mnt = exp->ex_mnt };
->  	char *pth;
->  
->  	qword_add(bpp, blen, exp->ex_client->name);
-> -	pth = d_path(&path, *bpp, *blen);
-> +	pth = d_path(&exp->ex_path, *bpp, *blen);
->  	if (IS_ERR(pth)) {
->  		/* is this correct? */
->  		(*bpp)[0] = '\n';
-> @@ -509,7 +507,7 @@ static int svc_export_parse(struct cache
->  	int an_int;
->  
->  	nd.path.dentry = NULL;
-> -	exp.ex_path = NULL;
-> +	exp.ex_pathname = NULL;
->  
->  	/* fs locations */
->  	exp.ex_fslocs.locations = NULL;
-> @@ -548,11 +546,11 @@ static int svc_export_parse(struct cache
->  
->  	exp.h.flags = 0;
->  	exp.ex_client = dom;
-> -	exp.ex_mnt = nd.path.mnt;
-> -	exp.ex_dentry = nd.path.dentry;
-> -	exp.ex_path = kstrdup(buf, GFP_KERNEL);
-> +	exp.ex_path.mnt = nd.path.mnt;
-> +	exp.ex_path.dentry = nd.path.dentry;
-> +	exp.ex_pathname = kstrdup(buf, GFP_KERNEL);
->  	err = -ENOMEM;
-> -	if (!exp.ex_path)
-> +	if (!exp.ex_pathname)
->  		goto out;
->  
->  	/* expiry */
-> @@ -629,7 +627,7 @@ static int svc_export_parse(struct cache
->   out:
->  	nfsd4_fslocs_free(&exp.ex_fslocs);
->  	kfree(exp.ex_uuid);
-> - 	kfree(exp.ex_path);
-> + 	kfree(exp.ex_pathname);
->  	if (nd.path.dentry)
->  		path_put(&nd.path);
->   out_no_path:
-> @@ -654,7 +652,7 @@ static int svc_export_show(struct seq_fi
->  		return 0;
->  	}
->  	exp = container_of(h, struct svc_export, h);
-> -	seq_path(m, exp->ex_mnt, exp->ex_dentry, " \t\n\\");
-> +	seq_path(m, exp->ex_path.mnt, exp->ex_path.dentry, " \t\n\\");
->  	seq_putc(m, '\t');
->  	seq_escape(m, exp->ex_client->name, " \t\n\\");
->  	seq_putc(m, '(');
-> @@ -681,8 +679,8 @@ static int svc_export_match(struct cache
->  	struct svc_export *orig = container_of(a, struct svc_export, h);
->  	struct svc_export *new = container_of(b, struct svc_export, h);
->  	return orig->ex_client == new->ex_client &&
-> -		orig->ex_dentry == new->ex_dentry &&
-> -		orig->ex_mnt == new->ex_mnt;
-> +		orig->ex_path.dentry == new->ex_path.dentry &&
-> +		orig->ex_path.mnt == new->ex_path.mnt;
->  }
->  
->  static void svc_export_init(struct cache_head *cnew, struct cache_head *citem)
-> @@ -692,9 +690,9 @@ static void svc_export_init(struct cache
->  
->  	kref_get(&item->ex_client->ref);
->  	new->ex_client = item->ex_client;
-> -	new->ex_dentry = dget(item->ex_dentry);
-> -	new->ex_mnt = mntget(item->ex_mnt);
-> -	new->ex_path = NULL;
-> +	new->ex_path.dentry = dget(item->ex_path.dentry);
-> +	new->ex_path.mnt = mntget(item->ex_path.mnt);
-> +	new->ex_pathname = NULL;
->  	new->ex_fslocs.locations = NULL;
->  	new->ex_fslocs.locations_count = 0;
->  	new->ex_fslocs.migrated = 0;
-> @@ -712,8 +710,8 @@ static void export_update(struct cache_h
->  	new->ex_fsid = item->ex_fsid;
->  	new->ex_uuid = item->ex_uuid;
->  	item->ex_uuid = NULL;
-> -	new->ex_path = item->ex_path;
-> -	item->ex_path = NULL;
-> +	new->ex_pathname = item->ex_pathname;
-> +	item->ex_pathname = NULL;
->  	new->ex_fslocs.locations = item->ex_fslocs.locations;
->  	item->ex_fslocs.locations = NULL;
->  	new->ex_fslocs.locations_count = item->ex_fslocs.locations_count;
-> @@ -756,8 +754,8 @@ svc_export_lookup(struct svc_export *exp
->  	struct cache_head *ch;
->  	int hash;
->  	hash = hash_ptr(exp->ex_client, EXPORT_HASHBITS);
-> -	hash ^= hash_ptr(exp->ex_dentry, EXPORT_HASHBITS);
-> -	hash ^= hash_ptr(exp->ex_mnt, EXPORT_HASHBITS);
-> +	hash ^= hash_ptr(exp->ex_path.dentry, EXPORT_HASHBITS);
-> +	hash ^= hash_ptr(exp->ex_path.mnt, EXPORT_HASHBITS);
->  
->  	ch = sunrpc_cache_lookup(&svc_export_cache, &exp->h,
->  				 hash);
-> @@ -773,8 +771,8 @@ svc_export_update(struct svc_export *new
->  	struct cache_head *ch;
->  	int hash;
->  	hash = hash_ptr(old->ex_client, EXPORT_HASHBITS);
-> -	hash ^= hash_ptr(old->ex_dentry, EXPORT_HASHBITS);
-> -	hash ^= hash_ptr(old->ex_mnt, EXPORT_HASHBITS);
-> +	hash ^= hash_ptr(old->ex_path.dentry, EXPORT_HASHBITS);
-> +	hash ^= hash_ptr(old->ex_path.mnt, EXPORT_HASHBITS);
->  
->  	ch = sunrpc_cache_update(&svc_export_cache, &new->h,
->  				 &old->h,
-> @@ -816,8 +814,8 @@ static int exp_set_key(svc_client *clp, 
->  	key.ek_client = clp;
->  	key.ek_fsidtype = fsid_type;
->  	memcpy(key.ek_fsid, fsidv, key_len(fsid_type));
-> -	key.ek_mnt = exp->ex_mnt;
-> -	key.ek_dentry = exp->ex_dentry;
-> +	key.ek_mnt = exp->ex_path.mnt;
-> +	key.ek_dentry = exp->ex_path.dentry;
->  	key.h.expiry_time = NEVER;
->  	key.h.flags = 0;
->  
-> @@ -871,8 +869,8 @@ static svc_export *exp_get_by_name(svc_c
->  		return ERR_PTR(-ENOENT);
->  
->  	key.ex_client = clp;
-> -	key.ex_mnt = mnt;
-> -	key.ex_dentry = dentry;
-> +	key.ex_path.mnt = mnt;
-> +	key.ex_path.dentry = dentry;
->  
->  	exp = svc_export_lookup(&key);
->  	if (exp == NULL)
-> @@ -969,7 +967,7 @@ static int exp_fsid_hash(svc_client *clp
->  static int exp_hash(struct auth_domain *clp, struct svc_export *exp)
->  {
->  	u32 fsid[2];
-> -	struct inode *inode = exp->ex_dentry->d_inode;
-> +	struct inode *inode = exp->ex_path.dentry->d_inode;
->  	dev_t dev = inode->i_sb->s_dev;
->  
->  	if (old_valid_dev(dev)) {
-> @@ -983,7 +981,7 @@ static int exp_hash(struct auth_domain *
->  static void exp_unhash(struct svc_export *exp)
->  {
->  	struct svc_expkey *ek;
-> -	struct inode *inode = exp->ex_dentry->d_inode;
-> +	struct inode *inode = exp->ex_path.dentry->d_inode;
->  
->  	ek = exp_get_key(exp->ex_client, inode->i_sb->s_dev, inode->i_ino);
->  	if (!IS_ERR(ek)) {
-> @@ -1065,12 +1063,11 @@ exp_export(struct nfsctl_export *nxp)
->  
->  	new.h.expiry_time = NEVER;
->  	new.h.flags = 0;
-> -	new.ex_path = kstrdup(nxp->ex_path, GFP_KERNEL);
-> -	if (!new.ex_path)
-> +	new.ex_pathname = kstrdup(nxp->ex_path, GFP_KERNEL);
-> +	if (!new.ex_pathname)
->  		goto finish;
->  	new.ex_client = clp;
-> -	new.ex_mnt = nd.path.mnt;
-> -	new.ex_dentry = nd.path.dentry;
-> +	new.ex_path = nd.path;
->  	new.ex_flags = nxp->ex_flags;
->  	new.ex_anon_uid = nxp->ex_anon_uid;
->  	new.ex_anon_gid = nxp->ex_anon_gid;
-> @@ -1091,8 +1088,8 @@ exp_export(struct nfsctl_export *nxp)
->  	} else
->  		err = 0;
->  finish:
-> -	if (new.ex_path)
-> -		kfree(new.ex_path);
-> +	if (new.ex_pathname)
-> +		kfree(new.ex_pathname);
->  	if (exp)
->  		exp_put(exp);
->  	if (fsid_key && !IS_ERR(fsid_key))
-> @@ -1363,7 +1360,7 @@ exp_pseudoroot(struct svc_rqst *rqstp, s
->  		return nfserr_perm;
->  	if (IS_ERR(exp))
->  		return nfserrno(PTR_ERR(exp));
-> -	rv = fh_compose(fhp, exp, exp->ex_dentry, NULL);
-> +	rv = fh_compose(fhp, exp, exp->ex_path.dentry, NULL);
->  	if (rv)
->  		goto out;
->  	rv = check_nfsd_access(exp, rqstp);
-> Index: b/fs/nfsd/nfs3proc.c
-> ===================================================================
-> --- a/fs/nfsd/nfs3proc.c
-> +++ b/fs/nfsd/nfs3proc.c
-> @@ -67,7 +67,7 @@ nfsd3_proc_getattr(struct svc_rqst *rqst
->  	if (nfserr)
->  		RETURN_STATUS(nfserr);
->  
-> -	err = vfs_getattr(resp->fh.fh_export->ex_mnt,
-> +	err = vfs_getattr(resp->fh.fh_export->ex_path.mnt,
->  			  resp->fh.fh_dentry, &resp->stat);
->  	nfserr = nfserrno(err);
->  
-> Index: b/fs/nfsd/nfs3xdr.c
-> ===================================================================
-> --- a/fs/nfsd/nfs3xdr.c
-> +++ b/fs/nfsd/nfs3xdr.c
-> @@ -217,7 +217,7 @@ encode_post_op_attr(struct svc_rqst *rqs
->  	        int err;
->  		struct kstat stat;
->  
-> -		err = vfs_getattr(fhp->fh_export->ex_mnt, dentry, &stat);
-> +		err = vfs_getattr(fhp->fh_export->ex_path.mnt, dentry, &stat);
->  		if (!err) {
->  			*p++ = xdr_one;		/* attributes follow */
->  			lease_get_mtime(dentry->d_inode, &stat.mtime);
-> @@ -269,7 +269,7 @@ void fill_post_wcc(struct svc_fh *fhp)
->  	if (fhp->fh_post_saved)
->  		printk("nfsd: inode locked twice during operation.\n");
->  
-> -	err = vfs_getattr(fhp->fh_export->ex_mnt, fhp->fh_dentry,
-> +	err = vfs_getattr(fhp->fh_export->ex_path.mnt, fhp->fh_dentry,
->  			&fhp->fh_post_attr);
->  	if (err)
->  		fhp->fh_post_saved = 0;
-> Index: b/fs/nfsd/nfs4proc.c
-> ===================================================================
-> --- a/fs/nfsd/nfs4proc.c
-> +++ b/fs/nfsd/nfs4proc.c
-> @@ -658,7 +658,7 @@ nfsd4_setattr(struct svc_rqst *rqstp, st
->  			return status;
->  		}
->  	}
-> -	status = mnt_want_write(cstate->current_fh.fh_export->ex_mnt);
-> +	status = mnt_want_write(cstate->current_fh.fh_export->ex_path.mnt);
->  	if (status)
->  		return status;
->  	status = nfs_ok;
-> @@ -670,7 +670,7 @@ nfsd4_setattr(struct svc_rqst *rqstp, st
->  	status = nfsd_setattr(rqstp, &cstate->current_fh, &setattr->sa_iattr,
->  				0, (time_t)0);
->  out:
-> -	mnt_drop_write(cstate->current_fh.fh_export->ex_mnt);
-> +	mnt_drop_write(cstate->current_fh.fh_export->ex_path.mnt);
->  	return status;
->  }
->  
-> Index: b/fs/nfsd/nfs4xdr.c
-> ===================================================================
-> --- a/fs/nfsd/nfs4xdr.c
-> +++ b/fs/nfsd/nfs4xdr.c
-> @@ -1325,9 +1325,9 @@ static char *nfsd4_path(struct svc_rqst 
->  	*stat = exp_pseudoroot(rqstp, &tmp_fh);
->  	if (*stat)
->  		return NULL;
-> -	rootpath = tmp_fh.fh_export->ex_path;
-> +	rootpath = tmp_fh.fh_export->ex_pathname;
->  
-> -	path = exp->ex_path;
-> +	path = exp->ex_pathname;
->  
->  	if (strncmp(path, rootpath, strlen(rootpath))) {
->  		dprintk("nfsd: fs_locations failed;"
-> @@ -1476,7 +1476,7 @@ nfsd4_encode_fattr(struct svc_fh *fhp, s
->  			goto out;
->  	}
->  
-> -	err = vfs_getattr(exp->ex_mnt, dentry, &stat);
-> +	err = vfs_getattr(exp->ex_path.mnt, dentry, &stat);
->  	if (err)
->  		goto out_nfserr;
->  	if ((bmval0 & (FATTR4_WORD0_FILES_FREE | FATTR4_WORD0_FILES_TOTAL |
-> @@ -1828,9 +1828,9 @@ out_acl:
->  	if (bmval1 & FATTR4_WORD1_MOUNTED_ON_FILEID) {
->  		if ((buflen -= 8) < 0)
->                  	goto out_resource;
-> -		if (exp->ex_mnt->mnt_root->d_inode == dentry->d_inode) {
-> -			err = vfs_getattr(exp->ex_mnt->mnt_parent,
-> -				exp->ex_mnt->mnt_mountpoint, &stat);
-> +		if (exp->ex_path.mnt->mnt_root->d_inode == dentry->d_inode) {
-> +			err = vfs_getattr(exp->ex_path.mnt->mnt_parent,
-> +				exp->ex_path.mnt->mnt_mountpoint, &stat);
->  			if (err)
->  				goto out_nfserr;
->  		}
-> Index: b/fs/nfsd/nfsfh.c
-> ===================================================================
-> --- a/fs/nfsd/nfsfh.c
-> +++ b/fs/nfsd/nfsfh.c
-> @@ -46,7 +46,7 @@ static int nfsd_acceptable(void *expv, s
->  		return 1;
->  
->  	tdentry = dget(dentry);
-> -	while (tdentry != exp->ex_dentry && ! IS_ROOT(tdentry)) {
-> +	while (tdentry != exp->ex_path.dentry && ! IS_ROOT(tdentry)) {
->  		/* make sure parents give x permission to user */
->  		int err;
->  		parent = dget_parent(tdentry);
-> @@ -58,9 +58,9 @@ static int nfsd_acceptable(void *expv, s
->  		dput(tdentry);
->  		tdentry = parent;
->  	}
-> -	if (tdentry != exp->ex_dentry)
-> +	if (tdentry != exp->ex_path.dentry)
->  		dprintk("nfsd_acceptable failed at %p %s\n", tdentry, tdentry->d_name.name);
-> -	rv = (tdentry == exp->ex_dentry);
-> +	rv = (tdentry == exp->ex_path.dentry);
->  	dput(tdentry);
->  	return rv;
->  }
-> @@ -203,9 +203,9 @@ fh_verify(struct svc_rqst *rqstp, struct
->  			fileid_type = fh->fh_fileid_type;
->  
->  		if (fileid_type == FILEID_ROOT)
-> -			dentry = dget(exp->ex_dentry);
-> +			dentry = dget(exp->ex_path.dentry);
->  		else {
-> -			dentry = exportfs_decode_fh(exp->ex_mnt, fid,
-> +			dentry = exportfs_decode_fh(exp->ex_path.mnt, fid,
->  					data_left, fileid_type,
->  					nfsd_acceptable, exp);
->  		}
-> @@ -289,7 +289,7 @@ out:
->  static void _fh_update(struct svc_fh *fhp, struct svc_export *exp,
->  		struct dentry *dentry)
->  {
-> -	if (dentry != exp->ex_dentry) {
-> +	if (dentry != exp->ex_path.dentry) {
->  		struct fid *fid = (struct fid *)
->  			(fhp->fh_handle.fh_auth + fhp->fh_handle.fh_size/4 - 1);
->  		int maxsize = (fhp->fh_maxsize - fhp->fh_handle.fh_size)/4;
-> @@ -334,12 +334,12 @@ fh_compose(struct svc_fh *fhp, struct sv
->  	struct inode * inode = dentry->d_inode;
->  	struct dentry *parent = dentry->d_parent;
->  	__u32 *datap;
-> -	dev_t ex_dev = exp->ex_dentry->d_inode->i_sb->s_dev;
-> -	int root_export = (exp->ex_dentry == exp->ex_dentry->d_sb->s_root);
-> +	dev_t ex_dev = exp->ex_path.dentry->d_inode->i_sb->s_dev;
-> +	int root_export = (exp->ex_path.dentry == exp->ex_path.dentry->d_sb->s_root);
->  
->  	dprintk("nfsd: fh_compose(exp %02x:%02x/%ld %s/%s, ino=%ld)\n",
->  		MAJOR(ex_dev), MINOR(ex_dev),
-> -		(long) exp->ex_dentry->d_inode->i_ino,
-> +		(long) exp->ex_path.dentry->d_inode->i_ino,
->  		parent->d_name.name, dentry->d_name.name,
->  		(inode ? inode->i_ino : 0));
->  
-> @@ -381,7 +381,7 @@ fh_compose(struct svc_fh *fhp, struct sv
->  			/* FALL THROUGH */
->  		case FSID_MAJOR_MINOR:
->  		case FSID_ENCODE_DEV:
-> -			if (!(exp->ex_dentry->d_inode->i_sb->s_type->fs_flags
-> +			if (!(exp->ex_path.dentry->d_inode->i_sb->s_type->fs_flags
->  			      & FS_REQUIRES_DEV))
->  				goto retry;
->  			break;
-> @@ -444,7 +444,7 @@ fh_compose(struct svc_fh *fhp, struct sv
->  		fhp->fh_handle.ofh_dev =  old_encode_dev(ex_dev);
->  		fhp->fh_handle.ofh_xdev = fhp->fh_handle.ofh_dev;
->  		fhp->fh_handle.ofh_xino =
-> -			ino_t_to_u32(exp->ex_dentry->d_inode->i_ino);
-> +			ino_t_to_u32(exp->ex_path.dentry->d_inode->i_ino);
->  		fhp->fh_handle.ofh_dirino = ino_t_to_u32(parent_ino(dentry));
->  		if (inode)
->  			_fh_update_old(dentry, exp, &fhp->fh_handle);
-> @@ -455,7 +455,7 @@ fh_compose(struct svc_fh *fhp, struct sv
->  		datap = fhp->fh_handle.fh_auth+0;
->  		fhp->fh_handle.fh_fsid_type = fsid_type;
->  		mk_fsid(fsid_type, datap, ex_dev,
-> -			exp->ex_dentry->d_inode->i_ino,
-> +			exp->ex_path.dentry->d_inode->i_ino,
->  			exp->ex_fsid, exp->ex_uuid);
->  
->  		len = key_len(fsid_type);
-> @@ -561,7 +561,7 @@ enum fsid_source fsid_source(struct svc_
->  	case FSID_DEV:
->  	case FSID_ENCODE_DEV:
->  	case FSID_MAJOR_MINOR:
-> -		if (fhp->fh_export->ex_dentry->d_inode->i_sb->s_type->fs_flags
-> +		if (fhp->fh_export->ex_path.dentry->d_inode->i_sb->s_type->fs_flags
->  		    & FS_REQUIRES_DEV)
->  			return FSIDSOURCE_DEV;
->  		break;
-> Index: b/fs/nfsd/nfsproc.c
-> ===================================================================
-> --- a/fs/nfsd/nfsproc.c
-> +++ b/fs/nfsd/nfsproc.c
-> @@ -41,7 +41,7 @@ static __be32
->  nfsd_return_attrs(__be32 err, struct nfsd_attrstat *resp)
->  {
->  	if (err) return err;
-> -	return nfserrno(vfs_getattr(resp->fh.fh_export->ex_mnt,
-> +	return nfserrno(vfs_getattr(resp->fh.fh_export->ex_path.mnt,
->  				    resp->fh.fh_dentry,
->  				    &resp->stat));
->  }
-> @@ -49,7 +49,7 @@ static __be32
->  nfsd_return_dirop(__be32 err, struct nfsd_diropres *resp)
->  {
->  	if (err) return err;
-> -	return nfserrno(vfs_getattr(resp->fh.fh_export->ex_mnt,
-> +	return nfserrno(vfs_getattr(resp->fh.fh_export->ex_path.mnt,
->  				    resp->fh.fh_dentry,
->  				    &resp->stat));
->  }
-> @@ -164,7 +164,7 @@ nfsd_proc_read(struct svc_rqst *rqstp, s
->  				  &resp->count);
->  
->  	if (nfserr) return nfserr;
-> -	return nfserrno(vfs_getattr(resp->fh.fh_export->ex_mnt,
-> +	return nfserrno(vfs_getattr(resp->fh.fh_export->ex_path.mnt,
->  				    resp->fh.fh_dentry,
->  				    &resp->stat));
->  }
-> Index: b/fs/nfsd/nfsxdr.c
-> ===================================================================
-> --- a/fs/nfsd/nfsxdr.c
-> +++ b/fs/nfsd/nfsxdr.c
-> @@ -206,7 +206,7 @@ encode_fattr(struct svc_rqst *rqstp, __b
->  __be32 *nfs2svc_encode_fattr(struct svc_rqst *rqstp, __be32 *p, struct svc_fh *fhp)
->  {
->  	struct kstat stat;
-> -	vfs_getattr(fhp->fh_export->ex_mnt, fhp->fh_dentry, &stat);
-> +	vfs_getattr(fhp->fh_export->ex_path.mnt, fhp->fh_dentry, &stat);
->  	return encode_fattr(rqstp, p, fhp, &stat);
->  }
->  
-> Index: b/fs/nfsd/vfs.c
-> ===================================================================
-> --- a/fs/nfsd/vfs.c
-> +++ b/fs/nfsd/vfs.c
-> @@ -101,7 +101,7 @@ nfsd_cross_mnt(struct svc_rqst *rqstp, s
->  {
->  	struct svc_export *exp = *expp, *exp2 = NULL;
->  	struct dentry *dentry = *dpp;
-> -	struct vfsmount *mnt = mntget(exp->ex_mnt);
-> +	struct vfsmount *mnt = mntget(exp->ex_path.mnt);
->  	struct dentry *mounts = dget(dentry);
->  	int err = 0;
->  
-> @@ -156,7 +156,7 @@ nfsd_lookup_dentry(struct svc_rqst *rqst
->  	if (isdotent(name, len)) {
->  		if (len==1)
->  			dentry = dget(dparent);
-> -		else if (dparent != exp->ex_dentry) {
-> +		else if (dparent != exp->ex_path.dentry) {
->  			dentry = dget_parent(dparent);
->  		} else  if (!EX_NOHIDE(exp))
->  			dentry = dget(dparent); /* .. == . just like at / */
-> @@ -164,7 +164,7 @@ nfsd_lookup_dentry(struct svc_rqst *rqst
->  			/* checking mountpoint crossing is very different when stepping up */
->  			struct svc_export *exp2 = NULL;
->  			struct dentry *dp;
-> -			struct vfsmount *mnt = mntget(exp->ex_mnt);
-> +			struct vfsmount *mnt = mntget(exp->ex_path.mnt);
->  			dentry = dget(dparent);
->  			while(dentry == mnt->mnt_root && follow_up(&mnt, &dentry))
->  				;
-> @@ -721,7 +721,7 @@ nfsd_open(struct svc_rqst *rqstp, struct
->  
->  		DQUOT_INIT(inode);
->  	}
-> -	*filp = dentry_open(dget(dentry), mntget(fhp->fh_export->ex_mnt), flags);
-> +	*filp = dentry_open(dget(dentry), mntget(fhp->fh_export->ex_path.mnt), flags);
->  	if (IS_ERR(*filp))
->  		host_err = PTR_ERR(*filp);
->  out_nfserr:
-> @@ -1242,11 +1242,11 @@ nfsd_create(struct svc_rqst *rqstp, stru
->  	case S_IFBLK:
->  	case S_IFIFO:
->  	case S_IFSOCK:
-> -		host_err = mnt_want_write(fhp->fh_export->ex_mnt);
-> +		host_err = mnt_want_write(fhp->fh_export->ex_path.mnt);
->  		if (host_err)
->  			break;
->  		host_err = vfs_mknod(dirp, dchild, iap->ia_mode, rdev);
-> -		mnt_drop_write(fhp->fh_export->ex_mnt);
-> +		mnt_drop_write(fhp->fh_export->ex_path.mnt);
->  		break;
->  	default:
->  	        printk("nfsd: bad file type %o in nfsd_create\n", type);
-> @@ -1457,7 +1457,7 @@ nfsd_readlink(struct svc_rqst *rqstp, st
->  	if (!inode->i_op || !inode->i_op->readlink)
->  		goto out;
->  
-> -	touch_atime(fhp->fh_export->ex_mnt, dentry);
-> +	touch_atime(fhp->fh_export->ex_path.mnt, dentry);
->  	/* N.B. Why does this call need a get_fs()??
->  	 * Remove the set_fs and watch the fireworks:-) --okir
->  	 */
-> @@ -1680,9 +1680,9 @@ nfsd_rename(struct svc_rqst *rqstp, stru
->  	}
->  
->  	host_err = -EXDEV;
-> -	if (ffhp->fh_export->ex_mnt != tfhp->fh_export->ex_mnt)
-> +	if (ffhp->fh_export->ex_path.mnt != tfhp->fh_export->ex_path.mnt)
->  		goto out_dput_new;
-> -	host_err = mnt_want_write(ffhp->fh_export->ex_mnt);
-> +	host_err = mnt_want_write(ffhp->fh_export->ex_path.mnt);
->  	if (host_err)
->  		goto out_dput_new;
->  
-> @@ -1866,7 +1866,7 @@ nfsd_permission(struct svc_rqst *rqstp, 
->  		inode->i_mode,
->  		IS_IMMUTABLE(inode)?	" immut" : "",
->  		IS_APPEND(inode)?	" append" : "",
-> -		__mnt_is_readonly(exp->ex_mnt)?	" ro" : "");
-> +		__mnt_is_readonly(exp->ex_path.mnt)?	" ro" : "");
->  	dprintk("      owner %d/%d user %d/%d\n",
->  		inode->i_uid, inode->i_gid, current->fsuid, current->fsgid);
->  #endif
-> @@ -1877,7 +1877,7 @@ nfsd_permission(struct svc_rqst *rqstp, 
->  	 */
->  	if (!(acc & MAY_LOCAL_ACCESS))
->  		if (acc & (MAY_WRITE | MAY_SATTR | MAY_TRUNC)) {
-> -			if (exp_rdonly(rqstp, exp) || __mnt_is_readonly(exp->ex_mnt))
-> +			if (exp_rdonly(rqstp, exp) || __mnt_is_readonly(exp->ex_path.mnt))
->  				return nfserr_rofs;
->  			if (/* (acc & MAY_WRITE) && */ IS_IMMUTABLE(inode))
->  				return nfserr_perm;
-> Index: b/include/linux/nfsd/export.h
-> ===================================================================
-> --- a/include/linux/nfsd/export.h
-> +++ b/include/linux/nfsd/export.h
-> @@ -84,9 +84,8 @@ struct svc_export {
->  	struct cache_head	h;
->  	struct auth_domain *	ex_client;
->  	int			ex_flags;
-> -	struct vfsmount *	ex_mnt;
-> -	struct dentry *		ex_dentry;
-> -	char *			ex_path;
-> +	struct path		ex_path;
-> +	char *			ex_pathname;
->  	uid_t			ex_anon_uid;
->  	gid_t			ex_anon_gid;
->  	int			ex_fsid;
-> 
-> -- 
-> 
+Here is dmesg
+Linux version 2.6.24-rc1-git10-embedded (root@homecore.visp.net.lb) (gcc 
+version 4.1.2 (Gentoo 4.1.2 p1.0.1)) #1 Thu Nov 1 23:12:53 EET 2007
+BIOS-provided physical RAM map:
+ BIOS-e801: 0000000000000000 - 000000000009f000 (usable)
+ BIOS-e801: 0000000000100000 - 0000000004000000 (usable)
+64MB LOWMEM available.
+Zone PFN ranges:
+  DMA             0 ->     4096
+  Normal       4096 ->    16384
+Movable zone start PFN for each node
+early_node_map[1] active PFN ranges
+    0:        0 ->    16384
+DMI not present or invalid.
+Allocating PCI resources starting at 10000000 (gap: 04000000:fc000000)
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 16256
+Kernel command line: console=ttyS0,38400n8
+Initializing CPU#0
+PID hash table entries: 256 (order: 8, 1024 bytes)
+Detected 266.627 MHz processor.
+Console: colour dummy device 80x25
+console [ttyS0] enabled
+Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
+Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
+Memory: 62836k/65536k available (1020k kernel code, 2292k reserved, 317k 
+data, 112k init, 0k highmem)
+virtual kernel memory layout:
+    fixmap  : 0xffffb000 - 0xfffff000   (  16 kB)
+    vmalloc : 0xc4800000 - 0xffff9000   ( 951 MB)
+    lowmem  : 0xc0000000 - 0xc4000000   (  64 MB)
+      .init : 0xc0252000 - 0xc026e000   ( 112 kB)
+      .data : 0xc01ff111 - 0xc024e6f4   ( 317 kB)
+      .text : 0xc0100000 - 0xc01ff111   (1020 kB)
+Checking if this processor honours the WP bit even in supervisor mode... Ok.
+SLUB: Genslabs=11, HWalign=32, Order=0-1, MinObjects=4, CPUs=1, Nodes=1
+Calibrating delay using timer specific routine.. 534.40 BogoMIPS (lpj=1068805)
+Mount-cache hash table entries: 512
+Compat vDSO mapped to ffffe000.
+CPU: NSC Unknown stepping 01
+Checking 'hlt' instruction... OK.
+Freeing SMP alternatives: 0k freed
+net_namespace: 64 bytes
+NET: Registered protocol family 16
+PCI: PCI BIOS revision 2.10 entry at 0xfc3ad, last bus=0
+PCI: Using configuration type 1
+Setting up standard PCI resources
+SCSI subsystem initialized
+PCI: Probing PCI hardware
+PCI: Device 0000:00:12.5 not found by BIOS
+Time: tsc clocksource has been installed.
+NET: Registered protocol family 2
+IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
+TCP established hash table entries: 2048 (order: 2, 16384 bytes)
+TCP bind hash table entries: 2048 (order: 1, 8192 bytes)
+TCP: Hash tables configured (established 2048 bind 2048)
+TCP reno registered
+scx200: NatSemi SCx200 Driver
+scx200: GPIO base 0xf400
+scx200: Configuration Block base 0x9000
+io scheduler noop registered (default)
+Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing disabled
+serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a NS16550A
+serial8250: ttyS1 at I/O 0x2f8 (irq = 3) is a NS16550A
+natsemi dp8381x driver, version 2.1, Sept 11, 2006
+  originally by Donald Becker <becker@scyld.com>
+  2.4.x kernel port by Jeff Garzik, Tjeerd Mulder
+natsemi eth0: NatSemi DP8381[56] at 0x80000000 (0000:00:0e.0), 
+00:0d:b9:00:8a:30, IRQ 10, port TP.
+scsi0 : sc1200
+scsi1 : sc1200
+ata1: PATA max UDMA/33 cmd 0x1f0 ctl 0x3f6 bmdma 0xfc00 irq 14
+ata2: DUMMY
+ata1.00: failed to IDENTIFY (device reports invalid type, err_mask=0x0)
+ata1: failed to recover some devices, retrying in 5 secs
+Clocksource tsc unstable (delta = -463009314 ns)
+Time: pit clocksource has been installed.
+ata1.00: failed to IDENTIFY (device reports invalid type, err_mask=0x0)
+ata1: failed to recover some devices, retrying in 5 secs
+scx200_wdt: timer margin 60 seconds
+cpuidle: using governor ladder
+enabling scx200 high-res timer (1 MHz +0 ppm)
+TCP cubic registered
+Time: scx200_hrt clocksource has been installed.
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+Using IPI Shortcut mode
+FS: Cannot open root device "<NULL>" or unknown-block(8,18)
+Please append a correct "root=" boot option; here are the available 
+partitions:
+Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-
+block(8,18)
+
+Last 3 lines is fine, i dont have any filesystem or root to boot (planning to 
+use initramfs).
+
+New card (1GB) BIOS
+PC Engines WRAP.2B/2C v1.03
+640 KB Base Memory
+64512 KB Extended Memory
+
+01F0 Master 848A SanDisk SDCFH-1024
+Phys C/H/S 1986/16/63 Log C/H/S 993/32/63
+GRUB Loading stage1.5.
+
+dmesg
+Linux version 2.6.24-rc1-git10-embedded (root@homecore.visp.net.lb) (gcc 
+version 4.1.2 (Gentoo 4.1.2 p1.0.1)) #1 Thu Nov 1 23:12:53 EET 2007
+BIOS-provided physical RAM map:
+ BIOS-e801: 0000000000000000 - 000000000009f000 (usable)
+ BIOS-e801: 0000000000100000 - 0000000004000000 (usable)
+64MB LOWMEM available.
+Zone PFN ranges:
+  DMA             0 ->     4096
+  Normal       4096 ->    16384
+Movable zone start PFN for each node
+early_node_map[1] active PFN ranges
+    0:        0 ->    16384
+DMI not present or invalid.
+Allocating PCI resources starting at 10000000 (gap: 04000000:fc000000)
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 16256
+Kernel command line: console=ttyS0,38400n8
+Initializing CPU#0
+PID hash table entries: 256 (order: 8, 1024 bytes)
+Detected 266.627 MHz processor.
+Console: colour dummy device 80x25
+console [ttyS0] enabled
+Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
+Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
+Memory: 62836k/65536k available (1020k kernel code, 2292k reserved, 317k 
+data, 112k init, 0k highmem)
+virtual kernel memory layout:
+    fixmap  : 0xffffb000 - 0xfffff000   (  16 kB)
+    vmalloc : 0xc4800000 - 0xffff9000   ( 951 MB)
+    lowmem  : 0xc0000000 - 0xc4000000   (  64 MB)
+      .init : 0xc0252000 - 0xc026e000   ( 112 kB)
+      .data : 0xc01ff111 - 0xc024e6f4   ( 317 kB)
+      .text : 0xc0100000 - 0xc01ff111   (1020 kB)
+Checking if this processor honours the WP bit even in supervisor mode... Ok.
+SLUB: Genslabs=11, HWalign=32, Order=0-1, MinObjects=4, CPUs=1, Nodes=1
+Calibrating delay using timer specific routine.. 534.41 BogoMIPS (lpj=1068836)
+Mount-cache hash table entries: 512
+Compat vDSO mapped to ffffe000.
+CPU: NSC Unknown stepping 01
+Checking 'hlt' instruction... OK.
+Freeing SMP alternatives: 0k freed
+net_namespace: 64 bytes
+NET: Registered protocol family 16
+PCI: PCI BIOS revision 2.10 entry at 0xfc3ad, last bus=0
+PCI: Using configuration type 1
+Setting up standard PCI resources
+SCSI subsystem initialized
+PCI: Probing PCI hardware
+PCI: Device 0000:00:12.5 not found by BIOS
+Time: tsc clocksource has been installed.
+NET: Registered protocol family 2
+IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
+TCP established hash table entries: 2048 (order: 2, 16384 bytes)
+TCP bind hash table entries: 2048 (order: 1, 8192 bytes)
+TCP: Hash tables configured (established 2048 bind 2048)
+TCP reno registered
+scx200: NatSemi SCx200 Driver
+scx200: GPIO base 0xf400
+scx200: Configuration Block base 0x9000
+io scheduler noop registered (default)
+Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing disabled
+serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a NS16550A
+serial8250: ttyS1 at I/O 0x2f8 (irq = 3) is a NS16550A
+natsemi dp8381x driver, version 2.1, Sept 11, 2006
+  originally by Donald Becker <becker@scyld.com>
+  2.4.x kernel port by Jeff Garzik, Tjeerd Mulder
+natsemi eth0: NatSemi DP8381[56] at 0x80000000 (0000:00:0e.0), 
+00:0d:b9:00:8a:30, IRQ 10, port TP.
+scsi0 : sc1200
+scsi1 : sc1200
+ata1: PATA max UDMA/33 cmd 0x1f0 ctl 0x3f6 bmdma 0xfc00 irq 14
+ata2: DUMMY
+ata1.00: CFA: SanDisk SDCFH-1024, HDX 3.07, max MWDMA2
+ata1.00: 2001888 sectors, multi 0: LBA
+ata1.00: configured for MWDMA2
+scsi 0:0:0:0: Direct-Access     ATA      SanDisk SDCFH-10 HDX  PQ: 0 ANSI: 5
+sd 0:0:0:0: [sda] 2001888 512-byte hardware sectors (1025 MB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support 
+DPO or FUA
+sd 0:0:0:0: [sda] 2001888 512-byte hardware sectors (1025 MB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support 
+DPO or FUA
+ sda:<4>Clocksource tsc unstable (delta = -334501841 ns)
+Time: pit clocksource has been installed.
+ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 cdb 0x0 data 4096 in
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata1.00: status: { DRDY }
+ata1: soft resetting link
+ata1.00: configured for MWDMA2
+ata1: EH complete
+ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 cdb 0x0 data 4096 in
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata1.00: status: { DRDY }
+ata1: soft resetting link
+ata1.00: configured for MWDMA2
+ata1: EH complete
+ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 cdb 0x0 data 4096 in
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata1.00: status: { DRDY }
+ata1: soft resetting link
+ata1.00: configured for MWDMA2
+ata1: EH complete
+
+and continuing like this.
+
+.config
+#
+# Automatically generated make config: don't edit
+# Linux kernel version: 2.6.24-rc1-git10
+# Thu Nov  1 23:11:50 2007
+#
+CONFIG_X86_32=y
+CONFIG_GENERIC_TIME=y
+CONFIG_GENERIC_CMOS_UPDATE=y
+CONFIG_CLOCKSOURCE_WATCHDOG=y
+CONFIG_GENERIC_CLOCKEVENTS=y
+CONFIG_LOCKDEP_SUPPORT=y
+CONFIG_STACKTRACE_SUPPORT=y
+CONFIG_SEMAPHORE_SLEEPERS=y
+CONFIG_X86=y
+CONFIG_MMU=y
+CONFIG_ZONE_DMA=y
+CONFIG_QUICKLIST=y
+CONFIG_GENERIC_ISA_DMA=y
+CONFIG_GENERIC_IOMAP=y
+CONFIG_GENERIC_HWEIGHT=y
+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
+CONFIG_DMI=y
+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+
+#
+# General setup
+#
+CONFIG_EXPERIMENTAL=y
+CONFIG_BROKEN_ON_SMP=y
+CONFIG_INIT_ENV_ARG_LIMIT=32
+CONFIG_LOCALVERSION="-embedded"
+CONFIG_LOCALVERSION_AUTO=y
+# CONFIG_SWAP is not set
+# CONFIG_SYSVIPC is not set
+# CONFIG_POSIX_MQUEUE is not set
+# CONFIG_BSD_PROCESS_ACCT is not set
+# CONFIG_TASKSTATS is not set
+# CONFIG_USER_NS is not set
+# CONFIG_AUDIT is not set
+# CONFIG_IKCONFIG is not set
+CONFIG_LOG_BUF_SHIFT=17
+# CONFIG_CGROUPS is not set
+CONFIG_FAIR_GROUP_SCHED=y
+CONFIG_FAIR_USER_SCHED=y
+# CONFIG_FAIR_CGROUP_SCHED is not set
+# CONFIG_SYSFS_DEPRECATED is not set
+# CONFIG_RELAY is not set
+CONFIG_BLK_DEV_INITRD=y
+CONFIG_INITRAMFS_SOURCE=""
+CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+CONFIG_SYSCTL=y
+CONFIG_EMBEDDED=y
+CONFIG_UID16=y
+CONFIG_SYSCTL_SYSCALL=y
+# CONFIG_KALLSYMS is not set
+CONFIG_HOTPLUG=y
+CONFIG_PRINTK=y
+# CONFIG_BUG is not set
+# CONFIG_ELF_CORE is not set
+CONFIG_BASE_FULL=y
+CONFIG_FUTEX=y
+CONFIG_ANON_INODES=y
+CONFIG_EPOLL=y
+CONFIG_SIGNALFD=y
+CONFIG_EVENTFD=y
+# CONFIG_SHMEM is not set
+# CONFIG_VM_EVENT_COUNTERS is not set
+# CONFIG_SLUB_DEBUG is not set
+# CONFIG_SLAB is not set
+CONFIG_SLUB=y
+# CONFIG_SLOB is not set
+CONFIG_RT_MUTEXES=y
+CONFIG_TINY_SHMEM=y
+CONFIG_BASE_SMALL=0
+CONFIG_MODULES=y
+CONFIG_MODULE_UNLOAD=y
+CONFIG_MODULE_FORCE_UNLOAD=y
+# CONFIG_MODVERSIONS is not set
+# CONFIG_MODULE_SRCVERSION_ALL is not set
+CONFIG_KMOD=y
+CONFIG_BLOCK=y
+# CONFIG_LBD is not set
+# CONFIG_BLK_DEV_IO_TRACE is not set
+# CONFIG_LSF is not set
+# CONFIG_BLK_DEV_BSG is not set
+
+#
+# IO Schedulers
+#
+CONFIG_IOSCHED_NOOP=y
+# CONFIG_IOSCHED_AS is not set
+# CONFIG_IOSCHED_DEADLINE is not set
+# CONFIG_IOSCHED_CFQ is not set
+# CONFIG_DEFAULT_AS is not set
+# CONFIG_DEFAULT_DEADLINE is not set
+# CONFIG_DEFAULT_CFQ is not set
+CONFIG_DEFAULT_NOOP=y
+CONFIG_DEFAULT_IOSCHED="noop"
+
+#
+# Processor type and features
+#
+# CONFIG_TICK_ONESHOT is not set
+# CONFIG_NO_HZ is not set
+# CONFIG_HIGH_RES_TIMERS is not set
+CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
+# CONFIG_SMP is not set
+CONFIG_X86_PC=y
+# CONFIG_X86_ELAN is not set
+# CONFIG_X86_VOYAGER is not set
+# CONFIG_X86_NUMAQ is not set
+# CONFIG_X86_SUMMIT is not set
+# CONFIG_X86_BIGSMP is not set
+# CONFIG_X86_VISWS is not set
+# CONFIG_X86_GENERICARCH is not set
+# CONFIG_X86_ES7000 is not set
+CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
+# CONFIG_PARAVIRT_GUEST is not set
+# CONFIG_M386 is not set
+# CONFIG_M486 is not set
+# CONFIG_M586 is not set
+# CONFIG_M586TSC is not set
+# CONFIG_M586MMX is not set
+# CONFIG_M686 is not set
+# CONFIG_MPENTIUMII is not set
+# CONFIG_MPENTIUMIII is not set
+# CONFIG_MPENTIUMM is not set
+# CONFIG_MCORE2 is not set
+# CONFIG_MPENTIUM4 is not set
+# CONFIG_MK6 is not set
+# CONFIG_MK7 is not set
+# CONFIG_MK8 is not set
+# CONFIG_MCRUSOE is not set
+# CONFIG_MEFFICEON is not set
+# CONFIG_MWINCHIPC6 is not set
+# CONFIG_MWINCHIP2 is not set
+# CONFIG_MWINCHIP3D is not set
+CONFIG_MGEODEGX1=y
+# CONFIG_MGEODE_LX is not set
+# CONFIG_MCYRIXIII is not set
+# CONFIG_MVIAC3_2 is not set
+# CONFIG_MVIAC7 is not set
+# CONFIG_X86_GENERIC is not set
+CONFIG_X86_CMPXCHG=y
+CONFIG_X86_L1_CACHE_SHIFT=4
+CONFIG_X86_XADD=y
+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+# CONFIG_ARCH_HAS_ILOG2_U32 is not set
+# CONFIG_ARCH_HAS_ILOG2_U64 is not set
+CONFIG_GENERIC_CALIBRATE_DELAY=y
+CONFIG_X86_PPRO_FENCE=y
+CONFIG_X86_WP_WORKS_OK=y
+CONFIG_X86_INVLPG=y
+CONFIG_X86_BSWAP=y
+CONFIG_X86_POPAD_OK=y
+CONFIG_X86_ALIGNMENT_16=y
+CONFIG_X86_TSC=y
+CONFIG_X86_MINIMUM_CPU_FAMILY=4
+# CONFIG_HPET_TIMER is not set
+CONFIG_PREEMPT_NONE=y
+# CONFIG_PREEMPT_VOLUNTARY is not set
+# CONFIG_PREEMPT is not set
+# CONFIG_X86_UP_APIC is not set
+# CONFIG_X86_MCE is not set
+# CONFIG_VM86 is not set
+# CONFIG_TOSHIBA is not set
+# CONFIG_I8K is not set
+# CONFIG_X86_REBOOTFIXUPS is not set
+# CONFIG_MICROCODE is not set
+# CONFIG_X86_MSR is not set
+# CONFIG_X86_CPUID is not set
+
+#
+# Firmware Drivers
+#
+# CONFIG_EDD is not set
+# CONFIG_DELL_RBU is not set
+# CONFIG_DCDBAS is not set
+# CONFIG_DMIID is not set
+CONFIG_NOHIGHMEM=y
+# CONFIG_HIGHMEM4G is not set
+# CONFIG_HIGHMEM64G is not set
+CONFIG_VMSPLIT_3G=y
+# CONFIG_VMSPLIT_3G_OPT is not set
+# CONFIG_VMSPLIT_2G is not set
+# CONFIG_VMSPLIT_2G_OPT is not set
+# CONFIG_VMSPLIT_1G is not set
+CONFIG_PAGE_OFFSET=0xC0000000
+# CONFIG_X86_PAE is not set
+CONFIG_ARCH_FLATMEM_ENABLE=y
+CONFIG_ARCH_SPARSEMEM_ENABLE=y
+CONFIG_ARCH_SELECT_MEMORY_MODEL=y
+CONFIG_ARCH_POPULATES_NODE_MAP=y
+CONFIG_SELECT_MEMORY_MODEL=y
+CONFIG_FLATMEM_MANUAL=y
+# CONFIG_DISCONTIGMEM_MANUAL is not set
+# CONFIG_SPARSEMEM_MANUAL is not set
+CONFIG_FLATMEM=y
+CONFIG_FLAT_NODE_MEM_MAP=y
+CONFIG_SPARSEMEM_STATIC=y
+# CONFIG_SPARSEMEM_VMEMMAP_ENABLE is not set
+CONFIG_SPLIT_PTLOCK_CPUS=4
+# CONFIG_RESOURCES_64BIT is not set
+CONFIG_ZONE_DMA_FLAG=1
+CONFIG_BOUNCE=y
+CONFIG_NR_QUICK=1
+CONFIG_VIRT_TO_BUS=y
+# CONFIG_MATH_EMULATION is not set
+# CONFIG_MTRR is not set
+# CONFIG_SECCOMP is not set
+# CONFIG_HZ_100 is not set
+CONFIG_HZ_250=y
+# CONFIG_HZ_300 is not set
+# CONFIG_HZ_1000 is not set
+CONFIG_HZ=250
+# CONFIG_KEXEC is not set
+CONFIG_PHYSICAL_START=0x100000
+# CONFIG_RELOCATABLE is not set
+CONFIG_PHYSICAL_ALIGN=0x100000
+CONFIG_COMPAT_VDSO=y
+
+#
+# Power management options (ACPI, APM)
+#
+CONFIG_PM=y
+# CONFIG_PM_LEGACY is not set
+# CONFIG_PM_DEBUG is not set
+CONFIG_SUSPEND_UP_POSSIBLE=y
+# CONFIG_SUSPEND is not set
+CONFIG_HIBERNATION_UP_POSSIBLE=y
+# CONFIG_ACPI is not set
+
+#
+# CPU Frequency scaling
+#
+CONFIG_CPU_FREQ=y
+CONFIG_CPU_FREQ_TABLE=y
+# CONFIG_CPU_FREQ_DEBUG is not set
+CONFIG_CPU_FREQ_STAT=y
+# CONFIG_CPU_FREQ_STAT_DETAILS is not set
+CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
+# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE is not set
+CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+# CONFIG_CPU_FREQ_GOV_POWERSAVE is not set
+# CONFIG_CPU_FREQ_GOV_USERSPACE is not set
+# CONFIG_CPU_FREQ_GOV_ONDEMAND is not set
+# CONFIG_CPU_FREQ_GOV_CONSERVATIVE is not set
+
+#
+# CPUFreq processor drivers
+#
+# CONFIG_X86_POWERNOW_K6 is not set
+# CONFIG_X86_POWERNOW_K7 is not set
+# CONFIG_X86_POWERNOW_K8 is not set
+CONFIG_X86_GX_SUSPMOD=y
+# CONFIG_X86_SPEEDSTEP_CENTRINO is not set
+# CONFIG_X86_SPEEDSTEP_ICH is not set
+# CONFIG_X86_SPEEDSTEP_SMI is not set
+# CONFIG_X86_P4_CLOCKMOD is not set
+# CONFIG_X86_CPUFREQ_NFORCE2 is not set
+# CONFIG_X86_LONGRUN is not set
+# CONFIG_X86_E_POWERSAVER is not set
+
+#
+# shared options
+#
+# CONFIG_X86_SPEEDSTEP_LIB is not set
+CONFIG_CPU_IDLE=y
+CONFIG_CPU_IDLE_GOV_LADDER=y
+
+#
+# Bus options (PCI, PCMCIA, EISA, MCA, ISA)
+#
+CONFIG_PCI=y
+# CONFIG_PCI_GOBIOS is not set
+# CONFIG_PCI_GOMMCONFIG is not set
+# CONFIG_PCI_GODIRECT is not set
+CONFIG_PCI_GOANY=y
+CONFIG_PCI_BIOS=y
+CONFIG_PCI_DIRECT=y
+CONFIG_PCI_DOMAINS=y
+# CONFIG_PCIEPORTBUS is not set
+# CONFIG_ARCH_SUPPORTS_MSI is not set
+CONFIG_ISA_DMA_API=y
+# CONFIG_ISA is not set
+# CONFIG_MCA is not set
+CONFIG_SCx200=y
+CONFIG_SCx200HR_TIMER=y
+# CONFIG_PCCARD is not set
+# CONFIG_HOTPLUG_PCI is not set
+
+#
+# Executable file formats
+#
+CONFIG_BINFMT_ELF=y
+# CONFIG_BINFMT_AOUT is not set
+# CONFIG_BINFMT_MISC is not set
+
+#
+# Networking
+#
+CONFIG_NET=y
+
+#
+# Networking options
+#
+CONFIG_PACKET=y
+# CONFIG_PACKET_MMAP is not set
+CONFIG_UNIX=y
+# CONFIG_NET_KEY is not set
+CONFIG_INET=y
+# CONFIG_IP_MULTICAST is not set
+# CONFIG_IP_ADVANCED_ROUTER is not set
+CONFIG_IP_FIB_HASH=y
+# CONFIG_IP_PNP is not set
+# CONFIG_NET_IPIP is not set
+# CONFIG_NET_IPGRE is not set
+# CONFIG_ARPD is not set
+# CONFIG_SYN_COOKIES is not set
+# CONFIG_INET_AH is not set
+# CONFIG_INET_ESP is not set
+# CONFIG_INET_IPCOMP is not set
+# CONFIG_INET_XFRM_TUNNEL is not set
+# CONFIG_INET_TUNNEL is not set
+# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
+# CONFIG_INET_XFRM_MODE_TUNNEL is not set
+# CONFIG_INET_XFRM_MODE_BEET is not set
+# CONFIG_INET_LRO is not set
+# CONFIG_INET_DIAG is not set
+# CONFIG_TCP_CONG_ADVANCED is not set
+CONFIG_TCP_CONG_CUBIC=y
+CONFIG_DEFAULT_TCP_CONG="cubic"
+# CONFIG_TCP_MD5SIG is not set
+# CONFIG_IPV6 is not set
+# CONFIG_INET6_XFRM_TUNNEL is not set
+# CONFIG_INET6_TUNNEL is not set
+# CONFIG_NETWORK_SECMARK is not set
+# CONFIG_NETFILTER is not set
+# CONFIG_IP_DCCP is not set
+# CONFIG_IP_SCTP is not set
+# CONFIG_TIPC is not set
+# CONFIG_ATM is not set
+# CONFIG_BRIDGE is not set
+# CONFIG_VLAN_8021Q is not set
+# CONFIG_DECNET is not set
+# CONFIG_LLC2 is not set
+# CONFIG_IPX is not set
+# CONFIG_ATALK is not set
+# CONFIG_X25 is not set
+# CONFIG_LAPB is not set
+# CONFIG_ECONET is not set
+# CONFIG_WAN_ROUTER is not set
+# CONFIG_NET_SCHED is not set
+
+#
+# Network testing
+#
+# CONFIG_NET_PKTGEN is not set
+# CONFIG_HAMRADIO is not set
+# CONFIG_IRDA is not set
+# CONFIG_BT is not set
+# CONFIG_AF_RXRPC is not set
+
+#
+# Wireless
+#
+# CONFIG_CFG80211 is not set
+# CONFIG_WIRELESS_EXT is not set
+# CONFIG_MAC80211 is not set
+# CONFIG_IEEE80211 is not set
+# CONFIG_RFKILL is not set
+# CONFIG_NET_9P is not set
+
+#
+# Device Drivers
+#
+
+#
+# Generic Driver Options
+#
+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+# CONFIG_STANDALONE is not set
+# CONFIG_PREVENT_FIRMWARE_BUILD is not set
+CONFIG_FW_LOADER=y
+# CONFIG_SYS_HYPERVISOR is not set
+# CONFIG_CONNECTOR is not set
+# CONFIG_MTD is not set
+# CONFIG_PARPORT is not set
+CONFIG_BLK_DEV=y
+# CONFIG_BLK_DEV_FD is not set
+# CONFIG_BLK_CPQ_DA is not set
+# CONFIG_BLK_CPQ_CISS_DA is not set
+# CONFIG_BLK_DEV_DAC960 is not set
+# CONFIG_BLK_DEV_UMEM is not set
+# CONFIG_BLK_DEV_COW_COMMON is not set
+# CONFIG_BLK_DEV_LOOP is not set
+# CONFIG_BLK_DEV_NBD is not set
+# CONFIG_BLK_DEV_SX8 is not set
+# CONFIG_BLK_DEV_RAM is not set
+# CONFIG_CDROM_PKTCDVD is not set
+# CONFIG_ATA_OVER_ETH is not set
+CONFIG_MISC_DEVICES=y
+# CONFIG_IBM_ASM is not set
+# CONFIG_PHANTOM is not set
+# CONFIG_EEPROM_93CX6 is not set
+# CONFIG_SGI_IOC4 is not set
+# CONFIG_TIFM_CORE is not set
+# CONFIG_IDE is not set
+
+#
+# SCSI device support
+#
+# CONFIG_RAID_ATTRS is not set
+CONFIG_SCSI=y
+CONFIG_SCSI_DMA=y
+# CONFIG_SCSI_TGT is not set
+# CONFIG_SCSI_NETLINK is not set
+# CONFIG_SCSI_PROC_FS is not set
+
+#
+# SCSI support type (disk, tape, CD-ROM)
+#
+CONFIG_BLK_DEV_SD=y
+# CONFIG_CHR_DEV_ST is not set
+# CONFIG_CHR_DEV_OSST is not set
+# CONFIG_BLK_DEV_SR is not set
+# CONFIG_CHR_DEV_SG is not set
+# CONFIG_CHR_DEV_SCH is not set
+
+#
+# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
+#
+# CONFIG_SCSI_MULTI_LUN is not set
+# CONFIG_SCSI_CONSTANTS is not set
+# CONFIG_SCSI_LOGGING is not set
+# CONFIG_SCSI_SCAN_ASYNC is not set
+CONFIG_SCSI_WAIT_SCAN=m
+
+#
+# SCSI Transports
+#
+# CONFIG_SCSI_SPI_ATTRS is not set
+# CONFIG_SCSI_FC_ATTRS is not set
+# CONFIG_SCSI_ISCSI_ATTRS is not set
+# CONFIG_SCSI_SAS_LIBSAS is not set
+# CONFIG_SCSI_SRP_ATTRS is not set
+CONFIG_SCSI_LOWLEVEL=y
+# CONFIG_ISCSI_TCP is not set
+# CONFIG_BLK_DEV_3W_XXXX_RAID is not set
+# CONFIG_SCSI_3W_9XXX is not set
+# CONFIG_SCSI_ACARD is not set
+# CONFIG_SCSI_AACRAID is not set
+# CONFIG_SCSI_AIC7XXX is not set
+# CONFIG_SCSI_AIC7XXX_OLD is not set
+# CONFIG_SCSI_AIC79XX is not set
+# CONFIG_SCSI_AIC94XX is not set
+# CONFIG_SCSI_DPT_I2O is not set
+# CONFIG_SCSI_ADVANSYS is not set
+# CONFIG_SCSI_ARCMSR is not set
+# CONFIG_MEGARAID_NEWGEN is not set
+# CONFIG_MEGARAID_LEGACY is not set
+# CONFIG_MEGARAID_SAS is not set
+# CONFIG_SCSI_HPTIOP is not set
+# CONFIG_SCSI_BUSLOGIC is not set
+# CONFIG_SCSI_DMX3191D is not set
+# CONFIG_SCSI_EATA is not set
+# CONFIG_SCSI_FUTURE_DOMAIN is not set
+# CONFIG_SCSI_GDTH is not set
+# CONFIG_SCSI_IPS is not set
+# CONFIG_SCSI_INITIO is not set
+# CONFIG_SCSI_INIA100 is not set
+# CONFIG_SCSI_STEX is not set
+# CONFIG_SCSI_SYM53C8XX_2 is not set
+# CONFIG_SCSI_IPR is not set
+# CONFIG_SCSI_QLOGIC_1280 is not set
+# CONFIG_SCSI_QLA_FC is not set
+# CONFIG_SCSI_QLA_ISCSI is not set
+# CONFIG_SCSI_LPFC is not set
+# CONFIG_SCSI_DC395x is not set
+# CONFIG_SCSI_DC390T is not set
+# CONFIG_SCSI_NSP32 is not set
+# CONFIG_SCSI_DEBUG is not set
+# CONFIG_SCSI_SRP is not set
+CONFIG_ATA=y
+# CONFIG_ATA_NONSTANDARD is not set
+# CONFIG_SATA_AHCI is not set
+# CONFIG_SATA_SVW is not set
+# CONFIG_ATA_PIIX is not set
+# CONFIG_SATA_MV is not set
+# CONFIG_SATA_NV is not set
+# CONFIG_PDC_ADMA is not set
+# CONFIG_SATA_QSTOR is not set
+# CONFIG_SATA_PROMISE is not set
+# CONFIG_SATA_SX4 is not set
+# CONFIG_SATA_SIL is not set
+# CONFIG_SATA_SIL24 is not set
+# CONFIG_SATA_SIS is not set
+# CONFIG_SATA_ULI is not set
+# CONFIG_SATA_VIA is not set
+# CONFIG_SATA_VITESSE is not set
+# CONFIG_SATA_INIC162X is not set
+# CONFIG_PATA_ALI is not set
+# CONFIG_PATA_AMD is not set
+# CONFIG_PATA_ARTOP is not set
+# CONFIG_PATA_ATIIXP is not set
+# CONFIG_PATA_CMD640_PCI is not set
+# CONFIG_PATA_CMD64X is not set
+# CONFIG_PATA_CS5520 is not set
+CONFIG_PATA_CS5530=y
+CONFIG_PATA_CS5535=y
+CONFIG_PATA_CS5536=y
+# CONFIG_PATA_CYPRESS is not set
+# CONFIG_PATA_EFAR is not set
+# CONFIG_ATA_GENERIC is not set
+# CONFIG_PATA_HPT366 is not set
+# CONFIG_PATA_HPT37X is not set
+# CONFIG_PATA_HPT3X2N is not set
+# CONFIG_PATA_HPT3X3 is not set
+# CONFIG_PATA_IT821X is not set
+# CONFIG_PATA_IT8213 is not set
+# CONFIG_PATA_JMICRON is not set
+# CONFIG_PATA_TRIFLEX is not set
+# CONFIG_PATA_MARVELL is not set
+# CONFIG_PATA_MPIIX is not set
+# CONFIG_PATA_OLDPIIX is not set
+# CONFIG_PATA_NETCELL is not set
+# CONFIG_PATA_NS87410 is not set
+# CONFIG_PATA_NS87415 is not set
+# CONFIG_PATA_OPTI is not set
+# CONFIG_PATA_OPTIDMA is not set
+# CONFIG_PATA_PDC_OLD is not set
+# CONFIG_PATA_RADISYS is not set
+# CONFIG_PATA_RZ1000 is not set
+CONFIG_PATA_SC1200=y
+# CONFIG_PATA_SERVERWORKS is not set
+# CONFIG_PATA_PDC2027X is not set
+# CONFIG_PATA_SIL680 is not set
+# CONFIG_PATA_SIS is not set
+# CONFIG_PATA_VIA is not set
+# CONFIG_PATA_WINBOND is not set
+# CONFIG_PATA_PLATFORM is not set
+# CONFIG_MD is not set
+# CONFIG_FUSION is not set
+
+#
+# IEEE 1394 (FireWire) support
+#
+# CONFIG_FIREWIRE is not set
+# CONFIG_IEEE1394 is not set
+# CONFIG_I2O is not set
+# CONFIG_MACINTOSH_DRIVERS is not set
+CONFIG_NETDEVICES=y
+# CONFIG_NETDEVICES_MULTIQUEUE is not set
+# CONFIG_DUMMY is not set
+# CONFIG_BONDING is not set
+# CONFIG_MACVLAN is not set
+# CONFIG_EQUALIZER is not set
+# CONFIG_TUN is not set
+# CONFIG_VETH is not set
+# CONFIG_IP1000 is not set
+# CONFIG_ARCNET is not set
+# CONFIG_PHYLIB is not set
+CONFIG_NET_ETHERNET=y
+# CONFIG_MII is not set
+# CONFIG_HAPPYMEAL is not set
+# CONFIG_SUNGEM is not set
+# CONFIG_CASSINI is not set
+# CONFIG_NET_VENDOR_3COM is not set
+# CONFIG_NET_TULIP is not set
+# CONFIG_HP100 is not set
+# CONFIG_IBM_NEW_EMAC_ZMII is not set
+# CONFIG_IBM_NEW_EMAC_RGMII is not set
+# CONFIG_IBM_NEW_EMAC_TAH is not set
+# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
+CONFIG_NET_PCI=y
+# CONFIG_PCNET32 is not set
+# CONFIG_AMD8111_ETH is not set
+# CONFIG_ADAPTEC_STARFIRE is not set
+# CONFIG_B44 is not set
+# CONFIG_FORCEDETH is not set
+# CONFIG_EEPRO100 is not set
+# CONFIG_E100 is not set
+# CONFIG_FEALNX is not set
+CONFIG_NATSEMI=y
+# CONFIG_NE2K_PCI is not set
+# CONFIG_8139CP is not set
+# CONFIG_8139TOO is not set
+# CONFIG_SIS900 is not set
+# CONFIG_EPIC100 is not set
+# CONFIG_SUNDANCE is not set
+# CONFIG_TLAN is not set
+# CONFIG_VIA_RHINE is not set
+# CONFIG_SC92031 is not set
+# CONFIG_NETDEV_1000 is not set
+# CONFIG_NETDEV_10000 is not set
+# CONFIG_TR is not set
+
+#
+# Wireless LAN
+#
+# CONFIG_WLAN_PRE80211 is not set
+# CONFIG_WLAN_80211 is not set
+# CONFIG_WAN is not set
+# CONFIG_FDDI is not set
+# CONFIG_HIPPI is not set
+# CONFIG_PPP is not set
+# CONFIG_SLIP is not set
+# CONFIG_NET_FC is not set
+# CONFIG_SHAPER is not set
+# CONFIG_NETCONSOLE is not set
+# CONFIG_NETPOLL is not set
+# CONFIG_NET_POLL_CONTROLLER is not set
+# CONFIG_ISDN is not set
+# CONFIG_PHONE is not set
+
+#
+# Input device support
+#
+CONFIG_INPUT=y
+# CONFIG_INPUT_FF_MEMLESS is not set
+# CONFIG_INPUT_POLLDEV is not set
+
+#
+# Userland interfaces
+#
+# CONFIG_INPUT_MOUSEDEV is not set
+# CONFIG_INPUT_JOYDEV is not set
+# CONFIG_INPUT_EVDEV is not set
+# CONFIG_INPUT_EVBUG is not set
+
+#
+# Input Device Drivers
+#
+# CONFIG_INPUT_KEYBOARD is not set
+# CONFIG_INPUT_MOUSE is not set
+# CONFIG_INPUT_JOYSTICK is not set
+# CONFIG_INPUT_TABLET is not set
+# CONFIG_INPUT_TOUCHSCREEN is not set
+# CONFIG_INPUT_MISC is not set
+
+#
+# Hardware I/O ports
+#
+# CONFIG_SERIO is not set
+# CONFIG_GAMEPORT is not set
+
+#
+# Character devices
+#
+CONFIG_VT=y
+CONFIG_VT_CONSOLE=y
+CONFIG_HW_CONSOLE=y
+# CONFIG_VT_HW_CONSOLE_BINDING is not set
+# CONFIG_SERIAL_NONSTANDARD is not set
+
+#
+# Serial drivers
+#
+CONFIG_SERIAL_8250=y
+CONFIG_SERIAL_8250_CONSOLE=y
+CONFIG_FIX_EARLYCON_MEM=y
+CONFIG_SERIAL_8250_PCI=y
+CONFIG_SERIAL_8250_NR_UARTS=4
+CONFIG_SERIAL_8250_RUNTIME_UARTS=4
+# CONFIG_SERIAL_8250_EXTENDED is not set
+
+#
+# Non-8250 serial port support
+#
+CONFIG_SERIAL_CORE=y
+CONFIG_SERIAL_CORE_CONSOLE=y
+# CONFIG_SERIAL_JSM is not set
+# CONFIG_UNIX98_PTYS is not set
+CONFIG_LEGACY_PTYS=y
+CONFIG_LEGACY_PTY_COUNT=256
+# CONFIG_IPMI_HANDLER is not set
+# CONFIG_HW_RANDOM is not set
+# CONFIG_NVRAM is not set
+# CONFIG_RTC is not set
+# CONFIG_GEN_RTC is not set
+# CONFIG_R3964 is not set
+# CONFIG_APPLICOM is not set
+# CONFIG_SONYPI is not set
+# CONFIG_MWAVE is not set
+CONFIG_SCx200_GPIO=y
+# CONFIG_PC8736x_GPIO is not set
+CONFIG_NSC_GPIO=y
+# CONFIG_CS5535_GPIO is not set
+# CONFIG_RAW_DRIVER is not set
+# CONFIG_HANGCHECK_TIMER is not set
+# CONFIG_TCG_TPM is not set
+# CONFIG_TELCLOCK is not set
+CONFIG_DEVPORT=y
+# CONFIG_I2C is not set
+
+#
+# SPI support
+#
+# CONFIG_SPI is not set
+# CONFIG_SPI_MASTER is not set
+# CONFIG_W1 is not set
+# CONFIG_POWER_SUPPLY is not set
+# CONFIG_HWMON is not set
+CONFIG_WATCHDOG=y
+# CONFIG_WATCHDOG_NOWAYOUT is not set
+
+#
+# Watchdog Device Drivers
+#
+# CONFIG_SOFT_WATCHDOG is not set
+# CONFIG_ACQUIRE_WDT is not set
+# CONFIG_ADVANTECH_WDT is not set
+# CONFIG_ALIM1535_WDT is not set
+# CONFIG_ALIM7101_WDT is not set
+# CONFIG_SC520_WDT is not set
+# CONFIG_EUROTECH_WDT is not set
+# CONFIG_IB700_WDT is not set
+# CONFIG_IBMASR is not set
+# CONFIG_WAFER_WDT is not set
+# CONFIG_I6300ESB_WDT is not set
+# CONFIG_ITCO_WDT is not set
+# CONFIG_SC1200_WDT is not set
+CONFIG_SCx200_WDT=y
+# CONFIG_PC87413_WDT is not set
+# CONFIG_60XX_WDT is not set
+# CONFIG_SBC8360_WDT is not set
+# CONFIG_CPU5_WDT is not set
+# CONFIG_SMSC37B787_WDT is not set
+# CONFIG_W83627HF_WDT is not set
+# CONFIG_W83697HF_WDT is not set
+# CONFIG_W83877F_WDT is not set
+# CONFIG_W83977F_WDT is not set
+# CONFIG_MACHZ_WDT is not set
+# CONFIG_SBC_EPX_C3_WATCHDOG is not set
+
+#
+# PCI-based Watchdog Cards
+#
+# CONFIG_PCIPCWATCHDOG is not set
+# CONFIG_WDTPCI is not set
+
+#
+# Sonics Silicon Backplane
+#
+CONFIG_SSB_POSSIBLE=y
+# CONFIG_SSB is not set
+
+#
+# Multifunction device drivers
+#
+# CONFIG_MFD_SM501 is not set
+
+#
+# Multimedia devices
+#
+# CONFIG_VIDEO_DEV is not set
+# CONFIG_DVB_CORE is not set
+# CONFIG_DAB is not set
+
+#
+# Graphics support
+#
+# CONFIG_AGP is not set
+# CONFIG_DRM is not set
+# CONFIG_VGASTATE is not set
+# CONFIG_VIDEO_OUTPUT_CONTROL is not set
+# CONFIG_FB is not set
+# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
+
+#
+# Display device support
+#
+# CONFIG_DISPLAY_SUPPORT is not set
+
+#
+# Console display driver support
+#
+# CONFIG_VGA_CONSOLE is not set
+CONFIG_DUMMY_CONSOLE=y
+
+#
+# Sound
+#
+# CONFIG_SOUND is not set
+# CONFIG_HID_SUPPORT is not set
+# CONFIG_USB_SUPPORT is not set
+# CONFIG_MMC is not set
+# CONFIG_NEW_LEDS is not set
+# CONFIG_INFINIBAND is not set
+# CONFIG_EDAC is not set
+# CONFIG_RTC_CLASS is not set
+# CONFIG_DMADEVICES is not set
+# CONFIG_ALIZATION is not set
+
+#
+# Userspace I/O
+#
+# CONFIG_UIO is not set
+
+#
+# File systems
+#
+CONFIG_EXT2_FS=y
+# CONFIG_EXT2_FS_XATTR is not set
+# CONFIG_EXT2_FS_XIP is not set
+# CONFIG_EXT3_FS is not set
+# CONFIG_EXT4DEV_FS is not set
+# CONFIG_REISERFS_FS is not set
+# CONFIG_JFS_FS is not set
+# CONFIG_FS_POSIX_ACL is not set
+# CONFIG_XFS_FS is not set
+# CONFIG_GFS2_FS is not set
+# CONFIG_OCFS2_FS is not set
+# CONFIG_MINIX_FS is not set
+# CONFIG_ROMFS_FS is not set
+# CONFIG_INOTIFY is not set
+# CONFIG_QUOTA is not set
+# CONFIG_DNOTIFY is not set
+# CONFIG_AUTOFS_FS is not set
+# CONFIG_AUTOFS4_FS is not set
+# CONFIG_FUSE_FS is not set
+
+#
+# CD-ROM/DVD Filesystems
+#
+# CONFIG_ISO9660_FS is not set
+# CONFIG_UDF_FS is not set
+
+#
+# DOS/FAT/NT Filesystems
+#
+# CONFIG_MSDOS_FS is not set
+# CONFIG_VFAT_FS is not set
+# CONFIG_NTFS_FS is not set
+
+#
+# Pseudo filesystems
+#
+CONFIG_PROC_FS=y
+# CONFIG_PROC_KCORE is not set
+CONFIG_PROC_SYSCTL=y
+CONFIG_SYSFS=y
+# CONFIG_TMPFS is not set
+# CONFIG_HUGETLBFS is not set
+# CONFIG_HUGETLB_PAGE is not set
+# CONFIG_CONFIGFS_FS is not set
+
+#
+# Miscellaneous filesystems
+#
+# CONFIG_ADFS_FS is not set
+# CONFIG_AFFS_FS is not set
+# CONFIG_HFS_FS is not set
+# CONFIG_HFSPLUS_FS is not set
+# CONFIG_BEFS_FS is not set
+# CONFIG_BFS_FS is not set
+# CONFIG_EFS_FS is not set
+# CONFIG_CRAMFS is not set
+# CONFIG_VXFS_FS is not set
+# CONFIG_HPFS_FS is not set
+# CONFIG_QNX4FS_FS is not set
+# CONFIG_SYSV_FS is not set
+# CONFIG_UFS_FS is not set
+# CONFIG_NETWORK_FILESYSTEMS is not set
+
+#
+# Partition Types
+#
+# CONFIG_PARTITION_ADVANCED is not set
+CONFIG_MSDOS_PARTITION=y
+# CONFIG_NLS is not set
+# CONFIG_DLM is not set
+# CONFIG_INSTRUMENTATION is not set
+
+#
+# Kernel hacking
+#
+CONFIG_TRACE_IRQFLAGS_SUPPORT=y
+# CONFIG_PRINTK_TIME is not set
+# CONFIG_ENABLE_WARN_DEPRECATED is not set
+# CONFIG_ENABLE_MUST_CHECK is not set
+# CONFIG_MAGIC_SYSRQ is not set
+# CONFIG_UNUSED_SYMBOLS is not set
+# CONFIG_DEBUG_FS is not set
+# CONFIG_HEADERS_CHECK is not set
+# CONFIG_DEBUG_KERNEL is not set
+# CONFIG_SAMPLES is not set
+CONFIG_EARLY_PRINTK=y
+# CONFIG_DOUBLEFAULT is not set
+
+#
+# Security options
+#
+# CONFIG_KEYS is not set
+# CONFIG_SECURITY is not set
+# CONFIG_SECURITY_FILE_CAPABILITIES is not set
+# CONFIG_CRYPTO is not set
+
+#
+# Library routines
+#
+CONFIG_BITREVERSE=y
+# CONFIG_CRC_CCITT is not set
+# CONFIG_CRC16 is not set
+# CONFIG_CRC_ITU_T is not set
+CONFIG_CRC32=y
+# CONFIG_CRC7 is not set
+# CONFIG_LIBCRC32C is not set
+CONFIG_PLIST=y
+CONFIG_HAS_IOMEM=y
+CONFIG_HAS_IOPORT=y
+CONFIG_HAS_DMA=y
+CONFIG_GENERIC_HARDIRQS=y
+CONFIG_GENERIC_IRQ_PROBE=y
+CONFIG_X86_BIOS_REBOOT=y
+CONFIG_KTIME_SCALAR=y
+
+
+
+--
+Denys Fedoryshchenko
+Technical Manager
+Virtual ISP S.A.L.
+
