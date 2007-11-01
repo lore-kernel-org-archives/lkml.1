@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759327AbXKASuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759794AbXKASwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759327AbXKASuh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 14:50:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754783AbXKASu3
+	id S1759794AbXKASwx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 14:52:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbXKASwo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 14:50:29 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60285 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754692AbXKASu2 (ORCPT
+	Thu, 1 Nov 2007 14:52:44 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:41053 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752271AbXKASwo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 14:50:28 -0400
-Date: Thu, 1 Nov 2007 11:45:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de,
-       linux-usb-devel@lists.sourceforge.net, hjlipp@web.de, kkeil@suse.de,
-       i4ldeveloper@listserv.isdn4linux.de, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/2] usb_gigaset: suspend support [v2]
-Message-Id: <20071101114537.0091c8d1.akpm@linux-foundation.org>
-In-Reply-To: <472A18D7.7020703@imap.cc>
-References: <20071029185311.4C955FC04C@xenon.ts.pxnet.com>
-	<20071029214131.70EABFC043@xenon.ts.pxnet.com>
-	<20071030140124.984aba58.akpm@linux-foundation.org>
-	<472A18D7.7020703@imap.cc>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Nov 2007 14:52:44 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=GyEuMDT6w5M37SbXRsrtYtETOxvsmlirLx26RSQQXRuV+jSpI1JdlFvtdXJ13zUnF
+	9ghf3IXicdyuflb6jXGNg==
+Date: Thu, 1 Nov 2007 11:52:28 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Paul Jackson <pj@sgi.com>
+cc: Christoph Lameter <clameter@sgi.com>, Lee.Schermerhorn@hp.com,
+       linux-kernel@vger.kernel.org, ak@suse.de
+Subject: Re: [RFC] cpuset relative memory policies - second choice
+In-Reply-To: <20071031131949.b91bf383.pj@sgi.com>
+Message-ID: <alpine.DEB.0.9999.0711011145090.21823@chino.kir.corp.google.com>
+References: <20071031061729.18174.60384.sendpatchset@jackhammer.engr.sgi.com> <Pine.LNX.4.64.0710311157310.21799@schroedinger.engr.sgi.com> <20071031131949.b91bf383.pj@sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 01 Nov 2007 19:20:07 +0100
-Tilman Schmidt <tilman@imap.cc> wrote:
+On Wed, 31 Oct 2007, Paul Jackson wrote:
 
-> >> +static int gigaset_suspend(struct usb_interface *intf, pm_message_t message)
-> >> +{
-> >> +	struct cardstate *cs;
-> >> +	struct usb_cardstate *ucs;
-> >> +
-> >> +	if ((cs = usb_get_intfdata(intf)) == NULL ||
-> >> +	    (ucs = cs->hw.usb) == NULL) {
-> >> +		err("%s: no cardstate", __func__);
-> >> +		return -EFAULT;
-> >> +	}
-> > 
-> > Is the above reeeeeely needed?  I bet it never happens.
+> The basic reason that I went with an additional per-task modal
+> state, rather than a modal flag for each mbind, set_mempolicy and
+> get_mempolicy call was to reduce the likely rate of bugs in user
+> level C code using this API.
 > 
-> I'm a great believer in defensive programming. :-)
-> 
-> Anyway, to be sure these checks aren't needed, I would need the
-> assurance that the suspend and resume methods are serialized with
-> the probe and disconnect methods. Are they?
 
-dunno it beats me.  Not to my knowledge.  Perhaps Greg and Rafael would know?
+I think it may be more error prone to accidently leave off the 
+get_mempolicy() system call to use the system-wide numbering or for 
+user-level code to forget that the mode was already set (and now stored in 
+their task_struct) without a subsequent get_mempolicy() to revert back to 
+the default behavior.  Both of these problems can be addressed by checking 
+the *policy returned by get_mempolicy(), as you've coded it, but many 
+applications will probably ignore that overhead.
+
+Allowing the mode to be passed on each set_mempolicy() system call seems 
+better, this is where the nodemask is passed anyway so it's legitimate for 
+the caller to specify how that nodemask should be interpreted (either 
+system-wide or cpuset-wide).  This keeps all semantics of the nodemask to 
+a single invocation of a system call instead of setting policy modes with 
+get_mempolicy() and confusing the matter later.
+
+I think get_mempolicy() can remain unchanged because it will simply return 
+the contextualized nodemask in either case and would not require a mode to 
+be passed.
+
+		David
