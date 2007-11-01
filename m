@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756890AbXKARlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbXKARox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756890AbXKARlp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 13:41:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbXKARlh
+	id S1756193AbXKARox (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 13:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbXKARop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 13:41:37 -0400
-Received: from gw.goop.org ([64.81.55.164]:51872 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752524AbXKARlh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 13:41:37 -0400
-Message-ID: <472A0FBF.6040907@goop.org>
-Date: Thu, 01 Nov 2007 10:41:19 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Thu, 1 Nov 2007 13:44:45 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48518 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752461AbXKARoo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 13:44:44 -0400
+Date: Thu, 1 Nov 2007 10:44:43 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Paul Jackson <pj@sgi.com>
+cc: rientjes@google.com, Lee.Schermerhorn@hp.com, linux-kernel@vger.kernel.org,
+       ak@suse.de
+Subject: Re: [RFC] cpuset relative memory policies - second choice
+In-Reply-To: <20071101102616.826d45a1.pj@sgi.com>
+Message-ID: <Pine.LNX.4.64.0711011040030.29895@schroedinger.engr.sgi.com>
+References: <20071031061729.18174.60384.sendpatchset@jackhammer.engr.sgi.com>
+ <Pine.LNX.4.64.0710311157310.21799@schroedinger.engr.sgi.com>
+ <20071031131949.b91bf383.pj@sgi.com> <Pine.LNX.4.64.0710311402300.22599@schroedinger.engr.sgi.com>
+ <20071031214719.81f8293a.pj@sgi.com> <Pine.LNX.4.64.0710312221140.26444@schroedinger.engr.sgi.com>
+ <20071031233352.959c32d0.pj@sgi.com> <Pine.LNX.4.64.0711010604210.27666@schroedinger.engr.sgi.com>
+ <20071101090612.e0c86ddb.pj@sgi.com> <Pine.LNX.4.64.0711011006070.29468@schroedinger.engr.sgi.com>
+ <20071101102616.826d45a1.pj@sgi.com>
 MIME-Version: 1.0
-To: Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
-CC: Glauber de Oliveira Costa <gcosta@redhat.com>, lguest@ozlabs.org,
-       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       ak@suse.de, chrisw@sous-sol.org, tglx@linutronix.de,
-       anthony@codemonkey.ws, akpm@linux-foundation.org,
-       virtualization@lists.linux-foundation.org, mingo@elte.hu
-Subject: Re: [PATCH 3/16] read/write_crX, clts and wbinvd for 64-bit paravirt
-References: <C34FAA4C.17CA9%Keir.Fraser@cl.cam.ac.uk>
-In-Reply-To: <C34FAA4C.17CA9%Keir.Fraser@cl.cam.ac.uk>
-X-Enigmail-Version: 0.95.4
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Keir Fraser wrote:
-> volatile prevents the asm from being 'moved significantly', according to the
-> gcc manual. I take that to mean that reordering is not allowed.
->   
+On Thu, 1 Nov 2007, Paul Jackson wrote:
 
-That phrase doesn't appear in the gcc manual; in fact, it specifically
-says that reordering can happen:
+> Christoph wrote:
+> > The library interface can set flags to modify behavior.
+> 
+> A library such as libnuma can set them, yes, but not everyone uses
+> libnuma.  Basically everyone uses the standard C library, glibc, which
+> has the system call wrappers, but these wrappers should not be setting
+> optional flags.
+> 
+> We're going around in circles here, Christoph.
 
-    The `volatile' keyword indicates that the instruction has important
-    side-effects.  GCC will not delete a volatile `asm' if it is reachable.
-    (The instruction can still be deleted if GCC can prove that
-    control-flow will never reach the location of the instruction.)  Note
-    that even a volatile `asm' instruction can be moved relative to other
-    code, including across jump instructions.  For example, on many targets
-    there is a system register which can be set to control the rounding
-    mode of floating point operations.  You might try setting it with a
-    volatile `asm', like this PowerPC example:
+Yes and you keep missing the point focusing on stuff that is not relevant.
+Where did you get the rule that libraries should not be setting flags? 
+libraries do all sort of conversion before calling the kernel API.
 
-                asm volatile("mtfsf 255,%0" : : "f" (fpenv));
-                sum = x + y;
-
-    This will not work reliably, as the compiler may move the addition back
-    before the volatile `asm'.  To make it work you need to add an
-    artificial dependency to the `asm' referencing a variable in the code
-    you don't want moved, for example:
-
-             asm volatile ("mtfsf 255,%1" : "=X"(sum): "f"(fpenv));
-             sum = x + y;
-
-I take from this that it is not a good idea to assume "asm volatile" has
-any ordering effects at all.
-
-    J
+Look the libraries are a strong argument against the method of setting 
+task flags. If you are using multiple libraries some of which have been 
+updated and some of those which have not then setting a task flag can 
+have bad consequences. You want clean syscall behavior.
