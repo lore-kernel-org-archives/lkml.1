@@ -1,128 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759692AbXKAMLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758213AbXKAMUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759692AbXKAMLo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 08:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755717AbXKAMLg
+	id S1758213AbXKAMUZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 08:20:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbXKAMUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 08:11:36 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:35374 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754913AbXKAMLf (ORCPT
+	Thu, 1 Nov 2007 08:20:12 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47848 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751009AbXKAMUL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 08:11:35 -0400
-Date: Thu, 1 Nov 2007 13:11:33 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andreas Mohr <andi@lisas.de>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH/RFC] eradicate bashisms in scripts/patch-kernel
-Message-ID: <20071101121133.GA14807@rhlx01.hs-esslingen.de>
-References: <20071031211321.GA8363@rhlx01.hs-esslingen.de> <47290096.7080207@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47290096.7080207@oracle.com>
-X-Priority: none
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Thu, 1 Nov 2007 08:20:11 -0400
+Subject: Re: [PATCH 2/6] sched: make sched_slice() group scheduling savvy
+From: Peter Zijlstra <peterz@infradead.org>
+To: vatsa@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Mike Galbraith <efault@gmx.de>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+In-Reply-To: <1193918598.27652.262.camel@twins>
+References: <20071031211030.310581000@chello.nl>
+	 <20071031211248.796653000@chello.nl>
+	 <20071101113138.GA20788@linux.vnet.ibm.com>
+	 <1193917912.27652.258.camel@twins>  <1193918299.27652.260.camel@twins>
+	 <1193918598.27652.262.camel@twins>
+Content-Type: text/plain
+Date: Thu, 01 Nov 2007 13:20:08 +0100
+Message-Id: <1193919608.27652.277.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 31, 2007 at 03:24:22PM -0700, Randy Dunlap wrote:
-> Andreas Mohr wrote:
-> >- the "source" statement most likely needs the ./ prepended, as can be
-> >gathered from e.g. http://osdir.com/ml/colinux.devel/2005-12/msg00036.html
+On Thu, 2007-11-01 at 13:03 +0100, Peter Zijlstra wrote:
+> On Thu, 2007-11-01 at 12:58 +0100, Peter Zijlstra wrote:
 > 
-> That email isn't very convincing to me.
-
-Actually that place simply was where I found how the
-
-.: 188: .tmpver.eC4856.1: not found
-
-dash error that happened when I replaced the bash-specific "source"
-statement with its "." counterpart could be ""fixed"".
-
-> http://www.opengroup.org/onlinepubs/009695399/utilities/dot.html just says 
-> that
-> if <filename> does not contain a slash, the search PATH shall be used 
-> (searched).
-> If you want to prevent that, it's OK to use ./, but at least say that in the
-> patch description, please.
-
-So this part seems to indicate that merely prepending ./ is problematic,
-since ./ implies relative path resolution whereas $TMPFILE.1 could
-theoretically be an absolute path already.
-It would probably be best to add the ./ to mktemp already, to make sure
-we source *exactly* the filename expression we originally mktemp'd.
-
-OTOH prepending ./ to mktemp by default would deny mktemp any
-"search for a temporary-capable directory and create the file there"
-capabilities. Hmm. I should investigate POSIX shell sourcing
-mechanisms more.
-
-> >@@ -202,13 +202,7 @@
-> > EXTRAVER=
-> > if [ x$EXTRAVERSION != "x" ]
-> > then
-> >-	if [ ${EXTRAVERSION:0:1} == "." ]; then
-> >-		EXTRAVER=${EXTRAVERSION:1}
-> >-	else
-> >-		EXTRAVER=$EXTRAVERSION
-> >-	fi
-> >-	EXTRAVER=${EXTRAVER%%[[:punct:]]*}
-> >-	#echo "$PNAME: changing EXTRAVERSION from $EXTRAVERSION to $EXTRAVER"
+> > > sched_slice() is about lantecy, its intended purpose is to ensure each
+> > > task is ran exactly once during sched_period() - which is
+> > > sysctl_sched_latency when nr_running <= sysctl_sched_nr_latency, and
+> > > otherwise linearly scales latency.
 > 
-> What's the problem above?
+> The thing that got my brain in a twist is what to do about the non-leaf
+> nodes, for those it seems I'm not doing the right thing - I think.
 
-The variable manipulation seems bash-specific, the resulting dash error was:
-
-linux-2.6.23/scripts/patch-kernel: 205: Syntax error: Bad substitution
-
-which pointed at the
-
-	if [ ${EXTRAVERSION:0:1} == "." ]; then
-
-line.
-
-> > 
-> >-    SUBLEVEL=$((SUBLEVEL + 1))
-> >+    SUBLEVEL=$(( $SUBLEVEL + 1 ))
-> 
-> Why are the added spaces needed?
-
-They weren't strictly needed, what was needed was to add the missing $ sign
-(you could perhaps say that I added the spaces to emphasize the $ sign).
-Maybe they're best removed.
-
-> Did you look at
-> http://www.opengroup.org/onlinepubs/000095399/utilities/xcu_chap02.html ?
-
-No. I should have started by looking at the opengroup.org site when
-looking for POSIX specs...
-
-> 
-> >     FULLVERSION="$VERSION.$PATCHLEVEL.$SUBLEVEL"
-> >     #echo "#___ trying $FULLVERSION ___"
-> > 
-> >-    if [ $((SUBLEVEL)) -gt $((STOPSUBLEVEL)) ]; then
-> >+    if [ $SUBLEVEL -gt $STOPSUBLEVEL ]; then
-> 
-> What's the problem here?
-
-I got 
-
-linux-2.6.23/scripts/patch-kernel: 270: arith: syntax error: "SUBLEVEL"
-
-thus I simply removed braces since that "fixed" the issue.
-May be incorrect, though...
+Ok, suppose a tree like so:
 
 
-I'll think a bit more about these couple changed places (and whether
-this still truly works as intended) and mail a patch then.
+level 2                   cfs_rq
+                       A           B
 
-(and a big NOTE: I'm no POSIX vs. non-POSIX shell guru at all, only a
-semi-versed shell script writer, thus these changes should be reviewed
-quite thoroughly)
+level 1             cfs_rqA     cfs_rqB
+                     A0        B0 - B99
 
-Thanks for your very fast review,
 
-Andreas Mohr
+So for sake of determinism, we want to impose a period in which all
+level 1 tasks will have ran (at least) once.
+
+Now what sched_slice() does is calculate the weighted proportion of the
+given period for each task to run, so that each task runs exactly once.
+
+Now level 2, can introduce these large weight differences, which in this
+case result in 'lumps' of time.
+
+In the given example above the weight difference is 1:100, which is
+already at the edges of what regular nice levels could do.
+
+How about limiting the max output of sched_slice() to
+sysctl_sched_latency in order to break up these large stretches of time?
+
+Index: linux-2.6/kernel/sched_fair.c
+===================================================================
+--- linux-2.6.orig/kernel/sched_fair.c
++++ linux-2.6/kernel/sched_fair.c
+@@ -341,7 +341,7 @@ static u64 sched_slice(struct cfs_rq *cf
+ 		do_div(slice, cfs_rq->load.weight);
+ 	}
+ 
+-	return slice;
++	return min_t(u64, sysctl_sched_latency, slice);
+ }
+ 
+ /*
+
+
+
