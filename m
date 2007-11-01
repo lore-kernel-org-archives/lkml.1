@@ -1,66 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757993AbXKAW6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758251AbXKAXAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757993AbXKAW6T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 18:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753817AbXKAW6H
+	id S1758251AbXKAXAT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 19:00:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbXKAXAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 18:58:07 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56247
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754322AbXKAW6G (ORCPT
+	Thu, 1 Nov 2007 19:00:04 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:56615 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753079AbXKAXAB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 18:58:06 -0400
-Date: Thu, 01 Nov 2007 15:58:05 -0700 (PDT)
-Message-Id: <20071101.155805.65012933.davem@davemloft.net>
-To: clameter@sgi.com
-Cc: akpm@linux-foundation.org, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
-       penberg@cs.helsinki.fi
-Subject: Re: [patch 0/7] [RFC] SLUB: Improve allocpercpu to reduce per cpu
- access overhead
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0711011545370.23379@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0711011511450.22508@schroedinger.engr.sgi.com>
-	<20071101.153824.91808126.davem@davemloft.net>
-	<Pine.LNX.4.64.0711011545370.23379@schroedinger.engr.sgi.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Nov 2007 19:00:01 -0400
+Date: Thu, 1 Nov 2007 17:00:00 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Denys Vlasenko <vda.linux@googlemail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Hannes Reinecke <hare@suse.de>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] debloat aic7xxx and aic79xx drivers
+Message-ID: <20071101225959.GO15111@parisc-linux.org>
+References: <200710141558.27156.vda.linux@googlemail.com> <200710141600.10468.vda.linux@googlemail.com> <200710141601.08946.vda.linux@googlemail.com> <200710141602.16283.vda.linux@googlemail.com> <20071101221604.GB19914@parisc-linux.org> <20071101152328.be2a4515.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071101152328.be2a4515.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Lameter <clameter@sgi.com>
-Date: Thu, 1 Nov 2007 15:48:00 -0700 (PDT)
+On Thu, Nov 01, 2007 at 03:23:28PM -0700, Randy Dunlap wrote:
+> when attempting to apply to scsi-misc or linus-git or ... ?
 
-> On Thu, 1 Nov 2007, David Miller wrote:
-> 
-> > From: Christoph Lameter <clameter@sgi.com>
-> > Date: Thu, 1 Nov 2007 15:15:39 -0700 (PDT)
-> > 
-> > > After boot is complete we allow the reduction of the size of the per cpu 
-> > > areas . Lets say we only need 128k per cpu. Then the remaining pages will
-> > > be returned to the page allocator.
-> > 
-> > You don't know how much you will need.  I exhausted the limit on
-> > sparc64 very late in the boot process when the last few userland
-> > services were starting up.
-> 
-> Well you would be able to specify how much will remain. If not it will 
-> just keep the 2M reserve around.
-> 
-> > And if I subsequently bring up 100,000 IP tunnels, it will exhaust the
-> > per-cpu allocation area.
-> 
-> Each tunnel needs 4 bytes per cpu?
+scsi-misc
 
-Each IP compression tunnel instance does an alloc_percpu().
-
-Since you're the one who wants to change the semantics and guarentees
-of this interface, perhaps it might help if you did some greps around
-the tree to see how alloc_percpu() is actually used.  That's what
-I did when I started running into trouble with your patches.
-
-You cannot put limits of the amount of alloc_percpu() memory available
-to clients, please let's proceed with that basic understanding in
-mind.  We're wasting a ton of time discussing this fundamental issue.
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
