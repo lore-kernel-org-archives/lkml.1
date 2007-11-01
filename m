@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbXKAE5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756266AbXKAE7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756164AbXKAE5S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 00:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbXKAE5G
+	id S1756266AbXKAE7o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 00:59:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbXKAE7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 00:57:06 -0400
-Received: from coyote.holtmann.net ([217.160.111.169]:34598 "EHLO
-	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752993AbXKAE5F (ORCPT
+	Thu, 1 Nov 2007 00:59:36 -0400
+Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:65019 "EHLO
+	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751810AbXKAE7f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 00:57:05 -0400
-Subject: Re: [PATCH]bluetooth: hci_sysfs connection bus_id add support for
-	diffrent hci device
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       bluez-devel@lists.sourceforge.net
-In-Reply-To: <a8e1da0710311920sa7db787s604f154f201d3a1@mail.gmail.com>
-References: <20071031023017.GA3896@darkstar.te-china.tietoenator.com>
-	 <20071031.000141.241824894.davem@davemloft.net>
-	 <1193817409.32459.10.camel@violet>
-	 <a8e1da0710310213r1e4f3d7ckcbdf2e6bf854745e@mail.gmail.com>
-	 <1193824773.32459.22.camel@violet>
-	 <a8e1da0710311805l32282ce0ve9df9280cf7cce06@mail.gmail.com>
-	 <a8e1da0710311920sa7db787s604f154f201d3a1@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 01 Nov 2007 05:56:50 +0100
-Message-Id: <1193893010.32459.104.camel@violet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 1 Nov 2007 00:59:35 -0400
+Message-ID: <47295D36.8020207@lwfinger.net>
+Date: Wed, 31 Oct 2007 23:59:34 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>,
+       dDomen Puncer <domen.puncer@telargo.com>
+CC: Dale Farnsworth <dale@farnsworth.org>, Jeff Garzik <jeff@garzik.org>
+Subject: Build warning with 2.6.24-rc1: FEC_MPC52xx' refers to undefined symbols
+ 'PPC_BESTCOMM' and 'PPC_BESTCOMM_FEC'
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+Using the git sources described as v2.6.24-rc1-659-gb44af9d on x86_64 architecture, I get the
+following build warnings:
 
-> > > Maybe we can use this instead:
-> > > >       snprintf(conn->dev.bus_id, BUS_ID_SIZE,
-> > > > -                     "%s%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X",
-> > > > +                     "%s%s%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X",
-> > > > +                     hdev->name + 3,
-> > > >                       conn->type == ACL_LINK ? "acl" : "sco",
-> > > >                       ba->b[5], ba->b[4], ba->b[3],
-> > > >                       ba->b[2], ba->b[1], ba->b[0]);
-> > >
-> > > I had a look on how other subsystems handle this case and yes, they
-> > > duplicate the id number from its parent device. So I applied the
-> > > attached patch to my tree.
->
-> Sorry for my noise.
-> Theoretically, for the "%d-%s" version, overwrite is also possible.
-> 
-> hdev->id is u16, imagine the id is 65535, then total length is 21.
+scripts/kconfig/qconf arch/x86/Kconfig.x86_64
+drivers/net/Kconfig:1887:warning: 'select' used by config symbol 'FEC_MPC52xx' refers to undefined
+symbol 'PPC_BESTCOMM'
+drivers/net/Kconfig:1888:warning: 'select' used by config symbol 'FEC_MPC52xx' refers to undefined
+symbol 'PPC_BESTCOMM_FEC'
 
-even to reach 3 digits you have to attach 100 Bluetooth devices at the
-same time. Tell me when you have done that ;)
+The offending commit is
 
-However, as I said, we have to move to using the connection handle.
+commit 5d031e9e7e9ad5aa6516646f955c6262478e1acd
+Author: Domen Puncer <domen.puncer@telargo.com>
+Date:   Fri Oct 26 18:07:49 2007 +0200
 
-Regards
+    FEC - fast ethernet controller for mpc52xx
 
-Marcel
+    Driver for ethernet on mpc5200/mpc5200b SoCs (FEC).
+
+    Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
+    Acked-by: Dale Farnsworth <dale@farnsworth.org>
+    Signed-off-by: Jeff Garzik <jeff@garzik.org>
+
+Larry Finger
 
 
