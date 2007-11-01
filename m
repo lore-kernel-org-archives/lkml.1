@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754600AbXKAAlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754314AbXKAAvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754600AbXKAAlU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 20:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbXKAAlJ
+	id S1754314AbXKAAvR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 20:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbXKAAvD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 20:41:09 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:63259 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752080AbXKAAlG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 20:41:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=U+uJG2E98ZAN04SPVnQ87dsLuKM2Y8xP/eYfP5uI0UI9BsO1Q1nj2nemOEZBeEvtJhwlrjqH/BcXSrynwuDG8NqzDQ3nmEq1pu061AlrEOw9au8Rf9AA/6eCH4Fr5eib2DOB7tmTWPlTfq0uGHE7zJvTtnTDkhbXDniCoCC2e7A=
-Message-ID: <4729209A.50809@gmail.com>
-Date: Thu, 01 Nov 2007 09:40:58 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Jens Axboe <jens.axboe@oracle.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Drake <dsd@gentoo.org>,
-       linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
-Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
-References: <47274A5F.6070409@gentoo.org> <20071030153417.59b9182c@the-village.bc.nu> <47276DCA.1000808@gentoo.org> <20071030190153.373c9347@the-village.bc.nu> <47278439.4030801@gentoo.org> <20071031114958.210bd7cc@the-village.bc.nu> <20071031115754.GK5059@kernel.dk> <472872F6.70802@garzik.org>
-In-Reply-To: <472872F6.70802@garzik.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Oct 2007 20:51:03 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:48730 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752111AbXKAAvB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 20:51:01 -0400
+Date: Thu, 1 Nov 2007 11:50:56 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: linux-input@atrey.karlin.mff.cuni.cz,
+       linux-usb-devel@lists.sourceforge.net,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] hiddev: compat_ptr() returns a void *
+Message-Id: <20071101115056.fdf8a95c.sfr@canb.auug.org.au>
+In-Reply-To: <Pine.LNX.4.64.0710311217370.18815@twin.jikos.cz>
+References: <20071031145153.30f9d3dd.sfr@canb.auug.org.au>
+	<Pine.LNX.4.64.0710311217370.18815@twin.jikos.cz>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__1_Nov_2007_11_50_56_+1100_u5I=IRqrvhpb0kMh"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Jeff.
+--Signature=_Thu__1_Nov_2007_11_50_56_+1100_u5I=IRqrvhpb0kMh
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Jeff Garzik wrote:
-> That's easy for the PIO case.  But CD writing is normally DMA, which
-> means you will get a DMA engine exception if the device wants to give
-> you more data than the scatter/gather entries permit.
+On Wed, 31 Oct 2007 12:27:24 +0100 (CET) Jiri Kosina <jikos@jikos.cz> wrote:
+>
+> I already have this fixed in my tree, sorry.
 
-For sense data and mode pages, the standard-sanctioned way to know the
-transfer size is to issue command with short buffer size just enough to
-contain the fixed size header part, determine actual transfer size from
-it and issue the command again with the correct buffer size.  This
-doesn't happen for READ/WRITE commands.  Transfer sizes are
-pre-determined for those commands and WRITE's to optical devices often
-can't be retried w/o side effect.
+As long as it gets fixed, I don't mind.
 
-I've just went through the ATA spec and this basically means we can't
-use DMA for these variable-transfer-length commands.  Some DMA engines
-have "throw away what's left over bit" in its command structure or SG
-entry but not all do and none of drivers we currently has such feature
-enabled.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Hmmm.... reading ide-cd.c::cdrom_pc_intr().  OIC, ide-cd is dealing with
-this problem by draining PIO after BMDMA engine is done.  This is
-possible for BMDMA engines as they simply step out when the SG entries
-are exhausted; then, the interrupt handler kicks in and drains the
-left-over using PIO.  This just isn't possible with more modern DMA engines.
+--Signature=_Thu__1_Nov_2007_11_50_56_+1100_u5I=IRqrvhpb0kMh
+Content-Type: application/pgp-signature
 
-This really makes me think libata should do these commands via PIO
-unless we're gonna enable leftover draining for each DMA engine
-implementation or blacklist the ones which can't drain individually.
-Then again, nobody really knows how well those features would work as
-probably none has actually used them.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Thanks.
+iD8DBQFHKSL1TgG2atn1QN8RAujQAJ9rrz6BRc95JDFoQ2KOr5B2VYMqFQCfR/Ec
+ImFvpM0ogVEHeDdCOV4dQfQ=
+=xMui
+-----END PGP SIGNATURE-----
 
--- 
-tejun
+--Signature=_Thu__1_Nov_2007_11_50_56_+1100_u5I=IRqrvhpb0kMh--
