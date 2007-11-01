@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755627AbXKATyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759279AbXKATyg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755627AbXKATyU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 15:54:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754713AbXKATxw
+	id S1759279AbXKATyg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 15:54:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754763AbXKATxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 15:53:52 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:55242 "EHLO
+	Thu, 1 Nov 2007 15:53:53 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:55241 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754359AbXKATxu (ORCPT
+	with ESMTP id S1753610AbXKATxu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 1 Nov 2007 15:53:50 -0400
-Date: Thu, 1 Nov 2007 15:53:27 -0400
+Date: Thu, 1 Nov 2007 15:53:25 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: stable@kernel.org
 Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       Lepton Wu <ytht.net@gmail.com>
-Subject: [PATCH 4/4] UML - kill subprocesses on exit
-Message-ID: <20071101195327.GA8882@c2.user-mode-linux.org>
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: [PATCH 1/4] UML - Stop using libc asm/page.h
+Message-ID: <20071101195325.GA8871@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,92 +24,122 @@ User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit 5161a303c94d812dc854278b58faa1885a669a48
-Author: Lepton Wu <ytht.net@gmail.com>
-Date:   Tue Oct 16 01:27:35 2007 -0700
+commit cd56e0945db8a5cd3176dcff2319f9e0c96bcb50
+Author: Jeff Dike <jdike@addtoit.com>
+Date:   Tue Oct 16 01:26:44 2007 -0700
 
-    uml: definitively kill subprocesses on panic
+    uml: stop using libc asm/page.h
     
-    In a stock 2.6.22.6 kernel, poweroff a user mode linux guest (2.6.22.6 running
-    in skas0 mode) will halt the host linux.  I think the reason is the kernel
-    thread abort because of a bug.  Then the sys_reboot in process of user mode
-    linux guest is not trapped by the user mode linux kernel and is executed by
-    host.  I think it is better to make sure all of our children process to quit
-    when user mode linux kernel abort.
+    Remove includes of asm/page.h from libc code.  This header seems to be
+    disappearing, and UML doesn't make much use of it anyway.
     
-    [ jdike - the kernel process needs to ignore SIGTERM, plus the waitpid/kill
-    loop is needed to make sure that all of our children are dead before the
-    kernel exits ]
+    The one use, PAGE_SHIFT in stub.h, is handled by copying the constant from the
+    kernel side of the house in common_offsets.h.
     
-    Signed-off-by: Lepton Wu <ytht.net@gmail.com>
+    [ jdike - added arch/um/kernel/skas/clone.c for -stable ]
+    
     Signed-off-by: Jeff Dike <jdike@linux.intel.com>
     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 ---
- arch/um/os-Linux/skas/process.c |    2 +-
- arch/um/os-Linux/util.c         |   38 ++++++++++++++++++++++++++++++++++++++
- 2 files changed, 39 insertions(+), 1 deletion(-)
-
-diff --git a/arch/um/os-Linux/skas/process.c b/arch/um/os-Linux/skas/process.c
-index ba9af8d..607d2b8 100644
---- a/arch/um/os-Linux/skas/process.c
-+++ b/arch/um/os-Linux/skas/process.c
-@@ -182,7 +182,7 @@ static int userspace_tramp(void *stack)
+ arch/um/include/common-offsets.h   |    1 +
+ arch/um/include/sysdep-i386/stub.h |    3 +--
+ arch/um/kernel/skas/clone.c        |    1 -
+ arch/um/os-Linux/main.c            |    1 -
+ arch/um/os-Linux/skas/mem.c        |    1 -
+ arch/um/os-Linux/start_up.c        |    1 -
+ arch/um/os-Linux/tt.c              |    1 -
+ 7 files changed, 2 insertions(+), 7 deletions(-)
+diff --git a/arch/um/include/common-offsets.h b/arch/um/include/common-offsets.h
+index 6eee343..2378ff4 100644
+--- a/arch/um/include/common-offsets.h
++++ b/arch/um/include/common-offsets.h
+@@ -10,6 +10,7 @@ OFFSET(HOST_TASK_PID, task_struct, pid);
  
- 	ptrace(PTRACE_TRACEME, 0, 0, 0);
+ DEFINE(UM_KERN_PAGE_SIZE, PAGE_SIZE);
+ DEFINE(UM_KERN_PAGE_MASK, PAGE_MASK);
++DEFINE(UM_KERN_PAGE_SHIFT, PAGE_SHIFT);
+ DEFINE(UM_NSEC_PER_SEC, NSEC_PER_SEC);
  
--	init_new_thread_signals();
-+	signal(SIGTERM, SIG_DFL);
- 	err = set_interval(1);
- 	if(err)
- 		panic("userspace_tramp - setting timer failed, errno = %d\n",
-diff --git a/arch/um/os-Linux/util.c b/arch/um/os-Linux/util.c
-index 7cbcf48..ef09543 100644
---- a/arch/um/os-Linux/util.c
-+++ b/arch/um/os-Linux/util.c
-@@ -105,6 +105,44 @@ int setjmp_wrapper(void (*proc)(void *, void *), ...)
+ DEFINE_STR(UM_KERN_EMERG, KERN_EMERG);
+diff --git a/arch/um/include/sysdep-i386/stub.h b/arch/um/include/sysdep-i386/stub.h
+index 4fffae7..19c85f3 100644
+--- a/arch/um/include/sysdep-i386/stub.h
++++ b/arch/um/include/sysdep-i386/stub.h
+@@ -9,7 +9,6 @@
+ #include <sys/mman.h>
+ #include <asm/ptrace.h>
+ #include <asm/unistd.h>
+-#include <asm/page.h>
+ #include "stub-data.h"
+ #include "kern_constants.h"
+ #include "uml-config.h"
+@@ -19,7 +18,7 @@ extern void stub_clone_handler(void);
  
- void os_dump_core(void)
+ #define STUB_SYSCALL_RET EAX
+ #define STUB_MMAP_NR __NR_mmap2
+-#define MMAP_OFFSET(o) ((o) >> PAGE_SHIFT)
++#define MMAP_OFFSET(o) ((o) >> UM_KERN_PAGE_SHIFT)
+ 
+ static inline long stub_syscall0(long syscall)
  {
-+	int pid;
-+
- 	signal(SIGSEGV, SIG_DFL);
-+
-+	/*
-+	 * We are about to SIGTERM this entire process group to ensure that
-+	 * nothing is around to run after the kernel exits.  The
-+	 * kernel wants to abort, not die through SIGTERM, so we
-+	 * ignore it here.
-+	 */
-+
-+	signal(SIGTERM, SIG_IGN);
-+	kill(0, SIGTERM);
-+	/*
-+	 * Most of the other processes associated with this UML are
-+	 * likely sTopped, so give them a SIGCONT so they see the
-+	 * SIGTERM.
-+	 */
-+	kill(0, SIGCONT);
-+
-+	/*
-+	 * Now, having sent signals to everyone but us, make sure they
-+	 * die by ptrace.  Processes can survive what's been done to
-+	 * them so far - the mechanism I understand is receiving a
-+	 * SIGSEGV and segfaulting immediately upon return.  There is
-+	 * always a SIGSEGV pending, and (I'm guessing) signals are
-+	 * processed in numeric order so the SIGTERM (signal 15 vs
-+	 * SIGSEGV being signal 11) is never handled.
-+	 *
-+	 * Run a waitpid loop until we get some kind of error.
-+	 * Hopefully, it's ECHILD, but there's not a lot we can do if
-+	 * it's something else.  Tell os_kill_ptraced_process not to
-+	 * wait for the child to report its death because there's
-+	 * nothing reasonable to do if that fails.
-+	 */
-+
-+	while ((pid = waitpid(-1, NULL, WNOHANG)) > 0)
-+		os_kill_ptraced_process(pid, 0);
-+
- 	abort();
- }
-
+diff --git a/arch/um/kernel/skas/clone.c b/arch/um/kernel/skas/clone.c
+index 47b812b..885a125 100644
+--- a/arch/um/kernel/skas/clone.c
++++ b/arch/um/kernel/skas/clone.c
+@@ -3,7 +3,6 @@
+ #include <sys/mman.h>
+ #include <sys/time.h>
+ #include <asm/unistd.h>
+-#include <asm/page.h>
+ #include "ptrace_user.h"
+ #include "skas.h"
+ #include "stub-data.h"
+diff --git a/arch/um/os-Linux/main.c b/arch/um/os-Linux/main.c
+index e85f499..919c25b 100644
+--- a/arch/um/os-Linux/main.c
++++ b/arch/um/os-Linux/main.c
+@@ -12,7 +12,6 @@
+ #include <sys/resource.h>
+ #include <sys/mman.h>
+ #include <sys/user.h>
+-#include <asm/page.h>
+ #include "kern_util.h"
+ #include "as-layout.h"
+ #include "mem_user.h"
+diff --git a/arch/um/os-Linux/skas/mem.c b/arch/um/os-Linux/skas/mem.c
+index 0f7df4e..9fbf210 100644
+--- a/arch/um/os-Linux/skas/mem.c
++++ b/arch/um/os-Linux/skas/mem.c
+@@ -9,7 +9,6 @@
+ #include <unistd.h>
+ #include <sys/mman.h>
+ #include <sys/wait.h>
+-#include <asm/page.h>
+ #include <asm/unistd.h>
+ #include "mem_user.h"
+ #include "mem.h"
+diff --git a/arch/um/os-Linux/start_up.c b/arch/um/os-Linux/start_up.c
+index 46f6139..f4f2981 100644
+--- a/arch/um/os-Linux/start_up.c
++++ b/arch/um/os-Linux/start_up.c
+@@ -19,7 +19,6 @@
+ #include <sys/mman.h>
+ #include <sys/resource.h>
+ #include <asm/unistd.h>
+-#include <asm/page.h>
+ #include <sys/types.h>
+ #include "kern_util.h"
+ #include "user.h"
+diff --git a/arch/um/os-Linux/tt.c b/arch/um/os-Linux/tt.c
+index bcf9359..5dc113d 100644
+--- a/arch/um/os-Linux/tt.c
++++ b/arch/um/os-Linux/tt.c
+@@ -17,7 +17,6 @@
+ #include <sys/mman.h>
+ #include <asm/ptrace.h>
+ #include <asm/unistd.h>
+-#include <asm/page.h>
+ #include "kern_util.h"
+ #include "user.h"
+ #include "signal_kern.h"
