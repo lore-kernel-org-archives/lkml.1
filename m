@@ -1,72 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758827AbXKAXlE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759165AbXKAXpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758827AbXKAXlE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 19:41:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbXKAXkx
+	id S1759165AbXKAXpT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 19:45:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbXKAXpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 19:40:53 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36502 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753817AbXKAXkv (ORCPT
+	Thu, 1 Nov 2007 19:45:04 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:46456 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752876AbXKAXpD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 19:40:51 -0400
-Date: Thu, 1 Nov 2007 16:40:46 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Max Krasnyansky <maxk@qualcomm.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: Strange freezes (seems like SATA related)
-Message-Id: <20071101164046.462f40f0.akpm@linux-foundation.org>
-In-Reply-To: <47261043.5020907@qualcomm.com>
-References: <47261043.5020907@qualcomm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Nov 2007 19:45:03 -0400
+Date: Fri, 2 Nov 2007 00:44:43 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>,
+       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>
+Subject: Re: build #337 failed for 2.6.24-rc1-gb1d08ac In function
+	`usbnet_set_settings':
+Message-ID: <20071101234443.GD7227@stusta.de>
+References: <200711012024.57412.toralf.foerster@gmx.de> <20071101141124.0cbe2897.randy.dunlap@oracle.com> <200711011632.18333.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200711011632.18333.david-b@pacbell.net>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Oct 2007 09:54:27 -0700
-Max Krasnyansky <maxk@qualcomm.com> wrote:
+On Thu, Nov 01, 2007 at 04:32:18PM -0700, David Brownell wrote:
+> On Thursday 01 November 2007, Randy Dunlap wrote:
+> > The MII functions aren't available unless NET_ETHERNET=y.
 
-> A couple of HP xw9300 machines (dual Opterons) started freezing up.
-> We're running on 2.6.22.1 on them. Freezes a somewhere weird. VGA console is alive
-> (I can switch vts, etc) but everything else is dead (network, etc).
-> Unfortunately SYSRQ was not enabled and I could not get backtraces and stuff.
-> 
-> Hooked up serial console and the only error that shows up is this.
-> 
-> ata1: EH in ADMA mode, notifier 0x1 notifier_error 0x0 gen_ctl 0x1581000 status 0x1540 next cpb count 0x0 next cpb idx 0x0
-> ata1: CPB 0: ctl_flags 0xd, resp_flags 0x1
-> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-> ata1.00: cmd ca/00:08:57:00:80/00:00:00:00:00/e0 tag 0 cdb 0x0 data 4096 out
->          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> Descriptor sense data with sense descriptors (in hex):
-> end_request: I/O error, dev sda, sector 8388695
-> Buffer I/O error on device sda1, logical block 1048579
-> lost page write due to I/O error on sda1
-> sd 0:0:0:0: [sda] Write Protect is off
-> 
-> I see a bunch of those and then the box just sits there spewing this periodically
-> 
-> ata1: EH in ADMA mode, notifier 0x1 notifier_error 0x0 gen_ctl 0x1581000 status 0x1540 next cpb count 0x0 next cpb idx 0x0
-> ata1: CPB 0: ctl_flags 0xd, resp_flags 0x1
-> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-> ata1.00: cmd ca/00:08:4f:00:f8/00:00:00:00:00/e1 tag 0 cdb 0x0 data 4096 out
->          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> 
-> SMART selftest on the drive passed without errors.
-> 
-> Here is how this machine looks like
-> 
-> ...
+The setting of CONFIG_NET_ETHERNET doesn't matter for this bug.
 
-So this happens on more than one machine?
+> > Howver, the MII functions aren't always needed...
+> > 
+> > David, any ideas on this one?
+> 
+> It's been several years since I looked at this.  It
+> used to behave just fine.
+> 
+> Something must have changed in the not-too-distant
+> past to have broken this mechanism...
+>...
 
-The kernel shouldn't freeze, so even if both machines have magically
-identical hardware faults, there's a kernel bug there somewhere.
+It seems to be an old bug.
 
-I guess it would be useful to test a 2.6.23 kernel if poss.  We've seen a
-very large number of reports like this one in recent months (many of which
-have not been responded to, btw) and perhaps someone has done something
-about them.
+The following combination of options is simply an unusual one:
+
+CONFIG_MII=m
+CONFIG_USB_USBNET=y
+CONFIG_USB_USBNET_MII=n
+
+> - Dave
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
