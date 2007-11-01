@@ -1,76 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761554AbXKAPkB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756689AbXKAPnI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761554AbXKAPkB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 11:40:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757759AbXKAPjy
+	id S1756689AbXKAPnI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 11:43:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbXKAPm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 11:39:54 -0400
-Received: from atlrel8.hp.com ([156.153.255.206]:34512 "EHLO atlrel8.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757026AbXKAPjx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 11:39:53 -0400
-Subject: Re: [patch 1/4] spinlock: lockbreak cleanup
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, riel <riel@redhat.com>
-In-Reply-To: <20071101142932.GB2648@wotan.suse.de>
-References: <20071101140146.GA26879@wotan.suse.de>
-	 <20071101140241.GB26879@wotan.suse.de> <1193925965.27652.284.camel@twins>
-	 <20071101142932.GB2648@wotan.suse.de>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Thu, 01 Nov 2007 11:39:59 -0400
-Message-Id: <1193931599.5300.40.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Nov 2007 11:42:56 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57665 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754393AbXKAPm4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 11:42:56 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: [PATCH resend] proc: Fix proc_kill_inodes to kill dentries on all proc superblocks
+Date: Thu, 01 Nov 2007 09:39:45 -0600
+Message-ID: <m1ir4mezzy.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-11-01 at 15:29 +0100, Nick Piggin wrote:
-> On Thu, Nov 01, 2007 at 03:06:05PM +0100, Peter Zijlstra wrote:
-> > On Thu, 2007-11-01 at 15:02 +0100, Nick Piggin wrote:
-> > 
-> > > Rename need_lockbreak to spin_needbreak, make it use spin_is_contended to
-> > > decouple it from the spinlock implementation, and make it typesafe (rwlocks
-> > > do not have any need_lockbreak sites -- why do they even get bloated up
-> > > with that break_lock then?).
-> > 
-> > IIRC Lee has a few patches floating about that do introduce lockbreak
-> > stuff for rwlocks.
-> 
-> Well that would be a good reason to introduce a break_lock for them,
-> but previously not so much... we have rwlocks in some slightly space
-> critical structures (vmas, inodes, etc).
-> 
-> I guess it was done to make the "template" hacks eaiser. I don't really
-> find that in good taste, especially for important core infrastructure.
-> Anyway.
 
-Actually, what I had/have is a cond_resched_rwlock() that I needed to
-convert the i_mmap_lock() to rw for testing reclaim scalability.  [I've
-seen a large system running an Oracle OLTP load hang spitting "cpu soft
-lockup" messages with all cpus spinning on a i_mmap_lock spin lock.]
-One of the i_mmap_lock paths uses cond_resched_lock() for spin locks.
-To do a straight forward conversion [and maybe that isn't the right
-approach], I created the cond_resched_rwlock() function by generalizing
-the cond_sched_lock() code and creating both spin and rw lock wrappers.
-I took advantage of the fact that, currently, need_lockbreak() is a
-macro and that both spin and rw locks have/had the break_lock member.
-Typesafe functions would probably be preferrable, if we want to keep
-break_lock for rw spin locks.
+It appears we overlooked support for removing generic proc files
+when we added support for multiple proc super blocks.  Handle
+that now.
 
-Here's the most recent posting:
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ fs/proc/generic.c  |   38 +++++++++++++++++++++-----------------
+ fs/proc/internal.h |    2 ++
+ fs/proc/root.c     |    2 +-
+ 3 files changed, 24 insertions(+), 18 deletions(-)
 
-	http://marc.info/?l=linux-mm&m=118980356306014&w=4
-
-See the changes to sched.[ch].  Should apply to 23-mm1 with offsets and
-minor fixup in fs/inode.c.
-
-Lee
-
-
+diff --git a/fs/proc/generic.c b/fs/proc/generic.c
+index 1bdb624..3906770 100644
+--- a/fs/proc/generic.c
++++ b/fs/proc/generic.c
+@@ -561,28 +561,32 @@ static int proc_register(struct proc_dir_entry * dir, struct proc_dir_entry * dp
+ static void proc_kill_inodes(struct proc_dir_entry *de)
+ {
+ 	struct list_head *p;
+-	struct super_block *sb = proc_mnt->mnt_sb;
++	struct super_block *sb;
+ 
+ 	/*
+ 	 * Actually it's a partial revoke().
+ 	 */
+-	file_list_lock();
+-	list_for_each(p, &sb->s_files) {
+-		struct file * filp = list_entry(p, struct file, f_u.fu_list);
+-		struct dentry * dentry = filp->f_path.dentry;
+-		struct inode * inode;
+-		const struct file_operations *fops;
+-
+-		if (dentry->d_op != &proc_dentry_operations)
+-			continue;
+-		inode = dentry->d_inode;
+-		if (PDE(inode) != de)
+-			continue;
+-		fops = filp->f_op;
+-		filp->f_op = NULL;
+-		fops_put(fops);
++	spin_lock(&sb_lock);
++	list_for_each_entry(sb, &proc_fs_type.fs_supers, s_instances) {
++		file_list_lock();
++		list_for_each(p, &sb->s_files) {
++			struct file * filp = list_entry(p, struct file, f_u.fu_list);
++			struct dentry * dentry = filp->f_path.dentry;
++			struct inode * inode;
++			const struct file_operations *fops;
++
++			if (dentry->d_op != &proc_dentry_operations)
++				continue;
++			inode = dentry->d_inode;
++			if (PDE(inode) != de)
++				continue;
++			fops = filp->f_op;
++			filp->f_op = NULL;
++			fops_put(fops);
++		}
++		file_list_unlock();
+ 	}
+-	file_list_unlock();
++	spin_unlock(&sb_lock);
+ }
+ 
+ static struct proc_dir_entry *proc_create(struct proc_dir_entry **parent,
+diff --git a/fs/proc/internal.h b/fs/proc/internal.h
+index 1820eb2..1b2b6c6 100644
+--- a/fs/proc/internal.h
++++ b/fs/proc/internal.h
+@@ -78,3 +78,5 @@ static inline int proc_fd(struct inode *inode)
+ {
+ 	return PROC_I(inode)->fd;
+ }
++
++extern struct file_system_type proc_fs_type;
+diff --git a/fs/proc/root.c b/fs/proc/root.c
+index ec9cb3b..1f86bb8 100644
+--- a/fs/proc/root.c
++++ b/fs/proc/root.c
+@@ -98,7 +98,7 @@ static void proc_kill_sb(struct super_block *sb)
+ 	put_pid_ns(ns);
+ }
+ 
+-static struct file_system_type proc_fs_type = {
++struct file_system_type proc_fs_type = {
+ 	.name		= "proc",
+ 	.get_sb		= proc_get_sb,
+ 	.kill_sb	= proc_kill_sb,
+-- 
+1.5.3.rc6.17.g1911
 
