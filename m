@@ -1,60 +1,283 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757626AbXKAH5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758658AbXKAH5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757626AbXKAH5k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 03:57:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755392AbXKAH5a
+	id S1758658AbXKAH5x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 03:57:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756615AbXKAH5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 03:57:30 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41979
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753729AbXKAH53 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 03:57:29 -0400
-Date: Thu, 01 Nov 2007 00:57:27 -0700 (PDT)
-Message-Id: <20071101.005727.218970168.davem@davemloft.net>
-To: dada1@cosmosbay.com
-Cc: clameter@sgi.com, akpm@linux-foundation.org, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
-       penberg@cs.helsinki.fi
-Subject: Re: [patch 0/7] [RFC] SLUB: Improve allocpercpu to reduce per cpu
- access overhead
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <47297DA6.5070904@cosmosbay.com>
-References: <20071101000211.970501947@sgi.com>
-	<47297DA6.5070904@cosmosbay.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Nov 2007 03:57:35 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:34594 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1755858AbXKAH5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 03:57:34 -0400
+Message-ID: <393903856.06449@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Thu, 1 Nov 2007 15:57:30 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Torsten Kaiser <just.for.lkml@googlemail.com>
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 100% iowait on one of cpus in current -git
+References: <200710220822.52370.maximlevitsky@gmail.com> <200710221421.21439.maximlevitsky@gmail.com> <393056632.00561@ustc.edu.cn> <200710221505.35397.maximlevitsky@gmail.com> <20071022131045.GA5357@mail.ustc.edu.cn> <393060478.03650@ustc.edu.cn> <64bb37e0710310822r5ca6b793p8fd97db2f72a8655@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="fUYQa+Pmc3FrFX/N"
+Content-Disposition: inline
+In-Reply-To: <64bb37e0710310822r5ca6b793p8fd97db2f72a8655@mail.gmail.com>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <E1InUvi-0002gG-47@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Dumazet <dada1@cosmosbay.com>
-Date: Thu, 01 Nov 2007 08:17:58 +0100
 
-> Say we reserve on x86_64 a really huge (2^32 bytes) area, and change
-> VM layout so that each cpu maps its own per_cpu area on this area,
-> so that the local per_cpu data sits in the same virtual address on
-> each cpu.
+--fUYQa+Pmc3FrFX/N
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-This is a mechanism used partially on IA64 already.
+On Wed, Oct 31, 2007 at 04:22:10PM +0100, Torsten Kaiser wrote:
+> On 10/22/07, Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
+> > On Mon, Oct 22, 2007 at 09:10:45PM +0800, Fengguang Wu wrote:
+> > > Hmm, Maybe it's an reiserfs related issue.  Do you have the full log file?
+> >
+> > Bingo! It can be reproduced in -mm on reiserfs:
+> >
+> > # mkfs.reiserfs /dev/sdb1
+> > # mount /dev/sdb1 /test
+> > # cp bin /test
+> > <wait for a while>
+> > # dmesg
+> > [...]
+> > [  418.346113] requeue_io 308: inode 6 size 302 at 08:11(sdb1)
+> > [  418.346119] requeue_io 308: inode 7 size 196 at 08:11(sdb1)
+> > [  418.346125] requeue_io 308: inode 8 size 85 at 08:11(sdb1)
+> 
+> Since 2.6.23-mm1 I also experience strange hangs during heavy writeouts.
+> Each time I noticed this I was using emerge (package util from the
+> gentoo distribution) to install/upgrade a package. The last step,
+> where this hang occurred, is moving the prepared files from a tmpfs
+> partion to the main xfs filesystem.
+> The hangs where not fatal, after a few second everything resumed
+> normal, so I was not able to capture a good image of what was
+> happening.
 
-I think you have to be very careful, and you can only use this per-cpu
-fixed virtual address area in extremely limited cases.
+Thank you for the detailed report.
 
-The reason is, I think the address matters, consider list heads, for
-example.
+How severe was the hangs? Only writeouts stalled, all apps stalled, or
+cannot type and run new commands?
 
-So you couldn't do:
+> Today it happend again, but a little more obvious. During the moving
+> process the writeout stalled completly for several minutes until I hit
+> SysRq+W.
+> 
+> /proc/meminfo:
+> MemTotal:      4061808 kB
+> MemFree:        881332 kB
+> Buffers:             0 kB
+> Cached:        2566628 kB
+> SwapCached:         64 kB
+> Active:         926612 kB
+> Inactive:      1959136 kB
+> SwapTotal:     9775416 kB
+> SwapFree:      9775296 kB
+> Dirty:           44948 kB
+> Writeback:           0 kB
+> AnonPages:      319068 kB
+> Mapped:          52844 kB
+> Slab:           235572 kB
+> SReclaimable:   164408 kB
+> SUnreclaim:      71164 kB
+> PageTables:       9576 kB
+> NFS_Unstable:        0 kB
+> Bounce:              0 kB
+> CommitLimit:  11806320 kB
+> Committed_AS:   544520 kB
+> VmallocTotal: 34359738367 kB
+> VmallocUsed:     35004 kB
+> VmallocChunk: 34359702447 kB
+> HugePages_Total:     0
+> HugePages_Free:      0
+> HugePages_Rsvd:      0
+> HugePages_Surp:      0
+> Hugepagesize:     2048 kB
+> 
+> The 'Dirty' count did not decrease during this time and 'Writeback' stayed at 0.
+> I also have /proc/pagetypeinfo ,but I see nothing interessing in
+> there. (But will send it, if needed)
+> 
+> The output from SysRq+W:
+> SysRq : Show Blocked State
+>   task                        PC stack   pid father
+> pdflush       D ffff81001fcc2a88     0   285      2
+>  ffff810005d55580 0000000000000046 0000000000000800 0000007000000001
+>  0000000000000400 ffffffff8022d61c ffffffff80817b00 ffffffff80817b00
+>  ffffffff80813f40 ffffffff80817b00 ffff810100893b18 0000000000000000
+> Call Trace:
+>  [<ffffffff8022d61c>] task_rq_lock+0x4c/0x90
+>  [<ffffffff8022c8ea>] __wake_up_common+0x5a/0x90
+>  [<ffffffff805b14c7>] __down+0xa7/0x11e
+>  [<ffffffff8022da70>] default_wake_function+0x0/0x10
+>  [<ffffffff805b1145>] __down_failed+0x35/0x3a
+>  [<ffffffff803750be>] xfs_buf_lock+0x3e/0x40
+>  [<ffffffff803771fe>] _xfs_buf_find+0x13e/0x240
+>  [<ffffffff8037736f>] xfs_buf_get_flags+0x6f/0x190
+>  [<ffffffff803774a2>] xfs_buf_read_flags+0x12/0xa0
+>  [<ffffffff80368614>] xfs_trans_read_buf+0x64/0x340
+>  [<ffffffff80352151>] xfs_itobp+0x81/0x1e0
+>  [<ffffffff803759de>] xfs_buf_rele+0x2e/0xd0
+>  [<ffffffff80354afe>] xfs_iflush+0xfe/0x520
+>  [<ffffffff803ae3b2>] __down_read_trylock+0x42/0x60
+>  [<ffffffff80355a72>] xfs_inode_item_push+0x12/0x20
+>  [<ffffffff80368037>] xfs_trans_push_ail+0x267/0x2b0
+>  [<ffffffff8035a33b>] xlog_ticket_get+0xfb/0x140
+>  [<ffffffff8035c5ae>] xfs_log_reserve+0xee/0x120
+>  [<ffffffff803669e8>] xfs_trans_reserve+0xa8/0x210
+>  [<ffffffff8035703a>] xfs_iomap_write_allocate+0xfa/0x410
+>  [<ffffffff804ce67a>] __split_bio+0x38a/0x3c0
+>  [<ffffffff80373657>] xfs_start_page_writeback+0x27/0x60
+>  [<ffffffff8035660c>] xfs_iomap+0x26c/0x310
+>  [<ffffffff803735d8>] xfs_map_blocks+0x38/0x90
+>  [<ffffffff80374a88>] xfs_page_state_convert+0x2b8/0x630
+>  [<ffffffff80374f5f>] xfs_vm_writepage+0x6f/0x120
+>  [<ffffffff8026acda>] __writepage+0xa/0x30
+>  [<ffffffff8026b2ce>] write_cache_pages+0x23e/0x330
+>  [<ffffffff8026acd0>] __writepage+0x0/0x30
+>  [<ffffffff80354db7>] xfs_iflush+0x3b7/0x520
+>  [<ffffffff80375782>] _xfs_buf_ioapply+0x222/0x320
+>  [<ffffffff803ae451>] __up_read+0x21/0xb0
+>  [<ffffffff8034f22c>] xfs_iunlock+0x5c/0xc0
+>  [<ffffffff8026b410>] do_writepages+0x20/0x40
+>  [<ffffffff802b36a0>] __writeback_single_inode+0xb0/0x380
+>  [<ffffffff804d052e>] dm_table_any_congested+0x2e/0x80
+>  [<ffffffff802b3d8d>] generic_sync_sb_inodes+0x20d/0x330
+>  [<ffffffff802b4322>] writeback_inodes+0xa2/0xe0
+>  [<ffffffff8026bde6>] wb_kupdate+0xa6/0x120
+>  [<ffffffff8026c2a0>] pdflush+0x0/0x1e0
+>  [<ffffffff8026c3b0>] pdflush+0x110/0x1e0
+>  [<ffffffff8026bd40>] wb_kupdate+0x0/0x120
+>  [<ffffffff8024a32b>] kthread+0x4b/0x80
+>  [<ffffffff8020c9d8>] child_rip+0xa/0x12
+>  [<ffffffff8024a2e0>] kthread+0x0/0x80
+>  [<ffffffff8020c9ce>] child_rip+0x0/0x12
+> 
+> emerge        D ffff81001fcc2a88     0  3221   8163
+>  ffff81008c0679f8 0000000000000086 ffff81008c067988 ffffffff8024a719
+>  ffff8100060fb008 ffffffff8022c8ea ffffffff80817b00 ffffffff80817b00
+>  ffffffff80813f40 ffffffff80817b00 ffff810100893b18 0000000000000000
+> Call Trace:
+>  [<ffffffff8024a719>] autoremove_wake_function+0x9/0x30
+>  [<ffffffff8022c8ea>] __wake_up_common+0x5a/0x90
+>  [<ffffffff8022c8ea>] __wake_up_common+0x5a/0x90
+>  [<ffffffff805b14c7>] __down+0xa7/0x11e
+>  [<ffffffff8022da70>] default_wake_function+0x0/0x10
+>  [<ffffffff805b1145>] __down_failed+0x35/0x3a
+>  [<ffffffff803750be>] xfs_buf_lock+0x3e/0x40
+>  [<ffffffff803771fe>] _xfs_buf_find+0x13e/0x240
+>  [<ffffffff8037736f>] xfs_buf_get_flags+0x6f/0x190
+>  [<ffffffff803774a2>] xfs_buf_read_flags+0x12/0xa0
+>  [<ffffffff80368614>] xfs_trans_read_buf+0x64/0x340
+>  [<ffffffff80352151>] xfs_itobp+0x81/0x1e0
+>  [<ffffffff803759de>] xfs_buf_rele+0x2e/0xd0
+>  [<ffffffff80354afe>] xfs_iflush+0xfe/0x520
+>  [<ffffffff803ae3b2>] __down_read_trylock+0x42/0x60
+>  [<ffffffff80355a72>] xfs_inode_item_push+0x12/0x20
+>  [<ffffffff80368037>] xfs_trans_push_ail+0x267/0x2b0
+>  [<ffffffff8035c532>] xfs_log_reserve+0x72/0x120
+>  [<ffffffff803669e8>] xfs_trans_reserve+0xa8/0x210
+>  [<ffffffff80372fe2>] kmem_zone_zalloc+0x32/0x50
+>  [<ffffffff8035242b>] xfs_itruncate_finish+0xfb/0x310
+>  [<ffffffff8036d8db>] xfs_free_eofblocks+0x23b/0x280
+>  [<ffffffff80371d83>] xfs_release+0x153/0x200
+>  [<ffffffff80377e00>] xfs_file_release+0x10/0x20
+>  [<ffffffff80294041>] __fput+0xb1/0x220
+>  [<ffffffff80290e94>] filp_close+0x54/0x90
+>  [<ffffffff802927af>] sys_close+0x9f/0x100
+>  [<ffffffff8020bbbe>] system_call+0x7e/0x83
+> 
+> 
+> After this SysRq+W writeback resumed again. Possible that writing
+> above into the syslog triggered that.
 
-	list_add(&obj->list, &per_cpu_ptr(list_head));
+Maybe. Are the log files on another disk/partition?
 
-and use that per-cpu fixed virtual address.
+> The source tmpfs is mounted with any special parameters, but the
+> target xfs filesystem resides on a dm-crypt device that is on top a 3
+> disk RAID5 md.
+> During the hang all CPUs where idle.
 
-IA64 seems to use it universally for every __get_cpu_var()
-access, so maybe it works out somehow :-)))
+No iowaits? ;-)
 
-I guess if list modifications by remote cpus are disallowed, it would
-work (list traversal works because using the fixed virtual address as
-the list head sentinal is OK), but that is an extremely fragile
-assumption to base the entire mechanism upon.
+> The system is x86_64 with CONFIG_NO_HZ=y, but was still receiving ~330
+> interrupts per second because of the bttv driver. (But I was not using
+> that device at this time.)
+> 
+> I'm willing to test patches or more provide more information, but lack
+> a good testcase to trigger this on demand.
+
+Thank you. Maybe we can start by the applied debug patch :-)
+
+Fengguang
+
+--fUYQa+Pmc3FrFX/N
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: attachment; filename="writeback-debug.patch"
+
+---
+ mm/page-writeback.c |   23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+--- linux-2.6.23-rc8-mm2.orig/mm/page-writeback.c
++++ linux-2.6.23-rc8-mm2/mm/page-writeback.c
+@@ -98,6 +98,26 @@ EXPORT_SYMBOL(laptop_mode);
+ 
+ /* End of sysctl-exported parameters */
+ 
++#define writeback_debug_report(n, wbc) do {                               \
++	__writeback_debug_report(n, wbc, __FILE__, __LINE__, __FUNCTION__); \
++} while (0)
++
++void __writeback_debug_report(long n, struct writeback_control *wbc,
++		const char *file, int line, const char *func)
++{
++	printk("%s %d %s: %s(%d) %ld "
++			"global %lu %lu %lu "
++			"wc %c%c tw %ld sk %ld\n",
++			file, line, func,
++			current->comm, current->pid, n,
++			global_page_state(NR_FILE_DIRTY),
++			global_page_state(NR_WRITEBACK),
++			global_page_state(NR_UNSTABLE_NFS),
++			wbc->encountered_congestion ? 'C':'_',
++			wbc->more_io ? 'M':'_',
++			wbc->nr_to_write,
++			wbc->pages_skipped);
++}
+ 
+ static void background_writeout(unsigned long _min_pages);
+ 
+@@ -404,6 +424,7 @@ static void balance_dirty_pages(struct a
+ 			pages_written += write_chunk - wbc.nr_to_write;
+ 			get_dirty_limits(&background_thresh, &dirty_thresh,
+ 				       &bdi_thresh, bdi);
++			writeback_debug_report(pages_written, &wbc);
+ 		}
+ 
+ 		/*
+@@ -568,6 +589,7 @@ static void background_writeout(unsigned
+ 		wbc.pages_skipped = 0;
+ 		writeback_inodes(&wbc);
+ 		min_pages -= MAX_WRITEBACK_PAGES - wbc.nr_to_write;
++		writeback_debug_report(min_pages, &wbc);
+ 		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
+ 			/* Wrote less than expected */
+ 			if (wbc.encountered_congestion)
+@@ -643,6 +665,7 @@ static void wb_kupdate(unsigned long arg
+ 		wbc.encountered_congestion = 0;
+ 		wbc.nr_to_write = MAX_WRITEBACK_PAGES;
+ 		writeback_inodes(&wbc);
++		writeback_debug_report(nr_to_write, &wbc);
+ 		if (wbc.nr_to_write > 0) {
+ 			if (wbc.encountered_congestion)
+ 				congestion_wait(WRITE, HZ/10);
+
+--fUYQa+Pmc3FrFX/N--
+
