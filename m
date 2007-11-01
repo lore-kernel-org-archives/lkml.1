@@ -1,51 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758835AbXKASE1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758068AbXKASGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758835AbXKASE1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 14:04:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754027AbXKASET
+	id S1758068AbXKASGO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 14:06:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbXKASF7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 14:04:19 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:55789 "EHLO pasmtpB.tele.dk"
+	Thu, 1 Nov 2007 14:05:59 -0400
+Received: from lobo.ruivo.org ([66.92.68.119]:38715 "EHLO lobo.ruivo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752461AbXKASES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 14:04:18 -0400
-Date: Thu, 1 Nov 2007 19:05:53 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Chris Holvenstot <cholvenstot@comcast.net>
-Cc: kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: Issue building kernel driver
-Message-ID: <20071101180553.GB3312@uranus.ravnborg.org>
-References: <1193938746.7555.7.camel@localhost>
-Mime-Version: 1.0
+	id S1752828AbXKASF7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 14:05:59 -0400
+Date: Thu, 1 Nov 2007 14:05:40 -0400
+From: Aristeu Rozanski <aris@ruivo.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Truxton Fulton <trux@truxton.com>,
+       Hiroto Shibuya <hiroto.shibuya@gmail.com>,
+       Lee Garrett <lee-in-berlin@web.de>, linux-kernel@vger.kernel.org,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>,
+       ak@suse.de, torvalds@linux-foundation.org
+Subject: Re: [Bugme-new] [Bug 8378] New: Averatec 3156X laptop doesn't
+	reboot with kernels > 2.6.13.5 (responsible commit found)
+Message-ID: <20071101180540.GO407@cathedrallabs.org>
+References: <200704271742.l3RHgPTH019561@fire-2.osdl.org> <20070427144434.970de79f.akpm@linux-foundation.org> <m2k5vx6vce.fsf@truxton.com> <4646171E.7090609@web.de> <20070512180240.7a8923d5.akpm@linux-foundation.org> <m2sl4tyloc.fsf@truxton.com> <20071101155031.GB8068@cathedrallabs.org> <20071101105304.a46420a7.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1193938746.7555.7.camel@localhost>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20071101105304.a46420a7.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 01, 2007 at 12:39:06PM -0500, Chris Holvenstot wrote:
+> > any chance to get this into next -mm?
 > 
-> Although it may not be popular with the crowd here, I do have a valid
-> reason to run Windows - and I accomidate this using the VirtualBox
-> product.  
-> 
-> Since I try to be slightly useful and build as many of the "test" kernel
-> images I can I end up rebuilding the VirtualBox kernel driver (open
-> source) on an almost daily basis.
+> Is is, as i386-fix-reboot-with-no-keyboard-attached.patch
+Thanks!
 
-We had an report about the vbox package a few days ago.
-I looked at it and the vbox code is so ugly that it was not fun at all.
-They play some very strange games in their include hell and that is
-obviously doomed to do so.
-You are unfortunately as a user hit by this and the only
-recommendation I have is to report it back to the vbox people.
-Fixing vbox may be trivial if you dive into their include hell
-but I do think you are better off talking to the vbox people here.
+-- 
+Aristeu
 
-They may say that "the kernel changed - fix the kernel" but we have the
-~1800 modules building in the kernel so they need to fix their end of stuff. 
-
-Good luck,
-
-	Sam
