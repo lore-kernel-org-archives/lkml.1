@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbXKAQHM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755424AbXKAQKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756219AbXKAQHM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 12:07:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbXKAQG7
+	id S1755424AbXKAQKE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 12:10:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275AbXKAQJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 12:06:59 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:35701 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753160AbXKAQG6 (ORCPT
+	Thu, 1 Nov 2007 12:09:54 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51635 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751389AbXKAQJx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 12:06:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=H23h6DBxBgNRhwoDlOGl2knR0pjUOuq+mGXuVhpPuVswYMErJWSQJfJp8d39CRTyLqsjcjQXMCTPRpV/hQ71U2RfIIxBr9XSmccd9Uip41wEqt6HSKaUevCNB798tIDa6XInkf3tK+/023OPg3SwdNTQ/q9pGvqwuO9poL9L7B4=
-Message-ID: <4729F996.4030701@gmail.com>
-Date: Fri, 02 Nov 2007 01:06:46 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 1 Nov 2007 12:09:53 -0400
+Date: Thu, 1 Nov 2007 09:08:45 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Nick Piggin <npiggin@suse.de>
+cc: Duane Griffin <duaneg@dghda.com>,
+       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org, Hugh Dickins <hugh@veritas.com>
+Subject: Re: 2.6.23 regression: accessing invalid mmap'ed memory from gdb
+ causes unkillable spinning
+In-Reply-To: <20071101154705.GA745@wotan.suse.de>
+Message-ID: <alpine.LFD.0.999.0711010901290.3342@woody.linux-foundation.org>
+References: <e9e943910710301745u429b14fj6c5a66fcbf6b0efa@mail.gmail.com>
+ <20071031041932.GA12189@wotan.suse.de> <alpine.LFD.0.999.0710310756220.30120@woody.linux-foundation.org>
+ <20071031151934.GA19211@wotan.suse.de> <alpine.LFD.0.999.0710310854560.3340@woody.linux-foundation.org>
+ <20071031225541.GA28552@wotan.suse.de> <alpine.LFD.0.999.0710311602170.3342@woody.linux-foundation.org>
+ <20071101023758.GA30613@wotan.suse.de> <alpine.LFD.0.999.0711010809171.3342@woody.linux-foundation.org>
+ <20071101154705.GA745@wotan.suse.de>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Daniel Drake <dsd@gentoo.org>, Jeff Garzik <jeff@garzik.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Albert Lee <albertcc@tw.ibm.com>
-Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
-References: <47274A5F.6070409@gentoo.org>	<20071030153417.59b9182c@the-village.bc.nu>	<47276DCA.1000808@gentoo.org>	<20071030190153.373c9347@the-village.bc.nu>	<47278439.4030801@gentoo.org>	<20071031114958.210bd7cc@the-village.bc.nu>	<20071031115754.GK5059@kernel.dk>	<4729A0DF.20800@garzik.org>	<20071101105335.1f20bab3@the-village.bc.nu>	<4729B3EA.6040707@garzik.org>	<20071101141501.3746cec2@the-village.bc.nu>	<4729F1BB.20306@gentoo.org> <20071101155714.5d1f3b41@the-village.bc.nu>
-In-Reply-To: <20071101155714.5d1f3b41@the-village.bc.nu>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> "one size" that you can supply to the SG_IO command (unless you want to 
->> use a stupidly large buffer) to retrieve all the data at once. Instead, 
->> as Tejun describes, you put a short read request in first, look at byte 
->> 1 of the page which tells you the length, and then read the whole lot.
+
+
+On Thu, 1 Nov 2007, Nick Piggin wrote:
 > 
-> ATAPI effectively requires you supply a stupidly large buffer. In theory
-> you set the transfer size in the lba registers and it all works. In
-> practice some drives ignore this and there isn't a nice reliable way to
-> clean up.
+> Untested patch follows
 
-The transfer size is specified in Allocation Length field inside CDB of
-commands which can transfer variable length data.  I got confused about
-this too but both the host and device know how much data can be transferred.
+Ok, this looks ok.
 
-> Welcome to the wonderful world of IDE, where the spec sucks and the
-> drives manage to do even worse things.
-> 
-> We can try and clean up better in these cases at least for PIO transfers
-> by trying to drain the data beyond this point, on the controllers that
-> cope with this but really - fix the app to reflect reality: ATAPI is SCSI
-> as spoken by yokels
+Except I would remove the VM_MAYSHARE bit from the test.
 
-Not that I disagree to this point tho.  :-)
+That whole bit should go, in fact.
 
--- 
-tejun
+We used to make it something different: iirc, a read-only SHARED mapping 
+was downgraded to a non-shared mapping, because we wanted to avoid some of 
+the costs we used to have with the VM implementation (actually, I think it 
+was various filesystems that don't like shared mappings because they don't 
+have a per-page writeback). But we left the VM_MAYSHARE bit on, to get 
+/proc/<pid>/mmap things right.
+
+Or something like that. I forget the details. But I *think* we don't 
+actually need this any more.
+
+But basically, the "right" way to test for shared mappings is historically 
+to just test the VM_MAYSHARE bit - but not *both* bits. Because VM_SHARE 
+may have been artificially cleared.
+
+Somebody should double-check my memory.
+
+		Linus
