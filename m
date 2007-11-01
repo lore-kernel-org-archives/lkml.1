@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761358AbXKAO52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761517AbXKAO5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761358AbXKAO52 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 10:57:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbXKAO5T
+	id S1761517AbXKAO5m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 10:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761034AbXKAO5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 10:57:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43838 "EHLO mx1.redhat.com"
+	Thu, 1 Nov 2007 10:57:32 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:42339 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755047AbXKAO5S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 10:57:18 -0400
-Message-ID: <4729E936.4040400@redhat.com>
-Date: Thu, 01 Nov 2007 07:56:54 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	id S1754571AbXKAO5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 10:57:31 -0400
+Date: Thu, 1 Nov 2007 15:57:24 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: =?ISO-8859-2?Q?Marcin_=A6lusarz?= <marcin.slusarz@gmail.com>
+cc: linux-kernel@vger.kernel.org, greg@kroah.com
+Subject: Re: usbserial.ko/option.ko on 2.6.23: Unable to handle kernel paging
+ request && inconsistent lock state
+In-Reply-To: <4bacf17f0711010755w10f216f4lb059c181c76089ea@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0711011556270.4152@twin.jikos.cz>
+References: <4bacf17f0710291526l6be89bd9o33f02c33186d57b7@mail.gmail.com> 
+ <Pine.LNX.4.64.0710300838280.18815@twin.jikos.cz> 
+ <4bacf17f0711010259q52db983dqa7fc1f25e6a859d4@mail.gmail.com> 
+ <Pine.LNX.4.64.0711011102090.4152@twin.jikos.cz>
+ <4bacf17f0711010755w10f216f4lb059c181c76089ea@mail.gmail.com>
 MIME-Version: 1.0
-To: Pavel Emelyanov <xemul@openvz.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] PID namespace design bug, workaround
-References: <20071101144307.GA29566@elte.hu> <4729E7E4.8070208@openvz.org>
-In-Reply-To: <4729E7E4.8070208@openvz.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1747641777-1430853947-1193929044=:4152"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Pavel Emelyanov wrote:
-> With this set we'll be able to mark pid namespaces as EXPERIMENTAL
-> or even BROKEN, so nobody will be able to crate them. So can we, please, 
-> keep things as they are for now - the appropriate fix will be ready 
-> soon.
+---1747641777-1430853947-1193929044=:4152
+Content-Type: TEXT/PLAIN; charset=ISO-8859-2
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-You sound far too optimistic for my taste.  I probably haven't seen the
-proposal you have in mind but everything else I have seen simply doesn't
-work without breaking something.
+On Thu, 1 Nov 2007, Marcin =A6lusarz wrote:
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+> > What kernel version are you using? I should have already fixed this one=
+ in
+> > current git -- commit acd2a847
+> I'm using 2.6.23
 
-iD8DBQFHKek22ijCOnn/RHQRAgJIAJ0VYwYHUKdEcnKfZHDdaUr5HTnk9QCgghTH
-n57LDahLDIIVIIlkrwNVLLQ=
-=2xU8
------END PGP SIGNATURE-----
+It got fixed after 2.6.24-rc1.
+
+--=20
+Jiri Kosina
+---1747641777-1430853947-1193929044=:4152--
