@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758023AbXKACUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754226AbXKACdl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758023AbXKACUl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 22:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754746AbXKACUX
+	id S1754226AbXKACdl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 22:33:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752723AbXKACdb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 22:20:23 -0400
-Received: from web36614.mail.mud.yahoo.com ([209.191.85.31]:21113 "HELO
-	web36614.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754558AbXKACUV (ORCPT
+	Wed, 31 Oct 2007 22:33:31 -0400
+Received: from de01egw01.freescale.net ([192.88.165.102]:55686 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752616AbXKACda convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 22:20:21 -0400
-X-YMail-OSG: Gpwz9IoVM1mx0TXkBY2vGBLgaSepj6RqTc.TbhFZfXjE55ZXtODceFiMZmD_amR7N5h7b2uZ1A--
-X-RocketYMMF: rancidfat
-Date: Wed, 31 Oct 2007 19:20:20 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static interface)
-To: Peter Dolding <oiaohm@gmail.com>, Toshiharu Harada <haradats@gmail.com>
-Cc: Crispin Cowan <crispin@crispincowan.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <e7d8f83e0710311904w45827586oabcca597fd612ea6@mail.gmail.com>
+	Wed, 31 Oct 2007 22:33:30 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <832119.21078.qm@web36614.mail.mud.yahoo.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] ucc_geth: add support for netpoll
+Date: Thu, 1 Nov 2007 10:33:24 +0800
+Message-ID: <989B956029373F45A0B8AF0297081890019B642A@zch01exm26.fsl.freescale.net>
+In-Reply-To: <20071031215903.GA1287@zarina>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] ucc_geth: add support for netpoll
+Thread-Index: AcgcCZ4oyVNzWoAuQC+9RMp5seRlUwAJWZog
+References: <20071011124842.GB13963@localhost.localdomain> <4723389F.7010109@ru.mvista.com> <20071027143731.GA2616@zarina> <989B956029373F45A0B8AF0297081890019B61BF@zch01exm26.fsl.freescale.net> <20071029121744.GA20372@localhost.localdomain> <20071031215903.GA1287@zarina>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: <cbou@mail.ru>
+Cc: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       <linuxppc-dev@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> -----Original Message-----
+> From: Anton Vorontsov [mailto:cbou@mail.ru] 
+> Sent: Thursday, November 01, 2007 5:59 AM
+> To: Li Yang-r58472
+> Cc: netdev@vger.kernel.org; linux-kernel@vger.kernel.org; 
+> linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH] ucc_geth: add support for netpoll
+> 
+> On Mon, Oct 29, 2007 at 03:17:44PM +0300, Anton Vorontsov wrote:
+> [...]
+> > > Oops.  The original patch happened to hit the Junk mail box. :(
+> > 
+> > That one as well? http://lkml.org/lkml/2007/10/11/128
+> > 
+> > > I think
+> > > the patch is good to merge after the cosmetic change.  I 
+> can do it 
+> > > in next pull request to Jeff.
+> > 
+> > Ok, great. Thanks.
+> 
+> I'm wondering if you missed that email again. Maybe your mail 
+> client/server doing weird things with emails from @ru.mvista.com?
 
---- Peter Dolding <oiaohm@gmail.com> wrote:
+No.  I have explicitly add you to the whitelist. :) Please be patient,
+isn't this patch a new feature which can only be integrated in the merge
+window?  Thanks.
 
-
-> Improvements to the single security framework are getting over looked.
-
-Please post proposed patches.
-
->   I would have personally though selinux would have done Posix file
-> capabilities as a general service to all.
-
-Posix capabilities predate SELinux. SELinux is not interested in
-Posix capabilities. 
-
-> But no IBM had to do it.
-
-Err, no. It was done by Andrew Morgan back in the dark ages.
-Why on earth do you think IBM did it?
-
-> ...
-
-OK, you have all the answers. Show us some code or STFU.
-
-
-Casey Schaufler
-casey@schaufler-ca.com
+- Leo
