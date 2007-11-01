@@ -1,82 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762163AbXKAXO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762191AbXKAXPX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762163AbXKAXO4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 19:14:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759458AbXKAXI6
+	id S1762191AbXKAXPX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 19:15:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759557AbXKAXI7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 19:08:58 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:40082 "EHLO e2.ny.us.ibm.com"
+	Thu, 1 Nov 2007 19:08:59 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:37910 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759304AbXKAXIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 19:08:53 -0400
-Subject: [PATCH 18/27] r-o-bind-mounts-elevate-write-count-over-calls-to-vfs_rename
+	id S1759106AbXKAXI4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 19:08:56 -0400
+Subject: [PATCH 20/27] r-o-bind-mounts-elevate-writer-count-for-do_sys_truncate
 To: akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, miklos@szeredi.hu, hch@infradead.org,
        Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Thu, 01 Nov 2007 16:08:50 -0700
+Date: Thu, 01 Nov 2007 16:08:53 -0700
 References: <20071101230826.9A4F6E00@kernel>
 In-Reply-To: <20071101230826.9A4F6E00@kernel>
-Message-Id: <20071101230850.2DD2790B@kernel>
+Message-Id: <20071101230853.1C16EDCD@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-This also uses the little helper in the NFS code to make an if() a little bit
-less ugly.  We introduced the helper at the beginning of the series.
-
-Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 Acked-by: Christoph Hellwig <hch@infradead.org>
+Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- linux-2.6.git-dave/fs/namei.c    |    4 ++++
- linux-2.6.git-dave/fs/nfsd/vfs.c |   15 +++++++++++----
- 2 files changed, 15 insertions(+), 4 deletions(-)
+ linux-2.6.git-dave/fs/open.c |   14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
-diff -puN fs/namei.c~r-o-bind-mounts-elevate-write-count-over-calls-to-vfs_rename fs/namei.c
---- linux-2.6.git/fs/namei.c~r-o-bind-mounts-elevate-write-count-over-calls-to-vfs_rename	2007-11-01 14:46:16.000000000 -0700
-+++ linux-2.6.git-dave/fs/namei.c	2007-11-01 14:46:16.000000000 -0700
-@@ -2734,8 +2734,12 @@ static int do_rename(int olddfd, const c
- 	if (new_dentry == trap)
- 		goto exit5;
+diff -puN fs/open.c~r-o-bind-mounts-elevate-writer-count-for-do_sys_truncate fs/open.c
+--- linux-2.6.git/fs/open.c~r-o-bind-mounts-elevate-writer-count-for-do_sys_truncate	2007-11-01 14:46:18.000000000 -0700
++++ linux-2.6.git-dave/fs/open.c	2007-11-01 14:46:18.000000000 -0700
+@@ -244,21 +244,21 @@ static long do_sys_truncate(const char _
+ 	if (!S_ISREG(inode->i_mode))
+ 		goto dput_and_out;
  
-+	error = mnt_want_write(oldnd.mnt);
+-	error = vfs_permission(&nd, MAY_WRITE);
++	error = mnt_want_write(nd.mnt);
+ 	if (error)
+ 		goto dput_and_out;
+ 
+-	error = -EROFS;
+-	if (IS_RDONLY(inode))
+-		goto dput_and_out;
++	error = vfs_permission(&nd, MAY_WRITE);
 +	if (error)
-+		goto exit5;
- 	error = vfs_rename(old_dir->d_inode, old_dentry,
- 				   new_dir->d_inode, new_dentry);
-+	mnt_drop_write(oldnd.mnt);
- exit5:
- 	dput(new_dentry);
- exit4:
-diff -puN fs/nfsd/vfs.c~r-o-bind-mounts-elevate-write-count-over-calls-to-vfs_rename fs/nfsd/vfs.c
---- linux-2.6.git/fs/nfsd/vfs.c~r-o-bind-mounts-elevate-write-count-over-calls-to-vfs_rename	2007-11-01 14:46:16.000000000 -0700
-+++ linux-2.6.git-dave/fs/nfsd/vfs.c	2007-11-01 14:46:16.000000000 -0700
-@@ -1668,13 +1668,20 @@ nfsd_rename(struct svc_rqst *rqstp, stru
- 	if (ndentry == trap)
- 		goto out_dput_new;
++		goto mnt_drop_write_and_out;
  
--#ifdef MSNFS
--	if ((ffhp->fh_export->ex_flags & NFSEXP_MSNFS) &&
-+	if (svc_msnfs(ffhp) &&
- 		((atomic_read(&odentry->d_count) > 1)
- 		 || (atomic_read(&ndentry->d_count) > 1))) {
- 			host_err = -EPERM;
--	} else
--#endif
-+			goto out_dput_new;
-+	}
-+
-+	host_err = -EXDEV;
-+	if (ffhp->fh_export->ex_mnt != tfhp->fh_export->ex_mnt)
-+		goto out_dput_new;
-+	host_err = mnt_want_write(ffhp->fh_export->ex_mnt);
-+	if (host_err)
-+		goto out_dput_new;
-+
- 	host_err = vfs_rename(fdir, odentry, tdir, ndentry);
- 	if (!host_err && EX_ISSYNC(tfhp->fh_export)) {
- 		host_err = nfsd_sync_dir(tdentry);
+ 	error = -EPERM;
+ 	if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
+-		goto dput_and_out;
++		goto mnt_drop_write_and_out;
+ 
+ 	error = get_write_access(inode);
+ 	if (error)
+-		goto dput_and_out;
++		goto mnt_drop_write_and_out;
+ 
+ 	/*
+ 	 * Make sure that there are no leases.  get_write_access() protects
+@@ -276,6 +276,8 @@ static long do_sys_truncate(const char _
+ 
+ put_write_and_out:
+ 	put_write_access(inode);
++mnt_drop_write_and_out:
++	mnt_drop_write(nd.mnt);
+ dput_and_out:
+ 	path_release(&nd);
+ out:
 _
