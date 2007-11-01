@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbXKAUjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755633AbXKAUpd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756793AbXKAUjx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 16:39:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753398AbXKAUjo
+	id S1755633AbXKAUpd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 16:45:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753300AbXKAUpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 16:39:44 -0400
-Received: from smtpauth05.prod.mesa1.secureserver.net ([64.202.165.99]:54667
-	"HELO smtpauth05.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753419AbXKAUjn (ORCPT
+	Thu, 1 Nov 2007 16:45:25 -0400
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:46081 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753275AbXKAUpY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 16:39:43 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Nov 2007 16:39:43 EDT
-Message-ID: <472A37EA.80209@seclark.us>
-Date: Thu, 01 Nov 2007 16:32:42 -0400
-From: Stephen Clark <Stephen.Clark@seclark.us>
-Reply-To: Stephen.Clark@seclark.us
-User-Agent: Mozilla/5.0 (X11; U; Linux 2.2.16-22smp i686; en-US; m18) Gecko/20010110 Netscape6/6.5
-X-Accept-Language: en-us, en
+	Thu, 1 Nov 2007 16:45:24 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=qZO679l5V99U3iKRh3OZQEMf5lisoYWk1sbrD8CUgrHrS7watEdQIZruQwSHkeJyGX1zZB+dPTf4S+LctDUoM2u/hrtbGNnMNq3FBkGROt7UOxokqa0narG8b4AcmS3UhBHPsjFVoZPc0nXh4e4hqT6B5E3YcxeAXZSfN9QxRf0=  ;
+X-YMail-OSG: PGQmHEgVM1mLdZsKw5PY26ZS51SyMmeFvZpp6qCM0VEoLl2Q
+Date: Thu, 01 Nov 2007 13:45:20 -0700
+From: David Brownell <david-b@pacbell.net>
+To: linux-kernel@vger.kernel.org, bvetel@gmail.com
+Subject: Re: SPI doesn't detect first dataflash (CS0) on a AT91rm9200ek with 
+ kernel 2.6.23.1
+References: <1193276989.7052.32.camel@rigel.esas.fr>
+In-Reply-To: <1193276989.7052.32.camel@rigel.esas.fr>
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>, andreas@kempe.biz
-Subject: asus-laptop module
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20071101204520.B959023C14A@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi List,
+> Could you help me ?
 
-When the asus-laptop module is loaded it automatically turns on my 
-wireless led
-light irregardless of the whether or not the my wireless is up or not. I 
-had previously
-been using the out of kernel asus-laptop module, which no longer 
-compiles because of
-missing some structure definition, Andreas Kempe had added a module 
-parameter to
-the out of tree version that let the module be loaded with the led off 
-by passing
-wled=0 as a parameter.
+Several people sent suggestions on this topic when you
+asked this question on linux-arm-kernel last week (which
+was BTW a far more appropriate list for this).
 
-Can this be added to the in kernel version? Or the default for the 
-wireless led be off
-when loading the module?
+I notice you didn't follow up on those suggestions in
+any way.  Before you ask again, it'd be polite to try
+following the suggestions you've already received.
 
-Thanks,
-Steve
-
--- 
-
-"They that give up essential liberty to obtain temporary safety, 
-deserve neither liberty nor safety."  (Ben Franklin)
-
-"The course of history shows that as a government grows, liberty 
-decreases."  (Thomas Jefferson)
-
-
+- Dave
 
