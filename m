@@ -1,88 +1,358 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755047AbXKABF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756181AbXKABHT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755047AbXKABF1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 21:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbXKABFR
+	id S1756181AbXKABHT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 21:07:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbXKABHG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 21:05:17 -0400
-Received: from wx-out-0506.google.com ([66.249.82.239]:63029 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752111AbXKABFP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 21:05:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Zq4rfrl4d61RMK40As+ldGQ7UJledILHHZMlLVwRES7Y4pvaZhD4xuA+162uKMC2aXKzyIVDYEqTEdluIyfefYXp9erVsRAOxRRyhHAPe3s7z68aY0DYKbTfy2t0OCzh7mVTtgvPY1Ep3fbzy+HWCKs7uJdP1qjfeKqAnKcWqIY=
-Message-ID: <a8e1da0710311805l32282ce0ve9df9280cf7cce06@mail.gmail.com>
-Date: Thu, 1 Nov 2007 09:05:14 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Marcel Holtmann" <marcel@holtmann.org>
-Subject: Re: [PATCH]bluetooth: hci_sysfs connection bus_id add support for diffrent hci device
-Cc: "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       bluez-devel@lists.sourceforge.net
-In-Reply-To: <1193824773.32459.22.camel@violet>
+	Wed, 31 Oct 2007 21:07:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59449 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752080AbXKABHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 21:07:03 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071031023017.GA3896@darkstar.te-china.tietoenator.com>
-	 <20071031.000141.241824894.davem@davemloft.net>
-	 <1193817409.32459.10.camel@violet>
-	 <a8e1da0710310213r1e4f3d7ckcbdf2e6bf854745e@mail.gmail.com>
-	 <1193824773.32459.22.camel@violet>
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+X-Fcc: ~/Mail/linus
+Cc: linux-kernel@vger.kernel.org, systemtap@sources.redhat.com
+Subject: [PATCH] markers: modpost
+In-Reply-To: Frank Ch. Eigler's message of  Friday, 26 October 2007 10:28:10 -0400 <20071026142810.GA14814@redhat.com>
+References: <20070919113737.GA18177@Krystal>
+	<y0mtzpqvk1l.fsf@ton.toronto.redhat.com>
+	<200709192132.00873.vda.linux@googlemail.com>
+	<20070921125819.GA13129@Krystal>
+	<20070921133006.GF8964@redhat.com>
+	<20070921133820.GD13129@Krystal>
+	<20071015194120.GA22562@redhat.com>
+	<20071015231209.GA18994@Krystal>
+	<20071015235033.321E84D0389@magilla.localdomain>
+	<20071025191722.GA6114@Krystal>
+	<20071026142810.GA14814@redhat.com>
+X-Zippy-Says: I was giving HAIR CUTS to th' SAUCER PEOPLE ..  I'm CLEAN!!
+Message-Id: <20071101010624.54D8D4D04AE@magilla.localdomain>
+Date: Wed, 31 Oct 2007 18:06:24 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/31/07, Marcel Holtmann <marcel@holtmann.org> wrote:
-> Hi Dave,
->
-> > > > > diff -upr linux/net/bluetooth/hci_sysfs.c linux.new/net/bluetooth/hci_sysfs.c
-> > > > > --- linux/net/bluetooth/hci_sysfs.c 2007-10-31 10:21:00.000000000 +0800
-> > > > > +++ linux.new/net/bluetooth/hci_sysfs.c     2007-10-31 10:21:55.000000000 +0800
-> > > > > @@ -302,7 +302,8 @@ void hci_conn_add_sysfs(struct hci_conn
-> > > > >     conn->dev.release = bt_release;
-> > > > >
-> > > > >     snprintf(conn->dev.bus_id, BUS_ID_SIZE,
-> > > > > -                   "%s%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X",
-> > > > > +                   "%s%s%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X",
-> > > > > +                   hdev->name,
-> > > > >                     conn->type == ACL_LINK ? "acl" : "sco",
-> > > > >                     ba->b[5], ba->b[4], ba->b[3],
-> > > > >                     ba->b[2], ba->b[1], ba->b[0]);
-> > > >
-> > > > This might not work.
-> > > >
-> > > > Your device's name is already 15 characters long,
-> > > > BUS_ID_SIZE is 20, and it seems hdev->name could
-> > > > easily overflow the 4 or 5 characters of space
-> > > > remaining.
-> > >
-> > > and should also be not needed since their parents are different. However
-> > > we had to add the connections to a bus. Otherwise the userspace will
-> > > never see them. I have to think about the right solution for this
-> > > problem.
-> >
-> > Maybe we can use this instead:
-> >       snprintf(conn->dev.bus_id, BUS_ID_SIZE,
-> > -                     "%s%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X",
-> > +                     "%s%s%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X",
-> > +                     hdev->name + 3,
-> >                       conn->type == ACL_LINK ? "acl" : "sco",
-> >                       ba->b[5], ba->b[4], ba->b[3],
-> >                       ba->b[2], ba->b[1], ba->b[0]);
->
-> I had a look on how other subsystems handle this case and yes, they
-> duplicate the id number from its parent device. So I applied the
-> attached patch to my tree.
-Thanks.
->
-> The best would be to use '"%d-%d", hdev->id, conn->handle', but at the
-> time we create the hci_conn structure and add the sysfs entry the
-> connection handle is not know yet. I have to look into that and see if
-> that can be changed.
-I agree. I wonder to  know whether the conn sys issue can be delayed
-after the handle is availible.
 
-Regards
-dave
+This adds some new magic in the MODPOST phase for CONFIG_MARKERS.
+Analogous to the Module.symvers file, the build will now write a
+Module.markers file when CONFIG_MARKERS=y is set.  This file lists
+the name, defining module, and format string of each marker,
+separated by \t characters.  This simple text file can be used by
+offline build procedures for instrumentation code, analogous to
+how System.map and Module.symvers can be useful to have for
+kernels other than the one you are running right now.
+
+The method of extracting the strings is somewhat crude, but is very
+simple and should work fine in practice for the foreseeable future.
+
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ scripts/Makefile.modpost |   11 +++
+ scripts/mod/modpost.c    |  174 +++++++++++++++++++++++++++++++++++++++++++++-
+ scripts/mod/modpost.h    |    3 +
+ 3 files changed, 187 insertions(+), 1 deletions(-)
+
+diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
+index d988f5d..6321870 100644
+--- a/scripts/Makefile.modpost
++++ b/scripts/Makefile.modpost
+@@ -13,6 +13,7 @@
+ # 2) modpost is then used to
+ # 3)  create one <module>.mod.c file pr. module
+ # 4)  create one Module.symvers file with CRC for all exported symbols
++# 4a) [CONFIG_MARKERS] create one Module.markers file listing defined markers
+ # 5) compile all <module>.mod.c files
+ # 6) final link of the module to a <module.ko> file
+ 
+@@ -45,6 +46,10 @@ include scripts/Makefile.lib
+ 
+ kernelsymfile := $(objtree)/Module.symvers
+ modulesymfile := $(firstword $(KBUILD_EXTMOD))/Module.symvers
++kernelmarkersfile := $(objtree)/Module.markers
++modulemarkersfile := $(firstword $(KBUILD_EXTMOD))/Module.markers
++
++markersfile = $(if $(KBUILD_EXTMOD),$(modulemarkersfile),$(kernelmarkersfile))
+ 
+ # Step 1), find all modules listed in $(MODVERDIR)/
+ __modules := $(sort $(shell grep -h '\.ko' /dev/null $(wildcard $(MODVERDIR)/*.mod)))
+@@ -62,6 +67,8 @@ modpost = scripts/mod/modpost                    \
+  $(if $(KBUILD_EXTMOD),-i,-o) $(kernelsymfile)   \
+  $(if $(KBUILD_EXTMOD),-I $(modulesymfile))      \
+  $(if $(KBUILD_EXTMOD),-o $(modulesymfile))      \
++ $(if $(CONFIG_MARKERS),-K $(kernelmarkersfile)) \
++ $(if $(CONFIG_MARKERS),-M $(markersfile))	 \
+  $(if $(KBUILD_EXTMOD)$(KBUILD_MODPOST_WARN),-w)
+ 
+ quiet_cmd_modpost = MODPOST $(words $(filter-out vmlinux FORCE, $^)) modules
+@@ -81,6 +88,10 @@ vmlinux.o: FORCE
+ $(symverfile):         __modpost ;
+ $(modules:.ko=.mod.c): __modpost ;
+ 
++ifdef CONFIG_MARKERS
++$(markersfile):	       __modpost ;
++endif
++
+ 
+ # Step 5), compile all *.mod.c files
+ 
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index 93ac52a..df80bfc 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -11,6 +11,8 @@
+  * Usage: modpost vmlinux module1.o module2.o ...
+  */
+ 
++#define _GNU_SOURCE
++#include <stdio.h>
+ #include <ctype.h>
+ #include "modpost.h"
+ #include "../../include/linux/license.h"
+@@ -424,6 +426,8 @@ static int parse_elf(struct elf_info *info, const char *filename)
+ 			info->export_unused_gpl_sec = i;
+ 		else if (strcmp(secname, "__ksymtab_gpl_future") == 0)
+ 			info->export_gpl_future_sec = i;
++		else if (strcmp(secname, "__markers_strings") == 0)
++			info->markers_strings_sec = i;
+ 
+ 		if (sechdrs[i].sh_type != SHT_SYMTAB)
+ 			continue;
+@@ -1249,6 +1253,73 @@ static int exit_section_ref_ok(const char *name)
+ 	return 0;
+ }
+ 
++static size_t strlen_with_padding(const char *start, const char *limit)
++{
++	const char *p = memchr(start, '\0', limit - start);
++	if (p == NULL)
++		return 0;
++	do
++		++p;
++	while (p < limit && *p == '\0');
++	return p - start;
++}
++
++static void get_markers(struct elf_info *info, struct module *mod)
++{
++	const Elf_Shdr *sh = &info->sechdrs[info->markers_strings_sec];
++	const char *strings;
++	const char *strings_end;
++	const char *p;
++	size_t n, i;
++
++	if (!info->markers_strings_sec)
++		return;
++
++	strings = (const char *) info->hdr + sh->sh_offset;
++	strings_end = strings + sh->sh_size;
++
++	/*
++	 * First count the strings.  They come in pairs of name, format.
++	 */
++	for (n = 0, p = strings; p < strings_end; ++n) {
++		size_t len = strlen_with_padding(p, strings_end);
++		if (len == 0)
++			break;
++		p += len;
++	}
++	if (n % 2 != 0 || p != strings_end) {
++		warn("%s.ko has bad __markers_strings, ignoring it\n",
++		     mod->name);
++		return;
++	}
++
++	if (n == 0)
++		return;
++
++	/*
++	 * Now collect each pair into a formatted line for the output.
++	 * Lines look like:
++	 *	marker_name	vmlinux	marker %s format %d
++	 * The format string after the second \t can use whitespace.
++	 */
++	mod->markers = NOFAIL(malloc(sizeof mod->markers[0] * n / 2));
++	mod->nmarkers = n / 2;
++
++	p = strings;
++	for (i = 0; i < n; i += 2) {
++		const char *name, *fmt;
++		name = p;
++		p += strlen_with_padding(p, strings_end);
++		fmt = p;
++		p += strlen_with_padding(p, strings_end);
++
++		mod->markers[i / 2] = NULL;
++		asprintf(&mod->markers[i / 2], "%s\t%s\t%s\n",
++			 name, mod->name, fmt);
++		NOFAIL(mod->markers[i / 2]);
++	}
++}
++
+ static void read_symbols(char *modname)
+ {
+ 	const char *symname;
+@@ -1301,6 +1372,8 @@ static void read_symbols(char *modname)
+ 		get_src_version(modname, mod->srcversion,
+ 				sizeof(mod->srcversion)-1);
+ 
++	get_markers(&info, mod);
++
+ 	parse_elf_finish(&info);
+ 
+ 	/* Our trick to get versioning for struct_module - it's
+@@ -1649,6 +1722,91 @@ static void write_dump(const char *fname)
+ 	write_if_changed(&buf, fname);
+ }
+ 
++static void add_marker(struct module *mod, const char *name, const char *fmt)
++{
++	char *line = NULL;
++	asprintf(&line, "%s\t%s\t%s\n", name, mod->name, fmt);
++	NOFAIL(line);
++
++	mod->markers = NOFAIL(realloc(mod->markers, ((mod->nmarkers + 1) *
++						     sizeof mod->markers[0])));
++	mod->markers[mod->nmarkers++] = line;
++}
++
++static void read_markers(const char *fname)
++{
++	unsigned long size, pos = 0;
++	void *file = grab_file(fname, &size);
++	char *line;
++
++        if (!file)
++		/* No old markers, silently ignore */
++		return;
++
++	while ((line = get_next_line(&pos, file, size))) {
++		char *marker, *modname, *fmt;
++		struct module *mod;
++
++		marker = line;
++		if (!(modname = strchr(marker, '\t')))
++			goto fail;
++		*modname++ = '\0';
++		if (!(fmt = strchr(modname, '\t')))
++			goto fail;
++		*fmt++ = '\0';
++		if (*marker == '\0' || *modname == '\0')
++			goto fail;
++
++		if (!(mod = find_module(modname))) {
++			if (is_vmlinux(modname)) {
++				have_vmlinux = 1;
++			}
++			mod = new_module(NOFAIL(strdup(modname)));
++			mod->skip = 1;
++		}
++
++		add_marker(mod, marker, fmt);
++	}
++	return;
++fail:
++	fatal("parse error in markers list file\n");
++}
++
++static int compare_strings(const void *a, const void *b)
++{
++	return strcmp(*(const char **) a, *(const char **) b);
++}
++
++static void write_markers(const char *fname)
++{
++	struct buffer buf = { };
++	struct module *mod;
++	size_t i;
++
++	for (mod = modules; mod; mod = mod->next)
++		if ((!external_module || !mod->skip) && mod->markers != NULL) {
++			/*
++			 * Sort the strings so we can skip duplicates when
++			 * we write them out.
++			 */
++			qsort(mod->markers, mod->nmarkers,
++			      sizeof mod->markers[0], &compare_strings);
++			for (i = 0; i < mod->nmarkers; ++i) {
++				char *line = mod->markers[i];
++				buf_write(&buf, line, strlen(line));
++				while (i + 1 < mod->nmarkers &&
++				       !strcmp(mod->markers[i],
++					       mod->markers[i + 1]))
++					free(mod->markers[i++]);
++				free(mod->markers[i]);
++			}
++			free(mod->markers);
++			mod->markers = NULL;
++		}
++
++	write_if_changed(&buf, fname);
++}
++
+ int main(int argc, char **argv)
+ {
+ 	struct module *mod;
+@@ -1656,10 +1814,12 @@ int main(int argc, char **argv)
+ 	char fname[SZ];
+ 	char *kernel_read = NULL, *module_read = NULL;
+ 	char *dump_write = NULL;
++	char *markers_read = NULL;
++	char *markers_write = NULL;
+ 	int opt;
+ 	int err;
+ 
+-	while ((opt = getopt(argc, argv, "i:I:mso:aw")) != -1) {
++	while ((opt = getopt(argc, argv, "i:I:mso:awM:K:")) != -1) {
+ 		switch(opt) {
+ 			case 'i':
+ 				kernel_read = optarg;
+@@ -1683,6 +1843,12 @@ int main(int argc, char **argv)
+ 			case 'w':
+ 				warn_unresolved = 1;
+ 				break;
++			case 'M':
++				markers_write = optarg;
++				break;
++			case 'K':
++				markers_read = optarg;
++				break;
+ 			default:
+ 				exit(1);
+ 		}
+@@ -1724,5 +1890,11 @@ int main(int argc, char **argv)
+ 	if (dump_write)
+ 		write_dump(dump_write);
+ 
++	if (markers_read)
++		read_markers(markers_read);
++
++	if (markers_write)
++		write_markers(markers_write);
++
+ 	return err;
+ }
+diff --git a/scripts/mod/modpost.h b/scripts/mod/modpost.h
+index 0ffed17..175301a 100644
+--- a/scripts/mod/modpost.h
++++ b/scripts/mod/modpost.h
+@@ -110,6 +110,8 @@ struct module {
+ 	int has_init;
+ 	int has_cleanup;
+ 	struct buffer dev_table_buf;
++	char **markers;
++	size_t nmarkers;
+ 	char	     srcversion[25];
+ };
+ 
+@@ -124,6 +126,7 @@ struct elf_info {
+ 	Elf_Section  export_gpl_sec;
+ 	Elf_Section  export_unused_gpl_sec;
+ 	Elf_Section  export_gpl_future_sec;
++	Elf_Section  markers_strings_sec;
+ 	const char   *strtab;
+ 	char	     *modinfo;
+ 	unsigned int modinfo_len;
