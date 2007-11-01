@@ -1,69 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759057AbXKASHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756795AbXKASNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759057AbXKASHB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 14:07:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754415AbXKASGu
+	id S1756795AbXKASNR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 14:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbXKASNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 14:06:50 -0400
-Received: from mga11.intel.com ([192.55.52.93]:20510 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754431AbXKASGt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 14:06:49 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,359,1188802800"; 
-   d="scan'208";a="193409843"
-Message-ID: <472A1526.8070208@intel.com>
-Date: Thu, 01 Nov 2007 11:04:22 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: jeff@garzik.org, netdev@vger.kernel.org, davej@redhat.com, ajax@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] e1000, e1000e valid-addr fixes
-References: <471E99E8.6030404@garzik.org>	<20071023.180744.115914004.davem@davemloft.net>	<471EABEE.8030900@garzik.org> <20071023.192313.115635750.davem@davemloft.net>
-In-Reply-To: <20071023.192313.115635750.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Nov 2007 18:04:44.0740 (UTC) FILETIME=[AECB3040:01C81CB1]
+	Thu, 1 Nov 2007 14:13:05 -0400
+Received: from hpsmtp-eml20.KPNXCHANGE.COM ([213.75.38.85]:47793 "EHLO
+	hpsmtp-eml20.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753246AbXKASNE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 14:13:04 -0400
+To: Chris Holvenstot <cholvenstot@comcast.net>
+Subject: Re: Issue building kernel driver
+Cc: linux-kernel@vger.kernel.org
+In-reply-To: <1193938746.7555.7.camel@localhost>
+References: <1193938746.7555.7.camel@localhost>
+Message-Id: <E1IneXG-0003NJ-7z@faramir.fjphome.nl>
+From: Frans Pop <elendil@planet.nl>
+Date: Thu, 01 Nov 2007 19:12:54 +0100
+X-OriginalArrivalTime: 01 Nov 2007 18:13:01.0660 (UTC) FILETIME=[D6FB29C0:01C81CB2]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Jeff Garzik <jeff@garzik.org>
-> Date: Tue, 23 Oct 2007 22:20:30 -0400
+Chris Holvenstot wrote:
+> Since I try to be slightly useful and build as many of the "test" kernel
+> images I can I end up rebuilding the VirtualBox kernel driver (open
+> source) on an almost daily basis.
 > 
->> David Miller wrote:
->>> From: Jeff Garzik <jeff@garzik.org>
->>> Date: Tue, 23 Oct 2007 21:03:36 -0400
->>>
->>>> I'm wondering if there is a way to avoid adding
->>>>
->>>> 	if (!is_valid_ether_addr(dev->dev_addr))
->>>> 		return -EINVAL;
->>>>
->>>> to every ethernet driver's ->open() hook.
->>> The first idea I get is:
->>>
->>> 1) Create netdev->validate_dev_addr().
->>>
->>> 2) If it exists, invoke it before ->open(), abort
->>>    and return if any errors signaled.
->>>
->>> etherdev init hooks up a function that does the above
->>> check, which allows us to avoid editing every ethernet
->>> driver
->>>
->>> What do you think?
->> Seems sane to me.  Something like this (attached)?
-> 
-> Looks great:
-> 
-> Acked-by: David S. Miller <davem@davemloft.net>
+> I attempted to rebuild the driver today and got the following error
+> messages running 2.6.24-rc1-git9
 
-I like it.
+I had the same issue and managed to work around it. See:
+http://vbox.innotek.de/pipermail/vbox-users/2007-October/002372.html
 
-Should I start sending patches to remove the checks from e1000/e1000e/ixgb/ixgbe
-already (to David, I assume?)?
-
-Auke
+Cheers,
+FJP
