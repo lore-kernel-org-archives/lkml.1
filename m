@@ -1,59 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759073AbXKATzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755985AbXKAT43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759073AbXKATzl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 15:55:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759427AbXKATyr
+	id S1755985AbXKAT43 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 15:56:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754746AbXKAT4U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 15:54:47 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:58246 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757194AbXKATyq (ORCPT
+	Thu, 1 Nov 2007 15:56:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:60192 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754621AbXKAT4T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 15:54:46 -0400
-To: "Serge E. Hallyn" <serge@hallyn.com>
-Cc: Olaf Dietsche <olaf+list.linux-kernel@olafdietsche.de>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Andrew Morgan <morgan@kernel.org>, Stephen Smalley <sds@epoch.ncsc.mil>,
-       Chris Wright <chrisw@osdl.org>
-Subject: Re: [PATCH] 2.6.23: Filesystem capabilities 0.17
-References: <871wbhc0zj.fsf@olafdietsche.de>
-	<20071031173606.GA27982@vino.hallyn.com>
-From: Olaf Dietsche <olaf+list.linux-kernel@olafdietsche.de>
-Date: Thu, 01 Nov 2007 20:54:09 +0100
-Message-ID: <87mytx91y6.fsf@olafdietsche.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Provags-ID: V01U2FsdGVkX1+zxefaOS3R30IWfNetFQg29VYE+8Qz5Qe+gtz
- TXxU46hRu3i5AiIZ2Y7yeUlotk+8IOj4aZ1iyP9PzGrVx2gZ+e
- XcU6KEGZRNoxFiPgCIoRA==
+	Thu, 1 Nov 2007 15:56:19 -0400
+Subject: Re: per-bdi-throttling: synchronous writepage doesn't work
+	correctly
+From: Peter Zijlstra <peterz@infradead.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: jdike@addtoit.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       hch@infradead.org, akpm@linux-foundation.org, viro@zeniv.linux.org.uk
+In-Reply-To: <E1InfZx-0004Eu-00@dorka.pomaz.szeredi.hu>
+References: <E1IndEw-00046x-00@dorka.pomaz.szeredi.hu>
+	 <1193935886.27652.313.camel@twins>
+	 <E1IndPT-00047e-00@dorka.pomaz.szeredi.hu>
+	 <1193936949.27652.321.camel@twins>  <1193937408.27652.326.camel@twins>
+	 <1193942132.27652.331.camel@twins>
+	 <E1InfZx-0004Eu-00@dorka.pomaz.szeredi.hu>
+Content-Type: text/plain
+Date: Thu, 01 Nov 2007 20:55:37 +0100
+Message-Id: <1193946937.5911.10.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Serge E. Hallyn" <serge@hallyn.com> writes:
 
-> Quoting Olaf Dietsche (olaf+list.linux-kernel@olafdietsche.de):
->> This patch implements filesystem capabilities. It allows to
->> run privileged executables without the need for suid root.
->> 
->> Changes:
->> - updated to 2.6.23
->> - fix const correctness
->> - fix secureexec
-[...]
-> given that file capabilities are now in 2.6.23, could you explain the
-> benefits of this version?  Should we consider switching it out for
-> yours?
+On Thu, 2007-11-01 at 20:19 +0100, Miklos Szeredi wrote:
+> > > 
+> > >       See the file "Locking" for more details.
+> > > 
+> > > 
+> > > The "should set PG_Writeback" bit threw me off I guess.
+> > 
+> > Hmm, set_page_writeback() is also the one clearing the radix tree dirty
+> > tag. So if that is not called, we get in a bit of a mess, no?
+> > 
+> > Which makes me think hostfs is buggy.
+> 
+> Yes, looks like that sort of usage is not valid.  But not clearing the
+> dirty tag won't cause any malfunction, it'll just waste some CPU when
+> looking for dirty pages to write back.  This is probably why this
+> wasn't noticed earlier.
 
-It's just another version, works without xattr and, most important:
-it's mine :-)
+Documentation/filesystems/Locking is also quite clear on the need to
+call set_page_writeback() and end_page_writeback().
 
-> If we stick with the current upstream file capabilities patch, should we
-> port your SECURE_HACK to it?  I actually thought that fixing
-> bprm_secure_exec() sufficed?
+minimal fix for hostfs
 
-Fixing bprm_secure_exec() is sufficient. SECURE_HACK is just a
-leftover, when there was no AT_SECURE and accordingly libc (< 2.3.6)
-ignored bprm_secure_exec().
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
 
-Regards, Olaf.
+diff --git a/fs/hostfs/hostfs_kern.c b/fs/hostfs/hostfs_kern.c
+index 8966b05..b6c1e12 100644
+--- a/fs/hostfs/hostfs_kern.c
++++ b/fs/hostfs/hostfs_kern.c
+@@ -415,6 +415,7 @@ int hostfs_writepage(struct page *page, struct writeback_control *wbc)
+ 	int end_index = inode->i_size >> PAGE_CACHE_SHIFT;
+ 	int err;
+ 
++	set_page_writeback(page);
+ 	if (page->index >= end_index)
+ 		count = inode->i_size & (PAGE_CACHE_SIZE-1);
+ 
+@@ -438,6 +439,7 @@ int hostfs_writepage(struct page *page, struct writeback_control *wbc)
+ 	kunmap(page);
+ 
+ 	unlock_page(page);
++	end_page_writeback(page);
+ 	return err;
+ }
+ 
+
+
