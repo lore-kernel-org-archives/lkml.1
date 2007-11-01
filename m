@@ -1,45 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754355AbXKAGOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbXKAGca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754355AbXKAGOw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 02:14:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbXKAGOo
+	id S1754503AbXKAGca (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 02:32:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbXKAGcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 02:14:44 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:44050 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751810AbXKAGOn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 02:14:43 -0400
-Date: Wed, 31 Oct 2007 23:19:54 -0700
-From: Greg KH <greg@kroah.com>
-To: Steven King <sfking@fdwdc.com>
-Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Subject: Re: ti_usb_3410_5052 breakage in 2.6.24-rc1
-Message-ID: <20071101061954.GA11303@kroah.com>
-References: <200710312225.44210.sfking@fdwdc.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710312225.44210.sfking@fdwdc.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 1 Nov 2007 02:32:22 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:47085 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751810AbXKAGcV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 02:32:21 -0400
+Date: Thu, 1 Nov 2007 17:32:21 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: <aacraid@adaptec.com>
+Cc: <linux-scsi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCHv2] aacraid: don't assign cpu_to_le32(constant) to u8
+Message-Id: <20071101173221.2e1fea42.sfr@canb.auug.org.au>
+In-Reply-To: <20071031150216.88cecc21.sfr@canb.auug.org.au>
+References: <20071031150216.88cecc21.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 31, 2007 at 10:25:43PM -0700, Steven King wrote:
->   My TI eZ430 (MSP-FET430UIF JTAG Tool) usb dongle works fine with 2.6.23.1 
-> and earlier, but doesn't work with 2.6.24-rc1; the ti_usb_3410_5052 module is 
-> loaded but the device descriptor is bogus, reporting only a single 
-> configuration, whereas in 2.6.23.1 it reports 2 configurations, allowing one 
-> to select the second configuration to get a serial port.
-> 
-> git bisect fingered this commit:
-> 
-> 063a2da8f01806906f7d7b1a1424b9afddebc443 "USB: serial core should respect 
-> driver requirements"
+Noticed on PowerPC allmod config build:
 
-Can you send me a copy of /proc/bus/usb/devices with this device plugged
-in?
+drivers/scsi/aacraid/commsup.c:1342: warning: large integer implicitly truncated to unsigned type
+drivers/scsi/aacraid/commsup.c:1343: warning: large integer implicitly truncated to unsigned type
+drivers/scsi/aacraid/commsup.c:1344: warning: large integer implicitly truncated to unsigned type
 
-thanks,
+Also fix some whitespace on the changed lines.
 
-greg k-h
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/scsi/aacraid/commsup.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+This version just fixes a couple of whitespace anomolies on the lines I
+changed.
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/drivers/scsi/aacraid/commsup.c b/drivers/scsi/aacraid/commsup.c
+index 240a0bb..3c2dbc0 100644
+--- a/drivers/scsi/aacraid/commsup.c
++++ b/drivers/scsi/aacraid/commsup.c
+@@ -1339,9 +1339,9 @@ int aac_check_health(struct aac_dev * aac)
+ 			aif = (struct aac_aifcmd *)hw_fib->data;
+ 			aif->command = cpu_to_le32(AifCmdEventNotify);
+ 		 	aif->seqnum = cpu_to_le32(0xFFFFFFFF);
+-		 	aif->data[0] = cpu_to_le32(AifEnExpEvent);
+-			aif->data[1] = cpu_to_le32(AifExeFirmwarePanic);
+-		 	aif->data[2] = cpu_to_le32(AifHighPriority);
++			aif->data[0] = AifEnExpEvent;
++			aif->data[1] = AifExeFirmwarePanic;
++			aif->data[2] = AifHighPriority;
+ 			aif->data[3] = cpu_to_le32(BlinkLED);
+ 
+ 			/*
+-- 
+1.5.3.4
+
