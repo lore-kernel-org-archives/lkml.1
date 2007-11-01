@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758219AbXKARZX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758550AbXKAR02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758219AbXKARZX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 13:25:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbXKARZI
+	id S1758550AbXKAR02 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 13:26:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbXKAR0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 13:25:08 -0400
-Received: from mail.suse.de ([195.135.220.2]:47220 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753058AbXKARZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 13:25:06 -0400
-Date: Thu, 1 Nov 2007 10:23:24 -0700
-From: Tony Jones <tonyj@suse.de>
-To: Steve Grubb <sgrubb@redhat.com>
-Cc: linux-audit@redhat.com, linux-kernel@vger.kernel.org, chrisw@sous-sol.org,
-       viro@ftp.linux.org.uk
-Subject: Re: [PATCH] audit: clear thread flag for new children
-Message-ID: <20071101172324.GA3938@suse.de>
-References: <20071026204228.GA1519@suse.de> <200710291804.31784.sgrubb@redhat.com> <20071029231529.GB15210@suse.de> <200711011033.53265.sgrubb@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200711011033.53265.sgrubb@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 1 Nov 2007 13:26:20 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46389 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752920AbXKAR0T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 13:26:19 -0400
+Date: Thu, 1 Nov 2007 10:26:16 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: rientjes@google.com, Lee.Schermerhorn@hp.com, linux-kernel@vger.kernel.org,
+       ak@suse.de
+Subject: Re: [RFC] cpuset relative memory policies - second choice
+Message-Id: <20071101102616.826d45a1.pj@sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0711011006070.29468@schroedinger.engr.sgi.com>
+References: <20071031061729.18174.60384.sendpatchset@jackhammer.engr.sgi.com>
+	<Pine.LNX.4.64.0710311157310.21799@schroedinger.engr.sgi.com>
+	<20071031131949.b91bf383.pj@sgi.com>
+	<Pine.LNX.4.64.0710311402300.22599@schroedinger.engr.sgi.com>
+	<20071031214719.81f8293a.pj@sgi.com>
+	<Pine.LNX.4.64.0710312221140.26444@schroedinger.engr.sgi.com>
+	<20071031233352.959c32d0.pj@sgi.com>
+	<Pine.LNX.4.64.0711010604210.27666@schroedinger.engr.sgi.com>
+	<20071101090612.e0c86ddb.pj@sgi.com>
+	<Pine.LNX.4.64.0711011006070.29468@schroedinger.engr.sgi.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 01, 2007 at 10:33:52AM -0400, Steve Grubb wrote:
-> On Monday 29 October 2007 07:15:30 pm Tony Jones wrote:
-> > On Mon, Oct 29, 2007 at 06:04:31PM -0400, Steve Grubb wrote:
-> > > So when audit is re-enabled, how do you make that task auditable?
-> >
-> > No idea. How do you do it currently? HINT: current->audit_context == NULL
-> > for these tasks.  If !audit_enabled, then audit_alloc() is not going to
-> > allocate an audit_context for the task.
-> 
-> We are looking into this - at one time it did. Someone should follow up with 
-> a path correcting this soon. But I doubt the audit system will work correctly 
-> if the flag gets removed as there is no good way to add it again later.
+Christoph wrote:
+> The library interface can set flags to modify behavior.
 
-So on the syscall path you're now going to something like (pseudocode):
-if (unlikely(current->audit_context)) {audit_syscall_entry()} 
-else if (audit_enabled) {audit_alloc(); audit_syscall_entry()}
+A library such as libnuma can set them, yes, but not everyone uses
+libnuma.  Basically everyone uses the standard C library, glibc, which
+has the system call wrappers, but these wrappers should not be setting
+optional flags.
 
-I agree, if this is what you want to do, then clearing the thread flag would
-be a bad idea.  I'd assumed the current behaviour was by design as allocating
-contexts at syscall time doesn't seem a great idea but if you need the 
-functionality, you need the functionality.
+We're going around in circles here, Christoph.
 
-Tony
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
