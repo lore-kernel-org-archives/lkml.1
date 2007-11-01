@@ -1,86 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759546AbXKABwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757163AbXKAB4e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759546AbXKABwS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 21:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbXKABwJ
+	id S1757163AbXKAB4e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 21:56:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbXKAB41
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 21:52:09 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:58856 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752080AbXKABwH (ORCPT
+	Wed, 31 Oct 2007 21:56:27 -0400
+Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:15350 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752630AbXKAB40 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 21:52:07 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Thu, 1 Nov 2007 02:51:44 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firewire: fw-sbp2: enforce read order of device generation
- and node ID
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org,
-       =?iso-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>
-In-Reply-To: <tkrat.005a632d2530a3f9@s5r6.in-berlin.de>
-Message-ID: <tkrat.391ef30a1853832e@s5r6.in-berlin.de>
-References: <tkrat.66a8b3070e07d80f@s5r6.in-berlin.de>
- <tkrat.005a632d2530a3f9@s5r6.in-berlin.de>
+	Wed, 31 Oct 2007 21:56:26 -0400
+X-IronPort-AV: E=Sophos;i="4.21,354,1188802800"; 
+   d="scan'208";a="541972397"
+Message-ID: <47293248.9000906@cisco.com>
+Date: Wed, 31 Oct 2007 18:56:24 -0700
+From: "bc Wong (chimwong)" <bcwong@cisco.com>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+To: linux-kernel@vger.kernel.org
+Subject: filp usage when cpu busy
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Nov 2007 01:56:25.0199 (UTC) FILETIME=[68C4C7F0:01C81C2A]
+Authentication-Results: sj-dkim-2; header.From=bcwong@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Two fixes:
-  - There was a small window where a login or reconnect job could use an
-    already updated card generation with an outdated node ID.  We better
-    use the fw_device.generation here, not the fw_card.generation.
-  - Insert a memory barrier to ensure that the device generation is read
-    before the node ID.  This is to guarantee that the generation is not
-    newer than the node ID.
+Hi,
 
-A small optimization:
-  - The target's and initiator's node IDs can be obtained from fw_device
-    and fw_card.  Dereferencing their underlying topology objects is not
-    necessary.
+With 2.6.16 x86_64 on a 4 core machine, I noticed
+that the filp usage (according to /proc/slabinfo)
+shoots up and keeps on increasing sharply when one
+of the CPUs is (1) locked up, or (2) very busy
+doing a lot of printk()'s with KERN_EMERG.
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/fw-sbp2.c |   14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
+In the case of (1), it's permanent until it runs
+out of memory eventually. For (2), it's temporary;
+filp count comes back down when the printk()'s are
+done.
 
-Index: linux/drivers/firewire/fw-sbp2.c
-===================================================================
---- linux.orig/drivers/firewire/fw-sbp2.c
-+++ linux/drivers/firewire/fw-sbp2.c
-@@ -643,9 +643,10 @@ static void sbp2_login(struct work_struc
- 	struct sbp2_login_response response;
- 	int generation, node_id, local_node_id;
- 
--	generation    = device->card->generation;
--	node_id       = device->node->node_id;
--	local_node_id = device->card->local_node->node_id;
-+	generation    = device->generation;
-+	rmb();
-+	node_id       = device->node_id;
-+	local_node_id = device->card->node_id;
- 
- 	if (sbp2_send_management_orb(lu, node_id, generation,
- 				SBP2_LOGIN_REQUEST, lu->lun, &response) < 0) {
-@@ -900,9 +901,10 @@ static void sbp2_reconnect(struct work_s
- 	struct fw_device *device = fw_device(unit->device.parent);
- 	int generation, node_id, local_node_id;
- 
--	generation    = device->card->generation;
--	node_id       = device->node->node_id;
--	local_node_id = device->card->local_node->node_id;
-+	generation    = device->generation;
-+	rmb();
-+	node_id       = device->node_id;
-+	local_node_id = device->card->node_id;
- 
- 	if (sbp2_send_management_orb(lu, node_id, generation,
- 				     SBP2_RECONNECT_REQUEST,
+I can't think of any relationship between a busy/
+locked-up CPU and filp count. The system is still
+functional. New short-lived processes kept being
+created, but the overall number of processes is
+stable.
 
--- 
-Stefan Richter
--=====-=-=== =-== ----=
-http://arcgraph.de/sr/
+Does anyone know why filp count would go up like
+that?
 
+Thanks,
+bc
