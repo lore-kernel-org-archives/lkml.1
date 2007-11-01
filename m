@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757176AbXKAVyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759091AbXKAVyf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757176AbXKAVyV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 17:54:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753821AbXKAVyN
+	id S1759091AbXKAVyf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 17:54:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754039AbXKAVy1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 17:54:13 -0400
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:58070 "EHLO
-	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753621AbXKAVyM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 17:54:12 -0400
-Date: Thu, 1 Nov 2007 22:53:48 +0100
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Josh Logan <joshtlogan@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       Ciaran McCreesh <ciaran.mccreesh@blueyonder.co.uk>,
-       Edward Hsu <edward_hsu@realtek.com.tw>, linux-kernel@vger.kernel.org
-Subject: Re: Abit F-190HD Onboard rlt8169 Ethernet Controller
-Message-ID: <20071101215348.GA17449@electric-eye.fr.zoreil.com>
-References: <20071029061532.5d10dfc6@snowcone> <20071029083333.18a4dab7@the-village.bc.nu> <4729FC36.3040000@gmail.com>
+	Thu, 1 Nov 2007 17:54:27 -0400
+Received: from styx.suse.cz ([82.119.242.94]:43308 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757993AbXKAVy0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 17:54:26 -0400
+Date: Thu, 1 Nov 2007 22:54:24 +0100
+From: Jan Kara <jack@suse.cz>
+To: Olaf Dietsche <olaf+list.linux-kernel@olafdietsche.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 2.6.23: Filesystem capabilities 0.17
+Message-ID: <20071101215424.GA27788@duck.suse.cz>
+References: <871wbhc0zj.fsf@olafdietsche.de> <20071031170853.GD28809@atrey.karlin.mff.cuni.cz> <87tzo5925v.fsf@olafdietsche.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4729FC36.3040000@gmail.com>
-X-Organisation: Land of Sunshine Inc.
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <87tzo5925v.fsf@olafdietsche.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Josh Logan <joshtlogan@gmail.com> :
-[...]
-> I have had this board for a few months as well and I have needed to 
-> patch the driver to use 0x0001 as well.
+On Thu 01-11-07 20:49:32, Olaf Dietsche wrote:
+> Jan Kara <jack@suse.cz> writes:
+> 
+> >> This patch implements filesystem capabilities. It allows to
+> >> run privileged executables without the need for suid root.
+> >   Hmm, is there some "design document" so that one does not have to poke
+> > through the code and find out what it's actually trying to do?
+> 
+> What do you mean with "trying to do"? I thought this is obvious, it
+> provides executables with filesystem capabilities.
+  Well, yes, that was obvious but I rather meant "how is it doing it?".
+So where does it store these bits and such.
 
-Ok.
+> > Also why don't you use extended attributes or store them inside the
+> > executable like Pavel did (you link it from your web page).
+> 
+> The links from my web page are there to show alternatives, nothing
+> else. When I started in 2002, xattr where pretty new or nonexistant.
+  OK, I see. I'm not sure it's going to make it when we already have an
+implementation of the functionality in kernel as Serge mentioned.
 
-Can people give the patch below a try before I submit it to Jeff ?
-
-From: Ciaran McCreesh <ciaran.mccreesh@blueyonder.co.uk>
-Date: Thu, 1 Nov 2007 22:48:15 +0100
-Subject: [PATCH] r8169: add PCI ID for the 8168 in the Abit Fatal1ty F-190HD motherboard
-
-Signed-off-by: Ciaran McCreesh <ciaran.mccreesh@blueyonder.co.uk>
-Signed-off-by: Francois Romieu <romieu@fr.zoreil.com>
-Cc: Edward Hsu <edward_hsu@realtek.com.tw>
----
- drivers/net/r8169.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
-index b94fa7e..702334e 100644
---- a/drivers/net/r8169.c
-+++ b/drivers/net/r8169.c
-@@ -171,6 +171,8 @@ static struct pci_device_id rtl8169_pci_tbl[] = {
- 	{ PCI_DEVICE(0x16ec,			0x0116), 0, 0, RTL_CFG_0 },
- 	{ PCI_VENDOR_ID_LINKSYS,		0x1032,
- 		PCI_ANY_ID, 0x0024, 0, 0, RTL_CFG_0 },
-+	{ 0x0001,				0x8168,
-+		PCI_ANY_ID, 0x2410, 0, 0, RTL_CFG_2 },
- 	{0,},
- };
- 
+								Honza
 -- 
-1.5.3.3
-
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
