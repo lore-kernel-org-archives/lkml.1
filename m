@@ -1,67 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991AbXKAQOA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754166AbXKAQTF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755991AbXKAQOA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 12:14:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbXKAQNx
+	id S1754166AbXKAQTF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 12:19:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbXKAQSz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 12:13:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52143 "EHLO mx1.redhat.com"
+	Thu, 1 Nov 2007 12:18:55 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:60083 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752451AbXKAQNw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 12:13:52 -0400
-Message-ID: <4729FB43.1010904@redhat.com>
-Date: Thu, 01 Nov 2007 14:13:55 -0200
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070811)
-MIME-Version: 1.0
-To: Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, lguest@ozlabs.org,
-       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       ak@suse.de, chrisw@sous-sol.org, tglx@linutronix.de,
-       anthony@codemonkey.ws, akpm@linux-foundation.org,
-       virtualization@lists.linux-foundation.org, mingo@elte.hu
-Subject: Re: [PATCH 3/16] read/write_crX, clts and wbinvd for 64-bit paravirt
-References: <C34FAA4C.17CA9%Keir.Fraser@cl.cam.ac.uk>
-In-Reply-To: <C34FAA4C.17CA9%Keir.Fraser@cl.cam.ac.uk>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1750785AbXKAQSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 12:18:54 -0400
+Date: Thu, 1 Nov 2007 22:01:20 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Mike Galbraith <efault@gmx.de>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: [PATCH 2/6] sched: make sched_slice() group scheduling savvy
+Message-ID: <20071101163120.GB20788@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20071031211030.310581000@chello.nl> <20071031211248.796653000@chello.nl> <20071101113138.GA20788@linux.vnet.ibm.com> <1193917912.27652.258.camel@twins> <1193918299.27652.260.camel@twins> <1193918598.27652.262.camel@twins> <1193919608.27652.277.camel@twins>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1193919608.27652.277.camel@twins>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Keir Fraser escreveu:
-> On 1/11/07 15:30, "Jeremy Fitzhardinge" <jeremy@goop.org> wrote:
+On Thu, Nov 01, 2007 at 01:20:08PM +0100, Peter Zijlstra wrote:
+> On Thu, 2007-11-01 at 13:03 +0100, Peter Zijlstra wrote:
+> > On Thu, 2007-11-01 at 12:58 +0100, Peter Zijlstra wrote:
+> > 
+> > > > sched_slice() is about lantecy, its intended purpose is to ensure each
+> > > > task is ran exactly once during sched_period() - which is
+> > > > sysctl_sched_latency when nr_running <= sysctl_sched_nr_latency, and
+> > > > otherwise linearly scales latency.
+> > 
+> > The thing that got my brain in a twist is what to do about the non-leaf
+> > nodes, for those it seems I'm not doing the right thing - I think.
 > 
->> Glauber de Oliveira Costa wrote:
->>> I in fact have seen bugs with mixed reads and writes to the same cr,
->>> (cr4), but adding the volatile
->>> flag to the read function seemed to fix it.
->> Well, volatile will make a read be repeated rather than caching the
->> previous value, but it has no effect on ordering.
+> Ok, suppose a tree like so:
 > 
-> volatile prevents the asm from being 'moved significantly', according to the
-> gcc manual. I take that to mean that reordering is not allowed.
 > 
-According to a gcc developer to whom I asked this question, volatile
-prevents the code
-to be removed, but does not prevent it to be moved (pun indented). In
-practice, it should force
-a re-read, but not influence the ordering decisions from the compiler.
-Besides , 'significantly'
-sounds like a significantly unprecise word, whose specific meaning may
-be implementation dependant.
+> level 2                   cfs_rq
+>                        A           B
+> 
+> level 1             cfs_rqA     cfs_rqB
+>                      A0        B0 - B99
+> 
+> 
+> So for sake of determinism, we want to impose a period in which all
+> level 1 tasks will have ran (at least) once.
 
-So I agree that adding a memory location reference is probably the best
-alternative.
+Peter,
+	I fail to see why this requirement to "determine a period in
+which all level 1 tasks will have ran (at least) once" is essential.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Remi - http://enigmail.mozdev.org
+I am visualizing each of the groups to be similar to Xen-like partitions
+which are given fair timeslices by the hypervisor (Linux kernel in this
+case). How each partition (group in this case) manages the allocated
+timeslice(s) to provide fairness to tasks within that partition/group should not
+(IMHO) depend on other groups and esp. how many tasks other groups has.
 
-iD8DBQFHKftDjYI8LaFUWXMRAiLTAKDqf/M8umNYw6u7r9ONozTEUVy8SwCgygma
-jWNKQmxmLpyPxr00KbQy9Vg=
-=JM4K
------END PGP SIGNATURE-----
+For ex: before this patch, fair time would be allocated to group and
+their tasks as below:
+
+    A0       B0-B9     A0    B10-B19     A0     B20-B29
+ |--------|--------|--------|--------|--------|--------|-----//--| 
+ 0       10ms	   20ms	   30ms     40ms     50ms     60ms
+
+i.e during the first 10ms allocated to group B, B0-B9 run,
+    during the next  10ms allocated to group B, B10-B19 run etc
+
+What's wrong with this scheme?
+
+By letting __sched_period() be determined for each group independently,
+we are building stronger isolation between them, which is good IMO
+(imagine a rogue container that does a fork bomb).
+
+> Now what sched_slice() does is calculate the weighted proportion of the
+> given period for each task to run, so that each task runs exactly once.
+> 
+> Now level 2, can introduce these large weight differences, which in this
+> case result in 'lumps' of time.
+> 
+> In the given example above the weight difference is 1:100, which is
+> already at the edges of what regular nice levels could do.
+> 
+> How about limiting the max output of sched_slice() to
+> sysctl_sched_latency in order to break up these large stretches of time?
+> 
+> Index: linux-2.6/kernel/sched_fair.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/sched_fair.c
+> +++ linux-2.6/kernel/sched_fair.c
+> @@ -341,7 +341,7 @@ static u64 sched_slice(struct cfs_rq *cf
+>  		do_div(slice, cfs_rq->load.weight);
+>  	}
+> 
+> -	return slice;
+> +	return min_t(u64, sysctl_sched_latency, slice);
+
+Hmm, going back to the previous example I cited, this will lead to:
+
+	sched_slice(grp A) = min(20ms, 500ms) = 20ms
+	sched_slice(A0) = min(20ms, 500ms) = 20ms
+
+	sched_slice(grp B) = min(20ms, 500ms) = 20ms
+	sched_slice(B0) = min(20ms, 0.5ms) = 0.5ms
+
+Fairness between groups and tasks would be obtained as below:
+
+     A0     B0-B39     A0     B40-B79    A0
+ |--------|--------|--------|--------|--------|
+ 0     20ms       40ms      60ms     80ms
+
+which seems to be more or less giving what we already have w/o the
+patch?
+
+-- 
+Regards,
+vatsa
