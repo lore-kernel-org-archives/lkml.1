@@ -1,128 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758879AbXKAT53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757281AbXKAUCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758879AbXKAT53 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 15:57:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbXKAT5V
+	id S1757281AbXKAUCR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 16:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755240AbXKAUCD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 15:57:21 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:58981 "EHLO e2.ny.us.ibm.com"
+	Thu, 1 Nov 2007 16:02:03 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40118 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753179AbXKAT5U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 15:57:20 -0400
-Date: Thu, 1 Nov 2007 12:57:12 -0700
-From: sukadev@us.ibm.com
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH resend] proc: Fix proc_kill_inodes to kill dentries on all proc superblocks
-Message-ID: <20071101195712.GA23239@us.ibm.com>
-References: <m1ir4mezzy.fsf@ebiederm.dsl.xmission.com> <4729F549.6090905@openvz.org>
-Mime-Version: 1.0
+	id S1753593AbXKAUCA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 16:02:00 -0400
+Message-ID: <472A30A9.7040203@redhat.com>
+Date: Thu, 01 Nov 2007 16:01:45 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Nick Piggin <npiggin@suse.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 1/4] x86: FIFO ticket spinlocks
+References: <20071101140146.GA26879@wotan.suse.de> <20071101140320.GC26879@wotan.suse.de>
+In-Reply-To: <20071101140320.GC26879@wotan.suse.de>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4729F549.6090905@openvz.org>
-User-Agent: Mutt/1.4.2.2i
-X-Operating-System: Linux 2.0.32 on an i486
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelianov [xemul@openvz.org] wrote:
-| Eric W. Biederman wrote:
-| > It appears we overlooked support for removing generic proc files
-| > when we added support for multiple proc super blocks.  Handle
-| > that now.
-| > 
-| > Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-| 
-| AFAIS this is just making the kill for all the super blocks
-| we have.
-| 
-| Acked-by: Pavel Emelyanov <xemul@openvz.org>
+On 11/01/2007 10:03 AM, Nick Piggin wrote:
 
-Acked-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+[edited to show the resulting code]
 
-| 
-| > ---
-| >  fs/proc/generic.c  |   38 +++++++++++++++++++++-----------------
-| >  fs/proc/internal.h |    2 ++
-| >  fs/proc/root.c     |    2 +-
-| >  3 files changed, 24 insertions(+), 18 deletions(-)
-| > 
-| > diff --git a/fs/proc/generic.c b/fs/proc/generic.c
-| > index 1bdb624..3906770 100644
-| > --- a/fs/proc/generic.c
-| > +++ b/fs/proc/generic.c
-| > @@ -561,28 +561,32 @@ static int proc_register(struct proc_dir_entry * dir, struct proc_dir_entry * dp
-| >  static void proc_kill_inodes(struct proc_dir_entry *de)
-| >  {
-| >  	struct list_head *p;
-| > -	struct super_block *sb = proc_mnt->mnt_sb;
-| > +	struct super_block *sb;
-| >  
-| >  	/*
-| >  	 * Actually it's a partial revoke().
-| >  	 */
-| > -	file_list_lock();
-| > -	list_for_each(p, &sb->s_files) {
-| > -		struct file * filp = list_entry(p, struct file, f_u.fu_list);
-| > -		struct dentry * dentry = filp->f_path.dentry;
-| > -		struct inode * inode;
-| > -		const struct file_operations *fops;
-| > -
-| > -		if (dentry->d_op != &proc_dentry_operations)
-| > -			continue;
-| > -		inode = dentry->d_inode;
-| > -		if (PDE(inode) != de)
-| > -			continue;
-| > -		fops = filp->f_op;
-| > -		filp->f_op = NULL;
-| > -		fops_put(fops);
-| > +	spin_lock(&sb_lock);
-| > +	list_for_each_entry(sb, &proc_fs_type.fs_supers, s_instances) {
-| > +		file_list_lock();
-| > +		list_for_each(p, &sb->s_files) {
-| > +			struct file * filp = list_entry(p, struct file, f_u.fu_list);
-| > +			struct dentry * dentry = filp->f_path.dentry;
-| > +			struct inode * inode;
-| > +			const struct file_operations *fops;
-| > +
-| > +			if (dentry->d_op != &proc_dentry_operations)
-| > +				continue;
-| > +			inode = dentry->d_inode;
-| > +			if (PDE(inode) != de)
-| > +				continue;
-| > +			fops = filp->f_op;
-| > +			filp->f_op = NULL;
-| > +			fops_put(fops);
-| > +		}
-| > +		file_list_unlock();
-| >  	}
-| > -	file_list_unlock();
-| > +	spin_unlock(&sb_lock);
-| >  }
-| >  
-| >  static struct proc_dir_entry *proc_create(struct proc_dir_entry **parent,
-| > diff --git a/fs/proc/internal.h b/fs/proc/internal.h
-| > index 1820eb2..1b2b6c6 100644
-| > --- a/fs/proc/internal.h
-| > +++ b/fs/proc/internal.h
-| > @@ -78,3 +78,5 @@ static inline int proc_fd(struct inode *inode)
-| >  {
-| >  	return PROC_I(inode)->fd;
-| >  }
-| > +
-| > +extern struct file_system_type proc_fs_type;
-| > diff --git a/fs/proc/root.c b/fs/proc/root.c
-| > index ec9cb3b..1f86bb8 100644
-| > --- a/fs/proc/root.c
-| > +++ b/fs/proc/root.c
-| > @@ -98,7 +98,7 @@ static void proc_kill_sb(struct super_block *sb)
-| >  	put_pid_ns(ns);
-| >  }
-| >  
-| > -static struct file_system_type proc_fs_type = {
-| > +struct file_system_type proc_fs_type = {
-| >  	.name		= "proc",
-| >  	.get_sb		= proc_get_sb,
-| >  	.kill_sb	= proc_kill_sb,
+> +	__asm__ __volatile__ (
+> +		LOCK_PREFIX "xaddw %w0, %1\n"
+> +		"1:\t"
+> +		"cmpb %h0, %b0\n\t"
+> +		"je 2f\n\t"
+> +		"rep ; nop\n\t"
+> +		"movb %1, %b0\n\t"
+> +		/* don't need lfence here, because loads are in-order */
+>  		"jmp 1b\n"
+> +		"2:"
+> +		:"+Q" (inc), "+m" (lock->slock)
+> +		:
+> +		:"memory", "cc");
+>  }
+
+If you really thought you might get long queues, you could figure out
+how far back you are and use that to determine how long to wait before
+testing the lock again. That cmpb could become a subb without adding
+overhead to the fast path -- that would give you the queue length (or
+its complement anyway.)
+
