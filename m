@@ -1,148 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067AbXJaXxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756245AbXKAABE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756067AbXJaXxm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 19:53:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbXJaXxc
+	id S1756245AbXKAABE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 20:01:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbXKAAAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 19:53:32 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:51814 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753240AbXJaXxb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 19:53:31 -0400
-Date: Wed, 31 Oct 2007 19:53:06 -0400
-Message-Id: <200710312353.l9VNr67n013016@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Ryan Finnie <ryan@finnie.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, cjwatson@ubuntu.com, linux-mm@kvack.org
-Subject: Re: msync(2) bug(?), returns AOP_WRITEPAGE_ACTIVATE to userland 
-In-reply-to: Your message of "Mon, 29 Oct 2007 20:33:45 -0000."
-             <Pine.LNX.4.64.0710292027310.21528@blonde.wat.veritas.com> 
-X-MailKey: Erez_Zadok
+	Wed, 31 Oct 2007 20:00:54 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34633 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754314AbXKAAAx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 20:00:53 -0400
+Date: Thu, 1 Nov 2007 00:00:07 +0000
+From: Alasdair G Kergon <agk@redhat.com>
+To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Cc: dm-devel@redhat.com, hare@suse.de, nfbrown@novell.com,
+       linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       akpm@linux-foundation.org, stable@kernel.org, devel@openvz.org
+Subject: Re: [dm-devel] Re: dm: bounce_pfn limit added
+Message-ID: <20071101000007.GO10006@agk.fab.redhat.com>
+Mail-Followup-To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, dm-devel@redhat.com,
+	hare@suse.de, nfbrown@novell.com, linux-kernel@vger.kernel.org,
+	jens.axboe@oracle.com, akpm@linux-foundation.org, stable@kernel.org,
+	devel@openvz.org
+References: <20071031020133.GL10006@agk.fab.redhat.com> <47282B1D.8030501@sw.ru> <47283061.8080501@suse.de> <20071031.170016.39152331.k-ueda@ct.jp.nec.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071031.170016.39152331.k-ueda@ct.jp.nec.com>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Oct 31, 2007 at 05:00:16PM -0500, Kiyoshi Ueda wrote:
+> How about the case that other dm device is stacked on the dm device?
+> (e.g. dm-linear over dm-multipath over i2o with bounce_pfn=64GB, and
+>       the multipath table is changed to i2o with bounce_pfn=1GB.)
+ 
+Let's not broaden the problem out in that direction yet - that's a
+known flaw in the way all these device restrictions are handled.
+(Which would, it happens, also be resolved by the dm architectural
+changes I'm contemplating.)
 
-Hi Hugh, I've addressed all of your concerns and am happy to report that the
-newly revised unionfs_writepage works even better, including under my
-memory-pressure conditions.  To summarize my changes since the last time:
+Yes, we could certainly take this patch - it won't do much harm (just
+hit performance in some configurations).  But I am not yet convinced
+that there isn't some further underlying problem with the way the
+responsibility for this bouncing is divided up between the various
+layers: I still don't feel I completely understand this problem yet.
 
-- I'm only masking __GFP_FS, not __GFP_IO
-- using find_or_create_page to avoid locking issues around mapping mask
-- handle for_reclaim case more efficiently
-- using copy_highpage so we handle KM_USER*
-- un/locking upper/lower page as/when needed
-- updated comments to clarify what/why
-- unionfs_sync_page: gone (yes, vfs.txt did confuse me, plus ecryptfs used
-  to have it)
+- How does that bio_alloc() in blk_queue_bounce() guarantee never to
+lead a deadlock (in the device-mapper context)?
+- Are some functions failing to take account of the hw_segments
+(and perhaps other) restrictions?
+- Are things actually simpler if the bouncing is dealt with just once 
+prior to entering the device stack (even though that may involve
+bouncing some data that does not need it) or is it better to endeavour
+to keep the bouncing as close to the final layer as possible?
 
-Below is the newest version of unionfs_writepage.  Let me know what you
-think.
-
-I have to say that with these changes, unionfs appears visibly faster under
-memory pressure.  I suspect the for_reclaim handling is probably the largest
-contributor to this speedup.
-
-Many thanks,
-Erez.
-
-//////////////////////////////////////////////////////////////////////////////
-
-static int unionfs_writepage(struct page *page, struct writeback_control *wbc)
-{
-	int err = -EIO;
-	struct inode *inode;
-	struct inode *lower_inode;
-	struct page *lower_page;
-	struct address_space *lower_mapping; /* lower inode mapping */
-	gfp_t mask;
-
-	inode = page->mapping->host;
-	lower_inode = unionfs_lower_inode(inode);
-	lower_mapping = lower_inode->i_mapping;
-
-	/*
-	 * find lower page (returns a locked page)
-	 *
-	 * We turn off __GFP_FS while we look for or create a new lower
-	 * page.  This prevents a recursion into the file system code, which
-	 * under memory pressure conditions could lead to a deadlock.  This
-	 * is similar to how the loop driver behaves (see loop_set_fd in
-	 * drivers/block/loop.c).  If we can't find the lower page, we
-	 * redirty our page and return "success" so that the VM will call us
-	 * again in the (hopefully near) future.
-	 */
-	mask = mapping_gfp_mask(lower_mapping) & ~(__GFP_FS);
-	lower_page = find_or_create_page(lower_mapping, page->index, mask);
-	if (!lower_page) {
-		err = 0;
-		set_page_dirty(page);
-		goto out;
-	}
-
-	/* copy page data from our upper page to the lower page */
-	copy_highpage(lower_page, page);
-
-	/*
-	 * Call lower writepage (expects locked page).  However, if we are
-	 * called with wbc->for_reclaim, then the VFS/VM just wants to
-	 * reclaim our page.  Therefore, we don't need to call the lower
-	 * ->writepage: just copy our data to the lower page (already done
-	 * above), then mark the lower page dirty and unlock it, and return
-	 * success.
-	 */
-	if (wbc->for_reclaim) {
-		set_page_dirty(lower_page);
-		unlock_page(lower_page);
-		goto out_release;
-	}
-	BUG_ON(!lower_mapping->a_ops->writepage);
-	clear_page_dirty_for_io(lower_page); /* emulate VFS behavior */
-	err = lower_mapping->a_ops->writepage(lower_page, wbc);
-	if (err < 0) {
-		ClearPageUptodate(page);
-		goto out_release;
-	}
-
-	/*
-	 * Lower file systems such as ramfs and tmpfs, may return
-	 * AOP_WRITEPAGE_ACTIVATE so that the VM won't try to (pointlessly)
-	 * write the page again for a while.  But those lower file systems
-	 * also set the page dirty bit back again.  Since we successfully
-	 * copied our page data to the lower page, then the VM will come
-	 * back to the lower page (directly) and try to flush it.  So we can
-	 * save the VM the hassle of coming back to our page and trying to
-	 * flush too.  Therefore, we don't re-dirty our own page, and we
-	 * never return AOP_WRITEPAGE_ACTIVATE back to the VM (we consider
-	 * this a success).
-	 *
-	 * We also unlock the lower page if the lower ->writepage returned
-	 * AOP_WRITEPAGE_ACTIVATE.  (This "anomalous" behaviour may be
-	 * addressed in future shmem/VM code.)
-	 */
-	if (err == AOP_WRITEPAGE_ACTIVATE) {
-		err = 0;
-		unlock_page(lower_page);
-	}
-
-	/* all is well */
-	SetPageUptodate(page);
-	/* lower mtimes have changed: update ours */
-	unionfs_copy_attr_times(inode);
-
-out_release:
-	/* b/c find_or_create_page increased refcnt */
-	page_cache_release(lower_page);
-out:
-	/*
-	 * We unlock our page unconditionally, because we never return
-	 * AOP_WRITEPAGE_ACTIVATE.
-	 */
-	unlock_page(page);
-	return err;
-}
-
-//////////////////////////////////////////////////////////////////////////////
+Alasdair
+-- 
+agk@redhat.com
