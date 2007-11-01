@@ -1,193 +1,360 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762540AbXKAXQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760405AbXKAXRG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762540AbXKAXQp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 19:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755320AbXKAXJH
+	id S1760405AbXKAXRG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 19:17:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760011AbXKAXJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 19:09:07 -0400
-Received: from xenotime.net ([66.160.160.81]:55389 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1759770AbXKAXJB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 19:09:01 -0400
-Date: Thu, 1 Nov 2007 16:08:57 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Andreas Mohr <andi@lisas.de>, herbert@gondor.apana.org.au
-Cc: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH/RFC] eradicate bashisms in scripts/patch-kernel
-Message-Id: <20071101160857.6e877307.rdunlap@xenotime.net>
-In-Reply-To: <20071101221606.GA10116@rhlx01.hs-esslingen.de>
-References: <20071031211321.GA8363@rhlx01.hs-esslingen.de>
-	<47290096.7080207@oracle.com>
-	<20071101121133.GA14807@rhlx01.hs-esslingen.de>
-	<20071101082457.ff9a5d67.randy.dunlap@oracle.com>
-	<20071101221606.GA10116@rhlx01.hs-esslingen.de>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Nov 2007 19:09:09 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:34082 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759953AbXKAXJC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 19:09:02 -0400
+Subject: [PATCH 24/27] r-o-bind-mounts-track-number-of-mount-writers
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, miklos@szeredi.hu, hch@infradead.org,
+       Dave Hansen <haveblue@us.ibm.com>
+From: Dave Hansen <haveblue@us.ibm.com>
+Date: Thu, 01 Nov 2007 16:08:58 -0700
+References: <20071101230826.9A4F6E00@kernel>
+In-Reply-To: <20071101230826.9A4F6E00@kernel>
+Message-Id: <20071101230858.6F76E20C@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Nov 2007 23:16:06 +0100 Andreas Mohr wrote:
-
-[add Herbert]
-
-> Hi,
-> 
-> On Thu, Nov 01, 2007 at 08:24:57AM -0700, Randy Dunlap wrote:
-> > On Thu, 1 Nov 2007 13:11:33 +0100 Andreas Mohr wrote:
-> > > I'll think a bit more about these couple changed places (and whether
-> > > this still truly works as intended) and mail a patch then.
-> > > 
-> > > (and a big NOTE: I'm no POSIX vs. non-POSIX shell guru at all, only a
-> > > semi-versed shell script writer, thus these changes should be reviewed
-> > > quite thoroughly)
-> > 
-> > Neither am I.  I read those web pages quickly yesterday, so after
-> > you read them, we can discuss more and/or review more patches.
-> 
-> OK, next iteration (v2).
-> 
-> 
-> Make the patch-kernel shell script sufficiently compatible with POSIX shells.
-> 
-> 
-> Changes since v1:
-> - don't actually change string quoting
-> - prepend ./ at mktemp step already
-> - remove added superfluous spaces in arithmetic expression
-> - don't remove double braces in STOPSUBLEVEL evaluation,
->   since these are integer values to be compared
-> 
-> Full ChangeLog:
-> - replaced non-standard "==" by standard "="
-OK
-
-> - replaced non-standard "source" statement by POSIX "dot" statement
-OK
-
-> - POSIX shell local file lookup needs ./ prepended, thus have mktemp
->   use this from the beginning and comment it properly
-
-I would like the patch description to say something like:
-
-Use ./ as a prefix on the TEMP filename so that the current search
-PATH will not be searched and thus another file with this same
-(pseudo random) name won't be used accidentally.
-
-> - replace non-standard bash string parsing by sed expression
->   (is the sed syntax ok? correct? strict enough?)
-
-I think that this is the part that bothers me.  I can't find
-anything at
-http://www.opengroup.org/onlinepubs/000095399/utilities/xcu_chap02.html
-that says that this:
-	EXTRAVER=${EXTRAVER%%[[:punct:]]*}
-
-is invalid or even optional syntax.  OTOH, it does list such syntax,
-so why are we working around this syntax?
-Please point out to me what I am missing...
-
-> - added missing $ signs to shell variable names
-OK
 
 
-> About the missing $ signs:
-> http://www.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html#tag_02_14
-> says:
-> "If the shell variable x contains a value that forms a valid integer
-> constant, then the arithmetic expansions
->  "$((x))" and "$(($x))" shall return the same value."
-> 
-> Hmm, well, seems dash doesn't... (syntax error).
-> Thus I still needed to add the $ signs despite opengroup.org specifying
-> it differently.
+This is the real meat of the entire series.  It actually implements the
+tracking of the number of writers to a mount.  However, it causes scalability
+problems because there can be hundreds of cpus doing open()/close() on files
+on the same mnt at the same time.  Even an atomic_t in the mnt has massive
+scalaing problems because the cacheline gets so terribly contended.
 
-Herbert?
+This uses a statically-allocated percpu variable.  All operations are local to
+a cpu as long that cpu operates on the same mount, and there are no writer
+count imbalances.  Writer count imbalances happen when a write is taken on one
+cpu, and released on another, like when an open/close pair is performed on two
 
-> Updated version verified again to now work with both bash and dash
-> on Debian stable.
-> 
-> Patch intended for inclusion in -mm, once it has survived some reviews.
-> 
-> Thanks.
-> 
-> Signed-off-by: Andreas Mohr <andi@lisas.de>
-> 
-> --- linux-2.6.23/scripts/patch-kernel.orig	2007-11-01 22:51:34.000000000 +0100
-> +++ linux-2.6.23/scripts/patch-kernel	2007-11-01 22:10:14.000000000 +0100
-> @@ -65,7 +65,7 @@
->  patchdir=${2-.}
->  stopvers=${3-default}
->  
-> -if [ "$1" == -h -o "$1" == --help -o ! -r "$sourcedir/Makefile" ]; then
-> +if [ "$1" = -h -o "$1" = --help -o ! -r "$sourcedir/Makefile" ]; then
->  cat << USAGE
->  usage: $PNAME [-h] [ sourcedir [ patchdir [ stopversion ] [ -acxx ] ] ]
->    source directory defaults to /usr/src/linux,
-> @@ -182,10 +182,12 @@
->  }
->  
->  # set current VERSION, PATCHLEVEL, SUBLEVEL, EXTRAVERSION
-> -TMPFILE=`mktemp .tmpver.XXXXXX` || { echo "cannot make temp file" ; exit 1; }
-> +# sourcing $TMPFILE.1 below needs lookup in local directory in a POSIX shell,
-> +# thus prepend ./ to mktemp argument
-> +TMPFILE=`mktemp ./.tmpver.XXXXXX` || { echo "cannot make temp file" ; exit 1; }
->  grep -E "^(VERSION|PATCHLEVEL|SUBLEVEL|EXTRAVERSION)" $sourcedir/Makefile > $TMPFILE
->  tr -d [:blank:] < $TMPFILE > $TMPFILE.1
-> -source $TMPFILE.1
-> +. $TMPFILE.1
->  rm -f $TMPFILE*
->  if [ -z "$VERSION" -o -z "$PATCHLEVEL" -o -z "$SUBLEVEL" ]
->  then
-> @@ -202,13 +204,7 @@
->  EXTRAVER=
->  if [ x$EXTRAVERSION != "x" ]
->  then
-> -	if [ ${EXTRAVERSION:0:1} == "." ]; then
-> -		EXTRAVER=${EXTRAVERSION:1}
-> -	else
-> -		EXTRAVER=$EXTRAVERSION
-> -	fi
-> -	EXTRAVER=${EXTRAVER%%[[:punct:]]*}
-> -	#echo "$PNAME: changing EXTRAVERSION from $EXTRAVERSION to $EXTRAVER"
-> +	EXTRAVER=`echo $EXTRAVERSION|sed -s 's/^[\.]\?\([^[:punct:]]*\).*/\1/'`
->  fi
->  
->  #echo "stopvers=$stopvers"
-> @@ -251,16 +247,16 @@
->  do
->      CURRENTFULLVERSION="$VERSION.$PATCHLEVEL.$SUBLEVEL"
->      EXTRAVER=
-> -    if [ $stopvers == $CURRENTFULLVERSION ]; then
-> +    if [ $stopvers = $CURRENTFULLVERSION ]; then
->          echo "Stopping at $CURRENTFULLVERSION base as requested."
->          break
->      fi
->  
-> -    SUBLEVEL=$((SUBLEVEL + 1))
-> +    SUBLEVEL=$(($SUBLEVEL + 1))
->      FULLVERSION="$VERSION.$PATCHLEVEL.$SUBLEVEL"
->      #echo "#___ trying $FULLVERSION ___"
->  
-> -    if [ $((SUBLEVEL)) -gt $((STOPSUBLEVEL)) ]; then
-> +    if [ $(($SUBLEVEL)) -gt $(($STOPSUBLEVEL)) ]; then
->  	echo "Stopping since sublevel ($SUBLEVEL) is beyond stop-sublevel ($STOPSUBLEVEL)"
->  	exit 1
->      fi
-> @@ -297,7 +293,7 @@
->  if [ x$gotac != x ]; then
->    # Out great user wants the -ac patches
->  	# They could have done -ac (get latest) or -acxx where xx=version they want
-> -	if [ $gotac == "-ac" ]; then
-> +	if [ $gotac = "-ac" ]; then
->  	  # They want the latest version
->  		HIGHESTPATCH=0
->  		for PATCHNAMES in $patchdir/patch-${CURRENTFULLVERSION}-ac*\.*
-> -
+Upon a remount,ro request, all of the data from the percpu variables is
+collected (expensive, but very rare) and we determine if there are any
+outstanding writers to the mount.
 
-Thanks,
+I've written a little benchmark to sit in a loop for a couple of seconds in
+several cpus in parallel doing open/write/close loops.
+
+http://sr71.net/~dave/linux/openbench.c
+
+The code in here is a a worst-possible case for this patch.  It does opens on
+a _pair_ of files in two different mounts in parallel.  This should cause my
+code to lose its "operate on the same mount" optimization completely.  This
+worst-case scenario causes a 3% degredation in the benchmark.
+
+I could probably get rid of even this 3%, but it would be more complex than
+what I have here, and I think this is getting into acceptable territory.  In
+practice, I expect writing more than 3 bytes to a file, as well as disk I/O to
+mask any effects that this has.
+
+(To get rid of that 3%, we could have an #defined number of mounts in the
+percpu variable.  So, instead of a CPU getting operate only on percpu data
+when it accesses only one mount, it could stay on percpu data when it only
+accesses N or fewer mounts.)
+
+Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
-~Randy
+
+ linux-2.6.git-dave/fs/namespace.c        |  205 ++++++++++++++++++++++++++++---
+ linux-2.6.git-dave/include/linux/mount.h |    8 +
+ 2 files changed, 198 insertions(+), 15 deletions(-)
+
+diff -puN fs/namespace.c~r-o-bind-mounts-track-number-of-mount-writers fs/namespace.c
+--- linux-2.6.git/fs/namespace.c~r-o-bind-mounts-track-number-of-mount-writers	2007-11-01 14:46:20.000000000 -0700
++++ linux-2.6.git-dave/fs/namespace.c	2007-11-01 14:46:20.000000000 -0700
+@@ -17,6 +17,7 @@
+ #include <linux/quotaops.h>
+ #include <linux/acct.h>
+ #include <linux/capability.h>
++#include <linux/cpumask.h>
+ #include <linux/module.h>
+ #include <linux/sysfs.h>
+ #include <linux/seq_file.h>
+@@ -52,6 +53,8 @@ static inline unsigned long hash(struct 
+ 	return tmp & hash_mask;
+ }
+ 
++#define MNT_WRITER_UNDERFLOW_LIMIT -(1<<16)
++
+ struct vfsmount *alloc_vfsmnt(const char *name)
+ {
+ 	struct vfsmount *mnt = kmem_cache_zalloc(mnt_cache, GFP_KERNEL);
+@@ -65,6 +68,7 @@ struct vfsmount *alloc_vfsmnt(const char
+ 		INIT_LIST_HEAD(&mnt->mnt_share);
+ 		INIT_LIST_HEAD(&mnt->mnt_slave_list);
+ 		INIT_LIST_HEAD(&mnt->mnt_slave);
++		atomic_set(&mnt->__mnt_writers, 0);
+ 		if (name) {
+ 			int size = strlen(name) + 1;
+ 			char *newname = kmalloc(size, GFP_KERNEL);
+@@ -85,6 +89,84 @@ struct vfsmount *alloc_vfsmnt(const char
+  * we can determine when writes are able to occur to
+  * a filesystem.
+  */
++/*
++ * __mnt_is_readonly: check whether a mount is read-only
++ * @mnt: the mount to check for its write status
++ *
++ * This shouldn't be used directly ouside of the VFS.
++ * It does not guarantee that the filesystem will stay
++ * r/w, just that it is right *now*.  This can not and
++ * should not be used in place of IS_RDONLY(inode).
++ * mnt_want/drop_write() will _keep_ the filesystem
++ * r/w.
++ */
++int __mnt_is_readonly(struct vfsmount *mnt)
++{
++	return (mnt->mnt_sb->s_flags & MS_RDONLY);
++}
++EXPORT_SYMBOL_GPL(__mnt_is_readonly);
++
++struct mnt_writer {
++	/*
++	 * If holding multiple instances of this lock, they
++	 * must be ordered by cpu number.
++	 */
++	spinlock_t lock;
++	unsigned long count;
++	struct vfsmount *mnt;
++} ____cacheline_aligned_in_smp;
++static DEFINE_PER_CPU(struct mnt_writer, mnt_writers);
++
++static int __init init_mnt_writers(void)
++{
++	int cpu;
++	for_each_possible_cpu(cpu) {
++		struct mnt_writer *writer = &per_cpu(mnt_writers, cpu);
++		spin_lock_init(&writer->lock);
++		writer->count = 0;
++	}
++	return 0;
++}
++fs_initcall(init_mnt_writers);
++
++static void mnt_unlock_cpus(void)
++{
++	int cpu;
++	struct mnt_writer *cpu_writer;
++
++	for_each_possible_cpu(cpu) {
++		cpu_writer = &per_cpu(mnt_writers, cpu);
++		spin_unlock(&cpu_writer->lock);
++	}
++}
++
++static inline void __clear_mnt_count(struct mnt_writer *cpu_writer)
++{
++	if (!cpu_writer->mnt)
++		return;
++	atomic_add(cpu_writer->count, &cpu_writer->mnt->__mnt_writers);
++	cpu_writer->count = 0;
++}
++ /*
++ * must hold cpu_writer->lock
++ */
++static inline void use_cpu_writer_for_mount(struct mnt_writer *cpu_writer,
++					  struct vfsmount *mnt)
++{
++	if (cpu_writer->mnt == mnt)
++		return;
++	__clear_mnt_count(cpu_writer);
++	cpu_writer->mnt = mnt;
++}
++
++/*
++ * Most r/o checks on a fs are for operations that take
++ * discrete amounts of time, like a write() or unlink().
++ * We must keep track of when those operations start
++ * (for permission checks) and when they end, so that
++ * we can determine when writes are able to occur to
++ * a filesystem.
++ */
+ /**
+  * mnt_want_write - get write access to a mount
+  * @mnt: the mount on which to take a write
+@@ -97,12 +179,58 @@ struct vfsmount *alloc_vfsmnt(const char
+  */
+ int mnt_want_write(struct vfsmount *mnt)
+ {
+-	if (__mnt_is_readonly(mnt))
+-		return -EROFS;
+-	return 0;
++	int ret = 0;
++	struct mnt_writer *cpu_writer;
++
++	cpu_writer = &get_cpu_var(mnt_writers);
++	spin_lock(&cpu_writer->lock);
++	if (__mnt_is_readonly(mnt)) {
++		ret = -EROFS;
++		goto out;
++	}
++	use_cpu_writer_for_mount(cpu_writer, mnt);
++	cpu_writer->count++;
++out:
++	spin_unlock(&cpu_writer->lock);
++	put_cpu_var(mnt_writers);
++	return ret;
+ }
+ EXPORT_SYMBOL_GPL(mnt_want_write);
+ 
++static void lock_and_coalesce_cpu_mnt_writer_counts(void)
++{
++	int cpu;
++	struct mnt_writer *cpu_writer;
++
++	for_each_possible_cpu(cpu) {
++		cpu_writer = &per_cpu(mnt_writers, cpu);
++		spin_lock(&cpu_writer->lock);
++		__clear_mnt_count(cpu_writer);
++		cpu_writer->mnt = NULL;
++	}
++}
++
++/*
++ * These per-cpu write counts are not guaranteed to have
++ * matched increments and decrements on any given cpu.
++ * A file open()ed for write on one cpu and close()d on
++ * another cpu will imbalance this count.  Make sure it
++ * does not get too far out of whack.
++ */
++static void handle_write_count_underflow(struct vfsmount *mnt)
++{
++	while (atomic_read(&mnt->__mnt_writers) <
++		MNT_WRITER_UNDERFLOW_LIMIT) {
++		/*
++		 * It isn't necessary to hold all of the locks
++		 * at the same time, but doing it this way makes
++		 * us share a lot more code.
++		 */
++		lock_and_coalesce_cpu_mnt_writer_counts();
++		mnt_unlock_cpus();
++	}
++}
++
+ /**
+  * mnt_drop_write - give up write access to a mount
+  * @mnt: the mount on which to give up write access
+@@ -113,23 +241,61 @@ EXPORT_SYMBOL_GPL(mnt_want_write);
+  */
+ void mnt_drop_write(struct vfsmount *mnt)
+ {
++	int must_check_underflow = 0;
++	struct mnt_writer *cpu_writer;
++
++	cpu_writer = &get_cpu_var(mnt_writers);
++	spin_lock(&cpu_writer->lock);
++
++	use_cpu_writer_for_mount(cpu_writer, mnt);
++	if (cpu_writer->count > 0) {
++		cpu_writer->count--;
++	} else {
++		must_check_underflow = 1;
++		atomic_dec(&mnt->__mnt_writers);
++	}
++
++	spin_unlock(&cpu_writer->lock);
++	/*
++	 * Logically, we could call this each time,
++	 * but the __mnt_writers cacheline tends to
++	 * be cold, and makes this expensive.
++	 */
++	if (must_check_underflow)
++		handle_write_count_underflow(mnt);
++	/*
++	 * This could be done right after the spinlock
++	 * is taken because the spinlock keeps us on
++	 * the cpu, and disables preemption.  However,
++	 * putting it here bounds the amount that
++	 * __mnt_writers can underflow.  Without it,
++	 * we could theoretically wrap __mnt_writers.
++	 */
++	put_cpu_var(mnt_writers);
+ }
+ EXPORT_SYMBOL_GPL(mnt_drop_write);
+ 
+-/*
+- * __mnt_is_readonly: check whether a mount is read-only
+- * @mnt: the mount to check for its write status
+- *
+- * This shouldn't be used directly ouside of the VFS.
+- * It does not guarantee that the filesystem will stay
+- * r/w, just that it is right *now*.  This can not and
+- * should not be used in place of IS_RDONLY(inode).
+- */
+-int __mnt_is_readonly(struct vfsmount *mnt)
++int mnt_make_readonly(struct vfsmount *mnt)
+ {
+-	return (mnt->mnt_sb->s_flags & MS_RDONLY);
++	int ret = 0;
++
++	lock_and_coalesce_cpu_mnt_writer_counts();
++	/*
++	 * With all the locks held, this value is stable
++	 */
++	if (atomic_read(&mnt->__mnt_writers) > 0) {
++		ret = -EBUSY;
++		goto out;
++	}
++	/*
++	 * actually set mount's r/o flag here to make
++	 * __mnt_is_readonly() true, which keeps anyone
++	 * from doing a successful mnt_want_write().
++	 */
++out:
++	mnt_unlock_cpus();
++	return ret;
+ }
+-EXPORT_SYMBOL_GPL(__mnt_is_readonly);
+ 
+ int simple_set_mnt(struct vfsmount *mnt, struct super_block *sb)
+ {
+@@ -325,6 +491,15 @@ static struct vfsmount *clone_mnt(struct
+ static inline void __mntput(struct vfsmount *mnt)
+ {
+ 	struct super_block *sb = mnt->mnt_sb;
++	lock_and_coalesce_cpu_mnt_writer_counts();
++	mnt_unlock_cpus();
++	/*
++	 * This probably indicates that somebody messed
++	 * up a mnt_want/drop_write() pair.  If this
++	 * happens, the filesystem was probably unable
++	 * to make r/w->r/o transitions.
++	 */
++	WARN_ON(atomic_read(&mnt->__mnt_writers));
+ 	dput(mnt->mnt_root);
+ 	free_vfsmnt(mnt);
+ 	deactivate_super(sb);
+diff -puN include/linux/mount.h~r-o-bind-mounts-track-number-of-mount-writers include/linux/mount.h
+--- linux-2.6.git/include/linux/mount.h~r-o-bind-mounts-track-number-of-mount-writers	2007-11-01 14:46:20.000000000 -0700
++++ linux-2.6.git-dave/include/linux/mount.h	2007-11-01 14:46:20.000000000 -0700
+@@ -14,6 +14,7 @@
+ 
+ #include <linux/types.h>
+ #include <linux/list.h>
++#include <linux/nodemask.h>
+ #include <linux/spinlock.h>
+ #include <asm/atomic.h>
+ 
+@@ -61,6 +62,13 @@ struct vfsmount {
+ 	atomic_t mnt_count;
+ 	int mnt_expiry_mark;		/* true if marked for expiry */
+ 	int mnt_pinned;
++	/*
++	 * This value is not stable unless all of the
++	 * mnt_writers[] spinlocks are held, and all
++	 * mnt_writer[]s on this mount have 0 as
++	 * their ->count
++	 */
++	atomic_t __mnt_writers;
+ };
+ 
+ static inline struct vfsmount *mntget(struct vfsmount *mnt)
+_
