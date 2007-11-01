@@ -1,72 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759518AbXKAJkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760185AbXKAJm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759518AbXKAJkj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 05:40:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbXKAJkb
+	id S1760185AbXKAJm2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 05:42:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbXKAJmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 05:40:31 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56767 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753376AbXKAJka (ORCPT
+	Thu, 1 Nov 2007 05:42:19 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44029 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753598AbXKAJmS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 05:40:30 -0400
-Subject: Re: [build bug, 2.6.24-rc1] CONFIG_VIDEO_DEV=m &
-	CONFIG_VIDEO_SAA7146_VV=y
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Trent Piepho <xyzzy@speakeasy.org>,
-       Linux Kernel Mailing list <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Johannes Stezenbach <js@linuxtv.org>
-In-Reply-To: <20071101090142.GA13009@elte.hu>
-References: <20071026073736.GA24172@elte.hu>
-	 <Pine.LNX.4.58.0710310458150.19072@shell4.speakeasy.net>
-	 <20071101090142.GA13009@elte.hu>
-Content-Type: text/plain
-Date: Thu, 01 Nov 2007 07:40:13 -0200
-Message-Id: <1193910013.8587.28.camel@gaivota>
+	Thu, 1 Nov 2007 05:42:18 -0400
+Date: Thu, 1 Nov 2007 09:43:44 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] libata ATAPI transfer size cleanups
+Message-ID: <20071101094344.6eb9d8bc@the-village.bc.nu>
+In-Reply-To: <20071101090733.GA9258@havoc.gtf.org>
+References: <20071101090733.GA9258@havoc.gtf.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.1-1mdv2008.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Thu, 1 Nov 2007 05:07:33 -0400
+Jeff Garzik <jeff@garzik.org> wrote:
 
-On Qui, 2007-11-01 at 10:01 +0100, Ingo Molnar wrote:
-> * Trent Piepho <xyzzy@speakeasy.org> wrote:
 > 
-> > On Fri, 26 Oct 2007, Ingo Molnar wrote:
-> > > the attached config (generated via make randconfig) fails to build due
-> > > to the combination of these config entries:
-> > >
-> > >   CONFIG_VIDEO_DEV=m
-> > >   CONFIG_VIDEO_SAA7146_VV=y
-> > >
-> > > i found no obvious Kconfig way to force VIDEO_SAA7146_VV to be modular
-> > > when VIDEO_DEV is modular - is there a good solution for this?
-> > 
-> > I guess you didn't like my reply to your first message about this?
-> > 
-> > http://lkml.org/lkml/2007/10/7/145
-> > 
-> > kbuild support for modules used as libraries is really poor.  The only 
-> > way to do is use select on the library module, and then have all the 
-> > dependencies of the selectee be included in the selector, which must 
-> > be done recursively so that any modules selected by the selectee have 
-> > their dependencies added to the selector.
+> This is purely for comment and testing, not for merging (yet?).
 > 
-> any patch for me to try? This bug is blocking automated randconfig 
-> build-testing quite frequently so it's quite a showstopper.
+> A common recipe in several vendor drivers (either GPL'd, or I have NDA'd
+> access to use them as a documentation-like reference) for ATAPI was
+> slightly different from ours.  This recipe can be found in
+> atapi_tf_xfer_size(), and it's slightly different from Alan's.
 
-Trent generated a patch for it. I'll update it soon my -git. You should
-notice that there were one change at av7110 that need to be applied
-before Trent's patch, otherwise the saa7146 stuff will be broken if V4L1
-is not selected.
+Looks mostly good. Might cause breakage on one or two controllers by
+setting lbam/lbah to 0 for DMA but we can test that and find out.
 
--- 
-Cheers,
-Mauro
+Note however - the scheme in use now has been tested for over ten years
+in drivers/ide. The scheme below has not...
 
+Having an ata_tf_xfer_size method is definitely a good idea whatever
+methods we eventually decide on.
