@@ -1,43 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756009AbXKABBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755047AbXKABF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756009AbXKABBp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 21:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbXKABBh
+	id S1755047AbXKABF1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 21:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbXKABFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 21:01:37 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45307 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752080AbXKABBg (ORCPT
+	Wed, 31 Oct 2007 21:05:17 -0400
+Received: from wx-out-0506.google.com ([66.249.82.239]:63029 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752111AbXKABFP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 21:01:36 -0400
-Date: Wed, 31 Oct 2007 18:01:34 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: David Miller <davem@davemloft.net>
-cc: akpm@linux-foundation.org, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
-       penberg@cs.helsinki.fi
-Subject: Re: [patch 0/7] [RFC] SLUB: Improve allocpercpu to reduce per cpu
- access overhead
-In-Reply-To: <20071031.180007.86834938.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0710311801110.25515@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0710311730280.25414@schroedinger.engr.sgi.com>
- <20071031.175124.84905325.davem@davemloft.net>
- <Pine.LNX.4.64.0710311752380.25515@schroedinger.engr.sgi.com>
- <20071031.180007.86834938.davem@davemloft.net>
+	Wed, 31 Oct 2007 21:05:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Zq4rfrl4d61RMK40As+ldGQ7UJledILHHZMlLVwRES7Y4pvaZhD4xuA+162uKMC2aXKzyIVDYEqTEdluIyfefYXp9erVsRAOxRRyhHAPe3s7z68aY0DYKbTfy2t0OCzh7mVTtgvPY1Ep3fbzy+HWCKs7uJdP1qjfeKqAnKcWqIY=
+Message-ID: <a8e1da0710311805l32282ce0ve9df9280cf7cce06@mail.gmail.com>
+Date: Thu, 1 Nov 2007 09:05:14 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Marcel Holtmann" <marcel@holtmann.org>
+Subject: Re: [PATCH]bluetooth: hci_sysfs connection bus_id add support for diffrent hci device
+Cc: "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       bluez-devel@lists.sourceforge.net
+In-Reply-To: <1193824773.32459.22.camel@violet>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071031023017.GA3896@darkstar.te-china.tietoenator.com>
+	 <20071031.000141.241824894.davem@davemloft.net>
+	 <1193817409.32459.10.camel@violet>
+	 <a8e1da0710310213r1e4f3d7ckcbdf2e6bf854745e@mail.gmail.com>
+	 <1193824773.32459.22.camel@violet>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Oct 2007, David Miller wrote:
+On 10/31/07, Marcel Holtmann <marcel@holtmann.org> wrote:
+> Hi Dave,
+>
+> > > > > diff -upr linux/net/bluetooth/hci_sysfs.c linux.new/net/bluetooth/hci_sysfs.c
+> > > > > --- linux/net/bluetooth/hci_sysfs.c 2007-10-31 10:21:00.000000000 +0800
+> > > > > +++ linux.new/net/bluetooth/hci_sysfs.c     2007-10-31 10:21:55.000000000 +0800
+> > > > > @@ -302,7 +302,8 @@ void hci_conn_add_sysfs(struct hci_conn
+> > > > >     conn->dev.release = bt_release;
+> > > > >
+> > > > >     snprintf(conn->dev.bus_id, BUS_ID_SIZE,
+> > > > > -                   "%s%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X",
+> > > > > +                   "%s%s%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X",
+> > > > > +                   hdev->name,
+> > > > >                     conn->type == ACL_LINK ? "acl" : "sco",
+> > > > >                     ba->b[5], ba->b[4], ba->b[3],
+> > > > >                     ba->b[2], ba->b[1], ba->b[0]);
+> > > >
+> > > > This might not work.
+> > > >
+> > > > Your device's name is already 15 characters long,
+> > > > BUS_ID_SIZE is 20, and it seems hdev->name could
+> > > > easily overflow the 4 or 5 characters of space
+> > > > remaining.
+> > >
+> > > and should also be not needed since their parents are different. However
+> > > we had to add the connections to a bus. Otherwise the userspace will
+> > > never see them. I have to think about the right solution for this
+> > > problem.
+> >
+> > Maybe we can use this instead:
+> >       snprintf(conn->dev.bus_id, BUS_ID_SIZE,
+> > -                     "%s%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X",
+> > +                     "%s%s%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X",
+> > +                     hdev->name + 3,
+> >                       conn->type == ACL_LINK ? "acl" : "sco",
+> >                       ba->b[5], ba->b[4], ba->b[3],
+> >                       ba->b[2], ba->b[1], ba->b[0]);
+>
+> I had a look on how other subsystems handle this case and yes, they
+> duplicate the id number from its parent device. So I applied the
+> attached patch to my tree.
+Thanks.
+>
+> The best would be to use '"%d-%d", hdev->id, conn->handle', but at the
+> time we create the hci_conn structure and add the sysfs entry the
+> connection handle is not know yet. I have to look into that and see if
+> that can be changed.
+I agree. I wonder to  know whether the conn sys issue can be delayed
+after the handle is availible.
 
-> Without DEBUG_VM I get a loop of crashes shortly after SSHD
-> is started, I'll try to track it down.
-
-Check how much per cpu memory is in use by
-
-cat /proc/vmstat
-
-currently we have a 32k limit there.
- 
+Regards
+dave
