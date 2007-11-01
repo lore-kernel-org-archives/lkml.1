@@ -1,99 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbXKASoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759370AbXKASoc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754819AbXKASoA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 14:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758219AbXKASnt
+	id S1759370AbXKASoc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 14:44:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754361AbXKASoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 14:43:49 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:38660 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753680AbXKASns (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 14:43:48 -0400
-Date: Thu, 1 Nov 2007 18:37:41 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-pcmcia@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PCMCIA: prevent auto insert during resume.
-Message-ID: <20071101183741.GA27621@flint.arm.linux.org.uk>
-Mail-Followup-To: Rodolfo Giometti <giometti@enneenne.com>,
-	Pavel Machek <pavel@ucw.cz>, linux-pcmcia@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-References: <20071026151141.GA4321@flint.arm.linux.org.uk> <20071026154705.GY19019@enneenne.com> <20071026160206.GC4321@flint.arm.linux.org.uk> <20071026162705.GZ19019@enneenne.com> <20071026163651.GD4321@flint.arm.linux.org.uk> <20071026165400.GA19019@enneenne.com> <20071026170030.GE4321@flint.arm.linux.org.uk> <20071026171857.GC19019@enneenne.com> <20071029192414.GC7742@ucw.cz> <20071101145359.GH5548@enneenne.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071101145359.GH5548@enneenne.com>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 1 Nov 2007 14:44:21 -0400
+Received: from mx38.mail.ru ([194.67.23.16]:60273 "EHLO mx38.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754220AbXKASoU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 14:44:20 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: Alexey Starikovskiy <aystarik@gmail.com>
+Subject: Re: [2.6.24-rc1 regression] AC adapter state does not change after resume
+Date: Thu, 1 Nov 2007 21:44:02 +0300
+User-Agent: KMail/1.9.7
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <200710302324.52822.arvidjaar@mail.ru> <200710310709.06621.arvidjaar@mail.ru> <47282055.2000409@gmail.com>
+In-Reply-To: <47282055.2000409@gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1928544.vAtv2EvoK9";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200711012144.12477.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 01, 2007 at 03:53:59PM +0100, Rodolfo Giometti wrote:
-> On Mon, Oct 29, 2007 at 07:24:15PM +0000, Pavel Machek wrote:
-> > On Fri 2007-10-26 19:18:57, Rodolfo Giometti wrote:
-> > > On Fri, Oct 26, 2007 at 06:00:31PM +0100, Russell King wrote:
-> > > 
-> > > > > > > Also if you didn't eject the socket, at resume the device will be
-> > > > > > > powered up again, my patch just prevents that a pre-powered off device
-> > > > > > > to be turned on at resume time.
-> > > > > > > 
-> > > > > > > However you should consider that some embedded systems have fixed
-> > > > > > > PCMCIA devices that can't be removed so there are no reasons to detect
-> > > > > > > them after resume, nobody can change them. :)
-> > > > > > > 
-> > > > > > > Also battery powered devices can go very frequently to sleep and the
-> > > > > > > current behavior force the user to switch off the unused device each
-> > > > > > > time the system resumes from sleep.
-> > > > > > 
-> > > > > > I realise that.  I do work on embedded devices, and this behaviour is
-> > > > > > explicitly there to support embedded devices.
-> > > > > > 
-> > > > > > I've suggested a workable solution to you which allows both of us to
-> > > > > > have the behaviour we both desire from the system.  That sounds like
-> > > > > > a negotiated solution to me...
-> > > > > 
-> > > > > Do you mean to switch off the socket from userland? It could be a
-> > > > > solution but in this case the device is powered on each time even if
-> > > > > for a short delay...
-> > > > 
-> > > > If it's a permanent device, and you've powered it down via pccardctl,
-> > > > then you've powered it down from userland.  So record that it's been
-> > > > powered down from userland.  Then, on resume, if it's been powered down
-> > > > from userland, don't try to re-power it on resume.
-> > > 
-> > > But the userland doesn't re-power it on resume... it's the kernel
-> > > itself whos re-powers the device on resume. So the userland can only
-> > > power down the device again.
-> > 
-> > I think Russell means: at a flag into kernel. If user powers down the
-> > device, set the flag. If flag is set during resume, avoid powering up
-> > the device.
-> 
-> That's exactly what my patch does! :)
-> 
-> If the user does 'eject' the device is not powered on at resume.
-> 
-> Currently, with out the patch, if you do an 'eject' to power down the
-> device, then you go to sleep and resume, the device is powered up
-> again and you have to do a new 'eject' to power it down.
-> 
-> My patch fixes this behaviour.
+--nextPart1928544.vAtv2EvoK9
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Let's be absolutely clear about this.  The patch in your original post
-does *NOT* do that.  It *completely* removes the possibility of powering
-up a device inserted into the PCMCIA slot before resuming without
-unplugging and replugging it by removing the code which detects an
-inserted card on resume.
+On Wednesday 31 October 2007, Alexey Starikovskiy wrote:
+> Andrey Borzenkov wrote:
+> > On Wednesday 31 October 2007, Alexey Starikovskiy wrote:
+> >> Andrey Borzenkov wrote:
+> >>> I suspect new ACPI AC adapter code but have to add some printk's to be
+> >>> sure.
+> >>>
+> >>> To reproduce - plug in AC cord, suspend, unplug, resume - kpowersave
+> >>> and sysfs still show AC adapter online. Or other way round.
+> >>>
+> >>> -andrey
+> >>
+> >> Please check if this patch helps.
+> >
+> > It does not even compile :)
+> >
+> > On serious note (after adding forward declaration) - patch half works. =
+It
+> > does make "online" return true value (which confirms that underlying AC=
+PI
+> > works correctly) but HAL still does not notice it.
+> >
+> > The problem is, with power_supply interface HAL does not use polling, it
+> > relies on CHANGE event. This event is apparently never generated if AC
+> > adapter state changes on resume. So the obvious fix is to compare AC
+> > state before and after suspend in ->resume function and generate
+> > synthetic CHANGE event if something has changed.
+> >
+> > This will also make superfluous polling redundant.
+>
+> Ok, here. This one compiles :)
+>
 
-And let's also be clear about something else.  You _were_ crystal clear
-on that aspect of it from your last mail on the subject since you were
-asking for names of attributes to set and clear such a flag.  I didn't
-respond because I'm not going to hold your hand with such obvious
-issues - if you need that level of support, it will be far faster for
-me to write the damned patch myself.
+=46or HAL regression:
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Tested-by: Andrey Borzenkov <arvidjaar@mail.ru>
+
+But the patch is incomplete. This synthetic event should be the same as if =
+OS=20
+were running; i.e. you should send both other events as well. As is you jus=
+t=20
+create latent bug to be hit by some netlink consumer sooner or later.
+
+--nextPart1928544.vAtv2EvoK9
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQBHKh5zR6LMutpd94wRAoPDAKCMm4j7jLfZyjHHOucHkh9QyqUQDQCeIs04
+++sqLemtZM2bwIWm6cucFCE=
+=Z36m
+-----END PGP SIGNATURE-----
+
+--nextPart1928544.vAtv2EvoK9--
