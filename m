@@ -1,50 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760187AbXKAJqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760484AbXKAJsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760187AbXKAJqw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 05:46:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756141AbXKAJqp
+	id S1760484AbXKAJsj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 05:48:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756960AbXKAJsb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 05:46:45 -0400
-Received: from jabberwock.ucw.cz ([89.250.246.4]:59776 "EHLO jabberwock.ucw.cz"
+	Thu, 1 Nov 2007 05:48:31 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:34866 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753753AbXKAJqo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 05:46:44 -0400
-X-Greylist: delayed 1209 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Nov 2007 05:46:44 EDT
-Date: Thu, 1 Nov 2007 09:31:40 +0100
-From: Martin Mares <mj@ucw.cz>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Robert Hancock <hancockr@shaw.ca>, Greg KH <greg@kroah.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, akpm@linux-foundation.org,
-       ak@suse.de, rajesh.shah@intel.com,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: pci-disable-decode-of-io-memory-during-bar-sizing.patch
-Message-ID: <mj+md-20071101.082743.5958.albireo@ucw.cz>
-References: <200708151919.l7FJJfUE010966@imap1.linux-foundation.org> <200710251622.36773.jbarnes@virtuousgeek.org> <20071026025407.GA21408@kroah.com> <200710260959.46811.jbarnes@virtuousgeek.org> <20071027024140.GC29039@kroah.com> <47267232.3020506@shaw.ca> <alpine.LFD.0.999.0710300811230.30120@woody.linux-foundation.org> <20071030094756.779ac5c0@laptopd505.fenrus.org> <alpine.LFD.0.999.0710300957260.30120@woody.linux-foundation.org> <20071030102820.47a6e365@laptopd505.fenrus.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071030102820.47a6e365@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.9i
+	id S1756871AbXKAJsa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 05:48:30 -0400
+Message-ID: <4729A0DF.20800@garzik.org>
+Date: Thu, 01 Nov 2007 05:48:15 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Drake <dsd@gentoo.org>
+CC: linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Tejun Heo <htejun@gmail.com>, Albert Lee <albertcc@tw.ibm.com>
+Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
+References: <47274A5F.6070409@gentoo.org> <20071030153417.59b9182c@the-village.bc.nu> <47276DCA.1000808@gentoo.org> <20071030190153.373c9347@the-village.bc.nu> <47278439.4030801@gentoo.org> <20071031114958.210bd7cc@the-village.bc.nu> <20071031115754.GK5059@kernel.dk>
+In-Reply-To: <20071031115754.GK5059@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+Ok, gave this a hard look.
 
-> something like
-> int pci_enable_mmconfig(struct pci_dev *pdev) ?
-> sounds like a very solid plan to me...
+This is basically a behavior change with regards to how we program the 
+bcount(low) and bcount(high) registers.
 
-Please remember that the driver is not the sole user of the PCI config
-space -- user-space programs (e.g., lspci) can access it via sysfs, too.
-Should we force users of such programs to add a magic kernel parameter
-to enable MMCONFIG? Does not make much sense.
+Issues about FIFO draining and devices returning too-much data are 
+ultimately tangential.  Furthermore, this is an ATAPI PIO issue, as 
+demonstrated by (a) Alan's patch did not change DMA lbam/lbah 
+programming and (b) Daniel's report of the message "ata2.00: 66 bytes 
+trailing data" which occurs in the PIO state machine.
 
-Maybe we should do all bus scanning with conf1 and then try if MMCONFIG
-returns the same values?
+To survey the behaviors for ATAPI PIO:
 
-				Have a nice fortnight
--- 
-Martin `MJ' Mares                          <mj@ucw.cz>   http://mj.ucw.cz/
-Faculty of Math and Physics, Charles University, Prague, Czech Rep., Earth
-"Beware of bugs in the above code; I have only proved it correct, not tried it." -- D.E.K.
+ide-cd:			read/write commands,	blimit = 32k
+			others cmds,		blimit = xfer_len
+
+old libata (pre-Alan):	blimit = 8k
+
+new libata behavior:	blimit = xfer_len
+
+thus Alan's patch was moving us CLOSER to ide-cd's behavior (if we 
+ignore read/write commands for the moment, which are not at issue).
+
+and the end result is that the change from old-libata to new-libata 
+behavior broke Daniel's case, which is a device known to ignore the SCSI 
+command CDB's allocation length field.
+
+Additionally, let's add some background:
+
+libata was originally written for first-gen SATA controllers (incl. 
+first-gen SATA bridges), most notably ata_piix, the controller Daniel is 
+using.
+
+I chose blimit 8k because I felt that matches the maximum size of a SATA 
+Data FIS.  I felt -- this was a wild-added guess -- that setting blimit 
+thusly would properly configure all the magic internal FIFOs and data 
+buffers in silicon that handled these crazy ATAPI devices with random 
+transfer lengths.
+
+I am not drawing any conclusions yet, but I'm thinking that blimit=8k 
+may be a better choice for SATA ATAPI.
+
+Other comment:
+
+* as Tejun noted in IRC, we don't have a clear idea of what triggered 
+the HSM violation.  turning on debugging printk's would help, but 
+unfortunately that means turning them on for everything, including hard 
+drives.
+
+	Jeff
+
+
