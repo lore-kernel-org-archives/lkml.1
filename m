@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754314AbXKAAvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753315AbXKAAvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754314AbXKAAvR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 20:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbXKAAvD
+	id S1753315AbXKAAvg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 20:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755011AbXKAAv0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 20:51:03 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:48730 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752111AbXKAAvB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 20:51:01 -0400
-Date: Thu, 1 Nov 2007 11:50:56 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jiri Kosina <jikos@jikos.cz>
-Cc: linux-input@atrey.karlin.mff.cuni.cz,
-       linux-usb-devel@lists.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] hiddev: compat_ptr() returns a void *
-Message-Id: <20071101115056.fdf8a95c.sfr@canb.auug.org.au>
-In-Reply-To: <Pine.LNX.4.64.0710311217370.18815@twin.jikos.cz>
-References: <20071031145153.30f9d3dd.sfr@canb.auug.org.au>
-	<Pine.LNX.4.64.0710311217370.18815@twin.jikos.cz>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i486-pc-linux-gnu)
+	Wed, 31 Oct 2007 20:51:26 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57106
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754845AbXKAAvZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 20:51:25 -0400
+Date: Wed, 31 Oct 2007 17:51:24 -0700 (PDT)
+Message-Id: <20071031.175124.84905325.davem@davemloft.net>
+To: clameter@sgi.com
+Cc: akpm@linux-foundation.org, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
+       penberg@cs.helsinki.fi
+Subject: Re: [patch 0/7] [RFC] SLUB: Improve allocpercpu to reduce per cpu
+ access overhead
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0710311730280.25414@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0710311724490.25361@schroedinger.engr.sgi.com>
+	<20071031.172741.192929676.davem@davemloft.net>
+	<Pine.LNX.4.64.0710311730280.25414@schroedinger.engr.sgi.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__1_Nov_2007_11_50_56_+1100_u5I=IRqrvhpb0kMh"
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__1_Nov_2007_11_50_56_+1100_u5I=IRqrvhpb0kMh
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+From: Christoph Lameter <clameter@sgi.com>
+Date: Wed, 31 Oct 2007 17:31:12 -0700 (PDT)
 
-On Wed, 31 Oct 2007 12:27:24 +0100 (CET) Jiri Kosina <jikos@jikos.cz> wrote:
->
-> I already have this fixed in my tree, sorry.
+> Others may have the same issue.
+> 
+> git pull git://git.kernel.org/pub/scm/linux/kernel/git/christoph/slab.git allocpercpu
+> 
+> should get you the whole thing.
 
-As long as it gets fixed, I don't mind.
+This patch fixes build failures with DEBUG_VM disabled.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__1_Nov_2007_11_50_56_+1100_u5I=IRqrvhpb0kMh
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHKSL1TgG2atn1QN8RAujQAJ9rrz6BRc95JDFoQ2KOr5B2VYMqFQCfR/Ec
-ImFvpM0ogVEHeDdCOV4dQfQ=
-=xMui
------END PGP SIGNATURE-----
-
---Signature=_Thu__1_Nov_2007_11_50_56_+1100_u5I=IRqrvhpb0kMh--
+diff --git a/include/linux/percpu.h b/include/linux/percpu.h
+index 4b167c0..d414703 100644
+--- a/include/linux/percpu.h
++++ b/include/linux/percpu.h
+@@ -36,7 +36,7 @@
+ #ifdef CONFIG_DEBUG_VM
+ #define __percpu_disguise(pdata) ((void *)~(unsigned long)(pdata))
+ #else
+-#define __percpu_disguide(pdata) ((void *)(pdata))
++#define __percpu_disguise(pdata) ((void *)(pdata))
+ #endif
+ 
+ /* 
