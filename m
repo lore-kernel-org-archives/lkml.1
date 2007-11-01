@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757373AbXKAOCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754923AbXKAODc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757373AbXKAOCv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 10:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753983AbXKAOCn
+	id S1754923AbXKAODc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 10:03:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbXKAODY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 10:02:43 -0400
-Received: from ns1.suse.de ([195.135.220.2]:57410 "EHLO mx1.suse.de"
+	Thu, 1 Nov 2007 10:03:24 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:44243 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753940AbXKAOCm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 10:02:42 -0400
-Date: Thu, 1 Nov 2007 15:02:41 +0100
+	id S1754198AbXKAODW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 10:03:22 -0400
+Date: Thu, 1 Nov 2007 15:03:20 +0100
 From: Nick Piggin <npiggin@suse.de>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
        Ingo Molnar <mingo@elte.hu>
-Subject: [patch 1/4] spinlock: lockbreak cleanup
-Message-ID: <20071101140241.GB26879@wotan.suse.de>
+Subject: [patch 1/4] x86: FIFO ticket spinlocks
+Message-ID: <20071101140320.GC26879@wotan.suse.de>
 References: <20071101140146.GA26879@wotan.suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -26,366 +26,442 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-The break_lock data structure and code for spinlocks is quite nasty.
-Not only does it double the size of a spinlock but it changes locking to
-a potentially less optimal trylock.
+Introduce ticket lock spinlocks for x86 which are FIFO. The implementation
+is described in the comments. The straight-line lock/unlock instruction
+sequence is slightly slower than the dec based locks on modern x86 CPUs,
+however the difference is quite small on Core2 and Opteron when working out of
+cache, and becomes almost insignificant even on P4 when the lock misses cache.
+trylock is more significantly slower, but they are relatively rare.
 
-Put all of that under CONFIG_GENERIC_LOCKBREAK, and introduce a
-__raw_spin_is_contended that uses the lock data itself to determine whether
-there are waiters on the lock, to be used if CONFIG_GENERIC_LOCKBREAK is
-not set.
+On an 8 core (2 socket) Opteron, spinlock unfairness is extremely noticable,
+with a userspace test having a difference of up to 2x runtime per thread, and
+some threads are starved or "unfairly" granted the lock up to 1 000 000 (!)
+times. After this patch, all threads appear to finish at exactly the same
+time.
 
-Rename need_lockbreak to spin_needbreak, make it use spin_is_contended to
-decouple it from the spinlock implementation, and make it typesafe (rwlocks
-do not have any need_lockbreak sites -- why do they even get bloated up
-with that break_lock then?).
+The memory ordering of the lock does conform to x86 standards, and the
+implementation has been reviewed by Intel and AMD engineers.
+
+The algorithm also tells us how many CPUs are contending the lock, so
+lockbreak becomes trivial and we no longer have to waste 4 bytes per
+spinlock for it.
+
+After this, we can no longer spin on any locks with preempt enabled
+and cannot reenable interrupts when spinning on an irq safe lock, because
+at that point we have already taken a ticket and the would deadlock if
+the same CPU tries to take the lock again.  These are questionable anyway:
+if the lock happens to be called under a preempt or interrupt disabled section,
+then it will just have the same latency problems. The real fix is to keep
+critical sections short, and ensure locks are reasonably fair (which this
+patch does).
 
 Signed-off-by: Nick Piggin <npiggin@suse.de>
 
 ---
-Index: linux-2.6/include/linux/sched.h
+Index: linux-2.6/include/asm-x86/spinlock_64.h
 ===================================================================
---- linux-2.6.orig/include/linux/sched.h
-+++ linux-2.6/include/linux/sched.h
-@@ -1854,23 +1854,16 @@ extern int cond_resched_softirq(void);
- 
- /*
-  * Does a critical section need to be broken due to another
-- * task waiting?:
-+ * task waiting?: (technically does not depend on CONFIG_PREEMPT,
-+ * but a general need for low latency)
+--- linux-2.6.orig/include/asm-x86/spinlock_64.h
++++ linux-2.6/include/asm-x86/spinlock_64.h
+@@ -12,74 +12,98 @@
+  * Simple spin lock operations.  There are two variants, one clears IRQ's
+  * on the local processor, one does not.
+  *
+- * We make no fairness assumptions. They have a cost.
++ * These are fair FIFO ticket locks, which are currently limited to 256
++ * CPUs.
+  *
+  * (the type definitions are in asm/spinlock_types.h)
   */
--#if defined(CONFIG_PREEMPT) && defined(CONFIG_SMP)
--# define need_lockbreak(lock) ((lock)->break_lock)
--#else
--# define need_lockbreak(lock) 0
--#endif
--
--/*
-- * Does a critical section need to be broken due to another
-- * task waiting or preemption being signalled:
-- */
--static inline int lock_need_resched(spinlock_t *lock)
-+static inline int spin_needbreak(spinlock_t *lock)
- {
--	if (need_lockbreak(lock) || need_resched())
--		return 1;
-+#ifdef CONFIG_PREEMPT
-+	return spin_is_contended(lock);
-+#else
- 	return 0;
+ 
++#if (NR_CPUS > 256)
++#error spinlock supports a maximum of 256 CPUs
 +#endif
++
+ static inline int __raw_spin_is_locked(raw_spinlock_t *lock)
+ {
+-	return *(volatile signed int *)(&(lock)->slock) <= 0;
++	int tmp = *(volatile signed int *)(&(lock)->slock);
++
++	return (((tmp >> 8) & 0xff) != (tmp & 0xff));
  }
  
- /*
-Index: linux-2.6/include/linux/spinlock.h
-===================================================================
---- linux-2.6.orig/include/linux/spinlock.h
-+++ linux-2.6/include/linux/spinlock.h
-@@ -120,6 +120,12 @@ do {								\
- 
- #define spin_is_locked(lock)	__raw_spin_is_locked(&(lock)->raw_lock)
- 
-+#ifdef CONFIG_GENERIC_LOCKBREAK
-+#define spin_is_contended(lock) ((lock)->break_lock)
-+#else
-+#define spin_is_contended(lock)	__raw_spin_is_contended(&(lock)->raw_lock)
-+#endif
-+
- /**
-  * spin_unlock_wait - wait until the spinlock gets unlocked
-  * @lock: the spinlock in question.
-Index: linux-2.6/fs/jbd/checkpoint.c
-===================================================================
---- linux-2.6.orig/fs/jbd/checkpoint.c
-+++ linux-2.6/fs/jbd/checkpoint.c
-@@ -347,7 +347,8 @@ restart:
- 				break;
- 			}
- 			retry = __process_buffer(journal, jh, bhs,&batch_count);
--			if (!retry && lock_need_resched(&journal->j_list_lock)){
-+			if (!retry && (need_resched() ||
-+				spin_needbreak(&journal->j_list_lock))) {
- 				spin_unlock(&journal->j_list_lock);
- 				retry = 1;
- 				break;
-Index: linux-2.6/fs/jbd/commit.c
-===================================================================
---- linux-2.6.orig/fs/jbd/commit.c
-+++ linux-2.6/fs/jbd/commit.c
-@@ -265,7 +265,7 @@ write_out_data:
- 			put_bh(bh);
- 		}
- 
--		if (lock_need_resched(&journal->j_list_lock)) {
-+		if (need_resched() || spin_needbreak(&journal->j_list_lock)) {
- 			spin_unlock(&journal->j_list_lock);
- 			goto write_out_data;
- 		}
-Index: linux-2.6/fs/jbd2/checkpoint.c
-===================================================================
---- linux-2.6.orig/fs/jbd2/checkpoint.c
-+++ linux-2.6/fs/jbd2/checkpoint.c
-@@ -347,7 +347,8 @@ restart:
- 				break;
- 			}
- 			retry = __process_buffer(journal, jh, bhs,&batch_count);
--			if (!retry && lock_need_resched(&journal->j_list_lock)){
-+			if (!retry && (need_resched() ||
-+				spin_needbreak(&journal->j_list_lock))) {
- 				spin_unlock(&journal->j_list_lock);
- 				retry = 1;
- 				break;
-Index: linux-2.6/fs/jbd2/commit.c
-===================================================================
---- linux-2.6.orig/fs/jbd2/commit.c
-+++ linux-2.6/fs/jbd2/commit.c
-@@ -265,7 +265,7 @@ write_out_data:
- 			put_bh(bh);
- 		}
- 
--		if (lock_need_resched(&journal->j_list_lock)) {
-+		if (need_resched() || spin_needbreak(&journal->j_list_lock)) {
- 			spin_unlock(&journal->j_list_lock);
- 			goto write_out_data;
- 		}
-Index: linux-2.6/include/linux/spinlock_up.h
-===================================================================
---- linux-2.6.orig/include/linux/spinlock_up.h
-+++ linux-2.6/include/linux/spinlock_up.h
-@@ -64,6 +64,8 @@ static inline void __raw_spin_unlock(raw
- # define __raw_spin_trylock(lock)	({ (void)(lock); 1; })
- #endif /* DEBUG_SPINLOCK */
- 
-+#define __raw_spin_is_contended(lock)	(((void)(lock), 0))
-+
- #define __raw_read_can_lock(lock)	(((void)(lock), 1))
- #define __raw_write_can_lock(lock)	(((void)(lock), 1))
- 
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -4662,19 +4662,15 @@ EXPORT_SYMBOL(cond_resched);
-  */
- int cond_resched_lock(spinlock_t *lock)
+-static inline void __raw_spin_lock(raw_spinlock_t *lock)
++static inline int __raw_spin_is_contended(raw_spinlock_t *lock)
  {
-+	int resched = need_resched() && system_state == SYSTEM_RUNNING;
- 	int ret = 0;
+-	asm volatile(
+-		"\n1:\t"
+-		LOCK_PREFIX " ; decl %0\n\t"
+-		"jns 2f\n"
+-		"3:\n"
+-		"rep;nop\n\t"
+-		"cmpl $0,%0\n\t"
+-		"jle 3b\n\t"
+-		"jmp 1b\n"
+-		"2:\t" : "=m" (lock->slock) : : "memory");
++	int tmp = *(volatile signed int *)(&(lock)->slock);
++
++	return (((tmp >> 8) & 0xff) - (tmp & 0xff)) > 1;
+ }
  
--	if (need_lockbreak(lock)) {
-+	if (spin_needbreak(lock) || resched) {
- 		spin_unlock(lock);
--		cpu_relax();
--		ret = 1;
--		spin_lock(lock);
--	}
--	if (need_resched() && system_state == SYSTEM_RUNNING) {
--		spin_release(&lock->dep_map, 1, _THIS_IP_);
--		_raw_spin_unlock(lock);
--		preempt_enable_no_resched();
--		__cond_resched();
-+		if (resched && need_resched())
-+			__cond_resched();
-+		else
-+			cpu_relax();
- 		ret = 1;
- 		spin_lock(lock);
- 	}
-Index: linux-2.6/mm/memory.c
+-/*
+- * Same as __raw_spin_lock, but reenable interrupts during spinning.
+- */
+-#ifndef CONFIG_PROVE_LOCKING
+-static inline void __raw_spin_lock_flags(raw_spinlock_t *lock, unsigned long flags)
++static inline void __raw_spin_lock(raw_spinlock_t *lock)
+ {
+-	asm volatile(
+-		"\n1:\t"
+-		LOCK_PREFIX " ; decl %0\n\t"
+-		"jns 5f\n"
+-		"testl $0x200, %1\n\t"	/* interrupts were disabled? */
+-		"jz 4f\n\t"
+-	        "sti\n"
+-		"3:\t"
+-		"rep;nop\n\t"
+-		"cmpl $0, %0\n\t"
+-		"jle 3b\n\t"
+-		"cli\n\t"
++	short inc = 0x0100;
++
++	/*
++	 * Ticket locks are conceptually two bytes, one indicating the current
++	 * head of the queue, and the other indicating the current tail. The
++	 * lock is acquired by atomically noting the tail and incrementing it
++	 * by one (thus adding ourself to the queue and noting our position),
++	 * then waiting until the head becomes equal to the the initial value
++	 * of the tail.
++	 *
++	 * This uses a 16-bit xadd to increment the tail and also load the
++	 * position of the head, which takes care of memory ordering issues
++	 * and should be optimal for the uncontended case. Note the tail must
++	 * be in the high byte, otherwise the 16-bit wide increment of the low
++	 * byte would carry up and contaminate the high byte.
++	 */
++
++	__asm__ __volatile__ (
++		LOCK_PREFIX "xaddw %w0, %1\n"
++		"1:\t"
++		"cmpb %h0, %b0\n\t"
++		"je 2f\n\t"
++		"rep ; nop\n\t"
++		"movb %1, %b0\n\t"
++		/* don't need lfence here, because loads are in-order */
+ 		"jmp 1b\n"
+-		"4:\t"
+-		"rep;nop\n\t"
+-		"cmpl $0, %0\n\t"
+-		"jg 1b\n\t"
+-		"jmp 4b\n"
+-		"5:\n\t"
+-		: "+m" (lock->slock) : "r" ((unsigned)flags) : "memory");
++		"2:"
++		:"+Q" (inc), "+m" (lock->slock)
++		:
++		:"memory", "cc");
+ }
+-#endif
++
++#define __raw_spin_lock_flags(lock, flags) __raw_spin_lock(lock)
+ 
+ static inline int __raw_spin_trylock(raw_spinlock_t *lock)
+ {
+-	int oldval;
++	short prev;
++	short new;
++	int ret = 0;
+ 
+ 	asm volatile(
+-		"xchgl %0,%1"
+-		:"=q" (oldval), "=m" (lock->slock)
+-		:"0" (0) : "memory");
++		"movw %2,%w0\n\t"
++		"cmpb %h0,%b0\n\t"
++		"jne 1f\n\t"
++		"movw %w0,%w1\n\t"
++		"incb %h1\n\t"
++		"lock ; cmpxchgw %w1,%2\n\t"
++		"decb %h1\n\t"
++		"cmpw %w0,%w1\n\t"
++		"jne 1f\n\t"
++		"movl $1,%3\n\t"
++		"1:"
++		:"=a" (prev), "=Q" (new), "+m" (lock->slock), "+m" (ret)
++		:
++		: "memory", "cc");
+ 
+-	return oldval > 0;
++	return ret;
+ }
+ 
+ static inline void __raw_spin_unlock(raw_spinlock_t *lock)
+ {
+-	asm volatile("movl $1,%0" :"=m" (lock->slock) :: "memory");
++	__asm__ __volatile__(
++		"incb %0"
++		:"+m" (lock->slock)
++		:
++		:"memory", "cc");
+ }
+ 
+ static inline void __raw_spin_unlock_wait(raw_spinlock_t *lock)
+Index: linux-2.6/include/asm-x86/spinlock_types.h
 ===================================================================
---- linux-2.6.orig/mm/memory.c
-+++ linux-2.6/mm/memory.c
-@@ -511,8 +511,7 @@ again:
- 		if (progress >= 32) {
- 			progress = 0;
- 			if (need_resched() ||
--			    need_lockbreak(src_ptl) ||
--			    need_lockbreak(dst_ptl))
-+			    spin_needbreak(src_ptl) || spin_needbreak(dst_ptl))
- 				break;
- 		}
- 		if (pte_none(*src_pte)) {
-@@ -851,7 +850,7 @@ unsigned long unmap_vmas(struct mmu_gath
- 			tlb_finish_mmu(*tlbp, tlb_start, start);
+--- linux-2.6.orig/include/asm-x86/spinlock_types.h
++++ linux-2.6/include/asm-x86/spinlock_types.h
+@@ -9,7 +9,7 @@ typedef struct {
+ 	unsigned int slock;
+ } raw_spinlock_t;
  
- 			if (need_resched() ||
--				(i_mmap_lock && need_lockbreak(i_mmap_lock))) {
-+				(i_mmap_lock && spin_needbreak(i_mmap_lock))) {
- 				if (i_mmap_lock) {
- 					*tlbp = NULL;
- 					goto out;
-@@ -1763,8 +1762,7 @@ again:
+-#define __RAW_SPIN_LOCK_UNLOCKED	{ 1 }
++#define __RAW_SPIN_LOCK_UNLOCKED	{ 0 }
  
- 	restart_addr = zap_page_range(vma, start_addr,
- 					end_addr - start_addr, details);
--	need_break = need_resched() ||
--			need_lockbreak(details->i_mmap_lock);
-+	need_break = need_resched() || spin_needbreak(details->i_mmap_lock);
- 
- 	if (restart_addr >= end_addr) {
- 		/* We have now completed this vma: mark it so */
+ typedef struct {
+ 	unsigned int lock;
 Index: linux-2.6/arch/x86_64/Kconfig
 ===================================================================
 --- linux-2.6.orig/arch/x86_64/Kconfig
 +++ linux-2.6/arch/x86_64/Kconfig
-@@ -78,6 +78,11 @@ config ISA
- config SBUS
- 	bool
+@@ -80,8 +80,7 @@ config SBUS
  
-+config GENERIC_LOCKBREAK
-+	bool
-+	default y
-+	depends on SMP && PREEMPT
-+
+ config GENERIC_LOCKBREAK
+ 	bool
+-	default y
+-	depends on SMP && PREEMPT
++	default n
+ 
  config RWSEM_GENERIC_SPINLOCK
  	bool
- 	default y
-Index: linux-2.6/include/linux/spinlock_types.h
+Index: linux-2.6/include/asm-x86/paravirt.h
 ===================================================================
---- linux-2.6.orig/include/linux/spinlock_types.h
-+++ linux-2.6/include/linux/spinlock_types.h
-@@ -19,7 +19,7 @@
+--- linux-2.6.orig/include/asm-x86/paravirt.h
++++ linux-2.6/include/asm-x86/paravirt.h
+@@ -1071,27 +1071,6 @@ static inline unsigned long __raw_local_
+ 	return f;
+ }
  
- typedef struct {
- 	raw_spinlock_t raw_lock;
--#if defined(CONFIG_PREEMPT) && defined(CONFIG_SMP)
-+#ifdef CONFIG_GENERIC_LOCKBREAK
- 	unsigned int break_lock;
- #endif
- #ifdef CONFIG_DEBUG_SPINLOCK
-@@ -35,7 +35,7 @@ typedef struct {
- 
- typedef struct {
- 	raw_rwlock_t raw_lock;
--#if defined(CONFIG_PREEMPT) && defined(CONFIG_SMP)
-+#ifdef CONFIG_GENERIC_LOCKBREAK
- 	unsigned int break_lock;
- #endif
- #ifdef CONFIG_DEBUG_SPINLOCK
-Index: linux-2.6/kernel/spinlock.c
+-#define CLI_STRING							\
+-	_paravirt_alt("pushl %%ecx; pushl %%edx;"			\
+-		      "call *%[paravirt_cli_opptr];"			\
+-		      "popl %%edx; popl %%ecx",				\
+-		      "%c[paravirt_cli_type]", "%c[paravirt_clobber]")
+-
+-#define STI_STRING							\
+-	_paravirt_alt("pushl %%ecx; pushl %%edx;"			\
+-		      "call *%[paravirt_sti_opptr];"			\
+-		      "popl %%edx; popl %%ecx",				\
+-		      "%c[paravirt_sti_type]", "%c[paravirt_clobber]")
+-
+-#define CLI_STI_CLOBBERS , "%eax"
+-#define CLI_STI_INPUT_ARGS						\
+-	,								\
+-	[paravirt_cli_type] "i" (PARAVIRT_PATCH(pv_irq_ops.irq_disable)),		\
+-	[paravirt_cli_opptr] "m" (pv_irq_ops.irq_disable),		\
+-	[paravirt_sti_type] "i" (PARAVIRT_PATCH(pv_irq_ops.irq_enable)),		\
+-	[paravirt_sti_opptr] "m" (pv_irq_ops.irq_enable),		\
+-	paravirt_clobber(CLBR_EAX)
+-
+ /* Make sure as little as possible of this mess escapes. */
+ #undef PARAVIRT_CALL
+ #undef __PVOP_CALL
+Index: linux-2.6/include/asm-x86/spinlock_32.h
 ===================================================================
---- linux-2.6.orig/kernel/spinlock.c
-+++ linux-2.6/kernel/spinlock.c
-@@ -65,8 +65,7 @@ EXPORT_SYMBOL(_write_trylock);
-  * even on CONFIG_PREEMPT, because lockdep assumes that interrupts are
-  * not re-enabled during lock-acquire (which the preempt-spin-ops do):
+--- linux-2.6.orig/include/asm-x86/spinlock_32.h
++++ linux-2.6/include/asm-x86/spinlock_32.h
+@@ -7,120 +7,116 @@
+ #include <asm/processor.h>
+ #include <linux/compiler.h>
+ 
+-#ifdef CONFIG_PARAVIRT
+-#include <asm/paravirt.h>
+-#else
+-#define CLI_STRING	"cli"
+-#define STI_STRING	"sti"
+-#define CLI_STI_CLOBBERS
+-#define CLI_STI_INPUT_ARGS
+-#endif /* CONFIG_PARAVIRT */
+-
+ /*
+  * Your basic SMP spinlocks, allowing only a single CPU anywhere
+  *
+  * Simple spin lock operations.  There are two variants, one clears IRQ's
+  * on the local processor, one does not.
+  *
+- * We make no fairness assumptions. They have a cost.
++ * These are fair FIFO ticket locks, which are currently limited to 256
++ * CPUs.
+  *
+  * (the type definitions are in asm/spinlock_types.h)
   */
--#if !defined(CONFIG_PREEMPT) || !defined(CONFIG_SMP) || \
--	defined(CONFIG_DEBUG_LOCK_ALLOC)
-+#if !defined(CONFIG_GENERIC_LOCKBREAK) || defined(CONFIG_DEBUG_LOCK_ALLOC)
  
- void __lockfunc _read_lock(rwlock_t *lock)
+-static inline int __raw_spin_is_locked(raw_spinlock_t *x)
++#if (NR_CPUS > 256)
++#error spinlock supports a maximum of 256 CPUs
++#endif
++
++static inline int __raw_spin_is_locked(raw_spinlock_t *lock)
  {
-Index: linux-2.6/arch/arm/Kconfig
-===================================================================
---- linux-2.6.orig/arch/arm/Kconfig
-+++ linux-2.6/arch/arm/Kconfig
-@@ -91,6 +91,11 @@ config GENERIC_IRQ_PROBE
- 	bool
- 	default y
- 
-+config GENERIC_LOCKBREAK
-+	bool
-+	default y
-+	depends on SMP && PREEMPT
+-	return *(volatile signed char *)(&(x)->slock) <= 0;
++	int tmp = *(volatile signed int *)(&(lock)->slock);
 +
- config RWSEM_GENERIC_SPINLOCK
- 	bool
- 	default y
-Index: linux-2.6/arch/i386/Kconfig
-===================================================================
---- linux-2.6.orig/arch/i386/Kconfig
-+++ linux-2.6/arch/i386/Kconfig
-@@ -14,6 +14,11 @@ config X86_32
- 	  486, 586, Pentiums, and various instruction-set-compatible chips by
- 	  AMD, Cyrix, and others.
++	return (((tmp >> 8) & 0xff) != (tmp & 0xff));
+ }
  
-+config GENERIC_LOCKBREAK
-+	bool
-+	default y
-+	depends on SMP && PREEMPT
+-static inline void __raw_spin_lock(raw_spinlock_t *lock)
++static inline int __raw_spin_is_contended(raw_spinlock_t *lock)
+ {
+-	asm volatile("\n1:\t"
+-		     LOCK_PREFIX " ; decb %0\n\t"
+-		     "jns 3f\n"
+-		     "2:\t"
+-		     "rep;nop\n\t"
+-		     "cmpb $0,%0\n\t"
+-		     "jle 2b\n\t"
+-		     "jmp 1b\n"
+-		     "3:\n\t"
+-		     : "+m" (lock->slock) : : "memory");
++	int tmp = *(volatile signed int *)(&(lock)->slock);
 +
- config GENERIC_TIME
- 	bool
- 	default y
-Index: linux-2.6/arch/ia64/Kconfig
-===================================================================
---- linux-2.6.orig/arch/ia64/Kconfig
-+++ linux-2.6/arch/ia64/Kconfig
-@@ -42,6 +42,11 @@ config MMU
- config SWIOTLB
-        bool
++	return (((tmp >> 8) & 0xff) - (tmp & 0xff)) > 1;
+ }
  
-+config GENERIC_LOCKBREAK
-+	bool
-+	default y
-+	depends on SMP && PREEMPT
+-/*
+- * It is easier for the lock validator if interrupts are not re-enabled
+- * in the middle of a lock-acquire. This is a performance feature anyway
+- * so we turn it off:
+- *
+- * NOTE: there's an irqs-on section here, which normally would have to be
+- * irq-traced, but on CONFIG_TRACE_IRQFLAGS we never use this variant.
+- */
+-#ifndef CONFIG_PROVE_LOCKING
+-static inline void __raw_spin_lock_flags(raw_spinlock_t *lock, unsigned long flags)
++static inline void __raw_spin_lock(raw_spinlock_t *lock)
+ {
+-	asm volatile(
+-		"\n1:\t"
+-		LOCK_PREFIX " ; decb %[slock]\n\t"
+-		"jns 5f\n"
+-		"2:\t"
+-		"testl $0x200, %[flags]\n\t"
+-		"jz 4f\n\t"
+-		STI_STRING "\n"
+-		"3:\t"
+-		"rep;nop\n\t"
+-		"cmpb $0, %[slock]\n\t"
+-		"jle 3b\n\t"
+-		CLI_STRING "\n\t"
++	short inc = 0x0100;
 +
- config RWSEM_XCHGADD_ALGORITHM
- 	bool
- 	default y
-Index: linux-2.6/arch/m32r/Kconfig
-===================================================================
---- linux-2.6.orig/arch/m32r/Kconfig
-+++ linux-2.6/arch/m32r/Kconfig
-@@ -235,6 +235,11 @@ config IRAM_SIZE
- # Define implied options from the CPU selection here
- #
- 
-+config GENERIC_LOCKBREAK
-+	bool
-+	default y
-+	depends on SMP && PREEMPT
++	/*
++	 * Ticket locks are conceptually two bytes, one indicating the current
++	 * head of the queue, and the other indicating the current tail. The
++	 * lock is acquired by atomically noting the tail and incrementing it
++	 * by one (thus adding ourself to the queue and noting our position),
++	 * then waiting until the head becomes equal to the the initial value
++	 * of the tail.
++	 *
++	 * This uses a 16-bit xadd to increment the tail and also load the
++	 * position of the head, which takes care of memory ordering issues
++	 * and should be optimal for the uncontended case. Note the tail must
++	 * be in the high byte, otherwise the 16-bit wide increment of the low
++	 * byte would carry up and contaminate the high byte.
++	 */
 +
- config RWSEM_GENERIC_SPINLOCK
- 	bool
- 	depends on M32R
-Index: linux-2.6/arch/mips/Kconfig
-===================================================================
---- linux-2.6.orig/arch/mips/Kconfig
-+++ linux-2.6/arch/mips/Kconfig
-@@ -671,6 +671,11 @@ source "arch/mips/vr41xx/Kconfig"
- 
- endmenu
- 
-+config GENERIC_LOCKBREAK
-+	bool
-+	default y
-+	depends on SMP && PREEMPT
++	__asm__ __volatile__ (
++		LOCK_PREFIX "xaddw %w0, %1\n"
++		"1:\t"
++		"cmpb %h0, %b0\n\t"
++		"je 2f\n\t"
++		"rep ; nop\n\t"
++		"movb %1, %b0\n\t"
++		/* don't need lfence here, because loads are in-order */
+ 		"jmp 1b\n"
+-		"4:\t"
+-		"rep;nop\n\t"
+-		"cmpb $0, %[slock]\n\t"
+-		"jg 1b\n\t"
+-		"jmp 4b\n"
+-		"5:\n\t"
+-		: [slock] "+m" (lock->slock)
+-		: [flags] "r" (flags)
+-	 	  CLI_STI_INPUT_ARGS
+-		: "memory" CLI_STI_CLOBBERS);
++		"2:"
++		:"+Q" (inc), "+m" (lock->slock)
++		:
++		:"memory", "cc");
+ }
+-#endif
 +
- config RWSEM_GENERIC_SPINLOCK
- 	bool
- 	default y
-Index: linux-2.6/arch/parisc/Kconfig
-===================================================================
---- linux-2.6.orig/arch/parisc/Kconfig
-+++ linux-2.6/arch/parisc/Kconfig
-@@ -19,6 +19,11 @@ config MMU
- config STACK_GROWSUP
- 	def_bool y
++#define __raw_spin_lock_flags(lock, flags) __raw_spin_lock(lock)
  
-+config GENERIC_LOCKBREAK
-+	bool
-+	default y
-+	depends on SMP && PREEMPT
+ static inline int __raw_spin_trylock(raw_spinlock_t *lock)
+ {
+-	char oldval;
++	short prev;
++	short new;
++	int ret = 0;
 +
- config RWSEM_GENERIC_SPINLOCK
- 	def_bool y
- 
-Index: linux-2.6/arch/sparc64/Kconfig
-===================================================================
---- linux-2.6.orig/arch/sparc64/Kconfig
-+++ linux-2.6/arch/sparc64/Kconfig
-@@ -200,6 +200,11 @@ config US2E_FREQ
- 	  If in doubt, say N.
- 
- # Global things across all Sun machines.
-+config GENERIC_LOCKBREAK
-+	bool
-+	default y
-+	depends on SMP && PREEMPT
+ 	asm volatile(
+-		"xchgb %b0,%1"
+-		:"=q" (oldval), "+m" (lock->slock)
+-		:"0" (0) : "memory");
+-	return oldval > 0;
++		"movw %2,%w0\n\t"
++		"cmpb %h0,%b0\n\t"
++		"jne 1f\n\t"
++		"movw %w0,%w1\n\t"
++		"incb %h1\n\t"
++		"lock ; cmpxchgw %w1,%2\n\t"
++		"decb %h1\n\t"
++		"cmpw %w0,%w1\n\t"
++		"jne 1f\n\t"
++		"movl $1,%3\n\t"
++		"1:"
++		:"=a" (prev), "=Q" (new), "+m" (lock->slock), "+m" (ret)
++		:
++		: "memory", "cc");
 +
- config RWSEM_GENERIC_SPINLOCK
- 	bool
++	return ret;
+ }
  
++#if defined(CONFIG_X86_OOSTORE) || defined(CONFIG_X86_PPRO_FENCE)
+ /*
+- * __raw_spin_unlock based on writing $1 to the low byte.
+- * This method works. Despite all the confusion.
+- * (except on PPro SMP or if we are using OOSTORE, so we use xchgb there)
++ * On PPro SMP or if we are using OOSTORE, we use a locked operation to unlock
+  * (PPro errata 66, 92)
+  */
+-
+-#if !defined(CONFIG_X86_OOSTORE) && !defined(CONFIG_X86_PPRO_FENCE)
+-
+-static inline void __raw_spin_unlock(raw_spinlock_t *lock)
+-{
+-	asm volatile("movb $1,%0" : "+m" (lock->slock) :: "memory");
+-}
+-
++#define UNLOCK_LOCK_PREFIX LOCK_PREFIX
+ #else
++#define UNLOCK_LOCK_PREFIX
++#endif
+ 
+ static inline void __raw_spin_unlock(raw_spinlock_t *lock)
+ {
+-	char oldval = 1;
+-
+-	asm volatile("xchgb %b0, %1"
+-		     : "=q" (oldval), "+m" (lock->slock)
+-		     : "0" (oldval) : "memory");
++	__asm__ __volatile__(
++		UNLOCK_LOCK_PREFIX "incb %0"
++		:"+m" (lock->slock)
++		:
++		:"memory", "cc");
+ }
+ 
+-#endif
+-
+ static inline void __raw_spin_unlock_wait(raw_spinlock_t *lock)
+ {
+ 	while (__raw_spin_is_locked(lock))
