@@ -1,122 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761655AbXKAXNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761902AbXKAXNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761655AbXKAXNL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 19:13:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759186AbXKAXIv
+	id S1761902AbXKAXNd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 19:13:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759284AbXKAXIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 19:08:51 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:49898 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758768AbXKAXIt (ORCPT
+	Thu, 1 Nov 2007 19:08:53 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:42634 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756994AbXKAXIu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 19:08:49 -0400
-Subject: [PATCH 11/27] r-o-bind-mounts-elevate-write-count-during-entire-ncp_ioctl
+	Thu, 1 Nov 2007 19:08:50 -0400
+Subject: [PATCH 15/27] r-o-bind-mounts-elevate-write-count-for-link-and-symlink-calls
 To: akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, miklos@szeredi.hu, hch@infradead.org,
        Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Thu, 01 Nov 2007 16:08:40 -0700
+Date: Thu, 01 Nov 2007 16:08:46 -0700
 References: <20071101230826.9A4F6E00@kernel>
 In-Reply-To: <20071101230826.9A4F6E00@kernel>
-Message-Id: <20071101230840.25D680E0@kernel>
+Message-Id: <20071101230846.A8C92EE4@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-fs/ncpfs/ioctl.c: In function 'ncp_ioctl_need_write':
-fs/ncpfs/ioctl.c:852: error: label at end of compound statement
 
-Cc: Dave Hansen <haveblue@us.ibm.com>
-Cc: Christoph Hellwig <hch@lst.de>
+Acked-by: Christoph Hellwig <hch@infradead.org>
+Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- linux-2.6.git-dave/fs/ncpfs/ioctl.c |   57 ++++++++++++++++++++++++++++++++++--
- 1 file changed, 55 insertions(+), 2 deletions(-)
+ linux-2.6.git-dave/fs/namei.c |   10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff -puN fs/ncpfs/ioctl.c~r-o-bind-mounts-elevate-write-count-during-entire-ncp_ioctl fs/ncpfs/ioctl.c
---- linux-2.6.git/fs/ncpfs/ioctl.c~r-o-bind-mounts-elevate-write-count-during-entire-ncp_ioctl	2007-11-01 14:46:11.000000000 -0700
-+++ linux-2.6.git-dave/fs/ncpfs/ioctl.c	2007-11-01 14:46:11.000000000 -0700
-@@ -14,6 +14,7 @@
- #include <linux/ioctl.h>
- #include <linux/time.h>
- #include <linux/mm.h>
-+#include <linux/mount.h>
- #include <linux/highuid.h>
- #include <linux/smp_lock.h>
- #include <linux/vmalloc.h>
-@@ -261,7 +262,7 @@ ncp_get_charsets(struct ncp_server* serv
- }
- #endif /* CONFIG_NCPFS_NLS */
+diff -puN fs/namei.c~r-o-bind-mounts-elevate-write-count-for-link-and-symlink-calls fs/namei.c
+--- linux-2.6.git/fs/namei.c~r-o-bind-mounts-elevate-write-count-for-link-and-symlink-calls	2007-11-01 14:46:14.000000000 -0700
++++ linux-2.6.git-dave/fs/namei.c	2007-11-01 14:46:14.000000000 -0700
+@@ -2349,7 +2349,12 @@ asmlinkage long sys_symlinkat(const char
+ 	if (IS_ERR(dentry))
+ 		goto out_unlock;
  
--int ncp_ioctl(struct inode *inode, struct file *filp,
-+static int __ncp_ioctl(struct inode *inode, struct file *filp,
- 	      unsigned int cmd, unsigned long arg)
- {
- 	struct ncp_server *server = NCP_SERVER(inode);
-@@ -817,11 +818,63 @@ outrel:			
- 				return -EFAULT;
- 			return 0;
- 		}
--
-+	default: /* unkown IOCTL command, assume write */
-+		;
- 	}
- 	return -EINVAL;
- }
- 
-+static int ncp_ioctl_need_write(unsigned int cmd)
-+{
-+	switch (cmd) {
-+	case NCP_IOC_GET_FS_INFO:
-+	case NCP_IOC_GET_FS_INFO_V2:
-+	case NCP_IOC_NCPREQUEST:
-+	case NCP_IOC_SETDENTRYTTL:
-+	case NCP_IOC_SIGN_INIT:
-+	case NCP_IOC_LOCKUNLOCK:
-+	case NCP_IOC_SET_SIGN_WANTED:
-+		return 1;
-+	case NCP_IOC_GETOBJECTNAME:
-+	case NCP_IOC_SETOBJECTNAME:
-+	case NCP_IOC_GETPRIVATEDATA:
-+	case NCP_IOC_SETPRIVATEDATA:
-+	case NCP_IOC_SETCHARSETS:
-+	case NCP_IOC_GETCHARSETS:
-+	case NCP_IOC_CONN_LOGGED_IN:
-+	case NCP_IOC_GETDENTRYTTL:
-+	case NCP_IOC_GETMOUNTUID2:
-+	case NCP_IOC_SIGN_WANTED:
-+	case NCP_IOC_GETROOT:
-+	case NCP_IOC_SETROOT:
-+		return 0;
-+	default:
-+		/* unkown IOCTL command, assume write */
-+	}
-+	return 1;
-+}
-+
-+int ncp_ioctl(struct inode *inode, struct file *filp,
-+	      unsigned int cmd, unsigned long arg)
-+{
-+	int ret;
-+
-+	if (ncp_ioctl_need_write(cmd)) {
-+		/*
-+		 * inside the ioctl(), any failures which
-+		 * are because of file_permission() are
-+		 * -EACCESS, so it seems consistent to keep
-+		 *  that here.
-+		 */
-+		if (mnt_want_write(filp->f_vfsmnt))
-+			return -EACCES;
-+	}
-+	ret = __ncp_ioctl(inode, filp, cmd, arg);
-+	if (ncp_ioctl_need_write(cmd))
-+		mnt_drop_write(filp->f_vfsmnt);
-+	return ret;
-+}
-+
- #ifdef CONFIG_COMPAT
- long ncp_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- {
++	error = mnt_want_write(nd.mnt);
++	if (error)
++		goto out_dput;
+ 	error = vfs_symlink(nd.dentry->d_inode, dentry, from, S_IALLUGO);
++	mnt_drop_write(nd.mnt);
++out_dput:
+ 	dput(dentry);
+ out_unlock:
+ 	mutex_unlock(&nd.dentry->d_inode->i_mutex);
+@@ -2444,7 +2449,12 @@ asmlinkage long sys_linkat(int olddfd, c
+ 	error = PTR_ERR(new_dentry);
+ 	if (IS_ERR(new_dentry))
+ 		goto out_unlock;
++	error = mnt_want_write(nd.mnt);
++	if (error)
++		goto out_dput;
+ 	error = vfs_link(old_nd.dentry, nd.dentry->d_inode, new_dentry);
++	mnt_drop_write(nd.mnt);
++out_dput:
+ 	dput(new_dentry);
+ out_unlock:
+ 	mutex_unlock(&nd.dentry->d_inode->i_mutex);
 _
