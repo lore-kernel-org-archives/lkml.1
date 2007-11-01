@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757064AbXKASBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756478AbXKASDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757064AbXKASBU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 14:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbXKASBK
+	id S1756478AbXKASDj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 14:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbXKASDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 14:01:10 -0400
-Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:57383 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753632AbXKASBI (ORCPT
+	Thu, 1 Nov 2007 14:03:31 -0400
+Received: from sccrmhc11.comcast.net ([63.240.77.81]:35057 "EHLO
+	sccrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752611AbXKASDa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 14:01:08 -0400
-X-Greylist: delayed 572 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Nov 2007 14:01:08 EDT
-X-IronPort-AV: E=Sophos;i="4.21,359,1188802800"; 
-   d="scan'208";a="412521005"
-Message-ID: <472A1222.70103@cisco.com>
-Date: Thu, 01 Nov 2007 10:51:30 -0700
-From: bc Wong <bcwong@cisco.com>
-User-Agent: Thunderbird 1.5.0.13 (Windows/20070809)
-MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: filp usage when cpu busy
-References: <47293248.9000906@cisco.com> <200711011505.15751.nickpiggin@yahoo.com.au>
-In-Reply-To: <200711011505.15751.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 1 Nov 2007 14:03:30 -0400
+Subject: Re: Issue building kernel driver
+From: Chris Holvenstot <cholvenstot@comcast.net>
+To: Adrian Bunk <bunk@kernel.org>, kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071101175126.GA7227@stusta.de>
+References: <1193938746.7555.7.camel@localhost>
+	 <20071101175126.GA7227@stusta.de>
+Content-Type: text/plain
+Date: Thu, 01 Nov 2007 13:03:37 -0500
+Message-Id: <1193940217.7555.13.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Nov 2007 17:51:34.0557 (UTC) FILETIME=[D7CED4D0:01C81CAF]
-Authentication-Results: sj-dkim-3; header.From=bcwong@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> On Thursday 01 November 2007 12:56, bc Wong (chimwong) wrote:
->> Hi,
->>
->> With 2.6.16 x86_64 on a 4 core machine, I noticed
->> that the filp usage (according to /proc/slabinfo)
->> shoots up and keeps on increasing sharply when one
->> of the CPUs is (1) locked up, or (2) very busy
->> doing a lot of printk()'s with KERN_EMERG.
->>
->> In the case of (1), it's permanent until it runs
->> out of memory eventually. For (2), it's temporary;
->> filp count comes back down when the printk()'s are
->> done.
->>
->> I can't think of any relationship between a busy/
->> locked-up CPU and filp count. The system is still
->> functional. New short-lived processes kept being
->> created, but the overall number of processes is
->> stable.
->>
->> Does anyone know why filp count would go up like
->> that?
-> 
-> Yeah, it's probably because filp structures are freed by
-> RCU, and if you have a locked up CPU then it can't go
-> through a quiescent state so RCU stops freeing your filps.
-> 
-> If you add some cond_resched()s to your code, you should
-> find that RCU will force a reschedule and things will work
-> (actually, for 2.6.16, I'm not sure if RCU had the code to
-> force a reschedule... it's force_quiescent_state() in
-> kernel/rcupdate.c upstream).
+Thank you for the quick response - normally I would not have bothered
+with the kernel list but this is a case where the same source would
+sucessfully compile on "git4" but not on "git9 or git10"
 
-Thanks! You're absolutely right. Btw, 2.6.16 does
-have force_quiescent_state().
+As I previously stated the message is also being sent to the VirtualBox
+developers (who will likely tell that they don't support those who build
+and test development kernels)
 
-Cheers,
-bc
+Once again thanks
+
+
+
+
+
+On Thu, 2007-11-01 at 18:51 +0100, Adrian Bunk wrote:
+> On Thu, Nov 01, 2007 at 12:39:06PM -0500, Chris Holvenstot wrote:
+> > Adrian Bunk <bunk@kernel.org>Adrian Bunk <bunk@kernel.org>
+> > Although it may not be popular with the crowd here, I do have a valid
+> > reason to run Windows - and I accomidate this using the VirtualBox
+> > product.  
+> > http://www.google.com/
+> > Since I try to be slightly useful and build as many of the "test" kernel
+> > images I can I end up rebuilding the VirtualBox kernel driver (open
+> > source) on an almost daily basis.
+> >...
+> > I am not sure if this should be reported to the kernel folks or the
+> > VirtualBox folks - but the kernel code is what changed.  However I will
+> > post this on the VirtualBox forum too.
+> 
+> We had a (different) bug report involving exactly this external driver 
+> at some older post 2.6.23 kernel where it turned out it was a problem in 
+> this driver - and this one also looks really like a problem in their 
+> driver.
+> 
+> Generally, problems with external drivers should be reported to the 
+> vendors of these drivers and not here (unless it's clear it's a bug in 
+> the kernel and not in the driver).
+> 
+> > Thanks
+> 
+> cu
+> Adrian
+> 
+
