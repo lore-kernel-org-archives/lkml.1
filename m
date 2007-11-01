@@ -1,35 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761059AbXKAWbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757450AbXKAWie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761059AbXKAWbr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 18:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760726AbXKAWbc
+	id S1757450AbXKAWie (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 18:38:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbXKAWi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 18:31:32 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38432 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760428AbXKAWbb (ORCPT
+	Thu, 1 Nov 2007 18:38:26 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32783
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753055AbXKAWiZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 18:31:31 -0400
-Date: Thu, 1 Nov 2007 22:32:53 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, davem@redhat.com
-Subject: Re: [IRDA] IRNET: Fix build when TCGETS2 is defined.
-Message-ID: <20071101223253.6804abb8@the-village.bc.nu>
-In-Reply-To: <200711011959.lA1JxPWc003735@hera.kernel.org>
-References: <200711011959.lA1JxPWc003735@hera.kernel.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Thu, 1 Nov 2007 18:38:25 -0400
+Date: Thu, 01 Nov 2007 15:38:24 -0700 (PDT)
+Message-Id: <20071101.153824.91808126.davem@davemloft.net>
+To: clameter@sgi.com
+Cc: akpm@linux-foundation.org, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
+       penberg@cs.helsinki.fi
+Subject: Re: [patch 0/7] [RFC] SLUB: Improve allocpercpu to reduce per cpu
+ access overhead
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0711011511450.22508@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0711010601430.27666@schroedinger.engr.sgi.com>
+	<20071101.142936.114015234.davem@davemloft.net>
+	<Pine.LNX.4.64.0711011511450.22508@schroedinger.engr.sgi.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Christoph Lameter <clameter@sgi.com>
+Date: Thu, 1 Nov 2007 15:15:39 -0700 (PDT)
 
-I'll go split the n_tty_ioctl stuff up and sort this cleanly for the
-serial ppp and other users as well.  Will send a patch tomorrow that
-makes ldisc catching of TCGET/SET calls unneccessary.
+> After boot is complete we allow the reduction of the size of the per cpu 
+> areas . Lets say we only need 128k per cpu. Then the remaining pages will
+> be returned to the page allocator.
 
-Alan
+You don't know how much you will need.  I exhausted the limit on
+sparc64 very late in the boot process when the last few userland
+services were starting up.
+
+And if I subsequently bring up 100,000 IP tunnels, it will exhaust the
+per-cpu allocation area.
+
+You have to make it fully dynamic, there is no way around it.
