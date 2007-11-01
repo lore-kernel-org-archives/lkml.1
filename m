@@ -1,161 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761015AbXKAXLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761069AbXKAXMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761015AbXKAXLx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 19:11:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756677AbXKAXIq
+	id S1761069AbXKAXMQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 19:12:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757778AbXKAXIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 19:08:46 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:42560 "EHLO
+	Thu, 1 Nov 2007 19:08:47 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:42604 "EHLO
 	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753469AbXKAXIn (ORCPT
+	with ESMTP id S1756854AbXKAXIq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 19:08:43 -0400
-Subject: [PATCH 01/27] do namei_flags calculation inside open_namei()
+	Thu, 1 Nov 2007 19:08:46 -0400
+Subject: [PATCH 07/27] r-o-bind-mounts-do_rmdir-elevate-write-count
 To: akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, miklos@szeredi.hu, hch@infradead.org,
        Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Thu, 01 Nov 2007 16:08:27 -0700
+Date: Thu, 01 Nov 2007 16:08:35 -0700
 References: <20071101230826.9A4F6E00@kernel>
 In-Reply-To: <20071101230826.9A4F6E00@kernel>
-Message-Id: <20071101230827.CDE3D014@kernel>
+Message-Id: <20071101230835.0185DD99@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-My end goal here is to make sure all users of may_open()
-return filps.  This will ensure that we properly release
-mount write counts which were taken for the filp in
-may_open().
 
-This patch moves the sys_open flags to namei flags
-calculation into fs/namei.c.  We'll shortly be moving
-the nameidata_to_filp() calls into namei.c, and this
-gets the sys_open flags to a place where we can get
-at them when we need them.
+Elevate the write count during the vfs_rmdir() call.
 
 Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
+Acked-by: Christoph Hellwig <hch@infradead.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 ---
 
- linux-2.6.git-dave/fs/namei.c |   43 +++++++++++++++++++++++++++++++++---------
- linux-2.6.git-dave/fs/open.c  |   22 +--------------------
- 2 files changed, 36 insertions(+), 29 deletions(-)
+ linux-2.6.git-dave/fs/namei.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff -puN fs/namei.c~do-namei_flags-calculation-inside-open_namei fs/namei.c
---- linux-2.6.git/fs/namei.c~do-namei_flags-calculation-inside-open_namei	2007-11-01 14:46:04.000000000 -0700
-+++ linux-2.6.git-dave/fs/namei.c	2007-11-01 14:46:04.000000000 -0700
-@@ -1674,7 +1674,12 @@ int may_open(struct nameidata *nd, int a
- 	return 0;
- }
- 
--static int open_namei_create(struct nameidata *nd, struct path *path,
-+/*
-+ * Be careful about ever adding any more callers of this
-+ * function.  Its flags must be in the namei format, not
-+ * what get passed to sys_open().
-+ */
-+static int __open_namei_create(struct nameidata *nd, struct path *path,
- 				int flag, int mode)
- {
- 	int error;
-@@ -1693,26 +1698,46 @@ static int open_namei_create(struct name
- }
- 
- /*
-+ * Note that while the flag value (low two bits) for sys_open means:
-+ *	00 - read-only
-+ *	01 - write-only
-+ *	10 - read-write
-+ *	11 - special
-+ * it is changed into
-+ *	00 - no permissions needed
-+ *	01 - read-permission
-+ *	10 - write-permission
-+ *	11 - read-write
-+ * for the internal routines (ie open_namei()/follow_link() etc)
-+ * This is more logical, and also allows the 00 "no perm needed"
-+ * to be used for symlinks (where the permissions are checked
-+ * later).
-+ *
-+*/
-+static inline int sys_open_flags_to_namei_flags(int flag)
-+{
-+	if ((flag+1) & O_ACCMODE)
-+		flag++;
-+	return flag;
-+}
-+
-+/*
-  *	open_namei()
-  *
-  * namei for open - this is in fact almost the whole open-routine.
-  *
-  * Note that the low bits of "flag" aren't the same as in the open
-- * system call - they are 00 - no permissions needed
-- *			  01 - read permission needed
-- *			  10 - write permission needed
-- *			  11 - read/write permissions needed
-- * which is a lot more logical, and also allows the "no perm" needed
-- * for symlinks (where the permissions are checked later).
-+ * system call.  See sys_open_flags_to_namei_flags().
-  * SMP-safe
-  */
--int open_namei(int dfd, const char *pathname, int flag,
-+int open_namei(int dfd, const char *pathname, int sys_open_flag,
- 		int mode, struct nameidata *nd)
- {
- 	int acc_mode, error;
- 	struct path path;
- 	struct dentry *dir;
- 	int count = 0;
-+	int flag = sys_open_flags_to_namei_flags(sys_open_flag);
- 
- 	acc_mode = ACC_MODE(flag);
- 
-@@ -1773,7 +1798,7 @@ do_last:
- 
- 	/* Negative dentry, just create the file */
- 	if (!path.dentry->d_inode) {
--		error = open_namei_create(nd, &path, flag, mode);
-+		error = __open_namei_create(nd, &path, flag, mode);
- 		if (error)
- 			goto exit;
- 		return 0;
-diff -puN fs/open.c~do-namei_flags-calculation-inside-open_namei fs/open.c
---- linux-2.6.git/fs/open.c~do-namei_flags-calculation-inside-open_namei	2007-11-01 14:46:04.000000000 -0700
-+++ linux-2.6.git-dave/fs/open.c	2007-11-01 14:46:04.000000000 -0700
-@@ -800,31 +800,13 @@ cleanup_file:
- 	return ERR_PTR(error);
- }
- 
--/*
-- * Note that while the flag value (low two bits) for sys_open means:
-- *	00 - read-only
-- *	01 - write-only
-- *	10 - read-write
-- *	11 - special
-- * it is changed into
-- *	00 - no permissions needed
-- *	01 - read-permission
-- *	10 - write-permission
-- *	11 - read-write
-- * for the internal routines (ie open_namei()/follow_link() etc). 00 is
-- * used by symlinks.
-- */
- static struct file *do_filp_open(int dfd, const char *filename, int flags,
- 				 int mode)
- {
--	int namei_flags, error;
-+	int error;
- 	struct nameidata nd;
- 
--	namei_flags = flags;
--	if ((namei_flags+1) & O_ACCMODE)
--		namei_flags++;
--
--	error = open_namei(dfd, filename, namei_flags, mode, &nd);
-+	error = open_namei(dfd, filename, flags, mode, &nd);
- 	if (!error)
- 		return nameidata_to_filp(&nd, flags);
- 
+diff -puN fs/namei.c~r-o-bind-mounts-do_rmdir-elevate-write-count fs/namei.c
+--- linux-2.6.git/fs/namei.c~r-o-bind-mounts-do_rmdir-elevate-write-count	2007-11-01 14:46:09.000000000 -0700
++++ linux-2.6.git-dave/fs/namei.c	2007-11-01 14:46:09.000000000 -0700
+@@ -2174,7 +2174,12 @@ static long do_rmdir(int dfd, const char
+ 	error = PTR_ERR(dentry);
+ 	if (IS_ERR(dentry))
+ 		goto exit2;
++	error = mnt_want_write(nd.mnt);
++	if (error)
++		goto exit3;
+ 	error = vfs_rmdir(nd.dentry->d_inode, dentry);
++	mnt_drop_write(nd.mnt);
++exit3:
+ 	dput(dentry);
+ exit2:
+ 	mutex_unlock(&nd.dentry->d_inode->i_mutex);
 _
