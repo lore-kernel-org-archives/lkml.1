@@ -1,155 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757356AbXKANr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759100AbXKANsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757356AbXKANr3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 09:47:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753490AbXKANrU
+	id S1759100AbXKANsQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 09:48:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753737AbXKANsB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 09:47:20 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:52658 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753303AbXKANrT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 09:47:19 -0400
-Date: Thu, 1 Nov 2007 08:47:01 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Stephen Smalley <sds@epoch.ncsc.mil>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       Andrew Morgan <morgan@kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       "Theodore Ts'o" <tytso@mit.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: [PATCH] file capabilities: allow sigcont within session (v2)
-Message-ID: <20071101134701.GA21131@sergelap.austin.ibm.com>
-References: <20071031234945.GA16455@sergelap.austin.ibm.com> <1193918844.12018.6.camel@moss-spartans.epoch.ncsc.mil>
+	Thu, 1 Nov 2007 09:48:01 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34003 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753419AbXKANsA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 09:48:00 -0400
+Message-ID: <4729D92E.2030108@redhat.com>
+Date: Thu, 01 Nov 2007 11:48:30 -0200
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070811)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1193918844.12018.6.camel@moss-spartans.epoch.ncsc.mil>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       rusty@rustcorp.com.au, ak@suse.de, mingo@elte.hu, chrisw@sous-sol.org,
+       avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
+       kvm-devel@lists.sourceforge.net, zach@vmware.com, tglx@linutronix.de,
+       jun.nakajima@intel.com, glommer@gmail.com,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 3/16] read/write_crX, clts and wbinvd for 64-bit paravirt
+References: <1193858101367-git-send-email-gcosta@redhat.com> <11938581073775-git-send-email-gcosta@redhat.com> <11938581133479-git-send-email-gcosta@redhat.com> <1193858118284-git-send-email-gcosta@redhat.com> <47295AA7.9090507@goop.org>
+In-Reply-To: <47295AA7.9090507@goop.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Stephen Smalley (sds@epoch.ncsc.mil):
-> On Wed, 2007-10-31 at 18:49 -0500, Serge E. Hallyn wrote:
-> > >From 5bff8967f45a35f858b96ca673d9bf98eac53d49 Mon Sep 17 00:00:00 2001
-> > From: Serge E. Hallyn <serue@us.ibm.com>
-> > Date: Wed, 31 Oct 2007 11:22:04 -0500
-> > Subject: [PATCH 1/1] file capabilities: allow sigcont within session (v2)
-> > 
-> > (This is a proposed fix to http://bugzilla.kernel.org/show_bug.cgi?id=9247)
-> > 
-> > Allow sigcont to be sent to a process with greater capabilities
-> > if it is in the same session.  Otherwise, a shell from which
-> > I've started a root shell and done 'suspend' can't be restarted
-> > by the parent shell.
-> > 
-> > Also don't do file-capabilities signaling checks when uids for
-> > the processes don't match, since the standard check_kill_permission
-> > will have done those checks.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Jeremy Fitzhardinge escreveu:
+> Glauber de Oliveira Costa wrote:
+>> This patch introduces, and patch callers when needed, native
+>> versions for read/write_crX functions, clts and wbinvd.
+>>
+>> Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+>> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+>> Acked-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+>> ---
+>>  arch/x86/mm/pageattr_64.c   |    3 +-
+>>  include/asm-x86/system_64.h |   60 ++++++++++++++++++++++++++++++------------
+>>  2 files changed, 45 insertions(+), 18 deletions(-)
+>>
+>> diff --git a/arch/x86/mm/pageattr_64.c b/arch/x86/mm/pageattr_64.c
+>> index c40afba..59a52b0 100644
+>> --- a/arch/x86/mm/pageattr_64.c
+>> +++ b/arch/x86/mm/pageattr_64.c
+>> @@ -12,6 +12,7 @@
+>>  #include <asm/processor.h>
+>>  #include <asm/tlbflush.h>
+>>  #include <asm/io.h>
+>> +#include <asm/paravirt.h>
+>>  
+>>  pte_t *lookup_address(unsigned long address)
+>>  { 
+>> @@ -77,7 +78,7 @@ static void flush_kernel_map(void *arg)
+>>  	   much cheaper than WBINVD. */
+>>  	/* clflush is still broken. Disable for now. */
+>>  	if (1 || !cpu_has_clflush)
+>> -		asm volatile("wbinvd" ::: "memory");
+>> +		wbinvd();
+>>  	else list_for_each_entry(pg, l, lru) {
+>>  		void *adr = page_address(pg);
+>>  		clflush_cache_range(adr, PAGE_SIZE);
+>> diff --git a/include/asm-x86/system_64.h b/include/asm-x86/system_64.h
+>> index 4cb2384..b558cb2 100644
+>> --- a/include/asm-x86/system_64.h
+>> +++ b/include/asm-x86/system_64.h
+>> @@ -65,53 +65,62 @@ extern void load_gs_index(unsigned);
+>>  /*
+>>   * Clear and set 'TS' bit respectively
+>>   */
+>> -#define clts() __asm__ __volatile__ ("clts")
+>> +static inline void native_clts(void)
+>> +{
+>> +	asm volatile ("clts");
+>> +}
+>>  
+>> -static inline unsigned long read_cr0(void)
+>> -{ 
+>> +static inline unsigned long native_read_cr0(void)
+>> +{
+>>  	unsigned long cr0;
+>>  	asm volatile("movq %%cr0,%0" : "=r" (cr0));
+>>  	return cr0;
+>>  }
+>>   
 > 
-> Description doesn't match the code.
-
-Egads.  I knew I should've just kept that part out of it for the first
-patch...
-
-New patch on top of previous one is appended.
-
-Thanks.
-
-> And in the non-matching uid case,
-> check_kill_permission typically returns an error before it reaches
-> cap_task_kill (modulo the special cases).
-
-Typically, but when it doesn't, then the file capabilities shouldn't get
-in the way of check_kill_permission() granting permission.  The file
-capabilities 
-
+> This is a pre-existing bug, but it seems to me that these read/write crX
+> asms should have a constraint to stop the compiler from reordering them
+> with respect to each other.  The brute-force approach would be to add
+> "memory" clobbers, but the subtle fix would be to add a variable which
+> is only used to sequence:
 > 
-> > 
-> > Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-> > ---
-> >  security/commoncap.c |    9 +++++++++
-> >  1 files changed, 9 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/security/commoncap.c b/security/commoncap.c
-> > index bf67871..4de6857 100644
-> > --- a/security/commoncap.c
-> > +++ b/security/commoncap.c
-> > @@ -526,6 +526,15 @@ int cap_task_kill(struct task_struct *p, struct siginfo *info,
-> >  	if (info != SEND_SIG_NOINFO && (is_si_special(info) || SI_FROMKERNEL(info)))
-> >  		return 0;
-> >  
-> > +	/* if tasks have same uid, then check_kill_permission did check */
-> > +	if (current->uid == p->uid || current->euid == p->uid ||
-> > +		current->uid == p->suid || current->euid == p->suid)
-> > +		return 0;
-> 
-> I'm confused - if you are allowing all signals within the same uid, then
+I in fact have seen bugs with mixed reads and writes to the same cr,
+(cr4), but adding the volatile
+flag to the read function seemed to fix it. Yet, I agree with you that
+the theorectical problem exists for the reorder, and your proposed fix
+seems fine (although if we're really desperate about memory usage, we
+can use a char instead a int and save 3 bytes!)
 
-No I was confused.  I wanted to allow for tasks with different uids.
+It also just ocurred to me that this part of the patch can also go into
+the consolidation part. So I'll respin it.
 
-But in fact that's not safe anyway.  A binary can be setuid and owned by
-a non-root user user1, have file capabilities, and be executed by user2.
+Thanks for the comment
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Remi - http://enigmail.mozdev.org
 
-(Anyway given how grossly my code missed my erroneous intentions, I need
-to add some signal tests to my file capabilities tests - and get those
-tests into LTP)
-
-> what was the point of having a cap_task_kill at all?  cap_task_kill was
-> supposed to prevent a process with lesser capabilities from killing a
-> process with more capabilities, even if they have the same uid, so that
-> when you have a program marked with file capabilities instead of a
-> setuid-0 program, that program can't be sent arbitrary signals by the
-> caller.
-> 
-> > +
-> > +	/* sigcont is permitted within same session */
-> > +	if (sig == SIGCONT && (task_session_nr(current)==task_session_nr(p)))
-> > +		return 0;
-> > +
-> >  	if (secid)
-> >  		/*
-> >  		 * Signal sent as a particular user.
-> -- 
-> Stephen Smalley
-> National Security Agency
-
-Thanks, Stephen.
-
->From 98741f07ab1bc4a1fc2de7fedfb9023ea30bf988 Mon Sep 17 00:00:00 2001
-From: Serge E. Hallyn <serue@us.ibm.com>
-Date: Thu, 1 Nov 2007 08:20:12 -0500
-Subject: [PATCH 1/1] file capabilities: remove the non-matching uid special case for kill
-
-There I went again having one patch do two (related) things.
-
-Remove the special check I had added to cap_task_kill() for
-non-matching uids.  In fact it turns out the check wouldn't be
-safe even if I'd coded it correctly.  A binary can be setuid
-and owned by a non-root user user1, have file capabilities, and
-be executed by user2.
-
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
----
- security/commoncap.c |    5 -----
- 1 files changed, 0 insertions(+), 5 deletions(-)
-
-diff --git a/security/commoncap.c b/security/commoncap.c
-index f04784a..302e8d0 100644
---- a/security/commoncap.c
-+++ b/security/commoncap.c
-@@ -526,11 +526,6 @@ int cap_task_kill(struct task_struct *p, struct siginfo *info,
- 	if (info != SEND_SIG_NOINFO && (is_si_special(info) || SI_FROMKERNEL(info)))
- 		return 0;
- 
--	/* if tasks have same uid, then check_kill_permission did check */
--	if (current->uid == p->uid || current->euid == p->uid ||
--		current->uid == p->suid || current->euid == p->suid)
--		return 0;
--
- 	/* sigcont is permitted within same session */
- 	if (sig == SIGCONT && (task_session_nr(current) == task_session_nr(p)))
- 		return 0;
--- 
-1.5.1.1.GIT
-
+iD8DBQFHKdkujYI8LaFUWXMRAhV2AKDPIjwGQnoLtldys/OWtIEs6biwxwCg1Jd/
+o36S+qcb4sWJ6peqhrSRnos=
+=YmeC
+-----END PGP SIGNATURE-----
