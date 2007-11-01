@@ -1,62 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbXKARvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753852AbXKARwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755269AbXKARvy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 13:51:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbXKARvq
+	id S1753852AbXKARwQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 13:52:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756326AbXKARv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 13:51:46 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:48282 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752750AbXKARvq (ORCPT
+	Thu, 1 Nov 2007 13:51:57 -0400
+Received: from rv-out-0910.google.com ([209.85.198.189]:50901 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755178AbXKARv4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 13:51:46 -0400
-Date: Thu, 1 Nov 2007 18:51:26 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Chris Holvenstot <cholvenstot@comcast.net>
-Cc: kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: Issue building kernel driver
-Message-ID: <20071101175126.GA7227@stusta.de>
-References: <1193938746.7555.7.camel@localhost>
+	Thu, 1 Nov 2007 13:51:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XzrTiT8brpEIy7oIBqcMmKxJw8PB2GXKv3iuh4+Nwq1lPW/+EvBe+fDNsX/K6RBNgbP74EJqj3xp8T116zRJUVpGWFNNxgeRHgWAOdMA6jSJBC0rQziaKnyeIAgFVCWME2eH/a8/BaP8mbwHSccHV35+bBdSGej20VOnNkxkHEI=
+Message-ID: <8bd0f97a0711011051o6d52f635i76c3a63b478ac817@mail.gmail.com>
+Date: Thu, 1 Nov 2007 13:51:55 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Bryan Wu" <bryan.wu@analog.com>
+Subject: Re: [PATCH 2/2] Blackfin I2C/TWI driver: add missing pin mux operation
+Cc: khali@linux-fr.org, i2c@lm-sensors.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1193736797-9005-3-git-send-email-bryan.wu@analog.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1193938746.7555.7.camel@localhost>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <1193736797-9005-1-git-send-email-bryan.wu@analog.com>
+	 <1193736797-9005-3-git-send-email-bryan.wu@analog.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 01, 2007 at 12:39:06PM -0500, Chris Holvenstot wrote:
-> 
-> Although it may not be popular with the crowd here, I do have a valid
-> reason to run Windows - and I accomidate this using the VirtualBox
-> product.  
-> 
-> Since I try to be slightly useful and build as many of the "test" kernel
-> images I can I end up rebuilding the VirtualBox kernel driver (open
-> source) on an almost daily basis.
->...
-> I am not sure if this should be reported to the kernel folks or the
-> VirtualBox folks - but the kernel code is what changed.  However I will
-> post this on the VirtualBox forum too.
+On 10/30/07, Bryan Wu <bryan.wu@analog.com> wrote:
+> --- a/drivers/i2c/busses/i2c-bfin-twi.c
+> +++ b/drivers/i2c/busses/i2c-bfin-twi.c
+> +static int setup_pin_mux(int action, struct bfin_twi_iface *iface)
+> +{
+> +
+> +       u16 pin_req[2][3] = {
+> +               {P_TWI0_SCL, P_TWI0_SDA, 0},
+> +               {P_TWI1_SCL, P_TWI1_SDA, 0},
+> +       };
 
-We had a (different) bug report involving exactly this external driver 
-at some older post 2.6.23 kernel where it turned out it was a problem in 
-this driver - and this one also looks really like a problem in their 
-driver.
+might be better to have this in the boards file ... consider the
+scenario on the BF54x where the user wants to use I2C0 and not I2C1 or
+vice versa so that they can use the set of pins for something else ...
+this would prevent such a setup
 
-Generally, problems with external drivers should be reported to the 
-vendors of these drivers and not here (unless it's clear it's a bug in 
-the kernel and not in the driver).
+> +       if (action) {
+> +               if (peripheral_request_list(pin_req[iface->bus_num], DRV_NAME))
+> +                       return -EFAULT;
+> +       } else {
+> +               peripheral_free_list(pin_req[iface->bus_num]);
+> +       }
+> +
+> +       return 0;
+> +}
 
-> Thanks
+EFAULT is incorrect i think ... want to pass back the actual value
+from peripheral_request_list()
 
-cu
-Adrian
+> --- a/drivers/i2c/busses/i2c-bfin-twi.c
+> +++ b/drivers/i2c/busses/i2c-bfin-twi.c
+> +static int setup_pin_mux(int action, struct bfin_twi_iface *iface)
+> +{
+> +
+> +       u16 pin_req[2][3] = {
+> +               {P_TWI0_SCL, P_TWI0_SDA, 0},
+> +               {P_TWI1_SCL, P_TWI1_SDA, 0},
+> +       };
 
--- 
+might be better to have this in the boards file ... consider the
+scenario on the BF54x where the user wants to use I2C0 and not I2C1 or
+vice versa so that they can use the set of pins for something else ...
+this would prevent such a setup
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+       if (action)
+               return peripheral_request_list(pin_req[iface->bus_num],
+DRV_NAME);
+       else
+               peripheral_free_list(pin_req[iface->bus_num]);
 
+       return 0;
+-mike
