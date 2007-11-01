@@ -1,55 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757693AbXKARUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbXKARYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757693AbXKARUf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 13:20:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbXKARU2
+	id S1755521AbXKARYt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 13:24:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbXKARYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 13:20:28 -0400
-Received: from helios.cs.csubak.edu ([136.168.201.112]:41952 "EHLO
-	helios.cs.csubak.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753345AbXKARU1 (ORCPT
+	Thu, 1 Nov 2007 13:24:41 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:50260 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752524AbXKARYk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 13:20:27 -0400
-Date: Thu, 1 Nov 2007 10:20:24 -0700 (PDT)
-From: David Griffith <dgriffi@cs.csubak.edu>
-To: Vitaliy Ivanov <vitalivanov@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: fixing usb-midi device support
-In-Reply-To: <35fbaa3e0711010346y5963d929w5054fabad1569d66@mail.gmail.com>
-Message-ID: <Pine.GSO.4.55.0711011018360.13024@helios.cs.csubak.edu>
-References: <Pine.GSO.4.55.0710311423530.10148@helios.cs.csubak.edu>
- <35fbaa3e0711010346y5963d929w5054fabad1569d66@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -0.1 (/)
-X-Spam-Report: ---- Start Spam Filter Report
-	Filter Analysis score is (-0.1/5.0)
-	-0.0 NO_RELAYS              Informational: message was not relayed via SMTP
-	-0.1 AWL                    AWL: From: address is in the auto white-list
-	---- End Spam Filter results
+	Thu, 1 Nov 2007 13:24:40 -0400
+To: a.p.zijlstra@chello.nl
+CC: jdike@addtoit.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-reply-to: <1193936949.27652.321.camel@twins> (message from Peter Zijlstra
+	on Thu, 01 Nov 2007 18:09:09 +0100)
+Subject: Re: per-bdi-throttling: synchronous writepage doesn't work
+	correctly
+References: <E1IndEw-00046x-00@dorka.pomaz.szeredi.hu>
+	 <1193935886.27652.313.camel@twins>
+	 <E1IndPT-00047e-00@dorka.pomaz.szeredi.hu> <1193936949.27652.321.camel@twins>
+Message-Id: <E1Indqb-00049a-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 01 Nov 2007 18:28:49 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Nov 2007, Vitaliy Ivanov wrote:
+> The page not having PG_writeback set on return is a hint, but not fool
+> proof, it could be the device is just blazing fast.
 
-> David,
->
-> On 10/31/07, David Griffith <dgriffi@cs.csubak.edu> wrote:
-> >
-> > I have a MOTU Fastlane and an Emu Xmidi 2x2 USB midi interfaces.  The Emu
-> > unit works fine with current kernels.  The MOTU unit won't work with
-> > kernels newer than 2.6.17.  I stumbled over a patch that had something to
-> > do with a MOTU Fastlane, but I haven't been able to find it again.  Could
-> > I get some advice on fixing MOTU Fastlane support?
->
-> I can see that you already had a discussion on this issue:
-> http://lkml.org/lkml/2007/8/10/102
->
-> Any results? Do you still can see the oops?
+Hmm, does it actually has to be foolproof though?  What will happen if
+bdi_writeout_inc() is called twice for the page?  The device will get
+twice the number of pages it deserves?  That's not all that bad,
+especially since that is a really really fast device.
 
-The oops is still present.  I was hoping that the patch I found and lost
-would help me understand what was going on.
-
--- 
-David Griffith
-dgriffi@cs.csubak.edu
+Miklos
