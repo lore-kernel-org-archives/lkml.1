@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757373AbXKAOOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbXKAOP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757373AbXKAOOW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 10:14:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbXKAOOP
+	id S1756841AbXKAOP1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 10:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567AbXKAOPR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 10:14:15 -0400
-Received: from iucha.net ([209.98.146.184]:53951 "EHLO mail.iucha.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753490AbXKAOOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 10:14:14 -0400
-Date: Thu, 1 Nov 2007 09:14:14 -0500
-From: Florin Iucha <florin@iucha.net>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: pdflush stuck in D state with v2.6.24-rc1-192-gef49c32
-Message-ID: <20071101141414.GZ25561@iucha.net>
-References: <20071030114250.GL25561@iucha.net> <E1ImpbK-0000l3-1u@localhost> <20071031000242.GP25561@iucha.net> <20071031035245.GQ25561@iucha.net> <E1In7S9-0001rv-NO@localhost> <20071031121606.GR25561@iucha.net> <20071031175318.GU25561@iucha.net> <E1InUH6-0001vE-1Y@localhost> <20071101122558.GX25561@iucha.net> <E1InZht-0004lr-NN@localhost>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Ul2mxMk0z4RYCW0d"
-Content-Disposition: inline
-In-Reply-To: <E1InZht-0004lr-NN@localhost>
-X-GPG-Key: http://iucha.net/florin_iucha.gpg
-X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Thu, 1 Nov 2007 10:15:17 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42837 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753044AbXKAOPP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 10:15:15 -0400
+Date: Thu, 1 Nov 2007 14:15:01 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Daniel Drake <dsd@gentoo.org>,
+       linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Tejun Heo <htejun@gmail.com>, Albert Lee <albertcc@tw.ibm.com>
+Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
+Message-ID: <20071101141501.3746cec2@the-village.bc.nu>
+In-Reply-To: <4729B3EA.6040707@garzik.org>
+References: <47274A5F.6070409@gentoo.org>
+	<20071030153417.59b9182c@the-village.bc.nu>
+	<47276DCA.1000808@gentoo.org>
+	<20071030190153.373c9347@the-village.bc.nu>
+	<47278439.4030801@gentoo.org>
+	<20071031114958.210bd7cc@the-village.bc.nu>
+	<20071031115754.GK5059@kernel.dk>
+	<4729A0DF.20800@garzik.org>
+	<20071101105335.1f20bab3@the-village.bc.nu>
+	<4729B3EA.6040707@garzik.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> We are both half-right.  I reverted my version of that completely, 
+> applied your version verbatim, and pushed it upstream.  The result: 
+> atapi_xlat _did_ start programming lbam/lbah for DMA (another behavior 
+> change), but request-sense DMA path was not changed to program lba[mh] 
+> for DMA.
 
---Ul2mxMk0z4RYCW0d
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I didn't realise we ever issued reques sense by DMA ?
 
-On Thu, Nov 01, 2007 at 09:03:33PM +0800, Fengguang Wu wrote:
-> Or will the system or fs size/age make any difference? If you happen
-> to have a spare/swap partition, could you make a new reiserfs and
-> mount it and copy several less-than-4KB files into it and wait for 30s
-> and see what happen to pdflush?
+> > Only if your transfer is actually 8K or more.
+> 
+> No, that's precisely the problem cause for what Daniel is reporting.  We 
+> are setting blimit=xfer_len(==10), when the device wants to return more 
+> than 10 bytes.  When set to the old limit (8k), the problem didn't occur.
 
-I will try that with a USB disk - I hope that won't make a difference.
+Lots of *other* problems occur instead. Daniel is reporting that if he
+makes a stupid request to a buggy drive he gets a reset and the system
+continues happily. Even that reset being a reset not a new command issue
+is actually us being excessively paranoid.
 
-> btw, what's the exact kernel version you are running?
+Prior to these changes people were reporting things like "I cannot
+use my CD-ROM".
 
-I noticed it with the kernel in the $SUBJECT, as reported by 'git
-describe'.  I have pulled in new changesets since then.
+So given we have ten years of experience of the method I put in taken
+from the old IDE layer versus a good way to make one buggy request work
+and break everything else - I *know* which I consider to be the right
+path.
 
-florin
+And PIO drains of DMA controllers do not work for most controllers, some
+will simply hang solid if you touch the data register as part of a DMA
+sequence (eg promise 2026x)
 
---=20
-Bruce Schneier expects the Spanish Inquisition.
-      http://geekz.co.uk/schneierfacts/fact/163
-
---Ul2mxMk0z4RYCW0d
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHKd81ND0rFCN2b1sRAvvhAJ9C4t6K8ht6nl+p4UJM3Y0Pthbj3wCeJB8s
-9XYgzgx2+88n+EV9g6GBcHs=
-=gNaN
------END PGP SIGNATURE-----
-
---Ul2mxMk0z4RYCW0d--
+Alan
