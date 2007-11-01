@@ -1,106 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761675AbXKAPGM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756722AbXKAPH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761675AbXKAPGM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 11:06:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756366AbXKAPFr
+	id S1756722AbXKAPH1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 11:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756353AbXKAPHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 11:05:47 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44182 "EHLO mx3.mail.elte.hu"
+	Thu, 1 Nov 2007 11:07:13 -0400
+Received: from sacred.ru ([62.205.161.221]:50546 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754072AbXKAPFq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 11:05:46 -0400
-Date: Thu, 1 Nov 2007 16:05:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [patch] PID namespace design bug, workaround
-Message-ID: <20071101150537.GC4044@elte.hu>
-References: <20071101144307.GA29566@elte.hu> <4729E86A.9090705@redhat.com>
+	id S1753711AbXKAPHL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 11:07:11 -0400
+Message-ID: <4729EB88.6080408@openvz.org>
+Date: Thu, 01 Nov 2007 18:06:48 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4729E86A.9090705@redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [patch] PID namespace design bug, workaround
+References: <20071101144307.GA29566@elte.hu>  <4729E7E4.8070208@openvz.org> <1193928977.27652.289.camel@twins>
+In-Reply-To: <1193928977.27652.289.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 01 Nov 2007 18:06:46 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ulrich Drepper <drepper@redhat.com> wrote:
-
-> Ingo Molnar wrote:
-> > +	clone_flags &= ~CLONE_NEWPID;
+Peter Zijlstra wrote:
+> On Thu, 2007-11-01 at 17:51 +0300, Pavel Emelyanov wrote:
 > 
-> I think the call should rather fail than silently drop the bit but 
-> aside from that I agree.  The problems we'd run into if the feature is 
-> getting used as-is are severe.
+>>  So can we, please, 
+>> keep things as they are for now - the appropriate fix will be ready 
+>> soon.
+> 
+> Just for the curious, could you outline on how you intend to fix this?
 
-does the patch below look OK to you?
+I have already answered to Ulrich about this. Just to
+make this sub-thread consistent:
 
-	Ingo
+The "fix" I mention is just returning -EINVAL in case user orders 
+CLONE_NEWPIDS and compiling out all the namespace cloning code. This 
+is just a more elegant way to get rid of pid namespaces rather than 
+Ingo proposed.
 
-------------------->
-From: Ingo Molnar <mingo@elte.hu>
-Subject: PID namespaces: turn them off for now
+Here's the root of the set:
+http://lkml.org/lkml/2007/10/31/118
 
-while checking recent commits to the kernel core i took a look at the 
-PID namespaces implementation, and it has a fatal flaw: it breaks 
-futexes and various libraries (and other stuff) that use PIDs as the 
-means of identifying tasks, by not providing any means of global 
-identification that works across PID namespaces. (PIDs _are_ a very 
-convenient and global way of identifying contexts.)
-
-i asked Ulrich about this and it turns out he has warned about this 
-early on:
-
-  http://www.nabble.com/Re%3A-question%3A-pid-space-semantics.-p3409990.html
-
-but this problem is still present in the code, and it has been recently 
-committed into mainline via:
-
-  commit 30e49c263e36341b60b735cbef5ca37912549264
-  Author: Pavel Emelyanov <xemul@openvz.org>
-  Date:   Thu Oct 18 23:40:10 2007 -0700
-
-      pid namespaces: allow cloning of new namespace
-
-without these problems having been resolved. A full-scale revert is 
-probably too intrusive, but at minimum we need to turn off user-space 
-access to this feature via this simple patch. Until this issue is 
-resolved properly the new PID namespace code needs to be turned off. 
-Letting this into 2.6.24 would be a disaster.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/fork.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
-
-Index: v/kernel/fork.c
-===================================================================
---- v.orig/kernel/fork.c
-+++ v/kernel/fork.c
-@@ -1420,6 +1420,15 @@ long do_fork(unsigned long clone_flags,
- 	int trace = 0;
- 	long nr;
- 
-+	/*
-+	 * PID namespaces are broken at the moment: they do not allow
-+	 * certain PID based syscalls (such as futexes) to be used
-+	 * across namespaces. This is broken and must not be allowed,
-+	 * so we keep this feature turned off until it's properly fixed.
-+	 */
-+	if (clone_flags & CLONE_NEWPID)
-+		return -ENOSYS;
-+
- 	if (unlikely(current->ptrace)) {
- 		trace = fork_traceflag (clone_flags);
- 		if (trace)
+Thanks,
+Pavel
