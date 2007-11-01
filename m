@@ -1,149 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762387AbXKAXQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762540AbXKAXQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762387AbXKAXQb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 19:16:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754958AbXKAXJF
+	id S1762540AbXKAXQp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 19:16:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755320AbXKAXJH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 19:09:05 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:50256 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759216AbXKAXJA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 19:09:00 -0400
-Subject: [PATCH 23/27] r-o-bind-mounts-sys_mknodat-elevate-write-count-for-vfs_mknod-create
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, miklos@szeredi.hu, hch@infradead.org,
-       Dave Hansen <haveblue@us.ibm.com>
-From: Dave Hansen <haveblue@us.ibm.com>
-Date: Thu, 01 Nov 2007 16:08:57 -0700
-References: <20071101230826.9A4F6E00@kernel>
-In-Reply-To: <20071101230826.9A4F6E00@kernel>
-Message-Id: <20071101230857.626CA14E@kernel>
+	Thu, 1 Nov 2007 19:09:07 -0400
+Received: from xenotime.net ([66.160.160.81]:55389 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1759770AbXKAXJB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 19:09:01 -0400
+Date: Thu, 1 Nov 2007 16:08:57 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Andreas Mohr <andi@lisas.de>, herbert@gondor.apana.org.au
+Cc: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH/RFC] eradicate bashisms in scripts/patch-kernel
+Message-Id: <20071101160857.6e877307.rdunlap@xenotime.net>
+In-Reply-To: <20071101221606.GA10116@rhlx01.hs-esslingen.de>
+References: <20071031211321.GA8363@rhlx01.hs-esslingen.de>
+	<47290096.7080207@oracle.com>
+	<20071101121133.GA14807@rhlx01.hs-esslingen.de>
+	<20071101082457.ff9a5d67.randy.dunlap@oracle.com>
+	<20071101221606.GA10116@rhlx01.hs-esslingen.de>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 1 Nov 2007 23:16:06 +0100 Andreas Mohr wrote:
+
+[add Herbert]
+
+> Hi,
+> 
+> On Thu, Nov 01, 2007 at 08:24:57AM -0700, Randy Dunlap wrote:
+> > On Thu, 1 Nov 2007 13:11:33 +0100 Andreas Mohr wrote:
+> > > I'll think a bit more about these couple changed places (and whether
+> > > this still truly works as intended) and mail a patch then.
+> > > 
+> > > (and a big NOTE: I'm no POSIX vs. non-POSIX shell guru at all, only a
+> > > semi-versed shell script writer, thus these changes should be reviewed
+> > > quite thoroughly)
+> > 
+> > Neither am I.  I read those web pages quickly yesterday, so after
+> > you read them, we can discuss more and/or review more patches.
+> 
+> OK, next iteration (v2).
+> 
+> 
+> Make the patch-kernel shell script sufficiently compatible with POSIX shells.
+> 
+> 
+> Changes since v1:
+> - don't actually change string quoting
+> - prepend ./ at mktemp step already
+> - remove added superfluous spaces in arithmetic expression
+> - don't remove double braces in STOPSUBLEVEL evaluation,
+>   since these are integer values to be compared
+> 
+> Full ChangeLog:
+> - replaced non-standard "==" by standard "="
+OK
+
+> - replaced non-standard "source" statement by POSIX "dot" statement
+OK
+
+> - POSIX shell local file lookup needs ./ prepended, thus have mktemp
+>   use this from the beginning and comment it properly
+
+I would like the patch description to say something like:
+
+Use ./ as a prefix on the TEMP filename so that the current search
+PATH will not be searched and thus another file with this same
+(pseudo random) name won't be used accidentally.
+
+> - replace non-standard bash string parsing by sed expression
+>   (is the sed syntax ok? correct? strict enough?)
+
+I think that this is the part that bothers me.  I can't find
+anything at
+http://www.opengroup.org/onlinepubs/000095399/utilities/xcu_chap02.html
+that says that this:
+	EXTRAVER=${EXTRAVER%%[[:punct:]]*}
+
+is invalid or even optional syntax.  OTOH, it does list such syntax,
+so why are we working around this syntax?
+Please point out to me what I am missing...
+
+> - added missing $ signs to shell variable names
+OK
 
 
-This takes care of all of the direct callers of vfs_mknod().
-Since a few of these cases also handle normal file creation
-as well, this also covers some calls to vfs_create().
+> About the missing $ signs:
+> http://www.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html#tag_02_14
+> says:
+> "If the shell variable x contains a value that forms a valid integer
+> constant, then the arithmetic expansions
+>  "$((x))" and "$(($x))" shall return the same value."
+> 
+> Hmm, well, seems dash doesn't... (syntax error).
+> Thus I still needed to add the $ signs despite opengroup.org specifying
+> it differently.
 
-So that we don't have to make three mnt_want/drop_write()
-calls inside of the switch statement, we move some of its
-logic outside of the switch and into a helper function
-suggested by Christoph.
+Herbert?
 
-This also encapsulates a fix for mknod(S_IFREG) that Miklos
-found.
+> Updated version verified again to now work with both bash and dash
+> on Debian stable.
+> 
+> Patch intended for inclusion in -mm, once it has survived some reviews.
+> 
+> Thanks.
+> 
+> Signed-off-by: Andreas Mohr <andi@lisas.de>
+> 
+> --- linux-2.6.23/scripts/patch-kernel.orig	2007-11-01 22:51:34.000000000 +0100
+> +++ linux-2.6.23/scripts/patch-kernel	2007-11-01 22:10:14.000000000 +0100
+> @@ -65,7 +65,7 @@
+>  patchdir=${2-.}
+>  stopvers=${3-default}
+>  
+> -if [ "$1" == -h -o "$1" == --help -o ! -r "$sourcedir/Makefile" ]; then
+> +if [ "$1" = -h -o "$1" = --help -o ! -r "$sourcedir/Makefile" ]; then
+>  cat << USAGE
+>  usage: $PNAME [-h] [ sourcedir [ patchdir [ stopversion ] [ -acxx ] ] ]
+>    source directory defaults to /usr/src/linux,
+> @@ -182,10 +182,12 @@
+>  }
+>  
+>  # set current VERSION, PATCHLEVEL, SUBLEVEL, EXTRAVERSION
+> -TMPFILE=`mktemp .tmpver.XXXXXX` || { echo "cannot make temp file" ; exit 1; }
+> +# sourcing $TMPFILE.1 below needs lookup in local directory in a POSIX shell,
+> +# thus prepend ./ to mktemp argument
+> +TMPFILE=`mktemp ./.tmpver.XXXXXX` || { echo "cannot make temp file" ; exit 1; }
+>  grep -E "^(VERSION|PATCHLEVEL|SUBLEVEL|EXTRAVERSION)" $sourcedir/Makefile > $TMPFILE
+>  tr -d [:blank:] < $TMPFILE > $TMPFILE.1
+> -source $TMPFILE.1
+> +. $TMPFILE.1
+>  rm -f $TMPFILE*
+>  if [ -z "$VERSION" -o -z "$PATCHLEVEL" -o -z "$SUBLEVEL" ]
+>  then
+> @@ -202,13 +204,7 @@
+>  EXTRAVER=
+>  if [ x$EXTRAVERSION != "x" ]
+>  then
+> -	if [ ${EXTRAVERSION:0:1} == "." ]; then
+> -		EXTRAVER=${EXTRAVERSION:1}
+> -	else
+> -		EXTRAVER=$EXTRAVERSION
+> -	fi
+> -	EXTRAVER=${EXTRAVER%%[[:punct:]]*}
+> -	#echo "$PNAME: changing EXTRAVERSION from $EXTRAVERSION to $EXTRAVER"
+> +	EXTRAVER=`echo $EXTRAVERSION|sed -s 's/^[\.]\?\([^[:punct:]]*\).*/\1/'`
+>  fi
+>  
+>  #echo "stopvers=$stopvers"
+> @@ -251,16 +247,16 @@
+>  do
+>      CURRENTFULLVERSION="$VERSION.$PATCHLEVEL.$SUBLEVEL"
+>      EXTRAVER=
+> -    if [ $stopvers == $CURRENTFULLVERSION ]; then
+> +    if [ $stopvers = $CURRENTFULLVERSION ]; then
+>          echo "Stopping at $CURRENTFULLVERSION base as requested."
+>          break
+>      fi
+>  
+> -    SUBLEVEL=$((SUBLEVEL + 1))
+> +    SUBLEVEL=$(($SUBLEVEL + 1))
+>      FULLVERSION="$VERSION.$PATCHLEVEL.$SUBLEVEL"
+>      #echo "#___ trying $FULLVERSION ___"
+>  
+> -    if [ $((SUBLEVEL)) -gt $((STOPSUBLEVEL)) ]; then
+> +    if [ $(($SUBLEVEL)) -gt $(($STOPSUBLEVEL)) ]; then
+>  	echo "Stopping since sublevel ($SUBLEVEL) is beyond stop-sublevel ($STOPSUBLEVEL)"
+>  	exit 1
+>      fi
+> @@ -297,7 +293,7 @@
+>  if [ x$gotac != x ]; then
+>    # Out great user wants the -ac patches
+>  	# They could have done -ac (get latest) or -acxx where xx=version they want
+> -	if [ $gotac == "-ac" ]; then
+> +	if [ $gotac = "-ac" ]; then
+>  	  # They want the latest version
+>  		HIGHESTPATCH=0
+>  		for PATCHNAMES in $patchdir/patch-${CURRENTFULLVERSION}-ac*\.*
+> -
 
-Acked-by: Christoph Hellwig <hch@infradead.org>
-Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Thanks,
 ---
-
- linux-2.6.git-dave/fs/namei.c         |   43 +++++++++++++++++++++++++---------
- linux-2.6.git-dave/fs/nfsd/vfs.c      |    4 +++
- linux-2.6.git-dave/net/unix/af_unix.c |    4 +++
- 3 files changed, 40 insertions(+), 11 deletions(-)
-
-diff -puN fs/namei.c~r-o-bind-mounts-sys_mknodat-elevate-write-count-for-vfs_mknod-create fs/namei.c
---- linux-2.6.git/fs/namei.c~r-o-bind-mounts-sys_mknodat-elevate-write-count-for-vfs_mknod-create	2007-11-01 14:46:20.000000000 -0700
-+++ linux-2.6.git-dave/fs/namei.c	2007-11-01 14:46:20.000000000 -0700
-@@ -2022,6 +2022,23 @@ int vfs_mknod(struct inode *dir, struct 
- 	return error;
- }
- 
-+static int may_mknod(mode_t mode)
-+{
-+	switch (mode & S_IFMT) {
-+	case S_IFREG:
-+	case S_IFCHR:
-+	case S_IFBLK:
-+	case S_IFIFO:
-+	case S_IFSOCK:
-+	case 0: /* zero mode translates to S_IFREG */
-+		return 0;
-+	case S_IFDIR:
-+		return -EPERM;
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
- asmlinkage long sys_mknodat(int dfd, const char __user *filename, int mode,
- 				unsigned dev)
- {
-@@ -2040,12 +2057,19 @@ asmlinkage long sys_mknodat(int dfd, con
- 	if (error)
- 		goto out;
- 	dentry = lookup_create(&nd, 0);
--	error = PTR_ERR(dentry);
--
-+	if (IS_ERR(dentry)) {
-+		error = PTR_ERR(dentry);
-+		goto out_unlock;
-+	}
- 	if (!IS_POSIXACL(nd.dentry->d_inode))
- 		mode &= ~current->fs->umask;
--	if (!IS_ERR(dentry)) {
--		switch (mode & S_IFMT) {
-+	error = may_mknod(mode);
-+	if (error)
-+		goto out_dput;
-+	error = mnt_want_write(nd.mnt);
-+	if (error)
-+		goto out_dput;
-+	switch (mode & S_IFMT) {
- 		case 0: case S_IFREG:
- 			error = vfs_create(nd.dentry->d_inode,dentry,mode,&nd);
- 			break;
-@@ -2056,14 +2080,11 @@ asmlinkage long sys_mknodat(int dfd, con
- 		case S_IFIFO: case S_IFSOCK:
- 			error = vfs_mknod(nd.dentry->d_inode,dentry,mode,0);
- 			break;
--		case S_IFDIR:
--			error = -EPERM;
--			break;
--		default:
--			error = -EINVAL;
--		}
--		dput(dentry);
- 	}
-+	mnt_drop_write(nd.mnt);
-+out_dput:
-+	dput(dentry);
-+out_unlock:
- 	mutex_unlock(&nd.dentry->d_inode->i_mutex);
- 	path_release(&nd);
- out:
-diff -puN fs/nfsd/vfs.c~r-o-bind-mounts-sys_mknodat-elevate-write-count-for-vfs_mknod-create fs/nfsd/vfs.c
---- linux-2.6.git/fs/nfsd/vfs.c~r-o-bind-mounts-sys_mknodat-elevate-write-count-for-vfs_mknod-create	2007-11-01 14:46:20.000000000 -0700
-+++ linux-2.6.git-dave/fs/nfsd/vfs.c	2007-11-01 14:46:20.000000000 -0700
-@@ -1242,7 +1242,11 @@ nfsd_create(struct svc_rqst *rqstp, stru
- 	case S_IFBLK:
- 	case S_IFIFO:
- 	case S_IFSOCK:
-+		host_err = mnt_want_write(fhp->fh_export->ex_mnt);
-+		if (host_err)
-+			break;
- 		host_err = vfs_mknod(dirp, dchild, iap->ia_mode, rdev);
-+		mnt_drop_write(fhp->fh_export->ex_mnt);
- 		break;
- 	default:
- 	        printk("nfsd: bad file type %o in nfsd_create\n", type);
-diff -puN net/unix/af_unix.c~r-o-bind-mounts-sys_mknodat-elevate-write-count-for-vfs_mknod-create net/unix/af_unix.c
---- linux-2.6.git/net/unix/af_unix.c~r-o-bind-mounts-sys_mknodat-elevate-write-count-for-vfs_mknod-create	2007-11-01 14:46:20.000000000 -0700
-+++ linux-2.6.git-dave/net/unix/af_unix.c	2007-11-01 14:46:20.000000000 -0700
-@@ -838,7 +838,11 @@ static int unix_bind(struct socket *sock
- 		 */
- 		mode = S_IFSOCK |
- 		       (SOCK_INODE(sock)->i_mode & ~current->fs->umask);
-+		err = mnt_want_write(nd.mnt);
-+		if (err)
-+			goto out_mknod_dput;
- 		err = vfs_mknod(nd.dentry->d_inode, dentry, mode, 0);
-+		mnt_drop_write(nd.mnt);
- 		if (err)
- 			goto out_mknod_dput;
- 		mutex_unlock(&nd.dentry->d_inode->i_mutex);
-_
+~Randy
