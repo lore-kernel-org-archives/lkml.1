@@ -1,50 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760818AbXKAKxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758085AbXKAKyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760818AbXKAKxS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 06:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757063AbXKAKxF
+	id S1758085AbXKAKyN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 06:54:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757063AbXKAKyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 06:53:05 -0400
-Received: from [81.2.110.250] ([81.2.110.250]:60776 "EHLO the-village.bc.nu"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756473AbXKAKxC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 06:53:02 -0400
-Date: Thu, 1 Nov 2007 10:53:35 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Daniel Drake <dsd@gentoo.org>,
-       linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Tejun Heo <htejun@gmail.com>, Albert Lee <albertcc@tw.ibm.com>
-Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
-Message-ID: <20071101105335.1f20bab3@the-village.bc.nu>
-In-Reply-To: <4729A0DF.20800@garzik.org>
-References: <47274A5F.6070409@gentoo.org>
-	<20071030153417.59b9182c@the-village.bc.nu>
-	<47276DCA.1000808@gentoo.org>
-	<20071030190153.373c9347@the-village.bc.nu>
-	<47278439.4030801@gentoo.org>
-	<20071031114958.210bd7cc@the-village.bc.nu>
-	<20071031115754.GK5059@kernel.dk>
-	<4729A0DF.20800@garzik.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Nov 2007 06:54:00 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:7547 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756769AbXKAKx7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 06:53:59 -0400
+Date: Thu, 1 Nov 2007 11:51:09 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Alistair John Strachan <alistair@devzero.co.uk>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       lkml@ml.breakpoint.cc
+Subject: Re: 2.4.24-rc1-git: crash on shutdown/unmount?
+Message-ID: <20071101105108.GD5037@kernel.dk>
+References: <200710311917.21441.alistair@devzero.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710311917.21441.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> demonstrated by (a) Alan's patch did not change DMA lbam/lbah 
-> programming and (b) Daniel's report of the message "ata2.00: 66 bytes 
+On Wed, Oct 31 2007, Alistair John Strachan wrote:
+> Hi Jens,
+> 
+> I guessed from the oops that you might have an idea what's causing this oops 
+> on shutdown/unmount. The git version (describe), a screenshot showing the 
+> oops, a config, and dmesg for a booted kernel are available from:
+> 
+> http://devzero.co.uk/~alistair/oops-20071031/
+> 
+> I went back to -rc1 and it still happens there too. If you need any more 
+> information or want me to bisect it, please let me know.
 
-(a) did. Well the original did, dunno about your version.
+Does this work for you?
 
-> I am not drawing any conclusions yet, but I'm thinking that blimit=8k 
-> may be a better choice for SATA ATAPI.
+diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
+index 54fd385..75c98d5 100644
+--- a/block/ll_rw_blk.c
++++ b/block/ll_rw_blk.c
+@@ -3221,6 +3221,7 @@ static inline void __generic_make_request(struct bio *bio)
+ 	sector_t old_sector;
+ 	int ret, nr_sectors = bio_sectors(bio);
+ 	dev_t old_dev;
++	int err = -EIO;
+ 
+ 	might_sleep();
+ 
+@@ -3248,7 +3249,7 @@ static inline void __generic_make_request(struct bio *bio)
+ 				bdevname(bio->bi_bdev, b),
+ 				(long long) bio->bi_sector);
+ end_io:
+-			bio_endio(bio, -EIO);
++			bio_endio(bio, err);
+ 			break;
+ 		}
+ 
+@@ -3283,6 +3284,10 @@ end_io:
+ 
+ 		if (bio_check_eod(bio, nr_sectors))
+ 			goto end_io;
++		if (bio_empty_barrier(bio) && !q->prepare_flush_fn) {
++			err = -EOPNOTSUPP;
++			goto end_io;
++		}
+ 
+ 		ret = q->make_request_fn(q, bio);
+ 	} while (ret);
 
-Only if your transfer is actually 8K or more.
+-- 
+Jens Axboe
 
-
-Alan
