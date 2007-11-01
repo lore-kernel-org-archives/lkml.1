@@ -1,40 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758068AbXKASGO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759057AbXKASHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758068AbXKASGO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 14:06:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbXKASF7
+	id S1759057AbXKASHB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 14:07:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754415AbXKASGu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 14:05:59 -0400
-Received: from lobo.ruivo.org ([66.92.68.119]:38715 "EHLO lobo.ruivo.org"
+	Thu, 1 Nov 2007 14:06:50 -0400
+Received: from mga11.intel.com ([192.55.52.93]:20510 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752828AbXKASF7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 14:05:59 -0400
-Date: Thu, 1 Nov 2007 14:05:40 -0400
-From: Aristeu Rozanski <aris@ruivo.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Truxton Fulton <trux@truxton.com>,
-       Hiroto Shibuya <hiroto.shibuya@gmail.com>,
-       Lee Garrett <lee-in-berlin@web.de>, linux-kernel@vger.kernel.org,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>,
-       ak@suse.de, torvalds@linux-foundation.org
-Subject: Re: [Bugme-new] [Bug 8378] New: Averatec 3156X laptop doesn't
-	reboot with kernels > 2.6.13.5 (responsible commit found)
-Message-ID: <20071101180540.GO407@cathedrallabs.org>
-References: <200704271742.l3RHgPTH019561@fire-2.osdl.org> <20070427144434.970de79f.akpm@linux-foundation.org> <m2k5vx6vce.fsf@truxton.com> <4646171E.7090609@web.de> <20070512180240.7a8923d5.akpm@linux-foundation.org> <m2sl4tyloc.fsf@truxton.com> <20071101155031.GB8068@cathedrallabs.org> <20071101105304.a46420a7.akpm@linux-foundation.org>
+	id S1754431AbXKASGt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 14:06:49 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,359,1188802800"; 
+   d="scan'208";a="193409843"
+Message-ID: <472A1526.8070208@intel.com>
+Date: Thu, 01 Nov 2007 11:04:22 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071101105304.a46420a7.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: David Miller <davem@davemloft.net>
+CC: jeff@garzik.org, netdev@vger.kernel.org, davej@redhat.com, ajax@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] e1000, e1000e valid-addr fixes
+References: <471E99E8.6030404@garzik.org>	<20071023.180744.115914004.davem@davemloft.net>	<471EABEE.8030900@garzik.org> <20071023.192313.115635750.davem@davemloft.net>
+In-Reply-To: <20071023.192313.115635750.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Nov 2007 18:04:44.0740 (UTC) FILETIME=[AECB3040:01C81CB1]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > any chance to get this into next -mm?
+David Miller wrote:
+> From: Jeff Garzik <jeff@garzik.org>
+> Date: Tue, 23 Oct 2007 22:20:30 -0400
 > 
-> Is is, as i386-fix-reboot-with-no-keyboard-attached.patch
-Thanks!
+>> David Miller wrote:
+>>> From: Jeff Garzik <jeff@garzik.org>
+>>> Date: Tue, 23 Oct 2007 21:03:36 -0400
+>>>
+>>>> I'm wondering if there is a way to avoid adding
+>>>>
+>>>> 	if (!is_valid_ether_addr(dev->dev_addr))
+>>>> 		return -EINVAL;
+>>>>
+>>>> to every ethernet driver's ->open() hook.
+>>> The first idea I get is:
+>>>
+>>> 1) Create netdev->validate_dev_addr().
+>>>
+>>> 2) If it exists, invoke it before ->open(), abort
+>>>    and return if any errors signaled.
+>>>
+>>> etherdev init hooks up a function that does the above
+>>> check, which allows us to avoid editing every ethernet
+>>> driver
+>>>
+>>> What do you think?
+>> Seems sane to me.  Something like this (attached)?
+> 
+> Looks great:
+> 
+> Acked-by: David S. Miller <davem@davemloft.net>
 
--- 
-Aristeu
+I like it.
 
+Should I start sending patches to remove the checks from e1000/e1000e/ixgb/ixgbe
+already (to David, I assume?)?
+
+Auke
