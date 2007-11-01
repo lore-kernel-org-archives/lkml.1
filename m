@@ -1,36 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755059AbXKAUjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbXKAUjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755059AbXKAUjR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 16:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbXKAUjF
+	id S1756793AbXKAUjx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 16:39:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753398AbXKAUjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 16:39:05 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36781 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751674AbXKAUjD (ORCPT
+	Thu, 1 Nov 2007 16:39:44 -0400
+Received: from smtpauth05.prod.mesa1.secureserver.net ([64.202.165.99]:54667
+	"HELO smtpauth05.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753419AbXKAUjn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 16:39:03 -0400
-Date: Thu, 1 Nov 2007 13:38:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Zurk Tech" <zurktech@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Quad core CPU detected but shows as single core in 2.6.23.1
-Message-Id: <20071101133856.d97ce4f0.akpm@linux-foundation.org>
-In-Reply-To: <2ed59cbb0710250750w73d2b29dwee0f1038fa9dff18@mail.gmail.com>
-References: <2ed59cbb0710250750w73d2b29dwee0f1038fa9dff18@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 1 Nov 2007 16:39:43 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Nov 2007 16:39:43 EDT
+Message-ID: <472A37EA.80209@seclark.us>
+Date: Thu, 01 Nov 2007 16:32:42 -0400
+From: Stephen Clark <Stephen.Clark@seclark.us>
+Reply-To: Stephen.Clark@seclark.us
+User-Agent: Mozilla/5.0 (X11; U; Linux 2.2.16-22smp i686; en-US; m18) Gecko/20010110 Netscape6/6.5
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: linux-kernel <linux-kernel@vger.kernel.org>, andreas@kempe.biz
+Subject: asus-laptop module
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Oct 2007 10:50:50 -0400
-"Zurk Tech" <zurktech@gmail.com> wrote:
+Hi List,
 
-> duh. never mind. i had an attack of the stupids and enabled GART error
-> reporting in the bios menu when i installed the motherboard. fixed
-> now. shows all 4 and 8 on the other one.
+When the asus-laptop module is loaded it automatically turns on my 
+wireless led
+light irregardless of the whether or not the my wireless is up or not. I 
+had previously
+been using the out of kernel asus-laptop module, which no longer 
+compiles because of
+missing some structure definition, Andreas Kempe had added a module 
+parameter to
+the out of tree version that let the module be loaded with the led off 
+by passing
+wled=0 as a parameter.
 
-Confused.  Why should that cause the kernel to misreport the core
-count?
+Can this be added to the in kernel version? Or the default for the 
+wireless led be off
+when loading the module?
+
+Thanks,
+Steve
+
+-- 
+
+"They that give up essential liberty to obtain temporary safety, 
+deserve neither liberty nor safety."  (Ben Franklin)
+
+"The course of history shows that as a government grows, liberty 
+decreases."  (Thomas Jefferson)
+
+
+
