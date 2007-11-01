@@ -1,73 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760262AbXKAXdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758827AbXKAXlE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760262AbXKAXdh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 19:33:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755758AbXKAXda
+	id S1758827AbXKAXlE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 19:41:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbXKAXkx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 19:33:30 -0400
-Received: from mail-03.jhb.wbs.co.za ([196.2.97.2]:35801 "EHLO
-	mail-03.jhb.wbs.co.za" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754719AbXKAXd3 (ORCPT
+	Thu, 1 Nov 2007 19:40:53 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36502 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753817AbXKAXkv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 19:33:29 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsxMAEb/KUfEAmHGRmdsb2JhbACOXgEBARIJHA4
-From: Bongani Hlope <bonganilinux@mweb.co.za>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: irq 21: nobody cared 2.6.24-rc1
-Date: Fri, 2 Nov 2007 01:33:28 +0200
-User-Agent: KMail/1.9.8
-Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-References: <200710251045.37040.bonganilinux@mweb.co.za> <20071101133238.16bb9a3f.akpm@linux-foundation.org>
-In-Reply-To: <20071101133238.16bb9a3f.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 1 Nov 2007 19:40:51 -0400
+Date: Thu, 1 Nov 2007 16:40:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Strange freezes (seems like SATA related)
+Message-Id: <20071101164046.462f40f0.akpm@linux-foundation.org>
+In-Reply-To: <47261043.5020907@qualcomm.com>
+References: <47261043.5020907@qualcomm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711020133.28907.bonganilinux@mweb.co.za>
-X-Original-Subject: Re: irq 21: nobody cared 2.6.24-rc1
-X-Spam-Score: 1.0 (+)
-X-Spam-Score-Int: 10
-X-Spam-Report: Spam detection software, running on the system "wbs-smtp-out-03.jhb.wbs.co.za", has
-	identified this incoming email as possible spam.  The original message
-	has been attached to this so you can view it (if it isn't spam) or label
-	similar future email.  If you have any questions, see
-	Postmaster for details.
-	Content preview:  On Thursday 01 November 2007 22:32:38 Andrew Morton wrote:
-	> On Thu, 25 Oct 2007 10:45:36 +0200 > > Bongani Hlope <bonganilinux@mweb.co.za>
-	wrote: > > Booting with irqpoll works > > > > ls /proc/irq/21/ (with irqpoll)
-	> > ehci_hcd:usb1/ smp_affinity uhci_hcd:usb2/ uhci_hcd:usb3/ > > uhci_hcd:usb4/
-	> > > > Disabling IRQ #21 > > Was any earlier kernel version OK? 2.6.23?
-	[...] 
-	Content analysis details:   (1.0 points, 5.0 required)
-	pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	0.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.5000]
-	0.9 RCVD_IN_PBL            RBL: Received via a relay in Spamhaus PBL
-	[196.2.114.125 listed in zen.spamhaus.org]
-	0.1 RDNS_DYNAMIC           Delivered to trusted network by host with
-	dynamic-looking rDNS
-X-Scan-Signature: bc494251cc6766af3c8ae5601359c165
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 01 November 2007 22:32:38 Andrew Morton wrote:
-> On Thu, 25 Oct 2007 10:45:36 +0200
->
-> Bongani Hlope <bonganilinux@mweb.co.za> wrote:
-> > Booting with irqpoll works
-> >
-> > ls /proc/irq/21/ (with irqpoll)
-> > ehci_hcd:usb1/  smp_affinity  uhci_hcd:usb2/  uhci_hcd:usb3/ 
-> > uhci_hcd:usb4/
-> >
-> >  Disabling IRQ #21
->
-> Was any earlier kernel version OK?  2.6.23?
+On Mon, 29 Oct 2007 09:54:27 -0700
+Max Krasnyansky <maxk@qualcomm.com> wrote:
 
-Yes the 2.6.23 kernel works fine. This seems to happen when I boot the 
-2.6.24-rc1 kernel with an iPod attached (hope this helps), but the 2.6.23 
-kernel doesn't experience this problem.
+> A couple of HP xw9300 machines (dual Opterons) started freezing up.
+> We're running on 2.6.22.1 on them. Freezes a somewhere weird. VGA console is alive
+> (I can switch vts, etc) but everything else is dead (network, etc).
+> Unfortunately SYSRQ was not enabled and I could not get backtraces and stuff.
+> 
+> Hooked up serial console and the only error that shows up is this.
+> 
+> ata1: EH in ADMA mode, notifier 0x1 notifier_error 0x0 gen_ctl 0x1581000 status 0x1540 next cpb count 0x0 next cpb idx 0x0
+> ata1: CPB 0: ctl_flags 0xd, resp_flags 0x1
+> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> ata1.00: cmd ca/00:08:57:00:80/00:00:00:00:00/e0 tag 0 cdb 0x0 data 4096 out
+>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+> Descriptor sense data with sense descriptors (in hex):
+> end_request: I/O error, dev sda, sector 8388695
+> Buffer I/O error on device sda1, logical block 1048579
+> lost page write due to I/O error on sda1
+> sd 0:0:0:0: [sda] Write Protect is off
+> 
+> I see a bunch of those and then the box just sits there spewing this periodically
+> 
+> ata1: EH in ADMA mode, notifier 0x1 notifier_error 0x0 gen_ctl 0x1581000 status 0x1540 next cpb count 0x0 next cpb idx 0x0
+> ata1: CPB 0: ctl_flags 0xd, resp_flags 0x1
+> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> ata1.00: cmd ca/00:08:4f:00:f8/00:00:00:00:00/e1 tag 0 cdb 0x0 data 4096 out
+>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+> 
+> SMART selftest on the drive passed without errors.
+> 
+> Here is how this machine looks like
+> 
+> ...
+
+So this happens on more than one machine?
+
+The kernel shouldn't freeze, so even if both machines have magically
+identical hardware faults, there's a kernel bug there somewhere.
+
+I guess it would be useful to test a 2.6.23 kernel if poss.  We've seen a
+very large number of reports like this one in recent months (many of which
+have not been responded to, btw) and perhaps someone has done something
+about them.
 
