@@ -1,144 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760776AbXKAP0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761242AbXKAP0t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760776AbXKAP0F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 11:26:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754138AbXKAPZz
+	id S1761242AbXKAP0t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 11:26:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbXKAP0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 11:25:55 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:56379 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754039AbXKAPZy (ORCPT
+	Thu, 1 Nov 2007 11:26:41 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:62620 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755304AbXKAP0k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 11:25:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=TgxFFycwKfTb6yGDQKEfhFX6CwC3mGlZn1HQDBGUchSGE/ogozvMBBM4w/Rx+yDmaskRNN6f9H5HL41SHixwsO7Hdsk/mBlA/fEl/ijNKSP4ntm6nqxbHvj0K5vC6C1Xn0sCafzsU+tQbwpo7LUb5tmQZBMko+6ekLA8Bz4ONtM=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [BUG] [linux-pm] Commit "Hibernation: Enter platform hibernation state in a consistent way)" makes my system to resume instantly from S4
-Date: Thu, 1 Nov 2007 17:25:30 +0200
-User-Agent: KMail/1.9.6
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <david-b@pacbell.net>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <200710271405.32908.maximlevitsky@gmail.com> <200710300036.13186.maximlevitsky@gmail.com> <200710300031.17355.rjw@sisk.pl>
-In-Reply-To: <200710300031.17355.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 1 Nov 2007 11:26:40 -0400
+Date: Thu, 1 Nov 2007 08:24:57 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andreas Mohr <andi@lisas.de>
+Cc: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH/RFC] eradicate bashisms in scripts/patch-kernel
+Message-Id: <20071101082457.ff9a5d67.randy.dunlap@oracle.com>
+In-Reply-To: <20071101121133.GA14807@rhlx01.hs-esslingen.de>
+References: <20071031211321.GA8363@rhlx01.hs-esslingen.de>
+	<47290096.7080207@oracle.com>
+	<20071101121133.GA14807@rhlx01.hs-esslingen.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711011725.30619.maximlevitsky@gmail.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 30 October 2007 01:31:13 Rafael J. Wysocki wrote:
-> On Monday, 29 October 2007 23:36, Maxim Levitsky wrote:
-> > On Monday 29 October 2007 22:37:37 Rafael J. Wysocki wrote:
-> > > On Monday, 29 October 2007 07:45, Maxim Levitsky wrote:
-> > > > On Sunday 28 October 2007 22:23:15 Rafael J. Wysocki wrote:
-> > > > > On Sunday, 28 October 2007 21:00, Maxim Levitsky wrote:
-> > > > > > On Saturday 27 October 2007 23:46:45 Rafael J. Wysocki wrote:
-> > > > > > > On Saturday, 27 October 2007 14:05, Maxim Levitsky wrote:
-> > > > > > > > Hi,
-> > > > > > > > 
-> > > > > > > > Recently I noticed that my system resumes just after suspend to disk.
-> > > > > > > > 
-> > > > > > > > I traced this to commit 9cd9a0058dd35268b24fa16795a92c800f4086d4.
-> > > > > > > > 
-> > > > > > > > Note:
-> > > > > > > > 
-> > > > > > > > This happens only if I enable WOL using /proc/acpi/wakeup
-> > > > > > > > (echo "ILAN" > /proc/acpi/wakeup)
-> > > > > > > 
-> > > > > > > What happens after a suspend to RAM?
-> > > > > > I do more testing tomorrow, but what I remember is that,
-> > > > > > I had no issues with suspend-to-ram.
-> > > > > > (And take into account the fact that _all_ wakeup devices were enabled always,
-> > > > > > the rc.local does that for me, and still I did quite a lot of suspends, but I
-> > > > > > got the immediate resume, only and always after suspend to disk.
-> > > > > 
-> > > > > Hm, can you please retest with the above commit applied, but with
-> > > > > device_suspend() in hibernation_platform_enter() replaced by device_shutdown()?
-> > > > Bingo! doing the above fixes this problem.
-> > > > And... strange, since I did test the system with e1000 unloaded, but still got same bug,
-> > > > back when I chased that bug, thus it is probably not related to e1000 and WOL.
-> > > > 
-> > > > the ACPI wake-up source (I have read the DSDT, and ICH datasheets, thus I know that this is a set of bits in southbridge)
-> > > > of e1000 is shared with EHCI and HDA sound codec.
-> > > > (But usb on my system only able to wake from S3, and the soundchip which can theoretically wake up from S3 too, doesn't have this ability)
-> > > > 
-> > > > (But disabling this wakeup source, fixes this bug too)
+On Thu, 1 Nov 2007 13:11:33 +0100 Andreas Mohr wrote:
+
+> On Wed, Oct 31, 2007 at 03:24:22PM -0700, Randy Dunlap wrote:
+> > Andreas Mohr wrote:
+> > >- the "source" statement most likely needs the ./ prepended, as can be
+> > >gathered from e.g. http://osdir.com/ml/colinux.devel/2005-12/msg00036.html
+> > 
+> > That email isn't very convincing to me.
+> 
+> Actually that place simply was where I found how the
+> 
+> .: 188: .tmpver.eC4856.1: not found
+> 
+> dash error that happened when I replaced the bash-specific "source"
+> statement with its "." counterpart could be ""fixed"".
+> 
+> > http://www.opengroup.org/onlinepubs/009695399/utilities/dot.html just says 
+> > that
+> > if <filename> does not contain a slash, the search PATH shall be used 
+> > (searched).
+> > If you want to prevent that, it's OK to use ./, but at least say that in the
+> > patch description, please.
+> 
+> So this part seems to indicate that merely prepending ./ is problematic,
+> since ./ implies relative path resolution whereas $TMPFILE.1 could
+> theoretically be an absolute path already.
+> It would probably be best to add the ./ to mktemp already, to make sure
+> we source *exactly* the filename expression we originally mktemp'd.
+> 
+> OTOH prepending ./ to mktemp by default would deny mktemp any
+> "search for a temporary-capable directory and create the file there"
+> capabilities. Hmm. I should investigate POSIX shell sourcing
+> mechanisms more.
+
+As I indicated, I don't object to this part of the patch or to
+the s/==/=/ part either.  The ./ just needs better patch description.
+
+
+> > >@@ -202,13 +202,7 @@
+> > > EXTRAVER=
+> > > if [ x$EXTRAVERSION != "x" ]
+> > > then
+> > >-	if [ ${EXTRAVERSION:0:1} == "." ]; then
+> > >-		EXTRAVER=${EXTRAVERSION:1}
+> > >-	else
+> > >-		EXTRAVER=$EXTRAVERSION
+> > >-	fi
+> > >-	EXTRAVER=${EXTRAVER%%[[:punct:]]*}
+> > >-	#echo "$PNAME: changing EXTRAVERSION from $EXTRAVERSION to $EXTRAVER"
+> > 
+> > What's the problem above?
+> 
+> The variable manipulation seems bash-specific, the resulting dash error was:
+> 
+> linux-2.6.23/scripts/patch-kernel: 205: Syntax error: Bad substitution
+> 
+> which pointed at the
+> 
+> 	if [ ${EXTRAVERSION:0:1} == "." ]; then
+> 
+> line.
+> 
 > > > 
-> > > OK
+> > >-    SUBLEVEL=$((SUBLEVEL + 1))
+> > >+    SUBLEVEL=$(( $SUBLEVEL + 1 ))
+> > 
+> > Why are the added spaces needed?
+> 
+> They weren't strictly needed, what was needed was to add the missing $ sign
+> (you could perhaps say that I added the spaces to emphasize the $ sign).
+> Maybe they're best removed.
+> 
+> > Did you look at
+> > http://www.opengroup.org/onlinepubs/000095399/utilities/xcu_chap02.html ?
+> 
+> No. I should have started by looking at the opengroup.org site when
+> looking for POSIX specs...
+> 
+> > 
+> > >     FULLVERSION="$VERSION.$PATCHLEVEL.$SUBLEVEL"
+> > >     #echo "#___ trying $FULLVERSION ___"
 > > > 
-> > > Please get back to device_suspend() in hibernation_platform_enter() and try
-> > > to unload ehci_hcd before hibernation with the wakeup source enabled.
-> > Well, ... bingo! again!
+> > >-    if [ $((SUBLEVEL)) -gt $((STOPSUBLEVEL)) ]; then
+> > >+    if [ $SUBLEVEL -gt $STOPSUBLEVEL ]; then
 > > 
-> > Replacing back the device_suspend() , and unloading the ehci_hcd fixes the problem!
-> > Even more, loading this module back causes this problem to reappear, and vise-verso.
-> > All wakeup sources are enabled always.
-> > 
-> > Note that I don't have any USB 2.0 devices yet.
-> > The usb devices I have are: keyboard,mouse,and joystick.
-> > 
-> > So now this problem looks fixable, I take a look at ehci driver.
+> > What's the problem here?
 > 
-> This is very similar to what I've been observing for some time on one of my
-> test boxes wrt suspending to RAM and in that case the problem is also related
-> to EHCI (this is a pretty old Celeron-based box with an Intel chipset).
+> I got 
 > 
-> It looks like in some situations, on some platforms the EHCI controller
-> triggers a resume right after the suspend (or hibernation) if the driver's
-> .suspend() routine is executed before invoking the ACPI firmware to put the
-> system into the sleep state.
+> linux-2.6.23/scripts/patch-kernel: 270: arith: syntax error: "SUBLEVEL"
 > 
-> [The "ehci_hcd causes box to resume immediately after suspend to RAM" thread on
-> linux-pm was about this problem.]
+> thus I simply removed braces since that "fixed" the issue.
+> May be incorrect, though...
 > 
-> Greetings,
-> Rafael
 > 
+> I'll think a bit more about these couple changed places (and whether
+> this still truly works as intended) and mail a patch then.
+> 
+> (and a big NOTE: I'm no POSIX vs. non-POSIX shell guru at all, only a
+> semi-versed shell script writer, thus these changes should be reviewed
+> quite thoroughly)
 
-Sorry, for a bit late response,
+Neither am I.  I read those web pages quickly yesterday, so after
+you read them, we can discuss more and/or review more patches.
 
-Do you meant that EHCI driver triggers the resume regardless of the above commit?
+Thanks.
 
-Now I have checked the source and understand that the above commit is 150% right.
-(Actually I always assumed that it was always there, and some developers did that too)
-
-
-I assumed that on hibernation the sequence is:
-
-.suspend() - disable device + enable wake
-snapshot
-
-.resume() - enabled device + disable wake
-snapshot writeout
-.suspend() - disable device + enable wake
-
-
-But before the above commit was introduced, the last .suspend()
-didn't happen, and thus all the code that enables wake was disabled.
-For the same reason rtc-cmos didn't work, since its .resume disables the alarm.
-
-The mystery why my system did react to WOL in S4 is resolved by the fact that
-e1000 .shutdown() calls .suspend() to make WOL work in S5 too.
-(Btw, this is wrong that rtc-cmos disables alarm in .shutdown()  since it can be used in S5 too)
-
-
-So, this commit caused the EHCI .suspend to activate the wakeup, and this code probably contains a bug
-(Or a lack of hardware workaround)
-
-
-Thus, since the suspend to ram isn't affected by the above commit, I want to know
-whenever it affects the system you have seen resuming from ram instantly with ehci driver.
-
-
-Best regards,
-	Maxim Levitsky
+---
+~Randy
