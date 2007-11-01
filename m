@@ -1,82 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758177AbXKAEvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbXKAE5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758177AbXKAEvK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 00:51:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbXKAEu4
+	id S1756164AbXKAE5S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 00:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbXKAE5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 00:50:56 -0400
-Received: from gw.goop.org ([64.81.55.164]:56098 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752317AbXKAEuz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 00:50:55 -0400
-Message-ID: <47295B2A.3080200@goop.org>
-Date: Wed, 31 Oct 2007 21:50:50 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Glauber de Oliveira Costa <gcosta@redhat.com>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rusty@rustcorp.com.au, ak@suse.de, mingo@elte.hu, chrisw@sous-sol.org,
-       avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
-       kvm-devel@lists.sourceforge.net, zach@vmware.com, tglx@linutronix.de,
-       jun.nakajima@intel.com, glommer@gmail.com,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 11/16] turn priviled operation into a macro in head_64.S
-References: <1193858101367-git-send-email-gcosta@redhat.com> <11938581073775-git-send-email-gcosta@redhat.com> <11938581133479-git-send-email-gcosta@redhat.com> <1193858118284-git-send-email-gcosta@redhat.com> <11938581242810-git-send-email-gcosta@redhat.com> <1193858130443-git-send-email-gcosta@redhat.com> <11938581351064-git-send-email-gcosta@redhat.com> <11938581403478-git-send-email-gcosta@redhat.com> <11938581451804-git-send-email-gcosta@redhat.com> <11938581512730-git-send-email-gcosta@redhat.com> <11938581562552-git-send-email-gcosta@redhat.com> <11938581612389-git-send-email-gcosta@redhat.com>
-In-Reply-To: <11938581612389-git-send-email-gcosta@redhat.com>
-X-Enigmail-Version: 0.95.4
-Content-Type: text/plain; charset=ISO-8859-15
+	Thu, 1 Nov 2007 00:57:06 -0400
+Received: from coyote.holtmann.net ([217.160.111.169]:34598 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752993AbXKAE5F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 00:57:05 -0400
+Subject: Re: [PATCH]bluetooth: hci_sysfs connection bus_id add support for
+	diffrent hci device
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       bluez-devel@lists.sourceforge.net
+In-Reply-To: <a8e1da0710311920sa7db787s604f154f201d3a1@mail.gmail.com>
+References: <20071031023017.GA3896@darkstar.te-china.tietoenator.com>
+	 <20071031.000141.241824894.davem@davemloft.net>
+	 <1193817409.32459.10.camel@violet>
+	 <a8e1da0710310213r1e4f3d7ckcbdf2e6bf854745e@mail.gmail.com>
+	 <1193824773.32459.22.camel@violet>
+	 <a8e1da0710311805l32282ce0ve9df9280cf7cce06@mail.gmail.com>
+	 <a8e1da0710311920sa7db787s604f154f201d3a1@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 01 Nov 2007 05:56:50 +0100
+Message-Id: <1193893010.32459.104.camel@violet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Glauber de Oliveira Costa wrote:
-> under paravirt, read cr2 cannot be issued directly anymore.
-> So wrap it in a macro, defined to the operation itself in case
-> paravirt is off, but to something else if we have paravirt
-> in the game
->   
+Hi Dave,
 
-Is this actually needed?  It's only used in the early fault handler in
-head_64.S.  Will we be taking that path in the paravirt case?  If so,
-should we disable the fault handler altogether, since the hypervisor can
-probably provide better diagnositcs.
-
-    J
-> Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
-> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> Acked-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-> ---
->  arch/x86/kernel/head_64.S |    9 ++++++++-
->  1 files changed, 8 insertions(+), 1 deletions(-)
+> > > Maybe we can use this instead:
+> > > >       snprintf(conn->dev.bus_id, BUS_ID_SIZE,
+> > > > -                     "%s%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X",
+> > > > +                     "%s%s%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X",
+> > > > +                     hdev->name + 3,
+> > > >                       conn->type == ACL_LINK ? "acl" : "sco",
+> > > >                       ba->b[5], ba->b[4], ba->b[3],
+> > > >                       ba->b[2], ba->b[1], ba->b[0]);
+> > >
+> > > I had a look on how other subsystems handle this case and yes, they
+> > > duplicate the id number from its parent device. So I applied the
+> > > attached patch to my tree.
 >
-> diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
-> index b6167fe..c31b1c9 100644
-> --- a/arch/x86/kernel/head_64.S
-> +++ b/arch/x86/kernel/head_64.S
-> @@ -19,6 +19,13 @@
->  #include <asm/msr.h>
->  #include <asm/cache.h>
->  
-> +#ifdef CONFIG_PARAVIRT
-> +#include <asm/asm-offsets.h>
-> +#include <asm/paravirt.h>
-> +#else
-> +#define GET_CR2_INTO_RCX movq %cr2, %rcx
-> +#endif
-> +
->  /* we are not able to switch in one step to the final KERNEL ADRESS SPACE
->   * because we need identity-mapped pages.
->   *
-> @@ -267,7 +274,7 @@ ENTRY(early_idt_handler)
->  	xorl %eax,%eax
->  	movq 8(%rsp),%rsi	# get rip
->  	movq (%rsp),%rdx
-> -	movq %cr2,%rcx
-> +	GET_CR2_INTO_RCX
->  	leaq early_idt_msg(%rip),%rdi
->  	call early_printk
->  	cmpl $2,early_recursion_flag(%rip)
->   
+> Sorry for my noise.
+> Theoretically, for the "%d-%s" version, overwrite is also possible.
+> 
+> hdev->id is u16, imagine the id is 65535, then total length is 21.
+
+even to reach 3 digits you have to attach 100 Bluetooth devices at the
+same time. Tell me when you have done that ;)
+
+However, as I said, we have to move to using the connection handle.
+
+Regards
+
+Marcel
+
 
