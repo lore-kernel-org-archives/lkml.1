@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758031AbXKAX44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759497AbXKAX6E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758031AbXKAX44 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 19:56:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbXKAX4r
+	id S1759497AbXKAX6E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 19:58:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbXKAX5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 19:56:47 -0400
-Received: from ns2.suse.de ([195.135.220.15]:34216 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753213AbXKAX4q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 19:56:46 -0400
-Date: Fri, 2 Nov 2007 00:56:44 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Duane Griffin <duaneg@dghda.com>,
-       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, Hugh Dickins <hugh@veritas.com>
-Subject: Re: 2.6.23 regression: accessing invalid mmap'ed memory from gdb causes unkillable spinning
-Message-ID: <20071101235644.GA20144@wotan.suse.de>
-References: <20071031041932.GA12189@wotan.suse.de> <alpine.LFD.0.999.0710310756220.30120@woody.linux-foundation.org> <20071031151934.GA19211@wotan.suse.de> <alpine.LFD.0.999.0710310854560.3340@woody.linux-foundation.org> <20071031225541.GA28552@wotan.suse.de> <alpine.LFD.0.999.0710311602170.3342@woody.linux-foundation.org> <20071101023758.GA30613@wotan.suse.de> <alpine.LFD.0.999.0711010809171.3342@woody.linux-foundation.org> <20071101154705.GA745@wotan.suse.de> <alpine.LFD.0.999.0711010901290.3342@woody.linux-foundation.org>
+	Thu, 1 Nov 2007 19:57:54 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39981 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752876AbXKAX5x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 19:57:53 -0400
+Date: Thu, 1 Nov 2007 16:57:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Emilian.Medve@freescale.com, linux-kernel@vger.kernel.org, hjlipp@web.de,
+       tilman@imap.cc, gigaset307x-common@lists.sourceforge.net, kkeil@suse.de,
+       isdn4linux@listserv.isdn4linux.de, mac@melware.de,
+       linux-omap-open-source@linux.omap.com
+Subject: Re: [PATCH resend] Make the dev_*() family of macros in
+ device.hcomplete
+Message-Id: <20071101165700.aa5167fb.akpm@linux-foundation.org>
+In-Reply-To: <20071030154008.GA22809@suse.de>
+References: <1193697795-7823-1-git-send-email-Emilian.Medve@Freescale.com>
+	<20071030000054.GA19022@suse.de>
+	<598D5675D34BE349929AF5EDE9B03E27016E5FCB@az33exm24.fsl.freescale.net>
+	<20071030154008.GA22809@suse.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0711010901290.3342@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 01, 2007 at 09:08:45AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Thu, 1 Nov 2007, Nick Piggin wrote:
+On Tue, 30 Oct 2007 08:40:08 -0700
+Greg KH <gregkh@suse.de> wrote:
+
+> On Tue, Oct 30, 2007 at 05:11:24AM -0700, Medve Emilian-EMMEDVE1 wrote:
+> > Hi Greg K-H,
 > > 
-> > Untested patch follows
+> > 
+> > > > +#define dev_info(dev, format, arg...)		\
+> > > > +	dev_printk(KERN_INFO, dev, format, ## arg)
+> > > > +
+> > > >  #ifdef DEBUG
+> > > >  #define dev_dbg(dev, format, arg...)		\
+> > > > -	dev_printk(KERN_DEBUG , dev , format , ## arg)
+> > > > +	dev_printk(KERN_DEBUG, dev, format, ## arg)
+> > > 
+> > > Those extra spaces are there for a good reason, older versions of gcc
+> > > are broken without it.  So please, put them all back...
+> > 
+> > You mean I should add spaces before commas only where they were
+> > initially or to all new code and/or macros?
 > 
-> Ok, this looks ok.
+> Put it back where it was, and do the same for all other macros.
 > 
-> Except I would remove the VM_MAYSHARE bit from the test.
+> > I've observed other kernel code and more often there are no spaces
+> > before commas. I'm asking because the CodingStyle document is not very
+> > explicit about this rule.
+> 
+> This is a gcc rule, for variable length macros, not a CodingStyle
+> guideline.  It just will not work without it :)
+> 
 
-But we do want to allow forced COW faults for MAP_PRIVATE mappings. gdb
-uses this for inserting breakpoints (but fortunately, a COW page in a
-MAP_PRIVATE mapping is a much more natural thing for the VM).
+The space-before-a-comma requirement was for gcc-2.95, iirc.
 
+It got to the stage where I was the only person testing with gcc-2.95 so I
+spent inordinate amounts of time adding spaces before people's newly-added
+commas.  Fortunately we abamdoned that gcc version so the space-before-a-comma
+requirement no longer exists.
 
-> That whole bit should go, in fact.
-> 
-> We used to make it something different: iirc, a read-only SHARED mapping 
-> was downgraded to a non-shared mapping, because we wanted to avoid some of 
-> the costs we used to have with the VM implementation (actually, I think it 
-> was various filesystems that don't like shared mappings because they don't 
-> have a per-page writeback). But we left the VM_MAYSHARE bit on, to get 
-> /proc/<pid>/mmap things right.
-> 
-> Or something like that. I forget the details. But I *think* we don't 
-> actually need this any more.
-> 
-> But basically, the "right" way to test for shared mappings is historically 
-> to just test the VM_MAYSHARE bit - but not *both* bits. Because VM_SHARE 
-> may have been artificially cleared.
- 
-I think you're right -- VM_MAYSHARE is basically testing for MAP_SHARED.
-I just don't know exactly what you're proposing here.
-
-Thanks,
-Nick
