@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759932AbXKALU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759648AbXKALYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759932AbXKALU2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 07:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756560AbXKALUU
+	id S1759648AbXKALYW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 07:24:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756843AbXKALYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 07:20:20 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:49295 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756526AbXKALUS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 07:20:18 -0400
-Message-ID: <4729B670.7090403@garzik.org>
-Date: Thu, 01 Nov 2007 07:20:16 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: linux-kernel@vger.kernel.org, kristen.c.accardi@intel.com,
-       linux-ide@vger.kernel.org
-Subject: Re: Suspend to ram regression (2.6.24-rc1-git)
-References: <20071031201308.GK11514@kernel.dk> <20071101084145.GA5037@kernel.dk> <20071101092155.GB5037@kernel.dk>
-In-Reply-To: <20071101092155.GB5037@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 1 Nov 2007 07:24:14 -0400
+Received: from tomts36.bellnexxia.net ([209.226.175.93]:51817 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756782AbXKALYN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 07:24:13 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HAIdUKUdMQWvU/2dsb2JhbACBW45W
+Date: Thu, 1 Nov 2007 07:24:07 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       systemtap@sources.redhat.com
+Subject: Re: [PATCH] markers: modpost
+Message-ID: <20071101112407.GA24217@Krystal>
+References: <20070921133006.GF8964@redhat.com> <20070921133820.GD13129@Krystal> <20071015194120.GA22562@redhat.com> <20071015231209.GA18994@Krystal> <20071015235033.321E84D0389@magilla.localdomain> <20071025191722.GA6114@Krystal> <20071026142810.GA14814@redhat.com> <20071101010624.54D8D4D04AE@magilla.localdomain> <20071101024622.GA3343@Krystal> <20071101093725.891F34D04AE@magilla.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+In-Reply-To: <20071101093725.891F34D04AE@magilla.localdomain>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 07:20:39 up 94 days, 11:39,  2 users,  load average: 1.41, 1.33, 0.94
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> Reverting just the default AHCI flags makes it work again. IOW, with the
-> below patch I can suspend properly with current -git.
+* Roland McGrath (roland@redhat.com) wrote:
+> > If we want to do it safely, I think we should iterate from
+> > __start___markers to __stop___markers symbols of vmlinux and get the
+> > pointers to the name/format string pairs.
+> > 
+> > The same can then be done with modules using the __markers section.
+> > 
+> > Or maybe is there some reason not to do that ?
 > 
-> diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-> index ed9b407..77f7631 100644
-> --- a/drivers/ata/ahci.c
-> +++ b/drivers/ata/ahci.c
-> @@ -190,8 +190,7 @@ enum {
->  
->  	AHCI_FLAG_COMMON		= ATA_FLAG_SATA | ATA_FLAG_NO_LEGACY |
->  					  ATA_FLAG_MMIO | ATA_FLAG_PIO_DMA |
-> -					  ATA_FLAG_ACPI_SATA | ATA_FLAG_AN |
-> -					  ATA_FLAG_IPM,
-> +					  ATA_FLAG_ACPI_SATA | ATA_FLAG_AN,
->  	AHCI_LFLAG_COMMON		= ATA_LFLAG_SKIP_D2H_BSY,
+> It's just rather a pain in the ass, a whole lot more fiddly work.
+> cf "somewhat crude" and "foreseeable future" in my patch's log entry.
+> Knock yourself out if you're looking for more tedious hacking to do in
+> modpost.c, but I say fix it when it breaks.
+> 
 
+Hmmmm, I have rarely seen code go into mainline without addressing valid
+technical criticism first. Please fix.
 
-sounds like the easy thing to do, in light of this breakage, might be to 
-default it to off, add a module parameter turning it on by setting that 
-flag.
+I'll look into it if I find the time.
 
+Mathieu
+
+> 
+> Thanks,
+> Roland
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
