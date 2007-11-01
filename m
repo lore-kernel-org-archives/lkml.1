@@ -1,48 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761952AbXKAPuv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753455AbXKAPwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761952AbXKAPuv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 11:50:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761319AbXKAPuh
+	id S1753455AbXKAPwU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 11:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754576AbXKAPwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 11:50:37 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:46446 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760961AbXKAPug (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 11:50:36 -0400
-Date: Thu, 1 Nov 2007 08:50:28 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Darren Hart <dvhltc@us.ibm.com>, linux-kernel@vger.kernel.org,
-       tony@bakeyournoodle.com, paulus@samba.org, dino@in.ibm.com,
-       tytso@us.ibm.com, antonb@us.ibm.com, rostedt@goodmis.org
-Subject: Re: [PATCH, RFC] hacks to allow -rt to run kernbench on POWER
-Message-ID: <20071101155028.GB14231@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20071029185044.GA23413@linux.vnet.ibm.com> <1193688468.9928.30.camel@pasglop> <1193864075.9767.20.camel@Aeon> <1193865328.9928.141.camel@pasglop>
+	Thu, 1 Nov 2007 11:52:08 -0400
+Received: from styx.suse.cz ([82.119.242.94]:60750 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754359AbXKAPwH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 11:52:07 -0400
+Date: Thu, 1 Nov 2007 16:52:04 +0100
+From: Jan Kara <jack@suse.cz>
+To: linux-kernel@vger.kernel.org
+Cc: LIOU Payphone <lioupayphone@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Forbid user to change file flags on quota files
+Message-ID: <20071101155204.GB30523@duck.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1193865328.9928.141.camel@pasglop>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 01, 2007 at 08:15:28AM +1100, Benjamin Herrenschmidt wrote:
-> 
-> > So as Paul mentioned, spin_lock is now a mutex.  There is a new
-> > raw_spinlock however (simply change the way it is declared, calling
-> > conventions are the same) which is used in a very few areas where a
-> > traditional spin_lock is truly necessary.  This may or may not be one of
-> > those times, but I wanted to point it out.
-> 
-> Yeah, I figured that. My main worry has more to do with some fishy
-> assumptions the powerpc VM code does regarding what can and cannot
-> happen in those locked sections, among other things. I'll have to sit
-> and think about it for a little while to convince myself we are ok ...
-> or not. Plus we do keep track of various MM related things in per-CPU
-> data structures but it looks like Paul already spotted that.
+  Hello,
 
-My concern would be that I failed to spot all of them.  ;-)
+  attached patch fixes possible deadlock spotted by LIOU Payphone. If we
+set inode flags for quota files, we first lock i_mutex and then start a
+transaction (which is a standard ordering) but quota files are special and
+their i_mutex should be acquired only when a transaction is started.
+Because users have no reason to muck with inode flags when quota is on
+anyway, just forbid users from changing inode flags when quota is on.
+I've done the change for all the filesystems supporting quota so that
+they are consistent. Andrew, would you please queue it? Thanks.
 
-							Thanx, Paul
+									Honza
+
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
+---
+
+Forbid user from changing file flags on quota files. User has no bussiness
+in playing with these flags when quota is on. Furthermore there is a remote
+possibility of deadlock due to a lock inversion between quota file's i_mutex and
+transaction's start (i_mutex for quota file is locked only when trasaction is
+started in quota operations) in ext3 and ext4.
+
+Signed-off-by: Jan Kara <jack@suse.cz>
+CC: LIOU Payphone <lioupayphone@gmail.com>
+
+diff -rupX /home/jack/.kerndiffexclude linux-2.6.24-rc1/fs/ext2/ioctl.c linux-2.6.24-rc1-1-forbid_setflags/fs/ext2/ioctl.c
+--- linux-2.6.24-rc1/fs/ext2/ioctl.c	2007-10-24 20:43:56.000000000 +0200
++++ linux-2.6.24-rc1-1-forbid_setflags/fs/ext2/ioctl.c	2007-11-01 16:01:26.000000000 +0100
+@@ -47,6 +47,11 @@ int ext2_ioctl (struct inode * inode, st
+ 			flags &= ~EXT2_DIRSYNC_FL;
+ 
+ 		mutex_lock(&inode->i_mutex);
++		/* Is it quota file? Don't allow user mess with it */
++		if (IS_NOQUOTA(inode)) {
++			mutex_unlock(&inode->i_mutex);
++			return -EPERM;
++		}
+ 		oldflags = ei->i_flags;
+ 
+ 		/*
+diff -rupX /home/jack/.kerndiffexclude linux-2.6.24-rc1/fs/ext3/ioctl.c linux-2.6.24-rc1-1-forbid_setflags/fs/ext3/ioctl.c
+--- linux-2.6.24-rc1/fs/ext3/ioctl.c	2007-10-11 12:01:23.000000000 +0200
++++ linux-2.6.24-rc1-1-forbid_setflags/fs/ext3/ioctl.c	2007-11-01 16:01:58.000000000 +0100
+@@ -51,6 +51,11 @@ int ext3_ioctl (struct inode * inode, st
+ 			flags &= ~EXT3_DIRSYNC_FL;
+ 
+ 		mutex_lock(&inode->i_mutex);
++		/* Is it quota file? Don't allow user mess with it */
++		if (IS_NOQUOTA(inode)) {
++			mutex_unlock(&inode->i_mutex);
++			return -EPERM;
++		}
+ 		oldflags = ei->i_flags;
+ 
+ 		/* The JOURNAL_DATA flag is modifiable only by root */
+diff -rupX /home/jack/.kerndiffexclude linux-2.6.24-rc1/fs/ext4/ioctl.c linux-2.6.24-rc1-1-forbid_setflags/fs/ext4/ioctl.c
+--- linux-2.6.24-rc1/fs/ext4/ioctl.c	2007-10-11 12:01:23.000000000 +0200
++++ linux-2.6.24-rc1-1-forbid_setflags/fs/ext4/ioctl.c	2007-11-01 16:03:02.000000000 +0100
+@@ -51,6 +51,11 @@ int ext4_ioctl (struct inode * inode, st
+ 			flags &= ~EXT4_DIRSYNC_FL;
+ 
+ 		mutex_lock(&inode->i_mutex);
++		/* Is it quota file? Don't allow user mess with it */
++		if (IS_NOQUOTA(inode)) {
++			mutex_unlock(&inode->i_mutex);
++			return -EPERM;
++		}
+ 		oldflags = ei->i_flags;
+ 
+ 		/* The JOURNAL_DATA flag is modifiable only by root */
+diff -rupX /home/jack/.kerndiffexclude linux-2.6.24-rc1/fs/jfs/ioctl.c linux-2.6.24-rc1-1-forbid_setflags/fs/jfs/ioctl.c
+--- linux-2.6.24-rc1/fs/jfs/ioctl.c	2007-10-11 12:01:23.000000000 +0200
++++ linux-2.6.24-rc1-1-forbid_setflags/fs/jfs/ioctl.c	2007-11-01 16:13:07.000000000 +0100
+@@ -79,6 +79,9 @@ int jfs_ioctl(struct inode * inode, stru
+ 		if (!S_ISDIR(inode->i_mode))
+ 			flags &= ~JFS_DIRSYNC_FL;
+ 
++		/* Is it quota file? Don't allow user mess with it */
++		if (IS_NOQUOTA(inode))
++			return -EPERM;
+ 		jfs_get_inode_flags(jfs_inode);
+ 		oldflags = jfs_inode->mode2;
+ 
+diff -rupX /home/jack/.kerndiffexclude linux-2.6.24-rc1/fs/reiserfs/ioctl.c linux-2.6.24-rc1-1-forbid_setflags/fs/reiserfs/ioctl.c
+--- linux-2.6.24-rc1/fs/reiserfs/ioctl.c	2007-10-24 20:43:58.000000000 +0200
++++ linux-2.6.24-rc1-1-forbid_setflags/fs/reiserfs/ioctl.c	2007-11-01 16:13:27.000000000 +0100
+@@ -57,6 +57,9 @@ int reiserfs_ioctl(struct inode *inode, 
+ 			if (get_user(flags, (int __user *)arg))
+ 				return -EFAULT;
+ 
++			/* Is it quota file? Don't allow user mess with it. */
++			if (IS_NOQUOTA(inode))
++				return -EPERM;
+ 			if (((flags ^ REISERFS_I(inode)->
+ 			      i_attrs) & (REISERFS_IMMUTABLE_FL |
+ 					  REISERFS_APPEND_FL))
