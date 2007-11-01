@@ -1,88 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbXKAUJB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757323AbXKAUK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757482AbXKAUJB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 16:09:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbXKAUIy
+	id S1757323AbXKAUK5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 16:10:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbXKAUKt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 16:08:54 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:50949 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753418AbXKAUIx (ORCPT
+	Thu, 1 Nov 2007 16:10:49 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:53556 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752636AbXKAUKs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 16:08:53 -0400
-Date: Thu, 1 Nov 2007 16:08:51 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Steven King <sfking@fdwdc.com>
-cc: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>,
-       <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] ti_usb_3410_5052 breakage in 2.6.24-rc1
-In-Reply-To: <200711011031.04620.sfking@fdwdc.com>
-Message-ID: <Pine.LNX.4.44L0.0711011547080.6180-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 1 Nov 2007 16:10:48 -0400
+Date: Thu, 1 Nov 2007 13:10:40 -0700
+From: Gary Hade <garyhade@us.ibm.com>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Gary Hade <garyhade@us.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH] x86: check boundary in count/setup_resource called by get_current_resources
+Message-ID: <20071101201040.GA22247@us.ibm.com>
+References: <200711010120.30410.yinghai.lu@sun.com> <20071101013239.992840bd.akpm@linux-foundation.org> <472A159A.6080106@sun.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <472A159A.6080106@sun.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Nov 2007, Steven King wrote:
-
-> > The real question is why 2.6.24-rc1 doesn't like the second
-> > configuration descriptor.  To answer it, you should see what shows up
-> > in the dmesg log when you first plug in the device on a kernel with
-> > CONFIG_USB_DEBUG enabled.
+On Thu, Nov 01, 2007 at 11:06:18AM -0700, Yinghai Lu wrote:
+> Andrew Morton wrote:
+> >On Thu, 01 Nov 2007 01:20:29 -0700 Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+> >
+> >>[PATCH] x86: check boundary in count/setup_resource called by 
+> >>get_current_resources
+> >>
+> >>need to check info->res_num less than PCI_BUS_NUM_RESOURCES, so
+> >>info->bus->resource[info->res_num] = res will not beyond of bus resource 
+> >>array
+> >>when acpi resutrn too many resource entries.
+> >>
+> >
+> >Isn't this a bit of a problem?  It sounds like PCI_BUS_NUM_RESOURCES is to
+> >small for that system?  If so, some sort of dynamic allocation might be
+> >needed.
 > 
-> ?!? As I wrote at the top of the message you quoted, I rebuilt with 
-> CONFIG_USB_DEBUG enabled and loaded the modules with debug=1, thats how I was 
-> able to see the 'wrong number of endpoints' message.
+> sound reasonable...
+> i have one local patch for amd64 that will get resources from pci conf. and 
+> it will use all 8 slots for bus 0.
+> and transparent bus under it only can copy 5 of them.
 
-But you didn't post the log messages, so I haven't seen them.  
-In addition, that "wrong number of endpoints" message occurs long after 
-the underlying problem; it's probably not connected.
+Yea, with the current fixed size pci_bus resource array
+I believe you would need to increase PCI_BUS_NUM_RESOURCES
+from 8 to 11 for the transparent bridge child bus to get
+all 8 _CRS returned resources.
 
-> Given that the dongle works correctly with a stock 2.6.24-rc1 with commit 
-> 063a2da8f01806906f7d7b1a1424b9afddebc443 reversed,
+Gary
 
-Can you post the /proc/bus/usb/devices entry under that kernel?  Do
-both configurations show up?
-
-> I'm reasonably confident 
-> that with that commit in place, the usb core is working correctly (or atleast 
-> as expected) in initially parsing the device descriptor, then usb-serial 
-> attempts to match the interface descriptor on the first configuration, and 
-> using the new more strict matching code, fails when the device reports for 
-> the only interface on the first configuration it has only a single bulk_out 
-> endpoint while the ti_usb_3410_5052 driver is expecting an interrupt_in and a 
-> bulk_in.  It never gets to the second configuration descriptor.
-
-Why shouldn't the core ever get to parse the second configuration
-descriptor?  Config descriptor parsing happens before driver matching
-and binding.  It has to; otherwise the core wouldn't know which 
-configuration to install by default.
-
-In the "working" 2.6.23 kernel there were two configurations and Config
-#2 was installed.  What happens if you install Config #1 under that
-kernel (echo 1 >/sys/bus/usb/devices/.../bConfigurationValue)?
-
-Presumably if Config #2 was present and installed in the "non-working"  
-2.6.24-rc1 kernel, the driver would bind correctly.
-
-> for me the only question is whether ti_usb_3410_5052 should 
-> have .num_interrupt_in and .num_bulk_in set to NUM_DONT_CARE or set to 0.
-
-Then you're concerned about the wrong question.  It's more important to 
-find out why Config #2 disappeared under 2.6.24-rc1.  The commit you 
-are focused on would not have caused it.
-
-> Are there versions of the dongle that have different device descriptors?  
-> Before I bricked (sticked?) my TI eZ430-rf2500 dongle, it reported a 
-> different idProduct even though as far as I can tell they are almost the 
-> exact same hardware, so that shouldnt be a problem...
-
-I have no idea what versions of your dongle are available.  In fact, I 
-never heard of it before reading your email messages.  However if you 
-have had two different dongles that report different idProduct values, 
-it's a safe bet that _something_ has changed between them.  The 
-firmware, if nothing else.
-
-Alan Stern
-
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
