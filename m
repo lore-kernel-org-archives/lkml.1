@@ -1,84 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760952AbXKAL2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759260AbXKALuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760952AbXKAL2S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 07:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757261AbXKAL2H
+	id S1759260AbXKALuR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 07:50:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756322AbXKALuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 07:28:07 -0400
-Received: from mx0.karneval.cz ([81.27.192.14]:59890 "EHLO av6.karneval.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756141AbXKAL2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 07:28:06 -0400
-Message-id: <15530290543226725036.slaby@karneval.cz>
-In-reply-to: <14457172322573118772.slaby@karneval.cz>
-Subject: [PATCH 2/2] Char: tty, add tty_schedule_wakeup
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: <linux-kernel@vger.kernel.org>
-Date: Thu,  1 Nov 2007 11:55:56 +0100 (CET)
+	Thu, 1 Nov 2007 07:50:04 -0400
+Received: from hawking.rebel.net.au ([203.20.69.83]:35046 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756141AbXKALuB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 07:50:01 -0400
+Message-ID: <4729BD60.3030105@davidnewall.com>
+Date: Thu, 01 Nov 2007 22:19:52 +1030
+From: David Newall <david@davidnewall.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Peter Dolding <oiaohm@gmail.com>, casey@schaufler-ca.com,
+       Toshiharu Harada <haradats@gmail.com>,
+       Crispin Cowan <crispin@crispincowan.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static
+ interface)
+References: <e7d8f83e0710311904w45827586oabcca597fd612ea6@mail.gmail.com>  <832119.21078.qm@web36614.mail.mud.yahoo.com> <e7d8f83e0710311951nd162a27rb2134e3b21e299a8@mail.gmail.com> <Pine.LNX.4.64.0711010813130.5103@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0711010813130.5103@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-UNTESTED so far
+Jan Engelhardt wrote:
+> On Nov 1 2007 12:51, Peter Dolding wrote:
+>   
+>> This is above me doing code.   No matter how many fixes I do to the
+>> core that will not fix dysfunction in the LSM section.  Strict
+>> policies on fixing the main security model will be required.
+>>     
+>
+> If there is no one wanting to fix the existing code, then the
+> perceived problem is not a problem.
 
---
-tty, add tty_schedule_wakeup
-
-Because several drivers schedule a workqueue only for tty_wakeup, move this
-functionality into tty layer and use newly added centralized work.
-
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-
----
-commit 0e9d5add01e8835407bd9f67b9fd82f98e19e122
-tree a566aa490d247b5d5b9ff8e6ed437268c495f86b
-parent 1ce760b56883d3c99b914266bca939f8d3ade1fd
-author Jiri Slaby <jirislaby@gmail.com> Thu, 01 Nov 2007 10:56:24 +0100
-committer Jiri Slaby <jirislaby@gmail.com> Thu, 01 Nov 2007 10:56:24 +0100
-
- drivers/char/tty_io.c |   17 +++++++++++++++++
- 1 files changed, 17 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index 0eb979d..fd4a0e4 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -112,6 +112,7 @@
- 
- #define TTY_WORK_HANGUP		1
- #define TTY_WORK_SAK		2
-+#define TTY_WORK_WAKEUP		3
- 
- struct ktermios tty_std_termios = {	/* for the benefit of tty drivers  */
- 	.c_iflag = ICRNL | IXON,
-@@ -1296,6 +1297,20 @@ void tty_wakeup(struct tty_struct *tty)
- EXPORT_SYMBOL_GPL(tty_wakeup);
- 
- /**
-+ *	tty_schedule_wakeup	-	request more data
-+ *	@tty: terminal
-+ *
-+ *	Functionally the same as tty_wakeup, but it can be used in hot
-+ *	paths. since the wakeup is scheduled and done in the future.
-+ */
-+void tty_schedule_wakeup(struct tty_struct *tty)
-+{
-+	set_bit(TTY_WORK_WAKEUP, tty->work_todo);
-+	schedule_work(&tty->work);
-+}
-+EXPORT_SYMBOL_GPL(tty_schedule_wakeup);
-+
-+/**
-  *	tty_ldisc_flush	-	flush line discipline queue
-  *	@tty: tty
-  *
-@@ -3599,6 +3614,8 @@ static void tty_work(struct work_struct *work)
- 		do_tty_hangup(tty);
- 	if (test_and_clear_bit(TTY_WORK_SAK, tty->work_todo))
- 		__do_SAK(tty);
-+	if (test_and_clear_bit(TTY_WORK_WAKEUP, tty->work_todo))
-+		tty_wakeup(tty);
- }
- 
- /**
+What an absurd claim.
