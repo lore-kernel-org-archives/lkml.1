@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbXKABb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755221AbXKABjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756698AbXKABb1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 21:31:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbXKABbR
+	id S1755221AbXKABjS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 21:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbXKABjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 21:31:17 -0400
-Received: from ns2.lanforge.com ([66.165.47.211]:48638 "EHLO ns2.lanforge.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752454AbXKABbQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 21:31:16 -0400
-X-Greylist: delayed 1470 seconds by postgrey-1.27 at vger.kernel.org; Wed, 31 Oct 2007 21:31:16 EDT
-Message-ID: <47292C5E.4050709@candelatech.com>
-Date: Wed, 31 Oct 2007 18:31:10 -0700
-From: Ben Greear <greearb@candelatech.com>
-Organization: Candela Technologies
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
-MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-CC: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Bin Guo <bguo@sw.starentnetworks.com>
-Subject: Re: expected behavior of PF_PACKET on NETIF_F_HW_VLAN_RX device?
-References: <18216.52455.698606.497464@zeus.sw.starentnetworks.com> <20071031123359.3954befc@freepuppy.rosehill> <4729269A.6090606@candelatech.com> <47292A99.5070805@linux-foundation.org>
-In-Reply-To: <47292A99.5070805@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 31 Oct 2007 21:39:06 -0400
+Received: from xenotime.net ([66.160.160.81]:38013 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753022AbXKABjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 21:39:05 -0400
+Date: Wed, 31 Oct 2007 18:39:00 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: sam@ravnborg.org, linux-kbuild@vger.kernel.org
+Subject: kbuild problem
+Message-Id: <20071031183900.46a0b529.rdunlap@xenotime.net>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger wrote:
->
-> The code in AF_PACKET should fix the skb before passing to user space 
-> so that there is
-> no difference between accel and non-accel hardware.  Internal choices 
-> shouldn't
-> leak to user space.  Ditto, the receive checksum offload should be 
-> fixed up as well.
-Ok, I guess that will fix the sniffing issues and any user-space 
-bridging type applications.
+Hi Sam,
 
-Currently, VLAN devices offer the ability to 'reorder' the header and 
-explicitly remove the VLAN
-header.  I assume we keep this feature and have the AF_PACKET logic 
-check the device
-flags to see if it should insert the VLAN header for hw-accel vlans?
+I have daily/nightly builds + test runs that use something like:
+(but more complicated than this)
 
-Either way, if we sniff the underlying device, we should always get the 
-VLAN header.
+cp saved.config.file arch/$ARCH/config.default
+EXPORT KBUILD_DEFCONFIG=config.default
+make defconfig
 
-What about drivers and filtering VLANs?  It seems there is still a 
-difference between software
-vlans and hw-accel in this case.
+
+This stopped working in 2.6.24-rc1-git3.  git2 worked as (I) expected.
+
+Is there anything in the Makefile changes around that time
+that could have caused this?
+
+Note: the make defconfig output has changed from
+
+Default configuration is based on config.default
+
+to
+
+*** Default configuration is based on 'x86_64_defconfig'
+
+
+If not, I'll dig deeper into my script files.
 
 Thanks,
-Ben
-
--- 
-Ben Greear <greearb@candelatech.com> 
-Candela Technologies Inc  http://www.candelatech.com
-
-
+---
+~Randy
