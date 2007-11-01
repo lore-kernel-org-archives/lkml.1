@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759876AbXKAKHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760582AbXKAKJO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759876AbXKAKHf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 06:07:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756306AbXKAKHZ
+	id S1760582AbXKAKJO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 06:09:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757338AbXKAKJA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 06:07:25 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:38720 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753753AbXKAKHX (ORCPT
+	Thu, 1 Nov 2007 06:09:00 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:13609 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757251AbXKAKI7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 06:07:23 -0400
-Date: Thu, 1 Nov 2007 13:05:39 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Li Yang-r58472 <LeoLi@freescale.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] ucc_geth: add support for netpoll
-Message-ID: <20071101100539.GA24088@localhost.localdomain>
-Reply-To: avorontsov@ru.mvista.com
-References: <20071011124842.GB13963@localhost.localdomain> <4723389F.7010109@ru.mvista.com> <20071027143731.GA2616@zarina> <989B956029373F45A0B8AF0297081890019B61BF@zch01exm26.fsl.freescale.net> <20071029121744.GA20372@localhost.localdomain> <20071031215903.GA1287@zarina> <989B956029373F45A0B8AF0297081890019B642A@zch01exm26.fsl.freescale.net>
+	Thu, 1 Nov 2007 06:08:59 -0400
+Subject: Re: [PATCH 0/6] various scheduler patches
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Mike Galbraith <efault@gmx.de>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+In-Reply-To: <20071101082915.GA8459@elte.hu>
+References: <20071031211030.310581000@chello.nl>
+	 <20071101082915.GA8459@elte.hu>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-yD1O886O9vHvMwcViDL0"
+Date: Thu, 01 Nov 2007 11:08:56 +0100
+Message-Id: <1193911736.27652.248.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <989B956029373F45A0B8AF0297081890019B642A@zch01exm26.fsl.freescale.net>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 01, 2007 at 10:33:24AM +0800, Li Yang-r58472 wrote:
-> > -----Original Message-----
-> > From: Anton Vorontsov [mailto:cbou@mail.ru] 
-> > Sent: Thursday, November 01, 2007 5:59 AM
-> > To: Li Yang-r58472
-> > Cc: netdev@vger.kernel.org; linux-kernel@vger.kernel.org; 
-> > linuxppc-dev@ozlabs.org
-> > Subject: Re: [PATCH] ucc_geth: add support for netpoll
-> > 
-> > On Mon, Oct 29, 2007 at 03:17:44PM +0300, Anton Vorontsov wrote:
-> > [...]
-> > > > Oops.  The original patch happened to hit the Junk mail box. :(
-> > > 
-> > > That one as well? http://lkml.org/lkml/2007/10/11/128
-> > > 
-> > > > I think
-> > > > the patch is good to merge after the cosmetic change.  I 
-> > can do it 
-> > > > in next pull request to Jeff.
-> > > 
-> > > Ok, great. Thanks.
-> > 
-> > I'm wondering if you missed that email again. Maybe your mail 
-> > client/server doing weird things with emails from @ru.mvista.com?
-> 
-> No.  I have explicitly add you to the whitelist. :)
 
-Hehe, thanks. ;-)
+--=-yD1O886O9vHvMwcViDL0
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> Please be patient,
-> isn't this patch a new feature which can only be integrated in the merge
-> window?
+On Thu, 2007-11-01 at 09:29 +0100, Ingo Molnar wrote:
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+>=20
+> > My current scheduler queue, seems to work well on lappy
+>=20
+> nice stuff! Both the hrtimers-tick feature and the rtlimit looks pretty=20
+> good.=20
 
-Sure it is. I didn't mean to "hurry up" you, of course not.
+Thanks!
 
-Just wondered if you've solved issues with getting my emails. Such
-wonders are quite normal if there was a precedent lately. ;-)
+> I'm wondering how well it works on SMP?
 
+It booted and seemed to properly compile a kernel on a dual core
+opteron :-)
 
-Sorry for troubling you,
+--=-yD1O886O9vHvMwcViDL0
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHKaW4XA2jU0ANEf4RAv1kAKCMoqbBuqw1KNqn/mDTK5ckivNzXwCZAZxy
+nKgyeDsT9qg8ICrNRKlfO6M=
+=18ME
+-----END PGP SIGNATURE-----
+
+--=-yD1O886O9vHvMwcViDL0--
+
