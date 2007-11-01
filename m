@@ -1,50 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761779AbXKAPhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761554AbXKAPkB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761779AbXKAPhx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 11:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756716AbXKAPho
+	id S1761554AbXKAPkB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 11:40:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757759AbXKAPjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 11:37:44 -0400
-Received: from ns2.suse.de ([195.135.220.15]:52121 "EHLO mx2.suse.de"
+	Thu, 1 Nov 2007 11:39:54 -0400
+Received: from atlrel8.hp.com ([156.153.255.206]:34512 "EHLO atlrel8.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756353AbXKAPho (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 11:37:44 -0400
-Date: Thu, 1 Nov 2007 08:40:44 -0700
-From: Greg KH <gregkh@suse.de>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [BUILD-FAILURE] 2.6.24-rc1-git8 build fails drivers/pci/probe.c
-Message-ID: <20071101154044.GA12833@suse.de>
-References: <47283A53.6060800@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47283A53.6060800@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1757026AbXKAPjx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 11:39:53 -0400
+Subject: Re: [patch 1/4] spinlock: lockbreak cleanup
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, riel <riel@redhat.com>
+In-Reply-To: <20071101142932.GB2648@wotan.suse.de>
+References: <20071101140146.GA26879@wotan.suse.de>
+	 <20071101140241.GB26879@wotan.suse.de> <1193925965.27652.284.camel@twins>
+	 <20071101142932.GB2648@wotan.suse.de>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Thu, 01 Nov 2007 11:39:59 -0400
+Message-Id: <1193931599.5300.40.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 31, 2007 at 01:48:27PM +0530, Kamalesh Babulal wrote:
-> Hi,
+On Thu, 2007-11-01 at 15:29 +0100, Nick Piggin wrote:
+> On Thu, Nov 01, 2007 at 03:06:05PM +0100, Peter Zijlstra wrote:
+> > On Thu, 2007-11-01 at 15:02 +0100, Nick Piggin wrote:
+> > 
+> > > Rename need_lockbreak to spin_needbreak, make it use spin_is_contended to
+> > > decouple it from the spinlock implementation, and make it typesafe (rwlocks
+> > > do not have any need_lockbreak sites -- why do they even get bloated up
+> > > with that break_lock then?).
+> > 
+> > IIRC Lee has a few patches floating about that do introduce lockbreak
+> > stuff for rwlocks.
 > 
-> The 2.6.24-rc-git8 build fails with build error
+> Well that would be a good reason to introduce a break_lock for them,
+> but previously not so much... we have rwlocks in some slightly space
+> critical structures (vmas, inodes, etc).
 > 
->   CC      drivers/pci/probe.o
-> drivers/pci/probe.c: In function 'pci_create_legacy_files':
-> drivers/pci/probe.c:56: error: implicit declaration of function 'class_device_create_bin_file'
-> drivers/pci/probe.c: In function 'pci_remove_legacy_files':
-> drivers/pci/probe.c:71: error: implicit declaration of function 'class_device_remove_bin_file'
-> make[2]: *** [drivers/pci/probe.o] Error 1
-> make[1]: *** [drivers/pci] Error 2
-> make: *** [drivers] Error 2
-> 
-> This is caused by the commit fcd239d3d5575e5cc63aab5c33cf6dc66904f6d6 (Driver core: remove class_device_*_bin_file).
-> These functions are still being used by drivers/pci/probe.c.
+> I guess it was done to make the "template" hacks eaiser. I don't really
+> find that in good taste, especially for important core infrastructure.
+> Anyway.
 
-Thanks for the report, Linus's tree now has a fix for this oversight on
-my behalf.
+Actually, what I had/have is a cond_resched_rwlock() that I needed to
+convert the i_mmap_lock() to rw for testing reclaim scalability.  [I've
+seen a large system running an Oracle OLTP load hang spitting "cpu soft
+lockup" messages with all cpus spinning on a i_mmap_lock spin lock.]
+One of the i_mmap_lock paths uses cond_resched_lock() for spin locks.
+To do a straight forward conversion [and maybe that isn't the right
+approach], I created the cond_resched_rwlock() function by generalizing
+the cond_sched_lock() code and creating both spin and rw lock wrappers.
+I took advantage of the fact that, currently, need_lockbreak() is a
+macro and that both spin and rw locks have/had the break_lock member.
+Typesafe functions would probably be preferrable, if we want to keep
+break_lock for rw spin locks.
 
-greg k-h
+Here's the most recent posting:
+
+	http://marc.info/?l=linux-mm&m=118980356306014&w=4
+
+See the changes to sched.[ch].  Should apply to 23-mm1 with offsets and
+minor fixup in fs/inode.c.
+
+Lee
+
+
+
