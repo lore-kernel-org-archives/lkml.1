@@ -1,92 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759370AbXKASoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759810AbXKASos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759370AbXKASoc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 14:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754361AbXKASoV
+	id S1759810AbXKASos (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 14:44:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759345AbXKASob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 14:44:21 -0400
-Received: from mx38.mail.ru ([194.67.23.16]:60273 "EHLO mx38.mail.ru"
+	Thu, 1 Nov 2007 14:44:31 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53676 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754220AbXKASoU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 14:44:20 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: Alexey Starikovskiy <aystarik@gmail.com>
-Subject: Re: [2.6.24-rc1 regression] AC adapter state does not change after resume
-Date: Thu, 1 Nov 2007 21:44:02 +0300
-User-Agent: KMail/1.9.7
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-References: <200710302324.52822.arvidjaar@mail.ru> <200710310709.06621.arvidjaar@mail.ru> <47282055.2000409@gmail.com>
-In-Reply-To: <47282055.2000409@gmail.com>
+	id S1759325AbXKASo3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 14:44:29 -0400
+Message-ID: <472A1EA1.3070109@redhat.com>
+Date: Thu, 01 Nov 2007 16:44:49 -0200
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070811)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1928544.vAtv2EvoK9";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: Andreas Herrmann3 <andreas.herrmann3@amd.com>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       akpm@linux-foundation.org, travis@sgi.com
+Subject: Re: [PATCH] x86: show cpuinfo only for online CPUs
+References: <20071101170206.GA7820@alberich.amd.com> <472A08F9.8060605@redhat.com> <20071101173543.GB5568@alberich.amd.com> <20071101183537.GD5568@alberich.amd.com>
+In-Reply-To: <20071101183537.GD5568@alberich.amd.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200711012144.12477.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1928544.vAtv2EvoK9
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-On Wednesday 31 October 2007, Alexey Starikovskiy wrote:
-> Andrey Borzenkov wrote:
-> > On Wednesday 31 October 2007, Alexey Starikovskiy wrote:
-> >> Andrey Borzenkov wrote:
-> >>> I suspect new ACPI AC adapter code but have to add some printk's to be
-> >>> sure.
-> >>>
-> >>> To reproduce - plug in AC cord, suspend, unplug, resume - kpowersave
-> >>> and sysfs still show AC adapter online. Or other way round.
-> >>>
-> >>> -andrey
-> >>
-> >> Please check if this patch helps.
-> >
-> > It does not even compile :)
-> >
-> > On serious note (after adding forward declaration) - patch half works. =
-It
-> > does make "online" return true value (which confirms that underlying AC=
-PI
-> > works correctly) but HAL still does not notice it.
-> >
-> > The problem is, with power_supply interface HAL does not use polling, it
-> > relies on CHANGE event. This event is apparently never generated if AC
-> > adapter state changes on resume. So the obvious fix is to compare AC
-> > state before and after suspend in ->resume function and generate
-> > synthetic CHANGE event if something has changed.
-> >
-> > This will also make superfluous polling redundant.
->
-> Ok, here. This one compiles :)
->
+Andreas Herrmann3 escreveu:
+> On Thu, Nov 01, 2007 at 06:35:43PM +0100, Andreas Herrmann3 wrote:
+>> On Thu, Nov 01, 2007 at 03:12:25PM -0200, Glauber de Oliveira Costa wrote:
+>>> So it could even work, but as accident. Unless I'm wrong about it, I'd
+>>> prefer to see an explicit attribution of cpu_index = 0 somewhere for the
+>>> boot cpu.
+>> Hmm, will look at this as well.
+> 
+> BTW, isn't it zero initialized anyway?
+> So, no need to explicitely set cpuinfo->cpu_index=0 for the boot cpu.
 
-=46or HAL regression:
-
-Tested-by: Andrey Borzenkov <arvidjaar@mail.ru>
-
-But the patch is incomplete. This synthetic event should be the same as if =
-OS=20
-were running; i.e. you should send both other events as well. As is you jus=
-t=20
-create latent bug to be hit by some netlink consumer sooner or later.
-
---nextPart1928544.vAtv2EvoK9
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
+Well, it should be, but as far as I know it is not exactly a guarantee
+given by all compilers. So it should be safer to do it explicitly, with
+no prejudice. Unless it's really guaranteed. If it is, yeah, no need.
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Remi - http://enigmail.mozdev.org
 
-iD8DBQBHKh5zR6LMutpd94wRAoPDAKCMm4j7jLfZyjHHOucHkh9QyqUQDQCeIs04
-++sqLemtZM2bwIWm6cucFCE=
-=Z36m
+iD8DBQFHKh6hjYI8LaFUWXMRAmVXAJ47DCzJjWIQQ/duiVXtevsw1Y5gaQCfSOoU
+uXq3vfX/NQjWk1lGQJCW6+E=
+=qhGb
 -----END PGP SIGNATURE-----
-
---nextPart1928544.vAtv2EvoK9--
