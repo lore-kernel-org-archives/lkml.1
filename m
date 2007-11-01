@@ -1,54 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759531AbXKAJia@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759518AbXKAJkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759531AbXKAJia (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 05:38:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755063AbXKAJiX
+	id S1759518AbXKAJkj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 05:40:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbXKAJkb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 05:38:23 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33546 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753611AbXKAJiW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 05:38:22 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 1 Nov 2007 05:40:31 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56767 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753376AbXKAJka (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 05:40:30 -0400
+Subject: Re: [build bug, 2.6.24-rc1] CONFIG_VIDEO_DEV=m &
+	CONFIG_VIDEO_SAA7146_VV=y
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Trent Piepho <xyzzy@speakeasy.org>,
+       Linux Kernel Mailing list <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Johannes Stezenbach <js@linuxtv.org>
+In-Reply-To: <20071101090142.GA13009@elte.hu>
+References: <20071026073736.GA24172@elte.hu>
+	 <Pine.LNX.4.58.0710310458150.19072@shell4.speakeasy.net>
+	 <20071101090142.GA13009@elte.hu>
+Content-Type: text/plain
+Date: Thu, 01 Nov 2007 07:40:13 -0200
+Message-Id: <1193910013.8587.28.camel@gaivota>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.1-1mdv2008.1 
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       systemtap@sources.redhat.com
-Subject: Re: [PATCH] markers: modpost
-In-Reply-To: Mathieu Desnoyers's message of  Wednesday, 31 October 2007 22:46:22 -0400 <20071101024622.GA3343@Krystal>
-References: <200709192132.00873.vda.linux@googlemail.com>
-	<20070921125819.GA13129@Krystal>
-	<20070921133006.GF8964@redhat.com>
-	<20070921133820.GD13129@Krystal>
-	<20071015194120.GA22562@redhat.com>
-	<20071015231209.GA18994@Krystal>
-	<20071015235033.321E84D0389@magilla.localdomain>
-	<20071025191722.GA6114@Krystal>
-	<20071026142810.GA14814@redhat.com>
-	<20071101010624.54D8D4D04AE@magilla.localdomain>
-	<20071101024622.GA3343@Krystal>
-X-Antipastobozoticataclysm: Bariumenemanilow
-Message-Id: <20071101093725.891F34D04AE@magilla.localdomain>
-Date: Thu,  1 Nov 2007 02:37:25 -0700 (PDT)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If we want to do it safely, I think we should iterate from
-> __start___markers to __stop___markers symbols of vmlinux and get the
-> pointers to the name/format string pairs.
+Hi Ingo,
+
+On Qui, 2007-11-01 at 10:01 +0100, Ingo Molnar wrote:
+> * Trent Piepho <xyzzy@speakeasy.org> wrote:
 > 
-> The same can then be done with modules using the __markers section.
+> > On Fri, 26 Oct 2007, Ingo Molnar wrote:
+> > > the attached config (generated via make randconfig) fails to build due
+> > > to the combination of these config entries:
+> > >
+> > >   CONFIG_VIDEO_DEV=m
+> > >   CONFIG_VIDEO_SAA7146_VV=y
+> > >
+> > > i found no obvious Kconfig way to force VIDEO_SAA7146_VV to be modular
+> > > when VIDEO_DEV is modular - is there a good solution for this?
+> > 
+> > I guess you didn't like my reply to your first message about this?
+> > 
+> > http://lkml.org/lkml/2007/10/7/145
+> > 
+> > kbuild support for modules used as libraries is really poor.  The only 
+> > way to do is use select on the library module, and then have all the 
+> > dependencies of the selectee be included in the selector, which must 
+> > be done recursively so that any modules selected by the selectee have 
+> > their dependencies added to the selector.
 > 
-> Or maybe is there some reason not to do that ?
+> any patch for me to try? This bug is blocking automated randconfig 
+> build-testing quite frequently so it's quite a showstopper.
 
-It's just rather a pain in the ass, a whole lot more fiddly work.
-cf "somewhat crude" and "foreseeable future" in my patch's log entry.
-Knock yourself out if you're looking for more tedious hacking to do in
-modpost.c, but I say fix it when it breaks.
+Trent generated a patch for it. I'll update it soon my -git. You should
+notice that there were one change at av7110 that need to be applied
+before Trent's patch, otherwise the saa7146 stuff will be broken if V4L1
+is not selected.
 
+-- 
+Cheers,
+Mauro
 
-Thanks,
-Roland
