@@ -1,105 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbXKACv7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754594AbXKADau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755897AbXKACv7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 22:51:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbXKACvt
+	id S1754594AbXKADau (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 23:30:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbXKADam
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 22:51:49 -0400
-Received: from wx-out-0506.google.com ([66.249.82.236]:54647 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752578AbXKACvs (ORCPT
+	Wed, 31 Oct 2007 23:30:42 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:44253 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753219AbXKADal (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 22:51:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=rz5r7zXeMOfx9gLglte/215AxMcLavv1l/J32j2AlJIZGH9FlLKXRrljGL5hT9bEUr+0/Uo5SMAQ1uzVBp/UM45Gzw+8miUW55EvxG6UHhMHGMcVbgO8xP1KPshoY5Sd08JMOoZNCcgbCW+0Mw+uIfbr8ukTJDn7NmxsHXn7KUs=
-Message-ID: <e7d8f83e0710311951nd162a27rb2134e3b21e299a8@mail.gmail.com>
-Date: Thu, 1 Nov 2007 12:51:47 +1000
-From: "Peter Dolding" <oiaohm@gmail.com>
-To: casey@schaufler-ca.com
-Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static interface)
-Cc: "Toshiharu Harada" <haradats@gmail.com>,
-       "Crispin Cowan" <crispin@crispincowan.com>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-In-Reply-To: <832119.21078.qm@web36614.mail.mud.yahoo.com>
+	Wed, 31 Oct 2007 23:30:41 -0400
+Message-ID: <472947F7.3040101@linux.vnet.ibm.com>
+Date: Thu, 01 Nov 2007 08:58:55 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Thomas Meyer <thomas@m3y3r.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, shaw@vranix.com,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: WARNING: at fs/sysfs/dir.c:424 sysfs_add_one() with 4fa435018d740cb83d74c92306aa1f796da91ddd
+References: <471E1764.5040000@m3y3r.de> <471E17E6.6060304@m3y3r.de> <20071031231711.GB5704@gmail.com>
+In-Reply-To: <20071031231711.GB5704@gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <e7d8f83e0710311904w45827586oabcca597fd612ea6@mail.gmail.com>
-	 <832119.21078.qm@web36614.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/1/07, Casey Schaufler <casey@schaufler-ca.com> wrote:
->
-> --- Peter Dolding <oiaohm@gmail.com> wrote:
->
->
-> > Improvements to the single security framework are getting over looked.
->
-> Please post proposed patches.
->
-> >   I would have personally though selinux would have done Posix file
-> > capabilities as a general service to all.
->
-> Posix capabilities predate SELinux. SELinux is not interested in
-> Posix capabilities.
->
-> > But no IBM had to do it.
->
-> Err, no. It was done by Andrew Morgan back in the dark ages.
-> Why on earth do you think IBM did it?
+Shaw Vrana wrote:
+> Yeah, I get the same with 2.6.24-rc1.
+> 
+> 
+> On Tue, Oct 23, 2007 at 05:48:54PM +0200, Thomas Meyer wrote:
+>> Thomas Meyer schrieb:
+>>> Oct 23 17:13:55 [kernel] usb 1-1: new high speed USB device using
+>>> ehci_hcd and address 7
+>>> Oct 23 17:13:55 [kernel] usb 1-1: configuration #1 chosen from 1 choice
+>>> Oct 23 17:13:55 [kernel] hub 1-1:1.0: USB hub found
+>>> Oct 23 17:13:55 [kernel] hub 1-1:1.0: 4 ports detected
+>>> Oct 23 17:13:55 [kernel] sysfs: duplicate filename 'bInterfaceNumber'
+>>> can not be created
+>>> Oct 23 17:13:55 [kernel] WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+>>> Oct 23 17:13:55 [kernel]  [<c01a37f0>] sysfs_add_one+0x54/0xb8
+>>> Oct 23 17:13:55 [kernel]  [<c01a332a>] sysfs_add_file+0x42/0x6a
+>>> Oct 23 17:13:55 [kernel]  [<c01a4a01>] sysfs_create_group+0x84/0xe7
+>>> Oct 23 17:13:55 [kernel]  [<c023e5ec>] device_add+0x44a/0x454
+>>> Oct 23 17:13:55 [kernel]  [<f88e774c>]
+>>> usb_create_sysfs_intf_files+0x24/0x98 [usbcore]
+>>> Oct 23 17:13:55 [kernel]  [<f88e4181>] usb_set_configuration+0x48f/0x4a9
+>>> [usbcore]
+>>> Oct 23 17:13:55 [kernel]  [<f88eabf3>] generic_probe+0x50/0x91 [usbcore]
+>>> Oct 23 17:13:55 [kernel]  [<f88e5817>] usb_probe_device+0x32/0x37 [usbcore]
+>>> Oct 23 17:13:55 [kernel]  [<c023fc11>] driver_probe_device+0xc5/0x148
+>>> Oct 23 17:13:55 [kernel]  [<c02d94bd>] klist_next+0x4b/0x6b
+>>> Oct 23 17:13:55 [kernel]  [<c023f14a>] bus_for_each_drv+0x35/0x5c
+>>> Oct 23 17:13:55 [kernel]  [<c023fd17>] device_attach+0x63/0x77
+>>> Oct 23 17:13:55 [kernel]  [<c023fc94>] __device_attach+0x0/0x5
+>>> Oct 23 17:13:55 [kernel]  [<c023f0c6>] bus_attach_device+0x26/0x75
+>>> Oct 23 17:13:55 [kernel]  [<c023e43d>] device_add+0x29b/0x454
+>>> Oct 23 17:13:55 [kernel]  [<f88dfc2e>] usb_new_device+0x4d/0x8a [usbcore]
+>>> Oct 23 17:13:55 [kernel]  [<f88e1149>] hub_thread+0x6f5/0xae2 [usbcore]
+>>> Oct 23 17:13:55 [kernel]  [<c02d9e72>] schedule+0x4b4/0x519
+>>> Oct 23 17:13:55 [kernel]  [<c013a1e1>] autoremove_wake_function+0x0/0x33
+>>> Oct 23 17:13:55 [kernel]  [<f88e0a54>] hub_thread+0x0/0xae2 [usbcore]
+>>> Oct 23 17:13:55 [kernel]  [<c013a119>] kthread+0x38/0x5f
+>>> Oct 23 17:13:55 [kernel]  [<c013a0e1>] kthread+0x0/0x5f
+>>> Oct 23 17:13:55 [kernel]  [<c0107bb7>] kernel_thread_helper+0x7/0x10
+>>> Oct 23 17:13:55 [kernel]  =======================
+>>>
+>>>
+>>>
+>>>   
+>> Sorry. This happens with 0895e91d60ef9bdef426d1ce14bb94bd5875870d...
 
+Hi,
 
-Posix file capabilities the option to replace SUID bit with something
-more security safe only handing out segments of root power instead of
-the complete box and dice like SUID.  Even different on a user by user
-base.
+Similar sysfs_add_one() was reported at http://lkml.org/lkml/2007/10/16/25 and
+a patch is pointed in the discussion there, this might help you.
 
-Posix capabilites is what Posix file capabilities is based on.  Yes I
-know the words appear close.  The word file is important.  Please read
-Website.  http://www.ibm.com/developerworks/linux/library/l-posixcap.html
+cc'ing greg kroah-hartman.
 
-IBM coders worked and got it into the main line really recently to
-provide at least some way to avoid fault of SUID of course it could
-still be made better.  I would have though being a important problem
-that other LSM guys would have done it first.  So door to add new
-features to kernel is open past any question.  Of course the features
-have to be for everyones good.
-
-Andrew Morgan Posix capabilities is something far older its been there
-for ages pre selinux the correct fix to SUID for everyone has always
-been there by extending Andrew Morgan's work.  So I will ask again why
-did IBM have to do Posix file capabilities instead of Selinux.
-Selinux has had 7+ years to do it.
-
-Thank you for proving my point past question Casey Schaufler.  You
-don't have a single clue of the alterations happing to the main
-security model so there is every chance you will overlap with it.
-
-Please get you tech right.  How many other holes are sitting open
-because you patch them at LSM level and don't look down into default
-security system to see if it should be fixed there.
-
->
-> OK, you have all the answers. Show us some code or STFU.
-
-That is no explanation to why the default security frame work is being
-neglected.  I don't have all the answers.  It does not take a person
-that high so see that LSM is a screwup leading to people being out of
-touch with the main security model and its neglect.  It should not be
-requiring outside parties to fix things that in the main security
-model.  Only way that can be happening is if LSM is dysfunctional.  7+
-year fault at min is not what you can call someone fixing a new fault.
- Now how are we going to fix the mess of LSM's to work correctly for
-the good of linux.
-
-One way is appoint one hard minded maintainer that is above my rights.
-
-This is above me doing code.   No matter how many fixes I do to the
-core that will not fix dysfunction in the LSM section.  Strict
-policies on fixing the main security model will be required.
-
-Peter Dolding
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
