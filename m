@@ -1,51 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754783AbXKASr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759496AbXKASsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754783AbXKASr1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 14:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbXKASrT
+	id S1759496AbXKASsS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 14:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbXKASsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 14:47:19 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:46185 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754476AbXKASrS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 14:47:18 -0400
-Date: Thu, 1 Nov 2007 19:47:17 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Tobias Powalowski <t.powa@gmx.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>
-Subject: Re: 2.6.24 breaks nvidia and amd/ati binary drivers, by exporting
- paravirt symbols as GPL
-In-Reply-To: <200711011936.33296.t.powa@gmx.de>
-Message-ID: <Pine.LNX.4.64.0711011944100.24502@fbirervta.pbzchgretzou.qr>
-References: <200711011936.33296.t.powa@gmx.de>
+	Thu, 1 Nov 2007 14:48:00 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:55602 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752461AbXKASr7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 14:47:59 -0400
+Message-ID: <472A1F5B.9060401@garzik.org>
+Date: Thu, 01 Nov 2007 14:47:55 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+CC: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       davej@redhat.com, ajax@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] e1000, e1000e valid-addr fixes
+References: <471E99E8.6030404@garzik.org>	<20071023.180744.115914004.davem@davemloft.net>	<471EABEE.8030900@garzik.org> <20071023.192313.115635750.davem@davemloft.net> <472A1526.8070208@intel.com>
+In-Reply-To: <472A1526.8070208@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Kok, Auke wrote:
+> David Miller wrote:
+>> From: Jeff Garzik <jeff@garzik.org>
+>> Date: Tue, 23 Oct 2007 22:20:30 -0400
+>>
+>>> David Miller wrote:
+>>>> From: Jeff Garzik <jeff@garzik.org>
+>>>> Date: Tue, 23 Oct 2007 21:03:36 -0400
+>>>>
+>>>>> I'm wondering if there is a way to avoid adding
+>>>>>
+>>>>> 	if (!is_valid_ether_addr(dev->dev_addr))
+>>>>> 		return -EINVAL;
+>>>>>
+>>>>> to every ethernet driver's ->open() hook.
+>>>> The first idea I get is:
+>>>>
+>>>> 1) Create netdev->validate_dev_addr().
+>>>>
+>>>> 2) If it exists, invoke it before ->open(), abort
+>>>>    and return if any errors signaled.
+>>>>
+>>>> etherdev init hooks up a function that does the above
+>>>> check, which allows us to avoid editing every ethernet
+>>>> driver
+>>>>
+>>>> What do you think?
+>>> Seems sane to me.  Something like this (attached)?
+>> Looks great:
+>>
+>> Acked-by: David S. Miller <davem@davemloft.net>
+> 
+> I like it.
+> 
+> Should I start sending patches to remove the checks from e1000/e1000e/ixgb/ixgbe
+> already (to David, I assume?)?
 
-On Nov 1 2007 19:36, Tobias Powalowski wrote:
->Hi
->commit to .24 tree:
->http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=93b1eab3d29e7ea32ee583de3362da84db06ded8
->
->introduces:
->+EXPORT_SYMBOL_GPL(pv_mmu_ops);
->+EXPORT_SYMBOL_GPL(pv_cpu_ops);
->
->pv_cpu_ops is for nvidia
->pv_mmu_ops' is for amd(ati)
->
+Send the patches to me like normal...
 
-Speaking of which, the patch introduced a strict-aliasing warning (that 
-is, common userspace program compilation would warn about such) at:
+	Jeff
 
-+       return *((void **)&tmpl + type);
 
-&tmpl is of type struct paravirt_patch_template **, and cross-casting 
-this to void ** usually gives a strict-aliasing warning.
-A workaround is to pre-cast to void *,
-	return *((void **)(void *)&tmpl + type);
-is that ok?
+
