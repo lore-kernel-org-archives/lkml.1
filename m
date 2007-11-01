@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757621AbXKALzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbXKAL4z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757621AbXKALzo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 07:55:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbXKALzg
+	id S1758934AbXKAL4z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 07:56:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752825AbXKAL4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 07:55:36 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:38841 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751009AbXKALzf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 07:55:35 -0400
-Message-ID: <4729BEB5.5080504@garzik.org>
-Date: Thu, 01 Nov 2007 07:55:33 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: linux-kernel@vger.kernel.org, kristen.c.accardi@intel.com,
-       linux-ide@vger.kernel.org
-Subject: Re: Suspend to ram regression (2.6.24-rc1-git)
-References: <20071031201308.GK11514@kernel.dk> <20071101084145.GA5037@kernel.dk> <20071101092155.GB5037@kernel.dk> <4729B670.7090403@garzik.org> <20071101112419.GE5037@kernel.dk>
-In-Reply-To: <20071101112419.GE5037@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Thu, 1 Nov 2007 07:56:48 -0400
+Received: from ic0245.upco.es ([130.206.70.245]:33826 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751769AbXKAL4r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 07:56:47 -0400
+Subject: 2.6.34-rc1 eat my photo SD card :-(
+From: Romano Giannetti <romanol@upcomillas.es>
+To: linux-kernel@vger.kernel.org
+Cc: drzeus-mmc@drzeus.cx
+Content-Type: text/plain; charset=ISO-8859-1
+Date: Thu, 01 Nov 2007 12:56:42 +0100
+Message-Id: <1193918202.8439.7.camel@rukbat>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Thu, Nov 01 2007, Jeff Garzik wrote:
->> Jens Axboe wrote:
->>> Reverting just the default AHCI flags makes it work again. IOW, with the
->>> below patch I can suspend properly with current -git.
->>> diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
->>> index ed9b407..77f7631 100644
->>> --- a/drivers/ata/ahci.c
->>> +++ b/drivers/ata/ahci.c
->>> @@ -190,8 +190,7 @@ enum {
->>>   	AHCI_FLAG_COMMON		= ATA_FLAG_SATA | ATA_FLAG_NO_LEGACY |
->>>  					  ATA_FLAG_MMIO | ATA_FLAG_PIO_DMA |
->>> -					  ATA_FLAG_ACPI_SATA | ATA_FLAG_AN |
->>> -					  ATA_FLAG_IPM,
->>> +					  ATA_FLAG_ACPI_SATA | ATA_FLAG_AN,
->>>  	AHCI_LFLAG_COMMON		= ATA_LFLAG_SKIP_D2H_BSY,
->>
->> sounds like the easy thing to do, in light of this breakage, might be to 
->> default it to off, add a module parameter turning it on by setting that 
->> flag.
-> 
-> Wouldn't it be better to just get this bug fixed? IOW, is there a reason
-> for disabling ALPM if it's Bug Free?
-> 
-> I'd suggest committing the patch disabling IPM, then Kristen can debug
-> the thing in piece in quiet. Once confident it works with ahci again, we
-> can revert that commit.
 
-Right -- if you are going to commit a patch "disabling" it, it is best 
-to do so via a simple module option, which allows users to easily try 
-the feature in parallel with Intel's debugging.
+Hi,
 
-	Jeff
+	I have a very possible regression to signal. This morning 2.6.24-rc1
+eat and destroyed my SD card. I have a toshiba laptop with a card slot
+and I have used it with 2.6.23-rcX and 2.6.23 without problems so far.
+This morning I put the card in, nothing happened, removed it. When I put
+it in again the filesystem in it was completely scr***ed up. 
+
+I have a flight waiting now, so I have put all the dmesgs and syslogs
+over there:
+
+http://www.dea.icai.upcomillas.es/romano/linux/info/2624-rc1-mmc/
+
+Sunday I'll be back to help debug it.
+
+Thank you very much
+
+	Romano 
+
+-- 
+Sorry for the disclaimer --- ¡I cannot stop it!
 
 
 
+--
+La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
+
+This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
