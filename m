@@ -1,59 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759335AbXKAJPB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbXKAJXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759335AbXKAJPB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 05:15:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755515AbXKAJOx
+	id S1758224AbXKAJXS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 05:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbXKAJXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 05:14:53 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32968
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753376AbXKAJOw (ORCPT
+	Thu, 1 Nov 2007 05:23:09 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46132 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754228AbXKAJXH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 05:14:52 -0400
-Date: Thu, 01 Nov 2007 02:14:51 -0700 (PDT)
-Message-Id: <20071101.021451.217578606.davem@davemloft.net>
-To: clameter@sgi.com
-Cc: akpm@linux-foundation.org, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
-       penberg@cs.helsinki.fi
-Subject: Re: [patch 0/7] [RFC] SLUB: Improve allocpercpu to reduce per cpu
- access overhead
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071101.000118.208338243.davem@davemloft.net>
-References: <20071031.181335.207429553.davem@davemloft.net>
-	<Pine.LNX.4.64.0710312115520.26072@schroedinger.engr.sgi.com>
-	<20071101.000118.208338243.davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 1 Nov 2007 05:23:07 -0400
+Date: Thu, 01 Nov 2007 18:21:35 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Add IORESOUCE_BUSY flag for System RAM (Re: [Question] How to represent SYSTEM_RAM in kerenel/resouce.c)
+Cc: Matthew Wilcox <matthew@wil.cx>, LKML <linux-kernel@vger.kernel.org>,
+       andi@firstfloor.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "tony.luck@intel.com" <tony.luck@intel.com>, pbadari@us.ibm.com,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>
+In-Reply-To: <20071003135702.bdcf3f1b.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20071003015242.GC12049@parisc-linux.org> <20071003135702.bdcf3f1b.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20071101181700.6D9A.Y-GOTO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Thu, 01 Nov 2007 00:01:18 -0700 (PDT)
+Hello.
 
-> From: Christoph Lameter <clameter@sgi.com>
-> Date: Wed, 31 Oct 2007 21:16:59 -0700 (PDT)
-> 
-> > Index: linux-2.6/mm/allocpercpu.c
-> > ===================================================================
-> > --- linux-2.6.orig/mm/allocpercpu.c	2007-10-31 20:53:16.565486654 -0700
-> > +++ linux-2.6/mm/allocpercpu.c	2007-10-31 21:00:27.553486484 -0700
->  ...
-> > @@ -37,7 +42,7 @@ enum unit_type { FREE, END, USED };
-> >  
-> >  static u8 cpu_alloc_map[UNITS_PER_CPU] = { 1, };
-> >  static DEFINE_SPINLOCK(cpu_alloc_map_lock);
-> > -static DEFINE_PER_CPU(int, cpu_area)[UNITS_PER_CPU];
-> > +static DEFINE_PER_CPU(unsigned long long, cpu_area)[UNITS_PER_CPU];
-> >  
-> >  #define CPU_DATA_OFFSET ((unsigned long)&per_cpu__cpu_area)
-> >  
-> 
-> This hunk helped the sparc64 looping OOPS I was getting, but cpus hang
-> in some other fashion soon afterwards.
+I was asked from Kame-san to write this patch.
 
-And if I bump PER_CPU_ALLOC_SIZE up to 128K it seems to mostly work.
+Please apply.
 
-You'll definitely need to make this work dynamically somehow.
+---------
+i386 and x86-64 registers System RAM as IORESOURCE_MEM | IORESOURCE_BUSY.
+
+But ia64 registers it as IORESOURCE_MEM only.
+In addition, memory hotplug code registers new memory as IORESOURCE_MEM too.
+
+This patch adds IORESOURCE_BUSY for them to avoid potential overlap mapping
+by PCI device.
+
+Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+
+---
+ arch/ia64/kernel/efi.c |    6 ++----
+ mm/memory_hotplug.c    |    2 +-
+ 2 files changed, 3 insertions(+), 5 deletions(-)
+
+Index: current/arch/ia64/kernel/efi.c
+===================================================================
+--- current.orig/arch/ia64/kernel/efi.c	2007-11-01 15:24:05.000000000 +0900
++++ current/arch/ia64/kernel/efi.c	2007-11-01 15:24:18.000000000 +0900
+@@ -1111,7 +1111,7 @@ efi_initialize_iomem_resources(struct re
+ 		if (md->num_pages == 0) /* should not happen */
+ 			continue;
+ 
+-		flags = IORESOURCE_MEM;
++		flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+ 		switch (md->type) {
+ 
+ 			case EFI_MEMORY_MAPPED_IO:
+@@ -1133,12 +1133,11 @@ efi_initialize_iomem_resources(struct re
+ 
+ 			case EFI_ACPI_MEMORY_NVS:
+ 				name = "ACPI Non-volatile Storage";
+-				flags |= IORESOURCE_BUSY;
+ 				break;
+ 
+ 			case EFI_UNUSABLE_MEMORY:
+ 				name = "reserved";
+-				flags |= IORESOURCE_BUSY | IORESOURCE_DISABLED;
++				flags |= IORESOURCE_DISABLED;
+ 				break;
+ 
+ 			case EFI_RESERVED_TYPE:
+@@ -1147,7 +1146,6 @@ efi_initialize_iomem_resources(struct re
+ 			case EFI_ACPI_RECLAIM_MEMORY:
+ 			default:
+ 				name = "reserved";
+-				flags |= IORESOURCE_BUSY;
+ 				break;
+ 		}
+ 
+Index: current/mm/memory_hotplug.c
+===================================================================
+--- current.orig/mm/memory_hotplug.c	2007-11-01 15:24:16.000000000 +0900
++++ current/mm/memory_hotplug.c	2007-11-01 15:41:27.000000000 +0900
+@@ -39,7 +39,7 @@ static struct resource *register_memory_
+ 	res->name = "System RAM";
+ 	res->start = start;
+ 	res->end = start + size - 1;
+-	res->flags = IORESOURCE_MEM;
++	res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+ 	if (request_resource(&iomem_resource, res) < 0) {
+ 		printk("System RAM resource %llx - %llx cannot be added\n",
+ 		(unsigned long long)res->start, (unsigned long long)res->end);
+
+-- 
+Yasunori Goto 
+
+
