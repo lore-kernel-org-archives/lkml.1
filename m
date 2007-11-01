@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757563AbXKAVuW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757176AbXKAVyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757563AbXKAVuW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 17:50:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754101AbXKAVuG
+	id S1757176AbXKAVyV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 17:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753821AbXKAVyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 17:50:06 -0400
-Received: from palrel11.hp.com ([156.153.255.246]:32882 "EHLO palrel11.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754054AbXKAVuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 17:50:05 -0400
-Message-ID: <472A49BD.6000802@hp.com>
-Date: Thu, 01 Nov 2007 14:48:45 -0700
-From: Rick Jones <rick.jones2@hp.com>
-User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
-X-Accept-Language: en-us, en
+	Thu, 1 Nov 2007 17:54:13 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:58070 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753621AbXKAVyM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 17:54:12 -0400
+Date: Thu, 1 Nov 2007 22:53:48 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Josh Logan <joshtlogan@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
+       Ciaran McCreesh <ciaran.mccreesh@blueyonder.co.uk>,
+       Edward Hsu <edward_hsu@realtek.com.tw>, linux-kernel@vger.kernel.org
+Subject: Re: Abit F-190HD Onboard rlt8169 Ethernet Controller
+Message-ID: <20071101215348.GA17449@electric-eye.fr.zoreil.com>
+References: <20071029061532.5d10dfc6@snowcone> <20071029083333.18a4dab7@the-village.bc.nu> <4729FC36.3040000@gmail.com>
 MIME-Version: 1.0
-To: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
-Cc: Ben Greear <greearb@candelatech.com>, David Miller <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       bguo@sw.starentnetworks.com
-Subject: Re: expected behavior of PF_PACKET on NETIF_F_HW_VLAN_RX device?
-References: <20071031123359.3954befc@freepuppy.rosehill>	<4729269A.6090606@candelatech.com>	<47292A99.5070805@linux-foundation.org>	<20071031.215025.195350296.davem@davemloft.net>	<4729EAFF.9050606@candelatech.com> <18218.18134.353553.189622@zeus.sw.starentnetworks.com>
-In-Reply-To: <18218.18134.353553.189622@zeus.sw.starentnetworks.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4729FC36.3040000@gmail.com>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>The code in AF_PACKET should fix the skb before passing to user
->>space so that there is no difference between accel and non-accel
->>hardware.  Internal choices shouldn't leak to user space.  Ditto,
->>the receive checksum offload should be fixed up as well.
-> 
-> 
-> yep.  bad csum on tx packets as reported by tcpdump is also an issue.
+Josh Logan <joshtlogan@gmail.com> :
+[...]
+> I have had this board for a few months as well and I have needed to 
+> patch the driver to use 0x0001 as well.
 
-With TX CKO enabled, there isn't any checksum to fixup when a tx packet is 
-sniffed, so I'm not sure what can be done in the kernel apart from an 
-unpalatable "disable CKO and all which depend upon it when entering promiscuous 
-mode."  Having the tap calculate a checksum would be equally bad for 
-performance, and would frankly be incorrect anyway because it would give the 
-user the false impression that was the checksum which went-out onto the wire.
+Ok.
 
-One could I suppose try to ammend the information passed to allow tcpdump to say 
-"oh, this was a tx packet on the same machine on which I am tracing so don't 
-worry about checksum mismatch" but I have to wonder if it is _really_ worth it. 
-Already someone has to deal with seeing TCP segments >> the MSS thanks to TSO. 
-(Actually tcpdump got rather confused about that too since the IP length of 
-those was 0, but IIRC we got that patched to use the length of zero as a "ah, 
-this was TSO so wing it" heuristic.)
+Can people give the patch below a try before I submit it to Jeff ?
 
-rick jones
+From: Ciaran McCreesh <ciaran.mccreesh@blueyonder.co.uk>
+Date: Thu, 1 Nov 2007 22:48:15 +0100
+Subject: [PATCH] r8169: add PCI ID for the 8168 in the Abit Fatal1ty F-190HD motherboard
+
+Signed-off-by: Ciaran McCreesh <ciaran.mccreesh@blueyonder.co.uk>
+Signed-off-by: Francois Romieu <romieu@fr.zoreil.com>
+Cc: Edward Hsu <edward_hsu@realtek.com.tw>
+---
+ drivers/net/r8169.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+index b94fa7e..702334e 100644
+--- a/drivers/net/r8169.c
++++ b/drivers/net/r8169.c
+@@ -171,6 +171,8 @@ static struct pci_device_id rtl8169_pci_tbl[] = {
+ 	{ PCI_DEVICE(0x16ec,			0x0116), 0, 0, RTL_CFG_0 },
+ 	{ PCI_VENDOR_ID_LINKSYS,		0x1032,
+ 		PCI_ANY_ID, 0x0024, 0, 0, RTL_CFG_0 },
++	{ 0x0001,				0x8168,
++		PCI_ANY_ID, 0x2410, 0, 0, RTL_CFG_2 },
+ 	{0,},
+ };
+ 
+-- 
+1.5.3.3
+
