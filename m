@@ -1,47 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756970AbXKAO3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761468AbXKAOev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756970AbXKAO3m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 10:29:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978AbXKAO3e
+	id S1761468AbXKAOev (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 10:34:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761255AbXKAOe1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 10:29:34 -0400
-Received: from ns1.suse.de ([195.135.220.2]:60154 "EHLO mx1.suse.de"
+	Thu, 1 Nov 2007 10:34:27 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52588 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753529AbXKAO3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 10:29:34 -0400
-Date: Thu, 1 Nov 2007 15:29:33 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       riel <riel@redhat.com>
-Subject: Re: [patch 1/4] spinlock: lockbreak cleanup
-Message-ID: <20071101142932.GB2648@wotan.suse.de>
-References: <20071101140146.GA26879@wotan.suse.de> <20071101140241.GB26879@wotan.suse.de> <1193925965.27652.284.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1760215AbXKAOe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 10:34:26 -0400
+From: Steve Grubb <sgrubb@redhat.com>
+Organization: Red Hat
+To: Tony Jones <tonyj@suse.de>
+Subject: Re: [PATCH] audit: clear thread flag for new children
+Date: Thu, 1 Nov 2007 10:33:52 -0400
+User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
+Cc: linux-audit@redhat.com, linux-kernel@vger.kernel.org, chrisw@sous-sol.org,
+       viro@ftp.linux.org.uk
+References: <20071026204228.GA1519@suse.de> <200710291804.31784.sgrubb@redhat.com> <20071029231529.GB15210@suse.de>
+In-Reply-To: <20071029231529.GB15210@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1193925965.27652.284.camel@twins>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200711011033.53265.sgrubb@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 01, 2007 at 03:06:05PM +0100, Peter Zijlstra wrote:
-> On Thu, 2007-11-01 at 15:02 +0100, Nick Piggin wrote:
-> 
-> > Rename need_lockbreak to spin_needbreak, make it use spin_is_contended to
-> > decouple it from the spinlock implementation, and make it typesafe (rwlocks
-> > do not have any need_lockbreak sites -- why do they even get bloated up
-> > with that break_lock then?).
-> 
-> IIRC Lee has a few patches floating about that do introduce lockbreak
-> stuff for rwlocks.
+On Monday 29 October 2007 07:15:30 pm Tony Jones wrote:
+> On Mon, Oct 29, 2007 at 06:04:31PM -0400, Steve Grubb wrote:
+> > So when audit is re-enabled, how do you make that task auditable?
+>
+> No idea. How do you do it currently? HINT: current->audit_context == NULL
+> for these tasks.  If !audit_enabled, then audit_alloc() is not going to
+> allocate an audit_context for the task.
 
-Well that would be a good reason to introduce a break_lock for them,
-but previously not so much... we have rwlocks in some slightly space
-critical structures (vmas, inodes, etc).
+We are looking into this - at one time it did. Someone should follow up with a 
+path correcting this soon. But I doubt the audit system will work correctly 
+if the flag gets removed as there is no good way to add it again later.
 
-I guess it was done to make the "template" hacks eaiser. I don't really
-find that in good taste, especially for important core infrastructure.
-Anyway.
+-Steve
