@@ -1,69 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759486AbXKAWPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759831AbXKAWQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759486AbXKAWPv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 18:15:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753680AbXKAWPl
+	id S1759831AbXKAWQV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 18:16:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755059AbXKAWQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 18:15:41 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39534 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754620AbXKAWPk (ORCPT
+	Thu, 1 Nov 2007 18:16:06 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:39682 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753680AbXKAWQE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 18:15:40 -0400
-Date: Thu, 1 Nov 2007 15:15:39 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: David Miller <davem@davemloft.net>
-cc: akpm@linux-foundation.org, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
-       penberg@cs.helsinki.fi
-Subject: Re: [patch 0/7] [RFC] SLUB: Improve allocpercpu to reduce per cpu
- access overhead
-In-Reply-To: <20071101.142936.114015234.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0711011511450.22508@schroedinger.engr.sgi.com>
-References: <20071101.000118.208338243.davem@davemloft.net>
- <20071101.021451.217578606.davem@davemloft.net>
- <Pine.LNX.4.64.0711010601430.27666@schroedinger.engr.sgi.com>
- <20071101.142936.114015234.davem@davemloft.net>
+	Thu, 1 Nov 2007 18:16:04 -0400
+Date: Thu, 1 Nov 2007 16:16:04 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Hannes Reinecke <hare@suse.de>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] debloat aic7xxx and aic79xx drivers
+Message-ID: <20071101221604.GB19914@parisc-linux.org>
+References: <200710141558.27156.vda.linux@googlemail.com> <200710141600.10468.vda.linux@googlemail.com> <200710141601.08946.vda.linux@googlemail.com> <200710141602.16283.vda.linux@googlemail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710141602.16283.vda.linux@googlemail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Nov 2007, David Miller wrote:
+On Sun, Oct 14, 2007 at 04:02:15PM +0100, Denys Vlasenko wrote:
+> Adds more consts
 
-> From: Christoph Lameter <clameter@sgi.com>
-> Date: Thu, 1 Nov 2007 06:03:44 -0700 (PDT)
-> 
-> > In order to make it truly dynamic we would have to virtually map the
-> > area.  vmap? But that reduces performance.
-> 
-> But it would still be faster than the double-indirection we do now,
-> right?
+error: patch failed: drivers/scsi/aic7xxx/aic79xx.h:1328
+error: drivers/scsi/aic7xxx/aic79xx.h: patch does not apply
+error: patch failed: drivers/scsi/aic7xxx/aic7xxx.h:1145
+error: drivers/scsi/aic7xxx/aic7xxx.h: patch does not apply
 
-I think I have an idea how to do this. Its a bit x86_64 specific but here 
-it goes.
-
-We define a virtual area of NR_CPUS * 2M areas that are each mapped by a
-PMD. That means we have a fixed virtual address for each cpus per cpu 
-area. 
-
-First cpu is at PER_CPU_START
-Second cpu is at PER_CPU_START + 2M
-
-So the per cpu area for cpu n is easily calculated using
-
-PER_CPU_START + cpu << 19
-
-without any lookups.
-
-On bootup we allocate the 2M pages.
-
-After boot is complete we allow the reduction of the size of the per cpu 
-areas . Lets say we only need 128k per cpu. Then the remaining pages will
-be returned to the page allocator.
-
-We create some sysfs thingy were one can see the current reserves of per 
-cpu storage. If one wants to reduce memory then one can write something to 
-that to return the remainder of the memory.
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
