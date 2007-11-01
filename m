@@ -1,39 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757828AbXKARSB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758588AbXKARSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757828AbXKARSB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 13:18:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753455AbXKARRw
+	id S1758588AbXKARSX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 13:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757755AbXKARSA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 13:17:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55544 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753399AbXKARRw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 13:17:52 -0400
-Message-ID: <472A0A36.1050403@redhat.com>
-Date: Thu, 01 Nov 2007 13:17:42 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Thu, 1 Nov 2007 13:18:00 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:54229 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757526AbXKARR7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 13:17:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=Pi0YlQMKbwxJJmc1O/lM3dHTW/M6AwzgHXKQXLOvCQmti1Kqidsy+MAZhZlI3lpzE2Kfe3/vdHVZf/rJ5dh5L4LpC0gpU12TCGDqM2p078k/8kZVdZxWqdUgQ3B4FlnHB7ufISRy5ANOAYqaSZqu/G31d3l0znc8dOHWtzAeCPg=
+From: Miguel =?utf-8?q?Bot=C3=B3n?= <mboton.lkml@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: remove duplicated #include entry
+Date: Thu, 1 Nov 2007 18:17:47 +0100
+User-Agent: KMail/1.9.7
+Cc: tglx@linutronix.de
 MIME-Version: 1.0
-To: Romano Giannetti <romanol@upcomillas.es>
-CC: linux-kernel@vger.kernel.org, drzeus-mmc@drzeus.cx
-Subject: Re: 2.6.34-rc1 eat my photo SD card :-(
-References: <1193918202.8439.7.camel@rukbat>
-In-Reply-To: <1193918202.8439.7.camel@rukbat>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200711011817.47895.mboton.lkml@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/01/2007 07:56 AM, Romano Giannetti wrote:
-> Hi,
-> 
-> 	I have a very possible regression to signal. This morning 2.6.24-rc1
-> eat and destroyed my SD card. I have a toshiba laptop with a card slot
-> and I have used it with 2.6.23-rcX and 2.6.23 without problems so far.
-> This morning I put the card in, nothing happened, removed it. When I put
-> it in again the filesystem in it was completely scr***ed up. 
-> 
+"#include <linux/kprobes.h>" is duplicated in "arch/x86/mm/fault_32.c".
+We just remove one of the entries.
 
-I always flip the write-protect switch when I use mine with a computer,
-and only let the camera write to the card.
+Signed-off-by: Miguel Botón <mboton@gmail.com>
+
+
+Index: linux-2.6.24-rc1/arch/x86/mm/fault_32.c
+===================================================================
+--- linux-2.6.24-rc1.orig/arch/x86/mm/fault_32.c
++++ linux-2.6.24-rc1/arch/x86/mm/fault_32.c
+@@ -22,7 +22,6 @@
+ #include <linux/bootmem.h>		/* for max_low_pfn */
+ #include <linux/vmalloc.h>
+ #include <linux/module.h>
+-#include <linux/kprobes.h>
+ #include <linux/uaccess.h>
+ #include <linux/kdebug.h>
+ #include <linux/kprobes.h>
+
+-- 
+	Miguel Botón
