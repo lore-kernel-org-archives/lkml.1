@@ -1,75 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbXKBFrH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753219AbXKBGYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753289AbXKBFrH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 01:47:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbXKBFq4
+	id S1753219AbXKBGYh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 02:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbXKBGY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 01:46:56 -0400
-Received: from andesite.resot.net ([217.175.160.141]:40351 "EHLO
-	andesite.ool.fr" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751763AbXKBFqz (ORCPT
+	Fri, 2 Nov 2007 02:24:28 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:37232 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751027AbXKBGY1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 01:46:55 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 Nov 2007 01:46:54 EDT
-Date: 2 Nov 2007 08:24:32 -0000
-Message-ID: <20071102082432.8665.qmail@andesite.ool.fr>
-From: "w.landgraf" <w.landgraf@ool.fr>
-To: linux-kernel@vger.kernel.org
-Subject: kernel 2.6.24-rc1-git10 crash report
-References: 
-In-Reply-To: 
-X-IPAddress: 217.175.174.165
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Fri, 2 Nov 2007 02:24:27 -0400
+X-IronPort-AV: i="4.21,361,1188792000"; 
+   d="scan'208"; a="42907910:sNHT21441840"
+From: Bryan Wu <bryan.wu@analog.com>
+To: khali@linux-fr.org, i2c@lm-sensors.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 0/4] Blackfin I2C/TWI driver updates and bug fixing according to Jean's review
+Date: Fri,  2 Nov 2007 14:24:20 +0800
+Message-Id: <1193984664-10609-1-git-send-email-bryan.wu@analog.com>
+X-Mailer: git-send-email 1.5.3.4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A detailed crash report is in your letter box
-postmaster@vger.kernel.org .  It returned steady-steady
-because was considered como spam by your mailer.
-w.landgraf www.copaya.yi.org
+Still remain in old I2C driver interface. I plan to move to new style I2C API recently.
+Also intend to using new TWI register accessor functions as Jean's suggestions.
+Then move that static pin_req setting to our Blackfin board files.
 
-> > On 1/Nov/2007 21:26 werner wrote ..
-> > > On 1/Nov/2007 15:57 werner wrote ..
-> > > > Kernel Crash -- Details see below
-> > > > globc 2.7  glib2 2.14.2
-> > > > W.Landgraf
-> > > > www.copaya.yi.org
-> > > >
-=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D
-> > > > 2.6.24-rc1-git10
-> > > > EIP 0600: <c0407284> EFLAGS 00010212 CPU 0
-> > > > EIUP is at xor_sse_2+0x34/0x200
-> > > > EAX: 10 EBX fffedb22 ECX c183f000 EDX c183c000 ESS
-8005003b EDI c0929614
-> EBP
-> > > c183f000
-> > > > ESP c1823ef0   
-> > > > DS 7b ES 7b FS d8 GS 0 SS 68
-> > > > Process swapper  pid 1  ti: c182200  task c1820000
-task.ti c=3D3D1822000
-> > > > Stack:  8x 0    8x 0   fffedb22  0  c04067b3  10 
-c0849b62  c1030780  c183f000
-> > > > c183c000
-> > > > call trace
-> > > > c0 4067b3 do_xor_speed+0x53/0xd0
-> > > >    9a9582 calibrate_xor_blocks 0xe2/0x100 (or 1a0 ?)
-> > > >   191594  register_filesystem =3D3D0X44/0X70
-> > > >   991565 kernel_init+0x125/0x2f0
-> > > >    10420a  ret_from_fork +0x6/0x1c  (or 0xb ...)
-> > > >   991440 kernel_init+0x0/0x2f0
-> > > >        " again
-> > > >    c0104edf  kernel_thread_helper+0x7/0x18
-> > > > code  08 89 74 24 44 0f 20 cf 0f 06 (or 0b) 0f 11 04
-24 0f 11 4c 34 10 0f
-> 11
-> > > 54
-> > > > 24 20 0f 11 5c 24 30 0f 18 82 00
-> > > > 01 00 00 0f 18 82 20 01 00 00 <00> 20x 0
-> > > > EIP c0407284 xor_sse_2+0x34/0x200 SS ESP 068: c1823ef0
-> > > > kernel panic
-> > > >
-> 
-> THE REST OF THIS MESSAGE, SEE IN YOUR MAILBOX 
-postmaster@vger.kernel.org  BECAUSE
-> OF YOUR STUPID SPAM CONFIGURATION 
+But currently version is OK and tested on Blackfin board with I2C devices.
+
