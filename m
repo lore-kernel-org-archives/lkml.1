@@ -1,90 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758919AbXKBBk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758919AbXKBBnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758919AbXKBBk0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 21:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753802AbXKBBkO
+	id S1758919AbXKBBnq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 21:43:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbXKBBng
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 21:40:14 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58210 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753337AbXKBBkM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 21:40:12 -0400
-Date: Thu, 1 Nov 2007 18:40:10 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       mathieu.desnoyers@polymtl.ca, penberg@cs.helsinki.fi
-Subject: Re: [patch 0/7] [RFC] SLUB: Improve allocpercpu to reduce per cpu
- access overhead
-In-Reply-To: <472A5A7A.6020508@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0711011818530.24692@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0711010601430.27666@schroedinger.engr.sgi.com>
- <20071101.142936.114015234.davem@davemloft.net>
- <Pine.LNX.4.64.0711011511450.22508@schroedinger.engr.sgi.com>
- <20071101.153824.91808126.davem@davemloft.net>
- <Pine.LNX.4.64.0711011545370.23379@schroedinger.engr.sgi.com>
- <472A5A7A.6020508@cosmosbay.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 1 Nov 2007 21:43:36 -0400
+Received: from ns2.suse.de ([195.135.220.15]:39677 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753522AbXKBBnf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 21:43:35 -0400
+From: NeilBrown <neilb@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Date: Fri, 2 Nov 2007 12:43:26 +1100
+Message-Id: <1071102014326.26923@suse.de>
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Dan Williams" <dan.j.williams@intel.com>
+Cc: stable@kernel.org
+Subject: [PATCH] md: Fix misapplied patch in raid5.c
+References: <20071102123814.26603.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hmmm... On x86_64 we could take 8 terabyte virtual space (bit order 43)
+commit 4ae3f847e49e3787eca91bced31f8fd328d50496 did not get applied
+correctly, presumably due to substantial similarities between
+handle_stripe5 and handle_stripe6.
 
-With the worst case scenario of 16k of cpus (bit order 16) we are looking 
-at 43-16 = 27 ~ 128MB per cpu. Each percpu can at max be mapped by 64 pmd 
-entries. 4k support is actually max for projected hw. So we'd get 
-to 512M. 
+This patch (with lots of context) moves the chunk of new code from
+handle_stripe6 (where it isn't needed (yet)) to handle_stripe5.
 
-On IA64 we could take half of the vmemmap area which is 45 bits. So 
-we could get up to 512MB (with 16k pages, 64k pages can get us even 
-further) assuming we can at some point run 16 processors per node (4k is 
-the current max which would put the limit on the per cpu area >1GB).
 
-Lets say you have a system with 64 cpus and an area of 128M of per cpu 
-storage. Then we are using 8GB of total memory for per cpu storage. The 
-128M allows us to store f.e.  16 M of word size counters.
-
-With SLAB and the current allocpercpu you would need the following for 
-16M counters:
-
-16M*32*64 (minimum alloc size of SLAB is 32 byte and we alloc via 
-		kmalloc) for the data.
-
-16M*64*8 for the pointer arrays. 16M allocpercpu areas for 64 processors 
-		and a pointer size of 8 bytes.
-
-So you would need to use 40G in current systems. The new scheme 
-would only need 8GB for the same amount of counters.
-
-So I think its unreasonable to assume that currently systems exist that 
-can use more than 128m of allocpercpu space (assuming 64 cpus).
+Signed-off-by: Neil Brown <neilb@suse.de>
+cc: "Dan Williams" <dan.j.williams@intel.com>
 
 ---
- include/asm-x86/pgtable_64.h |    4 ++++
- 1 file changed, 4 insertions(+)
+ The patch is correctly applied in -mm.
+ The same patch was sent to stable@ but doesn't seem to have made it yet.
+ When it does get applied, we should make sure it gets applied properly...
 
-Index: linux-2.6/include/asm-x86/pgtable_64.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/pgtable_64.h	2007-11-01 18:15:52.282577904 -0700
-+++ linux-2.6/include/asm-x86/pgtable_64.h	2007-11-01 18:18:02.886979040 -0700
-@@ -138,10 +138,14 @@ static inline pte_t ptep_get_and_clear_f
- #define VMALLOC_START    _AC(0xffffc20000000000, UL)
- #define VMALLOC_END      _AC(0xffffe1ffffffffff, UL)
- #define VMEMMAP_START	 _AC(0xffffe20000000000, UL)
-+#define PERCPU_START	 _AC(0xfffff20000000000, UL)
-+#define PERCPU_END	 _AC(0xfffffa0000000000, UL)
- #define MODULES_VADDR    _AC(0xffffffff88000000, UL)
- #define MODULES_END      _AC(0xfffffffffff00000, UL)
- #define MODULES_LEN   (MODULES_END - MODULES_VADDR)
+### Diffstat output
+ ./drivers/md/raid5.c |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff .prev/drivers/md/raid5.c ./drivers/md/raid5.c
+--- .prev/drivers/md/raid5.c	2007-11-02 12:10:49.000000000 +1100
++++ ./drivers/md/raid5.c	2007-11-02 12:25:31.000000000 +1100
+@@ -2607,40 +2607,47 @@ static void handle_stripe5(struct stripe
+ 	struct bio *return_bi = NULL;
+ 	struct stripe_head_state s;
+ 	struct r5dev *dev;
+ 	unsigned long pending = 0;
  
-+#define PERCPU_MIN_SHIFT	PMD_SHIFT
-+#define PERCPU_BITS		43
+ 	memset(&s, 0, sizeof(s));
+ 	pr_debug("handling stripe %llu, state=%#lx cnt=%d, pd_idx=%d "
+ 		"ops=%lx:%lx:%lx\n", (unsigned long long)sh->sector, sh->state,
+ 		atomic_read(&sh->count), sh->pd_idx,
+ 		sh->ops.pending, sh->ops.ack, sh->ops.complete);
+ 
+ 	spin_lock(&sh->lock);
+ 	clear_bit(STRIPE_HANDLE, &sh->state);
+ 	clear_bit(STRIPE_DELAYED, &sh->state);
+ 
+ 	s.syncing = test_bit(STRIPE_SYNCING, &sh->state);
+ 	s.expanding = test_bit(STRIPE_EXPAND_SOURCE, &sh->state);
+ 	s.expanded = test_bit(STRIPE_EXPAND_READY, &sh->state);
+ 	/* Now to look around and see what can be done */
+ 
++	/* clean-up completed biofill operations */
++	if (test_bit(STRIPE_OP_BIOFILL, &sh->ops.complete)) {
++		clear_bit(STRIPE_OP_BIOFILL, &sh->ops.pending);
++		clear_bit(STRIPE_OP_BIOFILL, &sh->ops.ack);
++		clear_bit(STRIPE_OP_BIOFILL, &sh->ops.complete);
++	}
 +
- #define _PAGE_BIT_PRESENT	0
- #define _PAGE_BIT_RW		1
- #define _PAGE_BIT_USER		2
-
+ 	rcu_read_lock();
+ 	for (i=disks; i--; ) {
+ 		mdk_rdev_t *rdev;
+ 		struct r5dev *dev = &sh->dev[i];
+ 		clear_bit(R5_Insync, &dev->flags);
+ 
+ 		pr_debug("check %d: state 0x%lx toread %p read %p write %p "
+ 			"written %p\n",	i, dev->flags, dev->toread, dev->read,
+ 			dev->towrite, dev->written);
+ 
+ 		/* maybe we can request a biofill operation
+ 		 *
+ 		 * new wantfill requests are only permitted while
+ 		 * STRIPE_OP_BIOFILL is clear
+ 		 */
+ 		if (test_bit(R5_UPTODATE, &dev->flags) && dev->toread &&
+ 			!test_bit(STRIPE_OP_BIOFILL, &sh->ops.pending))
+ 			set_bit(R5_Wantfill, &dev->flags);
+ 
+ 		/* now count some things */
+@@ -2880,47 +2887,40 @@ static void handle_stripe6(struct stripe
+ 	struct stripe_head_state s;
+ 	struct r6_state r6s;
+ 	struct r5dev *dev, *pdev, *qdev;
+ 
+ 	r6s.qd_idx = raid6_next_disk(pd_idx, disks);
+ 	pr_debug("handling stripe %llu, state=%#lx cnt=%d, "
+ 		"pd_idx=%d, qd_idx=%d\n",
+ 	       (unsigned long long)sh->sector, sh->state,
+ 	       atomic_read(&sh->count), pd_idx, r6s.qd_idx);
+ 	memset(&s, 0, sizeof(s));
+ 
+ 	spin_lock(&sh->lock);
+ 	clear_bit(STRIPE_HANDLE, &sh->state);
+ 	clear_bit(STRIPE_DELAYED, &sh->state);
+ 
+ 	s.syncing = test_bit(STRIPE_SYNCING, &sh->state);
+ 	s.expanding = test_bit(STRIPE_EXPAND_SOURCE, &sh->state);
+ 	s.expanded = test_bit(STRIPE_EXPAND_READY, &sh->state);
+ 	/* Now to look around and see what can be done */
+ 
+-	/* clean-up completed biofill operations */
+-	if (test_bit(STRIPE_OP_BIOFILL, &sh->ops.complete)) {
+-		clear_bit(STRIPE_OP_BIOFILL, &sh->ops.pending);
+-		clear_bit(STRIPE_OP_BIOFILL, &sh->ops.ack);
+-		clear_bit(STRIPE_OP_BIOFILL, &sh->ops.complete);
+-	}
+-
+ 	rcu_read_lock();
+ 	for (i=disks; i--; ) {
+ 		mdk_rdev_t *rdev;
+ 		dev = &sh->dev[i];
+ 		clear_bit(R5_Insync, &dev->flags);
+ 
+ 		pr_debug("check %d: state 0x%lx read %p write %p written %p\n",
+ 			i, dev->flags, dev->toread, dev->towrite, dev->written);
+ 		/* maybe we can reply to a read */
+ 		if (test_bit(R5_UPTODATE, &dev->flags) && dev->toread) {
+ 			struct bio *rbi, *rbi2;
+ 			pr_debug("Return read for disc %d\n", i);
+ 			spin_lock_irq(&conf->device_lock);
+ 			rbi = dev->toread;
+ 			dev->toread = NULL;
+ 			if (test_and_clear_bit(R5_Overlap, &dev->flags))
+ 				wake_up(&conf->wait_for_overlap);
+ 			spin_unlock_irq(&conf->device_lock);
+ 			while (rbi && rbi->bi_sector < dev->sector + STRIPE_SECTORS) {
+ 				copy_data(0, rbi, dev->page, dev->sector);
