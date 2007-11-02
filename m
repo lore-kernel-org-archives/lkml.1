@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756625AbXKBOfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756417AbXKBOf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756625AbXKBOfp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 10:35:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754243AbXKBOfi
+	id S1756417AbXKBOf4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 10:35:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754610AbXKBOfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 10:35:38 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:34637 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753889AbXKBOfh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 10:35:39 -0400
+Received: from sacred.ru ([62.205.161.221]:59185 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753688AbXKBOfh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 2 Nov 2007 10:35:37 -0400
-Date: Fri, 2 Nov 2007 07:35:35 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       mathieu.desnoyers@polymtl.ca, penberg@cs.helsinki.fi
-Subject: Re: [patch 0/7] [RFC] SLUB: Improve allocpercpu to reduce per cpu
- access overhead
-In-Reply-To: <1193999326.27652.348.camel@twins>
-Message-ID: <Pine.LNX.4.64.0711020734070.26635@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0711011511450.22508@schroedinger.engr.sgi.com> 
- <20071101.153824.91808126.davem@davemloft.net> 
- <Pine.LNX.4.64.0711011545370.23379@schroedinger.engr.sgi.com> 
- <20071101.155805.65012933.davem@davemloft.net> <1193999326.27652.348.camel@twins>
+Message-ID: <472B327E.2060006@openvz.org>
+Date: Fri, 02 Nov 2007 17:21:50 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ulrich Drepper <drepper@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Serge Hallyn <serue@us.ibm.com>
+Subject: Re: [patch] PID namespace design bug, workaround
+References: <20071101144307.GA29566@elte.hu>	<4729E7E4.8070208@openvz.org>	<4729E936.4040400@redhat.com>	<4729EB3C.9050102@openvz.org>	<472A6D91.1020300@redhat.com>	<472AD7D6.80900@openvz.org> <20071102010419.23f3db5c.akpm@linux-foundation.org> <472ADC78.6070706@openvz.org> <472B2EBD.7070007@redhat.com>
+In-Reply-To: <472B2EBD.7070007@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 02 Nov 2007 17:21:52 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Nov 2007, Peter Zijlstra wrote:
-
-> On Thu, 2007-11-01 at 15:58 -0700, David Miller wrote:
+Ulrich Drepper wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 > 
-> > Since you're the one who wants to change the semantics and guarentees
-> > of this interface, perhaps it might help if you did some greps around
-> > the tree to see how alloc_percpu() is actually used.  That's what
-> > I did when I started running into trouble with your patches.
+> Pavel Emelyanov wrote:
+>>> Isn't it this?
+>>>
+>>> http://lkml.org/lkml/2007/11/1/141
+>> That was the initial problem, and I already answered to Ingo about
+>> it
 > 
-> This fancy new BDI stuff also lives off percpu_counter/alloc_percpu().
+> No, look at my old mail which Ingo referenced in that posting.
 
-Yes there are numerous uses. I even can increase page allocator 
-performance and reduce its memory footprint by using it here.
+You pointed only one problem that is not a variation of "how do 
+we handle the case when we pass our pid outside the namespace".
 
-> That means that for example each NFS mount also consumes a number of
-> words - not quite sure from the top of my head how many, might be in the
-> order of 24 bytes or something.
+This problem with signals is now being resolved at IBM by Sukadev 
+and Serge (I put them in Cc), so this is about to be fixed by the
+time 2.6.24 releases (I hope).
+
+As far as the "passing the pid outside the namespace" is concerned, 
+is my answer "pids should never be used outside the namespace they
+came from, otherwise userspace won't work as expected" satisfactory?
+
+So is "everything else", you mentioned, covered with the problems
+above?
+
+> - --
+> ➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+> -----BEGIN PGP SIGNATURE-----
+> Version: GnuPG v1.4.7 (GNU/Linux)
 > 
-> I once before started looking at this, because the current
-> alloc_percpu() can have some false sharing - not that I have machines
-> that are overly bothered by that. I like the idea of a strict percpu
-> region, however do be aware of the users.
-
-Well I wonder if I should introduce it not as a replacement but as an 
-alternative to allocpercpu? We can then gradually switch over. The 
-existing API does not allow the specification of gfp_masks or alignements.
+> iD8DBQFHKy692ijCOnn/RHQRAtYLAJ98EXTGl3HMlCbVXOkL7TJRFfw4DACfcgYI
+> HHz5f7TfM05Dps+ruPRiUrU=
+> =IjS4
+> -----END PGP SIGNATURE-----
+> 
 
