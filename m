@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759991AbXKBBCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760212AbXKBBDN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759991AbXKBBCU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 21:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754941AbXKBBCJ
+	id S1760212AbXKBBDN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 21:03:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755438AbXKBBC5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 21:02:09 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:56171 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753621AbXKBBCI (ORCPT
+	Thu, 1 Nov 2007 21:02:57 -0400
+Received: from mga01.intel.com ([192.55.52.88]:3601 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754872AbXKBBC4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 21:02:08 -0400
-Subject: Re: [Lguest] [PATCH 3/16] read/write_crX, clts and wbinvd for
-	64-bit paravirt
-From: Zachary Amsden <zach@vmware.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Keir Fraser <Keir.Fraser@cl.cam.ac.uk>, lguest@ozlabs.org,
-       kvm-devel@lists.sourceforge.net, mingo@elte.hu, ak@suse.de,
-       linux-kernel@vger.kernel.org, anthony@codemonkey.ws, tglx@linutronix.de,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       virtualization@lists.linux-foundation.org, akpm@linux-foundation.org
-In-Reply-To: <472A0FBF.6040907@goop.org>
-References: <C34FAA4C.17CA9%Keir.Fraser@cl.cam.ac.uk>
-	 <472A0FBF.6040907@goop.org>
-Content-Type: text/plain
-Date: Thu, 01 Nov 2007 09:55:13 -0700
-Message-Id: <1193936113.29447.56.camel@bodhitayantram.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Nov 2007 21:02:56 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,360,1188802800"; 
+   d="scan'208";a="365560528"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 0/2 -v2 resend] x86_64 EFI boot support
+Date: Fri, 2 Nov 2007 09:02:47 +0800
+Message-ID: <9D7649D18729DE4BB2BD7B494F7FEDC295BE97@pdsmsx415.ccr.corp.intel.com>
+In-Reply-To: <4728E0DE.7080702@zytor.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 0/2 -v2 resend] x86_64 EFI boot support
+Thread-Index: Acgb+jWwCmyYPuiXRxewdbiLKnrj5wA8bUbg
+References: <1193218342.23935.147.camel@caritas-dev.intel.com>	<1193793701.23935.394.camel@caritas-dev.intel.com> <20071031125907.ba953d4a.akpm@linux-foundation.org> <4728E0DE.7080702@zytor.com>
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <tglx@linutronix.de>, <mingo@redhat.com>, <torvalds@linux-foundation.org>,
+       <adaplas@pol.net>, <ak@suse.de>, <ebiederm@xmission.com>,
+       <mouli@linux.intel.com>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 02 Nov 2007 01:02:47.0737 (UTC) FILETIME=[156CCA90:01C81CEC]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-11-01 at 10:41 -0700, Jeremy Fitzhardinge wrote:
-> Keir Fraser wrote:
-> > volatile prevents the asm from being 'moved significantly', according to the
-> > gcc manual. I take that to mean that reordering is not allowed.
-> >   
+>From: H. Peter Anvin [mailto:hpa@zytor.com]
+>The "EFI boot" patchset looks fairly unobtrusive to me.  One objection:
+>the VIDEO_TYPE_ numbers appear split up into groups; and the EFI one
+>probably should be 0x70 instead of 0x24.
 
-I understood it as reordering was permitted, but no re-ordering across
-another volatile load, store, or asm was permitted.  And of course, as
-long as input and output constraints are written properly, the
-re-ordering should not be vulnerable to pathological movement causing
-the code to malfunction.
+Should I change this and resend the patchset? Or you modify it before
+merging?
 
-It seems that CPU state side effects which can't be expressed in C need
-special care - FPU is certainly one example.
-
-Also, memory clobber on a volatile asm should stop invalid movement
-across TLB flushes and other problems areas.  Even memory fences should
-have memory clobber in order to stop movement of loads and stores across
-the fence by the compiler.
-
-Zach
-
+Best Regards,
+Huang Ying
