@@ -1,97 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764345AbXKCARr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764382AbXKCASK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764345AbXKCARr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 20:17:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762312AbXKCADl
+	id S1764382AbXKCASK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 20:18:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762227AbXKCADq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 20:03:41 -0400
-Received: from cantor.suse.de ([195.135.220.2]:41253 "EHLO mx1.suse.de"
+	Fri, 2 Nov 2007 20:03:46 -0400
+Received: from ns1.suse.de ([195.135.220.2]:41259 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762311AbXKCADk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 20:03:40 -0400
+	id S1762337AbXKCADp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 20:03:45 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 52/54] firmware: remove firmware_(un)register()
-Date: Fri,  2 Nov 2007 16:59:30 -0700
-Message-Id: <1194047972-9850-52-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       Mark Fasheh <mark.fasheh@oracle.com>,
+       Kurt Hackel <kurt.hackel@oracle.com>
+Subject: [PATCH 53/54] kset: convert ocfs2 to use kset_create
+Date: Fri,  2 Nov 2007 16:59:31 -0700
+Message-Id: <1194047972-9850-53-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <20071102235758.GA9803@kroah.com>
 References: <20071102235758.GA9803@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These functions are no longer called or needed, so we can remove them.
+Dynamically create the kset instead of declaring it statically.
 
-As I rewrote the whole firmware.c file, add my copyright.
+Also use the new kobj_attribute which cleans up this file a _lot_.
 
 Cc: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Mark Fasheh <mark.fasheh@oracle.com>
+Cc: Kurt Hackel <kurt.hackel@oracle.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/firmware.c |   19 ++-----------------
- include/linux/device.h  |    5 -----
- 2 files changed, 2 insertions(+), 22 deletions(-)
+ fs/ocfs2/cluster/masklog.c |    4 +-
+ fs/ocfs2/cluster/sys.c     |   83 +++++++++++--------------------------------
+ 2 files changed, 23 insertions(+), 64 deletions(-)
 
-diff --git a/drivers/base/firmware.c b/drivers/base/firmware.c
-index d225059..75e3049 100644
---- a/drivers/base/firmware.c
-+++ b/drivers/base/firmware.c
-@@ -3,11 +3,11 @@
-  *
-  * Copyright (c) 2002-3 Patrick Mochel
-  * Copyright (c) 2002-3 Open Source Development Labs
-+ * Copyright (c) 2007 Greg Kroah-Hartman <gregkh@suse.de>
-+ * Copyright (c) 2007 Novell Inc.
-  *
-  * This file is released under the GPLv2
-- *
-  */
--
- #include <linux/kobject.h>
- #include <linux/module.h>
- #include <linux/init.h>
-@@ -19,18 +19,6 @@
- struct kset *firmware_kset;
- EXPORT_SYMBOL_GPL(firmware_kset);
+diff --git a/fs/ocfs2/cluster/masklog.c b/fs/ocfs2/cluster/masklog.c
+index dead319..23c732f 100644
+--- a/fs/ocfs2/cluster/masklog.c
++++ b/fs/ocfs2/cluster/masklog.c
+@@ -146,7 +146,7 @@ static struct kset mlog_kset = {
+ 	.kobj   = {.ktype = &mlog_ktype},
+ };
  
--int firmware_register(struct kset *s)
--{
--	s->kobj.kset = firmware_kset;
--	s->kobj.ktype = NULL;
--	return subsystem_register(s);
--}
--
--void firmware_unregister(struct kset *s)
--{
--	subsystem_unregister(s);
--}
--
- int __init firmware_init(void)
+-int mlog_sys_init(struct kset *o2cb_subsys)
++int mlog_sys_init(struct kset *o2cb_kset)
  {
- 	firmware_kset = kset_create_and_register("firmware", NULL, NULL, NULL);
-@@ -38,6 +26,3 @@ int __init firmware_init(void)
- 		return PTR_ERR(firmware_kset);
- 	return 0;
+ 	int i = 0;
+ 
+@@ -157,7 +157,7 @@ int mlog_sys_init(struct kset *o2cb_subsys)
+ 	mlog_attr_ptrs[i] = NULL;
+ 
+ 	kobject_set_name(&mlog_kset.kobj, "logmask");
+-	mlog_kset.kobj.kset = o2cb_subsys;
++	mlog_kset.kobj.kset = o2cb_kset;
+ 	return kset_register(&mlog_kset);
+ }
+ 
+diff --git a/fs/ocfs2/cluster/sys.c b/fs/ocfs2/cluster/sys.c
+index 880d013..eb2c4d7 100644
+--- a/fs/ocfs2/cluster/sys.c
++++ b/fs/ocfs2/cluster/sys.c
+@@ -28,96 +28,55 @@
+ #include <linux/module.h>
+ #include <linux/kobject.h>
+ #include <linux/sysfs.h>
++#include <linux/fs.h>
+ 
+ #include "ocfs2_nodemanager.h"
+ #include "masklog.h"
+ #include "sys.h"
+ 
+-struct o2cb_attribute {
+-	struct attribute	attr;
+-	ssize_t (*show)(char *buf);
+-	ssize_t (*store)(const char *buf, size_t count);
+-};
+-
+-#define O2CB_ATTR(_name, _mode, _show, _store)	\
+-struct o2cb_attribute o2cb_attr_##_name = __ATTR(_name, _mode, _show, _store)
+-
+-#define to_o2cb_attr(_attr) container_of(_attr, struct o2cb_attribute, attr)
+ 
+-static ssize_t o2cb_interface_revision_show(char *buf)
++static ssize_t version_show(struct kobject *kobj, struct kobj_attribute *attr,
++			    char *buf)
+ {
+ 	return snprintf(buf, PAGE_SIZE, "%u\n", O2NM_API_VERSION);
  }
 -
--EXPORT_SYMBOL_GPL(firmware_register);
--EXPORT_SYMBOL_GPL(firmware_unregister);
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 3701269..cb71907 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -541,11 +541,6 @@ extern void device_shutdown(void);
- /* drivers/base/sys.c */
- extern void sysdev_shutdown(void);
+-static O2CB_ATTR(interface_revision, S_IFREG | S_IRUGO, o2cb_interface_revision_show, NULL);
++static struct kobj_attribute attr_version =
++	__ATTR(interface_revision, S_IFREG | S_IRUGO, version_show, NULL);
  
+ static struct attribute *o2cb_attrs[] = {
+-	&o2cb_attr_interface_revision.attr,
++	&attr_version.attr,
+ 	NULL,
+ };
+ 
+-static ssize_t
+-o2cb_show(struct kobject * kobj, struct attribute * attr, char * buffer);
+-static ssize_t
+-o2cb_store(struct kobject * kobj, struct attribute * attr,
+-	   const char * buffer, size_t count);
+-static struct sysfs_ops o2cb_sysfs_ops = {
+-	.show	= o2cb_show,
+-	.store	= o2cb_store,
++static struct attribute_group o2cb_attr_group = {
++	.attrs = o2cb_attrs,
+ };
+ 
+-static struct kobj_type o2cb_subsys_type = {
+-	.default_attrs	= o2cb_attrs,
+-	.sysfs_ops	= &o2cb_sysfs_ops,
+-};
 -
--/* drivers/base/firmware.c */
--extern int __must_check firmware_register(struct kset *);
--extern void firmware_unregister(struct kset *);
+-/* gives us o2cb_subsys */
+-static decl_subsys(o2cb, NULL);
 -
- /* debugging and troubleshooting/diagnostic helpers. */
- extern const char *dev_driver_string(struct device *dev);
- #define dev_printk(level, dev, format, arg...)	\
+-static ssize_t
+-o2cb_show(struct kobject * kobj, struct attribute * attr, char * buffer)
+-{
+-	struct o2cb_attribute *o2cb_attr = to_o2cb_attr(attr);
+-	struct kset *sbs = to_kset(kobj);
+-
+-	BUG_ON(sbs != &o2cb_subsys);
+-
+-	if (o2cb_attr->show)
+-		return o2cb_attr->show(buffer);
+-	return -EIO;
+-}
+-
+-static ssize_t
+-o2cb_store(struct kobject * kobj, struct attribute * attr,
+-	     const char * buffer, size_t count)
+-{
+-	struct o2cb_attribute *o2cb_attr = to_o2cb_attr(attr);
+-	struct kset *sbs = to_kset(kobj);
+-
+-	BUG_ON(sbs != &o2cb_subsys);
+-
+-	if (o2cb_attr->store)
+-		return o2cb_attr->store(buffer, count);
+-	return -EIO;
+-}
++static struct kset *o2cb_kset;
+ 
+ void o2cb_sys_shutdown(void)
+ {
+ 	mlog_sys_shutdown();
+-	subsystem_unregister(&o2cb_subsys);
++	kset_unregister(o2cb_kset);
+ }
+ 
+ int o2cb_sys_init(void)
+ {
+ 	int ret;
+ 
+-	o2cb_subsys.kobj.ktype = &o2cb_subsys_type;
+-	ret = subsystem_register(&o2cb_subsys);
++	o2cb_kset = kset_create_and_register("o2cb", NULL, NULL, fs_kset);
++	if (IS_ERR(o2cb_kset))
++		return PTR_ERR(o2cb_kset);
++
++	ret = sysfs_create_group(&o2cb_kset->kobj, &o2cb_attr_group);
+ 	if (ret)
+-		return ret;
++		goto error;
+ 
+-	ret = mlog_sys_init(&o2cb_subsys);
++	ret = mlog_sys_init(o2cb_kset);
+ 	if (ret)
+-		subsystem_unregister(&o2cb_subsys);
++		goto error;
++	return 0;
++error:
++	kset_unregister(o2cb_kset);
+ 	return ret;
+ }
 -- 
 1.5.3.4
 
