@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757346AbXKBA7B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759006AbXKBBBp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757346AbXKBA7B (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 20:59:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754611AbXKBA6x
+	id S1759006AbXKBBBp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 21:01:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754941AbXKBBBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 20:58:53 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46262 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753678AbXKBA6w (ORCPT
+	Thu, 1 Nov 2007 21:01:37 -0400
+Received: from mga03.intel.com ([143.182.124.21]:40058 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754872AbXKBBBg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 20:58:52 -0400
-Date: Thu, 1 Nov 2007 17:58:49 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       mathieu.desnoyers@polymtl.ca, penberg@cs.helsinki.fi
-Subject: Re: [patch 0/7] [RFC] SLUB: Improve allocpercpu to reduce per cpu
- access overhead
-In-Reply-To: <472A5A7A.6020508@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0711011757440.24589@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0711010601430.27666@schroedinger.engr.sgi.com>
- <20071101.142936.114015234.davem@davemloft.net>
- <Pine.LNX.4.64.0711011511450.22508@schroedinger.engr.sgi.com>
- <20071101.153824.91808126.davem@davemloft.net>
- <Pine.LNX.4.64.0711011545370.23379@schroedinger.engr.sgi.com>
- <472A5A7A.6020508@cosmosbay.com>
+	Thu, 1 Nov 2007 21:01:36 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,360,1188802800"; 
+   d="scan'208";a="309970722"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 0/2 -v2 resend] x86_64 EFI boot support
+Date: Fri, 2 Nov 2007 09:01:31 +0800
+Message-ID: <9D7649D18729DE4BB2BD7B494F7FEDC295BE93@pdsmsx415.ccr.corp.intel.com>
+In-Reply-To: <20071031125907.ba953d4a.akpm@linux-foundation.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 0/2 -v2 resend] x86_64 EFI boot support
+Thread-Index: Acgb+LX5lE2JJL8/TOuijiCOb2+PUgA8upTw
+References: <1193218342.23935.147.camel@caritas-dev.intel.com><1193793701.23935.394.camel@caritas-dev.intel.com> <20071031125907.ba953d4a.akpm@linux-foundation.org>
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <hpa@zytor.com>, <tglx@linutronix.de>, <mingo@redhat.com>,
+       <torvalds@linux-foundation.org>, <adaplas@pol.net>, <ak@suse.de>,
+       <ebiederm@xmission.com>, <mouli@linux.intel.com>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 02 Nov 2007 01:01:32.0272 (UTC) FILETIME=[E871BF00:01C81CEB]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Nov 2007, Eric Dumazet wrote:
+>From: Andrew Morton [mailto:akpm@linux-foundation.org]
+>On Wed, 31 Oct 2007 09:21:41 +0800
+>"Huang, Ying" <ying.huang@intel.com> wrote:
+>
+>> Can this patchset be merged into mainline kernel? This patchset has
+been
+>> in -mm tree from 2.6.23-rc2-mm2 on. Andrew Moton has suggested it to
+be
+>> merged into 2.6.24 during early merge window of 2.6.24. It was not
+>> merged into mainline because the 32-bit boot protocol has not been
+done.
+>>
+>> But now, the 32-bit boot protocol has been merged into mainline. So
+can
+>> this patchset be merged into mainline kernel now?
+>>
+>
+>I stopped paying attention, sorry.  Have all the outstanding issues
+been
+>addressed?
 
-> > Na. Some reasonable upper limit needs to be set. If we set that to say
-> > 32Megabytes and do the virtual mapping then we can just populate the first
-> > 2M and only allocate the remainder if we need it. Then we need to rely on
-> > Mel's defrag stuff though defrag memory if we need it.
-> 
-> If a 2MB page is not available, could we revert using 4KB pages ? (like
-> vmalloc stuff), paying an extra runtime overhead of course.
+That's all right. I think there is no big issue with this patchset, just
+a framebuffer driver and the document.
 
-Sure. Its going to be like vmemmap. There will be limited imposed though 
-by the amount of virtual space available. Basically the dynamic per cpu 
-area can be at maximum
-
-available_virtual_space / NR_CPUS
-
+Best Regards,
+Huang Ying
