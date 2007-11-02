@@ -1,46 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752941AbXKBGal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517AbXKBGmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752941AbXKBGal (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 02:30:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbXKBGaT
+	id S1753517AbXKBGmb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 02:42:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbXKBGmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 02:30:19 -0400
-Received: from ns2.suse.de ([195.135.220.15]:52313 "EHLO mx2.suse.de"
+	Fri, 2 Nov 2007 02:42:23 -0400
+Received: from mx2.suse.de ([195.135.220.15]:52682 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752197AbXKBGaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 02:30:13 -0400
-Date: Fri, 2 Nov 2007 07:30:11 +0100
+	id S1751027AbXKBGmW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 02:42:22 -0400
+Date: Fri, 2 Nov 2007 07:42:20 +0100
 From: Nick Piggin <npiggin@suse.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Duane Griffin <duaneg@dghda.com>,
-       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, Hugh Dickins <hugh@veritas.com>
-Subject: Re: 2.6.23 regression: accessing invalid mmap'ed memory from gdb causes unkillable spinning
-Message-ID: <20071102063011.GB20967@wotan.suse.de>
-References: <20071031151934.GA19211@wotan.suse.de> <alpine.LFD.0.999.0710310854560.3340@woody.linux-foundation.org> <20071031225541.GA28552@wotan.suse.de> <alpine.LFD.0.999.0710311602170.3342@woody.linux-foundation.org> <20071101023758.GA30613@wotan.suse.de> <alpine.LFD.0.999.0711010809171.3342@woody.linux-foundation.org> <20071101154705.GA745@wotan.suse.de> <alpine.LFD.0.999.0711010901290.3342@woody.linux-foundation.org> <20071101235644.GA20144@wotan.suse.de> <alpine.LFD.0.999.0711011816260.3342@woody.linux-foundation.org>
+Cc: Rik van Riel <riel@redhat.com>,
+       Gregory Haskins <gregory.haskins.ml@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 1/4] x86: FIFO ticket spinlocks
+Message-ID: <20071102064220.GC20967@wotan.suse.de>
+References: <20071101140146.GA26879@wotan.suse.de> <20071101140320.GC26879@wotan.suse.de> <4729E567.1050402@gmail.com> <alpine.LFD.0.999.0711010935060.3342@woody.linux-foundation.org> <20071101203526.293cd7f0@bree.surriel.com> <alpine.LFD.0.999.0711011819110.3342@woody.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0711011816260.3342@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0711011819110.3342@woody.linux-foundation.org>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 01, 2007 at 06:17:42PM -0700, Linus Torvalds wrote:
+On Thu, Nov 01, 2007 at 06:19:41PM -0700, Linus Torvalds wrote:
 > 
 > 
-> On Fri, 2 Nov 2007, Nick Piggin wrote:
+> On Thu, 1 Nov 2007, Rik van Riel wrote:
 > > 
-> > But we do want to allow forced COW faults for MAP_PRIVATE mappings. gdb
-> > uses this for inserting breakpoints (but fortunately, a COW page in a
-> > MAP_PRIVATE mapping is a much more natural thing for the VM).
-> 
-> Yes, I phrased that badly. I meant that I'd be happier if we got rid of 
-> VM_MAYSHARE entirely, and just used VM_SHARED. I thought we already made 
-> them always be the same (and any VM_MAYSHARE use is historical).
+> > Larry Woodman managed to wedge the VM into a state where, on his
+> > 4x dual core system, only 2 cores (on the same CPU) could get the
+> > zone->lru_lock overnight.  The other 6 cores on the system were
+> > just spinning, without being able to get the lock.
 
-Oh yeah, I think it would probably be clearer to use VM_SHARED == MAP_SHARED,
-and test the write permission explicitly. Though there could be something
-I missed that makes it not as easy as it sounds... probably something best
-left for Hugh ;)
+That's quite incredible, considering that the CPUs actually _taking_
+the locks also drop the locks and do quite a bit of work before taking
+them again (ie. they take them to pull pages off the LRU, but then
+do a reasonable amount of work to remove each one from pagecache before
+refilling from the LRU).
+
+Possibly actually that is a *more* difficult case for the HW to handle:
+once the CPU actually goes away and operates on other cachelines, it 
+may get a little more difficult to detect that it is causing starvation
+issues.
+
+
+> .. and this is almost always the result of a locking *bug*, not unfairness 
+> per se. IOW, unfairness just ends up showing the bug in the first place.
+
+I'd almost agree, but there are always going to be corner cases where
+we get multiple contentions on a spinlock -- the fact that a lock is
+needed at all obviously suggests that it can be contended. The LRU locking
+could be improved, but you could have eg. scheduler runqueue lock starvation
+if the planets lined up just right, and it is a little more difficult to
+improve on runqueue locking.
+
+Anyway, I also think this is partially a hardware issue, and as muliple
+cores, threads, and sockets get more common, I hope it will improve (it
+affects Intel CPUs as well as AMD). So it is possible to have an option
+to switch between locks if the hardware is fairer, but I want to get
+as much exposure with this locking as possible for now, to see if there
+is any funny performance corner cases exposed (which quite possibly will
+turn out to be caused by suboptimal locking itself).
+
+Anyway, if this can make its way to the x86 tree, I think it will get
+pulled into -mm (?) and get some exposure...
 
