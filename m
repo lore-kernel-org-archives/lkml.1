@@ -1,121 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760811AbXKBSIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759604AbXKBSLI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760811AbXKBSIs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 14:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754889AbXKBSIj
+	id S1759604AbXKBSLI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 14:11:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756640AbXKBSK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 14:08:39 -0400
-Received: from mx0.starentnetworks.com ([12.38.223.203]:42677 "EHLO
-	mx0.starentnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753974AbXKBSIi (ORCPT
+	Fri, 2 Nov 2007 14:10:56 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:45540 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755450AbXKBSK4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 14:08:38 -0400
+	Fri, 2 Nov 2007 14:10:56 -0400
+Date: Fri, 2 Nov 2007 10:38:15 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Zou Nan hai <nanhai.zou@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: [patch 9/9] Revert "x86_64: allocate sparsemem memmap above 4G"
+Message-ID: <20071102173815.GJ6378@kroah.com>
+References: <20071102173359.709442489@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18219.26528.485099.317944@zeus.sw.starentnetworks.com>
-Date: Fri, 2 Nov 2007 14:08:32 -0400
-From: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       bguo@sw.starentnetworks.com, Michael Chan <mchan@broadcom.com>
-Subject: Re: expected behavior of PF_PACKET on NETIF_F_HW_VLAN_RX device?
-In-Reply-To: <18218.18134.353553.189622@zeus.sw.starentnetworks.com>
-References: <20071031123359.3954befc@freepuppy.rosehill>
-	<4729269A.6090606@candelatech.com>
-	<47292A99.5070805@linux-foundation.org>
-	<20071031.215025.195350296.davem@davemloft.net>
-	<4729EAFF.9050606@candelatech.com>
-	<18218.18134.353553.189622@zeus.sw.starentnetworks.com>
-X-Mailer: VM 7.17 under 21.4 (patch 17) "Jumbo Shrimp" XEmacs Lucid
+Content-Disposition: inline; filename="revert-x86_64-allocate-sparsemem-memmap-above-4g.patch"
+In-Reply-To: <20071102173733.GA6378@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Johnson writes:
-> Ben Greear writes:
-> > Currently, VLAN devices offer the ability to 'reorder' the header
-> > and explicitly remove the VLAN header.  I assume we keep this
-> > feature and have the AF_PACKET logic check the device flags to see
-> > if it should insert the VLAN header for hw-accel vlans? 
-> > 
-> > Either way, if we sniff the underlying device, we should always get
-> > the VLAN header.
-> 
-> Yes, but it's more than just a packet socket issue.
-> 
-> A quick look through the hwaccel capable drivers (in 2.6.23) and most
-> are doing something like:
-> 
-> if (foo->vlgrp && packet_is_tagged)
->   vlan_hwaccel_receive_skb(skb, foo->vlgrp, vlan_tag);
-> else
->   netif_receive_skb(skb);
-> 
-> The important thing here is if the vlan group is NULL, the MAC must
-> be configured to NOT strip the tag.
-> 
-> users of NETIF_F_HW_VLAN_RX:
-> ---------------------------
-> ./drivers/net/8139cp.c:             looks ok
-> ./drivers/net/acenic.c:             *1
-> ./drivers/net/amd8111e.c:           unsure, probably *1
-> ./drivers/net/atl1/atl1_main.c:     looks ok
-> ./drivers/net/bnx2.c:               *2
-> ./drivers/net/bonding/bond_main.c:  unsure, probably ok
-> ./drivers/net/chelsio/cxgb2.c:      looks ok
-> ./drivers/net/cxgb3/cxgb3_main.c:   looks ok
-> ./drivers/net/e1000/e1000_main.c:   looks ok
-> ./drivers/net/ehea/ehea_main.c:     unsure, probably ok
-> ./drivers/net/forcedeth.c:          looks ok
-> ./drivers/net/gianfar.c:            looks ok
-> ./drivers/net/ixgb/ixgb_main.c:     looks ok
-> ./drivers/net/ns83820.c:            unsure, probably ok
-> ./drivers/net/r8169.c:              looks ok
-> ./drivers/net/s2io.c:               *1
-> ./drivers/net/sky2.c:               looks ok
-> ./drivers/net/starfire.c:           unsure, probably ok
-> ./drivers/net/tg3.c:                *2
-> ./drivers/net/typhoon.c:            unsure, probably ok
-> ./drivers/s390/net/qeth_main.c:     unsure, probably ok
-> 
-> *1:  Driver configures the MAC to strip TAGs even if vlan group is
->      NULL. MAC strips the tag, but driver calls netif_rx() or
->      netif_receive_skb() with the packet as untagged.  Kernel
->      processes tagged packet as if it was received untagged.  Possible
->      security issue.
-> 
-> *2:  If chip supports 'ASF', tag is always stripped (see *1 above).
->      Looks ok if ASF is not supported. 
+2.6.22-stable review patch.  If anyone has any objections, please let us
+know.
 
-Michael,
+------------------
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-These changes seems to cause this issue:
+patch 6a22c57b8d2a62dea7280a6b2ac807a539ef0716 in mainline.
 
->  [BNX2]: Fix VLAN on ASF
->  
->  Always set up the device to strip incoming VLAN tags when ASF is
->  enabled. ASF firmware will not parse packets correctly if VLAN tags
->  are not stripped.
->  
->  Signed-off-by: Michael Chan <mchan@broadcom.com>
->  Signed-off-by: David S. Miller <davem@davemloft.net>
->  
->  GIT: e29054f92d7d575631691865c1b95bee5bc974cc
+This reverts commit 2e1c49db4c640b35df13889b86b9d62215ade4b6.
 
-and
+First off, testing in Fedora has shown it to cause boot failures,
+bisected down by Martin Ebourne, and reported by Dave Jobes.  So the
+commit will likely be reverted in the 2.6.23 stable kernels.
 
-> ChangeSet@1.1371.72.2, 2003-12-02 02:34:13-08:00, davem@nuts.ninka.net +1 -0
->   [TG3]: Do not set RX_MODE_KEEP_VLAN_TAG when ASF is enabled.
+Secondly, in the 2.6.24 model, x86-64 has now grown support for
+SPARSEMEM_VMEMMAP, which disables the relevant code anyway, so while the
+bug is not visible any more, it's become invisible due to the code just
+being irrelevant and no longer enabled on the only architecture that
+this ever affected.
+
+backported to 2.6.22 by Chuck Ebbert
+
+Reported-by: Dave Jones <davej@redhat.com>
+Tested-by: Martin Ebourne <fedora@ebourne.me.uk>
+Cc: Zou Nan hai <nanhai.zou@intel.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Acked-by: Andy Whitcroft <apw@shadowen.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 
-Could you elaborate if this is really needed, if so is there some
-workaround that could be done instead?
+---
+ arch/x86_64/mm/init.c   |    5 -----
+ include/linux/bootmem.h |    1 -
+ mm/sparse.c             |   11 -----------
+ 3 files changed, 17 deletions(-)
 
-Simply removing the check seemed to work for me, but I'm unsure if
-this is actually a valid thing to do with these MACs.
-
-
+--- a/arch/x86_64/mm/init.c
++++ b/arch/x86_64/mm/init.c
+@@ -769,8 +769,3 @@ int in_gate_area_no_task(unsigned long a
+ 	return (addr >= VSYSCALL_START) && (addr < VSYSCALL_END);
+ }
+ 
+-void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
+-{
+-	return __alloc_bootmem_core(pgdat->bdata, size,
+-			SMP_CACHE_BYTES, (4UL*1024*1024*1024), 0);
+-}
+--- a/include/linux/bootmem.h
++++ b/include/linux/bootmem.h
+@@ -59,7 +59,6 @@ extern void *__alloc_bootmem_core(struct
+ 				  unsigned long align,
+ 				  unsigned long goal,
+ 				  unsigned long limit);
+-extern void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size);
+ 
+ #ifndef CONFIG_HAVE_ARCH_BOOTMEM_NODE
+ extern void reserve_bootmem(unsigned long addr, unsigned long size);
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -209,12 +209,6 @@ static int __meminit sparse_init_one_sec
+ 	return 1;
+ }
+ 
+-__attribute__((weak))
+-void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
+-{
+-	return NULL;
+-}
+-
+ static struct page __init *sparse_early_mem_map_alloc(unsigned long pnum)
+ {
+ 	struct page *map;
+@@ -225,11 +219,6 @@ static struct page __init *sparse_early_
+ 	if (map)
+ 		return map;
+ 
+-  	map = alloc_bootmem_high_node(NODE_DATA(nid),
+-                       sizeof(struct page) * PAGES_PER_SECTION);
+-	if (map)
+-		return map;
+-
+ 	map = alloc_bootmem_node(NODE_DATA(nid),
+ 			sizeof(struct page) * PAGES_PER_SECTION);
+ 	if (map)
 
 -- 
-Dave Johnson
-Starent Networks
-
