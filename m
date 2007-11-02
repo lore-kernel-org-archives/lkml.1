@@ -1,174 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761336AbXKBSHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760811AbXKBSIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761336AbXKBSHu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 14:07:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754889AbXKBSHl
+	id S1760811AbXKBSIs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 14:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754889AbXKBSIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 14:07:41 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:45474 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752393AbXKBSHk (ORCPT
+	Fri, 2 Nov 2007 14:08:39 -0400
+Received: from mx0.starentnetworks.com ([12.38.223.203]:42677 "EHLO
+	mx0.starentnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753974AbXKBSIi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 14:07:40 -0400
-Date: Fri, 2 Nov 2007 10:38:11 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Milan Broz <mbroz@redhat.com>, Alasdair G Kergon <agk@redhat.com>
-Subject: [patch 8/9] dm snapshot: fix invalidation deadlock
-Message-ID: <20071102173811.GI6378@kroah.com>
-References: <20071102173359.709442489@mini.kroah.org>
+	Fri, 2 Nov 2007 14:08:38 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="dm-snapshot-fix-invalidation-deadlock.patch"
-In-Reply-To: <20071102173733.GA6378@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+Content-Transfer-Encoding: 7bit
+Message-ID: <18219.26528.485099.317944@zeus.sw.starentnetworks.com>
+Date: Fri, 2 Nov 2007 14:08:32 -0400
+From: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       bguo@sw.starentnetworks.com, Michael Chan <mchan@broadcom.com>
+Subject: Re: expected behavior of PF_PACKET on NETIF_F_HW_VLAN_RX device?
+In-Reply-To: <18218.18134.353553.189622@zeus.sw.starentnetworks.com>
+References: <20071031123359.3954befc@freepuppy.rosehill>
+	<4729269A.6090606@candelatech.com>
+	<47292A99.5070805@linux-foundation.org>
+	<20071031.215025.195350296.davem@davemloft.net>
+	<4729EAFF.9050606@candelatech.com>
+	<18218.18134.353553.189622@zeus.sw.starentnetworks.com>
+X-Mailer: VM 7.17 under 21.4 (patch 17) "Jumbo Shrimp" XEmacs Lucid
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.22-stable review patch.  If anyone has any objections, please let us
-know.
+Dave Johnson writes:
+> Ben Greear writes:
+> > Currently, VLAN devices offer the ability to 'reorder' the header
+> > and explicitly remove the VLAN header.  I assume we keep this
+> > feature and have the AF_PACKET logic check the device flags to see
+> > if it should insert the VLAN header for hw-accel vlans? 
+> > 
+> > Either way, if we sniff the underlying device, we should always get
+> > the VLAN header.
+> 
+> Yes, but it's more than just a packet socket issue.
+> 
+> A quick look through the hwaccel capable drivers (in 2.6.23) and most
+> are doing something like:
+> 
+> if (foo->vlgrp && packet_is_tagged)
+>   vlan_hwaccel_receive_skb(skb, foo->vlgrp, vlan_tag);
+> else
+>   netif_receive_skb(skb);
+> 
+> The important thing here is if the vlan group is NULL, the MAC must
+> be configured to NOT strip the tag.
+> 
+> users of NETIF_F_HW_VLAN_RX:
+> ---------------------------
+> ./drivers/net/8139cp.c:             looks ok
+> ./drivers/net/acenic.c:             *1
+> ./drivers/net/amd8111e.c:           unsure, probably *1
+> ./drivers/net/atl1/atl1_main.c:     looks ok
+> ./drivers/net/bnx2.c:               *2
+> ./drivers/net/bonding/bond_main.c:  unsure, probably ok
+> ./drivers/net/chelsio/cxgb2.c:      looks ok
+> ./drivers/net/cxgb3/cxgb3_main.c:   looks ok
+> ./drivers/net/e1000/e1000_main.c:   looks ok
+> ./drivers/net/ehea/ehea_main.c:     unsure, probably ok
+> ./drivers/net/forcedeth.c:          looks ok
+> ./drivers/net/gianfar.c:            looks ok
+> ./drivers/net/ixgb/ixgb_main.c:     looks ok
+> ./drivers/net/ns83820.c:            unsure, probably ok
+> ./drivers/net/r8169.c:              looks ok
+> ./drivers/net/s2io.c:               *1
+> ./drivers/net/sky2.c:               looks ok
+> ./drivers/net/starfire.c:           unsure, probably ok
+> ./drivers/net/tg3.c:                *2
+> ./drivers/net/typhoon.c:            unsure, probably ok
+> ./drivers/s390/net/qeth_main.c:     unsure, probably ok
+> 
+> *1:  Driver configures the MAC to strip TAGs even if vlan group is
+>      NULL. MAC strips the tag, but driver calls netif_rx() or
+>      netif_receive_skb() with the packet as untagged.  Kernel
+>      processes tagged packet as if it was received untagged.  Possible
+>      security issue.
+> 
+> *2:  If chip supports 'ASF', tag is always stripped (see *1 above).
+>      Looks ok if ASF is not supported. 
 
-------------------
-From: Milan Broz <mbroz@redhat.com>
+Michael,
 
-patch fcac03abd325e4f7a4cc8fe05fea2793b1c8eb75 in mainline
+These changes seems to cause this issue:
 
-Process persistent exception store metadata IOs in a separate thread.
+>  [BNX2]: Fix VLAN on ASF
+>  
+>  Always set up the device to strip incoming VLAN tags when ASF is
+>  enabled. ASF firmware will not parse packets correctly if VLAN tags
+>  are not stripped.
+>  
+>  Signed-off-by: Michael Chan <mchan@broadcom.com>
+>  Signed-off-by: David S. Miller <davem@davemloft.net>
+>  
+>  GIT: e29054f92d7d575631691865c1b95bee5bc974cc
 
-A snapshot may become invalid while inside generic_make_request().
-A synchronous write is then needed to update the metadata while still
-inside that function.  Since the introduction of
-md-dm-reduce-stack-usage-with-stacked-block-devices.patch this has to
-be performed by a separate thread to avoid deadlock.
+and
 
-Signed-off-by: Milan Broz <mbroz@redhat.com>
-Signed-off-by: Alasdair G Kergon <agk@redhat.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> ChangeSet@1.1371.72.2, 2003-12-02 02:34:13-08:00, davem@nuts.ninka.net +1 -0
+>   [TG3]: Do not set RX_MODE_KEEP_VLAN_TAG when ASF is enabled.
 
----
- drivers/md/dm-exception-store.c |   48 +++++++++++++++++++++++++++++++++++-----
- 1 file changed, 43 insertions(+), 5 deletions(-)
 
---- a/drivers/md/dm-exception-store.c
-+++ b/drivers/md/dm-exception-store.c
-@@ -125,6 +125,8 @@ struct pstore {
- 	uint32_t callback_count;
- 	struct commit_callback *callbacks;
- 	struct dm_io_client *io_client;
-+
-+	struct workqueue_struct *metadata_wq;
- };
- 
- static inline unsigned int sectors_to_pages(unsigned int sectors)
-@@ -156,10 +158,24 @@ static void free_area(struct pstore *ps)
- 	ps->area = NULL;
- }
- 
-+struct mdata_req {
-+	struct io_region *where;
-+	struct dm_io_request *io_req;
-+	struct work_struct work;
-+	int result;
-+};
-+
-+static void do_metadata(struct work_struct *work)
-+{
-+	struct mdata_req *req = container_of(work, struct mdata_req, work);
-+
-+	req->result = dm_io(req->io_req, 1, req->where, NULL);
-+}
-+
- /*
-  * Read or write a chunk aligned and sized block of data from a device.
-  */
--static int chunk_io(struct pstore *ps, uint32_t chunk, int rw)
-+static int chunk_io(struct pstore *ps, uint32_t chunk, int rw, int metadata)
- {
- 	struct io_region where = {
- 		.bdev = ps->snap->cow->bdev,
-@@ -173,8 +189,23 @@ static int chunk_io(struct pstore *ps, u
- 		.client = ps->io_client,
- 		.notify.fn = NULL,
- 	};
-+	struct mdata_req req;
-+
-+	if (!metadata)
-+		return dm_io(&io_req, 1, &where, NULL);
- 
--	return dm_io(&io_req, 1, &where, NULL);
-+	req.where = &where;
-+	req.io_req = &io_req;
-+
-+	/*
-+	 * Issue the synchronous I/O from a different thread
-+	 * to avoid generic_make_request recursion.
-+	 */
-+	INIT_WORK(&req.work, do_metadata);
-+	queue_work(ps->metadata_wq, &req.work);
-+	flush_workqueue(ps->metadata_wq);
-+
-+	return req.result;
- }
- 
- /*
-@@ -189,7 +220,7 @@ static int area_io(struct pstore *ps, ui
- 	/* convert a metadata area index to a chunk index */
- 	chunk = 1 + ((ps->exceptions_per_area + 1) * area);
- 
--	r = chunk_io(ps, chunk, rw);
-+	r = chunk_io(ps, chunk, rw, 0);
- 	if (r)
- 		return r;
- 
-@@ -230,7 +261,7 @@ static int read_header(struct pstore *ps
- 	if (r)
- 		return r;
- 
--	r = chunk_io(ps, 0, READ);
-+	r = chunk_io(ps, 0, READ, 1);
- 	if (r)
- 		goto bad;
- 
-@@ -292,7 +323,7 @@ static int write_header(struct pstore *p
- 	dh->version = cpu_to_le32(ps->version);
- 	dh->chunk_size = cpu_to_le32(ps->snap->chunk_size);
- 
--	return chunk_io(ps, 0, WRITE);
-+	return chunk_io(ps, 0, WRITE, 1);
- }
- 
- /*
-@@ -409,6 +440,7 @@ static void persistent_destroy(struct ex
- {
- 	struct pstore *ps = get_info(store);
- 
-+	destroy_workqueue(ps->metadata_wq);
- 	dm_io_client_destroy(ps->io_client);
- 	vfree(ps->callbacks);
- 	free_area(ps);
-@@ -589,6 +621,12 @@ int dm_create_persistent(struct exceptio
- 	atomic_set(&ps->pending_count, 0);
- 	ps->callbacks = NULL;
- 
-+	ps->metadata_wq = create_singlethread_workqueue("ksnaphd");
-+	if (!ps->metadata_wq) {
-+		DMERR("couldn't start header metadata update thread");
-+		return -ENOMEM;
-+	}
-+
- 	store->destroy = persistent_destroy;
- 	store->read_metadata = persistent_read_metadata;
- 	store->prepare_exception = persistent_prepare;
+Could you elaborate if this is really needed, if so is there some
+workaround that could be done instead?
+
+Simply removing the check seemed to work for me, but I'm unsure if
+this is actually a valid thing to do with these MACs.
+
+
 
 -- 
+Dave Johnson
+Starent Networks
+
