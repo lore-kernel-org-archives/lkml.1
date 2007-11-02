@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758525AbXKBTK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbXKBTOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758525AbXKBTK1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 15:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbXKBTKS
+	id S1759301AbXKBTOT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 15:14:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756072AbXKBTOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 15:10:18 -0400
-Received: from mailgate.ics.forth.gr ([139.91.1.2]:53141 "EHLO
-	mailgate.ics.forth.gr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753091AbXKBTKR (ORCPT
+	Fri, 2 Nov 2007 15:14:09 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:16392 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756161AbXKBTOI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 15:10:17 -0400
-X-Greylist: delayed 4189 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 Nov 2007 15:10:17 EDT
-Message-ID: <47768.139.91.70.143.1194026426.squirrel@webmail.ics.forth.gr>
-Date: Fri, 2 Nov 2007 20:00:26 +0200 (EET)
-Subject: Error in __bread reading a 4K block from a SATA device
-From: "Thanos McAtos" <mcatos@ics.forth.gr>
-To: "lkml " <linux-kernel@vger.kernel.org>
-User-Agent: SquirrelMail/1.4.10a
+	Fri, 2 Nov 2007 15:14:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=IhJ2xLMmwiVvmEcHKgdc0m4Lp1AYGbUTbUErejA/WpoC6lDg5J2EDeiIOfUu0YQliELB0Z9be3hM2Ya+RUfizJFn9XLwjSzW+XxGcIXTa2d8+SQynNHR1q8js2sfcniIG0k3cRkGyeQEdqX955Tx7JbWB4xZEkWJfIrA7BOj3NM=
+Message-ID: <f158dc670711021214h1f9d6b80wf691fa08da1041d4@mail.gmail.com>
+Date: Fri, 2 Nov 2007 13:14:05 -0600
+From: "Latchesar Ionkov" <lucho@ionkov.net>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: [PATCH] 9p: basic sysfs support
+Cc: v9fs-developer@lists.sourceforge.net, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071102175151.GA32460@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071102165331.GA16063@ionkov.net>
+	 <20071102175151.GA32460@kroah.com>
+X-Google-Sender-Auth: a8ffeafb25905f8c
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+This patch adds only the basic 9p functionality, we use the sysfs
+interface extensively for configuring the 9p in-kernel servers (patch
+7 in the series). The v9fs filesyste will probably add some more
+subdirectories for authenticating users and mapping user names to
+uids...
 
-I'm trying to read a 4KB block using __bread from a SATA device but I get
-the following error:
+Thanks,
+    Lucho
 
-__find_get_block_slow() failed. block=1, b_blocknr=0
-b_state=0x00000029, b_size=4096
-
-If I try to read a 2K block (which is the hard sector size of the device),
-it works fine.
-
-Kernel version is 2.6.20.21. I have used this function at another system but
-the device from which I read was an IDE one and it's hard sector size was
-512 bytes. I've also tested this at a 2.6.18.8 kernel.
-
-The old device was at a 32bit system, the new one is at a 64bit one.
-
-What could be wrong?
-
-Thanx in advance.
-
-
-
+On 11/2/07, Greg KH <greg@kroah.com> wrote:
+> On Fri, Nov 02, 2007 at 10:53:31AM -0600, Latchesar Ionkov wrote:
+> > This patch implements the basic sysfs support for 9p. If CONFIG_NET_9P_DEBUG
+> > is defined, allows reading and modifying the debug level via
+> > /sysfs/fs/9p/debuglevel.
+>
+> Since this is a debug-only type file, why not just put it in debugfs
+> instead?
+>
+> And I have a huge patch-series pending that will make adding files like
+> this to sysfs much easier in the future.  But nice job, it looks like
+> you got it all correct, which is pretty hard to do first time these days
+> due to the complexity of the current interface :)
+>
+> thanks,
+>
+> greg k-h
+>
