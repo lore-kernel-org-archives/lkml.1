@@ -1,152 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753495AbXKBI1l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753680AbXKBIgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753495AbXKBI1l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 04:27:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbXKBI1d
+	id S1753680AbXKBIgS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 04:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbXKBIgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 04:27:33 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:33986 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751027AbXKBI1c (ORCPT
+	Fri, 2 Nov 2007 04:36:05 -0400
+Received: from rv-out-0910.google.com ([209.85.198.190]:54785 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752080AbXKBIgC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 04:27:32 -0400
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Fri, 02 Nov 2007 13:56:58 +0530
-Message-Id: <20071102082658.24616.78116.sendpatchset@balbir-laptop>
-Subject: [PATCH] make getdelays cgroupstats aware
+	Fri, 2 Nov 2007 04:36:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Lxu4YR1mk1ZDCqV/1MvsaBAQrmBj6dtDQuQGDM9iyEPjBPaCg93OXcmzYkpfKihVsbYhWOP8LC1ni8oTMgrmxV5R1Y/bTa5/o+FpLq5M/QT4LOJBYLyGsZeZ1X3rCPqiT+9eEhaDEd7dXWbSdCKA0i73RXVMsFOC4MMH6hrqOfs=
+Message-ID: <877aabc40711020136g1bc5b602p7423c8472da38273@mail.gmail.com>
+Date: Fri, 2 Nov 2007 14:06:01 +0530
+From: "Amit Shah" <shahamit@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: sata_nv: ata2 errors
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+In-Reply-To: <472A3EBF.1080403@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <877aabc40710250048m41675163x81671097f44bba7f@mail.gmail.com>
+	 <20071101133102.1121bc28.akpm@linux-foundation.org>
+	 <472A3EBF.1080403@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 11/2/07, Jeff Garzik <jeff@garzik.org> wrote:
+> Andrew Morton wrote:
+> > On Thu, 25 Oct 2007 13:18:50 +0530
+> > "Amit Shah" <shahamit@gmail.com> wrote:
+> >
+> >> On 2.6.24-rc1 (AMD Opteron 1216), my sata_nv driver produces this
+> >> output on bootup:
+> >>
+> >> ata2: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
+> >> ata2: SWNCQ:qc_active 0x1 defer_bits 0x0 last_issue_tag 0x0
+> >> ata2: ATA_REG 0x40 ERR_REG 0x0
+> >> ata2: tag : dhfis dmafis sdbfis sacitve
+> >> ata2: tag 0x0: 0 1 0 0
+> >> ata2.00: exception Emask 0x0 SAct 0x1 SErr 0x0 action 0x6 frozen
+> >> ...
+> >> ata2.00: status: { DRDY }
+> >>
+> >
+> > Are any other problems observeable?
+>
+>
+> 2.6.24-rc1 is missing the fix for this that is upstream,
+> 360737a982b1ae09e1659e0bb27085c03f02f404
 
+Yes, that commit fixed this for me.
 
-This patch was dropped from the -mm tree and not merged back. Updated with
-the name change of containerstats to cgroupstats
-
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
-
- Documentation/accounting/getdelays.c |   43 ++++++++++++++++++++++++++++++++++-
- 1 file changed, 42 insertions(+), 1 deletion(-)
-
-diff -puN Documentation/accounting/getdelays.c~csstats Documentation/accounting/getdelays.c
---- linux-2.6-latest/Documentation/accounting/getdelays.c~csstats	2007-11-02 13:17:52.000000000 +0530
-+++ linux-2.6-latest-balbir/Documentation/accounting/getdelays.c	2007-11-02 13:21:31.000000000 +0530
-@@ -25,6 +25,7 @@
- 
- #include <linux/genetlink.h>
- #include <linux/taskstats.h>
-+#include <linux/cgroupstats.h>
- 
- /*
-  * Generic macros for dealing with netlink sockets. Might be duplicated
-@@ -78,6 +79,7 @@ static void usage(void)
- 	fprintf(stderr, "  -i: print IO accounting (works only with -p)\n");
- 	fprintf(stderr, "  -l: listen forever\n");
- 	fprintf(stderr, "  -v: debug on\n");
-+	fprintf(stderr, "  -C: container path\n");
- }
- 
- /*
-@@ -212,6 +214,14 @@ void task_context_switch_counts(struct t
- 	       t->nvcsw, t->nivcsw);
- }
- 
-+void print_cgroupstats(struct cgroupstats *c)
-+{
-+	printf("sleeping %llu, blocked %llu, running %llu, stopped %llu, "
-+		"uninterruptible %llu\n", c->nr_sleeping, c->nr_io_wait,
-+		c->nr_running, c->nr_stopped, c->nr_uninterruptible);
-+}
-+
-+
- void print_ioacct(struct taskstats *t)
- {
- 	printf("%s: read=%llu, write=%llu, cancelled_write=%llu\n",
-@@ -239,11 +249,14 @@ int main(int argc, char *argv[])
- 	int maskset = 0;
- 	char *logfile = NULL;
- 	int loop = 0;
-+	int containerset = 0;
-+	char containerpath[1024];
-+	int cfd = 0;
- 
- 	struct msgtemplate msg;
- 
- 	while (1) {
--		c = getopt(argc, argv, "qdiw:r:m:t:p:vl");
-+		c = getopt(argc, argv, "qdiw:r:m:t:p:vlC:");
- 		if (c < 0)
- 			break;
- 
-@@ -260,6 +273,10 @@ int main(int argc, char *argv[])
- 			printf("printing task/process context switch rates\n");
- 			print_task_context_switch_counts = 1;
- 			break;
-+		case 'C':
-+			containerset = 1;
-+			strncpy(containerpath, optarg, strlen(optarg) + 1);
-+			break;
- 		case 'w':
- 			logfile = strdup(optarg);
- 			printf("write to file %s\n", logfile);
-@@ -334,6 +351,11 @@ int main(int argc, char *argv[])
- 		}
- 	}
- 
-+	if (tid && containerset) {
-+		fprintf(stderr, "Select either -t or -C, not both\n");
-+		goto err;
-+	}
-+
- 	if (tid) {
- 		rc = send_cmd(nl_sd, id, mypid, TASKSTATS_CMD_GET,
- 			      cmd_type, &tid, sizeof(__u32));
-@@ -344,6 +366,20 @@ int main(int argc, char *argv[])
- 		}
- 	}
- 
-+	if (containerset) {
-+		cfd = open(containerpath, O_RDONLY);
-+		if (cfd < 0) {
-+			perror("error opening container file");
-+			goto err;
-+		}
-+		rc = send_cmd(nl_sd, id, mypid, CGROUPSTATS_CMD_GET,
-+			      CGROUPSTATS_CMD_ATTR_FD, &cfd, sizeof(__u32));
-+		if (rc < 0) {
-+			perror("error sending cgroupstats command");
-+			goto err;
-+		}
-+	}
-+
- 	do {
- 		int i;
- 
-@@ -422,6 +458,9 @@ int main(int argc, char *argv[])
- 				}
- 				break;
- 
-+			case CGROUPSTATS_TYPE_CGROUP_STATS:
-+				print_cgroupstats(NLA_DATA(na));
-+				break;
- 			default:
- 				fprintf(stderr, "Unknown nla_type %d\n",
- 					na->nla_type);
-@@ -443,5 +482,7 @@ err:
- 	close(nl_sd);
- 	if (fd)
- 		close(fd);
-+	if (cfd)
-+		close(cfd);
- 	return 0;
- }
-_
+Thanks,
+Amit.
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Amit Shah
+http://www.amitshah.net/
