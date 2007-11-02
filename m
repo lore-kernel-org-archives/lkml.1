@@ -1,292 +1,289 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbXKBEtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753675AbXKBFCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753413AbXKBEtR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 00:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750958AbXKBEtE
+	id S1753675AbXKBFCS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 01:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbXKBFCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 00:49:04 -0400
-Received: from ozlabs.org ([203.10.76.45]:43812 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750953AbXKBEtD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 00:49:03 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 2 Nov 2007 01:02:08 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60526
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751694AbXKBFCF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 01:02:05 -0400
+Date: Thu, 01 Nov 2007 22:02:04 -0700 (PDT)
+Message-Id: <20071101.220204.254984189.davem@davemloft.net>
+To: npiggin@suse.de
+Cc: duaneg@dghda.com, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23 regression: accessing invalid mmap'ed memory from gdb
+ causes unkillable spinning
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071031.004425.12962203.davem@davemloft.net>
+References: <20071030.235600.254712083.davem@davemloft.net>
+	<20071031074106.GE12189@wotan.suse.de>
+	<20071031.004425.12962203.davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18218.44089.274628.680088@cargo.ozlabs.ibm.com>
-Date: Fri, 2 Nov 2007 15:48:57 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>
-CC: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] Restore deterministic CPU accounting on powerpc
-X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since powerpc started using CONFIG_GENERIC_CLOCKEVENTS, the
-deterministic CPU accounting (CONFIG_VIRT_CPU_ACCOUNTING) has been
-broken on powerpc, because we end up counting user time twice: once in
-timer_interrupt() and once in update_process_times().
+From: David Miller <davem@davemloft.net>
+Date: Wed, 31 Oct 2007 00:44:25 -0700 (PDT)
 
-This fixes the problem by pulling the code in update_process_times
-that updates utime and stime into a separate function called
-account_process_tick.  If CONFIG_VIRT_CPU_ACCOUNTING is not defined,
-there is a version of account_process_tick in kernel/timer.c that
-simply accounts a whole tick to either utime or stime as before.  If
-CONFIG_VIRT_CPU_ACCOUNTING is defined, then arch code gets to
-implement account_process_tick.
+> From: Nick Piggin <npiggin@suse.de>
+> Date: Wed, 31 Oct 2007 08:41:06 +0100
+> 
+> > You could possibly even do a generic "best effort" kind of thing with
+> > regular IPIs, that will timeout and continue if some CPUs don't handle
+> > them, and should be pretty easy to get working with existing smp_call_
+> > function stuff. Not exactly clean, but it would be better than nothing.
+> 
+> Without a doubt.
 
-This also lets us simplify the s390 code a bit; it means that the s390
-timer interrupt can now call update_process_times even when
-CONFIG_VIRT_CPU_ACCOUNTING is turned on, and can just implement a
-suitable account_process_tick().
+Putting my code where my mouth is, here is an example implementation
+of a special SysRQ "g" "dump regs globally" debugging tool for
+sparc64.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-I don't know who maintains kernel/timer.c, but I assume it's one of
-Ingo, Peter Z. or Thomas.  
+The only thing that has to happen is the SysRQ trigger.  So if you can
+either SysRQ-'g' at the console or "echo 'g' >/proc/sysrq-trigger" you
+can get the registers from the cpus in the system.
 
-In fact the arch bits here don't need to go in at the same time as the
-changes to include/linux/sched.h and kernel/timer.c, but could go in
-later.  I have included them here so people can see how these changes
-help in the VIRT_CPU_ACCOUNTING=y case.  The powerpc changes are
-tested, but the s390 changes aren't.
+The only case the remote cpu registers would not be capturable would
+be if they were stuck looping in the trap entry, trap exit, or low
+level TLB handler code.
 
-In case it's not obvious, I'd like this (or at least the generic and
-powerpc bits) to go in 2.6.24 since it fixes a regression.
+This means that even if some cpu is stuck in a spinlock loop with
+interrupts disabled, you'd see it with this thing.  The way it works
+is that cross cpu vectored interrupts are disabled independently of
+the processor interrupt level on sparc64.
 
- arch/powerpc/kernel/process.c |    4 +++-
- arch/powerpc/kernel/time.c    |   29 +++--------------------------
- arch/s390/kernel/time.c       |    4 ----
- arch/s390/kernel/vtime.c      |    9 ++-------
- include/asm-powerpc/time.h    |    6 ------
- include/asm-ppc/time.h        |    2 --
- include/asm-s390/system.h     |    1 -
- include/linux/sched.h         |    1 +
- kernel/timer.c                |   21 ++++++++++++++-------
- 9 files changed, 23 insertions(+), 54 deletions(-)
+This version just records the absolute minimum processor state, it
+could be trivially extended to record all of pt_regs etc.
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index b9d8837..eba9332 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -349,9 +349,11 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 
- 	local_irq_save(flags);
- 
-+#ifdef CONFIG_VIRT_CPU_ACCOUNTING
- 	account_system_vtime(current);
--	account_process_vtime(current);
-+	account_process_tick(0);
- 	calculate_steal_time();
-+#endif
- 
- 	last = _switch(old_thread, new_thread);
- 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 9eb3284..f950336 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -259,31 +259,19 @@ void account_system_vtime(struct task_struct *tsk)
-  * user and system time records.
-  * Must be called with interrupts disabled.
+Even on my 64 cpu niagara box, the output is reasonable and fills up
+one full screen of my console window.  Full pt_regs dumps are too
+much.
+
+diff --git a/arch/sparc64/kernel/process.c b/arch/sparc64/kernel/process.c
+index ca7cdfd..67bf91d 100644
+--- a/arch/sparc64/kernel/process.c
++++ b/arch/sparc64/kernel/process.c
+@@ -1,7 +1,6 @@
+-/*  $Id: process.c,v 1.131 2002/02/09 19:49:30 davem Exp $
+- *  arch/sparc64/kernel/process.c
++/*  arch/sparc64/kernel/process.c
+  *
+- *  Copyright (C) 1995, 1996 David S. Miller (davem@caip.rutgers.edu)
++ *  Copyright (C) 1995, 1996, 2007 David S. Miller (davem@davemloft.net)
+  *  Copyright (C) 1996       Eddie C. Dost   (ecd@skynet.be)
+  *  Copyright (C) 1997, 1998 Jakub Jelinek   (jj@sunsite.mff.cuni.cz)
   */
--void account_process_vtime(struct task_struct *tsk)
-+void account_process_tick(int user_tick)
- {
- 	cputime_t utime, utimescaled;
+@@ -31,6 +30,7 @@
+ #include <linux/tick.h>
+ #include <linux/init.h>
+ #include <linux/cpu.h>
++#include <linux/sysrq.h>
  
- 	utime = get_paca()->user_time;
- 	get_paca()->user_time = 0;
--	account_user_time(tsk, utime);
-+	account_user_time(current, utime);
+ #include <asm/oplib.h>
+ #include <asm/uaccess.h>
+@@ -48,6 +48,7 @@
+ #include <asm/unistd.h>
+ #include <asm/hypervisor.h>
+ #include <asm/sstate.h>
++#include <asm/irq_regs.h>
  
- 	/* Estimate the scaled utime by scaling the real utime based
- 	 * on the last spurr to purr ratio */
- 	utimescaled = utime * get_paca()->spurrdelta / get_paca()->purrdelta;
- 	get_paca()->spurrdelta = get_paca()->purrdelta = 0;
--	account_user_time_scaled(tsk, utimescaled);
--}
--
--static void account_process_time(struct pt_regs *regs)
--{
--	int cpu = smp_processor_id();
--
--	account_process_vtime(current);
--	run_local_timers();
--	if (rcu_pending(cpu))
--		rcu_check_callbacks(cpu, user_mode(regs));
--	scheduler_tick();
-- 	run_posix_cpu_timers(current);
-+	account_user_time_scaled(current, utimescaled);
+ /* #define VERBOSE_SHOWREGS */
+ 
+@@ -388,6 +389,76 @@ void show_regs32(struct pt_regs32 *regs)
+ 	       regs->u_regs[15]);
  }
  
- /*
-@@ -375,7 +363,6 @@ static void snapshot_purr(void)
- 
- #else /* ! CONFIG_VIRT_CPU_ACCOUNTING */
- #define calc_cputime_factors()
--#define account_process_time(regs)	update_process_times(user_mode(regs))
- #define calculate_steal_time()		do { } while (0)
- #endif
- 
-@@ -599,16 +586,6 @@ void timer_interrupt(struct pt_regs * regs)
- 		get_lppaca()->int_dword.fields.decr_int = 0;
- #endif
- 
--	/*
--	 * We cannot disable the decrementer, so in the period
--	 * between this cpu's being marked offline in cpu_online_map
--	 * and calling stop-self, it is taking timer interrupts.
--	 * Avoid calling into the scheduler rebalancing code if this
--	 * is the case.
--	 */
--	if (!cpu_is_offline(cpu))
--		account_process_time(regs);
--
- 	if (evt->event_handler)
- 		evt->event_handler(evt);
- 	else
-diff --git a/arch/s390/kernel/time.c b/arch/s390/kernel/time.c
-index 48dae49..6c6be1f 100644
---- a/arch/s390/kernel/time.c
-+++ b/arch/s390/kernel/time.c
-@@ -145,12 +145,8 @@ void account_ticks(u64 time)
- 	do_timer(ticks);
- #endif
- 
--#ifdef CONFIG_VIRT_CPU_ACCOUNTING
--	account_tick_vtime(current);
--#else
- 	while (ticks--)
- 		update_process_times(user_mode(get_irq_regs()));
--#endif
- 
- 	s390_do_profile();
- }
-diff --git a/arch/s390/kernel/vtime.c b/arch/s390/kernel/vtime.c
-index 84ff78d..4251de8 100644
---- a/arch/s390/kernel/vtime.c
-+++ b/arch/s390/kernel/vtime.c
-@@ -32,11 +32,12 @@ static DEFINE_PER_CPU(struct vtimer_queue, virt_cpu_timer);
-  * Update process times based on virtual cpu times stored by entry.S
-  * to the lowcore fields user_timer, system_timer & steal_clock.
-  */
--void account_tick_vtime(struct task_struct *tsk)
-+void account_process_tick(int user_tick)
- {
- 	cputime_t cputime;
- 	__u64 timer, clock;
- 	int rcu_user_flag;
-+	struct task_struct *tsk = current;
- 
- 	timer = S390_lowcore.last_update_timer;
- 	clock = S390_lowcore.last_update_clock;
-@@ -64,12 +65,6 @@ void account_tick_vtime(struct task_struct *tsk)
- 		S390_lowcore.steal_clock -= cputime << 12;
- 		account_steal_time(tsk, cputime);
- 	}
--
--	run_local_timers();
--	if (rcu_pending(smp_processor_id()))
--		rcu_check_callbacks(smp_processor_id(), rcu_user_flag);
--	scheduler_tick();
-- 	run_posix_cpu_timers(tsk);
- }
- 
- /*
-diff --git a/include/asm-powerpc/time.h b/include/asm-powerpc/time.h
-index f058955..0ff93bf 100644
---- a/include/asm-powerpc/time.h
-+++ b/include/asm-powerpc/time.h
-@@ -231,12 +231,6 @@ struct cpu_usage {
- 
- DECLARE_PER_CPU(struct cpu_usage, cpu_usage_array);
- 
--#ifdef CONFIG_VIRT_CPU_ACCOUNTING
--extern void account_process_vtime(struct task_struct *tsk);
--#else
--#define account_process_vtime(tsk)		do { } while (0)
--#endif
--
- #if defined(CONFIG_VIRT_CPU_ACCOUNTING)
- extern void calculate_steal_time(void);
- extern void snapshot_timebases(void);
-diff --git a/include/asm-ppc/time.h b/include/asm-ppc/time.h
-index 81dbcd4..3715490 100644
---- a/include/asm-ppc/time.h
-+++ b/include/asm-ppc/time.h
-@@ -153,8 +153,6 @@ extern __inline__ unsigned binary_tbl(void) {
- 
- unsigned mulhwu_scale_factor(unsigned, unsigned);
- 
--#define account_process_vtime(tsk)		do { } while (0)
--#define calculate_steal_time()			do { } while (0)
- #define snapshot_timebases()			do { } while (0)
- 
- #endif /* __ASM_TIME_H__ */
-diff --git a/include/asm-s390/system.h b/include/asm-s390/system.h
-index d866d33..3e39db1 100644
---- a/include/asm-s390/system.h
-+++ b/include/asm-s390/system.h
-@@ -99,7 +99,6 @@ static inline void restore_access_regs(unsigned int *acrs)
- 
- #ifdef CONFIG_VIRT_CPU_ACCOUNTING
- extern void account_vtime(struct task_struct *);
--extern void account_tick_vtime(struct task_struct *);
- extern void account_system_vtime(struct task_struct *);
- #else
- #define account_vtime(x) do { /* empty */ } while (0)
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 155d743..4d87b21 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -254,6 +254,7 @@ long io_schedule_timeout(long timeout);
- 
- extern void cpu_init (void);
- extern void trap_init(void);
-+extern void account_process_tick(int user);
- extern void update_process_times(int user);
- extern void scheduler_tick(void);
- 
-diff --git a/kernel/timer.c b/kernel/timer.c
-index fb4e67d..8054f6d 100644
---- a/kernel/timer.c
-+++ b/kernel/timer.c
-@@ -817,6 +817,19 @@ unsigned long next_timer_interrupt(void)
- 
- #endif
- 
-+#ifndef CONFIG_VIRT_CPU_ACCOUNTING
-+void account_process_tick(int user_tick)
++#ifdef CONFIG_MAGIC_SYSRQ
++struct global_reg_snapshot {
++	unsigned long		tstate;
++	unsigned long		tpc;
++	unsigned long		tnpc;
++	struct thread_info	*thread;
++} global_reg_snapshot[NR_CPUS];
++static DEFINE_SPINLOCK(global_reg_snapshot_lock);
++
++static void sysrq_handle_globreg(int key, struct tty_struct *tty)
 +{
-+	if (user_tick) {
-+		account_user_time(p, jiffies_to_cputime(1));
-+		account_user_time_scaled(p, jiffies_to_cputime(1));
++	struct pt_regs *regs = get_irq_regs();
++#ifdef CONFIG_KALLSYMS
++	char buffer[KSYM_SYMBOL_LEN];
++#endif
++	unsigned long flags;
++	int cpu;
++
++	spin_lock_irqsave(&global_reg_snapshot_lock, flags);
++	cpu = raw_smp_processor_id();
++	if (regs) {
++		global_reg_snapshot[cpu].tstate = regs->tstate;
++		global_reg_snapshot[cpu].tpc = regs->tpc;
++		global_reg_snapshot[cpu].tnpc = regs->tnpc;
 +	} else {
-+		account_system_time(p, HARDIRQ_OFFSET, jiffies_to_cputime(1));
-+		account_system_time_scaled(p, jiffies_to_cputime(1));
++		global_reg_snapshot[cpu].tstate = 0;
++		global_reg_snapshot[cpu].tpc = 0;
++		global_reg_snapshot[cpu].tnpc = 0;
 +	}
++	global_reg_snapshot[cpu].thread = current_thread_info();
++
++	smp_fetch_global_regs();
++
++	for_each_online_cpu(cpu) {
++		struct global_reg_snapshot *gp = &global_reg_snapshot[cpu];
++		struct thread_info *tp = gp->thread;
++
++		printk("%c CPU[%3d]: TSTATE[%016lx] TPC[%016lx] TNPC[%016lx] TASK[%s:%d]\n",
++		       (cpu == raw_smp_processor_id() ? '*' : ' '), cpu,
++		       gp->tstate, gp->tpc, gp->tnpc,
++		       ((tp  && tp->task) ? tp->task->comm : "NULL"),
++		       ((tp  && tp->task) ? tp->task->pid : -1));
++#ifdef CONFIG_KALLSYMS
++		if ((gp->tstate & TSTATE_PRIV) && (gp->tpc != 0UL)) {
++			sprint_symbol(buffer, gp->tpc);
++			printk("             TPC[%s]\n", buffer);
++		}
++#endif
++	}
++
++	memset(global_reg_snapshot, 0, sizeof(global_reg_snapshot));
++
++	spin_unlock_irqrestore(&global_reg_snapshot_lock, flags);
 +}
++
++static struct sysrq_key_op sparc_globalreg_op = {
++	.handler	= sysrq_handle_globreg,
++	.help_msg	= "Globalregs",
++	.action_msg	= "Show Global CPU Regs",
++};
++
++static int __init sparc_globreg_init(void)
++{
++	return register_sysrq_key('g', &sparc_globalreg_op);
++}
++
++core_initcall(sparc_globreg_init);
++
 +#endif
 +
- /*
-  * Called from the timer interrupt handler to charge one tick to the current
-  * process.  user_tick is 1 if the tick is user time, 0 for system.
-@@ -827,13 +840,7 @@ void update_process_times(int user_tick)
- 	int cpu = smp_processor_id();
+ unsigned long thread_saved_pc(struct task_struct *tsk)
+ {
+ 	struct thread_info *ti = task_thread_info(tsk);
+diff --git a/arch/sparc64/kernel/smp.c b/arch/sparc64/kernel/smp.c
+index c73b7a4..cbedf27 100644
+--- a/arch/sparc64/kernel/smp.c
++++ b/arch/sparc64/kernel/smp.c
+@@ -894,6 +894,7 @@ extern unsigned long xcall_flush_tlb_mm;
+ extern unsigned long xcall_flush_tlb_pending;
+ extern unsigned long xcall_flush_tlb_kernel_range;
+ extern unsigned long xcall_report_regs;
++extern unsigned long xcall_fetch_glob_regs;
+ extern unsigned long xcall_receive_signal;
+ extern unsigned long xcall_new_mmu_context_version;
  
- 	/* Note: this timer irq context must be accounted for as well. */
--	if (user_tick) {
--		account_user_time(p, jiffies_to_cputime(1));
--		account_user_time_scaled(p, jiffies_to_cputime(1));
--	} else {
--		account_system_time(p, HARDIRQ_OFFSET, jiffies_to_cputime(1));
--		account_system_time_scaled(p, jiffies_to_cputime(1));
--	}
-+	account_process_tick(user_tick);
- 	run_local_timers();
- 	if (rcu_pending(cpu))
- 		rcu_check_callbacks(cpu, user_tick);
+@@ -1064,6 +1065,11 @@ void smp_report_regs(void)
+ 	smp_cross_call(&xcall_report_regs, 0, 0, 0);
+ }
+ 
++void smp_fetch_global_regs(void)
++{
++	smp_cross_call(&xcall_fetch_glob_regs, 0, 0, 0);
++}
++
+ /* We know that the window frames of the user have been flushed
+  * to the stack before we get here because all callers of us
+  * are flush_tlb_*() routines, and these run after flush_cache_*()
+diff --git a/arch/sparc64/mm/ultra.S b/arch/sparc64/mm/ultra.S
+index 737c269..7a079ed 100644
+--- a/arch/sparc64/mm/ultra.S
++++ b/arch/sparc64/mm/ultra.S
+@@ -1,7 +1,6 @@
+-/* $Id: ultra.S,v 1.72 2002/02/09 19:49:31 davem Exp $
+- * ultra.S: Don't expand these all over the place...
++/* ultra.S: Don't expand these all over the place...
+  *
+- * Copyright (C) 1997, 2000 David S. Miller (davem@redhat.com)
++ * Copyright (C) 1997, 2000, 2007 David S. Miller (davem@davemloft.net)
+  */
+ 
+ #include <asm/asi.h>
+@@ -15,6 +14,7 @@
+ #include <asm/thread_info.h>
+ #include <asm/cacheflush.h>
+ #include <asm/hypervisor.h>
++#include <asm/cpudata.h>
+ 
+ 	/* Basically, most of the Spitfire vs. Cheetah madness
+ 	 * has to do with the fact that Cheetah does not support
+@@ -523,6 +523,27 @@ xcall_report_regs:
+ 	b		rtrap_xcall
+ 	 ldx		[%sp + PTREGS_OFF + PT_V9_TSTATE], %l1
+ 
++	.globl		xcall_fetch_glob_regs
++xcall_fetch_glob_regs:
++	sethi		%hi(global_reg_snapshot), %g1
++	or		%g1, %lo(global_reg_snapshot), %g1
++	__GET_CPUID(%g2)
++	sllx		%g2, 5, %g3
++	add		%g1, %g3, %g1
++	rdpr		%tstate, %g7
++	stx		%g7, [%g1 + 0x00]
++	rdpr		%tpc, %g7
++	stx		%g7, [%g1 + 0x08]
++	rdpr		%tnpc, %g7
++	stx		%g7, [%g1 + 0x10]
++	sethi		%hi(trap_block), %g7
++	or		%g7, %lo(trap_block), %g7
++	sllx		%g2, TRAP_BLOCK_SZ_SHIFT, %g2
++	add		%g7, %g2, %g7
++	ldx		[%g7 + TRAP_PER_CPU_THREAD], %g3
++	stx		%g3, [%g1 + 0x18]
++	retry
++
+ #ifdef DCACHE_ALIASING_POSSIBLE
+ 	.align		32
+ 	.globl		xcall_flush_dcache_page_cheetah
+diff --git a/drivers/char/sysrq.c b/drivers/char/sysrq.c
+index 39cc318..7f871a5 100644
+--- a/drivers/char/sysrq.c
++++ b/drivers/char/sysrq.c
+@@ -335,6 +335,7 @@ static struct sysrq_key_op *sysrq_key_table[36] = {
+ 	&sysrq_term_op,			/* e */
+ 	&sysrq_moom_op,			/* f */
+ 	/* g: May be registered by ppc for kgdb */
++	/*    May be registered by sparc for global register dump */
+ 	NULL,				/* g */
+ 	NULL,				/* h */
+ 	&sysrq_kill_op,			/* i */
+diff --git a/include/asm-sparc64/smp.h b/include/asm-sparc64/smp.h
+index e8a96a3..29393e3 100644
+--- a/include/asm-sparc64/smp.h
++++ b/include/asm-sparc64/smp.h
+@@ -1,6 +1,6 @@
+ /* smp.h: Sparc64 specific SMP stuff.
+  *
+- * Copyright (C) 1996 David S. Miller (davem@caip.rutgers.edu)
++ * Copyright (C) 1996, 2007 David S. Miller (davem@davemloft.net)
+  */
+ 
+ #ifndef _SPARC64_SMP_H
+@@ -43,6 +43,8 @@ extern int hard_smp_processor_id(void);
+ extern void smp_fill_in_sib_core_maps(void);
+ extern void cpu_play_dead(void);
+ 
++extern void smp_fetch_global_regs(void);
++
+ #ifdef CONFIG_HOTPLUG_CPU
+ extern int __cpu_disable(void);
+ extern void __cpu_die(unsigned int cpu);
+@@ -54,6 +56,7 @@ extern void __cpu_die(unsigned int cpu);
+ 
+ #define hard_smp_processor_id()		0
+ #define smp_fill_in_sib_core_maps() do { } while (0)
++#define smp_fetch_global_regs() do { } while (0)
+ 
+ #endif /* !(CONFIG_SMP) */
+ 
