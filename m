@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757123AbXKBB0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757450AbXKBBdc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757123AbXKBB0m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 21:26:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754812AbXKBB0f
+	id S1757450AbXKBBdc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 21:33:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbXKBBdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 21:26:35 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:39247 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753522AbXKBB0e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 21:26:34 -0400
-Message-ID: <472A7CA7.4060408@zytor.com>
-Date: Thu, 01 Nov 2007 18:25:59 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Thu, 1 Nov 2007 21:33:24 -0400
+Received: from ioctl.codeblau.de ([80.190.240.67]:50638 "EHLO codeblau.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752611AbXKBBdX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 21:33:23 -0400
+Date: Fri, 2 Nov 2007 02:33:21 +0100
+From: Felix von Leitner <felix-linuxkernel@fefe.de>
+To: linux-kernel@vger.kernel.org
+Subject: TCP_DEFER_ACCEPT issues
+Message-ID: <20071102013321.GA30893@codeblau.de>
 MIME-Version: 1.0
-To: "Huang, Ying" <ying.huang@intel.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, tglx@linutronix.de,
-       mingo@redhat.com, torvalds@linux-foundation.org, adaplas@pol.net,
-       ak@suse.de, ebiederm@xmission.com, mouli@linux.intel.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2 -v2 resend] x86_64 EFI boot support
-References: <1193218342.23935.147.camel@caritas-dev.intel.com>	<1193793701.23935.394.camel@caritas-dev.intel.com> <20071031125907.ba953d4a.akpm@linux-foundation.org> <4728E0DE.7080702@zytor.com> <9D7649D18729DE4BB2BD7B494F7FEDC295BE97@pdsmsx415.ccr.corp.intel.com>
-In-Reply-To: <9D7649D18729DE4BB2BD7B494F7FEDC295BE97@pdsmsx415.ccr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang, Ying wrote:
->> From: H. Peter Anvin [mailto:hpa@zytor.com]
->> The "EFI boot" patchset looks fairly unobtrusive to me.  One objection:
->> the VIDEO_TYPE_ numbers appear split up into groups; and the EFI one
->> probably should be 0x70 instead of 0x24.
-> 
-> Should I change this and resend the patchset? Or you modify it before
-> merging?
-> 
+I am trying to use TCP_DEFER_ACCEPT in my web server.
 
-I'd be easier if you could change and resend.
+There are some operational problems.  First of all: timeout handling.  I
+would like to be able to set a timeout in seconds (or better:
+milliseconds) for how long the socket is allowed to sit there without
+data coming in.  For high load situations, I have been enforcing
+timeouts in the range of 15 seconds, otherwise someone can DoS the
+server by opening a lot of connections and tying up data structures.
 
-	-hpa
+It is still possible, of course, to tie up kernel memory this way, by
+not reacting to the FIN or RST packets and running into a timeout there,
+too, but that is partially tunable via sysctl.
+
+According to tcp(7) the int argument to TCP_DEFER_ACCEPT is in seconds.
+In the kernel code, it's converted to TCP timeout units.  When I ran my
+server, and connected without sending any data, nothing happened.  No
+timeout.  Minutes later, the connection was still there.  Even worse:
+when I killed (!) the server process (thus closing the server socket),
+the client did not get a reset.  Only when I type something in the
+telnet, I get a reset.  This appears to be very broken.
+
+My suggestion:
+
+  1. make the argument to the setsockopt be in seconds, or milliseconds.
+  2. if the server socket is closed, reset all pending connections.
+
+Comments?
+
+Felix
