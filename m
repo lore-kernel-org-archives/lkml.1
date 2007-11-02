@@ -1,104 +1,372 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760644AbXKBWL7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761241AbXKBWM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760644AbXKBWL7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 18:11:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbXKBWLt
+	id S1761241AbXKBWM5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 18:12:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755472AbXKBWMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 18:11:49 -0400
-Received: from ioctl.codeblau.de ([80.190.240.67]:35201 "EHLO codeblau.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752080AbXKBWLs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 18:11:48 -0400
-Date: Fri, 2 Nov 2007 23:11:46 +0100
-From: Felix von Leitner <felix-linuxkernel@fefe.de>
-To: Rick Jones <rick.jones2@hp.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
-       Netdev <netdev@vger.kernel.org>
-Subject: Re: bizarre network timing problem
-Message-ID: <20071102221146.GA4354@codeblau.de>
-References: <20071017205127.GA21334@codeblau.de> <47167BDE.4000103@redhat.com> <20071017220019.GA22765@codeblau.de> <471689BF.2040909@hp.com> <20071018094230.GA2978@codeblau.de> <4717964A.8080100@hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4717964A.8080100@hp.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 2 Nov 2007 18:12:49 -0400
+Received: from smtp-105-friday.nerim.net ([62.4.16.105]:51684 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755400AbXKBWMr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 18:12:47 -0400
+Date: Fri, 2 Nov 2007 23:12:43 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: linux-kernel@vger.kernel.org, i2c@lm-sensors.org, linuxppc-dev@ozlabs.org,
+       rtc-linux@googlegroups.com
+Subject: Re: [2.6 patch] the scheduled I2C RTC driver removal
+Message-ID: <20071102231243.61c39d23@hyperion.delvare>
+In-Reply-To: <20071031230357.GW7227@stusta.de>
+References: <20071031230357.GW7227@stusta.de>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thus spake Rick Jones (rick.jones2@hp.com):
-> >How could I test this theory?
-> Can you take another trace that isn't so "cooked?"  One that just sticks 
-> with TCP-level and below stuff?
+Hi Adrian,
 
-Sorry for taking so long.  Here is a tcpdump.  The side on port 445 is
-the SMB server using TCP_CORK.
+On Thu, 1 Nov 2007 00:03:58 +0100, Adrian Bunk wrote:
+> This patch contains the scheduled removal of legacy I2C RTC drivers with 
+> replacement drivers.
 
-23:03:20.283772 IP 127.0.0.1.33230 > 127.0.0.1.445: S 1503927325:1503927325(0) win 32792 <mss 16396,sackOK,timestamp 9451736 0,nop,wscale 7>
-23:03:20.283774 IP 127.0.0.1.445 > 127.0.0.1.33230: S 1513925692:1513925692(0) ack 1503927326 win 32768 <mss 16396,sackOK,timestamp 9451737 9451736,nop,wscale 7>
-23:03:20.283797 IP 127.0.0.1.33230 > 127.0.0.1.445: . ack 1 win 257 <nop,nop,timestamp 9451737 9451737>
-23:03:20.295851 IP 127.0.0.1.33230 > 127.0.0.1.445: P 1:195(194) ack 1 win 257 <nop,nop,timestamp 9451740 9451737>
-23:03:20.295881 IP 127.0.0.1.445 > 127.0.0.1.33230: . ack 195 win 265 <nop,nop,timestamp 9451740 9451740>
-23:03:20.295959 IP 127.0.0.1.445 > 127.0.0.1.33230: P 1:87(86) ack 195 win 265 <nop,nop,timestamp 9451740 9451740>
-23:03:20.295998 IP 127.0.0.1.33230 > 127.0.0.1.445: . ack 87 win 256 <nop,nop,timestamp 9451740 9451740>
-23:03:20.296063 IP 127.0.0.1.33230 > 127.0.0.1.445: P 195:287(92) ack 87 win 256 <nop,nop,timestamp 9451740 9451740>
-23:03:20.296096 IP 127.0.0.1.445 > 127.0.0.1.33230: P 87:181(94) ack 287 win 265 <nop,nop,timestamp 9451740 9451740>
-23:03:20.296135 IP 127.0.0.1.33230 > 127.0.0.1.445: P 287:373(86) ack 181 win 255 <nop,nop,timestamp 9451740 9451740>
-23:03:20.296163 IP 127.0.0.1.445 > 127.0.0.1.33230: P 181:239(58) ack 373 win 265 <nop,nop,timestamp 9451740 9451740>
-23:03:20.296201 IP 127.0.0.1.33230 > 127.0.0.1.445: P 373:459(86) ack 239 win 255 <nop,nop,timestamp 9451740 9451740>
-23:03:20.296245 IP 127.0.0.1.445 > 127.0.0.1.33230: P 239:309(70) ack 459 win 265 <nop,nop,timestamp 9451740 9451740>
-23:03:20.296286 IP 127.0.0.1.33230 > 127.0.0.1.445: P 459:535(76) ack 309 win 254 <nop,nop,timestamp 9451740 9451740>
-23:03:20.296314 IP 127.0.0.1.445 > 127.0.0.1.33230: P 309:461(152) ack 535 win 265 <nop,nop,timestamp 9451740 9451740>
-23:03:20.296361 IP 127.0.0.1.33230 > 127.0.0.1.445: P 535:594(59) ack 461 win 253 <nop,nop,timestamp 9451740 9451740>
-23:03:20.296400 IP 127.0.0.1.445 > 127.0.0.1.33230: . 461:16845(16384) ack 594 win 265 <nop,nop,timestamp 9451740 9451740>
-23:03:20.335748 IP 127.0.0.1.33230 > 127.0.0.1.445: . ack 16845 win 125 <nop,nop,timestamp 9451750 9451740>
+I'm adding the rtc list in Cc.
 
-[note the .2 sec pause]
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> 
+>  Documentation/feature-removal-schedule.txt |    7 
+>  arch/powerpc/platforms/83xx/mpc832x_mds.c  |   24 -
+>  arch/powerpc/platforms/83xx/mpc834x_mds.c  |   24 -
+>  arch/powerpc/platforms/83xx/mpc836x_mds.c  |   24 -
+>  arch/ppc/platforms/83xx/mpc834x_sys.c      |   20 -
+>  arch/ppc/platforms/85xx/tqm85xx.c          |   21 -
+>  arch/ppc/platforms/katana.c                |   21 -
+>  drivers/i2c/chips/Kconfig                  |   38 -
+>  drivers/i2c/chips/Makefile                 |    3 
+>  drivers/i2c/chips/ds1337.c                 |  410 --------------------
+>  drivers/i2c/chips/ds1374.c                 |  267 -------------
+>  drivers/i2c/chips/m41t00.c                 |  413 ---------------------
+>  include/linux/m41t00.h                     |   50 --
+>  13 files changed, 1322 deletions(-)
 
-23:03:20.547763 IP 127.0.0.1.445 > 127.0.0.1.33230: P 16845:32845(16000) ack 594 win 265 <nop,nop,timestamp 9451803 9451750>
-23:03:20.547797 IP 127.0.0.1.33230 > 127.0.0.1.445: . ack 32845 win 0 <nop,nop,timestamp 9451803 9451803>
-23:03:20.547855 IP 127.0.0.1.33230 > 127.0.0.1.445: . ack 32845 win 96 <nop,nop,timestamp 9451803 9451803>
-23:03:20.547863 IP 127.0.0.1.445 > 127.0.0.1.33230: P 32845:33229(384) ack 594 win 265 <nop,nop,timestamp 9451803 9451803>
-23:03:20.547890 IP 127.0.0.1.33230 > 127.0.0.1.445: . ack 33229 win 96 <nop,nop,timestamp 9451803 9451803>
+Obviously we're not yet ready to remove the drivers, as some platforms
+still use them! The remaining platforms need to be updated to use the
+new RTC drivers first. The mapping is as follows:
 
-[note the .2 sec pause]
+chip       | old driver | new driver   |
+-----------+------------+--------------+
+DS1337     | ds1337     | rtc-ds1307   |
+DS1339     | ds1337     | rtc-ds1307   |
+DS1374     | ds1374     | rtc-ds1374   |
+M41T00     | m41t00     | rtc-ds1307   |
+M41T81     | m41t00     | rtc-m41t80   |
+M41ST85    | m41t00     | rtc-m41t80   |
 
-23:03:20.755775 IP 127.0.0.1.445 > 127.0.0.1.33230: P 33229:45517(12288) ack 594 win 265 <nop,nop,timestamp 9451855 9451803>
-23:03:20.755855 IP 127.0.0.1.33230 > 127.0.0.1.445: . ack 45517 win 96 <nop,nop,timestamp 9451855 9451855>
-23:03:20.755868 IP 127.0.0.1.445 > 127.0.0.1.33230: P 45517:49613(4096) ack 594 win 265 <nop,nop,timestamp 9451855 9451855>
-23:03:20.755898 IP 127.0.0.1.33230 > 127.0.0.1.445: . ack 49613 win 96 <nop,nop,timestamp 9451855 9451855>
+So, PPC people, please update your platform code to make use of the new
+drivers now, and let me know when you're done. As soon as all platforms
+are converted, I'll apply Adrian's patch.
 
-[another one]
+Thanks.
 
-23:03:20.963789 IP 127.0.0.1.445 > 127.0.0.1.33230: P 49613:61901(12288) ack 594 win 265 <nop,nop,timestamp 9451907 9451855>
-23:03:20.963871 IP 127.0.0.1.33230 > 127.0.0.1.445: . ack 61901 win 96 <nop,nop,timestamp 9451907 9451907>
-23:03:20.963885 IP 127.0.0.1.445 > 127.0.0.1.33230: P 61901:64525(2624) ack 594 win 265 <nop,nop,timestamp 9451907 9451907>
-23:03:20.963909 IP 127.0.0.1.33230 > 127.0.0.1.445: . ack 64525 win 96 <nop,nop,timestamp 9451907 9451907>
-23:03:20.964101 IP 127.0.0.1.33230 > 127.0.0.1.445: P 594:653(59) ack 64525 win 96 <nop,nop,timestamp 9451907 9451907>
-23:03:21.003790 IP 127.0.0.1.445 > 127.0.0.1.33230: . ack 653 win 265 <nop,nop,timestamp 9451917 9451907>
-23:03:21.171811 IP 127.0.0.1.445 > 127.0.0.1.33230: P 64525:76813(12288) ack 653 win 265 <nop,nop,timestamp 9451959 9451907>
+> 
+> bf858b44b3071082be3aaf71e2d46ddb26415247 
+> diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+> index 6bb9be5..391f2d1 100644
+> --- a/Documentation/feature-removal-schedule.txt
+> +++ b/Documentation/feature-removal-schedule.txt
+> @@ -275,13 +275,6 @@ Who:  Tejun Heo <htejun@gmail.com>
+>  
+>  ---------------------------
+>  
+> -What:	Legacy RTC drivers (under drivers/i2c/chips)
+> -When:	November 2007
+> -Why:	Obsolete. We have a RTC subsystem with better drivers.
+> -Who:	Jean Delvare <khali@linux-fr.org>
+> -
+> ----------------------------
+> -
+>  What:	iptables SAME target
+>  When:	1.1. 2008
+>  Files:	net/ipv4/netfilter/ipt_SAME.c, include/linux/netfilter_ipv4/ipt_SAME.h
+> diff --git a/arch/powerpc/platforms/83xx/mpc832x_mds.c b/arch/powerpc/platforms/83xx/mpc832x_mds.c
+> index 972fa85..66382df 100644
+> --- a/arch/powerpc/platforms/83xx/mpc832x_mds.c
+> +++ b/arch/powerpc/platforms/83xx/mpc832x_mds.c
+> @@ -145,30 +145,6 @@ static void __init mpc832x_sys_init_IRQ(void)
+>  #endif				/* CONFIG_QUICC_ENGINE */
+>  }
+>  
+> -#if defined(CONFIG_I2C_MPC) && defined(CONFIG_SENSORS_DS1374)
+> -extern ulong ds1374_get_rtc_time(void);
+> -extern int ds1374_set_rtc_time(ulong);
+> -
+> -static int __init mpc832x_rtc_hookup(void)
+> -{
+> -	struct timespec tv;
+> -
+> -	if (!machine_is(mpc832x_mds))
+> -		return 0;
+> -
+> -	ppc_md.get_rtc_time = ds1374_get_rtc_time;
+> -	ppc_md.set_rtc_time = ds1374_set_rtc_time;
+> -
+> -	tv.tv_nsec = 0;
+> -	tv.tv_sec = (ppc_md.get_rtc_time) ();
+> -	do_settimeofday(&tv);
+> -
+> -	return 0;
+> -}
+> -
+> -late_initcall(mpc832x_rtc_hookup);
+> -#endif
+> -
+>  /*
+>   * Called very early, MMU is off, device-tree isn't unflattened
+>   */
+> diff --git a/arch/powerpc/platforms/83xx/mpc834x_mds.c b/arch/powerpc/platforms/83xx/mpc834x_mds.c
+> index 00aed7c..a81bb3c 100644
+> --- a/arch/powerpc/platforms/83xx/mpc834x_mds.c
+> +++ b/arch/powerpc/platforms/83xx/mpc834x_mds.c
+> @@ -106,30 +106,6 @@ static void __init mpc834x_mds_init_IRQ(void)
+>  	ipic_set_default_priority();
+>  }
+>  
+> -#if defined(CONFIG_I2C_MPC) && defined(CONFIG_SENSORS_DS1374)
+> -extern ulong ds1374_get_rtc_time(void);
+> -extern int ds1374_set_rtc_time(ulong);
+> -
+> -static int __init mpc834x_rtc_hookup(void)
+> -{
+> -	struct timespec tv;
+> -
+> -	if (!machine_is(mpc834x_mds))
+> -		return 0;
+> -
+> -	ppc_md.get_rtc_time = ds1374_get_rtc_time;
+> -	ppc_md.set_rtc_time = ds1374_set_rtc_time;
+> -
+> -	tv.tv_nsec = 0;
+> -	tv.tv_sec = (ppc_md.get_rtc_time) ();
+> -	do_settimeofday(&tv);
+> -
+> -	return 0;
+> -}
+> -
+> -late_initcall(mpc834x_rtc_hookup);
+> -#endif
+> -
+>  /*
+>   * Called very early, MMU is off, device-tree isn't unflattened
+>   */
+> diff --git a/arch/powerpc/platforms/83xx/mpc836x_mds.c b/arch/powerpc/platforms/83xx/mpc836x_mds.c
+> index 0f3855c..8d87b9c 100644
+> --- a/arch/powerpc/platforms/83xx/mpc836x_mds.c
+> +++ b/arch/powerpc/platforms/83xx/mpc836x_mds.c
+> @@ -152,30 +152,6 @@ static void __init mpc836x_mds_init_IRQ(void)
+>  #endif				/* CONFIG_QUICC_ENGINE */
+>  }
+>  
+> -#if defined(CONFIG_I2C_MPC) && defined(CONFIG_SENSORS_DS1374)
+> -extern ulong ds1374_get_rtc_time(void);
+> -extern int ds1374_set_rtc_time(ulong);
+> -
+> -static int __init mpc8360_rtc_hookup(void)
+> -{
+> -	struct timespec tv;
+> -
+> -	if (!machine_is(mpc836x_mds))
+> -		return 0;
+> -
+> -	ppc_md.get_rtc_time = ds1374_get_rtc_time;
+> -	ppc_md.set_rtc_time = ds1374_set_rtc_time;
+> -
+> -	tv.tv_nsec = 0;
+> -	tv.tv_sec = (ppc_md.get_rtc_time) ();
+> -	do_settimeofday(&tv);
+> -
+> -	return 0;
+> -}
+> -
+> -late_initcall(mpc8360_rtc_hookup);
+> -#endif
+> -
+>  /*
+>   * Called very early, MMU is off, device-tree isn't unflattened
+>   */
+> diff --git a/arch/ppc/platforms/83xx/mpc834x_sys.c b/arch/ppc/platforms/83xx/mpc834x_sys.c
+> index b84f8df..cb0a749 100644
+> --- a/arch/ppc/platforms/83xx/mpc834x_sys.c
+> +++ b/arch/ppc/platforms/83xx/mpc834x_sys.c
+> @@ -224,26 +224,6 @@ mpc834x_sys_init_IRQ(void)
+>  	ipic_set_default_priority();
+>  }
+>  
+> -#if defined(CONFIG_I2C_MPC) && defined(CONFIG_SENSORS_DS1374)
+> -extern ulong	ds1374_get_rtc_time(void);
+> -extern int	ds1374_set_rtc_time(ulong);
+> -
+> -static int __init
+> -mpc834x_rtc_hookup(void)
+> -{
+> -	struct timespec	tv;
+> -
+> -	ppc_md.get_rtc_time = ds1374_get_rtc_time;
+> -	ppc_md.set_rtc_time = ds1374_set_rtc_time;
+> -
+> -	tv.tv_nsec = 0;
+> -	tv.tv_sec = (ppc_md.get_rtc_time)();
+> -	do_settimeofday(&tv);
+> -
+> -	return 0;
+> -}
+> -late_initcall(mpc834x_rtc_hookup);
+> -#endif
+>  static __inline__ void
+>  mpc834x_sys_set_bat(void)
+>  {
+> diff --git a/arch/ppc/platforms/85xx/tqm85xx.c b/arch/ppc/platforms/85xx/tqm85xx.c
+> index 4ee2bd1..27ce389 100644
+> --- a/arch/ppc/platforms/85xx/tqm85xx.c
+> +++ b/arch/ppc/platforms/85xx/tqm85xx.c
+> @@ -258,27 +258,6 @@ int tqm85xx_show_cpuinfo(struct seq_file *m)
+>  	return 0;
+>  }
+>  
+> -#if defined(CONFIG_I2C) && defined(CONFIG_SENSORS_DS1337)
+> -extern ulong ds1337_get_rtc_time(void);
+> -extern int ds1337_set_rtc_time(unsigned long nowtime);
+> -
+> -static int __init
+> -tqm85xx_rtc_hookup(void)
+> -{
+> -	struct timespec	tv;
+> -
+> -        ppc_md.set_rtc_time = ds1337_set_rtc_time;
+> -        ppc_md.get_rtc_time = ds1337_get_rtc_time;
+> -
+> -	tv.tv_nsec = 0;
+> -	tv.tv_sec = (ppc_md.get_rtc_time)();
+> -	do_settimeofday(&tv);
+> -
+> -	return 0;
+> -}
+> -late_initcall(tqm85xx_rtc_hookup);
+> -#endif
+> -
+>  #ifdef CONFIG_PCI
+>  /*
+>   * interrupt routing
+> diff --git a/arch/ppc/platforms/katana.c b/arch/ppc/platforms/katana.c
+> index 52f63e6..fe6e88c 100644
+> --- a/arch/ppc/platforms/katana.c
+> +++ b/arch/ppc/platforms/katana.c
+> @@ -838,27 +838,6 @@ katana_find_end_of_memory(void)
+>  	return bdp->bi_memsize;
+>  }
+>  
+> -#if defined(CONFIG_I2C_MV64XXX) && defined(CONFIG_SENSORS_M41T00)
+> -extern ulong	m41t00_get_rtc_time(void);
+> -extern int	m41t00_set_rtc_time(ulong);
+> -
+> -static int __init
+> -katana_rtc_hookup(void)
+> -{
+> -	struct timespec	tv;
+> -
+> -	ppc_md.get_rtc_time = m41t00_get_rtc_time;
+> -	ppc_md.set_rtc_time = m41t00_set_rtc_time;
+> -
+> -	tv.tv_nsec = 0;
+> -	tv.tv_sec = (ppc_md.get_rtc_time)();
+> -	do_settimeofday(&tv);
+> -
+> -	return 0;
+> -}
+> -late_initcall(katana_rtc_hookup);
+> -#endif
+> -
+>  #if defined(CONFIG_SERIAL_TEXT_DEBUG) && defined(CONFIG_SERIAL_MPSC_CONSOLE)
+>  static void __init
+>  katana_map_io(void)
+> diff --git a/drivers/i2c/chips/Kconfig b/drivers/i2c/chips/Kconfig
+> index 2e1c24f..5b8eb02 100644
+> --- a/drivers/i2c/chips/Kconfig
+> +++ b/drivers/i2c/chips/Kconfig
+> @@ -4,32 +4,6 @@
+>  
+>  menu "Miscellaneous I2C Chip support"
+>  
+> -config SENSORS_DS1337
+> -	tristate "Dallas DS1337 and DS1339 Real Time Clock (DEPRECATED)"
+> -	depends on EXPERIMENTAL
+> -	help
+> -	  If you say yes here you get support for Dallas Semiconductor
+> -	  DS1337 and DS1339 real-time clock chips.
+> -
+> -	  This driver can also be built as a module.  If so, the module
+> -	  will be called ds1337.
+> -
+> -	  This driver is deprecated and will be dropped soon. Use
+> -	  rtc-ds1307 instead.
+> -
+> -config SENSORS_DS1374
+> -	tristate "Dallas DS1374 Real Time Clock (DEPRECATED)"
+> -	depends on EXPERIMENTAL
+> -	help
+> -	  If you say yes here you get support for Dallas Semiconductor
+> -	  DS1374 real-time clock chips.
+> -
+> -	  This driver can also be built as a module.  If so, the module
+> -	  will be called ds1374.
+> -
+> -	  This driver is deprecated and will be dropped soon. Use
+> -	  rtc-ds1374 instead.
+> -
+>  config DS1682
+>  	tristate "Dallas DS1682 Total Elapsed Time Recorder with Alarm"
+>  	depends on EXPERIMENTAL
+> @@ -116,18 +90,6 @@ config TPS65010
+>  	  This driver can also be built as a module.  If so, the module
+>  	  will be called tps65010.
+>  
+> -config SENSORS_M41T00
+> -	tristate "ST M41T00 RTC chip (DEPRECATED)"
+> -	depends on PPC32
+> -	help
+> -	  If you say yes here you get support for the ST M41T00 RTC chip.
+> -
+> -	  This driver can also be built as a module.  If so, the module
+> -	  will be called m41t00.
+> -
+> -	  This driver is deprecated and will be dropped soon. Use
+> -	  rtc-ds1307 or rtc-m41t80 instead.
+> -
+>  config SENSORS_MAX6875
+>  	tristate "Maxim MAX6875 Power supply supervisor"
+>  	depends on EXPERIMENTAL
+> diff --git a/drivers/i2c/chips/Makefile b/drivers/i2c/chips/Makefile
+> index ca924e1..1d5d1a5 100644
+> --- a/drivers/i2c/chips/Makefile
+> +++ b/drivers/i2c/chips/Makefile
+> @@ -2,12 +2,9 @@
+>  # Makefile for miscellaneous I2C chip drivers.
+>  #
+>  
+> -obj-$(CONFIG_SENSORS_DS1337)	+= ds1337.o
+> -obj-$(CONFIG_SENSORS_DS1374)	+= ds1374.o
+>  obj-$(CONFIG_DS1682)		+= ds1682.o
+>  obj-$(CONFIG_SENSORS_EEPROM)	+= eeprom.o
+>  obj-$(CONFIG_SENSORS_MAX6875)	+= max6875.o
+> -obj-$(CONFIG_SENSORS_M41T00)	+= m41t00.o
+>  obj-$(CONFIG_SENSORS_PCA9539)	+= pca9539.o
+>  obj-$(CONFIG_SENSORS_PCF8574)	+= pcf8574.o
+>  obj-$(CONFIG_SENSORS_PCF8591)	+= pcf8591.o
+> (...)
 
-You get the idea.
-
-Anyway, now THIS is the interesting case, because we have two packets in
-the answer, and you see the first half of the answer leaving immediately
-(when I wanted the whole answer to be sent) but the second only leaving
-after the .2 sec delay.
-
-> If SMB is a one-request-at-a-time protocol (I can never remember),
-
-It is.
-
-> you 
-> could simulate it with a netperf TCP_RR test by passing suitable values to 
-> the test-specific -r option:
-
-> netperf -H <remote> -t TCP_RR -- -r <req>,<rsp>
-
-> If that shows similar behaviour then you can ass-u-me it isn't your 
-> application.
-
-Oh I'm pretty sure it's not my application, because my application performs
-well over ethernet, which is after all its purpose.  Also I see the
-write, the TCP uncork, then a pause, and then the packet leaving.
-
-Felix
+-- 
+Jean Delvare
