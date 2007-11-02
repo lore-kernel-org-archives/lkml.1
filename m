@@ -1,61 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760096AbXKBSuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760064AbXKBSx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760096AbXKBSuz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 14:50:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755797AbXKBSus
+	id S1760064AbXKBSx1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 14:53:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755251AbXKBSxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 14:50:48 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:36164 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757019AbXKBSur (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 14:50:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jNoGG2tSfE5JVl9prRf4b6iOX5iZaibeg8XhQCqkXc9Z60IZyHeSFWT0IlWlzZfLOzjKHtC5uF/OtA4nW4ZbrdF1019+UYc/vvybVJnvs/XqhpQZX6tGL8WF5YVTsbTSBuODWuDP+i9RVSoLaPDBZtzV4l2W0I0l7Lj9n5MM/D0=
-Message-ID: <1865922a0711021150r351cf210x39deb70888365abf@mail.gmail.com>
-Date: Fri, 2 Nov 2007 20:50:46 +0200
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
-To: "Jan Engelhardt" <jengelh@computergmbh.de>
-Subject: Re: [PATCH] Smackv9: Use a stateful parser for parsing Smack rules
-Cc: casey@schaufler-ca.com, akpm@osdl.org, torvalds@osdl.org,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       viro@ftp.linux.org.uk
-In-Reply-To: <Pine.LNX.4.64.0711011826470.24502@fbirervta.pbzchgretzou.qr>
+	Fri, 2 Nov 2007 14:53:20 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:52202 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752994AbXKBSxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 14:53:19 -0400
+Date: Fri, 2 Nov 2007 13:50:33 -0500
+From: Michael Halcrow <mhalcrow@us.ibm.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, ecryptfs-devel@lists.sourceforge.net,
+       trevor.highland@gmail.com, mhalcrow@us.ibm.com
+Subject: [PATCH 0/3] eCryptfs: extent offset fix, crypto performance, and larger header regions
+Message-ID: <20071102185033.GB30487@localhost.austin.ibm.com>
+Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20071101155445.GB19231@ubuntu>
-	 <Pine.LNX.4.64.0711011826470.24502@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/1/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
->
-> On Nov 1 2007 17:54, Ahmed S. Darwish wrote:
-> >+
-> >+static inline int isblank(char c)
-> >+{
-> >+      return (c == ' ' || c == '\t');
-> >+}
->
-> Use isspace().
->
+This patch set includes some minor fixes for eCryptfs, including:
 
-isspace accepts newlines and carriage-returns too which is not
-accepted between elements of a one rule.
+ - An enhancement to allow larger header regions
 
-> >+      for (i = 0; i < count && data[i]; i ++)
-> >...
-> >+                      subjectstr[(*label_len) ++] = data[i];
->
-> i++ w/o space
->
+ - A bugfix for hosts with page size >4K
 
-Notes Taken. Thanks for the review.
+ - An enhancement to reduce crypto overhead
 
-Regards,
-
-Darwish
+I recommend merging at least the bugfix into 2.6.24.
