@@ -1,102 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760820AbXKBS60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758525AbXKBTK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760820AbXKBS60 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 14:58:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756929AbXKBS6R
+	id S1758525AbXKBTK1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 15:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbXKBTKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 14:58:17 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:59313 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754889AbXKBS6Q (ORCPT
+	Fri, 2 Nov 2007 15:10:18 -0400
+Received: from mailgate.ics.forth.gr ([139.91.1.2]:53141 "EHLO
+	mailgate.ics.forth.gr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753091AbXKBTKR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 14:58:16 -0400
-Date: Fri, 2 Nov 2007 19:57:51 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>,
-       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>
-Subject: Re: build #337 failed for 2.6.24-rc1-gb1d08ac In function
-	`usbnet_set_settings':
-Message-ID: <20071102185751.GV30287@stusta.de>
-References: <200711012024.57412.toralf.foerster@gmx.de> <200711011632.18333.david-b@pacbell.net> <20071101234443.GD7227@stusta.de> <200711021145.15542.david-b@pacbell.net>
+	Fri, 2 Nov 2007 15:10:17 -0400
+X-Greylist: delayed 4189 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 Nov 2007 15:10:17 EDT
+Message-ID: <47768.139.91.70.143.1194026426.squirrel@webmail.ics.forth.gr>
+Date: Fri, 2 Nov 2007 20:00:26 +0200 (EET)
+Subject: Error in __bread reading a 4K block from a SATA device
+From: "Thanos McAtos" <mcatos@ics.forth.gr>
+To: "lkml " <linux-kernel@vger.kernel.org>
+User-Agent: SquirrelMail/1.4.10a
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200711021145.15542.david-b@pacbell.net>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 02, 2007 at 11:45:15AM -0700, David Brownell wrote:
-> On Thursday 01 November 2007, Adrian Bunk wrote:
-> > The following combination of options is simply an unusual one:
-> > 
-> > CONFIG_MII=m
-> > CONFIG_USB_USBNET=y
-> > CONFIG_USB_USBNET_MII=n
-> 
-> I though that had been fixed for ages ...
-> 
-> This should do a better job of it.
-> 
-> - Dave
-> 
-> ==========	CUT HERE
-> Simplify handling of the MII-dependent usbnet based adapters:  stick
-> to forward dependencies, and explicitly handle the core dependency.
-> 
-> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> ---
->  drivers/net/usb/Kconfig  |   23 ++++++++++++-----------
->  drivers/net/usb/usbnet.c |    9 ++++++++-
->  2 files changed, 20 insertions(+), 12 deletions(-)
-> 
-> --- a.orig/drivers/net/usb/Kconfig	2007-10-21 10:35:16.000000000 -0700
-> +++ a/drivers/net/usb/Kconfig	2007-11-02 11:32:15.000000000 -0700
-> @@ -93,13 +93,8 @@ config USB_RTL8150
->  	  To compile this driver as a module, choose M here: the
->  	  module will be called rtl8150.
->  
-> -config USB_USBNET_MII
-> -	tristate
-> -	default n
-> -
->  config USB_USBNET
->  	tristate "Multi-purpose USB Networking Framework"
-> -	select MII if USB_USBNET_MII != n
->  	---help---
->  	  This driver supports several kinds of network links over USB,
->  	  with "minidrivers" built around a common network driver core
-> @@ -131,11 +126,19 @@ config USB_USBNET
->  	  To compile this driver as a module, choose M here: the
->  	  module will be called usbnet.
->  
-> +# usbnet core will support MII when MII is static, or both are modules
-> +config USB_NET_MII
-> +	tristate
-> +	depends on USB_USBNET && NET_ETHERNET && (MII = y || MII = USB_USBNET)
-> +	default MII
-> +
-> +comment "MII support is needed for most Ethernet adapters"
-> +	depends on USB_USBNET && USB_NET_MII=n
->...
+Hello,
 
-This approach has two disadvantages:
-- it's complicated
-- the MII stuff is an implementation detail, and we shouldn't bother
-  the user with it (especially since we can do better)
+I'm trying to read a 4KB block using __bread from a SATA device but I get
+the following error:
 
-If you want to keep the #ifdef's, what's the problem with the second 
-patch I proposed to fix this bug?
+__find_get_block_slow() failed. block=1, b_blocknr=0
+b_state=0x00000029, b_size=4096
 
-cu
-Adrian
+If I try to read a 2K block (which is the hard sector size of the device),
+it works fine.
 
--- 
+Kernel version is 2.6.20.21. I have used this function at another system but
+the device from which I read was an IDE one and it's hard sector size was
+512 bytes. I've also tested this at a 2.6.18.8 kernel.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+The old device was at a 32bit system, the new one is at a 64bit one.
+
+What could be wrong?
+
+Thanx in advance.
+
+
 
