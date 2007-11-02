@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbXKBPGK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbXKBPOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755931AbXKBPGK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 11:06:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbXKBPF6
+	id S1755931AbXKBPOY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 11:14:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753784AbXKBPOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 11:05:58 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:51783 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753909AbXKBPF5 (ORCPT
+	Fri, 2 Nov 2007 11:14:16 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:64190 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753331AbXKBPOP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 11:05:57 -0400
-Date: Fri, 2 Nov 2007 11:05:56 -0400
-From: "George G. Davis" <gdavis@mvista.com>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] Fix hang in posix_locks_deadlock()
-Message-ID: <20071102150556.GB20594@mvista.com>
-References: <20071017185157.GC3785@mvista.com> <20071018185759.GU3785@mvista.com> <20071026170750.GC13033@fieldses.org>
+	Fri, 2 Nov 2007 11:14:15 -0400
+Subject: Re: [PATCH] mm: sysfs: expose the BDI object in sysfs
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Greg KH <greg@kroah.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Miklos Szeredi <miklos@szeredi.hu>
+In-Reply-To: <1194015564.27652.403.camel@twins>
+References: <1193410087.6914.34.camel@twins>
+	 <1193412836.27652.11.camel@twins> <1193414147.2431.35.camel@lov.site>
+	 <1193429066.5648.35.camel@lappy> <1193447889.5648.44.camel@lappy>
+	 <20071027024033.GB29039@kroah.com> <1193474399.27652.15.camel@twins>
+	 <20071027160203.GA5709@kroah.com> <1193519317.5776.14.camel@lov.site>
+	 <1194009359.27652.377.camel@twins>
+	 <3ae72650711020650l37870e45yb853f888b4807116@mail.gmail.com>
+	 <1194013028.27652.387.camel@twins>  <1194013979.2440.20.camel@lov.site>
+	 <1194015564.27652.403.camel@twins>
+Content-Type: text/plain
+Date: Fri, 02 Nov 2007 16:13:40 +0100
+Message-Id: <1194016420.2440.25.camel@lov.site>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071026170750.GC13033@fieldses.org>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18h//d/YggATUeL3DaGsjrsn8CUfgZaovy1fo4
+ V82e6SZgrEI86Dou6lcGdUUQIX6+olk+6lfJlOmo6CoGJJYmq4
+ zDkmGUsdEtmP5tkds9WzgXVA/n52q5s
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 26, 2007 at 01:07:50PM -0400, J. Bruce Fields wrote:
+On Fri, 2007-11-02 at 15:59 +0100, Peter Zijlstra wrote:
+> On Fri, 2007-11-02 at 15:32 +0100, Kay Sievers wrote:
+> > On Fri, 2007-11-02 at 15:17 +0100, Peter Zijlstra wrote:
+
+> Here is the 'pretty' patch :-)
 > 
-> It may take multiple steps to identify a deadlock.  With the above
-> you'll miss deadlocks like
-> 
-> 	process 1 is requesting a lock held by process 2
-> 	process 2 is blocking on a lock held by process 3
-> 	process 3 is blocking on a lock held by process 1.
-> 
-> Could you give more details about how you're causing
-> posix_locks_deadlock to hang?  Is there a simple test-case you can post?
+> Since it relies on the removal of the device name length limit, this
+> should not yet be applied.
+
+Ok, I'll take a look now, and see what's needed here. Would be good to
+get that into the next kernel, now that you are waiting for the crap to
+get fixed. :)
+
+Thanks,
+Kay
 
 
-Sorry I missed your message due to procmail filters and failure to
-read linux-kernel for a week.  : )
-
-A bit late now since you've appliead a workaround but FWIW the test
-case was posted as a followup to my initial post.
-
---
-Regards,
-George
