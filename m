@@ -1,169 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760952AbXKBPsJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757578AbXKBPwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760952AbXKBPsJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 11:48:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760967AbXKBPqk
+	id S1757578AbXKBPwT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 11:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbXKBPwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 11:46:40 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:53875 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760952AbXKBPqi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 11:46:38 -0400
-Date: Fri, 2 Nov 2007 16:46:15 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>,
-       jgarzik@pobox.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [2.6 patch] usbnet.c: check for the right MII variable
-Message-ID: <20071102154615.GS30287@stusta.de>
-References: <200711012024.57412.toralf.foerster@gmx.de> <20071101222524.GB7227@stusta.de> <200711011652.39601.david-b@pacbell.net>
+	Fri, 2 Nov 2007 11:52:06 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:53663 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753698AbXKBPwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 11:52:05 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.24-rc1: OOPS at  acpi_battery_update
+Date: Fri, 2 Nov 2007 17:08:41 +0100
+User-Agent: KMail/1.9.5
+Cc: Romano Giannetti <romanol@upcomillas.es>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+References: <1193652664.22149.4.camel@localhost> <20071101161459.d5f9abc0.akpm@linux-foundation.org>
+In-Reply-To: <20071101161459.d5f9abc0.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200711011652.39601.david-b@pacbell.net>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200711021708.42370.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 01, 2007 at 04:52:39PM -0700, David Brownell wrote:
-> On Thursday 01 November 2007, Adrian Bunk wrote:
-> > All this USB_USBNET_MII trickery is simply not worth it considering how 
-> > few code it saves.
+On Friday, 2 November 2007 00:14, Andrew Morton wrote:
+> On Mon, 29 Oct 2007 11:11:04 +0100
+> Romano Giannetti <romanol@upcomillas.es> wrote:
 > 
-> Depends on what systems you're talking about.  Forcing unused
-> code into the kernel is not free, especially if that's made into
-> a design policy and applied repeatedly to many subsystems.
-
-If it was turned into a design policy...
-
-My impression is that in some parts of the kernel every byte gets 
-counted, while in other parts noone would notice a few kilobytes more or 
-less.
-
-> > As a side effect, this also fixes the following compile error reported 
-> > by Toralf Förster:
+> > 
+> > Hi,
+> > 
+> > 	sometime on resuming from s2ram my laptop spew the following oops.
+> > Config, dmesg etc are at: 
+> > 
+> > http://www.dea.icai.upcomillas.es/romano/linux/info/2624rc1_6/
+> > 
+> > [    3.475386] Oops: 0000 [#1] SMP 
+> > [    3.475602] Process kacpi_notify (pid: 50, ti=c2122000 task=c210c030 task.ti=c2122000)
+> > [    3.475608] Stack: c35c5060 c02f2a58 00000046 00000000 6b6b6b6b c2b20298 c2123efc c02f29ac 
+> > [    3.475626]        c02166cb f896f3ca 00000000 f896ff63 00000246 00000000 c2b20298 ffffa512 
+> > [    3.475644]        c2123f04 c02f2a58 c2123f34 f896f3ed c2123f1c c34fbdb8 c2123f20 c02f3e22 
+> > [    3.475662] Call Trace:
+> > [    3.475667]  [show_trace_log_lvl+26/48] show_trace_log_lvl+0x1a/0x30
+> > [    3.475678]  [show_stack_log_lvl+177/224] show_stack_log_lvl+0xb1/0xe0
+> > [    3.475695]  [die+282/560] die+0x11a/0x230
+> > [    3.475687]  [show_registers+193/464] show_registers+0xc1/0x1d0
+> > [    3.475703]  [do_page_fault+415/1648] do_page_fault+0x19f/0x670
+> > [    3.475713]  [error_code+114/120] error_code+0x72/0x78
+> > [    3.475722]  [__mutex_unlock_slowpath+172/336] __mutex_unlock_slowpath+0xac/0x150
+> > [    3.475731]  [mutex_unlock+8/16] mutex_unlock+0x8/0x10
+> > [    3.475739]  [<f896f3ed>] acpi_battery_update+0x1ce/0x23c [battery]
+> > [    3.475753]  [<f896f927>] acpi_battery_notify+0x21/0x78 [battery]
+> > [    3.475764]  [acpi_ev_notify_dispatch+79/90] acpi_ev_notify_dispatch+0x4f/0x5a
+> > [    3.475792]  [worker_thread+157/256] worker_thread+0x9d/0x100
+> > [    3.475774]  [acpi_os_execute_notify+36/47] acpi_os_execute_notify+0x24/0x2f
+> > [    3.475784]  [run_workqueue+288/464] run_workqueue+0x120/0x1d0
+> > [    3.475809]  [kernel_thread_helper+7/16] kernel_thread_helper+0x7/0x10
+> > [    3.475801]  [kthread+66/112] kthread+0x42/0x70
+> > [    3.475821] Code: 8d b4 26 00 00 00 00 55 89 e5 83 ec 18 89 5d f8 89 c3 89 75 fc 0f b6 40 04 89 d6 84 c0 7f 24 8d 43 20 3b 43 20 0f 84 e4 00 00 00 <3b> 76 10 0f 85 93 00 00 00 3b 36 90 74 47 8b 5d f8 8b 75 fc 89 
+> > [    3.475818]  =======================
+> > [    3.475909] EIP: [debug_mutex_wake_waiter+36/352] debug_mutex_wake_waiter+0x24/0x160 SS:ESP 0068:c2123ebc
+> > 
 > 
-> Why not just fix the thing which changed and broke the build?
+> Did any earlier kernels do this?  In other words, do you believe that this
+> is a bug which we added after 2.6.23 was released?
 
-Today it's exactly one year since your commit entered the tree.
-
-Dear bug, happy birthday!  ;-)
-
-> Or if reverse dependencies can't be made to work sanely, then
-> have those Ethernet-adapter minidrivers depend on NET_ETHERNET
-> and then select MII.  (To make the relationships be simple
-> enough that current Kconfig can handle them.)
-
-It's not Kconfig's fault that you test for the wrong variable in 
-usbnet.c ...
-
-> I have a fair number of usbnet devices.  Not one of them needs
-> MII or NET_ETHERNET.
-
-I don't understand why you think this bug was in any way related to 
-NET_ETHERNET - set NET_ETHERNET=y and the bug is still present.
-
-If you insist on the #ifdef's take the patch below - it even saves a few 
-additional bytes if you have non-usbnet net drivers requiring MII 
-enabled statically or as modules in your .config but no usbnet drivers 
-requiring MII.
-
-> - Dave
-
-cu
-Adrian
-
-
-<--  snip  -->
-
-
-This patch fixes the following compile error with CONFIG_MII=m, 
-CONFIG_USB_USBNET=y, CONFIG_USB_USBNET_MII=n:
-
-<--  snip  -->
-
-...
-  LD      .tmp_vmlinux1
-drivers/built-in.o: In function `usbnet_set_settings':
-(.text+0xf1876): undefined reference to `mii_ethtool_sset'
-drivers/built-in.o: In function `usbnet_get_settings':
-(.text+0xf1836): undefined reference to `mii_ethtool_gset'
-drivers/built-in.o: In function `usbnet_get_link':
-(.text+0xf18d6): undefined reference to `mii_link_ok'
-drivers/built-in.o: In function `usbnet_nway_reset':
-(.text+0xf18f6): undefined reference to `mii_nway_restart'
-make: *** [.tmp_vmlinux1] Error 1
-
-<--  snip  -->
-
-This bug was introduced by commit 18ee91fa9815fa3bb4e51cdcb8229bd0a0f11a70
-and reported by Toralf Förster.
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
----
-
-BTW:
-The Kconfig part of this patch is not really required, but testing for
-  #if defined(CONFIG_USB_USBNET_MII) || defined(CONFIG_USB_USBNET_MII_MODULE)
-would look needlessly ugly.
-
- drivers/net/usb/Kconfig  |    5 ++---
- drivers/net/usb/usbnet.c |    7 +++----
- 2 files changed, 5 insertions(+), 7 deletions(-)
-
-a421e4910eb30b140a315e274632e87c7a218df6 
-diff --git a/drivers/net/usb/Kconfig b/drivers/net/usb/Kconfig
-index 5a96d74..9261371 100644
---- a/drivers/net/usb/Kconfig
-+++ b/drivers/net/usb/Kconfig
-@@ -94,12 +94,11 @@ config USB_RTL8150
- 	  module will be called rtl8150.
- 
- config USB_USBNET_MII
--	tristate
--	default n
-+	bool
- 
- config USB_USBNET
- 	tristate "Multi-purpose USB Networking Framework"
--	select MII if USB_USBNET_MII != n
-+	select MII if USB_USBNET_MII
- 	---help---
- 	  This driver supports several kinds of network links over USB,
- 	  with "minidrivers" built around a common network driver core
-diff --git a/drivers/net/usb/usbnet.c b/drivers/net/usb/usbnet.c
-index acd5f1c..7393ab0 100644
---- a/drivers/net/usb/usbnet.c
-+++ b/drivers/net/usb/usbnet.c
-@@ -683,8 +683,7 @@ done_nopm:
-  * they'll probably want to use this base set.
-  */
- 
--#if defined(CONFIG_MII) || defined(CONFIG_MII_MODULE)
--#define HAVE_MII
-+#ifdef CONFIG_USB_USBNET_MII
- 
- int usbnet_get_settings (struct net_device *net, struct ethtool_cmd *cmd)
- {
-@@ -744,7 +743,7 @@ int usbnet_nway_reset(struct net_device *net)
- }
- EXPORT_SYMBOL_GPL(usbnet_nway_reset);
- 
--#endif	/* HAVE_MII */
-+#endif	/*  CONFIG_USB_USBNET_MII  */
- 
- void usbnet_get_drvinfo (struct net_device *net, struct ethtool_drvinfo *info)
- {
-@@ -776,7 +775,7 @@ EXPORT_SYMBOL_GPL(usbnet_set_msglevel);
- 
- /* drivers may override default ethtool_ops in their bind() routine */
- static struct ethtool_ops usbnet_ethtool_ops = {
--#ifdef	HAVE_MII
-+#ifdef CONFIG_USB_USBNET_MII
- 	.get_settings		= usbnet_get_settings,
- 	.set_settings		= usbnet_set_settings,
- 	.get_link		= usbnet_get_link,
-
+This might be the same as http://bugzilla.kernel.org/show_bug.cgi?id=9283
