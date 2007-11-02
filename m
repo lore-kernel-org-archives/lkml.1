@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758397AbXKBPl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758707AbXKBPlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758397AbXKBPl2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 11:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755972AbXKBPlF
+	id S1758707AbXKBPlm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 11:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756621AbXKBPlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 11:41:05 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:60092 "EHLO
+	Fri, 2 Nov 2007 11:41:11 -0400
+Received: from [198.99.130.12] ([198.99.130.12]:60093 "EHLO
 	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1753716AbXKBPlD (ORCPT
+	with ESMTP id S1756159AbXKBPlI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 11:41:03 -0400
-Date: Fri, 2 Nov 2007 11:40:14 -0400
+	Fri, 2 Nov 2007 11:41:08 -0400
+Date: Fri, 2 Nov 2007 11:40:15 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>
-Cc: Karol Swietlicki <magotari@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+Cc: LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 4/6] UML - Remove now unused code
-Message-ID: <20071102154014.GA10278@c2.user-mode-linux.org>
+Subject: [PATCH 5/6] UML - Further bugs.c tidying
+Message-ID: <20071102154015.GA10283@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,180 +24,166 @@ User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Karol Swietlicki <magotari@gmail.com>
+bugs.c, for both i386 and x86_64, can undergo further cleaning -
+	The i386 arch_check_bugs only does one thing, so we might as
+well inline the cmov checking.
+	The i386 includes can be trimmed down a bit.
+	arch_init_thread wasn't used, so it is deleted.
+	The panics in arch_handle_signal are turned into printks
+because the process is about to get segfaulted anyway, so something is
+dying no matter what happens here.  Also, the return value was always
+the same, so it contained no information, so it can be void instead.
+The name is changed to arch_examine_signal because it doesn't handle
+anything.
+	The caller of arch_handle_signal, relay_signal, does things in
+a different order.  The kernel-mode signal check is now first, which
+puts everything else together, making things a bit clearer conceptually.
 
-This patch finishes what the previous one started. The code was not
-used after my first patch, and now can be removed with ease.
-
-[ jdike - also deleted the #if 0 lcall stuff ]
-
-Signed-off-by: Karol Swietlicki <magotari@gmail.com>
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 ---
- arch/um/sys-i386/bugs.c |  137 ------------------------------------------------
- 1 file changed, 137 deletions(-)
+ arch/um/include/arch.h    |    2 +-
+ arch/um/kernel/trap.c     |    5 ++---
+ arch/um/sys-i386/bugs.c   |   45 +++++++++++++++++++--------------------------
+ arch/um/sys-x86_64/bugs.c |    7 +------
+ 4 files changed, 23 insertions(+), 36 deletions(-)
 
 Index: linux-2.6.22/arch/um/sys-i386/bugs.c
 ===================================================================
---- linux-2.6.22.orig/arch/um/sys-i386/bugs.c	2007-10-31 11:24:45.000000000 -0400
-+++ linux-2.6.22/arch/um/sys-i386/bugs.c	2007-10-31 11:24:50.000000000 -0400
-@@ -12,8 +12,6 @@
- #include "user.h"
- #include "sysdep/archsetjmp.h"
+--- linux-2.6.22.orig/arch/um/sys-i386/bugs.c	2007-10-31 12:23:33.000000000 -0400
++++ linux-2.6.22/arch/um/sys-i386/bugs.c	2007-10-31 12:33:07.000000000 -0400
+@@ -3,14 +3,12 @@
+  * Licensed under the GPL
+  */
  
--#define MAXTOKEN 64
--
+-#include <errno.h>
+ #include <signal.h>
+-#include <string.h>
+ #include "kern_constants.h"
+-#include "os.h"
++#include "longjmp.h"
+ #include "task.h"
+ #include "user.h"
+-#include "sysdep/archsetjmp.h"
++#include "sysdep/ptrace.h"
+ 
  /* Set during early boot */
  int host_has_cmov = 1;
- static jmp_buf cmov_test_return;
-@@ -47,139 +45,8 @@ static void test_for_host_cmov(void)
+@@ -22,7 +20,7 @@ static void cmov_sigill_test_handler(int
+ 	longjmp(cmov_test_return, 1);
+ }
+ 
+-static void test_for_host_cmov(void)
++void arch_check_bugs(void)
+ {
+ 	struct sigaction old, new;
+ 
+@@ -45,16 +43,7 @@ static void test_for_host_cmov(void)
  	sigaction(SIGILL, &old, &new);
  }
  
--static char token(int fd, char *buf, int len, char stop)
+-void arch_init_thread(void)
 -{
--	int n;
--	char *ptr, *end, c;
--
--	ptr = buf;
--	end = &buf[len];
--	do {
--		n = os_read_file(fd, ptr, sizeof(*ptr));
--		c = *ptr++;
--		if (n != sizeof(*ptr)) {
--			if (n == 0)
--				return 0;
--			printk(UM_KERN_ERR "Reading /proc/cpuinfo failed, "
--			       "err = %d\n", -n);
--			if (n < 0)
--				return n;
--			else return -EIO;
--		}
--	} while ((c != '\n') && (c != stop) && (ptr < end));
--
--	if (ptr == end) {
--		printk(UM_KERN_ERR "Failed to find '%c' in /proc/cpuinfo\n",
--		       stop);
--		return -1;
--	}
--	*(ptr - 1) = '\0';
--	return c;
 -}
 -
--static int find_cpuinfo_line(int fd, char *key, char *scratch, int len)
+-void arch_check_bugs(void)
 -{
--	int n;
--	char c;
--
--	scratch[len - 1] = '\0';
--	while (1) {
--		c = token(fd, scratch, len - 1, ':');
--		if (c <= 0)
--			return 0;
--		else if (c != ':') {
--			printk(UM_KERN_ERR "Failed to find ':' in "
--			       "/proc/cpuinfo\n");
--			return 0;
--		}
--
--		if (!strncmp(scratch, key, strlen(key)))
--			return 1;
--
--		do {
--			n = os_read_file(fd, &c, sizeof(c));
--			if (n != sizeof(c)) {
--				printk(UM_KERN_ERR "Failed to find newline in "
--				       "/proc/cpuinfo, err = %d\n", -n);
--				return 0;
--			}
--		} while (c != '\n');
--	}
--	return 0;
+-	test_for_host_cmov();
 -}
 -
--static int check_cpu_flag(char *feature, int *have_it)
--{
--	char buf[MAXTOKEN], c;
--	int fd, len = ARRAY_SIZE(buf);
--
--	printk(UM_KERN_INFO "Checking for host processor %s support...",
--	       feature);
--	fd = os_open_file("/proc/cpuinfo", of_read(OPENFLAGS()), 0);
--	if (fd < 0) {
--		printk(UM_KERN_ERR "Couldn't open /proc/cpuinfo, err = %d\n",
--		       -fd);
--		return 0;
--	}
--
--	*have_it = 0;
--	if (!find_cpuinfo_line(fd, "flags", buf, ARRAY_SIZE(buf)))
--		goto out;
--
--	c = token(fd, buf, len - 1, ' ');
--	if (c < 0)
--		goto out;
--	else if (c != ' ') {
--		printk(UM_KERN_ERR "Failed to find ' ' in /proc/cpuinfo\n");
--		goto out;
--	}
--
--	while (1) {
--		c = token(fd, buf, len - 1, ' ');
--		if (c < 0)
--			goto out;
--		else if (c == '\n')
--			break;
--
--		if (!strcmp(buf, feature)) {
--			*have_it = 1;
--			goto out;
--		}
--	}
-- out:
--	if (*have_it == 0)
--		printk("No\n");
--	else if (*have_it == 1)
--		printk("Yes\n");
--	os_close_file(fd);
--	return 1;
--}
--
--#if 0 /*
--       * This doesn't work in tt mode, plus it's causing compilation problems
--       * for some people.
--       */
--static void disable_lcall(void)
--{
--	struct modify_ldt_ldt_s ldt;
--	int err;
--
--	bzero(&ldt, sizeof(ldt));
--	ldt.entry_number = 7;
--	ldt.base_addr = 0;
--	ldt.limit = 0;
--	err = modify_ldt(1, &ldt, sizeof(ldt));
--	if (err)
--		printk(UM_KERN_ERR "Failed to disable lcall7 - errno = %d\n",
--		       errno);
--}
--#endif
--
- void arch_init_thread(void)
+-int arch_handle_signal(int sig, struct uml_pt_regs *regs)
++void arch_examine_signal(int sig, struct uml_pt_regs *regs)
  {
--#if 0
--	disable_lcall();
--#endif
+ 	unsigned char tmp[2];
+ 
+@@ -63,20 +52,24 @@ int arch_handle_signal(int sig, struct u
+ 	 * SIGILL in init.
+ 	 */
+ 	if ((sig != SIGILL) || (TASK_PID(get_current()) != 1))
+-		return 0;
++		return;
++
++	if (copy_from_user_proc(tmp, (void *) UPT_IP(regs), 2)) {
++		printk(UM_KERN_ERR "SIGILL in init, could not read "
++		       "instructions!\n");
++		return;
++	}
+ 
+-	if (copy_from_user_proc(tmp, (void *) UPT_IP(regs), 2))
+-		panic("SIGILL in init, could not read instructions!\n");
+ 	if ((tmp[0] != 0x0f) || ((tmp[1] & 0xf0) != 0x40))
+-		return 0;
++		return;
+ 
+ 	if (host_has_cmov == 0)
+-		panic("SIGILL caused by cmov, which this processor doesn't "
+-		      "implement, boot a filesystem compiled for older "
+-		      "processors");
++		printk(UM_KERN_ERR "SIGILL caused by cmov, which this "
++		       "processor doesn't implement.  Boot a filesystem "
++		       "compiled for older processors");
+ 	else if (host_has_cmov == 1)
+-		panic("SIGILL caused by cmov, which this processor claims to "
+-		      "implement");
+-	else panic("Bad value for host_has_cmov (%d)", host_has_cmov);
+-	return 0;
++		printk(UM_KERN_ERR "SIGILL caused by cmov, which this "
++		       "processor claims to implement");
++	else printk(UM_KERN_ERR "Bad value for host_has_cmov (%d)",
++		    host_has_cmov);
+ }
+Index: linux-2.6.22/arch/um/sys-x86_64/bugs.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/sys-x86_64/bugs.c	2007-10-31 12:18:46.000000000 -0400
++++ linux-2.6.22/arch/um/sys-x86_64/bugs.c	2007-10-31 12:28:27.000000000 -0400
+@@ -6,15 +6,10 @@
+ 
+ #include "sysdep/ptrace.h"
+ 
+-void arch_init_thread(void)
+-{
+-}
+-
+ void arch_check_bugs(void)
+ {
  }
  
- void arch_check_bugs(void)
-@@ -210,10 +77,6 @@ int arch_handle_signal(int sig, struct u
- 	else if (host_has_cmov == 1)
- 		panic("SIGILL caused by cmov, which this processor claims to "
- 		      "implement");
--	else if (host_has_cmov == -1)
--		panic("SIGILL caused by cmov, couldn't tell if this processor "
--		      "implements it, boot a filesystem compiled for older "
--		      "processors");
- 	else panic("Bad value for host_has_cmov (%d)", host_has_cmov);
- 	return 0;
+-int arch_handle_signal(int sig, struct uml_pt_regs *regs)
++void arch_examine_signal(int sig, struct uml_pt_regs *regs)
+ {
+-	return 0;
+ }
+Index: linux-2.6.22/arch/um/include/arch.h
+===================================================================
+--- linux-2.6.22.orig/arch/um/include/arch.h	2007-10-12 12:09:00.000000000 -0400
++++ linux-2.6.22/arch/um/include/arch.h	2007-10-31 12:28:55.000000000 -0400
+@@ -10,6 +10,6 @@
+ 
+ extern void arch_check_bugs(void);
+ extern int arch_fixup(unsigned long address, struct uml_pt_regs *regs);
+-extern int arch_handle_signal(int sig, struct uml_pt_regs *regs);
++extern void arch_examine_signal(int sig, struct uml_pt_regs *regs);
+ 
+ #endif
+Index: linux-2.6.22/arch/um/kernel/trap.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/trap.c	2007-10-25 23:33:16.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/trap.c	2007-10-31 12:24:22.000000000 -0400
+@@ -216,9 +216,6 @@ unsigned long segv(struct faultinfo fi, 
+ 
+ void relay_signal(int sig, struct uml_pt_regs *regs)
+ {
+-	if (arch_handle_signal(sig, regs))
+-		return;
+-
+ 	if (!UPT_IS_USER(regs)) {
+ 		if (sig == SIGBUS)
+ 			printk(KERN_ERR "Bus error - the host /dev/shm or /tmp "
+@@ -226,6 +223,8 @@ void relay_signal(int sig, struct uml_pt
+ 		panic("Kernel mode signal %d", sig);
+ 	}
+ 
++	arch_examine_signal(sig, regs);
++
+ 	current->thread.arch.faultinfo = *UPT_FAULTINFO(regs);
+ 	force_sig(sig, current);
  }
