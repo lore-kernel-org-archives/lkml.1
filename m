@@ -1,294 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754958AbXKBGZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbXKBGaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754958AbXKBGZw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 02:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbXKBGYe
+	id S1753978AbXKBGaX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 02:30:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbXKBGaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 02:24:34 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:18338 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752336AbXKBGYb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 02:24:31 -0400
-X-IronPort-AV: i="4.21,361,1188792000"; 
-   d="scan'208"; a="55433967:sNHT35906262"
-From: Bryan Wu <bryan.wu@analog.com>
-To: khali@linux-fr.org, i2c@lm-sensors.org
-Cc: linux-kernel@vger.kernel.org, Sonic Zhang <sonic.zhang@analog.com>,
-       Bryan Wu <bryan.wu@analog.com>
-Subject: [PATCH 1/4] Blackfin I2C/TWI driver: Add repeat start feature to avoid break of a bundle of i2c master xfer operation.
-Date: Fri,  2 Nov 2007 14:24:21 +0800
-Message-Id: <1193984664-10609-2-git-send-email-bryan.wu@analog.com>
-X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <1193984664-10609-1-git-send-email-bryan.wu@analog.com>
-References: <1193984664-10609-1-git-send-email-bryan.wu@analog.com>
+	Fri, 2 Nov 2007 02:30:12 -0400
+Received: from ozlabs.org ([203.10.76.45]:60580 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751763AbXKBGaK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 02:30:10 -0400
+Subject: Re: [PATCH] ehea: add kexec support
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Christoph Raisch <RAISCH@de.ibm.com>
+Cc: Jan-Bernd Themann <THEMANN@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <MEDER@de.ibm.com>,
+       netdev <netdev@vger.kernel.org>, ossthema@linux.vnet.ibm.com,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Thomas Q Klein <TKLEIN@de.ibm.com>
+In-Reply-To: <OF59B5FFD2.0294206F-ONC1257385.006A802D-C1257385.006CB6BB@de.ibm.com>
+References: <200710261437.29117.ossthema@de.ibm.com>
+	 <1193610737.9637.1.camel@concordia>
+	 <OF79E7ACE7.5D0488CE-ONC1257384.002E58C0-C1257384.002F8561@de.ibm.com>
+	 <1193784636.32504.4.camel@concordia>
+	 <OF59B5FFD2.0294206F-ONC1257385.006A802D-C1257385.006CB6BB@de.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-y5rS4QiXPITsc4bYsb2F"
+Date: Fri, 02 Nov 2007 17:30:08 +1100
+Message-Id: <1193985008.1782.7.camel@concordia>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sonic Zhang <sonic.zhang@analog.com>
 
- - Create a new mode TWI_I2C_MODE_REPEAT.
- - No change to smbus operation.
+--=-y5rS4QiXPITsc4bYsb2F
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
-Signed-off-by: Bryan Wu <bryan.wu@analog.com>
----
- drivers/i2c/busses/i2c-bfin-twi.c |  179 +++++++++++++++++++++++--------------
- 1 files changed, 111 insertions(+), 68 deletions(-)
+On Wed, 2007-10-31 at 20:48 +0100, Christoph Raisch wrote:
+> Michael Ellerman <michael@ellerman.id.au> wrote on 30.10.2007 23:50:36:
+> >
+> > On Tue, 2007-10-30 at 09:39 +0100, Christoph Raisch wrote:
+> > >
+> > > Michael Ellerman <michael@ellerman.id.au> wrote on 28.10.2007 23:32:1=
+7:
+> > > Hope I didn't miss anything here...
+> >
+> > Perhaps. When we kdump the kernel does not call the reboot notifiers, s=
+o
+> > the code Jan-Bernd just added won't get called. So the eHEA resources
+> > won't be freed. When the kdump kernel tries to load the eHEA driver wha=
+t
+> > will happen?
+> >
+> Good point.
+>=20
+> If the device driver tries to allocate resources again (in the kdump
+> kernel),
+> which have been allocated before (in the crashed kernel) the hcalls will
+> fail because from the hypervisor view the resources are still in use.
+> Currently there's no method to find out the resource handles for these
+> HEA resources allocated by the crashed kernel within the hypervisor...
 
-diff --git a/drivers/i2c/busses/i2c-bfin-twi.c b/drivers/i2c/busses/i2c-bfin-twi.c
-index 67224a4..6535852 100644
---- a/drivers/i2c/busses/i2c-bfin-twi.c
-+++ b/drivers/i2c/busses/i2c-bfin-twi.c
-@@ -42,6 +42,7 @@
- #define TWI_I2C_MODE_STANDARD		0x01
- #define TWI_I2C_MODE_STANDARDSUB	0x02
- #define TWI_I2C_MODE_COMBINED		0x04
-+#define TWI_I2C_MODE_REPEAT		0x08
- 
- struct bfin_twi_iface {
- 	int			irq;
-@@ -58,6 +59,9 @@ struct bfin_twi_iface {
- 	struct timer_list	timeout_timer;
- 	struct i2c_adapter	adap;
- 	struct completion	complete;
-+	struct i2c_msg 		*pmsg;
-+	int			msg_num;
-+	int			cur_msg;
- };
- 
- static struct bfin_twi_iface twi_iface;
-@@ -76,12 +80,16 @@ static void bfin_twi_handle_interrupt(struct bfin_twi_iface *iface)
- 		/* start receive immediately after complete sending in
- 		 * combine mode.
- 		 */
--		else if (iface->cur_mode == TWI_I2C_MODE_COMBINED) {
-+		else if (iface->cur_mode == TWI_I2C_MODE_COMBINED)
- 			bfin_write_TWI_MASTER_CTL(bfin_read_TWI_MASTER_CTL()
- 				| MDIR | RSTART);
--		} else if (iface->manual_stop)
-+		else if (iface->manual_stop)
- 			bfin_write_TWI_MASTER_CTL(bfin_read_TWI_MASTER_CTL()
- 				| STOP);
-+		else if (iface->cur_mode == TWI_I2C_MODE_REPEAT &&
-+				iface->cur_msg+1 < iface->msg_num)
-+			bfin_write_TWI_MASTER_CTL(bfin_read_TWI_MASTER_CTL()
-+				| RSTART);
- 		SSYNC();
- 		/* Clear status */
- 		bfin_write_TWI_INT_STAT(XMTSERV);
-@@ -108,6 +116,11 @@ static void bfin_twi_handle_interrupt(struct bfin_twi_iface *iface)
- 			bfin_write_TWI_MASTER_CTL(bfin_read_TWI_MASTER_CTL()
- 				| STOP);
- 			SSYNC();
-+		} else if (iface->cur_mode == TWI_I2C_MODE_REPEAT &&
-+				iface->cur_msg+1 < iface->msg_num) {
-+			bfin_write_TWI_MASTER_CTL(bfin_read_TWI_MASTER_CTL()
-+				| RSTART);
-+			SSYNC();
- 		}
- 		/* Clear interrupt source */
- 		bfin_write_TWI_INT_STAT(RCVSERV);
-@@ -119,7 +132,7 @@ static void bfin_twi_handle_interrupt(struct bfin_twi_iface *iface)
- 		bfin_write_TWI_MASTER_STAT(0x3e);
- 		bfin_write_TWI_MASTER_CTL(0);
- 		SSYNC();
--		iface->result = -1;
-+		iface->result = -EIO;
- 		/* if both err and complete int stats are set, return proper
- 		 * results.
- 		 */
-@@ -170,6 +183,42 @@ static void bfin_twi_handle_interrupt(struct bfin_twi_iface *iface)
- 			bfin_write_TWI_MASTER_CTL(bfin_read_TWI_MASTER_CTL() |
- 				MEN | MDIR);
- 			SSYNC();
-+		} else if (iface->cur_mode == TWI_I2C_MODE_REPEAT &&
-+				iface->cur_msg+1 < iface->msg_num) {
-+			iface->cur_msg++;
-+			iface->transPtr = iface->pmsg[iface->cur_msg].buf;
-+			iface->writeNum = iface->readNum =
-+				iface->pmsg[iface->cur_msg].len;
-+			/* Set Transmit device address */
-+			bfin_write_TWI_MASTER_ADDR(
-+				iface->pmsg[iface->cur_msg].addr);
-+			if (iface->pmsg[iface->cur_msg].flags & I2C_M_RD)
-+				iface->read_write = I2C_SMBUS_READ;
-+			else {
-+				iface->read_write = I2C_SMBUS_WRITE;
-+				/* Transmit first data */
-+				if (iface->writeNum > 0) {
-+					bfin_write_TWI_XMT_DATA8(
-+						*(iface->transPtr++));
-+					iface->writeNum--;
-+					SSYNC();
-+				}
-+			}
-+
-+			if (iface->pmsg[iface->cur_msg].len <= 255)
-+				bfin_write_TWI_MASTER_CTL(
-+				iface->pmsg[iface->cur_msg].len << 6);
-+			else if (iface->pmsg[iface->cur_msg].len > 255) {
-+				bfin_write_TWI_MASTER_CTL(0xff << 6);
-+				iface->manual_stop = 1;
-+			}
-+			/* remove restart bit and enable master receive */
-+			bfin_write_TWI_MASTER_CTL(bfin_read_TWI_MASTER_CTL() &
-+				~RSTART);
-+			bfin_write_TWI_MASTER_CTL(bfin_read_TWI_MASTER_CTL() |
-+				MEN | ((iface->read_write == I2C_SMBUS_READ) ?
-+				MDIR : 0));
-+			SSYNC();
- 		} else {
- 			iface->result = 1;
- 			bfin_write_TWI_INT_MASK(0);
-@@ -221,7 +270,6 @@ static int bfin_twi_master_xfer(struct i2c_adapter *adap,
- {
- 	struct bfin_twi_iface *iface = adap->algo_data;
- 	struct i2c_msg *pmsg;
--	int i, ret;
- 	int rc = 0;
- 
- 	if (!(bfin_read_TWI_CONTROL() & TWI_ENA))
-@@ -231,81 +279,76 @@ static int bfin_twi_master_xfer(struct i2c_adapter *adap,
- 		yield();
- 	}
- 
--	ret = 0;
--	for (i = 0; rc >= 0 && i < num; i++) {
--		pmsg = &msgs[i];
--		if (pmsg->flags & I2C_M_TEN) {
--			dev_err(&(adap->dev), "i2c-bfin-twi: 10 bits addr "
--				"not supported !\n");
--			rc = -EINVAL;
--			break;
--		}
-+	iface->pmsg = msgs;
-+	iface->msg_num = num;
-+	iface->cur_msg = 0;
- 
--		iface->cur_mode = TWI_I2C_MODE_STANDARD;
--		iface->manual_stop = 0;
--		iface->transPtr = pmsg->buf;
--		iface->writeNum = iface->readNum = pmsg->len;
--		iface->result = 0;
--		iface->timeout_count = 10;
--		/* Set Transmit device address */
--		bfin_write_TWI_MASTER_ADDR(pmsg->addr);
--
--		/* FIFO Initiation. Data in FIFO should be
--		 *  discarded before start a new operation.
--		 */
--		bfin_write_TWI_FIFO_CTL(0x3);
--		SSYNC();
--		bfin_write_TWI_FIFO_CTL(0);
--		SSYNC();
-+	pmsg = &msgs[0];
-+	if (pmsg->flags & I2C_M_TEN) {
-+		dev_err(&adap->dev, "10 bits addr not supported!\n");
-+		return -EINVAL;
-+	}
- 
--		if (pmsg->flags & I2C_M_RD)
--			iface->read_write = I2C_SMBUS_READ;
--		else {
--			iface->read_write = I2C_SMBUS_WRITE;
--			/* Transmit first data */
--			if (iface->writeNum > 0) {
--				bfin_write_TWI_XMT_DATA8(*(iface->transPtr++));
--				iface->writeNum--;
--				SSYNC();
--			}
-+	iface->cur_mode = TWI_I2C_MODE_REPEAT;
-+	iface->manual_stop = 0;
-+	iface->transPtr = pmsg->buf;
-+	iface->writeNum = iface->readNum = pmsg->len;
-+	iface->result = 0;
-+	iface->timeout_count = 10;
-+	/* Set Transmit device address */
-+	bfin_write_TWI_MASTER_ADDR(pmsg->addr);
-+
-+	/* FIFO Initiation. Data in FIFO should be
-+	 *  discarded before start a new operation.
-+	 */
-+	bfin_write_TWI_FIFO_CTL(0x3);
-+	SSYNC();
-+	bfin_write_TWI_FIFO_CTL(0);
-+	SSYNC();
-+
-+	if (pmsg->flags & I2C_M_RD)
-+		iface->read_write = I2C_SMBUS_READ;
-+	else {
-+		iface->read_write = I2C_SMBUS_WRITE;
-+		/* Transmit first data */
-+		if (iface->writeNum > 0) {
-+			bfin_write_TWI_XMT_DATA8(*(iface->transPtr++));
-+			iface->writeNum--;
-+			SSYNC();
- 		}
-+	}
- 
--		/* clear int stat */
--		bfin_write_TWI_INT_STAT(MERR|MCOMP|XMTSERV|RCVSERV);
-+	/* clear int stat */
-+	bfin_write_TWI_INT_STAT(MERR | MCOMP | XMTSERV | RCVSERV);
- 
--		/* Interrupt mask . Enable XMT, RCV interrupt */
--		bfin_write_TWI_INT_MASK(MCOMP | MERR |
--			((iface->read_write == I2C_SMBUS_READ)?
--			RCVSERV : XMTSERV));
--		SSYNC();
-+	/* Interrupt mask . Enable XMT, RCV interrupt */
-+	bfin_write_TWI_INT_MASK(MCOMP | MERR | RCVSERV | XMTSERV);
-+	SSYNC();
- 
--		if (pmsg->len > 0 && pmsg->len <= 255)
--			bfin_write_TWI_MASTER_CTL(pmsg->len << 6);
--		else if (pmsg->len > 255) {
--			bfin_write_TWI_MASTER_CTL(0xff << 6);
--			iface->manual_stop = 1;
--		} else
--			break;
-+	if (pmsg->len <= 255)
-+		bfin_write_TWI_MASTER_CTL(pmsg->len << 6);
-+	else if (pmsg->len > 255) {
-+		bfin_write_TWI_MASTER_CTL(0xff << 6);
-+		iface->manual_stop = 1;
-+	}
- 
--		iface->timeout_timer.expires = jiffies + POLL_TIMEOUT;
--		add_timer(&iface->timeout_timer);
-+	iface->timeout_timer.expires = jiffies + POLL_TIMEOUT;
-+	add_timer(&iface->timeout_timer);
- 
--		/* Master enable */
--		bfin_write_TWI_MASTER_CTL(bfin_read_TWI_MASTER_CTL() | MEN |
--			((iface->read_write == I2C_SMBUS_READ) ? MDIR : 0) |
--			((CONFIG_I2C_BLACKFIN_TWI_CLK_KHZ>100) ? FAST : 0));
--		SSYNC();
-+	/* Master enable */
-+	bfin_write_TWI_MASTER_CTL(bfin_read_TWI_MASTER_CTL() | MEN |
-+		((iface->read_write == I2C_SMBUS_READ) ? MDIR : 0) |
-+		((CONFIG_I2C_BLACKFIN_TWI_CLK_KHZ > 100) ? FAST : 0));
-+	SSYNC();
- 
--		wait_for_completion(&iface->complete);
-+	wait_for_completion(&iface->complete);
- 
--		rc = iface->result;
--		if (rc == 1)
--			ret++;
--		else if (rc == -1)
--			break;
--	}
-+	rc = iface->result;
- 
--	return ret;
-+	if (rc == 1)
-+		return num;
-+	else
-+		return rc;
- }
- 
- /*
--- 
-1.5.3.4
+So the hypervisor can't allocate more resources, because they're already
+allocated, but it can't free the ones that are allocated because it
+doesn't know what they are? I don't think I understand.
+
+If that's really the way it works then eHEA is more or less broken for
+kdump I'm afraid.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-y5rS4QiXPITsc4bYsb2F
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHKsPwdSjSd0sB4dIRAh3iAJ9/4vrJwKDDsiW94b+10eQT3MKwTACgkTu4
+PT5eL1afNH+NriyRW+7COPY=
+=qa+e
+-----END PGP SIGNATURE-----
+
+--=-y5rS4QiXPITsc4bYsb2F--
+
