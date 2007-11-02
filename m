@@ -1,303 +1,506 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbXKBOgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755488AbXKBO7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757213AbXKBOgW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 10:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754221AbXKBOgL
+	id S1755488AbXKBO7n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 10:59:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbXKBO7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 10:36:11 -0400
-Received: from pne-smtpout4-sn2.hy.skanova.net ([81.228.8.154]:58639 "EHLO
-	pne-smtpout4-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754361AbXKBOgJ (ORCPT
+	Fri, 2 Nov 2007 10:59:35 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33304 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753331AbXKBO7e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 10:36:09 -0400
-Date: Fri, 2 Nov 2007 16:36:04 +0200
-From: Sami Farin <safari-kernel@safari.iki.fi>
-To: Linux kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Rik van Riel <riel@redhat.com>
-Subject: Re: kernel 2.6.23: what IS the VM doing?
-Message-ID: <20071102143604.y6v7qiax2uv2wusn@m.safari.iki.fi>
-Mail-Followup-To: Linux kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Rik van Riel <riel@redhat.com>
-References: <20070830115429.w2puzet5sllhccdk@m.safari.iki.fi> <46DE085F.2040306@redhat.com> <20070905114545.2hydqpasqx56afkf@m.safari.iki.fi> <46DED83A.8070104@redhat.com> <20070905173332.dzwkm5ofdvtjcal4@m.safari.iki.fi> <46DF3253.6030007@redhat.com> <20070914171746.7bbx2te5646zcdpr@m.safari.iki.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070914171746.7bbx2te5646zcdpr@m.safari.iki.fi>
-User-Agent: Mutt/1.5.16 (2007-10-15)
+	Fri, 2 Nov 2007 10:59:34 -0400
+Subject: [PATCH] mm: sysfs: expose the BDI object in sysfs
+From: Peter Zijlstra <peterz@infradead.org>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Greg KH <greg@kroah.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Miklos Szeredi <miklos@szeredi.hu>
+In-Reply-To: <1194013979.2440.20.camel@lov.site>
+References: <1193410087.6914.34.camel@twins>
+	 <1193412836.27652.11.camel@twins> <1193414147.2431.35.camel@lov.site>
+	 <1193429066.5648.35.camel@lappy> <1193447889.5648.44.camel@lappy>
+	 <20071027024033.GB29039@kroah.com> <1193474399.27652.15.camel@twins>
+	 <20071027160203.GA5709@kroah.com> <1193519317.5776.14.camel@lov.site>
+	 <1194009359.27652.377.camel@twins>
+	 <3ae72650711020650l37870e45yb853f888b4807116@mail.gmail.com>
+	 <1194013028.27652.387.camel@twins>  <1194013979.2440.20.camel@lov.site>
+Content-Type: text/plain
+Date: Fri, 02 Nov 2007 15:59:24 +0100
+Message-Id: <1194015564.27652.403.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 14, 2007 at 20:17:46 +0300, Sami Farin wrote:
-> On Wed, Sep 05, 2007 at 18:48:51 -0400, Rik van Riel wrote:
-> > Sami Farin wrote:
-> >> On Wed, Sep 05, 2007 at 12:24:26 -0400, Rik van Riel wrote:
-> >> ...
-> >>>> *shrug*
-> >>> The attached patch should make sure kswapd does not free an
-> >>> excessive number of pages in zone_normal just because the
-> >>> pages in zone_highmem are difficult to free.
-> >>>
-> >>> It does give kswapd a large margin to continue putting equal
-> >>> pressure on all zones in normal situations.
-> >>>
-> >>> Sami, could you try out this patch to see if it helps your
-> >>> situation?
-> >>
-> >> Thanks, Rik.  bzImage is ready, I probably reboot inside one
-> >> month for a reason or other 8-)
-> >
-> > The more I look at the bug, the more I see that it is probably
-> > not very easy to reproduce on demand.  I have, however, a full
+On Fri, 2007-11-02 at 15:32 +0100, Kay Sievers wrote:
+> On Fri, 2007-11-02 at 15:17 +0100, Peter Zijlstra wrote:
+> > One more question,
+> > 
+> > I currently prefix the names with "bdi-", is that needed?
 > 
-> Well, I now booted to x86_64 kernel.
-> 
-> I can still reproduce this.
-> When I unload ipset modules, kernel resumes "normal" operation, i.e.,
-> not swapping like mad.
+> Not really.
 
-I now have 2GB of extra RAM, so 3GB in total, on x86_64 system.
-If ipset tries to allocate 512 KB or more, kernel
-goes into swapping frenzy, of which system does not recover
-in over 30 minutes unless I press sysrq+k.
+Thanks.
 
-some kernel settings...:
-vm.dirty_ratio = 4
-vm.dirty_background_ratio = 2
-vm.swappiness = 10
-vm.vfs_cache_pressure = 10
-vm.overcommit_memory = 2
+Here is the 'pretty' patch :-)
 
-SysRq : Show Blocked State
-  task                        PC stack   pid father
-kswapd0       D 0000000000000000     0   258      2
- ffff8100be333ca0 0000000000000046 0000000000000000 0000000000000286
- ffff8100be333c50 ffffffff00000000 ffff8100be560080 ffffffff807af3c0
- 0000000000000064 00000001285af6e6 00000000000000ff ffffffff802463f8
-Call Trace:
- [<ffffffff802463f8>] __mod_timer+0xb8/0xd0
- [<ffffffff80657da3>] schedule_timeout+0x63/0xd0
- [<ffffffff80246120>] process_timeout+0x0/0x10
- [<ffffffff806576f8>] io_schedule_timeout+0x28/0x40
- [<ffffffff8027f5fc>] congestion_wait+0x8c/0xb0
- [<ffffffff802524e0>] autoremove_wake_function+0x0/0x40
- [<ffffffff80279ad4>] throttle_vm_writeout+0x54/0xc0
- [<ffffffff8027d6f3>] shrink_zone+0xe3/0x140
- [<ffffffff8027dea0>] kswapd+0x510/0x5b0
- [<ffffffff802524e0>] autoremove_wake_function+0x0/0x40
- [<ffffffff8027d990>] kswapd+0x0/0x5b0
- [<ffffffff802520dd>] kthread+0x4d/0x80
- [<ffffffff8020cae8>] child_rip+0xa/0x12
- [<ffffffff80252090>] kthread+0x0/0x80
- [<ffffffff8020cade>] child_rip+0x0/0x12
+Since it relies on the removal of the device name length limit, this
+should not yet be applied.
 
-irqbalance    D 0000000000aa7f00     0  2110      1
- ffff8100b8c4fcd8 0000000000000082 0000000000000000 0000000000000000
- ffff8100a5e57f00 0000000800700006 ffff8100be5f91c0 ffff810060182140
- ffff8100b8c4fc88 0000000000000282 ffff8100b8c4fcb8 ffffffff8040e1f6
-Call Trace:
- [<ffffffff8040e1f6>] __up_read+0x46/0xb0
- [<ffffffff806579d8>] io_schedule+0x28/0x40
- [<ffffffff802736e7>] sync_page+0x37/0x50
- [<ffffffff80657e9e>] __wait_on_bit_lock+0x4e/0x80
- [<ffffffff802736b0>] sync_page+0x0/0x50
- [<ffffffff80273695>] __lock_page+0x65/0x70
- [<ffffffff80252520>] wake_bit_function+0x0/0x30
- [<ffffffff80282289>] handle_mm_fault+0x269/0x870
- [<ffffffff802261b4>] do_page_fault+0x1a4/0x900
- [<ffffffff8028cafe>] free_pages_and_swap_cache+0x9e/0xd0
- [<ffffffff80285b86>] unmap_region+0x136/0x150
- [<ffffffff80285bfe>] remove_vma+0x5e/0x70
- [<ffffffff8040e330>] __up_write+0xd0/0x130
- [<ffffffff80659d9d>] error_exit+0x0/0x84
+---
+Subject: mm: sysfs: expose the BDI object in sysfs
 
-svscan        D 0000000000df7900     0  2438      1
- ffff8100b6607cd8 0000000000000082 0000000000000000 0000000000000000
- ffff81005f81fd80 0000000800700006 ffff8100bb516180 ffff810060182140
- ffff8100b6607c88 0000000000000282 ffff8100b6607cb8 ffffffff8040e1f6
-Call Trace:
- [<ffffffff8040e1f6>] __up_read+0x46/0xb0
- [<ffffffff806579d8>] io_schedule+0x28/0x40
- [<ffffffff802736e7>] sync_page+0x37/0x50
- [<ffffffff80657e9e>] __wait_on_bit_lock+0x4e/0x80
- [<ffffffff802736b0>] sync_page+0x0/0x50
- [<ffffffff80273695>] __lock_page+0x65/0x70
- [<ffffffff80252520>] wake_bit_function+0x0/0x30
- [<ffffffff80282289>] handle_mm_fault+0x269/0x870
- [<ffffffff803acc2c>] xfs_vn_getattr+0x4c/0x140
- [<ffffffff802261b4>] do_page_fault+0x1a4/0x900
- [<ffffffff8029cf80>] vfs_getattr+0x60/0x90
- [<ffffffff8029d515>] vfs_fstat+0x45/0x60
- [<ffffffff8022b35e>] sys32_fstat64+0x2e/0x40
- [<ffffffff80659d9d>] error_exit+0x0/0x84
-...
-ipset         D 0000000000000000     0  3713   3574
- ffff8100566237a8 0000000000000086 ffff810056623748 ffffffff802335e2
- ffff810056623748 0000000000000010 ffff8100b085e0c0 ffff810060182140
- ffff810056623758 0000000000000282 ffff810056623788 ffffffff8040e1f6
-Call Trace:
- [<ffffffff802335e2>] enqueue_entity+0x42/0x60
- [<ffffffff8040e1f6>] __up_read+0x46/0xb0
- [<ffffffff806579d8>] io_schedule+0x28/0x40
- [<ffffffff802736e7>] sync_page+0x37/0x50
- [<ffffffff80657fb5>] __wait_on_bit+0x55/0x80
- [<ffffffff802736b0>] sync_page+0x0/0x50
- [<ffffffff802738bf>] wait_on_page_bit+0x6f/0x80
- [<ffffffff80252520>] wake_bit_function+0x0/0x30
- [<ffffffff8027ccd4>] shrink_page_list+0x164/0x680
- [<ffffffff8024632a>] del_timer_sync+0x1a/0x30
- [<ffffffff80657dab>] schedule_timeout+0x6b/0xd0
- [<ffffffff80246120>] process_timeout+0x0/0x10
- [<ffffffff8027f60a>] congestion_wait+0x9a/0xb0
- [<ffffffff8027d5fa>] shrink_inactive_list+0x40a/0x420
- [<ffffffff8027d6df>] shrink_zone+0xcf/0x140
- [<ffffffff8027e3f4>] try_to_free_pages+0x174/0x270
- [<ffffffff802786c0>] __alloc_pages+0x160/0x350
- [<ffffffff8023cc77>] printk+0x67/0x70
- [<ffffffff80295d53>] cache_alloc_refill+0x2e3/0x570
- [<ffffffff802960f3>] __kmalloc+0x113/0x120
- [<ffffffff882f9283>] :ip_set_nethash:retry+0x183/0x500
- [<ffffffff882ad7af>] :ip_set:__ip_set_addip+0x6f/0x90
- [<ffffffff882aea2d>] :ip_set:ip_set_sockfn_get+0x93d/0xd50
- [<ffffffff805cb1b2>] nf_sockopt+0x142/0x150
- [<ffffffff805cb1cf>] nf_getsockopt+0xf/0x20
- [<ffffffff805d9398>] ip_getsockopt+0x98/0xc0
- [<ffffffff805f4391>] raw_getsockopt+0x11/0x30
- [<ffffffff805a20af>] sock_common_getsockopt+0xf/0x20
- [<ffffffff8059fe8c>] sys_getsockopt+0x9c/0xd0
- [<ffffffff8020be4c>] tracesys+0xdc/0xe1
+Provide a place in sysfs for the backing_dev_info object.
+This allows us to see and set the various BDI specific variables.
 
+In particular this properly exposes the read-ahead window for all
+relevant users and /sys/block/<block>/queue/read_ahead_kb should be
+deprecated.
 
-SysRq : Show Memory
-Mem-info:
-DMA per-cpu:
-CPU    0: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-CPU    1: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-DMA32 per-cpu:
-CPU    0: Hot: hi:  186, btch:  31 usd:  22   Cold: hi:   62, btch:  15 usd:  55
-CPU    1: Hot: hi:  186, btch:  31 usd:  13   Cold: hi:   62, btch:  15 usd:   4
-Active:10058 inactive:2274 dirty:1 writeback:106 unstable:0
- free:691389 slab:15936 mapped:1584 pagetables:4579 bounce:0
-DMA free:9108kB min:16kB low:20kB high:24kB active:0kB inactive:0kB present:8604kB pages_scanned:0 all_unreclaimable? yes
-lowmem_reserve[]: 0 2988 2988 2988
-DMA32 free:2756448kB min:6984kB low:8728kB high:10476kB active:40232kB inactive:9096kB present:3060476kB pages_scanned:166 all_unreclaimable? no
-lowmem_reserve[]: 0 0 0 0
-DMA: 5*4kB 4*8kB 2*16kB 4*32kB 3*64kB 2*128kB 1*256kB 0*512kB 2*1024kB 1*2048kB 1*4096kB = 9108kB
-DMA32: 14501*4kB 15671*8kB 13250*16kB 10866*32kB 8172*64kB 4993*128kB 2039*256kB 501*512kB 51*1024kB 10*2048kB 0*4096kB = 2756396kB
-Swap cache: add 320914, delete 319423, find 5260/12831, race 0+3
-Free swap  = 2853404kB
-Total swap = 3911784kB
-Free swap:       2853404kB
-780032 pages of RAM
-14430 reserved pages
-52938 pages shared
-1491 pages swap cached
-SysRq : Show Memory
-Mem-info:
-DMA per-cpu:
-CPU    0: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-CPU    1: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-DMA32 per-cpu:
-CPU    0: Hot: hi:  186, btch:  31 usd:  27   Cold: hi:   62, btch:  15 usd:  54
-CPU    1: Hot: hi:  186, btch:  31 usd:   6   Cold: hi:   62, btch:  15 usd:   1
-Active:10223 inactive:2151 dirty:0 writeback:122 unstable:0
- free:691292 slab:16134 mapped:1645 pagetables:4494 bounce:0
-DMA free:9108kB min:16kB low:20kB high:24kB active:0kB inactive:0kB present:8604kB pages_scanned:0 all_unreclaimable? yes
-lowmem_reserve[]: 0 2988 2988 2988
-DMA32 free:2756060kB min:6984kB low:8728kB high:10476kB active:40892kB inactive:8604kB present:3060476kB pages_scanned:39 all_unreclaimable? no
-lowmem_reserve[]: 0 0 0 0
-DMA: 5*4kB 4*8kB 2*16kB 4*32kB 3*64kB 2*128kB 1*256kB 0*512kB 2*1024kB 1*2048kB 1*4096kB = 9108kB
-DMA32: 13655*4kB 15211*8kB 12903*16kB 10596*32kB 8005*64kB 4982*128kB 2094*256kB 522*512kB 59*1024kB 10*2048kB 0*4096kB = 2756068kB
-Swap cache: add 412691, delete 411114, find 12357/32547, race 0+4
-Free swap  = 2853920kB
-Total swap = 3911784kB
-Free swap:       2853920kB
-780032 pages of RAM
-14430 reserved pages
-52619 pages shared
-1577 pages swap cached
+With patient help from Kay Sievers and Greg KH
 
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ block/genhd.c               |    3 +
+ fs/fuse/inode.c             |    3 -
+ fs/nfs/client.c             |   24 +++++----
+ fs/nfs/internal.h           |   10 ++--
+ fs/nfs/super.c              |   10 ++--
+ include/linux/backing-dev.h |   19 +++++++
+ include/linux/writeback.h   |    3 +
+ lib/percpu_counter.c        |    1 
+ mm/backing-dev.c            |  109 ++++++++++++++++++++++++++++++++++++++++++++
+ mm/page-writeback.c         |    2 
+ 10 files changed, 163 insertions(+), 21 deletions(-)
 
-5 min later...
+Index: linux-2.6-2/block/genhd.c
+===================================================================
+--- linux-2.6-2.orig/block/genhd.c
++++ linux-2.6-2/block/genhd.c
+@@ -182,6 +182,8 @@ void add_disk(struct gendisk *disk)
+ 			    disk->minors, NULL, exact_match, exact_lock, disk);
+ 	register_disk(disk);
+ 	blk_register_queue(disk);
++	bdi_register(&disk->queue->backing_dev_info, NULL,
++		"%s", disk->disk_name);
+ }
+ 
+ EXPORT_SYMBOL(add_disk);
+@@ -190,6 +192,7 @@ EXPORT_SYMBOL(del_gendisk);	/* in partit
+ void unlink_gendisk(struct gendisk *disk)
+ {
+ 	blk_unregister_queue(disk);
++	bdi_unregister(&disk->queue->backing_dev_info);
+ 	blk_unregister_region(MKDEV(disk->major, disk->first_minor),
+ 			      disk->minors);
+ }
+Index: linux-2.6-2/fs/fuse/inode.c
+===================================================================
+--- linux-2.6-2.orig/fs/fuse/inode.c
++++ linux-2.6-2/fs/fuse/inode.c
+@@ -467,7 +467,8 @@ static struct fuse_conn *new_conn(void)
+ 		atomic_set(&fc->num_waiting, 0);
+ 		fc->bdi.ra_pages = (VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
+ 		fc->bdi.unplug_io_fn = default_unplug_io_fn;
+-		err = bdi_init(&fc->bdi);
++		err = bdi_init_fmt(&fc->bdi, NULL,
++				"fuse-%llu", (unsigned long long)fc->id);
+ 		if (err) {
+ 			kfree(fc);
+ 			fc = NULL;
+Index: linux-2.6-2/fs/nfs/client.c
+===================================================================
+--- linux-2.6-2.orig/fs/nfs/client.c
++++ linux-2.6-2/fs/nfs/client.c
+@@ -657,7 +657,8 @@ static void nfs_server_set_fsinfo(struct
+ /*
+  * Probe filesystem information, including the FSID on v2/v3
+  */
+-static int nfs_probe_fsinfo(struct nfs_server *server, struct nfs_fh *mntfh, struct nfs_fattr *fattr)
++static int nfs_probe_fsinfo(struct nfs_server *server, struct nfs_fh *mntfh,
++		struct nfs_fattr *fattr, const char *dev_name)
+ {
+ 	struct nfs_fsinfo fsinfo;
+ 	struct nfs_client *clp = server->nfs_client;
+@@ -678,7 +679,8 @@ static int nfs_probe_fsinfo(struct nfs_s
+ 		goto out_error;
+ 
+ 	nfs_server_set_fsinfo(server, &fsinfo);
+-	error = bdi_init(&server->backing_dev_info);
++	error = bdi_init_fmt(&server->backing_dev_info, NULL,
++			     "nfs-%s", dev_name);
+ 	if (error)
+ 		goto out_error;
+ 
+@@ -772,7 +774,7 @@ void nfs_free_server(struct nfs_server *
+  * - keyed on server and FSID
+  */
+ struct nfs_server *nfs_create_server(const struct nfs_parsed_mount_data *data,
+-				     struct nfs_fh *mntfh)
++				     struct nfs_fh *mntfh, const char *dev_name)
+ {
+ 	struct nfs_server *server;
+ 	struct nfs_fattr fattr;
+@@ -792,7 +794,7 @@ struct nfs_server *nfs_create_server(con
+ 	BUG_ON(!server->nfs_client->rpc_ops->file_inode_ops);
+ 
+ 	/* Probe the root fh to retrieve its FSID */
+-	error = nfs_probe_fsinfo(server, mntfh, &fattr);
++	error = nfs_probe_fsinfo(server, mntfh, &fattr, dev_name);
+ 	if (error < 0)
+ 		goto error;
+ 	if (server->nfs_client->rpc_ops->version == 3) {
+@@ -949,7 +951,7 @@ static int nfs4_init_server(struct nfs_s
+  * - keyed on server and FSID
+  */
+ struct nfs_server *nfs4_create_server(const struct nfs_parsed_mount_data *data,
+-				      struct nfs_fh *mntfh)
++				      struct nfs_fh *mntfh, const char *dev_name)
+ {
+ 	struct nfs_fattr fattr;
+ 	struct nfs_server *server;
+@@ -991,7 +993,7 @@ struct nfs_server *nfs4_create_server(co
+ 		(unsigned long long) server->fsid.minor);
+ 	dprintk("Mount FH: %d\n", mntfh->size);
+ 
+-	error = nfs_probe_fsinfo(server, mntfh, &fattr);
++	error = nfs_probe_fsinfo(server, mntfh, &fattr, dev_name);
+ 	if (error < 0)
+ 		goto error;
+ 
+@@ -1021,7 +1023,8 @@ error:
+  * Create an NFS4 referral server record
+  */
+ struct nfs_server *nfs4_create_referral_server(struct nfs_clone_mount *data,
+-					       struct nfs_fh *mntfh)
++					       struct nfs_fh *mntfh,
++					       const char *dev_name)
+ {
+ 	struct nfs_client *parent_client;
+ 	struct nfs_server *server, *parent_server;
+@@ -1066,7 +1069,7 @@ struct nfs_server *nfs4_create_referral_
+ 		goto error;
+ 
+ 	/* probe the filesystem info for this server filesystem */
+-	error = nfs_probe_fsinfo(server, mntfh, &fattr);
++	error = nfs_probe_fsinfo(server, mntfh, &fattr, dev_name);
+ 	if (error < 0)
+ 		goto error;
+ 
+@@ -1100,7 +1103,8 @@ error:
+  */
+ struct nfs_server *nfs_clone_server(struct nfs_server *source,
+ 				    struct nfs_fh *fh,
+-				    struct nfs_fattr *fattr)
++				    struct nfs_fattr *fattr,
++				    const char *dev_name)
+ {
+ 	struct nfs_server *server;
+ 	struct nfs_fattr fattr_fsinfo;
+@@ -1128,7 +1132,7 @@ struct nfs_server *nfs_clone_server(stru
+ 		nfs_init_server_aclclient(server);
+ 
+ 	/* probe the filesystem info for this server filesystem */
+-	error = nfs_probe_fsinfo(server, fh, &fattr_fsinfo);
++	error = nfs_probe_fsinfo(server, fh, &fattr_fsinfo, dev_name);
+ 	if (error < 0)
+ 		goto out_free_server;
+ 
+Index: linux-2.6-2/include/linux/backing-dev.h
+===================================================================
+--- linux-2.6-2.orig/include/linux/backing-dev.h
++++ linux-2.6-2/include/linux/backing-dev.h
+@@ -11,6 +11,8 @@
+ #include <linux/percpu_counter.h>
+ #include <linux/log2.h>
+ #include <linux/proportions.h>
++#include <linux/kernel.h>
++#include <linux/device.h>
+ #include <asm/atomic.h>
+ 
+ struct page;
+@@ -48,11 +50,28 @@ struct backing_dev_info {
+ 
+ 	struct prop_local_percpu completions;
+ 	int dirty_exceeded;
++
++	struct device *dev;
+ };
+ 
+ int bdi_init(struct backing_dev_info *bdi);
+ void bdi_destroy(struct backing_dev_info *bdi);
+ 
++int bdi_register(struct backing_dev_info *bdi, struct device *parent,
++		const char *fmt, ...);
++void bdi_unregister(struct backing_dev_info *bdi);
++
++#define bdi_init_fmt(bdi, parent, fmt...)			\
++	({							\
++	 	int ret = bdi_init(bdi);			\
++	 	if (!ret) {					\
++	 		ret = bdi_register(bdi, parent, ##fmt);	\
++	 		if (ret)				\
++	 			bdi_destroy(bdi);		\
++	 	}						\
++	 	ret;						\
++	 })
++
+ static inline void __add_bdi_stat(struct backing_dev_info *bdi,
+ 		enum bdi_stat_item item, s64 amount)
+ {
+Index: linux-2.6-2/include/linux/writeback.h
+===================================================================
+--- linux-2.6-2.orig/include/linux/writeback.h
++++ linux-2.6-2/include/linux/writeback.h
+@@ -113,6 +113,9 @@ struct file;
+ int dirty_writeback_centisecs_handler(struct ctl_table *, int, struct file *,
+ 				      void __user *, size_t *, loff_t *);
+ 
++void get_dirty_limits(long *pbackground, long *pdirty, long *pbdi_dirty,
++		 struct backing_dev_info *bdi);
++
+ void page_writeback_init(void);
+ void balance_dirty_pages_ratelimited_nr(struct address_space *mapping,
+ 					unsigned long nr_pages_dirtied);
+Index: linux-2.6-2/mm/backing-dev.c
+===================================================================
+--- linux-2.6-2.orig/mm/backing-dev.c
++++ linux-2.6-2/mm/backing-dev.c
+@@ -4,12 +4,119 @@
+ #include <linux/fs.h>
+ #include <linux/sched.h>
+ #include <linux/module.h>
++#include <linux/writeback.h>
++#include <linux/device.h>
++
++
++static struct class *bdi_class;
++
++static ssize_t read_ahead_kb_store(struct device *dev,
++				  struct device_attribute *attr,
++				  const char *buf, size_t count)
++{
++	struct backing_dev_info *bdi = dev_get_drvdata(dev);
++	char *end;
++
++	bdi->ra_pages = simple_strtoul(buf, &end, 10) >> (PAGE_SHIFT - 10);
++
++	return end - buf;
++}
++
++#define K(pages) ((pages) << (PAGE_SHIFT - 10))
++
++#define BDI_SHOW(name, expr)						\
++static ssize_t name##_show(struct device *dev,				\
++			   struct device_attribute *attr, char *page)	\
++{									\
++	struct backing_dev_info *bdi = dev_get_drvdata(dev);		\
++									\
++	return snprintf(page, PAGE_SIZE-1, "%lld\n", (long long)expr);	\
++}
++
++BDI_SHOW(read_ahead_kb, K(bdi->ra_pages))
++
++BDI_SHOW(reclaimable_kb, K(bdi_stat(bdi, BDI_RECLAIMABLE)))
++BDI_SHOW(writeback_kb, K(bdi_stat(bdi, BDI_WRITEBACK)))
++
++static inline unsigned long get_dirty(struct backing_dev_info *bdi, int i)
++{
++	unsigned long thresh[3];
++
++	get_dirty_limits(&thresh[0], &thresh[1], &thresh[2], bdi);
++
++	return thresh[i];
++}
++
++BDI_SHOW(dirty_kb, K(get_dirty(bdi, 1)))
++BDI_SHOW(bdi_dirty_kb, K(get_dirty(bdi, 2)))
++
++#define __ATTR_RW(attr) __ATTR(attr, 0644, attr##_show, attr##_store)
++
++static struct device_attribute bdi_dev_attrs[] = {
++	__ATTR_RW(read_ahead_kb),
++	__ATTR_RO(reclaimable_kb),
++	__ATTR_RO(writeback_kb),
++	__ATTR_RO(dirty_kb),
++	__ATTR_RO(bdi_dirty_kb),
++	__ATTR_NULL,
++};
++
++static __init int bdi_class_init(void)
++{
++	bdi_class = class_create(THIS_MODULE, "bdi");
++	bdi_class->dev_attrs = bdi_dev_attrs;
++	return 0;
++}
++
++__initcall(bdi_class_init);
++
++int bdi_register(struct backing_dev_info *bdi, struct device *parent,
++		const char *fmt, ...)
++{
++	char *name;
++	va_list args;
++	int ret = 0;
++	struct device *dev;
++
++	va_start(args, fmt);
++	name = kvasprintf(GFP_KERNEL, fmt, args);
++	va_end(args);
++
++	if (!name)
++		return -ENOMEM;
++
++	dev = device_create(bdi_class, parent, MKDEV(0,0), name);
++	if (IS_ERR(dev)) {
++		ret = PTR_ERR(dev);
++		goto exit;
++	}
++
++	bdi->dev = dev;
++	dev_set_drvdata(bdi->dev, bdi);
++
++exit:
++	kfree(name);
++	return ret;
++}
++
++void bdi_unregister(struct backing_dev_info *bdi)
++{
++	if (bdi->dev) {
++		device_unregister(bdi->dev);
++		bdi->dev = NULL;
++	}
++}
++
++EXPORT_SYMBOL(bdi_register);
++EXPORT_SYMBOL(bdi_unregister);
+ 
+ int bdi_init(struct backing_dev_info *bdi)
+ {
+ 	int i, j;
+ 	int err;
+ 
++	bdi->dev = NULL;
++
+ 	for (i = 0; i < NR_BDI_STAT_ITEMS; i++) {
+ 		err = percpu_counter_init_irq(&bdi->bdi_stat[i], 0);
+ 		if (err)
+@@ -33,6 +140,8 @@ void bdi_destroy(struct backing_dev_info
+ {
+ 	int i;
+ 
++	bdi_unregister(bdi);
++
+ 	for (i = 0; i < NR_BDI_STAT_ITEMS; i++)
+ 		percpu_counter_destroy(&bdi->bdi_stat[i]);
+ 
+Index: linux-2.6-2/mm/page-writeback.c
+===================================================================
+--- linux-2.6-2.orig/mm/page-writeback.c
++++ linux-2.6-2/mm/page-writeback.c
+@@ -291,7 +291,7 @@ static unsigned long determine_dirtyable
+ 	return x + 1;	/* Ensure that we never return 0 */
+ }
+ 
+-static void
++void
+ get_dirty_limits(long *pbackground, long *pdirty, long *pbdi_dirty,
+ 		 struct backing_dev_info *bdi)
+ {
+Index: linux-2.6-2/lib/percpu_counter.c
+===================================================================
+--- linux-2.6-2.orig/lib/percpu_counter.c
++++ linux-2.6-2/lib/percpu_counter.c
+@@ -102,6 +102,7 @@ void percpu_counter_destroy(struct percp
+ 		return;
+ 
+ 	free_percpu(fbc->counters);
++	fbc->counters = NULL;
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	mutex_lock(&percpu_counters_lock);
+ 	list_del(&fbc->list);
+Index: linux-2.6-2/fs/nfs/internal.h
+===================================================================
+--- linux-2.6-2.orig/fs/nfs/internal.h
++++ linux-2.6-2/fs/nfs/internal.h
+@@ -65,16 +65,18 @@ extern void nfs_put_client(struct nfs_cl
+ extern struct nfs_client *nfs_find_client(const struct sockaddr_in *, int);
+ extern struct nfs_server *nfs_create_server(
+ 					const struct nfs_parsed_mount_data *,
+-					struct nfs_fh *);
++					struct nfs_fh *, const char *);
+ extern struct nfs_server *nfs4_create_server(
+ 					const struct nfs_parsed_mount_data *,
+-					struct nfs_fh *);
++					struct nfs_fh *, const char *);
+ extern struct nfs_server *nfs4_create_referral_server(struct nfs_clone_mount *,
+-						      struct nfs_fh *);
++						      struct nfs_fh *,
++						      const char *);
+ extern void nfs_free_server(struct nfs_server *server);
+ extern struct nfs_server *nfs_clone_server(struct nfs_server *,
+ 					   struct nfs_fh *,
+-					   struct nfs_fattr *);
++					   struct nfs_fattr *,
++					   const char *);
+ #ifdef CONFIG_PROC_FS
+ extern int __init nfs_fs_proc_init(void);
+ extern void nfs_fs_proc_exit(void);
+Index: linux-2.6-2/fs/nfs/super.c
+===================================================================
+--- linux-2.6-2.orig/fs/nfs/super.c
++++ linux-2.6-2/fs/nfs/super.c
+@@ -1359,7 +1359,7 @@ static int nfs_get_sb(struct file_system
+ 		goto out;
+ 
+ 	/* Get a volume representation */
+-	server = nfs_create_server(&data, &mntfh);
++	server = nfs_create_server(&data, &mntfh, dev_name);
+ 	if (IS_ERR(server)) {
+ 		error = PTR_ERR(server);
+ 		goto out;
+@@ -1442,7 +1442,7 @@ static int nfs_xdev_get_sb(struct file_s
+ 	dprintk("--> nfs_xdev_get_sb()\n");
+ 
+ 	/* create a new volume representation */
+-	server = nfs_clone_server(NFS_SB(data->sb), data->fh, data->fattr);
++	server = nfs_clone_server(NFS_SB(data->sb), data->fh, data->fattr, dev_name);
+ 	if (IS_ERR(server)) {
+ 		error = PTR_ERR(server);
+ 		goto out_err_noserver;
+@@ -1702,7 +1702,7 @@ static int nfs4_get_sb(struct file_syste
+ 		goto out;
+ 
+ 	/* Get a volume representation */
+-	server = nfs4_create_server(&data, &mntfh);
++	server = nfs4_create_server(&data, &mntfh, dev_name);
+ 	if (IS_ERR(server)) {
+ 		error = PTR_ERR(server);
+ 		goto out;
+@@ -1787,7 +1787,7 @@ static int nfs4_xdev_get_sb(struct file_
+ 	dprintk("--> nfs4_xdev_get_sb()\n");
+ 
+ 	/* create a new volume representation */
+-	server = nfs_clone_server(NFS_SB(data->sb), data->fh, data->fattr);
++	server = nfs_clone_server(NFS_SB(data->sb), data->fh, data->fattr, dev_name);
+ 	if (IS_ERR(server)) {
+ 		error = PTR_ERR(server);
+ 		goto out_err_noserver;
+@@ -1861,7 +1861,7 @@ static int nfs4_referral_get_sb(struct f
+ 	dprintk("--> nfs4_referral_get_sb()\n");
+ 
+ 	/* create a new volume representation */
+-	server = nfs4_create_referral_server(data, &mntfh);
++	server = nfs4_create_referral_server(data, &mntfh, dev_name);
+ 	if (IS_ERR(server)) {
+ 		error = PTR_ERR(server);
+ 		goto out_err_noserver;
 
-kswapd0       D 0000000000000000     0   258      2
- ffff8100be333d30 0000000000000046 0000000000000000 0000000000000286
- ffff8100be333ce0 ffffffff00000000 ffff8100be560080 ffffffff807af3c0
- 0000000000000064 00000001286155f2 00000000000000ff ffffffff802463f8
-Call Trace:
- [<ffffffff802463f8>] __mod_timer+0xb8/0xd0
- [<ffffffff80657da3>] schedule_timeout+0x63/0xd0
- [<ffffffff80246120>] process_timeout+0x0/0x10
- [<ffffffff806576f8>] io_schedule_timeout+0x28/0x40
- [<ffffffff8027f5fc>] congestion_wait+0x8c/0xb0
- [<ffffffff802524e0>] autoremove_wake_function+0x0/0x40
- [<ffffffff8027ded5>] kswapd+0x545/0x5b0
- [<ffffffff802524e0>] autoremove_wake_function+0x0/0x40
- [<ffffffff8027d990>] kswapd+0x0/0x5b0
- [<ffffffff802520dd>] kthread+0x4d/0x80
- [<ffffffff8020cae8>] child_rip+0xa/0x12
- [<ffffffff80252090>] kthread+0x0/0x80
- [<ffffffff8020cade>] child_rip+0x0/0x12
-
-
-
-
-Before this ipset test, I had around 100 KB swap used,
-after ipset finished and I restarted Xorg I had 500 MB.
-
-vmstat after I restarted Xorg:
-
-nr_free_pages 614862
-nr_inactive 27488
-nr_active 62666
-nr_anon_pages 37065
-nr_mapped 7015
-nr_file_pages 66637
-nr_dirty 3
-nr_writeback 0
-nr_slab_reclaimable 4257
-nr_slab_unreclaimable 10737
-nr_page_table_pages 2652
-nr_unstable 0
-nr_bounce 0
-nr_vmscan_write 340956
-pgpgin 78462562
-pgpgout 67868956
-pswpin 625227
-pswpout 338578
-pgalloc_dma 0
-pgalloc_dma32 399577709
-pgalloc_normal 0
-pgalloc_movable 0
-pgfree 400192776
-pgactivate 19916454
-pgdeactivate 18092870
-pgfault 472557115
-pgmajfault 291798
-pgrefill_dma 0
-pgrefill_dma32 97774325
-pgrefill_normal 0
-pgrefill_movable 0
-pgsteal_dma 0
-pgsteal_dma32 24633836
-pgsteal_normal 0
-pgsteal_movable 0
-pgscan_kswapd_dma 0
-pgscan_kswapd_dma32 28206694
-pgscan_kswapd_normal 0
-pgscan_kswapd_movable 0
-pgscan_direct_dma 0
-pgscan_direct_dma32 574376
-pgscan_direct_normal 0
-pgscan_direct_movable 0
-pginodesteal 0
-slabs_scanned 4761472
-kswapd_steal 24497549
-kswapd_inodesteal 232
-pageoutrun 392180
-allocstall 949
-pgrotated 315045
-
-
--- 
-Do what you love because life is too short for anything else.
 
