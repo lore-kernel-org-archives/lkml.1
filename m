@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760523AbXKBPo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759979AbXKBPpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760523AbXKBPo7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 11:44:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759335AbXKBPn4
+	id S1759979AbXKBPpk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 11:45:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758683AbXKBPoc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 11:43:56 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:49697 "EHLO
+	Fri, 2 Nov 2007 11:44:32 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:53863 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757158AbXKBPnz (ORCPT
+	with ESMTP id S1760111AbXKBPob (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 11:43:55 -0400
-Date: Fri, 2 Nov 2007 16:43:32 +0100
+	Fri, 2 Nov 2007 11:44:31 -0400
+Date: Fri, 2 Nov 2007 16:44:09 +0100
 From: Adrian Bunk <bunk@kernel.org>
-To: jgarzik@pobox.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] drivers/net/chelsio/: #if 0 unused functions
-Message-ID: <20071102154332.GL30287@stusta.de>
+To: mingo@redhat.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] proper prototype for kernel/sched.c:migration_init()
+Message-ID: <20071102154409.GM30287@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,87 +23,85 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch #if 0's the following unused functions:
-- espi.c:t1_espi_set_misc_ctrl()
-- sge.c:t1_sched_set_max_avail_bytes()
-- sge.c:t1_sched_set_drain_bits_per_us()
+This patch adds a proper prototype for migration_init() in 
+include/linux/sched.h
+
+Since there's no point in always returning 0 to a caller that doesn't 
+check the return value it also changes the function to return void.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/net/chelsio/espi.c |    2 ++
- drivers/net/chelsio/espi.h |    1 -
- drivers/net/chelsio/sge.c  |    4 ++++
- drivers/net/chelsio/sge.h  |    2 --
- 4 files changed, 6 insertions(+), 3 deletions(-)
+ include/linux/sched.h |    8 ++++++++
+ init/main.c           |    4 +---
+ kernel/sched.c        |    4 +---
+ 3 files changed, 10 insertions(+), 6 deletions(-)
 
-21c8ac8bf68a9ca84d7548003294535484140b59 
-diff --git a/drivers/net/chelsio/espi.c b/drivers/net/chelsio/espi.c
-index d7c5406..1e0749e 100644
---- a/drivers/net/chelsio/espi.c
-+++ b/drivers/net/chelsio/espi.c
-@@ -297,6 +297,7 @@ struct peespi *t1_espi_create(adapter_t *adapter)
- 	return espi;
+78199d6267bc667b7508606b1ba9c1dc2a694239 
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 155d743..9bdc784 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1983,6 +1983,14 @@ static inline void inc_syscw(struct task_struct *tsk)
  }
+ #endif
  
-+#if 0
- void t1_espi_set_misc_ctrl(adapter_t *adapter, u32 val)
- {
- 	struct peespi *espi = adapter->espi;
-@@ -309,6 +310,7 @@ void t1_espi_set_misc_ctrl(adapter_t *adapter, u32 val)
- 	writel(espi->misc_ctrl, adapter->regs + A_ESPI_MISC_CONTROL);
- 	spin_unlock(&espi->lock);
- }
-+#endif  /*  0  */
- 
- u32 t1_espi_get_mon(adapter_t *adapter, u32 addr, u8 wait)
- {
-diff --git a/drivers/net/chelsio/espi.h b/drivers/net/chelsio/espi.h
-index 84f2c98..5694aad 100644
---- a/drivers/net/chelsio/espi.h
-+++ b/drivers/net/chelsio/espi.h
-@@ -62,7 +62,6 @@ void t1_espi_intr_disable(struct peespi *);
- int t1_espi_intr_handler(struct peespi *);
- const struct espi_intr_counts *t1_espi_get_intr_counts(struct peespi *espi);
- 
--void t1_espi_set_misc_ctrl(adapter_t *adapter, u32 val);
- u32 t1_espi_get_mon(adapter_t *adapter, u32 addr, u8 wait);
- int t1_espi_get_mon_t204(adapter_t *, u32 *, u8);
- 
-diff --git a/drivers/net/chelsio/sge.c b/drivers/net/chelsio/sge.c
-index ffa7e64..e3668d7 100644
---- a/drivers/net/chelsio/sge.c
-+++ b/drivers/net/chelsio/sge.c
-@@ -330,6 +330,8 @@ unsigned int t1_sched_update_parms(struct sge *sge, unsigned int port,
- 	return max_avail_segs * (p->mtu - 40);
- }
- 
-+#if 0
++#ifdef CONFIG_SMP
++void migration_init(void);
++#else
++static inline void migration_init(void)
++{
++}
++#endif
 +
- /*
-  * t1_sched_max_avail_bytes() tells the scheduler the maximum amount of
-  * data that can be pushed per port.
-@@ -357,6 +359,8 @@ void t1_sched_set_drain_bits_per_us(struct sge *sge, unsigned int port,
- 	t1_sched_update_parms(sge, port, 0, 0);
+ #endif /* __KERNEL__ */
+ 
+ #endif
+diff --git a/init/main.c b/init/main.c
+index f605a96..80b04b6 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -56,6 +56,7 @@
+ #include <linux/pid_namespace.h>
+ #include <linux/device.h>
+ #include <linux/kthread.h>
++#include <linux/sched.h>
+ 
+ #include <asm/io.h>
+ #include <asm/bugs.h>
+@@ -747,11 +748,8 @@ __setup("nosoftlockup", nosoftlockup_setup);
+ static void __init do_pre_smp_initcalls(void)
+ {
+ 	extern int spawn_ksoftirqd(void);
+-#ifdef CONFIG_SMP
+-	extern int migration_init(void);
+ 
+ 	migration_init();
+-#endif
+ 	spawn_ksoftirqd();
+ 	if (!nosoftlockup)
+ 		spawn_softlockup_task();
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 3f6bd11..2f8b4e7 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -5621,7 +5621,7 @@ static struct notifier_block __cpuinitdata migration_notifier = {
+ 	.priority = 10
+ };
+ 
+-int __init migration_init(void)
++void __init migration_init(void)
+ {
+ 	void *cpu = (void *)(long)smp_processor_id();
+ 	int err;
+@@ -5631,8 +5631,6 @@ int __init migration_init(void)
+ 	BUG_ON(err == NOTIFY_BAD);
+ 	migration_call(&migration_notifier, CPU_ONLINE, cpu);
+ 	register_cpu_notifier(&migration_notifier);
+-
+-	return 0;
  }
- 
-+#endif  /*  0  */
-+
- 
- /*
-  * get_clock() implements a ns clock (see ktime_get)
-diff --git a/drivers/net/chelsio/sge.h b/drivers/net/chelsio/sge.h
-index 713d9c5..e1cbded 100644
---- a/drivers/net/chelsio/sge.h
-+++ b/drivers/net/chelsio/sge.h
-@@ -89,8 +89,6 @@ void t1_sge_intr_disable(struct sge *);
- void t1_sge_intr_clear(struct sge *);
- const struct sge_intr_counts *t1_sge_get_intr_counts(const struct sge *sge);
- void t1_sge_get_port_stats(const struct sge *sge, int port, struct sge_port_stats *);
--void t1_sched_set_max_avail_bytes(struct sge *, unsigned int);
--void t1_sched_set_drain_bits_per_us(struct sge *, unsigned int, unsigned int);
- unsigned int t1_sched_update_parms(struct sge *, unsigned int, unsigned int,
- 			   unsigned int);
+ #endif
  
 
