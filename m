@@ -1,100 +1,541 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763414AbXKCAKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763460AbXKCALN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763414AbXKCAKw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 20:10:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761721AbXKCACO
+	id S1763460AbXKCALN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 20:11:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761618AbXKCACV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 20:02:14 -0400
-Received: from cantor.suse.de ([195.135.220.2]:41176 "EHLO mx1.suse.de"
+	Fri, 2 Nov 2007 20:02:21 -0400
+Received: from mail.suse.de ([195.135.220.2]:41181 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761995AbXKCACM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 20:02:12 -0400
+	id S1761274AbXKCACS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 20:02:18 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 32/54] driver core: add way to get to bus device klist
-Date: Fri,  2 Nov 2007 16:59:10 -0700
-Message-Id: <1194047972-9850-32-git-send-email-gregkh@suse.de>
+Subject: [PATCH 33/54] driver core: remove fields from struct bus_type
+Date: Fri,  2 Nov 2007 16:59:11 -0700
+Message-Id: <1194047972-9850-33-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <20071102235758.GA9803@kroah.com>
 References: <20071102235758.GA9803@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This allows an easier way to get to the device klist associated with a
-struct bus_type (you have three to choose from...)  This will make it
-easier to move these fields to be dynamic in a future patch.
-
-The only user of this is the PCI core which horribly abuses this
-interface to rearrange the order of the pci devices.  This should be
-done using the existing bus device walking functions, but that's left
-for future patches.
+struct bus_type is static everywhere in the kernel.  This moves the
+kobject in the structure out of it, and a bunch of other private only to
+the driver core fields are now moved to a private structure.  This lets
+us dynamically create the backing kobject properly and gives us the
+chance to be able to document to users exactly how to use the struct
+bus_type as there are no fields they can improperly access.
 
 Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/bus.c     |    6 ++++++
- drivers/pci/probe.c    |   11 +++++++----
- include/linux/device.h |    1 +
- 3 files changed, 14 insertions(+), 4 deletions(-)
+ drivers/base/base.h     |   30 +++++++++++-
+ drivers/base/bus.c      |  120 ++++++++++++++++++++++++++--------------------
+ drivers/base/core.c     |    6 +-
+ drivers/base/dd.c       |    4 +-
+ drivers/base/driver.c   |    2 +-
+ drivers/base/platform.c |    4 +-
+ include/linux/device.h  |   12 +----
+ 7 files changed, 107 insertions(+), 71 deletions(-)
 
+diff --git a/drivers/base/base.h b/drivers/base/base.h
+index 7e309a4..ca6d273 100644
+--- a/drivers/base/base.h
++++ b/drivers/base/base.h
+@@ -1,6 +1,34 @@
+ 
+-/* initialisation functions */
++/**
++ * struct bus_type_private - structure to hold the private to the driver core portions of the bus_type structure.
++ *
++ * @subsys - the struct kset that defines this bus.  This is the main kobject
++ * @drivers_kset - the list of drivers associated with this bus
++ * @devices_kset - the list of devices associated with this bus
++ * @klist_devices - the klist to iterate over the @devices_kset
++ * @klist_drivers - the klist to iterate over the @drivers_kset
++ * @bus_notifier - the bus notifier list for anything that cares about things
++ * on this bus.
++ * @bus - pointer back to the struct bus_type that this structure is associated
++ * with.
++ *
++ * This structure is the one that is the actual kobject allowing struct
++ * bus_type to be statically allocated safely.  Nothing outside of the driver
++ * core should ever touch these fields.
++ */
++struct bus_type_private {
++	struct kset subsys;
++	struct kset *drivers_kset;
++	struct kset *devices_kset;
++	struct klist klist_devices;
++	struct klist klist_drivers;
++	struct blocking_notifier_head bus_notifier;
++	unsigned int drivers_autoprobe:1;
++	struct bus_type *bus;
++};
++
+ 
++/* initialisation functions */
+ extern int devices_init(void);
+ extern int buses_init(void);
+ extern int classes_init(void);
 diff --git a/drivers/base/bus.c b/drivers/base/bus.c
-index 3cd991f..e502ca6 100644
+index e502ca6..80a4919 100644
 --- a/drivers/base/bus.c
 +++ b/drivers/base/bus.c
-@@ -942,6 +942,12 @@ struct kset *bus_get_kset(struct bus_type *bus)
+@@ -18,7 +18,7 @@
+ #include "power/power.h"
+ 
+ #define to_bus_attr(_attr) container_of(_attr, struct bus_attribute, attr)
+-#define to_bus(obj) container_of(obj, struct bus_type, subsys.kobj)
++#define to_bus(obj) container_of(obj, struct bus_type_private, subsys.kobj)
+ 
+ /*
+  * sysfs bindings for drivers
+@@ -33,13 +33,17 @@ static int __must_check bus_rescan_devices_helper(struct device *dev,
+ 
+ static struct bus_type *bus_get(struct bus_type *bus)
+ {
+-	return bus ? container_of(kset_get(&bus->subsys),
+-				struct bus_type, subsys) : NULL;
++	if (bus) {
++		kset_get(&bus->p->subsys);
++		return bus;
++	}
++	return NULL;
+ }
+ 
+ static void bus_put(struct bus_type *bus)
+ {
+-	kset_put(&bus->subsys);
++	if (bus)
++		kset_put(&bus->p->subsys);
+ }
+ 
+ static ssize_t
+@@ -105,11 +109,11 @@ static ssize_t
+ bus_attr_show(struct kobject * kobj, struct attribute * attr, char * buf)
+ {
+ 	struct bus_attribute * bus_attr = to_bus_attr(attr);
+-	struct bus_type * bus = to_bus(kobj);
++	struct bus_type_private *bus_priv = to_bus(kobj);
+ 	ssize_t ret = 0;
+ 
+ 	if (bus_attr->show)
+-		ret = bus_attr->show(bus, buf);
++		ret = bus_attr->show(bus_priv->bus, buf);
+ 	return ret;
+ }
+ 
+@@ -118,11 +122,11 @@ bus_attr_store(struct kobject * kobj, struct attribute * attr,
+ 	       const char * buf, size_t count)
+ {
+ 	struct bus_attribute * bus_attr = to_bus_attr(attr);
+-	struct bus_type * bus = to_bus(kobj);
++	struct bus_type_private *bus_priv = to_bus(kobj);
+ 	ssize_t ret = 0;
+ 
+ 	if (bus_attr->store)
+-		ret = bus_attr->store(bus, buf, count);
++		ret = bus_attr->store(bus_priv->bus, buf, count);
+ 	return ret;
+ }
+ 
+@@ -135,7 +139,7 @@ int bus_create_file(struct bus_type * bus, struct bus_attribute * attr)
+ {
+ 	int error;
+ 	if (bus_get(bus)) {
+-		error = sysfs_create_file(&bus->subsys.kobj, &attr->attr);
++		error = sysfs_create_file(&bus->p->subsys.kobj, &attr->attr);
+ 		bus_put(bus);
+ 	} else
+ 		error = -EINVAL;
+@@ -145,7 +149,7 @@ int bus_create_file(struct bus_type * bus, struct bus_attribute * attr)
+ void bus_remove_file(struct bus_type * bus, struct bus_attribute * attr)
+ {
+ 	if (bus_get(bus)) {
+-		sysfs_remove_file(&bus->subsys.kobj, &attr->attr);
++		sysfs_remove_file(&bus->p->subsys.kobj, &attr->attr);
+ 		bus_put(bus);
+ 	}
+ }
+@@ -238,16 +242,16 @@ static DRIVER_ATTR(bind, S_IWUSR, NULL, driver_bind);
+ 
+ static ssize_t show_drivers_autoprobe(struct bus_type *bus, char *buf)
+ {
+-	return sprintf(buf, "%d\n", bus->drivers_autoprobe);
++	return sprintf(buf, "%d\n", bus->p->drivers_autoprobe);
+ }
+ 
+ static ssize_t store_drivers_autoprobe(struct bus_type *bus,
+ 				       const char *buf, size_t count)
+ {
+ 	if (buf[0] == '0')
+-		bus->drivers_autoprobe = 0;
++		bus->p->drivers_autoprobe = 0;
+ 	else
+-		bus->drivers_autoprobe = 1;
++		bus->p->drivers_autoprobe = 1;
+ 	return count;
+ }
+ 
+@@ -301,7 +305,7 @@ int bus_for_each_dev(struct bus_type * bus, struct device * start,
+ 	if (!bus)
+ 		return -EINVAL;
+ 
+-	klist_iter_init_node(&bus->klist_devices, &i,
++	klist_iter_init_node(&bus->p->klist_devices, &i,
+ 			     (start ? &start->knode_bus : NULL));
+ 	while ((dev = next_device(&i)) && !error)
+ 		error = fn(dev, data);
+@@ -334,7 +338,7 @@ struct device * bus_find_device(struct bus_type *bus,
+ 	if (!bus)
+ 		return NULL;
+ 
+-	klist_iter_init_node(&bus->klist_devices, &i,
++	klist_iter_init_node(&bus->p->klist_devices, &i,
+ 			     (start ? &start->knode_bus : NULL));
+ 	while ((dev = next_device(&i)))
+ 		if (match(dev, data) && get_device(dev))
+@@ -380,7 +384,7 @@ int bus_for_each_drv(struct bus_type * bus, struct device_driver * start,
+ 	if (!bus)
+ 		return -EINVAL;
+ 
+-	klist_iter_init_node(&bus->klist_drivers, &i,
++	klist_iter_init_node(&bus->p->klist_drivers, &i,
+ 			     start ? &start->knode_bus : NULL);
+ 	while ((drv = next_driver(&i)) && !error)
+ 		error = fn(drv, data);
+@@ -450,12 +454,12 @@ int bus_add_device(struct device * dev)
+ 		error = device_add_attrs(bus, dev);
+ 		if (error)
+ 			goto out_put;
+-		error = sysfs_create_link(&bus->devices_kset->kobj,
++		error = sysfs_create_link(&bus->p->devices_kset->kobj,
+ 						&dev->kobj, dev->bus_id);
+ 		if (error)
+ 			goto out_id;
+ 		error = sysfs_create_link(&dev->kobj,
+-				&dev->bus->subsys.kobj, "subsystem");
++				&dev->bus->p->subsys.kobj, "subsystem");
+ 		if (error)
+ 			goto out_subsys;
+ 		error = make_deprecated_bus_links(dev);
+@@ -467,7 +471,7 @@ int bus_add_device(struct device * dev)
+ out_deprecated:
+ 	sysfs_remove_link(&dev->kobj, "subsystem");
+ out_subsys:
+-	sysfs_remove_link(&bus->devices_kset->kobj, dev->bus_id);
++	sysfs_remove_link(&bus->p->devices_kset->kobj, dev->bus_id);
+ out_id:
+ 	device_remove_attrs(bus, dev);
+ out_put:
+@@ -489,11 +493,11 @@ void bus_attach_device(struct device * dev)
+ 
+ 	if (bus) {
+ 		dev->is_registered = 1;
+-		if (bus->drivers_autoprobe)
++		if (bus->p->drivers_autoprobe)
+ 			ret = device_attach(dev);
+ 		WARN_ON(ret < 0);
+ 		if (ret >= 0)
+-			klist_add_tail(&dev->knode_bus, &bus->klist_devices);
++			klist_add_tail(&dev->knode_bus, &bus->p->klist_devices);
+ 		else
+ 			dev->is_registered = 0;
+ 	}
+@@ -513,7 +517,7 @@ void bus_remove_device(struct device * dev)
+ 	if (dev->bus) {
+ 		sysfs_remove_link(&dev->kobj, "subsystem");
+ 		remove_deprecated_bus_links(dev);
+-		sysfs_remove_link(&dev->bus->devices_kset->kobj, dev->bus_id);
++		sysfs_remove_link(&dev->bus->p->devices_kset->kobj, dev->bus_id);
+ 		device_remove_attrs(dev->bus, dev);
+ 		if (dev->is_registered) {
+ 			dev->is_registered = 0;
+@@ -639,18 +643,18 @@ int bus_add_driver(struct device_driver *drv)
+ 	error = kobject_set_name(&drv->kobj, "%s", drv->name);
+ 	if (error)
+ 		goto out_put_bus;
+-	drv->kobj.kset = bus->drivers_kset;
++	drv->kobj.kset = bus->p->drivers_kset;
+ 	drv->kobj.ktype = &driver_ktype;
+ 	error = kobject_register(&drv->kobj);
+ 	if (error)
+ 		goto out_put_bus;
+ 
+-	if (drv->bus->drivers_autoprobe) {
++	if (drv->bus->p->drivers_autoprobe) {
+ 		error = driver_attach(drv);
+ 		if (error)
+ 			goto out_unregister;
+ 	}
+-	klist_add_tail(&drv->knode_bus, &bus->klist_drivers);
++	klist_add_tail(&drv->knode_bus, &bus->p->klist_drivers);
+ 	module_add_driver(drv->owner, drv);
+ 
+ 	error = driver_create_file(drv, &driver_attr_uevent);
+@@ -829,7 +833,7 @@ static ssize_t bus_uevent_store(struct bus_type *bus,
+ 	enum kobject_action action;
+ 
+ 	if (kobject_action_type(buf, count, &action) == 0)
+-		kobject_uevent(&bus->subsys.kobj, action);
++		kobject_uevent(&bus->p->subsys.kobj, action);
+ 	return count;
+ }
+ static BUS_ATTR(uevent, S_IWUSR, NULL, bus_uevent_store);
+@@ -845,17 +849,26 @@ static BUS_ATTR(uevent, S_IWUSR, NULL, bus_uevent_store);
+ int bus_register(struct bus_type * bus)
+ {
+ 	int retval;
++	struct bus_type_private *priv;
++
++	priv = kzalloc(sizeof(struct bus_type_private), GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++
++	priv->bus = bus;
++	bus->p = priv;
+ 
+-	BLOCKING_INIT_NOTIFIER_HEAD(&bus->bus_notifier);
++	BLOCKING_INIT_NOTIFIER_HEAD(&priv->bus_notifier);
+ 
+-	retval = kobject_set_name(&bus->subsys.kobj, "%s", bus->name);
++	retval = kobject_set_name(&priv->subsys.kobj, "%s", bus->name);
+ 	if (retval)
+ 		goto out;
+ 
+-	bus->subsys.kobj.kset = bus_kset;
+-	bus->subsys.kobj.ktype = &bus_ktype;
++	priv->subsys.kobj.kset = bus_kset;
++	priv->subsys.kobj.ktype = &bus_ktype;
++	priv->drivers_autoprobe = 1;
+ 
+-	retval = subsystem_register(&bus->subsys);
++	retval = kset_register(&priv->subsys);
+ 	if (retval)
+ 		goto out;
+ 
+@@ -863,24 +876,25 @@ int bus_register(struct bus_type * bus)
+ 	if (retval)
+ 		goto bus_uevent_fail;
+ 
+-	bus->devices_kset = kset_create_and_register("devices", NULL,
+-						     &bus->subsys.kobj, NULL);
+-	if (IS_ERR(bus->devices_kset)) {
+-		retval = PTR_ERR(bus->devices_kset);
++	priv->devices_kset = kset_create_and_register("devices", NULL,
++						      &priv->subsys.kobj,
++						      NULL);
++	if (IS_ERR(priv->devices_kset)) {
++		retval = PTR_ERR(priv->devices_kset);
+ 		goto bus_devices_fail;
+ 	}
+ 
+-	bus->drivers_kset = kset_create_and_register("drivers", NULL,
+-						     &bus->subsys.kobj, NULL);
+-	if (IS_ERR(bus->drivers_kset)) {
+-		retval = PTR_ERR(bus->drivers_kset);
++	priv->drivers_kset = kset_create_and_register("drivers", NULL,
++						      &priv->subsys.kobj,
++						      NULL);
++	if (IS_ERR(priv->drivers_kset)) {
++		retval = PTR_ERR(priv->drivers_kset);
+ 		goto bus_drivers_fail;
+ 	}
+ 
+-	klist_init(&bus->klist_devices, klist_devices_get, klist_devices_put);
+-	klist_init(&bus->klist_drivers, NULL, NULL);
++	klist_init(&priv->klist_devices, klist_devices_get, klist_devices_put);
++	klist_init(&priv->klist_drivers, NULL, NULL);
+ 
+-	bus->drivers_autoprobe = 1;
+ 	retval = add_probe_files(bus);
+ 	if (retval)
+ 		goto bus_probe_files_fail;
+@@ -895,13 +909,14 @@ int bus_register(struct bus_type * bus)
+ bus_attrs_fail:
+ 	remove_probe_files(bus);
+ bus_probe_files_fail:
+-	kset_unregister(bus->drivers_kset);
++	kset_unregister(bus->p->drivers_kset);
+ bus_drivers_fail:
+-	kset_unregister(bus->devices_kset);
++	kset_unregister(bus->p->devices_kset);
+ bus_devices_fail:
+ 	bus_remove_file(bus, &bus_attr_uevent);
+ bus_uevent_fail:
+-	subsystem_unregister(&bus->subsys);
++	kset_unregister(&bus->p->subsys);
++	kfree(bus->p);
+ out:
+ 	return retval;
+ }
+@@ -918,33 +933,34 @@ void bus_unregister(struct bus_type * bus)
+ 	pr_debug("bus %s: unregistering\n", bus->name);
+ 	bus_remove_attrs(bus);
+ 	remove_probe_files(bus);
+-	kset_unregister(bus->drivers_kset);
+-	kset_unregister(bus->devices_kset);
++	kset_unregister(bus->p->drivers_kset);
++	kset_unregister(bus->p->devices_kset);
+ 	bus_remove_file(bus, &bus_attr_uevent);
+-	subsystem_unregister(&bus->subsys);
++	kset_unregister(&bus->p->subsys);
++	kfree(bus->p);
+ }
+ 
+ int bus_register_notifier(struct bus_type *bus, struct notifier_block *nb)
+ {
+-	return blocking_notifier_chain_register(&bus->bus_notifier, nb);
++	return blocking_notifier_chain_register(&bus->p->bus_notifier, nb);
+ }
+ EXPORT_SYMBOL_GPL(bus_register_notifier);
+ 
+ int bus_unregister_notifier(struct bus_type *bus, struct notifier_block *nb)
+ {
+-	return blocking_notifier_chain_unregister(&bus->bus_notifier, nb);
++	return blocking_notifier_chain_unregister(&bus->p->bus_notifier, nb);
+ }
+ EXPORT_SYMBOL_GPL(bus_unregister_notifier);
+ 
+ struct kset *bus_get_kset(struct bus_type *bus)
+ {
+-	return &bus->subsys;
++	return &bus->p->subsys;
  }
  EXPORT_SYMBOL_GPL(bus_get_kset);
  
-+struct klist *bus_get_device_klist(struct bus_type *bus)
-+{
-+	return &bus->klist_devices;
-+}
-+EXPORT_SYMBOL_GPL(bus_get_device_klist);
-+
- int __init buses_init(void)
+ struct klist *bus_get_device_klist(struct bus_type *bus)
  {
- 	bus_kset = kset_create_and_register("bus", &bus_uevent_ops,
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 463a5a9..994e185 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -1251,16 +1251,19 @@ static void __init pci_sort_breadthfirst_klist(void)
- 	struct klist_node *n;
- 	struct device *dev;
- 	struct pci_dev *pdev;
-+	struct klist *device_klist;
- 
--	spin_lock(&pci_bus_type.klist_devices.k_lock);
--	list_for_each_safe(pos, tmp, &pci_bus_type.klist_devices.k_list) {
-+	device_klist = bus_get_device_klist(&pci_bus_type);
-+
-+	spin_lock(&device_klist->k_lock);
-+	list_for_each_safe(pos, tmp, &device_klist->k_list) {
- 		n = container_of(pos, struct klist_node, n_node);
- 		dev = container_of(n, struct device, knode_bus);
- 		pdev = to_pci_dev(dev);
- 		pci_insertion_sort_klist(pdev, &sorted_devices);
- 	}
--	list_splice(&sorted_devices, &pci_bus_type.klist_devices.k_list);
--	spin_unlock(&pci_bus_type.klist_devices.k_lock);
-+	list_splice(&sorted_devices, &device_klist->k_list);
-+	spin_unlock(&device_klist->k_lock);
+-	return &bus->klist_devices;
++	return &bus->p->klist_devices;
  }
+ EXPORT_SYMBOL_GPL(bus_get_device_klist);
  
- static void __init pci_insertion_sort_devices(struct pci_dev *a, struct list_head *list)
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 80188ec..d4753d4 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -749,7 +749,7 @@ int device_add(struct device *dev)
+ 
+ 	/* notify clients of device entry (new way) */
+ 	if (dev->bus)
+-		blocking_notifier_call_chain(&dev->bus->bus_notifier,
++		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+ 					     BUS_NOTIFY_ADD_DEVICE, dev);
+ 
+ 	error = device_create_file(dev, &uevent_attr);
+@@ -797,7 +797,7 @@ int device_add(struct device *dev)
+ 	device_pm_remove(dev);
+  PMError:
+ 	if (dev->bus)
+-		blocking_notifier_call_chain(&dev->bus->bus_notifier,
++		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+ 					     BUS_NOTIFY_DEL_DEVICE, dev);
+ 	device_remove_attrs(dev);
+  AttrsError:
+@@ -975,7 +975,7 @@ void device_del(struct device * dev)
+ 	if (platform_notify_remove)
+ 		platform_notify_remove(dev);
+ 	if (dev->bus)
+-		blocking_notifier_call_chain(&dev->bus->bus_notifier,
++		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+ 					     BUS_NOTIFY_DEL_DEVICE, dev);
+ 	device_pm_remove(dev);
+ 	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
+diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+index 7ac474d..7bf0e67 100644
+--- a/drivers/base/dd.c
++++ b/drivers/base/dd.c
+@@ -38,7 +38,7 @@ static void driver_bound(struct device *dev)
+ 		 dev->bus_id, dev->driver->name);
+ 
+ 	if (dev->bus)
+-		blocking_notifier_call_chain(&dev->bus->bus_notifier,
++		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+ 					     BUS_NOTIFY_BOUND_DRIVER, dev);
+ 
+ 	klist_add_tail(&dev->knode_driver, &dev->driver->klist_devices);
+@@ -296,7 +296,7 @@ static void __device_release_driver(struct device * dev)
+ 		klist_remove(&dev->knode_driver);
+ 
+ 		if (dev->bus)
+-			blocking_notifier_call_chain(&dev->bus->bus_notifier,
++			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+ 						     BUS_NOTIFY_UNBIND_DRIVER,
+ 						     dev);
+ 
+diff --git a/drivers/base/driver.c b/drivers/base/driver.c
+index 1c9770d..f94be40 100644
+--- a/drivers/base/driver.c
++++ b/drivers/base/driver.c
+@@ -185,7 +185,7 @@ void driver_unregister(struct device_driver * drv)
+  */
+ struct device_driver *driver_find(const char *name, struct bus_type *bus)
+ {
+-	struct kobject *k = kset_find_obj(bus->drivers_kset, name);
++	struct kobject *k = kset_find_obj(bus->p->drivers_kset, name);
+ 	if (k)
+ 		return to_drv(k);
+ 	return NULL;
+diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+index fb56092..d56a05f 100644
+--- a/drivers/base/platform.c
++++ b/drivers/base/platform.c
+@@ -497,12 +497,12 @@ int __init_or_module platform_driver_probe(struct platform_driver *drv,
+ 	 * if the probe was successful, and make sure any forced probes of
+ 	 * new devices fail.
+ 	 */
+-	spin_lock(&platform_bus_type.klist_drivers.k_lock);
++	spin_lock(&platform_bus_type.p->klist_drivers.k_lock);
+ 	drv->probe = NULL;
+ 	if (code == 0 && list_empty(&drv->driver.klist_devices.k_list))
+ 		retval = -ENODEV;
+ 	drv->driver.probe = platform_drv_probe_fail;
+-	spin_unlock(&platform_bus_type.klist_drivers.k_lock);
++	spin_unlock(&platform_bus_type.p->klist_drivers.k_lock);
+ 
+ 	if (code != retval)
+ 		platform_driver_unregister(drv);
 diff --git a/include/linux/device.h b/include/linux/device.h
-index 86eff9d..6d56a34 100644
+index 6d56a34..3701269 100644
 --- a/include/linux/device.h
 +++ b/include/linux/device.h
-@@ -118,6 +118,7 @@ extern int bus_unregister_notifier(struct bus_type *bus,
- 						      unbound */
+@@ -35,6 +35,7 @@ struct device_driver;
+ struct class;
+ struct class_device;
+ struct bus_type;
++struct bus_type_private;
  
- extern struct kset *bus_get_kset(struct bus_type *bus);
-+extern struct klist *bus_get_device_klist(struct bus_type *bus);
+ struct bus_attribute {
+ 	struct attribute	attr;
+@@ -51,15 +52,6 @@ extern void bus_remove_file(struct bus_type *, struct bus_attribute *);
  
- struct device_driver {
+ struct bus_type {
  	const char		* name;
+-
+-	struct kset		subsys;
+-	struct kset		*drivers_kset;
+-	struct kset		*devices_kset;
+-	struct klist		klist_devices;
+-	struct klist		klist_drivers;
+-
+-	struct blocking_notifier_head bus_notifier;
+-
+ 	struct bus_attribute	* bus_attrs;
+ 	struct device_attribute	* dev_attrs;
+ 	struct driver_attribute	* drv_attrs;
+@@ -75,7 +67,7 @@ struct bus_type {
+ 	int (*resume_early)(struct device * dev);
+ 	int (*resume)(struct device * dev);
+ 
+-	unsigned int drivers_autoprobe:1;
++	struct bus_type_private *p;
+ };
+ 
+ extern int __must_check bus_register(struct bus_type * bus);
 -- 
 1.5.3.4
 
