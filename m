@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754471AbXKBIht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753473AbXKBJH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754471AbXKBIht (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 04:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbXKBIhm
+	id S1753473AbXKBJH3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 05:07:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbXKBJHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 04:37:42 -0400
-Received: from mail.sf-mail.de ([62.27.20.61]:35700 "EHLO mail.sf-mail.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751876AbXKBIhl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 04:37:41 -0400
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: lenb@kernel.org
-Subject: Re: [2.6.24-rc1][BUG] Oops on battery removal
-Date: Fri, 2 Nov 2007 09:37:33 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-acpi@vger.kernel.org, astarikovskiy@suse.de,
-       kernel list <linux-kernel@vger.kernel.org>
-References: <200711020803.49608.eike-kernel@sf-tec.de>
-In-Reply-To: <200711020803.49608.eike-kernel@sf-tec.de>
+	Fri, 2 Nov 2007 05:07:23 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:56143 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752414AbXKBJHV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 05:07:21 -0400
+To: casey@schaufler-ca.com
+Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 2.6.23: Filesystem capabilities 0.17
+References: <520194.24968.qm@web36605.mail.mud.yahoo.com>
+From: Olaf Dietsche <olaf+list.linux-kernel@olafdietsche.de>
+Date: Fri, 02 Nov 2007 10:07:14 +0100
+Message-ID: <873avp818d.fsf@olafdietsche.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart6457516.6vRJRSPn98";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200711020937.33672.eike-kernel@sf-tec.de>
+Content-Type: text/plain; charset=us-ascii
+X-Provags-ID: V01U2FsdGVkX1/6NDE34+1dUKogJr7Q56cZW7SKq/wv+tyiIjg
+ p0YVcnRA5ALGE75IzxbFda3c6RFxVKSioG6EMHhQrFmRR7Pj16
+ YZu5RLhDVDw7Kvg5CMCXw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart6457516.6vRJRSPn98
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Casey Schaufler <casey@schaufler-ca.com> writes:
 
-Rolf Eike Beer wrote:
-> Hi,
+> --- Olaf Dietsche <olaf+list.linux-kernel@olafdietsche.de> wrote:
 >
-> this happened while I removed my battery on bootup. Complete dmesg is
-> attached. Kernel is 2.6.24-rc1-git of yesterday (last commit was
-> d919fd433b5823d1cf9d0688eb2eec183de9b74c).
+>> The bits are stored in a sparse file named /.capabilities in the
+>> directory of the mount point, where the corresponding executable
+>> lives. The inode number of the file is the index into this file.
+>
+> The old PlanG approach. It's the way that we did MAC labels in
+> Trix4. It has the wicked advantage of working across NFS without
+> anyone being the wiser.
 
-Ok, I found out that it has nothing to do with the actual removal as it see=
-ms.=20
-When I start the laptop with battery already detached I get the same error.
+If you don't trust a NFS, you'll mount it nosuid anyway and then
+fscaps are disabled too.
 
-Eike
+> It really causes trouble for backup utilities, however.
 
---nextPart6457516.6vRJRSPn98
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Whatever implementation you choose, you will always have to modify
+your backup utilities or copy the attributes separately.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+> Trix6 (there wasn't really a Trix5) had xattrs
+> available and we found the switch well worth the investment.
 
-iD8DBQBHKuHNXKSJPmm5/E4RAsGkAKCPJsedt8FGTavlgecZX41cw3IMxwCgne5x
-gIaxpyVhVZXGY95RGXVwihM=
-=gx7D
------END PGP SIGNATURE-----
+Extended attributes are a nice, clean concept, like micro kernels for
+example :-). But they have a cost, which shouldn't be ignored.
 
---nextPart6457516.6vRJRSPn98--
+Regards, Olaf.
