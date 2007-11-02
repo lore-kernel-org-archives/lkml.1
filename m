@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760212AbXKBBDN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759548AbXKBBG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760212AbXKBBDN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 21:03:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755438AbXKBBC5
+	id S1759548AbXKBBG1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 21:06:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754686AbXKBBGT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 21:02:57 -0400
-Received: from mga01.intel.com ([192.55.52.88]:3601 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754872AbXKBBC4 convert rfc822-to-8bit (ORCPT
+	Thu, 1 Nov 2007 21:06:19 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:43192 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754072AbXKBBGS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 21:02:56 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,360,1188802800"; 
-   d="scan'208";a="365560528"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 1 Nov 2007 21:06:18 -0400
+Date: Thu, 1 Nov 2007 18:06:17 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: David Miller <davem@davemloft.net>
+cc: akpm@linux-foundation.org, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
+       penberg@cs.helsinki.fi
+Subject: Re: [patch 0/7] [RFC] SLUB: Improve allocpercpu to reduce per cpu
+ access overhead
+In-Reply-To: <20071101.155805.65012933.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0711011759400.24589@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0711011511450.22508@schroedinger.engr.sgi.com>
+ <20071101.153824.91808126.davem@davemloft.net>
+ <Pine.LNX.4.64.0711011545370.23379@schroedinger.engr.sgi.com>
+ <20071101.155805.65012933.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 0/2 -v2 resend] x86_64 EFI boot support
-Date: Fri, 2 Nov 2007 09:02:47 +0800
-Message-ID: <9D7649D18729DE4BB2BD7B494F7FEDC295BE97@pdsmsx415.ccr.corp.intel.com>
-In-Reply-To: <4728E0DE.7080702@zytor.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 0/2 -v2 resend] x86_64 EFI boot support
-Thread-Index: Acgb+jWwCmyYPuiXRxewdbiLKnrj5wA8bUbg
-References: <1193218342.23935.147.camel@caritas-dev.intel.com>	<1193793701.23935.394.camel@caritas-dev.intel.com> <20071031125907.ba953d4a.akpm@linux-foundation.org> <4728E0DE.7080702@zytor.com>
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Cc: <tglx@linutronix.de>, <mingo@redhat.com>, <torvalds@linux-foundation.org>,
-       <adaplas@pol.net>, <ak@suse.de>, <ebiederm@xmission.com>,
-       <mouli@linux.intel.com>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 02 Nov 2007 01:02:47.0737 (UTC) FILETIME=[156CCA90:01C81CEC]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From: H. Peter Anvin [mailto:hpa@zytor.com]
->The "EFI boot" patchset looks fairly unobtrusive to me.  One objection:
->the VIDEO_TYPE_ numbers appear split up into groups; and the EFI one
->probably should be 0x70 instead of 0x24.
+On Thu, 1 Nov 2007, David Miller wrote:
 
-Should I change this and resend the patchset? Or you modify it before
-merging?
+> You cannot put limits of the amount of alloc_percpu() memory available
+> to clients, please let's proceed with that basic understanding in
+> mind.  We're wasting a ton of time discussing this fundamental issue.
 
-Best Regards,
-Huang Ying
+There is no point in making absolute demands like "no limits". There are 
+always limits to everything. 
+
+A new implementation avoids the need to allocate per cpu arrays and also 
+avoids the 32 bytes per object times cpus that are mostly wasted for small 
+allocations today. So its going to potentially allow more per cpu objects
+that available today.
+
+A reasonable implementation for 64 bit is likely going to depend on 
+reserving some virtual memory space for the per cpu mappings so that they 
+can be dynamically grown up to what the reserved virtual space allows.
+
+F.e. If we reserve 256G of virtual space and support a maximum of 16k cpus 
+then there is a limit on the per cpu space available of 16MB.
