@@ -1,328 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759351AbXKBSDv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761038AbXKBSEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759351AbXKBSDv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 14:03:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754889AbXKBSDo
+	id S1761038AbXKBSEk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 14:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbXKBSEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 14:03:44 -0400
-Received: from mx2.suse.de ([195.135.220.15]:34319 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754029AbXKBSDn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 14:03:43 -0400
-Date: Fri, 2 Nov 2007 19:03:42 +0100
-From: Jan Blunck <jblunck@suse.de>
-To: Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@lst.de>, Andreas Gruenbacher <agruen@suse.de>
-Cc: Bryan Wu <cooloney.lkml@gmail.com>, Bharata B Rao <bharata.rao@gmail.com>
-Subject: [PATCH 6/7] d_path: Make d_path() use a struct path (2nd try)
-Message-ID: <20071102180342.GB5619@hasse.suse.de>
-References: <20071029124120.528997881@weierstrass.suse.de> <20071029124121.829255433@weierstrass.suse.de>
+	Fri, 2 Nov 2007 14:04:33 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:46239 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752648AbXKBSEc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 14:04:32 -0400
+Date: Fri, 2 Nov 2007 10:38:08 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andi Kleen <ak@suse.de>
+Subject: [patch 7/9] x86: fix global_flush_tlb() bug
+Message-ID: <20071102173808.GH6378@kroah.com>
+References: <20071102173359.709442489@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071029124121.829255433@weierstrass.suse.de>
-Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG
-	Nuernberg)
+Content-Disposition: inline; filename="x86-fix-global_flush_tlb-bug.patch"
+In-Reply-To: <20071102173733.GA6378@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-d_path() is used on a <dentry,vfsmount> pair. Lets use a struct path to
-reflect this.
+2.6.22-stable review patch.  If anyone has any objections, please let us
+know.
 
-Signed-off-by: Jan Blunck <jblunck@suse.de>
+------------------
+From: Ingo Molnar <mingo@elte.hu>
+
+patch 9a24d04a3c26c223f22493492c5c9085b8773d4a upstream
+
+While we were reviewing pageattr_32/64.c for unification,
+Thomas Gleixner noticed the following serious SMP bug in
+global_flush_tlb():
+
+	down_read(&init_mm.mmap_sem);
+	list_replace_init(&deferred_pages, &l);
+	up_read(&init_mm.mmap_sem);
+
+this is SMP-unsafe because list_replace_init() done on two CPUs in
+parallel can corrupt the list.
+
+This bug has been introduced about a year ago in the 64-bit tree:
+
+       commit ea7322decb974a4a3e804f96a0201e893ff88ce3
+       Author: Andi Kleen <ak@suse.de>
+       Date:   Thu Dec 7 02:14:05 2006 +0100
+
+       [PATCH] x86-64: Speed and clean up cache flushing in change_page_attr
+
+                down_read(&init_mm.mmap_sem);
+        -       dpage = xchg(&deferred_pages, NULL);
+        +       list_replace_init(&deferred_pages, &l);
+                up_read(&init_mm.mmap_sem);
+
+the xchg() based version was SMP-safe, but list_replace_init() is not.
+So this "cleanup" introduced a nasty bug.
+
+why this bug never become prominent is a mystery - it can probably be
+explained with the (still) relative obscurity of the x86_64 architecture.
+
+the safe fix for now is to write-lock init_mm.mmap_sem.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
- arch/blackfin/kernel/traps.c      |   12 +++++-------
- drivers/md/bitmap.c               |    8 +-------
- drivers/usb/gadget/file_storage.c |    8 +++-----
- fs/compat_ioctl.c                 |    2 +-
- fs/dcache.c                       |   12 +++++-------
- fs/dcookies.c                     |    2 +-
- fs/ecryptfs/super.c               |    5 ++---
- fs/nfsd/export.c                  |    3 ++-
- fs/proc/base.c                    |    2 +-
- fs/seq_file.c                     |    4 +++-
- fs/sysfs/file.c                   |    5 ++---
- fs/unionfs/super.c                |    3 +--
- include/linux/dcache.h            |    5 +++--
- kernel/audit.c                    |    2 +-
- 14 files changed, 31 insertions(+), 42 deletions(-)
+ arch/x86_64/mm/pageattr.c |    9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-Index: b/arch/blackfin/kernel/traps.c
-===================================================================
---- a/arch/blackfin/kernel/traps.c
-+++ b/arch/blackfin/kernel/traps.c
-@@ -98,15 +98,13 @@ static int printk_address(unsigned long 
- 			struct vm_area_struct *vma = vml->vma;
+--- a/arch/x86_64/mm/pageattr.c
++++ b/arch/x86_64/mm/pageattr.c
+@@ -227,9 +227,14 @@ void global_flush_tlb(void)
+ 	struct page *pg, *next;
+ 	struct list_head l;
  
- 			if (address >= vma->vm_start && address < vma->vm_end) {
-+				char _tmpbuf[256];
- 				char *name = p->comm;
- 				struct file *file = vma->vm_file;
--				if (file) {
--					char _tmpbuf[256];
--					name = d_path(file->f_dentry,
--					              file->f_vfsmnt,
--					              _tmpbuf,
--					              sizeof(_tmpbuf));
--				}
-+
-+				if (file)
-+					name = d_path(&file->f_path, _tmpbuf,
-+						      sizeof(_tmpbuf));
+-	down_read(&init_mm.mmap_sem);
++	/*
++	 * Write-protect the semaphore, to exclude two contexts
++	 * doing a list_replace_init() call in parallel and to
++	 * exclude new additions to the deferred_pages list:
++	 */
++	down_write(&init_mm.mmap_sem);
+ 	list_replace_init(&deferred_pages, &l);
+-	up_read(&init_mm.mmap_sem);
++	up_write(&init_mm.mmap_sem);
  
- 				/* FLAT does not have its text aligned to the start of
- 				 * the map while FDPIC ELF does ...
-Index: b/drivers/md/bitmap.c
-===================================================================
---- a/drivers/md/bitmap.c
-+++ b/drivers/md/bitmap.c
-@@ -206,16 +206,10 @@ static void bitmap_checkfree(struct bitm
- /* copy the pathname of a file to a buffer */
- char *file_path(struct file *file, char *buf, int count)
- {
--	struct dentry *d;
--	struct vfsmount *v;
--
- 	if (!buf)
- 		return NULL;
+ 	flush_map(&l);
  
--	d = file->f_path.dentry;
--	v = file->f_path.mnt;
--
--	buf = d_path(d, v, buf, count);
-+	buf = d_path(&file->f_path, buf, count);
- 
- 	return IS_ERR(buf) ? NULL : buf;
- }
-Index: b/drivers/usb/gadget/file_storage.c
-===================================================================
---- a/drivers/usb/gadget/file_storage.c
-+++ b/drivers/usb/gadget/file_storage.c
-@@ -3567,8 +3567,7 @@ static ssize_t show_file(struct device *
- 
- 	down_read(&fsg->filesem);
- 	if (backing_file_is_open(curlun)) {	// Get the complete pathname
--		p = d_path(curlun->filp->f_path.dentry,
--				curlun->filp->f_path.mnt, buf, PAGE_SIZE - 1);
-+		p = d_path(&curlun->filp->f_path, buf, PAGE_SIZE - 1);
- 		if (IS_ERR(p))
- 			rc = PTR_ERR(p);
- 		else {
-@@ -3985,9 +3984,8 @@ static int __init fsg_bind(struct usb_ga
- 		if (backing_file_is_open(curlun)) {
- 			p = NULL;
- 			if (pathbuf) {
--				p = d_path(curlun->filp->f_path.dentry,
--					curlun->filp->f_path.mnt,
--					pathbuf, PATH_MAX);
-+				p = d_path(&curlun->filp->f_path,
-+					   pathbuf, PATH_MAX);
- 				if (IS_ERR(p))
- 					p = NULL;
- 			}
-Index: b/fs/compat_ioctl.c
-===================================================================
---- a/fs/compat_ioctl.c
-+++ b/fs/compat_ioctl.c
-@@ -3544,7 +3544,7 @@ static void compat_ioctl_error(struct fi
- 	/* find the name of the device. */
- 	path = (char *)__get_free_page(GFP_KERNEL);
- 	if (path) {
--		fn = d_path(filp->f_path.dentry, filp->f_path.mnt, path, PAGE_SIZE);
-+		fn = d_path(&filp->f_path, path, PAGE_SIZE);
- 		if (IS_ERR(fn))
- 			fn = "?";
- 	}
-Index: b/fs/dcache.c
-===================================================================
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -1831,8 +1831,7 @@ Elong:
- 
- /**
-  * d_path - return the path of a dentry
-- * @dentry: dentry to report
-- * @vfsmnt: vfsmnt to which the dentry belongs
-+ * @path: path to report
-  * @buf: buffer to return value in
-  * @buflen: buffer length
-  *
-@@ -1843,8 +1842,7 @@ Elong:
-  *
-  * "buflen" should be positive. Caller holds the dcache_lock.
-  */
--char *d_path(struct dentry *dentry, struct vfsmount *vfsmnt,
--	     char *buf, int buflen)
-+char *d_path(struct path *path, char *buf, int buflen)
- {
- 	char *res;
- 	struct path root;
-@@ -1856,15 +1854,15 @@ char *d_path(struct dentry *dentry, stru
- 	 * user wants to identify the object in /proc/pid/fd/.  The little hack
- 	 * below allows us to generate a name for these objects on demand:
- 	 */
--	if (dentry->d_op && dentry->d_op->d_dname)
--		return dentry->d_op->d_dname(dentry, buf, buflen);
-+	if (path->dentry->d_op && path->dentry->d_op->d_dname)
-+		return path->dentry->d_op->d_dname(path->dentry, buf, buflen);
- 
- 	read_lock(&current->fs->lock);
- 	root = current->fs->root;
- 	path_get(&current->fs->root);
- 	read_unlock(&current->fs->lock);
- 	spin_lock(&dcache_lock);
--	res = __d_path(dentry, vfsmnt, &root, buf, buflen);
-+	res = __d_path(path->dentry, path->mnt, &root, buf, buflen);
- 	spin_unlock(&dcache_lock);
- 	path_put(&root);
- 	return res;
-Index: b/fs/dcookies.c
-===================================================================
---- a/fs/dcookies.c
-+++ b/fs/dcookies.c
-@@ -170,7 +170,7 @@ asmlinkage long sys_lookup_dcookie(u64 c
- 		goto out;
- 
- 	/* FIXME: (deleted) ? */
--	path = d_path(dcs->path.dentry, dcs->path.mnt, kbuf, PAGE_SIZE);
-+	path = d_path(&dcs->path, kbuf, PAGE_SIZE);
- 
- 	if (IS_ERR(path)) {
- 		err = PTR_ERR(path);
-Index: b/fs/ecryptfs/super.c
-===================================================================
---- a/fs/ecryptfs/super.c
-+++ b/fs/ecryptfs/super.c
-@@ -163,8 +163,7 @@ static void ecryptfs_clear_inode(struct 
- static int ecryptfs_show_options(struct seq_file *m, struct vfsmount *mnt)
- {
- 	struct super_block *sb = mnt->mnt_sb;
--	struct dentry *lower_root_dentry = ecryptfs_dentry_to_lower(sb->s_root);
--	struct vfsmount *lower_mnt = ecryptfs_dentry_to_lower_mnt(sb->s_root);
-+	struct path *lower_root = &ecryptfs_dentry_to_private(sb->s_root)->lower_path;
- 	char *tmp_page;
- 	char *path;
- 	int rc = 0;
-@@ -174,7 +173,7 @@ static int ecryptfs_show_options(struct 
- 		rc = -ENOMEM;
- 		goto out;
- 	}
--	path = d_path(lower_root_dentry, lower_mnt, tmp_page, PAGE_SIZE);
-+	path = d_path(lower_root, tmp_page, PAGE_SIZE);
- 	if (IS_ERR(path)) {
- 		rc = PTR_ERR(path);
- 		goto out;
-Index: b/fs/nfsd/export.c
-===================================================================
---- a/fs/nfsd/export.c
-+++ b/fs/nfsd/export.c
-@@ -346,10 +346,11 @@ static void svc_export_request(struct ca
- {
- 	/*  client path */
- 	struct svc_export *exp = container_of(h, struct svc_export, h);
-+	struct path path = { .dentry = exp->ex_dentry, .mnt = exp->ex_mnt };
- 	char *pth;
- 
- 	qword_add(bpp, blen, exp->ex_client->name);
--	pth = d_path(exp->ex_dentry, exp->ex_mnt, *bpp, *blen);
-+	pth = d_path(&path, *bpp, *blen);
- 	if (IS_ERR(pth)) {
- 		/* is this correct? */
- 		(*bpp)[0] = '\n';
-Index: b/fs/proc/base.c
-===================================================================
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -1054,7 +1054,7 @@ static int do_proc_readlink(struct path 
- 	if (!tmp)
- 		return -ENOMEM;
- 
--	pathname = d_path(path->dentry, path->mnt, tmp, PAGE_SIZE);
-+	pathname = d_path(path, tmp, PAGE_SIZE);
- 	len = PTR_ERR(pathname);
- 	if (IS_ERR(pathname))
- 		goto out;
-Index: b/fs/seq_file.c
-===================================================================
---- a/fs/seq_file.c
-+++ b/fs/seq_file.c
-@@ -353,9 +353,11 @@ int seq_path(struct seq_file *m,
- 	     struct vfsmount *mnt, struct dentry *dentry,
- 	     char *esc)
- {
-+	struct path path = { .dentry = dentry, .mnt = mnt };
-+
- 	if (m->count < m->size) {
- 		char *s = m->buf + m->count;
--		char *p = d_path(dentry, mnt, s, m->size - m->count);
-+		char *p = d_path(&path, s, m->size - m->count);
- 		if (!IS_ERR(p)) {
- 			while (s <= p) {
- 				char c = *p++;
-Index: b/fs/sysfs/file.c
-===================================================================
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -355,9 +355,8 @@ static int sysfs_open_file(struct inode 
- 	int error;
- 	char *p;
- 
--	p = d_path(file->f_dentry, sysfs_mount, last_sysfs_file,
--		   sizeof(last_sysfs_file));
--	if (p)
-+	p = d_path(&file->f_path, last_sysfs_file, sizeof(last_sysfs_file));
-+	if (!IS_ERR(p))
- 		memmove(last_sysfs_file, p, strlen(p) + 1);
- 
- 	/* need attr_sd for attr and ops, its parent for kobj */
-Index: b/fs/unionfs/super.c
-===================================================================
---- a/fs/unionfs/super.c
-+++ b/fs/unionfs/super.c
-@@ -974,8 +974,7 @@ static int unionfs_show_options(struct s
- 
- 	seq_printf(m, ",dirs=");
- 	for (bindex = bstart; bindex <= bend; bindex++) {
--		path = d_path(unionfs_lower_dentry_idx(sb->s_root, bindex),
--			      unionfs_lower_mnt_idx(sb->s_root, bindex),
-+		path = d_path(&UNIONFS_D(sb->s_root)->lower_paths[bindex],
- 			      tmp_page, PAGE_SIZE);
- 		if (IS_ERR(path)) {
- 			ret = PTR_ERR(path);
-Index: b/include/linux/dcache.h
-===================================================================
---- a/include/linux/dcache.h
-+++ b/include/linux/dcache.h
-@@ -10,6 +10,7 @@
- #include <linux/rcupdate.h>
- 
- struct nameidata;
-+struct path;
- struct vfsmount;
- 
- /*
-@@ -300,8 +301,8 @@ extern int d_validate(struct dentry *, s
-  */
- extern char *dynamic_dname(struct dentry *, char *, int, const char *, ...);
- 
--extern char * d_path(struct dentry *, struct vfsmount *, char *, int);
--  
-+extern char *d_path(struct path *, char *, int);
-+
- /* Allocation counts.. */
- 
- /**
-Index: b/kernel/audit.c
-===================================================================
---- a/kernel/audit.c
-+++ b/kernel/audit.c
-@@ -1407,7 +1407,7 @@ void audit_log_d_path(struct audit_buffe
- 		audit_log_format(ab, "<no memory>");
- 		return;
- 	}
--	p = d_path(path->dentry, path->mnt, pathname, PATH_MAX+11);
-+	p = d_path(path, pathname, PATH_MAX+11);
- 	if (IS_ERR(p)) { /* Should never happen since we send PATH_MAX */
- 		/* FIXME: can we save some information here? */
- 		audit_log_format(ab, "<too long>");
+
+-- 
