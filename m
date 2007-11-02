@@ -1,160 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761451AbXKBPrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760952AbXKBPsJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761451AbXKBPrt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 11:47:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759379AbXKBPpk
+	id S1760952AbXKBPsJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 11:48:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760967AbXKBPqk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 11:45:40 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:60130 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1759412AbXKBPpi (ORCPT
+	Fri, 2 Nov 2007 11:46:40 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:53875 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760952AbXKBPqi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 11:45:38 -0400
-Date: Fri, 2 Nov 2007 11:40:13 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Karol Swietlicki <magotari@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 1/6] UML - Fix URLs in Kconfig and help strings
-Message-ID: <20071102154013.GA10268@c2.user-mode-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 2 Nov 2007 11:46:38 -0400
+Date: Fri, 2 Nov 2007 16:46:15 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>,
+       jgarzik@pobox.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [2.6 patch] usbnet.c: check for the right MII variable
+Message-ID: <20071102154615.GS30287@stusta.de>
+References: <200711012024.57412.toralf.foerster@gmx.de> <20071101222524.GB7227@stusta.de> <200711011652.39601.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200711011652.39601.david-b@pacbell.net>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Karol Swietlicki <magotari@gmail.com>
+On Thu, Nov 01, 2007 at 04:52:39PM -0700, David Brownell wrote:
+> On Thursday 01 November 2007, Adrian Bunk wrote:
+> > All this USB_USBNET_MII trickery is simply not worth it considering how 
+> > few code it saves.
+> 
+> Depends on what systems you're talking about.  Forcing unused
+> code into the kernel is not free, especially if that's made into
+> a design policy and applied repeatedly to many subsystems.
 
-This patch updates links which broke during the transition to the new 
-UML website.
+If it was turned into a design policy...
 
-Signed-off-by: Karol Swietlicki <magotari@gmail.com>
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+My impression is that in some parts of the kernel every byte gets 
+counted, while in other parts noone would notice a few kilobytes more or 
+less.
+
+> > As a side effect, this also fixes the following compile error reported 
+> > by Toralf Förster:
+> 
+> Why not just fix the thing which changed and broke the build?
+
+Today it's exactly one year since your commit entered the tree.
+
+Dear bug, happy birthday!  ;-)
+
+> Or if reverse dependencies can't be made to work sanely, then
+> have those Ethernet-adapter minidrivers depend on NET_ETHERNET
+> and then select MII.  (To make the relationships be simple
+> enough that current Kconfig can handle them.)
+
+It's not Kconfig's fault that you test for the wrong variable in 
+usbnet.c ...
+
+> I have a fair number of usbnet devices.  Not one of them needs
+> MII or NET_ETHERNET.
+
+I don't understand why you think this bug was in any way related to 
+NET_ETHERNET - set NET_ETHERNET=y and the bug is still present.
+
+If you insist on the #ifdef's take the patch below - it even saves a few 
+additional bytes if you have non-usbnet net drivers requiring MII 
+enabled statically or as modules in your .config but no usbnet drivers 
+requiring MII.
+
+> - Dave
+
+cu
+Adrian
+
+
+<--  snip  -->
+
+
+This patch fixes the following compile error with CONFIG_MII=m, 
+CONFIG_USB_USBNET=y, CONFIG_USB_USBNET_MII=n:
+
+<--  snip  -->
+
+...
+  LD      .tmp_vmlinux1
+drivers/built-in.o: In function `usbnet_set_settings':
+(.text+0xf1876): undefined reference to `mii_ethtool_sset'
+drivers/built-in.o: In function `usbnet_get_settings':
+(.text+0xf1836): undefined reference to `mii_ethtool_gset'
+drivers/built-in.o: In function `usbnet_get_link':
+(.text+0xf18d6): undefined reference to `mii_link_ok'
+drivers/built-in.o: In function `usbnet_nway_reset':
+(.text+0xf18f6): undefined reference to `mii_nway_restart'
+make: *** [.tmp_vmlinux1] Error 1
+
+<--  snip  -->
+
+This bug was introduced by commit 18ee91fa9815fa3bb4e51cdcb8229bd0a0f11a70
+and reported by Toralf Förster.
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
 ---
- arch/um/Kconfig             |    2 +-
- arch/um/Kconfig.char        |    2 +-
- arch/um/Kconfig.debug       |    4 ++--
- arch/um/Kconfig.net         |   12 ++++++------
- arch/um/include/chan_user.h |    2 +-
- 5 files changed, 11 insertions(+), 11 deletions(-)
 
-Index: linux-2.6.22/arch/um/Kconfig
-===================================================================
---- linux-2.6.22.orig/arch/um/Kconfig	2007-10-25 12:23:06.000000000 -0400
-+++ linux-2.6.22/arch/um/Kconfig	2007-10-26 15:38:03.000000000 -0400
-@@ -145,7 +145,7 @@ config HPPFS
- 	  by removing or changing anything in /proc which gives away the
- 	  identity of a UML.
+BTW:
+The Kconfig part of this patch is not really required, but testing for
+  #if defined(CONFIG_USB_USBNET_MII) || defined(CONFIG_USB_USBNET_MII_MODULE)
+would look needlessly ugly.
+
+ drivers/net/usb/Kconfig  |    5 ++---
+ drivers/net/usb/usbnet.c |    7 +++----
+ 2 files changed, 5 insertions(+), 7 deletions(-)
+
+a421e4910eb30b140a315e274632e87c7a218df6 
+diff --git a/drivers/net/usb/Kconfig b/drivers/net/usb/Kconfig
+index 5a96d74..9261371 100644
+--- a/drivers/net/usb/Kconfig
++++ b/drivers/net/usb/Kconfig
+@@ -94,12 +94,11 @@ config USB_RTL8150
+ 	  module will be called rtl8150.
  
--	  See <http://user-mode-linux.sf.net/hppfs.html> for more information.
-+	  See <http://user-mode-linux.sf.net/old/hppfs.html> for more information.
+ config USB_USBNET_MII
+-	tristate
+-	default n
++	bool
  
- 	  You only need this if you are setting up a UML honeypot.  Otherwise,
- 	  it is safe to say 'N' here.
-Index: linux-2.6.22/arch/um/Kconfig.char
-===================================================================
---- linux-2.6.22.orig/arch/um/Kconfig.char	2007-10-18 23:39:13.000000000 -0400
-+++ linux-2.6.22/arch/um/Kconfig.char	2007-10-26 15:38:03.000000000 -0400
-@@ -18,7 +18,7 @@ config SSL
-           lines on the UML that are usually made to show up on the host as
-           ttys or ptys.
+ config USB_USBNET
+ 	tristate "Multi-purpose USB Networking Framework"
+-	select MII if USB_USBNET_MII != n
++	select MII if USB_USBNET_MII
+ 	---help---
+ 	  This driver supports several kinds of network links over USB,
+ 	  with "minidrivers" built around a common network driver core
+diff --git a/drivers/net/usb/usbnet.c b/drivers/net/usb/usbnet.c
+index acd5f1c..7393ab0 100644
+--- a/drivers/net/usb/usbnet.c
++++ b/drivers/net/usb/usbnet.c
+@@ -683,8 +683,7 @@ done_nopm:
+  * they'll probably want to use this base set.
+  */
  
--          See <http://user-mode-linux.sourceforge.net/input.html> for more
-+          See <http://user-mode-linux.sourceforge.net/old/input.html> for more
-           information and command line examples of how to use this facility.
+-#if defined(CONFIG_MII) || defined(CONFIG_MII_MODULE)
+-#define HAVE_MII
++#ifdef CONFIG_USB_USBNET_MII
  
-           Unless you have a specific reason for disabling this, say Y.
-Index: linux-2.6.22/arch/um/Kconfig.debug
-===================================================================
---- linux-2.6.22.orig/arch/um/Kconfig.debug	2007-10-18 23:39:13.000000000 -0400
-+++ linux-2.6.22/arch/um/Kconfig.debug	2007-10-26 15:38:03.000000000 -0400
-@@ -9,7 +9,7 @@ config GPROF
- 	  This allows profiling of a User-Mode Linux kernel with the gprof
- 	  utility.
+ int usbnet_get_settings (struct net_device *net, struct ethtool_cmd *cmd)
+ {
+@@ -744,7 +743,7 @@ int usbnet_nway_reset(struct net_device *net)
+ }
+ EXPORT_SYMBOL_GPL(usbnet_nway_reset);
  
--	  See <http://user-mode-linux.sourceforge.net/gprof.html> for more
-+	  See <http://user-mode-linux.sourceforge.net/old/gprof.html> for more
- 	  details.
+-#endif	/* HAVE_MII */
++#endif	/*  CONFIG_USB_USBNET_MII  */
  
- 	  If you're involved in UML kernel development and want to use gprof,
-@@ -22,7 +22,7 @@ config GCOV
- 	  This option allows developers to retrieve coverage data from a UML
- 	  session.
+ void usbnet_get_drvinfo (struct net_device *net, struct ethtool_drvinfo *info)
+ {
+@@ -776,7 +775,7 @@ EXPORT_SYMBOL_GPL(usbnet_set_msglevel);
  
--	  See <http://user-mode-linux.sourceforge.net/gprof.html> for more
-+	  See <http://user-mode-linux.sourceforge.net/old/gprof.html> for more
- 	  details.
- 
- 	  If you're involved in UML kernel development and want to use gcov,
-Index: linux-2.6.22/arch/um/Kconfig.net
-===================================================================
---- linux-2.6.22.orig/arch/um/Kconfig.net	2007-10-12 12:09:00.000000000 -0400
-+++ linux-2.6.22/arch/um/Kconfig.net	2007-10-26 15:38:03.000000000 -0400
-@@ -14,7 +14,7 @@ config UML_NET
- 
-         For more information, including explanations of the networking and
-         sample configurations, see
--        <http://user-mode-linux.sourceforge.net/networking.html>.
-+        <http://user-mode-linux.sourceforge.net/old/networking.html>.
- 
-         If you'd like to be able to enable networking in the User-Mode
-         linux environment, say Y; otherwise say N.  Note that you must
-@@ -38,7 +38,7 @@ config UML_NET_ETHERTAP
-         CONFIG_NETLINK_DEV configured as Y or M.
- 
-         For more information, see
--        <http://user-mode-linux.sourceforge.net/networking.html>  That site
-+        <http://user-mode-linux.sourceforge.net/old/networking.html>  That site
-         has examples of the UML command line to use to enable Ethertap
-         networking.
- 
-@@ -72,7 +72,7 @@ config UML_NET_SLIP
-         To use this, your host must support slip devices.
- 
-         For more information, see
--        <http://user-mode-linux.sourceforge.net/networking.html>.  That site
-+        <http://user-mode-linux.sourceforge.net/old/networking.html>.
-         has examples of the UML command line to use to enable slip
-         networking, and details of a few quirks with it.
- 
-@@ -96,7 +96,7 @@ config UML_NET_DAEMON
-         networking daemon on the host.
- 
-         For more information, see
--        <http://user-mode-linux.sourceforge.net/networking.html>  That site
-+        <http://user-mode-linux.sourceforge.net/old/networking.html>  That site
-         has examples of the UML command line to use to enable Daemon
-         networking.
- 
-@@ -144,7 +144,7 @@ config UML_NET_MCAST
-         To use this, your host kernel(s) must support IP Multicasting.
- 
-         For more information, see
--        <http://user-mode-linux.sourceforge.net/networking.html>  That site
-+        <http://user-mode-linux.sourceforge.net/old/networking.html>  That site
-         has examples of the UML command line to use to enable Multicast
-         networking, and notes about the security of this approach.
- 
-@@ -165,7 +165,7 @@ config UML_NET_PCAP
- 	installed in order to build the pcap transport into UML.
- 
-         For more information, see
--        <http://user-mode-linux.sourceforge.net/networking.html>  That site
-+        <http://user-mode-linux.sourceforge.net/old/networking.html>  That site
-         has examples of the UML command line to use to enable this option.
- 
- 	If you intend to use UML as a network monitor for the host, say
-Index: linux-2.6.22/arch/um/include/chan_user.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/chan_user.h	2007-10-12 12:06:56.000000000 -0400
-+++ linux-2.6.22/arch/um/include/chan_user.h	2007-10-26 15:38:03.000000000 -0400
-@@ -48,7 +48,7 @@ extern void register_winch_irq(int fd, i
- #define __channel_help(fn, prefix) \
- __uml_help(fn, prefix "[0-9]*=<channel description>\n" \
- "    Attach a console or serial line to a host channel.  See\n" \
--"    http://user-mode-linux.sourceforge.net/input.html for a complete\n" \
-+"    http://user-mode-linux.sourceforge.net/old/input.html for a complete\n" \
- "    description of this switch.\n\n" \
- );
- 
+ /* drivers may override default ethtool_ops in their bind() routine */
+ static struct ethtool_ops usbnet_ethtool_ops = {
+-#ifdef	HAVE_MII
++#ifdef CONFIG_USB_USBNET_MII
+ 	.get_settings		= usbnet_get_settings,
+ 	.set_settings		= usbnet_set_settings,
+ 	.get_link		= usbnet_get_link,
+
