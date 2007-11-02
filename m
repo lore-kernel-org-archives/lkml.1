@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759266AbXKBUGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760359AbXKBUIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759266AbXKBUGU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 16:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754663AbXKBUGH
+	id S1760359AbXKBUIy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 16:08:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752582AbXKBUIs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 16:06:07 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:50941 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752648AbXKBUGF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 16:06:05 -0400
-Date: Fri, 2 Nov 2007 21:05:41 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>,
-       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>
-Subject: Re: build #337 failed for 2.6.24-rc1-gb1d08ac In function
-	`usbnet_set_settings':
-Message-ID: <20071102200541.GX30287@stusta.de>
-References: <200711012024.57412.toralf.foerster@gmx.de> <200711011632.18333.david-b@pacbell.net> <20071101234443.GD7227@stusta.de> <200711021145.15542.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Fri, 2 Nov 2007 16:08:48 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:49651 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753179AbXKBUIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 16:08:47 -0400
+Date: Fri, 2 Nov 2007 21:10:23 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+       Linux-arm <linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux-main <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] : kernel/built-in.o(.text+0x18db4):kernel/workqueue.c:823: undefined reference to `.L343'
+Message-ID: <20071102201023.GA16670@uranus.ravnborg.org>
+References: <20071102202931.deb09211.Kristoffer.ericson@gmail.com> <20071102194818.GA22719@flint.arm.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200711021145.15542.david-b@pacbell.net>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20071102194818.GA22719@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 02, 2007 at 11:45:15AM -0700, David Brownell wrote:
->...
-> --- a.orig/drivers/net/usb/usbnet.c	2007-10-13 15:16:10.000000000 -0700
-> +++ a/drivers/net/usb/usbnet.c	2007-11-02 11:39:59.000000000 -0700
-> @@ -682,10 +682,17 @@ done_nopm:
->  /* ethtool methods; minidrivers may need to add some more, but
->   * they'll probably want to use this base set.
->   */
-> +#undef HAVE_MII
->  
-> -#if defined(CONFIG_MII) || defined(CONFIG_MII_MODULE)
-> +#if defined(CONFIG_MII)
->  #define HAVE_MII
->  
-> +#elif defined(CONFIG_MII_MODULE) && defined(MODULE)
-> +#define HAVE_MII
-> +#endif
-> +
-> +#ifdef HAVE_MII
-> +
->  int usbnet_get_settings (struct net_device *net, struct ethtool_cmd *cmd)
->  {
->  	struct usbnet *dev = netdev_priv(net);
+On Fri, Nov 02, 2007 at 07:48:18PM +0000, Russell King - ARM Linux wrote:
+> On Fri, Nov 02, 2007 at 08:29:31PM -0700, Kristoffer Ericson wrote:
+> > Greetings,
+> > 
+> > Haven't found anyone reporting this. Taken from the very latest linux-2.6.git pull.
+> > 
+> > dnsdomainname: Unknown host
+> >   UPD     include/linux/compile.h
+> >   CC      init/version.o
+> >   LD      init/built-in.o
+> >   LD      .tmp_vmlinux1
+> > kernel/built-in.o(.text+0x18db0): In function `destroy_workqueue':
+> > kernel/workqueue.c:823: undefined reference to `.L342'
+> > kernel/built-in.o(.text+0x18db4):kernel/workqueue.c:823: undefined reference to `.L343'
+> > make: *** [.tmp_vmlinux1] Error 1
 > 
+> I think you'll have to look at the assembly produced for workqueue.c and
+> work out why GCC is referencing an undefined label.  You can get the
+> assembly for that by doing:
+> 
+> make ARCH=arm ...etc... kernel/workqueue.s
+Or make that:
 
-Despite all what you do in Kconfig and what you wrongly blame on 
-"select" the bug is in usbnet.c and this fix to usbnet.c _alone_  
-would be enough to fix the bug.
+make ARCH=arm ...etc... kernel/workqueue.lst
 
-But since you said you care about not including bloat you should better 
-take my second patch that results in smaller code in some configurations.
+to get intermixed C and assenbly
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	Sam
