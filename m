@@ -1,34 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759000AbXKBSHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761336AbXKBSHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759000AbXKBSHg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 14:07:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbXKBSH2
+	id S1761336AbXKBSHu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 14:07:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754889AbXKBSHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 14:07:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33690 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750983AbXKBSH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 14:07:27 -0400
-Message-ID: <472B66F4.1080707@redhat.com>
-Date: Fri, 02 Nov 2007 14:05:40 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Fri, 2 Nov 2007 14:07:41 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:45474 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752393AbXKBSHk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 14:07:40 -0400
+Date: Fri, 2 Nov 2007 10:38:11 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Milan Broz <mbroz@redhat.com>, Alasdair G Kergon <agk@redhat.com>
+Subject: [patch 8/9] dm snapshot: fix invalidation deadlock
+Message-ID: <20071102173811.GI6378@kroah.com>
+References: <20071102173359.709442489@mini.kroah.org>
 MIME-Version: 1.0
-To: Latchesar Ionkov <lucho@ionkov.net>
-CC: v9fs-developer@lists.sourceforge.net, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][REFERENCE ONLY] 9p: ramfs 9p server
-References: <20071102171100.GL16063@ionkov.net>
-In-Reply-To: <20071102171100.GL16063@ionkov.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="dm-snapshot-fix-invalidation-deadlock.patch"
+In-Reply-To: <20071102173733.GA6378@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Latchesar Ionkov wrote:
-> Sample ramfs file server that uses the in-kernel 9P file server support.
-> This code is for reference only.
+2.6.22-stable review patch.  If anyone has any objections, please let us
+know.
 
-Reference code generally goes in Documentation/
+------------------
+From: Milan Broz <mbroz@redhat.com>
 
-	-- Chris
+patch fcac03abd325e4f7a4cc8fe05fea2793b1c8eb75 in mainline
+
+Process persistent exception store metadata IOs in a separate thread.
+
+A snapshot may become invalid while inside generic_make_request().
+A synchronous write is then needed to update the metadata while still
+inside that function.  Since the introduction of
+md-dm-reduce-stack-usage-with-stacked-block-devices.patch this has to
+be performed by a separate thread to avoid deadlock.
+
+Signed-off-by: Milan Broz <mbroz@redhat.com>
+Signed-off-by: Alasdair G Kergon <agk@redhat.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/md/dm-exception-store.c |   48 +++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 43 insertions(+), 5 deletions(-)
+
+--- a/drivers/md/dm-exception-store.c
++++ b/drivers/md/dm-exception-store.c
+@@ -125,6 +125,8 @@ struct pstore {
+ 	uint32_t callback_count;
+ 	struct commit_callback *callbacks;
+ 	struct dm_io_client *io_client;
++
++	struct workqueue_struct *metadata_wq;
+ };
+ 
+ static inline unsigned int sectors_to_pages(unsigned int sectors)
+@@ -156,10 +158,24 @@ static void free_area(struct pstore *ps)
+ 	ps->area = NULL;
+ }
+ 
++struct mdata_req {
++	struct io_region *where;
++	struct dm_io_request *io_req;
++	struct work_struct work;
++	int result;
++};
++
++static void do_metadata(struct work_struct *work)
++{
++	struct mdata_req *req = container_of(work, struct mdata_req, work);
++
++	req->result = dm_io(req->io_req, 1, req->where, NULL);
++}
++
+ /*
+  * Read or write a chunk aligned and sized block of data from a device.
+  */
+-static int chunk_io(struct pstore *ps, uint32_t chunk, int rw)
++static int chunk_io(struct pstore *ps, uint32_t chunk, int rw, int metadata)
+ {
+ 	struct io_region where = {
+ 		.bdev = ps->snap->cow->bdev,
+@@ -173,8 +189,23 @@ static int chunk_io(struct pstore *ps, u
+ 		.client = ps->io_client,
+ 		.notify.fn = NULL,
+ 	};
++	struct mdata_req req;
++
++	if (!metadata)
++		return dm_io(&io_req, 1, &where, NULL);
+ 
+-	return dm_io(&io_req, 1, &where, NULL);
++	req.where = &where;
++	req.io_req = &io_req;
++
++	/*
++	 * Issue the synchronous I/O from a different thread
++	 * to avoid generic_make_request recursion.
++	 */
++	INIT_WORK(&req.work, do_metadata);
++	queue_work(ps->metadata_wq, &req.work);
++	flush_workqueue(ps->metadata_wq);
++
++	return req.result;
+ }
+ 
+ /*
+@@ -189,7 +220,7 @@ static int area_io(struct pstore *ps, ui
+ 	/* convert a metadata area index to a chunk index */
+ 	chunk = 1 + ((ps->exceptions_per_area + 1) * area);
+ 
+-	r = chunk_io(ps, chunk, rw);
++	r = chunk_io(ps, chunk, rw, 0);
+ 	if (r)
+ 		return r;
+ 
+@@ -230,7 +261,7 @@ static int read_header(struct pstore *ps
+ 	if (r)
+ 		return r;
+ 
+-	r = chunk_io(ps, 0, READ);
++	r = chunk_io(ps, 0, READ, 1);
+ 	if (r)
+ 		goto bad;
+ 
+@@ -292,7 +323,7 @@ static int write_header(struct pstore *p
+ 	dh->version = cpu_to_le32(ps->version);
+ 	dh->chunk_size = cpu_to_le32(ps->snap->chunk_size);
+ 
+-	return chunk_io(ps, 0, WRITE);
++	return chunk_io(ps, 0, WRITE, 1);
+ }
+ 
+ /*
+@@ -409,6 +440,7 @@ static void persistent_destroy(struct ex
+ {
+ 	struct pstore *ps = get_info(store);
+ 
++	destroy_workqueue(ps->metadata_wq);
+ 	dm_io_client_destroy(ps->io_client);
+ 	vfree(ps->callbacks);
+ 	free_area(ps);
+@@ -589,6 +621,12 @@ int dm_create_persistent(struct exceptio
+ 	atomic_set(&ps->pending_count, 0);
+ 	ps->callbacks = NULL;
+ 
++	ps->metadata_wq = create_singlethread_workqueue("ksnaphd");
++	if (!ps->metadata_wq) {
++		DMERR("couldn't start header metadata update thread");
++		return -ENOMEM;
++	}
++
+ 	store->destroy = persistent_destroy;
+ 	store->read_metadata = persistent_read_metadata;
+ 	store->prepare_exception = persistent_prepare;
+
+-- 
