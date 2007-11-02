@@ -1,100 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761477AbXKCAHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762857AbXKCAHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761477AbXKCAHS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 20:07:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761992AbXKCABa
+	id S1762857AbXKCAHm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 20:07:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762022AbXKCABe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 20:01:30 -0400
-Received: from ns2.suse.de ([195.135.220.15]:34840 "EHLO mx2.suse.de"
+	Fri, 2 Nov 2007 20:01:34 -0400
+Received: from ns2.suse.de ([195.135.220.15]:34846 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761979AbXKCAB3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 20:01:29 -0400
+	id S1762013AbXKCABd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 20:01:33 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 21/54] kset: convert /sys/hypervisor to use kset_create
-Date: Fri,  2 Nov 2007 16:58:59 -0700
-Message-Id: <1194047972-9850-21-git-send-email-gregkh@suse.de>
+Subject: [PATCH 22/54] kset: convert /sys/devices/system to use kset_create
+Date: Fri,  2 Nov 2007 16:59:00 -0700
+Message-Id: <1194047972-9850-22-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <20071102235758.GA9803@kroah.com>
 References: <20071102235758.GA9803@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dynamically create the kset instead of declaring it statically.  We also
-rename hypervisor_subsys to hypervisor_kset to catch all users of the
-variable.
+Dynamically create the kset instead of declaring it statically.
 
 Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/s390/hypfs/inode.c   |    2 +-
- drivers/base/hypervisor.c |   14 ++++++++++----
- include/linux/kobject.h   |    4 ++--
- 3 files changed, 13 insertions(+), 7 deletions(-)
+ drivers/base/sys.c |   28 ++++++++++++----------------
+ 1 files changed, 12 insertions(+), 16 deletions(-)
 
-diff --git a/arch/s390/hypfs/inode.c b/arch/s390/hypfs/inode.c
-index c022ccc..387d0e4 100644
---- a/arch/s390/hypfs/inode.c
-+++ b/arch/s390/hypfs/inode.c
-@@ -506,7 +506,7 @@ static int __init hypfs_init(void)
- 			goto fail_diag;
- 		}
- 	}
--	s390_subsys.kobj.kset = &hypervisor_subsys;
-+	s390_subsys.kobj.kset = hypervisor_kset;
- 	rc = subsystem_register(&s390_subsys);
- 	if (rc)
- 		goto fail_sysfs;
-diff --git a/drivers/base/hypervisor.c b/drivers/base/hypervisor.c
-index 14e75e9..cb2274f 100644
---- a/drivers/base/hypervisor.c
-+++ b/drivers/base/hypervisor.c
-@@ -2,19 +2,25 @@
-  * hypervisor.c - /sys/hypervisor subsystem.
-  *
-  * Copyright (C) IBM Corp. 2006
-+ * Copyright (C) 2007 Greg Kroah-Hartman <gregkh@suse.de>
-+ * Copyright (C) 2007 Novell Inc.
-  *
-  * This file is released under the GPLv2
-  */
+diff --git a/drivers/base/sys.c b/drivers/base/sys.c
+index 7693c95..600db58 100644
+--- a/drivers/base/sys.c
++++ b/drivers/base/sys.c
+@@ -126,19 +126,16 @@ void sysdev_class_remove_file(struct sysdev_class *c,
+ }
+ EXPORT_SYMBOL_GPL(sysdev_class_remove_file);
  
- #include <linux/kobject.h>
- #include <linux/device.h>
--
-+#include <linux/err.h>
- #include "base.h"
+-/*
+- * declare system_subsys
+- */
+-static decl_subsys(system, NULL);
++static struct kset *system_kset;
  
--decl_subsys(hypervisor, NULL);
--EXPORT_SYMBOL_GPL(hypervisor_subsys);
-+struct kset *hypervisor_kset;
-+EXPORT_SYMBOL_GPL(hypervisor_kset);
- 
- int __init hypervisor_init(void)
+ int sysdev_class_register(struct sysdev_class * cls)
  {
--	return subsystem_register(&hypervisor_subsys);
-+	hypervisor_kset = kset_create_and_register("hypervisor", NULL,
-+						   NULL, NULL);
-+	if (IS_ERR(hypervisor_kset))
-+		return PTR_ERR(hypervisor_kset);
+ 	pr_debug("Registering sysdev class '%s'\n",
+ 		 kobject_name(&cls->kset.kobj));
+ 	INIT_LIST_HEAD(&cls->drivers);
+-	cls->kset.kobj.parent = &system_subsys.kobj;
++	cls->kset.kobj.parent = &system_kset->kobj;
+ 	cls->kset.kobj.ktype = &ktype_sysdev_class;
+-	cls->kset.kobj.kset = &system_subsys;
++	cls->kset.kobj.kset = system_kset;
+ 	return kset_register(&cls->kset);
+ }
+ 
+@@ -297,8 +294,7 @@ void sysdev_shutdown(void)
+ 	pr_debug("Shutting Down System Devices\n");
+ 
+ 	mutex_lock(&sysdev_drivers_lock);
+-	list_for_each_entry_reverse(cls, &system_subsys.list,
+-				    kset.kobj.entry) {
++	list_for_each_entry_reverse(cls, &system_kset->list, kset.kobj.entry) {
+ 		struct sys_device * sysdev;
+ 
+ 		pr_debug("Shutting down type '%s':\n",
+@@ -360,9 +356,7 @@ int sysdev_suspend(pm_message_t state)
+ 
+ 	pr_debug("Suspending System Devices\n");
+ 
+-	list_for_each_entry_reverse(cls, &system_subsys.list,
+-				    kset.kobj.entry) {
+-
++	list_for_each_entry_reverse(cls, &system_kset->list, kset.kobj.entry) {
+ 		pr_debug("Suspending type '%s':\n",
+ 			 kobject_name(&cls->kset.kobj));
+ 
+@@ -413,8 +407,7 @@ aux_driver:
+ 	}
+ 
+ 	/* resume other classes */
+-	list_for_each_entry_continue(cls, &system_subsys.list,
+-					kset.kobj.entry) {
++	list_for_each_entry_continue(cls, &system_kset->list, kset.kobj.entry) {
+ 		list_for_each_entry(err_dev, &cls->kset.list, kobj.entry) {
+ 			pr_debug(" %s\n", kobject_name(&err_dev->kobj));
+ 			__sysdev_resume(err_dev);
+@@ -439,7 +432,7 @@ int sysdev_resume(void)
+ 
+ 	pr_debug("Resuming System Devices\n");
+ 
+-	list_for_each_entry(cls, &system_subsys.list, kset.kobj.entry) {
++	list_for_each_entry(cls, &system_kset->list, kset.kobj.entry) {
+ 		struct sys_device * sysdev;
+ 
+ 		pr_debug("Resuming type '%s':\n",
+@@ -457,8 +450,11 @@ int sysdev_resume(void)
+ 
+ int __init system_bus_init(void)
+ {
+-	system_subsys.kobj.parent = &devices_kset->kobj;
+-	return subsystem_register(&system_subsys);
++	system_kset = kset_create_and_register("system", NULL,
++					       NULL, devices_kset);
++	if (IS_ERR(system_kset))
++		return PTR_ERR(system_kset);
 +	return 0;
  }
-diff --git a/include/linux/kobject.h b/include/linux/kobject.h
-index 4196ad8..63a6bf9 100644
---- a/include/linux/kobject.h
-+++ b/include/linux/kobject.h
-@@ -190,8 +190,8 @@ struct kset _name##_subsys = { \
  
- /* The global /sys/kernel/ kset for people to chain off of */
- extern struct kset *kernel_kset;
--/* The global /sys/hypervisor/ subsystem  */
--extern struct kset hypervisor_subsys;
-+/* The global /sys/hypervisor/ kset for people to chain off of */
-+extern struct kset *hypervisor_kset;
- 
- extern int __must_check subsystem_register(struct kset *);
- extern void subsystem_unregister(struct kset *);
+ EXPORT_SYMBOL_GPL(sysdev_register);
 -- 
 1.5.3.4
 
