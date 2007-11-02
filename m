@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762857AbXKCAHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762736AbXKCAHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762857AbXKCAHm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 20:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762022AbXKCABe
+	id S1762736AbXKCAHx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 20:07:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756521AbXKCABi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 20:01:34 -0400
-Received: from ns2.suse.de ([195.135.220.15]:34846 "EHLO mx2.suse.de"
+	Fri, 2 Nov 2007 20:01:38 -0400
+Received: from ns2.suse.de ([195.135.220.15]:34850 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762013AbXKCABd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 20:01:33 -0400
+	id S1761722AbXKCABh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 20:01:37 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 22/54] kset: convert /sys/devices/system to use kset_create
-Date: Fri,  2 Nov 2007 16:59:00 -0700
-Message-Id: <1194047972-9850-22-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: [PATCH 23/54] kset: convert slub to use kset_create
+Date: Fri,  2 Nov 2007 16:59:01 -0700
+Message-Id: <1194047972-9850-23-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <20071102235758.GA9803@kroah.com>
 References: <20071102235758.GA9803@kroah.com>
@@ -24,92 +25,78 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Dynamically create the kset instead of declaring it statically.
 
 Cc: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Christoph Lameter <clameter@sgi.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/sys.c |   28 ++++++++++++----------------
- 1 files changed, 12 insertions(+), 16 deletions(-)
+ mm/slub.c |   19 ++++++++++---------
+ 1 files changed, 10 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/base/sys.c b/drivers/base/sys.c
-index 7693c95..600db58 100644
---- a/drivers/base/sys.c
-+++ b/drivers/base/sys.c
-@@ -126,19 +126,16 @@ void sysdev_class_remove_file(struct sysdev_class *c,
- }
- EXPORT_SYMBOL_GPL(sysdev_class_remove_file);
+diff --git a/mm/slub.c b/mm/slub.c
+index b821fdb..9957683 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -21,6 +21,7 @@
+ #include <linux/ctype.h>
+ #include <linux/kallsyms.h>
+ #include <linux/memory.h>
++#include <linux/err.h>
  
--/*
-- * declare system_subsys
-- */
--static decl_subsys(system, NULL);
-+static struct kset *system_kset;
+ /*
+  * Lock order:
+@@ -3978,7 +3979,7 @@ static struct kset_uevent_ops slab_uevent_ops = {
+ 	.filter = uevent_filter,
+ };
  
- int sysdev_class_register(struct sysdev_class * cls)
- {
- 	pr_debug("Registering sysdev class '%s'\n",
- 		 kobject_name(&cls->kset.kobj));
- 	INIT_LIST_HEAD(&cls->drivers);
--	cls->kset.kobj.parent = &system_subsys.kobj;
-+	cls->kset.kobj.parent = &system_kset->kobj;
- 	cls->kset.kobj.ktype = &ktype_sysdev_class;
--	cls->kset.kobj.kset = &system_subsys;
-+	cls->kset.kobj.kset = system_kset;
- 	return kset_register(&cls->kset);
- }
+-static decl_subsys(slab, &slab_uevent_ops);
++static struct kset *slab_kset;
  
-@@ -297,8 +294,7 @@ void sysdev_shutdown(void)
- 	pr_debug("Shutting Down System Devices\n");
+ #define ID_STR_LENGTH 64
  
- 	mutex_lock(&sysdev_drivers_lock);
--	list_for_each_entry_reverse(cls, &system_subsys.list,
--				    kset.kobj.entry) {
-+	list_for_each_entry_reverse(cls, &system_kset->list, kset.kobj.entry) {
- 		struct sys_device * sysdev;
- 
- 		pr_debug("Shutting down type '%s':\n",
-@@ -360,9 +356,7 @@ int sysdev_suspend(pm_message_t state)
- 
- 	pr_debug("Suspending System Devices\n");
- 
--	list_for_each_entry_reverse(cls, &system_subsys.list,
--				    kset.kobj.entry) {
--
-+	list_for_each_entry_reverse(cls, &system_kset->list, kset.kobj.entry) {
- 		pr_debug("Suspending type '%s':\n",
- 			 kobject_name(&cls->kset.kobj));
- 
-@@ -413,8 +407,7 @@ aux_driver:
+@@ -4031,7 +4032,7 @@ static int sysfs_slab_add(struct kmem_cache *s)
+ 		 * This is typically the case for debug situations. In that
+ 		 * case we can catch duplicate names easily.
+ 		 */
+-		sysfs_remove_link(&slab_subsys.kobj, s->name);
++		sysfs_remove_link(&slab_kset->kobj, s->name);
+ 		name = s->name;
+ 	} else {
+ 		/*
+@@ -4042,7 +4043,7 @@ static int sysfs_slab_add(struct kmem_cache *s)
  	}
  
- 	/* resume other classes */
--	list_for_each_entry_continue(cls, &system_subsys.list,
--					kset.kobj.entry) {
-+	list_for_each_entry_continue(cls, &system_kset->list, kset.kobj.entry) {
- 		list_for_each_entry(err_dev, &cls->kset.list, kobj.entry) {
- 			pr_debug(" %s\n", kobject_name(&err_dev->kobj));
- 			__sysdev_resume(err_dev);
-@@ -439,7 +432,7 @@ int sysdev_resume(void)
+ 	kobject_set_name(&s->kobj, name);
+-	s->kobj.kset = &slab_subsys;
++	s->kobj.kset = slab_kset;
+ 	s->kobj.ktype = &slab_ktype;
+ 	kobject_init(&s->kobj);
+ 	err = kobject_add(&s->kobj);
+@@ -4087,9 +4088,8 @@ static int sysfs_slab_alias(struct kmem_cache *s, const char *name)
+ 		/*
+ 		 * If we have a leftover link then remove it.
+ 		 */
+-		sysfs_remove_link(&slab_subsys.kobj, name);
+-		return sysfs_create_link(&slab_subsys.kobj,
+-						&s->kobj, name);
++		sysfs_remove_link(&slab_kset->kobj, name);
++		return sysfs_create_link(&slab_kset->kobj, &s->kobj, name);
+ 	}
  
- 	pr_debug("Resuming System Devices\n");
+ 	al = kmalloc(sizeof(struct saved_alias), GFP_KERNEL);
+@@ -4108,10 +4108,11 @@ static int __init slab_sysfs_init(void)
+ 	struct kmem_cache *s;
+ 	int err;
  
--	list_for_each_entry(cls, &system_subsys.list, kset.kobj.entry) {
-+	list_for_each_entry(cls, &system_kset->list, kset.kobj.entry) {
- 		struct sys_device * sysdev;
+-	err = subsystem_register(&slab_subsys);
+-	if (err) {
++	slab_kset = kset_create_and_register("slab", &slab_uevent_ops,
++					     NULL, NULL);
++	if (IS_ERR(slab_kset)) {
+ 		printk(KERN_ERR "Cannot register slab subsystem.\n");
+-		return -ENOSYS;
++		return PTR_ERR(slab_kset);
+ 	}
  
- 		pr_debug("Resuming type '%s':\n",
-@@ -457,8 +450,11 @@ int sysdev_resume(void)
- 
- int __init system_bus_init(void)
- {
--	system_subsys.kobj.parent = &devices_kset->kobj;
--	return subsystem_register(&system_subsys);
-+	system_kset = kset_create_and_register("system", NULL,
-+					       NULL, devices_kset);
-+	if (IS_ERR(system_kset))
-+		return PTR_ERR(system_kset);
-+	return 0;
- }
- 
- EXPORT_SYMBOL_GPL(sysdev_register);
+ 	slab_state = SYSFS;
 -- 
 1.5.3.4
 
