@@ -1,55 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753473AbXKBJH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753727AbXKBJ3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753473AbXKBJH3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 05:07:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbXKBJHX
+	id S1753727AbXKBJ3a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 05:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbXKBJ3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 05:07:23 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:56143 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752414AbXKBJHV (ORCPT
+	Fri, 2 Nov 2007 05:29:22 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:37831 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751876AbXKBJ3V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 05:07:21 -0400
-To: casey@schaufler-ca.com
-Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 2.6.23: Filesystem capabilities 0.17
-References: <520194.24968.qm@web36605.mail.mud.yahoo.com>
-From: Olaf Dietsche <olaf+list.linux-kernel@olafdietsche.de>
-Date: Fri, 02 Nov 2007 10:07:14 +0100
-Message-ID: <873avp818d.fsf@olafdietsche.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Fri, 2 Nov 2007 05:29:21 -0400
+Message-ID: <472AEDEC.1090606@suse.de>
+Date: Fri, 02 Nov 2007 12:29:16 +0300
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Provags-ID: V01U2FsdGVkX1/6NDE34+1dUKogJr7Q56cZW7SKq/wv+tyiIjg
- p0YVcnRA5ALGE75IzxbFda3c6RFxVKSioG6EMHhQrFmRR7Pj16
- YZu5RLhDVDw7Kvg5CMCXw==
+To: Rolf Eike Beer <eike-kernel@sf-tec.de>
+CC: lenb@kernel.org, linux-acpi@vger.kernel.org,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [2.6.24-rc1][BUG] Oops on battery removal
+References: <200711020803.49608.eike-kernel@sf-tec.de> <200711020937.33672.eike-kernel@sf-tec.de>
+In-Reply-To: <200711020937.33672.eike-kernel@sf-tec.de>
+Content-Type: multipart/mixed;
+ boundary="------------010800040709090204080502"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey Schaufler <casey@schaufler-ca.com> writes:
+This is a multi-part message in MIME format.
+--------------010800040709090204080502
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> --- Olaf Dietsche <olaf+list.linux-kernel@olafdietsche.de> wrote:
->
->> The bits are stored in a sparse file named /.capabilities in the
->> directory of the mount point, where the corresponding executable
->> lives. The inode number of the file is the index into this file.
->
-> The old PlanG approach. It's the way that we did MAC labels in
-> Trix4. It has the wicked advantage of working across NFS without
-> anyone being the wiser.
+Rolf Eike Beer wrote:
+> Rolf Eike Beer wrote:
+>> Hi,
+>>
+>> this happened while I removed my battery on bootup. Complete dmesg is
+>> attached. Kernel is 2.6.24-rc1-git of yesterday (last commit was
+>> d919fd433b5823d1cf9d0688eb2eec183de9b74c).
+> 
+> Ok, I found out that it has nothing to do with the actual removal as it seems. 
+> When I start the laptop with battery already detached I get the same error.
+> 
+> Eike
+Please check if this patch helps.
 
-If you don't trust a NFS, you'll mount it nosuid anyway and then
-fscaps are disabled too.
+Thanks,
+Alex.
 
-> It really causes trouble for backup utilities, however.
+--------------010800040709090204080502
+Content-Type: text/x-patch;
+ name="remove_cycle_at_battery_removal.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="remove_cycle_at_battery_removal.patch"
 
-Whatever implementation you choose, you will always have to modify
-your backup utilities or copy the attributes separately.
+ACPI: Battery: remove cycle from battery removal.
 
-> Trix6 (there wasn't really a Trix5) had xattrs
-> available and we found the switch well worth the investment.
+From:  <>
 
-Extended attributes are a nice, clean concept, like micro kernels for
-example :-). But they have a cost, which shouldn't be ignored.
+get_property() should not call battery_update() on absent battery to
+avoid cycle and oops.
 
-Regards, Olaf.
+Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+---
+
+ drivers/acpi/battery.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
+index c2ce0ad..50cdf6f 100644
+--- a/drivers/acpi/battery.c
++++ b/drivers/acpi/battery.c
+@@ -140,10 +140,11 @@ static int acpi_battery_get_property(struct power_supply *psy,
+ {
+ 	struct acpi_battery *battery = to_acpi_battery(psy);
+ 
+-	if ((!acpi_battery_present(battery)) &&
+-	     psp != POWER_SUPPLY_PROP_PRESENT)
++	if (acpi_battery_present(battery)) {
++		/* run battery update only if it is present */
++		acpi_battery_update(battery);
++	} else if (psp != POWER_SUPPLY_PROP_PRESENT)
+ 		return -ENODEV;
+-	acpi_battery_update(battery);
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_STATUS:
+ 		if (battery->state & 0x01)
+
+--------------010800040709090204080502--
