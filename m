@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759925AbXKBPoM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758728AbXKBPo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759925AbXKBPoM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 11:44:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758951AbXKBPng
+	id S1758728AbXKBPo3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 11:44:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759551AbXKBPnq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 11:43:36 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:49690 "EHLO
+	Fri, 2 Nov 2007 11:43:46 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:49694 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758907AbXKBPnd (ORCPT
+	with ESMTP id S1759538AbXKBPnp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 11:43:33 -0400
-Date: Fri, 2 Nov 2007 16:43:10 +0100
+	Fri, 2 Nov 2007 11:43:45 -0400
+Date: Fri, 2 Nov 2007 16:43:22 +0100
 From: Adrian Bunk <bunk@kernel.org>
 To: rusty@rustcorp.com.au
-Cc: lguest@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] lguest: make async_hcall() static
-Message-ID: <20071102154310.GI30287@stusta.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] kernel/futex.c: make 3 functions static
+Message-ID: <20071102154322.GJ30287@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,80 +23,87 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-async_hcall() can become static.
+The following functions can now become static again:
+- get_futex_key()
+- get_futex_key_refs()
+- drop_futex_key_refs()
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- arch/x86/lguest/boot.c         |   26 +++++++++++++-------------
- include/asm-x86/lguest_hcall.h |    3 ---
- 2 files changed, 13 insertions(+), 16 deletions(-)
+ include/linux/futex.h |    4 ----
+ kernel/futex.c        |   11 ++++-------
+ 2 files changed, 4 insertions(+), 11 deletions(-)
 
-7b280cbbeeeb4c37a031b9cda257bc3bccf39173 
-diff --git a/arch/x86/lguest/boot.c b/arch/x86/lguest/boot.c
-index a55b090..e6023b8 100644
---- a/arch/x86/lguest/boot.c
-+++ b/arch/x86/lguest/boot.c
-@@ -113,17 +113,6 @@ static void lguest_leave_lazy_mode(void)
- 	hcall(LHCALL_FLUSH_ASYNC, 0, 0, 0);
- }
+48faaee030e6f0ef92ec418552cce6b3b2c14c56 
+diff --git a/include/linux/futex.h b/include/linux/futex.h
+index 9965035..92d420f 100644
+--- a/include/linux/futex.h
++++ b/include/linux/futex.h
+@@ -149,10 +149,6 @@ union futex_key {
+ 		int offset;
+ 	} both;
+ };
+-int get_futex_key(u32 __user *uaddr, struct rw_semaphore *shared,
+-		  union futex_key *key);
+-void get_futex_key_refs(union futex_key *key);
+-void drop_futex_key_refs(union futex_key *key);
  
--static void lazy_hcall(unsigned long call,
--		       unsigned long arg1,
--		       unsigned long arg2,
--		       unsigned long arg3)
--{
--	if (paravirt_get_lazy_mode() == PARAVIRT_LAZY_NONE)
--		hcall(call, arg1, arg2, arg3);
--	else
--		async_hcall(call, arg1, arg2, arg3);
--}
--
- /* async_hcall() is pretty simple: I'm quite proud of it really.  We have a
-  * ring buffer of stored hypercalls which the Host will run though next time we
-  * do a normal hypercall.  Each entry in the ring has 4 slots for the hypercall
-@@ -134,8 +123,8 @@ static void lazy_hcall(unsigned long call,
-  * full and we just make the hypercall directly.  This has the nice side
-  * effect of causing the Host to run all the stored calls in the ring buffer
-  * which empties it for next time! */
--void async_hcall(unsigned long call,
--		 unsigned long arg1, unsigned long arg2, unsigned long arg3)
-+static void async_hcall(unsigned long call, unsigned long arg1,
-+			unsigned long arg2, unsigned long arg3)
+ #ifdef CONFIG_FUTEX
+ extern void exit_robust_list(struct task_struct *curr);
+diff --git a/kernel/futex.c b/kernel/futex.c
+index 3271045..9dc591a 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -181,8 +181,8 @@ static inline int match_futex(union futex_key *key1, union futex_key *key2)
+  * For other futexes, it points to &current->mm->mmap_sem and
+  * caller must have taken the reader lock. but NOT any spinlocks.
+  */
+-int get_futex_key(u32 __user *uaddr, struct rw_semaphore *fshared,
+-		  union futex_key *key)
++static int get_futex_key(u32 __user *uaddr, struct rw_semaphore *fshared,
++			 union futex_key *key)
  {
- 	/* Note: This code assumes we're uniprocessor. */
- 	static unsigned int next_call;
-@@ -161,6 +150,17 @@ void async_hcall(unsigned long call,
+ 	unsigned long address = (unsigned long)uaddr;
+ 	struct mm_struct *mm = current->mm;
+@@ -268,14 +268,13 @@ int get_futex_key(u32 __user *uaddr, struct rw_semaphore *fshared,
  	}
- 	local_irq_restore(flags);
+ 	return err;
  }
-+
-+static void lazy_hcall(unsigned long call,
-+		       unsigned long arg1,
-+		       unsigned long arg2,
-+		       unsigned long arg3)
-+{
-+	if (paravirt_get_lazy_mode() == PARAVIRT_LAZY_NONE)
-+		hcall(call, arg1, arg2, arg3);
-+	else
-+		async_hcall(call, arg1, arg2, arg3);
-+}
- /*:*/
+-EXPORT_SYMBOL_GPL(get_futex_key);
  
- /*G:033
-diff --git a/include/asm-x86/lguest_hcall.h b/include/asm-x86/lguest_hcall.h
-index 9c5092b..2091779 100644
---- a/include/asm-x86/lguest_hcall.h
-+++ b/include/asm-x86/lguest_hcall.h
-@@ -54,9 +54,6 @@ hcall(unsigned long call,
+ /*
+  * Take a reference to the resource addressed by a key.
+  * Can be called while holding spinlocks.
+  *
+  */
+-inline void get_futex_key_refs(union futex_key *key)
++static void get_futex_key_refs(union futex_key *key)
+ {
+ 	if (key->both.ptr == 0)
+ 		return;
+@@ -288,13 +287,12 @@ inline void get_futex_key_refs(union futex_key *key)
+ 			break;
+ 	}
  }
- /*:*/
+-EXPORT_SYMBOL_GPL(get_futex_key_refs);
  
--void async_hcall(unsigned long call,
--		 unsigned long arg1, unsigned long arg2, unsigned long arg3);
--
- /* Can't use our min() macro here: needs to be a constant */
- #define LGUEST_IRQS (NR_IRQS < 32 ? NR_IRQS: 32)
+ /*
+  * Drop a reference to the resource addressed by a key.
+  * The hash bucket spinlock must not be held.
+  */
+-void drop_futex_key_refs(union futex_key *key)
++static void drop_futex_key_refs(union futex_key *key)
+ {
+ 	if (!key->both.ptr)
+ 		return;
+@@ -307,7 +305,6 @@ void drop_futex_key_refs(union futex_key *key)
+ 			break;
+ 	}
+ }
+-EXPORT_SYMBOL_GPL(drop_futex_key_refs);
  
+ static u32 cmpxchg_futex_value_locked(u32 __user *uaddr, u32 uval, u32 newval)
+ {
 
