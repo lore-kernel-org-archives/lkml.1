@@ -1,68 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758690AbXKBRTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761657AbXKBRTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758690AbXKBRTW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 13:19:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757141AbXKBRTI
+	id S1761657AbXKBRTz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 13:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757141AbXKBRTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 13:19:08 -0400
-Received: from www17.your-server.de ([213.133.104.17]:42365 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755335AbXKBRTG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 13:19:06 -0400
-Message-ID: <472B5C01.7090508@m3y3r.de>
-Date: Fri, 02 Nov 2007 18:18:57 +0100
-From: Thomas Meyer <thomas@m3y3r.de>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
+	Fri, 2 Nov 2007 13:19:45 -0400
+Received: from tachyon.jukie.net ([205.150.199.214]:35046 "EHLO jukie.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757176AbXKBRTo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 13:19:44 -0400
+Date: Fri, 2 Nov 2007 13:19:33 -0400
+From: Bart Trojanowski <bart@jukie.net>
+To: Avi Kivity <avi@qumranet.com>, linux-kernel@vger.kernel.org
+Cc: kvm-devel@lists.sourceforge.net
+Subject: Re: [kvm-devel] [BUG] 2.6.23.1 host freezes when running kvm
+Message-ID: <20071102171933.GE32719@jukie.net>
+References: <20071019202019.GW3962@jukie.net> <20071020000240.GX3962@jukie.net> <20071020154445.GA5254@jukie.net> <471B366B.7040706@qumranet.com> <20071022132820.GA3962@jukie.net> <471CA88B.7000706@qumranet.com> <20071023135410.GF3962@jukie.net> <471E033E.20701@qumranet.com>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [regression] v2.6.24-rc1-497-gb1d08ac: kde battery icon gone
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <471E033E.20701@qumranet.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-i just wanted to report this:
+* Avi Kivity <avi@qumranet.com> [071023 10:21]:
+> Thanks, that will be most helpful.  If userspace won't compile against
+> some intermediate version, let me know the commit hash and I'll add a fixup.
 
-in v2.6.24-rc1-497-gb1d08ac the kde battery icon is no longer displayed.
+A bisect didn't find anything between 2.6.22 and 2.6.23.  Which made me
+very confused.  I think, I must have used the Debian userland tools...
+which is still bad and I will double check that with 2.6.23.
 
-with 2.6.23 shows the battery icon.
-
-current config:
-
-grep -i acpi .config
-# Power management options (ACPI, APM)
-CONFIG_ACPI=y
-CONFIG_ACPI_SLEEP=y
-# CONFIG_ACPI_PROCFS is not set
-CONFIG_ACPI_PROC_EVENT=y
-CONFIG_ACPI_AC=m
-CONFIG_ACPI_BATTERY=m
-CONFIG_ACPI_BUTTON=m
-CONFIG_ACPI_VIDEO=m
-CONFIG_ACPI_FAN=m
-CONFIG_ACPI_DOCK=m
-CONFIG_ACPI_BAY=m
-CONFIG_ACPI_PROCESSOR=m
-CONFIG_ACPI_HOTPLUG_CPU=y
-CONFIG_ACPI_THERMAL=m
-# CONFIG_ACPI_ASUS is not set
-# CONFIG_ACPI_TOSHIBA is not set
-CONFIG_ACPI_BLACKLIST_YEAR=0
-CONFIG_ACPI_DEBUG=y
-# CONFIG_ACPI_DEBUG_FUNC_TRACE is not set
-CONFIG_ACPI_EC=y
-CONFIG_ACPI_POWER=y
-CONFIG_ACPI_SYSTEM=y
-CONFIG_ACPI_CONTAINER=m
-CONFIG_ACPI_SBS=m
-CONFIG_X86_ACPI_CPUFREQ=m
-# CONFIG_X86_ACPI_CPUFREQ_PROC_INTF is not set
-CONFIG_HOTPLUG_PCI_ACPI=m
-# CONFIG_HOTPLUG_PCI_ACPI_IBM is not set
-CONFIG_PNPACPI=y
-# CONFIG_THINKPAD_ACPI is not set
-CONFIG_ATA_ACPI=y
-# CONFIG_PATA_ACPI is not set
+-Bart
 
