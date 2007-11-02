@@ -1,51 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758552AbXKBAfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759322AbXKBAjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758552AbXKBAfw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 20:35:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754646AbXKBAfo
+	id S1759322AbXKBAjl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 20:39:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755022AbXKBAjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 20:35:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58207 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754611AbXKBAfn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 20:35:43 -0400
-Date: Thu, 1 Nov 2007 20:35:26 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Gregory Haskins <gregory.haskins.ml@gmail.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 1/4] x86: FIFO ticket spinlocks
-Message-ID: <20071101203526.293cd7f0@bree.surriel.com>
-In-Reply-To: <alpine.LFD.0.999.0711010935060.3342@woody.linux-foundation.org>
-References: <20071101140146.GA26879@wotan.suse.de>
-	<20071101140320.GC26879@wotan.suse.de>
-	<4729E567.1050402@gmail.com>
-	<alpine.LFD.0.999.0711010935060.3342@woody.linux-foundation.org>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Nov 2007 20:39:33 -0400
+Received: from mail4.sea5.speakeasy.net ([69.17.117.6]:56525 "EHLO
+	mail4.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753678AbXKBAjd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 20:39:33 -0400
+Date: Thu, 1 Nov 2007 17:39:32 -0700 (PDT)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell2.speakeasy.net
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
+       lkml <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [v4l-dvb-maintainer] bttv build error (CONFIG_NET=n)
+In-Reply-To: <1193905709.8587.24.camel@gaivota>
+Message-ID: <Pine.LNX.4.58.0711011713260.18400@shell2.speakeasy.net>
+References: <20071030221508.3139ea5c.randy.dunlap@oracle.com> 
+ <Pine.LNX.4.58.0710310345160.19072@shell4.speakeasy.net> 
+ <20071031092350.91eae067.randy.dunlap@oracle.com> <1193905709.8587.24.camel@gaivota>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Nov 2007 09:38:22 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Thu, 1 Nov 2007, Mauro Carvalho Chehab wrote:
+> Randy,
+> > > The only reason the net stuff works, is because CONFIG_NET includes igmp.c,
+> > > which can't be compiled as a module.  That means ip_compute_csum() will get
+> > > pulled out of the lib.a file for igmp, and thus be present for the net modules
+> > > that use it too.  If igmp could be turned off, made a module, or stopped using
+> > > ip_compute_csum(), then the users of ip_compute_csum() that do depend on
+> > > CONFIG_NET would have the same problem as bttv does.
+> >
+> > Thanks for the analysis and summary.
+> > (I'm still waiting for those lkml.org links to load... timed out)
+> >
+> > > It seems a shame to create a new ip checksum function in the bttv driver when
+> > > a perfectly good one already exists and will already be present in just about
+> > > every kernel out there.  Honestly, how common is NET=n and VIDEO_BT848=m
+> > > outside of randconfig?
+>
+> This might happen on embedded devices, like a set top box or a PVR,
+> using a bttv hardware.
+>
+> > so just adding "depends on NET" should be OK then?
+>
+> Seems very weird to have bttv module dependent on NET, just because a
+> checksum calculus function is defined there.
 
-> So "unfair" is obviously always bad. Except when it isn't.
+Mauro, read the first message I linked too:
+http://lkml.org/lkml/2007/4/3/209 or http://article.gmane.org/gmane.linux.kernel/511684
 
-Larry Woodman managed to wedge the VM into a state where, on his
-4x dual core system, only 2 cores (on the same CPU) could get the
-zone->lru_lock overnight.  The other 6 cores on the system were
-just spinning, without being able to get the lock.
+Randy had this exact same problem with the md driver and a different ip
+checksum function.
 
-On the other hand, spinlock contention in the page replacement
-code is just a symptom of the fact that we scan too many pages.
-It can probably be fixed in other ways...
+ip_compute_csum() _isn't_ defined under NET.  It's part of the kernel's
+arch specific library.  So it should be available for all modules to use as
+part of the kernel core.  Except due to a flaw in the build system, symbols
+that are part of a library can't be used by modules unless there is at
+least one non-module user.  There would be the same problem with strcat()
+or tons of other functions, if one were able to compile all users of these
+functions are modules.
 
--- 
-"Debugging is twice as hard as writing the code in the first place.
-Therefore, if you write the code as cleverly as possible, you are,
-by definition, not smart enough to debug it." - Brian W. Kernighan
+I wonder if the build system could be modified to take every object that's
+part of lib-y an turn it into a .ko file?
+
+The process would be something like this:
+build lib-y objects like they are and make lib.a
+
+filter out of lib-y all objects that don't export symbols.  Since the
+objects are already compiled, this shouldn't be hard.
+
+obj-m += lib-y
+
+Now all the lib files will be modules, and if any module needs a symbol
+from one and it's not in the kernel, modprobe will load it.  Minimum bloat,
+since the library code isn't loaded into the kernel until something is in
+the kernel that needs it.  And we don't need to create kconfig symbols for
+library functions and remember to select them.  Let depmod keep track of
+what library functions a module needs.
