@@ -1,93 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762445AbXKCAOL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763978AbXKCAOh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762445AbXKCAOL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 20:14:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761804AbXKCAC7
+	id S1763978AbXKCAOh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 20:14:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761901AbXKCADG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 20:02:59 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:34960 "EHLO mx2.suse.de"
+	Fri, 2 Nov 2007 20:03:06 -0400
+Received: from mx2.suse.de ([195.135.220.15]:34976 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762253AbXKCAC6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 20:02:58 -0400
+	id S1756474AbXKCADD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 20:03:03 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Matt Domsch <Matt_Domsch@dell.com>,
-       Matt Tolentino <matthew.e.tolentino@intel.com>
-Subject: [PATCH 42/54] kset: convert efivars to use kset_create for the vars sub-subsystem.
-Date: Fri,  2 Nov 2007 16:59:20 -0700
-Message-Id: <1194047972-9850-42-git-send-email-gregkh@suse.de>
+       Cliff Brake <cbrake@accelent.com>, Dirk Behme <dirk.behme@de.bosch.com>
+Subject: [PATCH 43/54] kobject: convert arm/mach-omap1/pm.c to kobj_attr interface
+Date: Fri,  2 Nov 2007 16:59:21 -0700
+Message-Id: <1194047972-9850-43-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <20071102235758.GA9803@kroah.com>
 References: <20071102235758.GA9803@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dynamically create the kset instead of declaring it statically.
+This makes the code a bit simpler and and gets us one step closer to
+deleting the deprecated subsys_attr code.
 
 Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Matt Domsch <Matt_Domsch@dell.com>
-Cc: Matt Tolentino <matthew.e.tolentino@intel.com>
+Cc: Cliff Brake <cbrake@accelent.com>
+Cc: Dirk Behme <dirk.behme@de.bosch.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/firmware/efivars.c |   16 +++++++---------
- 1 files changed, 7 insertions(+), 9 deletions(-)
+ arch/arm/mach-omap1/pm.c |   22 ++++++++--------------
+ 1 files changed, 8 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/firmware/efivars.c b/drivers/firmware/efivars.c
-index c2383ac..362c5a5 100644
---- a/drivers/firmware/efivars.c
-+++ b/drivers/firmware/efivars.c
-@@ -443,7 +443,7 @@ static struct attribute_group efi_subsys_attr_group = {
- };
+diff --git a/arch/arm/mach-omap1/pm.c b/arch/arm/mach-omap1/pm.c
+index 402113c..63edafb 100644
+--- a/arch/arm/mach-omap1/pm.c
++++ b/arch/arm/mach-omap1/pm.c
+@@ -69,14 +69,14 @@ static unsigned int mpui1610_sleep_save[MPUI1610_SLEEP_SAVE_SIZE];
  
+ static unsigned short enable_dyn_sleep = 1;
  
--static decl_subsys(vars, NULL);
-+static struct kset *vars_kset;
- static struct kset *efi_kset;
- 
- /*
-@@ -489,7 +489,7 @@ efivar_create_sysfs_entry(unsigned long variable_name_size,
- 	efi_guid_unparse(vendor_guid, short_name + strlen(short_name));
- 
- 	kobject_set_name(&new_efivar->kobj, "%s", short_name);
--	new_efivar->kobj.kset = &vars_subsys;
-+	new_efivar->kobj.kset = vars_kset;
- 	new_efivar->kobj.ktype = &efivar_ktype;
- 	i = kobject_register(&new_efivar->kobj);
- 	if (i) {
-@@ -546,11 +546,9 @@ efivars_init(void)
- 		goto out_free;
- 	}
- 
--	vars_subsys.kobj.kset = efi_kset;
--
--	error = subsystem_register(&vars_subsys);
--
--	if (error) {
-+	vars_kset = kset_create_and_register("vars", NULL, NULL, efi_kset);
-+	if (IS_ERR(vars_kset)) {
-+		error = PTR_ERR(vars_kset);
- 		printk(KERN_ERR "efivars: Subsystem registration failed with error %d.\n", error);
- 		goto out_firmware_unregister;
- 	}
-@@ -589,7 +587,7 @@ efivars_init(void)
- 	else
- 		goto out_free;
- 
--	subsystem_unregister(&vars_subsys);
-+	kset_unregister(vars_kset);
- 
- out_firmware_unregister:
- 	kset_unregister(efi_kset);
-@@ -612,7 +610,7 @@ efivars_exit(void)
- 		efivar_unregister(entry);
- 	}
- 
--	subsystem_unregister(&vars_subsys);
-+	kset_unregister(vars_kset);
- 	kset_unregister(efi_kset);
+-static ssize_t omap_pm_sleep_while_idle_show(struct kset *kset, char *buf)
++static ssize_t idle_show(struct kobject *kobj, struct kobj_attribute *attr,
++			 char *buf)
+ {
+ 	return sprintf(buf, "%hu\n", enable_dyn_sleep);
  }
  
+-static ssize_t omap_pm_sleep_while_idle_store(struct kset *kset,
+-					      const char * buf,
+-					      size_t n)
++static ssize_t idle_store(struct kobject *kobj, struct kobj_attribute *attr,
++			  const char * buf, size_t n)
+ {
+ 	unsigned short value;
+ 	if (sscanf(buf, "%hu", &value) != 1 ||
+@@ -88,14 +88,8 @@ static ssize_t omap_pm_sleep_while_idle_store(struct kset *kset,
+ 	return n;
+ }
+ 
+-static struct subsys_attribute sleep_while_idle_attr = {
+-	.attr   = {
+-		.name = __stringify(sleep_while_idle),
+-		.mode = 0644,
+-	},
+-	.show   = omap_pm_sleep_while_idle_show,
+-	.store  = omap_pm_sleep_while_idle_store,
+-};
++static struct kobj_attribute sleep_while_idle_attr =
++	__ATTR(sleep_while_idle, 0644, idle_show, idle_store);
+ 
+ static void (*omap_sram_idle)(void) = NULL;
+ static void (*omap_sram_suspend)(unsigned long r0, unsigned long r1) = NULL;
+@@ -725,9 +719,9 @@ static int __init omap_pm_init(void)
+ 	omap_pm_init_proc();
+ #endif
+ 
+-	error = subsys_create_file(power_kset, &sleep_while_idle_attr);
++	error = sysfs_create_file(&power_kset->kobj, &sleep_while_idle_attr);
+ 	if (error)
+-		printk(KERN_ERR "subsys_create_file failed: %d\n", error);
++		printk(KERN_ERR "sysfs_create_file failed: %d\n", error);
+ 
+ 	if (cpu_is_omap16xx()) {
+ 		/* configure LOW_PWR pin */
 -- 
 1.5.3.4
 
