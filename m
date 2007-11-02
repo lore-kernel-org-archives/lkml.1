@@ -1,108 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760539AbXKBBxL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760519AbXKBByd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760539AbXKBBxL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 21:53:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbXKBBw5
+	id S1760519AbXKBByd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 21:54:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbXKBByX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 21:52:57 -0400
-Received: from [222.73.24.84] ([222.73.24.84]:62178 "EHLO song.cn.fujitsu.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752846AbXKBBw4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 21:52:56 -0400
-Message-ID: <472A828F.9070003@cn.fujitsu.com>
-Date: Fri, 02 Nov 2007 09:51:11 +0800
-From: lizf <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 1 Nov 2007 21:54:23 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:43258 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1754060AbXKBByW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 21:54:22 -0400
+Message-ID: <393968464.13148@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Fri, 2 Nov 2007 09:54:18 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Torsten Kaiser <just.for.lkml@googlemail.com>
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
+       linux-fsdevel@vger.kernel.org
+Subject: writeout stalls in current -git
+References: <200710220822.52370.maximlevitsky@gmail.com> <200710221421.21439.maximlevitsky@gmail.com> <393056632.00561@ustc.edu.cn> <200710221505.35397.maximlevitsky@gmail.com> <20071022131045.GA5357@mail.ustc.edu.cn> <393060478.03650@ustc.edu.cn> <64bb37e0710310822r5ca6b793p8fd97db2f72a8655@mail.gmail.com> <393903856.06449@ustc.edu.cn> <64bb37e0711011120i63cdfe3ci18995d57b6649a8@mail.gmail.com>
 MIME-Version: 1.0
-To: davem@davemloft.net
-CC: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: [PATCH] sparck64: remove duplicate includes
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <64bb37e0711011120i63cdfe3ci18995d57b6649a8@mail.gmail.com>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <E1Inljm-0002DW-CL@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Nov 01, 2007 at 07:20:51PM +0100, Torsten Kaiser wrote:
+> On 11/1/07, Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
+> > On Wed, Oct 31, 2007 at 04:22:10PM +0100, Torsten Kaiser wrote:
+> > > Since 2.6.23-mm1 I also experience strange hangs during heavy writeouts.
+> > > Each time I noticed this I was using emerge (package util from the
+> > > gentoo distribution) to install/upgrade a package. The last step,
+> > > where this hang occurred, is moving the prepared files from a tmpfs
+> > > partion to the main xfs filesystem.
+> > > The hangs where not fatal, after a few second everything resumed
+> > > normal, so I was not able to capture a good image of what was
+> > > happening.
+> >
+> > Thank you for the detailed report.
+> >
+> > How severe was the hangs? Only writeouts stalled, all apps stalled, or
+> > cannot type and run new commands?
+> 
+> Only writeout stalled. The emerge that was moving the files hung, but
+> everything else worked normaly.
+> I was able to run new commands, like coping the /proc/meminfo.
 
-This patch removes duplicate includes in arch/sparc64
+But you mentioned in the next mail that `watch cat /proc/meminfo`
+could also be blocked for some time - I guess in the same time emerge
+was stalled?
 
-Signed-off-by Li Zefan <lizf@cn.fujitsu.com>
+> [snip]
+> > > After this SysRq+W writeback resumed again. Possible that writing
+> > > above into the syslog triggered that.
+> >
+> > Maybe. Are the log files on another disk/partition?
+> 
+> No, everything was going to /
+> 
+> What might be interesting is, that doing cat /proc/meminfo
+> >~/stall/meminfo did not resume the writeback. So there might some
+> threshold that only was broken with the additional write from
+> syslog-ng. Or syslog-ng does some flushing, I dont now. (I'm using the
 
----
- arch/sparc64/kernel/ds.c          |    1 -
- arch/sparc64/kernel/module.c      |    1 -
- arch/sparc64/kernel/sys_sparc32.c |    1 -
- arch/sparc64/kernel/sys_sunos32.c |    1 -
- arch/sparc64/kernel/time.c        |    2 --
- 5 files changed, 0 insertions(+), 6 deletions(-)
+Have you tried explicit `sync`? ;-)
 
-diff --git a/arch/sparc64/kernel/ds.c b/arch/sparc64/kernel/ds.c
-index 9f472a7..eeb5a2f 100644
---- a/arch/sparc64/kernel/ds.c
-+++ b/arch/sparc64/kernel/ds.c
-@@ -6,7 +6,6 @@
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/types.h>
--#include <linux/module.h>
- #include <linux/string.h>
- #include <linux/slab.h>
- #include <linux/sched.h>
-diff --git a/arch/sparc64/kernel/module.c b/arch/sparc64/kernel/module.c
-index 5798715..158484b 100644
---- a/arch/sparc64/kernel/module.c
-+++ b/arch/sparc64/kernel/module.c
-@@ -11,7 +11,6 @@
- #include <linux/fs.h>
- #include <linux/string.h>
- #include <linux/slab.h>
--#include <linux/vmalloc.h>
- #include <linux/mm.h>
- 
- #include <asm/processor.h>
-diff --git a/arch/sparc64/kernel/sys_sparc32.c b/arch/sparc64/kernel/sys_sparc32.c
-index 78caff9..98c4688 100644
---- a/arch/sparc64/kernel/sys_sparc32.c
-+++ b/arch/sparc64/kernel/sys_sparc32.c
-@@ -51,7 +51,6 @@
- #include <linux/vfs.h>
- #include <linux/netfilter_ipv4/ip_tables.h>
- #include <linux/ptrace.h>
--#include <linux/highuid.h>
- 
- #include <asm/types.h>
- #include <asm/uaccess.h>
-diff --git a/arch/sparc64/kernel/sys_sunos32.c b/arch/sparc64/kernel/sys_sunos32.c
-index 170d6ca..cfc22d3 100644
---- a/arch/sparc64/kernel/sys_sunos32.c
-+++ b/arch/sparc64/kernel/sys_sunos32.c
-@@ -57,7 +57,6 @@
- #include <linux/personality.h>
- 
- /* For SOCKET_I */
--#include <linux/socket.h>
- #include <net/sock.h>
- #include <net/compat.h>
- 
-diff --git a/arch/sparc64/kernel/time.c b/arch/sparc64/kernel/time.c
-index cd8c740..54bdb88 100644
---- a/arch/sparc64/kernel/time.c
-+++ b/arch/sparc64/kernel/time.c
-@@ -28,7 +28,6 @@
- #include <linux/jiffies.h>
- #include <linux/cpufreq.h>
- #include <linux/percpu.h>
--#include <linux/profile.h>
- #include <linux/miscdevice.h>
- #include <linux/rtc.h>
- #include <linux/kernel_stat.h>
-@@ -47,7 +46,6 @@
- #include <asm/sections.h>
- #include <asm/cpudata.h>
- #include <asm/uaccess.h>
--#include <asm/prom.h>
- #include <asm/irq_regs.h>
- 
- DEFINE_SPINLOCK(mostek_lock);
--- 
-1.5.3.rc7
+> syslog-ng package from gentoo:
+> http://www.balabit.com/products/syslog_ng/ , version 2.0.5)
+> 
+> > > The source tmpfs is mounted with any special parameters, but the
+> > > target xfs filesystem resides on a dm-crypt device that is on top a 3
+> > > disk RAID5 md.
+> > > During the hang all CPUs where idle.
+> >
+> > No iowaits? ;-)
+> 
+> No, I have a KSysGuard in my taskbar that showed no activity at all.
+> 
+> OK, the subject does not match for my case, but there was also a tmpfs
+> involved. And I found no thread with stalls on xfs. :-)
+
+Do you mean it is actually related with tmpfs?
+
+> > > The system is x86_64 with CONFIG_NO_HZ=y, but was still receiving ~330
+> > > interrupts per second because of the bttv driver. (But I was not using
+> > > that device at this time.)
+> > >
+> > > I'm willing to test patches or more provide more information, but lack
+> > > a good testcase to trigger this on demand.
+> >
+> > Thank you. Maybe we can start by the applied debug patch :-)
+> 
+> Will applied it and try to recreate this.
+> 
+> Thanks for looking into it.
+
+Thank you for the rich information, too :-)
+
+Fengguang
 
