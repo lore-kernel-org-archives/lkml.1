@@ -1,106 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760519AbXKBByd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760512AbXKBB4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760519AbXKBByd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 21:54:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbXKBByX
+	id S1760512AbXKBB4U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 21:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbXKBB4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 21:54:23 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:43258 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1754060AbXKBByW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 21:54:22 -0400
-Message-ID: <393968464.13148@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Fri, 2 Nov 2007 09:54:18 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
-       linux-fsdevel@vger.kernel.org
-Subject: writeout stalls in current -git
-References: <200710220822.52370.maximlevitsky@gmail.com> <200710221421.21439.maximlevitsky@gmail.com> <393056632.00561@ustc.edu.cn> <200710221505.35397.maximlevitsky@gmail.com> <20071022131045.GA5357@mail.ustc.edu.cn> <393060478.03650@ustc.edu.cn> <64bb37e0710310822r5ca6b793p8fd97db2f72a8655@mail.gmail.com> <393903856.06449@ustc.edu.cn> <64bb37e0711011120i63cdfe3ci18995d57b6649a8@mail.gmail.com>
+	Thu, 1 Nov 2007 21:56:10 -0400
+Received: from THUNK.ORG ([69.25.196.29]:41375 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753055AbXKBB4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 21:56:08 -0400
+Date: Thu, 1 Nov 2007 21:54:54 -0400
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Stephen Smalley <sds@epoch.ncsc.mil>, lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       Andrew Morgan <morgan@kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: [PATCH] file capabilities: allow sigcont within session (v2)
+Message-ID: <20071102015453.GA7636@thunk.org>
+Mail-Followup-To: tytso@mit.edu, "Serge E. Hallyn" <serue@us.ibm.com>,
+	Stephen Smalley <sds@epoch.ncsc.mil>,
+	lkml <linux-kernel@vger.kernel.org>,
+	linux-security-module@vger.kernel.org,
+	Andrew Morton <akpm@osdl.org>, Andrew Morgan <morgan@kernel.org>,
+	Chris Wright <chrisw@sous-sol.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Natalie Protasevich <protasnb@gmail.com>
+References: <20071031234945.GA16455@sergelap.austin.ibm.com> <1193918844.12018.6.camel@moss-spartans.epoch.ncsc.mil> <20071101134701.GA21131@sergelap.austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <64bb37e0711011120i63cdfe3ci18995d57b6649a8@mail.gmail.com>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
-Message-Id: <E1Inljm-0002DW-CL@localhost>
+In-Reply-To: <20071101134701.GA21131@sergelap.austin.ibm.com>
+1;1609;0cFrom: Theodore Tso <tytso@mit.edu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+From: Theodore Tso <tytso@thunk.org>
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 01, 2007 at 07:20:51PM +0100, Torsten Kaiser wrote:
-> On 11/1/07, Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
-> > On Wed, Oct 31, 2007 at 04:22:10PM +0100, Torsten Kaiser wrote:
-> > > Since 2.6.23-mm1 I also experience strange hangs during heavy writeouts.
-> > > Each time I noticed this I was using emerge (package util from the
-> > > gentoo distribution) to install/upgrade a package. The last step,
-> > > where this hang occurred, is moving the prepared files from a tmpfs
-> > > partion to the main xfs filesystem.
-> > > The hangs where not fatal, after a few second everything resumed
-> > > normal, so I was not able to capture a good image of what was
-> > > happening.
-> >
-> > Thank you for the detailed report.
-> >
-> > How severe was the hangs? Only writeouts stalled, all apps stalled, or
-> > cannot type and run new commands?
+On Thu, Nov 01, 2007 at 08:47:01AM -0500, Serge E. Hallyn wrote:
+> > > >From 5bff8967f45a35f858b96ca673d9bf98eac53d49 Mon Sep 17 00:00:00 2001
+> > > From: Serge E. Hallyn <serue@us.ibm.com>
+> > > Date: Wed, 31 Oct 2007 11:22:04 -0500
+> > > Subject: [PATCH 1/1] file capabilities: allow sigcont within session (v2)
+
+> New patch on top of previous one is appended.
 > 
-> Only writeout stalled. The emerge that was moving the files hung, but
-> everything else worked normaly.
-> I was able to run new commands, like coping the /proc/meminfo.
-
-But you mentioned in the next mail that `watch cat /proc/meminfo`
-could also be blocked for some time - I guess in the same time emerge
-was stalled?
-
-> [snip]
-> > > After this SysRq+W writeback resumed again. Possible that writing
-> > > above into the syslog triggered that.
-> >
-> > Maybe. Are the log files on another disk/partition?
+> From 98741f07ab1bc4a1fc2de7fedfb9023ea30bf988 Mon Sep 17 00:00:00 2001
+> From: Serge E. Hallyn <serue@us.ibm.com>
+> Date: Thu, 1 Nov 2007 08:20:12 -0500
+> Subject: [PATCH 1/1] file capabilities: remove the non-matching uid special case for kill
 > 
-> No, everything was going to /
-> 
-> What might be interesting is, that doing cat /proc/meminfo
-> >~/stall/meminfo did not resume the writeback. So there might some
-> threshold that only was broken with the additional write from
-> syslog-ng. Or syslog-ng does some flushing, I dont now. (I'm using the
 
-Have you tried explicit `sync`? ;-)
+Tested-by: "Theodore Ts'o" <tytso@mit.edu>
 
-> syslog-ng package from gentoo:
-> http://www.balabit.com/products/syslog_ng/ , version 2.0.5)
-> 
-> > > The source tmpfs is mounted with any special parameters, but the
-> > > target xfs filesystem resides on a dm-crypt device that is on top a 3
-> > > disk RAID5 md.
-> > > During the hang all CPUs where idle.
-> >
-> > No iowaits? ;-)
-> 
-> No, I have a KSysGuard in my taskbar that showed no activity at all.
-> 
-> OK, the subject does not match for my case, but there was also a tmpfs
-> involved. And I found no thread with stalls on xfs. :-)
+Thanks, this fixes the issue I reported!
 
-Do you mean it is actually related with tmpfs?
-
-> > > The system is x86_64 with CONFIG_NO_HZ=y, but was still receiving ~330
-> > > interrupts per second because of the bttv driver. (But I was not using
-> > > that device at this time.)
-> > >
-> > > I'm willing to test patches or more provide more information, but lack
-> > > a good testcase to trigger this on demand.
-> >
-> > Thank you. Maybe we can start by the applied debug patch :-)
-> 
-> Will applied it and try to recreate this.
-> 
-> Thanks for looking into it.
-
-Thank you for the rich information, too :-)
-
-Fengguang
-
+				- Ted
