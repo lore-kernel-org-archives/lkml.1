@@ -1,1044 +1,1063 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760872AbXKBRLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761023AbXKBRLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760872AbXKBRLA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 13:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757658AbXKBRKs
+	id S1761023AbXKBRLY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 13:11:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760900AbXKBRLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 13:10:48 -0400
-Received: from mo10.iij4u.or.jp ([210.138.174.78]:33007 "EHLO mo10.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757764AbXKBRKp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 13:10:45 -0400
-Date: Sat, 3 Nov 2007 02:05:41 +0900
-To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Cc: James.Bottomley@SteelEye.com, jens.axboe@oracle.com, jeff@garzik.org,
-       anil.s.keshavamurthy@intel.com, muli@il.ibm.com, paulus@samba.org,
-       anton@samba.org, olof@lixom.net, tony.luck@intel.com,
-       davem@davemloft.net, kyle@parisc-linux.org
-Cc: fujita.tomonori@lab.ntt.co.jp
-Subject: [PATCH 1/3] move iova from drivers/pci/ to lib/
-From: FUJITA Tomonori <tomof@acm.org>
-In-Reply-To: <bfa0a387d445abb10ae67cf1541a6e20b9c0d31e.tomof@acm.org>
-References: <bfa0a387d445abb10ae67cf1541a6e20b9c0d31e.tomof@acm.org>
+	Fri, 2 Nov 2007 13:11:07 -0400
+Received: from 71-33-33-68.albq.qwest.net ([71.33.33.68]:39896 "EHLO
+	moria.ionkov.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760882AbXKBRLD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 13:11:03 -0400
+Date: Fri, 2 Nov 2007 11:11:00 -0600
+From: Latchesar Ionkov <lucho@ionkov.net>
+To: v9fs-developer@lists.sourceforge.net
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH][REFERENCE ONLY] 9p: ramfs 9p server
+Message-ID: <20071102171100.GL16063@ionkov.net>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20071103020236A.tomof@acm.org>
-X-Dispatcher: imput version 20050308(IM148)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-iova could be used by several IOMMUs. This patch just moves iova from
-drivers/pci/ to lib/ and fixes the appropriate Makefile and Kconfig
-files.
+Sample ramfs file server that uses the in-kernel 9P file server support.
+This code is for reference only.
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Signed-off-by: Latchesar Ionkov <lucho@ionkov.net>
+
 ---
- arch/x86/Kconfig.x86_64   |    1 +
- drivers/pci/Makefile      |    2 +-
- drivers/pci/intel-iommu.c |    1 -
- drivers/pci/intel-iommu.h |    2 +-
- drivers/pci/iova.c        |  394 ---------------------------------------------
- drivers/pci/iova.h        |   51 ------
- include/linux/iova.h      |   51 ++++++
- lib/Kconfig               |    3 +
- lib/Makefile              |    2 +
- lib/iova.c                |  394 +++++++++++++++++++++++++++++++++++++++++++++
- 10 files changed, 453 insertions(+), 448 deletions(-)
- delete mode 100644 drivers/pci/iova.c
- delete mode 100644 drivers/pci/iova.h
- create mode 100644 include/linux/iova.h
- create mode 100644 lib/iova.c
+ net/9p/Kconfig       |    8 +-
+ net/9p/Makefile      |    1 +
+ net/9p/ramfs/ramfs.c |  986 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 994 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/Kconfig.x86_64 b/arch/x86/Kconfig.x86_64
-index cc468ea..c10d3f0 100644
---- a/arch/x86/Kconfig.x86_64
-+++ b/arch/x86/Kconfig.x86_64
-@@ -749,6 +749,7 @@ config PCI_DOMAINS
- config DMAR
- 	bool "Support for DMA Remapping Devices (EXPERIMENTAL)"
- 	depends on PCI_MSI && ACPI && EXPERIMENTAL
-+	select IOVA
+diff --git a/net/9p/Kconfig b/net/9p/Kconfig
+index 5b0dc28..68f7496 100644
+--- a/net/9p/Kconfig
++++ b/net/9p/Kconfig
+@@ -23,11 +23,17 @@ config NET_9P_FD
+ 	  file descriptors.  TCP/IP is the default transport for 9p,
+ 	  so if you are going to use 9p, you'll likely want this.
+ 
+-config NET_9P_SRV
++menuconfig NET_9P_SRV
+ 	tristate "9P server support"
+ 	depends on NET_9P
  	help
- 	  DMA remapping (DMAR) devices support enables independent address
- 	  translations for Direct Memory Access (DMA) from devices.
-diff --git a/drivers/pci/Makefile b/drivers/pci/Makefile
-index 5550556..00c3428 100644
---- a/drivers/pci/Makefile
-+++ b/drivers/pci/Makefile
-@@ -21,7 +21,7 @@ obj-$(CONFIG_PCI_MSI) += msi.o
- obj-$(CONFIG_HT_IRQ) += htirq.o
+ 	  Say Y if you want the 9P server support
++
++config NET_9P_RAMFS
++        tristate "9P ramfs sample file server"
++        depends on NET_9P_SRV && NET_9P_LOOP
++        help
++          Say Y if you want the 9P ramfs support
+ config NET_9P_VIRTIO
+ 	depends on NET_9P && EXPERIMENTAL && VIRTIO
+ 	tristate "9P Virtio Transport (Experimental)"
+diff --git a/net/9p/Makefile b/net/9p/Makefile
+index 6ee024e..3808c40 100644
+--- a/net/9p/Makefile
++++ b/net/9p/Makefile
+@@ -3,6 +3,7 @@ obj-$(CONFIG_NET_9P_FD) += 9pnet_fd.o
+ obj-$(CONFIG_NET_9P_LOOP) += 9pnet_loop.o
+ obj-$(CONFIG_NET_9P_SRV) += 9psrv.o
+ obj-$(CONFIG_NET_9P_VIRTIO) += 9pnet_virtio.o
++obj-$(CONFIG_NET_9P_RAMFS) += ramfs/
  
- # Build Intel IOMMU support
--obj-$(CONFIG_DMAR) += dmar.o iova.o intel-iommu.o
-+obj-$(CONFIG_DMAR) += dmar.o intel-iommu.o
- 
- #
- # Some architectures use the generic PCI setup functions
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index dc1edbd..1a23b4c 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -30,7 +30,6 @@
- #include <linux/dmar.h>
- #include <linux/dma-mapping.h>
- #include <linux/mempool.h>
--#include "iova.h"
- #include "intel-iommu.h"
- #include <asm/proto.h> /* force_iommu in this header in x86-64*/
- #include <asm/cacheflush.h>
-diff --git a/drivers/pci/intel-iommu.h b/drivers/pci/intel-iommu.h
-index f54efd1..750e1b5 100644
---- a/drivers/pci/intel-iommu.h
-+++ b/drivers/pci/intel-iommu.h
-@@ -23,7 +23,7 @@
- 
- #include <linux/types.h>
- #include <linux/msi.h>
--#include "iova.h"
-+#include <linux/iova.h>
- #include <linux/io.h>
- 
- /*
-diff --git a/drivers/pci/iova.c b/drivers/pci/iova.c
-deleted file mode 100644
-index 8de7ab6..0000000
---- a/drivers/pci/iova.c
-+++ /dev/null
-@@ -1,394 +0,0 @@
--/*
-- * Copyright (c) 2006, Intel Corporation.
-- *
-- * This file is released under the GPLv2.
-- *
-- * Copyright (C) 2006 Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
-- */
--
--#include "iova.h"
--
--void
--init_iova_domain(struct iova_domain *iovad, unsigned long pfn_32bit)
--{
--	spin_lock_init(&iovad->iova_alloc_lock);
--	spin_lock_init(&iovad->iova_rbtree_lock);
--	iovad->rbroot = RB_ROOT;
--	iovad->cached32_node = NULL;
--	iovad->dma_32bit_pfn = pfn_32bit;
--}
--
--static struct rb_node *
--__get_cached_rbnode(struct iova_domain *iovad, unsigned long *limit_pfn)
--{
--	if ((*limit_pfn != iovad->dma_32bit_pfn) ||
--		(iovad->cached32_node == NULL))
--		return rb_last(&iovad->rbroot);
--	else {
--		struct rb_node *prev_node = rb_prev(iovad->cached32_node);
--		struct iova *curr_iova =
--			container_of(iovad->cached32_node, struct iova, node);
--		*limit_pfn = curr_iova->pfn_lo - 1;
--		return prev_node;
--	}
--}
--
--static void
--__cached_rbnode_insert_update(struct iova_domain *iovad,
--	unsigned long limit_pfn, struct iova *new)
--{
--	if (limit_pfn != iovad->dma_32bit_pfn)
--		return;
--	iovad->cached32_node = &new->node;
--}
--
--static void
--__cached_rbnode_delete_update(struct iova_domain *iovad, struct iova *free)
--{
--	struct iova *cached_iova;
--	struct rb_node *curr;
--
--	if (!iovad->cached32_node)
--		return;
--	curr = iovad->cached32_node;
--	cached_iova = container_of(curr, struct iova, node);
--
--	if (free->pfn_lo >= cached_iova->pfn_lo)
--		iovad->cached32_node = rb_next(&free->node);
--}
--
--/* Computes the padding size required, to make the
-- * the start address naturally aligned on its size
-- */
--static int
--iova_get_pad_size(int size, unsigned int limit_pfn)
--{
--	unsigned int pad_size = 0;
--	unsigned int order = ilog2(size);
--
--	if (order)
--		pad_size = (limit_pfn + 1) % (1 << order);
--
--	return pad_size;
--}
--
--static int __alloc_iova_range(struct iova_domain *iovad, unsigned long size,
--		unsigned long limit_pfn, struct iova *new, bool size_aligned)
--{
--	struct rb_node *curr = NULL;
--	unsigned long flags;
--	unsigned long saved_pfn;
--	unsigned int pad_size = 0;
--
--	/* Walk the tree backwards */
--	spin_lock_irqsave(&iovad->iova_rbtree_lock, flags);
--	saved_pfn = limit_pfn;
--	curr = __get_cached_rbnode(iovad, &limit_pfn);
--	while (curr) {
--		struct iova *curr_iova = container_of(curr, struct iova, node);
--		if (limit_pfn < curr_iova->pfn_lo)
--			goto move_left;
--		else if (limit_pfn < curr_iova->pfn_hi)
--			goto adjust_limit_pfn;
--		else {
--			if (size_aligned)
--				pad_size = iova_get_pad_size(size, limit_pfn);
--			if ((curr_iova->pfn_hi + size + pad_size) <= limit_pfn)
--				break;	/* found a free slot */
--		}
--adjust_limit_pfn:
--		limit_pfn = curr_iova->pfn_lo - 1;
--move_left:
--		curr = rb_prev(curr);
--	}
--
--	if (!curr) {
--		if (size_aligned)
--			pad_size = iova_get_pad_size(size, limit_pfn);
--		if ((IOVA_START_PFN + size + pad_size) > limit_pfn) {
--			spin_unlock_irqrestore(&iovad->iova_rbtree_lock, flags);
--			return -ENOMEM;
--		}
--	}
--
--	/* pfn_lo will point to size aligned address if size_aligned is set */
--	new->pfn_lo = limit_pfn - (size + pad_size) + 1;
--	new->pfn_hi = new->pfn_lo + size - 1;
--
--	spin_unlock_irqrestore(&iovad->iova_rbtree_lock, flags);
--	return 0;
--}
--
--static void
--iova_insert_rbtree(struct rb_root *root, struct iova *iova)
--{
--	struct rb_node **new = &(root->rb_node), *parent = NULL;
--	/* Figure out where to put new node */
--	while (*new) {
--		struct iova *this = container_of(*new, struct iova, node);
--		parent = *new;
--
--		if (iova->pfn_lo < this->pfn_lo)
--			new = &((*new)->rb_left);
--		else if (iova->pfn_lo > this->pfn_lo)
--			new = &((*new)->rb_right);
--		else
--			BUG(); /* this should not happen */
--	}
--	/* Add new node and rebalance tree. */
--	rb_link_node(&iova->node, parent, new);
--	rb_insert_color(&iova->node, root);
--}
--
--/**
-- * alloc_iova - allocates an iova
-- * @iovad - iova domain in question
-- * @size - size of page frames to allocate
-- * @limit_pfn - max limit address
-- * @size_aligned - set if size_aligned address range is required
-- * This function allocates an iova in the range limit_pfn to IOVA_START_PFN
-- * looking from limit_pfn instead from IOVA_START_PFN. If the size_aligned
-- * flag is set then the allocated address iova->pfn_lo will be naturally
-- * aligned on roundup_power_of_two(size).
-- */
--struct iova *
--alloc_iova(struct iova_domain *iovad, unsigned long size,
--	unsigned long limit_pfn,
--	bool size_aligned)
--{
--	unsigned long flags;
--	struct iova *new_iova;
--	int ret;
--
--	new_iova = alloc_iova_mem();
--	if (!new_iova)
--		return NULL;
--
--	/* If size aligned is set then round the size to
--	 * to next power of two.
--	 */
--	if (size_aligned)
--		size = __roundup_pow_of_two(size);
--
--	spin_lock_irqsave(&iovad->iova_alloc_lock, flags);
--	ret = __alloc_iova_range(iovad, size, limit_pfn, new_iova,
--			size_aligned);
--
--	if (ret) {
--		spin_unlock_irqrestore(&iovad->iova_alloc_lock, flags);
--		free_iova_mem(new_iova);
--		return NULL;
--	}
--
--	/* Insert the new_iova into domain rbtree by holding writer lock */
--	spin_lock(&iovad->iova_rbtree_lock);
--	iova_insert_rbtree(&iovad->rbroot, new_iova);
--	__cached_rbnode_insert_update(iovad, limit_pfn, new_iova);
--	spin_unlock(&iovad->iova_rbtree_lock);
--
--	spin_unlock_irqrestore(&iovad->iova_alloc_lock, flags);
--
--	return new_iova;
--}
--
--/**
-- * find_iova - find's an iova for a given pfn
-- * @iovad - iova domain in question.
-- * pfn - page frame number
-- * This function finds and returns an iova belonging to the
-- * given doamin which matches the given pfn.
-- */
--struct iova *find_iova(struct iova_domain *iovad, unsigned long pfn)
--{
--	unsigned long flags;
--	struct rb_node *node;
--
--	/* Take the lock so that no other thread is manipulating the rbtree */
--	spin_lock_irqsave(&iovad->iova_rbtree_lock, flags);
--	node = iovad->rbroot.rb_node;
--	while (node) {
--		struct iova *iova = container_of(node, struct iova, node);
--
--		/* If pfn falls within iova's range, return iova */
--		if ((pfn >= iova->pfn_lo) && (pfn <= iova->pfn_hi)) {
--			spin_unlock_irqrestore(&iovad->iova_rbtree_lock, flags);
--			/* We are not holding the lock while this iova
--			 * is referenced by the caller as the same thread
--			 * which called this function also calls __free_iova()
--			 * and it is by desing that only one thread can possibly
--			 * reference a particular iova and hence no conflict.
--			 */
--			return iova;
--		}
--
--		if (pfn < iova->pfn_lo)
--			node = node->rb_left;
--		else if (pfn > iova->pfn_lo)
--			node = node->rb_right;
--	}
--
--	spin_unlock_irqrestore(&iovad->iova_rbtree_lock, flags);
--	return NULL;
--}
--
--/**
-- * __free_iova - frees the given iova
-- * @iovad: iova domain in question.
-- * @iova: iova in question.
-- * Frees the given iova belonging to the giving domain
-- */
--void
--__free_iova(struct iova_domain *iovad, struct iova *iova)
--{
--	unsigned long flags;
--
--	spin_lock_irqsave(&iovad->iova_rbtree_lock, flags);
--	__cached_rbnode_delete_update(iovad, iova);
--	rb_erase(&iova->node, &iovad->rbroot);
--	spin_unlock_irqrestore(&iovad->iova_rbtree_lock, flags);
--	free_iova_mem(iova);
--}
--
--/**
-- * free_iova - finds and frees the iova for a given pfn
-- * @iovad: - iova domain in question.
-- * @pfn: - pfn that is allocated previously
-- * This functions finds an iova for a given pfn and then
-- * frees the iova from that domain.
-- */
--void
--free_iova(struct iova_domain *iovad, unsigned long pfn)
--{
--	struct iova *iova = find_iova(iovad, pfn);
--	if (iova)
--		__free_iova(iovad, iova);
--
--}
--
--/**
-- * put_iova_domain - destroys the iova doamin
-- * @iovad: - iova domain in question.
-- * All the iova's in that domain are destroyed.
-- */
--void put_iova_domain(struct iova_domain *iovad)
--{
--	struct rb_node *node;
--	unsigned long flags;
--
--	spin_lock_irqsave(&iovad->iova_rbtree_lock, flags);
--	node = rb_first(&iovad->rbroot);
--	while (node) {
--		struct iova *iova = container_of(node, struct iova, node);
--		rb_erase(node, &iovad->rbroot);
--		free_iova_mem(iova);
--		node = rb_first(&iovad->rbroot);
--	}
--	spin_unlock_irqrestore(&iovad->iova_rbtree_lock, flags);
--}
--
--static int
--__is_range_overlap(struct rb_node *node,
--	unsigned long pfn_lo, unsigned long pfn_hi)
--{
--	struct iova *iova = container_of(node, struct iova, node);
--
--	if ((pfn_lo <= iova->pfn_hi) && (pfn_hi >= iova->pfn_lo))
--		return 1;
--	return 0;
--}
--
--static struct iova *
--__insert_new_range(struct iova_domain *iovad,
--	unsigned long pfn_lo, unsigned long pfn_hi)
--{
--	struct iova *iova;
--
--	iova = alloc_iova_mem();
--	if (!iova)
--		return iova;
--
--	iova->pfn_hi = pfn_hi;
--	iova->pfn_lo = pfn_lo;
--	iova_insert_rbtree(&iovad->rbroot, iova);
--	return iova;
--}
--
--static void
--__adjust_overlap_range(struct iova *iova,
--	unsigned long *pfn_lo, unsigned long *pfn_hi)
--{
--	if (*pfn_lo < iova->pfn_lo)
--		iova->pfn_lo = *pfn_lo;
--	if (*pfn_hi > iova->pfn_hi)
--		*pfn_lo = iova->pfn_hi + 1;
--}
--
--/**
-- * reserve_iova - reserves an iova in the given range
-- * @iovad: - iova domain pointer
-- * @pfn_lo: - lower page frame address
-- * @pfn_hi:- higher pfn adderss
-- * This function allocates reserves the address range from pfn_lo to pfn_hi so
-- * that this address is not dished out as part of alloc_iova.
-- */
--struct iova *
--reserve_iova(struct iova_domain *iovad,
--	unsigned long pfn_lo, unsigned long pfn_hi)
--{
--	struct rb_node *node;
--	unsigned long flags;
--	struct iova *iova;
--	unsigned int overlap = 0;
--
--	spin_lock_irqsave(&iovad->iova_alloc_lock, flags);
--	spin_lock(&iovad->iova_rbtree_lock);
--	for (node = rb_first(&iovad->rbroot); node; node = rb_next(node)) {
--		if (__is_range_overlap(node, pfn_lo, pfn_hi)) {
--			iova = container_of(node, struct iova, node);
--			__adjust_overlap_range(iova, &pfn_lo, &pfn_hi);
--			if ((pfn_lo >= iova->pfn_lo) &&
--				(pfn_hi <= iova->pfn_hi))
--				goto finish;
--			overlap = 1;
--
--		} else if (overlap)
--				break;
--	}
--
--	/* We are here either becasue this is the first reserver node
--	 * or need to insert remaining non overlap addr range
--	 */
--	iova = __insert_new_range(iovad, pfn_lo, pfn_hi);
--finish:
--
--	spin_unlock(&iovad->iova_rbtree_lock);
--	spin_unlock_irqrestore(&iovad->iova_alloc_lock, flags);
--	return iova;
--}
--
--/**
-- * copy_reserved_iova - copies the reserved between domains
-- * @from: - source doamin from where to copy
-- * @to: - destination domin where to copy
-- * This function copies reserved iova's from one doamin to
-- * other.
-- */
--void
--copy_reserved_iova(struct iova_domain *from, struct iova_domain *to)
--{
--	unsigned long flags;
--	struct rb_node *node;
--
--	spin_lock_irqsave(&from->iova_alloc_lock, flags);
--	spin_lock(&from->iova_rbtree_lock);
--	for (node = rb_first(&from->rbroot); node; node = rb_next(node)) {
--		struct iova *iova = container_of(node, struct iova, node);
--		struct iova *new_iova;
--		new_iova = reserve_iova(to, iova->pfn_lo, iova->pfn_hi);
--		if (!new_iova)
--			printk(KERN_ERR "Reserve iova range %lx@%lx failed\n",
--				iova->pfn_lo, iova->pfn_lo);
--	}
--	spin_unlock(&from->iova_rbtree_lock);
--	spin_unlock_irqrestore(&from->iova_alloc_lock, flags);
--}
-diff --git a/drivers/pci/iova.h b/drivers/pci/iova.h
-deleted file mode 100644
-index d521b5b..0000000
---- a/drivers/pci/iova.h
-+++ /dev/null
-@@ -1,51 +0,0 @@
--/*
-- * Copyright (c) 2006, Intel Corporation.
-- *
-- * This file is released under the GPLv2.
-- *
-- * Copyright (C) 2006 Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
-- *
-- */
--
--#ifndef _IOVA_H_
--#define _IOVA_H_
--
--#include <linux/types.h>
--#include <linux/kernel.h>
--#include <linux/rbtree.h>
--#include <linux/dma-mapping.h>
--
--/* IO virtual address start page frame number */
--#define IOVA_START_PFN		(1)
--
--/* iova structure */
--struct iova {
--	struct rb_node	node;
--	unsigned long	pfn_hi; /* IOMMU dish out addr hi */
--	unsigned long	pfn_lo; /* IOMMU dish out addr lo */
--};
--
--/* holds all the iova translations for a domain */
--struct iova_domain {
--	spinlock_t	iova_alloc_lock;/* Lock to protect iova  allocation */
--	spinlock_t	iova_rbtree_lock; /* Lock to protect update of rbtree */
--	struct rb_root	rbroot;		/* iova domain rbtree root */
--	struct rb_node	*cached32_node; /* Save last alloced node */
--	unsigned long	dma_32bit_pfn;
--};
--
--struct iova *alloc_iova_mem(void);
--void free_iova_mem(struct iova *iova);
--void free_iova(struct iova_domain *iovad, unsigned long pfn);
--void __free_iova(struct iova_domain *iovad, struct iova *iova);
--struct iova *alloc_iova(struct iova_domain *iovad, unsigned long size,
--	unsigned long limit_pfn,
--	bool size_aligned);
--struct iova *reserve_iova(struct iova_domain *iovad, unsigned long pfn_lo,
--	unsigned long pfn_hi);
--void copy_reserved_iova(struct iova_domain *from, struct iova_domain *to);
--void init_iova_domain(struct iova_domain *iovad, unsigned long pfn_32bit);
--struct iova *find_iova(struct iova_domain *iovad, unsigned long pfn);
--void put_iova_domain(struct iova_domain *iovad);
--
--#endif
-diff --git a/include/linux/iova.h b/include/linux/iova.h
+ 9pnet-objs := \
+ 	mod.o \
+diff --git a/net/9p/ramfs/ramfs.c b/net/9p/ramfs/ramfs.c
 new file mode 100644
-index 0000000..d521b5b
+index 0000000..3aff620
 --- /dev/null
-+++ b/include/linux/iova.h
-@@ -0,0 +1,51 @@
++++ b/net/9p/ramfs/ramfs.c
+@@ -0,0 +1,986 @@
 +/*
-+ * Copyright (c) 2006, Intel Corporation.
++ * net/9p/srv/ramfs.c
 + *
-+ * This file is released under the GPLv2.
++ * Simple RAM filesystem
 + *
-+ * Copyright (C) 2006 Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
++ *  Copyright (C) 2007 by Latchesar Ionkov <lucho@ionkov.net>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License version 2
++ *  as published by the Free Software Foundation.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to:
++ *  Free Software Foundation
++ *  51 Franklin Street, Fifth Floor
++ *  Boston, MA  02111-1301  USA
 + *
 + */
 +
-+#ifndef _IOVA_H_
-+#define _IOVA_H_
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/errno.h>
++#include <linux/fs.h>
++#include <linux/poll.h>
++#include <linux/parser.h>
++#include <net/9p/9p.h>
++#include <net/9p/transport.h>
++#include <net/9p/srv.h>
 +
-+#include <linux/types.h>
-+#include <linux/kernel.h>
-+#include <linux/rbtree.h>
-+#include <linux/dma-mapping.h>
++#define ROOTPERM 	0777
 +
-+/* IO virtual address start page frame number */
-+#define IOVA_START_PFN		(1)
++struct ramfs_file {
++	struct mutex		lock;		/* file lock */
++	atomic_t		refcount;
++	unsigned long		status;
++	char			*name;
++	u32			perm;
++	u64			length;
++	u32			atime;
++	u32			mtime;
++	u32			uid;
++	u32			gid;
++	u32			muid;
++	char			*extension;
++	struct p9_qid		qid;
++	int 			excl;
 +
-+/* iova structure */
-+struct iova {
-+	struct rb_node	node;
-+	unsigned long	pfn_hi; /* IOMMU dish out addr hi */
-+	unsigned long	pfn_lo; /* IOMMU dish out addr lo */
++	struct ramfs_file	*parent;
++	struct ramfs_file	*next;		/* protected by parent lock */
++	struct ramfs_file	*prev;
++
++	struct ramfs_file	*dirents;	/* if directory */
++	struct ramfs_file	*dirlast;
++
++	struct list_head	fid_list;	/* all fids for a file */
++
++	u8			*data;
++	u64			datasize;
 +};
 +
-+/* holds all the iova translations for a domain */
-+struct iova_domain {
-+	spinlock_t	iova_alloc_lock;/* Lock to protect iova  allocation */
-+	spinlock_t	iova_rbtree_lock; /* Lock to protect update of rbtree */
-+	struct rb_root	rbroot;		/* iova domain rbtree root */
-+	struct rb_node	*cached32_node; /* Save last alloced node */
-+	unsigned long	dma_32bit_pfn;
++struct ramfs_fid {
++	struct ramfs_file	*file;
++	int			omode;
++	u64			diroffset;
++	struct ramfs_file	*dirent;
++	struct list_head	fid_list;	/* all fids for a file */
 +};
 +
-+struct iova *alloc_iova_mem(void);
-+void free_iova_mem(struct iova *iova);
-+void free_iova(struct iova_domain *iovad, unsigned long pfn);
-+void __free_iova(struct iova_domain *iovad, struct iova *iova);
-+struct iova *alloc_iova(struct iova_domain *iovad, unsigned long size,
-+	unsigned long limit_pfn,
-+	bool size_aligned);
-+struct iova *reserve_iova(struct iova_domain *iovad, unsigned long pfn_lo,
-+	unsigned long pfn_hi);
-+void copy_reserved_iova(struct iova_domain *from, struct iova_domain *to);
-+void init_iova_domain(struct iova_domain *iovad, unsigned long pfn_32bit);
-+struct iova *find_iova(struct iova_domain *iovad, unsigned long pfn);
-+void put_iova_domain(struct iova_domain *iovad);
++enum {
++	Removed = 1,
++};
 +
-+#endif
-diff --git a/lib/Kconfig b/lib/Kconfig
-index ba3d104..4107547 100644
---- a/lib/Kconfig
-+++ b/lib/Kconfig
-@@ -141,4 +141,7 @@ config HAS_DMA
- config CHECK_SIGNATURE
- 	bool
- 
-+config IOVA
-+	boolean
++static struct p9srv_type *ramfs_srv_type;
++static struct ramfs_file *root;
++static u64 qidpath;
++static int blksize = 8192;
 +
- endmenu
-diff --git a/lib/Makefile b/lib/Makefile
-index 3a0983b..7de33cc 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -66,6 +66,8 @@ obj-$(CONFIG_AUDIT_GENERIC) += audit.o
- obj-$(CONFIG_SWIOTLB) += swiotlb.o
- obj-$(CONFIG_FAULT_INJECTION) += fault-inject.o
- 
-+obj-$(CONFIG_IOVA) += iova.o
++static char *Enospace = "no space left";
++static char *Einternal = "internal error";
 +
- lib-$(CONFIG_GENERIC_BUG) += bug.o
- 
- hostprogs-y	:= gen_crc32table
-diff --git a/lib/iova.c b/lib/iova.c
-new file mode 100644
-index 0000000..6e14a3f
---- /dev/null
-+++ b/lib/iova.c
-@@ -0,0 +1,394 @@
-+/*
-+ * Copyright (c) 2006, Intel Corporation.
-+ *
-+ * This file is released under the GPLv2.
-+ *
-+ * Copyright (C) 2006 Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
-+ */
++static void ramfs_attach(struct p9srv_req *req);
++static void ramfs_walk(struct p9srv_req *req);
++static void ramfs_open(struct p9srv_req *req);
++static void ramfs_create(struct p9srv_req *req);
++static void ramfs_read(struct p9srv_req *req);
++static void ramfs_write(struct p9srv_req *req);
++static void ramfs_clunk(struct p9srv_req *req);
++static void ramfs_remove(struct p9srv_req *req);
++static void ramfs_stat(struct p9srv_req *req);
++static void ramfs_wstat(struct p9srv_req *req);
++static void ramfs_fiddestroy(struct p9srv_fid *fid);
++static void ramfs_connopen(struct p9srv_conn *conn);
++static void ramfs_connclose(struct p9srv_conn *conn);
 +
-+#include <linux/iova.h>
-+
-+void
-+init_iova_domain(struct iova_domain *iovad, unsigned long pfn_32bit)
++static char *p9_strdup(struct p9_str *str)
 +{
-+	spin_lock_init(&iovad->iova_alloc_lock);
-+	spin_lock_init(&iovad->iova_rbtree_lock);
-+	iovad->rbroot = RB_ROOT;
-+	iovad->cached32_node = NULL;
-+	iovad->dma_32bit_pfn = pfn_32bit;
++	char *ret;
++
++	ret = kmalloc(str->len + 1, GFP_KERNEL);
++	memmove(ret, str->str, str->len);
++	ret[str->len] = '\0';
++
++	return ret;
 +}
 +
-+static struct rb_node *
-+__get_cached_rbnode(struct iova_domain *iovad, unsigned long *limit_pfn)
++static void file_incref(struct ramfs_file *f)
 +{
-+	if ((*limit_pfn != iovad->dma_32bit_pfn) ||
-+		(iovad->cached32_node == NULL))
-+		return rb_last(&iovad->rbroot);
-+	else {
-+		struct rb_node *prev_node = rb_prev(iovad->cached32_node);
-+		struct iova *curr_iova =
-+			container_of(iovad->cached32_node, struct iova, node);
-+		*limit_pfn = curr_iova->pfn_lo - 1;
-+		return prev_node;
-+	}
-+}
-+
-+static void
-+__cached_rbnode_insert_update(struct iova_domain *iovad,
-+	unsigned long limit_pfn, struct iova *new)
-+{
-+	if (limit_pfn != iovad->dma_32bit_pfn)
++	if (!f)
 +		return;
-+	iovad->cached32_node = &new->node;
++
++	atomic_inc(&f->refcount);
++	P9_DPRINTK(P9SRV_DEBUG_FS, "file %p %s count %d\n", f, f->name,
++		atomic_read(&f->refcount));
 +}
 +
-+static void
-+__cached_rbnode_delete_update(struct iova_domain *iovad, struct iova *free)
++static void file_decrefimpl(struct ramfs_file *f, int lock)
 +{
-+	struct iova *cached_iova;
-+	struct rb_node *curr;
++	int n;
 +
-+	if (!iovad->cached32_node)
++	if (!f)
 +		return;
-+	curr = iovad->cached32_node;
-+	cached_iova = container_of(curr, struct iova, node);
 +
-+	if (free->pfn_lo >= cached_iova->pfn_lo)
-+		iovad->cached32_node = rb_next(&free->node);
++	n = atomic_dec_and_test(&f->refcount);
++	P9_DPRINTK(P9SRV_DEBUG_FS, "file %p %s count %d\n", f, f->name,
++		atomic_read(&f->refcount));
++	if (n) {
++		P9_DPRINTK(P9SRV_DEBUG_FS, "file %p %s destroy\n", f, f->name);
++		if (lock)
++			mutex_lock(&f->lock);
++
++		kfree(f->name);
++		kfree(f->extension);
++		kfree(f->data);
++		if (lock)
++			mutex_unlock(&f->lock);
++		kfree(f);
++	}
 +}
 +
-+/* Computes the padding size required, to make the
-+ * the start address naturally aligned on its size
-+ */
-+static int
-+iova_get_pad_size(int size, unsigned int limit_pfn)
++static void file_decref0(struct ramfs_file *f)
 +{
-+	unsigned int pad_size = 0;
-+	unsigned int order = ilog2(size);
-+
-+	if (order)
-+		pad_size = (limit_pfn + 1) % (1 << order);
-+
-+	return pad_size;
++	return file_decrefimpl(f, 0);
 +}
 +
-+static int __alloc_iova_range(struct iova_domain *iovad, unsigned long size,
-+		unsigned long limit_pfn, struct iova *new, bool size_aligned)
++static void file_decref(struct ramfs_file *f)
 +{
-+	struct rb_node *curr = NULL;
-+	unsigned long flags;
-+	unsigned long saved_pfn;
-+	unsigned int pad_size = 0;
++	return file_decrefimpl(f, 1);
++}
 +
-+	/* Walk the tree backwards */
-+	spin_lock_irqsave(&iovad->iova_rbtree_lock, flags);
-+	saved_pfn = limit_pfn;
-+	curr = __get_cached_rbnode(iovad, &limit_pfn);
-+	while (curr) {
-+		struct iova *curr_iova = container_of(curr, struct iova, node);
-+		if (limit_pfn < curr_iova->pfn_lo)
-+			goto move_left;
-+		else if (limit_pfn < curr_iova->pfn_hi)
-+			goto adjust_limit_pfn;
-+		else {
-+			if (size_aligned)
-+				pad_size = iova_get_pad_size(size, limit_pfn);
-+			if ((curr_iova->pfn_hi + size + pad_size) <= limit_pfn)
-+				break;	/* found a free slot */
-+		}
-+adjust_limit_pfn:
-+		limit_pfn = curr_iova->pfn_lo - 1;
-+move_left:
-+		curr = rb_prev(curr);
++static int file_truncate(struct ramfs_file *f, u32 size)
++{
++	int n;
++	u8 *buf;
++
++	if (size == 0) {
++		kfree(f->data);
++		f->data = NULL;
++		f->datasize = 0;
++		return 0;
 +	}
 +
-+	if (!curr) {
-+		if (size_aligned)
-+			pad_size = iova_get_pad_size(size, limit_pfn);
-+		if ((IOVA_START_PFN + size + pad_size) > limit_pfn) {
-+			spin_unlock_irqrestore(&iovad->iova_rbtree_lock, flags);
-+			return -ENOMEM;
-+		}
-+	}
++	n = (size/blksize + (size%blksize?1:0)) * blksize;
++	if (n <= f->datasize)
++		return 0;
 +
-+	/* pfn_lo will point to size aligned address if size_aligned is set */
-+	new->pfn_lo = limit_pfn - (size + pad_size) + 1;
-+	new->pfn_hi = new->pfn_lo + size - 1;
++	buf = kmalloc(n, GFP_KERNEL);
++	if (!buf)
++		return -1;
 +
-+	spin_unlock_irqrestore(&iovad->iova_rbtree_lock, flags);
++	memmove(buf, f->data, f->length);
++	kfree(f->data);
++	f->data = buf;
++	f->datasize = n;
 +	return 0;
 +}
 +
-+static void
-+iova_insert_rbtree(struct rb_root *root, struct iova *iova)
++static struct ramfs_file *
++find_file(struct ramfs_file *dir, char *name, int lock)
 +{
-+	struct rb_node **new = &(root->rb_node), *parent = NULL;
-+	/* Figure out where to put new node */
-+	while (*new) {
-+		struct iova *this = container_of(*new, struct iova, node);
-+		parent = *new;
++	struct ramfs_file *ret;
++	struct ramfs_file *f;
 +
-+		if (iova->pfn_lo < this->pfn_lo)
-+			new = &((*new)->rb_left);
-+		else if (iova->pfn_lo > this->pfn_lo)
-+			new = &((*new)->rb_right);
-+		else
-+			BUG(); /* this should not happen */
-+	}
-+	/* Add new node and rebalance tree. */
-+	rb_link_node(&iova->node, parent, new);
-+	rb_insert_color(&iova->node, root);
-+}
++	if (strcmp(name, "..") == 0)
++		return dir->parent;
 +
-+/**
-+ * alloc_iova - allocates an iova
-+ * @iovad - iova domain in question
-+ * @size - size of page frames to allocate
-+ * @limit_pfn - max limit address
-+ * @size_aligned - set if size_aligned address range is required
-+ * This function allocates an iova in the range limit_pfn to IOVA_START_PFN
-+ * looking from limit_pfn instead from IOVA_START_PFN. If the size_aligned
-+ * flag is set then the allocated address iova->pfn_lo will be naturally
-+ * aligned on roundup_power_of_two(size).
-+ */
-+struct iova *
-+alloc_iova(struct iova_domain *iovad, unsigned long size,
-+	unsigned long limit_pfn,
-+	bool size_aligned)
-+{
-+	unsigned long flags;
-+	struct iova *new_iova;
-+	int ret;
++	ret = NULL;
++	if (lock)
++		mutex_lock(&dir->lock);
 +
-+	new_iova = alloc_iova_mem();
-+	if (!new_iova)
-+		return NULL;
++	for (f = dir->dirents; f != NULL; f = f->next) {
++		P9_DPRINTK(P9SRV_DEBUG_FS, "dir %p '%s' child %p '%s'\n", dir,
++			dir->name, f, f->name);
 +
-+	/* If size aligned is set then round the size to
-+	 * to next power of two.
-+	 */
-+	if (size_aligned)
-+		size = __roundup_pow_of_two(size);
-+
-+	spin_lock_irqsave(&iovad->iova_alloc_lock, flags);
-+	ret = __alloc_iova_range(iovad, size, limit_pfn, new_iova,
-+			size_aligned);
-+
-+	if (ret) {
-+		spin_unlock_irqrestore(&iovad->iova_alloc_lock, flags);
-+		free_iova_mem(new_iova);
-+		return NULL;
-+	}
-+
-+	/* Insert the new_iova into domain rbtree by holding writer lock */
-+	spin_lock(&iovad->iova_rbtree_lock);
-+	iova_insert_rbtree(&iovad->rbroot, new_iova);
-+	__cached_rbnode_insert_update(iovad, limit_pfn, new_iova);
-+	spin_unlock(&iovad->iova_rbtree_lock);
-+
-+	spin_unlock_irqrestore(&iovad->iova_alloc_lock, flags);
-+
-+	return new_iova;
-+}
-+
-+/**
-+ * find_iova - find's an iova for a given pfn
-+ * @iovad - iova domain in question.
-+ * pfn - page frame number
-+ * This function finds and returns an iova belonging to the
-+ * given doamin which matches the given pfn.
-+ */
-+struct iova *find_iova(struct iova_domain *iovad, unsigned long pfn)
-+{
-+	unsigned long flags;
-+	struct rb_node *node;
-+
-+	/* Take the lock so that no other thread is manipulating the rbtree */
-+	spin_lock_irqsave(&iovad->iova_rbtree_lock, flags);
-+	node = iovad->rbroot.rb_node;
-+	while (node) {
-+		struct iova *iova = container_of(node, struct iova, node);
-+
-+		/* If pfn falls within iova's range, return iova */
-+		if ((pfn >= iova->pfn_lo) && (pfn <= iova->pfn_hi)) {
-+			spin_unlock_irqrestore(&iovad->iova_rbtree_lock, flags);
-+			/* We are not holding the lock while this iova
-+			 * is referenced by the caller as the same thread
-+			 * which called this function also calls __free_iova()
-+			 * and it is by desing that only one thread can possibly
-+			 * reference a particular iova and hence no conflict.
-+			 */
-+			return iova;
++		if (strcmp(name, f->name) == 0) {
++			ret = f;
++			file_incref(f);
++			break;
 +		}
-+
-+		if (pfn < iova->pfn_lo)
-+			node = node->rb_left;
-+		else if (pfn > iova->pfn_lo)
-+			node = node->rb_right;
 +	}
 +
-+	spin_unlock_irqrestore(&iovad->iova_rbtree_lock, flags);
-+	return NULL;
++	if (lock)
++		mutex_unlock(&dir->lock);
++
++	return ret;
 +}
 +
-+/**
-+ * __free_iova - frees the given iova
-+ * @iovad: iova domain in question.
-+ * @iova: iova in question.
-+ * Frees the given iova belonging to the giving domain
-+ */
-+void
-+__free_iova(struct iova_domain *iovad, struct iova *iova)
++static int check_perm(struct p9srv_req *req, struct ramfs_file *dir,
++	u32 uid, int perm)
 +{
-+	unsigned long flags;
++	int n;
 +
-+	spin_lock_irqsave(&iovad->iova_rbtree_lock, flags);
-+	__cached_rbnode_delete_update(iovad, iova);
-+	rb_erase(&iova->node, &iovad->rbroot);
-+	spin_unlock_irqrestore(&iovad->iova_rbtree_lock, flags);
-+	free_iova_mem(iova);
-+}
-+
-+/**
-+ * free_iova - finds and frees the iova for a given pfn
-+ * @iovad: - iova domain in question.
-+ * @pfn: - pfn that is allocated previously
-+ * This functions finds an iova for a given pfn and then
-+ * frees the iova from that domain.
-+ */
-+void
-+free_iova(struct iova_domain *iovad, unsigned long pfn)
-+{
-+	struct iova *iova = find_iova(iovad, pfn);
-+	if (iova)
-+		__free_iova(iovad, iova);
-+
-+}
-+
-+/**
-+ * put_iova_domain - destroys the iova doamin
-+ * @iovad: - iova domain in question.
-+ * All the iova's in that domain are destroyed.
-+ */
-+void put_iova_domain(struct iova_domain *iovad)
-+{
-+	struct rb_node *node;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&iovad->iova_rbtree_lock, flags);
-+	node = rb_first(&iovad->rbroot);
-+	while (node) {
-+		struct iova *iova = container_of(node, struct iova, node);
-+		rb_erase(node, &iovad->rbroot);
-+		free_iova_mem(iova);
-+		node = rb_first(&iovad->rbroot);
-+	}
-+	spin_unlock_irqrestore(&iovad->iova_rbtree_lock, flags);
-+}
-+
-+static int
-+__is_range_overlap(struct rb_node *node,
-+	unsigned long pfn_lo, unsigned long pfn_hi)
-+{
-+	struct iova *iova = container_of(node, struct iova, node);
-+
-+	if ((pfn_lo <= iova->pfn_hi) && (pfn_hi >= iova->pfn_lo))
++	if (!perm)
 +		return 1;
++
++	n = dir->perm & 7;
++	if (dir->uid == uid) {
++		n |= (dir->perm >> 6) & 7;
++		n |= (dir->perm >> 3) & 7;
++	}
++
++	if (!(n & perm)) {
++		p9srv_respond_error(req, Eperm, EPERM);
++		return 0;
++	}
++
++	return 1;
++}
++
++/* called holding parent lock, if parent != NULL */
++static struct ramfs_file *file_create(struct ramfs_file *parent, char *name,
++	int perm, u32 uid, u32 gid)
++{
++	struct ramfs_file *file;
++
++	file = kmalloc(sizeof(*file), GFP_KERNEL);
++	mutex_init(&file->lock);
++	atomic_set(&file->refcount, 1);
++	file->status = 0;
++	file->name = name;
++	file->perm = perm;
++	file->length = 0;
++	file->atime = 0;
++	file->mtime = 0;
++	file->uid = uid;
++	file->gid = gid;
++	file->muid = uid;
++	file->extension = NULL;
++	file->excl = 0;
++
++	file->parent = parent;
++	file->next = NULL;
++	file->prev = NULL;
++	file->dirents = NULL;
++	file->dirlast = NULL;
++	file->data = NULL;
++	file->datasize = 0;
++	file_truncate(file, 0);
++	file->qid.type = perm >> 24;
++	file->qid.version = 0;
++	file->qid.path = qidpath++;
++	INIT_LIST_HEAD(&file->fid_list);
++
++	if (parent) {
++		if (parent->dirlast) {
++			parent->dirlast->next = file;
++			file->prev = parent->dirlast;
++		} else
++			parent->dirents = file;
++
++		parent->dirlast = file;
++		parent->muid = uid;
++/*		parent->mtime = time(NULL); */
++		parent->qid.version++;
++		file_incref(parent);
++	}
++
++	P9_DPRINTK(P9SRV_DEBUG_FS, "file %p %s\n", file, file->name);
++	return file;
++}
++
++static void file2wstat(struct ramfs_file *f, struct p9_wstat *wstat)
++{
++	wstat->size = 0;
++	wstat->type = 0;
++	wstat->dev = 0;
++	wstat->qid = f->qid;
++	wstat->mode = f->perm;
++	wstat->atime = f->atime;
++	wstat->mtime = f->mtime;
++	wstat->length = f->length;
++	wstat->name = f->name;
++	wstat->uid = NULL;
++	wstat->gid = NULL;
++	wstat->muid = NULL;
++	wstat->extension = f->extension;
++	wstat->n_uid = f->uid;
++	wstat->n_gid = f->gid;
++	wstat->n_muid = f->muid;
++}
++
++static struct ramfs_fid *fid_alloc(struct ramfs_file *file)
++{
++	struct ramfs_fid *f;
++
++	f = kmalloc(sizeof(*f), GFP_KERNEL);
++	f->file = file;
++	file_incref(file);
++	f->omode = -1;
++	f->diroffset = 0;
++	f->dirent = NULL;
++	INIT_LIST_HEAD(&f->fid_list);
++
++	mutex_lock(&file->lock);
++	list_add_tail(&f->fid_list, &file->fid_list);
++	mutex_unlock(&file->lock);
++
++	P9_DPRINTK(P9SRV_DEBUG_FS, "fid %p file %s\n", f, file->name);
++	return f;
++}
++
++/* file is already incref-ed */
++static void fid_move(struct ramfs_fid *fid, struct ramfs_file *file)
++{
++	P9_DPRINTK(P9SRV_DEBUG_FS, "fid %p from %s to %s\n", fid,
++		fid->file->name, file->name);
++
++	mutex_lock(&fid->file->lock);
++	list_del(&fid->fid_list);
++	mutex_unlock(&fid->file->lock);
++	file_decref(fid->file);
++
++	fid->file = file;
++	mutex_lock(&fid->file->lock);
++	list_add(&fid->fid_list, &fid->file->fid_list);
++	mutex_unlock(&fid->file->lock);
++}
++
++static void ramfs_fiddestroy(struct p9srv_fid *fid)
++{
++	struct ramfs_fid *f;
++
++	f = fid->aux;
++	if (!f)
++		return;
++
++	mutex_lock(&f->file->lock);
++	list_del(&f->fid_list);
++	mutex_unlock(&f->file->lock);
++
++	file_decref(f->file);
++	file_decref(f->dirent);
++	kfree(f);
++}
++
++static void ramfs_attach(struct p9srv_req *req)
++{
++	int err;
++	struct ramfs_fid *fid;
++
++	if (req->afid != NULL) {
++		p9srv_respond_error(req, Enoauth, EIO);
++		return;
++	}
++
++	if (!check_perm(req, root, req->tcall->params.tattach.n_uname, 4))
++		return;
++
++	req->fid->uid = req->tcall->params.tattach.n_uname;
++	fid = fid_alloc(root);
++	req->fid->aux = fid;
++
++	err = p9_create_rattach(req->rcall, &fid->file->qid);
++	if (err < 0)
++		p9srv_respond_error(req, Einternal, err);
++	else
++		p9srv_respond(req, req->rcall);
++}
++
++static void ramfs_walk(struct p9srv_req *req)
++{
++	int i, err;
++	char *name;
++	struct ramfs_fid *fid, *nfid;
++	struct ramfs_file *nf;
++	struct p9_fcall *tc;
++	struct p9_qid wqids[P9_MAXWELEM];
++
++	P9_DPRINTK(P9SRV_DEBUG_FS, "fid %d nfid %d nwname %d\n", req->fid->fid,
++		req->newfid->fid, req->tcall->params.twalk.nwname);
++
++	if (req->fid != req->newfid) {
++		fid = req->fid->aux;
++		nfid = fid_alloc(fid->file);
++		req->newfid->aux = nfid;
++	}
++
++	tc = req->tcall;
++	if (tc->params.twalk.nwname == 0) {
++		i = 0;
++		goto done;
++	}
++
++	nfid = req->newfid->aux;
++	for (i = 0; i < tc->params.twalk.nwname; i++) {
++		name = p9_strdup(&tc->params.twalk.wnames[i]);
++		nf = find_file(nfid->file, name, 1);
++		kfree(name);
++		if (!nf)
++			break;
++
++		wqids[i] = nf->qid;
++		fid_move(nfid, nf);
++	}
++
++	if (i == 0) {
++		p9srv_respond_error(req, Enotfound, ENOENT);
++		return;
++	}
++
++done:
++	err = p9_create_rwalk(req->rcall, i, wqids);
++	if (err < 0)
++		p9srv_respond_error(req, Einternal, err);
++	else
++		p9srv_respond(req, req->rcall);
++}
++
++static void ramfs_open(struct p9srv_req *req)
++{
++	int m, mode, err;
++	struct ramfs_fid *fid;
++	struct ramfs_file *file;
++
++	err = 0;
++	fid = req->fid->aux;
++	mode = req->tcall->params.topen.mode;
++	m = 0;
++	switch (mode & 3) {
++	case P9_OREAD:
++		m = 4;
++		break;
++
++	case P9_OWRITE:
++		m = 2;
++		break;
++
++	case P9_ORDWR:
++		m = 6;
++		break;
++
++	case P9_OEXEC:
++		m = 1;
++		break;
++	}
++
++	if (mode & P9_OTRUNC)
++		m |= 2;
++
++	file = fid->file;
++	mutex_lock(&file->lock);
++	if (!check_perm(req, file, req->fid->uid, m))
++		goto done;
++
++	if (mode & P9_OTRUNC)
++		file_truncate(file, 0);
++
++	if (mode & P9_OEXCL) {
++		if (file->excl) {
++			p9srv_respond_error(req, Eopen, EPERM);
++			goto done;
++		}
++
++		file->excl = 1;
++	}
++
++	fid->omode = mode;
++	err = p9_create_ropen(req->rcall, &file->qid, 0);
++	if (err < 0)
++		p9srv_respond_error(req, Einternal, err);
++
++done:
++	mutex_unlock(&file->lock);
++	if (err >= 0)
++		p9srv_respond(req, req->rcall);
++}
++
++static void ramfs_create(struct p9srv_req *req)
++{
++	int mode, err;
++	u32 perm;
++	struct p9_fcall *tc;
++	struct ramfs_fid *fid;
++	struct ramfs_file *dir, *file, *nf;
++	char *sname;
++
++	err = 0;
++	tc = req->tcall;
++	perm = tc->params.tcreate.perm;
++	mode = tc->params.tcreate.mode;
++	sname = NULL;
++	file = NULL;
++
++	if (perm & P9_DMLINK) {
++		p9srv_respond_error(req, Eperm, EPERM);
++		goto done;
++	}
++
++	fid = req->fid->aux;
++	dir = fid->file;
++	sname = p9_strdup(&tc->params.tcreate.name);
++	P9_DPRINTK(P9SRV_DEBUG_FS, "name %s\n", sname);
++	if (!strcmp(sname, ".") || !strcmp(sname, "..")) {
++		p9srv_respond_error(req, Eexist, EEXIST);
++		goto done;
++	}
++
++	if (!check_perm(req, dir, req->fid->uid, 2))
++		goto done;
++
++	if (perm & P9_DMDIR)
++		perm &= ~0777 | (dir->perm & 0777);
++	else
++		perm &= ~0666 | (dir->perm & 0666);
++
++	mutex_lock(&dir->lock);
++	nf = find_file(dir, sname, 0);
++	if (nf) {
++		mutex_unlock(&dir->lock);
++		file_decref(nf);
++		p9srv_respond_error(req, Eexist, EEXIST);
++		goto done;
++	}
++
++	file = file_create(dir, sname, perm, dir->uid, 0);
++	mutex_unlock(&dir->lock);
++
++	fid->omode = mode;
++	file_incref(file);
++	fid_move(fid, file);
++	if (perm & (P9_DMNAMEDPIPE | P9_DMSYMLINK | P9_DMLINK | P9_DMDEVICE |
++		P9_DMSOCKET)) {
++
++		file->extension = p9_strdup(&tc->params.tcreate.extension);
++	} else {
++		if (mode & P9_OEXCL)
++			file->excl = 1;
++	}
++
++	P9_DPRINTK(P9SRV_DEBUG_FS, "file %p parent %p first child %p\n",
++		file, dir, dir->dirents);
++	err = p9_create_rcreate(req->rcall, &file->qid, 0);
++	if (err < 0)
++		p9srv_respond_error(req, Einternal, err);
++
++done:
++	if (!sname)
++		kfree(sname);
++
++	if (err >= 0)
++		p9srv_respond(req, req->rcall);
++}
++
++static void ramfs_read(struct p9srv_req *req)
++{
++	int i, n, count;
++	u64 offset;
++	struct p9_fcall *tc, *rc;
++	struct ramfs_fid *fid;
++	struct ramfs_file *file, *cf;
++	struct p9_wstat wstat;
++	u8 *data;
++
++	tc = req->tcall;
++	rc = req->rcall;
++	n = p9_init_rread(rc);
++	fid = req->fid->aux;
++	count = tc->params.tread.count;
++	offset = tc->params.tread.offset;
++	data = rc->params.rread.data;
++	file = fid->file;
++	if (file->perm & P9_DMDIR) {
++		mutex_lock(&file->lock);
++		if (offset == 0) {
++			file_decref(fid->dirent);
++			fid->dirent = file->dirents;
++			file_incref(fid->dirent);
++			fid->diroffset = 0;
++		}
++
++		cf = fid->dirent;
++		for (n = 0, cf = fid->dirent; (n < count) && (cf != NULL);
++							cf = cf->next) {
++			BUG_ON(test_bit(Removed, &cf->status));
++			file2wstat(cf, &wstat);
++			P9_DPRINTK(P9SRV_DEBUG_FS, "name %s\n", wstat.name);
++			i = p9_serialize_stat(&wstat, data + n, count - n - 1,
++				req->conn->dotu);
++			if (i == 0)
++				break;
++
++			n += i;
++		}
++
++		fid->diroffset += n;
++		file_incref(cf);
++		file_decref(fid->dirent);
++		fid->dirent = cf;
++		mutex_unlock(&file->lock);
++	} else {
++		n = count;
++		if (file->length < offset+count)
++			n = file->length - offset;
++
++		if (n < 0)
++			n = 0;
++
++		memmove(data, file->data + offset, n);
++	}
++
++/*
++	pthread_mutex_lock(&file->lock);
++	file->atime = time(NULL);
++	pthread_mutex_unlock(&file->lock);
++*/
++
++	p9_set_rread_count(rc, n);
++	p9srv_respond(req, rc);
++}
++
++static void ramfs_write(struct p9srv_req *req)
++{
++	int err;
++	u32 count;
++	u64 offset;
++	struct p9_fcall *tc;
++	struct ramfs_fid *fid;
++	struct ramfs_file *file;
++
++	tc = req->tcall;
++	offset = tc->params.twrite.offset;
++	count = tc->params.twrite.count;
++	fid = req->fid->aux;
++	file = fid->file;
++	if (req->fid->omode & P9_OAPPEND)
++		offset = file->length;
++
++	if (file->length < offset+count) {
++		mutex_lock(&file->lock);
++		if (file_truncate(file, offset+count)) {
++			mutex_unlock(&file->lock);
++			p9srv_respond_error(req, Enospace, ENOSPC);
++			return;
++		}
++
++		if (offset+count > file->datasize) {
++			if (file->datasize - offset > 0)
++				count = file->datasize - offset;
++			else
++				count = 0;
++		}
++
++		if (count) {
++			if (file->length < offset)
++				memset(file->data+file->length, 0,
++					offset - file->length);
++
++			file->length = offset+count;
++		}
++		mutex_unlock(&file->lock);
++	}
++
++	if (count)
++		memmove(file->data + offset, tc->params.twrite.data, count);
++
++	mutex_lock(&file->lock);
++	file->qid.version++;
++	file->muid = req->fid->uid;
++	mutex_unlock(&file->lock);
++
++	err = p9_create_rwrite(req->rcall, count);
++	if (err < 0)
++		p9srv_respond_error(req, Einternal, err);
++	else
++		p9srv_respond(req, req->rcall);
++}
++
++static void ramfs_clunk(struct p9srv_req *req)
++{
++	int err;
++
++	err = p9_create_rclunk(req->rcall);
++	if (err < 0)
++		p9srv_respond_error(req, Einternal, err);
++	else
++		p9srv_respond(req, req->rcall);
++}
++
++static void ramfs_remove(struct p9srv_req *req)
++{
++	int err;
++	struct p9_fcall *rc;
++	struct ramfs_fid *fid, *f;
++	struct ramfs_file *file;
++
++	err = 0;
++	rc = NULL;
++	fid = req->fid->aux;
++	file = fid->file;
++	P9_DPRINTK(P9SRV_DEBUG_FS, "fid %d name %s\n", req->fid->fid,
++		file->name);
++	mutex_lock(&file->lock);
++	if (file->perm & P9_DMDIR && file->dirents) {
++		mutex_unlock(&file->lock);
++		p9srv_respond_error(req, Enotempty, ENOTEMPTY);
++		return;
++	}
++	mutex_unlock(&file->lock);
++
++	mutex_lock(&file->parent->lock);
++	if (!check_perm(req, file->parent, req->fid->uid, 2))
++		goto done;
++
++	if (test_and_set_bit(Removed, &file->status))
++		goto respond;
++
++	if (file->parent->dirents == file)
++		file->parent->dirents = file->next;
++	else
++		file->prev->next = file->next;
++
++	if (file->next)
++		file->next->prev = file->prev;
++
++	if (file == file->parent->dirlast)
++		file->parent->dirlast = file->prev;
++
++	/* check if any fid has dirent set to the removed file */
++	list_for_each_entry(f, &file->parent->fid_list, fid_list) {
++		if (f->dirent == file) {
++			file_incref(file->next);
++			f->dirent = file->next;
++			file_decref(f->dirent);
++		}
++	}
++
++	file->prev = NULL;
++	file->next = NULL;
++
++	file->parent->muid = req->fid->uid;
++	file->parent->qid.version++;
++
++	file_decref(file);
++	file_decref0(file->parent);
++
++respond:
++	err = p9_create_rremove(req->rcall);
++
++done:
++	mutex_unlock(&file->parent->lock);
++	if (err < 0)
++		p9srv_respond_error(req, Einternal, err);
++	else
++		p9srv_respond(req, req->rcall);
++}
++
++static void ramfs_stat(struct p9srv_req *req)
++{
++	int err;
++	struct ramfs_fid *f;
++	struct p9_wstat wstat;
++
++	f = req->fid->aux;
++	file2wstat(f->file, &wstat);
++	err = p9_create_rstat(req->rcall, &wstat, req->conn->dotu);
++	if (err < 0)
++		p9srv_respond_error(req, Einternal, err);
++	else
++		p9srv_respond(req, req->rcall);
++}
++
++static void ramfs_wstat(struct p9srv_req *req)
++{
++	int lockparent, lockfile, err;
++	struct ramfs_fid *f;
++	struct ramfs_file *file, *nf;
++	struct p9_stat *stat;
++	struct p9_fcall *rc;
++	char *sname, *oldname;
++	u64 length, oldlength;
++	u32 oldperm;
++	u32 oldmtime;
++
++	rc = NULL;
++	err = 0;
++	oldlength = ~0;
++	oldperm = ~0;
++	oldmtime = ~0;
++	oldname = NULL;
++
++	f = req->fid->aux;
++	file = f->file;
++	stat = &req->tcall->params.twstat.stat;
++
++	mutex_lock(&file->lock);
++	lockfile = 1;
++
++	lockparent = stat->name.len != 0 && file->parent != file;
++	if (lockparent)
++		mutex_lock(&file->parent->lock);
++
++	oldname = NULL;
++	if (stat->name.len != 0) {
++		if (!check_perm(req, file->parent, req->fid->uid, 2))
++			goto out;
++
++		sname = p9_strdup(&stat->name);
++		nf = find_file(file->parent, sname, 0);
++
++		if (nf) {
++			kfree(sname);
++			p9srv_respond_error(req, Eexist, EEXIST);
++			goto out;
++		}
++
++		oldname = file->name;
++		file->name = sname;
++	}
++
++	if (stat->length != (u64) ~0) {
++		if (!check_perm(req, file, req->fid->uid, 2) ||
++						file->perm & P9_DMDIR)
++			goto out;
++
++		oldlength = file->length;
++		length = stat->length;
++		if (file_truncate(file, length)) {
++			p9srv_respond_error(req, Enospace, ENOSPC);
++			goto out;
++		}
++
++		if (length > file->datasize)
++			length = file->datasize;
++
++		if (file->length < length)
++			memset(file->data+file->length, 0, length-file->length);
++
++		file->length = length;
++	}
++
++	if (stat->mode != (u32) ~0) {
++		if (file->uid != req->fid->uid) {
++			p9srv_respond_error(req, Eperm, EPERM);
++			goto out;
++		}
++
++		oldperm = file->perm;
++		file->perm = stat->mode;
++	}
++
++	if (stat->mtime != (u32) ~0) {
++		if (file->uid != req->fid->uid) {
++			p9srv_respond_error(req, Eperm, EPERM);
++			goto out;
++		}
++
++		oldmtime = file->mtime;
++		file->mtime = stat->mtime;
++	}
++
++	err = p9_create_rwstat(req->rcall);
++	if (err < 0)
++		p9srv_respond_error(req, Einternal, err);
++	else
++		rc = req->rcall;
++
++out:
++	if (!rc) {
++		if (oldname) {
++			kfree(file->name);
++			file->name = oldname;
++		}
++
++		if (oldperm != ~0)
++			file->perm = oldperm;
++
++		if (oldmtime != ~0)
++			file->mtime = oldmtime;
++
++		if (oldlength != ~0) {
++			file->length = oldlength;
++			file_truncate(file, oldlength);
++		}
++	} else {
++		kfree(oldname);
++		if (stat->length != ~0) {
++			file_truncate(file, file->length);
++			memset(file->data + file->length, 0,
++				file->datasize - file->length);
++		}
++	}
++
++	if (lockparent)
++		mutex_unlock(&file->parent->lock);
++
++	if (lockfile)
++		mutex_unlock(&file->lock);
++
++	if (rc)
++		p9srv_respond(req, rc);
++}
++
++static void ramfs_connopen(struct p9srv_conn *conn)
++{
++	try_module_get(THIS_MODULE);
++}
++
++static void ramfs_connclose(struct p9srv_conn *conn)
++{
++	module_put(THIS_MODULE);
++}
++
++static void ramfs_destroy(struct p9srv *srv)
++{
++	module_put(THIS_MODULE);
++}
++
++static struct p9srv *ramfs_srv_create(void)
++{
++	char *s;
++	struct p9srv *srv;
++
++	srv = p9srv_srv_create();
++	if (IS_ERR(srv))
++		return srv;
++
++	srv->attach = ramfs_attach;
++	srv->walk = ramfs_walk;
++	srv->open = ramfs_open;
++	srv->create = ramfs_create;
++	srv->read = ramfs_read;
++	srv->write = ramfs_write;
++	srv->clunk = ramfs_clunk;
++	srv->remove = ramfs_remove;
++	srv->stat = ramfs_stat;
++	srv->wstat = ramfs_wstat;
++	srv->destroy = ramfs_destroy;
++	srv->fiddestroy = ramfs_fiddestroy;
++	srv->debuglevel = 0;
++	srv->connopen = ramfs_connopen;
++	srv->connclose = ramfs_connclose;
++
++	s = kmalloc(2, GFP_KERNEL);
++	*s = '\0';
++	root = file_create(NULL, s, ROOTPERM | P9_DMDIR, 0, 0);
++	file_incref(root);
++	root->parent = root;
++
++	try_module_get(THIS_MODULE);
++	p9srv_srv_start(srv);
++	return srv;
++}
++
++static int __init ramfs_init(void)
++{
++	ramfs_srv_type = p9srv_type_register("ramfs", ramfs_srv_create);
++	if (IS_ERR(ramfs_srv_type))
++		return PTR_ERR(ramfs_srv_type);
++
 +	return 0;
 +}
 +
-+static struct iova *
-+__insert_new_range(struct iova_domain *iovad,
-+	unsigned long pfn_lo, unsigned long pfn_hi)
++static void __exit ramfs_exit(void)
 +{
-+	struct iova *iova;
-+
-+	iova = alloc_iova_mem();
-+	if (!iova)
-+		return iova;
-+
-+	iova->pfn_hi = pfn_hi;
-+	iova->pfn_lo = pfn_lo;
-+	iova_insert_rbtree(&iovad->rbroot, iova);
-+	return iova;
++	p9srv_type_unregister("ramfs");
 +}
 +
-+static void
-+__adjust_overlap_range(struct iova *iova,
-+	unsigned long *pfn_lo, unsigned long *pfn_hi)
-+{
-+	if (*pfn_lo < iova->pfn_lo)
-+		iova->pfn_lo = *pfn_lo;
-+	if (*pfn_hi > iova->pfn_hi)
-+		*pfn_lo = iova->pfn_hi + 1;
-+}
++module_init(ramfs_init)
++module_exit(ramfs_exit)
 +
-+/**
-+ * reserve_iova - reserves an iova in the given range
-+ * @iovad: - iova domain pointer
-+ * @pfn_lo: - lower page frame address
-+ * @pfn_hi:- higher pfn adderss
-+ * This function allocates reserves the address range from pfn_lo to pfn_hi so
-+ * that this address is not dished out as part of alloc_iova.
-+ */
-+struct iova *
-+reserve_iova(struct iova_domain *iovad,
-+	unsigned long pfn_lo, unsigned long pfn_hi)
-+{
-+	struct rb_node *node;
-+	unsigned long flags;
-+	struct iova *iova;
-+	unsigned int overlap = 0;
-+
-+	spin_lock_irqsave(&iovad->iova_alloc_lock, flags);
-+	spin_lock(&iovad->iova_rbtree_lock);
-+	for (node = rb_first(&iovad->rbroot); node; node = rb_next(node)) {
-+		if (__is_range_overlap(node, pfn_lo, pfn_hi)) {
-+			iova = container_of(node, struct iova, node);
-+			__adjust_overlap_range(iova, &pfn_lo, &pfn_hi);
-+			if ((pfn_lo >= iova->pfn_lo) &&
-+				(pfn_hi <= iova->pfn_hi))
-+				goto finish;
-+			overlap = 1;
-+
-+		} else if (overlap)
-+				break;
-+	}
-+
-+	/* We are here either becasue this is the first reserver node
-+	 * or need to insert remaining non overlap addr range
-+	 */
-+	iova = __insert_new_range(iovad, pfn_lo, pfn_hi);
-+finish:
-+
-+	spin_unlock(&iovad->iova_rbtree_lock);
-+	spin_unlock_irqrestore(&iovad->iova_alloc_lock, flags);
-+	return iova;
-+}
-+
-+/**
-+ * copy_reserved_iova - copies the reserved between domains
-+ * @from: - source doamin from where to copy
-+ * @to: - destination domin where to copy
-+ * This function copies reserved iova's from one doamin to
-+ * other.
-+ */
-+void
-+copy_reserved_iova(struct iova_domain *from, struct iova_domain *to)
-+{
-+	unsigned long flags;
-+	struct rb_node *node;
-+
-+	spin_lock_irqsave(&from->iova_alloc_lock, flags);
-+	spin_lock(&from->iova_rbtree_lock);
-+	for (node = rb_first(&from->rbroot); node; node = rb_next(node)) {
-+		struct iova *iova = container_of(node, struct iova, node);
-+		struct iova *new_iova;
-+		new_iova = reserve_iova(to, iova->pfn_lo, iova->pfn_hi);
-+		if (!new_iova)
-+			printk(KERN_ERR "Reserve iova range %lx@%lx failed\n",
-+				iova->pfn_lo, iova->pfn_lo);
-+	}
-+	spin_unlock(&from->iova_rbtree_lock);
-+	spin_unlock_irqrestore(&from->iova_alloc_lock, flags);
-+}
--- 
-1.5.2.4
-
++MODULE_AUTHOR("Latchesar Ionkov <lucho@ionkov.net>");
++MODULE_LICENSE("GPL");
