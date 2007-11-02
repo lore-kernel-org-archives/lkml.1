@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbXKBP04@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756908AbXKBP1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756653AbXKBP04 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 11:26:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753716AbXKBP0t
+	id S1756908AbXKBP1T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 11:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755433AbXKBP1F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 11:26:49 -0400
-Received: from mail.gmx.net ([213.165.64.20]:57865 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753331AbXKBP0s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 11:26:48 -0400
-X-Authenticated: #704063
-X-Provags-ID: V01U2FsdGVkX187quIm2Ig7UrgyEc1bGpJqD1Y5ClXOSLNCXjIeLD
-	4EGYTioFypqjxn
-Date: Fri, 2 Nov 2007 16:26:35 +0100
-From: Eric Sesterhenn <snakebyte@gmx.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: oops in enqueue_entity with 2.6.24-rc1-g54866f03
-Message-ID: <20071102152635.GA18183@alice>
-References: <20071102123603.GA4988@alice> <200711021513.14425.rjw@sisk.pl>
+	Fri, 2 Nov 2007 11:27:05 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54925 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753716AbXKBP1E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 11:27:04 -0400
+Date: Fri, 2 Nov 2007 08:26:22 -0700
+From: Greg KH <greg@kroah.com>
+To: Marcin ?lusarz <marcin.slusarz@gmail.com>
+Cc: Jiri Kosina <jikos@jikos.cz>, linux-kernel@vger.kernel.org
+Subject: Re: usbserial.ko/option.ko on 2.6.23: Unable to handle kernel
+	paging request && inconsistent lock state
+Message-ID: <20071102152622.GB7279@kroah.com>
+References: <4bacf17f0710291526l6be89bd9o33f02c33186d57b7@mail.gmail.com> <Pine.LNX.4.64.0710300838280.18815@twin.jikos.cz> <4bacf17f0711010259q52db983dqa7fc1f25e6a859d4@mail.gmail.com> <Pine.LNX.4.64.0711011102090.4152@twin.jikos.cz> <4bacf17f0711010755w10f216f4lb059c181c76089ea@mail.gmail.com> <Pine.LNX.4.64.0711011556270.4152@twin.jikos.cz> <4bacf17f0711020139p92125f0gbe78804f80f90e10@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200711021513.14425.rjw@sisk.pl>
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snake-basket.de
-X-Operating-System: Linux/2.6.24-rc1 (x86_64)
-X-Uptime: 16:25:34 up  5:36,  6 users,  load average: 0.00, 0.19, 0.31
+In-Reply-To: <4bacf17f0711020139p92125f0gbe78804f80f90e10@mail.gmail.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rafael J. Wysocki (rjw@sisk.pl) wrote:
-> On Friday, 2 November 2007 13:36, Eric Sesterhenn wrote:
-> > hi,
-> > 
-> > I get the following crash with 2.6.24-rc1-g54866f03, the last version I
-> > tested which booted fine was 2.6.24-rc1-gb1d08ac0
-> 
-> Does 2.6.23 work correctly for you?
+On Fri, Nov 02, 2007 at 09:39:38AM +0100, Marcin ?lusarz wrote:
+> 2007/11/1, Jiri Kosina <jikos@jikos.cz>:
+> > On Thu, 1 Nov 2007, Marcin ?lusarz wrote:
+> >
+> > > > What kernel version are you using? I should have already fixed this one in
+> > > > current git -- commit acd2a847
+> > > I'm using 2.6.23
+> >
+> > It got fixed after 2.6.24-rc1.
+> I extracted this patch from git and applied on top of 2.6.23 and I
+> don't get lockdep warning.
 
-2.6.23.1 does work fine, i also tested 2.6.24-rc1, 2.6.24-rc1-g2a397e82
-and 2.6.24-rc1-gb1d08ac0 which did well, so this is a recently
-introduced regression.
+Thanks for letting me know, I'll add it to the -stable series for
+2.6.23.
 
-Eric
-
+greg k-h
