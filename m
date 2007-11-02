@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754853AbXKBHyw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755161AbXKBHzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754853AbXKBHyw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 03:54:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbXKBHyo
+	id S1755161AbXKBHzm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 03:55:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbXKBHzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 03:54:44 -0400
-Received: from orion2.pixelized.ch ([195.190.190.13]:50770 "EHLO
-	mail.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751279AbXKBHyn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 03:54:43 -0400
-Message-ID: <472AD7B6.8050301@debian.org>
-Date: Fri, 02 Nov 2007 08:54:30 +0100
-From: Giacomo Catenazzi <cate@debian.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+	Fri, 2 Nov 2007 03:55:35 -0400
+Received: from sacred.ru ([62.205.161.221]:60754 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752709AbXKBHze (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 03:55:34 -0400
+Message-ID: <472AD7D6.80900@openvz.org>
+Date: Fri, 02 Nov 2007 10:55:02 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Rik van Riel <riel@surriel.com>
-CC: Jan Engelhardt <jengelh@computergmbh.de>,
-       Mark Gross <mgross@linux.intel.com>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: WANTED: kernel projects for CS students
-References: <20071014190128.6e3cdb44@bree.surriel.com>	<20071015170411.GB18550@linux.intel.com>	<20071015183017.GB23130@uranus.ravnborg.org>	<4713C582.4000504@debian.org>	<20071016200623.GB23157@linux.intel.com>	<Pine.LNX.4.64.0710162207540.4548@fbirervta.pbzchgretzou.qr> <20071016162310.1891914f@bree.surriel.com>
-In-Reply-To: <20071016162310.1891914f@bree.surriel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Ulrich Drepper <drepper@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] PID namespace design bug, workaround
+References: <20071101144307.GA29566@elte.hu> <4729E7E4.8070208@openvz.org> <4729E936.4040400@redhat.com> <4729EB3C.9050102@openvz.org> <472A6D91.1020300@redhat.com>
+In-Reply-To: <472A6D91.1020300@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 02 Nov 2007 10:55:08 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> On Tue, 16 Oct 2007 22:09:04 +0200 (CEST)
-> Jan Engelhardt <jengelh@computergmbh.de> wrote:
->> On Oct 16 2007 13:06, Mark Gross wrote:
->>> base function:
->>> Starting from a stock distro (FC, Ubuntu, OpenSuSE...) and put down a
->>> kernel.org tree and automatically create a .config with all the
->>> drivers needed for the platform I'm building on.
->> Too easy. Since opensuse's udev loads most of the modules for your
->> hardware, all that would be needed is to transform the lsmod list of
->> modules plus the static options in /proc/config.gz (stuff like
->> psmouse) back into kconfig options ;-)
+Ulrich Drepper wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 > 
-> Well, at that point it does not know whether or not you
-> occasionally plug in an ipod or a digital camera.
+> Pavel Emelyanov wrote:
+>> The "fix" I mention is just returning -EINVAL in case user orders 
+>> CLONE_NEWPIDS
 > 
-> Going back from the lsmod output to all the right CONFIG
-> options is also not as trivial as it sounds, due to all
-> the dependencies there are.
+> That is the "fix" you were referring to?  I was hoping you have a sketch
+> for a real solution.  If nobody can think of a way to fix this PID
 
-As part of Linux Kernel Driver DataBase, yesterday I "solved"
-also this problem:
->From a module name, I can obtain relative the kernel
-configuration item.
+Looks like we misunderstood each other. Can you please elaborate on 
+what exactly is broken in pid namespaces?
 
-You can see the result in http://cateee.net/lkddb
-(grep '^drv module' drivers-db). I count 2570 such items.
+> namespaces are IMO not something which should go in at all.
 
-But I've some problems on few cases:
-sometime there is one module name with more CONFIG_s.
-Normally such cases happens in modules on the same directory,
-as support module or as parent module.
-I don't see a method to distinguish the right (minimal)
-configuration.
+We (mainly me and Sukadev) are fixing the issues we are aware of, but 
+looks like somebody found something and didn't notify the authors 
+about it.
 
-One solution would be to remove some dependencies on
-Makefile, and checking and ev. creating such dependencies
-on Kconfig. But this require a kernel modification.
+Thanks,
+Pavel
 
-Or you think there is a better (non-invasive) method?
-
-ciao
-	cate
+> - --
+> ➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+> -----BEGIN PGP SIGNATURE-----
+> Version: GnuPG v1.4.7 (GNU/Linux)
+> 
+> iD8DBQFHKm2R2ijCOnn/RHQRAgjXAKCkU9lcWC9aTR0nG89x47AZO9pVfwCgiaVC
+> /Giyp+en+VbtfFyD8D6v4Xk=
+> =RnIw
+> -----END PGP SIGNATURE-----
+> 
 
