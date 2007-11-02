@@ -1,284 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763472AbXKCAMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763467AbXKCAMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763472AbXKCAMJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 20:12:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762167AbXKCACf
+	id S1763467AbXKCAMg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 20:12:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762187AbXKCACi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 20:02:35 -0400
-Received: from ns.suse.de ([195.135.220.2]:41191 "EHLO mx1.suse.de"
+	Fri, 2 Nov 2007 20:02:38 -0400
+Received: from ns.suse.de ([195.135.220.2]:41200 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762152AbXKCACd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 20:02:33 -0400
+	id S1762184AbXKCACh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 20:02:37 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 36/54] fix struct user_info export's sysfs interaction
-Date: Fri,  2 Nov 2007 16:59:14 -0700
-Message-Id: <1194047972-9850-36-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       Mike Halcrow <mhalcrow@us.ibm.com>,
+       Phillip Hellewell <phillip@hellewell.homeip.net>
+Subject: [PATCH 37/54] ecryptfs: remove version_str file from sysfs
+Date: Fri,  2 Nov 2007 16:59:15 -0700
+Message-Id: <1194047972-9850-37-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <20071102235758.GA9803@kroah.com>
 References: <20071102235758.GA9803@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
+This file violates the one-value-per-file sysfs rule.
 
-Clean up the use of ksets and kobjects. Kobjects are instances of
-objects (like struct user_info), ksets are collections of objects of a
-similar type (like the uids directory containing the user_info directories).
-So, use kobjects for the user_info directories, and a kset for the "uids"
-directory.
+If you all want it added back, please do something like a per-feature
+file to show what is present and what isn't.
 
-On object cleanup, the final kobject_put() was missing.
-
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Mike Halcrow <mhalcrow@us.ibm.com>
+Cc: Phillip Hellewell <phillip@hellewell.homeip.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- include/linux/sched.h |    9 +---
- kernel/ksysfs.c       |    7 +--
- kernel/user.c         |  104 ++++++++++++++++++++++++-------------------------
- 3 files changed, 55 insertions(+), 65 deletions(-)
+ fs/ecryptfs/main.c |   43 -------------------------------------------
+ 1 files changed, 0 insertions(+), 43 deletions(-)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 155d743..e8033c1 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -547,18 +547,13 @@ struct user_struct {
- #ifdef CONFIG_FAIR_USER_SCHED
- 	struct task_group *tg;
- #ifdef CONFIG_SYSFS
--	struct kset kset;
--	struct subsys_attribute user_attr;
-+	struct kobject kobj;
- 	struct work_struct work;
- #endif
- #endif
+diff --git a/fs/ecryptfs/main.c b/fs/ecryptfs/main.c
+index 828fb99..286ade1 100644
+--- a/fs/ecryptfs/main.c
++++ b/fs/ecryptfs/main.c
+@@ -740,51 +740,8 @@ static ssize_t version_show(struct kobject *kobj,
+ 
+ static struct kobj_attribute version_attr = __ATTR_RO(version);
+ 
+-static struct ecryptfs_version_str_map_elem {
+-	u32 flag;
+-	char *str;
+-} ecryptfs_version_str_map[] = {
+-	{ECRYPTFS_VERSIONING_PASSPHRASE, "passphrase"},
+-	{ECRYPTFS_VERSIONING_PUBKEY, "pubkey"},
+-	{ECRYPTFS_VERSIONING_PLAINTEXT_PASSTHROUGH, "plaintext passthrough"},
+-	{ECRYPTFS_VERSIONING_POLICY, "policy"},
+-	{ECRYPTFS_VERSIONING_XATTR, "metadata in extended attribute"},
+-	{ECRYPTFS_VERSIONING_MULTKEY, "multiple keys per file"}
+-};
+-
+-static ssize_t version_str_show(struct kobject *kobj,
+-				struct kobj_attribute *attr, char *buff)
+-{
+-	int i;
+-	int remaining = PAGE_SIZE;
+-	int total_written = 0;
+-
+-	buff[0] = '\0';
+-	for (i = 0; i < ARRAY_SIZE(ecryptfs_version_str_map); i++) {
+-		int entry_size;
+-
+-		if (!(ECRYPTFS_VERSIONING_MASK
+-		      & ecryptfs_version_str_map[i].flag))
+-			continue;
+-		entry_size = strlen(ecryptfs_version_str_map[i].str);
+-		if ((entry_size + 2) > remaining)
+-			goto out;
+-		memcpy(buff, ecryptfs_version_str_map[i].str, entry_size);
+-		buff[entry_size++] = '\n';
+-		buff[entry_size] = '\0';
+-		buff += entry_size;
+-		total_written += entry_size;
+-		remaining -= entry_size;
+-	}
+-out:
+-	return total_written;
+-}
+-
+-static struct kobj_attribute version_attr_str = __ATTR_RO(version_str);
+-
+ static struct attribute *attributes[] = {
+ 	&version_attr.attr,
+-	&version_attr_str.attr,
+ 	NULL,
  };
  
--#ifdef CONFIG_FAIR_USER_SCHED
--extern int uids_kobject_init(void);
--#else
--static inline int uids_kobject_init(void) { return 0; }
--#endif
-+extern int uids_sysfs_init(void);
- 
- extern struct user_struct *find_user(uid_t);
- 
-diff --git a/kernel/ksysfs.c b/kernel/ksysfs.c
-index ea07bcf..e3293e7 100644
---- a/kernel/ksysfs.c
-+++ b/kernel/ksysfs.c
-@@ -142,11 +142,8 @@ static int __init ksysfs_init(void)
- 			goto group_exit;
- 	}
- 
--	/*
--	 * Create "/sys/kernel/uids" directory and corresponding root user's
--	 * directory under it.
--	 */
--	error = uids_kobject_init();
-+	/* create the /sys/kernel/uids/ directory */
-+	error = uids_sysfs_init();
- 	if (error)
- 		goto notes_exit;
- 
-diff --git a/kernel/user.c b/kernel/user.c
-index 75d9f9b..c9fffa1 100644
---- a/kernel/user.c
-+++ b/kernel/user.c
-@@ -115,7 +115,7 @@ static void sched_switch_user(struct task_struct *p) { }
- 
- #if defined(CONFIG_FAIR_USER_SCHED) && defined(CONFIG_SYSFS)
- 
--static struct kobject uids_kobject; /* represents /sys/kernel/uids directory */
-+static struct kset *uids_kset; /* represents the /sys/kernel/uids/ directory */
- static DEFINE_MUTEX(uids_mutex);
- 
- static inline void uids_mutex_lock(void)
-@@ -128,86 +128,84 @@ static inline void uids_mutex_unlock(void)
- 	mutex_unlock(&uids_mutex);
- }
- 
--/* return cpu shares held by the user */
--static ssize_t cpu_shares_show(struct kset *kset, char *buffer)
-+/* uid directory attributes */
-+static ssize_t cpu_shares_show(struct kobject *kobj,
-+			       struct kobj_attribute *attr,
-+			       char *buf)
- {
--	struct user_struct *up = container_of(kset, struct user_struct, kset);
-+	struct user_struct *up = container_of(kobj, struct user_struct, kobj);
- 
--	return sprintf(buffer, "%lu\n", sched_group_shares(up->tg));
-+	return sprintf(buf, "%lu\n", sched_group_shares(up->tg));
- }
- 
--/* modify cpu shares held by the user */
--static ssize_t cpu_shares_store(struct kset *kset, const char *buffer,
--				size_t size)
-+static ssize_t cpu_shares_store(struct kobject *kobj,
-+				struct kobj_attribute *attr,
-+				const char *buf, size_t size)
- {
--	struct user_struct *up = container_of(kset, struct user_struct, kset);
-+	struct user_struct *up = container_of(kobj, struct user_struct, kobj);
- 	unsigned long shares;
- 	int rc;
- 
--	sscanf(buffer, "%lu", &shares);
-+	sscanf(buf, "%lu", &shares);
- 
- 	rc = sched_group_set_shares(up->tg, shares);
- 
- 	return (rc ? rc : size);
- }
- 
--static void user_attr_init(struct subsys_attribute *sa, char *name, int mode)
-+static struct kobj_attribute cpu_share_attr =
-+	__ATTR(cpu_share, 0644, cpu_shares_show, cpu_shares_store);
-+
-+/* default attributes per uid directory */
-+static struct attribute *uids_attributes[] = {
-+	&cpu_share_attr.attr,
-+	NULL
-+};
-+
-+/* the lifetime of user_struct is not managed by the core (now) */
-+static void uids_release(struct kobject *kobj)
- {
--	sa->attr.name = name;
--	sa->attr.mode = mode;
--	sa->show = cpu_shares_show;
--	sa->store = cpu_shares_store;
-+	return;
- }
- 
--/* Create "/sys/kernel/uids/<uid>" directory and
-- *  "/sys/kernel/uids/<uid>/cpu_share" file for this user.
-- */
--static int user_kobject_create(struct user_struct *up)
-+static struct kobj_type uids_ktype = {
-+	.sysfs_ops = &kobj_sysfs_ops,
-+	.default_attrs = uids_attributes,
-+	.release = uids_release,
-+};
-+
-+/* create /sys/kernel/uids/<uid>/cpu_share file for this user */
-+static int uids_user_create(struct user_struct *up)
- {
--	struct kset *kset = &up->kset;
--	struct kobject *kobj = &kset->kobj;
-+	struct kobject *kobj = &up->kobj;
- 	int error;
- 
--	memset(kset, 0, sizeof(struct kset));
--	kobj->parent = &uids_kobject;	/* create under /sys/kernel/uids dir */
--	kobject_set_name(kobj, "%d", up->uid);
--	kset_init(kset);
--	user_attr_init(&up->user_attr, "cpu_share", 0644);
--
-+	memset(kobj, 0, sizeof(struct kobject));
-+	kobject_init(kobj);
-+	kobj->ktype = &uids_ktype;
-+	kobj->kset = uids_kset;
-+	kobject_set_name(&up->kobj, "%d", up->uid);
- 	error = kobject_add(kobj);
- 	if (error)
- 		goto done;
- 
--	error = sysfs_create_file(kobj, &up->user_attr.attr);
--	if (error)
--		kobject_del(kobj);
--
- 	kobject_uevent(kobj, KOBJ_ADD);
--
- done:
- 	return error;
- }
- 
--/* create these in sysfs filesystem:
-+/* create these entries in sysfs:
-  * 	"/sys/kernel/uids" directory
-  * 	"/sys/kernel/uids/0" directory (for root user)
-  * 	"/sys/kernel/uids/0/cpu_share" file (for root user)
-  */
--int __init uids_kobject_init(void)
-+int __init uids_sysfs_init(void)
- {
--	int error;
-+	uids_kset = kset_create_and_register("uids", NULL, NULL, kernel_kset);
-+	if (IS_ERR(uids_kset))
-+		return PTR_ERR(uids_kset);
- 
--	/* create under /sys/kernel dir */
--	uids_kobject.parent = &kernel_kset->kobj;
--	uids_kobject.kset = kernel_kset;
--	kobject_set_name(&uids_kobject, "uids");
--	kobject_init(&uids_kobject);
--
--	error = kobject_add(&uids_kobject);
--	if (!error)
--		error = user_kobject_create(&root_user);
--
--	return error;
-+	return uids_user_create(&root_user);
- }
- 
- /* work function to remove sysfs directory for a user and free up
-@@ -216,7 +214,6 @@ int __init uids_kobject_init(void)
- static void remove_user_sysfs_dir(struct work_struct *w)
- {
- 	struct user_struct *up = container_of(w, struct user_struct, work);
--	struct kobject *kobj = &up->kset.kobj;
- 	unsigned long flags;
- 	int remove_user = 0;
- 
-@@ -238,9 +235,9 @@ static void remove_user_sysfs_dir(struct work_struct *w)
- 	if (!remove_user)
- 		goto done;
- 
--	sysfs_remove_file(kobj, &up->user_attr.attr);
--	kobject_uevent(kobj, KOBJ_REMOVE);
--	kobject_del(kobj);
-+	kobject_uevent(&up->kobj, KOBJ_REMOVE);
-+	kobject_del(&up->kobj);
-+	kobject_put(&up->kobj);
- 
- 	sched_destroy_user(up);
- 	key_put(up->uid_keyring);
-@@ -267,7 +264,8 @@ static inline void free_user(struct user_struct *up, unsigned long flags)
- 
- #else	/* CONFIG_FAIR_USER_SCHED && CONFIG_SYSFS */
- 
--static inline int user_kobject_create(struct user_struct *up) { return 0; }
-+int uids_sysfs_init(void) { return 0; }
-+static inline int uids_user_create(struct user_struct *up) { return 0; }
- static inline void uids_mutex_lock(void) { }
- static inline void uids_mutex_unlock(void) { }
- 
-@@ -324,7 +322,7 @@ struct user_struct * alloc_uid(struct user_namespace *ns, uid_t uid)
- 	struct hlist_head *hashent = uidhashentry(ns, uid);
- 	struct user_struct *up;
- 
--	/* Make uid_hash_find() + user_kobject_create() + uid_hash_insert()
-+	/* Make uid_hash_find() + uids_user_create() + uid_hash_insert()
- 	 * atomic.
- 	 */
- 	uids_mutex_lock();
-@@ -365,7 +363,7 @@ struct user_struct * alloc_uid(struct user_namespace *ns, uid_t uid)
- 			return NULL;
- 		}
- 
--		if (user_kobject_create(new)) {
-+		if (uids_user_create(new)) {
- 			sched_destroy_user(new);
- 			key_put(new->uid_keyring);
- 			key_put(new->session_keyring);
 -- 
 1.5.3.4
 
