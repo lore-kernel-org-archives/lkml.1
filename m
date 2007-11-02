@@ -1,77 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757830AbXKBRdE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757392AbXKBRle@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757830AbXKBRdE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 13:33:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755916AbXKBRcx
+	id S1757392AbXKBRle (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 13:41:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753615AbXKBRl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 13:32:53 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54115 "EHLO ogre.sisk.pl"
+	Fri, 2 Nov 2007 13:41:27 -0400
+Received: from gateway.drzeus.cx ([85.8.24.16]:39222 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754644AbXKBRcw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 13:32:52 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Meyer <thomas@m3y3r.de>
-Subject: Re: [regression] v2.6.24-rc1-497-gb1d08ac: kde battery icon gone
-Date: Fri, 2 Nov 2007 18:49:50 +0100
-User-Agent: KMail/1.9.5
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alexey Starikovskiy <aystarik@gmail.com>
-References: <472B5C01.7090508@m3y3r.de>
-In-Reply-To: <472B5C01.7090508@m3y3r.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	id S1753093AbXKBRl0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 13:41:26 -0400
+Date: Fri, 2 Nov 2007 18:39:51 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Romano Giannetti <romanol@upcomillas.es>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.34-rc1 eat my photo SD card :-(
+Message-ID: <20071102183951.06c1b468@poseidon.drzeus.cx>
+In-Reply-To: <472A0A36.1050403@redhat.com>
+References: <1193918202.8439.7.camel@rukbat>
+	<472A0A36.1050403@redhat.com>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711021849.50716.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 2 November 2007 18:18, Thomas Meyer wrote:
-> i just wanted to report this:
-> 
-> in v2.6.24-rc1-497-gb1d08ac the kde battery icon is no longer displayed.
+On Thu, 01 Nov 2007 13:17:42 -0400
+Chuck Ebbert <cebbert@redhat.com> wrote:
 
-Appropriate CCs added.
+> 
+> I always flip the write-protect switch when I use mine with a computer,
+> and only let the camera write to the card.
 
-> with 2.6.23 shows the battery icon.
-> 
-> current config:
-> 
-> grep -i acpi .config
-> # Power management options (ACPI, APM)
-> CONFIG_ACPI=y
-> CONFIG_ACPI_SLEEP=y
-> # CONFIG_ACPI_PROCFS is not set
-> CONFIG_ACPI_PROC_EVENT=y
-> CONFIG_ACPI_AC=m
-> CONFIG_ACPI_BATTERY=m
-> CONFIG_ACPI_BUTTON=m
-> CONFIG_ACPI_VIDEO=m
-> CONFIG_ACPI_FAN=m
-> CONFIG_ACPI_DOCK=m
-> CONFIG_ACPI_BAY=m
-> CONFIG_ACPI_PROCESSOR=m
-> CONFIG_ACPI_HOTPLUG_CPU=y
-> CONFIG_ACPI_THERMAL=m
-> # CONFIG_ACPI_ASUS is not set
-> # CONFIG_ACPI_TOSHIBA is not set
-> CONFIG_ACPI_BLACKLIST_YEAR=0
-> CONFIG_ACPI_DEBUG=y
-> # CONFIG_ACPI_DEBUG_FUNC_TRACE is not set
-> CONFIG_ACPI_EC=y
-> CONFIG_ACPI_POWER=y
-> CONFIG_ACPI_SYSTEM=y
-> CONFIG_ACPI_CONTAINER=m
-> CONFIG_ACPI_SBS=m
-> CONFIG_X86_ACPI_CPUFREQ=m
-> # CONFIG_X86_ACPI_CPUFREQ_PROC_INTF is not set
-> CONFIG_HOTPLUG_PCI_ACPI=m
-> # CONFIG_HOTPLUG_PCI_ACPI_IBM is not set
-> CONFIG_PNPACPI=y
-> # CONFIG_THINKPAD_ACPI is not set
-> CONFIG_ATA_ACPI=y
-> # CONFIG_PATA_ACPI is not set
-> 
-> -
+Just so noone gets any optimistic ideas, that switch is software enforced so it's no guarantee against bugs. 
+
+(But since my code is bug free, that shouldn't be an issue. ;))
+
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
