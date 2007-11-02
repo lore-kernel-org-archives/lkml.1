@@ -1,76 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755900AbXKBNy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754097AbXKBNzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755900AbXKBNy6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 09:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbXKBNyv
+	id S1754097AbXKBNzU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 09:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755943AbXKBNzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 09:54:51 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53247 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753322AbXKBNyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 09:54:50 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Philipp Matthias Hahn <pmhahn@titan.lahn.de>
-Subject: Re: [2.6.23] IBM X41 looses time after Suspend2Disk
-Date: Fri, 2 Nov 2007 15:11:32 +0100
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20071029201955.GA1955@titan.lahn.de> <20071030210801.GA1767@elf.ucw.cz> <20071102133323.GC2780@titan.lahn.de>
-In-Reply-To: <20071102133323.GC2780@titan.lahn.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 2 Nov 2007 09:55:00 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41949 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755406AbXKBNy7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 09:54:59 -0400
+Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Greg KH <greg@kroah.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Miklos Szeredi <miklos@szeredi.hu>
+In-Reply-To: <3ae72650711020650l37870e45yb853f888b4807116@mail.gmail.com>
+References: <1193410087.6914.34.camel@twins>
+	 <1193412836.27652.11.camel@twins> <1193414147.2431.35.camel@lov.site>
+	 <1193429066.5648.35.camel@lappy> <1193447889.5648.44.camel@lappy>
+	 <20071027024033.GB29039@kroah.com> <1193474399.27652.15.camel@twins>
+	 <20071027160203.GA5709@kroah.com> <1193519317.5776.14.camel@lov.site>
+	 <1194009359.27652.377.camel@twins>
+	 <3ae72650711020650l37870e45yb853f888b4807116@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 02 Nov 2007 14:54:51 +0100
+Message-Id: <1194011691.27652.382.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711021511.32834.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 2 November 2007 14:33, Philipp Matthias Hahn wrote:
-> Hello!
+On Fri, 2007-11-02 at 14:50 +0100, Kay Sievers wrote:
+> On Nov 2, 2007 2:15 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> > Thanks for the help so far, however we're still not quite there.
+> >
+> > The below patch still has the funny 20 character name limit. Is there a
+> > good reason its a char array like this, and not just a char * to a kstr?
+> > The code does kstrdup all over the place, I can't imagine why suddenly
+> > limiting it to 20 chars seems like a good idea.
 > 
-> On Tue, Oct 30, 2007 at 10:08:01PM +0100, Pavel Machek wrote:
-> > > > On Monday, 29 October 2007 21:19, Philipp Matthias Hahn wrote:
-> > > > > I have an IBM X41 tablet pc running 2.6.23 with the following problem:
-> > > > > Suspend2Ram work fine, but when I do a Suspend2Disk (echo disk >
-> > > > > /sys/power/state), the notebook hangs showing the following lines:
-> > > ...
-> > > > >         Suspending console(s)
-> > > > > 
-> > > > > When I repeatedly press some keys or move the TrackPoint, the SwSusp
-> > > > > continues and the notebook powers off.
-> > > > > On reboot, the notebook resumes but hangs showing the following screen:
-> > > ...
-> > > > >         Suspending console(s)
-> > > > > 
-> > > > > Generating interrupts by pressing keys or moving the TrackPoints makes
-> > > > > the resume continue. But after that, the notebook looses time, xterms
-> > > > > don't get updated until I press a key, the beeper beeps until I press a
-> > > > > key, etc.
-> ...
-> > > On Mon, Oct 29, 2007 at 10:24:14PM +0100, Pavel Machek wrote:
-> > > > Yep, I seen that before. Try "nohz=off".
-> > > 
-> > > Okay, that seems to solve the "timer loosing time after resume" problem.
-> > > 
-> > > 
-> > > But I still need to press some keys on suspend (7-12 key presses and
-> > > releases) to unhang it. On resume not key presses are needed any
-> > > more.
-> > 
-> > So it fixed resume but not suspend? strange. Try highres=off, too. And
-> > maybe irqpoll?
+> You are absolutely right, it doesn't make any sense. The 20 char limit
+> is bad, but really,
+> having the name duplicated in the device structure, while the name is
+> already in the
+> embedded kobject, is really bad.
 > 
-> highres=off did the trick. Thank you.
-> 
-> Does somebody want more data to debug this further?
+> Greg recently got rid of the 20 chars in the kobject, now we need to fix the
+> devices to completely get rid of the static bus_id string array, and just set
+> the kobject name directly.
+> It's all long overdue to fix things like this in the driver core -
+> it's such a mess. After the
+> kset cleanup Greg and I are doing currently, we will remove that silly limit.
 
-Please create a bugzilla entry at http://bugzilla.kernel.org for this bug
-(against "Power Management"->"Hibernation/Suspend") and put a summary of your
-findings in there.  Also, please add my address to the bug's CC list.
+Ok, great!
 
-Thanks,
-Rafael
+Could I ask you to nudge me awake once those patches hit a git tree
+somewhere?
+
+> Hmm, regardless of the limit, isn't there a better device name than a memory
+> address of a kernel structure. :)
+
+Yes there is, Trond already suggested a proper replacement, however so
+far I've been just trying to get it to work before trying to make it
+pretty.
+
+Will implement Trond's suggestion while you and Greg eradicate this 20
+byte thing :-)
+
