@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760512AbXKBB4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759047AbXKBCBk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760512AbXKBB4U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 21:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbXKBB4K
+	id S1759047AbXKBCBk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 22:01:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753845AbXKBCBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 21:56:10 -0400
-Received: from THUNK.ORG ([69.25.196.29]:41375 "EHLO thunker.thunk.org"
+	Thu, 1 Nov 2007 22:01:31 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50373 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753055AbXKBB4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 21:56:08 -0400
-Date: Thu, 1 Nov 2007 21:54:54 -0400
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Stephen Smalley <sds@epoch.ncsc.mil>, lkml <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       Andrew Morgan <morgan@kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: [PATCH] file capabilities: allow sigcont within session (v2)
-Message-ID: <20071102015453.GA7636@thunk.org>
-Mail-Followup-To: tytso@mit.edu, "Serge E. Hallyn" <serue@us.ibm.com>,
-	Stephen Smalley <sds@epoch.ncsc.mil>,
-	lkml <linux-kernel@vger.kernel.org>,
-	linux-security-module@vger.kernel.org,
-	Andrew Morton <akpm@osdl.org>, Andrew Morgan <morgan@kernel.org>,
-	Chris Wright <chrisw@sous-sol.org>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Natalie Protasevich <protasnb@gmail.com>
-References: <20071031234945.GA16455@sergelap.austin.ibm.com> <1193918844.12018.6.camel@moss-spartans.epoch.ncsc.mil> <20071101134701.GA21131@sergelap.austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071101134701.GA21131@sergelap.austin.ibm.com>
-1;1609;0cFrom: Theodore Tso <tytso@mit.edu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-From: Theodore Tso <tytso@thunk.org>
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	id S1753678AbXKBCBb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 22:01:31 -0400
+Date: Thu, 1 Nov 2007 22:01:07 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Gregory Haskins <gregory.haskins.ml@gmail.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 1/4] x86: FIFO ticket spinlocks
+Message-ID: <20071101220107.1d71f4d9@bree.surriel.com>
+In-Reply-To: <alpine.LFD.0.999.0711011819110.3342@woody.linux-foundation.org>
+References: <20071101140146.GA26879@wotan.suse.de>
+	<20071101140320.GC26879@wotan.suse.de>
+	<4729E567.1050402@gmail.com>
+	<alpine.LFD.0.999.0711010935060.3342@woody.linux-foundation.org>
+	<20071101203526.293cd7f0@bree.surriel.com>
+	<alpine.LFD.0.999.0711011819110.3342@woody.linux-foundation.org>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 01, 2007 at 08:47:01AM -0500, Serge E. Hallyn wrote:
-> > > >From 5bff8967f45a35f858b96ca673d9bf98eac53d49 Mon Sep 17 00:00:00 2001
-> > > From: Serge E. Hallyn <serue@us.ibm.com>
-> > > Date: Wed, 31 Oct 2007 11:22:04 -0500
-> > > Subject: [PATCH 1/1] file capabilities: allow sigcont within session (v2)
-
-> New patch on top of previous one is appended.
+On Thu, 1 Nov 2007 18:19:41 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> On Thu, 1 Nov 2007, Rik van Riel wrote:
+> > 
+> > Larry Woodman managed to wedge the VM into a state where, on his
+> > 4x dual core system, only 2 cores (on the same CPU) could get the
+> > zone->lru_lock overnight.  The other 6 cores on the system were
+> > just spinning, without being able to get the lock.
 > 
-> From 98741f07ab1bc4a1fc2de7fedfb9023ea30bf988 Mon Sep 17 00:00:00 2001
-> From: Serge E. Hallyn <serue@us.ibm.com>
-> Date: Thu, 1 Nov 2007 08:20:12 -0500
-> Subject: [PATCH 1/1] file capabilities: remove the non-matching uid special case for kill
-> 
+> .. and this is almost always the result of a locking *bug*, not
+> unfairness per se. IOW, unfairness just ends up showing the bug in
+> the first place.
 
-Tested-by: "Theodore Ts'o" <tytso@mit.edu>
+No argument there.  If you have the kind of lock contention where
+fairness matters, the contention is probably what needs to be fixed,
+not the locking mechanism.
 
-Thanks, this fixes the issue I reported!
+Having said that, making bugs like that less likely to totally wedge
+a system would be a good thing for everybody who uses Linux in
+production.  Exposing bugs is good for development, bad for business.
 
-				- Ted
+-- 
+"Debugging is twice as hard as writing the code in the first place.
+Therefore, if you write the code as cleverly as possible, you are,
+by definition, not smart enough to debug it." - Brian W. Kernighan
