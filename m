@@ -1,120 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755791AbXKBCjh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761445AbXKBCjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755791AbXKBCjh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 22:39:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756381AbXKBCil
+	id S1761445AbXKBCjw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 22:39:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756544AbXKBCim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 22:38:41 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:28878 "EHLO
+	Thu, 1 Nov 2007 22:38:42 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:24198 "EHLO
 	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755825AbXKBCij (ORCPT
+	with ESMTP id S1755890AbXKBCij (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 1 Nov 2007 22:38:39 -0400
 X-IronPort-AV: i="4.21,361,1188792000"; 
-   d="scan'208"; a="55424473:sNHT299324053"
+   d="scan'208"; a="55424474:sNHT29785385"
 From: Bryan Wu <bryan.wu@analog.com>
 To: dbrownell@users.sourceforge.net, akpm@linux-foundation.org
 Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
        Bryan Wu <bryan.wu@analog.com>
-Subject: [PATCH 3/4] Blackfin SPI driver:  move hard coded pin_req to board file
-Date: Fri,  2 Nov 2007 10:38:31 +0800
-Message-Id: <1193971112-7744-4-git-send-email-bryan.wu@analog.com>
+Subject: [PATCH 4/4] Blackfin SPI driver: reconfigure speed_hz and bits_per_word in each spi transfer
+Date: Fri,  2 Nov 2007 10:38:32 +0800
+Message-Id: <1193971112-7744-5-git-send-email-bryan.wu@analog.com>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <1193971112-7744-1-git-send-email-bryan.wu@analog.com>
 References: <1193971112-7744-1-git-send-email-bryan.wu@analog.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove some sort of bloaty code, try to get these pin_req arrays built at compile-time
-
- - move this static things to the blackfin board file
- - add pin_req array to struct bfin5xx_spi_master
- - tested on BF537/BF548 with SPI flash
+ - reconfigure SPI baud from speed_hz of each spi transfer
+ - according to spi_transfer.bits_per_word to reprogram register and setup
+   correct SPI operation handlers
 
 Signed-off-by: Bryan Wu <bryan.wu@analog.com>
 ---
- drivers/spi/spi_bfin5xx.c          |   28 +++++++---------------------
- include/asm-blackfin/bfin5xx_spi.h |    1 +
- 2 files changed, 8 insertions(+), 21 deletions(-)
+ drivers/spi/spi_bfin5xx.c |   54 ++++++++++++++++++++++++++++++++++++++------
+ 1 files changed, 46 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/spi/spi_bfin5xx.c b/drivers/spi/spi_bfin5xx.c
-index a6f6d5f..f466fa0 100644
+index f466fa0..3e5126e 100644
 --- a/drivers/spi/spi_bfin5xx.c
 +++ b/drivers/spi/spi_bfin5xx.c
-@@ -80,6 +80,9 @@ struct driver_data {
- 	/* Regs base of SPI controller */
- 	void __iomem *regs_base;
+@@ -234,10 +234,8 @@ static int restore_state(struct driver_data *drv_data)
+ 	dev_dbg(&drv_data->pdev->dev, "restoring spi ctl state\n");
  
-+	/* Pin request list */
-+	u16 *pin_req;
+ 	/* Load the registers */
+-	write_BAUD(drv_data, chip->baud);
+-	chip->ctl_reg &= (~BIT_CTL_TIMOD);
+-	chip->ctl_reg |= (chip->width << 8);
+ 	write_CTRL(drv_data, chip->ctl_reg);
++	write_BAUD(drv_data, chip->baud);
+ 
+ 	bfin_spi_enable(drv_data);
+ 	cs_active(drv_data, chip);
+@@ -679,6 +677,7 @@ static void pump_transfers(unsigned long data)
+ 	message = drv_data->cur_msg;
+ 	transfer = drv_data->cur_transfer;
+ 	chip = drv_data->cur_chip;
 +
- 	/* BFIN hookup */
- 	struct bfin5xx_spi_master *master_info;
+ 	/*
+ 	 * if msg is error or done, report it back using complete() callback
+ 	 */
+@@ -736,23 +735,62 @@ static void pump_transfers(unsigned long data)
+ 	drv_data->len_in_bytes = transfer->len;
+ 	drv_data->cs_change = transfer->cs_change;
  
-@@ -1245,25 +1248,6 @@ static inline int destroy_queue(struct driver_data *drv_data)
- 	return 0;
- }
- 
--static int setup_pin_mux(int action, int bus_num)
--{
--
--	u16 pin_req[3][4] = {
--		{P_SPI0_SCK, P_SPI0_MISO, P_SPI0_MOSI, 0},
--		{P_SPI1_SCK, P_SPI1_MISO, P_SPI1_MOSI, 0},
--		{P_SPI2_SCK, P_SPI2_MISO, P_SPI2_MOSI, 0},
--	};
--
--	if (action) {
--		if (peripheral_request_list(pin_req[bus_num], DRV_NAME))
--			return -EFAULT;
--	} else {
--		peripheral_free_list(pin_req[bus_num]);
--	}
--
--	return 0;
--}
--
- static int __init bfin5xx_spi_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
-@@ -1286,6 +1270,7 @@ static int __init bfin5xx_spi_probe(struct platform_device *pdev)
- 	drv_data->master = master;
- 	drv_data->master_info = platform_info;
- 	drv_data->pdev = pdev;
-+	drv_data->pin_req = platform_info->pin_req;
- 
- 	master->bus_num = pdev->id;
- 	master->num_chipselect = platform_info->num_chipselect;
-@@ -1336,7 +1321,8 @@ static int __init bfin5xx_spi_probe(struct platform_device *pdev)
- 		goto out_error_queue_alloc;
+-	width = chip->width;
++	/* Bits per word setup */
++	switch (transfer->bits_per_word) {
++	case 8:
++		drv_data->n_bytes = 1;
++		width = CFG_SPI_WORDSIZE8;
++		drv_data->read = chip->cs_change_per_word ?
++			u8_cs_chg_reader : u8_reader;
++		drv_data->write = chip->cs_change_per_word ?
++			u8_cs_chg_writer : u8_writer;
++		drv_data->duplex = chip->cs_change_per_word ?
++			u8_cs_chg_duplex : u8_duplex;
++		break;
++
++	case 16:
++		drv_data->n_bytes = 2;
++		width = CFG_SPI_WORDSIZE16;
++		drv_data->read = chip->cs_change_per_word ?
++			u16_cs_chg_reader : u16_reader;
++		drv_data->write = chip->cs_change_per_word ?
++			u16_cs_chg_writer : u16_writer;
++		drv_data->duplex = chip->cs_change_per_word ?
++			u16_cs_chg_duplex : u16_duplex;
++		break;
++
++	default:
++		/* No change, the same as default setting */
++		drv_data->n_bytes = chip->n_bytes;
++		width = chip->width;
++		drv_data->write = drv_data->tx ? chip->write : null_writer;
++		drv_data->read = drv_data->rx ? chip->read : null_reader;
++		drv_data->duplex = chip->duplex ? chip->duplex : null_writer;
++		break;
++	}
++	cr = (read_CTRL(drv_data) & (~BIT_CTL_TIMOD));
++	cr |= (width << 8);
++	write_CTRL(drv_data, cr);
++
+ 	if (width == CFG_SPI_WORDSIZE16) {
+ 		drv_data->len = (transfer->len) >> 1;
+ 	} else {
+ 		drv_data->len = transfer->len;
  	}
+-	drv_data->write = drv_data->tx ? chip->write : null_writer;
+-	drv_data->read = drv_data->rx ? chip->read : null_reader;
+-	drv_data->duplex = chip->duplex ? chip->duplex : null_writer;
+ 	dev_dbg(&drv_data->pdev->dev,
+ 		"transfer: drv_data->write is %p, chip->write is %p, null_wr is %p\n",
+-   		drv_data->write, chip->write, null_writer);
++		drv_data->write, chip->write, null_writer);
  
--	if (setup_pin_mux(1, master->bus_num)) {
-+	status = peripheral_request_list(drv_data->pin_req, DRV_NAME);
-+	if (status != 0) {
- 		dev_err(&pdev->dev, ": Requesting Peripherals failed\n");
- 		goto out_error;
- 	}
-@@ -1384,7 +1370,7 @@ static int __devexit bfin5xx_spi_remove(struct platform_device *pdev)
- 	/* Disconnect from the SPI framework */
- 	spi_unregister_master(drv_data->master);
+ 	/* speed and width has been set on per message */
+ 	message->state = RUNNING_STATE;
+ 	dma_config = 0;
  
--	setup_pin_mux(0, drv_data->master->bus_num);
-+	peripheral_free_list(drv_data->pin_req);
- 
- 	/* Prevent double remove */
- 	platform_set_drvdata(pdev, NULL);
-diff --git a/include/asm-blackfin/bfin5xx_spi.h b/include/asm-blackfin/bfin5xx_spi.h
-index d4485b3..1a0b57f 100644
---- a/include/asm-blackfin/bfin5xx_spi.h
-+++ b/include/asm-blackfin/bfin5xx_spi.h
-@@ -152,6 +152,7 @@
- struct bfin5xx_spi_master {
- 	u16 num_chipselect;
- 	u8 enable_dma;
-+	u16 pin_req[4];
- };
- 
- /* spi_board_info.controller_data for SPI slave devices,
++	/* Speed setup (surely valid because already checked) */
++	if (transfer->speed_hz)
++		write_BAUD(drv_data, hz_to_spi_baud(transfer->speed_hz));
++	else
++		write_BAUD(drv_data, chip->baud);
++
+ 	write_STAT(drv_data, BIT_STAT_CLR);
+ 	cr = (read_CTRL(drv_data) & (~BIT_CTL_TIMOD));
+ 	cs_active(drv_data, chip);
 -- 
 1.5.3.4
