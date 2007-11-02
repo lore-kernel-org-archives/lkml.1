@@ -1,185 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764382AbXKCASK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764248AbXKCASc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764382AbXKCASK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 20:18:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762227AbXKCADq
+	id S1764248AbXKCASc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 20:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762271AbXKCADt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 20:03:46 -0400
-Received: from ns1.suse.de ([195.135.220.2]:41259 "EHLO mx1.suse.de"
+	Fri, 2 Nov 2007 20:03:49 -0400
+Received: from cantor.suse.de ([195.135.220.2]:41263 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762337AbXKCADp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 20:03:45 -0400
+	id S1761990AbXKCADs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 20:03:48 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Mark Fasheh <mark.fasheh@oracle.com>,
-       Kurt Hackel <kurt.hackel@oracle.com>
-Subject: [PATCH 53/54] kset: convert ocfs2 to use kset_create
-Date: Fri,  2 Nov 2007 16:59:31 -0700
-Message-Id: <1194047972-9850-53-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
+Subject: [PATCH 54/54] kset: remove decl_subsys macro
+Date: Fri,  2 Nov 2007 16:59:32 -0700
+Message-Id: <1194047972-9850-54-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <20071102235758.GA9803@kroah.com>
 References: <20071102235758.GA9803@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dynamically create the kset instead of declaring it statically.
+This macro is no longer used.  ksets should be created dynamically with
+a call to kset_create_and_register() not declared statically.
 
-Also use the new kobj_attribute which cleans up this file a _lot_.
+Yes, there are 5 remaining static struct kset usages in the kernel tree,
+but they will be fixed up soon.
 
 Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Mark Fasheh <mark.fasheh@oracle.com>
-Cc: Kurt Hackel <kurt.hackel@oracle.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ocfs2/cluster/masklog.c |    4 +-
- fs/ocfs2/cluster/sys.c     |   83 +++++++++++--------------------------------
- 2 files changed, 23 insertions(+), 64 deletions(-)
+ drivers/base/class.c    |   11 +++++++++--
+ include/linux/kobject.h |    6 ------
+ 2 files changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/fs/ocfs2/cluster/masklog.c b/fs/ocfs2/cluster/masklog.c
-index dead319..23c732f 100644
---- a/fs/ocfs2/cluster/masklog.c
-+++ b/fs/ocfs2/cluster/masklog.c
-@@ -146,7 +146,7 @@ static struct kset mlog_kset = {
- 	.kobj   = {.ktype = &mlog_ktype},
+diff --git a/drivers/base/class.c b/drivers/base/class.c
+index 27256b3..c854158 100644
+--- a/drivers/base/class.c
++++ b/drivers/base/class.c
+@@ -453,8 +453,15 @@ static struct kset_uevent_ops class_uevent_ops = {
+ 	.uevent =	class_uevent,
  };
  
--int mlog_sys_init(struct kset *o2cb_subsys)
-+int mlog_sys_init(struct kset *o2cb_kset)
+-static decl_subsys(class_obj, &class_uevent_ops);
+-
++/*
++ * DO NOT copy how this is created, kset_create_and_register() should be
++ * called, but this is a hold-over from the old-way and will be deleted
++ * entirely soon.
++ */
++static struct kset class_obj_subsys = {
++	.kobj = { .k_name = "class_obj", },
++	.uevent_ops = &class_uevent_ops,
++};
+ 
+ static int class_device_add_attrs(struct class_device * cd)
  {
- 	int i = 0;
+diff --git a/include/linux/kobject.h b/include/linux/kobject.h
+index 05c8ef8..0e8f21e 100644
+--- a/include/linux/kobject.h
++++ b/include/linux/kobject.h
+@@ -192,12 +192,6 @@ extern struct kobject * kset_find_obj(struct kset *, const char *);
+ #define set_kset_name(str)	.kset = { .kobj = { .k_name = str } }
  
-@@ -157,7 +157,7 @@ int mlog_sys_init(struct kset *o2cb_subsys)
- 	mlog_attr_ptrs[i] = NULL;
  
- 	kobject_set_name(&mlog_kset.kobj, "logmask");
--	mlog_kset.kobj.kset = o2cb_subsys;
-+	mlog_kset.kobj.kset = o2cb_kset;
- 	return kset_register(&mlog_kset);
- }
- 
-diff --git a/fs/ocfs2/cluster/sys.c b/fs/ocfs2/cluster/sys.c
-index 880d013..eb2c4d7 100644
---- a/fs/ocfs2/cluster/sys.c
-+++ b/fs/ocfs2/cluster/sys.c
-@@ -28,96 +28,55 @@
- #include <linux/module.h>
- #include <linux/kobject.h>
- #include <linux/sysfs.h>
-+#include <linux/fs.h>
- 
- #include "ocfs2_nodemanager.h"
- #include "masklog.h"
- #include "sys.h"
- 
--struct o2cb_attribute {
--	struct attribute	attr;
--	ssize_t (*show)(char *buf);
--	ssize_t (*store)(const char *buf, size_t count);
--};
--
--#define O2CB_ATTR(_name, _mode, _show, _store)	\
--struct o2cb_attribute o2cb_attr_##_name = __ATTR(_name, _mode, _show, _store)
--
--#define to_o2cb_attr(_attr) container_of(_attr, struct o2cb_attribute, attr)
- 
--static ssize_t o2cb_interface_revision_show(char *buf)
-+static ssize_t version_show(struct kobject *kobj, struct kobj_attribute *attr,
-+			    char *buf)
- {
- 	return snprintf(buf, PAGE_SIZE, "%u\n", O2NM_API_VERSION);
- }
--
--static O2CB_ATTR(interface_revision, S_IFREG | S_IRUGO, o2cb_interface_revision_show, NULL);
-+static struct kobj_attribute attr_version =
-+	__ATTR(interface_revision, S_IFREG | S_IRUGO, version_show, NULL);
- 
- static struct attribute *o2cb_attrs[] = {
--	&o2cb_attr_interface_revision.attr,
-+	&attr_version.attr,
- 	NULL,
- };
- 
--static ssize_t
--o2cb_show(struct kobject * kobj, struct attribute * attr, char * buffer);
--static ssize_t
--o2cb_store(struct kobject * kobj, struct attribute * attr,
--	   const char * buffer, size_t count);
--static struct sysfs_ops o2cb_sysfs_ops = {
--	.show	= o2cb_show,
--	.store	= o2cb_store,
-+static struct attribute_group o2cb_attr_group = {
-+	.attrs = o2cb_attrs,
- };
- 
--static struct kobj_type o2cb_subsys_type = {
--	.default_attrs	= o2cb_attrs,
--	.sysfs_ops	= &o2cb_sysfs_ops,
--};
--
--/* gives us o2cb_subsys */
--static decl_subsys(o2cb, NULL);
--
--static ssize_t
--o2cb_show(struct kobject * kobj, struct attribute * attr, char * buffer)
--{
--	struct o2cb_attribute *o2cb_attr = to_o2cb_attr(attr);
--	struct kset *sbs = to_kset(kobj);
--
--	BUG_ON(sbs != &o2cb_subsys);
--
--	if (o2cb_attr->show)
--		return o2cb_attr->show(buffer);
--	return -EIO;
+-#define decl_subsys(_name,_uevent_ops) \
+-struct kset _name##_subsys = { \
+-	.kobj = { .k_name = __stringify(_name) }, \
+-	.uevent_ops =_uevent_ops, \
 -}
 -
--static ssize_t
--o2cb_store(struct kobject * kobj, struct attribute * attr,
--	     const char * buffer, size_t count)
--{
--	struct o2cb_attribute *o2cb_attr = to_o2cb_attr(attr);
--	struct kset *sbs = to_kset(kobj);
--
--	BUG_ON(sbs != &o2cb_subsys);
--
--	if (o2cb_attr->store)
--		return o2cb_attr->store(buffer, count);
--	return -EIO;
--}
-+static struct kset *o2cb_kset;
- 
- void o2cb_sys_shutdown(void)
- {
- 	mlog_sys_shutdown();
--	subsystem_unregister(&o2cb_subsys);
-+	kset_unregister(o2cb_kset);
- }
- 
- int o2cb_sys_init(void)
- {
- 	int ret;
- 
--	o2cb_subsys.kobj.ktype = &o2cb_subsys_type;
--	ret = subsystem_register(&o2cb_subsys);
-+	o2cb_kset = kset_create_and_register("o2cb", NULL, NULL, fs_kset);
-+	if (IS_ERR(o2cb_kset))
-+		return PTR_ERR(o2cb_kset);
-+
-+	ret = sysfs_create_group(&o2cb_kset->kobj, &o2cb_attr_group);
- 	if (ret)
--		return ret;
-+		goto error;
- 
--	ret = mlog_sys_init(&o2cb_subsys);
-+	ret = mlog_sys_init(o2cb_kset);
- 	if (ret)
--		subsystem_unregister(&o2cb_subsys);
-+		goto error;
-+	return 0;
-+error:
-+	kset_unregister(o2cb_kset);
- 	return ret;
- }
+ /* The global /sys/kernel/ kset for people to chain off of */
+ extern struct kset *kernel_kset;
+ /* The global /sys/hypervisor/ kset for people to chain off of */
 -- 
 1.5.3.4
 
