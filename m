@@ -1,76 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760836AbXKBUJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760770AbXKBUK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760836AbXKBUJo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 16:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756950AbXKBUJh
+	id S1760770AbXKBUK4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 16:10:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757330AbXKBUKt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 16:09:37 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:54962 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752582AbXKBUJg (ORCPT
+	Fri, 2 Nov 2007 16:10:49 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35582 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757450AbXKBUKt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 16:09:36 -0400
-Date: Fri, 2 Nov 2007 21:09:35 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Randy Dunlap <rdunlap@xenotime.net>, Andreas Mohr <andi@lisas.de>,
-       Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH/RFC] eradicate bashisms in scripts/patch-kernel
-Message-ID: <20071102200935.GA14153@rhlx01.hs-esslingen.de>
-References: <20071031211321.GA8363@rhlx01.hs-esslingen.de> <47290096.7080207@oracle.com> <20071101121133.GA14807@rhlx01.hs-esslingen.de> <20071101082457.ff9a5d67.randy.dunlap@oracle.com> <20071101221606.GA10116@rhlx01.hs-esslingen.de> <20071101160857.6e877307.rdunlap@xenotime.net> <20071102020118.GA13852@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071102020118.GA13852@gondor.apana.org.au>
-X-Priority: none
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Fri, 2 Nov 2007 16:10:49 -0400
+Date: Fri, 2 Nov 2007 13:10:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michael Halcrow <mhalcrow@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, ecryptfs-devel@lists.sourceforge.net,
+       trevor.highland@gmail.com
+Subject: Re: [PATCH 3/3] eCryptfs: Set inode key only once per crypto
+ operation
+Message-Id: <20071102131031.3369e6e6.akpm@linux-foundation.org>
+In-Reply-To: <20071102185308.GC30760@localhost.austin.ibm.com>
+References: <20071102185033.GB30487@localhost.austin.ibm.com>
+	<20071102185308.GC30760@localhost.austin.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 2 Nov 2007 13:53:08 -0500
+Michael Halcrow <mhalcrow@us.ibm.com> wrote:
 
-On Fri, Nov 02, 2007 at 10:01:18AM +0800, Herbert Xu wrote:
-> On Thu, Nov 01, 2007 at 04:08:57PM -0700, Randy Dunlap wrote:
-> > I think that this is the part that bothers me.  I can't find
-> > anything at
-> > http://www.opengroup.org/onlinepubs/000095399/utilities/xcu_chap02.html
-> > that says that this:
-> > 	EXTRAVER=${EXTRAVER%%[[:punct:]]*}
-> > 
-> > is invalid or even optional syntax.  OTOH, it does list such syntax,
+> There is no need to keep re-setting the same key for any given
+> eCryptfs inode. This patch optimizes the use of the crypto API and
+> helps performance a bit.
 > 
-> This is POSIX-compliant and has worked with dash from the very
-> start.
+> Signed-off-by: Trevor Highland <trevor.highland@gmail.com>
+> Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
 
-True (just verified again). But then I didn't actually say that this line
-is problematic. Since I had to replace the leading . replacement part already
-I decided to simply fold everything into one sed expression.
+I've inferred from this that Michael authored this patch.  Please
+let me know if that was incorrect.
 
-> Using variables without dollar signs in arithmetic expansion was
-> only added to dash very recently.  So please please talk to your
-> distribution maker to update their dash packages and it will work
-> correctly.
-
-"Debian stable.", aka "Update not an option.". Right?
-
-Since the specs list both possibilities I'd simply go with the safe one,
-the one that works on older dash versions, too.
-Unless adding a $ sign happens to break other equally important
-shells...
-
-> This usage is compliant with the most recent revision of POSIX
-> while earlier ones did not specifically require this (due to
-> the fact that assignment support was not required either).
-
-This is where I'd think the problem is. If dash once upon a time
-decided to support the $ variant only and the specs didn't list both
-at that time, well...
-
-The dash version on my system is 0.5.3-5, BTW. Even Debian testing
-has 0.5.3-7 only.
-I'm now quite certain on which side to tweak things ;)
-
-Thanks a lot for your review,
-
-Andreas Mohr
+The way in which we indicate authorship is to put a From: line right
+at the top of the changelog.  If no such line appears then the From:
+line from the mail headers is used.
