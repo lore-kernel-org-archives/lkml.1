@@ -1,113 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760705AbXKBR6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757350AbXKBR6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760705AbXKBR6Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 13:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760666AbXKBR6F
+	id S1757350AbXKBR6g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 13:58:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760839AbXKBR6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 13:58:05 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:59436 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756645AbXKBR6E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 13:58:04 -0400
-Date: Fri, 2 Nov 2007 10:38:02 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Eric Sandeen <sandeen@redhat.com>, Bodo Eggert <7eggert@gmx.de>
-Subject: [patch 5/9] minixfs: limit minixfs printks on corrupted dir i_size
-	(CVE-2006-6058)
-Message-ID: <20071102173802.GF6378@kroah.com>
-References: <20071102173359.709442489@mini.kroah.org>
+	Fri, 2 Nov 2007 13:58:20 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:41894 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756789AbXKBR6S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 13:58:18 -0400
+Message-ID: <472B652A.5000900@garzik.org>
+Date: Fri, 02 Nov 2007 13:58:02 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="minixfs-limit-minixfs-printks-on-corrupted-dir-i_size.patch"
-In-Reply-To: <20071102173733.GA6378@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+To: Daniel Drake <dsd@gentoo.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jens Axboe <jens.axboe@oracle.com>,
+       linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Tejun Heo <htejun@gmail.com>, Albert Lee <albertcc@tw.ibm.com>
+Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
+References: <47274A5F.6070409@gentoo.org>	<20071030153417.59b9182c@the-village.bc.nu>	<47276DCA.1000808@gentoo.org>	<20071030190153.373c9347@the-village.bc.nu>	<47278439.4030801@gentoo.org>	<20071031114958.210bd7cc@the-village.bc.nu>	<20071031115754.GK5059@kernel.dk>	<4729A0DF.20800@garzik.org>	<20071101105335.1f20bab3@the-village.bc.nu>	<4729B3EA.6040707@garzik.org> <20071101141501.3746cec2@the-village.bc.nu> <4729F1BB.20306@gentoo.org>
+In-Reply-To: <4729F1BB.20306@gentoo.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.22-stable review patch.  If anyone has any objections, please let us
-know.
+Daniel Drake wrote:
+> Again, ignore me if I'm not contributing anything useful, but I'm 
+> increasingly thinking that the SG_IO command block in question is 
+> perfectly valid, and doing a short read of the mode page in question 
+> (and probably others too) is in fact required before you can know its 
+> true size to do a full read anyway.
 
-------------------
-From: Eric Sandeen <sandeen@redhat.com>
 
-patch 44ec6f3f89889a469773b1fd894f8fcc07c29cf in mainline
+Correct -- I do not see anything wrong with the SCSI command being 
+passed to the device.
 
-This attempts to address CVE-2006-6058
-http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-6058
+It is quite normal to request an allocation length less than the amount 
+of data to be returned -- often this is even a requirement, in order for 
+the SCSI client to see how much data buffer is must allocate for the 
+returned data.
 
-first reported at http://projects.info-pull.com/mokb/MOKB-17-11-2006.html
+This technique is used all over SCSI, both in userland and in the 
+kernel.  Nothing wrong with the test app AFAICS.
 
-Essentially a corrupted minix dir inode reporting a very large
-i_size will loop for a very long time in minix_readdir, minix_find_entry,
-etc, because on EIO they just move on to try the next page.  This is
-under the BKL, printk-storming as well.  This can lock up the machine
-for a very long time.  Simply ratelimiting the printks gets things back
-under control.  Make the message a bit more informative while we're here.
+This behavior can be adequated summarized as a drive firmware bug, where 
+the device will puke when both SCSI allocation length and ATA byte count 
+limit are below the amount of data it wishes to return.
 
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
-Cc: Bodo Eggert <7eggert@gmx.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+At this point I think we're interested to see the output from Tejun's 
+debugging patch, posted in this thread.
 
----
- fs/minix/itree_v1.c |    9 +++++++--
- fs/minix/itree_v2.c |    9 +++++++--
- 2 files changed, 14 insertions(+), 4 deletions(-)
+	Jeff
 
---- a/fs/minix/itree_v1.c
-+++ b/fs/minix/itree_v1.c
-@@ -23,11 +23,16 @@ static inline block_t *i_data(struct ino
- static int block_to_path(struct inode * inode, long block, int offsets[DEPTH])
- {
- 	int n = 0;
-+	char b[BDEVNAME_SIZE];
- 
- 	if (block < 0) {
--		printk("minix_bmap: block<0\n");
-+		printk("MINIX-fs: block_to_path: block %ld < 0 on dev %s\n",
-+			block, bdevname(inode->i_sb->s_bdev, b));
- 	} else if (block >= (minix_sb(inode->i_sb)->s_max_size/BLOCK_SIZE)) {
--		printk("minix_bmap: block>big\n");
-+		if (printk_ratelimit())
-+			printk("MINIX-fs: block_to_path: "
-+			       "block %ld too big on dev %s\n",
-+				block, bdevname(inode->i_sb->s_bdev, b));
- 	} else if (block < 7) {
- 		offsets[n++] = block;
- 	} else if ((block -= 7) < 512) {
---- a/fs/minix/itree_v2.c
-+++ b/fs/minix/itree_v2.c
-@@ -23,12 +23,17 @@ static inline block_t *i_data(struct ino
- static int block_to_path(struct inode * inode, long block, int offsets[DEPTH])
- {
- 	int n = 0;
-+	char b[BDEVNAME_SIZE];
- 	struct super_block *sb = inode->i_sb;
- 
- 	if (block < 0) {
--		printk("minix_bmap: block<0\n");
-+		printk("MINIX-fs: block_to_path: block %ld < 0 on dev %s\n",
-+			block, bdevname(sb->s_bdev, b));
- 	} else if (block >= (minix_sb(inode->i_sb)->s_max_size/sb->s_blocksize)) {
--		printk("minix_bmap: block>big\n");
-+		if (printk_ratelimit())
-+			printk("MINIX-fs: block_to_path: "
-+			       "block %ld too big on dev %s\n",
-+				block, bdevname(sb->s_bdev, b));
- 	} else if (block < 7) {
- 		offsets[n++] = block;
- 	} else if ((block -= 7) < 256) {
 
--- 
