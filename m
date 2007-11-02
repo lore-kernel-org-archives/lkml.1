@@ -1,109 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbXKBRMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761214AbXKBRMr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759301AbXKBRMU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 13:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757768AbXKBRMH
+	id S1761214AbXKBRMr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 13:12:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757323AbXKBRMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 13:12:07 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:64248 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757609AbXKBRMF (ORCPT
+	Fri, 2 Nov 2007 13:12:35 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:59945 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756754AbXKBRMd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 13:12:05 -0400
-Subject: Re: Device mapper regression 2.6.23 vs. v2.6.23-6597-gcfa76f0
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Thomas Meyer <thomas@m3y3r.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dm-devel@redhat.com, Greg KH <greg@kroah.com>
-In-Reply-To: <472B5855.8080303@m3y3r.de>
-References: <471BA729.6050206@m3y3r.de>
-	 <20071029001832.05c0a372.akpm@linux-foundation.org>
-	 <1193659166.2773.12.camel@lov.site>  <472B5855.8080303@m3y3r.de>
-Content-Type: text/plain
-Date: Fri, 02 Nov 2007 18:12:00 +0100
-Message-Id: <1194023520.8053.5.camel@lov.site>
+	Fri, 2 Nov 2007 13:12:33 -0400
+Date: Fri, 2 Nov 2007 19:12:27 +0200
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: FUJITA Tomonori <tomof@acm.org>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       James.Bottomley@SteelEye.com, jens.axboe@oracle.com, jeff@garzik.org,
+       anil.s.keshavamurthy@intel.com, paulus@samba.org, anton@samba.org,
+       olof@lixom.net, tony.luck@intel.com, davem@davemloft.net,
+       kyle@parisc-linux.org, fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH -mm 0/3] convert IOMMUs to use iova
+Message-ID: <20071102171227.GH7975@rhun.haifa.ibm.com>
+References: <bfa0a387d445abb10ae67cf1541a6e20b9c0d31e.tomof@acm.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1+NSW9SwCpvCu5nijkN6vNhuXsurEKkm1RjfF9
- K3Id047oXz4WI4U+PZZXtx84cpxlSFGWQNI6MsHhzR+FgV2E5M
- B0ErNJHlXED+s0UkzkHK6kpBzd6MiyY
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <bfa0a387d445abb10ae67cf1541a6e20b9c0d31e.tomof@acm.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Nov 03, 2007 at 02:05:39AM +0900, FUJITA Tomonori wrote:
 
-On Fri, 2007-11-02 at 18:03 +0100, Thomas Meyer wrote:
-> Kay Sievers schrieb:
-> > On Mon, 2007-10-29 at 00:18 -0700, Andrew Morton wrote:
-> >   
-> >> On Sun, 21 Oct 2007 21:23:21 +0200 Thomas Meyer <thomas@m3y3r.de> wrote:
-> >>     
-> >>> I have an external hard drive with an encrypted partition. I am using
-> >>> kde so all i had to do under 2.6.23 was
-> >>>   "cryptsetup luksOpen /dev/sdb2 crypt-extern"
-> >>>
-> >>> then udev/hal/kde (?)automatically created an desktop icon. i could
-> >>> click this icon to mount and open the drive.
-> >>>
-> >>> when i do the luksOpen command with v2.6.23-6597-gcfa76f0 this icon is
-> >>> not created anymore.
-> >>>
-> >>> a few commits were made in drivers/md, so it seems something broke.
-> >>>
-> >>> config extract:
-> >>>
-> >>> CONFIG_MD=y
-> >>> # CONFIG_BLK_DEV_MD is not set
-> >>> CONFIG_BLK_DEV_DM=y
-> >>> # CONFIG_DM_DEBUG is not set
-> >>> CONFIG_DM_CRYPT=y
-> >>> CONFIG_DM_SNAPSHOT=m
-> >>> CONFIG_DM_MIRROR=m
-> >>> CONFIG_DM_ZERO=m
-> >>> # CONFIG_DM_MULTIPATH is not set
-> >>> CONFIG_DM_DELAY=m
-> >>> CONFIG_DM_UEVENT=y
-> >>> # CONFIG_FUSION is not set
-> >>>
-> >>> any ideas?
-> >>>
-> >>>       
-> >> Could be DM breakage, could be udev/sysfs breakage.  Is it still happening
-> >> in current mainline?
-> >>     
-> >
-> > There are no obvious changes, which I would expect to cause a breakage
-> > in this area. 
-> >
-> >> And how come I'm seeing unresponded-to-for-a-week regression
-> >> reports on lkml?
-> >>     
-> >
-> > It works fine with 2.6.24-rc1+ and GNOME, even without any initial shell
-> > command to set it up. Just inserting a LUKS volume, brings up a password
-> > dialog, and then mounts all automatically.
-> >
-> > There was a timing problem fix in HAL (in 0.5.10), maybe that is what
-> > happens here.
-> >   
-> Hal version is 0.5.9.1-r2.
+> This patchset convert the PPC64 IOMMU to use the iova code for free
+> area management.
 > 
-> to make things clear:
-> boot 2.6.23 doing "cryptsetup luksOpen /dev/sdb2 crypt-extern" -> kde
-> asks to mount new device
-> boot v2.6.24-rc1-497-gb1d08ac doing "cryptsetup luksOpen /dev/sdb2
-> crypt-extern" -> nothing happens in kde.
+> The IOMMUs ignores low level drivers' restrictions, the maximum
+> segment size and segment boundary.
 > 
-> same user land, different kernel.
+> I fixed the former:
+> 
+> http://thread.gmane.org/gmane.linux.scsi/35602
+> 
+> The latter makes the free area management complicated. I'd like to
+> convert IOMMUs to use the iova code (that intel-iommu introduced)
+> for free area management and enable iova to handle segment boundary
+> restrictions, rather than fixing all the IOMMUs' free area
+> management,
 
-Yeah, but I expect it to be a timing problem, which may show up with a
-new kernel. The kernel is maybe just that bit faster in the event
-generation, that it triggers a silly HAL bug. You probably need:
-  http://gitweb.freedesktop.org/?p=hal.git;a=commit;h=f3e160d0ab85f62b76400cb521b4d1b5813d0711
+In general it sounds like a great idea, but have you looked at what
+impact this has on the performance of the IO path?
 
-It's all fine here regarding LUKS volumes, therefore I wouldn't know
-what would be wrong at the kernel side.
-
-Kay
-
+Cheers,
+Muli
