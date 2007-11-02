@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762129AbXKCAEI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762533AbXKCAE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762129AbXKCAEI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 20:04:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761830AbXKCAAz
+	id S1762533AbXKCAE1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 20:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760835AbXKCAA7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 20:00:55 -0400
-Received: from mail.suse.de ([195.135.220.2]:41091 "EHLO mx1.suse.de"
+	Fri, 2 Nov 2007 20:00:59 -0400
+Received: from ns.suse.de ([195.135.220.2]:41103 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761810AbXKCAAy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 20:00:54 -0400
+	id S1761861AbXKCAA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 20:00:58 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
        Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 12/54] kset: convert gfs2 dlm to use kset_create
-Date: Fri,  2 Nov 2007 16:58:50 -0700
-Message-Id: <1194047972-9850-12-git-send-email-gregkh@suse.de>
+Subject: [PATCH 13/54] kset: convert dlm to use kset_create
+Date: Fri,  2 Nov 2007 16:58:51 -0700
+Message-Id: <1194047972-9850-13-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <20071102235758.GA9803@kroah.com>
 References: <20071102235758.GA9803@kroah.com>
@@ -28,46 +28,44 @@ Cc: Kay Sievers <kay.sievers@vrfy.org>
 Cc: Steven Whitehouse <swhiteho@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/gfs2/locking/dlm/sysfs.c |   22 ++++++++++++----------
- 1 files changed, 12 insertions(+), 10 deletions(-)
+ fs/dlm/lockspace.c |   20 +++++++++++---------
+ 1 files changed, 11 insertions(+), 9 deletions(-)
 
-diff --git a/fs/gfs2/locking/dlm/sysfs.c b/fs/gfs2/locking/dlm/sysfs.c
-index 93e66b2..9c351db 100644
---- a/fs/gfs2/locking/dlm/sysfs.c
-+++ b/fs/gfs2/locking/dlm/sysfs.c
-@@ -189,7 +189,7 @@ static struct kobj_type gdlm_ktype = {
- 	.sysfs_ops     = &gdlm_attr_ops,
+diff --git a/fs/dlm/lockspace.c b/fs/dlm/lockspace.c
+index 18e4a17..28c3cb4 100644
+--- a/fs/dlm/lockspace.c
++++ b/fs/dlm/lockspace.c
+@@ -166,7 +166,7 @@ static struct kobj_type dlm_ktype = {
+ 	.release       = lockspace_kobj_release,
  };
  
--static struct kset gdlm_kset;
-+static struct kset *gdlm_kset;
+-static struct kset dlm_kset;
++static struct kset *dlm_kset;
  
- int gdlm_kobject_setup(struct gdlm_ls *ls, struct kobject *fskobj)
+ static int kobject_setup(struct dlm_ls *ls)
  {
-@@ -201,7 +201,7 @@ int gdlm_kobject_setup(struct gdlm_ls *ls, struct kobject *fskobj)
+@@ -180,7 +180,7 @@ static int kobject_setup(struct dlm_ls *ls)
+ 	if (error)
  		return error;
- 	}
  
--	ls->kobj.kset = &gdlm_kset;
-+	ls->kobj.kset = gdlm_kset;
- 	ls->kobj.ktype = &gdlm_ktype;
- 	ls->kobj.parent = fskobj;
+-	ls->ls_kobj.kset = &dlm_kset;
++	ls->ls_kobj.kset = dlm_kset;
+ 	ls->ls_kobj.ktype = &dlm_ktype;
+ 	return 0;
+ }
+@@ -225,17 +225,19 @@ int dlm_lockspace_init(void)
+ 	INIT_LIST_HEAD(&lslist);
+ 	spin_lock_init(&lslist_lock);
  
-@@ -221,17 +221,19 @@ int gdlm_sysfs_init(void)
- {
- 	int error;
- 
--	kobject_set_name(&gdlm_kset.kobj, "lock_dlm");
--	gdlm_kset.kobj.kset = &kernel_subsys;
--	error = kset_register(&gdlm_kset);
+-	kobject_set_name(&dlm_kset.kobj, "dlm");
+-	dlm_kset.kobj.kset = &kernel_subsys;
+-	error = kset_register(&dlm_kset);
 -	if (error)
--		printk("lock_dlm: cannot register kset %d\n", error);
--
+-		printk("dlm_lockspace_init: cannot register kset %d\n", error);
 -	return error;
-+	gdlm_kset = kset_create_and_register("lock_dlm", NULL,
-+					     NULL, &kernel_subsys);
-+	if (IS_ERR(gdlm_kset)) {
-+		error = PTR_ERR(gdlm_kset);
++	dlm_kset = kset_create_and_register("dlm", NULL, NULL, &kernel_subsys);
++	if (IS_ERR(dlm_kset)) {
++		error = PTR_ERR(dlm_kset);
 +		printk(KERN_WARNING "%s: can not create kset %d\n",
 +		       __FUNCTION__, error);
 +		return error;
@@ -75,12 +73,13 @@ index 93e66b2..9c351db 100644
 +	return 0;
  }
  
- void gdlm_sysfs_exit(void)
+ void dlm_lockspace_exit(void)
  {
--	kset_unregister(&gdlm_kset);
-+	kset_unregister(gdlm_kset);
+-	kset_unregister(&dlm_kset);
++	kset_unregister(dlm_kset);
  }
  
+ static int dlm_scand(void *data)
 -- 
 1.5.3.4
 
