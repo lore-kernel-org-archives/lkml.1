@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbXKBPZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbXKBP04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756146AbXKBPZt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 11:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbXKBPZn
+	id S1756653AbXKBP04 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 11:26:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753716AbXKBP0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 11:25:43 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47961 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754115AbXKBPZm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 11:25:42 -0400
-Date: Fri, 2 Nov 2007 16:25:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: delayacct regression in 2.6.24 git
-Message-ID: <20071102152529.GB20134@elte.hu>
-References: <472B2908.7020507@linux.vnet.ibm.com>
+	Fri, 2 Nov 2007 11:26:49 -0400
+Received: from mail.gmx.net ([213.165.64.20]:57865 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753331AbXKBP0s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 11:26:48 -0400
+X-Authenticated: #704063
+X-Provags-ID: V01U2FsdGVkX187quIm2Ig7UrgyEc1bGpJqD1Y5ClXOSLNCXjIeLD
+	4EGYTioFypqjxn
+Date: Fri, 2 Nov 2007 16:26:35 +0100
+From: Eric Sesterhenn <snakebyte@gmx.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: oops in enqueue_entity with 2.6.24-rc1-g54866f03
+Message-ID: <20071102152635.GA18183@alice>
+References: <20071102123603.GA4988@alice> <200711021513.14425.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <472B2908.7020507@linux.vnet.ibm.com>
+In-Reply-To: <200711021513.14425.rjw@sisk.pl>
+X-Editor: Vim http://www.vim.org/
+X-Info: http://www.snake-basket.de
+X-Operating-System: Linux/2.6.24-rc1 (x86_64)
+X-Uptime: 16:25:34 up  5:36,  6 users,  load average: 0.00, 0.19, 0.31
 User-Agent: Mutt/1.5.16 (2007-06-09)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Rafael J. Wysocki (rjw@sisk.pl) wrote:
+> On Friday, 2 November 2007 13:36, Eric Sesterhenn wrote:
+> > hi,
+> > 
+> > I get the following crash with 2.6.24-rc1-g54866f03, the last version I
+> > tested which booted fine was 2.6.24-rc1-gb1d08ac0
+> 
+> Does 2.6.23 work correctly for you?
 
-* Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+2.6.23.1 does work fine, i also tested 2.6.24-rc1, 2.6.24-rc1-g2a397e82
+and 2.6.24-rc1-gb1d08ac0 which did well, so this is a recently
+introduced regression.
 
-> Hi, Ingo,
-> 
-> I missed commit 75d4ef16a6aa84f708188bada182315f80aab6fa
-> "sched: fix delay accounting performance regression"
-> 
-> Without these changes, I find that delay accounting does
-> not work as expected, I see zeros in the field for virtual,delay
-> and count(s).
-> 
-> CPU             count     real total  virtual total    delay total
->                     0      535861848              0              0
-> 
-> 
-> This breaks existing delay accounting behaviour.
-> 
-> Am I missing something?
+Eric
 
-delay accounting was causing context-switch slowdown because it called 
-sched_clock() explicitly - but indeed my fix to that is wrong ...
-
-how about reverting the change but also using rq->clock instead of 
-sched_clock()?
-
-	Ingo
