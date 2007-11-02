@@ -1,94 +1,255 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755060AbXKBLC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbXKBL32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755060AbXKBLC4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 07:02:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752430AbXKBLCt
+	id S1754833AbXKBL32 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 07:29:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbXKBL3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 07:02:49 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:52607 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752790AbXKBLCs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 07:02:48 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "w.landgraf" <w.landgraf@ool.fr>
-Subject: Re: kernel 2.6.24-rc1-git10 crash report
-Date: Fri, 2 Nov 2007 12:19:25 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <20071102082432.8665.qmail@andesite.ool.fr>
-In-Reply-To: <20071102082432.8665.qmail@andesite.ool.fr>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 2 Nov 2007 07:29:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:40567 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753018AbXKBL3T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 07:29:19 -0400
+Subject: [git pull] lockdep for v2.6.24-rc1
+From: Peter Zijlstra <peterz@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain
+Date: Fri, 02 Nov 2007 12:29:12 +0100
+Message-Id: <1194002952.27652.356.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711021219.25648.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 2 November 2007 09:24, w.landgraf wrote:
-> A detailed crash report is in your letter box
-> postmaster@vger.kernel.org .  It returned steady-steady
-> because was considered como spam by your mailer.
-> w.landgraf www.copaya.yi.org
+The following changes since commit 2a397e82c7db18019e408f953dd58dc1963a328c:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../bart/ide-2.6
 
-Can you please send a problem description, in plain text, first?
+are available in the git repository at:
 
-Thanks,
-Rafael
+  git://git.kernel.org/pub/scm/linux/kernel/git/peterz/linux-2.6-lockdep.git v2.6.24-rc1-lockdep
 
+Gautham R Shenoy (1):
+      lockdep: fix a typo in the __lock_acquire comment
+
+Peter Zijlstra (2):
+      lockdep: fixup irq tracing
+      sched: fix unconditional irq lock
+
+ arch/x86/kernel/kprobes_32.c  |    7 +------
+ arch/x86/kernel/kprobes_64.c  |    7 +------
+ arch/x86/kernel/traps_32.c    |    2 ++
+ arch/x86/kernel/traps_64.c    |    2 ++
+ arch/x86/mm/fault_32.c        |    5 +++++
+ arch/x86/mm/fault_64.c        |    5 +++++
+ include/asm-x86/irqflags_32.h |   21 +++++++++++++++++++++
+ include/asm-x86/irqflags_64.h |   20 ++++++++++++++++++++
+ kernel/lockdep.c              |    2 +-
+ kernel/sched_debug.c          |    5 +++--
+ 10 files changed, 61 insertions(+), 15 deletions(-)
+
+diff --git a/arch/x86/kernel/kprobes_32.c b/arch/x86/kernel/kprobes_32.c
+index 90f778c..d87a523 100644
+--- a/arch/x86/kernel/kprobes_32.c
++++ b/arch/x86/kernel/kprobes_32.c
+@@ -564,12 +564,7 @@ static int __kprobes post_kprobe_handler(struct pt_regs *regs)
  
-> > > On 1/Nov/2007 21:26 werner wrote ..
-> > > > On 1/Nov/2007 15:57 werner wrote ..
-> > > > > Kernel Crash -- Details see below
-> > > > > globc 2.7  glib2 2.14.2
-> > > > > W.Landgraf
-> > > > > www.copaya.yi.org
-> > > > >
-> =3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D=3D3D
-> > > > > 2.6.24-rc1-git10
-> > > > > EIP 0600: <c0407284> EFLAGS 00010212 CPU 0
-> > > > > EIUP is at xor_sse_2+0x34/0x200
-> > > > > EAX: 10 EBX fffedb22 ECX c183f000 EDX c183c000 ESS
-> 8005003b EDI c0929614
-> > EBP
-> > > > c183f000
-> > > > > ESP c1823ef0   
-> > > > > DS 7b ES 7b FS d8 GS 0 SS 68
-> > > > > Process swapper  pid 1  ti: c182200  task c1820000
-> task.ti c=3D3D1822000
-> > > > > Stack:  8x 0    8x 0   fffedb22  0  c04067b3  10 
-> c0849b62  c1030780  c183f000
-> > > > > c183c000
-> > > > > call trace
-> > > > > c0 4067b3 do_xor_speed+0x53/0xd0
-> > > > >    9a9582 calibrate_xor_blocks 0xe2/0x100 (or 1a0 ?)
-> > > > >   191594  register_filesystem =3D3D0X44/0X70
-> > > > >   991565 kernel_init+0x125/0x2f0
-> > > > >    10420a  ret_from_fork +0x6/0x1c  (or 0xb ...)
-> > > > >   991440 kernel_init+0x0/0x2f0
-> > > > >        " again
-> > > > >    c0104edf  kernel_thread_helper+0x7/0x18
-> > > > > code  08 89 74 24 44 0f 20 cf 0f 06 (or 0b) 0f 11 04
-> 24 0f 11 4c 34 10 0f
-> > 11
-> > > > 54
-> > > > > 24 20 0f 11 5c 24 30 0f 18 82 00
-> > > > > 01 00 00 0f 18 82 20 01 00 00 <00> 20x 0
-> > > > > EIP c0407284 xor_sse_2+0x34/0x200 SS ESP 068: c1823ef0
-> > > > > kernel panic
-> > > > >
-> > 
-> > THE REST OF THIS MESSAGE, SEE IN YOUR MAILBOX 
-> postmaster@vger.kernel.org  BECAUSE
-> > OF YOUR STUPID SPAM CONFIGURATION 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+ 	resume_execution(cur, regs, kcb);
+ 	regs->eflags |= kcb->kprobe_saved_eflags;
+-#ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT
+-	if (raw_irqs_disabled_flags(regs->eflags))
+-		trace_hardirqs_off();
+-	else
+-		trace_hardirqs_on();
+-#endif
++	trace_hardirqs_fixup_flags(regs->eflags);
+ 
+ 	/*Restore back the original saved kprobes variables and continue. */
+ 	if (kcb->kprobe_status == KPROBE_REENTER) {
+diff --git a/arch/x86/kernel/kprobes_64.c b/arch/x86/kernel/kprobes_64.c
+index 681b801..3db3611 100644
+--- a/arch/x86/kernel/kprobes_64.c
++++ b/arch/x86/kernel/kprobes_64.c
+@@ -551,12 +551,7 @@ int __kprobes post_kprobe_handler(struct pt_regs *regs)
+ 
+ 	resume_execution(cur, regs, kcb);
+ 	regs->eflags |= kcb->kprobe_saved_rflags;
+-#ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT
+-	if (raw_irqs_disabled_flags(regs->eflags))
+-		trace_hardirqs_off();
+-	else
+-		trace_hardirqs_on();
+-#endif
++	trace_hardirqs_fixup_flags(regs->eflags);
+ 
+ 	/* Restore the original saved kprobes variables and continue. */
+ 	if (kcb->kprobe_status == KPROBE_REENTER) {
+diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
+index cc9acac..298d13e 100644
+--- a/arch/x86/kernel/traps_32.c
++++ b/arch/x86/kernel/traps_32.c
+@@ -789,6 +789,8 @@ void restart_nmi(void)
+ #ifdef CONFIG_KPROBES
+ fastcall void __kprobes do_int3(struct pt_regs *regs, long error_code)
+ {
++	trace_hardirqs_fixup();
++
+ 	if (notify_die(DIE_INT3, "int3", regs, error_code, 3, SIGTRAP)
+ 			== NOTIFY_STOP)
+ 		return;
+diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
+index d0c2bc7..4a6bd49 100644
+--- a/arch/x86/kernel/traps_64.c
++++ b/arch/x86/kernel/traps_64.c
+@@ -807,6 +807,8 @@ asmlinkage __kprobes void default_do_nmi(struct pt_regs *regs)
+ /* runs on IST stack. */
+ asmlinkage void __kprobes do_int3(struct pt_regs * regs, long error_code)
+ {
++	trace_hardirqs_fixup();
++
+ 	if (notify_die(DIE_INT3, "int3", regs, error_code, 3, SIGTRAP) == NOTIFY_STOP) {
+ 		return;
+ 	}
+diff --git a/arch/x86/mm/fault_32.c b/arch/x86/mm/fault_32.c
+index 503dfc0..2e542e8 100644
+--- a/arch/x86/mm/fault_32.c
++++ b/arch/x86/mm/fault_32.c
+@@ -303,6 +303,11 @@ fastcall void __kprobes do_page_fault(struct pt_regs *regs,
+ 	int write, si_code;
+ 	int fault;
+ 
++	/*
++	 * We can fault from pretty much anywhere, with unknown IRQ state.
++	 */
++	trace_hardirqs_fixup();
++
+ 	/* get the address */
+         address = read_cr2();
+ 
+diff --git a/arch/x86/mm/fault_64.c b/arch/x86/mm/fault_64.c
+index 644b4f7..0e26230 100644
+--- a/arch/x86/mm/fault_64.c
++++ b/arch/x86/mm/fault_64.c
+@@ -304,6 +304,11 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
+ 	unsigned long flags;
+ 	siginfo_t info;
+ 
++	/*
++	 * We can fault from pretty much anywhere, with unknown IRQ state.
++	 */
++	trace_hardirqs_fixup();
++
+ 	tsk = current;
+ 	mm = tsk->mm;
+ 	prefetchw(&mm->mmap_sem);
+diff --git a/include/asm-x86/irqflags_32.h b/include/asm-x86/irqflags_32.h
+index d058b04..4c77200 100644
+--- a/include/asm-x86/irqflags_32.h
++++ b/include/asm-x86/irqflags_32.h
+@@ -129,6 +129,27 @@ static inline int raw_irqs_disabled(void)
+ 
+ 	return raw_irqs_disabled_flags(flags);
+ }
++
++/*
++ * makes the traced hardirq state match with the machine state
++ *
++ * should be a rarely used function, only in places where its
++ * otherwise impossible to know the irq state, like in traps.
++ */
++static inline void trace_hardirqs_fixup_flags(unsigned long flags)
++{
++	if (raw_irqs_disabled_flags(flags))
++		trace_hardirqs_off();
++	else
++		trace_hardirqs_on();
++}
++
++static inline void trace_hardirqs_fixup(void)
++{
++	unsigned long flags = __raw_local_save_flags();
++
++	trace_hardirqs_fixup_flags(flags);
++}
+ #endif /* __ASSEMBLY__ */
+ 
+ /*
+diff --git a/include/asm-x86/irqflags_64.h b/include/asm-x86/irqflags_64.h
+index 5341ea1..bb9163b 100644
+--- a/include/asm-x86/irqflags_64.h
++++ b/include/asm-x86/irqflags_64.h
+@@ -112,6 +112,26 @@ static inline int raw_irqs_disabled(void)
+ }
+ 
+ /*
++ * makes the traced hardirq state match with the machine state
++ *
++ * should be a rarely used function, only in places where its
++ * otherwise impossible to know the irq state, like in traps.
++ */
++static inline void trace_hardirqs_fixup_flags(unsigned long flags)
++{
++	if (raw_irqs_disabled_flags(flags))
++		trace_hardirqs_off();
++	else
++		trace_hardirqs_on();
++}
++
++static inline void trace_hardirqs_fixup(void)
++{
++	unsigned long flags = __raw_local_save_flags();
++
++	trace_hardirqs_fixup_flags(flags);
++}
++/*
+  * Used in the idle loop; sti takes one instruction cycle
+  * to complete:
+  */
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 55fe0c7..ed38bbf 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -2424,7 +2424,7 @@ static int __lock_acquire(struct lockdep_map *lock, unsigned int subclass,
+ 		return 0;
+ 
+ 	/*
+-	 * Calculate the chain hash: it's the combined has of all the
++	 * Calculate the chain hash: it's the combined hash of all the
+ 	 * lock keys along the dependency chain. We save the hash value
+ 	 * at every step so that we can get the current hash easily
+ 	 * after unlock. The chain hash is then used to cache dependency
+diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
+index e6fb392..415e5c3 100644
+--- a/kernel/sched_debug.c
++++ b/kernel/sched_debug.c
+@@ -80,6 +80,7 @@ print_task(struct seq_file *m, struct rq *rq, struct task_struct *p)
+ static void print_rq(struct seq_file *m, struct rq *rq, int rq_cpu)
+ {
+ 	struct task_struct *g, *p;
++	unsigned long flags;
+ 
+ 	SEQ_printf(m,
+ 	"\nrunnable tasks:\n"
+@@ -88,7 +89,7 @@ static void print_rq(struct seq_file *m, struct rq *rq, int rq_cpu)
+ 	"------------------------------------------------------"
+ 	"----------------------------------------------------\n");
+ 
+-	read_lock_irq(&tasklist_lock);
++	read_lock_irqsave(&tasklist_lock, flags);
+ 
+ 	do_each_thread(g, p) {
+ 		if (!p->se.on_rq || task_cpu(p) != rq_cpu)
+@@ -97,7 +98,7 @@ static void print_rq(struct seq_file *m, struct rq *rq, int rq_cpu)
+ 		print_task(m, rq, p);
+ 	} while_each_thread(g, p);
+ 
+-	read_unlock_irq(&tasklist_lock);
++	read_unlock_irqrestore(&tasklist_lock, flags);
+ }
+ 
+ void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+
