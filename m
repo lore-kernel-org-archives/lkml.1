@@ -1,182 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755920AbXKBObT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756180AbXKBOeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755920AbXKBObT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 10:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbXKBObL
+	id S1756180AbXKBOeR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 10:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbXKBOeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 10:31:11 -0400
-Received: from gate.crashing.org ([63.228.1.57]:37223 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753924AbXKBObK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 10:31:10 -0400
-Date: Fri, 2 Nov 2007 09:28:23 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-X-X-Sender: galak@blarg.am.freescale.net
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       nfs@lists.sourceforge.net, neilb@suse.de, bfields@fieldses.org,
-       chuck.lever@oracle.com, Andrew Morton <akpm@osdl.org>
-Subject: Re: LTP ustat01 test fails on NFSROOT
-In-Reply-To: <1193335168.7705.39.camel@heimdal.trondhjem.org>
-Message-ID: <Pine.LNX.4.64.0711020927530.25341@blarg.am.freescale.net>
-References: <CBDE987B-0713-4D62-8122-054183E75410@kernel.crashing.org> 
- <1193188894.27073.20.camel@heimdal.trondhjem.org> 
- <1954B8FA-6E29-4FB7-86B0-EA43AF8F2AAF@kernel.crashing.org> 
- <2B2C1270-60FB-4830-A62C-D0357D2E1FB3@kernel.crashing.org>
- <1193335168.7705.39.camel@heimdal.trondhjem.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 2 Nov 2007 10:34:07 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:51607 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753784AbXKBOeG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 10:34:06 -0400
+Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Greg KH <greg@kroah.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Miklos Szeredi <miklos@szeredi.hu>
+In-Reply-To: <1194013028.27652.387.camel@twins>
+References: <1193410087.6914.34.camel@twins>
+	 <1193412836.27652.11.camel@twins> <1193414147.2431.35.camel@lov.site>
+	 <1193429066.5648.35.camel@lappy> <1193447889.5648.44.camel@lappy>
+	 <20071027024033.GB29039@kroah.com> <1193474399.27652.15.camel@twins>
+	 <20071027160203.GA5709@kroah.com> <1193519317.5776.14.camel@lov.site>
+	 <1194009359.27652.377.camel@twins>
+	 <3ae72650711020650l37870e45yb853f888b4807116@mail.gmail.com>
+	 <1194013028.27652.387.camel@twins>
+Content-Type: text/plain
+Date: Fri, 02 Nov 2007 15:32:59 +0100
+Message-Id: <1194013979.2440.20.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18fA5s21+GyOpgCC2WC74phKPnEfcMDHkfwpxQ
+ Vp29YENshZvQbVTYZUCc8sFMg9+LmL8WrKLja/UxK+BiJmM+Pd
+ HKymnboDJr4cydIaVWGI3vyGjetRCS1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Oct 2007, Trond Myklebust wrote:
+On Fri, 2007-11-02 at 15:17 +0100, Peter Zijlstra wrote:
+> One more question,
+> 
+> I currently prefix the names with "bdi-", is that needed?
 
-> Could you please try the following patch?
->
-> Cheers
->   Trond
+Not really.
 
-Its a new month so I'll ping again about sending this fix upstream to
-linus for 2.6.24 :) ?
+> That is, if I give the bdi object a parent, how will it look?
+> Would a bdi device with name "sda" with a block device called "sda" as
+> parent look like: /sys/block/sda/sda? Or would if be
+> called /sys/block/sda/bdi:sda or just /sys/block/sda/bdi?
 
-- k
+The class devices as childs get their own subdirectory at the parent. So
+it would be /sys/block/sda/bdi/sda
 
-> --------------------------------- CUT HERE -----------------------------
-> From: Trond Myklebust <Trond.Myklebust@netapp.com>
-> Date: Thu, 25 Oct 2007 13:56:10 -0400
-> NFS: Fix the ustat() regression
->
-> Since 2.6.18, the superblock sb->s_root has been a dummy dentry with a
-> dummy inode. This breaks ustat(), which actually uses sb->s_root in a
-> vfstat() call.
->
-> Fix this by making the s_root a dummy alias to the directory inode that was
-> used when creating the superblock.
->
-> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-> ---
->
->  fs/nfs/getroot.c |   81 ++++++++++++++++++------------------------------------
->  1 files changed, 27 insertions(+), 54 deletions(-)
->
-> diff --git a/fs/nfs/getroot.c b/fs/nfs/getroot.c
-> index 522e5ad..0ee4384 100644
-> --- a/fs/nfs/getroot.c
-> +++ b/fs/nfs/getroot.c
-> @@ -43,6 +43,25 @@
->  #define NFSDBG_FACILITY		NFSDBG_CLIENT
->
->  /*
-> + * Set the superblock root dentry.
-> + * Note that this function frees the inode in case of error.
-> + */
-> +static int nfs_superblock_set_dummy_root(struct super_block *sb, struct inode *inode)
-> +{
-> +	/* The mntroot acts as the dummy root dentry for this superblock */
-> +	if (sb->s_root == NULL) {
-> +		sb->s_root = d_alloc_root(inode);
-> +		if (sb->s_root == NULL) {
-> +			iput(inode);
-> +			return -ENOMEM;
-> +		}
-> +		/* Circumvent igrab(): we know the inode is not being freed */
-> +		atomic_inc(&inode->i_count);
-> +	}
-> +	return 0;
-> +}
-> +
-> +/*
->   * get an NFS2/NFS3 root dentry from the root filehandle
->   */
->  struct dentry *nfs_get_root(struct super_block *sb, struct nfs_fh *mntfh)
-> @@ -54,33 +73,6 @@ struct dentry *nfs_get_root(struct super_block *sb, struct nfs_fh *mntfh)
->  	struct inode *inode;
->  	int error;
->
-> -	/* create a dummy root dentry with dummy inode for this superblock */
-> -	if (!sb->s_root) {
-> -		struct nfs_fh dummyfh;
-> -		struct dentry *root;
-> -		struct inode *iroot;
-> -
-> -		memset(&dummyfh, 0, sizeof(dummyfh));
-> -		memset(&fattr, 0, sizeof(fattr));
-> -		nfs_fattr_init(&fattr);
-> -		fattr.valid = NFS_ATTR_FATTR;
-> -		fattr.type = NFDIR;
-> -		fattr.mode = S_IFDIR | S_IRUSR | S_IWUSR;
-> -		fattr.nlink = 2;
-> -
-> -		iroot = nfs_fhget(sb, &dummyfh, &fattr);
-> -		if (IS_ERR(iroot))
-> -			return ERR_PTR(PTR_ERR(iroot));
-> -
-> -		root = d_alloc_root(iroot);
-> -		if (!root) {
-> -			iput(iroot);
-> -			return ERR_PTR(-ENOMEM);
-> -		}
-> -
-> -		sb->s_root = root;
-> -	}
-> -
->  	/* get the actual root for this mount */
->  	fsinfo.fattr = &fattr;
->
-> @@ -96,6 +88,10 @@ struct dentry *nfs_get_root(struct super_block *sb, struct nfs_fh *mntfh)
->  		return ERR_PTR(PTR_ERR(inode));
->  	}
->
-> +	error = nfs_superblock_set_dummy_root(sb, inode);
-> +	if (error != 0)
-> +		return ERR_PTR(error);
-> +
->  	/* root dentries normally start off anonymous and get spliced in later
->  	 * if the dentry tree reaches them; however if the dentry already
->  	 * exists, we'll pick it up at this point and use it as the root
-> @@ -241,33 +237,6 @@ struct dentry *nfs4_get_root(struct super_block *sb, struct nfs_fh *mntfh)
->
->  	dprintk("--> nfs4_get_root()\n");
->
-> -	/* create a dummy root dentry with dummy inode for this superblock */
-> -	if (!sb->s_root) {
-> -		struct nfs_fh dummyfh;
-> -		struct dentry *root;
-> -		struct inode *iroot;
-> -
-> -		memset(&dummyfh, 0, sizeof(dummyfh));
-> -		memset(&fattr, 0, sizeof(fattr));
-> -		nfs_fattr_init(&fattr);
-> -		fattr.valid = NFS_ATTR_FATTR;
-> -		fattr.type = NFDIR;
-> -		fattr.mode = S_IFDIR | S_IRUSR | S_IWUSR;
-> -		fattr.nlink = 2;
-> -
-> -		iroot = nfs_fhget(sb, &dummyfh, &fattr);
-> -		if (IS_ERR(iroot))
-> -			return ERR_PTR(PTR_ERR(iroot));
-> -
-> -		root = d_alloc_root(iroot);
-> -		if (!root) {
-> -			iput(iroot);
-> -			return ERR_PTR(-ENOMEM);
-> -		}
-> -
-> -		sb->s_root = root;
-> -	}
-> -
->  	/* get the info about the server and filesystem */
->  	error = nfs4_server_capabilities(server, mntfh);
->  	if (error < 0) {
-> @@ -289,6 +258,10 @@ struct dentry *nfs4_get_root(struct super_block *sb, struct nfs_fh *mntfh)
->  		return ERR_PTR(PTR_ERR(inode));
->  	}
->
-> +	error = nfs_superblock_set_dummy_root(sb, inode);
-> +	if (error != 0)
-> +		return ERR_PTR(error);
-> +
->  	/* root dentries normally start off anonymous and get spliced in later
->  	 * if the dentry tree reaches them; however if the dentry already
->  	 * exists, we'll pick it up at this point and use it as the root
->
+It's currently only implemented for class devices which get a bus device
+as a parent, but that will be for all parents, so that we prevent
+clashing names if devices from multiple subsystems get the same parent.
+See here for netdevs there is a "net" "glue directory":
+
+  $ ls -l /sys/class/net/eth0
+  /sys/class/net/eth0 -> ../../devices/pci0000:00/0000:00:1c.0/0000:02:00.0/net/eth0
+
+We needed this, because people complained that they can't name their
+netif "irq", because there is already an attribute at the parent with
+that name. :)
+
+When we get the "block as devices" patch merged, we can do the proper
+parent logic for bdi, and I'll add the same logic as we have for bus
+device parents today.
+
+Kay
+
