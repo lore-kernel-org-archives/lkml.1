@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758701AbXKBRFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758919AbXKBRH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758701AbXKBRFj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 13:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755178AbXKBRFa
+	id S1758919AbXKBRH2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 13:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755897AbXKBRHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 13:05:30 -0400
-Received: from 71-33-33-68.albq.qwest.net ([71.33.33.68]:45970 "EHLO
+	Fri, 2 Nov 2007 13:07:10 -0400
+Received: from 71-33-33-68.albq.qwest.net ([71.33.33.68]:45747 "EHLO
 	moria.ionkov.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754029AbXKBRF3 (ORCPT
+	with ESMTP id S1755760AbXKBRHI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 13:05:29 -0400
-Date: Fri, 2 Nov 2007 11:05:27 -0600
+	Fri, 2 Nov 2007 13:07:08 -0400
+Date: Fri, 2 Nov 2007 11:07:06 -0600
 From: Latchesar Ionkov <lucho@ionkov.net>
 To: v9fs-developer@lists.sourceforge.net
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 7/10] 9p: sysfs support for in-kenel servers
-Message-ID: <20071102170527.GH16063@ionkov.net>
+Subject: [PATCH 8/10] 9p: loopback transport
+Message-ID: <20071102170706.GI16063@ionkov.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,569 +23,430 @@ User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sysfs support for 9P servers.
-Every server type is represented as a directory in /sys/fs/9p/srv. Initially
-there is a single file in the directory -- 'clone'. Reading from the clone
-file creates a new instance of the file server and returns its id. Each
-instance is represented as a directory in /sys/fs/9p/srv/<file server>/. The
-file server instance can be controlled by the 'ctl' file in its directory.
-Currently the ctl file accepts the following commands:
-
-	listen-add <trans> <options>
-	listen-del <trans> <options>
-	destroy
-
-Example:
-	echo 'listen-add tcp port=564' > /sys/fs/9p/srv/ramfs/0/ctl
+9P loopback transport that can be used between 9P in-kernel servers and v9fs
+on the same machine.
 
 Signed-off-by: Latchesar Ionkov <lucho@ionkov.net>
 
 ---
- include/net/9p/srv.h |   24 +++-
- net/9p/srv.c         |  386 +++++++++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 405 insertions(+), 5 deletions(-)
+ net/9p/Kconfig      |    7 +
+ net/9p/Makefile     |    4 +
+ net/9p/trans_loop.c |  371 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 382 insertions(+), 0 deletions(-)
 
-diff --git a/include/net/9p/srv.h b/include/net/9p/srv.h
-index 72d011e..a81ae8f 100644
---- a/include/net/9p/srv.h
-+++ b/include/net/9p/srv.h
-@@ -69,11 +69,17 @@ struct p9srv {
- 	void			(*wstat)(struct p9srv_req *);
+diff --git a/net/9p/Kconfig b/net/9p/Kconfig
+index 979c781..ae341f0 100644
+--- a/net/9p/Kconfig
++++ b/net/9p/Kconfig
+@@ -23,6 +23,13 @@ config NET_9P_FD
+ 	  file descriptors.  TCP/IP is the default transport for 9p,
+ 	  so if you are going to use 9p, you'll likely want this.
  
- 	/* implementation specific */
-+	int			id;
- 	atomic_t		refcount;
- 	spinlock_t		lock;		/* covers all srv fields */
-+	unsigned long		status;
- 	struct list_head	conn_list;	/* all connections for srv */
- 	struct list_head	req_list;	/* requests not yet worked on */
- 	struct list_head	workreq_list;	/* requests being worked on */
-+	struct kobject		kobj;
-+	struct list_head	srv_list;	/* all servers of a type */
-+	struct list_head	lis_list;	/* all listeners for the srv */
-+	struct work_struct	shutwork;
- };
++config NET_9P_LOOP
++	depends on NET_9P
++	default y if NET_9P
++	tristate "9P Loopback Transport (Experimental)"
++	help
++	  Loopback transport.
++
+ config NET_9P_DEBUG
+ 	bool "Debug information"
+ 	depends on NET_9P
+diff --git a/net/9p/Makefile b/net/9p/Makefile
+index d143e4a..da05d35 100644
+--- a/net/9p/Makefile
++++ b/net/9p/Makefile
+@@ -1,5 +1,6 @@
+ obj-$(CONFIG_NET_9P) := 9pnet.o
+ obj-$(CONFIG_NET_9P_FD) += 9pnet_fd.o
++obj-$(CONFIG_NET_9P_LOOP) += 9pnet_loop.o
+ obj-$(CONFIG_NET_9P_SRV) += 9psrv.o
  
- struct p9srv_conn {
-@@ -90,6 +96,16 @@ struct p9srv_conn {
- 	wait_queue_head_t	reset_wqueue;
- };
+ 9pnet-objs := \
+@@ -10,6 +11,9 @@ obj-$(CONFIG_NET_9P_SRV) += 9psrv.o
+ 	fcprint.o \
+ 	util.o \
  
-+struct p9srv_type {
-+	spinlock_t		lock;
-+	char			*name;
-+	int			nextid;
-+	struct kobject		kobj;
-+	struct list_head	srv_list;	/* all servers of a type */
-+	struct list_head	stype_list;	/* all server types */
-+	struct p9srv*		(*create)(void);
++9pnet_loop-objs := \
++	trans_loop.o \
++
+ 9psrv-objs := \
+ 	srv.o \
+ 
+diff --git a/net/9p/trans_loop.c b/net/9p/trans_loop.c
+new file mode 100644
+index 0000000..7e7793b
+--- /dev/null
++++ b/net/9p/trans_loop.c
+@@ -0,0 +1,371 @@
++/*
++ * linux/fs/9p/trans_fd.c
++ *
++ * Loopback transport. Used for testing.
++ *
++ *  Copyright (C) 2007 by Latchesar Ionkov <lucho@ionkov.net>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License version 2
++ *  as published by the Free Software Foundation.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to:
++ *  Free Software Foundation
++ *  51 Franklin Street, Fifth Floor
++ *  Boston, MA  02111-1301  USA
++ *
++ */
++
++#include <linux/in.h>
++#include <linux/module.h>
++#include <linux/net.h>
++#include <linux/ipv6.h>
++#include <linux/errno.h>
++#include <linux/kernel.h>
++#include <linux/un.h>
++#include <linux/uaccess.h>
++#include <linux/inet.h>
++#include <linux/idr.h>
++#include <linux/file.h>
++#include <linux/parser.h>
++#include <net/9p/9p.h>
++#include <net/9p/transport.h>
++
++struct p9_trans_loop {
++	spinlock_t			lock;
++	char				*name;
++	struct p9_trans			*ctrans;
++	struct p9_trans			*strans;
++	struct p9_trans_listener	listener;
++	struct list_head		trans_list;
 +};
 +
- enum {
- 	/* connection status values */
- 	Reset = 1,		/* resetting */
-@@ -149,11 +165,11 @@ extern char *Enotfound;
- extern char *Eopen;
- extern char *Eexist;
- extern char *Enotempty;
--
-+extern struct kset p9srv_subsys;
- 
- struct p9srv *p9srv_srv_create(void);
- void p9srv_srv_stop(struct p9srv *srv);
--void p9srv_srv_destroy(struct p9srv *srv);
-+void p9srv_srv_shutdown(struct p9srv *srv);
- void p9srv_srv_start(struct p9srv *srv);
- void p9srv_respond(struct p9srv_req *req, struct p9_fcall *rc);
- void p9srv_respond_error(struct p9srv_req *req, char *ename, int ecode);
-@@ -165,5 +181,9 @@ void p9srv_conn_destroy(struct p9srv_conn *conn);
- struct p9srv_fid *p9srv_fid_find(struct p9srv_fidpool *fp, u32 fid);
- void p9srv_fid_incref(struct p9srv_fid *fid);
- void p9srv_fid_decref(struct p9srv_fid *fid);
-+struct p9srv_type *p9srv_type_register(char *name, struct p9srv *(*create)(void));
-+void p9srv_type_unregister(char *name);
-+int p9srv_listener_add(struct p9srv *, char *, char *);
-+int p9srv_listener_del(struct p9srv *, char *, char *);
- 
- #endif
-diff --git a/net/9p/srv.c b/net/9p/srv.c
-index 855ac70..e0c359b 100644
---- a/net/9p/srv.c
-+++ b/net/9p/srv.c
-@@ -37,6 +37,18 @@ struct p9srv_fidpool {
- 	struct hlist_head	hash[FID_HTABLE_SIZE];
- };
- 
-+struct p9srv_listener {
-+	struct p9_trans_listener	*listener;
-+	char				*name;
-+	char				*options;
-+	struct list_head		lis_list;
++struct p9_loop_opts {
++	char *name;
++};
++
++static struct p9_trans *p9lo_clt_create(const char *, char *);
++static void p9lo_clt_request(struct p9_trans *, struct p9_trans_req *);
++static int p9lo_clt_cancel(struct p9_trans *, struct p9_trans_req *);
++static void p9lo_clt_destroy(struct p9_trans *);
++static int p9lo_srv_create(struct p9_trans_loop *lt);
++static void p9lo_srv_destroy(struct p9_trans *);
++static int p9lo_srv_cancel(struct p9_trans *, struct p9_trans_req *);
++static void p9lo_srv_respond(struct p9_trans *, struct p9_trans_req *);
++static struct p9_trans_listener *p9lo_listener_create(char *);
++static void p9lo_trans_listener_destroy(struct p9_trans_listener *);
++
++static struct p9_trans_module p9lo_trans_mod = {
++	.name = "loop",
++	.maxsize = 65536,
++	.def = 0,
++	.create_client = p9lo_clt_create,
++	.create_listener = p9lo_listener_create,
 +};
 +
 +enum {
-+	/* p9srv status */
-+	Shutdown = 1,
++	Opt_name, Opt_err,
 +};
 +
- enum {
- 	/* p9srv_req status */
- 	Respond = 1,
-@@ -45,6 +57,8 @@ enum {
- };
- 
- struct workqueue_struct *p9srv_wq;
-+static DEFINE_SPINLOCK(p9srv_type_lock);
-+static LIST_HEAD(p9srv_type_list);
- 
- char *Eunknownfid = "unknown fid";
- EXPORT_SYMBOL(Eunknownfid);
-@@ -78,9 +92,12 @@ char *Eexist = "file or directory already exists";
- EXPORT_SYMBOL(Eexist);
- char *Enotempty = "directory not empty";
- EXPORT_SYMBOL(Enotempty);
-+decl_subsys_name(p9srv, srv, NULL, NULL);
-+EXPORT_SYMBOL(p9srv_subsys);
- 
- static void p9srv_srv_ref(struct p9srv *srv);
- static void p9srv_srv_unref(struct p9srv *srv);
-+static void p9srv_shut_work(struct work_struct *work);
- static void p9srv_conn_reset(struct p9srv_conn *conn, struct p9srv_req *vreq);
- static void p9srv_conn_respond(struct p9srv_req *req);
- static struct p9srv_fidpool *p9srv_fidpool_create(void);
-@@ -109,6 +126,14 @@ static void p9srv_stat(struct p9srv_req *);
- static void p9srv_wstat(struct p9srv_req *);
- static void p9srv_preq_work(struct work_struct *work);
- static void p9srv_conn_request(struct p9_trans *, struct p9_trans_req *req);
-+static void p9srv_type_release(struct kobject *);
-+static ssize_t p9srv_type_show(struct kobject *, struct attribute *, char *);
-+static ssize_t p9srv_type_store(struct kobject *, struct attribute *,
-+	const char *, size_t);
-+static void p9srv_srv_release(struct kobject *);
-+static ssize_t p9srv_srv_show(struct kobject *, struct attribute *, char *);
-+static ssize_t p9srv_srv_store(struct kobject *, struct attribute *,
-+	const char *, size_t);
- 
- static void (*p9srv_fcall[])(struct p9srv_req *) = {
- 	p9srv_version,		/* Tversion */
-@@ -144,6 +169,36 @@ static void (*p9srv_fcall_post[])(struct p9srv_req *) = {
- 	NULL,			/* Twstat */
- };
- 
-+static struct sysfs_ops p9srv_type_ops = {
-+	.show = p9srv_type_show,
-+	.store = p9srv_type_store,
++static match_table_t tokens = {
++	{Opt_name, "name=%s"},
++	{Opt_err, NULL},
 +};
 +
-+static struct kobj_type p9srv_type_ktype = {
-+	.release = p9srv_type_release,
-+	.sysfs_ops = &p9srv_type_ops,
-+};
++static DEFINE_MUTEX(p9lo_lock);
++static LIST_HEAD(p9lo_trans_list);
 +
-+static struct attribute p9srv_clone_attr = {
-+	.name = "clone",
-+	.mode = 0444,
-+};
++static void parse_opts(char *options, struct p9_loop_opts *opts)
++{
++	int token;
++	char *p;
++	substring_t args[MAX_OPT_ARGS];
 +
-+static struct sysfs_ops p9srv_srv_ops = {
-+	.show = p9srv_srv_show,
-+	.store = p9srv_srv_store,
-+};
-+
-+static struct kobj_type p9srv_srv_ktype = {
-+	.release = p9srv_srv_release,
-+	.sysfs_ops = &p9srv_srv_ops,
-+};
-+
-+static struct attribute p9srv_ctl_attr = {
-+	.name = "ctl",
-+	.mode = 0644,
-+};
-+
- struct p9srv *p9srv_srv_create(void)
- {
- 	struct p9srv *srv;
-@@ -156,10 +211,14 @@ struct p9srv *p9srv_srv_create(void)
- 
- 	memset(srv, 0, sizeof(struct p9srv));
- 	spin_lock_init(&srv->lock);
-+	srv->id = -1;
- 	atomic_set(&srv->refcount, 1);
-+	srv->status = 0;
- 	INIT_LIST_HEAD(&srv->conn_list);
- 	INIT_LIST_HEAD(&srv->req_list);
- 	INIT_LIST_HEAD(&srv->workreq_list);
-+	INIT_LIST_HEAD(&srv->lis_list);
-+	INIT_WORK(&srv->shutwork, p9srv_shut_work);
- 
- 	/* the values below may be overwritten by the creator */
- 	srv->msize = 65536 + P9_IOHDRSZ;
-@@ -171,12 +230,32 @@ struct p9srv *p9srv_srv_create(void)
- }
- EXPORT_SYMBOL(p9srv_srv_create);
- 
--void p9srv_srv_destroy(struct p9srv *srv)
-+void p9srv_srv_shutdown(struct p9srv *srv)
- {
--	P9_DPRINTK(P9SRV_DEBUG_SRV, "%p\n", srv);
-+	struct p9srv_listener *slis, *stmp;
-+	LIST_HEAD(lis_list);
-+
-+	if (test_and_set_bit(Shutdown, &srv->status))
++	opts->name = NULL;
++	if (!options)
 +		return;
 +
-+	P9_DPRINTK(P9SRV_DEBUG_SRV, "srv %p\n", srv);
-+	spin_lock(&srv->lock);
-+	list_for_each_entry_safe(slis, stmp, &srv->lis_list, lis_list) {
-+		list_move(&slis->lis_list, &lis_list);
++	while ((p = strsep(&options, ",")) != NULL) {
++		if (*p == '\0')
++			continue;
++
++		token = match_token(p, tokens, args);
++		switch (token) {
++		case Opt_name:
++			opts->name = match_strdup(&args[0]);
++			break;
++		default:
++			continue;
++		}
 +	}
-+	spin_unlock(&srv->lock);
-+
-+	list_for_each_entry_safe(slis, stmp, &lis_list, lis_list) {
-+		list_del(&slis->lis_list);
-+		(*slis->listener->destroy)(slis->listener);
-+		kfree(slis);
-+	}
-+
-+	sysfs_remove_file(&srv->kobj, &p9srv_ctl_attr);
-+	kobject_unregister(&srv->kobj);
- 	p9srv_srv_unref(srv);
- }
--EXPORT_SYMBOL(p9srv_srv_destroy);
-+EXPORT_SYMBOL(p9srv_srv_shutdown);
- 
- void p9srv_srv_ref(struct p9srv *srv)
- {
-@@ -200,6 +279,14 @@ void p9srv_srv_unref(struct p9srv *srv)
- 	}
- }
- 
-+static void p9srv_shut_work(struct work_struct *work)
-+{
-+	struct p9srv *srv;
-+
-+	srv = container_of(work, struct p9srv, shutwork);
-+	p9srv_srv_shutdown(srv);
 +}
 +
- void p9srv_srv_start(struct p9srv *srv)
- {
- 	P9_DPRINTK(P9SRV_DEBUG_SRV, "%p\n", srv);
-@@ -366,6 +453,289 @@ void p9srv_req_unref(struct p9srv_req *req)
- }
- EXPORT_SYMBOL(p9srv_req_unref);
- 
-+struct p9srv_type *p9srv_type_register(char *name,
-+	struct p9srv *(*create)(void))
++static struct p9_trans_loop *p9lo_trans_find(char *name)
 +{
-+	int err;
-+	struct p9srv_type *ret, *stype;
++	struct p9_trans_loop *lo;
 +
-+	ret = kzalloc(sizeof(*ret), GFP_KERNEL);
-+	if (!ret)
-+		return ERR_PTR(-ENOMEM);
++	mutex_lock(&p9lo_lock);
++	list_for_each_entry(lo, &p9lo_trans_list, trans_list) {
++		if (!strcmp(name, lo->name)) {
++			mutex_unlock(&p9lo_lock);
++			return lo;
++		}
++	}
++	mutex_unlock(&p9lo_lock);
++	return ERR_PTR(-ENOENT);
++}
 +
-+	spin_lock_init(&ret->lock);
-+	ret->name = name;
-+	ret->nextid = 0;
-+	INIT_LIST_HEAD(&ret->srv_list);
-+	INIT_LIST_HEAD(&ret->stype_list);
-+	ret->create = create;
++static struct p9_trans_loop *p9lo_trans_create(char *name)
++{
++	struct p9_trans_loop *lo;
 +
-+	spin_lock(&p9srv_type_lock);
-+	list_for_each_entry(stype, &p9srv_type_list, stype_list) {
-+		if (strcmp(name, stype->name) == 0) {
-+			spin_unlock(&p9srv_type_lock);
-+			kfree(ret);
++	mutex_lock(&p9lo_lock);
++	list_for_each_entry(lo, &p9lo_trans_list, trans_list) {
++		if (!strcmp(name, lo->name)) {
++			mutex_unlock(&p9lo_lock);
 +			return ERR_PTR(-EEXIST);
 +		}
 +	}
 +
-+	list_add_tail(&ret->stype_list, &p9srv_type_list);
-+	spin_unlock(&p9srv_type_lock);
++	lo = kmalloc(sizeof(*lo) + strlen(name) + 1, GFP_KERNEL);
++	spin_lock_init(&lo->lock);
++	lo->name = (char *) lo + sizeof(*lo);
++	strcpy(lo->name, name);
++	lo->ctrans = NULL;
++	lo->strans = NULL;
++	lo->listener.err = 0;
++	lo->listener.aux = NULL;
++	lo->listener.taux = lo;
++	lo->listener.newtrans = NULL;
++	lo->listener.destroy = p9lo_trans_listener_destroy;
++	list_add_tail(&lo->trans_list, &p9lo_trans_list);
++	mutex_unlock(&p9lo_lock);
 +
-+	kobject_init(&ret->kobj);
-+	kobject_set_name(&ret->kobj, "%s", name);
-+	ret->kobj.parent = &p9srv_subsys.kobj;
-+	ret->kobj.ktype = &p9srv_type_ktype;
-+	err = kobject_add(&ret->kobj);
-+	if (err)
-+		goto error;
-+
-+	err = sysfs_create_file(&ret->kobj, &p9srv_clone_attr);
-+	if (err)
-+		goto error;
-+
-+	return ret;
-+
-+error:
-+	kobject_unregister(&ret->kobj);
-+	/* kfree ??? */
-+	return ERR_PTR(err);
++	P9_DPRINTK(P9_DEBUG_TRANS, "trans %p\n", lo);
++	return lo;
 +}
-+EXPORT_SYMBOL(p9srv_type_register);
 +
-+void p9srv_type_unregister(char *name)
++static void p9lo_trans_destroy(struct p9_trans_loop *lo)
 +{
-+	struct p9srv_type *stype;
-+
-+	spin_lock(&p9srv_type_lock);
-+	list_for_each_entry(stype, &p9srv_type_list, stype_list) {
-+		if (strcmp(name, stype->name) == 0) {
-+			list_del(&stype->stype_list);
-+			spin_unlock(&p9srv_type_lock);
-+			sysfs_remove_file(&stype->kobj, &p9srv_clone_attr);
-+			kobject_unregister(&stype->kobj);
-+			/* kfree ??? */
-+			return;
-+		}
-+	}
-+	spin_unlock(&p9srv_type_lock);
-+}
-+EXPORT_SYMBOL(p9srv_type_unregister);
-+
-+static void p9srv_type_release(struct kobject *kobj)
-+{
++	if (lo->ctrans || lo->strans || !list_empty(&lo->trans_list))
++		return;
++	
++	kfree(lo);
 +}
 +
-+static ssize_t p9srv_type_show(struct kobject *kobj, struct attribute *attr,
-+	char *buf)
++static struct p9_trans *p9lo_clt_create(const char *devname, char *options)
 +{
 +	int err;
-+	struct p9srv_type *stype;
-+	struct p9srv *srv;
++	struct p9_trans *ctrans;
++	struct p9_trans_loop *lt;
++	struct p9_loop_opts opts;
 +
-+	stype = container_of(kobj, struct p9srv_type, kobj);
-+	srv = (*stype->create)();
-+	if (IS_ERR(srv))
-+		return PTR_ERR(srv);
++	parse_opts(options, &opts);
++	if (!opts.name)
++		return ERR_PTR(-ENOENT);
 +
-+	spin_lock(&stype->lock);
-+	srv->id = stype->nextid++;
-+	list_add_tail(&srv->srv_list, &stype->srv_list);
-+	spin_unlock(&stype->lock);
++	lt = p9lo_trans_find(opts.name);
++	if (IS_ERR(lt))
++		return (struct p9_trans *) lt;
 +
-+	kobject_init(&srv->kobj);
-+	kobject_set_name(&srv->kobj, "%d", srv->id);
-+	srv->kobj.parent = &stype->kobj;
-+	srv->kobj.ktype = &p9srv_srv_ktype;
-+	err = kobject_add(&srv->kobj);
-+	if (err)
-+		goto error;
++	ctrans = kmalloc(sizeof(*ctrans), GFP_KERNEL);
++	if (!ctrans)
++		return ERR_PTR(-ENOMEM);
 +
-+	err = sysfs_create_file(&srv->kobj, &p9srv_ctl_attr);
-+	if (err)
-+		goto error;
++	ctrans->err = 0;
++	ctrans->priv = lt;
++	ctrans->request = p9lo_clt_request;
++	ctrans->cancel = p9lo_clt_cancel;
++	ctrans->destroy = p9lo_clt_destroy;
 +
-+	return snprintf(buf, PAGE_SIZE, "%d", srv->id);
-+
-+error:
-+	spin_lock(&stype->lock);
-+	list_del(&srv->srv_list);
-+	spin_unlock(&stype->lock);
-+	kobject_unregister(&srv->kobj);
-+	/* kfree ??? */
-+	return err;
-+}
-+
-+static ssize_t p9srv_type_store(struct kobject *kobj, struct attribute *attr,
-+	const char *buf, size_t buflen)
-+{
-+	return -EPERM;
-+}
-+
-+static void p9srv_srv_release(struct kobject *kobj)
-+{
-+}
-+
-+static ssize_t p9srv_srv_show(struct kobject *kobj, struct attribute *attr,
-+	char *buf)
-+{
-+	struct p9srv *srv;
-+
-+	srv = container_of(kobj, struct p9srv, kobj);
-+	return snprintf(buf, PAGE_SIZE, "%d\n", srv->id);
-+}
-+
-+static ssize_t p9srv_srv_store(struct kobject *kobj, struct attribute *attr,
-+	const char *buf, size_t buflen)
-+{
-+	int n, err;
-+	char *args[7];
-+	char *p, *ep;
-+	struct p9srv *srv;
-+
-+	srv = container_of(kobj, struct p9srv, kobj);
-+	if (test_bit(Shutdown, &srv->status))
-+		return -ENOENT;
-+
-+	p = (char *) buf;
-+	ep = (char *) buf + buflen - 1;
-+	while (*ep == '\n')
-+		ep--;
-+
-+	ep++;
-+	*ep = '\0';
-+	P9_DPRINTK(P9SRV_DEBUG_SRV, "buf '%s'\n", p);
-+	for(n = 0; n < ARRAY_SIZE(args) && p < ep; n++) {
-+		args[n] = p;
-+		p = strchr(p, ' ');
-+		if (!p)
-+			break;
-+
-+		*p = '\0';
-+		p++;
++	spin_lock(&lt->lock);
++	if (lt->ctrans || lt->strans) {
++		spin_unlock(&lt->lock);
++		kfree(ctrans);
++		return ERR_PTR(-EEXIST);
 +	}
 +
-+	while (*args[n] == '\0')
-+		n--;
++	lt->ctrans = ctrans;
++	spin_unlock(&lt->lock);
 +
-+	n++;
-+	if (n == 0)
-+		return -EINVAL;
-+
-+	if (strcmp(args[0], "listen-add") == 0) {
-+		if (n == 2)
-+			args[2] = NULL;
-+		else if (n < 2 || n > 3)
-+			return -EINVAL;
-+
-+		err = p9srv_listener_add(srv, args[1], args[2]);
-+		if (err)
-+			return err;
-+	} else if (strcmp(args[0], "listen-del") == 0) {
-+		if (n == 2)
-+			args[2] = NULL;
-+		else if (n < 2 || n > 3)
-+			return -EINVAL;
-+
-+		err = p9srv_listener_del(srv, args[1], args[2]);
-+		if (err)
-+			return err;
-+	} else if (strcmp(args[0], "shutdown") == 0) {
-+		/* we can't call p9srv_shutdown directly because
-+		   kobject_unregister will wait for the kobject
-+		   that we hold to be freed (and that won't happen) */
-+		queue_work(p9srv_wq, &srv->shutwork);
-+	} else {
-+		return -EINVAL;
++	err = p9lo_srv_create(lt);
++	if (err) {
++		spin_lock(&lt->lock);
++		lt->ctrans = NULL;
++		spin_unlock(&lt->lock);
++		kfree(ctrans);
++		return ERR_PTR(err);
 +	}
 +
-+	return buflen;
++	P9_DPRINTK(P9_DEBUG_TRANS, "trans %p ctrans %p\n", ctrans->priv,
++		ctrans);
++
++	return ctrans;
 +}
 +
-+static void p9srv_newtrans(struct p9_trans_listener *l, struct p9_trans *trans)
++static void p9lo_clt_destroy(struct p9_trans *ctrans)
 +{
-+	struct p9srv *srv;
++	struct p9_trans_loop *lt;
 +
-+	srv = l->aux;
-+	if (!trans) {
-+		P9_DPRINTK(P9SRV_DEBUG_SRV, "listener err %d\n", l->err);
++	lt = ctrans->priv;
++	spin_lock(&lt->lock);
++	lt->ctrans = NULL;
++	if (lt->strans)
++		lt->strans->err = -EIO;
++	spin_unlock(&lt->lock);
++
++	if (lt->strans)
++		(*lt->strans->request)(lt->strans, NULL);
++
++	p9lo_trans_destroy(lt);
++}
++
++static void p9lo_clt_request(struct p9_trans *trans, struct p9_trans_req *creq)
++{
++	struct p9_trans_req *sreq;
++	struct p9_trans_loop *lt;
++
++	lt = trans->priv;
++	P9_DPRINTK(P9_DEBUG_TRANS, "trans %p ctrans %p\n", lt, trans);
++	sreq = kmalloc(sizeof(*sreq), GFP_KERNEL);
++	sreq->tag = creq->tag;
++	sreq->err = 0;
++	sreq->tc = creq->tc;
++	sreq->rc = creq->rc;
++	sreq->cb = p9lo_srv_respond;
++	sreq->cba = NULL;
++	sreq->aux = creq;
++	INIT_LIST_HEAD(&sreq->req_list);
++
++	spin_lock(&lt->lock);
++	if (!lt->strans) {
++		lt->strans->err = -EIO;
++		spin_unlock(&lt->lock);
 +		return;
 +	}
++	spin_unlock(&lt->lock);
 +
-+	if (test_bit(Shutdown, &srv->status)) {
-+		(*trans->destroy)(trans);
-+		return;
-+	}
-+
-+	p9srv_conn_create(srv, trans);
++	(*lt->strans->request)(lt->strans, sreq);
 +}
 +
-+
-+int p9srv_listener_add(struct p9srv *srv, char *lname, char *options)
++static int p9lo_clt_cancel(struct p9_trans *trans, struct p9_trans_req *req)
 +{
-+	substring_t tname;
-+	struct p9_trans_module *tmod;
-+	struct p9_trans_listener *lis;
-+	struct p9srv_listener *slis;
-+
-+	P9_DPRINTK(P9SRV_DEBUG_SRV, "listener '%s' options '%s'\n",
-+		lname, options);
-+	tname.from = lname;
-+	tname.to = lname + strlen(lname);
-+	tmod = v9fs_match_trans(&tname);
-+	if (!tmod)
-+		return -ENOENT;
-+
-+	lis = tmod->create_listener(options);
-+	if (IS_ERR(lis))
-+		return PTR_ERR(lis);
-+
-+	lis->newtrans = p9srv_newtrans;
-+	lis->aux = srv;
-+
-+	slis = kmalloc(sizeof(*slis) + strlen(lname) + strlen(options) + 2,
-+		GFP_KERNEL);
-+	if (!slis) {
-+		(*lis->destroy)(lis);
-+		return -ENOMEM;
-+	}
-+
-+	slis->listener = lis;
-+	slis->name = (char *) slis + sizeof(*slis);
-+	slis->options = slis->name + strlen(lname) + 1;
-+	strcpy(slis->name, lname);
-+	strcpy(slis->options, options);
-+	INIT_LIST_HEAD(&slis->lis_list);
-+	spin_lock(&srv->lock);
-+	list_add_tail(&slis->lis_list, &srv->lis_list);
-+	spin_unlock(&srv->lock);
-+
 +	return 0;
 +}
-+EXPORT_SYMBOL(p9srv_listener_add);
 +
-+int p9srv_listener_del(struct p9srv *srv, char *lname, char *options)
++static int p9lo_srv_create(struct p9_trans_loop *lt)
 +{
-+	struct p9srv_listener *slis;
++	struct p9_trans *strans;
 +
-+	P9_DPRINTK(P9SRV_DEBUG_SRV, "listener '%s' options '%s'\n",
-+		lname, options);
-+	spin_lock(&srv->lock);
-+	list_for_each_entry(slis, &srv->lis_list, lis_list) {
-+		if (!strcmp(lname, slis->name) &&
-+					!strcmp(options, slis->options)) {
-+			list_del(&slis->lis_list);
-+			spin_unlock(&srv->lock);
-+			(*slis->listener->destroy)(slis->listener);
-+			kfree(slis);
-+			return 0;
-+		}
++	strans = kmalloc(sizeof(*strans), GFP_KERNEL);
++	if (!strans)
++		return -ENOMEM;
++
++	strans->err = 0;
++	strans->priv = lt;
++	strans->request = NULL;
++	strans->cancel = p9lo_srv_cancel;
++	strans->destroy = p9lo_srv_destroy;
++
++	spin_lock(&lt->lock);
++	if (lt->strans) {
++		spin_unlock(&lt->lock);
++		kfree(strans);
++		return -EEXIST;
 +	}
 +
-+	return -ENOENT;
++	lt->strans = strans;
++	spin_unlock(&lt->lock);
++
++	P9_DPRINTK(P9_DEBUG_TRANS, "trans %p strans %p\n", strans->priv,
++		strans);
++
++	(*lt->listener.newtrans)(&lt->listener, strans);
++	return 0;
 +}
-+EXPORT_SYMBOL(p9srv_listener_del);
 +
- static void p9srv_version(struct p9srv_req *req)
- {
- 	int msize;
-@@ -1258,17 +1628,27 @@ void p9srv_conn_respond(struct p9srv_req *req)
- 
- static int __init p9srv_init(void)
- {
-+	int err;
++static void p9lo_srv_destroy(struct p9_trans *strans)
++{
++	struct p9_trans_loop *trans;
 +
- 	p9srv_wq = create_workqueue("9psrv");
- 	if (!p9srv_wq) {
- 		printk(KERN_WARNING "9psrv: creating workqueue failed\n");
- 		return -ENOMEM;
- 	}
- 
-+	kobj_set_kset_s(&p9srv_subsys, p9_subsys);
-+	err = subsystem_register(&p9srv_subsys);
-+	if (err) {
-+		destroy_workqueue(p9srv_wq);
-+		return err;
++	trans = strans->priv;
++	spin_lock(&trans->lock);
++	trans->strans = NULL;
++	if (trans->ctrans)
++		trans->ctrans->err = -EIO;
++	spin_unlock(&trans->lock);
++}
++
++static int p9lo_srv_cancel(struct p9_trans *trans, struct p9_trans_req *req)
++{
++	return 0;
++}
++
++static void p9lo_srv_respond(struct p9_trans *trans, struct p9_trans_req *sreq)
++{
++	struct p9_trans_loop *t;
++	struct p9_trans_req *creq;
++
++	t = trans->priv;
++	creq = sreq->aux;
++
++	if (sreq->rc != creq->rc) {
++		kfree(creq->rc);
++		creq->rc = sreq->rc;
 +	}
 +
- 	return 0;
- }
- 
- static void __exit p9srv_exit(void)
- {
-+	subsystem_unregister(&p9srv_subsys);
- 	destroy_workqueue(p9srv_wq);
- 	p9srv_wq = NULL;
- }
++	kfree(sreq);
++	P9_DPRINTK(P9_DEBUG_TRANS, "id %d size %d\n", creq->rc->id, creq->rc->size);
++	(*creq->cb)(t->ctrans, creq);
++}
++
++static struct p9_trans_listener *p9lo_listener_create(char *options)
++{
++	struct p9_trans_loop *lt;
++	struct p9_loop_opts opts;
++
++	parse_opts(options, &opts);
++	if (!opts.name)
++		return ERR_PTR(-ENOENT);
++
++	lt = p9lo_trans_create(opts.name);
++	if (IS_ERR(lt))
++		return (struct p9_trans_listener *) lt;
++
++	return &lt->listener;
++}
++
++static void p9lo_trans_listener_destroy(struct p9_trans_listener *lis)
++{
++	struct p9_trans_loop *lt;
++
++	lt = lis->taux;
++	mutex_lock(&p9lo_lock);
++	list_del(&lt->trans_list);
++	mutex_unlock(&p9lo_lock);
++	p9lo_trans_destroy(lt);
++}
++
++static int __init p9lo_init(void)
++{
++	v9fs_register_trans(&p9lo_trans_mod);
++
++	return 1;
++}
++
++static void __exit p9lo_exit(void) {
++	printk(KERN_ERR "Removal of 9p transports not implemented\n");
++	BUG();
++}
++
++module_init(p9lo_init);
++module_exit(p9lo_exit);
++
++MODULE_AUTHOR("Latchesar Ionkov <lucho@ionkov.net>");
++MODULE_LICENSE("GPL");
