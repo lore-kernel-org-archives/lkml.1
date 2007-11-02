@@ -1,126 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761241AbXKBWS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761491AbXKBWTX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761241AbXKBWS0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 18:18:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755227AbXKBWST
+	id S1761491AbXKBWTX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 18:19:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757452AbXKBWTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 18:18:19 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:59044 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755222AbXKBWST (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 18:18:19 -0400
-X-Greylist: delayed 4045 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 Nov 2007 18:18:18 EDT
-Date: Fri, 2 Nov 2007 22:10:50 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: perex@suse.cz
-Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] Use list_for_each_entry instead of list_for_each in sound/oss
- drivers.
-Message-ID: <Pine.LNX.4.64.0711022207140.489@ask.diku.dk>
+	Fri, 2 Nov 2007 18:19:14 -0400
+Received: from ioctl.codeblau.de ([80.190.240.67]:53942 "EHLO codeblau.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755472AbXKBWTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 18:19:13 -0400
+Date: Fri, 2 Nov 2007 23:19:12 +0100
+From: Felix von Leitner <felix-linuxkernel@fefe.de>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: TCP_DEFER_ACCEPT issues
+Message-ID: <20071102221912.GB4354@codeblau.de>
+References: <20071102013321.GA30893@codeblau.de> <472AD0AE.50106@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <472AD0AE.50106@cosmosbay.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+Thus spake Eric Dumazet (dada1@cosmosbay.com):
+> 1) Setting a timeout in a millisecond range (< 1000) is not very good 
+> because some clients may need much more time to send your server the data 
+> (very long distance). So a second granularity is OK.
 
-Combine list_for_each and list_entry into list_for_each_entry.
+I want millisecond accuracy for consistency.  select and poll have it,
+we have a 1000 Hz timer, we should also expose that accuracy.  I don't
+want to have sub second timeouts, in case you were wondering.
 
-An excerpt of the semantic patch implementing these changes is as follows:
+> 2) After timeout is elapsed, the server tcp stack has no socket associated 
+> to your client attempt. So closing the server listening socket wont be able 
+> to send RST. I agree a RST *should* be sent by the server once the timeout 
+> is triggered.
 
-@ra@
-type T,T1;
-identifier I, x;
-expression E, E1, E2;
-iterator list_for_each_entry;
-@@
+I don't see any evidence for a timeout happening at all.
+I passed 1 as argument to the setsockopt, so I'd expect a timeout to
+happen pretty quickly.  There was no connection reset until I Ctrl-C'd
+the server 15 minuets (!) laster.
 
-   <... when != _Y(I)
-- list_for_each(_X(I),E1)
-+ list_for_each_entry(x,E1,E2)
-   {
-       ... when != \(_Y(I)\|_X(I)\|x=E\)
- 	  when != T1 x;
--     x = list_entry(_X(I),T,E2);
-       ... when != \(_Y(I)\|_X(I)\|x=E\)
-   }
-   ...>
+> A typical tcpdump of what is happening for a tcp_defer_accept timeout of 20 
+> seconds is :
 
-@@
-type T;
-identifier I;
-expression E1, E2;
-@@
+> [1]08:52:47.480291 IP client.60930 > server.http: S 
+> 2498995442:2498995442(0) win 5840 <mss 1460,sackOK,timestamp 2685904595 
+> 0,nop,wscale 2>
+> [2]08:52:47.480302 IP server.http > client.60930: S 
+> 1173302644:1173302644(0) ack 2498995443 win 5840 <mss 1460>
+> [3]08:52:47.481669 IP client.60930 > server.http: . ack 1 win 5840
 
-- struct list_head *I;
-+ T *I;
-   <+... when != _Y(I)
-- list_for_each(_X(I),E1)
-+ list_for_each_entry(I,E1,E2)
-   {
-       <+... when != _Y(I)
--     list_entry(_X(I),T,E2)
-+     I
-       ...+>
-   }
-   ...+>
+> [4]08:52:50.757543 IP server.http > client.60930: S 
+> 1173302644:1173302644(0) ack 2498995443 win 5840 <mss 1460>
+> [5]08:52:50.758953 IP client.60930 > server.http: . ack 1 win 5840
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
----
+> [6]08:52:56.760611 IP server.http > client.60930: S 
+> 1173302644:1173302644(0) ack 2498995443 win 5840 <mss 1460>
+> [7]08:52:56.761886 IP client.60930 > server.http: . ack 1 win 5840
 
-diff -u -p -b -B a/sound/oss/ac97_codec.c b/sound/oss/ac97_codec.c
---- a/sound/oss/ac97_codec.c 2007-06-02 22:32:47.000000000 +0200
-+++ b/sound/oss/ac97_codec.c 2007-11-02 07:27:37.000000000 +0100
-@@ -815,7 +815,6 @@ int ac97_probe_codec(struct ac97_codec *
-  	int i;
-  	char cidbuf[CODEC_ID_BUFSZ];
-  	u16 f;
--	struct list_head *l;
-  	struct ac97_driver *d;
+> [8]08:53:08.771254 IP server.http > client.60930: S 
+> 1173302644:1173302644(0) ack 2498995443 win 5840 <mss 1460>
+> [9]08:53:08.772514 IP client.60930 > server.http: . ack 1 win 5840
 
-  	/* wait for codec-ready state */
-@@ -891,8 +890,7 @@ int ac97_probe_codec(struct ac97_codec *
-  	mutex_lock(&codec_mutex);
-  	list_add(&codec->list, &codecs);
+> [10]08:53:32.782488 IP server.http > client.60930: S 
+> 1173302644:1173302644(0) ack 2498995443 win 5840 <mss 1460>
+> [11]08:53:32.783754 IP client.60930 > server.http: . ack 1 win 5840
 
--	list_for_each(l, &codec_drivers) {
--		d = list_entry(l, struct ac97_driver, list);
-+	list_for_each_entry(d, &codec_drivers, list) {
-  		if ((codec->model ^ d->codec_id) & d->codec_mask)
-  			continue;
-  		if(d->probe(codec, d) == 0)
-@@ -1400,14 +1398,12 @@ EXPORT_SYMBOL(ac97_set_adc_rate);
+> <a very long time, then client finally sends 2 bytes>
 
-  static int swap_headphone(int remove_master)
-  {
--	struct list_head *l;
-  	struct ac97_codec *c;
+> [12]08:59:30.509097 IP client.60930 > server.http: P 1:3(2) ack 1 win 5840
+> [13]08:59:30.509125 IP server.http > client.60930: R 
+> 1173302645:1173302645(0) win 0
 
-  	if (remove_master) {
-  		mutex_lock(&codec_mutex);
--		list_for_each(l, &codecs)
-+		list_for_each_entry(c, &codecs, list)
-  		{
--			c = list_entry(l, struct ac97_codec, list);
-  			if (supported_mixer(c, SOUND_MIXER_PHONEOUT))
-  				c->supported_mixers &= ~SOUND_MASK_PHONEOUT;
-  		}
-diff -u -p -b -B a/sound/oss/swarm_cs4297a.c b/sound/oss/swarm_cs4297a.c
---- a/sound/oss/swarm_cs4297a.c 2007-06-02 22:32:47.000000000 +0200
-+++ b/sound/oss/swarm_cs4297a.c 2007-11-02 07:27:46.000000000 +0100
-@@ -1532,14 +1532,12 @@ static int cs4297a_open_mixdev(struct in
-  {
-  	int minor = iminor(inode);
-  	struct cs4297a_state *s=NULL;
--	struct list_head *entry;
+I see this, too.  If I connect and not send something, I expected the
+kernel to drop the connection when the timeout is reached.  Nothing like
+that happens.
 
-  	CS_DBGOUT(CS_FUNCTION | CS_OPEN, 4,
-  		  printk(KERN_INFO "cs4297a: cs4297a_open_mixdev()+\n"));
+> So TCP_DEFER_ACCEPT might send way more packets than needed.
 
--	list_for_each(entry, &cs4297a_devs)
-+	list_for_each_entry(s, &cs4297a_devs, list)
-  	{
--		s = list_entry(entry, struct cs4297a_state, list);
-  		if(s->dev_mixer == minor)
-  			break;
-  	}
+Only in the face of attackers, and after the handshake.  I could live
+with that.  If the timeout happened.
+
+> We only should wait for the data coming from the client to be able to pass 
+> the new socket to the listening application.
+
+Yes.  And we should send a RST if no data is coming in within the
+timeout, which is not happening for me (2.6.23).
+
+Felix
