@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757353AbXKBP33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757130AbXKBP3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757353AbXKBP33 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 11:29:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756533AbXKBP3Q
+	id S1757130AbXKBP3w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 11:29:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755319AbXKBP3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 11:29:16 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:47671 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756379AbXKBP3P (ORCPT
+	Fri, 2 Nov 2007 11:29:41 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50047 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755218AbXKBP3k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 11:29:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hEhS1lHzHjWcL4gN0W6Fj0c5wSjsHPpHW/z4nuMJOGw3gL0NJTgcARwNfJ0suyNt4P2BbaxsljfB3eU5PnrpdKJ0UgIz58fENDjV0p/QY4O/Oit4afZ62hvc/yLCYDuGIjVeDuLSWKHV/pPjJBFZAsG8K2z97BuBebU9eRkq6QE=
-Message-ID: <e2e108260711020829p5994f79bp48ca35a1ce84ff03@mail.gmail.com>
-Date: Fri, 2 Nov 2007 16:29:13 +0100
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Andrew Haley" <aph@redhat.com>
-Subject: Re: Is gcc thread-unsafe?
-Cc: "David Schwartz" <davids@webmaster.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Tomash Brechko" <tomash.brechko@gmail.com>
-In-Reply-To: <18215.1394.294830.944162@zebedee.pink>
+	Fri, 2 Nov 2007 11:29:40 -0400
+Date: Fri, 2 Nov 2007 08:29:38 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       mathieu.desnoyers@polymtl.ca, penberg@cs.helsinki.fi
+Subject: Re: [patch 0/7] [RFC] SLUB: Improve allocpercpu to reduce per cpu
+ access overhead
+In-Reply-To: <1194016836.27652.406.camel@twins>
+Message-ID: <Pine.LNX.4.64.0711020826040.26717@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0711011511450.22508@schroedinger.engr.sgi.com> 
+ <20071101.153824.91808126.davem@davemloft.net> 
+ <Pine.LNX.4.64.0711011545370.23379@schroedinger.engr.sgi.com> 
+ <20071101.155805.65012933.davem@davemloft.net>  <1193999326.27652.348.camel@twins>
+  <Pine.LNX.4.64.0711020734070.26635@schroedinger.engr.sgi.com>
+ <1194016836.27652.406.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <18210.2314.57767.962503@zebedee.pink>
-	 <MDEHLPKNGKAHNMBLJOLKCELIHMAC.davids@webmaster.com>
-	 <18215.1394.294830.944162@zebedee.pink>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/30/07, Andrew Haley <aph@redhat.com> wrote:
-> David Schwartz writes:
-> >
-> > Can we get some kind of consensus that 'optimizations' that add
-> > writes to any object that the programmer might have taken the
-> > address of are invalid on any platform that supports memory
-> > protection?
->
-> That's what the proposed standard language says, kinda-sorta.  There's
-> an informal description at
-> http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2338.html.
+On Fri, 2 Nov 2007, Peter Zijlstra wrote:
 
-There is other important information in the cited text. A.o. it is
-explained that register promotion of potentially shared variables can
-introduce data races. Or: register promotion can introduce bugs in
-multithreaded software when compiled with optimization enabled. Are
-there any register promotion transformations implemented in gcc that
-can introduce data races in multithreaded software ? This is very
-important information both for kernel developers and for developers of
-multithreaded userspace applications.
+> On Fri, 2007-11-02 at 07:35 -0700, Christoph Lameter wrote:
+> 
+> > Well I wonder if I should introduce it not as a replacement but as an 
+> > alternative to allocpercpu? We can then gradually switch over. The 
+> > existing API does not allow the specification of gfp_masks or alignements.
+> 
+> I've thought about suggesting that very thing. However, I think we need
+> to have a clear view of where we're going with that so that we don't end
+> up with two per cpu allocators because some users could not be converted
+> over or some such.
 
-Another conclusion from the cited text is that in contrast with what
-was stated before on the gcc mailing list, it is not required to
-declare thread-shared variables volatile if that thread-shared data is
-consistently protected by calls to locking functions.
+At least in my tests so far show that it can be a full replacement but 
+then I have only tested on x86_64 and Ia64. Its likely much easier to go
+for the full replacement rather than in steps.
 
-Bart Van Assche.
+If we want dynamically sized virtually mapped per cpu areas then we may 
+have issues on 32 bit platforms and with !MMU. So I would think that a 
+fallback to a statically sized version may be needed. On the other hand
+!MMU and 32 bit do not support a large number of processors. So we may be 
+able to get away on 32 bit with a small virtual memory area.
+
