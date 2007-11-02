@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756200AbXKBOGb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755477AbXKBOR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756200AbXKBOGb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 10:06:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753911AbXKBOGW
+	id S1755477AbXKBOR0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 10:17:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753770AbXKBORS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 10:06:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56904 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753648AbXKBOGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 10:06:21 -0400
-Message-ID: <472B2EBD.7070007@redhat.com>
-Date: Fri, 02 Nov 2007 07:05:49 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Pavel Emelyanov <xemul@openvz.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] PID namespace design bug, workaround
-References: <20071101144307.GA29566@elte.hu>	<4729E7E4.8070208@openvz.org>	<4729E936.4040400@redhat.com>	<4729EB3C.9050102@openvz.org>	<472A6D91.1020300@redhat.com>	<472AD7D6.80900@openvz.org> <20071102010419.23f3db5c.akpm@linux-foundation.org> <472ADC78.6070706@openvz.org>
-In-Reply-To: <472ADC78.6070706@openvz.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Fri, 2 Nov 2007 10:17:18 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41700 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753688AbXKBORR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 10:17:17 -0400
+Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Greg KH <greg@kroah.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Miklos Szeredi <miklos@szeredi.hu>
+In-Reply-To: <3ae72650711020650l37870e45yb853f888b4807116@mail.gmail.com>
+References: <1193410087.6914.34.camel@twins>
+	 <1193412836.27652.11.camel@twins> <1193414147.2431.35.camel@lov.site>
+	 <1193429066.5648.35.camel@lappy> <1193447889.5648.44.camel@lappy>
+	 <20071027024033.GB29039@kroah.com> <1193474399.27652.15.camel@twins>
+	 <20071027160203.GA5709@kroah.com> <1193519317.5776.14.camel@lov.site>
+	 <1194009359.27652.377.camel@twins>
+	 <3ae72650711020650l37870e45yb853f888b4807116@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 02 Nov 2007 15:17:08 +0100
+Message-Id: <1194013028.27652.387.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+One more question,
 
-Pavel Emelyanov wrote:
->> Isn't it this?
->>
->> http://lkml.org/lkml/2007/11/1/141
-> 
-> That was the initial problem, and I already answered to Ingo about
-> it
+I currently prefix the names with "bdi-", is that needed?
 
-No, look at my old mail which Ingo referenced in that posting.
+That is, if I give the bdi object a parent, how will it look?
+Would a bdi device with name "sda" with a block device called "sda" as
+parent look like: /sys/block/sda/sda? Or would if be
+called /sys/block/sda/bdi:sda or just /sys/block/sda/bdi?
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
 
-iD8DBQFHKy692ijCOnn/RHQRAtYLAJ98EXTGl3HMlCbVXOkL7TJRFfw4DACfcgYI
-HHz5f7TfM05Dps+ruPRiUrU=
-=IjS4
------END PGP SIGNATURE-----
+
