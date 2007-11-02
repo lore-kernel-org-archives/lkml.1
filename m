@@ -1,257 +1,444 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764008AbXKCAPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764094AbXKCAQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764008AbXKCAPv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 20:15:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762142AbXKCADS
+	id S1764094AbXKCAQM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 20:16:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762190AbXKCADY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 20:03:18 -0400
-Received: from cantor.suse.de ([195.135.220.2]:41233 "EHLO mx1.suse.de"
+	Fri, 2 Nov 2007 20:03:24 -0400
+Received: from ns2.suse.de ([195.135.220.15]:35018 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761865AbXKCADQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 20:03:16 -0400
+	id S1762067AbXKCADV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 20:03:21 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Michael Holzheu <holzheu@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Volker Sameske <sameske@de.ibm.com>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>
-Subject: [PATCH 46/54] kset: convert s390 ipl.c to use kset_create
-Date: Fri,  2 Nov 2007 16:59:24 -0700
-Message-Id: <1194047972-9850-46-git-send-email-gregkh@suse.de>
+       Thibaut VARENE <varenet@parisc-linux.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Kyle McMartin <kyle@parisc-linux.org>
+Subject: [PATCH 47/54] kobject: convert parisc/pdc_stable to kobj_attr interface
+Date: Fri,  2 Nov 2007 16:59:25 -0700
+Message-Id: <1194047972-9850-47-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <20071102235758.GA9803@kroah.com>
 References: <20071102235758.GA9803@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dynamically create the kset instead of declaring it statically.
-This makes the kobject attributes now work properly that I broke in the
-previous patch.
+This makes the code a bit simpler and and gets us one step closer to
+deleting the deprecated subsys_attr code.
+
+NOTE, this needs the next patch in the series in order to work properly.
+This will build, but the sysfs files will not properly operate.
 
 Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Michael Holzheu <holzheu@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Volker Sameske <sameske@de.ibm.com>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Thibaut VARENE <varenet@parisc-linux.org>
+Cc: Matthew Wilcox <matthew@wil.cx>
+Cc: Grant Grundler <grundler@parisc-linux.org>
+Cc: Kyle McMartin <kyle@parisc-linux.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/s390/kernel/ipl.c |   75 +++++++++++++++++++++++++-----------------------
- 1 files changed, 39 insertions(+), 36 deletions(-)
+ drivers/parisc/pdc_stable.c |  147 ++++++++++++++++++++----------------------
+ 1 files changed, 70 insertions(+), 77 deletions(-)
 
-diff --git a/arch/s390/kernel/ipl.c b/arch/s390/kernel/ipl.c
-index f2cfbf9..327e990 100644
---- a/arch/s390/kernel/ipl.c
-+++ b/arch/s390/kernel/ipl.c
-@@ -14,6 +14,7 @@
- #include <linux/delay.h>
- #include <linux/reboot.h>
- #include <linux/ctype.h>
-+#include <linux/err.h>
- #include <asm/ipl.h>
- #include <asm/smp.h>
- #include <asm/setup.h>
-@@ -426,7 +427,7 @@ static struct attribute_group ipl_unknown_attr_group = {
- 	.attrs = ipl_unknown_attrs,
+diff --git a/drivers/parisc/pdc_stable.c b/drivers/parisc/pdc_stable.c
+index 1382be6..e1b9cba 100644
+--- a/drivers/parisc/pdc_stable.c
++++ b/drivers/parisc/pdc_stable.c
+@@ -120,7 +120,7 @@ struct pdcspath_entry pdcspath_entry_##_name = { \
  };
  
--static decl_subsys(ipl, NULL);
-+static struct kset *ipl_kset;
+ #define PDCS_ATTR(_name, _mode, _show, _store) \
+-struct subsys_attribute pdcs_attr_##_name = { \
++struct kobj_attribute pdcs_attr_##_name = { \
+ 	.attr = {.name = __stringify(_name), .mode = _mode}, \
+ 	.show = _show, \
+ 	.store = _store, \
+@@ -523,15 +523,15 @@ static struct pdcspath_entry *pdcspath_entries[] = {
  
- /*
-  * reipl section
-@@ -602,7 +603,7 @@ static ssize_t reipl_type_store(struct kobject *kobj,
- static struct kobj_attribute reipl_type_attr =
- 		__ATTR(reipl_type, 0644, reipl_type_show, reipl_type_store);
- 
--static decl_subsys(reipl, NULL);
-+static struct kset *reipl_kset;
- 
- /*
-  * dump section
-@@ -699,13 +700,13 @@ static ssize_t dump_type_store(struct kobject *kobj,
- static struct kobj_attribute dump_type_attr =
- 		__ATTR(dump_type, 0644, dump_type_show, dump_type_store);
- 
--static decl_subsys(dump, NULL);
-+static struct kset *dump_kset;
- 
- /*
-  * Shutdown actions section
+ /**
+  * pdcs_size_read - Stable Storage size output.
+- * @kset: An allocated and populated struct kset. We don't use it tho.
+  * @buf: The output buffer to write to.
   */
- 
--static decl_subsys(shutdown_actions, NULL);
-+static struct kset *shutdown_actions_kset;
- 
- /* on panic */
- 
-@@ -830,23 +831,23 @@ static int __init ipl_register_fcp_files(void)
+-static ssize_t
+-pdcs_size_read(struct kset *kset, char *buf)
++static ssize_t pdcs_size_read(struct kobject *kobj,
++			      struct kobj_attribute *attr,
++			      char *buf)
  {
- 	int rc;
+ 	char *out = buf;
  
--	rc = sysfs_create_group(&ipl_subsys.kobj,
-+	rc = sysfs_create_group(&ipl_kset->kobj,
- 				&ipl_fcp_attr_group);
- 	if (rc)
- 		goto out;
--	rc = sysfs_create_bin_file(&ipl_subsys.kobj,
-+	rc = sysfs_create_bin_file(&ipl_kset->kobj,
- 				   &ipl_parameter_attr);
- 	if (rc)
- 		goto out_ipl_parm;
--	rc = sysfs_create_bin_file(&ipl_subsys.kobj,
-+	rc = sysfs_create_bin_file(&ipl_kset->kobj,
- 				   &ipl_scp_data_attr);
- 	if (!rc)
- 		goto out;
+-	if (!kset || !buf)
++	if (!buf)
+ 		return -EINVAL;
  
--	sysfs_remove_bin_file(&ipl_subsys.kobj, &ipl_parameter_attr);
-+	sysfs_remove_bin_file(&ipl_kset->kobj, &ipl_parameter_attr);
+ 	/* show the size of the stable storage */
+@@ -542,17 +542,17 @@ pdcs_size_read(struct kset *kset, char *buf)
  
- out_ipl_parm:
--	sysfs_remove_group(&ipl_subsys.kobj, &ipl_fcp_attr_group);
-+	sysfs_remove_group(&ipl_kset->kobj, &ipl_fcp_attr_group);
- out:
- 	return rc;
- }
-@@ -855,12 +856,12 @@ static int __init ipl_init(void)
+ /**
+  * pdcs_auto_read - Stable Storage autoboot/search flag output.
+- * @kset: An allocated and populated struct kset. We don't use it tho.
+  * @buf: The output buffer to write to.
+  * @knob: The PF_AUTOBOOT or PF_AUTOSEARCH flag
+  */
+-static ssize_t
+-pdcs_auto_read(struct kset *kset, char *buf, int knob)
++static ssize_t pdcs_auto_read(struct kobject *kobj,
++			      struct kobj_attribute *attr,
++			      char *buf, int knob)
  {
- 	int rc;
+ 	char *out = buf;
+ 	struct pdcspath_entry *pathentry;
  
--	rc = firmware_register(&ipl_subsys);
--	if (rc)
--		return rc;
-+	ipl_kset = kset_create_and_register("ipl", NULL, NULL, firmware_kset);
-+	if (IS_ERR(ipl_kset))
-+		return PTR_ERR(ipl_kset);
- 	switch (ipl_info.type) {
- 	case IPL_TYPE_CCW:
--		rc = sysfs_create_group(&ipl_subsys.kobj,
-+		rc = sysfs_create_group(&ipl_kset->kobj,
- 					&ipl_ccw_attr_group);
- 		break;
- 	case IPL_TYPE_FCP:
-@@ -868,16 +869,16 @@ static int __init ipl_init(void)
- 		rc = ipl_register_fcp_files();
- 		break;
- 	case IPL_TYPE_NSS:
--		rc = sysfs_create_group(&ipl_subsys.kobj,
-+		rc = sysfs_create_group(&ipl_kset->kobj,
- 					&ipl_nss_attr_group);
- 		break;
- 	default:
--		rc = sysfs_create_group(&ipl_subsys.kobj,
-+		rc = sysfs_create_group(&ipl_kset->kobj,
- 					&ipl_unknown_attr_group);
- 		break;
- 	}
- 	if (rc)
--		firmware_unregister(&ipl_subsys);
-+		kset_unregister(ipl_kset);
- 	return rc;
+-	if (!kset || !buf)
++	if (!buf)
+ 		return -EINVAL;
+ 
+ 	/* Current flags are stored in primary boot path entry */
+@@ -568,40 +568,37 @@ pdcs_auto_read(struct kset *kset, char *buf, int knob)
+ 
+ /**
+  * pdcs_autoboot_read - Stable Storage autoboot flag output.
+- * @kset: An allocated and populated struct kset. We don't use it tho.
+  * @buf: The output buffer to write to.
+  */
+-static inline ssize_t
+-pdcs_autoboot_read(struct kset *kset, char *buf)
++static ssize_t pdcs_autoboot_read(struct kobject *kobj,
++				  struct kobj_attribute *attr, char *buf)
+ {
+-	return pdcs_auto_read(kset, buf, PF_AUTOBOOT);
++	return pdcs_auto_read(kobj, attr, buf, PF_AUTOBOOT);
  }
  
-@@ -899,7 +900,7 @@ static int __init reipl_nss_init(void)
- 
- 	if (!MACHINE_IS_VM)
- 		return 0;
--	rc = sysfs_create_group(&reipl_subsys.kobj, &reipl_nss_attr_group);
-+	rc = sysfs_create_group(&reipl_kset->kobj, &reipl_nss_attr_group);
- 	if (rc)
- 		return rc;
- 	strncpy(reipl_nss_name, kernel_nss_name, NSS_NAME_SIZE + 1);
-@@ -914,7 +915,7 @@ static int __init reipl_ccw_init(void)
- 	reipl_block_ccw = (void *) get_zeroed_page(GFP_KERNEL);
- 	if (!reipl_block_ccw)
- 		return -ENOMEM;
--	rc = sysfs_create_group(&reipl_subsys.kobj, &reipl_ccw_attr_group);
-+	rc = sysfs_create_group(&reipl_kset->kobj, &reipl_ccw_attr_group);
- 	if (rc) {
- 		free_page((unsigned long)reipl_block_ccw);
- 		return rc;
-@@ -952,7 +953,7 @@ static int __init reipl_fcp_init(void)
- 	reipl_block_fcp = (void *) get_zeroed_page(GFP_KERNEL);
- 	if (!reipl_block_fcp)
- 		return -ENOMEM;
--	rc = sysfs_create_group(&reipl_subsys.kobj, &reipl_fcp_attr_group);
-+	rc = sysfs_create_group(&reipl_kset->kobj, &reipl_fcp_attr_group);
- 	if (rc) {
- 		free_page((unsigned long)reipl_block_fcp);
- 		return rc;
-@@ -974,12 +975,12 @@ static int __init reipl_init(void)
+ /**
+  * pdcs_autosearch_read - Stable Storage autoboot flag output.
+- * @kset: An allocated and populated struct kset. We don't use it tho.
+  * @buf: The output buffer to write to.
+  */
+-static inline ssize_t
+-pdcs_autosearch_read(struct kset *kset, char *buf)
++static ssize_t pdcs_autosearch_read(struct kobject *kobj,
++				    struct kobj_attribute *attr, char *buf)
  {
- 	int rc;
+-	return pdcs_auto_read(kset, buf, PF_AUTOSEARCH);
++	return pdcs_auto_read(kobj, attr, buf, PF_AUTOSEARCH);
+ }
  
--	rc = firmware_register(&reipl_subsys);
--	if (rc)
--		return rc;
--	rc = sysfs_create_file(&reipl_subsys.kobj, &reipl_type_attr);
-+	reipl_kset = kset_create_and_register("reipl", NULL, NULL, firmware_kset);
-+	if (IS_ERR(reipl_kset))
-+		return PTR_ERR(reipl_kset);
-+	rc = sysfs_create_file(&reipl_kset->kobj, &reipl_type_attr);
- 	if (rc) {
--		firmware_unregister(&reipl_subsys);
-+		kset_unregister(reipl_kset);
- 		return rc;
- 	}
- 	rc = reipl_ccw_init();
-@@ -1004,7 +1005,7 @@ static int __init dump_ccw_init(void)
- 	dump_block_ccw = (void *) get_zeroed_page(GFP_KERNEL);
- 	if (!dump_block_ccw)
- 		return -ENOMEM;
--	rc = sysfs_create_group(&dump_subsys.kobj, &dump_ccw_attr_group);
-+	rc = sysfs_create_group(&dump_kset->kobj, &dump_ccw_attr_group);
- 	if (rc) {
- 		free_page((unsigned long)dump_block_ccw);
- 		return rc;
-@@ -1028,7 +1029,7 @@ static int __init dump_fcp_init(void)
- 	dump_block_fcp = (void *) get_zeroed_page(GFP_KERNEL);
- 	if (!dump_block_fcp)
- 		return -ENOMEM;
--	rc = sysfs_create_group(&dump_subsys.kobj, &dump_fcp_attr_group);
-+	rc = sysfs_create_group(&dump_kset->kobj, &dump_fcp_attr_group);
- 	if (rc) {
- 		free_page((unsigned long)dump_block_fcp);
- 		return rc;
-@@ -1063,12 +1064,12 @@ static int __init dump_init(void)
+ /**
+  * pdcs_timer_read - Stable Storage timer count output (in seconds).
+- * @kset: An allocated and populated struct kset. We don't use it tho.
+  * @buf: The output buffer to write to.
+  *
+  * The value of the timer field correponds to a number of seconds in powers of 2.
+  */
+-static ssize_t
+-pdcs_timer_read(struct kset *kset, char *buf)
++static ssize_t pdcs_timer_read(struct kobject *kobj,
++			       struct kobj_attribute *attr, char *buf)
  {
- 	int rc;
+ 	char *out = buf;
+ 	struct pdcspath_entry *pathentry;
  
--	rc = firmware_register(&dump_subsys);
--	if (rc)
--		return rc;
--	rc = sysfs_create_file(&dump_subsys.kobj, &dump_type_attr);
-+	dump_kset = kset_create_and_register("dump", NULL, NULL, firmware_kset);
-+	if (IS_ERR(dump_kset))
-+		return PTR_ERR(dump_kset);
-+	rc = sysfs_create_file(&dump_kset->kobj, &dump_type_attr);
- 	if (rc) {
--		firmware_unregister(&dump_subsys);
-+		kset_unregister(dump_kset);
- 		return rc;
- 	}
- 	rc = dump_ccw_init();
-@@ -1085,12 +1086,14 @@ static int __init shutdown_actions_init(void)
+-	if (!kset || !buf)
++	if (!buf)
+ 		return -EINVAL;
+ 
+ 	/* Current flags are stored in primary boot path entry */
+@@ -618,15 +615,14 @@ pdcs_timer_read(struct kset *kset, char *buf)
+ 
+ /**
+  * pdcs_osid_read - Stable Storage OS ID register output.
+- * @kset: An allocated and populated struct kset. We don't use it tho.
+  * @buf: The output buffer to write to.
+  */
+-static ssize_t
+-pdcs_osid_read(struct kset *kset, char *buf)
++static ssize_t pdcs_osid_read(struct kobject *kobj,
++			      struct kobj_attribute *attr, char *buf)
  {
- 	int rc;
+ 	char *out = buf;
  
--	rc = firmware_register(&shutdown_actions_subsys);
--	if (rc)
--		return rc;
--	rc = sysfs_create_file(&shutdown_actions_subsys.kobj, &on_panic_attr);
-+	shutdown_actions_kset = kset_create_and_register("shutdown_actions",
-+							 NULL, NULL,
-+							 firmware_kset);
-+	if (IS_ERR(shutdown_actions_kset))
-+		return PTR_ERR(shutdown_actions_kset);
-+	rc = sysfs_create_file(&shutdown_actions_kset->kobj, &on_panic_attr);
- 	if (rc) {
--		firmware_unregister(&shutdown_actions_subsys);
-+		kset_unregister(shutdown_actions_kset);
- 		return rc;
- 	}
- 	atomic_notifier_chain_register(&panic_notifier_list,
+-	if (!kset || !buf)
++	if (!buf)
+ 		return -EINVAL;
+ 
+ 	out += sprintf(out, "%s dependent data (0x%.4x)\n",
+@@ -637,18 +633,17 @@ pdcs_osid_read(struct kset *kset, char *buf)
+ 
+ /**
+  * pdcs_osdep1_read - Stable Storage OS-Dependent data area 1 output.
+- * @kset: An allocated and populated struct kset. We don't use it tho.
+  * @buf: The output buffer to write to.
+  *
+  * This can hold 16 bytes of OS-Dependent data.
+  */
+-static ssize_t
+-pdcs_osdep1_read(struct kset *kset, char *buf)
++static ssize_t pdcs_osdep1_read(struct kobject *kobj,
++				struct kobj_attribute *attr, char *buf)
+ {
+ 	char *out = buf;
+ 	u32 result[4];
+ 
+-	if (!kset || !buf)
++	if (!buf)
+ 		return -EINVAL;
+ 
+ 	if (pdc_stable_read(PDCS_ADDR_OSD1, &result, sizeof(result)) != PDC_OK)
+@@ -664,18 +659,17 @@ pdcs_osdep1_read(struct kset *kset, char *buf)
+ 
+ /**
+  * pdcs_diagnostic_read - Stable Storage Diagnostic register output.
+- * @kset: An allocated and populated struct kset. We don't use it tho.
+  * @buf: The output buffer to write to.
+  *
+  * I have NFC how to interpret the content of that register ;-).
+  */
+-static ssize_t
+-pdcs_diagnostic_read(struct kset *kset, char *buf)
++static ssize_t pdcs_diagnostic_read(struct kobject *kobj,
++				    struct kobj_attribute *attr, char *buf)
+ {
+ 	char *out = buf;
+ 	u32 result;
+ 
+-	if (!kset || !buf)
++	if (!buf)
+ 		return -EINVAL;
+ 
+ 	/* get diagnostic */
+@@ -689,18 +683,17 @@ pdcs_diagnostic_read(struct kset *kset, char *buf)
+ 
+ /**
+  * pdcs_fastsize_read - Stable Storage FastSize register output.
+- * @kset: An allocated and populated struct kset. We don't use it tho.
+  * @buf: The output buffer to write to.
+  *
+  * This register holds the amount of system RAM to be tested during boot sequence.
+  */
+-static ssize_t
+-pdcs_fastsize_read(struct kset *kset, char *buf)
++static ssize_t pdcs_fastsize_read(struct kobject *kobj,
++				  struct kobj_attribute *attr, char *buf)
+ {
+ 	char *out = buf;
+ 	u32 result;
+ 
+-	if (!kset || !buf)
++	if (!buf)
+ 		return -EINVAL;
+ 
+ 	/* get fast-size */
+@@ -718,13 +711,12 @@ pdcs_fastsize_read(struct kset *kset, char *buf)
+ 
+ /**
+  * pdcs_osdep2_read - Stable Storage OS-Dependent data area 2 output.
+- * @kset: An allocated and populated struct kset. We don't use it tho.
+  * @buf: The output buffer to write to.
+  *
+  * This can hold pdcs_size - 224 bytes of OS-Dependent data, when available.
+  */
+-static ssize_t
+-pdcs_osdep2_read(struct kset *kset, char *buf)
++static ssize_t pdcs_osdep2_read(struct kobject *kobj,
++				struct kobj_attribute *attr, char *buf)
+ {
+ 	char *out = buf;
+ 	unsigned long size;
+@@ -736,7 +728,7 @@ pdcs_osdep2_read(struct kset *kset, char *buf)
+ 
+ 	size = pdcs_size - 224;
+ 
+-	if (!kset || !buf)
++	if (!buf)
+ 		return -EINVAL;
+ 
+ 	for (i=0; i<size; i+=4) {
+@@ -751,7 +743,6 @@ pdcs_osdep2_read(struct kset *kset, char *buf)
+ 
+ /**
+  * pdcs_auto_write - This function handles autoboot/search flag modifying.
+- * @kset: An allocated and populated struct kset. We don't use it tho.
+  * @buf: The input buffer to read from.
+  * @count: The number of bytes to be read.
+  * @knob: The PF_AUTOBOOT or PF_AUTOSEARCH flag
+@@ -760,8 +751,9 @@ pdcs_osdep2_read(struct kset *kset, char *buf)
+  * We expect a precise syntax:
+  *	\"n\" (n == 0 or 1) to toggle AutoBoot Off or On
+  */
+-static ssize_t
+-pdcs_auto_write(struct kset *kset, const char *buf, size_t count, int knob)
++static ssize_t pdcs_auto_write(struct kobject *kobj,
++			       struct kobj_attribute *attr, const char *buf,
++			       size_t count, int knob)
+ {
+ 	struct pdcspath_entry *pathentry;
+ 	unsigned char flags;
+@@ -771,7 +763,7 @@ pdcs_auto_write(struct kset *kset, const char *buf, size_t count, int knob)
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EACCES;
+ 
+-	if (!kset || !buf || !count)
++	if (!buf || !count)
+ 		return -EINVAL;
+ 
+ 	/* We'll use a local copy of buf */
+@@ -826,7 +818,6 @@ parse_error:
+ 
+ /**
+  * pdcs_autoboot_write - This function handles autoboot flag modifying.
+- * @kset: An allocated and populated struct kset. We don't use it tho.
+  * @buf: The input buffer to read from.
+  * @count: The number of bytes to be read.
+  *
+@@ -834,15 +825,15 @@ parse_error:
+  * We expect a precise syntax:
+  *	\"n\" (n == 0 or 1) to toggle AutoSearch Off or On
+  */
+-static inline ssize_t
+-pdcs_autoboot_write(struct kset *kset, const char *buf, size_t count)
++static ssize_t pdcs_autoboot_write(struct kobject *kobj,
++				   struct kobj_attribute *attr,
++				   const char *buf, size_t count)
+ {
+-	return pdcs_auto_write(kset, buf, count, PF_AUTOBOOT);
++	return pdcs_auto_write(kset, attr, buf, count, PF_AUTOBOOT);
+ }
+ 
+ /**
+  * pdcs_autosearch_write - This function handles autosearch flag modifying.
+- * @kset: An allocated and populated struct kset. We don't use it tho.
+  * @buf: The input buffer to read from.
+  * @count: The number of bytes to be read.
+  *
+@@ -850,15 +841,15 @@ pdcs_autoboot_write(struct kset *kset, const char *buf, size_t count)
+  * We expect a precise syntax:
+  *	\"n\" (n == 0 or 1) to toggle AutoSearch Off or On
+  */
+-static inline ssize_t
+-pdcs_autosearch_write(struct kset *kset, const char *buf, size_t count)
++static ssize_t pdcs_autosearch_write(struct kobject *kobj,
++				     struct kobj_attribute *attr,
++				     const char *buf, size_t count)
+ {
+-	return pdcs_auto_write(kset, buf, count, PF_AUTOSEARCH);
++	return pdcs_auto_write(kset, attr, buf, count, PF_AUTOSEARCH);
+ }
+ 
+ /**
+  * pdcs_osdep1_write - Stable Storage OS-Dependent data area 1 input.
+- * @kset: An allocated and populated struct kset. We don't use it tho.
+  * @buf: The input buffer to read from.
+  * @count: The number of bytes to be read.
+  *
+@@ -866,15 +857,16 @@ pdcs_autosearch_write(struct kset *kset, const char *buf, size_t count)
+  * write approach. It's up to userspace to deal with it when constructing
+  * its input buffer.
+  */
+-static ssize_t
+-pdcs_osdep1_write(struct kset *kset, const char *buf, size_t count)
++static ssize_t pdcs_osdep1_write(struct kobject *kobj,
++				 struct kobj_attribute *attr,
++				 const char *buf, size_t count)
+ {
+ 	u8 in[16];
+ 
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EACCES;
+ 
+-	if (!kset || !buf || !count)
++	if (!buf || !count)
+ 		return -EINVAL;
+ 
+ 	if (unlikely(pdcs_osid != OS_ID_LINUX))
+@@ -895,7 +887,6 @@ pdcs_osdep1_write(struct kset *kset, const char *buf, size_t count)
+ 
+ /**
+  * pdcs_osdep2_write - Stable Storage OS-Dependent data area 2 input.
+- * @kset: An allocated and populated struct kset. We don't use it tho.
+  * @buf: The input buffer to read from.
+  * @count: The number of bytes to be read.
+  *
+@@ -903,8 +894,9 @@ pdcs_osdep1_write(struct kset *kset, const char *buf, size_t count)
+  * byte-by-byte write approach. It's up to userspace to deal with it when
+  * constructing its input buffer.
+  */
+-static ssize_t
+-pdcs_osdep2_write(struct kset *kset, const char *buf, size_t count)
++static ssize_t pdcs_osdep2_write(struct kobject *kobj,
++				 struct kobj_attribute *attr,
++				 const char *buf, size_t count)
+ {
+ 	unsigned long size;
+ 	unsigned short i;
+@@ -913,7 +905,7 @@ pdcs_osdep2_write(struct kset *kset, const char *buf, size_t count)
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EACCES;
+ 
+-	if (!kset || !buf || !count)
++	if (!buf || !count)
+ 		return -EINVAL;
+ 
+ 	if (unlikely(pdcs_size <= 224))
+@@ -951,19 +943,23 @@ static PDCS_ATTR(diagnostic, 0400, pdcs_diagnostic_read, NULL);
+ static PDCS_ATTR(fastsize, 0400, pdcs_fastsize_read, NULL);
+ static PDCS_ATTR(osdep2, 0600, pdcs_osdep2_read, pdcs_osdep2_write);
+ 
+-static struct subsys_attribute *pdcs_subsys_attrs[] = {
+-	&pdcs_attr_size,
+-	&pdcs_attr_autoboot,
+-	&pdcs_attr_autosearch,
+-	&pdcs_attr_timer,
+-	&pdcs_attr_osid,
+-	&pdcs_attr_osdep1,
+-	&pdcs_attr_diagnostic,
+-	&pdcs_attr_fastsize,
+-	&pdcs_attr_osdep2,
++static struct attribute *pdcs_subsys_attrs[] = {
++	&pdcs_attr_size.attr,
++	&pdcs_attr_autoboot.attr,
++	&pdcs_attr_autosearch.attr,
++	&pdcs_attr_timer.attr,
++	&pdcs_attr_osid.attr,
++	&pdcs_attr_osdep1.attr,
++	&pdcs_attr_diagnostic.attr,
++	&pdcs_attr_fastsize.attr,
++	&pdcs_attr_osdep2.attr,
+ 	NULL,
+ };
+ 
++static struct attribute_group pdcs_attr_group = {
++	.attrs = pdcs_subsys_attrs,
++};
++
+ static decl_subsys(paths, NULL);
+ static decl_subsys(stable, NULL);
+ 
+@@ -1042,8 +1038,7 @@ pdcs_unregister_pathentries(void)
+ static int __init
+ pdc_stable_init(void)
+ {
+-	struct subsys_attribute *attr;
+-	int i, rc = 0, error = 0;
++	int rc = 0, error = 0;
+ 	u32 result;
+ 
+ 	/* find the size of the stable storage */
+@@ -1068,10 +1063,8 @@ pdc_stable_init(void)
+ 		goto fail_firmreg;
+ 
+ 	/* Don't forget the root entries */
+-	for (i = 0; (attr = pdcs_subsys_attrs[i]) && !error; i++)
+-		if (attr->show)
+-			error = subsys_create_file(&stable_subsys, attr);
+-	
++	error = sysfs_create_group(&stable_subsys.kobj, pdcs_attr_group);
++
+ 	/* register the paths subsys as a subsystem of stable subsys */
+ 	paths_subsys.kobj.kset = &stable_subsys;
+ 	if ((rc = subsystem_register(&paths_subsys)))
 -- 
 1.5.3.4
 
