@@ -1,63 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759351AbXKBTuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759791AbXKBTxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759351AbXKBTuj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 15:50:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754039AbXKBTuc
+	id S1759791AbXKBTxv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 15:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbXKBTxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 15:50:32 -0400
-Received: from nz-out-0506.google.com ([64.233.162.228]:28996 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753837AbXKBTub (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 15:50:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=Mg5BfuEaUQbhRRnGfsnTtFkPxz4r/chk/4LxtoHCwUZLcrhEXBYLrkZ5G0kp1+A8EPkAmRUenDVp5t2Gqz0ZxK8h3ZCxOzoale8jaxzNkHrsRuAb6+JRCLU1EhASrHPPL3GRK/Wmr2j8Xi9wNuXrfM1s6QLIBDUBNd14ugTaUWY=
-Message-ID: <b6c5339f0711021250w78fc420ekbc68e3c74b9939d3@mail.gmail.com>
-Date: Fri, 2 Nov 2007 15:50:29 -0400
-From: "Bob Copeland" <me@bobcopeland.com>
-To: "Dirk Hohndel" <hohndel@linux.intel.com>
-Subject: Re: [PATCH] add_partition silently ignored errors
-Cc: "Jens Axboe" <jens.axboe@oracle.com>,
-       "Cornelia Huck" <cornelia.huck@de.ibm.com>,
-       "Andries Brouwer" <aeb@cwi.nl>, "Al Viro" <viro@ftp.linux.org.uk>,
-       linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <20071102192914.GA888@linux.intel.com>
+	Fri, 2 Nov 2007 15:53:44 -0400
+Received: from waste.org ([66.93.16.53]:38911 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753178AbXKBTxn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 15:53:43 -0400
+Date: Fri, 2 Nov 2007 14:48:35 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: linux-mm <linux-mm@kvack.org>, Adrian Bunk <bunk@stusta.de>,
+       Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Remove unused code from mm/tiny-shmem.c
+Message-ID: <20071102194835.GQ19691@waste.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20071029154339.00512901@gondolin.boeblingen.de.ibm.com>
-	 <20071029154849.GA24187@bigserver.hohndel.org>
-	 <20071030080742.GE4993@kernel.dk>
-	 <20071030100934.6d2a8f12@gondolin.boeblingen.de.ibm.com>
-	 <20071030165608.GA2601@linux.intel.com>
-	 <20071030183112.7e860c23@gondolin.boeblingen.de.ibm.com>
-	 <20071030225635.GA3401@linux.intel.com>
-	 <20071102130438.GC28340@kernel.dk>
-	 <20071102192914.GA888@linux.intel.com>
-X-Google-Sender-Auth: 24e3be2766e7785b
+In-Reply-To: <20071102172056.14261.39829.sendpatchset@balbir-laptop>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/2/07, Dirk Hohndel <hohndel@linux.intel.com> wrote:
-> > > @@ -554,8 +573,11 @@ int rescan_partitions(struct gendisk *disk, struct block_device *bdev)
-> > >             if (from + size > get_capacity(disk)) {
-> > >                     printk(" %s: p%d exceeds device capacity\n",
-> > >                             disk->disk_name, p);
-> > > +                   return -EBUSY;
-[snip]
-> I was wondering about that myself - EBUSY seemed to be used in a couple of
-> other cases where there wasn't a clear match, but I think EOVERFLOW actually
-> might make more sense. Opinions?
+[resent due to damaged header]
 
-ISTR that some people wanted to keep going in this case rather than
-return an error, e.g. for forensic purposes...
+On Fri, Nov 02, 2007 at 10:50:56PM +0530, Balbir Singh wrote:
+> This code in mm/tiny-shmem.c is under #if 0, do we really need it? This
+> patch removes it.
+> 
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-.. digging... here's a thread from last year:
+Adrian added the #ifdefs in March, not sure why he didn't kill it outright.
 
-http://lkml.org/lkml/2006/5/11/64
+Acked-by: Matt Mackall <mpm@selenic.com>
 
--Bob
+>  mm/tiny-shmem.c |   12 ------------
+>  1 file changed, 12 deletions(-)
+> 
+> diff -puN mm/tiny-shmem.c~remove-unused-code mm/tiny-shmem.c
+> --- linux-2.6-latest/mm/tiny-shmem.c~remove-unused-code	2007-11-02 22:43:12.000000000 +0530
+> +++ linux-2.6-latest-balbir/mm/tiny-shmem.c	2007-11-02 22:43:30.000000000 +0530
+> @@ -121,18 +121,6 @@ int shmem_unuse(swp_entry_t entry, struc
+>  	return 0;
+>  }
+>  
+> -#if 0
+> -int shmem_mmap(struct file *file, struct vm_area_struct *vma)
+> -{
+> -	file_accessed(file);
+> -#ifndef CONFIG_MMU
+> -	return ramfs_nommu_mmap(file, vma);
+> -#else
+> -	return 0;
+> -#endif
+> -}
+> -#endif  /*  0  */
+> -
+>  #ifndef CONFIG_MMU
+>  unsigned long shmem_get_unmapped_area(struct file *file,
+>  				      unsigned long addr,
+
+-- 
+Mathematics is the supreme nostalgia of our time.
+
