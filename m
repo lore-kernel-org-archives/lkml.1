@@ -1,220 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756382AbXKBNmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755488AbXKBNuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756382AbXKBNmp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 09:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756009AbXKBNm2
+	id S1755488AbXKBNuv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 09:50:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbXKBNuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 09:42:28 -0400
-Received: from mtagate2.uk.ibm.com ([195.212.29.135]:44022 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755921AbXKBNm0 (ORCPT
+	Fri, 2 Nov 2007 09:50:44 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:7451 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752824AbXKBNun (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 09:42:26 -0400
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
-Subject: [PATCH 2/2] IB/ehca: Fix static rate calculation
-User-Agent: KMail/1.9.1
-Cc: "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-References: <200711021432.50203.fenkes@de.ibm.com>
-In-Reply-To: <200711021432.50203.fenkes@de.ibm.com>
+	Fri, 2 Nov 2007 09:50:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=c3neWhjwuswKFta5ASiVTFAI6IYvglq7uAuBpaYxJHDkcgQYpJoX3fbynz8Ry8PRXCbB5C+xCoChXpxn/JFs9DlB2o1R92ve9e5+Od3Nzddo4+tWpF2ukEMsumXqJb02EUoHEJL0ITLTx9IUyH2tgBBBU3DEH9VTHagFSnjNuTQ=
+Message-ID: <3ae72650711020650l37870e45yb853f888b4807116@mail.gmail.com>
+Date: Fri, 2 Nov 2007 14:50:41 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
+Cc: "Greg KH" <greg@kroah.com>, "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "Jens Axboe" <jens.axboe@oracle.com>,
+       "Fengguang Wu" <fengguang.wu@gmail.com>,
+       "Trond Myklebust" <trond.myklebust@fys.uio.no>,
+       "Miklos Szeredi" <miklos@szeredi.hu>
+In-Reply-To: <1194009359.27652.377.camel@twins>
 MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 3180
-Date: Fri, 2 Nov 2007 15:41:49 +0200
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <200711021441.50158.fenkes@de.ibm.com>
+Content-Disposition: inline
+References: <1193410087.6914.34.camel@twins> <1193412836.27652.11.camel@twins>
+	 <1193414147.2431.35.camel@lov.site> <1193429066.5648.35.camel@lappy>
+	 <1193447889.5648.44.camel@lappy> <20071027024033.GB29039@kroah.com>
+	 <1193474399.27652.15.camel@twins> <20071027160203.GA5709@kroah.com>
+	 <1193519317.5776.14.camel@lov.site> <1194009359.27652.377.camel@twins>
+X-Google-Sender-Auth: 07184de639e37388
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The IPD formula was a little off and assumed a fixed physical link rate; fix
-the formula and query the actual physical link rate, now that we can get it.
-Also, refactor the calculation into a common function ehca_calc_ipd() and
-use that instead of duplicating code.
+On Nov 2, 2007 2:15 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> Thanks for the help so far, however we're still not quite there.
+>
+> The below patch still has the funny 20 character name limit. Is there a
+> good reason its a char array like this, and not just a char * to a kstr?
+> The code does kstrdup all over the place, I can't imagine why suddenly
+> limiting it to 20 chars seems like a good idea.
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
----
- drivers/infiniband/hw/ehca/ehca_av.c      |   48 +++++++++++++++++++++++-----
- drivers/infiniband/hw/ehca/ehca_classes.h |    1 -
- drivers/infiniband/hw/ehca/ehca_iverbs.h  |    3 ++
- drivers/infiniband/hw/ehca/ehca_main.c    |    3 --
- drivers/infiniband/hw/ehca/ehca_qp.c      |   29 +++++++----------
- 5 files changed, 54 insertions(+), 30 deletions(-)
+You are absolutely right, it doesn't make any sense. The 20 char limit
+is bad, but really,
+having the name duplicated in the device structure, while the name is
+already in the
+embedded kobject, is really bad.
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_av.c b/drivers/infiniband/hw/ehca/ehca_av.c
-index 97d1086..453eb99 100644
---- a/drivers/infiniband/hw/ehca/ehca_av.c
-+++ b/drivers/infiniband/hw/ehca/ehca_av.c
-@@ -50,6 +50,38 @@
- 
- static struct kmem_cache *av_cache;
- 
-+int ehca_calc_ipd(struct ehca_shca *shca, int port,
-+		  enum ib_rate path_rate, u32 *ipd)
-+{
-+	int path = ib_rate_to_mult(path_rate);
-+	int link, ret;
-+	struct ib_port_attr pa;
-+
-+	if (path_rate == IB_RATE_PORT_CURRENT) {
-+		*ipd = 0;
-+		return 0;
-+	}
-+
-+	if (unlikely(path < 0)) {
-+		ehca_err(&shca->ib_device, "Invalid static rate! path_rate=%x",
-+			 path_rate);
-+		return -EINVAL;
-+	}
-+
-+	ret = ehca_query_port(&shca->ib_device, port, &pa);
-+	if (unlikely(ret < 0)) {
-+		ehca_err(&shca->ib_device, "Failed to query port  ret=%i", ret);
-+		return ret;
-+	}
-+
-+	link = ib_width_enum_to_int(pa.active_width) * pa.active_speed;
-+
-+	/* IPD = round((link / path) - 1) */
-+	*ipd = ((link + (path >> 1)) / path) - 1;
-+
-+	return 0;
-+}
-+
- struct ib_ah *ehca_create_ah(struct ib_pd *pd, struct ib_ah_attr *ah_attr)
- {
- 	int ret;
-@@ -69,15 +101,13 @@ struct ib_ah *ehca_create_ah(struct ib_pd *pd, struct ib_ah_attr *ah_attr)
- 	av->av.slid_path_bits = ah_attr->src_path_bits;
- 
- 	if (ehca_static_rate < 0) {
--		int ah_mult = ib_rate_to_mult(ah_attr->static_rate);
--		int ehca_mult =
--			ib_rate_to_mult(shca->sport[ah_attr->port_num].rate );
--
--		if (ah_mult >= ehca_mult)
--			av->av.ipd = 0;
--		else
--			av->av.ipd = (ah_mult > 0) ?
--				((ehca_mult - 1) / ah_mult) : 0;
-+		u32 ipd;
-+		if (ehca_calc_ipd(shca, ah_attr->port_num,
-+				  ah_attr->static_rate, &ipd)) {
-+			ret = -EINVAL;
-+			goto create_ah_exit1;
-+		}
-+		av->av.ipd = ipd;
- 	} else
- 		av->av.ipd = ehca_static_rate;
- 
-diff --git a/drivers/infiniband/hw/ehca/ehca_classes.h b/drivers/infiniband/hw/ehca/ehca_classes.h
-index 2d660ae..87f12d4 100644
---- a/drivers/infiniband/hw/ehca/ehca_classes.h
-+++ b/drivers/infiniband/hw/ehca/ehca_classes.h
-@@ -95,7 +95,6 @@ struct ehca_sma_attr {
- struct ehca_sport {
- 	struct ib_cq *ibcq_aqp1;
- 	struct ib_qp *ibqp_aqp1;
--	enum ib_rate  rate;
- 	enum ib_port_state port_state;
- 	struct ehca_sma_attr saved_attr;
- };
-diff --git a/drivers/infiniband/hw/ehca/ehca_iverbs.h b/drivers/infiniband/hw/ehca/ehca_iverbs.h
-index dce503b..5485799 100644
---- a/drivers/infiniband/hw/ehca/ehca_iverbs.h
-+++ b/drivers/infiniband/hw/ehca/ehca_iverbs.h
-@@ -189,6 +189,9 @@ int ehca_mmap(struct ib_ucontext *context, struct vm_area_struct *vma);
- 
- void ehca_poll_eqs(unsigned long data);
- 
-+int ehca_calc_ipd(struct ehca_shca *shca, int port,
-+		  enum ib_rate path_rate, u32 *ipd);
-+
- #ifdef CONFIG_PPC_64K_PAGES
- void *ehca_alloc_fw_ctrlblock(gfp_t flags);
- void ehca_free_fw_ctrlblock(void *ptr);
-diff --git a/drivers/infiniband/hw/ehca/ehca_main.c b/drivers/infiniband/hw/ehca/ehca_main.c
-index c6cd38c..90d4334 100644
---- a/drivers/infiniband/hw/ehca/ehca_main.c
-+++ b/drivers/infiniband/hw/ehca/ehca_main.c
-@@ -327,9 +327,6 @@ static int ehca_sense_attributes(struct ehca_shca *shca)
- 		shca->hw_level = ehca_hw_level;
- 	ehca_gen_dbg(" ... hardware level=%x", shca->hw_level);
- 
--	shca->sport[0].rate = IB_RATE_30_GBPS;
--	shca->sport[1].rate = IB_RATE_30_GBPS;
--
- 	shca->hca_cap = rblock->hca_cap_indicators;
- 	ehca_gen_dbg(" ... HCA capabilities:");
- 	for (i = 0; i < ARRAY_SIZE(hca_cap_descr); i++)
-diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
-index de18264..2e3e654 100644
---- a/drivers/infiniband/hw/ehca/ehca_qp.c
-+++ b/drivers/infiniband/hw/ehca/ehca_qp.c
-@@ -1196,10 +1196,6 @@ static int internal_modify_qp(struct ib_qp *ibqp,
- 		update_mask |= EHCA_BMASK_SET(MQPCB_MASK_QKEY, 1);
- 	}
- 	if (attr_mask & IB_QP_AV) {
--		int ah_mult = ib_rate_to_mult(attr->ah_attr.static_rate);
--		int ehca_mult = ib_rate_to_mult(shca->sport[my_qp->
--						init_attr.port_num].rate);
--
- 		mqpcb->dlid = attr->ah_attr.dlid;
- 		update_mask |= EHCA_BMASK_SET(MQPCB_MASK_DLID, 1);
- 		mqpcb->source_path_bits = attr->ah_attr.src_path_bits;
-@@ -1207,11 +1203,12 @@ static int internal_modify_qp(struct ib_qp *ibqp,
- 		mqpcb->service_level = attr->ah_attr.sl;
- 		update_mask |= EHCA_BMASK_SET(MQPCB_MASK_SERVICE_LEVEL, 1);
- 
--		if (ah_mult < ehca_mult)
--			mqpcb->max_static_rate = (ah_mult > 0) ?
--			((ehca_mult - 1) / ah_mult) : 0;
--		else
--			mqpcb->max_static_rate = 0;
-+		if (ehca_calc_ipd(shca, my_qp->init_attr.port_num,
-+				  attr->ah_attr.static_rate,
-+				  &mqpcb->max_static_rate)) {
-+			ret = -EINVAL;
-+			goto modify_qp_exit2;
-+		}
- 		update_mask |= EHCA_BMASK_SET(MQPCB_MASK_MAX_STATIC_RATE, 1);
- 
- 		/*
-@@ -1280,10 +1277,6 @@ static int internal_modify_qp(struct ib_qp *ibqp,
- 			(MQPCB_MASK_RDMA_ATOMIC_OUTST_DEST_QP, 1);
- 	}
- 	if (attr_mask & IB_QP_ALT_PATH) {
--		int ah_mult = ib_rate_to_mult(attr->alt_ah_attr.static_rate);
--		int ehca_mult = ib_rate_to_mult(
--			shca->sport[my_qp->init_attr.port_num].rate);
--
- 		if (attr->alt_port_num < 1
- 		    || attr->alt_port_num > shca->num_ports) {
- 			ret = -EINVAL;
-@@ -1309,10 +1302,12 @@ static int internal_modify_qp(struct ib_qp *ibqp,
- 		mqpcb->source_path_bits_al = attr->alt_ah_attr.src_path_bits;
- 		mqpcb->service_level_al = attr->alt_ah_attr.sl;
- 
--		if (ah_mult > 0 && ah_mult < ehca_mult)
--			mqpcb->max_static_rate_al = (ehca_mult - 1) / ah_mult;
--		else
--			mqpcb->max_static_rate_al = 0;
-+		if (ehca_calc_ipd(shca, my_qp->init_attr.port_num,
-+				  attr->alt_ah_attr.static_rate,
-+				  &mqpcb->max_static_rate_al)) {
-+			ret = -EINVAL;
-+			goto modify_qp_exit2;
-+		}
- 
- 		/* OpenIB doesn't support alternate retry counts - copy them */
- 		mqpcb->retry_count_al = mqpcb->retry_count;
--- 
-1.5.2
+Greg recently got rid of the 20 chars in the kobject, now we need to fix the
+devices to completely get rid of the static bus_id string array, and just set
+the kobject name directly.
+It's all long overdue to fix things like this in the driver core -
+it's such a mess. After the
+kset cleanup Greg and I are doing currently, we will remove that silly limit.
 
+Hmm, regardless of the limit, isn't there a better device name than a memory
+address of a kernel structure. :) If there is no better data,
+shouldn't we get something
+like an atomic counter somewhere in the nfs code, which just increases
+with every
+instance, and we could use that number as a connection id?
 
+Kay
