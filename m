@@ -1,52 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbXKBFQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754083AbXKBFbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754217AbXKBFQk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 01:16:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752248AbXKBFQc
+	id S1754083AbXKBFbY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 01:31:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbXKBFbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 01:16:32 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:41175 "EHLO mail.dvmed.net"
+	Fri, 2 Nov 2007 01:31:15 -0400
+Received: from ozlabs.org ([203.10.76.45]:45499 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752197AbXKBFQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 01:16:31 -0400
-Message-ID: <472AB2AD.3040709@garzik.org>
-Date: Fri, 02 Nov 2007 01:16:29 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	id S1751027AbXKBFbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 01:31:14 -0400
 MIME-Version: 1.0
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-CC: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] libata ATAPI transfer size cleanups
-References: <20071101090733.GA9258@havoc.gtf.org> <64bb37e0711011251w255746c7x6947f85431d4f4fe@mail.gmail.com>
-In-Reply-To: <64bb37e0711011251w255746c7x6947f85431d4f4fe@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Message-ID: <18218.44709.383144.771700@cargo.ozlabs.ibm.com>
+Date: Fri, 2 Nov 2007 15:59:17 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Differences in bitops argument types
+In-Reply-To: <20071101222305.GA28830@duck.suse.cz>
+References: <20071101222305.GA28830@duck.suse.cz>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Torsten Kaiser wrote:
-> On 11/1/07, Jeff Garzik <jeff@garzik.org> wrote:
->> +       lo = tf->lbam;
->> +       hi = tf->lbam;
->> +       ibyte = (hi << 8) | lo;
->> +
->> +       lo = result_tf->lbam;
->> +       hi = result_tf->lbam;
-> 
-> That doesn't look right.
-> I suspect this was intended:
-> 
-> lo = tf->lbam;
-> hi = tf->lbah;
+Jan Kara writes:
 
-Agreed, will correct.
+>   I've just found out that operations like constant_test_bit() take pointer
+> of different types on different architectures. In particular, x86_64,
+> blackfin and frv take void * while i386, s390 and m68k take unsigned long
+> *. Is this intended difference? Wouldn't using void * everywhere be more
+> appropriate? Thanks for answer in advance.
 
-Thanks,
+A bitmap is defined to be an array of unsigned longs.  Using an array
+of a smaller or longer type will give different results on big-endian
+architectures.  Therefore using unsigned long * is better, because it
+finds errors where callers are using an array of some other type.
 
-	Jeff
-
-
-
+Paul.
