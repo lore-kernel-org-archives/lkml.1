@@ -1,102 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758150AbXKBRvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760051AbXKBRwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758150AbXKBRvr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 13:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633AbXKBRvj
+	id S1760051AbXKBRwh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 13:52:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633AbXKBRwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 13:51:39 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:43060 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753665AbXKBRvj (ORCPT
+	Fri, 2 Nov 2007 13:52:30 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:19718 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753296AbXKBRw3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 13:51:39 -0400
-Date: Fri, 2 Nov 2007 10:37:55 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 3/9] genirq: mark io_apic level interrupts to avoid resend
-Message-ID: <20071102173755.GD6378@kroah.com>
-References: <20071102173359.709442489@mini.kroah.org>
+	Fri, 2 Nov 2007 13:52:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=cSXNv9N9SV5KROlQqeGRjj51SjE+OexjVJ+WWTE7OwHSBY8eJKl7WKTVdyOFXSZyC8BkpBmMIqS5kaAALKrBul4T2Hnr4AWXqHg0xvuBLU4DYz7u7XWrcV/4yHJLpbgNayUnKa9MsjVNw4VsI3lS/7qnDx5FvY3Ou48+9n7eD+s=
+Message-ID: <e9e943910711021052j4b5366c4u8b3ae87080e8b310@mail.gmail.com>
+Date: Fri, 2 Nov 2007 17:52:25 +0000
+From: "Duane Griffin" <duaneg@dghda.com>
+To: "Chuck Ebbert" <cebbert@redhat.com>
+Subject: Re: patch remove-broken-ptrace-special-case-code-from-file-mapping.patch queued to -stable tree
+Cc: linux-kernel@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>, stable@kernel.org,
+       npiggin@suse.de
+In-Reply-To: <472B59CC.9030206@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="genirq-mark-io_apic-level-interrupts-to-avoid-resend.patch"
-In-Reply-To: <20071102173733.GA6378@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071102162222.EC46D14540CB@imap.suse.de>
+	 <alpine.LFD.0.999.0711020945330.3342@woody.linux-foundation.org>
+	 <20071102165816.GA16493@suse.de> <472B59CC.9030206@redhat.com>
+X-Google-Sender-Auth: ac63b9ac78618b00
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.22-stable review patch.  If anyone has any objections, please let us
-know.
+On 02/11/2007, Chuck Ebbert <cebbert@redhat.com> wrote:
+> On 11/02/2007 12:58 PM, Greg KH wrote:
+> > Unless Nick really objects, and then I'll drop yours and use his, but I
+> > don't think that Duane verified that his patch fixed the issue.
+> >
+>
+> I put Nick's in Fedora, so it had better work...  ;)
 
-------------------
-From: Thomas Gleixner <tglx@linutronix.de>
+I've tested both patches, and they both fix the problem. So no
+worries, either way :)
 
-patch cc75b92d11384ba14f93828a2a0040344ae872e7 in mainline.
+As Linus said, his patch does change the behaviour. I'm not qualified
+to judge how risky that is, however I think that the change is an
+improvement. In fact in my original bug report I suggested the old
+behaviour could be considered buggy and the new behaviour might be
+preferable.
 
-Level type interrupts do not need to be resent.  It was also found that
-some chipsets get confused in case of the resend.
-
-Mark the ioapic level type interrupts as such to avoid the resend
-functionality in the generic irq code.
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- arch/i386/kernel/io_apic.c   |    7 +++++--
- arch/x86_64/kernel/io_apic.c |    7 +++++--
- 2 files changed, 10 insertions(+), 4 deletions(-)
-
---- a/arch/i386/kernel/io_apic.c
-+++ b/arch/i386/kernel/io_apic.c
-@@ -1275,12 +1275,15 @@ static struct irq_chip ioapic_chip;
- static void ioapic_register_intr(int irq, int vector, unsigned long trigger)
- {
- 	if ((trigger == IOAPIC_AUTO && IO_APIC_irq_trigger(irq)) ||
--			trigger == IOAPIC_LEVEL)
-+	    trigger == IOAPIC_LEVEL) {
-+		irq_desc[irq].status |= IRQ_LEVEL;
- 		set_irq_chip_and_handler_name(irq, &ioapic_chip,
- 					 handle_fasteoi_irq, "fasteoi");
--	else
-+	} else {
-+		irq_desc[irq].status &= ~IRQ_LEVEL;
- 		set_irq_chip_and_handler_name(irq, &ioapic_chip,
- 					 handle_edge_irq, "edge");
-+	}
- 	set_intr_gate(vector, interrupt[irq]);
- }
- 
---- a/arch/x86_64/kernel/io_apic.c
-+++ b/arch/x86_64/kernel/io_apic.c
-@@ -774,12 +774,15 @@ static struct irq_chip ioapic_chip;
- 
- static void ioapic_register_intr(int irq, unsigned long trigger)
- {
--	if (trigger)
-+	if (trigger) {
-+		irq_desc[irq].status |= IRQ_LEVEL;
- 		set_irq_chip_and_handler_name(irq, &ioapic_chip,
- 					      handle_fasteoi_irq, "fasteoi");
--	else
-+	} else {
-+		irq_desc[irq].status &= ~IRQ_LEVEL;
- 		set_irq_chip_and_handler_name(irq, &ioapic_chip,
- 					      handle_edge_irq, "edge");
-+	}
- }
- 
- static void setup_IO_APIC_irq(int apic, int pin, unsigned int irq,
+Cheers,
+Duane.
 
 -- 
+"I never could learn to drink that blood and call it wine" - Bob Dylan
