@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756438AbXKBVUt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754763AbXKBVV0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756438AbXKBVUt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 17:20:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761113AbXKBVUQ
+	id S1754763AbXKBVV0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 17:21:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754932AbXKBVVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 17:20:16 -0400
-Received: from mail.trixing.net ([87.230.125.58]:53184 "EHLO mail.trixing.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760892AbXKBVUN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 17:20:13 -0400
-Message-ID: <472B9479.7040105@l4x.org>
-Date: Fri, 02 Nov 2007 22:19:53 +0100
-From: Jan Dittmer <jdi@l4x.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+	Fri, 2 Nov 2007 17:21:10 -0400
+Received: from firewall.rowland.harvard.edu ([140.247.233.35]:45042 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1754495AbXKBVVI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 17:21:08 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 Nov 2007 17:21:08 EDT
+Date: Fri, 2 Nov 2007 17:14:26 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Steven King <sfking@fdwdc.com>, Oliver Neukum <oliver@neukum.name>
+cc: Kernel development list <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] ti_usb_3410_5052 breakage in 2.6.24-rc1
+In-Reply-To: <200711011634.32360.sfking@fdwdc.com>
+Message-ID: <Pine.LNX.4.44L0.0711021710280.5073-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: David Howells <dhowells@redhat.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <15675.1193753820@redhat.com> <4726337B.1080608@l4x.org> <4725B553.4060502@l4x.org> <4220.1193663179@redhat.com> <15712.1193753924@redhat.com>
-In-Reply-To: <15712.1193753924@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 192.168.1.106
-X-SA-Exim-Mail-From: jdi@l4x.org
-Subject: Re: Working frv toolchain?
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:51:29 +0000)
-X-SA-Exim-Scanned: Yes (on mail.trixing.net)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells wrote:
-> David Howells <dhowells@redhat.com> wrote:
+On Thu, 1 Nov 2007, Steven King wrote:
+
+> > But you didn't post the log messages, so I haven't seen them.
+> > In addition, that "wrong number of endpoints" message occurs long after
+> > the underlying problem; it's probably not connected.
 > 
->> Ah... I'd forgotten about that.  I'm not sure all the ASM constraint changes
->> are upstream yet, and gcc bz 28583 also gets incurred.  Are you particularly
->> interested in building your own compiler, or would one of ours do?
+> Okay, attached is full .config, dmesg, /proc/bus/usb/devices and lsusb for 
+> 2.6.23.1 (aka working dongle), 2.6.24-rc1 (aka non-working dongle), 
+> 2.6.24-rc1-r (2.6.24-rc1 with commit 063a2da8f01806906f7d7b1a1424b9afddebc443 
+> backed out, aka working dongle 2) and finally 2.6.24-rc1-X (2.6.24-rc1 with 
+> my patch to ti_usb_3410_5052, aka working dongle 3).  Normally I have a udev 
+> rule to automagically select configuration 2, for these tests I disabled 
+> that.  The {dmesg, proc.bus.usb.devices, lsusb}-2.6.xxx-1 is after I 
+> did 'echo 2 > /sys/.../bConfigurationValue'.
 > 
-> Look in:
-> 
-> 	ftp://ftp.redhat.com/pub/redhat/gnupro/FRV
+> Clean fresh build for each of the kernels, the dongle was plugged after the 
+> system was fully up and X had started.
 
-Hrm, that gets me further, but one of the final stages fail:
+Okay, this explains everything.  In 2.6.23 (or 2.6.24-rc1 with the 
+commit backed out), usb-serial binds to the "wrong" interface and 
+performs a firmware download.  Up to that point the device has just the 
+one configuration, but with the new firmware it has two.  Then you 
+install the second config and the driver can bind successfully.
 
-   CC      init/version.o
-   LD      init/built-in.o
-   LD      .tmp_vmlinux1
-kernel/built-in.o(.text+0x2e684): In function `kallsyms_lookup_name':
-: relocation truncated to fit: R_FRV_GPREL12 kallsyms_num_syms
-kernel/built-in.o(.text+0x2e6d4): In function `kallsyms_lookup_name':
-: relocation truncated to fit: R_FRV_GPREL12 kallsyms_num_syms
-kernel/built-in.o(.text+0x2e750): In function `get_symbol_pos':
-: relocation truncated to fit: R_FRV_GPREL12 kallsyms_num_syms
-kernel/built-in.o(.text+0x2ed00): In function `update_iter':
-: relocation truncated to fit: R_FRV_GPREL12 kallsyms_num_syms
-make[1]: *** [.tmp_vmlinux1] Error 1
-make: *** [sub-make] Error 2
+With 2.6.24-rc1, the driver never gets a chance to update the firmware 
+because the invalid endpoint matching prevents it.
 
-Todays git tree. Is there any known good release I can test
-this toolchain against?
+Oliver, what do you think should be done to solve this?
 
-Thanks,
+Alan Stern
 
-Jan
