@@ -1,50 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759621AbXKBPnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759925AbXKBPoM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759621AbXKBPnt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 11:43:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758897AbXKBPnc
+	id S1759925AbXKBPoM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 11:44:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758951AbXKBPng
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 11:43:32 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:60125 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1758874AbXKBPnb (ORCPT
+	Fri, 2 Nov 2007 11:43:36 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:49690 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758907AbXKBPnd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 11:43:31 -0400
-Date: Fri, 2 Nov 2007 11:42:54 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: devzero@web.de
-Cc: linux-kernel@vger.kernel.org, 12o3l@tiscali.nl
-Subject: Re: build failure, missing libvdeplug.h?
-Message-ID: <20071102154254.GA5760@c2.user-mode-linux.org>
-References: <2061698400@web.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 2 Nov 2007 11:43:33 -0400
+Date: Fri, 2 Nov 2007 16:43:10 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: rusty@rustcorp.com.au
+Cc: lguest@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] lguest: make async_hcall() static
+Message-ID: <20071102154310.GI30287@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <2061698400@web.de>
-User-Agent: Mutt/1.4.2.3i
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 02, 2007 at 01:05:59PM +0100, devzero@web.de wrote:
-> I tried 2.6.24-rc1-git11 with "allmodconfig ARCH=um" today.
-> 
-> this gave at least two errors - i needed to set CONFIG_SMP=n 
+async_hcall() can become static.
 
-SMP should depend on BROKEN for now, and I thought it did.
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-> and CONFIG_UML_NET_VDE=n to make it compile.
+---
 
-For this, my immediate reaction is that if you're going to build
-something, the dependencies should be there.  However, I guess we
-should have some sympathy for the automatic allyesconfig builders.
-I'm wondering whether, instead of failing the build if headers or
-libraries aren't available, compile in some sort of stub which will
-produce a run-time error instead.
+ arch/x86/lguest/boot.c         |   26 +++++++++++++-------------
+ include/asm-x86/lguest_hcall.h |    3 ---
+ 2 files changed, 13 insertions(+), 16 deletions(-)
 
-The violates my preference to have error detected as early as
-possible, but maybe it's preferable to the current situation.
+7b280cbbeeeb4c37a031b9cda257bc3bccf39173 
+diff --git a/arch/x86/lguest/boot.c b/arch/x86/lguest/boot.c
+index a55b090..e6023b8 100644
+--- a/arch/x86/lguest/boot.c
++++ b/arch/x86/lguest/boot.c
+@@ -113,17 +113,6 @@ static void lguest_leave_lazy_mode(void)
+ 	hcall(LHCALL_FLUSH_ASYNC, 0, 0, 0);
+ }
+ 
+-static void lazy_hcall(unsigned long call,
+-		       unsigned long arg1,
+-		       unsigned long arg2,
+-		       unsigned long arg3)
+-{
+-	if (paravirt_get_lazy_mode() == PARAVIRT_LAZY_NONE)
+-		hcall(call, arg1, arg2, arg3);
+-	else
+-		async_hcall(call, arg1, arg2, arg3);
+-}
+-
+ /* async_hcall() is pretty simple: I'm quite proud of it really.  We have a
+  * ring buffer of stored hypercalls which the Host will run though next time we
+  * do a normal hypercall.  Each entry in the ring has 4 slots for the hypercall
+@@ -134,8 +123,8 @@ static void lazy_hcall(unsigned long call,
+  * full and we just make the hypercall directly.  This has the nice side
+  * effect of causing the Host to run all the stored calls in the ring buffer
+  * which empties it for next time! */
+-void async_hcall(unsigned long call,
+-		 unsigned long arg1, unsigned long arg2, unsigned long arg3)
++static void async_hcall(unsigned long call, unsigned long arg1,
++			unsigned long arg2, unsigned long arg3)
+ {
+ 	/* Note: This code assumes we're uniprocessor. */
+ 	static unsigned int next_call;
+@@ -161,6 +150,17 @@ void async_hcall(unsigned long call,
+ 	}
+ 	local_irq_restore(flags);
+ }
++
++static void lazy_hcall(unsigned long call,
++		       unsigned long arg1,
++		       unsigned long arg2,
++		       unsigned long arg3)
++{
++	if (paravirt_get_lazy_mode() == PARAVIRT_LAZY_NONE)
++		hcall(call, arg1, arg2, arg3);
++	else
++		async_hcall(call, arg1, arg2, arg3);
++}
+ /*:*/
+ 
+ /*G:033
+diff --git a/include/asm-x86/lguest_hcall.h b/include/asm-x86/lguest_hcall.h
+index 9c5092b..2091779 100644
+--- a/include/asm-x86/lguest_hcall.h
++++ b/include/asm-x86/lguest_hcall.h
+@@ -54,9 +54,6 @@ hcall(unsigned long call,
+ }
+ /*:*/
+ 
+-void async_hcall(unsigned long call,
+-		 unsigned long arg1, unsigned long arg2, unsigned long arg3);
+-
+ /* Can't use our min() macro here: needs to be a constant */
+ #define LGUEST_IRQS (NR_IRQS < 32 ? NR_IRQS: 32)
+ 
 
-				Jeff
-
--- 
-Work email - jdike at linux dot intel dot com
