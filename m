@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763543AbXKCALs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763472AbXKCAMJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763543AbXKCALs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 20:11:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762047AbXKCAC3
+	id S1763472AbXKCAMJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 20:12:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762167AbXKCACf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 20:02:29 -0400
-Received: from ns2.suse.de ([195.135.220.15]:34886 "EHLO mx2.suse.de"
+	Fri, 2 Nov 2007 20:02:35 -0400
+Received: from ns.suse.de ([195.135.220.2]:41191 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761997AbXKCAC1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 20:02:27 -0400
+	id S1762152AbXKCACd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 20:02:33 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Mike Halcrow <mhalcrow@us.ibm.com>,
-       Phillip Hellewell <phillip@hellewell.homeip.net>,
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 35/54] Driver Core: switch all dynamic ksets to kobj_sysfs_ops
-Date: Fri,  2 Nov 2007 16:59:13 -0700
-Message-Id: <1194047972-9850-35-git-send-email-gregkh@suse.de>
+Subject: [PATCH 36/54] fix struct user_info export's sysfs interaction
+Date: Fri,  2 Nov 2007 16:59:14 -0700
+Message-Id: <1194047972-9850-36-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <20071102235758.GA9803@kroah.com>
 References: <20071102235758.GA9803@kroah.com>
@@ -25,288 +26,259 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Kay Sievers <kay.sievers@vrfy.org>
 
-Switch all dynamically created ksets, that export simple attributes,
-to kobj_attribute from subsys_attribute. Struct subsys_attribute will
-be removed.
+Clean up the use of ksets and kobjects. Kobjects are instances of
+objects (like struct user_info), ksets are collections of objects of a
+similar type (like the uids directory containing the user_info directories).
+So, use kobjects for the user_info directories, and a kset for the "uids"
+directory.
 
+On object cleanup, the final kobject_put() was missing.
+
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
 Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Mike Halcrow <mhalcrow@us.ibm.com>
-Cc: Phillip Hellewell <phillip@hellewell.homeip.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ecryptfs/main.c   |   10 ++++++----
- kernel/ksysfs.c      |   35 +++++++++++++++++++++--------------
- kernel/power/disk.c  |   18 ++++++++++++------
- kernel/power/main.c  |   12 ++++++++----
- kernel/power/power.h |    2 +-
- lib/kobject.c        |    8 ++++----
- 6 files changed, 52 insertions(+), 33 deletions(-)
+ include/linux/sched.h |    9 +---
+ kernel/ksysfs.c       |    7 +--
+ kernel/user.c         |  104 ++++++++++++++++++++++++-------------------------
+ 3 files changed, 55 insertions(+), 65 deletions(-)
 
-diff --git a/fs/ecryptfs/main.c b/fs/ecryptfs/main.c
-index b72a495..828fb99 100644
---- a/fs/ecryptfs/main.c
-+++ b/fs/ecryptfs/main.c
-@@ -732,12 +732,13 @@ static int ecryptfs_init_kmem_caches(void)
- 
- static struct kset *ecryptfs_kset;
- 
--static ssize_t version_show(struct kset *kset, char *buff)
-+static ssize_t version_show(struct kobject *kobj,
-+			    struct kobj_attribute *attr, char *buff)
- {
- 	return snprintf(buff, PAGE_SIZE, "%d\n", ECRYPTFS_VERSIONING_MASK);
- }
- 
--static struct subsys_attribute version_attr = __ATTR_RO(version);
-+static struct kobj_attribute version_attr = __ATTR_RO(version);
- 
- static struct ecryptfs_version_str_map_elem {
- 	u32 flag;
-@@ -751,7 +752,8 @@ static struct ecryptfs_version_str_map_elem {
- 	{ECRYPTFS_VERSIONING_MULTKEY, "multiple keys per file"}
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 155d743..e8033c1 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -547,18 +547,13 @@ struct user_struct {
+ #ifdef CONFIG_FAIR_USER_SCHED
+ 	struct task_group *tg;
+ #ifdef CONFIG_SYSFS
+-	struct kset kset;
+-	struct subsys_attribute user_attr;
++	struct kobject kobj;
+ 	struct work_struct work;
+ #endif
+ #endif
  };
  
--static ssize_t version_str_show(struct kset *kset, char *buff)
-+static ssize_t version_str_show(struct kobject *kobj,
-+				struct kobj_attribute *attr, char *buff)
- {
- 	int i;
- 	int remaining = PAGE_SIZE;
-@@ -778,7 +780,7 @@ out:
- 	return total_written;
- }
+-#ifdef CONFIG_FAIR_USER_SCHED
+-extern int uids_kobject_init(void);
+-#else
+-static inline int uids_kobject_init(void) { return 0; }
+-#endif
++extern int uids_sysfs_init(void);
  
--static struct subsys_attribute version_attr_str = __ATTR_RO(version_str);
-+static struct kobj_attribute version_attr_str = __ATTR_RO(version_str);
+ extern struct user_struct *find_user(uid_t);
  
- static struct attribute *attributes[] = {
- 	&version_attr.attr,
 diff --git a/kernel/ksysfs.c b/kernel/ksysfs.c
-index b4f5116..ea07bcf 100644
+index ea07bcf..e3293e7 100644
 --- a/kernel/ksysfs.c
 +++ b/kernel/ksysfs.c
-@@ -18,30 +18,34 @@
- #include <linux/err.h>
+@@ -142,11 +142,8 @@ static int __init ksysfs_init(void)
+ 			goto group_exit;
+ 	}
  
- #define KERNEL_ATTR_RO(_name) \
--static struct subsys_attribute _name##_attr = __ATTR_RO(_name)
-+static struct kobj_attribute _name##_attr = __ATTR_RO(_name)
+-	/*
+-	 * Create "/sys/kernel/uids" directory and corresponding root user's
+-	 * directory under it.
+-	 */
+-	error = uids_kobject_init();
++	/* create the /sys/kernel/uids/ directory */
++	error = uids_sysfs_init();
+ 	if (error)
+ 		goto notes_exit;
  
- #define KERNEL_ATTR_RW(_name) \
--static struct subsys_attribute _name##_attr = \
-+static struct kobj_attribute _name##_attr = \
- 	__ATTR(_name, 0644, _name##_show, _name##_store)
+diff --git a/kernel/user.c b/kernel/user.c
+index 75d9f9b..c9fffa1 100644
+--- a/kernel/user.c
++++ b/kernel/user.c
+@@ -115,7 +115,7 @@ static void sched_switch_user(struct task_struct *p) { }
  
- #if defined(CONFIG_HOTPLUG) && defined(CONFIG_NET)
- /* current uevent sequence number */
--static ssize_t uevent_seqnum_show(struct kset *kset, char *page)
-+static ssize_t uevent_seqnum_show(struct kobject *kobj,
-+				  struct kobj_attribute *attr, char *buf)
- {
--	return sprintf(page, "%llu\n", (unsigned long long)uevent_seqnum);
-+	return sprintf(buf, "%llu\n", (unsigned long long)uevent_seqnum);
- }
- KERNEL_ATTR_RO(uevent_seqnum);
+ #if defined(CONFIG_FAIR_USER_SCHED) && defined(CONFIG_SYSFS)
  
- /* uevent helper program, used during early boo */
--static ssize_t uevent_helper_show(struct kset *kset, char *page)
-+static ssize_t uevent_helper_show(struct kobject *kobj,
-+				  struct kobj_attribute *attr, char *buf)
- {
--	return sprintf(page, "%s\n", uevent_helper);
-+	return sprintf(buf, "%s\n", uevent_helper);
- }
--static ssize_t uevent_helper_store(struct kset *kset, const char *page, size_t count)
-+static ssize_t uevent_helper_store(struct kobject *kobj,
-+				   struct kobj_attribute *attr,
-+				   const char *buf, size_t count)
- {
- 	if (count+1 > UEVENT_HELPER_PATH_LEN)
- 		return -ENOENT;
--	memcpy(uevent_helper, page, count);
-+	memcpy(uevent_helper, buf, count);
- 	uevent_helper[count] = '\0';
- 	if (count && uevent_helper[count-1] == '\n')
- 		uevent_helper[count-1] = '\0';
-@@ -51,21 +55,24 @@ KERNEL_ATTR_RW(uevent_helper);
- #endif
+-static struct kobject uids_kobject; /* represents /sys/kernel/uids directory */
++static struct kset *uids_kset; /* represents the /sys/kernel/uids/ directory */
+ static DEFINE_MUTEX(uids_mutex);
  
- #ifdef CONFIG_KEXEC
--static ssize_t kexec_loaded_show(struct kset *kset, char *page)
-+static ssize_t kexec_loaded_show(struct kobject *kobj,
-+				 struct kobj_attribute *attr, char *buf)
- {
--	return sprintf(page, "%d\n", !!kexec_image);
-+	return sprintf(buf, "%d\n", !!kexec_image);
- }
- KERNEL_ATTR_RO(kexec_loaded);
- 
--static ssize_t kexec_crash_loaded_show(struct kset *kset, char *page)
-+static ssize_t kexec_crash_loaded_show(struct kobject *kobj,
-+				       struct kobj_attribute *attr, char *buf)
- {
--	return sprintf(page, "%d\n", !!kexec_crash_image);
-+	return sprintf(buf, "%d\n", !!kexec_crash_image);
- }
- KERNEL_ATTR_RO(kexec_crash_loaded);
- 
--static ssize_t vmcoreinfo_show(struct kset *kset, char *page)
-+static ssize_t vmcoreinfo_show(struct kobject *kobj,
-+			       struct kobj_attribute *attr, char *buf)
- {
--	return sprintf(page, "%lx %x\n",
-+	return sprintf(buf, "%lx %x\n",
- 		       paddr_vmcoreinfo_note(),
- 		       (unsigned int)vmcoreinfo_max_size);
- }
-diff --git a/kernel/power/disk.c b/kernel/power/disk.c
-index 05fbe67..c8062cc 100644
---- a/kernel/power/disk.c
-+++ b/kernel/power/disk.c
-@@ -557,7 +557,8 @@ static const char * const hibernation_modes[] = {
-  *	supports it (as determined by having hibernation_ops).
-  */
- 
--static ssize_t disk_show(struct kset *kset, char *buf)
-+static ssize_t disk_show(struct kobject *kobj, struct kobj_attribut *attr,
-+			 char *buf)
- {
- 	int i;
- 	char *start = buf;
-@@ -587,7 +588,8 @@ static ssize_t disk_show(struct kset *kset, char *buf)
+ static inline void uids_mutex_lock(void)
+@@ -128,86 +128,84 @@ static inline void uids_mutex_unlock(void)
+ 	mutex_unlock(&uids_mutex);
  }
  
- 
--static ssize_t disk_store(struct kset *kset, const char *buf, size_t n)
-+static ssize_t disk_store(struct kobject *kobj, struct kobj_attribut *attr,
-+			  const char *buf, size_t n)
- {
- 	int error = 0;
- 	int i;
-@@ -632,13 +634,15 @@ static ssize_t disk_store(struct kset *kset, const char *buf, size_t n)
- 
- power_attr(disk);
- 
--static ssize_t resume_show(struct kset *kset, char *buf)
-+static ssize_t resume_show(struct kobject *kobj, struct kobj_attribut *attr,
-+			   char *buf)
- {
- 	return sprintf(buf,"%d:%d\n", MAJOR(swsusp_resume_device),
- 		       MINOR(swsusp_resume_device));
- }
- 
--static ssize_t resume_store(struct kset *kset, const char *buf, size_t n)
-+static ssize_t resume_store(struct kobject *kobj, struct kobj_attribut *attr,
-+			    const char *buf, size_t n)
- {
- 	unsigned int maj, min;
- 	dev_t res;
-@@ -664,12 +668,14 @@ static ssize_t resume_store(struct kset *kset, const char *buf, size_t n)
- 
- power_attr(resume);
- 
--static ssize_t image_size_show(struct kset *kset, char *buf)
-+static ssize_t image_size_show(struct kobject *kobj, struct kobj_attribut *attr,
+-/* return cpu shares held by the user */
+-static ssize_t cpu_shares_show(struct kset *kset, char *buffer)
++/* uid directory attributes */
++static ssize_t cpu_shares_show(struct kobject *kobj,
++			       struct kobj_attribute *attr,
 +			       char *buf)
  {
- 	return sprintf(buf, "%lu\n", image_size);
+-	struct user_struct *up = container_of(kset, struct user_struct, kset);
++	struct user_struct *up = container_of(kobj, struct user_struct, kobj);
+ 
+-	return sprintf(buffer, "%lu\n", sched_group_shares(up->tg));
++	return sprintf(buf, "%lu\n", sched_group_shares(up->tg));
  }
  
--static ssize_t image_size_store(struct kset *kset, const char *buf, size_t n)
-+static ssize_t image_size_store(struct kobject *kobj, struct kobj_attribut *attr,
-+				const char *buf, size_t n)
+-/* modify cpu shares held by the user */
+-static ssize_t cpu_shares_store(struct kset *kset, const char *buffer,
+-				size_t size)
++static ssize_t cpu_shares_store(struct kobject *kobj,
++				struct kobj_attribute *attr,
++				const char *buf, size_t size)
  {
- 	unsigned long size;
+-	struct user_struct *up = container_of(kset, struct user_struct, kset);
++	struct user_struct *up = container_of(kobj, struct user_struct, kobj);
+ 	unsigned long shares;
+ 	int rc;
  
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 6651a3c..f0f506b 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -287,7 +287,8 @@ struct kset *power_kset;
-  *	proper enumerated value, and initiates a suspend transition.
+-	sscanf(buffer, "%lu", &shares);
++	sscanf(buf, "%lu", &shares);
+ 
+ 	rc = sched_group_set_shares(up->tg, shares);
+ 
+ 	return (rc ? rc : size);
+ }
+ 
+-static void user_attr_init(struct subsys_attribute *sa, char *name, int mode)
++static struct kobj_attribute cpu_share_attr =
++	__ATTR(cpu_share, 0644, cpu_shares_show, cpu_shares_store);
++
++/* default attributes per uid directory */
++static struct attribute *uids_attributes[] = {
++	&cpu_share_attr.attr,
++	NULL
++};
++
++/* the lifetime of user_struct is not managed by the core (now) */
++static void uids_release(struct kobject *kobj)
+ {
+-	sa->attr.name = name;
+-	sa->attr.mode = mode;
+-	sa->show = cpu_shares_show;
+-	sa->store = cpu_shares_store;
++	return;
+ }
+ 
+-/* Create "/sys/kernel/uids/<uid>" directory and
+- *  "/sys/kernel/uids/<uid>/cpu_share" file for this user.
+- */
+-static int user_kobject_create(struct user_struct *up)
++static struct kobj_type uids_ktype = {
++	.sysfs_ops = &kobj_sysfs_ops,
++	.default_attrs = uids_attributes,
++	.release = uids_release,
++};
++
++/* create /sys/kernel/uids/<uid>/cpu_share file for this user */
++static int uids_user_create(struct user_struct *up)
+ {
+-	struct kset *kset = &up->kset;
+-	struct kobject *kobj = &kset->kobj;
++	struct kobject *kobj = &up->kobj;
+ 	int error;
+ 
+-	memset(kset, 0, sizeof(struct kset));
+-	kobj->parent = &uids_kobject;	/* create under /sys/kernel/uids dir */
+-	kobject_set_name(kobj, "%d", up->uid);
+-	kset_init(kset);
+-	user_attr_init(&up->user_attr, "cpu_share", 0644);
+-
++	memset(kobj, 0, sizeof(struct kobject));
++	kobject_init(kobj);
++	kobj->ktype = &uids_ktype;
++	kobj->kset = uids_kset;
++	kobject_set_name(&up->kobj, "%d", up->uid);
+ 	error = kobject_add(kobj);
+ 	if (error)
+ 		goto done;
+ 
+-	error = sysfs_create_file(kobj, &up->user_attr.attr);
+-	if (error)
+-		kobject_del(kobj);
+-
+ 	kobject_uevent(kobj, KOBJ_ADD);
+-
+ done:
+ 	return error;
+ }
+ 
+-/* create these in sysfs filesystem:
++/* create these entries in sysfs:
+  * 	"/sys/kernel/uids" directory
+  * 	"/sys/kernel/uids/0" directory (for root user)
+  * 	"/sys/kernel/uids/0/cpu_share" file (for root user)
   */
- 
--static ssize_t state_show(struct kset *kset, char *buf)
-+static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *attr,
-+			  char *buf)
+-int __init uids_kobject_init(void)
++int __init uids_sysfs_init(void)
  {
- 	char *s = buf;
- #ifdef CONFIG_SUSPEND
-@@ -308,7 +309,8 @@ static ssize_t state_show(struct kset *kset, char *buf)
- 	return (s - buf);
+-	int error;
++	uids_kset = kset_create_and_register("uids", NULL, NULL, kernel_kset);
++	if (IS_ERR(uids_kset))
++		return PTR_ERR(uids_kset);
+ 
+-	/* create under /sys/kernel dir */
+-	uids_kobject.parent = &kernel_kset->kobj;
+-	uids_kobject.kset = kernel_kset;
+-	kobject_set_name(&uids_kobject, "uids");
+-	kobject_init(&uids_kobject);
+-
+-	error = kobject_add(&uids_kobject);
+-	if (!error)
+-		error = user_kobject_create(&root_user);
+-
+-	return error;
++	return uids_user_create(&root_user);
  }
  
--static ssize_t state_store(struct kset *kset, const char *buf, size_t n)
-+static ssize_t state_store(struct kobject *kobj, struct kobj_attribute *attr,
-+			   const char *buf, size_t n)
+ /* work function to remove sysfs directory for a user and free up
+@@ -216,7 +214,6 @@ int __init uids_kobject_init(void)
+ static void remove_user_sysfs_dir(struct work_struct *w)
  {
- #ifdef CONFIG_SUSPEND
- 	suspend_state_t state = PM_SUSPEND_STANDBY;
-@@ -345,13 +347,15 @@ power_attr(state);
- #ifdef CONFIG_PM_TRACE
- int pm_trace_enabled;
+ 	struct user_struct *up = container_of(w, struct user_struct, work);
+-	struct kobject *kobj = &up->kset.kobj;
+ 	unsigned long flags;
+ 	int remove_user = 0;
  
--static ssize_t pm_trace_show(struct kset *kset, char *buf)
-+static ssize_t pm_trace_show(struct kobject *kobj, struct kobj_attribute *attr,
-+			     char *buf)
- {
- 	return sprintf(buf, "%d\n", pm_trace_enabled);
- }
+@@ -238,9 +235,9 @@ static void remove_user_sysfs_dir(struct work_struct *w)
+ 	if (!remove_user)
+ 		goto done;
  
- static ssize_t
--pm_trace_store(struct kset *kset, const char *buf, size_t n)
-+pm_trace_store(struct kobject *kobj, struct kobj_attribute *attr,
-+	       const char *buf, size_t n)
- {
- 	int val;
+-	sysfs_remove_file(kobj, &up->user_attr.attr);
+-	kobject_uevent(kobj, KOBJ_REMOVE);
+-	kobject_del(kobj);
++	kobject_uevent(&up->kobj, KOBJ_REMOVE);
++	kobject_del(&up->kobj);
++	kobject_put(&up->kobj);
  
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index 1083e6b..2093c3a 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -54,7 +54,7 @@ extern int pfn_is_nosave(unsigned long);
- extern struct mutex pm_mutex;
+ 	sched_destroy_user(up);
+ 	key_put(up->uid_keyring);
+@@ -267,7 +264,8 @@ static inline void free_user(struct user_struct *up, unsigned long flags)
  
- #define power_attr(_name) \
--static struct subsys_attribute _name##_attr = {	\
-+static struct kobj_attribute _name##_attr = {	\
- 	.attr	= {				\
- 		.name = __stringify(_name),	\
- 		.mode = 0644,			\
-diff --git a/lib/kobject.c b/lib/kobject.c
-index bc2ba8c..dda6614 100644
---- a/lib/kobject.c
-+++ b/lib/kobject.c
-@@ -524,9 +524,8 @@ static void dir_release(struct kobject *kobj)
- }
+ #else	/* CONFIG_FAIR_USER_SCHED && CONFIG_SYSFS */
  
- static struct kobj_type dir_ktype = {
-+	.sysfs_ops	= &kobj_sysfs_ops,
- 	.release	= dir_release,
--	.sysfs_ops	= NULL,
--	.default_attrs	= NULL,
- };
+-static inline int user_kobject_create(struct user_struct *up) { return 0; }
++int uids_sysfs_init(void) { return 0; }
++static inline int uids_user_create(struct user_struct *up) { return 0; }
+ static inline void uids_mutex_lock(void) { }
+ static inline void uids_mutex_unlock(void) { }
  
- /**
-@@ -699,7 +698,8 @@ static void kset_release(struct kobject *kobj)
- 	kfree(kset);
- }
+@@ -324,7 +322,7 @@ struct user_struct * alloc_uid(struct user_namespace *ns, uid_t uid)
+ 	struct hlist_head *hashent = uidhashentry(ns, uid);
+ 	struct user_struct *up;
  
--static struct kobj_type kset_type = {
-+static struct kobj_type kset_ktype = {
-+	.sysfs_ops	= &kobj_sysfs_ops,
- 	.release = kset_release,
- };
+-	/* Make uid_hash_find() + user_kobject_create() + uid_hash_insert()
++	/* Make uid_hash_find() + uids_user_create() + uid_hash_insert()
+ 	 * atomic.
+ 	 */
+ 	uids_mutex_lock();
+@@ -365,7 +363,7 @@ struct user_struct * alloc_uid(struct user_namespace *ns, uid_t uid)
+ 			return NULL;
+ 		}
  
-@@ -741,7 +741,7 @@ static struct kset *kset_create(const char *name,
- 	kset->uevent_ops = uevent_ops;
- 	kset->kobj.parent = parent_kobj;
- 	kset->kobj.kset = parent_kset;
--	kset->kobj.ktype = &kset_type;
-+	kset->kobj.ktype = &kset_ktype;
- 
- 	return kset;
- }
+-		if (user_kobject_create(new)) {
++		if (uids_user_create(new)) {
+ 			sched_destroy_user(new);
+ 			key_put(new->uid_keyring);
+ 			key_put(new->session_keyring);
 -- 
 1.5.3.4
 
