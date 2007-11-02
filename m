@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761375AbXKBVUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756438AbXKBVUt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761375AbXKBVUd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 17:20:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758282AbXKBVUF
+	id S1756438AbXKBVUt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 17:20:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761113AbXKBVUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 17:20:05 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36119
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757346AbXKBVUD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 17:20:03 -0400
-Date: Fri, 02 Nov 2007 14:20:02 -0700 (PDT)
-Message-Id: <20071102.142002.56666600.davem@davemloft.net>
-To: djohnson+linux-kernel@sw.starentnetworks.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       bguo@sw.starentnetworks.com, mchan@broadcom.com
-Subject: Re: expected behavior of PF_PACKET on NETIF_F_HW_VLAN_RX device?
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <18219.26528.485099.317944@zeus.sw.starentnetworks.com>
-References: <4729EAFF.9050606@candelatech.com>
-	<18218.18134.353553.189622@zeus.sw.starentnetworks.com>
-	<18219.26528.485099.317944@zeus.sw.starentnetworks.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 2 Nov 2007 17:20:16 -0400
+Received: from mail.trixing.net ([87.230.125.58]:53184 "EHLO mail.trixing.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760892AbXKBVUN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 17:20:13 -0400
+Message-ID: <472B9479.7040105@l4x.org>
+Date: Fri, 02 Nov 2007 22:19:53 +0100
+From: Jan Dittmer <jdi@l4x.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+MIME-Version: 1.0
+To: David Howells <dhowells@redhat.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <15675.1193753820@redhat.com> <4726337B.1080608@l4x.org> <4725B553.4060502@l4x.org> <4220.1193663179@redhat.com> <15712.1193753924@redhat.com>
+In-Reply-To: <15712.1193753924@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 192.168.1.106
+X-SA-Exim-Mail-From: jdi@l4x.org
+Subject: Re: Working frv toolchain?
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:51:29 +0000)
+X-SA-Exim-Scanned: Yes (on mail.trixing.net)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
-Date: Fri, 2 Nov 2007 14:08:32 -0400
+David Howells wrote:
+> David Howells <dhowells@redhat.com> wrote:
+> 
+>> Ah... I'd forgotten about that.  I'm not sure all the ASM constraint changes
+>> are upstream yet, and gcc bz 28583 also gets incurred.  Are you particularly
+>> interested in building your own compiler, or would one of ours do?
+> 
+> Look in:
+> 
+> 	ftp://ftp.redhat.com/pub/redhat/gnupro/FRV
 
-> These changes seems to cause this issue:
-> 
-> >  [BNX2]: Fix VLAN on ASF
-> >  
-> >  Always set up the device to strip incoming VLAN tags when ASF is
-> >  enabled. ASF firmware will not parse packets correctly if VLAN tags
-> >  are not stripped.
-> >  
-> >  Signed-off-by: Michael Chan <mchan@broadcom.com>
-> >  Signed-off-by: David S. Miller <davem@davemloft.net>
-> >  
-> >  GIT: e29054f92d7d575631691865c1b95bee5bc974cc
-> 
-> and
-> 
-> > ChangeSet@1.1371.72.2, 2003-12-02 02:34:13-08:00, davem@nuts.ninka.net +1 -0
-> >   [TG3]: Do not set RX_MODE_KEEP_VLAN_TAG when ASF is enabled.
-> 
-> 
-> Could you elaborate if this is really needed, if so is there some
-> workaround that could be done instead?
-> 
-> Simply removing the check seemed to work for me, but I'm unsure if
-> this is actually a valid thing to do with these MACs.
+Hrm, that gets me further, but one of the final stages fail:
 
-Unfortunately the ASF firmware is very picky.
+   CC      init/version.o
+   LD      init/built-in.o
+   LD      .tmp_vmlinux1
+kernel/built-in.o(.text+0x2e684): In function `kallsyms_lookup_name':
+: relocation truncated to fit: R_FRV_GPREL12 kallsyms_num_syms
+kernel/built-in.o(.text+0x2e6d4): In function `kallsyms_lookup_name':
+: relocation truncated to fit: R_FRV_GPREL12 kallsyms_num_syms
+kernel/built-in.o(.text+0x2e750): In function `get_symbol_pos':
+: relocation truncated to fit: R_FRV_GPREL12 kallsyms_num_syms
+kernel/built-in.o(.text+0x2ed00): In function `update_iter':
+: relocation truncated to fit: R_FRV_GPREL12 kallsyms_num_syms
+make[1]: *** [.tmp_vmlinux1] Error 1
+make: *** [sub-make] Error 2
 
-I think were are stuck with this behavior.
+Todays git tree. Is there any known good release I can test
+this toolchain against?
+
+Thanks,
+
+Jan
