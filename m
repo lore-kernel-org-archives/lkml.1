@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755585AbXKEIGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756505AbXKEIHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755585AbXKEIGm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 03:06:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbXKEIGe
+	id S1756505AbXKEIHe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 03:07:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbXKEIH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 03:06:34 -0500
-Received: from py-out-1112.google.com ([64.233.166.178]:64860 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751267AbXKEIGd (ORCPT
+	Mon, 5 Nov 2007 03:07:27 -0500
+Received: from 170.Red-213-96-222.staticIP.rima-tde.net ([213.96.222.170]:36093
+	"EHLO smtp.ferdyx.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751444AbXKEIH0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 03:06:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent;
-        b=OC61yWT6zdfnRhoxMMKTpq3a5Qm709bif1sfylSWkewkDREq8KtudfW2z9v1LGqkionU0K7XQAs6FYq95l7yjp9uODNXouFGuSYZJF1xDoJiKwdl4LD1MoxEkGNch3DCWNZ2RUIrRow/yPfulzObngRx5O/vbE89etrlxeGU2qg=
-Date: Mon, 5 Nov 2007 03:06:28 -0500
-From: Joseph Fannin <jfannin@gmail.com>
-To: Bo =?iso-8859-1?Q?Brant=E9n?= <bosse@acc.umu.se>
-Cc: linux-kernel@vger.kernel.org, mpm@selenic.com
-Subject: Re: x86_64 ten times slower than i386
-Message-ID: <20071105080628.GA6313@nineveh.local>
-Mail-Followup-To: Bo =?iso-8859-1?Q?Brant=E9n?= <bosse@acc.umu.se>,
-	linux-kernel@vger.kernel.org, mpm@selenic.com
-References: <Pine.A41.4.64.0711031329490.397338@stalin.acc.umu.se> <20071103162640.GS17536@waste.org> <Pine.A41.4.64.0711032334170.770224@stalin.acc.umu.se>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.A41.4.64.0711032334170.770224@stalin.acc.umu.se>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Mon, 5 Nov 2007 03:07:26 -0500
+Date: Fri, 2 Nov 2007 00:05:07 +0000
+From: Ciaran McCreesh <ciaran.mccreesh@blueyonder.co.uk>
+To: Francois Romieu <romieu@fr.zoreil.com>
+Cc: Josh Logan <joshtlogan@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jeff Garzik <jeff@garzik.org>, Edward Hsu <edward_hsu@realtek.com.tw>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Abit F-190HD Onboard rlt8169 Ethernet Controller
+Message-ID: <20071102000507.4fb427a5@snowcone>
+In-Reply-To: <20071101215348.GA17449@electric-eye.fr.zoreil.com>
+References: <20071029061532.5d10dfc6@snowcone>
+	<20071029083333.18a4dab7@the-village.bc.nu>
+	<4729FC36.3040000@gmail.com>
+	<20071101215348.GA17449@electric-eye.fr.zoreil.com>
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 03, 2007 at 11:38:24PM +0100, Bo Brantén wrote:
-> On Sat, 3 Nov 2007, Matt Mackall wrote:
->
->> This is typically due to a problem with the setup of your MTRRs. Try
->> booting with mem=nnnM where nnn is some number smaller than your
->> actual amount of memory.
->
-> Thank you for that advice, the system has 4GB and if I boot with mem=3072M
-> it will run as fast as normal
+On Thu, 1 Nov 2007 22:53:48 +0100
+Francois Romieu <romieu@fr.zoreil.com> wrote:
+> Josh Logan <joshtlogan@gmail.com> :
+> [...]
+> > I have had this board for a few months as well and I have needed to 
+> > patch the driver to use 0x0001 as well.
+> 
+> Ok.
+> 
+> Can people give the patch below a try before I submit it to Jeff ?
 
-Also, check if a BIOS upgrade is available -- it's possible that a
-newer BIOS will have fixed this.
+Yes, that works.
 
---
-Joseph Fannin
-jfannin@gmail.com
-
+Thanks,
+-- 
+Ciaran McCreesh
