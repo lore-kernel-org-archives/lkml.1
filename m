@@ -1,127 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759604AbXKBSLI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758107AbXKBSR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759604AbXKBSLI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 14:11:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756640AbXKBSK4
+	id S1758107AbXKBSR1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 14:17:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755673AbXKBSRS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 14:10:56 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:45540 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755450AbXKBSK4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 14:10:56 -0400
-Date: Fri, 2 Nov 2007 10:38:15 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Zou Nan hai <nanhai.zou@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: [patch 9/9] Revert "x86_64: allocate sparsemem memmap above 4G"
-Message-ID: <20071102173815.GJ6378@kroah.com>
-References: <20071102173359.709442489@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="revert-x86_64-allocate-sparsemem-memmap-above-4g.patch"
-In-Reply-To: <20071102173733.GA6378@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+	Fri, 2 Nov 2007 14:17:18 -0400
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:41979 "EHLO mo11.iij4u.or.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753615AbXKBSRR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 14:17:17 -0400
+Date: Sat, 3 Nov 2007 03:11:29 +0900
+To: muli@il.ibm.com
+Cc: tomof@acm.org, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       James.Bottomley@SteelEye.com, jens.axboe@oracle.com, jeff@garzik.org,
+       anil.s.keshavamurthy@intel.com, paulus@samba.org, anton@samba.org,
+       olof@lixom.net, tony.luck@intel.com, davem@davemloft.net,
+       kyle@parisc-linux.org, fujita.tomonori@lab.ntt.co.jp
+Cc: fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH -mm 0/3] convert IOMMUs to use iova
+From: FUJITA Tomonori <tomof@acm.org>
+In-Reply-To: <20071102171227.GH7975@rhun.haifa.ibm.com>
+References: <bfa0a387d445abb10ae67cf1541a6e20b9c0d31e.tomof@acm.org>
+	<20071102171227.GH7975@rhun.haifa.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20071103031349S.tomof@acm.org>
+X-Dispatcher: imput version 20050308(IM148)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.22-stable review patch.  If anyone has any objections, please let us
-know.
+On Fri, 2 Nov 2007 19:12:27 +0200
+Muli Ben-Yehuda <muli@il.ibm.com> wrote:
 
-------------------
-From: Linus Torvalds <torvalds@linux-foundation.org>
+> On Sat, Nov 03, 2007 at 02:05:39AM +0900, FUJITA Tomonori wrote:
+> 
+> > This patchset convert the PPC64 IOMMU to use the iova code for free
+> > area management.
+> > 
+> > The IOMMUs ignores low level drivers' restrictions, the maximum
+> > segment size and segment boundary.
+> > 
+> > I fixed the former:
+> > 
+> > http://thread.gmane.org/gmane.linux.scsi/35602
+> > 
+> > The latter makes the free area management complicated. I'd like to
+> > convert IOMMUs to use the iova code (that intel-iommu introduced)
+> > for free area management and enable iova to handle segment boundary
+> > restrictions, rather than fixing all the IOMMUs' free area
+> > management,
+> 
+> In general it sounds like a great idea, but have you looked at what
+> impact this has on the performance of the IO path?
 
-patch 6a22c57b8d2a62dea7280a6b2ac807a539ef0716 in mainline.
+Not yet. And I have access to only an entry-class pSeries server so I
+would appreciate it if POWERPC people try the patchset with high-end
+servers.
 
-This reverts commit 2e1c49db4c640b35df13889b86b9d62215ade4b6.
+The patchset doesn't use the tricks that the current POWERPC IOMMU use
+to improve performance (Anton and Olof told me about them, Thanks!)
+. So I might need to modify iova for them.
 
-First off, testing in Fedora has shown it to cause boot failures,
-bisected down by Martin Ebourne, and reported by Dave Jobes.  So the
-commit will likely be reverted in the 2.6.23 stable kernels.
+I think that it's difficult to use some tricks used in the IOMMUs with
+the iova even if we modify the iova. If the iova degrades performance,
+I think that it would be better to have new IOMMU library code to use
+simply a bit map that most of the IOMMUs use.
 
-Secondly, in the 2.6.24 model, x86-64 has now grown support for
-SPARSEMEM_VMEMMAP, which disables the relevant code anyway, so while the
-bug is not visible any more, it's become invisible due to the code just
-being irrelevant and no longer enabled on the only architecture that
-this ever affected.
-
-backported to 2.6.22 by Chuck Ebbert
-
-Reported-by: Dave Jones <davej@redhat.com>
-Tested-by: Martin Ebourne <fedora@ebourne.me.uk>
-Cc: Zou Nan hai <nanhai.zou@intel.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Acked-by: Andy Whitcroft <apw@shadowen.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
-
----
- arch/x86_64/mm/init.c   |    5 -----
- include/linux/bootmem.h |    1 -
- mm/sparse.c             |   11 -----------
- 3 files changed, 17 deletions(-)
-
---- a/arch/x86_64/mm/init.c
-+++ b/arch/x86_64/mm/init.c
-@@ -769,8 +769,3 @@ int in_gate_area_no_task(unsigned long a
- 	return (addr >= VSYSCALL_START) && (addr < VSYSCALL_END);
- }
- 
--void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
--{
--	return __alloc_bootmem_core(pgdat->bdata, size,
--			SMP_CACHE_BYTES, (4UL*1024*1024*1024), 0);
--}
---- a/include/linux/bootmem.h
-+++ b/include/linux/bootmem.h
-@@ -59,7 +59,6 @@ extern void *__alloc_bootmem_core(struct
- 				  unsigned long align,
- 				  unsigned long goal,
- 				  unsigned long limit);
--extern void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size);
- 
- #ifndef CONFIG_HAVE_ARCH_BOOTMEM_NODE
- extern void reserve_bootmem(unsigned long addr, unsigned long size);
---- a/mm/sparse.c
-+++ b/mm/sparse.c
-@@ -209,12 +209,6 @@ static int __meminit sparse_init_one_sec
- 	return 1;
- }
- 
--__attribute__((weak))
--void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
--{
--	return NULL;
--}
--
- static struct page __init *sparse_early_mem_map_alloc(unsigned long pnum)
- {
- 	struct page *map;
-@@ -225,11 +219,6 @@ static struct page __init *sparse_early_
- 	if (map)
- 		return map;
- 
--  	map = alloc_bootmem_high_node(NODE_DATA(nid),
--                       sizeof(struct page) * PAGES_PER_SECTION);
--	if (map)
--		return map;
--
- 	map = alloc_bootmem_node(NODE_DATA(nid),
- 			sizeof(struct page) * PAGES_PER_SECTION);
- 	if (map)
-
--- 
+Another possible factor to degrade performance is that we can't
+allocate areas for map_sg at one stroke like some of the IOMMUs do.
+We need to allocate an area per sg segment to handle segment boundary.
+If it's unacceptable, I guess that there is only one way, LLDs
+allocate many sg entries and then the IOMMU splits the sg entryes.
