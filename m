@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756283AbXKBPVI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbXKBPZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756283AbXKBPVI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 11:21:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754715AbXKBPU4
+	id S1756146AbXKBPZt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 11:25:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbXKBPZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 11:20:56 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:45039 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754610AbXKBPUz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 11:20:55 -0400
-Subject: Re: [patch 0/7] [RFC] SLUB: Improve allocpercpu to reduce per cpu
-	access overhead
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       mathieu.desnoyers@polymtl.ca, penberg@cs.helsinki.fi
-In-Reply-To: <Pine.LNX.4.64.0711020734070.26635@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0711011511450.22508@schroedinger.engr.sgi.com>
-	 <20071101.153824.91808126.davem@davemloft.net>
-	 <Pine.LNX.4.64.0711011545370.23379@schroedinger.engr.sgi.com>
-	 <20071101.155805.65012933.davem@davemloft.net>
-	 <1193999326.27652.348.camel@twins>
-	 <Pine.LNX.4.64.0711020734070.26635@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Fri, 02 Nov 2007 16:20:36 +0100
-Message-Id: <1194016836.27652.406.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 2 Nov 2007 11:25:43 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47961 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754115AbXKBPZm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 11:25:42 -0400
+Date: Fri, 2 Nov 2007 16:25:29 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: delayacct regression in 2.6.24 git
+Message-ID: <20071102152529.GB20134@elte.hu>
+References: <472B2908.7020507@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <472B2908.7020507@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-11-02 at 07:35 -0700, Christoph Lameter wrote:
 
-> Well I wonder if I should introduce it not as a replacement but as an 
-> alternative to allocpercpu? We can then gradually switch over. The 
-> existing API does not allow the specification of gfp_masks or alignements.
+* Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-I've thought about suggesting that very thing. However, I think we need
-to have a clear view of where we're going with that so that we don't end
-up with two per cpu allocators because some users could not be converted
-over or some such.
+> Hi, Ingo,
+> 
+> I missed commit 75d4ef16a6aa84f708188bada182315f80aab6fa
+> "sched: fix delay accounting performance regression"
+> 
+> Without these changes, I find that delay accounting does
+> not work as expected, I see zeros in the field for virtual,delay
+> and count(s).
+> 
+> CPU             count     real total  virtual total    delay total
+>                     0      535861848              0              0
+> 
+> 
+> This breaks existing delay accounting behaviour.
+> 
+> Am I missing something?
 
+delay accounting was causing context-switch slowdown because it called 
+sched_clock() explicitly - but indeed my fix to that is wrong ...
 
+how about reverting the change but also using rq->clock instead of 
+sched_clock()?
 
-
+	Ingo
