@@ -1,87 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756126AbXKBNdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbXKBNe1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756126AbXKBNdi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 09:33:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbXKBNd3
+	id S1756212AbXKBNe1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 09:34:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbXKBNeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 09:33:29 -0400
-Received: from ip-svs-1.Informatik.Uni-Oldenburg.DE ([134.106.12.126]:51759
-	"EHLO schlidder.svs.informatik.uni-oldenburg.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754096AbXKBNd2 (ORCPT
+	Fri, 2 Nov 2007 09:34:19 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:63556 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753907AbXKBNeS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 09:33:28 -0400
-Date: Fri, 2 Nov 2007 14:33:23 +0100
-From: Philipp Matthias Hahn <pmhahn@titan.lahn.de>
-To: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [2.6.23] IBM X41 looses time after Suspend2Disk
-Message-ID: <20071102133323.GC2780@titan.lahn.de>
-Mail-Followup-To: Pavel Machek <pavel@ucw.cz>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-pm@lists.linux-foundation.org,
-	Thomas Gleixner <tglx@linutronix.de>
-References: <20071029201955.GA1955@titan.lahn.de> <200710292205.11459.rjw@sisk.pl> <20071030083537.GA2797@titan.lahn.de> <200710302220.34490.rjw@sisk.pl> <20071029201955.GA1955@titan.lahn.de> <20071029212414.GD3692@elf.ucw.cz> <20071029201955.GA1955@titan.lahn.de> <200710292205.11459.rjw@sisk.pl> <20071030083537.GA2797@titan.lahn.de> <20071030210801.GA1767@elf.ucw.cz>
+	Fri, 2 Nov 2007 09:34:18 -0400
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
+Subject: [PATCH 1/2] IB/ehca: Return physical link information in query_port()
+Date: Fri, 2 Nov 2007 15:33:51 +0200
+User-Agent: KMail/1.9.1
+Cc: "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+References: <200711021432.50203.fenkes@de.ibm.com>
+In-Reply-To: <200711021432.50203.fenkes@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200710302220.34490.rjw@sisk.pl> <20071030210801.GA1767@elf.ucw.cz>
-Organization: UUCP-Freunde Lahn e.V.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200711021433.51565.fenkes@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+Newer firmware versions return physical port information to the partition,
+so hand that information to the consumer if it's present.
 
-On Tue, Oct 30, 2007 at 10:08:01PM +0100, Pavel Machek wrote:
-> > > On Monday, 29 October 2007 21:19, Philipp Matthias Hahn wrote:
-> > > > I have an IBM X41 tablet pc running 2.6.23 with the following problem:
-> > > > Suspend2Ram work fine, but when I do a Suspend2Disk (echo disk >
-> > > > /sys/power/state), the notebook hangs showing the following lines:
-> > ...
-> > > >         Suspending console(s)
-> > > > 
-> > > > When I repeatedly press some keys or move the TrackPoint, the SwSusp
-> > > > continues and the notebook powers off.
-> > > > On reboot, the notebook resumes but hangs showing the following screen:
-> > ...
-> > > >         Suspending console(s)
-> > > > 
-> > > > Generating interrupts by pressing keys or moving the TrackPoints makes
-> > > > the resume continue. But after that, the notebook looses time, xterms
-> > > > don't get updated until I press a key, the beeper beeps until I press a
-> > > > key, etc.
-...
-> > On Mon, Oct 29, 2007 at 10:24:14PM +0100, Pavel Machek wrote:
-> > > Yep, I seen that before. Try "nohz=off".
-> > 
-> > Okay, that seems to solve the "timer loosing time after resume" problem.
-> > 
-> > 
-> > But I still need to press some keys on suspend (7-12 key presses and
-> > releases) to unhang it. On resume not key presses are needed any
-> > more.
-> 
-> So it fixed resume but not suspend? strange. Try highres=off, too. And
-> maybe irqpoll?
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+---
+ drivers/infiniband/hw/ehca/ehca_hca.c |   20 ++++++++++++++------
+ drivers/infiniband/hw/ehca/hipz_hw.h  |    6 +++++-
+ 2 files changed, 19 insertions(+), 7 deletions(-)
 
-highres=off did the trick. Thank you.
-
-Does somebody want more data to debug this further?
-
-
-On Tue, Oct 30, 2007 at 10:20:33PM +0100, Rafael J. Wysocki wrote:
-> Well, have you tried doing "echo platform > /sys/power/disk" before
-> hibernation instead?
-
-It also seems to work, but doesn't improve the situation. I still need
-to press keys for resume.
-
-BYtE
-Philipp
+diff --git a/drivers/infiniband/hw/ehca/ehca_hca.c b/drivers/infiniband/hw/ehca/ehca_hca.c
+index 15806d1..5bd7b59 100644
+--- a/drivers/infiniband/hw/ehca/ehca_hca.c
++++ b/drivers/infiniband/hw/ehca/ehca_hca.c
+@@ -151,7 +151,6 @@ int ehca_query_port(struct ib_device *ibdev,
+ 	}
+ 
+ 	memset(props, 0, sizeof(struct ib_port_attr));
+-	props->state = rblock->state;
+ 
+ 	switch (rblock->max_mtu) {
+ 	case 0x1:
+@@ -188,11 +187,20 @@ int ehca_query_port(struct ib_device *ibdev,
+ 	props->subnet_timeout  = rblock->subnet_timeout;
+ 	props->init_type_reply = rblock->init_type_reply;
+ 
+-	props->active_width    = IB_WIDTH_12X;
+-	props->active_speed    = 0x1;
+-
+-	/* at the moment (logical) link state is always LINK_UP */
+-	props->phys_state      = 0x5;
++	if (rblock->state && rblock->phys_width) {
++		props->phys_state      = rblock->phys_pstate;
++		props->state           = rblock->phys_state;
++		props->active_width    = rblock->phys_width;
++		props->active_speed    = rblock->phys_speed;
++	} else {
++		/* old firmware releases don't report physical
++		 * port info, so use default values
++		 */
++		props->phys_state      = 5;
++		props->state           = rblock->state;
++		props->active_width    = IB_WIDTH_12X;
++		props->active_speed    = 0x1;
++	}
+ 
+ query_port1:
+ 	ehca_free_fw_ctrlblock(rblock);
+diff --git a/drivers/infiniband/hw/ehca/hipz_hw.h b/drivers/infiniband/hw/ehca/hipz_hw.h
+index d9739e5..485b840 100644
+--- a/drivers/infiniband/hw/ehca/hipz_hw.h
++++ b/drivers/infiniband/hw/ehca/hipz_hw.h
+@@ -402,7 +402,11 @@ struct hipz_query_port {
+ 	u64 max_msg_sz;
+ 	u32 max_mtu;
+ 	u32 vl_cap;
+-	u8  reserved2[1900];
++	u32 phys_pstate;
++	u32 phys_state;
++	u32 phys_speed;
++	u32 phys_width;
++	u8  reserved2[1884];
+ 	u64 guid_entries[255];
+ } __attribute__ ((packed));
+ 
 -- 
-  / /  (_)__  __ ____  __ Philipp Hahn
- / /__/ / _ \/ // /\ \/ /
-/____/_/_//_/\_,_/ /_/\_\ pmhahn@titan.lahn.de
+1.5.2
+
+
