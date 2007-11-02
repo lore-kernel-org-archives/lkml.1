@@ -1,60 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbXKBPOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025AbXKBPUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755931AbXKBPOY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 11:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753784AbXKBPOQ
+	id S1756025AbXKBPUB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 11:20:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099AbXKBPTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 11:14:16 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:64190 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753331AbXKBPOP (ORCPT
+	Fri, 2 Nov 2007 11:19:54 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:15332 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753784AbXKBPTx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 11:14:15 -0400
-Subject: Re: [PATCH] mm: sysfs: expose the BDI object in sysfs
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Greg KH <greg@kroah.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Miklos Szeredi <miklos@szeredi.hu>
-In-Reply-To: <1194015564.27652.403.camel@twins>
-References: <1193410087.6914.34.camel@twins>
-	 <1193412836.27652.11.camel@twins> <1193414147.2431.35.camel@lov.site>
-	 <1193429066.5648.35.camel@lappy> <1193447889.5648.44.camel@lappy>
-	 <20071027024033.GB29039@kroah.com> <1193474399.27652.15.camel@twins>
-	 <20071027160203.GA5709@kroah.com> <1193519317.5776.14.camel@lov.site>
-	 <1194009359.27652.377.camel@twins>
-	 <3ae72650711020650l37870e45yb853f888b4807116@mail.gmail.com>
-	 <1194013028.27652.387.camel@twins>  <1194013979.2440.20.camel@lov.site>
-	 <1194015564.27652.403.camel@twins>
-Content-Type: text/plain
-Date: Fri, 02 Nov 2007 16:13:40 +0100
-Message-Id: <1194016420.2440.25.camel@lov.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Fri, 2 Nov 2007 11:19:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NFdXn/7F90GtKlR2omIjAA+49bhjewlWAVGXDLzhSQrEaEl1DiF8rQwyCh/p3sLoW1gdUDJGjop7Z1lbkR3Z6zTKUkMI5lo9uOz4ROtI6XogXRFKkSvm+yrakxLupcP6OVk5lsiGNCs2bMjr7eu0zxPWvwjHC0kuPTNB63M1aT8=
+Message-ID: <b1c6420f0711020819y7140c338o718e60c933c1aa3a@mail.gmail.com>
+Date: Sat, 3 Nov 2007 00:19:52 +0900
+From: "Suzuki Takashi" <suzuki.takashi@gmail.com>
+To: "David Howells" <dhowells@redhat.com>
+Subject: Re: [Linux-am33-list] [PATCH 0/2] MN10300: Add the MN10300 architecture to Linux kernel [try #2]
+Cc: torvalds@osdl.org, akpm@linux-foundation.org, linux-am33-list@redhat.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <31286.1193785564@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18h//d/YggATUeL3DaGsjrsn8CUfgZaovy1fo4
- V82e6SZgrEI86Dou6lcGdUUQIX6+olk+6lfJlOmo6CoGJJYmq4
- zDkmGUsdEtmP5tkds9WzgXVA/n52q5s
+Content-Disposition: inline
+References: <20071029122759.2846.83510.stgit@warthog.procyon.org.uk>
+	 <b1c6420f0710300557j57cfc554m458adc7dbeeed610@mail.gmail.com>
+	 <15631.1193753689@redhat.com>
+	 <b1c6420f0710300810g1dbf8142j4c515a9baab4207a@mail.gmail.com>
+	 <27157.1193763218@redhat.com>
+	 <b1c6420f0710301459i147f0f00n1f7009139d3ac31a@mail.gmail.com>
+	 <31286.1193785564@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-11-02 at 15:59 +0100, Peter Zijlstra wrote:
-> On Fri, 2007-11-02 at 15:32 +0100, Kay Sievers wrote:
-> > On Fri, 2007-11-02 at 15:17 +0100, Peter Zijlstra wrote:
+Sorry for the late.
 
-> Here is the 'pretty' patch :-)
-> 
-> Since it relies on the removal of the device name length limit, this
-> should not yet be applied.
+On 10/31/07, David Howells <dhowells@redhat.com> wrote:
+> > But is there any utility that depends on that uname says mn10300?
+>
+> autoconf:-)
 
-Ok, I'll take a look now, and see what's needed here. Would be good to
-get that into the next kernel, now that you are waiting for the crap to
-get fixed. :)
+I forgot again the one as an host environment. :-)
+AFAIK, mn10300 series are for embedded systems and I've never heard as
+development hosts.
+I had noticed the new machine name needs to be added / changed, though.
 
-Thanks,
-Kay
+> Can you guarantee there won't be any non-AM33 variants of mn10300 that need
+> supporting?  An AM34, perhaps?
+
+I think `am33' is a reasonable name if  it is the first variant of
+mn10300 series
+that is supported by Linux, like `am33' is for glibc and `i386' is
+(was) for Linux and others.
+People don't misunderstand that an AM30, AM31 or AM32 is supported by Linux.
+AM3n seems to be upper compatible with AM3(n-1), so far.
+MEI (and only they) know if AM34, and any newer core in that series
+are compatible with AM33.
+
+> The discrepancy has been around for years, and I suspect it's not going to
+> change now.  If MEI ask, I will change it.
+
+I see.
+I know there is no technical problem if the arch name continues to be mn10300.
+It is an issue of some branding strategy, or a designing policy.
+I understand you (RH) are not in a position to decide to change, nor
+to refuse to change.
+
+I just noticed and became worried about the mismatch.
+If MEI ask you to change the toolchain name from am33 to mn10300, I
+have no objection to that.
+I'd be glad to hear any comments from MEI.
 
 
+-- 
+Suzuki Takashi
+Japan
