@@ -1,36 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760219AbXKBR57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760705AbXKBR6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760219AbXKBR57 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 13:57:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756645AbXKBR5w
+	id S1760705AbXKBR6Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 13:58:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760666AbXKBR6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 13:57:52 -0400
-Received: from mx1.suse.de ([195.135.220.2]:38257 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756286AbXKBR5w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 13:57:52 -0400
-Date: Fri, 2 Nov 2007 18:57:50 +0100
-From: Jan Blunck <jblunck@suse.de>
-To: Bharata B Rao <bharata.rao@gmail.com>
-Cc: Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@lst.de>, Andreas Gruenbacher <agruen@suse.de>
-Subject: Re: [PATCH 6/7] d_path: Make d_path() use a struct path
-Message-ID: <20071102175749.GA5619@hasse.suse.de>
-References: <20071029124120.528997881@weierstrass.suse.de> <20071029124121.829255433@weierstrass.suse.de> <344eb09a0711012345p1d6bd667s52ef38f3185b478@mail.gmail.com>
+	Fri, 2 Nov 2007 13:58:05 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59436 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756645AbXKBR6E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 13:58:04 -0400
+Date: Fri, 2 Nov 2007 10:38:02 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Eric Sandeen <sandeen@redhat.com>, Bodo Eggert <7eggert@gmx.de>
+Subject: [patch 5/9] minixfs: limit minixfs printks on corrupted dir i_size
+	(CVE-2006-6058)
+Message-ID: <20071102173802.GF6378@kroah.com>
+References: <20071102173359.709442489@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <344eb09a0711012345p1d6bd667s52ef38f3185b478@mail.gmail.com>
-Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG
-	Nuernberg)
+Content-Disposition: inline; filename="minixfs-limit-minixfs-printks-on-corrupted-dir-i_size.patch"
+In-Reply-To: <20071102173733.GA6378@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 02, Bharata B Rao wrote:
+2.6.22-stable review patch.  If anyone has any objections, please let us
+know.
 
-> 
-> Did you miss the d_path() caller arch/blackfin/kernel/traps.c:printk_address() ?
-> 
+------------------
+From: Eric Sandeen <sandeen@redhat.com>
 
-Sorry, yes I missed that one.
+patch 44ec6f3f89889a469773b1fd894f8fcc07c29cf in mainline
+
+This attempts to address CVE-2006-6058
+http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-6058
+
+first reported at http://projects.info-pull.com/mokb/MOKB-17-11-2006.html
+
+Essentially a corrupted minix dir inode reporting a very large
+i_size will loop for a very long time in minix_readdir, minix_find_entry,
+etc, because on EIO they just move on to try the next page.  This is
+under the BKL, printk-storming as well.  This can lock up the machine
+for a very long time.  Simply ratelimiting the printks gets things back
+under control.  Make the message a bit more informative while we're here.
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Cc: Bodo Eggert <7eggert@gmx.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ fs/minix/itree_v1.c |    9 +++++++--
+ fs/minix/itree_v2.c |    9 +++++++--
+ 2 files changed, 14 insertions(+), 4 deletions(-)
+
+--- a/fs/minix/itree_v1.c
++++ b/fs/minix/itree_v1.c
+@@ -23,11 +23,16 @@ static inline block_t *i_data(struct ino
+ static int block_to_path(struct inode * inode, long block, int offsets[DEPTH])
+ {
+ 	int n = 0;
++	char b[BDEVNAME_SIZE];
+ 
+ 	if (block < 0) {
+-		printk("minix_bmap: block<0\n");
++		printk("MINIX-fs: block_to_path: block %ld < 0 on dev %s\n",
++			block, bdevname(inode->i_sb->s_bdev, b));
+ 	} else if (block >= (minix_sb(inode->i_sb)->s_max_size/BLOCK_SIZE)) {
+-		printk("minix_bmap: block>big\n");
++		if (printk_ratelimit())
++			printk("MINIX-fs: block_to_path: "
++			       "block %ld too big on dev %s\n",
++				block, bdevname(inode->i_sb->s_bdev, b));
+ 	} else if (block < 7) {
+ 		offsets[n++] = block;
+ 	} else if ((block -= 7) < 512) {
+--- a/fs/minix/itree_v2.c
++++ b/fs/minix/itree_v2.c
+@@ -23,12 +23,17 @@ static inline block_t *i_data(struct ino
+ static int block_to_path(struct inode * inode, long block, int offsets[DEPTH])
+ {
+ 	int n = 0;
++	char b[BDEVNAME_SIZE];
+ 	struct super_block *sb = inode->i_sb;
+ 
+ 	if (block < 0) {
+-		printk("minix_bmap: block<0\n");
++		printk("MINIX-fs: block_to_path: block %ld < 0 on dev %s\n",
++			block, bdevname(sb->s_bdev, b));
+ 	} else if (block >= (minix_sb(inode->i_sb)->s_max_size/sb->s_blocksize)) {
+-		printk("minix_bmap: block>big\n");
++		if (printk_ratelimit())
++			printk("MINIX-fs: block_to_path: "
++			       "block %ld too big on dev %s\n",
++				block, bdevname(sb->s_bdev, b));
+ 	} else if (block < 7) {
+ 		offsets[n++] = block;
+ 	} else if ((block -= 7) < 256) {
+
+-- 
