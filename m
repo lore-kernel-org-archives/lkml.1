@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759047AbXKBCBk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760942AbXKBCCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759047AbXKBCBk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 22:01:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753845AbXKBCBb
+	id S1760942AbXKBCCV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 22:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755393AbXKBCCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 22:01:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50373 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753678AbXKBCBb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 22:01:31 -0400
-Date: Thu, 1 Nov 2007 22:01:07 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Gregory Haskins <gregory.haskins.ml@gmail.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 1/4] x86: FIFO ticket spinlocks
-Message-ID: <20071101220107.1d71f4d9@bree.surriel.com>
-In-Reply-To: <alpine.LFD.0.999.0711011819110.3342@woody.linux-foundation.org>
-References: <20071101140146.GA26879@wotan.suse.de>
-	<20071101140320.GC26879@wotan.suse.de>
-	<4729E567.1050402@gmail.com>
-	<alpine.LFD.0.999.0711010935060.3342@woody.linux-foundation.org>
-	<20071101203526.293cd7f0@bree.surriel.com>
-	<alpine.LFD.0.999.0711011819110.3342@woody.linux-foundation.org>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	Thu, 1 Nov 2007 22:02:12 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:2930 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755130AbXKBCCL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 22:02:11 -0400
+Date: Fri, 2 Nov 2007 10:01:18 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: Andreas Mohr <andi@lisas.de>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH/RFC] eradicate bashisms in scripts/patch-kernel
+Message-ID: <20071102020118.GA13852@gondor.apana.org.au>
+References: <20071031211321.GA8363@rhlx01.hs-esslingen.de> <47290096.7080207@oracle.com> <20071101121133.GA14807@rhlx01.hs-esslingen.de> <20071101082457.ff9a5d67.randy.dunlap@oracle.com> <20071101221606.GA10116@rhlx01.hs-esslingen.de> <20071101160857.6e877307.rdunlap@xenotime.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071101160857.6e877307.rdunlap@xenotime.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Nov 2007 18:19:41 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> On Thu, 1 Nov 2007, Rik van Riel wrote:
-> > 
-> > Larry Woodman managed to wedge the VM into a state where, on his
-> > 4x dual core system, only 2 cores (on the same CPU) could get the
-> > zone->lru_lock overnight.  The other 6 cores on the system were
-> > just spinning, without being able to get the lock.
+On Thu, Nov 01, 2007 at 04:08:57PM -0700, Randy Dunlap wrote:
+>
+> > - replace non-standard bash string parsing by sed expression
+> >   (is the sed syntax ok? correct? strict enough?)
 > 
-> .. and this is almost always the result of a locking *bug*, not
-> unfairness per se. IOW, unfairness just ends up showing the bug in
-> the first place.
+> I think that this is the part that bothers me.  I can't find
+> anything at
+> http://www.opengroup.org/onlinepubs/000095399/utilities/xcu_chap02.html
+> that says that this:
+> 	EXTRAVER=${EXTRAVER%%[[:punct:]]*}
+> 
+> is invalid or even optional syntax.  OTOH, it does list such syntax,
 
-No argument there.  If you have the kind of lock contention where
-fairness matters, the contention is probably what needs to be fixed,
-not the locking mechanism.
+This is POSIX-compliant and has worked with dash from the very
+start.
 
-Having said that, making bugs like that less likely to totally wedge
-a system would be a good thing for everybody who uses Linux in
-production.  Exposing bugs is good for development, bad for business.
+> > About the missing $ signs:
+> > http://www.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html#tag_02_14
+> > says:
+> > "If the shell variable x contains a value that forms a valid integer
+> > constant, then the arithmetic expansions
+> >  "$((x))" and "$(($x))" shall return the same value."
+> > 
+> > Hmm, well, seems dash doesn't... (syntax error).
+> > Thus I still needed to add the $ signs despite opengroup.org specifying
+> > it differently.
+> 
+> Herbert?
 
+Using variables without dollar signs in arithmetic expansion was
+only added to dash very recently.  So please please talk to your
+distribution maker to update their dash packages and it will work
+correctly.
+
+This usage is compliant with the most recent revision of POSIX
+while earlier ones did not specifically require this (due to
+the fact that assignment support was not required either).
+
+Cheers,
 -- 
-"Debugging is twice as hard as writing the code in the first place.
-Therefore, if you write the code as cleverly as possible, you are,
-by definition, not smart enough to debug it." - Brian W. Kernighan
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
