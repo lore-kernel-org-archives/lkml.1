@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932109AbXKCAFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762566AbXKCAGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932109AbXKCAFv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 20:05:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761923AbXKCABP
+	id S1762566AbXKCAGO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 20:06:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761932AbXKCABT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 20:01:15 -0400
-Received: from ns.suse.de ([195.135.220.2]:41138 "EHLO mx1.suse.de"
+	Fri, 2 Nov 2007 20:01:19 -0400
+Received: from ns2.suse.de ([195.135.220.15]:34833 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756457AbXKCABO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 20:01:14 -0400
+	id S1761697AbXKCABR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 20:01:17 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 17/54] kset: convert drivers/base/bus.c kset_create_and_register
-Date: Fri,  2 Nov 2007 16:58:55 -0700
-Message-Id: <1194047972-9850-17-git-send-email-gregkh@suse.de>
+Subject: [PATCH 18/54] kset: convert drivers/base/class.c kset_create_and_register
+Date: Fri,  2 Nov 2007 16:58:56 -0700
+Message-Id: <1194047972-9850-18-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <20071102235758.GA9803@kroah.com>
 References: <20071102235758.GA9803@kroah.com>
@@ -23,64 +23,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Dynamically create the kset instead of declaring it statically.
 
+The class_obj subsystem is not yet converted as it is more complex and
+should be going away soon with the removal of class_device from the
+kernel tree.
+
 Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/bus.c |   13 +++++++++----
- 1 files changed, 9 insertions(+), 4 deletions(-)
+ drivers/base/class.c |   12 +++++-------
+ 1 files changed, 5 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/base/bus.c b/drivers/base/bus.c
-index 6309560..8b65694 100644
---- a/drivers/base/bus.c
-+++ b/drivers/base/bus.c
-@@ -13,6 +13,7 @@
- #include <linux/errno.h>
- #include <linux/init.h>
- #include <linux/string.h>
-+#include <linux/err.h>
- #include "base.h"
- #include "power/power.h"
- 
-@@ -166,7 +167,7 @@ static struct kset_uevent_ops bus_uevent_ops = {
- 	.filter = bus_uevent_filter,
+diff --git a/drivers/base/class.c b/drivers/base/class.c
+index 8ad9892..27256b3 100644
+--- a/drivers/base/class.c
++++ b/drivers/base/class.c
+@@ -71,7 +71,7 @@ static struct kobj_type class_ktype = {
  };
  
--static decl_subsys(bus, &bus_uevent_ops);
-+static struct kset *bus_kset;
+ /* Hotplug events for classes go to the class_obj subsys */
+-static decl_subsys(class, NULL);
++static struct kset *class_kset;
  
  
- #ifdef CONFIG_HOTPLUG
-@@ -767,7 +768,7 @@ EXPORT_SYMBOL_GPL(device_reprobe);
- #if 0
- struct bus_type * find_bus(char * name)
+ int class_create_file(struct class * cls, const struct class_attribute * attr)
+@@ -149,7 +149,7 @@ int class_register(struct class * cls)
+ 	if (error)
+ 		return error;
+ 
+-	cls->subsys.kobj.kset = &class_subsys;
++	cls->subsys.kobj.kset = class_kset;
+ 	cls->subsys.kobj.ktype = &class_ktype;
+ 
+ 	error = subsystem_register(&cls->subsys);
+@@ -855,11 +855,9 @@ void class_interface_unregister(struct class_interface *class_intf)
+ 
+ int __init classes_init(void)
  {
--	struct kobject * k = kset_find_obj(&bus_subsys.kset, name);
-+	struct kobject * k = kset_find_obj(bus_kset, name);
- 	return k ? to_bus(k) : NULL;
- }
- #endif  /*  0  */
-@@ -851,7 +852,7 @@ int bus_register(struct bus_type * bus)
- 	if (retval)
- 		goto out;
+-	int retval;
+-
+-	retval = subsystem_register(&class_subsys);
+-	if (retval)
+-		return retval;
++	class_kset = kset_create_and_register("class", NULL, NULL, NULL);
++	if (IS_ERR(class_kset))
++		return PTR_ERR(class_kset);
  
--	bus->subsys.kobj.kset = &bus_subsys;
-+	bus->subsys.kobj.kset = bus_kset;
- 	bus->subsys.kobj.ktype = &bus_ktype;
- 
- 	retval = subsystem_register(&bus->subsys);
-@@ -935,7 +936,11 @@ EXPORT_SYMBOL_GPL(bus_unregister_notifier);
- 
- int __init buses_init(void)
- {
--	return subsystem_register(&bus_subsys);
-+	bus_kset = kset_create_and_register("bus", &bus_uevent_ops,
-+					    NULL, NULL);
-+	if (IS_ERR(bus_kset))
-+		return PTR_ERR(bus_kset);
-+	return 0;
- }
- 
- 
+ 	/* ick, this is ugly, the things we go through to keep from showing up
+ 	 * in sysfs... */
 -- 
 1.5.3.4
 
