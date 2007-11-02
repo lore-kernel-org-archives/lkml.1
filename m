@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759497AbXKAX6E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757874AbXKBABH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759497AbXKAX6E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 19:58:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbXKAX5y
+	id S1757874AbXKBABH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 20:01:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754140AbXKBAAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 19:57:54 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39981 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752876AbXKAX5x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 19:57:53 -0400
-Date: Thu, 1 Nov 2007 16:57:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Greg KH <gregkh@suse.de>
-Cc: Emilian.Medve@freescale.com, linux-kernel@vger.kernel.org, hjlipp@web.de,
-       tilman@imap.cc, gigaset307x-common@lists.sourceforge.net, kkeil@suse.de,
-       isdn4linux@listserv.isdn4linux.de, mac@melware.de,
-       linux-omap-open-source@linux.omap.com
-Subject: Re: [PATCH resend] Make the dev_*() family of macros in
- device.hcomplete
-Message-Id: <20071101165700.aa5167fb.akpm@linux-foundation.org>
-In-Reply-To: <20071030154008.GA22809@suse.de>
-References: <1193697795-7823-1-git-send-email-Emilian.Medve@Freescale.com>
-	<20071030000054.GA19022@suse.de>
-	<598D5675D34BE349929AF5EDE9B03E27016E5FCB@az33exm24.fsl.freescale.net>
-	<20071030154008.GA22809@suse.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 1 Nov 2007 20:00:53 -0400
+Received: from ns1.suse.de ([195.135.220.2]:53128 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753678AbXKBAAx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 20:00:53 -0400
+Date: Fri, 2 Nov 2007 01:00:51 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 1/4] x86: FIFO ticket spinlocks
+Message-ID: <20071102000051.GB20144@wotan.suse.de>
+References: <20071101140146.GA26879@wotan.suse.de> <20071101140320.GC26879@wotan.suse.de> <472A30A9.7040203@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <472A30A9.7040203@redhat.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Oct 2007 08:40:08 -0700
-Greg KH <gregkh@suse.de> wrote:
-
-> On Tue, Oct 30, 2007 at 05:11:24AM -0700, Medve Emilian-EMMEDVE1 wrote:
-> > Hi Greg K-H,
-> > 
-> > 
-> > > > +#define dev_info(dev, format, arg...)		\
-> > > > +	dev_printk(KERN_INFO, dev, format, ## arg)
-> > > > +
-> > > >  #ifdef DEBUG
-> > > >  #define dev_dbg(dev, format, arg...)		\
-> > > > -	dev_printk(KERN_DEBUG , dev , format , ## arg)
-> > > > +	dev_printk(KERN_DEBUG, dev, format, ## arg)
-> > > 
-> > > Those extra spaces are there for a good reason, older versions of gcc
-> > > are broken without it.  So please, put them all back...
-> > 
-> > You mean I should add spaces before commas only where they were
-> > initially or to all new code and/or macros?
+On Thu, Nov 01, 2007 at 04:01:45PM -0400, Chuck Ebbert wrote:
+> On 11/01/2007 10:03 AM, Nick Piggin wrote:
 > 
-> Put it back where it was, and do the same for all other macros.
+> [edited to show the resulting code]
 > 
-> > I've observed other kernel code and more often there are no spaces
-> > before commas. I'm asking because the CodingStyle document is not very
-> > explicit about this rule.
+> > +	__asm__ __volatile__ (
+> > +		LOCK_PREFIX "xaddw %w0, %1\n"
+> > +		"1:\t"
+> > +		"cmpb %h0, %b0\n\t"
+> > +		"je 2f\n\t"
+> > +		"rep ; nop\n\t"
+> > +		"movb %1, %b0\n\t"
+> > +		/* don't need lfence here, because loads are in-order */
+> >  		"jmp 1b\n"
+> > +		"2:"
+> > +		:"+Q" (inc), "+m" (lock->slock)
+> > +		:
+> > +		:"memory", "cc");
+> >  }
 > 
-> This is a gcc rule, for variable length macros, not a CodingStyle
-> guideline.  It just will not work without it :)
-> 
+> If you really thought you might get long queues, you could figure out
+> how far back you are and use that to determine how long to wait before
+> testing the lock again. That cmpb could become a subb without adding
+> overhead to the fast path -- that would give you the queue length (or
+> its complement anyway.)
 
-The space-before-a-comma requirement was for gcc-2.95, iirc.
+Indeed. You can use this as a really nice input into a backoff
+algorithm (eg. if you're next in line, don't back off, or at least
+don't go into exponential backoff; if you've got people in front
+of you, start throttling harder).
 
-It got to the stage where I was the only person testing with gcc-2.95 so I
-spent inordinate amounts of time adding spaces before people's newly-added
-commas.  Fortunately we abamdoned that gcc version so the space-before-a-comma
-requirement no longer exists.
-
+I think I'll leave that to SGI if they come up with a big x86 SSI ;)
