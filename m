@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760039AbXKBUaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759386AbXKBUns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760039AbXKBUaf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 16:30:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758012AbXKBUa0
+	id S1759386AbXKBUns (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 16:43:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753852AbXKBUnj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 16:30:26 -0400
-Received: from ns120.gr8dns.org ([193.108.181.120]:55804 "EHLO mail.gr8dns.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753445AbXKBUaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 16:30:25 -0400
-Date: Fri, 2 Nov 2007 13:29:49 -0700
-From: Dirk Hohndel <hohndel@linux.intel.com>
-To: Bob Copeland <me@bobcopeland.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>, Andries Brouwer <aeb@cwi.nl>,
-       Al Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] add_partition silently ignored errors
-Message-ID: <20071102202949.GA1128@linux.intel.com>
-References: <20071029154339.00512901@gondolin.boeblingen.de.ibm.com> <20071029154849.GA24187@bigserver.hohndel.org> <20071030080742.GE4993@kernel.dk> <20071030100934.6d2a8f12@gondolin.boeblingen.de.ibm.com> <20071030165608.GA2601@linux.intel.com> <20071030183112.7e860c23@gondolin.boeblingen.de.ibm.com> <20071030225635.GA3401@linux.intel.com> <20071102130438.GC28340@kernel.dk> <20071102192914.GA888@linux.intel.com> <b6c5339f0711021250w78fc420ekbc68e3c74b9939d3@mail.gmail.com>
-MIME-Version: 1.0
+	Fri, 2 Nov 2007 16:43:39 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:57356 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753537AbXKBUni (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 16:43:38 -0400
+Date: Sat, 3 Nov 2007 07:43:06 +1100
+From: David Chinner <dgc@sgi.com>
+To: Torsten Kaiser <just.for.lkml@googlemail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Fengguang Wu <wfg@mail.ustc.edu.cn>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
+       linux-fsdevel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: writeout stalls in current -git
+Message-ID: <20071102204258.GR995458@sgi.com>
+References: <200710221505.35397.maximlevitsky@gmail.com> <20071022131045.GA5357@mail.ustc.edu.cn> <393060478.03650@ustc.edu.cn> <64bb37e0710310822r5ca6b793p8fd97db2f72a8655@mail.gmail.com> <393903856.06449@ustc.edu.cn> <64bb37e0711011120i63cdfe3ci18995d57b6649a8@mail.gmail.com> <64bb37e0711011200n228e708eg255640388f83da22@mail.gmail.com> <E1InmAI-0003ME-2i@localhost> <1193998532.27652.343.camel@twins> <64bb37e0711021222q7d12c825mc62d433c4fe19e8@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <b6c5339f0711021250w78fc420ekbc68e3c74b9939d3@mail.gmail.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+In-Reply-To: <64bb37e0711021222q7d12c825mc62d433c4fe19e8@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 02, 2007 at 03:50:29PM -0400, Bob Copeland wrote:
-> On 11/2/07, Dirk Hohndel <hohndel@linux.intel.com> wrote:
-> > > > @@ -554,8 +573,11 @@ int rescan_partitions(struct gendisk *disk, struct block_device *bdev)
-> > > >             if (from + size > get_capacity(disk)) {
-> > > >                     printk(" %s: p%d exceeds device capacity\n",
-> > > >                             disk->disk_name, p);
-> > > > +                   return -EBUSY;
-> [snip]
-> > I was wondering about that myself - EBUSY seemed to be used in a couple of
-> > other cases where there wasn't a clear match, but I think EOVERFLOW actually
-> > might make more sense. Opinions?
-> 
-> ISTR that some people wanted to keep going in this case rather than
-> return an error, e.g. for forensic purposes...
-> 
-> .. digging... here's a thread from last year:
-> 
-> http://lkml.org/lkml/2006/5/11/64
+On Fri, Nov 02, 2007 at 08:22:10PM +0100, Torsten Kaiser wrote:
+> [  630.000000] SysRq : Emergency Sync
+> [  630.120000] Emergency Sync complete
+> [  632.850000] SysRq : Show Blocked State
+> [  632.850000]   task                        PC stack   pid father
+> [  632.850000] pdflush       D ffff81000f091788     0   285      2
+> [  632.850000]  ffff810005d4da80 0000000000000046 0000000000000800
+> 0000007000000001
+> [  632.850000]  ffff81000fd52400 ffffffff8022d61c ffffffff80819b00
+> ffffffff80819b00
+> [  632.850000]  ffffffff80815f40 ffffffff80819b00 ffff810100316f98
+> 0000000000000000
+> [  632.850000] Call Trace:
+> [  632.850000]  [<ffffffff8022d61c>] task_rq_lock+0x4c/0x90
+> [  632.850000]  [<ffffffff8022c8ea>] __wake_up_common+0x5a/0x90
+> [  632.850000]  [<ffffffff805b16e7>] __down+0xa7/0x11e
+> [  632.850000]  [<ffffffff8022da70>] default_wake_function+0x0/0x10
+> [  632.850000]  [<ffffffff805b1365>] __down_failed+0x35/0x3a
+> [  632.850000]  [<ffffffff803752ce>] xfs_buf_lock+0x3e/0x40
+> [  632.850000]  [<ffffffff8037740e>] _xfs_buf_find+0x13e/0x240
+> [  632.850000]  [<ffffffff8037757f>] xfs_buf_get_flags+0x6f/0x190
+> [  632.850000]  [<ffffffff803776b2>] xfs_buf_read_flags+0x12/0xa0
+> [  632.850000]  [<ffffffff80368824>] xfs_trans_read_buf+0x64/0x340
+> [  632.850000]  [<ffffffff80352361>] xfs_itobp+0x81/0x1e0
+> [  632.850000]  [<ffffffff8026b293>] write_cache_pages+0x123/0x330
+> [  632.850000]  [<ffffffff80354d0e>] xfs_iflush+0xfe/0x520
 
-Thanks for finding that! I took a different approach than Andries but can
-appreciate the argument. I'll remove that line from my patch.
+That's stalled waiting on the inode cluster buffer lock. That implies
+that the inode lcuser is already being written out and the inode has
+been redirtied during writeout.
 
-/D
+Does the kernel you are testing have the "flush inodes in ascending
+inode number order" patches applied? If so, can you remove that
+patch and see if the problem goes away?
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
