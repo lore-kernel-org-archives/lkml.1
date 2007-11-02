@@ -1,255 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbXKBL32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754403AbXKBLu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754833AbXKBL32 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 07:29:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbXKBL3U
+	id S1754403AbXKBLu0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 07:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbXKBLuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 07:29:20 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40567 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753018AbXKBL3T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 07:29:19 -0400
-Subject: [git pull] lockdep for v2.6.24-rc1
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain
-Date: Fri, 02 Nov 2007 12:29:12 +0100
-Message-Id: <1194002952.27652.356.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Fri, 2 Nov 2007 07:50:13 -0400
+Received: from mail.sf-mail.de ([62.27.20.61]:48103 "EHLO mail.sf-mail.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753018AbXKBLuK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 07:50:10 -0400
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+Subject: Re: [2.6.24-rc1][BUG] Oops on battery removal
+Date: Fri, 2 Nov 2007 12:49:57 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: lenb@kernel.org, linux-acpi@vger.kernel.org,
+       kernel list <linux-kernel@vger.kernel.org>
+References: <200711020803.49608.eike-kernel@sf-tec.de> <200711020937.33672.eike-kernel@sf-tec.de> <472AEDEC.1090606@suse.de>
+In-Reply-To: <472AEDEC.1090606@suse.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart4937473.g82rgmyeHN";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200711021250.03555.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 2a397e82c7db18019e408f953dd58dc1963a328c:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../bart/ide-2.6
+--nextPart4937473.g82rgmyeHN
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-are available in the git repository at:
+Alexey Starikovskiy wrote:
+> Rolf Eike Beer wrote:
+> > Rolf Eike Beer wrote:
+> >> Hi,
+> >>
+> >> this happened while I removed my battery on bootup. Complete dmesg is
+> >> attached. Kernel is 2.6.24-rc1-git of yesterday (last commit was
+> >> d919fd433b5823d1cf9d0688eb2eec183de9b74c).
+> >
+> > Ok, I found out that it has nothing to do with the actual removal as it
+> > seems. When I start the laptop with battery already detached I get the
+> > same error.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/peterz/linux-2.6-lockdep.git v2.6.24-rc1-lockdep
+> Please check if this patch helps.
 
-Gautham R Shenoy (1):
-      lockdep: fix a typo in the __lock_acquire comment
+It made things worse:
 
-Peter Zijlstra (2):
-      lockdep: fixup irq tracing
-      sched: fix unconditional irq lock
+Nov  2 12:37:20 donald kernel: ACPI: EC: non-query interrupt received,=20
+switching to interrupt mode
+Nov  2 12:37:20 donald acpid: received event "battery BAT1 00000080 0000000=
+0"
+Nov  2 12:37:20 donald acpid: notifying client 2856[101:102]
+Nov  2 12:37:20 donald acpid: notifying client 2911[0:0]
+Nov  2 12:37:20 donald acpid: notifying client 3048[0:0]
+Nov  2 12:37:20 donald acpid: completed event "battery BAT1 00000080 000000=
+00"
+Nov  2 12:37:20 donald kernel: WARNING:=20
+at /home/eike/repos/linux-2.6/lib/kref.c:33 kref_get()
+Nov  2 12:37:20 donald kernel:  [<c0104edd>] show_trace_log_lvl+0x1a/0x2f
+Nov  2 12:37:20 donald kernel:  [<c010576e>] show_trace+0x12/0x14
+Nov  2 12:37:20 donald kernel:  [<c010585b>] dump_stack+0x16/0x18
+Nov  2 12:37:20 donald kernel:  [<c01d1d3c>] kref_get+0x37/0x43
+Nov  2 12:37:20 donald kernel:  [<c01d10af>] kobject_get+0x12/0x17
+Nov  2 12:37:20 donald kernel:  [<c0231509>] get_device+0x13/0x1d
+Nov  2 12:37:20 donald kernel:  [<c02319e8>] device_remove_file+0xe/0x2a
+Nov  2 12:37:20 donald kernel:  [<f8be7043>] sysfs_remove_battery+0x17/0x22=
+=20
+[battery]
+Nov  2 12:37:20 donald kernel:  [<f8be71a2>] acpi_battery_update+0x3f/0x255=
+=20
+[battery]
+Nov  2 12:37:20 donald kernel:  [<f8be73ed>] acpi_battery_read+0x11/0x20=20
+[battery]
+Nov  2 12:37:20 donald powersaved[3048]: WARNING (filter_function:201) Hal=
+=20
+service stopped. Battery information no longer available
+Nov  2 12:37:20 donald kernel:  [<f8be741c>] acpi_battery_read_state+0xf/0x=
+11=20
+[battery]
+Nov  2 12:37:20 donald kernel:  [<c01889ca>] seq_read+0xea/0x264
+Nov  2 12:37:20 donald kernel:  [<c019fddb>] proc_reg_read+0x63/0x76
+Nov  2 12:37:20 donald kernel:  [<c0172631>] vfs_read+0xa6/0x12f
+Nov  2 12:37:20 donald kernel:  [<c0172a2a>] sys_read+0x3d/0x61
+Nov  2 12:37:20 donald kernel:  [<c0103f12>] sysenter_past_esp+0x5f/0x85
+Nov  2 12:37:20 donald kernel:  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D
+Nov  2 12:37:20 donald kernel: WARNING:=20
+at /home/eike/repos/linux-2.6/lib/kref.c:33 kref_get()
+Nov  2 12:37:20 donald kernel:  [<c0104edd>] show_trace_log_lvl+0x1a/0x2f
+Nov  2 12:37:20 donald kernel:  [<c010576e>] show_trace+0x12/0x14
+Nov  2 12:37:20 donald kernel:  [<c010585b>] dump_stack+0x16/0x18
+Nov  2 12:37:20 donald kernel:  [<c01d1d3c>] kref_get+0x37/0x43
+Nov  2 12:37:20 donald kernel:  [<c01d10af>] kobject_get+0x12/0x17
+Nov  2 12:37:20 donald kernel:  [<c0231509>] get_device+0x13/0x1d
+Nov  2 12:37:20 donald kernel:  [<c02319e8>] device_remove_file+0xe/0x2a
+Nov  2 12:37:20 donald kernel:  [<f8b9b3dd>]=20
+power_supply_remove_attrs+0x16/0x37 [power_supply]
+Nov  2 12:37:20 donald kernel:  [<f8b9b012>] power_supply_unregister+0x12/0=
+x1d=20
+[power_supply]
+Nov  2 12:37:20 donald kernel:  [<f8be704b>] sysfs_remove_battery+0x1f/0x22=
+=20
+[battery]
+Nov  2 12:37:20 donald kernel:  [<f8be71a2>] acpi_battery_update+0x3f/0x255=
+=20
+[battery]
+Nov  2 12:37:20 donald kernel:  [<f8be73ed>] acpi_battery_read+0x11/0x20=20
+[battery]
+Nov  2 12:37:20 donald kernel:  [<f8be741c>] acpi_battery_read_state+0xf/0x=
+11=20
+[battery]
+Nov  2 12:37:20 donald kernel:  [<c01889ca>] seq_read+0xea/0x264
+Nov  2 12:37:20 donald kernel:  [<c019fddb>] proc_reg_read+0x63/0x76
+Nov  2 12:37:20 donald kernel:  [<c0172631>] vfs_read+0xa6/0x12f
+Nov  2 12:37:20 donald kernel:  [<c0172a2a>] sys_read+0x3d/0x61
+Nov  2 12:37:20 donald kernel:  [<c0103f12>] sysenter_past_esp+0x5f/0x85
+Nov  2 12:37:20 donald kernel:  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D
 
- arch/x86/kernel/kprobes_32.c  |    7 +------
- arch/x86/kernel/kprobes_64.c  |    7 +------
- arch/x86/kernel/traps_32.c    |    2 ++
- arch/x86/kernel/traps_64.c    |    2 ++
- arch/x86/mm/fault_32.c        |    5 +++++
- arch/x86/mm/fault_64.c        |    5 +++++
- include/asm-x86/irqflags_32.h |   21 +++++++++++++++++++++
- include/asm-x86/irqflags_64.h |   20 ++++++++++++++++++++
- kernel/lockdep.c              |    2 +-
- kernel/sched_debug.c          |    5 +++--
- 10 files changed, 61 insertions(+), 15 deletions(-)
+tons more of stuff like this, system us unusable with this kernel now. In t=
+he=20
+meantime I upgraded to current git, last commit is now=20
+b4d367fb20ed19be4a53fa88b407248aeb8bd461
 
-diff --git a/arch/x86/kernel/kprobes_32.c b/arch/x86/kernel/kprobes_32.c
-index 90f778c..d87a523 100644
---- a/arch/x86/kernel/kprobes_32.c
-+++ b/arch/x86/kernel/kprobes_32.c
-@@ -564,12 +564,7 @@ static int __kprobes post_kprobe_handler(struct pt_regs *regs)
- 
- 	resume_execution(cur, regs, kcb);
- 	regs->eflags |= kcb->kprobe_saved_eflags;
--#ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT
--	if (raw_irqs_disabled_flags(regs->eflags))
--		trace_hardirqs_off();
--	else
--		trace_hardirqs_on();
--#endif
-+	trace_hardirqs_fixup_flags(regs->eflags);
- 
- 	/*Restore back the original saved kprobes variables and continue. */
- 	if (kcb->kprobe_status == KPROBE_REENTER) {
-diff --git a/arch/x86/kernel/kprobes_64.c b/arch/x86/kernel/kprobes_64.c
-index 681b801..3db3611 100644
---- a/arch/x86/kernel/kprobes_64.c
-+++ b/arch/x86/kernel/kprobes_64.c
-@@ -551,12 +551,7 @@ int __kprobes post_kprobe_handler(struct pt_regs *regs)
- 
- 	resume_execution(cur, regs, kcb);
- 	regs->eflags |= kcb->kprobe_saved_rflags;
--#ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT
--	if (raw_irqs_disabled_flags(regs->eflags))
--		trace_hardirqs_off();
--	else
--		trace_hardirqs_on();
--#endif
-+	trace_hardirqs_fixup_flags(regs->eflags);
- 
- 	/* Restore the original saved kprobes variables and continue. */
- 	if (kcb->kprobe_status == KPROBE_REENTER) {
-diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
-index cc9acac..298d13e 100644
---- a/arch/x86/kernel/traps_32.c
-+++ b/arch/x86/kernel/traps_32.c
-@@ -789,6 +789,8 @@ void restart_nmi(void)
- #ifdef CONFIG_KPROBES
- fastcall void __kprobes do_int3(struct pt_regs *regs, long error_code)
- {
-+	trace_hardirqs_fixup();
-+
- 	if (notify_die(DIE_INT3, "int3", regs, error_code, 3, SIGTRAP)
- 			== NOTIFY_STOP)
- 		return;
-diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
-index d0c2bc7..4a6bd49 100644
---- a/arch/x86/kernel/traps_64.c
-+++ b/arch/x86/kernel/traps_64.c
-@@ -807,6 +807,8 @@ asmlinkage __kprobes void default_do_nmi(struct pt_regs *regs)
- /* runs on IST stack. */
- asmlinkage void __kprobes do_int3(struct pt_regs * regs, long error_code)
- {
-+	trace_hardirqs_fixup();
-+
- 	if (notify_die(DIE_INT3, "int3", regs, error_code, 3, SIGTRAP) == NOTIFY_STOP) {
- 		return;
- 	}
-diff --git a/arch/x86/mm/fault_32.c b/arch/x86/mm/fault_32.c
-index 503dfc0..2e542e8 100644
---- a/arch/x86/mm/fault_32.c
-+++ b/arch/x86/mm/fault_32.c
-@@ -303,6 +303,11 @@ fastcall void __kprobes do_page_fault(struct pt_regs *regs,
- 	int write, si_code;
- 	int fault;
- 
-+	/*
-+	 * We can fault from pretty much anywhere, with unknown IRQ state.
-+	 */
-+	trace_hardirqs_fixup();
-+
- 	/* get the address */
-         address = read_cr2();
- 
-diff --git a/arch/x86/mm/fault_64.c b/arch/x86/mm/fault_64.c
-index 644b4f7..0e26230 100644
---- a/arch/x86/mm/fault_64.c
-+++ b/arch/x86/mm/fault_64.c
-@@ -304,6 +304,11 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
- 	unsigned long flags;
- 	siginfo_t info;
- 
-+	/*
-+	 * We can fault from pretty much anywhere, with unknown IRQ state.
-+	 */
-+	trace_hardirqs_fixup();
-+
- 	tsk = current;
- 	mm = tsk->mm;
- 	prefetchw(&mm->mmap_sem);
-diff --git a/include/asm-x86/irqflags_32.h b/include/asm-x86/irqflags_32.h
-index d058b04..4c77200 100644
---- a/include/asm-x86/irqflags_32.h
-+++ b/include/asm-x86/irqflags_32.h
-@@ -129,6 +129,27 @@ static inline int raw_irqs_disabled(void)
- 
- 	return raw_irqs_disabled_flags(flags);
- }
-+
-+/*
-+ * makes the traced hardirq state match with the machine state
-+ *
-+ * should be a rarely used function, only in places where its
-+ * otherwise impossible to know the irq state, like in traps.
-+ */
-+static inline void trace_hardirqs_fixup_flags(unsigned long flags)
-+{
-+	if (raw_irqs_disabled_flags(flags))
-+		trace_hardirqs_off();
-+	else
-+		trace_hardirqs_on();
-+}
-+
-+static inline void trace_hardirqs_fixup(void)
-+{
-+	unsigned long flags = __raw_local_save_flags();
-+
-+	trace_hardirqs_fixup_flags(flags);
-+}
- #endif /* __ASSEMBLY__ */
- 
- /*
-diff --git a/include/asm-x86/irqflags_64.h b/include/asm-x86/irqflags_64.h
-index 5341ea1..bb9163b 100644
---- a/include/asm-x86/irqflags_64.h
-+++ b/include/asm-x86/irqflags_64.h
-@@ -112,6 +112,26 @@ static inline int raw_irqs_disabled(void)
- }
- 
- /*
-+ * makes the traced hardirq state match with the machine state
-+ *
-+ * should be a rarely used function, only in places where its
-+ * otherwise impossible to know the irq state, like in traps.
-+ */
-+static inline void trace_hardirqs_fixup_flags(unsigned long flags)
-+{
-+	if (raw_irqs_disabled_flags(flags))
-+		trace_hardirqs_off();
-+	else
-+		trace_hardirqs_on();
-+}
-+
-+static inline void trace_hardirqs_fixup(void)
-+{
-+	unsigned long flags = __raw_local_save_flags();
-+
-+	trace_hardirqs_fixup_flags(flags);
-+}
-+/*
-  * Used in the idle loop; sti takes one instruction cycle
-  * to complete:
-  */
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index 55fe0c7..ed38bbf 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -2424,7 +2424,7 @@ static int __lock_acquire(struct lockdep_map *lock, unsigned int subclass,
- 		return 0;
- 
- 	/*
--	 * Calculate the chain hash: it's the combined has of all the
-+	 * Calculate the chain hash: it's the combined hash of all the
- 	 * lock keys along the dependency chain. We save the hash value
- 	 * at every step so that we can get the current hash easily
- 	 * after unlock. The chain hash is then used to cache dependency
-diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
-index e6fb392..415e5c3 100644
---- a/kernel/sched_debug.c
-+++ b/kernel/sched_debug.c
-@@ -80,6 +80,7 @@ print_task(struct seq_file *m, struct rq *rq, struct task_struct *p)
- static void print_rq(struct seq_file *m, struct rq *rq, int rq_cpu)
- {
- 	struct task_struct *g, *p;
-+	unsigned long flags;
- 
- 	SEQ_printf(m,
- 	"\nrunnable tasks:\n"
-@@ -88,7 +89,7 @@ static void print_rq(struct seq_file *m, struct rq *rq, int rq_cpu)
- 	"------------------------------------------------------"
- 	"----------------------------------------------------\n");
- 
--	read_lock_irq(&tasklist_lock);
-+	read_lock_irqsave(&tasklist_lock, flags);
- 
- 	do_each_thread(g, p) {
- 		if (!p->se.on_rq || task_cpu(p) != rq_cpu)
-@@ -97,7 +98,7 @@ static void print_rq(struct seq_file *m, struct rq *rq, int rq_cpu)
- 		print_task(m, rq, p);
- 	} while_each_thread(g, p);
- 
--	read_unlock_irq(&tasklist_lock);
-+	read_unlock_irqrestore(&tasklist_lock, flags);
- }
- 
- void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
+Eike
 
+--nextPart4937473.g82rgmyeHN
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+
+iD8DBQBHKw7rXKSJPmm5/E4RAnnTAJ0Yd4IAwHwEQT5o9PmFko2ca7MqHQCcCs3e
+kL9Kq7VIC2/NNW+L+9IEz6U=
+=j933
+-----END PGP SIGNATURE-----
+
+--nextPart4937473.g82rgmyeHN--
