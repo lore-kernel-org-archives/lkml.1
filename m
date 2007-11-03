@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757805AbXKCFcg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758270AbXKCGGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757805AbXKCFcg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 01:32:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754809AbXKCFc2
+	id S1758270AbXKCGGn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 02:06:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756148AbXKCGGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 01:32:28 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:35113 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754225AbXKCFc1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 01:32:27 -0400
-Date: Sat, 3 Nov 2007 01:31:26 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>, Russell King <rmk@arm.linux.org.uk>
-Subject: [PATCH] ARM: Remove reference to non-existent MTD_OBSOLETE_CHIPS.
-Message-ID: <Pine.LNX.4.64.0711030129060.24537@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Sat, 3 Nov 2007 02:06:34 -0400
+Received: from ozlabs.org ([203.10.76.45]:38925 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755541AbXKCGGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Nov 2007 02:06:33 -0400
+From: Michael Neuling <mikey@neuling.org>
+To: Christoph Raisch <RAISCH@de.ibm.com>
+cc: michael@ellerman.id.au, Thomas Q Klein <TKLEIN@de.ibm.com>,
+       ossthema@linux.vnet.ibm.com, Jeff Garzik <jeff@garzik.org>,
+       Jan-Bernd Themann <THEMANN@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <MEDER@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Subject: Re: [PATCH] ehea: add kexec support 
+In-reply-to: <OF3FAFDB41.AF236738-ONC1257387.00376233-C1257387.00389861@de.ibm.com> 
+References: <200710261437.29117.ossthema@de.ibm.com> <1193610737.9637.1.camel@concordia> <OF79E7ACE7.5D0488CE-ONC1257384.002E58C0-C1257384.002F8561@de.ibm.com> <1193784636.32504.4.camel@concordia> <OF59B5FFD2.0294206F-ONC1257385.006A802D-C1257385.006CB6BB@de.ibm.com> <1193985008.1782.7.camel@concordia> <OF3FAFDB41.AF236738-ONC1257387.00376233-C1257387.00389861@de.ibm.com>
+Comments: In-reply-to Christoph Raisch <RAISCH@de.ibm.com>
+   message dated "Fri, 02 Nov 2007 11:19:12 +0100."
+X-Mailer: MH-E 8.0.3; nmh 1.2; GNU Emacs 21.4.1
+Date: Sat, 03 Nov 2007 17:06:31 +1100
+Message-ID: <24042.1194069991@neuling.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Michael Ellerman <michael@ellerman.id.au> wrote on 02.11.2007 07:30:08:
+> 
+> > On Wed, 2007-10-31 at 20:48 +0100, Christoph Raisch wrote:
+> > > Michael Ellerman <michael@ellerman.id.au> wrote on 30.10.2007 23:50:36:
+> > If that's really the way it works then eHEA is more or less broken for
+> > kdump I'm afraid.
+> 
+> We think we have a way to workaround this, but let me first try to
+> explain the base problem.
+> 
+> DD allocates HEA resources and gets firmware_handles for these resources.
+> To free the resources DD needs to use exactly these handles.
+> There's no generic firmware call "clean out all resources".
+> Allocating the same resources twice does not work.
 
-The CONFIG variable MTD_OBSOLETE_CHIPS was deleted in commit
-ba7cc09c9c9e29a57045dc5bbf843ac1cfad3283.
+Can we get a new firmware call to do this?  
 
-Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+> So a new kernel can't free the resources allocated by an old kernel,
+> because the numeric values of the handles aren't known anymore.
 
----
+How many possible handles are there?  
 
-diff --git a/arch/arm/configs/collie_defconfig b/arch/arm/configs/collie_defconfig
-index 970c8c7..4264e27 100644
---- a/arch/arm/configs/collie_defconfig
-+++ b/arch/arm/configs/collie_defconfig
-@@ -367,7 +367,6 @@ CONFIG_MTD_CFI_UTIL=y
- # CONFIG_MTD_RAM is not set
- # CONFIG_MTD_ROM is not set
- # CONFIG_MTD_ABSENT is not set
--CONFIG_MTD_OBSOLETE_CHIPS=y
- CONFIG_MTD_SHARP=y
- # CONFIG_MTD_XIP is not set
+If the handles are lost, is the only way to clear out the HEA resources
+is to reset the partition?
 
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+> Potential Solution:
+> Hea driver cleanup function hooks into ppc_md.machine_crash_shutdown
+> and frees all firmware resources at shutdown time of the crashed kernel.
 
-http://crashcourse.ca
-========================================================================
+This means the crashed kernel now has to be trusted to shut down and
+free up the resources.  Isn't trusting the crashing kernel in this way
+against the whole kdump idea?
+
+> crash_kexec continues and loads new kernel.
+> The new kernel restarts the HEA driver within kdump kernel, which will work
+> because resources have been freed before.
+> 
+> Michael, would this work?
+> 
+> Gruss / Regards
+> Christoph R.
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
