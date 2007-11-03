@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759593AbXKCI2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760343AbXKCIb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759593AbXKCI2d (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 04:28:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757103AbXKCI20
+	id S1760343AbXKCIb3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 04:31:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbXKCIbX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 04:28:26 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45924 "EHLO mx3.mail.elte.hu"
+	Sat, 3 Nov 2007 04:31:23 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46231 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755922AbXKCI2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 04:28:25 -0400
-Date: Sat, 3 Nov 2007 09:28:08 +0100
+	id S1754788AbXKCIbW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Nov 2007 04:31:22 -0400
+Date: Sat, 3 Nov 2007 09:31:09 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Cc: Thomas Meyer <thomas@m3y3r.de>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: [regression] v2.6.24-rc1-497-gb1d08ac: kde battery icon gone
-Message-ID: <20071103082808.GB10760@elte.hu>
-References: <472B5C01.7090508@m3y3r.de> <20071103063520.13EA59AFABF@smtp05.mtu.ru>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: delayacct regression in 2.6.24 git
+Message-ID: <20071103083109.GD10760@elte.hu>
+References: <472B2908.7020507@linux.vnet.ibm.com> <20071102152529.GB20134@elte.hu> <472B501E.9000307@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071103063520.13EA59AFABF@smtp05.mtu.ru>
+In-Reply-To: <472B501E.9000307@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,14 +35,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andrey Borzenkov <arvidjaar@mail.ru> wrote:
+* Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> > # CONFIG_ACPI_PROCFS is not set
+> >> Am I missing something?
+> > 
+> > delay accounting was causing context-switch slowdown because it 
+> > called sched_clock() explicitly - but indeed my fix to that is wrong 
+> > ...
+> > 
+> > how about reverting the change but also using rq->clock instead of 
+> > sched_clock()?
 > 
-> And if you enable it (ACPI_PROCFS)?
+> Hmm... I think that might work, I find that schedule() calls 
+> __update_rq_clock() which in turn calls sched_clock(), so it might be 
+> a worthwhile optimization.
 
-ACPI_PROCFS was newly introduced i think but without a 'default y' 
-Kconfig entry. That was a mistake i think - it broke some power 
-management tools on my laptop too.
+yep, that's the idea - in general rq->clock is updated for almost every 
+scheduling event so you can rely on it instead of calling sched_clock() 
+directly.
 
 	Ingo
