@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755854AbXKCQ1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756104AbXKCQgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755854AbXKCQ1Q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 12:27:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754211AbXKCQ1B
+	id S1756104AbXKCQgl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 12:36:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754744AbXKCQge
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 12:27:01 -0400
-Received: from waste.org ([66.93.16.53]:43928 "EHLO waste.org"
+	Sat, 3 Nov 2007 12:36:34 -0400
+Received: from main.gmane.org ([80.91.229.2]:46835 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754006AbXKCQ1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 12:27:00 -0400
-Date: Sat, 3 Nov 2007 11:26:40 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Bo Brant?n <bosse@acc.umu.se>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: x86_64 ten times slower than i386
-Message-ID: <20071103162640.GS17536@waste.org>
-References: <Pine.A41.4.64.0711031329490.397338@stalin.acc.umu.se>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.A41.4.64.0711031329490.397338@stalin.acc.umu.se>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1754697AbXKCQgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Nov 2007 12:36:33 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Remigiusz Modrzejewski <lkml.only@maxnet.org.pl>
+Subject: Re: Policy on dual licensing?
+Date: Sat, 3 Nov 2007 16:36:04 +0000 (UTC)
+Message-ID: <slrnfip934.fao.lkml.only@localhost.localdomain>
+References: <slrnfiopoa.9cu.lkml.only@localhost.localdomain> <m3fxzno3fr.fsf@maximus.localdomain>
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: host-ip38-174.crowley.pl
+X-Posting-License: http://ppl.7thguard.net/PPL
+X-Homesite: http://lrem.net/
+User-Agent: slrn/0.9.8.1 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 03, 2007 at 01:31:49PM +0100, Bo Brant?n wrote:
-> 
-> Hello,
-> 
-> I tryed different linux distributions on a computer with an Intel Core 2 
-> Quad and I noticed that the 64-bit versions was at least 10 times slower 
-> than the 32-bit versions, to boot the system took over 20 minutes in 64-bit 
-> mode and then even scrolling text at the command prompt felt slow, however 
-> Vista 64 boots as fast as Vista 32 on the same computer. So I would like to 
-> ask if this is a known problem or if there is some simple misstake I can 
-> have done.
-> 
-> I used live cd's from gentoo and ubunto and at least ubuntu has a rather 
-> new kernel, also dmesg doesn't show anything strange, for example is the 
-> bogomips figure the same as when booting in 32-bit mode.
+Krzysztof Halasa wrote:
+> It doesn't make sense in general. Being derived from *BSD may mean
+> only a tiny fragment comes from *BSD. I can't see any valid reason
+> to force/ask the author to publish his/her code under BSD
+> (GPL + BSD = BSD) instead of GPLv2 as used by the whole Linux.
+>
+> There are exceptions, of course - if you take a *BSD project and
+> include it with no/minor changes it makes sense to use BSD licence,
+> because we really want to cooperate, and because we don't have to
+> fear "evil corporations" taking our code (because it's mostly not
+> "ours").
 
-This is typically due to a problem with the setup of your MTRRs. Try
-booting with mem=nnnM where nnn is some number smaller than your
-actual amount of memory.
+Well, you've shown both poles, where the correct licensing decision 
+seems quite obvious. But in between there lies the great gray area,
+where it's not so clear. Lets say you take a BSD driver and perform
+a medium sized hack, eg add a new feature and include it into Linux
+kernel. Now you've got code that has been mainly of appropriate *BSD
+authorship, but with a reason for them (and the "evil corporations")
+to want the change ported back. The final choice *is* to be made by
+the author, it's the right way to be. What I suggest is to encourage
+authors to share back, best done by maintainer asking to do so just
+before committing.
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+Remigiusz 'lRem' Modrzejewski
+Contact: http://lrem.net/pages/view/about
+Feel free to correct my English.
+
