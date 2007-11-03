@@ -1,377 +1,392 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762203AbXKCXvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762387AbXKCXve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762203AbXKCXvQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 19:51:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759295AbXKCXtt
+	id S1762387AbXKCXve (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 19:51:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759798AbXKCXtu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 19:49:49 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:59230 "EHLO pasmtpB.tele.dk"
+	Sat, 3 Nov 2007 19:49:50 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:59229 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757006AbXKCXto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756956AbXKCXto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 3 Nov 2007 19:49:44 -0400
 From: Sam Ravnborg <sam@ravnborg.org>
 To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
        "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 03/10] x86: arch/x86/Kconfig.cpu unification
-Date: Sun,  4 Nov 2007 00:51:13 +0100
-Message-Id: <11941338801910-git-send-email-sam@ravnborg.org>
+Subject: [PATCH 01/10] x86: unification of cfufreq/Kconfig
+Date: Sun,  4 Nov 2007 00:51:11 +0100
+Message-Id: <11941338801315-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <11941338804007-git-send-email-sam@ravnborg.org>
-References: <11941338801315-git-send-email-sam@ravnborg.org> <11941338804007-git-send-email-sam@ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move all CPU definitions to Kconfig.cpu
+Merge the two Kconfig files to a single file.
+Checked by comparing menuconfig before and after.
+Except some slight reordering in the x86_&4 case
+the result is equal.
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- arch/x86/Kconfig.cpu    |   83 ++++++++++++++++++++++++++++++++++++++--------
- arch/x86/Kconfig.x86_64 |   61 +----------------------------------
- 2 files changed, 69 insertions(+), 75 deletions(-)
+ arch/x86/Kconfig.i386                              |    2 +-
+ arch/x86/Kconfig.x86_64                            |    2 +-
+ .../x86/kernel/cpu/cpufreq/{Kconfig_32 => Kconfig} |   68 ++++++++----
+ arch/x86/kernel/cpu/cpufreq/Kconfig_64             |  108 --------------------
+ 4 files changed, 48 insertions(+), 132 deletions(-)
+ rename arch/x86/kernel/cpu/cpufreq/{Kconfig_32 => Kconfig} (77%)
+ delete mode 100644 arch/x86/kernel/cpu/cpufreq/Kconfig_64
 
-diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
-index 0e2adad..6fc19c1 100644
---- a/arch/x86/Kconfig.cpu
-+++ b/arch/x86/Kconfig.cpu
-@@ -3,11 +3,12 @@ if !X86_ELAN
+diff --git a/arch/x86/Kconfig.i386 b/arch/x86/Kconfig.i386
+index 7331efe..b6f2fd0 100644
+--- a/arch/x86/Kconfig.i386
++++ b/arch/x86/Kconfig.i386
+@@ -1092,7 +1092,7 @@ config APM_REAL_MODE_POWER_OFF
  
- choice
- 	prompt "Processor family"
--	default M686
-+	default M686 if X86_32
-+	default GENERIC_CPU if X86_64
+ endif # APM
  
- config M386
- 	bool "386"
--	depends on !UML
-+	depends on X86_32 && !UML
- 	---help---
- 	  This is the processor type of your CPU. This information is used for
- 	  optimizing purposes. In order to compile a kernel that can run on
-@@ -49,6 +50,7 @@ config M386
+-source "arch/x86/kernel/cpu/cpufreq/Kconfig_32"
++source "arch/x86/kernel/cpu/cpufreq/Kconfig"
  
- config M486
- 	bool "486"
-+	depends on X86_32
- 	help
- 	  Select this for a 486 series processor, either Intel or one of the
- 	  compatible processors from AMD, Cyrix, IBM, or Intel.  Includes DX,
-@@ -57,6 +59,7 @@ config M486
+ source "drivers/cpuidle/Kconfig"
  
- config M586
- 	bool "586/K5/5x86/6x86/6x86MX"
-+	depends on X86_32
- 	help
- 	  Select this for an 586 or 686 series processor such as the AMD K5,
- 	  the Cyrix 5x86, 6x86 and 6x86MX.  This choice does not
-@@ -64,18 +67,21 @@ config M586
- 
- config M586TSC
- 	bool "Pentium-Classic"
-+	depends on X86_32
- 	help
- 	  Select this for a Pentium Classic processor with the RDTSC (Read
- 	  Time Stamp Counter) instruction for benchmarking.
- 
- config M586MMX
- 	bool "Pentium-MMX"
-+	depends on X86_32
- 	help
- 	  Select this for a Pentium with the MMX graphics/multimedia
- 	  extended instructions.
- 
- config M686
- 	bool "Pentium-Pro"
-+	depends on X86_32
- 	help
- 	  Select this for Intel Pentium Pro chips.  This enables the use of
- 	  Pentium Pro extended instructions, and disables the init-time guard
-@@ -83,6 +89,7 @@ config M686
- 
- config MPENTIUMII
- 	bool "Pentium-II/Celeron(pre-Coppermine)"
-+	depends on X86_32
- 	help
- 	  Select this for Intel chips based on the Pentium-II and
- 	  pre-Coppermine Celeron core.  This option enables an unaligned
-@@ -92,6 +99,7 @@ config MPENTIUMII
- 
- config MPENTIUMIII
- 	bool "Pentium-III/Celeron(Coppermine)/Pentium-III Xeon"
-+	depends on X86_32
- 	help
- 	  Select this for Intel chips based on the Pentium-III and
- 	  Celeron-Coppermine core.  This option enables use of some
-@@ -100,19 +108,14 @@ config MPENTIUMIII
- 
- config MPENTIUMM
- 	bool "Pentium M"
-+	depends on X86_32
- 	help
- 	  Select this for Intel Pentium M (not Pentium-4 M)
- 	  notebook chips.
- 
--config MCORE2
--	bool "Core 2/newer Xeon"
--	help
--	  Select this for Intel Core 2 and newer Core 2 Xeons (Xeon 51xx and 53xx)
--	  CPUs. You can distinguish newer from older Xeons by the CPU family
--	  in /proc/cpuinfo. Newer ones have 6 and older ones 15 (not a typo)
--
- config MPENTIUM4
- 	bool "Pentium-4/Celeron(P4-based)/Pentium-4 M/older Xeon"
-+	depends on X86_32
- 	help
- 	  Select this for Intel Pentium 4 chips.  This includes the
- 	  Pentium 4, Pentium D, P4-based Celeron and Xeon, and
-@@ -148,6 +151,7 @@ config MPENTIUM4
- 
- config MK6
- 	bool "K6/K6-II/K6-III"
-+	depends on X86_32
- 	help
- 	  Select this for an AMD K6-family processor.  Enables use of
- 	  some extended instructions, and passes appropriate optimization
-@@ -155,6 +159,7 @@ config MK6
- 
- config MK7
- 	bool "Athlon/Duron/K7"
-+	depends on X86_32
- 	help
- 	  Select this for an AMD Athlon K7-family processor.  Enables use of
- 	  some extended instructions, and passes appropriate optimization
-@@ -169,6 +174,7 @@ config MK8
- 
- config MCRUSOE
- 	bool "Crusoe"
-+	depends on X86_32
- 	help
- 	  Select this for a Transmeta Crusoe processor.  Treats the processor
- 	  like a 586 with TSC, and sets some GCC optimization flags (like a
-@@ -176,11 +182,13 @@ config MCRUSOE
- 
- config MEFFICEON
- 	bool "Efficeon"
-+	depends on X86_32
- 	help
- 	  Select this for a Transmeta Efficeon processor.
- 
- config MWINCHIPC6
- 	bool "Winchip-C6"
-+	depends on X86_32
- 	help
- 	  Select this for an IDT Winchip C6 chip.  Linux and GCC
- 	  treat this chip as a 586TSC with some extended instructions
-@@ -188,6 +196,7 @@ config MWINCHIPC6
- 
- config MWINCHIP2
- 	bool "Winchip-2"
-+	depends on X86_32
- 	help
- 	  Select this for an IDT Winchip-2.  Linux and GCC
- 	  treat this chip as a 586TSC with some extended instructions
-@@ -195,6 +204,7 @@ config MWINCHIP2
- 
- config MWINCHIP3D
- 	bool "Winchip-2A/Winchip-3"
-+	depends on X86_32
- 	help
- 	  Select this for an IDT Winchip-2A or 3.  Linux and GCC
- 	  treat this chip as a 586TSC with some extended instructions
-@@ -204,16 +214,19 @@ config MWINCHIP3D
- 
- config MGEODEGX1
- 	bool "GeodeGX1"
-+	depends on X86_32
- 	help
- 	  Select this for a Geode GX1 (Cyrix MediaGX) chip.
- 
- config MGEODE_LX
-        bool "Geode GX/LX"
-+	depends on X86_32
-        help
-          Select this for AMD Geode GX and LX processors.
- 
- config MCYRIXIII
- 	bool "CyrixIII/VIA-C3"
-+	depends on X86_32
- 	help
- 	  Select this for a Cyrix III or C3 chip.  Presently Linux and GCC
- 	  treat this chip as a generic 586. Whilst the CPU is 686 class,
-@@ -225,6 +238,7 @@ config MCYRIXIII
- 
- config MVIAC3_2
- 	bool "VIA C3-2 (Nehemiah)"
-+	depends on X86_32
- 	help
- 	  Select this for a VIA C3 "Nehemiah". Selecting this enables usage
- 	  of SSE and tells gcc to treat the CPU as a 686.
-@@ -232,15 +246,42 @@ config MVIAC3_2
- 
- config MVIAC7
- 	bool "VIA C7"
-+	depends on X86_32
- 	help
- 	  Select this for a VIA C7.  Selecting this uses the correct cache
- 	  shift and tells gcc to treat the CPU as a 686.
- 
-+config MPSC
-+	bool "Intel P4 / older Netburst based Xeon"
-+	depends on X86_64
-+	help
-+	  Optimize for Intel Pentium 4, Pentium D and older Nocona/Dempsey
-+	  Xeon CPUs with Intel 64bit which is compatible with x86-64.
-+	  Note that the latest Xeons (Xeon 51xx and 53xx) are not based on the
-+          Netburst core and shouldn't use this option. You can distinguish them
-+	  using the cpu family field
-+	  in /proc/cpuinfo. Family 15 is an older Xeon, Family 6 a newer one.
-+
-+config MCORE2
-+	bool "Core 2/newer Xeon"
-+	help
-+	  Select this for Intel Core 2 and newer Core 2 Xeons (Xeon 51xx and 53xx)
-+	  CPUs. You can distinguish newer from older Xeons by the CPU family
-+	  in /proc/cpuinfo. Newer ones have 6 and older ones 15 (not a typo)
-+
-+config GENERIC_CPU
-+	bool "Generic-x86-64"
-+	depends on X86_64
-+	help
-+	  Generic x86-64 CPU.
-+	  Run equally well on all x86-64 CPUs.
-+
- endchoice
- 
- config X86_GENERIC
--       bool "Generic x86 support"
--       help
-+	bool "Generic x86 support"
-+	depends on X86_32
-+	help
- 	  Instead of just including optimizations for the selected
- 	  x86 variant (e.g. PII, Crusoe or Athlon), include some more
- 	  generic optimizations as well. This will make the kernel
-@@ -253,7 +294,19 @@ endif
- 
- #
- # Define implied options from the CPU selection here
--#
-+# Most is only relevant for X86_32
-+config X86_L1_CACHE_BYTES
-+	int
-+	default "128" if GENERIC_CPU || MPSC
-+	default "64" if MK8 || MCORE2
-+	depends on X86_64
-+
-+config X86_INTERNODE_CACHE_BYTES
-+	int
-+	default "4096" if X86_VSMP
-+	default X86_L1_CACHE_BYTES if !X86_VSMP
-+	depends on X86_64
-+
- config X86_CMPXCHG
- 	bool
- 	depends on !M386
-@@ -261,7 +314,7 @@ config X86_CMPXCHG
- 
- config X86_L1_CACHE_SHIFT
- 	int
--	default "7" if MPENTIUM4 || X86_GENERIC
-+	default "7" if MPENTIUM4 || X86_GENERIC || GENERIC_CPU || MPSC
- 	default "4" if X86_ELAN || M486 || M386 || MGEODEGX1
- 	default "5" if MWINCHIP3D || MWINCHIP2 || MWINCHIPC6 || MCRUSOE || MEFFICEON || MCYRIXIII || MK6 || MPENTIUMIII || MPENTIUMII || M686 || M586MMX || M586TSC || M586 || MVIAC3_2 || MGEODE_LX
- 	default "6" if MK7 || MK8 || MPENTIUMM || MCORE2 || MVIAC7
-@@ -330,7 +383,7 @@ config X86_ALIGNMENT_16
- 
- config X86_GOOD_APIC
- 	bool
--	depends on MK7 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || M586MMX || MK8 || MEFFICEON || MCORE2 || MVIAC7
-+	depends on MK7 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || M586MMX || MK8 || MEFFICEON || MCORE2 || MVIAC7 || X86_64
- 	default y
- 
- config X86_INTEL_USERCOPY
-@@ -355,7 +408,7 @@ config X86_OOSTORE
- 
- config X86_TSC
- 	bool
--	depends on (MWINCHIP3D || MWINCHIP2 || MCRUSOE || MEFFICEON || MCYRIXIII || MK7 || MK6 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || M586MMX || M586TSC || MK8 || MVIAC3_2 || MVIAC7 || MGEODEGX1 || MGEODE_LX || MCORE2) && !X86_NUMAQ
-+	depends on ((MWINCHIP3D || MWINCHIP2 || MCRUSOE || MEFFICEON || MCYRIXIII || MK7 || MK6 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || M586MMX || M586TSC || MK8 || MVIAC3_2 || MVIAC7 || MGEODEGX1 || MGEODE_LX || MCORE2) && !X86_NUMAQ) || X86_64
- 	default y
- 
- # this should be set for all -march=.. options where the compiler
 diff --git a/arch/x86/Kconfig.x86_64 b/arch/x86/Kconfig.x86_64
-index f04eba3..9fd69a0 100644
+index cc468ea..8d6b534 100644
 --- a/arch/x86/Kconfig.x86_64
 +++ b/arch/x86/Kconfig.x86_64
-@@ -159,66 +159,7 @@ config X86_VSMP
+@@ -719,7 +719,7 @@ config ARCH_HIBERNATION_HEADER
  
- endchoice
+ source "drivers/acpi/Kconfig"
  
--choice
--	prompt "Processor family"
--	default GENERIC_CPU
--
--config MK8
--	bool "AMD-Opteron/Athlon64"
--	help
--	  Optimize for AMD Opteron/Athlon64/Hammer/K8 CPUs.
--
--config MPSC
--       bool "Intel P4 / older Netburst based Xeon"
--       help
--	  Optimize for Intel Pentium 4, Pentium D and older Nocona/Dempsey
--	  Xeon CPUs with Intel 64bit which is compatible with x86-64.
--	  Note that the latest Xeons (Xeon 51xx and 53xx) are not based on the
--          Netburst core and shouldn't use this option. You can distinguish them
--	  using the cpu family field
--	  in /proc/cpuinfo. Family 15 is an older Xeon, Family 6 a newer one.
--
--config MCORE2
--	bool "Intel Core2 / newer Xeon"
--	help
--	  Optimize for Intel Core2 and newer Xeons (51xx)
--	  You can distinguish the newer Xeons from the older ones using
--	  the cpu family field in /proc/cpuinfo. 15 is an older Xeon
--	  (use CONFIG_MPSC then), 6 is a newer one.
--
--config GENERIC_CPU
--	bool "Generic-x86-64"
--	help
--	  Generic x86-64 CPU.
--	  Run equally well on all x86-64 CPUs.
--
--endchoice
--
+-source "arch/x86/kernel/cpu/cpufreq/Kconfig_64"
++source "arch/x86/kernel/cpu/cpufreq/Kconfig"
+ 
+ source "drivers/cpuidle/Kconfig"
+ 
+diff --git a/arch/x86/kernel/cpu/cpufreq/Kconfig_32 b/arch/x86/kernel/cpu/cpufreq/Kconfig
+similarity index 77%
+rename from arch/x86/kernel/cpu/cpufreq/Kconfig_32
+rename to arch/x86/kernel/cpu/cpufreq/Kconfig
+index d8c6f13..a84cea6 100644
+--- a/arch/x86/kernel/cpu/cpufreq/Kconfig_32
++++ b/arch/x86/kernel/cpu/cpufreq/Kconfig
+@@ -19,6 +19,9 @@ config X86_ACPI_CPUFREQ
+ 	  Processor Performance States.
+ 	  This driver also supports Intel Enhanced Speedstep.
+ 
++	  To compile this driver as a module, choose M here: the
++	  module will be called acpi-cpufreq.
++
+ 	  For details, take a look at <file:Documentation/cpu-freq/>.
+ 
+ 	  If in doubt, say N.
+@@ -26,7 +29,7 @@ config X86_ACPI_CPUFREQ
+ config ELAN_CPUFREQ
+ 	tristate "AMD Elan SC400 and SC410"
+ 	select CPU_FREQ_TABLE
+-	depends on X86_ELAN
++	depends on X86_32 && X86_ELAN
+ 	---help---
+ 	  This adds the CPUFreq driver for AMD Elan SC400 and SC410
+ 	  processors.
+@@ -42,7 +45,7 @@ config ELAN_CPUFREQ
+ config SC520_CPUFREQ
+ 	tristate "AMD Elan SC520"
+ 	select CPU_FREQ_TABLE
+-	depends on X86_ELAN
++	depends on X86_32 && X86_ELAN
+ 	---help---
+ 	  This adds the CPUFreq driver for AMD Elan SC520 processor.
+ 
+@@ -54,6 +57,7 @@ config SC520_CPUFREQ
+ config X86_POWERNOW_K6
+ 	tristate "AMD Mobile K6-2/K6-3 PowerNow!"
+ 	select CPU_FREQ_TABLE
++	depends on X86_32
+ 	help
+ 	  This adds the CPUFreq driver for mobile AMD K6-2+ and mobile
+ 	  AMD K6-3+ processors.
+@@ -65,6 +69,7 @@ config X86_POWERNOW_K6
+ config X86_POWERNOW_K7
+ 	tristate "AMD Mobile Athlon/Duron PowerNow!"
+ 	select CPU_FREQ_TABLE
++	depends on X86_32
+ 	help
+ 	  This adds the CPUFreq driver for mobile AMD K7 mobile processors.
+ 
+@@ -76,23 +81,27 @@ config X86_POWERNOW_K7_ACPI
+ 	bool
+ 	depends on X86_POWERNOW_K7 && ACPI_PROCESSOR
+ 	depends on !(X86_POWERNOW_K7 = y && ACPI_PROCESSOR = m)
++	depends on X86_32
+ 	default y
+ 
+ config X86_POWERNOW_K8
+ 	tristate "AMD Opteron/Athlon64 PowerNow!"
+ 	select CPU_FREQ_TABLE
+-	depends on EXPERIMENTAL
+ 	help
+ 	  This adds the CPUFreq driver for mobile AMD Opteron/Athlon64 processors.
+ 
++	  To compile this driver as a module, choose M here: the
++	  module will be called powernow-k8.
++
+ 	  For details, take a look at <file:Documentation/cpu-freq/>.
+ 
+ 	  If in doubt, say N.
+ 
+ config X86_POWERNOW_K8_ACPI
+-	bool "ACPI Support"
+-	select ACPI_PROCESSOR
+-	depends on ACPI && X86_POWERNOW_K8
++	bool
++	prompt "ACPI Support" if X86_32
++	depends on ACPI && X86_POWERNOW_K8 && ACPI_PROCESSOR
++	depends on !(X86_POWERNOW_K8 = y && ACPI_PROCESSOR = m)
+ 	default y
+ 	help
+ 	  This provides access to the K8s Processor Performance States via ACPI.
+@@ -104,7 +113,7 @@ config X86_POWERNOW_K8_ACPI
+ 
+ config X86_GX_SUSPMOD
+ 	tristate "Cyrix MediaGX/NatSemi Geode Suspend Modulation"
+-	depends on PCI
++	depends on X86_32 && PCI
+ 	help
+ 	 This add the CPUFreq driver for NatSemi Geode processors which
+ 	 support suspend modulation.
+@@ -114,15 +123,19 @@ config X86_GX_SUSPMOD
+ 	 If in doubt, say N.
+ 
+ config X86_SPEEDSTEP_CENTRINO
+-	tristate "Intel Enhanced SpeedStep"
++	tristate "Intel Enhanced SpeedStep (deprecated)"
+ 	select CPU_FREQ_TABLE
+-	select X86_SPEEDSTEP_CENTRINO_TABLE
++	select X86_SPEEDSTEP_CENTRINO_TABLE if X86_32
+ 	help
++	  This is deprecated and this functionality is now merged into
++	  acpi_cpufreq (X86_ACPI_CPUFREQ). Use that driver instead of
++	  speedstep_centrino.
+ 	  This adds the CPUFreq driver for Enhanced SpeedStep enabled
+-	  mobile CPUs.  This means Intel Pentium M (Centrino) CPUs. However,
+-	  you also need to say Y to "Use ACPI tables to decode..." below
+-	  [which might imply enabling ACPI] if you want to use this driver
+-	  on non-Banias CPUs.
++	  mobile CPUs.  This means Intel Pentium M (Centrino) CPUs
++	  or 64bit enabled Intel Xeons.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called speedstep-centrino.
+ 
+ 	  For details, take a look at <file:Documentation/cpu-freq/>.
+ 
+@@ -130,7 +143,7 @@ config X86_SPEEDSTEP_CENTRINO
+ 
+ config X86_SPEEDSTEP_CENTRINO_TABLE
+ 	bool "Built-in tables for Banias CPUs"
+-	depends on X86_SPEEDSTEP_CENTRINO
++	depends on X86_32 && X86_SPEEDSTEP_CENTRINO
+ 	default y
+ 	help
+ 	  Use built-in tables for Banias CPUs if ACPI encoding
+@@ -141,6 +154,7 @@ config X86_SPEEDSTEP_CENTRINO_TABLE
+ config X86_SPEEDSTEP_ICH
+ 	tristate "Intel Speedstep on ICH-M chipsets (ioport interface)"
+ 	select CPU_FREQ_TABLE
++	depends on X86_32
+ 	help
+ 	  This adds the CPUFreq driver for certain mobile Intel Pentium III
+ 	  (Coppermine), all mobile Intel Pentium III-M (Tualatin) and all
+@@ -154,7 +168,7 @@ config X86_SPEEDSTEP_ICH
+ config X86_SPEEDSTEP_SMI
+ 	tristate "Intel SpeedStep on 440BX/ZX/MX chipsets (SMI interface)"
+ 	select CPU_FREQ_TABLE
+-	depends on EXPERIMENTAL
++	depends on X86_32 && EXPERIMENTAL
+ 	help
+ 	  This adds the CPUFreq driver for certain mobile Intel Pentium III
+ 	  (Coppermine), all mobile Intel Pentium III-M (Tualatin)
+@@ -169,15 +183,24 @@ config X86_P4_CLOCKMOD
+ 	select CPU_FREQ_TABLE
+ 	help
+ 	  This adds the CPUFreq driver for Intel Pentium 4 / XEON
+-	  processors.
++	  processors.  When enabled it will lower CPU temperature by skipping
++	  clocks.
++
++	  This driver should be only used in exceptional
++	  circumstances when very low power is needed because it causes severe
++	  slowdowns and noticeable latencies.  Normally Speedstep should be used
++	  instead.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called p4-clockmod.
+ 
+ 	  For details, take a look at <file:Documentation/cpu-freq/>.
+ 
+-	  If in doubt, say N.
++	  Unless you are absolutely sure say N.
+ 
+ config X86_CPUFREQ_NFORCE2
+ 	tristate "nVidia nForce2 FSB changing"
+-	depends on EXPERIMENTAL
++	depends on X86_32 && EXPERIMENTAL
+ 	help
+ 	  This adds the CPUFreq driver for FSB changing on nVidia nForce2
+ 	  platforms.
+@@ -188,6 +211,7 @@ config X86_CPUFREQ_NFORCE2
+ 
+ config X86_LONGRUN
+ 	tristate "Transmeta LongRun"
++	depends on X86_32
+ 	help
+ 	  This adds the CPUFreq driver for Transmeta Crusoe and Efficeon processors
+ 	  which support LongRun.
+@@ -199,7 +223,7 @@ config X86_LONGRUN
+ config X86_LONGHAUL
+ 	tristate "VIA Cyrix III Longhaul"
+ 	select CPU_FREQ_TABLE
+-	depends on ACPI_PROCESSOR
++	depends on X86_32 && ACPI_PROCESSOR
+ 	help
+ 	  This adds the CPUFreq driver for VIA Samuel/CyrixIII,
+ 	  VIA Cyrix Samuel/C3, VIA Cyrix Ezra and VIA Cyrix Ezra-T
+@@ -212,7 +236,7 @@ config X86_LONGHAUL
+ config X86_E_POWERSAVER
+ 	tristate "VIA C7 Enhanced PowerSaver (EXPERIMENTAL)"
+ 	select CPU_FREQ_TABLE
+-	depends on EXPERIMENTAL
++	depends on X86_32 && EXPERIMENTAL
+ 	help
+ 	  This adds the CPUFreq driver for VIA C7 processors.
+ 
+@@ -233,11 +257,11 @@ config X86_ACPI_CPUFREQ_PROC_INTF
+ 
+ config X86_SPEEDSTEP_LIB
+ 	tristate
+-	default X86_SPEEDSTEP_ICH || X86_SPEEDSTEP_SMI || X86_P4_CLOCKMOD
++	default (X86_SPEEDSTEP_ICH || X86_SPEEDSTEP_SMI || X86_P4_CLOCKMOD)
+ 
+ config X86_SPEEDSTEP_RELAXED_CAP_CHECK
+ 	bool "Relaxed speedstep capability checks"
+-	depends on (X86_SPEEDSTEP_SMI || X86_SPEEDSTEP_ICH)
++	depends on X86_32 && (X86_SPEEDSTEP_SMI || X86_SPEEDSTEP_ICH)
+ 	help
+ 	  Don't perform all checks for a speedstep capable system which would
+ 	  normally be done. Some ancient or strange systems, though speedstep
+diff --git a/arch/x86/kernel/cpu/cpufreq/Kconfig_64 b/arch/x86/kernel/cpu/cpufreq/Kconfig_64
+deleted file mode 100644
+index 9c9699f..0000000
+--- a/arch/x86/kernel/cpu/cpufreq/Kconfig_64
++++ /dev/null
+@@ -1,108 +0,0 @@
 -#
--# Define implied options from the CPU selection here
+-# CPU Frequency scaling
 -#
--config X86_L1_CACHE_BYTES
--	int
--	default "128" if GENERIC_CPU || MPSC
--	default "64" if MK8 || MCORE2
 -
--config X86_L1_CACHE_SHIFT
--	int
--	default "7" if GENERIC_CPU || MPSC
--	default "6" if MK8 || MCORE2
+-menu "CPU Frequency scaling"
 -
--config X86_INTERNODE_CACHE_BYTES
--	int
--	default "4096" if X86_VSMP
--	default X86_L1_CACHE_BYTES if !X86_VSMP
+-source "drivers/cpufreq/Kconfig"
 -
--config X86_TSC
+-if CPU_FREQ
+-
+-comment "CPUFreq processor drivers"
+-
+-config X86_POWERNOW_K8
+-	tristate "AMD Opteron/Athlon64 PowerNow!"
+-	select CPU_FREQ_TABLE
+-	help
+-	  This adds the CPUFreq driver for mobile AMD Opteron/Athlon64 processors.
+-
+-	  To compile this driver as a module, choose M here: the
+-	  module will be called powernow-k8.
+-
+-	  For details, take a look at <file:Documentation/cpu-freq/>.
+-
+-	  If in doubt, say N.
+-
+-config X86_POWERNOW_K8_ACPI
 -	bool
+-	depends on X86_POWERNOW_K8 && ACPI_PROCESSOR
+-	depends on !(X86_POWERNOW_K8 = y && ACPI_PROCESSOR = m)
 -	default y
 -
--config X86_GOOD_APIC
--	bool
--	default y
-+source "arch/x86/Kconfig.cpu"
- 
- config MICROCODE
- 	tristate "/dev/cpu/microcode - Intel CPU microcode support"
+-config X86_SPEEDSTEP_CENTRINO
+-	tristate "Intel Enhanced SpeedStep (deprecated)"
+-	select CPU_FREQ_TABLE
+-	depends on ACPI_PROCESSOR
+-	help
+-	  This is deprecated and this functionality is now merged into
+-	  acpi_cpufreq (X86_ACPI_CPUFREQ). Use that driver instead of
+-	  speedstep_centrino.
+-	  This adds the CPUFreq driver for Enhanced SpeedStep enabled
+-	  mobile CPUs.  This means Intel Pentium M (Centrino) CPUs
+-	  or 64bit enabled Intel Xeons.
+-
+-	  To compile this driver as a module, choose M here: the
+-	  module will be called speedstep-centrino.
+-
+-	  For details, take a look at <file:Documentation/cpu-freq/>.
+-
+-	  If in doubt, say N.
+-
+-config X86_ACPI_CPUFREQ
+-	tristate "ACPI Processor P-States driver"
+-	select CPU_FREQ_TABLE
+-	depends on ACPI_PROCESSOR
+-	help
+-	  This driver adds a CPUFreq driver which utilizes the ACPI
+-	  Processor Performance States.
+-	  This driver also supports Intel Enhanced Speedstep.
+-
+-	  To compile this driver as a module, choose M here: the
+-	  module will be called acpi-cpufreq.
+-
+-	  For details, take a look at <file:Documentation/cpu-freq/>.
+-
+-	  If in doubt, say N.
+-
+-comment "shared options"
+-
+-config X86_ACPI_CPUFREQ_PROC_INTF
+-	bool "/proc/acpi/processor/../performance interface (deprecated)"
+-	depends on PROC_FS
+-	depends on X86_ACPI_CPUFREQ || X86_POWERNOW_K8_ACPI
+-	help
+-	  This enables the deprecated /proc/acpi/processor/../performance
+-	  interface. While it is helpful for debugging, the generic,
+-	  cross-architecture cpufreq interfaces should be used.
+-
+-	  If in doubt, say N.
+-
+-config X86_P4_CLOCKMOD
+-	tristate "Intel Pentium 4 clock modulation"
+-	depends on EMBEDDED
+-	select CPU_FREQ_TABLE
+-	help
+-	  This adds the clock modulation driver for Intel Pentium 4 / XEON
+-	  processors.  When enabled it will lower CPU temperature by skipping
+-	  clocks.
+-
+-	  This driver should be only used in exceptional
+-	  circumstances when very low power is needed because it causes severe
+-	  slowdowns and noticeable latencies.  Normally Speedstep should be used
+-	  instead.
+-
+-	  To compile this driver as a module, choose M here: the
+-	  module will be called p4-clockmod.
+-
+-	  For details, take a look at <file:Documentation/cpu-freq/>.
+-
+-	  Unless you are absolutely sure say N.
+-
+-
+-config X86_SPEEDSTEP_LIB
+-	tristate
+-	default X86_P4_CLOCKMOD
+-
+-endif
+-
+-endmenu
 -- 
 1.5.3.4.1157.g0e74-dirty
 
