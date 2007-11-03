@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760359AbXKCIeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760116AbXKCIyu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760359AbXKCIeZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 04:34:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbXKCIeS
+	id S1760116AbXKCIyu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 04:54:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756455AbXKCIyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 04:34:18 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57789 "EHLO mx2.mail.elte.hu"
+	Sat, 3 Nov 2007 04:54:44 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54292 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756897AbXKCIeS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 04:34:18 -0400
-Date: Sat, 3 Nov 2007 09:33:58 +0100
+	id S1755568AbXKCIyn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Nov 2007 04:54:43 -0400
+Date: Sat, 3 Nov 2007 09:54:20 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Fix delay accounting regression
-Message-ID: <20071103083358.GE10760@elte.hu>
-References: <20071102142220.24166.49046.sendpatchset@balbir-laptop> <20071102155358.GA32116@elte.hu> <20071102165559.GA5424@linux.vnet.ibm.com>
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Restore deterministic CPU accounting on powerpc
+Message-ID: <20071103085420.GA14551@elte.hu>
+References: <18218.44089.274628.680088@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071102165559.GA5424@linux.vnet.ibm.com>
+In-Reply-To: <18218.44089.274628.680088@cargo.ozlabs.ibm.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,29 +37,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+* Paul Mackerras <paulus@samba.org> wrote:
 
-> On Fri, Nov 02, 2007 at 04:53:58PM +0100, Ingo Molnar wrote:
-> > 
-> > * Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> > > Fix the delay accounting regression introduced by commit 
-> > > 75d4ef16a6aa84f708188bada182315f80aab6fa. rq no longer has sched_info 
-> > > data associated with it. task_struct sched_info structure is used by 
-> > > delay accounting to provide back statistics to user space.
-> > 
-> > no, this really is broken code. sched_clock() is not a generally 
-> > reliable time source so at a minimum the rq->clock fix i mentioned is 
-> > needed. What user-space tools are utilizing delay-accounting by the way? 
-> > We have most of this data available under SCHEDSTATS - how about 
-> > consolidating CONFIG_TASK_DELAY_ACCT into CONFIG_SCHEDSTATS?
-> > 
-> > 	Ingo
+> Since powerpc started using CONFIG_GENERIC_CLOCKEVENTS, the 
+> deterministic CPU accounting (CONFIG_VIRT_CPU_ACCOUNTING) has been 
+> broken on powerpc, because we end up counting user time twice: once in 
+> timer_interrupt() and once in update_process_times().
 > 
-> Hi, Ingo,
+> This fixes the problem by pulling the code in update_process_times 
+> that updates utime and stime into a separate function called 
+> account_process_tick.  If CONFIG_VIRT_CPU_ACCOUNTING is not defined, 
+> there is a version of account_process_tick in kernel/timer.c that 
+> simply accounts a whole tick to either utime or stime as before.  If 
+> CONFIG_VIRT_CPU_ACCOUNTING is defined, then arch code gets to 
+> implement account_process_tick.
 > 
-> How about this?
+> This also lets us simplify the s390 code a bit; it means that the s390 
+> timer interrupt can now call update_process_times even when 
+> CONFIG_VIRT_CPU_ACCOUNTING is turned on, and can just implement a 
+> suitable account_process_tick().
+> 
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
 
-thanks, applied.
+lets push this towards Linus via the scheduler tree, ok?
 
 	Ingo
