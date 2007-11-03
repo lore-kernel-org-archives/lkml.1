@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762205AbXKCByi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758489AbXKCCrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762205AbXKCByi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 21:54:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756295AbXKCBx5
+	id S1758489AbXKCCrR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 22:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755733AbXKCCrG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 21:53:57 -0400
-Received: from thunk.org ([69.25.196.29]:41036 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752949AbXKCBxy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 21:53:54 -0400
-From: "Theodore Ts'o" <tytso@mit.edu>
-To: linux-kernel@vger.kernel.org
-Cc: "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH,RFC 3/3] scripts/setlocalversion: Fix false positive -dirty tag caused by make-kpkg
-Date: Fri,  2 Nov 2007 21:53:01 -0400
-Message-Id: <1194054781-16609-3-git-send-email-tytso@mit.edu>
-X-Mailer: git-send-email 1.5.3.4.499.g1104e-dirty
-In-Reply-To: <1194054781-16609-2-git-send-email-tytso@mit.edu>
-References: <1194054781-16609-1-git-send-email-tytso@mit.edu>
- <1194054781-16609-2-git-send-email-tytso@mit.edu>
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Fri, 2 Nov 2007 22:47:06 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50161 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755747AbXKCCrE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 22:47:04 -0400
+Date: Fri, 2 Nov 2007 19:46:22 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ralf Baechle <ralf@linux-mips.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jay Estabrook <jay.estabrook@hp.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] Use i8253.c lock for PC speaker on MIPS, too.
+In-Reply-To: <20071102172606.GA29513@linux-mips.org>
+Message-ID: <alpine.LFD.0.999.0711021940010.3342@woody.linux-foundation.org>
+References: <20071102161650.GA28459@linux-mips.org>
+ <20071102172606.GA29513@linux-mips.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-make-kpkg modifies scripts/package/Makefile and deletes
-scripts/package/builddeb as part of its build process.  Ignore these
-changes so the tree isn't marked as -dirty, when it is just an
-artifact of make-kpkg.  (make-kpkg clean restores the files to their
-original state, and these helper scripts won't affect the final
-compiled kernel in any way.)
 
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
----
- scripts/setlocalversion |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/scripts/setlocalversion b/scripts/setlocalversion
-index bfc8c8c..ad56a06 100644
---- a/scripts/setlocalversion
-+++ b/scripts/setlocalversion
-@@ -17,7 +17,8 @@ if head=`git rev-parse --verify HEAD 2>/dev/null`; then
- 
- 	# Are there uncommitted changes?
- 	git status >& /dev/null
--	if git diff-index HEAD | read dummy; then
-+	if git diff-index --name-only HEAD | grep -v "^scripts/package" \
-+	    | read dummy; then
- 		printf '%s' -dirty
- 	fi
- fi
--- 
-1.5.3.4.499.g1104e-dirty
+On Fri, 2 Nov 2007, Ralf Baechle wrote:
+>
+> The Jazz machines have to use the PIT timer for dyntick and highresolution
+> kernels.  This may break because currently just like i386 used to do MIPS
+> uses two separate spinlocks in the actual PIT code and the PC speaker
+> code.  So switch to do it the same that x86 currently does PIT locking.
 
+Hmm. That leaves apparently just alpha/ppc/powerpc as supporting pcspkr, 
+and *not* doing this. Maybe they should be forced to do the i8253 lock in 
+arch code too, and expose it through <asm/i8253.h>, instead of having that 
+butt-ugly #ifdef remain in the sources?
+
+Paul, Jay, Ivan: right now drivers/input/pcspkr.c does this:
+
+	#if defined(CONFIG_MIPS) || defined(CONFIG_X86)
+	/* Use the global PIT lock ! */
+	#include <asm/i8253.h>
+	#else
+	#include <asm/8253pit.h>
+	static DEFINE_SPINLOCK(i8253_lock);
+	#endif
+
+and wouldn't it be nice if we just changed it to
+
+	#include <asm/i8253.h>
+
+and got rid of one totally unnecessary stupid arch difference?
+
+		Linus
