@@ -1,47 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759163AbXKCGYd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759636AbXKCGfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759163AbXKCGYd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 02:24:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756379AbXKCGYZ
+	id S1759636AbXKCGfb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 02:35:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756655AbXKCGfX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 02:24:25 -0400
-Received: from THUNK.ORG ([69.25.196.29]:33514 "EHLO thunker.thunk.org"
+	Sat, 3 Nov 2007 02:35:23 -0400
+Received: from smtp05.mtu.ru ([62.5.255.52]:53322 "EHLO smtp05.mtu.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751015AbXKCGYY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 02:24:24 -0400
-Date: Sat, 3 Nov 2007 02:23:04 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       jeff@garzik.org, linux-ide@vger.kernel.org
-Subject: Re: Suspend to ram regression (2.6.24-rc1-git)
-Message-ID: <20071103062304.GA10428@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-	Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-	jeff@garzik.org, linux-ide@vger.kernel.org
-References: <20071031201308.GK11514@kernel.dk> <20071101084145.GA5037@kernel.dk> <20071102163708.15304989.kristen.c.accardi@intel.com>
+	id S1756422AbXKCGfW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Nov 2007 02:35:22 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: [regression] v2.6.24-rc1-497-gb1d08ac: kde battery icon gone
+To: Thomas Meyer <thomas@m3y3r.de>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Date: Sat, 03 Nov 2007 09:35:16 +0300
+References: <472B5C01.7090508@m3y3r.de>
+User-Agent: KNode/0.10.5
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071102163708.15304989.kristen.c.accardi@intel.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Transfer-Encoding: 7Bit
+Message-Id: <20071103063520.13EA59AFABF@smtp05.mtu.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 02, 2007 at 04:37:08PM -0700, Kristen Carlson Accardi wrote:
+Thomas Meyer wrote:
+
+> i just wanted to report this:
 > 
-> Does this patch fix your problem?  It seems to get hung up while disabling
-> DIPM, and after thinking about this a bit, I don't think we really need
-> to do this anyway.
+> in v2.6.24-rc1-497-gb1d08ac the kde battery icon is no longer displayed.
+> 
+> with 2.6.23 shows the battery icon.
+> 
+> current config:
+> 
+> grep -i acpi .config
+> # Power management options (ACPI, APM)
+> CONFIG_ACPI=y
+> CONFIG_ACPI_SLEEP=y
+> # CONFIG_ACPI_PROCFS is not set
 
-Yep, this fixes suspend/resume on my X61 thinkpad.  Interestingly I'm
-not seeing any power savings with ALPM set to min_power, at least not
-compared to what I get after suspend and resuming (which mysteriously
-cause the power utilization of my laptop to drop by a watt --- maybe
-that is engaging ALPM as part of the suspend process?  I dunno).
+And if you enable it (ACPI_PROCFS)?
 
-     		      	      	 - Ted
+
