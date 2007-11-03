@@ -1,63 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758797AbXKCUiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759287AbXKCUqE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758797AbXKCUiW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 16:38:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756669AbXKCUiP
+	id S1759287AbXKCUqE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 16:46:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756482AbXKCUpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 16:38:15 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57988 "EHLO ogre.sisk.pl"
+	Sat, 3 Nov 2007 16:45:52 -0400
+Received: from mail0.scram.de ([78.47.204.202]:52128 "EHLO mail0.scram.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756440AbXKCUiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 16:38:15 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: [RFC][PATCH 3/3] PM: Suspend/hibernation debug documentation update (rev. 2)
-Date: Sat, 3 Nov 2007 21:54:48 +0100
-User-Agent: KMail/1.9.5
-Cc: johannes@sipsolutions.net, lenb@kernel.org, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, pavel@ucw.cz
-References: <200711032054.40195.rjw@sisk.pl> <200711032058.23358.rjw@sisk.pl> <E1IoPIE-0005qK-9U@faramir.fjphome.nl>
-In-Reply-To: <E1IoPIE-0005qK-9U@faramir.fjphome.nl>
+	id S1755749AbXKCUpv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Nov 2007 16:45:51 -0400
+X-Spam-Score: -3.868
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+ * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+ *      [score: 0.0000]
+ *  0.5 AWL AWL: From: address is in the auto white-list
+Message-ID: <472CDE02.1020804@scram.de>
+Date: Sat, 03 Nov 2007 21:45:54 +0100
+From: Jochen Friedrich <jochen@scram.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+CC: linux-kernel@vger.kernel.org, Scott Wood <scottwood@freescale.com>,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: [PATCH] [POWERPC] Fix fs_enet module build
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711032154.49758.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 3 November 2007 21:08, Frans Pop wrote:
-> Rafael J. Wysocki wrote:
-> > +core run in a test mode.  There are 5 test modes available:
-> > +
-> > +freezer - test the freezing of processes
-> > +devices - test the freezing of processes and suspending of devices
-> > +platform - test the freezing of processes, suspending of devices and platform
-> > +           global control methods(*)
-> > +processors - test the freezing of processes, suspending of devices, platform
-> > +             global control methods(*) and the disabling of nonboot CPUs
-> > +core - test the freezing of processes, suspending of devices, platform global
-> > +       control methods(*), the disabling of nonboot CPUs and suspending of
-> > +       platform/system devices
-> 
-> I'd suggest to indent this as follows:
-> - freezer
->   Test the freezing of processes.
-> - devices
->   Test the freezing of processes and suspending of devices.
-> - platform
->   Test the freezing of processes, suspending of devices and platform global
->   control methods(*).
-> - processors
->   Test the freezing of processes, suspending of devices, platform global
->   control methods(*) and the disabling of nonboot CPUs.
-> - core
->   Test the freezing of processes, suspending of devices, platform global
->   control methods(*), the disabling of nonboot CPUs and suspending of
->   platform/system devices.
+If fs_enet is build as module, mii-fec/mii-bitbang should be build as
+module, as well. Otherwise some symbols remain undefined.
 
-Yup, this way it looks better.
+  Building modules, stage 2.
+  MODPOST 5 modules
+ERROR: "fs_scc_ops" [drivers/net/fs_enet/fs_enet.ko] undefined!
+make[1]: *** [__modpost] Error 1
+make: *** [modules] Error 2
 
-Thanks,
-Rafael
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+---
+
+This can be pulled from git://git.bocc.de/dbox2.git for-2.6.24
+
+ drivers/net/fs_enet/Makefile |   12 ++++++++++--
+ 1 files changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/fs_enet/Makefile b/drivers/net/fs_enet/Makefile
+index 02d4dc1..2f7563a 100644
+--- a/drivers/net/fs_enet/Makefile
++++ b/drivers/net/fs_enet/Makefile
+@@ -4,7 +4,15 @@
+ 
+ obj-$(CONFIG_FS_ENET) += fs_enet.o
+ 
+-obj-$(CONFIG_8xx) += mac-fec.o mac-scc.o mii-fec.o
+-obj-$(CONFIG_CPM2) += mac-fcc.o mii-bitbang.o
++fs_enet-$(CONFIG_8xx) += mac-fec.o mac-scc.o
++fs_enet-$(CONFIG_CPM2) += mac-fcc.o
++
++ifeq ($(CONFIG_8xx),y)
++        obj-$(CONFIG_FS_ENET) += mii-fec.o
++endif
++
++ifeq ($(CONFIG_CPM2),y)
++        obj-$(CONFIG_FS_ENET) += mii-bitbang.o
++endif
+ 
+ fs_enet-objs := fs_enet-main.o
+-- 
+1.5.3.4
+
