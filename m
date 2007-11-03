@@ -1,88 +1,469 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761597AbXKCXHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759687AbXKCXHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761597AbXKCXHi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 19:07:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758918AbXKCXGe
+	id S1759687AbXKCXHw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 19:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759394AbXKCXGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 19:06:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53823 "EHLO mx1.redhat.com"
+	Sat, 3 Nov 2007 19:06:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53825 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758443AbXKCXGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 19:06:33 -0400
-Date: Sat, 3 Nov 2007 18:55:37 -0400
+	id S1758747AbXKCXGe convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Nov 2007 19:06:34 -0400
+Date: Sat, 3 Nov 2007 18:56:43 -0400
 From: Rik van Riel <riel@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org
-Subject: [RFC PATCH 4/10] debug page_file_cache
-Message-ID: <20071103185537.20c42f7a@bree.surriel.com>
+Subject: [RFC PATCH 5/10] use an indexed array for LRU lists and variables
+Message-ID: <20071103185643.39c1fc9a@bree.surriel.com>
 In-Reply-To: <20071103184229.3f20e2f0@bree.surriel.com>
 References: <20071103184229.3f20e2f0@bree.surriel.com>
 Organization: Red Hat, Inc.
 X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Debug whether we end up classifying the wrong pages as
-filesystem backed.  This has not triggered in stress
-tests on my system, but who knows...
+Use an indexed array for LRU variables.  This makes the rest
+of the split VM code a lot cleaner.
+
+V1 -> V2 [lts]:
++ Remove extraneous  __dec_zone_state(zone, NR_ACTIVE) pointed
+  out by Mel G.
+
+>From clameter@sgi.com Wed Aug 29 11:39:51 2007
+
+Currently we are defining explicit variables for the inactive
+and active list. An indexed array can be more generic and avoid
+repeating similar code in several places in the reclaim code.
+
+We are saving a few bytes in terms of code size:
+
+Before:
+
+   text    data     bss     dec     hex filename
+4097753  573120 4092484 8763357  85b7dd vmlinux
+
+After:
+
+   text    data     bss     dec     hex filename
+4097729  573120 4092484 8763333  85b7c5 vmlinux
+
+Having an easy way to add new lru lists may ease future work on
+the reclaim code.
 
 Signed-off-by: Rik van Riel <riel@redhat.com>
+Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-Index: linux-2.6.23-mm1/include/linux/mm_inline.h
+ include/linux/mm_inline.h |   34 ++++++++---
+ include/linux/mmzone.h    |   17 +++--
+ mm/page_alloc.c           |    9 +--
+ mm/swap.c                 |    2 
+ mm/vmscan.c               |  132 ++++++++++++++++++++++------------------------
+ mm/vmstat.c               |    3 -
+ 6 files changed, 107 insertions(+), 90 deletions(-)
+
+Index: linux-2.6.23-rc8-mm2-vm/include/linux/mmzone.h
 ===================================================================
---- linux-2.6.23-mm1.orig/include/linux/mm_inline.h
-+++ linux-2.6.23-mm1/include/linux/mm_inline.h
-@@ -1,6 +1,8 @@
- #ifndef LINUX_MM_INLINE_H
- #define LINUX_MM_INLINE_H
+--- linux-2.6.23-rc8-mm2-vm.orig/include/linux/mmzone.h
++++ linux-2.6.23-rc8-mm2-vm/include/linux/mmzone.h
+@@ -82,8 +82,8 @@ struct zone_padding {
+ enum zone_stat_item {
+ 	/* First 128 byte cacheline (assuming 64 bit words) */
+ 	NR_FREE_PAGES,
+-	NR_INACTIVE,
+-	NR_ACTIVE,
++	NR_INACTIVE,	/* must match order of LRU_[IN]ACTIVE */
++	NR_ACTIVE,	/*  "     "     "   "       "         */
+ 	NR_ANON_PAGES,	/* Mapped anonymous pages */
+ 	NR_FILE_MAPPED,	/* pagecache pages mapped into pagetables.
+ 			   only modified from process context */
+@@ -107,6 +107,13 @@ enum zone_stat_item {
+ #endif
+ 	NR_VM_ZONE_STAT_ITEMS };
  
-+#include <linux/fs.h>  /* for struct address_space */
++enum lru_list {
++	LRU_INACTIVE,	/* must match order of NR_[IN]ACTIVE */
++	LRU_ACTIVE,	/*  "     "     "   "       "        */
++	NR_LRU_LISTS };
 +
- /**
-  * page_file_cache(@page)
-  * Returns !0 if @page is page cache page backed by a regular file,
-@@ -9,11 +11,19 @@
-  * We would like to get this info without a page flag, but the state
-  * needs to propagate to whereever the page is last deleted from the LRU.
-  */
-+extern const struct address_space_operations shmem_aops;
- static inline int page_file_cache(struct page *page)
++#define for_each_lru(l) for (l = 0; l < NR_LRU_LISTS; l++)
++
+ struct per_cpu_pages {
+ 	int count;		/* number of pages in the list */
+ 	int high;		/* high watermark, emptying needed */
+@@ -260,10 +267,8 @@ struct zone {
+ 
+ 	/* Fields commonly accessed by the page reclaim scanner */
+ 	spinlock_t		lru_lock;	
+-	struct list_head	active_list;
+-	struct list_head	inactive_list;
+-	unsigned long		nr_scan_active;
+-	unsigned long		nr_scan_inactive;
++	struct list_head	list[NR_LRU_LISTS];
++	unsigned long		nr_scan[NR_LRU_LISTS];
+ 	unsigned long		pages_scanned;	   /* since last reclaim */
+ 	unsigned long		flags;		   /* zone flags, see below */
+ 
+Index: linux-2.6.23-rc8-mm2-vm/include/linux/mm_inline.h
+===================================================================
+--- linux-2.6.23-rc8-mm2-vm.orig/include/linux/mm_inline.h
++++ linux-2.6.23-rc8-mm2-vm/include/linux/mm_inline.h
+@@ -30,43 +30,55 @@ static inline int page_swap_cache(struct
+ }
+ 
+ static inline void
++add_page_to_lru_list(struct zone *zone, struct page *page, enum lru_list l)
++{
++	list_add(&page->lru, &zone->list[l]);
++	__inc_zone_state(zone, NR_INACTIVE + l);
++}
++
++static inline void
++del_page_from_lru_list(struct zone *zone, struct page *page, enum lru_list l)
++{
++	list_del(&page->lru);
++	__dec_zone_state(zone, NR_INACTIVE + l);
++}
++
++
++static inline void
+ add_page_to_active_list(struct zone *zone, struct page *page)
  {
-+	struct address_space * mapping = page_mapping(page);
-+
- 	if (PageSwapBacked(page))
- 		return 0;
- 
-+	/* These pages should all be marked PG_swapbacked */
-+	WARN_ON(PageAnon(page));
-+	WARN_ON(PageSwapCache(page));
-+	WARN_ON(mapping && mapping->a_ops && mapping->a_ops == &shmem_aops);
-+
- 	/* The page is page cache backed by a normal filesystem. */
- 	return 2;
+-	list_add(&page->lru, &zone->active_list);
+-	__inc_zone_state(zone, NR_ACTIVE);
++	add_page_to_lru_list(zone, page, LRU_ACTIVE);
  }
-Index: linux-2.6.23-mm1/mm/shmem.c
+ 
+ static inline void
+ add_page_to_inactive_list(struct zone *zone, struct page *page)
+ {
+-	list_add(&page->lru, &zone->inactive_list);
+-	__inc_zone_state(zone, NR_INACTIVE);
++	add_page_to_lru_list(zone, page, LRU_INACTIVE);
+ }
+ 
+ static inline void
+ del_page_from_active_list(struct zone *zone, struct page *page)
+ {
+-	list_del(&page->lru);
+-	__dec_zone_state(zone, NR_ACTIVE);
++	del_page_from_lru_list(zone, page, LRU_ACTIVE);
+ }
+ 
+ static inline void
+ del_page_from_inactive_list(struct zone *zone, struct page *page)
+ {
+-	list_del(&page->lru);
+-	__dec_zone_state(zone, NR_INACTIVE);
++	del_page_from_lru_list(zone, page, LRU_INACTIVE);
+ }
+ 
+ static inline void
+ del_page_from_lru(struct zone *zone, struct page *page)
+ {
++	enum lru_list l = LRU_INACTIVE;
++
+ 	list_del(&page->lru);
+ 	if (PageActive(page)) {
+ 		__ClearPageActive(page);
+-		__dec_zone_state(zone, NR_ACTIVE);
+-	} else {
+-		__dec_zone_state(zone, NR_INACTIVE);
++		l = LRU_ACTIVE;
+ 	}
++	__dec_zone_state(zone, NR_INACTIVE + l);
+ }
+ 
+ #endif
+Index: linux-2.6.23-rc8-mm2-vm/mm/page_alloc.c
 ===================================================================
---- linux-2.6.23-mm1.orig/mm/shmem.c
-+++ linux-2.6.23-mm1/mm/shmem.c
-@@ -180,7 +180,7 @@ static inline void shmem_unacct_blocks(u
+--- linux-2.6.23-rc8-mm2-vm.orig/mm/page_alloc.c
++++ linux-2.6.23-rc8-mm2-vm/mm/page_alloc.c
+@@ -3433,6 +3433,7 @@ static void __meminit free_area_init_cor
+ 	for (j = 0; j < MAX_NR_ZONES; j++) {
+ 		struct zone *zone = pgdat->node_zones + j;
+ 		unsigned long size, realsize, memmap_pages;
++		enum lru_list l;
+ 
+ 		size = zone_spanned_pages_in_node(nid, j, zones_size);
+ 		realsize = size - zone_absent_pages_in_node(nid, j,
+@@ -3482,10 +3483,10 @@ static void __meminit free_area_init_cor
+ 		zone->prev_priority = DEF_PRIORITY;
+ 
+ 		zone_pcp_init(zone);
+-		INIT_LIST_HEAD(&zone->active_list);
+-		INIT_LIST_HEAD(&zone->inactive_list);
+-		zone->nr_scan_active = 0;
+-		zone->nr_scan_inactive = 0;
++		for_each_lru(l) {
++			INIT_LIST_HEAD(&zone->list[l]);
++			zone->nr_scan[l] = 0;
++		}
+ 		zap_zone_vm_stats(zone);
+ 		zone->flags = 0;
+ 		if (!size)
+Index: linux-2.6.23-rc8-mm2-vm/mm/swap.c
+===================================================================
+--- linux-2.6.23-rc8-mm2-vm.orig/mm/swap.c
++++ linux-2.6.23-rc8-mm2-vm/mm/swap.c
+@@ -114,7 +114,7 @@ static void pagevec_move_tail(struct pag
+ 			spin_lock(&zone->lru_lock);
+ 		}
+ 		if (PageLRU(page) && !PageActive(page)) {
+-			list_move_tail(&page->lru, &zone->inactive_list);
++			list_move_tail(&page->lru, &zone->list[LRU_INACTIVE]);
+ 			pgmoved++;
+ 		}
+ 	}
+Index: linux-2.6.23-rc8-mm2-vm/mm/vmscan.c
+===================================================================
+--- linux-2.6.23-rc8-mm2-vm.orig/mm/vmscan.c
++++ linux-2.6.23-rc8-mm2-vm/mm/vmscan.c
+@@ -788,10 +788,10 @@ static unsigned long isolate_pages_globa
+ 					int active)
+ {
+ 	if (active)
+-		return isolate_lru_pages(nr, &z->active_list, dst,
++		return isolate_lru_pages(nr, &z->list[LRU_ACTIVE], dst,
+ 						scanned, order, mode);
+ 	else
+-		return isolate_lru_pages(nr, &z->inactive_list, dst,
++		return isolate_lru_pages(nr, &z->list[LRU_INACTIVE], dst,
+ 						scanned, order, mode);
  }
  
- static const struct super_operations shmem_ops;
--static const struct address_space_operations shmem_aops;
-+const struct address_space_operations shmem_aops;
- static const struct file_operations shmem_file_operations;
- static const struct inode_operations shmem_inode_operations;
- static const struct inode_operations shmem_dir_inode_operations;
-@@ -2344,7 +2344,7 @@ static void destroy_inodecache(void)
- 	kmem_cache_destroy(shmem_inode_cachep);
+@@ -937,10 +937,7 @@ static unsigned long shrink_inactive_lis
+ 			VM_BUG_ON(PageLRU(page));
+ 			SetPageLRU(page);
+ 			list_del(&page->lru);
+-			if (PageActive(page))
+-				add_page_to_active_list(zone, page);
+-			else
+-				add_page_to_inactive_list(zone, page);
++			add_page_to_lru_list(zone, page, PageActive(page));
+ 			if (!pagevec_add(&pvec, page)) {
+ 				spin_unlock_irq(&zone->lru_lock);
+ 				__pagevec_release(&pvec);
+@@ -999,11 +996,14 @@ static void shrink_active_list(unsigned 
+ 	int pgdeactivate = 0;
+ 	unsigned long pgscanned;
+ 	LIST_HEAD(l_hold);	/* The pages which were snipped off */
+-	LIST_HEAD(l_inactive);	/* Pages to go onto the inactive_list */
+-	LIST_HEAD(l_active);	/* Pages to go onto the active_list */
++	struct list_head list[NR_LRU_LISTS];
+ 	struct page *page;
+ 	struct pagevec pvec;
+ 	int reclaim_mapped = 0;
++	enum lru_list l;
++
++	for_each_lru(l)
++		INIT_LIST_HEAD(&list[l]);
+ 
+ 	if (sc->may_swap) {
+ 		long mapped_ratio;
+@@ -1110,28 +1110,28 @@ force_reclaim_mapped:
+ 			if (!reclaim_mapped ||
+ 			    (total_swap_pages == 0 && PageAnon(page)) ||
+ 			    page_referenced(page, 0, sc->mem_cgroup)) {
+-				list_add(&page->lru, &l_active);
++				list_add(&page->lru, &list[LRU_ACTIVE]);
+ 				continue;
+ 			}
+ 		} else if (TestClearPageReferenced(page)) {
+-			list_add(&page->lru, &l_active);
++			list_add(&page->lru, &list[LRU_ACTIVE]);
+ 			continue;
+ 		}
+-		list_add(&page->lru, &l_inactive);
++		list_add(&page->lru, &list[LRU_INACTIVE]);
+ 	}
+ 
+ 	pagevec_init(&pvec, 1);
+ 	pgmoved = 0;
+ 	spin_lock_irq(&zone->lru_lock);
+-	while (!list_empty(&l_inactive)) {
+-		page = lru_to_page(&l_inactive);
+-		prefetchw_prev_lru_page(page, &l_inactive, flags);
++	while (!list_empty(&list[LRU_INACTIVE])) {
++		page = lru_to_page(&list[LRU_INACTIVE]);
++		prefetchw_prev_lru_page(page, &list[LRU_INACTIVE], flags);
+ 		VM_BUG_ON(PageLRU(page));
+ 		SetPageLRU(page);
+ 		VM_BUG_ON(!PageActive(page));
+ 		ClearPageActive(page);
+ 
+-		list_move(&page->lru, &zone->inactive_list);
++		list_move(&page->lru, &zone->list[LRU_INACTIVE]);
+ 		mem_cgroup_move_lists(page_get_page_cgroup(page), false);
+ 		pgmoved++;
+ 		if (!pagevec_add(&pvec, page)) {
+@@ -1153,13 +1153,13 @@ force_reclaim_mapped:
+ 		pagevec_strip(&pvec);
+ 	pgmoved = 0;
+ 	spin_lock_irq(&zone->lru_lock);
+-	while (!list_empty(&l_active)) {
+-		page = lru_to_page(&l_active);
+-		prefetchw_prev_lru_page(page, &l_active, flags);
++	while (!list_empty(&list[LRU_ACTIVE])) {
++		page = lru_to_page(&list[LRU_ACTIVE]);
++		prefetchw_prev_lru_page(page, &list[LRU_ACTIVE], flags);
+ 		VM_BUG_ON(PageLRU(page));
+ 		SetPageLRU(page);
+ 		VM_BUG_ON(!PageActive(page));
+-		list_move(&page->lru, &zone->active_list);
++		list_move(&page->lru, &zone->list[LRU_ACTIVE]);
+ 		mem_cgroup_move_lists(page_get_page_cgroup(page), true);
+ 		pgmoved++;
+ 		if (!pagevec_add(&pvec, page)) {
+@@ -1183,51 +1183,51 @@ force_reclaim_mapped:
+ 	pagevec_release(&pvec);
  }
  
--static const struct address_space_operations shmem_aops = {
-+const struct address_space_operations shmem_aops = {
- 	.writepage	= shmem_writepage,
- 	.set_page_dirty	= __set_page_dirty_no_writeback,
- #ifdef CONFIG_TMPFS
++static unsigned long shrink_list(enum lru_list l, unsigned long nr_to_scan,
++	struct zone *zone, struct scan_control *sc, int priority)
++{
++	if (l == LRU_ACTIVE) {
++		shrink_active_list(nr_to_scan, zone, sc, priority);
++		return 0;
++	}
++	return shrink_inactive_list(nr_to_scan, zone, sc);
++}
++
+ /*
+  * This is a basic per-zone page freer.  Used by both kswapd and direct reclaim.
+  */
+ static unsigned long shrink_zone(int priority, struct zone *zone,
+ 				struct scan_control *sc)
+ {
+-	unsigned long nr_active;
+-	unsigned long nr_inactive;
++	unsigned long nr[NR_LRU_LISTS];
+ 	unsigned long nr_to_scan;
+ 	unsigned long nr_reclaimed = 0;
++	enum lru_list l;
+ 
+ 	/*
+ 	 * Add one to `nr_to_scan' just to make sure that the kernel will
+ 	 * slowly sift through the active list.
+ 	 */
+-	zone->nr_scan_active +=
+-		(zone_page_state(zone, NR_ACTIVE) >> priority) + 1;
+-	nr_active = zone->nr_scan_active;
+-	if (nr_active >= sc->swap_cluster_max)
+-		zone->nr_scan_active = 0;
+-	else
+-		nr_active = 0;
+-
+-	zone->nr_scan_inactive +=
+-		(zone_page_state(zone, NR_INACTIVE) >> priority) + 1;
+-	nr_inactive = zone->nr_scan_inactive;
+-	if (nr_inactive >= sc->swap_cluster_max)
+-		zone->nr_scan_inactive = 0;
+-	else
+-		nr_inactive = 0;
++	for_each_lru(l) {
++		zone->nr_scan[l] += (zone_page_state(zone, NR_INACTIVE + l)
++							>> priority) + 1;
++		nr[l] = zone->nr_scan[l];
++		if (nr[l] >= sc->swap_cluster_max)
++			zone->nr_scan[l] = 0;
++		else
++			nr[l] = 0;
++	}
+ 
+-	while (nr_active || nr_inactive) {
+-		if (nr_active) {
+-			nr_to_scan = min(nr_active,
++	while (nr[LRU_ACTIVE] || nr[LRU_INACTIVE]) {
++		for_each_lru(l) {
++			if (nr[l]) {
++				nr_to_scan = min(nr[l],
+ 					(unsigned long)sc->swap_cluster_max);
+-			nr_active -= nr_to_scan;
+-			shrink_active_list(nr_to_scan, zone, sc, priority);
+-		}
++				nr[l] -= nr_to_scan;
+ 
+-		if (nr_inactive) {
+-			nr_to_scan = min(nr_inactive,
+-					(unsigned long)sc->swap_cluster_max);
+-			nr_inactive -= nr_to_scan;
+-			nr_reclaimed += shrink_inactive_list(nr_to_scan, zone,
+-								sc);
++				nr_reclaimed += shrink_list(l, nr_to_scan,
++							zone, sc, priority);
++			}
+ 		}
+ 	}
+ 
+@@ -1746,6 +1746,7 @@ static unsigned long shrink_all_zones(un
+ {
+ 	struct zone *zone;
+ 	unsigned long nr_to_scan, ret = 0;
++	enum lru_list l;
+ 
+ 	for_each_zone(zone) {
+ 
+@@ -1755,28 +1756,25 @@ static unsigned long shrink_all_zones(un
+ 		if (zone_is_all_unreclaimable(zone) && prio != DEF_PRIORITY)
+ 			continue;
+ 
+-		/* For pass = 0 we don't shrink the active list */
+-		if (pass > 0) {
+-			zone->nr_scan_active +=
+-				(zone_page_state(zone, NR_ACTIVE) >> prio) + 1;
+-			if (zone->nr_scan_active >= nr_pages || pass > 3) {
+-				zone->nr_scan_active = 0;
++		for_each_lru(l) {
++			/* For pass = 0 we don't shrink the active list */
++			if (pass == 0 && l == LRU_ACTIVE)
++				continue;
++
++			zone->nr_scan[l] +=
++				(zone_page_state(zone, NR_INACTIVE + l)
++								>> prio) + 1;
++			if (zone->nr_scan[l] >= nr_pages || pass > 3) {
++				zone->nr_scan[l] = 0;
+ 				nr_to_scan = min(nr_pages,
+-					zone_page_state(zone, NR_ACTIVE));
+-				shrink_active_list(nr_to_scan, zone, sc, prio);
++					zone_page_state(zone,
++							NR_INACTIVE + l));
++				ret += shrink_list(l, nr_to_scan, zone,
++								sc, prio);
++				if (ret >= nr_pages)
++					return ret;
+ 			}
+ 		}
+-
+-		zone->nr_scan_inactive +=
+-			(zone_page_state(zone, NR_INACTIVE) >> prio) + 1;
+-		if (zone->nr_scan_inactive >= nr_pages || pass > 3) {
+-			zone->nr_scan_inactive = 0;
+-			nr_to_scan = min(nr_pages,
+-				zone_page_state(zone, NR_INACTIVE));
+-			ret += shrink_inactive_list(nr_to_scan, zone, sc);
+-			if (ret >= nr_pages)
+-				return ret;
+-		}
+ 	}
+ 
+ 	return ret;
+Index: linux-2.6.23-rc8-mm2-vm/mm/vmstat.c
+===================================================================
+--- linux-2.6.23-rc8-mm2-vm.orig/mm/vmstat.c
++++ linux-2.6.23-rc8-mm2-vm/mm/vmstat.c
+@@ -756,7 +756,8 @@ static void zoneinfo_show_print(struct s
+ 		   zone->pages_low,
+ 		   zone->pages_high,
+ 		   zone->pages_scanned,
+-		   zone->nr_scan_active, zone->nr_scan_inactive,
++		   zone->nr_scan[LRU_ACTIVE],
++		   zone->nr_scan[LRU_INACTIVE],
+ 		   zone->spanned_pages,
+ 		   zone->present_pages);
+ 
