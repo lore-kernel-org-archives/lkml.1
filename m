@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760343AbXKCIb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760359AbXKCIeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760343AbXKCIb3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 04:31:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbXKCIbX
+	id S1760359AbXKCIeZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 04:34:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbXKCIeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 04:31:23 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46231 "EHLO mx3.mail.elte.hu"
+	Sat, 3 Nov 2007 04:34:18 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57789 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754788AbXKCIbW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 04:31:22 -0400
-Date: Sat, 3 Nov 2007 09:31:09 +0100
+	id S1756897AbXKCIeS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Nov 2007 04:34:18 -0400
+Date: Sat, 3 Nov 2007 09:33:58 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Balbir Singh <balbir@linux.vnet.ibm.com>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: delayacct regression in 2.6.24 git
-Message-ID: <20071103083109.GD10760@elte.hu>
-References: <472B2908.7020507@linux.vnet.ibm.com> <20071102152529.GB20134@elte.hu> <472B501E.9000307@linux.vnet.ibm.com>
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fix delay accounting regression
+Message-ID: <20071103083358.GE10760@elte.hu>
+References: <20071102142220.24166.49046.sendpatchset@balbir-laptop> <20071102155358.GA32116@elte.hu> <20071102165559.GA5424@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <472B501E.9000307@linux.vnet.ibm.com>
+In-Reply-To: <20071102165559.GA5424@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,21 +37,27 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> >> Am I missing something?
+> On Fri, Nov 02, 2007 at 04:53:58PM +0100, Ingo Molnar wrote:
 > > 
-> > delay accounting was causing context-switch slowdown because it 
-> > called sched_clock() explicitly - but indeed my fix to that is wrong 
-> > ...
+> > * Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 > > 
-> > how about reverting the change but also using rq->clock instead of 
-> > sched_clock()?
+> > > Fix the delay accounting regression introduced by commit 
+> > > 75d4ef16a6aa84f708188bada182315f80aab6fa. rq no longer has sched_info 
+> > > data associated with it. task_struct sched_info structure is used by 
+> > > delay accounting to provide back statistics to user space.
+> > 
+> > no, this really is broken code. sched_clock() is not a generally 
+> > reliable time source so at a minimum the rq->clock fix i mentioned is 
+> > needed. What user-space tools are utilizing delay-accounting by the way? 
+> > We have most of this data available under SCHEDSTATS - how about 
+> > consolidating CONFIG_TASK_DELAY_ACCT into CONFIG_SCHEDSTATS?
+> > 
+> > 	Ingo
 > 
-> Hmm... I think that might work, I find that schedule() calls 
-> __update_rq_clock() which in turn calls sched_clock(), so it might be 
-> a worthwhile optimization.
+> Hi, Ingo,
+> 
+> How about this?
 
-yep, that's the idea - in general rq->clock is updated for almost every 
-scheduling event so you can rely on it instead of calling sched_clock() 
-directly.
+thanks, applied.
 
 	Ingo
