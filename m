@@ -1,339 +1,397 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760926AbXKCDxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761576AbXKCD6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760926AbXKCDxU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 23:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756116AbXKCDxN
+	id S1761576AbXKCD6V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 23:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756711AbXKCD6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 23:53:13 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:60241 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755378AbXKCDxL (ORCPT
+	Fri, 2 Nov 2007 23:58:13 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:58373 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756046AbXKCD6M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 23:53:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JST/QCxqkm7QhmRWwPze5z3fvIM2yolAqXH+Mlgs4il68VvIs6sMyEb7Vhw3EBrIXhZKbKbR+yXPAQpom3pUOxBNyx1sdtgoI+IhvB6hqu+VzXAps+5A7pFKOyFls4LwGr5AZrdFjikJVIwf3zywBzwtJMHJoGpSsAjOGx4OI88=
-Message-ID: <386072610711022053r554fd5c1l26c7c3cf6f7427b1@mail.gmail.com>
-Date: Sat, 3 Nov 2007 11:53:09 +0800
-From: "Bryan Wu" <cooloney.lkml@gmail.com>
-To: "Jan Blunck" <jblunck@suse.de>
-Subject: Re: [PATCH 6/7] d_path: Make d_path() use a struct path (2nd try)
-Cc: "Linux-Kernel Mailinglist" <linux-kernel@vger.kernel.org>,
-       "Christoph Hellwig" <hch@lst.de>,
-       "Andreas Gruenbacher" <agruen@suse.de>,
-       "Bharata B Rao" <bharata.rao@gmail.com>
-In-Reply-To: <20071102180342.GB5619@hasse.suse.de>
+	Fri, 2 Nov 2007 23:58:12 -0400
+Message-ID: <472BF1D0.3070108@schaufler-ca.com>
+Date: Fri, 02 Nov 2007 20:58:08 -0700
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-2022-JP
+To: akpm@osdl.org, torvalds@osdl.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Cc: paul.moore@hp.com
+Subject: [PATCH] NetLabel: Introduce a new kernel configuration API for NetLabel
+ - For 2.6.24-rc-git11 - Smack Version 10
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071029124120.528997881@weierstrass.suse.de>
-	 <20071029124121.829255433@weierstrass.suse.de>
-	 <20071102180342.GB5619@hasse.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/3/07, Jan Blunck <jblunck@suse.de> wrote:
-> d_path() is used on a <dentry,vfsmount> pair. Lets use a struct path to
-> reflect this.
->
-> Signed-off-by: Jan Blunck <jblunck@suse.de>
-> ---
->  arch/blackfin/kernel/traps.c      |   12 +++++-------
-Thanks，Acked-by: Bryan Wu <bryan.wu@analog.com>
+From: Paul Moore <paul.moore@hp.com>
 
->  drivers/md/bitmap.c               |    8 +-------
->  drivers/usb/gadget/file_storage.c |    8 +++-----
->  fs/compat_ioctl.c                 |    2 +-
->  fs/dcache.c                       |   12 +++++-------
->  fs/dcookies.c                     |    2 +-
->  fs/ecryptfs/super.c               |    5 ++---
->  fs/nfsd/export.c                  |    3 ++-
->  fs/proc/base.c                    |    2 +-
->  fs/seq_file.c                     |    4 +++-
->  fs/sysfs/file.c                   |    5 ++---
->  fs/unionfs/super.c                |    3 +--
->  include/linux/dcache.h            |    5 +++--
->  kernel/audit.c                    |    2 +-
->  14 files changed, 31 insertions(+), 42 deletions(-)
->
-> Index: b/arch/blackfin/kernel/traps.c
-> ===================================================================
-> --- a/arch/blackfin/kernel/traps.c
-> +++ b/arch/blackfin/kernel/traps.c
-> @@ -98,15 +98,13 @@ static int printk_address(unsigned long
->                         struct vm_area_struct *vma = vml->vma;
->
->                         if (address >= vma->vm_start && address < vma->vm_end) {
-> +                               char _tmpbuf[256];
->                                 char *name = p->comm;
->                                 struct file *file = vma->vm_file;
-> -                               if (file) {
-> -                                       char _tmpbuf[256];
-> -                                       name = d_path(file->f_dentry,
-> -                                                     file->f_vfsmnt,
-> -                                                     _tmpbuf,
-> -                                                     sizeof(_tmpbuf));
-> -                               }
-> +
-> +                               if (file)
-> +                                       name = d_path(&file->f_path, _tmpbuf,
-> +                                                     sizeof(_tmpbuf));
->
->                                 /* FLAT does not have its text aligned to the start of
->                                  * the map while FDPIC ELF does ...
-> Index: b/drivers/md/bitmap.c
-> ===================================================================
-> --- a/drivers/md/bitmap.c
-> +++ b/drivers/md/bitmap.c
-> @@ -206,16 +206,10 @@ static void bitmap_checkfree(struct bitm
->  /* copy the pathname of a file to a buffer */
->  char *file_path(struct file *file, char *buf, int count)
->  {
-> -       struct dentry *d;
-> -       struct vfsmount *v;
-> -
->         if (!buf)
->                 return NULL;
->
-> -       d = file->f_path.dentry;
-> -       v = file->f_path.mnt;
-> -
-> -       buf = d_path(d, v, buf, count);
-> +       buf = d_path(&file->f_path, buf, count);
->
->         return IS_ERR(buf) ? NULL : buf;
->  }
-> Index: b/drivers/usb/gadget/file_storage.c
-> ===================================================================
-> --- a/drivers/usb/gadget/file_storage.c
-> +++ b/drivers/usb/gadget/file_storage.c
-> @@ -3567,8 +3567,7 @@ static ssize_t show_file(struct device *
->
->         down_read(&fsg->filesem);
->         if (backing_file_is_open(curlun)) {     // Get the complete pathname
-> -               p = d_path(curlun->filp->f_path.dentry,
-> -                               curlun->filp->f_path.mnt, buf, PAGE_SIZE - 1);
-> +               p = d_path(&curlun->filp->f_path, buf, PAGE_SIZE - 1);
->                 if (IS_ERR(p))
->                         rc = PTR_ERR(p);
->                 else {
-> @@ -3985,9 +3984,8 @@ static int __init fsg_bind(struct usb_ga
->                 if (backing_file_is_open(curlun)) {
->                         p = NULL;
->                         if (pathbuf) {
-> -                               p = d_path(curlun->filp->f_path.dentry,
-> -                                       curlun->filp->f_path.mnt,
-> -                                       pathbuf, PATH_MAX);
-> +                               p = d_path(&curlun->filp->f_path,
-> +                                          pathbuf, PATH_MAX);
->                                 if (IS_ERR(p))
->                                         p = NULL;
->                         }
-> Index: b/fs/compat_ioctl.c
-> ===================================================================
-> --- a/fs/compat_ioctl.c
-> +++ b/fs/compat_ioctl.c
-> @@ -3544,7 +3544,7 @@ static void compat_ioctl_error(struct fi
->         /* find the name of the device. */
->         path = (char *)__get_free_page(GFP_KERNEL);
->         if (path) {
-> -               fn = d_path(filp->f_path.dentry, filp->f_path.mnt, path, PAGE_SIZE);
-> +               fn = d_path(&filp->f_path, path, PAGE_SIZE);
->                 if (IS_ERR(fn))
->                         fn = "?";
->         }
-> Index: b/fs/dcache.c
-> ===================================================================
-> --- a/fs/dcache.c
-> +++ b/fs/dcache.c
-> @@ -1831,8 +1831,7 @@ Elong:
->
->  /**
->   * d_path - return the path of a dentry
-> - * @dentry: dentry to report
-> - * @vfsmnt: vfsmnt to which the dentry belongs
-> + * @path: path to report
->   * @buf: buffer to return value in
->   * @buflen: buffer length
->   *
-> @@ -1843,8 +1842,7 @@ Elong:
->   *
->   * "buflen" should be positive. Caller holds the dcache_lock.
->   */
-> -char *d_path(struct dentry *dentry, struct vfsmount *vfsmnt,
-> -            char *buf, int buflen)
-> +char *d_path(struct path *path, char *buf, int buflen)
->  {
->         char *res;
->         struct path root;
-> @@ -1856,15 +1854,15 @@ char *d_path(struct dentry *dentry, stru
->          * user wants to identify the object in /proc/pid/fd/.  The little hack
->          * below allows us to generate a name for these objects on demand:
->          */
-> -       if (dentry->d_op && dentry->d_op->d_dname)
-> -               return dentry->d_op->d_dname(dentry, buf, buflen);
-> +       if (path->dentry->d_op && path->dentry->d_op->d_dname)
-> +               return path->dentry->d_op->d_dname(path->dentry, buf, buflen);
->
->         read_lock(&current->fs->lock);
->         root = current->fs->root;
->         path_get(&current->fs->root);
->         read_unlock(&current->fs->lock);
->         spin_lock(&dcache_lock);
-> -       res = __d_path(dentry, vfsmnt, &root, buf, buflen);
-> +       res = __d_path(path->dentry, path->mnt, &root, buf, buflen);
->         spin_unlock(&dcache_lock);
->         path_put(&root);
->         return res;
-> Index: b/fs/dcookies.c
-> ===================================================================
-> --- a/fs/dcookies.c
-> +++ b/fs/dcookies.c
-> @@ -170,7 +170,7 @@ asmlinkage long sys_lookup_dcookie(u64 c
->                 goto out;
->
->         /* FIXME: (deleted) ? */
-> -       path = d_path(dcs->path.dentry, dcs->path.mnt, kbuf, PAGE_SIZE);
-> +       path = d_path(&dcs->path, kbuf, PAGE_SIZE);
->
->         if (IS_ERR(path)) {
->                 err = PTR_ERR(path);
-> Index: b/fs/ecryptfs/super.c
-> ===================================================================
-> --- a/fs/ecryptfs/super.c
-> +++ b/fs/ecryptfs/super.c
-> @@ -163,8 +163,7 @@ static void ecryptfs_clear_inode(struct
->  static int ecryptfs_show_options(struct seq_file *m, struct vfsmount *mnt)
->  {
->         struct super_block *sb = mnt->mnt_sb;
-> -       struct dentry *lower_root_dentry = ecryptfs_dentry_to_lower(sb->s_root);
-> -       struct vfsmount *lower_mnt = ecryptfs_dentry_to_lower_mnt(sb->s_root);
-> +       struct path *lower_root = &ecryptfs_dentry_to_private(sb->s_root)->lower_path;
->         char *tmp_page;
->         char *path;
->         int rc = 0;
-> @@ -174,7 +173,7 @@ static int ecryptfs_show_options(struct
->                 rc = -ENOMEM;
->                 goto out;
->         }
-> -       path = d_path(lower_root_dentry, lower_mnt, tmp_page, PAGE_SIZE);
-> +       path = d_path(lower_root, tmp_page, PAGE_SIZE);
->         if (IS_ERR(path)) {
->                 rc = PTR_ERR(path);
->                 goto out;
-> Index: b/fs/nfsd/export.c
-> ===================================================================
-> --- a/fs/nfsd/export.c
-> +++ b/fs/nfsd/export.c
-> @@ -346,10 +346,11 @@ static void svc_export_request(struct ca
->  {
->         /*  client path */
->         struct svc_export *exp = container_of(h, struct svc_export, h);
-> +       struct path path = { .dentry = exp->ex_dentry, .mnt = exp->ex_mnt };
->         char *pth;
->
->         qword_add(bpp, blen, exp->ex_client->name);
-> -       pth = d_path(exp->ex_dentry, exp->ex_mnt, *bpp, *blen);
-> +       pth = d_path(&path, *bpp, *blen);
->         if (IS_ERR(pth)) {
->                 /* is this correct? */
->                 (*bpp)[0] = '\n';
-> Index: b/fs/proc/base.c
-> ===================================================================
-> --- a/fs/proc/base.c
-> +++ b/fs/proc/base.c
-> @@ -1054,7 +1054,7 @@ static int do_proc_readlink(struct path
->         if (!tmp)
->                 return -ENOMEM;
->
-> -       pathname = d_path(path->dentry, path->mnt, tmp, PAGE_SIZE);
-> +       pathname = d_path(path, tmp, PAGE_SIZE);
->         len = PTR_ERR(pathname);
->         if (IS_ERR(pathname))
->                 goto out;
-> Index: b/fs/seq_file.c
-> ===================================================================
-> --- a/fs/seq_file.c
-> +++ b/fs/seq_file.c
-> @@ -353,9 +353,11 @@ int seq_path(struct seq_file *m,
->              struct vfsmount *mnt, struct dentry *dentry,
->              char *esc)
->  {
-> +       struct path path = { .dentry = dentry, .mnt = mnt };
-> +
->         if (m->count < m->size) {
->                 char *s = m->buf + m->count;
-> -               char *p = d_path(dentry, mnt, s, m->size - m->count);
-> +               char *p = d_path(&path, s, m->size - m->count);
->                 if (!IS_ERR(p)) {
->                         while (s <= p) {
->                                 char c = *p++;
-> Index: b/fs/sysfs/file.c
-> ===================================================================
-> --- a/fs/sysfs/file.c
-> +++ b/fs/sysfs/file.c
-> @@ -355,9 +355,8 @@ static int sysfs_open_file(struct inode
->         int error;
->         char *p;
->
-> -       p = d_path(file->f_dentry, sysfs_mount, last_sysfs_file,
-> -                  sizeof(last_sysfs_file));
-> -       if (p)
-> +       p = d_path(&file->f_path, last_sysfs_file, sizeof(last_sysfs_file));
-> +       if (!IS_ERR(p))
->                 memmove(last_sysfs_file, p, strlen(p) + 1);
->
->         /* need attr_sd for attr and ops, its parent for kobj */
-> Index: b/fs/unionfs/super.c
-> ===================================================================
-> --- a/fs/unionfs/super.c
-> +++ b/fs/unionfs/super.c
-> @@ -974,8 +974,7 @@ static int unionfs_show_options(struct s
->
->         seq_printf(m, ",dirs=");
->         for (bindex = bstart; bindex <= bend; bindex++) {
-> -               path = d_path(unionfs_lower_dentry_idx(sb->s_root, bindex),
-> -                             unionfs_lower_mnt_idx(sb->s_root, bindex),
-> +               path = d_path(&UNIONFS_D(sb->s_root)->lower_paths[bindex],
->                               tmp_page, PAGE_SIZE);
->                 if (IS_ERR(path)) {
->                         ret = PTR_ERR(path);
-> Index: b/include/linux/dcache.h
-> ===================================================================
-> --- a/include/linux/dcache.h
-> +++ b/include/linux/dcache.h
-> @@ -10,6 +10,7 @@
->  #include <linux/rcupdate.h>
->
->  struct nameidata;
-> +struct path;
->  struct vfsmount;
->
->  /*
-> @@ -300,8 +301,8 @@ extern int d_validate(struct dentry *, s
->   */
->  extern char *dynamic_dname(struct dentry *, char *, int, const char *, ...);
->
-> -extern char * d_path(struct dentry *, struct vfsmount *, char *, int);
-> -
-> +extern char *d_path(struct path *, char *, int);
-> +
->  /* Allocation counts.. */
->
->  /**
-> Index: b/kernel/audit.c
-> ===================================================================
-> --- a/kernel/audit.c
-> +++ b/kernel/audit.c
-> @@ -1407,7 +1407,7 @@ void audit_log_d_path(struct audit_buffe
->                 audit_log_format(ab, "<no memory>");
->                 return;
->         }
-> -       p = d_path(path->dentry, path->mnt, pathname, PATH_MAX+11);
-> +       p = d_path(path, pathname, PATH_MAX+11);
->         if (IS_ERR(p)) { /* Should never happen since we send PATH_MAX */
->                 /* FIXME: can we save some information here? */
->                 audit_log_format(ab, "<too long>");
->
+Add a new set of configuration functions to the NetLabel/LSM API so that
+LSMs can perform their own configuration of the NetLabel subsystem without
+relying on assistance from userspace.
+
+Signed-off-by: Paul Moore <paul.moore@hp.com>
+---
+
+Unrelated changes in 2.6.24-rc1-git11 (or earlier) to net/ipv4/cipso_ipv4.c
+require this update. Tested with the Version 10 Smack patch on
+2.6.24-rc1-git11.
+
+ include/net/netlabel.h             |   47 ++++++++--
+ net/ipv4/cipso_ipv4.c              |    4 -
+ net/netlabel/netlabel_cipso_v4.c   |    2
+ net/netlabel/netlabel_cipso_v4.h   |    3 +
+ net/netlabel/netlabel_domainhash.h |    1
+ net/netlabel/netlabel_kapi.c       |  177
+++++++++++++++++++++++++++++++++++++
+ 6 files changed, 225 insertions(+), 9 deletions(-)
+
+diff --git a/include/net/netlabel.h b/include/net/netlabel.h
+index 2e5b2f6..facaf68 100644
+--- a/include/net/netlabel.h
++++ b/include/net/netlabel.h
+@@ -36,6 +36,8 @@
+ #include <net/netlink.h>
+ #include <asm/atomic.h>
+ 
++struct cipso_v4_doi;
++
+ /*
+  * NetLabel - A management interface for maintaining network packet label
+  *            mapping tables for explicit packet labling protocols.
+@@ -99,12 +101,6 @@ struct netlbl_audit {
+     uid_t loginuid;
+ };
+ 
+-/* Domain mapping definition struct */
+-struct netlbl_dom_map;
+-
+-/* Domain mapping operations */
+-int netlbl_domhsh_remove(const char *domain, struct netlbl_audit
+*audit_info);
+-
+ /* LSM security attributes */
+ struct netlbl_lsm_cache {
+     atomic_t refcount;
+@@ -285,6 +281,19 @@ static inline void netlbl_secattr_free(struct
+netlbl_lsm_secattr *secattr)
+ 
+ #ifdef CONFIG_NETLABEL
+ /*
++ * LSM configuration operations
++ */
++int netlbl_cfg_map_del(const char *domain, struct netlbl_audit
+*audit_info);
++int netlbl_cfg_unlbl_add_map(const char *domain,
++                 struct netlbl_audit *audit_info);
++int netlbl_cfg_cipsov4_add(struct cipso_v4_doi *doi_def,
++               struct netlbl_audit *audit_info);
++int netlbl_cfg_cipsov4_add_map(struct cipso_v4_doi *doi_def,
++                   const char *domain,
++                   struct netlbl_audit *audit_info);
++int netlbl_cfg_cipsov4_del(u32 doi, struct netlbl_audit *audit_info);
++
++/*
+  * LSM security attribute operations
+  */
+ int netlbl_secattr_catmap_walk(struct netlbl_lsm_secattr_catmap *catmap,
+@@ -318,6 +327,32 @@ void netlbl_cache_invalidate(void);
+ int netlbl_cache_add(const struct sk_buff *skb,
+              const struct netlbl_lsm_secattr *secattr);
+ #else
++static inline int netlbl_cfg_map_del(const char *domain,
++                     struct netlbl_audit *audit_info)
++{
++    return -ENOSYS;
++}
++static inline int netlbl_cfg_unlbl_add_map(const char *domain,
++                       struct netlbl_audit *audit_info)
++{
++    return -ENOSYS;
++}
++static inline int netlbl_cfg_cipsov4_add(struct cipso_v4_doi *doi_def,
++                     struct netlbl_audit *audit_info)
++{
++    return -ENOSYS;
++}
++static inline int netlbl_cfg_cipsov4_add_map(struct cipso_v4_doi *doi_def,
++                         const char *domain,
++                         struct netlbl_audit *audit_info)
++{
++    return -ENOSYS;
++}
++static inline int netlbl_cfg_cipsov4_del(u32 doi,
++                     struct netlbl_audit *audit_info)
++{
++    return -ENOSYS;
++}
+ static inline int netlbl_secattr_catmap_walk(
+                                   struct netlbl_lsm_secattr_catmap *catmap,
+                       u32 offset)
+diff --git a/net/ipv4/cipso_ipv4.c b/net/ipv4/cipso_ipv4.c
+index f18e88b..5e97315 100644
+--- a/net/ipv4/cipso_ipv4.c
++++ b/net/ipv4/cipso_ipv4.c
+@@ -546,8 +546,8 @@ int cipso_v4_doi_remove(u32 doi,
+         rcu_read_lock();
+         list_for_each_entry_rcu(dom_iter, &doi_def->dom_list, list)
+             if (dom_iter->valid)
+-                netlbl_domhsh_remove(dom_iter->domain,
+-                             audit_info);
++                netlbl_cfg_map_del(dom_iter->domain,
++                           audit_info);
+         rcu_read_unlock();
+         cipso_v4_cache_invalidate();
+         call_rcu(&doi_def->rcu, callback);
+diff --git a/net/netlabel/netlabel_cipso_v4.c
+b/net/netlabel/netlabel_cipso_v4.c
+index ba0ca8d..54f9d1b 100644
+--- a/net/netlabel/netlabel_cipso_v4.c
++++ b/net/netlabel/netlabel_cipso_v4.c
+@@ -89,7 +89,7 @@ static const struct nla_policy
+netlbl_cipsov4_genl_policy[NLBL_CIPSOV4_A_MAX + 1
+  * safely.
+  *
+  */
+-static void netlbl_cipsov4_doi_free(struct rcu_head *entry)
++void netlbl_cipsov4_doi_free(struct rcu_head *entry)
+ {
+     struct cipso_v4_doi *ptr;
+ 
+diff --git a/net/netlabel/netlabel_cipso_v4.h
+b/net/netlabel/netlabel_cipso_v4.h
+index f03cf9b..220cb9d 100644
+--- a/net/netlabel/netlabel_cipso_v4.h
++++ b/net/netlabel/netlabel_cipso_v4.h
+@@ -163,4 +163,7 @@ enum {
+ /* NetLabel protocol functions */
+ int netlbl_cipsov4_genl_init(void);
+ 
++/* Free the memory associated with a CIPSOv4 DOI definition */
++void netlbl_cipsov4_doi_free(struct rcu_head *entry);
++
+ #endif
+diff --git a/net/netlabel/netlabel_domainhash.h
+b/net/netlabel/netlabel_domainhash.h
+index 3689956..8220990 100644
+--- a/net/netlabel/netlabel_domainhash.h
++++ b/net/netlabel/netlabel_domainhash.h
+@@ -61,6 +61,7 @@ int netlbl_domhsh_add(struct netlbl_dom_map *entry,
+               struct netlbl_audit *audit_info);
+ int netlbl_domhsh_add_default(struct netlbl_dom_map *entry,
+                   struct netlbl_audit *audit_info);
++int netlbl_domhsh_remove(const char *domain, struct netlbl_audit
+*audit_info);
+ int netlbl_domhsh_remove_default(struct netlbl_audit *audit_info);
+ struct netlbl_dom_map *netlbl_domhsh_getentry(const char *domain);
+ int netlbl_domhsh_walk(u32 *skip_bkt,
+diff --git a/net/netlabel/netlabel_kapi.c b/net/netlabel/netlabel_kapi.c
+index 4f50949..2ba5ae8 100644
+--- a/net/netlabel/netlabel_kapi.c
++++ b/net/netlabel/netlabel_kapi.c
+@@ -30,6 +30,7 @@
+ 
+ #include <linux/init.h>
+ #include <linux/types.h>
++#include <linux/audit.h>
+ #include <net/ip.h>
+ #include <net/netlabel.h>
+ #include <net/cipso_ipv4.h>
+@@ -37,10 +38,186 @@
+ 
+ #include "netlabel_domainhash.h"
+ #include "netlabel_unlabeled.h"
++#include "netlabel_cipso_v4.h"
+ #include "netlabel_user.h"
+ #include "netlabel_mgmt.h"
+ 
+ /*
++ * Configuration Functions
++ */
++
++/**
++ * netlbl_cfg_map_del - Remove a NetLabel/LSM domain mapping
++ * @domain: the domain mapping to remove
++ * @audit_info: NetLabel audit information
++ *
++ * Description:
++ * Removes a NetLabel/LSM domain mapping.  A @domain value of NULL
+causes the
++ * default domain mapping to be removed.  Returns zero on success, negative
++ * values on failure.
++ *
++ */
++int netlbl_cfg_map_del(const char *domain, struct netlbl_audit *audit_info)
++{
++    return netlbl_domhsh_remove(domain, audit_info);
++}
++
++/**
++ * netlbl_cfg_unlbl_add_map - Add an unlabeled NetLabel/LSM domain mapping
++ * @domain: the domain mapping to add
++ * @audit_info: NetLabel audit information
++ *
++ * Description:
++ * Adds a new unlabeled NetLabel/LSM domain mapping.  A @domain value
+of NULL
++ * causes a new default domain mapping to be added.  Returns zero on
+success,
++ * negative values on failure.
++ *
++ */
++int netlbl_cfg_unlbl_add_map(const char *domain,
++                 struct netlbl_audit *audit_info)
++{
++    int ret_val = -ENOMEM;
++    struct netlbl_dom_map *entry;
++
++    entry = kzalloc(sizeof(*entry), GFP_ATOMIC);
++    if (entry == NULL)
++        goto cfg_unlbl_add_map_failure;
++    if (domain != NULL) {
++        entry->domain = kstrdup(domain, GFP_ATOMIC);
++        if (entry->domain == NULL)
++            goto cfg_unlbl_add_map_failure;
++    }
++    entry->type = NETLBL_NLTYPE_UNLABELED;
++
++    ret_val = netlbl_domhsh_add(entry, audit_info);
++    if (ret_val != 0)
++        goto cfg_unlbl_add_map_failure;
++
++    return 0;
++
++cfg_unlbl_add_map_failure:
++    if (entry != NULL)
++        kfree(entry->domain);
++    kfree(entry);
++    return ret_val;
++}
++
++/**
++ * netlbl_cfg_cipsov4_add - Add a new CIPSOv4 DOI definition
++ * @doi_def: the DOI definition
++ * @audit_info: NetLabel audit information
++ *
++ * Description:
++ * Add a new CIPSOv4 DOI definition to the NetLabel subsystem.  Returns
+zero on
++ * success, negative values on failure.
++ *
++ */
++int netlbl_cfg_cipsov4_add(struct cipso_v4_doi *doi_def,
++               struct netlbl_audit *audit_info)
++{
++    int ret_val;
++    const char *type_str;
++    struct audit_buffer *audit_buf;
++
++    ret_val = cipso_v4_doi_add(doi_def);
++
++    audit_buf = netlbl_audit_start_common(AUDIT_MAC_CIPSOV4_ADD,
++                          audit_info);
++    if (audit_buf != NULL) {
++        switch (doi_def->type) {
++        case CIPSO_V4_MAP_STD:
++            type_str = "std";
++            break;
++        case CIPSO_V4_MAP_PASS:
++            type_str = "pass";
++            break;
++        default:
++            type_str = "(unknown)";
++        }
++        audit_log_format(audit_buf,
++                 " cipso_doi=%u cipso_type=%s res=%u",
++                 doi_def->doi,
++                 type_str,
++                 ret_val == 0 ? 1 : 0);
++        audit_log_end(audit_buf);
++    }
++
++    return ret_val;
++}
++
++/**
++ * netlbl_cfg_cipsov4_add_map - Add a new CIPSOv4 DOI definition and
+mapping
++ * @doi_def: the DOI definition
++ * @domain: the domain mapping to add
++ * @audit_info: NetLabel audit information
++ *
++ * Description:
++ * Add a new CIPSOv4 DOI definition and NetLabel/LSM domain mapping for
+this
++ * new DOI definition to the NetLabel subsystem.  A @domain value of
+NULL adds
++ * a new default domain mapping.  Returns zero on success, negative
+values on
++ * failure.
++ *
++ */
++int netlbl_cfg_cipsov4_add_map(struct cipso_v4_doi *doi_def,
++                   const char *domain,
++                   struct netlbl_audit *audit_info)
++{
++    int ret_val = -ENOMEM;
++    struct netlbl_dom_map *entry;
++
++    entry = kzalloc(sizeof(*entry), GFP_ATOMIC);
++    if (entry == NULL)
++        goto cfg_cipsov4_add_map_failure;
++    if (domain != NULL) {
++        entry->domain = kstrdup(domain, GFP_ATOMIC);
++        if (entry->domain == NULL)
++            goto cfg_cipsov4_add_map_failure;
++    }
++    entry->type = NETLBL_NLTYPE_CIPSOV4;
++    entry->type_def.cipsov4 = doi_def;
++
++    /* Grab a RCU read lock here so nothing happens to the doi_def variable
++     * between adding it to the CIPSOv4 protocol engine and adding a
++     * domain mapping for it. */
++
++    rcu_read_lock();
++    ret_val = netlbl_cfg_cipsov4_add(doi_def, audit_info);
++    if (ret_val != 0)
++        goto cfg_cipsov4_add_map_failure_unlock;
++    ret_val = netlbl_domhsh_add(entry, audit_info);
++    if (ret_val != 0)
++        goto cfg_cipsov4_add_map_failure_remove_doi;
++    rcu_read_unlock();
++
++    return 0;
++
++cfg_cipsov4_add_map_failure_remove_doi:
++    cipso_v4_doi_remove(doi_def->doi, audit_info, netlbl_cipsov4_doi_free);
++cfg_cipsov4_add_map_failure_unlock:
++    rcu_read_unlock();
++cfg_cipsov4_add_map_failure:
++    if (entry != NULL)
++        kfree(entry->domain);
++    kfree(entry);
++    return ret_val;
++}
++
++/**
++ * netlbl_cfg_cipsov4_del - Removean existing CIPSOv4 DOI definition
++ * @doi: the CIPSO DOI value
++ * @Aaudit_info: NetLabel audit information
++ *
++ * Description:
++ * Removes an existing CIPSOv4 DOI definition from the NetLabel subsystem.
++ * Returns zero on success, negative values on failure.
++ *
++ */
++int netlbl_cfg_cipsov4_del(u32 doi, struct netlbl_audit *audit_info)
++{
++    return cipso_v4_doi_remove(doi, audit_info, netlbl_cipsov4_doi_free);
++}
++
++/*
+  * Security Attribute Functions
+  */
+ 
+
