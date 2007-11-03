@@ -1,83 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764680AbXKCATY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764309AbXKCATl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764680AbXKCATY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 20:19:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762440AbXKCAEa
+	id S1764309AbXKCATl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 20:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762583AbXKCAEi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 20:04:30 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:57896 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762314AbXKCAE2 (ORCPT
+	Fri, 2 Nov 2007 20:04:38 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:55140 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762448AbXKCAEg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 20:04:28 -0400
-Date: Sat, 3 Nov 2007 01:04:05 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] proper prototype for get_filesystem_list()
-Message-ID: <20071103000405.GC4594@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Fri, 2 Nov 2007 20:04:36 -0400
+Date: Sat, 3 Nov 2007 00:04:14 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linux-arm <linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux-main <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] : kernel/built-in.o(.text+0x18db4):kernel/workqueue.c:823: undefined reference to `.L343'
+Message-ID: <20071103000413.GA22006@flint.arm.linux.org.uk>
+References: <20071102202931.deb09211.Kristoffer.ericson@gmail.com> <20071102194818.GA22719@flint.arm.linux.org.uk> <20071102201023.GA16670@uranus.ravnborg.org> <20071103000406.30654cff.Kristoffer.ericson@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20071103000406.30654cff.Kristoffer.ericson@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a proper prototype for migration_init() in
-include/linux/fs.h
+On Sat, Nov 03, 2007 at 12:04:06AM -0700, Kristoffer Ericson wrote:
+> On Fri, 2 Nov 2007 21:10:23 +0100
+> Sam Ravnborg <sam@ravnborg.org> wrote:
+> 
+> > On Fri, Nov 02, 2007 at 07:48:18PM +0000, Russell King - ARM Linux wrote:
+> > > On Fri, Nov 02, 2007 at 08:29:31PM -0700, Kristoffer Ericson wrote:
+> > > > Greetings,
+> > > > 
+> > > > Haven't found anyone reporting this. Taken from the very latest linux-2.6.git pull.
+> > > > 
+> > > > dnsdomainname: Unknown host
+> > > >   UPD     include/linux/compile.h
+> > > >   CC      init/version.o
+> > > >   LD      init/built-in.o
+> > > >   LD      .tmp_vmlinux1
+> > > > kernel/built-in.o(.text+0x18db0): In function `destroy_workqueue':
+> > > > kernel/workqueue.c:823: undefined reference to `.L342'
+> > > > kernel/built-in.o(.text+0x18db4):kernel/workqueue.c:823: undefined reference to `.L343'
+> > > > make: *** [.tmp_vmlinux1] Error 1
+> > > 
+> > > I think you'll have to look at the assembly produced for workqueue.c and
+> > > work out why GCC is referencing an undefined label.  You can get the
+> > > assembly for that by doing:
+> > > 
+> > > make ARCH=arm ...etc... kernel/workqueue.s
+> > Or make that:
+> > 
+> > make ARCH=arm ...etc... kernel/workqueue.lst
+> > 
+> > to get intermixed C and assenbly
+> > 
+> > 	Sam
+> arm-unknown-linux-gnu- kernel/workqueue.1strrent:)$ make ARCH=arm CROSS_COMPILE=a
+> make: *** No rule to make target `kernel/workqueue.1st'.  Stop.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Suggest you use a better console font that allows you to identify
+the difference between '1' (one) and 'l' (lima).
 
----
+> arm-unknown-linux-gnu- kernel/workqueue.lstrrent:)$ make ARCH=arm CROSS_COMPILE=a
+>   CHK     include/linux/version.h
+> make[1]: `include/asm-arm/mach-types.h' is up to date.
+>   CHK     include/linux/utsrelease.h
+>   CALL    scripts/checksyscalls.sh
+> <stdin>:1097:2: warning: #warning syscall fadvise64 not implemented
+> <stdin>:1265:2: warning: #warning syscall migrate_pages not implemented
+> <stdin>:1321:2: warning: #warning syscall pselect6 not implemented
+> <stdin>:1325:2: warning: #warning syscall ppoll not implemented
+> <stdin>:1365:2: warning: #warning syscall epoll_pwait not implemented
+>   MKLST   kernel/workqueue.lst
+> No System.map
 
- fs/proc/proc_misc.c |    1 -
- include/linux/fs.h  |    1 +
- init/do_mounts.c    |    3 +--
- 3 files changed, 2 insertions(+), 3 deletions(-)
-
-769db79bc8aef7d9612c5ea7045f8a956d628e7a 
-diff --git a/fs/proc/proc_misc.c b/fs/proc/proc_misc.c
-index e0d064e..163b7d2 100644
---- a/fs/proc/proc_misc.c
-+++ b/fs/proc/proc_misc.c
-@@ -63,7 +63,6 @@
-  */
- extern int get_hardware_list(char *);
- extern int get_stram_list(char *);
--extern int get_filesystem_list(char *);
- extern int get_exec_domain_list(char *);
- extern int get_dma_list(char *);
- 
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index b3ec4a4..d296dcc 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -2095,6 +2095,7 @@ struct ctl_table;
- int proc_nr_files(struct ctl_table *table, int write, struct file *filp,
- 		  void __user *buffer, size_t *lenp, loff_t *ppos);
- 
-+int get_filesystem_list(char * buf);
- 
- #endif /* __KERNEL__ */
- #endif /* _LINUX_FS_H */
-diff --git a/init/do_mounts.c b/init/do_mounts.c
-index 4efa1e5..3aafc09 100644
---- a/init/do_mounts.c
-+++ b/init/do_mounts.c
-@@ -11,6 +11,7 @@
- #include <linux/mount.h>
- #include <linux/device.h>
- #include <linux/init.h>
-+#include <linux/fs.h>
- 
- #include <linux/nfs_fs.h>
- #include <linux/nfs_fs_sb.h>
-@@ -18,8 +19,6 @@
- 
- #include "do_mounts.h"
- 
--extern int get_filesystem_list(char * buf);
--
- int __initdata rd_doload;	/* 1 = load RAM disk, 0 = don't load */
- 
- int root_mountflags = MS_RDONLY | MS_SILENT;
-
+You're not looking for a system.map file, but the workqueue.s or
+workqueue.lst file to find out where this nonexistent label is
+referenced.
