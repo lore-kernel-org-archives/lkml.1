@@ -1,44 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764954AbXKCAV0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764494AbXKCAWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764954AbXKCAV0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 20:21:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762626AbXKCAFA
+	id S1764494AbXKCAWW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 20:22:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758107AbXKCAWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 20:05:00 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:57904 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762618AbXKCAE7 (ORCPT
+	Fri, 2 Nov 2007 20:22:11 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:34461 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756164AbXKCAWJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 20:04:59 -0400
-Date: Sat, 3 Nov 2007 01:04:35 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: trond.myklebust@fys.uio.no
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] fs/nfs/dir.c should #include "internal.h"
-Message-ID: <20071103000435.GH4594@stusta.de>
+	Fri, 2 Nov 2007 20:22:09 -0400
+Date: Fri, 2 Nov 2007 17:18:39 -0700
+From: Greg KH <greg@kroah.com>
+To: Latchesar Ionkov <lucho@ionkov.net>
+Cc: v9fs-developer@lists.sourceforge.net, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 9p: basic sysfs support
+Message-ID: <20071103001839.GA13530@kroah.com>
+References: <20071102165331.GA16063@ionkov.net> <20071102175151.GA32460@kroah.com> <f158dc670711021214h1f9d6b80wf691fa08da1041d4@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <f158dc670711021214h1f9d6b80wf691fa08da1041d4@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Every file should include the headers containing the prototypes for
-its global functions (in this case nfs_access_cache_shrinker()).
+On Fri, Nov 02, 2007 at 01:14:05PM -0600, Latchesar Ionkov wrote:
+> This patch adds only the basic 9p functionality, we use the sysfs
+> interface extensively for configuring the 9p in-kernel servers (patch
+> 7 in the series). The v9fs filesyste will probably add some more
+> subdirectories for authenticating users and mapping user names to
+> uids...
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Ah, ok.  I don't know your projected time frame for this patch series,
+but if it's for 2.6.25, you might want to look at the set of patches I
+just sent to lkml to help make files like this easier to create thanks
+to the great work from Kay Sievers.
 
----
-d26650fc1c0dbe80a18d94527357af85c5763143 
-diff --git a/fs/nfs/dir.c b/fs/nfs/dir.c
-index 3533453..f697b5c 100644
---- a/fs/nfs/dir.c
-+++ b/fs/nfs/dir.c
-@@ -38,6 +38,7 @@
- #include "nfs4_fs.h"
- #include "delegation.h"
- #include "iostat.h"
-+#include "internal.h"
- 
- /* #define NFS_DEBUG_VERBOSE 1 */
- 
+thanks,
+
+greg k-h
