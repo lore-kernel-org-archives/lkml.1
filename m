@@ -1,62 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760650AbXKCJL0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760615AbXKCJRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760650AbXKCJL0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 05:11:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757429AbXKCJLU
+	id S1760615AbXKCJRg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 05:17:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754490AbXKCJR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 05:11:20 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:34648 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755568AbXKCJLT (ORCPT
+	Sat, 3 Nov 2007 05:17:26 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:50327 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753558AbXKCJRY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 05:11:19 -0400
-Date: Sat, 3 Nov 2007 05:10:17 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: bryan.wu@analog.com, Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] BLACKFIN:  Typo: "CONFIG_RTC_BFIN_MODULE" ->
- "CONFIG_RTC_DRV_BFIN_MODULE"
-Message-ID: <Pine.LNX.4.64.0711030506370.8543@localhost.localdomain>
+	Sat, 3 Nov 2007 05:17:24 -0400
+Date: Sat, 3 Nov 2007 10:17:22 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Swen Schillig <swen@vnet.ibm.com>
+Cc: James Bottomley <James.Bottomley@steeleye.com>,
+       Christof Schmitt <christof.schmitt@de.ibm.com>,
+       linux-scsi@vger.kernel.org, Linux on 390 Port <LINUX-390@vm.marist.edu>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] zfcp: add some internal zfcp adapter statistics
+Message-ID: <20071103091722.GA7807@osiris.boeblingen.de.ibm.com>
+References: <200710311133.52090.swen@vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710311133.52090.swen@vnet.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> +static void zfcp_fsf_req_latency(struct zfcp_fsf_req *fsf_req)
+> +{
+> +	struct fsf_qual_latency_info *lat_inf;
+> +	struct zfcp_unit *unit;
+> +
+> +	lat_inf = &fsf_req->qtcb->prefix.prot_status_qual.latency_info;
+> +	unit = fsf_req->unit;
+> +
+> +	switch (fsf_req->qtcb->bottom.io.data_direction) {
+> +	case FSF_DATADIR_READ:
+> +		unit->latencies.read.channel += lat_inf->channel_lat;
+> +		unit->latencies.read.fabric += lat_inf->fabric_lat;
+> +		unit->latencies.read.counter++;
+> +		break;
+> +	case FSF_DATADIR_WRITE:
+> +		unit->latencies.write.channel += lat_inf->channel_lat;
+> +		unit->latencies.write.fabric += lat_inf->fabric_lat;
+> +		unit->latencies.write.counter++;
+> +		break;
+> +	case FSF_DATADIR_CMND:
+> +		unit->latencies.cmd.channel += lat_inf->channel_lat;
+> +		unit->latencies.cmd.fabric += lat_inf->fabric_lat;
+> +		unit->latencies.cmd.counter++;
+> +		break;
+> +	}
+> +}
 
-Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+These statistics are concurrently updated from several cpus without
+any locking. That looks like a bug.
 
----
+> +zfcp_sysfs_unit_##_name##_latency_show(struct device *dev,		\
+> +				       struct device_attribute *attr,	\
+> +				       char *buf) {			\
+> +	struct scsi_device *sdev = to_scsi_device(dev);			\
+> +	struct zfcp_unit *unit = sdev->hostdata;			\
+> +	struct zfcp_latencies *lat = &unit->latencies;			\
+> +	struct zfcp_adapter *adapter = unit->port->adapter;		\
+> +									\
+> +	return sprintf(buf, "%u %u %u\n",				\
+> +		       lat->_name.fabric * adapter->timer_ticks / 1000, \
+> +		       lat->_name.channel * adapter->timer_ticks / 1000,\
+> +		       lat->_name.counter);				\
 
-  i'm *reasonably* confident that this is a typo that should be fixed.
+In addition they can be read concurrently from userspace without any
+locking... Since you put several values together in the output I assume
+this is supposed to be some sort of snapshot, which it currently isn't.
 
+> +static int
+> +zfcp_sysfs_adapter_ex_config(struct class_device *cdev,
+> +			     struct fsf_qtcb_bottom_config **qtcb_config)
+> +{
+> +	struct Scsi_Host *scsi_host = class_to_shost(cdev);
+> +	struct zfcp_adapter *adapter = (struct zfcp_adapter *)
+> +						scsi_host->hostdata[0];
+> +
+> +	if (!(adapter->adapter_features & FSF_FEATURE_MEASUREMENT_DATA)) {
+> +		ZFCP_LOG_NORMAL("error: Enhanced measurement feature not "
+> +				"supported");
+> +		return -EOPNOTSUPP;
+> +	}
+> +
+> +	*qtcb_config = kzalloc(sizeof(struct fsf_qtcb_bottom_config),
+> +			       GFP_KERNEL);
+> +	if (!*qtcb_config)
+> +		return -ENOMEM;
+> +
+> +	return zfcp_fsf_exchange_config_data_sync(adapter, *qtcb_config);
+> +}
+> +
+> +static ssize_t
+> +zfcp_sysfs_adapter_request_show(struct class_device *cdev, char *buf)
+> +{
+> +	struct fsf_qtcb_bottom_config *qtcb_config;
+> +	int retval;
+> +
+> +	retval = zfcp_sysfs_adapter_ex_config(cdev, &qtcb_config);
+> +
+> +	if (!retval)
+> +		retval = sprintf(buf, "%lu %lu %lu\n",
+> +				 qtcb_config->stat_info.input_req,
+> +				 qtcb_config->stat_info.output_req,
+> +				 qtcb_config->stat_info.control_req);
+> +
+> +	kfree(qtcb_config);
+> +	return retval;
+> +}
 
-diff --git a/arch/blackfin/mach-bf533/boards/H8606.c b/arch/blackfin/mach-bf533/boards/H8606.c
-index b941550..7d33096 100644
---- a/arch/blackfin/mach-bf533/boards/H8606.c
-+++ b/arch/blackfin/mach-bf533/boards/H8606.c
-@@ -49,7 +49,7 @@
-  */
- const char bfin_board_name[] = "HV Sistemas H8606";
-
--#if defined(CONFIG_RTC_DRV_BFIN) || defined(CONFIG_RTC_BFIN_MODULE)
-+#if defined(CONFIG_RTC_DRV_BFIN) || defined(CONFIG_RTC_DRV_BFIN_MODULE)
- static struct platform_device rtc_device = {
- 	.name = "rtc-bfin",
- 	.id   = -1,
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+You're going to call kfree with some random value if the adapter doesn't
+support the measurement data feature.
