@@ -1,69 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762256AbXKCX4F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762031AbXKDACy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762256AbXKCX4F (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 19:56:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757364AbXKCXzz
+	id S1762031AbXKDACy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 20:02:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756919AbXKDACr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 19:55:55 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:54439 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757006AbXKCXzy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 19:55:54 -0400
-Date: Sat, 3 Nov 2007 16:55:25 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Dave Hansen <haveblue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>, Ulrich Drepper <drepper@redhat.com>,
-       linux-kernel@vger.kernel.org,
-       "Dinakar Guniguntala [imap]" <dino@in.ibm.com>,
-       Sripathi Kodi <sripathik@in.ibm.com>
-Subject: Re: [patch] PID namespace design bug, workaround
-Message-ID: <20071103165525.2dcd55c7@laptopd505.fenrus.org>
-In-Reply-To: <alpine.LFD.0.999.0711031535450.15101@woody.linux-foundation.org>
-References: <20071101144307.GA29566@elte.hu>
-	<4729E7E4.8070208@openvz.org>
-	<4729E936.4040400@redhat.com>
-	<4729EB3C.9050102@openvz.org>
-	<472A6D91.1020300@redhat.com>
-	<472AD7D6.80900@openvz.org>
-	<20071102010419.23f3db5c.akpm@linux-foundation.org>
-	<1194024622.6271.108.camel@localhost>
-	<alpine.LFD.0.999.0711021038480.3342@woody.linux-foundation.org>
-	<20071103201251.GB26366@elte.hu>
-	<alpine.LFD.0.999.0711031535450.15101@woody.linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 3 Nov 2007 20:02:47 -0400
+Received: from france.micfo.com ([87.117.253.20]:59415 "EHLO france.micfo.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756552AbXKDACq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Nov 2007 20:02:46 -0400
+X-Greylist: delayed 3608 seconds by postgrey-1.27 at vger.kernel.org; Sat, 03 Nov 2007 20:02:46 EDT
+From: Alberto Gonzalez <info@gnebu.es>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Laptop's HDD
+Date: Sun, 4 Nov 2007 00:02:25 +0100
+User-Agent: KMail/1.9.7
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200711040002.25784.info@gnebu.es>
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - france.micfo.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - gnebu.es
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 3 Nov 2007 15:40:48 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Hi,
 
-> I don't understand how you can call this a "PID namespace design
-> bug", when it clearly has nothing what-so-ever to do with pid
-> namespaces, and everything to do with the *futexes* that blithely
-> assume that pid's are unique and that made it part of the
-> user-visible interface.
-> 
-> OF COURSE any pid namespace design will always break such
-> assumptions, but that's not because of any PID namespace bugs. It's
-> what the whole *point* of PID namespaces are. If you use pid's
-> (instead of some opaque cookies), you will not be able to use such
-> things across pid-separation.
+Maybe some of you have been hearing lately about a problem with laptop's hard 
+disk drives being killed by *insert Linux distro here* [1]
 
-well... kind of.
-THere are 2 things around pid namespaces: which pids you can see/touch
-(in proc or signals or otherwise), and the non-uniqueness.
+The problem comes from a very high rate of load/unload cycles of the heads 
+that reaches the 300.000-600.000 limit in 2-3 years (with smartmontools it 
+can checked it with "smartctl -A /dev/sda")  . There are reports of HDD dying 
+even earlier for this problem [2]
 
-For containers you clearly want the first part... but... is there a
-strong reason to not just *not* create duplicate pids even across
-namespaces? there's no rule in posix or anything similar to fd's afaik
-concerning which pids we can hand out... so we could just make then
-unique globally but just with limited visibility....
+For what I've read, it's not that Linux is doing anything special to your hard 
+disk, it's the BIOS settings that take care of killing your disk sooner than 
+later. However, I'm asking on this list because the problem seems to have 
+started with kernel 2.6.10 [3].
+
+Windows seems to override the BIOS settings, so hardware vendors have never 
+cared about this problem.
+
+So my question is: Is this something the (Linux) kernel should care about or 
+should distributions care about it with userspace tools?
+
+By the way, this settings seem to be there in order to save power. However, 
+loading/unloading the heads ~3 times per minute doesn't seem like a very good 
+powersaving policy. Couldn't this be one of the reasons why Linux is using 
+generally more power than Windows?
+
+Regards,
+Alberto.
+
+[1] - http://beranger.org/index.php?page=diary&2007/10/24/18/07/21
+- http://ubuntudemon.wordpress.com/2007/10/26/laptop-hardrive-killer-bug/
+
+[2] - 
+http://ubuntudemon.wordpress.com/2007/10/27/laptop-hardrive-killer-bug-is-worse-than-i-thought/#comment-31490
+http://paul.luon.net/journal/hacking/BrokenHDDs.html
+
+[3] - https://www.redhat.com/archives/fedora-list/2005-March/msg00463.html
