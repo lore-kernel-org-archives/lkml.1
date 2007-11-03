@@ -1,40 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757804AbXKCJll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758076AbXKCJoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757804AbXKCJll (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 05:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753748AbXKCJlc
+	id S1758076AbXKCJoX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 05:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbXKCJoQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 05:41:32 -0400
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:26522 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753535AbXKCJlb (ORCPT
+	Sat, 3 Nov 2007 05:44:16 -0400
+Received: from rv-out-0910.google.com ([209.85.198.189]:18260 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753558AbXKCJoP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 05:41:31 -0400
-Date: Sat, 3 Nov 2007 10:40:58 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Swen Schillig <swen@vnet.ibm.com>
-Cc: James Bottomley <James.Bottomley@steeleye.com>,
-       Christof Schmitt <christof.schmitt@de.ibm.com>,
-       linux-scsi@vger.kernel.org, Linux on 390 Port <LINUX-390@vm.marist.edu>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] zfcp: add some internal zfcp adapter statistics
-Message-ID: <20071103094058.GA25134@osiris.boeblingen.de.ibm.com>
-References: <200710311133.52090.swen@vnet.ibm.com> <20071103091722.GA7807@osiris.boeblingen.de.ibm.com>
+	Sat, 3 Nov 2007 05:44:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=UxC41cjod19umlopMT8Hxys3Jq827Jssq0P3+J9CxL3E0oPMnb/HdjV0isx+GBy9RHi6x0ahisLKqsFbOvu4WhLIMPksOaor98792LROwClhNbVYzNpRdGwokFvYwtURIKfuv3IAj4WlI4cYwbaF6ZpysNYHxdJ/wLzrr5iiMo4=
+Message-ID: <5699f8f00711030244j4d8bed83j3a9e4a2191201a3c@mail.gmail.com>
+Date: Sat, 3 Nov 2007 10:44:14 +0100
+From: "Wander Winkelhorst" <w.winkelhorst@gmail.com>
+To: "Rik van Riel" <riel@surriel.com>
+Subject: Re: WANTED: kernel projects for CS students
+Cc: Valdis.Kletnieks@vt.edu, "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>,
+       "Pavel Machek" <pavel@ucw.cz>, linux-kernel@vger.kernel.org
+In-Reply-To: <20071102233615.6dc90e35@bree.surriel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071103091722.GA7807@osiris.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <20071014190128.6e3cdb44@bree.surriel.com>
+	 <20071028180707.GA6111@ucw.cz>
+	 <20071029194820.GC27646@csclub.uwaterloo.ca>
+	 <20071029201911.GB3537@elf.ucw.cz>
+	 <20071029214452.GA27643@csclub.uwaterloo.ca>
+	 <12100.1194059303@turing-police.cc.vt.edu>
+	 <20071102233615.6dc90e35@bree.surriel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > +	if (!(adapter->adapter_features & FSF_FEATURE_MEASUREMENT_DATA)) {
-> > +		ZFCP_LOG_NORMAL("error: Enhanced measurement feature not "
-> > +				"supported");
-> > +		return -EOPNOTSUPP;
-> > +	}
+On 11/3/07, Rik van Riel <riel@surriel.com> wrote:
+> On Fri, 02 Nov 2007 23:08:23 -0400
+> Valdis.Kletnieks@vt.edu wrote:
+>
+> > IBM's AIX supported file system compression on the JFS filesystem
+> > years ago. I was able to get up to 30% throughput increases by
+> > converting the /usr filesystem to compressed - because even a 33mhz
+> > Power chipset could read in 5 512-byte blocks and decompress it to
+> > the original 4K faster than the disk could read in 8 512-byte
+> > blocks.
+>
+> > Given that today there's an even *bigger* disparity in CPU speed
+> > versus disk speed, I'd be surprised if it doesn't help today too.
+>
+> The problem is that disk seek times have not gotten much
+> faster over the years, while disk throughput rates have
+> skyrocketed.
+>
+> Transferring a little less data is not going to help you
+> when 80% of your disk time is spent seeking, not reading
+> or writing.
 
-Btw. any user can flood the console with these messages if the adapter
-doesn't support the feature. That can be considered a denial of service
-attack. Please just return -EOPNOTSUPP and don't print anything on the
-console.
+This sounds like flash based media are an ideal candidate for compression.
+No seek times to speak of, transfer rates that are lower than those of
+disks and limited capacity.
+
+I believe JFFS2 (a flash filesystem) allready does compression though.
