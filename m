@@ -1,63 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757015AbXKCBXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757778AbXKCBYE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757015AbXKCBXr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 21:23:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbXKCBXP
+	id S1757778AbXKCBYE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 21:24:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754889AbXKCBXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 21:23:15 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:35195 "EHLO
+	Fri, 2 Nov 2007 21:23:17 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:35200 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752179AbXKCBXM (ORCPT
+	with ESMTP id S1752555AbXKCBXN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 21:23:12 -0400
+	Fri, 2 Nov 2007 21:23:13 -0400
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       viro@ftp.linux.org.uk, hch@infradead.org
-Subject: [GIT PULL -mm] 0/8 Unionfs updates/cleanups/fixes
-Date: Fri,  2 Nov 2007 21:22:41 -0400
-Message-Id: <11940529692937-git-send-email-ezk@cs.sunysb.edu>
+       viro@ftp.linux.org.uk, hch@infradead.org,
+       Erez Zadok <ezk@cs.sunysb.edu>
+Subject: [PATCH 2/8] Unionfs: cleanup permission checking code
+Date: Fri,  2 Nov 2007 21:22:43 -0400
+Message-Id: <119405297013-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
+In-Reply-To: <11940529692937-git-send-email-ezk@cs.sunysb.edu>
+References: <11940529692937-git-send-email-ezk@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Use vfs helpers and avoid redundant checks performed by the VFS already.
 
-The following is a series of patches related to Unionfs.  The main change
-here is that we dropped ->sync_page and rewritten ->writepage.
-
-These patches were tested (where appropriate) on Linus's 2.6.24 latest code
-(as of v2.6.24-rc1-521-g54866f0), as well as the backports to
-2.6.{23,22,21,20,19,18,9} on ext2/3/4, xfs, reiserfs, nfs2/3/4, jffs2,
-ramfs, tmpfs, cramfs, and squashfs (where available).  See
-http://unionfs.filesystems.org/ to download backported unionfs code.
-
-Please pull from the 'master' branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/ezk/unionfs.git
-
-to receive the following:
-
-Erez Zadok (8):
-      Unionfs: delete whiteouts in sticky directories
-      Unionfs: cleanup permission checking code
-      Unionfs: update usage.txt documentation
-      Unionfs: mmap updates
-      Unionfs: avoid a deadlock during branch-management on a pivot_root'ed union
-      Unionfs: don't bother validating inode if it has no lower branches
-      Unionfs: don't printk an error if it's due to common copyup
-      Unionfs/VFS: no need to export 2 symbols in security/security.c
-
- Documentation/filesystems/unionfs/usage.txt |   17 +++
- fs/unionfs/commonfops.c                     |    4 
- fs/unionfs/debug.c                          |    6 +
- fs/unionfs/inode.c                          |   96 ++++++-----------
- fs/unionfs/mmap.c                           |  156 ++++++++++------------------
- fs/unionfs/rename.c                         |    2 
- fs/unionfs/subr.c                           |    8 +
- fs/unionfs/union.h                          |   39 +++++--
- security/security.c                         |    2 
- 9 files changed, 158 insertions(+), 172 deletions(-)
-
+Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
-Erez Zadok
-ezk@cs.sunysb.edu
+ fs/unionfs/commonfops.c |    4 ---
+ fs/unionfs/inode.c      |   70 +++++++++--------------------------------------
+ 2 files changed, 13 insertions(+), 61 deletions(-)
+
+diff --git a/fs/unionfs/commonfops.c b/fs/unionfs/commonfops.c
+index 7654bcb..50e5775 100644
+--- a/fs/unionfs/commonfops.c
++++ b/fs/unionfs/commonfops.c
+@@ -669,10 +669,6 @@ static long do_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ 
+ 	lower_file = unionfs_lower_file(file);
+ 
+-	err = security_file_ioctl(lower_file, cmd, arg);
+-	if (err)
+-		goto out;
+-
+ 	err = -ENOTTY;
+ 	if (!lower_file || !lower_file->f_op)
+ 		goto out;
+diff --git a/fs/unionfs/inode.c b/fs/unionfs/inode.c
+index f4facf4..169365c 100644
+--- a/fs/unionfs/inode.c
++++ b/fs/unionfs/inode.c
+@@ -914,59 +914,6 @@ static void unionfs_put_link(struct dentry *dentry, struct nameidata *nd,
+ }
+ 
+ /*
+- * Basically copied from the kernel vfs permission(), but we've changed
+- * the following:
+- *   (1) the IS_RDONLY check is skipped, and
+- *   (2) We return 0 (success) if the non-leftmost branch is mounted
+- *       readonly, to allow copyup to work.
+- *   (3) we do call security_inode_permission, and therefore security inside
+- *       SELinux, etc. are performed.
+- *
+- * @inode: the lower inode we're checking permission on
+- */
+-static int inode_permission(struct super_block *sb, struct inode *inode,
+-			    int mask, struct nameidata *nd, int bindex)
+-{
+-	int retval, submask;
+-
+-	if (mask & MAY_WRITE) {
+-		umode_t mode = inode->i_mode;
+-		/* The first branch is allowed to be really readonly. */
+-		if (bindex == 0 &&
+-		    IS_RDONLY(inode) &&
+-		    (S_ISREG(mode) || S_ISDIR(mode) || S_ISLNK(mode)))
+-			return -EROFS;
+-		/*
+-		 * Nobody gets write access to an immutable file.
+-		 */
+-		if (IS_IMMUTABLE(inode))
+-			return -EACCES;
+-		/*
+-		 * For all other branches than the first one, we ignore
+-		 * EROFS or if the branch is mounted as readonly, to let
+-		 * copyup take place.
+-		 */
+-		if (bindex > 0 &&
+-		    is_robranch_super(sb, bindex) &&
+-		    (S_ISREG(mode) || S_ISDIR(mode) || S_ISLNK(mode)))
+-			return 0;
+-	}
+-
+-	/* Ordinary permission routines do not understand MAY_APPEND. */
+-	submask = mask & ~MAY_APPEND;
+-	if (inode->i_op && inode->i_op->permission)
+-		retval = inode->i_op->permission(inode, submask, nd);
+-	else
+-		retval = generic_permission(inode, submask, NULL);
+-
+-	if (retval && retval != -EROFS)	/* ignore EROFS */
+-		return retval;
+-
+-	retval = security_inode_permission(inode, mask, nd);
+-	return ((retval == -EROFS) ? 0 : retval);	/* ignore EROFS */
+-}
+-
+-/*
+  * Don't grab the superblock read-lock in unionfs_permission, which prevents
+  * a deadlock with the branch-management "add branch" code (which grabbed
+  * the write lock).  It is safe to not grab the read lock here, because even
+@@ -1011,11 +958,20 @@ static int unionfs_permission(struct inode *inode, int mask,
+ 			continue;
+ 
+ 		/*
+-		 * We use our own special version of permission, such that
+-		 * only the first branch returns -EROFS.
++		 * We check basic permissions, but we ignore any conditions
++		 * such as readonly file systems or branches marked as
++		 * readonly, because those conditions should lead to a
++		 * copyup taking place later on.
+ 		 */
+-		err = inode_permission(inode->i_sb, lower_inode, mask, nd,
+-				       bindex);
++		err = permission(lower_inode, mask, nd);
++		if (err && bindex > 0) {
++			umode_t mode = lower_inode->i_mode;
++			if (is_robranch_super(inode->i_sb, bindex) &&
++			    (S_ISREG(mode) || S_ISDIR(mode) || S_ISLNK(mode)))
++				err = 0;
++			if (IS_COPYUP_ERR(err))
++				err = 0;
++		}
+ 
+ 		/*
+ 		 * The permissions are an intersection of the overall directory
+-- 
+1.5.2.2
+
