@@ -1,72 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758168AbXKCVbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757875AbXKCWLy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758168AbXKCVbV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 17:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756617AbXKCVbM
+	id S1757875AbXKCWLy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 18:11:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbXKCWLr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 17:31:12 -0400
-Received: from twinlark.arctic.org ([207.29.250.54]:38955 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756596AbXKCVbL (ORCPT
+	Sat, 3 Nov 2007 18:11:47 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:62669 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753057AbXKCWLq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 17:31:11 -0400
-Message-ID: <472CE89C.2020801@kernel.org>
-Date: Sat, 03 Nov 2007 14:31:08 -0700
-From: Andrew Morgan <morgan@kernel.org>
-User-Agent: Thunderbird 2.0.0.0 (Macintosh/20070326)
-MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Stephen Smalley <sds@epoch.ncsc.mil>, lkml <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       Chris Wright <chrisw@sous-sol.org>, "Theodore Ts'o" <tytso@mit.edu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: [PATCH] file capabilities: allow sigcont within session (v2)
-References: <20071031234945.GA16455@sergelap.austin.ibm.com> <1193918844.12018.6.camel@moss-spartans.epoch.ncsc.mil> <20071101134701.GA21131@sergelap.austin.ibm.com>
-In-Reply-To: <20071101134701.GA21131@sergelap.austin.ibm.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 3 Nov 2007 18:11:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:cc:subject:date:message-id:x-mailer:sender;
+        b=BAg2Em6h5M8v96e7TMBPWWqDjnDQi/99H2Y37oNuCVhUuJld4rQV8O3cbFd2tvTmPPQejP3blvdorFErXxVn6r5fcDdUeA6TJAag/psIYC/V9Q5ZeeD5R/A5Uu9e1X8kImPLZHVGgSx2qZBpthj8rO/P+7ndtXPs3izbPO4k3Uk=
+From: Michael Marineau <mike@marineau.org>
+To: linux-kernel@vger.kernel.org
+Cc: trivial@kernel.org, Michael Marineau <mike@marineau.org>
+Subject: [PATCH] tmpfs: fix mounts when size is less than the page size
+Date: Sat,  3 Nov 2007 15:11:42 -0700
+Message-Id: <11941279021705-git-send-email-mike@marineau.org>
+X-Mailer: git-send-email 1.5.1.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+When tmpfs is mounted with a size less than one page the number of blocks
+is set to 0 which makes the tmpfs mount unlimited. This can lead to a quick
+and surprising death is someone typos a tmpfs mount command and writes to much.
 
-Serge E. Hallyn wrote:
-> Quoting Stephen Smalley (sds@epoch.ncsc.mil):
->> On Wed, 2007-10-31 at 18:49 -0500, Serge E. Hallyn wrote:
-[..]
->>> Also don't do file-capabilities signaling checks when uids for
->>> the processes don't match, since the standard check_kill_permission
->>> will have done those checks.
->> Description doesn't match the code.
-> 
-> Egads.  I knew I should've just kept that part out of it for the first
-> patch...
-> 
-> New patch on top of previous one is appended.
+tmpfs can still be mounted as unlimited if size or nr_blocks is exactly 0.
 
-Dang! I stared at the code a long time to see what you were doing...
+Signed-off-by: Michael Marineau <mike@marineau.org>
+---
+ mm/shmem.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-And concluded that you had coded what you intended; allow processes that
-share UIDs to kill one another - independent of capabilities. The fact
-that this is the reverse of the words you used to introduce your patch,
-I didn't notice.
+diff --git a/mm/shmem.c b/mm/shmem.c
+index 253d205..66b07f2 100644
+--- a/mm/shmem.c
++++ b/mm/shmem.c
+@@ -2138,6 +2138,8 @@ static int shmem_parse_options(char *options, int *mode, uid_t *uid,
+ 			if (*rest)
+ 				goto bad_val;
+ 			*blocks = size >> PAGE_CACHE_SHIFT;
++			if (size && blocks == 0)
++				blocks = 1;
+ 		} else if (!strcmp(this_char,"nr_blocks")) {
+ 			*blocks = memparse(value,&rest);
+ 			if (*rest)
+-- 
+1.5.1.6
 
-I totally missed the fact that this was (unwanted) new functionality!!
-Mea culpa for the bad review.
-
-I certainly Sign off the revised patch.
-
-Cheers
-
-Andrew
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFHLOicmwytjiwfWMwRAq5HAJ49eajMT4myf1oKfrab2oCw/o9HnwCgkYt2
-RyIsmHVWmClsrxCz5s1HRJY=
-=hGLO
------END PGP SIGNATURE-----
