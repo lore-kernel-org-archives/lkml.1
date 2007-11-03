@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757778AbXKCBYE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761904AbXKCBYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757778AbXKCBYE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 21:24:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754889AbXKCBXR
+	id S1761904AbXKCBYX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 21:24:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757032AbXKCBXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 21:23:17 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:35200 "EHLO
+	Fri, 2 Nov 2007 21:23:20 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:35203 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752555AbXKCBXN (ORCPT
+	with ESMTP id S1752810AbXKCBXP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 21:23:13 -0400
+	Fri, 2 Nov 2007 21:23:15 -0400
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@ftp.linux.org.uk, hch@infradead.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 2/8] Unionfs: cleanup permission checking code
-Date: Fri,  2 Nov 2007 21:22:43 -0400
-Message-Id: <119405297013-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 6/8] Unionfs: don't bother validating inode if it has no lower branches
+Date: Fri,  2 Nov 2007 21:22:47 -0400
+Message-Id: <11940529722460-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11940529692937-git-send-email-ezk@cs.sunysb.edu>
@@ -25,118 +25,35 @@ References: <11940529692937-git-send-email-ezk@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use vfs helpers and avoid redundant checks performed by the VFS already.
-
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/commonfops.c |    4 ---
- fs/unionfs/inode.c      |   70 +++++++++--------------------------------------
- 2 files changed, 13 insertions(+), 61 deletions(-)
+ fs/unionfs/debug.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/fs/unionfs/commonfops.c b/fs/unionfs/commonfops.c
-index 7654bcb..50e5775 100644
---- a/fs/unionfs/commonfops.c
-+++ b/fs/unionfs/commonfops.c
-@@ -669,10 +669,6 @@ static long do_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- 
- 	lower_file = unionfs_lower_file(file);
- 
--	err = security_file_ioctl(lower_file, cmd, arg);
--	if (err)
--		goto out;
--
- 	err = -ENOTTY;
- 	if (!lower_file || !lower_file->f_op)
- 		goto out;
-diff --git a/fs/unionfs/inode.c b/fs/unionfs/inode.c
-index f4facf4..169365c 100644
---- a/fs/unionfs/inode.c
-+++ b/fs/unionfs/inode.c
-@@ -914,59 +914,6 @@ static void unionfs_put_link(struct dentry *dentry, struct nameidata *nd,
- }
- 
- /*
-- * Basically copied from the kernel vfs permission(), but we've changed
-- * the following:
-- *   (1) the IS_RDONLY check is skipped, and
-- *   (2) We return 0 (success) if the non-leftmost branch is mounted
-- *       readonly, to allow copyup to work.
-- *   (3) we do call security_inode_permission, and therefore security inside
-- *       SELinux, etc. are performed.
-- *
-- * @inode: the lower inode we're checking permission on
-- */
--static int inode_permission(struct super_block *sb, struct inode *inode,
--			    int mask, struct nameidata *nd, int bindex)
--{
--	int retval, submask;
--
--	if (mask & MAY_WRITE) {
--		umode_t mode = inode->i_mode;
--		/* The first branch is allowed to be really readonly. */
--		if (bindex == 0 &&
--		    IS_RDONLY(inode) &&
--		    (S_ISREG(mode) || S_ISDIR(mode) || S_ISLNK(mode)))
--			return -EROFS;
--		/*
--		 * Nobody gets write access to an immutable file.
--		 */
--		if (IS_IMMUTABLE(inode))
--			return -EACCES;
--		/*
--		 * For all other branches than the first one, we ignore
--		 * EROFS or if the branch is mounted as readonly, to let
--		 * copyup take place.
--		 */
--		if (bindex > 0 &&
--		    is_robranch_super(sb, bindex) &&
--		    (S_ISREG(mode) || S_ISDIR(mode) || S_ISLNK(mode)))
--			return 0;
--	}
--
--	/* Ordinary permission routines do not understand MAY_APPEND. */
--	submask = mask & ~MAY_APPEND;
--	if (inode->i_op && inode->i_op->permission)
--		retval = inode->i_op->permission(inode, submask, nd);
--	else
--		retval = generic_permission(inode, submask, NULL);
--
--	if (retval && retval != -EROFS)	/* ignore EROFS */
--		return retval;
--
--	retval = security_inode_permission(inode, mask, nd);
--	return ((retval == -EROFS) ? 0 : retval);	/* ignore EROFS */
--}
--
--/*
-  * Don't grab the superblock read-lock in unionfs_permission, which prevents
-  * a deadlock with the branch-management "add branch" code (which grabbed
-  * the write lock).  It is safe to not grab the read lock here, because even
-@@ -1011,11 +958,20 @@ static int unionfs_permission(struct inode *inode, int mask,
- 			continue;
- 
- 		/*
--		 * We use our own special version of permission, such that
--		 * only the first branch returns -EROFS.
-+		 * We check basic permissions, but we ignore any conditions
-+		 * such as readonly file systems or branches marked as
-+		 * readonly, because those conditions should lead to a
-+		 * copyup taking place later on.
- 		 */
--		err = inode_permission(inode->i_sb, lower_inode, mask, nd,
--				       bindex);
-+		err = permission(lower_inode, mask, nd);
-+		if (err && bindex > 0) {
-+			umode_t mode = lower_inode->i_mode;
-+			if (is_robranch_super(inode->i_sb, bindex) &&
-+			    (S_ISREG(mode) || S_ISDIR(mode) || S_ISLNK(mode)))
-+				err = 0;
-+			if (IS_COPYUP_ERR(err))
-+				err = 0;
-+		}
- 
- 		/*
- 		 * The permissions are an intersection of the overall directory
+diff --git a/fs/unionfs/debug.c b/fs/unionfs/debug.c
+index 894bf7c..0066ccd 100644
+--- a/fs/unionfs/debug.c
++++ b/fs/unionfs/debug.c
+@@ -49,6 +49,9 @@ void __unionfs_check_inode(const struct inode *inode,
+ 	sb = inode->i_sb;
+ 	istart = ibstart(inode);
+ 	iend = ibend(inode);
++	/* don't check inode if no lower branches */
++	if (istart < 0 && iend < 0)
++		return;
+ 	if (unlikely(istart > iend)) {
+ 		PRINT_CALLER(fname, fxn, line);
+ 		pr_debug(" Ci0: inode=%p istart/end=%d:%d\n",
+@@ -221,6 +224,9 @@ check_inode:
+ 		return;
+ 	istart = ibstart(inode);
+ 	iend = ibend(inode);
++	/* don't check inode if no lower branches */
++	if (istart < 0 && iend < 0)
++		return;
+ 	BUG_ON(istart > iend);
+ 	if (unlikely((istart == -1 && iend != -1) ||
+ 		     (istart != -1 && iend == -1))) {
 -- 
 1.5.2.2
 
