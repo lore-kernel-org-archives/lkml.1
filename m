@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761777AbXKCXIi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761244AbXKCXIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761777AbXKCXIi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 19:08:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759950AbXKCXGk
+	id S1761244AbXKCXIw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 19:08:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760052AbXKCXGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 19:06:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53830 "EHLO mx1.redhat.com"
+	Sat, 3 Nov 2007 19:06:42 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53832 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759848AbXKCXGi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 19:06:38 -0400
-Date: Sat, 3 Nov 2007 18:54:25 -0400
+	id S1759921AbXKCXGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Nov 2007 19:06:40 -0400
+Date: Sat, 3 Nov 2007 19:03:54 -0400
 From: Rik van Riel <riel@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org
-Subject: [RFC PATCH 1/10] move isolate_lru_page to vmscan.c
-Message-ID: <20071103185425.07de14b1@bree.surriel.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [RFC PATCH 8/10] make split VM and lumpy reclaim work together
+Message-ID: <20071103190354.2ef7f5e8@bree.surriel.com>
 In-Reply-To: <20071103184229.3f20e2f0@bree.surriel.com>
 References: <20071103184229.3f20e2f0@bree.surriel.com>
 Organization: Red Hat, Inc.
@@ -25,221 +25,114 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-move isolate_lru_page() to vmscan.c
+Make lumpy reclaim and the split VM code work together better, by
+allowing both file and anonymous pages to be relaimed together.
 
-Against 2.6.23-rc4-mm1
+Will be merged into patch 6/10 soon, split out for the benefit of
+people who have looked at the older code in the past.
 
-V1 -> V2 [lts]:
-+  fix botched merge -- add back "get_page_unless_zero()"
-
-From: Nick Piggin <npiggin@suse.de>
-To: Linux Memory Management <linux-mm@kvack.org>
-Subject: [patch 1/4] mm: move and rework isolate_lru_page
-Date:	Mon, 12 Mar 2007 07:38:44 +0100 (CET)
-
-isolate_lru_page logically belongs to be in vmscan.c than migrate.c.
-
-It is tough, because we don't need that function without memory migration
-so there is a valid argument to have it in migrate.c. However a subsequent
-patch needs to make use of it in the core mm, so we can happily move it
-to vmscan.c.
-
-Also, make the function a little more generic by not requiring that it
-adds an isolated page to a given list. Callers can do that.
-
-	Note that we now have '__isolate_lru_page()', that does
-	something quite different, visible outside of vmscan.c
-	for use with memory controller.  Methinks we need to
-	rationalize these names/purposes.	--lts
-
-Signed-off-by: Nick Piggin <npiggin@suse.de>
 Signed-off-by: Rik van Riel <riel@redhat.com>
-Signed-off-by: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
 
- include/linux/migrate.h |    3 ---
- mm/internal.h           |    2 ++
- mm/mempolicy.c          |   10 ++++++++--
- mm/migrate.c            |   47 ++++++++++-------------------------------------
- mm/vmscan.c             |   41 +++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 61 insertions(+), 42 deletions(-)
-
-Index: Linux/include/linux/migrate.h
+Index: linux-2.6.23-mm1/mm/vmscan.c
 ===================================================================
---- Linux.orig/include/linux/migrate.h	2007-07-08 19:32:17.000000000 -0400
-+++ Linux/include/linux/migrate.h	2007-09-20 10:21:52.000000000 -0400
-@@ -25,7 +25,6 @@ static inline int vma_migratable(struct 
- 	return 1;
- }
+--- linux-2.6.23-mm1.orig/mm/vmscan.c
++++ linux-2.6.23-mm1/mm/vmscan.c
+@@ -752,10 +752,6 @@ static unsigned long isolate_lru_pages(u
  
--extern int isolate_lru_page(struct page *p, struct list_head *pagelist);
- extern int putback_lru_pages(struct list_head *l);
- extern int migrate_page(struct address_space *,
- 			struct page *, struct page *);
-@@ -42,8 +41,6 @@ extern int migrate_vmas(struct mm_struct
- static inline int vma_migratable(struct vm_area_struct *vma)
- 					{ return 0; }
+ 			cursor_page = pfn_to_page(pfn);
  
--static inline int isolate_lru_page(struct page *p, struct list_head *list)
--					{ return -ENOSYS; }
- static inline int putback_lru_pages(struct list_head *l) { return 0; }
- static inline int migrate_pages(struct list_head *l, new_page_t x,
- 		unsigned long private) { return -ENOSYS; }
-Index: Linux/mm/internal.h
-===================================================================
---- Linux.orig/mm/internal.h	2007-09-20 09:09:36.000000000 -0400
-+++ Linux/mm/internal.h	2007-09-20 10:21:52.000000000 -0400
-@@ -34,6 +34,8 @@ static inline void __put_page(struct pag
- 	atomic_dec(&page->_count);
- }
- 
-+extern int isolate_lru_page(struct page *page);
-+
- extern void fastcall __init __free_pages_bootmem(struct page *page,
- 						unsigned int order);
- 
-Index: Linux/mm/migrate.c
-===================================================================
---- Linux.orig/mm/migrate.c	2007-09-20 10:21:51.000000000 -0400
-+++ Linux/mm/migrate.c	2007-09-20 10:21:52.000000000 -0400
-@@ -36,36 +36,6 @@
- #define lru_to_page(_head) (list_entry((_head)->prev, struct page, lru))
- 
- /*
-- * Isolate one page from the LRU lists. If successful put it onto
-- * the indicated list with elevated page count.
-- *
-- * Result:
-- *  -EBUSY: page not on LRU list
-- *  0: page removed from LRU list and added to the specified list.
-- */
--int isolate_lru_page(struct page *page, struct list_head *pagelist)
--{
--	int ret = -EBUSY;
+-			/* Don't lump pages of different types:  file vs anon */
+-			if (!PageLRU(page) || (file != !!page_file_cache(cursor_page)))
+-				break;
 -
--	if (PageLRU(page)) {
--		struct zone *zone = page_zone(page);
--
--		spin_lock_irq(&zone->lru_lock);
--		if (PageLRU(page) && get_page_unless_zero(page)) {
--			ret = 0;
--			ClearPageLRU(page);
--			if (PageActive(page))
--				del_page_from_active_list(zone, page);
--			else
--				del_page_from_inactive_list(zone, page);
--			list_add_tail(&page->lru, pagelist);
--		}
--		spin_unlock_irq(&zone->lru_lock);
--	}
--	return ret;
--}
--
--/*
-  * migrate_prep() needs to be called before we start compiling a list of pages
-  * to be migrated using isolate_lru_page().
+ 			/* Check that we have not crossed a zone boundary. */
+ 			if (unlikely(page_zone_id(cursor_page) != zone_id))
+ 				continue;
+@@ -799,16 +795,22 @@ static unsigned long isolate_pages_globa
+  * clear_active_flags() is a helper for shrink_active_list(), clearing
+  * any active bits from the pages in the list.
   */
-@@ -850,14 +820,17 @@ static int do_move_pages(struct mm_struc
- 				!migrate_all)
- 			goto put_and_set;
+-static unsigned long clear_active_flags(struct list_head *page_list)
++static unsigned long clear_active_flags(struct list_head *page_list,
++					unsigned int *count)
+ {
+ 	int nr_active = 0;
++	int lru;
+ 	struct page *page;
  
--		err = isolate_lru_page(page, &pagelist);
-+		err = isolate_lru_page(page);
-+		if (err) {
- put_and_set:
--		/*
--		 * Either remove the duplicate refcount from
--		 * isolate_lru_page() or drop the page ref if it was
--		 * not isolated.
--		 */
--		put_page(page);
-+			/*
-+			 * Either remove the duplicate refcount from
-+			 * isolate_lru_page() or drop the page ref if it was
-+			 * not isolated.
-+			 */
-+			put_page(page);
-+		} else
-+			list_add_tail(&page->lru, &pagelist);
- set_status:
- 		pp->status = err;
- 	}
-Index: Linux/mm/vmscan.c
-===================================================================
---- Linux.orig/mm/vmscan.c	2007-09-20 09:09:36.000000000 -0400
-+++ Linux/mm/vmscan.c	2007-09-20 10:21:52.000000000 -0400
-@@ -810,6 +810,47 @@ static unsigned long clear_active_flags(
+-	list_for_each_entry(page, page_list, lru)
++	list_for_each_entry(page, page_list, lru) {
++		lru = page_file_cache(page);
+ 		if (PageActive(page)) {
++			lru += LRU_ACTIVE;
+ 			ClearPageActive(page);
+ 			nr_active++;
+ 		}
++		count[lru]++;
++	}
+ 
  	return nr_active;
  }
+@@ -876,24 +878,25 @@ static unsigned long shrink_inactive_lis
+ 		unsigned long nr_scan;
+ 		unsigned long nr_freed;
+ 		unsigned long nr_active;
++		unsigned int count[NR_LRU_LISTS] = { 0, };
++		int mode = (sc->order > PAGE_ALLOC_COSTLY_ORDER) ?
++					ISOLATE_BOTH : ISOLATE_INACTIVE;
  
-+/**
-+ * isolate_lru_page(@page)
-+ *
-+ * Isolate one @page from the LRU lists. Must be called with an elevated
-+ * refcount on the page, which is a fundamentnal difference from
-+ * isolate_lru_pages (which is called without a stable reference).
-+ *
-+ * The returned page will have PageLru() cleared, and PageActive set,
-+ * if it was found on the active list. This flag generally will need to be
-+ * cleared by the caller before letting the page go.
-+ *
-+ * The vmstat page counts corresponding to the list on which the page was
-+ * found will be decremented.
-+ *
-+ * lru_lock must not be held, interrupts must be enabled.
-+ *
-+ * Returns:
-+ *  -EBUSY: page not on LRU list
-+ *  0: page removed from LRU list.
-+ */
-+int isolate_lru_page(struct page *page)
-+{
-+	int ret = -EBUSY;
-+
-+	if (PageLRU(page)) {
-+		struct zone *zone = page_zone(page);
-+
-+		spin_lock_irq(&zone->lru_lock);
-+		if (PageLRU(page) && get_page_unless_zero(page)) {
-+			ret = 0;
-+			ClearPageLRU(page);
-+			if (PageActive(page))
-+				del_page_from_active_list(zone, page);
-+			else
-+				del_page_from_inactive_list(zone, page);
-+		}
-+		spin_unlock_irq(&zone->lru_lock);
-+	}
-+	return ret;
-+}
-+
- /*
-  * shrink_inactive_list() is a helper for shrink_zone().  It returns the number
-  * of reclaimed pages
-Index: Linux/mm/mempolicy.c
-===================================================================
---- Linux.orig/mm/mempolicy.c	2007-09-20 09:09:36.000000000 -0400
-+++ Linux/mm/mempolicy.c	2007-09-20 10:21:52.000000000 -0400
-@@ -93,6 +93,8 @@
- #include <asm/tlbflush.h>
- #include <asm/uaccess.h>
+ 		nr_taken = sc->isolate_pages(sc->swap_cluster_max,
+-			     &page_list, &nr_scan, sc->order,
+-			     (sc->order > PAGE_ALLOC_COSTLY_ORDER)?
+-					     ISOLATE_BOTH : ISOLATE_INACTIVE,
++			     &page_list, &nr_scan, sc->order, mode,
+ 				zone, sc->mem_cgroup, 0, file);
+-		nr_active = clear_active_flags(&page_list);
++		nr_active = clear_active_flags(&page_list, count);
+ 		__count_vm_events(PGDEACTIVATE, nr_active);
  
-+#include "internal.h"
+-		if (file) {
+-			__mod_zone_page_state(zone, NR_ACTIVE_FILE, -nr_active);
+-			__mod_zone_page_state(zone, NR_INACTIVE_FILE,
+-						-(nr_taken - nr_active));
+-		} else {
+-			__mod_zone_page_state(zone, NR_ACTIVE_ANON, -nr_active);
+-			__mod_zone_page_state(zone, NR_INACTIVE_ANON,
+-						-(nr_taken - nr_active));
+-		}
++		__mod_zone_page_state(zone, NR_ACTIVE_FILE,
++						-count[LRU_ACTIVE_FILE]);
++		__mod_zone_page_state(zone, NR_INACTIVE_FILE,
++						-count[LRU_INACTIVE_FILE]);
++		__mod_zone_page_state(zone, NR_ACTIVE_ANON,
++						-count[LRU_ACTIVE_ANON]);
++		__mod_zone_page_state(zone, NR_INACTIVE_ANON,
++						-count[LRU_INACTIVE_ANON]);
 +
- /* Internal flags */
- #define MPOL_MF_DISCONTIG_OK (MPOL_MF_INTERNAL << 0)	/* Skip checks for continuous vmas */
- #define MPOL_MF_INVERT (MPOL_MF_INTERNAL << 1)		/* Invert check for nodemask */
-@@ -603,8 +605,12 @@ static void migrate_page_add(struct page
- 	/*
- 	 * Avoid migrating a page that is shared with others.
- 	 */
--	if ((flags & MPOL_MF_MOVE_ALL) || page_mapcount(page) == 1)
--		isolate_lru_page(page, pagelist);
-+	if ((flags & MPOL_MF_MOVE_ALL) || page_mapcount(page) == 1) {
-+		if (!isolate_lru_page(page)) {
-+			get_page(page);
-+			list_add_tail(&page->lru, pagelist);
-+		}
-+	}
- }
+ 		zone->pages_scanned += nr_scan;
+ 		spin_unlock_irq(&zone->lru_lock);
  
- static struct page *new_node_page(struct page *page, unsigned long node, int **x)
+@@ -914,7 +917,7 @@ static unsigned long shrink_inactive_lis
+ 			 * The attempt at page out may have made some
+ 			 * of the pages active, mark them inactive again.
+ 			 */
+-			nr_active = clear_active_flags(&page_list);
++			nr_active = clear_active_flags(&page_list, count);
+ 			count_vm_events(PGDEACTIVATE, nr_active);
+ 
+ 			nr_freed += shrink_page_list(&page_list, sc,
+@@ -943,11 +946,11 @@ static unsigned long shrink_inactive_lis
+ 			VM_BUG_ON(PageLRU(page));
+ 			SetPageLRU(page);
+ 			list_del(&page->lru);
+-			if (file) {
++			if (page_file_cache(page)) {
+ 				l += LRU_FILE;
+-				zone->recent_rotated_file += sc->activated;
++				zone->recent_rotated_file++;
+ 			} else {
+-				zone->recent_rotated_anon += sc->activated;
++				zone->recent_rotated_anon++;
+ 			}
+ 			if (PageActive(page))
+ 				l += LRU_ACTIVE;
