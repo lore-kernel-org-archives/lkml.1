@@ -1,44 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760274AbXKCKJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbXKCKTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760274AbXKCKJT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 06:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756568AbXKCKJI
+	id S1757184AbXKCKTT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 06:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbXKCKTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 06:09:08 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:65096 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756095AbXKCKJG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 06:09:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=caEontqHISCxAUPsEQXhhXoiJtzxXQa5nC5Mhru+yT7yJfW5ZZtIZngHUlHc8n2HwCQPA+ni5oAUqjqE9rKcmCznqUXYGdZWgdzThJb7eQ/nmsvLDdvZrdxvm2cqcOzgwy25EH14LmlUqxonjyZ+r4cyWVkEkcxv1faZAUOYzXM=
-Message-ID: <472C48BC.30809@gmail.com>
-Date: Sat, 03 Nov 2007 13:09:00 +0300
-From: Alexey Starikovskiy <aystarik@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Sat, 3 Nov 2007 06:19:10 -0400
+Received: from mx39.mail.ru ([194.67.23.35]:49707 "EHLO mx39.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752258AbXKCKTJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Nov 2007 06:19:09 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [regression] v2.6.24-rc1-497-gb1d08ac: kde battery icon gone
+Date: Sat, 3 Nov 2007 13:19:00 +0300
+User-Agent: KMail/1.9.7
+Cc: Thomas Meyer <thomas@m3y3r.de>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Len Brown <lenb@kernel.org>
+References: <472B5C01.7090508@m3y3r.de> <20071103063520.13EA59AFABF@smtp05.mtu.ru> <20071103082808.GB10760@elte.hu>
+In-Reply-To: <20071103082808.GB10760@elte.hu>
 MIME-Version: 1.0
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 2.6.24: make /proc/acpi/ac_adapter dependent on ACPI_PROCFS
-References: <200710302321.19497.arvidjaar@mail.ru>
-In-Reply-To: <200710302321.19497.arvidjaar@mail.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart1710816.yTvNyEqPkc";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200711031319.04664.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrey Borzenkov wrote:
-> Let's make it consistent with battery code; also it fixes HAL case of 
-> duplicated adapters. Somebody will have to sort out HAL with ACPI_PROCFS 
-> case ...
->
-> -andrey
->   
-Andrey,
-Please excuse me, I mis-understood your comment, and thought that you 
-are trying to
-do AC adapter register/unregister at on/off.
+--nextPart1710816.yTvNyEqPkc
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Acked-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+On Saturday 03 November 2007, Ingo Molnar wrote:
+> * Andrey Borzenkov <arvidjaar@mail.ru> wrote:
+> > > # CONFIG_ACPI_PROCFS is not set
+> >
+> > And if you enable it (ACPI_PROCFS)?
+>
+> ACPI_PROCFS was newly introduced i think but without a 'default y'
+> Kconfig entry. That was a mistake i think - it broke some power
+> management tools on my laptop too.
+>
+
+It is not that new but battery started to make use of it only now. It provi=
+des=20
+replacement interface via sysfs power_supply object; this should be support=
+ed=20
+by modern power tools - at least hal/kpowersave do not have any issues.
+
+=2Dandrey
+
+--nextPart1710816.yTvNyEqPkc
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQBHLEsVR6LMutpd94wRArBrAJ9tusYx8Jr9NRUEV6pGhUW0ZvE2bACgrGhL
+tP5M1OttYhsfRyTb4KypO4E=
+=xinj
+-----END PGP SIGNATURE-----
+
+--nextPart1710816.yTvNyEqPkc--
