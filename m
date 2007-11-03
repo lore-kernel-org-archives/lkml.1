@@ -1,870 +1,377 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762445AbXKCXuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762203AbXKCXvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762445AbXKCXuz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 19:50:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759178AbXKCXts
+	id S1762203AbXKCXvQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 19:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759295AbXKCXtt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 19:49:48 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:52678 "EHLO pasmtpA.tele.dk"
+	Sat, 3 Nov 2007 19:49:49 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:59230 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756552AbXKCXto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757006AbXKCXto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 3 Nov 2007 19:49:44 -0400
 From: Sam Ravnborg <sam@ravnborg.org>
 To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
        "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 02/10] x86: start unification of arch/x86/Kconfig.*
-Date: Sun,  4 Nov 2007 00:51:12 +0100
-Message-Id: <11941338804007-git-send-email-sam@ravnborg.org>
+Subject: [PATCH 03/10] x86: arch/x86/Kconfig.cpu unification
+Date: Sun,  4 Nov 2007 00:51:13 +0100
+Message-Id: <11941338801910-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <11941338801315-git-send-email-sam@ravnborg.org>
-References: <11941338801315-git-send-email-sam@ravnborg.org>
+In-Reply-To: <11941338804007-git-send-email-sam@ravnborg.org>
+References: <11941338801315-git-send-email-sam@ravnborg.org> <11941338804007-git-send-email-sam@ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This step introduces the file arch/x86/Kconfig
-which contains all the menu's from "Power Management"
-and below.
-
-The main parts of the new Kconfig file are shared
-and the remaining i386/x86_64 specific parts
-are covered by dependencies.
-
-All config options without prompt are kept in the
-i386/x86_64 specific files to keep them
-together.
-
-The patch has been tested by comparing the menus available
-in menuconfig before and after the patch.
+Move all CPU definitions to Kconfig.cpu
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- arch/x86/Kconfig        |  345 +++++++++++++++++++++++++++++++++++++++++++++++
- arch/x86/Kconfig.i386   |  299 +----------------------------------------
- arch/x86/Kconfig.x86_64 |   91 +------------
- 3 files changed, 352 insertions(+), 383 deletions(-)
- create mode 100644 arch/x86/Kconfig
+ arch/x86/Kconfig.cpu    |   83 ++++++++++++++++++++++++++++++++++++++--------
+ arch/x86/Kconfig.x86_64 |   61 +----------------------------------
+ 2 files changed, 69 insertions(+), 75 deletions(-)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-new file mode 100644
-index 0000000..0f08145
---- /dev/null
-+++ b/arch/x86/Kconfig
-@@ -0,0 +1,345 @@
-+menu "Power management options"
-+	depends on !X86_VOYAGER
-+
-+source "kernel/power/Kconfig"
-+
-+source "drivers/acpi/Kconfig"
-+
-+menuconfig APM
-+	tristate "APM (Advanced Power Management) BIOS support"
-+	depends on X86_32 && PM_SLEEP && !X86_VISWS
-+	---help---
-+	  APM is a BIOS specification for saving power using several different
-+	  techniques. This is mostly useful for battery powered laptops with
-+	  APM compliant BIOSes. If you say Y here, the system time will be
-+	  reset after a RESUME operation, the /proc/apm device will provide
-+	  battery status information, and user-space programs will receive
-+	  notification of APM "events" (e.g. battery status change).
-+
-+	  If you select "Y" here, you can disable actual use of the APM
-+	  BIOS by passing the "apm=off" option to the kernel at boot time.
-+
-+	  Note that the APM support is almost completely disabled for
-+	  machines with more than one CPU.
-+
-+	  In order to use APM, you will need supporting software. For location
-+	  and more information, read <file:Documentation/pm.txt> and the
-+	  Battery Powered Linux mini-HOWTO, available from
-+	  <http://www.tldp.org/docs.html#howto>.
-+
-+	  This driver does not spin down disk drives (see the hdparm(8)
-+	  manpage ("man 8 hdparm") for that), and it doesn't turn off
-+	  VESA-compliant "green" monitors.
-+
-+	  This driver does not support the TI 4000M TravelMate and the ACER
-+	  486/DX4/75 because they don't have compliant BIOSes. Many "green"
-+	  desktop machines also don't have compliant BIOSes, and this driver
-+	  may cause those machines to panic during the boot phase.
-+
-+	  Generally, if you don't have a battery in your machine, there isn't
-+	  much point in using this driver and you should say N. If you get
-+	  random kernel OOPSes or reboots that don't seem to be related to
-+	  anything, try disabling/enabling this option (or disabling/enabling
-+	  APM in your BIOS).
-+
-+	  Some other things you should try when experiencing seemingly random,
-+	  "weird" problems:
-+
-+	  1) make sure that you have enough swap space and that it is
-+	  enabled.
-+	  2) pass the "no-hlt" option to the kernel
-+	  3) switch on floating point emulation in the kernel and pass
-+	  the "no387" option to the kernel
-+	  4) pass the "floppy=nodma" option to the kernel
-+	  5) pass the "mem=4M" option to the kernel (thereby disabling
-+	  all but the first 4 MB of RAM)
-+	  6) make sure that the CPU is not over clocked.
-+	  7) read the sig11 FAQ at <http://www.bitwizard.nl/sig11/>
-+	  8) disable the cache from your BIOS settings
-+	  9) install a fan for the video card or exchange video RAM
-+	  10) install a better fan for the CPU
-+	  11) exchange RAM chips
-+	  12) exchange the motherboard.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called apm.
-+
-+if APM
-+
-+config APM_IGNORE_USER_SUSPEND
-+	bool "Ignore USER SUSPEND"
-+	help
-+	  This option will ignore USER SUSPEND requests. On machines with a
-+	  compliant APM BIOS, you want to say N. However, on the NEC Versa M
-+	  series notebooks, it is necessary to say Y because of a BIOS bug.
-+
-+config APM_DO_ENABLE
-+	bool "Enable PM at boot time"
-+	---help---
-+	  Enable APM features at boot time. From page 36 of the APM BIOS
-+	  specification: "When disabled, the APM BIOS does not automatically
-+	  power manage devices, enter the Standby State, enter the Suspend
-+	  State, or take power saving steps in response to CPU Idle calls."
-+	  This driver will make CPU Idle calls when Linux is idle (unless this
-+	  feature is turned off -- see "Do CPU IDLE calls", below). This
-+	  should always save battery power, but more complicated APM features
-+	  will be dependent on your BIOS implementation. You may need to turn
-+	  this option off if your computer hangs at boot time when using APM
-+	  support, or if it beeps continuously instead of suspending. Turn
-+	  this off if you have a NEC UltraLite Versa 33/C or a Toshiba
-+	  T400CDT. This is off by default since most machines do fine without
-+	  this feature.
-+
-+config APM_CPU_IDLE
-+	bool "Make CPU Idle calls when idle"
-+	help
-+	  Enable calls to APM CPU Idle/CPU Busy inside the kernel's idle loop.
-+	  On some machines, this can activate improved power savings, such as
-+	  a slowed CPU clock rate, when the machine is idle. These idle calls
-+	  are made after the idle loop has run for some length of time (e.g.,
-+	  333 mS). On some machines, this will cause a hang at boot time or
-+	  whenever the CPU becomes idle. (On machines with more than one CPU,
-+	  this option does nothing.)
-+
-+config APM_DISPLAY_BLANK
-+	bool "Enable console blanking using APM"
-+	help
-+	  Enable console blanking using the APM. Some laptops can use this to
-+	  turn off the LCD backlight when the screen blanker of the Linux
-+	  virtual console blanks the screen. Note that this is only used by
-+	  the virtual console screen blanker, and won't turn off the backlight
-+	  when using the X Window system. This also doesn't have anything to
-+	  do with your VESA-compliant power-saving monitor. Further, this
-+	  option doesn't work for all laptops -- it might not turn off your
-+	  backlight at all, or it might print a lot of errors to the console,
-+	  especially if you are using gpm.
-+
-+config APM_ALLOW_INTS
-+	bool "Allow interrupts during APM BIOS calls"
-+	help
-+	  Normally we disable external interrupts while we are making calls to
-+	  the APM BIOS as a measure to lessen the effects of a badly behaving
-+	  BIOS implementation.  The BIOS should reenable interrupts if it
-+	  needs to.  Unfortunately, some BIOSes do not -- especially those in
-+	  many of the newer IBM Thinkpads.  If you experience hangs when you
-+	  suspend, try setting this to Y.  Otherwise, say N.
-+
-+config APM_REAL_MODE_POWER_OFF
-+	bool "Use real mode APM BIOS call to power off"
-+	help
-+	  Use real mode APM BIOS calls to switch off the computer. This is
-+	  a work-around for a number of buggy BIOSes. Switch this option on if
-+	  your computer crashes instead of powering off properly.
-+
-+endif # APM
-+
-+source "arch/x86/kernel/cpu/cpufreq/Kconfig"
-+
-+source "drivers/cpuidle/Kconfig"
-+
-+endmenu
-+
-+
-+menu "Bus options (PCI etc.)"
-+
-+config PCI
-+	bool "PCI support" if !X86_VISWS
-+	depends on !X86_VOYAGER
-+	default y if X86_VISWS
-+	select ARCH_SUPPORTS_MSI if (X86_LOCAL_APIC && X86_IO_APIC)
-+	help
-+	  Find out whether you have a PCI motherboard. PCI is the name of a
-+	  bus system, i.e. the way the CPU talks to the other stuff inside
-+	  your box. Other bus systems are ISA, EISA, MicroChannel (MCA) or
-+	  VESA. If you have PCI, say Y, otherwise N.
-+
-+	  The PCI-HOWTO, available from
-+	  <http://www.tldp.org/docs.html#howto>, contains valuable
-+	  information about which PCI hardware does work under Linux and which
-+	  doesn't.
-+
-+choice
-+	prompt "PCI access mode"
-+	depends on X86_32 && PCI && !X86_VISWS
-+	default PCI_GOANY
-+	---help---
-+	  On PCI systems, the BIOS can be used to detect the PCI devices and
-+	  determine their configuration. However, some old PCI motherboards
-+	  have BIOS bugs and may crash if this is done. Also, some embedded
-+	  PCI-based systems don't have any BIOS at all. Linux can also try to
-+	  detect the PCI hardware directly without using the BIOS.
-+
-+	  With this option, you can specify how Linux should detect the
-+	  PCI devices. If you choose "BIOS", the BIOS will be used,
-+	  if you choose "Direct", the BIOS won't be used, and if you
-+	  choose "MMConfig", then PCI Express MMCONFIG will be used.
-+	  If you choose "Any", the kernel will try MMCONFIG, then the
-+	  direct access method and falls back to the BIOS if that doesn't
-+	  work. If unsure, go with the default, which is "Any".
-+
-+config PCI_GOBIOS
-+	bool "BIOS"
-+
-+config PCI_GOMMCONFIG
-+	bool "MMConfig"
-+
-+config PCI_GODIRECT
-+	bool "Direct"
-+
-+config PCI_GOANY
-+	bool "Any"
-+
-+endchoice
-+
-+config PCI_MMCONFIG
-+	bool "Support mmconfig PCI config space access"
-+	depends on X86_64 && PCI && ACPI
-+
-+config DMAR
-+	bool "Support for DMA Remapping Devices (EXPERIMENTAL)"
-+	depends on X86_64 && PCI_MSI && ACPI && EXPERIMENTAL
-+	help
-+	  DMA remapping (DMAR) devices support enables independent address
-+	  translations for Direct Memory Access (DMA) from devices.
-+	  These DMA remapping devices are reported via ACPI tables
-+	  and include PCI device scope covered by these DMA
-+	  remapping devices.
-+
-+config DMAR_GFX_WA
-+	bool "Support for Graphics workaround"
-+	depends on DMAR
-+	default y
-+	help
-+	 Current Graphics drivers tend to use physical address
-+	 for DMA and avoid using DMA APIs. Setting this config
-+	 option permits the IOMMU driver to set a unity map for
-+	 all the OS-visible memory. Hence the driver can continue
-+	 to use physical addresses for DMA.
-+
-+source "drivers/pci/pcie/Kconfig"
-+
-+source "drivers/pci/Kconfig"
-+
-+if X86_32
-+
-+config ISA
-+	bool "ISA support"
-+	depends on !(X86_VOYAGER || X86_VISWS)
-+	help
-+	  Find out whether you have ISA slots on your motherboard.  ISA is the
-+	  name of a bus system, i.e. the way the CPU talks to the other stuff
-+	  inside your box.  Other bus systems are PCI, EISA, MicroChannel
-+	  (MCA) or VESA.  ISA is an older system, now being displaced by PCI;
-+	  newer boards don't support it.  If you have ISA, say Y, otherwise N.
-+
-+config EISA
-+	bool "EISA support"
-+	depends on ISA
-+	---help---
-+	  The Extended Industry Standard Architecture (EISA) bus was
-+	  developed as an open alternative to the IBM MicroChannel bus.
-+
-+	  The EISA bus provided some of the features of the IBM MicroChannel
-+	  bus while maintaining backward compatibility with cards made for
-+	  the older ISA bus.  The EISA bus saw limited use between 1988 and
-+	  1995 when it was made obsolete by the PCI bus.
-+
-+	  Say Y here if you are building a kernel for an EISA-based machine.
-+
-+	  Otherwise, say N.
-+
-+source "drivers/eisa/Kconfig"
-+
-+config MCA
-+	bool "MCA support" if !(X86_VISWS || X86_VOYAGER)
-+	default y if X86_VOYAGER
-+	help
-+	  MicroChannel Architecture is found in some IBM PS/2 machines and
-+	  laptops.  It is a bus system similar to PCI or ISA. See
-+	  <file:Documentation/mca.txt> (and especially the web page given
-+	  there) before attempting to build an MCA bus kernel.
-+
-+source "drivers/mca/Kconfig"
-+
-+config SCx200
-+	tristate "NatSemi SCx200 support"
-+	depends on !X86_VOYAGER
-+	help
-+	  This provides basic support for National Semiconductor's
-+	  (now AMD's) Geode processors.  The driver probes for the
-+	  PCI-IDs of several on-chip devices, so its a good dependency
-+	  for other scx200_* drivers.
-+
-+	  If compiled as a module, the driver is named scx200.
-+
-+config SCx200HR_TIMER
-+	tristate "NatSemi SCx200 27MHz High-Resolution Timer Support"
-+	depends on SCx200 && GENERIC_TIME
-+	default y
-+	help
-+	  This driver provides a clocksource built upon the on-chip
-+	  27MHz high-resolution timer.  Its also a workaround for
-+	  NSC Geode SC-1100's buggy TSC, which loses time when the
-+	  processor goes idle (as is done by the scheduler).  The
-+	  other workaround is idle=poll boot option.
-+
-+config GEODE_MFGPT_TIMER
-+	bool "Geode Multi-Function General Purpose Timer (MFGPT) events"
-+	depends on MGEODE_LX && GENERIC_TIME && GENERIC_CLOCKEVENTS
-+	default y
-+	help
-+	  This driver provides a clock event source based on the MFGPT
-+	  timer(s) in the CS5535 and CS5536 companion chip for the geode.
-+	  MFGPTs have a better resolution and max interval than the
-+	  generic PIT, and are suitable for use as high-res timers.
-+
-+
-+endif # X86_32
-+
-+source "drivers/pcmcia/Kconfig"
-+
-+source "drivers/pci/hotplug/Kconfig"
-+
-+endmenu
-+
-+
-+
-+menu "Executable file formats / Emulations"
-+
-+source "fs/Kconfig.binfmt"
-+
-+config IA32_EMULATION
-+	bool "IA32 Emulation"
+diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
+index 0e2adad..6fc19c1 100644
+--- a/arch/x86/Kconfig.cpu
++++ b/arch/x86/Kconfig.cpu
+@@ -3,11 +3,12 @@ if !X86_ELAN
+ 
+ choice
+ 	prompt "Processor family"
+-	default M686
++	default M686 if X86_32
++	default GENERIC_CPU if X86_64
+ 
+ config M386
+ 	bool "386"
+-	depends on !UML
++	depends on X86_32 && !UML
+ 	---help---
+ 	  This is the processor type of your CPU. This information is used for
+ 	  optimizing purposes. In order to compile a kernel that can run on
+@@ -49,6 +50,7 @@ config M386
+ 
+ config M486
+ 	bool "486"
++	depends on X86_32
+ 	help
+ 	  Select this for a 486 series processor, either Intel or one of the
+ 	  compatible processors from AMD, Cyrix, IBM, or Intel.  Includes DX,
+@@ -57,6 +59,7 @@ config M486
+ 
+ config M586
+ 	bool "586/K5/5x86/6x86/6x86MX"
++	depends on X86_32
+ 	help
+ 	  Select this for an 586 or 686 series processor such as the AMD K5,
+ 	  the Cyrix 5x86, 6x86 and 6x86MX.  This choice does not
+@@ -64,18 +67,21 @@ config M586
+ 
+ config M586TSC
+ 	bool "Pentium-Classic"
++	depends on X86_32
+ 	help
+ 	  Select this for a Pentium Classic processor with the RDTSC (Read
+ 	  Time Stamp Counter) instruction for benchmarking.
+ 
+ config M586MMX
+ 	bool "Pentium-MMX"
++	depends on X86_32
+ 	help
+ 	  Select this for a Pentium with the MMX graphics/multimedia
+ 	  extended instructions.
+ 
+ config M686
+ 	bool "Pentium-Pro"
++	depends on X86_32
+ 	help
+ 	  Select this for Intel Pentium Pro chips.  This enables the use of
+ 	  Pentium Pro extended instructions, and disables the init-time guard
+@@ -83,6 +89,7 @@ config M686
+ 
+ config MPENTIUMII
+ 	bool "Pentium-II/Celeron(pre-Coppermine)"
++	depends on X86_32
+ 	help
+ 	  Select this for Intel chips based on the Pentium-II and
+ 	  pre-Coppermine Celeron core.  This option enables an unaligned
+@@ -92,6 +99,7 @@ config MPENTIUMII
+ 
+ config MPENTIUMIII
+ 	bool "Pentium-III/Celeron(Coppermine)/Pentium-III Xeon"
++	depends on X86_32
+ 	help
+ 	  Select this for Intel chips based on the Pentium-III and
+ 	  Celeron-Coppermine core.  This option enables use of some
+@@ -100,19 +108,14 @@ config MPENTIUMIII
+ 
+ config MPENTIUMM
+ 	bool "Pentium M"
++	depends on X86_32
+ 	help
+ 	  Select this for Intel Pentium M (not Pentium-4 M)
+ 	  notebook chips.
+ 
+-config MCORE2
+-	bool "Core 2/newer Xeon"
+-	help
+-	  Select this for Intel Core 2 and newer Core 2 Xeons (Xeon 51xx and 53xx)
+-	  CPUs. You can distinguish newer from older Xeons by the CPU family
+-	  in /proc/cpuinfo. Newer ones have 6 and older ones 15 (not a typo)
+-
+ config MPENTIUM4
+ 	bool "Pentium-4/Celeron(P4-based)/Pentium-4 M/older Xeon"
++	depends on X86_32
+ 	help
+ 	  Select this for Intel Pentium 4 chips.  This includes the
+ 	  Pentium 4, Pentium D, P4-based Celeron and Xeon, and
+@@ -148,6 +151,7 @@ config MPENTIUM4
+ 
+ config MK6
+ 	bool "K6/K6-II/K6-III"
++	depends on X86_32
+ 	help
+ 	  Select this for an AMD K6-family processor.  Enables use of
+ 	  some extended instructions, and passes appropriate optimization
+@@ -155,6 +159,7 @@ config MK6
+ 
+ config MK7
+ 	bool "Athlon/Duron/K7"
++	depends on X86_32
+ 	help
+ 	  Select this for an AMD Athlon K7-family processor.  Enables use of
+ 	  some extended instructions, and passes appropriate optimization
+@@ -169,6 +174,7 @@ config MK8
+ 
+ config MCRUSOE
+ 	bool "Crusoe"
++	depends on X86_32
+ 	help
+ 	  Select this for a Transmeta Crusoe processor.  Treats the processor
+ 	  like a 586 with TSC, and sets some GCC optimization flags (like a
+@@ -176,11 +182,13 @@ config MCRUSOE
+ 
+ config MEFFICEON
+ 	bool "Efficeon"
++	depends on X86_32
+ 	help
+ 	  Select this for a Transmeta Efficeon processor.
+ 
+ config MWINCHIPC6
+ 	bool "Winchip-C6"
++	depends on X86_32
+ 	help
+ 	  Select this for an IDT Winchip C6 chip.  Linux and GCC
+ 	  treat this chip as a 586TSC with some extended instructions
+@@ -188,6 +196,7 @@ config MWINCHIPC6
+ 
+ config MWINCHIP2
+ 	bool "Winchip-2"
++	depends on X86_32
+ 	help
+ 	  Select this for an IDT Winchip-2.  Linux and GCC
+ 	  treat this chip as a 586TSC with some extended instructions
+@@ -195,6 +204,7 @@ config MWINCHIP2
+ 
+ config MWINCHIP3D
+ 	bool "Winchip-2A/Winchip-3"
++	depends on X86_32
+ 	help
+ 	  Select this for an IDT Winchip-2A or 3.  Linux and GCC
+ 	  treat this chip as a 586TSC with some extended instructions
+@@ -204,16 +214,19 @@ config MWINCHIP3D
+ 
+ config MGEODEGX1
+ 	bool "GeodeGX1"
++	depends on X86_32
+ 	help
+ 	  Select this for a Geode GX1 (Cyrix MediaGX) chip.
+ 
+ config MGEODE_LX
+        bool "Geode GX/LX"
++	depends on X86_32
+        help
+          Select this for AMD Geode GX and LX processors.
+ 
+ config MCYRIXIII
+ 	bool "CyrixIII/VIA-C3"
++	depends on X86_32
+ 	help
+ 	  Select this for a Cyrix III or C3 chip.  Presently Linux and GCC
+ 	  treat this chip as a generic 586. Whilst the CPU is 686 class,
+@@ -225,6 +238,7 @@ config MCYRIXIII
+ 
+ config MVIAC3_2
+ 	bool "VIA C3-2 (Nehemiah)"
++	depends on X86_32
+ 	help
+ 	  Select this for a VIA C3 "Nehemiah". Selecting this enables usage
+ 	  of SSE and tells gcc to treat the CPU as a 686.
+@@ -232,15 +246,42 @@ config MVIAC3_2
+ 
+ config MVIAC7
+ 	bool "VIA C7"
++	depends on X86_32
+ 	help
+ 	  Select this for a VIA C7.  Selecting this uses the correct cache
+ 	  shift and tells gcc to treat the CPU as a 686.
+ 
++config MPSC
++	bool "Intel P4 / older Netburst based Xeon"
 +	depends on X86_64
 +	help
-+	  Include code to run 32-bit programs under a 64-bit kernel. You should
-+	  likely turn this on, unless you're 100% sure that you don't have any
-+	  32-bit programs left.
++	  Optimize for Intel Pentium 4, Pentium D and older Nocona/Dempsey
++	  Xeon CPUs with Intel 64bit which is compatible with x86-64.
++	  Note that the latest Xeons (Xeon 51xx and 53xx) are not based on the
++          Netburst core and shouldn't use this option. You can distinguish them
++	  using the cpu family field
++	  in /proc/cpuinfo. Family 15 is an older Xeon, Family 6 a newer one.
 +
-+config IA32_AOUT
-+       tristate "IA32 a.out support"
-+       depends on IA32_EMULATION
-+       help
-+         Support old a.out binaries in the 32bit emulation.
++config MCORE2
++	bool "Core 2/newer Xeon"
++	help
++	  Select this for Intel Core 2 and newer Core 2 Xeons (Xeon 51xx and 53xx)
++	  CPUs. You can distinguish newer from older Xeons by the CPU family
++	  in /proc/cpuinfo. Newer ones have 6 and older ones 15 (not a typo)
 +
-+endmenu
++config GENERIC_CPU
++	bool "Generic-x86-64"
++	depends on X86_64
++	help
++	  Generic x86-64 CPU.
++	  Run equally well on all x86-64 CPUs.
 +
-+
-+
-+source "net/Kconfig"
-+
-+source drivers/Kconfig
-+
-+source "drivers/firmware/Kconfig"
-+
-+source fs/Kconfig
-+
-+source "kernel/Kconfig.instrumentation"
-+
-+source "arch/x86/Kconfig.debug"
-+
-+source "security/Kconfig"
-+
-+source "crypto/Kconfig"
-+
-+source "lib/Kconfig"
-diff --git a/arch/x86/Kconfig.i386 b/arch/x86/Kconfig.i386
-index b6f2fd0..8f79cdd 100644
---- a/arch/x86/Kconfig.i386
-+++ b/arch/x86/Kconfig.i386
-@@ -517,8 +517,6 @@ config X86_CPUID
- 	  with major 203 and minors 0 to 31 for /dev/cpu/0/cpuid to
- 	  /dev/cpu/31/cpuid.
+ endchoice
  
--source "drivers/firmware/Kconfig"
--
- choice
- 	prompt "High Memory Support"
- 	default HIGHMEM4G if !X86_NUMAQ
-@@ -957,198 +955,8 @@ config ARCH_ENABLE_MEMORY_HOTPLUG
- 	def_bool y
- 	depends on HIGHMEM
+ config X86_GENERIC
+-       bool "Generic x86 support"
+-       help
++	bool "Generic x86 support"
++	depends on X86_32
++	help
+ 	  Instead of just including optimizations for the selected
+ 	  x86 variant (e.g. PII, Crusoe or Athlon), include some more
+ 	  generic optimizations as well. This will make the kernel
+@@ -253,7 +294,19 @@ endif
  
--menu "Power management options (ACPI, APM)"
--	depends on !X86_VOYAGER
--
--source kernel/power/Kconfig
--
--source "drivers/acpi/Kconfig"
--
--menuconfig APM
--	tristate "APM (Advanced Power Management) BIOS support"
--	depends on PM_SLEEP && !X86_VISWS
--	---help---
--	  APM is a BIOS specification for saving power using several different
--	  techniques. This is mostly useful for battery powered laptops with
--	  APM compliant BIOSes. If you say Y here, the system time will be
--	  reset after a RESUME operation, the /proc/apm device will provide
--	  battery status information, and user-space programs will receive
--	  notification of APM "events" (e.g. battery status change).
--
--	  If you select "Y" here, you can disable actual use of the APM
--	  BIOS by passing the "apm=off" option to the kernel at boot time.
--
--	  Note that the APM support is almost completely disabled for
--	  machines with more than one CPU.
--
--	  In order to use APM, you will need supporting software. For location
--	  and more information, read <file:Documentation/pm.txt> and the
--	  Battery Powered Linux mini-HOWTO, available from
--	  <http://www.tldp.org/docs.html#howto>.
--
--	  This driver does not spin down disk drives (see the hdparm(8)
--	  manpage ("man 8 hdparm") for that), and it doesn't turn off
--	  VESA-compliant "green" monitors.
--
--	  This driver does not support the TI 4000M TravelMate and the ACER
--	  486/DX4/75 because they don't have compliant BIOSes. Many "green"
--	  desktop machines also don't have compliant BIOSes, and this driver
--	  may cause those machines to panic during the boot phase.
--
--	  Generally, if you don't have a battery in your machine, there isn't
--	  much point in using this driver and you should say N. If you get
--	  random kernel OOPSes or reboots that don't seem to be related to
--	  anything, try disabling/enabling this option (or disabling/enabling
--	  APM in your BIOS).
--
--	  Some other things you should try when experiencing seemingly random,
--	  "weird" problems:
--
--	  1) make sure that you have enough swap space and that it is
--	  enabled.
--	  2) pass the "no-hlt" option to the kernel
--	  3) switch on floating point emulation in the kernel and pass
--	  the "no387" option to the kernel
--	  4) pass the "floppy=nodma" option to the kernel
--	  5) pass the "mem=4M" option to the kernel (thereby disabling
--	  all but the first 4 MB of RAM)
--	  6) make sure that the CPU is not over clocked.
--	  7) read the sig11 FAQ at <http://www.bitwizard.nl/sig11/>
--	  8) disable the cache from your BIOS settings
--	  9) install a fan for the video card or exchange video RAM
--	  10) install a better fan for the CPU
--	  11) exchange RAM chips
--	  12) exchange the motherboard.
--
--	  To compile this driver as a module, choose M here: the
--	  module will be called apm.
--
--if APM
--
--config APM_IGNORE_USER_SUSPEND
--	bool "Ignore USER SUSPEND"
--	help
--	  This option will ignore USER SUSPEND requests. On machines with a
--	  compliant APM BIOS, you want to say N. However, on the NEC Versa M
--	  series notebooks, it is necessary to say Y because of a BIOS bug.
--
--config APM_DO_ENABLE
--	bool "Enable PM at boot time"
--	---help---
--	  Enable APM features at boot time. From page 36 of the APM BIOS
--	  specification: "When disabled, the APM BIOS does not automatically
--	  power manage devices, enter the Standby State, enter the Suspend
--	  State, or take power saving steps in response to CPU Idle calls."
--	  This driver will make CPU Idle calls when Linux is idle (unless this
--	  feature is turned off -- see "Do CPU IDLE calls", below). This
--	  should always save battery power, but more complicated APM features
--	  will be dependent on your BIOS implementation. You may need to turn
--	  this option off if your computer hangs at boot time when using APM
--	  support, or if it beeps continuously instead of suspending. Turn
--	  this off if you have a NEC UltraLite Versa 33/C or a Toshiba
--	  T400CDT. This is off by default since most machines do fine without
--	  this feature.
--
--config APM_CPU_IDLE
--	bool "Make CPU Idle calls when idle"
--	help
--	  Enable calls to APM CPU Idle/CPU Busy inside the kernel's idle loop.
--	  On some machines, this can activate improved power savings, such as
--	  a slowed CPU clock rate, when the machine is idle. These idle calls
--	  are made after the idle loop has run for some length of time (e.g.,
--	  333 mS). On some machines, this will cause a hang at boot time or
--	  whenever the CPU becomes idle. (On machines with more than one CPU,
--	  this option does nothing.)
--
--config APM_DISPLAY_BLANK
--	bool "Enable console blanking using APM"
--	help
--	  Enable console blanking using the APM. Some laptops can use this to
--	  turn off the LCD backlight when the screen blanker of the Linux
--	  virtual console blanks the screen. Note that this is only used by
--	  the virtual console screen blanker, and won't turn off the backlight
--	  when using the X Window system. This also doesn't have anything to
--	  do with your VESA-compliant power-saving monitor. Further, this
--	  option doesn't work for all laptops -- it might not turn off your
--	  backlight at all, or it might print a lot of errors to the console,
--	  especially if you are using gpm.
--
--config APM_ALLOW_INTS
--	bool "Allow interrupts during APM BIOS calls"
--	help
--	  Normally we disable external interrupts while we are making calls to
--	  the APM BIOS as a measure to lessen the effects of a badly behaving
--	  BIOS implementation.  The BIOS should reenable interrupts if it
--	  needs to.  Unfortunately, some BIOSes do not -- especially those in
--	  many of the newer IBM Thinkpads.  If you experience hangs when you
--	  suspend, try setting this to Y.  Otherwise, say N.
--
--config APM_REAL_MODE_POWER_OFF
--	bool "Use real mode APM BIOS call to power off"
--	help
--	  Use real mode APM BIOS calls to switch off the computer. This is
--	  a work-around for a number of buggy BIOSes. Switch this option on if
--	  your computer crashes instead of powering off properly.
--
--endif # APM
--
--source "arch/x86/kernel/cpu/cpufreq/Kconfig"
--
--source "drivers/cpuidle/Kconfig"
--
--endmenu
--
--menu "Bus options (PCI, PCMCIA, EISA, MCA, ISA)"
--
--config PCI
--	bool "PCI support" if !X86_VISWS
--	depends on !X86_VOYAGER
--	default y if X86_VISWS
--	select ARCH_SUPPORTS_MSI if (X86_LOCAL_APIC && X86_IO_APIC)
--	help
--	  Find out whether you have a PCI motherboard. PCI is the name of a
--	  bus system, i.e. the way the CPU talks to the other stuff inside
--	  your box. Other bus systems are ISA, EISA, MicroChannel (MCA) or
--	  VESA. If you have PCI, say Y, otherwise N.
--
--	  The PCI-HOWTO, available from
--	  <http://www.tldp.org/docs.html#howto>, contains valuable
--	  information about which PCI hardware does work under Linux and which
--	  doesn't.
--
--choice
--	prompt "PCI access mode"
--	depends on PCI && !X86_VISWS
--	default PCI_GOANY
--	---help---
--	  On PCI systems, the BIOS can be used to detect the PCI devices and
--	  determine their configuration. However, some old PCI motherboards
--	  have BIOS bugs and may crash if this is done. Also, some embedded
--	  PCI-based systems don't have any BIOS at all. Linux can also try to
--	  detect the PCI hardware directly without using the BIOS.
--
--	  With this option, you can specify how Linux should detect the
--	  PCI devices. If you choose "BIOS", the BIOS will be used,
--	  if you choose "Direct", the BIOS won't be used, and if you
--	  choose "MMConfig", then PCI Express MMCONFIG will be used.
--	  If you choose "Any", the kernel will try MMCONFIG, then the
--	  direct access method and falls back to the BIOS if that doesn't
--	  work. If unsure, go with the default, which is "Any".
--
--config PCI_GOBIOS
--	bool "BIOS"
--
--config PCI_GOMMCONFIG
--	bool "MMConfig"
--
--config PCI_GODIRECT
--	bool "Direct"
--
--config PCI_GOANY
--	bool "Any"
--
--endchoice
- 
-+# BUS options
- config PCI_BIOS
- 	bool
- 	depends on !X86_VISWS && PCI && (PCI_GOBIOS || PCI_GOANY)
-@@ -1169,117 +977,14 @@ config PCI_DOMAINS
- 	depends on PCI
- 	default y
- 
--source "drivers/pci/pcie/Kconfig"
--
--source "drivers/pci/Kconfig"
--
- config ISA_DMA_API
- 	bool
- 	default y
- 
--config ISA
--	bool "ISA support"
--	depends on !(X86_VOYAGER || X86_VISWS)
--	help
--	  Find out whether you have ISA slots on your motherboard.  ISA is the
--	  name of a bus system, i.e. the way the CPU talks to the other stuff
--	  inside your box.  Other bus systems are PCI, EISA, MicroChannel
--	  (MCA) or VESA.  ISA is an older system, now being displaced by PCI;
--	  newer boards don't support it.  If you have ISA, say Y, otherwise N.
--
--config EISA
--	bool "EISA support"
--	depends on ISA
--	---help---
--	  The Extended Industry Standard Architecture (EISA) bus was
--	  developed as an open alternative to the IBM MicroChannel bus.
--
--	  The EISA bus provided some of the features of the IBM MicroChannel
--	  bus while maintaining backward compatibility with cards made for
--	  the older ISA bus.  The EISA bus saw limited use between 1988 and
--	  1995 when it was made obsolete by the PCI bus.
--
--	  Say Y here if you are building a kernel for an EISA-based machine.
--
--	  Otherwise, say N.
--
--source "drivers/eisa/Kconfig"
--
--config MCA
--	bool "MCA support" if !(X86_VISWS || X86_VOYAGER)
--	default y if X86_VOYAGER
--	help
--	  MicroChannel Architecture is found in some IBM PS/2 machines and
--	  laptops.  It is a bus system similar to PCI or ISA. See
--	  <file:Documentation/mca.txt> (and especially the web page given
--	  there) before attempting to build an MCA bus kernel.
--
--source "drivers/mca/Kconfig"
--
--config SCx200
--	tristate "NatSemi SCx200 support"
--	depends on !X86_VOYAGER
--	help
--	  This provides basic support for National Semiconductor's
--	  (now AMD's) Geode processors.  The driver probes for the
--	  PCI-IDs of several on-chip devices, so its a good dependency
--	  for other scx200_* drivers.
--
--	  If compiled as a module, the driver is named scx200.
--
--config SCx200HR_TIMER
--	tristate "NatSemi SCx200 27MHz High-Resolution Timer Support"
--	depends on SCx200 && GENERIC_TIME
--	default y
--	help
--	  This driver provides a clocksource built upon the on-chip
--	  27MHz high-resolution timer.  Its also a workaround for
--	  NSC Geode SC-1100's buggy TSC, which loses time when the
--	  processor goes idle (as is done by the scheduler).  The
--	  other workaround is idle=poll boot option.
--
--config GEODE_MFGPT_TIMER
--	bool "Geode Multi-Function General Purpose Timer (MFGPT) events"
--	depends on MGEODE_LX && GENERIC_TIME && GENERIC_CLOCKEVENTS
--	default y
--	help
--	  This driver provides a clock event source based on the MFGPT
--	  timer(s) in the CS5535 and CS5536 companion chip for the geode.
--	  MFGPTs have a better resolution and max interval than the
--	  generic PIT, and are suitable for use as high-res timers.
--
- config K8_NB
- 	def_bool y
- 	depends on AGP_AMD64
- 
--source "drivers/pcmcia/Kconfig"
--
--source "drivers/pci/hotplug/Kconfig"
--
--endmenu
--
--menu "Executable file formats"
--
--source "fs/Kconfig.binfmt"
--
--endmenu
--
--source "net/Kconfig"
--
--source "drivers/Kconfig"
--
--source "fs/Kconfig"
--
--source "kernel/Kconfig.instrumentation"
--
--source "arch/x86/Kconfig.debug"
--
--source "security/Kconfig"
--
--source "crypto/Kconfig"
--
--source "lib/Kconfig"
--
  #
- # Use the generic interrupt handling code in kernel/irq/:
- #
-@@ -1319,3 +1024,5 @@ config X86_TRAMPOLINE
- config KTIME_SCALAR
- 	bool
- 	default y
+ # Define implied options from the CPU selection here
+-#
++# Most is only relevant for X86_32
++config X86_L1_CACHE_BYTES
++	int
++	default "128" if GENERIC_CPU || MPSC
++	default "64" if MK8 || MCORE2
++	depends on X86_64
 +
-+source "arch/x86/Kconfig"
++config X86_INTERNODE_CACHE_BYTES
++	int
++	default "4096" if X86_VSMP
++	default X86_L1_CACHE_BYTES if !X86_VSMP
++	depends on X86_64
++
+ config X86_CMPXCHG
+ 	bool
+ 	depends on !M386
+@@ -261,7 +314,7 @@ config X86_CMPXCHG
+ 
+ config X86_L1_CACHE_SHIFT
+ 	int
+-	default "7" if MPENTIUM4 || X86_GENERIC
++	default "7" if MPENTIUM4 || X86_GENERIC || GENERIC_CPU || MPSC
+ 	default "4" if X86_ELAN || M486 || M386 || MGEODEGX1
+ 	default "5" if MWINCHIP3D || MWINCHIP2 || MWINCHIPC6 || MCRUSOE || MEFFICEON || MCYRIXIII || MK6 || MPENTIUMIII || MPENTIUMII || M686 || M586MMX || M586TSC || M586 || MVIAC3_2 || MGEODE_LX
+ 	default "6" if MK7 || MK8 || MPENTIUMM || MCORE2 || MVIAC7
+@@ -330,7 +383,7 @@ config X86_ALIGNMENT_16
+ 
+ config X86_GOOD_APIC
+ 	bool
+-	depends on MK7 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || M586MMX || MK8 || MEFFICEON || MCORE2 || MVIAC7
++	depends on MK7 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || M586MMX || MK8 || MEFFICEON || MCORE2 || MVIAC7 || X86_64
+ 	default y
+ 
+ config X86_INTEL_USERCOPY
+@@ -355,7 +408,7 @@ config X86_OOSTORE
+ 
+ config X86_TSC
+ 	bool
+-	depends on (MWINCHIP3D || MWINCHIP2 || MCRUSOE || MEFFICEON || MCYRIXIII || MK7 || MK6 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || M586MMX || M586TSC || MK8 || MVIAC3_2 || MVIAC7 || MGEODEGX1 || MGEODE_LX || MCORE2) && !X86_NUMAQ
++	depends on ((MWINCHIP3D || MWINCHIP2 || MCRUSOE || MEFFICEON || MCYRIXIII || MK7 || MK6 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || M586MMX || M586TSC || MK8 || MVIAC3_2 || MVIAC7 || MGEODEGX1 || MGEODE_LX || MCORE2) && !X86_NUMAQ) || X86_64
+ 	default y
+ 
+ # this should be set for all -march=.. options where the compiler
 diff --git a/arch/x86/Kconfig.x86_64 b/arch/x86/Kconfig.x86_64
-index 8d6b534..f04eba3 100644
+index f04eba3..9fd69a0 100644
 --- a/arch/x86/Kconfig.x86_64
 +++ b/arch/x86/Kconfig.x86_64
-@@ -708,28 +708,14 @@ config GENERIC_PENDING_IRQ
- 	depends on GENERIC_HARDIRQS && SMP
- 	default y
+@@ -159,66 +159,7 @@ config X86_VSMP
  
--menu "Power management options"
--
--source kernel/power/Kconfig
-+###  Power management options
+ endchoice
  
- config ARCH_HIBERNATION_HEADER
- 	bool
- 	depends on HIBERNATION
- 	default y
- 
--source "drivers/acpi/Kconfig"
+-choice
+-	prompt "Processor family"
+-	default GENERIC_CPU
 -
--source "arch/x86/kernel/cpu/cpufreq/Kconfig"
--
--source "drivers/cpuidle/Kconfig"
--
--endmenu
--
--menu "Bus options (PCI etc.)"
--
--config PCI
--	bool "PCI support"
--	select ARCH_SUPPORTS_MSI if (X86_LOCAL_APIC && X86_IO_APIC)
-+### BUS options
- 
- # x86-64 doesn't support PCI BIOS access from long mode so always go direct.
- config PCI_DIRECT
-@@ -737,36 +723,11 @@ config PCI_DIRECT
- 	depends on PCI
- 	default y
- 
--config PCI_MMCONFIG
--	bool "Support mmconfig PCI config space access"
--	depends on PCI && ACPI
--
- config PCI_DOMAINS
- 	bool
- 	depends on PCI
- 	default y
- 
--config DMAR
--	bool "Support for DMA Remapping Devices (EXPERIMENTAL)"
--	depends on PCI_MSI && ACPI && EXPERIMENTAL
+-config MK8
+-	bool "AMD-Opteron/Athlon64"
 -	help
--	  DMA remapping (DMAR) devices support enables independent address
--	  translations for Direct Memory Access (DMA) from devices.
--	  These DMA remapping devices are reported via ACPI tables
--	  and include PCI device scope covered by these DMA
--	  remapping devices.
+-	  Optimize for AMD Opteron/Athlon64/Hammer/K8 CPUs.
 -
--config DMAR_GFX_WA
--	bool "Support for Graphics workaround"
--	depends on DMAR
--	default y
--	help
--	 Current Graphics drivers tend to use physical address
--	 for DMA and avoid using DMA APIs. Setting this config
--	 option permits the IOMMU driver to set a unity map for
--	 all the OS-visible memory. Hence the driver can continue
--	 to use physical addresses for DMA.
--
- config DMAR_FLOPPY_WA
- 	bool
- 	depends on DMAR
-@@ -777,34 +738,8 @@ config DMAR_FLOPPY_WA
- 	 workaround will setup a 1:1 mapping for the first
- 	 16M to make floppy (an ISA device) work.
- 
--source "drivers/pci/pcie/Kconfig"
--
--source "drivers/pci/Kconfig"
--
--source "drivers/pcmcia/Kconfig"
--
--source "drivers/pci/hotplug/Kconfig"
--
--endmenu
--
--
--menu "Executable file formats / Emulations"
--
--source "fs/Kconfig.binfmt"
--
--config IA32_EMULATION
--	bool "IA32 Emulation"
--	help
--	  Include code to run 32-bit programs under a 64-bit kernel. You should
--	  likely turn this on, unless you're 100% sure that you don't have any
--	  32-bit programs left.
--
--config IA32_AOUT
--       tristate "IA32 a.out support"
--       depends on IA32_EMULATION
+-config MPSC
+-       bool "Intel P4 / older Netburst based Xeon"
 -       help
--         Support old a.out binaries in the 32bit emulation.
+-	  Optimize for Intel Pentium 4, Pentium D and older Nocona/Dempsey
+-	  Xeon CPUs with Intel 64bit which is compatible with x86-64.
+-	  Note that the latest Xeons (Xeon 51xx and 53xx) are not based on the
+-          Netburst core and shouldn't use this option. You can distinguish them
+-	  using the cpu family field
+-	  in /proc/cpuinfo. Family 15 is an older Xeon, Family 6 a newer one.
+-
+-config MCORE2
+-	bool "Intel Core2 / newer Xeon"
+-	help
+-	  Optimize for Intel Core2 and newer Xeons (51xx)
+-	  You can distinguish the newer Xeons from the older ones using
+-	  the cpu family field in /proc/cpuinfo. 15 is an older Xeon
+-	  (use CONFIG_MPSC then), 6 is a newer one.
+-
+-config GENERIC_CPU
+-	bool "Generic-x86-64"
+-	help
+-	  Generic x86-64 CPU.
+-	  Run equally well on all x86-64 CPUs.
+-
+-endchoice
+-
+-#
+-# Define implied options from the CPU selection here
+-#
+-config X86_L1_CACHE_BYTES
+-	int
+-	default "128" if GENERIC_CPU || MPSC
+-	default "64" if MK8 || MCORE2
+-
+-config X86_L1_CACHE_SHIFT
+-	int
+-	default "7" if GENERIC_CPU || MPSC
+-	default "6" if MK8 || MCORE2
+-
+-config X86_INTERNODE_CACHE_BYTES
+-	int
+-	default "4096" if X86_VSMP
+-	default X86_L1_CACHE_BYTES if !X86_VSMP
+-
+-config X86_TSC
+-	bool
+-	default y
+-
+-config X86_GOOD_APIC
+-	bool
+-	default y
++source "arch/x86/Kconfig.cpu"
  
-+### Executable file formats / emulation options
- config COMPAT
- 	bool
- 	depends on IA32_EMULATION
-@@ -818,22 +753,4 @@ config SYSVIPC_COMPAT
- 	depends on COMPAT && SYSVIPC
- 	default y
- 
--endmenu
--
--source "net/Kconfig"
--
--source drivers/Kconfig
--
--source "drivers/firmware/Kconfig"
--
--source fs/Kconfig
--
--source "kernel/Kconfig.instrumentation"
--
--source "arch/x86/Kconfig.debug"
--
--source "security/Kconfig"
--
--source "crypto/Kconfig"
--
--source "lib/Kconfig"
-+source "arch/x86/Kconfig"
+ config MICROCODE
+ 	tristate "/dev/cpu/microcode - Intel CPU microcode support"
 -- 
 1.5.3.4.1157.g0e74-dirty
 
