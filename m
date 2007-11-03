@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762346AbXKCBZX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762811AbXKCBZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762346AbXKCBZX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 21:25:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758195AbXKCBXY
+	id S1762811AbXKCBZn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 21:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760915AbXKCBXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 21:23:24 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:35206 "EHLO
+	Fri, 2 Nov 2007 21:23:31 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:35216 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753058AbXKCBXP (ORCPT
+	with ESMTP id S1758107AbXKCBXY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 21:23:15 -0400
+	Fri, 2 Nov 2007 21:23:24 -0400
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@ftp.linux.org.uk, hch@infradead.org,
-       Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 7/8] Unionfs: don't printk an error if it's due to common copyup
-Date: Fri,  2 Nov 2007 21:22:48 -0400
-Message-Id: <11940529723778-git-send-email-ezk@cs.sunysb.edu>
+       Hugh Dickins <hugh@veritas.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Erez Zadok <ezk@cs.sunysb.edu>, Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: [PATCH 4/8] Unionfs: mmap updates
+Date: Fri,  2 Nov 2007 21:22:45 -0400
+Message-Id: <11940529702778-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11940529692937-git-send-email-ezk@cs.sunysb.edu>
@@ -25,65 +26,230 @@ References: <11940529692937-git-send-email-ezk@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rewrite unionfs_writepage to minimize dependence on AOP_WRITEPAGE_ACTIVEATE,
+handle memory pressure better, and update documentation.  Remove
+unionfs_sync_page because it's not needed.
+
+CC: Hugh Dickins <hugh@veritas.com>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>
+
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/inode.c  |    9 +++++----
- fs/unionfs/rename.c |    2 +-
- fs/unionfs/subr.c   |    8 ++++++--
- 3 files changed, 12 insertions(+), 7 deletions(-)
+ fs/unionfs/mmap.c |  156 ++++++++++++++++++++--------------------------------
+ 1 files changed, 60 insertions(+), 96 deletions(-)
 
-diff --git a/fs/unionfs/inode.c b/fs/unionfs/inode.c
-index 169365c..bcefe45 100644
---- a/fs/unionfs/inode.c
-+++ b/fs/unionfs/inode.c
-@@ -465,10 +465,11 @@ static int unionfs_symlink(struct inode *dir, struct dentry *dentry,
- 			if (!lower_dentry || IS_ERR(lower_dentry)) {
- 				if (IS_ERR(lower_dentry))
- 					err = PTR_ERR(lower_dentry);
+diff --git a/fs/unionfs/mmap.c b/fs/unionfs/mmap.c
+index bed11c3..4b00b98 100644
+--- a/fs/unionfs/mmap.c
++++ b/fs/unionfs/mmap.c
+@@ -25,83 +25,91 @@ static int unionfs_writepage(struct page *page, struct writeback_control *wbc)
+ 	struct inode *inode;
+ 	struct inode *lower_inode;
+ 	struct page *lower_page;
+-	char *kaddr, *lower_kaddr;
++	struct address_space *lower_mapping; /* lower inode mapping */
++	gfp_t mask;
+ 
+ 	inode = page->mapping->host;
+ 	lower_inode = unionfs_lower_inode(inode);
++	lower_mapping = lower_inode->i_mapping;
+ 
+ 	/*
+ 	 * find lower page (returns a locked page)
+ 	 *
+-	 * NOTE: we used to call grab_cache_page(), but that was unnecessary
+-	 * as it would have tried to create a new lower page if it didn't
+-	 * exist, leading to deadlocks (esp. under memory-pressure
+-	 * conditions, when it is really a bad idea to *consume* more
+-	 * memory).  Instead, we assume the lower page exists, and if we can
+-	 * find it, then we ->writepage on it; if we can't find it, then it
+-	 * couldn't have disappeared unless the kernel already flushed it,
+-	 * in which case we're still OK.  This is especially correct if
+-	 * wbc->sync_mode is WB_SYNC_NONE (as per
+-	 * Documentation/filesystems/vfs.txt).  If we can't flush our page
+-	 * because we can't find a lower page, then at least we re-mark our
+-	 * page as dirty, and return AOP_WRITEPAGE_ACTIVATE as the VFS
+-	 * expects us to.  (Note, if in the future it'd turn out that we
+-	 * have to find a lower page no matter what, then we'd have to
+-	 * resort to RAIF's page pointer flipping trick.)
++	 * We turn off __GFP_FS while we look for or create a new lower
++	 * page.  This prevents a recursion into the file system code, which
++	 * under memory pressure conditions could lead to a deadlock.  This
++	 * is similar to how the loop driver behaves (see loop_set_fd in
++	 * drivers/block/loop.c).  If we can't find the lower page, we
++	 * redirty our page and return "success" so that the VM will call us
++	 * again in the (hopefully near) future.
+ 	 */
+-	lower_page = find_lock_page(lower_inode->i_mapping, page->index);
++	mask = mapping_gfp_mask(lower_mapping) & ~(__GFP_FS);
++	lower_page = find_or_create_page(lower_mapping, page->index, mask);
+ 	if (!lower_page) {
+-		err = AOP_WRITEPAGE_ACTIVATE;
++		err = 0;
+ 		set_page_dirty(page);
+ 		goto out;
+ 	}
+ 
+-	/* get page address, and encode it */
+-	kaddr = kmap(page);
+-	lower_kaddr = kmap(lower_page);
++	/* copy page data from our upper page to the lower page */
++	copy_highpage(lower_page, page);
+ 
+-	memcpy(lower_kaddr, kaddr, PAGE_CACHE_SIZE);
 -
--				printk(KERN_ERR "unionfs: lower dentry "
--				       "NULL (or error) for bindex = %d\n",
--				       bindex);
-+				if (!IS_COPYUP_ERR(err))
-+					printk(KERN_ERR
-+					       "unionfs: create_parents for "
-+					       "symlink failed: bindex=%d "
-+					       "err=%d\n", bindex, err);
- 				continue;
- 			}
- 		}
-diff --git a/fs/unionfs/rename.c b/fs/unionfs/rename.c
-index 1ab474f..4a35b5e 100644
---- a/fs/unionfs/rename.c
-+++ b/fs/unionfs/rename.c
-@@ -41,7 +41,7 @@ static int __unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
- 				       bindex);
- 		if (IS_ERR(lower_new_dentry)) {
- 			err = PTR_ERR(lower_new_dentry);
--			if (err == -EROFS)
-+			if (IS_COPYUP_ERR(err))
- 				goto out;
- 			printk(KERN_ERR "unionfs: error creating directory "
- 			       "tree for rename, bindex=%d err=%d\n",
-diff --git a/fs/unionfs/subr.c b/fs/unionfs/subr.c
-index d97086a..968ee8c 100644
---- a/fs/unionfs/subr.c
-+++ b/fs/unionfs/subr.c
-@@ -61,8 +61,12 @@ int create_whiteout(struct dentry *dentry, int start)
- 						      dentry->d_name.name,
- 						      bindex);
- 			if (!lower_dentry || IS_ERR(lower_dentry)) {
--				printk(KERN_ERR "unionfs: create_parents "
--				       "failed for bindex = %d\n", bindex);
-+				int ret = PTR_ERR(lower_dentry);
-+				if (!IS_COPYUP_ERR(ret))
-+					printk(KERN_ERR
-+					       "unionfs: create_parents for "
-+					       "whiteout failed: bindex=%d "
-+					       "err=%d\n", bindex, ret);
- 				continue;
- 			}
- 		}
+-	kunmap(page);
+-	kunmap(lower_page);
+-
+-	BUG_ON(!lower_inode->i_mapping->a_ops->writepage);
+-
+-	/* call lower writepage (expects locked page) */
+-	clear_page_dirty_for_io(lower_page); /* emulate VFS behavior */
+-	err = lower_inode->i_mapping->a_ops->writepage(lower_page, wbc);
+-
+-	/* b/c find_lock_page locked it and ->writepage unlocks on success */
+-	if (err)
++	/*
++	 * Call lower writepage (expects locked page).  However, if we are
++	 * called with wbc->for_reclaim, then the VFS/VM just wants to
++	 * reclaim our page.  Therefore, we don't need to call the lower
++	 * ->writepage: just copy our data to the lower page (already done
++	 * above), then mark the lower page dirty and unlock it, and return
++	 * success.
++	 */
++	if (wbc->for_reclaim) {
++		set_page_dirty(lower_page);
+ 		unlock_page(lower_page);
+-	/* b/c grab_cache_page increased refcnt */
+-	page_cache_release(lower_page);
+-
++		goto out_release;
++	}
++	BUG_ON(!lower_mapping->a_ops->writepage);
++	clear_page_dirty_for_io(lower_page); /* emulate VFS behavior */
++	err = lower_mapping->a_ops->writepage(lower_page, wbc);
+ 	if (err < 0) {
+ 		ClearPageUptodate(page);
+-		goto out;
++		goto out_release;
+ 	}
++
++	/*
++	 * Lower file systems such as ramfs and tmpfs, may return
++	 * AOP_WRITEPAGE_ACTIVATE so that the VM won't try to (pointlessly)
++	 * write the page again for a while.  But those lower file systems
++	 * also set the page dirty bit back again.  Since we successfully
++	 * copied our page data to the lower page, then the VM will come
++	 * back to the lower page (directly) and try to flush it.  So we can
++	 * save the VM the hassle of coming back to our page and trying to
++	 * flush too.  Therefore, we don't re-dirty our own page, and we
++	 * never return AOP_WRITEPAGE_ACTIVATE back to the VM (we consider
++	 * this a success).
++	 *
++	 * We also unlock the lower page if the lower ->writepage returned
++	 * AOP_WRITEPAGE_ACTIVATE.  (This "anomalous" behaviour may be
++	 * addressed in future shmem/VM code.)
++	 */
+ 	if (err == AOP_WRITEPAGE_ACTIVATE) {
+-		/*
+-		 * Lower file systems such as ramfs and tmpfs, may return
+-		 * AOP_WRITEPAGE_ACTIVATE so that the VM won't try to
+-		 * (pointlessly) write the page again for a while.  But
+-		 * those lower file systems also set the page dirty bit back
+-		 * again.  So we mimic that behaviour here.
+-		 */
+-		if (PageDirty(lower_page))
+-			set_page_dirty(page);
+-		goto out;
++		err = 0;
++		unlock_page(lower_page);
+ 	}
+ 
+ 	/* all is well */
+ 	SetPageUptodate(page);
+-	/* lower mtimes has changed: update ours */
++	/* lower mtimes have changed: update ours */
+ 	unionfs_copy_attr_times(inode);
+ 
+-	unlock_page(page);
+-
++out_release:
++	/* b/c find_or_create_page increased refcnt */
++	page_cache_release(lower_page);
+ out:
++	/*
++	 * We unlock our page unconditionally, because we never return
++	 * AOP_WRITEPAGE_ACTIVATE.
++	 */
++	unlock_page(page);
+ 	return err;
+ }
+ 
+@@ -119,9 +127,8 @@ static int unionfs_writepages(struct address_space *mapping,
+ 	if (!mapping_cap_writeback_dirty(lower_inode->i_mapping))
+ 		goto out;
+ 
+-	/* Note: generic_writepages may return AOP_WRITEPAGE_ACTIVATE */
+ 	err = generic_writepages(mapping, wbc);
+-	if (err == 0)
++	if (!err)
+ 		unionfs_copy_attr_times(inode);
+ out:
+ 	return err;
+@@ -313,53 +320,10 @@ out:
+ 	return err;		/* assume all is ok */
+ }
+ 
+-static void unionfs_sync_page(struct page *page)
+-{
+-	struct inode *inode;
+-	struct inode *lower_inode;
+-	struct page *lower_page;
+-	struct address_space *mapping;
+-
+-	inode = page->mapping->host;
+-	lower_inode = unionfs_lower_inode(inode);
+-
+-	/*
+-	 * Find lower page (returns a locked page).
+-	 *
+-	 * NOTE: we used to call grab_cache_page(), but that was unnecessary
+-	 * as it would have tried to create a new lower page if it didn't
+-	 * exist, leading to deadlocks.  All our sync_page method needs to
+-	 * do is ensure that pending I/O gets done.
+-	 */
+-	lower_page = find_lock_page(lower_inode->i_mapping, page->index);
+-	if (!lower_page) {
+-		printk(KERN_ERR "unionfs: find_lock_page failed\n");
+-		goto out;
+-	}
+-
+-	/* do the actual sync */
+-	mapping = lower_page->mapping;
+-	/*
+-	 * XXX: can we optimize ala RAIF and set the lower page to be
+-	 * discarded after a successful sync_page?
+-	 */
+-	if (mapping && mapping->a_ops && mapping->a_ops->sync_page)
+-		mapping->a_ops->sync_page(lower_page);
+-
+-	/* b/c find_lock_page locked it */
+-	unlock_page(lower_page);
+-	/* b/c find_lock_page increased refcnt */
+-	page_cache_release(lower_page);
+-
+-out:
+-	return;
+-}
+-
+ struct address_space_operations unionfs_aops = {
+ 	.writepage	= unionfs_writepage,
+ 	.writepages	= unionfs_writepages,
+ 	.readpage	= unionfs_readpage,
+ 	.prepare_write	= unionfs_prepare_write,
+ 	.commit_write	= unionfs_commit_write,
+-	.sync_page	= unionfs_sync_page,
+ };
 -- 
 1.5.2.2
 
