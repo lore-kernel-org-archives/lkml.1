@@ -1,73 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759287AbXKCUqE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758168AbXKCVbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759287AbXKCUqE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 16:46:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756482AbXKCUpw
+	id S1758168AbXKCVbV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 17:31:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756617AbXKCVbM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 16:45:52 -0400
-Received: from mail0.scram.de ([78.47.204.202]:52128 "EHLO mail0.scram.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755749AbXKCUpv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 16:45:51 -0400
-X-Spam-Score: -3.868
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
- * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
- *      [score: 0.0000]
- *  0.5 AWL AWL: From: address is in the auto white-list
-Message-ID: <472CDE02.1020804@scram.de>
-Date: Sat, 03 Nov 2007 21:45:54 +0100
-From: Jochen Friedrich <jochen@scram.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+	Sat, 3 Nov 2007 17:31:12 -0400
+Received: from twinlark.arctic.org ([207.29.250.54]:38955 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756596AbXKCVbL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Nov 2007 17:31:11 -0400
+Message-ID: <472CE89C.2020801@kernel.org>
+Date: Sat, 03 Nov 2007 14:31:08 -0700
+From: Andrew Morgan <morgan@kernel.org>
+User-Agent: Thunderbird 2.0.0.0 (Macintosh/20070326)
 MIME-Version: 1.0
-To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
-CC: linux-kernel@vger.kernel.org, Scott Wood <scottwood@freescale.com>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: [PATCH] [POWERPC] Fix fs_enet module build
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: Stephen Smalley <sds@epoch.ncsc.mil>, lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       Chris Wright <chrisw@sous-sol.org>, "Theodore Ts'o" <tytso@mit.edu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: [PATCH] file capabilities: allow sigcont within session (v2)
+References: <20071031234945.GA16455@sergelap.austin.ibm.com> <1193918844.12018.6.camel@moss-spartans.epoch.ncsc.mil> <20071101134701.GA21131@sergelap.austin.ibm.com>
+In-Reply-To: <20071101134701.GA21131@sergelap.austin.ibm.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If fs_enet is build as module, mii-fec/mii-bitbang should be build as
-module, as well. Otherwise some symbols remain undefined.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-  Building modules, stage 2.
-  MODPOST 5 modules
-ERROR: "fs_scc_ops" [drivers/net/fs_enet/fs_enet.ko] undefined!
-make[1]: *** [__modpost] Error 1
-make: *** [modules] Error 2
+Serge E. Hallyn wrote:
+> Quoting Stephen Smalley (sds@epoch.ncsc.mil):
+>> On Wed, 2007-10-31 at 18:49 -0500, Serge E. Hallyn wrote:
+[..]
+>>> Also don't do file-capabilities signaling checks when uids for
+>>> the processes don't match, since the standard check_kill_permission
+>>> will have done those checks.
+>> Description doesn't match the code.
+> 
+> Egads.  I knew I should've just kept that part out of it for the first
+> patch...
+> 
+> New patch on top of previous one is appended.
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
+Dang! I stared at the code a long time to see what you were doing...
 
-This can be pulled from git://git.bocc.de/dbox2.git for-2.6.24
+And concluded that you had coded what you intended; allow processes that
+share UIDs to kill one another - independent of capabilities. The fact
+that this is the reverse of the words you used to introduce your patch,
+I didn't notice.
 
- drivers/net/fs_enet/Makefile |   12 ++++++++++--
- 1 files changed, 10 insertions(+), 2 deletions(-)
+I totally missed the fact that this was (unwanted) new functionality!!
+Mea culpa for the bad review.
 
-diff --git a/drivers/net/fs_enet/Makefile b/drivers/net/fs_enet/Makefile
-index 02d4dc1..2f7563a 100644
---- a/drivers/net/fs_enet/Makefile
-+++ b/drivers/net/fs_enet/Makefile
-@@ -4,7 +4,15 @@
- 
- obj-$(CONFIG_FS_ENET) += fs_enet.o
- 
--obj-$(CONFIG_8xx) += mac-fec.o mac-scc.o mii-fec.o
--obj-$(CONFIG_CPM2) += mac-fcc.o mii-bitbang.o
-+fs_enet-$(CONFIG_8xx) += mac-fec.o mac-scc.o
-+fs_enet-$(CONFIG_CPM2) += mac-fcc.o
-+
-+ifeq ($(CONFIG_8xx),y)
-+        obj-$(CONFIG_FS_ENET) += mii-fec.o
-+endif
-+
-+ifeq ($(CONFIG_CPM2),y)
-+        obj-$(CONFIG_FS_ENET) += mii-bitbang.o
-+endif
- 
- fs_enet-objs := fs_enet-main.o
--- 
-1.5.3.4
+I certainly Sign off the revised patch.
 
+Cheers
+
+Andrew
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFHLOicmwytjiwfWMwRAq5HAJ49eajMT4myf1oKfrab2oCw/o9HnwCgkYt2
+RyIsmHVWmClsrxCz5s1HRJY=
+=hGLO
+-----END PGP SIGNATURE-----
