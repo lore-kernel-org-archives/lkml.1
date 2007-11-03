@@ -1,99 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755248AbXKCOOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755510AbXKCOnf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755248AbXKCOOV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 10:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbXKCOON
+	id S1755510AbXKCOnf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 10:43:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbXKCOn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 10:14:13 -0400
-Received: from smtp-106-saturday.noc.nerim.net ([62.4.17.106]:2003 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753926AbXKCOOM (ORCPT
+	Sat, 3 Nov 2007 10:43:27 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:43775 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754278AbXKCOn0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 10:14:12 -0400
-Date: Sat, 3 Nov 2007 15:14:10 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Bryan Wu <bryan.wu@analog.com>
-Cc: i2c@lm-sensors.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] Blackfin I2C/TWI driver: add driver descriptions,
- versions and some module useful information
-Message-ID: <20071103151410.7a7ed29e@hyperion.delvare>
-In-Reply-To: <1193984664-10609-5-git-send-email-bryan.wu@analog.com>
-References: <1193984664-10609-1-git-send-email-bryan.wu@analog.com>
-	<1193984664-10609-5-git-send-email-bryan.wu@analog.com>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 3 Nov 2007 10:43:26 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <472C88E9.60103@s5r6.in-berlin.de>
+Date: Sat, 03 Nov 2007 15:42:49 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+MIME-Version: 1.0
+To: Torsten Kaiser <just.for.lkml@googlemail.com>
+CC: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: 2.6.24-rc1-54866f032307063776b4eff7eadb131d47f9f9b4 fails to
+ boot: kernel BUG at include/linux/scatterlist.h:49!
+References: <64bb37e0711021503x4844b905yba1e9a681c4e788a@mail.gmail.com>	 <472BA567.8040301@s5r6.in-berlin.de> <64bb37e0711030614q4be3a2b6j5d3c55b26cb07030@mail.gmail.com>
+In-Reply-To: <64bb37e0711030614q4be3a2b6j5d3c55b26cb07030@mail.gmail.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri,  2 Nov 2007 14:24:24 +0800, Bryan Wu wrote:
-> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
-> ---
->  drivers/i2c/busses/i2c-bfin-twi.c |   19 ++++++++++++-------
->  1 files changed, 12 insertions(+), 7 deletions(-)
+Torsten Kaiser wrote:
+> On 11/2/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+>> To which extent do you need IEEE 1394 drivers?
 > 
-> diff --git a/drivers/i2c/busses/i2c-bfin-twi.c b/drivers/i2c/busses/i2c-bfin-twi.c
-> index 727625b..ae41c0b 100644
-> --- a/drivers/i2c/busses/i2c-bfin-twi.c
-> +++ b/drivers/i2c/busses/i2c-bfin-twi.c
-> @@ -37,6 +37,15 @@
->  #include <asm/portmux.h>
->  #include <asm/irq.h>
->  
-> +#define DRV_NAME	"i2c-bfin-twi"
-> +#define DRV_AUTHOR	"Sonic Zhang, Bryan Wu"
+> Using eth1394 as primary network connection on this computer.
+> So switching to the new stack is currently not an option,
 
-What's the point this define when you're using it only once, a few
-lines below?
+That's right.
 
-> +#define DRV_DESC	"Blackfin BF5xx on-chip I2C TWI Contoller Driver"
-> +#define DRV_VERSION	"1.8"
-> +
-> +MODULE_AUTHOR(DRV_AUTHOR);
-> +MODULE_DESCRIPTION(DRV_DESC);
-> +MODULE_LICENSE("GPL");
-> +
->  #define POLL_TIMEOUT       (2 * HZ)
->  
->  /* SMBus mode*/
-> @@ -701,8 +710,8 @@ static int i2c_bfin_twi_probe(struct platform_device *pdev)
->  	else
->  		platform_set_drvdata(pdev, iface);
->  
-> -	dev_info(&pdev->dev, "Blackfin I2C TWI controller, regs_base@%p\n",
-> -		iface->regs_base);
-> +	dev_info(&pdev->dev, "%s, Version %s, regs_base@%p\n",
-> +		DRV_DESC, DRV_VERSION, iface->regs_base);
+> Looking that calltrace upwards, it seems replacing the
+> memset(dma->sglist,...) with sg_init_table(...) would fix the BUG_ON()
+> as that inits the SG_MAGIC.
 
-You're mixing device and driver here. DRV_DESC describes the driver,
-while this dev_info() refers to a specific device. So I don't see more
-confusion than benefit with this change. If you want to expose the
-driver version, you'd rather user MODULE_VERSION().
+Yes, this should be the first thing to be fixed.
 
->  
->  	return rc;
->  
-> @@ -735,7 +744,7 @@ static struct platform_driver i2c_bfin_twi_driver = {
->  	.suspend	= i2c_bfin_twi_suspend,
->  	.resume		= i2c_bfin_twi_resume,
->  	.driver		= {
-> -		.name	= "i2c-bfin-twi",
-> +		.name	= DRV_NAME,
->  		.owner	= THIS_MODULE,
->  	},
->  };
-> @@ -750,9 +759,5 @@ static void __exit i2c_bfin_twi_exit(void)
->  	platform_driver_unregister(&i2c_bfin_twi_driver);
->  }
->  
-> -MODULE_AUTHOR("Sonic Zhang <sonic.zhang@analog.com>");
-> -MODULE_DESCRIPTION("I2C-Bus adapter routines for Blackfin TWI");
-> -MODULE_LICENSE("GPL");
-> -
->  module_init(i2c_bfin_twi_init);
->  module_exit(i2c_bfin_twi_exit);
+> But I do not trust myself to fixing all
+> the iterators correctly to convert this completely to the new API.
 
+Since ieee1394 doesn't create chained s/g lists, we might even get away
+with ieee1394's existing iterators.
 
+(The other place where the 1394 stack deals with s/g lists is sbp2 where
+we have to deal with what comes from the SCSI stack or the block layer.
+But sbp2's s/g list handling is entirely unrelated to ieee1394's own
+code for isochronous I/O and async streams, which eth1394 needs and
+caused the bug.)
 -- 
-Jean Delvare
+Stefan Richter
+-=====-=-=== =-== ---=-
+http://arcgraph.de/sr/
