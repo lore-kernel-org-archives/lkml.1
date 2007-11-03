@@ -1,53 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757875AbXKCWLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758675AbXKCWNP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757875AbXKCWLy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 18:11:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbXKCWLr
+	id S1758675AbXKCWNP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 18:13:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756204AbXKCWNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 18:11:47 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:62669 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753057AbXKCWLq (ORCPT
+	Sat, 3 Nov 2007 18:13:00 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:38118 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753495AbXKCWM7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 18:11:46 -0400
+	Sat, 3 Nov 2007 18:12:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:cc:subject:date:message-id:x-mailer:sender;
-        b=BAg2Em6h5M8v96e7TMBPWWqDjnDQi/99H2Y37oNuCVhUuJld4rQV8O3cbFd2tvTmPPQejP3blvdorFErXxVn6r5fcDdUeA6TJAag/psIYC/V9Q5ZeeD5R/A5Uu9e1X8kImPLZHVGgSx2qZBpthj8rO/P+7ndtXPs3izbPO4k3Uk=
-From: Michael Marineau <mike@marineau.org>
-To: linux-kernel@vger.kernel.org
-Cc: trivial@kernel.org, Michael Marineau <mike@marineau.org>
-Subject: [PATCH] tmpfs: fix mounts when size is less than the page size
-Date: Sat,  3 Nov 2007 15:11:42 -0700
-Message-Id: <11941279021705-git-send-email-mike@marineau.org>
-X-Mailer: git-send-email 1.5.1.6
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XpkSp48/6Ve69gJIPg4p+4+IGZTd4JnklT4yLX6K6fkq5wMK20t2CdTXh/v9ahTe0JuJCoME6MyvtVLe+dhDXVzk7niP6nT8r3W2yjxGBRyg02yEjTwH3kA/MXRortswBfusQiODXa4FbW6FFFtGluxlUztST2BXWZ/NY2BL0aQ=
+Message-ID: <1865922a0711031512g101da6a8ydb85520037a8b655@mail.gmail.com>
+Date: Sun, 4 Nov 2007 00:12:58 +0200
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+To: "Kyle Moffett" <mrmacman_g4@mac.com>
+Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser
+Cc: "Casey Schaufler" <casey@schaufler-ca.com>, akpm@osdl.org,
+       torvalds@osdl.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <45A82524-172E-4F18-B660-981D5A1A6D75@mac.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071103164303.GA26707@ubuntu>
+	 <45A82524-172E-4F18-B660-981D5A1A6D75@mac.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When tmpfs is mounted with a size less than one page the number of blocks
-is set to 0 which makes the tmpfs mount unlimited. This can lead to a quick
-and surprising death is someone typos a tmpfs mount command and writes to much.
+On 11/3/07, Kyle Moffett <mrmacman_g4@mac.com> wrote:
+> On Nov 03, 2007, at 12:43:06, Ahmed S. Darwish wrote:
+> > Bashv3 builtin "echo" behaves very strangely to -EINVAL. It sends
+> > all the buffers that causes -EINVAL again in subsequent echo
+> > invocations.
+> >
+> > i.e.
+> > echo "Invalid Rule" > /smack/load  # -EINVAL returned
+> > echo "Valid Rule" > /smack/load
+> >
+> > In seconod iteration, echo sends the first invalid buffer again
+> > then sends the new one. This causes a "Invalid Rule\nValid Rule"
+> > buffer sent to write().
+> >
+> > IMHO, this is a bug in builtin echo. The external /bin/echo doesn't
+> > cause such strange behaviour.
+>
+> Actually, what causes problems here is something between a bug and a
+> feature in libc's buffering.  Basically the -EINVAL error causes libc
+> to leave its data in the file-output buffer despite the file being
+> closed and reopened. Since a standalone echo just exits that buffer
+> is discarded, but for the bash builtin it hangs around in the buffer
+> for a while and ends up getting prepended to the following echo
+> statement.  There's actually multiple ways to make this fail; this is
+> just the simplest.
+>
 
-tmpfs can still be mounted as unlimited if size or nr_blocks is exactly 0.
+Thanks a lot for such a useful info. Is there a way from my side  to
+make subsequent echo invocations not affected by previous failed ones
+?
 
-Signed-off-by: Michael Marineau <mike@marineau.org>
----
- mm/shmem.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+Regards,
 
-diff --git a/mm/shmem.c b/mm/shmem.c
-index 253d205..66b07f2 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -2138,6 +2138,8 @@ static int shmem_parse_options(char *options, int *mode, uid_t *uid,
- 			if (*rest)
- 				goto bad_val;
- 			*blocks = size >> PAGE_CACHE_SHIFT;
-+			if (size && blocks == 0)
-+				blocks = 1;
- 		} else if (!strcmp(this_char,"nr_blocks")) {
- 			*blocks = memparse(value,&rest);
- 			if (*rest)
 -- 
-1.5.1.6
-
+Ahmed S. Darwish
+Homepage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
