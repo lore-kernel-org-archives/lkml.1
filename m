@@ -1,58 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761779AbXKCXrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761619AbXKCXt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761779AbXKCXrU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 19:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760003AbXKCXq6
+	id S1761619AbXKCXt4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 19:49:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757622AbXKCXto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 19:46:58 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:28834 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759683AbXKCXq5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 19:46:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references:sender;
-        b=C0Y3OGUrV9crOc503KpWqL8QCeRlcgEGIgU58/J4CFANnwTAAxOQW+Dn/8ekz9ogsnywyV9mPEFwafo+M2tl0BBrZg3UNp1isH3y7d4IJlJ1sn+q8FTNy8iil7yEuNWtg/ApMc7X4jld2a0ptAMjCpnIocjP3j1sHAsVBh0MBRg=
-From: Michael Marineau <mike@marineau.org>
-To: linux-kernel@vger.kernel.org
-Cc: trivial@kernel.org, Michael Marineau <mike@marineau.org>
-Subject: [PATCH, RESEND] tmpfs: fix mounts when size is less than the page size
-Date: Sat,  3 Nov 2007 16:46:52 -0700
-Message-Id: <11941336124117-git-send-email-mike@marineau.org>
-X-Mailer: git-send-email 1.5.1.6
-In-Reply-To: <11941279021705-git-send-email-mike@marineau.org>
-References: <11941279021705-git-send-email-mike@marineau.org>
+	Sat, 3 Nov 2007 19:49:44 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:52685 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757043AbXKCXtn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Nov 2007 19:49:43 -0400
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH 05/10] x86: add X86_64 dependency to x86_64 specific symbols in Kconig.x86_64
+Date: Sun,  4 Nov 2007 00:51:15 +0100
+Message-Id: <11941338802646-git-send-email-sam@ravnborg.org>
+X-Mailer: git-send-email 1.5.0.6
+In-Reply-To: <11941338802525-git-send-email-sam@ravnborg.org>
+References: <11941338801315-git-send-email-sam@ravnborg.org> <11941338804007-git-send-email-sam@ravnborg.org> <11941338801910-git-send-email-sam@ravnborg.org> <11941338802525-git-send-email-sam@ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When tmpfs is mounted with a size less than one page the number of blocks
-is set to 0 which makes the tmpfs mount unlimited. This can lead to a quick
-and surprising death is someone typos a tmpfs mount command and writes to much.
+To ease unification of Kconfig.i386 and Kconfig.x86_64
+add X86_64 dependencies to all x86_64 specific symbols.
 
-tmpfs can still be mounted as unlimited if size or nr_blocks is exactly 0.
+This patch introduce no functional changes but is one step
+towards unification. This smaller step is used to ease
+review of the patch set.
 
-Signed-off-by: Michael Marineau <mike@marineau.org>
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
-Somehow I was a moron and didn't notice the compiler shouting insults at me,
-here is the correct version of the patch. Sorry for the noise :-(
+ arch/x86/Kconfig.x86_64 |   18 +++++++++---------
+ 1 files changed, 9 insertions(+), 9 deletions(-)
 
- mm/shmem.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/mm/shmem.c b/mm/shmem.c
-index 253d205..86b47d8 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -2138,6 +2138,8 @@ static int shmem_parse_options(char *options, int *mode, uid_t *uid,
- 			if (*rest)
- 				goto bad_val;
- 			*blocks = size >> PAGE_CACHE_SHIFT;
-+			if (size && *blocks == 0)
-+				*blocks = 1;
- 		} else if (!strcmp(this_char,"nr_blocks")) {
- 			*blocks = memparse(value,&rest);
- 			if (*rest)
+diff --git a/arch/x86/Kconfig.x86_64 b/arch/x86/Kconfig.x86_64
+index 9fd69a0..5b7ada6 100644
+--- a/arch/x86/Kconfig.x86_64
++++ b/arch/x86/Kconfig.x86_64
+@@ -151,7 +151,7 @@ config X86_PC
+ 
+ config X86_VSMP
+ 	bool "Support for ScaleMP vSMP"
+-	depends on PCI
++	depends on X86_64 && PCI
+ 	 help
+ 	  Support for ScaleMP vSMP systems.  Say 'Y' here if this kernel is
+ 	  supposed to run on these EM64T-based machines.  Only choose this option
+@@ -297,7 +297,7 @@ config NUMA
+ 
+ config K8_NUMA
+        bool "Old style AMD Opteron NUMA detection"
+-       depends on NUMA && PCI
++       depends on X86_64 && NUMA && PCI
+        default y
+        help
+ 	 Enable K8 NUMA node topology detection.  You should say Y here if
+@@ -315,7 +315,7 @@ config NODES_SHIFT
+ 
+ config X86_64_ACPI_NUMA
+        bool "ACPI NUMA detection"
+-       depends on NUMA
++       depends on X86_64 && NUMA
+        select ACPI 
+ 	select PCI
+        select ACPI_NUMA
+@@ -325,7 +325,7 @@ config X86_64_ACPI_NUMA
+ 
+ config NUMA_EMU
+ 	bool "NUMA emulation"
+-	depends on NUMA
++	depends on X86_64 && NUMA
+ 	help
+ 	  Enable NUMA emulation. A flat machine will be split
+ 	  into virtual nodes when booted with "numa=fake=N", where N is the
+@@ -421,7 +421,7 @@ config GART_IOMMU
+ 	default y
+ 	select SWIOTLB
+ 	select AGP
+-	depends on PCI
++	depends on X86_64 && PCI
+ 	help
+ 	  Support for full DMA access of devices with 32bit memory access only
+ 	  on systems with more than 3GB. This is usually needed for USB,
+@@ -436,7 +436,7 @@ config GART_IOMMU
+ config CALGARY_IOMMU
+ 	bool "IBM Calgary IOMMU support"
+ 	select SWIOTLB
+-	depends on PCI && EXPERIMENTAL
++	depends on X86_64 && PCI && EXPERIMENTAL
+ 	help
+ 	  Support for hardware IOMMUs in IBM's xSeries x366 and x460
+ 	  systems. Needed to run systems with more than 3GB of memory
+@@ -483,7 +483,7 @@ config X86_MCE
+ 
+ config X86_MCE_INTEL
+ 	bool "Intel MCE features"
+-	depends on X86_MCE && X86_LOCAL_APIC
++	depends on X86_64 && X86_MCE && X86_LOCAL_APIC
+ 	default y
+ 	help
+ 	   Additional support for intel specific MCE features such as
+@@ -491,7 +491,7 @@ config X86_MCE_INTEL
+ 
+ config X86_MCE_AMD
+ 	bool "AMD MCE features"
+-	depends on X86_MCE && X86_LOCAL_APIC
++	depends on X86_64 && X86_MCE && X86_LOCAL_APIC
+ 	default y
+ 	help
+ 	   Additional support for AMD specific MCE features such as
+@@ -598,7 +598,7 @@ config SECCOMP
+ 
+ config CC_STACKPROTECTOR
+ 	bool "Enable -fstack-protector buffer overflow detection (EXPERIMENTAL)"
+-	depends on EXPERIMENTAL
++	depends on X86_64 && EXPERIMENTAL
+ 	help
+          This option turns on the -fstack-protector GCC feature. This
+ 	  feature puts, at the beginning of critical functions, a canary
 -- 
-1.5.1.6
+1.5.3.4.1157.g0e74-dirty
 
