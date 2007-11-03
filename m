@@ -1,89 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759020AbXKCHEE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759454AbXKCH1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759020AbXKCHEE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 03:04:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbXKCHDy
+	id S1759454AbXKCH1S (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 03:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756529AbXKCH1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 03:03:54 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:2450 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754073AbXKCHDy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 03:03:54 -0400
-Date: Sat, 3 Nov 2007 08:03:51 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Torsten Kaiser <just.for.lkml@googlemail.com>,
-       linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
-Subject: Re: 2.6.24-rc1-54866f032307063776b4eff7eadb131d47f9f9b4 fails to  boot: kernel BUG at include/linux/scatterlist.h:49!
-Message-ID: <20071103070350.GE28340@kernel.dk>
-References: <64bb37e0711021503x4844b905yba1e9a681c4e788a@mail.gmail.com> <472BA567.8040301@s5r6.in-berlin.de> <472BAFDF.9000301@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <472BAFDF.9000301@s5r6.in-berlin.de>
+	Sat, 3 Nov 2007 03:27:09 -0400
+Received: from ppsw-2.csi.cam.ac.uk ([131.111.8.132]:47194 "EHLO
+	ppsw-2.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756670AbXKCH1I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Nov 2007 03:27:08 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+From: Anton Altaparmakov <aia21@cam.ac.uk>
+To: Mike Galbraith <efault@gmx.de>
+In-Reply-To: <1194065777.11539.5.camel@Homer.simpson.net>
+Subject: Re: [Linux-NTFS-Dev] 2.6.23 regression: second access of empty ntfs file leads to D	state hang
+References: <1193638086.7409.21.camel@Homer.simpson.net> <E3E758D0-25AC-45B8-9BAB-F8CDF75AF3CA@cam.ac.uk> <1193658311.7324.2.camel@Homer.simpson.net> <4E61D235-B8E8-43DF-96A5-B3169E6AB223@cam.ac.uk> <1193668997.7284.2.camel@Homer.simpson.net> <1193671099.7172.0.camel@Homer.simpson.net> <1193731202.7229.9.camel@Homer.simpson.net> <3BFCE55A-F7E2-4A19-8FD9-F23AF2A29D76@cam.ac.uk> <1EEFFD17-64E7-41C6-BFED-529A5794EC36@cam.ac.uk> <1194065777.11539.5.camel@Homer.simpson.net>
+Message-Id: <FC4CF4B4-06A3-4D14-916A-0622D4D2A719@cam.ac.uk>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v912)
+Date: Sat, 3 Nov 2007 07:27:03 +0000
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       ntfs-dev <linux-ntfs-dev@lists.sourceforge.net>,
+       Neil Brown <neilb@suse.de>
+X-Mailer: Apple Mail (2.912)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 03 2007, Stefan Richter wrote:
-> I wrote:
-> > Torsten Kaiser wrote:
-> >> Both 2.6.24-rc1 and the current git version fail to boot for me:
-> >>
-> >> [   57.182205] ohci1394: fw-host0: OHCI-1394 1.1 (PCI): IRQ=[16] MMIO=[effff800-efffffff]  Max Packet=[2048]  IR/IT contexts=[4/8]
-> >> [   57.194032] eth1394: eth2: IPv4 over IEEE 1394 (fw-host0)
-> >> [   57.199527] ------------[ cut here ]------------
-> >> [   57.204154] kernel BUG at include/linux/scatterlist.h:49!
-> >> [   57.209559] invalid opcode: 0000 [1] SMP
-> >> [   57.213667] CPU 0
-> >> [   57.215742] Modules linked in:
-> >> [   57.218857] Pid: 1, comm: swapper Not tainted 2.6.24-rc1 #1
-> >> [   57.224435] RIP: 0010:[<ffffffff80463512>]  [<ffffffff80463512>] dma_region_alloc+0x142/0x180
-> >> [   57.233003] RSP: 0000:ffff810004f29db0  EFLAGS: 00010293
-> >> [   57.238322] RAX: ffffc20001454000 RBX: 0000000000000000 RCX: ffffe20001c7e690
-> >> [   57.245457] RDX: 0000000000000000 RSI: 00003ffffffff000 RDI: 0000000000000388
-> >> [   57.252592] RBP: ffff810005ddca48 R08: 0000000000000000 R09: ffffc20001454000
-> >> [   57.259727] R10: 0000000000000002 R11: 0000000000000000 R12: 0000000087654321
-> >> [   57.266862] R13: ffff810100914000 R14: 0000000000000002 R15: ffff810005e88000
-> >> [   57.273996] FS:  0000000000000000(0000) GS:ffffffff8079c000(0000) knlGS:0000000000000000
-> >> [   57.282082] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> >> [   57.287834] CR2: 0000000000e01766 CR3: 0000000000201000 CR4: 00000000000006e0
-> >> [   57.294968] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> >> [   57.302102] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> >> [   57.309238] Process swapper (pid: 1, threadinfo ffff810004f28000, task ffff81010032a000)
-> >> [   57.317332] Stack:  ffff810005ddca48 0000000000000002 ffff810005ddca00 0000000000000010
-> >> [   57.325546]  000000000000001f ffffffff80464146 ffffffff8089ff00 0000000000010000
-> >> [   57.333104]  ffff810005ddca00 ffff8101011b66c0 ffff810005e88000 ffffffff80754740
-> >> [   57.340455] Call Trace:
-> >> [   57.343139]  [<ffffffff80464146>] hpsb_iso_common_init+0x1e6/0x210
-> >> [   57.349322]  [<ffffffff80464198>] hpsb_iso_recv_init+0x28/0x70
-> >> [   57.355159]  [<ffffffff8046c940>] ether1394_iso+0x0/0x130
-> >> [   57.360564]  [<ffffffff8046bc08>] ether1394_recv_init+0x58/0xd0
-> [...]
-> >> from gdb:
-> >> 0xffffffff80463512 is in dma_region_alloc (include/linux/scatterlist.h:49).
-> >> 44               * In order for the low bit stealing approach to work, pages
-> >> 45               * must be aligned at a 32-bit boundary as a minimum.
-> >> 46               */
-> >> 47              BUG_ON((unsigned long) page & 0x03);
-> >> 48      #ifdef CONFIG_DEBUG_SG
-> >> 49              BUG_ON(sg->sg_magic != SG_MAGIC);
-> >> 50      #endif
-> >> 51              sg->page_link = page_link | (unsigned long) page;
-> >> 52      }
-> >> 53
-> > 
-> > Uh oh...
-> > 
-> > I'm afraid the ieee1394 core's own scatter-gather list managing code
-> > didn't survive the changes in the kernel's s/g list implementation.
-> > 
-> > Alas I will be quite busy with non-Linux related stuff during at least
-> > the next two weeks and can't fix this myself for now.
-> 
-> Jens, maybe you can come up with a fix quicker than I could.
+Great, thanks!  I will submit it to Linus.
 
-Sure, I'll take a look!
+Best regards,
+
+	Anton
+
+On 3 Nov 2007, at 04:56, Mike Galbraith wrote:
+
+> On Fri, 2007-11-02 at 19:22 +0000, Anton Altaparmakov wrote:
+>
+>> Would you be able to test it in your setup?  Thanks a lot in advance!
+>
+> Modulo uninitialized vi, works fine.  I moved it up, and all is well.
+> Thanks.
+>
+> Tested-by:  Mike Galbraith <efault@gmx.de>
+>
+> diff --git a/fs/ntfs/aops.c b/fs/ntfs/aops.c
+> index cfdc790..ad87cb0 100644
+> --- a/fs/ntfs/aops.c
+> +++ b/fs/ntfs/aops.c
+> @@ -405,6 +405,15 @@ static int ntfs_readpage(struct file *file,  
+> struct page *page)
+>
+> retry_readpage:
+> 	BUG_ON(!PageLocked(page));
+> +	vi = page->mapping->host;
+> +	i_size = i_size_read(vi);
+> +	/* Is the page fully outside i_size? (truncate in progress) */
+> +	if (unlikely(page->index >= (i_size + PAGE_CACHE_SIZE - 1) >>
+> +			PAGE_CACHE_SHIFT)) {
+> +		zero_user_page(page, 0, PAGE_CACHE_SIZE, KM_USER0);
+> +		ntfs_debug("Read outside i_size - truncated?");
+> +		goto done;
+> +	}
+> 	/*
+> 	 * This can potentially happen because we clear PageUptodate() during
+> 	 * ntfs_writepage() of MstProtected() attributes.
+> @@ -413,7 +422,6 @@ retry_readpage:
+> 		unlock_page(page);
+> 		return 0;
+> 	}
+> -	vi = page->mapping->host;
+> 	ni = NTFS_I(vi);
+> 	/*
+> 	 * Only $DATA attributes can be encrypted and only unnamed $DATA
+> diff --git a/fs/ntfs/attrib.c b/fs/ntfs/attrib.c
+> index 92dabdc..50d3b0c 100644
+> --- a/fs/ntfs/attrib.c
+> +++ b/fs/ntfs/attrib.c
+> @@ -179,10 +179,7 @@ int ntfs_map_runlist_nolock(ntfs_inode *ni, VCN  
+> vcn, ntfs_attr_search_ctx *ctx)
+> 	 * ntfs_mapping_pairs_decompress() fails.
+> 	 */
+> 	end_vcn = sle64_to_cpu(a->data.non_resident.highest_vcn) + 1;
+> -	if (!a->data.non_resident.lowest_vcn && end_vcn == 1)
+> -		end_vcn = sle64_to_cpu(a->data.non_resident.allocated_size) >>
+> -				ni->vol->cluster_size_bits;
+> -	if (unlikely(vcn >= end_vcn)) {
+> +	if (unlikely(vcn && vcn >= end_vcn)) {
+> 		err = -ENOENT;
+> 		goto err_out;
+> 	}
+> diff --git a/fs/ntfs/compress.c b/fs/ntfs/compress.c
+> index d98daf5..d1619d0 100644
+> --- a/fs/ntfs/compress.c
+> +++ b/fs/ntfs/compress.c
+> @@ -561,6 +561,16 @@ int ntfs_read_compressed_block(struct page *page)
+> 	read_unlock_irqrestore(&ni->size_lock, flags);
+> 	max_page = ((i_size + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT) -
+> 			offset;
+> +	/* Is the page fully outside i_size? (truncate in progress) */
+> +	if (xpage >= max_page) {
+> +		kfree(bhs);
+> +		kfree(pages);
+> +		zero_user_page(page, 0, PAGE_CACHE_SIZE, KM_USER0);
+> +		ntfs_debug("Compressed read outside i_size - truncated?");
+> +		SetPageUptodate(page);
+> +		unlock_page(page);
+> +		return 0;
+> +	}
+> 	if (nr_pages < max_page)
+> 		max_page = nr_pages;
+> 	for (i = 0; i < max_page; i++, offset++) {
 
 -- 
-Jens Axboe
+Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
+Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
+Linux NTFS maintainer, http://www.linux-ntfs.org/
 
