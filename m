@@ -1,99 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760177AbXKCXq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761779AbXKCXrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760177AbXKCXq7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 19:46:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbXKCXqv
+	id S1761779AbXKCXrU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 19:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760003AbXKCXq6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 19:46:51 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:58809 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753358AbXKCXqu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 19:46:50 -0400
-Date: Sun, 4 Nov 2007 00:48:26 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] replace "make ARCH=i386/x86_64 with make ARCH=x86"
-Message-ID: <20071103234826.GA26654@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+	Sat, 3 Nov 2007 19:46:58 -0400
+Received: from rv-out-0910.google.com ([209.85.198.191]:28834 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759683AbXKCXq5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Nov 2007 19:46:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references:sender;
+        b=C0Y3OGUrV9crOc503KpWqL8QCeRlcgEGIgU58/J4CFANnwTAAxOQW+Dn/8ekz9ogsnywyV9mPEFwafo+M2tl0BBrZg3UNp1isH3y7d4IJlJ1sn+q8FTNy8iil7yEuNWtg/ApMc7X4jld2a0ptAMjCpnIocjP3j1sHAsVBh0MBRg=
+From: Michael Marineau <mike@marineau.org>
+To: linux-kernel@vger.kernel.org
+Cc: trivial@kernel.org, Michael Marineau <mike@marineau.org>
+Subject: [PATCH, RESEND] tmpfs: fix mounts when size is less than the page size
+Date: Sat,  3 Nov 2007 16:46:52 -0700
+Message-Id: <11941336124117-git-send-email-mike@marineau.org>
+X-Mailer: git-send-email 1.5.1.6
+In-Reply-To: <11941279021705-git-send-email-mike@marineau.org>
+References: <11941279021705-git-send-email-mike@marineau.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patchset unify the i386 and x86_64 Kconfig
-files for x86.
-In addition it replaces the use of ARCH=i386 and
-ARCH=x86_64 with the more intuitive ARCH=x86.
+When tmpfs is mounted with a size less than one page the number of blocks
+is set to 0 which makes the tmpfs mount unlimited. This can lead to a quick
+and surprising death is someone typos a tmpfs mount command and writes to much.
 
-The primary purpose of this patch serie is to 
-enable make ARCH=x86 and let the config decide
-if we are building for 32 or 64 bit.
+tmpfs can still be mounted as unlimited if size or nr_blocks is exactly 0.
 
-But we will break quite a high number of
-scripts with this change.
-What is the desired behaviour when specifying:
-make ARCH=i386
-and
-make ARCH=x86_64
-??
+Signed-off-by: Michael Marineau <mike@marineau.org>
+---
+Somehow I was a moron and didn't notice the compiler shouting insults at me,
+here is the correct version of the patch. Sorry for the noise :-(
 
-For now it just error out like this:
-$ make ARCH=i386
-Makefile:503: /home/sam/kernel/x86.git/arch/i386/Makefile: No such file or directory
-make: *** No rule to make target `/home/sam/kernel/x86.git/arch/i386/Makefile'.  Stop.
+ mm/shmem.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-
-What is the required functionality here?
-Note - only patch 9 and 10 are changing any behaviour.
-So if we decide to keep current functionality then
-the first 8 patches still makes a lot of sense.
-
-
-The patch serie contains:
-Sam Ravnborg (10):
-      x86: unification of cfufreq/Kconfig
-      x86: start unification of arch/x86/Kconfig.*
-      x86: arch/x86/Kconfig.cpu unification
-      x86: add X86_32 dependency to i386 specific symbols in Kconfig.i386
-      x86: add X86_64 dependency to x86_64 specific symbols in Kconig.x86_64
-      x86: copy x86_64 specific Kconfig symbols to Kconifg.i386
-      x86: add remaning bits from x86_64 to Kconfig.i386
-      x86: combine all config options with prompts in Kconfig
-      x86: select i386 or x86_64 at config time
-      x86: enable make ARCH=x86
-
-The diffstat looks promising:
- 9 files changed, 975 insertions(+), 2639 deletions(-)
-
-A patch that makes the kernel more than 1500 line smaller
-is a good patch!
-
-Full diffstat (as git can show it):
-
-$ git diff --stat -C -M -B HEAD~10..HEAD
- Makefile                                           |    5 +-
- arch/x86/{Kconfig.i386 => Kconfig}                 |  600 ++++----
- arch/x86/Kconfig.cpu                               |   83 +-
- arch/x86/Kconfig.i386                              | 1609 ++++----------------
- arch/x86/Kconfig.x86_64                            | 1132 ++++----------
- arch/x86/Makefile                                  |    2 +-
- .../x86/kernel/cpu/cpufreq/{Kconfig_32 => Kconfig} |   68 +-
- arch/x86/kernel/cpu/cpufreq/Kconfig_64             |  108 --
- scripts/kconfig/Makefile                           |    7 +-
- 9 files changed, 975 insertions(+), 2639 deletions(-)
-
-The serie can be pulled from:
-
-	ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/x86.git
-
-
-Patches will follow in seperate thread.
-This serie replaces the single patch I posted the other day.
-This serie are made to ease review and to do so a few of the patches
-does not change functionality but are just preparing for later steps.
-
-	Sam
+diff --git a/mm/shmem.c b/mm/shmem.c
+index 253d205..86b47d8 100644
+--- a/mm/shmem.c
++++ b/mm/shmem.c
+@@ -2138,6 +2138,8 @@ static int shmem_parse_options(char *options, int *mode, uid_t *uid,
+ 			if (*rest)
+ 				goto bad_val;
+ 			*blocks = size >> PAGE_CACHE_SHIFT;
++			if (size && *blocks == 0)
++				*blocks = 1;
+ 		} else if (!strcmp(this_char,"nr_blocks")) {
+ 			*blocks = memparse(value,&rest);
+ 			if (*rest)
+-- 
+1.5.1.6
 
