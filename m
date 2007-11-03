@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764408AbXKCAU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764858AbXKCAUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764408AbXKCAU2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 20:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762328AbXKCAEq
+	id S1764858AbXKCAUs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 20:20:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754760AbXKCAEw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 20:04:46 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:57898 "EHLO
+	Fri, 2 Nov 2007 20:04:52 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:57901 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762331AbXKCAEp (ORCPT
+	with ESMTP id S1762391AbXKCAEu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 20:04:45 -0400
-Date: Sat, 3 Nov 2007 01:04:21 +0100
+	Fri, 2 Nov 2007 20:04:50 -0400
+Date: Sat, 3 Nov 2007 01:04:26 +0100
 From: Adrian Bunk <bunk@kernel.org>
 To: Davide Libenzi <davidel@xmailserver.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] fs/signalfd.c should #include <linux/syscalls.h>
-Message-ID: <20071103000421.GE4594@stusta.de>
+Subject: [2.6 patch] fs/eventfd.c should #include <linux/syscalls.h>
+Message-ID: <20071103000426.GF4594@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,21 +24,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Every file should include the headers containing the prototypes for
-its global functions (in this case sys_signalfd()).
+its global functions (in this case sys_eventfd()).
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-8b3bc8f299ba6ce251a047cb5c6a7aabc95a4f39 
-diff --git a/fs/signalfd.c b/fs/signalfd.c
-index fb7f7e8..60da986 100644
---- a/fs/signalfd.c
-+++ b/fs/signalfd.c
-@@ -27,6 +27,7 @@
- #include <linux/list.h>
+5cf38f68bfaefff7992322fb92bdac533561e7ae 
+diff --git a/fs/eventfd.c b/fs/eventfd.c
+index 2ce19c0..a9f130c 100644
+--- a/fs/eventfd.c
++++ b/fs/eventfd.c
+@@ -15,6 +15,7 @@
+ #include <linux/spinlock.h>
  #include <linux/anon_inodes.h>
- #include <linux/signalfd.h>
+ #include <linux/eventfd.h>
 +#include <linux/syscalls.h>
  
- struct signalfd_ctx {
- 	sigset_t sigmask;
+ struct eventfd_ctx {
+ 	wait_queue_head_t wqh;
+
