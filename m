@@ -1,61 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758435AbXKCEer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758267AbXKCE4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758435AbXKCEer (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 00:34:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752955AbXKCEek
+	id S1758267AbXKCE4a (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 00:56:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbXKCE4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 00:34:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46805 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752208AbXKCEej (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 00:34:39 -0400
-Message-ID: <472BFA4B.9040506@redhat.com>
-Date: Fri, 02 Nov 2007 21:34:19 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Pavel Emelyanov <xemul@openvz.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>
-Subject: Re: [patch] PID namespace design bug, workaround
-References: <20071101144307.GA29566@elte.hu>	<4729E7E4.8070208@openvz.org>	<4729E936.4040400@redhat.com>	<4729EB3C.9050102@openvz.org>	<472A6D91.1020300@redhat.com>	<472AD7D6.80900@openvz.org> <20071102010419.23f3db5c.akpm@linux-foundation.org> <472ADC78.6070706@openvz.org> <472B2EBD.7070007@redhat.com> <472B327E.2060006@openvz.org> <472B4378.80809@redhat.com> <472B4937.1050106@openvz.org>
-In-Reply-To: <472B4937.1050106@openvz.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Sat, 3 Nov 2007 00:56:23 -0400
+Received: from mail.gmx.net ([213.165.64.20]:38316 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752949AbXKCE4W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Nov 2007 00:56:22 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/fZyU4Ljjfg7DupRr7chr/8fxW2z/JiQr3n8mVGF
+	zNF0ahBvtGPZOW
+Subject: Re: [Linux-NTFS-Dev] 2.6.23 regression: second access of empty
+	ntfs file leads to D	state hang
+From: Mike Galbraith <efault@gmx.de>
+To: Anton Altaparmakov <aia21@cam.ac.uk>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       ntfs-dev <linux-ntfs-dev@lists.sourceforge.net>,
+       Neil Brown <neilb@suse.de>
+In-Reply-To: <1EEFFD17-64E7-41C6-BFED-529A5794EC36@cam.ac.uk>
+References: <1193638086.7409.21.camel@Homer.simpson.net>
+	 <E3E758D0-25AC-45B8-9BAB-F8CDF75AF3CA@cam.ac.uk>
+	 <1193658311.7324.2.camel@Homer.simpson.net>
+	 <4E61D235-B8E8-43DF-96A5-B3169E6AB223@cam.ac.uk>
+	 <1193668997.7284.2.camel@Homer.simpson.net>
+	 <1193671099.7172.0.camel@Homer.simpson.net>
+	 <1193731202.7229.9.camel@Homer.simpson.net>
+	 <3BFCE55A-F7E2-4A19-8FD9-F23AF2A29D76@cam.ac.uk>
+	 <1EEFFD17-64E7-41C6-BFED-529A5794EC36@cam.ac.uk>
+Content-Type: text/plain
+Date: Sat, 03 Nov 2007 05:56:17 +0100
+Message-Id: <1194065777.11539.5.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Fri, 2007-11-02 at 19:22 +0000, Anton Altaparmakov wrote:
 
-Pavel Emelyanov wrote:
-> Having access to the same IPCs in different pid namespaces won't work.
-> Having access to the same filesystem in different IPC namespaces won't work.
-> Having access to the same UID namespace in different VFS namespaces won't work.
-> Having access to the same <any> namespace in different <many others> namespace
->  wont' work.
-> [...]
+> Would you be able to test it in your setup?  Thanks a lot in advance!
+
+Modulo uninitialized vi, works fine.  I moved it up, and all is well.
+Thanks.
+
+Tested-by:  Mike Galbraith <efault@gmx.de>
+
+diff --git a/fs/ntfs/aops.c b/fs/ntfs/aops.c
+index cfdc790..ad87cb0 100644
+--- a/fs/ntfs/aops.c
++++ b/fs/ntfs/aops.c
+@@ -405,6 +405,15 @@ static int ntfs_readpage(struct file *file, struct page *page)
+ 
+ retry_readpage:
+ 	BUG_ON(!PageLocked(page));
++	vi = page->mapping->host;
++	i_size = i_size_read(vi);
++	/* Is the page fully outside i_size? (truncate in progress) */
++	if (unlikely(page->index >= (i_size + PAGE_CACHE_SIZE - 1) >>
++			PAGE_CACHE_SHIFT)) {
++		zero_user_page(page, 0, PAGE_CACHE_SIZE, KM_USER0);
++		ntfs_debug("Read outside i_size - truncated?");
++		goto done;
++	}
+ 	/*
+ 	 * This can potentially happen because we clear PageUptodate() during
+ 	 * ntfs_writepage() of MstProtected() attributes.
+@@ -413,7 +422,6 @@ retry_readpage:
+ 		unlock_page(page);
+ 		return 0;
+ 	}
+-	vi = page->mapping->host;
+ 	ni = NTFS_I(vi);
+ 	/*
+ 	 * Only $DATA attributes can be encrypted and only unnamed $DATA
+diff --git a/fs/ntfs/attrib.c b/fs/ntfs/attrib.c
+index 92dabdc..50d3b0c 100644
+--- a/fs/ntfs/attrib.c
++++ b/fs/ntfs/attrib.c
+@@ -179,10 +179,7 @@ int ntfs_map_runlist_nolock(ntfs_inode *ni, VCN vcn, ntfs_attr_search_ctx *ctx)
+ 	 * ntfs_mapping_pairs_decompress() fails.
+ 	 */
+ 	end_vcn = sle64_to_cpu(a->data.non_resident.highest_vcn) + 1;
+-	if (!a->data.non_resident.lowest_vcn && end_vcn == 1)
+-		end_vcn = sle64_to_cpu(a->data.non_resident.allocated_size) >>
+-				ni->vol->cluster_size_bits;
+-	if (unlikely(vcn >= end_vcn)) {
++	if (unlikely(vcn && vcn >= end_vcn)) {
+ 		err = -ENOENT;
+ 		goto err_out;
+ 	}
+diff --git a/fs/ntfs/compress.c b/fs/ntfs/compress.c
+index d98daf5..d1619d0 100644
+--- a/fs/ntfs/compress.c
++++ b/fs/ntfs/compress.c
+@@ -561,6 +561,16 @@ int ntfs_read_compressed_block(struct page *page)
+ 	read_unlock_irqrestore(&ni->size_lock, flags);
+ 	max_page = ((i_size + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT) -
+ 			offset;
++	/* Is the page fully outside i_size? (truncate in progress) */
++	if (xpage >= max_page) {
++		kfree(bhs);
++		kfree(pages);
++		zero_user_page(page, 0, PAGE_CACHE_SIZE, KM_USER0);
++		ntfs_debug("Compressed read outside i_size - truncated?");
++		SetPageUptodate(page);
++		unlock_page(page);
++		return 0;
++	}
+ 	if (nr_pages < max_page)
+ 		max_page = nr_pages;
+ 	for (i = 0; i < max_page; i++, offset++) {
 
 
-Then explicitly prevent the cases which cannot work in the clone()
-calls.  Yes, giving people rope to shoot themselves is a Unix tradition
-but it's so unnecessary in this case and will only cause support
-problems for innocent people.
-
-I bet the result will be that if you have a separate PID namespace you
-need to enforce every other namespace as well.  There are simply too
-many dependencies.
-
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFHK/pL2ijCOnn/RHQRAtp6AKC8QIRvJa4qVUSx9IVpRq6X+6HPGQCff/hT
-m2tpKWmeM+xAfS5ICvB0NVk=
-=5ozn
------END PGP SIGNATURE-----
