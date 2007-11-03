@@ -1,392 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762387AbXKCXve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762788AbXKCXvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762387AbXKCXve (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 19:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759798AbXKCXtu
+	id S1762788AbXKCXvr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 19:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760177AbXKCXtv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 19:49:50 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:59229 "EHLO pasmtpB.tele.dk"
+	Sat, 3 Nov 2007 19:49:51 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:59240 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756956AbXKCXto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757239AbXKCXto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 3 Nov 2007 19:49:44 -0400
 From: Sam Ravnborg <sam@ravnborg.org>
 To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
        "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 01/10] x86: unification of cfufreq/Kconfig
-Date: Sun,  4 Nov 2007 00:51:11 +0100
-Message-Id: <11941338801315-git-send-email-sam@ravnborg.org>
+Subject: [PATCH 07/10] x86: add remaning bits from x86_64 to Kconfig.i386
+Date: Sun,  4 Nov 2007 00:51:17 +0100
+Message-Id: <11941338813105-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.5.0.6
+In-Reply-To: <11941338813125-git-send-email-sam@ravnborg.org>
+References: <11941338801315-git-send-email-sam@ravnborg.org> <11941338804007-git-send-email-sam@ravnborg.org> <11941338801910-git-send-email-sam@ravnborg.org> <11941338802525-git-send-email-sam@ravnborg.org> <11941338802646-git-send-email-sam@ravnborg.org> <11941338813125-git-send-email-sam@ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Merge the two Kconfig files to a single file.
-Checked by comparing menuconfig before and after.
-Except some slight reordering in the x86_&4 case
-the result is equal.
+A few symbols remained in Kconfig.x86_64 where the
+dependencies were different or the help text was
+different from the i386 one.
+Modify all relevant Kconfig.i386 symbols such that
+they have X86_64 dependencies for x86_64 specific items
+and update the help text as appropriate.
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- arch/x86/Kconfig.i386                              |    2 +-
- arch/x86/Kconfig.x86_64                            |    2 +-
- .../x86/kernel/cpu/cpufreq/{Kconfig_32 => Kconfig} |   68 ++++++++----
- arch/x86/kernel/cpu/cpufreq/Kconfig_64             |  108 --------------------
- 4 files changed, 48 insertions(+), 132 deletions(-)
- rename arch/x86/kernel/cpu/cpufreq/{Kconfig_32 => Kconfig} (77%)
- delete mode 100644 arch/x86/kernel/cpu/cpufreq/Kconfig_64
+ arch/x86/Kconfig.i386 |   51 ++++++++++++++++++++++++++++++++++++++++--------
+ 1 files changed, 42 insertions(+), 9 deletions(-)
 
 diff --git a/arch/x86/Kconfig.i386 b/arch/x86/Kconfig.i386
-index 7331efe..b6f2fd0 100644
+index 890c258..4984904 100644
 --- a/arch/x86/Kconfig.i386
 +++ b/arch/x86/Kconfig.i386
-@@ -1092,7 +1092,7 @@ config APM_REAL_MODE_POWER_OFF
- 
- endif # APM
- 
--source "arch/x86/kernel/cpu/cpufreq/Kconfig_32"
-+source "arch/x86/kernel/cpu/cpufreq/Kconfig"
- 
- source "drivers/cpuidle/Kconfig"
- 
-diff --git a/arch/x86/Kconfig.x86_64 b/arch/x86/Kconfig.x86_64
-index cc468ea..8d6b534 100644
---- a/arch/x86/Kconfig.x86_64
-+++ b/arch/x86/Kconfig.x86_64
-@@ -719,7 +719,7 @@ config ARCH_HIBERNATION_HEADER
- 
- source "drivers/acpi/Kconfig"
- 
--source "arch/x86/kernel/cpu/cpufreq/Kconfig_64"
-+source "arch/x86/kernel/cpu/cpufreq/Kconfig"
- 
- source "drivers/cpuidle/Kconfig"
- 
-diff --git a/arch/x86/kernel/cpu/cpufreq/Kconfig_32 b/arch/x86/kernel/cpu/cpufreq/Kconfig
-similarity index 77%
-rename from arch/x86/kernel/cpu/cpufreq/Kconfig_32
-rename to arch/x86/kernel/cpu/cpufreq/Kconfig
-index d8c6f13..a84cea6 100644
---- a/arch/x86/kernel/cpu/cpufreq/Kconfig_32
-+++ b/arch/x86/kernel/cpu/cpufreq/Kconfig
-@@ -19,6 +19,9 @@ config X86_ACPI_CPUFREQ
- 	  Processor Performance States.
- 	  This driver also supports Intel Enhanced Speedstep.
- 
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called acpi-cpufreq.
-+
- 	  For details, take a look at <file:Documentation/cpu-freq/>.
- 
- 	  If in doubt, say N.
-@@ -26,7 +29,7 @@ config X86_ACPI_CPUFREQ
- config ELAN_CPUFREQ
- 	tristate "AMD Elan SC400 and SC410"
- 	select CPU_FREQ_TABLE
--	depends on X86_ELAN
-+	depends on X86_32 && X86_ELAN
- 	---help---
- 	  This adds the CPUFreq driver for AMD Elan SC400 and SC410
- 	  processors.
-@@ -42,7 +45,7 @@ config ELAN_CPUFREQ
- config SC520_CPUFREQ
- 	tristate "AMD Elan SC520"
- 	select CPU_FREQ_TABLE
--	depends on X86_ELAN
-+	depends on X86_32 && X86_ELAN
- 	---help---
- 	  This adds the CPUFreq driver for AMD Elan SC520 processor.
- 
-@@ -54,6 +57,7 @@ config SC520_CPUFREQ
- config X86_POWERNOW_K6
- 	tristate "AMD Mobile K6-2/K6-3 PowerNow!"
- 	select CPU_FREQ_TABLE
-+	depends on X86_32
- 	help
- 	  This adds the CPUFreq driver for mobile AMD K6-2+ and mobile
- 	  AMD K6-3+ processors.
-@@ -65,6 +69,7 @@ config X86_POWERNOW_K6
- config X86_POWERNOW_K7
- 	tristate "AMD Mobile Athlon/Duron PowerNow!"
- 	select CPU_FREQ_TABLE
-+	depends on X86_32
- 	help
- 	  This adds the CPUFreq driver for mobile AMD K7 mobile processors.
- 
-@@ -76,23 +81,27 @@ config X86_POWERNOW_K7_ACPI
+@@ -307,9 +307,17 @@ source "arch/x86/Kconfig.cpu"
+ config HPET_TIMER
  	bool
- 	depends on X86_POWERNOW_K7 && ACPI_PROCESSOR
- 	depends on !(X86_POWERNOW_K7 = y && ACPI_PROCESSOR = m)
-+	depends on X86_32
+ 	prompt "HPET Timer Support" if X86_32
++	default y if X86_64
+ 	help
+-	  This enables the use of the HPET for the kernel's internal timer.
++	  Use the IA-PC HPET (High Precision Event Timer) to manage
++	  time in preference to the PIT and RTC, if a HPET is
++	  present.
+ 	  HPET is the next generation timer replacing legacy 8254s.
++          The HPET provides a stable time base on SMP
++	  systems, unlike the TSC, but it is more expensive to access,
++	  as it is off-chip.  You can find the HPET spec at
++	  <http://www.intel.com/hardwaredesign/hpetspec.htm>.
++
+ 	  You can safely choose Y here.  However, HPET will only be
+ 	  activated if the platform and the BIOS support this feature.
+ 	  Otherwise the 8254 will be used for timing services.
+@@ -377,8 +385,8 @@ config NR_CPUS
+ 	default "8"
+ 	help
+ 	  This allows you to specify the maximum number of CPUs which this
+-	  kernel will support.  The maximum supported value is 255 and the
+-	  minimum value which makes sense is 2.
++	  kernel will support. Current maximum is 255 CPUs due to
++	  APIC addressing limits. Less depending on the hardware.
+ 
+ 	  This is purely to save memory - each supported CPU adds
+ 	  approximately eight kilobytes to the kernel image.
+@@ -444,8 +452,10 @@ config X86_VISWS_APIC
  	default y
  
- config X86_POWERNOW_K8
- 	tristate "AMD Opteron/Athlon64 PowerNow!"
- 	select CPU_FREQ_TABLE
--	depends on EXPERIMENTAL
- 	help
- 	  This adds the CPUFreq driver for mobile AMD Opteron/Athlon64 processors.
- 
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called powernow-k8.
-+
- 	  For details, take a look at <file:Documentation/cpu-freq/>.
- 
- 	  If in doubt, say N.
- 
- config X86_POWERNOW_K8_ACPI
--	bool "ACPI Support"
--	select ACPI_PROCESSOR
--	depends on ACPI && X86_POWERNOW_K8
+ config X86_MCE
+-	bool "Machine Check Exception"
 +	bool
-+	prompt "ACPI Support" if X86_32
-+	depends on ACPI && X86_POWERNOW_K8 && ACPI_PROCESSOR
-+	depends on !(X86_POWERNOW_K8 = y && ACPI_PROCESSOR = m)
- 	default y
- 	help
- 	  This provides access to the K8s Processor Performance States via ACPI.
-@@ -104,7 +113,7 @@ config X86_POWERNOW_K8_ACPI
++	prompt "Machine Check Exception" if X86_32 || (X86_64 && EMBEDDED)
+ 	depends on !X86_VOYAGER
++	default y if X86_64
+ 	---help---
+ 	  Machine Check Exception support allows the processor to notify the
+ 	  kernel if it detects a problem (e.g. overheating, component failure).
+@@ -459,6 +469,9 @@ config X86_MCE
+ 	  problem on some new non-standard machine, you can boot with "nomce"
+ 	  to disable it.  MCE support simply ignores non-MCE processors like
+ 	  the 386 and 486, so nearly everyone can say Y here.
++	  This version for x86_64 will require the mcelog utility to decode
++	  some machine check error logs. See
++	  ftp://ftp.x86-64.org/pub/linux/tools/mcelog
  
- config X86_GX_SUSPMOD
- 	tristate "Cyrix MediaGX/NatSemi Geode Suspend Modulation"
--	depends on PCI
-+	depends on X86_32 && PCI
- 	help
- 	 This add the CPUFreq driver for NatSemi Geode processors which
- 	 support suspend modulation.
-@@ -114,15 +123,19 @@ config X86_GX_SUSPMOD
- 	 If in doubt, say N.
+ config X86_MCE_NONFATAL
+ 	tristate "Check for non-fatal errors on AMD Athlon/Duron / Intel Pentium 4"
+@@ -577,6 +590,8 @@ config MICROCODE
  
- config X86_SPEEDSTEP_CENTRINO
--	tristate "Intel Enhanced SpeedStep"
-+	tristate "Intel Enhanced SpeedStep (deprecated)"
- 	select CPU_FREQ_TABLE
--	select X86_SPEEDSTEP_CENTRINO_TABLE
-+	select X86_SPEEDSTEP_CENTRINO_TABLE if X86_32
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called microcode.
++	  If you use modprobe or kmod you may also want to add the line
++	  'alias char-major-10-184 microcode' to your /etc/modules.conf file.
+ 
+ config MICROCODE_OLD_INTERFACE
+ 	bool
+@@ -722,13 +737,19 @@ config X86_PAE
+ # Common NUMA Features
+ config NUMA
+ 	bool "Numa Memory Allocation and Scheduler Support (EXPERIMENTAL)"
+-	depends on X86_32 && SMP && HIGHMEM64G && (X86_NUMAQ || (X86_SUMMIT || X86_GENERICARCH) && ACPI) && EXPERIMENTAL
++	depends on (X86_32 && SMP && HIGHMEM64G && (X86_NUMAQ || (X86_SUMMIT || X86_GENERICARCH) && ACPI) && EXPERIMENTAL) || (X86_64 && SMP)
+ 	default n if X86_PC
+ 	default y if (X86_NUMAQ || X86_SUMMIT)
  	help
-+	  This is deprecated and this functionality is now merged into
-+	  acpi_cpufreq (X86_ACPI_CPUFREQ). Use that driver instead of
-+	  speedstep_centrino.
- 	  This adds the CPUFreq driver for Enhanced SpeedStep enabled
--	  mobile CPUs.  This means Intel Pentium M (Centrino) CPUs. However,
--	  you also need to say Y to "Use ACPI tables to decode..." below
--	  [which might imply enabling ACPI] if you want to use this driver
--	  on non-Banias CPUs.
-+	  mobile CPUs.  This means Intel Pentium M (Centrino) CPUs
-+	  or 64bit enabled Intel Xeons.
+-	  NUMA support for i386. This is currently highly experimental
+-	  and should be only used for kernel development. It might also
+-	  cause boot failures.
++	  NUMA (Non Uniform Memory Access) support.
++	  For i386 this is currently highly experimental and should be
++	  only used for kernel development. It might also cause boot failures.
++	  NUMA support for X86_64 is working fine. The kernel
++	  will try to allocate memory used by a CPU on the local memory
++	  controller of the CPU and add some more NUMA awareness to the kernel.
++	  This code is recommended on all multiprocessor Opteron systems.
++	  If the system is EM64T, you should say N unless your system is EM64T
++	  NUMA.
+ 
+ comment "NUMA (Summit) requires SMP, 64GB highmem support, ACPI"
+ 	depends on X86_32 && X86_SUMMIT && (!HIGHMEM64G || !ACPI)
+@@ -879,6 +900,8 @@ config MTRR
+ 
+ 	  You can safely say Y even if your machine doesn't have MTRRs, you'll
+ 	  just add about 9 KB to your kernel.
++	  For x86_64 you should just say Y here, all x86_64 machines
++	  support MTRRs.
+ 
+ 	  See <file:Documentation/mtrr.txt> for more information.
+ 
+@@ -977,7 +1000,7 @@ config KEXEC
+ config CRASH_DUMP
+ 	bool "kernel crash dumps (EXPERIMENTAL)"
+ 	depends on EXPERIMENTAL
+-	depends on HIGHMEM
++	depends on X86_64 || HIGHMEM
+ 	help
+ 	  Generate crash dump after being started by kexec.
+ 	  This should be normally only set in special crash dump kernels
+@@ -992,6 +1015,7 @@ config CRASH_DUMP
+ config PHYSICAL_START
+ 	hex "Physical address where the kernel is loaded" if (EMBEDDED || CRASH_DUMP)
+ 	default "0x1000000" if X86_NUMAQ
++	default "0x200000"  if X86_64
+ 	default "0x100000"
+ 	help
+ 	  This gives the physical address where the kernel is loaded.
+@@ -1044,6 +1068,10 @@ config RELOCATABLE
+ 	  must live at a different physical address than the primary
+ 	  kernel.
+ 
++	  Note: If CONFIG_RELOCATABLE=y, then the kernel runs from the address
++	  it has been loaded at and the compile time physical address
++	  (CONFIG_PHYSICAL_START) is ignored.
 +
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called speedstep-centrino.
- 
- 	  For details, take a look at <file:Documentation/cpu-freq/>.
- 
-@@ -130,7 +143,7 @@ config X86_SPEEDSTEP_CENTRINO
- 
- config X86_SPEEDSTEP_CENTRINO_TABLE
- 	bool "Built-in tables for Banias CPUs"
--	depends on X86_SPEEDSTEP_CENTRINO
-+	depends on X86_32 && X86_SPEEDSTEP_CENTRINO
- 	default y
- 	help
- 	  Use built-in tables for Banias CPUs if ACPI encoding
-@@ -141,6 +154,7 @@ config X86_SPEEDSTEP_CENTRINO_TABLE
- config X86_SPEEDSTEP_ICH
- 	tristate "Intel Speedstep on ICH-M chipsets (ioport interface)"
- 	select CPU_FREQ_TABLE
-+	depends on X86_32
- 	help
- 	  This adds the CPUFreq driver for certain mobile Intel Pentium III
- 	  (Coppermine), all mobile Intel Pentium III-M (Tualatin) and all
-@@ -154,7 +168,7 @@ config X86_SPEEDSTEP_ICH
- config X86_SPEEDSTEP_SMI
- 	tristate "Intel SpeedStep on 440BX/ZX/MX chipsets (SMI interface)"
- 	select CPU_FREQ_TABLE
--	depends on EXPERIMENTAL
-+	depends on X86_32 && EXPERIMENTAL
- 	help
- 	  This adds the CPUFreq driver for certain mobile Intel Pentium III
- 	  (Coppermine), all mobile Intel Pentium III-M (Tualatin)
-@@ -169,15 +183,24 @@ config X86_P4_CLOCKMOD
- 	select CPU_FREQ_TABLE
- 	help
- 	  This adds the CPUFreq driver for Intel Pentium 4 / XEON
--	  processors.
-+	  processors.  When enabled it will lower CPU temperature by skipping
-+	  clocks.
+ config PHYSICAL_ALIGN
+ 	hex
+ 	prompt "Alignment value to which kernel should be aligned" if X86_32
+@@ -1075,6 +1103,11 @@ config HOTPLUG_CPU
+ 	  Say Y here to experiment with turning CPUs off and on, and to
+ 	  enable suspend on SMP systems. CPUs can be controlled through
+ 	  /sys/devices/system/cpu.
++	  This is also required for suspend/hibernation on SMP systems.
 +
-+	  This driver should be only used in exceptional
-+	  circumstances when very low power is needed because it causes severe
-+	  slowdowns and noticeable latencies.  Normally Speedstep should be used
-+	  instead.
++	  Say N if you want to disable CPU hotplug and don't need to
++	  suspend.
 +
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called p4-clockmod.
  
- 	  For details, take a look at <file:Documentation/cpu-freq/>.
- 
--	  If in doubt, say N.
-+	  Unless you are absolutely sure say N.
- 
- config X86_CPUFREQ_NFORCE2
- 	tristate "nVidia nForce2 FSB changing"
--	depends on EXPERIMENTAL
-+	depends on X86_32 && EXPERIMENTAL
- 	help
- 	  This adds the CPUFreq driver for FSB changing on nVidia nForce2
- 	  platforms.
-@@ -188,6 +211,7 @@ config X86_CPUFREQ_NFORCE2
- 
- config X86_LONGRUN
- 	tristate "Transmeta LongRun"
-+	depends on X86_32
- 	help
- 	  This adds the CPUFreq driver for Transmeta Crusoe and Efficeon processors
- 	  which support LongRun.
-@@ -199,7 +223,7 @@ config X86_LONGRUN
- config X86_LONGHAUL
- 	tristate "VIA Cyrix III Longhaul"
- 	select CPU_FREQ_TABLE
--	depends on ACPI_PROCESSOR
-+	depends on X86_32 && ACPI_PROCESSOR
- 	help
- 	  This adds the CPUFreq driver for VIA Samuel/CyrixIII,
- 	  VIA Cyrix Samuel/C3, VIA Cyrix Ezra and VIA Cyrix Ezra-T
-@@ -212,7 +236,7 @@ config X86_LONGHAUL
- config X86_E_POWERSAVER
- 	tristate "VIA C7 Enhanced PowerSaver (EXPERIMENTAL)"
- 	select CPU_FREQ_TABLE
--	depends on EXPERIMENTAL
-+	depends on X86_32 && EXPERIMENTAL
- 	help
- 	  This adds the CPUFreq driver for VIA C7 processors.
- 
-@@ -233,11 +257,11 @@ config X86_ACPI_CPUFREQ_PROC_INTF
- 
- config X86_SPEEDSTEP_LIB
- 	tristate
--	default X86_SPEEDSTEP_ICH || X86_SPEEDSTEP_SMI || X86_P4_CLOCKMOD
-+	default (X86_SPEEDSTEP_ICH || X86_SPEEDSTEP_SMI || X86_P4_CLOCKMOD)
- 
- config X86_SPEEDSTEP_RELAXED_CAP_CHECK
- 	bool "Relaxed speedstep capability checks"
--	depends on (X86_SPEEDSTEP_SMI || X86_SPEEDSTEP_ICH)
-+	depends on X86_32 && (X86_SPEEDSTEP_SMI || X86_SPEEDSTEP_ICH)
- 	help
- 	  Don't perform all checks for a speedstep capable system which would
- 	  normally be done. Some ancient or strange systems, though speedstep
-diff --git a/arch/x86/kernel/cpu/cpufreq/Kconfig_64 b/arch/x86/kernel/cpu/cpufreq/Kconfig_64
-deleted file mode 100644
-index 9c9699f..0000000
---- a/arch/x86/kernel/cpu/cpufreq/Kconfig_64
-+++ /dev/null
-@@ -1,108 +0,0 @@
--#
--# CPU Frequency scaling
--#
--
--menu "CPU Frequency scaling"
--
--source "drivers/cpufreq/Kconfig"
--
--if CPU_FREQ
--
--comment "CPUFreq processor drivers"
--
--config X86_POWERNOW_K8
--	tristate "AMD Opteron/Athlon64 PowerNow!"
--	select CPU_FREQ_TABLE
--	help
--	  This adds the CPUFreq driver for mobile AMD Opteron/Athlon64 processors.
--
--	  To compile this driver as a module, choose M here: the
--	  module will be called powernow-k8.
--
--	  For details, take a look at <file:Documentation/cpu-freq/>.
--
--	  If in doubt, say N.
--
--config X86_POWERNOW_K8_ACPI
--	bool
--	depends on X86_POWERNOW_K8 && ACPI_PROCESSOR
--	depends on !(X86_POWERNOW_K8 = y && ACPI_PROCESSOR = m)
--	default y
--
--config X86_SPEEDSTEP_CENTRINO
--	tristate "Intel Enhanced SpeedStep (deprecated)"
--	select CPU_FREQ_TABLE
--	depends on ACPI_PROCESSOR
--	help
--	  This is deprecated and this functionality is now merged into
--	  acpi_cpufreq (X86_ACPI_CPUFREQ). Use that driver instead of
--	  speedstep_centrino.
--	  This adds the CPUFreq driver for Enhanced SpeedStep enabled
--	  mobile CPUs.  This means Intel Pentium M (Centrino) CPUs
--	  or 64bit enabled Intel Xeons.
--
--	  To compile this driver as a module, choose M here: the
--	  module will be called speedstep-centrino.
--
--	  For details, take a look at <file:Documentation/cpu-freq/>.
--
--	  If in doubt, say N.
--
--config X86_ACPI_CPUFREQ
--	tristate "ACPI Processor P-States driver"
--	select CPU_FREQ_TABLE
--	depends on ACPI_PROCESSOR
--	help
--	  This driver adds a CPUFreq driver which utilizes the ACPI
--	  Processor Performance States.
--	  This driver also supports Intel Enhanced Speedstep.
--
--	  To compile this driver as a module, choose M here: the
--	  module will be called acpi-cpufreq.
--
--	  For details, take a look at <file:Documentation/cpu-freq/>.
--
--	  If in doubt, say N.
--
--comment "shared options"
--
--config X86_ACPI_CPUFREQ_PROC_INTF
--	bool "/proc/acpi/processor/../performance interface (deprecated)"
--	depends on PROC_FS
--	depends on X86_ACPI_CPUFREQ || X86_POWERNOW_K8_ACPI
--	help
--	  This enables the deprecated /proc/acpi/processor/../performance
--	  interface. While it is helpful for debugging, the generic,
--	  cross-architecture cpufreq interfaces should be used.
--
--	  If in doubt, say N.
--
--config X86_P4_CLOCKMOD
--	tristate "Intel Pentium 4 clock modulation"
--	depends on EMBEDDED
--	select CPU_FREQ_TABLE
--	help
--	  This adds the clock modulation driver for Intel Pentium 4 / XEON
--	  processors.  When enabled it will lower CPU temperature by skipping
--	  clocks.
--
--	  This driver should be only used in exceptional
--	  circumstances when very low power is needed because it causes severe
--	  slowdowns and noticeable latencies.  Normally Speedstep should be used
--	  instead.
--
--	  To compile this driver as a module, choose M here: the
--	  module will be called p4-clockmod.
--
--	  For details, take a look at <file:Documentation/cpu-freq/>.
--
--	  Unless you are absolutely sure say N.
--
--
--config X86_SPEEDSTEP_LIB
--	tristate
--	default X86_P4_CLOCKMOD
--
--endif
--
--endmenu
+ config COMPAT_VDSO
+ 	bool "Compat VDSO support"
 -- 
 1.5.3.4.1157.g0e74-dirty
 
