@@ -1,46 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759553AbXKCU1L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758797AbXKCUiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759553AbXKCU1L (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 16:27:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757115AbXKCU05
+	id S1758797AbXKCUiW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 16:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756669AbXKCUiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 16:26:57 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51603 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756370AbXKCU05 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 16:26:57 -0400
-Date: Sat, 3 Nov 2007 13:26:55 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Hugh Dickins <hugh@veritas.com>
-cc: =?ISO-8859-1?Q?Oliv=E9r_Pint=E9r?= <oliver.pntr@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH 1/2] slub: fix leakage
-In-Reply-To: <Pine.LNX.4.64.0711032007060.17942@blonde.wat.veritas.com>
-Message-ID: <Pine.LNX.4.64.0711031326450.6227@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0711031708040.10266@blonde.wat.veritas.com>
- <6101e8c40711031027x3f946b28p324dadeab7c1b2c3@mail.gmail.com>
- <Pine.LNX.4.64.0711031741160.10953@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0711031847450.13845@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0711031935510.15611@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0711031247250.5828@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0711031950300.17078@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0711031253580.6080@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0711032007060.17942@blonde.wat.veritas.com>
+	Sat, 3 Nov 2007 16:38:15 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57988 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756440AbXKCUiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Nov 2007 16:38:15 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Frans Pop <elendil@planet.nl>
+Subject: Re: [RFC][PATCH 3/3] PM: Suspend/hibernation debug documentation update (rev. 2)
+Date: Sat, 3 Nov 2007 21:54:48 +0100
+User-Agent: KMail/1.9.5
+Cc: johannes@sipsolutions.net, lenb@kernel.org, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, pavel@ucw.cz
+References: <200711032054.40195.rjw@sisk.pl> <200711032058.23358.rjw@sisk.pl> <E1IoPIE-0005qK-9U@faramir.fjphome.nl>
+In-Reply-To: <E1IoPIE-0005qK-9U@faramir.fjphome.nl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711032154.49758.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 3 Nov 2007, Hugh Dickins wrote:
+On Saturday, 3 November 2007 21:08, Frans Pop wrote:
+> Rafael J. Wysocki wrote:
+> > +core run in a test mode.  There are 5 test modes available:
+> > +
+> > +freezer - test the freezing of processes
+> > +devices - test the freezing of processes and suspending of devices
+> > +platform - test the freezing of processes, suspending of devices and platform
+> > +           global control methods(*)
+> > +processors - test the freezing of processes, suspending of devices, platform
+> > +             global control methods(*) and the disabling of nonboot CPUs
+> > +core - test the freezing of processes, suspending of devices, platform global
+> > +       control methods(*), the disabling of nonboot CPUs and suspending of
+> > +       platform/system devices
+> 
+> I'd suggest to indent this as follows:
+> - freezer
+>   Test the freezing of processes.
+> - devices
+>   Test the freezing of processes and suspending of devices.
+> - platform
+>   Test the freezing of processes, suspending of devices and platform global
+>   control methods(*).
+> - processors
+>   Test the freezing of processes, suspending of devices, platform global
+>   control methods(*) and the disabling of nonboot CPUs.
+> - core
+>   Test the freezing of processes, suspending of devices, platform global
+>   control methods(*), the disabling of nonboot CPUs and suspending of
+>   platform/system devices.
 
-> Neither of us has yet posted a correct patch which applies to 2.6.23
-> and 2.6.22.  I'm testing your 2.6.24-rc patch overnight, and if that's
-> fine then one of us will post the version for -stable.  I thought I'd
-> better leave that to you, after I've reported back.
+Yup, this way it looks better.
 
-Ok.
-
+Thanks,
+Rafael
