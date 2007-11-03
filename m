@@ -1,78 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764248AbXKCASc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764578AbXKCASp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764248AbXKCASc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 20:18:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762271AbXKCADt
+	id S1764578AbXKCASp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 20:18:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762447AbXKCAEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 20:03:49 -0400
-Received: from cantor.suse.de ([195.135.220.2]:41263 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761990AbXKCADs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 20:03:48 -0400
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 54/54] kset: remove decl_subsys macro
-Date: Fri,  2 Nov 2007 16:59:32 -0700
-Message-Id: <1194047972-9850-54-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <20071102235758.GA9803@kroah.com>
-References: <20071102235758.GA9803@kroah.com>
+	Fri, 2 Nov 2007 20:04:20 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:49497 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762311AbXKCAET (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Nov 2007 20:04:19 -0400
+Date: Sat, 3 Nov 2007 01:03:54 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] mm/slub.c: remove unused exports
+Message-ID: <20071103000354.GA4594@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This macro is no longer used.  ksets should be created dynamically with
-a call to kset_create_and_register() not declared statically.
+This patch removes the following unused EXPORT_SYMBOL's:
+- kmem_ptr_validate
+- ksize
 
-Yes, there are 5 remaining static struct kset usages in the kernel tree,
-but they will be fixed up soon.
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/class.c    |   11 +++++++++--
- include/linux/kobject.h |    6 ------
- 2 files changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/base/class.c b/drivers/base/class.c
-index 27256b3..c854158 100644
---- a/drivers/base/class.c
-+++ b/drivers/base/class.c
-@@ -453,8 +453,15 @@ static struct kset_uevent_ops class_uevent_ops = {
- 	.uevent =	class_uevent,
- };
+ mm/slub.c |    2 --
+ 1 file changed, 2 deletions(-)
+
+23a2ab570c092f28f7cb0a0bd8d48bd0bd598d9e 
+diff --git a/mm/slub.c b/mm/slub.c
+index bcdb2c8..e996ca4 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -2267,7 +2267,6 @@ int kmem_ptr_validate(struct kmem_cache *s, const void *object)
+ 	 */
+ 	return 1;
+ }
+-EXPORT_SYMBOL(kmem_ptr_validate);
  
--static decl_subsys(class_obj, &class_uevent_ops);
--
-+/*
-+ * DO NOT copy how this is created, kset_create_and_register() should be
-+ * called, but this is a hold-over from the old-way and will be deleted
-+ * entirely soon.
-+ */
-+static struct kset class_obj_subsys = {
-+	.kobj = { .k_name = "class_obj", },
-+	.uevent_ops = &class_uevent_ops,
-+};
+ /*
+  * Determine the size of a slab object
+@@ -2603,7 +2602,6 @@ size_t ksize(const void *object)
+ 	 */
+ 	return s->size;
+ }
+-EXPORT_SYMBOL(ksize);
  
- static int class_device_add_attrs(struct class_device * cd)
+ void kfree(const void *x)
  {
-diff --git a/include/linux/kobject.h b/include/linux/kobject.h
-index 05c8ef8..0e8f21e 100644
---- a/include/linux/kobject.h
-+++ b/include/linux/kobject.h
-@@ -192,12 +192,6 @@ extern struct kobject * kset_find_obj(struct kset *, const char *);
- #define set_kset_name(str)	.kset = { .kobj = { .k_name = str } }
- 
- 
--#define decl_subsys(_name,_uevent_ops) \
--struct kset _name##_subsys = { \
--	.kobj = { .k_name = __stringify(_name) }, \
--	.uevent_ops =_uevent_ops, \
--}
--
- /* The global /sys/kernel/ kset for people to chain off of */
- extern struct kset *kernel_kset;
- /* The global /sys/hypervisor/ kset for people to chain off of */
--- 
-1.5.3.4
 
