@@ -1,80 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761544AbXKCUCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761762AbXKCUDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761544AbXKCUCW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 16:02:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757851AbXKCUCP
+	id S1761762AbXKCUDY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 16:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757963AbXKCUDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 16:02:15 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:47599 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757829AbXKCUCN convert rfc822-to-8bit (ORCPT
+	Sat, 3 Nov 2007 16:03:17 -0400
+Received: from clarity.mcc.ac.uk ([130.88.200.144]:61082 "EHLO
+	clarity.mcc.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756519AbXKCUDR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 16:02:13 -0400
-Date: Sat, 3 Nov 2007 13:01:54 -0700
-From: sukadev@us.ibm.com
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Ulrich Drepper <drepper@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [patch] PID namespace design bug, workaround
-Message-ID: <20071103200154.GA23234@us.ibm.com>
-References: <20071101144307.GA29566@elte.hu> <4729E7E4.8070208@openvz.org> <4729E936.4040400@redhat.com> <4729EB3C.9050102@openvz.org> <472A6D91.1020300@redhat.com> <472AD7D6.80900@openvz.org> <20071102010419.23f3db5c.akpm@linux-foundation.org> <472ADC78.6070706@openvz.org> <472B2EBD.7070007@redhat.com> <472B327E.2060006@openvz.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <472B327E.2060006@openvz.org>
-User-Agent: Mutt/1.4.2.2i
-X-Operating-System: Linux 2.0.32 on an i486
+	Sat, 3 Nov 2007 16:03:17 -0400
+Message-ID: <472CD3F3.7050701@gentoo.org>
+Date: Sat, 03 Nov 2007 20:02:59 +0000
+From: Daniel Drake <dsd@gentoo.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070805)
+MIME-Version: 1.0
+To: Tejun Heo <htejun@gmail.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Albert Lee <albertcc@tw.ibm.com>
+Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
+References: <47274A5F.6070409@gentoo.org>	<20071030153417.59b9182c@the-village.bc.nu>	<47276DCA.1000808@gentoo.org>	<20071030190153.373c9347@the-village.bc.nu>	<47278439.4030801@gentoo.org>	<20071031114958.210bd7cc@the-village.bc.nu>	<20071031115754.GK5059@kernel.dk>	<4729A0DF.20800@garzik.org>	<20071101105335.1f20bab3@the-village.bc.nu>	<4729B3EA.6040707@garzik.org> <20071101141501.3746cec2@the-village.bc.nu> <4729F1BB.20306@gentoo.org> <4729F8F1.4040103@gmail.com> <472B946F.4030004@gentoo.org> <472BCC18.7070503@gmail.com>
+In-Reply-To: <472BCC18.7070503@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-UoM: Scanned by the University Mail System. See http://www.itservices.manchester.ac.uk/email/filtering/information/ for details.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelianov [xemul@openvz.org] wrote:
-| Ulrich Drepper wrote:
-| > -----BEGIN PGP SIGNED MESSAGE-----
-| > Hash: SHA1
-| > 
-| > Pavel Emelyanov wrote:
-| >>> Isn't it this?
-| >>>
-| >>> http://lkml.org/lkml/2007/11/1/141
-| >> That was the initial problem, and I already answered to Ingo about
-| >> it
-| > 
-| > No, look at my old mail which Ingo referenced in that posting.
-| 
-| You pointed only one problem that is not a variation of "how do 
-| we handle the case when we pass our pid outside the namespace".
-| 
-| This problem with signals is now being resolved at IBM by Sukadev 
-| and Serge (I put them in Cc), so this is about to be fixed by the
-| time 2.6.24 releases (I hope).
+Tejun Heo wrote:
+>> <4>ata2.00: HSM violation: eh_analyze_tf: BUSY|DRQ
+>> <3>ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+>> <3>ata2.00: cmd a0/00:00:00:0a:00/00:00:00:00:00/a0 tag 0 cdb 0x5a data
+>> 10 in
+>> <4>         res 58/00:02:00:0a:00/00:00:00:00:00/a0 Emask 0x2 (HSM
+>> violation)
+>> <3>ata2.00: status: { DRDY DRQ }
+>> <6>ata2: soft resetting link
+>> <6>ata2.00: configured for UDMA/33
+>> <6>ata2: EH complete
+> 
+> Does this patch fix the problem?
 
-Yes. We (Oleg, Eric included in Cc) have a patchset to address signals
-issues in child pid namespaces. It is being discussed on Containers list:
+That fixes it, thanks! There is no more ugly error in dmesg, the test
+prog doesn't print any sense data, and brasero works OK too. However,
+these messages appear in the kernel log every time I run the test app
+(or when brasero does its thing):
 
-https://lists.linux-foundation.org/pipermail/containers/2007-October/008240.html
+<4>ata2.00: 10 bytes trailing data
+<4>ata2.00: 10 bytes trailing data
+<4>ata2.00: 10 bytes trailing data
+<4>ata2.00: 10 bytes trailing data
+<4>ata2.00: 10 bytes trailing data
+<4>ata2.00: 10 bytes trailing data
+<4>ata2.00: 6 bytes trailing data
 
-We will post the patchset to LKML soon.
+Daniel
 
-| 
-| As far as the "passing the pid outside the namespace" is concerned, 
-| is my answer "pids should never be used outside the namespace they
-| came from, otherwise userspace won't work as expected" satisfactory?
-| 
-| So is "everything else", you mentioned, covered with the problems
-| above?
-| 
-| > - --
-| > ➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
-| > -----BEGIN PGP SIGNATURE-----
-| > Version: GnuPG v1.4.7 (GNU/Linux)
-| > 
-| > iD8DBQFHKy692ijCOnn/RHQRAtYLAJ98EXTGl3HMlCbVXOkL7TJRFfw4DACfcgYI
-| > HHz5f7TfM05Dps+ruPRiUrU=
-| > =IjS4
-| > -----END PGP SIGNATURE-----
-| > 
