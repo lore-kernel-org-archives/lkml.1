@@ -1,64 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755170AbXKCMa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754805AbXKCMfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755170AbXKCMa0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 08:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753586AbXKCMaJ
+	id S1754805AbXKCMfA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 08:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753562AbXKCMew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 08:30:09 -0400
-Received: from main.gmane.org ([80.91.229.2]:60164 "EHLO ciao.gmane.org"
+	Sat, 3 Nov 2007 08:34:52 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:40340 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754603AbXKCMaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 08:30:07 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Remigiusz Modrzejewski <lkml.only@maxnet.org.pl>
-Subject: Policy on dual licensing?
-Date: Sat, 3 Nov 2007 12:14:15 +0000 (UTC)
-Message-ID: <slrnfiopoa.9cu.lkml.only@localhost.localdomain>
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: host-ip38-174.crowley.pl
-X-stopkeylogger: don't use broken software
-X-Posting-License: http://ppl.7thguard.net/PPL
-X-Homesite: http://lrem.net/
-User-Agent: slrn/0.9.8.1 (Linux)
+	id S1753459AbXKCMev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Nov 2007 08:34:51 -0400
+Message-ID: <472C6AE1.30104@garzik.org>
+Date: Sat, 03 Nov 2007 08:34:41 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Tejun Heo <htejun@gmail.com>
+CC: Daniel Drake <dsd@gentoo.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Albert Lee <albertcc@tw.ibm.com>
+Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
+References: <47274A5F.6070409@gentoo.org>	<20071030153417.59b9182c@the-village.bc.nu>	<47276DCA.1000808@gentoo.org>	<20071030190153.373c9347@the-village.bc.nu>	<47278439.4030801@gentoo.org>	<20071031114958.210bd7cc@the-village.bc.nu>	<20071031115754.GK5059@kernel.dk>	<4729A0DF.20800@garzik.org>	<20071101105335.1f20bab3@the-village.bc.nu>	<4729B3EA.6040707@garzik.org> <20071101141501.3746cec2@the-village.bc.nu> <4729F1BB.20306@gentoo.org> <4729F8F1.4040103@gmail.com> <472B946F.4030004@gentoo.org> <472BCC18.7070503@gmail.com>
+In-Reply-To: <472BCC18.7070503@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Tejun Heo wrote:
+> Does this patch fix the problem?
+[snip]
 
-We've all seen the last flame war about Linux stealing BSD code. Due to
-Theo's bad wording whole discussion rolled around the question about
-legality of this, a big waste of time (question answered a thousand
-times). Still, the question about ethics is quite valid...
+I hope it does...  that patch removes a call to sg_last() and in general 
+cleans up the function a bit, which is nice.
 
-There are over four hundred C source files that mention BSD, but only 
-a hundred of them is dual licensed. Of course not all mentions of BSD
-mean the file is derived from it, as well as not each such licensed file
-must use the acronym.  No matter what the scale really is, the problem
-exists.
+	Jeff
 
-What I suppose is that people porting BSD code to Linux don't mean
-closing the doors for back-porting changes. They are simply unaware 
-or forget about the possibility of dual licensing. Obviously, each
-submitter should read Documentation/SubmittingDrivers, where it is
-explicitly stated. Yet humans are prone to forgetting, so this may
-seem not enough.
 
-What I propose is implementing a policy on accepting such code.
-According to it, every time a maintainer is considering a driver
-that is derived from BSD and licensed GPL-only, should request
-for dual licensing before accepting the patch. If the submitter is
-reluctant to do so - what can we do, it's better to have this inside
-this way than not at all. However, this should minimize such cases 
-and, hopefully, satisfy the claims about Linux maintainers not doing 
-all that they could to make the world a better place.
 
-Best regards,
-Remigiusz Modrzejewski
-
--- 
-Remigiusz 'lRem' Modrzejewski
-I might be *extremely unresponsive* at the From: email...
-Contact: http://lrem.net/pages/view/about
-Feel free to correct my English.
 
