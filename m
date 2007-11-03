@@ -1,119 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760615AbXKCJRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757445AbXKCJdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760615AbXKCJRg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 05:17:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754490AbXKCJR0
+	id S1757445AbXKCJdS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 05:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbXKCJdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 05:17:26 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:50327 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753558AbXKCJRY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 05:17:24 -0400
-Date: Sat, 3 Nov 2007 10:17:22 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Swen Schillig <swen@vnet.ibm.com>
-Cc: James Bottomley <James.Bottomley@steeleye.com>,
-       Christof Schmitt <christof.schmitt@de.ibm.com>,
-       linux-scsi@vger.kernel.org, Linux on 390 Port <LINUX-390@vm.marist.edu>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] zfcp: add some internal zfcp adapter statistics
-Message-ID: <20071103091722.GA7807@osiris.boeblingen.de.ibm.com>
-References: <200710311133.52090.swen@vnet.ibm.com>
+	Sat, 3 Nov 2007 05:33:05 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56508 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752318AbXKCJdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Nov 2007 05:33:04 -0400
+Date: Sat, 3 Nov 2007 10:32:40 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Restore deterministic CPU accounting on powerpc
+Message-ID: <20071103093240.GA22932@elte.hu>
+References: <18218.44089.274628.680088@cargo.ozlabs.ibm.com> <20071103085420.GA14551@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200710311133.52090.swen@vnet.ibm.com>
+In-Reply-To: <20071103085420.GA14551@elte.hu>
 User-Agent: Mutt/1.5.16 (2007-06-09)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +static void zfcp_fsf_req_latency(struct zfcp_fsf_req *fsf_req)
-> +{
-> +	struct fsf_qual_latency_info *lat_inf;
-> +	struct zfcp_unit *unit;
-> +
-> +	lat_inf = &fsf_req->qtcb->prefix.prot_status_qual.latency_info;
-> +	unit = fsf_req->unit;
-> +
-> +	switch (fsf_req->qtcb->bottom.io.data_direction) {
-> +	case FSF_DATADIR_READ:
-> +		unit->latencies.read.channel += lat_inf->channel_lat;
-> +		unit->latencies.read.fabric += lat_inf->fabric_lat;
-> +		unit->latencies.read.counter++;
-> +		break;
-> +	case FSF_DATADIR_WRITE:
-> +		unit->latencies.write.channel += lat_inf->channel_lat;
-> +		unit->latencies.write.fabric += lat_inf->fabric_lat;
-> +		unit->latencies.write.counter++;
-> +		break;
-> +	case FSF_DATADIR_CMND:
-> +		unit->latencies.cmd.channel += lat_inf->channel_lat;
-> +		unit->latencies.cmd.fabric += lat_inf->fabric_lat;
-> +		unit->latencies.cmd.counter++;
-> +		break;
-> +	}
-> +}
 
-These statistics are concurrently updated from several cpus without
-any locking. That looks like a bug.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> +zfcp_sysfs_unit_##_name##_latency_show(struct device *dev,		\
-> +				       struct device_attribute *attr,	\
-> +				       char *buf) {			\
-> +	struct scsi_device *sdev = to_scsi_device(dev);			\
-> +	struct zfcp_unit *unit = sdev->hostdata;			\
-> +	struct zfcp_latencies *lat = &unit->latencies;			\
-> +	struct zfcp_adapter *adapter = unit->port->adapter;		\
-> +									\
-> +	return sprintf(buf, "%u %u %u\n",				\
-> +		       lat->_name.fabric * adapter->timer_ticks / 1000, \
-> +		       lat->_name.channel * adapter->timer_ticks / 1000,\
-> +		       lat->_name.counter);				\
+> * Paul Mackerras <paulus@samba.org> wrote:
+> 
+> > Since powerpc started using CONFIG_GENERIC_CLOCKEVENTS, the 
+> > deterministic CPU accounting (CONFIG_VIRT_CPU_ACCOUNTING) has been 
+> > broken on powerpc, because we end up counting user time twice: once in 
+> > timer_interrupt() and once in update_process_times().
+> > 
+> > This fixes the problem by pulling the code in update_process_times 
+> > that updates utime and stime into a separate function called 
+> > account_process_tick.  If CONFIG_VIRT_CPU_ACCOUNTING is not defined, 
+> > there is a version of account_process_tick in kernel/timer.c that 
+> > simply accounts a whole tick to either utime or stime as before.  If 
+> > CONFIG_VIRT_CPU_ACCOUNTING is defined, then arch code gets to 
+> > implement account_process_tick.
+> > 
+> > This also lets us simplify the s390 code a bit; it means that the s390 
+> > timer interrupt can now call update_process_times even when 
+> > CONFIG_VIRT_CPU_ACCOUNTING is turned on, and can just implement a 
+> > suitable account_process_tick().
+> > 
+> > Signed-off-by: Paul Mackerras <paulus@samba.org>
+> 
+> lets push this towards Linus via the scheduler tree, ok?
 
-In addition they can be read concurrently from userspace without any
-locking... Since you put several values together in the output I assume
-this is supposed to be some sort of snapshot, which it currently isn't.
+hm, i've removed it for now because it doesnt even build due toj:
 
-> +static int
-> +zfcp_sysfs_adapter_ex_config(struct class_device *cdev,
-> +			     struct fsf_qtcb_bottom_config **qtcb_config)
-> +{
-> +	struct Scsi_Host *scsi_host = class_to_shost(cdev);
-> +	struct zfcp_adapter *adapter = (struct zfcp_adapter *)
-> +						scsi_host->hostdata[0];
-> +
-> +	if (!(adapter->adapter_features & FSF_FEATURE_MEASUREMENT_DATA)) {
-> +		ZFCP_LOG_NORMAL("error: Enhanced measurement feature not "
-> +				"supported");
-> +		return -EOPNOTSUPP;
-> +	}
-> +
-> +	*qtcb_config = kzalloc(sizeof(struct fsf_qtcb_bottom_config),
-> +			       GFP_KERNEL);
-> +	if (!*qtcb_config)
-> +		return -ENOMEM;
-> +
-> +	return zfcp_fsf_exchange_config_data_sync(adapter, *qtcb_config);
-> +}
-> +
-> +static ssize_t
-> +zfcp_sysfs_adapter_request_show(struct class_device *cdev, char *buf)
-> +{
-> +	struct fsf_qtcb_bottom_config *qtcb_config;
-> +	int retval;
-> +
-> +	retval = zfcp_sysfs_adapter_ex_config(cdev, &qtcb_config);
-> +
-> +	if (!retval)
-> +		retval = sprintf(buf, "%lu %lu %lu\n",
-> +				 qtcb_config->stat_info.input_req,
-> +				 qtcb_config->stat_info.output_req,
-> +				 qtcb_config->stat_info.control_req);
-> +
-> +	kfree(qtcb_config);
-> +	return retval;
-> +}
++#ifndef CONFIG_VIRT_CPU_ACCOUNTING
++void account_process_tick(int user_tick)
++{
++       if (user_tick) {
++               account_user_time(p, jiffies_to_cputime(1));
++               account_user_time_scaled(p, jiffies_to_cputime(1));
 
-You're going to call kfree with some random value if the adapter doesn't
-support the measurement data feature.
+	Ingo
