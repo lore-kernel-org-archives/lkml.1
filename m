@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756331AbXKCQsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756134AbXKCRCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756331AbXKCQsS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 12:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754710AbXKCQsK
+	id S1756134AbXKCRCw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 13:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbXKCRCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 12:48:10 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:32954 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754429AbXKCQsJ (ORCPT
+	Sat, 3 Nov 2007 13:02:45 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52729 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753994AbXKCRCo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 12:48:09 -0400
-Message-ID: <472CA62D.8050205@linux.vnet.ibm.com>
-Date: Sat, 03 Nov 2007 22:17:41 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] Restore deterministic CPU accounting on powerpc
-References: <18218.44089.274628.680088@cargo.ozlabs.ibm.com> <661de9470711030202x24d0186cuc96a70156ecfa23f@mail.gmail.com> <18220.24362.604297.53633@cargo.ozlabs.ibm.com>
-In-Reply-To: <18220.24362.604297.53633@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 3 Nov 2007 13:02:44 -0400
+Date: Sat, 3 Nov 2007 10:02:23 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, linux-ide@vger.kernel.org
+Subject: Re: Suspend to ram regression (2.6.24-rc1-git)
+Message-ID: <20071103100223.48831355@laptopd505.fenrus.org>
+In-Reply-To: <20071103062304.GA10428@thunk.org>
+References: <20071031201308.GK11514@kernel.dk>
+	<20071101084145.GA5037@kernel.dk>
+	<20071102163708.15304989.kristen.c.accardi@intel.com>
+	<20071103062304.GA10428@thunk.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mackerras wrote:
-> Balbir Singh writes:
-> 
->> So, scaled accounting will not be available if
->> CONFIG_VIRT_CPU_ACCOUNTING is defined? Am I reading this correctly
-> 
-> No, what makes you think that?  If VIRT_CPU_ACCOUNTING=y it is the
-> responsibility of the arch's account_process_tick to update the scaled
-> stats.  And the powerpc version does that by calling
-> account_user_time_scaled().
-> 
-> Paul.
+On Sat, 3 Nov 2007 02:23:04 -0400
+Theodore Tso <tytso@mit.edu> wrote:
 
-I looked at the diff's and could just see the reversal of scaled
-accounting. I looked at account_process_vtime(), now
-account_process_tick() and things seem fine. I was mislead by the
-diff.
+> Yep, this fixes suspend/resume on my X61 thinkpad.  Interestingly I'm
+> not seeing any power savings with ALPM set to min_power, at least not
+> compared to what I get after suspend and resuming (which mysteriously
+> cause the power utilization of my laptop to drop by a watt --- maybe
+> that is engaging ALPM as part of the suspend process?  I dunno).
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+
+ALPM seems to help only if your disk is idle for 2 seconds or more;
+unfortunately several standard linux desktops have the disk spin up all
+the time via all kinds of things.... there's some "standard guilty"
+ones if you're interested in chasing this down..
