@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762539AbXKCBYh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762680AbXKCBYw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762539AbXKCBYh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Nov 2007 21:24:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757085AbXKCBXV
+	id S1762680AbXKCBYw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Nov 2007 21:24:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758800AbXKCBX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Nov 2007 21:23:21 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:35205 "EHLO
+	Fri, 2 Nov 2007 21:23:27 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:35210 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752949AbXKCBXP (ORCPT
+	with ESMTP id S1753879AbXKCBXQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Nov 2007 21:23:15 -0400
+	Fri, 2 Nov 2007 21:23:16 -0400
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@ftp.linux.org.uk, hch@infradead.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 5/8] Unionfs: avoid a deadlock during branch-management on a pivot_root'ed union
-Date: Fri,  2 Nov 2007 21:22:46 -0400
-Message-Id: <11940529712183-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 3/8] Unionfs: update usage.txt documentation
+Date: Fri,  2 Nov 2007 21:22:44 -0400
+Message-Id: <11940529701438-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11940529692937-git-send-email-ezk@cs.sunysb.edu>
@@ -26,71 +26,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
-Acked-by: Herton Ronaldo Krzesinski <herton@mandriva.com>
 ---
- fs/unionfs/union.h |   39 +++++++++++++++++++++++++++++++++------
- 1 files changed, 33 insertions(+), 6 deletions(-)
+ Documentation/filesystems/unionfs/usage.txt |   17 +++++++++++++++++
+ 1 files changed, 17 insertions(+), 0 deletions(-)
 
-diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
-index 6333488..0476f97 100644
---- a/fs/unionfs/union.h
-+++ b/fs/unionfs/union.h
-@@ -142,11 +142,18 @@ struct unionfs_sb_info {
- 	 * This rwsem is used to make sure that a branch management
- 	 * operation...
- 	 *   1) will not begin before all currently in-flight operations
--	 *      complete
-+	 *      complete.
- 	 *   2) any new operations do not execute until the currently
--	 *      running branch management operation completes
-+	 *      running branch management operation completes.
-+	 *
-+	 * The write_lock_owner records the PID of the task which grabbed
-+	 * the rw_sem for writing.  If the same task also tries to grab the
-+	 * read lock, we allow it.  This prevents a self-deadlock when
-+	 * branch-management is used on a pivot_root'ed union, because we
-+	 * have to ->lookup paths which belong to the same union.
- 	 */
- 	struct rw_semaphore rwsem;
-+	pid_t write_lock_owner;	/* PID of rw_sem owner (write lock) */
- 	int high_branch_id;	/* last unique branch ID given */
- 	struct unionfs_data *data;
- };
-@@ -234,10 +241,30 @@ static inline off_t rdstate2offset(struct unionfs_dir_state *buf)
- 	return tmp;
- }
+diff --git a/Documentation/filesystems/unionfs/usage.txt b/Documentation/filesystems/unionfs/usage.txt
+index d8c15de..a6b1aca 100644
+--- a/Documentation/filesystems/unionfs/usage.txt
++++ b/Documentation/filesystems/unionfs/usage.txt
+@@ -74,6 +74,23 @@ to read-write, and change /bar from read-write to read-only:
  
--#define unionfs_read_lock(sb)	 down_read(&UNIONFS_SB(sb)->rwsem)
--#define unionfs_read_unlock(sb)	 up_read(&UNIONFS_SB(sb)->rwsem)
--#define unionfs_write_lock(sb)	 down_write(&UNIONFS_SB(sb)->rwsem)
--#define unionfs_write_unlock(sb) up_write(&UNIONFS_SB(sb)->rwsem)
-+static inline void unionfs_read_lock(struct super_block *sb)
-+{
-+	if (UNIONFS_SB(sb)->write_lock_owner &&
-+	    UNIONFS_SB(sb)->write_lock_owner == current->pid)
-+		return;
-+	down_read(&UNIONFS_SB(sb)->rwsem);
-+}
-+static inline void unionfs_read_unlock(struct super_block *sb)
-+{
-+	if (UNIONFS_SB(sb)->write_lock_owner &&
-+	    UNIONFS_SB(sb)->write_lock_owner == current->pid)
-+		return;
-+	up_read(&UNIONFS_SB(sb)->rwsem);
-+}
-+static inline void unionfs_write_lock(struct super_block *sb)
-+{
-+	down_write(&UNIONFS_SB(sb)->rwsem);
-+	UNIONFS_SB(sb)->write_lock_owner = current->pid;
-+}
-+static inline void unionfs_write_unlock(struct super_block *sb)
-+{
-+	up_write(&UNIONFS_SB(sb)->rwsem);
-+	UNIONFS_SB(sb)->write_lock_owner = 0;
-+}
+ # mount -t unionfs -o remount,mode=/foo=rw,mode=/bar=ro none MOUNTPOINT
  
- static inline void unionfs_double_lock_dentry(struct dentry *d1,
- 					      struct dentry *d2)
++Note: in Unionfs 2.x, you cannot set the leftmost branch to readonly because
++then Unionfs won't have any writable place for copyups to take place.
++Moreover, the VFS can get confused when it tries to modify something in a
++file system mounted read-write, but isn't permitted to write to it.
++Instead, you should set the whole union as readonly, as described above.
++If, however, you must set the leftmost branch as readonly, perhaps so you
++can get a snapshot of it at a point in time, then you should insert a new
++writable top-level branch, and mark the one you want as readonly.  This can
++be accomplished as follows, assuming that /foo is your current leftmost
++branch:
++
++# mount -t tmpfs -o size=NNN /new
++# mount -t unionfs -o remount,add=/new,mode=/foo=ro none MOUNTPOINT
++<do what you want safely in /foo>
++# mount -t unionfs -o remount,del=/new,mode=/foo=rw none MOUNTPOINT
++<check if there's anything in /new you want to preserve>
++# umount /new
+ 
+ CACHE CONSISTENCY
+ =================
 -- 
 1.5.2.2
 
