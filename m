@@ -1,73 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759904AbXKDBSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760523AbXKDB2h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759904AbXKDBSR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 21:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755835AbXKDBSE
+	id S1760523AbXKDB2h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 21:28:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755813AbXKDB23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 21:18:04 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35767 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754111AbXKDBSB (ORCPT
+	Sat, 3 Nov 2007 21:28:29 -0400
+Received: from wx-out-0506.google.com ([66.249.82.227]:50514 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754827AbXKDB21 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 21:18:01 -0400
-Date: Sun, 4 Nov 2007 02:17:37 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] replace "make ARCH=i386/x86_64 with make ARCH=x86"
-Message-ID: <20071104011737.GG12045@stusta.de>
-References: <20071103234826.GA26654@uranus.ravnborg.org> <20071103165247.3663f518@laptopd505.fenrus.org>
+	Sat, 3 Nov 2007 21:28:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mV//3A737bEhmWtngEIz43Pv6enKgWWQoV+q6rSVp9A+anzLZCiH5Ouylr/G00OcHpnZjhL/de8BzYfsuNNXhmciI6wC6nMapx5ghuSVR3nW9sXQUcKBjPxJoyFnqixC3JOPxngXosla0y0T/bqrPUt60bimzpwacfWT07s3q7U=
+Message-ID: <e7d8f83e0711031828i4bbc138eo274e1583d4fe58d3@mail.gmail.com>
+Date: Sun, 4 Nov 2007 11:28:26 +1000
+From: "Peter Dolding" <oiaohm@gmail.com>
+To: "David Newall" <david@davidnewall.com>
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static interface)
+Cc: "Jan Engelhardt" <jengelh@computergmbh.de>, casey@schaufler-ca.com,
+       "Toshiharu Harada" <haradats@gmail.com>,
+       "Crispin Cowan" <crispin@crispincowan.com>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+In-Reply-To: <4729BD60.3030105@davidnewall.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071103165247.3663f518@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <e7d8f83e0710311904w45827586oabcca597fd612ea6@mail.gmail.com>
+	 <832119.21078.qm@web36614.mail.mud.yahoo.com>
+	 <e7d8f83e0710311951nd162a27rb2134e3b21e299a8@mail.gmail.com>
+	 <Pine.LNX.4.64.0711010813130.5103@fbirervta.pbzchgretzou.qr>
+	 <4729BD60.3030105@davidnewall.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 03, 2007 at 04:52:47PM -0700, Arjan van de Ven wrote:
-> On Sun, 4 Nov 2007 00:48:26 +0100
-> Sam Ravnborg <sam@ravnborg.org> wrote:
-> 
-> > This patchset unify the i386 and x86_64 Kconfig
-> > files for x86.
-> > In addition it replaces the use of ARCH=i386 and
-> > ARCH=x86_64 with the more intuitive ARCH=x86.
-> > 
-> > The primary purpose of this patch serie is to 
-> > enable make ARCH=x86 and let the config decide
-> > if we are building for 32 or 64 bit.
-> > 
-> > But we will break quite a high number of
-> > scripts with this change.
-> > What is the desired behaviour when specifying:
-> > make ARCH=i386
-> > and
-> > make ARCH=x86_64
-> 
-> I would say.. just print a very very nasty warning, wait 20 seconds,
-> and then pretend it was passed as x86
-> and then remove in the next release (assuming the code isn't too ugly)
+On 11/1/07, David Newall <david@davidnewall.com> wrote:
+> Jan Engelhardt wrote:
+> > On Nov 1 2007 12:51, Peter Dolding wrote:
+> >
+> >> This is above me doing code.   No matter how many fixes I do to the
+> >> core that will not fix dysfunction in the LSM section.  Strict
+> >> policies on fixing the main security model will be required.
+> >>
+> >
+> > If there is no one wanting to fix the existing code, then the
+> > perceived problem is not a problem.
+>
+> What an absurd claim.
+>
+I agree.  If they can provide a reason.  A correct reason why its not
+being fixed then the perceived problem does not exist.  Until then it
+common human flaw Tunnel vision.  People normally don't look at the
+big picture.
 
-I'd suggest exit'ing after printing a helpful note.
+Common fake reason is that Linus does not approve.   History of
+patches completely disagrees with that.  Parts Linus has blocked have
+been out of alignment with the build into kernel security model.  Yet
+other parts that were in alignment with the model have got in during
+the same time.  Perfect example of dysfunction making up a lie because
+things will not go into kernel exactly how they want.
 
-The user will anyway have to adjust his build environment, so let's make 
-a clear cut now.
+LSM is nothing more than a testing and model zone.   A place were
+important features should not be.  It was put there because model
+designs could not get along.   Did that mean that LSM was were the
+features were intended to stay.  No the goal should be simple to get
+as many good features into the main line as possible while staying in
+alignment with the main kernels model.  I don't know where the wrong
+idea that the main line did not have a security model came from
+either.  Something does not have to be a LSM to be a security model.
 
-> other than that.. just break it now in 2.6.24; people at least remember
-> .24 as the release that unified, so they expect changes there... they
-> won't expect them for .25 or later
+XEN, KVM and lguest are not a suitable workaround to problem.  Its
+more of LSM developers trying to say its not needed so don't have to
+work with each other.  I am not always using x86 machines so at times
+not one of those solutions fit.
 
-cu
-Adrian
+Containers in Linux kernel get to be processor neutral in features.
+So it will not matter what the processor chip it will work.  So the
+correct solution to running many LSM somehow has to be done with
+Containers.
 
--- 
+Note calling me a know it all is not an answer either.   Either they
+can put have a good explanation for there failing or the need asses
+kicked.  Heck if I am wrong I need ass kick and perfectly prepared to
+accept it.  The problem is I am not a person to accept invalid answers
+what they have been giving me so far.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+My main base is System Administration.  Not coding please note that
+System Administrators are the final clients.  If you want someone with
+System Administration back ground to take up the leadership of LSM and
+bash it into a System Administrator friendly shape I am more than
+prepared to do so.  I can bet a System Administrator in charge who is
+looking from flexibility's and security point of view is going to get
+noses really badly out of joint.  The flexibility bit is currently
+missing.   Its not always possible to reboot a server just because the
+security framework is not up to the job or client wants you to use a
+tighter model.
 
+Yes so people trying to lie to me is something I have very little
+tolerance with.  Paperwork like PHD don't scare me off.  I have had to
+repair networks destroyed by people with PHD with masters in computer
+programming because they run a BIOS destroying virus from a outside
+source.  So lets just say my trust has to be earned and using
+incorrect facts don't get trust from me.
+
+There is a bigger one than just Containers.  Its called linux on
+desktop.   Some how security models will have to tolerate being
+controlled from a central server.  Preferred 1 model so any number of
+Linux Distros can be used in a network.  Just like different versions
+of windows can now.  So somehow we have to get to one master model.
+Even if the other models are just like feature tweaks.  Application
+controlled allows pam and ldap into play.
+
+Selinux jamed in does not really suit what is needed.  The world of
+Linux is changing the LSM need to get there but into gear and catch
+up.
+
+Peter Dolding
