@@ -1,77 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759986AbXKDNl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760727AbXKDNmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759986AbXKDNl7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 08:41:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756852AbXKDNlv
+	id S1760727AbXKDNmW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 08:42:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759443AbXKDNmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 08:41:51 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:45091 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756409AbXKDNlv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 08:41:51 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sun, 4 Nov 2007 14:41:39 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [GIT PULL] FireWire update
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux1394-devel@lists.sourceforge.net
-Message-ID: <tkrat.acb17d7c55769fbb@s5r6.in-berlin.de>
+	Sun, 4 Nov 2007 08:42:06 -0500
+Received: from lucidpixels.com ([75.144.35.66]:37033 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756852AbXKDNmE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Nov 2007 08:42:04 -0500
+Date: Sun, 4 Nov 2007 08:42:04 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: =?ISO-8859-1?Q?BERTRAND_Jo=EBl?= <joel.bertrand@systella.fr>
+cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: 2.6.23.1: mdadm/raid5 hung/d-state
+In-Reply-To: <472DCBBB.1040806@systella.fr>
+Message-ID: <Pine.LNX.4.64.0711040841160.2225@p34.internal.lan>
+References: <Pine.LNX.4.64.0711040658180.30831@p34.internal.lan>
+ <472DCBBB.1040806@systella.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463747160-851533030-1194183724=:2225"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from the for-linus branch at
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
-
-to receive the following IEEE 1394 subsystem update.
-This fixes "2.6.24-rc1-54866.. fails to boot: kernel BUG at
-include/linux/scatterlist.h:49!", bug# 9296.
-
- drivers/ieee1394/dma.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
-
-Jens Axboe (1):
-      ieee1394: iso and async streams: s/g list fix
+---1463747160-851533030-1194183724=:2225
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
 
-Full log and diff:
 
-commit 9e66269d40229cd9823024120910a43af57a9d72
-Author: Jens Axboe <jens.axboe@oracle.com>
-Date:   Sun Nov 4 09:44:56 2007 +0100
+On Sun, 4 Nov 2007, BERTRAND Jo=EBl wrote:
 
-    ieee1394: iso and async streams: s/g list fix
-    
-    Torsten Kaiser wrote:
-    > Looking that calltrace upwards, it seems replacing the
-    > memset(dma->sglist,...) with sg_init_table(...) would fix the BUG_ON()
-    > as that inits the SG_MAGIC.
-    
-    Tested-by: Torsten Kaiser <just.for.lkml@googlemail.com>
-    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> Justin Piszcz wrote:
+>> # ps auxww | grep D
+>> USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+>> root       273  0.0  0.0      0     0 ?        D    Oct21  14:40 [pdflus=
+h]
+>> root       274  0.0  0.0      0     0 ?        D    Oct21  13:00 [pdflus=
+h]
+>>=20
+>> After several days/weeks, this is the second time this has happened, whi=
+le=20
+>> doing regular file I/O (decompressing a file), everything on the device=
+=20
+>> went into D-state.
+>
+> =09Same observation here (kernel 2.6.23). I can see this bug when I try=
+=20
+> to synchronize a raid1 volume over iSCSI (each element is a raid5 volume)=
+, or=20
+> sometimes only with a 1,5 TB raid5 volume. When this bug occurs, md subsy=
+stem=20
+> eats 100% of one CPU and pdflush remains in D state too. What is your=20
+> architecture ? I use two 32-threads T1000 (sparc64), and I'm trying to=20
+> determine if this bug is arch specific.
+>
+> =09Regards,
+>
+> =09JKB
+>
 
-diff --git a/drivers/ieee1394/dma.c b/drivers/ieee1394/dma.c
-index f5f4983..7c4eb39 100644
---- a/drivers/ieee1394/dma.c
-+++ b/drivers/ieee1394/dma.c
-@@ -103,8 +103,7 @@ int dma_region_alloc(struct dma_region *dma, unsigned long n_bytes,
- 		goto err;
- 	}
- 
--	/* just to be safe - this will become unnecessary once sglist->address goes away */
--	memset(dma->sglist, 0, dma->n_pages * sizeof(*dma->sglist));
-+	sg_init_table(dma->sglist, dma->n_pages);
- 
- 	/* fill scatter/gather list with pages */
- 	for (i = 0; i < dma->n_pages; i++) {
+Using x86_64 here (Q6600/Intel DG965WH).
 
--- 
-Stefan Richter
--=====-=-=== =-== --=--
-http://arcgraph.de/sr/
-
+Justin.
+---1463747160-851533030-1194183724=:2225--
