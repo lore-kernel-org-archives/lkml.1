@@ -1,80 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753912AbXKDWxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171AbXKDW5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753912AbXKDWxt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 17:53:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbXKDWxl
+	id S1754171AbXKDW5T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 17:57:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbXKDW5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 17:53:41 -0500
-Received: from flatline.sindominio.net ([82.144.4.26]:42478 "EHLO
-	flatline.sindominio.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751729AbXKDWxk (ORCPT
+	Sun, 4 Nov 2007 17:57:10 -0500
+Received: from an-out-0708.google.com ([209.85.132.240]:54010 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751480AbXKDW5J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 17:53:40 -0500
-Date: Thu, 1 Nov 2007 08:19:02 +0100
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: mcgrof@gmail.com, linux-wireless@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Prism54: Convert mgmt_sem to the mutex API
-Message-ID: <20071101071902.GH6092@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	mcgrof@gmail.com, linux-wireless@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>
+	Sun, 4 Nov 2007 17:57:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=qpCjalQViGzxNImwmEqVlxAiNAKpHVDvE6F25zFgFfcHjyacv3Sojy3tiJ6TYEuyB8KDKPbj9Jla0VcNj1wlyR9QJwrulpK+G997HpwSHG+RReiwEGsFDtOd8Ir6BfNVs1tW6qsKgwn30WBzhJv249urk9F7hiCq8ccM5LjLKJw=
+Message-ID: <3c16e8dc0711041457r684fb42fpc3845a941162b65d@mail.gmail.com>
+Date: Sun, 4 Nov 2007 19:57:08 -0300
+From: "Felipe Dias" <felipediassss@gmail.com>
+To: "Jiri Slaby" <jirislaby@gmail.com>
+Subject: Re: textsearch in module = BUG: scheduling while atomic
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <472E458B.50903@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <3c16e8dc0711040915n206c38d6u7e15972bf55e0e0d@mail.gmail.com>
+	 <472E07ED.2010907@gmail.com>
+	 <3c16e8dc0711041222w6bc67b3fn8320e982ffd723b0@mail.gmail.com>
+	 <472E346E.90309@gmail.com>
+	 <3c16e8dc0711041405m33c5e54dw6c8d51ac600d51cf@mail.gmail.com>
+	 <472E44CA.6090600@gmail.com> <472E458B.50903@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Prism54: Convert mgmt_sem to the mutex API
+I change the algo, from "bm" to "kmp" and probably resolve. I will
+make more tests and if error occour i post latter...
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+Thanks so much.
+Felipe Dias
 
---
-
-diff --git a/drivers/net/wireless/prism54/islpci_dev.c b/drivers/net/wireless/prism54/islpci_dev.c
-index 219dd65..dbb538c 100644
---- a/drivers/net/wireless/prism54/islpci_dev.c
-+++ b/drivers/net/wireless/prism54/islpci_dev.c
-@@ -861,7 +861,7 @@ islpci_setup(struct pci_dev *pdev)
- 	init_waitqueue_head(&priv->reset_done);
- 
- 	/* init the queue read locks, process wait counter */
--	sema_init(&priv->mgmt_sem, 1);
-+	mutex_init(&priv->mgmt_lock);
- 	priv->mgmt_received = NULL;
- 	init_waitqueue_head(&priv->mgmt_wqueue);
- 	sema_init(&priv->stats_sem, 1);
-diff --git a/drivers/net/wireless/prism54/islpci_dev.h b/drivers/net/wireless/prism54/islpci_dev.h
-index 736666d..4e0182c 100644
---- a/drivers/net/wireless/prism54/islpci_dev.h
-+++ b/drivers/net/wireless/prism54/islpci_dev.h
-@@ -26,6 +26,7 @@
- #include <linux/wireless.h>
- #include <net/iw_handler.h>
- #include <linux/list.h>
-+#include <linux/mutex.h>
- 
- #include "isl_38xx.h"
- #include "isl_oid.h"
-@@ -164,7 +165,7 @@ typedef struct {
- 	wait_queue_head_t reset_done;
- 
- 	/* used by islpci_mgt_transaction */
--	struct semaphore mgmt_sem; /* serialize access to mailbox and wqueue */
-+	struct mutex mgmt_lock; /* serialize access to mailbox and wqueue */
- 	struct islpci_mgmtframe *mgmt_received;	  /* mbox for incoming frame */
- 	wait_queue_head_t mgmt_wqueue;            /* waitqueue for mbox */
- 
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
-
-       The yellow ships hung in the air just like bricks dont do
-                 (The Hitch-Hiker's Guide to the Galaxy)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+On 11/4/07, Jiri Slaby <jirislaby@gmail.com> wrote:
+> On 11/04/2007 11:16 PM, Jiri Slaby wrote:
+> > On 11/04/2007 11:05 PM, Felipe Dias wrote:
+> >> Ow sorry... the warning:
+> >>
+> >> BUG: scheduling while atomic: gnome-cups-icon/0x00000101/3827
+> >>  [<c02aefe6>] __sched_text_start+0x56/0x7c8
+> >>  [<c0130139>] autoremove_wake_function+0x14/0x33
+> >>  [<c0119284>] __wake_up_common+0x35/0x53
+> >>  [<c01197f6>] __wake_up+0x32/0x43
+> >>  [<c02af847>] wait_for_completion+0x6a/0x9f
+> >>  [<c011b6ae>] default_wake_function+0x0/0xc
+> >>  [<c012cdff>] call_usermodehelper_keys+0xad/0xc5
+> >>  [<c012ceec>] request_module+0xd5/0xe6
+> >
+> > Seems like it is not inteded for using in atomic at all (you probably passed an
+> > unknown algo here to the prepare function). You seem to have to use a workqueue
+> > if it is possible or prepare the serach before the interrupt occurs.
+>
+> Or pass 0 instead of TS_AUTOLOAD.
+>
