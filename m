@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755233AbXKDXoL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755007AbXKDXxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755233AbXKDXoL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 18:44:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752983AbXKDXn6
+	id S1755007AbXKDXxy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 18:53:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867AbXKDXxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 18:43:58 -0500
-Received: from ns.firmix.at ([62.141.48.66]:1651 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751893AbXKDXn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 18:43:57 -0500
-Subject: Re: duplicated include files
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: Marco Costalba <mcostalba@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0711041447330.6072@localhost.localdomain>
-References: <e5bfff550711041141h612a24cdrcdb5baa35907989d@mail.gmail.com>
-	 <e5bfff550711041143i7be3cff7kd4903ed43cb4e232@mail.gmail.com>
-	 <Pine.LNX.4.64.0711041447330.6072@localhost.localdomain>
-Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Mon, 05 Nov 2007 00:43:52 +0100
-Message-Id: <1194219832.12714.12.camel@gimli.at.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+	Sun, 4 Nov 2007 18:53:46 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:60787 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754093AbXKDXxp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Nov 2007 18:53:45 -0500
+Message-ID: <472E5AB6.40509@zytor.com>
+Date: Sun, 04 Nov 2007 15:50:14 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, tglx@linutronix.de,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] fix i486 boot failure due to stale %ds
+References: <200711042158.lA4Lwv9S014628@harpo.it.uu.se> <472E50C5.5020201@goop.org>
+In-Reply-To: <472E50C5.5020201@goop.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -2.314 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-2.314 required=5
-X-Spam-Score: -2.314 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-11-04 at 14:49 -0500, Robert P. J. Day wrote:
-[...]
-> actually, one wonders if there's any value in keeping any references
-> to other version control systems such as subversion, SCCS, CVS,
-> mercurial, etc.
+Jeremy Fitzhardinge wrote:
+>> Maybe not. I had a look in Intel's SDM Vol3, and the
+>> section "switching to protected mode" specifies that
+>> a move to %cr0 that sets PE should immediately be
+>> followed by a far jmp or call.
+> 
+> Yes, that's what the spec says.  I queried this a few months ago, but
+> hpa used his convincing voice and said that in practice it isn't
+> necessary; there are no known cpus which need this, and any that do
+> would cause other things to break.  But I guess now we have the
+> counter-example...
 
-Lots of people have their working trees in CVS, Subversion, ....
-So it probably annoys them and doesn't really buy anything IMHO.
+Joy.  Apparently the Intel documentation is actually self-inconsistent. 
+  Section 9.9.1, page 9-17 does indeed have the "far jump or call" 
+injunction, whereas the sample code in section 9.10.1, page 9-27, line 
+180 does a near jump!
 
-	Bernd
--- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
-
+	-hpa
