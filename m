@@ -1,58 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754250AbXKDWYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbXKDWZz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754250AbXKDWYe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 17:24:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbXKDWY1
+	id S1754674AbXKDWZz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 17:25:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbXKDWZs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 17:24:27 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:50796 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752971AbXKDWY0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 17:24:26 -0500
-Message-ID: <472E45BF.3070003@zytor.com>
-Date: Sun, 04 Nov 2007 14:20:47 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Mikael Pettersson <mikpe@it.uu.se>
-CC: linux-kernel@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de
-Subject: Re: [PATCH] fix i486 boot failure due to stale %ds
-References: <200711042158.lA4Lwv9S014628@harpo.it.uu.se>
-In-Reply-To: <200711042158.lA4Lwv9S014628@harpo.it.uu.se>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 4 Nov 2007 17:25:48 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:49774 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753118AbXKDWZr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Nov 2007 17:25:47 -0500
+Date: Sun, 4 Nov 2007 23:27:24 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, sam@ranvborg.org,
+       akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Makefile: add 'includecheck' help text
+Message-ID: <20071104222724.GA22479@uranus.ravnborg.org>
+References: <20071104120155.d1e85630.randy.dunlap@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071104120155.d1e85630.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikael Pettersson wrote:
+On Sun, Nov 04, 2007 at 12:01:55PM -0800, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> Maybe not. I had a look in Intel's SDM Vol3, and the
-> section "switching to protected mode" specifies that
-> a move to %cr0 that sets PE should immediately be
-> followed by a far jmp or call. They write that "random
-> failures can occur if other instructions exist between
-> [the move to %cr0] and [the far jmp/call]". The current
-> version of pmjump.S does exactly that: it executes
-> a bunch of moves to segment registers in that window.
-> 
-> (Section 9.9.1 in the Sept. 2005 revision I have in
-> front of me.)
-> 
-> Similarly, section "serializing instructions" writes
-> that a move to %cr0 that enables or disables paging
-> should be followed by a jump. They write that this isn't
-> required in P4 or P6 family processors, but is required
-> for compatibility with other ia32 processors. Reading
-> between the lines, they imply that older ia32 processors
-> don't treat %cr0 writes as completely serializing.
-> 
-> (Section 7.4 in the Sept. 2005 revision.)
-> 
+> Add 'includecheck' to the Static analyzers help list.
 
-The problem is that Intel has a tendency to exaggerate in their 
-documentation; in particular, they tend not to remove restrictions that 
-are long-since obsolete.  However, it sounds like you have actually 
-found a CPU for which this restriction is motivated.
+Thanks Randy - applied.
 
-	-hpa
+	Sam
