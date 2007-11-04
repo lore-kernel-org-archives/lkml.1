@@ -1,39 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755133AbXKDTug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755724AbXKDTwL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755133AbXKDTug (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 14:50:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbXKDTu2
+	id S1755724AbXKDTwL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 14:52:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbXKDTv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 14:50:28 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:50883 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752237AbXKDTu2 (ORCPT
+	Sun, 4 Nov 2007 14:51:59 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:41584 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753372AbXKDTv6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 14:50:28 -0500
-Date: Sun, 4 Nov 2007 14:49:08 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Marco Costalba <mcostalba@gmail.com>
-cc: linux-kernel@vger.kernel.org
+	Sun, 4 Nov 2007 14:51:58 -0500
+Date: Sun, 4 Nov 2007 11:51:08 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Marco Costalba" <mcostalba@gmail.com>
+Cc: linux-kernel@vger.kernel.org
 Subject: Re: duplicated include files
+Message-Id: <20071104115108.ea8729a2.randy.dunlap@oracle.com>
 In-Reply-To: <e5bfff550711041143i7be3cff7kd4903ed43cb4e232@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0711041447330.6072@localhost.localdomain>
 References: <e5bfff550711041141h612a24cdrcdb5baa35907989d@mail.gmail.com>
- <e5bfff550711041143i7be3cff7kd4903ed43cb4e232@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	<e5bfff550711041143i7be3cff7kd4903ed43cb4e232@mail.gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 Nov 2007, Marco Costalba wrote:
+On Sun, 4 Nov 2007 20:43:01 +0100 Marco Costalba wrote:
 
 > On 11/4/07, Marco Costalba <mcostalba@gmail.com> wrote:
 > > make includecheck does not work for me. Linux tree is from latest git.
@@ -43,19 +41,12 @@ On Sun, 4 Nov 2007, Marco Costalba wrote:
 > >
 > > bash-3.2$ make includecheck
 > > find * \( -name SCCS -o -name BitKeeper -o -name .svn -o -name CVS -o
->
+> 
 > BTW what's that 'BitKeeper' fossil here?
 
-actually, one wonders if there's any value in keeping any references
-to other version control systems such as subversion, SCCS, CVS,
-mercurial, etc.
+It allows people to continue using any of {CVS, SVN, BitKeeper}
+for their kernel tree.  The BK kernel tree is still being updated
+AFAIK.  (It was last time I looked, about 3 weeks ago.)
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+---
+~Randy
