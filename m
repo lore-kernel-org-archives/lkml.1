@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756720AbXKDTBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756141AbXKDTD0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756720AbXKDTBc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 14:01:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbXKDTBO
+	id S1756141AbXKDTD0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 14:03:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753744AbXKDTDS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 14:01:14 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:50339 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754052AbXKDTBN (ORCPT
+	Sun, 4 Nov 2007 14:03:18 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:44447 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753559AbXKDTDR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 14:01:13 -0500
-Date: Sun, 4 Nov 2007 11:06:56 -0800
-From: Greg KH <greg@kroah.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sysfs: add filter function to groups
-Message-ID: <20071104190656.GA23669@kroah.com>
-References: <1193671019.3383.13.camel@localhost.localdomain> <1193676852.2655.21.camel@lov.site> <1193677071.3383.56.camel@localhost.localdomain> <47261F50.3050901@s5r6.in-berlin.de> <1193768743.3321.91.camel@localhost.localdomain> <20071031035506.GH14910@kroah.com> <1193841484.3411.8.camel@localhost.localdomain> <20071031172943.GA29492@kroah.com> <1194185522.3434.7.camel@localhost.localdomain>
+	Sun, 4 Nov 2007 14:03:17 -0500
+Date: Sun, 4 Nov 2007 14:01:59 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Marco Costalba <mcostalba@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: List of possible duplicated include files in include/
+In-Reply-To: <e5bfff550711041052m1c55571bx49c60dd6ce407d01@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0711041357310.23176@localhost.localdomain>
+References: <e5bfff550711041044p7c07c42g836461e81a6005a@mail.gmail.com> 
+ <Pine.LNX.4.64.0711041347001.12818@localhost.localdomain>
+ <e5bfff550711041052m1c55571bx49c60dd6ce407d01@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1194185522.3434.7.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 04, 2007 at 08:12:02AM -0600, James Bottomley wrote:
-> On Wed, 2007-10-31 at 10:29 -0700, Greg KH wrote:
-> > On Wed, Oct 31, 2007 at 09:38:04AM -0500, James Bottomley wrote:
-> > > On Tue, 2007-10-30 at 20:55 -0700, Greg KH wrote:
-> > > > OSame problem here, if grp->is_visible is not set, sysfs_add_file() would
-> > > > never be called, right?
-> > > > 
-> > > > Other than the logic problem (I think), I have no issue with this idea
-> > > > at all.  Care to redo this so it works?
-> > > 
-> > > It's a fair cop govenor ... new patch attached.
-> > 
-> > Much better, thanks :)
-> > 
-> > I have no problem with this, if you want to take this in your tree,
-> > please do and feel free to add:
-> > 	Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > 
-> > to it, or I can take it in mine.
-> 
-> Actually, I think I have a use for it and the follow on patch (coming
-> soon) to do attribute bitmaps in the SCSI tree, so I'd like to add your
-> ack and take it through this tree.
+On Sun, 4 Nov 2007, Marco Costalba wrote:
 
-That's fine.  Can you CC: me on the patch that uses this code so I can
-see how well it works out?
+> On 11/4/07, Robert P. J. Day <rpjday@crashcourse.ca> wrote:
+> > On Sun, 4 Nov 2007, Marco Costalba wrote:
+> >
+> > > Here the number of false positives is overhelming, but perhaps
+> > > there are also _real_ duplicated include somewhere in the bunch:
+> > >
+> > > include/acpi/acpi_bus.h:
+> > > #include <linux/device.h>
+> >
+> > ... snip header file output ...
+> >
+> > i deliberately left out header files from my script output.  i can
+> > tweak the script and add this to the web page as well.
+> >
+>
+> Here the real job is to fliter out false positives more then print
+> out the list I would say ;-)
 
-thanks,
+  i don't think there are a lot of false positives there and, in any
+event, it's a case of diminishing returns -- if you can get most of
+what you want with two minutes of quick-and-dirty scripting, there's
+not much point in spending another 10 or 15 minutes trying to tidy
+things up only a little.
 
-greg k-h
+  just my $0.02 canadian, which is finally worth more than $0.02
+american.  :-)
+
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
