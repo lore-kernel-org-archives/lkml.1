@@ -1,101 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbXKDQoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbXKDQzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754649AbXKDQoi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 11:44:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbXKDQoa
+	id S1754613AbXKDQzR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 11:55:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbXKDQzF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 11:44:30 -0500
-Received: from aun.it.uu.se ([130.238.12.36]:52805 "EHLO aun.it.uu.se"
+	Sun, 4 Nov 2007 11:55:05 -0500
+Received: from khc.piap.pl ([195.187.100.11]:47943 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752112AbXKDQo3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 11:44:29 -0500
-Date: Sun, 4 Nov 2007 17:44:04 +0100 (MET)
-Message-Id: <200711041644.lA4Gi4Ms013028@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] fix i486 boot failure due to stale %ds
-Cc: hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de
+	id S1752186AbXKDQzD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Nov 2007 11:55:03 -0500
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux1394-user@lists.sourceforge.net, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: VIA VT6307 OHCI version?
+References: <m3sl4ciz1h.fsf@maximus.localdomain>
+	<4714EF01.2060609@s5r6.in-berlin.de>
+	<m3d4vebylw.fsf@maximus.localdomain>
+	<471527E5.1050407@s5r6.in-berlin.de>
+	<m34pgpmszu.fsf@maximus.localdomain>
+	<47166C83.2050207@s5r6.in-berlin.de>
+	<m3fy09ffp9.fsf@maximus.localdomain>
+	<4719A0C4.3050301@s5r6.in-berlin.de>
+	<m3bqausztv.fsf@maximus.localdomain>
+	<4719FF0F.3080504@s5r6.in-berlin.de>
+	<m3ejfp4bg9.fsf@maximus.localdomain>
+	<4724C9DA.7030900@s5r6.in-berlin.de>
+	<m33avvdlbq.fsf@maximus.localdomain>
+	<47251744.6090206@s5r6.in-berlin.de>
+	<m3abq2ccb6.fsf@maximus.localdomain>
+	<472CC8D9.8070609@s5r6.in-berlin.de>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Sun, 04 Nov 2007 17:54:59 +0100
+In-Reply-To: <472CC8D9.8070609@s5r6.in-berlin.de> (Stefan Richter's message of "Sat, 03 Nov 2007 20:15:37 +0100")
+Message-ID: <m3ejf63q8s.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Oct 2007 01:05:58 +0100 (MET), Mikael Pettersson wrote:
->My old 486 fails to boot with the 2.6.24-rc1 kernel.
->Grub loads it, 4 lines of text appear but not the kernel's
->"Linux version <blah> greet", and the machine reboots.
->Double-checked with a serial console: nothing appears
->before it reboots.
->
->All 2.6 kernels up to 2.6.23 worked fine on this machine.
+Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
 
-Problem identified and solved.
+> For special occasions, Asustek hand out a testing and reprogramming
+> utility from VIA to their customers (viafire.exe, together with EEPROM
+> image files and instructions; see the link to the RAR archive at this
+> page).  The documentation of the tool also contains a partial
+> description of the EEPROM contents.
 
-The last good kernel was 2.6.23-git17. The change in 2.6.23-git18
-that broke my 486 was a24e785111a32ccb7cebafd24b1b1cb474ea8e5d,
-which included the following:
+I see. I guess there is no much mystery in the EEPROM, i.e.
+we know where to place GUID and PCI subsystem IDs and we know
+how to initialize the rest (for both VT6306 and 6307, as it's
+almost certainly the same). And we know how to handle VT6307
+EEPROM programming.
 
->--- a/arch/x86/boot/compressed/head_32.S
->+++ b/arch/x86/boot/compressed/head_32.S
->@@ -27,13 +27,22 @@
-> #include <asm/segment.h>
-> #include <asm/page.h>
-> #include <asm/boot.h>
->+#include <asm/asm-offsets.h>
-> 
-> .section ".text.head","ax",@progbits
->        .globl startup_32
-> 
-> startup_32:
->-       cld
->-       cli
->+       /* check to see if KEEP_SEGMENTS flag is meaningful */
->+       cmpw $0x207, BP_version(%esi)
->+       jb 1f
->+
->+       /* test KEEP_SEGMENTS flag to see if the bootloader is asking
->+        * us to not reload segments */
->+       testb $(1<<6), BP_loadflags(%esi)
->+       jnz 2f
->+
->+1:     cli
->        movl $(__BOOT_DS),%eax
->        movl %eax,%ds
->        movl %eax,%es
+I have no 6306 personally and I haven't connected a logic analyzer
+to any so programming 6306 EEPROM is a speculation.
 
-That is, it added loads from %ds:offset(%esi) before the code
-that sanitises %ds et al. Commenting out these loads and tests
-made the kernel boot again.
-
-Adding debugging code to head_32.S and decompress_kernel(),
-I found that startup_32 actually is invoked with a good %ds
-(== 0x18 == __BOOT_DS) and a flat 4GB data segment in the
-corresponding GDT entry.
-
-Since data accesses work after %ds is (re)loaded with __BOOT_DS,
-it's clear that on this machine, the hidden registers behind %ds
-are stale on entry to startup_32. After adding a patch to reload
-%ds with itself (not __BOOT_DS) at startup_32 the kernel doesn't
-crash and reboot any more on this machine.
-
-The machine in question is a ca 1993 vintage Siemens 486 with
-a Quadtel S3 / Phoenix BIOS from 1994, booting via grub-0.95-13
-from Fedora Core 4.
-
-Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
----
- arch/x86/boot/compressed/head_32.S |    5 +++++
- 1 files changed, 5 insertions(+)
-
---- linux-2.6.24-rc1-git13/arch/x86/boot/compressed/head_32.S.~1~	2007-11-04 16:34:33.000000000 +0100
-+++ linux-2.6.24-rc1-git13/arch/x86/boot/compressed/head_32.S	2007-11-04 16:44:15.000000000 +0100
-@@ -33,6 +33,11 @@
- 	.globl startup_32
- 
- startup_32:
-+	/* workaround for BIOSen or boot loaders that don't reload %ds
-+	   after changing the GDT (insane but unfortunately true) */
-+	movl %ds,%eax
-+	movl %eax,%ds
-+
- 	cld
- 	/* test KEEP_SEGMENTS flag to see if the bootloader is asking
- 	 * us to not reload segments */
+I will look at their archive "really soon" of course.
+-- 
+Krzysztof Halasa
