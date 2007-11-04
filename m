@@ -1,101 +1,346 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754511AbXKDEDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754945AbXKDEwL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754511AbXKDEDS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 00:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750802AbXKDEDB
+	id S1754945AbXKDEwL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 00:52:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446AbXKDEv6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 00:03:01 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:57072 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750741AbXKDEDA (ORCPT
+	Sun, 4 Nov 2007 00:51:58 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:53297
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751133AbXKDEv4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 00:03:00 -0400
-Message-ID: <472D445B.1080005@tw.ibm.com>
-Date: Sun, 04 Nov 2007 12:02:35 +0800
-From: Albert Lee <albertcc@tw.ibm.com>
-Reply-To: albertl@mail.com
-User-Agent: Mozilla Thunderbird 1.0.6 (Windows/20050716)
-X-Accept-Language: en-us, en
+	Sun, 4 Nov 2007 00:51:56 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: linux-kernel@vger.kernel.org
+Subject: User Mode Linux still broken in 2.6.23.1
+Date: Sat, 3 Nov 2007 23:51:50 -0500
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Jeff Dike <jdike@addtoit.com>, akpm@linux-foundation.org,
+       Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Daniel Drake <dsd@gentoo.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Jeff Garzik <jeff@garzik.org>, Jens Axboe <jens.axboe@oracle.com>,
-       linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
-Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
-References: <47274A5F.6070409@gentoo.org>	<20071030153417.59b9182c@the-village.bc.nu>	<47276DCA.1000808@gentoo.org>	<20071030190153.373c9347@the-village.bc.nu>	<47278439.4030801@gentoo.org>	<20071031114958.210bd7cc@the-village.bc.nu>	<20071031115754.GK5059@kernel.dk>	<4729A0DF.20800@garzik.org>	<20071101105335.1f20bab3@the-village.bc.nu>	<4729B3EA.6040707@garzik.org> <20071101141501.3746cec2@the-village.bc.nu> <4729F1BB.20306@gentoo.org> <4729F8F1.4040103@gmail.com> <472B946F.4030004@gentoo.org> <472BCC18.7070503@gmail.com> <472CD3F3.7050701@gentoo.org> <472D0D4A.70404@gmail.com>
-In-Reply-To: <472D0D4A.70404@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_o/ULHH40yt4k+wh"
+Message-Id: <200711032351.52977.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Daniel Drake wrote:
-> 
->>Tejun Heo wrote:
->>
->>>><4>ata2.00: HSM violation: eh_analyze_tf: BUSY|DRQ
->>>><3>ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
->>>><3>ata2.00: cmd a0/00:00:00:0a:00/00:00:00:00:00/a0 tag 0 cdb 0x5a data
->>>>10 in
->>>><4>         res 58/00:02:00:0a:00/00:00:00:00:00/a0 Emask 0x2 (HSM
->>>>violation)
->>>><3>ata2.00: status: { DRDY DRQ }
->>>><6>ata2: soft resetting link
->>>><6>ata2.00: configured for UDMA/33
->>>><6>ata2: EH complete
->>>
->>>Does this patch fix the problem?
->>
->>That fixes it, thanks! There is no more ugly error in dmesg, the test
->>prog doesn't print any sense data, and brasero works OK too. However,
->>these messages appear in the kernel log every time I run the test app
->>(or when brasero does its thing):
->>
->><4>ata2.00: 10 bytes trailing data
->><4>ata2.00: 10 bytes trailing data
->><4>ata2.00: 10 bytes trailing data
->><4>ata2.00: 10 bytes trailing data
->><4>ata2.00: 10 bytes trailing data
->><4>ata2.00: 10 bytes trailing data
->><4>ata2.00: 6 bytes trailing data
-> 
-> 
-> Yeah, that's expected.  What's going on here is that your drive sends
-> full mode sense data (76bytes) regardless of allocation size in CDB but
-> it does honor transfer chunk set in the PACKET TF, which is set to the
-> same value as allocation size by Alan's patch.  So, now the drive sends
-> the 76 bytes in 8 chunks.  The first chunk is transferred into the sg
-> buffer and the following chunks are thrown away.
-> 
-> Previously, transfer chunk was set to 8k, so the drive claims to
-> transfer 76 bytes from the buegging, libata transfers leading 10 bytes
-> got transferred into the user buffer and throws away what's remaining.
-> The change caused problem because libata HSM always switches to
-> HSM_ST_LAST (command sequence completion) after filling the command
-> buffer completely.  So, throwing away is activated iff the extra data to
-> throw away is transfered together with the last chunk of useful data.
-> 
-> With the chunk size reduced to allocation size, the initial chunk fills
-> the data buffer completely and all the extra bytes are transfered in
-> separate chunks.  However, libata HSM expects command sequence to
-> complete after the initial chunk but the drive asserts DRQ for the next
-> chunk on the following interrupt, so HSM violation is triggered.
-> 
-> The patch modifies HSM such that it keeps throwing away extra data as
-> long as the drive asserts DRQ which is how IDE driver does it.
-> 
+--Boundary-00=_o/ULHH40yt4k+wh
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
 
->From past experience, some dead ATAPI devices stuck in DRQ=1. We should
-take care of such situation, otherwise the HSM might get into an infinite
-loop of waiting for the dead ATAPI device to say DRQ=0 and discarding
-endless "trailing data".
+Building with the attached .config on x86-64, it does this:
 
-Maybe we could set a limit here. If the ATAPI device keeps DRQ=1 and
-exceeds the limit, we consider it as HSM violation and have EH handle it.
+  CC      arch/um/kernel/smp.o
+In file included from include/asm/arch/tlb.h:11,
+                 from include/asm/tlb.h:4,
+                 from arch/um/kernel/smp.c:8:
+include/asm-generic/tlb.h: In function ‘tlb_flush_mmu’:
+include/asm-generic/tlb.h:76: error: implicit declaration of function ‘release_pages’
+include/asm-generic/tlb.h: In function ‘tlb_remove_page’:
+include/asm-generic/tlb.h:105: error: implicit declaration of function ‘page_cache_release’
+make[1]: *** [arch/um/kernel/smp.o] Error 1
+make: *** [arch/um/kernel] Error 2
 
---
-albert
+I've been doing the following to fix it.  I know it's not the right fix,
+(see the earlier thread about it at http://lkml.org/lkml/2007/8/24/441 )
+but could the one line fix go into the -stable queue 2.6.23 while a proper
+fix goes into 2.6.24?
 
+From: Rob Landley <rob@landley.net>
 
+Fix build break in User Mode Linux 2.6.23.1.
 
+Signed-off-by: Rob Landley <rob@landley.net>
+
+---
+
+ arch/um/kernel/smp.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- linux-2.6.23-rc3/arch/um/kernel/smp.c
++++ linux-2.6.23-new/arch/um/kernel/smp.c
+@@ -5,6 +5,7 @@
+
+ #include "linux/percpu.h"
+ #include "asm/pgalloc.h"
++#include "linux/pagemap.h"
+ #include "asm/tlb.h"
+
+ /* For some reason, mmu_gathers are referenced when CONFIG_SMP is off. */
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
+
+--Boundary-00=_o/ULHH40yt4k+wh
+Content-Type: text/plain;
+  charset="utf-8";
+  name=".config"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename=".config"
+
+#
+# Automatically generated make config: don't edit
+# Linux kernel version: 2.6.23.1
+# Sat Nov  3 20:20:52 2007
+#
+CONFIG_DEFCONFIG_LIST="arch/$ARCH/defconfig"
+CONFIG_GENERIC_HARDIRQS=y
+CONFIG_UML=y
+CONFIG_MMU=y
+CONFIG_NO_IOMEM=y
+# CONFIG_TRACE_IRQFLAGS_SUPPORT is not set
+CONFIG_LOCKDEP_SUPPORT=y
+# CONFIG_STACKTRACE_SUPPORT is not set
+CONFIG_GENERIC_CALIBRATE_DELAY=y
+CONFIG_GENERIC_BUG=y
+CONFIG_IRQ_RELEASE_METHOD=y
+
+#
+# UML-specific options
+#
+# CONFIG_STATIC_LINK is not set
+CONFIG_MODE_SKAS=y
+CONFIG_UML_X86=y
+CONFIG_64BIT=y
+CONFIG_RWSEM_GENERIC_SPINLOCK=y
+CONFIG_SEMAPHORE_SLEEPERS=y
+CONFIG_TOP_ADDR=0x80000000
+CONFIG_3_LEVEL_PGTABLES=y
+CONFIG_STUB_CODE=0x7fbfffe000
+CONFIG_STUB_DATA=0x7fbffff000
+CONFIG_STUB_START=0x7fbfffe000
+# CONFIG_ARCH_HAS_SC_SIGNALS is not set
+# CONFIG_ARCH_REUSE_HOST_VSYSCALL_AREA is not set
+CONFIG_SMP_BROKEN=y
+CONFIG_GENERIC_HWEIGHT=y
+CONFIG_FLATMEM=y
+CONFIG_FLAT_NODE_MEM_MAP=y
+# CONFIG_SPARSEMEM_STATIC is not set
+CONFIG_SPLIT_PTLOCK_CPUS=4
+CONFIG_RESOURCES_64BIT=y
+CONFIG_ZONE_DMA_FLAG=0
+CONFIG_VIRT_TO_BUS=y
+CONFIG_LD_SCRIPT_DYN=y
+# CONFIG_NET is not set
+CONFIG_BINFMT_ELF=y
+# CONFIG_BINFMT_MISC is not set
+CONFIG_HOSTFS=y
+# CONFIG_MCONSOLE is not set
+CONFIG_NEST_LEVEL=0
+CONFIG_KERNEL_STACK_ORDER=1
+# CONFIG_UML_REAL_TIME_CLOCK is not set
+
+#
+# General setup
+#
+# CONFIG_EXPERIMENTAL is not set
+CONFIG_BROKEN_ON_SMP=y
+CONFIG_INIT_ENV_ARG_LIMIT=128
+CONFIG_LOCALVERSION=""
+# CONFIG_LOCALVERSION_AUTO is not set
+# CONFIG_SWAP is not set
+# CONFIG_SYSVIPC is not set
+# CONFIG_BSD_PROCESS_ACCT is not set
+# CONFIG_IKCONFIG is not set
+CONFIG_LOG_BUF_SHIFT=14
+# CONFIG_SYSFS_DEPRECATED is not set
+# CONFIG_RELAY is not set
+# CONFIG_BLK_DEV_INITRD is not set
+CONFIG_SYSCTL=y
+# CONFIG_EMBEDDED is not set
+CONFIG_UID16=y
+CONFIG_SYSCTL_SYSCALL=y
+CONFIG_KALLSYMS=y
+# CONFIG_KALLSYMS_EXTRA_PASS is not set
+CONFIG_HOTPLUG=y
+CONFIG_PRINTK=y
+CONFIG_BUG=y
+CONFIG_ELF_CORE=y
+CONFIG_BASE_FULL=y
+CONFIG_FUTEX=y
+CONFIG_ANON_INODES=y
+CONFIG_EPOLL=y
+CONFIG_SIGNALFD=y
+CONFIG_EVENTFD=y
+CONFIG_SHMEM=y
+CONFIG_VM_EVENT_COUNTERS=y
+CONFIG_SLUB_DEBUG=y
+# CONFIG_SLAB is not set
+CONFIG_SLUB=y
+# CONFIG_SLOB is not set
+CONFIG_RT_MUTEXES=y
+# CONFIG_TINY_SHMEM is not set
+CONFIG_BASE_SMALL=0
+# CONFIG_MODULES is not set
+CONFIG_BLOCK=y
+# CONFIG_BLK_DEV_IO_TRACE is not set
+
+#
+# IO Schedulers
+#
+CONFIG_IOSCHED_NOOP=y
+# CONFIG_IOSCHED_AS is not set
+# CONFIG_IOSCHED_DEADLINE is not set
+# CONFIG_IOSCHED_CFQ is not set
+# CONFIG_DEFAULT_AS is not set
+# CONFIG_DEFAULT_DEADLINE is not set
+# CONFIG_DEFAULT_CFQ is not set
+CONFIG_DEFAULT_NOOP=y
+CONFIG_DEFAULT_IOSCHED="noop"
+CONFIG_BLK_DEV=y
+# CONFIG_BLK_DEV_UBD is not set
+# CONFIG_BLK_DEV_COW_COMMON is not set
+# CONFIG_MMAPPER is not set
+CONFIG_BLK_DEV_LOOP=y
+# CONFIG_BLK_DEV_CRYPTOLOOP is not set
+# CONFIG_BLK_DEV_RAM is not set
+
+#
+# Character Devices
+#
+CONFIG_STDERR_CONSOLE=y
+CONFIG_STDIO_CONSOLE=y
+# CONFIG_SSL is not set
+# CONFIG_NULL_CHAN is not set
+# CONFIG_PORT_CHAN is not set
+# CONFIG_PTY_CHAN is not set
+# CONFIG_TTY_CHAN is not set
+# CONFIG_XTERM_CHAN is not set
+CONFIG_NOCONFIG_CHAN=y
+CONFIG_CON_ZERO_CHAN="fd:0,fd:1"
+CONFIG_CON_CHAN="xterm"
+CONFIG_SSL_CHAN="pty"
+CONFIG_UNIX98_PTYS=y
+# CONFIG_LEGACY_PTYS is not set
+# CONFIG_RAW_DRIVER is not set
+# CONFIG_WATCHDOG is not set
+# CONFIG_UML_SOUND is not set
+# CONFIG_SOUND is not set
+# CONFIG_HOSTAUDIO is not set
+# CONFIG_HW_RANDOM is not set
+# CONFIG_UML_RANDOM is not set
+
+#
+# Generic Driver Options
+#
+CONFIG_STANDALONE=y
+# CONFIG_PREVENT_FIRMWARE_BUILD is not set
+# CONFIG_FW_LOADER is not set
+# CONFIG_SYS_HYPERVISOR is not set
+
+#
+# Networking
+#
+
+#
+# File systems
+#
+CONFIG_EXT2_FS=y
+# CONFIG_EXT2_FS_XATTR is not set
+# CONFIG_EXT2_FS_XIP is not set
+# CONFIG_EXT3_FS is not set
+# CONFIG_REISERFS_FS is not set
+# CONFIG_JFS_FS is not set
+# CONFIG_FS_POSIX_ACL is not set
+# CONFIG_XFS_FS is not set
+# CONFIG_MINIX_FS is not set
+# CONFIG_ROMFS_FS is not set
+# CONFIG_INOTIFY is not set
+# CONFIG_QUOTA is not set
+CONFIG_DNOTIFY=y
+# CONFIG_AUTOFS_FS is not set
+# CONFIG_AUTOFS4_FS is not set
+# CONFIG_FUSE_FS is not set
+
+#
+# CD-ROM/DVD Filesystems
+#
+# CONFIG_ISO9660_FS is not set
+# CONFIG_UDF_FS is not set
+
+#
+# DOS/FAT/NT Filesystems
+#
+# CONFIG_MSDOS_FS is not set
+# CONFIG_VFAT_FS is not set
+# CONFIG_NTFS_FS is not set
+
+#
+# Pseudo filesystems
+#
+CONFIG_PROC_FS=y
+# CONFIG_PROC_KCORE is not set
+CONFIG_PROC_SYSCTL=y
+CONFIG_SYSFS=y
+# CONFIG_TMPFS is not set
+# CONFIG_HUGETLB_PAGE is not set
+CONFIG_RAMFS=y
+
+#
+# Miscellaneous filesystems
+#
+# CONFIG_HFSPLUS_FS is not set
+# CONFIG_CRAMFS is not set
+# CONFIG_VXFS_FS is not set
+# CONFIG_HPFS_FS is not set
+# CONFIG_QNX4FS_FS is not set
+# CONFIG_SYSV_FS is not set
+# CONFIG_UFS_FS is not set
+
+#
+# Partition Types
+#
+# CONFIG_PARTITION_ADVANCED is not set
+CONFIG_MSDOS_PARTITION=y
+
+#
+# Native Language Support
+#
+# CONFIG_NLS is not set
+
+#
+# Security options
+#
+# CONFIG_KEYS is not set
+# CONFIG_SECURITY is not set
+# CONFIG_CRYPTO is not set
+
+#
+# Library routines
+#
+# CONFIG_CRC_CCITT is not set
+# CONFIG_CRC16 is not set
+# CONFIG_CRC_ITU_T is not set
+# CONFIG_CRC32 is not set
+# CONFIG_CRC7 is not set
+# CONFIG_LIBCRC32C is not set
+CONFIG_PLIST=y
+CONFIG_HAS_DMA=y
+
+#
+# SCSI device support
+#
+# CONFIG_RAID_ATTRS is not set
+# CONFIG_SCSI is not set
+# CONFIG_SCSI_DMA is not set
+# CONFIG_SCSI_NETLINK is not set
+# CONFIG_MD is not set
+# CONFIG_INPUT is not set
+
+#
+# Kernel hacking
+#
+# CONFIG_PRINTK_TIME is not set
+# CONFIG_ENABLE_MUST_CHECK is not set
+# CONFIG_UNUSED_SYMBOLS is not set
+# CONFIG_DEBUG_FS is not set
+# CONFIG_DEBUG_KERNEL is not set
+# CONFIG_SLUB_DEBUG_ON is not set
+CONFIG_DEBUG_BUGVERBOSE=y
+# CONFIG_DEBUG_STACK_USAGE is not set
+
+--Boundary-00=_o/ULHH40yt4k+wh--
