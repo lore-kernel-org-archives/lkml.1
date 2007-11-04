@@ -1,68 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbXKDUMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753771AbXKDUaI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753878AbXKDUMi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 15:12:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbXKDUM3
+	id S1753771AbXKDUaI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 15:30:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751176AbXKDU35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 15:12:29 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:48997 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752706AbXKDUM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 15:12:28 -0500
-Subject: Re: [patch] PID namespaces
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>, Ulrich Drepper <drepper@redhat.com>,
-       linux-kernel@vger.kernel.org,
-       "Dinakar Guniguntala [imap]" <dino@in.ibm.com>,
-       Sripathi Kodi <sripathik@in.ibm.com>
-In-Reply-To: <20071104103851.GA14317@elte.hu>
-References: <4729E7E4.8070208@openvz.org> <4729E936.4040400@redhat.com>
-	 <4729EB3C.9050102@openvz.org> <472A6D91.1020300@redhat.com>
-	 <472AD7D6.80900@openvz.org>
-	 <20071102010419.23f3db5c.akpm@linux-foundation.org>
-	 <1194024622.6271.108.camel@localhost>
-	 <alpine.LFD.0.999.0711021038480.3342@woody.linux-foundation.org>
-	 <20071103201251.GB26366@elte.hu>
-	 <alpine.LFD.0.999.0711031535450.15101@woody.linux-foundation.org>
-	 <20071104103851.GA14317@elte.hu>
+	Sun, 4 Nov 2007 15:29:57 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:40874 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751428AbXKDU35 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Nov 2007 15:29:57 -0500
+Subject: Re: device struct bloat
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20071103124823.6059640e@shemminger-laptop>
+References: <20071103124823.6059640e@shemminger-laptop>
 Content-Type: text/plain
-Date: Sun, 04 Nov 2007 12:12:11 -0800
-Message-Id: <1194207131.6271.122.camel@localhost>
+Date: Sun, 04 Nov 2007 21:29:18 +0100
+Message-Id: <1194208158.5911.63.camel@lappy>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-11-04 at 11:38 +0100, Ingo Molnar wrote:
-> I.e. keep the namespace functionality but use a modulo 1.000.000 base 
-> for the PIDs so that it all looks nicer to the user. Minimal visibility 
-> difference but maximum compatibility. (The resulting limits are 
-> reasonable: 1 million tasks per container and 4 million containers on a 
-> single 32-bit box.) We could still restrict cross-namespace API use but 
-> all the cases where a global PID is desirable would still all work. I 
-> might be missing something obvious though.
 
-There is definitely a great deal of desire to have containers look as
-much as possible like a normally functioning system.  That includes
-having an init process.  Everything today depends on that init process
-having a pretty specific pid.  That's definitely one of the 0.1% of
-things that isn't really shaped by the kernel, but it's a pretty
-important one 0.1%.  (Linux Vserver does this pid virtualization, but
-_only_ for init, btw.)
+On Sat, 2007-11-03 at 12:48 -0700, Stephen Hemminger wrote:
+> The sizeof(struct device) is way too big, especially in the network device case.
+> We want to support 1000's of device's and the change from class_device to
+> net_device has caused needless bloat.
+> 
+> sizeof(struct device) = 272
+> sizeof(struct class_device) = 92
+>   * not the class_id in class_device could also be removed or changed to
+>      a ptr, since it is redundant for net_devices.
 
-We also need to consider the needs of a checkpoint/restart system.  Most
-of my interest in containers comes because of their isolation
-properties.  That isolation is what lets us pick a container up and move
-it more easily across systems.
+The thing that surprised me most was that it contains a struct
+semaphore, Greg, is that really needed?
 
-But, once we've moved the container, all of that "single, global kernel"
-stuff goes out the window because it wasn't just one kernel making
-decisions.  Plus, those pids stop becoming just cookies that were issued
-by one kernel and interpreted by one kernel.
 
--- Dave
 
