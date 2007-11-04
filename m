@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755852AbXKDXhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755106AbXKDXmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755852AbXKDXhl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 18:37:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbXKDXhc
+	id S1755106AbXKDXmW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 18:42:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbXKDXmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 18:37:32 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:56982 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754645AbXKDXhb (ORCPT
+	Sun, 4 Nov 2007 18:42:13 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47672 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753110AbXKDXmM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 18:37:31 -0500
-Message-ID: <472E5785.4020004@zytor.com>
-Date: Sun, 04 Nov 2007 15:36:37 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Mikael Petterson <mikpe@it.uu.se>,
-       Eric Biederman <ebiederm@xmission.com>
-Subject: Re: [GIT PULL] x86 setup: correct booting on 486DX4
-References: <200711042259.lA4Mxa0n025210@tazenda.hos.anvin.org> <alpine.LFD.0.999.0711041512530.15101@woody.linux-foundation.org> <alpine.LFD.0.999.0711041522300.15101@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0711041522300.15101@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 4 Nov 2007 18:42:12 -0500
+Date: Sun, 4 Nov 2007 23:42:05 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: albertl@mail.com
+Cc: albertcc@tw.ibm.com, Tejun Heo <htejun@gmail.com>,
+       Daniel Drake <dsd@gentoo.org>, Jeff Garzik <jeff@garzik.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
+Message-ID: <20071104234205.7627d007@the-village.bc.nu>
+In-Reply-To: <472D445B.1080005@tw.ibm.com>
+References: <47274A5F.6070409@gentoo.org>
+	<20071030153417.59b9182c@the-village.bc.nu>
+	<47276DCA.1000808@gentoo.org>
+	<20071030190153.373c9347@the-village.bc.nu>
+	<47278439.4030801@gentoo.org>
+	<20071031114958.210bd7cc@the-village.bc.nu>
+	<20071031115754.GK5059@kernel.dk>
+	<4729A0DF.20800@garzik.org>
+	<20071101105335.1f20bab3@the-village.bc.nu>
+	<4729B3EA.6040707@garzik.org>
+	<20071101141501.3746cec2@the-village.bc.nu>
+	<4729F1BB.20306@gentoo.org>
+	<4729F8F1.4040103@gmail.com>
+	<472B946F.4030004@gentoo.org>
+	<472BCC18.7070503@gmail.com>
+	<472CD3F3.7050701@gentoo.org>
+	<472D0D4A.70404@gmail.com>
+	<472D445B.1080005@tw.ibm.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Sun, 4 Nov 2007, Linus Torvalds wrote:
->> I'm not entirely sure that it needs to be a long-jump, btw. I think any
->> regular branch is sufficient. You obviously *do* need to make the long 
->> jump later (to reload %cs in protected mode), but I'm not sure it's needed 
->> in that place. I forget the exact rules (but they definitely were 
->> documented).
-> 
-> Hmm. The original Linux code did
-> 
-> 	movw    $1, %ax
-> 	lmsw    %ax
-> 	jmp     flush_instr
->     flush_instr:
-> 
-> and I think that was straigh out of the documentation. So yeah, I think 
-> that's the right fix - not a longjmp (which in itself is dangerous: it 
-> potentially behaves *differently* on different CPU's, since some CPU's may 
-> do the long jump with pre-protected-mode semantics, while others will do 
-> it with protected mode already in effect!)
-> 
+> Maybe we could set a limit here. If the ATAPI device keeps DRQ=1 and
+> exceeds the limit, we consider it as HSM violation and have EH handle it.
 
-Just looked it up; it was a bit hard to find (it is Intel vol 3 page 
-9-27, at least in the version I have), but you're right -- the 
-documentation only demands a short jump here, not a long jmp (which 
-actually makes sense given what I remembered that a long jump should be 
-deferrable here.)  So yes, that is definitely the right fix and avoids 
-the ugly mixing of code.
-
-I'll update the patch.
-
-	-hpa
+On a DMA transfer its basically out of our control (and a PIO drain will
+lock some controllers solid until power cycle), but on PIO we know we
+never set a chunk size over 64K, so if we exceed 64K its time to apply a
+larger hammer
