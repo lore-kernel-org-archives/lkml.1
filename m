@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757146AbXKDJe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756835AbXKDJzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757146AbXKDJe0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 04:34:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753861AbXKDJeS
+	id S1756835AbXKDJzS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 04:55:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbXKDJzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 04:34:18 -0500
-Received: from antispam.upcomillas.es ([130.206.70.245]:48196 "EHLO
-	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752237AbXKDJeQ (ORCPT
+	Sun, 4 Nov 2007 04:55:06 -0500
+Received: from smtp-100-sunday.nerim.net ([62.4.16.100]:51585 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754108AbXKDJzE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 04:34:16 -0500
-Subject: Re: *SPAM* Re: 2.6.24-rc1: OOPS at  acpi_battery_update
-From: Romano Giannetti <romanol@upcomillas.es>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-In-Reply-To: <200711021708.42370.rjw@sisk.pl>
-References: <1193652664.22149.4.camel@localhost>
-	 <20071101161459.d5f9abc0.akpm@linux-foundation.org>
-	 <200711021708.42370.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: Sun, 04 Nov 2007 10:34:13 +0100
-Message-Id: <1194168853.10245.18.camel@rukbat>
+	Sun, 4 Nov 2007 04:55:04 -0500
+Date: Sun, 4 Nov 2007 10:55:01 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, i2c@lm-sensors.org
+Subject: Re: [i2c] [PATCH] Fix i2c module parameter permissions for
+ read/write
+Message-ID: <20071104105501.380a840a@hyperion.delvare>
+In-Reply-To: <9e4733910711032155j1649a3b8u56a59e754d77f61b@mail.gmail.com>
+References: <9e4733910711032155j1649a3b8u56a59e754d77f61b@mail.gmail.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi John,
 
-On Fri, 2007-11-02 at 17:08 +0100, Rafael J. Wysocki wrote:
-> On Friday, 2 November 2007 00:14, Andrew Morton wrote:
-> > On Mon, 29 Oct 2007 11:11:04 +0100
-[OOPS removed]
-> > 
-> > Did any earlier kernels do this?  In other words, do you believe that this
-> > is a bug which we added after 2.6.23 was released?
+On Sun, 4 Nov 2007 00:55:15 -0400, Jon Smirl wrote:
+> The permissions of i2c module parameters were set to zero making the
+> parameters invisible and unsettable from the kernel command line. This
+> patch changes the permissions to the standard 0644 read/write.
 
-Never noticed it before. But it's happening just sometime (I've had it
-just two times), so I cannot be sure.
+These permissions have nothing to do with the kernel command line. They
+define whether a file is created in sysfs for the respective module
+parameter. Even with permissions set to 0, you can still set the value
+in question from the kernel command line with <module>.<parm>=<value>.
 
-> This might be the same as http://bugzilla.kernel.org/show_bug.cgi?id=9283
+Also, there's no such think as "standard 0644" permissions. For some
+parameters, it doesn't make much sense to expose them in sysfs. For
+others it doesn't make sense (or could even be dangerous) to make them
+writable. Each parameter has its own requirements.
 
-Hmmm... there is too little info for my level in that bug report to
-understand if it's the same. 
+> 
+> Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+> ---
+> 
+> diff --git a/include/linux/i2c.h b/include/linux/i2c.h
+> index 8033e6b..395e430 100644
+> --- a/include/linux/i2c.h
+> +++ b/include/linux/i2c.h
+> @@ -588,7 +588,7 @@ union i2c_smbus_data {
+>  #define I2C_CLIENT_MODULE_PARM(var,desc) \
+>    static unsigned short var[I2C_CLIENT_MAX_OPTS] = I2C_CLIENT_DEFAULTS; \
+>    static unsigned int var##_num; \
+> -  module_param_array(var, short, &var##_num, 0); \
+> +  module_param_array(var, short, &var##_num, 0644); \
+>    MODULE_PARM_DESC(var,desc)
+> 
+>  #define I2C_CLIENT_MODULE_PARM_FORCE(name)                             \
+> 
+> 
 
-Romano 
 
 -- 
-Sorry for the disclaimer --- ¡I cannot stop it!
-
-
-
---
-La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
-
-This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
+Jean Delvare
