@@ -1,94 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756871AbXKDSeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbXKDSjJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756871AbXKDSeL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 13:34:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbXKDSd5
+	id S1755987AbXKDSjJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 13:39:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbXKDSi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 13:33:57 -0500
-Received: from orion2.pixelized.ch ([195.190.190.13]:54908 "EHLO
-	mail.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753352AbXKDSd4 (ORCPT
+	Sun, 4 Nov 2007 13:38:56 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:39934 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753063AbXKDSi4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 13:33:56 -0500
-Message-ID: <472E1085.8040801@cateee.net>
-Date: Sun, 04 Nov 2007 19:33:41 +0100
-From: Giacomo Catenazzi <cate@cateee.net>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Sun, 4 Nov 2007 13:38:56 -0500
+Date: Sun, 4 Nov 2007 13:37:31 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: duplicated include files
+In-Reply-To: <20071104100724.518cf6c9.randy.dunlap@oracle.com>
+Message-ID: <Pine.LNX.4.64.0711041334590.5541@localhost.localdomain>
+References: <Pine.LNX.4.64.0711041229580.27153@localhost.localdomain>
+ <20071104100724.518cf6c9.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: David Miller <davem@davemloft.net>, mingo@elte.hu, sam@ravnborg.org,
-       thomas@archlinux.org, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       linux-kbuild@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: 2.6.24-rc1-82798a1 compile failure (x86_64)
-References: <20071103121149.GA22149@uranus.ravnborg.org> <20071104020217.GJ12045@stusta.de> <20071104100429.GA12311@elte.hu> <20071104.023133.241080055.davem@davemloft.net> <20071104152930.GL12045@stusta.de> <472DF121.8000509@cateee.net> <20071104163439.GM12045@stusta.de>
-In-Reply-To: <20071104163439.GM12045@stusta.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Sun, Nov 04, 2007 at 05:19:45PM +0100, Giacomo Catenazzi wrote:
->> Adrian Bunk wrote:
->>> On Sun, Nov 04, 2007 at 02:31:33AM -0800, David Miller wrote:
->>>> From: Ingo Molnar <mingo@elte.hu>
->>>> Date: Sun, 4 Nov 2007 11:04:29 +0100
->>>>
->>>>> * Adrian Bunk <bunk@kernel.org> wrote:
->>>>>
->>>>>> I also have CFLAGS set on some computers in my environments since for 
->>>>>> packages using GNU autoconf that's the correct way to set the compiler 
->>>>>> flags.
->>>>>>
->>>>>> The kernel already sets all flags correctly, and a user wanting to 
->>>>>> change the flags for the kernel is an exception with very special needs 
->>>>>> (I'd even claim so special that he could simply edit the Makefile...).
->>>>  ...
->>>>> At minimum the extra CFLAGS needs to be put into the .config - but 
->>>>> that's not a too nice solution either. How about just adding an 
->>>>> extra-CFLAGS option to .config and perhaps a 'make configpickupCFLAGS' 
->>>>> pass for anyone who wants to propagate the environment CFLAGS into the 
->>>>> kernel build.
->>>> I totally disagree.
->>>>
->>>> People can't have it both ways.  CFLAGS has global meaning in every
->>>> Makefile based build tree, it's not an "autoconf" thing.  This is well
->>>> established practice, and I think it's a good thing the kernel does it
->>>> now too.
->>> Makefiles do normally not pick such variables from the environment.
->> ????
->>
->> Are you sure???
->>
->> From http://www.gnu.org/software/make/manual/make.html#Environment
->>
->> : Variables in make can come from the environment in which make
->> : is run. Every environment variable that make sees when it starts
->> : up is transformed into a make variable with the same name and
->> : value.
->>
->> and most important:
->>
->> : Thus, by setting the variable CFLAGS in your environment, you
->> : can cause all C compilations in most makefiles to use the
->> : compiler switches you prefer. This is safe for variables with
->> : standard or conventional meanings because you know that no
->> : makefile will use them for other things. (Note this is not
->> : totally reliable; some makefiles set CFLAGS explicitly and
->> : therefore are not affected by the value in the environment.)
-> 
-> 
-> Thanks for the correction, I had forgotten about the case where a 
-> Makefile does not set CFLAGS at all.
-> 
-> But the main point that stuff like e.g. -I/usr/local/dist/include that 
-> might in some environments be correct for all and required for most 
-> userspace software should not leak into the kernel still stands.
+On Sun, 4 Nov 2007, Randy Dunlap wrote:
 
-Yes, you are right.
-Kernel uses the gcc in "freestanding" mode, so I think we should
-eventually share the compiler options and environment only with
-other freestanding programs (aka: none).
+> On Sun, 4 Nov 2007 12:31:38 -0500 (EST) Robert P. J. Day wrote:
+>
+> >
+> >   given the recent patches to remove duplicated #include preprocessor
+> > directives in source files, let it be known that there are a number of
+> > them:
+> >
+> >   http://www.crashcourse.ca/wiki/index.php/Duplicate_include_files
+> >
+> > help yourself.
+>
+> Could you make the tool (script?) available also, please?
 
-ciao
-	cate
+trust me, it's not a script i'm particularly proud of:
+
+===========================
+#!/bin/sh
+
+DIR=${1-*}              # by default, all directories
+
+for cf in $(find ${DIR} -name *.c) ; do
+        echo ${cf}
+        grep "#include" $cf | sort | uniq -c | grep -v 1
+done | grep -B1 "#include" | grep -v -- "--"
+===========================
+
+  on the bright side, it took about 90 seconds to write, but i won't
+be winning any awards for style.
+
+  i'll add it to the web page.
+
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
