@@ -1,105 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754564AbXKDW6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbXKDXA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754564AbXKDW6S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 17:58:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753139AbXKDW6J
+	id S1754638AbXKDXA2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 18:00:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbXKDXAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 17:58:09 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:47433 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752936AbXKDW6H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 17:58:07 -0500
-Date: Sun, 4 Nov 2007 14:57:50 -0800
-Message-Id: <200711042257.lA4Mvobr025200@tazenda.hos.anvin.org>
-From: "H. Peter Anvin" <hpa@zytor.com>
-To: Linus Torvalds <torvalds@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, Mikael Petterson <mikpe@it.uu.se>,
-       Eric Biederman <ebiederm@xmission.com>
-Subject: [GIT PULL] x86 setup: correct booting on 486DX4
+	Sun, 4 Nov 2007 18:00:20 -0500
+Received: from khc.piap.pl ([195.187.100.11]:33653 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753206AbXKDXAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Nov 2007 18:00:19 -0500
+To: andi@lisas.de
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       linux1394-user@lists.sourceforge.net,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: VIA VT6307 OHCI version?
+References: <471527E5.1050407@s5r6.in-berlin.de>
+	<m34pgpmszu.fsf@maximus.localdomain>
+	<47166C83.2050207@s5r6.in-berlin.de>
+	<m3fy09ffp9.fsf@maximus.localdomain>
+	<4719A0C4.3050301@s5r6.in-berlin.de>
+	<m3bqausztv.fsf@maximus.localdomain>
+	<4719FF0F.3080504@s5r6.in-berlin.de>
+	<m3ejfp4bg9.fsf@maximus.localdomain>
+	<4724C9DA.7030900@s5r6.in-berlin.de>
+	<m33avvdlbq.fsf@maximus.localdomain>
+	<20071104193109.GA4033@rhlx01.hs-esslingen.de>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Mon, 05 Nov 2007 00:00:16 +0100
+In-Reply-To: <20071104193109.GA4033@rhlx01.hs-esslingen.de> (Andreas Mohr's message of "Sun, 4 Nov 2007 20:31:09 +0100")
+Message-ID: <m38x5dhb0f.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus; please pull:
+Andreas Mohr <andim2@users.sourceforge.net> writes:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/hpa/linux-2.6-x86setup.git for-linus
+> EEPROM dump (VT6306)
+> 00: 00 11 06 66 45 55 56 E1 04 04 32 55 F8 00 A2 02
+      --------- GUID --------
 
-H. Peter Anvin (1):
-      x86 setup: correct booting on 486DX4
+> 10: A1 00 40 63 06 11 44 30 03 DF 40 80 00 20 00 73
+                  - subs ID -
 
- arch/x86/boot/pmjump.S |   32 +++++++++++++++++++++-----------
- 1 files changed, 21 insertions(+), 11 deletions(-)
+> 20: 3C 10 00 00 00 00 FF FF FF FF FF FF FF FF FF FF
+>
+> Your VT6307 chip is in OHCI 1.0 mode
 
-[Full diff and log follows]
+Thanks for the data. It's the same as for all my VT6307, excluding
+GUID (different for every card) and PCI subsystem vendor/device IDs.
 
-commit ac3b37b78c5f0f0be0b476a35370650f7bad482f
-Author: H. Peter Anvin <hpa@zytor.com>
-Date:   Sun Nov 4 14:33:41 2007 -0800
+I guess Stefan could now try to write these values (except GUID
+and probably PCI subsystem IDs, and with OHCI 1.1 bit) to the "bad"
+card :-) I wouldn't try with a good card yet, though (unless you
+know how to repair it and/or you want to risk it, and/or you
+want to use the DOS utility mentioned by Stefan).
 
-    x86 setup: correct booting on 486DX4
-    
-    Apparently, the 486DX4 does not correctly serialize a mov to %cr0, so
-    we really do need the far jump immediately afterwards.  This means
-    losing the nice separation between 16- and 32-bit code, but c'est la
-    vie.
-    
-    Also pass %ebx = %edi = %ebp = 0 to support future extension of the
-    32-bit boot protocol.
-    
-    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+I would try myself but I have no VT6306.
 
-diff --git a/arch/x86/boot/pmjump.S b/arch/x86/boot/pmjump.S
-index 2e55923..17e6dec 100644
---- a/arch/x86/boot/pmjump.S
-+++ b/arch/x86/boot/pmjump.S
-@@ -28,27 +28,37 @@
-  * void protected_mode_jump(u32 entrypoint, u32 bootparams);
-  */
- protected_mode_jump:
--	xorl	%ebx, %ebx		# Flag to indicate this is a boot
- 	movl	%edx, %esi		# Pointer to boot_params table
--	movl	%eax, 2f		# Patch ljmpl instruction
-+
-+	xorl	%edx, %edx
-+	movw	%cs, %dx
-+	shll	$4, %edx		# Patch ljmpl instruction
-+	addl	%edx, 2f
- 	jmp	1f			# Short jump to flush instruction q.
- 
- 1:
- 	movw	$__BOOT_DS, %cx
-+	xorl	%ebx, %ebx		# Per protocol
-+	xorl	%ebp, %ebp		# Per protocol
-+	xorl	%edi, %edi		# Per protocol
- 
- 	movl	%cr0, %edx
- 	orb	$1, %dl			# Protected mode (PE) bit
- 	movl	%edx, %cr0
-+	
-+	.byte	0x66, 0xea		# ljmpl opcode
-+2:	.long	3f			# Offset
-+	.word	__BOOT_CS		# Segment
- 
--	movw	%cx, %ds
--	movw	%cx, %es
--	movw	%cx, %fs
--	movw	%cx, %gs
--	movw	%cx, %ss
-+	.code32
-+3:
-+	movl	%ecx, %ds
-+	movl	%ecx, %es
-+	movl	%ecx, %fs
-+	movl	%ecx, %gs
-+	movl	%ecx, %ss
- 
- 	# Jump to the 32-bit entrypoint
--	.byte	0x66, 0xea		# ljmpl opcode
--2:	.long	0			# offset
--	.word	__BOOT_CS		# segment
--
-+	jmpl	*%eax
-+	
- 	.size	protected_mode_jump, .-protected_mode_jump
+BTW I don't know where I found the info about VT6306 not working
+with I^2C EEPROMs but it seems to be false, the datasheets claim
+both chips can get startup info from 4-wire or I^2C EEPROM. Given
+that both chips have identical EEPROM interface (except "fast I^2C
+mode" which means nothing) I'd be surprised if the program can't
+set OHCI 1.1 on VT6306.
+
+> And viewing from a quite problematic angle (card is in running PC,
+> difficult to view) strongly seems to indicate a VT630_6_ (the "6" is
+> quite clearly visible).
+> This means that I currently cannot offer any mfct. date data however,
+> unfortunately.
+
+Yeah. I think (feel or something) VIA does the usual thing with
+revision numbers so rev 0x46 means always the same silicon (VT6306)
+and rev 0x80 is always the same VT6307. There might be other
+revisions but I think we won't find non-VT6306 rev 0x46 or
+non-VT6307 rev 0x80.
+
+And, for someone using the old driver, VT6306 should probably have
+8/8 IR/IT contexts while VT6307 - 4/8 (the new driver doesn't seem
+to show this info and I think VT6306 can be limited to 4 as well).
+-- 
+Krzysztof Halasa
