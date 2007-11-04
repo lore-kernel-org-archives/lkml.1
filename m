@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753686AbXKDUG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbXKDUMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753686AbXKDUG6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 15:06:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbXKDUGu
+	id S1753878AbXKDUMi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 15:12:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbXKDUM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 15:06:50 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:16795 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751673AbXKDUGt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 15:06:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JEffagHC+vkjqlI8MKlyQCDEA0eN9VajMChMK0Vkxqz7ORGcXNP+lreBrUrXF+Qe/tWADk0EHFw5paGxrOZb9KEeh5yuB7jZUPuUITwGRP+kV1Im0O1FxsJBGwlXy/Y9Pg5A3Lj3qdVwZECZn42D/bPmwB7LgcoMASRBRhfGNk8=
-Message-ID: <1865922a0711041206m4a132200m19e33189137c901@mail.gmail.com>
-Date: Sun, 4 Nov 2007 22:06:45 +0200
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
-To: "Casey Schaufler" <casey@schaufler-ca.com>
-Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser
-Cc: akpm@osdl.org, torvalds@osdl.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20071103164303.GA26707@ubuntu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Sun, 4 Nov 2007 15:12:29 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:48997 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752706AbXKDUM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Nov 2007 15:12:28 -0500
+Subject: Re: [patch] PID namespaces
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>, Ulrich Drepper <drepper@redhat.com>,
+       linux-kernel@vger.kernel.org,
+       "Dinakar Guniguntala [imap]" <dino@in.ibm.com>,
+       Sripathi Kodi <sripathik@in.ibm.com>
+In-Reply-To: <20071104103851.GA14317@elte.hu>
+References: <4729E7E4.8070208@openvz.org> <4729E936.4040400@redhat.com>
+	 <4729EB3C.9050102@openvz.org> <472A6D91.1020300@redhat.com>
+	 <472AD7D6.80900@openvz.org>
+	 <20071102010419.23f3db5c.akpm@linux-foundation.org>
+	 <1194024622.6271.108.camel@localhost>
+	 <alpine.LFD.0.999.0711021038480.3342@woody.linux-foundation.org>
+	 <20071103201251.GB26366@elte.hu>
+	 <alpine.LFD.0.999.0711031535450.15101@woody.linux-foundation.org>
+	 <20071104103851.GA14317@elte.hu>
+Content-Type: text/plain
+Date: Sun, 04 Nov 2007 12:12:11 -0800
+Message-Id: <1194207131.6271.122.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <472B8DAF.9080706@schaufler-ca.com> <20071103164303.GA26707@ubuntu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/3/07, Ahmed S. Darwish <darwish.07@gmail.com> wrote:
->  static int smk_open_load(struct inode *inode, struct file *file)
->  {
-> -       return seq_open(file, &load_seq_ops);
-> +       if ((file->f_flags & O_ACCMODE) == O_RDONLY)
-> +               return seq_open(file, &load_seq_ops);
-> +
-> +       if (down_interruptible(&smack_write_sem))
-> +               return -ERESTARTSYS;
-> +
-> +       load_state = kzalloc(sizeof(struct smack_load_state), GFP_KERNEL);
-> +       if (!load_state)
-> +               return -ENOMEM;
-> +
-> +       return 0;
-> +}
+On Sun, 2007-11-04 at 11:38 +0100, Ingo Molnar wrote:
+> I.e. keep the namespace functionality but use a modulo 1.000.000 base 
+> for the PIDs so that it all looks nicer to the user. Minimal visibility 
+> difference but maximum compatibility. (The resulting limits are 
+> reasonable: 1 million tasks per container and 4 million containers on a 
+> single 32-bit box.) We could still restrict cross-namespace API use but 
+> all the cases where a global PID is desirable would still all work. I 
+> might be missing something obvious though.
 
-Is it right to do the kzalloc with the semaphore being held? Will the
-lock be held forever If kzalloc failed and -ENOMEM was returned ?
+There is definitely a great deal of desire to have containers look as
+much as possible like a normally functioning system.  That includes
+having an init process.  Everything today depends on that init process
+having a pretty specific pid.  That's definitely one of the 0.1% of
+things that isn't really shaped by the kernel, but it's a pretty
+important one 0.1%.  (Linux Vserver does this pid virtualization, but
+_only_ for init, btw.)
 
-Thanks,
+We also need to consider the needs of a checkpoint/restart system.  Most
+of my interest in containers comes because of their isolation
+properties.  That isolation is what lets us pick a container up and move
+it more easily across systems.
 
--- 
-Ahmed S. Darwish
-Homepage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
+But, once we've moved the container, all of that "single, global kernel"
+stuff goes out the window because it wasn't just one kernel making
+decisions.  Plus, those pids stop becoming just cookies that were issued
+by one kernel and interpreted by one kernel.
+
+-- Dave
+
