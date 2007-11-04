@@ -1,77 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbXKDX5G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbXKEAA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755533AbXKDX5G (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 18:57:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbXKDX4z
+	id S1755259AbXKEAA3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 19:00:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754228AbXKEAAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 18:56:55 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:33080 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753110AbXKDX4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 18:56:54 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: bcm43xx-dev@lists.berlios.de
-Subject: b43 on HP nx6325 w/ openSUSE 10.3 (x86_64)
-Date: Mon, 5 Nov 2007 01:13:54 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Michael Buesch <mb@bu3sch.de>, LKML <linux-kernel@vger.kernel.org>,
-       Larry Finger <larry.finger@lwfinger.net>,
-       Stefano Brivio <stefano.brivio@polimi.it>
+	Sun, 4 Nov 2007 19:00:20 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38485 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754133AbXKEAAS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Nov 2007 19:00:18 -0500
+Date: Sun, 4 Nov 2007 15:59:17 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Mikael Petterson <mikpe@it.uu.se>,
+       Eric Biederman <ebiederm@xmission.com>
+Subject: Re: [GIT PULL] x86 setup: correct booting on 486DX4
+In-Reply-To: <472E551E.2010507@zytor.com>
+Message-ID: <alpine.LFD.0.999.0711041546510.15101@woody.linux-foundation.org>
+References: <200711042259.lA4Mxa0n025210@tazenda.hos.anvin.org>
+ <alpine.LFD.0.999.0711041512530.15101@woody.linux-foundation.org>
+ <472E551E.2010507@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711050113.55591.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I'm trying to make the b43 driver work on an HP nx6325 with openSUSE 10.3
-(64-bit).  In short, it sort of works, but some things are a bit ugly.
 
-The kernel is the current -git (approx. 2.6.24-rc1-git13) with the following
-extra patches applied:
+On Sun, 4 Nov 2007, H. Peter Anvin wrote:
+> 
+> It's not an instruction-decoding issue at all (that's a 16- vs 32-bit issue,
+> which can only be changed by a ljmp).  Apparently the 486DX4 mis-executes the
+> load to segment register, which is an EU function in that context.  (And yes,
+> it's sort-of-documented behaviour in the sense that the documentation says "do
+> things this way", but the Intel docs are unfortunately full of "do things this
+> way" which don't make sense and occasionally are actively harmful, too.)
 
-b43: Fix rfkill callback deadlock
-b43: debugfs SHM read buffer overrun fix
-b43: Rewrite and fix rfkill init
+I still disagree.
 
-and I'm using the firmware from
-http://downloads.openwrt.org/sources/broadcom-wl-4.80.53.0.tar.bz2
+I took out "Programming the 80386" just to check, and the documentation 
+very clearly states that when changing the CR0 bits (I quote):
 
-Here's the debug info from dmesg:
+	"The program must execute a jump instruction immediately after 
+	 changing the value of the PE bit in order to flush the execution 
+	 pipeline of any instructions that may have been fetched in the 
+	 wrong mode. [...]"
 
-b43-phy1: Broadcom 4311 WLAN found
-b43-phy1 debug: Found PHY: Analog 4, Type 2, Revision 8
-b43-phy1 debug: Found Radio: Manuf 0x17F, Version 0x2050, Revision 2
-b43-phy1 debug: Loading firmware version 351.126 (2006-07-29 05:54:02)
-Registered led device: b43-phy1:tx
-Registered led device: b43-phy1:rx
-b43-phy1 debug: Chip initialized
-b43-phy1 debug: 32-bit DMA initialized
-b43-phy1 debug: Wireless interface started
-b43-phy1 debug: Adding Interface type 2
+In other words, not only is this documented since day 1, it makes total 
+sense, and they even said exactöy *why* that jump had to be done.
 
-Now, the first problem is that the card seems to lose frames from time to
-time.  This is visible in the output of mtr and while trying to transfer large
-files using scp.  With scp the transfer just stalls and stays this way although
-the other end is pingable etc. (eg. attempting to transfer more than 400 MB at
-once triggers this 100% of the time).
+In fact, there's even a code example. It's page 624 in my copy of the 
+book, and yes, it has a short jump to flush things, followed by a long 
+jump. The code there looks like this:
 
-If you can suggest some more specific tests to me, I'll run them and report
-back.
+	; *****
+	; ** [4] Enter Protected Mode
+	; *****
+		SMSW AX
+		OR   AX, PE
+		LMSW AX
+		JMP  Flush
+	Flush:
+		JMP far ptr Start32
 
-The second problem is that YaST is apparently unable to detect the device,
-which sort of sucks, because it leads to configuration problems (basically, you
-need to set up everything manually).  Evidently, udev manages to handle it, so
-this may be related to HAL.  Anyway, it looks like the problem is related to
-the fact that the device is not present under /sys/bus/pci/devices/ directly,
-but you need to go through the ssb0:0 subdirectory to get to it.
 
-Do you have any ideas how to tell the user space stuff where the devices is
-in sysfs?
+which is pretty damn conclusive. It's documented, it has examples, it 
+works. In other words, it's how you should do things.
 
-Greetings,
-Rafael
+And Linux always did it correctly. I don't understand why you disagree, 
+and why Jeremy says
+
+	"Having successfully broken the rules for a long time so far, 
+	 maybe we can get away with still cutting corners..."
+
+when the fact is, we used to *not* cut corners, we used to *not* break the 
+rules, and what we used to do (a short jump immediately after setting PE) 
+was exactly what Intel always said you should do, and there is no question 
+what-so-ever about it.
+
+So here's a suggestion:
+
+ - make the code do what it used to do. A regular jump to flush the 
+   pipeline. Which is what Intel has always said should be done.
+
+and I really don't see that there is any argument about this. 
+
+			Linus
