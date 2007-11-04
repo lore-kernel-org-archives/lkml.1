@@ -1,95 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761610AbXKDAIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761610AbXKDAOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761610AbXKDAIA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 20:08:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbXKDAHw
+	id S1761610AbXKDAOS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 20:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757575AbXKDAOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 20:07:52 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:29750 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754755AbXKDAHu (ORCPT
+	Sat, 3 Nov 2007 20:14:10 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:39344
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756815AbXKDAOJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 20:07:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=n7ySyJbn+BdZbSOiG6uCYNY0XpFcqAb3eMiG1FuTuXQkV29zd2w67pUjlhG3R7p+J0sfwFipFMQIdFizoCg962B4l25lXBt+nDVKnKHppzAbSQJT0ArDV/+KYiVrHD3/mFaCJP3RTHiiONLukuMDHwrfd62Vu3LeBWw6VrC9hdc=
-Message-ID: <472D0D4A.70404@gmail.com>
-Date: Sun, 04 Nov 2007 09:07:38 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Sat, 3 Nov 2007 20:14:09 -0400
+Date: Sat, 3 Nov 2007 17:21:33 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Dave Hansen <haveblue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>, Ulrich Drepper <drepper@redhat.com>,
+       linux-kernel@vger.kernel.org,
+       "Dinakar Guniguntala [imap]" <dino@in.ibm.com>,
+       Sripathi Kodi <sripathik@in.ibm.com>
+Subject: Re: [patch] PID namespace design bug, workaround
+In-Reply-To: <20071103165525.2dcd55c7@laptopd505.fenrus.org>
+Message-ID: <Pine.LNX.4.64.0711031714130.4780@asgard.lang.hm>
+References: <20071101144307.GA29566@elte.hu> <4729E7E4.8070208@openvz.org>
+ <4729E936.4040400@redhat.com> <4729EB3C.9050102@openvz.org>
+ <472A6D91.1020300@redhat.com> <472AD7D6.80900@openvz.org>
+ <20071102010419.23f3db5c.akpm@linux-foundation.org> <1194024622.6271.108.camel@localhost>
+ <alpine.LFD.0.999.0711021038480.3342@woody.linux-foundation.org>
+ <20071103201251.GB26366@elte.hu> <alpine.LFD.0.999.0711031535450.15101@woody.linux-foundation.org>
+ <20071103165525.2dcd55c7@laptopd505.fenrus.org>
 MIME-Version: 1.0
-To: Daniel Drake <dsd@gentoo.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Albert Lee <albertcc@tw.ibm.com>
-Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
-References: <47274A5F.6070409@gentoo.org>	<20071030153417.59b9182c@the-village.bc.nu>	<47276DCA.1000808@gentoo.org>	<20071030190153.373c9347@the-village.bc.nu>	<47278439.4030801@gentoo.org>	<20071031114958.210bd7cc@the-village.bc.nu>	<20071031115754.GK5059@kernel.dk>	<4729A0DF.20800@garzik.org>	<20071101105335.1f20bab3@the-village.bc.nu>	<4729B3EA.6040707@garzik.org> <20071101141501.3746cec2@the-village.bc.nu> <4729F1BB.20306@gentoo.org> <4729F8F1.4040103@gmail.com> <472B946F.4030004@gentoo.org> <472BCC18.7070503@gmail.com> <472CD3F3.7050701@gentoo.org>
-In-Reply-To: <472CD3F3.7050701@gentoo.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Drake wrote:
-> Tejun Heo wrote:
->>> <4>ata2.00: HSM violation: eh_analyze_tf: BUSY|DRQ
->>> <3>ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
->>> <3>ata2.00: cmd a0/00:00:00:0a:00/00:00:00:00:00/a0 tag 0 cdb 0x5a data
->>> 10 in
->>> <4>         res 58/00:02:00:0a:00/00:00:00:00:00/a0 Emask 0x2 (HSM
->>> violation)
->>> <3>ata2.00: status: { DRDY DRQ }
->>> <6>ata2: soft resetting link
->>> <6>ata2.00: configured for UDMA/33
->>> <6>ata2: EH complete
+On Sat, 3 Nov 2007, Arjan van de Ven wrote:
+
+> On Sat, 3 Nov 2007 15:40:48 -0700 (PDT)
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>
+>> I don't understand how you can call this a "PID namespace design
+>> bug", when it clearly has nothing what-so-ever to do with pid
+>> namespaces, and everything to do with the *futexes* that blithely
+>> assume that pid's are unique and that made it part of the
+>> user-visible interface.
 >>
->> Does this patch fix the problem?
-> 
-> That fixes it, thanks! There is no more ugly error in dmesg, the test
-> prog doesn't print any sense data, and brasero works OK too. However,
-> these messages appear in the kernel log every time I run the test app
-> (or when brasero does its thing):
-> 
-> <4>ata2.00: 10 bytes trailing data
-> <4>ata2.00: 10 bytes trailing data
-> <4>ata2.00: 10 bytes trailing data
-> <4>ata2.00: 10 bytes trailing data
-> <4>ata2.00: 10 bytes trailing data
-> <4>ata2.00: 10 bytes trailing data
-> <4>ata2.00: 6 bytes trailing data
+>> OF COURSE any pid namespace design will always break such
+>> assumptions, but that's not because of any PID namespace bugs. It's
+>> what the whole *point* of PID namespaces are. If you use pid's
+>> (instead of some opaque cookies), you will not be able to use such
+>> things across pid-separation.
+>
+> well... kind of.
+> THere are 2 things around pid namespaces: which pids you can see/touch
+> (in proc or signals or otherwise), and the non-uniqueness.
+>
+> For containers you clearly want the first part... but... is there a
+> strong reason to not just *not* create duplicate pids even across
+> namespaces? there's no rule in posix or anything similar to fd's afaik
+> concerning which pids we can hand out... so we could just make then
+> unique globally but just with limited visibility....
 
-Yeah, that's expected.  What's going on here is that your drive sends
-full mode sense data (76bytes) regardless of allocation size in CDB but
-it does honor transfer chunk set in the PACKET TF, which is set to the
-same value as allocation size by Alan's patch.  So, now the drive sends
-the 76 bytes in 8 chunks.  The first chunk is transferred into the sg
-buffer and the following chunks are thrown away.
+two problems that I can think of
 
-Previously, transfer chunk was set to 8k, so the drive claims to
-transfer 76 bytes from the buegging, libata transfers leading 10 bytes
-got transferred into the user buffer and throws away what's remaining.
-The change caused problem because libata HSM always switches to
-HSM_ST_LAST (command sequence completion) after filling the command
-buffer completely.  So, throwing away is activated iff the extra data to
-throw away is transfered together with the last chunk of useful data.
+1. the container people would like to eventually have the ability to 
+migrate containers from one system to another (or to suspend a container) 
+in this sort of case trying to fit the allocated PIDs from the container 
+into a running system is a problem if PIDs are not allowed to overlap.
 
-With the chunk size reduced to allocation size, the initial chunk fills
-the data buffer completely and all the extra bytes are transfered in
-separate chunks.  However, libata HSM expects command sequence to
-complete after the initial chunk but the drive asserts DRQ for the next
-chunk on the following interrupt, so HSM violation is triggered.
+2. it seems to me that there is porobably a latent security issue in 
+having a global PID namespace with just limited visability. the types of 
+bugs that may let you affect a process seem easier to make if the only 
+protection is visability rather then complete seperation.
 
-The patch modifies HSM such that it keeps throwing away extra data as
-long as the drive asserts DRQ which is how IDE driver does it.
-
-However, there's still remaining issues.  What does happen if you raise
-allocation length and buffersize of the test program to 16?  ie. Change
-0x0a in cmd[] to 0x10 and increase buffer[10] to buffer[16].
-
-Thanks.
-
--- 
-tejun
+David Lang
