@@ -1,24 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755724AbXKDTwL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753414AbXKDUC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755724AbXKDTwL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 14:52:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbXKDTv7
+	id S1753414AbXKDUC2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 15:02:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbXKDUCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 14:51:59 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:41584 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753372AbXKDTv6 (ORCPT
+	Sun, 4 Nov 2007 15:02:20 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:45909 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751019AbXKDUCU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 14:51:58 -0500
-Date: Sun, 4 Nov 2007 11:51:08 -0800
+	Sun, 4 Nov 2007 15:02:20 -0500
+Date: Sun, 4 Nov 2007 12:01:55 -0800
 From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Marco Costalba" <mcostalba@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: duplicated include files
-Message-Id: <20071104115108.ea8729a2.randy.dunlap@oracle.com>
-In-Reply-To: <e5bfff550711041143i7be3cff7kd4903ed43cb4e232@mail.gmail.com>
-References: <e5bfff550711041141h612a24cdrcdb5baa35907989d@mail.gmail.com>
-	<e5bfff550711041143i7be3cff7kd4903ed43cb4e232@mail.gmail.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: sam@ranvborg.org, akpm <akpm@linux-foundation.org>
+Subject: [PATCH] Makefile: add 'includecheck' help text
+Message-Id: <20071104120155.d1e85630.randy.dunlap@oracle.com>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -31,22 +28,22 @@ X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 Nov 2007 20:43:01 +0100 Marco Costalba wrote:
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-> On 11/4/07, Marco Costalba <mcostalba@gmail.com> wrote:
-> > make includecheck does not work for me. Linux tree is from latest git.
-> >
-> > bash-3.2$ pwd
-> > /git/linux-2.6
-> >
-> > bash-3.2$ make includecheck
-> > find * \( -name SCCS -o -name BitKeeper -o -name .svn -o -name CVS -o
-> 
-> BTW what's that 'BitKeeper' fossil here?
+Add 'includecheck' to the Static analyzers help list.
 
-It allows people to continue using any of {CVS, SVN, BitKeeper}
-for their kernel tree.  The BK kernel tree is still being updated
-AFAIK.  (It was last time I looked, about 3 weeks ago.)
-
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
-~Randy
+ Makefile |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- linux-2.6.24-rc1-git13.orig/Makefile
++++ linux-2.6.24-rc1-git13/Makefile
+@@ -1169,6 +1169,7 @@ help:
+ 	@echo  'Static analysers'
+ 	@echo  '  checkstack      - Generate a list of stack hogs'
+ 	@echo  '  namespacecheck  - Name space analysis on compiled kernel'
++	@echo  '  includecheck    - Check for duplicate included header files'
+ 	@echo  '  export_report   - List the usages of all exported symbols'
+ 	@if [ -r $(srctree)/include/asm-$(SRCARCH)/Kbuild ]; then \
+ 	 echo  '  headers_check   - Sanity check on exported headers'; \
