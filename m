@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756812AbXKDJ34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757146AbXKDJe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756812AbXKDJ34 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 04:29:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754364AbXKDJ3t
+	id S1757146AbXKDJe0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 04:34:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753861AbXKDJeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 04:29:49 -0500
-Received: from antispam.upcomillas.es ([130.206.70.245]:48174 "EHLO
+	Sun, 4 Nov 2007 04:34:18 -0500
+Received: from antispam.upcomillas.es ([130.206.70.245]:48196 "EHLO
 	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754310AbXKDJ3r (ORCPT
+	with ESMTP id S1752237AbXKDJeQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 04:29:47 -0500
-Subject: Re: 2.6.34-rc1 eat my photo SD card :-(
+	Sun, 4 Nov 2007 04:34:16 -0500
+Subject: Re: *SPAM* Re: 2.6.24-rc1: OOPS at  acpi_battery_update
 From: Romano Giannetti <romanol@upcomillas.es>
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20071102182833.2c055446@poseidon.drzeus.cx>
-References: <1193918202.8439.7.camel@rukbat>
-	 <20071102182833.2c055446@poseidon.drzeus.cx>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+In-Reply-To: <200711021708.42370.rjw@sisk.pl>
+References: <1193652664.22149.4.camel@localhost>
+	 <20071101161459.d5f9abc0.akpm@linux-foundation.org>
+	 <200711021708.42370.rjw@sisk.pl>
 Content-Type: text/plain; charset=ISO-8859-1
-Date: Sun, 04 Nov 2007 10:29:43 +0100
-Message-Id: <1194168583.10245.15.camel@rukbat>
+Date: Sun, 04 Nov 2007 10:34:13 +0100
+Message-Id: <1194168853.10245.18.camel@rukbat>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 8bit
@@ -27,43 +29,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 2007-11-02 at 18:28 +0100, Pierre Ossman wrote:
-> On Thu, 01 Nov 2007 12:56:42 +0100
-> Romano Giannetti <romanol@upcomillas.es> wrote:
-> 
-> Data loss is never fun. I hope you didn't have anything important on the card.
-> 
-
-Well. A cousin-in-law marriage, would have been best not to lose it, but
-I'll survive.
-
-> > I have a flight waiting now, so I have put all the dmesgs and syslogs
-> > over there:
+On Fri, 2007-11-02 at 17:08 +0100, Rafael J. Wysocki wrote:
+> On Friday, 2 November 2007 00:14, Andrew Morton wrote:
+> > On Mon, 29 Oct 2007 11:11:04 +0100
+[OOPS removed]
 > > 
-> > http://www.dea.icai.upcomillas.es/romano/linux/info/2624-rc1-mmc/
-> > 
+> > Did any earlier kernels do this?  In other words, do you believe that this
+> > is a bug which we added after 2.6.23 was released?
 
-Hmmm... the Uni server is down today. Darn.
+Never noticed it before. But it's happening just sometime (I've had it
+just two times), so I cannot be sure.
 
-> I'm afraid the logs are of little help. They are just filled with
-> noise from the file system. You also seem to prove the FAT code to
-> give an invalid pointer (the oops in the first dmesg).
-> 
+> This might be the same as http://bugzilla.kernel.org/show_bug.cgi?id=9283
 
-Ok, I suspected it.
+Hmmm... there is too little info for my level in that bug report to
+understand if it's the same. 
 
-> Can you reproduce this? To help you I need to see the errors given by
-> the MMC layer. You should also try reproducing it without a tainted
-> kernel (i.e. don't load ndiswrapper).
+Romano 
 
-I have a spare 128M card I can use to try. The one that failed was a 2G
-one. I will try to reproduce without tainting the kernel (unfortunately,
-the Atheros chip I have is not supported by ath5k yet, and the choice is
-between ndiswrapper or Vista.). Should I enable some debugging option
-for the MMC layer?  
-
-
-> Rgds
 -- 
 Sorry for the disclaimer --- ¡I cannot stop it!
 
