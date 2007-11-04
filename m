@@ -1,77 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbXKDSjJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755641AbXKDSoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755987AbXKDSjJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 13:39:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbXKDSi4
+	id S1755641AbXKDSoS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 13:44:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbXKDSoH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 13:38:56 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:39934 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753063AbXKDSi4 (ORCPT
+	Sun, 4 Nov 2007 13:44:07 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:36280 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751037AbXKDSoF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 13:38:56 -0500
-Date: Sun, 4 Nov 2007 13:37:31 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: duplicated include files
-In-Reply-To: <20071104100724.518cf6c9.randy.dunlap@oracle.com>
-Message-ID: <Pine.LNX.4.64.0711041334590.5541@localhost.localdomain>
-References: <Pine.LNX.4.64.0711041229580.27153@localhost.localdomain>
- <20071104100724.518cf6c9.randy.dunlap@oracle.com>
+	Sun, 4 Nov 2007 13:44:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=s6+lFaJoXkeZ9aSokb/IW7k5OqqWqBXOYcHTIbfiolj7+JD7IBZ6WE1u8RIBG1ccHXKRx+7e0ouPLY6EsoczIXkN2iUsIDZsMyIjo/7ZXZDv1DN1FF89tyg4P/jcEXTDBShXMuQ1tMGoXebmo/8GNbLpUVfFwAozMHaziSlFO78=
+Message-ID: <e5bfff550711041044p7c07c42g836461e81a6005a@mail.gmail.com>
+Date: Sun, 4 Nov 2007 19:44:04 +0100
+From: "Marco Costalba" <mcostalba@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: List of possible duplicated include files in include/
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 Nov 2007, Randy Dunlap wrote:
+Here the number of false positives is overhelming, but perhaps there
+are also _real_ duplicated include somewhere in the bunch:
 
-> On Sun, 4 Nov 2007 12:31:38 -0500 (EST) Robert P. J. Day wrote:
->
-> >
-> >   given the recent patches to remove duplicated #include preprocessor
-> > directives in source files, let it be known that there are a number of
-> > them:
-> >
-> >   http://www.crashcourse.ca/wiki/index.php/Duplicate_include_files
-> >
-> > help yourself.
->
-> Could you make the tool (script?) available also, please?
+include/acpi/acpi_bus.h:
+#include <linux/device.h>
 
-trust me, it's not a script i'm particularly proud of:
+include/asm-alpha/core_cia.h:
+#include <asm/io_trivial.h>
 
-===========================
-#!/bin/sh
+include/asm-arm/atomic.h:
+#include <asm/system.h>
 
-DIR=${1-*}              # by default, all directories
+include/asm-arm/arch-clps711x/hardware.h:
+#include <asm/hardware/ep7212.h>
 
-for cf in $(find ${DIR} -name *.c) ; do
-        echo ${cf}
-        grep "#include" $cf | sort | uniq -c | grep -v 1
-done | grep -B1 "#include" | grep -v -- "--"
-===========================
+include/asm-arm/arch-clps711x/hardware.h:
+#include <asm/hardware/clps7111.h>
 
-  on the bright side, it took about 90 seconds to write, but i won't
-be winning any awards for style.
+include/asm-arm/arch-clps711x/hardware.h:
+#include <asm/hardware/ep7212.h>
 
-  i'll add it to the web page.
+include/asm-arm/arch-clps711x/hardware.h:
+#include <asm/hardware/cs89712.h>
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+include/asm-arm/arch-clps711x/hardware.h:
+#include <asm/hardware/clps7111.h>
 
-http://crashcourse.ca
-========================================================================
+include/asm-arm/arch-clps711x/hardware.h:
+#include <asm/hardware/ep7212.h>
+
+include/asm-ia64/pgtable.h:
+#include <asm/processor.h>
+
+include/asm-m32r/m32r.h:
+#include <asm/m32700ut/m32700ut_pld.h>
+
+include/asm-mips/bitops.h:
+#include <asm-generic/bitops/fls64.h>
+
+include/asm-mips/tx4938/tx4938.h:
+#include <asm/byteorder.h>
+
+include/asm-powerpc/io.h:
+#include <asm/io-defs.h>
+
+include/asm-x86/elf.h:
+#include <asm/processor.h>
+
+include/asm-x86/msr.h:
+#include <linux/errno.h>
+
+include/asm-x86/smp_64.h:
+#include <asm/thread_info.h>
+
+include/linux/aio.h:
+#include <linux/uio.h>
+
+include/linux/aio.h:
+#include <linux/aio_abi.h>
+
+include/linux/atalk.h:
+#include <asm/byteorder.h>
+
+include/linux/cgroup.h:
+#include <linux/cgroup_subsys.h>
+
+include/linux/icmpv6.h:
+#include <linux/skbuff.h>
+
+include/linux/igmp.h:
+#include <linux/skbuff.h>
+
+include/linux/udp.h:
+#include <linux/types.h>
+
+include/net/ieee80211.h:
+#include <linux/wireless.h>
