@@ -1,91 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758644AbXKDKjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758433AbXKDKvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758644AbXKDKjW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 05:39:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755350AbXKDKjP
+	id S1758433AbXKDKvd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 05:51:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755497AbXKDKvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 05:39:15 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54684 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755028AbXKDKjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 05:39:13 -0500
-Date: Sun, 4 Nov 2007 11:38:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Dave Hansen <haveblue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>, Ulrich Drepper <drepper@redhat.com>,
-       linux-kernel@vger.kernel.org,
-       "Dinakar Guniguntala [imap]" <dino@in.ibm.com>,
-       Sripathi Kodi <sripathik@in.ibm.com>
-Subject: Re: [patch] PID namespaces
-Message-ID: <20071104103851.GA14317@elte.hu>
-References: <4729E7E4.8070208@openvz.org> <4729E936.4040400@redhat.com> <4729EB3C.9050102@openvz.org> <472A6D91.1020300@redhat.com> <472AD7D6.80900@openvz.org> <20071102010419.23f3db5c.akpm@linux-foundation.org> <1194024622.6271.108.camel@localhost> <alpine.LFD.0.999.0711021038480.3342@woody.linux-foundation.org> <20071103201251.GB26366@elte.hu> <alpine.LFD.0.999.0711031535450.15101@woody.linux-foundation.org>
+	Sun, 4 Nov 2007 05:51:24 -0500
+Received: from py-out-1112.google.com ([64.233.166.177]:23159 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754946AbXKDKvX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Nov 2007 05:51:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NushnOxD3xj8KCYCDgMngLhTEzDXLdXHxofkpOjQJbYYM16ksvRZ4KGRiDJulUZcJfQ1VHAbDFsVNhnM18ZnmygJQEU45UEVJaPyIeaGBSx2pm41xm3bEvnoKYl0j9R0ayAznV6QjG5g74emRa0irad1K5M/j4tcn7+tFEGGDXQ=
+Message-ID: <64bb37e0711040251w4d08ac83n1e090a8fab19d3d8@mail.gmail.com>
+Date: Sun, 4 Nov 2007 11:51:21 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: 2.6.24-rc1-54866f032307063776b4eff7eadb131d47f9f9b4 fails to boot: kernel BUG at include/linux/scatterlist.h:49!
+Cc: "Stefan Richter" <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org,
+       linux1394-devel@lists.sourceforge.net
+In-Reply-To: <20071104084456.GJ28340@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0711031535450.15101@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <64bb37e0711021503x4844b905yba1e9a681c4e788a@mail.gmail.com>
+	 <472BA567.8040301@s5r6.in-berlin.de>
+	 <64bb37e0711030614q4be3a2b6j5d3c55b26cb07030@mail.gmail.com>
+	 <472C88E9.60103@s5r6.in-berlin.de> <20071103160404.GH28340@kernel.dk>
+	 <20071104084456.GJ28340@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 11/4/07, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Sat, Nov 03 2007, Jens Axboe wrote:
+> > It's probably enough. Only if you use chaining do you need to convert to
+> > using for_each_sg() and so on.
+>
+> Did a grep over ieee1394/, this seems to be all you need.
 
-(changed the Subject line)
+What *I* need. For eth1394.
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Stefan Richter wrote:
+> (The other place where the 1394 stack deals with s/g lists is sbp2 where
+> we have to deal with what comes from the SCSI stack or the block layer.
+> But sbp2's s/g list handling is entirely unrelated to ieee1394's own
+> code for isochronous I/O and async streams, which eth1394 needs and
+> caused the bug.)
 
-> On Sat, 3 Nov 2007, Ingo Molnar wrote:
-> > 
-> > - one problem is that this condition is 'invisible'. If two 
-> >   namespaces happen to access the same robust futex (say a yum 
-> >   update from two PID namespaces sharing the same read-mostly 
-> >   filesystem) there's silent breakage and data corruption due to PID 
-> >   overlap.
-> 
-> .. and this is in *no* way different from thousands of applications 
-> that write their pid to lock-files, and others decide that it's 
-> "stale" because using "kill(pid, 0)" returns that the pid doesn't 
-> exist any more.
-> 
-> The solution? You can't do that kind of locking over NFS, or across 
-> pid namespaces. Nobody blames NFS or pid namespaces for it.
+I see nothing preventing chained sg lists to be feed into
+sbp2scsi_queuecommand() which then gives these lists to
+sbp2_prep_command_orb_sg().
 
-the difference to NFS is that for PID namespaces we do have a single 
-trusted kernel that fully controls all the domains so there's no obvious 
-"hard barrier of trust" that people could perceive as a showstopper.
+And there I find this:
+static void sbp2_prep_command_orb_sg(struct sbp2_command_orb *orb,
+                                     struct sbp2_fwhost_info *hi,
+                                     struct sbp2_command_info *cmd,
+                                     unsigned int scsi_use_sg,
+                                     struct scatterlist *sgpnt,
+                                     u32 orb_direction,
+                                     enum dma_data_direction dma_dir)
+{
+[snip]
+for (i = 0, sg_count = 0 ; i < count; i++, sgpnt++) {
 
-We've got a global kernel and unlike other namespaces there's (almost) 
-no "directed allocation" done of specific PIDs (unlike files, socket 
-addresses or fds). So the PID is a cookie that is 99.9% shaped _by the 
-kernel already_. [there are a few exceptions but those are much less 
-problematic than the lack of global PIDs is] So we might as well shape 
-the cookies in a way that keeps them global. What is the technological 
-reason for not keeping PIDs globally unique? We've cited a good number 
-of reasons why it's desirable - it's a pretty damn useful cookie for 
-identifying tasks. (it's also very scalable - PID -> task lookup is 
-completely lockless.)
 
-I.e. keep the namespace functionality but use a modulo 1.000.000 base 
-for the PIDs so that it all looks nicer to the user. Minimal visibility 
-difference but maximum compatibility. (The resulting limits are 
-reasonable: 1 million tasks per container and 4 million containers on a 
-single 32-bit box.) We could still restrict cross-namespace API use but 
-all the cases where a global PID is desirable would still all work. I 
-might be missing something obvious though.
+As yesterday my md1_raid5-thread oopsed with the same bug from the
+thread "kernel NULL pointer dereference in blk_rq_map_sg with
+v2.6.23-6815-g0895e91" I'm rather suspicious of anything sg related
+right now. (At least I think its the same bug, as 2.6.23-mm1 does not
+contain the fix from that thread)
 
-The reason why i bring this up now is because 2.6.24 is an 
-all-or-nothing flag day for this detail. Once it's out there we wont 
-realistically be able to change any of these details. (And in general 
-i'm very supportive of the containers concept - a year ago at the KS i 
-was one of the very few proponents of quickly merging containers into 
-the kernel.)
+> diff --git a/drivers/ieee1394/dma.c b/drivers/ieee1394/dma.c
+> index f5f4983..7c4eb39 100644
+> --- a/drivers/ieee1394/dma.c
+> +++ b/drivers/ieee1394/dma.c
+> @@ -103,8 +103,7 @@ int dma_region_alloc(struct dma_region *dma, unsigned long n_bytes,
+>                 goto err;
+>         }
+>
+> -       /* just to be safe - this will become unnecessary once sglist->address goes away */
+> -       memset(dma->sglist, 0, dma->n_pages * sizeof(*dma->sglist));
+> +       sg_init_table(dma->sglist, dma->n_pages);
+>
+>         /* fill scatter/gather list with pages */
+>         for (i = 0; i < dma->n_pages; i++) {
+>
 
-	Ingo
+With that patch, 2.6.24-rc1-b4f555081fdd27d13e6ff39d455d5aefae9d2c0c
+boots, eth1394 works.
+
+Torsten
