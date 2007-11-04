@@ -1,63 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171AbXKDW5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754564AbXKDW6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754171AbXKDW5T (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 17:57:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbXKDW5K
+	id S1754564AbXKDW6S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 17:58:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753139AbXKDW6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 17:57:10 -0500
-Received: from an-out-0708.google.com ([209.85.132.240]:54010 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751480AbXKDW5J (ORCPT
+	Sun, 4 Nov 2007 17:58:09 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:47433 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752936AbXKDW6H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 17:57:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qpCjalQViGzxNImwmEqVlxAiNAKpHVDvE6F25zFgFfcHjyacv3Sojy3tiJ6TYEuyB8KDKPbj9Jla0VcNj1wlyR9QJwrulpK+G997HpwSHG+RReiwEGsFDtOd8Ir6BfNVs1tW6qsKgwn30WBzhJv249urk9F7hiCq8ccM5LjLKJw=
-Message-ID: <3c16e8dc0711041457r684fb42fpc3845a941162b65d@mail.gmail.com>
-Date: Sun, 4 Nov 2007 19:57:08 -0300
-From: "Felipe Dias" <felipediassss@gmail.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Subject: Re: textsearch in module = BUG: scheduling while atomic
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <472E458B.50903@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3c16e8dc0711040915n206c38d6u7e15972bf55e0e0d@mail.gmail.com>
-	 <472E07ED.2010907@gmail.com>
-	 <3c16e8dc0711041222w6bc67b3fn8320e982ffd723b0@mail.gmail.com>
-	 <472E346E.90309@gmail.com>
-	 <3c16e8dc0711041405m33c5e54dw6c8d51ac600d51cf@mail.gmail.com>
-	 <472E44CA.6090600@gmail.com> <472E458B.50903@gmail.com>
+	Sun, 4 Nov 2007 17:58:07 -0500
+Date: Sun, 4 Nov 2007 14:57:50 -0800
+Message-Id: <200711042257.lA4Mvobr025200@tazenda.hos.anvin.org>
+From: "H. Peter Anvin" <hpa@zytor.com>
+To: Linus Torvalds <torvalds@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, Mikael Petterson <mikpe@it.uu.se>,
+       Eric Biederman <ebiederm@xmission.com>
+Subject: [GIT PULL] x86 setup: correct booting on 486DX4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I change the algo, from "bm" to "kmp" and probably resolve. I will
-make more tests and if error occour i post latter...
+Hi Linus; please pull:
 
-Thanks so much.
-Felipe Dias
+  git://git.kernel.org/pub/scm/linux/kernel/git/hpa/linux-2.6-x86setup.git for-linus
 
-On 11/4/07, Jiri Slaby <jirislaby@gmail.com> wrote:
-> On 11/04/2007 11:16 PM, Jiri Slaby wrote:
-> > On 11/04/2007 11:05 PM, Felipe Dias wrote:
-> >> Ow sorry... the warning:
-> >>
-> >> BUG: scheduling while atomic: gnome-cups-icon/0x00000101/3827
-> >>  [<c02aefe6>] __sched_text_start+0x56/0x7c8
-> >>  [<c0130139>] autoremove_wake_function+0x14/0x33
-> >>  [<c0119284>] __wake_up_common+0x35/0x53
-> >>  [<c01197f6>] __wake_up+0x32/0x43
-> >>  [<c02af847>] wait_for_completion+0x6a/0x9f
-> >>  [<c011b6ae>] default_wake_function+0x0/0xc
-> >>  [<c012cdff>] call_usermodehelper_keys+0xad/0xc5
-> >>  [<c012ceec>] request_module+0xd5/0xe6
-> >
-> > Seems like it is not inteded for using in atomic at all (you probably passed an
-> > unknown algo here to the prepare function). You seem to have to use a workqueue
-> > if it is possible or prepare the serach before the interrupt occurs.
->
-> Or pass 0 instead of TS_AUTOLOAD.
->
+H. Peter Anvin (1):
+      x86 setup: correct booting on 486DX4
+
+ arch/x86/boot/pmjump.S |   32 +++++++++++++++++++++-----------
+ 1 files changed, 21 insertions(+), 11 deletions(-)
+
+[Full diff and log follows]
+
+commit ac3b37b78c5f0f0be0b476a35370650f7bad482f
+Author: H. Peter Anvin <hpa@zytor.com>
+Date:   Sun Nov 4 14:33:41 2007 -0800
+
+    x86 setup: correct booting on 486DX4
+    
+    Apparently, the 486DX4 does not correctly serialize a mov to %cr0, so
+    we really do need the far jump immediately afterwards.  This means
+    losing the nice separation between 16- and 32-bit code, but c'est la
+    vie.
+    
+    Also pass %ebx = %edi = %ebp = 0 to support future extension of the
+    32-bit boot protocol.
+    
+    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+
+diff --git a/arch/x86/boot/pmjump.S b/arch/x86/boot/pmjump.S
+index 2e55923..17e6dec 100644
+--- a/arch/x86/boot/pmjump.S
++++ b/arch/x86/boot/pmjump.S
+@@ -28,27 +28,37 @@
+  * void protected_mode_jump(u32 entrypoint, u32 bootparams);
+  */
+ protected_mode_jump:
+-	xorl	%ebx, %ebx		# Flag to indicate this is a boot
+ 	movl	%edx, %esi		# Pointer to boot_params table
+-	movl	%eax, 2f		# Patch ljmpl instruction
++
++	xorl	%edx, %edx
++	movw	%cs, %dx
++	shll	$4, %edx		# Patch ljmpl instruction
++	addl	%edx, 2f
+ 	jmp	1f			# Short jump to flush instruction q.
+ 
+ 1:
+ 	movw	$__BOOT_DS, %cx
++	xorl	%ebx, %ebx		# Per protocol
++	xorl	%ebp, %ebp		# Per protocol
++	xorl	%edi, %edi		# Per protocol
+ 
+ 	movl	%cr0, %edx
+ 	orb	$1, %dl			# Protected mode (PE) bit
+ 	movl	%edx, %cr0
++	
++	.byte	0x66, 0xea		# ljmpl opcode
++2:	.long	3f			# Offset
++	.word	__BOOT_CS		# Segment
+ 
+-	movw	%cx, %ds
+-	movw	%cx, %es
+-	movw	%cx, %fs
+-	movw	%cx, %gs
+-	movw	%cx, %ss
++	.code32
++3:
++	movl	%ecx, %ds
++	movl	%ecx, %es
++	movl	%ecx, %fs
++	movl	%ecx, %gs
++	movl	%ecx, %ss
+ 
+ 	# Jump to the 32-bit entrypoint
+-	.byte	0x66, 0xea		# ljmpl opcode
+-2:	.long	0			# offset
+-	.word	__BOOT_CS		# segment
+-
++	jmpl	*%eax
++	
+ 	.size	protected_mode_jump, .-protected_mode_jump
