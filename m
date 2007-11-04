@@ -1,113 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759534AbXKDNhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759609AbXKDNj7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759534AbXKDNhj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 08:37:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756228AbXKDNha
+	id S1759609AbXKDNj7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 08:39:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756556AbXKDNjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 08:37:30 -0500
-Received: from thunk.org ([69.25.196.29]:49279 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756109AbXKDNh2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 08:37:28 -0500
-Date: Sat, 3 Nov 2007 20:04:43 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Remigiusz Modrzejewski <lkml.only@maxnet.org.pl>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Policy on dual licensing?
-Message-ID: <20071104000443.GB30710@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Remigiusz Modrzejewski <lkml.only@maxnet.org.pl>,
-	linux-kernel@vger.kernel.org
-References: <slrnfiopoa.9cu.lkml.only@localhost.localdomain>
+	Sun, 4 Nov 2007 08:39:51 -0500
+Received: from wa-out-1112.google.com ([209.85.146.183]:36712 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753323AbXKDNju (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Nov 2007 08:39:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PrHn4vgHfRtiaJZ7VIgv0kkaLkq2tj2OgFeGAx+zJ6N61F1ybZ0QnCaNDXt8WbBLt/PT5CH5qrW58equMGQlu5m3BFfPnm3qlaz5TIPloG79z7/0waNiVacA5aaaL9sXjqofwtH5lHY10GGJL/5YZnF5URimt5qbXEqdBg1Fr1Y=
+Message-ID: <9e4733910711040539h5714faeeq6a9985fa5a63963@mail.gmail.com>
+Date: Sun, 4 Nov 2007 08:39:49 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Jean Delvare" <khali@linux-fr.org>
+Subject: Re: [i2c] [PATCH] Fix i2c module parameter permissions for read/write
+Cc: lkml <linux-kernel@vger.kernel.org>, i2c@lm-sensors.org
+In-Reply-To: <20071104105501.380a840a@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <slrnfiopoa.9cu.lkml.only@localhost.localdomain>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+References: <9e4733910711032155j1649a3b8u56a59e754d77f61b@mail.gmail.com>
+	 <20071104105501.380a840a@hyperion.delvare>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 03, 2007 at 12:14:15PM +0000, Remigiusz Modrzejewski wrote:
-> 
-> We've all seen the last flame war about Linux stealing BSD code. Due to
-> Theo's bad wording whole discussion rolled around the question about
-> legality of this, a big waste of time (question answered a thousand
-> times). Still, the question about ethics is quite valid...
+On 11/4/07, Jean Delvare <khali@linux-fr.org> wrote:
+> Hi John,
+>
+> On Sun, 4 Nov 2007 00:55:15 -0400, Jon Smirl wrote:
+> > The permissions of i2c module parameters were set to zero making the
+> > parameters invisible and unsettable from the kernel command line. This
+> > patch changes the permissions to the standard 0644 read/write.
+>
+> These permissions have nothing to do with the kernel command line. They
+> define whether a file is created in sysfs for the respective module
+> parameter. Even with permissions set to 0, you can still set the value
+> in question from the kernel command line with <module>.<parm>=<value>.
 
-Please let's not restart the flame war then.  The ethics question is
-never going to be settled on LKML.  There are some people who believe
-that a GPL license *does* make the world a better place, since it
-doesn't allow a company like NetApp to take a open-source licensed OS,
-make millions off of it, and not be obligated to contribute changes
-back.  There are other people who believe that the BSD license is
-morally and/or ethically superior because it allows NetApp to make
-millions off of BSD 4.2/3 code, and they don't see any reason why such
-a corporation should be obligated to give their improvements back ---
-and that the existence of a BSD-licensed OS which allows this makes
-the world a better place.
+I figured out later by inserting printks into the driver that they
+were being set from the command line, but without changing the
+permissions there was no way to read them to verify.  The permissions
+should at least be set to 0444 to allow them to be read.
 
-This is the essense of the of the BSD vs. GPL philosophical divide.
+IMHO the I2C_CLIENT_INSMOD macros could use some rework since they use
+side effects to set variables without being explicit about it.
 
-Then there are those who believe that it is morally and ethically
-consistent not to obligate a company like NetApp to give back to the
-original project from when it claim, and yet it is morally and
-ethically consistent to try to lay a guilt trip on the Linux project
-when they do exactly same thing as NetApp, except they are using a GPL
-license instead of propietary licese.  
+The real problem was unrelated to this, it was an off by one error in
+the i2c bus numbering code of my embedded processor. That made the
+parameters not work since I was setting them on a different bus.
 
-There are also who believe that such an attempt represents the height
-of hypocrisy on the part of the whiners in the BSD camp.  And, of
-course, there are those who think the BSD folks are being incredibly
-silly, but who are personally willing such gestures in the name of
-inter-project amity, while thinking that trying to make any kind of
-blanket policy statement is folly.
+Changed to 0444.
 
-If you haven't guessed, I'm in the latter camp.
+Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+---
 
-> There are over four hundred C source files that mention BSD, but only 
-> a hundred of them is dual licensed. Of course not all mentions of BSD
-> mean the file is derived from it, as well as not each such licensed file
-> must use the acronym.  No matter what the scale really is, the problem
-> exists.
+diff --git a/include/linux/i2c.h b/include/linux/i2c.h
+index 8033e6b..395e430 100644
+--- a/include/linux/i2c.h
++++ b/include/linux/i2c.h
+@@ -588,7 +588,7 @@ union i2c_smbus_data {
+ #define I2C_CLIENT_MODULE_PARM(var,desc) \
+  static unsigned short var[I2C_CLIENT_MAX_OPTS] = I2C_CLIENT_DEFAULTS; \
+  static unsigned int var##_num; \
+-  module_param_array(var, short, &var##_num, 0); \
++  module_param_array(var, short, &var##_num, 0444); \
+  MODULE_PARM_DESC(var,desc)
 
-First of all, just because it mentioned BSD doesn't necessarily mean
-that it came from BSD.  For example, I wrote the /dev/random driver
-spceifically from Linux, but dual licensed it because I wanted the BSD
-camps to pick it up.  Secondly, you're presupposing that it is a
-*problem*.  There are those who believe that there is nothing wrong,
-either morally, ethically, or legally, with taking BSD code, and not
-dual-licesing it when adding GPL-specific additions.  You are begging
-the question by just asserting that it is a _problem_.  Some people
-view the GPLv2 license as a feature, not a bug.  
+ #define I2C_CLIENT_MODULE_PARM_FORCE(name)                             \
 
-At the end of the day, people can choose whatever license they want.
-BSD people have intentionally said they don't care if a NetApp takes
-there codes and makes adds proprietary licensed code around it, when
-they specified a BSD license.  The Open Solaris people have
-intentionally said they don't want this, by picking a license which is
-GPLv2 incompatible.  People who choose the GPLv2 license, either for a
-new driver or when they add Linux-specific glue code as part of a port
-of a driver, are also making their own statement.
 
-> What I propose is implementing a policy on accepting such code.
-> According to it, every time a maintainer is considering a driver
-> that is derived from BSD and licensed GPL-only, should request
-> for dual licensing before accepting the patch. If the submitter is
-> reluctant to do so - what can we do, it's better to have this inside
-> this way than not at all. However, this should minimize such cases 
-> and, hopefully, satisfy the claims about Linux maintainers not doing 
-> all that they could to make the world a better place.
-
-Actually, again, you're begging the question.  I have no doubt that
-people who write code under a BSD, CDDL, or GPL license all believe
-they are making the world a better place in their own way.  For you to
-say that Linux maintainers who don't try to get more drivers dual
-licensed === not making the world a better place is just as unfair as
-asserting that people who only make their code under the CDDL is doing
-so only because they are trying to make their Sun options stop from
-being underwater (blub blub blub :-).
-
-						- Ted
+-- 
+Jon Smirl
+jonsmirl@gmail.com
