@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760795AbXKDMLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759783AbXKDMUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760795AbXKDMLk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 07:11:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759622AbXKDMLZ
+	id S1759783AbXKDMUZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 07:20:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754916AbXKDMUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 07:11:25 -0500
-Received: from ozlabs.org ([203.10.76.45]:59639 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758418AbXKDMLY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 07:11:24 -0500
-From: Michael Neuling <mikey@neuling.org>
-To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-cc: "Paul Mackerras" <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] Restore deterministic CPU accounting on powerpc 
-In-reply-to: <661de9470711030202x24d0186cuc96a70156ecfa23f@mail.gmail.com> 
-References: <18218.44089.274628.680088@cargo.ozlabs.ibm.com> <661de9470711030202x24d0186cuc96a70156ecfa23f@mail.gmail.com>
-Comments: In-reply-to "Balbir Singh" <balbir@linux.vnet.ibm.com>
-   message dated "Sat, 03 Nov 2007 14:32:59 +0530."
-X-Mailer: MH-E 8.0.3; nmh 1.2; GNU Emacs 21.4.1
-Date: Sun, 04 Nov 2007 23:11:27 +1100
-Message-ID: <30600.1194178287@neuling.org>
+	Sun, 4 Nov 2007 07:20:14 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:56095 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754258AbXKDMUM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Nov 2007 07:20:12 -0500
+Date: Sun, 4 Nov 2007 12:19:26 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Michael Marineau <mike@marineau.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       trivial@kernel.org
+Subject: Re: [PATCH, RESEND] tmpfs: fix mounts when size is less than the
+ page size
+In-Reply-To: <11941336124117-git-send-email-mike@marineau.org>
+Message-ID: <Pine.LNX.4.64.0711041202260.4631@blonde.wat.veritas.com>
+References: <11941279021705-git-send-email-mike@marineau.org>
+ <11941336124117-git-send-email-mike@marineau.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > +#ifndef CONFIG_VIRT_CPU_ACCOUNTING
-> > +void account_process_tick(int user_tick)
-> > +{
-> > +       if (user_tick) {
-> > +               account_user_time(p, jiffies_to_cputime(1));
-> > +               account_user_time_scaled(p, jiffies_to_cputime(1));
-> > +       } else {
-> > +               account_system_time(p, HARDIRQ_OFFSET, jiffies_to_cputime(1
-));
-> > +               account_system_time_scaled(p, jiffies_to_cputime(1));
-> > +       }
-> > +}
-> > +#endif
-> > +
-> 
-> Hi, Paul,
-> 
-> So, scaled accounting will not be available if
-> CONFIG_VIRT_CPU_ACCOUNTING is defined? Am I reading this correctly
+Fair enough, that does match the documentation of "size=0" better.
+Though either way, someone who typos is going to get one kind of surprise
+or another.  Do you mind if we do it slightly differently, achieving the
+same effect without a special case, by rounding up instead of down?
 
-Balbir, 
 
-Paulus' patch will have merge issues with the scaled time cleanup patch
-I posted a week or so back.  My cleanup patch is only in akpm's tree at
-this stage.
+From: Michael Marineau <mike@marineau.org>
 
-Mikey
+When tmpfs is mounted with a size less than one page, the number of blocks
+is set to 0 which makes the tmpfs mount unlimited. This can lead to a quick
+and surprising death if someone typos a tmpfs mount command and writes too
+much.
+
+tmpfs can still be mounted as unlimited if size or nr_blocks is exactly 0,
+as Documentation/filesystems/tmpfs.txt says.
+
+Hugh: do this by rounding size up instead of down in all cases: which
+slightly expands other odd-sized tmpfs mounts, but in a consistent way.
+
+Signed-off-by: Michael Marineau <mike@marineau.org>
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
+
+ mm/shmem.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- 2.6.24-rc1-git/mm/shmem.c	2007-10-31 06:18:05.000000000 +0000
++++ linux/mm/shmem.c	2007-11-04 11:46:09.000000000 +0000
+@@ -2137,7 +2137,7 @@ static int shmem_parse_options(char *opt
+ 			}
+ 			if (*rest)
+ 				goto bad_val;
+-			*blocks = size >> PAGE_CACHE_SHIFT;
++			*blocks = DIV_ROUND_UP(size, PAGE_CACHE_SIZE);
+ 		} else if (!strcmp(this_char,"nr_blocks")) {
+ 			*blocks = memparse(value,&rest);
+ 			if (*rest)
