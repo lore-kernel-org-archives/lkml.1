@@ -1,56 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754784AbXKDTAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbXKDTBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754784AbXKDTAO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 14:00:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbXKDS77
+	id S1755393AbXKDTBT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 14:01:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbXKDTBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 13:59:59 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:46437 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752024AbXKDS76 (ORCPT
+	Sun, 4 Nov 2007 14:01:06 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:53433 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752582AbXKDTBE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 13:59:58 -0500
-Date: Sun, 4 Nov 2007 20:00:03 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Dan Williams <dcbw@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Jeff Lee <YY_Lee@issc.com.tw>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Ivo van Doorn <ivdoorn@gmail.com>,
-       Luis Correia <luis.f.correia@gmail.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-wireless@vger.kernel.org, mwallis@serialmonkey.com
-Subject: Re: Licensing of IS89C35 WLAN USB driver [was Re: rt73usb: support
-	for wireless in Kohjinsha subnotebook]
-Message-ID: <20071104190003.GC4065@elf.ucw.cz>
-References: <20071023090808.GB19758@infradead.org> <20071030112221.GA17586@elf.ucw.cz> <1193757119.29187.17.camel@localhost.localdomain>
+	Sun, 4 Nov 2007 14:01:04 -0500
+Message-ID: <472E16D6.4080706@zytor.com>
+Date: Sun, 04 Nov 2007 11:00:38 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1193757119.29187.17.camel@localhost.localdomain>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Mikael Pettersson <mikpe@it.uu.se>
+CC: linux-kernel@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de
+Subject: Re: [PATCH] fix i486 boot failure due to stale %ds
+References: <200711041644.lA4Gi4Ms013028@harpo.it.uu.se> <472E0F8E.1010609@zytor.com>
+In-Reply-To: <472E0F8E.1010609@zytor.com>
+Content-Type: multipart/mixed;
+ boundary="------------080808090703080506030200"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2007-10-30 11:11:59, Dan Williams wrote:
-> On Tue, 2007-10-30 at 12:22 +0100, Pavel Machek wrote:
-> > Hi!
-> > 
-> > You are listed as author of IS89C35 802.11bg WLAN USB Driver. That
-> > driver has clear MODULE_LICENSE("GPL") tag, but not other notices.
-> > 
-> > Is it safe to assume whole sources are to be distributed under GPLv2?
-> > (Or is it GPLv2 or later?)
-> 
-> Pavel,
-> 
-> I sent mail as you requested on Sunday to Jeff Lee but haven't heard
-> back yet.  I can't find any generic contact email addresses for ISSC
-> Taiwan or the Italian company that produced the adapter in question,
-> unfortunately.
+This is a multi-part message in MIME format.
+--------------080808090703080506030200
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Okay, I posted note to my blog, perhaps someone speaks up.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Urk, -ENOTAWAKEYET.  Try *THIS* patch, please.
+
+	-hpa
+
+
+--------------080808090703080506030200
+Content-Type: text/plain;
+ name="diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="diff"
+
+diff --git a/arch/x86/boot/pmjump.S b/arch/x86/boot/pmjump.S
+index 2e55923..17e6dec 100644
+--- a/arch/x86/boot/pmjump.S
++++ b/arch/x86/boot/pmjump.S
+@@ -28,27 +28,37 @@
+  * void protected_mode_jump(u32 entrypoint, u32 bootparams);
+  */
+ protected_mode_jump:
+-	xorl	%ebx, %ebx		# Flag to indicate this is a boot
+ 	movl	%edx, %esi		# Pointer to boot_params table
+-	movl	%eax, 2f		# Patch ljmpl instruction
++
++	xorl	%edx, %edx
++	movw	%cs, %dx
++	shll	$4, %edx		# Patch ljmpl instruction
++	addl	%edx, 2f
+ 	jmp	1f			# Short jump to flush instruction q.
+ 
+ 1:
+ 	movw	$__BOOT_DS, %cx
++	xorl	%ebx, %ebx		# Per protocol
++	xorl	%ebp, %ebp		# Per protocol
++	xorl	%edi, %edi		# Per protocol
+ 
+ 	movl	%cr0, %edx
+ 	orb	$1, %dl			# Protected mode (PE) bit
+ 	movl	%edx, %cr0
++	
++	.byte	0x66, 0xea		# ljmpl opcode
++2:	.long	3f			# Offset
++	.word	__BOOT_CS		# Segment
+ 
+-	movw	%cx, %ds
+-	movw	%cx, %es
+-	movw	%cx, %fs
+-	movw	%cx, %gs
+-	movw	%cx, %ss
++	.code32
++3:
++	movl	%ecx, %ds
++	movl	%ecx, %es
++	movl	%ecx, %fs
++	movl	%ecx, %gs
++	movl	%ecx, %ss
+ 
+ 	# Jump to the 32-bit entrypoint
+-	.byte	0x66, 0xea		# ljmpl opcode
+-2:	.long	0			# offset
+-	.word	__BOOT_CS		# segment
+-
++	jmpl	*%eax
++	
+ 	.size	protected_mode_jump, .-protected_mode_jump
+
+--------------080808090703080506030200--
