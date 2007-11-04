@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbXKDSwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757224AbXKDSwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755894AbXKDSwk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 13:52:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753542AbXKDSwd
+	id S1757224AbXKDSwx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 13:52:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756555AbXKDSwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 13:52:33 -0500
-Received: from rv-out-0910.google.com ([209.85.198.190]:45973 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753372AbXKDSwc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 13:52:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OX1VKkX+ZOjzz/s46DFXgCn8Wf/Esqcy7yNvDbeq2wJ/vJdayiGrheRucy2/ZbDAQ0rK2VpwfK5u2e3zAeMVdHNwAy7pGCM78Q0ccUM1EVTCACMf7ygT+DoGy4m3jxhSAazf0KQnhLwi4hApVNtV/R12x9X9i5FtK3ua6jqeraY=
-Message-ID: <e5bfff550711041052m1c55571bx49c60dd6ce407d01@mail.gmail.com>
-Date: Sun, 4 Nov 2007 19:52:31 +0100
-From: "Marco Costalba" <mcostalba@gmail.com>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Subject: Re: List of possible duplicated include files in include/
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0711041347001.12818@localhost.localdomain>
+	Sun, 4 Nov 2007 13:52:43 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:43967 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756151AbXKDSwm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Nov 2007 13:52:42 -0500
+To: Chris Snook <csnook@redhat.com>
+Cc: Zurk Tech <zurktech@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Quad core CPU detected but shows as single core in 2.6.23.1
+From: Andi Kleen <andi@firstfloor.org>
+References: <2ed59cbb0711021231l55fe2df3l23f8da65bb7166f6@mail.gmail.com>
+	<472D2119.8090102@redhat.com>
+Date: Sun, 04 Nov 2007 19:52:40 +0100
+In-Reply-To: <472D2119.8090102@redhat.com> (Chris Snook's message of "Sat\, 03 Nov 2007 21\:32\:09 -0400")
+Message-ID: <p737ikx3ksn.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <e5bfff550711041044p7c07c42g836461e81a6005a@mail.gmail.com>
-	 <Pine.LNX.4.64.0711041347001.12818@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/4/07, Robert P. J. Day <rpjday@crashcourse.ca> wrote:
-> On Sun, 4 Nov 2007, Marco Costalba wrote:
->
-> > Here the number of false positives is overhelming, but perhaps there
-> > are also _real_ duplicated include somewhere in the bunch:
-> >
-> > include/acpi/acpi_bus.h:
-> > #include <linux/device.h>
->
-> ... snip header file output ...
->
-> i deliberately left out header files from my script output.  i can
-> tweak the script and add this to the web page as well.
->
+Chris Snook <csnook@redhat.com> writes:
 
-Here the real job is to fliter out false positives more then print out
-the list I would say ;-)
+>> Marking TSC unstable due to TSCs unsynchronized
+>
+> This is probably wrong.  The TSC is on the northbridge on Barcelona
+> chips, so every core on the die should be in sync.  Hypothetically you
+> could have different speed northbridges in different sockets, but
+> we've never tried very hard to support that case anyway.  We should
+> probably be marking the TSC as stable on Barcelona chips.
 
-Marco
+It's a little more complicated. Stable clock is only guaranteed as long 
+as the CPUs all run on the same clock crystal. That is true 
+when they're all on the current motherboard. But at least for K8
+there were several systems that consist of multiple motherboards
+and HT cables inbetween them (like all the 8 socket systems).
+On those the TSCs can drift too with Fam10h. I'm not aware
+of any of those shipping yet, but since it's essentially 
+the same platform as K8 they will appear sooner or later.
+
+So far we lack a reliable way to detect this condition. If it could
+be detected it would be possible to switch to TSC timing
+for the single motherboard systems.
+
+However after some bad experiences in the past I personally would only
+do that after such a system demonstrates synchronized TSC for at least
+a week under varying workloads.
+
+>> xor: automatically using best checksumming function: generic_sse
+>>    generic_sse:  7449.000 MB/sec
+>> xor: using function: generic_sse (7449.000 MB/sec)
+>
+> We should probably also implement an SSE5 function to take advantage
+> of the 128-bit SSE operations supported on newer processors.
+
+SSE5 doesn't exist in Fam10h
+
+In general the optimized x86 RAID functions are mostly quite suboptimal
+on my testing and do not actually do what they promise (E.g. the cache
+avoiding functions do not actually avoid the cache fully etc.) I had a
+rewrite of them in C some time ago which was faster on most CPUs
+except on Core2 for so far unknown reasons. Needs more work.
+
+-Andi
