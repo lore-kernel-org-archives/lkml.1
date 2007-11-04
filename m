@@ -1,80 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759609AbXKDNj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760042AbXKDNkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759609AbXKDNj7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 08:39:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756556AbXKDNjv
+	id S1760042AbXKDNkz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 08:40:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756409AbXKDNkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 08:39:51 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:36712 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753323AbXKDNju (ORCPT
+	Sun, 4 Nov 2007 08:40:46 -0500
+Received: from rayleigh.systella.fr ([213.41.184.253]:56922 "EHLO
+	rayleigh.systella.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755803AbXKDNkp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 08:39:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PrHn4vgHfRtiaJZ7VIgv0kkaLkq2tj2OgFeGAx+zJ6N61F1ybZ0QnCaNDXt8WbBLt/PT5CH5qrW58equMGQlu5m3BFfPnm3qlaz5TIPloG79z7/0waNiVacA5aaaL9sXjqofwtH5lHY10GGJL/5YZnF5URimt5qbXEqdBg1Fr1Y=
-Message-ID: <9e4733910711040539h5714faeeq6a9985fa5a63963@mail.gmail.com>
-Date: Sun, 4 Nov 2007 08:39:49 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: [i2c] [PATCH] Fix i2c module parameter permissions for read/write
-Cc: lkml <linux-kernel@vger.kernel.org>, i2c@lm-sensors.org
-In-Reply-To: <20071104105501.380a840a@hyperion.delvare>
+	Sun, 4 Nov 2007 08:40:45 -0500
+Message-ID: <472DCBBB.1040806@systella.fr>
+Date: Sun, 04 Nov 2007 14:40:11 +0100
+From: =?ISO-8859-1?Q?BERTRAND_Jo=EBl?= <joel.bertrand@systella.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux sparc64; fr-FR; rv:1.8.1.6) Gecko/20070802 Iceape/1.1.4 (Debian-1.1.4-1)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: 2.6.23.1: mdadm/raid5 hung/d-state
+References: <Pine.LNX.4.64.0711040658180.30831@p34.internal.lan>
+In-Reply-To: <Pine.LNX.4.64.0711040658180.30831@p34.internal.lan>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <9e4733910711032155j1649a3b8u56a59e754d77f61b@mail.gmail.com>
-	 <20071104105501.380a840a@hyperion.delvare>
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-3.1.8 (rayleigh.systella.fr [192.168.254.1]); Sun, 04 Nov 2007 14:40:19 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/4/07, Jean Delvare <khali@linux-fr.org> wrote:
-> Hi John,
->
-> On Sun, 4 Nov 2007 00:55:15 -0400, Jon Smirl wrote:
-> > The permissions of i2c module parameters were set to zero making the
-> > parameters invisible and unsettable from the kernel command line. This
-> > patch changes the permissions to the standard 0644 read/write.
->
-> These permissions have nothing to do with the kernel command line. They
-> define whether a file is created in sysfs for the respective module
-> parameter. Even with permissions set to 0, you can still set the value
-> in question from the kernel command line with <module>.<parm>=<value>.
+Justin Piszcz wrote:
+> # ps auxww | grep D
+> USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+> root       273  0.0  0.0      0     0 ?        D    Oct21  14:40 [pdflush]
+> root       274  0.0  0.0      0     0 ?        D    Oct21  13:00 [pdflush]
+> 
+> After several days/weeks, this is the second time this has happened, 
+> while doing regular file I/O (decompressing a file), everything on the 
+> device went into D-state.
 
-I figured out later by inserting printks into the driver that they
-were being set from the command line, but without changing the
-permissions there was no way to read them to verify.  The permissions
-should at least be set to 0444 to allow them to be read.
+	Same observation here (kernel 2.6.23). I can see this bug when I try to 
+synchronize a raid1 volume over iSCSI (each element is a raid5 volume), 
+or sometimes only with a 1,5 TB raid5 volume. When this bug occurs, md 
+subsystem eats 100% of one CPU and pdflush remains in D state too. What 
+is your architecture ? I use two 32-threads T1000 (sparc64), and I'm 
+trying to determine if this bug is arch specific.
 
-IMHO the I2C_CLIENT_INSMOD macros could use some rework since they use
-side effects to set variables without being explicit about it.
+	Regards,
 
-The real problem was unrelated to this, it was an off by one error in
-the i2c bus numbering code of my embedded processor. That made the
-parameters not work since I was setting them on a different bus.
-
-Changed to 0444.
-
-Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
----
-
-diff --git a/include/linux/i2c.h b/include/linux/i2c.h
-index 8033e6b..395e430 100644
---- a/include/linux/i2c.h
-+++ b/include/linux/i2c.h
-@@ -588,7 +588,7 @@ union i2c_smbus_data {
- #define I2C_CLIENT_MODULE_PARM(var,desc) \
-  static unsigned short var[I2C_CLIENT_MAX_OPTS] = I2C_CLIENT_DEFAULTS; \
-  static unsigned int var##_num; \
--  module_param_array(var, short, &var##_num, 0); \
-+  module_param_array(var, short, &var##_num, 0444); \
-  MODULE_PARM_DESC(var,desc)
-
- #define I2C_CLIENT_MODULE_PARM_FORCE(name)                             \
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+	JKB
