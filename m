@@ -1,91 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761388AbXKDBod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761130AbXKDCCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761388AbXKDBod (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Nov 2007 21:44:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755622AbXKDBoZ
+	id S1761130AbXKDCCr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Nov 2007 22:02:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755894AbXKDCCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 21:44:25 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:54760 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755137AbXKDBoY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 21:44:24 -0400
-Date: Sun, 4 Nov 2007 02:44:01 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 02/10] x86: start unification of arch/x86/Kconfig.*
-Message-ID: <20071104014401.GI12045@stusta.de>
-References: <11941338801315-git-send-email-sam@ravnborg.org> <11941338804007-git-send-email-sam@ravnborg.org>
+	Sat, 3 Nov 2007 22:02:38 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:52465 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754197AbXKDCCi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Nov 2007 22:02:38 -0400
+Message-ID: <472D282B.2000208@garzik.org>
+Date: Sat, 03 Nov 2007 22:02:19 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <11941338804007-git-send-email-sam@ravnborg.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] replace "make ARCH=i386/x86_64 with make ARCH=x86"
+References: <20071103234826.GA26654@uranus.ravnborg.org>
+In-Reply-To: <20071103234826.GA26654@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 04, 2007 at 12:51:12AM +0100, Sam Ravnborg wrote:
->...
-> --- a/arch/x86/Kconfig.x86_64
-> +++ b/arch/x86/Kconfig.x86_64
->...
->  # x86-64 doesn't support PCI BIOS access from long mode so always go direct.
->  config PCI_DIRECT
-> @@ -737,36 +723,11 @@ config PCI_DIRECT
->  	depends on PCI
->  	default y
->  
-> -config PCI_MMCONFIG
-> -	bool "Support mmconfig PCI config space access"
-> -	depends on PCI && ACPI
-> -
->  config PCI_DOMAINS
->  	bool
->  	depends on PCI
->  	default y
->  
-> -config DMAR
-> -	bool "Support for DMA Remapping Devices (EXPERIMENTAL)"
-> -	depends on PCI_MSI && ACPI && EXPERIMENTAL
-> -	help
-> -	  DMA remapping (DMAR) devices support enables independent address
-> -	  translations for Direct Memory Access (DMA) from devices.
-> -	  These DMA remapping devices are reported via ACPI tables
-> -	  and include PCI device scope covered by these DMA
-> -	  remapping devices.
-> -
-> -config DMAR_GFX_WA
-> -	bool "Support for Graphics workaround"
-> -	depends on DMAR
-> -	default y
-> -	help
-> -	 Current Graphics drivers tend to use physical address
-> -	 for DMA and avoid using DMA APIs. Setting this config
-> -	 option permits the IOMMU driver to set a unity map for
-> -	 all the OS-visible memory. Hence the driver can continue
-> -	 to use physical addresses for DMA.
-> -
->  config DMAR_FLOPPY_WA
->  	bool
->  	depends on DMAR
->...
+Sam Ravnborg wrote:
+> This patchset unify the i386 and x86_64 Kconfig
+> files for x86.
+> In addition it replaces the use of ARCH=i386 and
+> ARCH=x86_64 with the more intuitive ARCH=x86.
+> 
+> The primary purpose of this patch serie is to 
+> enable make ARCH=x86 and let the config decide
+> if we are building for 32 or 64 bit.
 
-In patch 8 the remaining PCI_* options and DMAR_FLOPPY_WA end in a 
-completely different place in the Kconfig file than the options moved 
-here.
+Yuck, I dislike.  Please don't take away this nice development workflow. 
+  the current workflow of
 
-Please keep options that belong together grouped together no matter 
-whether all of them are user visible.
+	make ARCH=i386 allmodconfig && make ARCH=i386 -sj5
 
-cu
-Adrian
+no longer works.  Now, the new and ungainly step of editing the .config 
+is added, with vi or sed.
 
--- 
+This also opens a chicken-and-egg problem...  What kind of config is 
+generated by allmodconfig when ARCH==x86?  There is no good answer.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+The existing tradition of switching between 32-bit and 64-bit was quite 
+nice, and it was done in The Obvious Way(tm) -- via the method for 
+specifying the architecture/platform.  Switching to Kconfig for that 
+decision is a step backwards in usability and IMO violates the Principle 
+of Least Surprise.
+
+	Jeff
+
 
