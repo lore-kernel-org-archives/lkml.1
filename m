@@ -1,99 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbXKDTBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756720AbXKDTBc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755393AbXKDTBT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 14:01:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbXKDTBG
+	id S1756720AbXKDTBc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 14:01:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbXKDTBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 14:01:06 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:53433 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752582AbXKDTBE (ORCPT
+	Sun, 4 Nov 2007 14:01:14 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:50339 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754052AbXKDTBN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 14:01:04 -0500
-Message-ID: <472E16D6.4080706@zytor.com>
-Date: Sun, 04 Nov 2007 11:00:38 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Sun, 4 Nov 2007 14:01:13 -0500
+Date: Sun, 4 Nov 2007 11:06:56 -0800
+From: Greg KH <greg@kroah.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sysfs: add filter function to groups
+Message-ID: <20071104190656.GA23669@kroah.com>
+References: <1193671019.3383.13.camel@localhost.localdomain> <1193676852.2655.21.camel@lov.site> <1193677071.3383.56.camel@localhost.localdomain> <47261F50.3050901@s5r6.in-berlin.de> <1193768743.3321.91.camel@localhost.localdomain> <20071031035506.GH14910@kroah.com> <1193841484.3411.8.camel@localhost.localdomain> <20071031172943.GA29492@kroah.com> <1194185522.3434.7.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Mikael Pettersson <mikpe@it.uu.se>
-CC: linux-kernel@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de
-Subject: Re: [PATCH] fix i486 boot failure due to stale %ds
-References: <200711041644.lA4Gi4Ms013028@harpo.it.uu.se> <472E0F8E.1010609@zytor.com>
-In-Reply-To: <472E0F8E.1010609@zytor.com>
-Content-Type: multipart/mixed;
- boundary="------------080808090703080506030200"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1194185522.3434.7.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080808090703080506030200
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Sun, Nov 04, 2007 at 08:12:02AM -0600, James Bottomley wrote:
+> On Wed, 2007-10-31 at 10:29 -0700, Greg KH wrote:
+> > On Wed, Oct 31, 2007 at 09:38:04AM -0500, James Bottomley wrote:
+> > > On Tue, 2007-10-30 at 20:55 -0700, Greg KH wrote:
+> > > > OSame problem here, if grp->is_visible is not set, sysfs_add_file() would
+> > > > never be called, right?
+> > > > 
+> > > > Other than the logic problem (I think), I have no issue with this idea
+> > > > at all.  Care to redo this so it works?
+> > > 
+> > > It's a fair cop govenor ... new patch attached.
+> > 
+> > Much better, thanks :)
+> > 
+> > I have no problem with this, if you want to take this in your tree,
+> > please do and feel free to add:
+> > 	Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > 
+> > to it, or I can take it in mine.
+> 
+> Actually, I think I have a use for it and the follow on patch (coming
+> soon) to do attribute bitmaps in the SCSI tree, so I'd like to add your
+> ack and take it through this tree.
 
-Urk, -ENOTAWAKEYET.  Try *THIS* patch, please.
+That's fine.  Can you CC: me on the patch that uses this code so I can
+see how well it works out?
 
-	-hpa
+thanks,
 
-
---------------080808090703080506030200
-Content-Type: text/plain;
- name="diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="diff"
-
-diff --git a/arch/x86/boot/pmjump.S b/arch/x86/boot/pmjump.S
-index 2e55923..17e6dec 100644
---- a/arch/x86/boot/pmjump.S
-+++ b/arch/x86/boot/pmjump.S
-@@ -28,27 +28,37 @@
-  * void protected_mode_jump(u32 entrypoint, u32 bootparams);
-  */
- protected_mode_jump:
--	xorl	%ebx, %ebx		# Flag to indicate this is a boot
- 	movl	%edx, %esi		# Pointer to boot_params table
--	movl	%eax, 2f		# Patch ljmpl instruction
-+
-+	xorl	%edx, %edx
-+	movw	%cs, %dx
-+	shll	$4, %edx		# Patch ljmpl instruction
-+	addl	%edx, 2f
- 	jmp	1f			# Short jump to flush instruction q.
- 
- 1:
- 	movw	$__BOOT_DS, %cx
-+	xorl	%ebx, %ebx		# Per protocol
-+	xorl	%ebp, %ebp		# Per protocol
-+	xorl	%edi, %edi		# Per protocol
- 
- 	movl	%cr0, %edx
- 	orb	$1, %dl			# Protected mode (PE) bit
- 	movl	%edx, %cr0
-+	
-+	.byte	0x66, 0xea		# ljmpl opcode
-+2:	.long	3f			# Offset
-+	.word	__BOOT_CS		# Segment
- 
--	movw	%cx, %ds
--	movw	%cx, %es
--	movw	%cx, %fs
--	movw	%cx, %gs
--	movw	%cx, %ss
-+	.code32
-+3:
-+	movl	%ecx, %ds
-+	movl	%ecx, %es
-+	movl	%ecx, %fs
-+	movl	%ecx, %gs
-+	movl	%ecx, %ss
- 
- 	# Jump to the 32-bit entrypoint
--	.byte	0x66, 0xea		# ljmpl opcode
--2:	.long	0			# offset
--	.word	__BOOT_CS		# segment
--
-+	jmpl	*%eax
-+	
- 	.size	protected_mode_jump, .-protected_mode_jump
-
---------------080808090703080506030200--
+greg k-h
