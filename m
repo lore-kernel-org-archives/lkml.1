@@ -1,44 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762179AbXKER1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762232AbXKER21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762179AbXKER1z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 12:27:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761561AbXKERXm
+	id S1762232AbXKER21 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 12:28:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760747AbXKERZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 12:23:42 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:43313 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761554AbXKERXl (ORCPT
+	Mon, 5 Nov 2007 12:25:33 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:53943 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759693AbXKERZa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 12:23:41 -0500
-Message-ID: <472F5195.2050403@zytor.com>
-Date: Mon, 05 Nov 2007 09:23:33 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Bo_Brant=E9n?= <bosse@acc.umu.se>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: x86_64 ten times slower than i386
-References: <Pine.A41.4.64.0711031329490.397338@stalin.acc.umu.se> <20071103162640.GS17536@waste.org> <Pine.A41.4.64.0711032334170.770224@stalin.acc.umu.se> <Pine.A41.4.64.0711051110530.803034@stalin.acc.umu.se> <Pine.A41.4.64.0711051657440.291004@stalin.acc.umu.se>
-In-Reply-To: <Pine.A41.4.64.0711051657440.291004@stalin.acc.umu.se>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Mon, 5 Nov 2007 12:25:30 -0500
+Subject: Re: [PATCH 34/54] Driver Core: add kobj_attribute handling
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20071105171133.GD12843@suse.de>
+References: <20071102235758.GA9803@kroah.com>
+	 <1194047972-9850-34-git-send-email-gregkh@suse.de>
+	 <20071105134203.1c078136@gondolin.boeblingen.de.ibm.com>
+	 <1194279812.6771.11.camel@lov.site>  <20071105171133.GD12843@suse.de>
+Content-Type: text/plain
+Date: Mon, 05 Nov 2007 18:25:40 +0100
+Message-Id: <1194283540.2174.8.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19+QppM51Gzx/OtVtI2No3h1m3FLDj6kuQZukG
+ G9bzf9XZBkMBYS6/e07cxTVZanBbwlX7n9/t93wQPtr8fhgfEd
+ fu6V8FhPkdwQgjKkvfkuAlXDlMBNzKd
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bo Brantén wrote:
-> 
-> After I uppgraded the BIOS the mtrr looks like below, and now it works 
-> if I boot with mem=4736M so I can use all memory but it still doesn't 
-> work without the mem parameter then it will run as slow as before.
-> 
-> reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
-> reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
-> reg02: base=0xc0000000 (3072MB), size= 256MB: write-back, count=1
-> reg03: base=0xcf800000 (3320MB), size=   8MB: uncachable, count=1
-> reg04: base=0xcf700000 (3319MB), size=   1MB: uncachable, count=1
-> reg05: base=0x100000000 (4096MB), size= 512MB: write-back, count=1
-> reg06: base=0x120000000 (4608MB), size= 128MB: write-back, count=1
 
-What does your e820 map look like?
+On Mon, 2007-11-05 at 09:11 -0800, Greg KH wrote:
+> On Mon, Nov 05, 2007 at 05:23:32PM +0100, Kay Sievers wrote:
+> > On Mon, 2007-11-05 at 13:42 +0100, Cornelia Huck wrote:
+> > > On Fri,  2 Nov 2007 16:59:12 -0700,
+> > > Greg Kroah-Hartman <gregkh@suse.de> wrote:
+> > > 
+> > > > From: Kay Sievers <kay.sievers@vrfy.org>
+> > > > 
+> > > > Add kobj_sysfs_ops to replace subsys_sysfs_ops. There is no
+> > > > need for special kset operations, we want to be able to use
+> > > > simple attribute operations at any kobject, not only ksets.
+> > > > 
+> > > > The whole concept of any default sysfs attribute operations
+> > > > will go away with the upcoming removal of subsys_sysfs_ops.
+> > > > 
+> > > > Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+> > > > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > > > ---
+> > > >  include/linux/kobject.h |   10 ++++++++++
+> > > >  lib/kobject.c           |   29 +++++++++++++++++++++++++++++
+> > > >  2 files changed, 39 insertions(+), 0 deletions(-)
+> > > 
+> > > How about adding some simple wrappers around the new kobj_attribute
+> > > structure? This makes the layering clearer.
+> > 
+> > > +#define KOBJ_ATTR(_name,_mode,_show,_store)		\
+> > > +	struct kobj_attribute kobj_attr_##_name =	\
+> > > +		__ATTR(_name,_mode,_show,_store)
+> > 
+> > That sounds fine.
+> > 
+> > > +extern int __must_check kobject_create_file(struct kobject *,
+> > > 
+> > > 					    struct kobj_attribute *);
+> > > +extern void kobject_remove_file(struct kobject *,struct kobj_attribute *);
+> > 
+> > That should usually be done by default attributes assigned to the ktype.
+> > Do you have a good use case, where people need to create such attributes
+> > individually instead?
+> 
+> The s390 code that was converted to use kobj_attributes :)
+> 
+> These look very useful, I'll go add them to the series unless Kay really
+> objects.
 
-	-hpa
+I just want to hear a good reason to create attributes individually. :)
+Especially in conjunction with kobject_register(), these attributes are
+not available at uevent time, which is really really bad.
+
+Default attributes just work fine, and have the proper error handling
+built-in. Offering special functions for it, may just encourage people
+to continue this "broken" way of creating attributes.
+
+So I really object, unless we get a good example why it's needed. :)
+
+Kay
+
