@@ -1,101 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754223AbXKEU4O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754743AbXKEVF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754223AbXKEU4O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 15:56:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbXKEUz5
+	id S1754743AbXKEVF2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 16:05:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753831AbXKEVFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 15:55:57 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:36773 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750741AbXKEUz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 15:55:56 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Larry Finger <larry.finger@lwfinger.net>
-Subject: Re: b43 on HP nx6325 w/ openSUSE 10.3 (x86_64)
-Date: Mon, 5 Nov 2007 22:13:02 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: bcm43xx-dev@lists.berlios.de, Michael Buesch <mb@bu3sch.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Stefano Brivio <stefano.brivio@polimi.it>
-References: <200711050113.55591.rjw@sisk.pl> <472E663F.9040501@lwfinger.net>
-In-Reply-To: <472E663F.9040501@lwfinger.net>
+	Mon, 5 Nov 2007 16:05:18 -0500
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:46705 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753816AbXKEVFQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 16:05:16 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=YXEHQbKWGJrQSs1hmi978uMBCfG6MP7ArwOqfFCyMJ9eaJw+xS8S6MJ08G2dtEYG98n4kFZASWXwir8HvdVm7QX/g3CGv8XTnuv0AAPsYIAcFQkmzrbskHs2XdOtwbEzyBL93tqIjae5CYXngs7Flz2Ka5Zns+g0oi8yqSXBHkc=  ;
+X-YMail-OSG: L2OuYrwVM1kHNNuhHhA6UZHMR3FFOR0PAyErYbEzk4.S2grVMUNW0bcaUtPBN89hc0Vrty4PMA--
+From: David Brownell <david-b@pacbell.net>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [patch/rfc 1/4] GPIO implementation framework
+Date: Mon, 5 Nov 2007 13:05:13 -0800
+User-Agent: KMail/1.9.6
+Cc: Felipe Balbi <felipebalbi@users.sourceforge.net>,
+       Bill Gatliff <bgat@billgatliff.com>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Victor <andrew@sanpeople.com>, Tony Lindgren <tony@atomide.com>,
+       Jean Delvare <khali@linux-fr.org>, "eric miao" <eric.y.miao@gmail.com>,
+       Kevin Hilman <khilman@mvista.com>, Paul Mundt <lethal@linux-sh.org>,
+       Ben Dooks <ben@trinity.fluff.org>
+References: <200710291809.29936.david-b@pacbell.net> <200710291851.23821.david-b@pacbell.net>
+In-Reply-To: <200710291851.23821.david-b@pacbell.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-Message-Id: <200711052213.03362.rjw@sisk.pl>
+Message-Id: <200711051305.13980.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 5 of November 2007, Larry Finger wrote:
-> Rafael J. Wysocki wrote:
-> > Hi,
-> > 
-> > I'm trying to make the b43 driver work on an HP nx6325 with openSUSE 10.3
-> > (64-bit).  In short, it sort of works, but some things are a bit ugly.
-> > 
-> > The kernel is the current -git (approx. 2.6.24-rc1-git13) with the following
-> > extra patches applied:
-> > 
-> > b43: Fix rfkill callback deadlock
-> > b43: debugfs SHM read buffer overrun fix
-> > b43: Rewrite and fix rfkill init
-> > 
-> > and I'm using the firmware from
-> > http://downloads.openwrt.org/sources/broadcom-wl-4.80.53.0.tar.bz2
-> > 
-> > Here's the debug info from dmesg:
-> > 
-> > b43-phy1: Broadcom 4311 WLAN found
-> > b43-phy1 debug: Found PHY: Analog 4, Type 2, Revision 8
-> > b43-phy1 debug: Found Radio: Manuf 0x17F, Version 0x2050, Revision 2
-> > b43-phy1 debug: Loading firmware version 351.126 (2006-07-29 05:54:02)
-> > Registered led device: b43-phy1:tx
-> > Registered led device: b43-phy1:rx
-> > b43-phy1 debug: Chip initialized
-> > b43-phy1 debug: 32-bit DMA initialized
-> > b43-phy1 debug: Wireless interface started
-> > b43-phy1 debug: Adding Interface type 2
-> > 
-> > Now, the first problem is that the card seems to lose frames from time to
-> > time.  This is visible in the output of mtr and while trying to transfer large
-> > files using scp.  With scp the transfer just stalls and stays this way although
-> > the other end is pingable etc. (eg. attempting to transfer more than 400 MB at
-> > once triggers this 100% of the time).
-> > 
-> > If you can suggest some more specific tests to me, I'll run them and report
-> > back.
-> > 
-> > The second problem is that YaST is apparently unable to detect the device,
-> > which sort of sucks, because it leads to configuration problems (basically, you
-> > need to set up everything manually).  Evidently, udev manages to handle it, so
-> > this may be related to HAL.  Anyway, it looks like the problem is related to
-> > the fact that the device is not present under /sys/bus/pci/devices/ directly,
-> > but you need to go through the ssb0:0 subdirectory to get to it.
-> > 
-> > Do you have any ideas how to tell the user space stuff where the devices is
-> > in sysfs?
+On Monday 29 October 2007, David Brownell wrote:
 > 
-> Your configuration is exactly like mine - openSUSE 10.3, x86_64 with Linus's latest git, and a 4311.
->  I have not used mtr or scp and cannot comment on your transfer problems.
+> Provides new implementation infrastructure that platforms may choose to use
+> when implementing the GPIO programming interface.  Platforms can update their
+> GPIO support to use this.  The downside is slower access to non-inlined GPIOs;
+> rarely a problem except when bitbanging some protocol.
 
-That may be AP-related, but I had no such problems with the bcm43xx used
-previously on the same hardware w/ the same AP.
+I was asked just what that overhead *is* ... and it surprised me.
+A summary of the results is appended to this note.
 
-> I have had 0 problems configuring the device with YaST.
+Fortuntely it turns out those problems all go away if the gpiolib
+code uses a *raw* spinlock to guard its table lookups.  With a raw
+spinlock, any performance impact of gpiolib seems to be well under
+a microsecond in this bitbang context (and not objectionable).
+Preempt became free; enabling debug options had only a minor cost.
 
-Hm, I wonder what I've done wrong, then. :-)
+That's as it should be, since the only substantive changes were to
+grab and release a lock, do one table lookup a bit differently, and
+add one indirection function call ... changes which should not have
+any visible performance impact on per-bit codepaths, and one might
+expect to cost on the order of one dozen instructions.
 
-Can you send me /etc/sysconfig/network/ifcfg-wlan0 (or whatever the card is
-visible as on your system) from the x86_64 laptop?
 
-> On the x86_64 laptop, I let NetworkManager control the wireless 
-> connection, but I have also used the traditional ifup/ifdown method. On an i386 system, I use
-> ifup/ifdown as I don't run X on that machine. Both make fast connections.
+So the next version of this code will include a few minor bugfixes,
+and will also use a raw spinlock to protect that table.  A raw lock
+seems appropriate there in any case, since non-sleeping GPIOs should
+be accessible from hardirq contexts even on RT kernels.
 
-Well, finally I did configure the card with YaST, but I had to manually add it
-to the list.  ifup/ifdown works, but I haven't tried NetworkManager yet.
+If anyone has any strong arguments against using a raw spinlock
+to protect that table, it'd be nice to know them sooner rather
+than later.
 
-Greetings,
-Rafael
+- Dave
+
+
+SUMMARY:
+
+Using the i2c-gpio driver on a preempt kernel with all the usual
+kernel debug options enabled, the per-bit times (*) went up in a
+bad way:  from about 6.4 usec/bit (original GPIO code on this board)
+up to about 11.2 usec/bit (just switching to gpiolib), which is
+well into "objectionable overhead" territory for bit access.
+
+Just enabling preempt shot the time up to 7.4 usec/bit ... which is
+also objectionable (it's all-the-time overhead that is clearly
+needless), but much less so.
+
+Converting the table lock to be a raw spinlock essentially removed
+all non-debug overheads.  It took enabling all those debug options
+plus internal gpiolib debugging overhead to get those times up to
+the 7.4 usec/bit that previously applied even with just preempt.
+
+(*) Those times being eyeballed medians; I didn't make time to find
+    a way to export a few thousand measurements from the tool and
+    do the math.  The typical range was +/- one usec.
+
+    The numbers include udelay() calls, so the relevant point is
+    the time *delta* attributable only to increased gpiolib costs,
+    not the base time (with udelays).  The delta probably reflects
+    on the order of four GPIO calls:  set two different bits, clear
+    one of them, and read it to make sure it cleared.
+
+
+> The upside is: 
+> 
+>   * Providing two features which were "want to have (but OK to defer)" when
+>     GPIO interfaces were first discussed in November 2006:
+> 
+>     -   A "struct gpio_chip" to plug in GPIOs that aren't directly supported
+>         by SOC platforms, but come from FPGAs or other multifunction devices
+>         (like UCB-1x00 GPIOs).
+> 
+>     -   Full support for message-based GPIO expanders, needing a gpio_chip
+>         hookup; previous support for this part of the programming interface
+>         was just stubs.  (One example: the widely used pcf8574 I2C chips,
+>         with 8 GPIOs each.)
+> 
+>   * Including a non-stub implementation of the gpio_{request,free}() calls,
+>     which makes those calls much more useful.  The diagnostic labels are
+>     also recorded given DEBUG_FS, so /sys/kernel/debug/gpio can show a
+>     snapshot of all GPIOs known to this infrastructure.
+> 
+> The driver programming interfaces introduced in 2.6.21 do not change at all;
+> this new infrastructure is entirely below the covers.
+
+
