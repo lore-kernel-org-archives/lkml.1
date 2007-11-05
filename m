@@ -1,82 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbXKENA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbXKENDz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756133AbXKENA4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 08:00:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754787AbXKENAs
+	id S1756620AbXKENDz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 08:03:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754703AbXKENDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 08:00:48 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:61147 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754704AbXKENAr (ORCPT
+	Mon, 5 Nov 2007 08:03:47 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52051 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754272AbXKENDp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 08:00:47 -0500
-Date: Mon, 5 Nov 2007 14:00:45 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: stable@kernel.org
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [PATCH 5/6] drivers/video/ps3fb: fix memset size error
-In-Reply-To: <Pine.LNX.4.62.0711050930170.1532@pademelon.sonytel.be>
-Message-ID: <Pine.LNX.4.62.0711051359140.28623@pademelon.sonytel.be>
-References: <472E7FBC.7020906@cn.fujitsu.com> <Pine.LNX.4.62.0711050930170.1532@pademelon.sonytel.be>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1769223260-1194267645=:28623"
+	Mon, 5 Nov 2007 08:03:45 -0500
+Date: Mon, 5 Nov 2007 13:03:30 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tejun Heo <htejun@gmail.com>
+Cc: albertl@mail.com, albertcc@tw.ibm.com, Daniel Drake <dsd@gentoo.org>,
+       Jeff Garzik <jeff@garzik.org>, Jens Axboe <jens.axboe@oracle.com>,
+       linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
+Message-ID: <20071105130330.06a22f7a@the-village.bc.nu>
+In-Reply-To: <472E5E5C.8040308@gmail.com>
+References: <47274A5F.6070409@gentoo.org>
+	<20071030153417.59b9182c@the-village.bc.nu>
+	<47276DCA.1000808@gentoo.org>
+	<20071030190153.373c9347@the-village.bc.nu>
+	<47278439.4030801@gentoo.org>
+	<20071031114958.210bd7cc@the-village.bc.nu>
+	<20071031115754.GK5059@kernel.dk>
+	<4729A0DF.20800@garzik.org>
+	<20071101105335.1f20bab3@the-village.bc.nu>
+	<4729B3EA.6040707@garzik.org>
+	<20071101141501.3746cec2@the-village.bc.nu>
+	<4729F1BB.20306@gentoo.org>
+	<4729F8F1.4040103@gmail.com>
+	<472B946F.4030004@gentoo.org>
+	<472BCC18.7070503@gmail.com>
+	<472CD3F3.7050701@gentoo.org>
+	<472D0D4A.70404@gmail.com>
+	<472D445B.1080005@tw.ibm.com>
+	<20071104234205.7627d007@the-village.bc.nu>
+	<472E5E5C.8040308@gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Mon, 05 Nov 2007 09:05:48 +0900
+Tejun Heo <htejun@gmail.com> wrote:
 
----584337861-1769223260-1194267645=:28623
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Mon, 5 Nov 2007, Geert Uytterhoeven wrote:
-> On Mon, 5 Nov 2007, Li Zefan wrote:
-> > The size passing to memset is wrong.
+> Alan Cox wrote:
+> >> Maybe we could set a limit here. If the ATAPI device keeps DRQ=1 and
+> >> exceeds the limit, we consider it as HSM violation and have EH handle it.
 > > 
-> > Signed-off-by Li Zefan <lizf@cn.fujitsu.com>
+> > On a DMA transfer its basically out of our control (and a PIO drain will
+> > lock some controllers solid until power cycle),
 > 
-> Acked-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> Do such controllers lock up on PIO draining after PIO transfers too?
+> Can you tell which are those controllers?
 
-As this leaks 24 bytes of uninitialized stack to user space, probably this
-should be applied to -stable, too?
+Promise PDC202xx will lock on a PIO drain of a DMA transfer or (if you
+reset it before you drain) on a PIO drain of a PIO transfer.
 
-> > ---
-> >  drivers/video/ps3fb.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/drivers/video/ps3fb.c b/drivers/video/ps3fb.c
-> > index b3463dd..75836aa 100644
-> > --- a/drivers/video/ps3fb.c
-> > +++ b/drivers/video/ps3fb.c
-> > @@ -727,7 +727,7 @@ static int ps3fb_blank(int blank, struct fb_info *info)
-> >  
-> >  static int ps3fb_get_vblank(struct fb_vblank *vblank)
-> >  {
-> > -	memset(vblank, 0, sizeof(&vblank));
-> > +	memset(vblank, 0, sizeof(*vblank));
-> >  	vblank->flags = FB_VBLANK_HAVE_VSYNC;
-> >  	return 0;
-> >  }
+> > but on PIO we know we
+> > never set a chunk size over 64K, so if we exceed 64K its time to apply a
+> > larger hammer
+> 
+> Draining is related to the amount of data the drive responds not to the
+> chunk size.  I agree 64k should be enough for most cases but I think
+> there can be corner cases where this doesn't hold.
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1769223260-1194267645=:28623--
+Tapes perhaps yes ?
