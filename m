@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759218AbXKERNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759305AbXKERNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759218AbXKERNY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 12:13:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757554AbXKERHq
+	id S1759305AbXKERNl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 12:13:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757219AbXKERHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 12:07:46 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59511 "EHLO
+	Mon, 5 Nov 2007 12:07:47 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59514 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754704AbXKERHo (ORCPT
+	with ESMTP id S1757562AbXKERHq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 12:07:44 -0500
-Date: Mon, 5 Nov 2007 18:07:20 +0100
+	Mon, 5 Nov 2007 12:07:46 -0500
+Date: Mon, 5 Nov 2007 18:07:22 +0100
 From: Adrian Bunk <bunk@kernel.org>
-To: Steven Toth <stoth@hauppauge.com>
-Cc: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] media/video/cx23885/: cleanups
-Message-ID: <20071105170720.GL12045@stusta.de>
+To: v4l-dvb-maintainer@linuxtv.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] cx88-mpeg.c: make 4 functions static
+Message-ID: <20071105170722.GM12045@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,237 +23,89 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains the following cleanups:
-- make the following needlessly global code static:
-  - cx23885-core.c: struct cx23885_sram_channels[]
-  - cx23885-core.c: struct cx23887_sram_channels[]
-  - cx23885-core.c: cx23885_wakeup()
-  - cx23885-core.c: cx23885_sram_channel_setup()
-  - cx23885-core.c: cx23885_sram_channel_dump()
-  - cx23885-core.c: cx23885_risc_disasm()
-  - cx23885-core.c: cx23885_shutdown()
-  - cx23885-core.c: cx23885_reset()
-  - cx23885-core.c: cx23885_dev_unregister()
-  - cx23885-core.c: cx23885_risc_databuffer()
-  - cx23885-core.c: cx23885_risc_stopper()
-- #if 0 the following unused functions:
-  - cx23885-core.c: cx23885_risc_buffer()
-  - cx23885-core.c: cx23885_cancel_buffers()
-- remove the following unused EXPORT_SYMBOL's:
-  - cx23885-cards.c: cx23885_boards
-  - cx23885-i2c.c: cx23885_call_i2c_clients
+This patch makes the following needlessly global functions static:
+- cx8802_init_common()
+- cx8802_fini_common()
+- cx8802_suspend_common()
+- cx8802_resume_common()
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/media/video/cx23885/cx23885-cards.c |    2 
- drivers/media/video/cx23885/cx23885-core.c  |   50 ++++++++++----------
- drivers/media/video/cx23885/cx23885-i2c.c   |    2 
- drivers/media/video/cx23885/cx23885.h       |    4 -
- 4 files changed, 27 insertions(+), 31 deletions(-)
+ drivers/media/video/cx88/cx88-mpeg.c |   14 ++++----------
+ drivers/media/video/cx88/cx88.h      |    6 ------
+ 2 files changed, 4 insertions(+), 16 deletions(-)
 
-23f11be19ad99d0c560955ddf96a3a3bace80721 
-diff --git a/drivers/media/video/cx23885/cx23885-cards.c b/drivers/media/video/cx23885/cx23885-cards.c
-index b9012ac..134b931 100644
---- a/drivers/media/video/cx23885/cx23885-cards.c
-+++ b/drivers/media/video/cx23885/cx23885-cards.c
-@@ -270,8 +270,6 @@ void cx23885_card_setup(struct cx23885_dev *dev)
+cfc675144973c2ae6188929e18194e27da937f43 
+diff --git a/drivers/media/video/cx88/cx88-mpeg.c b/drivers/media/video/cx88/cx88-mpeg.c
+index 448c673..60ac423 100644
+--- a/drivers/media/video/cx88/cx88-mpeg.c
++++ b/drivers/media/video/cx88/cx88-mpeg.c
+@@ -437,10 +437,7 @@ static irqreturn_t cx8802_irq(int irq, void *dev_id)
+ 	return IRQ_RETVAL(handled);
+ }
  
- /* ------------------------------------------------------------------ */
- 
--EXPORT_SYMBOL(cx23885_boards);
+-/* ----------------------------------------------------------- */
+-/* exported stuff                                              */
 -
- /*
-  * Local variables:
-  * c-basic-offset: 8
-diff --git a/drivers/media/video/cx23885/cx23885-core.c b/drivers/media/video/cx23885/cx23885-core.c
-index 3cdd136..0248bf5 100644
---- a/drivers/media/video/cx23885/cx23885-core.c
-+++ b/drivers/media/video/cx23885/cx23885-core.c
-@@ -73,7 +73,7 @@ static LIST_HEAD(cx23885_devlist);
-  * 0x00010ea0 0x00010xxx Free
-  */
- 
--struct sram_channel cx23885_sram_channels[] = {
-+static struct sram_channel cx23885_sram_channels[] = {
- 	[SRAM_CH01] = {
- 		.name		= "test ch1",
- 		.cmds_start	= 0x10000,
-@@ -205,7 +205,7 @@ struct sram_channel cx23885_sram_channels[] = {
-  * 0x00010ea0 0x00010xxx Free
-  */
- 
--struct sram_channel cx23887_sram_channels[] = {
-+static struct sram_channel cx23887_sram_channels[] = {
- 	[SRAM_CH01] = {
- 		.name		= "test ch1",
- 		.cmds_start	= 0x0,
-@@ -356,8 +356,8 @@ static int cx23885_risc_decode(u32 risc)
- 	return incr[risc >> 28] ? incr[risc >> 28] : 1;
- }
- 
--void cx23885_wakeup(struct cx23885_tsport *port,
--		    struct cx23885_dmaqueue *q, u32 count)
-+static void cx23885_wakeup(struct cx23885_tsport *port,
-+			   struct cx23885_dmaqueue *q, u32 count)
+-int cx8802_init_common(struct cx8802_dev *dev)
++static int cx8802_init_common(struct cx8802_dev *dev)
  {
- 	struct cx23885_dev *dev = port->dev;
- 	struct cx23885_buffer *buf;
-@@ -391,12 +391,10 @@ void cx23885_wakeup(struct cx23885_tsport *port,
- 		printk("%s: %d buffers handled (should be 1)\n",
- 		       __FUNCTION__, bc);
- }
--void cx23885_sram_channel_dump(struct cx23885_dev *dev,
--			       struct sram_channel *ch);
- 
--int cx23885_sram_channel_setup(struct cx23885_dev *dev,
--			       struct sram_channel *ch,
--			       unsigned int bpl, u32 risc)
-+static int cx23885_sram_channel_setup(struct cx23885_dev *dev,
-+				      struct sram_channel *ch,
-+				      unsigned int bpl, u32 risc)
- {
- 	unsigned int i, lines;
- 	u32 cdt;
-@@ -467,8 +465,8 @@ int cx23885_sram_channel_setup(struct cx23885_dev *dev,
+ 	struct cx88_core *core = dev->core;
+ 	int err;
+@@ -488,7 +485,7 @@ int cx8802_init_common(struct cx8802_dev *dev)
  	return 0;
  }
  
--void cx23885_sram_channel_dump(struct cx23885_dev *dev,
--			       struct sram_channel *ch)
-+static void cx23885_sram_channel_dump(struct cx23885_dev *dev,
-+				      struct sram_channel *ch)
+-void cx8802_fini_common(struct cx8802_dev *dev)
++static void cx8802_fini_common(struct cx8802_dev *dev)
  {
- 	static char *name[] = {
- 		"init risc lo",
-@@ -529,8 +527,8 @@ void cx23885_sram_channel_dump(struct cx23885_dev *dev,
- 	       dev->name, cx_read(ch->cnt2_reg));
- }
+ 	dprintk( 2, "cx8802_fini_common\n" );
+ 	cx8802_stop_dma(dev);
+@@ -504,7 +501,7 @@ void cx8802_fini_common(struct cx8802_dev *dev)
  
--void cx23885_risc_disasm(struct cx23885_tsport *port,
--			 struct btcx_riscmem *risc)
-+static void cx23885_risc_disasm(struct cx23885_tsport *port,
-+				struct btcx_riscmem *risc)
+ /* ----------------------------------------------------------- */
+ 
+-int cx8802_suspend_common(struct pci_dev *pci_dev, pm_message_t state)
++static int cx8802_suspend_common(struct pci_dev *pci_dev, pm_message_t state)
  {
- 	struct cx23885_dev *dev = port->dev;
- 	unsigned int i, j, n;
-@@ -548,7 +546,7 @@ void cx23885_risc_disasm(struct cx23885_tsport *port,
- 	}
- }
- 
--void cx23885_shutdown(struct cx23885_dev *dev)
-+static void cx23885_shutdown(struct cx23885_dev *dev)
- {
- 	/* disable RISC controller */
- 	cx_write(DEV_CNTRL2, 0);
-@@ -578,7 +576,7 @@ void cx23885_shutdown(struct cx23885_dev *dev)
- 
- }
- 
--void cx23885_reset(struct cx23885_dev *dev)
-+static void cx23885_reset(struct cx23885_dev *dev)
- {
- 	dprintk(1, "%s()\n", __FUNCTION__);
- 
-@@ -636,8 +634,8 @@ static int get_resources(struct cx23885_dev *dev)
- }
- 
- static void cx23885_timeout(unsigned long data);
--int cx23885_risc_stopper(struct pci_dev *pci, struct btcx_riscmem *risc,
--			 u32 reg, u32 mask, u32 value);
-+static int cx23885_risc_stopper(struct pci_dev *pci, struct btcx_riscmem *risc,
-+				u32 reg, u32 mask, u32 value);
- 
- static int cx23885_init_tsport(struct cx23885_dev *dev, struct cx23885_tsport *port, int portno)
- {
-@@ -837,7 +835,7 @@ static int cx23885_dev_setup(struct cx23885_dev *dev)
+ 	struct cx8802_dev *dev = pci_get_drvdata(pci_dev);
+ 	struct cx88_core *core = dev->core;
+@@ -530,7 +527,7 @@ int cx8802_suspend_common(struct pci_dev *pci_dev, pm_message_t state)
  	return 0;
  }
  
--void cx23885_dev_unregister(struct cx23885_dev *dev)
-+static void cx23885_dev_unregister(struct cx23885_dev *dev)
+-int cx8802_resume_common(struct pci_dev *pci_dev)
++static int cx8802_resume_common(struct pci_dev *pci_dev)
  {
- 	release_mem_region(pci_resource_start(dev->pci,0),
- 			   pci_resource_len(dev->pci,0));
-@@ -912,6 +910,7 @@ static u32* cx23885_risc_field(u32 *rp, struct scatterlist *sglist,
- 	return rp;
- }
+ 	struct cx8802_dev *dev = pci_get_drvdata(pci_dev);
+ 	struct cx88_core *core = dev->core;
+@@ -874,9 +871,6 @@ EXPORT_SYMBOL(cx8802_buf_prepare);
+ EXPORT_SYMBOL(cx8802_buf_queue);
+ EXPORT_SYMBOL(cx8802_cancel_buffers);
  
-+#if 0
- int cx23885_risc_buffer(struct pci_dev *pci, struct btcx_riscmem *risc,
- 			struct scatterlist *sglist, unsigned int top_offset,
- 			unsigned int bottom_offset, unsigned int bpl,
-@@ -951,10 +950,13 @@ int cx23885_risc_buffer(struct pci_dev *pci, struct btcx_riscmem *risc,
- 	BUG_ON((risc->jmp - risc->cpu + 2) * sizeof (*risc->cpu) > risc->size);
- 	return 0;
- }
-+#endif  /*  0  */
- 
--int cx23885_risc_databuffer(struct pci_dev *pci, struct btcx_riscmem *risc,
--			    struct scatterlist *sglist, unsigned int bpl,
--			    unsigned int lines)
-+static int cx23885_risc_databuffer(struct pci_dev *pci,
-+				   struct btcx_riscmem *risc,
-+				   struct scatterlist *sglist,
-+				   unsigned int bpl,
-+				   unsigned int lines)
- {
- 	u32 instructions;
- 	u32 *rp;
-@@ -981,8 +983,8 @@ int cx23885_risc_databuffer(struct pci_dev *pci, struct btcx_riscmem *risc,
- 	return 0;
- }
- 
--int cx23885_risc_stopper(struct pci_dev *pci, struct btcx_riscmem *risc,
--			 u32 reg, u32 mask, u32 value)
-+static int cx23885_risc_stopper(struct pci_dev *pci, struct btcx_riscmem *risc,
-+				u32 reg, u32 mask, u32 value)
- {
- 	u32 *rp;
- 	int rc;
-@@ -1243,6 +1245,7 @@ static void do_cancel_buffers(struct cx23885_tsport *port, char *reason,
- 	spin_unlock_irqrestore(&port->slock, flags);
- }
- 
-+#if 0
- void cx23885_cancel_buffers(struct cx23885_tsport *port)
- {
- 	struct cx23885_dev *dev = port->dev;
-@@ -1253,6 +1256,7 @@ void cx23885_cancel_buffers(struct cx23885_tsport *port)
- 	cx23885_stop_dma(port);
- 	do_cancel_buffers(port, "cancel", 0);
- }
-+#endif  /*  0  */
- 
- static void cx23885_timeout(unsigned long data)
- {
-diff --git a/drivers/media/video/cx23885/cx23885-i2c.c b/drivers/media/video/cx23885/cx23885-i2c.c
-index 71da528..12c3006 100644
---- a/drivers/media/video/cx23885/cx23885-i2c.c
-+++ b/drivers/media/video/cx23885/cx23885-i2c.c
-@@ -366,8 +366,6 @@ int cx23885_i2c_unregister(struct cx23885_i2c *bus)
- 
- /* ----------------------------------------------------------------------- */
- 
--EXPORT_SYMBOL(cx23885_call_i2c_clients);
+-EXPORT_SYMBOL(cx8802_init_common);
+-EXPORT_SYMBOL(cx8802_fini_common);
 -
- /*
-  * Local variables:
-  * c-basic-offset: 8
-diff --git a/drivers/media/video/cx23885/cx23885.h b/drivers/media/video/cx23885/cx23885.h
-index dec4dc2..205640c 100644
---- a/drivers/media/video/cx23885/cx23885.h
-+++ b/drivers/media/video/cx23885/cx23885.h
-@@ -254,10 +254,6 @@ struct sram_channel {
- #define cx_set(reg,bit)          cx_andor((reg),(bit),(bit))
- #define cx_clear(reg,bit)        cx_andor((reg),(bit),0)
+ EXPORT_SYMBOL(cx8802_register_driver);
+ EXPORT_SYMBOL(cx8802_unregister_driver);
+ EXPORT_SYMBOL(cx8802_get_driver);
+diff --git a/drivers/media/video/cx88/cx88.h b/drivers/media/video/cx88/cx88.h
+index eb296bd..bb1036a 100644
+--- a/drivers/media/video/cx88/cx88.h
++++ b/drivers/media/video/cx88/cx88.h
+@@ -633,12 +633,6 @@ int cx8802_buf_prepare(struct videobuf_queue *q,struct cx8802_dev *dev,
+ void cx8802_buf_queue(struct cx8802_dev *dev, struct cx88_buffer *buf);
+ void cx8802_cancel_buffers(struct cx8802_dev *dev);
  
--extern int cx23885_sram_channel_setup(struct cx23885_dev *dev,
--	struct sram_channel *ch,
--	unsigned int bpl, u32 risc);
+-int cx8802_init_common(struct cx8802_dev *dev);
+-void cx8802_fini_common(struct cx8802_dev *dev);
+-
+-int cx8802_suspend_common(struct pci_dev *pci_dev, pm_message_t state);
+-int cx8802_resume_common(struct pci_dev *pci_dev);
 -
  /* ----------------------------------------------------------- */
- /* cx23885-cards.c                                                */
- 
+ /* cx88-video.c*/
+ extern const u32 cx88_user_ctrls[];
 
