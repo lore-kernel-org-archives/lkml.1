@@ -1,122 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754399AbXKESKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbXKESLe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754399AbXKESKz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 13:10:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751087AbXKESKs
+	id S1754737AbXKESLe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 13:11:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbXKESL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 13:10:48 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:59460 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750830AbXKESKr (ORCPT
+	Mon, 5 Nov 2007 13:11:26 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:64831 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752700AbXKESLZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 13:10:47 -0500
-Date: Mon, 5 Nov 2007 13:10:46 -0500
-To: "J.A. Magall?n" <jamagallon@ono.com>
-Cc: "Linux-Kernel, " <linux-kernel@vger.kernel.org>
-Subject: Re: Opteron box and 4Gb memory
-Message-ID: <20071105181046.GE27646@csclub.uwaterloo.ca>
-References: <20071025230904.03d5f46a@werewolf> <47211172.9070606@zytor.com> <20071105001847.546565c4@werewolf>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071105001847.546565c4@werewolf>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Mon, 5 Nov 2007 13:11:25 -0500
+Date: Mon, 5 Nov 2007 19:11:09 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
+       Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH 22/54] kset: convert /sys/devices/system to use
+ kset_create
+Message-ID: <20071105191109.52c07ab4@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <1194047972-9850-22-git-send-email-gregkh@suse.de>
+References: <20071102235758.GA9803@kroah.com>
+	<1194047972-9850-22-git-send-email-gregkh@suse.de>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.1.0-rc1 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 05, 2007 at 12:18:47AM +0100, J.A. Magall?n wrote:
-> Well, I was able to get about 3 Gb with MTRR=discrete in the BIOS,
-> but I'm still in the process to find the 'software hole' option to get
-> the rest of the 4Gb...
-> 
-> But now another (perhaps related) question has arised...
-> I like all those 5-line progams to test system performance...;).
-> I just wrote a simple program that sums/muls int/float vectors with
-> scalar/sse operations. And my opteron box looks terribly slow.
-> 
-> This is my MacPro, Xeon 5130:
-> 
-> belly:~/bn> bn  
-> 	proc: 4 x MacPro1,1 @ 2000 MHz
-> 	ram:  2048 Mb
-> 	os:   unx, Darwin, 9.0.0
-> 	cc:   gcc-4.0.1
-> vector size   : 8 x 1024 x 1024
-> allocation:     0.01 ms
-> int scl add: ..........   36.78 ms,  228.07 Mips   |  114.03 Mips  /GHz
-> int scl mul: ..........   34.30 ms,  244.60 Mips   |  122.30 Mips  /GHz
-> flt scl add: ..........   34.28 ms,  244.73 Mflops |  122.37 Mflops/GHz
-> flt vec add: ..........    7.89 ms, 1063.15 Mflops |  531.58 Mflops/GHz
-> flt scl mul: ..........   34.20 ms,  245.28 Mflops |  122.64 Mflops/GHz
-> flt vec mul: ..........    7.90 ms, 1061.77 Mflops |  530.89 Mflops/GHz
-> total:       3322.19 ms
-> 
-> This is a normal (I think) opteron box (Opteron 846):
-> 
-> selene:~/bn> g  
-> 	proc: 4 x x86_64 @ 2004 MHz
-> 	ram:  3496 Mb
-> 	os:   unx, Linux, 2.6.9-42.0.10.ELsmp
-> 	cc:   gcc-4.0.2
-> vector size   : 8 x 1024 x 1024
-> allocation:     0.05 ms
-> int scl add: ..........   45.98 ms,  182.42 Mips   |   91.03 Mips  /GHz
-> int scl mul: ..........   44.31 ms,  189.30 Mips   |   94.46 Mips  /GHz
-> flt scl add: ..........   44.52 ms,  188.41 Mflops |   94.02 Mflops/GHz
-> flt vec add: ..........   10.03 ms,  836.70 Mflops |  417.52 Mflops/GHz
-> flt scl mul: ..........   43.32 ms,  193.63 Mflops |   96.62 Mflops/GHz
-> flt vec mul: ..........   10.02 ms,  836.98 Mflops |  417.65 Mflops/GHz
-> total:       4705.07 ms
-> 
-> And this is my opteron (Opteron 275)
-> 
-> cicely:~/bn> g  
-> 	proc: 4 x x86_64 @ 2200 MHz
-> 	ram:  2914 Mb
-> 	os:   unx, Linux, 2.6.23.1-desktop-1mdv
-> 	cc:   gcc-4.0.2
-> vector size   : 8 x 1024 x 1024
-> allocation:     0.03 ms
-> int scl add: ..........   87.67 ms,   95.68 Mips   |   43.49 Mips  /GHz
-> int scl mul: ..........   85.48 ms,   98.13 Mips   |   44.61 Mips  /GHz
-> flt scl add: ..........   85.90 ms,   97.66 Mflops |   44.39 Mflops/GHz
-> flt vec add: ..........   19.51 ms,  429.96 Mflops |  195.44 Mflops/GHz
-> flt scl mul: ..........   85.86 ms,   97.70 Mflops |   44.41 Mflops/GHz
-> flt vec mul: ..........   19.50 ms,  430.11 Mflops |  195.50 Mflops/GHz
-> total:       6334.96 ms
-> 
-> As I read in AMD site, the only difference that matters in models is
-> the xx5 vx xx6, related to fequency, but the processors should be just
-> the same.
-> 
-> As this only does intensive memory/fp operations, I'm not going to blame
-> gcc nor kernel versions here (I have compared gcc 3.4, 4.0, 4.1, and 4.2
-> on one of the boxes and results are very similar, the code is really
-> stupid and not very suitable for compiler smartness...).
-> I suspect it is a memory problem. It can be hardware or caused by
-> incorrect BIOS/kernel-mtrr setup:
-> 
-> selene:~> cat /proc/mtrr
-> reg00: base=0x00000000 (   0MB), size=16384MB: write-back, count=1
-> reg01: base=0xf0000000 (3840MB), size= 256MB: uncachable, count=1
-> 
-> cicely:~> cat /proc/mtrr
-> reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
-> reg01: base=0x80000000 (2048MB), size= 512MB: write-back, count=1
-> reg02: base=0xa0000000 (2560MB), size= 256MB: write-back, count=1
-> reg03: base=0xb0000000 (2816MB), size= 128MB: write-back, count=1
-> reg04: base=0xb8000000 (2944MB), size=  16MB: write-back, count=1
-> 
-> 
-> Any idea on what can be going on here ? I have asked the 'good opteron'
-> admin info about the mobo an memory of the box.
-> 
-> Any help will be _very_ appreciated.
+On Fri,  2 Nov 2007 16:59:00 -0700,
+Greg Kroah-Hartman <gregkh@suse.de> wrote:
 
-Well what revisions are the two opterons?  Is one running dual channel
-memory while the other isn't perhaps?  What speed and type is the ram on
-the two opterons?
+> Dynamically create the kset instead of declaring it statically.
+> 
+> Cc: Kay Sievers <kay.sievers@vrfy.org>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> ---
+>  drivers/base/sys.c |   28 ++++++++++++----------------
+>  1 files changed, 12 insertions(+), 16 deletions(-)
 
---
-Len Sorensen
+Unfortunately, at that point in the patch series reipl breaks for me :(
+
+I used the following silly debug patch:
+
+---
+ drivers/base/power/shutdown.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/drivers/base/power/shutdown.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/shutdown.c	2007-11-05 18:51:51.000000000 +0100
++++ linux-2.6/drivers/base/power/shutdown.c	2007-11-05 18:52:50.000000000 +0100
+@@ -37,10 +37,11 @@ void device_shutdown(void)
+ 	list_for_each_entry_safe_reverse(dev, devn, &devices_kset->list,
+ 				kobj.entry) {
+ 		if (dev->bus && dev->bus->shutdown) {
+-			dev_dbg(dev, "shutdown\n");
++			dev_dbg(dev, "shutdown (bus %s)\n", dev->bus->name);
+ 			dev->bus->shutdown(dev);
+ 		} else if (dev->driver && dev->driver->shutdown) {
+-			dev_dbg(dev, "shutdown\n");
++			dev_dbg(dev, "shutdown (driver %s)\n",
++				dev->driver->name);
+ 			dev->driver->shutdown(dev);
+ 		}
+ 	}
+
+and get as the kernel's last words:
+
+<loads of sane shutdowns for the ccw and css busses>
+    <7>io_subchannel 0.0.095c: shutdown (bus css)
+    <7>io_subchannel 0.0.095b: shutdown (bus css)
+    <7>io_subchannel 0.0.095a: shutdown (bus css)
+    <7> : shutdown (bus )
+    <1>Unable to handle kernel pointer dereference at virtual kernel address 0000000500000000
+    <4>Oops: 003b [#1]
+    <4>Modules linked in: dm_multipath sunrpc qeth ccwgroup dm_mod
+    <4>CPU:    2    Not tainted
+    <4>Process reboot (pid: 2892, task: 0000000002cae048, ksp: 00000000045c39b8)
+    <4>Krnl PSW : 0704000180000000 0000000500000006 (0x500000006)
+    <4>           R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:0 CC:0 PM:0 EA:3
+    <4>Krnl GPRS: 0000000000019e75 0000000500000006 0000000002c42810 0000000002c429b0
+    <4>           00000000002a36ec 0000000000000000 000003ffffb76d48 0000000000000160
+    <4>           00000000001423a4 000002000015e390 00000000006e06b8 0000000000634638
+    <4>           0000000002c42810 000000000041f670 00000000002a36fe 00000000045c3d00
+    <4>Krnl Code: Bad PSW.
+    <4>Call Trace:
+    <4>([<00000000002a36ec>] device_shutdown+0x78/0x144)
+    <4> [<000000000013f18c>] kernel_restart_prepare+0x44/0x50
+    <4> [<000000000013f1be>] kernel_restart+0x26/0x6c
+    <4> [<0000000000142548>] sys_reboot+0x1a4/0x1f4
+    <4> [<0000000000111038>] sysc_noemu+0x10/0x16
+    <4> [<00000200001048e0>] 0x200001048e0
+    <4>
+    <4> 
+
+Huh? We want to shutdown an unknown device on a bus that wishes to stay
+anonymous?
+
+Any hints would be appreciated...
