@@ -1,70 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755272AbXKESR2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754975AbXKEST5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755272AbXKESR2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 13:17:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbXKESRU
+	id S1754975AbXKEST5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 13:19:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbXKESTu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 13:17:20 -0500
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:56371 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753414AbXKESRT (ORCPT
+	Mon, 5 Nov 2007 13:19:50 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:58923 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752759AbXKESTt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 13:17:19 -0500
-Date: Mon, 5 Nov 2007 19:17:05 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 34/54] Driver Core: add kobj_attribute handling
-Message-ID: <20071105191705.5f2baaaa@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <1194286070.2174.14.camel@lov.site>
-References: <20071102235758.GA9803@kroah.com>
-	<1194047972-9850-34-git-send-email-gregkh@suse.de>
-	<20071105134203.1c078136@gondolin.boeblingen.de.ibm.com>
-	<1194279812.6771.11.camel@lov.site>
-	<20071105171133.GD12843@suse.de>
-	<1194283540.2174.8.camel@lov.site>
-	<20071105184350.0a1cd957@gondolin.boeblingen.de.ibm.com>
-	<1194286070.2174.14.camel@lov.site>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.1.0-rc1 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Nov 2007 13:19:49 -0500
+Date: Mon, 5 Nov 2007 10:13:32 -0800
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Future of Linux 2.6.22.y series
+Message-ID: <20071105181332.GB28628@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 05 Nov 2007 19:07:50 +0100,
-Kay Sievers <kay.sievers@vrfy.org> wrote:
+For the last release, I stated that I thought the 2.6.22.12 release
+would be the last one in the 2.6.22.y series.  Since then, I've received
+a number of other patches that would be nice to have in the .22.y tree.
 
-> On Mon, 2007-11-05 at 18:43 +0100, Cornelia Huck wrote:
-> > On Mon, 05 Nov 2007 18:25:40 +0100,
-> > Kay Sievers <kay.sievers@vrfy.org> wrote:
-> > 
-> > > > > That should usually be done by default attributes assigned to the ktype.
-> > > > > Do you have a good use case, where people need to create such attributes
-> > > > > individually instead?
-> > > > 
-> > > > The s390 code that was converted to use kobj_attributes :)
-> > > > 
-> > > > These look very useful, I'll go add them to the series unless Kay really
-> > > > objects.
-> > > 
-> > > I just want to hear a good reason to create attributes individually. :)
-> > > Especially in conjunction with kobject_register(), these attributes are
-> > > not available at uevent time, which is really really bad.
-> > > 
-> > > Default attributes just work fine, and have the proper error handling
-> > > built-in. Offering special functions for it, may just encourage people
-> > > to continue this "broken" way of creating attributes.
-> > 
-> > But where should I specify those default attributes?
-> > kset_create_and_register() sets the ktype to kset_ktype...
-> 
-> Do you need to create attributes at a kset itself, not the kobjects that
-> belong to the kset?
+So, for a while, I'll keep the 2.6.22.y tree open, doing new releases
+every once in a while as they accumulate.  I do this, for no other than
+the selfish reason that I use it every day on my openSuSE 10.3 boxes as
+that is the kernel base that release is on :)
 
-Yes, see arch/s390/kernel/ipl.c (and I guess anything that uses
-subsys_create_file() before).
+If anyone has any objections or questions about this, please let me
+know.
+
+thanks,
+
+greg k-h
