@@ -1,37 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756721AbXKEQA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755971AbXKEQEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756721AbXKEQA1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 11:00:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbXKEQAR
+	id S1755971AbXKEQEc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 11:04:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753675AbXKEQEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 11:00:17 -0500
-Received: from mail.acc.umu.se ([130.239.18.156]:43008 "EHLO mail.acc.umu.se"
+	Mon, 5 Nov 2007 11:04:25 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59244 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752111AbXKEQAQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 11:00:16 -0500
-Date: Mon, 5 Nov 2007 17:00:05 +0100 (CET)
-From: =?ISO-8859-1?Q?Bo_Brant=E9n?= <bosse@acc.umu.se>
-To: linux-kernel@vger.kernel.org
-Subject: Re: x86_64 ten times slower than i386
-In-Reply-To: <Pine.A41.4.64.0711051110530.803034@stalin.acc.umu.se>
-Message-ID: <Pine.A41.4.64.0711051657440.291004@stalin.acc.umu.se>
-References: <Pine.A41.4.64.0711031329490.397338@stalin.acc.umu.se>
- <20071103162640.GS17536@waste.org> <Pine.A41.4.64.0711032334170.770224@stalin.acc.umu.se>
- <Pine.A41.4.64.0711051110530.803034@stalin.acc.umu.se>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	id S1753305AbXKEQEY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 11:04:24 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <472B9479.7040105@l4x.org>
+References: <472B9479.7040105@l4x.org> <15675.1193753820@redhat.com> <4726337B.1080608@l4x.org> <4725B553.4060502@l4x.org> <4220.1193663179@redhat.com> <15712.1193753924@redhat.com>
+To: Jan Dittmer <jdi@l4x.org>
+Cc: dhowells@redhat.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Working frv toolchain?
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Mon, 05 Nov 2007 16:04:26 +0000
+Message-ID: <27945.1194278666@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jan Dittmer <jdi@l4x.org> wrote:
 
-After I uppgraded the BIOS the mtrr looks like below, and now it works if 
-I boot with mem=4736M so I can use all memory but it still doesn't work 
-without the mem parameter then it will run as slow as before.
+> Hrm, that gets me further, but one of the final stages fail:
 
-reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
-reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
-reg02: base=0xc0000000 (3072MB), size= 256MB: write-back, count=1
-reg03: base=0xcf800000 (3320MB), size=   8MB: uncachable, count=1
-reg04: base=0xcf700000 (3319MB), size=   1MB: uncachable, count=1
-reg05: base=0x100000000 (4096MB), size= 512MB: write-back, count=1
-reg06: base=0x120000000 (4608MB), size= 128MB: write-back, count=1
+Can you try the attached patch?
+
+David
+---
+[PATCH] FRV: Fix the extern declaration of kallsyms_num_syms
+
+From: David Howells <dhowells@redhat.com>
+
+Fix the extern declaration of kallsyms_num_syms to indicate that the symbol
+does not reside in the small-data storage space, and so may not be accessed
+relative to the small data base register.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ kernel/kallsyms.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
+index 474219a..fa84b83 100644
+--- a/kernel/kallsyms.c
++++ b/kernel/kallsyms.c
+@@ -32,7 +32,8 @@
+ 
+ /* These will be re-linked against their real values during the second link stage */
+ extern const unsigned long kallsyms_addresses[] __attribute__((weak));
+-extern const unsigned long kallsyms_num_syms __attribute__((weak));
++extern const unsigned long kallsyms_num_syms
++__nongpreldata __attribute__((weak));
+ extern const u8 kallsyms_names[] __attribute__((weak));
+ 
+ extern const u8 kallsyms_token_table[] __attribute__((weak));
