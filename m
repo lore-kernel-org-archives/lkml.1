@@ -1,59 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754958AbXKEFga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755047AbXKEFlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754958AbXKEFga (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 00:36:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751087AbXKEFgX
+	id S1755047AbXKEFlz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 00:41:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbXKEFlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 00:36:23 -0500
-Received: from gate.crashing.org ([63.228.1.57]:37382 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750961AbXKEFgX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 00:36:23 -0500
-Subject: Re: [PATCH 3/6]] POWERPC: fix memset size error
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
-       paulus@samba.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <472E7E44.6000807@cn.fujitsu.com>
-References: <472E7E44.6000807@cn.fujitsu.com>
-Content-Type: text/plain
-Date: Mon, 05 Nov 2007 16:35:57 +1100
-Message-Id: <1194240957.6511.44.camel@pasglop>
+	Mon, 5 Nov 2007 00:41:47 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55706 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751087AbXKEFlr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 00:41:47 -0500
+Date: Mon, 5 Nov 2007 14:38:15 +0900
+From: Kyungmin Park <kyungmin.park@samsung.com>
+To: linux-omap-open-source@linux.omap.com, LKML <linux-kernel@vger.kernel.org>
+Cc: David Brownell <david-b@pacbell.net>, Tony Lindgren <tony@atomide.com>
+Subject: USB device DMA support on OMAP2
+Message-ID: <20071105053815.GA2036@party>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The current omap udc dosen't support the DMA mode
+and it has some problem at setup time on OMAP2 with previous patch file.
+I found that the code assumes bulk out required the big data transfer.
+But MODE SELECT(6) sent the only 24 bytes. it makes a problem.
+So I implement the small packets handling for it.
 
-On Mon, 2007-11-05 at 10:21 +0800, Li Zefan wrote:
-> The size passing to memset is wrong.
-> 
-> Signed-off-by Li Zefan <lizf@cn.fujitsu.com>
+It is tested with both linux and windows.
 
-Good catch, looks like a remain of when path was an array on the stack.
-
-Thanks !
-
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-> 
-> ---
->  arch/powerpc/kernel/prom_init.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-> index 1db10f7..1add6ef 100644
-> --- a/arch/powerpc/kernel/prom_init.c
-> +++ b/arch/powerpc/kernel/prom_init.c
-> @@ -1244,7 +1244,7 @@ static void __init prom_initialize_tce_table(void)
->  			local_alloc_bottom = base;
->  
->  		/* It seems OF doesn't null-terminate the path :-( */
-> -		memset(path, 0, sizeof(path));
-> +		memset(path, 0, PROM_SCRATCH_SIZE);
->  		/* Call OF to setup the TCE hardware */
->  		if (call_prom("package-to-path", 3, 1, node,
->  			      path, PROM_SCRATCH_SIZE-1) == PROM_ERROR) {
-
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+diff --git a/drivers/usb/gadget/omap_udc.c b/drivers/usb/gadget/omap_udc.c
+index 983337e..9719f08 100644
+--- a/drivers/usb/gadget/omap_udc.c
++++ b/drivers/usb/gadget/omap_udc.c
+@@ -4,6 +4,8 @@
+  * Copyright (C) 2004 Texas Instruments, Inc.
+  * Copyright (C) 2004-2005 David Brownell
+  *
++ * OMAP2 & DMA support by Kyungmin Park <kyungmin.park@samsung.com>
++ *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation; either version 2 of the License, or
+@@ -60,11 +62,6 @@
+ /* bulk DMA seems to be behaving for both IN and OUT */
+ #define	USE_DMA
+ 
+-/* FIXME: OMAP2 currently has some problem in DMA mode */
+-#ifdef CONFIG_ARCH_OMAP2
+-#undef USE_DMA
+-#endif
+-
+ /* ISO too */
+ #define	USE_ISO
+ 
+@@ -73,6 +70,8 @@
+ 
+ #define	DMA_ADDR_INVALID	(~(dma_addr_t)0)
+ 
++#define OMAP2_DMA_CH(ch)	(((ch) - 1) << 1)
++#define OMAP24XX_DMA(name, ch)	(OMAP24XX_DMA_##name + OMAP2_DMA_CH(ch))
+ 
+ /*
+  * The OMAP UDC needs _very_ early endpoint setup:  before enabling the
+@@ -571,20 +570,25 @@ static void next_in_dma(struct omap_ep *ep, struct omap_req *req)
+ 	const int	sync_mode = cpu_is_omap15xx()
+ 				? OMAP_DMA_SYNC_FRAME
+ 				: OMAP_DMA_SYNC_ELEMENT;
++	int		dma_trigger = 0;
++
++	if (cpu_is_omap24xx())
++		dma_trigger = OMAP24XX_DMA(USB_W2FC_TX0, ep->dma_channel);
+ 
+ 	/* measure length in either bytes or packets */
+ 	if ((cpu_is_omap16xx() && length <= UDC_TXN_TSC)
++			|| (cpu_is_omap24xx() && length < ep->maxpacket)
+ 			|| (cpu_is_omap15xx() && length < ep->maxpacket)) {
+ 		txdma_ctrl = UDC_TXN_EOT | length;
+ 		omap_set_dma_transfer_params(ep->lch, OMAP_DMA_DATA_TYPE_S8,
+-				length, 1, sync_mode, 0, 0);
++				length, 1, sync_mode, dma_trigger, 0);
+ 	} else {
+ 		length = min(length / ep->maxpacket,
+ 				(unsigned) UDC_TXN_TSC + 1);
+ 		txdma_ctrl = length;
+ 		omap_set_dma_transfer_params(ep->lch, OMAP_DMA_DATA_TYPE_S16,
+ 				ep->ep.maxpacket >> 1, length, sync_mode,
+-				0, 0);
++				dma_trigger, 0);
+ 		length *= ep->maxpacket;
+ 	}
+ 	omap_set_dma_src_params(ep->lch, OMAP_DMA_PORT_EMIFF,
+@@ -622,20 +626,31 @@ static void finish_in_dma(struct omap_ep *ep, struct omap_req *req, int status)
+ 
+ static void next_out_dma(struct omap_ep *ep, struct omap_req *req)
+ {
+-	unsigned packets;
++	unsigned packets = req->req.length - req->req.actual;
++	int dma_trigger = 0;
++
++	if (cpu_is_omap24xx())
++		dma_trigger = OMAP24XX_DMA(USB_W2FC_RX0, ep->dma_channel);
+ 
+ 	/* NOTE:  we filtered out "short reads" before, so we know
+ 	 * the buffer has only whole numbers of packets.
++	 * except MODE SELECT(6) sent the 24 bytes data in OMAP24XX DMA mode
+ 	 */
+-
+-	/* set up this DMA transfer, enable the fifo, start */
+-	packets = (req->req.length - req->req.actual) / ep->ep.maxpacket;
+-	packets = min(packets, (unsigned)UDC_RXN_TC + 1);
+-	req->dma_bytes = packets * ep->ep.maxpacket;
+-	omap_set_dma_transfer_params(ep->lch, OMAP_DMA_DATA_TYPE_S16,
+-			ep->ep.maxpacket >> 1, packets,
+-			OMAP_DMA_SYNC_ELEMENT,
+-			0, 0);
++	if (cpu_is_omap24xx() && packets < ep->maxpacket) {
++		omap_set_dma_transfer_params(ep->lch, OMAP_DMA_DATA_TYPE_S8,
++				packets, 1, OMAP_DMA_SYNC_ELEMENT,
++				dma_trigger, 0);
++		req->dma_bytes = packets;
++	} else {
++		/* set up this DMA transfer, enable the fifo, start */
++		packets /= ep->ep.maxpacket;
++		packets = min(packets, (unsigned)UDC_RXN_TC + 1);
++		req->dma_bytes = packets * ep->ep.maxpacket;
++		omap_set_dma_transfer_params(ep->lch, OMAP_DMA_DATA_TYPE_S16,
++				ep->ep.maxpacket >> 1, packets,
++				OMAP_DMA_SYNC_ELEMENT,
++				dma_trigger, 0);
++	}
+ 	omap_set_dma_dest_params(ep->lch, OMAP_DMA_PORT_EMIFF,
+ 		OMAP_DMA_AMODE_POST_INC, req->req.dma + req->req.actual,
+ 		0, 0);
+@@ -743,6 +758,7 @@ static void dma_channel_claim(struct omap_ep *ep, unsigned channel)
+ {
+ 	u16	reg;
+ 	int	status, restart, is_in;
++	int	dma_channel;
+ 
+ 	is_in = ep->bEndpointAddress & USB_DIR_IN;
+ 	if (is_in)
+@@ -769,11 +785,15 @@ static void dma_channel_claim(struct omap_ep *ep, unsigned channel)
+ 	ep->dma_channel = channel;
+ 
+ 	if (is_in) {
+-		status = omap_request_dma(OMAP_DMA_USB_W2FC_TX0 - 1 + channel,
++		if (cpu_is_omap24xx())
++			dma_channel = OMAP24XX_DMA(USB_W2FC_TX0, channel);
++		else
++			dma_channel = OMAP_DMA_USB_W2FC_TX0 - 1 + channel;
++		status = omap_request_dma(dma_channel,
+ 			ep->ep.name, dma_error, ep, &ep->lch);
+ 		if (status == 0) {
+ 			UDC_TXDMA_CFG_REG = reg;
+-			/* EMIFF */
++			/* EMIFF or SDRC */
+ 			omap_set_dma_src_burst_mode(ep->lch,
+ 						OMAP_DMA_DATA_BURST_4);
+ 			omap_set_dma_src_data_pack(ep->lch, 1);
+@@ -785,7 +805,12 @@ static void dma_channel_claim(struct omap_ep *ep, unsigned channel)
+ 				0, 0);
+ 		}
+ 	} else {
+-		status = omap_request_dma(OMAP_DMA_USB_W2FC_RX0 - 1 + channel,
++		if (cpu_is_omap24xx())
++			dma_channel = OMAP24XX_DMA(USB_W2FC_RX0, channel);
++		else
++			dma_channel = OMAP_DMA_USB_W2FC_RX0 - 1 + channel;
++
++		status = omap_request_dma(dma_channel,
+ 			ep->ep.name, dma_error, ep, &ep->lch);
+ 		if (status == 0) {
+ 			UDC_RXDMA_CFG_REG = reg;
+@@ -795,7 +820,7 @@ static void dma_channel_claim(struct omap_ep *ep, unsigned channel)
+ 				OMAP_DMA_AMODE_CONSTANT,
+ 				(unsigned long) io_v2p((u32)&UDC_DATA_DMA_REG),
+ 				0, 0);
+-			/* EMIFF */
++			/* EMIFF or SDRC */
+ 			omap_set_dma_dest_burst_mode(ep->lch,
+ 						OMAP_DMA_DATA_BURST_4);
+ 			omap_set_dma_dest_data_pack(ep->lch, 1);
+@@ -808,7 +833,7 @@ static void dma_channel_claim(struct omap_ep *ep, unsigned channel)
+ 		omap_disable_dma_irq(ep->lch, OMAP_DMA_BLOCK_IRQ);
+ 
+ 		/* channel type P: hw synch (fifo) */
+-		if (!cpu_is_omap15xx())
++		if (cpu_class_is_omap1() && !cpu_is_omap15xx())
+ 			OMAP1_DMA_LCH_CTRL_REG(ep->lch) = 2;
+ 	}
+ 
+@@ -926,11 +951,13 @@ omap_ep_queue(struct usb_ep *_ep, struct usb_request *_req, gfp_t gfp_flags)
+ 
+ 	/* this isn't bogus, but OMAP DMA isn't the only hardware to
+ 	 * have a hard time with partial packet reads...  reject it.
++	 * Except OMAP2 can handle the small packets.
+ 	 */
+ 	if (use_dma
+ 			&& ep->has_dma
+ 			&& ep->bEndpointAddress != 0
+ 			&& (ep->bEndpointAddress & USB_DIR_IN) == 0
++			&& !cpu_class_is_omap2()
+ 			&& (req->req.length % ep->ep.maxpacket) != 0) {
+ 		DBG("%s, no partial packet OUT reads\n", __FUNCTION__);
+ 		return -EMSGSIZE;
