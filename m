@@ -1,143 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755535AbXKEQnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754049AbXKEQoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755535AbXKEQnr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 11:43:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbXKEQnk
+	id S1754049AbXKEQoN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 11:44:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbXKEQn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 11:43:40 -0500
-Received: from nic2.axis.se ([193.13.178.10]:51001 "EHLO krynn.se.axis.com"
+	Mon, 5 Nov 2007 11:43:58 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:48365 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750887AbXKEQnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 11:43:39 -0500
-Date: Mon, 5 Nov 2007 17:42:17 +0100
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Mikael Starvik <mikael.starvik@axis.com>,
-       Jesper Nilsson <jesper.nilsson@axis.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] CRIS: Remove MTD_AMSTD and MTD_OBSOLETE_CHIPS take two
-Message-ID: <20071105164216.GQ7621@axis.com>
+	id S1755730AbXKEQn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 11:43:57 -0500
+Date: Mon, 5 Nov 2007 11:43:53 -0500
+To: Jan Blunck <jblunck@suse.de>
+Cc: Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, neilb@suse.de
+Subject: Re: [PATCH 7/9] Use struct path in struct svc_expkey
+Message-ID: <20071105164353.GF22767@fieldses.org>
+References: <20071105163232.550298985@hasse.suse.de> <20071105163234.240126105@hasse.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20071105163234.240126105@hasse.suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove MTD_AMDSTD and MTD_OBSOLETE_CHIPS from defconfig, Kconfig and code,
-instead we'll use MTD_CFI or MTD_JEDECPROBE.
+On Mon, Nov 05, 2007 at 05:32:39PM +0100, Jan Blunck wrote:
+> I'm embedding struct path into struct svc_expkey.
 
-Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
+Looks straightforward to me, thanks.
 
----
- arch-v10/defconfig              |    2 --
- arch-v10/drivers/Kconfig        |    2 --
- arch-v10/drivers/axisflashmap.c |    8 ++++----
- arch-v32/drivers/Kconfig        |    2 --
- arch-v32/drivers/axisflashmap.c |    8 ++++----
- defconfig                       |    2 --
- 6 files changed, 8 insertions(+), 16 deletions(-)
+	Acked-by: J. Bruce Fields <bfields@citi.umich.edu>
 
-diff --git a/arch/cris/arch-v10/defconfig b/arch/cris/arch-v10/defconfig
-index 710c20b..572f119 100644
---- a/arch/cris/arch-v10/defconfig
-+++ b/arch/cris/arch-v10/defconfig
-@@ -99,7 +99,6 @@ CONFIG_MTD=y
- CONFIG_MTD_CFI=y
- # CONFIG_MTD_CFI_INTELEXT is not set
- CONFIG_MTD_CFI_AMDSTD=y
--CONFIG_MTD_AMDSTD=y
- CONFIG_MTD_CHAR=y
- CONFIG_MTD_BLOCK=y
- CONFIG_ETRAX_I2C=y
-@@ -145,7 +144,6 @@ CONFIG_MTD_CFI=y
- # CONFIG_MTD_CFI_GEOMETRY is not set
- # CONFIG_MTD_CFI_INTELEXT is not set
- CONFIG_MTD_CFI_AMDSTD=y
--CONFIG_MTD_AMDSTD=y
- # CONFIG_MTD_SHARP is not set
- # CONFIG_MTD_PHYSMAP is not set
- # CONFIG_MTD_NORA is not set
-diff --git a/arch/cris/arch-v10/drivers/Kconfig b/arch/cris/arch-v10/drivers/Kconfig
-index 03e2e68..136a0c6 100644
---- a/arch/cris/arch-v10/drivers/Kconfig
-+++ b/arch/cris/arch-v10/drivers/Kconfig
-@@ -605,8 +605,6 @@ config ETRAX_AXISFLASHMAP
- 	select MTD
- 	select MTD_CFI
- 	select MTD_CFI_AMDSTD
--	select MTD_OBSOLETE_CHIPS
--	select MTD_AMDSTD
- 	select MTD_CHAR
- 	select MTD_BLOCK
- 	select MTD_PARTITIONS
-diff --git a/arch/cris/arch-v10/drivers/axisflashmap.c b/arch/cris/arch-v10/drivers/axisflashmap.c
-index efd7b0f..ea3cf2e 100644
---- a/arch/cris/arch-v10/drivers/axisflashmap.c
-+++ b/arch/cris/arch-v10/drivers/axisflashmap.c
-@@ -312,12 +312,12 @@ static struct mtd_info *probe_cs(struct map_info *map_cs)
-                "%s: Probing a 0x%08lx bytes large window at 0x%08lx.\n",
- 	       map_cs->name, map_cs->size, map_cs->map_priv_1);
- 
--#ifdef CONFIG_MTD_AMDSTD
--	mtd_cs = do_map_probe("amd_flash", map_cs);
--#endif
- #ifdef CONFIG_MTD_CFI
-+	mtd_cs = do_map_probe("cfi_probe", map_cs);
-+#endif
-+#ifdef CONFIG_MTD_JEDECPROBE
- 	if (!mtd_cs) {
--		mtd_cs = do_map_probe("cfi_probe", map_cs);
-+		mtd_cs = do_map_probe("jedec_probe", map_cs);
- 	}
- #endif
- 
-diff --git a/arch/cris/arch-v32/drivers/Kconfig b/arch/cris/arch-v32/drivers/Kconfig
-index cc6ba54..7f72d7c 100644
---- a/arch/cris/arch-v32/drivers/Kconfig
-+++ b/arch/cris/arch-v32/drivers/Kconfig
-@@ -362,8 +362,6 @@ config ETRAX_AXISFLASHMAP
- 	select MTD
- 	select MTD_CFI
- 	select MTD_CFI_AMDSTD
--	select MTD_OBSOLETE_CHIPS
--	select MTD_AMDSTD
- 	select MTD_CHAR
- 	select MTD_BLOCK
- 	select MTD_PARTITIONS
-diff --git a/arch/cris/arch-v32/drivers/axisflashmap.c b/arch/cris/arch-v32/drivers/axisflashmap.c
-index 3ec12ea..7904d98 100644
---- a/arch/cris/arch-v32/drivers/axisflashmap.c
-+++ b/arch/cris/arch-v32/drivers/axisflashmap.c
-@@ -190,12 +190,12 @@ static struct mtd_info *probe_cs(struct map_info *map_cs)
- 	       "%s: Probing a 0x%08lx bytes large window at 0x%08lx.\n",
- 	       map_cs->name, map_cs->size, map_cs->map_priv_1);
- 
--#ifdef CONFIG_MTD_AMDSTD
--	mtd_cs = do_map_probe("amd_flash", map_cs);
--#endif
- #ifdef CONFIG_MTD_CFI
--	if (!mtd_cs) {
- 		mtd_cs = do_map_probe("cfi_probe", map_cs);
-+#endif
-+#ifdef CONFIG_MTD_JEDECPROBE
-+	if (!mtd_cs) {
-+		mtd_cs = do_map_probe("jedec_probe", map_cs);
- 	}
- #endif
- 
-diff --git a/arch/cris/defconfig b/arch/cris/defconfig
-index 142a108..e3e91f6 100644
---- a/arch/cris/defconfig
-+++ b/arch/cris/defconfig
-@@ -226,8 +226,6 @@ CONFIG_MTD_CFI_UTIL=y
- CONFIG_MTD_RAM=y
- # CONFIG_MTD_ROM is not set
- # CONFIG_MTD_ABSENT is not set
--CONFIG_MTD_OBSOLETE_CHIPS=y
--CONFIG_MTD_AMDSTD=y
- # CONFIG_MTD_SHARP is not set
- # CONFIG_MTD_JEDEC is not set
- 
-/^JN - Jesper Nilsson
---
-               Jesper Nilsson -- jesper.nilsson@axis.com
+--b.
+
+> 
+> Signed-off-by: Jan Blunck <jblunck@suse.de>
+> ---
+>  fs/nfsd/export.c            |   30 +++++++++++++-----------------
+>  include/linux/nfsd/export.h |    3 +--
+>  2 files changed, 14 insertions(+), 19 deletions(-)
+> 
+> Index: b/fs/nfsd/export.c
+> ===================================================================
+> --- a/fs/nfsd/export.c
+> +++ b/fs/nfsd/export.c
+> @@ -63,10 +63,8 @@ static void expkey_put(struct kref *ref)
+>  	struct svc_expkey *key = container_of(ref, struct svc_expkey, h.ref);
+>  
+>  	if (test_bit(CACHE_VALID, &key->h.flags) &&
+> -	    !test_bit(CACHE_NEGATIVE, &key->h.flags)) {
+> -		dput(key->ek_dentry);
+> -		mntput(key->ek_mnt);
+> -	}
+> +	    !test_bit(CACHE_NEGATIVE, &key->h.flags))
+> +		path_put(&key->ek_path);
+>  	auth_domain_put(key->ek_client);
+>  	kfree(key);
+>  }
+> @@ -169,9 +167,8 @@ static int expkey_parse(struct cache_det
+>  			goto out;
+>  
+>  		dprintk("Found the path %s\n", buf);
+> -		key.ek_mnt = nd.path.mnt;
+> -		key.ek_dentry = nd.path.dentry;
+> -		
+> +		key.ek_path = nd.path;
+> +
+>  		ek = svc_expkey_update(&key, ek);
+>  		if (ek)
+>  			cache_put(&ek->h, &svc_expkey_cache);
+> @@ -206,7 +203,7 @@ static int expkey_show(struct seq_file *
+>  	if (test_bit(CACHE_VALID, &h->flags) && 
+>  	    !test_bit(CACHE_NEGATIVE, &h->flags)) {
+>  		seq_printf(m, " ");
+> -		seq_path(m, ek->ek_mnt, ek->ek_dentry, "\\ \t\n");
+> +		seq_path(m, ek->ek_path.mnt, ek->ek_path.dentry, "\\ \t\n");
+>  	}
+>  	seq_printf(m, "\n");
+>  	return 0;
+> @@ -243,8 +240,8 @@ static inline void expkey_update(struct 
+>  	struct svc_expkey *new = container_of(cnew, struct svc_expkey, h);
+>  	struct svc_expkey *item = container_of(citem, struct svc_expkey, h);
+>  
+> -	new->ek_mnt = mntget(item->ek_mnt);
+> -	new->ek_dentry = dget(item->ek_dentry);
+> +	new->ek_path = item->ek_path;
+> +	path_get(&item->ek_path);
+>  }
+>  
+>  static struct cache_head *expkey_alloc(void)
+> @@ -814,8 +811,7 @@ static int exp_set_key(svc_client *clp, 
+>  	key.ek_client = clp;
+>  	key.ek_fsidtype = fsid_type;
+>  	memcpy(key.ek_fsid, fsidv, key_len(fsid_type));
+> -	key.ek_mnt = exp->ex_path.mnt;
+> -	key.ek_dentry = exp->ex_path.dentry;
+> +	key.ek_path = exp->ex_path;
+>  	key.h.expiry_time = NEVER;
+>  	key.h.flags = 0;
+>  
+> @@ -864,7 +860,7 @@ static svc_export *exp_get_by_name(svc_c
+>  {
+>  	struct svc_export *exp, key;
+>  	int err;
+> -	
+> +
+>  	if (!clp)
+>  		return ERR_PTR(-ENOENT);
+>  
+> @@ -1036,9 +1032,9 @@ exp_export(struct nfsctl_export *nxp)
+>  	/* must make sure there won't be an ex_fsid clash */
+>  	if ((nxp->ex_flags & NFSEXP_FSID) &&
+>  	    (!IS_ERR(fsid_key = exp_get_fsid_key(clp, nxp->ex_dev))) &&
+> -	    fsid_key->ek_mnt &&
+> -	    (fsid_key->ek_mnt != nd.path.mnt ||
+> -	     fsid_key->ek_dentry != nd.path.dentry))
+> +	    fsid_key->ek_path.mnt &&
+> +	    (fsid_key->ek_path.mnt != nd.path.mnt ||
+> +	     fsid_key->ek_path.dentry != nd.path.dentry))
+>  		goto finish;
+>  
+>  	if (!IS_ERR(exp)) {
+> @@ -1219,7 +1215,7 @@ static struct svc_export *exp_find(struc
+>  	if (IS_ERR(ek))
+>  		return ERR_PTR(PTR_ERR(ek));
+>  
+> -	exp = exp_get_by_name(clp, ek->ek_mnt, ek->ek_dentry, reqp);
+> +	exp = exp_get_by_name(clp, ek->ek_path.mnt, ek->ek_path.dentry, reqp);
+>  	cache_put(&ek->h, &svc_expkey_cache);
+>  
+>  	if (IS_ERR(exp))
+> Index: b/include/linux/nfsd/export.h
+> ===================================================================
+> --- a/include/linux/nfsd/export.h
+> +++ b/include/linux/nfsd/export.h
+> @@ -106,8 +106,7 @@ struct svc_expkey {
+>  	int			ek_fsidtype;
+>  	u32			ek_fsid[6];
+>  
+> -	struct vfsmount *	ek_mnt;
+> -	struct dentry *		ek_dentry;
+> +	struct path		ek_path;
+>  };
+>  
+>  #define EX_SECURE(exp)		(!((exp)->ex_flags & NFSEXP_INSECURE_PORT))
+> 
+> 
