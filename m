@@ -1,69 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756456AbXKENSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbXKENVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756456AbXKENSn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 08:18:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754967AbXKENSf
+	id S1756620AbXKENVX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 08:21:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755138AbXKENVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 08:18:35 -0500
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:33977 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754803AbXKENSe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 08:18:34 -0500
-Date: Mon, 5 Nov 2007 14:18:19 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Michael Holzheu <holzheu@de.ibm.com>
-Subject: Re: [PATCH 27/54] kset: convert s390 hypervisor kset to use
- kset_create
-Message-ID: <20071105141819.22af5f6f@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <1194047972-9850-27-git-send-email-gregkh@suse.de>
-References: <20071102235758.GA9803@kroah.com>
-	<1194047972-9850-27-git-send-email-gregkh@suse.de>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Nov 2007 08:21:16 -0500
+Received: from nic2.axis.se ([193.13.178.10]:55552 "EHLO krynn.se.axis.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754967AbXKENVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 08:21:15 -0500
+Date: Mon, 5 Nov 2007 14:21:02 +0100
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Mikael Starvik <mikael.starvik@axis.com>,
+       Jesper Nilsson <jesper.nilsson@axis.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] CRIS: Remove MTD_AMSTD and MTD_OBSOLETE_CHIPS
+Message-ID: <20071105132102.GL7621@axis.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri,  2 Nov 2007 16:59:05 -0700,
-Greg Kroah-Hartman <gregkh@suse.de> wrote:
+Remove no longer configured MTD_AMDSTD and MTD_OBSOLETE_CHIPS from
+defconfig, Kconfig and code, instead we'll use MTD_CFI and/or MTD_JEDECPROBE.
 
-> Dynamically create the kset instead of declaring it statically.
-> 
-> Cc: Kay Sievers <kay.sievers@vrfy.org>
-> Cc: Michael Holzheu <holzheu@de.ibm.com>
-> Cc: Cornelia Huck <cornelia.huck@de.ibm.com>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> ---
->  arch/s390/hypfs/inode.c |   15 +++++++++------
->  1 files changed, 9 insertions(+), 6 deletions(-)
+Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
 
-arch/s390/hypfs/inode.c: In function 'hypfs_init':
-arch/s390/hypfs/inode.c:512: error: implicit declaration of function 'IS_PTR'
-
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 ---
- arch/s390/hypfs/inode.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+ arch-v10/defconfig              |    3 +--
+ arch-v10/drivers/Kconfig        |    2 --
+ arch-v10/drivers/axisflashmap.c |    8 ++++----
+ arch-v32/drivers/Kconfig        |    2 --
+ defconfig                       |    4 ++--
+ 5 files changed, 7 insertions(+), 12 deletions(-)
 
-Index: linux-2.6/arch/s390/hypfs/inode.c
-===================================================================
---- linux-2.6.orig/arch/s390/hypfs/inode.c	2007-11-05 11:12:49.000000000 +0100
-+++ linux-2.6/arch/s390/hypfs/inode.c	2007-11-05 14:14:46.000000000 +0100
-@@ -509,7 +509,7 @@ static int __init hypfs_init(void)
+diff --git a/arch/cris/arch-v10/defconfig b/arch/cris/arch-v10/defconfig
+index 710c20b..d03bfc0 100644
+--- a/arch/cris/arch-v10/defconfig
++++ b/arch/cris/arch-v10/defconfig
+@@ -99,7 +99,7 @@ CONFIG_MTD=y
+ CONFIG_MTD_CFI=y
+ # CONFIG_MTD_CFI_INTELEXT is not set
+ CONFIG_MTD_CFI_AMDSTD=y
+-CONFIG_MTD_AMDSTD=y
++# CONFIG_MTD_AMDSTD is not set
+ CONFIG_MTD_CHAR=y
+ CONFIG_MTD_BLOCK=y
+ CONFIG_ETRAX_I2C=y
+@@ -145,7 +145,6 @@ CONFIG_MTD_CFI=y
+ # CONFIG_MTD_CFI_GEOMETRY is not set
+ # CONFIG_MTD_CFI_INTELEXT is not set
+ CONFIG_MTD_CFI_AMDSTD=y
+-CONFIG_MTD_AMDSTD=y
+ # CONFIG_MTD_SHARP is not set
+ # CONFIG_MTD_PHYSMAP is not set
+ # CONFIG_MTD_NORA is not set
+diff --git a/arch/cris/arch-v10/drivers/Kconfig b/arch/cris/arch-v10/drivers/Kconfig
+index e6fc845..faf8b4d 100644
+--- a/arch/cris/arch-v10/drivers/Kconfig
++++ b/arch/cris/arch-v10/drivers/Kconfig
+@@ -606,8 +606,6 @@ config ETRAX_AXISFLASHMAP
+ 	select MTD
+ 	select MTD_CFI
+ 	select MTD_CFI_AMDSTD
+-	select MTD_OBSOLETE_CHIPS
+-	select MTD_AMDSTD
+ 	select MTD_CHAR
+ 	select MTD_BLOCK
+ 	select MTD_PARTITIONS
+diff --git a/arch/cris/arch-v10/drivers/axisflashmap.c b/arch/cris/arch-v10/drivers/axisflashmap.c
+index efd7b0f..ea3cf2e 100644
+--- a/arch/cris/arch-v10/drivers/axisflashmap.c
++++ b/arch/cris/arch-v10/drivers/axisflashmap.c
+@@ -312,12 +312,12 @@ static struct mtd_info *probe_cs(struct map_info *map_cs)
+                "%s: Probing a 0x%08lx bytes large window at 0x%08lx.\n",
+ 	       map_cs->name, map_cs->size, map_cs->map_priv_1);
  
- 	s390_kset = kset_create_and_register("s390", NULL, NULL,
- 		    hypervisor_kset);
--	if (IS_PTR(s390_kset)) {
-+	if (IS_ERR(s390_kset)) {
- 		rc = PTR_ERR(s390_kset);
- 		goto fail_sysfs;
+-#ifdef CONFIG_MTD_AMDSTD
+-	mtd_cs = do_map_probe("amd_flash", map_cs);
+-#endif
+ #ifdef CONFIG_MTD_CFI
++	mtd_cs = do_map_probe("cfi_probe", map_cs);
++#endif
++#ifdef CONFIG_MTD_JEDECPROBE
+ 	if (!mtd_cs) {
+-		mtd_cs = do_map_probe("cfi_probe", map_cs);
++		mtd_cs = do_map_probe("jedec_probe", map_cs);
  	}
+ #endif
+ 
+diff --git a/arch/cris/arch-v32/drivers/Kconfig b/arch/cris/arch-v32/drivers/Kconfig
+index cc6ba54..7f72d7c 100644
+--- a/arch/cris/arch-v32/drivers/Kconfig
++++ b/arch/cris/arch-v32/drivers/Kconfig
+@@ -362,8 +362,6 @@ config ETRAX_AXISFLASHMAP
+ 	select MTD
+ 	select MTD_CFI
+ 	select MTD_CFI_AMDSTD
+-	select MTD_OBSOLETE_CHIPS
+-	select MTD_AMDSTD
+ 	select MTD_CHAR
+ 	select MTD_BLOCK
+ 	select MTD_PARTITIONS
+diff --git a/arch/cris/defconfig b/arch/cris/defconfig
+index e2d8185..713439b 100644
+--- a/arch/cris/defconfig
++++ b/arch/cris/defconfig
+@@ -226,8 +226,8 @@ CONFIG_MTD_CFI_UTIL=y
+ CONFIG_MTD_RAM=y
+ # CONFIG_MTD_ROM is not set
+ # CONFIG_MTD_ABSENT is not set
+-CONFIG_MTD_OBSOLETE_CHIPS=y
+-CONFIG_MTD_AMDSTD=y
++# CONFIG_MTD_OBSOLETE_CHIPS is not set
++# CONFIG_MTD_AMDSTD is not set
+ # CONFIG_MTD_SHARP is not set
+ # CONFIG_MTD_JEDEC is not set
+ 
+
+/^JN - Jesper Nilsson
+--
+               Jesper Nilsson -- jesper.nilsson@axis.com
