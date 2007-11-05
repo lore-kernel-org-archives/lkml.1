@@ -1,116 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755614AbXKEAPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755967AbXKEAQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755614AbXKEAPq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 19:15:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbXKEAPj
+	id S1755967AbXKEAQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 19:16:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbXKEAQT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 19:15:39 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:42824 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753678AbXKEAPj (ORCPT
+	Sun, 4 Nov 2007 19:16:19 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53242 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751480AbXKEAQS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 19:15:39 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
+	Sun, 4 Nov 2007 19:16:18 -0500
+Date: Sun, 4 Nov 2007 16:15:21 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linus Torvalds <torvalds@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Mikael Petterson <mikpe@it.uu.se>
-Subject: Re: [GIT PULL] x86 setup: correct booting on 486DX4
-References: <200711042257.lA4Mvobr025200@tazenda.hos.anvin.org>
-Date: Sun, 04 Nov 2007 17:14:41 -0700
-In-Reply-To: <200711042257.lA4Mvobr025200@tazenda.hos.anvin.org> (H. Peter
-	Anvin's message of "Sun, 4 Nov 2007 14:57:50 -0800")
-Message-ID: <m1bqa9blam.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+cc: Jeremy Fitzhardinge <jeremy@goop.org>, Mikael Pettersson <mikpe@it.uu.se>,
+       linux-kernel@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de
+Subject: Re: [PATCH] fix i486 boot failure due to stale %ds
+In-Reply-To: <472E5AB6.40509@zytor.com>
+Message-ID: <alpine.LFD.0.999.0711041600280.15101@woody.linux-foundation.org>
+References: <200711042158.lA4Lwv9S014628@harpo.it.uu.se> <472E50C5.5020201@goop.org>
+ <472E5AB6.40509@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
 
-> Hi Linus; please pull:
->
->   git://git.kernel.org/pub/scm/linux/kernel/git/hpa/linux-2.6-x86setup.git
-> for-linus
->
-> H. Peter Anvin (1):
->       x86 setup: correct booting on 486DX4
->
->  arch/x86/boot/pmjump.S |   32 +++++++++++++++++++++-----------
->  1 files changed, 21 insertions(+), 11 deletions(-)
->
-> [Full diff and log follows]
 
-Looks reasonable to me.
+On Sun, 4 Nov 2007, H. Peter Anvin wrote:
+> 
+> Joy.  Apparently the Intel documentation is actually self-inconsistent.
+> Section 9.9.1, page 9-17 does indeed have the "far jump or call" injunction,
+> whereas the sample code in section 9.10.1, page 9-27, line 180 does a near
+> jump!
 
-> commit ac3b37b78c5f0f0be0b476a35370650f7bad482f
-> Author: H. Peter Anvin <hpa@zytor.com>
-> Date:   Sun Nov 4 14:33:41 2007 -0800
->
->     x86 setup: correct booting on 486DX4
->     
->     Apparently, the 486DX4 does not correctly serialize a mov to %cr0, so
->     we really do need the far jump immediately afterwards.  This means
->     losing the nice separation between 16- and 32-bit code, but c'est la
->     vie.
->     
->     Also pass %ebx = %edi = %ebp = 0 to support future extension of the
->     32-bit boot protocol.
->     
->     Signed-off-by: H. Peter Anvin <hpa@zytor.com>
->
-> diff --git a/arch/x86/boot/pmjump.S b/arch/x86/boot/pmjump.S
-> index 2e55923..17e6dec 100644
-> --- a/arch/x86/boot/pmjump.S
-> +++ b/arch/x86/boot/pmjump.S
-> @@ -28,27 +28,37 @@
->   * void protected_mode_jump(u32 entrypoint, u32 bootparams);
->   */
->  protected_mode_jump:
-> -	xorl	%ebx, %ebx		# Flag to indicate this is a boot
->  	movl	%edx, %esi		# Pointer to boot_params table
-> -	movl	%eax, 2f		# Patch ljmpl instruction
-> +
-> +	xorl	%edx, %edx
-> +	movw	%cs, %dx
-> +	shll	$4, %edx		# Patch ljmpl instruction
-> +	addl	%edx, 2f
->  	jmp	1f			# Short jump to flush instruction q.
->  
->  1:
->  	movw	$__BOOT_DS, %cx
-> +	xorl	%ebx, %ebx		# Per protocol
-> +	xorl	%ebp, %ebp		# Per protocol
-> +	xorl	%edi, %edi		# Per protocol
->  
->  	movl	%cr0, %edx
->  	orb	$1, %dl			# Protected mode (PE) bit
->  	movl	%edx, %cr0
-> +	
-> +	.byte	0x66, 0xea		# ljmpl opcode
-> +2:	.long	3f			# Offset
-> +	.word	__BOOT_CS		# Segment
->  
-> -	movw	%cx, %ds
-> -	movw	%cx, %es
-> -	movw	%cx, %fs
-> -	movw	%cx, %gs
-> -	movw	%cx, %ss
-> +	.code32
-> +3:
-> +	movl	%ecx, %ds
-> +	movl	%ecx, %es
-> +	movl	%ecx, %fs
-> +	movl	%ecx, %gs
-> +	movl	%ecx, %ss
->  
->  	# Jump to the 32-bit entrypoint
-> -	.byte	0x66, 0xea		# ljmpl opcode
-> -2:	.long	0			# offset
-> -	.word	__BOOT_CS		# segment
-> -
-> +	jmpl	*%eax
-> +	
->  	.size	protected_mode_jump, .-protected_mode_jump
+See the older code. There's literally two different issues:
+
+ - flushing the pipeline. Using a regular short jump is not only 
+   sufficient, but is a good idea because the byte sequence has no 
+   dependency on any modes, so it is guaranteed to flush any pipeline 
+   without itself having any behavioural differences.
+
+   This part is a no-op for later CPU's: they simply won't care, since 
+   they serialize the pipeline on their own (and the have to, since a 
+   correctly predicted branch no longer flushes it anyway).
+
+   So this is purely a i386/i486 thing (and *maybe* Pentium, but 
+   definitely not PPro and later)
+
+ - setting up the proper protected mode bits in CS. This obviously changes
+   the CS itself, and anything that depends on any shadow state in CS will 
+   need this to happen first. In practice, very few things really depend 
+   on the CS bits, of course.
+
+Doing them back-to-back is obviously the best situation, and leaves the 
+minimum footprint for any dubious undocumented behaviour. That said, while 
+the whole thing with shadow segment table is strictly speaking probably 
+"undocumented" behaviour, it's certainly a reality, and lots of code has 
+depended on the fact that even though you haven't reloaded a segment, the 
+segment continues to work across mode switches thanks to the shadow table. 
+
+So it's not like there's any real secret to what happens until the 
+longjump has been executed: we continue running with the CS shadow table 
+entry being in "real mode", and the effect of that tends to be minimal. 
+But in theory, the CS table entry could affect how instructions actually 
+act, even though in practice I don't think it really has any real effect 
+outside of the actual segment access check (and certainly did not in the 
+i386/i486 timeframe).
+
+So I'd suggest having both jumps back-to-back, but realistically, the 
+first regular short jump is actually the one that is more important. 
+That's the one that really matters on i386/i486 class machines, and later 
+CPU's will generally do the right thing even with _neither_ jump there.
+
+			Linus
