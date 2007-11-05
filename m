@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759455AbXKERO2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759531AbXKEROp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759455AbXKERO2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 12:14:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757667AbXKERH5
+	id S1759531AbXKEROp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 12:14:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757680AbXKERIB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 12:07:57 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59518 "EHLO
+	Mon, 5 Nov 2007 12:08:01 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59520 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757616AbXKERHx (ORCPT
+	with ESMTP id S1757640AbXKERHz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 12:07:53 -0500
-Date: Mon, 5 Nov 2007 18:07:29 +0100
+	Mon, 5 Nov 2007 12:07:55 -0500
+Date: Mon, 5 Nov 2007 18:07:31 +0100
 From: Adrian Bunk <bunk@kernel.org>
-To: James.Bottomley@SteelEye.com
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: [2.6 patch] scsi/aic94xx/: cleanups
-Message-ID: <20071105170729.GO12045@stusta.de>
+To: amitkale@netxen.com, jgarzik@pobox.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] drivers/net/netxen/: cleanups
+Message-ID: <20071105170731.GP12045@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -32,648 +32,596 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/scsi/aic94xx/aic94xx_dev.c  |    8 +++---
- drivers/scsi/aic94xx/aic94xx_dump.c |   10 +++++++-
- drivers/scsi/aic94xx/aic94xx_dump.h |    9 -------
- drivers/scsi/aic94xx/aic94xx_hwi.c  |   24 ++++++++++----------
- drivers/scsi/aic94xx/aic94xx_hwi.h  |    2 -
- drivers/scsi/aic94xx/aic94xx_init.c |    8 +++---
- drivers/scsi/aic94xx/aic94xx_reg.c  |   33 +++++++++++++---------------
- drivers/scsi/aic94xx/aic94xx_scb.c  |   33 +++++++++++++++-------------
- drivers/scsi/aic94xx/aic94xx_sds.c  |    4 +--
- drivers/scsi/aic94xx/aic94xx_seq.c  |   12 +++++-----
- drivers/scsi/aic94xx/aic94xx_seq.h  |    4 ---
- drivers/scsi/aic94xx/aic94xx_task.c |   12 +++++-----
- drivers/scsi/aic94xx/aic94xx_tmf.c  |    4 +--
- 13 files changed, 80 insertions(+), 83 deletions(-)
+ drivers/net/netxen/netxen_nic.h          |   14 ----
+ drivers/net/netxen/netxen_nic_hw.c       |   19 +++---
+ drivers/net/netxen/netxen_nic_hw.h       |    8 --
+ drivers/net/netxen/netxen_nic_init.c     |   70 ++++++++++++-----------
+ drivers/net/netxen/netxen_nic_isr.c      |    7 +-
+ drivers/net/netxen/netxen_nic_main.c     |    9 +-
+ drivers/net/netxen/netxen_nic_niu.c      |   26 +++++---
+ drivers/net/netxen/netxen_nic_phan_reg.h |    7 --
+ 8 files changed, 76 insertions(+), 84 deletions(-)
 
-7e734a8fb18107e68dd29d3b665c15ceb440a323 
-diff --git a/drivers/scsi/aic94xx/aic94xx_dev.c b/drivers/scsi/aic94xx/aic94xx_dev.c
-index 3dce618..b5aa4b1 100644
---- a/drivers/scsi/aic94xx/aic94xx_dev.c
-+++ b/drivers/scsi/aic94xx/aic94xx_dev.c
-@@ -35,7 +35,7 @@
- #define SET_DDB(_ddb, _ha) set_bit(_ddb, (_ha)->hw_prof.ddb_bitmap)
- #define CLEAR_DDB(_ddb, _ha) clear_bit(_ddb, (_ha)->hw_prof.ddb_bitmap)
+dbc7aeed37e41cd37a01cce259e5c0ab01f8dd88 
+diff --git a/drivers/net/netxen/netxen_nic.h b/drivers/net/netxen/netxen_nic.h
+index fbc2553..ef9f986 100644
+--- a/drivers/net/netxen/netxen_nic.h
++++ b/drivers/net/netxen/netxen_nic.h
+@@ -1015,14 +1015,8 @@ int netxen_niu_xgbe_enable_phy_interrupts(struct netxen_adapter *adapter);
+ int netxen_niu_gbe_enable_phy_interrupts(struct netxen_adapter *adapter);
+ int netxen_niu_xgbe_disable_phy_interrupts(struct netxen_adapter *adapter);
+ int netxen_niu_gbe_disable_phy_interrupts(struct netxen_adapter *adapter);
+-int netxen_niu_xgbe_clear_phy_interrupts(struct netxen_adapter *adapter);
+-int netxen_niu_gbe_clear_phy_interrupts(struct netxen_adapter *adapter);
+ void netxen_nic_xgbe_handle_phy_intr(struct netxen_adapter *adapter);
+ void netxen_nic_gbe_handle_phy_intr(struct netxen_adapter *adapter);
+-void netxen_niu_gbe_set_mii_mode(struct netxen_adapter *adapter, int port,
+-				 long enable);
+-void netxen_niu_gbe_set_gmii_mode(struct netxen_adapter *adapter, int port,
+-				  long enable);
+ int netxen_niu_gbe_phy_read(struct netxen_adapter *adapter, long reg,
+ 			    __u32 * readval);
+ int netxen_niu_gbe_phy_write(struct netxen_adapter *adapter,
+@@ -1045,7 +1039,6 @@ int netxen_nic_hw_write_wx(struct netxen_adapter *adapter, u64 off, void *data,
+ 			   int len);
+ void netxen_crb_writelit_adapter(struct netxen_adapter *adapter,
+ 				 unsigned long off, int data);
+-int netxen_nic_erase_pxe(struct netxen_adapter *adapter);
  
--static inline int asd_get_ddb(struct asd_ha_struct *asd_ha)
-+static int asd_get_ddb(struct asd_ha_struct *asd_ha)
- {
- 	int ddb, i;
+ /* Functions from netxen_nic_init.c */
+ void netxen_free_adapter_offload(struct netxen_adapter *adapter);
+@@ -1064,15 +1057,10 @@ int netxen_flash_erase_secondary(struct netxen_adapter *adapter);
+ int netxen_flash_erase_primary(struct netxen_adapter *adapter);
+ void netxen_halt_pegs(struct netxen_adapter *adapter);
  
-@@ -71,7 +71,7 @@ out:
- #define NCQ_DATA_SCB_PTR offsetof(struct asd_ddb_stp_sata_target_port, ncq_data_scb_ptr)
- #define ITNL_TIMEOUT    offsetof(struct asd_ddb_ssp_smp_target_port, itnl_timeout)
+-int netxen_rom_fast_write(struct netxen_adapter *adapter, int addr, int data);
+ int netxen_rom_se(struct netxen_adapter *adapter, int addr);
+-int netxen_do_rom_se(struct netxen_adapter *adapter, int addr);
  
--static inline void asd_free_ddb(struct asd_ha_struct *asd_ha, int ddb)
-+static void asd_free_ddb(struct asd_ha_struct *asd_ha, int ddb)
- {
- 	if (!ddb || ddb >= 0xFFFF)
- 		return;
-@@ -79,7 +79,7 @@ static inline void asd_free_ddb(struct asd_ha_struct *asd_ha, int ddb)
- 	CLEAR_DDB(ddb, asd_ha);
- }
+ /* Functions from netxen_nic_isr.c */
+ int netxen_nic_link_ok(struct netxen_adapter *adapter);
+-void netxen_nic_isr_other(struct netxen_adapter *adapter);
+-void netxen_indicate_link_status(struct netxen_adapter *adapter, u32 link);
+-void netxen_handle_port_int(struct netxen_adapter *adapter, u32 enable);
+ void netxen_initialize_adapter_sw(struct netxen_adapter *adapter);
+ void netxen_initialize_adapter_hw(struct netxen_adapter *adapter);
+ void *netxen_alloc(struct pci_dev *pdev, size_t sz, dma_addr_t * ptr,
+@@ -1089,8 +1077,6 @@ int netxen_nic_tx_has_work(struct netxen_adapter *adapter);
+ void netxen_watchdog_task(struct work_struct *work);
+ void netxen_post_rx_buffers(struct netxen_adapter *adapter, u32 ctx,
+ 			    u32 ringid);
+-void netxen_post_rx_buffers_nodb(struct netxen_adapter *adapter, u32 ctx,
+-				 u32 ringid);
+ int netxen_process_cmd_ring(unsigned long data);
+ u32 netxen_process_rcv_ring(struct netxen_adapter *adapter, int ctx, int max);
+ void netxen_nic_set_multi(struct net_device *netdev);
+diff --git a/drivers/net/netxen/netxen_nic_hw.c b/drivers/net/netxen/netxen_nic_hw.c
+index 2c19b8d..b2c7861 100644
+--- a/drivers/net/netxen/netxen_nic_hw.c
++++ b/drivers/net/netxen/netxen_nic_hw.c
+@@ -33,7 +33,6 @@
  
--static inline void asd_set_ddb_type(struct domain_device *dev)
-+static void asd_set_ddb_type(struct domain_device *dev)
- {
- 	struct asd_ha_struct *asd_ha = dev->port->ha->lldd_ha;
- 	int ddb = (int) (unsigned long) dev->lldd_dev;
-@@ -109,7 +109,7 @@ static int asd_init_sata_tag_ddb(struct domain_device *dev)
- 	return 0;
- }
+ #include "netxen_nic.h"
+ #include "netxen_nic_hw.h"
+-#define DEFINE_GLOBAL_RECV_CRB
+ #include "netxen_nic_phan_reg.h"
  
--static inline int asd_init_sata(struct domain_device *dev)
-+static int asd_init_sata(struct domain_device *dev)
- {
- 	struct asd_ha_struct *asd_ha = dev->port->ha->lldd_ha;
- 	int ddb = (int) (unsigned long) dev->lldd_dev;
-diff --git a/drivers/scsi/aic94xx/aic94xx_dump.c b/drivers/scsi/aic94xx/aic94xx_dump.c
-index 6bd8e30..9d637e2 100644
---- a/drivers/scsi/aic94xx/aic94xx_dump.c
-+++ b/drivers/scsi/aic94xx/aic94xx_dump.c
-@@ -738,6 +738,8 @@ static void asd_dump_lseq_state(struct asd_ha_struct *asd_ha, int lseq)
- 	PRINT_LMIP_dword(asd_ha, lseq, DEV_PRES_TIMER_TERM_TS);
- }
  
-+#if 0
-+
- /**
-  * asd_dump_ddb_site -- dump a CSEQ DDB site
-  * @asd_ha: pointer to host adapter structure
-@@ -880,6 +882,8 @@ void asd_dump_scb_sites(struct asd_ha_struct *asd_ha)
- 	}
- }
- 
-+#endif  /*  0  */
-+
- /**
-  * ads_dump_seq_state -- dump CSEQ and LSEQ states
-  * @asd_ha: pointer to host adapter structure
-@@ -922,7 +926,9 @@ void asd_dump_frame_rcvd(struct asd_phy *phy,
- 	spin_unlock_irqrestore(&phy->sas_phy.frame_rcvd_lock, flags);
- }
- 
--static inline void asd_dump_scb(struct asd_ascb *ascb, int ind)
-+#if 0
-+
-+static void asd_dump_scb(struct asd_ascb *ascb, int ind)
- {
- 	asd_printk("scb%d: vaddr: 0x%p, dma_handle: 0x%llx, next: 0x%llx, "
- 		   "index:%d, opcode:0x%02x\n",
-@@ -956,4 +962,6 @@ void asd_dump_scb_list(struct asd_ascb *ascb, int num)
- 	}
- }
- 
-+#endif  /*  0  */
-+
- #endif /* ASD_DEBUG */
-diff --git a/drivers/scsi/aic94xx/aic94xx_dump.h b/drivers/scsi/aic94xx/aic94xx_dump.h
-index 0c388e7..191a753 100644
---- a/drivers/scsi/aic94xx/aic94xx_dump.h
-+++ b/drivers/scsi/aic94xx/aic94xx_dump.h
-@@ -29,24 +29,15 @@
- 
- #ifdef ASD_DEBUG
- 
--void asd_dump_ddb_0(struct asd_ha_struct *asd_ha);
--void asd_dump_target_ddb(struct asd_ha_struct *asd_ha, u16 site_no);
--void asd_dump_scb_sites(struct asd_ha_struct *asd_ha);
- void asd_dump_seq_state(struct asd_ha_struct *asd_ha, u8 lseq_mask);
- void asd_dump_frame_rcvd(struct asd_phy *phy,
- 			 struct done_list_struct *dl);
--void asd_dump_scb_list(struct asd_ascb *ascb, int num);
- #else /* ASD_DEBUG */
- 
--static inline void asd_dump_ddb_0(struct asd_ha_struct *asd_ha) { }
--static inline void asd_dump_target_ddb(struct asd_ha_struct *asd_ha,
--				     u16 site_no) { }
--static inline void asd_dump_scb_sites(struct asd_ha_struct *asd_ha) { }
- static inline void asd_dump_seq_state(struct asd_ha_struct *asd_ha,
- 				      u8 lseq_mask) { }
- static inline void asd_dump_frame_rcvd(struct asd_phy *phy,
- 				       struct done_list_struct *dl) { }
--static inline void asd_dump_scb_list(struct asd_ascb *ascb, int num) { }
- #endif /* ASD_DEBUG */
- 
- #endif /* _AIC94XX_DUMP_H_ */
-diff --git a/drivers/scsi/aic94xx/aic94xx_hwi.c b/drivers/scsi/aic94xx/aic94xx_hwi.c
-index 0cd7eed..e163cba 100644
---- a/drivers/scsi/aic94xx/aic94xx_hwi.c
-+++ b/drivers/scsi/aic94xx/aic94xx_hwi.c
-@@ -251,7 +251,7 @@ static int asd_init_scbs(struct asd_ha_struct *asd_ha)
- 	return 0;
- }
- 
--static inline void asd_get_max_scb_ddb(struct asd_ha_struct *asd_ha)
-+static void asd_get_max_scb_ddb(struct asd_ha_struct *asd_ha)
- {
- 	asd_ha->hw_prof.max_scbs = asd_get_cmdctx_size(asd_ha)/ASD_SCB_SIZE;
- 	asd_ha->hw_prof.max_ddbs = asd_get_devctx_size(asd_ha)/ASD_DDB_SIZE;
-@@ -773,7 +773,7 @@ static void asd_dl_tasklet_handler(unsigned long data)
-  * asd_process_donelist_isr -- schedule processing of done list entries
-  * @asd_ha: pointer to host adapter structure
-  */
--static inline void asd_process_donelist_isr(struct asd_ha_struct *asd_ha)
-+static void asd_process_donelist_isr(struct asd_ha_struct *asd_ha)
- {
- 	tasklet_schedule(&asd_ha->seq.dl_tasklet);
- }
-@@ -782,7 +782,7 @@ static inline void asd_process_donelist_isr(struct asd_ha_struct *asd_ha)
-  * asd_com_sas_isr -- process device communication interrupt (COMINT)
-  * @asd_ha: pointer to host adapter structure
-  */
--static inline void asd_com_sas_isr(struct asd_ha_struct *asd_ha)
-+static void asd_com_sas_isr(struct asd_ha_struct *asd_ha)
- {
- 	u32 comstat = asd_read_reg_dword(asd_ha, COMSTAT);
- 
-@@ -821,7 +821,7 @@ static inline void asd_com_sas_isr(struct asd_ha_struct *asd_ha)
- 	asd_chip_reset(asd_ha);
- }
- 
--static inline void asd_arp2_err(struct asd_ha_struct *asd_ha, u32 dchstatus)
-+static void asd_arp2_err(struct asd_ha_struct *asd_ha, u32 dchstatus)
- {
- 	static const char *halt_code[256] = {
- 		"UNEXPECTED_INTERRUPT0",
-@@ -908,7 +908,7 @@ static inline void asd_arp2_err(struct asd_ha_struct *asd_ha, u32 dchstatus)
-  * asd_dch_sas_isr -- process device channel interrupt (DEVINT)
-  * @asd_ha: pointer to host adapter structure
-  */
--static inline void asd_dch_sas_isr(struct asd_ha_struct *asd_ha)
-+static void asd_dch_sas_isr(struct asd_ha_struct *asd_ha)
- {
- 	u32 dchstatus = asd_read_reg_dword(asd_ha, DCHSTATUS);
- 
-@@ -923,7 +923,7 @@ static inline void asd_dch_sas_isr(struct asd_ha_struct *asd_ha)
-  * ads_rbi_exsi_isr -- process external system interface interrupt (INITERR)
-  * @asd_ha: pointer to host adapter structure
-  */
--static inline void asd_rbi_exsi_isr(struct asd_ha_struct *asd_ha)
-+static void asd_rbi_exsi_isr(struct asd_ha_struct *asd_ha)
- {
- 	u32 stat0r = asd_read_reg_dword(asd_ha, ASISTAT0R);
- 
-@@ -971,7 +971,7 @@ static inline void asd_rbi_exsi_isr(struct asd_ha_struct *asd_ha)
-  *
-  * Asserted on PCIX errors: target abort, etc.
-  */
--static inline void asd_hst_pcix_isr(struct asd_ha_struct *asd_ha)
-+static void asd_hst_pcix_isr(struct asd_ha_struct *asd_ha)
- {
- 	u16 status;
- 	u32 pcix_status;
-@@ -1044,8 +1044,8 @@ irqreturn_t asd_hw_isr(int irq, void *dev_id)
- 
- /* ---------- SCB handling ---------- */
- 
--static inline struct asd_ascb *asd_ascb_alloc(struct asd_ha_struct *asd_ha,
--					      gfp_t gfp_flags)
-+static struct asd_ascb *asd_ascb_alloc(struct asd_ha_struct *asd_ha,
-+				       gfp_t gfp_flags)
- {
- 	extern struct kmem_cache *asd_ascb_cache;
- 	struct asd_seq_data *seq = &asd_ha->seq;
-@@ -1144,8 +1144,8 @@ struct asd_ascb *asd_ascb_alloc_list(struct asd_ha_struct
-  *
-  * LOCKING: called with the pending list lock held.
-  */
--static inline void asd_swap_head_scb(struct asd_ha_struct *asd_ha,
--				     struct asd_ascb *ascb)
-+static void asd_swap_head_scb(struct asd_ha_struct *asd_ha,
-+			      struct asd_ascb *ascb)
- {
- 	struct asd_seq_data *seq = &asd_ha->seq;
- 	struct asd_ascb *last = list_entry(ascb->list.prev,
-@@ -1171,7 +1171,7 @@ static inline void asd_swap_head_scb(struct asd_ha_struct *asd_ha,
-  * intended to be called from asd_post_ascb_list(), just prior to
-  * posting the SCBs to the sequencer.
-  */
--static inline void asd_start_scb_timers(struct list_head *list)
-+static void asd_start_scb_timers(struct list_head *list)
- {
- 	struct asd_ascb *ascb;
- 	list_for_each_entry(ascb, list, list) {
-diff --git a/drivers/scsi/aic94xx/aic94xx_hwi.h b/drivers/scsi/aic94xx/aic94xx_hwi.h
-index 491e5d8..cd5b671 100644
---- a/drivers/scsi/aic94xx/aic94xx_hwi.h
-+++ b/drivers/scsi/aic94xx/aic94xx_hwi.h
-@@ -389,8 +389,6 @@ void asd_build_control_phy(struct asd_ascb *ascb, int phy_id, u8 subfunc);
- void asd_control_led(struct asd_ha_struct *asd_ha, int phy_id, int op);
- void asd_turn_led(struct asd_ha_struct *asd_ha, int phy_id, int op);
- int  asd_enable_phys(struct asd_ha_struct *asd_ha, const u8 phy_mask);
--void asd_build_initiate_link_adm_task(struct asd_ascb *ascb, int phy_id,
--				      u8 subfunc);
- 
- void asd_ascb_timedout(unsigned long data);
- int  asd_chip_hardrst(struct asd_ha_struct *asd_ha);
-diff --git a/drivers/scsi/aic94xx/aic94xx_init.c b/drivers/scsi/aic94xx/aic94xx_init.c
-index b70d6e7..3d81532 100644
---- a/drivers/scsi/aic94xx/aic94xx_init.c
-+++ b/drivers/scsi/aic94xx/aic94xx_init.c
-@@ -364,7 +364,7 @@ static struct asd_pcidev_struct {
+@@ -244,12 +243,15 @@ struct netxen_recv_crb recv_crb_registers[] = {
  	},
  };
  
--static inline int asd_create_ha_caches(struct asd_ha_struct *asd_ha)
-+static int asd_create_ha_caches(struct asd_ha_struct *asd_ha)
+-u64 ctx_addr_sig_regs[][3] = {
++static u64 ctx_addr_sig_regs[][3] = {
+ 	{NETXEN_NIC_REG(0x188), NETXEN_NIC_REG(0x18c), NETXEN_NIC_REG(0x1c0)},
+ 	{NETXEN_NIC_REG(0x190), NETXEN_NIC_REG(0x194), NETXEN_NIC_REG(0x1c4)},
+ 	{NETXEN_NIC_REG(0x198), NETXEN_NIC_REG(0x19c), NETXEN_NIC_REG(0x1c8)},
+ 	{NETXEN_NIC_REG(0x1a0), NETXEN_NIC_REG(0x1a4), NETXEN_NIC_REG(0x1cc)}
+ };
++#define CRB_CTX_ADDR_REG_LO(FUNC_ID)		(ctx_addr_sig_regs[FUNC_ID][0])
++#define CRB_CTX_ADDR_REG_HI(FUNC_ID)		(ctx_addr_sig_regs[FUNC_ID][2])
++#define CRB_CTX_SIGNATURE_REG(FUNC_ID)		(ctx_addr_sig_regs[FUNC_ID][1])
+ 
+ 
+ /*  PCI Windowing for DDR regions.  */
+@@ -279,8 +281,8 @@ u64 ctx_addr_sig_regs[][3] = {
+ 
+ #define NETXEN_NIC_WINDOW_MARGIN 0x100000
+ 
+-unsigned long netxen_nic_pci_set_window(struct netxen_adapter *adapter,
+-					unsigned long long addr);
++static unsigned long netxen_nic_pci_set_window(struct netxen_adapter *adapter,
++					       unsigned long long addr);
+ void netxen_free_hw_resources(struct netxen_adapter *adapter);
+ 
+ int netxen_nic_set_mac(struct net_device *netdev, void *p)
+@@ -886,11 +888,10 @@ void netxen_nic_read_w0(struct netxen_adapter *adapter, u32 index, u32 * value)
+ 	netxen_nic_pci_change_crbwindow(adapter, 1);
+ }
+ 
+-int netxen_pci_set_window_warning_count = 0;
++static int netxen_pci_set_window_warning_count = 0;
+ 
+-unsigned long
+-netxen_nic_pci_set_window(struct netxen_adapter *adapter,
+-			  unsigned long long addr)
++static  unsigned long netxen_nic_pci_set_window(struct netxen_adapter *adapter,
++						unsigned long long addr)
  {
- 	asd_ha->scb_pool = dma_pool_create(ASD_DRIVER_NAME "_scb_pool",
- 					   &asd_ha->pcidev->dev,
-@@ -382,7 +382,7 @@ static inline int asd_create_ha_caches(struct asd_ha_struct *asd_ha)
-  * asd_free_edbs -- free empty data buffers
-  * asd_ha: pointer to host adapter structure
+ 	static int ddr_mn_window = -1;
+ 	static int qdr_sn_window = -1;
+@@ -952,6 +953,7 @@ netxen_nic_pci_set_window(struct netxen_adapter *adapter,
+ 	return addr;
+ }
+ 
++#if 0
+ int
+ netxen_nic_erase_pxe(struct netxen_adapter *adapter)
+ {
+@@ -962,6 +964,7 @@ netxen_nic_erase_pxe(struct netxen_adapter *adapter)
+ 	}
+ 	return 0;
+ }
++#endif  /*  0  */
+ 
+ int netxen_nic_get_board_info(struct netxen_adapter *adapter)
+ {
+diff --git a/drivers/net/netxen/netxen_nic_hw.h b/drivers/net/netxen/netxen_nic_hw.h
+index 245bf13..197e1fc 100644
+--- a/drivers/net/netxen/netxen_nic_hw.h
++++ b/drivers/net/netxen/netxen_nic_hw.h
+@@ -520,15 +520,11 @@ int netxen_niu_set_promiscuous_mode(struct netxen_adapter *adapter,
+ int netxen_niu_xg_set_promiscuous_mode(struct netxen_adapter *adapter,
+ 				       netxen_niu_prom_mode_t mode);
+ 
+-/* get/set the MAC address for a given MAC */
+-int netxen_niu_macaddr_get(struct netxen_adapter *adapter,
+-			   netxen_ethernet_macaddr_t * addr);
++/* set the MAC address for a given MAC */
+ int netxen_niu_macaddr_set(struct netxen_adapter *adapter,
+ 			   netxen_ethernet_macaddr_t addr);
+ 
+-/* XG versons */
+-int netxen_niu_xg_macaddr_get(struct netxen_adapter *adapter,
+-			      netxen_ethernet_macaddr_t * addr);
++/* XG version */
+ int netxen_niu_xg_macaddr_set(struct netxen_adapter *adapter,
+ 			      netxen_ethernet_macaddr_t addr);
+ 
+diff --git a/drivers/net/netxen/netxen_nic_init.c b/drivers/net/netxen/netxen_nic_init.c
+index 3758926..8667e8f 100644
+--- a/drivers/net/netxen/netxen_nic_init.c
++++ b/drivers/net/netxen/netxen_nic_init.c
+@@ -54,13 +54,17 @@ static unsigned int crb_addr_xform[NETXEN_MAX_CRB_XFORM];
+ 
+ #define NETXEN_NIC_XDMA_RESET 0x8000ff
+ 
+-static inline void
+-netxen_nic_locked_write_reg(struct netxen_adapter *adapter,
+-			    unsigned long off, int *data)
++static void netxen_post_rx_buffers_nodb(struct netxen_adapter *adapter,
++					uint32_t ctx, uint32_t ringid);
++
++#if 0
++static void netxen_nic_locked_write_reg(struct netxen_adapter *adapter,
++					unsigned long off, int *data)
+ {
+ 	void __iomem *addr = pci_base_offset(adapter, off);
+ 	writel(*data, addr);
+ }
++#endif  /*  0  */
+ 
+ static void crb_addr_transform_setup(void)
+ {
+@@ -255,7 +259,7 @@ void netxen_initialize_adapter_ops(struct netxen_adapter *adapter)
+  * netxen_decode_crb_addr(0 - utility to translate from internal Phantom CRB
+  * address to external PCI CRB address.
   */
--static inline void asd_free_edbs(struct asd_ha_struct *asd_ha)
-+static void asd_free_edbs(struct asd_ha_struct *asd_ha)
- {
- 	struct asd_seq_data *seq = &asd_ha->seq;
- 	int i;
-@@ -393,7 +393,7 @@ static inline void asd_free_edbs(struct asd_ha_struct *asd_ha)
- 	seq->edb_arr = NULL;
- }
- 
--static inline void asd_free_escbs(struct asd_ha_struct *asd_ha)
-+static void asd_free_escbs(struct asd_ha_struct *asd_ha)
- {
- 	struct asd_seq_data *seq = &asd_ha->seq;
- 	int i;
-@@ -408,7 +408,7 @@ static inline void asd_free_escbs(struct asd_ha_struct *asd_ha)
- 	seq->escb_arr = NULL;
- }
- 
--static inline void asd_destroy_ha_caches(struct asd_ha_struct *asd_ha)
-+static void asd_destroy_ha_caches(struct asd_ha_struct *asd_ha)
+-u32 netxen_decode_crb_addr(u32 addr)
++static u32 netxen_decode_crb_addr(u32 addr)
  {
  	int i;
+ 	u32 base_addr, offset, pci_base;
+@@ -282,7 +286,7 @@ static long rom_max_timeout = 100;
+ static long rom_lock_timeout = 10000;
+ static long rom_write_timeout = 700;
  
-diff --git a/drivers/scsi/aic94xx/aic94xx_reg.c b/drivers/scsi/aic94xx/aic94xx_reg.c
-index f210dac..6f36b39 100644
---- a/drivers/scsi/aic94xx/aic94xx_reg.c
-+++ b/drivers/scsi/aic94xx/aic94xx_reg.c
-@@ -32,8 +32,8 @@
-  * Offset comes before value to remind that the operation of
-  * this function is *offs = val.
-  */
--static inline void asd_write_byte(struct asd_ha_struct *asd_ha,
--				  unsigned long offs, u8 val)
-+static void asd_write_byte(struct asd_ha_struct *asd_ha,
-+			   unsigned long offs, u8 val)
+-static inline int rom_lock(struct netxen_adapter *adapter)
++static int rom_lock(struct netxen_adapter *adapter)
  {
- 	if (unlikely(asd_ha->iospace))
- 		outb(val,
-@@ -43,8 +43,8 @@ static inline void asd_write_byte(struct asd_ha_struct *asd_ha,
- 	wmb();
+ 	int iter;
+ 	u32 done = 0;
+@@ -312,7 +316,7 @@ static inline int rom_lock(struct netxen_adapter *adapter)
+ 	return 0;
  }
  
--static inline void asd_write_word(struct asd_ha_struct *asd_ha,
--				  unsigned long offs, u16 val)
-+static void asd_write_word(struct asd_ha_struct *asd_ha,
-+			   unsigned long offs, u16 val)
+-int netxen_wait_rom_done(struct netxen_adapter *adapter)
++static int netxen_wait_rom_done(struct netxen_adapter *adapter)
  {
- 	if (unlikely(asd_ha->iospace))
- 		outw(val,
-@@ -54,8 +54,8 @@ static inline void asd_write_word(struct asd_ha_struct *asd_ha,
- 	wmb();
+ 	long timeout = 0;
+ 	long done = 0;
+@@ -329,7 +333,7 @@ int netxen_wait_rom_done(struct netxen_adapter *adapter)
+ 	return 0;
  }
  
--static inline void asd_write_dword(struct asd_ha_struct *asd_ha,
--				   unsigned long offs, u32 val)
-+static void asd_write_dword(struct asd_ha_struct *asd_ha,
-+			    unsigned long offs, u32 val)
+-static inline int netxen_rom_wren(struct netxen_adapter *adapter)
++static int netxen_rom_wren(struct netxen_adapter *adapter)
  {
- 	if (unlikely(asd_ha->iospace))
- 		outl(val,
-@@ -67,8 +67,7 @@ static inline void asd_write_dword(struct asd_ha_struct *asd_ha,
- 
- /* Reading from device address space.
-  */
--static inline u8 asd_read_byte(struct asd_ha_struct *asd_ha,
--			       unsigned long offs)
-+static u8 asd_read_byte(struct asd_ha_struct *asd_ha, unsigned long offs)
- {
- 	u8 val;
- 	if (unlikely(asd_ha->iospace))
-@@ -80,8 +79,8 @@ static inline u8 asd_read_byte(struct asd_ha_struct *asd_ha,
- 	return val;
+ 	/* Set write enable latch in ROM status register */
+ 	netxen_nic_reg_write(adapter, NETXEN_ROMUSB_ROM_ABYTE_CNT, 0);
+@@ -341,15 +345,15 @@ static inline int netxen_rom_wren(struct netxen_adapter *adapter)
+ 	return 0;
  }
  
--static inline u16 asd_read_word(struct asd_ha_struct *asd_ha,
--				unsigned long offs)
-+static u16 asd_read_word(struct asd_ha_struct *asd_ha,
-+			 unsigned long offs)
+-static inline unsigned int netxen_rdcrbreg(struct netxen_adapter *adapter,
+-					   unsigned int addr)
++static unsigned int netxen_rdcrbreg(struct netxen_adapter *adapter,
++				    unsigned int addr)
  {
- 	u16 val;
- 	if (unlikely(asd_ha->iospace))
-@@ -93,8 +92,8 @@ static inline u16 asd_read_word(struct asd_ha_struct *asd_ha,
- 	return val;
+ 	unsigned int data = 0xdeaddead;
+ 	data = netxen_nic_reg_read(adapter, addr);
+ 	return data;
  }
  
--static inline u32 asd_read_dword(struct asd_ha_struct *asd_ha,
--				 unsigned long offs)
-+static u32 asd_read_dword(struct asd_ha_struct *asd_ha,
-+			  unsigned long offs)
+-static inline int netxen_do_rom_rdsr(struct netxen_adapter *adapter)
++static int netxen_do_rom_rdsr(struct netxen_adapter *adapter)
+ {
+ 	netxen_nic_reg_write(adapter, NETXEN_ROMUSB_ROM_INSTR_OPCODE,
+ 			     M25P_INSTR_RDSR);
+@@ -359,7 +363,7 @@ static inline int netxen_do_rom_rdsr(struct netxen_adapter *adapter)
+ 	return netxen_rdcrbreg(adapter, NETXEN_ROMUSB_ROM_RDATA);
+ }
+ 
+-static inline void netxen_rom_unlock(struct netxen_adapter *adapter)
++static void netxen_rom_unlock(struct netxen_adapter *adapter)
  {
  	u32 val;
- 	if (unlikely(asd_ha->iospace))
-@@ -125,8 +124,8 @@ static inline u32 asd_mem_offs_swb(void)
-  * of the sliding window.
-  */
- #define ASD_READ_SW(ww, type, ord)                                     \
--static inline type asd_read_##ww##_##ord (struct asd_ha_struct *asd_ha,\
--					  u32 reg)                     \
-+static type asd_read_##ww##_##ord (struct asd_ha_struct *asd_ha,       \
-+				   u32 reg)			       \
- {                                                                      \
- 	struct asd_ha_addrspace *io_handle = &asd_ha->io_handle[0];    \
- 	u32 map_offs=(reg - io_handle-> ww##_base )+asd_mem_offs_##ww ();\
-@@ -134,8 +133,8 @@ static inline type asd_read_##ww##_##ord (struct asd_ha_struct *asd_ha,\
+ 
+@@ -368,7 +372,7 @@ static inline void netxen_rom_unlock(struct netxen_adapter *adapter)
+ 
  }
  
- #define ASD_WRITE_SW(ww, type, ord)                                    \
--static inline void asd_write_##ww##_##ord (struct asd_ha_struct *asd_ha,\
--				  u32 reg, type val)                   \
-+static void asd_write_##ww##_##ord (struct asd_ha_struct *asd_ha,      \
-+				    u32 reg, type val)		       \
- {                                                                      \
- 	struct asd_ha_addrspace *io_handle = &asd_ha->io_handle[0];    \
- 	u32 map_offs=(reg - io_handle-> ww##_base )+asd_mem_offs_##ww ();\
-@@ -186,7 +185,7 @@ ASD_WRITE_SW(swc, u32, dword);
-  * @asd_ha: pointer to host adapter structure
-  * @reg: register desired to be within range of the new window
-  */
--static inline void asd_move_swb(struct asd_ha_struct *asd_ha, u32 reg)
-+static void asd_move_swb(struct asd_ha_struct *asd_ha, u32 reg)
+-int netxen_rom_wip_poll(struct netxen_adapter *adapter)
++static int netxen_rom_wip_poll(struct netxen_adapter *adapter)
  {
- 	u32 base = reg & ~(MBAR0_SWB_SIZE-1);
- 	pci_write_config_dword(asd_ha->pcidev, PCI_CONF_MBAR0_SWB, base);
-diff --git a/drivers/scsi/aic94xx/aic94xx_scb.c b/drivers/scsi/aic94xx/aic94xx_scb.c
-index db6ab1a..1b967b5 100644
---- a/drivers/scsi/aic94xx/aic94xx_scb.c
-+++ b/drivers/scsi/aic94xx/aic94xx_scb.c
-@@ -50,7 +50,7 @@
- 			   | CURRENT_SPINUP_HOLD | CURRENT_GTO_TIMEOUT \
- 			   | CURRENT_OOB_ERROR)
- 
--static inline void get_lrate_mode(struct asd_phy *phy, u8 oob_mode)
-+static void get_lrate_mode(struct asd_phy *phy, u8 oob_mode)
- {
- 	struct sas_phy *sas_phy = phy->sas_phy.phy;
- 
-@@ -81,7 +81,7 @@ static inline void get_lrate_mode(struct asd_phy *phy, u8 oob_mode)
- 		phy->sas_phy.oob_mode = SATA_OOB_MODE;
+ 	long timeout = 0;
+ 	long wip = 1;
+@@ -385,8 +389,8 @@ int netxen_rom_wip_poll(struct netxen_adapter *adapter)
+ 	return 0;
  }
  
--static inline void asd_phy_event_tasklet(struct asd_ascb *ascb,
-+static void asd_phy_event_tasklet(struct asd_ascb *ascb,
- 					 struct done_list_struct *dl)
+-static inline int do_rom_fast_write(struct netxen_adapter *adapter, int addr,
+-				    int data)
++static int do_rom_fast_write(struct netxen_adapter *adapter, int addr,
++			     int data)
  {
- 	struct asd_ha_struct *asd_ha = ascb->ha;
-@@ -125,8 +125,7 @@ static inline void asd_phy_event_tasklet(struct asd_ascb *ascb,
+ 	if (netxen_rom_wren(adapter)) {
+ 		return -1;
+@@ -404,8 +408,8 @@ static inline int do_rom_fast_write(struct netxen_adapter *adapter, int addr,
+ 	return netxen_rom_wip_poll(adapter);
  }
  
- /* If phys are enabled sparsely, this will do the right thing. */
--static inline unsigned ord_phy(struct asd_ha_struct *asd_ha,
--			       struct asd_phy *phy)
-+static unsigned ord_phy(struct asd_ha_struct *asd_ha, struct asd_phy *phy)
+-static inline int
+-do_rom_fast_read(struct netxen_adapter *adapter, int addr, int *valp)
++static int do_rom_fast_read(struct netxen_adapter *adapter,
++			    int addr, int *valp)
  {
- 	u8 enabled_mask = asd_ha->hw_prof.enabled_phys;
- 	int i, k = 0;
-@@ -151,7 +150,7 @@ static inline unsigned ord_phy(struct asd_ha_struct *asd_ha,
-  * LOCKING: the frame_rcvd_lock needs to be held since this parses the frame
-  * buffer.
-  */
--static inline void asd_get_attached_sas_addr(struct asd_phy *phy, u8 *sas_addr)
-+static void asd_get_attached_sas_addr(struct asd_phy *phy, u8 *sas_addr)
- {
- 	if (phy->sas_phy.frame_rcvd[0] == 0x34
- 	    && phy->sas_phy.oob_mode == SATA_OOB_MODE) {
-@@ -232,9 +231,9 @@ static void asd_deform_port(struct asd_ha_struct *asd_ha, struct asd_phy *phy)
- 	spin_unlock_irqrestore(&asd_ha->asd_ports_lock, flags);
+ 	cond_resched();
+ 
+@@ -427,9 +431,8 @@ do_rom_fast_read(struct netxen_adapter *adapter, int addr, int *valp)
+ 	return 0;
  }
  
--static inline void asd_bytes_dmaed_tasklet(struct asd_ascb *ascb,
--					   struct done_list_struct *dl,
--					   int edb_id, int phy_id)
-+static void asd_bytes_dmaed_tasklet(struct asd_ascb *ascb,
-+				    struct done_list_struct *dl,
-+				    int edb_id, int phy_id)
+-static inline int 
+-do_rom_fast_read_words(struct netxen_adapter *adapter, int addr,
+-			u8 *bytes, size_t size)
++static int do_rom_fast_read_words(struct netxen_adapter *adapter, int addr,
++				  u8 *bytes, size_t size)
  {
- 	unsigned long flags;
- 	int edb_el = edb_id + ascb->edb_index;
-@@ -255,9 +254,9 @@ static inline void asd_bytes_dmaed_tasklet(struct asd_ascb *ascb,
- 	sas_ha->notify_port_event(&phy->sas_phy, PORTE_BYTES_DMAED);
+ 	int addridx;
+ 	int ret = 0;
+@@ -473,6 +476,7 @@ int netxen_rom_fast_read(struct netxen_adapter *adapter, int addr, int *valp)
+ 	return ret;
  }
- 
--static inline void asd_link_reset_err_tasklet(struct asd_ascb *ascb,
--					      struct done_list_struct *dl,
--					      int phy_id)
-+static void asd_link_reset_err_tasklet(struct asd_ascb *ascb,
-+				       struct done_list_struct *dl,
-+				       int phy_id)
- {
- 	struct asd_ha_struct *asd_ha = ascb->ha;
- 	struct sas_ha_struct *sas_ha = &asd_ha->sas_ha;
-@@ -308,9 +307,9 @@ out:
- 	;
- }
- 
--static inline void asd_primitive_rcvd_tasklet(struct asd_ascb *ascb,
--					      struct done_list_struct *dl,
--					      int phy_id)
-+static void asd_primitive_rcvd_tasklet(struct asd_ascb *ascb,
-+				       struct done_list_struct *dl,
-+				       int phy_id)
- {
- 	unsigned long flags;
- 	struct sas_ha_struct *sas_ha = &ascb->ha->sas_ha;
-@@ -709,7 +708,7 @@ out:
- 	asd_ascb_free(ascb);
- }
- 
--static inline void set_speed_mask(u8 *speed_mask, struct asd_phy_desc *pd)
-+static void set_speed_mask(u8 *speed_mask, struct asd_phy_desc *pd)
- {
- 	/* disable all speeds, then enable defaults */
- 	*speed_mask = SAS_SPEED_60_DIS | SAS_SPEED_30_DIS | SAS_SPEED_15_DIS
-@@ -814,6 +813,8 @@ void asd_build_control_phy(struct asd_ascb *ascb, int phy_id, u8 subfunc)
- 
- /* ---------- INITIATE LINK ADM TASK ---------- */
  
 +#if 0
-+
- static void link_adm_tasklet_complete(struct asd_ascb *ascb,
- 				      struct done_list_struct *dl)
+ int netxen_rom_fast_write(struct netxen_adapter *adapter, int addr, int data)
  {
-@@ -846,6 +847,8 @@ void asd_build_initiate_link_adm_task(struct asd_ascb *ascb, int phy_id,
- 	ascb->tasklet_complete = link_adm_tasklet_complete;
- }
- 
-+#endif  /*  0  */
-+
- /* ---------- SCB timer ---------- */
- 
- /**
-diff --git a/drivers/scsi/aic94xx/aic94xx_sds.c b/drivers/scsi/aic94xx/aic94xx_sds.c
-index 5b0932f..62cda27 100644
---- a/drivers/scsi/aic94xx/aic94xx_sds.c
-+++ b/drivers/scsi/aic94xx/aic94xx_sds.c
-@@ -589,8 +589,8 @@ static int asd_reset_flash(struct asd_ha_struct *asd_ha)
- 	return err;
- }
- 
--static inline int asd_read_flash_seg(struct asd_ha_struct *asd_ha,
--				     void *buffer, u32 offs, int size)
-+static int asd_read_flash_seg(struct asd_ha_struct *asd_ha,
-+			      void *buffer, u32 offs, int size)
- {
- 	asd_read_reg_string(asd_ha, buffer, asd_ha->hw_prof.flash.bar+offs,
- 			    size);
-diff --git a/drivers/scsi/aic94xx/aic94xx_seq.c b/drivers/scsi/aic94xx/aic94xx_seq.c
-index c750fbf..143d504 100644
---- a/drivers/scsi/aic94xx/aic94xx_seq.c
-+++ b/drivers/scsi/aic94xx/aic94xx_seq.c
-@@ -60,7 +60,7 @@ static u16 last_scb_site_no;
-  *
-  * Return 0 on success, negative on failure.
-  */
--int asd_pause_cseq(struct asd_ha_struct *asd_ha)
-+static int asd_pause_cseq(struct asd_ha_struct *asd_ha)
- {
- 	int	count = PAUSE_TRIES;
- 	u32	arp2ctl;
-@@ -87,7 +87,7 @@ int asd_pause_cseq(struct asd_ha_struct *asd_ha)
-  *
-  * Return 0 on success, negative on error.
-  */
--int asd_unpause_cseq(struct asd_ha_struct *asd_ha)
-+static int asd_unpause_cseq(struct asd_ha_struct *asd_ha)
- {
- 	u32	arp2ctl;
- 	int	count = PAUSE_TRIES;
-@@ -115,7 +115,7 @@ int asd_unpause_cseq(struct asd_ha_struct *asd_ha)
-  *
-  * Return 0 on success, negative on error.
-  */
--static inline int asd_seq_pause_lseq(struct asd_ha_struct *asd_ha, int lseq)
-+static int asd_seq_pause_lseq(struct asd_ha_struct *asd_ha, int lseq)
- {
- 	u32    arp2ctl;
- 	int    count = PAUSE_TRIES;
-@@ -143,7 +143,7 @@ static inline int asd_seq_pause_lseq(struct asd_ha_struct *asd_ha, int lseq)
-  *
-  * Return 0 on success, negative on failure.
-  */
--int asd_pause_lseq(struct asd_ha_struct *asd_ha, u8 lseq_mask)
-+static int asd_pause_lseq(struct asd_ha_struct *asd_ha, u8 lseq_mask)
- {
- 	int lseq;
- 	int err = 0;
-@@ -164,7 +164,7 @@ int asd_pause_lseq(struct asd_ha_struct *asd_ha, u8 lseq_mask)
-  *
-  * Return 0 on success, negative on error.
-  */
--static inline int asd_seq_unpause_lseq(struct asd_ha_struct *asd_ha, int lseq)
-+static int asd_seq_unpause_lseq(struct asd_ha_struct *asd_ha, int lseq)
- {
- 	u32 arp2ctl;
- 	int count = PAUSE_TRIES;
-@@ -186,6 +186,7 @@ static inline int asd_seq_unpause_lseq(struct asd_ha_struct *asd_ha, int lseq)
- }
- 
- 
-+#if 0
- /**
-  * asd_unpause_lseq - unpause the link sequencer(s)
-  * @asd_ha: pointer to host adapter structure
-@@ -206,6 +207,7 @@ int asd_unpause_lseq(struct asd_ha_struct *asd_ha, u8 lseq_mask)
- 
- 	return err;
+ 	int ret = 0;
+@@ -484,9 +488,10 @@ int netxen_rom_fast_write(struct netxen_adapter *adapter, int addr, int data)
+ 	netxen_rom_unlock(adapter);
+ 	return ret;
  }
 +#endif  /*  0  */
  
- /* ---------- Downloading CSEQ/LSEQ microcode ---------- */
- 
-diff --git a/drivers/scsi/aic94xx/aic94xx_seq.h b/drivers/scsi/aic94xx/aic94xx_seq.h
-index 2ea6a0d..ad787c5 100644
---- a/drivers/scsi/aic94xx/aic94xx_seq.h
-+++ b/drivers/scsi/aic94xx/aic94xx_seq.h
-@@ -58,10 +58,6 @@ struct sequencer_file_header {
- } __attribute__((packed));
- 
- #ifdef __KERNEL__
--int asd_pause_cseq(struct asd_ha_struct *asd_ha);
--int asd_unpause_cseq(struct asd_ha_struct *asd_ha);
--int asd_pause_lseq(struct asd_ha_struct *asd_ha, u8 lseq_mask);
--int asd_unpause_lseq(struct asd_ha_struct *asd_ha, u8 lseq_mask);
- int asd_init_seqs(struct asd_ha_struct *asd_ha);
- int asd_start_seqs(struct asd_ha_struct *asd_ha);
- int asd_release_firmware(void);
-diff --git a/drivers/scsi/aic94xx/aic94xx_task.c b/drivers/scsi/aic94xx/aic94xx_task.c
-index ee0a98b..e35b731 100644
---- a/drivers/scsi/aic94xx/aic94xx_task.c
-+++ b/drivers/scsi/aic94xx/aic94xx_task.c
-@@ -33,7 +33,7 @@ static void asd_unbuild_ata_ascb(struct asd_ascb *a);
- static void asd_unbuild_smp_ascb(struct asd_ascb *a);
- static void asd_unbuild_ssp_ascb(struct asd_ascb *a);
- 
--static inline void asd_can_dequeue(struct asd_ha_struct *asd_ha, int num)
-+static void asd_can_dequeue(struct asd_ha_struct *asd_ha, int num)
+-static inline int do_rom_fast_write_words(struct netxen_adapter *adapter, 
+-						int addr, u8 *bytes, size_t size)
++static int do_rom_fast_write_words(struct netxen_adapter *adapter, 
++				   int addr, u8 *bytes, size_t size)
  {
- 	unsigned long flags;
+ 	int addridx = addr;
+ 	int ret = 0;
+@@ -548,7 +553,7 @@ int netxen_rom_fast_write_words(struct netxen_adapter *adapter, int addr,
+ 	return ret;
+ }
  
-@@ -51,9 +51,9 @@ static const u8 data_dir_flags[] = {
- 	[PCI_DMA_NONE]          = DATA_DIR_NONE, /* NO TRANSFER */
+-int netxen_rom_wrsr(struct netxen_adapter *adapter, int data)
++static int netxen_rom_wrsr(struct netxen_adapter *adapter, int data)
+ {
+ 	int ret;
+ 
+@@ -567,7 +572,7 @@ int netxen_rom_wrsr(struct netxen_adapter *adapter, int data)
+ 	return netxen_rom_wip_poll(adapter);
+ }
+ 
+-int netxen_rom_rdsr(struct netxen_adapter *adapter)
++static int netxen_rom_rdsr(struct netxen_adapter *adapter)
+ {
+ 	int ret;
+ 
+@@ -632,7 +637,7 @@ out_kfree:
+ 	return ret;
+ }
+ 
+-int netxen_do_rom_se(struct netxen_adapter *adapter, int addr)
++static int netxen_do_rom_se(struct netxen_adapter *adapter, int addr)
+ {
+ 	netxen_rom_wren(adapter);
+ 	netxen_nic_reg_write(adapter, NETXEN_ROMUSB_ROM_ADDRESS, addr);
+@@ -646,7 +651,7 @@ int netxen_do_rom_se(struct netxen_adapter *adapter, int addr)
+ 	return netxen_rom_wip_poll(adapter);
+ }
+ 
+-void check_erased_flash(struct netxen_adapter *adapter, int addr)
++static void check_erased_flash(struct netxen_adapter *adapter, int addr)
+ {
+ 	int i;
+ 	int val;
+@@ -682,8 +687,8 @@ int netxen_rom_se(struct netxen_adapter *adapter, int addr)
+ 	return ret;
+ }
+ 
+-int
+-netxen_flash_erase_sections(struct netxen_adapter *adapter, int start, int end)
++static int netxen_flash_erase_sections(struct netxen_adapter *adapter,
++				       int start, int end)
+ {
+ 	int ret = FLASH_SUCCESS;
+ 	int i;
+@@ -990,7 +995,7 @@ int netxen_nic_rx_has_work(struct netxen_adapter *adapter)
+ 	return 0;
+ }
+ 
+-static inline int netxen_nic_check_temp(struct netxen_adapter *adapter)
++static int netxen_nic_check_temp(struct netxen_adapter *adapter)
+ {
+ 	struct net_device *netdev = adapter->netdev;
+ 	uint32_t temp, temp_state, temp_val;
+@@ -1064,9 +1069,8 @@ void netxen_watchdog_task(struct work_struct *work)
+  * and if the number of receives exceeds RX_BUFFERS_REFILL, then we
+  * invoke the routine to send more rx buffers to the Phantom...
+  */
+-void
+-netxen_process_rcv(struct netxen_adapter *adapter, int ctxid,
+-		   struct status_desc *desc)
++static void netxen_process_rcv(struct netxen_adapter *adapter, int ctxid,
++			       struct status_desc *desc)
+ {
+ 	struct pci_dev *pdev = adapter->pdev;
+ 	struct net_device *netdev = adapter->netdev;
+@@ -1460,8 +1464,8 @@ void netxen_post_rx_buffers(struct netxen_adapter *adapter, u32 ctx, u32 ringid)
+ 	}
+ }
+ 
+-void netxen_post_rx_buffers_nodb(struct netxen_adapter *adapter, uint32_t ctx,
+-				 uint32_t ringid)
++static void netxen_post_rx_buffers_nodb(struct netxen_adapter *adapter,
++					uint32_t ctx, uint32_t ringid)
+ {
+ 	struct pci_dev *pdev = adapter->ahw.pdev;
+ 	struct sk_buff *skb;
+diff --git a/drivers/net/netxen/netxen_nic_isr.c b/drivers/net/netxen/netxen_nic_isr.c
+index b2de6b6..0a261de 100644
+--- a/drivers/net/netxen/netxen_nic_isr.c
++++ b/drivers/net/netxen/netxen_nic_isr.c
+@@ -66,7 +66,8 @@ struct net_device_stats *netxen_nic_get_stats(struct net_device *netdev)
+ 	return stats;
+ }
+ 
+-void netxen_indicate_link_status(struct netxen_adapter *adapter, u32 link)
++static void netxen_indicate_link_status(struct netxen_adapter *adapter,
++					u32 link)
+ {
+ 	struct net_device *netdev = adapter->netdev;
+ 
+@@ -76,6 +77,7 @@ void netxen_indicate_link_status(struct netxen_adapter *adapter, u32 link)
+ 		netif_carrier_off(netdev);
+ }
+ 
++#if 0
+ void netxen_handle_port_int(struct netxen_adapter *adapter, u32 enable)
+ {
+ 	__u32 int_src;
+@@ -134,8 +136,9 @@ void netxen_handle_port_int(struct netxen_adapter *adapter, u32 enable)
+ 	if (adapter->enable_phy_interrupts)
+ 		adapter->enable_phy_interrupts(adapter);
+ }
++#endif  /*  0  */
+ 
+-void netxen_nic_isr_other(struct netxen_adapter *adapter)
++static void netxen_nic_isr_other(struct netxen_adapter *adapter)
+ {
+ 	int portno = adapter->portnum;
+ 	u32 val, linkup, qg_linksup;
+diff --git a/drivers/net/netxen/netxen_nic_main.c b/drivers/net/netxen/netxen_nic_main.c
+index a80f0cd..d0d1f05 100644
+--- a/drivers/net/netxen/netxen_nic_main.c
++++ b/drivers/net/netxen/netxen_nic_main.c
+@@ -89,8 +89,8 @@ MODULE_DEVICE_TABLE(pci, netxen_pci_tbl);
+ struct workqueue_struct *netxen_workq;
+ static void netxen_watchdog(unsigned long);
+ 
+-static inline void netxen_nic_update_cmd_producer(struct netxen_adapter *adapter,
+-							uint32_t crb_producer)
++static void netxen_nic_update_cmd_producer(struct netxen_adapter *adapter,
++					   uint32_t crb_producer)
+ {
+ 	switch (adapter->portnum) {
+ 		case 0:
+@@ -118,8 +118,8 @@ static inline void netxen_nic_update_cmd_producer(struct netxen_adapter *adapter
+ 	}
+ }
+ 
+-static inline void netxen_nic_update_cmd_consumer(struct netxen_adapter *adapter,
+-							u32 crb_consumer)
++static void netxen_nic_update_cmd_consumer(struct netxen_adapter *adapter,
++					   u32 crb_consumer)
+ {
+ 	switch (adapter->portnum) {
+ 		case 0:
+@@ -148,7 +148,6 @@ static inline void netxen_nic_update_cmd_consumer(struct netxen_adapter *adapter
+ }
+ 
+ #define	ADAPTER_LIST_SIZE 12
+-int netxen_cards_found;
+ 
+ static void netxen_nic_disable_int(struct netxen_adapter *adapter)
+ {
+diff --git a/drivers/net/netxen/netxen_nic_niu.c b/drivers/net/netxen/netxen_nic_niu.c
+index 5b9e1b3..94e096c 100644
+--- a/drivers/net/netxen/netxen_nic_niu.c
++++ b/drivers/net/netxen/netxen_nic_niu.c
+@@ -40,7 +40,7 @@
+ 
+ static long phy_lock_timeout = 100000000;
+ 
+-static inline int phy_lock(struct netxen_adapter *adapter)
++static int phy_lock(struct netxen_adapter *adapter)
+ {
+ 	int i;
+ 	int done = 0, timeout = 0;
+@@ -68,7 +68,7 @@ static inline int phy_lock(struct netxen_adapter *adapter)
+ 	return 0;
+ }
+ 
+-static inline int phy_unlock(struct netxen_adapter *adapter)
++static int phy_unlock(struct netxen_adapter *adapter)
+ {
+ 	readl(pci_base_offset(adapter, NETXEN_PCIE_REG(PCIE_SEM3_UNLOCK)));
+ 
+@@ -300,13 +300,15 @@ int netxen_niu_gbe_disable_phy_interrupts(struct netxen_adapter *adapter)
+ 	return result;
+ }
+ 
++#if 0
+ int netxen_niu_xgbe_clear_phy_interrupts(struct netxen_adapter *adapter)
+ {
+ 	netxen_crb_writelit_adapter(adapter, NETXEN_NIU_ACTIVE_INT, -1);
+ 	return 0;
+ }
++#endif  /*  0  */
+ 
+-int netxen_niu_gbe_clear_phy_interrupts(struct netxen_adapter *adapter)
++static int netxen_niu_gbe_clear_phy_interrupts(struct netxen_adapter *adapter)
+ {
+ 	int result = 0;
+ 	if (0 !=
+@@ -322,8 +324,8 @@ int netxen_niu_gbe_clear_phy_interrupts(struct netxen_adapter *adapter)
+  * netxen_niu_gbe_set_mii_mode- Set 10/100 Mbit Mode for GbE MAC
+  *
+  */
+-void netxen_niu_gbe_set_mii_mode(struct netxen_adapter *adapter,
+-				 int port, long enable)
++static void netxen_niu_gbe_set_mii_mode(struct netxen_adapter *adapter,
++					int port, long enable)
+ {
+ 	netxen_crb_writelit_adapter(adapter, NETXEN_NIU_MODE, 0x2);
+ 	netxen_crb_writelit_adapter(adapter, NETXEN_NIU_GB_MAC_CONFIG_0(port),
+@@ -360,8 +362,8 @@ void netxen_niu_gbe_set_mii_mode(struct netxen_adapter *adapter,
+ /* 
+  * netxen_niu_gbe_set_gmii_mode- Set GbE Mode for GbE MAC
+  */
+-void netxen_niu_gbe_set_gmii_mode(struct netxen_adapter *adapter,
+-				  int port, long enable)
++static void netxen_niu_gbe_set_gmii_mode(struct netxen_adapter *adapter,
++					 int port, long enable)
+ {
+ 	netxen_crb_writelit_adapter(adapter, NETXEN_NIU_MODE, 0x2);
+ 	netxen_crb_writelit_adapter(adapter, NETXEN_NIU_GB_MAC_CONFIG_0(port),
+@@ -464,6 +466,7 @@ int netxen_niu_xg_init_port(struct netxen_adapter *adapter, int port)
+ 	return 0;
+ }
+ 
++#if 0
+ /* 
+  * netxen_niu_gbe_handle_phy_interrupt - Handles GbE PHY interrupts
+  * @param enable 0 means don't enable the port
+@@ -559,13 +562,14 @@ int netxen_niu_gbe_handle_phy_interrupt(struct netxen_adapter *adapter,
+ 	}
+ 	return result;
+ }
++#endif  /*  0  */
+ 
+ /*
+  * Return the current station MAC address.
+  * Note that the passed-in value must already be in network byte order.
+  */
+-int netxen_niu_macaddr_get(struct netxen_adapter *adapter,
+-			   netxen_ethernet_macaddr_t * addr)
++static int netxen_niu_macaddr_get(struct netxen_adapter *adapter,
++				  netxen_ethernet_macaddr_t * addr)
+ {
+ 	u32 stationhigh;
+ 	u32 stationlow;
+@@ -636,6 +640,7 @@ int netxen_niu_macaddr_set(struct netxen_adapter *adapter,
+ 	return 0;
+ }
+ 
++#if 0
+ /* Enable a GbE interface */
+ int netxen_niu_enable_gbe_port(struct netxen_adapter *adapter,
+ 			       int port, netxen_niu_gbe_ifmode_t mode)
+@@ -713,6 +718,7 @@ int netxen_niu_enable_gbe_port(struct netxen_adapter *adapter,
+ 		return -EIO;
+ 	return 0;
+ }
++#endif  /*  0  */
+ 
+ /* Disable a GbE interface */
+ int netxen_niu_disable_gbe_port(struct netxen_adapter *adapter)
+@@ -853,6 +859,7 @@ int netxen_niu_xg_macaddr_set(struct netxen_adapter *adapter,
+ 	return 0;
+ }
+ 
++#if 0
+ /*
+  * Return the current station MAC address.
+  * Note that the passed-in value must already be in network byte order.
+@@ -883,6 +890,7 @@ int netxen_niu_xg_macaddr_get(struct netxen_adapter *adapter,
+ 
+ 	return 0;
+ }
++#endif  /*  0  */
+ 
+ int netxen_niu_xg_set_promiscuous_mode(struct netxen_adapter *adapter,
+ 				       netxen_niu_prom_mode_t mode)
+diff --git a/drivers/net/netxen/netxen_nic_phan_reg.h b/drivers/net/netxen/netxen_nic_phan_reg.h
+index 10fe6fa..a6c28de 100644
+--- a/drivers/net/netxen/netxen_nic_phan_reg.h
++++ b/drivers/net/netxen/netxen_nic_phan_reg.h
+@@ -165,14 +165,7 @@ struct netxen_recv_crb {
+ 	u32 crb_status_ring_size;
  };
  
--static inline int asd_map_scatterlist(struct sas_task *task,
--				      struct sg_el *sg_arr,
--				      gfp_t gfp_flags)
-+static int asd_map_scatterlist(struct sas_task *task,
-+			       struct sg_el *sg_arr,
-+			       gfp_t gfp_flags)
- {
- 	struct asd_ascb *ascb = task->lldd_task;
- 	struct asd_ha_struct *asd_ha = ascb->ha;
-@@ -131,7 +131,7 @@ err_unmap:
- 	return res;
- }
+-#if defined(DEFINE_GLOBAL_RECV_CRB)
+-#else
+ extern struct netxen_recv_crb recv_crb_registers[];
+-extern u64 ctx_addr_sig_regs[][3];
+-#endif				/* DEFINE_GLOBAL_RECEIVE_CRB */
+-#define CRB_CTX_ADDR_REG_LO(FUNC_ID)		(ctx_addr_sig_regs[FUNC_ID][0])
+-#define CRB_CTX_ADDR_REG_HI(FUNC_ID)		(ctx_addr_sig_regs[FUNC_ID][2])
+-#define CRB_CTX_SIGNATURE_REG(FUNC_ID)		(ctx_addr_sig_regs[FUNC_ID][1])
  
--static inline void asd_unmap_scatterlist(struct asd_ascb *ascb)
-+static void asd_unmap_scatterlist(struct asd_ascb *ascb)
- {
- 	struct asd_ha_struct *asd_ha = ascb->ha;
- 	struct sas_task *task = ascb->uldd_task;
-@@ -541,7 +541,7 @@ static void asd_unbuild_ssp_ascb(struct asd_ascb *a)
- 
- /* ---------- Execute Task ---------- */
- 
--static inline int asd_can_queue(struct asd_ha_struct *asd_ha, int num)
-+static int asd_can_queue(struct asd_ha_struct *asd_ha, int num)
- {
- 	int res = 0;
- 	unsigned long flags;
-diff --git a/drivers/scsi/aic94xx/aic94xx_tmf.c b/drivers/scsi/aic94xx/aic94xx_tmf.c
-index c0d0b7d..c3fe7ca 100644
---- a/drivers/scsi/aic94xx/aic94xx_tmf.c
-+++ b/drivers/scsi/aic94xx/aic94xx_tmf.c
-@@ -53,7 +53,7 @@ static int asd_enqueue_internal(struct asd_ascb *ascb,
- 	return res;
- }
- 
--static inline void asd_timedout_common(unsigned long data)
-+static void asd_timedout_common(unsigned long data)
- {
- 	struct asd_ascb *ascb = (void *) data;
- 	struct asd_seq_data *seq = &ascb->ha->seq;
-@@ -287,7 +287,7 @@ static void asd_tmf_tasklet_complete(struct asd_ascb *ascb,
- 	complete(&ascb->completion);
- }
- 
--static inline int asd_clear_nexus(struct sas_task *task)
-+static int asd_clear_nexus(struct sas_task *task)
- {
- 	int res = TMF_RESP_FUNC_FAILED;
- 	int leftover;
+ /*
+  * Temperature control.
 
