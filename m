@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757828AbXKERI1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757917AbXKERIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757828AbXKERI1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 12:08:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756256AbXKERGn
+	id S1757917AbXKERIs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 12:08:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755644AbXKERGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 12:06:43 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59472 "EHLO
+	Mon, 5 Nov 2007 12:06:46 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59474 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757255AbXKERGl (ORCPT
+	with ESMTP id S1756810AbXKERGp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 12:06:41 -0500
-Date: Mon, 5 Nov 2007 18:06:18 +0100
+	Mon, 5 Nov 2007 12:06:45 -0500
+Date: Mon, 5 Nov 2007 18:06:22 +0100
 From: Adrian Bunk <bunk@kernel.org>
 To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] remove Documentation/highuid.txt
-Message-ID: <20071105170618.GX12045@stusta.de>
+Subject: [2.6 patch] remove Documentation/smp.txt
+Message-ID: <20071105170622.GY12045@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -22,114 +22,59 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A nearly 8 years old status and TODO list for the change to 32-bit UIDs
-doesn't have much value.
+After seeing the filename I'd have expected something about the 
+implementation of SMP in the Linux kernel - not some notes on kernel 
+configuration and building trivialities noone would search at this 
+place.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- Documentation/00-INDEX    |    2 
- Documentation/highuid.txt |   79 --------------------------------------
- 2 files changed, 81 deletions(-)
+ Documentation/00-INDEX |    2 --
+ Documentation/smp.txt  |   22 ----------------------
+ 2 files changed, 24 deletions(-)
 
-75431baf33dfc60d0e005fc09be529b6dacd595c 
+07dd2298fa79d2dd42d3f774bd18e1c074881a4b 
 diff --git a/Documentation/00-INDEX b/Documentation/00-INDEX
-index 6b09461..9e94065 100644
+index 9e94065..9d9a6ae 100644
 --- a/Documentation/00-INDEX
 +++ b/Documentation/00-INDEX
-@@ -160,8 +160,6 @@ gpio.txt
- 	- overview of GPIO (General Purpose Input/Output) access conventions.
- hayes-esp.txt
- 	- info on using the Hayes ESP serial driver.
--highuid.txt
--	- notes on the change from 16 bit to 32 bit user/group IDs.
- hpet.txt
- 	- High Precision Event Timer Driver for Linux.
- hrtimer/
-diff --git a/Documentation/highuid.txt b/Documentation/highuid.txt
+@@ -360,8 +360,6 @@ sharedsubtree.txt
+ 	- a description of shared subtrees for namespaces.
+ smart-config.txt
+ 	- description of the Smart Config makefile feature.
+-smp.txt
+-	- a few notes on symmetric multi-processing.
+ sony-laptop.txt
+ 	- Sony Notebook Control Driver (SNC) Readme.
+ sonypi.txt
+diff --git a/Documentation/smp.txt b/Documentation/smp.txt
 deleted file mode 100644
-index 76034d9..0000000
---- a/Documentation/highuid.txt
+index 82fc50b..0000000
+--- a/Documentation/smp.txt
 +++ /dev/null
-@@ -1,79 +0,0 @@
--Notes on the change from 16-bit UIDs to 32-bit UIDs:
+@@ -1,22 +0,0 @@
+-To set up SMP
 -
--- kernel code MUST take into account __kernel_uid_t and __kernel_uid32_t
--  when communicating between user and kernel space in an ioctl or data
--  structure.
+-Configure the kernel and answer Y to CONFIG_SMP.
 -
--- kernel code should use uid_t and gid_t in kernel-private structures and
--  code.
+-If you are using LILO, it is handy to have both SMP and non-SMP
+-kernel images on hand. Edit /etc/lilo.conf to create an entry
+-for another kernel image called "linux-smp" or something.
 -
--What's left to be done for 32-bit UIDs on all Linux architectures:
+-The next time you compile the kernel, when running a SMP kernel,
+-edit linux/Makefile and change "MAKE=make" to "MAKE=make -jN"
+-(where N = number of CPU + 1, or if you have tons of memory/swap
+- you can just use "-j" without a number). Feel free to experiment
+-with this one.
 -
--- Disk quotas have an interesting limitation that is not related to the
--  maximum UID/GID. They are limited by the maximum file size on the
--  underlying filesystem, because quota records are written at offsets
--  corresponding to the UID in question.
--  Further investigation is needed to see if the quota system can cope
--  properly with huge UIDs. If it can deal with 64-bit file offsets on all 
--  architectures, this should not be a problem.
+-Of course you should time how long each build takes :-)
+-Example:
+-   make config
+-   time -v sh -c 'make clean install modules modules_install'
 -
--- Decide whether or not to keep backwards compatibility with the system
--  accounting file, or if we should break it as the comments suggest
--  (currently, the old 16-bit UID and GID are still written to disk, and
--  part of the former pad space is used to store separate 32-bit UID and
--  GID)
--
--- Need to validate that OS emulation calls the 16-bit UID
--  compatibility syscalls, if the OS being emulated used 16-bit UIDs, or
--  uses the 32-bit UID system calls properly otherwise.
--
--  This affects at least:
--	SunOS emulation
--	Solaris emulation
--	iBCS on Intel
--
--	sparc32 emulation on sparc64
--	(need to support whatever new 32-bit UID system calls are added to
--	sparc32)
--
--- Validate that all filesystems behave properly.
--
--  At present, 32-bit UIDs _should_ work for:
--	ext2
--	ufs
--	isofs
--	nfs
--	coda
--	udf
--
--  Ioctl() fixups have been made for:
--	ncpfs
--	smbfs
--
--  Filesystems with simple fixups to prevent 16-bit UID wraparound:
--	minix
--	sysv
--	qnx4
--
--  Other filesystems have not been checked yet.
--
--- The ncpfs and smpfs filesystems cannot presently use 32-bit UIDs in
--  all ioctl()s. Some new ioctl()s have been added with 32-bit UIDs, but
--  more are needed. (as well as new user<->kernel data structures)
--
--- The ELF core dump format only supports 16-bit UIDs on arm, i386, m68k,
--  sh, and sparc32. Fixing this is probably not that important, but would
--  require adding a new ELF section.
--
--- The ioctl()s used to control the in-kernel NFS server only support
--  16-bit UIDs on arm, i386, m68k, sh, and sparc32.
--
--- make sure that the UID mapping feature of AX25 networking works properly
--  (it should be safe because it's always used a 32-bit integer to
--  communicate between user and kernel)
--
--
--Chris Wing
--wingc@umich.edu
--
--last updated: January 11, 2000
+-If you are using some Compaq MP compliant machines you will need to set
+-the operating system in the BIOS settings to "Unixware" - don't ask me
+-why Compaqs don't work otherwise.
 
