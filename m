@@ -1,75 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbXKEXJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbXKEXOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755374AbXKEXJz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 18:09:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbXKEXJq
+	id S1755330AbXKEXOT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 18:14:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754123AbXKEXOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 18:09:46 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:48900 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754634AbXKEXJp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 18:09:45 -0500
-Subject: Re: [2.6 patch] ext4/super.c: fix #ifdef's
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Adrian Bunk <bunk@kernel.org>
-Cc: sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>, tytso@mit.edu
-In-Reply-To: <20071105170713.GJ12045@stusta.de>
-References: <20071105170713.GJ12045@stusta.de>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Mon, 05 Nov 2007 15:09:43 -0800
-Message-Id: <1194304183.3987.13.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+	Mon, 5 Nov 2007 18:14:12 -0500
+Received: from mail1.webmaster.com ([216.152.64.169]:1658 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752859AbXKEXOL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 18:14:11 -0500
+From: "David Schwartz" <davids@webmaster.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: RE: Policy on dual licensing?
+Date: Mon, 5 Nov 2007 15:13:10 -0800
+Message-ID: <MDEHLPKNGKAHNMBLJOLKEEHLIAAC.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <slrnfiopoa.9cu.lkml.only@localhost.localdomain>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Mon, 05 Nov 2007 15:14:20 -0800
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Mon, 05 Nov 2007 15:14:22 -0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-by: Mingmming Cao <cmm@us.ibm.com>
 
-Ted, I added this patch in ext4 patch queue.
+> What I suppose is that people porting BSD code to Linux don't mean
+> closing the doors for back-porting changes. They are simply unaware
+> or forget about the possibility of dual licensing. Obviously, each
+> submitter should read Documentation/SubmittingDrivers, where it is
+> explicitly stated. Yet humans are prone to forgetting, so this may
+> seem not enough.
+>
+> What I propose is implementing a policy on accepting such code.
+> According to it, every time a maintainer is considering a driver
+> that is derived from BSD and licensed GPL-only, should request
+> for dual licensing before accepting the patch. If the submitter is
+> reluctant to do so - what can we do, it's better to have this inside
+> this way than not at all. However, this should minimize such cases
+> and, hopefully, satisfy the claims about Linux maintainers not doing
+> all that they could to make the world a better place.
+>
+> Best regards,
+> Remigiusz Modrzejewski
 
-On Mon, 2007-11-05 at 18:07 +0100, Adrian Bunk wrote:
-> This patch fixes the names of two variables in #ifdef's.
-> 
-> Based on a report by Robert P. J. Day.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> 
->  fs/ext4/super.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> 44e9889e6a3952ea225704b2e494d31e00f34a6b 
-> diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-> index 8031dc0..6673672 100644
-> --- a/fs/ext4/super.c
-> +++ b/fs/ext4/super.c
-> @@ -646,7 +646,7 @@ static int ext4_show_options(struct seq_file *seq, struct vfsmount *vfs)
->  		seq_puts(seq, ",debug");
->  	if (test_opt(sb, OLDALLOC))
->  		seq_puts(seq, ",oldalloc");
-> -#ifdef CONFIG_EXT4_FS_XATTR
-> +#ifdef CONFIG_EXT4DEV_FS_XATTR
->  	if (test_opt(sb, XATTR_USER))
->  		seq_puts(seq, ",user_xattr");
->  	if (!test_opt(sb, XATTR_USER) &&
-> @@ -654,7 +654,7 @@ static int ext4_show_options(struct seq_file *seq, struct vfsmount *vfs)
->  		seq_puts(seq, ",nouser_xattr");
->  	}
->  #endif
-> -#ifdef CONFIG_EXT4_FS_POSIX_ACL
-> +#ifdef CONFIG_EXT4DEV_FS_POSIX_ACL
->  	if (test_opt(sb, POSIX_ACL))
->  		seq_puts(seq, ",acl");
->  	if (!test_opt(sb, POSIX_ACL) && (def_mount_opts & EXT4_DEFM_ACL))
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+This will result in more code in the Linux tree that has a license other
+than the project default. This will impose a greater and greater burden on
+developers who have to carefully check the license of files every time they
+cut and paste code from one file into another.
+
+It creates a serious risk of incorrect license notices (because someone
+cuts/pastes a substantial chunk of GPL-only code into a dual-licensed file
+without changing the license notice) and accidental copyright violations
+(because someone else took the cut/pasted part into a BSD-licensed project)
+if intimately-connected files are under different licenses. Every effort
+should be made to avoid this.
+
+Having a clear policy would be a good idea. I think the general policy
+should be that any dual-licensed file should contain a clear notice that the
+Linux kernel is GPL (that is the only license 'guaranteed' to cover the
+entire distribution) and that development may result in the file being
+"contaminated" by code that is not dual-licensed.
+
+Just a notice referring to a 'dual license FAQ' in Documention would be
+fine, of course. That file should advise developers that they should remove
+the dual license if they cause the file to be no longer dual-licensable due
+to code they've added, cut/pasted, or modified. Gratuitous removal of
+dual-licensing should be discouraged, but removing it should be encouraged
+where it's a genuine impediment to development.
+
+The example I always use is if we have a filesystem with a different
+license. Imagine if a new function is added to the filesystem interface. It
+is offered in a 'generic' version, with the expectation that filesystems
+will override it to provide a better-performing version. Imagine if the
+generic version is GPLv2-only and a filesystem in-tree is dual licensed.
+
+A developer probably cannot cut/paste the generic version as a base without
+breaking the dual license. If they want to keep the dual license, they have
+to re-implement the function. This creates an increased risk of bugs or
+incompatibilities. Worse, it creates a maintenance headache in that this
+function will need to be understood separately from other filesystems'
+implementation of the same function. A little imagination will allow one to
+imagine many ways this can cause problems.
+
+The only good way this can end is if they change the license on that file to
+GPL only. Possible bad ways include accidentally contaminating the
+apparently dual-licensed file with code that was offered by its author only
+under the GPL.
+
+DS
+
 
