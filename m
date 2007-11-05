@@ -1,77 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756180AbXKEIav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756471AbXKEIhF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756180AbXKEIav (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 03:30:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbXKEIao
+	id S1756471AbXKEIhF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 03:37:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbXKEIgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 03:30:44 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:57241 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752892AbXKEIan (ORCPT
+	Mon, 5 Nov 2007 03:36:52 -0500
+Received: from rayleigh.systella.fr ([213.41.184.253]:42904 "EHLO
+	rayleigh.systella.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753391AbXKEIgv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 03:30:43 -0500
-Date: Mon, 5 Nov 2007 09:30:37 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/6] drivers/video/ps3fb: fix memset size error
-In-Reply-To: <472E7FBC.7020906@cn.fujitsu.com>
-Message-ID: <Pine.LNX.4.62.0711050930170.1532@pademelon.sonytel.be>
-References: <472E7FBC.7020906@cn.fujitsu.com>
+	Mon, 5 Nov 2007 03:36:51 -0500
+Message-ID: <472ED613.8050101@systella.fr>
+Date: Mon, 05 Nov 2007 09:36:35 +0100
+From: =?ISO-8859-1?Q?BERTRAND_Jo=EBl?= <joel.bertrand@systella.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux sparc64; fr-FR; rv:1.8.1.6) Gecko/20070802 Iceape/1.1.4 (Debian-1.1.4-1)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-667897339-1194251437=:1532"
+To: Neil Brown <neilb@suse.de>
+CC: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: 2.6.23.1: mdadm/raid5 hung/d-state
+References: <Pine.LNX.4.64.0711040658180.30831@p34.internal.lan> <18222.16003.92062.970530@notabene.brown>
+In-Reply-To: <18222.16003.92062.970530@notabene.brown>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-3.1.8 (rayleigh.systella.fr [192.168.254.1]); Mon, 05 Nov 2007 09:36:41 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----584337861-667897339-1194251437=:1532
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Mon, 5 Nov 2007, Li Zefan wrote:
-> The size passing to memset is wrong.
+Neil Brown wrote:
+> On Sunday November 4, jpiszcz@lucidpixels.com wrote:
+>> # ps auxww | grep D
+>> USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+>> root       273  0.0  0.0      0     0 ?        D    Oct21  14:40 [pdflush]
+>> root       274  0.0  0.0      0     0 ?        D    Oct21  13:00 [pdflush]
+>>
+>> After several days/weeks, this is the second time this has happened, while 
+>> doing regular file I/O (decompressing a file), everything on the device 
+>> went into D-state.
 > 
-> Signed-off-by Li Zefan <lizf@cn.fujitsu.com>
-
-Acked-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-
-> ---
->  drivers/video/ps3fb.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> At a guess (I haven't looked closely) I'd say it is the bug that was
+> meant to be fixed by
 > 
-> diff --git a/drivers/video/ps3fb.c b/drivers/video/ps3fb.c
-> index b3463dd..75836aa 100644
-> --- a/drivers/video/ps3fb.c
-> +++ b/drivers/video/ps3fb.c
-> @@ -727,7 +727,7 @@ static int ps3fb_blank(int blank, struct fb_info *info)
->  
->  static int ps3fb_get_vblank(struct fb_vblank *vblank)
->  {
-> -	memset(vblank, 0, sizeof(&vblank));
-> +	memset(vblank, 0, sizeof(*vblank));
->  	vblank->flags = FB_VBLANK_HAVE_VSYNC;
->  	return 0;
->  }
+> commit 4ae3f847e49e3787eca91bced31f8fd328d50496
+> 
+> except that patch applied badly and needed to be fixed with
+> the following patch (not in git yet).
+> These have been sent to stable@ and should be in the queue for 2.6.23.2
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
+	My linux-2.6.23/drivers/md/raid5.c contains your patch for a long time :
 
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-667897339-1194251437=:1532--
+...
+         spin_lock(&sh->lock);
+         clear_bit(STRIPE_HANDLE, &sh->state);
+         clear_bit(STRIPE_DELAYED, &sh->state);
+
+         s.syncing = test_bit(STRIPE_SYNCING, &sh->state);
+         s.expanding = test_bit(STRIPE_EXPAND_SOURCE, &sh->state);
+         s.expanded = test_bit(STRIPE_EXPAND_READY, &sh->state);
+         /* Now to look around and see what can be done */
+
+         /* clean-up completed biofill operations */
+         if (test_bit(STRIPE_OP_BIOFILL, &sh->ops.complete)) {
+                 clear_bit(STRIPE_OP_BIOFILL, &sh->ops.pending);
+                 clear_bit(STRIPE_OP_BIOFILL, &sh->ops.ack);
+                 clear_bit(STRIPE_OP_BIOFILL, &sh->ops.complete);
+         }
+
+         rcu_read_lock();
+         for (i=disks; i--; ) {
+                 mdk_rdev_t *rdev;
+                 struct r5dev *dev = &sh->dev[i];
+...
+
+but it doesn't fix this bug.
+
+	Regards,
+
+	JKB
