@@ -1,81 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755645AbXKESgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbXKESiK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755645AbXKESgS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 13:36:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbXKESgB
+	id S1754551AbXKESiK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 13:38:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbXKESh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 13:36:01 -0500
-Received: from lucidpixels.com ([75.144.35.66]:60813 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751327AbXKESgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 13:36:00 -0500
-Date: Mon, 5 Nov 2007 13:35:59 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Dan Williams <dan.j.williams@gmail.com>
-cc: Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org,
-       =?ISO-8859-1?Q?BERTRAND_Jo=EBl?= <joel.bertrand@systella.fr>
-Subject: Re: 2.6.23.1: mdadm/raid5 hung/d-state
-In-Reply-To: <e9c3a7c20711051035m78ba90ck68f4fbc10480462a@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0711051335450.11422@p34.internal.lan>
-References: <Pine.LNX.4.64.0711040658180.30831@p34.internal.lan> 
- <18222.16003.92062.970530@notabene.brown>  <Pine.LNX.4.64.0711041651250.23496@p34.internal.lan>
- <e9c3a7c20711051035m78ba90ck68f4fbc10480462a@mail.gmail.com>
+	Mon, 5 Nov 2007 13:37:57 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54280 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753277AbXKESh5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 13:37:57 -0500
+Date: Mon, 5 Nov 2007 10:36:50 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Mikael Petterson <mikpe@it.uu.se>,
+       Eric Biederman <ebiederm@xmission.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [GIT PULL] x86 setup: correct booting on 486 (revised)
+In-Reply-To: <472F61C8.4040300@zytor.com>
+Message-ID: <alpine.LFD.0.999.0711051035090.15101@woody.linux-foundation.org>
+References: <200711050358.lA53wlho003349@tazenda.hos.anvin.org>
+ <alpine.LFD.0.999.0711050842360.15101@woody.linux-foundation.org>
+ <472F5941.2060507@zytor.com> <alpine.LFD.0.999.0711051006060.15101@woody.linux-foundation.org>
+ <472F61C8.4040300@zytor.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463747160-2043971365-1194287759=:11422"
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----1463747160-2043971365-1194287759=:11422
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 
 
+On Mon, 5 Nov 2007, H. Peter Anvin wrote:
+> 
+> Well, the 32-bit code needs to set up its own stack, and only it knows where
+> it wants its stack; we don't guarantee that the stack is valid when we enter
+> the 32-bit code and we're entering with both INT and NMI disabled (requiring a
+> stack would probably break all existing users of the 32-bit entrypoint.)
 
-On Mon, 5 Nov 2007, Dan Williams wrote:
+I agree. But it would be nice if some basic instructions still worked: as 
+is, you cannot even do things like reloading %eflags, because the only way 
+to do that requires a stack.
 
-> On 11/4/07, Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
->>
->>
->> On Mon, 5 Nov 2007, Neil Brown wrote:
->>
->>> On Sunday November 4, jpiszcz@lucidpixels.com wrote:
->>>> # ps auxww | grep D
->>>> USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMA=
-ND
->>>> root       273  0.0  0.0      0     0 ?        D    Oct21  14:40 [pdfl=
-ush]
->>>> root       274  0.0  0.0      0     0 ?        D    Oct21  13:00 [pdfl=
-ush]
->>>>
->>>> After several days/weeks, this is the second time this has happened, w=
-hile
->>>> doing regular file I/O (decompressing a file), everything on the devic=
-e
->>>> went into D-state.
->>>
->>> At a guess (I haven't looked closely) I'd say it is the bug that was
->>> meant to be fixed by
->>>
->>> commit 4ae3f847e49e3787eca91bced31f8fd328d50496
->>>
->>> except that patch applied badly and needed to be fixed with
->>> the following patch (not in git yet).
->>> These have been sent to stable@ and should be in the queue for 2.6.23.2
->>>
->>
->> Ah, thanks Neil, will be updating as soon as it is released, thanks.
->>
->
-> Are you seeing the same "md thread takes 100% of the CPU" that Jo=EBl is
-> reporting?
->
+> However, that being said, doing so is trivial, and it might help some
+> debugging hack; anything that makes debugging easier is a Good Thing[TM].
 
-Yes, in another e-mail I posted the top output with md3_raid5 at 100%.
+Yeah. Even if it was just re-using the boot-time stack area temporarily, 
+just to give code the choice to use a common set of instructions.
 
-Justin.
----1463747160-2043971365-1194287759=:11422--
+			Linus
