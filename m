@@ -1,97 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755781AbXKELYN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756425AbXKELYw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755781AbXKELYN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 06:24:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754223AbXKELX5
+	id S1756425AbXKELYw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 06:24:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754178AbXKELYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 06:23:57 -0500
-Received: from anchor-post-32.mail.demon.net ([194.217.242.90]:4005 "EHLO
-	anchor-post-32.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754014AbXKELX4 (ORCPT
+	Mon, 5 Nov 2007 06:24:45 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:50875 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751466AbXKELYo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 06:23:56 -0500
-X-Greylist: delayed 642 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Nov 2007 06:23:56 EST
-Message-ID: <472EFACA.1090308@lougher.demon.co.uk>
-Date: Mon, 05 Nov 2007 11:13:14 +0000
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Mon, 5 Nov 2007 06:24:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=WgxA23YNBTlvmPUNBrWEXBQIPC68XBVpADpTNtpEihqDp+tMzUNjpTZvG6cEMAnJcmwoq32fuVEzOg5ITYkGczocLS/ynwvwZRi+M3WAOfQJXQckYEuiM87R02J3wkiYnf3A90yePXW+YcfS+a+18SoEQDydygbX2Y6fjjklm7c=
+Message-ID: <472EFD76.7000001@gmail.com>
+Date: Mon, 05 Nov 2007 12:24:38 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [ANN] Squashfs 3.3 released
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Jesper Nilsson <jesper.nilsson@axis.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Mikael Starvik <mikael.starvik@axis.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] CRISv10 serial driver rewrite
+References: <20071102093432.GD7621@axis.com> <472AFE4D.5030308@gmail.com> <20071105111839.GI7621@axis.com>
+In-Reply-To: <20071105111839.GI7621@axis.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 11/05/2007 12:18 PM, Jesper Nilsson wrote:
+> On Fri, Nov 02, 2007 at 11:39:09AM +0100, Jiri Slaby wrote:
+>> On 11/02/2007 10:34 AM, Jesper Nilsson wrote:
+>>> @@ -4434,7 +3941,7 @@ block_til_ready(struct tty_struct *tty, struct file * filp,
+>>>  	if (tty_hung_up_p(filp) ||
+>>>  	    (info->flags & ASYNC_CLOSING)) {
+>>>  		if (info->flags & ASYNC_CLOSING)
+>>> -			interruptible_sleep_on(&info->close_wait);
+>>> +			wait_event_interruptible(info->close_wait, 0);
+>> Aiee, this is nonsense, 0 will never be 1, only signal will stop this, use
+>> completion instead.
+> 
+> True, I've changed it to use "!info->flags & ASYNC_CLOSING" condition
+> for now, as this is a more non-intrusive patch.
+> I will look at using completion later, at the same time as using
 
-I'm pleased to announce another release of Squashfs.  This is the 22nd
-release in just over five years.  Squashfs 3.3 has lots of nice improvements,
-both to the filesystem itself (bigger blocks and sparse files), but
-also to the Squashfs-tools Mksquashfs and Unsquashfs.
+Aha, then the completion is a bad idea. Just
+wait_event_interruptible(info->close_wait, !(info->flags & ASYNC_CLOSING));
+as you proposed to use is fine (and you don't need the "if (info->flags &
+ASYNC_CLOSING)" test one line above).
 
-The next stage after this release is to fix the one remaining blocking issue
-(filesystem endianness), and then try to get Squashfs mainlined into the
-Linux kernel again.
-
-The list of changes from the change-log are as follows:
-
-1. Filesystem improvements:
-
-    1.1. Maximum block size has been increased to 1Mbyte, and the
-         default block size has been increased to 128 Kbytes.
-         This improves compression.
-
-    1.2. Sparse files are now supported.  Sparse files are files
-         which have large areas of unallocated data commonly called
-         holes.  These files are now detected by Squashfs and stored
-         more efficiently.  This improves compression and read
-         performance for sparse files.
-
-2. Mksquashfs improvements:
-
-    2.1.  Exclude files have been extended to use wildcard pattern
-          matching and regular expressions.  Support has also been
-          added for non-anchored excludes, which means it is
-          now possible to specify excludes which match anywhere
-          in the filesystem (i.e. leaf files), rather than always
-          having to specify exclude files starting from the root
-          directory (anchored excludes).
-
-    2.2.  Recovery files are now created when appending to existing
-          Squashfs filesystems.  This allows the original filesystem
-          to be recovered if Mksquashfs aborts unexpectedly
-          (i.e. power failure).
-
-3. Unsquashfs improvements:
-
-     3.1. Multiple extract files can now be specified on the
-          command line, and the files/directories to be extracted can
-          now also be given in a file.
-
-     3.2. Extract files have been extended to use wildcard pattern
-          matching and regular expressions.
-
-     3.3. Filename printing has been enhanced and Unquashfs can
-          now display filenames with file attributes
-          ('ls -l' style output).
-
-     3.4. A -stat option has been added which displays the filesystem
-          superblock information.
-
-     3.5. Unsquashfs now supports 1.x filesystems.
-
-4. Miscellaneous improvements/bug fixes:
-
-    4.1. Squashfs kernel code improved to use SetPageError in
-         squashfs_readpage() if I/O error occurs.
-
-    4.2. Fixed Squashfs kernel code bug preventing file
-         seeking beyond 2GB.
-
-    4.3. Mksquashfs now detects file size changes between
-         first phase directory scan and second phase filesystem create.
-
-Regards
-
-Phillip Lougher
+regards,
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
