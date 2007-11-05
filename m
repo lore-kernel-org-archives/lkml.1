@@ -1,42 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbXKEAQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbXKEAXt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756211AbXKEAQj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 19:16:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbXKEAQU
+	id S1755255AbXKEAXt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 19:23:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867AbXKEAXl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 19:16:20 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:57300 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753971AbXKEAQT (ORCPT
+	Sun, 4 Nov 2007 19:23:41 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47117 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752168AbXKEAXk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 19:16:19 -0500
-Message-ID: <472E6001.9040404@zytor.com>
-Date: Sun, 04 Nov 2007 16:12:49 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Sun, 4 Nov 2007 19:23:40 -0500
+Date: Sun, 4 Nov 2007 16:23:11 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Jeremy Fitzhardinge <jeremy@goop.org>, Mikael Pettersson <mikpe@it.uu.se>,
+       linux-kernel@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de
+Subject: Re: [PATCH] fix i486 boot failure due to stale %ds
+In-Reply-To: <alpine.LFD.0.999.0711041600280.15101@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.999.0711041615380.15101@woody.linux-foundation.org>
+References: <200711042158.lA4Lwv9S014628@harpo.it.uu.se> <472E50C5.5020201@goop.org>
+ <472E5AB6.40509@zytor.com>
+ <alpine.LFD.0.999.0711041600280.15101@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Mikael Petterson <mikpe@it.uu.se>,
-       Eric Biederman <ebiederm@xmission.com>
-Subject: Re: [GIT PULL] x86 setup: correct booting on 486DX4
-References: <200711042259.lA4Mxa0n025210@tazenda.hos.anvin.org> <alpine.LFD.0.999.0711041512530.15101@woody.linux-foundation.org> <472E551E.2010507@zytor.com> <alpine.LFD.0.999.0711041546510.15101@woody.linux-foundation.org> <472E5DAB.8080804@zytor.com>
-In-Reply-To: <472E5DAB.8080804@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> 
-> Apparently because the Intel documentation disagrees with itself. That's 
-> all.
-> 
 
-Just to be perfectly clear: I much prefer the code with the short (near) 
-jump, because it keeps the code cleaner.  I have sent a patch to Mikael 
-to test out.
 
-	-hpa
+On Sun, 4 Nov 2007, Linus Torvalds wrote:
+> 
+> So I'd suggest having both jumps back-to-back, but realistically, the 
+> first regular short jump is actually the one that is more important. 
+> That's the one that really matters on i386/i486 class machines, and later 
+> CPU's will generally do the right thing even with _neither_ jump there.
+
+That's obviously badly phrased.
+
+The far jump is obviously required on all CPU's in order for us to 
+actually finally get to 32-bit protected mode and reload CS, but what I 
+*meant* was that we certainly also know that "unreal mode" works and is 
+used by various strange DOS extenders, and that not doing the far jump 
+isn't really required for having a "working setup" - it's just going to be 
+a rather limited mode.
+
+So the short jump is required for the code to *work*. The long jump is 
+required only to get us the 32-bit mode we *want* and out of the odd 
+"half-way" state. Two different issues.
+
+		Linus
