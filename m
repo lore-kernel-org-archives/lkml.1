@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbXKEOrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756609AbXKEOuE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756214AbXKEOrV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 09:47:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbXKEOrO
+	id S1756609AbXKEOuE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 09:50:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbXKEOtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 09:47:14 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:16049 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751087AbXKEOrN (ORCPT
+	Mon, 5 Nov 2007 09:49:55 -0500
+Received: from crystal.sipsolutions.net ([195.210.38.204]:35003 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751381AbXKEOtz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 09:47:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=SVyabmwzsNjKGJTwGgGTV/krEVm63CSrohdbxurUdYS0jkbOD3Gs9EeuV3Ot5X/3MO5U35I8Xh23vdva3chTYfSqXVZds8tUaxJ2rRdHYE6GXF2hjtKZJEpGHqhzSAQQOxhZx8c11WfQrpa7DR2zd9naa+QfHlxUM5e00sXHyqA=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] PID namespaces
-Date: Mon, 5 Nov 2007 14:47:01 +0000
-User-Agent: KMail/1.9.1
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Dave Hansen <haveblue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>, Ulrich Drepper <drepper@redhat.com>,
-       linux-kernel@vger.kernel.org,
-       "Dinakar Guniguntala [imap]" <dino@in.ibm.com>,
-       Sripathi Kodi <sripathik@in.ibm.com>
-References: <4729E7E4.8070208@openvz.org> <alpine.LFD.0.999.0711031535450.15101@woody.linux-foundation.org> <20071104103851.GA14317@elte.hu>
-In-Reply-To: <20071104103851.GA14317@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 5 Nov 2007 09:49:55 -0500
+Subject: [PATCH] kobject: two typo fixes
+From: Johannes Berg <johannes@sipsolutions.net>
+To: trivial@kernel.org
+Cc: Greg KH <gregkh@suse.de>, Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 05 Nov 2007 13:59:11 +0100
+Message-Id: <1194267551.13501.2.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711051447.02232.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 04 November 2007 10:38, Ingo Molnar wrote:
-> I.e. keep the namespace functionality but use a modulo 1.000.000 base 
-> for the PIDs so that it all looks nicer to the user. Minimal visibility 
-> difference but maximum compatibility. (The resulting limits are 
-> reasonable: 1 million tasks per container and 4 million containers on a 
-> single 32-bit box.) We could still restrict cross-namespace API use but 
+This fixes two typos from commit
+34358c26a2c96b2a068dc44e0ac602106a466bce.
 
-4 thousand, not 4 million.
---
-vda
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+---
+ lib/kobject.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- linux-2.6.orig/lib/kobject.c	2007-11-05 13:51:34.004672254 +0100
++++ linux-2.6/lib/kobject.c	2007-11-05 13:51:52.304652018 +0100
+@@ -313,8 +313,8 @@ int kobject_rename(struct kobject * kobj
+ 		struct kobject *temp_kobj;
+ 		temp_kobj = kset_find_obj(kobj->kset, new_name);
+ 		if (temp_kobj) {
+-			printk(KERN_WARNING "kobject '%s' can not be renamed "
+-			       "to '%s' as '%s' is already in existance.\n",
++			printk(KERN_WARNING "kobject '%s' cannot be renamed "
++			       "to '%s' as '%s' is already in existence.\n",
+ 			       kobject_name(kobj), new_name, new_name);
+ 			kobject_put(temp_kobj);
+ 			return -EINVAL;
+
+
