@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754906AbXKETYG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754342AbXKET1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754906AbXKETYG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 14:24:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbXKETXx
+	id S1754342AbXKET1S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 14:27:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbXKET1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 14:23:53 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:32902 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751887AbXKETXw (ORCPT
+	Mon, 5 Nov 2007 14:27:10 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59609 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751087AbXKET1J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 14:23:52 -0500
-Date: Mon, 5 Nov 2007 11:23:51 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: stable@kernel.org
-cc: Hugh Dickins <hugh@veritas.com>,
-       =?iso-8859-1?Q?Oliv=E9r_Pint=E9r?= <oliver.pntr@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Mon, 5 Nov 2007 14:27:09 -0500
+Date: Mon, 5 Nov 2007 11:26:42 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+cc: stable@kernel.org, Hugh Dickins <hugh@veritas.com>,
+       Oliv?r Pint?r <oliver.pntr@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
        linux-kernel@vger.kernel.org
 Subject: Re: [PATCH 1/2] slub: fix leakage
 In-Reply-To: <Pine.LNX.4.64.0711051114560.14913@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0711051123130.15999@schroedinger.engr.sgi.com>
+Message-ID: <alpine.LFD.0.999.0711051126250.15101@woody.linux-foundation.org>
 References: <Pine.LNX.4.64.0711031708040.10266@blonde.wat.veritas.com>
  <6101e8c40711031027x3f946b28p324dadeab7c1b2c3@mail.gmail.com>
  <Pine.LNX.4.64.0711031741160.10953@blonde.wat.veritas.com>
@@ -37,62 +35,16 @@ References: <Pine.LNX.4.64.0711031708040.10266@blonde.wat.veritas.com>
  <Pine.LNX.4.64.0711051901330.28390@blonde.wat.veritas.com>
  <Pine.LNX.4.64.0711051114560.14913@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix against 2.6.22 (the .23 fix also applies with some offsets)
 
 
-SLUB: Fix memory leak by not reusing cpu_slab
+On Mon, 5 Nov 2007, Christoph Lameter wrote:
+> 
+> Here is the fix against 2.6.23:
 
-Fix the memory leak that may occur when we attempt to reuse a cpu_slab
-that was allocated while we reenabled interrupts in order to be able to
-grow a slab cache. The per cpu freelist may contain objects and in that
-situation we may overwrite the per cpu freelist pointer loosing objects.
-This only occurs if we find that the concurrently allocated slab fits
-our allocation needs.
+Will you send the equivalent one for the current -git tree?
 
-If we simply always deactivate the slab then the freelist will be properly
-reintegrated and the memory leak will go away.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
----
- mm/slub.c |   20 +-------------------
- 1 file changed, 1 insertion(+), 19 deletions(-)
-
-Index: linux-2.6.22/mm/slub.c
-===================================================================
---- linux-2.6.22.orig/mm/slub.c	2007-07-08 16:32:17.000000000 -0700
-+++ linux-2.6.22/mm/slub.c	2007-11-05 11:19:15.000000000 -0800
-@@ -1431,28 +1431,8 @@ new_slab:
- 	page = new_slab(s, gfpflags, node);
- 	if (page) {
- 		cpu = smp_processor_id();
--		if (s->cpu_slab[cpu]) {
--			/*
--			 * Someone else populated the cpu_slab while we
--			 * enabled interrupts, or we have gotten scheduled
--			 * on another cpu. The page may not be on the
--			 * requested node even if __GFP_THISNODE was
--			 * specified. So we need to recheck.
--			 */
--			if (node == -1 ||
--				page_to_nid(s->cpu_slab[cpu]) == node) {
--				/*
--				 * Current cpuslab is acceptable and we
--				 * want the current one since its cache hot
--				 */
--				discard_slab(s, page);
--				page = s->cpu_slab[cpu];
--				slab_lock(page);
--				goto load_freelist;
--			}
--			/* New slab does not fit our expectations */
-+		if (s->cpu_slab[cpu])
- 			flush_slab(s, s->cpu_slab[cpu], cpu);
--		}
- 		slab_lock(page);
- 		SetSlabFrozen(page);
- 		s->cpu_slab[cpu] = page;
+		Linus
