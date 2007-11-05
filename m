@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755812AbXKEKdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755286AbXKEKlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755812AbXKEKdo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 05:33:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753973AbXKEKdg
+	id S1755286AbXKEKlt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 05:41:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753993AbXKEKlm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 05:33:36 -0500
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:13670 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753589AbXKEKdf (ORCPT
+	Mon, 5 Nov 2007 05:41:42 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:40424 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753889AbXKEKll (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 05:33:35 -0500
-Date: Mon, 5 Nov 2007 11:33:19 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH 33/54] driver core: remove fields from struct bus_type
-Message-ID: <20071105113319.4c54f711@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <1194047972-9850-33-git-send-email-gregkh@suse.de>
-References: <20071102235758.GA9803@kroah.com>
-	<1194047972-9850-33-git-send-email-gregkh@suse.de>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i486-pc-linux-gnu)
+	Mon, 5 Nov 2007 05:41:41 -0500
+Date: Mon, 5 Nov 2007 10:41:29 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] replace "make ARCH=i386/x86_64 with make ARCH=x86"
+Message-ID: <20071105104129.GB3662@infradead.org>
+References: <20071103234826.GA26654@uranus.ravnborg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071103234826.GA26654@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri,  2 Nov 2007 16:59:11 -0700,
-Greg Kroah-Hartman <gregkh@suse.de> wrote:
-
-> struct bus_type is static everywhere in the kernel.  This moves the
-> kobject in the structure out of it, and a bunch of other private only to
-> the driver core fields are now moved to a private structure.  This lets
-> us dynamically create the backing kobject properly and gives us the
-> chance to be able to document to users exactly how to use the struct
-> bus_type as there are no fields they can improperly access.
+On Sun, Nov 04, 2007 at 12:48:26AM +0100, Sam Ravnborg wrote:
+> This patchset unify the i386 and x86_64 Kconfig
+> files for x86.
+> In addition it replaces the use of ARCH=i386 and
+> ARCH=x86_64 with the more intuitive ARCH=x86.
 > 
-> Cc: Kay Sievers <kay.sievers@vrfy.org>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> ---
->  drivers/base/base.h     |   30 +++++++++++-
->  drivers/base/bus.c      |  120 ++++++++++++++++++++++++++--------------------
->  drivers/base/core.c     |    6 +-
->  drivers/base/dd.c       |    4 +-
->  drivers/base/driver.c   |    2 +-
->  drivers/base/platform.c |    4 +-
->  include/linux/device.h  |   12 +----
->  7 files changed, 107 insertions(+), 71 deletions(-)
+> The primary purpose of this patch serie is to 
+> enable make ARCH=x86 and let the config decide
+> if we are building for 32 or 64 bit.
+
+Nice!  Thanks a lot for the work.
+
+> But we will break quite a high number of
+> scripts with this change.
+> What is the desired behaviour when specifying:
+> make ARCH=i386
+> and
+> make ARCH=x86_64
+> ??
 > 
+> For now it just error out like this:
+> $ make ARCH=i386
+> Makefile:503: /home/sam/kernel/x86.git/arch/i386/Makefile: No such file or directory
+> make: *** No rule to make target `/home/sam/kernel/x86.git/arch/i386/Makefile'.  Stop.
 
-drivers/base/bus.c: In function 'make_deprecated_bus_links':
-drivers/base/bus.c:428: error: 'struct bus_type' has no member named 'subsys'
+Sounds fine, other architectures had that exactly same issue before.  Maybe
+we can add a more useful message thouigh like
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+$ARCH does not exist for any non-existant arch.
 
----
- drivers/base/bus.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6/drivers/base/bus.c
-===================================================================
---- linux-2.6.orig/drivers/base/bus.c	2007-11-05 11:12:49.000000000 +0100
-+++ linux-2.6/drivers/base/bus.c	2007-11-05 11:30:28.000000000 +0100
-@@ -425,7 +425,7 @@ static void device_remove_attrs(struct b
- static int make_deprecated_bus_links(struct device *dev)
- {
- 	return sysfs_create_link(&dev->kobj,
--				 &dev->bus->subsys.kobj, "bus");
-+				 &dev->bus->p->subsys.kobj, "bus");
- }
- 
- static void remove_deprecated_bus_links(struct device *dev)
