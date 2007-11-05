@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758156AbXKERMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758149AbXKERMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758156AbXKERMY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 12:12:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756953AbXKERHe
+	id S1758149AbXKERMs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 12:12:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757199AbXKERHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 12:07:34 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:59500 "EHLO
+	Mon, 5 Nov 2007 12:07:38 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:59503 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756196AbXKERHc (ORCPT
+	with ESMTP id S1757005AbXKERHh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 12:07:32 -0500
-Date: Mon, 5 Nov 2007 18:07:09 +0100
+	Mon, 5 Nov 2007 12:07:37 -0500
+Date: Mon, 5 Nov 2007 18:07:13 +0100
 From: Adrian Bunk <bunk@kernel.org>
-To: chris@zankel.net
-Cc: linux-kernel@vger.kernel.org, "Robert P. J. Day" <rpjday@crashcourse.ca>
-Subject: [2.6 patch] xtensa/kernel/setup.c: remove dead code
-Message-ID: <20071105170709.GI12045@stusta.de>
+To: sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>
+Subject: [2.6 patch] ext4/super.c: fix #ifdef's
+Message-ID: <20071105170713.GJ12045@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,26 +24,38 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes dead code reported by Robert P. J. Day.
+This patch fixes the names of two variables in #ifdef's.
+
+Based on a report by Robert P. J. Day.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-e801f21f9b0e708b32bb92f5dba792973576f7aa 
-diff --git a/arch/xtensa/kernel/setup.c b/arch/xtensa/kernel/setup.c
-index 2e8d398..9f23a74 100644
---- a/arch/xtensa/kernel/setup.c
-+++ b/arch/xtensa/kernel/setup.c
-@@ -60,11 +60,6 @@ struct ide_ops *ide_ops;
- extern struct rtc_ops no_rtc_ops;
- struct rtc_ops *rtc_ops;
- 
--#ifdef CONFIG_PC_KEYB
--extern struct kbd_ops no_kbd_ops;
--struct kbd_ops *kbd_ops;
--#endif
--
- #ifdef CONFIG_BLK_DEV_INITRD
- extern void *initrd_start;
- extern void *initrd_end;
+
+ fs/ext4/super.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+44e9889e6a3952ea225704b2e494d31e00f34a6b 
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 8031dc0..6673672 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -646,7 +646,7 @@ static int ext4_show_options(struct seq_file *seq, struct vfsmount *vfs)
+ 		seq_puts(seq, ",debug");
+ 	if (test_opt(sb, OLDALLOC))
+ 		seq_puts(seq, ",oldalloc");
+-#ifdef CONFIG_EXT4_FS_XATTR
++#ifdef CONFIG_EXT4DEV_FS_XATTR
+ 	if (test_opt(sb, XATTR_USER))
+ 		seq_puts(seq, ",user_xattr");
+ 	if (!test_opt(sb, XATTR_USER) &&
+@@ -654,7 +654,7 @@ static int ext4_show_options(struct seq_file *seq, struct vfsmount *vfs)
+ 		seq_puts(seq, ",nouser_xattr");
+ 	}
+ #endif
+-#ifdef CONFIG_EXT4_FS_POSIX_ACL
++#ifdef CONFIG_EXT4DEV_FS_POSIX_ACL
+ 	if (test_opt(sb, POSIX_ACL))
+ 		seq_puts(seq, ",acl");
+ 	if (!test_opt(sb, POSIX_ACL) && (def_mount_opts & EXT4_DEFM_ACL))
 
