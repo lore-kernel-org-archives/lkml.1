@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759531AbXKEROp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759451AbXKERPG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759531AbXKEROp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 12:14:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757680AbXKERIB
+	id S1759451AbXKERPG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 12:15:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757683AbXKERIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 12:08:01 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59520 "EHLO
+	Mon, 5 Nov 2007 12:08:06 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59524 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757640AbXKERHz (ORCPT
+	with ESMTP id S1757654AbXKERH5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 12:07:55 -0500
-Date: Mon, 5 Nov 2007 18:07:31 +0100
+	Mon, 5 Nov 2007 12:07:57 -0500
+Date: Mon, 5 Nov 2007 18:07:33 +0100
 From: Adrian Bunk <bunk@kernel.org>
-To: amitkale@netxen.com, jgarzik@pobox.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] drivers/net/netxen/: cleanups
-Message-ID: <20071105170731.GP12045@stusta.de>
+To: james.smart@emulex.com, James.Bottomley@SteelEye.com
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] scsi/lpfc/: possible cleanups
+Message-ID: <20071105170733.GQ12045@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,605 +23,414 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains the following cleanups:
-- static functions in .c files shouldn't be marked inline
-- make needlessly global code static
-- #if 0 unused code
+This patch contains the following possible cleanups:
+- make the following needlessly global functions static:
+  - lpfc_els.c: lpfc_register_new_vport()
+  - lpfc_els.c: lpfc_issue_els_fdisc()
+  - lpfc_els.c: lpfc_issue_fabric_iocb()
+  - lpfc_els.c: lpfc_fabric_abort_vport()
+  - lpfc_hbadisc.c: lpfc_dev_loss_tmo_handler()
+  - lpfc_hbadisc.c: lpfc_mbx_cmpl_clear_la()
+  - lpfc_hbadisc.c: lpfc_disc_flush_list()
+  - lpfc_hbadisc.c: __lpfc_find_node()
+  - lpfc_init.c: lpfc_hb_timeout()
+  - lpfc_init.c: lpfc_block_mgmt_io()
+  - lpfc_sli.c: __lpfc_sli_release_iocbq()
+  - lpfc_sli.c: lpfc_sli_next_hbq_slot()
+  - lpfc_sli.c: lpfc_sli_hbqbuf_init_hbqs()
+  - lpfc_sli.c: lpfc_sli_hbqbuf_find()
+  - lpfc_sli.c: __lpfc_sli_issue_iocb()
+- #if 0 the following unused global functions:
+  - lpfc_els.c: lpfc_fabric_abort_flogi()
+  - lpfc_hbadisc.c: lpfc_find_node()
+  - lpfc_hbadisc.c: lpfc_findnode_rpi()
+- remove the unused exports
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/net/netxen/netxen_nic.h          |   14 ----
- drivers/net/netxen/netxen_nic_hw.c       |   19 +++---
- drivers/net/netxen/netxen_nic_hw.h       |    8 --
- drivers/net/netxen/netxen_nic_init.c     |   70 ++++++++++++-----------
- drivers/net/netxen/netxen_nic_isr.c      |    7 +-
- drivers/net/netxen/netxen_nic_main.c     |    9 +-
- drivers/net/netxen/netxen_nic_niu.c      |   26 +++++---
- drivers/net/netxen/netxen_nic_phan_reg.h |    7 --
- 8 files changed, 76 insertions(+), 84 deletions(-)
+ drivers/scsi/lpfc/lpfc_crtn.h    |   19 -------------------
+ drivers/scsi/lpfc/lpfc_els.c     |   18 ++++++++++++++----
+ drivers/scsi/lpfc/lpfc_hbadisc.c |   13 +++++++++----
+ drivers/scsi/lpfc/lpfc_init.c    |   22 +++++++++++-----------
+ drivers/scsi/lpfc/lpfc_sli.c     |   10 +++++-----
+ drivers/scsi/lpfc/lpfc_vport.c   |    3 ---
+ 6 files changed, 39 insertions(+), 46 deletions(-)
 
-dbc7aeed37e41cd37a01cce259e5c0ab01f8dd88 
-diff --git a/drivers/net/netxen/netxen_nic.h b/drivers/net/netxen/netxen_nic.h
-index fbc2553..ef9f986 100644
---- a/drivers/net/netxen/netxen_nic.h
-+++ b/drivers/net/netxen/netxen_nic.h
-@@ -1015,14 +1015,8 @@ int netxen_niu_xgbe_enable_phy_interrupts(struct netxen_adapter *adapter);
- int netxen_niu_gbe_enable_phy_interrupts(struct netxen_adapter *adapter);
- int netxen_niu_xgbe_disable_phy_interrupts(struct netxen_adapter *adapter);
- int netxen_niu_gbe_disable_phy_interrupts(struct netxen_adapter *adapter);
--int netxen_niu_xgbe_clear_phy_interrupts(struct netxen_adapter *adapter);
--int netxen_niu_gbe_clear_phy_interrupts(struct netxen_adapter *adapter);
- void netxen_nic_xgbe_handle_phy_intr(struct netxen_adapter *adapter);
- void netxen_nic_gbe_handle_phy_intr(struct netxen_adapter *adapter);
--void netxen_niu_gbe_set_mii_mode(struct netxen_adapter *adapter, int port,
--				 long enable);
--void netxen_niu_gbe_set_gmii_mode(struct netxen_adapter *adapter, int port,
--				  long enable);
- int netxen_niu_gbe_phy_read(struct netxen_adapter *adapter, long reg,
- 			    __u32 * readval);
- int netxen_niu_gbe_phy_write(struct netxen_adapter *adapter,
-@@ -1045,7 +1039,6 @@ int netxen_nic_hw_write_wx(struct netxen_adapter *adapter, u64 off, void *data,
- 			   int len);
- void netxen_crb_writelit_adapter(struct netxen_adapter *adapter,
- 				 unsigned long off, int data);
--int netxen_nic_erase_pxe(struct netxen_adapter *adapter);
+c94edacd40dd5e59cd20072974594e3d2160540c 
+diff --git a/drivers/scsi/lpfc/lpfc_crtn.h b/drivers/scsi/lpfc/lpfc_crtn.h
+index a599e15..53dd68d 100644
+--- a/drivers/scsi/lpfc/lpfc_crtn.h
++++ b/drivers/scsi/lpfc/lpfc_crtn.h
+@@ -45,7 +45,6 @@ void lpfc_cleanup_rpis(struct lpfc_vport *vport, int remove);
+ int lpfc_linkdown(struct lpfc_hba *);
+ void lpfc_mbx_cmpl_read_la(struct lpfc_hba *, LPFC_MBOXQ_t *);
  
- /* Functions from netxen_nic_init.c */
- void netxen_free_adapter_offload(struct netxen_adapter *adapter);
-@@ -1064,15 +1057,10 @@ int netxen_flash_erase_secondary(struct netxen_adapter *adapter);
- int netxen_flash_erase_primary(struct netxen_adapter *adapter);
- void netxen_halt_pegs(struct netxen_adapter *adapter);
+-void lpfc_mbx_cmpl_clear_la(struct lpfc_hba *, LPFC_MBOXQ_t *);
+ void lpfc_mbx_cmpl_reg_login(struct lpfc_hba *, LPFC_MBOXQ_t *);
+ void lpfc_mbx_cmpl_dflt_rpi(struct lpfc_hba *, LPFC_MBOXQ_t *);
+ void lpfc_mbx_cmpl_fabric_reg_login(struct lpfc_hba *, LPFC_MBOXQ_t *);
+@@ -69,12 +68,10 @@ int  lpfc_nlp_put(struct lpfc_nodelist *);
+ struct lpfc_nodelist *lpfc_setup_disc_node(struct lpfc_vport *, uint32_t);
+ void lpfc_disc_list_loopmap(struct lpfc_vport *);
+ void lpfc_disc_start(struct lpfc_vport *);
+-void lpfc_disc_flush_list(struct lpfc_vport *);
+ void lpfc_cleanup_discovery_resources(struct lpfc_vport *);
+ void lpfc_disc_timeout(unsigned long);
  
--int netxen_rom_fast_write(struct netxen_adapter *adapter, int addr, int data);
- int netxen_rom_se(struct netxen_adapter *adapter, int addr);
--int netxen_do_rom_se(struct netxen_adapter *adapter, int addr);
+ struct lpfc_nodelist *__lpfc_findnode_rpi(struct lpfc_vport *, uint16_t);
+-struct lpfc_nodelist *lpfc_findnode_rpi(struct lpfc_vport *, uint16_t);
  
- /* Functions from netxen_nic_isr.c */
- int netxen_nic_link_ok(struct netxen_adapter *adapter);
--void netxen_nic_isr_other(struct netxen_adapter *adapter);
--void netxen_indicate_link_status(struct netxen_adapter *adapter, u32 link);
--void netxen_handle_port_int(struct netxen_adapter *adapter, u32 enable);
- void netxen_initialize_adapter_sw(struct netxen_adapter *adapter);
- void netxen_initialize_adapter_hw(struct netxen_adapter *adapter);
- void *netxen_alloc(struct pci_dev *pdev, size_t sz, dma_addr_t * ptr,
-@@ -1089,8 +1077,6 @@ int netxen_nic_tx_has_work(struct netxen_adapter *adapter);
- void netxen_watchdog_task(struct work_struct *work);
- void netxen_post_rx_buffers(struct netxen_adapter *adapter, u32 ctx,
- 			    u32 ringid);
--void netxen_post_rx_buffers_nodb(struct netxen_adapter *adapter, u32 ctx,
--				 u32 ringid);
- int netxen_process_cmd_ring(unsigned long data);
- u32 netxen_process_rcv_ring(struct netxen_adapter *adapter, int ctx, int max);
- void netxen_nic_set_multi(struct net_device *netdev);
-diff --git a/drivers/net/netxen/netxen_nic_hw.c b/drivers/net/netxen/netxen_nic_hw.c
-index 2c19b8d..b2c7861 100644
---- a/drivers/net/netxen/netxen_nic_hw.c
-+++ b/drivers/net/netxen/netxen_nic_hw.c
-@@ -33,7 +33,6 @@
+ void lpfc_worker_wake_up(struct lpfc_hba *);
+ int lpfc_workq_post_event(struct lpfc_hba *, void *, void *, uint32_t);
+@@ -82,8 +79,6 @@ int lpfc_do_work(void *);
+ int lpfc_disc_state_machine(struct lpfc_vport *, struct lpfc_nodelist *, void *,
+ 			    uint32_t);
  
- #include "netxen_nic.h"
- #include "netxen_nic_hw.h"
--#define DEFINE_GLOBAL_RECV_CRB
- #include "netxen_nic_phan_reg.h"
+-void lpfc_register_new_vport(struct lpfc_hba *, struct lpfc_vport *,
+-			struct lpfc_nodelist *);
+ void lpfc_do_scr_ns_plogi(struct lpfc_hba *, struct lpfc_vport *);
+ int lpfc_check_sparm(struct lpfc_vport *, struct lpfc_nodelist *,
+ 		     struct serv_parm *, uint32_t);
+@@ -92,7 +87,6 @@ int lpfc_els_chk_latt(struct lpfc_vport *);
+ int lpfc_els_abort_flogi(struct lpfc_hba *);
+ int lpfc_initial_flogi(struct lpfc_vport *);
+ int lpfc_initial_fdisc(struct lpfc_vport *);
+-int lpfc_issue_els_fdisc(struct lpfc_vport *, struct lpfc_nodelist *, uint8_t);
+ int lpfc_issue_els_plogi(struct lpfc_vport *, uint32_t, uint8_t);
+ int lpfc_issue_els_prli(struct lpfc_vport *, struct lpfc_nodelist *, uint8_t);
+ int lpfc_issue_els_adisc(struct lpfc_vport *, struct lpfc_nodelist *, uint8_t);
+@@ -112,7 +106,6 @@ int lpfc_els_rsp_prli_acc(struct lpfc_vport *, struct lpfc_iocbq *,
+ void lpfc_cancel_retry_delay_tmo(struct lpfc_vport *, struct lpfc_nodelist *);
+ void lpfc_els_retry_delay(unsigned long);
+ void lpfc_els_retry_delay_handler(struct lpfc_nodelist *);
+-void lpfc_dev_loss_tmo_handler(struct lpfc_nodelist *);
+ void lpfc_els_unsol_event(struct lpfc_hba *, struct lpfc_sli_ring *,
+ 			  struct lpfc_iocbq *);
+ int lpfc_els_handle_rscn(struct lpfc_vport *);
+@@ -124,7 +117,6 @@ int lpfc_els_disc_adisc(struct lpfc_vport *);
+ int lpfc_els_disc_plogi(struct lpfc_vport *);
+ void lpfc_els_timeout(unsigned long);
+ void lpfc_els_timeout_handler(struct lpfc_vport *);
+-void lpfc_hb_timeout(unsigned long);
+ void lpfc_hb_timeout_handler(struct lpfc_hba *);
  
+ void lpfc_ct_unsol_event(struct lpfc_hba *, struct lpfc_sli_ring *,
+@@ -142,7 +134,6 @@ void lpfc_hba_init(struct lpfc_hba *, uint32_t *);
+ int lpfc_post_buffer(struct lpfc_hba *, struct lpfc_sli_ring *, int, int);
+ void lpfc_decode_firmware_rev(struct lpfc_hba *, char *, int);
+ int lpfc_online(struct lpfc_hba *);
+-void lpfc_block_mgmt_io(struct lpfc_hba *);
+ void lpfc_unblock_mgmt_io(struct lpfc_hba *);
+ void lpfc_offline_prep(struct lpfc_hba *);
+ void lpfc_offline(struct lpfc_hba *);
+@@ -165,7 +156,6 @@ int lpfc_mbox_tmo_val(struct lpfc_hba *, int);
  
-@@ -244,12 +243,15 @@ struct netxen_recv_crb recv_crb_registers[] = {
- 	},
- };
+ void lpfc_config_hbq(struct lpfc_hba *, uint32_t, struct lpfc_hbq_init *,
+ 	uint32_t , LPFC_MBOXQ_t *);
+-struct lpfc_hbq_entry * lpfc_sli_next_hbq_slot(struct lpfc_hba *, uint32_t);
+ struct hbq_dmabuf *lpfc_els_hbq_alloc(struct lpfc_hba *);
+ void lpfc_els_hbq_free(struct lpfc_hba *, struct hbq_dmabuf *);
  
--u64 ctx_addr_sig_regs[][3] = {
-+static u64 ctx_addr_sig_regs[][3] = {
- 	{NETXEN_NIC_REG(0x188), NETXEN_NIC_REG(0x18c), NETXEN_NIC_REG(0x1c0)},
- 	{NETXEN_NIC_REG(0x190), NETXEN_NIC_REG(0x194), NETXEN_NIC_REG(0x1c4)},
- 	{NETXEN_NIC_REG(0x198), NETXEN_NIC_REG(0x19c), NETXEN_NIC_REG(0x1c8)},
- 	{NETXEN_NIC_REG(0x1a0), NETXEN_NIC_REG(0x1a4), NETXEN_NIC_REG(0x1cc)}
- };
-+#define CRB_CTX_ADDR_REG_LO(FUNC_ID)		(ctx_addr_sig_regs[FUNC_ID][0])
-+#define CRB_CTX_ADDR_REG_HI(FUNC_ID)		(ctx_addr_sig_regs[FUNC_ID][2])
-+#define CRB_CTX_SIGNATURE_REG(FUNC_ID)		(ctx_addr_sig_regs[FUNC_ID][1])
+@@ -178,7 +168,6 @@ void lpfc_poll_start_timer(struct lpfc_hba * phba);
+ void lpfc_sli_poll_fcp_ring(struct lpfc_hba * hba);
+ struct lpfc_iocbq * lpfc_sli_get_iocbq(struct lpfc_hba *);
+ void lpfc_sli_release_iocbq(struct lpfc_hba * phba, struct lpfc_iocbq * iocb);
+-void __lpfc_sli_release_iocbq(struct lpfc_hba * phba, struct lpfc_iocbq * iocb);
+ uint16_t lpfc_sli_next_iotag(struct lpfc_hba * phba, struct lpfc_iocbq * iocb);
  
+ void lpfc_reset_barrier(struct lpfc_hba * phba);
+@@ -205,10 +194,8 @@ struct lpfc_dmabuf *lpfc_sli_ringpostbuf_get(struct lpfc_hba *,
+ 					     struct lpfc_sli_ring *,
+ 					     dma_addr_t);
+ int lpfc_sli_hbq_count(void);
+-int lpfc_sli_hbqbuf_init_hbqs(struct lpfc_hba *, uint32_t);
+ int lpfc_sli_hbqbuf_add_hbqs(struct lpfc_hba *, uint32_t);
+ void lpfc_sli_hbqbuf_free_all(struct lpfc_hba *);
+-struct hbq_dmabuf *lpfc_sli_hbqbuf_find(struct lpfc_hba *, uint32_t);
+ int lpfc_sli_hbq_size(void);
+ int lpfc_sli_issue_abort_iotag(struct lpfc_hba *, struct lpfc_sli_ring *,
+ 			       struct lpfc_iocbq *);
+@@ -219,9 +206,6 @@ int lpfc_sli_abort_iocb(struct lpfc_vport *, struct lpfc_sli_ring *, uint16_t,
+ void lpfc_mbox_timeout(unsigned long);
+ void lpfc_mbox_timeout_handler(struct lpfc_hba *);
  
- /*  PCI Windowing for DDR regions.  */
-@@ -279,8 +281,8 @@ u64 ctx_addr_sig_regs[][3] = {
+-struct lpfc_nodelist *__lpfc_find_node(struct lpfc_vport *, node_filter,
+-				       void *);
+-struct lpfc_nodelist *lpfc_find_node(struct lpfc_vport *, node_filter, void *);
+ struct lpfc_nodelist *lpfc_findnode_did(struct lpfc_vport *, uint32_t);
+ struct lpfc_nodelist *lpfc_findnode_wwpn(struct lpfc_vport *,
+ 					 struct lpfc_name *);
+@@ -281,11 +265,8 @@ extern void lpfc_debugfs_slow_ring_trc(struct lpfc_hba *, char *, uint32_t,
+ extern struct lpfc_hbq_init *lpfc_hbq_defs[];
  
- #define NETXEN_NIC_WINDOW_MARGIN 0x100000
+ /* Interface exported by fabric iocb scheduler */
+-int lpfc_issue_fabric_iocb(struct lpfc_hba *, struct lpfc_iocbq *);
+-void lpfc_fabric_abort_vport(struct lpfc_vport *);
+ void lpfc_fabric_abort_nport(struct lpfc_nodelist *);
+ void lpfc_fabric_abort_hba(struct lpfc_hba *);
+-void lpfc_fabric_abort_flogi(struct lpfc_hba *);
+ void lpfc_fabric_block_timeout(unsigned long);
+ void lpfc_unblock_fabric_iocbs(struct lpfc_hba *);
+ void lpfc_adjust_queue_depth(struct lpfc_hba *);
+diff --git a/drivers/scsi/lpfc/lpfc_els.c b/drivers/scsi/lpfc/lpfc_els.c
+index 8085900..7e1a559 100644
+--- a/drivers/scsi/lpfc/lpfc_els.c
++++ b/drivers/scsi/lpfc/lpfc_els.c
+@@ -42,6 +42,14 @@ static int lpfc_els_retry(struct lpfc_hba *, struct lpfc_iocbq *,
+ 			  struct lpfc_iocbq *);
+ static void lpfc_cmpl_fabric_iocb(struct lpfc_hba *, struct lpfc_iocbq *,
+ 			struct lpfc_iocbq *);
++static void lpfc_fabric_abort_vport(struct lpfc_vport *vport);
++static int lpfc_issue_els_fdisc(struct lpfc_vport *vport,
++				struct lpfc_nodelist *ndlp, uint8_t retry);
++static int lpfc_issue_fabric_iocb(struct lpfc_hba *phba,
++				  struct lpfc_iocbq *iocb);
++static void lpfc_register_new_vport(struct lpfc_hba *phba,
++				    struct lpfc_vport *vport,
++				    struct lpfc_nodelist *ndlp);
  
--unsigned long netxen_nic_pci_set_window(struct netxen_adapter *adapter,
--					unsigned long long addr);
-+static unsigned long netxen_nic_pci_set_window(struct netxen_adapter *adapter,
-+					       unsigned long long addr);
- void netxen_free_hw_resources(struct netxen_adapter *adapter);
+ static int lpfc_max_els_tries = 3;
  
- int netxen_nic_set_mac(struct net_device *netdev, void *p)
-@@ -886,11 +888,10 @@ void netxen_nic_read_w0(struct netxen_adapter *adapter, u32 index, u32 * value)
- 	netxen_nic_pci_change_crbwindow(adapter, 1);
+@@ -4150,7 +4158,7 @@ lpfc_cmpl_reg_new_vport(struct lpfc_hba *phba, LPFC_MBOXQ_t *pmb)
+ 	return;
  }
  
--int netxen_pci_set_window_warning_count = 0;
-+static int netxen_pci_set_window_warning_count = 0;
- 
--unsigned long
--netxen_nic_pci_set_window(struct netxen_adapter *adapter,
--			  unsigned long long addr)
-+static  unsigned long netxen_nic_pci_set_window(struct netxen_adapter *adapter,
-+						unsigned long long addr)
+-void
++static void
+ lpfc_register_new_vport(struct lpfc_hba *phba, struct lpfc_vport *vport,
+ 			struct lpfc_nodelist *ndlp)
  {
- 	static int ddr_mn_window = -1;
- 	static int qdr_sn_window = -1;
-@@ -952,6 +953,7 @@ netxen_nic_pci_set_window(struct netxen_adapter *adapter,
- 	return addr;
- }
- 
-+#if 0
- int
- netxen_nic_erase_pxe(struct netxen_adapter *adapter)
- {
-@@ -962,6 +964,7 @@ netxen_nic_erase_pxe(struct netxen_adapter *adapter)
- 	}
- 	return 0;
- }
-+#endif  /*  0  */
- 
- int netxen_nic_get_board_info(struct netxen_adapter *adapter)
- {
-diff --git a/drivers/net/netxen/netxen_nic_hw.h b/drivers/net/netxen/netxen_nic_hw.h
-index 245bf13..197e1fc 100644
---- a/drivers/net/netxen/netxen_nic_hw.h
-+++ b/drivers/net/netxen/netxen_nic_hw.h
-@@ -520,15 +520,11 @@ int netxen_niu_set_promiscuous_mode(struct netxen_adapter *adapter,
- int netxen_niu_xg_set_promiscuous_mode(struct netxen_adapter *adapter,
- 				       netxen_niu_prom_mode_t mode);
- 
--/* get/set the MAC address for a given MAC */
--int netxen_niu_macaddr_get(struct netxen_adapter *adapter,
--			   netxen_ethernet_macaddr_t * addr);
-+/* set the MAC address for a given MAC */
- int netxen_niu_macaddr_set(struct netxen_adapter *adapter,
- 			   netxen_ethernet_macaddr_t addr);
- 
--/* XG versons */
--int netxen_niu_xg_macaddr_get(struct netxen_adapter *adapter,
--			      netxen_ethernet_macaddr_t * addr);
-+/* XG version */
- int netxen_niu_xg_macaddr_set(struct netxen_adapter *adapter,
- 			      netxen_ethernet_macaddr_t addr);
- 
-diff --git a/drivers/net/netxen/netxen_nic_init.c b/drivers/net/netxen/netxen_nic_init.c
-index 3758926..8667e8f 100644
---- a/drivers/net/netxen/netxen_nic_init.c
-+++ b/drivers/net/netxen/netxen_nic_init.c
-@@ -54,13 +54,17 @@ static unsigned int crb_addr_xform[NETXEN_MAX_CRB_XFORM];
- 
- #define NETXEN_NIC_XDMA_RESET 0x8000ff
- 
--static inline void
--netxen_nic_locked_write_reg(struct netxen_adapter *adapter,
--			    unsigned long off, int *data)
-+static void netxen_post_rx_buffers_nodb(struct netxen_adapter *adapter,
-+					uint32_t ctx, uint32_t ringid);
-+
-+#if 0
-+static void netxen_nic_locked_write_reg(struct netxen_adapter *adapter,
-+					unsigned long off, int *data)
- {
- 	void __iomem *addr = pci_base_offset(adapter, off);
- 	writel(*data, addr);
- }
-+#endif  /*  0  */
- 
- static void crb_addr_transform_setup(void)
- {
-@@ -255,7 +259,7 @@ void netxen_initialize_adapter_ops(struct netxen_adapter *adapter)
-  * netxen_decode_crb_addr(0 - utility to translate from internal Phantom CRB
-  * address to external PCI CRB address.
-  */
--u32 netxen_decode_crb_addr(u32 addr)
-+static u32 netxen_decode_crb_addr(u32 addr)
- {
- 	int i;
- 	u32 base_addr, offset, pci_base;
-@@ -282,7 +286,7 @@ static long rom_max_timeout = 100;
- static long rom_lock_timeout = 10000;
- static long rom_write_timeout = 700;
- 
--static inline int rom_lock(struct netxen_adapter *adapter)
-+static int rom_lock(struct netxen_adapter *adapter)
- {
- 	int iter;
- 	u32 done = 0;
-@@ -312,7 +316,7 @@ static inline int rom_lock(struct netxen_adapter *adapter)
- 	return 0;
- }
- 
--int netxen_wait_rom_done(struct netxen_adapter *adapter)
-+static int netxen_wait_rom_done(struct netxen_adapter *adapter)
- {
- 	long timeout = 0;
- 	long done = 0;
-@@ -329,7 +333,7 @@ int netxen_wait_rom_done(struct netxen_adapter *adapter)
- 	return 0;
- }
- 
--static inline int netxen_rom_wren(struct netxen_adapter *adapter)
-+static int netxen_rom_wren(struct netxen_adapter *adapter)
- {
- 	/* Set write enable latch in ROM status register */
- 	netxen_nic_reg_write(adapter, NETXEN_ROMUSB_ROM_ABYTE_CNT, 0);
-@@ -341,15 +345,15 @@ static inline int netxen_rom_wren(struct netxen_adapter *adapter)
- 	return 0;
- }
- 
--static inline unsigned int netxen_rdcrbreg(struct netxen_adapter *adapter,
--					   unsigned int addr)
-+static unsigned int netxen_rdcrbreg(struct netxen_adapter *adapter,
-+				    unsigned int addr)
- {
- 	unsigned int data = 0xdeaddead;
- 	data = netxen_nic_reg_read(adapter, addr);
- 	return data;
- }
- 
--static inline int netxen_do_rom_rdsr(struct netxen_adapter *adapter)
-+static int netxen_do_rom_rdsr(struct netxen_adapter *adapter)
- {
- 	netxen_nic_reg_write(adapter, NETXEN_ROMUSB_ROM_INSTR_OPCODE,
- 			     M25P_INSTR_RDSR);
-@@ -359,7 +363,7 @@ static inline int netxen_do_rom_rdsr(struct netxen_adapter *adapter)
- 	return netxen_rdcrbreg(adapter, NETXEN_ROMUSB_ROM_RDATA);
- }
- 
--static inline void netxen_rom_unlock(struct netxen_adapter *adapter)
-+static void netxen_rom_unlock(struct netxen_adapter *adapter)
- {
- 	u32 val;
- 
-@@ -368,7 +372,7 @@ static inline void netxen_rom_unlock(struct netxen_adapter *adapter)
- 
- }
- 
--int netxen_rom_wip_poll(struct netxen_adapter *adapter)
-+static int netxen_rom_wip_poll(struct netxen_adapter *adapter)
- {
- 	long timeout = 0;
- 	long wip = 1;
-@@ -385,8 +389,8 @@ int netxen_rom_wip_poll(struct netxen_adapter *adapter)
- 	return 0;
- }
- 
--static inline int do_rom_fast_write(struct netxen_adapter *adapter, int addr,
--				    int data)
-+static int do_rom_fast_write(struct netxen_adapter *adapter, int addr,
-+			     int data)
- {
- 	if (netxen_rom_wren(adapter)) {
- 		return -1;
-@@ -404,8 +408,8 @@ static inline int do_rom_fast_write(struct netxen_adapter *adapter, int addr,
- 	return netxen_rom_wip_poll(adapter);
- }
- 
--static inline int
--do_rom_fast_read(struct netxen_adapter *adapter, int addr, int *valp)
-+static int do_rom_fast_read(struct netxen_adapter *adapter,
-+			    int addr, int *valp)
- {
- 	cond_resched();
- 
-@@ -427,9 +431,8 @@ do_rom_fast_read(struct netxen_adapter *adapter, int addr, int *valp)
- 	return 0;
- }
- 
--static inline int 
--do_rom_fast_read_words(struct netxen_adapter *adapter, int addr,
--			u8 *bytes, size_t size)
-+static int do_rom_fast_read_words(struct netxen_adapter *adapter, int addr,
-+				  u8 *bytes, size_t size)
- {
- 	int addridx;
- 	int ret = 0;
-@@ -473,6 +476,7 @@ int netxen_rom_fast_read(struct netxen_adapter *adapter, int addr, int *valp)
- 	return ret;
- }
- 
-+#if 0
- int netxen_rom_fast_write(struct netxen_adapter *adapter, int addr, int data)
- {
- 	int ret = 0;
-@@ -484,9 +488,10 @@ int netxen_rom_fast_write(struct netxen_adapter *adapter, int addr, int data)
- 	netxen_rom_unlock(adapter);
- 	return ret;
- }
-+#endif  /*  0  */
- 
--static inline int do_rom_fast_write_words(struct netxen_adapter *adapter, 
--						int addr, u8 *bytes, size_t size)
-+static int do_rom_fast_write_words(struct netxen_adapter *adapter, 
-+				   int addr, u8 *bytes, size_t size)
- {
- 	int addridx = addr;
- 	int ret = 0;
-@@ -548,7 +553,7 @@ int netxen_rom_fast_write_words(struct netxen_adapter *adapter, int addr,
- 	return ret;
- }
- 
--int netxen_rom_wrsr(struct netxen_adapter *adapter, int data)
-+static int netxen_rom_wrsr(struct netxen_adapter *adapter, int data)
- {
- 	int ret;
- 
-@@ -567,7 +572,7 @@ int netxen_rom_wrsr(struct netxen_adapter *adapter, int data)
- 	return netxen_rom_wip_poll(adapter);
- }
- 
--int netxen_rom_rdsr(struct netxen_adapter *adapter)
-+static int netxen_rom_rdsr(struct netxen_adapter *adapter)
- {
- 	int ret;
- 
-@@ -632,7 +637,7 @@ out_kfree:
- 	return ret;
- }
- 
--int netxen_do_rom_se(struct netxen_adapter *adapter, int addr)
-+static int netxen_do_rom_se(struct netxen_adapter *adapter, int addr)
- {
- 	netxen_rom_wren(adapter);
- 	netxen_nic_reg_write(adapter, NETXEN_ROMUSB_ROM_ADDRESS, addr);
-@@ -646,7 +651,7 @@ int netxen_do_rom_se(struct netxen_adapter *adapter, int addr)
- 	return netxen_rom_wip_poll(adapter);
- }
- 
--void check_erased_flash(struct netxen_adapter *adapter, int addr)
-+static void check_erased_flash(struct netxen_adapter *adapter, int addr)
- {
- 	int i;
- 	int val;
-@@ -682,8 +687,8 @@ int netxen_rom_se(struct netxen_adapter *adapter, int addr)
- 	return ret;
+@@ -4266,7 +4274,7 @@ out:
+ 	lpfc_els_free_iocb(phba, cmdiocb);
  }
  
 -int
--netxen_flash_erase_sections(struct netxen_adapter *adapter, int start, int end)
-+static int netxen_flash_erase_sections(struct netxen_adapter *adapter,
-+				       int start, int end)
++static int
+ lpfc_issue_els_fdisc(struct lpfc_vport *vport, struct lpfc_nodelist *ndlp,
+ 		     uint8_t retry)
  {
- 	int ret = FLASH_SUCCESS;
- 	int i;
-@@ -990,7 +995,7 @@ int netxen_nic_rx_has_work(struct netxen_adapter *adapter)
- 	return 0;
- }
- 
--static inline int netxen_nic_check_temp(struct netxen_adapter *adapter)
-+static int netxen_nic_check_temp(struct netxen_adapter *adapter)
- {
- 	struct net_device *netdev = adapter->netdev;
- 	uint32_t temp, temp_state, temp_val;
-@@ -1064,9 +1069,8 @@ void netxen_watchdog_task(struct work_struct *work)
-  * and if the number of receives exceeds RX_BUFFERS_REFILL, then we
-  * invoke the routine to send more rx buffers to the Phantom...
-  */
--void
--netxen_process_rcv(struct netxen_adapter *adapter, int ctxid,
--		   struct status_desc *desc)
-+static void netxen_process_rcv(struct netxen_adapter *adapter, int ctxid,
-+			       struct status_desc *desc)
- {
- 	struct pci_dev *pdev = adapter->pdev;
- 	struct net_device *netdev = adapter->netdev;
-@@ -1460,8 +1464,8 @@ void netxen_post_rx_buffers(struct netxen_adapter *adapter, u32 ctx, u32 ringid)
+@@ -4539,7 +4547,7 @@ lpfc_cmpl_fabric_iocb(struct lpfc_hba *phba, struct lpfc_iocbq *cmdiocb,
  	}
  }
  
--void netxen_post_rx_buffers_nodb(struct netxen_adapter *adapter, uint32_t ctx,
--				 uint32_t ringid)
-+static void netxen_post_rx_buffers_nodb(struct netxen_adapter *adapter,
-+					uint32_t ctx, uint32_t ringid)
+-int
++static int
+ lpfc_issue_fabric_iocb(struct lpfc_hba *phba, struct lpfc_iocbq *iocb)
  {
- 	struct pci_dev *pdev = adapter->ahw.pdev;
- 	struct sk_buff *skb;
-diff --git a/drivers/net/netxen/netxen_nic_isr.c b/drivers/net/netxen/netxen_nic_isr.c
-index b2de6b6..0a261de 100644
---- a/drivers/net/netxen/netxen_nic_isr.c
-+++ b/drivers/net/netxen/netxen_nic_isr.c
-@@ -66,7 +66,8 @@ struct net_device_stats *netxen_nic_get_stats(struct net_device *netdev)
- 	return stats;
+ 	unsigned long iflags;
+@@ -4583,7 +4591,7 @@ lpfc_issue_fabric_iocb(struct lpfc_hba *phba, struct lpfc_iocbq *iocb)
  }
  
--void netxen_indicate_link_status(struct netxen_adapter *adapter, u32 link)
-+static void netxen_indicate_link_status(struct netxen_adapter *adapter,
-+					u32 link)
- {
- 	struct net_device *netdev = adapter->netdev;
  
-@@ -76,6 +77,7 @@ void netxen_indicate_link_status(struct netxen_adapter *adapter, u32 link)
- 		netif_carrier_off(netdev);
+-void lpfc_fabric_abort_vport(struct lpfc_vport *vport)
++static void lpfc_fabric_abort_vport(struct lpfc_vport *vport)
+ {
+ 	LIST_HEAD(completions);
+ 	struct lpfc_hba  *phba = vport->phba;
+@@ -4663,6 +4671,7 @@ void lpfc_fabric_abort_hba(struct lpfc_hba *phba)
  }
+ 
  
 +#if 0
- void netxen_handle_port_int(struct netxen_adapter *adapter, u32 enable)
+ void lpfc_fabric_abort_flogi(struct lpfc_hba *phba)
  {
- 	__u32 int_src;
-@@ -134,8 +136,9 @@ void netxen_handle_port_int(struct netxen_adapter *adapter, u32 enable)
- 	if (adapter->enable_phy_interrupts)
- 		adapter->enable_phy_interrupts(adapter);
- }
-+#endif  /*  0  */
- 
--void netxen_nic_isr_other(struct netxen_adapter *adapter)
-+static void netxen_nic_isr_other(struct netxen_adapter *adapter)
- {
- 	int portno = adapter->portnum;
- 	u32 val, linkup, qg_linksup;
-diff --git a/drivers/net/netxen/netxen_nic_main.c b/drivers/net/netxen/netxen_nic_main.c
-index a80f0cd..d0d1f05 100644
---- a/drivers/net/netxen/netxen_nic_main.c
-+++ b/drivers/net/netxen/netxen_nic_main.c
-@@ -89,8 +89,8 @@ MODULE_DEVICE_TABLE(pci, netxen_pci_tbl);
- struct workqueue_struct *netxen_workq;
- static void netxen_watchdog(unsigned long);
- 
--static inline void netxen_nic_update_cmd_producer(struct netxen_adapter *adapter,
--							uint32_t crb_producer)
-+static void netxen_nic_update_cmd_producer(struct netxen_adapter *adapter,
-+					   uint32_t crb_producer)
- {
- 	switch (adapter->portnum) {
- 		case 0:
-@@ -118,8 +118,8 @@ static inline void netxen_nic_update_cmd_producer(struct netxen_adapter *adapter
+ 	LIST_HEAD(completions);
+@@ -4693,5 +4702,6 @@ void lpfc_fabric_abort_flogi(struct lpfc_hba *phba)
+ 		(piocb->iocb_cmpl) (phba, piocb, piocb);
  	}
  }
- 
--static inline void netxen_nic_update_cmd_consumer(struct netxen_adapter *adapter,
--							u32 crb_consumer)
-+static void netxen_nic_update_cmd_consumer(struct netxen_adapter *adapter,
-+					   u32 crb_consumer)
- {
- 	switch (adapter->portnum) {
- 		case 0:
-@@ -148,7 +148,6 @@ static inline void netxen_nic_update_cmd_consumer(struct netxen_adapter *adapter
- }
- 
- #define	ADAPTER_LIST_SIZE 12
--int netxen_cards_found;
- 
- static void netxen_nic_disable_int(struct netxen_adapter *adapter)
- {
-diff --git a/drivers/net/netxen/netxen_nic_niu.c b/drivers/net/netxen/netxen_nic_niu.c
-index 5b9e1b3..94e096c 100644
---- a/drivers/net/netxen/netxen_nic_niu.c
-+++ b/drivers/net/netxen/netxen_nic_niu.c
-@@ -40,7 +40,7 @@
- 
- static long phy_lock_timeout = 100000000;
- 
--static inline int phy_lock(struct netxen_adapter *adapter)
-+static int phy_lock(struct netxen_adapter *adapter)
- {
- 	int i;
- 	int done = 0, timeout = 0;
-@@ -68,7 +68,7 @@ static inline int phy_lock(struct netxen_adapter *adapter)
- 	return 0;
- }
- 
--static inline int phy_unlock(struct netxen_adapter *adapter)
-+static int phy_unlock(struct netxen_adapter *adapter)
- {
- 	readl(pci_base_offset(adapter, NETXEN_PCIE_REG(PCIE_SEM3_UNLOCK)));
- 
-@@ -300,13 +300,15 @@ int netxen_niu_gbe_disable_phy_interrupts(struct netxen_adapter *adapter)
- 	return result;
- }
- 
-+#if 0
- int netxen_niu_xgbe_clear_phy_interrupts(struct netxen_adapter *adapter)
- {
- 	netxen_crb_writelit_adapter(adapter, NETXEN_NIU_ACTIVE_INT, -1);
- 	return 0;
- }
 +#endif  /*  0  */
  
--int netxen_niu_gbe_clear_phy_interrupts(struct netxen_adapter *adapter)
-+static int netxen_niu_gbe_clear_phy_interrupts(struct netxen_adapter *adapter)
- {
- 	int result = 0;
- 	if (0 !=
-@@ -322,8 +324,8 @@ int netxen_niu_gbe_clear_phy_interrupts(struct netxen_adapter *adapter)
-  * netxen_niu_gbe_set_mii_mode- Set 10/100 Mbit Mode for GbE MAC
-  *
-  */
--void netxen_niu_gbe_set_mii_mode(struct netxen_adapter *adapter,
--				 int port, long enable)
-+static void netxen_niu_gbe_set_mii_mode(struct netxen_adapter *adapter,
-+					int port, long enable)
- {
- 	netxen_crb_writelit_adapter(adapter, NETXEN_NIU_MODE, 0x2);
- 	netxen_crb_writelit_adapter(adapter, NETXEN_NIU_GB_MAC_CONFIG_0(port),
-@@ -360,8 +362,8 @@ void netxen_niu_gbe_set_mii_mode(struct netxen_adapter *adapter,
- /* 
-  * netxen_niu_gbe_set_gmii_mode- Set GbE Mode for GbE MAC
-  */
--void netxen_niu_gbe_set_gmii_mode(struct netxen_adapter *adapter,
--				  int port, long enable)
-+static void netxen_niu_gbe_set_gmii_mode(struct netxen_adapter *adapter,
-+					 int port, long enable)
- {
- 	netxen_crb_writelit_adapter(adapter, NETXEN_NIU_MODE, 0x2);
- 	netxen_crb_writelit_adapter(adapter, NETXEN_NIU_GB_MAC_CONFIG_0(port),
-@@ -464,6 +466,7 @@ int netxen_niu_xg_init_port(struct netxen_adapter *adapter, int port)
- 	return 0;
- }
  
-+#if 0
- /* 
-  * netxen_niu_gbe_handle_phy_interrupt - Handles GbE PHY interrupts
-  * @param enable 0 means don't enable the port
-@@ -559,13 +562,14 @@ int netxen_niu_gbe_handle_phy_interrupt(struct netxen_adapter *adapter,
- 	}
- 	return result;
- }
-+#endif  /*  0  */
- 
- /*
-  * Return the current station MAC address.
-  * Note that the passed-in value must already be in network byte order.
-  */
--int netxen_niu_macaddr_get(struct netxen_adapter *adapter,
--			   netxen_ethernet_macaddr_t * addr)
-+static int netxen_niu_macaddr_get(struct netxen_adapter *adapter,
-+				  netxen_ethernet_macaddr_t * addr)
- {
- 	u32 stationhigh;
- 	u32 stationlow;
-@@ -636,6 +640,7 @@ int netxen_niu_macaddr_set(struct netxen_adapter *adapter,
- 	return 0;
- }
- 
-+#if 0
- /* Enable a GbE interface */
- int netxen_niu_enable_gbe_port(struct netxen_adapter *adapter,
- 			       int port, netxen_niu_gbe_ifmode_t mode)
-@@ -713,6 +718,7 @@ int netxen_niu_enable_gbe_port(struct netxen_adapter *adapter,
- 		return -EIO;
- 	return 0;
- }
-+#endif  /*  0  */
- 
- /* Disable a GbE interface */
- int netxen_niu_disable_gbe_port(struct netxen_adapter *adapter)
-@@ -853,6 +859,7 @@ int netxen_niu_xg_macaddr_set(struct netxen_adapter *adapter,
- 	return 0;
- }
- 
-+#if 0
- /*
-  * Return the current station MAC address.
-  * Note that the passed-in value must already be in network byte order.
-@@ -883,6 +890,7 @@ int netxen_niu_xg_macaddr_get(struct netxen_adapter *adapter,
- 
- 	return 0;
- }
-+#endif  /*  0  */
- 
- int netxen_niu_xg_set_promiscuous_mode(struct netxen_adapter *adapter,
- 				       netxen_niu_prom_mode_t mode)
-diff --git a/drivers/net/netxen/netxen_nic_phan_reg.h b/drivers/net/netxen/netxen_nic_phan_reg.h
-index 10fe6fa..a6c28de 100644
---- a/drivers/net/netxen/netxen_nic_phan_reg.h
-+++ b/drivers/net/netxen/netxen_nic_phan_reg.h
-@@ -165,14 +165,7 @@ struct netxen_recv_crb {
- 	u32 crb_status_ring_size;
+diff --git a/drivers/scsi/lpfc/lpfc_hbadisc.c b/drivers/scsi/lpfc/lpfc_hbadisc.c
+index c81c2b3..c3f7af5 100644
+--- a/drivers/scsi/lpfc/lpfc_hbadisc.c
++++ b/drivers/scsi/lpfc/lpfc_hbadisc.c
+@@ -57,6 +57,7 @@ static uint8_t lpfcAlpaArray[] = {
  };
  
--#if defined(DEFINE_GLOBAL_RECV_CRB)
--#else
- extern struct netxen_recv_crb recv_crb_registers[];
--extern u64 ctx_addr_sig_regs[][3];
--#endif				/* DEFINE_GLOBAL_RECEIVE_CRB */
--#define CRB_CTX_ADDR_REG_LO(FUNC_ID)		(ctx_addr_sig_regs[FUNC_ID][0])
--#define CRB_CTX_ADDR_REG_HI(FUNC_ID)		(ctx_addr_sig_regs[FUNC_ID][2])
--#define CRB_CTX_SIGNATURE_REG(FUNC_ID)		(ctx_addr_sig_regs[FUNC_ID][1])
+ static void lpfc_disc_timeout_handler(struct lpfc_vport *);
++static void lpfc_disc_flush_list(struct lpfc_vport *vport);
+ 
+ void
+ lpfc_terminate_rport_io(struct fc_rport *rport)
+@@ -154,7 +155,7 @@ lpfc_dev_loss_tmo_callbk(struct fc_rport *rport)
+  * This function is called from the worker thread when dev_loss_tmo
+  * expire.
+  */
+-void
++static void
+ lpfc_dev_loss_tmo_handler(struct lpfc_nodelist *ndlp)
+ {
+ 	struct lpfc_rport_data *rdata;
+@@ -749,7 +750,7 @@ lpfc_linkup(struct lpfc_hba *phba)
+  * as the completion routine when the command is
+  * handed off to the SLI layer.
+  */
+-void
++static void
+ lpfc_mbx_cmpl_clear_la(struct lpfc_hba *phba, LPFC_MBOXQ_t *pmb)
+ {
+ 	struct lpfc_vport *vport = pmb->vport;
+@@ -2414,7 +2415,7 @@ lpfc_free_tx(struct lpfc_hba *phba, struct lpfc_nodelist *ndlp)
+ 	}
+ }
+ 
+-void
++static void
+ lpfc_disc_flush_list(struct lpfc_vport *vport)
+ {
+ 	struct lpfc_nodelist *ndlp, *next_ndlp;
+@@ -2747,7 +2748,7 @@ lpfc_filter_by_wwpn(struct lpfc_nodelist *ndlp, void *param)
+ 		      sizeof(ndlp->nlp_portname)) == 0;
+ }
+ 
+-struct lpfc_nodelist *
++static struct lpfc_nodelist *
+ __lpfc_find_node(struct lpfc_vport *vport, node_filter filter, void *param)
+ {
+ 	struct lpfc_nodelist *ndlp;
+@@ -2760,6 +2761,7 @@ __lpfc_find_node(struct lpfc_vport *vport, node_filter filter, void *param)
+ 	return NULL;
+ }
+ 
++#if 0
+ /*
+  * Search node lists for a remote port matching filter criteria
+  * Caller needs to hold host_lock before calling this routine.
+@@ -2775,6 +2777,7 @@ lpfc_find_node(struct lpfc_vport *vport, node_filter filter, void *param)
+ 	spin_unlock_irq(shost->host_lock);
+ 	return ndlp;
+ }
++#endif  /*  0  */
  
  /*
-  * Temperature control.
+  * This routine looks up the ndlp lists for the given RPI. If rpi found it
+@@ -2786,6 +2789,7 @@ __lpfc_findnode_rpi(struct lpfc_vport *vport, uint16_t rpi)
+ 	return __lpfc_find_node(vport, lpfc_filter_by_rpi, &rpi);
+ }
+ 
++#if 0
+ struct lpfc_nodelist *
+ lpfc_findnode_rpi(struct lpfc_vport *vport, uint16_t rpi)
+ {
+@@ -2797,6 +2801,7 @@ lpfc_findnode_rpi(struct lpfc_vport *vport, uint16_t rpi)
+ 	spin_unlock_irq(shost->host_lock);
+ 	return ndlp;
+ }
++#endif  /*  0  */
+ 
+ /*
+  * This routine looks up the ndlp lists for the given WWPN. If WWPN found it
+diff --git a/drivers/scsi/lpfc/lpfc_init.c b/drivers/scsi/lpfc/lpfc_init.c
+index ecebdfa..131f81e 100644
+--- a/drivers/scsi/lpfc/lpfc_init.c
++++ b/drivers/scsi/lpfc/lpfc_init.c
+@@ -473,7 +473,7 @@ lpfc_hba_down_post(struct lpfc_hba *phba)
+ }
+ 
+ /* HBA heart beat timeout handler */
+-void
++static void
+ lpfc_hb_timeout(unsigned long ptr)
+ {
+ 	struct lpfc_hba *phba;
+@@ -1339,6 +1339,16 @@ lpfc_stop_phba_timers(struct lpfc_hba *phba)
+ 	return;
+ }
+ 
++static void
++lpfc_block_mgmt_io(struct lpfc_hba * phba)
++{
++	unsigned long iflag;
++
++	spin_lock_irqsave(&phba->hbalock, iflag);
++	phba->sli.sli_flag |= LPFC_BLOCK_MGMT_IO;
++	spin_unlock_irqrestore(&phba->hbalock, iflag);
++}
++
+ int
+ lpfc_online(struct lpfc_hba *phba)
+ {
+@@ -1385,16 +1395,6 @@ lpfc_online(struct lpfc_hba *phba)
+ }
+ 
+ void
+-lpfc_block_mgmt_io(struct lpfc_hba * phba)
+-{
+-	unsigned long iflag;
+-
+-	spin_lock_irqsave(&phba->hbalock, iflag);
+-	phba->sli.sli_flag |= LPFC_BLOCK_MGMT_IO;
+-	spin_unlock_irqrestore(&phba->hbalock, iflag);
+-}
+-
+-void
+ lpfc_unblock_mgmt_io(struct lpfc_hba * phba)
+ {
+ 	unsigned long iflag;
+diff --git a/drivers/scsi/lpfc/lpfc_sli.c b/drivers/scsi/lpfc/lpfc_sli.c
+index ce348c5..de79d72 100644
+--- a/drivers/scsi/lpfc/lpfc_sli.c
++++ b/drivers/scsi/lpfc/lpfc_sli.c
+@@ -106,7 +106,7 @@ lpfc_sli_get_iocbq(struct lpfc_hba *phba)
+ 	return iocbq;
+ }
+ 
+-void
++static void
+ __lpfc_sli_release_iocbq(struct lpfc_hba *phba, struct lpfc_iocbq *iocbq)
+ {
+ 	size_t start_clean = offsetof(struct lpfc_iocbq, iocb);
+@@ -514,7 +514,7 @@ lpfc_sli_turn_on_ring(struct lpfc_hba *phba, int ringno)
+ 	spin_unlock_irqrestore(&phba->hbalock, iflags);
+ }
+ 
+-struct lpfc_hbq_entry *
++static struct lpfc_hbq_entry *
+ lpfc_sli_next_hbq_slot(struct lpfc_hba *phba, uint32_t hbqno)
+ {
+ 	struct hbq_s *hbqp = &phba->hbqs[hbqno];
+@@ -660,14 +660,14 @@ lpfc_sli_hbqbuf_add_hbqs(struct lpfc_hba *phba, uint32_t qno)
+ 					 lpfc_hbq_defs[qno]->add_count));
+ }
+ 
+-int
++static int
+ lpfc_sli_hbqbuf_init_hbqs(struct lpfc_hba *phba, uint32_t qno)
+ {
+ 	return(lpfc_sli_hbqbuf_fill_hbqs(phba, qno,
+ 					 lpfc_hbq_defs[qno]->init_count));
+ }
+ 
+-struct hbq_dmabuf *
++static struct hbq_dmabuf *
+ lpfc_sli_hbqbuf_find(struct lpfc_hba *phba, uint32_t tag)
+ {
+ 	struct lpfc_dmabuf *d_buf;
+@@ -2848,7 +2848,7 @@ lpfc_sli_next_iocb(struct lpfc_hba *phba, struct lpfc_sli_ring *pring,
+ /*
+  * Lockless version of lpfc_sli_issue_iocb.
+  */
+-int
++static int
+ __lpfc_sli_issue_iocb(struct lpfc_hba *phba, struct lpfc_sli_ring *pring,
+ 		    struct lpfc_iocbq *piocb, uint32_t flag)
+ {
+diff --git a/drivers/scsi/lpfc/lpfc_vport.c b/drivers/scsi/lpfc/lpfc_vport.c
+index dcb415e..cff3828 100644
+--- a/drivers/scsi/lpfc/lpfc_vport.c
++++ b/drivers/scsi/lpfc/lpfc_vport.c
+@@ -532,9 +532,6 @@ skip_logo:
+ 	return VPORT_OK;
+ }
+ 
+-EXPORT_SYMBOL(lpfc_vport_create);
+-EXPORT_SYMBOL(lpfc_vport_delete);
+-
+ struct lpfc_vport **
+ lpfc_create_vport_work_array(struct lpfc_hba *phba)
+ {
 
