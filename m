@@ -1,75 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677AbXKEGmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbXKEG4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754677AbXKEGmt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 01:42:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbXKEGmk
+	id S1754704AbXKEG4U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 01:56:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbXKEG4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 01:42:40 -0500
-Received: from mail8.dotsterhost.com ([66.11.233.1]:49352 "HELO
-	mail8.dotsterhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751170AbXKEGmk (ORCPT
+	Mon, 5 Nov 2007 01:56:11 -0500
+Received: from twinlark.arctic.org ([207.29.250.54]:55166 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751267AbXKEG4K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 01:42:40 -0500
-Message-ID: <472EBB5A.8030402@crispincowan.com>
-Date: Sun, 04 Nov 2007 22:42:34 -0800
-From: Crispin Cowan <crispin@crispincowan.com>
-Organization: Crispin's Labs
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 5 Nov 2007 01:56:10 -0500
+Message-ID: <472EBE87.1050106@kernel.org>
+Date: Sun, 04 Nov 2007 22:56:07 -0800
+From: Andrew Morgan <morgan@kernel.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071020)
 MIME-Version: 1.0
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-CC: simon@fire.lp0.eu, linux-kernel@vger.kernel.org,
+To: Peter Dolding <oiaohm@gmail.com>
+CC: casey@schaufler-ca.com, Toshiharu Harada <haradats@gmail.com>,
+       Crispin Cowan <crispin@crispincowan.com>, linux-kernel@vger.kernel.org,
        linux-security-module@vger.kernel.org
 Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static
- interface
-References: <20071022210956.31f7bbcf@laptopd505.fenrus.org>	<20071023051642.GA3908@sequoia.sous-sol.org>	<471E9260.6000704@goop.org>	<20071023220649.5a76af82@laptopd505.fenrus.org>	<55615.simon.1193226629@5ec7c279.invalid> <200710272308.GCH56742.OHLVMSFFFQJOtO@I-love.SAKURA.ne.jp>
-In-Reply-To: <200710272308.GCH56742.OHLVMSFFFQJOtO@I-love.SAKURA.ne.jp>
+ interface)
+References: <e7d8f83e0710311904w45827586oabcca597fd612ea6@mail.gmail.com>	 <832119.21078.qm@web36614.mail.mud.yahoo.com> <e7d8f83e0710311951nd162a27rb2134e3b21e299a8@mail.gmail.com>
+In-Reply-To: <e7d8f83e0710311951nd162a27rb2134e3b21e299a8@mail.gmail.com>
+X-Enigmail-Version: 0.94.4.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tetsuo Handa wrote:
-> I think there are two other problems regarding LSM.
->
-> (1) There is only one "struct security_ops" structure in the system.
->
-> (2) There is only one "void *security" field in "struct task_struct".
->
->
-> Years ago, there was only one MAC implementation (i.e. SELinux)
-> in the mainline kernel.
-> But now, there are many MAC (or access control/tracking) implementations
-> waiting for inclusion into the mainline kernel.
-> The competition for occupying "struct security_ops" has started.
->
-> My idea is that, why not create chains of "struct security_ops"
-> (i.e. linked list of "struct security_ops")
-> and allow choosing which chain to use for per a "struct task_struct" basis
-> (i.e. add "struct security_ops" to "struct task_struct").
->   
-That idea was in the Stacker module, and it was tabled until there is
-more than one upstream LSM. In particular, it requires 2 or more LSMs
-that actually make sense to stack together. IMHO TOMOYO/AppArmor/SELinux
-are all exclusive of one another (in a running kernel) and real stacking
-is still pending useful component intrusion prevention modules. Such
-modules can be built, they just have not yet been built.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> TOMOYO Linux is having difficulty that TOMOYO Linux unlikely be able to use
-> "struct security_ops" since SELinux is occupying it.
->   
-Just disable SELinux and load TOMOYO. Oh, you can't because someone has
-made modules not be loadable :(  Hmmm, perhaps someone could fix that by
-reverting the static interface patch ... :)
+Peter Dolding wrote:
+> On 11/1/07, Casey Schaufler <casey@schaufler-ca.com> wrote:
+>> --- Peter Dolding <oiaohm@gmail.com> wrote:
+>> Posix capabilities predate SELinux. SELinux is not interested in
+>> Posix capabilities.
+>>
+>>> But no IBM had to do it.
+>> Err, no. It was done by Andrew Morgan back in the dark ages.
+>> Why on earth do you think IBM did it?
+> 
+> Posix file capabilities the option to replace SUID bit with something
+> more security safe only handing out segments of root power instead of
+> the complete box and dice like SUID.  Even different on a user by user
+> base.
+> 
+> Posix capabilites is what Posix file capabilities is based on.  Yes I
+> know the words appear close.  The word file is important.  Please read
+> Website.  http://www.ibm.com/developerworks/linux/library/l-posixcap.html
 
-> May be we should consider stackable LSM again?
->   
-Exactly. Stacker was shelved, so to speak :) because of the lack of
-in-kernel modules. Soon it will be time to reconsider that.
+For the record, I think you are both right. I took a stab at it back
+when Casey and I first met:
 
-Crispin
+ftp://ftp.kernel.org/pub/linux/libs/security/linux-privs/old/kernel-2.4-fcap/README
 
--- 
-Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin
-CEO, Mercenary Linux		   http://mercenarylinux.com/
-	       Itanium. Vista. GPLv3. Complexity at work
+all that stuff worked fine it was just a bit ahead of its time...
 
+- From memory, at that point in time "extended attributes" were an
+external patch, and having some trouble getting merged. My sense was
+that EA was a pre-requisite and I was happy to wait for that support to
+become integrated before pushing my file capability support.
+
+In the midst of all this LSM emerged as a reaction to Linus' clear
+unhappiness about all extensions security. I didn't have the time to
+participate in the LSM, and my work sat in the form of these patches.
+
+SELinux at that time existed as a separate infrastructure, and evidently
+did have the time to embrace LSM.
+
+> IBM coders worked and got it into the main line really recently to
+> provide at least some way to avoid fault of SUID of course it could
+
+[...]
+
+So, yes, IBM (Serge) deserve full credit for starting over, and getting
+it merged...
+
+Cheers
+
+Andrew
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.6 (GNU/Linux)
+
+iD8DBQFHLr6EQheEq9QabfIRAsOrAJ9XzTL0Lqm5jaxwO6UoPB9Pwh3SzQCfVWFd
+cPyjsGp/s6D6HuBE6M4NJH0=
+=G/ah
+-----END PGP SIGNATURE-----
