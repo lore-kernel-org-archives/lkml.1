@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754474AbXKESdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754952AbXKESf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754474AbXKESdR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 13:33:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbXKESdF
+	id S1754952AbXKESf2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 13:35:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbXKESfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 13:33:05 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:39832 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751112AbXKESdE (ORCPT
+	Mon, 5 Nov 2007 13:35:16 -0500
+Received: from an-out-0708.google.com ([209.85.132.249]:29795 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750981AbXKESfO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 13:33:04 -0500
-Message-ID: <472F61C8.4040300@zytor.com>
-Date: Mon, 05 Nov 2007 10:32:40 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Mon, 5 Nov 2007 13:35:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YGte7hx9MpPT5vO+nzuOp4lslxBfhWVrK4FxUd3d/aahcThIn/7aFgnRUOpBebwKRXolx1mvy5OdaMC4ouK5pBMh7YIEMSfZ+WH84E/QP81D6ety+mT/3YD75ggyY11jnYYWqnsFajNSphBDtTli4SvFhajd6RxIqrXtREh/iYM=
+Message-ID: <e9c3a7c20711051035m78ba90ck68f4fbc10480462a@mail.gmail.com>
+Date: Mon, 5 Nov 2007 11:35:13 -0700
+From: "Dan Williams" <dan.j.williams@gmail.com>
+To: "Justin Piszcz" <jpiszcz@lucidpixels.com>
+Subject: Re: 2.6.23.1: mdadm/raid5 hung/d-state
+Cc: "Neil Brown" <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org,
+       "=?ISO-8859-1?Q?BERTRAND_Jo=EBl?=" <joel.bertrand@systella.fr>
+In-Reply-To: <Pine.LNX.4.64.0711041651250.23496@p34.internal.lan>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Mikael Petterson <mikpe@it.uu.se>,
-       Eric Biederman <ebiederm@xmission.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [GIT PULL] x86 setup: correct booting on 486 (revised)
-References: <200711050358.lA53wlho003349@tazenda.hos.anvin.org> <alpine.LFD.0.999.0711050842360.15101@woody.linux-foundation.org> <472F5941.2060507@zytor.com> <alpine.LFD.0.999.0711051006060.15101@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0711051006060.15101@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0711040658180.30831@p34.internal.lan>
+	 <18222.16003.92062.970530@notabene.brown>
+	 <Pine.LNX.4.64.0711041651250.23496@p34.internal.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> Final comment: shouldn't we set up %esp to be correct for the new %ss too?
-> 
+On 11/4/07, Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
+>
+>
+> On Mon, 5 Nov 2007, Neil Brown wrote:
+>
+> > On Sunday November 4, jpiszcz@lucidpixels.com wrote:
+> >> # ps auxww | grep D
+> >> USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+> >> root       273  0.0  0.0      0     0 ?        D    Oct21  14:40 [pdflush]
+> >> root       274  0.0  0.0      0     0 ?        D    Oct21  13:00 [pdflush]
+> >>
+> >> After several days/weeks, this is the second time this has happened, while
+> >> doing regular file I/O (decompressing a file), everything on the device
+> >> went into D-state.
+> >
+> > At a guess (I haven't looked closely) I'd say it is the bug that was
+> > meant to be fixed by
+> >
+> > commit 4ae3f847e49e3787eca91bced31f8fd328d50496
+> >
+> > except that patch applied badly and needed to be fixed with
+> > the following patch (not in git yet).
+> > These have been sent to stable@ and should be in the queue for 2.6.23.2
+> >
+>
+> Ah, thanks Neil, will be updating as soon as it is released, thanks.
+>
 
-Well, the 32-bit code needs to set up its own stack, and only it knows 
-where it wants its stack; we don't guarantee that the stack is valid 
-when we enter the 32-bit code and we're entering with both INT and NMI 
-disabled (requiring a stack would probably break all existing users of 
-the 32-bit entrypoint.)
-
-However, that being said, doing so is trivial, and it might help some 
-debugging hack; anything that makes debugging easier is a Good Thing[TM].
-
-	-hpa
+Are you seeing the same "md thread takes 100% of the CPU" that Joël is
+reporting?
