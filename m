@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758149AbXKERMs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757231AbXKERNF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758149AbXKERMs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 12:12:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757199AbXKERHi
+	id S1757231AbXKERNF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 12:13:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757528AbXKERHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 12:07:38 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:59503 "EHLO
+	Mon, 5 Nov 2007 12:07:43 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:59509 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757005AbXKERHh (ORCPT
+	with ESMTP id S1757516AbXKERHl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 12:07:37 -0500
-Date: Mon, 5 Nov 2007 18:07:13 +0100
+	Mon, 5 Nov 2007 12:07:41 -0500
+Date: Mon, 5 Nov 2007 18:07:18 +0100
 From: Adrian Bunk <bunk@kernel.org>
-To: sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>
-Subject: [2.6 patch] ext4/super.c: fix #ifdef's
-Message-ID: <20071105170713.GJ12045@stusta.de>
+To: v4l-dvb-maintainer@linuxtv.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] media/common/ir-functions.c: make a function static
+Message-ID: <20071105170718.GK12045@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,38 +23,48 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the names of two variables in #ifdef's.
-
-Based on a report by Robert P. J. Day.
+ir_rc5_decode() can become static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- fs/ext4/super.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/media/common/ir-functions.c |    3 +--
+ include/media/ir-common.h           |    1 -
+ 2 files changed, 1 insertion(+), 3 deletions(-)
 
-44e9889e6a3952ea225704b2e494d31e00f34a6b 
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 8031dc0..6673672 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -646,7 +646,7 @@ static int ext4_show_options(struct seq_file *seq, struct vfsmount *vfs)
- 		seq_puts(seq, ",debug");
- 	if (test_opt(sb, OLDALLOC))
- 		seq_puts(seq, ",oldalloc");
--#ifdef CONFIG_EXT4_FS_XATTR
-+#ifdef CONFIG_EXT4DEV_FS_XATTR
- 	if (test_opt(sb, XATTR_USER))
- 		seq_puts(seq, ",user_xattr");
- 	if (!test_opt(sb, XATTR_USER) &&
-@@ -654,7 +654,7 @@ static int ext4_show_options(struct seq_file *seq, struct vfsmount *vfs)
- 		seq_puts(seq, ",nouser_xattr");
- 	}
- #endif
--#ifdef CONFIG_EXT4_FS_POSIX_ACL
-+#ifdef CONFIG_EXT4DEV_FS_POSIX_ACL
- 	if (test_opt(sb, POSIX_ACL))
- 		seq_puts(seq, ",acl");
- 	if (!test_opt(sb, POSIX_ACL) && (def_mount_opts & EXT4_DEFM_ACL))
+b0c2b9ed5b57f3a18160f03305a569eaee5e2bc2 
+diff --git a/drivers/media/common/ir-functions.c b/drivers/media/common/ir-functions.c
+index e7c3ab9..bb2a027 100644
+--- a/drivers/media/common/ir-functions.c
++++ b/drivers/media/common/ir-functions.c
+@@ -258,7 +258,7 @@ int ir_decode_biphase(u32 *samples, int count, int low, int high)
+  * saa7134 */
+ 
+ /* decode raw bit pattern to RC5 code */
+-u32 ir_rc5_decode(unsigned int code)
++static u32 ir_rc5_decode(unsigned int code)
+ {
+ 	unsigned int org_code = code;
+ 	unsigned int pair;
+@@ -371,7 +371,6 @@ EXPORT_SYMBOL_GPL(ir_dump_samples);
+ EXPORT_SYMBOL_GPL(ir_decode_biphase);
+ EXPORT_SYMBOL_GPL(ir_decode_pulsedistance);
+ 
+-EXPORT_SYMBOL_GPL(ir_rc5_decode);
+ EXPORT_SYMBOL_GPL(ir_rc5_timer_end);
+ EXPORT_SYMBOL_GPL(ir_rc5_timer_keyup);
+ 
+diff --git a/include/media/ir-common.h b/include/media/ir-common.h
+index 7a785fa..b904d32 100644
+--- a/include/media/ir-common.h
++++ b/include/media/ir-common.h
+@@ -97,7 +97,6 @@ int  ir_dump_samples(u32 *samples, int count);
+ int  ir_decode_biphase(u32 *samples, int count, int low, int high);
+ int  ir_decode_pulsedistance(u32 *samples, int count, int low, int high);
+ 
+-u32 ir_rc5_decode(unsigned int code);
+ void ir_rc5_timer_end(unsigned long data);
+ void ir_rc5_timer_keyup(unsigned long data);
+ 
 
