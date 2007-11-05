@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754511AbXKEQUG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbXKEQV7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754511AbXKEQUG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 11:20:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbXKEQTx
+	id S1754836AbXKEQV7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 11:21:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbXKEQVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 11:19:53 -0500
-Received: from az33egw02.freescale.net ([192.88.158.103]:36484 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752168AbXKEQTw (ORCPT
+	Mon, 5 Nov 2007 11:21:52 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47905 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750999AbXKEQVv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 11:19:52 -0500
-Message-ID: <472F4298.60005@freescale.com>
-Date: Mon, 05 Nov 2007 10:19:36 -0600
-From: Scott Wood <scottwood@freescale.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
+	Mon, 5 Nov 2007 11:21:51 -0500
+Date: Mon, 5 Nov 2007 08:21:04 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+cc: Pavel Machek <pavel@ucw.cz>, Casey Schaufler <casey@schaufler-ca.com>,
+       akpm@linux-foundation.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser
+In-Reply-To: <20071105094007.GA19367@ubuntu>
+Message-ID: <alpine.LFD.0.999.0711050818200.15101@woody.linux-foundation.org>
+References: <472B8DAF.9080706@schaufler-ca.com> <20071103164303.GA26707@ubuntu>
+ <20071104122848.GC3921@ucw.cz> <20071105094007.GA19367@ubuntu>
 MIME-Version: 1.0
-To: Jochen Friedrich <jochen@scram.de>
-CC: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: [PATCH] [POWERPC] Fix fs_enet module build
-References: <472CDE02.1020804@scram.de>
-In-Reply-To: <472CDE02.1020804@scram.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jochen Friedrich wrote:
-> diff --git a/drivers/net/fs_enet/Makefile b/drivers/net/fs_enet/Makefile
-> index 02d4dc1..2f7563a 100644
-> --- a/drivers/net/fs_enet/Makefile
-> +++ b/drivers/net/fs_enet/Makefile
-> @@ -4,7 +4,15 @@
-> 
-> obj-$(CONFIG_FS_ENET) += fs_enet.o
-> 
-> -obj-$(CONFIG_8xx) += mac-fec.o mac-scc.o mii-fec.o
-> -obj-$(CONFIG_CPM2) += mac-fcc.o mii-bitbang.o
-> +fs_enet-$(CONFIG_8xx) += mac-fec.o mac-scc.o
-> +fs_enet-$(CONFIG_CPM2) += mac-fcc.o
-> +
-> +ifeq ($(CONFIG_8xx),y)
-> +        obj-$(CONFIG_FS_ENET) += mii-fec.o
-> +endif
-> +
-> +ifeq ($(CONFIG_CPM2),y)
-> +        obj-$(CONFIG_FS_ENET) += mii-bitbang.o
-> +endif
-> 
-> fs_enet-objs := fs_enet-main.o
 
-If we're going to mess with this, we should probably just make 
-CONFIG_FS_ENET_SCC, CONFIG_FS_ENET_FCC, and CONFIG_FS_ENET_FEC, and have 
-them depend on CONFIG_FS_ENET.
 
--Scott
+On Mon, 5 Nov 2007, Ahmed S. Darwish wrote:
+
+> On Sun, Nov 04, 2007 at 12:28:48PM +0000, Pavel Machek wrote:
+> > 
+> > Can we avoid string parsers in the kernel?
+> > 
+> 
+> Ok, Could someone suggest a better idea please ?. 
+
+I personally think string parsers are *much* better than the alternatives 
+(which basically boil down to nasty binary interfaces)
+
+> I thought about packing the rules in a structure and sending
+> it over an ioctl() command. Is this applicable ?
+
+That's *MUCH* worse.
+
+Strings are nice. They aren't that complex, and as long as it's not a 
+performance-critical area, there are basically no downsides.
+
+Binary structures and ioctl's are *much* worse. They are totally 
+undebuggable with generic tools (think "echo" or "strace"), and they are a 
+total nightmare to parse across architectures and pointer sizes.
+
+So the rule should be: always use strings if at all possible and relevant. 
+If the data is fundamentally binary, it shouldn't be re-coded to ascii (no 
+real advantage), but if the data is "stringish", and there aren't big 
+performance issues, then keep it as strings.
+
+			Linus
