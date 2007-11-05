@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756840AbXKERHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756191AbXKERHc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756840AbXKERHA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 12:07:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757175AbXKERG1
+	id S1756191AbXKERHc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 12:07:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754634AbXKERGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 12:06:27 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:59465 "EHLO
+	Mon, 5 Nov 2007 12:06:37 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59470 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757145AbXKERGZ (ORCPT
+	with ESMTP id S1757203AbXKERGf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 12:06:25 -0500
-Date: Mon, 5 Nov 2007 18:06:01 +0100
+	Mon, 5 Nov 2007 12:06:35 -0500
+Date: Mon, 5 Nov 2007 18:06:12 +0100
 From: Adrian Bunk <bunk@kernel.org>
-To: kuznet@ms2.inr.ac.ru
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] remove Documentation/networking/routing.txt
-Message-ID: <20071105170601.GU12045@stusta.de>
+To: hskinnemoen@atmel.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] avr32: remove UID16 option
+Message-ID: <20071105170612.GW12045@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,78 +23,24 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This file is so outdated that I can't see any value in keeping it.
+avr32 already sees the option from init/Kconfig.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-
- Documentation/networking/00-INDEX    |    2 -
- Documentation/networking/routing.txt |   46 ---------------------------
- 2 files changed, 48 deletions(-)
-
-54b248bbff6345016e060136cfb5c09d43b26b69 
-diff --git a/Documentation/networking/00-INDEX b/Documentation/networking/00-INDEX
-index 5e21f37..563e442 100644
---- a/Documentation/networking/00-INDEX
-+++ b/Documentation/networking/00-INDEX
-@@ -82,6 +82,4 @@ policy-routing.txt
- ray_cs.txt
- 	- Raylink Wireless LAN card driver info.
--routing.txt
--	- the new routing mechanism
- shaper.txt
- 	- info on the module that can shape/limit transmitted traffic.
-diff --git a/Documentation/networking/routing.txt b/Documentation/networking/routing.txt
-deleted file mode 100644
-index a26838b..0000000
---- a/Documentation/networking/routing.txt
-+++ /dev/null
-@@ -1,46 +0,0 @@
--The directory ftp.inr.ac.ru:/ip-routing contains:
+044f492c0600b6b5936d966b6c9447c7d704ce75 
+diff --git a/arch/avr32/Kconfig b/arch/avr32/Kconfig
+index bbecbd8..4f402c9 100644
+--- a/arch/avr32/Kconfig
++++ b/arch/avr32/Kconfig
+@@ -19,9 +19,6 @@ config AVR32
+ 	  There is an AVR32 Linux project with a web page at
+ 	  http://avr32linux.org/.
+ 
+-config UID16
+-	bool
 -
--- iproute.c - "professional" routing table maintenance utility.
--
--- rdisc.tar.gz - rdisc daemon, ported from Sun.
--	STRONGLY RECOMMENDED FOR ALL HOSTS.
--
--- routing.tgz - original Mike McLagan's route by source patch.
--		Currently it is obsolete.
--
--- gated.dif-ss<NEWEST>.gz - gated-R3_6Alpha_2 fixes.
--	        Look at README.gated
--
--- mrouted-3.8.dif.gz - mrouted-3.8 fixes.
--
--- rtmon.c - trivial debugging utility: reads and stores netlink.
--
--
--NEWS for user.
--
--- Policy based routing. Routing decisions are made on the basis
--  not only of destination address, but also source address,
--  TOS and incoming interface.
--- Complete set of IP level control messages.
--  Now Linux is the only OS in the world complying to RFC requirements.
--  Great win 8)
--- New interface addressing paradigm.
--  Assignment of address ranges to interface,
--  multiple prefixes etc. etc.
--  Do not bother, it is compatible with the old one. Moreover:
--- You don't need to do "route add aaa.bbb.ccc... eth0" anymore,
--  it is done automatically.
--- "Abstract" UNIX sockets and security enhancements.
--  This is necessary to use TIRPC and TLI emulation library.
--
--NEWS for hacker.
--
--- New destination cache. Flexible, robust and just beautiful.
--- Network stack is reordered, simplified, optimized, a lot of bugs fixed.
--  (well, and new bugs were introduced, but I haven't seen them yet 8))
--  It is difficult to describe all the changes, look into source.
--
--If you see this file, then this patch works 8)
--
--Alexey Kuznetsov.
--kuznet@ms2.inr.ac.ru
+ config GENERIC_GPIO
+ 	bool
+ 	default y
 
