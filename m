@@ -1,37 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756173AbXKEJi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756096AbXKEJl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756173AbXKEJi4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 04:38:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbXKEJit
+	id S1756096AbXKEJl5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 04:41:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753983AbXKEJlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 04:38:49 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:27737 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753608AbXKEJis (ORCPT
+	Mon, 5 Nov 2007 04:41:50 -0500
+Received: from hu-out-0506.google.com ([72.14.214.236]:17022 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753556AbXKEJls (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 04:38:48 -0500
+	Mon, 5 Nov 2007 04:41:48 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=rXa0RJ5YeHdEJIKPfzBO3tBvCfiS8Kd8K4fEKNqFf0zhIYiSElpfS+xVMDPyC5bWU6Bd4cNPzYvogdpab+PQJMxNZagMAXGB+WB+c42uKq7J77wV0oFoC7qmEtIiGlej27hBTdNt1wd3MJ+3C8gPJjQxnnYk5P4OyHLO5JtQ4Js=
-Message-ID: <25b3869e0711050138n5e02cb19x23c441ba48052e07@mail.gmail.com>
-Date: Mon, 5 Nov 2007 15:08:47 +0530
-From: Srini <v.vvsrini@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: PAGE SIZE in Xeon (64 bit) processor
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=RoT7OsSCG0q7/GRdKsCtI1PklP4XgwPWPt6bORgAqggGi4VgQ5AlLdEXqCsfYY0IGdz8wtkQWWZWvOL6rRgn9CVWR48PwhrYW4X/IYnWKDV0dz20k/WNHOz+OKD0IViMfJPFGqGVSzvjbkLd4l/mraC+Tz41wreSrArNQOhfMO4=
+Date: Mon, 5 Nov 2007 11:41:25 +0200
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Casey Schaufler <casey@schaufler-ca.com>, akpm@osdl.org, torvalds@osdl.org,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser
+Message-ID: <20071105094007.GA19367@ubuntu>
+References: <472B8DAF.9080706@schaufler-ca.com> <20071103164303.GA26707@ubuntu> <20071104122848.GC3921@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20071104122848.GC3921@ucw.cz>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, Nov 04, 2007 at 12:28:48PM +0000, Pavel Machek wrote:
+> Hi!
+> 
+> > > Still to come:
+> > > 
+> > >   - Final cleanup of smack_load_write and smack_cipso_write.
+> > 
+> > Hi All,
+> > 
+> > After agreeing with Casey on the "load" input grammar yesterday, here's
+> > the final grammar and its parser (which needs more testing):
+> > 
+> > A Smack Rule in an "egrep" format is:
+> > 
+> > "^[:space:]*Subject[:space:]+Object[:space:]+[rwxaRWXA-]+[:space:]*\n"
+> > 
+> > where Subject/Object strings are in the form:
+> > 
+> > "^[^/[:space:][:cntrl:]]{1,SMK_MAXLEN}$"
+> 
+> Can we avoid string parsers in the kernel?
+> 
 
-Is there a way currently (or in the near future to-be-released kernel
-version) where we can increase the PAGE SIZE in Xeon processor from
-4KB to 64KB?
+Ok, Could someone suggest a better idea please ?. 
 
-Thanks,
+I thought about packing the rules in a structure and sending
+it over an ioctl() command. Is this applicable ?
 
-Srini
+> 
+> > +static inline int isblank(char c)
+> > +{
+> > +	return (c == ' ' || c == '\t');
+> > +}
+> 
+> This sounds like enough for 'NAK'.
+> 
+> 						Pavel,
+> 		who still thinks smack rules should be parsed
+> 		in userspace and compiled into selinux rules...
+> 		
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
