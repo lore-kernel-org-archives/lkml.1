@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754910AbXKEJ1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755379AbXKEJcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754910AbXKEJ1q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 04:27:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbXKEJ1f
+	id S1755379AbXKEJcz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 04:32:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbXKEJcs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 04:27:35 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:2023 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753063AbXKEJ1f (ORCPT
+	Mon, 5 Nov 2007 04:32:48 -0500
+Received: from wa-out-1112.google.com ([209.85.146.179]:49867 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753833AbXKEJcr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 04:27:35 -0500
-Date: Mon, 5 Nov 2007 17:26:32 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Marcus Better <marcus@better.se>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.24-rc1: hangs when logging in to X session
-Message-ID: <20071105092632.GA10468@gondor.apana.org.au>
-References: <fg4qau$9mg$1@ger.gmane.org> <fg4tbq$kum$1@ger.gmane.org> <20071101163138.382e249b.akpm@linux-foundation.org> <200711050955.32881.marcus@better.se> <20071105010308.6bd33fb1.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 5 Nov 2007 04:32:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=SmkuTRBlwIhudFeONg+q6OEK9OXnxyl2Y6MRC7CWc6IeUMUDhd7pfvZ4l48oA6OI++sJR933zFKAWOVJEa7SUFwNqVXeQPE2qqqLYqrNHwjDbGgzlIiTxYbVnHFGZYyTNutWO0pi9TOfsNPc7ZYn6rIPXQY/dG9rlR5okBk7nzs=
+Message-ID: <35fbaa3e0711050132v7e791ab8ua4b21db144186530@mail.gmail.com>
+Date: Mon, 5 Nov 2007 11:32:46 +0200
+From: "Vitaliy Ivanov" <vitalivanov@gmail.com>
+To: "Willy Tarreau" <w@1wt.eu>
+Subject: Re: [2.4 patch] Port of adutux driver from 2.6 kernel to 2.4.
+Cc: "Pete Zaitcev" <zaitcev@redhat.com>, linux-usb-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071104140552.GA25915@1wt.eu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071105010308.6bd33fb1.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+References: <35fbaa3e0710141345w484b941em831282cf0d49b5c@mail.gmail.com>
+	 <1192542889.29039.66.camel@dell1.softservecom.com>
+	 <20071016154138.GA23326@1wt.eu>
+	 <1192559051.29039.139.camel@dell1.softservecom.com>
+	 <1192644776.10761.60.camel@dell1.softservecom.com>
+	 <35fbaa3e0710190826uae4e7b7u7d8f3139e1697030@mail.gmail.com>
+	 <20071019095313.76990765.zaitcev@redhat.com>
+	 <1192815634.7965.53.camel@dell1.softservecom.com>
+	 <20071022204539.d3e1d291.zaitcev@redhat.com>
+	 <20071104140552.GA25915@1wt.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 05, 2007 at 01:03:08AM -0800, Andrew Morton wrote:
-> On Mon, 5 Nov 2007 09:55:32 +0100 Marcus Better <marcus@better.se> wrote:
-> 
-> > Andrew Morton wrote:
-> > > > My laptop hangs when I try to log in to X with the current git kernel
-> > > > (commit 2a397e82c7db18019e408f953dd58dc1963a328c). It runs fine with
-> > > > 2.6.23. At boot time kdm starts normally, but hangs with the caps lock
-> > > > LED blinking immediately after I press Enter after typing the password.
+Willy,
 
-This was fixed after the changeset you quoted so if you update
-to the latest it should work again.
+On 11/4/07, Willy Tarreau <w@1wt.eu> wrote:
+> I'm planning on issuing a new 2.4.36 prerelease soon. Have you made any
+> progress on your code after Pete's recommendations ?
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Yep. We just finalized 2.6 changes and now I'm working on 2.4 version.
+Will get back to you all soon. When are you plan to make prerelease?
+As always I'm too busy on my regular work and will try to put more
+time to this.
+
+Thanks,
+Vitaliy
