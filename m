@@ -1,1261 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786AbXKESnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbXKESpl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756786AbXKESnp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 13:43:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756274AbXKESnB
+	id S1756194AbXKESpl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 13:45:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbXKESpd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 13:43:01 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:55011 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756205AbXKESm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 13:42:56 -0500
-Date: Mon, 5 Nov 2007 21:42:19 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+	Mon, 5 Nov 2007 13:45:33 -0500
+Received: from smtp.ono.com ([62.42.230.12]:20115 "EHLO resmaa01.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754000AbXKESpc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 13:45:32 -0500
+Date: Mon, 5 Nov 2007 19:45:21 +0100
+From: "J.A. =?ISO-8859-1?Q?Magall=F3n?=" <jamagallon@ono.com>
 To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [3/4] Distributed storage. Algorithms.
-Message-ID: <20071105184218.GD26175@2ka.mipt.ru>
+Subject: Re: Opteron box and 4Gb memory
+Message-ID: <20071105194521.5fc0ec71@werewolf>
+In-Reply-To: <20071105181046.GE27646@csclub.uwaterloo.ca>
+References: <20071025230904.03d5f46a@werewolf>
+	<47211172.9070606@zytor.com>
+	<20071105001847.546565c4@werewolf>
+	<20071105181046.GE27646@csclub.uwaterloo.ca>
+X-Mailer: Claws Mail 3.0.2cvs113 (GTK+ 2.12.1; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mirror and linear data stripping algorithms for DST.
+On Mon, 5 Nov 2007 13:10:46 -0500, lsorense@csclub.uwaterloo.ca (Lennart Sorensen) wrote:
 
-Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+> On Mon, Nov 05, 2007 at 12:18:47AM +0100, J.A. Magall?n wrote:
+> > Well, I was able to get about 3 Gb with MTRR=discrete in the BIOS,
+> > but I'm still in the process to find the 'software hole' option to get
+> > the rest of the 4Gb...
+> > 
+> > But now another (perhaps related) question has arised...
+> > I like all those 5-line progams to test system performance...;).
+> > I just wrote a simple program that sums/muls int/float vectors with
+> > scalar/sse operations. And my opteron box looks terribly slow.
+> > 
+> > This is my MacPro, Xeon 5130:
+> > 
+> > belly:~/bn> bn  
+> > 	proc: 4 x MacPro1,1 @ 2000 MHz
+> > 	ram:  2048 Mb
+> > 	os:   unx, Darwin, 9.0.0
+> > 	cc:   gcc-4.0.1
+> > vector size   : 8 x 1024 x 1024
+> > allocation:     0.01 ms
+> > int scl add: ..........   36.78 ms,  228.07 Mips   |  114.03 Mips  /GHz
+> > int scl mul: ..........   34.30 ms,  244.60 Mips   |  122.30 Mips  /GHz
+> > flt scl add: ..........   34.28 ms,  244.73 Mflops |  122.37 Mflops/GHz
+> > flt vec add: ..........    7.89 ms, 1063.15 Mflops |  531.58 Mflops/GHz
+> > flt scl mul: ..........   34.20 ms,  245.28 Mflops |  122.64 Mflops/GHz
+> > flt vec mul: ..........    7.90 ms, 1061.77 Mflops |  530.89 Mflops/GHz
+> > total:       3322.19 ms
+> > 
+> > This is a normal (I think) opteron box (Opteron 846):
+> > 
+> > selene:~/bn> g  
+> > 	proc: 4 x x86_64 @ 2004 MHz
+> > 	ram:  3496 Mb
+> > 	os:   unx, Linux, 2.6.9-42.0.10.ELsmp
+> > 	cc:   gcc-4.0.2
+> > vector size   : 8 x 1024 x 1024
+> > allocation:     0.05 ms
+> > int scl add: ..........   45.98 ms,  182.42 Mips   |   91.03 Mips  /GHz
+> > int scl mul: ..........   44.31 ms,  189.30 Mips   |   94.46 Mips  /GHz
+> > flt scl add: ..........   44.52 ms,  188.41 Mflops |   94.02 Mflops/GHz
+> > flt vec add: ..........   10.03 ms,  836.70 Mflops |  417.52 Mflops/GHz
+> > flt scl mul: ..........   43.32 ms,  193.63 Mflops |   96.62 Mflops/GHz
+> > flt vec mul: ..........   10.02 ms,  836.98 Mflops |  417.65 Mflops/GHz
+> > total:       4705.07 ms
+> > 
+> > And this is my opteron (Opteron 275)
+> > 
+> > cicely:~/bn> g  
+> > 	proc: 4 x x86_64 @ 2200 MHz
+> > 	ram:  2914 Mb
+> > 	os:   unx, Linux, 2.6.23.1-desktop-1mdv
+> > 	cc:   gcc-4.0.2
+> > vector size   : 8 x 1024 x 1024
+> > allocation:     0.03 ms
+> > int scl add: ..........   87.67 ms,   95.68 Mips   |   43.49 Mips  /GHz
+> > int scl mul: ..........   85.48 ms,   98.13 Mips   |   44.61 Mips  /GHz
+> > flt scl add: ..........   85.90 ms,   97.66 Mflops |   44.39 Mflops/GHz
+> > flt vec add: ..........   19.51 ms,  429.96 Mflops |  195.44 Mflops/GHz
+> > flt scl mul: ..........   85.86 ms,   97.70 Mflops |   44.41 Mflops/GHz
+> > flt vec mul: ..........   19.50 ms,  430.11 Mflops |  195.50 Mflops/GHz
+> > total:       6334.96 ms
+> > 
+> > As I read in AMD site, the only difference that matters in models is
+> > the xx5 vx xx6, related to fequency, but the processors should be just
+> > the same.
+> > 
+> > As this only does intensive memory/fp operations, I'm not going to blame
+> > gcc nor kernel versions here (I have compared gcc 3.4, 4.0, 4.1, and 4.2
+> > on one of the boxes and results are very similar, the code is really
+> > stupid and not very suitable for compiler smartness...).
+> > I suspect it is a memory problem. It can be hardware or caused by
+> > incorrect BIOS/kernel-mtrr setup:
+> > 
+> > selene:~> cat /proc/mtrr
+> > reg00: base=0x00000000 (   0MB), size=16384MB: write-back, count=1
+> > reg01: base=0xf0000000 (3840MB), size= 256MB: uncachable, count=1
+> > 
+> > cicely:~> cat /proc/mtrr
+> > reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
+> > reg01: base=0x80000000 (2048MB), size= 512MB: write-back, count=1
+> > reg02: base=0xa0000000 (2560MB), size= 256MB: write-back, count=1
+> > reg03: base=0xb0000000 (2816MB), size= 128MB: write-back, count=1
+> > reg04: base=0xb8000000 (2944MB), size=  16MB: write-back, count=1
+> > 
+> > 
+> > Any idea on what can be going on here ? I have asked the 'good opteron'
+> > admin info about the mobo an memory of the box.
+> > 
+> > Any help will be _very_ appreciated.
+> 
+> Well what revisions are the two opterons?  Is one running dual channel
+> memory while the other isn't perhaps?  What speed and type is the ram on
+> the two opterons?
+> 
 
-diff --git a/drivers/block/dst/alg_linear.c b/drivers/block/dst/alg_linear.c
-new file mode 100644
-index 0000000..cb77b57
---- /dev/null
-+++ b/drivers/block/dst/alg_linear.c
-@@ -0,0 +1,104 @@
-+/*
-+ * 2007+ Copyright (c) Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-+ * All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/dst.h>
-+
-+static struct dst_alg *alg_linear;
-+
-+/*
-+ * This callback is invoked when node is removed from storage.
-+ */
-+static void dst_linear_del_node(struct dst_node *n)
-+{
-+}
-+
-+/*
-+ * This callback is invoked when node is added to storage.
-+ */
-+static int dst_linear_add_node(struct dst_node *n)
-+{
-+	struct dst_storage *st = n->st;
-+
-+	dprintk("%s: disk_size: %llu, node_size: %llu.\n",
-+			__func__, st->disk_size, n->size);
-+
-+	mutex_lock(&st->tree_lock);
-+	n->start = st->disk_size;
-+	st->disk_size += n->size;
-+	mutex_unlock(&st->tree_lock);
-+
-+	return 0;
-+}
-+
-+static int dst_linear_remap(struct dst_request *req)
-+{
-+	int err;
-+
-+	if (req->node->bdev) {
-+		generic_make_request(req->bio);
-+		return 0;
-+	}
-+
-+	err = kst_check_permissions(req->state, req->bio);
-+	if (err)
-+		return err;
-+
-+	return req->state->ops->push(req);
-+}
-+
-+/*
-+ * Failover callback - it is invoked each time error happens during
-+ * request processing.
-+ */
-+static int dst_linear_error(struct kst_state *st, int err)
-+{
-+	if (err)
-+		set_bit(DST_NODE_FROZEN, &st->node->flags);
-+	else
-+		clear_bit(DST_NODE_FROZEN, &st->node->flags);
-+	return 0;
-+}
-+
-+static struct dst_alg_ops alg_linear_ops = {
-+	.remap		= dst_linear_remap,
-+	.add_node 	= dst_linear_add_node,
-+	.del_node 	= dst_linear_del_node,
-+	.error		= dst_linear_error,
-+	.owner		= THIS_MODULE,
-+};
-+
-+static int __devinit alg_linear_init(void)
-+{
-+	alg_linear = dst_alloc_alg("alg_linear", &alg_linear_ops);
-+	if (!alg_linear)
-+		return -ENOMEM;
-+
-+	return 0;
-+}
-+
-+static void __devexit alg_linear_exit(void)
-+{
-+	dst_remove_alg(alg_linear);
-+}
-+
-+module_init(alg_linear_init);
-+module_exit(alg_linear_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Evgeniy Polyakov <johnpol@2ka.mipt.ru>");
-+MODULE_DESCRIPTION("Linear distributed algorithm.");
-diff --git a/drivers/block/dst/alg_mirror.c b/drivers/block/dst/alg_mirror.c
-new file mode 100644
-index 0000000..1b55f4d
---- /dev/null
-+++ b/drivers/block/dst/alg_mirror.c
-@@ -0,0 +1,1113 @@
-+/*
-+ * 2007+ Copyright (c) Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-+ * All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/poll.h>
-+#include <linux/dst.h>
-+
-+struct dst_mirror_node_data
-+{
-+	u64		age;
-+};
-+
-+struct dst_mirror_priv
-+{
-+	unsigned int		chunk_num;
-+
-+	u64			last_start;
-+
-+	spinlock_t		backlog_lock;
-+	struct list_head	backlog_list;
-+
-+	struct dst_mirror_node_data	old_data, new_data;
-+
-+	unsigned long		*chunk;
-+};
-+
-+static struct dst_alg *alg_mirror;
-+static struct bio_set *dst_mirror_bio_set;
-+
-+static int dst_mirror_resync(struct dst_node *n, int ndp);
-+
-+static void dst_mirror_mark_sync(struct dst_node *n)
-+{
-+	if (test_bit(DST_NODE_NOTSYNC, &n->flags)) {
-+		struct dst_mirror_priv *priv = n->priv;
-+
-+		clear_bit(DST_NODE_NOTSYNC, &n->flags);
-+		dprintk("%s: node: %p, %llu:%llu synchronization "
-+				"has been completed.\n",
-+			__func__, n, n->start, n->size);
-+		priv->old_data.age = 0;
-+	}
-+}
-+
-+static void dst_mirror_mark_notsync(struct dst_node *n)
-+{
-+	if (!test_bit(DST_NODE_NOTSYNC, &n->flags)) {
-+		set_bit(DST_NODE_NOTSYNC, &n->flags);
-+		dprintk("%s: not synced node n: %p.\n", __func__, n);
-+	}
-+}
-+
-+static void dst_mirror_mark_node_notsync(struct dst_node *n)
-+{
-+	struct dst_mirror_priv *p = n->priv;
-+
-+	memset(p->chunk, 0xff, DIV_ROUND_UP(p->chunk_num, BITS_PER_LONG)*sizeof(long));
-+	dst_mirror_mark_notsync(n);
-+	dst_mirror_resync(n, 0);
-+}
-+
-+static void dst_mirror_mark_node_sync(struct dst_node *n)
-+{
-+	struct dst_mirror_priv *p = n->priv;
-+
-+	memset(p->chunk, 0x0, DIV_ROUND_UP(p->chunk_num, BITS_PER_LONG)*sizeof(long));
-+	dst_mirror_mark_sync(n);
-+}
-+
-+static ssize_t dst_mirror_mark_dirty(struct device *dev, struct device_attribute *attr,
-+			 const char *buf, size_t count)
-+{
-+	struct dst_node *n = container_of(dev, struct dst_node, device);
-+
-+	dst_mirror_mark_node_notsync(n);
-+	return count;
-+}
-+
-+static ssize_t dst_mirror_mark_clean(struct device *dev, struct device_attribute *attr,
-+			 const char *buf, size_t count)
-+{
-+	struct dst_node *n = container_of(dev, struct dst_node, device);
-+
-+	dst_mirror_mark_node_sync(n);
-+	return count;
-+}
-+
-+static ssize_t dst_mirror_chunk_mask_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct dst_node *n = container_of(dev, struct dst_node, device);
-+	struct dst_mirror_priv *priv = n->priv;
-+	unsigned int i;
-+	int rest = PAGE_SIZE, rest_bits = priv->chunk_num;
-+
-+	for (i = 0; i < DIV_ROUND_UP(priv->chunk_num, BITS_PER_LONG); ++i) {
-+		int bit, j;
-+
-+		for (j = 0; j < min(BITS_PER_LONG, rest_bits); ++j) {
-+			bit = (priv->chunk[i] >> j) & 1;
-+			sprintf(buf, "%c", (bit)?'+':'-');
-+			buf++;
-+		}
-+
-+		rest_bits -= j;
-+		rest -= j;
-+
-+		if (rest < BITS_PER_LONG || rest_bits <= 0)
-+			break;
-+	}
-+
-+	return PAGE_SIZE - rest;
-+}
-+
-+static struct device_attribute dst_mirror_attrs[] = {
-+	__ATTR(chunks, S_IRUGO, dst_mirror_chunk_mask_show, NULL),
-+	__ATTR(dirty, S_IWUSR, NULL, dst_mirror_mark_dirty),
-+	__ATTR(clean, S_IWUSR, NULL, dst_mirror_mark_clean),
-+};
-+
-+/*
-+ * This callback is invoked when node is removed from storage.
-+ */
-+static void dst_mirror_del_node(struct dst_node *n)
-+{
-+	struct dst_mirror_priv *priv = n->priv;
-+	struct dst_request *req, *tmp;
-+
-+	list_for_each_entry_safe(req, tmp, &priv->backlog_list, request_list_entry) {
-+		kst_del_req(req);
-+		kst_complete_req(req, -ENODEV);
-+	}
-+
-+	if (priv) {
-+		vfree(priv->chunk);
-+		kfree(priv);
-+		n->priv = NULL;
-+	}
-+
-+	if (n->device.parent == &n->st->device) {
-+		int i;
-+
-+		for (i=0; i<ARRAY_SIZE(dst_mirror_attrs); ++i)
-+			device_remove_file(&n->device, &dst_mirror_attrs[i]);
-+	}
-+}
-+
-+static void dst_mirror_handle_priv(struct dst_node *n)
-+{
-+	if (n->priv) {
-+		int err, i;
-+
-+		for (i=0; i<ARRAY_SIZE(dst_mirror_attrs); ++i)
-+			err = device_create_file(&n->device,
-+					&dst_mirror_attrs[i]);
-+	}
-+}
-+
-+static void dst_mirror_destructor(struct bio *bio)
-+{
-+	dprintk("%s: bio: %p.\n", __func__, bio);
-+	bio_free(bio, dst_mirror_bio_set);
-+}
-+
-+/*
-+ * This function copies node's private on-disk data from first node
-+ * to the new one.
-+ */
-+static int dst_mirror_get_node_data(struct dst_node *n,
-+		struct dst_mirror_node_data *ndata, int old)
-+{
-+	struct dst_node *first;
-+	struct dst_mirror_priv *p;
-+
-+	mutex_lock(&n->st->tree_lock);
-+	first = dst_storage_tree_search(n->st, n->start);
-+	mutex_unlock(&n->st->tree_lock);
-+	if (!first) {
-+		dprintk("%s: there are no nodes in the storage.\n", __func__);
-+		return -ENODEV;
-+	}
-+
-+	p = first->priv;
-+	memcpy(ndata, (old)?&p->old_data:&p->new_data, sizeof(struct dst_mirror_node_data));
-+
-+	dst_node_put(first);
-+	return 0;
-+}
-+
-+struct dst_mirror_ndp
-+{
-+	int			err;
-+	struct page		*page;
-+	struct completion	complete;
-+};
-+
-+static void dst_mirror_ndp_bio_endio(struct dst_request *req, int err)
-+{
-+	struct dst_mirror_ndp *cmp = req->bio->bi_private;
-+
-+	cmp->err = err;
-+	dprintk("%s: completing request: bio: %p, cmp: %p.\n",
-+			__func__, req->bio, cmp);
-+	complete(&cmp->complete);
-+}
-+
-+static int dst_mirror_ndp_end_io(struct bio *bio, unsigned int size, int err)
-+{
-+	struct dst_mirror_ndp *cmp = bio->bi_private;
-+
-+	if (bio->bi_size)
-+		return 0;
-+
-+	dprintk("%s: completing request: bio: %p, cmp: %p.\n", __func__, bio, cmp);
-+	complete(&cmp->complete);
-+	return 0;
-+}
-+
-+/*
-+ * This function reads or writes node's private data from underlying media.
-+ */
-+static int dst_mirror_process_node_data(struct dst_node *n,
-+		struct dst_mirror_node_data *ndata, int op)
-+{
-+	struct bio *bio;
-+	int err = -ENOMEM;
-+	struct dst_mirror_ndp *cmp;
-+	void *addr;
-+
-+	cmp = kzalloc(sizeof(struct dst_mirror_ndp), GFP_KERNEL);
-+	if (!cmp)
-+		goto err_out_exit;
-+
-+	cmp->page = alloc_page(GFP_NOIO);
-+	if (!cmp->page)
-+		goto err_out_free_cmp;
-+
-+	addr = kmap(cmp->page);
-+
-+	init_completion(&cmp->complete);
-+
-+	if (op == WRITE)
-+		memcpy(addr, ndata, sizeof(struct dst_mirror_node_data));
-+
-+	bio = bio_alloc_bioset(GFP_NOIO, 1, dst_mirror_bio_set);
-+	if (!bio)
-+		goto err_out_free_page;
-+
-+	bio->bi_rw = op;
-+	bio->bi_private = cmp;
-+	bio->bi_sector = n->size;
-+	bio->bi_bdev = n->bdev;
-+	bio->bi_destructor = dst_mirror_destructor;
-+	bio->bi_end_io = dst_mirror_ndp_end_io;
-+
-+	err = bio_add_pc_page(n->st->queue, bio, cmp->page, 512, 0);
-+	if (err <= 0)
-+		goto err_out_free_bio;
-+
-+	if (n->bdev) {
-+		generic_make_request(bio);
-+	} else {
-+		struct dst_request req;
-+
-+		memset(&req, 0, sizeof(struct dst_request));
-+
-+		req.node = n;
-+		req.state = n->state;
-+		req.start = bio->bi_sector;
-+		req.size = req.orig_size = bio->bi_size;
-+		req.bio = bio;
-+		req.idx = bio->bi_idx;
-+		req.num = bio->bi_vcnt;
-+		req.flags = 0;
-+		req.offset = 0;
-+		req.bio_endio = &dst_mirror_ndp_bio_endio;
-+		req.callback = &kst_data_callback;
-+
-+		err = req.state->ops->push(&req);
-+		if (err)
-+			req.bio_endio(&req, err);
-+	}
-+
-+	dprintk("%s: waiting for completion: bio: %p, cmp: %p, err: %d.\n",
-+			__func__, bio, cmp);
-+
-+	wait_for_completion(&cmp->complete);
-+
-+	err = cmp->err;
-+
-+	if (!err && (op != WRITE))
-+		memcpy(ndata, addr, sizeof(struct dst_mirror_node_data));
-+
-+	kunmap(cmp->page);
-+
-+	dprintk("%s: freeing bio: %p, err: %d.\n", __func__, bio, err);
-+
-+err_out_free_bio:
-+	bio_put(bio);
-+err_out_free_page:
-+	__free_page(cmp->page);
-+err_out_free_cmp:
-+	kfree(cmp);
-+err_out_exit:
-+	return err;
-+}
-+
-+/*
-+ * This function reads node's private data from underlying media.
-+ */
-+static int dst_mirror_read_node_data(struct dst_node *n,
-+		struct dst_mirror_node_data *ndata)
-+{
-+	return dst_mirror_process_node_data(n, ndata, READ);
-+}
-+
-+/*
-+ * This function writes node's private data from underlying media.
-+ */
-+static int dst_mirror_write_node_data(struct dst_node *n,
-+		struct dst_mirror_node_data *ndata)
-+{
-+	dprintk("%s: writing new age: %llx, node: %p %llu-%llu.\n",
-+			__func__, ndata->age, n, n->start, n->size);
-+	return dst_mirror_process_node_data(n, ndata, WRITE);
-+}
-+
-+static int dst_mirror_ndp_setup(struct dst_node *n, int first_node, int clean_on_sync)
-+{
-+	struct dst_mirror_priv *p = n->priv;
-+	int sync = 1, err;
-+
-+	err = dst_mirror_read_node_data(n, &p->old_data);
-+	if (err)
-+		return err;
-+
-+	if (first_node) {
-+		p->new_data.age = *(u64 *)&n->st;
-+
-+		dprintk("%s: first age: %llx -> %llx.\n",
-+				__func__, p->old_data.age, p->new_data.age);
-+
-+		err = dst_mirror_write_node_data(n, &p->new_data);
-+		if (err)
-+			return err;
-+	} else {
-+		err = dst_mirror_get_node_data(n, &p->new_data, 1);
-+		if (err)
-+			return err;
-+
-+		if (p->new_data.age != p->old_data.age) {
-+			sync = 0;
-+			dprintk("%s: node %llu:%llu is not synced with the first "
-+					"node (old != new): %llx != %llx.\n",
-+					__func__, n->start, n->start+n->size,
-+					p->old_data.age, p->new_data.age);
-+			err = dst_mirror_get_node_data(n, &p->new_data, 0);
-+			if (err)
-+				return err;
-+		} else {
-+			err = dst_mirror_get_node_data(n, &p->new_data, 0);
-+			if (err)
-+				return err;
-+
-+			err = dst_mirror_write_node_data(n, &p->new_data);
-+			if (err)
-+				return err;
-+
-+			dprintk("%s: node %llu:%llu is in sync with the first node.\n",
-+					__func__, n->start, n->start+n->size);
-+		}
-+	}
-+
-+	if (!sync)
-+		dst_mirror_mark_node_notsync(n);
-+	else if (clean_on_sync)
-+		dst_mirror_mark_node_sync(n);
-+
-+	dprintk("%s: age: old: %llx, new: %llx.\n", __func__, p->old_data.age, p->new_data.age);
-+
-+	return 0;
-+}
-+
-+/*
-+ * This callback is invoked when node is added to storage.
-+ */
-+static int dst_mirror_add_node(struct dst_node *n)
-+{
-+	struct dst_storage *st = n->st;
-+	struct dst_mirror_priv *priv;
-+	int err = -ENOMEM, first_node = 0;
-+	u64 disk_size;
-+
-+	n->size--; /* A sector size actually. */
-+
-+	mutex_lock(&st->tree_lock);
-+	disk_size = st->disk_size;
-+	if (st->disk_size) {
-+		st->disk_size = min(n->size, st->disk_size);
-+	} else {
-+		st->disk_size = n->size;
-+		first_node = 1;
-+	}
-+	mutex_unlock(&st->tree_lock);
-+
-+	priv = kzalloc(sizeof(struct dst_mirror_priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	priv->chunk_num = st->disk_size;
-+
-+	priv->chunk = vmalloc(DIV_ROUND_UP(priv->chunk_num, BITS_PER_LONG) * sizeof(long));
-+	if (!priv->chunk)
-+		goto err_out_free;
-+
-+	spin_lock_init(&priv->backlog_lock);
-+	INIT_LIST_HEAD(&priv->backlog_list);
-+
-+	dprintk("%s: %llu:%llu, chunk_num: %u, disk_size: %llu.\n\n",
-+			__func__, n->start, n->size,
-+			priv->chunk_num, st->disk_size);
-+
-+	n->priv_callback = &dst_mirror_handle_priv;
-+	n->priv = priv;
-+
-+	err = dst_mirror_ndp_setup(n, first_node, 1);
-+	if (err)
-+		goto err_out_free_chunk;
-+
-+	return 0;
-+
-+err_out_free_chunk:
-+	vfree(priv->chunk);
-+err_out_free:
-+	kfree(priv);
-+	n->priv = NULL;
-+
-+	mutex_lock(&st->tree_lock);
-+	st->disk_size = disk_size;
-+	mutex_unlock(&st->tree_lock);
-+	return err;
-+}
-+
-+static void dst_mirror_sync_destructor(struct bio *bio)
-+{
-+	struct bio_vec *bv;
-+	int i;
-+
-+	bio_for_each_segment(bv, bio, i)
-+		__free_page(bv->bv_page);
-+	bio_free(bio, dst_mirror_bio_set);
-+}
-+
-+/*
-+ * Without errors it is always called under node's request lock,
-+ * so it is safe to requeue them.
-+ */
-+static void dst_mirror_bio_error(struct dst_request *req, int err)
-+{
-+	int i;
-+	struct dst_mirror_priv *priv = req->node->priv;
-+	unsigned int num, idx;
-+	u64 start = req->start - to_sector(req->orig_size - req->size);
-+
-+	if (err)
-+		dst_mirror_mark_notsync(req->node);
-+
-+	priv->last_start = req->start;
-+
-+	idx = start;
-+	num = to_sector(req->orig_size);
-+
-+	dprintk("%s: %llu:%llu start: %llu, size: %llu, "
-+		"chunk_num: %u, idx: %d, num: %d, err: %d, node: %p.\n",
-+		__func__, req->node->start, req->node->size,
-+		start, req->orig_size, priv->chunk_num,
-+		idx, num, err, req->node);
-+
-+	if (unlikely(idx >= priv->chunk_num || idx + num > priv->chunk_num)) {
-+		dprintk("%s: %llu:%llu req: %p, start: %llu, orig_size: %llu, "
-+			"req_start: %llu, req_size: %llu, "
-+			"chunk_num: %u, idx: %d, num: %d, err: %d.\n",
-+			__func__, req->node->start, req->node->size, req,
-+			start, req->orig_size,
-+			req->start, req->size,
-+			priv->chunk_num, idx, num, err);
-+		return;
-+	}
-+
-+	if (err) {
-+		for (i=0; i<num; ++i)
-+			__set_bit(idx+i, priv->chunk);
-+	} else {
-+		for (i=0; i<num; ++i)
-+			__clear_bit(idx+i, priv->chunk);
-+	}
-+}
-+
-+static void dst_mirror_sync_req_endio(struct dst_request *req, int err)
-+{
-+	struct dst_node *n = req->node;
-+	struct dst_mirror_priv *p = req->node->priv;
-+	int i;
-+	unsigned long notsync = 0;
-+
-+	dst_mirror_bio_error(req, err);
-+
-+	dprintk("%s: freeing bio: %p, bi_size: %u, "
-+			"orig_size: %llu, req: %p, node: %p.\n",
-+		__func__, req->bio, req->bio->bi_size, req->orig_size, req,
-+		req->node);
-+
-+	bio_put(req->bio);
-+
-+	if (!test_bit(DST_NODE_NOTSYNC, &n->flags))
-+		return;
-+
-+	for (i = 0; i < DIV_ROUND_UP(p->chunk_num, BITS_PER_LONG); ++i) {
-+		notsync = p->chunk[i];
-+		if (notsync)
-+			break;
-+	}
-+
-+	if (notsync) {
-+		dprintk("%s: %d/%d sync: %lx, ffs: %lu, chunk_num (modulo %u): %d.\n",
-+				__func__, i, DIV_ROUND_UP(p->chunk_num, BITS_PER_LONG),
-+				notsync, __ffs(notsync), BITS_PER_LONG,
-+				p->chunk_num%BITS_PER_LONG);
-+		if (i != DIV_ROUND_UP(p->chunk_num, BITS_PER_LONG) - 1)
-+			return;
-+
-+		if (__ffs(notsync) != (p->chunk_num%BITS_PER_LONG))
-+			return;
-+	}
-+
-+	dst_mirror_mark_sync(n);
-+}
-+
-+static int dst_mirror_sync_endio(struct bio *bio, unsigned int size, int err)
-+{
-+	struct dst_request *req = bio->bi_private;
-+	struct dst_node *n = req->node;
-+	struct dst_mirror_priv *priv = n->priv;
-+	unsigned long flags;
-+
-+	dprintk("%s: bio: %p, err: %d, size: %u, req: %p.\n",
-+			__func__, bio, err, bio->bi_size, req);
-+
-+	if (bio->bi_size)
-+		return 1;
-+
-+	bio->bi_rw = WRITE;
-+	bio->bi_size = req->orig_size;
-+	bio->bi_sector = req->start;
-+
-+	if (!err) {
-+		spin_lock_irqsave(&priv->backlog_lock, flags);
-+		list_add_tail(&req->request_list_entry, &priv->backlog_list);
-+		spin_unlock_irqrestore(&priv->backlog_lock, flags);
-+		kst_wake(req->state);
-+	} else {
-+		req->bio_endio(req, err);
-+		dst_free_request(req);
-+	}
-+	return 0;
-+}
-+
-+static int dst_mirror_sync_block(struct dst_node *n,
-+		int bit_start, int bit_num)
-+{
-+	u64 start = to_bytes(bit_start);
-+	u32 size = to_bytes(bit_num);
-+	struct bio *bio;
-+	unsigned int nr_pages = DIV_ROUND_UP(size, PAGE_SIZE), i;
-+	struct page *page;
-+	int err = -ENOMEM;
-+	struct dst_request *req;
-+
-+	dprintk("%s: bit_start: %d, bit_num: %d, start: %llu, nr_pages: %u, "
-+			"disk_size: %llu.\n",
-+			__func__, bit_start, bit_num, start, nr_pages,
-+			n->st->disk_size);
-+
-+	while (nr_pages) {
-+		req = dst_clone_request(NULL, n->w->req_pool);
-+		if (!req)
-+			return -ENOMEM;
-+
-+		bio = bio_alloc_bioset(GFP_NOIO, nr_pages, dst_mirror_bio_set);
-+		if (!bio)
-+			goto err_out_free_req;
-+
-+		bio->bi_rw = READ;
-+		bio->bi_private = req;
-+		bio->bi_sector = to_sector(start);
-+		bio->bi_bdev = NULL;
-+		bio->bi_destructor = dst_mirror_sync_destructor;
-+		bio->bi_end_io = dst_mirror_sync_endio;
-+
-+		for (i = 0; i < nr_pages; ++i) {
-+			err = -ENOMEM;
-+
-+			page = alloc_page(GFP_NOIO);
-+			if (!page)
-+				break;
-+
-+			err = bio_add_pc_page(n->st->queue, bio, page,
-+					min_t(u32, PAGE_SIZE, size), 0);
-+			if (err <= 0)
-+				break;
-+			size -= err;
-+			err = 0;
-+		}
-+
-+		if (err && !bio->bi_vcnt)
-+			goto err_out_put_bio;
-+
-+		req->node = n;
-+		req->state = n->state;
-+		req->start = bio->bi_sector;
-+		req->size = req->orig_size = bio->bi_size;
-+		req->bio = bio;
-+		req->idx = bio->bi_idx;
-+		req->num = bio->bi_vcnt;
-+		req->flags = DST_REQ_CHECK_QUEUE;
-+		req->offset = 0;
-+		req->bio_endio = &dst_mirror_sync_req_endio;
-+		req->callback = &kst_data_callback;
-+
-+		dprintk("%s: start: %llu, size: %llu/%u, bio: %p, req: %p, "
-+				"node: %p.\n",
-+				__func__, req->start, req->size, nr_pages, bio,
-+				req, req->node);
-+
-+		err = n->st->queue->make_request_fn(n->st->queue, bio);
-+		if (err)
-+			goto err_out_put_bio;
-+
-+		nr_pages -= bio->bi_vcnt;
-+		start += bio->bi_size;
-+	}
-+
-+	return 0;
-+
-+err_out_put_bio:
-+	bio_put(bio);
-+err_out_free_req:
-+	dst_free_request(req);
-+	return err;
-+}
-+
-+/*
-+ * Resync logic.
-+ *
-+ * System allocates and queues requests for number of regions.
-+ * Each request initially is reading from the one of the nodes.
-+ * When it is completed, system checks if given region was already
-+ * written to, and in such case just drops read request, otherwise
-+ * it writes it to the node being updated. Any write clears not-uptodate
-+ * bit, which is used as a flag that region must be synchronized or not.
-+ * Reading is never performed from the node under resync.
-+ */
-+static int dst_mirror_resync(struct dst_node *n, int ndp)
-+{
-+	struct dst_mirror_priv *priv = n->priv;
-+	int err = 0, sync = 1, total = priv->chunk_num;
-+	unsigned int i;
-+
-+	dprintk("%s: node: %p, %llu:%llu synchronization has been started.\n",
-+			__func__, n, n->start, n->size);
-+
-+	if (ndp) {
-+		err = dst_mirror_ndp_setup(n, 0, 0);
-+		if (err)
-+			return err;
-+	}
-+
-+	for (i = 0; i < DIV_ROUND_UP(priv->chunk_num, BITS_PER_LONG); ++i) {
-+		int bit, num, start;
-+		unsigned long word = priv->chunk[i];
-+
-+		if (!word)
-+			continue;
-+
-+		num = 0;
-+		start = -1;
-+		while (word && num < BITS_PER_LONG) {
-+			bit = __ffs(word);
-+			if (start == -1)
-+				start = bit;
-+			num++;
-+			word >>= (bit+1);
-+
-+			if (--total == 0)
-+				break;
-+		}
-+
-+		if (start != -1) {
-+			err = dst_mirror_sync_block(n, start + i*BITS_PER_LONG,
-+					num);
-+			if (err)
-+				break;
-+			sync = 0;
-+		}
-+
-+		if (total == 0)
-+			break;
-+	}
-+
-+	return err;
-+}
-+
-+static int dst_mirror_end_io(struct bio *bio, unsigned int size, int err)
-+{
-+	struct dst_request *req = bio->bi_private;
-+
-+	if (bio->bi_size)
-+		return 0;
-+
-+	dprintk("%s: req: %p, bio: %p, req->bio: %p, err: %d.\n",
-+			__func__, req, bio, req->bio, err);
-+	req->bio_endio(req, err);
-+	bio_put(bio);
-+	return 0;
-+}
-+
-+static void dst_mirror_read_endio(struct dst_request *req, int err)
-+{
-+	dst_mirror_bio_error(req, err);
-+
-+	if (!err)
-+		kst_bio_endio(req, 0);
-+}
-+
-+static void dst_mirror_write_endio(struct dst_request *req, int err)
-+{
-+	dst_mirror_bio_error(req, err);
-+
-+	req = req->priv;
-+
-+	dprintk("%s: req: %p, priv: %p err: %d, bio: %p, "
-+			"cnt: %d, orig_size: %llu.\n",
-+		__func__, req, req->priv, err, req->bio,
-+		atomic_read(&req->refcnt), req->orig_size);
-+
-+	if (atomic_dec_and_test(&req->refcnt)) {
-+		bio_endio(req->bio, req->orig_size, 0);
-+		dst_free_request(req);
-+	}
-+}
-+
-+static int dst_mirror_process_request_nosync(struct dst_request *req,
-+		struct dst_node *n)
-+{
-+	int err = 0;
-+
-+	/*
-+	 * Block layer requires to clone a bio.
-+	 */
-+	if (n->bdev) {
-+		struct bio *clone = bio_alloc_bioset(GFP_NOIO,
-+			req->bio->bi_max_vecs, dst_mirror_bio_set);
-+
-+		__bio_clone(clone, req->bio);
-+
-+		clone->bi_bdev = n->bdev;
-+		clone->bi_destructor = dst_mirror_destructor;
-+		clone->bi_private = req;
-+		clone->bi_end_io = &dst_mirror_end_io;
-+
-+		dprintk("%s: clone: %p, bio: %p, req: %p.\n",
-+				__func__, clone, req->bio, req);
-+
-+		generic_make_request(clone);
-+	} else {
-+		struct dst_request nr;
-+		/*
-+		 * Network state processing engine will clone request
-+		 * by itself if needed. We can not use the same structure
-+		 * here, since number of its fields will be modified.
-+		 */
-+		memcpy(&nr, req, sizeof(struct dst_request));
-+
-+		nr.node = n;
-+		nr.state = n->state;
-+		nr.priv = req;
-+
-+		err = kst_check_permissions(n->state, req->bio);
-+		if (!err)
-+			err = n->state->ops->push(&nr);
-+	}
-+
-+	dprintk("%s: req: %p, n: %p, bdev: %p, err: %d.\n",
-+			__func__, req, n, n->bdev, err);
-+
-+	return err;
-+}
-+
-+static void dst_mirror_sync_requeue(struct dst_node *n)
-+{
-+	struct dst_mirror_priv *p = n->priv;
-+	struct dst_request *req;
-+	unsigned int num, idx, i;
-+	u64 start;
-+	unsigned long flags;
-+	int err;
-+
-+	while (!list_empty(&p->backlog_list)) {
-+		req = NULL;
-+		spin_lock_irqsave(&p->backlog_lock, flags);
-+		if (!list_empty(&p->backlog_list)) {
-+			req = list_entry(p->backlog_list.next,
-+					struct dst_request,
-+					request_list_entry);
-+			list_del_init(&req->request_list_entry);
-+		}
-+		spin_unlock_irqrestore(&p->backlog_lock, flags);
-+
-+		if (!req)
-+			break;
-+
-+		start = req->start - to_sector(req->orig_size - req->size);
-+
-+		idx = start;
-+		num = to_sector(req->orig_size);
-+
-+		for (i=0; i<num; ++i)
-+			if (test_bit(idx+i, p->chunk))
-+				break;
-+
-+		dprintk("%s: idx: %u, num: %u, i: %u, req: %p, "
-+				"start: %llu, size: %llu.\n",
-+				__func__, idx, num, i, req,
-+				req->start, req->orig_size);
-+
-+		err = -1;
-+		if (i != num) {
-+			err = dst_mirror_process_request_nosync(req, n);
-+			if (!err)
-+				dst_free_request(req);
-+		}
-+
-+		if (err)
-+			kst_complete_req(req, err);
-+	}
-+
-+	if (p->old_data.age == 0)
-+		dst_mirror_write_node_data(n, &p->new_data);
-+}
-+
-+static int dst_mirror_process_request(struct dst_request *req,
-+		struct dst_node *n)
-+{
-+	dst_mirror_sync_requeue(n);
-+	return dst_mirror_process_request_nosync(req, n);
-+}
-+
-+static int dst_mirror_write(struct dst_request *oreq)
-+{
-+	struct dst_node *n, *node = oreq->node;
-+	struct dst_request *req;
-+	int num, err = 0, err_num = 0, orig_num;
-+
-+	req = dst_clone_request(oreq, oreq->node->w->req_pool);
-+	if (!req) {
-+		err = -ENOMEM;
-+		goto err_out_exit;
-+	}
-+
-+	req->priv = req;
-+
-+	/*
-+	 * This logic is pretty simple - req->bio_endio will not
-+	 * call bio_endio() until all mirror devices completed
-+	 * processing of the request (no matter with or without error).
-+	 * Mirror's req->bio_endio callback will take care of that.
-+	 */
-+	orig_num = num = atomic_read(&req->node->shared_num) + 1;
-+	atomic_set(&req->refcnt, num);
-+
-+	req->bio_endio = &dst_mirror_write_endio;
-+
-+	dprintk("\n%s: req: %p, mirror to %d nodes.\n",
-+			__func__, req, num);
-+
-+	err = dst_mirror_process_request(req, node);
-+	if (err)
-+		err_num++;
-+
-+	if (--num) {
-+		list_for_each_entry(n, &node->shared, shared) {
-+			dprintk("\n%s: req: %p, start: %llu, size: %llu, "
-+					"num: %d, n: %p, state: %p.\n",
-+				__func__, req, req->start,
-+				req->size, num, n, n->state);
-+
-+			err = dst_mirror_process_request(req, n);
-+			if (err)
-+				err_num++;
-+
-+			if (--num <= 0)
-+				break;
-+		}
-+	}
-+
-+	if (err_num == orig_num) {
-+		dprintk("%s: req: %p, num: %d, err: %d.\n",
-+				__func__, req, num, err);
-+		err = -ENODEV;
-+		goto err_out_exit;
-+	}
-+
-+	return 0;
-+
-+err_out_exit:
-+	return err;
-+}
-+
-+static int dst_mirror_read(struct dst_request *req)
-+{
-+	struct dst_node *node = req->node, *n, *min_dist_node;
-+	struct dst_mirror_priv *priv = node->priv;
-+	u64 dist, d;
-+	int err;
-+
-+	req->bio_endio = &dst_mirror_read_endio;
-+
-+	do {
-+		err = -ENODEV;
-+		min_dist_node = NULL;
-+		dist = -1ULL;
-+
-+		/*
-+		 * Reading is never performed from the node under resync.
-+		 * If this will cause any troubles (like all nodes must be
-+		 * resynced between each other), this check can be removed
-+		 * and per-chunk dirty bit can be tested instead.
-+		 */
-+
-+		if (!test_bit(DST_NODE_NOTSYNC, &node->flags)) {
-+			priv = node->priv;
-+			if (req->start > priv->last_start)
-+				dist = req->start - priv->last_start;
-+			else
-+				dist = priv->last_start - req->start;
-+			min_dist_node = req->node;
-+		}
-+
-+		list_for_each_entry(n, &node->shared, shared) {
-+			if (test_bit(DST_NODE_NOTSYNC, &n->flags))
-+				continue;
-+
-+			priv = n->priv;
-+
-+			if (req->start > priv->last_start)
-+				d = req->start - priv->last_start;
-+			else
-+				d = priv->last_start - req->start;
-+
-+			if (d < dist)
-+				min_dist_node = n;
-+		}
-+
-+		if (!min_dist_node)
-+			break;
-+
-+		req->node = min_dist_node;
-+		req->state = req->node->state;
-+
-+		if (req->node->bdev) {
-+			req->bio->bi_bdev = req->node->bdev;
-+			generic_make_request(req->bio);
-+			err = 0;
-+			break;
-+		}
-+
-+		err = req->state->ops->push(req);
-+		if (err) {
-+			dprintk("%s: req: %p, bio: %p, node: %p, err: %d.\n",
-+				__func__, req, req->bio, min_dist_node, err);
-+			dst_mirror_mark_notsync(req->node);
-+		}
-+	} while (err && min_dist_node);
-+
-+	if (err || !min_dist_node) {
-+		dprintk("%s: req: %p, bio: %p, node: %p, err: %d.\n",
-+			__func__, req, req->bio, min_dist_node, err);
-+		if (!err)
-+			err = -ENODEV;
-+	}
-+	dprintk("%s: req: %p, err: %d.\n", __func__, req, err);
-+	return err;
-+}
-+
-+/*
-+ * This callback is invoked from block layer request processing function,
-+ * its task is to remap block request to different nodes.
-+ */
-+static int dst_mirror_remap(struct dst_request *req)
-+{
-+	int (*remap[])(struct dst_request *) =
-+		{&dst_mirror_read, &dst_mirror_write};
-+
-+	return remap[bio_rw(req->bio) == WRITE](req);
-+}
-+
-+static int dst_mirror_error(struct kst_state *st, int err)
-+{
-+	struct dst_request *req, *tmp;
-+	unsigned int revents = st->socket->ops->poll(NULL, st->socket, NULL);
-+
-+	dprintk("%s: err: %d, revents: %x, notsync: %d.\n",
-+			__func__, err, revents,
-+			test_bit(DST_NODE_NOTSYNC, &st->node->flags));
-+
-+	if (err == -EEXIST)
-+		return err;
-+
-+	if (!(revents & (POLLERR | POLLHUP)) &&
-+		   	(err == -EPIPE || err == -ECONNRESET)) {
-+		if (test_bit(DST_NODE_NOTSYNC, &st->node->flags)) {
-+			return dst_mirror_resync(st->node, 1);
-+		}
-+		return 0;
-+	}
-+
-+	if (atomic_read(&st->node->shared_num) == 0 &&
-+			!st->node->shared_head) {
-+		dprintk("%s: this node is the only one in the mirror, "
-+				"can not mark it notsync.\n", __func__);
-+		return err;
-+	}
-+
-+	dst_mirror_mark_notsync(st->node);
-+
-+	mutex_lock(&st->request_lock);
-+	list_for_each_entry_safe(req, tmp, &st->request_list,
-+					request_list_entry) {
-+		kst_del_req(req);
-+		dprintk("%s: requeue [%c], start: %llu, idx: %d,"
-+				" num: %d, size: %llu, offset: %u, err: %d.\n",
-+			__func__, (bio_rw(req->bio) == WRITE)?'W':'R',
-+			req->start, req->idx, req->num, req->size,
-+			req->offset, err);
-+
-+		if (bio_rw(req->bio) != WRITE) {
-+			req->start -= to_sector(req->orig_size - req->size);
-+			req->size = req->orig_size;
-+			req->flags &= ~(DST_REQ_HEADER_SENT | DST_REQ_CHEKSUM_RECV);
-+			req->idx = 0;
-+			if (dst_mirror_read(req))
-+				dst_free_request(req);
-+		} else {
-+			kst_complete_req(req, err);
-+		}
-+	}
-+	mutex_unlock(&st->request_lock);
-+	return err;
-+}
-+
-+static struct dst_alg_ops alg_mirror_ops = {
-+	.remap		= dst_mirror_remap,
-+	.add_node	= dst_mirror_add_node,
-+	.del_node	= dst_mirror_del_node,
-+	.error		= dst_mirror_error,
-+	.owner		= THIS_MODULE,
-+};
-+
-+static int __devinit alg_mirror_init(void)
-+{
-+	int err = -ENOMEM;
-+
-+	dst_mirror_bio_set = bioset_create(256, 256);
-+	if (!dst_mirror_bio_set)
-+		return -ENOMEM;
-+
-+	alg_mirror = dst_alloc_alg("alg_mirror", &alg_mirror_ops);
-+	if (!alg_mirror)
-+		goto err_out;
-+
-+	return 0;
-+
-+err_out:
-+	bioset_free(dst_mirror_bio_set);
-+	return err;
-+}
-+
-+static void __devexit alg_mirror_exit(void)
-+{
-+	dst_remove_alg(alg_mirror);
-+	bioset_free(dst_mirror_bio_set);
-+}
-+
-+module_init(alg_mirror_init);
-+module_exit(alg_mirror_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Evgeniy Polyakov <johnpol@2ka.mipt.ru>");
-+MODULE_DESCRIPTION("Mirror distributed algorithm.");
+Well, problem solved...
 
+I'm going to kill all pc assemblers in the world... Someone should teach them
+to learn mauals before assembling anything but a power chord.
 
--- 
-	Evgeniy Polyakov
+The memory was not paired, so the motherboard was not interleaving the access.
+With no inter-node but with inter-module interleaving, and a couple 1Gb sticks
+for each processor now I get something like:
+
+cicely:~/bn> bn
+	name: cicely.cps.unizar.es
+	arch: x86-64
+	proc: 4 x x86_64 @ 2200 MHz
+	ram:  3555 Mb
+	os:   unx, Linux, 2.6.23.1-desktop-1mdv
+	cc:   gcc-4.3.0
+vector size   : 8 x 1024 x 1024
+allocation:     0.02 ms
+int scl add: ..........   60.56 ms,  138.52 Mips   |   62.96 Mips  /GHz
+int scl mul: ..........   59.34 ms,  141.36 Mips   |   64.26 Mips  /GHz
+flt scl add: ..........   59.01 ms,  142.16 Mflops |   64.62 Mflops/GHz
+flt vec add: ..........   14.79 ms,  567.06 Mflops |  257.75 Mflops/GHz
+flt scl mul: ..........   59.02 ms,  142.12 Mflops |   64.60 Mflops/GHz
+flt vec mul: ..........   14.82 ms,  566.19 Mflops |  257.36 Mflops/GHz
+total:       5019.86 ms
+
+Much better, but not like the other opteron box.
+
+My processors are higher than Rev E0, because the BIOS does not let me choose
+the 'software' hole. If I activate the 'hardware hole', I see al the memory
+I can:
+
+cicely:~/bn> free
+             total       used       free     shared    buffers     cached
+Mem:       3640628     214496    3426132          0      21240      84184
+-/+ buffers/cache:     109072    3531556
+Swap:      4200988          0    4200988
+
+3.64 Gb. The rest is eaten by the graphics card, as I could read in the
+AMD site. Don't know if mem=4096 to boot the kernel would help, even if it
+is possible (don't think so, as it looks like a BIOS mis-feature).
+The ram is DDR 400.
+
+Anyways, can I trust what dmidecode says ? I installed the ram as the board
+manual said in banks 1A+1B (not 2A+2B) for each processor, but this program
+says this:
+
+BANK0   64Mb            BANK4   64Mb
+BANK1   64Mb            BANK5   64Mb
+BANK2 1024Mb            BANK6 1024Mb
+BANK3 1024Mb            BANK7 1024Mb
+
+I would always have thought that BANK0 would be slot 1A in first processor,
+but it looks like not...
+And where do the 64 Mb blocks come from ?
+
+Really strange...
+
+--
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2008.1 (Cooker) for i586
+Linux 2.6.23-jam01 (gcc 4.2.2 20070909 (4.2.2-0.RC.1mdv2008.0)) SMP PREEMPT
+09 F9 11 02 9D 74 E3 5B D8 41 56 C5 63 56 88 C0
