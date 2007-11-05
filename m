@@ -1,95 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756643AbXKEOYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756875AbXKEOZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756643AbXKEOYU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 09:24:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755163AbXKEOYG
+	id S1756875AbXKEOZb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 09:25:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755524AbXKEOZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 09:24:06 -0500
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:51399 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754986AbXKEOYE (ORCPT
+	Mon, 5 Nov 2007 09:25:24 -0500
+Received: from moutng.kundenserver.de ([212.227.126.179]:57997 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754895AbXKEOZX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 09:24:04 -0500
-In-Reply-To: <24042.1194069991@neuling.org>
-References: <200710261437.29117.ossthema@de.ibm.com> <1193610737.9637.1.camel@concordia> <OF79E7ACE7.5D0488CE-ONC1257384.002E58C0-C1257384.002F8561@de.ibm.com> <1193784636.32504.4.camel@concordia> <OF59B5FFD2.0294206F-ONC1257385.006A802D-C1257385.006CB6BB@de.ibm.com> <1193985008.1782.7.camel@concordia> <OF3FAFDB41.AF236738-ONC1257387.00376233-C1257387.00389861@de.ibm.com> <24042.1194069991@neuling.org>
-Subject: Re: [PATCH] ehea: add kexec support
-To: Michael Neuling <mikey@neuling.org>
-Cc: Jan-Bernd Themann <THEMANN@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <MEDER@de.ibm.com>,
-       michael@ellerman.id.au, netdev <netdev@vger.kernel.org>,
-       ossthema@linux.vnet.ibm.com, Stefan Roscher <stefan.roscher@de.ibm.com>,
-       Thomas Q Klein <TKLEIN@de.ibm.com>
-X-Mailer: Lotus Notes Release 8.0 August 02, 2007
-Message-ID: <OF46AA6850.8C031396-ONC125738A.004D7626-C125738A.004F05C8@de.ibm.com>
-From: Christoph Raisch <RAISCH@de.ibm.com>
-Date: Mon, 5 Nov 2007 15:24:13 +0100
-X-MIMETrack: Serialize by Router on D12ML067/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
- 05/11/2007 15:23:59
+	Mon, 5 Nov 2007 09:25:23 -0500
+Date: Mon, 5 Nov 2007 15:23:30 +0100
+From: Andre Haupt <andre@bitwigglers.org>
+To: linux-kernel@vger.kernel.org
+Cc: buytenh@wantstofly.org, dsaxena@plexity.net,
+       Andre Haupt <andre@bitwigglers.org>
+Subject: [patch 1/1] ixp23xx: fix some double includes
+Message-ID: <20071105142330.GA27398@ahaupt-debian-vm.localdomain>
+References: <20071105142114.977138260@ahaupt-debian-vm.localdomain>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename=ixp23xx_fix_includes
+User-Agent: quilt/0.45-1
+X-Provags-ID: V01U2FsdGVkX18fuAfnkW6CsDnnkXeLriyaYmThrdwtNKonEzY
+ 1aWH3zThFEVpKYB7BZUgRtXMRMspsy/0qKlOT+L2QXla6eBe19
+ bqfgJaQSL/vIy/YZyelvIWyHpUkz+7/tcAAQV0FilI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Andre Haupt <andre@bitwigglers.org>
+Signed-off-by: Andre Haupt <andre@bitwigglers.org>
 
-Michael Neuling <mikey@neuling.org> wrote on 03.11.2007 07:06:31:
+---
+ arch/arm/mach-ixp23xx/core.c       |    1 -
+ arch/arm/mach-ixp23xx/espresso.c   |    2 --
+ arch/arm/mach-ixp23xx/ixdp2351.c   |    2 --
+ arch/arm/mach-ixp23xx/roadrunner.c |    2 --
+ 4 files changed, 7 deletions(-)
 
-> > DD allocates HEA resources and gets firmware_handles for these
-resources.
-> > To free the resources DD needs to use exactly these handles.
-> > There's no generic firmware call "clean out all resources".
-> > Allocating the same resources twice does not work.
->
-> Can we get a new firmware call to do this?
+Index: linus/arch/arm/mach-ixp23xx/core.c
+===================================================================
+--- linus.orig/arch/arm/mach-ixp23xx/core.c	2007-11-05 15:12:25.000000000 +0100
++++ linus/arch/arm/mach-ixp23xx/core.c	2007-11-05 15:12:45.000000000 +0100
+@@ -19,7 +19,6 @@
+ #include <linux/spinlock.h>
+ #include <linux/sched.h>
+ #include <linux/interrupt.h>
+-#include <linux/serial.h>
+ #include <linux/tty.h>
+ #include <linux/bitops.h>
+ #include <linux/serial.h>
+Index: linus/arch/arm/mach-ixp23xx/espresso.c
+===================================================================
+--- linus.orig/arch/arm/mach-ixp23xx/espresso.c	2007-11-05 15:13:46.000000000 +0100
++++ linus/arch/arm/mach-ixp23xx/espresso.c	2007-11-05 15:14:46.000000000 +0100
+@@ -15,7 +15,6 @@
+ #include <linux/spinlock.h>
+ #include <linux/sched.h>
+ #include <linux/interrupt.h>
+-#include <linux/serial.h>
+ #include <linux/tty.h>
+ #include <linux/bitops.h>
+ #include <linux/ioport.h>
+@@ -38,7 +37,6 @@
+ #include <asm/pgtable.h>
+ 
+ #include <asm/mach/map.h>
+-#include <asm/mach/irq.h>
+ #include <asm/mach/arch.h>
+ #include <asm/mach/irq.h>
+ #include <asm/mach/pci.h>
+Index: linus/arch/arm/mach-ixp23xx/ixdp2351.c
+===================================================================
+--- linus.orig/arch/arm/mach-ixp23xx/ixdp2351.c	2007-11-05 15:15:15.000000000 +0100
++++ linus/arch/arm/mach-ixp23xx/ixdp2351.c	2007-11-05 15:15:38.000000000 +0100
+@@ -20,7 +20,6 @@
+ #include <linux/sched.h>
+ #include <linux/interrupt.h>
+ #include <linux/irq.h>
+-#include <linux/serial.h>
+ #include <linux/tty.h>
+ #include <linux/bitops.h>
+ #include <linux/ioport.h>
+@@ -42,7 +41,6 @@
+ #include <asm/pgtable.h>
+ 
+ #include <asm/mach/map.h>
+-#include <asm/mach/irq.h>
+ #include <asm/mach/arch.h>
+ #include <asm/mach/irq.h>
+ #include <asm/mach/pci.h>
+Index: linus/arch/arm/mach-ixp23xx/roadrunner.c
+===================================================================
+--- linus.orig/arch/arm/mach-ixp23xx/roadrunner.c	2007-11-05 15:15:55.000000000 +0100
++++ linus/arch/arm/mach-ixp23xx/roadrunner.c	2007-11-05 15:16:15.000000000 +0100
+@@ -19,7 +19,6 @@
+ #include <linux/spinlock.h>
+ #include <linux/sched.h>
+ #include <linux/interrupt.h>
+-#include <linux/serial.h>
+ #include <linux/tty.h>
+ #include <linux/bitops.h>
+ #include <linux/ioport.h>
+@@ -42,7 +41,6 @@
+ #include <asm/pgtable.h>
+ 
+ #include <asm/mach/map.h>
+-#include <asm/mach/irq.h>
+ #include <asm/mach/arch.h>
+ #include <asm/mach/irq.h>
+ #include <asm/mach/pci.h>
 
-Well, there's no simple answer to this. I'm not working on firmware.
-I'm trying to get an answer... but don't expect anything "real soon".
-
->
-> > So a new kernel can't free the resources allocated by an old kernel,
-> > because the numeric values of the handles aren't known anymore.
->
-> How many possible handles are there?
-
-Depends on system configuration, between
-4 and 64 per port.
-
->
-> If the handles are lost, is the only way to clear out the HEA resources
-> is to reset the partition?
-
-Yes, that's exactly the problem.
-
->
-> > Potential Solution:
-> > Hea driver cleanup function hooks into ppc_md.machine_crash_shutdown
-> > and frees all firmware resources at shutdown time of the crashed
-kernel.
->
-> This means the crashed kernel now has to be trusted to shut down and
-> free up the resources.  Isn't trusting the crashing kernel in this way
-> against the whole kdump idea?
-
-I would hope that if the cleanup routine only does hcalls
-and does not change any kernel memory areas, then the risk to damage
-anything
-else  in kernel should be pretty small. This should allow to catch most
-cases,
-but as always you can imagine situations where the kernel memory is broken
-beyond hope to even restart the kdump kernel.
-
-
->
-> > crash_kexec continues and loads new kernel.
-> > The new kernel restarts the HEA driver within kdump kernel, which will
-work
-> > because resources have been freed before.
-> >
-> > Michael, would this work?
-
-Is ppc_md.machine_crash_shutdown the right hook?
-
-Gruss/Regards
-Christoph R
-
-
+--
