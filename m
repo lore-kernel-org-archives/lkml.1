@@ -1,348 +1,321 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756326AbXKEQed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755034AbXKEQeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756326AbXKEQed (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 11:34:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbXKEQdg
+	id S1755034AbXKEQeu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 11:34:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753920AbXKEQdh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 11:33:36 -0500
-Received: from cantor.suse.de ([195.135.220.2]:44626 "EHLO mx1.suse.de"
+	Mon, 5 Nov 2007 11:33:37 -0500
+Received: from ns.suse.de ([195.135.220.2]:44630 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752892AbXKEQdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753199AbXKEQdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 5 Nov 2007 11:33:32 -0500
-Message-Id: <20071105163233.264260335@hasse.suse.de>
+Message-Id: <20071105163234.688960656@hasse.suse.de>
 User-Agent: quilt/0.46-1
-Date: Mon, 05 Nov 2007 17:32:35 +0100
+Date: Mon, 05 Nov 2007 17:32:41 +0100
 From: Jan Blunck <jblunck@suse.de>
 To: Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
        Christoph Hellwig <hch@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Cc: dwmw2@infradead.org
-Subject: [PATCH 3/9] d_path: Use struct path in struct avc_audit_data
+Cc: Bryan Wu <bryan.wu@analog.com>
+Subject: [PATCH 9/9] d_path: Make d_path() use a struct path
 References: <20071105163232.550298985@hasse.suse.de>
-Content-Disposition: inline; filename=vfs/d_path-Use_struct_path_in_struct_avc_audit_data.diff
+Content-Disposition: inline; filename=vfs/d_path-use_struct_path.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-audit_log_d_path() is a d_path() wrapper that is used by the audit code. To
-use a struct path in audit_log_d_path() I need to embed it into struct
-avc_audit_data.
+d_path() is used on a <dentry,vfsmount> pair. Lets use a struct path to
+reflect this.
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
+Acked-by: Bryan Wu <bryan.wu@analog.com>
 Acked-by: Christoph Hellwig <hch@infradead.org>
 ---
- include/linux/audit.h          |    5 ++---
- kernel/audit.c                 |   12 ++++++------
- kernel/auditsc.c               |   28 +++++++++++-----------------
- security/selinux/avc.c         |   13 ++++++++-----
- security/selinux/hooks.c       |   28 ++++++++++++----------------
- security/selinux/include/avc.h |    6 ++----
- 6 files changed, 41 insertions(+), 51 deletions(-)
+ arch/blackfin/kernel/traps.c      |   12 +++++-------
+ drivers/md/bitmap.c               |    8 +-------
+ drivers/usb/gadget/file_storage.c |    8 +++-----
+ fs/compat_ioctl.c                 |    2 +-
+ fs/dcache.c                       |   12 +++++-------
+ fs/dcookies.c                     |    2 +-
+ fs/ecryptfs/super.c               |    5 ++---
+ fs/nfsd/export.c                  |    3 ++-
+ fs/proc/base.c                    |    2 +-
+ fs/seq_file.c                     |    4 +++-
+ fs/sysfs/file.c                   |    5 ++---
+ fs/unionfs/super.c                |    3 +--
+ include/linux/dcache.h            |    5 +++--
+ kernel/audit.c                    |    2 +-
+ 14 files changed, 31 insertions(+), 42 deletions(-)
 
-Index: b/include/linux/audit.h
+Index: b/arch/blackfin/kernel/traps.c
 ===================================================================
---- a/include/linux/audit.h
-+++ b/include/linux/audit.h
-@@ -527,8 +527,7 @@ extern const char *	    audit_log_n_untr
- 							const char *string);
- extern void		    audit_log_d_path(struct audit_buffer *ab,
- 					     const char *prefix,
--					     struct dentry *dentry,
--					     struct vfsmount *vfsmnt);
-+					     struct path *path);
- extern void		    audit_log_lost(const char *message);
- 				/* Private API (for audit.c only) */
- extern int audit_filter_user(struct netlink_skb_parms *cb, int type);
-@@ -545,7 +544,7 @@ extern int audit_enabled;
- #define audit_log_hex(a,b,l) do { ; } while (0)
- #define audit_log_untrustedstring(a,s) do { ; } while (0)
- #define audit_log_n_untrustedstring(a,n,s) do { ; } while (0)
--#define audit_log_d_path(b,p,d,v) do { ; } while (0)
-+#define audit_log_d_path(b,p,d) do { ; } while (0)
- #define audit_enabled 0
- #endif
- #endif
+--- a/arch/blackfin/kernel/traps.c
++++ b/arch/blackfin/kernel/traps.c
+@@ -98,15 +98,13 @@ static int printk_address(unsigned long 
+ 			struct vm_area_struct *vma = vml->vma;
+ 
+ 			if (address >= vma->vm_start && address < vma->vm_end) {
++				char _tmpbuf[256];
+ 				char *name = p->comm;
+ 				struct file *file = vma->vm_file;
+-				if (file) {
+-					char _tmpbuf[256];
+-					name = d_path(file->f_dentry,
+-					              file->f_vfsmnt,
+-					              _tmpbuf,
+-					              sizeof(_tmpbuf));
+-				}
++
++				if (file)
++					name = d_path(&file->f_path, _tmpbuf,
++						      sizeof(_tmpbuf));
+ 
+ 				/* FLAT does not have its text aligned to the start of
+ 				 * the map while FDPIC ELF does ...
+Index: b/drivers/md/bitmap.c
+===================================================================
+--- a/drivers/md/bitmap.c
++++ b/drivers/md/bitmap.c
+@@ -206,16 +206,10 @@ static void bitmap_checkfree(struct bitm
+ /* copy the pathname of a file to a buffer */
+ char *file_path(struct file *file, char *buf, int count)
+ {
+-	struct dentry *d;
+-	struct vfsmount *v;
+-
+ 	if (!buf)
+ 		return NULL;
+ 
+-	d = file->f_path.dentry;
+-	v = file->f_path.mnt;
+-
+-	buf = d_path(d, v, buf, count);
++	buf = d_path(&file->f_path, buf, count);
+ 
+ 	return IS_ERR(buf) ? NULL : buf;
+ }
+Index: b/drivers/usb/gadget/file_storage.c
+===================================================================
+--- a/drivers/usb/gadget/file_storage.c
++++ b/drivers/usb/gadget/file_storage.c
+@@ -3567,8 +3567,7 @@ static ssize_t show_file(struct device *
+ 
+ 	down_read(&fsg->filesem);
+ 	if (backing_file_is_open(curlun)) {	// Get the complete pathname
+-		p = d_path(curlun->filp->f_path.dentry,
+-				curlun->filp->f_path.mnt, buf, PAGE_SIZE - 1);
++		p = d_path(&curlun->filp->f_path, buf, PAGE_SIZE - 1);
+ 		if (IS_ERR(p))
+ 			rc = PTR_ERR(p);
+ 		else {
+@@ -3985,9 +3984,8 @@ static int __init fsg_bind(struct usb_ga
+ 		if (backing_file_is_open(curlun)) {
+ 			p = NULL;
+ 			if (pathbuf) {
+-				p = d_path(curlun->filp->f_path.dentry,
+-					curlun->filp->f_path.mnt,
+-					pathbuf, PATH_MAX);
++				p = d_path(&curlun->filp->f_path,
++					   pathbuf, PATH_MAX);
+ 				if (IS_ERR(p))
+ 					p = NULL;
+ 			}
+Index: b/fs/compat_ioctl.c
+===================================================================
+--- a/fs/compat_ioctl.c
++++ b/fs/compat_ioctl.c
+@@ -3544,7 +3544,7 @@ static void compat_ioctl_error(struct fi
+ 	/* find the name of the device. */
+ 	path = (char *)__get_free_page(GFP_KERNEL);
+ 	if (path) {
+-		fn = d_path(filp->f_path.dentry, filp->f_path.mnt, path, PAGE_SIZE);
++		fn = d_path(&filp->f_path, path, PAGE_SIZE);
+ 		if (IS_ERR(fn))
+ 			fn = "?";
+ 	}
+Index: b/fs/dcache.c
+===================================================================
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -1831,8 +1831,7 @@ Elong:
+ 
+ /**
+  * d_path - return the path of a dentry
+- * @dentry: dentry to report
+- * @vfsmnt: vfsmnt to which the dentry belongs
++ * @path: path to report
+  * @buf: buffer to return value in
+  * @buflen: buffer length
+  *
+@@ -1843,8 +1842,7 @@ Elong:
+  *
+  * "buflen" should be positive. Caller holds the dcache_lock.
+  */
+-char *d_path(struct dentry *dentry, struct vfsmount *vfsmnt,
+-	     char *buf, int buflen)
++char *d_path(struct path *path, char *buf, int buflen)
+ {
+ 	char *res;
+ 	struct path root;
+@@ -1856,15 +1854,15 @@ char *d_path(struct dentry *dentry, stru
+ 	 * user wants to identify the object in /proc/pid/fd/.  The little hack
+ 	 * below allows us to generate a name for these objects on demand:
+ 	 */
+-	if (dentry->d_op && dentry->d_op->d_dname)
+-		return dentry->d_op->d_dname(dentry, buf, buflen);
++	if (path->dentry->d_op && path->dentry->d_op->d_dname)
++		return path->dentry->d_op->d_dname(path->dentry, buf, buflen);
+ 
+ 	read_lock(&current->fs->lock);
+ 	root = current->fs->root;
+ 	path_get(&current->fs->root);
+ 	read_unlock(&current->fs->lock);
+ 	spin_lock(&dcache_lock);
+-	res = __d_path(dentry, vfsmnt, &root, buf, buflen);
++	res = __d_path(path->dentry, path->mnt, &root, buf, buflen);
+ 	spin_unlock(&dcache_lock);
+ 	path_put(&root);
+ 	return res;
+Index: b/fs/dcookies.c
+===================================================================
+--- a/fs/dcookies.c
++++ b/fs/dcookies.c
+@@ -170,7 +170,7 @@ asmlinkage long sys_lookup_dcookie(u64 c
+ 		goto out;
+ 
+ 	/* FIXME: (deleted) ? */
+-	path = d_path(dcs->path.dentry, dcs->path.mnt, kbuf, PAGE_SIZE);
++	path = d_path(&dcs->path, kbuf, PAGE_SIZE);
+ 
+ 	if (IS_ERR(path)) {
+ 		err = PTR_ERR(path);
+Index: b/fs/ecryptfs/super.c
+===================================================================
+--- a/fs/ecryptfs/super.c
++++ b/fs/ecryptfs/super.c
+@@ -163,8 +163,7 @@ static void ecryptfs_clear_inode(struct 
+ static int ecryptfs_show_options(struct seq_file *m, struct vfsmount *mnt)
+ {
+ 	struct super_block *sb = mnt->mnt_sb;
+-	struct dentry *lower_root_dentry = ecryptfs_dentry_to_lower(sb->s_root);
+-	struct vfsmount *lower_mnt = ecryptfs_dentry_to_lower_mnt(sb->s_root);
++	struct path *lower_root = &ecryptfs_dentry_to_private(sb->s_root)->lower_path;
+ 	char *tmp_page;
+ 	char *path;
+ 	int rc = 0;
+@@ -174,7 +173,7 @@ static int ecryptfs_show_options(struct 
+ 		rc = -ENOMEM;
+ 		goto out;
+ 	}
+-	path = d_path(lower_root_dentry, lower_mnt, tmp_page, PAGE_SIZE);
++	path = d_path(lower_root, tmp_page, PAGE_SIZE);
+ 	if (IS_ERR(path)) {
+ 		rc = PTR_ERR(path);
+ 		goto out;
+Index: b/fs/nfsd/export.c
+===================================================================
+--- a/fs/nfsd/export.c
++++ b/fs/nfsd/export.c
+@@ -345,7 +345,7 @@ static void svc_export_request(struct ca
+ 	char *pth;
+ 
+ 	qword_add(bpp, blen, exp->ex_client->name);
+-	pth = d_path(exp->ex_path.dentry, exp->ex_path.mnt, *bpp, *blen);
++	pth = d_path(&exp->ex_path, *bpp, *blen);
+ 	if (IS_ERR(pth)) {
+ 		/* is this correct? */
+ 		(*bpp)[0] = '\n';
+Index: b/fs/proc/base.c
+===================================================================
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -1054,7 +1054,7 @@ static int do_proc_readlink(struct path 
+ 	if (!tmp)
+ 		return -ENOMEM;
+ 
+-	pathname = d_path(path->dentry, path->mnt, tmp, PAGE_SIZE);
++	pathname = d_path(path, tmp, PAGE_SIZE);
+ 	len = PTR_ERR(pathname);
+ 	if (IS_ERR(pathname))
+ 		goto out;
+Index: b/fs/seq_file.c
+===================================================================
+--- a/fs/seq_file.c
++++ b/fs/seq_file.c
+@@ -353,8 +353,7 @@ int seq_path(struct seq_file *m, struct 
+ {
+ 	if (m->count < m->size) {
+ 		char *s = m->buf + m->count;
+-		char *p = d_path(path->dentry, path->mnt, s,
+-				 m->size - m->count);
++		char *p = d_path(path, s, m->size - m->count);
+ 		if (!IS_ERR(p)) {
+ 			while (s <= p) {
+ 				char c = *p++;
+Index: b/fs/sysfs/file.c
+===================================================================
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -355,9 +355,8 @@ static int sysfs_open_file(struct inode 
+ 	int error;
+ 	char *p;
+ 
+-	p = d_path(file->f_dentry, sysfs_mount, last_sysfs_file,
+-		   sizeof(last_sysfs_file));
+-	if (p)
++	p = d_path(&file->f_path, last_sysfs_file, sizeof(last_sysfs_file));
++	if (!IS_ERR(p))
+ 		memmove(last_sysfs_file, p, strlen(p) + 1);
+ 
+ 	/* need attr_sd for attr and ops, its parent for kobj */
+Index: b/fs/unionfs/super.c
+===================================================================
+--- a/fs/unionfs/super.c
++++ b/fs/unionfs/super.c
+@@ -974,8 +974,7 @@ static int unionfs_show_options(struct s
+ 
+ 	seq_printf(m, ",dirs=");
+ 	for (bindex = bstart; bindex <= bend; bindex++) {
+-		path = d_path(unionfs_lower_dentry_idx(sb->s_root, bindex),
+-			      unionfs_lower_mnt_idx(sb->s_root, bindex),
++		path = d_path(&UNIONFS_D(sb->s_root)->lower_paths[bindex],
+ 			      tmp_page, PAGE_SIZE);
+ 		if (IS_ERR(path)) {
+ 			ret = PTR_ERR(path);
+Index: b/include/linux/dcache.h
+===================================================================
+--- a/include/linux/dcache.h
++++ b/include/linux/dcache.h
+@@ -10,6 +10,7 @@
+ #include <linux/rcupdate.h>
+ 
+ struct nameidata;
++struct path;
+ struct vfsmount;
+ 
+ /*
+@@ -300,8 +301,8 @@ extern int d_validate(struct dentry *, s
+  */
+ extern char *dynamic_dname(struct dentry *, char *, int, const char *, ...);
+ 
+-extern char * d_path(struct dentry *, struct vfsmount *, char *, int);
+-  
++extern char *d_path(struct path *, char *, int);
++
+ /* Allocation counts.. */
+ 
+ /**
 Index: b/kernel/audit.c
 ===================================================================
 --- a/kernel/audit.c
 +++ b/kernel/audit.c
-@@ -1394,26 +1394,26 @@ const char *audit_log_untrustedstring(st
- 
- /* This is a helper-function to print the escaped d_path */
- void audit_log_d_path(struct audit_buffer *ab, const char *prefix,
--		      struct dentry *dentry, struct vfsmount *vfsmnt)
-+		      struct path *path)
- {
--	char *p, *path;
-+	char *p, *pathname;
- 
- 	if (prefix)
- 		audit_log_format(ab, " %s", prefix);
- 
- 	/* We will allow 11 spaces for ' (deleted)' to be appended */
--	path = kmalloc(PATH_MAX+11, ab->gfp_mask);
--	if (!path) {
-+	pathname = kmalloc(PATH_MAX+11, ab->gfp_mask);
-+	if (!pathname) {
+@@ -1407,7 +1407,7 @@ void audit_log_d_path(struct audit_buffe
  		audit_log_format(ab, "<no memory>");
  		return;
  	}
--	p = d_path(dentry, vfsmnt, path, PATH_MAX+11);
-+	p = d_path(path->dentry, path->mnt, pathname, PATH_MAX+11);
+-	p = d_path(path->dentry, path->mnt, pathname, PATH_MAX+11);
++	p = d_path(path, pathname, PATH_MAX+11);
  	if (IS_ERR(p)) { /* Should never happen since we send PATH_MAX */
  		/* FIXME: can we save some information here? */
  		audit_log_format(ab, "<too long>");
- 	} else
- 		audit_log_untrustedstring(ab, p);
--	kfree(path);
-+	kfree(pathname);
- }
- 
- /**
-Index: b/kernel/auditsc.c
-===================================================================
---- a/kernel/auditsc.c
-+++ b/kernel/auditsc.c
-@@ -201,8 +201,7 @@ struct audit_context {
- 	int		    name_count;
- 	struct audit_names  names[AUDIT_NAMES];
- 	char *		    filterkey;	/* key for rule that triggered record */
--	struct dentry *	    pwd;
--	struct vfsmount *   pwdmnt;
-+	struct path	    pwd;
- 	struct audit_context *previous; /* For nested syscalls */
- 	struct audit_aux_data *aux;
- 	struct audit_aux_data *aux_pids;
-@@ -758,12 +757,9 @@ static inline void audit_free_names(stru
- 			__putname(context->names[i].name);
- 	}
- 	context->name_count = 0;
--	if (context->pwd)
--		dput(context->pwd);
--	if (context->pwdmnt)
--		mntput(context->pwdmnt);
--	context->pwd = NULL;
--	context->pwdmnt = NULL;
-+	path_put(&context->pwd);
-+	context->pwd.dentry = NULL;
-+	context->pwd.mnt = NULL;
- }
- 
- static inline void audit_free_aux(struct audit_context *context)
-@@ -910,8 +906,7 @@ static void audit_log_task_info(struct a
- 			if ((vma->vm_flags & VM_EXECUTABLE) &&
- 			    vma->vm_file) {
- 				audit_log_d_path(ab, "exe=",
--						 vma->vm_file->f_path.dentry,
--						 vma->vm_file->f_path.mnt);
-+						 &vma->vm_file->f_path);
- 				break;
- 			}
- 			vma = vma->vm_next;
-@@ -1177,10 +1172,10 @@ static void audit_log_exit(struct audit_
- 				  context->target_sid))
- 			call_panic = 1;
- 
--	if (context->pwd && context->pwdmnt) {
-+	if (context->pwd.dentry && context->pwd.mnt) {
- 		ab = audit_log_start(context, GFP_KERNEL, AUDIT_CWD);
- 		if (ab) {
--			audit_log_d_path(ab, "cwd=", context->pwd, context->pwdmnt);
-+			audit_log_d_path(ab, "cwd=", &context->pwd);
- 			audit_log_end(ab);
- 		}
- 	}
-@@ -1203,8 +1198,7 @@ static void audit_log_exit(struct audit_
- 			case 0:
- 				/* name was specified as a relative path and the
- 				 * directory component is the cwd */
--				audit_log_d_path(ab, " name=", context->pwd,
--						 context->pwdmnt);
-+				audit_log_d_path(ab, " name=", &context->pwd);
- 				break;
- 			default:
- 				/* log the name's directory component */
-@@ -1526,10 +1520,10 @@ void __audit_getname(const char *name)
- 	context->names[context->name_count].ino  = (unsigned long)-1;
- 	context->names[context->name_count].osid = 0;
- 	++context->name_count;
--	if (!context->pwd) {
-+	if (!context->pwd.dentry) {
- 		read_lock(&current->fs->lock);
--		context->pwd = dget(current->fs->pwd.dentry);
--		context->pwdmnt = mntget(current->fs->pwd.mnt);
-+		context->pwd = current->fs->pwd;
-+		path_get(&current->fs->pwd);
- 		read_unlock(&current->fs->lock);
- 	}
- 
-Index: b/security/selinux/avc.c
-===================================================================
---- a/security/selinux/avc.c
-+++ b/security/selinux/avc.c
-@@ -568,10 +568,11 @@ void avc_audit(u32 ssid, u32 tsid,
- 			audit_log_format(ab, " capability=%d", a->u.cap);
- 			break;
- 		case AVC_AUDIT_DATA_FS:
--			if (a->u.fs.dentry) {
--				struct dentry *dentry = a->u.fs.dentry;
--				if (a->u.fs.mnt) {
--					audit_log_d_path(ab, "path=", dentry, a->u.fs.mnt);
-+			if (a->u.fs.path.dentry) {
-+				struct dentry *dentry = a->u.fs.path.dentry;
-+				if (a->u.fs.path.mnt) {
-+					audit_log_d_path(ab, "path=",
-+							 &a->u.fs.path);
- 				} else {
- 					audit_log_format(ab, " name=");
- 					audit_log_untrustedstring(ab, dentry->d_name.name);
-@@ -626,8 +627,10 @@ void avc_audit(u32 ssid, u32 tsid,
- 				case AF_UNIX:
- 					u = unix_sk(sk);
- 					if (u->dentry) {
-+						struct path path = { .dentry = u->dentry,
-+								     .mnt = u->mnt };
- 						audit_log_d_path(ab, "path=",
--								 u->dentry, u->mnt);
-+								 &path);
- 						break;
- 					}
- 					if (!u->addr)
-Index: b/security/selinux/hooks.c
-===================================================================
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -1106,8 +1106,8 @@ static inline int dentry_has_perm(struct
- 	struct inode *inode = dentry->d_inode;
- 	struct avc_audit_data ad;
- 	AVC_AUDIT_DATA_INIT(&ad,FS);
--	ad.u.fs.mnt = mnt;
--	ad.u.fs.dentry = dentry;
-+	ad.u.fs.path.mnt = mnt;
-+	ad.u.fs.path.dentry = dentry;
- 	return inode_has_perm(tsk, inode, av, &ad);
- }
- 
-@@ -1125,15 +1125,12 @@ static int file_has_perm(struct task_str
- {
- 	struct task_security_struct *tsec = tsk->security;
- 	struct file_security_struct *fsec = file->f_security;
--	struct vfsmount *mnt = file->f_path.mnt;
--	struct dentry *dentry = file->f_path.dentry;
--	struct inode *inode = dentry->d_inode;
-+	struct inode *inode = file->f_path.dentry->d_inode;
- 	struct avc_audit_data ad;
- 	int rc;
- 
- 	AVC_AUDIT_DATA_INIT(&ad, FS);
--	ad.u.fs.mnt = mnt;
--	ad.u.fs.dentry = dentry;
-+	ad.u.fs.path = file->f_path;
- 
- 	if (tsec->sid != fsec->sid) {
- 		rc = avc_has_perm(tsec->sid, fsec->sid,
-@@ -1168,7 +1165,7 @@ static int may_create(struct inode *dir,
- 	sbsec = dir->i_sb->s_security;
- 
- 	AVC_AUDIT_DATA_INIT(&ad, FS);
--	ad.u.fs.dentry = dentry;
-+	ad.u.fs.path.dentry = dentry;
- 
- 	rc = avc_has_perm(tsec->sid, dsec->sid, SECCLASS_DIR,
- 			  DIR__ADD_NAME | DIR__SEARCH,
-@@ -1226,7 +1223,7 @@ static int may_link(struct inode *dir,
- 	isec = dentry->d_inode->i_security;
- 
- 	AVC_AUDIT_DATA_INIT(&ad, FS);
--	ad.u.fs.dentry = dentry;
-+	ad.u.fs.path.dentry = dentry;
- 
- 	av = DIR__SEARCH;
- 	av |= (kind ? DIR__REMOVE_NAME : DIR__ADD_NAME);
-@@ -1273,7 +1270,7 @@ static inline int may_rename(struct inod
- 
- 	AVC_AUDIT_DATA_INIT(&ad, FS);
- 
--	ad.u.fs.dentry = old_dentry;
-+	ad.u.fs.path.dentry = old_dentry;
- 	rc = avc_has_perm(tsec->sid, old_dsec->sid, SECCLASS_DIR,
- 			  DIR__REMOVE_NAME | DIR__SEARCH, &ad);
- 	if (rc)
-@@ -1289,7 +1286,7 @@ static inline int may_rename(struct inod
- 			return rc;
- 	}
- 
--	ad.u.fs.dentry = new_dentry;
-+	ad.u.fs.path.dentry = new_dentry;
- 	av = DIR__ADD_NAME | DIR__SEARCH;
- 	if (new_dentry->d_inode)
- 		av |= DIR__REMOVE_NAME;
-@@ -1668,8 +1665,7 @@ static int selinux_bprm_set_security(str
- 	}
- 
- 	AVC_AUDIT_DATA_INIT(&ad, FS);
--	ad.u.fs.mnt = bprm->file->f_path.mnt;
--	ad.u.fs.dentry = bprm->file->f_path.dentry;
-+	ad.u.fs.path = bprm->file->f_path;
- 
- 	if (bprm->file->f_path.mnt->mnt_flags & MNT_NOSUID)
- 		newsid = tsec->sid;
-@@ -2065,7 +2061,7 @@ static int selinux_sb_kern_mount(struct 
- 		return rc;
- 
- 	AVC_AUDIT_DATA_INIT(&ad,FS);
--	ad.u.fs.dentry = sb->s_root;
-+	ad.u.fs.path.dentry = sb->s_root;
- 	return superblock_has_perm(current, sb, FILESYSTEM__MOUNT, &ad);
- }
- 
-@@ -2074,7 +2070,7 @@ static int selinux_sb_statfs(struct dent
- 	struct avc_audit_data ad;
- 
- 	AVC_AUDIT_DATA_INIT(&ad,FS);
--	ad.u.fs.dentry = dentry->d_sb->s_root;
-+	ad.u.fs.path.dentry = dentry->d_sb->s_root;
- 	return superblock_has_perm(current, dentry->d_sb, FILESYSTEM__GETATTR, &ad);
- }
- 
-@@ -2337,7 +2333,7 @@ static int selinux_inode_setxattr(struct
- 		return -EPERM;
- 
- 	AVC_AUDIT_DATA_INIT(&ad,FS);
--	ad.u.fs.dentry = dentry;
-+	ad.u.fs.path.dentry = dentry;
- 
- 	rc = avc_has_perm(tsec->sid, isec->sid, isec->sclass,
- 			  FILE__RELABELFROM, &ad);
-Index: b/security/selinux/include/avc.h
-===================================================================
---- a/security/selinux/include/avc.h
-+++ b/security/selinux/include/avc.h
-@@ -13,6 +13,7 @@
- #include <linux/spinlock.h>
- #include <linux/init.h>
- #include <linux/in6.h>
-+#include <linux/path.h>
- #include <asm/system.h>
- #include "flask.h"
- #include "av_permissions.h"
-@@ -30,8 +31,6 @@ extern int selinux_enforcing;
- struct avc_entry;
- 
- struct task_struct;
--struct vfsmount;
--struct dentry;
- struct inode;
- struct sock;
- struct sk_buff;
-@@ -46,8 +45,7 @@ struct avc_audit_data {
- 	struct task_struct *tsk;
- 	union 	{
- 		struct {
--			struct vfsmount *mnt;
--			struct dentry *dentry;
-+			struct path path;
- 			struct inode *inode;
- 		} fs;
- 		struct {
 
 
