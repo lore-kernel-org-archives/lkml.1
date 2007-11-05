@@ -1,65 +1,253 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756605AbXKESwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757192AbXKESwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756605AbXKESwV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 13:52:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbXKESwE
+	id S1757192AbXKESwf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 13:52:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756715AbXKESw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 13:52:04 -0500
-Received: from web50101.mail.re2.yahoo.com ([206.190.38.29]:21643 "HELO
-	web50101.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751087AbXKESwD (ORCPT
+	Mon, 5 Nov 2007 13:52:27 -0500
+Received: from smtp111.sbc.mail.mud.yahoo.com ([68.142.198.210]:32590 "HELO
+	smtp111.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756693AbXKESwY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 13:52:03 -0500
+	Mon, 5 Nov 2007 13:52:24 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=JCb81Pgjuw24lXWEJQNGOc7fLYlYLj/9WTnaRCjDBosFrMgVW6GbXrqNtRSqq7biPHYHk/0AHAZvoGNQbFd4ALar7Fga+tXefT0oXIroVHv7SVQh5bmSxHYrNiGBi2nbEgo/OYjeXBa+k9xNQ9/RRJRXCNoPGTtvQ9FZBkP6YRg=;
-X-YMail-OSG: Ts.d9yQVM1k49e3DQAxHUr6TIi3FuAT36rS6VCRahdSEFq2iyX4nDTbiN2AzgtYDD2YuKg--
-Date: Mon, 5 Nov 2007 10:52:01 -0800 (PST)
-From: Doug Thompson <norsk5@yahoo.com>
-Subject: Re: [2.6 patch] move edac.txt DOCUMENTATION two levels up
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@kernel.org>
-Cc: dougthompson@xmission.com, bluesmoke-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20071105171733.307a562a@the-village.bc.nu>
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=jeCiWEY8jrA0TEAUQUO87GleKLvQ+f10+iCmbriXkt6pxJ4GKWrqcGGuim3H611nyOY5KTw0Hh7uDCIyTIgNnRFmdPzO25cxa7ma4PdLGry+1usixf+suPiiJK9LVBvZGsCWOe56FWfmj2jP/tt4S0E5SyaiQ9B/lTYS8qnWhpA=  ;
+X-YMail-OSG: NiSlm8IVM1mACpBtMkyWBaasyF9THorAxt3DFXTiaKO6lvj9R7.jDofsBy7sKPvx9fnE5dwMgjpaIfy59K0ZjXNVnYG7DtMy319KKXs8YryQ67qrQ3g-
+From: David Brownell <david-b@pacbell.net>
+To: rtc-linux@googlegroups.com
+Subject: [patch 2.6.24-rc1-git] rtc-cmos exports nvram in sysfs
+Date: Mon, 5 Nov 2007 10:52:21 -0800
+User-Agent: KMail/1.9.6
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <293742.55428.qm@web50101.mail.re2.yahoo.com>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711051052.21226.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Interesting
+This makes rtc-cmos export its NVRAM, like several other RTC drivers.
 
-At the time I submitted it there was a big discussion on just how messed up the documentation
-directory was, inconsistent and not well laid out. Then more discussion on how it could be laid
-out in relation to where various subsystem were laid out (ie drivers doc directory like there was
-a drivers src directory and the like).
+It still works within the limits of the current CMOS_READ/CMOS_WRITE
+calls, which don't understand how to access multiple register banks.
+The primary impact of that limitation is that Linux can't access the
+uppermost 128 bytes of NVRAM on many systems.
 
-Therefore I placed it following that pattern.
+Note that this isn't aiming to be a drop-in replacement for the legacy
+/dev/nvram support.  (Presumably that has real users, and isn't just
+getting carried forward automatically?)  Userspace handles more work:
 
-So what I am hearing is that documentation for a subsystem should just continue to be dumped into
-one directory with everything else.
+ - When userspace code updates NVRAM, that will need to include
+   updating any platform-specific checksums that may apply.
 
-Okay, if that is the goal, I am fine with, but things are pretty jumbled up in there. I will know
-where it is at least.
+ - No /proc/driver/nvram file will parse and display NVRAM data
+   according to whichever boot firmware your board expects.
 
-doug t
+Also minor pnp-related updates: update a comment, remove dead code.
 
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Alessandro Zummo <a.zummo@towertech.it>
+---
+ drivers/rtc/rtc-cmos.c |  129 ++++++++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 117 insertions(+), 12 deletions(-)
 
-
---- Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-
-> On Mon, 5 Nov 2007 18:06:08 +0100
-> Adrian Bunk <bunk@kernel.org> wrote:
-> 
-> > There's no reason for edac.txt for being at this unusual place.
-> > 
-> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> Acked-by: Alan Cox <alan@redhat.com>
-> 
-> 
-
-
-W1DUG
+--- g26.orig/drivers/rtc/rtc-cmos.c	2007-11-05 09:41:51.000000000 -0800
++++ g26/drivers/rtc/rtc-cmos.c	2007-11-05 10:42:00.000000000 -0800
+@@ -393,6 +393,80 @@ static const struct rtc_class_ops cmos_r
+ 
+ /*----------------------------------------------------------------*/
+ 
++/*
++ * All these chips have at least 64 bytes of address space, shared by
++ * RTC registers and NVRAM.  Most of those bytes of NVRAM are used
++ * by boot firmware.  Modern chips have 128 or 256 bytes.
++ */
++
++#define NVRAM_OFFSET	(RTC_REG_D + 1)
++
++static ssize_t
++cmos_nvram_read(struct kobject *kobj, struct bin_attribute *attr,
++		char *buf, loff_t off, size_t count)
++{
++	int	retval;
++
++	if (unlikely(off >= attr->size))
++		return 0;
++	if ((off + count) > attr->size)
++		count = attr->size - off;
++
++	spin_lock_irq(&rtc_lock);
++	for (retval = 0, off += NVRAM_OFFSET; count--; retval++, off++)
++		*buf++ = CMOS_READ(off);
++	spin_unlock_irq(&rtc_lock);
++
++	return retval;
++}
++
++static ssize_t
++cmos_nvram_write(struct kobject *kobj, struct bin_attribute *attr,
++		char *buf, loff_t off, size_t count)
++{
++	struct cmos_rtc	*cmos;
++	int		retval;
++
++	cmos = dev_get_drvdata(container_of(kobj, struct device, kobj));
++	if (unlikely(off >= attr->size))
++		return -EFBIG;
++	if ((off + count) > attr->size)
++		count = attr->size - off;
++
++	/* NOTE:  on at least PCs and Ataris, the boot firmware uses a
++	 * checksum on part of the NVRAM data.  That's currently ignored
++	 * here.  If userspace is smart enough to know what fields of
++	 * NVRAM to update, updating checksums is also part of its job.
++	 */
++	spin_lock_irq(&rtc_lock);
++	for (retval = 0, off += NVRAM_OFFSET; count--; retval++, off++) {
++		/* don't trash RTC registers */
++		if (off == cmos->day_alrm
++				|| off == cmos->mon_alrm
++				|| off == cmos->century)
++			buf++;
++		else
++			CMOS_WRITE(*buf++, off);
++	}
++	spin_unlock_irq(&rtc_lock);
++
++	return retval;
++}
++
++static struct bin_attribute nvram = {
++	.attr = {
++		.name	= "nvram",
++		.mode	= S_IRUGO | S_IWUSR,
++		.owner	= THIS_MODULE,
++	},
++
++	.read	= cmos_nvram_read,
++	.write	= cmos_nvram_write,
++	/* size gets set up later */
++};
++
++/*----------------------------------------------------------------*/
++
+ static struct cmos_rtc	cmos_rtc;
+ 
+ static irqreturn_t cmos_interrupt(int irq, void *p)
+@@ -412,11 +486,9 @@ static irqreturn_t cmos_interrupt(int ir
+ }
+ 
+ #ifdef	CONFIG_PNP
+-#define	is_pnp()	1
+ #define	INITSECTION
+ 
+ #else
+-#define	is_pnp()	0
+ #define	INITSECTION	__init
+ #endif
+ 
+@@ -426,6 +498,7 @@ cmos_do_probe(struct device *dev, struct
+ 	struct cmos_rtc_board_info	*info = dev->platform_data;
+ 	int				retval = 0;
+ 	unsigned char			rtc_control;
++	unsigned			address_space;
+ 
+ 	/* there can be only one ... */
+ 	if (cmos_rtc.dev)
+@@ -450,15 +523,36 @@ cmos_do_probe(struct device *dev, struct
+ 	cmos_rtc.irq = rtc_irq;
+ 	cmos_rtc.iomem = ports;
+ 
++	/* Heuristic to deduce NVRAM size ... do what the legacy NVRAM
++	 * driver did, but don't reject unknown configs.   Old hardware
++	 * won't address 128 bytes, and for now we ignore the way newer
++	 * chips can address 256 bytes (using two more i/o ports).
++	 */
++#if	defined(CONFIG_ATARI)
++	address_space = 64;
++#elif defined(__i386__) || defined(__x86_64__) || defined(__arm__)
++	address_space = 128;
++#else
++#warning Assuming 128 bytes of RTC+NVRAM address space, not 64 bytes.
++	address_space = 128;
++#endif
++
+ 	/* For ACPI systems extension info comes from the FADT.  On others,
+ 	 * board specific setup provides it as appropriate.  Systems where
+ 	 * the alarm IRQ isn't automatically a wakeup IRQ (like ACPI, and
+ 	 * some almost-clones) can provide hooks to make that behave.
++	 *
++	 * Note that ACPI doesn't preclude putting these registers into
++	 * "extended" areas of the chip, including some that we won't yet
++	 * expect CMOS_READ and friends to handle.
+ 	 */
+ 	if (info) {
+-		cmos_rtc.day_alrm = info->rtc_day_alarm;
+-		cmos_rtc.mon_alrm = info->rtc_mon_alarm;
+-		cmos_rtc.century = info->rtc_century;
++		if (info->rtc_day_alarm && info->rtc_day_alarm < 128)
++			cmos_rtc.day_alrm = info->rtc_day_alarm;
++		if (info->rtc_mon_alarm && info->rtc_mon_alarm < 128)
++			cmos_rtc.mon_alrm = info->rtc_mon_alarm;
++		if (info->rtc_century && info->rtc_century < 128)
++			cmos_rtc.century = info->rtc_century;
+ 
+ 		if (info->wake_on && info->wake_off) {
+ 			cmos_rtc.wake_on = info->wake_on;
+@@ -518,10 +612,13 @@ cmos_do_probe(struct device *dev, struct
+ 		goto cleanup1;
+ 	}
+ 
+-	/* REVISIT optionally make 50 or 114 bytes NVRAM available,
+-	 * like rtc-ds1553, rtc-ds1742 ... this will often include
+-	 * registers for century, and day/month alarm.
+-	 */
++	/* export at least the first block of NVRAM */
++	nvram.size = address_space - NVRAM_OFFSET;
++	retval = sysfs_create_bin_file(&dev->kobj, &nvram);
++	if (retval < 0) {
++		dev_dbg(dev, "can't create nvram file? %d\n", retval);
++		goto cleanup2;
++	}
+ 
+ 	pr_info("%s: alarms up to one %s%s\n",
+ 			cmos_rtc.rtc->dev.bus_id,
+@@ -536,6 +633,9 @@ cmos_do_probe(struct device *dev, struct
+ 
+ 	return 0;
+ 
++cleanup2:
++	if (is_valid_irq(rtc_irq))
++		free_irq(rtc_irq, cmos_rtc.rtc);
+ cleanup1:
+ 	cmos_rtc.dev = NULL;
+ 	rtc_device_unregister(cmos_rtc.rtc);
+@@ -563,6 +663,8 @@ static void __exit cmos_do_remove(struct
+ 
+ 	cmos_do_shutdown();
+ 
++	sysfs_remove_bin_file(&dev->kobj, &nvram);
++
+ 	if (is_valid_irq(cmos->irq))
+ 		free_irq(cmos->irq, cmos->rtc);
+ 
+@@ -659,9 +761,12 @@ static int cmos_resume(struct device *de
+ 
+ /*----------------------------------------------------------------*/
+ 
+-/* The "CMOS" RTC normally lives on the platform_bus.  On ACPI systems,
+- * the device node will always be created as a PNPACPI device.  Plus
+- * pre-ACPI PCs probably list it in the PNPBIOS tables.
++/* On non-x86 systems, a "CMOS" RTC lives most naturally on platform_bus.
++ * ACPI systems always list these as PNPACPI devices, and pre-ACPI PCs
++ * probably list them in similar PNPBIOS tables; so PNP is more common.
++ *
++ * We don't use legacy "poke at the hardware" probing.  Ancient PCs that
++ * predate even PNPBIOS should set up platform_bus devices.
+  */
+ 
+ #ifdef	CONFIG_PNP
