@@ -1,133 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754617AbXKEHVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755093AbXKEHbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754617AbXKEHVe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 02:21:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753391AbXKEHVO
+	id S1755093AbXKEHbt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 02:31:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbXKEHbl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 02:21:14 -0500
-Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:42733 "EHLO
-	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752798AbXKEHVN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 02:21:13 -0500
-Subject: [PATCH 2/2 -mm] sisusb: *_ioctl32_conversion functions do not
-	exist in recent kernels
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: linux-kernel@vger.kernel.org
-Cc: thomas@winischhofer.net, akpm@linux-foundation.org, gregkh@suse.de
-Content-Type: text/plain
-Organization: NTT Open Source Software Center
-Date: Mon, 05 Nov 2007 16:21:11 +0900
-Message-Id: <1194247271.13121.33.camel@sebastian.kern.oss.ntt.co.jp>
+	Mon, 5 Nov 2007 02:31:41 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:39892 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751458AbXKEHbk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 02:31:40 -0500
+Date: Mon, 5 Nov 2007 08:33:17 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-kbuild@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [Git Patch] Makefile: fix wrong dirs when making cscope
+Message-ID: <20071105073317.GA26441@uranus.ravnborg.org>
+References: <20071105070953.GB2461@hacking>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071105070953.GB2461@hacking>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove dead code while at it.
+Hi Wang.
 
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
----
+Thanks for this fix, but I have a few comments. See below.
 
-diff -urNp linux-2.6.24-rc1-git13-orig/drivers/video/sis/sis.h linux-2.6.24-rc1-git13/drivers/video/sis/sis.h
---- linux-2.6.24-rc1-git13-orig/drivers/video/sis/sis.h	2007-10-10 05:31:38.000000000 +0900
-+++ linux-2.6.24-rc1-git13/drivers/video/sis/sis.h	2007-11-05 15:24:15.000000000 +0900
-@@ -39,12 +39,7 @@
- #include <linux/spinlock.h>
- 
- #ifdef CONFIG_COMPAT
--#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,10)
--#include <linux/ioctl32.h>
--#define SIS_OLD_CONFIG_COMPAT
--#else
- #define SIS_NEW_CONFIG_COMPAT
--#endif
- #endif	/* CONFIG_COMPAT */
- 
- #if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,8)
-@@ -607,9 +602,6 @@ struct sis_video_info {
- 	int		haveXGIROM;
- 	int		registered;
- 	int		warncount;
--#ifdef SIS_OLD_CONFIG_COMPAT
--	int		ioctl32registered;
--#endif
- 
- 	int		sisvga_engine;
- 	int		hwcursor_size;
-diff -urNp linux-2.6.24-rc1-git13-orig/drivers/video/sis/sis_main.c linux-2.6.24-rc1-git13/drivers/video/sis/sis_main.c
---- linux-2.6.24-rc1-git13-orig/drivers/video/sis/sis_main.c	2007-11-05 10:22:15.000000000 +0900
-+++ linux-2.6.24-rc1-git13/drivers/video/sis/sis_main.c	2007-11-05 15:25:47.000000000 +0900
-@@ -5804,9 +5804,6 @@ sisfb_probe(struct pci_dev *pdev, const 
- 	ivideo->pcifunc = PCI_FUNC(pdev->devfn);
- 	ivideo->subsysvendor = pdev->subsystem_vendor;
- 	ivideo->subsysdevice = pdev->subsystem_device;
--#ifdef SIS_OLD_CONFIG_COMPAT
--	ivideo->ioctl32registered = 0;
--#endif
- 
- #ifndef MODULE
- 	if(sisfb_mode_idx == -1) {
-@@ -6419,30 +6416,6 @@ error_3:	vfree(ivideo->bios_abase);
- 		ivideo->next = card_list;
- 		card_list = ivideo;
- 
--#ifdef SIS_OLD_CONFIG_COMPAT
--		{
--		int ret;
--		/* Our ioctls are all "32/64bit compatible" */
--		ret =  register_ioctl32_conversion(FBIO_ALLOC,             NULL);
--		ret |= register_ioctl32_conversion(FBIO_FREE,              NULL);
--		ret |= register_ioctl32_conversion(FBIOGET_VBLANK,         NULL);
--		ret |= register_ioctl32_conversion(SISFB_GET_INFO_SIZE,    NULL);
--		ret |= register_ioctl32_conversion(SISFB_GET_INFO,         NULL);
--		ret |= register_ioctl32_conversion(SISFB_GET_TVPOSOFFSET,  NULL);
--		ret |= register_ioctl32_conversion(SISFB_SET_TVPOSOFFSET,  NULL);
--		ret |= register_ioctl32_conversion(SISFB_SET_LOCK,         NULL);
--		ret |= register_ioctl32_conversion(SISFB_GET_VBRSTATUS,    NULL);
--		ret |= register_ioctl32_conversion(SISFB_GET_AUTOMAXIMIZE, NULL);
--		ret |= register_ioctl32_conversion(SISFB_SET_AUTOMAXIMIZE, NULL);
--		ret |= register_ioctl32_conversion(SISFB_COMMAND,          NULL);
--		if(ret)
--			printk(KERN_ERR
--				"sisfb: Error registering ioctl32 translations\n");
--		else
--			ivideo->ioctl32registered = 1;
--		}
--#endif
--
- 		printk(KERN_INFO "sisfb: 2D acceleration is %s, y-panning %s\n",
- 			ivideo->sisfb_accel ? "enabled" : "disabled",
- 			ivideo->sisfb_ypan  ?
-@@ -6472,27 +6445,6 @@ static void __devexit sisfb_remove(struc
- 	int			registered = ivideo->registered;
- 	int			modechanged = ivideo->modechanged;
- 
--#ifdef SIS_OLD_CONFIG_COMPAT
--	if(ivideo->ioctl32registered) {
--		int ret;
--		ret =  unregister_ioctl32_conversion(FBIO_ALLOC);
--		ret |= unregister_ioctl32_conversion(FBIO_FREE);
--		ret |= unregister_ioctl32_conversion(FBIOGET_VBLANK);
--		ret |= unregister_ioctl32_conversion(SISFB_GET_INFO_SIZE);
--		ret |= unregister_ioctl32_conversion(SISFB_GET_INFO);
--		ret |= unregister_ioctl32_conversion(SISFB_GET_TVPOSOFFSET);
--		ret |= unregister_ioctl32_conversion(SISFB_SET_TVPOSOFFSET);
--		ret |= unregister_ioctl32_conversion(SISFB_SET_LOCK);
--		ret |= unregister_ioctl32_conversion(SISFB_GET_VBRSTATUS);
--		ret |= unregister_ioctl32_conversion(SISFB_GET_AUTOMAXIMIZE);
--		ret |= unregister_ioctl32_conversion(SISFB_SET_AUTOMAXIMIZE);
--		ret |= unregister_ioctl32_conversion(SISFB_COMMAND);
--		if(ret)
--			printk(KERN_ERR
--			     "sisfb: Error unregistering ioctl32 translations\n");
--	}
--#endif
--
- 	/* Unmap */
- 	iounmap(ivideo->mmio_vbase);
- 	iounmap(ivideo->video_vbase);
+On Mon, Nov 05, 2007 at 03:09:53PM +0800, WANG Cong wrote:
+> 
+> Hi, Sam!
+> 
+> This patch fixed the following errors when doing "make cscope" and
+> "make cscope ARCH=um".
+> 
+>   FILELST cscope.files
+> find: arch/i386: No such file or directory
+>   MAKE    cscope.out
+> 
+> 
+>   FILELST cscope.files
+> find: include/asm-i386: No such file or directory
+>   MAKE    cscope.out
+> 
+> 
+> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> 
+> ---
+>  Makefile |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6/Makefile
+> ===================================================================
+> --- linux-2.6.orig/Makefile
+> +++ linux-2.6/Makefile
+> @@ -1322,7 +1322,7 @@ ALLSOURCE_ARCHS := $(ARCH) $(SRCARCH)
+>  endif
+>  
+>  define find-sources
+> -        ( for arch in $(ALLSOURCE_ARCHS) ; do \
+> +        ( for arch in `echo $(ALLSOURCE_ARCHS)|sed -e "s/i386/x86/"`; do \
+>  	       find $(__srctree)arch/$${arch} $(RCS_FIND_IGNORE) \
+>  	            -name $1 -print; \
+>  	  done ; \
+
+Could you change this such that the substitution takes places where we
+assign ALLSOURCE_ARCHS so all potential users benefit from this fix.
+And on top of this fix it so x86_64 is also replaced by x86 so we fix
+both x86 architectures.
 
 
+> @@ -1331,7 +1331,7 @@ define find-sources
+>  	  find $(__srctree)include $(RCS_FIND_IGNORE) \
+>  	       \( -name config -o -name 'asm-*' \) -prune \
+>  	       -o -name $1 -print; \
+> -	  for arch in $(ALLINCLUDE_ARCHS) ; do \
+> +	  for arch in `echo $(ALLINCLUDE_ARCHS)|sed -e "s/i386/x86/"`; do \
+>  	       find $(__srctree)include/asm-$${arch} $(RCS_FIND_IGNORE) \
+>  	            -name $1 -print; \
+>  	  done ; \
+> 
+Same comments for ALLINCLUDE_ARCHS
+
+PS. Yout patch may be obsoleted by ongoing work to eliminate
+ARCH=i386 / ARCH=x86_64. But if/when this hits mainline I dunno so
+please do the requested changes and send me a new patch.
+
+Tanks,
+	Sam
