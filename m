@@ -1,84 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756512AbXKECdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754958AbXKEDDG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756512AbXKECdS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 21:33:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbXKECdF
+	id S1754958AbXKEDDG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 22:03:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbXKEDCy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 21:33:05 -0500
-Received: from wx-out-0506.google.com ([66.249.82.227]:12533 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754416AbXKECdC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 21:33:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=BL4Ixg5eHxQ4FYnsedwPXaOJND1iJNcLrl13L1xXwpcbRtALN97pxfB5a4ryXo9RU2I352H/UKbxWB+xEF4GGyza3LudVvQ/yjIq8CG0QyvbuemM7puKD9cwLNjNHR/wxXAjDgDin+gycmIWQ2Vrv6+8dBbPLg3h2AMeAPZqFH4=
-Message-ID: <7b69d1470711041832k61131a50kef28f4c84dedb8bd@mail.gmail.com>
-Date: Sun, 4 Nov 2007 21:32:56 -0500
-From: "Scott Preece" <sepreece@gmail.com>
-To: "Paulius Zaleckas" <pauliusz@yahoo.com>
-Subject: Re: [PATCH] Spelling fix: lenght->length
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
-In-Reply-To: <1194177114.1412.8.camel@paulius.dzuku>
+	Sun, 4 Nov 2007 22:02:54 -0500
+Received: from pip15.gyao.ne.jp ([61.122.117.253]:25166 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752582AbXKEDCx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Nov 2007 22:02:53 -0500
+Date: Mon, 5 Nov 2007 12:02:40 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: duplicated include files
+Message-ID: <20071105030240.GA26439@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Adrian Bunk <bunk@kernel.org>,
+	"Robert P. J. Day" <rpjday@crashcourse.ca>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0711041229580.27153@localhost.localdomain> <20071104100724.518cf6c9.randy.dunlap@oracle.com> <Pine.LNX.4.64.0711041334590.5541@localhost.localdomain> <20071104190348.GN12045@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1194177114.1412.8.camel@paulius.dzuku>
+In-Reply-To: <20071104190348.GN12045@stusta.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/4/07, Paulius Zaleckas <pauliusz@yahoo.com> wrote:
+On Sun, Nov 04, 2007 at 08:03:48PM +0100, Adrian Bunk wrote:
+> BTW:  "make includecheck" already does the same...
+> 
+When was that added? It's not listed in the 'make help', and I see
+there's a versioncheck too that's not reported. Some of these are
+actually useful, I wonder what else is lurking in the depths of
+undocumented Makefile target land ;-)
 
-I noticed a couple of additional typos, in the diff-provided material
-near the patch.
+docs: Add includecheck/versioncheck to 'make help'
 
-<snip>
-
-> diff --git a/arch/ppc/syslib/ppc_sys.c b/arch/ppc/syslib/ppc_sys.c
-> index 2d48018..837183c 100644
-> --- a/arch/ppc/syslib/ppc_sys.c
-> +++ b/arch/ppc/syslib/ppc_sys.c
-> @@ -185,7 +185,7 @@ void platform_notify_map(const struct platform_notify_dev_map *map,
->   */
->
->  /*
-> -   Here we'll replace .name pointers with fixed-lenght strings
-> +   Here we'll replace .name pointers with fixed-length strings
->     Hereby, this should be called *before* any func stuff triggeded.
----
-
-Not your patch, but "triggeded" -> "triggered"; and I'm wondering what
-the "Hereby"
-is supposed to mean - seems like it might be meant to be "Therefore".
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
 ---
->   */
->  void ppc_sys_device_initfunc(void)
 
-<snip>
-
-> diff --git a/drivers/media/video/pwc/pwc-if.c b/drivers/media/video/pwc/pwc-if.c
-> index 7300ace..f991d72 100644
-> --- a/drivers/media/video/pwc/pwc-if.c
-> +++ b/drivers/media/video/pwc/pwc-if.c
-> @@ -542,7 +542,7 @@ int pwc_handle_frame(struct pwc_device *pdev)
->         }
->
->         if (pdev->read_frame != NULL) {
-> -               /* Decompression is a lenghty process, so it's outside of the lock.
-> +               /* Decompression is a lengthy process, so it's outside of the lock.
->                    This gives the isoc_handler the opportunity to fill more frames
->                    in the mean time.
----
-
-"mean time" -> "meantime"
-
----
->                 */
-
-<snip>
-
--- 
-scott preece
+diff --git a/Makefile b/Makefile
+index 188c3b6..1ab40ac 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1168,6 +1168,8 @@ help:
+ 	@echo  ''
+ 	@echo  'Static analysers'
+ 	@echo  '  checkstack      - Generate a list of stack hogs'
++	@echo  '  versioncheck    - Sanity check on version.h usage'
++	@echo  '  includecheck    - Sanity check on duplicate includes'
+ 	@echo  '  namespacecheck  - Name space analysis on compiled kernel'
+ 	@echo  '  export_report   - List the usages of all exported symbols'
+ 	@if [ -r $(srctree)/include/asm-$(SRCARCH)/Kbuild ]; then \
