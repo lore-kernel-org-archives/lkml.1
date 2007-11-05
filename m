@@ -1,103 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753678AbXKERrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754678AbXKER46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753678AbXKERrj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 12:47:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753577AbXKERrO
+	id S1754678AbXKER46 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 12:56:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbXKER4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 12:47:14 -0500
-Received: from mx0.starentnetworks.com ([12.38.223.203]:54170 "EHLO
-	mx0.starentnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753049AbXKERrK (ORCPT
+	Mon, 5 Nov 2007 12:56:50 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:53499 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751087AbXKER4t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 12:47:10 -0500
+	Mon, 5 Nov 2007 12:56:49 -0500
+Message-ID: <472F5941.2060507@zytor.com>
+Date: Mon, 05 Nov 2007 09:56:17 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Mikael Petterson <mikpe@it.uu.se>,
+       Eric Biederman <ebiederm@xmission.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [GIT PULL] x86 setup: correct booting on 486 (revised)
+References: <200711050358.lA53wlho003349@tazenda.hos.anvin.org> <alpine.LFD.0.999.0711050842360.15101@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0711050842360.15101@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <18223.22296.654548.764588@zeus.sw.starentnetworks.com>
-Date: Mon, 5 Nov 2007 12:47:04 -0500
-From: "Dave Johnson" <djohnson+linux-kernel@sw.starentnetworks.com>
-To: David Miller <davem@davemloft.net>, jes@trained-monkey.org,
-       mchan@broadcom.com, ram.vepa@neterion.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, bguo@sw.starentnetworks.com
-Subject: [PATCH 2/2] NET: Re-add VLAN tag for devices incapable of keeping it
-In-Reply-To: <472A6089.7020104@hp.com>
-References: <472A49BD.6000802@hp.com>
-	<20071101.145956.63020380.davem@davemloft.net>
-	<472A4D5C.2070301@hp.com>
-	<20071101.150723.30590053.davem@davemloft.net>
-	<472A6089.7020104@hp.com>
-X-Mailer: VM 7.17 under 21.4 (patch 17) "Jumbo Shrimp" XEmacs Lucid
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus Torvalds wrote:
+> 
+> On Sun, 4 Nov 2007, H. Peter Anvin wrote:
+>> H. Peter Anvin (2):
+>>       x86 setup: add a near jump to serialize %cr0 on 386/486
+>>       x86 setup: set %ebx == %ebp == %edi == 0 on protected mode entry
+> 
+> Ok, I'm obviously happier, but I have to admit that the original code was 
+> safer than the new code. It did both the short jump and the far jump 
+> before reloading any segments.
+> 
+> So I suspect the new code _works_ fine, but it's simply not as 
+> fundamentally safe as the old code was.
+> 
+> The old code did do some instructions in between the short jump and the 
+> far jump, but they were all the kind of instructions that didn't care 
+> about the PE bit: there was a _read_ of the segment descriptor value, but 
+> that's mode-independent (it's only the writes that matter), and the other 
+> instructions were bog-standard integer instructions.
+> 
+> So I would actually prefer some additional safety, with something like 
+> the appended..
+> 
+> This is TOTALLY UNTESTED! I checked with objdump that the result looks 
+> roughly ok, but I didn't really think through the segment base address in 
+> that long jump thing. Do we have the difference between flat mode and the 
+> 16-bit bootup mode in some better way?
+> 
+> Hmm?
+> 
 
-This patch changes the following drivers to use vlan_hwaccel_rx()
-and/or vlan_hwaccel_receive_skb() with a NULL vlan group if needed as
-they are not setup to dynamically enable/disable vlan removal in
-their MAC based on the vlan group:
+Well, we *could* do a 16-bit PM segment (and do two far jumps), but that 
+seems rather silly.  We'd have to patch the GDT for the base in that 
+case, anyway.
 
-drivers/net/tg3.c           Tested on BCM5704, looks good
-drivers/net/bnx2.c          Tested on BCM5708, looks good
-drivers/net/acenic.c        Not tested, I don't have one of these
-drivers/net/s2io.c          Not tested, I don't have one of these
+This is more or less the same code I had for the first version of the 
+patch, modulo moving the short jump of course.  I do like making the 
+32-bit code a separate function, but it really should be "movl %ecx,..." 
+in the 32-bit code.
 
-In addition, these drivers might also need changes, but should
-probably be done by the maintainer as it's not clear exactly what
-change is needed:
+I have to admit I agree with Eric that this is probably overkill, but 
+hey, there is nothing like a bit of overkill to make sure something is 
+really and truly dead.
 
-drivers/net/amd8111e.c
-drivers/net/cxgb3/*
+Cooking up a tree now.
 
-Signed-off-by: Dave Johnson <djohnson@sw.starentnetworks.com>
-
-===== drivers/net/acenic.c 1.77 vs edited =====
---- 1.77/drivers/net/acenic.c	2007-07-24 16:28:41 -04:00
-+++ edited/drivers/net/acenic.c	2007-11-03 12:27:40 -04:00
-@@ -2036,7 +2036,7 @@
- 
- 		/* send it up */
- #if ACENIC_DO_VLAN
--		if (ap->vlgrp && (bd_flags & BD_FLG_VLAN_TAG)) {
-+		if (bd_flags & BD_FLG_VLAN_TAG) {
- 			vlan_hwaccel_rx(skb, ap->vlgrp, retdesc->vlan);
- 		} else
- #endif
-===== drivers/net/bnx2.c 1.135 vs edited =====
---- 1.135/drivers/net/bnx2.c	2007-09-20 15:14:21 -04:00
-+++ edited/drivers/net/bnx2.c	2007-11-05 09:34:26 -05:00
-@@ -2493,7 +2493,8 @@
- 		}
- 
- #ifdef BCM_VLAN
--		if ((status & L2_FHDR_STATUS_L2_VLAN_TAG) && (bp->vlgrp != 0)) {
-+		if ((status & L2_FHDR_STATUS_L2_VLAN_TAG) &&
-+		    (bp->vlgrp || (bp->flags & ASF_ENABLE_FLAG))) {
- 			vlan_hwaccel_receive_skb(skb, bp->vlgrp,
- 				rx_hdr->l2_fhdr_vlan_tag);
- 		}
-===== drivers/net/s2io.c 1.124 vs edited =====
---- 1.124/drivers/net/s2io.c	2007-08-03 18:10:44 -04:00
-+++ edited/drivers/net/s2io.c	2007-11-03 12:29:09 -04:00
-@@ -6834,8 +6834,7 @@
- 	sp->mac_control.stats_info->sw_stat.mem_freed += skb->truesize;
- 	if (!sp->lro) {
- 		skb->protocol = eth_type_trans(skb, dev);
--		if ((sp->vlgrp && RXD_GET_VLAN_TAG(rxdp->Control_2) &&
--			vlan_strip_flag)) {
-+		if (RXD_GET_VLAN_TAG(rxdp->Control_2) && vlan_strip_flag) {
- 			/* Queueing the vlan frame to the upper layer */
- 			if (napi)
- 				vlan_hwaccel_receive_skb(skb, sp->vlgrp,
-===== drivers/net/tg3.c 1.523 vs edited =====
---- 1.523/drivers/net/tg3.c	2007-09-11 04:28:44 -04:00
-+++ edited/drivers/net/tg3.c	2007-11-05 09:38:33 -05:00
-@@ -3417,7 +3417,7 @@
- 
- 		skb->protocol = eth_type_trans(skb, tp->dev);
- #if TG3_VLAN_TAG_USED
--		if (tp->vlgrp != NULL &&
-+		if ((tp->vlgrp || (tp->tg3_flags & TG3_FLAG_ENABLE_ASF)) &&
- 		    desc->type_flags & RXD_FLAG_VLAN) {
- 			tg3_vlan_rx(tp, skb,
- 				    desc->err_vlan & RXD_VLAN_MASK);
-
+	-hpa
