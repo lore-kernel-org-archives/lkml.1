@@ -1,74 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756362AbXKEDYG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755692AbXKEDuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756362AbXKEDYG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 22:24:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbXKEDXx
+	id S1755692AbXKEDuq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 22:50:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbXKEDuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 22:23:53 -0500
-Received: from koto.vergenet.net ([210.128.90.7]:47153 "EHLO koto.vergenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753089AbXKEDXw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 22:23:52 -0500
-Date: Mon, 5 Nov 2007 12:23:48 +0900
-From: Simon Horman <horms@verge.net.au>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, tony.luck@intel.com,
-       linux-ia64@vger.kernel.org
-Subject: Re: [PATCH 2/6] IA64: fix memset size error
-Message-ID: <20071105032347.GB15262@verge.net.au>
-References: <472E7D34.1040509@cn.fujitsu.com> <472E7DDC.9050806@cn.fujitsu.com>
+	Sun, 4 Nov 2007 22:50:39 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:35230 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753159AbXKEDui (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Nov 2007 22:50:38 -0500
+Date: Sun, 4 Nov 2007 22:49:12 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Marco Costalba <mcostalba@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: duplicated include files
+In-Reply-To: <472E53D0.2000204@goop.org>
+Message-ID: <Pine.LNX.4.64.0711042248220.30791@localhost.localdomain>
+References: <e5bfff550711041141h612a24cdrcdb5baa35907989d@mail.gmail.com>
+ <e5bfff550711041143i7be3cff7kd4903ed43cb4e232@mail.gmail.com>
+ <Pine.LNX.4.64.0711041447330.6072@localhost.localdomain> <472E53D0.2000204@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <472E7DDC.9050806@cn.fujitsu.com>
-User-Agent: mutt-ng/devel-r804 (Debian)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 05, 2007 at 10:20:12AM +0800, Li Zefan wrote:
-> Li Zefan wrote:
-> > The size arguments passing to memset is wrong.
-> > 
-> > Signed-off-by Li Zefan <lizf@cn.fujitsu.com>
+On Sun, 4 Nov 2007, Jeremy Fitzhardinge wrote:
 
-This looks correct to me. Acked.
+> Robert P. J. Day wrote:
+> > actually, one wonders if there's any value in keeping any references
+> > to other version control systems such as subversion, SCCS, CVS,
+> > mercurial, etc.
+>
+> What do you mean by "other"?  git doesn't have a monopoly, and the
+> kernel should support people using a reasonable set of version
+> control systems.  Supporting VSS would be strange, but nothing wrong
+> with the set you listed, if people find those systems useful.  It's
+> not like it amounts to a huge amount of effort to do so.
 
-> > 
-> > ---
-> >  drivers/video/ps3fb.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> 
-> Sorry, please ignore the wrong patch, and here is the right one:
-> 
-> ---
->  arch/ia64/kernel/efi.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/ia64/kernel/efi.c b/arch/ia64/kernel/efi.c
-> index 3f7ea13..0e4ef20 100644
-> --- a/arch/ia64/kernel/efi.c
-> +++ b/arch/ia64/kernel/efi.c
-> @@ -218,7 +218,7 @@ efi_gettimeofday (struct timespec *ts)
->  {
->  	efi_time_t tm;
->  
-> -	memset(ts, 0, sizeof(ts));
-> +	memset(ts, 0, sizeof(*ts));
->  	if ((*efi.get_time)(&tm, NULL) != EFI_SUCCESS)
->  		return;
->  
-> -- 
-> 1.5.3.rc7
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-ia64" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+you're right, my mistake, i was just caught up in a git-centered
+perspective.
 
+rday
 -- 
-Horms
-  H: http://www.vergenet.net/~horms/
-  W: http://www.valinux.co.jp/en/
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
+http://crashcourse.ca
+========================================================================
