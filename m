@@ -1,82 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755233AbXKEAO3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755614AbXKEAPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755233AbXKEAO3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 19:14:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbXKEAOS
+	id S1755614AbXKEAPq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 19:15:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbXKEAPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 19:14:18 -0500
-Received: from probity.mcc.ac.uk ([130.88.200.94]:65428 "EHLO
-	probity.mcc.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753049AbXKEAOR (ORCPT
+	Sun, 4 Nov 2007 19:15:39 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:42824 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753678AbXKEAPj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 19:14:17 -0500
-Message-ID: <472E6095.5050401@gentoo.org>
-Date: Mon, 05 Nov 2007 00:15:17 +0000
-From: Daniel Drake <dsd@gentoo.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070908)
+	Sun, 4 Nov 2007 19:15:39 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Linus Torvalds <torvalds@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Mikael Petterson <mikpe@it.uu.se>
+Subject: Re: [GIT PULL] x86 setup: correct booting on 486DX4
+References: <200711042257.lA4Mvobr025200@tazenda.hos.anvin.org>
+Date: Sun, 04 Nov 2007 17:14:41 -0700
+In-Reply-To: <200711042257.lA4Mvobr025200@tazenda.hos.anvin.org> (H. Peter
+	Anvin's message of "Sun, 4 Nov 2007 14:57:50 -0800")
+Message-ID: <m1bqa9blam.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Albert Lee <albertcc@tw.ibm.com>
-Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
-References: <47274A5F.6070409@gentoo.org>	<20071030153417.59b9182c@the-village.bc.nu>	<47276DCA.1000808@gentoo.org>	<20071030190153.373c9347@the-village.bc.nu>	<47278439.4030801@gentoo.org>	<20071031114958.210bd7cc@the-village.bc.nu>	<20071031115754.GK5059@kernel.dk>	<4729A0DF.20800@garzik.org>	<20071101105335.1f20bab3@the-village.bc.nu>	<4729B3EA.6040707@garzik.org> <20071101141501.3746cec2@the-village.bc.nu> <4729F1BB.20306@gentoo.org> <4729F8F1.4040103@gmail.com> <472B946F.4030004@gentoo.org> <472BCC18.7070503@gmail.com> <472CD3F3.7050701@gentoo.org> <472D0D4A.70404@gmail.com>
-In-Reply-To: <472D0D4A.70404@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-UoM: Scanned by the University Mail System. See http://www.itservices.manchester.ac.uk/email/filtering/information/ for details.
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> However, there's still remaining issues.  What does happen if you raise
-> allocation length and buffersize of the test program to 16?  ie. Change
-> 0x0a in cmd[] to 0x10 and increase buffer[10] to buffer[16].
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-Eek. The process hangs in D state for a good 60 seconds or so.
-Caught a trace with sysrq.
+> Hi Linus; please pull:
+>
+>   git://git.kernel.org/pub/scm/linux/kernel/git/hpa/linux-2.6-x86setup.git
+> for-linus
+>
+> H. Peter Anvin (1):
+>       x86 setup: correct booting on 486DX4
+>
+>  arch/x86/boot/pmjump.S |   32 +++++++++++++++++++++-----------
+>  1 files changed, 21 insertions(+), 11 deletions(-)
+>
+> [Full diff and log follows]
 
-<6>a.out         D 00200202     0  7015   3217
-<4>       b801fc7c 00200082 b029d5cb 00200202 b04a4c00 b04a4c00 b046ee58 
-b0472040
-<4>       b24fa000 b24fa140 b17fc040 00000000 b264e000 b801fb80 b264e000 
-b01f266c
-<4>       b278f800 00200202 b0285eb7 7fffffff 7fffffff b801fc7c b801fc7c 
-b035327c
-<4>Call Trace:
-<4> [<b029d5cb>] ata_scsi_translate+0xd7/0x105
-<4> [<b01f266c>] elv_next_request+0xe3/0xf2
-<4> [<b0285eb7>] scsi_dispatch_cmd+0x172/0x1aa
-<4> [<b035327c>] schedule_timeout+0x13/0x8d
-<4> [<b0128830>] del_timer+0x48/0x4e
-<4> [<b0352abc>] wait_for_common+0xb2/0x118
-<4> [<b011bc10>] default_wake_function+0x0/0x8
-<4> [<b01f50d6>] blk_execute_rq+0xa6/0xbc
-<4> [<b01f412b>] blk_end_sync_rq+0x0/0x23
-<4> [<b0181a14>] bio_add_pc_page+0x23/0x28
-<4> [<b0182116>] bio_copy_user+0x116/0x221
-<4> [<b0181e5b>] bio_phys_segments+0xe/0x14
-<4> [<b01f4253>] blk_rq_bio_prep+0x28/0xa4
-<4> [<b01f452a>] blk_rq_append_bio+0x11/0x3a
-<4> [<b01f46a0>] blk_rq_map_user+0xfc/0x17f
-<4> [<b01f8173>] sg_io+0x20e/0x2f0
-<4> [<b01f8408>] scsi_cmd_ioctl+0x1b3/0x34b
+Looks reasonable to me.
 
-When it unhung, this appeared in the logs
-ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata2.00: cmd a0/01:00:00:10:00/00:00:00:00:00/a0 tag 0 cdb 0x5a data 16 in
-          res 40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-ata2.00: status: { DRDY }
-ata2: port is slow to respond, please be patient (Status 0xd0)
-ata2: device not ready (errno=-16), forcing hardreset
-ata2: soft resetting link
-ata2.00: configured for UDMA/33
-ata2: EH complete
-
-And the app itself outputted:
-result 0
-check sense data:
-72 0b 00 00 00 00 00 0e 09 0c 00 00 00 03 00 00 00 00 00
-
-Daniel
+> commit ac3b37b78c5f0f0be0b476a35370650f7bad482f
+> Author: H. Peter Anvin <hpa@zytor.com>
+> Date:   Sun Nov 4 14:33:41 2007 -0800
+>
+>     x86 setup: correct booting on 486DX4
+>     
+>     Apparently, the 486DX4 does not correctly serialize a mov to %cr0, so
+>     we really do need the far jump immediately afterwards.  This means
+>     losing the nice separation between 16- and 32-bit code, but c'est la
+>     vie.
+>     
+>     Also pass %ebx = %edi = %ebp = 0 to support future extension of the
+>     32-bit boot protocol.
+>     
+>     Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+>
+> diff --git a/arch/x86/boot/pmjump.S b/arch/x86/boot/pmjump.S
+> index 2e55923..17e6dec 100644
+> --- a/arch/x86/boot/pmjump.S
+> +++ b/arch/x86/boot/pmjump.S
+> @@ -28,27 +28,37 @@
+>   * void protected_mode_jump(u32 entrypoint, u32 bootparams);
+>   */
+>  protected_mode_jump:
+> -	xorl	%ebx, %ebx		# Flag to indicate this is a boot
+>  	movl	%edx, %esi		# Pointer to boot_params table
+> -	movl	%eax, 2f		# Patch ljmpl instruction
+> +
+> +	xorl	%edx, %edx
+> +	movw	%cs, %dx
+> +	shll	$4, %edx		# Patch ljmpl instruction
+> +	addl	%edx, 2f
+>  	jmp	1f			# Short jump to flush instruction q.
+>  
+>  1:
+>  	movw	$__BOOT_DS, %cx
+> +	xorl	%ebx, %ebx		# Per protocol
+> +	xorl	%ebp, %ebp		# Per protocol
+> +	xorl	%edi, %edi		# Per protocol
+>  
+>  	movl	%cr0, %edx
+>  	orb	$1, %dl			# Protected mode (PE) bit
+>  	movl	%edx, %cr0
+> +	
+> +	.byte	0x66, 0xea		# ljmpl opcode
+> +2:	.long	3f			# Offset
+> +	.word	__BOOT_CS		# Segment
+>  
+> -	movw	%cx, %ds
+> -	movw	%cx, %es
+> -	movw	%cx, %fs
+> -	movw	%cx, %gs
+> -	movw	%cx, %ss
+> +	.code32
+> +3:
+> +	movl	%ecx, %ds
+> +	movl	%ecx, %es
+> +	movl	%ecx, %fs
+> +	movl	%ecx, %gs
+> +	movl	%ecx, %ss
+>  
+>  	# Jump to the 32-bit entrypoint
+> -	.byte	0x66, 0xea		# ljmpl opcode
+> -2:	.long	0			# offset
+> -	.word	__BOOT_CS		# segment
+> -
+> +	jmpl	*%eax
+> +	
+>  	.size	protected_mode_jump, .-protected_mode_jump
