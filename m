@@ -1,59 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbXKECAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754697AbXKECPF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755506AbXKECAi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 21:00:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbXKECA2
+	id S1754697AbXKECPF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 21:15:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbXKECOz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 21:00:28 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50430 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753139AbXKECA0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 21:00:26 -0500
-Date: Sun, 4 Nov 2007 18:00:15 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
-Subject: Re: [git patches] Add and use media change notification
-In-Reply-To: <20071104150711.GA29087@havoc.gtf.org>
-Message-ID: <alpine.LFD.0.999.0711041755120.15101@woody.linux-foundation.org>
-References: <20071104150711.GA29087@havoc.gtf.org>
+	Sun, 4 Nov 2007 21:14:55 -0500
+Received: from [222.73.24.84] ([222.73.24.84]:51383 "EHLO song.cn.fujitsu.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752581AbXKECOy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Nov 2007 21:14:54 -0500
+Message-ID: <472E7C2C.3030205@cn.fujitsu.com>
+Date: Mon, 05 Nov 2007 10:13:00 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/6] fix memset size error
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This series of six proposed patches fix the same kind of bug. The size
+passing to memset is the size of a pointer i.e. sizeof(ptr), and normally
+the right thing is sizeof(*ptr).
 
 
-On Sun, 4 Nov 2007, Jeff Garzik wrote:
-> 
-> The end to CD-ROM polling...  newer SATA ATAPI hardware will emit
-> 'asynchronous notification' events when media is changed.  This adds
-> support.
-
-I *really* didn't want to pull this.
-
-Not only is it after the -rc1 period, but I also think you pushed this ina 
-really offensive manner, and I don't like how you and James have made this 
-whole thing personal. You guys need to sort it out, and there is no way 
-you can blame James for all your troubles, since I've heard the same kind 
-of complaints about every single maintainer out there (including you) 
-about some driver or other infrastructure issue.
-
-So I'm unhappy about pulling this.
-
-That said, I did finally decide to just pull it. Partly because the 
-concept apparently has been in -mm for a while anyway (even if the final 
-patch has not - but the patch itself isn't that large, I'd worry more 
-about thngs like certain hardware simply not doing things right), but 
-mostly because I hate it when others hold up driver features, and I 
-decided that in this case this really is something that is better done 
-earlier rather than later, to get exposure as soon as possible.
-
-But I really think you need to lay off James, and help him rather than 
-make every single complaint a big flame-war!
-
-Please, Jeff?
-
-		Linus
+Li Zefan
