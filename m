@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757120AbXKERGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757281AbXKERGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757120AbXKERGY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 12:06:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbXKERGM
+	id S1757281AbXKERGo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 12:06:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756212AbXKERG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 12:06:12 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59456 "EHLO
+	Mon, 5 Nov 2007 12:06:26 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59463 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754753AbXKERGK (ORCPT
+	with ESMTP id S1753990AbXKERGX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 12:06:10 -0500
-Date: Mon, 5 Nov 2007 18:05:46 +0100
+	Mon, 5 Nov 2007 12:06:23 -0500
+Date: Mon, 5 Nov 2007 18:05:57 +0100
 From: Adrian Bunk <bunk@kernel.org>
-To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Pekka Pietikainen <pp@ee.oulu.fi>
-Subject: [2.6 patch] remove Documentation/networking/ncsa-telnet
-Message-ID: <20071105170546.GS12045@stusta.de>
+To: jgarzik@pobox.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] remove Documentation/networking/pt.txt
+Message-ID: <20071105170557.GT12045@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,52 +23,91 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Newsflash: There once was a version of NCSA telnet that had some bug.
-
-Spotted by Pekka Pietikainen.
+There's no no point in keeping documentation for a driver that was 
+removed many years ago.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- Documentation/networking/00-INDEX    |    2 --
- Documentation/networking/ncsa-telnet |   16 ----------------
- 2 files changed, 18 deletions(-)
+ Documentation/networking/00-INDEX |    2 -
+ Documentation/networking/pt.txt   |   58 ------------------------------
+ 2 files changed, 60 deletions(-)
 
-b9ccc5424cc83b4c0ca9c8d380a4b7567916a463 
+cfe9580e99bc2406a5a05bae24487ca84619bec7 
 diff --git a/Documentation/networking/00-INDEX b/Documentation/networking/00-INDEX
-index a9f4acc..9c64042 100644
+index 9c64042..5e21f37 100644
 --- a/Documentation/networking/00-INDEX
 +++ b/Documentation/networking/00-INDEX
-@@ -74,8 +74,6 @@ ltpc.txt
- 	- the Apple or Farallon LocalTalk PC card driver
- multicast.txt
- 	- Behaviour of cards under Multicast
--ncsa-telnet
--	- notes on how NCSA telnet (DOS) breaks with MTU discovery enabled.
- netdevices.txt
- 	- info on network device driver functions exported to the kernel.
- olympic.txt
-diff --git a/Documentation/networking/ncsa-telnet b/Documentation/networking/ncsa-telnet
+@@ -80,6 +80,4 @@ olympic.txt
+ policy-routing.txt
+ 	- IP policy-based routing
+-pt.txt
+-	- the Gracilis Packetwin AX.25 device driver
+ ray_cs.txt
+ 	- Raylink Wireless LAN card driver info.
+diff --git a/Documentation/networking/pt.txt b/Documentation/networking/pt.txt
 deleted file mode 100644
-index d77d28b..0000000
---- a/Documentation/networking/ncsa-telnet
+index 72e888c..0000000
+--- a/Documentation/networking/pt.txt
 +++ /dev/null
-@@ -1,16 +0,0 @@
--NCSA telnet doesn't work with path MTU discovery enabled. This is due to a
--bug in NCSA that also stops it working with other modern networking code
--such as Solaris.
+@@ -1,58 +0,0 @@
+-This is the README for the Gracilis Packetwin device driver, version 0.5
+-ALPHA for Linux 1.3.43.
 -
--The following information is courtesy of 
--Marek <marekm@i17linuxb.ists.pwr.wroc.pl>
+-These files will allow you to talk to the PackeTwin (now know as PT) and
+-connect through it just like a pair of TNCs.  To do this you will also
+-require the AX.25 code in the kernel enabled.
 -
--There is a fixed version somewhere on ftp.upe.ac.za (sorry, I don't
--remember the exact pathname, and this site is very slow from here).
--It may or may not be faster for you to get it from
--ftp://ftp.ists.pwr.wroc.pl/pub/msdos/telnet/ncsa_upe/tel23074.zip
--(source is in v230704s.zip).  I have tested it with 1.3.79 (with
--path mtu discovery enabled - ncsa 2.3.08 didn't work) and it seems
--to work.  I don't know if anyone is working on this code - this
--version is over a year old.  Too bad - it's faster and often more
--stable than these windoze telnets, and runs on almost anything...
+-There are four files in this archive; this readme, a patch file, a .c file
+-and finally a .h file.  The two program files need to be put into the
+-drivers/net directory in the Linux source tree, for me this is the
+-directory /usr/src/linux/drivers/net.  The patch file needs to be patched in
+-at the top of the Linux source tree (/usr/src/linux in my case).
+-
+-You will most probably have to edit the pt.c file to suit your own setup,
+-this should just involve changing some of the defines at the top of the file. 
+-Please note that if you run an external modem you must specify a speed of 0.
+-
+-The program is currently setup to run a 4800 baud external modem on port A
+-and a Kantronics DE-9600 daughter board on port B so if you have this (or
+-something similar) then you're right.
+-
+-To compile in the driver, put the files in the correct place and patch in
+-the diff.  You will have to re-configure the kernel again before you
+-recompile it. 
+-
+-The driver is not real good at the moment for finding the card.  You can
+-'help' it by changing the order of the potential addresses in the structure
+-found in the pt_init() function so the address of where the card is is put
+-first.
+-
+-After compiling, you have to get them going, they are pretty well like any
+-other net device and just need ifconfig to get them going.
+-As an example, here is my /etc/rc.net
+---------------------------
+-
+-#
+-# Configure the PackeTwin, port A.
+-/sbin/ifconfig pt0a 44.136.8.87 hw ax25 vk2xlz mtu 512 
+-/sbin/ifconfig pt0a 44.136.8.87 broadcast 44.136.8.255 netmask 255.255.255.0
+-/sbin/route add -net 44.136.8.0 netmask 255.255.255.0 dev pt0a
+-/sbin/route add -net 44.0.0.0 netmask 255.0.0.0 gw 44.136.8.68 dev pt0a
+-/sbin/route add -net 138.25.16.0 netmask 255.255.240.0 dev pt0a
+-/sbin/route add -host 44.136.8.255 dev pt0a
+-#
+-# Configure the PackeTwin, port B.
+-/sbin/ifconfig pt0b 44.136.8.87 hw ax25 vk2xlz-1 mtu 512
+-/sbin/ifconfig pt0b 44.136.8.87 broadcast 44.255.255.255 netmask 255.0.0.0
+-/sbin/route add -host 44.136.8.216 dev pt0b
+-/sbin/route add -host 44.136.8.95  dev pt0b
+-/sbin/route add -host 44.255.255.255 dev pt0b
+-
+-This version of the driver comes under the GNU GPL.  If you have one of my
+-previous (non-GPL) versions of the driver, please update to this one.
+-
+-I hope that this all works well for you.  I would be pleased to hear how
+-many people use the driver and if it does its job.
+-
+-  - Craig vk2xlz <csmall@small.dropbear.id.au>
 
