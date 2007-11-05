@@ -1,153 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbXKEQ6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756595AbXKEQ63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755259AbXKEQ6P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 11:58:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbXKEQ6B
+	id S1756595AbXKEQ63 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 11:58:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755179AbXKEQ6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 11:58:01 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:60382 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753889AbXKEQ57 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 11:57:59 -0500
-Subject: Re: msync(2) bug(?), returns AOP_WRITEPAGE_ACTIVATE to userland
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Ryan Finnie <ryan@finnie.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, cjwatson@ubuntu.com, linux-mm@kvack.org,
-       Christoph Hellwig <hch@infradead.org>
-In-Reply-To: <Pine.LNX.4.64.0711051358440.7629@blonde.wat.veritas.com>
-References: <200710312353.l9VNr67n013016@agora.fsl.cs.sunysb.edu>
-	 <Pine.LNX.4.64.0711051358440.7629@blonde.wat.veritas.com>
-Content-Type: text/plain
-Date: Mon, 05 Nov 2007 08:38:50 -0800
-Message-Id: <1194280730.6271.145.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Nov 2007 11:58:14 -0500
+Received: from styx.suse.cz ([82.119.242.94]:38616 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754825AbXKEQ6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 11:58:12 -0500
+Date: Mon, 5 Nov 2007 17:58:10 +0100
+From: Jan Kara <jack@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org,
+       LIOU Payphone <lioupayphone@gmail.com>, Andreas Schwab <schwab@suse.de>
+Subject: Re: [PATCH] Forbid user to change file flags on quota files
+Message-ID: <20071105165810.GF9561@duck.suse.cz>
+References: <20071101155204.GB30523@duck.suse.cz> <Pine.LNX.4.64.0711021831340.26618@fbirervta.pbzchgretzou.qr> <20071105103230.GA9561@duck.suse.cz> <jefxzlas0q.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <jefxzlas0q.fsf@sykes.suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-11-05 at 15:40 +0000, Hugh Dickins wrote:
-> The second problem was a hang: all cpus in
-> handle_write_count_underflow
-> doing lock_and_coalesce_cpu_mnt_writer_counts: new -mm stuff from Dave
-> Hansen.  At first I thought that was a locking problem in Dave's code,
-> but I now suspect it's that your unionfs reference counting is wrong
-> somewhere, and the error accumulates until __mnt_writers drops below
-> MNT_WRITER_UNDERFLOW_LIMIT, but the coalescence does nothing to help
-> and we're stuck in that loop. 
+On Mon 05-11-07 11:47:01, Andreas Schwab wrote:
+> Jan Kara <jack@suse.cz> writes:
+> 
+> > On Fri 02-11-07 18:32:08, Jan Engelhardt wrote:
+> >> 
+> >> On Nov 1 2007 16:52, Jan Kara wrote:
+> >> 
+> >> >--- linux-2.6.24-rc1/fs/ext2/ioctl.c	2007-10-24 20:43:56.000000000 +0200
+> >> >+++ linux-2.6.24-rc1-1-forbid_setflags/fs/ext2/ioctl.c	2007-11-01 16:01:26.000000000 +0100
+> >> >@@ -47,6 +47,11 @@ int ext2_ioctl (struct inode * inode, st
+> >> > 			flags &= ~EXT2_DIRSYNC_FL;
+> >> > 
+> >> > 		mutex_lock(&inode->i_mutex);
+> >> >+		/* Is it quota file? Don't allow user mess with it */
+> >> 
+> >> "Do not allow user to mess with it".
+> >   I think both "allow user mess" and "allow user to mess" are possible,
+> 
+> I think it's either "to allow doing sth" or "to allow to do sth", but
+> "to allow do sth" looks definitely wrong to me.
+  OK, you've convinced me :). Andrew, please fold this patch in the
+previous one. Thanks.
+								Honza
 
-I've never actually seen this happen in practice, but I do know exactly
-what you're talking about.
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
+---
 
-> but I hope Dave can
-> also make handle_write_count_underflow more robust, it's unfortunate
-> if refcount errors elsewhere first show up as a hang there.
+A grammar correction in a comment.
 
-Actually, I think your s/while/if/ change is probably a decent fix.
-Barring any other races, that loop should always have made progress on
-mnt->__mnt_writers the way it is written.  If we get to:
+Signed-off-by: Jan Kara <jack@suse.cz>
 
->                 lock_and_coalesce_cpu_mnt_writer_counts();
------------------>HERE
->                 mnt_unlock_cpus();
-
-and don't have a positive mnt->__mnt_writers, we know something is going
-badly.  We WARN_ON() there, which should at least give an earlier
-warning that the system is not doing well.  But it doesn't fix the
-inevitable.  Could you try the attached patch and see if it at least
-warns you earlier?
-
-I have a decent guess what the bug is, too.  In the unionfs code:
-
-> int init_lower_nd(struct nameidata *nd, unsigned int flags)
-> {
-> ...
-> #ifdef ALLOC_LOWER_ND_FILE
->                 file = kzalloc(sizeof(struct file), GFP_KERNEL);
->                 if (unlikely(!file)) {
->                         err = -ENOMEM;
->                         break; /* exit switch statement and thus return */
->                 }
->                 nd->intent.open.file = file;
-> #endif /* ALLOC_LOWER_ND_FILE */
-
-The r/o bind mount code will mnt_drop_write() on that file's f_vfsmnt at
-__fput() time.  Since that code never got a write on the mount, we'll
-see an imbalance if the file was opened for a write.  I don't see this
-file's mnt set anywhere, so I'm not completely sure that this is it.  In
-any case, rolling your own 'struct file' without using alloc_file() and
-friends is a no-no.
-
-BTW, I have some "debugging" code in my latest set of patches that I
-think should fix this kind of imbalance with the mnt->__mnt_writers().
-It ensures that before we do that mnt_drop_write() at __fput() that we
-absolutely did a mnt_want_write() at some point in the 'struct file's
-life.  
-
--- Dave
-
- linux-2.6.git-dave/fs/namespace.c        |   31 ++++++++++++++++++++++---------
- linux-2.6.git-dave/include/linux/mount.h |    1 +
- 2 files changed, 23 insertions(+), 9 deletions(-)
-
-diff -puN fs/namei.c~fix-naughty-loop fs/namei.c
-diff -puN fs/namespace.c~fix-naughty-loop fs/namespace.c
---- linux-2.6.git/fs/namespace.c~fix-naughty-loop	2007-11-05 08:03:59.000000000 -0800
-+++ linux-2.6.git-dave/fs/namespace.c	2007-11-05 08:35:06.000000000 -0800
-@@ -225,16 +225,29 @@ static void lock_and_coalesce_cpu_mnt_wr
-  */
- static void handle_write_count_underflow(struct vfsmount *mnt)
- {
--	while (atomic_read(&mnt->__mnt_writers) <
--		MNT_WRITER_UNDERFLOW_LIMIT) {
--		/*
--		 * It isn't necessary to hold all of the locks
--		 * at the same time, but doing it this way makes
--		 * us share a lot more code.
--		 */
--		lock_and_coalesce_cpu_mnt_writer_counts();
--		mnt_unlock_cpus();
-+	if (atomic_read(&mnt->__mnt_writers) >=
-+	    MNT_WRITER_UNDERFLOW_LIMIT)
-+		return;
-+	/*
-+	 * It isn't necessary to hold all of the locks
-+	 * at the same time, but doing it this way makes
-+	 * us share a lot more code.
-+	 */
-+	lock_and_coalesce_cpu_mnt_writer_counts();
-+	/*
-+	 * If coalescing the per-cpu writer counts did not
-+	 * get us back to a positive writer count, we have
-+	 * a bug.
-+	 */
-+	if ((atomic_read(&mnt->__mnt_writers) < 0) &&
-+	    !(mnt->mnt_flags & MNT_IMBALANCED_WRITE_COUNT)) {
-+		printk("leak detected on mount(%p) writers count: %d\n",
-+			mnt, atomic_read(&mnt->__mnt_writers));
-+		WARN_ON(1);
-+		/* use the flag to keep the dmesg spam down */
-+		mnt->mnt_flags |= MNT_IMBALANCED_WRITE_COUNT;
- 	}
-+	mnt_unlock_cpus();
- }
+diff -rupX /home/jack/.kerndiffexclude linux-2.6.23-1-forbid_setflags/fs/ext2/ioctl.c linux-2.6.23-2-comment_fix/fs/ext2/ioctl.c
+--- linux-2.6.23-1-forbid_setflags/fs/ext2/ioctl.c	2007-11-01 16:19:00.000000000 +0100
++++ linux-2.6.23-2-comment_fix/fs/ext2/ioctl.c	2007-11-05 17:53:53.000000000 +0100
+@@ -46,7 +46,7 @@ int ext2_ioctl (struct inode * inode, st
+ 			flags &= ~EXT2_DIRSYNC_FL;
  
- /**
-diff -puN include/linux/mount.h~fix-naughty-loop include/linux/mount.h
---- linux-2.6.git/include/linux/mount.h~fix-naughty-loop	2007-11-05 08:22:21.000000000 -0800
-+++ linux-2.6.git-dave/include/linux/mount.h	2007-11-05 08:28:20.000000000 -0800
-@@ -32,6 +32,7 @@ struct mnt_namespace;
- #define MNT_READONLY	0x40	/* does the user want this to be r/o? */
+ 		mutex_lock(&inode->i_mutex);
+-		/* Is it quota file? Don't allow user mess with it */
++		/* Is it quota file? Do not allow user to mess with it */
+ 		if (IS_NOQUOTA(inode)) {
+ 			mutex_unlock(&inode->i_mutex);
+ 			return -EPERM;
+diff -rupX /home/jack/.kerndiffexclude linux-2.6.23-1-forbid_setflags/fs/ext3/ioctl.c linux-2.6.23-2-comment_fix/fs/ext3/ioctl.c
+--- linux-2.6.23-1-forbid_setflags/fs/ext3/ioctl.c	2007-11-01 16:19:00.000000000 +0100
++++ linux-2.6.23-2-comment_fix/fs/ext3/ioctl.c	2007-11-05 17:54:00.000000000 +0100
+@@ -51,7 +51,7 @@ int ext3_ioctl (struct inode * inode, st
+ 			flags &= ~EXT3_DIRSYNC_FL;
  
- #define MNT_SHRINKABLE	0x100
-+#define MNT_IMBALANCED_WRITE_COUNT	0x200 /* just for debugging */
+ 		mutex_lock(&inode->i_mutex);
+-		/* Is it quota file? Don't allow user mess with it */
++		/* Is it quota file? Do not allow user to mess with it */
+ 		if (IS_NOQUOTA(inode)) {
+ 			mutex_unlock(&inode->i_mutex);
+ 			return -EPERM;
+diff -rupX /home/jack/.kerndiffexclude linux-2.6.23-1-forbid_setflags/fs/ext4/ioctl.c linux-2.6.23-2-comment_fix/fs/ext4/ioctl.c
+--- linux-2.6.23-1-forbid_setflags/fs/ext4/ioctl.c	2007-11-01 16:19:00.000000000 +0100
++++ linux-2.6.23-2-comment_fix/fs/ext4/ioctl.c	2007-11-05 17:54:07.000000000 +0100
+@@ -51,7 +51,7 @@ int ext4_ioctl (struct inode * inode, st
+ 			flags &= ~EXT4_DIRSYNC_FL;
  
- #define MNT_SHARED	0x1000	/* if the vfsmount is a shared mount */
- #define MNT_UNBINDABLE	0x2000	/* if the vfsmount is a unbindable mount */
-_
-
-
+ 		mutex_lock(&inode->i_mutex);
+-		/* Is it quota file? Don't allow user mess with it */
++		/* Is it quota file? Do not allow user to mess with it */
+ 		if (IS_NOQUOTA(inode)) {
+ 			mutex_unlock(&inode->i_mutex);
+ 			return -EPERM;
+diff -rupX /home/jack/.kerndiffexclude linux-2.6.23-1-forbid_setflags/fs/jfs/ioctl.c linux-2.6.23-2-comment_fix/fs/jfs/ioctl.c
+--- linux-2.6.23-1-forbid_setflags/fs/jfs/ioctl.c	2007-11-01 16:19:00.000000000 +0100
++++ linux-2.6.23-2-comment_fix/fs/jfs/ioctl.c	2007-11-05 17:53:39.000000000 +0100
+@@ -79,7 +79,7 @@ int jfs_ioctl(struct inode * inode, stru
+ 		if (!S_ISDIR(inode->i_mode))
+ 			flags &= ~JFS_DIRSYNC_FL;
+ 
+-		/* Is it quota file? Don't allow user mess with it */
++		/* Is it quota file? Do not allow user to mess with it */
+ 		if (IS_NOQUOTA(inode))
+ 			return -EPERM;
+ 		jfs_get_inode_flags(jfs_inode);
+diff -rupX /home/jack/.kerndiffexclude linux-2.6.23-1-forbid_setflags/fs/reiserfs/ioctl.c linux-2.6.23-2-comment_fix/fs/reiserfs/ioctl.c
+--- linux-2.6.23-1-forbid_setflags/fs/reiserfs/ioctl.c	2007-11-01 16:19:00.000000000 +0100
++++ linux-2.6.23-2-comment_fix/fs/reiserfs/ioctl.c	2007-11-05 17:53:47.000000000 +0100
+@@ -57,7 +57,7 @@ int reiserfs_ioctl(struct inode *inode, 
+ 			if (get_user(flags, (int __user *)arg))
+ 				return -EFAULT;
+ 
+-			/* Is it quota file? Don't allow user mess with it. */
++			/* Is it quota file? Do not allow user to mess with it. */
+ 			if (IS_NOQUOTA(inode))
+ 				return -EPERM;
+ 			if (((flags ^ REISERFS_I(inode)->
