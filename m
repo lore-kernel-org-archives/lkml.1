@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140AbXKET6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754646AbXKEUCh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754140AbXKET6h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 14:58:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbXKET63
+	id S1754646AbXKEUCh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 15:02:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbXKEUCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 14:58:29 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:54728 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752401AbXKET62 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 14:58:28 -0500
-Date: Mon, 5 Nov 2007 20:58:27 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: Andreas Mohr <andi@lisas.de>, Herbert Xu <herbert@gondor.apana.org.au>,
-       Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH/RFC] eradicate bashisms in scripts/patch-kernel
-Message-ID: <20071105195827.GA24117@rhlx01.hs-esslingen.de>
-References: <20071031211321.GA8363@rhlx01.hs-esslingen.de> <47290096.7080207@oracle.com> <20071101121133.GA14807@rhlx01.hs-esslingen.de> <20071101082457.ff9a5d67.randy.dunlap@oracle.com> <20071101221606.GA10116@rhlx01.hs-esslingen.de> <20071101160857.6e877307.rdunlap@xenotime.net> <20071102020118.GA13852@gondor.apana.org.au> <20071102200935.GA14153@rhlx01.hs-esslingen.de> <20071102131707.6023a5b7.rdunlap@xenotime.net>
+	Mon, 5 Nov 2007 15:02:30 -0500
+Received: from mx2.suse.de ([195.135.220.15]:57711 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750741AbXKEUC3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 15:02:29 -0500
+Date: Mon, 5 Nov 2007 12:01:47 -0800
+From: Greg KH <gregkh@suse.de>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 34/54] Driver Core: add kobj_attribute handling
+Message-ID: <20071105200147.GA25907@suse.de>
+References: <1194047972-9850-34-git-send-email-gregkh@suse.de> <20071105134203.1c078136@gondolin.boeblingen.de.ibm.com> <1194279812.6771.11.camel@lov.site> <20071105171133.GD12843@suse.de> <1194283540.2174.8.camel@lov.site> <20071105184350.0a1cd957@gondolin.boeblingen.de.ibm.com> <1194286070.2174.14.camel@lov.site> <20071105191705.5f2baaaa@gondolin.boeblingen.de.ibm.com> <1194287971.2174.27.camel@lov.site> <20071105195950.604ea56f@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071102131707.6023a5b7.rdunlap@xenotime.net>
-X-Priority: none
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20071105195950.604ea56f@gondolin.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Fri, Nov 02, 2007 at 01:17:07PM -0700, Randy Dunlap wrote:
-> On Fri, 2 Nov 2007 21:09:35 +0100 Andreas Mohr wrote:
+On Mon, Nov 05, 2007 at 07:59:50PM +0100, Cornelia Huck wrote:
+> On Mon, 05 Nov 2007 19:39:31 +0100,
+> Kay Sievers <kay.sievers@vrfy.org> wrote:
 > 
-> > Hi,
+> > Where are the objects that join this kset? A kset is a "collection of
+> > objects of a similar type", If there are no objects, you don't need a
+> > kset at all, I guess, but just a plain directory. :)
 > 
-> > I'm now quite certain on which side to tweak things ;)
+> Yes, ipl.c looks a lot like "we need a subdirectory under /sys/firmware/
+> and need to jump through hoops to get it there".
+
+In looking at all of the users of the firmware subdirectory, that is
+what they are all needing that subdirectory for.
+
+Ugh, I'll go change that up and delete that kset, and a few of the other
+ksets as they just need to be directories, not full-blown ksets.
+
+> > Anyway, seems we need an easy way to pass default attributes to ksets
+> > and plain directories. If userspace should set some values here when a
+> > subsystems creates the its sysfs representation, we must make sure, that
+> > the attributes exist at the time the event is sent, otherwise we will
+> > run into all sorts of timing problems.
 > 
-> The other parts of your patch should probably be merged IMO.
+> Maybe they need something like device->uevent_suppress, but at the
+> kobject level?
 
-Hmm, that particular part consists of _two_ transformations:
-- removing the leading dot
-- keep everything before [:punct:]
+Ugh, I hope not :)
 
-and the first transformation doesn't work on certain dash versions
-the way it's currently coded.
+thanks,
 
-> Would you resend a trimmed-down patch?
-> or should I do it?
-
-Feel free to go ahead, otherwise I'll try another patch sometime soon.
-All I care about is that the result works on (at least)
-one shell implementation _more_ than the current status ;)
-
-Thanks a lot,
-
-Andreas Mohr
+greg k-h
