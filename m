@@ -1,41 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbXKEK3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755248AbXKEKck@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755500AbXKEK3A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 05:29:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbXKEK2w
+	id S1755248AbXKEKck (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 05:32:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753889AbXKEKcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 05:28:52 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:47856 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753726AbXKEK2v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 05:28:51 -0500
-Date: Mon, 5 Nov 2007 10:28:49 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Jan Blunck <jblunck@suse.de>
-Cc: Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@lst.de>, Andreas Gruenbacher <agruen@suse.de>
-Subject: Re: [PATCH 0/7] struct path related cleanups of d_path() code
-Message-ID: <20071105102849.GA3662@infradead.org>
-References: <20071029124120.528997881@weierstrass.suse.de>
-Mime-Version: 1.0
+	Mon, 5 Nov 2007 05:32:33 -0500
+Received: from styx.suse.cz ([82.119.242.94]:51998 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753589AbXKEKcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 05:32:33 -0500
+Date: Mon, 5 Nov 2007 11:32:30 +0100
+From: Jan Kara <jack@suse.cz>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: linux-kernel@vger.kernel.org, LIOU Payphone <lioupayphone@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Forbid user to change file flags on quota files
+Message-ID: <20071105103230.GA9561@duck.suse.cz>
+References: <20071101155204.GB30523@duck.suse.cz> <Pine.LNX.4.64.0711021831340.26618@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071029124120.528997881@weierstrass.suse.de>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <Pine.LNX.4.64.0711021831340.26618@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 29, 2007 at 01:41:20PM +0100, Jan Blunck wrote:
+On Fri 02-11-07 18:32:08, Jan Engelhardt wrote:
 > 
-> Here are some more struct path cleanups. This patch series changes d_path() to
-> take a struct path argument. The existing users are changed to give struct path
-> more deeply into the call chain. In some structures I need to replace existing
-> <dentry,vfsmount> pairs and embed a struct path instead.
+> On Nov 1 2007 16:52, Jan Kara wrote:
+> 
+> >--- linux-2.6.24-rc1/fs/ext2/ioctl.c	2007-10-24 20:43:56.000000000 +0200
+> >+++ linux-2.6.24-rc1-1-forbid_setflags/fs/ext2/ioctl.c	2007-11-01 16:01:26.000000000 +0100
+> >@@ -47,6 +47,11 @@ int ext2_ioctl (struct inode * inode, st
+> > 			flags &= ~EXT2_DIRSYNC_FL;
+> > 
+> > 		mutex_lock(&inode->i_mutex);
+> >+		/* Is it quota file? Don't allow user mess with it */
+> 
+> "Do not allow user to mess with it".
+  I think both "allow user mess" and "allow user to mess" are possible, maybe
+with a slightly different meanings. If you are confident that the first one
+is not correct in this place, I can change it :)
 
-All these patches look good to me, but please reorder patch 6 to apply before
-patch 7 in your current series.  Also it would be nice if you could also
-convert seq_path to take a struct path while you're at it.
+> >--- linux-2.6.24-rc1/fs/ext3/ioctl.c	2007-10-11 12:01:23.000000000 +0200
+> >--- linux-2.6.24-rc1/fs/ext4/ioctl.c	2007-10-11 12:01:23.000000000 +0200
+> >--- linux-2.6.24-rc1/fs/jfs/ioctl.c	2007-10-11 12:01:23.000000000 +0200
+> >--- linux-2.6.24-rc1/fs/reiserfs/ioctl.c	2007-10-24 20:43:58.000000000 +0200
+> 
+> And the other filesystems are all fine?
+  I'm not sure what you mean... Forbidding IOC_SETFLAGS for them on quota
+files is fine.
 
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
