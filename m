@@ -1,126 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756764AbXKEMZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbXKEMh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756764AbXKEMZU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 07:25:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754971AbXKEMZG
+	id S1755927AbXKEMh1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 07:37:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754785AbXKEMhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 07:25:06 -0500
-Received: from mail.lysator.liu.se ([130.236.254.3]:37150 "EHLO
-	mail.lysator.liu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754368AbXKEMZE (ORCPT
+	Mon, 5 Nov 2007 07:37:15 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:37687 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753299AbXKEMhN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 07:25:04 -0500
-Message-ID: <472F0B96.4080205@27m.se>
-Date: Mon, 05 Nov 2007 13:24:54 +0100
-From: Markus Gothe <markus.gothe@27m.se>
-User-Agent: Icedove 1.5.0.14pre (X11/20071020)
-MIME-Version: 1.0
-To: veerasena reddy <veerasena_b@yahoo.co.in>
-Cc: uclibc@uclibc.org, linux-mips <linux-mips@linux-mips.org>,
-       "linux-kernel.org" <linux-kernel@vger.kernel.org>, buildroot@uclibc.org
-Subject: Re: NPTL support
-References: <279675.30374.qm@web8411.mail.in.yahoo.com>
-In-Reply-To: <279675.30374.qm@web8411.mail.in.yahoo.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Mon, 5 Nov 2007 07:37:13 -0500
+Subject: Re: oops in enqueue_entity with 2.6.24-rc1-g54866f03
+From: Peter Zijlstra <peterz@infradead.org>
+To: Eric Sesterhenn <snakebyte@gmx.de>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20071102123603.GA4988@alice>
+References: <20071102123603.GA4988@alice>
+Content-Type: text/plain
+Date: Mon, 05 Nov 2007 13:37:11 +0100
+Message-Id: <1194266231.27652.437.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA256
+On Fri, 2007-11-02 at 13:36 +0100, Eric Sesterhenn wrote:
+> hi,
+> 
+> I get the following crash with 2.6.24-rc1-g54866f03, the last version I
+> tested which booted fine was 2.6.24-rc1-gb1d08ac0
+> 
 
-I don't use neither buildroot nor uClibc-nptl, due to uClibc-nptl is a
-(dev-)branch and not a release. It differs quite a lot from the 0.9.29
-release.
+How reproducable is this?
 
-//Markus
+If its very much reproducable, could you git bisect it, as in between
+those commits you tested nothing much has changed, that is, nothing that
+stands out to me.
 
-veerasena reddy wrote:
-> Hi Markus,
->
-> thanks for the information.
->
-> i checked out uclibc-nptl (version 0.9.29). is it a stable release?
->  If i want to build toolchain using buildroot with nptl support for
-> linux kernel 2.6.18.8, could you please guide us the right version
-> of buildroot, binutils, and gcc to be used.
->
-> Thanks & Regards, Veerasena.
->
-> ----- Original Message ---- From: Markus Gothe
-> <markus.gothe@27m.se> To: veerasena reddy
-> <veerasena_b@yahoo..co.in> Cc: uclibc@uclibc.org; linux-mips
-> <linux-mips@linux-mips.org>; linux-kernel.org
-> <linux-kernel@vger.kernel.org>; buildroot@uclibc.org Sent: Friday,
-> 2 November, 2007 6:01:41 PM Subject: Re: NPTL support
->
-> You'll have to use the uClibc-nptl branch on their svn. In 0.9.28,
-> no.
->
-> //Markus
->
-> On 2 Nov 2007, at 06:03, veerasena reddy wrote:
->
->> Hi,
->>
->> I am trying to build the toolchain for MIPS processor using
->> buildroot. I am using gcc version of 3.4.3, binutils-2.15,
->> uclibc-0.9.28 and linux-2.6.18.8 kernel.
->>
->> Basically i need to enable NPTL feature support in my toolchain.
->> does uclibc-0.9.28 has the support for NPTL? If not, how can i
->> get it enabled for my above build configuration?
->>
->> I see there is separate branch "uclibc-nptl" in uclibc. Do i need
->> to use this (uclibc-nptl) to meet my requirement?
->>
->> Could you please suggest me right approach to succssfully enable
->> NPTL?
->>
->> Thanks in advance.
->>
->> Regards, Veerasena.
->>
->>
->> Why delete messages? Unlimited storage is just a click away. Go
->> to http://help.yahoo.com/l/in/yahoo/mail/yahoomail/tools/
->> tools-08.html
->>
->>
->
-> _______________________________________
->
-> Mr Markus Gothe Software Engineer
->
-> Phone: +46 (0)13 21 81 20 (ext. 1046) Fax: +46 (0)13 21 21 15
-> Mobile: +46 (0)73 718 72 80 Diskettgatan 11, SE-583 35 Linköping,
-> Sweden www.27m.com
->
->
-> Did you know? You can CHAT without downloading messenger. Go to
-> http://in.messenger.yahoo.com/webmessengerpromo.php/
->
->
+# git log -p  b1d08ac0..54866f03 | git shortlog
+David S. Miller (7):
+      [SPARC64]: Fix bogus '&' conditinal in set_rtc_mmss().
+      [SPARC64]: Kill unused ITAG_MASK macro in ultra.S
+      [SPARC64]: Fix build failure when CONFIG_BUG is disabled.
+      [SPARC64]: Fix build with CONFIG_NET disabled.
+      [SPARC64]: Fix linkage of enormous kernels.
+      [IRDA] IRNET: Fix build when TCGETS2 is defined.
+      [SPARC64]: Update defconfig.
+
+Ilpo J<E4>rvinen (2):
+      [TCP]: Process DSACKs that reside within a SACK block
+      [TCP]: Another TAGBITS -> SACKED_ACKED|LOST conversion
+
+Linus Torvalds (1):
+      Merge branch 'master' of master.kernel.org:/.../davem/net-2.6
+
+Pavel Emelyanov (13):
+      [NET]: Move the sock_copy() from the header
+      [NET]: Move the get_net() from sock_copy()
+      [NET]: Cleanup the allocation/freeing of the sock object
+      [NET]: Auto-zero the allocated sock object
+      [NET]: Move some core sock setup into sk_prot_alloc
+      [NET]: Make the sk_clone() lighter
+      [NET]: Remove bogus zero_it argument from sk_alloc
+      [NET]: Forget the zero_it argument of sk_alloc()
+      [NETNS]: Make the init/exit hooks checks outside the loop
+      [NET]: Relax the reference counting of init_net_ns
+      [NET]: Hide the dead code in the net_namespace.c
+      [NET]: Mark the setup_net as __net_init
+      [NET]: Hide the net_ns kmem cache
+
+Stephen Hemminger (1):
+      [NET]: docbook fixes for netif_ functions
 
 
-- --
-_______________________________________
 
-Mr Markus Gothe
-Software Engineer
-
-Phone: +46 (0)13 21 81 20 (ext. 1046)
-Fax: +46 (0)13 21 21 15
-Mobile: +46 (0)73 718 72 80
-Diskettgatan 11, SE-583 35 Linköping, Sweden
-www.27m.com
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFHLwuS6I0XmJx2NrwRCLRDAJ9O5mtOAtncebZ9yTZoZpWQLD7hKwCghfdz
-IlaSKs6XX+dD6dqC5YFYbRY=
-=/Kz+
------END PGP SIGNATURE-----
 
