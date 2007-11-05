@@ -1,49 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567AbXKEXPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755761AbXKEXRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755567AbXKEXPz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 18:15:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754384AbXKEXPq
+	id S1755761AbXKEXRY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 18:17:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740AbXKEXRO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 18:15:46 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41737
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754253AbXKEXPp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 18:15:45 -0500
-Date: Mon, 05 Nov 2007 15:15:44 -0800 (PST)
-Message-Id: <20071105.151544.175839612.davem@davemloft.net>
-To: kaber@trash.net
-Cc: djohnson+linux-kernel@sw.starentnetworks.com, jes@trained-monkey.org,
-       mchan@broadcom.com, ram.vepa@neterion.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, bguo@sw.starentnetworks.com
-Subject: Re: [PATCH 1/2] NET: Re-add VLAN tag for devices incapable of
- keeping it
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <472F5A33.20906@trash.net>
-References: <472A6089.7020104@hp.com>
-	<18223.22291.622615.129374@zeus.sw.starentnetworks.com>
-	<472F5A33.20906@trash.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 5 Nov 2007 18:17:14 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:37046 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754545AbXKEXRN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 18:17:13 -0500
+Message-ID: <472FA475.5030106@garzik.org>
+Date: Mon, 05 Nov 2007 18:17:09 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
+Subject: Re: [git patches] Add and use media change notification
+References: <20071104150711.GA29087@havoc.gtf.org> <alpine.LFD.0.999.0711041755120.15101@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0711041755120.15101@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Patrick McHardy <kaber@trash.net>
-Date: Mon, 05 Nov 2007 19:00:19 +0100
+Linus Torvalds wrote:
+> 
+> On Sun, 4 Nov 2007, Jeff Garzik wrote:
+>> The end to CD-ROM polling...  newer SATA ATAPI hardware will emit
+>> 'asynchronous notification' events when media is changed.  This adds
+>> support.
+> 
+> I *really* didn't want to pull this.
+> 
+> Not only is it after the -rc1 period, but I also think you pushed this ina 
+> really offensive manner, and I don't like how you and James have made this 
+> whole thing personal. You guys need to sort it out, and there is no way 
+> you can blame James for all your troubles, since I've heard the same kind 
+> of complaints about every single maintainer out there (including you) 
+> about some driver or other infrastructure issue.
+> 
+> So I'm unhappy about pulling this.
+> 
+> That said, I did finally decide to just pull it. Partly because the 
+> concept apparently has been in -mm for a while anyway (even if the final 
+> patch has not - but the patch itself isn't that large, I'd worry more 
+> about thngs like certain hardware simply not doing things right), but 
+> mostly because I hate it when others hold up driver features, and I 
+> decided that in this case this really is something that is better done 
+> earlier rather than later, to get exposure as soon as possible.
+> 
+> But I really think you need to lay off James, and help him rather than 
+> make every single complaint a big flame-war!
+> 
+> Please, Jeff?
 
-> This looks like a rather expensive operation for the unlikely case
-> that packets will be received by a packet socket. IMO it should only
-> be reconstructed if actually needed, by af_packet itself.
+Fair enough...
 
-Completely agreed.  We should not do this by default when %99
-of the networking stack simply does not care about this.
+	Jeff
 
-> As we discussed some time back storing the VLAN tag in the CB on
-> TX clashes with other users of the CB like qdiscs, so we need a
-> new field in the skb for this anyway.
 
-Someone will have to find a way to remove some other fields in
-sk_buff before I'm going to allow more space to be eaten up
-by this completely fringe case feature.
+
