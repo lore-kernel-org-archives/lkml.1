@@ -1,63 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755165AbXKETOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756734AbXKETPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755165AbXKETOb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 14:14:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbXKETOY
+	id S1756734AbXKETPa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 14:15:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbXKETPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 14:14:24 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:43680 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752403AbXKETOX (ORCPT
+	Mon, 5 Nov 2007 14:15:21 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:47589 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751925AbXKETPV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 14:14:23 -0500
-Date: Mon, 5 Nov 2007 20:14:00 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Doug Thompson <norsk5@yahoo.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, dougthompson@xmission.com,
-       bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] move edac.txt DOCUMENTATION two levels up
-Message-ID: <20071105191400.GB3444@stusta.de>
-References: <20071105171733.307a562a@the-village.bc.nu> <293742.55428.qm@web50101.mail.re2.yahoo.com>
+	Mon, 5 Nov 2007 14:15:21 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <472F6BB0.6050803@s5r6.in-berlin.de>
+Date: Mon, 05 Nov 2007 20:14:56 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <293742.55428.qm@web50101.mail.re2.yahoo.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: andi@lisas.de, linux1394-user@lists.sourceforge.net,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: VIA VT6307 OHCI version?
+References: <471527E5.1050407@s5r6.in-berlin.de>	<m34pgpmszu.fsf@maximus.localdomain>	<47166C83.2050207@s5r6.in-berlin.de>	<m3fy09ffp9.fsf@maximus.localdomain>	<4719A0C4.3050301@s5r6.in-berlin.de>	<m3bqausztv.fsf@maximus.localdomain>	<4719FF0F.3080504@s5r6.in-berlin.de>	<m3ejfp4bg9.fsf@maximus.localdomain>	<4724C9DA.7030900@s5r6.in-berlin.de>	<m33avvdlbq.fsf@maximus.localdomain>	<20071104193109.GA4033@rhlx01.hs-esslingen.de> <m38x5dhb0f.fsf@maximus.localdomain>
+In-Reply-To: <m38x5dhb0f.fsf@maximus.localdomain>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 05, 2007 at 10:52:01AM -0800, Doug Thompson wrote:
-> Interesting
-> 
-> At the time I submitted it there was a big discussion on just how messed up the documentation
-> directory was, inconsistent and not well laid out. Then more discussion on how it could be laid
-> out in relation to where various subsystem were laid out (ie drivers doc directory like there was
-> a drivers src directory and the like).
-> 
-> Therefore I placed it following that pattern.
-> 
-> So what I am hearing is that documentation for a subsystem should just continue to be dumped into
-> one directory with everything else.
-> 
-> Okay, if that is the goal, I am fine with, but things are pretty jumbled up in there. I will know
-> where it is at least.
+Krzysztof Halasa wrote:
+> I guess Stefan could now try to write these values (except GUID
+> and probably PCI subsystem IDs, and with OHCI 1.1 bit) to the "bad"
+> card :-)
 
-The current status quo is that everything is in one directory.
-
-If someone wants to put more structure into Documentation/ that would be 
-fine with me, but edac.txt being the only file under 
-Documentation/drivers/ doesn't make sense and only makes it harder to 
-find this file.
-
-> doug t
-
-cu
-Adrian
-
+I will get back to this in about two weeks.
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Stefan Richter
+-=====-=-=== =-== ---=-
+http://arcgraph.de/sr/
