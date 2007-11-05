@@ -1,52 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbXKEXhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755771AbXKEXif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755336AbXKEXhS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 18:37:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbXKEXhH
+	id S1755771AbXKEXif (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 18:38:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754008AbXKEXiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 18:37:07 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53462 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750830AbXKEXhE (ORCPT
+	Mon, 5 Nov 2007 18:38:25 -0500
+Received: from rv-out-0910.google.com ([209.85.198.186]:54037 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753951AbXKEXiX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 18:37:04 -0500
-Date: Mon, 5 Nov 2007 15:35:54 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, miklos@szeredi.hu, hch@infradead.org,
-       haveblue@us.ibm.com
-Subject: Re: [PATCH 25/27]
- r-o-bind-mounts-track-number-of-mount-writers-make-lockdep-happy-with-r-o-bind-mounts
-Message-Id: <20071105153554.908846f9.akpm@linux-foundation.org>
-In-Reply-To: <20071101230900.13469A0F@kernel>
-References: <20071101230826.9A4F6E00@kernel>
-	<20071101230900.13469A0F@kernel>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 5 Nov 2007 18:38:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=KqSKFUAO5H6N+v6oaggBPwWx+CD3EqPz5TfA25pxs8oAVg/rYK33ngmaTP+VMcYunlK+WcNcjB/6oQ5S/w+sq6VDxwsjzWuTlJl87QqeRA71Q0lxFOECgdlvjPGFRZxuVAa3dPeKXIaXVxmd42NYik1zLDE7JvpqZgjZZYR6Tvg=
+Message-ID: <1865922a0711051538n61c5d979kac61652166da14e2@mail.gmail.com>
+Date: Tue, 6 Nov 2007 01:38:22 +0200
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser
+Cc: "Pavel Machek" <pavel@ucw.cz>, "Casey Schaufler" <casey@schaufler-ca.com>,
+       akpm@linux-foundation.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "Al Viro" <viro@ftp.linux.org.uk>
+In-Reply-To: <alpine.LFD.0.999.0711050818200.15101@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <472B8DAF.9080706@schaufler-ca.com> <20071103164303.GA26707@ubuntu>
+	 <20071104122848.GC3921@ucw.cz> <20071105094007.GA19367@ubuntu>
+	 <alpine.LFD.0.999.0711050818200.15101@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 01 Nov 2007 16:09:00 -0700
-Dave Hansen <haveblue@us.ibm.com> wrote:
+On 11/5/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>
+>
+> On Mon, 5 Nov 2007, Ahmed S. Darwish wrote:
+>
+> > On Sun, Nov 04, 2007 at 12:28:48PM +0000, Pavel Machek wrote:
+> > >
+> > > Can we avoid string parsers in the kernel?
+> > >
+> >
+> > Ok, Could someone suggest a better idea please ?.
+>
+> I personally think string parsers are *much* better than the alternatives
+> (which basically boil down to nasty binary interfaces)
+>
+> > I thought about packing the rules in a structure and sending
+> > it over an ioctl() command. Is this applicable ?
+>
+> That's *MUCH* worse.
+>
+> Strings are nice. They aren't that complex, and as long as it's not a
+> performance-critical area, there are basically no downsides.
+>
+> Binary structures and ioctl's are *much* worse. They are totally
+> undebuggable with generic tools (think "echo" or "strace"), and they are a
+> total nightmare to parse across architectures and pointer sizes.
+>
+> So the rule should be: always use strings if at all possible and relevant.
+> If the data is fundamentally binary, it shouldn't be re-coded to ascii (no
+> real advantage), but if the data is "stringish", and there aren't big
+> performance issues, then keep it as strings.
+>
 
-> With the r/o bind mount patches, we can have as many
-> spinlocks nested as there are CPUs on the system.
-> Lockdep freaks out after 8.
-> 
-> So, create a new lockdep class of locks for the
-> mnt_writer spinlocks, and initialize each of the
-> cpu locks to be in a different class.
-> 
-> It should shut up warnings like this, while still
-> allowing some of the lockdep goodness to remain:
-> 
-> =============================================
-> [ INFO: possible recursive locking detected ]
-> 2.6.23-rc6 #6
-> 
+Thanks a lot for such a kind advice. I'll keep that in my mind.
 
-I added your signed-off-by: to this.
+Regards,
 
-I wish you hadn't mucked up all those Subject:s
+-- 
+Ahmed S. Darwish
+Homepage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
