@@ -1,144 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753553AbXKECRE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756160AbXKECR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753553AbXKECRE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 21:17:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbXKECQp
+	id S1756160AbXKECR1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 21:17:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbXKECRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 21:16:45 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:60788 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753632AbXKECQo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 21:16:44 -0500
-Date: Mon, 5 Nov 2007 02:16:42 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: torvalds@osdl.org, Andrew Morton <akpm@osdl.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [git pull] drm patches for 2.6.24-rc2
-In-Reply-To: <Pine.LNX.4.64.0711050103070.30576@skynet.skynet.ie>
-Message-ID: <alpine.DEB.0.82.0711050215050.11125@skynet.skynet.ie>
-References: <Pine.LNX.4.64.0711050103070.30576@skynet.skynet.ie>
+	Sun, 4 Nov 2007 21:17:07 -0500
+Received: from [222.73.24.84] ([222.73.24.84]:54871 "EHLO song.cn.fujitsu.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753425AbXKECRE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Nov 2007 21:17:04 -0500
+Message-ID: <472E7CB4.5020301@cn.fujitsu.com>
+Date: Mon, 05 Nov 2007 10:15:16 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: LKML <linux-kernel@vger.kernel.org>, buytenh@wantstofly.org
+Subject: [PATCH 1/6] ARM: fix memset size error
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The size passing to memset is wrong. And here we can replace
+kmalloc with kzalloc.
 
-Typical of me, I found another issue so I've just repushed the tree..
+Signed-off-by Li Zefan <lizf@cn.fujitsu.com>
 
-If you have or haven't pulled, please re-pull..
+---
+ arch/arm/common/uengine.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-Please pull from 'drm-patches' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-patches
+diff --git a/arch/arm/common/uengine.c b/arch/arm/common/uengine.c
+index 95c8508..117cab3 100644
+--- a/arch/arm/common/uengine.c
++++ b/arch/arm/common/uengine.c
+@@ -374,8 +374,8 @@ static int set_initial_registers(int uengine, struct ixp2000_uengine_code *c)
+ 	u8 *ucode;
+ 	int i;
+ 
+-	gpr_a = kmalloc(128 * sizeof(u32), GFP_KERNEL);
+-	gpr_b = kmalloc(128 * sizeof(u32), GFP_KERNEL);
++	gpr_a = kzalloc(128 * sizeof(u32), GFP_KERNEL);
++	gpr_b = kzalloc(128 * sizeof(u32), GFP_KERNEL);
+ 	ucode = kmalloc(513 * 5, GFP_KERNEL);
+ 	if (gpr_a == NULL || gpr_b == NULL || ucode == NULL) {
+ 		kfree(ucode);
+@@ -388,8 +388,6 @@ static int set_initial_registers(int uengine, struct ixp2000_uengine_code *c)
+ 	if (c->uengine_parameters & IXP2000_UENGINE_4_CONTEXTS)
+ 		per_ctx_regs = 32;
+ 
+-	memset(gpr_a, 0, sizeof(gpr_a));
+-	memset(gpr_b, 0, sizeof(gpr_b));
+ 	for (i = 0; i < 256; i++) {
+ 		struct ixp2000_reg_value *r = c->initial_reg_values + i;
+ 		u32 *bank;
+-- 
+1.5.3.rc7
 
-to receive the following updates:
-
- drivers/char/drm/drmP.h         |    2 --
- drivers/char/drm/drm_os_linux.h |    8 --------
- drivers/char/drm/radeon_cp.c    |    5 +++--
- drivers/char/drm/radeon_drv.h   |    1 +
- drivers/char/drm/savage_bci.c   |    3 ---
- drivers/char/drm/sis_mm.c       |    1 +
- 6 files changed, 5 insertions(+), 15 deletions(-)
-
-Dave Airlie (3):
-      radeon: set the address to access the GART table on the CPU side correctly
-      drm: remove second forward decleration of drm device struct.
-      drm: remove remnants of DRM_COPY_FROM/TO_USER_IOCTL
-
-Roel Kluin (1):
-      drm/sis: missing mutex unlock in error path.
-
-diff --git a/drivers/char/drm/drmP.h b/drivers/char/drm/drmP.h
-index 9dd0760..dde02a1 100644
---- a/drivers/char/drm/drmP.h
-+++ b/drivers/char/drm/drmP.h
-@@ -559,8 +559,6 @@ struct drm_mm {
-  * a family of cards. There will one drm_device for each card present
-  * in this family
-  */
--struct drm_device;
--
- struct drm_driver {
- 	int (*load) (struct drm_device *, unsigned long flags);
- 	int (*firstopen) (struct drm_device *);
-diff --git a/drivers/char/drm/drm_os_linux.h b/drivers/char/drm/drm_os_linux.h
-index 76e44ac..daa69c9 100644
---- a/drivers/char/drm/drm_os_linux.h
-+++ b/drivers/char/drm/drm_os_linux.h
-@@ -62,14 +62,6 @@ static __inline__ int mtrr_del(int reg, unsigned long base, unsigned long size)
- 
- #endif
- 
--/** For data going into the kernel through the ioctl argument */
--#define DRM_COPY_FROM_USER_IOCTL(arg1, arg2, arg3)	\
--	if ( copy_from_user(&arg1, arg2, arg3) )	\
--		return -EFAULT
--/** For data going from the kernel through the ioctl argument */
--#define DRM_COPY_TO_USER_IOCTL(arg1, arg2, arg3)	\
--	if ( copy_to_user(arg1, &arg2, arg3) )		\
--		return -EFAULT
- /** Other copying of data to kernel space */
- #define DRM_COPY_FROM_USER(arg1, arg2, arg3)		\
- 	copy_from_user(arg1, arg2, arg3)
-diff --git a/drivers/char/drm/radeon_cp.c b/drivers/char/drm/radeon_cp.c
-index 335423c..24fca8e 100644
---- a/drivers/char/drm/radeon_cp.c
-+++ b/drivers/char/drm/radeon_cp.c
-@@ -1679,7 +1679,7 @@ static int radeon_do_init_cp(struct drm_device * dev, drm_radeon_init_t * init)
- 			dev_priv->gart_info.bus_addr =
- 			    dev_priv->pcigart_offset + dev_priv->fb_location;
- 			dev_priv->gart_info.mapping.offset =
--			    dev_priv->gart_info.bus_addr;
-+			    dev_priv->pcigart_offset + dev_priv->fb_aper_offset;
- 			dev_priv->gart_info.mapping.size =
- 			    dev_priv->gart_info.table_size;
- 
-@@ -2275,7 +2275,8 @@ int radeon_driver_firstopen(struct drm_device *dev)
- 	if (ret != 0)
- 		return ret;
- 
--	ret = drm_addmap(dev, drm_get_resource_start(dev, 0),
-+	dev_priv->fb_aper_offset = drm_get_resource_start(dev, 0);
-+	ret = drm_addmap(dev, dev_priv->fb_aper_offset,
- 			 drm_get_resource_len(dev, 0), _DRM_FRAME_BUFFER,
- 			 _DRM_WRITE_COMBINING, &map);
- 	if (ret != 0)
-diff --git a/drivers/char/drm/radeon_drv.h b/drivers/char/drm/radeon_drv.h
-index e4077bc..bfbb60a 100644
---- a/drivers/char/drm/radeon_drv.h
-+++ b/drivers/char/drm/radeon_drv.h
-@@ -293,6 +293,7 @@ typedef struct drm_radeon_private {
- 
- 	/* starting from here on, data is preserved accross an open */
- 	uint32_t flags;		/* see radeon_chip_flags */
-+	unsigned long fb_aper_offset;
- } drm_radeon_private_t;
- 
- typedef struct drm_radeon_buf_priv {
-diff --git a/drivers/char/drm/savage_bci.c b/drivers/char/drm/savage_bci.c
-index 59484d5..d465b2f 100644
---- a/drivers/char/drm/savage_bci.c
-+++ b/drivers/char/drm/savage_bci.c
-@@ -968,9 +968,6 @@ static int savage_bci_event_wait(struct drm_device *dev, void *data, struct drm_
- 
- 	DRM_DEBUG("\n");
- 
--	DRM_COPY_FROM_USER_IOCTL(event, (drm_savage_event_wait_t __user *) data,
--				 sizeof(event));
--
- 	UPDATE_EVENT_COUNTER();
- 	if (dev_priv->status_ptr)
- 		hw_e = dev_priv->status_ptr[1] & 0xffff;
-diff --git a/drivers/char/drm/sis_mm.c b/drivers/char/drm/sis_mm.c
-index 6be1c57..a6b7ccd 100644
---- a/drivers/char/drm/sis_mm.c
-+++ b/drivers/char/drm/sis_mm.c
-@@ -134,6 +134,7 @@ static int sis_drm_alloc(struct drm_device *dev, struct drm_file *file_priv,
- 		      dev_priv->agp_initialized)) {
- 		DRM_ERROR
- 		    ("Attempt to allocate from uninitialized memory manager.\n");
-+		mutex_unlock(&dev->struct_mutex);
- 		return -EINVAL;
- 	}
- 
