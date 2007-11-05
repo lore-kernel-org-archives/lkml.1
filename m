@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753322AbXKESAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbXKESHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753322AbXKESAq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 13:00:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbXKESAg
+	id S1753374AbXKESHu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 13:07:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751251AbXKESHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 13:00:36 -0500
-Received: from stinky.trash.net ([213.144.137.162]:40372 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750950AbXKESAf (ORCPT
+	Mon, 5 Nov 2007 13:07:43 -0500
+Received: from moutng.kundenserver.de ([212.227.126.174]:62174 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751112AbXKESHm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 13:00:35 -0500
-Message-ID: <472F5A33.20906@trash.net>
-Date: Mon, 05 Nov 2007 19:00:19 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
-MIME-Version: 1.0
-To: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
-CC: David Miller <davem@davemloft.net>, jes@trained-monkey.org,
-       mchan@broadcom.com, ram.vepa@neterion.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, bguo@sw.starentnetworks.com
-Subject: Re: [PATCH 1/2] NET: Re-add VLAN tag for devices incapable of keeping
- it
-References: <472A49BD.6000802@hp.com>	<20071101.145956.63020380.davem@davemloft.net>	<472A4D5C.2070301@hp.com>	<20071101.150723.30590053.davem@davemloft.net>	<472A6089.7020104@hp.com> <18223.22291.622615.129374@zeus.sw.starentnetworks.com>
-In-Reply-To: <18223.22291.622615.129374@zeus.sw.starentnetworks.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Mon, 5 Nov 2007 13:07:42 -0500
+Subject: Re: [PATCH 34/54] Driver Core: add kobj_attribute handling
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <20071105184350.0a1cd957@gondolin.boeblingen.de.ibm.com>
+References: <20071102235758.GA9803@kroah.com>
+	 <1194047972-9850-34-git-send-email-gregkh@suse.de>
+	 <20071105134203.1c078136@gondolin.boeblingen.de.ibm.com>
+	 <1194279812.6771.11.camel@lov.site> <20071105171133.GD12843@suse.de>
+	 <1194283540.2174.8.camel@lov.site>
+	 <20071105184350.0a1cd957@gondolin.boeblingen.de.ibm.com>
+Content-Type: text/plain
+Date: Mon, 05 Nov 2007 19:07:50 +0100
+Message-Id: <1194286070.2174.14.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18f2gGvj1Y9rII+g8ZVq3QG0CNSuP0ocZvn+45
+ 3SGyr3hE2AWn0b2lKBJ8nO/7w8RipZK/bgX/y5RY1qOdXf73N6
+ MdpSZCilpZsmnZbFnhmMlZvzNx4hMgS
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Johnson wrote:
-> +/* VLAN rx hw acceleration helper.  This acts like netif_{rx,receive_skb}(). */
-> +static inline int __vlan_hwaccel_rx(struct sk_buff *skb,
-> +				    struct vlan_group *grp,
-> +				    unsigned short vlan_tag, int polling)
-> +{
-> ...
-> +		/* Driver removed vlan tag from the packet, but we have no
-> +		 * vlan device for this VID.
-> +		 *
-> +		 * This can occur for 2 reasons:
-> +		 * 1) Have a vlan group, we want some VIDs, just not this VID.
-> +		 * 2) Have no vlan group, but hardware limitation requires it
-> +		 *    to remove vlan tags anyway.
-> +		 *
-> +		 * Normally if no vlan group is configured, the underlying
-> +		 * driver will configure the hardware to NOT strip out the
-> +		 * vlan tag.  It can then call netif_receive_skb/netif_rx
-> +		 * with the vlan tag still intact.  However some devices
-> +		 * cannot be configured to keep the vlan tag and must not
-> +		 * call netif_receive_skb/netif_rx with the vlan tag
-> +		 * missing.  This would allow the normal protocol handlers
-> +		 * to process this tagged packet as if it arived without a
-> +		 * vlan tag.
-> +		 *
-> +		 * We need to re-add the TAG and hand the packet off to the
-> +		 * base device with the TAG present so any protocol handlers
-> +		 * (PF_PACKET, etc...) will get a chance to see it.
-> +		 */
+On Mon, 2007-11-05 at 18:43 +0100, Cornelia Huck wrote:
+> On Mon, 05 Nov 2007 18:25:40 +0100,
+> Kay Sievers <kay.sievers@vrfy.org> wrote:
+> 
+> > > > That should usually be done by default attributes assigned to the ktype.
+> > > > Do you have a good use case, where people need to create such attributes
+> > > > individually instead?
+> > > 
+> > > The s390 code that was converted to use kobj_attributes :)
+> > > 
+> > > These look very useful, I'll go add them to the series unless Kay really
+> > > objects.
+> > 
+> > I just want to hear a good reason to create attributes individually. :)
+> > Especially in conjunction with kobject_register(), these attributes are
+> > not available at uevent time, which is really really bad.
+> > 
+> > Default attributes just work fine, and have the proper error handling
+> > built-in. Offering special functions for it, may just encourage people
+> > to continue this "broken" way of creating attributes.
+> 
+> But where should I specify those default attributes?
+> kset_create_and_register() sets the ktype to kset_ktype...
 
+Do you need to create attributes at a kset itself, not the kobjects that
+belong to the kset?
 
-This looks like a rather expensive operation for the unlikely case
-that packets will be received by a packet socket. IMO it should only
-be reconstructed if actually needed, by af_packet itself.
-
-As we discussed some time back storing the VLAN tag in the CB on
-TX clashes with other users of the CB like qdiscs, so we need a
-new field in the skb for this anyway.
+Kay
 
