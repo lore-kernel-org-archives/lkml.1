@@ -1,93 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755093AbXKEHbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbXKEHcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755093AbXKEHbt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 02:31:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbXKEHbl
+	id S1756015AbXKEHcS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 02:32:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753048AbXKEHcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 02:31:41 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:39892 "EHLO pasmtpB.tele.dk"
+	Mon, 5 Nov 2007 02:32:06 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:54730 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751458AbXKEHbk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 02:31:40 -0500
-Date: Mon, 5 Nov 2007 08:33:17 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-kbuild@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [Git Patch] Makefile: fix wrong dirs when making cscope
-Message-ID: <20071105073317.GA26441@uranus.ravnborg.org>
-References: <20071105070953.GB2461@hacking>
+	id S1753391AbXKEHcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 02:32:04 -0500
+Date: Mon, 5 Nov 2007 08:30:10 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Romano Giannetti <romanol@upcomillas.es>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.34-rc1 eat my photo SD card :-(
+Message-ID: <20071105083010.544ddcdb@poseidon.drzeus.cx>
+In-Reply-To: <1194168583.10245.15.camel@rukbat>
+References: <1193918202.8439.7.camel@rukbat>
+	<20071102182833.2c055446@poseidon.drzeus.cx>
+	<1194168583.10245.15.camel@rukbat>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071105070953.GB2461@hacking>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Wang.
+On Sun, 04 Nov 2007 10:29:43 +0100
+Romano Giannetti <romanol@upcomillas.es> wrote:
 
-Thanks for this fix, but I have a few comments. See below.
+> > Can you reproduce this? To help you I need to see the errors given by
+> > the MMC layer. You should also try reproducing it without a tainted
+> > kernel (i.e. don't load ndiswrapper).
+> 
+> I have a spare 128M card I can use to try. The one that failed was a 2G
+> one. 
 
-On Mon, Nov 05, 2007 at 03:09:53PM +0800, WANG Cong wrote:
-> 
-> Hi, Sam!
-> 
-> This patch fixed the following errors when doing "make cscope" and
-> "make cscope ARCH=um".
-> 
->   FILELST cscope.files
-> find: arch/i386: No such file or directory
->   MAKE    cscope.out
-> 
-> 
->   FILELST cscope.files
-> find: include/asm-i386: No such file or directory
->   MAKE    cscope.out
-> 
-> 
-> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> 
-> ---
->  Makefile |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6/Makefile
-> ===================================================================
-> --- linux-2.6.orig/Makefile
-> +++ linux-2.6/Makefile
-> @@ -1322,7 +1322,7 @@ ALLSOURCE_ARCHS := $(ARCH) $(SRCARCH)
->  endif
->  
->  define find-sources
-> -        ( for arch in $(ALLSOURCE_ARCHS) ; do \
-> +        ( for arch in `echo $(ALLSOURCE_ARCHS)|sed -e "s/i386/x86/"`; do \
->  	       find $(__srctree)arch/$${arch} $(RCS_FIND_IGNORE) \
->  	            -name $1 -print; \
->  	  done ; \
+Many of these problems are card specific, so please make sure to also test with the original card.
 
-Could you change this such that the substitution takes places where we
-assign ALLSOURCE_ARCHS so all potential users benefit from this fix.
-And on top of this fix it so x86_64 is also replaced by x86 so we fix
-both x86 architectures.
+> I will try to reproduce without tainting the kernel (unfortunately,
+> the Atheros chip I have is not supported by ath5k yet, and the choice is
+> between ndiswrapper or Vista.). Should I enable some debugging option
+> for the MMC layer?  
 
+Not at this point no. The debugging tends to be quite noise so it easily drowns out any temporary problems.
 
-> @@ -1331,7 +1331,7 @@ define find-sources
->  	  find $(__srctree)include $(RCS_FIND_IGNORE) \
->  	       \( -name config -o -name 'asm-*' \) -prune \
->  	       -o -name $1 -print; \
-> -	  for arch in $(ALLINCLUDE_ARCHS) ; do \
-> +	  for arch in `echo $(ALLINCLUDE_ARCHS)|sed -e "s/i386/x86/"`; do \
->  	       find $(__srctree)include/asm-$${arch} $(RCS_FIND_IGNORE) \
->  	            -name $1 -print; \
->  	  done ; \
-> 
-Same comments for ALLINCLUDE_ARCHS
+Rgds
+-- 
+     -- Pierre Ossman
 
-PS. Yout patch may be obsoleted by ongoing work to eliminate
-ARCH=i386 / ARCH=x86_64. But if/when this hits mainline I dunno so
-please do the requested changes and send me a new patch.
-
-Tanks,
-	Sam
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
