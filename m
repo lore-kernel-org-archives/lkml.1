@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761021AbXKERVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761166AbXKERVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761021AbXKERVc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 12:21:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758131AbXKERJm
+	id S1761166AbXKERVt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 12:21:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758929AbXKERMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 12:09:42 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:37763 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758115AbXKERJl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 12:09:41 -0500
-Date: Mon, 5 Nov 2007 08:12:03 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       SteveW@acm.org, dipankar@in.ibm.com
-Subject: Re: dn_route.c momentarily exiting RCU read-side critical section
-Message-ID: <20071105161203.GB9479@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20071030151254.GA8285@linux.vnet.ibm.com> <E1Ip0Vs-0002zP-00@gondolin.me.apana.org.au>
+	Mon, 5 Nov 2007 12:12:47 -0500
+Received: from mail.suse.de ([195.135.220.2]:48123 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758924AbXKERMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 12:12:46 -0500
+Date: Mon, 5 Nov 2007 09:05:41 -0800
+From: Greg KH <gregkh@suse.de>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       Michael Holzheu <holzheu@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Volker Sameske <sameske@de.ibm.com>
+Subject: Re: [PATCH 46/54] kset: convert s390 ipl.c to use kset_create
+Message-ID: <20071105170541.GB12843@suse.de>
+References: <20071102235758.GA9803@kroah.com> <1194047972-9850-46-git-send-email-gregkh@suse.de> <20071105112731.288a8334@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1Ip0Vs-0002zP-00@gondolin.me.apana.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20071105112731.288a8334@gondolin.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 05, 2007 at 07:53:04PM +0800, Herbert Xu wrote:
-> Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> >> 
-> >> > net/decnet/dn_route.c in dn_rt_cache_get_next() is as follows:
-> >> > 
-> >> > static struct dn_route *dn_rt_cache_get_next(struct seq_file *seq, struct dn_route *rt)
-> >> > {
-> >> >     struct dn_rt_cache_iter_state *s = rcu_dereference(seq->private);
-> >> > 
-> >> >     rt = rt->u.dst.dn_next;
-> >> >     while(!rt) {
-> >> >             rcu_read_unlock_bh();
-> >> >             if (--s->bucket < 0)
-> >> >                     break;
-> >
-> > OK, for my next stupid question: why is the rcu_dereference(seq->private)
-> > required, as opposed to simply seq->private?
+On Mon, Nov 05, 2007 at 11:27:31AM +0100, Cornelia Huck wrote:
+> On Fri,  2 Nov 2007 16:59:24 -0700,
+> Greg Kroah-Hartman <gregkh@suse.de> wrote:
 > 
-> It was put there by someone who went through the code converting
-> all occurances of smp_read_barrier_depends to rcu_dereference.
-> In this instance the rcu_dereference conversion doesn't make much
-> sense so we should probably just revert it.
+> > Dynamically create the kset instead of declaring it statically.
+> > This makes the kobject attributes now work properly that I broke in the
+> > previous patch.
+> > 
+> > Cc: Kay Sievers <kay.sievers@vrfy.org>
+> > Cc: Michael Holzheu <holzheu@de.ibm.com>
+> > Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+> > Cc: Volker Sameske <sameske@de.ibm.com>
+> > Cc: Cornelia Huck <cornelia.huck@de.ibm.com>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > ---
+> >  arch/s390/kernel/ipl.c |   75 +++++++++++++++++++++++++-----------------------
+> >  1 files changed, 39 insertions(+), 36 deletions(-)
+> 
+> It seems you also need this (not yet booted):
+> 
+> Fix the following warnings:
+> 
+> arch/s390/kernel/ipl.c: In function 'reipl_init':
+> arch/s390/kernel/ipl.c:981: warning: passing argument 2 of 'sysfs_create_file' from incompatible pointer type
+> arch/s390/kernel/ipl.c: In function 'dump_init':
+> arch/s390/kernel/ipl.c:1070: warning: passing argument 2 of 'sysfs_create_file' from incompatible pointer type
+> arch/s390/kernel/ipl.c: In function 'shutdown_actions_init':
+> arch/s390/kernel/ipl.c:1094: warning: passing argument 2 of 'sysfs_create_file' from incompatible pointer type
+> 
+> Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-Thank you for the info!  Stupid question #3: what sequence of events
-would the smp_read_barrier_depends() be defending against?
+Thanks, but this should go with the previous kobject_attribute cleanup
+patch, not the kset patch.  I've merged it in now.
 
-							Thanx, Paul
+thanks for the review and patch.
+
+greg k-h
