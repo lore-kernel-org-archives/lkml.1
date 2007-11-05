@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616AbXKELIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbXKELJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755616AbXKELIQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 06:08:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754076AbXKELIB
+	id S1756015AbXKELJe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 06:09:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004AbXKELJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 06:08:01 -0500
-Received: from ozlabs.org ([203.10.76.45]:41268 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754014AbXKELIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 06:08:00 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: [PULL] lguest tree
-Date: Mon, 5 Nov 2007 22:08:26 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Adrian Bunk <bunk@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       lguest <lguest@ozlabs.org>
+	Mon, 5 Nov 2007 06:09:28 -0500
+Received: from styx.suse.cz ([82.119.242.94]:42903 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753891AbXKELJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 06:09:27 -0500
+Date: Mon, 5 Nov 2007 12:09:26 +0100
+From: Jan Kara <jack@suse.cz>
+To: Olaf Dietsche <olaf+list.linux-kernel@olafdietsche.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 2.6.23: Filesystem capabilities 0.17
+Message-ID: <20071105110925.GC9561@duck.suse.cz>
+References: <871wbhc0zj.fsf@olafdietsche.de> <20071031170853.GD28809@atrey.karlin.mff.cuni.cz> <87tzo5925v.fsf@olafdietsche.de> <20071101215424.GA27788@duck.suse.cz> <87fxzp8v2c.fsf@olafdietsche.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711052208.26462.rusty@rustcorp.com.au>
+In-Reply-To: <87fxzp8v2c.fsf@olafdietsche.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Thu 01-11-07 23:22:51, Olaf Dietsche wrote:
+> Jan Kara <jack@suse.cz> writes:
+> 
+> > On Thu 01-11-07 20:49:32, Olaf Dietsche wrote:
+> >> Jan Kara <jack@suse.cz> writes:
+> >> 
+> >> >> This patch implements filesystem capabilities. It allows to
+> >> >> run privileged executables without the need for suid root.
+> >> >   Hmm, is there some "design document" so that one does not have to poke
+> >> > through the code and find out what it's actually trying to do?
+> >> 
+> >> What do you mean with "trying to do"? I thought this is obvious, it
+> >> provides executables with filesystem capabilities.
+> >   Well, yes, that was obvious but I rather meant "how is it doing it?".
+> > So where does it store these bits and such.
+> 
+> The bits are stored in a sparse file named /.capabilities in the
+> directory of the mount point, where the corresponding executable
+> lives. The inode number of the file is the index into this file.
+  Thanks for explanation. I guess I should warn you a bit :) Quota stores
+it's data (which are in a certain sence filesystem metadata) in regular
+files and believe me it brings some unexpected complexity. Especially
+avoiding deadlocks with journaled filesystems was quite complex for quotas
+(you cannot call filesystem write function when a transaction is already
+started or deadlocks can happen).
+  I guess with capabilities you need to write to the file only in some
+special situations but still you could have problems with that.
 
-	This includes Adrian's unexporting and re-staticing of futex and mm
-routines once used by lguest (no longer, with the new "virtio" model).
-
-The following changes since commit b55d1b1814c52463c11707f53dbdc223e09b2924:
-  Linus Torvalds (1):
-        Merge branch 'drm-patches' of master.kernel.org:/.../airlied/drm-2.6
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-lguest.git master
-
-Adrian Bunk (3):
-      lguest: make async_hcall() static
-      unexport access_process_vm
-      kernel/futex.c: make 3 functions static
-
-Rusty Russell (1):
-      lguest: tidy up documentation
-
- arch/x86/lguest/boot.c         |   69 +++++++++++++++++++--------------------
- include/asm-x86/lguest_hcall.h |    3 --
- include/linux/futex.h          |    4 --
- kernel/futex.c                 |   11 ++----
- mm/memory.c                    |    1 -
- 5 files changed, 38 insertions(+), 50 deletions(-)
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
