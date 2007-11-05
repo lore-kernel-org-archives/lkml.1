@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755922AbXKEXTa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755595AbXKEXXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755922AbXKEXTa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 18:19:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbXKEXTW
+	id S1755595AbXKEXXz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 18:23:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754741AbXKEXXs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 18:19:22 -0500
-Received: from hobbit.corpit.ru ([81.13.94.6]:22103 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750741AbXKEXTV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 18:19:21 -0500
-Message-ID: <472FA4F7.4090705@msgid.tls.msk.ru>
-Date: Tue, 06 Nov 2007 02:19:19 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Icedove 1.5.0.12 (X11/20070607)
-MIME-Version: 1.0
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [ANN] Squashfs 3.3 released
-References: <472EFACA.1090308@lougher.demon.co.uk>
-In-Reply-To: <472EFACA.1090308@lougher.demon.co.uk>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: id=4F9CF57E
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 5 Nov 2007 18:23:48 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52061
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754535AbXKEXXr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 18:23:47 -0500
+Date: Mon, 05 Nov 2007 15:23:47 -0800 (PST)
+Message-Id: <20071105.152347.77881497.davem@davemloft.net>
+To: gregkh@suse.de
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net
+Subject: Re: [GIT PATCH] PCI patches for 2.6.24-rc1
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071105221752.GA9509@suse.de>
+References: <20071105215601.GA4612@kroah.com>
+	<alpine.LFD.0.999.0711051410180.15101@woody.linux-foundation.org>
+	<20071105221752.GA9509@suse.de>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Phillip Lougher wrote:
-> Hi,
+From: Greg KH <gregkh@suse.de>
+Date: Mon, 5 Nov 2007 14:17:52 -0800
+
+> On Mon, Nov 05, 2007 at 02:13:58PM -0800, Linus Torvalds wrote:
+> > On Mon, 5 Nov 2007, Greg KH wrote:
+> > > 
+> > > They are a bunch of quirk updates from David Miller, a new config item
+> > > to help Jeff Garzik start to cleanup the isdn drivers and let him take
+> > > those patches through his tree, and a few other minor bugfixes.
+> > 
+> > This one is bogus:
+> > 
+> >     PCI: Revert "PCI: disable MSI by default on systems with Serverworks HT1000 chips"
+> >     
+> >     This reverts commit e3008dedff4bdc96a5f67224cd3d8d12237082a0.
+> >     
+> >     The real bug was an INTX issue in the tg3 ethernet chip, and
+> >     cured by commit c129d962a66c76964954a98b38586ada82cf9381
+> >     
+> >     Signed-off-by: David S. Miller <davem@davemloft.net>
+> >     Acked-by: Jeff Garzik <jgarzik@redhat.com>
+> >     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > 
+> > It says "cured by commit c129d962a66c76964954a98b38586ada82cf9381", but no 
+> > such commit exists. What?
+> > 
+> > Did you mean commit ba698ad4b7e466cbb4a8bde6b9da8080ab06808d, and if so, 
+> > where did that c129d.. come from?
 > 
-> I'm pleased to announce another release of Squashfs.  This is the 22nd
-> release in just over five years.
+> I'll defer to David on this one, as he sent it to me.
 
-Thanks Phillip.
+At the time I originally wrote that patch, that was the commit ID in
+my net-2.6 tree, but I rebased net-2.6 before final submittion of the
+tg3 patch and I didn't update the commit log for this patch to match.
 
-A tiny bug[fix] I always forgot to send...  In fs/squashfs/inode.c,
-constants TASK_UNINTERRUPTIBLE and TASK_INTERRUPTIBLE are used, but
-they aren't sometimes defined (declared in linux/sched.h):
-
-  CC [M]  fs/squashfs/inode.o
-fs/squashfs/inode.c: In function 'squashfs_get_cached_block':
-fs/squashfs/inode.c:367: error: 'TASK_UNINTERRUPTIBLE' undeclared (first use in this function)
-fs/squashfs/inode.c:367: error: (Each undeclared identifier is reported only once
-fs/squashfs/inode.c:367: error: for each function it appears in.)
-fs/squashfs/inode.c:367: warning: implicit declaration of function 'schedule'
-fs/squashfs/inode.c:404: error: 'TASK_INTERRUPTIBLE' undeclared (first use in this function)
-fs/squashfs/inode.c: In function 'release_cached_fragment':
-fs/squashfs/inode.c:499: error: 'TASK_UNINTERRUPTIBLE' undeclared (first use in this function)
-fs/squashfs/inode.c:499: error: 'TASK_INTERRUPTIBLE' undeclared (first use in this function)
-fs/squashfs/inode.c: In function 'get_cached_fragment':
-fs/squashfs/inode.c:522: error: 'TASK_UNINTERRUPTIBLE' undeclared (first use in this function)
-fs/squashfs/inode.c:559: error: 'TASK_INTERRUPTIBLE' undeclared (first use in this function)
-
-I'm not exactly sure which config option is "at blame"
-(this is an i486-based UP generic-hardware config), but
-I'm not interested to know, either.  The following
-trivial patch fixes it once for all.
-
---- linux-2.6.22.orig/fs/squashfs/inode.c       2007-07-12 14:57:22.000000000 +0400
-+++ linux-2.6.22/fs/squashfs/inode.c    2007-07-12 14:57:53.000000000 +0400
-@@ -31,6 +31,7 @@
- #include <linux/vfs.h>
- #include <linux/vmalloc.h>
-+#include <linux/sched.h>
- #include <linux/smp_lock.h>
-
- #include "squashfs.h"
-
-
-It was needed for v3.2 too.
-
-Thanks.
-
-/mjt
+Sorry.
