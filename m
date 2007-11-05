@@ -1,253 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757192AbXKESwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbXKES7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757192AbXKESwf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 13:52:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756715AbXKESw1
+	id S1755448AbXKES7R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 13:59:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420AbXKES7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 13:52:27 -0500
-Received: from smtp111.sbc.mail.mud.yahoo.com ([68.142.198.210]:32590 "HELO
-	smtp111.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756693AbXKESwY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 13:52:24 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=jeCiWEY8jrA0TEAUQUO87GleKLvQ+f10+iCmbriXkt6pxJ4GKWrqcGGuim3H611nyOY5KTw0Hh7uDCIyTIgNnRFmdPzO25cxa7ma4PdLGry+1usixf+suPiiJK9LVBvZGsCWOe56FWfmj2jP/tt4S0E5SyaiQ9B/lTYS8qnWhpA=  ;
-X-YMail-OSG: NiSlm8IVM1mACpBtMkyWBaasyF9THorAxt3DFXTiaKO6lvj9R7.jDofsBy7sKPvx9fnE5dwMgjpaIfy59K0ZjXNVnYG7DtMy319KKXs8YryQ67qrQ3g-
-From: David Brownell <david-b@pacbell.net>
-To: rtc-linux@googlegroups.com
-Subject: [patch 2.6.24-rc1-git] rtc-cmos exports nvram in sysfs
-Date: Mon, 5 Nov 2007 10:52:21 -0800
-User-Agent: KMail/1.9.6
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
+	Mon, 5 Nov 2007 13:59:07 -0500
+Received: from ns2.suse.de ([195.135.220.15]:53487 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751887AbXKES7E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 13:59:04 -0500
+Date: Mon, 5 Nov 2007 10:58:28 -0800
+From: Greg KH <gregkh@suse.de>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH 22/54] kset: convert /sys/devices/system to use
+	kset_create
+Message-ID: <20071105185828.GA31896@suse.de>
+References: <20071102235758.GA9803@kroah.com> <1194047972-9850-22-git-send-email-gregkh@suse.de> <20071105191109.52c07ab4@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711051052.21226.david-b@pacbell.net>
+In-Reply-To: <20071105191109.52c07ab4@gondolin.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This makes rtc-cmos export its NVRAM, like several other RTC drivers.
+On Mon, Nov 05, 2007 at 07:11:09PM +0100, Cornelia Huck wrote:
+> On Fri,  2 Nov 2007 16:59:00 -0700,
+> Greg Kroah-Hartman <gregkh@suse.de> wrote:
+> 
+> > Dynamically create the kset instead of declaring it statically.
+> > 
+> > Cc: Kay Sievers <kay.sievers@vrfy.org>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > ---
+> >  drivers/base/sys.c |   28 ++++++++++++----------------
+> >  1 files changed, 12 insertions(+), 16 deletions(-)
+> 
+> Unfortunately, at that point in the patch series reipl breaks for me :(
+> 
+> I used the following silly debug patch:
 
-It still works within the limits of the current CMOS_READ/CMOS_WRITE
-calls, which don't understand how to access multiple register banks.
-The primary impact of that limitation is that Linux can't access the
-uppermost 128 bytes of NVRAM on many systems.
+What does reipl have to do with shutdown?
 
-Note that this isn't aiming to be a drop-in replacement for the legacy
-/dev/nvram support.  (Presumably that has real users, and isn't just
-getting carried forward automatically?)  Userspace handles more work:
+> ---
+>  drivers/base/power/shutdown.c |    5 +++--
+>  1 files changed, 3 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6/drivers/base/power/shutdown.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/base/power/shutdown.c	2007-11-05 18:51:51.000000000 +0100
+> +++ linux-2.6/drivers/base/power/shutdown.c	2007-11-05 18:52:50.000000000 +0100
+> @@ -37,10 +37,11 @@ void device_shutdown(void)
+>  	list_for_each_entry_safe_reverse(dev, devn, &devices_kset->list,
+>  				kobj.entry) {
+>  		if (dev->bus && dev->bus->shutdown) {
+> -			dev_dbg(dev, "shutdown\n");
+> +			dev_dbg(dev, "shutdown (bus %s)\n", dev->bus->name);
+>  			dev->bus->shutdown(dev);
+>  		} else if (dev->driver && dev->driver->shutdown) {
+> -			dev_dbg(dev, "shutdown\n");
+> +			dev_dbg(dev, "shutdown (driver %s)\n",
+> +				dev->driver->name);
+>  			dev->driver->shutdown(dev);
+>  		}
+>  	}
+> 
+> and get as the kernel's last words:
+> 
+> <loads of sane shutdowns for the ccw and css busses>
+>     <7>io_subchannel 0.0.095c: shutdown (bus css)
+>     <7>io_subchannel 0.0.095b: shutdown (bus css)
+>     <7>io_subchannel 0.0.095a: shutdown (bus css)
+>     <7> : shutdown (bus )
+>     <1>Unable to handle kernel pointer dereference at virtual kernel address 0000000500000000
+>     <4>Oops: 003b [#1]
+>     <4>Modules linked in: dm_multipath sunrpc qeth ccwgroup dm_mod
+>     <4>CPU:    2    Not tainted
+>     <4>Process reboot (pid: 2892, task: 0000000002cae048, ksp: 00000000045c39b8)
+>     <4>Krnl PSW : 0704000180000000 0000000500000006 (0x500000006)
+>     <4>           R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:0 CC:0 PM:0 EA:3
+>     <4>Krnl GPRS: 0000000000019e75 0000000500000006 0000000002c42810 0000000002c429b0
+>     <4>           00000000002a36ec 0000000000000000 000003ffffb76d48 0000000000000160
+>     <4>           00000000001423a4 000002000015e390 00000000006e06b8 0000000000634638
+>     <4>           0000000002c42810 000000000041f670 00000000002a36fe 00000000045c3d00
+>     <4>Krnl Code: Bad PSW.
+>     <4>Call Trace:
+>     <4>([<00000000002a36ec>] device_shutdown+0x78/0x144)
+>     <4> [<000000000013f18c>] kernel_restart_prepare+0x44/0x50
+>     <4> [<000000000013f1be>] kernel_restart+0x26/0x6c
+>     <4> [<0000000000142548>] sys_reboot+0x1a4/0x1f4
+>     <4> [<0000000000111038>] sysc_noemu+0x10/0x16
+>     <4> [<00000200001048e0>] 0x200001048e0
+>     <4>
+>     <4> 
+> 
+> Huh? We want to shutdown an unknown device on a bus that wishes to stay
+> anonymous?
+> 
+> Any hints would be appreciated...
 
- - When userspace code updates NVRAM, that will need to include
-   updating any platform-specific checksums that may apply.
+I'll look into this, I wonder if we are walking off the end of an
+unterminated list...
 
- - No /proc/driver/nvram file will parse and display NVRAM data
-   according to whichever boot firmware your board expects.
+thanks,
 
-Also minor pnp-related updates: update a comment, remove dead code.
-
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-Cc: Alessandro Zummo <a.zummo@towertech.it>
----
- drivers/rtc/rtc-cmos.c |  129 ++++++++++++++++++++++++++++++++++++++++++++-----
- 1 file changed, 117 insertions(+), 12 deletions(-)
-
---- g26.orig/drivers/rtc/rtc-cmos.c	2007-11-05 09:41:51.000000000 -0800
-+++ g26/drivers/rtc/rtc-cmos.c	2007-11-05 10:42:00.000000000 -0800
-@@ -393,6 +393,80 @@ static const struct rtc_class_ops cmos_r
- 
- /*----------------------------------------------------------------*/
- 
-+/*
-+ * All these chips have at least 64 bytes of address space, shared by
-+ * RTC registers and NVRAM.  Most of those bytes of NVRAM are used
-+ * by boot firmware.  Modern chips have 128 or 256 bytes.
-+ */
-+
-+#define NVRAM_OFFSET	(RTC_REG_D + 1)
-+
-+static ssize_t
-+cmos_nvram_read(struct kobject *kobj, struct bin_attribute *attr,
-+		char *buf, loff_t off, size_t count)
-+{
-+	int	retval;
-+
-+	if (unlikely(off >= attr->size))
-+		return 0;
-+	if ((off + count) > attr->size)
-+		count = attr->size - off;
-+
-+	spin_lock_irq(&rtc_lock);
-+	for (retval = 0, off += NVRAM_OFFSET; count--; retval++, off++)
-+		*buf++ = CMOS_READ(off);
-+	spin_unlock_irq(&rtc_lock);
-+
-+	return retval;
-+}
-+
-+static ssize_t
-+cmos_nvram_write(struct kobject *kobj, struct bin_attribute *attr,
-+		char *buf, loff_t off, size_t count)
-+{
-+	struct cmos_rtc	*cmos;
-+	int		retval;
-+
-+	cmos = dev_get_drvdata(container_of(kobj, struct device, kobj));
-+	if (unlikely(off >= attr->size))
-+		return -EFBIG;
-+	if ((off + count) > attr->size)
-+		count = attr->size - off;
-+
-+	/* NOTE:  on at least PCs and Ataris, the boot firmware uses a
-+	 * checksum on part of the NVRAM data.  That's currently ignored
-+	 * here.  If userspace is smart enough to know what fields of
-+	 * NVRAM to update, updating checksums is also part of its job.
-+	 */
-+	spin_lock_irq(&rtc_lock);
-+	for (retval = 0, off += NVRAM_OFFSET; count--; retval++, off++) {
-+		/* don't trash RTC registers */
-+		if (off == cmos->day_alrm
-+				|| off == cmos->mon_alrm
-+				|| off == cmos->century)
-+			buf++;
-+		else
-+			CMOS_WRITE(*buf++, off);
-+	}
-+	spin_unlock_irq(&rtc_lock);
-+
-+	return retval;
-+}
-+
-+static struct bin_attribute nvram = {
-+	.attr = {
-+		.name	= "nvram",
-+		.mode	= S_IRUGO | S_IWUSR,
-+		.owner	= THIS_MODULE,
-+	},
-+
-+	.read	= cmos_nvram_read,
-+	.write	= cmos_nvram_write,
-+	/* size gets set up later */
-+};
-+
-+/*----------------------------------------------------------------*/
-+
- static struct cmos_rtc	cmos_rtc;
- 
- static irqreturn_t cmos_interrupt(int irq, void *p)
-@@ -412,11 +486,9 @@ static irqreturn_t cmos_interrupt(int ir
- }
- 
- #ifdef	CONFIG_PNP
--#define	is_pnp()	1
- #define	INITSECTION
- 
- #else
--#define	is_pnp()	0
- #define	INITSECTION	__init
- #endif
- 
-@@ -426,6 +498,7 @@ cmos_do_probe(struct device *dev, struct
- 	struct cmos_rtc_board_info	*info = dev->platform_data;
- 	int				retval = 0;
- 	unsigned char			rtc_control;
-+	unsigned			address_space;
- 
- 	/* there can be only one ... */
- 	if (cmos_rtc.dev)
-@@ -450,15 +523,36 @@ cmos_do_probe(struct device *dev, struct
- 	cmos_rtc.irq = rtc_irq;
- 	cmos_rtc.iomem = ports;
- 
-+	/* Heuristic to deduce NVRAM size ... do what the legacy NVRAM
-+	 * driver did, but don't reject unknown configs.   Old hardware
-+	 * won't address 128 bytes, and for now we ignore the way newer
-+	 * chips can address 256 bytes (using two more i/o ports).
-+	 */
-+#if	defined(CONFIG_ATARI)
-+	address_space = 64;
-+#elif defined(__i386__) || defined(__x86_64__) || defined(__arm__)
-+	address_space = 128;
-+#else
-+#warning Assuming 128 bytes of RTC+NVRAM address space, not 64 bytes.
-+	address_space = 128;
-+#endif
-+
- 	/* For ACPI systems extension info comes from the FADT.  On others,
- 	 * board specific setup provides it as appropriate.  Systems where
- 	 * the alarm IRQ isn't automatically a wakeup IRQ (like ACPI, and
- 	 * some almost-clones) can provide hooks to make that behave.
-+	 *
-+	 * Note that ACPI doesn't preclude putting these registers into
-+	 * "extended" areas of the chip, including some that we won't yet
-+	 * expect CMOS_READ and friends to handle.
- 	 */
- 	if (info) {
--		cmos_rtc.day_alrm = info->rtc_day_alarm;
--		cmos_rtc.mon_alrm = info->rtc_mon_alarm;
--		cmos_rtc.century = info->rtc_century;
-+		if (info->rtc_day_alarm && info->rtc_day_alarm < 128)
-+			cmos_rtc.day_alrm = info->rtc_day_alarm;
-+		if (info->rtc_mon_alarm && info->rtc_mon_alarm < 128)
-+			cmos_rtc.mon_alrm = info->rtc_mon_alarm;
-+		if (info->rtc_century && info->rtc_century < 128)
-+			cmos_rtc.century = info->rtc_century;
- 
- 		if (info->wake_on && info->wake_off) {
- 			cmos_rtc.wake_on = info->wake_on;
-@@ -518,10 +612,13 @@ cmos_do_probe(struct device *dev, struct
- 		goto cleanup1;
- 	}
- 
--	/* REVISIT optionally make 50 or 114 bytes NVRAM available,
--	 * like rtc-ds1553, rtc-ds1742 ... this will often include
--	 * registers for century, and day/month alarm.
--	 */
-+	/* export at least the first block of NVRAM */
-+	nvram.size = address_space - NVRAM_OFFSET;
-+	retval = sysfs_create_bin_file(&dev->kobj, &nvram);
-+	if (retval < 0) {
-+		dev_dbg(dev, "can't create nvram file? %d\n", retval);
-+		goto cleanup2;
-+	}
- 
- 	pr_info("%s: alarms up to one %s%s\n",
- 			cmos_rtc.rtc->dev.bus_id,
-@@ -536,6 +633,9 @@ cmos_do_probe(struct device *dev, struct
- 
- 	return 0;
- 
-+cleanup2:
-+	if (is_valid_irq(rtc_irq))
-+		free_irq(rtc_irq, cmos_rtc.rtc);
- cleanup1:
- 	cmos_rtc.dev = NULL;
- 	rtc_device_unregister(cmos_rtc.rtc);
-@@ -563,6 +663,8 @@ static void __exit cmos_do_remove(struct
- 
- 	cmos_do_shutdown();
- 
-+	sysfs_remove_bin_file(&dev->kobj, &nvram);
-+
- 	if (is_valid_irq(cmos->irq))
- 		free_irq(cmos->irq, cmos->rtc);
- 
-@@ -659,9 +761,12 @@ static int cmos_resume(struct device *de
- 
- /*----------------------------------------------------------------*/
- 
--/* The "CMOS" RTC normally lives on the platform_bus.  On ACPI systems,
-- * the device node will always be created as a PNPACPI device.  Plus
-- * pre-ACPI PCs probably list it in the PNPBIOS tables.
-+/* On non-x86 systems, a "CMOS" RTC lives most naturally on platform_bus.
-+ * ACPI systems always list these as PNPACPI devices, and pre-ACPI PCs
-+ * probably list them in similar PNPBIOS tables; so PNP is more common.
-+ *
-+ * We don't use legacy "poke at the hardware" probing.  Ancient PCs that
-+ * predate even PNPBIOS should set up platform_bus devices.
-  */
- 
- #ifdef	CONFIG_PNP
+greg k-h
