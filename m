@@ -1,85 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756544AbXKEKvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756704AbXKEKvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756544AbXKEKvj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 05:51:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbXKEKvb
+	id S1756704AbXKEKvz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 05:51:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754550AbXKEKvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 05:51:31 -0500
-Received: from ic0245.upco.es ([130.206.70.245]:56200 "EHLO
-	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754225AbXKEKva (ORCPT
+	Mon, 5 Nov 2007 05:51:46 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:59445 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754225AbXKEKvp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 05:51:30 -0500
-Subject: Re: 2.6.34-rc1 eat my photo SD card :-(
-From: Romano Giannetti <romanol@upcomillas.es>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, linux-kernel@vger.kernel.org
-In-Reply-To: <ada8x5ec7oh.fsf@cisco.com>
-References: <1193918202.8439.7.camel@rukbat>
-	 <20071102182833.2c055446@poseidon.drzeus.cx>
-	 <1194168583.10245.15.camel@rukbat>  <ada8x5ec7oh.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: Mon, 05 Nov 2007 11:51:26 +0100
-Message-Id: <1194259886.6927.9.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 8bit
+	Mon, 5 Nov 2007 05:51:45 -0500
+Date: Mon, 5 Nov 2007 11:51:44 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Marco Costalba <mcostalba@gmail.com>, Sam Ravnborg <sam@ravnborg.org>
+cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: duplicated include files
+In-Reply-To: <e5bfff550711041141h612a24cdrcdb5baa35907989d@mail.gmail.com>
+Message-ID: <Pine.LNX.4.62.0711051146070.28623@pademelon.sonytel.be>
+References: <e5bfff550711041141h612a24cdrcdb5baa35907989d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1137589070-1194259861=:28623"
+Content-ID: <Pine.LNX.4.62.0711051151320.28623@pademelon.sonytel.be>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-On Sun, 2007-11-04 at 08:11 -0800, Roland Dreier wrote:
-> I had something similar recently, trying to access an SD card in the
-> internal drive of my thinkpad X60.  Fortunately, the data wasn't
-> actually corrupted, but when I tried to copy the picture files off the
-> card, I saw garbage filenames in the picture directory, [...]
+---584337861-1137589070-1194259861=:28623
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.62.0711051151321.28623@pademelon.sonytel.be>
 
-> When I put the same card back in the camera and used the camera's dock
-> to access the data via USB mass storage, everything worked fine.  So
-> it does seem to be at least somewhat MMC-related.
+On Sun, 4 Nov 2007, Marco Costalba wrote:
+> make includecheck does not work for me. Linux tree is from latest git.
+> 
+> bash-3.2$ pwd
+> /git/linux-2.6
+> 
+> bash-3.2$ make includecheck
+> find * \( -name SCCS -o -name BitKeeper -o -name .svn -o -name CVS -o
+> -name .pc -o -name .hg -o -name .git \) -prune -o \
+>                 -name '*.[hcS]' -type f -print | sort \
+>                 | xargs perl -w scripts/checkincludes.pl
+> Can't open perl script "scripts/checkincludes.pl": No such file or directory
+> make[1]: *** [includecheck] Error 123
+> make: *** [sub-make] Error 2
+> 
+> bash-3.2$ ls scripts/checkincludes.pl
+> scripts/checkincludes.pl
 
-It is reproducible for me, too, with the 128Mbyte card. Full logs are
-here:
+Are you building in a different tree than the source tree? The patch below
+fixed it for me.
 
-http://www.dea.icai.upcomillas.es/romano/linux/info/lk2624-rc1-mmc2/
+Question: Why don't GENKSYMS and KALLSYMS need the $(srctree) prefix?
+---
+Subject: kbuild: Add missing srctree prefix for includecheck and versioncheck
 
-a rapid grep shows at boot: 
+Add missing $(srctree)/ prefix for scripts used by the includecheck and
+versioncheck make targets
 
-Nov  5 08:45:40 rukbat kernel: [   26.538165] sr0: scsi3-mmc drive: 24x/24x writer dvd-ram cd/rw xa/form2 cdda tray
-Nov  5 08:45:40 rukbat kernel: [   38.456554] PM: Adding info for No Bus:mmc0
-Nov  5 08:45:40 rukbat kernel: [   38.456634] mmc0: SDHCI at 0xd0100800 irq 16 DMA
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+ Makefile |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-and when loading the card: 
+--- a/Makefile
++++ b/Makefile
+@@ -1414,12 +1414,12 @@ tags: FORCE
+ includecheck:
+ 	find * $(RCS_FIND_IGNORE) \
+ 		-name '*.[hcS]' -type f -print | sort \
+-		| xargs $(PERL) -w scripts/checkincludes.pl
++		| xargs $(PERL) -w $(srctree)/scripts/checkincludes.pl
+ 
+ versioncheck:
+ 	find * $(RCS_FIND_IGNORE) \
+ 		-name '*.[hcS]' -type f -print | sort \
+-		| xargs $(PERL) -w scripts/checkversion.pl
++		| xargs $(PERL) -w $(srctree)/scripts/checkversion.pl
+ 
+ namespacecheck:
+ 	$(PERL) $(srctree)/scripts/namespace.pl
 
-Nov  5 09:21:14 rukbat kernel: [ 1632.002723] mmc0: new SD card at address e32f
-Nov  5 09:21:14 rukbat kernel: [ 1632.002947] PM: Adding info for mmc:mmc0:e32f
-Nov  5 09:21:14 rukbat kernel: [ 1632.024011] mmcblk0: mmc0:e32f SD128 123008KiB 
-Nov  5 09:21:14 rukbat kernel: [ 1632.025327]  mmcblk0: p1
-Nov  5 09:21:15 rukbat hald: mounted /dev/mmcblk0p1 on behalf of uid 1153
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
 
-(I've trimmed away the spam by NetworkManager). 
-
-and opening the folder in Nautilus:
-
-Nov  5 09:21:43 rukbat kernel: [ 1654.235333] FAT: Filesystem panic (dev mmcblk0p1)
-Nov  5 09:21:43 rukbat kernel: [ 1654.235893] FAT: Filesystem panic (dev mmcblk0p1)
-Nov  5 09:21:43 rukbat kernel: [ 1654.235915] mmcblk0p1: rw=0, want=575135, limit=245919
-...ad libitum.
-
-and it's definitely a regression, the card is read under 2.6.23. I've
-not a lot of time in my hands now, but maybe the next weekend I can try
-a bisection...
-
-Romano 
-
-
-
--- 
-Sorry for the disclaimer ---  cannot stop it!
-
-
-
---
-La presente comunicaci髇 tiene car醕ter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribuci髇, reproducci髇 o uso de esta comunicaci髇 y/o de la informaci髇 contenida en la misma est醤 estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicaci髇 por error, por favor, notif韖uelo inmediatamente al remitente contestando a este mensaje y proceda a continuaci髇 a destruirlo. Gracias por su colaboraci髇.
-
-This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
+Sony Network and Software Technology Center Europe
+The Corporate Village 路 Da Vincilaan 7-D1 路 B-1935 Zaventem 路 Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 路 B-1840 Londerzeel 路 Belgium	
+VAT BE 0413.825.160 路 RPR Brussels	
+Fortis Bank Zaventem 路 Swift GEBABEBB08A 路 IBAN BE39001382358619
+---584337861-1137589070-1194259861=:28623--
