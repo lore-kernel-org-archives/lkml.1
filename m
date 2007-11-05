@@ -1,108 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbXKES7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756485AbXKETAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755448AbXKES7R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 13:59:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420AbXKES7H
+	id S1756485AbXKETAT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 14:00:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753795AbXKETAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 13:59:07 -0500
-Received: from ns2.suse.de ([195.135.220.15]:53487 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751887AbXKES7E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 13:59:04 -0500
-Date: Mon, 5 Nov 2007 10:58:28 -0800
-From: Greg KH <gregkh@suse.de>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH 22/54] kset: convert /sys/devices/system to use
-	kset_create
-Message-ID: <20071105185828.GA31896@suse.de>
-References: <20071102235758.GA9803@kroah.com> <1194047972-9850-22-git-send-email-gregkh@suse.de> <20071105191109.52c07ab4@gondolin.boeblingen.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071105191109.52c07ab4@gondolin.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 5 Nov 2007 14:00:08 -0500
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:35045 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754153AbXKETAG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 14:00:06 -0500
+Date: Mon, 5 Nov 2007 19:59:50 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 34/54] Driver Core: add kobj_attribute handling
+Message-ID: <20071105195950.604ea56f@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <1194287971.2174.27.camel@lov.site>
+References: <20071102235758.GA9803@kroah.com>
+	<1194047972-9850-34-git-send-email-gregkh@suse.de>
+	<20071105134203.1c078136@gondolin.boeblingen.de.ibm.com>
+	<1194279812.6771.11.camel@lov.site>
+	<20071105171133.GD12843@suse.de>
+	<1194283540.2174.8.camel@lov.site>
+	<20071105184350.0a1cd957@gondolin.boeblingen.de.ibm.com>
+	<1194286070.2174.14.camel@lov.site>
+	<20071105191705.5f2baaaa@gondolin.boeblingen.de.ibm.com>
+	<1194287971.2174.27.camel@lov.site>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.1.0-rc1 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 05, 2007 at 07:11:09PM +0100, Cornelia Huck wrote:
-> On Fri,  2 Nov 2007 16:59:00 -0700,
-> Greg Kroah-Hartman <gregkh@suse.de> wrote:
-> 
-> > Dynamically create the kset instead of declaring it statically.
-> > 
-> > Cc: Kay Sievers <kay.sievers@vrfy.org>
-> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > ---
-> >  drivers/base/sys.c |   28 ++++++++++++----------------
-> >  1 files changed, 12 insertions(+), 16 deletions(-)
-> 
-> Unfortunately, at that point in the patch series reipl breaks for me :(
-> 
-> I used the following silly debug patch:
+On Mon, 05 Nov 2007 19:39:31 +0100,
+Kay Sievers <kay.sievers@vrfy.org> wrote:
 
-What does reipl have to do with shutdown?
+> Where are the objects that join this kset? A kset is a "collection of
+> objects of a similar type", If there are no objects, you don't need a
+> kset at all, I guess, but just a plain directory. :)
 
-> ---
->  drivers/base/power/shutdown.c |    5 +++--
->  1 files changed, 3 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6/drivers/base/power/shutdown.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/base/power/shutdown.c	2007-11-05 18:51:51.000000000 +0100
-> +++ linux-2.6/drivers/base/power/shutdown.c	2007-11-05 18:52:50.000000000 +0100
-> @@ -37,10 +37,11 @@ void device_shutdown(void)
->  	list_for_each_entry_safe_reverse(dev, devn, &devices_kset->list,
->  				kobj.entry) {
->  		if (dev->bus && dev->bus->shutdown) {
-> -			dev_dbg(dev, "shutdown\n");
-> +			dev_dbg(dev, "shutdown (bus %s)\n", dev->bus->name);
->  			dev->bus->shutdown(dev);
->  		} else if (dev->driver && dev->driver->shutdown) {
-> -			dev_dbg(dev, "shutdown\n");
-> +			dev_dbg(dev, "shutdown (driver %s)\n",
-> +				dev->driver->name);
->  			dev->driver->shutdown(dev);
->  		}
->  	}
-> 
-> and get as the kernel's last words:
-> 
-> <loads of sane shutdowns for the ccw and css busses>
->     <7>io_subchannel 0.0.095c: shutdown (bus css)
->     <7>io_subchannel 0.0.095b: shutdown (bus css)
->     <7>io_subchannel 0.0.095a: shutdown (bus css)
->     <7> : shutdown (bus )
->     <1>Unable to handle kernel pointer dereference at virtual kernel address 0000000500000000
->     <4>Oops: 003b [#1]
->     <4>Modules linked in: dm_multipath sunrpc qeth ccwgroup dm_mod
->     <4>CPU:    2    Not tainted
->     <4>Process reboot (pid: 2892, task: 0000000002cae048, ksp: 00000000045c39b8)
->     <4>Krnl PSW : 0704000180000000 0000000500000006 (0x500000006)
->     <4>           R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:0 CC:0 PM:0 EA:3
->     <4>Krnl GPRS: 0000000000019e75 0000000500000006 0000000002c42810 0000000002c429b0
->     <4>           00000000002a36ec 0000000000000000 000003ffffb76d48 0000000000000160
->     <4>           00000000001423a4 000002000015e390 00000000006e06b8 0000000000634638
->     <4>           0000000002c42810 000000000041f670 00000000002a36fe 00000000045c3d00
->     <4>Krnl Code: Bad PSW.
->     <4>Call Trace:
->     <4>([<00000000002a36ec>] device_shutdown+0x78/0x144)
->     <4> [<000000000013f18c>] kernel_restart_prepare+0x44/0x50
->     <4> [<000000000013f1be>] kernel_restart+0x26/0x6c
->     <4> [<0000000000142548>] sys_reboot+0x1a4/0x1f4
->     <4> [<0000000000111038>] sysc_noemu+0x10/0x16
->     <4> [<00000200001048e0>] 0x200001048e0
->     <4>
->     <4> 
-> 
-> Huh? We want to shutdown an unknown device on a bus that wishes to stay
-> anonymous?
-> 
-> Any hints would be appreciated...
+Yes, ipl.c looks a lot like "we need a subdirectory under /sys/firmware/
+and need to jump through hoops to get it there".
 
-I'll look into this, I wonder if we are walking off the end of an
-unterminated list...
+> Anyway, seems we need an easy way to pass default attributes to ksets
+> and plain directories. If userspace should set some values here when a
+> subsystems creates the its sysfs representation, we must make sure, that
+> the attributes exist at the time the event is sent, otherwise we will
+> run into all sorts of timing problems.
 
-thanks,
-
-greg k-h
+Maybe they need something like device->uevent_suppress, but at the
+kobject level?
