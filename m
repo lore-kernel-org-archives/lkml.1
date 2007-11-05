@@ -1,55 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755434AbXKELPB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755777AbXKELTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755434AbXKELPB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 06:15:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbXKELOw
+	id S1755777AbXKELTA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 06:19:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbXKELSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 06:14:52 -0500
-Received: from mail.station1.mxsweep.com ([212.147.136.149]:4860 "EHLO
-	iamp04-out.mxsweep.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751273AbXKELOv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 06:14:51 -0500
-Message-ID: <472EFA1F.8040003@draigBrady.com>
-Date: Mon, 5 Nov 2007 11:10:23 +0000
-From: =?ISO-8859-1?Q?P=E1draig_Brady?= <P@draigBrady.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
+	Mon, 5 Nov 2007 06:18:53 -0500
+Received: from nic2.axis.se ([193.13.178.10]:43192 "EHLO krynn.se.axis.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752881AbXKELSw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 06:18:52 -0500
+Date: Mon, 5 Nov 2007 12:18:39 +0100
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Mikael Starvik <mikael.starvik@axis.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] CRISv10 serial driver rewrite
+Message-ID: <20071105111839.GI7621@axis.com>
+References: <20071102093432.GD7621@axis.com> <472AFE4D.5030308@gmail.com>
 MIME-Version: 1.0
-To: Alberto Gonzalez <info@gnebu.es>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Laptop's HDD
-References: <200711040002.25784.info@gnebu.es>
-In-Reply-To: <200711040002.25784.info@gnebu.es>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 05 Nov 2007 11:13:01.0244 (UTC) FILETIME=[D403D7C0:01C81F9C]
-x-MXSweep-CtasdSpam: Unknown
-x-MXSweep-CtasdVirus: Unknown
-x-MXSweep-KeywordsCount: 0
-x-MXPurifier-SpamScore: 0
-x-MXPurifier-VirusScore: 0
-X-MXUniqueID: 2dda4b87-929c-457a-aeca-9753e9ea0b9a
-X-MXSweep-Threat: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <472AFE4D.5030308@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alberto Gonzalez wrote:
-> Hi,
+On Fri, Nov 02, 2007 at 11:39:09AM +0100, Jiri Slaby wrote:
+> On 11/02/2007 10:34 AM, Jesper Nilsson wrote:
+> > @@ -4434,7 +3941,7 @@ block_til_ready(struct tty_struct *tty, struct file * filp,
+> >  	if (tty_hung_up_p(filp) ||
+> >  	    (info->flags & ASYNC_CLOSING)) {
+> >  		if (info->flags & ASYNC_CLOSING)
+> > -			interruptible_sleep_on(&info->close_wait);
+> > +			wait_event_interruptible(info->close_wait, 0);
 > 
-> Maybe some of you have been hearing lately about a problem with laptop's hard 
-> disk drives being killed by *insert Linux distro here* [1]
+> Aiee, this is nonsense, 0 will never be 1, only signal will stop this, use
+> completion instead.
 
-I asked about this on the fedora devel list:
-http://www.redhat.com/archives/fedora-devel-list/2007-October/msg02324.html
+True, I've changed it to use "!info->flags & ASYNC_CLOSING" condition
+for now, as this is a more non-intrusive patch.
+I will look at using completion later, at the same time as using
+spinlocks instead of volatiles.
 
-I don't think the kernel should worry about this.
-I don't even think distros should change the default settings of the BIOS/disk.
+> You maybe want to create a function for this deinit invoked from
+> more places in the new code.
 
-Up to and including Fedora 7 on my laptop, the disk did a load cycle
-on average once every 48 seconds. Mounting the filesystems noatime changed this
-to once every 108 seconds, which is a little aggressive still but not too bad.
+Good idea, I've done that too for the new patch.
 
-Note fedora 8 will have the relatime option on by default for all filesystems.
+> >  static int __init
+> > @@ -4812,7 +4418,26 @@ rs_init(void)
+> >  #if !defined(CONFIG_ETRAX_SERIAL_FAST_TIMER)
+> >  	init_timer(&flush_timer);
+> >  	flush_timer.function = timed_flush_handler;
+> 
+> Side note, this should be setup_timer without accessing .function.
 
-Pádraig.
+Also excellent point, have done so.
+
+> > -	if (request_irq(SERIAL_IRQ_NBR, ser_interrupt, IRQF_SHARED | IRQF_DISABLED, "serial ", NULL))
+> > -		panic("irq8");
+> > +	if (request_irq(SERIAL_IRQ_NBR, ser_interrupt,
+> > +			IRQF_SHARED | IRQF_DISABLED, "serial ", driver))
+> > +		panic("%s: Failed to request irq8", __FUNCTION__);
+> 
+> Is the panic needed here? Can't the cris architecture live without the driver?
+
+There are some differing opinions on that here, it should probably not
+reach this unless there is a configuration error, and so it more like
+a debug-help. I'll put this on the "to clarify" list.
+
+> > +	u8 dma_out_enabled:1;	/* Set to 1 if DMA should be used */
+> > +	u8 dma_in_enabled:1;	/* Set to 1 if DMA should be used */
+> 
+> bitfileds generate ugly code.
+
+Agreed, I've changed them to u8 instead. The space saving is
+not worth the aggravation.
+
+> > +	volatile int		tr_running; /* 1 if output is running */
+> 
+> What's the volatile for here? atomic_t?
+
+The driver uses old volatile style synchronization. Changing over
+to spinlocks is like I mentioned on my todo-list.
+
+> > +#ifdef DECLARE_WAITQUEUE
+> > +	wait_queue_head_t	open_wait;
+> > +	wait_queue_head_t	close_wait;
+> > +#else
+> > +	struct wait_queue	*open_wait;
+> > +	struct wait_queue	*close_wait;
+> > +#endif
+> 
+> We know, we have it, don't we?
+
+True, old compatibility code, removed in the new patch.
+
+> Jiri Slaby (jirislaby@gmail.com)
+> Faculty of Informatics, Masaryk University
+
+Thanks for all the comments!
+
+/^JN - Jesper Nilsson
+--
+               Jesper Nilsson -- jesper.nilsson@axis.com
