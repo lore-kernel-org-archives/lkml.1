@@ -1,211 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755047AbXKEFlz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755544AbXKEGLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755047AbXKEFlz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 00:41:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbXKEFlr
+	id S1755544AbXKEGLk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 01:11:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbXKEGLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 00:41:47 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55706 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751087AbXKEFlr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 00:41:47 -0500
-Date: Mon, 5 Nov 2007 14:38:15 +0900
-From: Kyungmin Park <kyungmin.park@samsung.com>
-To: linux-omap-open-source@linux.omap.com, LKML <linux-kernel@vger.kernel.org>
-Cc: David Brownell <david-b@pacbell.net>, Tony Lindgren <tony@atomide.com>
-Subject: USB device DMA support on OMAP2
-Message-ID: <20071105053815.GA2036@party>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 5 Nov 2007 01:11:32 -0500
+Received: from ozlabs.org ([203.10.76.45]:54710 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751170AbXKEGLc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 01:11:32 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [RFC PATCH 1/2] sg_ring instead of scatterlist chaining
+Date: Mon, 5 Nov 2007 17:11:55 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Paul Mackerras <paulus@samba.org>, Boaz Harrosh <bharrosh@panasas.com>,
+       Jens Axboe <jens.axboe@oracle.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>, mingo@elte.hu
+References: <1193076664-13652-10-git-send-email-jens.axboe@oracle.com> <18209.29891.911465.715995@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0710260742140.30120@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0710260742140.30120@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200711051711.55364.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current omap udc dosen't support the DMA mode
-and it has some problem at setup time on OMAP2 with previous patch file.
-I found that the code assumes bulk out required the big data transfer.
-But MODE SELECT(6) sent the only 24 bytes. it makes a problem.
-So I implement the small packets handling for it.
+Hi all,
 
-It is tested with both linux and windows.
+	This patch implements a header for a linked list of scatterlist
+ arrays, rather than using an extra entry and low pointer bits to chain them
+together.  I've tested that it's sane for virtio (which uses struct
+scatterlist).
 
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
----
-diff --git a/drivers/usb/gadget/omap_udc.c b/drivers/usb/gadget/omap_udc.c
-index 983337e..9719f08 100644
---- a/drivers/usb/gadget/omap_udc.c
-+++ b/drivers/usb/gadget/omap_udc.c
-@@ -4,6 +4,8 @@
-  * Copyright (C) 2004 Texas Instruments, Inc.
-  * Copyright (C) 2004-2005 David Brownell
-  *
-+ * OMAP2 & DMA support by Kyungmin Park <kyungmin.park@samsung.com>
+Features:
+1) Neatens code by including length in structure.
+2) Avoids end ambiguity by including maximum length too.
+3) Works fine with old "sg is an array" interfaces.
+4) Kinda icky for stack declaration, so hence a helper is created.
+5) Lacks magic.
+
+I reverted (most of?) the scatterlist chaining changes to create these
+patches, so it won't apply to your kernels.  The reversion patch isn't
+interesting, so I haven't posted it.
+
+Thanks,
+Rusty.
+
+diff --git a/include/linux/scatterlist.h b/include/linux/scatterlist.h
+index 4efbd9c..ce7e581 100644
+--- a/include/linux/scatterlist.h
++++ b/include/linux/scatterlist.h
+@@ -5,6 +5,51 @@
+ #include <linux/mm.h>
+ #include <linux/string.h>
+ 
++/**
++ * struct sg_ring - a ring of scatterlists
++ * @list: the list_head chaining them together
++ * @num: the number of valid sg entries
++ * @max: the maximum number of sg entries (size of the sg array).
++ * @sg: the array of scatterlist entries.
 + *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
-  * the Free Software Foundation; either version 2 of the License, or
-@@ -60,11 +62,6 @@
- /* bulk DMA seems to be behaving for both IN and OUT */
- #define	USE_DMA
- 
--/* FIXME: OMAP2 currently has some problem in DMA mode */
--#ifdef CONFIG_ARCH_OMAP2
--#undef USE_DMA
--#endif
--
- /* ISO too */
- #define	USE_ISO
- 
-@@ -73,6 +70,8 @@
- 
- #define	DMA_ADDR_INVALID	(~(dma_addr_t)0)
- 
-+#define OMAP2_DMA_CH(ch)	(((ch) - 1) << 1)
-+#define OMAP24XX_DMA(name, ch)	(OMAP24XX_DMA_##name + OMAP2_DMA_CH(ch))
- 
- /*
-  * The OMAP UDC needs _very_ early endpoint setup:  before enabling the
-@@ -571,20 +570,25 @@ static void next_in_dma(struct omap_ep *ep, struct omap_req *req)
- 	const int	sync_mode = cpu_is_omap15xx()
- 				? OMAP_DMA_SYNC_FRAME
- 				: OMAP_DMA_SYNC_ELEMENT;
-+	int		dma_trigger = 0;
++ * This provides a convenient encapsulation of one or more scatter gather
++ * arrays. */
++struct sg_ring
++{
++	struct list_head list;
++	unsigned int num, max;
++	struct scatterlist sg[0];
++};
 +
-+	if (cpu_is_omap24xx())
-+		dma_trigger = OMAP24XX_DMA(USB_W2FC_TX0, ep->dma_channel);
- 
- 	/* measure length in either bytes or packets */
- 	if ((cpu_is_omap16xx() && length <= UDC_TXN_TSC)
-+			|| (cpu_is_omap24xx() && length < ep->maxpacket)
- 			|| (cpu_is_omap15xx() && length < ep->maxpacket)) {
- 		txdma_ctrl = UDC_TXN_EOT | length;
- 		omap_set_dma_transfer_params(ep->lch, OMAP_DMA_DATA_TYPE_S8,
--				length, 1, sync_mode, 0, 0);
-+				length, 1, sync_mode, dma_trigger, 0);
- 	} else {
- 		length = min(length / ep->maxpacket,
- 				(unsigned) UDC_TXN_TSC + 1);
- 		txdma_ctrl = length;
- 		omap_set_dma_transfer_params(ep->lch, OMAP_DMA_DATA_TYPE_S16,
- 				ep->ep.maxpacket >> 1, length, sync_mode,
--				0, 0);
-+				dma_trigger, 0);
- 		length *= ep->maxpacket;
- 	}
- 	omap_set_dma_src_params(ep->lch, OMAP_DMA_PORT_EMIFF,
-@@ -622,20 +626,31 @@ static void finish_in_dma(struct omap_ep *ep, struct omap_req *req, int status)
- 
- static void next_out_dma(struct omap_ep *ep, struct omap_req *req)
++/* This helper declares an sg ring on the stack or in a struct. */
++#define DECLARE_SG(name, max)			\
++	struct {				\
++		struct sg_ring ring;		\
++		struct scatterlist sg[max];	\
++	} name
++
++/**
++ * sg_ring_init - initialize a scatterlist ring.
++ * @sg: the sg_ring.
++ * @max: the size of the trailing sg array.
++ *
++ * After initialization sg is alone in the ring. */
++static inline void sg_ring_init(struct sg_ring *sg, unsigned int max)
++{
++	INIT_LIST_HEAD(&sg->list);
++	sg->max = max;
++}
++
++/**
++ * sg_ring_next - next array in a scatterlist ring.
++ * @sg: the sg_ring.
++ *
++ * After initialization sg is alone in the ring. */
++static inline struct sg_ring *sg_ring_next(struct sg_ring *sg)
++{
++	return list_first_entry(&sg->list, struct sg_ring, list);
++}
++
+ static inline void sg_set_buf(struct scatterlist *sg, const void *buf,
+ 			      unsigned int buflen)
  {
--	unsigned packets;
-+	unsigned packets = req->req.length - req->req.actual;
-+	int dma_trigger = 0;
+@@ -20,4 +65,20 @@ static inline void sg_init_one(struct scatterlist *sg, const void *buf,
+ 	sg_set_buf(sg, buf, buflen);
+ }
+ 
++/**
++ * sg_init_single - initialize a one-element scatterlist ring.
++ * @sg: the sg_ring.
++ * @buf: the pointer to the buffer.
++ * @buflen: the length of the buffer.
++ *
++ * Does sg_ring_init and also sets up first (and only) sg element. */
++static inline void sg_init_single(struct sg_ring *sg,
++				  const void *buf,
++				  unsigned int buflen)
++{
++	sg_ring_init(sg, 1);
++	sg->num = 1;
++	sg_init_one(&sg->sg[0], buf, buflen);
++}
 +
-+	if (cpu_is_omap24xx())
-+		dma_trigger = OMAP24XX_DMA(USB_W2FC_RX0, ep->dma_channel);
- 
- 	/* NOTE:  we filtered out "short reads" before, so we know
- 	 * the buffer has only whole numbers of packets.
-+	 * except MODE SELECT(6) sent the 24 bytes data in OMAP24XX DMA mode
- 	 */
--
--	/* set up this DMA transfer, enable the fifo, start */
--	packets = (req->req.length - req->req.actual) / ep->ep.maxpacket;
--	packets = min(packets, (unsigned)UDC_RXN_TC + 1);
--	req->dma_bytes = packets * ep->ep.maxpacket;
--	omap_set_dma_transfer_params(ep->lch, OMAP_DMA_DATA_TYPE_S16,
--			ep->ep.maxpacket >> 1, packets,
--			OMAP_DMA_SYNC_ELEMENT,
--			0, 0);
-+	if (cpu_is_omap24xx() && packets < ep->maxpacket) {
-+		omap_set_dma_transfer_params(ep->lch, OMAP_DMA_DATA_TYPE_S8,
-+				packets, 1, OMAP_DMA_SYNC_ELEMENT,
-+				dma_trigger, 0);
-+		req->dma_bytes = packets;
-+	} else {
-+		/* set up this DMA transfer, enable the fifo, start */
-+		packets /= ep->ep.maxpacket;
-+		packets = min(packets, (unsigned)UDC_RXN_TC + 1);
-+		req->dma_bytes = packets * ep->ep.maxpacket;
-+		omap_set_dma_transfer_params(ep->lch, OMAP_DMA_DATA_TYPE_S16,
-+				ep->ep.maxpacket >> 1, packets,
-+				OMAP_DMA_SYNC_ELEMENT,
-+				dma_trigger, 0);
-+	}
- 	omap_set_dma_dest_params(ep->lch, OMAP_DMA_PORT_EMIFF,
- 		OMAP_DMA_AMODE_POST_INC, req->req.dma + req->req.actual,
- 		0, 0);
-@@ -743,6 +758,7 @@ static void dma_channel_claim(struct omap_ep *ep, unsigned channel)
- {
- 	u16	reg;
- 	int	status, restart, is_in;
-+	int	dma_channel;
- 
- 	is_in = ep->bEndpointAddress & USB_DIR_IN;
- 	if (is_in)
-@@ -769,11 +785,15 @@ static void dma_channel_claim(struct omap_ep *ep, unsigned channel)
- 	ep->dma_channel = channel;
- 
- 	if (is_in) {
--		status = omap_request_dma(OMAP_DMA_USB_W2FC_TX0 - 1 + channel,
-+		if (cpu_is_omap24xx())
-+			dma_channel = OMAP24XX_DMA(USB_W2FC_TX0, channel);
-+		else
-+			dma_channel = OMAP_DMA_USB_W2FC_TX0 - 1 + channel;
-+		status = omap_request_dma(dma_channel,
- 			ep->ep.name, dma_error, ep, &ep->lch);
- 		if (status == 0) {
- 			UDC_TXDMA_CFG_REG = reg;
--			/* EMIFF */
-+			/* EMIFF or SDRC */
- 			omap_set_dma_src_burst_mode(ep->lch,
- 						OMAP_DMA_DATA_BURST_4);
- 			omap_set_dma_src_data_pack(ep->lch, 1);
-@@ -785,7 +805,12 @@ static void dma_channel_claim(struct omap_ep *ep, unsigned channel)
- 				0, 0);
- 		}
- 	} else {
--		status = omap_request_dma(OMAP_DMA_USB_W2FC_RX0 - 1 + channel,
-+		if (cpu_is_omap24xx())
-+			dma_channel = OMAP24XX_DMA(USB_W2FC_RX0, channel);
-+		else
-+			dma_channel = OMAP_DMA_USB_W2FC_RX0 - 1 + channel;
-+
-+		status = omap_request_dma(dma_channel,
- 			ep->ep.name, dma_error, ep, &ep->lch);
- 		if (status == 0) {
- 			UDC_RXDMA_CFG_REG = reg;
-@@ -795,7 +820,7 @@ static void dma_channel_claim(struct omap_ep *ep, unsigned channel)
- 				OMAP_DMA_AMODE_CONSTANT,
- 				(unsigned long) io_v2p((u32)&UDC_DATA_DMA_REG),
- 				0, 0);
--			/* EMIFF */
-+			/* EMIFF or SDRC */
- 			omap_set_dma_dest_burst_mode(ep->lch,
- 						OMAP_DMA_DATA_BURST_4);
- 			omap_set_dma_dest_data_pack(ep->lch, 1);
-@@ -808,7 +833,7 @@ static void dma_channel_claim(struct omap_ep *ep, unsigned channel)
- 		omap_disable_dma_irq(ep->lch, OMAP_DMA_BLOCK_IRQ);
- 
- 		/* channel type P: hw synch (fifo) */
--		if (!cpu_is_omap15xx())
-+		if (cpu_class_is_omap1() && !cpu_is_omap15xx())
- 			OMAP1_DMA_LCH_CTRL_REG(ep->lch) = 2;
- 	}
- 
-@@ -926,11 +951,13 @@ omap_ep_queue(struct usb_ep *_ep, struct usb_request *_req, gfp_t gfp_flags)
- 
- 	/* this isn't bogus, but OMAP DMA isn't the only hardware to
- 	 * have a hard time with partial packet reads...  reject it.
-+	 * Except OMAP2 can handle the small packets.
- 	 */
- 	if (use_dma
- 			&& ep->has_dma
- 			&& ep->bEndpointAddress != 0
- 			&& (ep->bEndpointAddress & USB_DIR_IN) == 0
-+			&& !cpu_class_is_omap2()
- 			&& (req->req.length % ep->ep.maxpacket) != 0) {
- 		DBG("%s, no partial packet OUT reads\n", __FUNCTION__);
- 		return -EMSGSIZE;
+ #endif /* _LINUX_SCATTERLIST_H */
