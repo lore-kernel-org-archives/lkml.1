@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756267AbXKEMHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbXKEMYH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756267AbXKEMHn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 07:07:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754346AbXKEMHg
+	id S1756076AbXKEMYH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 07:24:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754368AbXKEMXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 07:07:36 -0500
-Received: from ro-out-1112.google.com ([72.14.202.177]:10604 "EHLO
-	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754140AbXKEMHe (ORCPT
+	Mon, 5 Nov 2007 07:23:52 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:39534 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753877AbXKEMXu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 07:07:34 -0500
+	Mon, 5 Nov 2007 07:23:50 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:mime-version:content-type:content-disposition:user-agent;
-        b=P50yhkUvsES79+CIJADvKyWJ8pv6dFtRtFNo22wFtIguajvvXVyrROwWMxTddm2DLu7a0noPHfdaFVW5fLo0CJSrOISf8KapCnyzVxv4FrN4FS71QrmuBiqA2MoWoALvDRHWqZHpx3lB4OtnWwjjs6Et18WRkT52rowQQFZma5c=
-Date: Mon, 5 Nov 2007 20:06:14 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kbuild@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>
-Subject: [Git Patch][Resend] Makefile: fix wrong dirs when making cscope
-Message-ID: <20071105120614.GA8245@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=lBot3A2pc0pogJ0wM+6BzdN4oLsWJg5UGxmKds6viMCbNd9TdiGteHrb4y0rO8hXNrtTrSo8G422mwsJ0RvgvWEFGESrl7UcMOVTK0z37dY3l7xMZx7i28xvY6B4HiF6GFVjHYe1tAh1vAJcS312Txxw/VvJnYej7X7QiRjEtb0=
+Message-ID: <84144f020711050423r7a1f0e55g36c8c5ad29bfc700@mail.gmail.com>
+Date: Mon, 5 Nov 2007 14:23:50 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: RFC: Reproducible oops with lockdep on count_matching_names()
+Cc: "Michael Buesch" <mb@bu3sch.de>, "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       "Michael Wu" <flamingice@sourmilk.net>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       "Ingo Molnar" <mingo@redhat.com>,
+       "Johannes Berg" <johannes@sipsolutions.net>,
+       linux-kernel@vger.kernel.org, "Michael Chan" <mchan@broadcom.com>,
+       netdev@vger.kernel.org, "Christoph Lameter" <clameter@sgi.com>
+In-Reply-To: <1194264016.27652.428.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+References: <20071101191716.GA3201@pogo> <1194001120.27652.353.camel@twins>
+	 <43e72e890711031258g4ccd9cd0hc4520e9473f6ce49@mail.gmail.com>
+	 <200711032106.56569.mb@bu3sch.de> <1194264016.27652.428.camel@twins>
+X-Google-Sender-Auth: f052747249068b3a
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Michael,
 
-Hi, Sam! Is this one OK for you?
+On Sat, 2007-11-03 at 21:06 +0100, Michael Buesch wrote:
+> Who is responsible for slab btw?
+> I mean, someone should be interested in getting this bug fixed. :)
+> When using slab I see random corruptions. I think related to rmmod, but
+> I'm not sure. I don't see this with slub.
 
-This patch fixed the following errors when doing "make cscope" and
-"make cscope ARCH=um".
+Is CONFIG_DEBUG_SLAB enabled? Usually these kind of random corruptions
+are caused by someone passing a bad pointer to kfree() or
+kmem_cache_free().
 
-  FILELST cscope.files
-find: arch/i386: No such file or directory
-  MAKE    cscope.out
-
-
-  FILELST cscope.files
-find: include/asm-i386: No such file or directory
-  MAKE    cscope.out
-
-
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-
----
- Makefile |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/Makefile b/Makefile
-index 188c3b6..7bc0bf7 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1309,6 +1309,7 @@ ALLINCLUDE_ARCHS := $(ARCH) $(SUBARCH)
- else
- ALLINCLUDE_ARCHS := $(SRCARCH)
- endif
-+ALLINCLUDE_ARCHS := $(shell echo $(ALLINCLUDE_ARCHS)|sed -e "s/i386/x86/")
- else
- #Allow user to specify only ALLSOURCE_PATHS on the command line, keeping existing behavour.
- ALLINCLUDE_ARCHS := $(ALLSOURCE_ARCHS)
-@@ -1318,7 +1319,7 @@ endif
- ifeq ($(ARCH), $(SRCARCH))
- ALLSOURCE_ARCHS := $(ARCH)
- else
--ALLSOURCE_ARCHS := $(ARCH) $(SRCARCH)
-+ALLSOURCE_ARCHS := $(shell echo $(ARCH) $(SRCARCH)|sed -e "s/i386/x86/")
- endif
- 
- define find-sources
+                                  Pekka
