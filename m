@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbXKEIMv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755306AbXKEI1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755907AbXKEIMv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 03:12:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753451AbXKEIMo
+	id S1755306AbXKEI1a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 03:27:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbXKEI1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 03:12:44 -0500
-Received: from ro-out-1112.google.com ([72.14.202.182]:58634 "EHLO
-	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753434AbXKEIMn (ORCPT
+	Mon, 5 Nov 2007 03:27:21 -0500
+Received: from adicia.telenet-ops.be ([195.130.132.56]:44274 "EHLO
+	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752318AbXKEI1U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 03:12:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=el2qnpkOJe+YR8etJwLiVDCrwGelWxYLS1eLfMhrgHAWHlioPrkTivDAEVrlLhVSToc0ECi4SjgxvtWr8cOz2G1EgWjubnpJYPL2Kg3x8W0z/8tWpgWm5SfL5RKvp50E83kKXBbXa8mODUrzuV5K3HICGRRawhaTVmiBbUCPPfM=
-Date: Mon, 5 Nov 2007 16:11:44 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: WANG Cong <xiyou.wangcong@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-kbuild@vger.kernel.org, Andrew Morton <akpm@osdl.org>
-Subject: Re: [git Patch] Makefile: Remove ncscope.out when make mrproper
-Message-ID: <20071105081144.GE2461@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <20071105073233.GC2461@hacking> <20071105074137.GA26540@uranus.ravnborg.org>
+	Mon, 5 Nov 2007 03:27:20 -0500
+Date: Mon, 5 Nov 2007 09:27:16 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: duplicated include files
+In-Reply-To: <Pine.LNX.4.64.0711041229580.27153@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0711050924420.6173@anakin>
+References: <Pine.LNX.4.64.0711041229580.27153@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071105074137.GA26540@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 05, 2007 at 08:41:37AM +0100, Sam Ravnborg wrote:
+On Sun, 4 Nov 2007, Robert P. J. Day wrote:
+>   given the recent patches to remove duplicated #include preprocessor
+> directives in source files, let it be known that there are a number of
+> them:
+> 
+>   http://www.crashcourse.ca/wiki/index.php/Duplicate_include_files
+> 
+> help yourself.
 
-<snip>
+Thanks!
 
->
->Hi WANG.
->
->ncscope.out is just a temporary file but I see why you like to have it covered.
+drivers/scsi/gvp11.c is a false positive, as it includes "gvp11.h" once
+without HOSTS_C defined and once with.
 
-Thanks. ;)
+drivers/scsi/mvme147.c looks similar, but "mvme147.h" does not check for
+HOSTS_C (anymore?).
 
->How about modifying the rule to look like this:
->> -		  Module.symvers tags TAGS cscope*
->> +		  Module.symvers tags TAGS *cscope*
->
->Or is this to broad a pattern?
->
->	Sam
+But both need a cleanup anyway...
 
-Yes, that is better. New patch below.
+Gr{oetje,eeting}s,
 
+						Geert
 
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
----
-Index: linux-2.6/Makefile
-===================================================================
---- linux-2.6.orig/Makefile
-+++ linux-2.6/Makefile
-@@ -1073,7 +1073,7 @@ MRPROPER_DIRS  += include/config include
- MRPROPER_FILES += .config .config.old include/asm .version .old_version \
-                   include/linux/autoconf.h include/linux/version.h      \
-                   include/linux/utsrelease.h                            \
--		  Module.symvers tags TAGS cscope*
-+		  Module.symvers tags TAGS *cscope*
- 
- # clean - Delete most, but leave enough to build external modules
- #
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
