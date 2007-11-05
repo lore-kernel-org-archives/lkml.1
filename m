@@ -1,61 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755692AbXKEDuq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755723AbXKED4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755692AbXKEDuq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 22:50:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbXKEDuj
+	id S1755723AbXKED4s (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 22:56:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753858AbXKED4l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 22:50:39 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:35230 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753159AbXKEDui (ORCPT
+	Sun, 4 Nov 2007 22:56:41 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:49060 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753196AbXKED4l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 22:50:38 -0500
-Date: Sun, 4 Nov 2007 22:49:12 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Marco Costalba <mcostalba@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: duplicated include files
-In-Reply-To: <472E53D0.2000204@goop.org>
-Message-ID: <Pine.LNX.4.64.0711042248220.30791@localhost.localdomain>
-References: <e5bfff550711041141h612a24cdrcdb5baa35907989d@mail.gmail.com>
- <e5bfff550711041143i7be3cff7kd4903ed43cb4e232@mail.gmail.com>
- <Pine.LNX.4.64.0711041447330.6072@localhost.localdomain> <472E53D0.2000204@goop.org>
+	Sun, 4 Nov 2007 22:56:41 -0500
+Date: Sun, 4 Nov 2007 19:58:55 -0800
+From: Greg KH <greg@kroah.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: device struct bloat
+Message-ID: <20071105035855.GA25511@kroah.com>
+References: <20071103124823.6059640e@shemminger-laptop> <1194208158.5911.63.camel@lappy>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1194208158.5911.63.camel@lappy>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 Nov 2007, Jeremy Fitzhardinge wrote:
+On Sun, Nov 04, 2007 at 09:29:18PM +0100, Peter Zijlstra wrote:
+> 
+> On Sat, 2007-11-03 at 12:48 -0700, Stephen Hemminger wrote:
+> > The sizeof(struct device) is way too big, especially in the network device case.
+> > We want to support 1000's of device's and the change from class_device to
+> > net_device has caused needless bloat.
+> > 
+> > sizeof(struct device) = 272
+> > sizeof(struct class_device) = 92
+> >   * not the class_id in class_device could also be removed or changed to
+> >      a ptr, since it is redundant for net_devices.
+> 
+> The thing that surprised me most was that it contains a struct
+> semaphore, Greg, is that really needed?
 
-> Robert P. J. Day wrote:
-> > actually, one wonders if there's any value in keeping any references
-> > to other version control systems such as subversion, SCCS, CVS,
-> > mercurial, etc.
->
-> What do you mean by "other"?  git doesn't have a monopoly, and the
-> kernel should support people using a reasonable set of version
-> control systems.  Supporting VSS would be strange, but nothing wrong
-> with the set you listed, if people find those systems useful.  It's
-> not like it amounts to a huge amount of effort to do so.
+Yes, it serializes bind and unbind stuff for the device.  There are
+comments about it in drivers/base/dd.c if you want to look into it.
 
-you're right, my mistake, i was just caught up in a git-centered
-perspective.
+thanks,
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+greg k-h
