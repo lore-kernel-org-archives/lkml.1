@@ -1,83 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbXKDXzI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbXKDX5G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755399AbXKDXzI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 18:55:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867AbXKDXy5
+	id S1755533AbXKDX5G (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 18:57:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbXKDX4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 18:54:57 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:60796 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751893AbXKDXy4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 18:54:56 -0500
-Message-ID: <472E5B0F.7000805@zytor.com>
-Date: Sun, 04 Nov 2007 15:51:43 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Sun, 4 Nov 2007 18:56:55 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:33080 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753110AbXKDX4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Nov 2007 18:56:54 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: bcm43xx-dev@lists.berlios.de
+Subject: b43 on HP nx6325 w/ openSUSE 10.3 (x86_64)
+Date: Mon, 5 Nov 2007 01:13:54 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Michael Buesch <mb@bu3sch.de>, LKML <linux-kernel@vger.kernel.org>,
+       Larry Finger <larry.finger@lwfinger.net>,
+       Stefano Brivio <stefano.brivio@polimi.it>
 MIME-Version: 1.0
-To: Mikael Pettersson <mikpe@it.uu.se>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix i486 boot failure due to stale %ds
-References: <200711042158.lA4Lwv9S014628@harpo.it.uu.se> <472E50C5.5020201@goop.org>
-In-Reply-To: <472E50C5.5020201@goop.org>
-Content-Type: multipart/mixed;
- boundary="------------030203000106090103050806"
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711050113.55591.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030203000106090103050806
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi,
 
-Mikael, can you try this patch (rev 3) on your 486?
+I'm trying to make the b43 driver work on an HP nx6325 with openSUSE 10.3
+(64-bit).  In short, it sort of works, but some things are a bit ugly.
 
-	-hpa
+The kernel is the current -git (approx. 2.6.24-rc1-git13) with the following
+extra patches applied:
 
---------------030203000106090103050806
-Content-Type: text/plain;
- name="diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="diff"
+b43: Fix rfkill callback deadlock
+b43: debugfs SHM read buffer overrun fix
+b43: Rewrite and fix rfkill init
 
-diff --git a/arch/x86/boot/pmjump.S b/arch/x86/boot/pmjump.S
-index 2e55923..d93a0c2 100644
---- a/arch/x86/boot/pmjump.S
-+++ b/arch/x86/boot/pmjump.S
-@@ -28,17 +28,21 @@
-  * void protected_mode_jump(u32 entrypoint, u32 bootparams);
-  */
- protected_mode_jump:
--	xorl	%ebx, %ebx		# Flag to indicate this is a boot
- 	movl	%edx, %esi		# Pointer to boot_params table
--	movl	%eax, 2f		# Patch ljmpl instruction
-+	movl	%eax, 3f		# Patch ljmpl instruction
- 	jmp	1f			# Short jump to flush instruction q.
--
- 1:
-+
- 	movw	$__BOOT_DS, %cx
-+	xorl	%ebx, %ebx		# Per protocol
-+	xorl	%ebp, %ebp		# Per protocol
-+	xorl	%edi, %edi		# Per protocol
- 
- 	movl	%cr0, %edx
- 	orb	$1, %dl			# Protected mode (PE) bit
- 	movl	%edx, %cr0
-+	jmp	2f			# Short jump to serialize
-+2:
- 
- 	movw	%cx, %ds
- 	movw	%cx, %es
-@@ -48,7 +52,7 @@ protected_mode_jump:
- 
- 	# Jump to the 32-bit entrypoint
- 	.byte	0x66, 0xea		# ljmpl opcode
--2:	.long	0			# offset
-+3:	.long	0			# offset
- 	.word	__BOOT_CS		# segment
- 
- 	.size	protected_mode_jump, .-protected_mode_jump
+and I'm using the firmware from
+http://downloads.openwrt.org/sources/broadcom-wl-4.80.53.0.tar.bz2
 
---------------030203000106090103050806--
+Here's the debug info from dmesg:
+
+b43-phy1: Broadcom 4311 WLAN found
+b43-phy1 debug: Found PHY: Analog 4, Type 2, Revision 8
+b43-phy1 debug: Found Radio: Manuf 0x17F, Version 0x2050, Revision 2
+b43-phy1 debug: Loading firmware version 351.126 (2006-07-29 05:54:02)
+Registered led device: b43-phy1:tx
+Registered led device: b43-phy1:rx
+b43-phy1 debug: Chip initialized
+b43-phy1 debug: 32-bit DMA initialized
+b43-phy1 debug: Wireless interface started
+b43-phy1 debug: Adding Interface type 2
+
+Now, the first problem is that the card seems to lose frames from time to
+time.  This is visible in the output of mtr and while trying to transfer large
+files using scp.  With scp the transfer just stalls and stays this way although
+the other end is pingable etc. (eg. attempting to transfer more than 400 MB at
+once triggers this 100% of the time).
+
+If you can suggest some more specific tests to me, I'll run them and report
+back.
+
+The second problem is that YaST is apparently unable to detect the device,
+which sort of sucks, because it leads to configuration problems (basically, you
+need to set up everything manually).  Evidently, udev manages to handle it, so
+this may be related to HAL.  Anyway, it looks like the problem is related to
+the fact that the device is not present under /sys/bus/pci/devices/ directly,
+but you need to go through the ssb0:0 subdirectory to get to it.
+
+Do you have any ideas how to tell the user space stuff where the devices is
+in sysfs?
+
+Greetings,
+Rafael
