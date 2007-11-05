@@ -1,106 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755777AbXKELTA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755781AbXKELYN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755777AbXKELTA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 06:19:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbXKELSx
+	id S1755781AbXKELYN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 06:24:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754223AbXKELX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 06:18:53 -0500
-Received: from nic2.axis.se ([193.13.178.10]:43192 "EHLO krynn.se.axis.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752881AbXKELSw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 06:18:52 -0500
-Date: Mon, 5 Nov 2007 12:18:39 +0100
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mikael Starvik <mikael.starvik@axis.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] CRISv10 serial driver rewrite
-Message-ID: <20071105111839.GI7621@axis.com>
-References: <20071102093432.GD7621@axis.com> <472AFE4D.5030308@gmail.com>
+	Mon, 5 Nov 2007 06:23:57 -0500
+Received: from anchor-post-32.mail.demon.net ([194.217.242.90]:4005 "EHLO
+	anchor-post-32.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754014AbXKELX4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 06:23:56 -0500
+X-Greylist: delayed 642 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Nov 2007 06:23:56 EST
+Message-ID: <472EFACA.1090308@lougher.demon.co.uk>
+Date: Mon, 05 Nov 2007 11:13:14 +0000
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <472AFE4D.5030308@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [ANN] Squashfs 3.3 released
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 02, 2007 at 11:39:09AM +0100, Jiri Slaby wrote:
-> On 11/02/2007 10:34 AM, Jesper Nilsson wrote:
-> > @@ -4434,7 +3941,7 @@ block_til_ready(struct tty_struct *tty, struct file * filp,
-> >  	if (tty_hung_up_p(filp) ||
-> >  	    (info->flags & ASYNC_CLOSING)) {
-> >  		if (info->flags & ASYNC_CLOSING)
-> > -			interruptible_sleep_on(&info->close_wait);
-> > +			wait_event_interruptible(info->close_wait, 0);
-> 
-> Aiee, this is nonsense, 0 will never be 1, only signal will stop this, use
-> completion instead.
+Hi,
 
-True, I've changed it to use "!info->flags & ASYNC_CLOSING" condition
-for now, as this is a more non-intrusive patch.
-I will look at using completion later, at the same time as using
-spinlocks instead of volatiles.
+I'm pleased to announce another release of Squashfs.  This is the 22nd
+release in just over five years.  Squashfs 3.3 has lots of nice improvements,
+both to the filesystem itself (bigger blocks and sparse files), but
+also to the Squashfs-tools Mksquashfs and Unsquashfs.
 
-> You maybe want to create a function for this deinit invoked from
-> more places in the new code.
+The next stage after this release is to fix the one remaining blocking issue
+(filesystem endianness), and then try to get Squashfs mainlined into the
+Linux kernel again.
 
-Good idea, I've done that too for the new patch.
+The list of changes from the change-log are as follows:
 
-> >  static int __init
-> > @@ -4812,7 +4418,26 @@ rs_init(void)
-> >  #if !defined(CONFIG_ETRAX_SERIAL_FAST_TIMER)
-> >  	init_timer(&flush_timer);
-> >  	flush_timer.function = timed_flush_handler;
-> 
-> Side note, this should be setup_timer without accessing .function.
+1. Filesystem improvements:
 
-Also excellent point, have done so.
+    1.1. Maximum block size has been increased to 1Mbyte, and the
+         default block size has been increased to 128 Kbytes.
+         This improves compression.
 
-> > -	if (request_irq(SERIAL_IRQ_NBR, ser_interrupt, IRQF_SHARED | IRQF_DISABLED, "serial ", NULL))
-> > -		panic("irq8");
-> > +	if (request_irq(SERIAL_IRQ_NBR, ser_interrupt,
-> > +			IRQF_SHARED | IRQF_DISABLED, "serial ", driver))
-> > +		panic("%s: Failed to request irq8", __FUNCTION__);
-> 
-> Is the panic needed here? Can't the cris architecture live without the driver?
+    1.2. Sparse files are now supported.  Sparse files are files
+         which have large areas of unallocated data commonly called
+         holes.  These files are now detected by Squashfs and stored
+         more efficiently.  This improves compression and read
+         performance for sparse files.
 
-There are some differing opinions on that here, it should probably not
-reach this unless there is a configuration error, and so it more like
-a debug-help. I'll put this on the "to clarify" list.
+2. Mksquashfs improvements:
 
-> > +	u8 dma_out_enabled:1;	/* Set to 1 if DMA should be used */
-> > +	u8 dma_in_enabled:1;	/* Set to 1 if DMA should be used */
-> 
-> bitfileds generate ugly code.
+    2.1.  Exclude files have been extended to use wildcard pattern
+          matching and regular expressions.  Support has also been
+          added for non-anchored excludes, which means it is
+          now possible to specify excludes which match anywhere
+          in the filesystem (i.e. leaf files), rather than always
+          having to specify exclude files starting from the root
+          directory (anchored excludes).
 
-Agreed, I've changed them to u8 instead. The space saving is
-not worth the aggravation.
+    2.2.  Recovery files are now created when appending to existing
+          Squashfs filesystems.  This allows the original filesystem
+          to be recovered if Mksquashfs aborts unexpectedly
+          (i.e. power failure).
 
-> > +	volatile int		tr_running; /* 1 if output is running */
-> 
-> What's the volatile for here? atomic_t?
+3. Unsquashfs improvements:
 
-The driver uses old volatile style synchronization. Changing over
-to spinlocks is like I mentioned on my todo-list.
+     3.1. Multiple extract files can now be specified on the
+          command line, and the files/directories to be extracted can
+          now also be given in a file.
 
-> > +#ifdef DECLARE_WAITQUEUE
-> > +	wait_queue_head_t	open_wait;
-> > +	wait_queue_head_t	close_wait;
-> > +#else
-> > +	struct wait_queue	*open_wait;
-> > +	struct wait_queue	*close_wait;
-> > +#endif
-> 
-> We know, we have it, don't we?
+     3.2. Extract files have been extended to use wildcard pattern
+          matching and regular expressions.
 
-True, old compatibility code, removed in the new patch.
+     3.3. Filename printing has been enhanced and Unquashfs can
+          now display filenames with file attributes
+          ('ls -l' style output).
 
-> Jiri Slaby (jirislaby@gmail.com)
-> Faculty of Informatics, Masaryk University
+     3.4. A -stat option has been added which displays the filesystem
+          superblock information.
 
-Thanks for all the comments!
+     3.5. Unsquashfs now supports 1.x filesystems.
 
-/^JN - Jesper Nilsson
---
-               Jesper Nilsson -- jesper.nilsson@axis.com
+4. Miscellaneous improvements/bug fixes:
+
+    4.1. Squashfs kernel code improved to use SetPageError in
+         squashfs_readpage() if I/O error occurs.
+
+    4.2. Fixed Squashfs kernel code bug preventing file
+         seeking beyond 2GB.
+
+    4.3. Mksquashfs now detects file size changes between
+         first phase directory scan and second phase filesystem create.
+
+Regards
+
+Phillip Lougher
