@@ -1,105 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbXKESLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754582AbXKESMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754737AbXKESLe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 13:11:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbXKESL0
+	id S1754582AbXKESMz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 13:12:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752045AbXKESMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 13:11:26 -0500
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:64831 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752700AbXKESLZ (ORCPT
+	Mon, 5 Nov 2007 13:12:48 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:59226 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751087AbXKESMr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 13:11:25 -0500
-Date: Mon, 5 Nov 2007 19:11:09 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH 22/54] kset: convert /sys/devices/system to use
- kset_create
-Message-ID: <20071105191109.52c07ab4@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <1194047972-9850-22-git-send-email-gregkh@suse.de>
-References: <20071102235758.GA9803@kroah.com>
-	<1194047972-9850-22-git-send-email-gregkh@suse.de>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.1.0-rc1 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Nov 2007 13:12:47 -0500
+Date: Mon, 5 Nov 2007 10:07:37 -0800
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Linux 2.6.22.12
+Message-ID: <20071105180736.GA28562@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri,  2 Nov 2007 16:59:00 -0700,
-Greg Kroah-Hartman <gregkh@suse.de> wrote:
+We (the -stable team) are announcing the release of the 2.6.22.12 kernel.
+It fixes a number of reported bugs, and any user of the 2.6.22 series is
+encouraged to upgrade.
 
-> Dynamically create the kset instead of declaring it statically.
-> 
-> Cc: Kay Sievers <kay.sievers@vrfy.org>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> ---
->  drivers/base/sys.c |   28 ++++++++++++----------------
->  1 files changed, 12 insertions(+), 16 deletions(-)
+I'll also be replying to this message with a copy of the patch between
+2.6.22.11 and 2.6.22.12
 
-Unfortunately, at that point in the patch series reipl breaks for me :(
+The updated 2.6.22.y git tree can be found at:
+        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.22.y.git
+and can be browsed at the normal kernel.org git web browser:
+        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.22.y.git;a=summary
 
-I used the following silly debug patch:
+thanks,
 
----
- drivers/base/power/shutdown.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+greg k-h
 
-Index: linux-2.6/drivers/base/power/shutdown.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/shutdown.c	2007-11-05 18:51:51.000000000 +0100
-+++ linux-2.6/drivers/base/power/shutdown.c	2007-11-05 18:52:50.000000000 +0100
-@@ -37,10 +37,11 @@ void device_shutdown(void)
- 	list_for_each_entry_safe_reverse(dev, devn, &devices_kset->list,
- 				kobj.entry) {
- 		if (dev->bus && dev->bus->shutdown) {
--			dev_dbg(dev, "shutdown\n");
-+			dev_dbg(dev, "shutdown (bus %s)\n", dev->bus->name);
- 			dev->bus->shutdown(dev);
- 		} else if (dev->driver && dev->driver->shutdown) {
--			dev_dbg(dev, "shutdown\n");
-+			dev_dbg(dev, "shutdown (driver %s)\n",
-+				dev->driver->name);
- 			dev->driver->shutdown(dev);
- 		}
- 	}
+--------
 
-and get as the kernel's last words:
+ Makefile                             |    2 -
+ arch/i386/kernel/io_apic.c           |    7 +++--
+ arch/x86_64/kernel/io_apic.c         |    7 +++--
+ arch/x86_64/mm/init.c                |    5 ---
+ arch/x86_64/mm/pageattr.c            |    9 +++++-
+ drivers/infiniband/core/uverbs_cmd.c |    8 ++++-
+ drivers/md/dm-exception-store.c      |   48 +++++++++++++++++++++++++++++++----
+ fs/minix/itree_v1.c                  |    9 +++++-
+ fs/minix/itree_v2.c                  |    9 +++++-
+ include/linux/bootmem.h              |    1 
+ kernel/irq/chip.c                    |    5 ---
+ kernel/irq/resend.c                  |    7 ++++-
+ kernel/params.c                      |    8 +++++
+ mm/sparse.c                          |   11 --------
+ 14 files changed, 95 insertions(+), 41 deletions(-)
 
-<loads of sane shutdowns for the ccw and css busses>
-    <7>io_subchannel 0.0.095c: shutdown (bus css)
-    <7>io_subchannel 0.0.095b: shutdown (bus css)
-    <7>io_subchannel 0.0.095a: shutdown (bus css)
-    <7> : shutdown (bus )
-    <1>Unable to handle kernel pointer dereference at virtual kernel address 0000000500000000
-    <4>Oops: 003b [#1]
-    <4>Modules linked in: dm_multipath sunrpc qeth ccwgroup dm_mod
-    <4>CPU:    2    Not tainted
-    <4>Process reboot (pid: 2892, task: 0000000002cae048, ksp: 00000000045c39b8)
-    <4>Krnl PSW : 0704000180000000 0000000500000006 (0x500000006)
-    <4>           R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:0 CC:0 PM:0 EA:3
-    <4>Krnl GPRS: 0000000000019e75 0000000500000006 0000000002c42810 0000000002c429b0
-    <4>           00000000002a36ec 0000000000000000 000003ffffb76d48 0000000000000160
-    <4>           00000000001423a4 000002000015e390 00000000006e06b8 0000000000634638
-    <4>           0000000002c42810 000000000041f670 00000000002a36fe 00000000045c3d00
-    <4>Krnl Code: Bad PSW.
-    <4>Call Trace:
-    <4>([<00000000002a36ec>] device_shutdown+0x78/0x144)
-    <4> [<000000000013f18c>] kernel_restart_prepare+0x44/0x50
-    <4> [<000000000013f1be>] kernel_restart+0x26/0x6c
-    <4> [<0000000000142548>] sys_reboot+0x1a4/0x1f4
-    <4> [<0000000000111038>] sysc_noemu+0x10/0x16
-    <4> [<00000200001048e0>] 0x200001048e0
-    <4>
-    <4> 
+Summary of changes from v2.6.22.11 to v2.6.22.12
+================================================
 
-Huh? We want to shutdown an unknown device on a bus that wishes to stay
-anonymous?
+Dave Young (1):
+      param_sysfs_builtin memchr argument fix
 
-Any hints would be appreciated...
+Eric Sandeen (1):
+      minixfs: limit minixfs printks on corrupted dir i_size (CVE-2006-6058)
+
+Greg Kroah-Hartman (1):
+      Linux 2.6.22.12
+
+Ingo Molnar (1):
+      x86: fix global_flush_tlb() bug
+
+Linus Torvalds (1):
+      Revert "x86_64: allocate sparsemem memmap above 4G"
+
+Milan Broz (1):
+      dm snapshot: fix invalidation deadlock
+
+Roland Dreier (1):
+      IB/uverbs: Fix checking of userspace object ownership
+
+Thomas Gleixner (3):
+      genirq: cleanup mismerge artifact
+      genirq: suppress resend of level interrupts
+      genirq: mark io_apic level interrupts to avoid resend
+
