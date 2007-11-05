@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbXKEG3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754273AbXKEGbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756110AbXKEG3h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 01:29:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbXKEG33
+	id S1754273AbXKEGbw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 01:31:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbXKEGbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 01:29:29 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:42178 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751170AbXKEG32 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 01:29:28 -0500
-Date: Mon, 5 Nov 2007 06:29:26 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: linux-kernel@vger.kernel.org
-cc: dri-devel@lists.sourceforge.net
-Subject: [PATCH series] DRM memory manager core
-Message-ID: <Pine.LNX.4.64.0711050612110.8487@skynet.skynet.ie>
+	Mon, 5 Nov 2007 01:31:45 -0500
+Received: from wx-out-0506.google.com ([66.249.82.229]:6521 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751089AbXKEGbo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 01:31:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=HOz6shpACWmFmp5COezSWLUSe0GbD9WHttN4FXnd9P0bcyj7LP3Rb6OUDTfJLHeq1rG8pmlQLHJ4KT9GLgF+X+L+QPfjbmSn4jp96ujCcTUrB8rAwY0UGraP/debKx2xQKIsDn8LGrcPFH7d7/8BWyy9Tf29D/WyB9YQ9X+SJCk=
+Message-ID: <9c9fda240711042231s1f698683o20eb5332879d3ec5@mail.gmail.com>
+Date: Mon, 5 Nov 2007 15:31:43 +0900
+From: "Kyungmin Park" <kmpark@infradead.org>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: USB device DMA support on OMAP2
+Cc: linux-omap-open-source@linux.omap.com, linux-kernel@vger.kernel.org,
+       kyungmin.park@samsung.com, tony@atomide.com
+In-Reply-To: <20071105062408.46E6423CA67@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071105053815.GA2036@party>
+	 <20071105062408.46E6423CA67@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+X-Google-Sender-Auth: 31541f5475dd229b
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 11/5/07, David Brownell <david-b@pacbell.net> wrote:
+> > The current omap udc dosen't support the DMA mode
+>
+> It most certainly does!!  I think you it has DMA issues on OMAP2.
+>
 
-Hi all,
+Ah, Yes, OMAP1 supports the DMA mode. It means the OMAP2 DMA support.
 
-These patches are the first set of patches containing the core components 
-of the DRI memory manger from Tungsten Graphics.
+>
+> > and it has some problem at setup time on OMAP2 with previous patch file.
+> > I found that the code assumes bulk out required the big data transfer.
+> > But MODE SELECT(6) sent the only 24 bytes. it makes a problem.
+> > So I implement the small packets handling for it.
+> >
+> > It is tested with both linux and windows.
+> >
+> > Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+>
+> I'll have a look at it, thanks.
+>
+> Is this aginst the linux-omap tree, or current kernel.org code?
+> (There _shouldn't_ be any differences, but I've not checked in
+> some time now and such issues do creep in from time to time.)
+>
 
-At least one patch is too big for the list, and I spent a lot of time
-getting the separation even to this level...
+There's some difference related with double buffering.
+It's against the latest kernel code. I checked it.
 
-the patches are here:
-http://people.freedesktop.org/~airlied/ttm/
-
-What is this?
-The DRI memory manager is a new unified memory manager for GPUs initially
-targetted at Intel Integrated devices.
-http://www.tungstengraphics.com/wiki/index.php/TTM_Memory_Manager
-
-What's changed recently?
-
-The major thrust of recent work has been to try and stabilise the memory 
-manager API (ioctls) such that we believe they are supportable going 
-forward. Thomas Hellstrom (TG), Eric Anholt (Intel) and me (Red Hat), have 
-worked to create a cleaner API that we believe should provide the 
-functionality we need from a GPU memory manager going forward. We have 
-focused on the API as this is set in stone once we merge the code into a 
-stable kernel.
-
-What are in these patches?
-The patches contain the changes to the core DRM infrastructure to add 
-support for fencing and buffer objects. It doesn't contain the AGP backend 
-or the i915 driver which will be posted later.
-
-Issues raised previously:
-1. use of proc - drm already uses proc so until all of the drm moves out 
-of proc, no point adding a whole new interface just for one info file.
-2. heuristic for memory limiting. - Users can allocate a lot of locked 
-memory using the GPU memory manager this is required for graphics 
-applications. The current code just imposes a limit worked out from the 
-amount of low memory. We have talked to benh about trying to solve this in 
-a generic way along with SPU.
-3. style - yes the code should nearly all be kernel style, and I don't 
-think it introduces any new compat wrappers or anything for ppl to give 
-out about (except maybe the memory limiter).
-
-I think its about time we merged this code, it is in an area of the 
-kernel wholly self-contained and mostly maintained by me, and adds a 
-feature that allows userspace graphics to leverage features of graphics 
-cards that only the binary vendors have done up until now.
-
-Dave.
-
+Thank you,
+Kyungmin Park
