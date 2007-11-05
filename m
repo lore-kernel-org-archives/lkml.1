@@ -1,397 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754849AbXKESQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755272AbXKESR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754849AbXKESQV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 13:16:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbXKESQD
+	id S1755272AbXKESR2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 13:17:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbXKESRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 13:16:03 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:58861 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751024AbXKESQA (ORCPT
+	Mon, 5 Nov 2007 13:17:20 -0500
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:56371 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753414AbXKESRT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 13:16:00 -0500
-Date: Mon, 5 Nov 2007 10:08:52 -0800
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.22.12
-Message-ID: <20071105180852.GA28628@kroah.com>
-References: <20071105180736.GA28562@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071105180736.GA28562@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 5 Nov 2007 13:17:19 -0500
+Date: Mon, 5 Nov 2007 19:17:05 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 34/54] Driver Core: add kobj_attribute handling
+Message-ID: <20071105191705.5f2baaaa@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <1194286070.2174.14.camel@lov.site>
+References: <20071102235758.GA9803@kroah.com>
+	<1194047972-9850-34-git-send-email-gregkh@suse.de>
+	<20071105134203.1c078136@gondolin.boeblingen.de.ibm.com>
+	<1194279812.6771.11.camel@lov.site>
+	<20071105171133.GD12843@suse.de>
+	<1194283540.2174.8.camel@lov.site>
+	<20071105184350.0a1cd957@gondolin.boeblingen.de.ibm.com>
+	<1194286070.2174.14.camel@lov.site>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.1.0-rc1 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff --git a/Makefile b/Makefile
-index 8874c9b..b55f9bf 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1,7 +1,7 @@
- VERSION = 2
- PATCHLEVEL = 6
- SUBLEVEL = 22
--EXTRAVERSION = .11
-+EXTRAVERSION = .12
- NAME = Holy Dancing Manatees, Batman!
- 
- # *DOCUMENTATION*
-diff --git a/arch/i386/kernel/io_apic.c b/arch/i386/kernel/io_apic.c
-index 7f8b7af..97ba305 100644
---- a/arch/i386/kernel/io_apic.c
-+++ b/arch/i386/kernel/io_apic.c
-@@ -1275,12 +1275,15 @@ static struct irq_chip ioapic_chip;
- static void ioapic_register_intr(int irq, int vector, unsigned long trigger)
- {
- 	if ((trigger == IOAPIC_AUTO && IO_APIC_irq_trigger(irq)) ||
--			trigger == IOAPIC_LEVEL)
-+	    trigger == IOAPIC_LEVEL) {
-+		irq_desc[irq].status |= IRQ_LEVEL;
- 		set_irq_chip_and_handler_name(irq, &ioapic_chip,
- 					 handle_fasteoi_irq, "fasteoi");
--	else
-+	} else {
-+		irq_desc[irq].status &= ~IRQ_LEVEL;
- 		set_irq_chip_and_handler_name(irq, &ioapic_chip,
- 					 handle_edge_irq, "edge");
-+	}
- 	set_intr_gate(vector, interrupt[irq]);
- }
- 
-diff --git a/arch/x86_64/kernel/io_apic.c b/arch/x86_64/kernel/io_apic.c
-index 1c6c6f7..34d7cde 100644
---- a/arch/x86_64/kernel/io_apic.c
-+++ b/arch/x86_64/kernel/io_apic.c
-@@ -774,12 +774,15 @@ static struct irq_chip ioapic_chip;
- 
- static void ioapic_register_intr(int irq, unsigned long trigger)
- {
--	if (trigger)
-+	if (trigger) {
-+		irq_desc[irq].status |= IRQ_LEVEL;
- 		set_irq_chip_and_handler_name(irq, &ioapic_chip,
- 					      handle_fasteoi_irq, "fasteoi");
--	else
-+	} else {
-+		irq_desc[irq].status &= ~IRQ_LEVEL;
- 		set_irq_chip_and_handler_name(irq, &ioapic_chip,
- 					      handle_edge_irq, "edge");
-+	}
- }
- 
- static void setup_IO_APIC_irq(int apic, int pin, unsigned int irq,
-diff --git a/arch/x86_64/mm/init.c b/arch/x86_64/mm/init.c
-index 9a0e98a..b7e514e 100644
---- a/arch/x86_64/mm/init.c
-+++ b/arch/x86_64/mm/init.c
-@@ -769,8 +769,3 @@ int in_gate_area_no_task(unsigned long addr)
- 	return (addr >= VSYSCALL_START) && (addr < VSYSCALL_END);
- }
- 
--void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
--{
--	return __alloc_bootmem_core(pgdat->bdata, size,
--			SMP_CACHE_BYTES, (4UL*1024*1024*1024), 0);
--}
-diff --git a/arch/x86_64/mm/pageattr.c b/arch/x86_64/mm/pageattr.c
-index 9148f4a..7cd5254 100644
---- a/arch/x86_64/mm/pageattr.c
-+++ b/arch/x86_64/mm/pageattr.c
-@@ -227,9 +227,14 @@ void global_flush_tlb(void)
- 	struct page *pg, *next;
- 	struct list_head l;
- 
--	down_read(&init_mm.mmap_sem);
-+	/*
-+	 * Write-protect the semaphore, to exclude two contexts
-+	 * doing a list_replace_init() call in parallel and to
-+	 * exclude new additions to the deferred_pages list:
-+	 */
-+	down_write(&init_mm.mmap_sem);
- 	list_replace_init(&deferred_pages, &l);
--	up_read(&init_mm.mmap_sem);
-+	up_write(&init_mm.mmap_sem);
- 
- 	flush_map(&l);
- 
-diff --git a/drivers/infiniband/core/uverbs_cmd.c b/drivers/infiniband/core/uverbs_cmd.c
-index 01d7008..495c803 100644
---- a/drivers/infiniband/core/uverbs_cmd.c
-+++ b/drivers/infiniband/core/uverbs_cmd.c
-@@ -147,8 +147,12 @@ static struct ib_uobject *__idr_get_uobj(struct idr *idr, int id,
- 
- 	spin_lock(&ib_uverbs_idr_lock);
- 	uobj = idr_find(idr, id);
--	if (uobj)
--		kref_get(&uobj->ref);
-+	if (uobj) {
-+		if (uobj->context == context)
-+			kref_get(&uobj->ref);
-+		else
-+			uobj = NULL;
-+	}
- 	spin_unlock(&ib_uverbs_idr_lock);
- 
- 	return uobj;
-diff --git a/drivers/md/dm-exception-store.c b/drivers/md/dm-exception-store.c
-index 4264f69..5c7569c 100644
---- a/drivers/md/dm-exception-store.c
-+++ b/drivers/md/dm-exception-store.c
-@@ -125,6 +125,8 @@ struct pstore {
- 	uint32_t callback_count;
- 	struct commit_callback *callbacks;
- 	struct dm_io_client *io_client;
-+
-+	struct workqueue_struct *metadata_wq;
- };
- 
- static inline unsigned int sectors_to_pages(unsigned int sectors)
-@@ -156,10 +158,24 @@ static void free_area(struct pstore *ps)
- 	ps->area = NULL;
- }
- 
-+struct mdata_req {
-+	struct io_region *where;
-+	struct dm_io_request *io_req;
-+	struct work_struct work;
-+	int result;
-+};
-+
-+static void do_metadata(struct work_struct *work)
-+{
-+	struct mdata_req *req = container_of(work, struct mdata_req, work);
-+
-+	req->result = dm_io(req->io_req, 1, req->where, NULL);
-+}
-+
- /*
-  * Read or write a chunk aligned and sized block of data from a device.
-  */
--static int chunk_io(struct pstore *ps, uint32_t chunk, int rw)
-+static int chunk_io(struct pstore *ps, uint32_t chunk, int rw, int metadata)
- {
- 	struct io_region where = {
- 		.bdev = ps->snap->cow->bdev,
-@@ -173,8 +189,23 @@ static int chunk_io(struct pstore *ps, uint32_t chunk, int rw)
- 		.client = ps->io_client,
- 		.notify.fn = NULL,
- 	};
-+	struct mdata_req req;
-+
-+	if (!metadata)
-+		return dm_io(&io_req, 1, &where, NULL);
- 
--	return dm_io(&io_req, 1, &where, NULL);
-+	req.where = &where;
-+	req.io_req = &io_req;
-+
-+	/*
-+	 * Issue the synchronous I/O from a different thread
-+	 * to avoid generic_make_request recursion.
-+	 */
-+	INIT_WORK(&req.work, do_metadata);
-+	queue_work(ps->metadata_wq, &req.work);
-+	flush_workqueue(ps->metadata_wq);
-+
-+	return req.result;
- }
- 
- /*
-@@ -189,7 +220,7 @@ static int area_io(struct pstore *ps, uint32_t area, int rw)
- 	/* convert a metadata area index to a chunk index */
- 	chunk = 1 + ((ps->exceptions_per_area + 1) * area);
- 
--	r = chunk_io(ps, chunk, rw);
-+	r = chunk_io(ps, chunk, rw, 0);
- 	if (r)
- 		return r;
- 
-@@ -230,7 +261,7 @@ static int read_header(struct pstore *ps, int *new_snapshot)
- 	if (r)
- 		return r;
- 
--	r = chunk_io(ps, 0, READ);
-+	r = chunk_io(ps, 0, READ, 1);
- 	if (r)
- 		goto bad;
- 
-@@ -292,7 +323,7 @@ static int write_header(struct pstore *ps)
- 	dh->version = cpu_to_le32(ps->version);
- 	dh->chunk_size = cpu_to_le32(ps->snap->chunk_size);
- 
--	return chunk_io(ps, 0, WRITE);
-+	return chunk_io(ps, 0, WRITE, 1);
- }
- 
- /*
-@@ -409,6 +440,7 @@ static void persistent_destroy(struct exception_store *store)
- {
- 	struct pstore *ps = get_info(store);
- 
-+	destroy_workqueue(ps->metadata_wq);
- 	dm_io_client_destroy(ps->io_client);
- 	vfree(ps->callbacks);
- 	free_area(ps);
-@@ -589,6 +621,12 @@ int dm_create_persistent(struct exception_store *store)
- 	atomic_set(&ps->pending_count, 0);
- 	ps->callbacks = NULL;
- 
-+	ps->metadata_wq = create_singlethread_workqueue("ksnaphd");
-+	if (!ps->metadata_wq) {
-+		DMERR("couldn't start header metadata update thread");
-+		return -ENOMEM;
-+	}
-+
- 	store->destroy = persistent_destroy;
- 	store->read_metadata = persistent_read_metadata;
- 	store->prepare_exception = persistent_prepare;
-diff --git a/fs/minix/itree_v1.c b/fs/minix/itree_v1.c
-index 1a5f3bf..82d6554 100644
---- a/fs/minix/itree_v1.c
-+++ b/fs/minix/itree_v1.c
-@@ -23,11 +23,16 @@ static inline block_t *i_data(struct inode *inode)
- static int block_to_path(struct inode * inode, long block, int offsets[DEPTH])
- {
- 	int n = 0;
-+	char b[BDEVNAME_SIZE];
- 
- 	if (block < 0) {
--		printk("minix_bmap: block<0\n");
-+		printk("MINIX-fs: block_to_path: block %ld < 0 on dev %s\n",
-+			block, bdevname(inode->i_sb->s_bdev, b));
- 	} else if (block >= (minix_sb(inode->i_sb)->s_max_size/BLOCK_SIZE)) {
--		printk("minix_bmap: block>big\n");
-+		if (printk_ratelimit())
-+			printk("MINIX-fs: block_to_path: "
-+			       "block %ld too big on dev %s\n",
-+				block, bdevname(inode->i_sb->s_bdev, b));
- 	} else if (block < 7) {
- 		offsets[n++] = block;
- 	} else if ((block -= 7) < 512) {
-diff --git a/fs/minix/itree_v2.c b/fs/minix/itree_v2.c
-index ad8f0de..f230109 100644
---- a/fs/minix/itree_v2.c
-+++ b/fs/minix/itree_v2.c
-@@ -23,12 +23,17 @@ static inline block_t *i_data(struct inode *inode)
- static int block_to_path(struct inode * inode, long block, int offsets[DEPTH])
- {
- 	int n = 0;
-+	char b[BDEVNAME_SIZE];
- 	struct super_block *sb = inode->i_sb;
- 
- 	if (block < 0) {
--		printk("minix_bmap: block<0\n");
-+		printk("MINIX-fs: block_to_path: block %ld < 0 on dev %s\n",
-+			block, bdevname(sb->s_bdev, b));
- 	} else if (block >= (minix_sb(inode->i_sb)->s_max_size/sb->s_blocksize)) {
--		printk("minix_bmap: block>big\n");
-+		if (printk_ratelimit())
-+			printk("MINIX-fs: block_to_path: "
-+			       "block %ld too big on dev %s\n",
-+				block, bdevname(sb->s_bdev, b));
- 	} else if (block < 7) {
- 		offsets[n++] = block;
- 	} else if ((block -= 7) < 256) {
-diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
-index c83534e..0365ec9 100644
---- a/include/linux/bootmem.h
-+++ b/include/linux/bootmem.h
-@@ -59,7 +59,6 @@ extern void *__alloc_bootmem_core(struct bootmem_data *bdata,
- 				  unsigned long align,
- 				  unsigned long goal,
- 				  unsigned long limit);
--extern void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size);
- 
- #ifndef CONFIG_HAVE_ARCH_BOOTMEM_NODE
- extern void reserve_bootmem(unsigned long addr, unsigned long size);
-diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
-index 615ce97..f1a73f0 100644
---- a/kernel/irq/chip.c
-+++ b/kernel/irq/chip.c
-@@ -352,13 +352,10 @@ handle_level_irq(unsigned int irq, struct irq_desc *desc)
- 	 * keep it masked and get out of here
- 	 */
- 	action = desc->action;
--	if (unlikely(!action || (desc->status & IRQ_DISABLED))) {
--		desc->status |= IRQ_PENDING;
-+	if (unlikely(!action || (desc->status & IRQ_DISABLED)))
- 		goto out_unlock;
--	}
- 
- 	desc->status |= IRQ_INPROGRESS;
--	desc->status &= ~IRQ_PENDING;
- 	spin_unlock(&desc->lock);
- 
- 	action_ret = handle_IRQ_event(irq, action);
-diff --git a/kernel/irq/resend.c b/kernel/irq/resend.c
-index 5bfeaed..a804679 100644
---- a/kernel/irq/resend.c
-+++ b/kernel/irq/resend.c
-@@ -62,7 +62,12 @@ void check_irq_resend(struct irq_desc *desc, unsigned int irq)
- 	 */
- 	desc->chip->enable(irq);
- 
--	if ((status & (IRQ_PENDING | IRQ_REPLAY)) == IRQ_PENDING) {
-+	/*
-+	 * We do not resend level type interrupts. Level type
-+	 * interrupts are resent by hardware when they are still
-+	 * active.
-+	 */
-+	if ((status & (IRQ_LEVEL | IRQ_PENDING | IRQ_REPLAY)) == IRQ_PENDING) {
- 		desc->status = (status & ~IRQ_PENDING) | IRQ_REPLAY;
- 
- 		if (!desc->chip || !desc->chip->retrigger ||
-diff --git a/kernel/params.c b/kernel/params.c
-index e61c46c..8e8ca8f 100644
---- a/kernel/params.c
-+++ b/kernel/params.c
-@@ -591,11 +591,17 @@ static void __init param_sysfs_builtin(void)
- 
- 	for (i=0; i < __stop___param - __start___param; i++) {
- 		char *dot;
-+		size_t kplen;
- 
- 		kp = &__start___param[i];
-+		kplen = strlen(kp->name);
- 
- 		/* We do not handle args without periods. */
--		dot = memchr(kp->name, '.', MAX_KBUILD_MODNAME);
-+		if (kplen > MAX_KBUILD_MODNAME) {
-+			DEBUGP("kernel parameter name is too long: %s\n", kp->name);
-+			continue;
-+		}
-+		dot = memchr(kp->name, '.', kplen);
- 		if (!dot) {
- 			DEBUGP("couldn't find period in %s\n", kp->name);
- 			continue;
-diff --git a/mm/sparse.c b/mm/sparse.c
-index e03b39f..fdc1454 100644
---- a/mm/sparse.c
-+++ b/mm/sparse.c
-@@ -209,12 +209,6 @@ static int __meminit sparse_init_one_section(struct mem_section *ms,
- 	return 1;
- }
- 
--__attribute__((weak))
--void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
--{
--	return NULL;
--}
--
- static struct page __init *sparse_early_mem_map_alloc(unsigned long pnum)
- {
- 	struct page *map;
-@@ -225,11 +219,6 @@ static struct page __init *sparse_early_mem_map_alloc(unsigned long pnum)
- 	if (map)
- 		return map;
- 
--  	map = alloc_bootmem_high_node(NODE_DATA(nid),
--                       sizeof(struct page) * PAGES_PER_SECTION);
--	if (map)
--		return map;
--
- 	map = alloc_bootmem_node(NODE_DATA(nid),
- 			sizeof(struct page) * PAGES_PER_SECTION);
- 	if (map)
+On Mon, 05 Nov 2007 19:07:50 +0100,
+Kay Sievers <kay.sievers@vrfy.org> wrote:
+
+> On Mon, 2007-11-05 at 18:43 +0100, Cornelia Huck wrote:
+> > On Mon, 05 Nov 2007 18:25:40 +0100,
+> > Kay Sievers <kay.sievers@vrfy.org> wrote:
+> > 
+> > > > > That should usually be done by default attributes assigned to the ktype.
+> > > > > Do you have a good use case, where people need to create such attributes
+> > > > > individually instead?
+> > > > 
+> > > > The s390 code that was converted to use kobj_attributes :)
+> > > > 
+> > > > These look very useful, I'll go add them to the series unless Kay really
+> > > > objects.
+> > > 
+> > > I just want to hear a good reason to create attributes individually. :)
+> > > Especially in conjunction with kobject_register(), these attributes are
+> > > not available at uevent time, which is really really bad.
+> > > 
+> > > Default attributes just work fine, and have the proper error handling
+> > > built-in. Offering special functions for it, may just encourage people
+> > > to continue this "broken" way of creating attributes.
+> > 
+> > But where should I specify those default attributes?
+> > kset_create_and_register() sets the ktype to kset_ktype...
+> 
+> Do you need to create attributes at a kset itself, not the kobjects that
+> belong to the kset?
+
+Yes, see arch/s390/kernel/ipl.c (and I guess anything that uses
+subsys_create_file() before).
