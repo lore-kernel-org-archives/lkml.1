@@ -1,102 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbXKED7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756262AbXKEEBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756117AbXKED7Z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 22:59:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbXKED7R
+	id S1756262AbXKEEBm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 23:01:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580AbXKEEBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 22:59:17 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:37456 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754132AbXKED7Q (ORCPT
+	Sun, 4 Nov 2007 23:01:35 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58185
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753385AbXKEEBe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 22:59:16 -0500
-Date: Sun, 4 Nov 2007 19:58:47 -0800
-Message-Id: <200711050358.lA53wlho003349@tazenda.hos.anvin.org>
-From: "H. Peter Anvin" <hpa@zytor.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, Mikael Petterson <mikpe@it.uu.se>,
-       Eric Biederman <ebiederm@xmission.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [GIT PULL] x86 setup: correct booting on 486 (revised)
-In-reply-to: <200711050216.lA52GBmY023984@tazenda.hos.anvin.org>
+	Sun, 4 Nov 2007 23:01:34 -0500
+Date: Sun, 04 Nov 2007 20:01:33 -0800 (PST)
+Message-Id: <20071104.200133.103599780.davem@davemloft.net>
+To: bunk@kernel.org
+Cc: mingo@elte.hu, sam@ravnborg.org, thomas@archlinux.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: 2.6.24-rc1-82798a1 compile failure (x86_64)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071104152930.GL12045@stusta.de>
+References: <20071104100429.GA12311@elte.hu>
+	<20071104.023133.241080055.davem@davemloft.net>
+	<20071104152930.GL12045@stusta.de>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just for the record, I realized this patch could be done slightly
-cleaner and cleaned it up accordingly.
+From: Adrian Bunk <bunk@kernel.org>
+Date: Sun, 4 Nov 2007 16:29:30 +0100
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/hpa/linux-2.6-x86setup.git for-linus
+> On Sun, Nov 04, 2007 at 02:31:33AM -0800, David Miller wrote:
+> > People can't have it both ways.  CFLAGS has global meaning in every
+> > Makefile based build tree, it's not an "autoconf" thing.  This is well
+> > established practice, and I think it's a good thing the kernel does it
+> > now too.
+> 
+> Makefiles do normally not pick such variables from the environment.
 
-H. Peter Anvin (2):
-      x86 setup: add a near jump to serialize %cr0 on 386/486
-      x86 setup: set %ebx == %ebp == %edi == 0 on protected mode entry
+The absolutely do.
 
- arch/x86/boot/pmjump.S |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
-
-commit 9f259cc59ba45b8db401d60be9700e275676fb15
-Author: H. Peter Anvin <hpa@zytor.com>
-Date:   Sun Nov 4 17:54:31 2007 -0800
-
-    x86 setup: set %ebx == %ebp == %edi == 0 on protected mode entry
-    
-    In accordance with the newly formalized 32-bit boot protocol, set
-    %ebx == %ebp == %edi == 0 in order to support future extensions to the
-    protocol.
-    
-    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-
-diff --git a/arch/x86/boot/pmjump.S b/arch/x86/boot/pmjump.S
-index 26baeab..fa6bed1 100644
---- a/arch/x86/boot/pmjump.S
-+++ b/arch/x86/boot/pmjump.S
-@@ -28,11 +28,13 @@
-  * void protected_mode_jump(u32 entrypoint, u32 bootparams);
-  */
- protected_mode_jump:
--	xorl	%ebx, %ebx		# Flag to indicate this is a boot
- 	movl	%edx, %esi		# Pointer to boot_params table
- 	movl	%eax, 2f		# Patch ljmpl instruction
- 
- 	movw	$__BOOT_DS, %cx
-+	xorl	%ebx, %ebx		# Per the 32-bit boot protocol
-+	xorl	%ebp, %ebp		# Per the 32-bit boot protocol
-+	xorl	%edi, %edi		# Per the 32-bit boot protocol
- 
- 	movl	%cr0, %edx
- 	orb	$1, %dl			# Protected mode (PE) bit
-
-commit 7ed192906a2144ebc8ca2925a85d27b9c5355668
-Author: H. Peter Anvin <hpa@zytor.com>
-Date:   Sun Nov 4 17:50:12 2007 -0800
-
-    x86 setup: add a near jump to serialize %cr0 on 386/486
-    
-    The 386 and 486 needs a jump immediately after setting %cr0 in order
-    to serialize the pipeline.
-    
-    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-
-diff --git a/arch/x86/boot/pmjump.S b/arch/x86/boot/pmjump.S
-index 2e55923..26baeab 100644
---- a/arch/x86/boot/pmjump.S
-+++ b/arch/x86/boot/pmjump.S
-@@ -31,14 +31,14 @@ protected_mode_jump:
- 	xorl	%ebx, %ebx		# Flag to indicate this is a boot
- 	movl	%edx, %esi		# Pointer to boot_params table
- 	movl	%eax, 2f		# Patch ljmpl instruction
--	jmp	1f			# Short jump to flush instruction q.
- 
--1:
- 	movw	$__BOOT_DS, %cx
- 
- 	movl	%cr0, %edx
- 	orb	$1, %dl			# Protected mode (PE) bit
- 	movl	%edx, %cr0
-+	jmp	1f			# Short jump to serialize on 386/486
-+1:
- 
- 	movw	%cx, %ds
- 	movw	%cx, %es
+All of the default builtin compilation rules inside of GNU
+make, and every other UNIX make out there, do.
