@@ -1,139 +1,276 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755595AbXKEQdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754141AbXKEQeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755595AbXKEQdz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 11:33:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbXKEQdd
+	id S1754141AbXKEQeU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 11:34:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbXKEQde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 11:33:33 -0500
-Received: from ns2.suse.de ([195.135.220.15]:39261 "EHLO mx2.suse.de"
+	Mon, 5 Nov 2007 11:33:34 -0500
+Received: from ns1.suse.de ([195.135.220.2]:44628 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753168AbXKEQdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752761AbXKEQdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 5 Nov 2007 11:33:32 -0500
-Message-Id: <20071105163234.240126105@hasse.suse.de>
+Message-Id: <20071105163233.798618935@hasse.suse.de>
 User-Agent: quilt/0.46-1
-Date: Mon, 05 Nov 2007 17:32:39 +0100
+Date: Mon, 05 Nov 2007 17:32:37 +0100
 From: Jan Blunck <jblunck@suse.de>
 To: Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
        Christoph Hellwig <hch@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Cc: bfields@fieldses.org, neilb@suse.de
-Subject: [PATCH 7/9] Use struct path in struct svc_expkey
+Subject: [PATCH 5/9] d_path: Make get_dcookie() use a struct path argument
 References: <20071105163232.550298985@hasse.suse.de>
-Content-Disposition: inline; filename=vfs/nfsd-svc_expkey_use_struct_path.diff
+Content-Disposition: inline; filename=vfs/d_path_Make_get_dcookie_use_a_struct_path_argument.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm embedding struct path into struct svc_expkey.
+get_dcookie() is always called with a dentry and a vfsmount from a struct
+path. Make get_dcookie() take it directly as an argument.
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
+Acked-by: Christoph Hellwig <hch@infradead.org>
 ---
- fs/nfsd/export.c            |   30 +++++++++++++-----------------
- include/linux/nfsd/export.h |    3 +--
- 2 files changed, 14 insertions(+), 19 deletions(-)
+ arch/powerpc/oprofile/cell/spu_task_sync.c |   15 +++++---------
+ drivers/oprofile/buffer_sync.c             |   21 ++++++++-----------
+ fs/dcookies.c                              |   31 ++++++++++++-----------------
+ include/linux/dcookies.h                   |   15 ++++++--------
+ 4 files changed, 35 insertions(+), 47 deletions(-)
 
-Index: b/fs/nfsd/export.c
+Index: b/arch/powerpc/oprofile/cell/spu_task_sync.c
 ===================================================================
---- a/fs/nfsd/export.c
-+++ b/fs/nfsd/export.c
-@@ -63,10 +63,8 @@ static void expkey_put(struct kref *ref)
- 	struct svc_expkey *key = container_of(ref, struct svc_expkey, h.ref);
- 
- 	if (test_bit(CACHE_VALID, &key->h.flags) &&
--	    !test_bit(CACHE_NEGATIVE, &key->h.flags)) {
--		dput(key->ek_dentry);
--		mntput(key->ek_mnt);
--	}
-+	    !test_bit(CACHE_NEGATIVE, &key->h.flags))
-+		path_put(&key->ek_path);
- 	auth_domain_put(key->ek_client);
- 	kfree(key);
- }
-@@ -169,9 +167,8 @@ static int expkey_parse(struct cache_det
- 			goto out;
- 
- 		dprintk("Found the path %s\n", buf);
--		key.ek_mnt = nd.path.mnt;
--		key.ek_dentry = nd.path.dentry;
--		
-+		key.ek_path = nd.path;
-+
- 		ek = svc_expkey_update(&key, ek);
- 		if (ek)
- 			cache_put(&ek->h, &svc_expkey_cache);
-@@ -206,7 +203,7 @@ static int expkey_show(struct seq_file *
- 	if (test_bit(CACHE_VALID, &h->flags) && 
- 	    !test_bit(CACHE_NEGATIVE, &h->flags)) {
- 		seq_printf(m, " ");
--		seq_path(m, ek->ek_mnt, ek->ek_dentry, "\\ \t\n");
-+		seq_path(m, ek->ek_path.mnt, ek->ek_path.dentry, "\\ \t\n");
- 	}
- 	seq_printf(m, "\n");
- 	return 0;
-@@ -243,8 +240,8 @@ static inline void expkey_update(struct 
- 	struct svc_expkey *new = container_of(cnew, struct svc_expkey, h);
- 	struct svc_expkey *item = container_of(citem, struct svc_expkey, h);
- 
--	new->ek_mnt = mntget(item->ek_mnt);
--	new->ek_dentry = dget(item->ek_dentry);
-+	new->ek_path = item->ek_path;
-+	path_get(&item->ek_path);
- }
- 
- static struct cache_head *expkey_alloc(void)
-@@ -814,8 +811,7 @@ static int exp_set_key(svc_client *clp, 
- 	key.ek_client = clp;
- 	key.ek_fsidtype = fsid_type;
- 	memcpy(key.ek_fsid, fsidv, key_len(fsid_type));
--	key.ek_mnt = exp->ex_path.mnt;
--	key.ek_dentry = exp->ex_path.dentry;
-+	key.ek_path = exp->ex_path;
- 	key.h.expiry_time = NEVER;
- 	key.h.flags = 0;
- 
-@@ -864,7 +860,7 @@ static svc_export *exp_get_by_name(svc_c
+--- a/arch/powerpc/oprofile/cell/spu_task_sync.c
++++ b/arch/powerpc/oprofile/cell/spu_task_sync.c
+@@ -198,14 +198,13 @@ out:
+  * dcookie user still being registered (namely, the reader
+  * of the event buffer).
+  */
+-static inline unsigned long fast_get_dcookie(struct dentry *dentry,
+-					     struct vfsmount *vfsmnt)
++static inline unsigned long fast_get_dcookie(struct path *path)
  {
- 	struct svc_export *exp, key;
- 	int err;
--	
-+
- 	if (!clp)
- 		return ERR_PTR(-ENOENT);
+ 	unsigned long cookie;
  
-@@ -1036,9 +1032,9 @@ exp_export(struct nfsctl_export *nxp)
- 	/* must make sure there won't be an ex_fsid clash */
- 	if ((nxp->ex_flags & NFSEXP_FSID) &&
- 	    (!IS_ERR(fsid_key = exp_get_fsid_key(clp, nxp->ex_dev))) &&
--	    fsid_key->ek_mnt &&
--	    (fsid_key->ek_mnt != nd.path.mnt ||
--	     fsid_key->ek_dentry != nd.path.dentry))
-+	    fsid_key->ek_path.mnt &&
-+	    (fsid_key->ek_path.mnt != nd.path.mnt ||
-+	     fsid_key->ek_path.dentry != nd.path.dentry))
- 		goto finish;
+-	if (dentry->d_cookie)
+-		return (unsigned long)dentry;
+-	get_dcookie(dentry, vfsmnt, &cookie);
++	if (path->dentry->d_cookie)
++		return (unsigned long)path->dentry;
++	get_dcookie(path, &cookie);
+ 	return cookie;
+ }
  
- 	if (!IS_ERR(exp)) {
-@@ -1219,7 +1215,7 @@ static struct svc_export *exp_find(struc
- 	if (IS_ERR(ek))
- 		return ERR_PTR(PTR_ERR(ek));
+@@ -240,8 +239,7 @@ get_exec_dcookie_and_offset(struct spu *
+ 			continue;
+ 		if (!(vma->vm_flags & VM_EXECUTABLE))
+ 			continue;
+-		app_cookie = fast_get_dcookie(vma->vm_file->f_dentry,
+-					  vma->vm_file->f_vfsmnt);
++		app_cookie = fast_get_dcookie(&vma->vm_file->f_path);
+ 		pr_debug("got dcookie for %s\n",
+ 			 vma->vm_file->f_dentry->d_name.name);
+ 		app = vma->vm_file;
+@@ -262,8 +260,7 @@ get_exec_dcookie_and_offset(struct spu *
+ 		break;
+ 	}
  
--	exp = exp_get_by_name(clp, ek->ek_mnt, ek->ek_dentry, reqp);
-+	exp = exp_get_by_name(clp, ek->ek_path.mnt, ek->ek_path.dentry, reqp);
- 	cache_put(&ek->h, &svc_expkey_cache);
+-	*spu_bin_dcookie = fast_get_dcookie(vma->vm_file->f_dentry,
+-						 vma->vm_file->f_vfsmnt);
++	*spu_bin_dcookie = fast_get_dcookie(&vma->vm_file->f_path);
+ 	pr_debug("got dcookie for %s\n", vma->vm_file->f_dentry->d_name.name);
  
- 	if (IS_ERR(exp))
-Index: b/include/linux/nfsd/export.h
+ 	up_read(&mm->mmap_sem);
+Index: b/drivers/oprofile/buffer_sync.c
 ===================================================================
---- a/include/linux/nfsd/export.h
-+++ b/include/linux/nfsd/export.h
-@@ -106,8 +106,7 @@ struct svc_expkey {
- 	int			ek_fsidtype;
- 	u32			ek_fsid[6];
+--- a/drivers/oprofile/buffer_sync.c
++++ b/drivers/oprofile/buffer_sync.c
+@@ -187,23 +187,22 @@ void sync_stop(void)
+ 	end_sync();
+ }
  
--	struct vfsmount *	ek_mnt;
--	struct dentry *		ek_dentry;
-+	struct path		ek_path;
+- 
++
+ /* Optimisation. We can manage without taking the dcookie sem
+  * because we cannot reach this code without at least one
+  * dcookie user still being registered (namely, the reader
+  * of the event buffer). */
+-static inline unsigned long fast_get_dcookie(struct dentry * dentry,
+-	struct vfsmount * vfsmnt)
++static inline unsigned long fast_get_dcookie(struct path *path)
+ {
+ 	unsigned long cookie;
+- 
+-	if (dentry->d_cookie)
+-		return (unsigned long)dentry;
+-	get_dcookie(dentry, vfsmnt, &cookie);
++
++	if (path->dentry->d_cookie)
++		return (unsigned long)path->dentry;
++	get_dcookie(path, &cookie);
+ 	return cookie;
+ }
+ 
+- 
++
+ /* Look up the dcookie for the task's first VM_EXECUTABLE mapping,
+  * which corresponds loosely to "application name". This is
+  * not strictly necessary but allows oprofile to associate
+@@ -222,8 +221,7 @@ static unsigned long get_exec_dcookie(st
+ 			continue;
+ 		if (!(vma->vm_flags & VM_EXECUTABLE))
+ 			continue;
+-		cookie = fast_get_dcookie(vma->vm_file->f_path.dentry,
+-			vma->vm_file->f_path.mnt);
++		cookie = fast_get_dcookie(&vma->vm_file->f_path);
+ 		break;
+ 	}
+ 
+@@ -248,8 +246,7 @@ static unsigned long lookup_dcookie(stru
+ 			continue;
+ 
+ 		if (vma->vm_file) {
+-			cookie = fast_get_dcookie(vma->vm_file->f_path.dentry,
+-				vma->vm_file->f_path.mnt);
++			cookie = fast_get_dcookie(&vma->vm_file->f_path);
+ 			*offset = (vma->vm_pgoff << PAGE_SHIFT) + addr -
+ 				vma->vm_start;
+ 		} else {
+Index: b/fs/dcookies.c
+===================================================================
+--- a/fs/dcookies.c
++++ b/fs/dcookies.c
+@@ -24,6 +24,7 @@
+ #include <linux/errno.h>
+ #include <linux/dcookies.h>
+ #include <linux/mutex.h>
++#include <linux/path.h>
+ #include <asm/uaccess.h>
+ 
+ /* The dcookies are allocated from a kmem_cache and
+@@ -31,8 +32,7 @@
+  * code here is particularly performance critical
+  */
+ struct dcookie_struct {
+-	struct dentry * dentry;
+-	struct vfsmount * vfsmnt;
++	struct path path;
+ 	struct list_head hash_list;
  };
  
- #define EX_SECURE(exp)		(!((exp)->ex_flags & NFSEXP_INSECURE_PORT))
+@@ -51,7 +51,7 @@ static inline int is_live(void)
+ /* The dentry is locked, its address will do for the cookie */
+ static inline unsigned long dcookie_value(struct dcookie_struct * dcs)
+ {
+-	return (unsigned long)dcs->dentry;
++	return (unsigned long)dcs->path.dentry;
+ }
+ 
+ 
+@@ -89,19 +89,16 @@ static void hash_dcookie(struct dcookie_
+ }
+ 
+ 
+-static struct dcookie_struct * alloc_dcookie(struct dentry * dentry,
+-	struct vfsmount * vfsmnt)
++static struct dcookie_struct * alloc_dcookie(struct path *path)
+ {
+ 	struct dcookie_struct * dcs = kmem_cache_alloc(dcookie_cache, GFP_KERNEL);
+ 	if (!dcs)
+ 		return NULL;
+ 
+-	dentry->d_cookie = dcs;
+-
+-	dcs->dentry = dget(dentry);
+-	dcs->vfsmnt = mntget(vfsmnt);
++	path->dentry->d_cookie = dcs;
++	dcs->path = *path;
++	path_get(path);
+ 	hash_dcookie(dcs);
+-
+ 	return dcs;
+ }
+ 
+@@ -109,8 +106,7 @@ static struct dcookie_struct * alloc_dco
+ /* This is the main kernel-side routine that retrieves the cookie
+  * value for a dentry/vfsmnt pair.
+  */
+-int get_dcookie(struct dentry * dentry, struct vfsmount * vfsmnt,
+-	unsigned long * cookie)
++int get_dcookie(struct path *path, unsigned long * cookie)
+ {
+ 	int err = 0;
+ 	struct dcookie_struct * dcs;
+@@ -122,10 +118,10 @@ int get_dcookie(struct dentry * dentry, 
+ 		goto out;
+ 	}
+ 
+-	dcs = dentry->d_cookie;
++	dcs = path->dentry->d_cookie;
+ 
+ 	if (!dcs)
+-		dcs = alloc_dcookie(dentry, vfsmnt);
++		dcs = alloc_dcookie(path);
+ 
+ 	if (!dcs) {
+ 		err = -ENOMEM;
+@@ -174,7 +170,7 @@ asmlinkage long sys_lookup_dcookie(u64 c
+ 		goto out;
+ 
+ 	/* FIXME: (deleted) ? */
+-	path = d_path(dcs->dentry, dcs->vfsmnt, kbuf, PAGE_SIZE);
++	path = d_path(dcs->path.dentry, dcs->path.mnt, kbuf, PAGE_SIZE);
+ 
+ 	if (IS_ERR(path)) {
+ 		err = PTR_ERR(path);
+@@ -254,9 +250,8 @@ out_kmem:
+ 
+ static void free_dcookie(struct dcookie_struct * dcs)
+ {
+-	dcs->dentry->d_cookie = NULL;
+-	dput(dcs->dentry);
+-	mntput(dcs->vfsmnt);
++	dcs->path.dentry->d_cookie = NULL;
++	path_put(&dcs->path);
+ 	kmem_cache_free(dcookie_cache, dcs);
+ }
+ 
+Index: b/include/linux/dcookies.h
+===================================================================
+--- a/include/linux/dcookies.h
++++ b/include/linux/dcookies.h
+@@ -13,6 +13,7 @@
+ #ifdef CONFIG_PROFILING
+  
+ #include <linux/dcache.h>
++#include <linux/path.h>
+ #include <linux/types.h>
+  
+ struct dcookie_user;
+@@ -43,8 +44,7 @@ void dcookie_unregister(struct dcookie_u
+  *
+  * Returns 0 on success, with *cookie filled in
+  */
+-int get_dcookie(struct dentry * dentry, struct vfsmount * vfsmnt,
+-	unsigned long * cookie);
++int get_dcookie(struct path *path, unsigned long *cookie);
+ 
+ #else
+ 
+@@ -57,13 +57,12 @@ static inline void dcookie_unregister(st
+ {
+ 	return;
+ }
+- 
+-static inline int get_dcookie(struct dentry * dentry,
+-	struct vfsmount * vfsmnt, unsigned long * cookie)
++
++static inline int get_dcookie(struct path *path, unsigned long *cookie)
+ {
+ 	return -ENOSYS;
+-} 
+- 
++}
++
+ #endif /* CONFIG_PROFILING */
+- 
++
+ #endif /* DCOOKIES_H */
 
 
