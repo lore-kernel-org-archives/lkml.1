@@ -1,68 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756332AbXKEKu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756544AbXKEKvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756332AbXKEKu5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 05:50:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754013AbXKEKut
+	id S1756544AbXKEKvj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 05:51:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbXKEKvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 05:50:49 -0500
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:58797 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753589AbXKEKus (ORCPT
+	Mon, 5 Nov 2007 05:51:31 -0500
+Received: from ic0245.upco.es ([130.206.70.245]:56200 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754225AbXKEKva (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 05:50:48 -0500
-Date: Mon, 5 Nov 2007 16:11:12 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org, paulus@samba.org,
-       apw@shadowen.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] cpm_load_patch() - declartion conflict
-Message-ID: <20071105104112.GA18347@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+	Mon, 5 Nov 2007 05:51:30 -0500
+Subject: Re: 2.6.34-rc1 eat my photo SD card :-(
+From: Romano Giannetti <romanol@upcomillas.es>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, linux-kernel@vger.kernel.org
+In-Reply-To: <ada8x5ec7oh.fsf@cisco.com>
+References: <1193918202.8439.7.camel@rukbat>
+	 <20071102182833.2c055446@poseidon.drzeus.cx>
+	 <1194168583.10245.15.camel@rukbat>  <ada8x5ec7oh.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: Mon, 05 Nov 2007 11:51:26 +0100
+Message-Id: <1194259886.6927.9.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-The build fails with following error
+On Sun, 2007-11-04 at 08:11 -0800, Roland Dreier wrote:
+> I had something similar recently, trying to access an SD card in the
+> internal drive of my thinkpad X60.  Fortunately, the data wasn't
+> actually corrupted, but when I tried to copy the picture files off the
+> card, I saw garbage filenames in the picture directory, [...]
 
-  CC      arch/powerpc/sysdev/micropatch.o
-arch/powerpc/sysdev/micropatch.c:625: error: conflicting types for â€˜cpm_load_patchâ€™
-include/asm/commproc.h:94: error: previous declaration of â€˜cpm_load_patchâ€™ was here
-arch/powerpc/sysdev/micropatch.c: In function â€˜cpm_load_patchâ€™:
-arch/powerpc/sysdev/micropatch.c:630: warning: unused variable â€˜smpâ€™
-arch/powerpc/sysdev/micropatch.c:629: warning: unused variable â€˜sppâ€™
-arch/powerpc/sysdev/micropatch.c:628: warning: unused variable â€˜iipâ€™
-make[1]: *** [arch/powerpc/sysdev/micropatch.o] Error 1
-make: *** [arch/powerpc/sysdev] Error 2
+> When I put the same card back in the camera and used the camera's dock
+> to access the data via USB mass storage, everything worked fine.  So
+> it does seem to be at least somewhat MMC-related.
 
-The commit f2a0bd3753dad7ea4605ebd5435716b39e9f92bb defines the function
-with void cpm_load_patch(cpm8xx_t *cp) prtotype and is declared as 
-extern void cpm_load_patch(volatile immap_t *immr) in the header file.
+It is reproducible for me, too, with the 128Mbyte card. Full logs are
+here:
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+http://www.dea.icai.upcomillas.es/romano/linux/info/lk2624-rc1-mmc2/
+
+a rapid grep shows at boot: 
+
+Nov  5 08:45:40 rukbat kernel: [   26.538165] sr0: scsi3-mmc drive: 24x/24x writer dvd-ram cd/rw xa/form2 cdda tray
+Nov  5 08:45:40 rukbat kernel: [   38.456554] PM: Adding info for No Bus:mmc0
+Nov  5 08:45:40 rukbat kernel: [   38.456634] mmc0: SDHCI at 0xd0100800 irq 16 DMA
+
+and when loading the card: 
+
+Nov  5 09:21:14 rukbat kernel: [ 1632.002723] mmc0: new SD card at address e32f
+Nov  5 09:21:14 rukbat kernel: [ 1632.002947] PM: Adding info for mmc:mmc0:e32f
+Nov  5 09:21:14 rukbat kernel: [ 1632.024011] mmcblk0: mmc0:e32f SD128 123008KiB 
+Nov  5 09:21:14 rukbat kernel: [ 1632.025327]  mmcblk0: p1
+Nov  5 09:21:15 rukbat hald: mounted /dev/mmcblk0p1 on behalf of uid 1153
+
+(I've trimmed away the spam by NetworkManager). 
+
+and opening the folder in Nautilus:
+
+Nov  5 09:21:43 rukbat kernel: [ 1654.235333] FAT: Filesystem panic (dev mmcblk0p1)
+Nov  5 09:21:43 rukbat kernel: [ 1654.235893] FAT: Filesystem panic (dev mmcblk0p1)
+Nov  5 09:21:43 rukbat kernel: [ 1654.235915] mmcblk0p1: rw=0, want=575135, limit=245919
+...ad libitum.
+
+and it's definitely a regression, the card is read under 2.6.23. I've
+not a lot of time in my hands now, but maybe the next weekend I can try
+a bisection...
+
+Romano 
+
+
+
+-- 
+Sorry for the disclaimer --- ¡I cannot stop it!
+
+
+
 --
-diff --git a/include/asm-powerpc/commproc.h b/include/asm-powerpc/commproc.h
-index 0307c84..a2328b8 100644
---- a/include/asm-powerpc/commproc.h
-+++ b/include/asm-powerpc/commproc.h
-@@ -91,7 +91,7 @@ extern uint m8xx_cpm_hostalloc(uint size);
- extern int  m8xx_cpm_hostfree(uint start);
- extern void m8xx_cpm_hostdump(void);
- 
--extern void cpm_load_patch(volatile immap_t *immr);
-+extern void cpm_load_patch(cpm8xx_t *cp);
- 
- /* Buffer descriptors used by many of the CPM protocols.
- */
+La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
 
-
---
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
