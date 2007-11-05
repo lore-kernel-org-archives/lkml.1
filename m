@@ -1,72 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755141AbXKEQXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543AbXKEQdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755141AbXKEQXj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 11:23:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbXKEQXb
+	id S1754543AbXKEQdm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 11:33:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753235AbXKEQdc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 11:23:31 -0500
-Received: from moutng.kundenserver.de ([212.227.126.188]:57173 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751428AbXKEQXa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 11:23:30 -0500
-Subject: Re: [PATCH 34/54] Driver Core: add kobj_attribute handling
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20071105134203.1c078136@gondolin.boeblingen.de.ibm.com>
-References: <20071102235758.GA9803@kroah.com>
-	 <1194047972-9850-34-git-send-email-gregkh@suse.de>
-	 <20071105134203.1c078136@gondolin.boeblingen.de.ibm.com>
-Content-Type: text/plain
-Date: Mon, 05 Nov 2007 17:23:32 +0100
-Message-Id: <1194279812.6771.11.camel@lov.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/B+ZY4myOXbIA3m0hAaMOj8kifuIS/MZFrnk1
- 5A9F1If6Gfpfo4QP9X+xS8mgLQte0JmZRO5oSCZYp6GZHsOWuC
- SHYDl5xrH2UpZ3UKZFWouGdyxOm5J4q
+	Mon, 5 Nov 2007 11:33:32 -0500
+Received: from ns2.suse.de ([195.135.220.15]:39262 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753110AbXKEQdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 11:33:32 -0500
+Message-Id: <20071105163232.815259081@hasse.suse.de>
+User-Agent: quilt/0.46-1
+Date: Mon, 05 Nov 2007 17:32:33 +0100
+From: Jan Blunck <jblunck@suse.de>
+To: Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Andreas Gruenbacher <agruen@suse.de>
+Subject: [PATCH 1/9] One less parameter to __d_path
+References: <20071105163232.550298985@hasse.suse.de>
+Content-Disposition: inline; filename=vfs/one-less-parameter-to-__d_path.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-11-05 at 13:42 +0100, Cornelia Huck wrote:
-> On Fri,  2 Nov 2007 16:59:12 -0700,
-> Greg Kroah-Hartman <gregkh@suse.de> wrote:
-> 
-> > From: Kay Sievers <kay.sievers@vrfy.org>
-> > 
-> > Add kobj_sysfs_ops to replace subsys_sysfs_ops. There is no
-> > need for special kset operations, we want to be able to use
-> > simple attribute operations at any kobject, not only ksets.
-> > 
-> > The whole concept of any default sysfs attribute operations
-> > will go away with the upcoming removal of subsys_sysfs_ops.
-> > 
-> > Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
-> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > ---
-> >  include/linux/kobject.h |   10 ++++++++++
-> >  lib/kobject.c           |   29 +++++++++++++++++++++++++++++
-> >  2 files changed, 39 insertions(+), 0 deletions(-)
-> 
-> How about adding some simple wrappers around the new kobj_attribute
-> structure? This makes the layering clearer.
+All callers to __d_path pass the dentry and vfsmount of a struct
+path to __d_path. Pass the struct path directly, instead.
 
-> +#define KOBJ_ATTR(_name,_mode,_show,_store)		\
-> +	struct kobj_attribute kobj_attr_##_name =	\
-> +		__ATTR(_name,_mode,_show,_store)
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: Jan Blunck <jblunck@suse.de>
+Acked-by: Christoph Hellwig <hch@infradead.org>
+---
+ fs/dcache.c |   12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
-That sounds fine.
+Index: b/fs/dcache.c
+===================================================================
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -1778,9 +1778,8 @@ shouldnt_be_hashed:
+  *
+  * "buflen" should be positive. Caller holds the dcache_lock.
+  */
+-static char * __d_path( struct dentry *dentry, struct vfsmount *vfsmnt,
+-			struct dentry *root, struct vfsmount *rootmnt,
+-			char *buffer, int buflen)
++static char * __d_path(struct dentry *dentry, struct vfsmount *vfsmnt,
++		       struct path *root, char *buffer, int buflen)
+ {
+ 	char * end = buffer+buflen;
+ 	char * retval;
+@@ -1805,7 +1804,7 @@ static char * __d_path( struct dentry *d
+ 	for (;;) {
+ 		struct dentry * parent;
+ 
+-		if (dentry == root && vfsmnt == rootmnt)
++		if (dentry == root->dentry && vfsmnt == root->mnt)
+ 			break;
+ 		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
+ 			/* Global root? */
+@@ -1868,7 +1867,7 @@ char * d_path(struct dentry *dentry, str
+ 	path_get(&current->fs->root);
+ 	read_unlock(&current->fs->lock);
+ 	spin_lock(&dcache_lock);
+-	res = __d_path(dentry, vfsmnt, root.dentry, root.mnt, buf, buflen);
++	res = __d_path(dentry, vfsmnt, &root, buf, buflen);
+ 	spin_unlock(&dcache_lock);
+ 	path_put(&root);
+ 	return res;
+@@ -1936,8 +1935,7 @@ asmlinkage long sys_getcwd(char __user *
+ 		unsigned long len;
+ 		char * cwd;
+ 
+-		cwd = __d_path(pwd.dentry, pwd.mnt, root.dentry, root.mnt,
+-			       page, PAGE_SIZE);
++		cwd = __d_path(pwd.dentry, pwd.mnt, &root, page, PAGE_SIZE);
+ 		spin_unlock(&dcache_lock);
+ 
+ 		error = PTR_ERR(cwd);
 
-> +extern int __must_check kobject_create_file(struct kobject *,
-> 
-> 					    struct kobj_attribute *);
-> +extern void kobject_remove_file(struct kobject *,struct kobj_attribute *);
-
-That should usually be done by default attributes assigned to the ktype.
-Do you have a good use case, where people need to create such attributes
-individually instead?
-
-Kay
 
