@@ -1,53 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756636AbXKEMY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756764AbXKEMZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756636AbXKEMY2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 07:24:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754368AbXKEMYT
+	id S1756764AbXKEMZU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 07:25:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754971AbXKEMZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 07:24:19 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:55799 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753877AbXKEMYS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 07:24:18 -0500
-Date: Mon, 5 Nov 2007 13:22:18 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Romano Giannetti <romanol@upcomillas.es>
-Cc: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.34-rc1 eat my photo SD card :-(
-Message-ID: <20071105132218.495f244e@poseidon.drzeus.cx>
-In-Reply-To: <1194259886.6927.9.camel@localhost>
-References: <1193918202.8439.7.camel@rukbat>
-	<20071102182833.2c055446@poseidon.drzeus.cx>
-	<1194168583.10245.15.camel@rukbat>
-	<ada8x5ec7oh.fsf@cisco.com>
-	<1194259886.6927.9.camel@localhost>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Nov 2007 07:25:06 -0500
+Received: from mail.lysator.liu.se ([130.236.254.3]:37150 "EHLO
+	mail.lysator.liu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754368AbXKEMZE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 07:25:04 -0500
+Message-ID: <472F0B96.4080205@27m.se>
+Date: Mon, 05 Nov 2007 13:24:54 +0100
+From: Markus Gothe <markus.gothe@27m.se>
+User-Agent: Icedove 1.5.0.14pre (X11/20071020)
+MIME-Version: 1.0
+To: veerasena reddy <veerasena_b@yahoo.co.in>
+Cc: uclibc@uclibc.org, linux-mips <linux-mips@linux-mips.org>,
+       "linux-kernel.org" <linux-kernel@vger.kernel.org>, buildroot@uclibc.org
+Subject: Re: NPTL support
+References: <279675.30374.qm@web8411.mail.in.yahoo.com>
+In-Reply-To: <279675.30374.qm@web8411.mail.in.yahoo.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 05 Nov 2007 11:51:26 +0100
-Romano Giannetti <romanol@upcomillas.es> wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
 
-> 
-> and opening the folder in Nautilus:
-> 
-> Nov  5 09:21:43 rukbat kernel: [ 1654.235333] FAT: Filesystem panic (dev mmcblk0p1)
-> Nov  5 09:21:43 rukbat kernel: [ 1654.235893] FAT: Filesystem panic (dev mmcblk0p1)
-> Nov  5 09:21:43 rukbat kernel: [ 1654.235915] mmcblk0p1: rw=0, want=575135, limit=245919
-> ...ad libitum.
-> 
+I don't use neither buildroot nor uClibc-nptl, due to uClibc-nptl is a
+(dev-)branch and not a release. It differs quite a lot from the 0.9.29
+release.
 
-Ok, now this is a bit more telling. The filesystem is indeed corrupt somehow as it references sectors waaaay outside the device (at roughly 280 MB).
+//Markus
 
-Did you partition and format this card in the camera or in Linux?
+veerasena reddy wrote:
+> Hi Markus,
+>
+> thanks for the information.
+>
+> i checked out uclibc-nptl (version 0.9.29). is it a stable release?
+>  If i want to build toolchain using buildroot with nptl support for
+> linux kernel 2.6.18.8, could you please guide us the right version
+> of buildroot, binutils, and gcc to be used.
+>
+> Thanks & Regards, Veerasena.
+>
+> ----- Original Message ---- From: Markus Gothe
+> <markus.gothe@27m.se> To: veerasena reddy
+> <veerasena_b@yahoo..co.in> Cc: uclibc@uclibc.org; linux-mips
+> <linux-mips@linux-mips.org>; linux-kernel.org
+> <linux-kernel@vger.kernel.org>; buildroot@uclibc.org Sent: Friday,
+> 2 November, 2007 6:01:41 PM Subject: Re: NPTL support
+>
+> You'll have to use the uClibc-nptl branch on their svn. In 0.9.28,
+> no.
+>
+> //Markus
+>
+> On 2 Nov 2007, at 06:03, veerasena reddy wrote:
+>
+>> Hi,
+>>
+>> I am trying to build the toolchain for MIPS processor using
+>> buildroot. I am using gcc version of 3.4.3, binutils-2.15,
+>> uclibc-0.9.28 and linux-2.6.18.8 kernel.
+>>
+>> Basically i need to enable NPTL feature support in my toolchain.
+>> does uclibc-0.9.28 has the support for NPTL? If not, how can i
+>> get it enabled for my above build configuration?
+>>
+>> I see there is separate branch "uclibc-nptl" in uclibc. Do i need
+>> to use this (uclibc-nptl) to meet my requirement?
+>>
+>> Could you please suggest me right approach to succssfully enable
+>> NPTL?
+>>
+>> Thanks in advance.
+>>
+>> Regards, Veerasena.
+>>
+>>
+>> Why delete messages? Unlimited storage is just a click away. Go
+>> to http://help.yahoo.com/l/in/yahoo/mail/yahoomail/tools/
+>> tools-08.html
+>>
+>>
+>
+> _______________________________________
+>
+> Mr Markus Gothe Software Engineer
+>
+> Phone: +46 (0)13 21 81 20 (ext. 1046) Fax: +46 (0)13 21 21 15
+> Mobile: +46 (0)73 718 72 80 Diskettgatan 11, SE-583 35 Linköping,
+> Sweden www.27m.com
+>
+>
+> Did you know? You can CHAT without downloading messenger. Go to
+> http://in.messenger.yahoo.com/webmessengerpromo.php/
+>
+>
 
-Rgds
--- 
-     -- Pierre Ossman
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+- --
+_______________________________________
+
+Mr Markus Gothe
+Software Engineer
+
+Phone: +46 (0)13 21 81 20 (ext. 1046)
+Fax: +46 (0)13 21 21 15
+Mobile: +46 (0)73 718 72 80
+Diskettgatan 11, SE-583 35 Linköping, Sweden
+www.27m.com
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFHLwuS6I0XmJx2NrwRCLRDAJ9O5mtOAtncebZ9yTZoZpWQLD7hKwCghfdz
+IlaSKs6XX+dD6dqC5YFYbRY=
+=/Kz+
+-----END PGP SIGNATURE-----
+
