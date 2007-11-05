@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756078AbXKEX3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbXKEXhS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756078AbXKEX3p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 18:29:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbXKEX3i
+	id S1755336AbXKEXhS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 18:37:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbXKEXhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 18:29:38 -0500
-Received: from pne-smtpout2-sn2.hy.skanova.net ([81.228.8.164]:33367 "EHLO
-	pne-smtpout2-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752554AbXKEX3h (ORCPT
+	Mon, 5 Nov 2007 18:37:07 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53462 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750830AbXKEXhE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 18:29:37 -0500
-X-Greylist: delayed 4208 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Nov 2007 18:29:37 EST
-Date: Mon, 5 Nov 2007 23:19:25 +0100 (CET)
-From: Peter Osterlund <petero2@telia.com>
-X-X-Sender: petero@quad.localdomain
-To: Jens Axboe <jens.axboe@oracle.com>, Tejun Heo <htejun@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Thomas Maier <balagi@justmail.de>
-Subject: Re: pktcdvd oops
-In-Reply-To: <20071105092018.GD5359@kernel.dk>
-Message-ID: <Pine.LNX.4.64.0711052312410.5445@quad.localdomain>
-References: <20071105092018.GD5359@kernel.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Mon, 5 Nov 2007 18:37:04 -0500
+Date: Mon, 5 Nov 2007 15:35:54 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, miklos@szeredi.hu, hch@infradead.org,
+       haveblue@us.ibm.com
+Subject: Re: [PATCH 25/27]
+ r-o-bind-mounts-track-number-of-mount-writers-make-lockdep-happy-with-r-o-bind-mounts
+Message-Id: <20071105153554.908846f9.akpm@linux-foundation.org>
+In-Reply-To: <20071101230900.13469A0F@kernel>
+References: <20071101230826.9A4F6E00@kernel>
+	<20071101230900.13469A0F@kernel>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Nov 2007, Jens Axboe wrote:
+On Thu, 01 Nov 2007 16:09:00 -0700
+Dave Hansen <haveblue@us.ibm.com> wrote:
 
-> Hi Peter,
->
-> You don't seem to have a bugzilla account, so could not reassign to you.
-> See http://bugzilla.kernel.org/show_bug.cgi?id=9294
+> With the r/o bind mount patches, we can have as many
+> spinlocks nested as there are CPUs on the system.
+> Lockdep freaks out after 8.
+> 
+> So, create a new lockdep class of locks for the
+> mnt_writer spinlocks, and initialize each of the
+> cpu locks to be in a different class.
+> 
+> It should shut up warnings like this, while still
+> allowing some of the lockdep goodness to remain:
+> 
+> =============================================
+> [ INFO: possible recursive locking detected ]
+> 2.6.23-rc6 #6
+> 
 
-Problem is repeatable on my computer. It dies in __module_get() on this 
-line:
+I added your signed-off-by: to this.
 
- 		BUG_ON(module_refcount(module) == 0);
-
-I think this is because commit 7b595756ec1f49e0049a9e01a1298d53a7faaa15, 
-which states: "Note that with this change, userland holding a sysfs node 
-does not prevent the backing module from being unloaded."
-
-Unfortunately, I don't know how this sysfs stuff is supposed to work, and 
-therefore don't know how to fix the problem.
-
--- 
-Peter Osterlund - petero2@telia.com
-http://web.telia.com/~u89404340
+I wish you hadn't mucked up all those Subject:s
