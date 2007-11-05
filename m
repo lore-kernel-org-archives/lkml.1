@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759305AbXKERNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759400AbXKERN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759305AbXKERNl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 12:13:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757219AbXKERHr
+	id S1759400AbXKERN6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 12:13:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757599AbXKERHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 12:07:47 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59514 "EHLO
+	Mon, 5 Nov 2007 12:07:51 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59516 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757562AbXKERHq (ORCPT
+	with ESMTP id S1757588AbXKERHu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 12:07:46 -0500
-Date: Mon, 5 Nov 2007 18:07:22 +0100
+	Mon, 5 Nov 2007 12:07:50 -0500
+Date: Mon, 5 Nov 2007 18:07:26 +0100
 From: Adrian Bunk <bunk@kernel.org>
-To: v4l-dvb-maintainer@linuxtv.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] cx88-mpeg.c: make 4 functions static
-Message-ID: <20071105170722.GM12045@stusta.de>
+To: Luca Risolia <luca.risolia@studio.unibo.it>
+Cc: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] media/video/et61x251/: make 5 functions static
+Message-ID: <20071105170726.GN12045@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,89 +23,97 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the following needlessly global functions static:
-- cx8802_init_common()
-- cx8802_fini_common()
-- cx8802_suspend_common()
-- cx8802_resume_common()
+This patch makes the following needlessly global functions in 
+et61x251_core.c static:
+- et61x251_read_reg()
+- et61x251_i2c_try_read()
+- et61x251_i2c_try_write()
+- et61x251_i2c_read()
+- et61x251_i2c_write()
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/media/video/cx88/cx88-mpeg.c |   14 ++++----------
- drivers/media/video/cx88/cx88.h      |    6 ------
- 2 files changed, 4 insertions(+), 16 deletions(-)
+ drivers/media/video/et61x251/et61x251_core.c   |   20 ++++++++---------
+ drivers/media/video/et61x251/et61x251_sensor.h |    8 ------
+ 2 files changed, 10 insertions(+), 18 deletions(-)
 
-cfc675144973c2ae6188929e18194e27da937f43 
-diff --git a/drivers/media/video/cx88/cx88-mpeg.c b/drivers/media/video/cx88/cx88-mpeg.c
-index 448c673..60ac423 100644
---- a/drivers/media/video/cx88/cx88-mpeg.c
-+++ b/drivers/media/video/cx88/cx88-mpeg.c
-@@ -437,10 +437,7 @@ static irqreturn_t cx8802_irq(int irq, void *dev_id)
- 	return IRQ_RETVAL(handled);
+e176e19b9d562fe3d3fe1cddf3f08136002f1b25 
+diff --git a/drivers/media/video/et61x251/et61x251_core.c b/drivers/media/video/et61x251/et61x251_core.c
+index d19d73b..38d2ad0 100644
+--- a/drivers/media/video/et61x251/et61x251_core.c
++++ b/drivers/media/video/et61x251/et61x251_core.c
+@@ -227,7 +227,7 @@ int et61x251_write_reg(struct et61x251_device* cam, u8 value, u16 index)
  }
  
--/* ----------------------------------------------------------- */
--/* exported stuff                                              */
--
--int cx8802_init_common(struct cx8802_dev *dev)
-+static int cx8802_init_common(struct cx8802_dev *dev)
+ 
+-int et61x251_read_reg(struct et61x251_device* cam, u16 index)
++static int et61x251_read_reg(struct et61x251_device* cam, u16 index)
  {
- 	struct cx88_core *core = dev->core;
- 	int err;
-@@ -488,7 +485,7 @@ int cx8802_init_common(struct cx8802_dev *dev)
- 	return 0;
+ 	struct usb_device* udev = cam->usbdev;
+ 	u8* buff = cam->control_buffer;
+@@ -268,9 +268,9 @@ et61x251_i2c_wait(struct et61x251_device* cam,
  }
  
--void cx8802_fini_common(struct cx8802_dev *dev)
-+static void cx8802_fini_common(struct cx8802_dev *dev)
- {
- 	dprintk( 2, "cx8802_fini_common\n" );
- 	cx8802_stop_dma(dev);
-@@ -504,7 +501,7 @@ void cx8802_fini_common(struct cx8802_dev *dev)
  
- /* ----------------------------------------------------------- */
- 
--int cx8802_suspend_common(struct pci_dev *pci_dev, pm_message_t state)
-+static int cx8802_suspend_common(struct pci_dev *pci_dev, pm_message_t state)
+-int
+-et61x251_i2c_try_read(struct et61x251_device* cam,
+-		      const struct et61x251_sensor* sensor, u8 address)
++static int et61x251_i2c_try_read(struct et61x251_device* cam,
++				 const struct et61x251_sensor* sensor,
++				 u8 address)
  {
- 	struct cx8802_dev *dev = pci_get_drvdata(pci_dev);
- 	struct cx88_core *core = dev->core;
-@@ -530,7 +527,7 @@ int cx8802_suspend_common(struct pci_dev *pci_dev, pm_message_t state)
- 	return 0;
+ 	struct usb_device* udev = cam->usbdev;
+ 	u8* data = cam->control_buffer;
+@@ -301,10 +301,9 @@ et61x251_i2c_try_read(struct et61x251_device* cam,
  }
  
--int cx8802_resume_common(struct pci_dev *pci_dev)
-+static int cx8802_resume_common(struct pci_dev *pci_dev)
+ 
+-int
+-et61x251_i2c_try_write(struct et61x251_device* cam,
+-		       const struct et61x251_sensor* sensor, u8 address,
+-		       u8 value)
++static int et61x251_i2c_try_write(struct et61x251_device* cam,
++				  const struct et61x251_sensor* sensor,
++				  u8 address, u8 value)
  {
- 	struct cx8802_dev *dev = pci_get_drvdata(pci_dev);
- 	struct cx88_core *core = dev->core;
-@@ -874,9 +871,6 @@ EXPORT_SYMBOL(cx8802_buf_prepare);
- EXPORT_SYMBOL(cx8802_buf_queue);
- EXPORT_SYMBOL(cx8802_cancel_buffers);
+ 	struct usb_device* udev = cam->usbdev;
+ 	u8* data = cam->control_buffer;
+@@ -387,13 +386,14 @@ et61x251_i2c_raw_write(struct et61x251_device* cam, u8 n, u8 data1, u8 data2,
+ }
  
--EXPORT_SYMBOL(cx8802_init_common);
--EXPORT_SYMBOL(cx8802_fini_common);
--
- EXPORT_SYMBOL(cx8802_register_driver);
- EXPORT_SYMBOL(cx8802_unregister_driver);
- EXPORT_SYMBOL(cx8802_get_driver);
-diff --git a/drivers/media/video/cx88/cx88.h b/drivers/media/video/cx88/cx88.h
-index eb296bd..bb1036a 100644
---- a/drivers/media/video/cx88/cx88.h
-+++ b/drivers/media/video/cx88/cx88.h
-@@ -633,12 +633,6 @@ int cx8802_buf_prepare(struct videobuf_queue *q,struct cx8802_dev *dev,
- void cx8802_buf_queue(struct cx8802_dev *dev, struct cx88_buffer *buf);
- void cx8802_cancel_buffers(struct cx8802_dev *dev);
  
--int cx8802_init_common(struct cx8802_dev *dev);
--void cx8802_fini_common(struct cx8802_dev *dev);
--
--int cx8802_suspend_common(struct pci_dev *pci_dev, pm_message_t state);
--int cx8802_resume_common(struct pci_dev *pci_dev);
--
- /* ----------------------------------------------------------- */
- /* cx88-video.c*/
- extern const u32 cx88_user_ctrls[];
+-int et61x251_i2c_read(struct et61x251_device* cam, u8 address)
++static int et61x251_i2c_read(struct et61x251_device* cam, u8 address)
+ {
+ 	return et61x251_i2c_try_read(cam, &cam->sensor, address);
+ }
+ 
+ 
+-int et61x251_i2c_write(struct et61x251_device* cam, u8 address, u8 value)
++static int et61x251_i2c_write(struct et61x251_device* cam,
++			      u8 address, u8 value)
+ {
+ 	return et61x251_i2c_try_write(cam, &cam->sensor, address, value);
+ }
+diff --git a/drivers/media/video/et61x251/et61x251_sensor.h b/drivers/media/video/et61x251/et61x251_sensor.h
+index e145863..71a0314 100644
+--- a/drivers/media/video/et61x251/et61x251_sensor.h
++++ b/drivers/media/video/et61x251/et61x251_sensor.h
+@@ -52,14 +52,6 @@ et61x251_attach_sensor(struct et61x251_device* cam,
+ /*****************************************************************************/
+ 
+ extern int et61x251_write_reg(struct et61x251_device*, u8 value, u16 index);
+-extern int et61x251_read_reg(struct et61x251_device*, u16 index);
+-extern int et61x251_i2c_write(struct et61x251_device*, u8 address, u8 value);
+-extern int et61x251_i2c_read(struct et61x251_device*, u8 address);
+-extern int et61x251_i2c_try_write(struct et61x251_device*,
+-				  const struct et61x251_sensor*, u8 address,
+-				  u8 value);
+-extern int et61x251_i2c_try_read(struct et61x251_device*,
+-				 const struct et61x251_sensor*, u8 address);
+ extern int et61x251_i2c_raw_write(struct et61x251_device*, u8 n, u8 data1,
+ 				  u8 data2, u8 data3, u8 data4, u8 data5,
+ 				  u8 data6, u8 data7, u8 data8, u8 address);
 
