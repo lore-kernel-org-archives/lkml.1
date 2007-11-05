@@ -1,125 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbXKENVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756609AbXKEN3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756620AbXKENVX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 08:21:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755138AbXKENVQ
+	id S1756609AbXKEN3W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 08:29:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754703AbXKEN3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 08:21:16 -0500
-Received: from nic2.axis.se ([193.13.178.10]:55552 "EHLO krynn.se.axis.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754967AbXKENVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 08:21:15 -0500
-Date: Mon, 5 Nov 2007 14:21:02 +0100
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Mikael Starvik <mikael.starvik@axis.com>,
-       Jesper Nilsson <jesper.nilsson@axis.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] CRIS: Remove MTD_AMSTD and MTD_OBSOLETE_CHIPS
-Message-ID: <20071105132102.GL7621@axis.com>
+	Mon, 5 Nov 2007 08:29:13 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:46123 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754368AbXKEN3M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 08:29:12 -0500
+Date: Mon, 5 Nov 2007 07:29:06 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Andrew Morgan <morgan@kernel.org>
+Cc: Peter Dolding <oiaohm@gmail.com>, casey@schaufler-ca.com,
+       Toshiharu Harada <haradats@gmail.com>,
+       Crispin Cowan <crispin@crispincowan.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to
+	static interface)
+Message-ID: <20071105132906.GA26078@sergelap.austin.ibm.com>
+References: <e7d8f83e0710311904w45827586oabcca597fd612ea6@mail.gmail.com> <832119.21078.qm@web36614.mail.mud.yahoo.com> <e7d8f83e0710311951nd162a27rb2134e3b21e299a8@mail.gmail.com> <472EBE87.1050106@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <472EBE87.1050106@kernel.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove no longer configured MTD_AMDSTD and MTD_OBSOLETE_CHIPS from
-defconfig, Kconfig and code, instead we'll use MTD_CFI and/or MTD_JEDECPROBE.
+Quoting Andrew Morgan (morgan@kernel.org):
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> Peter Dolding wrote:
+> > On 11/1/07, Casey Schaufler <casey@schaufler-ca.com> wrote:
+> >> --- Peter Dolding <oiaohm@gmail.com> wrote:
+> >> Posix capabilities predate SELinux. SELinux is not interested in
+> >> Posix capabilities.
+> >>
+> >>> But no IBM had to do it.
+> >> Err, no. It was done by Andrew Morgan back in the dark ages.
+> >> Why on earth do you think IBM did it?
+> > 
+> > Posix file capabilities the option to replace SUID bit with something
+> > more security safe only handing out segments of root power instead of
+> > the complete box and dice like SUID.  Even different on a user by user
+> > base.
+> > 
+> > Posix capabilites is what Posix file capabilities is based on.  Yes I
+> > know the words appear close.  The word file is important.  Please read
+> > Website.  http://www.ibm.com/developerworks/linux/library/l-posixcap.html
+> 
+> For the record, I think you are both right. I took a stab at it back
+> when Casey and I first met:
+> 
+> ftp://ftp.kernel.org/pub/linux/libs/security/linux-privs/old/kernel-2.4-fcap/README
+> 
+> all that stuff worked fine it was just a bit ahead of its time...
+> 
+> - From memory, at that point in time "extended attributes" were an
+> external patch, and having some trouble getting merged. My sense was
+> that EA was a pre-requisite and I was happy to wait for that support to
+> become integrated before pushing my file capability support.
+> 
+> In the midst of all this LSM emerged as a reaction to Linus' clear
+> unhappiness about all extensions security. I didn't have the time to
+> participate in the LSM, and my work sat in the form of these patches.
+> 
+> SELinux at that time existed as a separate infrastructure, and evidently
+> did have the time to embrace LSM.
+> 
+> > IBM coders worked and got it into the main line really recently to
+> > provide at least some way to avoid fault of SUID of course it could
+> 
+> [...]
+> 
+> So, yes, IBM (Serge) deserve full credit for starting over, and getting
+> it merged...
 
-Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
+There are still pieces to line up.  Note that Andrew Morgan is working
+on a patch to make the securebits per-process to make capabilities
+more useful as well as a 64-bit capability patch.  And the support in
+tree to date would be riddled with gotchas without Andrew Morgan's,
+Stephen Smalley's, and Casey Schaufler's input.
 
----
- arch-v10/defconfig              |    3 +--
- arch-v10/drivers/Kconfig        |    2 --
- arch-v10/drivers/axisflashmap.c |    8 ++++----
- arch-v32/drivers/Kconfig        |    2 --
- defconfig                       |    4 ++--
- 5 files changed, 7 insertions(+), 12 deletions(-)
+-serge
 
-diff --git a/arch/cris/arch-v10/defconfig b/arch/cris/arch-v10/defconfig
-index 710c20b..d03bfc0 100644
---- a/arch/cris/arch-v10/defconfig
-+++ b/arch/cris/arch-v10/defconfig
-@@ -99,7 +99,7 @@ CONFIG_MTD=y
- CONFIG_MTD_CFI=y
- # CONFIG_MTD_CFI_INTELEXT is not set
- CONFIG_MTD_CFI_AMDSTD=y
--CONFIG_MTD_AMDSTD=y
-+# CONFIG_MTD_AMDSTD is not set
- CONFIG_MTD_CHAR=y
- CONFIG_MTD_BLOCK=y
- CONFIG_ETRAX_I2C=y
-@@ -145,7 +145,6 @@ CONFIG_MTD_CFI=y
- # CONFIG_MTD_CFI_GEOMETRY is not set
- # CONFIG_MTD_CFI_INTELEXT is not set
- CONFIG_MTD_CFI_AMDSTD=y
--CONFIG_MTD_AMDSTD=y
- # CONFIG_MTD_SHARP is not set
- # CONFIG_MTD_PHYSMAP is not set
- # CONFIG_MTD_NORA is not set
-diff --git a/arch/cris/arch-v10/drivers/Kconfig b/arch/cris/arch-v10/drivers/Kconfig
-index e6fc845..faf8b4d 100644
---- a/arch/cris/arch-v10/drivers/Kconfig
-+++ b/arch/cris/arch-v10/drivers/Kconfig
-@@ -606,8 +606,6 @@ config ETRAX_AXISFLASHMAP
- 	select MTD
- 	select MTD_CFI
- 	select MTD_CFI_AMDSTD
--	select MTD_OBSOLETE_CHIPS
--	select MTD_AMDSTD
- 	select MTD_CHAR
- 	select MTD_BLOCK
- 	select MTD_PARTITIONS
-diff --git a/arch/cris/arch-v10/drivers/axisflashmap.c b/arch/cris/arch-v10/drivers/axisflashmap.c
-index efd7b0f..ea3cf2e 100644
---- a/arch/cris/arch-v10/drivers/axisflashmap.c
-+++ b/arch/cris/arch-v10/drivers/axisflashmap.c
-@@ -312,12 +312,12 @@ static struct mtd_info *probe_cs(struct map_info *map_cs)
-                "%s: Probing a 0x%08lx bytes large window at 0x%08lx.\n",
- 	       map_cs->name, map_cs->size, map_cs->map_priv_1);
- 
--#ifdef CONFIG_MTD_AMDSTD
--	mtd_cs = do_map_probe("amd_flash", map_cs);
--#endif
- #ifdef CONFIG_MTD_CFI
-+	mtd_cs = do_map_probe("cfi_probe", map_cs);
-+#endif
-+#ifdef CONFIG_MTD_JEDECPROBE
- 	if (!mtd_cs) {
--		mtd_cs = do_map_probe("cfi_probe", map_cs);
-+		mtd_cs = do_map_probe("jedec_probe", map_cs);
- 	}
- #endif
- 
-diff --git a/arch/cris/arch-v32/drivers/Kconfig b/arch/cris/arch-v32/drivers/Kconfig
-index cc6ba54..7f72d7c 100644
---- a/arch/cris/arch-v32/drivers/Kconfig
-+++ b/arch/cris/arch-v32/drivers/Kconfig
-@@ -362,8 +362,6 @@ config ETRAX_AXISFLASHMAP
- 	select MTD
- 	select MTD_CFI
- 	select MTD_CFI_AMDSTD
--	select MTD_OBSOLETE_CHIPS
--	select MTD_AMDSTD
- 	select MTD_CHAR
- 	select MTD_BLOCK
- 	select MTD_PARTITIONS
-diff --git a/arch/cris/defconfig b/arch/cris/defconfig
-index e2d8185..713439b 100644
---- a/arch/cris/defconfig
-+++ b/arch/cris/defconfig
-@@ -226,8 +226,8 @@ CONFIG_MTD_CFI_UTIL=y
- CONFIG_MTD_RAM=y
- # CONFIG_MTD_ROM is not set
- # CONFIG_MTD_ABSENT is not set
--CONFIG_MTD_OBSOLETE_CHIPS=y
--CONFIG_MTD_AMDSTD=y
-+# CONFIG_MTD_OBSOLETE_CHIPS is not set
-+# CONFIG_MTD_AMDSTD is not set
- # CONFIG_MTD_SHARP is not set
- # CONFIG_MTD_JEDEC is not set
- 
-
-/^JN - Jesper Nilsson
---
-               Jesper Nilsson -- jesper.nilsson@axis.com
+(But hey, thanks :)
