@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757231AbXKERNF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759218AbXKERNY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757231AbXKERNF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 12:13:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757528AbXKERHn
+	id S1759218AbXKERNY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 12:13:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757554AbXKERHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 12:07:43 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:59509 "EHLO
+	Mon, 5 Nov 2007 12:07:46 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59511 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757516AbXKERHl (ORCPT
+	with ESMTP id S1754704AbXKERHo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 12:07:41 -0500
-Date: Mon, 5 Nov 2007 18:07:18 +0100
+	Mon, 5 Nov 2007 12:07:44 -0500
+Date: Mon, 5 Nov 2007 18:07:20 +0100
 From: Adrian Bunk <bunk@kernel.org>
-To: v4l-dvb-maintainer@linuxtv.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] media/common/ir-functions.c: make a function static
-Message-ID: <20071105170718.GK12045@stusta.de>
+To: Steven Toth <stoth@hauppauge.com>
+Cc: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] media/video/cx23885/: cleanups
+Message-ID: <20071105170720.GL12045@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,48 +23,237 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ir_rc5_decode() can become static.
+This patch contains the following cleanups:
+- make the following needlessly global code static:
+  - cx23885-core.c: struct cx23885_sram_channels[]
+  - cx23885-core.c: struct cx23887_sram_channels[]
+  - cx23885-core.c: cx23885_wakeup()
+  - cx23885-core.c: cx23885_sram_channel_setup()
+  - cx23885-core.c: cx23885_sram_channel_dump()
+  - cx23885-core.c: cx23885_risc_disasm()
+  - cx23885-core.c: cx23885_shutdown()
+  - cx23885-core.c: cx23885_reset()
+  - cx23885-core.c: cx23885_dev_unregister()
+  - cx23885-core.c: cx23885_risc_databuffer()
+  - cx23885-core.c: cx23885_risc_stopper()
+- #if 0 the following unused functions:
+  - cx23885-core.c: cx23885_risc_buffer()
+  - cx23885-core.c: cx23885_cancel_buffers()
+- remove the following unused EXPORT_SYMBOL's:
+  - cx23885-cards.c: cx23885_boards
+  - cx23885-i2c.c: cx23885_call_i2c_clients
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/media/common/ir-functions.c |    3 +--
- include/media/ir-common.h           |    1 -
- 2 files changed, 1 insertion(+), 3 deletions(-)
+ drivers/media/video/cx23885/cx23885-cards.c |    2 
+ drivers/media/video/cx23885/cx23885-core.c  |   50 ++++++++++----------
+ drivers/media/video/cx23885/cx23885-i2c.c   |    2 
+ drivers/media/video/cx23885/cx23885.h       |    4 -
+ 4 files changed, 27 insertions(+), 31 deletions(-)
 
-b0c2b9ed5b57f3a18160f03305a569eaee5e2bc2 
-diff --git a/drivers/media/common/ir-functions.c b/drivers/media/common/ir-functions.c
-index e7c3ab9..bb2a027 100644
---- a/drivers/media/common/ir-functions.c
-+++ b/drivers/media/common/ir-functions.c
-@@ -258,7 +258,7 @@ int ir_decode_biphase(u32 *samples, int count, int low, int high)
-  * saa7134 */
+23f11be19ad99d0c560955ddf96a3a3bace80721 
+diff --git a/drivers/media/video/cx23885/cx23885-cards.c b/drivers/media/video/cx23885/cx23885-cards.c
+index b9012ac..134b931 100644
+--- a/drivers/media/video/cx23885/cx23885-cards.c
++++ b/drivers/media/video/cx23885/cx23885-cards.c
+@@ -270,8 +270,6 @@ void cx23885_card_setup(struct cx23885_dev *dev)
  
- /* decode raw bit pattern to RC5 code */
--u32 ir_rc5_decode(unsigned int code)
-+static u32 ir_rc5_decode(unsigned int code)
+ /* ------------------------------------------------------------------ */
+ 
+-EXPORT_SYMBOL(cx23885_boards);
+-
+ /*
+  * Local variables:
+  * c-basic-offset: 8
+diff --git a/drivers/media/video/cx23885/cx23885-core.c b/drivers/media/video/cx23885/cx23885-core.c
+index 3cdd136..0248bf5 100644
+--- a/drivers/media/video/cx23885/cx23885-core.c
++++ b/drivers/media/video/cx23885/cx23885-core.c
+@@ -73,7 +73,7 @@ static LIST_HEAD(cx23885_devlist);
+  * 0x00010ea0 0x00010xxx Free
+  */
+ 
+-struct sram_channel cx23885_sram_channels[] = {
++static struct sram_channel cx23885_sram_channels[] = {
+ 	[SRAM_CH01] = {
+ 		.name		= "test ch1",
+ 		.cmds_start	= 0x10000,
+@@ -205,7 +205,7 @@ struct sram_channel cx23885_sram_channels[] = {
+  * 0x00010ea0 0x00010xxx Free
+  */
+ 
+-struct sram_channel cx23887_sram_channels[] = {
++static struct sram_channel cx23887_sram_channels[] = {
+ 	[SRAM_CH01] = {
+ 		.name		= "test ch1",
+ 		.cmds_start	= 0x0,
+@@ -356,8 +356,8 @@ static int cx23885_risc_decode(u32 risc)
+ 	return incr[risc >> 28] ? incr[risc >> 28] : 1;
+ }
+ 
+-void cx23885_wakeup(struct cx23885_tsport *port,
+-		    struct cx23885_dmaqueue *q, u32 count)
++static void cx23885_wakeup(struct cx23885_tsport *port,
++			   struct cx23885_dmaqueue *q, u32 count)
  {
- 	unsigned int org_code = code;
- 	unsigned int pair;
-@@ -371,7 +371,6 @@ EXPORT_SYMBOL_GPL(ir_dump_samples);
- EXPORT_SYMBOL_GPL(ir_decode_biphase);
- EXPORT_SYMBOL_GPL(ir_decode_pulsedistance);
+ 	struct cx23885_dev *dev = port->dev;
+ 	struct cx23885_buffer *buf;
+@@ -391,12 +391,10 @@ void cx23885_wakeup(struct cx23885_tsport *port,
+ 		printk("%s: %d buffers handled (should be 1)\n",
+ 		       __FUNCTION__, bc);
+ }
+-void cx23885_sram_channel_dump(struct cx23885_dev *dev,
+-			       struct sram_channel *ch);
  
--EXPORT_SYMBOL_GPL(ir_rc5_decode);
- EXPORT_SYMBOL_GPL(ir_rc5_timer_end);
- EXPORT_SYMBOL_GPL(ir_rc5_timer_keyup);
+-int cx23885_sram_channel_setup(struct cx23885_dev *dev,
+-			       struct sram_channel *ch,
+-			       unsigned int bpl, u32 risc)
++static int cx23885_sram_channel_setup(struct cx23885_dev *dev,
++				      struct sram_channel *ch,
++				      unsigned int bpl, u32 risc)
+ {
+ 	unsigned int i, lines;
+ 	u32 cdt;
+@@ -467,8 +465,8 @@ int cx23885_sram_channel_setup(struct cx23885_dev *dev,
+ 	return 0;
+ }
  
-diff --git a/include/media/ir-common.h b/include/media/ir-common.h
-index 7a785fa..b904d32 100644
---- a/include/media/ir-common.h
-+++ b/include/media/ir-common.h
-@@ -97,7 +97,6 @@ int  ir_dump_samples(u32 *samples, int count);
- int  ir_decode_biphase(u32 *samples, int count, int low, int high);
- int  ir_decode_pulsedistance(u32 *samples, int count, int low, int high);
+-void cx23885_sram_channel_dump(struct cx23885_dev *dev,
+-			       struct sram_channel *ch)
++static void cx23885_sram_channel_dump(struct cx23885_dev *dev,
++				      struct sram_channel *ch)
+ {
+ 	static char *name[] = {
+ 		"init risc lo",
+@@ -529,8 +527,8 @@ void cx23885_sram_channel_dump(struct cx23885_dev *dev,
+ 	       dev->name, cx_read(ch->cnt2_reg));
+ }
  
--u32 ir_rc5_decode(unsigned int code);
- void ir_rc5_timer_end(unsigned long data);
- void ir_rc5_timer_keyup(unsigned long data);
+-void cx23885_risc_disasm(struct cx23885_tsport *port,
+-			 struct btcx_riscmem *risc)
++static void cx23885_risc_disasm(struct cx23885_tsport *port,
++				struct btcx_riscmem *risc)
+ {
+ 	struct cx23885_dev *dev = port->dev;
+ 	unsigned int i, j, n;
+@@ -548,7 +546,7 @@ void cx23885_risc_disasm(struct cx23885_tsport *port,
+ 	}
+ }
+ 
+-void cx23885_shutdown(struct cx23885_dev *dev)
++static void cx23885_shutdown(struct cx23885_dev *dev)
+ {
+ 	/* disable RISC controller */
+ 	cx_write(DEV_CNTRL2, 0);
+@@ -578,7 +576,7 @@ void cx23885_shutdown(struct cx23885_dev *dev)
+ 
+ }
+ 
+-void cx23885_reset(struct cx23885_dev *dev)
++static void cx23885_reset(struct cx23885_dev *dev)
+ {
+ 	dprintk(1, "%s()\n", __FUNCTION__);
+ 
+@@ -636,8 +634,8 @@ static int get_resources(struct cx23885_dev *dev)
+ }
+ 
+ static void cx23885_timeout(unsigned long data);
+-int cx23885_risc_stopper(struct pci_dev *pci, struct btcx_riscmem *risc,
+-			 u32 reg, u32 mask, u32 value);
++static int cx23885_risc_stopper(struct pci_dev *pci, struct btcx_riscmem *risc,
++				u32 reg, u32 mask, u32 value);
+ 
+ static int cx23885_init_tsport(struct cx23885_dev *dev, struct cx23885_tsport *port, int portno)
+ {
+@@ -837,7 +835,7 @@ static int cx23885_dev_setup(struct cx23885_dev *dev)
+ 	return 0;
+ }
+ 
+-void cx23885_dev_unregister(struct cx23885_dev *dev)
++static void cx23885_dev_unregister(struct cx23885_dev *dev)
+ {
+ 	release_mem_region(pci_resource_start(dev->pci,0),
+ 			   pci_resource_len(dev->pci,0));
+@@ -912,6 +910,7 @@ static u32* cx23885_risc_field(u32 *rp, struct scatterlist *sglist,
+ 	return rp;
+ }
+ 
++#if 0
+ int cx23885_risc_buffer(struct pci_dev *pci, struct btcx_riscmem *risc,
+ 			struct scatterlist *sglist, unsigned int top_offset,
+ 			unsigned int bottom_offset, unsigned int bpl,
+@@ -951,10 +950,13 @@ int cx23885_risc_buffer(struct pci_dev *pci, struct btcx_riscmem *risc,
+ 	BUG_ON((risc->jmp - risc->cpu + 2) * sizeof (*risc->cpu) > risc->size);
+ 	return 0;
+ }
++#endif  /*  0  */
+ 
+-int cx23885_risc_databuffer(struct pci_dev *pci, struct btcx_riscmem *risc,
+-			    struct scatterlist *sglist, unsigned int bpl,
+-			    unsigned int lines)
++static int cx23885_risc_databuffer(struct pci_dev *pci,
++				   struct btcx_riscmem *risc,
++				   struct scatterlist *sglist,
++				   unsigned int bpl,
++				   unsigned int lines)
+ {
+ 	u32 instructions;
+ 	u32 *rp;
+@@ -981,8 +983,8 @@ int cx23885_risc_databuffer(struct pci_dev *pci, struct btcx_riscmem *risc,
+ 	return 0;
+ }
+ 
+-int cx23885_risc_stopper(struct pci_dev *pci, struct btcx_riscmem *risc,
+-			 u32 reg, u32 mask, u32 value)
++static int cx23885_risc_stopper(struct pci_dev *pci, struct btcx_riscmem *risc,
++				u32 reg, u32 mask, u32 value)
+ {
+ 	u32 *rp;
+ 	int rc;
+@@ -1243,6 +1245,7 @@ static void do_cancel_buffers(struct cx23885_tsport *port, char *reason,
+ 	spin_unlock_irqrestore(&port->slock, flags);
+ }
+ 
++#if 0
+ void cx23885_cancel_buffers(struct cx23885_tsport *port)
+ {
+ 	struct cx23885_dev *dev = port->dev;
+@@ -1253,6 +1256,7 @@ void cx23885_cancel_buffers(struct cx23885_tsport *port)
+ 	cx23885_stop_dma(port);
+ 	do_cancel_buffers(port, "cancel", 0);
+ }
++#endif  /*  0  */
+ 
+ static void cx23885_timeout(unsigned long data)
+ {
+diff --git a/drivers/media/video/cx23885/cx23885-i2c.c b/drivers/media/video/cx23885/cx23885-i2c.c
+index 71da528..12c3006 100644
+--- a/drivers/media/video/cx23885/cx23885-i2c.c
++++ b/drivers/media/video/cx23885/cx23885-i2c.c
+@@ -366,8 +366,6 @@ int cx23885_i2c_unregister(struct cx23885_i2c *bus)
+ 
+ /* ----------------------------------------------------------------------- */
+ 
+-EXPORT_SYMBOL(cx23885_call_i2c_clients);
+-
+ /*
+  * Local variables:
+  * c-basic-offset: 8
+diff --git a/drivers/media/video/cx23885/cx23885.h b/drivers/media/video/cx23885/cx23885.h
+index dec4dc2..205640c 100644
+--- a/drivers/media/video/cx23885/cx23885.h
++++ b/drivers/media/video/cx23885/cx23885.h
+@@ -254,10 +254,6 @@ struct sram_channel {
+ #define cx_set(reg,bit)          cx_andor((reg),(bit),(bit))
+ #define cx_clear(reg,bit)        cx_andor((reg),(bit),0)
+ 
+-extern int cx23885_sram_channel_setup(struct cx23885_dev *dev,
+-	struct sram_channel *ch,
+-	unsigned int bpl, u32 risc);
+-
+ /* ----------------------------------------------------------- */
+ /* cx23885-cards.c                                                */
  
 
