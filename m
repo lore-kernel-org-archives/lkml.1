@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbXKDEz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757493AbXKDE6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756147AbXKDEz0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 00:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbXKDEzS
+	id S1757493AbXKDE6v (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 00:58:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbXKDE6o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 00:55:18 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:13705 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752112AbXKDEzQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 00:55:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=VBw3exX7JJv5ZNQGHx6uaBBq/jzKdFCIMQTuo76G3CauaR/aqRLHA/ia98Xt8vErACpwEVbGn2zkN9/w8vP9cxWgCDpqhO7jYVhwDJbHHJMzAyzJ7t+Ury31kAlb05BHNQM7R9yLcPQxoDfgbHtkz5cnEaTP22snFD0odv1DsW4=
-Message-ID: <9e4733910711032155j1649a3b8u56a59e754d77f61b@mail.gmail.com>
-Date: Sun, 4 Nov 2007 00:55:15 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: lkml <linux-kernel@vger.kernel.org>, i2c@lm-sensors.org
-Subject: [PATCH] Fix i2c module parameter permissions for read/write
+	Sun, 4 Nov 2007 00:58:44 -0400
+Received: from [212.12.190.107] ([212.12.190.107]:46772 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752737AbXKDE6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Nov 2007 00:58:43 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: linux-fsdevel@vger.kernel.org
+Subject: Massive slowdown when re-querying large nfs dir
+Date: Mon, 5 Nov 2007 07:58:38 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200711050758.38090.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The permissions of i2c module parameters were set to zero making the
-parameters invisible and unsettable from the kernel command line. This
-patch changes the permissions to the standard 0644 read/write.
+There is a massive (3-18x) slowdown when re-querying a large nfs dir (2k+ 
+entries) using a simple ls -l.
 
-Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
----
+On 2.6.23 client and server running userland rpc.nfs.V2:
+first  try: time -p ls -l <2k+ entry dir>  in ~2.5sec
+more tries: time -p ls -l <2k+ entry dir>  in ~8sec
 
-diff --git a/include/linux/i2c.h b/include/linux/i2c.h
-index 8033e6b..395e430 100644
---- a/include/linux/i2c.h
-+++ b/include/linux/i2c.h
-@@ -588,7 +588,7 @@ union i2c_smbus_data {
- #define I2C_CLIENT_MODULE_PARM(var,desc) \
-   static unsigned short var[I2C_CLIENT_MAX_OPTS] = I2C_CLIENT_DEFAULTS; \
-   static unsigned int var##_num; \
--  module_param_array(var, short, &var##_num, 0); \
-+  module_param_array(var, short, &var##_num, 0644); \
-   MODULE_PARM_DESC(var,desc)
+first  try: time -p ls -l <5k+ entry dir>  in ~9sec
+more tries: time -p ls -l <5k+ entry dir>  in ~180sec
 
- #define I2C_CLIENT_MODULE_PARM_FORCE(name)                             \
+On 2.6.23 client and 2.4.31 server running userland rpc.nfs.V2:
+first  try: time -p ls -l <2k+ entry dir>  in ~2.5sec
+more tries: time -p ls -l <2k+ entry dir>  in ~7sec
+
+first  try: time -p ls -l <5k+ entry dir>  in ~8sec
+more tries: time -p ls -l <5k+ entry dir>  in ~43sec
+
+Remounting the nfs-dir on the client resets the problem.
+
+Any ideas?
 
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Thanks!
+
+--
+Al
+
