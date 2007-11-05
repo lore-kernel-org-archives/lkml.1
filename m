@@ -1,157 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757259AbXKET3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755106AbXKETcP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757259AbXKET3z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 14:29:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754742AbXKET2U
+	id S1755106AbXKETcP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 14:32:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbXKETb7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 14:28:20 -0500
-Received: from saraswathi.solana.com ([198.99.130.12]:47868 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754667AbXKET2T (ORCPT
+	Mon, 5 Nov 2007 14:31:59 -0500
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:51628 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750830AbXKETb6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 14:28:19 -0500
-Date: Mon, 5 Nov 2007 14:27:48 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH 6/6] UML - Borrow const.h techniques
-Message-ID: <20071105192748.GA8808@c2.user-mode-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+	Mon, 5 Nov 2007 14:31:58 -0500
+Date: Mon, 5 Nov 2007 11:31:58 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: stable@kernel.org, Hugh Dickins <hugh@veritas.com>,
+       Oliv?r Pint?r <oliver.pntr@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] slub: fix leakage
+In-Reply-To: <alpine.LFD.0.999.0711051126250.15101@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0711051130100.16207@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0711031708040.10266@blonde.wat.veritas.com>
+ <6101e8c40711031027x3f946b28p324dadeab7c1b2c3@mail.gmail.com>
+ <Pine.LNX.4.64.0711031741160.10953@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0711031847450.13845@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0711031935510.15611@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0711031247250.5828@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0711031950300.17078@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0711031253580.6080@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0711032007060.17942@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0711031326450.6227@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0711041103030.8179@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0711051036250.13139@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0711051901330.28390@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0711051114560.14913@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.999.0711051126250.15101@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suggested by Geert Uytterhoeven - use const.h to get constants that
-are usable in both C and assembly.  I can't include it directly since
-this code can't include kernel headers.  const.h is also for numeric
-constants that can be typed by tacking a "UL" or similar on the end.
-The constants here have to be typed by casting them.
+On Mon, 5 Nov 2007, Linus Torvalds wrote:
 
-So, the relevant parts of const.h are copied here and modified in
-order to allow the constants to be uncasted in assembly and casted in
-C.
+> > Here is the fix against 2.6.23:
+> 
+> Will you send the equivalent one for the current -git tree?
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+I already sent that on Saturday (also sent a version against mm which is 
+a bit different now). Here is the version against git again:
+
+
+SLUB: Fix memory leak by not reusing cpu_slab
+
+Fix the memory leak that may occur when we attempt to reuse a cpu_slab
+that was allocated while we reenabled interrupts in order to be able to
+grow a slab cache. The per cpu freelist may contain objects and in that
+situation we may overwrite the per cpu freelist pointer loosing objects.
+This only occurs if we find that the concurrently allocated slab fits
+our allocation needs.
+
+If we simply always deactivate the slab then the freelist will be properly
+reintegrated and the memory leak will go away.
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
 ---
- arch/um/include/as-layout.h |   34 +++++++++++++++++++++-------------
- arch/um/sys-i386/stub.S     |    8 ++++----
- arch/um/sys-x86_64/stub.S   |    8 ++++----
- 3 files changed, 29 insertions(+), 21 deletions(-)
+ mm/slub.c |   20 +-------------------
+ 1 file changed, 1 insertion(+), 19 deletions(-)
 
-Index: linux-2.6/arch/um/include/as-layout.h
+Index: linux-2.6/mm/slub.c
 ===================================================================
---- linux-2.6.orig/arch/um/include/as-layout.h	2007-11-05 14:06:09.000000000 -0500
-+++ linux-2.6/arch/um/include/as-layout.h	2007-11-05 14:16:29.000000000 -0500
-@@ -10,23 +10,31 @@
- #include "kern_constants.h"
+--- linux-2.6.orig/mm/slub.c	2007-11-03 11:41:58.000000000 -0700
++++ linux-2.6/mm/slub.c	2007-11-03 11:42:12.000000000 -0700
+@@ -1511,26 +1511,8 @@ new_slab:
  
- /*
-- * Assembly doesn't want any casting, but C does, so define these
-- * without casts here, and define new symbols with casts inside the C
-- * section.
-+ * Stolen from linux/const.h, which can't be directly included since
-+ * this is used in userspace code, which has no access to the kernel
-+ * headers.  Changed to be suitable for adding casts to the start,
-+ * rather than "UL" to the end.
-  */
--#define ASM_STUB_CODE (UML_CONFIG_TOP_ADDR - 2 * UM_KERN_PAGE_SIZE)
--#define ASM_STUB_DATA (UML_CONFIG_TOP_ADDR - UM_KERN_PAGE_SIZE)
--#define ASM_STUB_START ASM_STUB_CODE
- 
--/*
-- * This file is included by the assembly stubs, which just want the
-- * definitions above.
-+/* Some constant macros are used in both assembler and
-+ * C code.  Therefore we cannot annotate them always with
-+ * 'UL' and other type specifiers unilaterally.  We
-+ * use the following macros to deal with this.
-  */
--#ifndef __ASSEMBLY__
- 
--#define STUB_CODE ((unsigned long) ASM_STUB_CODE)
--#define STUB_DATA ((unsigned long) ASM_STUB_DATA)
--#define STUB_START ((unsigned long) ASM_STUB_START)
-+#ifdef __ASSEMBLY__
-+#define _AC(X, Y)	(Y)
-+#else
-+#define __AC(X, Y)	(X (Y))
-+#define _AC(X, Y)	__AC(X, Y)
-+#endif
-+
-+#define STUB_CODE _AC((unsigned long), \
-+		      UML_CONFIG_TOP_ADDR - 2 * UM_KERN_PAGE_SIZE)
-+#define STUB_DATA _AC((unsigned long), UML_CONFIG_TOP_ADDR - UM_KERN_PAGE_SIZE)
-+#define STUB_START _AC(, STUB_CODE)
-+
-+#ifndef __ASSEMBLY__
- 
- #include "sysdep/ptrace.h"
- 
-Index: linux-2.6/arch/um/sys-i386/stub.S
-===================================================================
---- linux-2.6.orig/arch/um/sys-i386/stub.S	2007-11-05 14:06:09.000000000 -0500
-+++ linux-2.6/arch/um/sys-i386/stub.S	2007-11-05 14:14:20.000000000 -0500
-@@ -7,7 +7,7 @@
- 	.globl batch_syscall_stub
- batch_syscall_stub:
- 	/* load pointer to first operation */
--	mov	$(ASM_STUB_DATA+8), %esp
-+	mov	$(STUB_DATA+8), %esp
- 
- again:
- 	/* load length of additional data */
-@@ -15,12 +15,12 @@ again:
- 
- 	/* if(length == 0) : end of list */
- 	/* write possible 0 to header */
--	mov	%eax, ASM_STUB_DATA+4
-+	mov	%eax, STUB_DATA+4
- 	cmpl	$0, %eax
- 	jz	done
- 
- 	/* save current pointer */
--	mov	%esp, ASM_STUB_DATA+4
-+	mov	%esp, STUB_DATA+4
- 
- 	/* skip additional data */
- 	add	%eax, %esp
-@@ -46,7 +46,7 @@ again:
- 
- done:
- 	/* save return value */
--	mov	%eax, ASM_STUB_DATA
-+	mov	%eax, STUB_DATA
- 
- 	/* stop */
- 	int3
-Index: linux-2.6/arch/um/sys-x86_64/stub.S
-===================================================================
---- linux-2.6.orig/arch/um/sys-x86_64/stub.S	2007-11-05 14:06:09.000000000 -0500
-+++ linux-2.6/arch/um/sys-x86_64/stub.S	2007-11-05 14:14:20.000000000 -0500
-@@ -8,18 +8,18 @@ syscall_stub:
- 	/* We don't have 64-bit constants, so this constructs the address
- 	 * we need.
- 	 */
--	movq	$(ASM_STUB_DATA >> 32), %rbx
-+	movq	$(STUB_DATA >> 32), %rbx
- 	salq	$32, %rbx
--	movq	$(ASM_STUB_DATA & 0xffffffff), %rcx
-+	movq	$(STUB_DATA & 0xffffffff), %rcx
- 	or	%rcx, %rbx
- 	movq	%rax, (%rbx)
- 	int3
- 
- 	.globl batch_syscall_stub
- batch_syscall_stub:
--	mov	$(ASM_STUB_DATA >> 32), %rbx
-+	mov	$(STUB_DATA >> 32), %rbx
- 	sal	$32, %rbx
--	mov	$(ASM_STUB_DATA & 0xffffffff), %rax
-+	mov	$(STUB_DATA & 0xffffffff), %rax
- 	or	%rax, %rbx
- 	/* load pointer to first operation */
- 	mov	%rbx, %rsp
+ 	if (new) {
+ 		c = get_cpu_slab(s, smp_processor_id());
+-		if (c->page) {
+-			/*
+-			 * Someone else populated the cpu_slab while we
+-			 * enabled interrupts, or we have gotten scheduled
+-			 * on another cpu. The page may not be on the
+-			 * requested node even if __GFP_THISNODE was
+-			 * specified. So we need to recheck.
+-			 */
+-			if (node_match(c, node)) {
+-				/*
+-				 * Current cpuslab is acceptable and we
+-				 * want the current one since its cache hot
+-				 */
+-				discard_slab(s, new);
+-				slab_lock(c->page);
+-				goto load_freelist;
+-			}
+-			/* New slab does not fit our expectations */
++		if (c->page)
+ 			flush_slab(s, c);
+-		}
+ 		slab_lock(new);
+ 		SetSlabFrozen(new);
+ 		c->page = new;
