@@ -1,42 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbXKEBLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755798AbXKEBSs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756034AbXKEBLd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Nov 2007 20:11:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755739AbXKEBLX
+	id S1755798AbXKEBSs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Nov 2007 20:18:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbXKEBSl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Nov 2007 20:11:23 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:45904 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755724AbXKEBLW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Nov 2007 20:11:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=AdnNX6FQ6bb2Eu5gFjVsXrmZMHIK6QEQy1tsJQfeZnY+CXXJLltaOK8TvP3/FjrchWB5VGZFE/ZAZz5aP1AKpFLJP53jywPi5ZKuhVToS0FufL3Uw5MsFkpGzq3elhjQ4ZLpFqsZAON4rGU8OR6CYWPb9Lc1qcWa64IHz8p+Dho=
-Message-ID: <f17812d70711041711x215e6fbdtd14ba74bff5e7aec@mail.gmail.com>
-Date: Mon, 5 Nov 2007 09:11:21 +0800
-From: "eric miao" <eric.y.miao@gmail.com>
-To: linux-main <linux-kernel@vger.kernel.org>
-Subject: duplicate device name print out by dev_xxxx
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Sun, 4 Nov 2007 20:18:41 -0500
+Received: from aun.it.uu.se ([130.238.12.36]:56067 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753726AbXKEBSk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Nov 2007 20:18:40 -0500
+Date: Mon, 5 Nov 2007 02:18:35 +0100 (MET)
+Message-Id: <200711050118.lA51IZHt016079@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: hpa@zytor.com, mikpe@it.uu.se
+Subject: Re: [PATCH] fix i486 boot failure due to stale %ds
+Cc: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All,
+On Sun, 04 Nov 2007 15:51:43 -0800, H. Peter Anvin wrote:
+> Mikael, can you try this patch (rev 3) on your 486?
 
-I found in recent kernel that dev_xxxx() macros will print out duplicate
-device name, which is a bit ugly. And this is true at least for platform_device.
+It works fine.
 
-The reason is due to dev_printk() printing out both dev_driver_string(dev)
-and (dev)->bus_id, the latter is assigned with the same driver name
-for a platform_device.
-
-Any idea on this?
-
--- 
-Cheers
-- eric
+/Mikael
