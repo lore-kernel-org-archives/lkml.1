@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755595AbXKEXXz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbXKEXZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755595AbXKEXXz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 18:23:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754741AbXKEXXs
+	id S1756037AbXKEXZA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 18:25:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754463AbXKEXYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 18:23:48 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52061
+	Mon, 5 Nov 2007 18:24:53 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52065
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754535AbXKEXXr (ORCPT
+	by vger.kernel.org with ESMTP id S1754459AbXKEXYw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 18:23:47 -0500
-Date: Mon, 05 Nov 2007 15:23:47 -0800 (PST)
-Message-Id: <20071105.152347.77881497.davem@davemloft.net>
-To: gregkh@suse.de
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	Mon, 5 Nov 2007 18:24:52 -0500
+Date: Mon, 05 Nov 2007 15:24:51 -0800 (PST)
+Message-Id: <20071105.152451.260321864.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: gregkh@suse.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz,
        pcihpd-discuss@lists.sourceforge.net
 Subject: Re: [GIT PATCH] PCI patches for 2.6.24-rc1
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071105221752.GA9509@suse.de>
-References: <20071105215601.GA4612@kroah.com>
-	<alpine.LFD.0.999.0711051410180.15101@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0711051432531.15101@woody.linux-foundation.org>
+References: <alpine.LFD.0.999.0711051410180.15101@woody.linux-foundation.org>
 	<20071105221752.GA9509@suse.de>
+	<alpine.LFD.0.999.0711051432531.15101@woody.linux-foundation.org>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,39 +29,22 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Greg KH <gregkh@suse.de>
-Date: Mon, 5 Nov 2007 14:17:52 -0800
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Mon, 5 Nov 2007 14:37:31 -0800 (PST)
 
-> On Mon, Nov 05, 2007 at 02:13:58PM -0800, Linus Torvalds wrote:
-> > On Mon, 5 Nov 2007, Greg KH wrote:
-> > > 
-> > > They are a bunch of quirk updates from David Miller, a new config item
-> > > to help Jeff Garzik start to cleanup the isdn drivers and let him take
-> > > those patches through his tree, and a few other minor bugfixes.
-> > 
-> > This one is bogus:
-> > 
-> >     PCI: Revert "PCI: disable MSI by default on systems with Serverworks HT1000 chips"
-> >     
-> >     This reverts commit e3008dedff4bdc96a5f67224cd3d8d12237082a0.
-> >     
-> >     The real bug was an INTX issue in the tg3 ethernet chip, and
-> >     cured by commit c129d962a66c76964954a98b38586ada82cf9381
-> >     
-> >     Signed-off-by: David S. Miller <davem@davemloft.net>
-> >     Acked-by: Jeff Garzik <jgarzik@redhat.com>
-> >     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > 
-> > It says "cured by commit c129d962a66c76964954a98b38586ada82cf9381", but no 
-> > such commit exists. What?
-> > 
-> > Did you mean commit ba698ad4b7e466cbb4a8bde6b9da8080ab06808d, and if so, 
-> > where did that c129d.. come from?
+> So let me one more say:
 > 
-> I'll defer to David on this one, as he sent it to me.
+>  - don't just say 
+> 
+> 	.. was cured by commit xyz
+> 
+>  - but add the one-liner description of the commit, something along the 
+>    lines of
+> 
+> 	.. was cured by commit xyz ("PCI: Add quirk for devices which 
+>         disable MSI when INTX_DISABLE is set.")
+> 
+> so that the commit messages are readable even outside git.
 
-At the time I originally wrote that patch, that was the commit ID in
-my net-2.6 tree, but I rebased net-2.6 before final submittion of the
-tg3 patch and I didn't update the commit log for this patch to match.
-
-Sorry.
+I agree, and I've been trying to get into the habit of
+doing this even though I didn't this time.
