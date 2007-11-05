@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756619AbXKEMrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756251AbXKEMus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756619AbXKEMrW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 07:47:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbXKEMrP
+	id S1756251AbXKEMus (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 07:50:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754859AbXKEMuk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 07:47:15 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:47547 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750887AbXKEMrO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 07:47:14 -0500
-Subject: Re: oops in enqueue_entity with 2.6.24-rc1-g54866f03
-From: Peter Zijlstra <peterz@infradead.org>
-To: Eric Sesterhenn <snakebyte@gmx.de>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20071105124427.GA8765@alice>
-References: <20071102123603.GA4988@alice> <1194266231.27652.437.camel@twins>
-	 <20071105124427.GA8765@alice>
-Content-Type: text/plain
-Date: Mon, 05 Nov 2007 13:47:12 +0100
-Message-Id: <1194266832.27652.439.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Nov 2007 07:50:40 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:4776 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754560AbXKEMuj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 07:50:39 -0500
+Date: Mon, 5 Nov 2007 13:47:11 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: linux-kernel@vger.kernel.org, jeff@garzik.org, linux-ide@vger.kernel.org
+Subject: Re: Suspend to ram regression (2.6.24-rc1-git)
+Message-ID: <20071105124711.GF5359@kernel.dk>
+References: <20071031201308.GK11514@kernel.dk> <20071101084145.GA5037@kernel.dk> <20071102163708.15304989.kristen.c.accardi@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071102163708.15304989.kristen.c.accardi@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-11-05 at 13:44 +0100, Eric Sesterhenn wrote:
-> * Peter Zijlstra (peterz@infradead.org) wrote:
-> > On Fri, 2007-11-02 at 13:36 +0100, Eric Sesterhenn wrote:
-> > > hi,
+On Fri, Nov 02 2007, Kristen Carlson Accardi wrote:
+> On Thu, 1 Nov 2007 09:41:46 +0100
+> Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > On Wed, Oct 31 2007, Jens Axboe wrote:
+> > > Hi,
 > > > 
-> > > I get the following crash with 2.6.24-rc1-g54866f03, the last version I
-> > > tested which booted fine was 2.6.24-rc1-gb1d08ac0
+> > > My x60 stopped suspending about two days ago. It just freezes after
+> > > printing
 > > > 
+> > > Suspending console(s)
+> > > 
+> > > where it would normally turn everything off and the 'moon' light would
+> > > go on. Posting this message in case somebody else knows what is up, if
+> > > not I'll do a bisect on it tomorrow.
 > > 
-> > How reproducable is this?
+> > Did the bisect, it points to this commit:
+> > 
+> > 1556594f913fa81d008cecfe46d7211c919a853 is first bad commit
+> > commit 31556594f913fa81d008cecfe46d7211c919a853
+> > Author: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+> > Date:   Thu Oct 25 01:33:26 2007 -0400
+> > 
+> >     [libata] AHCI: add hw link power management support
+> > 
+> > Booting any kernel after this commit fails suspending to ram, it just
+> > sits there forever.
+> > 
+> > -- 
+> > Jens Axboe
+> > 
 > 
-> happens every boot
-> 
-> > If its very much reproducable, could you git bisect it, as in between
-> > those commits you tested nothing much has changed, that is, nothing that
-> > stands out to me.
-> 
-> i did already bisect this but landed at a commit which wasnt the cause
-> (also failed when i reverted it), I am currently bisecting a second time with
-> -rc1 as the other starting point, because I am not sure how to make git
-> give me revision gb1d08ac0 again to test it another time (the binary i
-> have here boots fine)
+> Does this patch fix your problem?  It seems to get hung up while disabling
+> DIPM, and after thinking about this a bit, I don't think we really need
+> to do this anyway.
 
-git checkout b1d08ac0
+Yep, works for me! Can we get this expedited upstream?
 
-should do I guess.
+-- 
+Jens Axboe
 
