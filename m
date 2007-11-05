@@ -1,194 +1,281 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754906AbXKERpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755127AbXKERrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754906AbXKERpf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 12:45:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbXKERpZ
+	id S1755127AbXKERrY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 12:47:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbXKERrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 12:45:25 -0500
-Received: from accolon.hansenpartnership.com ([64.109.89.108]:47864 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752237AbXKERpX (ORCPT
+	Mon, 5 Nov 2007 12:47:10 -0500
+Received: from mx0.starentnetworks.com ([12.38.223.203]:54163 "EHLO
+	mx0.starentnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752782AbXKERrH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 12:45:23 -0500
-Subject: [GIT PATCH] SCSI bug fixes for 2.6.24-rc1
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 05 Nov 2007 11:45:20 -0600
-Message-Id: <1194284720.5367.8.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
-Content-Transfer-Encoding: 8bit
+	Mon, 5 Nov 2007 12:47:07 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18223.22291.622615.129374@zeus.sw.starentnetworks.com>
+Date: Mon, 5 Nov 2007 12:46:59 -0500
+From: "Dave Johnson" <djohnson+linux-kernel@sw.starentnetworks.com>
+To: David Miller <davem@davemloft.net>, jes@trained-monkey.org,
+       mchan@broadcom.com, ram.vepa@neterion.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, bguo@sw.starentnetworks.com
+Subject: [PATCH 1/2] NET: Re-add VLAN tag for devices incapable of keeping it
+In-Reply-To: <472A6089.7020104@hp.com>
+References: <472A49BD.6000802@hp.com>
+	<20071101.145956.63020380.davem@davemloft.net>
+	<472A4D5C.2070301@hp.com>
+	<20071101.150723.30590053.davem@davemloft.net>
+	<472A6089.7020104@hp.com>
+X-Mailer: VM 7.17 under 21.4 (patch 17) "Jumbo Shrimp" XEmacs Lucid
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These are a fairly straightforward and small collection of fixes.
 
-The patch is available here:
+Some MACs are configured to remove VLAN tags on RX packets even if
+the kernel isn't setup to use VLANs.
 
-master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+On these drivers it is bad to simply pass the packets with the VLAN
+tag removed to the network stack.  This gives the network stack the
+impression these packets arrived from the network without a VLAN tag
+even though they had one.  This has 2 issues: 1, PF_PACKET sockets see
+the packet without the VLAN tag when bound to the base device; and 2,
+the L3 stacks will process these packets as if they had no tag to
+begin with.
 
-The short changelog is:
+This patch changes vlan_hwaccel_rx() and vlan_hwaccel_receive_skb() to
+accept a NULL vlan group.  This simplifies the drivers as they can
+call vlan_hwaccel_rx()/vlan_hwaccel_receive_skb() if the MAC
+has removed the VLAN tag, or netif_rx()/netif_receive_skb() if the
+MAC hasn't removed a VLAN tag (or the packet arrived untagged).
 
-Ilpo Järvinen (1):
-      osst: fix if (...) \n #if... cases missing semicolons when false
+If the vlan group is NULL or no device for the received VID exists,
+vlan_hwaccel_rx()/vlan_hwaccel_receive_skb() will now re-add a VLAN
+tag and pass the packet to the base device with tag intact.
 
-James Bottomley (1):
-      Update MAINTAINER email address and trees
+It is still preferable for the drivers to disable VLAN tag removal in
+the hardware if no vlan group is configured.  However for devices that
+cannot do this the change will ensure tagged packets remain tagged in
+the network stack.
 
-James Smart (1):
-      lpfc : Correct queue tag handling
-
-Robert Jennings (1):
-      ibmvscsi: Prevent IO during partner login
-
-The diffstat is:
-
- MAINTAINERS                      |    6 ++++--
- drivers/scsi/ibmvscsi/ibmvscsi.c |   19 ++++++++++++++-----
- drivers/scsi/lpfc/lpfc_scsi.c    |    5 +++--
- drivers/scsi/osst.c              |    6 ++++--
- 4 files changed, 25 insertions(+), 11 deletions(-)
-
-James
+Signed-off-by: Dave Johnson <djohnson@sw.starentnetworks.com>
 
 ---
-And the complete diff:
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 231bda2..b03014d 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2544,7 +2544,7 @@ S:	Supported
+Note, __vlan_hwaccel_rx() needed to move below __vlan_put_tag() so the
+change really isn't as big as it may look below.
+
+===== include/linux/if_vlan.h 1.25 vs edited =====
+--- 1.25/include/linux/if_vlan.h	2007-07-14 21:53:28 -04:00
++++ edited/include/linux/if_vlan.h	2007-11-03 14:26:43 -04:00
+@@ -164,71 +164,6 @@
+ 	(VLAN_TX_SKB_CB(__skb)->magic == VLAN_TX_COOKIE_MAGIC)
+ #define vlan_tx_tag_get(__skb)	(VLAN_TX_SKB_CB(__skb)->vlan_tag)
  
- MISCELLANEOUS MCA-SUPPORT
- P:	James Bottomley
--M:	jejb@steeleye.com
-+M:	James.Bottomley@HansenPartnership.com
- L:	linux-kernel@vger.kernel.org
- S:	Maintained
- 
-@@ -3296,9 +3296,11 @@ S:	Maintained
- 
- SCSI SUBSYSTEM
- P:	James E.J. Bottomley
--M:	James.Bottomley@SteelEye.com
-+M:	James.Bottomley@HansenPartnership.com
- L:	linux-scsi@vger.kernel.org
- T:	git kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
-+T:	git kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
-+T:	git kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-pending-2.6.git
- S:	Maintained
- 
- SCSI TAPE DRIVER
-diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
-index 22d91ee..5f2396c 100644
---- a/drivers/scsi/ibmvscsi/ibmvscsi.c
-+++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
-@@ -556,7 +556,7 @@ static int ibmvscsi_send_srp_event(struct srp_event_struct *evt_struct,
- 				   unsigned long timeout)
+-/* VLAN rx hw acceleration helper.  This acts like netif_{rx,receive_skb}(). */
+-static inline int __vlan_hwaccel_rx(struct sk_buff *skb,
+-				    struct vlan_group *grp,
+-				    unsigned short vlan_tag, int polling)
+-{
+-	struct net_device_stats *stats;
+-
+-	if (skb_bond_should_drop(skb)) {
+-		dev_kfree_skb_any(skb);
+-		return NET_RX_DROP;
+-	}
+-
+-	skb->dev = vlan_group_get_device(grp, vlan_tag & VLAN_VID_MASK);
+-	if (skb->dev == NULL) {
+-		dev_kfree_skb_any(skb);
+-
+-		/* Not NET_RX_DROP, this is not being dropped
+-		 * due to congestion.
+-		 */
+-		return 0;
+-	}
+-
+-	skb->dev->last_rx = jiffies;
+-
+-	stats = vlan_dev_get_stats(skb->dev);
+-	stats->rx_packets++;
+-	stats->rx_bytes += skb->len;
+-
+-	skb->priority = vlan_get_ingress_priority(skb->dev, vlan_tag);
+-	switch (skb->pkt_type) {
+-	case PACKET_BROADCAST:
+-		break;
+-
+-	case PACKET_MULTICAST:
+-		stats->multicast++;
+-		break;
+-
+-	case PACKET_OTHERHOST:
+-		/* Our lower layer thinks this is not local, let's make sure.
+-		 * This allows the VLAN to have a different MAC than the underlying
+-		 * device, and still route correctly.
+-		 */
+-		if (!compare_ether_addr(eth_hdr(skb)->h_dest,
+-				       	skb->dev->dev_addr))
+-			skb->pkt_type = PACKET_HOST;
+-		break;
+-	};
+-
+-	return (polling ? netif_receive_skb(skb) : netif_rx(skb));
+-}
+-
+-static inline int vlan_hwaccel_rx(struct sk_buff *skb,
+-				  struct vlan_group *grp,
+-				  unsigned short vlan_tag)
+-{
+-	return __vlan_hwaccel_rx(skb, grp, vlan_tag, 0);
+-}
+-
+-static inline int vlan_hwaccel_receive_skb(struct sk_buff *skb,
+-					   struct vlan_group *grp,
+-					   unsigned short vlan_tag)
+-{
+-	return __vlan_hwaccel_rx(skb, grp, vlan_tag, 1);
+-}
+-
+ /**
+  * __vlan_put_tag - regular VLAN tag inserting
+  * @skb: skbuff to tag
+@@ -243,10 +178,19 @@
+ static inline struct sk_buff *__vlan_put_tag(struct sk_buff *skb, unsigned short tag)
  {
- 	u64 *crq_as_u64 = (u64 *) &evt_struct->crq;
--	int request_status;
-+	int request_status = 0;
- 	int rc;
- 
- 	/* If we have exhausted our request limit, just fail this request,
-@@ -574,6 +574,13 @@ static int ibmvscsi_send_srp_event(struct srp_event_struct *evt_struct,
- 		if (request_status < -1)
- 			goto send_error;
- 		/* Otherwise, we may have run out of requests. */
-+		/* If request limit was 0 when we started the adapter is in the
-+		 * process of performing a login with the server adapter, or
-+		 * we may have run out of requests.
+ 	struct vlan_ethhdr *veth;
++	int new_mac_offset;
++
++	if (skb_mac_header_was_set(skb))
++		/* if the MAC header is not at skb->data we need to push to that
++		 * place then pull back before returning to the caller.
 +		 */
-+		else if (request_status == -1 &&
-+		         evt_struct->iu.srp.login_req.opcode != SRP_LOGIN_REQ)
-+			goto send_busy;
- 		/* Abort and reset calls should make it through.
- 		 * Nothing except abort and reset should use the last two
- 		 * slots unless we had two or less to begin with.
-@@ -633,7 +640,8 @@ static int ibmvscsi_send_srp_event(struct srp_event_struct *evt_struct,
- 	unmap_cmd_data(&evt_struct->iu.srp.cmd, evt_struct, hostdata->dev);
++		new_mac_offset = VLAN_HLEN + skb->data - skb_mac_header(skb);
++	else
++		new_mac_offset = VLAN_HLEN;
  
- 	free_event_struct(&hostdata->pool, evt_struct);
--	atomic_inc(&hostdata->request_limit);
-+	if (request_status != -1)
-+		atomic_inc(&hostdata->request_limit);
- 	return SCSI_MLQUEUE_HOST_BUSY;
- 
-  send_error:
-@@ -927,10 +935,11 @@ static int send_srp_login(struct ibmvscsi_host_data *hostdata)
- 	login->req_buf_fmt = SRP_BUF_FORMAT_DIRECT | SRP_BUF_FORMAT_INDIRECT;
- 	
- 	spin_lock_irqsave(hostdata->host->host_lock, flags);
--	/* Start out with a request limit of 1, since this is negotiated in
--	 * the login request we are just sending
-+	/* Start out with a request limit of 0, since this is negotiated in
-+	 * the login request we are just sending and login requests always
-+	 * get sent by the driver regardless of request_limit.
- 	 */
--	atomic_set(&hostdata->request_limit, 1);
-+	atomic_set(&hostdata->request_limit, 0);
- 
- 	rc = ibmvscsi_send_srp_event(evt_struct, hostdata, init_timeout * 2);
- 	spin_unlock_irqrestore(hostdata->host->host_lock, flags);
-diff --git a/drivers/scsi/lpfc/lpfc_scsi.c b/drivers/scsi/lpfc/lpfc_scsi.c
-index c075556..4e46045 100644
---- a/drivers/scsi/lpfc/lpfc_scsi.c
-+++ b/drivers/scsi/lpfc/lpfc_scsi.c
-@@ -682,6 +682,7 @@ lpfc_scsi_prep_cmnd(struct lpfc_vport *vport, struct lpfc_scsi_buf *lpfc_cmd,
- 	IOCB_t *iocb_cmd = &lpfc_cmd->cur_iocbq.iocb;
- 	struct lpfc_iocbq *piocbq = &(lpfc_cmd->cur_iocbq);
- 	int datadir = scsi_cmnd->sc_data_direction;
-+	char tag[2];
- 
- 	lpfc_cmd->fcp_rsp->rspSnsLen = 0;
- 	/* clear task management bits */
-@@ -692,8 +693,8 @@ lpfc_scsi_prep_cmnd(struct lpfc_vport *vport, struct lpfc_scsi_buf *lpfc_cmd,
- 
- 	memcpy(&fcp_cmnd->fcpCdb[0], scsi_cmnd->cmnd, 16);
- 
--	if (scsi_cmnd->device->tagged_supported) {
--		switch (scsi_cmnd->tag) {
-+	if (scsi_populate_tag_msg(scsi_cmnd, tag)) {
-+		switch (tag[0]) {
- 		case HEAD_OF_QUEUE_TAG:
- 			fcp_cmnd->fcpCntl1 = HEAD_OF_Q;
- 			break;
-diff --git a/drivers/scsi/osst.c b/drivers/scsi/osst.c
-index 4652ad2..abef704 100644
---- a/drivers/scsi/osst.c
-+++ b/drivers/scsi/osst.c
-@@ -593,10 +593,11 @@ static int osst_verify_frame(struct osst_tape * STp, int frame_seq_number, int q
- 	if (aux->frame_type != OS_FRAME_TYPE_DATA &&
- 	    aux->frame_type != OS_FRAME_TYPE_EOD &&
- 	    aux->frame_type != OS_FRAME_TYPE_MARKER) {
--		if (!quiet)
-+		if (!quiet) {
- #if DEBUG
- 			printk(OSST_DEB_MSG "%s:D: Skipping frame, frame type %x\n", name, aux->frame_type);
- #endif
-+		}
- 		goto err_out;
+-	if (skb_headroom(skb) < VLAN_HLEN) {
++	if (skb_headroom(skb) < new_mac_offset) {
+ 		struct sk_buff *sk_tmp = skb;
+-		skb = skb_realloc_headroom(sk_tmp, VLAN_HLEN);
++		skb = skb_realloc_headroom(sk_tmp, new_mac_offset);
+ 		kfree_skb(sk_tmp);
+ 		if (!skb) {
+ 			printk(KERN_ERR "vlan: failed to realloc headroom\n");
+@@ -260,7 +204,7 @@
+ 		}
  	}
- 	if (aux->frame_type == OS_FRAME_TYPE_EOD &&
-@@ -606,11 +607,12 @@ static int osst_verify_frame(struct osst_tape * STp, int frame_seq_number, int q
- 		goto err_out;
+ 
+-	veth = (struct vlan_ethhdr *)skb_push(skb, VLAN_HLEN);
++	veth = (struct vlan_ethhdr *)skb_push(skb, new_mac_offset);
+ 
+ 	/* Move the mac addresses to the beginning of the new header. */
+ 	memmove(skb->data, skb->data + VLAN_HLEN, 2 * VLAN_ETH_ALEN);
+@@ -275,6 +219,8 @@
+ 	skb->mac_header -= VLAN_HLEN;
+ 	skb->network_header -= VLAN_HLEN;
+ 
++	/* back to where we started, minus the new vlan header */
++	skb_pull(skb, new_mac_offset-VLAN_HLEN);
+ 	return skb;
+ }
+ 
+@@ -372,6 +318,98 @@
+ 	} else {
+ 		return __vlan_get_tag(skb, tag);
  	}
-         if (frame_seq_number != -1 && ntohl(aux->frame_seq_num) != frame_seq_number) {
--		if (!quiet)
-+		if (!quiet) {
- #if DEBUG
- 			printk(OSST_DEB_MSG "%s:D: Skipping frame, sequence number %u (expected %d)\n", 
- 					    name, ntohl(aux->frame_seq_num), frame_seq_number);
- #endif
-+		}
- 		goto err_out;
- 	}
- 	if (aux->frame_type == OS_FRAME_TYPE_MARKER) {
-
++}
++
++/* VLAN rx hw acceleration helper.  This acts like netif_{rx,receive_skb}(). */
++static inline int __vlan_hwaccel_rx(struct sk_buff *skb,
++				    struct vlan_group *grp,
++				    unsigned short vlan_tag, int polling)
++{
++	struct net_device_stats *stats;
++	struct net_device *new_dev;
++
++	if (skb_bond_should_drop(skb)) {
++		dev_kfree_skb_any(skb);
++		return NET_RX_DROP;
++	}
++
++	if (grp)
++		new_dev = vlan_group_get_device(grp, vlan_tag & VLAN_VID_MASK);
++
++	if (!grp || !new_dev) {
++		/* Driver removed vlan tag from the packet, but we have no
++		 * vlan device for this VID.
++		 *
++		 * This can occur for 2 reasons:
++		 * 1) Have a vlan group, we want some VIDs, just not this VID.
++		 * 2) Have no vlan group, but hardware limitation requires it
++		 *    to remove vlan tags anyway.
++		 *
++		 * Normally if no vlan group is configured, the underlying
++		 * driver will configure the hardware to NOT strip out the
++		 * vlan tag.  It can then call netif_receive_skb/netif_rx
++		 * with the vlan tag still intact.  However some devices
++		 * cannot be configured to keep the vlan tag and must not
++		 * call netif_receive_skb/netif_rx with the vlan tag
++		 * missing.  This would allow the normal protocol handlers
++		 * to process this tagged packet as if it arived without a
++		 * vlan tag.
++		 *
++		 * We need to re-add the TAG and hand the packet off to the
++		 * base device with the TAG present so any protocol handlers
++		 * (PF_PACKET, etc...) will get a chance to see it.
++		 */
++
++		skb = __vlan_put_tag(skb, vlan_tag);
++
++		if (likely(skb))
++			return (polling ? netif_receive_skb(skb) : netif_rx(skb));
++		else
++			return NET_RX_DROP;
++	}
++
++	skb->dev = new_dev;
++	skb->dev->last_rx = jiffies;
++
++	stats = vlan_dev_get_stats(skb->dev);
++	stats->rx_packets++;
++	stats->rx_bytes += skb->len;
++
++	skb->priority = vlan_get_ingress_priority(skb->dev, vlan_tag);
++	switch (skb->pkt_type) {
++	case PACKET_BROADCAST:
++		break;
++
++	case PACKET_MULTICAST:
++		stats->multicast++;
++		break;
++
++	case PACKET_OTHERHOST:
++		/* Our lower layer thinks this is not local, let's make sure.
++		 * This allows the VLAN to have a different MAC than the underlying
++		 * device, and still route correctly.
++		 */
++		if (!compare_ether_addr(eth_hdr(skb)->h_dest,
++				       	skb->dev->dev_addr))
++			skb->pkt_type = PACKET_HOST;
++		break;
++	};
++
++	return (polling ? netif_receive_skb(skb) : netif_rx(skb));
++}
++
++static inline int vlan_hwaccel_rx(struct sk_buff *skb,
++				  struct vlan_group *grp,
++				  unsigned short vlan_tag)
++{
++	return __vlan_hwaccel_rx(skb, grp, vlan_tag, 0);
++}
++
++static inline int vlan_hwaccel_receive_skb(struct sk_buff *skb,
++					   struct vlan_group *grp,
++					   unsigned short vlan_tag)
++{
++	return __vlan_hwaccel_rx(skb, grp, vlan_tag, 1);
+ }
+ 
+ #endif /* __KERNEL__ */
 
