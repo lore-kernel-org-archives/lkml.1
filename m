@@ -1,56 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756964AbXKESqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757132AbXKESrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756964AbXKESqi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 13:46:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbXKESq3
+	id S1757132AbXKESrY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 13:47:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbXKESrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 13:46:29 -0500
-Received: from mail.acc.umu.se ([130.239.18.156]:49864 "EHLO mail.acc.umu.se"
+	Mon, 5 Nov 2007 13:47:15 -0500
+Received: from ns2.suse.de ([195.135.220.15]:52375 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753962AbXKESq2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 13:46:28 -0500
-Date: Mon, 5 Nov 2007 19:46:18 +0100 (CET)
-From: =?ISO-8859-1?Q?Bo_Brant=E9n?= <bosse@acc.umu.se>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: x86_64 ten times slower than i386
-In-Reply-To: <472F5195.2050403@zytor.com>
-Message-ID: <Pine.A41.4.64.0711051945280.708776@stalin.acc.umu.se>
-References: <Pine.A41.4.64.0711031329490.397338@stalin.acc.umu.se>
- <20071103162640.GS17536@waste.org> <Pine.A41.4.64.0711032334170.770224@stalin.acc.umu.se>
- <Pine.A41.4.64.0711051110530.803034@stalin.acc.umu.se>
- <Pine.A41.4.64.0711051657440.291004@stalin.acc.umu.se> <472F5195.2050403@zytor.com>
+	id S1754137AbXKESrO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 13:47:14 -0500
+Date: Mon, 5 Nov 2007 10:46:36 -0800
+From: Greg KH <gregkh@suse.de>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 34/54] Driver Core: add kobj_attribute handling
+Message-ID: <20071105184636.GA23031@suse.de>
+References: <20071102235758.GA9803@kroah.com> <1194047972-9850-34-git-send-email-gregkh@suse.de> <20071105134203.1c078136@gondolin.boeblingen.de.ibm.com> <1194279812.6771.11.camel@lov.site> <20071105171133.GD12843@suse.de> <1194283540.2174.8.camel@lov.site> <20071105184350.0a1cd957@gondolin.boeblingen.de.ibm.com> <1194286070.2174.14.camel@lov.site> <20071105191705.5f2baaaa@gondolin.boeblingen.de.ibm.com> <1194287971.2174.27.camel@lov.site>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1194287971.2174.27.camel@lov.site>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Nov 2007, H. Peter Anvin wrote:
+On Mon, Nov 05, 2007 at 07:39:31PM +0100, Kay Sievers wrote:
+> On Mon, 2007-11-05 at 19:17 +0100, Cornelia Huck wrote:
+> > On Mon, 05 Nov 2007 19:07:50 +0100,
+> > Kay Sievers <kay.sievers@vrfy.org> wrote:
+> > 
+> > > On Mon, 2007-11-05 at 18:43 +0100, Cornelia Huck wrote:
+> > > > On Mon, 05 Nov 2007 18:25:40 +0100,
+> > > > Kay Sievers <kay.sievers@vrfy.org> wrote:
+> > > > 
+> > > > > > > That should usually be done by default attributes assigned to the ktype.
+> > > > > > > Do you have a good use case, where people need to create such attributes
+> > > > > > > individually instead?
+> > > > > > 
+> > > > > > The s390 code that was converted to use kobj_attributes :)
+> > > > > > 
+> > > > > > These look very useful, I'll go add them to the series unless Kay really
+> > > > > > objects.
+> > > > > 
+> > > > > I just want to hear a good reason to create attributes individually. :)
+> > > > > Especially in conjunction with kobject_register(), these attributes are
+> > > > > not available at uevent time, which is really really bad.
+> > > > > 
+> > > > > Default attributes just work fine, and have the proper error handling
+> > > > > built-in. Offering special functions for it, may just encourage people
+> > > > > to continue this "broken" way of creating attributes.
+> > > > 
+> > > > But where should I specify those default attributes?
+> > > > kset_create_and_register() sets the ktype to kset_ktype...
+> > > 
+> > > Do you need to create attributes at a kset itself, not the kobjects that
+> > > belong to the kset?
+> > 
+> > Yes, see arch/s390/kernel/ipl.c
+> 
+> Where are the objects that join this kset? A kset is a "collection of
+> objects of a similar type", If there are no objects, you don't need a
+> kset at all, I guess, but just a plain directory. :)
+> 
+> Anyway, seems we need an easy way to pass default attributes to ksets
+> and plain directories. If userspace should set some values here when a
+> subsystems creates the its sysfs representation, we must make sure, that
+> the attributes exist at the time the event is sent, otherwise we will
+> run into all sorts of timing problems.
 
->> reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
->> reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
->> reg02: base=0xc0000000 (3072MB), size= 256MB: write-back, count=1
->> reg03: base=0xcf800000 (3320MB), size=   8MB: uncachable, count=1
->> reg04: base=0xcf700000 (3319MB), size=   1MB: uncachable, count=1
->> reg05: base=0x100000000 (4096MB), size= 512MB: write-back, count=1
->> reg06: base=0x120000000 (4608MB), size= 128MB: write-back, count=1
->
-> What does your e820 map look like?
+Kay is right, it should be simple to add the kobject attributes to the
+kobject itself when it is registered to this kset, right?
 
-BIOS-provided physical RAM map:
-  BIOS-e820: 0000000000000000 - 000000000008f000 (usable)
-  BIOS-e820: 000000000008f000 - 00000000000a0000 (reserved)
-  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
-  BIOS-e820: 0000000000100000 - 00000000cf561000 (usable)
-  BIOS-e820: 00000000cf561000 - 00000000cf56e000 (reserved)
-  BIOS-e820: 00000000cf56e000 - 00000000cf637000 (usable)
-  BIOS-e820: 00000000cf637000 - 00000000cf6e9000 (ACPI NVS)
-  BIOS-e820: 00000000cf6e9000 - 00000000cf6ed000 (usable)
-  BIOS-e820: 00000000cf6ed000 - 00000000cf6f2000 (ACPI data)
-  BIOS-e820: 00000000cf6f2000 - 00000000cf6f3000 (usable)
-  BIOS-e820: 00000000cf6f3000 - 00000000cf6ff000 (ACPI data)
-  BIOS-e820: 00000000cf6ff000 - 00000000cf700000 (usable)
-  BIOS-e820: 00000000cf700000 - 00000000d0000000 (reserved)
-  BIOS-e820: 00000000fff00000 - 0000000100000000 (reserved)
-  BIOS-e820: 0000000100000000 - 000000012c000000 (usable)
+> > (and I guess anything that uses
+> > subsys_create_file() before).
+> 
+> Well, some users embedded ksets(subsystem) into objects, because it they
+> confused kobjects and ksets. So there may be a only very few valid users
+> left. :)
 
+Hm, I don't think that anyone still does this anymore, as I think I
+fixed up all of these horrible use cases :)
+
+thanks,
+
+greg k-h
