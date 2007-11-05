@@ -1,54 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbXKEXwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755779AbXKEX6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755837AbXKEXwY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 18:52:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbXKEXwP
+	id S1755779AbXKEX6V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 18:58:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754734AbXKEX6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 18:52:15 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:1457 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750741AbXKEXwO (ORCPT
+	Mon, 5 Nov 2007 18:58:11 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52988 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754153AbXKEX6J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 18:52:14 -0500
-Date: Tue, 6 Nov 2007 07:51:17 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       SteveW@acm.org, dipankar@in.ibm.com
-Subject: Re: dn_route.c momentarily exiting RCU read-side critical section
-Message-ID: <20071105235117.GA18396@gondor.apana.org.au>
-References: <20071030151254.GA8285@linux.vnet.ibm.com> <E1Ip0Vs-0002zP-00@gondolin.me.apana.org.au> <20071105161203.GB9479@linux.vnet.ibm.com>
+	Mon, 5 Nov 2007 18:58:09 -0500
+Date: Mon, 5 Nov 2007 15:57:49 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: peterz@infradead.org, just.for.lkml@googlemail.com,
+       maximlevitsky@gmail.com, linux-kernel@vger.kernel.org, dgc@sgi.com,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: writeout stalls in current -git
+Message-Id: <20071105155749.73e0e38e.akpm@linux-foundation.org>
+In-Reply-To: <393999615.15343@ustc.edu.cn>
+References: <393056632.00561@ustc.edu.cn>
+	<200710221505.35397.maximlevitsky@gmail.com>
+	<20071022131045.GA5357@mail.ustc.edu.cn>
+	<393060478.03650@ustc.edu.cn>
+	<64bb37e0710310822r5ca6b793p8fd97db2f72a8655@mail.gmail.com>
+	<393903856.06449@ustc.edu.cn>
+	<64bb37e0711011120i63cdfe3ci18995d57b6649a8@mail.gmail.com>
+	<64bb37e0711011200n228e708eg255640388f83da22@mail.gmail.com>
+	<E1InmAI-0003ME-2i@localhost>
+	<1193998532.27652.343.camel@twins>
+	<393999615.15343@ustc.edu.cn>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071105161203.GB9479@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 05, 2007 at 08:12:03AM -0800, Paul E. McKenney wrote:
-> > >> 
-> > >> > net/decnet/dn_route.c in dn_rt_cache_get_next() is as follows:
-> > >> > 
-> > >> > static struct dn_route *dn_rt_cache_get_next(struct seq_file *seq, struct dn_route *rt)
-> > >> > {
-> > >> >     struct dn_rt_cache_iter_state *s = rcu_dereference(seq->private);
-> > >> > 
-> > >> >     rt = rt->u.dst.dn_next;
-> > >> >     while(!rt) {
-> > >> >             rcu_read_unlock_bh();
-> > >> >             if (--s->bucket < 0)
-> > >> >                     break;
->
-> Thank you for the info!  Stupid question #3: what sequence of events
-> would the smp_read_barrier_depends() be defending against?
+On Fri, 2 Nov 2007 18:33:29 +0800
+Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
 
-The reading of rt from the hash bucket and the dereferencing above.
-We need to make sure that we see the initialised rt.
+> On Fri, Nov 02, 2007 at 11:15:32AM +0100, Peter Zijlstra wrote:
+> > On Fri, 2007-11-02 at 10:21 +0800, Fengguang Wu wrote:
+> > 
+> > > Interestingly, no background_writeout() appears, but only
+> > > balance_dirty_pages() and wb_kupdate.  Obviously wb_kupdate won't
+> > > block the process.
+> > 
+> > Yeah, the background threshold is not (yet) scaled. So it can happen
+> > that the bdi_dirty limit is below the background limit.
+> > 
+> > I'm curious though as to these stalls, though, I can't seem to think of
+> > what goes wrong.. esp since most writeback seems to happen from pdflush.
+> 
+> Me confused too. The new debug patch will confirm whether emerge is
+> waiting in balance_dirty_pages().
+> 
+> > (or I'm totally misreading it - quite a possible as I'm still recovering
+> > from a serious cold and not all the green stuff has yet figured out its
+> > proper place wrt brain cells 'n stuff)
+> 
+> Do take care of yourself.
+> 
+> > 
+> > I still have this patch floating around:
+> 
+> I think this patch is OK for 2.6.24 :-)
+> 
+> Reviewed-by: Fengguang Wu <wfg@mail.ustc.edu.cn> 
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+I would prefer Tested-by: :(
+
+> > 
+> > ---
+> > Subject: mm: speed up writeback ramp-up on clean systems
+> > 
+> > We allow violation of bdi limits if there is a lot of room on the
+> > system. Once we hit half the total limit we start enforcing bdi limits
+> > and bdi ramp-up should happen. Doing it this way avoids many small
+> > writeouts on an otherwise idle system and should also speed up the
+> > ramp-up.
+
+Given the problems we're having in there I'm a bit reluctant to go tossing
+hastily put together and inadequately tested stuff onto the fire.  And
+that's what this patch looks like to me.
+
+Wanna convince me otherwise?
