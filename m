@@ -1,96 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754784AbXKETL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755165AbXKETOb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754784AbXKETL6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 14:11:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754272AbXKETLs
+	id S1755165AbXKETOb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 14:14:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbXKETOY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 14:11:48 -0500
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:58002 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753690AbXKETLq (ORCPT
+	Mon, 5 Nov 2007 14:14:24 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:43680 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752403AbXKETOX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 14:11:46 -0500
-Date: Mon, 5 Nov 2007 20:11:32 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH 22/54] kset: convert /sys/devices/system to use
- kset_create
-Message-ID: <20071105201132.3a3e443b@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20071105185828.GA31896@suse.de>
-References: <20071102235758.GA9803@kroah.com>
-	<1194047972-9850-22-git-send-email-gregkh@suse.de>
-	<20071105191109.52c07ab4@gondolin.boeblingen.de.ibm.com>
-	<20071105185828.GA31896@suse.de>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.1.0-rc1 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Nov 2007 14:14:23 -0500
+Date: Mon, 5 Nov 2007 20:14:00 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Doug Thompson <norsk5@yahoo.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, dougthompson@xmission.com,
+       bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] move edac.txt DOCUMENTATION two levels up
+Message-ID: <20071105191400.GB3444@stusta.de>
+References: <20071105171733.307a562a@the-village.bc.nu> <293742.55428.qm@web50101.mail.re2.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <293742.55428.qm@web50101.mail.re2.yahoo.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Nov 2007 10:58:28 -0800,
-Greg KH <gregkh@suse.de> wrote:
-
-> On Mon, Nov 05, 2007 at 07:11:09PM +0100, Cornelia Huck wrote:
-> > On Fri,  2 Nov 2007 16:59:00 -0700,
-> > Greg Kroah-Hartman <gregkh@suse.de> wrote:
-> > 
-> > > Dynamically create the kset instead of declaring it statically.
-> > > 
-> > > Cc: Kay Sievers <kay.sievers@vrfy.org>
-> > > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > > ---
-> > >  drivers/base/sys.c |   28 ++++++++++++----------------
-> > >  1 files changed, 12 insertions(+), 16 deletions(-)
-> > 
-> > Unfortunately, at that point in the patch series reipl breaks for me :(
-> > 
-> > I used the following silly debug patch:
+On Mon, Nov 05, 2007 at 10:52:01AM -0800, Doug Thompson wrote:
+> Interesting
 > 
-> What does reipl have to do with shutdown?
-
-Before we reipl (reboot), device_shutdown() is called.
-
-> > <loads of sane shutdowns for the ccw and css busses>
-> >     <7>io_subchannel 0.0.095c: shutdown (bus css)
-> >     <7>io_subchannel 0.0.095b: shutdown (bus css)
-> >     <7>io_subchannel 0.0.095a: shutdown (bus css)
-> >     <7> : shutdown (bus )
-> >     <1>Unable to handle kernel pointer dereference at virtual kernel address 0000000500000000
-> >     <4>Oops: 003b [#1]
-> >     <4>Modules linked in: dm_multipath sunrpc qeth ccwgroup dm_mod
-> >     <4>CPU:    2    Not tainted
-> >     <4>Process reboot (pid: 2892, task: 0000000002cae048, ksp: 00000000045c39b8)
-> >     <4>Krnl PSW : 0704000180000000 0000000500000006 (0x500000006)
-> >     <4>           R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:0 CC:0 PM:0 EA:3
-> >     <4>Krnl GPRS: 0000000000019e75 0000000500000006 0000000002c42810 0000000002c429b0
-> >     <4>           00000000002a36ec 0000000000000000 000003ffffb76d48 0000000000000160
-> >     <4>           00000000001423a4 000002000015e390 00000000006e06b8 0000000000634638
-> >     <4>           0000000002c42810 000000000041f670 00000000002a36fe 00000000045c3d00
-> >     <4>Krnl Code: Bad PSW.
-> >     <4>Call Trace:
-> >     <4>([<00000000002a36ec>] device_shutdown+0x78/0x144)
-> >     <4> [<000000000013f18c>] kernel_restart_prepare+0x44/0x50
-> >     <4> [<000000000013f1be>] kernel_restart+0x26/0x6c
-> >     <4> [<0000000000142548>] sys_reboot+0x1a4/0x1f4
-> >     <4> [<0000000000111038>] sysc_noemu+0x10/0x16
-> >     <4> [<00000200001048e0>] 0x200001048e0
-> >     <4>
-> >     <4> 
-> > 
-> > Huh? We want to shutdown an unknown device on a bus that wishes to stay
-> > anonymous?
-> > 
-> > Any hints would be appreciated...
+> At the time I submitted it there was a big discussion on just how messed up the documentation
+> directory was, inconsistent and not well laid out. Then more discussion on how it could be laid
+> out in relation to where various subsystem were laid out (ie drivers doc directory like there was
+> a drivers src directory and the like).
 > 
-> I'll look into this, I wonder if we are walking off the end of an
-> unterminated list...
+> Therefore I placed it following that pattern.
+> 
+> So what I am hearing is that documentation for a subsystem should just continue to be dumped into
+> one directory with everything else.
+> 
+> Okay, if that is the goal, I am fine with, but things are pretty jumbled up in there. I will know
+> where it is at least.
 
-Could well be. If I'm using lcrash's walk function correctly (which
-always manages to confuse me...), the list of devices_kset seems to be
-broken.
+The current status quo is that everything is in one directory.
+
+If someone wants to put more structure into Documentation/ that would be 
+fine with me, but edac.txt being the only file under 
+Documentation/drivers/ doesn't make sense and only makes it harder to 
+find this file.
+
+> doug t
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
