@@ -1,78 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbXKEMh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756078AbXKEMm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755927AbXKEMh1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 07:37:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754785AbXKEMhP
+	id S1756078AbXKEMm6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 07:42:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbXKEMmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 07:37:15 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:37687 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753299AbXKEMhN (ORCPT
+	Mon, 5 Nov 2007 07:42:51 -0500
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:53014 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753889AbXKEMmu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 07:37:13 -0500
-Subject: Re: oops in enqueue_entity with 2.6.24-rc1-g54866f03
-From: Peter Zijlstra <peterz@infradead.org>
-To: Eric Sesterhenn <snakebyte@gmx.de>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20071102123603.GA4988@alice>
-References: <20071102123603.GA4988@alice>
-Content-Type: text/plain
-Date: Mon, 05 Nov 2007 13:37:11 +0100
-Message-Id: <1194266231.27652.437.camel@twins>
+	Mon, 5 Nov 2007 07:42:50 -0500
+Date: Mon, 5 Nov 2007 13:42:03 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH 34/54] Driver Core: add kobj_attribute handling
+Message-ID: <20071105134203.1c078136@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <1194047972-9850-34-git-send-email-gregkh@suse.de>
+References: <20071102235758.GA9803@kroah.com>
+	<1194047972-9850-34-git-send-email-gregkh@suse.de>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-11-02 at 13:36 +0100, Eric Sesterhenn wrote:
-> hi,
+On Fri,  2 Nov 2007 16:59:12 -0700,
+Greg Kroah-Hartman <gregkh@suse.de> wrote:
+
+> From: Kay Sievers <kay.sievers@vrfy.org>
 > 
-> I get the following crash with 2.6.24-rc1-g54866f03, the last version I
-> tested which booted fine was 2.6.24-rc1-gb1d08ac0
+> Add kobj_sysfs_ops to replace subsys_sysfs_ops. There is no
+> need for special kset operations, we want to be able to use
+> simple attribute operations at any kobject, not only ksets.
 > 
+> The whole concept of any default sysfs attribute operations
+> will go away with the upcoming removal of subsys_sysfs_ops.
+> 
+> Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> ---
+>  include/linux/kobject.h |   10 ++++++++++
+>  lib/kobject.c           |   29 +++++++++++++++++++++++++++++
+>  2 files changed, 39 insertions(+), 0 deletions(-)
 
-How reproducable is this?
+How about adding some simple wrappers around the new kobj_attribute
+structure? This makes the layering clearer.
 
-If its very much reproducable, could you git bisect it, as in between
-those commits you tested nothing much has changed, that is, nothing that
-stands out to me.
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+---
+ include/linux/kobject.h |    7 ++++++-
+ lib/kobject.c           |   22 ++++++++++++++++++++++
+ 2 files changed, 28 insertions(+), 1 deletion(-)
 
-# git log -p  b1d08ac0..54866f03 | git shortlog
-David S. Miller (7):
-      [SPARC64]: Fix bogus '&' conditinal in set_rtc_mmss().
-      [SPARC64]: Kill unused ITAG_MASK macro in ultra.S
-      [SPARC64]: Fix build failure when CONFIG_BUG is disabled.
-      [SPARC64]: Fix build with CONFIG_NET disabled.
-      [SPARC64]: Fix linkage of enormous kernels.
-      [IRDA] IRNET: Fix build when TCGETS2 is defined.
-      [SPARC64]: Update defconfig.
-
-Ilpo J<E4>rvinen (2):
-      [TCP]: Process DSACKs that reside within a SACK block
-      [TCP]: Another TAGBITS -> SACKED_ACKED|LOST conversion
-
-Linus Torvalds (1):
-      Merge branch 'master' of master.kernel.org:/.../davem/net-2.6
-
-Pavel Emelyanov (13):
-      [NET]: Move the sock_copy() from the header
-      [NET]: Move the get_net() from sock_copy()
-      [NET]: Cleanup the allocation/freeing of the sock object
-      [NET]: Auto-zero the allocated sock object
-      [NET]: Move some core sock setup into sk_prot_alloc
-      [NET]: Make the sk_clone() lighter
-      [NET]: Remove bogus zero_it argument from sk_alloc
-      [NET]: Forget the zero_it argument of sk_alloc()
-      [NETNS]: Make the init/exit hooks checks outside the loop
-      [NET]: Relax the reference counting of init_net_ns
-      [NET]: Hide the dead code in the net_namespace.c
-      [NET]: Mark the setup_net as __net_init
-      [NET]: Hide the net_ns kmem cache
-
-Stephen Hemminger (1):
-      [NET]: docbook fixes for netif_ functions
-
-
-
-
+Index: linux-2.6/include/linux/kobject.h
+===================================================================
+--- linux-2.6.orig/include/linux/kobject.h	2007-11-05 11:12:49.000000000 +0100
++++ linux-2.6/include/linux/kobject.h	2007-11-05 13:24:55.000000000 +0100
+@@ -126,7 +126,12 @@ struct kobj_attribute {
+ 	ssize_t (*store)(struct kobject *kobj, struct kobj_attribute *attr,
+ 			 const char *buf, size_t count);
+ };
+-
++#define KOBJ_ATTR(_name,_mode,_show,_store)		\
++	struct kobj_attribute kobj_attr_##_name =	\
++		__ATTR(_name,_mode,_show,_store)
++extern int __must_check kobject_create_file(struct kobject *,
++					    struct kobj_attribute *);
++extern void kobject_remove_file(struct kobject *,struct kobj_attribute *);
+ extern struct sysfs_ops kobj_sysfs_ops;
+ 
+ /**
+Index: linux-2.6/lib/kobject.c
+===================================================================
+--- linux-2.6.orig/lib/kobject.c	2007-11-05 11:12:49.000000000 +0100
++++ linux-2.6/lib/kobject.c	2007-11-05 13:36:45.000000000 +0100
+@@ -577,6 +577,28 @@ struct sysfs_ops kobj_sysfs_ops = {
+ 	.store	= kobj_attr_store,
+ };
+ 
++/**
++ * kobject_create_file() - create an attribute file for a kobject
++ * @kobj: kobject the attribute is created for
++ * @attr: attribute to be created
++ */
++int kobject_create_file(struct kobject *kobj, struct kobj_attribute *attr)
++{
++	return sysfs_create_file(kobj, &attr->attr);
++}
++EXPORT_SYMBOL_GPL(kobject_create_file);
++
++/**
++ * kobject_remove_file() - remove an attribute file from a kobject
++ * @kobj: kobject the attribute is removed from
++ * @attr: attribute to be removed
++ */
++void kobject_remove_file(struct kobject *kobj, struct kobj_attribute *attr)
++{
++	sysfs_remove_file(kobj, &attr->attr);
++}
++EXPORT_SYMBOL_GPL(kobject_remove_file);
++
+ static void dir_release(struct kobject *kobj)
+ {
+ 	kfree(kobj);
