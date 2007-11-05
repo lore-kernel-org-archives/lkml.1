@@ -1,104 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbXKELrQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbXKELrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756893AbXKELrQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 06:47:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756744AbXKELqk
+	id S1757119AbXKELrd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 06:47:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756765AbXKELqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 06:46:40 -0500
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:18161 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754799AbXKELqg (ORCPT
+	Mon, 5 Nov 2007 06:46:46 -0500
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:10384 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756751AbXKELqn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 06:46:36 -0500
-Message-Id: <20071105114627.467128000@vnet.ibm.com>
+	Mon, 5 Nov 2007 06:46:43 -0500
+Message-Id: <20071105114600.743203000@vnet.ibm.com>
 References: <20071105113742.233391000@vnet.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 05 Nov 2007 12:37:47 +0100
+Date: Mon, 05 Nov 2007 12:37:45 +0100
 From: swen@vnet.ibm.com
 To: James.Bottomley@steeleye.com
 Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-s390@vger.kernel.org,
        Christof Schmitt <christof.schmitt@de.ibm.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 5/6] zfcp: Fix deadlock when adding invalid LUN
-Content-Disposition: inline; filename=805-zfcp-deadlock.diff
+Subject: [patch 3/6] zfcp: Specify waiting times in ERP in seconds
+Content-Disposition: inline; filename=803-zfcp-waits.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Christof Schmitt <christof.schmitt@de.ibm.com>
 
-When adding an invalid LUN, there is a deadlock between the add
-via scsi_scan_target and the slave_destroy handler: The handler
-waits for the scan to complete, but for an invalid unit,
-scsi_scan_target directly calls the slave_destroy handler.
-
-Fix the deadlock by removing the wait in the slave_destroy
-handler, it was not necessary anyway.
+It is not necessary to use jiffies or milliseconds to specify
+waiting times that last a couple of seconds.
 
 Signed-off-by: Christof Schmitt <christof.schmitt@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 Signed-off-by: Swen Schillig <swen@vnet.ibm.com>
 ---
 
- drivers/s390/scsi/zfcp_aux.c  |    2 --
- drivers/s390/scsi/zfcp_def.h  |    4 ----
- drivers/s390/scsi/zfcp_erp.c  |    1 -
- drivers/s390/scsi/zfcp_scsi.c |    3 ---
- 4 files changed, 10 deletions(-)
+ drivers/s390/scsi/zfcp_def.h |    4 ++--
+ drivers/s390/scsi/zfcp_erp.c |    8 ++++----
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-Index: scsi-misc/drivers/s390/scsi/zfcp_aux.c
-===================================================================
---- scsi-misc.orig/drivers/s390/scsi/zfcp_aux.c
-+++ scsi-misc/drivers/s390/scsi/zfcp_aux.c
-@@ -844,8 +844,6 @@ zfcp_unit_enqueue(struct zfcp_port *port
- 	unit->sysfs_device.release = zfcp_sysfs_unit_release;
- 	dev_set_drvdata(&unit->sysfs_device, unit);
- 
--	init_waitqueue_head(&unit->scsi_scan_wq);
--
- 	/* mark unit unusable as long as sysfs registration is not complete */
- 	atomic_set_mask(ZFCP_STATUS_COMMON_REMOVE, &unit->status);
- 
 Index: scsi-misc/drivers/s390/scsi/zfcp_def.h
 ===================================================================
 --- scsi-misc.orig/drivers/s390/scsi/zfcp_def.h
 +++ scsi-misc/drivers/s390/scsi/zfcp_def.h
-@@ -982,10 +982,6 @@ struct zfcp_unit {
-         struct scsi_device     *device;        /* scsi device struct pointer */
- 	struct zfcp_erp_action erp_action;     /* pending error recovery */
-         atomic_t               erp_counter;
--	wait_queue_head_t      scsi_scan_wq;   /* can be used to wait until
--						  all scsi_scan_target
--						  requests have been
--						  completed. */
- };
+@@ -117,7 +117,7 @@ zfcp_address_to_sg(void *address, struct
  
- /* FSF request */
+ #define ZFCP_SBAL_TIMEOUT               (5*HZ)
+ 
+-#define ZFCP_TYPE2_RECOVERY_TIME        (8*HZ)
++#define ZFCP_TYPE2_RECOVERY_TIME        8	/* seconds */
+ 
+ /* queue polling (values in microseconds) */
+ #define ZFCP_MAX_INPUT_THRESHOLD 	5000	/* FIXME: tune */
+@@ -138,7 +138,7 @@ zfcp_address_to_sg(void *address, struct
+ #define ZFCP_STATUS_READS_RECOM		        FSF_STATUS_READS_RECOM
+ 
+ /* Do 1st retry in 1 second, then double the timeout for each following retry */
+-#define ZFCP_EXCHANGE_CONFIG_DATA_FIRST_SLEEP	100
++#define ZFCP_EXCHANGE_CONFIG_DATA_FIRST_SLEEP	1
+ #define ZFCP_EXCHANGE_CONFIG_DATA_RETRIES	7
+ 
+ /* timeout value for "default timer" for fsf requests */
 Index: scsi-misc/drivers/s390/scsi/zfcp_erp.c
 ===================================================================
 --- scsi-misc.orig/drivers/s390/scsi/zfcp_erp.c
 +++ scsi-misc/drivers/s390/scsi/zfcp_erp.c
-@@ -1609,7 +1609,6 @@ static void zfcp_erp_scsi_scan(struct wo
- 	scsi_scan_target(&rport->dev, 0, rport->scsi_target_id,
- 			 unit->scsi_lun, 0);
- 	atomic_clear_mask(ZFCP_STATUS_UNIT_SCSI_WORK_PENDING, &unit->status);
--	wake_up(&unit->scsi_scan_wq);
- 	zfcp_unit_put(unit);
- 	kfree(p);
- }
-Index: scsi-misc/drivers/s390/scsi/zfcp_scsi.c
-===================================================================
---- scsi-misc.orig/drivers/s390/scsi/zfcp_scsi.c
-+++ scsi-misc/drivers/s390/scsi/zfcp_scsi.c
-@@ -180,9 +180,6 @@ static void zfcp_scsi_slave_destroy(stru
+@@ -131,7 +131,7 @@ static void zfcp_close_qdio(struct zfcp_
+ 	debug_text_event(adapter->erp_dbf, 3, "qdio_down2a");
+ 	while (qdio_shutdown(adapter->ccw_device,
+ 			     QDIO_FLAG_CLEANUP_USING_CLEAR) == -EINPROGRESS)
+-		msleep(1000);
++		ssleep(1);
+ 	debug_text_event(adapter->erp_dbf, 3, "qdio_down2b");
  
- 	if (unit) {
- 		zfcp_erp_wait(unit->port->adapter);
--		wait_event(unit->scsi_scan_wq,
--			   atomic_test_mask(ZFCP_STATUS_UNIT_SCSI_WORK_PENDING,
--					    &unit->status) == 0);
- 		atomic_clear_mask(ZFCP_STATUS_UNIT_REGISTERED, &unit->status);
- 		sdpnt->hostdata = NULL;
- 		unit->device = NULL;
+ 	/* cleanup used outbound sbals */
+@@ -1900,7 +1900,7 @@ zfcp_erp_adapter_strategy(struct zfcp_er
+ 		ZFCP_LOG_INFO("Waiting to allow the adapter %s "
+ 			      "to recover itself\n",
+ 			      zfcp_get_busid_by_adapter(adapter));
+-		msleep(jiffies_to_msecs(ZFCP_TYPE2_RECOVERY_TIME));
++		ssleep(ZFCP_TYPE2_RECOVERY_TIME);
+ 	}
+ 
+ 	return retval;
+@@ -2080,7 +2080,7 @@ zfcp_erp_adapter_strategy_open_qdio(stru
+ 	debug_text_event(adapter->erp_dbf, 3, "qdio_down1a");
+ 	while (qdio_shutdown(adapter->ccw_device,
+ 			     QDIO_FLAG_CLEANUP_USING_CLEAR) == -EINPROGRESS)
+-		msleep(1000);
++		ssleep(1);
+ 	debug_text_event(adapter->erp_dbf, 3, "qdio_down1b");
+ 
+  failed_qdio_establish:
+@@ -2165,7 +2165,7 @@ zfcp_erp_adapter_strategy_open_fsf_xconf
+ 		ZFCP_LOG_DEBUG("host connection still initialising... "
+ 			       "waiting and retrying...\n");
+ 		/* sleep a little bit before retry */
+-		msleep(jiffies_to_msecs(sleep));
++		ssleep(sleep);
+ 		sleep *= 2;
+ 	}
+ 
 
 -- 
