@@ -1,66 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761166AbXKERVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760151AbXKERWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761166AbXKERVt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 12:21:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758929AbXKERMr
+	id S1760151AbXKERWI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 12:22:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759495AbXKEROj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 12:12:47 -0500
-Received: from mail.suse.de ([195.135.220.2]:48123 "EHLO mx1.suse.de"
+	Mon, 5 Nov 2007 12:14:39 -0500
+Received: from mx1.suse.de ([195.135.220.2]:48232 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758924AbXKERMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 12:12:46 -0500
-Date: Mon, 5 Nov 2007 09:05:41 -0800
+	id S1759489AbXKEROi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 12:14:38 -0500
+Date: Mon, 5 Nov 2007 09:00:55 -0800
 From: Greg KH <gregkh@suse.de>
 To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
-       Michael Holzheu <holzheu@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Volker Sameske <sameske@de.ibm.com>
-Subject: Re: [PATCH 46/54] kset: convert s390 ipl.c to use kset_create
-Message-ID: <20071105170541.GB12843@suse.de>
-References: <20071102235758.GA9803@kroah.com> <1194047972-9850-46-git-send-email-gregkh@suse.de> <20071105112731.288a8334@gondolin.boeblingen.de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH 33/54] driver core: remove fields from struct bus_type
+Message-ID: <20071105170055.GA12843@suse.de>
+References: <20071102235758.GA9803@kroah.com> <1194047972-9850-33-git-send-email-gregkh@suse.de> <20071105113319.4c54f711@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071105112731.288a8334@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20071105113319.4c54f711@gondolin.boeblingen.de.ibm.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 05, 2007 at 11:27:31AM +0100, Cornelia Huck wrote:
-> On Fri,  2 Nov 2007 16:59:24 -0700,
+On Mon, Nov 05, 2007 at 11:33:19AM +0100, Cornelia Huck wrote:
+> On Fri,  2 Nov 2007 16:59:11 -0700,
 > Greg Kroah-Hartman <gregkh@suse.de> wrote:
 > 
-> > Dynamically create the kset instead of declaring it statically.
-> > This makes the kobject attributes now work properly that I broke in the
-> > previous patch.
+> > struct bus_type is static everywhere in the kernel.  This moves the
+> > kobject in the structure out of it, and a bunch of other private only to
+> > the driver core fields are now moved to a private structure.  This lets
+> > us dynamically create the backing kobject properly and gives us the
+> > chance to be able to document to users exactly how to use the struct
+> > bus_type as there are no fields they can improperly access.
 > > 
 > > Cc: Kay Sievers <kay.sievers@vrfy.org>
-> > Cc: Michael Holzheu <holzheu@de.ibm.com>
-> > Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > Cc: Volker Sameske <sameske@de.ibm.com>
-> > Cc: Cornelia Huck <cornelia.huck@de.ibm.com>
 > > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 > > ---
-> >  arch/s390/kernel/ipl.c |   75 +++++++++++++++++++++++++-----------------------
-> >  1 files changed, 39 insertions(+), 36 deletions(-)
+> >  drivers/base/base.h     |   30 +++++++++++-
+> >  drivers/base/bus.c      |  120 ++++++++++++++++++++++++++--------------------
+> >  drivers/base/core.c     |    6 +-
+> >  drivers/base/dd.c       |    4 +-
+> >  drivers/base/driver.c   |    2 +-
+> >  drivers/base/platform.c |    4 +-
+> >  include/linux/device.h  |   12 +----
+> >  7 files changed, 107 insertions(+), 71 deletions(-)
+> > 
 > 
-> It seems you also need this (not yet booted):
-> 
-> Fix the following warnings:
-> 
-> arch/s390/kernel/ipl.c: In function 'reipl_init':
-> arch/s390/kernel/ipl.c:981: warning: passing argument 2 of 'sysfs_create_file' from incompatible pointer type
-> arch/s390/kernel/ipl.c: In function 'dump_init':
-> arch/s390/kernel/ipl.c:1070: warning: passing argument 2 of 'sysfs_create_file' from incompatible pointer type
-> arch/s390/kernel/ipl.c: In function 'shutdown_actions_init':
-> arch/s390/kernel/ipl.c:1094: warning: passing argument 2 of 'sysfs_create_file' from incompatible pointer type
+> drivers/base/bus.c: In function 'make_deprecated_bus_links':
+> drivers/base/bus.c:428: error: 'struct bus_type' has no member named 'subsys'
 > 
 > Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+> 
+> ---
+>  drivers/base/bus.c |    2 +-
+>  1 files changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6/drivers/base/bus.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/base/bus.c	2007-11-05 11:12:49.000000000 +0100
+> +++ linux-2.6/drivers/base/bus.c	2007-11-05 11:30:28.000000000 +0100
+> @@ -425,7 +425,7 @@ static void device_remove_attrs(struct b
+>  static int make_deprecated_bus_links(struct device *dev)
+>  {
+>  	return sysfs_create_link(&dev->kobj,
+> -				 &dev->bus->subsys.kobj, "bus");
+> +				 &dev->bus->p->subsys.kobj, "bus");
+>  }
+>  
+>  static void remove_deprecated_bus_links(struct device *dev)
 
-Thanks, but this should go with the previous kobject_attribute cleanup
-patch, not the kset patch.  I've merged it in now.
+Thanks, Kay beat you to this by sending me a patch for it yesterday :)
 
-thanks for the review and patch.
-
-greg k-h
+greg
