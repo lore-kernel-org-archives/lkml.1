@@ -1,38 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756271AbXKEP7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756721AbXKEQA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756271AbXKEP7V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 10:59:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbXKEP7O
+	id S1756721AbXKEQA1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 11:00:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbXKEQAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 10:59:14 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:58125 "EHLO 2ka.mipt.ru"
+	Mon, 5 Nov 2007 11:00:17 -0500
+Received: from mail.acc.umu.se ([130.239.18.156]:43008 "EHLO mail.acc.umu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752111AbXKEP7O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 10:59:14 -0500
-Date: Mon, 5 Nov 2007 18:59:14 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 6/6] W1: fix memset size error
-Message-ID: <20071105155913.GB30901@2ka.mipt.ru>
-References: <472E8054.6000006@cn.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <472E8054.6000006@cn.fujitsu.com>
-User-Agent: Mutt/1.5.9i
+	id S1752111AbXKEQAQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 11:00:16 -0500
+Date: Mon, 5 Nov 2007 17:00:05 +0100 (CET)
+From: =?ISO-8859-1?Q?Bo_Brant=E9n?= <bosse@acc.umu.se>
+To: linux-kernel@vger.kernel.org
+Subject: Re: x86_64 ten times slower than i386
+In-Reply-To: <Pine.A41.4.64.0711051110530.803034@stalin.acc.umu.se>
+Message-ID: <Pine.A41.4.64.0711051657440.291004@stalin.acc.umu.se>
+References: <Pine.A41.4.64.0711031329490.397338@stalin.acc.umu.se>
+ <20071103162640.GS17536@waste.org> <Pine.A41.4.64.0711032334170.770224@stalin.acc.umu.se>
+ <Pine.A41.4.64.0711051110530.803034@stalin.acc.umu.se>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 05, 2007 at 10:30:44AM +0800, Li Zefan (lizf@cn.fujitsu.com) wrote:
-> The size arguments passing to memset is wrong.
-> 
-> Signed-off-by Li Zefan <lizf@cn.fujitsu.com>
 
-Thanks a lot, patch is obviously correct.
+After I uppgraded the BIOS the mtrr looks like below, and now it works if 
+I boot with mem=4736M so I can use all memory but it still doesn't work 
+without the mem parameter then it will run as slow as before.
 
-ACK.
-
--- 
-	Evgeniy Polyakov
+reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
+reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
+reg02: base=0xc0000000 (3072MB), size= 256MB: write-back, count=1
+reg03: base=0xcf800000 (3320MB), size=   8MB: uncachable, count=1
+reg04: base=0xcf700000 (3319MB), size=   1MB: uncachable, count=1
+reg05: base=0x100000000 (4096MB), size= 512MB: write-back, count=1
+reg06: base=0x120000000 (4608MB), size= 128MB: write-back, count=1
