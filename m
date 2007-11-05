@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755212AbXKEWSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbXKEWUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755212AbXKEWSi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 17:18:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbXKEWSb
+	id S1755131AbXKEWUk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 17:20:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752782AbXKEWUd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 17:18:31 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:42379 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751887AbXKEWSa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 17:18:30 -0500
-Date: Mon, 5 Nov 2007 14:17:52 -0800
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net
-Subject: Re: [GIT PATCH] PCI patches for 2.6.24-rc1
-Message-ID: <20071105221752.GA9509@suse.de>
-References: <20071105215601.GA4612@kroah.com> <alpine.LFD.0.999.0711051410180.15101@woody.linux-foundation.org>
+	Mon, 5 Nov 2007 17:20:33 -0500
+Received: from hpsmtp-eml19.KPNXCHANGE.COM ([213.75.38.84]:14450 "EHLO
+	hpsmtp-eml19.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752700AbXKEWUd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 17:20:33 -0500
+From: Frans Pop <elendil@planet.nl>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: 2.6.23: No text consoles with FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
+Date: Mon, 5 Nov 2007 23:20:30 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <200710132013.24024.elendil@planet.nl> <1192340601.6548.11.camel@daplas>
+In-Reply-To: <1192340601.6548.11.camel@daplas>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0711051410180.15101@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200711052320.31003.elendil@planet.nl>
+X-OriginalArrivalTime: 05 Nov 2007 22:20:31.0348 (UTC) FILETIME=[13BCBB40:01C81FFA]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 05, 2007 at 02:13:58PM -0800, Linus Torvalds wrote:
-> On Mon, 5 Nov 2007, Greg KH wrote:
-> > 
-> > They are a bunch of quirk updates from David Miller, a new config item
-> > to help Jeff Garzik start to cleanup the isdn drivers and let him take
-> > those patches through his tree, and a few other minor bugfixes.
-> 
-> This one is bogus:
-> 
->     PCI: Revert "PCI: disable MSI by default on systems with Serverworks HT1000 chips"
->     
->     This reverts commit e3008dedff4bdc96a5f67224cd3d8d12237082a0.
->     
->     The real bug was an INTX issue in the tg3 ethernet chip, and
->     cured by commit c129d962a66c76964954a98b38586ada82cf9381
->     
->     Signed-off-by: David S. Miller <davem@davemloft.net>
->     Acked-by: Jeff Garzik <jgarzik@redhat.com>
->     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> It says "cured by commit c129d962a66c76964954a98b38586ada82cf9381", but no 
-> such commit exists. What?
-> 
-> Did you mean commit ba698ad4b7e466cbb4a8bde6b9da8080ab06808d, and if so, 
-> where did that c129d.. come from?
+On Sunday 14 October 2007, Antonino A. Daplas wrote:
+> On Sat, 2007-10-13 at 20:13 +0200, Frans Pop wrote:
+> > I could solve this issue in two ways:
+> > - boot with VGA=791 parameter (initial boot was without VGA= parameter)
+> > - compile kernel without FRAMEBUFFER_CONSOLE_DETECT_PRIMARY set (I also
+> >   unset FB_VIRTUAL, but without its boot param that should be a no-op)
+>
+> After looking at vfb.c again, it seems the default is for vfb to be
+> enabled and you have to actively disable vfb either with
+>
+> video=vfb:disable or video=vfb:off
+>
+> I have to change this behavior. In the meantime, try one of the above
+> options.
 
-I'll defer to David on this one, as he sent it to me.
+I'm not sure if there's been any progress on this issue, but to make sure it 
+does not get forgotten, I've just filed a BR under drivers/video(other) and 
+added that as blocker to #9056 (2.6.23 regressions):
+http://bugzilla.kernel.org/show_bug.cgi?id=9310
 
-David?
-
-greg k-h
+Cheers,
+FJP
