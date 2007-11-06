@@ -1,48 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbXKFM5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755535AbXKFNEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756090AbXKFM5q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 07:57:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754578AbXKFM5i
+	id S1755535AbXKFNEe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 08:04:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbXKFNE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 07:57:38 -0500
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:58332 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754153AbXKFM5h (ORCPT
+	Tue, 6 Nov 2007 08:04:26 -0500
+Received: from nf-out-0910.google.com ([64.233.182.188]:6886 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751000AbXKFNEZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 07:57:37 -0500
-Message-ID: <4730649E.2020405@linux.vnet.ibm.com>
-Date: Tue, 06 Nov 2007 18:27:02 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Tue, 6 Nov 2007 08:04:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=iQFJjISlqTF77Zdfn3vwXvBY3ulb4WeIUZazKwpX0PUO+Wzro0Ula3y24gwNDliEq+ODFB1bbAqLMuFh0k7ad0cAUlFGoKNgydsttvuBpPTFgrGrDLCuKW0RgarTsgTeQ3xjmn77ojJfYh6H5ftjtXyESi1bmWk4VnLJyuW2Ta8=
+Message-ID: <2ed59cbb0711060504y2c2e114ci98432cbaf6cdd24f@mail.gmail.com>
+Date: Tue, 6 Nov 2007 08:04:24 -0500
+From: "Zurk Tech" <zurktech@gmail.com>
+To: "Michal Schmidt" <xschmi00@stud.feec.vutbr.cz>
+Subject: Re: Truecrypt in kernel ?
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20071106081527.409a0026@hammerfall>
 MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: linux-kernel@vger.kernel.org, pbadari@us.ibm.com,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: mm snapshot broken-out-2007-11-06-02-32.tar.gz uploaded - build
- fails on powerpc
-References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
-In-Reply-To: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <2ed59cbb0711051742k5e4a7858ie95126399006ba53@mail.gmail.com>
+	 <20071106081527.409a0026@hammerfall>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-akpm@linux-foundation.org wrote:
-> powerpc-move-_rtc_time-routines-under-config_adb_cuda.patch
+aka author is being an idiot. *sigh*
+-z-
 
-  CC      net/9p/error.o
-arch/powerpc/platforms/powermac/time.c:168: error: implicit declaration of function ‘from_rtc_time’
-arch/powerpc/platforms/powermac/time.c:225: error: implicit declaration of function ‘to_rtc_time’
-make[2]: *** [arch/powerpc/platforms/powermac/time.o] Error 1
-make[1]: *** [arch/powerpc/platforms/powermac] Error 2
-make: *** [arch/powerpc/platforms] Error 2
-
-The above patch causes the build failure, because the from_rtc_time() and to_rtc_time() are
-moved under the ifdef CONFIG_ADB_CUDA, but they are begin called in the pmu_set_rtc_time() and
-pmac_get_rtc_time() under CONFIG_ADB_PMU.
-
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+On 11/6/07, Michal Schmidt <xschmi00@stud.feec.vutbr.cz> wrote:
+>
+> Two reasons:
+> The author hasn't sent patches.
+> It looks to me the license is incompatible with the GPLv2.
+>
+> Michal
+>
