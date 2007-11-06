@@ -1,37 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755658AbXKFJje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756035AbXKFJoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755658AbXKFJje (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 04:39:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbXKFJj1
+	id S1756035AbXKFJoT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 04:44:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbXKFJoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 04:39:27 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:51128 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750999AbXKFJj0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 04:39:26 -0500
-Date: Tue, 6 Nov 2007 10:39:11 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] avr32: remove UID16 option
-Message-ID: <20071106103911.0b923374@dhcp-255-175.norway.atmel.com>
-In-Reply-To: <20071105170612.GW12045@stusta.de>
-References: <20071105170612.GW12045@stusta.de>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i486-pc-linux-gnu)
+	Tue, 6 Nov 2007 04:44:11 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56158 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752605AbXKFJoK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 04:44:10 -0500
+Subject: Re: [linux-usb-devel] device struct bloat
+From: Peter Zijlstra <peterz@infradead.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-usb-devel@lists.sourceforge.net, Greg KH <greg@kroah.com>,
+       Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oneukum@suse.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, apw <apw@shadowen.org>
+In-Reply-To: <200711051738.35080.david-b@pacbell.net>
+References: <20071103124823.6059640e@shemminger-laptop>
+	 <1194260234.27652.425.camel@twins> <20071105224929.GA30521@kroah.com>
+	 <200711051738.35080.david-b@pacbell.net>
+Content-Type: text/plain
+Date: Tue, 06 Nov 2007 10:43:42 +0100
+Message-Id: <1194342222.6544.20.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Nov 2007 18:06:12 +0100
-Adrian Bunk <bunk@kernel.org> wrote:
-
-> avr32 already sees the option from init/Kconfig.
+On Mon, 2007-11-05 at 17:38 -0800, David Brownell wrote:
+> On Monday 05 November 2007, Greg KH wrote:
+> > --- linux-2.6-2.orig/drivers/spi/spi.c
+> > +++ linux-2.6-2/drivers/spi/spi.c
 > 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> It'd be quicker to end up in the right hands if you had
+> split this big and random patch according to subsystem...
 
-Indeed. Applied, thanks.
+Yeah, sorry, I just started converting mindlessly and stopped once it
+compiled (which explains the missing FW bits, I don't have that in my
+config). Then booted and fixed up what broke, well aside from the final
+lockdep issue. As I couldn't get that fixed, I never looked twice,
+didn't make it a proper patch-set, nor validated the rest of the patch.
 
-Håvard
+Wasn't even planning on sending it out initially.
+
+> There's already a patch in the MM queue that removes
+> the SPI-private semaphore.  Except that it's missing
+> the bug noted below.
+
+Right, lack of a recent -mm made me work against mainline. I'm sure I
+would've noticed otherwise :-)
+
