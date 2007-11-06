@@ -1,61 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756196AbXKFCH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756394AbXKFCYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756196AbXKFCH3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 21:07:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbXKFCHV
+	id S1756394AbXKFCYn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 21:24:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755066AbXKFCYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 21:07:21 -0500
-Received: from mail.parknet.ad.jp ([210.171.162.6]:35863 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752045AbXKFCHT (ORCPT
+	Mon, 5 Nov 2007 21:24:34 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51940 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754738AbXKFCYd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 21:07:19 -0500
+	Mon, 5 Nov 2007 21:24:33 -0500
+Date: Tue, 06 Nov 2007 11:23:01 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] fat: optimize fat_count_free_clusters()
-References: <87hck1pssj.fsf@duaron.myhome.or.jp>
-	<20071105164954.ac568ba3.akpm@linux-foundation.org>
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Date: Tue, 06 Nov 2007 11:07:12 +0900
-In-Reply-To: <20071105164954.ac568ba3.akpm@linux-foundation.org> (Andrew Morton's message of "Mon\, 5 Nov 2007 16\:49\:54 -0800")
-Message-ID: <87pryom8j3.fsf@duaron.myhome.or.jp>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/23.0.50 (gnu/linux)
+Subject: [PATCH] Add IORESOUCE_BUSY flag for System RAM take 2. 
+Cc: Matthew Wilcox <matthew@wil.cx>, lkml <linux-kernel@vger.kernel.org>,
+       andi@firstfloor.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "tony.luck@intel.com" <tony.luck@intel.com>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>,
+       Badari Pulavarty <pbadari@us.ibm.com>
+In-Reply-To: <1193934490.26106.0.camel@dyn9047017100.beaverton.ibm.com>
+References: <20071101181700.6D9A.Y-GOTO@jp.fujitsu.com> <1193934490.26106.0.camel@dyn9047017100.beaverton.ibm.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20071106111839.4D11.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
 
->> +/* 128kb is the whole sectors for FAT12 and FAT16 */
->> +#define FAT_READA_SIZE		(128 * 1024)
->> +
->> +static void fat_ent_reada(struct super_block *sb, struct fat_entry *fatent,
->> +			  unsigned long reada_blocks)
->> +{
->> +	struct fatent_operations *ops = MSDOS_SB(sb)->fatent_ops;
->> +	sector_t blocknr;
->> +	int i, offset;
->> +
->> +	ops->ent_blocknr(sb, fatent->entry, &offset, &blocknr);
->> +
->> +	for (i = 0; i < reada_blocks; i++)
->> +		sb_breadahead(sb, blocknr + i);
->> +}
->
-> You might find that it's simpler and faster to call
-> page_cache_sync_readahead() against sb->s_bdev->bd_inode->i_mapping.
->
-> Or maybe not - that requires a struct file_ra_state.  We _used_ to have a
-> nice simple read-some-stuff-into-pagecache function which didn't need an
-> ra_state but that seems to have disappeared in the various recent readahead
-> churn.  Oh well.
+Hello.
 
-Yes. I found it, but I gave up for now by file_ra_state. Also I'd like
-to use a large block to read FAT.  I'll rethink this code after large
-block was merged.
+I merged Baradi-san's patch and mine. This and Kame-san's
+following patch is necessary for x86-64 memory unplug.
 
-Thanks.
+http://marc.info/?l=linux-mm&m=119399026017901&w=2
+
+I heard Kame-san's patch is already included in -mm.
+So, I'll repost merged patch now.
+
+This patch is tested on 2.6.23-mm1.
+
+Please apply.
+
+---
+
+i386 and x86-64 registers System RAM as IORESOURCE_MEM | IORESOURCE_BUSY.
+
+But ia64 registers it as IORESOURCE_MEM only.
+In addition, memory hotplug code registers new memory as IORESOURCE_MEM too.
+
+This difference causes a failure of memory unplug of x86-64.
+This patch fix it.
+
+This patch adds IORESOURCE_BUSY to avoid potential overlap mapping
+by PCI device.
+
+
+Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+
+---
+ arch/ia64/kernel/efi.c |    6 ++----
+ kernel/resource.c      |    2 +-
+ mm/memory_hotplug.c    |    2 +-
+ 3 files changed, 4 insertions(+), 6 deletions(-)
+
+Index: current/arch/ia64/kernel/efi.c
+===================================================================
+--- current.orig/arch/ia64/kernel/efi.c	2007-11-02 17:17:30.000000000 +0900
++++ current/arch/ia64/kernel/efi.c	2007-11-02 17:19:10.000000000 +0900
+@@ -1111,7 +1111,7 @@ efi_initialize_iomem_resources(struct re
+ 		if (md->num_pages == 0) /* should not happen */
+ 			continue;
+ 
+-		flags = IORESOURCE_MEM;
++		flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+ 		switch (md->type) {
+ 
+ 			case EFI_MEMORY_MAPPED_IO:
+@@ -1133,12 +1133,11 @@ efi_initialize_iomem_resources(struct re
+ 
+ 			case EFI_ACPI_MEMORY_NVS:
+ 				name = "ACPI Non-volatile Storage";
+-				flags |= IORESOURCE_BUSY;
+ 				break;
+ 
+ 			case EFI_UNUSABLE_MEMORY:
+ 				name = "reserved";
+-				flags |= IORESOURCE_BUSY | IORESOURCE_DISABLED;
++				flags |= IORESOURCE_DISABLED;
+ 				break;
+ 
+ 			case EFI_RESERVED_TYPE:
+@@ -1147,7 +1146,6 @@ efi_initialize_iomem_resources(struct re
+ 			case EFI_ACPI_RECLAIM_MEMORY:
+ 			default:
+ 				name = "reserved";
+-				flags |= IORESOURCE_BUSY;
+ 				break;
+ 		}
+ 
+Index: current/mm/memory_hotplug.c
+===================================================================
+--- current.orig/mm/memory_hotplug.c	2007-11-02 17:19:09.000000000 +0900
++++ current/mm/memory_hotplug.c	2007-11-02 17:19:10.000000000 +0900
+@@ -39,7 +39,7 @@ static struct resource *register_memory_
+ 	res->name = "System RAM";
+ 	res->start = start;
+ 	res->end = start + size - 1;
+-	res->flags = IORESOURCE_MEM;
++	res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+ 	if (request_resource(&iomem_resource, res) < 0) {
+ 		printk("System RAM resource %llx - %llx cannot be added\n",
+ 		(unsigned long long)res->start, (unsigned long long)res->end);
+Index: current/kernel/resource.c
+===================================================================
+--- current.orig/kernel/resource.c	2007-11-02 17:19:15.000000000 +0900
++++ current/kernel/resource.c	2007-11-02 17:22:39.000000000 +0900
+@@ -287,7 +287,7 @@ walk_memory_resource(unsigned long start
+ 	int ret = -1;
+ 	res.start = (u64) start_pfn << PAGE_SHIFT;
+ 	res.end = ((u64)(start_pfn + nr_pages) << PAGE_SHIFT) - 1;
+-	res.flags = IORESOURCE_MEM;
++	res.flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+ 	orig_end = res.end;
+ 	while ((res.start < res.end) && (find_next_system_ram(&res) >= 0)) {
+ 		pfn = (unsigned long)(res.start >> PAGE_SHIFT);
+
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Yasunori Goto 
+
+
