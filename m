@@ -1,70 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004AbXKFVlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756798AbXKFVnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755004AbXKFVlr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 16:41:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755260AbXKFVlh
+	id S1756798AbXKFVnT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 16:43:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754224AbXKFVnL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 16:41:37 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40167 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754351AbXKFVlg (ORCPT
+	Tue, 6 Nov 2007 16:43:11 -0500
+Received: from ithilien.qualcomm.com ([129.46.51.59]:43741 "EHLO
+	ithilien.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753464AbXKFVnK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 16:41:36 -0500
-Date: Tue, 6 Nov 2007 14:41:04 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Greg KH <greg@kroah.com>
-Cc: nix.or.die@googlemail.com, linux-kernel@vger.kernel.org
-Subject: Re: mm snapshot broken-out-2007-11-06-02-32.tar.gz uploaded
-Message-Id: <20071106144104.fb041f48.akpm@linux-foundation.org>
-In-Reply-To: <20071106213326.GA5085@kroah.com>
-References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
-	<4730CB42.4090106@googlemail.com>
-	<20071106134052.71bf12d6.akpm@linux-foundation.org>
-	<20071106210712.GA5993@kroah.com>
-	<20071106141509.51e66ab3.akpm@linux-foundation.org>
-	<20071106213326.GA5085@kroah.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 6 Nov 2007 16:43:10 -0500
+X-Greylist: delayed 395 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Nov 2007 16:43:10 EST
+Message-ID: <4730DFE2.9070202@qualcomm.com>
+Date: Tue, 06 Nov 2007 13:42:58 -0800
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070926)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Strange freezes (seems like SATA related)
+References: <47261043.5020907@qualcomm.com> <20071101164046.462f40f0.akpm@linux-foundation.org>
+In-Reply-To: <20071101164046.462f40f0.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 6 Nov 2007 13:33:26 -0800 Greg KH <greg@kroah.com> wrote:
-> On Tue, Nov 06, 2007 at 02:15:09PM -0800, Andrew Morton wrote:
-> > > On Tue, 6 Nov 2007 13:07:12 -0800 Greg KH <greg@kroah.com> wrote:
-> > > > > [15745.009868]  =======================
-> > > > > [15745.009870] Code: d4 13 00 83 7c 24 04 00 75 0f 8b 43 14 83 c0 0c e8 fc fb ff ff 89 44 24 04 8b 43 14 8b 48 04 8d 53 08 89 50 04 89 43 08 89 4b 0c <89> 11 8b 43 14 83 c0 08 c6 00 01 8b 44 24 04 89 43 10 c7 04 24
-> > > > > [15745.009928] EIP: [<c01c50a2>] kobject_add+0xae/0x160 SS:ESP 0068:cfa37f40
-> > > > > 
-> > > > 
-> > > > Don't knowm sorry - we'll need to wait until someone can hit it more
-> > > > reliably :(
-> > > 
-> > > Ah, I have a fix for that, Kay found it.  Do you want an add-on to your
-> > > tree, or a whole new version of one of the patches?
-> > 
-> > Is OK, it looks like I need to resync everyone and undrop various
-> > trees.   A fix for perfmon would be nice.
-> > 
-> > It took five solid hours to get this lot vaguely compiling.  20-30
-> > fix patches needed, several trees dropped, 5-10 patches dropped.
+
+
+Andrew Morton wrote:
+> On Mon, 29 Oct 2007 09:54:27 -0700
+> Max Krasnyansky <maxk@qualcomm.com> wrote:
 > 
-> Let me regenerate my tree, drop the block-device patch that you hate so
-> much,
-
-I don't "hate" it.  It's just that it makes my ydl4.1 G5 no longer boot. 
-This is not an unreasonable objection...
-
-> and then attack the perfmon code.
-
-Would be good, thanks - I'll send you a diff.
-
->  Should be done in a few hours.
-
-I won't be pulling the trees again until Friday.
-
-> Sound ok?
+>> A couple of HP xw9300 machines (dual Opterons) started freezing up.
+>> We're running on 2.6.22.1 on them. Freezes a somewhere weird. VGA console is alive
+>> (I can switch vts, etc) but everything else is dead (network, etc).
+>> Unfortunately SYSRQ was not enabled and I could not get backtraces and stuff.
+>>
+>> Hooked up serial console and the only error that shows up is this.
+>>
+>> ata1: EH in ADMA mode, notifier 0x1 notifier_error 0x0 gen_ctl 0x1581000 status 0x1540 next cpb count 0x0 next cpb idx 0x0
+>> ata1: CPB 0: ctl_flags 0xd, resp_flags 0x1
+>> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+>> ata1.00: cmd ca/00:08:57:00:80/00:00:00:00:00/e0 tag 0 cdb 0x0 data 4096 out
+>>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>> Descriptor sense data with sense descriptors (in hex):
+>> end_request: I/O error, dev sda, sector 8388695
+>> Buffer I/O error on device sda1, logical block 1048579
+>> lost page write due to I/O error on sda1
+>> sd 0:0:0:0: [sda] Write Protect is off
+>>
+>> I see a bunch of those and then the box just sits there spewing this periodically
+>>
+>> ata1: EH in ADMA mode, notifier 0x1 notifier_error 0x0 gen_ctl 0x1581000 status 0x1540 next cpb count 0x0 next cpb idx 0x0
+>> ata1: CPB 0: ctl_flags 0xd, resp_flags 0x1
+>> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+>> ata1.00: cmd ca/00:08:4f:00:f8/00:00:00:00:00/e1 tag 0 cdb 0x0 data 4096 out
+>>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>>
+>> SMART selftest on the drive passed without errors.
+>>
+>> Here is how this machine looks like
+>>
+>> ...
 > 
+> So this happens on more than one machine?
+Yep.
 
-Thanks.
+> The kernel shouldn't freeze, so even if both machines have magically
+> identical hardware faults, there's a kernel bug there somewhere.
+> 
+> I guess it would be useful to test a 2.6.23 kernel if poss.  We've seen a
+> very large number of reports like this one in recent months (many of which
+> have not been responded to, btw) and perhaps someone has done something
+> about them.
+I may not be able to run identical workload on 2.6.23. Will try to give it a shot
+sometime next week. Also I've upgraded to 2.6.22.10 last week. There are a few fixes 
+in there that may potentially affect those boxes.
+
+Max
+
+
+
