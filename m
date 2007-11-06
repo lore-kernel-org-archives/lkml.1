@@ -1,107 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757430AbXKFAxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756429AbXKFAxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757430AbXKFAxW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 19:53:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756433AbXKFAul
+	id S1756429AbXKFAxi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 19:53:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757181AbXKFAwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 19:50:41 -0500
-Received: from nds154-200.nds.lab.novell.com ([151.155.154.200]:25189 "EHLO
-	lsg.lab.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755551AbXKFAue (ORCPT
+	Mon, 5 Nov 2007 19:52:14 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:56629 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757179AbXKFAwM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 19:50:34 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 7/8] RT: Optimize rebalancing
-To: rostedt@goodmis.org
-Cc: mingo@elte.hu, dvhltc@us.ibm.com, zijlstra@redhat.com,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       ghaskins@novell.com
-Date: Mon, 05 Nov 2007 16:49:08 -0700
-Message-ID: <20071105234908.25451.67301.stgit@lsg>
-In-Reply-To: <20071105234832.25451.55430.stgit@lsg>
-References: <20071105234832.25451.55430.stgit@lsg>
-User-Agent: StGIT/0.12.1
+	Mon, 5 Nov 2007 19:52:12 -0500
+Message-ID: <472FB9A8.6050007@zytor.com>
+Date: Mon, 05 Nov 2007 16:47:36 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Guillaume Chazarain <guichaz@yahoo.fr>
+CC: Sam Ravnborg <sam@ravnborg.org>, Roland Dreier <rdreier@cisco.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] replace "make ARCH=i386/x86_64 with make ARCH=x86"
+References: <20071103234826.GA26654@uranus.ravnborg.org>	 <20071105104129.GB3662@infradead.org>	 <20071105171740.GA29481@uranus.ravnborg.org>	 <adafxzkbcid.fsf@cisco.com>	 <20071105214937.GA31496@uranus.ravnborg.org>	 <472FAB4C.9040303@zytor.com> <3d8471ca0711051640w33588d8fn2c0e4aecf99d3547@mail.gmail.com>
+In-Reply-To: <3d8471ca0711051640w33588d8fn2c0e4aecf99d3547@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We have logic to detect whether the system has migratable tasks, but we are
-not using it when deciding whether to push tasks away.  So we add support
-for considering this new information.
+Guillaume Chazarain wrote:
+> On 11/6/07, H. Peter Anvin <hpa@zytor.com> wrote:
+>> The issue with "make allyesconfig" concerns me, although the same
+>> situation already exists with any multiple-choice configuration.  What I
+>> guess we really want is to be able to specify a few specific choices.
+> 
+> I don't know enough about Kbuild to know if it's possible or not, but I
+> would find it great if the *config targets could take CONFIG_ variables
+> on the command line, like:
+> 
+> make oldconfig CONFIG_SMP=y
+> 
+> If it's not possible, why not inherit the CONFIG_ options from environment
+> variables, like we already do for $CFLAGS, but only at make *config
+> time in this case?
+> 
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
+It probably can only be done at *config time (and probably *should* only 
+be done at *config time); but it seems like it would be a 
+straightforward addition to Kconfig to look in the environment for 
+variables named CONFIG_* just like it'd look in an old config file.
 
- kernel/sched.c    |    2 ++
- kernel/sched_rt.c |   10 ++++++++--
- 2 files changed, 10 insertions(+), 2 deletions(-)
+That would definitely resolve a lot of issues.
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 8a27f09..0eced8c 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -268,6 +268,7 @@ struct rt_rq {
- 	unsigned long rt_nr_uninterruptible;
- 	/* highest queued rt task prio */
- 	int highest_prio;
-+	int overloaded;
- };
- 
- /*
-@@ -6869,6 +6870,7 @@ void __init sched_init(void)
- 		rq->migration_thread = NULL;
- 		INIT_LIST_HEAD(&rq->migration_queue);
- 		rq->rt.highest_prio = MAX_RT_PRIO;
-+		rq->rt.overloaded = 0;
- #endif
- 		atomic_set(&rq->nr_iowait, 0);
- 
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 6ba5921..698f4d9 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -28,10 +28,12 @@ static inline cpumask_t *rt_overload(struct rq *rq)
- static inline void rt_set_overload(struct rq *rq)
- {
- 	cpu_set(rq->cpu, *rt_overload_mask(rq->cpu));
-+	rq->rt.overloaded = 1;
- }
- static inline void rt_clear_overload(struct rq *rq)
- {
- 	cpu_clear(rq->cpu, *rt_overload_mask(rq->cpu));
-+	rq->rt.overloaded = 0;
- }
- 
- static void update_rt_migration(struct task_struct *p, struct rq *rq)
-@@ -496,6 +498,9 @@ static int push_rt_task(struct rq *rq)
- 
- 	assert_spin_locked(&rq->lock);
- 
-+	if (!rq->rt.overloaded)
-+		return 0;
-+
- 	next_task = pick_next_highest_task_rt(rq, -1);
- 	if (!next_task)
- 		return 0;
-@@ -737,7 +742,7 @@ static void schedule_tail_balance_rt(struct rq *rq)
- 	 * the lock was owned by prev, we need to release it
- 	 * first via finish_lock_switch and then reaquire it here.
- 	 */
--	if (unlikely(rq->rt.rt_nr_running > 1)) {
-+	if (unlikely(rq->rt.overloaded)) {
- 		spin_lock(&rq->lock);
- 		push_rt_tasks(rq);
- 		schedstat_inc(rq, rto_schedule_tail);
-@@ -749,7 +754,8 @@ static void wakeup_balance_rt(struct rq *rq, struct task_struct *p)
- {
- 	if (unlikely(rt_task(p)) &&
- 	    !task_running(rq, p) &&
--	    (p->prio >= rq->curr->prio)) {
-+	    (p->prio >= rq->rt.highest_prio) &&
-+	    rq->rt.overloaded) {
- 		push_rt_tasks(rq);
- 		schedstat_inc(rq, rto_wakeup);
- 	}
-
+	-hpa
