@@ -1,59 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755785AbXKFSOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755605AbXKFSSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755785AbXKFSOb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 13:14:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754321AbXKFSOY
+	id S1755605AbXKFSSp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 13:18:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbXKFSSh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 13:14:24 -0500
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:22638 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754178AbXKFSOX (ORCPT
+	Tue, 6 Nov 2007 13:18:37 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:49254 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751079AbXKFSSg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 13:14:23 -0500
-Message-ID: <4730AE66.6030501@panasas.com>
-Date: Tue, 06 Nov 2007 20:11:50 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, matthew@wil.cx
-Subject: Re: [PATCH] Add the macro to test if "exactly_one_bit_set" to log2.h.
-References: <Pine.LNX.4.64.0711061135310.23545@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0711061135310.23545@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 6 Nov 2007 13:18:36 -0500
+Subject: Re: mm snapshot broken-out-2007-11-06-02-32.tar.gz uploaded -
+	build failure - rpadlpar_sysfs
+From: Badari Pulavarty <pbadari@gmail.com>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, mm-commits@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Andy Whitcroft <apw@shadowen.org>
+In-Reply-To: <4730896A.9060701@linux.vnet.ibm.com>
+References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
+	 <4730896A.9060701@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Tue, 06 Nov 2007 10:19:28 -0800
+Message-Id: <1194373168.25901.3.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Nov 2007 18:11:53.0409 (UTC) FILETIME=[825DA310:01C820A0]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 06 2007 at 18:38 +0200, "Robert P. J. Day" <rpjday@crashcourse.ca> wrote:
-> While this macro is defined in terms of "is_power_of_2" and is
-> therefore functionally equivalent, the visual semantics are sometimes
-> more appropriate for what is actually being tested.
+On Tue, 2007-11-06 at 21:04 +0530, Kamalesh Babulal wrote:
+> Hi Andrew,
 > 
-> Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+> The build fails with following error
+>  
+>   CC      drivers/pci/hotplug/rpadlpar_sysfs.o
+> drivers/pci/hotplug/rpadlpar_sysfs.c:133: error: initializer element is not constant
+> drivers/pci/hotplug/rpadlpar_sysfs.c:133: error: (near initialization for `dlpar_io_kset.kobj.parent')
+> drivers/pci/hotplug/rpadlpar_sysfs.c:133: error: initializer element is not constant
+> drivers/pci/hotplug/rpadlpar_sysfs.c:133: error: (near initialization for `dlpar_io_kset.kobj')
+> drivers/pci/hotplug/rpadlpar_sysfs.c:134: error: unknown field `ktype' specified in initializer
+> drivers/pci/hotplug/rpadlpar_sysfs.c:134: warning: initialization from incompatible pointer type
+> make[3]: *** [drivers/pci/hotplug/rpadlpar_sysfs.o] Error 1
+> make[2]: *** [drivers/pci/hotplug] Error 2
+> make[1]: *** [drivers/pci] Error 2
+> make: *** [drivers] Error 2
 > 
-> ---
-> 
-> diff --git a/include/linux/log2.h b/include/linux/log2.h
-> index c8cf5e8..d0d324e 100644
-> --- a/include/linux/log2.h
-> +++ b/include/linux/log2.h
-> @@ -55,6 +55,12 @@ bool is_power_of_2(unsigned long n)
->  }
-> 
->  /*
-> + *  And for folks who want slightly different semantics ...
-> + */
-> +
-> +#define exactly_one_bit_set is_power_of_2
+> The patch, gregkh-driver-kset-convert-pci-hotplug-to-use-kset_create_and_register.patch
+> is causing the build failure.
 
-at_most_one_bit_set No?
-> +
-> +/*
->   * round up to nearest power of two
->   */
->  static inline __attribute__((const))
+Here is the fix (against 24-rc1 mm-brokenout). Can you try it ?
 
-Boaz
+Thanks,
+Badari
+
+Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com> 
+---
+ drivers/pci/hotplug/rpadlpar_sysfs.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+Index: linux-2.6.24-rc1/drivers/pci/hotplug/rpadlpar_sysfs.c
+===================================================================
+--- linux-2.6.24-rc1.orig/drivers/pci/hotplug/rpadlpar_sysfs.c	2007-11-06 10:09:10.000000000 -0800
++++ linux-2.6.24-rc1/drivers/pci/hotplug/rpadlpar_sysfs.c	2007-11-06 10:11:33.000000000 -0800
+@@ -129,14 +129,13 @@ struct kobj_type ktype_dlpar_io = {
+ };
+ 
+ struct kset dlpar_io_kset = {
+-	.kobj = {.ktype = &ktype_dlpar_io,
+-		 .parent = &pci_hotplug_slots_kset->kobj},
+-	.ktype = &ktype_dlpar_io,
++	.kobj = {.ktype = &ktype_dlpar_io},
+ };
+ 
+ int dlpar_sysfs_init(void)
+ {
+ 	kobject_set_name(&dlpar_io_kset.kobj, DLPAR_KOBJ_NAME);
++	dlpar_io_kset.kobj.parent = &pci_hotplug_slots_kset->kobj;
+ 	if (kset_register(&dlpar_io_kset)) {
+ 		printk(KERN_ERR "rpadlpar_io: cannot register kset for %s\n",
+ 				kobject_name(&dlpar_io_kset.kobj));
+
+
