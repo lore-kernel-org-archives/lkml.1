@@ -1,79 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757412AbXKFKtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757175AbXKFKxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757412AbXKFKtk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 05:49:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbXKFKtb
+	id S1757175AbXKFKxi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 05:53:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755827AbXKFKxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 05:49:31 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:60561 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755426AbXKFKta (ORCPT
+	Tue, 6 Nov 2007 05:53:31 -0500
+Received: from crystal.sipsolutions.net ([195.210.38.204]:60861 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755749AbXKFKxa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 05:49:30 -0500
-Date: Tue, 6 Nov 2007 11:49:06 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Dave Jones <davej@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 01/10] x86: unification of cfufreq/Kconfig
-Message-ID: <20071106104906.GG26163@stusta.de>
-References: <11941338801315-git-send-email-sam@ravnborg.org> <20071106073821.GA12733@redhat.com> <20071106081339.GA5687@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20071106081339.GA5687@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 6 Nov 2007 05:53:30 -0500
+Subject: Re: 2.6.24-rc1-git15 Kernel build fails on powerpc - Unrecognized
+	opcode: `dssall'
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <661de9470711060246s3040f68drf0a6310aeec4e1e8@mail.gmail.com>
+References: <47304343.2010709@linux.vnet.ibm.com>
+	 <661de9470711060246s3040f68drf0a6310aeec4e1e8@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-uYIXIRK9kGJr6sndLTNN"
+Date: Tue, 06 Nov 2007 11:54:46 +0100
+Message-Id: <1194346486.4066.13.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 06, 2007 at 09:13:39AM +0100, Sam Ravnborg wrote:
-> >  > +	depends on X86_32 && X86_ELAN
-> >  >  	---help---
-> >  >  	  This adds the CPUFreq driver for AMD Elan SC520 processor.
-> > 
-> > X86_ELAN should depend on X86_32 rather than adding this everywhere.
-> 
-> ...
-> 
-> >  >  	bool
-> >  >  	depends on X86_POWERNOW_K7 && ACPI_PROCESSOR
-> >  >  	depends on !(X86_POWERNOW_K7 = y && ACPI_PROCESSOR = m)
-> >  > +	depends on X86_32
-> >  >  	default y
-> > 
-> > This 2nd hunk shouldn't be necessary, as it depends on X86_POWERNOW_K7
-> > which you just added the 32bit dependancy to. 
-> > 
-> >  >  config X86_SPEEDSTEP_RELAXED_CAP_CHECK
-> >  >  	bool "Relaxed speedstep capability checks"
-> >  > -	depends on (X86_SPEEDSTEP_SMI || X86_SPEEDSTEP_ICH)
-> >  > +	depends on X86_32 && (X86_SPEEDSTEP_SMI || X86_SPEEDSTEP_ICH)
-> > 
-> > Should also be unnecessary due to those items now being 32bit dependant.
-> 
-> In several cases the "depends on X86_32 were added not as a necessity
-> but just to make it obvious that a given symbol is 32 bit specific.
-> I can drop doing it this way if it is anyway obvious from the context.
-> 
-> Will try to do so in next patch-set, due tonigt if things goes OK.
 
-Please keep them for now (and also add them for the other cases like 
-RWSEM_XCHGADD_ALGORITHM).
+--=-uYIXIRK9kGJr6sndLTNN
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-My impression of the whole x86 merge is that a quite mechanical approach 
-is the best one for avoiding to introduce bugs, and cleaning such 
-harmless stuff later is not a problem.
 
-> 	Sam
 
-cu
-Adrian
+> >   CHK     include/linux/compile.h
+> >   AS      arch/powerpc/kernel/swsusp_32.o
+> > arch/powerpc/kernel/swsusp_32.S: Assembler messages:
+> > arch/powerpc/kernel/swsusp_32.S:138: Error: Unrecognized opcode: `dssal=
+l'
+> > make[1]: *** [arch/powerpc/kernel/swsusp_32.o] Error 1
+> > make: *** [arch/powerpc/kernel] Error 2
+> >
+>=20
+> Looks suspiciously like an altivec issue. Could you compile with make
+> V=3D1 and/or do a git bisect and see what broke?
 
--- 
+Looks more like a toolchain issue to me.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+johannes
+
+--=-uYIXIRK9kGJr6sndLTNN
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUARzBH9aVg1VMiehFYAQL+exAAvrYLhzgPOuZeNb7zAyEEFZFdA8eTomgR
+xmiLcsoDP0To2Pfvzbv2eILTTn7yKxWfZjwijKutJwqWY9X58z7puG0a0EXlwc4B
+yUwx9TCMY6QppBCKu8oXb8CB5xz0I9kbrTwmNJVEKrKcCD1364+tFRnJffGWJenD
+tBLLSEPUaKwYL4wkP+d69PvcNifQ2JDEnDE982JwjTkBL9y9q9eDu2tbAW00l9zL
+URG75ih2HIr0IvE4BTQpXSk0HcdQMmnGrNOKQ0oejQbKh5uf2hXJlC8A976FC7rB
+xGFcc5zwRPfK29H5HxxlL/4HJFA1fdIheVnhgX8szkMjW6egKkYsdFt1xHdtpr/f
+JYVvaK5mqQ133KPpacd6weybi99VLC8weULq+HlMtz4Q2CEtOCwGNRrp6LBjUL+m
+YgOPDq2jqsfaATZC/PPXgOR9LClD7C7QZ5n/MOMIdx0CMQbe1ZVbbLb0k0qWy3ur
+Y8h7ohqWiJ9OUNZQ9co/O3KRxnuQ+JFCvZps7GpZxjGovZU6ZZRmdeFjJj5c6bWJ
+MAkGhlx9l+yw2Gnri0qk40JtExOBo8lMV1UE1gX6CgrDDL51k2RDLeOpihaSpj9q
+kUt/Qv0xUUiL5Axfdk0TZOZkLHFwvZ8j1d6q9f0IBQ7dkohmXvNqSG85xTovftOP
+So9VN6KPc1c=
+=+TJD
+-----END PGP SIGNATURE-----
+
+--=-uYIXIRK9kGJr6sndLTNN--
 
