@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756744AbXKFVZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757451AbXKFV01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756744AbXKFVZe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 16:25:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254AbXKFVZ1
+	id S1757451AbXKFV01 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 16:26:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754314AbXKFV0T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 16:25:27 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:54165 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752410AbXKFVZ0 (ORCPT
+	Tue, 6 Nov 2007 16:26:19 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:40164 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753650AbXKFV0T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 16:25:26 -0500
-Message-ID: <4730DBC1.5030009@zytor.com>
-Date: Tue, 06 Nov 2007 13:25:21 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Al Boldi <a1426z@gawab.com>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] init: Introduce rootdir bootparm to select which dir
- to sys_chroot
-References: <200711061340.26112.a1426z@gawab.com> <200711072310.20715.a1426z@gawab.com> <4730CAD8.1050407@zytor.com> <200711080013.20702.a1426z@gawab.com>
-In-Reply-To: <200711080013.20702.a1426z@gawab.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 6 Nov 2007 16:26:19 -0500
+Date: Tue, 6 Nov 2007 13:24:26 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [patch 1/4] Create arch/Kconfig
+Message-Id: <20071106132426.1e12b065.randy.dunlap@oracle.com>
+In-Reply-To: <4730D8B7.7020909@zytor.com>
+References: <20071106203724.620893371@polymtl.ca>
+	<20071106204151.811746387@polymtl.ca>
+	<4730D8B7.7020909@zytor.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Boldi wrote:
-> H. Peter Anvin wrote:
->> Al Boldi wrote:
->>> Al Boldi wrote:
->>>> This patch introduces a rootdir kernel boot parameter, which specifies
->>>> the path to the kernel sys_chroot boot dir.
->>>>
->>>> This is useful for systems that have more than one distribution
->>>> installed on the same fs/partition.
->> This seems like something that should be done via an initramfs.
-> 
-> Agreed. But, not everybody boots their systems via initramfs, and even if 
-> they did, they also have to know how to reconfigure it.
-> 
-> In contrast, this patch offers the rootdir functionality as a simple bootparm 
-> and without any extra initramfs dependency.
-> 
+On Tue, 06 Nov 2007 13:12:23 -0800 H. Peter Anvin wrote:
 
-And yet another hack in the kernel!
+> Ideally architecture should be a Kconfig option (it's not needed before 
+> config runs, unlike, say HOSTCC.)
+> 
+> That might take some major surgery, though.
 
-Instead of heaping hack du jour into the kernel, write a small initramfs 
-that provides the appropriate functionality, please.
+I think that's what Sam was going to try to get to.
+He said that we need all ARCHes to source "drivers/Kconfig",
+so I did cris.  About 5 more ARCHes need conversions.
 
-	-hpa
+---
+~Randy
