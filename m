@@ -1,52 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755020AbXKFPeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755535AbXKFPhD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755020AbXKFPeq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 10:34:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbXKFPej
+	id S1755535AbXKFPhD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 10:37:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbXKFPgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 10:34:39 -0500
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:45058 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753122AbXKFPei (ORCPT
+	Tue, 6 Nov 2007 10:36:54 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:35692 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751729AbXKFPgy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 10:34:38 -0500
-Message-ID: <4730896A.9060701@linux.vnet.ibm.com>
-Date: Tue, 06 Nov 2007 21:04:02 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Tue, 6 Nov 2007 10:36:54 -0500
+Date: Tue, 6 Nov 2007 10:36:51 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Greg KH <greg@kroah.com>
+cc: Peter Zijlstra <peterz@infradead.org>, Oliver Neukum <oneukum@suse.de>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, apw <apw@shadowen.org>,
+       Ingo Molnar <mingo@elte.hu>, <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: device struct bloat
+In-Reply-To: <20071105224929.GA30521@kroah.com>
+Message-ID: <Pine.LNX.4.44L0.0711061021390.3883-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: mm snapshot broken-out-2007-11-06-02-32.tar.gz uploaded - build
- failure - rpadlpar_sysfs
-References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
-In-Reply-To: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On Mon, 5 Nov 2007, Greg KH wrote:
 
-The build fails with following error
- 
-  CC      drivers/pci/hotplug/rpadlpar_sysfs.o
-drivers/pci/hotplug/rpadlpar_sysfs.c:133: error: initializer element is not constant
-drivers/pci/hotplug/rpadlpar_sysfs.c:133: error: (near initialization for `dlpar_io_kset.kobj.parent')
-drivers/pci/hotplug/rpadlpar_sysfs.c:133: error: initializer element is not constant
-drivers/pci/hotplug/rpadlpar_sysfs.c:133: error: (near initialization for `dlpar_io_kset.kobj')
-drivers/pci/hotplug/rpadlpar_sysfs.c:134: error: unknown field `ktype' specified in initializer
-drivers/pci/hotplug/rpadlpar_sysfs.c:134: warning: initialization from incompatible pointer type
-make[3]: *** [drivers/pci/hotplug/rpadlpar_sysfs.o] Error 1
-make[2]: *** [drivers/pci/hotplug] Error 2
-make[1]: *** [drivers/pci] Error 2
-make: *** [drivers] Error 2
+> On Mon, Nov 05, 2007 at 11:57:14AM +0100, Peter Zijlstra wrote:
+> > Hmm, the problem seems to be stuff like:
+> > 
+> > add usb driver to pci
+> >   scan pci devices
+> >      add usb host controller device
+> >         scan usb devices
+> >           add usb hub device
+> >             scan usb devices
+> >               add usb .....
+> > 
+> > This seems to be able to go on forever, as long as one can cascade usb
+> > hubs.
+> 
+> USB hubs only work 7 deep, so there is a limit.
 
-The patch, gregkh-driver-kset-convert-pci-hotplug-to-use-kset_create_and_register.patch
-is causing the build failure.
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+In fact things don't work this way.  The list above stops short after
+"add usb host controller devices"; the probe routines for host
+controllers do not scan for USB hubs or other USB devices.  Instead
+they are detected by a completely separate thread (khubd).
+
+> > Doesn't seem like an ideal thing to do from a stack space POV either.
+> > 
+> > Would it be possible to break at the second scan, that is the device
+> > probe and stick that into a workqueue or something. Then we'd only ever
+> > have driver->device nesting.
+> 
+> Alan and Oliver have done some work in this area I think, combined with
+> the suspend/bind/unbind issues.  I'll let them comment on your patch :)
+
+I gather the idea is to convert dev->sem to a mutex.  This idea had 
+occurred to me a long time ago but I didn't pursue it because of the 
+sheer number of places where dev->sem gets used, not to mention the 
+lockdep problems.
+
+You can't possibly solve the lockdep problems here with a simple-minded
+approach like your DRIVER_NORMAL, DRIVER_PARENT, etc.  The device tree
+is arbitrarily deep & wide, and there is at least one routine that
+acquires the semaphores for _all_ the devices in the tree.  This fact
+alone seems to preclude using lockdep for device locks.  (If there was 
+a form of mutex_lock() that bypassed the lockdep checks, you could use 
+it and avoid these issues.)
+
+Deadlock is a serious consideration.  For the most part, routines 
+locking devices do so along a single path in the tree.  For this simple 
+case the rule is: Never acquire a parent's lock while holding the 
+child's lock.
+
+The routine that locks all the devices acquires the locks in order of 
+device registration.  The idea here is that children are always 
+registered _after_ their parents, so this should be compatible with the 
+previous rule.  But there is a potential problem: device_move() can 
+move an older child under a younger parent!
+
+Right now we have no way to deal with this.  There has been some 
+discussion of reordering the dpm_active list when a device is moved, 
+but so far nothing has been done about it.
+
+Alan Stern
+
