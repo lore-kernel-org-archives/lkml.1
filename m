@@ -1,99 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758916AbXKFT6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759023AbXKFT6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758916AbXKFT6e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 14:58:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757493AbXKFTwa
+	id S1759023AbXKFT6v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 14:58:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756807AbXKFTwb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 14:52:30 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45386 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754321AbXKFTwE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 14:52:31 -0500
+Received: from 1wt.eu ([62.212.114.60]:3731 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756132AbXKFTwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 6 Nov 2007 14:52:04 -0500
-Message-Id: <20071106195203.825244760@sgi.com>
-References: <20071106195144.983665861@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 06 Nov 2007 11:52:11 -0800
-From: Christoph Lameter <clameter@sgi.com>
-To: akpm@linux-foundation.org
-Cc: linux-mm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: David Miller <davem@davemloft.net>
-Cc: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 27/28] cpu alloc: Use in the crypto subsystem.
-Content-Disposition: inline; filename=cpu_alloc_crypto
+Date: Tue, 6 Nov 2007 20:51:48 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Romano Giannetti <romanol@upcomillas.es>
+Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, Roland Dreier <rdreier@cisco.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.34-rc1 eat my photo SD card :-(
+Message-ID: <20071106195148.GD1045@1wt.eu>
+References: <1193918202.8439.7.camel@rukbat> <20071102182833.2c055446@poseidon.drzeus.cx> <1194168583.10245.15.camel@rukbat> <ada8x5ec7oh.fsf@cisco.com> <1194259886.6927.9.camel@localhost> <20071105132218.495f244e@poseidon.drzeus.cx> <1194270393.27789.2.camel@localhost> <20071105162633.09e54290@poseidon.drzeus.cx> <1194343121.6953.6.camel@rukbat>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1194343121.6953.6.camel@rukbat>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+On Tue, Nov 06, 2007 at 10:58:41AM +0100, Romano Giannetti wrote:
+(first time)
+> 0000000 0000 0000 31e4 c363 d908 cb2e 0000 0000
 
----
- crypto/async_tx/async_tx.c |   15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+(fourth time)
+> 0000000 0000 0000 71e4 c36f d908 cb2e 0000 0000
 
-Index: linux-2.6/crypto/async_tx/async_tx.c
-===================================================================
---- linux-2.6.orig/crypto/async_tx/async_tx.c	2007-11-05 09:46:04.000000000 -0800
-+++ linux-2.6/crypto/async_tx/async_tx.c	2007-11-05 09:49:56.000000000 -0800
-@@ -207,10 +207,10 @@ static void async_tx_rebalance(void)
- 	for_each_dma_cap_mask(cap, dma_cap_mask_all)
- 		for_each_possible_cpu(cpu) {
- 			struct dma_chan_ref *ref =
--				per_cpu_ptr(channel_table[cap], cpu)->ref;
-+				CPU_PTR(channel_table[cap], cpu)->ref;
- 			if (ref) {
- 				atomic_set(&ref->count, 0);
--				per_cpu_ptr(channel_table[cap], cpu)->ref =
-+				CPU_PTR(channel_table[cap], cpu)->ref =
- 									NULL;
- 			}
- 		}
-@@ -223,7 +223,7 @@ static void async_tx_rebalance(void)
- 			else
- 				new = get_chan_ref_by_cap(cap, -1);
- 
--			per_cpu_ptr(channel_table[cap], cpu)->ref = new;
-+			CPU_PTR(channel_table[cap], cpu)->ref = new;
- 		}
- 
- 	spin_unlock_irqrestore(&async_tx_lock, flags);
-@@ -327,7 +327,8 @@ async_tx_init(void)
- 	clear_bit(DMA_INTERRUPT, dma_cap_mask_all.bits);
- 
- 	for_each_dma_cap_mask(cap, dma_cap_mask_all) {
--		channel_table[cap] = alloc_percpu(struct chan_ref_percpu);
-+		channel_table[cap] = CPU_ALLOC(struct chan_ref_percpu,
-+						GFP_KERNEL | __GFP_ZERO);
- 		if (!channel_table[cap])
- 			goto err;
- 	}
-@@ -343,7 +344,7 @@ err:
- 	printk(KERN_ERR "async_tx: initialization failure\n");
- 
- 	while (--cap >= 0)
--		free_percpu(channel_table[cap]);
-+		CPU_FRE(channel_table[cap]);
- 
- 	return 1;
- }
-@@ -356,7 +357,7 @@ static void __exit async_tx_exit(void)
- 
- 	for_each_dma_cap_mask(cap, dma_cap_mask_all)
- 		if (channel_table[cap])
--			free_percpu(channel_table[cap]);
-+			CPU_FREE(channel_table[cap]);
- 
- 	dma_async_client_unregister(&async_tx_dma);
- }
-@@ -378,7 +379,7 @@ async_tx_find_channel(struct dma_async_t
- 	else if (likely(channel_table_initialized)) {
- 		struct dma_chan_ref *ref;
- 		int cpu = get_cpu();
--		ref = per_cpu_ptr(channel_table[tx_type], cpu)->ref;
-+		ref = CPU_PTR(channel_table[tx_type], cpu)->ref;
- 		put_cpu();
- 		return ref ? ref->chan : NULL;
- 	} else
+(fifth time)
+> 0000000 0000 0000 f1e4 c37b d908 cb2e 0000 0000
 
--- 
+Most always, you have only a few bits which change, and always for
+the same bytes :
+
+  31 -> 71 -> f1  (|40, |80)
+  63 -> 6f -> 7b  (|0c, |10&~4)
+
+It looks like a hardware problem to me. Maybe one version is more
+optimized and puts more stress on the device ? I remember having
+had comparable problems in the past with a CF connected to a
+home-made IDE adapter on which the +5V wire had been cut. The CF
+drained its power from the IDE signals and it would most always
+work correctly, except when reading large files. Writing to it
+finally killed it.  
+
+Regards,
+Willy
+
