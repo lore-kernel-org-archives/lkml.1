@@ -1,92 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757426AbXKFLsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757012AbXKFLsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757426AbXKFLsT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 06:48:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751079AbXKFLsF
+	id S1757012AbXKFLsz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 06:48:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756015AbXKFLss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 06:48:05 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:52695 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753478AbXKFLsD (ORCPT
+	Tue, 6 Nov 2007 06:48:48 -0500
+Received: from ro-out-1112.google.com ([72.14.202.183]:7737 "EHLO
+	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751019AbXKFLsr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 06:48:03 -0500
-Date: Tue, 6 Nov 2007 12:47:38 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>
-Cc: Kyle Moffett <mrmacman_g4@mac.com>,
-       Casey Schaufler <casey@schaufler-ca.com>, akpm@osdl.org,
-       torvalds@osdl.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser
-Message-ID: <20071106114738.GH26163@stusta.de>
-References: <472B8DAF.9080706@schaufler-ca.com> <20071103164303.GA26707@ubuntu> <20071106063305.GA26163@stusta.de> <C1C917F8-57EA-434C-9FD8-CB5A4EAF2653@mac.com> <20071106085651.GC26163@stusta.de> <20071106113359.GA6041@ubuntu>
+	Tue, 6 Nov 2007 06:48:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:mime-version:content-type:content-disposition:content-transfer-encoding:user-agent;
+        b=DaCmde0F3KV8saShbZ6/fBOu58EETySiC5RHP80+na9U9z9sGCAl2TKDEpVinrB+ia7nZ8iZooHn3Anx6G+pU3Q/V7lsG2ko+vbVkveGTr6Qh6uy8G248MbTrlL+/5BfD4N+UtUpXwkZllprZ9VoHHonrRjAGLp3PxmdQPt/4Kw=
+Date: Tue, 6 Nov 2007 19:46:02 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: jdike@karaya.com, user-mode-linux-devel@lists.sourceforge.net
+Subject: UML defconfig building failed again
+Message-ID: <20071106114602.GB7652@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20071106113359.GA6041@ubuntu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 06, 2007 at 01:34:05PM +0200, Ahmed S. Darwish wrote:
-> Hi,
-> 
-> On Tue, Nov 06, 2007 at 09:56:51AM +0100, Adrian Bunk wrote:
-> > On Tue, Nov 06, 2007 at 03:26:12AM -0500, Kyle Moffett wrote:
-> > > On Nov 06, 2007, at 01:33:05, Adrian Bunk wrote:
-> > >> Can you limit this to 7bit ASCII and use isascii() somewhere?
-> > >>
-> > >> Otherwise I'd expect funny things to happen when you e.g. use isspace() on 
-> > >> the UTF-8 encoded character ??.
-> > >
-> > > Actually, you don't need to.  You tell them it expects UTF-8 encoded 
-> > > strings and be done with it.  All US-ASCII characters from 0 through 127 
-> > > (IE: high bit clear) are exactly the same in UTF-8, and UTF-8 special 
-> > > characters have the high bit set in all bytes.  Therefore you just assume 
-> > > that anything with the high bit set is part of a word and you can handle 
-> > > basic UTF-8.  (It doesn't work on special UTF-8 space characters like 
-> > > nonbreaking space and similar, but handling those is significantly more 
-> > > complicated).
-> > 
-> > The documentations says:
-> > "Smack labels cannot contain unprintable characters or the "/" (slash) 
-> >  character."
-> > 
-> > What you propose might contain unprintable characters, and it might even 
-> > be invalid UTF-8.
-> 
-> As far as I understand the problem now, isspace() accepts the 0xa0
-> character which might collide with some of UTF-8 encoded characters
-> cause the high bit is set.
-> 
-> I used "if (!isspace(c) && !isgraph(c)) return -EINVAL;" to test 
-> rules' characters validity which seems not enough. I'll add !isascii(c)
-> in the condition and ask Casey to change the documentation to be
-> something like:
-> 
-> Smack labels are represented in ASCII characters, they cannot contain
-> unprintable characters or the '/' (slash) character.
-> 
-> and in write():
-> if (!isascii(c) return -EINVAL;
-> if (!isspace(c) && !isgraph(c)) return -EINVAL;
-> 
-> This satisfy above customized labels rule, right ?
 
-It should work for all charsets you'll usually have to handle.
+Hi, Jeff!
 
-It would not work if someone would e.g. give you UTF-16 encoded strings, 
-but I don't see this happening in practice.
+I used today's linus-tree and defconfig to compile uml, but it failed. Error messages are
+things like:
 
-> Regards,
+In file included from include/asm/processor-generic.h:13,
+                 from include/asm/processor.h:77,
+                 from include/asm/thread_info.h:11,
+                 from include/linux/thread_info.h:21,
+                 from include/linux/preempt.h:9,
+                 from include/linux/spinlock.h:49,
+                 from include/linux/seqlock.h:29,
+                 from include/linux/time.h:8,
+                 from include/linux/timex.h:57,
+                 from include/linux/sched.h:53,
+                 from arch/um/include/sysdep/kernel-offsets.h:2,
+                 from arch/um/kernel/asm-offsets.c:1:
+include/asm/ptrace.h:50: warning: ‘struct user_fxsr_struct’ declared inside parameter list
+include/asm/ptrace.h:50: warning: its scope is only this definition or declaration, which is probably not what you want
+include/asm/ptrace.h:52: warning: ‘struct user_fxsr_struct’ declared inside parameter list
+In file included from include/linux/timer.h:5,
+                 from include/linux/sched.h:87,
+                 from arch/um/include/sysdep/kernel-offsets.h:2,
+                 from arch/um/kernel/asm-offsets.c:1:
+include/linux/ktime.h: In function ‘ktime_set’:
+include/linux/ktime.h:84: warning: comparison is always false due to limited range of data type
 
-cu
-Adrian
+{snip}
 
--- 
+It seems like CONFIG_X86_32 was not set. Any ideas?
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Thanks.
+
 
