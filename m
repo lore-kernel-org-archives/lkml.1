@@ -1,115 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757594AbXKFLm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757426AbXKFLsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757594AbXKFLm5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 06:42:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756015AbXKFLms
+	id S1757426AbXKFLsT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 06:48:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751079AbXKFLsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 06:42:48 -0500
-Received: from lucidpixels.com ([75.144.35.66]:54727 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754485AbXKFLmr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 06:42:47 -0500
-Date: Tue, 6 Nov 2007 06:42:45 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: =?ISO-8859-1?Q?BERTRAND_Jo=EBl?= <joel.bertrand@systella.fr>
-cc: Dan Williams <dan.j.williams@intel.com>, Neil Brown <neilb@suse.de>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: 2.6.23.1: mdadm/raid5 hung/d-state
-In-Reply-To: <47305288.8020307@systella.fr>
-Message-ID: <Pine.LNX.4.64.0711060641210.3010@p34.internal.lan>
-References: <Pine.LNX.4.64.0711040658180.30831@p34.internal.lan> 
- <18222.16003.92062.970530@notabene.brown>  <Pine.LNX.4.64.0711041651250.23496@p34.internal.lan>
-  <e9c3a7c20711051035m78ba90ck68f4fbc10480462a@mail.gmail.com> 
- <Pine.LNX.4.64.0711051335450.11422@p34.internal.lan>
- <e9c3a7c20711051619u7054aab9l208b604b9e58fb61@mail.gmail.com>
- <47303FB8.7000801@systella.fr> <Pine.LNX.4.64.0711060628450.3010@p34.internal.lan>
- <47305288.8020307@systella.fr>
+	Tue, 6 Nov 2007 06:48:05 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:52695 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753478AbXKFLsD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 06:48:03 -0500
+Date: Tue, 6 Nov 2007 12:47:38 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Cc: Kyle Moffett <mrmacman_g4@mac.com>,
+       Casey Schaufler <casey@schaufler-ca.com>, akpm@osdl.org,
+       torvalds@osdl.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser
+Message-ID: <20071106114738.GH26163@stusta.de>
+References: <472B8DAF.9080706@schaufler-ca.com> <20071103164303.GA26707@ubuntu> <20071106063305.GA26163@stusta.de> <C1C917F8-57EA-434C-9FD8-CB5A4EAF2653@mac.com> <20071106085651.GC26163@stusta.de> <20071106113359.GA6041@ubuntu>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463747160-1918280824-1194349365=:3010"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20071106113359.GA6041@ubuntu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Tue, Nov 06, 2007 at 01:34:05PM +0200, Ahmed S. Darwish wrote:
+> Hi,
+> 
+> On Tue, Nov 06, 2007 at 09:56:51AM +0100, Adrian Bunk wrote:
+> > On Tue, Nov 06, 2007 at 03:26:12AM -0500, Kyle Moffett wrote:
+> > > On Nov 06, 2007, at 01:33:05, Adrian Bunk wrote:
+> > >> Can you limit this to 7bit ASCII and use isascii() somewhere?
+> > >>
+> > >> Otherwise I'd expect funny things to happen when you e.g. use isspace() on 
+> > >> the UTF-8 encoded character ??.
+> > >
+> > > Actually, you don't need to.  You tell them it expects UTF-8 encoded 
+> > > strings and be done with it.  All US-ASCII characters from 0 through 127 
+> > > (IE: high bit clear) are exactly the same in UTF-8, and UTF-8 special 
+> > > characters have the high bit set in all bytes.  Therefore you just assume 
+> > > that anything with the high bit set is part of a word and you can handle 
+> > > basic UTF-8.  (It doesn't work on special UTF-8 space characters like 
+> > > nonbreaking space and similar, but handling those is significantly more 
+> > > complicated).
+> > 
+> > The documentations says:
+> > "Smack labels cannot contain unprintable characters or the "/" (slash) 
+> >  character."
+> > 
+> > What you propose might contain unprintable characters, and it might even 
+> > be invalid UTF-8.
+> 
+> As far as I understand the problem now, isspace() accepts the 0xa0
+> character which might collide with some of UTF-8 encoded characters
+> cause the high bit is set.
+> 
+> I used "if (!isspace(c) && !isgraph(c)) return -EINVAL;" to test 
+> rules' characters validity which seems not enough. I'll add !isascii(c)
+> in the condition and ask Casey to change the documentation to be
+> something like:
+> 
+> Smack labels are represented in ASCII characters, they cannot contain
+> unprintable characters or the '/' (slash) character.
+> 
+> and in write():
+> if (!isascii(c) return -EINVAL;
+> if (!isspace(c) && !isgraph(c)) return -EINVAL;
+> 
+> This satisfy above customized labels rule, right ?
 
----1463747160-1918280824-1194349365=:3010
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+It should work for all charsets you'll usually have to handle.
 
+It would not work if someone would e.g. give you UTF-16 encoded strings, 
+but I don't see this happening in practice.
 
+> Regards,
 
-On Tue, 6 Nov 2007, BERTRAND Jo=EBl wrote:
+cu
+Adrian
 
-> Justin Piszcz wrote:
->>=20
->>=20
->> On Tue, 6 Nov 2007, BERTRAND Jo=EBl wrote:
->>
->>>     Done. Here is obtained ouput :
->>>=20
->>> [ 1265.899068] check 4: state 0x6 toread 0000000000000000 read=20
->>> 0000000000000000 write fffff800fdd4e360 written 0000000000000000
->>> [ 1265.941328] check 3: state 0x1 toread 0000000000000000 read=20
->>> 0000000000000000 write 0000000000000000 written 0000000000000000
->>> [ 1265.972129] check 2: state 0x1 toread 0000000000000000 read=20
->>> 0000000000000000 write 0000000000000000 written 0000000000000000
->>>=20
->>>
->>>     For information, after crash, I have :
->>>=20
->>> Root poulenc:[/sys/block] > cat /proc/mdstat
->>> Personalities : [raid1] [raid6] [raid5] [raid4]
->>> md_d0 : active raid5 sdc1[0] sdh1[5] sdg1[4] sdf1[3] sde1[2] sdd1[1]
->>>      1464725760 blocks level 5, 64k chunk, algorithm 2 [6/6] [UUUUUU]
->>>
->>>     Regards,
->>>
->>>     JKB
->>=20
->> After the crash it is not 'resyncing' ?
->
-> =09No, it isn't...
->
-> =09JKB
->
+-- 
 
-After any crash/unclean shutdown the RAID should resync, if it doesn't,=20
-that's not good, I'd suggest running a raid check.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-The 'repair' is supposed to clean it, in some cases (md0=3Dswap) it gets=20
-dirty again.
-
-Tue May  8 09:19:54 EDT 2007: Executing RAID health check for /dev/md0...
-Tue May  8 09:19:55 EDT 2007: Executing RAID health check for /dev/md1...
-Tue May  8 09:19:56 EDT 2007: Executing RAID health check for /dev/md2...
-Tue May  8 09:19:57 EDT 2007: Executing RAID health check for /dev/md3...
-Tue May  8 10:09:58 EDT 2007: cat /sys/block/md0/md/mismatch_cnt
-Tue May  8 10:09:58 EDT 2007: 2176
-Tue May  8 10:09:58 EDT 2007: cat /sys/block/md1/md/mismatch_cnt
-Tue May  8 10:09:58 EDT 2007: 0
-Tue May  8 10:09:58 EDT 2007: cat /sys/block/md2/md/mismatch_cnt
-Tue May  8 10:09:58 EDT 2007: 0
-Tue May  8 10:09:58 EDT 2007: cat /sys/block/md3/md/mismatch_cnt
-Tue May  8 10:09:58 EDT 2007: 0
-Tue May  8 10:09:58 EDT 2007: The meta-device /dev/md0 has 2176 mismatched=
-=20
-sectors.
-Tue May  8 10:09:58 EDT 2007: Executing repair on /dev/md0
-Tue May  8 10:09:59 EDT 2007: The meta-device /dev/md1 has no mismatched=20
-sectors.
-Tue May  8 10:10:00 EDT 2007: The meta-device /dev/md2 has no mismatched=20
-sectors.
-Tue May  8 10:10:01 EDT 2007: The meta-device /dev/md3 has no mismatched=20
-sectors.
-Tue May  8 10:20:02 EDT 2007: All devices are clean...
-Tue May  8 10:20:02 EDT 2007: cat /sys/block/md0/md/mismatch_cnt
-Tue May  8 10:20:02 EDT 2007: 2176
-Tue May  8 10:20:02 EDT 2007: cat /sys/block/md1/md/mismatch_cnt
-Tue May  8 10:20:02 EDT 2007: 0
-Tue May  8 10:20:02 EDT 2007: cat /sys/block/md2/md/mismatch_cnt
-Tue May  8 10:20:02 EDT 2007: 0
-Tue May  8 10:20:02 EDT 2007: cat /sys/block/md3/md/mismatch_cnt
-Tue May  8 10:20:02 EDT 2007: 0
-
----1463747160-1918280824-1194349365=:3010--
