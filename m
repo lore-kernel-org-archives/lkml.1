@@ -1,108 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755386AbXKFS2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbXKFS3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755386AbXKFS2R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 13:28:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753707AbXKFS2F
+	id S1756212AbXKFS3R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 13:29:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754437AbXKFS3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 13:28:05 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34746 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753750AbXKFS2E (ORCPT
+	Tue, 6 Nov 2007 13:29:00 -0500
+Received: from mx.neterion.com ([72.1.205.142]:42441 "EHLO owa.neterion.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753707AbXKFS27 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 13:28:04 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Mikael Petterson <mikpe@it.uu.se>
-Subject: Re: [GIT PULL] x86 setup: correct booting on 486 (revised)
-References: <200711050358.lA53wlho003349@tazenda.hos.anvin.org>
-	<alpine.LFD.0.999.0711050842360.15101@woody.linux-foundation.org>
-	<472F5941.2060507@zytor.com>
-	<alpine.LFD.0.999.0711051006060.15101@woody.linux-foundation.org>
-	<472F61C8.4040300@zytor.com>
-	<alpine.LFD.0.999.0711051035090.15101@woody.linux-foundation.org>
-	<m1pryoa1f6.fsf@ebiederm.dsl.xmission.com>
-	<472F7D8D.8050505@zytor.com> <472F826E.3050008@goop.org>
-	<472F85F2.6040501@zytor.com> <472FBC83.5060509@goop.org>
-	<472FBF40.1010300@zytor.com> <472FC0F3.10102@goop.org>
-	<472FC401.9020202@zytor.com> <47309389.3080403@goop.org>
-	<47309608.9030200@zytor.com> <47309C85.6030904@goop.org>
-	<47309D98.8080003@zytor.com>
-	<m1zlxr5mik.fsf@ebiederm.dsl.xmission.com>
-	<4730AB1F.2030001@zytor.com>
-Date: Tue, 06 Nov 2007 11:27:01 -0700
-In-Reply-To: <4730AB1F.2030001@zytor.com> (H. Peter Anvin's message of "Tue,
-	06 Nov 2007 09:57:51 -0800")
-Message-ID: <m1fxzj5ix6.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 6 Nov 2007 13:28:59 -0500
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+x-mimeole: Produced By Microsoft Exchange V6.5
+Subject: RE: [PATCH 2/2] NET: Re-add VLAN tag for devices incapable of keeping it
+Date: Tue, 6 Nov 2007 13:28:56 -0500
+Message-ID: <78C9135A3D2ECE4B8162EBDCE82CAD77027E9E9E@nekter>
+In-Reply-To: <78C9135A3D2ECE4B8162EBDCE82CAD77027E9D5E@nekter>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2/2] NET: Re-add VLAN tag for devices incapable of keeping it
+Thread-Index: Acgf1AQ/2bRZtd8UQlenqsgyajyQUAAR39VAACAEH5A=
+From: "Ramkrishna Vepa" <Ramkrishna.Vepa@neterion.com>
+To: "Dave Johnson" <djohnson+linux-kernel@sw.starentnetworks.com>,
+       "David Miller" <davem@davemloft.net>, <jes@trained-monkey.org>,
+       <mchan@broadcom.com>, <ram.vepa@neterion.com>,
+       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
+       <bguo@sw.starentnetworks.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
+Dave,
 
-> Eric W. Biederman wrote:
->>>
->>> I think it should be sparsely used, but stuff like simple end markers is
-> pretty
->>> much what it's good for.
->>>
->>> The main reason I want to avoid adding another header field is that the
-> header
->>> is a finite resource; one of the many poor decisions in its original design
-> was
->>> using a 2-byte jump at the top, so address 0x281 is the end of the universe.
->>
->> That was fixed long ago (by having a 4 byte reserved field in the middle) that
->> we can do a two byte jump and then do a farther jump from there to the 16bit
->> code.  So as long as we actually use discipline and really reserve
->> the field for a further jump there should be no need for 0x281 being the end
->> of the universe.
->>
->
-> That's not the only complication.  The thing that concern me more is boot
-> loaders using the jump as a length indicator, and there is really very little
-> chance to test that out safely, except perhaps by breaking it immediately (by
-> adding a 16-byte jump at the end; that way we provide a minimum of overlap for
-> boot loader authors.)
+If you can remove the patch for the s2io driver, we can submit a patch
+that can dynamically program Xframe to strip or not strip the vlan tag
+based on whether the vlan group is not NULL or NULL respectively. For
+this, we have to modify the initialization as well as the vlan
+registration.
 
-The old setup.S had that 16-byte jump in there.
-We actually goofed when we added the relocatable bzImage support and
-moved the 16bit jump.
+With regards to the question on the Vlan id received not added to the
+group, I think we should drop these packets. This change requires
+additional changes to support multiple receive rings. But will add it to
+the driver on our website, which supports multiple rx rings, tx fifos,
+multiqueue etc, and is a very small incremental change.
 
-> That being said, I don't see any such field (bootsect_kludge could be recycled,
-> arguably, and pad2 is three bytes which is enough for a 16-bit jump.)
->
-> At the moment, though, that would only push the maximum from 0x281 to 0x290,
-> then we run into the next field in struct boot_params.  Although this field can
-> also be relocated over time, it once again shows that breaking this particular
-> limit is nontrivial, and that we're better off trying to avoid pushing it.
+Thanks,
+Ram
 
-> However, with a little discipline I think we can make 0x281 last us for the
-> usable lifetime of this format.  In the 10 years since the 2.00 format was
-> created, we have only added 36 bytes of header, and we have 57 bytes left (plus
-> 5 bytes of pad and 6 bytes of recyclable field.) When we get closer to full, if
-> we haven't already created a mechanism making field additions obsolete I think
-> we would be better off creating a pointer to a secondary header than trying to
-> break the limitations involved in the current header format.
+> -----Original Message-----
+> From: Ramkrishna Vepa [mailto:Ramkrishna.Vepa@neterion.com]
+> Sent: Monday, November 05, 2007 6:40 PM
+> To: Dave Johnson; David Miller; jes@trained-monkey.org;
+> mchan@broadcom.com; ram.vepa@neterion.com;
+linux-kernel@vger.kernel.org;
+> netdev@vger.kernel.org; bguo@sw.starentnetworks.com
+> Subject: RE: [PATCH 2/2] NET: Re-add VLAN tag for devices incapable of
+> keeping it
+> 
+> The Xframe (S2io) adapter can be programmed dynamically to either,
+> always strip the vlan tag or not. In this case, if the vlan group is
+> NULL, it can be programmed at run time to NOT strip the vlan tag.
+> 
+> When a packet with a Vlan id is received that is not added to the
+group,
+> should it be dropped or indicated up? Either can be handled by the
+> hardware. The vlan tag in this particular case will be stripped as the
+> vlan group is not NULL.
+> 
+> Ram
+> 
+> > -----Original Message-----
+> > From: Dave Johnson
+> [mailto:djohnson+linux-kernel@sw.starentnetworks.com]
+> > Sent: Monday, November 05, 2007 9:47 AM
+> > To: David Miller; jes@trained-monkey.org; mchan@broadcom.com;
+> > ram.vepa@neterion.com; linux-kernel@vger.kernel.org;
+> > netdev@vger.kernel.org; bguo@sw.starentnetworks.com
+> > Subject: [PATCH 2/2] NET: Re-add VLAN tag for devices incapable of
+> keeping
+> > it
+> >
+> >
+> > This patch changes the following drivers to use vlan_hwaccel_rx()
+> > and/or vlan_hwaccel_receive_skb() with a NULL vlan group if needed
+as
+> > they are not setup to dynamically enable/disable vlan removal in
+> > their MAC based on the vlan group:
+> >
+> > drivers/net/tg3.c           Tested on BCM5704, looks good
+> > drivers/net/bnx2.c          Tested on BCM5708, looks good
+> > drivers/net/acenic.c        Not tested, I don't have one of these
+> > drivers/net/s2io.c          Not tested, I don't have one of these
+> >
+> > In addition, these drivers might also need changes, but should
+> > probably be done by the maintainer as it's not clear exactly what
+> > change is needed:
+> >
+> > drivers/net/amd8111e.c
+> > drivers/net/cxgb3/*
+> >
+> > Signed-off-by: Dave Johnson <djohnson@sw.starentnetworks.com>
+> >
+> > ===== drivers/net/acenic.c 1.77 vs edited =====
+> > --- 1.77/drivers/net/acenic.c	2007-07-24 16:28:41 -04:00
+> > +++ edited/drivers/net/acenic.c	2007-11-03 12:27:40 -04:00
+> > @@ -2036,7 +2036,7 @@
+> >
+> >  		/* send it up */
+> >  #if ACENIC_DO_VLAN
+> > -		if (ap->vlgrp && (bd_flags & BD_FLG_VLAN_TAG)) {
+> > +		if (bd_flags & BD_FLG_VLAN_TAG) {
+> >  			vlan_hwaccel_rx(skb, ap->vlgrp, retdesc->vlan);
+> >  		} else
+> >  #endif
+> > ===== drivers/net/bnx2.c 1.135 vs edited =====
+> > --- 1.135/drivers/net/bnx2.c	2007-09-20 15:14:21 -04:00
+> > +++ edited/drivers/net/bnx2.c	2007-11-05 09:34:26 -05:00
+> > @@ -2493,7 +2493,8 @@
+> >  		}
+> >
+> >  #ifdef BCM_VLAN
+> > -		if ((status & L2_FHDR_STATUS_L2_VLAN_TAG) && (bp->vlgrp
+> != 0))
+> > {
+> > +		if ((status & L2_FHDR_STATUS_L2_VLAN_TAG) &&
+> > +		    (bp->vlgrp || (bp->flags & ASF_ENABLE_FLAG))) {
+> >  			vlan_hwaccel_receive_skb(skb, bp->vlgrp,
+> >  				rx_hdr->l2_fhdr_vlan_tag);
+> >  		}
+> > ===== drivers/net/s2io.c 1.124 vs edited =====
+> > --- 1.124/drivers/net/s2io.c	2007-08-03 18:10:44 -04:00
+> > +++ edited/drivers/net/s2io.c	2007-11-03 12:29:09 -04:00
+> > @@ -6834,8 +6834,7 @@
+> >  	sp->mac_control.stats_info->sw_stat.mem_freed += skb->truesize;
+> >  	if (!sp->lro) {
+> >  		skb->protocol = eth_type_trans(skb, dev);
+> > -		if ((sp->vlgrp && RXD_GET_VLAN_TAG(rxdp->Control_2) &&
+> > -			vlan_strip_flag)) {
+> > +		if (RXD_GET_VLAN_TAG(rxdp->Control_2) &&
+> vlan_strip_flag) {
+> >  			/* Queueing the vlan frame to the upper layer */
+> >  			if (napi)
+> >  				vlan_hwaccel_receive_skb(skb, sp->vlgrp,
+> > ===== drivers/net/tg3.c 1.523 vs edited =====
+> > --- 1.523/drivers/net/tg3.c	2007-09-11 04:28:44 -04:00
+> > +++ edited/drivers/net/tg3.c	2007-11-05 09:38:33 -05:00
+> > @@ -3417,7 +3417,7 @@
+> >
+> >  		skb->protocol = eth_type_trans(skb, tp->dev);
+> >  #if TG3_VLAN_TAG_USED
+> > -		if (tp->vlgrp != NULL &&
+> > +		if ((tp->vlgrp || (tp->tg3_flags & TG3_FLAG_ENABLE_ASF))
+> &&
+> >  		    desc->type_flags & RXD_FLAG_VLAN) {
+> >  			tg3_vlan_rx(tp, skb,
+> >  				    desc->err_vlan & RXD_VLAN_MASK);
 
-I have a hard time believing in discipline when I see the amount of
-not invented here and various oddball mistakes (cause by overlooking
-things) that seems to go on when extending the format.  We never
-needed to change the way the command line was passed, and we should
-have kept the longer jump where we had it.
-
-If we are going to through and add an additional pointer to a notes section
-let's please put a jump in there so we can make the header longer as
-we choose.
-
-Pointers really, really, really suck for maintenance of binary formats.
-Offsets against a known base are better, but better still is if you can
-avoid them entirely.  For what we are doing allocating a contiguous piece
-of memory or file is not at all unreasonable.
-
-Eric
