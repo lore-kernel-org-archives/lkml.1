@@ -1,74 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756149AbXKFXFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755738AbXKFXIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756149AbXKFXFv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 18:05:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753695AbXKFXFo
+	id S1755738AbXKFXIs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 18:08:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbXKFXIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 18:05:44 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:40273 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753512AbXKFXFn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 18:05:43 -0500
-Message-ID: <4730F351.5060006@us.ibm.com>
-Date: Tue, 06 Nov 2007 17:05:53 -0600
-From: Anthony Liguori <aliguori@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Tue, 6 Nov 2007 18:08:39 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43033 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753330AbXKFXIh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 18:08:37 -0500
+Date: Tue, 6 Nov 2007 15:08:08 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Adrian Bunk <bunk@kernel.org>
+cc: "Ahmed S. Darwish" <darwish.07@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Casey Schaufler <casey@schaufler-ca.com>, akpm@linux-foundation.org,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser
+In-Reply-To: <20071106230044.GO26163@stusta.de>
+Message-ID: <alpine.LFD.0.999.0711061506550.15101@woody.linux-foundation.org>
+References: <472B8DAF.9080706@schaufler-ca.com> <20071103164303.GA26707@ubuntu>
+ <20071104122848.GC3921@ucw.cz> <20071105094007.GA19367@ubuntu>
+ <alpine.LFD.0.999.0711050818200.15101@woody.linux-foundation.org>
+ <20071106080637.GB26163@stusta.de> <alpine.LFD.0.999.0711060738270.15101@woody.linux-foundation.org>
+ <20071106230044.GO26163@stusta.de>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Dor Laor <dor.laor@qumranet.com>, linux-kernel@vger.kernel.org,
-       virtualization@lists.linux-foundation.org
-Subject: Re: virtio config_ops refactoring
-References: <4730A8F3.6020008@us.ibm.com> <200711070957.44165.rusty__13109.5125260346$1194390035$gmane$org@rustcorp.com.au>
-In-Reply-To: <200711070957.44165.rusty__13109.5125260346$1194390035$gmane$org@rustcorp.com.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Wednesday 07 November 2007 04:48:35 Anthony Liguori wrote:
->> Semantically, find requires that a field have both a type and a length.
->> With the exception of the VIRTQUEUE field used internally by lguest,
->> type is always a unique identifier.  Since virtqueue information is not
->> a required part of the config space, it seems to me that type really
->> should be treated as a unique identifier.
+
+
+On Wed, 7 Nov 2007, Adrian Bunk wrote:
 > 
-> Hi Anthony,
-> 
-> 	Not sure I get this.  It is a unique identifier.  You need the length
-> to handle unknown fields.
+> You were the one who suggested to _parse_ strings in the kernel.
 
-It's not a unique identifier since it can be used for multiple items 
-(like it is for virtqueues configs).
+So?
 
->> find_vq also is curious in that it is stateful in it's enumeration.
-> 
-> Well, they're *all* stateful.  This gives a simple method of knowing what 
-> fields the guest understands: it marks the fields as it finds them.  Then it 
-> sets the status, which allows the host to know when it's completed 
-> configuration reads.
+We do that for lots of things.
 
-But PCI device configuration is not stateful.  If you care about letting 
-the host know what features a guest understands, I think something more 
-explicit and stateful should be used.  For instance, a feature register 
-that stores a bitmap.
+What do you think a filename is? And yes, we parse it. Things like '/' and 
+'.' and '..' have magic meaning.
 
-Otherwise, the host has to infer based on what fields that guest has 
-read what features the guest actually supports.  That seems error prone 
-to me.
+You don't need to bring up idiotic things like character sets. You can see 
+it as a byte string. You're done with it.
 
-> I like enumerating the virtqueues: it's not necessary but it's clearer.
-> 
->> This adds seemingly unnecessary complexity.
-> 
-> I'd be happy for a simpler mechanism...
-
-What do you think of what I proposed?  It seems simpler to me.
-
-Regards,
-
-Anthony Liguori
-
-> Cheers,
-> Rusty.
-
+		Linus
