@@ -1,57 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757620AbXKFTBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbXKFTFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757620AbXKFTBy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 14:01:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756861AbXKFTBh
+	id S1757504AbXKFTFR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 14:05:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756280AbXKFTFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 14:01:37 -0500
-Received: from ns2.lanforge.com ([66.165.47.211]:46102 "EHLO ns2.lanforge.com"
+	Tue, 6 Nov 2007 14:05:05 -0500
+Received: from mail0.lsil.com ([147.145.40.20]:39540 "EHLO mail0.lsil.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756639AbXKFTBg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 14:01:36 -0500
-Message-ID: <4730B8ED.7020301@candelatech.com>
-Date: Tue, 06 Nov 2007 10:56:45 -0800
-From: Ben Greear <greearb@candelatech.com>
-Organization: Candela Technologies
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
+	id S1754045AbXKFTFD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 14:05:03 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Patrick McHardy <kaber@trash.net>, David Miller <davem@davemloft.net>,
-       djohnson+linux-kernel@sw.starentnetworks.com, jes@trained-monkey.org,
-       mchan@broadcom.com, ram.vepa@neterion.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, bguo@sw.starentnetworks.com
-Subject: Re: [PATCH 1/2] NET: Re-add VLAN tag for devices incapable of keeping
- it
-References: <472A6089.7020104@hp.com>	<18223.22291.622615.129374@zeus.sw.starentnetworks.com>	<472F5A33.20906@trash.net>	<20071105.151544.175839612.davem@davemloft.net>	<472FB375.1020802@trash.net> <m3y7db45ga.fsf@maximus.localdomain>
-In-Reply-To: <m3y7db45ga.fsf@maximus.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: PATCH [2/8] scsi: megaraid_sas - add module param fast_load
+Date: Tue, 6 Nov 2007 12:04:31 -0700
+Message-ID: <9738BCBE884FDB42801FAD8A7769C26501CA1BB0@NAMAIL1.ad.lsil.com>
+In-Reply-To: <20071030173645.GA16455@infradead.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: PATCH [2/8] scsi: megaraid_sas - add module param fast_load
+Thread-Index: AcgbG3T9N+YTpNWpStiN6x/f8v4hRAFi4/dw
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: "Christoph Hellwig" <hch@infradead.org>
+Cc: <linux-scsi@vger.kernel.org>, <James.Bottomley@SteelEye.com>,
+       <akpm@osdl.org>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 06 Nov 2007 19:04:32.0509 (UTC) FILETIME=[DD560AD0:01C820A7]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> Patrick McHardy <kaber@trash.net> writes:
-> 
->> I think there is one more case that matters, which is briding
->> from a device with VLAN stripping for a VLAN not configured
->> locally. The tag will be stripped and will be lost for forwarded
->> packets.
-> 
-> I think we should drop such packets on RX. Anyway we shouldn't
-> forward them.
 
-Bridging eth0 to eth1 should not pay attention to VLAN tags
-at all (if the pkt comes in on VLAN 7, it should go out on VLAN 7),
-in my opinion.  If the NIC is stripping the VLAN header, then this
-cannot work unless something re-builds the VLAN header.  If the stripped
-VLAN header is placed into the skb, then any code that does need to
-rebuild it can do so.  It may be less efficient, but users can just
-not use that NIC hardware for high-end solutions, and at any rate,
-less efficient is better than broken.
+Re-Sending:
 
-Ben
+Christoph,
 
--- 
-Ben Greear <greearb@candelatech.com>
-Candela Technologies Inc  http://www.candelatech.com
+The e-mail I sent out on Oct. 31st was bounced back, I re-send it again.
+ 
+I see that scsi_scan_host_selected is in scsi_priv.h and currently is
+not used by any other driver. The scsi_priv.h is not part of the include
+dir (/include/scsi). One of the major Linux distro's don't even include
+this file in /usr/src/kernels. Also it looks like at this time this
+function may not be available (not exported?) for driver modules to use.
+Even if I include scsi_priv.h I get "unknown symbol" for this function
+while loading.
+May be in the long run we can solve all these issues to call
+scsi_scan_host_selected. However, the current implementation works fine
+and has been tested by LSI and others. This implementation doesn't break
+any protocol nor does it adversely affect any driver functionality.
+
+In a future update soon I will modify the comment on proc/scsi and
+remove the extra braces you have pointed out. Please accept the current
+implementation/patches. 
+
+Regards, 
+ 
+Bo Yang
+------------------------------------------------------------------------
+------------------------ 
+From: Yang, Bo 
+Sent: Wednesday, October 31, 2007 9:46 AM
+To: Christoph Hellwig
+Cc: linux-scsi@vger.kernel.org; James.Bottomley@SteelEye.com;
+akpm@osdl.org; linux-kernel@vger.kernel.org; Patro, Sumant; Kolli, Neela
+Subject: RE: PATCH [2/8] scsi: megaraid_sas - add module param fast_load
+
+
+Christoph,
+
+I see that scsi_scan_host_selected is in scsi_priv.h and currently is
+not used by any other driver. The scsi_priv.h is not part of the include
+dir (/include/scsi). One of the major Linux distro's don't even include
+this file in /usr/src/kernels. Also it looks like at this time this
+function may not be available (not exported?) for driver modules to use.
+Even if I include scsi_priv.h I get "unknown symbol" for this function
+while loading.
+May be in the long run we can solve all these issues to call
+scsi_scan_host_selected. However, the current implementation works fine
+and has been tested by LSI and others. This implementation doesn't break
+any protocol nor does it adversely affect any driver functionality.
+
+In a future update soon I will modify the comment on proc/scsi and
+remove the extra braces you have pointed out. Please accept the current
+implementation/patches. 
+
+Regards, 
+
+Bo Yang
+
+-----Original Message-----
+From: Christoph Hellwig [mailto:hch@infradead.org] 
+Sent: Tuesday, October 30, 2007 1:37 PM
+To: Yang, Bo
+Cc: linux-scsi@vger.kernel.org; James.Bottomley@SteelEye.com;
+akpm@osdl.org; linux-kernel@vger.kernel.org; Patro, Sumant
+Subject: Re: PATCH [2/8] scsi: megaraid_sas - add module param fast_load
+
+On Mon, Oct 01, 2007 at 11:46:51AM -0400, bo yang wrote:
+> +/*
+> + * Fast driver load option, skip scanning for physical devices during
+> + * load.  This would result in physical devices being skipped during
+> + * driver load time. These can be later added though,
+> + * using /proc/scsi/scsi
+> + */
+
+/proc/scsi/scsi is deprecated, so please don't recommend it here.
+The proper way is the scan attribute of the scsi host.
+
+> +static unsigned int fast_load;
+> +module_param_named(fast_load, fast_load, int, 0); 
+> +MODULE_PARM_DESC(fast_load,
+> +	"megasas: Faster loading of the driver, skips physical devices!
+"\
+> +	"(default = 0)");
+
+This should show up in sysfs.
+
+> +static struct megasas_instance *megasas_lookup_instance(u16 host_no) 
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < megasas_mgmt_info.max_index; i++) {
+> +		if ((megasas_mgmt_info.instance[i]) &&
+> +			(megasas_mgmt_info.instance[i]->host->host_no
+> +			== host_no))
+
+no need for the braces here.  This should be:
+
+		if (megasas_mgmt_info.instance[i] &&
+		    megasas_mgmt_info.instance[i]->host->host_no ==
+host_no)
+
+> +static int megasas_slave_alloc(struct scsi_device *sdev) {
+> +	struct megasas_instance *instance;
+> +	int tmp_fastload = fast_load;
+> +
+> +	instance = megasas_lookup_instance(sdev->host->host_no);
+> +
+> +	if (tmp_fastload && sdev->channel < MEGASAS_MAX_PD_CHANNELS) {
+> +		if ((sdev->id == MEGASAS_MAX_DEV_PER_CHANNEL -1) &&
+> +			(sdev->channel == MEGASAS_MAX_PD_CHANNELS - 1))
+{
+> +
+> +		/*
+> +		 * If fast load option was set and scan for last device
+is
+> +		 * over, reset the fast_load flag so that during a
+possible
+> +		 * next scan, devices can be made available
+> +		 */
+> +			fast_load = 0;
+> +		}
+> +		return -ENXIO;
+> +	}
+> +
+> +	return 0;
+> +}
+
+This is a rather complicated and fragile way to implement this feature.
+
+I'd recomment to change the call to scsi_scan_host in megasas_io_attach
+to something like:
+
+	if (fast_load) {
+		int channel;
+
+		for (channel = 0; channel < MEGASAS_MAX_PD_CHANNELS;
+		     channel++) {
+			scsi_scan_host_selected(host, channel,
+SCAN_WILD_CARD,
+						SCAN_WILD_CARD, 0);
+		}
+	} else {
+		scsi_scan_host(host);
+	}
 
