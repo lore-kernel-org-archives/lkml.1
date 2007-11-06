@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756438AbXKFBcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756431AbXKFBgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756438AbXKFBcS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 20:32:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbXKFBcJ
+	id S1756431AbXKFBgv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 20:36:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbXKFBgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 20:32:09 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:49872 "EHLO
+	Mon, 5 Nov 2007 20:36:43 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:34317 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750741AbXKFBcI (ORCPT
+	with ESMTP id S1753221AbXKFBgm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 20:32:08 -0500
-Message-ID: <472FC401.9020202@zytor.com>
-Date: Mon, 05 Nov 2007 17:31:45 -0800
+	Mon, 5 Nov 2007 20:36:42 -0500
+Message-ID: <472FC454.4040701@zytor.com>
+Date: Mon, 05 Nov 2007 17:33:08 -0800
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+To: Adrian Bunk <bunk@kernel.org>
+CC: Sam Ravnborg <sam@ravnborg.org>, Roland Dreier <rdreier@cisco.com>,
+       Christoph Hellwig <hch@infradead.org>,
        Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Mikael Petterson <mikpe@it.uu.se>
-Subject: Re: [GIT PULL] x86 setup: correct booting on 486 (revised)
-References: <200711050358.lA53wlho003349@tazenda.hos.anvin.org>	<alpine.LFD.0.999.0711050842360.15101@woody.linux-foundation.org>	<472F5941.2060507@zytor.com>	<alpine.LFD.0.999.0711051006060.15101@woody.linux-foundation.org>	<472F61C8.4040300@zytor.com>	<alpine.LFD.0.999.0711051035090.15101@woody.linux-foundation.org> <m1pryoa1f6.fsf@ebiederm.dsl.xmission.com> <472F7D8D.8050505@zytor.com> <472F826E.3050008@goop.org> <472F85F2.6040501@zytor.com> <472FBC83.5060509@goop.org> <472FBF40.1010300@zytor.com> <472FC0F3.10102@goop.org>
-In-Reply-To: <472FC0F3.10102@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] replace "make ARCH=i386/x86_64 with make ARCH=x86"
+References: <20071103234826.GA26654@uranus.ravnborg.org> <20071105104129.GB3662@infradead.org> <20071105171740.GA29481@uranus.ravnborg.org> <adafxzkbcid.fsf@cisco.com> <20071105214937.GA31496@uranus.ravnborg.org> <472FAB4C.9040303@zytor.com> <20071106012916.GE3444@stusta.de>
+In-Reply-To: <20071106012916.GE3444@stusta.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
+Adrian Bunk wrote:
+>>
+>> The issue with "make allyesconfig" concerns me, although the same situation 
+>> already exists with any multiple-choice configuration.  What I guess we 
+>> really want is to be able to specify a few specific choices.
 > 
-> Another thing it would be nice to add is an elf-note-like notion so that
-> the kernel can export arbitrary key/value data to the bootloader (ie,
-> the converse of the bootloader->kernel value list).  Xen currently does
-> this via ELF notes, but any semanically equivalent mechanism would do. 
-> It's probably simpler than trying to work out how to mush bzimage and
-> ELF together.
+> It's already available:
+> 
+> $ cat myconfig
+> CONFIG_HIGHMEM64G=y
+> CONFIG_SMP=n
+> CONFIG_PCI=n
+> CONFIG_IPV6=m
+> $ make allyesconfig KCONFIG_ALLCONFIG=myconfig
 > 
 
-I suspect all we need is an offset-pointer field pointing into the 
-kernel image.  As far as the kernel build process is concerned, it 
-becomes a section in the boot/compressed link script.  That offset then 
-needs to get exported to the setup.elf link stage and there adjusted to 
-become a file offset.
-
-The ELF note format is sane enough, although it looks like it's not 
-self-terminating, so we'd either need an offset and a length field, or 
-adopt the convention that namesz = descsz = type = 0 terminates the 
-block (I prefer the latter, myself.)  We also need the notes documented, 
-obviously.
+OK.  It would be nicer to be able to specify things via variables 
+directly on the command line, but definitely fills the need.
 
 	-hpa
-
