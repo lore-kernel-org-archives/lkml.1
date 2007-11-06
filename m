@@ -1,61 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbXKFEih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757234AbXKFEvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757311AbXKFEih (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 23:38:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755749AbXKFEi3
+	id S1757234AbXKFEvY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 23:51:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756027AbXKFEvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 23:38:29 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37952 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754802AbXKFEi3 (ORCPT
+	Mon, 5 Nov 2007 23:51:16 -0500
+Received: from nz-out-0506.google.com ([64.233.162.228]:46361 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756009AbXKFEvP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 23:38:29 -0500
-Date: Mon, 5 Nov 2007 20:38:16 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Christoph Lameter <clameter@sgi.com>,
-       linux-mm@kvack.org, Dong Pu <cocobear.cn@gmail.com>
-Subject: Re: [git Patch] mm/util.c: Remove needless code
-Message-Id: <20071105203816.3f8b2e7a.akpm@linux-foundation.org>
-In-Reply-To: <20071106031207.GA2478@hacking>
-References: <20071106031207.GA2478@hacking>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 5 Nov 2007 23:51:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=c330z9z2ERmRmaKR92uvLnXl+hDJhjfF8ZXIAHRBk7g6JgZsJKWpRxsKwiga2Hd3HTp5qpQwQMIHAqX0t/8VF+wajM29KvG3vtyIdjjW7EYPhOq8sY3142pir7shUHT7wKQX2D0V0dPvAiF1w5r7uVxFl7AtLtaaEBMXLjj+sDw=
+Message-ID: <8bd0f97a0711052051v45856f6apfacd66ade1d47113@mail.gmail.com>
+Date: Mon, 5 Nov 2007 23:51:13 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Subject: Re: a list of non-existent but included include/linux header files
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0711052327090.6602@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0711052327090.6602@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Nov 2007 11:12:07 +0800 WANG Cong <xiyou.wangcong@gmail.com> wrote:
+On 11/5/07, Robert P. J. Day <rpjday@crashcourse.ca> wrote:
+>   this list is short enough that i'll just post it here -- attempts to
+> include header files under include/linux when those header files
+> simply don't exist.  obviously, there might be false positives for one
+> reason or another.
 
-> 
-> If the code can be executed there, 'new_size' is always larger
-> than 'ks'. Thus min() is needless.
-> 
-> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
-> Signed-off-by: Dong Pu <cocobear.cn@gmail.com>
-> Cc: Christoph Lameter <clameter@sgi.com>
-> 
-> ---
->  mm/util.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/mm/util.c b/mm/util.c
-> index 5f64026..295c7aa 100644
-> --- a/mm/util.c
-> +++ b/mm/util.c
-> @@ -96,7 +96,7 @@ void *krealloc(const void *p, size_t new_size, gfp_t flags)
->  
->  	ret = kmalloc_track_caller(new_size, flags);
->  	if (ret) {
-> -		memcpy(ret, p, min(new_size, ks));
-> +		memcpy(ret, p, ks);
->  		kfree(p);
->  	}
->  	return ret;
+obviously the kgdb ones can be ignored
 
-Thanks.  This was already fixed by
+> (the only manual culling i did of the list was to
+> remove inclusions of autoconf.h and utsrelease.h -- i assumed those
+> weren't an issue for anyone.)
 
-http://www.mail-archive.com/mm-commits@vger.kernel.org/msg28294.html
+should do the opposite ... nobody should be including linux/autoconf.h
 
-(which is somewhere in one of my ever-growing number of for-2.6.24 queues)
+as for the Blackfin ones, the answer is the same last time you ask ...
+the includes are for drivers we havent pushed to mainline yet
+-mike
