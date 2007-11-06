@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755932AbXKFR16@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756317AbXKFR2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755932AbXKFR16 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 12:27:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754118AbXKFR1u
+	id S1756317AbXKFR2a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 12:28:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbXKFR2W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 12:27:50 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:47559 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753831AbXKFR1r (ORCPT
+	Tue, 6 Nov 2007 12:28:22 -0500
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:40237 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753637AbXKFR2T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 12:27:47 -0500
-Message-ID: <47309BA4.2010803@linux.vnet.ibm.com>
-Date: Tue, 06 Nov 2007 22:21:48 +0530
+	Tue, 6 Nov 2007 12:28:19 -0500
+Message-ID: <4730A41B.2020202@linux.vnet.ibm.com>
+Date: Tue, 06 Nov 2007 22:57:55 +0530
 From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
@@ -19,57 +19,96 @@ To: akpm@linux-foundation.org
 CC: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
        Andy Whitcroft <apw@shadowen.org>,
        Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: [BUG] mm snapshot broken-out-2007-11-06-02-32.tar.gz - soft lockup
+Subject: [BUG] mm snapshot broken-out-2007-11-06-02-32 - kernel oops
 References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
 In-Reply-To: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
 Content-Type: multipart/mixed;
- boundary="------------070407000902050607050003"
+ boundary="------------010600090101090305080808"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------070407000902050607050003
+--------------010600090101090305080808
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
 Hi Andrew,
 
-The kernel is stuck at soft lockup while booting, with following
-call trace
+Kernel bug, followed by soft lockup is hit, while booting in to 2.6.24-rc1 mm1
+broken-out
 
-BUG: soft lockup - CPU#1 stuck for 11s! [mount:959]
+BUG: unable to handle kernel NULL pointer dereference at virtual address 00000004
+printing eip: c10675eb *pdpt = 000000000290c001 *pde = 0000000000000000 
+Oops: 0002 [#1] SMP 
+last sysfs file: 
+Modules linked in:
 
-Pid: 959, comm: mount Not tainted (2.6.24-rc1-mm1-autokern1 #1)
-EIP: 0060:[<c1067b81>] EFLAGS: 00000206 CPU: 1
-EIP is at shrink_dcache_sb+0x4c/0xd1
-EAX: c132fe80 EBX: c1c21248 ECX: c1985000 EDX: fffffff3
-ESI: c1c21248 EDI: c1985000 EBP: c181a000 ESP: c2695e94
+Pid: 1164, comm: mount Not tainted (2.6.24-rc1-mm1-autokern1 #1)
+EIP: 0060:[<c10675eb>] EFLAGS: 00010202 CPU: 9
+EIP is at d_kill+0xd/0x41
+EAX: 00000000 EBX: c1c32088 ECX: c1c320b8 EDX: c1067509
+ESI: c1c320b0 EDI: c1c32088 EBP: c22a5a00 ESP: c22b1ed0
  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-CR0: 8005003b CR2: 09dc8000 CR3: 02675000 CR4: 000002f0
+Process mount (pid: 1164, ti=c22b0000 task=c29fa000 task.ti=c22b0000)
+Stack: c1c32088 c1c320b0 c1067949 c1c320b0 c1067ba9 c22b1f34 c22a5a00 c2923000 
+       c22a5a00 c105b839 00000001 c22b1f34 00000001 00000001 c106c4aa 00000000 
+       00000080 c2870000 00000001 00000080 c22b1f34 c106cdb1 c2923000 00000000 
+Call Trace:
+ [<c1067949>] prune_one_dentry+0x30/0xa6
+ [<c1067ba9>] shrink_dcache_sb+0xa8/0xd1
+ [<c105b839>] do_remount_sb+0x2c/0xa4
+ [<c106c4aa>] do_remount+0x77/0xae
+ [<c106cdb1>] do_mount+0x131/0x1a5
+ [<c103c517>] __alloc_pages+0x45/0x2be
+ [<c106d077>] sys_mount+0x6f/0xad
+ [<c100221e>] syscall_call+0x7/0xb
+ [<c1200000>] unix_gid_parse+0x213/0x297
+ =======================
+Code: f2 89 d8 ff d1 eb 14 5b 89 f0 5e e9 1c 29 00 00 c6 40 08 01 c6 05 80 fe 32 c1 01 5b 5e c3 56 8d 48 30 53 8b 51 04 89 c3 8b 40 30 <89> 50 04 89 02 89 d8 c7 43 30 00 01 10 00 c7 41 04 00 02 20 00 
+EIP: [<c10675eb>] d_kill+0xd/0x41 SS:ESP 0068:c22b1ed0
+BUG: soft lockup - CPU#9 stuck for 11s! [mount:1164]
+
+Pid: 1164, comm: mount Tainted: G      D (2.6.24-rc1-mm1-autokern1 #1)
+EIP: 0060:[<c1206684>] EFLAGS: 00000286 CPU: 9
+EIP is at _spin_lock+0x5/0xf
+EAX: c132fe80 EBX: c1c25e58 ECX: 00000000 EDX: 00000000
+ESI: c132fe80 EDI: c1c20404 EBP: c1c25e58 ESP: c22b1dd4
+ DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+CR0: 8005003b CR2: 00000004 CR3: 01370000 CR4: 000006f0
 DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
 DR6: ffff0ff0 DR7: 00000400
- [<c105b871>] do_remount_sb+0x2c/0xa4
- [<c108f0c0>] sysfs_fill_super+0x0/0x85
- [<c105bc7d>] get_sb_single+0x71/0x88
- [<c108f157>] sysfs_get_sb+0x12/0x17
- [<c108f0c0>] sysfs_fill_super+0x0/0x85
- [<c105bccb>] vfs_kern_mount+0x37/0x6e
- [<c106c7ec>] do_new_mount+0x86/0x109
- [<c106ce4b>] do_mount+0x18b/0x1a5
- [<c1002c84>] apic_timer_interrupt+0x28/0x30
- [<c106cc1e>] exact_copy_from_user+0x44/0x4f
- [<c106d0b7>] sys_mount+0x6f/0xad
+ [<c10fe3be>] _atomic_dec_and_lock+0x2a/0x58
+ [<c1067687>] dput+0x68/0x114
+ [<c105ad44>] __fput+0x1b3/0x1d6
+ [<c1047a99>] remove_vma+0x25/0x42
+ [<c104952e>] exit_mmap+0xb6/0xcc
+ [<c10176c1>] mmput+0x36/0xa1
+ [<c101bc51>] do_exit+0x1db/0x28c
+ [<c10032e7>] die+0x1ac/0x1b1
+ [<c100f68a>] do_page_fault+0x5d1/0x6c3
+ [<c100f0b9>] do_page_fault+0x0/0x6c3
+ [<c120683a>] error_code+0x72/0x78
+ [<c1067509>] d_callback+0x0/0x5
+ [<c10f007b>] md4_transform+0x4a7/0x520
+ [<c10600d8>] __link_path_walk+0x1a1/0x99f
+ [<c10675eb>] d_kill+0xd/0x41
+ [<c1067949>] prune_one_dentry+0x30/0xa6
+ [<c1067ba9>] shrink_dcache_sb+0xa8/0xd1
+ [<c105b839>] do_remount_sb+0x2c/0xa4
+ [<c106c4aa>] do_remount+0x77/0xae
+ [<c106cdb1>] do_mount+0x131/0x1a5
+ [<c103c517>] __alloc_pages+0x45/0x2be
+ [<c106d077>] sys_mount+0x6f/0xad
  [<c100221e>] syscall_call+0x7/0xb
- [<c1200000>] svcauth_unix_set_client+0xc/0x14d
+ [<c1200000>] unix_gid_parse+0x213/0x297
  =======================
-
 -- 
 Thanks & Regards,
 Kamalesh Babulal,
 Linux Technology Center,
 IBM, ISTL.
 
---------------070407000902050607050003
+--------------010600090101090305080808
 Content-Type: text/plain;
  name="config-autobench-2.6.24-rc1-mm1-autokern1"
 Content-Transfer-Encoding: 7bit
@@ -79,7 +118,7 @@ Content-Disposition: attachment;
 #
 # Automatically generated make config: don't edit
 # Linux kernel version: 2.6.24-rc1-mm1-autokern1
-# Tue Nov  6 13:54:41 2007
+# Tue Nov  6 13:51:48 2007
 #
 CONFIG_X86_32=y
 CONFIG_GENERIC_TIME=y
@@ -1218,4 +1257,4 @@ CONFIG_X86_BIOS_REBOOT=y
 CONFIG_X86_TRAMPOLINE=y
 CONFIG_KTIME_SCALAR=y
 
---------------070407000902050607050003--
+--------------010600090101090305080808--
