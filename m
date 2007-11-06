@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757429AbXKFTAI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757358AbXKFTBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757429AbXKFTAI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 14:00:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbXKFS74
+	id S1757358AbXKFTBm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 14:01:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754898AbXKFTBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 13:59:56 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:49054 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752613AbXKFS7z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 13:59:55 -0500
-Date: Tue, 6 Nov 2007 23:05:10 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Jens Axboe <axboe@kernel.dk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Nick <gentuu@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] cfq: fix IOPRIO_CLASS_IDLE delays
-Message-ID: <20071106200510.GA11435@tv-sign.ru>
+	Tue, 6 Nov 2007 14:01:31 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:34825 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753330AbXKFTBa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 14:01:30 -0500
+Subject: Re: writeout stalls in current -git
+From: Peter Zijlstra <peterz@infradead.org>
+To: David Chinner <dgc@sgi.com>
+Cc: Torsten Kaiser <just.for.lkml@googlemail.com>,
+       Fengguang Wu <wfg@mail.ustc.edu.cn>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, xfs@oss.sgi.com
+In-Reply-To: <20071106042527.GT995458@sgi.com>
+References: <393903856.06449@ustc.edu.cn>
+	 <64bb37e0711011120i63cdfe3ci18995d57b6649a8@mail.gmail.com>
+	 <64bb37e0711011200n228e708eg255640388f83da22@mail.gmail.com>
+	 <E1InmAI-0003ME-2i@localhost> <1193998532.27652.343.camel@twins>
+	 <64bb37e0711021222q7d12c825mc62d433c4fe19e8@mail.gmail.com>
+	 <20071102204258.GR995458@sgi.com>
+	 <64bb37e0711040319l5de285c3xea64474540a51b6e@mail.gmail.com>
+	 <20071105014510.GU66820511@sgi.com>
+	 <64bb37e0711051027v49869699s9593ea54713b15ff@mail.gmail.com>
+	 <20071106042527.GT995458@sgi.com>
+Content-Type: text/plain
+Date: Tue, 06 Nov 2007 20:01:22 +0100
+Message-Id: <1194375682.6289.88.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After the fresh boot:
+On Tue, 2007-11-06 at 15:25 +1100, David Chinner wrote:
 
-	ionice -c3 -p $$
-	echo cfq >> /sys/block/XXX/queue/scheduler
-	dd if=/dev/XXX of=/dev/null bs=512 count=1
+> I'm struggling to understand what possible changed in XFS or writeback that
+> would lead to stalls like this, esp. as you appear to be removing files when
+> the stalls occur. 
 
-Now dd hangs in D state and the queue is completely stalled for approximately
-INITIAL_JIFFIES + CFQ_IDLE_GRACE jiffies. This is because cfq_init_queue()
-forgets to initialize cfq_data->last_end_request.
+Just a crazy idea,..
 
-(I guess this patch is not complete, overflow is still possible)
+Could there be a set_page_dirty() that doesn't have
+balance_dirty_pages() call near? For example modifying meta data in
+unlink?
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-
---- cfq/block/cfq-iosched.c~	2007-08-09 19:59:26.000000000 +0400
-+++ cfq/block/cfq-iosched.c	2007-11-06 22:39:08.000000000 +0300
-@@ -2122,6 +2122,7 @@ static void *cfq_init_queue(struct reque
- 
- 	INIT_WORK(&cfqd->unplug_work, cfq_kick_queue);
- 
-+	cfqd->last_end_request = jiffies;
- 	cfqd->cfq_quantum = cfq_quantum;
- 	cfqd->cfq_fifo_expire[0] = cfq_fifo_expire[0];
- 	cfqd->cfq_fifo_expire[1] = cfq_fifo_expire[1];
+Such a situation could lead to an excess of dirty pages and the next
+call to balance_dirty_pages() would appear to stall, as it would
+desperately try to get below the limit again.
 
