@@ -1,90 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756217AbXKFJ45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756646AbXKFJ6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756217AbXKFJ45 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 04:56:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbXKFJ4u
+	id S1756646AbXKFJ6w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 04:58:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbXKFJ6p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 04:56:50 -0500
-Received: from sacred.ru ([62.205.161.221]:47613 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753478AbXKFJ4t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 04:56:49 -0500
-Message-ID: <473031FA.2060707@openvz.org>
-Date: Tue, 06 Nov 2007 12:20:58 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Module init call vs symbols exporting race?
+	Tue, 6 Nov 2007 04:58:45 -0500
+Received: from antispam.upcomillas.es ([130.206.70.245]:44973 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750999AbXKFJ6o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 04:58:44 -0500
+Subject: Re: 2.6.34-rc1 eat my photo SD card :-(
+From: Romano Giannetti <romanol@upcomillas.es>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20071105162633.09e54290@poseidon.drzeus.cx>
+References: <1193918202.8439.7.camel@rukbat>
+	 <20071102182833.2c055446@poseidon.drzeus.cx>
+	 <1194168583.10245.15.camel@rukbat> <ada8x5ec7oh.fsf@cisco.com>
+	 <1194259886.6927.9.camel@localhost>
+	 <20071105132218.495f244e@poseidon.drzeus.cx>
+	 <1194270393.27789.2.camel@localhost>
+	 <20071105162633.09e54290@poseidon.drzeus.cx>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Tue, 06 Nov 2007 12:56:35 +0300 (MSK)
+Date: Tue, 06 Nov 2007 10:58:41 +0100
+Message-Id: <1194343121.6953.6.camel@rukbat>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
 
-I looked at the sys_init_module() and found that the ->init callback
-for the module is called without the module_mutex held and *after*
-the module's symbols are exported. Doesn't this create the race when
-loading two modules in parallel? Like this.
+Hi, 
 
-Consider the first module to be (without any internal locking for
-simplicity)
+I have some more data. I really start to think that the mmc layer is
+busted. I repeated a dd of the device, unmounted, five or six times in a
+row, and look:
 
-=== foo.c ===
-static struct list_head foo_list;
+(0)rukbat:~/software/toshiba/lk2624-rc1-mmc2% sudo dd if=/dev/mmcblk0  bs=1c count=128 | od -h
+128+0 records in
+128+0 records out
+128 bytes (128 B) copied, 0.0112835 seconds, 11.3 kB/s
+0000000 0000 0000 31e4 c363 d908 cb2e 0000 0000
+0000020 9550 c217 2a10 c012 0100 0010 0200 0020
+0000040 25a8 cb45 af00 cb2a 0000 0000 9550 c217
+0000060 2a10 c012 0100 0010 0200 0020 02e0 cb45
+0000100 6db8 cb2d 0000 0000 9550 c217 2a10 c012
+0000120 0100 0010 0200 0020 ed00 cb4a 70b0 cba5
+0000140 0000 0000 9550 c217 2a10 c012 0100 0010
+0000160 0200 0020 3058 cb7e 7730 cb28 0000 0000
+0000200
+(0)rukbat:~/software/toshiba/lk2624-rc1-mmc2% uname -a
+Linux rukbat 2.6.24-rc1 #7 SMP Sun Oct 28 23:51:49 CET 2007 i686 GNU/Linux
+(0)rukbat:~/software/toshiba/lk2624-rc1-mmc2% sudo dd if=/dev/mmcblk0  bs=1c count=128 | od -h
+0000000 6b6b 6b6b 6b6b 6b6b 6b6b 6b6b 6b6b 6b6b
+128+0 records in
+128+0 records out
+128 bytes (128 B) copied, 0.0114972 seconds, 11.1 kB/s
+*
+0000200
+(0)rukbat:~/software/toshiba/lk2624-rc1-mmc2% sudo dd if=/dev/mmcblk0  bs=1c count=128 | od -h
+128+0 records in
+128+0 records out
+128 bytes (128 B) copied, 0.0112756 seconds, 11.4 kB/s
+0000000 6b6b 6b6b 6b6b 6b6b 6b6b 6b6b 6b6b 6b6b
+*
+0000200
+(0)rukbat:~/software/toshiba/lk2624-rc1-mmc2% sudo dd if=/dev/mmcblk0  bs=1c count=128 | od -h
+0000000 6b6b 6b6b 6b6b 6b6b 6b6b 6b6b 6b6b 6b6b
+*
+0000200
+128+0 records in
+128+0 records out
+128 bytes (128 B) copied, 0.0121104 seconds, 10.6 kB/s
+(0)rukbat:~/software/toshiba/lk2624-rc1-mmc2% sudo dd if=/dev/mmcblk0  bs=1c count=128 | od -h
+128+0 records in
+128+0 records out
+128 bytes (128 B) copied, 0.0112943 seconds, 11.3 kB/s
+0000000 6b6b 6b6b 6b6b 6b6b 6b6b 6b6b 6b6b 6b6b
+*
+0000200
+(0)rukbat:~/software/toshiba/lk2624-rc1-mmc2% sudo dd if=/dev/mmcblk0  bs=1c count=128 | od -h
+128+0 records in
+128+0 records out
+128 bytes (128 B) copied, 0.0112721 seconds, 11.4 kB/s
+0000000 0000 0000 71e4 c36f d908 cb2e 0000 0000
+0000020 9550 c217 2a10 c012 0100 0010 0200 0020
+0000040 25a8 cb45 af00 cb2a 0000 0000 9550 c217
+0000060 2a10 c012 0100 0010 0200 0020 02e0 cb45
+0000100 6db8 cb2d 0000 0000 9550 c217 2a10 c012
+0000120 0100 0010 0200 0020 ed00 cb4a 70b0 cba5
+0000140 0000 0000 9550 c217 2a10 c012 0100 0010
+0000160 0200 0020 3058 cb7e 7730 cb28 0000 0000
+0000200
+(0)rukbat:~/software/toshiba/lk2624-rc1-mmc2% sudo dd if=/dev/mmcblk0  bs=1c count=128 | od -h
+128+0 records in
+128+0 records out
+128 bytes (128 B) copied, 0.0112219 seconds, 11.4 kB/s
+0000000 0000 0000 f1e4 c37b d908 cb2e 0000 0000
+0000020 9550 c217 2a10 c012 0100 0010 0200 0020
+0000040 25a8 cb45 af00 cb2a 0000 0000 9550 c217
+0000060 2a10 c012 0100 0010 0200 0020 02e0 cb45
+0000100 6db8 cb2d 0000 0000 9550 c217 2a10 c012
+0000120 0100 0010 0200 0020 ed00 cb4a 70b0 cba5
+0000140 0000 0000 9550 c217 2a10 c012 0100 0010
+0000160 0200 0020 3058 cb7e 7730 cb28 0000 0000
+0000200
+(0)rukbat:~/software/toshiba/lk2624-rc1-mmc2% sudo dd if=/dev/mmcblk0  bs=1c count=128 | od -h
+128+0 records in
+128+0 records out
+128 bytes (128 B) copied, 0.011198 seconds, 11.4 kB/s
+0000000 3038 3030 3030 000a 0000 0000 0000 0000
+0000020 0000 0000 0000 0000 0000 0000 0000 0000
+*
+0000200
 
-void foo_register(struct list_head *elem)
-{
-	list_add(elem, &foo_list);
-}
-EXPORT_SYMBOL(foo_register);
+I really do not think this is normal. I will try to reboot to 2.6.23 and to see what's happening... 
 
-static int foo_init(void)
-{
-	INIT_LIST_HEAD(&foo_list);
-}
-module_init(foo_init);
-===
+I saw in the changelog that there were changes w/ respect to DMA; maybe
+these changes are the most probable culprit. 
 
-and the second one
 
-=== bar.c ===
-struct bar_struct {
-	struct list_head list;
-	...
-} bar;
+Romano 
 
-static int bar_init(void)
-{
-	foo_register(&bar.list);
-}
-module_init(bar_init);
-===
 
-If I understand the sys_init_module() right, the following code
-flow is possible:
+-- 
+Sorry for the disclaimer --- ¡I cannot stop it!
 
-1CPU                                        2CPU
-sys_init_module(/* foo module */)           sys_init_module(/* bar module */)
-  mutex_lock(&module_mutex);
-  load_module();
-      /* export the foo_init here */
-  mutex_unlock(&module_mutex);
-                                            mutex_lock(&module_mutex);
-                                            load_module();
-                                                /* resolve the foo_init here */
-                                            mutex_unlock(&mudule_mutex);
-                                            mod->init(); /* bar_init */
-           /*
-            * OOPS! The foo_list is not ready yet, because the foo_init
-            * is not called yet.
-            */
-  mod->init(); /* foo_init... too late */
 
-Is this analysis correct?
 
-Thanks,
-Pavel
+--
+La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
+
+This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
