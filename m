@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757451AbXKFV01@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756011AbXKFVeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757451AbXKFV01 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 16:26:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754314AbXKFV0T
+	id S1756011AbXKFVeR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 16:34:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754820AbXKFVeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 16:26:19 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:40164 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753650AbXKFV0T (ORCPT
+	Tue, 6 Nov 2007 16:34:03 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:42107 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754701AbXKFVeB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 16:26:19 -0500
-Date: Tue, 6 Nov 2007 13:24:26 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [patch 1/4] Create arch/Kconfig
-Message-Id: <20071106132426.1e12b065.randy.dunlap@oracle.com>
-In-Reply-To: <4730D8B7.7020909@zytor.com>
-References: <20071106203724.620893371@polymtl.ca>
-	<20071106204151.811746387@polymtl.ca>
-	<4730D8B7.7020909@zytor.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 6 Nov 2007 16:34:01 -0500
+Date: Tue, 6 Nov 2007 13:33:26 -0800
+From: Greg KH <greg@kroah.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: nix.or.die@googlemail.com, linux-kernel@vger.kernel.org
+Subject: Re: mm snapshot broken-out-2007-11-06-02-32.tar.gz uploaded
+Message-ID: <20071106213326.GA5085@kroah.com>
+References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org> <4730CB42.4090106@googlemail.com> <20071106134052.71bf12d6.akpm@linux-foundation.org> <20071106210712.GA5993@kroah.com> <20071106141509.51e66ab3.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071106141509.51e66ab3.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 06 Nov 2007 13:12:23 -0800 H. Peter Anvin wrote:
-
-> Ideally architecture should be a Kconfig option (it's not needed before 
-> config runs, unlike, say HOSTCC.)
+On Tue, Nov 06, 2007 at 02:15:09PM -0800, Andrew Morton wrote:
+> > On Tue, 6 Nov 2007 13:07:12 -0800 Greg KH <greg@kroah.com> wrote:
+> > > > [15745.009868]  =======================
+> > > > [15745.009870] Code: d4 13 00 83 7c 24 04 00 75 0f 8b 43 14 83 c0 0c e8 fc fb ff ff 89 44 24 04 8b 43 14 8b 48 04 8d 53 08 89 50 04 89 43 08 89 4b 0c <89> 11 8b 43 14 83 c0 08 c6 00 01 8b 44 24 04 89 43 10 c7 04 24
+> > > > [15745.009928] EIP: [<c01c50a2>] kobject_add+0xae/0x160 SS:ESP 0068:cfa37f40
+> > > > 
+> > > 
+> > > Don't knowm sorry - we'll need to wait until someone can hit it more
+> > > reliably :(
+> > 
+> > Ah, I have a fix for that, Kay found it.  Do you want an add-on to your
+> > tree, or a whole new version of one of the patches?
 > 
-> That might take some major surgery, though.
+> Is OK, it looks like I need to resync everyone and undrop various
+> trees.   A fix for perfmon would be nice.
+> 
+> It took five solid hours to get this lot vaguely compiling.  20-30
+> fix patches needed, several trees dropped, 5-10 patches dropped.
 
-I think that's what Sam was going to try to get to.
-He said that we need all ARCHes to source "drivers/Kconfig",
-so I did cris.  About 5 more ARCHes need conversions.
+Let me regenerate my tree, drop the block-device patch that you hate so
+much, and then attack the perfmon code.  Should be done in a few hours.
 
----
-~Randy
+Sound ok?
+
+thanks,
+
+greg k-h
