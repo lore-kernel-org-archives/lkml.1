@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756508AbXKFBA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756323AbXKFBJn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756508AbXKFBA7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 20:00:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbXKFBAv
+	id S1756323AbXKFBJn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 20:09:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbXKFBJf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 20:00:51 -0500
-Received: from gw.goop.org ([64.81.55.164]:38645 "EHLO mail.goop.org"
+	Mon, 5 Nov 2007 20:09:35 -0500
+Received: from waste.org ([66.93.16.53]:40113 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755166AbXKFBAv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 20:00:51 -0500
-Message-ID: <472FBC83.5060509@goop.org>
-Date: Mon, 05 Nov 2007 16:59:47 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	id S1752273AbXKFBJf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 20:09:35 -0500
+Date: Mon, 5 Nov 2007 19:09:24 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Loopback mounts should update the mtime of the underlying file on writes
+Message-ID: <20071106010924.GT17536@waste.org>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Mikael Petterson <mikpe@it.uu.se>
-Subject: Re: [GIT PULL] x86 setup: correct booting on 486 (revised)
-References: <200711050358.lA53wlho003349@tazenda.hos.anvin.org>	<alpine.LFD.0.999.0711050842360.15101@woody.linux-foundation.org>	<472F5941.2060507@zytor.com>	<alpine.LFD.0.999.0711051006060.15101@woody.linux-foundation.org>	<472F61C8.4040300@zytor.com>	<alpine.LFD.0.999.0711051035090.15101@woody.linux-foundation.org> <m1pryoa1f6.fsf@ebiederm.dsl.xmission.com> <472F7D8D.8050505@zytor.com> <472F826E.3050008@goop.org> <472F85F2.6040501@zytor.com>
-In-Reply-To: <472F85F2.6040501@zytor.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Jeremy Fitzhardinge wrote:
->> H. Peter Anvin wrote:
->>> Nailing down the interface as hard as possible is a good idea, to
->>> avoid tying your hands for the future. 
->>
->> Erm, I guess I see what you mean, but it comes to the effect of tying
->> your hands now in a specific way, rather than having them tied in an
->> unknown way later on...
->
-> Sort of.  The problem is you can frequently not
->
->> But I hadn't noticed the 32-bit boot protocol spec go in.  Unfortunately
->> it isn't useful for booting a pv Xen guest; I just mailed my
->> comments. I hope we can iterate this to something more generally
->> useful before
->> getting too wedded to the current protocol.
->
-> I'm not so sure about that.  Xen PV is rather fundamentally a
-> different beast, hence the platform field recently added to the protocol.
+Noticed by a Mercurial user. I think this should fix it.
 
-Hm, OK.  So make this predicated on "hardware subarchitecture == PC".
+Signed-off-by: Matt Mackall <mpm@selenic.com>
 
->
-> This is addressed by the "don't reload segments" bit in LOADFLAGS.
+Index: l/drivers/block/loop.c
+===================================================================
+--- l.orig/drivers/block/loop.c	2007-11-05 17:50:07.000000000 -0600
++++ l/drivers/block/loop.c	2007-11-05 19:03:51.000000000 -0600
+@@ -221,6 +221,7 @@ static int do_lo_send_aops(struct loop_d
+ 	offset = pos & ((pgoff_t)PAGE_CACHE_SIZE - 1);
+ 	bv_offs = bvec->bv_offset;
+ 	len = bvec->bv_len;
++	file_update_time(file);
+ 	while (len > 0) {
+ 		sector_t IV;
+ 		unsigned size;
+@@ -299,6 +300,7 @@ static int __do_lo_send_write(struct fil
+ 
+ 	set_fs(get_ds());
+ 	bw = file->f_op->write(file, buf, len, &pos);
++	file_update_time(file);
+ 	set_fs(old_fs);
+ 	if (likely(bw == len))
+ 		return 0;
 
-OK.
 
-    J
+-- 
+Mathematics is the supreme nostalgia of our time.
