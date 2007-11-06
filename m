@@ -1,72 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756599AbXKFUIe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755501AbXKFUIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756599AbXKFUIe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 15:08:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754534AbXKFUIY
+	id S1755501AbXKFUIv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 15:08:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754534AbXKFUIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 15:08:24 -0500
-Received: from khc.piap.pl ([195.187.100.11]:56678 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754086AbXKFUIX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 15:08:23 -0500
-To: Ben Greear <greearb@candelatech.com>
-Cc: Patrick McHardy <kaber@trash.net>, David Miller <davem@davemloft.net>,
-       djohnson+linux-kernel@sw.starentnetworks.com, jes@trained-monkey.org,
-       mchan@broadcom.com, ram.vepa@neterion.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, bguo@sw.starentnetworks.com
-Subject: Re: [PATCH 1/2] NET: Re-add VLAN tag for devices incapable of keeping it
-References: <472A6089.7020104@hp.com>
-	<18223.22291.622615.129374@zeus.sw.starentnetworks.com>
-	<472F5A33.20906@trash.net>
-	<20071105.151544.175839612.davem@davemloft.net>
-	<472FB375.1020802@trash.net> <m3y7db45ga.fsf@maximus.localdomain>
-	<4730B8ED.7020301@candelatech.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 06 Nov 2007 21:08:21 +0100
-In-Reply-To: <4730B8ED.7020301@candelatech.com> (Ben Greear's message of "Tue, 06 Nov 2007 10:56:45 -0800")
-Message-ID: <m3fxzj3znu.fsf@maximus.localdomain>
+	Tue, 6 Nov 2007 15:08:41 -0500
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:55070 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756717AbXKFUIi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 15:08:38 -0500
+Date: Wed, 7 Nov 2007 01:38:07 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: akpm@linux-foundation.org
+Cc: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux390@de.ibm.com, linux-s390@vger.kernel.org, dhowells@redhat.com,
+       hch@lst.de, apw@shadowen.org
+Subject: [PATCH] mm snapshot broken-out-2007-11-06-02-32 - conflict in vxfs_iget ()
+Message-ID: <20071106200807.GC13674@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Greear <greearb@candelatech.com> writes:
+Hi Andrew,
 
-> Bridging eth0 to eth1 should not pay attention to VLAN tags
-> at all (if the pkt comes in on VLAN 7, it should go out on VLAN 7),
-> in my opinion.  If the NIC is stripping the VLAN header, then this
-> cannot work unless something re-builds the VLAN header.  If the stripped
-> VLAN header is placed into the skb, then any code that does need to
-> rebuild it can do so.  It may be less efficient, but users can just
-> not use that NIC hardware for high-end solutions, and at any rate,
-> less efficient is better than broken.
+The kernel build fails on S390, with error 
 
-That is all true. The problem arises when you receive a tagged frame
-on eth0, the chip removes the tag, and then the bridge sends it
-out untagged on eth1.
+ CC [M]  fs/freevxfs/vxfs_inode.o
+fs/freevxfs/vxfs_inode.c:298: error: conflicting types for 'vxfs_iget'
+fs/freevxfs/vxfs_extern.h:61: error: previous declaration of 'vxfs_iget' was here
+fs/freevxfs/vxfs_inode.c:298: error: conflicting types for 'vxfs_iget'
+fs/freevxfs/vxfs_extern.h:61: error: previous declaration of 'vxfs_iget' was here
+make[2]: *** [fs/freevxfs/vxfs_inode.o] Error 1
+make[1]: *** [fs/freevxfs] Error 2
+make: *** [fs] Error 2
 
-I think there are two valid models for VLAN + bridging:
+This error is caused by iget-stop-freevxfs-from-using-iget-and-read_inode.patch,
+where the function proto type is declared as 
+vxfs_iget(struct super_block *, unsigned long) and defined as 
+vxfs_iget(struct super_block *sbp, ino_t ino)
 
-a) bridging works on "physical" interfaces, all tags are transmitted
-   unchanged.
+This patch has been tested for the buid failure.
 
-b) every VLAN is a different logical interface, packets from unknown
-   VLANs are dropped on RX (and thus don't show up anywhere, except
-   counters), bridging uses logical interfaces. VLAN 100 on eth0 may
-   become VLAN 200 on eth1 and may be untagged on eth2.
+Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+--
+--- linux-2.6.24-rc1/fs/freevxfs/vxfs_extern.h	2007-11-06 17:04:04.000000000 +0530
++++ linux-2.6.24-rc1/fs/freevxfs/~vxfs_extern.h	2007-11-07 00:45:09.000000000 +0530
+@@ -58,7 +58,7 @@ extern struct inode *		vxfs_get_fake_ino
+ extern void			vxfs_put_fake_inode(struct inode *);
+ extern struct vxfs_inode_info *	vxfs_blkiget(struct super_block *, u_long, ino_t);
+ extern struct vxfs_inode_info *	vxfs_stiget(struct super_block *, ino_t);
+-extern struct inode *		vxfs_iget(struct super_block *, unsigned long);
++extern struct inode *		vxfs_iget(struct super_block *sbp, ino_t ino);
+ extern void			vxfs_clear_inode(struct inode *);
+ 
+ /* vxfs_lookup.c */
 
-
-"a" requires "soft" VLANs and/or adding the tags back (with
-accelerated VLANs). This is how unmanaged switches labeled
-"802.1Q - transparent" work. Not very flexible but usually good
-enough.
-
-"b" is how switches supporting VLANs (and 802.1Q) usually work.
-
-
-I know ability to see exactly all packets as they are received
-(including tags) is a really nice thing. But maybe we should change
-the model? Making the ethX only carry untagged frames (even without
-hw VLAN acceleration)?
--- 
-Krzysztof Halasa
+--
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
