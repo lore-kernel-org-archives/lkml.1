@@ -1,41 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755727AbXKFQrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756220AbXKFQr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755727AbXKFQrV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 11:47:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754118AbXKFQrO
+	id S1756220AbXKFQr4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 11:47:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbXKFQrs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 11:47:14 -0500
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:19440 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754048AbXKFQrN (ORCPT
+	Tue, 6 Nov 2007 11:47:48 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55713 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754118AbXKFQrr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 11:47:13 -0500
-From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-To: aglitke <agl@us.ibm.com>
-Subject: Re: problem in follow_hugetlb_page on ppc64 architecture with get_user_pages
-Date: Tue, 6 Nov 2007 17:39:34 +0100
-User-Agent: KMail/1.8.2
-Cc: Christoph Raisch <RAISCH@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, general@lists.openfabrics.org,
-       Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>,
-       Roland Dreier <rdreier@cisco.com>
-References: <OF6FC435A0.F59C9AD9-ONC125738B.002A5195-C125738B.002A424A@de.ibm.com> <1194361532.20383.4.camel@localhost.localdomain>
-In-Reply-To: <1194361532.20383.4.camel@localhost.localdomain>
+	Tue, 6 Nov 2007 11:47:47 -0500
+Date: Tue, 6 Nov 2007 08:47:17 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Theodore Tso <tytso@mit.edu>
+cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net
+Subject: Re: [GIT PATCH] PCI patches for 2.6.24-rc1
+In-Reply-To: <20071106161406.GD9086@thunk.org>
+Message-ID: <alpine.LFD.0.999.0711060841570.15101@woody.linux-foundation.org>
+References: <20071105215601.GA4612@kroah.com>
+ <alpine.LFD.0.999.0711051410180.15101@woody.linux-foundation.org>
+ <alpine.LFD.0.999.0711051414120.15101@woody.linux-foundation.org>
+ <20071106161406.GD9086@thunk.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711061739.34952.hnguyen@linux.vnet.ibm.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Adam!
-On Tuesday 06 November 2007 16:05, aglitke wrote:
-> Please try this patch and see if it helps.
-Tested on 2.6.22 (don't have the system with 2.6.23 at the moment) and
-the testcase ran perfectly.
-Thanks!
-Nam
 
+
+On Tue, 6 Nov 2007, Theodore Tso wrote:
+> 
+> hmm, I wonder if it would be a good idea to put together a git hook
+> script that looks for things that look like git commit ID's, and if
+> they aren't valid commit ID's that appear in the repository, the
+> maintainer gets a warning when they do a "git am" or otherwise suck in
+> a patch that was sent via e-mail...
+
+Well, the thing is, sometimes it makes sense.
+
+In the stable tree, for example, the commits often point to the particular 
+commit in the *development* tree that the particular stable commit was 
+cherry-picked from. And that all makes perfect sense - but such a commit 
+will not even exist in that tree (very much by definition: the whole point 
+of a stable tree is to *not* have all the development commits in that 
+tree, so just individual commits get moved over).
+
+So it does make sense to point to commits in totally independent trees at 
+times.
+
+Yes, it could be an option, and yes, you could probably enable/disable it 
+on a per-repository basis (ie the above kind of thing tens to make sense 
+for certain repositories but not others). But it's definitely not 
+something that necessarily always makes sense to do, so it's likely not a 
+good default (and if it's not a default, then mistakes will continue to 
+happen).
+
+		Linus
