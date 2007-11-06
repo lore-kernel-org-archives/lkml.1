@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757278AbXKFAyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756508AbXKFBA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757278AbXKFAyZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 19:54:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755525AbXKFAyO
+	id S1756508AbXKFBA7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 20:00:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbXKFBAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 19:54:14 -0500
-Received: from quark.didntduck.org ([69.55.226.66]:51511 "EHLO
-	quark.didntduck.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755541AbXKFAyM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 19:54:12 -0500
-Message-ID: <472FBB13.9070608@didntduck.org>
-Date: Mon, 05 Nov 2007 19:53:39 -0500
-From: Brian Gerst <bgerst@didntduck.org>
+	Mon, 5 Nov 2007 20:00:51 -0500
+Received: from gw.goop.org ([64.81.55.164]:38645 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755166AbXKFBAv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 20:00:51 -0500
+Message-ID: <472FBC83.5060509@goop.org>
+Date: Mon, 05 Nov 2007 16:59:47 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 03/10] x86: arch/x86/Kconfig.cpu unification
-References: <11941338801315-git-send-email-sam@ravnborg.org> <11941338804007-git-send-email-sam@ravnborg.org> <11941338801910-git-send-email-sam@ravnborg.org>
-In-Reply-To: <11941338801910-git-send-email-sam@ravnborg.org>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8bit
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Mikael Petterson <mikpe@it.uu.se>
+Subject: Re: [GIT PULL] x86 setup: correct booting on 486 (revised)
+References: <200711050358.lA53wlho003349@tazenda.hos.anvin.org>	<alpine.LFD.0.999.0711050842360.15101@woody.linux-foundation.org>	<472F5941.2060507@zytor.com>	<alpine.LFD.0.999.0711051006060.15101@woody.linux-foundation.org>	<472F61C8.4040300@zytor.com>	<alpine.LFD.0.999.0711051035090.15101@woody.linux-foundation.org> <m1pryoa1f6.fsf@ebiederm.dsl.xmission.com> <472F7D8D.8050505@zytor.com> <472F826E.3050008@goop.org> <472F85F2.6040501@zytor.com>
+In-Reply-To: <472F85F2.6040501@zytor.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> Move all CPU definitions to Kconfig.cpu
+H. Peter Anvin wrote:
+> Jeremy Fitzhardinge wrote:
+>> H. Peter Anvin wrote:
+>>> Nailing down the interface as hard as possible is a good idea, to
+>>> avoid tying your hands for the future. 
+>>
+>> Erm, I guess I see what you mean, but it comes to the effect of tying
+>> your hands now in a specific way, rather than having them tied in an
+>> unknown way later on...
+>
+> Sort of.  The problem is you can frequently not
+>
+>> But I hadn't noticed the 32-bit boot protocol spec go in.  Unfortunately
+>> it isn't useful for booting a pv Xen guest; I just mailed my
+>> comments. I hope we can iterate this to something more generally
+>> useful before
+>> getting too wedded to the current protocol.
+>
+> I'm not so sure about that.  Xen PV is rather fundamentally a
+> different beast, hence the platform field recently added to the protocol.
 
-This patch causes build failure on x86_64:
+Hm, OK.  So make this predicated on "hardware subarchitecture == PC".
 
-lib/rwsem.c: In function ‘__init_rwsem’:
-lib/rwsem.c:24: error: ‘struct rw_semaphore’ has no member named ‘count’
-lib/rwsem.c:24: error: ‘RWSEM_UNLOCKED_VALUE’ undeclared (first use in
-this function)
-lib/rwsem.c:24: error: (Each undeclared identifier is reported only once
-lib/rwsem.c:24: error: for each function it appears in.)
-lib/rwsem.c: In function ‘__rwsem_do_wake’:
-lib/rwsem.c:64: error: implicit declaration of function
-‘rwsem_atomic_update’
-lib/rwsem.c:64: error: ‘RWSEM_ACTIVE_BIAS’ undeclared (first use in this
-function)
-lib/rwsem.c:66: error: ‘RWSEM_ACTIVE_MASK’ undeclared (first use in this
-function)
-lib/rwsem.c:115: error: ‘RWSEM_WAITING_BIAS’ undeclared (first use in
-this function)
-lib/rwsem.c:120: error: implicit declaration of function ‘rwsem_atomic_add’
-lib/rwsem.c: In function ‘rwsem_down_failed_common’:
-lib/rwsem.c:169: error: ‘RWSEM_ACTIVE_MASK’ undeclared (first use in
-this function)
-lib/rwsem.c: In function ‘rwsem_down_read_failed’:
-lib/rwsem.c:197: error: ‘RWSEM_WAITING_BIAS’ undeclared (first use in
-this function)
-lib/rwsem.c:197: error: ‘RWSEM_ACTIVE_BIAS’ undeclared (first use in
-this function)
-lib/rwsem.c: In function ‘rwsem_down_write_failed’:
-lib/rwsem.c:210: error: ‘RWSEM_ACTIVE_BIAS’ undeclared (first use in
-this function)
+>
+> This is addressed by the "don't reload segments" bit in LOADFLAGS.
 
-git bisect gives:
-55432d383871d127685d78f94e0ad60307dcc0e9 is first bad commit
-commit 55432d383871d127685d78f94e0ad60307dcc0e9
-Author: Sam Ravnborg <sam@ravnborg.org>
-Date:   Thu Nov 1 21:54:39 2007 +0100
+OK.
 
-    x86: arch/x86/Kconfig.cpu unification
-
+    J
