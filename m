@@ -1,42 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756171AbXKFSDc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756317AbXKFSEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756171AbXKFSDc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 13:03:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbXKFSDW
+	id S1756317AbXKFSEj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 13:04:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbXKFSEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 13:03:22 -0500
-Received: from khc.piap.pl ([195.187.100.11]:47727 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751063AbXKFSDV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 13:03:21 -0500
-To: Patrick McHardy <kaber@trash.net>
-Cc: David Miller <davem@davemloft.net>,
-       djohnson+linux-kernel@sw.starentnetworks.com, jes@trained-monkey.org,
-       mchan@broadcom.com, ram.vepa@neterion.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, bguo@sw.starentnetworks.com
-Subject: Re: [PATCH 1/2] NET: Re-add VLAN tag for devices incapable of keeping it
-References: <472A6089.7020104@hp.com>
-	<18223.22291.622615.129374@zeus.sw.starentnetworks.com>
-	<472F5A33.20906@trash.net>
-	<20071105.151544.175839612.davem@davemloft.net>
-	<472FB375.1020802@trash.net>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 06 Nov 2007 19:03:17 +0100
-In-Reply-To: <472FB375.1020802@trash.net> (Patrick McHardy's message of "Tue, 06 Nov 2007 01:21:09 +0100")
-Message-ID: <m3y7db45ga.fsf@maximus.localdomain>
+	Tue, 6 Nov 2007 13:04:32 -0500
+Received: from ns01.unsolicited.net ([69.10.132.115]:60556 "EHLO
+	ns01.unsolicited.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751019AbXKFSEb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 13:04:31 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=simple; s=one; d=unsolicited.net;
+	h=Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:X-Enigmail-Version:Content-Type:Content-Transfer-Encoding;
+	b=VRXpK2L3xcJMl9pSsVRrEZTjG/5lGbHdpgwnSVZGJH++jWxFG/8G2N/ixX4IRZ4x0HrM8YQ9DsBBJx0VCHqHVYu7w5CIQUxhgtmUQ7Kq+kEIlqSK4jTeGC3fRIn9zTTjKXuskFNchblbCDkjbaczmeKOvz6fbM37ToAik2ASn4E=;
+Message-ID: <4730AC7D.4000204@unsolicited.net>
+Date: Tue, 06 Nov 2007 18:03:41 +0000
+From: David <david@unsolicited.net>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24-rc1 - Regularly getting processes stuck in D state on
+ startup
+References: <472F5F8B.7090200@unsolicited.net> <394336012.27271@ustc.edu.cn>
+In-Reply-To: <394336012.27271@ustc.edu.cn>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick McHardy <kaber@trash.net> writes:
+Fengguang Wu wrote:
+> On Mon, Nov 05, 2007 at 06:23:07PM +0000, David wrote:
+>   
+>> I've attached the output of Sysrq-T to this mail... system is a
+>> dual-core AMD64, and files are on a RAID-1 root partition connected two
+>> SATA disks on the on-board NVidia controller. I've had no problems
+>> before .24 rc1
+>>     
+>
+> Could you try with the attached 4 patches? Two of them are expected to
+> fix your problem, another two are debugging ones(in case the problem
+> persists).
+>
+>   
+I've applied the patches, and have tried a few reboots with no problems
+so far. I will report back if I see any further problems.
 
-> I think there is one more case that matters, which is briding
-> from a device with VLAN stripping for a VLAN not configured
-> locally. The tag will be stripped and will be lost for forwarded
-> packets.
-
-I think we should drop such packets on RX. Anyway we shouldn't
-forward them.
--- 
-Krzysztof Halasa
+Thanks
+David
