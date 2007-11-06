@@ -1,42 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbXKFIvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616AbXKFIzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756198AbXKFIvR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 03:51:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754666AbXKFIvB
+	id S1755616AbXKFIzU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 03:55:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbXKFIzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 03:51:01 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47424 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754466AbXKFIvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 03:51:00 -0500
-Date: Tue, 6 Nov 2007 03:50:26 -0500
-From: Alexander Viro <aviro@redhat.com>
-To: Benny Halevy <bhalevy@panasas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Steve Dickson <SteveD@redhat.com>, Alexander Viro <aviro@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, nfs@lists.sourceforge.net,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>
-Subject: Re: [PATCH] NFS: Stop sillyname renames and unmounts from racing
-Message-ID: <20071106085026.GB5397@devserv.devel.redhat.com>
-References: <472C56E5.1040901@RedHat.com> <20071105210636.2fc72e14.akpm@linux-foundation.org> <473024D2.6080105@panasas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <473024D2.6080105@panasas.com>
-User-Agent: Mutt/1.4.1i
+	Tue, 6 Nov 2007 03:55:07 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:27846 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751327AbXKFIzG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 03:55:06 -0500
+Subject: problem in follow_hugetlb_page on ppc64 architecture with get_user_pages
+To: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, general@lists.openfabrics.org
+Cc: agl@us.ibm.com, Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>,
+       Roland Dreier <rdreier@cisco.com>
+X-Mailer: Lotus Notes Release 8.0 August 02, 2007
+Message-ID: <OF6FC435A0.F59C9AD9-ONC125738B.002A5195-C125738B.002A424A@de.ibm.com>
+From: Christoph Raisch <RAISCH@de.ibm.com>
+Date: Tue, 6 Nov 2007 08:42:40 +0100
+X-MIMETrack: Serialize by Router on D12ML067/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
+ 06/11/2007 09:55:02
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 06, 2007 at 10:24:50AM +0200, Benny Halevy wrote:
 
-> It'd be very nice if the silly renamed inodes (with silly_count > 1) were moved
-> to a different list in the first pass, under the inode_lock, and then waited on
-> until silly_count <= 1 in a second pass only on the filtered list.  This will
-> provide you with O(1).
+Hello,
+if get_user_pages is used on a hugetlb vma, and there was no previous write
+to the pages,
+follow_hugetlb_page will call
+ret = hugetlb_fault(mm, vma, vaddr, 0),
+although the page should be used for write access in get_user_pages.
 
-It's absolutely pointless, starting with any kind of searching for inodes,
-etc.  If you want fs shutdown _not_ to happen until async activity of
-that kind is over, don't reinvent the sodding wheels, just tell VFS that
-you are holding an active reference to superblock.  End of story.
+We currently see this when testing Infiniband on ppc64 with ehca +
+hugetlbfs.
+>From reading the code this should also be an issue on other architectures.
+Roland, Adam, are you aware of anything in this area with mellanox
+Infiniband cards or other usages with I/O adapters?
+
+Gruss / Regards
+Christoph R. + Nam Ng.
+
+
