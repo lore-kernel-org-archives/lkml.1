@@ -1,210 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755219AbXKFUCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759925AbXKFUCy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755219AbXKFUCh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 15:02:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758685AbXKFT7Y
+	id S1759925AbXKFUCy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 15:02:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759492AbXKFUB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 14:59:24 -0500
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:43752 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759149AbXKFT7V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 14:59:21 -0500
-Date: Wed, 7 Nov 2007 01:28:48 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux390@de.ibm.com,
-       linux-s390@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>,
-       Greg K-H <greg@kroah.com>, Michael Ernst <mernst@linux.vnet.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: mm snapshot broken-out-2007-11-06-02-32.tar.gz uploaded - S390x build fails
-Message-ID: <20071106195848.GB13674@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org> <473083CA.9060607@linux.vnet.ibm.com> <20071106162939.41c4bd36@gondolin.boeblingen.de.ibm.com> <20071106174208.3b01e68f@gondolin.boeblingen.de.ibm.com>
-MIME-Version: 1.0
+	Tue, 6 Nov 2007 15:01:28 -0500
+Received: from 1wt.eu ([62.212.114.60]:3742 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759092AbXKFUBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 15:01:25 -0500
+Date: Tue, 6 Nov 2007 21:00:24 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Re: Future of Linux 2.6.22.y series
+Message-ID: <20071106200024.GF1045@1wt.eu>
+References: <20071105181332.GB28628@kroah.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071106174208.3b01e68f@gondolin.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20071105181332.GB28628@kroah.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 06, 2007 at 05:42:08PM +0100, Cornelia Huck wrote:
-> On Tue, 6 Nov 2007 16:29:39 +0100,
-> Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
+On Mon, Nov 05, 2007 at 10:13:32AM -0800, Greg Kroah-Hartman wrote:
+> For the last release, I stated that I thought the 2.6.22.12 release
+> would be the last one in the 2.6.22.y series.  Since then, I've received
+> a number of other patches that would be nice to have in the .22.y tree.
 > 
-> > That's a clash between git-s390 and the recent kset cleanup.
-> > 
-> > sclp_cpi_sys.c needs to be converted from firmware_register() to the
-> > new dynamic kset allocation (kset_create_and_register()) and the
-> > subsys_attributes to kobj_attributes (I may look at it later if I find
-> > some time).
-> 
-> Adapt sclp_cpi_sys.c to the dynamic kset changes.
+> So, for a while, I'll keep the 2.6.22.y tree open, doing new releases
+> every once in a while as they accumulate.  I do this, for no other than
+> the selfish reason that I use it every day on my openSuSE 10.3 boxes as
+> that is the kernel base that release is on :)
 
-Hi Cornelia,
+It certainly is one of the most valuable reasons. If all people were
+"selfish" enough to contribute what they do only for themselves, we
+would possibly have less out-of-tree code.
 
-Thanks, the patch fixes the build failure.
+> If anyone has any objections or questions about this, please let me
+> know.
 
-Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+Oh no, please keep it going on for as long as you want, I'll rebase my
+version on it instead of 2.6.20.y ;-)
 
----
- drivers/s390/char/sclp_cpi_sys.c |   58 ++++++++++++++++++++++-----------------
- 1 files changed, 33 insertions(+), 25 deletions(-)
-
-Index: linux-2.6/drivers/s390/char/sclp_cpi_sys.c
-===================================================================
---- linux-2.6.orig/drivers/s390/char/sclp_cpi_sys.c	2007-11-06 17:08:59.000000000 +0100
-+++ linux-2.6/drivers/s390/char/sclp_cpi_sys.c	2007-11-06 17:30:09.000000000 +0100
-@@ -220,13 +220,15 @@ static void set_string(char *attr, const
- 	}
- }
- 
--static ssize_t system_name_show(struct kset *kset, char *page)
-+static ssize_t system_name_show(struct kobject *kobj,
-+				struct kobj_attribute *attr, char *page)
- {
- 	return snprintf(page, PAGE_SIZE, "%s\n", system_name);
- }
- 
--static ssize_t system_name_store(struct kset *kset, const char *buf,
--	size_t len)
-+static ssize_t system_name_store(struct kobject *kobj,
-+				 struct kobj_attribute *attr, const char *buf,
-+				 size_t len)
- {
- 	int rc;
- 
-@@ -239,16 +241,18 @@ static ssize_t system_name_store(struct 
- 	return len;
- }
- 
--static struct subsys_attribute system_name_attr =
-+static struct kobj_attribute system_name_attr =
- 	__ATTR(system_name, 0644, system_name_show, system_name_store);
- 
--static ssize_t sysplex_name_show(struct kset *kset, char *page)
-+static ssize_t sysplex_name_show(struct kobject *kobj,
-+				 struct kobj_attribute *attr, char *page)
- {
- 	return snprintf(page, PAGE_SIZE, "%s\n", sysplex_name);
- }
- 
--static ssize_t sysplex_name_store(struct kset *kset, const char *buf,
--	size_t len)
-+static ssize_t sysplex_name_store(struct kobject *kobj,
-+				  struct kobj_attribute *attr, const char *buf,
-+				  size_t len)
- {
- 	int rc;
- 
-@@ -261,17 +265,19 @@ static ssize_t sysplex_name_store(struct
- 	return len;
- }
- 
--static struct subsys_attribute sysplex_name_attr =
-+static struct kobj_attribute sysplex_name_attr =
- 	__ATTR(sysplex_name, 0644, sysplex_name_show,
- 	sysplex_name_store);
- 
--static ssize_t system_type_show(struct kset *kset, char *page)
-+static ssize_t system_type_show(struct kobject *kobj,
-+				struct kobj_attribute *attr, char *page)
- {
- 	return snprintf(page, PAGE_SIZE, "%s\n", system_type);
- }
- 
--static ssize_t system_type_store(struct kset *kset, const char *buf,
--	size_t len)
-+static ssize_t system_type_store(struct kobject *kobj,
-+				 struct kobj_attribute *attr, const char *buf,
-+				 size_t len)
- {
- 	int rc;
- 
-@@ -284,18 +290,20 @@ static ssize_t system_type_store(struct 
- 	return len;
- }
- 
--static struct subsys_attribute system_type_attr =
-+static struct kobj_attribute system_type_attr =
- 	__ATTR(system_type, 0644, system_type_show, system_type_store);
- 
--static ssize_t system_level_show(struct kset *kset, char *page)
-+static ssize_t system_level_show(struct kobject *kobj,
-+				 struct kobj_attribute *attr, char *page)
- {
- 	unsigned long long level = system_level;
- 
- 	return snprintf(page, PAGE_SIZE, "%#018llx\n", level);
- }
- 
--static ssize_t system_level_store(struct kset *kset, const char *buf,
--	size_t len)
-+static ssize_t system_level_store(struct kobject *kobj,
-+				  struct kobj_attribute *attr, const char *buf,
-+				  size_t len)
- {
- 	unsigned long long level;
- 	char *endp;
-@@ -314,12 +322,12 @@ static ssize_t system_level_store(struct
- 	return len;
- }
- 
--static struct subsys_attribute system_level_attr =
-+static struct kobj_attribute system_level_attr =
- 	__ATTR(system_level, 0644, system_level_show,
- 	system_level_store);
- 
--static ssize_t set_store(struct kset *kset, const char *buf,
--	size_t len)
-+static ssize_t set_store(struct kobject *kobj, struct kobj_attribute *attr,
-+			 const char *buf, size_t len)
- {
- 	int rc;
- 
-@@ -330,7 +338,7 @@ static ssize_t set_store(struct kset *ks
- 	return len;
- }
- 
--static struct subsys_attribute set_attr =
-+static struct kobj_attribute set_attr =
- 	__ATTR(set, 0200, NULL, set_store);
- 
- static struct attribute *cpi_attrs[] = {
-@@ -346,7 +354,7 @@ static struct attribute_group cpi_attr_g
- 	.attrs = cpi_attrs,
- };
- 
--static decl_subsys(cpi, NULL, NULL);
-+static struct kset *cpi_kset;
- 
- int sclp_cpi_set_data(const char *system, const char *sysplex, const char *type,
- 		      const u64 level)
-@@ -376,13 +384,13 @@ static int __init cpi_init(void)
- {
- 	int rc;
- 
--	rc = firmware_register(&cpi_subsys);
--	if (rc)
--		return rc;
-+	cpi_kset = kset_create_and_register("cpi", NULL, NULL, firmware_kset);
-+	if (IS_ERR(cpi_kset))
-+		return PTR_ERR(cpi_kset);
- 
--	rc = sysfs_create_group(&cpi_subsys.kobj, &cpi_attr_group);
-+	rc = sysfs_create_group(&cpi_kset->kobj, &cpi_attr_group);
- 	if (rc)
--		firmware_unregister(&cpi_subsys);
-+		kset_unregister(cpi_kset);
- 
- 	return rc;
- }
--
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+Thanks,
+Willy
 
