@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbXKFIHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755605AbXKFIMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755849AbXKFIHS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 03:07:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbXKFIHF
+	id S1755605AbXKFIMQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 03:12:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbXKFIMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 03:07:05 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:41752 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753648AbXKFIHC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 03:07:02 -0500
-Date: Tue, 6 Nov 2007 09:06:38 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Ahmed S. Darwish" <darwish.07@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       Casey Schaufler <casey@schaufler-ca.com>, akpm@linux-foundation.org,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser
-Message-ID: <20071106080637.GB26163@stusta.de>
-References: <472B8DAF.9080706@schaufler-ca.com> <20071103164303.GA26707@ubuntu> <20071104122848.GC3921@ucw.cz> <20071105094007.GA19367@ubuntu> <alpine.LFD.0.999.0711050818200.15101@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Tue, 6 Nov 2007 03:12:03 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:45143 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751991AbXKFIMB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 03:12:01 -0500
+Date: Tue, 6 Nov 2007 09:13:39 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Dave Jones <davej@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 01/10] x86: unification of cfufreq/Kconfig
+Message-ID: <20071106081339.GA5687@uranus.ravnborg.org>
+References: <11941338801315-git-send-email-sam@ravnborg.org> <20071106073821.GA12733@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0711050818200.15101@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20071106073821.GA12733@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 05, 2007 at 08:21:04AM -0800, Linus Torvalds wrote:
+>  > +	depends on X86_32 && X86_ELAN
+>  >  	---help---
+>  >  	  This adds the CPUFreq driver for AMD Elan SC520 processor.
 > 
+> X86_ELAN should depend on X86_32 rather than adding this everywhere.
+
+...
+
+>  >  	bool
+>  >  	depends on X86_POWERNOW_K7 && ACPI_PROCESSOR
+>  >  	depends on !(X86_POWERNOW_K7 = y && ACPI_PROCESSOR = m)
+>  > +	depends on X86_32
+>  >  	default y
 > 
-> On Mon, 5 Nov 2007, Ahmed S. Darwish wrote:
+> This 2nd hunk shouldn't be necessary, as it depends on X86_POWERNOW_K7
+> which you just added the 32bit dependancy to. 
 > 
-> > On Sun, Nov 04, 2007 at 12:28:48PM +0000, Pavel Machek wrote:
-> > > 
-> > > Can we avoid string parsers in the kernel?
-> > > 
-> > 
-> > Ok, Could someone suggest a better idea please ?. 
+>  >  config X86_SPEEDSTEP_RELAXED_CAP_CHECK
+>  >  	bool "Relaxed speedstep capability checks"
+>  > -	depends on (X86_SPEEDSTEP_SMI || X86_SPEEDSTEP_ICH)
+>  > +	depends on X86_32 && (X86_SPEEDSTEP_SMI || X86_SPEEDSTEP_ICH)
 > 
-> I personally think string parsers are *much* better than the alternatives 
-> (which basically boil down to nasty binary interfaces)
->...
+> Should also be unnecessary due to those items now being 32bit dependant.
 
-How do we get the information about the character encoding of the string 
-to be parsed into the kernel?
+In several cases the "depends on X86_32 were added not as a necessity
+but just to make it obvious that a given symbol is 32 bit specific.
+I can drop doing it this way if it is anyway obvious from the context.
 
-> 			Linus
+Will try to do so in next patch-set, due tonigt if things goes OK.
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	Sam
