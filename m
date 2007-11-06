@@ -1,63 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754870AbXKFUk6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbXKFUmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754870AbXKFUk6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 15:40:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbXKFUku
+	id S1755255AbXKFUmU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 15:42:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbXKFUmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 15:40:50 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58226 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752410AbXKFUku (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 15:40:50 -0500
-Date: Tue, 6 Nov 2007 13:40:52 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
-Subject: Re: mm snapshot broken-out-2007-11-06-02-32.tar.gz uploaded
-Message-Id: <20071106134052.71bf12d6.akpm@linux-foundation.org>
-In-Reply-To: <4730CB42.4090106@googlemail.com>
-References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
-	<4730CB42.4090106@googlemail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Nov 2007 15:42:09 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:37160 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753627AbXKFUmI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 15:42:08 -0500
+Message-Id: <20071106203724.620893371@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Tue, 06 Nov 2007 15:37:24 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: [patch 0/4] Move Instrumentation Support menu to arch/Kconfig
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue,  6 Nov 2007 20:41:52 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 06 Nov 2007 21:14:58 +0100 Gabriel C <nix.or.die@googlemail.com> wrote:
-> After some hours uptime I got the following Oops :
-> 
-> [15745.009673] BUG: unable to handle kernel paging request at virtual address 63383166
+Hi Andrew,
 
-An all-ascii address: "c81f".
+Following a discussion with Linus, here is the implementation of the
+kernel/Kconfig.instrumentation removal. The result of the discussion has been
+to decide to move the architecture dependent instrumentation menu entries to
+arch/Kconfig and enable/disable each option on a per architecture basis with a
+Kconfig boolean. I moved the architecture independent instrumentation items to
+init/Kconfig.
 
-> [15745.009683] printing eip: c01c50a2 *pde = 00000000
-> [15745.009692] Oops: 0002 [#1] SMP
-> [15745.009699] last sysfs file: /sys/devices/pci0000:00/0000:00:1e.0/0000:04:0b.0/irq
-> [15745.009705] Modules linked in: fuse pc87360 hwmon_vid eeprom adm1021 ext4dev jbd2 crc16 loop lp intel_agp sr_mod agpgart 3c59x parport_pc iTCO_wdt mii parport iTCO_vendor_support cdrom i82860_edac watchdog_core edac_core dcdbas pcspkr i2c_i801 watchdog_dev shpchp evdev pci_hotplug
-> [15745.009742]
-> [15745.009746] Pid: 6277, comm: su Not tainted (2.6.24-rc1-mm1 #2)
-> [15745.009751] EIP: 0060:[<c01c50a2>] EFLAGS: 00210206 CPU: 1
-> [15745.009761] EIP is at kobject_add+0xae/0x160
-> [15745.009765] EAX: c186c300 EBX: cf81a0b0 ECX: 63383166 EDX: cf81a0b8
-> [15745.009769] ESI: cf81a0b0 EDI: cf81a0d0 EBP: c03b4bcc ESP: cfa37f40
-> [15745.009773]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> [15745.009778] Process su (pid: 6277, ti=cfa36000 task=c354c000 task.ti=cfa36000)
-> [15745.009781] Stack: fffffffe c186c30c cf81a080 cf81a0b0 cf81a0d0 c03b4bcc c011fba1 cf81a0b0
-> [15745.009793]        c0368fd1 00000013 cf81a080 cf81a080 00000013 00000000 c011fe94 00000013
-> [15745.009804]        00000013 00000001 00000000 c0122e0d 00000013 00000000 09756508 c0124688
-> [15745.009815] Call Trace:
-> [15745.009820]  [<c011fba1>] uids_user_create+0x41/0x5a
-> [15745.009833]  [<c011fe94>] alloc_uid+0xad/0x121
-> [15745.009840]  [<c0122e0d>] set_user+0x1d/0x93
-> [15745.009847]  [<c0124688>] sys_setuid+0x47/0xc5
-> [15745.009855]  [<c0103d32>] sysenter_past_esp+0x5f/0x85
-> [15745.009868]  =======================
-> [15745.009870] Code: d4 13 00 83 7c 24 04 00 75 0f 8b 43 14 83 c0 0c e8 fc fb ff ff 89 44 24 04 8b 43 14 8b 48 04 8d 53 08 89 50 04 89 43 08 89 4b 0c <89> 11 8b 43 14 83 c0 08 c6 00 01 8b 44 24 04 89 43 10 c7 04 24
-> [15745.009928] EIP: [<c01c50a2>] kobject_add+0xae/0x160 SS:ESP 0068:cfa37f40
-> 
+Mathieu
 
-Don't knowm sorry - we'll need to wait until someone can hit it more
-reliably :(
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
