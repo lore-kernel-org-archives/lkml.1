@@ -1,46 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbXKFWnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755497AbXKFWuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756089AbXKFWnY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 17:43:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754455AbXKFWnQ
+	id S1755497AbXKFWuX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 17:50:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754690AbXKFWuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 17:43:16 -0500
-Received: from smtp-out2.tiscali.nl ([195.241.79.177]:44954 "EHLO
-	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751832AbXKFWnQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 17:43:16 -0500
-Message-ID: <4730EE00.8040809@tiscali.nl>
-Date: Tue, 06 Nov 2007 23:43:12 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Tue, 6 Nov 2007 17:50:11 -0500
+Received: from gw.goop.org ([64.81.55.164]:50054 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754455AbXKFWuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 17:50:09 -0500
+Message-ID: <4730EF9F.3020803@goop.org>
+Date: Tue, 06 Nov 2007 14:50:07 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fix writing to unintended memory in pkt_generic_packet();
- drivers/block/pktcdvd.c
-Content-Type: text/plain; charset=ISO-8859-1
+To: Glauber de Oliveira Costa <gcosta@redhat.com>
+CC: linux-kernel@vger.kernel.org, avi@qumranet.com, aliguori@us.ibm.com,
+       kvm-devel@lists.sourceforge.net, hollisb@us.ibm.com
+Subject: Re: include files for kvmclock
+References: <11943875362987-git-send-email-gcosta@redhat.com> <11943875433821-git-send-email-gcosta@redhat.com>
+In-Reply-To: <11943875433821-git-send-email-gcosta@redhat.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CDROM_PACKET_SIZE is added as an offset to the pointer to unsigned char cmd[16].
-The adjusted pointer is then used as a destination address in a call to
-memset(). However, when CDROM_PACKET_SIZE is added to the pointer, it is
-automatically scaled by the size of cmd, which is 16. This results in the call
-to memset() writing to unintended memory.
+Glauber de Oliveira Costa wrote:
+> This patch introduces the include files for kvm clock.
+> They'll be needed for both guest and host part.
+>
+> Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+> ---
+>  include/asm-x86/kvm_para.h |   23 +++++++++++++++++++++++
+>  include/linux/kvm.h        |    1 +
+>  include/linux/kvm_para.h   |   20 ++++++++++++++++++++
+>  3 files changed, 44 insertions(+), 0 deletions(-)
+>
+> diff --git a/include/asm-x86/kvm_para.h b/include/asm-x86/kvm_para.h
+> index c6f3fd8..af9fb75 100644
+> --- a/include/asm-x86/kvm_para.h
+> +++ b/include/asm-x86/kvm_para.h
+> @@ -10,15 +10,38 @@
+>   * paravirtualization, the appropriate feature bit should be checked.
+>   */
+>  #define KVM_CPUID_FEATURES	0x40000001
+> +#define KVM_FEATURE_CLOCKEVENTS 0
+> +#define KVM_FEATURE_CLOCKSOURCE 1
+> +
+>  
+>  #ifdef __KERNEL__
+>  #include <asm/processor.h>
+> +extern void kvmclock_init(void);
+> +
+> +union kvm_hv_clock {
+>   
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
-index a8130a4..548efcf 100644
---- a/drivers/block/pktcdvd.c
-+++ b/drivers/block/pktcdvd.c
-@@ -767,7 +767,7 @@ static int pkt_generic_packet(struct pktcdvd_device *pd, struct packet_command *
- 	rq->cmd_len = COMMAND_SIZE(cgc->cmd[0]);
- 	memcpy(rq->cmd, cgc->cmd, CDROM_PACKET_SIZE);
- 	if (sizeof(rq->cmd) > CDROM_PACKET_SIZE)
--		memset(rq->cmd + CDROM_PACKET_SIZE, 0, sizeof(rq->cmd) - CDROM_PACKET_SIZE);
-+		memset((char *)rq->cmd + CDROM_PACKET_SIZE, 0, sizeof(rq->cmd) - CDROM_PACKET_SIZE);
- 
- 	rq->timeout = 60*HZ;
- 	rq->cmd_type = REQ_TYPE_BLOCK_PC;
+Why two copies of this structure?
+
+> +	struct {
+> +		u64 tsc_mult;
+> +		u64 now_ns;
+> +		/* That's the wall clock, not the water closet */
+> +		u64 wc_sec;
+> +		u64 wc_nsec;
+> +		u64 last_tsc;
+> +		/* At first, we could use the tsc value as a marker, but Jeremy
+> +		 * well noted that it will cause us locking problems in 32-bit
+> +		 * sys, so we have a special version field */
+> +		u32 version;
+> +	};
+> +	char page_align[PAGE_SIZE];
+> +};
+> +
+>   
+
+[...]
+
+> +
+> +union kvm_hv_clock {
+> +	struct {
+> +		u64 tsc_mult;
+> +		u64 now_ns;
+> +		/* That's the wall clock, not the water closet */
+> +		u64 wc_sec;
+> +		u64 wc_nsec;
+> +		u64 last_tsc;
+> +		/* At first, we could use the tsc value as a marker, but Jeremy
+> +		 * well noted that it will cause us locking problems in 32-bit
+> +		 * sys, so we have a special version field */
+> +		u32 version;
+> +	};
+> +	char page_align[PAGE_SIZE];
+> +};
+> +
+>  /*
+>   * hypercalls use architecture specific
+>   */
+>   
+
