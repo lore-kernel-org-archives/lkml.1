@@ -1,77 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757045AbXKFS7b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757429AbXKFTAI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757045AbXKFS7b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 13:59:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbXKFS7X
+	id S1757429AbXKFTAI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 14:00:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbXKFS74
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 13:59:23 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:50327 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751991AbXKFS7W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 13:59:22 -0500
-Subject: Re: mm snapshot broken-out-2007-11-06-02-32 - powerpc link failure
-From: Badari Pulavarty <pbadari@gmail.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, mm-commits@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <4730AF9E.7020908@linux.vnet.ibm.com>
-References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
-	 <4730AF9E.7020908@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Tue, 06 Nov 2007 11:00:38 -0800
-Message-Id: <1194375638.26782.8.camel@dyn9047017100.beaverton.ibm.com>
+	Tue, 6 Nov 2007 13:59:56 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:49054 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752613AbXKFS7z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 13:59:55 -0500
+Date: Tue, 6 Nov 2007 23:05:10 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Jens Axboe <axboe@kernel.dk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Nick <gentuu@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] cfq: fix IOPRIO_CLASS_IDLE delays
+Message-ID: <20071106200510.GA11435@tv-sign.ru>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-11-06 at 23:47 +0530, Kamalesh Babulal wrote:
-> Hi Andrew,
-> 
-> The kernel linking fails on the powerpc, with following error message
-> 
->   CC      init/version.o
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> arch/powerpc/kernel/built-in.o(.toc+0x1550): undefined reference to `devices_subsys'
-> make: *** [.tmp_vmlinux1] Error 1
+After the fresh boot:
 
-I sent a fix for this 30 minutes ago ..
+	ionice -c3 -p $$
+	echo cfq >> /sys/block/XXX/queue/scheduler
+	dd if=/dev/XXX of=/dev/null bs=512 count=1
 
-Here it is anyway.
+Now dd hangs in D state and the queue is completely stalled for approximately
+INITIAL_JIFFIES + CFQ_IDLE_GRACE jiffies. This is because cfq_init_queue()
+forgets to initialize cfq_data->last_end_request.
 
-Thanks,
-Badari
+(I guess this patch is not complete, overflow is still possible)
 
----
- arch/powerpc/kernel/vio.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-Index: linux-2.6.24-rc1/arch/powerpc/kernel/vio.c
-===================================================================
---- linux-2.6.24-rc1.orig/arch/powerpc/kernel/vio.c	2007-10-23 20:50:57.000000000 -0700
-+++ linux-2.6.24-rc1/arch/powerpc/kernel/vio.c	2007-11-06 10:31:56.000000000 -0800
-@@ -37,7 +37,7 @@
- #include <asm/iseries/hv_call_xm.h>
- #include <asm/iseries/iommu.h>
+--- cfq/block/cfq-iosched.c~	2007-08-09 19:59:26.000000000 +0400
++++ cfq/block/cfq-iosched.c	2007-11-06 22:39:08.000000000 +0300
+@@ -2122,6 +2122,7 @@ static void *cfq_init_queue(struct reque
  
--extern struct kset devices_subsys; /* needed for vio_find_name() */
-+extern struct kset *devices_kset;  /* needed for vio_find_name() */
+ 	INIT_WORK(&cfqd->unplug_work, cfq_kick_queue);
  
- static struct bus_type vio_bus_type;
- 
-@@ -369,7 +369,7 @@ static struct vio_dev *vio_find_name(con
- {
- 	struct kobject *found;
- 
--	found = kset_find_obj(&devices_subsys, kobj_name);
-+	found = kset_find_obj(devices_kset, kobj_name);
- 	if (!found)
- 		return NULL;
- 
-
-
++	cfqd->last_end_request = jiffies;
+ 	cfqd->cfq_quantum = cfq_quantum;
+ 	cfqd->cfq_fifo_expire[0] = cfq_fifo_expire[0];
+ 	cfqd->cfq_fifo_expire[1] = cfq_fifo_expire[1];
 
