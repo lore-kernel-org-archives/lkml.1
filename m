@@ -1,64 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755733AbXKFNSP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756320AbXKFNVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755733AbXKFNSP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 08:18:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754713AbXKFNSA
+	id S1756320AbXKFNVR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 08:21:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbXKFNVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 08:18:00 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:26719 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754153AbXKFNSA (ORCPT
+	Tue, 6 Nov 2007 08:21:07 -0500
+Received: from morrison.andev.ch ([213.133.123.55]:65412 "EHLO
+	morrison.andev.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751000AbXKFNVG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 08:18:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=A5QySW1caVFa5hFT5krMnALMcn1efd/dkNtY/grNM2f8qtIQUCEhudXG2kPzXm0aGbQowO1zVLjXtQ06SF4xDVPUoMRKoJKrYRuRgIH27up+UpYV8mYtvGvsugpwf24sWSl7EV666mT0TjF5lKRHLCE9TEJjBMvZfhUd3+twwNU=
-Date: Tue, 6 Nov 2007 14:17:22 +0100
-From: Frederik Deweerdt <deweerdt@free.fr>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [-mm patch] fix getblk_slow "integer constant is too large" warning
-Message-ID: <20071106131722.GE21227@slug>
-References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
+	Tue, 6 Nov 2007 08:21:06 -0500
+X-Greylist: delayed 472 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Nov 2007 08:21:06 EST
+Date: Tue, 6 Nov 2007 14:13:10 +0100
+From: Petar Bogdanovic <list+2007@smokva.net>
+To: linux-kernel@vger.kernel.org
+Subject: dd/mke2fs on loopback hangs
+Message-ID: <20071106131310.GA8628@pintail.smokva.net>
+Mail-Followup-To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.12-2006-07-14
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 06, 2007 at 02:33:53AM -0800, akpm@linux-foundation.org wrote:
-> The mm snapshot broken-out-2007-11-06-02-32.tar.gz has been uploaded to
-> 
->    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-11-06-02-32.tar.gz
-> 
-> It contains the following patches against 2.6.24-rc1:
-> 
-[...]
-> getblk-handle-2tb-devices.patch
-[...]
-0xffffffff00000000 is unsigned long long on 32 bits
-fs/buffer.c: In function '__getblk_slow':
-fs/buffer.c:1126: warning: integer constant is too large for 'unsigned long' type
+Hi,
 
-Regards,
-Frederik
+I experience some strange problems with my loopback-on-ext3-setup.
+After creating a plain `zeroed' dummy-file and doing a /dev/loop/0 on
+it, every dd or mke2fs hangs while doing certain write()s. Here are the
+steps just in order to show, how simple the setup is:
 
-Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
+	1) create a dummy file (size: 1GB or less)
+		dd if=/dev/zero of=dummy bs=1M count=1000
+
+	2) create a loopback device on the dummy file
+		losetup /dev/loop/0 dummy
+
+	3) write on the loopback device or create a filesystem
+		dd if=/dev/zero of=/dev/loop/0 bs=1M
+		mke2fs -m 0 /dev/loop/0
 
 
-diff --git a/fs/buffer.c b/fs/buffer.c
-index ca713df..795fe86 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -1123,7 +1123,7 @@ __getblk_slow(struct block_device *bdev, sector_t block, int size)
- 
- #if (BITS_PER_LONG == 32) && defined(CONFIG_LBD)
- 	if ((block >> (PAGE_CACHE_SHIFT - bdev->bd_inode->i_blkbits)) &
--			0xffffffff00000000UL) {
-+			0xffffffff00000000ULL) {
- 		/*
- 		 * We'll fail because the block is outside the range
- 		 * which a 32-bit pagecache index can address
+mke2fs will take ages to complete but not _every_ time. It has happend
+once, that it completed very fast during the first run. The same goes
+for dd -- it takes nearly forever:
+
+	# dd if=/dev/zero of=/dev/loop/0 bs=1M count=500
+	500+0 records in
+	500+0 records out
+	524288000 bytes (524 MB) copied, 547.585 s, 957 kB/s
+	                                            ^^^^^^^^
+
+
+While dd/mke2fs hangs, it's worth mentioning that firefox hangs too. I
+also do not have any other problems with IO besides this one.
+
+A short test on an external USB-vfat-drive did not show the same
+behaviour, so maybe it has to do something with my filesystem options:
+
+	# dumpe2fs -h /dev/sda2
+	dumpe2fs 1.40.2 (12-Jul-2007)
+	Filesystem volume name:   <none>
+	Last mounted on:          <not available>
+	Filesystem UUID:          794a82ae-b09b-48d0-901d-234dfdf28116
+	Filesystem magic number:  0xEF53
+	Filesystem revision #:    1 (dynamic)
+	Filesystem features:      has_journal resize_inode dir_index filetype needs_recovery sparse_super large_file
+	Filesystem flags:         signed directory hash 
+	Default mount options:    (none)
+	Filesystem state:         clean
+	Errors behavior:          Continue
+	Filesystem OS type:       Linux
+	Inode count:              9043968
+	Block count:              18067100
+	Reserved block count:     903355
+	Free blocks:              17000463
+	Free inodes:              8954830
+	First block:              0
+	Block size:               4096
+	Fragment size:            4096
+	Reserved GDT blocks:      1019
+	Blocks per group:         32768
+	Fragments per group:      32768
+	Inodes per group:         16384
+	Inode blocks per group:   512
+	Filesystem created:       Wed Aug 29 13:27:22 2007
+	Last mount time:          Tue Nov  6 12:47:25 2007
+	Last write time:          Tue Nov  6 12:47:25 2007
+	Mount count:              21
+	Maximum mount count:      21
+	Last checked:             Tue Oct 30 17:21:00 2007
+	Check interval:           15552000 (6 months)
+	Next check after:         Sun Apr 27 18:21:00 2008
+	Reserved blocks uid:      0 (user root)
+	Reserved blocks gid:      0 (group root)
+	First inode:              11
+	Inode size:               128
+	Journal inode:            8
+	Default directory hash:   tea
+	Directory Hash Seed:      a35cc1dc-1c7d-4fce-9c37-5092b932be09
+	Journal backup:           inode blocks
+	Journal size:             128M
+
+
+Thanks for any kind of hint,
+
+Petar
+
+
+P.S:	$ uname -a
+	Linux pintail 2.6.23-ARCH #1 SMP PREEMPT Sat Oct 27 09:04:14 UTC
+	2007 i686 Intel(R) Pentium(R) M processor 1.70GHz GenuineIntel
+	GNU/Linux
