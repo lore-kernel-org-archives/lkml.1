@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757442AbXKFVtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756721AbXKFVul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757442AbXKFVtV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 16:49:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754573AbXKFVtN
+	id S1756721AbXKFVul (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 16:50:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754203AbXKFVue
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 16:49:13 -0500
-Received: from warlock.qualcomm.com ([129.46.50.49]:48233 "EHLO
-	warlock.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754221AbXKFVtM (ORCPT
+	Tue, 6 Nov 2007 16:50:34 -0500
+Received: from pne-smtpout2-sn1.fre.skanova.net ([81.228.11.159]:60673 "EHLO
+	pne-smtpout2-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752041AbXKFVud (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 16:49:12 -0500
-Message-ID: <4730DE5C.5010205@qualcomm.com>
-Date: Tue, 06 Nov 2007 13:36:28 -0800
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070926)
+	Tue, 6 Nov 2007 16:50:33 -0500
+X-Greylist: delayed 487 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Nov 2007 16:50:33 EST
+Date: Tue, 6 Nov 2007 22:42:24 +0100 (CET)
+From: Peter Osterlund <petero2@telia.com>
+X-X-Sender: petero@quad.localdomain
+To: Thomas Maier <balagi@justmail.de>
+cc: Tejun Heo <htejun@gmail.com>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, gregkh@suse.de
+Subject: Re: pktcdvd oops
+In-Reply-To: <op.t1d2aurziudtyh@master>
+Message-ID: <Pine.LNX.4.64.0711062229490.5800@quad.localdomain>
+References: <20071105092018.GD5359@kernel.dk> <Pine.LNX.4.64.0711052312410.5445@quad.localdomain>
+ <47302E9F.6020708@gmail.com> <op.t1d2aurziudtyh@master>
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Strange freezes (seems like SATA related)
-References: <fa.geuG6UTKiSgc409K9/yA9HzMTUs@ifi.uio.no> <472674CB.10807@shaw.ca>
-In-Reply-To: <472674CB.10807@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Can you post the full dmesg output? What kind of drive is this?
+On Tue, 6 Nov 2007, Thomas Maier wrote:
 
-Sorry for the delay. I'm on vacation and have sporadic email access.
-Full dmesg is pretty long. Here SATA related section.
+> Hello,
+>
+> have not tested it yet, but i quess, the code mentioned by Peter
+> is in pkt_new_dev() that is called by pkt_setup_dev():
+>
+> 	/* This is safe, since we have a reference from open(). */
+> 		__module_get(THIS_MODULE);
+>
+>
+> So, now, there must be checks in every sysfs operation in the module code,
+> to ensure that the module is still loaded?
 
-sata_nv 0000:00:07.0: version 3.4
-ACPI: PCI Interrupt Link [LSA0] enabled at IRQ 23
-ACPI: PCI Interrupt 0000:00:07.0[A] -> Link [LSA0] -> GSI 23 (level, high) -> IRQ 23
-sata_nv 0000:00:07.0: Using ADMA mode
-PCI: Setting latency timer of device 0000:00:07.0 to 64
-scsi0 : sata_nv
-scsi1 : sata_nv
-ata1: SATA max UDMA/133 cmd 0xffffc20000a16480 ctl 0xffffc20000a164a0 bmdma 0x00000000000158b0 irq 23
-ata2: SATA max UDMA/133 cmd 0xffffc20000a16580 ctl 0xffffc20000a165a0 bmdma 0x00000000000158b8 irq 23
-ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-ata1.00: ATA-7: SAMSUNG HD080HJ, WT100-33, max UDMA/100
-ata1.00: 156301488 sectors, multi 16: LBA48 
-ata1.00: configured for UDMA/100
-ata2: SATA link down (SStatus 0 SControl 300)
-scsi 0:0:0:0: Direct-Access     ATA      SAMSUNG HD080HJ  WT10 PQ: 0 ANSI: 5
-ata1: bounce limit 0xFFFFFFFFFFFFFFFF, segment boundary 0xFFFFFFFF, hw segs 61
-sd 0:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-sd 0:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
- sda: sda1 sda2 sda3
-sd 0:0:0:0: [sda] Attached SCSI disk
-ACPI: PCI Interrupt Link [LSA1] enabled at IRQ 22
-ACPI: PCI Interrupt 0000:00:08.0[A] -> Link [LSA1] -> GSI 22 (level, high) -> IRQ 22
-sata_nv 0000:00:08.0: Using ADMA mode
+I haven't tested it either yet. What I don't understand is this: If the 
+__module_get() is not safe because the module code could have already been 
+unloaded, how can it possibly be made safe by adding more code to the 
+pktcdvd module? If the module is unloaded, trying to execute its code 
+can't be a good thing no matter what the code does.
 
-Max
+> BTW: the bug report says:
+>
+>  Steps to reproduce:
+>
+>   modprobe pktcdvd
+>   echo 22:0 >/sys/class/pktcdvd/add
+>
+> Is there any module unload??? Why is the module not available after the 
+> modprobe, but the sysfs entries, generated by the module? Confused ;)
 
+I think the purpose of the BUG_ON in __module_get() is to catch cases that 
+are unsafe, even if the call would have happened to work in this 
+particular case.
 
-
+-- 
+Peter Osterlund - petero2@telia.com
+http://web.telia.com/~u89404340
