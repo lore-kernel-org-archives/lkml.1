@@ -1,34 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbXKFSsj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757192AbXKFSsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756887AbXKFSsj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 13:48:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755449AbXKFSsV
+	id S1757192AbXKFSsy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 13:48:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756468AbXKFSs1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 13:48:21 -0500
-Received: from mail-dub.bigfish.com ([213.199.154.10]:20321 "EHLO
-	mail108-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755330AbXKFSsU (ORCPT
+	Tue, 6 Nov 2007 13:48:27 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:46330 "EHLO
+	outbound3-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755730AbXKFSsZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 13:48:20 -0500
+	Tue, 6 Nov 2007 13:48:25 -0500
 X-BigFish: VP
 X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
 X-Server-Uuid: D6C75999-9DAF-4D89-B9AC-C25E3A0BB76A
-Message-ID: <20071106183646.064906000@amd.com>
+Message-ID: <20071106183646.436605000@amd.com>
 References: <20071106183645.951275000@amd.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 06 Nov 2007 19:36:46 +0100
+Date: Tue, 06 Nov 2007 19:36:50 +0100
 From: "Robert Richter" <robert.richter@amd.com>
 To: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@redhat.com>,
        "H. Peter Anvin" <hpa@zytor.com>, "LKML" <linux-kernel@vger.kernel.org>
 cc: "Robert Richter" <robert.richter@amd.com>
-Subject: [patch 1/6] x86: apicdef unification: some constants made
- unsigned
-X-OriginalArrivalTime: 06 Nov 2007 18:47:57.0855 (UTC)
- FILETIME=[8C79E2F0:01C820A5]
+Subject: [patch 5/6] x86: apicdef unification: 32 and 64 bit files
+ coalesced
+X-OriginalArrivalTime: 06 Nov 2007 18:47:57.0995 (UTC)
+ FILETIME=[8C8F3FB0:01C820A5]
 MIME-Version: 1.0
-X-WSS-ID: 6B2E696B24S1590817-01-01
+X-WSS-ID: 6B2E696D24S1590837-07-01
 Content-Disposition: inline;
- filename="apicdef/0001-apicdef_32.h-some-constants-made-unsigned.patch"
+ filename="apicdef/0005-apicdef-32-and-64-bit-files-coalesced.patch"
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,45 +37,1236 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Robert Richter <robert.richter@amd.com>
 ---
- include/asm-x86/apicdef_32.h |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+ include/asm-x86/apicdef.h    |  401 +++++++++++++++++++++++++++++++++++++++++-
+ include/asm-x86/apicdef_32.h |  402 ------------------------------------------
+ include/asm-x86/apicdef_64.h |  402 ------------------------------------------
+ 3 files changed, 399 insertions(+), 806 deletions(-)
+ delete mode 100644 include/asm-x86/apicdef_32.h
+ delete mode 100644 include/asm-x86/apicdef_64.h
 
-Index: linux-perfmon/include/asm-x86/apicdef_32.h
+Index: linux-perfmon/include/asm-x86/apicdef.h
 ===================================================================
---- linux-perfmon.orig/include/asm-x86/apicdef_32.h
-+++ linux-perfmon/include/asm-x86/apicdef_32.h
-@@ -13,23 +13,23 @@
- #define		APIC_ID		0x20
- #define		APIC_LVR	0x30
- #define			APIC_LVR_MASK		0xFF00FF
--#define			GET_APIC_VERSION(x)	((x)&0xFF)
--#define			GET_APIC_MAXLVT(x)	(((x)>>16)&0xFF)
--#define			APIC_INTEGRATED(x)	((x)&0xF0)
+--- linux-perfmon.orig/include/asm-x86/apicdef.h
++++ linux-perfmon/include/asm-x86/apicdef.h
+@@ -1,5 +1,402 @@
++#ifndef __ASM_APICDEF_H
++#define __ASM_APICDEF_H
++
++/*
++ * Constants for various Intel APICs. (local APIC, IOAPIC, etc.)
++ *
++ * Alan Cox <Alan.Cox@linux.org>, 1995.
++ * Ingo Molnar <mingo@redhat.com>, 1999, 2000
++ */
++
++#define		APIC_DEFAULT_PHYS_BASE	0xfee00000
++ 
++#define		APIC_ID		0x20
++#ifndef CONFIG_X86_32
++#define			APIC_ID_MASK		(0xFFu<<24)
++#define			GET_APIC_ID(x)		(((x)>>24)&0xFFu)
++#define			SET_APIC_ID(x)		(((x)<<24))
++#endif
++#define		APIC_LVR	0x30
++#define			APIC_LVR_MASK		0xFF00FF
 +#define			GET_APIC_VERSION(x)	((x)&0xFFu)
 +#define			GET_APIC_MAXLVT(x)	(((x)>>16)&0xFFu)
 +#define			APIC_INTEGRATED(x)	((x)&0xF0u)
- #define			APIC_XAPIC(x)		((x) >= 0x14)
- #define		APIC_TASKPRI	0x80
--#define			APIC_TPRI_MASK		0xFF
+ #ifdef CONFIG_X86_32
+-# include "apicdef_32.h"
++#define			APIC_XAPIC(x)		((x) >= 0x14)
++#endif
++#define		APIC_TASKPRI	0x80
 +#define			APIC_TPRI_MASK		0xFFu
- #define		APIC_ARBPRI	0x90
--#define			APIC_ARBPRI_MASK	0xFF
++#define		APIC_ARBPRI	0x90
 +#define			APIC_ARBPRI_MASK	0xFFu
- #define		APIC_PROCPRI	0xA0
- #define		APIC_EOI	0xB0
- #define			APIC_EIO_ACK		0x0		/* Write this to the EOI register */
- #define		APIC_RRR	0xC0
- #define		APIC_LDR	0xD0
--#define			APIC_LDR_MASK		(0xFF<<24)
--#define			GET_APIC_LOGICAL_ID(x)	(((x)>>24)&0xFF)
++#define		APIC_PROCPRI	0xA0
++#define		APIC_EOI	0xB0
++#define			APIC_EIO_ACK		0x0		/* Write this to the EOI register */
++#define		APIC_RRR	0xC0
++#define		APIC_LDR	0xD0
 +#define			APIC_LDR_MASK		(0xFFu<<24)
 +#define			GET_APIC_LOGICAL_ID(x)	(((x)>>24)&0xFFu)
- #define			SET_APIC_LOGICAL_ID(x)	(((x)<<24))
--#define			APIC_ALL_CPUS		0xFF
++#define			SET_APIC_LOGICAL_ID(x)	(((x)<<24))
 +#define			APIC_ALL_CPUS		0xFFu
- #define		APIC_DFR	0xE0
- #define			APIC_DFR_CLUSTER		0x0FFFFFFFul
- #define			APIC_DFR_FLAT			0xFFFFFFFFul
++#define		APIC_DFR	0xE0
++#define			APIC_DFR_CLUSTER		0x0FFFFFFFul
++#define			APIC_DFR_FLAT			0xFFFFFFFFul
++#define		APIC_SPIV	0xF0
++#define			APIC_SPIV_FOCUS_DISABLED	(1<<9)
++#define			APIC_SPIV_APIC_ENABLED		(1<<8)
++#define		APIC_ISR	0x100
++#define		APIC_ISR_NR	0x8	/* Number of 32 bit ISR registers. */
++#define		APIC_TMR	0x180
++#define 	APIC_IRR	0x200
++#define 	APIC_ESR	0x280
++#define			APIC_ESR_SEND_CS	0x00001
++#define			APIC_ESR_RECV_CS	0x00002
++#define			APIC_ESR_SEND_ACC	0x00004
++#define			APIC_ESR_RECV_ACC	0x00008
++#define			APIC_ESR_SENDILL	0x00020
++#define			APIC_ESR_RECVILL	0x00040
++#define			APIC_ESR_ILLREGA	0x00080
++#define		APIC_ICR	0x300
++#define			APIC_DEST_SELF		0x40000
++#define			APIC_DEST_ALLINC	0x80000
++#define			APIC_DEST_ALLBUT	0xC0000
++#define			APIC_ICR_RR_MASK	0x30000
++#define			APIC_ICR_RR_INVALID	0x00000
++#define			APIC_ICR_RR_INPROG	0x10000
++#define			APIC_ICR_RR_VALID	0x20000
++#define			APIC_INT_LEVELTRIG	0x08000
++#define			APIC_INT_ASSERT		0x04000
++#define			APIC_ICR_BUSY		0x01000
++#define			APIC_DEST_LOGICAL	0x00800
++#ifndef CONFIG_X86_32
++#define			APIC_DEST_PHYSICAL	0x00000
++#endif
++#define			APIC_DM_FIXED		0x00000
++#define			APIC_DM_LOWEST		0x00100
++#define			APIC_DM_SMI		0x00200
++#define			APIC_DM_REMRD		0x00300
++#define			APIC_DM_NMI		0x00400
++#define			APIC_DM_INIT		0x00500
++#define			APIC_DM_STARTUP		0x00600
++#define			APIC_DM_EXTINT		0x00700
++#define			APIC_VECTOR_MASK	0x000FF
++#define		APIC_ICR2	0x310
++#define			GET_APIC_DEST_FIELD(x)	(((x)>>24)&0xFF)
++#define			SET_APIC_DEST_FIELD(x)	((x)<<24)
++#define		APIC_LVTT	0x320
++#define		APIC_LVTTHMR	0x330
++#define		APIC_LVTPC	0x340
++#define		APIC_LVT0	0x350
++#define			APIC_LVT_TIMER_BASE_MASK	(0x3<<18)
++#define			GET_APIC_TIMER_BASE(x)		(((x)>>18)&0x3)
++#define			SET_APIC_TIMER_BASE(x)		(((x)<<18))
++#define			APIC_TIMER_BASE_CLKIN		0x0
++#define			APIC_TIMER_BASE_TMBASE		0x1
++#define			APIC_TIMER_BASE_DIV		0x2
++#define			APIC_LVT_TIMER_PERIODIC		(1<<17)
++#define			APIC_LVT_MASKED			(1<<16)
++#define			APIC_LVT_LEVEL_TRIGGER		(1<<15)
++#define			APIC_LVT_REMOTE_IRR		(1<<14)
++#define			APIC_INPUT_POLARITY		(1<<13)
++#define			APIC_SEND_PENDING		(1<<12)
++#define			APIC_MODE_MASK			0x700
++#define			GET_APIC_DELIVERY_MODE(x)	(((x)>>8)&0x7)
++#define			SET_APIC_DELIVERY_MODE(x,y)	(((x)&~0x700)|((y)<<8))
++#define				APIC_MODE_FIXED		0x0
++#define				APIC_MODE_NMI		0x4
++#define				APIC_MODE_EXTINT	0x7
++#define 	APIC_LVT1	0x360
++#define		APIC_LVTERR	0x370
++#define		APIC_TMICT	0x380
++#define		APIC_TMCCT	0x390
++#define		APIC_TDCR	0x3E0
++#define			APIC_TDR_DIV_TMBASE	(1<<2)
++#define			APIC_TDR_DIV_1		0xB
++#define			APIC_TDR_DIV_2		0x0
++#define			APIC_TDR_DIV_4		0x1
++#define			APIC_TDR_DIV_8		0x2
++#define			APIC_TDR_DIV_16		0x3
++#define			APIC_TDR_DIV_32		0x8
++#define			APIC_TDR_DIV_64		0x9
++#define			APIC_TDR_DIV_128	0xA
++
++#define APIC_BASE (fix_to_virt(FIX_APIC_BASE))
++
++#ifdef CONFIG_X86_32
++#define MAX_IO_APICS 64
+ #else
+-# include "apicdef_64.h"
++#define MAX_IO_APICS 128
++#define MAX_LOCAL_APIC 256
++#define BAD_APICID 0xFFu
++
++/*
++ * All x86-64 systems are xAPIC compatible.
++ * In the following, "apicid" is a physical APIC ID.
++ */
++#define XAPIC_DEST_CPUS_SHIFT	4
++#define XAPIC_DEST_CPUS_MASK	((1u << XAPIC_DEST_CPUS_SHIFT) - 1)
++#define XAPIC_DEST_CLUSTER_MASK	(XAPIC_DEST_CPUS_MASK << XAPIC_DEST_CPUS_SHIFT)
++#define APIC_CLUSTER(apicid)	((apicid) & XAPIC_DEST_CLUSTER_MASK)
++#define APIC_CLUSTERID(apicid)	(APIC_CLUSTER(apicid) >> XAPIC_DEST_CPUS_SHIFT)
++#define APIC_CPUID(apicid)	((apicid) & XAPIC_DEST_CPUS_MASK)
++#define NUM_APIC_CLUSTERS	((BAD_APICID + 1) >> XAPIC_DEST_CPUS_SHIFT)
++#endif
++
++/*
++ * the local APIC register structure, memory mapped. Not terribly well
++ * tested, but we might eventually use this one in the future - the
++ * problem why we cannot use it right now is the P5 APIC, it has an
++ * errata which cannot take 8-bit reads and writes, only 32-bit ones ...
++ */
++#define u32 unsigned int
++
++struct local_apic {
++
++/*000*/	struct { u32 __reserved[4]; } __reserved_01;
++
++/*010*/	struct { u32 __reserved[4]; } __reserved_02;
++
++/*020*/	struct { /* APIC ID Register */
++		u32   __reserved_1	: 24,
++			phys_apic_id	:  4,
++			__reserved_2	:  4;
++		u32 __reserved[3];
++	} id;
++
++/*030*/	const
++	struct { /* APIC Version Register */
++		u32   version		:  8,
++			__reserved_1	:  8,
++			max_lvt		:  8,
++			__reserved_2	:  8;
++		u32 __reserved[3];
++	} version;
++
++/*040*/	struct { u32 __reserved[4]; } __reserved_03;
++
++/*050*/	struct { u32 __reserved[4]; } __reserved_04;
++
++/*060*/	struct { u32 __reserved[4]; } __reserved_05;
++
++/*070*/	struct { u32 __reserved[4]; } __reserved_06;
++
++/*080*/	struct { /* Task Priority Register */
++		u32   priority	:  8,
++			__reserved_1	: 24;
++		u32 __reserved_2[3];
++	} tpr;
++
++/*090*/	const
++	struct { /* Arbitration Priority Register */
++		u32   priority	:  8,
++			__reserved_1	: 24;
++		u32 __reserved_2[3];
++	} apr;
++
++/*0A0*/	const
++	struct { /* Processor Priority Register */
++		u32   priority	:  8,
++			__reserved_1	: 24;
++		u32 __reserved_2[3];
++	} ppr;
++
++/*0B0*/	struct { /* End Of Interrupt Register */
++		u32   eoi;
++		u32 __reserved[3];
++	} eoi;
++
++/*0C0*/	struct { u32 __reserved[4]; } __reserved_07;
++
++/*0D0*/	struct { /* Logical Destination Register */
++		u32   __reserved_1	: 24,
++			logical_dest	:  8;
++		u32 __reserved_2[3];
++	} ldr;
++
++/*0E0*/	struct { /* Destination Format Register */
++		u32   __reserved_1	: 28,
++			model		:  4;
++		u32 __reserved_2[3];
++	} dfr;
++
++/*0F0*/	struct { /* Spurious Interrupt Vector Register */
++		u32	spurious_vector	:  8,
++			apic_enabled	:  1,
++			focus_cpu	:  1,
++			__reserved_2	: 22;
++		u32 __reserved_3[3];
++	} svr;
++
++/*100*/	struct { /* In Service Register */
++/*170*/		u32 bitfield;
++		u32 __reserved[3];
++	} isr [8];
++
++/*180*/	struct { /* Trigger Mode Register */
++/*1F0*/		u32 bitfield;
++		u32 __reserved[3];
++	} tmr [8];
++
++/*200*/	struct { /* Interrupt Request Register */
++/*270*/		u32 bitfield;
++		u32 __reserved[3];
++	} irr [8];
++
++/*280*/	union { /* Error Status Register */
++		struct {
++			u32   send_cs_error			:  1,
++				receive_cs_error		:  1,
++				send_accept_error		:  1,
++				receive_accept_error		:  1,
++				__reserved_1			:  1,
++				send_illegal_vector		:  1,
++				receive_illegal_vector		:  1,
++				illegal_register_address	:  1,
++				__reserved_2			: 24;
++			u32 __reserved_3[3];
++		} error_bits;
++		struct {
++			u32 errors;
++			u32 __reserved_3[3];
++		} all_errors;
++	} esr;
++
++/*290*/	struct { u32 __reserved[4]; } __reserved_08;
++
++/*2A0*/	struct { u32 __reserved[4]; } __reserved_09;
++
++/*2B0*/	struct { u32 __reserved[4]; } __reserved_10;
++
++/*2C0*/	struct { u32 __reserved[4]; } __reserved_11;
++
++/*2D0*/	struct { u32 __reserved[4]; } __reserved_12;
++
++/*2E0*/	struct { u32 __reserved[4]; } __reserved_13;
++
++/*2F0*/	struct { u32 __reserved[4]; } __reserved_14;
++
++/*300*/	struct { /* Interrupt Command Register 1 */
++		u32   vector			:  8,
++			delivery_mode		:  3,
++			destination_mode	:  1,
++			delivery_status		:  1,
++			__reserved_1		:  1,
++			level			:  1,
++			trigger			:  1,
++			__reserved_2		:  2,
++			shorthand		:  2,
++			__reserved_3		:  12;
++		u32 __reserved_4[3];
++	} icr1;
++
++/*310*/	struct { /* Interrupt Command Register 2 */
++		union {
++			u32   __reserved_1	: 24,
++				phys_dest	:  4,
++				__reserved_2	:  4;
++			u32   __reserved_3	: 24,
++				logical_dest	:  8;
++		} dest;
++		u32 __reserved_4[3];
++	} icr2;
++
++/*320*/	struct { /* LVT - Timer */
++		u32   vector		:  8,
++			__reserved_1	:  4,
++			delivery_status	:  1,
++			__reserved_2	:  3,
++			mask		:  1,
++			timer_mode	:  1,
++			__reserved_3	: 14;
++		u32 __reserved_4[3];
++	} lvt_timer;
++
++/*330*/	struct { /* LVT - Thermal Sensor */
++		u32  vector		:  8,
++			delivery_mode	:  3,
++			__reserved_1	:  1,
++			delivery_status	:  1,
++			__reserved_2	:  3,
++			mask		:  1,
++			__reserved_3	: 15;
++		u32 __reserved_4[3];
++	} lvt_thermal;
++
++/*340*/	struct { /* LVT - Performance Counter */
++		u32   vector		:  8,
++			delivery_mode	:  3,
++			__reserved_1	:  1,
++			delivery_status	:  1,
++			__reserved_2	:  3,
++			mask		:  1,
++			__reserved_3	: 15;
++		u32 __reserved_4[3];
++	} lvt_pc;
++
++/*350*/	struct { /* LVT - LINT0 */
++		u32   vector		:  8,
++			delivery_mode	:  3,
++			__reserved_1	:  1,
++			delivery_status	:  1,
++			polarity	:  1,
++			remote_irr	:  1,
++			trigger		:  1,
++			mask		:  1,
++			__reserved_2	: 15;
++		u32 __reserved_3[3];
++	} lvt_lint0;
++
++/*360*/	struct { /* LVT - LINT1 */
++		u32   vector		:  8,
++			delivery_mode	:  3,
++			__reserved_1	:  1,
++			delivery_status	:  1,
++			polarity	:  1,
++			remote_irr	:  1,
++			trigger		:  1,
++			mask		:  1,
++			__reserved_2	: 15;
++		u32 __reserved_3[3];
++	} lvt_lint1;
++
++/*370*/	struct { /* LVT - Error */
++		u32   vector		:  8,
++			__reserved_1	:  4,
++			delivery_status	:  1,
++			__reserved_2	:  3,
++			mask		:  1,
++			__reserved_3	: 15;
++		u32 __reserved_4[3];
++	} lvt_error;
++
++/*380*/	struct { /* Timer Initial Count Register */
++		u32   initial_count;
++		u32 __reserved_2[3];
++	} timer_icr;
++
++/*390*/	const
++	struct { /* Timer Current Count Register */
++		u32   curr_count;
++		u32 __reserved_2[3];
++	} timer_ccr;
++
++/*3A0*/	struct { u32 __reserved[4]; } __reserved_16;
++
++/*3B0*/	struct { u32 __reserved[4]; } __reserved_17;
++
++/*3C0*/	struct { u32 __reserved[4]; } __reserved_18;
++
++/*3D0*/	struct { u32 __reserved[4]; } __reserved_19;
++
++/*3E0*/	struct { /* Timer Divide Configuration Register */
++		u32   divisor		:  4,
++			__reserved_1	: 28;
++		u32 __reserved_2[3];
++	} timer_dcr;
++
++/*3F0*/	struct { u32 __reserved[4]; } __reserved_20;
++
++} __attribute__ ((packed));
++
++#undef u32
++
+ #endif
+Index: linux-perfmon/include/asm-x86/apicdef_32.h
+===================================================================
+--- linux-perfmon.orig/include/asm-x86/apicdef_32.h
++++ /dev/null
+@@ -1,402 +0,0 @@
+-#ifndef __ASM_APICDEF_H
+-#define __ASM_APICDEF_H
+-
+-/*
+- * Constants for various Intel APICs. (local APIC, IOAPIC, etc.)
+- *
+- * Alan Cox <Alan.Cox@linux.org>, 1995.
+- * Ingo Molnar <mingo@redhat.com>, 1999, 2000
+- */
+-
+-#define		APIC_DEFAULT_PHYS_BASE	0xfee00000
+- 
+-#define		APIC_ID		0x20
+-#ifndef CONFIG_X86_32
+-#define			APIC_ID_MASK		(0xFFu<<24)
+-#define			GET_APIC_ID(x)		(((x)>>24)&0xFFu)
+-#define			SET_APIC_ID(x)		(((x)<<24))
+-#endif
+-#define		APIC_LVR	0x30
+-#define			APIC_LVR_MASK		0xFF00FF
+-#define			GET_APIC_VERSION(x)	((x)&0xFFu)
+-#define			GET_APIC_MAXLVT(x)	(((x)>>16)&0xFFu)
+-#define			APIC_INTEGRATED(x)	((x)&0xF0u)
+-#ifdef CONFIG_X86_32
+-#define			APIC_XAPIC(x)		((x) >= 0x14)
+-#endif
+-#define		APIC_TASKPRI	0x80
+-#define			APIC_TPRI_MASK		0xFFu
+-#define		APIC_ARBPRI	0x90
+-#define			APIC_ARBPRI_MASK	0xFFu
+-#define		APIC_PROCPRI	0xA0
+-#define		APIC_EOI	0xB0
+-#define			APIC_EIO_ACK		0x0		/* Write this to the EOI register */
+-#define		APIC_RRR	0xC0
+-#define		APIC_LDR	0xD0
+-#define			APIC_LDR_MASK		(0xFFu<<24)
+-#define			GET_APIC_LOGICAL_ID(x)	(((x)>>24)&0xFFu)
+-#define			SET_APIC_LOGICAL_ID(x)	(((x)<<24))
+-#define			APIC_ALL_CPUS		0xFFu
+-#define		APIC_DFR	0xE0
+-#define			APIC_DFR_CLUSTER		0x0FFFFFFFul
+-#define			APIC_DFR_FLAT			0xFFFFFFFFul
+-#define		APIC_SPIV	0xF0
+-#define			APIC_SPIV_FOCUS_DISABLED	(1<<9)
+-#define			APIC_SPIV_APIC_ENABLED		(1<<8)
+-#define		APIC_ISR	0x100
+-#define		APIC_ISR_NR	0x8	/* Number of 32 bit ISR registers. */
+-#define		APIC_TMR	0x180
+-#define 	APIC_IRR	0x200
+-#define 	APIC_ESR	0x280
+-#define			APIC_ESR_SEND_CS	0x00001
+-#define			APIC_ESR_RECV_CS	0x00002
+-#define			APIC_ESR_SEND_ACC	0x00004
+-#define			APIC_ESR_RECV_ACC	0x00008
+-#define			APIC_ESR_SENDILL	0x00020
+-#define			APIC_ESR_RECVILL	0x00040
+-#define			APIC_ESR_ILLREGA	0x00080
+-#define		APIC_ICR	0x300
+-#define			APIC_DEST_SELF		0x40000
+-#define			APIC_DEST_ALLINC	0x80000
+-#define			APIC_DEST_ALLBUT	0xC0000
+-#define			APIC_ICR_RR_MASK	0x30000
+-#define			APIC_ICR_RR_INVALID	0x00000
+-#define			APIC_ICR_RR_INPROG	0x10000
+-#define			APIC_ICR_RR_VALID	0x20000
+-#define			APIC_INT_LEVELTRIG	0x08000
+-#define			APIC_INT_ASSERT		0x04000
+-#define			APIC_ICR_BUSY		0x01000
+-#define			APIC_DEST_LOGICAL	0x00800
+-#ifndef CONFIG_X86_32
+-#define			APIC_DEST_PHYSICAL	0x00000
+-#endif
+-#define			APIC_DM_FIXED		0x00000
+-#define			APIC_DM_LOWEST		0x00100
+-#define			APIC_DM_SMI		0x00200
+-#define			APIC_DM_REMRD		0x00300
+-#define			APIC_DM_NMI		0x00400
+-#define			APIC_DM_INIT		0x00500
+-#define			APIC_DM_STARTUP		0x00600
+-#define			APIC_DM_EXTINT		0x00700
+-#define			APIC_VECTOR_MASK	0x000FF
+-#define		APIC_ICR2	0x310
+-#define			GET_APIC_DEST_FIELD(x)	(((x)>>24)&0xFF)
+-#define			SET_APIC_DEST_FIELD(x)	((x)<<24)
+-#define		APIC_LVTT	0x320
+-#define		APIC_LVTTHMR	0x330
+-#define		APIC_LVTPC	0x340
+-#define		APIC_LVT0	0x350
+-#define			APIC_LVT_TIMER_BASE_MASK	(0x3<<18)
+-#define			GET_APIC_TIMER_BASE(x)		(((x)>>18)&0x3)
+-#define			SET_APIC_TIMER_BASE(x)		(((x)<<18))
+-#define			APIC_TIMER_BASE_CLKIN		0x0
+-#define			APIC_TIMER_BASE_TMBASE		0x1
+-#define			APIC_TIMER_BASE_DIV		0x2
+-#define			APIC_LVT_TIMER_PERIODIC		(1<<17)
+-#define			APIC_LVT_MASKED			(1<<16)
+-#define			APIC_LVT_LEVEL_TRIGGER		(1<<15)
+-#define			APIC_LVT_REMOTE_IRR		(1<<14)
+-#define			APIC_INPUT_POLARITY		(1<<13)
+-#define			APIC_SEND_PENDING		(1<<12)
+-#define			APIC_MODE_MASK			0x700
+-#define			GET_APIC_DELIVERY_MODE(x)	(((x)>>8)&0x7)
+-#define			SET_APIC_DELIVERY_MODE(x,y)	(((x)&~0x700)|((y)<<8))
+-#define				APIC_MODE_FIXED		0x0
+-#define				APIC_MODE_NMI		0x4
+-#define				APIC_MODE_EXTINT	0x7
+-#define 	APIC_LVT1	0x360
+-#define		APIC_LVTERR	0x370
+-#define		APIC_TMICT	0x380
+-#define		APIC_TMCCT	0x390
+-#define		APIC_TDCR	0x3E0
+-#define			APIC_TDR_DIV_TMBASE	(1<<2)
+-#define			APIC_TDR_DIV_1		0xB
+-#define			APIC_TDR_DIV_2		0x0
+-#define			APIC_TDR_DIV_4		0x1
+-#define			APIC_TDR_DIV_8		0x2
+-#define			APIC_TDR_DIV_16		0x3
+-#define			APIC_TDR_DIV_32		0x8
+-#define			APIC_TDR_DIV_64		0x9
+-#define			APIC_TDR_DIV_128	0xA
+-
+-#define APIC_BASE (fix_to_virt(FIX_APIC_BASE))
+-
+-#ifdef CONFIG_X86_32
+-#define MAX_IO_APICS 64
+-#else
+-#define MAX_IO_APICS 128
+-#define MAX_LOCAL_APIC 256
+-#define BAD_APICID 0xFFu
+-
+-/*
+- * All x86-64 systems are xAPIC compatible.
+- * In the following, "apicid" is a physical APIC ID.
+- */
+-#define XAPIC_DEST_CPUS_SHIFT	4
+-#define XAPIC_DEST_CPUS_MASK	((1u << XAPIC_DEST_CPUS_SHIFT) - 1)
+-#define XAPIC_DEST_CLUSTER_MASK	(XAPIC_DEST_CPUS_MASK << XAPIC_DEST_CPUS_SHIFT)
+-#define APIC_CLUSTER(apicid)	((apicid) & XAPIC_DEST_CLUSTER_MASK)
+-#define APIC_CLUSTERID(apicid)	(APIC_CLUSTER(apicid) >> XAPIC_DEST_CPUS_SHIFT)
+-#define APIC_CPUID(apicid)	((apicid) & XAPIC_DEST_CPUS_MASK)
+-#define NUM_APIC_CLUSTERS	((BAD_APICID + 1) >> XAPIC_DEST_CPUS_SHIFT)
+-#endif
+-
+-/*
+- * the local APIC register structure, memory mapped. Not terribly well
+- * tested, but we might eventually use this one in the future - the
+- * problem why we cannot use it right now is the P5 APIC, it has an
+- * errata which cannot take 8-bit reads and writes, only 32-bit ones ...
+- */
+-#define u32 unsigned int
+-
+-struct local_apic {
+-
+-/*000*/	struct { u32 __reserved[4]; } __reserved_01;
+-
+-/*010*/	struct { u32 __reserved[4]; } __reserved_02;
+-
+-/*020*/	struct { /* APIC ID Register */
+-		u32   __reserved_1	: 24,
+-			phys_apic_id	:  4,
+-			__reserved_2	:  4;
+-		u32 __reserved[3];
+-	} id;
+-
+-/*030*/	const
+-	struct { /* APIC Version Register */
+-		u32   version		:  8,
+-			__reserved_1	:  8,
+-			max_lvt		:  8,
+-			__reserved_2	:  8;
+-		u32 __reserved[3];
+-	} version;
+-
+-/*040*/	struct { u32 __reserved[4]; } __reserved_03;
+-
+-/*050*/	struct { u32 __reserved[4]; } __reserved_04;
+-
+-/*060*/	struct { u32 __reserved[4]; } __reserved_05;
+-
+-/*070*/	struct { u32 __reserved[4]; } __reserved_06;
+-
+-/*080*/	struct { /* Task Priority Register */
+-		u32   priority	:  8,
+-			__reserved_1	: 24;
+-		u32 __reserved_2[3];
+-	} tpr;
+-
+-/*090*/	const
+-	struct { /* Arbitration Priority Register */
+-		u32   priority	:  8,
+-			__reserved_1	: 24;
+-		u32 __reserved_2[3];
+-	} apr;
+-
+-/*0A0*/	const
+-	struct { /* Processor Priority Register */
+-		u32   priority	:  8,
+-			__reserved_1	: 24;
+-		u32 __reserved_2[3];
+-	} ppr;
+-
+-/*0B0*/	struct { /* End Of Interrupt Register */
+-		u32   eoi;
+-		u32 __reserved[3];
+-	} eoi;
+-
+-/*0C0*/	struct { u32 __reserved[4]; } __reserved_07;
+-
+-/*0D0*/	struct { /* Logical Destination Register */
+-		u32   __reserved_1	: 24,
+-			logical_dest	:  8;
+-		u32 __reserved_2[3];
+-	} ldr;
+-
+-/*0E0*/	struct { /* Destination Format Register */
+-		u32   __reserved_1	: 28,
+-			model		:  4;
+-		u32 __reserved_2[3];
+-	} dfr;
+-
+-/*0F0*/	struct { /* Spurious Interrupt Vector Register */
+-		u32	spurious_vector	:  8,
+-			apic_enabled	:  1,
+-			focus_cpu	:  1,
+-			__reserved_2	: 22;
+-		u32 __reserved_3[3];
+-	} svr;
+-
+-/*100*/	struct { /* In Service Register */
+-/*170*/		u32 bitfield;
+-		u32 __reserved[3];
+-	} isr [8];
+-
+-/*180*/	struct { /* Trigger Mode Register */
+-/*1F0*/		u32 bitfield;
+-		u32 __reserved[3];
+-	} tmr [8];
+-
+-/*200*/	struct { /* Interrupt Request Register */
+-/*270*/		u32 bitfield;
+-		u32 __reserved[3];
+-	} irr [8];
+-
+-/*280*/	union { /* Error Status Register */
+-		struct {
+-			u32   send_cs_error			:  1,
+-				receive_cs_error		:  1,
+-				send_accept_error		:  1,
+-				receive_accept_error		:  1,
+-				__reserved_1			:  1,
+-				send_illegal_vector		:  1,
+-				receive_illegal_vector		:  1,
+-				illegal_register_address	:  1,
+-				__reserved_2			: 24;
+-			u32 __reserved_3[3];
+-		} error_bits;
+-		struct {
+-			u32 errors;
+-			u32 __reserved_3[3];
+-		} all_errors;
+-	} esr;
+-
+-/*290*/	struct { u32 __reserved[4]; } __reserved_08;
+-
+-/*2A0*/	struct { u32 __reserved[4]; } __reserved_09;
+-
+-/*2B0*/	struct { u32 __reserved[4]; } __reserved_10;
+-
+-/*2C0*/	struct { u32 __reserved[4]; } __reserved_11;
+-
+-/*2D0*/	struct { u32 __reserved[4]; } __reserved_12;
+-
+-/*2E0*/	struct { u32 __reserved[4]; } __reserved_13;
+-
+-/*2F0*/	struct { u32 __reserved[4]; } __reserved_14;
+-
+-/*300*/	struct { /* Interrupt Command Register 1 */
+-		u32   vector			:  8,
+-			delivery_mode		:  3,
+-			destination_mode	:  1,
+-			delivery_status		:  1,
+-			__reserved_1		:  1,
+-			level			:  1,
+-			trigger			:  1,
+-			__reserved_2		:  2,
+-			shorthand		:  2,
+-			__reserved_3		:  12;
+-		u32 __reserved_4[3];
+-	} icr1;
+-
+-/*310*/	struct { /* Interrupt Command Register 2 */
+-		union {
+-			u32   __reserved_1	: 24,
+-				phys_dest	:  4,
+-				__reserved_2	:  4;
+-			u32   __reserved_3	: 24,
+-				logical_dest	:  8;
+-		} dest;
+-		u32 __reserved_4[3];
+-	} icr2;
+-
+-/*320*/	struct { /* LVT - Timer */
+-		u32   vector		:  8,
+-			__reserved_1	:  4,
+-			delivery_status	:  1,
+-			__reserved_2	:  3,
+-			mask		:  1,
+-			timer_mode	:  1,
+-			__reserved_3	: 14;
+-		u32 __reserved_4[3];
+-	} lvt_timer;
+-
+-/*330*/	struct { /* LVT - Thermal Sensor */
+-		u32  vector		:  8,
+-			delivery_mode	:  3,
+-			__reserved_1	:  1,
+-			delivery_status	:  1,
+-			__reserved_2	:  3,
+-			mask		:  1,
+-			__reserved_3	: 15;
+-		u32 __reserved_4[3];
+-	} lvt_thermal;
+-
+-/*340*/	struct { /* LVT - Performance Counter */
+-		u32   vector		:  8,
+-			delivery_mode	:  3,
+-			__reserved_1	:  1,
+-			delivery_status	:  1,
+-			__reserved_2	:  3,
+-			mask		:  1,
+-			__reserved_3	: 15;
+-		u32 __reserved_4[3];
+-	} lvt_pc;
+-
+-/*350*/	struct { /* LVT - LINT0 */
+-		u32   vector		:  8,
+-			delivery_mode	:  3,
+-			__reserved_1	:  1,
+-			delivery_status	:  1,
+-			polarity	:  1,
+-			remote_irr	:  1,
+-			trigger		:  1,
+-			mask		:  1,
+-			__reserved_2	: 15;
+-		u32 __reserved_3[3];
+-	} lvt_lint0;
+-
+-/*360*/	struct { /* LVT - LINT1 */
+-		u32   vector		:  8,
+-			delivery_mode	:  3,
+-			__reserved_1	:  1,
+-			delivery_status	:  1,
+-			polarity	:  1,
+-			remote_irr	:  1,
+-			trigger		:  1,
+-			mask		:  1,
+-			__reserved_2	: 15;
+-		u32 __reserved_3[3];
+-	} lvt_lint1;
+-
+-/*370*/	struct { /* LVT - Error */
+-		u32   vector		:  8,
+-			__reserved_1	:  4,
+-			delivery_status	:  1,
+-			__reserved_2	:  3,
+-			mask		:  1,
+-			__reserved_3	: 15;
+-		u32 __reserved_4[3];
+-	} lvt_error;
+-
+-/*380*/	struct { /* Timer Initial Count Register */
+-		u32   initial_count;
+-		u32 __reserved_2[3];
+-	} timer_icr;
+-
+-/*390*/	const
+-	struct { /* Timer Current Count Register */
+-		u32   curr_count;
+-		u32 __reserved_2[3];
+-	} timer_ccr;
+-
+-/*3A0*/	struct { u32 __reserved[4]; } __reserved_16;
+-
+-/*3B0*/	struct { u32 __reserved[4]; } __reserved_17;
+-
+-/*3C0*/	struct { u32 __reserved[4]; } __reserved_18;
+-
+-/*3D0*/	struct { u32 __reserved[4]; } __reserved_19;
+-
+-/*3E0*/	struct { /* Timer Divide Configuration Register */
+-		u32   divisor		:  4,
+-			__reserved_1	: 28;
+-		u32 __reserved_2[3];
+-	} timer_dcr;
+-
+-/*3F0*/	struct { u32 __reserved[4]; } __reserved_20;
+-
+-} __attribute__ ((packed));
+-
+-#undef u32
+-
+-#endif
+Index: linux-perfmon/include/asm-x86/apicdef_64.h
+===================================================================
+--- linux-perfmon.orig/include/asm-x86/apicdef_64.h
++++ /dev/null
+@@ -1,402 +0,0 @@
+-#ifndef __ASM_APICDEF_H
+-#define __ASM_APICDEF_H
+-
+-/*
+- * Constants for various Intel APICs. (local APIC, IOAPIC, etc.)
+- *
+- * Alan Cox <Alan.Cox@linux.org>, 1995.
+- * Ingo Molnar <mingo@redhat.com>, 1999, 2000
+- */
+-
+-#define		APIC_DEFAULT_PHYS_BASE	0xfee00000
+- 
+-#define		APIC_ID		0x20
+-#ifndef CONFIG_X86_32
+-#define			APIC_ID_MASK		(0xFFu<<24)
+-#define			GET_APIC_ID(x)		(((x)>>24)&0xFFu)
+-#define			SET_APIC_ID(x)		(((x)<<24))
+-#endif
+-#define		APIC_LVR	0x30
+-#define			APIC_LVR_MASK		0xFF00FF
+-#define			GET_APIC_VERSION(x)	((x)&0xFFu)
+-#define			GET_APIC_MAXLVT(x)	(((x)>>16)&0xFFu)
+-#define			APIC_INTEGRATED(x)	((x)&0xF0u)
+-#ifdef CONFIG_X86_32
+-#define			APIC_XAPIC(x)		((x) >= 0x14)
+-#endif
+-#define		APIC_TASKPRI	0x80
+-#define			APIC_TPRI_MASK		0xFFu
+-#define		APIC_ARBPRI	0x90
+-#define			APIC_ARBPRI_MASK	0xFFu
+-#define		APIC_PROCPRI	0xA0
+-#define		APIC_EOI	0xB0
+-#define			APIC_EIO_ACK		0x0		/* Write this to the EOI register */
+-#define		APIC_RRR	0xC0
+-#define		APIC_LDR	0xD0
+-#define			APIC_LDR_MASK		(0xFFu<<24)
+-#define			GET_APIC_LOGICAL_ID(x)	(((x)>>24)&0xFFu)
+-#define			SET_APIC_LOGICAL_ID(x)	(((x)<<24))
+-#define			APIC_ALL_CPUS		0xFFu
+-#define		APIC_DFR	0xE0
+-#define			APIC_DFR_CLUSTER		0x0FFFFFFFul
+-#define			APIC_DFR_FLAT			0xFFFFFFFFul
+-#define		APIC_SPIV	0xF0
+-#define			APIC_SPIV_FOCUS_DISABLED	(1<<9)
+-#define			APIC_SPIV_APIC_ENABLED		(1<<8)
+-#define		APIC_ISR	0x100
+-#define		APIC_ISR_NR	0x8	/* Number of 32 bit ISR registers. */
+-#define		APIC_TMR	0x180
+-#define 	APIC_IRR	0x200
+-#define 	APIC_ESR	0x280
+-#define			APIC_ESR_SEND_CS	0x00001
+-#define			APIC_ESR_RECV_CS	0x00002
+-#define			APIC_ESR_SEND_ACC	0x00004
+-#define			APIC_ESR_RECV_ACC	0x00008
+-#define			APIC_ESR_SENDILL	0x00020
+-#define			APIC_ESR_RECVILL	0x00040
+-#define			APIC_ESR_ILLREGA	0x00080
+-#define		APIC_ICR	0x300
+-#define			APIC_DEST_SELF		0x40000
+-#define			APIC_DEST_ALLINC	0x80000
+-#define			APIC_DEST_ALLBUT	0xC0000
+-#define			APIC_ICR_RR_MASK	0x30000
+-#define			APIC_ICR_RR_INVALID	0x00000
+-#define			APIC_ICR_RR_INPROG	0x10000
+-#define			APIC_ICR_RR_VALID	0x20000
+-#define			APIC_INT_LEVELTRIG	0x08000
+-#define			APIC_INT_ASSERT		0x04000
+-#define			APIC_ICR_BUSY		0x01000
+-#define			APIC_DEST_LOGICAL	0x00800
+-#ifndef CONFIG_X86_32
+-#define			APIC_DEST_PHYSICAL	0x00000
+-#endif
+-#define			APIC_DM_FIXED		0x00000
+-#define			APIC_DM_LOWEST		0x00100
+-#define			APIC_DM_SMI		0x00200
+-#define			APIC_DM_REMRD		0x00300
+-#define			APIC_DM_NMI		0x00400
+-#define			APIC_DM_INIT		0x00500
+-#define			APIC_DM_STARTUP		0x00600
+-#define			APIC_DM_EXTINT		0x00700
+-#define			APIC_VECTOR_MASK	0x000FF
+-#define		APIC_ICR2	0x310
+-#define			GET_APIC_DEST_FIELD(x)	(((x)>>24)&0xFF)
+-#define			SET_APIC_DEST_FIELD(x)	((x)<<24)
+-#define		APIC_LVTT	0x320
+-#define		APIC_LVTTHMR	0x330
+-#define		APIC_LVTPC	0x340
+-#define		APIC_LVT0	0x350
+-#define			APIC_LVT_TIMER_BASE_MASK	(0x3<<18)
+-#define			GET_APIC_TIMER_BASE(x)		(((x)>>18)&0x3)
+-#define			SET_APIC_TIMER_BASE(x)		(((x)<<18))
+-#define			APIC_TIMER_BASE_CLKIN		0x0
+-#define			APIC_TIMER_BASE_TMBASE		0x1
+-#define			APIC_TIMER_BASE_DIV		0x2
+-#define			APIC_LVT_TIMER_PERIODIC		(1<<17)
+-#define			APIC_LVT_MASKED			(1<<16)
+-#define			APIC_LVT_LEVEL_TRIGGER		(1<<15)
+-#define			APIC_LVT_REMOTE_IRR		(1<<14)
+-#define			APIC_INPUT_POLARITY		(1<<13)
+-#define			APIC_SEND_PENDING		(1<<12)
+-#define			APIC_MODE_MASK			0x700
+-#define			GET_APIC_DELIVERY_MODE(x)	(((x)>>8)&0x7)
+-#define			SET_APIC_DELIVERY_MODE(x,y)	(((x)&~0x700)|((y)<<8))
+-#define				APIC_MODE_FIXED		0x0
+-#define				APIC_MODE_NMI		0x4
+-#define				APIC_MODE_EXTINT	0x7
+-#define 	APIC_LVT1	0x360
+-#define		APIC_LVTERR	0x370
+-#define		APIC_TMICT	0x380
+-#define		APIC_TMCCT	0x390
+-#define		APIC_TDCR	0x3E0
+-#define			APIC_TDR_DIV_TMBASE	(1<<2)
+-#define			APIC_TDR_DIV_1		0xB
+-#define			APIC_TDR_DIV_2		0x0
+-#define			APIC_TDR_DIV_4		0x1
+-#define			APIC_TDR_DIV_8		0x2
+-#define			APIC_TDR_DIV_16		0x3
+-#define			APIC_TDR_DIV_32		0x8
+-#define			APIC_TDR_DIV_64		0x9
+-#define			APIC_TDR_DIV_128	0xA
+-
+-#define APIC_BASE (fix_to_virt(FIX_APIC_BASE))
+-
+-#ifdef CONFIG_X86_32
+-#define MAX_IO_APICS 64
+-#else
+-#define MAX_IO_APICS 128
+-#define MAX_LOCAL_APIC 256
+-#define BAD_APICID 0xFFu
+-
+-/*
+- * All x86-64 systems are xAPIC compatible.
+- * In the following, "apicid" is a physical APIC ID.
+- */
+-#define XAPIC_DEST_CPUS_SHIFT	4
+-#define XAPIC_DEST_CPUS_MASK	((1u << XAPIC_DEST_CPUS_SHIFT) - 1)
+-#define XAPIC_DEST_CLUSTER_MASK	(XAPIC_DEST_CPUS_MASK << XAPIC_DEST_CPUS_SHIFT)
+-#define APIC_CLUSTER(apicid)	((apicid) & XAPIC_DEST_CLUSTER_MASK)
+-#define APIC_CLUSTERID(apicid)	(APIC_CLUSTER(apicid) >> XAPIC_DEST_CPUS_SHIFT)
+-#define APIC_CPUID(apicid)	((apicid) & XAPIC_DEST_CPUS_MASK)
+-#define NUM_APIC_CLUSTERS	((BAD_APICID + 1) >> XAPIC_DEST_CPUS_SHIFT)
+-#endif
+-
+-/*
+- * the local APIC register structure, memory mapped. Not terribly well
+- * tested, but we might eventually use this one in the future - the
+- * problem why we cannot use it right now is the P5 APIC, it has an
+- * errata which cannot take 8-bit reads and writes, only 32-bit ones ...
+- */
+-#define u32 unsigned int
+-
+-struct local_apic {
+-
+-/*000*/	struct { u32 __reserved[4]; } __reserved_01;
+-
+-/*010*/	struct { u32 __reserved[4]; } __reserved_02;
+-
+-/*020*/	struct { /* APIC ID Register */
+-		u32   __reserved_1	: 24,
+-			phys_apic_id	:  4,
+-			__reserved_2	:  4;
+-		u32 __reserved[3];
+-	} id;
+-
+-/*030*/	const
+-	struct { /* APIC Version Register */
+-		u32   version		:  8,
+-			__reserved_1	:  8,
+-			max_lvt		:  8,
+-			__reserved_2	:  8;
+-		u32 __reserved[3];
+-	} version;
+-
+-/*040*/	struct { u32 __reserved[4]; } __reserved_03;
+-
+-/*050*/	struct { u32 __reserved[4]; } __reserved_04;
+-
+-/*060*/	struct { u32 __reserved[4]; } __reserved_05;
+-
+-/*070*/	struct { u32 __reserved[4]; } __reserved_06;
+-
+-/*080*/	struct { /* Task Priority Register */
+-		u32   priority	:  8,
+-			__reserved_1	: 24;
+-		u32 __reserved_2[3];
+-	} tpr;
+-
+-/*090*/	const
+-	struct { /* Arbitration Priority Register */
+-		u32   priority	:  8,
+-			__reserved_1	: 24;
+-		u32 __reserved_2[3];
+-	} apr;
+-
+-/*0A0*/	const
+-	struct { /* Processor Priority Register */
+-		u32   priority	:  8,
+-			__reserved_1	: 24;
+-		u32 __reserved_2[3];
+-	} ppr;
+-
+-/*0B0*/	struct { /* End Of Interrupt Register */
+-		u32   eoi;
+-		u32 __reserved[3];
+-	} eoi;
+-
+-/*0C0*/	struct { u32 __reserved[4]; } __reserved_07;
+-
+-/*0D0*/	struct { /* Logical Destination Register */
+-		u32   __reserved_1	: 24,
+-			logical_dest	:  8;
+-		u32 __reserved_2[3];
+-	} ldr;
+-
+-/*0E0*/	struct { /* Destination Format Register */
+-		u32   __reserved_1	: 28,
+-			model		:  4;
+-		u32 __reserved_2[3];
+-	} dfr;
+-
+-/*0F0*/	struct { /* Spurious Interrupt Vector Register */
+-		u32	spurious_vector	:  8,
+-			apic_enabled	:  1,
+-			focus_cpu	:  1,
+-			__reserved_2	: 22;
+-		u32 __reserved_3[3];
+-	} svr;
+-
+-/*100*/	struct { /* In Service Register */
+-/*170*/		u32 bitfield;
+-		u32 __reserved[3];
+-	} isr [8];
+-
+-/*180*/	struct { /* Trigger Mode Register */
+-/*1F0*/		u32 bitfield;
+-		u32 __reserved[3];
+-	} tmr [8];
+-
+-/*200*/	struct { /* Interrupt Request Register */
+-/*270*/		u32 bitfield;
+-		u32 __reserved[3];
+-	} irr [8];
+-
+-/*280*/	union { /* Error Status Register */
+-		struct {
+-			u32   send_cs_error			:  1,
+-				receive_cs_error		:  1,
+-				send_accept_error		:  1,
+-				receive_accept_error		:  1,
+-				__reserved_1			:  1,
+-				send_illegal_vector		:  1,
+-				receive_illegal_vector		:  1,
+-				illegal_register_address	:  1,
+-				__reserved_2			: 24;
+-			u32 __reserved_3[3];
+-		} error_bits;
+-		struct {
+-			u32 errors;
+-			u32 __reserved_3[3];
+-		} all_errors;
+-	} esr;
+-
+-/*290*/	struct { u32 __reserved[4]; } __reserved_08;
+-
+-/*2A0*/	struct { u32 __reserved[4]; } __reserved_09;
+-
+-/*2B0*/	struct { u32 __reserved[4]; } __reserved_10;
+-
+-/*2C0*/	struct { u32 __reserved[4]; } __reserved_11;
+-
+-/*2D0*/	struct { u32 __reserved[4]; } __reserved_12;
+-
+-/*2E0*/	struct { u32 __reserved[4]; } __reserved_13;
+-
+-/*2F0*/	struct { u32 __reserved[4]; } __reserved_14;
+-
+-/*300*/	struct { /* Interrupt Command Register 1 */
+-		u32   vector			:  8,
+-			delivery_mode		:  3,
+-			destination_mode	:  1,
+-			delivery_status		:  1,
+-			__reserved_1		:  1,
+-			level			:  1,
+-			trigger			:  1,
+-			__reserved_2		:  2,
+-			shorthand		:  2,
+-			__reserved_3		:  12;
+-		u32 __reserved_4[3];
+-	} icr1;
+-
+-/*310*/	struct { /* Interrupt Command Register 2 */
+-		union {
+-			u32   __reserved_1	: 24,
+-				phys_dest	:  4,
+-				__reserved_2	:  4;
+-			u32   __reserved_3	: 24,
+-				logical_dest	:  8;
+-		} dest;
+-		u32 __reserved_4[3];
+-	} icr2;
+-
+-/*320*/	struct { /* LVT - Timer */
+-		u32   vector		:  8,
+-			__reserved_1	:  4,
+-			delivery_status	:  1,
+-			__reserved_2	:  3,
+-			mask		:  1,
+-			timer_mode	:  1,
+-			__reserved_3	: 14;
+-		u32 __reserved_4[3];
+-	} lvt_timer;
+-
+-/*330*/	struct { /* LVT - Thermal Sensor */
+-		u32  vector		:  8,
+-			delivery_mode	:  3,
+-			__reserved_1	:  1,
+-			delivery_status	:  1,
+-			__reserved_2	:  3,
+-			mask		:  1,
+-			__reserved_3	: 15;
+-		u32 __reserved_4[3];
+-	} lvt_thermal;
+-
+-/*340*/	struct { /* LVT - Performance Counter */
+-		u32   vector		:  8,
+-			delivery_mode	:  3,
+-			__reserved_1	:  1,
+-			delivery_status	:  1,
+-			__reserved_2	:  3,
+-			mask		:  1,
+-			__reserved_3	: 15;
+-		u32 __reserved_4[3];
+-	} lvt_pc;
+-
+-/*350*/	struct { /* LVT - LINT0 */
+-		u32   vector		:  8,
+-			delivery_mode	:  3,
+-			__reserved_1	:  1,
+-			delivery_status	:  1,
+-			polarity	:  1,
+-			remote_irr	:  1,
+-			trigger		:  1,
+-			mask		:  1,
+-			__reserved_2	: 15;
+-		u32 __reserved_3[3];
+-	} lvt_lint0;
+-
+-/*360*/	struct { /* LVT - LINT1 */
+-		u32   vector		:  8,
+-			delivery_mode	:  3,
+-			__reserved_1	:  1,
+-			delivery_status	:  1,
+-			polarity	:  1,
+-			remote_irr	:  1,
+-			trigger		:  1,
+-			mask		:  1,
+-			__reserved_2	: 15;
+-		u32 __reserved_3[3];
+-	} lvt_lint1;
+-
+-/*370*/	struct { /* LVT - Error */
+-		u32   vector		:  8,
+-			__reserved_1	:  4,
+-			delivery_status	:  1,
+-			__reserved_2	:  3,
+-			mask		:  1,
+-			__reserved_3	: 15;
+-		u32 __reserved_4[3];
+-	} lvt_error;
+-
+-/*380*/	struct { /* Timer Initial Count Register */
+-		u32   initial_count;
+-		u32 __reserved_2[3];
+-	} timer_icr;
+-
+-/*390*/	const
+-	struct { /* Timer Current Count Register */
+-		u32   curr_count;
+-		u32 __reserved_2[3];
+-	} timer_ccr;
+-
+-/*3A0*/	struct { u32 __reserved[4]; } __reserved_16;
+-
+-/*3B0*/	struct { u32 __reserved[4]; } __reserved_17;
+-
+-/*3C0*/	struct { u32 __reserved[4]; } __reserved_18;
+-
+-/*3D0*/	struct { u32 __reserved[4]; } __reserved_19;
+-
+-/*3E0*/	struct { /* Timer Divide Configuration Register */
+-		u32   divisor		:  4,
+-			__reserved_1	: 28;
+-		u32 __reserved_2[3];
+-	} timer_dcr;
+-
+-/*3F0*/	struct { u32 __reserved[4]; } __reserved_20;
+-
+-} __attribute__ ((packed));
+-
+-#undef u32
+-
+-#endif
 
 -- 
 Advanced Micro Devices, Inc.
