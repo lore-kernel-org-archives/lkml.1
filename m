@@ -1,70 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756732AbXKFKkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757126AbXKFKos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756732AbXKFKkv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 05:40:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbXKFKkn
+	id S1757126AbXKFKos (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 05:44:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754619AbXKFKol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 05:40:43 -0500
-Received: from [212.12.190.251] ([212.12.190.251]:50372 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754215AbXKFKkn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 05:40:43 -0500
-From: Al Boldi <a1426z@gawab.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] init: Introduce rootdir bootparm to select which dir to sys_chroot
-Date: Tue, 6 Nov 2007 13:40:26 +0300
-User-Agent: KMail/1.5
-Cc: hpa@zytor.com, akpm@linux-foundation.org
+	Tue, 6 Nov 2007 05:44:41 -0500
+Received: from ftp.linux-mips.org ([194.74.144.162]:44481 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751991AbXKFKok (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 05:44:40 -0500
+Date: Tue, 6 Nov 2007 10:44:31 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] MIPS:  Delete now-unreferenced i2c-yosemite.h header
+	file.
+Message-ID: <20071106104431.GD24844@linux-mips.org>
+References: <Pine.LNX.4.64.0711060149350.3143@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711061340.26112.a1426z@gawab.com>
+In-Reply-To: <Pine.LNX.4.64.0711060149350.3143@localhost.localdomain>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Nov 06, 2007 at 01:55:12AM -0500, Robert P. J. Day wrote:
 
-This patch introduces a rootdir kernel boot parameter, which specifies the 
-path to the kernel sys_chroot boot dir.
+> Given that the corresponding source file i2c-yosemite.c file was
+> removed in commit daa4a68f901c4d6491baa1a01f5c869a553c3f6c, and that
+> no one else includes this file, it seems safe to delete it.
 
-This is useful for systems that have more than one distribution installed on 
-the same fs/partition.
+Thanks, queue for 2.6.25.
 
-
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Al Boldi <a1426z@gawab.com>
-
----
-
---- a/init/do_mounts.c
-+++ b/init/do_mounts.c
-@@ -252,6 +252,15 @@ __setup("rootflags=", root_data_setup);
- __setup("rootfstype=", fs_names_setup);
- __setup("rootdelay=", root_delay_setup);
- 
-+static char * __initdata root_dir;
-+static int __init root_dir_setup(char *str)
-+{
-+	root_dir = strcat("./",str);
-+	return 1;
-+}
-+
-+__setup("rootdir=", root_dir_setup);
-+
- static void __init get_fs_names(char *page)
- {
- 	char *s = page;
-@@ -469,6 +478,10 @@ void __init prepare_namespace(void)
- 	mount_root();
- out:
- 	sys_mount(".", "/", NULL, MS_MOVE, NULL);
-+
-+	if(root_dir)
-+		sys_chdir(root_dir);
-+
- 	sys_chroot(".");
- 	security_sb_post_mountroot();
- }
-
+  Ralf
