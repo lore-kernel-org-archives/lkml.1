@@ -1,39 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753802AbXKFNcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754071AbXKFNeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753802AbXKFNcs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 08:32:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbXKFNcj
+	id S1754071AbXKFNeU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 08:34:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbXKFNeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 08:32:39 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:44794 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751037AbXKFNcj (ORCPT
+	Tue, 6 Nov 2007 08:34:13 -0500
+Received: from coyote.holtmann.net ([217.160.111.169]:36285 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751729AbXKFNeM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 08:32:39 -0500
-Date: Tue, 6 Nov 2007 13:32:24 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       devel@openvz.org
-Subject: Re: [PATCH -net 2/2] Put proc_net_create() on death row
-Message-ID: <20071106133224.GA13120@infradead.org>
-References: <20071106122350.GB6215@localhost.sw.ru>
+	Tue, 6 Nov 2007 08:34:12 -0500
+Subject: Re: [PATCH]bluetooth rfcomm_dev refcount bug fix
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: linux-kernel@vger.kernel.org, bluez-devel@lists.sourceforge.net
+In-Reply-To: <20071106060028.GA3176@darkstar.te-china.tietoenator.com>
+References: <20071106060028.GA3176@darkstar.te-china.tietoenator.com>
+Content-Type: text/plain
+Date: Tue, 06 Nov 2007 14:33:50 +0100
+Message-Id: <1194356030.4763.18.camel@aeonflux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071106122350.GB6215@localhost.sw.ru>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 06, 2007 at 03:23:50PM +0300, Alexey Dobriyan wrote:
-> proc_net_create() stands on the way of shrinking the number of
-> interfaces one can use for /proc files, namely, it uses ->get_info
-> hook which will be converted, deprecated and deleted on its own
-> schedule.
+Hi Dave,
 
-It's just a trivial helper, so please just remove it once you've
-converted all users.
+> I'm afraid to be considered as spam ;)
+> 
+> (Due to timezone offset, I have to mail again and cann't wait for your
+> reply, sorry for the annoying)
+
+I am in a different timezone every other week. So nevermind ;)
+
+> I think the rfcomm_dev_put could be seperated from the rfcomm_dev_put,
+> it will be more straitforward then.
+> 
+> please consider below patch, tested on my side. thanks.
+
+That one looks totally wrong to me. Without even testing it, it will
+have side effects that you haven't run into yet. Unless the TTY core
+changed so much, this comments are there for a really good reason and
+the code is tested a lot.
+
+Also if you have to do two rfcomm_dev_put() in a row, then we are doing
+something really wrong and this tries to hide a real bug somewhere.
+
+Regards
+
+Marcel
+
 
