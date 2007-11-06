@@ -1,92 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754861AbXKFOF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbXKFOG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754861AbXKFOF4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 09:05:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbXKFOFs
+	id S1755330AbXKFOG2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 09:06:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228AbXKFOGU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 09:05:48 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:37915 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752273AbXKFOFr (ORCPT
+	Tue, 6 Nov 2007 09:06:20 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:14139 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752898AbXKFOGT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 09:05:47 -0500
+	Tue, 6 Nov 2007 09:06:19 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=i9gWr8mRXSWsCHKtwp1UqdC+80opHmWMQiNUNS1ewrDx1ipq8ez7TC+U7cW3PTHQ7934s0kEVX5ElW4TAeENvHr5L7J7KHOefFUn5MzK3T3MvrtUz/Z35RJBFMoK9SZqSGcw7Ulm2NxEmWnCYGsFGr6QGt9K8U954HYp+L596Vk=
-Date: Tue, 6 Nov 2007 16:05:13 +0200
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Kyle Moffett <mrmacman_g4@mac.com>,
-       Casey Schaufler <casey@schaufler-ca.com>, akpm@osdl.org,
-       torvalds@osdl.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser
-Message-ID: <20071106140504.GA6310@ubuntu>
-References: <472B8DAF.9080706@schaufler-ca.com> <20071103164303.GA26707@ubuntu> <20071106063305.GA26163@stusta.de> <C1C917F8-57EA-434C-9FD8-CB5A4EAF2653@mac.com> <20071106085651.GC26163@stusta.de> <20071106113359.GA6041@ubuntu> <20071106114738.GH26163@stusta.de> <1865922a0711060423ue81dbdct413b993e727f6f9@mail.gmail.com> <46B300CD-7A35-4E81-A0AE-EC2BB72016DD@mac.com> <20071106133446.GI26163@stusta.de>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=B7eZPvg/JSpfLN49J9OKVj/avSTIQwFMC4CrgczGLtUWNcvMwqpusVXmq+3XaumDQNp++WtZvJx23jNpmc1V+dz+ayVJceJbuE6Se8KlW7DFDXXXgKTXoo5ewTL14NoPeAuFYGRpyoJGm2OHUfWnqnA7J26GL6IKr2CasV1mNpY=
+Message-ID: <d120d5000711060606h66adacd8q4c1576f98389bf41@mail.gmail.com>
+Date: Tue, 6 Nov 2007 09:06:16 -0500
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: 2.6.23: no more free evdev devices - evdev leak?
+Cc: "Soeren Sonnenburg" <kernel@nn7.de>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Jiri Kosina" <jikos@jikos.cz>
+In-Reply-To: <20071105191341.9b9dd857.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071106133446.GI26163@stusta.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+References: <1193848484.5070.41.camel@localhost>
+	 <20071105191341.9b9dd857.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 06, 2007 at 02:34:46PM +0100, Adrian Bunk wrote:
-> On Tue, Nov 06, 2007 at 07:49:26AM -0500, Kyle Moffett wrote:
-> > On Nov 06, 2007, at 07:23:36, Ahmed S. Darwish wrote:
-> >> On 11/6/07, Adrian Bunk <bunk@kernel.org> wrote:
-> >>> On Tue, Nov 06, 2007 at 01:34:05PM +0200, Ahmed S. Darwish wrote:
-> >>>> As far as I understand the problem now, isspace() accepts the 0xa0 
-> >>>> character which might collide with some of UTF-8 encoded characters 
-> >>>> cause the high bit is set.
-> >>
-> >> I admit I'm not experienced in such encoding stuff, but shouldn't the 
-> >> ASCII and the ASCII-compatible UTF-8 encodings be enough for the labels?
-> >>
-> >>> It would not work if someone would e.g. give you UTF-16 encoded strings, 
-> >>> but I don't see this happening in practice.
-> >>
-> >> Won't this complicate the code too much ?
-> >
-> > Well the VFS (for example) certainly doesn't support any encodings other 
-> > than various extended-ASCII forms (which includes UTF-8).  Something like 
-> > UTF-16 has extra null characters in-between every normal character, and as 
-> > such would fail completely if passed to the VFS.
-> 
-> Good point.
-> 
-> > Personally I think that isspace() accepting character 0xA0 is a bug, as 
-> > there are several variants of extended ASCII only one of which has that 
-> > character as a space.  Others have it as ?? (accented A), etc.
-> 
-> But even then Smack would still have a similar problem with isgraph().
-> 
+On Nov 5, 2007 10:13 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Wed, 31 Oct 2007 16:34:44 +0000 Soeren Sonnenburg <kernel@nn7.de> wrote:
+>
+> > Dear all,
+>
+> (cc's added)
+>
+>
+> > whenever I do a suspend resume cycle the input device's numbers are
+> > increased until I finally run out of evdev devices. Is this a kernel
+> > problem or some userspace program (udev/...) creating new devices all
+> > the time?
 
-Great, To summarize the discussion. Will there be a problem in 
-accepting ASCII and the UTF-8 ASCII _subset_ _only_ and  return 
--EINVAL for all other cases/ecnodings ?.
+evdev marks the device slot as free as soon as evdev_disconnect is
+called which shoudl be called from input_unregister_device().
 
-i.e. The fragment I sent in a previous message:
+Could you please try sticking a printk in
+hidinput_disconnect(drivers/hid/hid-input.c) to verify that
+input_unregister_device is in fact being called?
 
-/* Filter UTF-8 non-ascii compatible bytes (> 0x7F) */
-if (!isascii(c)) return -EINVAL; 
-/* Filter unwanted ascii chars */
-if (!isspace(c) && !isgraph(c)) return -EINVAL; 
-
-> > In addition 
-> > the "canonical" internal text format of the kernel is UTF-8 as that 
-> > encoding can represent any character in any other encoding and it is 
-> > backwards-compatible with traditional ASCII.
-> > 
-> > Cheers,
-> > Kyle Moffett-
-> 
-> cu
-> Adrian
-> 
-
---
-Ahmed S. Darwish
-Homepage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
+-- 
+Dmitry
