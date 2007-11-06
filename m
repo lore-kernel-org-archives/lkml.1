@@ -1,110 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbXKFUn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757321AbXKFUnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754219AbXKFUn2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 15:43:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754726AbXKFUmR
+	id S1757321AbXKFUnn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 15:43:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754587AbXKFUmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 15:42:17 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:37214 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754485AbXKFUmO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 15:42:14 -0500
-Message-Id: <20071106204151.811746387@polymtl.ca>
-References: <20071106203724.620893371@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Tue, 06 Nov 2007 15:37:25 -0500
+	Tue, 6 Nov 2007 15:42:47 -0500
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:62007 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756181AbXKFUmp convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 15:42:45 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HAPRfMEdMROHU/2dsb2JhbACBWw
+Date: Tue, 6 Nov 2007 15:42:42 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: [patch 1/4] Create arch/Kconfig
-Content-Disposition: inline; filename=add-kconfig-to-arch.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue,  6 Nov 2007 20:41:52 +0000
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 0/4] Add ARCH_SUPPORTS_KPROBES (take 2)
+Message-ID: <20071106204242.GA18743@Krystal>
+References: <20071031010345.301342580@polymtl.ca> <20071106203931.06063bab@dhcp-255-175.norway.atmel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20071106203931.06063bab@dhcp-255-175.norway.atmel.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 15:32:48 up 3 days,  1:38,  4 users,  load average: 1.35, 0.95,
+	0.92
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Puts the content of arch/Kconfig in the "General setup" menu.
+* Haavard Skinnemoen (hskinnemoen@atmel.com) wrote:
+> On Tue, 30 Oct 2007 21:03:45 -0400
+> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> 
+> > take 2, using def_bool this time.
+> 
+> Currently, avr32 doesn't include kernel/Kconfig.instrumentation, but
+> defines KPROBES in arch/avr32/Kconfig.debug instead. I want to bring
+> avr32 in sync with everyone else, but that will obviously conflict with
+> this patchset.
+> 
+> Are these patches about to get merged or should I just send my stuff
+> upstream and ask you to rebase afterwards?
+> 
 
-Linus:
+I have not posted them to Andrew yet. I can do it right away, so you
+could rebase on them.
 
-> Should it come with a re-duplication of it's content into each
-> architecture, which was the case previously ? The oprofile and kprobes
-> menu entries were litteraly cut and pasted from one architecture to
-> another. Should we put its content in init/Kconfig then ?
+Mathieu
 
-I don't think it's a good idea to go back to making it per-architecture,
-although that extensive "depends on <list-of-archiectures-here>" might
-indicate that there certainly is room for cleanup there.
 
-And I don't think it's wrong keeping it in kernel/Kconfig.xyz per se, I
-just think it's wrong to (a) lump the code together when it really doesn't
-necessarily need to and (b) show it to users as some kind of choice that
-is tied together (whether it then has common code or not).
-
-On the per-architecture side, I do think it would be better to *not* have
-internal architecture knowledge in a generic file, and as such a line like
-
-        depends on X86_32 || IA64 || PPC || S390 || SPARC64 || X86_64 || AVR32
-
-really shouldn't exist in a file like kernel/Kconfig.instrumentation.
-
-It would be much better to do
-
-        depends on ARCH_SUPPORTS_KPROBES
-
-in that generic file, and then architectures that do support it would just
-have a
-
-        bool ARCH_SUPPORTS_KPROBES
-                default y
-
-in *their* architecture files. That would seem to be much more logical,
-and is readable both for arch maintainers *and* for people who have no
-clue - and don't care - about which architecture is supposed to support
-which interface...
-                   
-
-Sam Ravnborg:
-
-Stuff it into a new file: arch/Kconfig
-We can then extend this file to include all the 'trailing'
-Kconfig things that are anyway equal for all ARCHs.
-
-But it should be kept clean - so if we introduce such a file
-then we should use ARCH_HAS_whatever in the arch specific Kconfig
-files to enable stuff that is not shared.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Sam Ravnborg <sam@ravnborg.org>
----
- arch/Kconfig |    3 +++
- init/Kconfig |    2 ++
- 2 files changed, 5 insertions(+)
-
-Index: linux-2.6-lttng/init/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/init/Kconfig	2007-11-02 13:20:51.000000000 -0400
-+++ linux-2.6-lttng/init/Kconfig	2007-11-02 13:20:52.000000000 -0400
-@@ -644,6 +644,8 @@ config SLOB
- 
- endchoice
- 
-+source "arch/Kconfig"
-+
- endmenu		# General setup
- 
- config RT_MUTEXES
-Index: linux-2.6-lttng/arch/Kconfig
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/arch/Kconfig	2007-11-02 13:20:52.000000000 -0400
-@@ -0,0 +1,3 @@
-+#
-+# General architecture dependent options
-+#
+> Håvard
 
 -- 
 Mathieu Desnoyers
