@@ -1,72 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbXKFO5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754778AbXKFO7p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755625AbXKFO5b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 09:57:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbXKFO5X
+	id S1754778AbXKFO7p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 09:59:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbXKFO7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 09:57:23 -0500
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:33380 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751729AbXKFO5V (ORCPT
+	Tue, 6 Nov 2007 09:59:38 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:49334 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752605AbXKFO7h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 09:57:21 -0500
-Date: Tue, 6 Nov 2007 20:21:19 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: akpm@linux-foundation.org
-Cc: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
-       wei.zhang@freescale.com, ebony.zhu@freescale.com,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: mm snapshot broken-out-2007-11-06-02-32.tar.gz uploaded - Build Failure at fsldma.c
-Message-ID: <20071106145119.GA32391@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+	Tue, 6 Nov 2007 09:59:37 -0500
+Date: Tue, 6 Nov 2007 15:59:13 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: pavel@ucw.cz, torvalds@linux-foundation.org, darwish.07@gmail.com,
+       casey@schaufler-ca.com, akpm@linux-foundation.org,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       viro@ftp.linux.org.uk
+Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser
+Message-ID: <20071106145913.GM26163@stusta.de>
+References: <alpine.LFD.0.999.0711050818200.15101@woody.linux-foundation.org> <200711060656.ADF87510.tJLVFOHOFSOFMQ@I-love.SAKURA.ne.jp> <20071106100035.GE26163@stusta.de> <200711062127.CBC60981.tQOOSVFHJFOFML@I-love.SAKURA.ne.jp> <20071106135845.GJ26163@stusta.de> <200711062332.DFH35933.FtQLMSOOOVHJFF@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200711062332.DFH35933.FtQLMSOOOVHJFF@I-love.SAKURA.ne.jp>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On Tue, Nov 06, 2007 at 11:32:15PM +0900, Tetsuo Handa wrote:
+> Hello.
+> 
+> Adrian Bunk wrote:
+> > And \* is not a replacement for \?. It's quite common to have both ways 
+> > to express "one character" and to express "at least one character", and 
+> > both have their use cases and will get used if available.
+> You can use \? to represent "one character" and
+> \?\* to represent "at least one character".
 
-The build fails with error
+Not "one character", it's "one byte".
 
-  CC      net/9p/error.o
-drivers/dma/fsldma.h:152: error: conflicting types for ‘in_be64’
-include/asm/io.h:136: error: previous definition of ‘in_be64’ was here
-drivers/dma/fsldma.h:157: error: conflicting types for ‘out_be64’
-include/asm/io.h:135: error: previous definition of ‘out_be64’ was here
-drivers/dma/fsldma.h:164: error: conflicting types for ‘in_le64’
-include/asm/io.h:140: error: previous definition of ‘in_le64’ was here
-drivers/dma/fsldma.h:169: error: conflicting types for ‘out_le64’
-include/asm/io.h:145: error: previous definition of ‘out_le64’ was here
-drivers/dma/fsldma.c:504: error: implicit declaration of function ‘bus_to_virt’
-make[2]: *** [drivers/dma/fsldma.o] Error 1
-make[1]: *** [drivers/dma] Error 2
-make: *** [drivers] Error 2
+> > But the problem is that in your code you only match one byte for \?, 
+> > and this might or might not be equal to one character.
+> "one byte" is almost equal to "one character".
+> "\?" matches to one of the following types.
+> 
+> *  1 ASCII printable character (for 0x21-0x2E or 0x30-0x5B or 0x5D-0x7E)
+> *  2 ASCII printable characters \\ (for 0x5C, which means single "\")
+> *  4 ASCII printable characters \ooo (for 0x01-0x20 or 0x7F-0xFF, where "ooo" is octal value)
+> 
+> These 3 types represents one *byte*.
+> I want to say "\? matches to one character",
+> but since expression of a character depends on the value of that byte,
+> I'm saying "\? matches to one *byte* character" instead.
+> Well, this sentence might be confusing, but how can I express more accurately?
 
-This error is caused by the patch add-dma-engine-driver-for-freescale-mpc85xx-processors.patch
+The problem is that your code matches one byte, not one character.
 
-The following patch solves the conflict types error, but the bus_to_virt
-is under the CONFIG_PPC32 ifdef and we had a discuss on the same for the
-availability of the function for ppc64 at http://lkml.org/lkml/2007/10/17/524
+More or less all userspace programs handle multi-byte UTF-8 characters 
+just fine without bothering the user with the fact whether a character 
+consists of one or more bytes.
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
---
---- linux-2.6.24-rc1/drivers/dma/fsldma.h	2007-11-06 09:12:09.000000000 -0500
-+++ linux-2.6.24-rc1/drivers/dma/~fsldma.h	2007-11-06 09:12:31.000000000 -0500
-@@ -147,7 +147,7 @@ struct fsl_dma_chan {
- #define to_fsl_desc(lh) container_of(lh, struct fsl_desc_sw, node)
- #define tx_to_fsl_desc(tx) container_of(tx, struct fsl_desc_sw, async_tx)
- 
--#ifndef __powerpc64
-+#ifndef __powerpc64__
- static u64 in_be64(const u64 __iomem *addr)
- {
- 	return ((u64)in_be32((u32 *)addr) << 32) | (in_be32((u32 *)addr + 1));
+And users will try to use this \? for matching one character when 
+writing a pattern that denies access.
 
---
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+That's not just a documentation problem.
+
+> Thanks.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
