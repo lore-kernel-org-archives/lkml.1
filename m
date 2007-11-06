@@ -1,158 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755551AbXKFWhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755808AbXKFWmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755551AbXKFWhY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 17:37:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbXKFWhM
+	id S1755808AbXKFWmk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 17:42:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754386AbXKFWmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 17:37:12 -0500
-Received: from sitemail2.everyone.net ([216.200.145.36]:33740 "EHLO
-	omta16.mta.everyone.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754194AbXKFWhL (ORCPT
+	Tue, 6 Nov 2007 17:42:32 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:48453 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754406AbXKFWmb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 17:37:11 -0500
-X-Eon-Dm: dm43
-X-Eon-Sig: AQEbFf9HMOxu5BYWPgIAAAAE,4e4720edfc377e88e2da74a617ac3dc1
-Message-ID: <4730EC6D.7040709@us.ibm.com>
-Date: Tue, 06 Nov 2007 14:36:29 -0800
-From: Mike Mason <mmlnx@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Tue, 6 Nov 2007 17:42:31 -0500
+Date: Tue, 6 Nov 2007 23:42:06 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: pavel@ucw.cz, torvalds@linux-foundation.org, darwish.07@gmail.com,
+       casey@schaufler-ca.com, akpm@linux-foundation.org,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       viro@ftp.linux.org.uk
+Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser
+Message-ID: <20071106224206.GN26163@stusta.de>
+References: <20071106100035.GE26163@stusta.de> <200711062127.CBC60981.tQOOSVFHJFOFML@I-love.SAKURA.ne.jp> <20071106135845.GJ26163@stusta.de> <200711062332.DFH35933.FtQLMSOOOVHJFF@I-love.SAKURA.ne.jp> <20071106145913.GM26163@stusta.de> <200711070027.GCH09822.QFFSOOFHJtLVOM@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: ltt-dev@shafik.org, linux-kernel@vger.kernel.org,
-       systemtap@sources.redhat.com
-Subject: Re: [to-be-posted-soon] Multiple handlers per marker
-References: <472A345C.2010208@us.ibm.com> <20071101221530.GC19700@Krystal> <20071102033654.GA1301@Krystal> <20071104232442.GA32320@Krystal> <472F9D63.7010906@us.ibm.com> <20071105231735.GA620@Krystal>
-In-Reply-To: <20071105231735.GA620@Krystal>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200711070027.GCH09822.QFFSOOFHJtLVOM@I-love.SAKURA.ne.jp>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> * Mike Mason (mmlnx@us.ibm.com) wrote:
->> Mathieu Desnoyers wrote:
->>> * Mathieu Desnoyers (compudj@krystal.dyndns.org) wrote:
->>>> * Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
->>>>> * Mike Mason (mmlnx@us.ibm.com) wrote:
->>>>>> Hi Mathieu,
->>>>>>
->>>>>> Are you aware of any working being done to allow multiple handlers to 
->>>>>> be attached to a marker?  Something like what kprobes allows.  I've 
->>>>>> started to look into this and don't want to duplicate efforts.
->>>>>>
->>>>> Nope, but I know we will have to address this.
->>>>>
->>>>> Something along the lines of walking an RCU list of function pointers,
->>>>> calling them.
->>>>>
->>>>> The only downside I see is that we will have to pass a va_list * instead
->>>>> of real va args. The could make the marker site a little bit bigger and
->>>>> will change the probe callback arguments.
->>>>>
->>>>> What do you think about these ideas ?
->>>>>
->>>>> If we can find a way to make the common case (only one probe connected)
->>>>> _ultra_ fast, and yet architecture independent, that would be awesome. A
->>>>> simple call is kind of hard to beat though.. So we may have to think
->>>>> about a design with :
->>>>>
->>>>> - One call at the marker site
->>>>> - if 1 probe is installed :
->>>>>   - If the format string is empty, connect a probe without va args.
->>>>>   - If the format string is not empty, connect a "stage 1" probe that 
->>>>> takes
->>>>>     the va args, starts/ends the va_list and calls _one_ function (let's
->>>>>     call it "stage 2" probe), that takes va_list as parameter.
->>>>> - if more than 1 probe is installed :
->>>>>   - The stage 1 probe creates the va_list and passes it to each function
->>>>>     connected, iterated with an RCU list.
->>>>>
->>>>> What do you think ?
->>>>>
->>>>> Mathieu
->>>>>
->>>> I'm working on an implementation.
->>>>
->>> It's ready for testing. Please grab
->>> http://ltt.polymtl.ca/lttng/patch-2.6.24-rc1-git13-lttng-0.10-pre18.tar.bz2
->>> patch name :
->>> markers-support-multiple-probes.patch
->> This patch alone doesn't apply cleanly at all on 2.6.24-rc1-git14.  Are 
->> there other patches in this series I should apply first?
->>
+On Wed, Nov 07, 2007 at 12:27:04AM +0900, Tetsuo Handa wrote:
+> Hello.
 > 
-> Yes, the following ones should suffice :
+> Adrian Bunk wrote:
+> > The problem is that your code matches one byte, not one character.
+> > 
+> > More or less all userspace programs handle multi-byte UTF-8 characters 
+> > just fine without bothering the user with the fact whether a character 
+> > consists of one or more bytes.
+> I understood what you are saying.
 > 
-> # instrumentation menu removal
-> add-kconfig-to-arch.patch
-> add-arch-supports-oprofile.patch
-> add-arch-supports-kprobes.patch
-> move-kconfig-instrumentation-to-arch.patch
-> #
-> kprobes-use-mutex-for-insn-pages.patch
-> kprobes-dont-use-kprobes-mutex-in-arch-code.patch
-> kprobes-declare-kprobes-mutex-static.patch
-> declare-array.patch
-> text-edit-lock-architecture-independent-code.patch
-> text-edit-lock-alternative-i386-and-x86_64.patch
-> text-edit-lock-kprobes-architecture-independent.patch
-> text-edit-lock-kprobes-i386.patch
-> text-edit-lock-kprobes-x86_64.patch
-> text-edit-lock-i386-standardize-debug-rodata.patch
-> text-edit-lock-x86_64-standardize-debug-rodata.patch
-> #
-> immediate-values-architecture-independent-code.patch
-> immediate-values-kconfig-embedded.patch
-> immediate-values-move-kprobes-i386-restore-interrupt-to-kdebug-h.patch
-> add-asm-compat-to-x86.patch
-> immediate-values-i386-optimization.patch
-> immediate-values-powerpc-optimization.patch
-> immediate-values-documentation.patch
-> #
-> linux-kernel-markers-immediate-values.patch
-> #
-> markers-support-multiple-probes.patch
+> You are saying "a character" does not always consist of one byte,
+> while I'm saying "a character" does always consist of one byte.
 > 
-> Tell me if you still have rejects.
+> Yes, some userspace programs don't use strcmp()
+> since strcmp() can't handle some encodings like UTF-16.
+> But the kernel uses strcmp()
+> since the VFS related functions can't handle encodings
+> which contains '\0' in the pathname.
+> VFS related functions assume that '\0' is end-of-string marker.
+>...
 
-I applied the above patches to 2.6.24-rc1-git14.  They applied fine with just a few offsets until the last patch, which yielded this result:
+The common case isn't UTF-16, it's UTF-8.
 
-patching file include/linux/marker.h
-Hunk #5 succeeded at 162 with fuzz 2.
-patching file kernel/marker.c
-Hunk #14 FAILED at 534.
-Hunk #15 FAILED at 587.
-Hunk #16 FAILED at 621.
-Hunk #17 FAILED at 732.
-Hunk #18 FAILED at 769.
-Hunk #19 succeeded at 791 (offset 12 lines).
-5 out of 19 hunks FAILED -- saving rejects to file kernel/marker.c.rej
-patching file kernel/module.c
-Hunk #1 succeeded at 1998 (offset -3 lines).
-Hunk #2 succeeded at 2608 (offset -37 lines).
-Hunk #3 succeeded at 2651 with fuzz 1 (offset -3 lines).
-patching file include/linux/module.h
-Hunk #1 FAILED at 468.
-Hunk #2 succeeded at 572 (offset -2 lines).
-1 out of 2 hunks FAILED -- saving rejects to file include/linux/module.h.rej
-patching file samples/markers/probe-example.c
+And UTF-8 is both quite common and doesn't have this problem with '\0'.
 
-Mike
+> > And users will try to use this \? for matching one character when 
+> > writing a pattern that denies access.
+> Yes, but since this string is handled by the *kernel*,
+> I want users follow point of view of the kernel.
 
-> 
-> Mathieu
-> 
-> 
->> Mike
->>
->>> It still need to go through patchcheck.pl and some polishing, but it
->>> seems to work fine for me with multiple probes (the sample marker,
->>> sample probe and multiple instances of my lttng probes can
->>> connect/disconnect without problem).
->>> Currently, the "connect/disconnect" and "arm/disarm" operations are
->>> separate. However, they could be merged. Any comment/preference on this?
->>> Being separate, a probe provider can wait until the very last moment
->>> before it activates its markers, with a minimalistic impact on the
->>> system, but it is not such a strong argument.
->>> Mathieu
-> 
+Users are used to deal with characters and hot having to bother with all 
+the mess of different encodings.
+
+Having patterns that describe rules to deny access in an LSM breaking 
+this expectation is really a bad thing.
+
+> Thanks.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
