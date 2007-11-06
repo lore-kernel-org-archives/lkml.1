@@ -1,262 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756789AbXKFKUK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756928AbXKFKU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756789AbXKFKUK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 05:20:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754619AbXKFKT5
+	id S1756928AbXKFKU6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 05:20:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754619AbXKFKUt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 05:19:57 -0500
-Received: from rayleigh.systella.fr ([213.41.184.253]:44764 "EHLO
-	rayleigh.systella.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753958AbXKFKT4 (ORCPT
+	Tue, 6 Nov 2007 05:20:49 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:40980 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754885AbXKFKUr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 05:19:56 -0500
-Message-ID: <47303FB8.7000801@systella.fr>
-Date: Tue, 06 Nov 2007 11:19:36 +0100
-From: =?ISO-8859-1?Q?BERTRAND_Jo=EBl?= <joel.bertrand@systella.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux sparc64; fr-FR; rv:1.8.1.6) Gecko/20070802 Iceape/1.1.4 (Debian-1.1.4-1)
-MIME-Version: 1.0
-To: Dan Williams <dan.j.williams@intel.com>
-CC: Justin Piszcz <jpiszcz@lucidpixels.com>, Neil Brown <neilb@suse.de>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: 2.6.23.1: mdadm/raid5 hung/d-state
-References: <Pine.LNX.4.64.0711040658180.30831@p34.internal.lan>	 <18222.16003.92062.970530@notabene.brown>	 <Pine.LNX.4.64.0711041651250.23496@p34.internal.lan>	 <e9c3a7c20711051035m78ba90ck68f4fbc10480462a@mail.gmail.com>	 <Pine.LNX.4.64.0711051335450.11422@p34.internal.lan> <e9c3a7c20711051619u7054aab9l208b604b9e58fb61@mail.gmail.com>
-In-Reply-To: <e9c3a7c20711051619u7054aab9l208b604b9e58fb61@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 6 Nov 2007 05:20:47 -0500
+Subject: Re: writeout stalls in current -git
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Fengguang Wu <wfg@mail.ustc.edu.cn>, just.for.lkml@googlemail.com,
+       maximlevitsky@gmail.com, linux-kernel@vger.kernel.org, dgc@sgi.com,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <20071105155749.73e0e38e.akpm@linux-foundation.org>
+References: <393056632.00561@ustc.edu.cn>
+	 <200710221505.35397.maximlevitsky@gmail.com>
+	 <20071022131045.GA5357@mail.ustc.edu.cn> <393060478.03650@ustc.edu.cn>
+	 <64bb37e0710310822r5ca6b793p8fd97db2f72a8655@mail.gmail.com>
+	 <393903856.06449@ustc.edu.cn>
+	 <64bb37e0711011120i63cdfe3ci18995d57b6649a8@mail.gmail.com>
+	 <64bb37e0711011200n228e708eg255640388f83da22@mail.gmail.com>
+	 <E1InmAI-0003ME-2i@localhost> <1193998532.27652.343.camel@twins>
+	 <393999615.15343@ustc.edu.cn>
+	 <20071105155749.73e0e38e.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 06 Nov 2007 11:20:41 +0100
+Message-Id: <1194344441.6289.8.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-3.1.8 (rayleigh.systella.fr [192.168.254.1]); Tue, 06 Nov 2007 11:19:42 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Done. Here is obtained ouput :
+On Mon, 2007-11-05 at 15:57 -0800, Andrew Morton wrote:
 
-[ 1260.967796] for sector 7629696, rmw=0 rcw=0
-[ 1260.969314] handling stripe 7629696, state=0x14 cnt=1, pd_idx=2 ops=0:0:0
-[ 1260.980606] check 5: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ffcffcc0 written 0000000000000000
-[ 1260.994808] check 4: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fdd4e360 written 0000000000000000
-[ 1261.009325] check 3: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1261.244478] check 2: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1261.270821] check 1: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ff517e40 written 0000000000000000
-[ 1261.312320] check 0: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fd4cae60 written 0000000000000000
-[ 1261.361030] locked=4 uptodate=2 to_read=0 to_write=4 failed=0 
-failed_num=0
-[ 1261.443120] for sector 7629696, rmw=0 rcw=0
-[ 1261.453348] handling stripe 7629696, state=0x14 cnt=1, pd_idx=2 ops=0:0:0
-[ 1261.491538] check 5: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ffcffcc0 written 0000000000000000
-[ 1261.529120] check 4: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fdd4e360 written 0000000000000000
-[ 1261.560151] check 3: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1261.599180] check 2: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1261.637138] check 1: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ff517e40 written 0000000000000000
-[ 1261.674502] check 0: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fd4cae60 written 0000000000000000
-[ 1261.712589] locked=4 uptodate=2 to_read=0 to_write=4 failed=0 
-failed_num=0
-[ 1261.864338] for sector 7629696, rmw=0 rcw=0
-[ 1261.873475] handling stripe 7629696, state=0x14 cnt=1, pd_idx=2 ops=0:0:0
-[ 1261.907840] check 5: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ffcffcc0 written 0000000000000000
-[ 1261.950770] check 4: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fdd4e360 written 0000000000000000
-[ 1261.989003] check 3: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1262.019621] check 2: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1262.068705] check 1: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ff517e40 written 0000000000000000
-[ 1262.113265] check 0: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fd4cae60 written 0000000000000000
-[ 1262.150511] locked=4 uptodate=2 to_read=0 to_write=4 failed=0 
-failed_num=0
-[ 1262.171143] for sector 7629696, rmw=0 rcw=0
-[ 1262.179142] handling stripe 7629696, state=0x14 cnt=1, pd_idx=2 ops=0:0:0
-[ 1262.201905] check 5: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ffcffcc0 written 0000000000000000
-[ 1262.252750] check 4: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fdd4e360 written 0000000000000000
-[ 1262.289631] check 3: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1262.344709] check 2: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1262.400411] check 1: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ff517e40 written 0000000000000000
-[ 1262.437353] check 0: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fd4cae60 written 0000000000000000
-[ 1262.492561] locked=4 uptodate=2 to_read=0 to_write=4 failed=0 
-failed_num=0
-[ 1262.524993] for sector 7629696, rmw=0 rcw=0
-[ 1262.533314] handling stripe 7629696, state=0x14 cnt=1, pd_idx=2 ops=0:0:0
-[ 1262.561900] check 5: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ffcffcc0 written 0000000000000000
-[ 1262.588986] check 4: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fdd4e360 written 0000000000000000
-[ 1262.619455] check 3: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1262.671006] check 2: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1262.709065] check 1: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ff517e40 written 0000000000000000
-[ 1262.746904] check 0: state 0x6 toread 0000000000000000 read 
-0000000000000000
-write fffff800fd4cae60 written 0000000000000000
-[ 1262.780203] locked=4 uptodate=2 to_read=0 to_write=4 failed=0 
-failed_num=0
-[ 1262.805941] for sector 7629696, rmw=0 rcw=0
-[ 1262.815759] handling stripe 7629696, state=0x14 cnt=1, pd_idx=2 ops=0:0:0
-[ 1262.850115] check 5: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ffcffcc0 written 0000000000000000
-[ 1262.893254] check 4: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fdd4e360 written 0000000000000000
-[ 1262.931227] check 3: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1262.979417] check 2: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1263.017059] check 1: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ff517e40 written 0000000000000000
-[ 1263.067023] check 0: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fd4cae60 written 0000000000000000
-[ 1263.104531] locked=4 uptodate=2 to_read=0 to_write=4 failed=0 
-failed_num=0
-[ 1263.452465] for sector 7629696, rmw=0 rcw=0
-[ 1263.460875] handling stripe 7629696, state=0x14 cnt=1, pd_idx=2 ops=0:0:0
-[ 1263.490828] check 5: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ffcffcc0 written 0000000000000000
-[ 1263.518608] check 4: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fdd4e360 written 0000000000000000
-[ 1263.555348] check 3: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1263.593250] check 2: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1263.655904] check 1: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ff517e40 written 0000000000000000
-[ 1263.707175] check 0: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fd4cae60 written 0000000000000000
-[ 1263.744877] locked=4 uptodate=2 to_read=0 to_write=4 failed=0 
-failed_num=0
-[ 1263.764939] for sector 7629696, rmw=0 rcw=0
-[ 1263.773640] handling stripe 7629696, state=0x14 cnt=1, pd_idx=2 ops=0:0:0
-[ 1263.802799] check 5: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ffcffcc0 written 0000000000000000
-[ 1263.840684] check 4: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fdd4e360 written 0000000000000000
-[ 1263.879844] check 3: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1263.917788] check 2: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1263.963288] check 1: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ff517e40 written 0000000000000000
-[ 1264.007020] check 0: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fd4cae60 written 0000000000000000
-[ 1264.044718] locked=4 uptodate=2 to_read=0 to_write=4 failed=0 
-failed_num=0
-[ 1264.063690] for sector 7629696, rmw=0 rcw=0
-[ 1264.071938] handling stripe 7629696, state=0x14 cnt=1, pd_idx=2 ops=0:0:0
-[ 1264.100608] check 5: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ffcffcc0 written 0000000000000000
-[ 1264.138977] check 4: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fdd4e360 written 0000000000000000
-[ 1264.170593] check 3: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1264.214718] check 2: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1264.259371] check 1: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ff517e40 written 0000000000000000
-[ 1264.296140] check 0: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fd4cae60 written 0000000000000000
-[ 1264.335221] locked=4 uptodate=2 to_read=0 to_write=4 failed=0 
-failed_num=0
-[ 1264.354767] for sector 7629696, rmw=0 rcw=0
-[ 1264.363279] handling stripe 7629696, state=0x14 cnt=1, pd_idx=2 ops=0:0:0
-[ 1264.399971] check 5: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ffcffcc0 written 0000000000000000
-[ 1264.454607] check 4: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fdd4e360 written 0000000000000000
-[ 1264.510498] check 3: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1264.548240] check 2: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1264.585633] check 1: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ff517e40 written 0000000000000000
-[ 1264.622707] check 0: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fd4cae60 written 0000000000000000
-[ 1264.660464] locked=4 uptodate=2 to_read=0 to_write=4 failed=0 
-failed_num=0
-[ 1264.680185] for sector 7629696, rmw=0 rcw=0
-[ 1264.688775] handling stripe 7629696, state=0x14 cnt=1, pd_idx=2 ops=0:0:0
-[ 1264.717231] check 5: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ffcffcc0 written 0000000000000000
-[ 1264.760881] check 4: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fdd4e360 written 0000000000000000
-[ 1264.797532] check 3: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1264.833996] check 2: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1264.870709] check 1: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ff517e40 written 0000000000000000
-[ 1264.901594] check 0: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fd4cae60 written 0000000000000000
-[ 1264.940015] locked=4 uptodate=2 to_read=0 to_write=4 failed=0 
-failed_num=0
-[ 1264.959415] for sector 7629696, rmw=0 rcw=0
-[ 1264.967595] handling stripe 7629696, state=0x14 cnt=1, pd_idx=2 ops=0:0:0
-[ 1264.996217] check 5: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ffcffcc0 written 0000000000000000
-[ 1265.046572] check 4: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fdd4e360 written 0000000000000000
-[ 1265.083599] check 3: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1265.109803] check 2: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1265.139780] check 1: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ff517e40 written 0000000000000000
-[ 1265.170751] check 0: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fd4cae60 written 0000000000000000
-[ 1265.517286] locked=4 uptodate=2 to_read=0 to_write=4 failed=0 
-failed_num=0
-[ 1265.533341] for sector 7629696, rmw=0 rcw=0
-[ 1265.541329] handling stripe 7629696, state=0x14 cnt=1, pd_idx=2 ops=0:0:0
-[ 1265.568846] check 5: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ffcffcc0 written 0000000000000000
-[ 1265.606657] check 4: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fdd4e360 written 0000000000000000
-[ 1265.649175] check 3: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1265.685075] check 2: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1265.727835] check 1: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ff517e40 written 0000000000000000
-[ 1265.764432] check 0: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fd4cae60 written 0000000000000000
-[ 1265.806241] locked=4 uptodate=2 to_read=0 to_write=4 failed=0 
-failed_num=0
-[ 1265.825835] for sector 7629696, rmw=0 rcw=0
-[ 1265.833817] handling stripe 7629696, state=0x14 cnt=1, pd_idx=2 ops=0:0:0
-[ 1265.862460] check 5: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800ffcffcc0 written 0000000000000000
-[ 1265.899068] check 4: state 0x6 toread 0000000000000000 read 
-0000000000000000 write fffff800fdd4e360 written 0000000000000000
-[ 1265.941328] check 3: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
-[ 1265.972129] check 2: state 0x1 toread 0000000000000000 read 
-0000000000000000 write 0000000000000000 written 0000000000000000
+> > > Subject: mm: speed up writeback ramp-up on clean systems
+> > > 
+> > > We allow violation of bdi limits if there is a lot of room on the
+> > > system. Once we hit half the total limit we start enforcing bdi limits
+> > > and bdi ramp-up should happen. Doing it this way avoids many small
+> > > writeouts on an otherwise idle system and should also speed up the
+> > > ramp-up.
+> 
+> Given the problems we're having in there I'm a bit reluctant to go tossing
+> hastily put together and inadequately tested stuff onto the fire.  And
+> that's what this patch looks like to me.
+
+Not really hastily, I think it was written before the stuff hit
+mainline. Inadequately tested, perhaps, its been in my and probably Wu's
+kernels for a while. Granted that's not a lot of testing in the face of
+those who have problems atm.
+
+> Wanna convince me otherwise?
+
+I'm perfectly happy with this patch earning its credits in -mm for a
+while and maybe going in around -rc4 or something like that (hoping that
+by then we've fixed these nagging issues).
+
+Another patch I did come up with yesterday - not driven by any problems
+in that area - could perhaps join this one on that path:
+
+---
+Subject: mm: bdi: tweak task dirty penalty
+
+Penalizing heavy dirtiers with 1/8-th the total dirty limit might be rather
+excessive on large memory machines. Use sqrt to scale it sub-linearly.
+
+Update the comment while we're there.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ mm/page-writeback.c |   12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+Index: linux-2.6-2/mm/page-writeback.c
+===================================================================
+--- linux-2.6-2.orig/mm/page-writeback.c
++++ linux-2.6-2/mm/page-writeback.c
+@@ -213,17 +213,21 @@ static inline void task_dirties_fraction
+ }
+ 
+ /*
+- * scale the dirty limit
++ * Task specific dirty limit:
+  *
+- * task specific dirty limit:
++ *   dirty -= 8 * sqrt(dirty) * p_{t}
+  *
+- *   dirty -= (dirty/8) * p_{t}
++ * Penalize tasks that dirty a lot of pages by lowering their dirty limit. This
++ * avoids infrequent dirtiers from getting stuck in this other guys dirty
++ * pages.
++ *
++ * Use a sub-linear function to scale the penalty, we only need a little room.
+  */
+ void task_dirty_limit(struct task_struct *tsk, long *pdirty)
+ {
+ 	long numerator, denominator;
+ 	long dirty = *pdirty;
+-	u64 inv = dirty >> 3;
++	u64 inv = 8*int_sqrt(dirty);
+ 
+ 	task_dirties_fraction(tsk, &numerator, &denominator);
+ 	inv *= numerator;
 
 
-	For information, after crash, I have :
-
-Root poulenc:[/sys/block] > cat /proc/mdstat
-Personalities : [raid1] [raid6] [raid5] [raid4]
-md_d0 : active raid5 sdc1[0] sdh1[5] sdg1[4] sdf1[3] sde1[2] sdd1[1]
-       1464725760 blocks level 5, 64k chunk, algorithm 2 [6/6] [UUUUUU]
-
-	Regards,
-
-	JKB
