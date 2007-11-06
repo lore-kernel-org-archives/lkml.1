@@ -1,133 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757054AbXKFCyy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756686AbXKFDMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757054AbXKFCyy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 21:54:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754875AbXKFCyr
+	id S1756686AbXKFDMU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 22:12:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754749AbXKFDMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 21:54:47 -0500
-Received: from mx.neterion.com ([72.1.205.142]:32846 "EHLO owa.neterion.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755258AbXKFCyr convert rfc822-to-8bit (ORCPT
+	Mon, 5 Nov 2007 22:12:12 -0500
+Received: from an-out-0708.google.com ([209.85.132.250]:36238 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754741AbXKFDML (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 21:54:47 -0500
-X-Greylist: delayed 890 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Nov 2007 21:54:47 EST
-Content-class: urn:content-classes:message
+	Mon, 5 Nov 2007 22:12:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=ETod0PpNqNx3SV6gPZaI8UxP6tHWoR/9usgovnKx2OHnczpHBaCH/2goRd5akca/aG+EA/wLjqXVCwJ+Dvz078cL8jQCWC6l5LllTQDTvkzTA4SlGLapHOogFkcYNbvy2ZSf43Q1dOfnfk9IKmkkv6eRatNfCpOuMHqH8uCYwG8=
+Message-ID: <a8e1da0711051912r34c6ad68jc420ceb8655407b7@mail.gmail.com>
+Date: Tue, 6 Nov 2007 11:12:09 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Marcel Holtmann" <marcel@holtmann.org>
+Subject: Re: [PATCH]bluetooth rfcomm_dev refcount bug fix
+Cc: linux-kernel@vger.kernel.org, bluez-devel@lists.sourceforge.net
+In-Reply-To: <1194274870.4437.8.camel@aeonflux>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-x-mimeole: Produced By Microsoft Exchange V6.5
-Subject: RE: [PATCH 2/2] NET: Re-add VLAN tag for devices incapable of keeping it
-Date: Mon, 5 Nov 2007 21:39:55 -0500
-Message-ID: <78C9135A3D2ECE4B8162EBDCE82CAD77027E9D5E@nekter>
-In-Reply-To: <18223.22296.654548.764588@zeus.sw.starentnetworks.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2/2] NET: Re-add VLAN tag for devices incapable of keeping it
-Thread-Index: Acgf1AQ/2bRZtd8UQlenqsgyajyQUAAR39VA
-From: "Ramkrishna Vepa" <Ramkrishna.Vepa@neterion.com>
-To: "Dave Johnson" <djohnson+linux-kernel@sw.starentnetworks.com>,
-       "David Miller" <davem@davemloft.net>, <jes@trained-monkey.org>,
-       <mchan@broadcom.com>, <ram.vepa@neterion.com>,
-       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
-       <bguo@sw.starentnetworks.com>
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_27084_12391945.1194318729620"
+References: <20071105045921.GA3556@darkstar.te-china.tietoenator.com>
+	 <1194274870.4437.8.camel@aeonflux>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Xframe (S2io) adapter can be programmed dynamically to either,
-always strip the vlan tag or not. In this case, if the vlan group is
-NULL, it can be programmed at run time to NOT strip the vlan tag.
+------=_Part_27084_12391945.1194318729620
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-When a packet with a Vlan id is received that is not added to the group,
-should it be dropped or indicated up? Either can be handled by the
-hardware. The vlan tag in this particular case will be stripped as the
-vlan group is not NULL.
+On 11/5/07, Marcel Holtmann <marcel@holtmann.org> wrote:
+> Hi Dave,
+>
+> > In the rfcomm_tty_hangup the rfcomm_dev refcnt should be dropped later.
+> >
+> > If rfcomm_dev is destructed in tty_hangup function, then the later tty_close function will oops.
+>
+> your patch removes the complete release on hangup logic. That can't be
+> right. I think the problem is with calling tty_vhangup() and then
+> decrementing the reference count. In case we call tty_vhangup and we
+> have release on hangup we should not delete the device here. What about
+> the attached patch? Does it solve it?
+>
 
-Ram
+How about this patch (attached), it works for me as well.
 
-> -----Original Message-----
-> From: Dave Johnson
-[mailto:djohnson+linux-kernel@sw.starentnetworks.com]
-> Sent: Monday, November 05, 2007 9:47 AM
-> To: David Miller; jes@trained-monkey.org; mchan@broadcom.com;
-> ram.vepa@neterion.com; linux-kernel@vger.kernel.org;
-> netdev@vger.kernel.org; bguo@sw.starentnetworks.com
-> Subject: [PATCH 2/2] NET: Re-add VLAN tag for devices incapable of
-keeping
-> it
-> 
-> 
-> This patch changes the following drivers to use vlan_hwaccel_rx()
-> and/or vlan_hwaccel_receive_skb() with a NULL vlan group if needed as
-> they are not setup to dynamically enable/disable vlan removal in
-> their MAC based on the vlan group:
-> 
-> drivers/net/tg3.c           Tested on BCM5704, looks good
-> drivers/net/bnx2.c          Tested on BCM5708, looks good
-> drivers/net/acenic.c        Not tested, I don't have one of these
-> drivers/net/s2io.c          Not tested, I don't have one of these
-> 
-> In addition, these drivers might also need changes, but should
-> probably be done by the maintainer as it's not clear exactly what
-> change is needed:
-> 
-> drivers/net/amd8111e.c
-> drivers/net/cxgb3/*
-> 
-> Signed-off-by: Dave Johnson <djohnson@sw.starentnetworks.com>
-> 
-> ===== drivers/net/acenic.c 1.77 vs edited =====
-> --- 1.77/drivers/net/acenic.c	2007-07-24 16:28:41 -04:00
-> +++ edited/drivers/net/acenic.c	2007-11-03 12:27:40 -04:00
-> @@ -2036,7 +2036,7 @@
-> 
->  		/* send it up */
->  #if ACENIC_DO_VLAN
-> -		if (ap->vlgrp && (bd_flags & BD_FLG_VLAN_TAG)) {
-> +		if (bd_flags & BD_FLG_VLAN_TAG) {
->  			vlan_hwaccel_rx(skb, ap->vlgrp, retdesc->vlan);
->  		} else
->  #endif
-> ===== drivers/net/bnx2.c 1.135 vs edited =====
-> --- 1.135/drivers/net/bnx2.c	2007-09-20 15:14:21 -04:00
-> +++ edited/drivers/net/bnx2.c	2007-11-05 09:34:26 -05:00
-> @@ -2493,7 +2493,8 @@
->  		}
-> 
->  #ifdef BCM_VLAN
-> -		if ((status & L2_FHDR_STATUS_L2_VLAN_TAG) && (bp->vlgrp
-!= 0))
-> {
-> +		if ((status & L2_FHDR_STATUS_L2_VLAN_TAG) &&
-> +		    (bp->vlgrp || (bp->flags & ASF_ENABLE_FLAG))) {
->  			vlan_hwaccel_receive_skb(skb, bp->vlgrp,
->  				rx_hdr->l2_fhdr_vlan_tag);
->  		}
-> ===== drivers/net/s2io.c 1.124 vs edited =====
-> --- 1.124/drivers/net/s2io.c	2007-08-03 18:10:44 -04:00
-> +++ edited/drivers/net/s2io.c	2007-11-03 12:29:09 -04:00
-> @@ -6834,8 +6834,7 @@
->  	sp->mac_control.stats_info->sw_stat.mem_freed += skb->truesize;
->  	if (!sp->lro) {
->  		skb->protocol = eth_type_trans(skb, dev);
-> -		if ((sp->vlgrp && RXD_GET_VLAN_TAG(rxdp->Control_2) &&
-> -			vlan_strip_flag)) {
-> +		if (RXD_GET_VLAN_TAG(rxdp->Control_2) &&
-vlan_strip_flag) {
->  			/* Queueing the vlan frame to the upper layer */
->  			if (napi)
->  				vlan_hwaccel_receive_skb(skb, sp->vlgrp,
-> ===== drivers/net/tg3.c 1.523 vs edited =====
-> --- 1.523/drivers/net/tg3.c	2007-09-11 04:28:44 -04:00
-> +++ edited/drivers/net/tg3.c	2007-11-05 09:38:33 -05:00
-> @@ -3417,7 +3417,7 @@
-> 
->  		skb->protocol = eth_type_trans(skb, tp->dev);
->  #if TG3_VLAN_TAG_USED
-> -		if (tp->vlgrp != NULL &&
-> +		if ((tp->vlgrp || (tp->tg3_flags & TG3_FLAG_ENABLE_ASF))
-&&
->  		    desc->type_flags & RXD_FLAG_VLAN) {
->  			tg3_vlan_rx(tp, skb,
->  				    desc->err_vlan & RXD_VLAN_MASK);
+Regards
+dave
 
+------=_Part_27084_12391945.1194318729620
+Content-Type: application/octet-stream; name=diff.rfcomm.1
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f8numart
+Content-Disposition: attachment; filename=diff.rfcomm.1
+
+ZGlmZiAtdXByIGxpbnV4L25ldC9ibHVldG9vdGgvcmZjb21tL3R0eS5jIGxpbnV4Lm5ldy9uZXQv
+Ymx1ZXRvb3RoL3JmY29tbS90dHkuYwotLS0gbGludXgvbmV0L2JsdWV0b290aC9yZmNvbW0vdHR5
+LmMJMjAwNy0xMS0wNSAxMToyODo0OS4wMDAwMDAwMDAgKzA4MDAKKysrIGxpbnV4Lm5ldy9uZXQv
+Ymx1ZXRvb3RoL3JmY29tbS90dHkuYwkyMDA3LTExLTA2IDExOjEzOjAyLjAwMDAwMDAwMCArMDgw
+MApAQCAtNDI2LDcgKzQyNiw2IEBAIHN0YXRpYyBpbnQgcmZjb21tX3JlbGVhc2VfZGV2KHZvaWQg
+X191c2UKIAkJdHR5X3ZoYW5ndXAoZGV2LT50dHkpOwogCiAJcmZjb21tX2Rldl9kZWwoZGV2KTsK
+LQlyZmNvbW1fZGV2X3B1dChkZXYpOwogCXJldHVybiAwOwogfQogCk9ubHkgaW4gbGludXgubmV3
+L25ldC9ibHVldG9vdGgvcmZjb21tOiB0dHkuY34K
+------=_Part_27084_12391945.1194318729620--
