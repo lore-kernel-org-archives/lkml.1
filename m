@@ -1,84 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755605AbXKFSSp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755386AbXKFS2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755605AbXKFSSp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 13:18:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbXKFSSh
+	id S1755386AbXKFS2R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 13:28:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753707AbXKFS2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 13:18:37 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:49254 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751079AbXKFSSg (ORCPT
+	Tue, 6 Nov 2007 13:28:05 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34746 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753750AbXKFS2E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 13:18:36 -0500
-Subject: Re: mm snapshot broken-out-2007-11-06-02-32.tar.gz uploaded -
-	build failure - rpadlpar_sysfs
-From: Badari Pulavarty <pbadari@gmail.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, mm-commits@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <4730896A.9060701@linux.vnet.ibm.com>
-References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
-	 <4730896A.9060701@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Tue, 06 Nov 2007 10:19:28 -0800
-Message-Id: <1194373168.25901.3.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Nov 2007 13:28:04 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Mikael Petterson <mikpe@it.uu.se>
+Subject: Re: [GIT PULL] x86 setup: correct booting on 486 (revised)
+References: <200711050358.lA53wlho003349@tazenda.hos.anvin.org>
+	<alpine.LFD.0.999.0711050842360.15101@woody.linux-foundation.org>
+	<472F5941.2060507@zytor.com>
+	<alpine.LFD.0.999.0711051006060.15101@woody.linux-foundation.org>
+	<472F61C8.4040300@zytor.com>
+	<alpine.LFD.0.999.0711051035090.15101@woody.linux-foundation.org>
+	<m1pryoa1f6.fsf@ebiederm.dsl.xmission.com>
+	<472F7D8D.8050505@zytor.com> <472F826E.3050008@goop.org>
+	<472F85F2.6040501@zytor.com> <472FBC83.5060509@goop.org>
+	<472FBF40.1010300@zytor.com> <472FC0F3.10102@goop.org>
+	<472FC401.9020202@zytor.com> <47309389.3080403@goop.org>
+	<47309608.9030200@zytor.com> <47309C85.6030904@goop.org>
+	<47309D98.8080003@zytor.com>
+	<m1zlxr5mik.fsf@ebiederm.dsl.xmission.com>
+	<4730AB1F.2030001@zytor.com>
+Date: Tue, 06 Nov 2007 11:27:01 -0700
+In-Reply-To: <4730AB1F.2030001@zytor.com> (H. Peter Anvin's message of "Tue,
+	06 Nov 2007 09:57:51 -0800")
+Message-ID: <m1fxzj5ix6.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-11-06 at 21:04 +0530, Kamalesh Babulal wrote:
-> Hi Andrew,
-> 
-> The build fails with following error
->  
->   CC      drivers/pci/hotplug/rpadlpar_sysfs.o
-> drivers/pci/hotplug/rpadlpar_sysfs.c:133: error: initializer element is not constant
-> drivers/pci/hotplug/rpadlpar_sysfs.c:133: error: (near initialization for `dlpar_io_kset.kobj.parent')
-> drivers/pci/hotplug/rpadlpar_sysfs.c:133: error: initializer element is not constant
-> drivers/pci/hotplug/rpadlpar_sysfs.c:133: error: (near initialization for `dlpar_io_kset.kobj')
-> drivers/pci/hotplug/rpadlpar_sysfs.c:134: error: unknown field `ktype' specified in initializer
-> drivers/pci/hotplug/rpadlpar_sysfs.c:134: warning: initialization from incompatible pointer type
-> make[3]: *** [drivers/pci/hotplug/rpadlpar_sysfs.o] Error 1
-> make[2]: *** [drivers/pci/hotplug] Error 2
-> make[1]: *** [drivers/pci] Error 2
-> make: *** [drivers] Error 2
-> 
-> The patch, gregkh-driver-kset-convert-pci-hotplug-to-use-kset_create_and_register.patch
-> is causing the build failure.
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-Here is the fix (against 24-rc1 mm-brokenout). Can you try it ?
+> Eric W. Biederman wrote:
+>>>
+>>> I think it should be sparsely used, but stuff like simple end markers is
+> pretty
+>>> much what it's good for.
+>>>
+>>> The main reason I want to avoid adding another header field is that the
+> header
+>>> is a finite resource; one of the many poor decisions in its original design
+> was
+>>> using a 2-byte jump at the top, so address 0x281 is the end of the universe.
+>>
+>> That was fixed long ago (by having a 4 byte reserved field in the middle) that
+>> we can do a two byte jump and then do a farther jump from there to the 16bit
+>> code.  So as long as we actually use discipline and really reserve
+>> the field for a further jump there should be no need for 0x281 being the end
+>> of the universe.
+>>
+>
+> That's not the only complication.  The thing that concern me more is boot
+> loaders using the jump as a length indicator, and there is really very little
+> chance to test that out safely, except perhaps by breaking it immediately (by
+> adding a 16-byte jump at the end; that way we provide a minimum of overlap for
+> boot loader authors.)
 
-Thanks,
-Badari
+The old setup.S had that 16-byte jump in there.
+We actually goofed when we added the relocatable bzImage support and
+moved the 16bit jump.
 
-Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com> 
----
- drivers/pci/hotplug/rpadlpar_sysfs.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+> That being said, I don't see any such field (bootsect_kludge could be recycled,
+> arguably, and pad2 is three bytes which is enough for a 16-bit jump.)
+>
+> At the moment, though, that would only push the maximum from 0x281 to 0x290,
+> then we run into the next field in struct boot_params.  Although this field can
+> also be relocated over time, it once again shows that breaking this particular
+> limit is nontrivial, and that we're better off trying to avoid pushing it.
 
-Index: linux-2.6.24-rc1/drivers/pci/hotplug/rpadlpar_sysfs.c
-===================================================================
---- linux-2.6.24-rc1.orig/drivers/pci/hotplug/rpadlpar_sysfs.c	2007-11-06 10:09:10.000000000 -0800
-+++ linux-2.6.24-rc1/drivers/pci/hotplug/rpadlpar_sysfs.c	2007-11-06 10:11:33.000000000 -0800
-@@ -129,14 +129,13 @@ struct kobj_type ktype_dlpar_io = {
- };
- 
- struct kset dlpar_io_kset = {
--	.kobj = {.ktype = &ktype_dlpar_io,
--		 .parent = &pci_hotplug_slots_kset->kobj},
--	.ktype = &ktype_dlpar_io,
-+	.kobj = {.ktype = &ktype_dlpar_io},
- };
- 
- int dlpar_sysfs_init(void)
- {
- 	kobject_set_name(&dlpar_io_kset.kobj, DLPAR_KOBJ_NAME);
-+	dlpar_io_kset.kobj.parent = &pci_hotplug_slots_kset->kobj;
- 	if (kset_register(&dlpar_io_kset)) {
- 		printk(KERN_ERR "rpadlpar_io: cannot register kset for %s\n",
- 				kobject_name(&dlpar_io_kset.kobj));
+> However, with a little discipline I think we can make 0x281 last us for the
+> usable lifetime of this format.  In the 10 years since the 2.00 format was
+> created, we have only added 36 bytes of header, and we have 57 bytes left (plus
+> 5 bytes of pad and 6 bytes of recyclable field.) When we get closer to full, if
+> we haven't already created a mechanism making field additions obsolete I think
+> we would be better off creating a pointer to a secondary header than trying to
+> break the limitations involved in the current header format.
 
+I have a hard time believing in discipline when I see the amount of
+not invented here and various oddball mistakes (cause by overlooking
+things) that seems to go on when extending the format.  We never
+needed to change the way the command line was passed, and we should
+have kept the longer jump where we had it.
 
+If we are going to through and add an additional pointer to a notes section
+let's please put a jump in there so we can make the header longer as
+we choose.
+
+Pointers really, really, really suck for maintenance of binary formats.
+Offsets against a known base are better, but better still is if you can
+avoid them entirely.  For what we are doing allocating a contiguous piece
+of memory or file is not at all unreasonable.
+
+Eric
