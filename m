@@ -1,98 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755471AbXKFWZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755551AbXKFWhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755471AbXKFWZi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 17:25:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbXKFWZa
+	id S1755551AbXKFWhY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 17:37:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbXKFWhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 17:25:30 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33707 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754140AbXKFWZ3 (ORCPT
+	Tue, 6 Nov 2007 17:37:12 -0500
+Received: from sitemail2.everyone.net ([216.200.145.36]:33740 "EHLO
+	omta16.mta.everyone.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754194AbXKFWhL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 17:25:29 -0500
-Date: Tue, 6 Nov 2007 14:23:20 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Chris Stromsoe <cbs@cts.ucla.edu>
-Cc: Adrian Bunk <bunk@kernel.org>, Bill Davidsen <davidsen@tmr.com>,
-       James Corey <ploversegg@yahoo.com>, Rob Sims <lkml-z@robsims.com>,
-       Kyle Rose <krose@akamai.com>, linux-kernel@vger.kernel.org
-Subject: Re: sk98lin for 2.6.23-rc1
-Message-ID: <20071106142320.710ddc29@freepuppy.rosehill>
-In-Reply-To: <Pine.LNX.4.64.0709090542350.2617@potato.cts.ucla.edu>
-References: <20070905102230.10b0bdcf@oldman>
-	<782111.42803.qm@web90413.mail.mud.yahoo.com>
-	<46E2DF74.7040307@tmr.com>
-	<20070908191132.GD3563@stusta.de>
-	<Pine.LNX.4.64.0709090542350.2617@potato.cts.ucla.edu>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 6 Nov 2007 17:37:11 -0500
+X-Eon-Dm: dm43
+X-Eon-Sig: AQEbFf9HMOxu5BYWPgIAAAAE,4e4720edfc377e88e2da74a617ac3dc1
+Message-ID: <4730EC6D.7040709@us.ibm.com>
+Date: Tue, 06 Nov 2007 14:36:29 -0800
+From: Mike Mason <mmlnx@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: ltt-dev@shafik.org, linux-kernel@vger.kernel.org,
+       systemtap@sources.redhat.com
+Subject: Re: [to-be-posted-soon] Multiple handlers per marker
+References: <472A345C.2010208@us.ibm.com> <20071101221530.GC19700@Krystal> <20071102033654.GA1301@Krystal> <20071104232442.GA32320@Krystal> <472F9D63.7010906@us.ibm.com> <20071105231735.GA620@Krystal>
+In-Reply-To: <20071105231735.GA620@Krystal>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 9 Sep 2007 05:54:45 -0700 (PDT)
-Chris Stromsoe <cbs@cts.ucla.edu> wrote:
+Mathieu Desnoyers wrote:
+> * Mike Mason (mmlnx@us.ibm.com) wrote:
+>> Mathieu Desnoyers wrote:
+>>> * Mathieu Desnoyers (compudj@krystal.dyndns.org) wrote:
+>>>> * Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
+>>>>> * Mike Mason (mmlnx@us.ibm.com) wrote:
+>>>>>> Hi Mathieu,
+>>>>>>
+>>>>>> Are you aware of any working being done to allow multiple handlers to 
+>>>>>> be attached to a marker?  Something like what kprobes allows.  I've 
+>>>>>> started to look into this and don't want to duplicate efforts.
+>>>>>>
+>>>>> Nope, but I know we will have to address this.
+>>>>>
+>>>>> Something along the lines of walking an RCU list of function pointers,
+>>>>> calling them.
+>>>>>
+>>>>> The only downside I see is that we will have to pass a va_list * instead
+>>>>> of real va args. The could make the marker site a little bit bigger and
+>>>>> will change the probe callback arguments.
+>>>>>
+>>>>> What do you think about these ideas ?
+>>>>>
+>>>>> If we can find a way to make the common case (only one probe connected)
+>>>>> _ultra_ fast, and yet architecture independent, that would be awesome. A
+>>>>> simple call is kind of hard to beat though.. So we may have to think
+>>>>> about a design with :
+>>>>>
+>>>>> - One call at the marker site
+>>>>> - if 1 probe is installed :
+>>>>>   - If the format string is empty, connect a probe without va args.
+>>>>>   - If the format string is not empty, connect a "stage 1" probe that 
+>>>>> takes
+>>>>>     the va args, starts/ends the va_list and calls _one_ function (let's
+>>>>>     call it "stage 2" probe), that takes va_list as parameter.
+>>>>> - if more than 1 probe is installed :
+>>>>>   - The stage 1 probe creates the va_list and passes it to each function
+>>>>>     connected, iterated with an RCU list.
+>>>>>
+>>>>> What do you think ?
+>>>>>
+>>>>> Mathieu
+>>>>>
+>>>> I'm working on an implementation.
+>>>>
+>>> It's ready for testing. Please grab
+>>> http://ltt.polymtl.ca/lttng/patch-2.6.24-rc1-git13-lttng-0.10-pre18.tar.bz2
+>>> patch name :
+>>> markers-support-multiple-probes.patch
+>> This patch alone doesn't apply cleanly at all on 2.6.24-rc1-git14.  Are 
+>> there other patches in this series I should apply first?
+>>
+> 
+> Yes, the following ones should suffice :
+> 
+> # instrumentation menu removal
+> add-kconfig-to-arch.patch
+> add-arch-supports-oprofile.patch
+> add-arch-supports-kprobes.patch
+> move-kconfig-instrumentation-to-arch.patch
+> #
+> kprobes-use-mutex-for-insn-pages.patch
+> kprobes-dont-use-kprobes-mutex-in-arch-code.patch
+> kprobes-declare-kprobes-mutex-static.patch
+> declare-array.patch
+> text-edit-lock-architecture-independent-code.patch
+> text-edit-lock-alternative-i386-and-x86_64.patch
+> text-edit-lock-kprobes-architecture-independent.patch
+> text-edit-lock-kprobes-i386.patch
+> text-edit-lock-kprobes-x86_64.patch
+> text-edit-lock-i386-standardize-debug-rodata.patch
+> text-edit-lock-x86_64-standardize-debug-rodata.patch
+> #
+> immediate-values-architecture-independent-code.patch
+> immediate-values-kconfig-embedded.patch
+> immediate-values-move-kprobes-i386-restore-interrupt-to-kdebug-h.patch
+> add-asm-compat-to-x86.patch
+> immediate-values-i386-optimization.patch
+> immediate-values-powerpc-optimization.patch
+> immediate-values-documentation.patch
+> #
+> linux-kernel-markers-immediate-values.patch
+> #
+> markers-support-multiple-probes.patch
+> 
+> Tell me if you still have rejects.
 
-> On Sat, 8 Sep 2007, Adrian Bunk wrote:
-> > On Sat, Sep 08, 2007 at 01:44:20PM -0400, Bill Davidsen wrote:
-> >
-> >> Haven't tried later kernels, don't intend to, while no network is 
-> >> really secure, it not really useful.
-> >
-> > You are a regular reader of linux-kernel, and therefore the sk98lin 
-> > removal can hardly be a surprise for you. If you prefer whining over 
-> > helping to improve the kernel that's your choice...
-> 
-> I've been trying to migrate off sk98lin to skge since earlier this year, 
-> without success, starting with 2.6.18 or .19.
-> 
-> I have several of these cards in production using the sk98lin driver:
-> 
-> fresno:~# lspci -vv -s 02:01
-> 02:01.0 Ethernet controller: SysKonnect SK-9872 Gigabit Ethernet Server Adapter (SK-NET GE-ZX dual link) (rev 11)
->          Subsystem: SysKonnect SK-9844 Gigabit Ethernet Server Adapter (SK-NET GE-SX dual link)
->          Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR+ FastB2B-
->          Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
->          Latency: 64 (5750ns min, 7750ns max), Cache Line Size: 32 bytes
->          Interrupt: pin A routed to IRQ 22
->          Region 0: Memory at febfc000 (32-bit, non-prefetchable) [size=16K]
->          Region 1: I/O ports at e800 [size=256]
->          Expansion ROM at febc0000 [disabled] [size=128K]
->          Capabilities: [48] Power Management version 1
->                  Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
->                  Status: D0 PME-Enable- DSel=0 DScale=1 PME-
->          Capabilities: [50] Vital Product Data
-> 
-> They are dual port SX fiber.  Both ports are connected.  If I do this:
-> 
-> fresno:~# modprobe skge
-> fresno:~# ip li set eth2 up
-> fresno:~# ip li set eth2 down
-> fresno:~# ip li set eth3 up
-> 
-> the system locks up and I have to power cycle it.  The order doesn't 
-> matter (if I do eth3 up/down, then eth2 up kills it).
-> 
-> I don't have any problems with sk98lin.  This works fine:
-> 
-> fresno:~# modprobe sk98lin RlmtMode=DualNet
-> fresno:~# ip li set eth2 up
-> fresno:~# ip li set eth2 down
-> fresno:~# ip li set eth3 up
-> fresno:~# ip li set eth3 down
-> 
-> 
-> I am more than happy to test various driver changes, and have tried a few 
-> suggested patches but nothing has worked so far.  I would like to be using 
-> skge instead of sk98lin, but so far haven't had any success.
+I applied the above patches to 2.6.24-rc1-git14.  They applied fine with just a few offsets until the last patch, which yielded this result:
 
-Please test 2.6.24-rc1 (or -rc2) because there were several fixes for skge
-that made it work correctly for dual port fiber board. The worst bug in skge
-was that it configured the ram buffer incorrectly.
+patching file include/linux/marker.h
+Hunk #5 succeeded at 162 with fuzz 2.
+patching file kernel/marker.c
+Hunk #14 FAILED at 534.
+Hunk #15 FAILED at 587.
+Hunk #16 FAILED at 621.
+Hunk #17 FAILED at 732.
+Hunk #18 FAILED at 769.
+Hunk #19 succeeded at 791 (offset 12 lines).
+5 out of 19 hunks FAILED -- saving rejects to file kernel/marker.c.rej
+patching file kernel/module.c
+Hunk #1 succeeded at 1998 (offset -3 lines).
+Hunk #2 succeeded at 2608 (offset -37 lines).
+Hunk #3 succeeded at 2651 with fuzz 1 (offset -3 lines).
+patching file include/linux/module.h
+Hunk #1 FAILED at 468.
+Hunk #2 succeeded at 572 (offset -2 lines).
+1 out of 2 hunks FAILED -- saving rejects to file include/linux/module.h.rej
+patching file samples/markers/probe-example.c
 
-I just submitted these for next 2.6.23.X stable release as well
+Mike
 
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+> 
+> Mathieu
+> 
+> 
+>> Mike
+>>
+>>> It still need to go through patchcheck.pl and some polishing, but it
+>>> seems to work fine for me with multiple probes (the sample marker,
+>>> sample probe and multiple instances of my lttng probes can
+>>> connect/disconnect without problem).
+>>> Currently, the "connect/disconnect" and "arm/disarm" operations are
+>>> separate. However, they could be merged. Any comment/preference on this?
+>>> Being separate, a probe provider can wait until the very last moment
+>>> before it activates its markers, with a minimalistic impact on the
+>>> system, but it is not such a strong argument.
+>>> Mathieu
+> 
