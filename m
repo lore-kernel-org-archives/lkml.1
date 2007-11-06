@@ -1,164 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756613AbXKFVfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755826AbXKFVk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756613AbXKFVfu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 16:35:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755247AbXKFVfl
+	id S1755826AbXKFVk0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 16:40:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbXKFVkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 16:35:41 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:39057 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755236AbXKFVfk (ORCPT
+	Tue, 6 Nov 2007 16:40:10 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:40966 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753300AbXKFVkH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 16:35:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=h/qaG5x5t35GnSYJZfKPemtUKNw1KTPSZdmI3X/3lO/ry2NqEGnsDDc8ApASdGDwAz1jI47Fxl0k7KdfRxWZliQXhD4yeI6t2IG298bvvU5LVInDtr9InhWF+dTE2xQxa+a7/bSEDZNNG5TM80wdvLuQ430F+yejNMz5cXmyK2M=
-Message-ID: <5d6222a80711061335q7ef03b42i335bb1e8c07eb7e4@mail.gmail.com>
-Date: Tue, 6 Nov 2007 19:35:38 -0200
-From: "Glauber de Oliveira Costa" <glommer@gmail.com>
-To: "Glauber de Oliveira Costa" <gcosta@redhat.com>
-Subject: Re: [kvm-devel] include files for kvmclock
-Cc: linux-kernel@vger.kernel.org, jeremy@goop.org, hollisb@us.ibm.com,
-       kvm-devel@lists.sourceforge.net, avi@qumranet.com
-In-Reply-To: <11943875433821-git-send-email-gcosta@redhat.com>
+	Tue, 6 Nov 2007 16:40:07 -0500
+Date: Tue, 6 Nov 2007 13:39:29 -0800
+From: Greg KH <greg@kroah.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: kamalesh@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       linux390@de.ibm.com, linux-s390@vger.kernel.org, apw@shadowen.org
+Subject: Re: mm snapshot broken-out-2007-11-06-02-32.tar.gz uploaded -
+	S390x build fails
+Message-ID: <20071106213929.GA13634@kroah.com>
+References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org> <473083CA.9060607@linux.vnet.ibm.com> <20071106131037.ea014b48.akpm@linux-foundation.org> <20071106211345.GB5993@kroah.com> <20071106143344.b9e5ba09.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <11943875362987-git-send-email-gcosta@redhat.com>
-	 <11943875433821-git-send-email-gcosta@redhat.com>
+In-Reply-To: <20071106143344.b9e5ba09.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/6/07, Glauber de Oliveira Costa <gcosta@redhat.com> wrote:
-> This patch introduces the include files for kvm clock.
-> They'll be needed for both guest and host part.
+On Tue, Nov 06, 2007 at 02:33:44PM -0800, Andrew Morton wrote:
+> > On Tue, 6 Nov 2007 13:13:45 -0800 Greg KH <greg@kroah.com> wrote:
+> > On Tue, Nov 06, 2007 at 01:10:37PM -0800, Andrew Morton wrote:
+> > > > On Tue, 06 Nov 2007 20:40:02 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> > > > drivers/s390/char/sclp_cpi_sys.c:242: error: storage size of `system_name_attr' isn't known
+> > > > drivers/s390/char/sclp_cpi_sys.c:264: error: storage size of `sysplex_name_attr' isn't known
+> > > > drivers/s390/char/sclp_cpi_sys.c:287: error: storage size of `system_type_attr' isn't known
+> > > > drivers/s390/char/sclp_cpi_sys.c:317: error: storage size of `system_level_attr' isn't known
+> > > > drivers/s390/char/sclp_cpi_sys.c:333: error: storage size of `set_attr' isn't known
+> > > > make[2]: *** [drivers/s390/char/sclp_cpi_sys.o] Error 1
+> > > > make[1]: *** [drivers/s390/char] Error 2
+> > > > make: *** [drivers/s390] Error 2
+> > > > 
+> > > > The patch git-s390.patch is causing this failure.
+> > > 
+> > > git-s390 newly adds that file.  I suspect that this code works OK for the
+> > > s390 guys (they're using Linux).  But Greg's driver tree basically ports
+> > > their driver to Gregnux, in which nothing works any more.
+> > > 
+> > > Greg, this is turning into a bit of a trainwreck.  Can you please have a
+> > > think about how we can provide a bit of back-compatibility to ease this
+> > > transition rather than just trashing everything?
+> > 
+> > It's _always_ a trainwreck when I touch anything in the driver core,
+> > look at how many individual patches it took to do a lot of this work
+> > (50+ and still growing).  My method is to introduce the new api, convert
+> > everyone over to it, and then remove the old crappy one.
+> > 
+> > Now for dealing with external trees, I have _no_ visiblity into them for
+> > the most part.  I can't build s390 stuff (no cross compiler), so I can't
+> > even test their changes.
+> > 
+> > But, there really should not be that many places that are touching these
+> > types of things that I am currently changing (ksets and ktypes and
+> > subsystems.)
+> > 
+> > So, how do I do this?  Do I just not let my changes trickle into your
+> > tree, and hold off until I merge them with Linus, hoping that me and Kay
+> > have tested everything good enough?  That way, no build ever should
+> > break, but functionality might not be all working as well as it could
+> > be.
+> > 
+> > Or we live with some breakage as you pull my stuff into your tree.
+> > 
+> > Either way, I'm glad to help fix the broken stuff, and I'm also glad to
+> > take the responsibility for getting this all right the first time it
+> > goes to Linus.
+> > 
+> > What do you think is best to do?
+> > 
+> 
+> Leave the old interfaces in place, deprecate them, remove them later.  If
+> at all possible.
 
-And of course, this was my test files by mistake ;-)
-Oh god... ;-)
+It's usually not a matter of them being "interfaces" but structure
+changes.  The only way to slim these things down into something that
+works properly (ksets being dynamic instead of static), and changing
+the majority of these ksets into kobjects as ksets is not the correct
+usage, doesn't lend themselves to being able to keep the old stuff
+around anymore.
 
-Patches aren't numbered but this one should go first. And please just ignore,
-the replica of the hv_clock union definition in the patch bellow. It
-should all go in asm/kvm_para.h
+Almost all of these build problems are a simple one-line change in the
+offending code, so it's not a tough change for me to do on stuff in your
+tree.
 
-The other two patches are fine, and can be applied in any order, so
-it's not worth resending. I'll grab your comments first.
+thanks,
 
-> Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
-> ---
->  include/asm-x86/kvm_para.h |   23 +++++++++++++++++++++++
->  include/linux/kvm.h        |    1 +
->  include/linux/kvm_para.h   |   20 ++++++++++++++++++++
->  3 files changed, 44 insertions(+), 0 deletions(-)
->
-> diff --git a/include/asm-x86/kvm_para.h b/include/asm-x86/kvm_para.h
-> index c6f3fd8..af9fb75 100644
-> --- a/include/asm-x86/kvm_para.h
-> +++ b/include/asm-x86/kvm_para.h
-> @@ -10,15 +10,38 @@
->   * paravirtualization, the appropriate feature bit should be checked.
->   */
->  #define KVM_CPUID_FEATURES     0x40000001
-> +#define KVM_FEATURE_CLOCKEVENTS 0
-> +#define KVM_FEATURE_CLOCKSOURCE 1
-> +
->
->  #ifdef __KERNEL__
->  #include <asm/processor.h>
-> +extern void kvmclock_init(void);
-> +
-> +union kvm_hv_clock {
-> +       struct {
-> +               u64 tsc_mult;
-> +               u64 now_ns;
-> +               /* That's the wall clock, not the water closet */
-> +               u64 wc_sec;
-> +               u64 wc_nsec;
-> +               u64 last_tsc;
-> +               /* At first, we could use the tsc value as a marker, but Jeremy
-> +                * well noted that it will cause us locking problems in 32-bit
-> +                * sys, so we have a special version field */
-> +               u32 version;
-> +       };
-> +       char page_align[PAGE_SIZE];
-> +};
-> +
->
->  /* This instruction is vmcall.  On non-VT architectures, it will generate a
->   * trap that we will then rewrite to the appropriate instruction.
->   */
->  #define KVM_HYPERCALL ".byte 0x0f,0x01,0xc1"
->
-> +#define KVM_HCALL_REGISTER_CLOCK       1
-> +
->  /* For KVM hypercalls, a three-byte sequence of either the vmrun or the vmmrun
->   * instruction.  The hypervisor may replace it with something else but only the
->   * instructions are guaranteed to be supported.
-> diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-> index 71d33d6..7ac8786 100644
-> --- a/include/linux/kvm.h
-> +++ b/include/linux/kvm.h
-> @@ -359,6 +359,7 @@ struct kvm_signal_mask {
->  #define KVM_CAP_MMU_SHADOW_CACHE_CONTROL 2
->  #define KVM_CAP_USER_MEMORY 3
->  #define KVM_CAP_SET_TSS_ADDR 4
-> +#define KVM_CAP_CLK      5
->
->  /*
->   * ioctls for VM fds
-> diff --git a/include/linux/kvm_para.h b/include/linux/kvm_para.h
-> index e4db25f..567a192 100644
-> --- a/include/linux/kvm_para.h
-> +++ b/include/linux/kvm_para.h
-> @@ -11,8 +11,28 @@
->
->  /* Return values for hypercalls */
->  #define KVM_ENOSYS             1000
-> +#define KVM_ENODEV             1019
-> +#define KVM_EINVAL             1022
->
->  #ifdef __KERNEL__
-> +#define KVM_HCALL_REGISTER_CLOCK       1
-> +
-> +union kvm_hv_clock {
-> +       struct {
-> +               u64 tsc_mult;
-> +               u64 now_ns;
-> +               /* That's the wall clock, not the water closet */
-> +               u64 wc_sec;
-> +               u64 wc_nsec;
-> +               u64 last_tsc;
-> +               /* At first, we could use the tsc value as a marker, but Jeremy
-> +                * well noted that it will cause us locking problems in 32-bit
-> +                * sys, so we have a special version field */
-> +               u32 version;
-> +       };
-> +       char page_align[PAGE_SIZE];
-> +};
-> +
->  /*
->   * hypercalls use architecture specific
->   */
-> --
-> 1.5.0.6
->
->
-> -------------------------------------------------------------------------
-> This SF.net email is sponsored by: Splunk Inc.
-> Still grepping through log files to find problems?  Stop.
-> Now Search log events and configuration files using AJAX and a browser.
-> Download your FREE copy of Splunk now >> http://get.splunk.com/
-> _______________________________________________
-> kvm-devel mailing list
-> kvm-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/kvm-devel
->
-
-
--- 
-Glauber de Oliveira Costa.
-"Free as in Freedom"
-http://glommer.net
-
-"The less confident you are, the more serious you have to act."
+greg k-h
