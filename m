@@ -1,48 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbXKFLHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757267AbXKFLJ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756887AbXKFLHs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 06:07:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755197AbXKFLHl
+	id S1757267AbXKFLJ4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 06:09:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756185AbXKFLJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 06:07:41 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54985 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754215AbXKFLHk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 06:07:40 -0500
-Date: Tue, 6 Nov 2007 11:02:54 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Kyle Moffett <mrmacman_g4@mac.com>,
-       "Ahmed S. Darwish" <darwish.07@gmail.com>,
-       Casey Schaufler <casey@schaufler-ca.com>, akpm@osdl.org,
-       torvalds@osdl.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser
-Message-ID: <20071106110254.3a461e1c@the-village.bc.nu>
-In-Reply-To: <20071106085651.GC26163@stusta.de>
-References: <472B8DAF.9080706@schaufler-ca.com>
-	<20071103164303.GA26707@ubuntu>
-	<20071106063305.GA26163@stusta.de>
-	<C1C917F8-57EA-434C-9FD8-CB5A4EAF2653@mac.com>
-	<20071106085651.GC26163@stusta.de>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Nov 2007 06:09:47 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:46429 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753958AbXKFLJq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 06:09:46 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20071106022505.f32b1bff.akpm@linux-foundation.org>
+References: <20071106022505.f32b1bff.akpm@linux-foundation.org> <20071025163352.5057.59344.stgit@warthog.procyon.org.uk> <20071025163514.5057.4558.stgit@warthog.procyon.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 16/31] IGET: Stop FreeVXFS from using iget() and read_inode() [try #5]
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Tue, 06 Nov 2007 11:09:23 +0000
+Message-ID: <1363.1194347363@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The documentations says:
-> "Smack labels cannot contain unprintable characters or the "/" (slash) 
->  character."
-> 
-> What you propose might contain unprintable characters, and it might even 
-> be invalid UTF-8.
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Just like filenames then. I haven't noticed the vfs explode as a result
+> Not completely trivial - the ino_t -> unsigned long conversion needs to be
+> propagated fairly widely in there.
 
-Alan
+I'll just make it unsigned long.  That's what iget() took as the inode number
+parameter type, so it can't behave any differently as a first guess.
+
+David
