@@ -1,88 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755779AbXKEX6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756010AbXKFADk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755779AbXKEX6V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 18:58:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754734AbXKEX6L
+	id S1756010AbXKFADk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 19:03:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754734AbXKFAD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 18:58:11 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52988 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754153AbXKEX6J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 18:58:09 -0500
-Date: Mon, 5 Nov 2007 15:57:49 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: peterz@infradead.org, just.for.lkml@googlemail.com,
-       maximlevitsky@gmail.com, linux-kernel@vger.kernel.org, dgc@sgi.com,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: writeout stalls in current -git
-Message-Id: <20071105155749.73e0e38e.akpm@linux-foundation.org>
-In-Reply-To: <393999615.15343@ustc.edu.cn>
-References: <393056632.00561@ustc.edu.cn>
-	<200710221505.35397.maximlevitsky@gmail.com>
-	<20071022131045.GA5357@mail.ustc.edu.cn>
-	<393060478.03650@ustc.edu.cn>
-	<64bb37e0710310822r5ca6b793p8fd97db2f72a8655@mail.gmail.com>
-	<393903856.06449@ustc.edu.cn>
-	<64bb37e0711011120i63cdfe3ci18995d57b6649a8@mail.gmail.com>
-	<64bb37e0711011200n228e708eg255640388f83da22@mail.gmail.com>
-	<E1InmAI-0003ME-2i@localhost>
-	<1193998532.27652.343.camel@twins>
-	<393999615.15343@ustc.edu.cn>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Nov 2007 19:03:29 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:56612 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754631AbXKFAD2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 19:03:28 -0500
+Date: Mon, 5 Nov 2007 19:03:27 -0500
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [git patches] net driver fixes
+Message-ID: <20071106000327.GA13079@havoc.gtf.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Nov 2007 18:33:29 +0800
-Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
 
-> On Fri, Nov 02, 2007 at 11:15:32AM +0100, Peter Zijlstra wrote:
-> > On Fri, 2007-11-02 at 10:21 +0800, Fengguang Wu wrote:
-> > 
-> > > Interestingly, no background_writeout() appears, but only
-> > > balance_dirty_pages() and wb_kupdate.  Obviously wb_kupdate won't
-> > > block the process.
-> > 
-> > Yeah, the background threshold is not (yet) scaled. So it can happen
-> > that the bdi_dirty limit is below the background limit.
-> > 
-> > I'm curious though as to these stalls, though, I can't seem to think of
-> > what goes wrong.. esp since most writeback seems to happen from pdflush.
-> 
-> Me confused too. The new debug patch will confirm whether emerge is
-> waiting in balance_dirty_pages().
-> 
-> > (or I'm totally misreading it - quite a possible as I'm still recovering
-> > from a serious cold and not all the green stuff has yet figured out its
-> > proper place wrt brain cells 'n stuff)
-> 
-> Do take care of yourself.
-> 
-> > 
-> > I still have this patch floating around:
-> 
-> I think this patch is OK for 2.6.24 :-)
-> 
-> Reviewed-by: Fengguang Wu <wfg@mail.ustc.edu.cn> 
+Please pull from 'upstream-linus' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-linus
 
-I would prefer Tested-by: :(
+to receive the following updates:
 
-> > 
-> > ---
-> > Subject: mm: speed up writeback ramp-up on clean systems
-> > 
-> > We allow violation of bdi limits if there is a lot of room on the
-> > system. Once we hit half the total limit we start enforcing bdi limits
-> > and bdi ramp-up should happen. Doing it this way avoids many small
-> > writeouts on an otherwise idle system and should also speed up the
-> > ramp-up.
+ drivers/net/82596.c          |    3 ++-
+ drivers/net/phy/marvell.c    |   23 ++++++++++++++++++-----
+ drivers/net/phy/phy_device.c |    2 +-
+ drivers/net/sunhme.c         |    4 ++--
+ 4 files changed, 23 insertions(+), 9 deletions(-)
 
-Given the problems we're having in there I'm a bit reluctant to go tossing
-hastily put together and inadequately tested stuff onto the fire.  And
-that's what this patch looks like to me.
+David Miller (1):
+      SUNHME: Fix missing NETIF_F_VLAN_CHALLENGED on PCI happy meals
 
-Wanna convince me otherwise?
+Evgeniy Dushistov (1):
+      82596: free nonexistent resource fix
+
+Olof Johansson (2):
+      phylib: Add ID for Marvell 88E1240
+      phylib: Silence driver registration
+
+diff --git a/drivers/net/82596.c b/drivers/net/82596.c
+index bb30d5b..2797da7 100644
+--- a/drivers/net/82596.c
++++ b/drivers/net/82596.c
+@@ -1192,6 +1192,8 @@ struct net_device * __init i82596_probe(int unit)
+ 			goto out;
+ 		}
+ 
++		dev->base_addr = ioaddr;
++
+ 		for (i = 0; i < 8; i++) {
+ 			eth_addr[i] = inb(ioaddr + 8 + i);
+ 			checksum += eth_addr[i];
+@@ -1209,7 +1211,6 @@ struct net_device * __init i82596_probe(int unit)
+ 			goto out1;
+ 		}
+ 
+-		dev->base_addr = ioaddr;
+ 		dev->irq = 10;
+ 	}
+ #endif
+diff --git a/drivers/net/phy/marvell.c b/drivers/net/phy/marvell.c
+index d2ede5f..035fd41 100644
+--- a/drivers/net/phy/marvell.c
++++ b/drivers/net/phy/marvell.c
+@@ -265,7 +265,7 @@ static struct phy_driver marvell_drivers[] = {
+ 		.read_status = &genphy_read_status,
+ 		.ack_interrupt = &marvell_ack_interrupt,
+ 		.config_intr = &marvell_config_intr,
+-		.driver = {.owner = THIS_MODULE,},
++		.driver = { .owner = THIS_MODULE },
+ 	},
+ 	{
+ 		.phy_id = 0x01410c90,
+@@ -278,7 +278,7 @@ static struct phy_driver marvell_drivers[] = {
+ 		.read_status = &genphy_read_status,
+ 		.ack_interrupt = &marvell_ack_interrupt,
+ 		.config_intr = &marvell_config_intr,
+-		.driver = {.owner = THIS_MODULE,},
++		.driver = { .owner = THIS_MODULE },
+ 	},
+ 	{
+ 		.phy_id = 0x01410cc0,
+@@ -291,7 +291,7 @@ static struct phy_driver marvell_drivers[] = {
+ 		.read_status = &genphy_read_status,
+ 		.ack_interrupt = &marvell_ack_interrupt,
+ 		.config_intr = &marvell_config_intr,
+-		.driver = {.owner = THIS_MODULE,},
++		.driver = { .owner = THIS_MODULE },
+ 	},
+ 	{
+ 		.phy_id = 0x01410cd0,
+@@ -304,8 +304,21 @@ static struct phy_driver marvell_drivers[] = {
+ 		.read_status = &genphy_read_status,
+ 		.ack_interrupt = &marvell_ack_interrupt,
+ 		.config_intr = &marvell_config_intr,
+-		.driver = {.owner = THIS_MODULE,},
+-	}
++		.driver = { .owner = THIS_MODULE },
++	},
++	{
++		.phy_id = 0x01410e30,
++		.phy_id_mask = 0xfffffff0,
++		.name = "Marvell 88E1240",
++		.features = PHY_GBIT_FEATURES,
++		.flags = PHY_HAS_INTERRUPT,
++		.config_init = &m88e1111_config_init,
++		.config_aneg = &marvell_config_aneg,
++		.read_status = &genphy_read_status,
++		.ack_interrupt = &marvell_ack_interrupt,
++		.config_intr = &marvell_config_intr,
++		.driver = { .owner = THIS_MODULE },
++	},
+ };
+ 
+ static int __init marvell_init(void)
+diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
+index c046121..f6e4848 100644
+--- a/drivers/net/phy/phy_device.c
++++ b/drivers/net/phy/phy_device.c
+@@ -706,7 +706,7 @@ int phy_driver_register(struct phy_driver *new_driver)
+ 		return retval;
+ 	}
+ 
+-	pr_info("%s: Registered new driver\n", new_driver->name);
++	pr_debug("%s: Registered new driver\n", new_driver->name);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/net/sunhme.c b/drivers/net/sunhme.c
+index 120c8af..c20a3bd 100644
+--- a/drivers/net/sunhme.c
++++ b/drivers/net/sunhme.c
+@@ -3143,8 +3143,8 @@ static int __devinit happy_meal_pci_probe(struct pci_dev *pdev,
+ 	dev->irq = pdev->irq;
+ 	dev->dma = 0;
+ 
+-	/* Happy Meal can do it all... */
+-	dev->features |= NETIF_F_SG | NETIF_F_HW_CSUM;
++	/* Happy Meal can do it all... except VLAN. */
++	dev->features |= NETIF_F_SG | NETIF_F_HW_CSUM | NETIF_F_VLAN_CHALLENGED;
+ 
+ #if defined(CONFIG_SBUS) && defined(CONFIG_PCI)
+ 	/* Hook up PCI register/dma accessors. */
