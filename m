@@ -1,110 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754886AbXKFFyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755067AbXKFGDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754886AbXKFFyE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 00:54:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752510AbXKFFxz
+	id S1755067AbXKFGDy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 01:03:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbXKFGDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 00:53:55 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:42330 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751330AbXKFFxy (ORCPT
+	Tue, 6 Nov 2007 01:03:46 -0500
+Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:39227 "HELO
+	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752143AbXKFGDp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 00:53:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=t/Z+MXD/mJtJTmAnhOxwb/xxCRZFhYbv3YT28lOBHu43+KRhc4hmvtQCJ6a138fzcm0P48dpPht5iknh8heD5yiZtuKVbSa7J+pmosuRW8lG+NaCD7ZRlTLe6xPE1Y5ABdKLIroTY5gbLa5N341dB5aP9aIkBIngbbh5zyhtIDs=
-Date: Tue, 6 Nov 2007 14:00:28 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: linux-kernel@vger.kernel.org, bluez-devel@lists.sourceforge.net
-Subject: Re: [PATCH]bluetooth rfcomm_dev refcount bug fix
-Message-ID: <20071106060028.GA3176@darkstar.te-china.tietoenator.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 6 Nov 2007 01:03:45 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=GUOxqQUfGeVRkpLm/j1jun5wj8Zj1n1LuaZ4N4pRKJbxGpNOHsLC9AK1IABUaL/S1a9rZ6YKAzl5hGW8L/v2gjsk3hOvyMQXKJ/zikRVVGtap/qMRF+PmmGX0uOwMWoOPh5ypJ6TmwRxKXI3gO7Vwz0MF6DTeSW4Xnmzpj4d1xc=  ;
+X-YMail-OSG: yDkRTGAVM1ncEpzE3puxUmkwTD4iy.ADKsuHeN0o.0BneNz9jE4odI.4SIdu3csjkhj7aYm1KA--
+From: David Brownell <david-b@pacbell.net>
+To: Bryan Wu <bryan.wu@analog.com>
+Subject: Re: [PATCH 3/4] Blackfin SPI driver:  move hard coded pin_req to board file
+Date: Mon, 5 Nov 2007 22:03:42 -0800
+User-Agent: KMail/1.9.6
+Cc: akpm@linux-foundation.org, spi-devel-general@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+References: <1193971112-7744-1-git-send-email-bryan.wu@analog.com> <1193971112-7744-4-git-send-email-bryan.wu@analog.com>
+In-Reply-To: <1193971112-7744-4-git-send-email-bryan.wu@analog.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+Message-Id: <200711052203.42855.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi marcel,
-I'm afraid to be considered as spam ;)
+On Thursday 01 November 2007, Bryan Wu wrote:
+> --- a/include/asm-blackfin/bfin5xx_spi.h
+> +++ b/include/asm-blackfin/bfin5xx_spi.h
+> @@ -152,6 +152,7 @@
+>  struct bfin5xx_spi_master {
+>         u16 num_chipselect;
+>         u8 enable_dma;
+> +       u16 pin_req[4];
+>  };
+>  
+>  /* spi_board_info.controller_data for SPI slave devices,
 
-(Due to timezone offset, I have to mail again and cann't wait for your
-reply, sorry for the annoying)
+I take it there's a patch some where -- outside of this set
+of four -- to initialize that new field so drivers will get
+valid pin setup data?  (That name doesn't sound like it's
+platform data, by the way.)
 
-I think the rfcomm_dev_put could be seperated from the rfcomm_dev_put,
-it will be more straitforward then.
+That's going to need to merge in sync with this patch, else
+I'd think the resulting kernel won't run ...
 
-please consider below patch, tested on my side. thanks.
-
-diff -upr linux/net/bluetooth/rfcomm/tty.c linux.new/net/bluetooth/rfcomm/tty.c
---- linux/net/bluetooth/rfcomm/tty.c	2007-11-05 11:28:49.000000000 +0800
-+++ linux.new/net/bluetooth/rfcomm/tty.c	2007-11-06 13:40:44.000000000 +0800
-@@ -109,9 +109,6 @@ static void rfcomm_dev_destruct(struct r
- 
- 	tty_unregister_device(rfcomm_tty_driver, dev->id);
- 
--	/* Refcount should only hit zero when called from rfcomm_dev_del()
--	   which will have taken us off the list. Everything else are
--	   refcounting bugs. */
- 	BUG_ON(!list_empty(&dev->list));
- 
- 	kfree(dev);
-@@ -128,13 +125,6 @@ static inline void rfcomm_dev_hold(struc
- 
- static inline void rfcomm_dev_put(struct rfcomm_dev *dev)
- {
--	/* The reason this isn't actually a race, as you no
--	   doubt have a little voice screaming at you in your
--	   head, is that the refcount should never actually
--	   reach zero unless the device has already been taken
--	   off the list, in rfcomm_dev_del(). And if that's not
--	   true, we'll hit the BUG() in rfcomm_dev_destruct()
--	   anyway. */
- 	if (atomic_dec_and_test(&dev->refcnt))
- 		rfcomm_dev_destruct(dev);
- }
-@@ -309,12 +299,11 @@ out:
- 	return dev->id;
- }
- 
--static void rfcomm_dev_del(struct rfcomm_dev *dev)
-+static void rfcomm_dev_set_del(struct rfcomm_dev *dev)
- {
- 	BT_DBG("dev %p", dev);
- 
- 	set_bit(RFCOMM_TTY_RELEASED, &dev->flags);
--	rfcomm_dev_put(dev);
- }
- 
- /* ---- Send buffer ---- */
-@@ -425,7 +414,7 @@ static int rfcomm_release_dev(void __use
- 	if (dev->tty)
- 		tty_vhangup(dev->tty);
- 
--	rfcomm_dev_del(dev);
-+	rfcomm_dev_set_del(dev);
- 	rfcomm_dev_put(dev);
- 	return 0;
- }
-@@ -564,7 +553,8 @@ static void rfcomm_dev_state_change(stru
- 				if (rfcomm_dev_get(dev->id) == NULL)
- 					return;
- 
--				rfcomm_dev_del(dev);
-+				rfcomm_dev_set_del(dev);
-+				rfcomm_dev_put(dev);
- 				/* We have to drop DLC lock here, otherwise
- 				   rfcomm_dev_put() will dead lock if it's
- 				   the last reference. */
-@@ -1022,7 +1012,8 @@ static void rfcomm_tty_hangup(struct tty
- 	if (test_bit(RFCOMM_RELEASE_ONHUP, &dev->flags)) {
- 		if (rfcomm_dev_get(dev->id) == NULL)
- 			return;
--		rfcomm_dev_del(dev);
-+		rfcomm_dev_set_del(dev);
-+		rfcomm_dev_put(dev);
- 		rfcomm_dev_put(dev);
- 	}
- }
+- Dave
