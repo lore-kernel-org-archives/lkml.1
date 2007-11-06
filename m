@@ -1,45 +1,56 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756566AbXKCQzq (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sat, 3 Nov 2007 12:55:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754452AbXKCQzh
+	id S1756508AbXKFNOh (ORCPT <rfc822;ralf@linux-mips.org>);
+	Tue, 6 Nov 2007 08:14:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbXKFNO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Nov 2007 12:55:37 -0400
-Received: from galatiansvm01.netdns.net ([202.157.142.35]:41073 "EHLO
-	galatiansvm01.netdns.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754477AbXKCQzg (ORCPT
+	Tue, 6 Nov 2007 08:14:27 -0500
+Received: from smtp03.aspadmin.com ([66.240.201.18]:47318 "EHLO
+	smtp03.aspadmin.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751209AbXKFNO0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Nov 2007 12:55:36 -0400
-Cc: recipient list not shown:;
-Message-ID: <1194109139.472ca8d374f05@mail.thebluebarrel.com.sg>
-Date: Sun,  4 Nov 2007 00:58:59 +0800
-From: sendra@thebluebarrel.com.sg
-Subject: RF Nr 9527BCV-33-7-7-7
+	Tue, 6 Nov 2007 08:14:26 -0500
+X-Greylist: delayed 27277 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Nov 2007 08:14:26 EST
+Message-ID: <4114-22007112653151913@admin-412537a00>
+Reply-To: "QUE TE IMPORTO" <info@mexlogistica.com>
+Organisation: QUE TE IMPORTO
+From: "QUE TE IMPORTO" <publicidad@chiverito.com>
+To: linux-kernel@vger.kernel.org
+Subject: IMPORTACIONES Y CURSOS
+Date: Mon, 5 Nov 2007 23:31:51 -0600
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) 3.2.7
-To: unlisted-recipients:; (no To-header on input)
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1756566AbXKCQzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1756508AbXKFNOh@vger.kernel.org>
+
+WWW.MEXLOGISTICA.COM=20
+TEL (81) 8998-6589 & 8394-7238=20
+info@mexlogistica.com=20
+nextel id. 52*168008*1=20
+
+AGENCIA ADUANAL EN MEXICO Y EUA: LAREDO, MONTERREY, MEXICO Y MAS...
+COMERCIALIZADORA: PERMISOS DE IMPORTACION, PADRON GENERAL Y SECTORIAL
+IMPORTACIONES & EXPORTACIONES: NORMAL Y CON PEQUE=D1A IMPORTACION
+HACEMOS TUS COMPRAS EN EL EXTRANJERO Y POR INTERNET
+
+CURSOS PRACTICOS EN MONTERREY, NL MEXICO
+IMPORTACIONES EFECTIVAS (9 NOV)
+VENTAS EFECTIVAS  (8 NOV)=20
+CLASIFICACION DE MERCANCIAS Y LLENADO DE TLCAN (7 NOV)
+SEMINARIO EN LOG=CDSTICA Y TRANSPORTE (17 NOV)
+SEMINARIO PRACTICO EN IMPORTACIONES (24 NOV)
+Detalles en: www.mexlogistica.com/cursos=20
+
+WWW.MEXLOGISTICA.COM=20
+TEL (81) 8998-6589 & 8394-7238=20
+info@mexlogistica.com=20
+nextel id. 52*168008*1=20
 
 
-
-YOU 'VE WON.
-
-You have won $950,000.00 Dollars in DE EURO MILLIONES ONLINE
-INT.LOTTERY SPAIN.Forfurther development for Clarification and
-procedure   please   Contact ,Dr.Pauly Anderson.
-
-E-mai    finansseguros@sfax.ws 0R finansseguros2@ozu.es
-
-TEL: 34  652-063-073.
-
-(1) Tic Nr: 6460DGH
-(2) Sr Nr: 0909AOB09
-(3) LU Nr: 726726XZJHN
-(4) BT Nr: 2GH267XZZ1-5-42
-(5) RF Nr 9527BCV-33-7-7-7
-
-Regards.
-Mss.Sodic Lasy
+-
+To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
+ in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
