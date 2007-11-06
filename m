@@ -1,54 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbXKFCuN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756896AbXKFCx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756797AbXKFCuN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 21:50:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755258AbXKFCuA
+	id S1756896AbXKFCx0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 21:53:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755927AbXKFCxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 21:50:00 -0500
-Received: from el-out-1112.google.com ([209.85.162.178]:45932 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754738AbXKFCt7 (ORCPT
+	Mon, 5 Nov 2007 21:53:19 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:41976 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755617AbXKFCxS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 21:49:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bELAir/uCq76OAJbiZ4j49Xum4QU1ju3CHVccdSmDiizpRmvypK2izUNTPN8YUWfFXdX/R4wkS+bQvHg3/c7bLogTdIQXleK9f1ES84nLKuGPIx9Aftd2DvWs8qOWmKCK+WGbr0JO6W2i3NhNfw+ewUiLG98Rjki+KCk3xnmHcw=
-Message-ID: <a8e1da0711051849ma591d4k6a816e2de7390347@mail.gmail.com>
-Date: Tue, 6 Nov 2007 10:49:55 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Alon Bar-Lev" <alon.barlev@gmail.com>
-Subject: Re: [Bluez-devel] [BUG] rfcomm]
-Cc: linux-kernel@vger.kernel.org, marcel@holtmann.org,
-       bluez-devel@lists.sourceforge.net
-In-Reply-To: <a8e1da0711051748u4a0d2d57t4bad26e4f02f559e@mail.gmail.com>
+	Mon, 5 Nov 2007 21:53:18 -0500
+Date: Tue, 6 Nov 2007 03:52:53 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Brian Gerst <bgerst@didntduck.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 03/10] x86: arch/x86/Kconfig.cpu unification
+Message-ID: <20071106025253.GF3444@stusta.de>
+References: <11941338801315-git-send-email-sam@ravnborg.org> <11941338804007-git-send-email-sam@ravnborg.org> <11941338801910-git-send-email-sam@ravnborg.org> <472FBB13.9070608@didntduck.org> <20071106024630.GA900@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <200710231950.31313.alon.barlev@gmail.com>
-	 <a8e1da0711042108r7cea1a46s8d8b93795c314119@mail.gmail.com>
-	 <9e0cf0bf0711050746s5f7910d8teb3c8ae9530b549e@mail.gmail.com>
-	 <a8e1da0711051748u4a0d2d57t4bad26e4f02f559e@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071106024630.GA900@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/6/07, Dave Young <hidave.darkstar@gmail.com> wrote:
-> On 11/5/07, Alon Bar-Lev <alon.barlev@gmail.com> wrote:
-> > On 11/5/07, Dave Young <hidave.darkstar@gmail.com> wrote:
-> > > Hi,
-> > > I managed to produce this bug last weekend. I debugged it and found a
-> > > rfcomm_dev refcnt BUG.
-> > > please try the patch of attachment, sorry for attachement because of
-> > > my gmail/mutt configuration problem.
-> > >
-> > > I post it in below thread:
-> > > http://lkml.org/lkml/2007/11/4/207
-> >
-> > It actually worse... :(
->
-Hi,
-sorry for reply again, this seems a diffrent issue ...
+On Tue, Nov 06, 2007 at 03:46:30AM +0100, Sam Ravnborg wrote:
+> On Mon, Nov 05, 2007 at 07:53:39PM -0500, Brian Gerst wrote:
+> > Sam Ravnborg wrote:
+> > > Move all CPU definitions to Kconfig.cpu
+> > 
+> > This patch causes build failure on x86_64:
+> > 
+> > lib/rwsem.c: In function ‘__init_rwsem’:
+> > lib/rwsem.c:24: error: ‘struct rw_semaphore’ has no member named ‘count’
+> > lib/rwsem.c:24: error: ‘RWSEM_UNLOCKED_VALUE’ undeclared (first use in
+> > this function)
+> > lib/rwsem.c:24: error: (Each undeclared identifier is reported only once
+> > lib/rwsem.c:24: error: for each function it appears in.)
+> > lib/rwsem.c: In function ‘__rwsem_do_wake’:
+> > lib/rwsem.c:64: error: implicit declaration of function
+> > ‘rwsem_atomic_update’
+> > lib/rwsem.c:64: error: ‘RWSEM_ACTIVE_BIAS’ undeclared (first use in this
+> > function)
+> > lib/rwsem.c:66: error: ‘RWSEM_ACTIVE_MASK’ undeclared (first use in this
+> > function)
+> > lib/rwsem.c:115: error: ‘RWSEM_WAITING_BIAS’ undeclared (first use in
+> > this function)
+> > lib/rwsem.c:120: error: implicit declaration of function ‘rwsem_atomic_add’
+> > lib/rwsem.c: In function ‘rwsem_down_failed_common’:
+> > lib/rwsem.c:169: error: ‘RWSEM_ACTIVE_MASK’ undeclared (first use in
+> > this function)
+> > lib/rwsem.c: In function ‘rwsem_down_read_failed’:
+> > lib/rwsem.c:197: error: ‘RWSEM_WAITING_BIAS’ undeclared (first use in
+> > this function)
+> > lib/rwsem.c:197: error: ‘RWSEM_ACTIVE_BIAS’ undeclared (first use in
+> > this function)
+> > lib/rwsem.c: In function ‘rwsem_down_write_failed’:
+> > lib/rwsem.c:210: error: ‘RWSEM_ACTIVE_BIAS’ undeclared (first use in
+> > this function)
+> > 
+> > git bisect gives:
+> > 55432d383871d127685d78f94e0ad60307dcc0e9 is first bad commit
+> > commit 55432d383871d127685d78f94e0ad60307dcc0e9
+> > Author: Sam Ravnborg <sam@ravnborg.org>
+> > Date:   Thu Nov 1 21:54:39 2007 +0100
+> > 
+> >     x86: arch/x86/Kconfig.cpu unification
+> 
+> Seems that a default value fail to change value when we shift
+> from 32 to 64 bit. I have it reproduced here.
+> Will look at it tonight.
 
-Regards
-dave
+The problem is that you source arch/x86/Kconfig.cpu from 
+arch/x86/Kconfig.x86_64 but didn't give RWSEM_XCHGADD_ALGORITHM 
+the required dependency on X86_32.
+
+> 	Sam
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
