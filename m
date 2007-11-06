@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756270AbXKFRF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbXKFRKc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756270AbXKFRF4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 12:05:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754197AbXKFRFt
+	id S1755891AbXKFRKc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 12:10:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbXKFRKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 12:05:49 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:38793 "EHLO
+	Tue, 6 Nov 2007 12:10:25 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33113 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753578AbXKFRFs (ORCPT
+	with ESMTP id S1751063AbXKFRKY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 12:05:48 -0500
+	Tue, 6 Nov 2007 12:10:24 -0500
 From: ebiederm@xmission.com (Eric W. Biederman)
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
@@ -29,11 +29,12 @@ References: <200711050358.lA53wlho003349@tazenda.hos.anvin.org>
 	<472F85F2.6040501@zytor.com> <472FBC83.5060509@goop.org>
 	<472FBF40.1010300@zytor.com> <472FC0F3.10102@goop.org>
 	<472FC401.9020202@zytor.com> <47309389.3080403@goop.org>
-	<47309608.9030200@zytor.com>
-Date: Tue, 06 Nov 2007 10:04:13 -0700
-In-Reply-To: <47309608.9030200@zytor.com> (H. Peter Anvin's message of "Tue,
-	06 Nov 2007 08:27:52 -0800")
-Message-ID: <m1640f71bm.fsf@ebiederm.dsl.xmission.com>
+	<47309608.9030200@zytor.com> <47309C85.6030904@goop.org>
+	<47309D98.8080003@zytor.com>
+Date: Tue, 06 Nov 2007 10:09:23 -0700
+In-Reply-To: <47309D98.8080003@zytor.com> (H. Peter Anvin's message of "Tue,
+	06 Nov 2007 09:00:08 -0800")
+Message-ID: <m1zlxr5mik.fsf@ebiederm.dsl.xmission.com>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -44,29 +45,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 > Jeremy Fitzhardinge wrote:
 >> H. Peter Anvin wrote:
->>> The ELF note format is sane enough, although it looks like it's not
->>> self-terminating, so we'd either need an offset and a length field, or
->>> adopt the convention that namesz = descsz = type = 0 terminates the
->>> block (I prefer the latter, myself.)
+>>> .notes : {
+>>>     *(.note.*)
+>>>     . = ALIGN(4);
+>>>     LONG(0);
+>>>     LONG(0);
+>>>     LONG(0);
+>>> }
+>>>
+>>> Am I missing something?
 >>
->> Hm, I think offset+length would be better: it's how they're represented
->> in a normal ELF file, so you can just extract the length if you're
->> extracting the notes.  Also, generating a terminating note with the
->> current linker-based notes machinery would be a bit of a pain.
+>> Oh, I suppose, but I never much liked putting data-definition into the
+>> linker script.
+>>
 >
-> .notes : {
-> 	*(.note.*)
-> 	. = ALIGN(4);
-> 	LONG(0);
-> 	LONG(0);
-> 	LONG(0);
-> }
+> I think it should be sparsely used, but stuff like simple end markers is pretty
+> much what it's good for.
 >
-> Am I missing something?
+> The main reason I want to avoid adding another header field is that the header
+> is a finite resource; one of the many poor decisions in its original design was
+> using a 2-byte jump at the top, so address 0x281 is the end of the universe.
 
-I don't think adding a length any harder.
-
-The all zero note is reserved so using it this way should be ok.
-Regardless this sounds like a sane thing to be looking at.
+That was fixed long ago (by having a 4 byte reserved field in the middle) that
+we can do a two byte jump and then do a farther jump from there to the 16bit
+code.  So as long as we actually use discipline and really reserve
+the field for a further jump there should be no need for 0x281 being the end
+of the universe.
 
 Eric
