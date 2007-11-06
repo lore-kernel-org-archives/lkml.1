@@ -1,104 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756376AbXKFQ7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755736AbXKFREG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756376AbXKFQ7S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 11:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754389AbXKFQ7I
+	id S1755736AbXKFREG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 12:04:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753707AbXKFRDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 11:59:08 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:45365 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753954AbXKFQ7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 11:59:07 -0500
-Subject: [PATCH] r/o bind mounts: fix buggy loop
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, hch@infradead.org, hugh@veritas.com,
-       Dave Hansen <haveblue@us.ibm.com>
-From: Dave Hansen <haveblue@us.ibm.com>
-Date: Tue, 06 Nov 2007 08:59:00 -0800
-Message-Id: <20071106165900.4AA6F6E1@kernel>
+	Tue, 6 Nov 2007 12:03:55 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:36889 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753695AbXKFRDy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 12:03:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=JYvfuas/IQf76knDIPwQIpkD8wGAdfq5LNxOKEZW8HWWRj5O4if0jReGHkMyBQRe3QJwYdReQSs5TKsFrvj58ySmQZ/WEUVr2LE0nNvfK/zVPVlSVLhcYxh1b/rI2dcl8aK7smZHIvcZC3KTErMYo9iGIdIbylAhXPrncfVXQi0=
+Message-ID: <661de9470711060903w73f6eca4r83a9bdd777bd5366@mail.gmail.com>
+Date: Tue, 6 Nov 2007 22:33:51 +0530
+From: "Balbir Singh" <balbir@linux.vnet.ibm.com>
+To: "Jonathan Corbet" <corbet@lwn.net>
+Subject: Re: Patch tags [was writeout stalls in current -git]
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <28448.1194366312@lwn.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071105155749.73e0e38e.akpm@linux-foundation.org>
+	 <28448.1194366312@lwn.net>
+X-Google-Sender-Auth: bf5745136caf2584
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> This seems like as good an opportunity as any to toss my patch tags
+> document out there one more time.  I still think it's a good idea to
+> codify some sort of consensus on what these tags mean...
+>
+> jon
+>
 
-The mnt->__mnt_writers can go negative for a time if
-a pair of mnt_want_write()/mnt_drop_write() calls is
-done on a different cpu, but for the same mount.
-This part is expected.
+[snip]
 
-The lock_and_coalesce..() function should make that
-count positive (or at least 0).  Hugh Dickins had
-found a bug in the unionfs code which caused a
-permanent imbalance in this code, and eventually
-underflowed the atomic_t mnt->__mnt_writers.
+> +By offering my Reviewed-by: tag, I state that:
+> +
+> + (a) I have carried out a technical review of this patch to evaluate its
+> +     appropriateness and readiness for inclusion into the mainline kernel.
+> +
+> + (b) Any problems, concerns, or questions relating to the patch have been
+> +     communicated back to the submitter.  I am satisfied with the
+> +     submitter's response to my comments.
+> +
+> + (c) While there may be things that could be improved with this submission,
+> +     I believe that it is, at this time, (1) a worthwhile modification to
+> +     the kernel, and (2) free of known issues which would argue against its
+> +     inclusion.
+> +
+> + (d) While I have reviewed the patch and believe it to be sound, I do not
+> +     (unless explicitly stated elsewhere) make any warranties or guarantees
+> +     that it will achieve its stated purpose or function properly in any
+> +     given situation.
 
-It also locked up the while() loop that expects the
-count to go up after it is coalesced.
+How about adding a Commented-on-by?
 
-The following patch won't fix such a unionfs bug, but
-it will keep the loop from locking up.  It will also
-warn a lot earlier that something funky is going on.
+Initial version(s) that are not suitable or still shaping up are
+commented-on by several people. A person who comments on one version
+might not do a thorough review of the entire code, but through a
+series of comments has contributed by pushing the developer in the
+correct direction.
 
-Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
----
-
- linux-2.6.git-dave/fs/namespace.c        |   31 ++++++++++++++++++++++---------
- linux-2.6.git-dave/include/linux/mount.h |    1 +
- 2 files changed, 23 insertions(+), 9 deletions(-)
-
-diff -puN fs/namei.c~fix-naughty-loop fs/namei.c
-diff -puN fs/namespace.c~fix-naughty-loop fs/namespace.c
---- linux-2.6.git/fs/namespace.c~fix-naughty-loop	2007-11-05 08:03:59.000000000 -0800
-+++ linux-2.6.git-dave/fs/namespace.c	2007-11-05 08:35:06.000000000 -0800
-@@ -225,16 +225,29 @@ static void lock_and_coalesce_cpu_mnt_wr
-  */
- static void handle_write_count_underflow(struct vfsmount *mnt)
- {
--	while (atomic_read(&mnt->__mnt_writers) <
--		MNT_WRITER_UNDERFLOW_LIMIT) {
--		/*
--		 * It isn't necessary to hold all of the locks
--		 * at the same time, but doing it this way makes
--		 * us share a lot more code.
--		 */
--		lock_and_coalesce_cpu_mnt_writer_counts();
--		mnt_unlock_cpus();
-+	if (atomic_read(&mnt->__mnt_writers) >=
-+	    MNT_WRITER_UNDERFLOW_LIMIT)
-+		return;
-+	/*
-+	 * It isn't necessary to hold all of the locks
-+	 * at the same time, but doing it this way makes
-+	 * us share a lot more code.
-+	 */
-+	lock_and_coalesce_cpu_mnt_writer_counts();
-+	/*
-+	 * If coalescing the per-cpu writer counts did not
-+	 * get us back to a positive writer count, we have
-+	 * a bug.
-+	 */
-+	if ((atomic_read(&mnt->__mnt_writers) < 0) &&
-+	    !(mnt->mnt_flags & MNT_IMBALANCED_WRITE_COUNT)) {
-+		printk("leak detected on mount(%p) writers count: %d\n",
-+			mnt, atomic_read(&mnt->__mnt_writers));
-+		WARN_ON(1);
-+		/* use the flag to keep the dmesg spam down */
-+		mnt->mnt_flags |= MNT_IMBALANCED_WRITE_COUNT;
- 	}
-+	mnt_unlock_cpus();
- }
- 
- /**
-diff -puN include/linux/mount.h~fix-naughty-loop include/linux/mount.h
---- linux-2.6.git/include/linux/mount.h~fix-naughty-loop	2007-11-05 08:22:21.000000000 -0800
-+++ linux-2.6.git-dave/include/linux/mount.h	2007-11-05 08:28:20.000000000 -0800
-@@ -32,6 +32,7 @@ struct mnt_namespace;
- #define MNT_READONLY	0x40	/* does the user want this to be r/o? */
- 
- #define MNT_SHRINKABLE	0x100
-+#define MNT_IMBALANCED_WRITE_COUNT	0x200 /* just for debugging */
- 
- #define MNT_SHARED	0x1000	/* if the vfsmount is a shared mount */
- #define MNT_UNBINDABLE	0x2000	/* if the vfsmount is a unbindable mount */
-diff -puN include/linux/fs.h~fix-naughty-loop include/linux/fs.h
-diff -puN fs/nfsd/nfs4state.c~fix-naughty-loop fs/nfsd/nfs4state.c
-_
+Balbir
