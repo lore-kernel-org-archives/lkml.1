@@ -1,74 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756021AbXKFW6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755379AbXKFW7z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756021AbXKFW6S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 17:58:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbXKFW5v
+	id S1755379AbXKFW7z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 17:59:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754232AbXKFW7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 17:57:51 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47093 "EHLO mx1.redhat.com"
+	Tue, 6 Nov 2007 17:59:43 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:37385 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755201AbXKFW5u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 17:57:50 -0500
-Message-ID: <4730F1AF.8050608@redhat.com>
-Date: Tue, 06 Nov 2007 20:58:55 -0200
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070811)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: linux-kernel@vger.kernel.org, avi@qumranet.com, aliguori@us.ibm.com,
-       kvm-devel@lists.sourceforge.net, hollisb@us.ibm.com
-Subject: Re: include files for kvmclock
-References: <11943875362987-git-send-email-gcosta@redhat.com> <11943875433821-git-send-email-gcosta@redhat.com> <4730EF9F.3020803@goop.org>
-In-Reply-To: <4730EF9F.3020803@goop.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	id S1753761AbXKFW7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 17:59:42 -0500
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH] x86: add X86_64 dependency to x86_64 specific symbols in Kconfig.x86_64
+Date: Wed,  7 Nov 2007 00:01:16 +0100
+Message-Id: <1194390080957-git-send-email-sam@ravnborg.org>
+X-Mailer: git-send-email 1.5.0.6
+In-Reply-To: <11943900792324-git-send-email-sam@ravnborg.org>
+References: <11943900793940-git-send-email-sam@ravnborg.org> <11943900792519-git-send-email-sam@ravnborg.org> <11943900793757-git-send-email-sam@ravnborg.org> <11943900792324-git-send-email-sam@ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+To ease unification of Kconfig.i386 and Kconfig.x86_64
+add X86_64 dependencies to all x86_64 specific symbols.
 
-Jeremy Fitzhardinge escreveu:
-> Glauber de Oliveira Costa wrote:
->> This patch introduces the include files for kvm clock.
->> They'll be needed for both guest and host part.
->>
->> Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
->> ---
->>  include/asm-x86/kvm_para.h |   23 +++++++++++++++++++++++
->>  include/linux/kvm.h        |    1 +
->>  include/linux/kvm_para.h   |   20 ++++++++++++++++++++
->>  3 files changed, 44 insertions(+), 0 deletions(-)
->>
->> diff --git a/include/asm-x86/kvm_para.h b/include/asm-x86/kvm_para.h
->> index c6f3fd8..af9fb75 100644
->> --- a/include/asm-x86/kvm_para.h
->> +++ b/include/asm-x86/kvm_para.h
->> @@ -10,15 +10,38 @@
->>   * paravirtualization, the appropriate feature bit should be checked.
->>   */
->>  #define KVM_CPUID_FEATURES	0x40000001
->> +#define KVM_FEATURE_CLOCKEVENTS 0
->> +#define KVM_FEATURE_CLOCKSOURCE 1
->> +
->>  
->>  #ifdef __KERNEL__
->>  #include <asm/processor.h>
->> +extern void kvmclock_init(void);
->> +
->> +union kvm_hv_clock {
->>   
-> 
-> Why two copies of this structure?
-> 
-It's called silly mistake. ;-)
+This patch introduce no functional changes but is one step
+towards unification. This smaller step is used to ease
+review of the patch set.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Remi - http://enigmail.mozdev.org
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+ arch/x86/Kconfig.x86_64 |   34 +++++++++++++++++-----------------
+ 1 files changed, 17 insertions(+), 17 deletions(-)
 
-iD8DBQFHMPGvjYI8LaFUWXMRAgt2AJ9NKgq2LCueUidH56ZgUYA+5wBhGwCfdqQB
-otFP1/SFowaANQ8FojEtJUE=
-=8Xqp
------END PGP SIGNATURE-----
+diff --git a/arch/x86/Kconfig.x86_64 b/arch/x86/Kconfig.x86_64
+index cdd1458..36bb856 100644
+--- a/arch/x86/Kconfig.x86_64
++++ b/arch/x86/Kconfig.x86_64
+@@ -18,7 +18,7 @@ config X86_64
+ 	  <http://www.x86-64.org/>.
+ 
+ config 64BIT
+-	def_bool y
++	def_bool X86_64
+ 
+ config X86
+ 	bool
+@@ -129,7 +129,7 @@ config X86_PC
+ 
+ config X86_VSMP
+ 	bool "Support for ScaleMP vSMP"
+-	depends on PCI
++	depends on X86_64 && PCI
+ 	 help
+ 	  Support for ScaleMP vSMP systems.  Say 'Y' here if this kernel is
+ 	  supposed to run on these EM64T-based machines.  Only choose this option
+@@ -275,7 +275,7 @@ config NUMA
+ 
+ config K8_NUMA
+        bool "Old style AMD Opteron NUMA detection"
+-       depends on NUMA && PCI
++       depends on X86_64 && NUMA && PCI
+        default y
+        help
+ 	 Enable K8 NUMA node topology detection.  You should say Y here if
+@@ -286,14 +286,14 @@ config K8_NUMA
+ 
+ config NODES_SHIFT
+ 	int
+-	default "6"
++	default "6" if X86_64
+ 	depends on NEED_MULTIPLE_NODES
+ 
+ # Dummy CONFIG option to select ACPI_NUMA from drivers/acpi/Kconfig.
+ 
+ config X86_64_ACPI_NUMA
+        bool "ACPI NUMA detection"
+-       depends on NUMA
++       depends on X86_64 && NUMA
+        select ACPI 
+ 	select PCI
+        select ACPI_NUMA
+@@ -303,7 +303,7 @@ config X86_64_ACPI_NUMA
+ 
+ config NUMA_EMU
+ 	bool "NUMA emulation"
+-	depends on NUMA
++	depends on X86_64 && NUMA
+ 	help
+ 	  Enable NUMA emulation. A flat machine will be split
+ 	  into virtual nodes when booted with "numa=fake=N", where N is the
+@@ -324,7 +324,7 @@ config ARCH_SPARSEMEM_ENABLE
+ 	select SPARSEMEM_VMEMMAP_ENABLE
+ 
+ config ARCH_MEMORY_PROBE
+-	def_bool y
++	def_bool X86_64
+ 	depends on MEMORY_HOTPLUG
+ 
+ config ARCH_FLATMEM_ENABLE
+@@ -334,15 +334,15 @@ config ARCH_FLATMEM_ENABLE
+ source "mm/Kconfig"
+ 
+ config MEMORY_HOTPLUG_RESERVE
+-	def_bool y
++	def_bool X86_64
+ 	depends on (MEMORY_HOTPLUG && DISCONTIGMEM)
+ 
+ config HAVE_ARCH_EARLY_PFN_TO_NID
+-	def_bool y
++	def_bool X86_64
+ 	depends on NUMA
+ 
+ config OUT_OF_LINE_PFN_TO_PAGE
+-	def_bool y
++	def_bool X86_64
+ 	depends on DISCONTIGMEM
+ 
+ config NR_CPUS
+@@ -360,7 +360,7 @@ config NR_CPUS
+ 
+ config PHYSICAL_ALIGN
+ 	hex
+-	default "0x200000"
++	default "0x200000" if X86_64
+ 
+ config HOTPLUG_CPU
+ 	bool "Support for suspend on SMP and hot-pluggable CPUs (EXPERIMENTAL)"
+@@ -399,7 +399,7 @@ config GART_IOMMU
+ 	default y
+ 	select SWIOTLB
+ 	select AGP
+-	depends on PCI
++	depends on X86_64 && PCI
+ 	help
+ 	  Support for full DMA access of devices with 32bit memory access only
+ 	  on systems with more than 3GB. This is usually needed for USB,
+@@ -414,7 +414,7 @@ config GART_IOMMU
+ config CALGARY_IOMMU
+ 	bool "IBM Calgary IOMMU support"
+ 	select SWIOTLB
+-	depends on PCI && EXPERIMENTAL
++	depends on X86_64 && PCI && EXPERIMENTAL
+ 	help
+ 	  Support for hardware IOMMUs in IBM's xSeries x366 and x460
+ 	  systems. Needed to run systems with more than 3GB of memory
+@@ -461,7 +461,7 @@ config X86_MCE
+ 
+ config X86_MCE_INTEL
+ 	bool "Intel MCE features"
+-	depends on X86_MCE && X86_LOCAL_APIC
++	depends on X86_64 && X86_MCE && X86_LOCAL_APIC
+ 	default y
+ 	help
+ 	   Additional support for intel specific MCE features such as
+@@ -469,7 +469,7 @@ config X86_MCE_INTEL
+ 
+ config X86_MCE_AMD
+ 	bool "AMD MCE features"
+-	depends on X86_MCE && X86_LOCAL_APIC
++	depends on X86_64 && X86_MCE && X86_LOCAL_APIC
+ 	default y
+ 	help
+ 	   Additional support for AMD specific MCE features such as
+@@ -576,7 +576,7 @@ config SECCOMP
+ 
+ config CC_STACKPROTECTOR
+ 	bool "Enable -fstack-protector buffer overflow detection (EXPERIMENTAL)"
+-	depends on EXPERIMENTAL
++	depends on X86_64 && EXPERIMENTAL
+ 	help
+          This option turns on the -fstack-protector GCC feature. This
+ 	  feature puts, at the beginning of critical functions, a canary
+@@ -601,7 +601,7 @@ config CC_STACKPROTECTOR_ALL
+ source kernel/Kconfig.hz
+ 
+ config K8_NB
+-	def_bool y
++	def_bool X86_64
+ 	depends on AGP_AMD64 || GART_IOMMU || (PCI && NUMA)
+ 
+ endmenu
+-- 
+1.5.3.4.1157.g0e74-dirty
+
