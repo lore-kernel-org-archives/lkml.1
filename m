@@ -1,91 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbXKFLSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbXKFL0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757378AbXKFLSj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 06:18:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754779AbXKFLSc
+	id S1756916AbXKFL0Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 06:26:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbXKFL0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 06:18:32 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:46442 "EHLO
+	Tue, 6 Nov 2007 06:26:17 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:39200 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754677AbXKFLSb (ORCPT
+	with ESMTP id S1751209AbXKFL0Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 06:18:31 -0500
-Date: Tue, 6 Nov 2007 12:18:29 +0100
+	Tue, 6 Nov 2007 06:26:16 -0500
+Date: Tue, 6 Nov 2007 12:26:15 +0100
 From: Jan Kara <jack@suse.cz>
-To: Gregory Nietsky <gregnietsky@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Odd Ooops jbd ??
-Message-ID: <20071106111829.GF32704@atrey.karlin.mff.cuni.cz>
-References: <473023FE.8020501@networksentry.co.za>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org,
+       Christian Borntraeger <borntraeger@de.ibm.com>
+Subject: Re: Future of Linux 2.6.22.y series
+Message-ID: <20071106112615.GG32704@atrey.karlin.mff.cuni.cz>
+References: <20071105181332.GB28628@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="ikeVEW9yuYc//A+q"
 Content-Disposition: inline
-In-Reply-To: <473023FE.8020501@networksentry.co.za>
+In-Reply-To: <20071105181332.GB28628@kroah.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> here is a error i keep bumping into with 2.6.24-rc1 (git11)
-> 
-> the trigger is a ISDN call from one port to another (loopback cable) 
-> within asterisk i have not been able to replicate it in any other way 
-> the error may be in the ISDN
-> what i cant understand is why it would affect the fs.
-> 
-> shortly after this occurs there many oopses letting it run yesterday 
-> corrupted the superblock on the / fs
-> 
-> i will continue to try narrow it down any ideas are welcome.
-> 
-  Actually, you seem to have snipped the reason why the kernel has
-oopsed. Can you post it please? Thanks.
 
-> printing eip: c0177656 *pde = 00000000
-> Oops: 0000 [#1] PREEMPT SMP
+--ikeVEW9yuYc//A+q
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+> For the last release, I stated that I thought the 2.6.22.12 release
+> would be the last one in the 2.6.22.y series.  Since then, I've received
+> a number of other patches that would be nice to have in the .22.y tree.
 > 
-> ...
-> 
-> Pid: 564, comm: kjournald Not tainted (2.6.24-rc1-git11-i386-smp #4)
-> EIP: 0060:[<c0177656>] EFLAGS: 00010006 CPU: 1
-> EIP is at kmem_cache_alloc+0x5d/0xa6
-> EAX: 00000000 EBX: 00000282 ECX: c03621d0 EDX: 74736e69
-> ESI: c1c164fc EDI: 74736e69 EBP: c03621d0 ESP: c359de80
-> DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> Process kjournald (pid: 564, ti=c359c000 task=c352d800 task.ti=c359c000)
-> Stack: c352d800 00000001 74736e69 00011200 00000092 c2035600 c3179380 
-> 00000001
->       00011210 c015d385 00000010 c019797d 00000001 00000002 c359dee8 
-> c019797d
->       00000000 c3179380 00000001 00000000 c019a0fa 00000000 c201c2a0 
-> 00000010
-> Call Trace:
-> [<c015d385>] mempool_alloc+0x24/0xc2
-> [<c019797d>] sync_buffer+0x0/0x33
-> [<c019797d>] sync_buffer+0x0/0x33
-> [<c019a0fa>] bio_alloc_bioset+0x8c/0xe6
-> [<c011e0cb>] __wake_up_common+0x38/0x5d
-> [<c019a15f>] bio_alloc+0xb/0x17
-> [<c0196959>] submit_bh+0x6b/0xf5
-> [<f88c2b47>] journal_do_submit_data+0x23/0x2b [jbd]
-> [<f88c3054>] journal_commit_transaction+0x4a7/0xcff [jbd]
-> [<c010316d>] __switch_to+0x94/0x10b
-> [<c02b49b7>] schedule+0x4b9/0x4f2
-> [<c012d019>] lock_timer_base+0x19/0x35
-> [<c012d079>] try_to_del_timer_sync+0x44/0x4a
-> [<f88c61f3>] kjournald+0xb0/0x1ec [jbd]
-> [<c01362a4>] autoremove_wake_function+0x0/0x33
-> [<f88c6143>] kjournald+0x0/0x1ec [jbd]
-> [<c01361d5>] kthread+0x38/0x5f
-> [<c013619d>] kthread+0x0/0x5f
-> [<c0105347>] kernel_thread_helper+0x7/0x10
-> =======================
-> Code: 3e 85 ff 89 7c 24 08 75 1b 89 14 24 8b 54 24 0c 83 c9 ff 89 e8 89 
-> 74 24 04 e8 d8 f8 ff ff 89 44 24 08 eb 0c 8b 54 24 08 8b 46 0c <8b> 04 
-> 82 89 06 89 d8
-> 50 9d 0f 1f 84 00 00 00 00 00 66 83 7c 24
-> EIP: [<c0177656>] kmem_cache_alloc+0x5d/0xa6 SS:ESP 0068:c359de80
+> So, for a while, I'll keep the 2.6.22.y tree open, doing new releases
+> every once in a while as they accumulate.  I do this, for no other than
+> the selfish reason that I use it every day on my openSuSE 10.3 boxes as
+> that is the kernel base that release is on :)
+  In that case you might be interested in picking up the attached fix :)
+I don't know if you already didn't get it...
 
 								Honza
 -- 
 Jan Kara <jack@suse.cz>
 SuSE CR Labs
+
+--ikeVEW9yuYc//A+q
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: attachment; filename="ramdisk-2.6.23-corruption_fix.diff"
+
+Subject: [PATCH] rd: fix data corruption on memory pressure
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+
+We have seen ramdisk based install systems, where some pages of mapped 
+libraries and programs were suddendly zeroed under memory pressure. This 
+should not happen, as the ramdisk avoids freeing its pages by keeping them 
+dirty all the time.
+
+It turns out that there is a case, where the VM makes a ramdisk page clean, 
+without telling the ramdisk driver.
+On memory pressure shrink_zone runs and it starts to run shrink_active_list. 
+There is a check for buffer_heads_over_limit, and if true, pagevec_strip is 
+called. pagevec_strip calls try_to_release_page. If the mapping has no 
+releasepage callback, try_to_free_buffers is called. try_to_free_buffers has 
+now a special logic for some file systems to make a dirty page clean, if all 
+buffers are clean. Thats what happened in our test case.
+
+The simplest solution is to provide a noop-releasepage callback for the
+ramdisk driver. This avoids try_to_free_buffers for ramdisk pages. 
+
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+Signed-off-by: Jan Kara <jack@suse.cz>
+---
+ drivers/block/rd.c |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+Index: linux-2.6/drivers/block/rd.c
+===================================================================
+--- linux-2.6.orig/drivers/block/rd.c
++++ linux-2.6/drivers/block/rd.c
+@@ -189,6 +189,18 @@ static int ramdisk_set_page_dirty(struct
+ 	return 0;
+ }
+ 
++/*
++ * releasepage is called by pagevec_strip/try_to_release_page if
++ * buffers_heads_over_limit is true. Without a releasepage function
++ * try_to_free_buffers is called instead. That can unset the dirty
++ * bit of our ram disk pages, which will be eventually freed, even
++ * if the page is still in use.
++ */
++static int ramdisk_releasepage(struct page *page, gfp_t dummy)
++{
++	return 0;
++}
++
+ static const struct address_space_operations ramdisk_aops = {
+ 	.readpage	= ramdisk_readpage,
+ 	.prepare_write	= ramdisk_prepare_write,
+@@ -196,6 +208,7 @@ static const struct address_space_operat
+ 	.writepage	= ramdisk_writepage,
+ 	.set_page_dirty	= ramdisk_set_page_dirty,
+ 	.writepages	= ramdisk_writepages,
++	.releasepage	= ramdisk_releasepage,
+ };
+ 
+ static int rd_blkdev_pagecache_IO(int rw, struct bio_vec *vec, sector_t sector,
+
+--ikeVEW9yuYc//A+q--
