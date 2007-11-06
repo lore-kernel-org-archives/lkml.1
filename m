@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754667AbXKFO0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754800AbXKFOaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754667AbXKFO0Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 09:26:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbXKFO0S
+	id S1754800AbXKFOaq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 09:30:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbXKFOai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 09:26:18 -0500
-Received: from rv-out-0910.google.com ([209.85.198.191]:51560 "EHLO
+	Tue, 6 Nov 2007 09:30:38 -0500
+Received: from rv-out-0910.google.com ([209.85.198.186]:57847 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752433AbXKFO0R (ORCPT
+	with ESMTP id S1751414AbXKFOag (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 09:26:17 -0500
+	Tue, 6 Nov 2007 09:30:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=CaNdkzoxAIzeFzNT/R4Op6+obv5jlWyCgNHubUtR5dT2Lu0BeQuUINwCQPiTiAwnDj7sIVJ++7HVzcI5RkhS2mTCtoiWeEEPpzIcb0yRhHM0F29ZdtFGvgj9YOOk/rj3Eg91lpoE7o4C6jmCqS5TwNGpyPdV3O7Z2j5gDAFINZ4=
-Message-ID: <a4e6962a0711060626x46e2355ak92f04f555013edf1@mail.gmail.com>
-Date: Tue, 6 Nov 2007 08:26:17 -0600
-From: "Eric Van Hensbergen" <ericvh@gmail.com>
-To: torvalds@osdl.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "V9FS Developers" <v9fs-developer@lists.sourceforge.net>
-Subject: [GIT PULL] 9p: 2.6.24-rc1 patches
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DdejGkK4Se2FbEn+AQoTT/2/aKDUbtwuJidXmf70Z/dzAzJ1cyqexaK1+EnemW1WxIxkjQheECHbcDhTwHXMt9RXwchyy4J5naj7YhOpqn6Q4hzVjeVBK/uwIXV/1flUK220zKL25f13rJQDUtYKxiSji1u7fUMn1h23Vu+/p1I=
+Message-ID: <1865922a0711060630i4d67f8a5ka2fd30494a525ac9@mail.gmail.com>
+Date: Tue, 6 Nov 2007 16:30:35 +0200
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser
+Cc: "Kyle Moffett" <mrmacman_g4@mac.com>,
+       "Casey Schaufler" <casey@schaufler-ca.com>, akpm@osdl.org,
+       torvalds@osdl.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071106141037.GL26163@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <20071103164303.GA26707@ubuntu>
+	 <C1C917F8-57EA-434C-9FD8-CB5A4EAF2653@mac.com>
+	 <20071106085651.GC26163@stusta.de> <20071106113359.GA6041@ubuntu>
+	 <20071106114738.GH26163@stusta.de>
+	 <1865922a0711060423ue81dbdct413b993e727f6f9@mail.gmail.com>
+	 <46B300CD-7A35-4E81-A0AE-EC2BB72016DD@mac.com>
+	 <20071106133446.GI26163@stusta.de> <20071106140504.GA6310@ubuntu>
+	 <20071106141037.GL26163@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
-   Please pull the following bug-fixes for v9fs.
+On 11/6/07, Adrian Bunk <bunk@kernel.org> wrote:
+> On Tue, Nov 06, 2007 at 04:05:13PM +0200, Ahmed S. Darwish wrote:
+> >
+> > Great, To summarize the discussion. Will there be a problem in
+> > accepting ASCII and the UTF-8 ASCII _subset_ _only_ and  return
+> > -EINVAL for all other cases/ecnodings ?.
+>
+> The UTF-8 ASCII subset is the complete ASCII.
+>
+> > i.e. The fragment I sent in a previous message:
+> >
+> > /* Filter UTF-8 non-ascii compatible bytes (> 0x7F) */
+> > if (!isascii(c)) return -EINVAL;
+> > /* Filter unwanted ascii chars */
+> > if (!isspace(c) && !isgraph(c)) return -EINVAL;
+> >...
+>
+> As I already said, this should work fine.
+>
 
-The following changes since commit 2655e2cee2d77459fcb7e10228259e4ee0328697:
-  Alan Cox (1):
-        ata_piix: Add additional PCI identifier for 40 wire short cable
+I thought you were objecting not handling the remaining non-ASCII
+UTF-8 bytes. Everything is clear now. A Big thank you to everybody in
+this thread for your effort on this :).
 
-are available in the git repository at:
+Regards,
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/ericvh/v9fs.git for-linus
-
-Latchesar Ionkov (4):
-      9p: fix memory leak in v9fs_get_sb
-      9p: use copy of the options value instead of original
-      9p: return NULL when trans not found
-      9p: add missing end-of-options record for trans_fd
-
- fs/9p/v9fs.c      |    6 ++++--
- fs/9p/vfs_super.c |    3 +++
- net/9p/mod.c      |    4 ++--
- net/9p/trans_fd.c |    3 ++-
- 4 files changed, 11 insertions(+), 5 deletions(-)
-
-   Thanks,
-         -eric
+-- 
+Ahmed S. Darwish
+Homepage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
