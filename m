@@ -1,75 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbXKFRKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755225AbXKFRPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755891AbXKFRKc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 12:10:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbXKFRKZ
+	id S1755225AbXKFRPv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 12:15:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbXKFRPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 12:10:25 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33113 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751063AbXKFRKY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 12:10:24 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Mikael Petterson <mikpe@it.uu.se>
-Subject: Re: [GIT PULL] x86 setup: correct booting on 486 (revised)
-References: <200711050358.lA53wlho003349@tazenda.hos.anvin.org>
-	<alpine.LFD.0.999.0711050842360.15101@woody.linux-foundation.org>
-	<472F5941.2060507@zytor.com>
-	<alpine.LFD.0.999.0711051006060.15101@woody.linux-foundation.org>
-	<472F61C8.4040300@zytor.com>
-	<alpine.LFD.0.999.0711051035090.15101@woody.linux-foundation.org>
-	<m1pryoa1f6.fsf@ebiederm.dsl.xmission.com>
-	<472F7D8D.8050505@zytor.com> <472F826E.3050008@goop.org>
-	<472F85F2.6040501@zytor.com> <472FBC83.5060509@goop.org>
-	<472FBF40.1010300@zytor.com> <472FC0F3.10102@goop.org>
-	<472FC401.9020202@zytor.com> <47309389.3080403@goop.org>
-	<47309608.9030200@zytor.com> <47309C85.6030904@goop.org>
-	<47309D98.8080003@zytor.com>
-Date: Tue, 06 Nov 2007 10:09:23 -0700
-In-Reply-To: <47309D98.8080003@zytor.com> (H. Peter Anvin's message of "Tue,
-	06 Nov 2007 09:00:08 -0800")
-Message-ID: <m1zlxr5mik.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 6 Nov 2007 12:15:42 -0500
+Received: from styx.suse.cz ([82.119.242.94]:42599 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753228AbXKFRPl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 12:15:41 -0500
+Date: Tue, 6 Nov 2007 18:15:37 +0100
+From: Jan Kara <jack@suse.cz>
+To: linux-kernel@vger.kernel.org
+Cc: linux-ext4@vger.kernel.org
+Subject: [RFC] [PATCH 0/3] Recursive mtime for ext3
+Message-ID: <20071106171537.GD23689@duck.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="bKyqfOwhbdpXa4YI"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
 
-> Jeremy Fitzhardinge wrote:
->> H. Peter Anvin wrote:
->>> .notes : {
->>>     *(.note.*)
->>>     . = ALIGN(4);
->>>     LONG(0);
->>>     LONG(0);
->>>     LONG(0);
->>> }
->>>
->>> Am I missing something?
->>
->> Oh, I suppose, but I never much liked putting data-definition into the
->> linker script.
->>
->
-> I think it should be sparsely used, but stuff like simple end markers is pretty
-> much what it's good for.
->
-> The main reason I want to avoid adding another header field is that the header
-> is a finite resource; one of the many poor decisions in its original design was
-> using a 2-byte jump at the top, so address 0x281 is the end of the universe.
+--bKyqfOwhbdpXa4YI
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-That was fixed long ago (by having a 4 byte reserved field in the middle) that
-we can do a two byte jump and then do a farther jump from there to the 16bit
-code.  So as long as we actually use discipline and really reserve
-the field for a further jump there should be no need for 0x281 being the end
-of the universe.
+  Hello,
 
-Eric
+  in following three patches is implemented recursive mtime feature for
+ext3. The first two patches are mostly clean-up patches, the third patch
+implements the feature itself. If somebody is interested in testing this
+(or even writing a support of this feature in rsync and similar), please
+contact me. Attached are sources of simple tools set_recmod, get_recmod
+for testing the feature and also a patch implementing basic support of
+the feature in e2fsprogs. Comments welcome.
+
+								Honza
+
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
+
+--bKyqfOwhbdpXa4YI
+Content-Type: text/x-c++src; charset=us-ascii
+Content-Disposition: attachment; filename="set_recmod.c"
+
+#include <stdio.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <string.h>
+
+#include <sys/ioctl.h>
+#include <linux/fs.h>
+#include <linux/ext2_fs.h>
+
+#define EXT2_IOC_GETRTIME _IOR('f', 9, unsigned int)
+
+#define S_RECMOD 0x100000
+
+int main(int argc, char **argv)
+{
+	int fd;
+	long flags;
+
+	if (argc < 2)
+		return 1;
+
+	fd = open(argv[1], O_RDONLY);
+	if (fd < 0) {
+		printf("Cannot open: %m\n");
+		return 1;
+	}
+	if (ioctl(fd, EXT2_IOC_GETFLAGS, &flags) < 0) {
+		printf("Cannot get flags: %m\n");
+		return 1;
+	}
+	flags |= S_RECMOD;
+	if (ioctl(fd, EXT2_IOC_SETFLAGS, &flags) < 0) {
+		printf("Cannot set flags: %m\n");
+		return 1;
+	}
+
+	return 0;
+}
+
+--bKyqfOwhbdpXa4YI
+Content-Type: text/x-c++src; charset=us-ascii
+Content-Disposition: attachment; filename="get_recmod.c"
+
+#include <stdio.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <string.h>
+
+#include <sys/ioctl.h>
+#include <linux/fs.h>
+#include <linux/ext2_fs.h>
+
+#define EXT2_IOC_GETRTIME _IOR('f', 9, unsigned int)
+
+#define S_RECMOD 0x100000
+
+int main(int argc, char **argv)
+{
+	int fd;
+	long flags;
+	unsigned time;
+
+	if (argc < 2)
+		return 1;
+
+	fd = open(argv[1], O_RDONLY);
+	if (fd < 0) {
+		printf("Cannot open: %m\n");
+		return 1;
+	}
+	if (ioctl(fd, EXT2_IOC_GETFLAGS, &flags) < 0) {
+		printf("Cannot get flags: %m\n");
+		return 1;
+	}
+	if (ioctl(fd, EXT2_IOC_GETRTIME, &time) < 0) {
+		printf("Cannot get rtime: %s\n", strerror(errno));
+		return 1;
+	}
+	printf("RECMOD flags: %d, time %u\n", !!(flags & S_RECMOD), time);
+
+	return 0;
+}
+
+--bKyqfOwhbdpXa4YI
+Content-Type: text/x-patch; charset=us-ascii
+Content-Disposition: attachment; filename="e2fsprogs-rec_mtime.diff"
+
+diff --git a/lib/e2p/feature.c b/lib/e2p/feature.c
+index fe7e65a..a12540b 100644
+--- a/lib/e2p/feature.c
++++ b/lib/e2p/feature.c
+@@ -37,6 +37,8 @@ static struct feature feature_list[] = {
+ 			"resize_inode" },
+ 	{	E2P_FEATURE_COMPAT, EXT2_FEATURE_COMPAT_LAZY_BG,
+ 			"lazy_bg" },
++	{	E2P_FEATURE_COMPAT, EXT2_FEATURE_COMPAT_RTIME,
++			"recursive_mtime" },
+ 
+ 	{	E2P_FEATURE_RO_INCOMPAT, EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER,
+ 			"sparse_super" },
+diff --git a/lib/ext2fs/ext2_fs.h b/lib/ext2fs/ext2_fs.h
+index a316665..21747c2 100644
+--- a/lib/ext2fs/ext2_fs.h
++++ b/lib/ext2fs/ext2_fs.h
+@@ -623,6 +623,7 @@ struct ext2_super_block {
+ #define EXT2_FEATURE_COMPAT_RESIZE_INODE	0x0010
+ #define EXT2_FEATURE_COMPAT_DIR_INDEX		0x0020
+ #define EXT2_FEATURE_COMPAT_LAZY_BG		0x0040
++#define EXT2_FEATURE_COMPAT_RTIME		0x0080
+ 
+ #define EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	0x0001
+ #define EXT2_FEATURE_RO_COMPAT_LARGE_FILE	0x0002
+diff --git a/lib/ext2fs/ext2fs.h b/lib/ext2fs/ext2fs.h
+index 83a9091..64b6eb6 100644
+--- a/lib/ext2fs/ext2fs.h
++++ b/lib/ext2fs/ext2fs.h
+@@ -418,7 +418,8 @@ typedef struct ext2_icount *ext2_icount_
+ 					 EXT2_FEATURE_COMPAT_RESIZE_INODE|\
+ 					 EXT2_FEATURE_COMPAT_DIR_INDEX|\
+ 					 EXT2_FEATURE_COMPAT_LAZY_BG|\
+-					 EXT2_FEATURE_COMPAT_EXT_ATTR)
++					 EXT2_FEATURE_COMPAT_EXT_ATTR|\
++					 EXT2_FEATURE_COMPAT_RTIME)
+ 
+ /* This #ifdef is temporary until compression is fully supported */
+ #ifdef ENABLE_COMPRESSION
+diff --git a/misc/mke2fs.c b/misc/mke2fs.c
+index 4a6cace..5060db7 100644
+--- a/misc/mke2fs.c
++++ b/misc/mke2fs.c
+@@ -870,7 +870,8 @@ static __u32 ok_features[3] = {
+ 	EXT3_FEATURE_COMPAT_HAS_JOURNAL |
+ 		EXT2_FEATURE_COMPAT_RESIZE_INODE |
+ 		EXT2_FEATURE_COMPAT_DIR_INDEX |
+-		EXT2_FEATURE_COMPAT_LAZY_BG,	/* Compat */
++		EXT2_FEATURE_COMPAT_LAZY_BG |
++		EXT2_FEATURE_COMPAT_RTIME,	/* Compat */
+ 	EXT2_FEATURE_INCOMPAT_FILETYPE|		/* Incompat */
+ 		EXT3_FEATURE_INCOMPAT_JOURNAL_DEV|
+ 		EXT2_FEATURE_INCOMPAT_META_BG,
+diff --git a/misc/tune2fs.c b/misc/tune2fs.c
+index 833b994..5195e40 100644
+--- a/misc/tune2fs.c
++++ b/misc/tune2fs.c
+@@ -96,7 +96,8 @@ static void usage(void)
+ 
+ static __u32 ok_features[3] = {
+ 	EXT3_FEATURE_COMPAT_HAS_JOURNAL |
+-		EXT2_FEATURE_COMPAT_DIR_INDEX,	/* Compat */
++		EXT2_FEATURE_COMPAT_DIR_INDEX |
++		EXT2_FEATURE_COMPAT_RTIME,	/* Compat */
+ 	EXT2_FEATURE_INCOMPAT_FILETYPE,		/* Incompat */
+ 	EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	/* R/O compat */
+ };
+
+--bKyqfOwhbdpXa4YI--
