@@ -1,52 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756633AbXKFVOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756988AbXKFVOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756633AbXKFVOZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 16:14:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754331AbXKFVOR
+	id S1756988AbXKFVOk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 16:14:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756321AbXKFVO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 16:14:17 -0500
-Received: from [212.12.190.217] ([212.12.190.217]:54572 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754233AbXKFVOR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 16:14:17 -0500
-From: Al Boldi <a1426z@gawab.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] init: Introduce rootdir bootparm to select which dir to sys_chroot
-Date: Thu, 8 Nov 2007 00:13:20 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <200711061340.26112.a1426z@gawab.com> <200711072310.20715.a1426z@gawab.com> <4730CAD8.1050407@zytor.com>
-In-Reply-To: <4730CAD8.1050407@zytor.com>
+	Tue, 6 Nov 2007 16:14:27 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:35120 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756636AbXKFVO0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 16:14:26 -0500
+Date: Tue, 6 Nov 2007 13:13:45 -0800
+From: Greg KH <greg@kroah.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux390@de.ibm.com,
+       linux-s390@vger.kernel.org, apw@shadowen.org
+Subject: Re: mm snapshot broken-out-2007-11-06-02-32.tar.gz uploaded -
+	S390x build fails
+Message-ID: <20071106211345.GB5993@kroah.com>
+References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org> <473083CA.9060607@linux.vnet.ibm.com> <20071106131037.ea014b48.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711080013.20702.a1426z@gawab.com>
+In-Reply-To: <20071106131037.ea014b48.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Al Boldi wrote:
-> > Al Boldi wrote:
-> >> This patch introduces a rootdir kernel boot parameter, which specifies
-> >> the path to the kernel sys_chroot boot dir.
-> >>
-> >> This is useful for systems that have more than one distribution
-> >> installed on the same fs/partition.
->
-> This seems like something that should be done via an initramfs.
+On Tue, Nov 06, 2007 at 01:10:37PM -0800, Andrew Morton wrote:
+> > On Tue, 06 Nov 2007 20:40:02 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> > drivers/s390/char/sclp_cpi_sys.c:242: error: storage size of `system_name_attr' isn't known
+> > drivers/s390/char/sclp_cpi_sys.c:264: error: storage size of `sysplex_name_attr' isn't known
+> > drivers/s390/char/sclp_cpi_sys.c:287: error: storage size of `system_type_attr' isn't known
+> > drivers/s390/char/sclp_cpi_sys.c:317: error: storage size of `system_level_attr' isn't known
+> > drivers/s390/char/sclp_cpi_sys.c:333: error: storage size of `set_attr' isn't known
+> > make[2]: *** [drivers/s390/char/sclp_cpi_sys.o] Error 1
+> > make[1]: *** [drivers/s390/char] Error 2
+> > make: *** [drivers/s390] Error 2
+> > 
+> > The patch git-s390.patch is causing this failure.
+> 
+> git-s390 newly adds that file.  I suspect that this code works OK for the
+> s390 guys (they're using Linux).  But Greg's driver tree basically ports
+> their driver to Gregnux, in which nothing works any more.
+> 
+> Greg, this is turning into a bit of a trainwreck.  Can you please have a
+> think about how we can provide a bit of back-compatibility to ease this
+> transition rather than just trashing everything?
 
-Agreed. But, not everybody boots their systems via initramfs, and even if 
-they did, they also have to know how to reconfigure it.
+It's _always_ a trainwreck when I touch anything in the driver core,
+look at how many individual patches it took to do a lot of this work
+(50+ and still growing).  My method is to introduce the new api, convert
+everyone over to it, and then remove the old crappy one.
 
-In contrast, this patch offers the rootdir functionality as a simple bootparm 
-and without any extra initramfs dependency.
+Now for dealing with external trees, I have _no_ visiblity into them for
+the most part.  I can't build s390 stuff (no cross compiler), so I can't
+even test their changes.
 
+But, there really should not be that many places that are touching these
+types of things that I am currently changing (ksets and ktypes and
+subsystems.)
 
-Thanks!
+So, how do I do this?  Do I just not let my changes trickle into your
+tree, and hold off until I merge them with Linus, hoping that me and Kay
+have tested everything good enough?  That way, no build ever should
+break, but functionality might not be all working as well as it could
+be.
 
---
-Al
+Or we live with some breakage as you pull my stuff into your tree.
 
+Either way, I'm glad to help fix the broken stuff, and I'm also glad to
+take the responsibility for getting this all right the first time it
+goes to Linus.
 
+What do you think is best to do?
+
+thanks,
+
+greg k-h
