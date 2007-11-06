@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755104AbXKFHdN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755083AbXKFHgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755104AbXKFHdN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 02:33:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754292AbXKFHc7
+	id S1755083AbXKFHgj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 02:36:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752045AbXKFHgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 02:32:59 -0500
-Received: from mga02.intel.com ([134.134.136.20]:25149 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754215AbXKFHc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 02:32:59 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,376,1188802800"; 
-   d="scan'208";a="263743977"
-Subject: [Patch1/2] fix wrong proc cpuinfo on x64
-From: Zou Nan hai <nanhai.zou@intel.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@osdl.org>
-Content-Type: text/plain
-Organization: 
-Message-Id: <1194333939.3046.36.camel@linux-znh>
-Mime-Version: 1.0
-X-Mailer: Ximian Evolution 1.2.2 (1.2.2-4) 
-Date: 06 Nov 2007 15:25:39 +0800
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Nov 2007 02:36:32 -0500
+Received: from pip10.gyao.ne.jp ([61.122.117.248]:16660 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751441AbXKFHgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 02:36:31 -0500
+Date: Tue, 6 Nov 2007 16:36:20 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Alasdair G Kergon <agk@redhat.com>
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] md: dm-mpath-hp-sw depends on scsi
+Message-ID: <20071106073620.GA5258@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com,
+	linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+With CONFIG_SCSI=n __scsi_print_sense() is never linked in.
 
-in 2.6.24-rc1 kernel, 
-The /proc/cpuinfo display is wrong.
+drivers/built-in.o: In function `hp_sw_end_io':
+dm-mpath-hp-sw.c:(.text+0x914f8): undefined reference to `__scsi_print_sense'
 
-One issue is every processor id appears to be 0.
+Caught with a randconfig on current git.
 
-That is because smp_store_cpu_info will set cpuinfo_x86->cpu_index
-to cpu id then call identify_cpu
-identify_cpu will call early_identify_cpu which set c->cpu_index back to
-0.
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
-This patch set cpu_index after identify_cpu to fix the issue.
+---
 
-Signed-off-by: Zou Nan hai <nanhai.zou@intel.com>
+ drivers/md/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-2.6.24-rc1/arch/x86/kernel/smpboot_64.c	2007-10-29 22:03:05.000000000 -0400
-+++ b/arch/x86/kernel/smpboot_64.c	2007-11-05 22:12:57.000000000 -0500
-@@ -141,8 +141,8 @@ static void __cpuinit smp_store_cpu_info
- 	struct cpuinfo_x86 *c = &cpu_data(id);
+diff --git a/drivers/md/Kconfig b/drivers/md/Kconfig
+index 9b6fbf0..3fa7c77 100644
+--- a/drivers/md/Kconfig
++++ b/drivers/md/Kconfig
+@@ -269,7 +269,7 @@ config DM_MULTIPATH_RDAC
  
- 	*c = boot_cpu_data;
--	c->cpu_index = id;
- 	identify_cpu(c);
-+	c->cpu_index = id;
- 	print_cpu_info(c);
- }
+ config DM_MULTIPATH_HP
+         tristate "HP MSA multipath support (EXPERIMENTAL)"
+-        depends on DM_MULTIPATH && BLK_DEV_DM && EXPERIMENTAL
++        depends on DM_MULTIPATH && BLK_DEV_DM && SCSI && EXPERIMENTAL
+         ---help---
+           Multipath support for HP MSA (Active/Passive) series hardware.
  
-
