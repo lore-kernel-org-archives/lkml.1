@@ -1,79 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754473AbXKFN7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677AbXKFODm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754473AbXKFN7U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 08:59:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbXKFN7L
+	id S1754677AbXKFODm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 09:03:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbXKFODe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 08:59:11 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:55518 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752064AbXKFN7K (ORCPT
+	Tue, 6 Nov 2007 09:03:34 -0500
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:19730 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751112AbXKFODd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 08:59:10 -0500
-Date: Tue, 6 Nov 2007 14:58:45 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: pavel@ucw.cz, torvalds@linux-foundation.org, darwish.07@gmail.com,
-       casey@schaufler-ca.com, akpm@linux-foundation.org,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       viro@ftp.linux.org.uk
-Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser
-Message-ID: <20071106135845.GJ26163@stusta.de>
-References: <20071104122848.GC3921@ucw.cz> <20071105094007.GA19367@ubuntu> <alpine.LFD.0.999.0711050818200.15101@woody.linux-foundation.org> <200711060656.ADF87510.tJLVFOHOFSOFMQ@I-love.SAKURA.ne.jp> <20071106100035.GE26163@stusta.de> <200711062127.CBC60981.tQOOSVFHJFOFML@I-love.SAKURA.ne.jp>
+	Tue, 6 Nov 2007 09:03:33 -0500
+Date: Tue, 6 Nov 2007 15:03:18 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Christian Borntraeger <cborntra@de.ibm.com>,
+       Gerald Schaefer <geraldsc@de.ibm.com>
+Subject: [PATCH] s390: cmm - remove unused binary sysctls
+Message-ID: <20071106140318.GA6536@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200711062127.CBC60981.tQOOSVFHJFOFML@I-love.SAKURA.ne.jp>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 06, 2007 at 09:27:00PM +0900, Tetsuo Handa wrote:
-> Hello.
-> 
-> Adrian Bunk wrote:
-> > You have a "\?" pattern which is defined as "1 byte character other
-> > than '/'".
-> Don't worry. The "\?" pattern is for temporary files with /tmp/prefixXXXXXX pattern.
-> /tmp/prefixXXXXXX is represented as /tmp/prefix\?\?\?\?\?\? in TOMOYO Linux's syntax.
-> 
-> > The user usually doesn't know how many bytes a character in a path or 
-> > file name on his system has.
-> The "\*" pattern is for this purpose which means more than 0 byte characters other than '/'.
-> 
-> TOMOYO supports various patterns
-> http://tomoyo.sourceforge.jp/en/1.5.x/policy-reference.html#exception_policy.conf
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-And there you document \* as well as \? as wildcards for "pathname 
-patterns".
+Remove binary sysctls that never worked due to missing strategy functions.
 
-And \* is not a replacement for \?. It's quite common to have both ways 
-to express "one character" and to express "at least one character", and 
-both have their use cases and will get used if available.
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
+ arch/s390/mm/cmm.c     |    3 ---
+ include/linux/sysctl.h |    5 -----
+ kernel/sysctl_check.c  |    3 ---
+ 3 files changed, 11 deletions(-)
 
-> TOMOYO Linux handles string using 7bit ASCII. In TOMOYO Linux,
-> a byte 0x21 <= c <= 0x7E && c != 0x5C is represented as is,
-> c == 0x5C is represented as \\,
-> 0x01 <= c <= 0x20 || 0x7F <= c <= 0xFF is represented as \ooo style.
-> c == 0x00 is not needed since it is used as end-of-string marker.
-> This rule makes any string passed from/to kernel safely.
-
-That's unrelated to this problem.
-
-You talk about your internal byte representation.
-
-But the problem is that in your code you only match one byte for \?, 
-and this might or might not be equal to one character.
-
-> Thanks.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Index: linux-2.6/arch/s390/mm/cmm.c
+===================================================================
+--- linux-2.6.orig/arch/s390/mm/cmm.c
++++ linux-2.6/arch/s390/mm/cmm.c
+@@ -341,19 +341,16 @@ cmm_timeout_handler(ctl_table *ctl, int 
+ 
+ static struct ctl_table cmm_table[] = {
+ 	{
+-		.ctl_name	= VM_CMM_PAGES,
+ 		.procname	= "cmm_pages",
+ 		.mode		= 0644,
+ 		.proc_handler	= &cmm_pages_handler,
+ 	},
+ 	{
+-		.ctl_name	= VM_CMM_TIMED_PAGES,
+ 		.procname	= "cmm_timed_pages",
+ 		.mode		= 0644,
+ 		.proc_handler	= &cmm_pages_handler,
+ 	},
+ 	{
+-		.ctl_name	= VM_CMM_TIMEOUT,
+ 		.procname	= "cmm_timeout",
+ 		.mode		= 0644,
+ 		.proc_handler	= &cmm_timeout_handler,
+Index: linux-2.6/include/linux/sysctl.h
+===================================================================
+--- linux-2.6.orig/include/linux/sysctl.h
++++ linux-2.6/include/linux/sysctl.h
+@@ -207,11 +207,6 @@ enum
+ 	VM_PANIC_ON_OOM=33,	/* panic at out-of-memory */
+ 	VM_VDSO_ENABLED=34,	/* map VDSO into new processes? */
+ 	VM_MIN_SLAB=35,		 /* Percent pages ignored by zone reclaim */
+-
+-	/* s390 vm cmm sysctls */
+-	VM_CMM_PAGES=1111,
+-	VM_CMM_TIMED_PAGES=1112,
+-	VM_CMM_TIMEOUT=1113,
+ };
+ 
+ 
+Index: linux-2.6/kernel/sysctl_check.c
+===================================================================
+--- linux-2.6.orig/kernel/sysctl_check.c
++++ linux-2.6/kernel/sysctl_check.c
+@@ -140,9 +140,6 @@ static struct trans_ctl_table trans_vm_t
+ 	{ VM_PANIC_ON_OOM,		"panic_on_oom" },
+ 	{ VM_VDSO_ENABLED,		"vdso_enabled" },
+ 	{ VM_MIN_SLAB,			"min_slab_ratio" },
+-	{ VM_CMM_PAGES,			"cmm_pages" },
+-	{ VM_CMM_TIMED_PAGES,		"cmm_timed_pages" },
+-	{ VM_CMM_TIMEOUT,		"cmm_timeout" },
+ 
+ 	{}
+ };
