@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758746AbXKFT5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758822AbXKFT5r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758746AbXKFT5b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 14:57:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757460AbXKFTw0
+	id S1758822AbXKFT5r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 14:57:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757472AbXKFTw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 14:52:26 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:52156 "EHLO
+	Tue, 6 Nov 2007 14:52:27 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45427 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756117AbXKFTwD (ORCPT
+	with ESMTP id S1753330AbXKFTwE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 14:52:03 -0500
-Message-Id: <20071106195202.913577924@sgi.com>
+	Tue, 6 Nov 2007 14:52:04 -0500
+Message-Id: <20071106195203.369982748@sgi.com>
 References: <20071106195144.983665861@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 06 Nov 2007 11:52:07 -0800
+Date: Tue, 06 Nov 2007 11:52:09 -0800
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
 Cc: linux-mm@vger.kernel.org
@@ -21,75 +21,304 @@ Cc: linux-kernel@vger.kernel.org
 Cc: David Miller <davem@davemloft.net>
 Cc: Eric Dumazet <dada1@cosmosbay.com>
 Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 23/28] cpu alloc: Chelsio statistics conversion
-Content-Disposition: inline; filename=cpu_alloc_chelsio
+Subject: [patch 25/28] cpu alloc: Explicitly code allocpercpu calls in iucv
+Content-Disposition: inline; filename=cpu_alloc_iucv
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+The iucv is the only user of the various functions that are used to bring
+parts of cpus up and down. Its the only allocpercpu user that will do
+I/O on per cpu objects (which is difficult to do with virtually mapped memory).
+And its the only use of allocpercpu where a GFP_DMA allocation is done.
+
+Remove the allocpercpu calls from iucv and code the allocation and freeing
+manually.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- drivers/net/chelsio/sge.c |   13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+ net/iucv/iucv.c |   99 +++++++++++++++++++++++++++++++-------------------------
+ 1 file changed, 56 insertions(+), 43 deletions(-)
 
-Index: linux-2.6/drivers/net/chelsio/sge.c
+Index: linux-2.6/net/iucv/iucv.c
 ===================================================================
---- linux-2.6.orig/drivers/net/chelsio/sge.c	2007-11-04 19:19:23.000000000 -0800
-+++ linux-2.6/drivers/net/chelsio/sge.c	2007-11-04 19:21:01.000000000 -0800
-@@ -805,7 +805,7 @@ void t1_sge_destroy(struct sge *sge)
- 	int i;
+--- linux-2.6.orig/net/iucv/iucv.c	2007-11-04 21:15:10.000000000 -0800
++++ linux-2.6/net/iucv/iucv.c	2007-11-04 21:22:50.000000000 -0800
+@@ -97,7 +97,7 @@ struct iucv_irq_list {
+ 	struct iucv_irq_data data;
+ };
  
- 	for_each_port(sge->adapter, i)
--		free_percpu(sge->port_stats[i]);
-+		CPU_FREE(sge->port_stats[i]);
+-static struct iucv_irq_data *iucv_irq_data;
++static struct iucv_irq_data *iucv_irq_data[NR_CPUS];
+ static cpumask_t iucv_buffer_cpumask = CPU_MASK_NONE;
+ static cpumask_t iucv_irq_cpumask = CPU_MASK_NONE;
  
- 	kfree(sge->tx_sched);
- 	free_tx_resources(sge);
-@@ -984,7 +984,7 @@ void t1_sge_get_port_stats(const struct 
+@@ -277,7 +277,7 @@ union iucv_param {
+ /*
+  * Anchor for per-cpu IUCV command parameter block.
+  */
+-static union iucv_param *iucv_param;
++static union iucv_param *iucv_param[NR_CPUS];
  
- 	memset(ss, 0, sizeof(*ss));
- 	for_each_possible_cpu(cpu) {
--		struct sge_port_stats *st = per_cpu_ptr(sge->port_stats[port], cpu);
-+		struct sge_port_stats *st = CPU_PTR(sge->port_stats[port], cpu);
+ /**
+  * iucv_call_b2f0
+@@ -356,7 +356,7 @@ static void iucv_allow_cpu(void *data)
+ 	 *	0x10 - Flag to allow priority message completion interrupts
+ 	 *	0x08 - Flag to allow IUCV control interrupts
+ 	 */
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[cpu];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	parm->set_mask.ipmask = 0xf8;
+ 	iucv_call_b2f0(IUCV_SETMASK, parm);
+@@ -377,7 +377,7 @@ static void iucv_block_cpu(void *data)
+ 	union iucv_param *parm;
  
- 		ss->rx_packets += st->rx_packets;
- 		ss->rx_cso_good += st->rx_cso_good;
-@@ -1380,7 +1380,7 @@ static void sge_rx(struct sge *sge, stru
- 	__skb_pull(skb, sizeof(*p));
+ 	/* Disable all iucv interrupts. */
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[cpu];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	iucv_call_b2f0(IUCV_SETMASK, parm);
  
- 	skb->dev->last_rx = jiffies;
--	st = per_cpu_ptr(sge->port_stats[p->iff], smp_processor_id());
-+	st = THIS_CPU(sge->port_stats[p->iff]);
- 	st->rx_packets++;
+@@ -401,9 +401,9 @@ static void iucv_declare_cpu(void *data)
+ 		return;
  
- 	skb->protocol = eth_type_trans(skb, adapter->port[p->iff].dev);
-@@ -1848,7 +1848,7 @@ int t1_start_xmit(struct sk_buff *skb, s
+ 	/* Declare interrupt buffer. */
+-	parm = percpu_ptr(iucv_param, cpu);
++	parm = iucv_param[cpu];
+ 	memset(parm, 0, sizeof(union iucv_param));
+-	parm->db.ipbfadr1 = virt_to_phys(percpu_ptr(iucv_irq_data, cpu));
++	parm->db.ipbfadr1 = virt_to_phys(iucv_irq_data[cpu]);
+ 	rc = iucv_call_b2f0(IUCV_DECLARE_BUFFER, parm);
+ 	if (rc) {
+ 		char *err = "Unknown";
+@@ -458,7 +458,7 @@ static void iucv_retrieve_cpu(void *data
+ 	iucv_block_cpu(NULL);
+ 
+ 	/* Retrieve interrupt buffer. */
+-	parm = percpu_ptr(iucv_param, cpu);
++	parm = iucv_param[cpu];
+ 	iucv_call_b2f0(IUCV_RETRIEVE_BUFFER, parm);
+ 
+ 	/* Clear indication that an iucv buffer exists for this cpu. */
+@@ -558,13 +558,13 @@ static int __cpuinit iucv_cpu_notify(str
+ 	switch (action) {
+ 	case CPU_UP_PREPARE:
+ 	case CPU_UP_PREPARE_FROZEN:
+-		if (!percpu_populate(iucv_irq_data,
+-				     sizeof(struct iucv_irq_data),
+-				     GFP_KERNEL|GFP_DMA, cpu))
++		iucv_irq_data[cpu] = kmalloc_node(sizeof(struct iucv_irq_data),
++					GFP_KERNEL|GFP_DMA, cpu_to_node(cpu));
++		if (!iucv_irq_data[cpu])
+ 			return NOTIFY_BAD;
+-		if (!percpu_populate(iucv_param, sizeof(union iucv_param),
+-				     GFP_KERNEL|GFP_DMA, cpu)) {
+-			percpu_depopulate(iucv_irq_data, cpu);
++		iucv_param[cpu] = kmalloc_node(sizeof(union iucv_param),
++				     GFP_KERNEL|GFP_DMA, cpu_to_node(cpu));
++		if (!iucv_param[cpu])
+ 			return NOTIFY_BAD;
+ 		}
+ 		break;
+@@ -572,8 +572,10 @@ static int __cpuinit iucv_cpu_notify(str
+ 	case CPU_UP_CANCELED_FROZEN:
+ 	case CPU_DEAD:
+ 	case CPU_DEAD_FROZEN:
+-		percpu_depopulate(iucv_param, cpu);
+-		percpu_depopulate(iucv_irq_data, cpu);
++		kfree(iucv_param[cpu]);
++		iucv_param[cpu] = NULL;
++		kfree(iucv_irq_data[cpu]);
++		iucv_irq_data[cpu] = NULL;
+ 		break;
+ 	case CPU_ONLINE:
+ 	case CPU_ONLINE_FROZEN:
+@@ -612,7 +614,7 @@ static int iucv_sever_pathid(u16 pathid,
  {
- 	struct adapter *adapter = dev->priv;
- 	struct sge *sge = adapter->sge;
--	struct sge_port_stats *st = per_cpu_ptr(sge->port_stats[dev->if_port], smp_processor_id());
-+	struct sge_port_stats *st = THIS_CPU(sge->port_stats[dev->if_port]);
- 	struct cpl_tx_pkt *cpl;
- 	struct sk_buff *orig_skb = skb;
- 	int ret;
-@@ -2165,7 +2165,8 @@ struct sge * __devinit t1_sge_create(str
- 	sge->jumbo_fl = t1_is_T1B(adapter) ? 1 : 0;
+ 	union iucv_param *parm;
  
- 	for_each_port(adapter, i) {
--		sge->port_stats[i] = alloc_percpu(struct sge_port_stats);
-+		sge->port_stats[i] = CPU_ALLOC(struct sge_port_stats,
-+					GFP_KERNEL | __GFP_ZERO);
- 		if (!sge->port_stats[i])
- 			goto nomem_port;
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[smp_processor_id()];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	if (userdata)
+ 		memcpy(parm->ctrl.ipuser, userdata, sizeof(parm->ctrl.ipuser));
+@@ -755,7 +757,7 @@ int iucv_path_accept(struct iucv_path *p
+ 
+ 	local_bh_disable();
+ 	/* Prepare parameter block. */
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[smp_processor_id()];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	parm->ctrl.ippathid = path->pathid;
+ 	parm->ctrl.ipmsglim = path->msglim;
+@@ -799,7 +801,7 @@ int iucv_path_connect(struct iucv_path *
+ 	BUG_ON(in_atomic());
+ 	spin_lock_bh(&iucv_table_lock);
+ 	iucv_cleanup_queue();
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[smp_processor_id()];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	parm->ctrl.ipmsglim = path->msglim;
+ 	parm->ctrl.ipflags1 = path->flags;
+@@ -854,7 +856,7 @@ int iucv_path_quiesce(struct iucv_path *
+ 	int rc;
+ 
+ 	local_bh_disable();
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[smp_processor_id()];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	if (userdata)
+ 		memcpy(parm->ctrl.ipuser, userdata, sizeof(parm->ctrl.ipuser));
+@@ -881,7 +883,7 @@ int iucv_path_resume(struct iucv_path *p
+ 	int rc;
+ 
+ 	local_bh_disable();
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[smp_processor_id()];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	if (userdata)
+ 		memcpy(parm->ctrl.ipuser, userdata, sizeof(parm->ctrl.ipuser));
+@@ -936,7 +938,7 @@ int iucv_message_purge(struct iucv_path 
+ 	int rc;
+ 
+ 	local_bh_disable();
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[smp_processor_id()];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	parm->purge.ippathid = path->pathid;
+ 	parm->purge.ipmsgid = msg->id;
+@@ -1003,7 +1005,7 @@ int iucv_message_receive(struct iucv_pat
  	}
-@@ -2209,7 +2210,7 @@ struct sge * __devinit t1_sge_create(str
- 	return sge;
- nomem_port:
- 	while (i >= 0) {
--		free_percpu(sge->port_stats[i]);
-+		CPU_FREE(sge->port_stats[i]);
- 		--i;
+ 
+ 	local_bh_disable();
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[smp_processor_id()];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	parm->db.ipbfadr1 = (u32)(addr_t) buffer;
+ 	parm->db.ipbfln1f = (u32) size;
+@@ -1040,7 +1042,7 @@ int iucv_message_reject(struct iucv_path
+ 	int rc;
+ 
+ 	local_bh_disable();
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[smp_processor_id()];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	parm->db.ippathid = path->pathid;
+ 	parm->db.ipmsgid = msg->id;
+@@ -1074,7 +1076,7 @@ int iucv_message_reply(struct iucv_path 
+ 	int rc;
+ 
+ 	local_bh_disable();
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[smp_processor_id()];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	if (flags & IUCV_IPRMDATA) {
+ 		parm->dpl.ippathid = path->pathid;
+@@ -1118,7 +1120,7 @@ int iucv_message_send(struct iucv_path *
+ 	int rc;
+ 
+ 	local_bh_disable();
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[smp_processor_id()];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	if (flags & IUCV_IPRMDATA) {
+ 		/* Message of 8 bytes can be placed into the parameter list. */
+@@ -1172,7 +1174,7 @@ int iucv_message_send2way(struct iucv_pa
+ 	int rc;
+ 
+ 	local_bh_disable();
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[smp_processor_id()];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	if (flags & IUCV_IPRMDATA) {
+ 		parm->dpl.ippathid = path->pathid;
+@@ -1559,7 +1561,7 @@ static void iucv_external_interrupt(u16 
+ 	struct iucv_irq_data *p;
+ 	struct iucv_irq_list *work;
+ 
+-	p = percpu_ptr(iucv_irq_data, smp_processor_id());
++	p = iucv_irq_data[smp_processor_id()];
+ 	if (p->ippathid >= iucv_max_pathid) {
+ 		printk(KERN_WARNING "iucv_do_int: Got interrupt with "
+ 		       "pathid %d > max_connections (%ld)\n",
+@@ -1598,6 +1600,7 @@ static void iucv_external_interrupt(u16 
+ static int __init iucv_init(void)
+ {
+ 	int rc;
++	int cpu;
+ 
+ 	if (!MACHINE_IS_VM) {
+ 		rc = -EPROTONOSUPPORT;
+@@ -1617,19 +1620,21 @@ static int __init iucv_init(void)
+ 		rc = PTR_ERR(iucv_root);
+ 		goto out_bus;
  	}
- 	kfree(sge);
+-	/* Note: GFP_DMA used to get memory below 2G */
+-	iucv_irq_data = percpu_alloc(sizeof(struct iucv_irq_data),
+-				     GFP_KERNEL|GFP_DMA);
+-	if (!iucv_irq_data) {
+-		rc = -ENOMEM;
+-		goto out_root;
+-	}
+-	/* Allocate parameter blocks. */
+-	iucv_param = percpu_alloc(sizeof(union iucv_param),
+-				  GFP_KERNEL|GFP_DMA);
+-	if (!iucv_param) {
+-		rc = -ENOMEM;
+-		goto out_extint;
++
++	for_each_online_cpu(cpu) {
++			/* Note: GFP_DMA used to get memory below 2G */
++		iucv_irq_data[cpu] = kmalloc_node(sizeof(struct iucv_irq_data),
++				     GFP_KERNEL|GFP_DMA, cpu_to_node(cpu));
++		if (!iucv_irq_data[cpu]) {
++			rc = -ENOMEM;
++			goto out_root;
++
++		/* Allocate parameter blocks. */
++		iucv_param[cpu] = kmalloc_node(sizeof(union iucv_param),
++				  GFP_KERNEL|GFP_DMA, cpu_to_node(cpu));
++		if (!iucv_param[cpu]) {
++			rc = -ENOMEM;
++			goto out_extint;
+ 	}
+ 	register_hotcpu_notifier(&iucv_cpu_notifier);
+ 	ASCEBC(iucv_error_no_listener, 16);
+@@ -1639,7 +1644,10 @@ static int __init iucv_init(void)
+ 	return 0;
+ 
+ out_extint:
+-	percpu_free(iucv_irq_data);
++	for_each_cpu(cpu) {
++		kfree(iucv_irq_data[cpu]);
++		iucv_irq_data[cpu] = NULL;
++	}
+ out_root:
+ 	s390_root_dev_unregister(iucv_root);
+ out_bus:
+@@ -1658,6 +1666,7 @@ out:
+ static void __exit iucv_exit(void)
+ {
+ 	struct iucv_irq_list *p, *n;
++	int cpu;
+ 
+ 	spin_lock_irq(&iucv_queue_lock);
+ 	list_for_each_entry_safe(p, n, &iucv_task_queue, list)
+@@ -1666,8 +1675,12 @@ static void __exit iucv_exit(void)
+ 		kfree(p);
+ 	spin_unlock_irq(&iucv_queue_lock);
+ 	unregister_hotcpu_notifier(&iucv_cpu_notifier);
+-	percpu_free(iucv_param);
+-	percpu_free(iucv_irq_data);
++	for_each_cpu(cpu) {
++		kfree(iucv_param[cpu]);
++		iucv_param[cpu] = NULL;
++		kfree(iucv_irq_data[cpu]);
++		iucv_irq_data[cpu] = NULL;
++	}
+ 	s390_root_dev_unregister(iucv_root);
+ 	bus_unregister(&iucv_bus);
+ 	unregister_external_interrupt(0x4000, iucv_external_interrupt);
 
 -- 
