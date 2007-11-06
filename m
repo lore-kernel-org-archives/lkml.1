@@ -1,55 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756074AbXKFJZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756280AbXKFJaD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756074AbXKFJZU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 04:25:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbXKFJZI
+	id S1756280AbXKFJaD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 04:30:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753773AbXKFJ3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 04:25:08 -0500
-Received: from el-out-1112.google.com ([209.85.162.179]:26008 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751729AbXKFJZG (ORCPT
+	Tue, 6 Nov 2007 04:29:53 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50328 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751991AbXKFJ3w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 04:25:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Co//MVkK52tDXSAboGzZBdmpgAivlq4i1k8R360XJ+F+vTm84RlGrZ1PUaQ9uZrGCFA02zTxRhZTn/ZSwhU0uTr48b65iL07/NPseD+fnKHGFBZjtbxsyV6CBmJdw8zPzFAG0ho/bYgKM+yBRKU9CUo+rRCN9OhbVt/3ryEVcis=
-Message-ID: <b6a2187b0711060125u15d3a03bw803ae22d4a5211a0@mail.gmail.com>
-Date: Tue, 6 Nov 2007 17:25:03 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Hugh Dickins" <hugh@veritas.com>
-Subject: Slab/Slub growing above 2.6.20.15 (may be...)
-Cc: "Christoph Lameter" <clameter@sgi.com>,
-       "=?ISO-8859-1?Q?Oliv=E9r_Pint=E9r?=" <oliver.pntr@gmail.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>, "Willy Tarreau" <w@1wt.eu>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 6 Nov 2007 04:29:52 -0500
+Date: Tue, 6 Nov 2007 01:29:12 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Jimenez <pj@place.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, hpa@zytor.com
+Subject: Re: [PATCH] KJ: Make i8259_64 more _32-like
+Message-Id: <20071106012912.8b205ce6.akpm@linux-foundation.org>
+In-Reply-To: <20071030152957.DD9FC8B2B@place.org>
+References: <20071030064050.C401D8B2B@place.org>
+	<alpine.LFD.0.9999.0710300959100.3186@localhost.localdomain>
+	<20071030152957.DD9FC8B2B@place.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 6, 2007 3:58 PM, Hugh Dickins <hugh@veritas.com> wrote:
-> > running Oracle. It only happens with lots of activities.
->
-> It would help everybody if you could get more info on this.
+On Tue, 30 Oct 2007 10:29:57 -0500 Paul Jimenez <pj@place.org> wrote:
 
-Ok, I'll try to log down the activities when it happens again.
+>  This patch mainly hinges around two includes and their ramifications:
+>  
+>  #include <i8259.h>	which provides cached_{slave,master}_mask
+>  #include <io_ports.h>	which provides PIC_{MASTER,SLAVE}_{IMR,CMD} 
+>  
+>  Adding these two includes and using those half dozen or so definitions
+>  removed 140+ lines of diffs between i8259_32.c and i8259_64.c, thus
+>  making it easier for the real substantitive differences between them to
+>  show up, and hopefully therefore making it easier to eventually merge
+>  the two.  All the warnings that checkpatch.pl throws (missing spaces
+>  after commas and >80 character lines) exist intentionally to match
+>  i8259_32.c.
 
-> Give 2.6.24-rc2 a try when it appears, if you can.
+x86_64 allnoconfig:
 
-Definitely will. Only problem is I still need vmware and cisco vpn,
-and these two modules cannot compile on 2.6.24-rc1. Does anyone have a
-patch for these? Last time I posted some patches for these, I got yell
-at. But I need to work at the same time.
-
-> Do you think it's the SLAB which is growing?  If /proc/meminfo's
-> Slab count goes up and up, then use /proc/slabinfo to see what
-> it is that's leaking.  Then there's CONFIG_DEBUG_SLAB_LEAK.
-
-These are good tools for me to work with.
-
-Thank you,
-Jeff.
+arch/x86/kernel/i8259_64.c:26:22: error: io_ports.h: No such file or directory
+arch/x86/kernel/i8259_64.c:120: error: static declaration of 'cached_irq_mask' follows non-static declaration
+include/asm/i8259.h:4: error: previous declaration of 'cached_irq_mask' was here
+arch/x86/kernel/i8259_64.c: In function 'disable_8259A_irq':
+arch/x86/kernel/i8259_64.c:141: error: 'PIC_SLAVE_IMR' undeclared (first use in this function)
+arch/x86/kernel/i8259_64.c:141: error: (Each undeclared identifier is reported only once
+arch/x86/kernel/i8259_64.c:141: error: for each function it appears in.)
+arch/x86/kernel/i8259_64.c:143: error: 'PIC_MASTER_IMR' undeclared (first use in this function)
+arch/x86/kernel/i8259_64.c: In function 'enable_8259A_irq':
+arch/x86/kernel/i8259_64.c:155: error: 'PIC_SLAVE_IMR' undeclared (first use in this function)
+arch/x86/kernel/i8259_64.c:157: error: 'PIC_MASTER_IMR' undeclared (first use in this function)
+arch/x86/kernel/i8259_64.c: In function 'i8259A_irq_pending':
+arch/x86/kernel/i8259_64.c:169: error: 'PIC_MASTER_CMD' undeclared (first use in this function)
+arch/x86/kernel/i8259_64.c:171: error: 'PIC_SLAVE_CMD' undeclared (first use in this function)
+arch/x86/kernel/i8259_64.c: In function 'i8259A_irq_real':
+arch/x86/kernel/i8259_64.c:198: error: 'PIC_MASTER_CMD' undeclared (first use in this function)
+arch/x86/kernel/i8259_64.c:203: error: 'PIC_SLAVE_CMD' undeclared (first use in this function)
+arch/x86/kernel/i8259_64.c: In function 'mask_and_ack_8259A':
+arch/x86/kernel/i8259_64.c:242: error: 'PIC_SLAVE_IMR' undeclared (first use in this function)
+arch/x86/kernel/i8259_64.c:244: error: 'PIC_SLAVE_CMD' undeclared (first use in this function)
+arch/x86/kernel/i8259_64.c:245: error: 'PIC_CASCADE_IR' undeclared (first use in this function)
+arch/x86/kernel/i8259_64.c:245: error: 'PIC_MASTER_CMD' undeclared (first use in this function)
+arch/x86/kernel/i8259_64.c:247: error: 'PIC_MASTER_IMR' undeclared (first use in this function)
+arch/x86/kernel/i8259_64.c: In function 'i8259A_shutdown':
+arch/x86/kernel/i8259_64.c:321: error: 'PIC_MASTER_IMR' undeclared (first use in this function)
+arch/x86/kernel/i8259_64.c:322: error: 'PIC_SLAVE_IMR' undeclared (first use in this function)
+arch/x86/kernel/i8259_64.c: In function 'init_8259A':
+arch/x86/kernel/i8259_64.c:356: error: 'PIC_MASTER_IMR' undeclared (first use in this function)
+arch/x86/kernel/i8259_64.c:357: error: 'PIC_SLAVE_IMR' undeclared (first use in this function)
+arch/x86/kernel/i8259_64.c:362: error: 'PIC_MASTER_CMD' undeclared (first use in this function)
+arch/x86/kernel/i8259_64.c:366: error: 'MASTER_ICW4_DEFAULT' undeclared (first use in this function)
+arch/x86/kernel/i8259_64.c:366: error: 'PIC_ICW4_AEOI' undeclared (first use in this function)
+arch/x86/kernel/i8259_64.c:370: error: 'PIC_SLAVE_CMD' undeclared (first use in this function)
+arch/x86/kernel/i8259_64.c:372: error: 'PIC_CASCADE_IR' undeclared (first use in this function)
+arch/x86/kernel/i8259_64.c:373: error: 'SLAVE_ICW4_DEFAULT' undeclared (first use in this function)
