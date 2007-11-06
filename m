@@ -1,70 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756725AbXKFKBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756217AbXKFKFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756725AbXKFKBP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 05:01:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754666AbXKFKBA
+	id S1756217AbXKFKFc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 05:05:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbXKFKFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 05:01:00 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59315 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752024AbXKFKA7 (ORCPT
+	Tue, 6 Nov 2007 05:05:24 -0500
+Received: from trinity.phys.uwm.edu ([129.89.57.159]:53578 "EHLO
+	trinity.phys.uwm.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750802AbXKFKFY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 05:00:59 -0500
-Date: Tue, 6 Nov 2007 11:00:35 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: pavel@ucw.cz, torvalds@linux-foundation.org, darwish.07@gmail.com,
-       casey@schaufler-ca.com, akpm@linux-foundation.org,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       viro@ftp.linux.org.uk
-Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser
-Message-ID: <20071106100035.GE26163@stusta.de>
-References: <472B8DAF.9080706@schaufler-ca.com> <20071103164303.GA26707@ubuntu> <20071104122848.GC3921@ucw.cz> <20071105094007.GA19367@ubuntu> <alpine.LFD.0.999.0711050818200.15101@woody.linux-foundation.org> <200711060656.ADF87510.tJLVFOHOFSOFMQ@I-love.SAKURA.ne.jp>
+	Tue, 6 Nov 2007 05:05:24 -0500
+X-Greylist: delayed 640 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Nov 2007 05:05:23 EST
+Date: Tue, 6 Nov 2007 03:49:13 -0600 (CST)
+From: Bruce Allen <ballen@gravity.phys.uwm.edu>
+X-X-Sender: ballen@trinity.phys.uwm.edu
+To: Jim Paris <jim@jtan.com>
+cc: Tejun Heo <htejun@gmail.com>, Steen Eugen Poulsen <sep@lix-world.net>,
+       Andrew Morton <akpm@linux-foundation.org>, lists@dusted.dk,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       bruce.allen@aei.mpg.de
+Subject: Re: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+In-Reply-To: <20071026040226.GA26960@jim.sh>
+Message-ID: <Pine.LNX.4.63.0711060348290.22998@trinity.phys.uwm.edu>
+References: <56020.194.255.108.253.1192004925.squirrel@root.dusted.dk>
+ <20071012174153.69556b32.akpm@linux-foundation.org> <47105C53.7040603@lix-world.net>
+ <471DC52B.20802@gmail.com> <471F2647.4030304@lix-world.net> <47214593.1080102@gmail.com>
+ <20071026040226.GA26960@jim.sh>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200711060656.ADF87510.tJLVFOHOFSOFMQ@I-love.SAKURA.ne.jp>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 06, 2007 at 06:56:43AM +0900, Tetsuo Handa wrote:
-> 
-> Linus Torvalds wrote:
-> > I personally think string parsers are *much* better than the alternatives 
-> > (which basically boil down to nasty binary interfaces)
-> Me too.
-> 
-> > Binary structures and ioctl's are *much* worse. They are totally 
-> > undebuggable with generic tools (think "echo" or "strace"), and they are a 
-> > total nightmare to parse across architectures and pointer sizes.
-> Not only pointer sizes bugs, but also checking pointer address costs.
-> For binary policy, we have to examine ->next pointer is valid or not.
-> We can't blindly use address supplied from userland.
-> 
-> I have encountered mismatch of kernel version and AppArmor's policy parser version
-> when I just updated only kernel. As a result, the segmentation faults rushed toward me.
->  From this experience, TOMOYO still uses string parser in the kernel.
-> If a parser doesn't consume much stack (i.e. call functions recursively), I think it is no problem.
+>>>> All these are caused by smartd.  Updating should fix the problem.
+>>>
+>>> Okay, but there is no newer smartd than what I'm using. (5.37)
+>>
+>> Bruce?  Original thread can be read from...
+>>
+>> http://thread.gmane.org/gmane.linux.kernel/588972
+>
+> The fixes were added in smartmontools CVS, but there hasn't been a
+> release since then.
 
-You have a "\?" pattern which is defined as "1 byte character other
-than '/'".
+I think we'll do a new smartmontools release fairly soon.
 
-The user usually doesn't know how many bytes a character in a path or 
-file name on his system has.
-
-IMHO not ideal for name-based MAC...
-
-> Thanks.
-
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Cheers,
+ 	Bruce
