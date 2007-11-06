@@ -1,85 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbXKFLei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757406AbXKFLjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757119AbXKFLei (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 06:34:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751079AbXKFLea
+	id S1757406AbXKFLjS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 06:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754485AbXKFLjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 06:34:30 -0500
-Received: from fk-out-0910.google.com ([209.85.128.189]:9850 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750999AbXKFLe3 (ORCPT
+	Tue, 6 Nov 2007 06:39:08 -0500
+Received: from mtagate1.uk.ibm.com ([195.212.29.134]:3395 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754215AbXKFLjH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 06:34:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=awo8ThpaCATPGI2fUwjc2F9hqXWEMnQfIPXy5OkI8bsiFSm1xr6sjCIAiStseu84fNC554Sfa8yHCZk7mH6b4llgEIbjvdLHTseoTlQlhri6VVu/soCDV/8J8VU0YODe1uo6gCS9OUp3qcsfjEIHRFsTVw/LcpeCsnGxBcViZh4=
-Date: Tue, 6 Nov 2007 13:34:05 +0200
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Kyle Moffett <mrmacman_g4@mac.com>,
-       Casey Schaufler <casey@schaufler-ca.com>, akpm@osdl.org,
-       torvalds@osdl.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser
-Message-ID: <20071106113359.GA6041@ubuntu>
-References: <472B8DAF.9080706@schaufler-ca.com> <20071103164303.GA26707@ubuntu> <20071106063305.GA26163@stusta.de> <C1C917F8-57EA-434C-9FD8-CB5A4EAF2653@mac.com> <20071106085651.GC26163@stusta.de>
+	Tue, 6 Nov 2007 06:39:07 -0500
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Jan Kara <jack@suse.cz>
+Subject: Re: Future of Linux 2.6.22.y series
+Date: Tue, 6 Nov 2007 12:38:50 +0100
+User-Agent: KMail/1.9.7
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+References: <20071105181332.GB28628@kroah.com> <20071106112615.GG32704@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <20071106112615.GG32704@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071106085651.GC26163@stusta.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Message-Id: <200711061238.50162.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Am Dienstag, 6. November 2007 schrieb Jan Kara:
+>   In that case you might be interested in picking up the attached fix :)
+> I don't know if you already didn't get it...
 
-On Tue, Nov 06, 2007 at 09:56:51AM +0100, Adrian Bunk wrote:
-> On Tue, Nov 06, 2007 at 03:26:12AM -0500, Kyle Moffett wrote:
-> > On Nov 06, 2007, at 01:33:05, Adrian Bunk wrote:
-> >> Can you limit this to 7bit ASCII and use isascii() somewhere?
-> >>
-> >> Otherwise I'd expect funny things to happen when you e.g. use isspace() on 
-> >> the UTF-8 encoded character ??.
-> >
-> > Actually, you don't need to.  You tell them it expects UTF-8 encoded 
-> > strings and be done with it.  All US-ASCII characters from 0 through 127 
-> > (IE: high bit clear) are exactly the same in UTF-8, and UTF-8 special 
-> > characters have the high bit set in all bytes.  Therefore you just assume 
-> > that anything with the high bit set is part of a word and you can handle 
-> > basic UTF-8.  (It doesn't work on special UTF-8 space characters like 
-> > nonbreaking space and similar, but handling those is significantly more 
-> > complicated).
-> 
-> The documentations says:
-> "Smack labels cannot contain unprintable characters or the "/" (slash) 
->  character."
-> 
-> What you propose might contain unprintable characters, and it might even 
-> be invalid UTF-8.
-> 
+---
+[PATCH] rd: fix data corruption on memory pressure
+---
 
-As far as I understand the problem now, isspace() accepts the 0xa0
-character which might collide with some of UTF-8 encoded characters
-cause the high bit is set.
+The patch is currently in mm but not yet upstream. As soon as it is merged,
+this patch is a good candidate for stable.
 
-I used "if (!isspace(c) && !isgraph(c)) return -EINVAL;" to test 
-rules' characters validity which seems not enough. I'll add !isascii(c)
-in the condition and ask Casey to change the documentation to be
-something like:
-
-Smack labels are represented in ASCII characters, they cannot contain
-unprintable characters or the '/' (slash) character.
-
-and in write():
-if (!isascii(c) return -EINVAL;
-if (!isspace(c) && !isgraph(c)) return -EINVAL;
-
-This satisfy above customized labels rule, right ?
-
-Regards,
-
---
-Ahmed S. Darwish
-Homepage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
+Christian
