@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755035AbXKFO4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbXKFO5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755035AbXKFO4u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 09:56:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbXKFO4n
+	id S1755625AbXKFO5b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 09:57:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbXKFO5X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 09:56:43 -0500
-Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:55210 "EHLO
-	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752398AbXKFO4m (ORCPT
+	Tue, 6 Nov 2007 09:57:23 -0500
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:33380 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751729AbXKFO5V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 09:56:42 -0500
-X-Greylist: delayed 1800 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Nov 2007 09:56:42 EST
-Date: Tue, 06 Nov 2007 15:26:37 +0100
-From: Arnd Hannemann <arnd@arndnet.de>
-Subject: Re: Truecrypt in kernel ?
-In-reply-to: <2ed59cbb0711051742k5e4a7858ie95126399006ba53@mail.gmail.com>
-To: Zurk Tech <zurktech@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <4730799D.5020800@arndnet.de>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8
-Content-transfer-encoding: 7BIT
-X-IronPort-AV: E=Sophos;i="4.21,378,1188770400";   d="scan'208";a="20244527"
-X-Enigmail-Version: 0.95.0
-References: <2ed59cbb0711051742k5e4a7858ie95126399006ba53@mail.gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Tue, 6 Nov 2007 09:57:21 -0500
+Date: Tue, 6 Nov 2007 20:21:19 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: akpm@linux-foundation.org
+Cc: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
+       wei.zhang@freescale.com, ebony.zhu@freescale.com,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: mm snapshot broken-out-2007-11-06-02-32.tar.gz uploaded - Build Failure at fsldma.c
+Message-ID: <20071106145119.GA32391@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Andrew,
 
-Zurk Tech schrieb:
-> i was trying to move my truecrypt container from my xp box to my
-> debian etch box.
-> on windows xp its just double click to mount it, no need to even
-> install with the portable option.
-> on linux i had to download the source of the kernel, compile it, add
-> the truecrypt module, reboot and then mount it.
-> just wondering why the truecrypt module isnt in the mainline kernel ?
-> its the only cross platform encrypted disk solution out there and it
-> should be less of a chore to use it in linux...is there something
-> wrong with the truecrypt kernel driver ?
+The build fails with error
 
-Its not the only cross platform solution: You could use LUKS[1] on linux
-and FreeOTFE[2] on win platform. With modern linux distributions LUKS is
-very easy to use.
+  CC      net/9p/error.o
+drivers/dma/fsldma.h:152: error: conflicting types for ‘in_be64’
+include/asm/io.h:136: error: previous definition of ‘in_be64’ was here
+drivers/dma/fsldma.h:157: error: conflicting types for ‘out_be64’
+include/asm/io.h:135: error: previous definition of ‘out_be64’ was here
+drivers/dma/fsldma.h:164: error: conflicting types for ‘in_le64’
+include/asm/io.h:140: error: previous definition of ‘in_le64’ was here
+drivers/dma/fsldma.h:169: error: conflicting types for ‘out_le64’
+include/asm/io.h:145: error: previous definition of ‘out_le64’ was here
+drivers/dma/fsldma.c:504: error: implicit declaration of function ‘bus_to_virt’
+make[2]: *** [drivers/dma/fsldma.o] Error 1
+make[1]: *** [drivers/dma] Error 2
+make: *** [drivers] Error 2
 
-[1] http://luks.endorphin.org
-[2] http://www.freeotfe.org
+This error is caused by the patch add-dma-engine-driver-for-freescale-mpc85xx-processors.patch
 
-Best regards, Arnd
+The following patch solves the conflict types error, but the bus_to_virt
+is under the CONFIG_PPC32 ifdef and we had a discuss on the same for the
+availability of the function for ppc64 at http://lkml.org/lkml/2007/10/17/524
+
+Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+--
+--- linux-2.6.24-rc1/drivers/dma/fsldma.h	2007-11-06 09:12:09.000000000 -0500
++++ linux-2.6.24-rc1/drivers/dma/~fsldma.h	2007-11-06 09:12:31.000000000 -0500
+@@ -147,7 +147,7 @@ struct fsl_dma_chan {
+ #define to_fsl_desc(lh) container_of(lh, struct fsl_desc_sw, node)
+ #define tx_to_fsl_desc(tx) container_of(tx, struct fsl_desc_sw, async_tx)
+ 
+-#ifndef __powerpc64
++#ifndef __powerpc64__
+ static u64 in_be64(const u64 __iomem *addr)
+ {
+ 	return ((u64)in_be32((u32 *)addr) << 32) | (in_be32((u32 *)addr + 1));
+
+--
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
