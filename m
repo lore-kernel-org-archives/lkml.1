@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756243AbXKFIhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755943AbXKFIkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756243AbXKFIhi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 03:37:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbXKFIha
+	id S1755943AbXKFIkz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 03:40:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754697AbXKFIks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 03:37:30 -0500
-Received: from mga11.intel.com ([192.55.52.93]:55128 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753110AbXKFIha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 03:37:30 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,377,1188802800"; 
-   d="scan'208";a="196955897"
-Subject: [Patch2/2] fix wrong proc cpuinfo on x64
-From: Zou Nan hai <nanhai.zou@intel.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@osdl.org>
+	Tue, 6 Nov 2007 03:40:48 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:41419 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754435AbXKFIkr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 03:40:47 -0500
+Subject: Re: [PATCH 11/16] CRIS architecture: Correct compile errors
+From: David Woodhouse <dwmw2@infradead.org>
+To: Jesper Nilsson <jesper.nilsson@axis.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Mikael Starvik <mikael.starvik@axis.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20071030093353.GN11960@axis.com>
+References: <20071030093353.GN11960@axis.com>
 Content-Type: text/plain
-Organization: 
-Message-Id: <1194333940.3046.38.camel@linux-znh>
+Date: Tue, 06 Nov 2007 08:40:43 +0000
+Message-Id: <1194338443.24746.43.camel@pmac.infradead.org>
 Mime-Version: 1.0
-X-Mailer: Ximian Evolution 1.2.2 (1.2.2-4) 
-Date: 06 Nov 2007 16:28:20 +0800
+X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-in 2.6.24-rc1 kernel, 
-The /proc/cpuinfo display is wrong.
 
-Another issue is that it will display bogus cpus with wrong information
-if the kernel is compiled with a big CONFIG_NR_CPU.
+On Tue, 2007-10-30 at 10:33 +0100, Jesper Nilsson wrote:
+> Add include file with prototype for mtdram_init_device from
+> drivers/mtd/devices/mtdram.c.
+> Used by axisflashmap.c to boot from ram.
+> 
+> Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
+> 
+> ---
+>  mtdram.h |   10 ++++++++++
+>  1 file changed, 10 insertions(+)
+> 
+> --- /dev/null	2007-10-06 06:38:38.348072750 +0200
+> +++ linux-2.6.23/include/linux/mtd/mtdram.h	2002-11-13 15:57:45.000000000 +0100
+> @@ -0,0 +1,10 @@
+> +#ifndef __MTD_MTDRAM_H__
+> +#define __MTD_MTDRAM_H__
+> +
+> +#ifdef __KERNEL__
+> +#include <linux/mtd/mtd.h>
+> +int mtdram_init_device(struct mtd_info *mtd, void *mapped_address, 
+> +                       unsigned long size, char *name);
+> +
+> +#endif /* __KERNEL__ */
+> +#endif /* __MTD_MTDRAM_H__ */
 
-That is because before a cpu in cpu_present_map is up, c->cpu_index of
-that cpu is 0.
-thus the cpu_online(c->cpu_index) check in show_cpuinfo is invalid.
+You don't need #ifdef __KERNEL__ on a file which isn't exported to
+userspace. Having removed that, I've applied it to my tree.
 
-This patch will let cpuinfo_op use cpu_online_map instead of
-cpu_present_map to iterate cpus.
-
-
-Signed-off-by: Zou Nan hai <nanhai.zou@intel.com>
-
---- linux-2.6.24-rc1/arch/x86/kernel/setup_64.c	2007-10-29 22:03:05.000000000 -0400
-+++ b/arch/x86/kernel/setup_64.c	2007-11-05 23:09:06.000000000 -0500
-@@ -1078,8 +1078,6 @@ static int show_cpuinfo(struct seq_file 
- 
- 
- #ifdef CONFIG_SMP
--	if (!cpu_online(c->cpu_index))
--		return 0;
- 	cpu = c->cpu_index;
- #endif
- 
-@@ -1171,15 +1169,15 @@ static int show_cpuinfo(struct seq_file 
- static void *c_start(struct seq_file *m, loff_t *pos)
- {
- 	if (*pos == 0)	/* just in case, cpu 0 is not the first */
--		*pos = first_cpu(cpu_possible_map);
--	if ((*pos) < NR_CPUS && cpu_possible(*pos))
-+		*pos = first_cpu(cpu_online_map);
-+	if ((*pos) < NR_CPUS && cpu_online(*pos))
- 		return &cpu_data(*pos);
- 	return NULL;
- }
- 
- static void *c_next(struct seq_file *m, void *v, loff_t *pos)
- {
--	*pos = next_cpu(*pos, cpu_possible_map);
-+	*pos = next_cpu(*pos, cpu_online_map);
- 	return c_start(m, pos);
- }
- 
+-- 
+dwmw2
 
