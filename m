@@ -1,80 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754778AbXKFO7p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721AbXKFPFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754778AbXKFO7p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 09:59:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbXKFO7i
+	id S1754721AbXKFPFi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 10:05:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbXKFPFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 09:59:38 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:49334 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752605AbXKFO7h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 09:59:37 -0500
-Date: Tue, 6 Nov 2007 15:59:13 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: pavel@ucw.cz, torvalds@linux-foundation.org, darwish.07@gmail.com,
-       casey@schaufler-ca.com, akpm@linux-foundation.org,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       viro@ftp.linux.org.uk
-Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser
-Message-ID: <20071106145913.GM26163@stusta.de>
-References: <alpine.LFD.0.999.0711050818200.15101@woody.linux-foundation.org> <200711060656.ADF87510.tJLVFOHOFSOFMQ@I-love.SAKURA.ne.jp> <20071106100035.GE26163@stusta.de> <200711062127.CBC60981.tQOOSVFHJFOFML@I-love.SAKURA.ne.jp> <20071106135845.GJ26163@stusta.de> <200711062332.DFH35933.FtQLMSOOOVHJFF@I-love.SAKURA.ne.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200711062332.DFH35933.FtQLMSOOOVHJFF@I-love.SAKURA.ne.jp>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 6 Nov 2007 10:05:31 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:34358 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751938AbXKFPFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 10:05:30 -0500
+Subject: Re: problem in follow_hugetlb_page on ppc64 architecture with
+	get_user_pages
+From: aglitke <agl@us.ibm.com>
+To: Christoph Raisch <RAISCH@de.ibm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, general@lists.openfabrics.org,
+       Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>,
+       Roland Dreier <rdreier@cisco.com>
+In-Reply-To: <OF6FC435A0.F59C9AD9-ONC125738B.002A5195-C125738B.002A424A@de.ibm.com>
+References: <OF6FC435A0.F59C9AD9-ONC125738B.002A5195-C125738B.002A424A@de.ibm.com>
+Content-Type: text/plain
+Organization: IBM
+Date: Tue, 06 Nov 2007 09:05:32 -0600
+Message-Id: <1194361532.20383.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 06, 2007 at 11:32:15PM +0900, Tetsuo Handa wrote:
-> Hello.
+Please try this patch and see if it helps.
+
+commit 6decbd17d6fb70d50f6db2c348bb41d7246a67d1
+Author: Adam Litke <agl@us.ibm.com>
+Date:   Tue Nov 6 06:59:12 2007 -0800
+
+    hugetlb: follow_hugetlb_page for write access
+    
+    When calling get_user_pages(), a write flag is passed in by the caller to
+    indicate if write access is required on the faulted-in pages.  Currently,
+    follow_hugetlb_page() ignores this flag and always faults pages for
+    read-only access.
+    
+    This patch passes the write flag down to follow_hugetlb_page() and makes
+    sure hugetlb_fault() is called with the right write_access parameter.
+    
+    Test patch only.  Not Signed-off.
+
+diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+index 3a19b03..31fa0a0 100644
+--- a/include/linux/hugetlb.h
++++ b/include/linux/hugetlb.h
+@@ -19,7 +19,7 @@ static inline int is_vm_hugetlb_page(struct vm_area_struct *vma)
+ int hugetlb_sysctl_handler(struct ctl_table *, int, struct file *, void __user *, size_t *, loff_t *);
+ int hugetlb_treat_movable_handler(struct ctl_table *, int, struct file *, void __user *, size_t *, loff_t *);
+ int copy_hugetlb_page_range(struct mm_struct *, struct mm_struct *, struct vm_area_struct *);
+-int follow_hugetlb_page(struct mm_struct *, struct vm_area_struct *, struct page **, struct vm_area_struct **, unsigned long *, int *, int);
++int follow_hugetlb_page(struct mm_struct *, struct vm_area_struct *, struct page **, struct vm_area_struct **, unsigned long *, int *, int, int);
+ void unmap_hugepage_range(struct vm_area_struct *, unsigned long, unsigned long);
+ void __unmap_hugepage_range(struct vm_area_struct *, unsigned long, unsigned long);
+ int hugetlb_prefault(struct address_space *, struct vm_area_struct *);
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index eab8c42..b645985 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -621,7 +621,8 @@ int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+ 
+ int follow_hugetlb_page(struct mm_struct *mm, struct vm_area_struct *vma,
+ 			struct page **pages, struct vm_area_struct **vmas,
+-			unsigned long *position, int *length, int i)
++			unsigned long *position, int *length, int i,
++			int write)
+ {
+ 	unsigned long pfn_offset;
+ 	unsigned long vaddr = *position;
+@@ -643,7 +644,7 @@ int follow_hugetlb_page(struct mm_struct *mm, struct vm_area_struct *vma,
+ 			int ret;
+ 
+ 			spin_unlock(&mm->page_table_lock);
+-			ret = hugetlb_fault(mm, vma, vaddr, 0);
++			ret = hugetlb_fault(mm, vma, vaddr, write);
+ 			spin_lock(&mm->page_table_lock);
+ 			if (!(ret & VM_FAULT_ERROR))
+ 				continue;
+diff --git a/mm/memory.c b/mm/memory.c
+index f82b359..1bcd444 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -1039,7 +1039,7 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+ 
+ 		if (is_vm_hugetlb_page(vma)) {
+ 			i = follow_hugetlb_page(mm, vma, pages, vmas,
+-						&start, &len, i);
++						&start, &len, i, write);
+ 			continue;
+ 		}
+ 
+
+On Tue, 2007-11-06 at 08:42 +0100, Christoph Raisch wrote:
+> Hello,
+> if get_user_pages is used on a hugetlb vma, and there was no previous write
+> to the pages,
+> follow_hugetlb_page will call
+> ret = hugetlb_fault(mm, vma, vaddr, 0),
+> although the page should be used for write access in get_user_pages.
 > 
-> Adrian Bunk wrote:
-> > And \* is not a replacement for \?. It's quite common to have both ways 
-> > to express "one character" and to express "at least one character", and 
-> > both have their use cases and will get used if available.
-> You can use \? to represent "one character" and
-> \?\* to represent "at least one character".
-
-Not "one character", it's "one byte".
-
-> > But the problem is that in your code you only match one byte for \?, 
-> > and this might or might not be equal to one character.
-> "one byte" is almost equal to "one character".
-> "\?" matches to one of the following types.
+> We currently see this when testing Infiniband on ppc64 with ehca +
+> hugetlbfs.
+> From reading the code this should also be an issue on other architectures.
+> Roland, Adam, are you aware of anything in this area with mellanox
+> Infiniband cards or other usages with I/O adapters?
 > 
-> *  1 ASCII printable character (for 0x21-0x2E or 0x30-0x5B or 0x5D-0x7E)
-> *  2 ASCII printable characters \\ (for 0x5C, which means single "\")
-> *  4 ASCII printable characters \ooo (for 0x01-0x20 or 0x7F-0xFF, where "ooo" is octal value)
+> Gruss / Regards
+> Christoph R. + Nam Ng.
 > 
-> These 3 types represents one *byte*.
-> I want to say "\? matches to one character",
-> but since expression of a character depends on the value of that byte,
-> I'm saying "\? matches to one *byte* character" instead.
-> Well, this sentence might be confusing, but how can I express more accurately?
-
-The problem is that your code matches one byte, not one character.
-
-More or less all userspace programs handle multi-byte UTF-8 characters 
-just fine without bothering the user with the fact whether a character 
-consists of one or more bytes.
-
-And users will try to use this \? for matching one character when 
-writing a pattern that denies access.
-
-That's not just a documentation problem.
-
-> Thanks.
-
-cu
-Adrian
-
+> 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Adam Litke - (agl at us.ibm.com)
+IBM Linux Technology Center
 
