@@ -1,42 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754136AbXKFFQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754477AbXKFFgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754136AbXKFFQV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 00:16:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbXKFFQN
+	id S1754477AbXKFFgS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 00:36:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbXKFFgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 00:16:13 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:48002 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750802AbXKFFQL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 00:16:11 -0500
-Date: Tue, 6 Nov 2007 00:15:32 -0500
-From: Alexander Viro <aviro@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Steve Dickson <SteveD@redhat.com>, Alexander Viro <aviro@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, nfs@lists.sourceforge.net,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>
-Subject: Re: [PATCH] NFS: Stop sillyname renames and unmounts from racing
-Message-ID: <20071106051532.GA5397@devserv.devel.redhat.com>
-References: <472C56E5.1040901@RedHat.com> <20071105210636.2fc72e14.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 6 Nov 2007 00:36:09 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:46849 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751000AbXKFFgI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 00:36:08 -0500
+Date: Tue, 6 Nov 2007 06:35:44 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: a list of non-existent but included include/linux header files
+Message-ID: <20071106053544.GH3444@stusta.de>
+References: <Pine.LNX.4.64.0711052327090.6602@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20071105210636.2fc72e14.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <Pine.LNX.4.64.0711052327090.6602@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 05, 2007 at 09:06:36PM -0800, Andrew Morton wrote:
-> > Any objections to exporting the inode_lock spin lock?
-> > If so, how should modules _safely_ access the s_inode list?
+On Mon, Nov 05, 2007 at 11:31:39PM -0500, Robert P. J. Day wrote:
+> 
+>   this list is short enough that i'll just post it here -- attempts to
+> include header files under include/linux when those header files
+> simply don't exist.  obviously, there might be false positives for one
+> reason or another.  (the only manual culling i did of the list was to
+> remove inclusions of autoconf.h and utsrelease.h -- i assumed those
+> weren't an issue for anyone.)
+>...
+> === Missing: include/linux/compile.h ===
+> arch/x86/boot/version.c:#include <linux/compile.h>
+> init/version.c:#include <linux/compile.h>
+>...
 
-> That's going to make hch unhappy.
+That's a generated header.
 
-That's going to make me just as unhappy, especially since it's pointless;
-instead of the entire sorry mess we should just bump sb->s_active to pin
-the superblock down (we know that it's active at that point, so it's just
-an atomic_inc(); no games with locking, etc., are needed) and call
-deactivate_super() on the way out.  And deactivate_super() is exported
-already.
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
