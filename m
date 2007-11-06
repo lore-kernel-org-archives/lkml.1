@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756217AbXKFKFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756739AbXKFKIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756217AbXKFKFc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 05:05:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbXKFKFY
+	id S1756739AbXKFKIU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 05:08:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753632AbXKFKIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 05:05:24 -0500
-Received: from trinity.phys.uwm.edu ([129.89.57.159]:53578 "EHLO
-	trinity.phys.uwm.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750802AbXKFKFY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 05:05:24 -0500
-X-Greylist: delayed 640 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Nov 2007 05:05:23 EST
-Date: Tue, 6 Nov 2007 03:49:13 -0600 (CST)
-From: Bruce Allen <ballen@gravity.phys.uwm.edu>
-X-X-Sender: ballen@trinity.phys.uwm.edu
-To: Jim Paris <jim@jtan.com>
-cc: Tejun Heo <htejun@gmail.com>, Steen Eugen Poulsen <sep@lix-world.net>,
-       Andrew Morton <akpm@linux-foundation.org>, lists@dusted.dk,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       bruce.allen@aei.mpg.de
-Subject: Re: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-In-Reply-To: <20071026040226.GA26960@jim.sh>
-Message-ID: <Pine.LNX.4.63.0711060348290.22998@trinity.phys.uwm.edu>
-References: <56020.194.255.108.253.1192004925.squirrel@root.dusted.dk>
- <20071012174153.69556b32.akpm@linux-foundation.org> <47105C53.7040603@lix-world.net>
- <471DC52B.20802@gmail.com> <471F2647.4030304@lix-world.net> <47214593.1080102@gmail.com>
- <20071026040226.GA26960@jim.sh>
+	Tue, 6 Nov 2007 05:08:13 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:60535 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750951AbXKFKIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 05:08:12 -0500
+Message-ID: <47303D07.4050404@redhat.com>
+Date: Tue, 06 Nov 2007 05:08:07 -0500
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Don Porter <porterde@cs.utexas.edu>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [RFC/PATCH] Optimize zone allocator synchronization
+References: <20071104195212.GF16354@olive-green.cs.utexas.edu>
+In-Reply-To: <20071104195212.GF16354@olive-green.cs.utexas.edu>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>> All these are caused by smartd.  Updating should fix the problem.
->>>
->>> Okay, but there is no newer smartd than what I'm using. (5.37)
->>
->> Bruce?  Original thread can be read from...
->>
->> http://thread.gmane.org/gmane.linux.kernel/588972
->
-> The fixes were added in smartmontools CVS, but there hasn't been a
-> release since then.
+Don Porter wrote:
+> From: Donald E. Porter <porterde@cs.utexas.edu>
+> 
+> In the bulk page allocation/free routines in mm/page_alloc.c, the zone
+> lock is held across all iterations.  For certain parallel workloads, I
+> have found that releasing and reacquiring the lock for each iteration
+> yields better performance, especially at higher CPU counts.  For
+> instance, kernel compilation is sped up by 5% on an 8 CPU test
+> machine.  In most cases, there is no significant effect on performance
+> (although the effect tends to be slightly positive).  This seems quite
+> reasonable for the very small scope of the change.
+> 
+> My intuition is that this patch prevents smaller requests from waiting
+> on larger ones.  While grabbing and releasing the lock within the loop
+> adds a few instructions, it can lower the latency for a particular
+> thread's allocation which is often on the thread's critical path.
+> Lowering the average latency for allocation can increase system throughput.
+> 
+> More detailed information, including data from the tests I ran to
+> validate this change are available at
+> http://www.cs.utexas.edu/~porterde/kernel-patch.html .
+> 
+> Thanks in advance for your consideration and feedback.
 
-I think we'll do a new smartmontools release fairly soon.
+That's an interesting insight.  My intuition is that Nick Piggin's 
+recently-posted ticket spinlocks patches[1] will reduce the need for this patch, 
+though it may be useful to have both.  Can you benchmark again with only ticket 
+spinlocks, and with ticket spinlocks + this patch?  You'll probably want to use 
+2.6.24-rc1 as your baseline, due to the x86 architecture merge.
 
-Cheers,
- 	Bruce
+	-- Chris
+
+[1] http://lkml.org/lkml/2007/11/1/123
