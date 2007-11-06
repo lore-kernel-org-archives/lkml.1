@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755214AbXKFGdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167AbXKFGqj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755214AbXKFGdi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 01:33:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754185AbXKFGda
+	id S1755167AbXKFGqj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 01:46:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754136AbXKFGqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 01:33:30 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47201 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753574AbXKFGd3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 01:33:29 -0500
-Date: Tue, 6 Nov 2007 07:33:05 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>
-Cc: Casey Schaufler <casey@schaufler-ca.com>, akpm@osdl.org, torvalds@osdl.org,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser
-Message-ID: <20071106063305.GA26163@stusta.de>
-References: <472B8DAF.9080706@schaufler-ca.com> <20071103164303.GA26707@ubuntu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20071103164303.GA26707@ubuntu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 6 Nov 2007 01:46:31 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:60730 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753574AbXKFGqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 01:46:30 -0500
+Date: Tue, 6 Nov 2007 17:46:26 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David <david@unsolicited.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24-rc1 - Regularly getting processes stuck in D state on
+ startup
+Message-Id: <20071106174626.3c7d3a14.sfr@canb.auug.org.au>
+In-Reply-To: <472F5F8B.7090200@unsolicited.net>
+References: <472F5F8B.7090200@unsolicited.net>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__6_Nov_2007_17_46_26_+1100_8xmxNkw/AX+AIC9W"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 03, 2007 at 06:43:06PM +0200, Ahmed S. Darwish wrote:
-> On Fri, Nov 02, 2007 at 01:50:55PM -0700, Casey Schaufler wrote:
-> > 
-> > Still to come:
-> > 
-> >   - Final cleanup of smack_load_write and smack_cipso_write.
-> 
-> Hi All,
-> 
-> After agreeing with Casey on the "load" input grammar yesterday, here's
-> the final grammar and its parser (which needs more testing):
-> 
-> A Smack Rule in an "egrep" format is:
-> 
-> "^[:space:]*Subject[:space:]+Object[:space:]+[rwxaRWXA-]+[:space:]*\n"
-> 
-> where Subject/Object strings are in the form:
-> 
-> "^[^/[:space:][:cntrl:]]{1,SMK_MAXLEN}$"
->...
+--Signature=_Tue__6_Nov_2007_17_46_26_+1100_8xmxNkw/AX+AIC9W
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Can you limit this to 7bit ASCII and use isascii() somewhere?
+On Mon, 05 Nov 2007 18:23:07 +0000 David <david@unsolicited.net> wrote:
+>
+> I've been testing rc1 for a week or so, and about 25% of the time I'm
+> seeing Firefox and Thunderbird getting stuck in 'D' state as they startup.
+>=20
+> I've attached the output of Sysrq-T to this mail... system is a
+> dual-core AMD64, and files are on a RAID-1 root partition connected two
+> SATA disks on the on-board NVidia controller. I've had no problems
+> before .24 rc1
 
-Otherwise I'd expect funny things to happen when you e.g. use isspace() 
-on the UTF-8 encoded character à.
+I am seeing something very similar on a PowerPC machine where copying a
+file from an LVM volume with ext3 on it to a simple scsi partition (again
+ext3) on the same disk will hang in congestion_wait.  If I am patient
+enough, the copy makes very slow progress.  A kill -9 will kill it
+eventually, but a simple control-C will not.
 
-cu
-Adrian
+This hang occurs more often than not (and usually when I am trying to
+install a new kernel into /boot for testing :-)).
 
--- 
+I don't have access to the machine today, but if more information would
+be useful, I could boot into 2.6.24-rc1-<mumble> again tomorrow.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Tue__6_Nov_2007_17_46_26_+1100_8xmxNkw/AX+AIC9W
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHMA3ITgG2atn1QN8RAuukAJ4wpCSvsropRp2Y7AnacEnfVnQxuwCfRaaq
+Z3zJZVqq5SNmhKH3+PyXVO8=
+=os0F
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__6_Nov_2007_17_46_26_+1100_8xmxNkw/AX+AIC9W--
