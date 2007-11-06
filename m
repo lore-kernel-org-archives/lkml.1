@@ -1,98 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755932AbXKFQfI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755279AbXKFQkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755932AbXKFQfI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 11:35:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020AbXKFQe5
+	id S1755279AbXKFQkq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 11:40:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbXKFQki
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 11:34:57 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:47740 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753496AbXKFQe5 (ORCPT
+	Tue, 6 Nov 2007 11:40:38 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:52403 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753228AbXKFQki (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 11:34:57 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Christian Borntraeger <cborntra@de.ibm.com>,
-       Gerald Schaefer <geraldsc@de.ibm.com>
-Subject: [PATCH] s390: cmm - remove unused binary sysctls
-Date: Tue, 06 Nov 2007 09:34:18 -0700
-Message-ID: <m1tznz72ph.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 6 Nov 2007 11:40:38 -0500
+Date: Tue, 6 Nov 2007 11:38:52 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>, matthew@wil.cx
+Subject: [PATCH] Add the macro to test if "exactly_one_bit_set" to log2.h.
+Message-ID: <Pine.LNX.4.64.0711061135310.23545@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+While this macro is defined in terms of "is_power_of_2" and is
+therefore functionally equivalent, the visual semantics are sometimes
+more appropriate for what is actually being tested.
 
-Remove binary sysctls that never worked due to missing strategy functions.
+Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
 
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
 ---
- arch/s390/mm/cmm.c     |    3 ---
- include/linux/sysctl.h |    5 -----
- kernel/sysctl_check.c  |    3 ---
- 3 files changed, 11 deletions(-)
 
-Index: linux-2.6/arch/s390/mm/cmm.c
-===================================================================
---- linux-2.6.orig/arch/s390/mm/cmm.c
-+++ linux-2.6/arch/s390/mm/cmm.c
-@@ -341,19 +341,16 @@ cmm_timeout_handler(ctl_table *ctl, int 
- 
- static struct ctl_table cmm_table[] = {
- 	{
--		.ctl_name	= VM_CMM_PAGES,
- 		.procname	= "cmm_pages",
- 		.mode		= 0644,
- 		.proc_handler	= &cmm_pages_handler,
- 	},
- 	{
--		.ctl_name	= VM_CMM_TIMED_PAGES,
- 		.procname	= "cmm_timed_pages",
- 		.mode		= 0644,
- 		.proc_handler	= &cmm_pages_handler,
- 	},
- 	{
--		.ctl_name	= VM_CMM_TIMEOUT,
- 		.procname	= "cmm_timeout",
- 		.mode		= 0644,
- 		.proc_handler	= &cmm_timeout_handler,
-Index: linux-2.6/include/linux/sysctl.h
-===================================================================
---- linux-2.6.orig/include/linux/sysctl.h
-+++ linux-2.6/include/linux/sysctl.h
-@@ -207,11 +207,6 @@ enum
- 	VM_PANIC_ON_OOM=33,	/* panic at out-of-memory */
- 	VM_VDSO_ENABLED=34,	/* map VDSO into new processes? */
- 	VM_MIN_SLAB=35,		 /* Percent pages ignored by zone reclaim */
--
--	/* s390 vm cmm sysctls */
--	VM_CMM_PAGES=1111,
--	VM_CMM_TIMED_PAGES=1112,
--	VM_CMM_TIMEOUT=1113,
- };
- 
- 
-Index: linux-2.6/kernel/sysctl_check.c
-===================================================================
---- linux-2.6.orig/kernel/sysctl_check.c
-+++ linux-2.6/kernel/sysctl_check.c
-@@ -140,9 +140,6 @@ static struct trans_ctl_table trans_vm_t
- 	{ VM_PANIC_ON_OOM,		"panic_on_oom" },
- 	{ VM_VDSO_ENABLED,		"vdso_enabled" },
- 	{ VM_MIN_SLAB,			"min_slab_ratio" },
--	{ VM_CMM_PAGES,			"cmm_pages" },
--	{ VM_CMM_TIMED_PAGES,		"cmm_timed_pages" },
--	{ VM_CMM_TIMEOUT,		"cmm_timeout" },
- 
- 	{}
- };
+diff --git a/include/linux/log2.h b/include/linux/log2.h
+index c8cf5e8..d0d324e 100644
+--- a/include/linux/log2.h
++++ b/include/linux/log2.h
+@@ -55,6 +55,12 @@ bool is_power_of_2(unsigned long n)
+ }
 
+ /*
++ *  And for folks who want slightly different semantics ...
++ */
++
++#define exactly_one_bit_set is_power_of_2
++
++/*
+  * round up to nearest power of two
+  */
+ static inline __attribute__((const))
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
+http://crashcourse.ca
+========================================================================
