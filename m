@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbXKFAgE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756084AbXKFAk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756195AbXKFAgE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 19:36:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753574AbXKFAfw
+	id S1756084AbXKFAk1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 19:40:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbXKFAkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 19:35:52 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34750
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752750AbXKFAfv (ORCPT
+	Mon, 5 Nov 2007 19:40:17 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:3871 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752700AbXKFAkQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 19:35:51 -0500
-Date: Mon, 05 Nov 2007 16:35:42 -0800 (PST)
-Message-Id: <20071105.163542.157789854.davem@davemloft.net>
-To: kaber@trash.net
-Cc: djohnson+linux-kernel@sw.starentnetworks.com, jes@trained-monkey.org,
-       mchan@broadcom.com, ram.vepa@neterion.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, bguo@sw.starentnetworks.com
-Subject: Re: [PATCH 1/2] NET: Re-add VLAN tag for devices incapable of
- keeping it
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <472FB375.1020802@trash.net>
-References: <472F5A33.20906@trash.net>
-	<20071105.151544.175839612.davem@davemloft.net>
-	<472FB375.1020802@trash.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 5 Nov 2007 19:40:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=LL/y7edV4aiCo3WA3QL2zLozikM2cMdZLz3i4RTHagoJZeRwhAporhrHr3eZdmOApO5Vuc1d2cfbskDgR3nDzuU86WrjJQjugrQGxrc7cLHrjXBAef6r1nyVZIC7XVj2ESfA3mnhd0p2IYZHpe0mWgePbQpAzjAVgbplulG/NnQ=
+Message-ID: <3d8471ca0711051640w33588d8fn2c0e4aecf99d3547@mail.gmail.com>
+Date: Tue, 6 Nov 2007 01:40:14 +0100
+From: "Guillaume Chazarain" <guichaz@yahoo.fr>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] replace "make ARCH=i386/x86_64 with make ARCH=x86"
+Cc: "Sam Ravnborg" <sam@ravnborg.org>, "Roland Dreier" <rdreier@cisco.com>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Ingo Molnar" <mingo@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <472FAB4C.9040303@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071103234826.GA26654@uranus.ravnborg.org>
+	 <20071105104129.GB3662@infradead.org>
+	 <20071105171740.GA29481@uranus.ravnborg.org>
+	 <adafxzkbcid.fsf@cisco.com>
+	 <20071105214937.GA31496@uranus.ravnborg.org>
+	 <472FAB4C.9040303@zytor.com>
+X-Google-Sender-Auth: 5bea0390cc5164bc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Patrick McHardy <kaber@trash.net>
-Date: Tue, 06 Nov 2007 01:21:09 +0100
+On 11/6/07, H. Peter Anvin <hpa@zytor.com> wrote:
+> The issue with "make allyesconfig" concerns me, although the same
+> situation already exists with any multiple-choice configuration.  What I
+> guess we really want is to be able to specify a few specific choices.
 
-> David Miller wrote:
-> > From: Patrick McHardy <kaber@trash.net>
-> > Date: Mon, 05 Nov 2007 19:00:19 +0100
-> > 
-> >> This looks like a rather expensive operation for the unlikely case
-> >> that packets will be received by a packet socket. IMO it should only
-> >> be reconstructed if actually needed, by af_packet itself.
-> > 
-> > Completely agreed.  We should not do this by default when %99
-> > of the networking stack simply does not care about this.
-> 
-> 
-> I think there is one more case that matters, which is briding
-> from a device with VLAN stripping for a VLAN not configured
-> locally. The tag will be stripped and will be lost for forwarded
-> packets. But I'm not exactly sure this really can be configured
-> (time for bed so I'll check tommorrow).
+I don't know enough about Kbuild to know if it's possible or not, but I
+would find it great if the *config targets could take CONFIG_ variables
+on the command line, like:
 
-If so then when such rules are loaded, just like PF_PACKET, it can set
-the indication to start reconstituting VLAN headers stripped by HW.
+make oldconfig CONFIG_SMP=y
 
-> >> As we discussed some time back storing the VLAN tag in the CB on
-> >> TX clashes with other users of the CB like qdiscs, so we need a
-> >> new field in the skb for this anyway.
-> > 
-> > Someone will have to find a way to remove some other fields in
-> > sk_buff before I'm going to allow more space to be eaten up
-> > by this completely fringe case feature.
-> 
-> We have a two byte hole after tc_verd where we could fit this in.
-> But I'm pretty sure we also could reuse some other fields on input,
-> like queue_mapping or maybe even destructor for unowned skbs.
+If it's not possible, why not inherit the CONFIG_ options from environment
+variables, like we already do for $CFLAGS, but only at make *config
+time in this case?
 
-Two bytes is enough, so if there is a hole we can use it.
+-- 
+Guillaume
