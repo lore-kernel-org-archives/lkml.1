@@ -1,305 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbXKFIVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756407AbXKFIVb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755964AbXKFIVT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 03:21:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754510AbXKFIVK
+	id S1756407AbXKFIVb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 03:21:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755982AbXKFIVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 03:21:10 -0500
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:52012 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1754466AbXKFIVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 03:21:09 -0500
-Message-ID: <394337271.18157@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Tue, 6 Nov 2007 16:21:05 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: David <david@unsolicited.net>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: 2.6.24-rc1 - Regularly getting processes stuck in D state on
-	startup
-References: <472F5F8B.7090200@unsolicited.net> <E1IpJLy-0002ag-TL@localhost>
+	Tue, 6 Nov 2007 03:21:20 -0500
+Received: from py-out-1112.google.com ([64.233.166.183]:39548 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755629AbXKFIVS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 03:21:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:from;
+        b=CDY+OzoVlZraDUZ5mGpClOxk0okjonxifmMTpG0/79c10mDJ/PSRsyiQEicnviF+uQNgiJBy78mWRmufeqG6g9Wc0fd7xmnXyJqa7hBnyTLDAhQ6UNpmcRHaYhx3Li8j15rL9V8m+hicahKS1XLssT5tWIorrl28W/IcrLOPUvc=
+Message-ID: <473023FE.8020501@networksentry.co.za>
+Date: Tue, 06 Nov 2007 10:21:18 +0200
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1IpJLy-0002ag-TL@localhost>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
-Message-Id: <E1IpJgH-0003H1-AD@localhost>
+To: linux-kernel@vger.kernel.org
+Subject: Odd Ooops jbd ??
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+From: Gregory Nietsky <gregnietsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[added CC list]
+here is a error i keep bumping into with 2.6.24-rc1 (git11)
 
-On Tue, Nov 06, 2007 at 04:00:06PM +0800, Fengguang Wu wrote:
-> On Mon, Nov 05, 2007 at 06:23:07PM +0000, David wrote:
-> > I've been testing rc1 for a week or so, and about 25% of the time I'm
-> > seeing Firefox and Thunderbird getting stuck in 'D' state as they startup.
-> > 
-> > I've attached the output of Sysrq-T to this mail... system is a
-> > dual-core AMD64, and files are on a RAID-1 root partition connected two
-> > SATA disks on the on-board NVidia controller. I've had no problems
-> > before .24 rc1
-> 
-> David, thank you for the reporting.
-> 
-> Could you try with the attached 4 patches? Two of them are expected to
-> fix your problem, another two are debugging ones(in case the problem
-> persists).
-> 
-> Thank you,
-> Fengguang
+the trigger is a ISDN call from one port to another (loopback cable) 
+within asterisk i have not been able to replicate it in any other way 
+the error may be in the ISDN
+what i cant understand is why it would affect the fs.
 
-> Subject: reiserfs: fix writeback
-> 
-> Reiserfs could leave newly created sub-page-size files in dirty state for ever.
-> They cannot be synced to disk by pdflush routines or an explicit `sync' command.
-> Only `umount' can do the trick.
-> 
-> This is not a new issue in 2.6.23-git17. 2.6.23 is buggy in the same way.
-> 
-> The direct cause is, the dirty page's PG_dirty is cleared on
-> reiserfs_file_release(). Call trace:
-> 
-> 	 [<ffffffff8027e920>] cancel_dirty_page+0xd0/0xf0
-> 	 [<ffffffff8816d470>] :reiserfs:reiserfs_cut_from_item+0x660/0x710
-> 	 [<ffffffff8816d791>] :reiserfs:reiserfs_do_truncate+0x271/0x530
-> 	 [<ffffffff8815872d>] :reiserfs:reiserfs_truncate_file+0xfd/0x3b0
-> 	 [<ffffffff8815d3d0>] :reiserfs:reiserfs_file_release+0x1e0/0x340
-> 	 [<ffffffff802a187c>] __fput+0xcc/0x1b0
-> 	 [<ffffffff802a1ba6>] fput+0x16/0x20
-> 	 [<ffffffff8029e676>] filp_close+0x56/0x90
-> 	 [<ffffffff8029fe0d>] sys_close+0xad/0x110
-> 	 [<ffffffff8020c41e>] system_call+0x7e/0x83
-> 
-> Fix the problem by simply removing the cancel_dirty_page() call.
-> 
-> 
-> Here are more detailed demonstrations of the problem:
-> 
-> 1) the page has both PG_dirty(D)/PAGECACHE_TAG_DIRTY(d) after being written to;
->    and then only PAGECACHE_TAG_DIRTY(d) remains after the file is closed.
-> 
-> ------------------------------ screen 0 ------------------------------
-> [T0] root /home/wfg# cat > /test/tiny
-> [T1] hi
-> [T2] root /home/wfg#
-> 
-> ------------------------------ screen 1 ------------------------------
-> [T1] root /home/wfg# echo /test/tiny > /proc/filecache
-> [T1] root /home/wfg# cat /proc/filecache
->      # file /test/tiny
->      # flags R:referenced A:active M:mmap U:uptodate D:dirty W:writeback O:owner B:buffer d:dirty w:writeback
->      # idx   len     state   refcnt
->      0       1       ___UD__Bd_      2
-> [T2] root /home/wfg# cat /proc/filecache
->      # file /test/tiny
->      # flags R:referenced A:active M:mmap U:uptodate D:dirty W:writeback O:owner B:buffer d:dirty w:writeback
->      # idx   len     state   refcnt
->      0       1       ___U___Bd_      2
-> 
-> 2) note the non-zero `cancelled_write_bytes' after /tmp/hi is copied.
-> 
-> ------------------------------ screen 0 ------------------------------
-> [T0] root /home/wfg# echo hi > /tmp/hi
-> [T1] root /home/wfg# cp /tmp/hi /dev/stdin /test
-> [T2] hi
-> [T3] root /home/wfg#
-> 
-> ------------------------------ screen 1 ------------------------------
-> [T1] root /proc/4397# cd /proc/`pidof cp`
-> [T1] root /proc/4713# cat io
->      rchar: 8396
->      wchar: 3
->      syscr: 20
->      syscw: 1
->      read_bytes: 0
->      write_bytes: 20480
->      cancelled_write_bytes: 4096
-> [T2] root /proc/4713# cat io
->      rchar: 8399
->      wchar: 6
->      syscr: 21
->      syscw: 2
->      read_bytes: 0
->      write_bytes: 24576
->      cancelled_write_bytes: 4096
-> 
-> Cc: Maxim Levitsky <maximlevitsky@gmail.com>                                                                           
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
-> ---
->  fs/reiserfs/stree.c |    3 ---
->  1 file changed, 3 deletions(-)
-> 
-> --- linux-2.6.24-git17.orig/fs/reiserfs/stree.c
-> +++ linux-2.6.24-git17/fs/reiserfs/stree.c
-> @@ -1458,9 +1458,6 @@ static void unmap_buffers(struct page *p
->  				}
->  				bh = next;
->  			} while (bh != head);
-> -			if (PAGE_SIZE == bh->b_size) {
-> -				cancel_dirty_page(page, PAGE_CACHE_SIZE);
-> -			}
->  		}
->  	}
->  }
+shortly after this occurs there many oopses letting it run yesterday 
+corrupted the superblock on the / fs
 
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Subject: mm: speed up writeback ramp-up on clean systems
-> 
-> We allow violation of bdi limits if there is a lot of room on the
-> system. Once we hit half the total limit we start enforcing bdi limits
-> and bdi ramp-up should happen. Doing it this way avoids many small
-> writeouts on an otherwise idle system and should also speed up the
-> ramp-up.
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
-> ---
->  mm/page-writeback.c |   19 +++++++++++++++++--
->  1 file changed, 17 insertions(+), 2 deletions(-)
-> 
-> --- linux-2.6.24-git17.orig/mm/page-writeback.c
-> +++ linux-2.6.24-git17/mm/page-writeback.c
-> @@ -355,8 +355,8 @@ get_dirty_limits(long *pbackground, long
->   */
->  static void balance_dirty_pages(struct address_space *mapping)
->  {
-> -	long bdi_nr_reclaimable;
-> -	long bdi_nr_writeback;
-> +	long nr_reclaimable, bdi_nr_reclaimable;
-> +	long nr_writeback, bdi_nr_writeback;
->  	long background_thresh;
->  	long dirty_thresh;
->  	long bdi_thresh;
-> @@ -376,11 +376,26 @@ static void balance_dirty_pages(struct a
->  
->  		get_dirty_limits(&background_thresh, &dirty_thresh,
->  				&bdi_thresh, bdi);
-> +
-> +		nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
-> +					global_page_state(NR_UNSTABLE_NFS);
-> +		nr_writeback = global_page_state(NR_WRITEBACK);
-> +
->  		bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
->  		bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
-> +
->  		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
->  			break;
->  
-> +		/*
-> +		 * Throttle it only when the background writeback cannot
-> +		 * catch-up. This avoids (excessively) small writeouts
-> +		 * when the bdi limits are ramping up.
-> +		 */
-> +		if (nr_reclaimable + nr_writeback <
-> +				(background_thresh + dirty_thresh) / 2)
-> +			break;
-> +
->  		if (!bdi->dirty_exceeded)
->  			bdi->dirty_exceeded = 1;
->  
+i will continue to try narrow it down any ideas are welcome.
 
-> ---
->  mm/page-writeback.c |   23 +++++++++++++++++++++++
->  1 file changed, 23 insertions(+)
-> 
-> --- linux-2.6.23-rc8-mm2.orig/mm/page-writeback.c
-> +++ linux-2.6.23-rc8-mm2/mm/page-writeback.c
-> @@ -98,6 +98,26 @@ EXPORT_SYMBOL(laptop_mode);
->  
->  /* End of sysctl-exported parameters */
->  
-> +#define writeback_debug_report(n, wbc) do {                               \
-> +	__writeback_debug_report(n, wbc, __FILE__, __LINE__, __FUNCTION__); \
-> +} while (0)
-> +
-> +void __writeback_debug_report(long n, struct writeback_control *wbc,
-> +		const char *file, int line, const char *func)
-> +{
-> +	printk("%s %d %s: %s(%d) %ld "
-> +			"global %lu %lu %lu "
-> +			"wc %c%c tw %ld sk %ld\n",
-> +			file, line, func,
-> +			current->comm, current->pid, n,
-> +			global_page_state(NR_FILE_DIRTY),
-> +			global_page_state(NR_WRITEBACK),
-> +			global_page_state(NR_UNSTABLE_NFS),
-> +			wbc->encountered_congestion ? 'C':'_',
-> +			wbc->more_io ? 'M':'_',
-> +			wbc->nr_to_write,
-> +			wbc->pages_skipped);
-> +}
->  
->  static void background_writeout(unsigned long _min_pages);
->  
-> @@ -404,6 +424,7 @@ static void balance_dirty_pages(struct a
->  			pages_written += write_chunk - wbc.nr_to_write;
->  			get_dirty_limits(&background_thresh, &dirty_thresh,
->  				       &bdi_thresh, bdi);
-> +			writeback_debug_report(pages_written, &wbc);
->  		}
->  
->  		/*
-> @@ -568,6 +589,7 @@ static void background_writeout(unsigned
->  		wbc.pages_skipped = 0;
->  		writeback_inodes(&wbc);
->  		min_pages -= MAX_WRITEBACK_PAGES - wbc.nr_to_write;
-> +		writeback_debug_report(min_pages, &wbc);
->  		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
->  			/* Wrote less than expected */
->  			if (wbc.encountered_congestion)
-> @@ -643,6 +665,7 @@ static void wb_kupdate(unsigned long arg
->  		wbc.encountered_congestion = 0;
->  		wbc.nr_to_write = MAX_WRITEBACK_PAGES;
->  		writeback_inodes(&wbc);
-> +		writeback_debug_report(nr_to_write, &wbc);
->  		if (wbc.nr_to_write > 0) {
->  			if (wbc.encountered_congestion)
->  				congestion_wait(WRITE, HZ/10);
+printing eip: c0177656 *pde = 00000000
+Oops: 0000 [#1] PREEMPT SMP
 
-> Subject: track redirty_tail() calls
-> 
-> It helps a lot to know how redirty_tail() are called.
-> 
-> Cc: Ken Chen <kenchen@google.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
-> ---
->  fs/fs-writeback.c |   16 +++++++++++++++-
->  1 file changed, 15 insertions(+), 1 deletion(-)
-> 
-> --- linux-2.6.24-git17.orig/fs/fs-writeback.c
-> +++ linux-2.6.24-git17/fs/fs-writeback.c
-> @@ -164,12 +164,26 @@ static void redirty_tail(struct inode *i
->  	list_move(&inode->i_list, &sb->s_dirty);
->  }
->  
-> +#define requeue_io(inode)						\
-> +	do {								\
-> +		__requeue_io(inode, __LINE__);				\
-> +	} while (0)
-> +
->  /*
->   * requeue inode for re-scanning after sb->s_io list is exhausted.
->   */
-> -static void requeue_io(struct inode *inode)
-> +static void __requeue_io(struct inode *inode, int line)
->  {
->  	list_move(&inode->i_list, &inode->i_sb->s_more_io);
-> +
-> +	printk(KERN_DEBUG "requeue_io %d: inode %lu size %llu at %02x:%02x(%s)\n",
-> +			line,
-> +			inode->i_ino,
-> +			i_size_read(inode),
-> +			MAJOR(inode->i_sb->s_dev),
-> +			MINOR(inode->i_sb->s_dev),
-> +			inode->i_sb->s_id
-> +			);
->  }
->  
->  static void inode_sync_complete(struct inode *inode)
+...
 
+Pid: 564, comm: kjournald Not tainted (2.6.24-rc1-git11-i386-smp #4)
+EIP: 0060:[<c0177656>] EFLAGS: 00010006 CPU: 1
+EIP is at kmem_cache_alloc+0x5d/0xa6
+EAX: 00000000 EBX: 00000282 ECX: c03621d0 EDX: 74736e69
+ESI: c1c164fc EDI: 74736e69 EBP: c03621d0 ESP: c359de80
+ DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+Process kjournald (pid: 564, ti=c359c000 task=c352d800 task.ti=c359c000)
+Stack: c352d800 00000001 74736e69 00011200 00000092 c2035600 c3179380 
+00000001
+       00011210 c015d385 00000010 c019797d 00000001 00000002 c359dee8 
+c019797d
+       00000000 c3179380 00000001 00000000 c019a0fa 00000000 c201c2a0 
+00000010
+Call Trace:
+ [<c015d385>] mempool_alloc+0x24/0xc2
+ [<c019797d>] sync_buffer+0x0/0x33
+ [<c019797d>] sync_buffer+0x0/0x33
+ [<c019a0fa>] bio_alloc_bioset+0x8c/0xe6
+ [<c011e0cb>] __wake_up_common+0x38/0x5d
+ [<c019a15f>] bio_alloc+0xb/0x17
+ [<c0196959>] submit_bh+0x6b/0xf5
+ [<f88c2b47>] journal_do_submit_data+0x23/0x2b [jbd]
+ [<f88c3054>] journal_commit_transaction+0x4a7/0xcff [jbd]
+ [<c010316d>] __switch_to+0x94/0x10b
+ [<c02b49b7>] schedule+0x4b9/0x4f2
+ [<c012d019>] lock_timer_base+0x19/0x35
+ [<c012d079>] try_to_del_timer_sync+0x44/0x4a
+ [<f88c61f3>] kjournald+0xb0/0x1ec [jbd]
+ [<c01362a4>] autoremove_wake_function+0x0/0x33
+ [<f88c6143>] kjournald+0x0/0x1ec [jbd]
+ [<c01361d5>] kthread+0x38/0x5f
+ [<c013619d>] kthread+0x0/0x5f
+ [<c0105347>] kernel_thread_helper+0x7/0x10
+ =======================
+Code: 3e 85 ff 89 7c 24 08 75 1b 89 14 24 8b 54 24 0c 83 c9 ff 89 e8 89 
+74 24 04 e8 d8 f8 ff ff 89 44 24 08 eb 0c 8b 54 24 08 8b 46 0c <8b> 04 
+82 89 06 89 d8
+50 9d 0f 1f 84 00 00 00 00 00 66 83 7c 24
+EIP: [<c0177656>] kmem_cache_alloc+0x5d/0xa6 SS:ESP 0068:c359de80
