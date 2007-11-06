@@ -1,100 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757235AbXKFMXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757647AbXKFMYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757235AbXKFMXr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 07:23:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755599AbXKFMXi
+	id S1757647AbXKFMYS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 07:24:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbXKFMYB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 07:23:38 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:44233 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751079AbXKFMXh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 07:23:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AUeUgydhUcglX2ZBwVEaxDwU9goHEYSUiVg9HTigUXVpHR5Ar8wWunbol1z+IkifUHgx1tFccHGJQyFOHGhh+bLcI0vxmu4bTUkGQVOvYLshQowOsAm41xTosaqe/RC1J/AihxEIJfBm/6bIxQ56GqLkmZBLAS1pya8bxXgKYK8=
-Message-ID: <1865922a0711060423ue81dbdct413b993e727f6f9@mail.gmail.com>
-Date: Tue, 6 Nov 2007 14:23:36 +0200
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser
-Cc: "Kyle Moffett" <mrmacman_g4@mac.com>,
-       "Casey Schaufler" <casey@schaufler-ca.com>, akpm@osdl.org,
-       torvalds@osdl.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20071106114738.GH26163@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Nov 2007 07:24:01 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:45131 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755599AbXKFMYA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 07:24:00 -0500
+Date: Tue, 6 Nov 2007 15:23:50 +0300
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: davem@davemloft.net
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, devel@openvz.org
+Subject: [PATCH -net 2/2] Put proc_net_create() on death row
+Message-ID: <20071106122350.GB6215@localhost.sw.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <472B8DAF.9080706@schaufler-ca.com> <20071103164303.GA26707@ubuntu>
-	 <20071106063305.GA26163@stusta.de>
-	 <C1C917F8-57EA-434C-9FD8-CB5A4EAF2653@mac.com>
-	 <20071106085651.GC26163@stusta.de> <20071106113359.GA6041@ubuntu>
-	 <20071106114738.GH26163@stusta.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/6/07, Adrian Bunk <bunk@kernel.org> wrote:
-> On Tue, Nov 06, 2007 at 01:34:05PM +0200, Ahmed S. Darwish wrote:
-> > Hi,
-> >
-> > On Tue, Nov 06, 2007 at 09:56:51AM +0100, Adrian Bunk wrote:
-> > > On Tue, Nov 06, 2007 at 03:26:12AM -0500, Kyle Moffett wrote:
-> > > > On Nov 06, 2007, at 01:33:05, Adrian Bunk wrote:
-> > > >> Can you limit this to 7bit ASCII and use isascii() somewhere?
-> > > >>
-> > > >> Otherwise I'd expect funny things to happen when you e.g. use isspace() on
-> > > >> the UTF-8 encoded character ??.
-> > > >
-> > > > Actually, you don't need to.  You tell them it expects UTF-8 encoded
-> > > > strings and be done with it.  All US-ASCII characters from 0 through 127
-> > > > (IE: high bit clear) are exactly the same in UTF-8, and UTF-8 special
-> > > > characters have the high bit set in all bytes.  Therefore you just assume
-> > > > that anything with the high bit set is part of a word and you can handle
-> > > > basic UTF-8.  (It doesn't work on special UTF-8 space characters like
-> > > > nonbreaking space and similar, but handling those is significantly more
-> > > > complicated).
-> > >
-> > > The documentations says:
-> > > "Smack labels cannot contain unprintable characters or the "/" (slash)
-> > >  character."
-> > >
-> > > What you propose might contain unprintable characters, and it might even
-> > > be invalid UTF-8.
-> >
-> > As far as I understand the problem now, isspace() accepts the 0xa0
-> > character which might collide with some of UTF-8 encoded characters
-> > cause the high bit is set.
-> >
-> > I used "if (!isspace(c) && !isgraph(c)) return -EINVAL;" to test
-> > rules' characters validity which seems not enough. I'll add !isascii(c)
-> > in the condition and ask Casey to change the documentation to be
-> > something like:
-> >
-> > Smack labels are represented in ASCII characters, they cannot contain
-> > unprintable characters or the '/' (slash) character.
-> >
-> > and in write():
-> > if (!isascii(c) return -EINVAL;
-> > if (!isspace(c) && !isgraph(c)) return -EINVAL;
-> >
-> > This satisfy above customized labels rule, right ?
->
-> It should work for all charsets you'll usually have to handle.
->
+proc_net_create() stands on the way of shrinking the number of
+interfaces one can use for /proc files, namely, it uses ->get_info
+hook which will be converted, deprecated and deleted on its own
+schedule.
 
-I admit I'm not experienced in such encoding stuff, but shouldn't the
-ASCII and the ASCII-compatible UTF-8 encodings be enough for the
-labels ?
+Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+---
 
-> It would not work if someone would e.g. give you UTF-16 encoded strings,
-> but I don't see this happening in practice.
+ Documentation/feature-removal-schedule.txt |    9 +++++++++
+ include/linux/proc_fs.h                    |    8 ++++++--
+ 2 files changed, 15 insertions(+), 2 deletions(-)
 
-Won't this complicate the code too much ?
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -130,6 +130,15 @@ Who:	Christoph Hellwig <hch@lst.de>
+ 
+ ---------------------------
+ 
++What:	proc_net_create()
++When:	2.6.25
++Why:	proc_net_create() stands on the way of shrinking the number of
++	interfaces one can use for /proc files, namely, it uses ->get_info
++	hook which will be deleted later.
++Who:	Alexey Dobriyan <adobriyan@gmail.com>
++
++---------------------------
++
+ What:	CONFIG_FORCED_INLINING
+ When:	June 2006
+ Why:	Config option is there to see if gcc is good enough. (in january
+--- a/include/linux/proc_fs.h
++++ b/include/linux/proc_fs.h
+@@ -196,7 +196,7 @@ static inline struct proc_dir_entry *create_proc_info_entry(const char *name,
+ 	return res;
+ }
+ 
+-extern struct proc_dir_entry *proc_net_create(struct net *net,
++extern __deprecated struct proc_dir_entry *proc_net_create(struct net *net,
+ 	const char *name, mode_t mode, get_info_t *get_info);
+ extern struct proc_dir_entry *proc_net_fops_create(struct net *net,
+ 	const char *name, mode_t mode, const struct file_operations *fops);
+@@ -208,7 +208,11 @@ extern void proc_net_remove(struct net *net, const char *name);
+ #define proc_bus NULL
+ 
+ #define proc_net_fops_create(net, name, mode, fops)  ({ (void)(mode), NULL; })
+-#define proc_net_create(net, name, mode, info)	({ (void)(mode), NULL; })
++static inline __deprecated struct proc_dir_entry *proc_net_create(
++	struct net *net, const char *name, mode_t mode, get_info_t *get_info)
++{
++	return NULL;
++}
+ static inline void proc_net_remove(struct net *net, const char *name) {}
+ 
+ static inline void proc_flush_task(struct task_struct *task)
 
--- 
-Ahmed S. Darwish
-Homepage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
