@@ -1,109 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755923AbXKFAUE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbXKFAVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755923AbXKFAUE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 19:20:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754453AbXKFATv
+	id S1756128AbXKFAVh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 19:21:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754634AbXKFAV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 19:19:51 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:47358 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754149AbXKFATu (ORCPT
+	Mon, 5 Nov 2007 19:21:27 -0500
+Received: from stinky.trash.net ([213.144.137.162]:48087 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752782AbXKFAV0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 19:19:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:references:x-google-sender-auth;
-        b=WWAywa2BvzPkeZa4SeY3jiiBbJVi/UdtGI9oYYnsnCaWXdyNHnbKJRFCVlBtEqkCYxPO4d/+s0fcNUffRB/pam70B9qKN5ccx7jdbEz5YJDJ9Ecton4SSXLgS82WgdlxUVMXwJ4KfFUVGQVSk6M6jZgaP85oxv1gImwIJJAvoLM=
-Message-ID: <e9c3a7c20711051619u7054aab9l208b604b9e58fb61@mail.gmail.com>
-Date: Mon, 5 Nov 2007 17:19:49 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Justin Piszcz" <jpiszcz@lucidpixels.com>,
-       "=?ISO-8859-1?Q?BERTRAND_Jo=EBl?=" <joel.bertrand@systella.fr>
-Subject: Re: 2.6.23.1: mdadm/raid5 hung/d-state
-Cc: "Neil Brown" <neilb@suse.de>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0711051335450.11422@p34.internal.lan>
+	Mon, 5 Nov 2007 19:21:26 -0500
+Message-ID: <472FB375.1020802@trash.net>
+Date: Tue, 06 Nov 2007 01:21:09 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_29572_25767903.1194308389630"
-References: <Pine.LNX.4.64.0711040658180.30831@p34.internal.lan>
-	 <18222.16003.92062.970530@notabene.brown>
-	 <Pine.LNX.4.64.0711041651250.23496@p34.internal.lan>
-	 <e9c3a7c20711051035m78ba90ck68f4fbc10480462a@mail.gmail.com>
-	 <Pine.LNX.4.64.0711051335450.11422@p34.internal.lan>
-X-Google-Sender-Auth: 5eb36f2fb820b55c
+To: David Miller <davem@davemloft.net>
+CC: djohnson+linux-kernel@sw.starentnetworks.com, jes@trained-monkey.org,
+       mchan@broadcom.com, ram.vepa@neterion.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, bguo@sw.starentnetworks.com
+Subject: Re: [PATCH 1/2] NET: Re-add VLAN tag for devices incapable of keeping
+ it
+References: <472A6089.7020104@hp.com>	<18223.22291.622615.129374@zeus.sw.starentnetworks.com>	<472F5A33.20906@trash.net> <20071105.151544.175839612.davem@davemloft.net>
+In-Reply-To: <20071105.151544.175839612.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_29572_25767903.1194308389630
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+David Miller wrote:
+> From: Patrick McHardy <kaber@trash.net>
+> Date: Mon, 05 Nov 2007 19:00:19 +0100
+> 
+>> This looks like a rather expensive operation for the unlikely case
+>> that packets will be received by a packet socket. IMO it should only
+>> be reconstructed if actually needed, by af_packet itself.
+> 
+> Completely agreed.  We should not do this by default when %99
+> of the networking stack simply does not care about this.
 
-On 11/5/07, Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
-[..]
-> > Are you seeing the same "md thread takes 100% of the CPU" that Jo=EBl i=
-s
-> > reporting?
-> >
->
-> Yes, in another e-mail I posted the top output with md3_raid5 at 100%.
->
 
-This seems too similar to Jo=EBl's situation for them not to be
-correlated, and it shows that iscsi is not a necessary component of
-the failure.
+I think there is one more case that matters, which is briding
+from a device with VLAN stripping for a VLAN not configured
+locally. The tag will be stripped and will be lost for forwarded
+packets. But I'm not exactly sure this really can be configured
+(time for bed so I'll check tommorrow).
 
-The attached patch allows the debug statements in MD to be enabled via
-sysfs.  Jo=EBl, since it is easier for you to reproduce can you capture
-the kernel log output after the raid thread goes into the spin?  It
-will help if you have CONFIG_PRINTK_TIME=3Dy set in your kernel
-configuration.
+>> As we discussed some time back storing the VLAN tag in the CB on
+>> TX clashes with other users of the CB like qdiscs, so we need a
+>> new field in the skb for this anyway.
+> 
+> Someone will have to find a way to remove some other fields in
+> sk_buff before I'm going to allow more space to be eaten up
+> by this completely fringe case feature.
 
-After the failure run:
 
-echo 1 > /sys/block/md_d0/md/debug_print_enable; sleep 5; echo 0 >
-/sys/block/md_d0/md/debug_print_enable
+We have a two byte hole after tc_verd where we could fit this in.
+But I'm pretty sure we also could reuse some other fields on input,
+like queue_mapping or maybe even destructor for unowned skbs.
 
-...to enable the print messages for a few seconds.  Please send the
-output in a private message if it proves too big for the mailing list.
-
-------=_Part_29572_25767903.1194308389630
-Content-Type: application/octet-stream; name=raid5-debug-print-enable.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f8no5bvd
-Content-Disposition: attachment; filename=raid5-debug-print-enable.patch
-
-cmFpZDU6IGRlYnVnIHByaW50IGVuYWJsZQoKRnJvbTogRGFuIFdpbGxpYW1zIDxkYW4uai53aWxs
-aWFtc0BpbnRlbC5jb20+CgoKLS0tCgogZHJpdmVycy9tZC9yYWlkNS5jIHwgICAzNiArKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysKIDEgZmlsZXMgY2hhbmdlZCwgMzYgaW5zZXJ0
-aW9ucygrKSwgMCBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2ZXJzL21kL3JhaWQ1LmMg
-Yi9kcml2ZXJzL21kL3JhaWQ1LmMKaW5kZXggMzgwOGY1Mi4uNDk2YjlhMyAxMDA2NDQKLS0tIGEv
-ZHJpdmVycy9tZC9yYWlkNS5jCisrKyBiL2RyaXZlcnMvbWQvcmFpZDUuYwpAQCAtNTQsNiArNTQs
-MTAgQEAKICNpbmNsdWRlIDxsaW51eC9yYWlkL2JpdG1hcC5oPgogI2luY2x1ZGUgPGxpbnV4L2Fz
-eW5jX3R4Lmg+CiAKK3N0YXRpYyBpbnQgZGVidWdfcHJpbnRfZW5hYmxlOworI3VuZGVmIHByX2Rl
-YnVnCisjZGVmaW5lIHByX2RlYnVnKHguLi4pICgodm9pZCkoZGVidWdfcHJpbnRfZW5hYmxlICYm
-IHByaW50ayh4KSkpIAorCiAvKgogICogU3RyaXBlIGNhY2hlCiAgKi8KQEAgLTQwMjMsNiArNDAy
-NywzNyBAQCByYWlkNV9zdHJpcGVjYWNoZV9zaXplID0gX19BVFRSKHN0cmlwZV9jYWNoZV9zaXpl
-LCBTX0lSVUdPIHwgU19JV1VTUiwKIAkJCQlyYWlkNV9zdG9yZV9zdHJpcGVfY2FjaGVfc2l6ZSk7
-CiAKIHN0YXRpYyBzc2l6ZV90CityYWlkNV9zaG93X2RlYnVnX3ByaW50X2VuYWJsZShtZGRldl90
-ICptZGRldiwgY2hhciAqcGFnZSkKK3sKKwlyZXR1cm4gc3ByaW50ZihwYWdlLCAiJWRcbiIsIGRl
-YnVnX3ByaW50X2VuYWJsZSk7Cit9CisKK3N0YXRpYyBzc2l6ZV90CityYWlkNV9zdG9yZV9kZWJ1
-Z19wcmludF9lbmFibGUobWRkZXZfdCAqbWRkZXYsIGNvbnN0IGNoYXIgKnBhZ2UsIHNpemVfdCBs
-ZW4pCit7CisJcmFpZDVfY29uZl90ICpjb25mID0gbWRkZXZfdG9fY29uZihtZGRldik7CisJY2hh
-ciAqZW5kOworCWludCBuZXc7CisJaWYgKGxlbiA+PSBQQUdFX1NJWkUpCisJCXJldHVybiAtRUlO
-VkFMOworCisJbmV3ID0gc2ltcGxlX3N0cnRvdWwocGFnZSwgJmVuZCwgMTApOworCWlmICghKnBh
-Z2UgfHwgKCplbmQgJiYgKmVuZCAhPSAnXG4nKSApCisJCXJldHVybiAtRUlOVkFMOworCWlmIChu
-ZXcgPCAwIHx8IG5ldyA+IDEpCisJCXJldHVybiAtRUlOVkFMOworCisJZGVidWdfcHJpbnRfZW5h
-YmxlID0gbmV3OworCQorCXJldHVybiBsZW47Cit9CisKK3N0YXRpYyBzdHJ1Y3QgbWRfc3lzZnNf
-ZW50cnkKK3JhaWQ1X2RlYnVnX3ByaW50ID0gX19BVFRSKGRlYnVnX3ByaW50X2VuYWJsZSwgU19J
-UlVHTyB8IFNfSVdVU1IsCisJCQkJcmFpZDVfc2hvd19kZWJ1Z19wcmludF9lbmFibGUsCisJCQkJ
-cmFpZDVfc3RvcmVfZGVidWdfcHJpbnRfZW5hYmxlKTsKKworc3RhdGljIHNzaXplX3QKIHN0cmlw
-ZV9jYWNoZV9hY3RpdmVfc2hvdyhtZGRldl90ICptZGRldiwgY2hhciAqcGFnZSkKIHsKIAlyYWlk
-NV9jb25mX3QgKmNvbmYgPSBtZGRldl90b19jb25mKG1kZGV2KTsKQEAgLTQwMzgsNiArNDA3Myw3
-IEBAIHJhaWQ1X3N0cmlwZWNhY2hlX2FjdGl2ZSA9IF9fQVRUUl9STyhzdHJpcGVfY2FjaGVfYWN0
-aXZlKTsKIHN0YXRpYyBzdHJ1Y3QgYXR0cmlidXRlICpyYWlkNV9hdHRyc1tdID0gIHsKIAkmcmFp
-ZDVfc3RyaXBlY2FjaGVfc2l6ZS5hdHRyLAogCSZyYWlkNV9zdHJpcGVjYWNoZV9hY3RpdmUuYXR0
-ciwKKwkmcmFpZDVfZGVidWdfcHJpbnQuYXR0ciwKIAlOVUxMLAogfTsKIHN0YXRpYyBzdHJ1Y3Qg
-YXR0cmlidXRlX2dyb3VwIHJhaWQ1X2F0dHJzX2dyb3VwID0gewo=
-------=_Part_29572_25767903.1194308389630--
