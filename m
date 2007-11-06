@@ -1,107 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756736AbXKFTtq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757187AbXKFTuc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756736AbXKFTtq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 14:49:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754321AbXKFTtj
+	id S1757187AbXKFTuc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 14:50:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754805AbXKFTuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 14:49:39 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:45809 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754118AbXKFTti (ORCPT
+	Tue, 6 Nov 2007 14:50:25 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:36806 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754121AbXKFTuY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 14:49:38 -0500
-Date: Tue, 6 Nov 2007 14:49:37 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Greg KH <greg@kroah.com>
-cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: BUG in: Driver core: convert block from raw kobjects to core
- devices (fwd)
-In-Reply-To: <20071105215949.GA29754@kroah.com>
-Message-ID: <Pine.LNX.4.44L0.0711061419090.8694-100000@iolanthe.rowland.org>
+	Tue, 6 Nov 2007 14:50:24 -0500
+Date: Tue, 6 Nov 2007 11:46:29 -0800
+From: Greg KH <greg@kroah.com>
+To: Badari Pulavarty <pbadari@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, mm-commits@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: mm snapshot broken-out-2007-11-06-02-32.tar.gz uploaded
+Message-ID: <20071106194629.GA1691@kroah.com>
+References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org> <1194374218.26782.6.camel@dyn9047017100.beaverton.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1194374218.26782.6.camel@dyn9047017100.beaverton.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Nov 2007, Greg KH wrote:
-
-> On Mon, Nov 05, 2007 at 04:49:21PM -0500, Alan Stern wrote:
-> > Greg:
+On Tue, Nov 06, 2007 at 10:36:58AM -0800, Badari Pulavarty wrote:
+> On Tue, 2007-11-06 at 02:33 -0800, akpm@linux-foundation.org wrote:
+> > The mm snapshot broken-out-2007-11-06-02-32.tar.gz has been uploaded to
 > > 
-> > So what's our status?  Do you think it's worthwhile adding the 
-> > "drop reference to parent kobject at remove time instead of release 
-> > time" patch?
+> >    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-11-06-02-32.tar.gz
+> > 
 > 
-> No.
+> > gregkh-driver-kset-convert-sys-devices-to-use-kset_create.patch
 > 
-> I still need to take the time and read this thread and find the real
-> problem here.  The fact that the issue does not show up for other,
-> non-scsi block devices, makes me feel this is a scsi-specific problem
-> with how it deals with the driver model, but I need to take the time to
-> sit down and figure it out for sure.
+> Above patch renamed devices_subsys to devices_kset to catch all users of
+> the variable. Need fixes to vio.
+> 
+> 
+> # make -j8 zImage
+>   CHK     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   CALL    scripts/checksyscalls.sh
+> <stdin>:1389:2: warning: #warning syscall revokeat not implemented
+> <stdin>:1393:2: warning: #warning syscall frevoke not implemented
+>   CHK     include/linux/compile.h
+>   GEN     .version
+>   CHK     include/linux/compile.h
+>   UPD     include/linux/compile.h
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> arch/powerpc/kernel/built-in.o(.toc+0x1548): undefined reference to
+> `devices_subsys'
+> make: *** [.tmp_vmlinux1] Error 1
+> 
+> 
+> Here is the patch, Is this correct usage ?
 
-Here's the story as far as the SCSI stack goes.  To what extent other 
-subsystems have analogous problems, I don't know.
+Yes, but, what is this file doing mucking around in a "private" variable
+to the driver core?  No wonder I never caught this, as it's one
+reference away from being declared static.
 
-     1. In drivers/scsi/scsi_scan.c, scsi_alloc_sdev() creates a
-	scsi_device structure and calls scsi_alloc_queue(), which
-	ends up calling blk_init_queue().  As the creator of the
-	request_queue, the SCSI core owns the initial reference
-	to q->kobj.
+Please fix this file up properly, like the comment in vio.c shows:
+	 * XXX once vio_bus_type.devices is actually used as a kset in
+	 * drivers/base/bus.c, this function should be removed in favor of
+	 * "device_find(kobj_name, &vio_bus_type)"
 
-     2. This reference is released as part of the scsi_device's
-	release routine.  In scsi_sysfs.c,
-	scsi_device_dev_release_usercontext() calls scsi_free_queue(),
-	which does nothing but call blk_cleanup_queue(), which
-	calls blk_put_queue(), which does the final kobject_put()
-	on q->kobj.
+The fact that this function works at all is so tenous and scary that I
+would never trust it on a running system.  Let alone something so
+"enterprise" as a pseries box...
 
-As a result of 1 and 2, the request_queue isn't released until the
-scsi_device is released.
+thanks,
 
-     3. In sd.c, sd_probe() does "gd = alloc_disk()" and it sets
-	gd->driverfs_dev to point to the scsi_device's embedded
-	struct device (named sdev_gendev).  It then calls add_disk()
-	in block/genhd.c, which calls register_disk() in
-	fs/partitions/check.c.  register_disk() sets disk->dev.parent
-	to disk->driverfs_dev and then calls device_add(&disk->dev).
-
-Setting disk->dev.parent and calling device_add() in this way is new to
-Kay's reworking of the driver core.  Previously disk->dev.kobj had been
-registered directly, as the gendisk was some sort of class device
-rather than a regular device.
-
-Anyway, the upshot of 3 is that sdev->sdev_gendev.kobj is the parent of
-disk->dev.kobj, and consequently the scsi_device can't be released
-until the gendisk is released.
-
-     4. add_disk() goes on to call blk_register_queue(disk), which sets
-	q->kobj.parent to disk->dev.kobj and then calls
-	kobject_add(&q->kobj).
-
-As a result of 4, the gendisk can't be released until the request_queue 
-is released.
-
-Thus we have a cycle:
-
-	1&2: request_queue isn't released before scsi_device;
-
-	3: scsi_device isn't released before gendisk;
-
-	4: gendisk isn't released before request_queue.
-
-The dependency in 1&2 is hard-coded into the SCSI core.  If I 
-understand correctly, the core really does need the request_queue to 
-hang around as long as the scsi_device is still present.  According to 
-James Bottomley, any block device driver should be expected to have a 
-similar requirement.
-
-But the dependencies in 3 and 4 are unnecessary.  They are artifacts,
-caused by the fact that a kobject doesn't drop its reference to its
-parent until it is released.  If instead the reference to the parent
-were dropped when the kobject was removed then 3 and 4 wouldn't apply.
-
-Alan Stern
-
+greg k-h
