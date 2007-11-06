@@ -1,85 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbXKFVew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbXKFVfP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757447AbXKFVew (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 16:34:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755002AbXKFVel
+	id S1756777AbXKFVfP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 16:35:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755427AbXKFVen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 16:34:41 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58369 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754877AbXKFVej (ORCPT
+	Tue, 6 Nov 2007 16:34:43 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:64925 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755247AbXKFVem convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 16:34:39 -0500
-Date: Tue, 6 Nov 2007 14:33:44 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Greg KH <greg@kroah.com>
-Cc: kamalesh@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       linux390@de.ibm.com, linux-s390@vger.kernel.org, apw@shadowen.org
-Subject: Re: mm snapshot broken-out-2007-11-06-02-32.tar.gz uploaded - S390x
- build fails
-Message-Id: <20071106143344.b9e5ba09.akpm@linux-foundation.org>
-In-Reply-To: <20071106211345.GB5993@kroah.com>
-References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
-	<473083CA.9060607@linux.vnet.ibm.com>
-	<20071106131037.ea014b48.akpm@linux-foundation.org>
-	<20071106211345.GB5993@kroah.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+	Tue, 6 Nov 2007 16:34:42 -0500
+Date: Tue, 6 Nov 2007 22:34:07 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 0/4] Add ARCH_SUPPORTS_KPROBES (take 2)
+Message-ID: <20071106223407.3b1c6205@siona>
+In-Reply-To: <20071106204242.GA18743@Krystal>
+References: <20071031010345.301342580@polymtl.ca>
+	<20071106203931.06063bab@dhcp-255-175.norway.atmel.com>
+	<20071106204242.GA18743@Krystal>
+Organization: Atmel
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 6 Nov 2007 13:13:45 -0800 Greg KH <greg@kroah.com> wrote:
-> On Tue, Nov 06, 2007 at 01:10:37PM -0800, Andrew Morton wrote:
-> > > On Tue, 06 Nov 2007 20:40:02 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-> > > drivers/s390/char/sclp_cpi_sys.c:242: error: storage size of `system_name_attr' isn't known
-> > > drivers/s390/char/sclp_cpi_sys.c:264: error: storage size of `sysplex_name_attr' isn't known
-> > > drivers/s390/char/sclp_cpi_sys.c:287: error: storage size of `system_type_attr' isn't known
-> > > drivers/s390/char/sclp_cpi_sys.c:317: error: storage size of `system_level_attr' isn't known
-> > > drivers/s390/char/sclp_cpi_sys.c:333: error: storage size of `set_attr' isn't known
-> > > make[2]: *** [drivers/s390/char/sclp_cpi_sys.o] Error 1
-> > > make[1]: *** [drivers/s390/char] Error 2
-> > > make: *** [drivers/s390] Error 2
-> > > 
-> > > The patch git-s390.patch is causing this failure.
-> > 
-> > git-s390 newly adds that file.  I suspect that this code works OK for the
-> > s390 guys (they're using Linux).  But Greg's driver tree basically ports
-> > their driver to Gregnux, in which nothing works any more.
-> > 
-> > Greg, this is turning into a bit of a trainwreck.  Can you please have a
-> > think about how we can provide a bit of back-compatibility to ease this
-> > transition rather than just trashing everything?
-> 
-> It's _always_ a trainwreck when I touch anything in the driver core,
-> look at how many individual patches it took to do a lot of this work
-> (50+ and still growing).  My method is to introduce the new api, convert
-> everyone over to it, and then remove the old crappy one.
-> 
-> Now for dealing with external trees, I have _no_ visiblity into them for
-> the most part.  I can't build s390 stuff (no cross compiler), so I can't
-> even test their changes.
-> 
-> But, there really should not be that many places that are touching these
-> types of things that I am currently changing (ksets and ktypes and
-> subsystems.)
-> 
-> So, how do I do this?  Do I just not let my changes trickle into your
-> tree, and hold off until I merge them with Linus, hoping that me and Kay
-> have tested everything good enough?  That way, no build ever should
-> break, but functionality might not be all working as well as it could
-> be.
-> 
-> Or we live with some breakage as you pull my stuff into your tree.
-> 
-> Either way, I'm glad to help fix the broken stuff, and I'm also glad to
-> take the responsibility for getting this all right the first time it
-> goes to Linus.
-> 
-> What do you think is best to do?
-> 
+On Tue, 6 Nov 2007 15:42:42 -0500
+Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-Leave the old interfaces in place, deprecate them, remove them later.  If
-at all possible.
+> I have not posted them to Andrew yet. I can do it right away, so you
+> could rebase on them.
 
+Thanks. I'll rebase and submit it tomorrow, and then put oprofile on
+top of that.
+
+Håvard
