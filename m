@@ -1,80 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754284AbXKFNvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754473AbXKFN7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754284AbXKFNvs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 08:51:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbXKFNvl
+	id S1754473AbXKFN7U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 08:59:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbXKFN7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 08:51:41 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:16976 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751705AbXKFNvj (ORCPT
+	Tue, 6 Nov 2007 08:59:11 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:55518 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752064AbXKFN7K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 08:51:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=OTOvOX2Uf5h4UPLd3d9BomkFlHpCWIAgvuWLagovRx9ozwMIMdL8h9eoaOcf6zZsFbGitZ7DVT0eNmk9yK2nh4FM04abYnEKrI0gNSN4FqCFAxikK2fRXuUBVuyUgCL00ZolWqbzSLDlaZiOsdizP5m1inC4JgIBuJLlOZmrtjw=
-Message-ID: <47307166.9010001@googlemail.com>
-Date: Tue, 06 Nov 2007 14:51:34 +0100
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071004)
+	Tue, 6 Nov 2007 08:59:10 -0500
+Date: Tue, 6 Nov 2007 14:58:45 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: pavel@ucw.cz, torvalds@linux-foundation.org, darwish.07@gmail.com,
+       casey@schaufler-ca.com, akpm@linux-foundation.org,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       viro@ftp.linux.org.uk
+Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser
+Message-ID: <20071106135845.GJ26163@stusta.de>
+References: <20071104122848.GC3921@ucw.cz> <20071105094007.GA19367@ubuntu> <alpine.LFD.0.999.0711050818200.15101@woody.linux-foundation.org> <200711060656.ADF87510.tJLVFOHOFSOFMQ@I-love.SAKURA.ne.jp> <20071106100035.GE26163@stusta.de> <200711062127.CBC60981.tQOOSVFHJFOFML@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: mm snapshot broken-out-2007-11-06-02-32.tar.gz uploaded
-References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
-In-Reply-To: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200711062127.CBC60981.tQOOSVFHJFOFML@I-love.SAKURA.ne.jp>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-akpm@linux-foundation.org wrote:
-> The mm snapshot broken-out-2007-11-06-02-32.tar.gz has been uploaded to
+On Tue, Nov 06, 2007 at 09:27:00PM +0900, Tetsuo Handa wrote:
+> Hello.
 > 
->    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-11-06-02-32.tar.gz
+> Adrian Bunk wrote:
+> > You have a "\?" pattern which is defined as "1 byte character other
+> > than '/'".
+> Don't worry. The "\?" pattern is for temporary files with /tmp/prefixXXXXXX pattern.
+> /tmp/prefixXXXXXX is represented as /tmp/prefix\?\?\?\?\?\? in TOMOYO Linux's syntax.
 > 
+> > The user usually doesn't know how many bytes a character in a path or 
+> > file name on his system has.
+> The "\*" pattern is for this purpose which means more than 0 byte characters other than '/'.
+> 
+> TOMOYO supports various patterns
+> http://tomoyo.sourceforge.jp/en/1.5.x/policy-reference.html#exception_policy.conf
 
-Some warnings ( still building :) )
+And there you document \* as well as \? as wildcards for "pathname 
+patterns".
 
-..
+And \* is not a replacement for \?. It's quite common to have both ways 
+to express "one character" and to express "at least one character", and 
+both have their use cases and will get used if available.
 
-arch/x86/Kconfig.i386:178:warning: 'select' used by config symbol 'X86_RDC321X' refers to undefined symbol 'GENERIC_GPIO'
+> TOMOYO Linux handles string using 7bit ASCII. In TOMOYO Linux,
+> a byte 0x21 <= c <= 0x7E && c != 0x5C is represented as is,
+> c == 0x5C is represented as \\,
+> 0x01 <= c <= 0x20 || 0x7F <= c <= 0xFF is represented as \ooo style.
+> c == 0x00 is not needed since it is used as end-of-string marker.
+> This rule makes any string passed from/to kernel safely.
 
-...
+That's unrelated to this problem.
 
-...
+You talk about your internal byte representation.
 
-fs/buffer.c: In function '__getblk_slow':
-fs/buffer.c:1126: warning: integer constant is too large for 'unsigned long' type
+But the problem is that in your code you only match one byte for \?, 
+and this might or might not be equal to one character.
 
-that is :
+> Thanks.
 
-#if (BITS_PER_LONG == 32) && defined(CONFIG_LBD)
-        if ((block >> (PAGE_CACHE_SHIFT - bdev->bd_inode->i_blkbits)) &
-                        0xffffffff00000000UL) { <-- ULL ?
+cu
+Adrian
 
-...
+-- 
 
-...
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-fs/reiser4/tree.c: In function 'check_tree_pointer':
-fs/reiser4/tree.c:807: warning: passing argument 1 of 'coord_clear_iplug' discards qualifiers from pointer target type
-fs/reiser4/export_ops.c:25: warning: 'object_on_wire_done' defined but not used
-fs/reiser4/export_ops.c:36: warning: 'decode_inode' defined but not used
-fs/reiser4/export_ops.c:69: warning: 'reiser4_decode_fh' defined but not used
-fs/reiser4/export_ops.c:261: warning: 'reiser4_get_dentry' defined but not used
-fs/reiser4/plugin/file/cryptcompress.c: In function 'align_or_cut_overhead':
-fs/reiser4/plugin/file/cryptcompress.c:847: warning: 'oh' may be used uninitialized in this function
-fs/reiser4/plugin/item/item.c: In function 'obtain_item_plugin':
-fs/reiser4/plugin/item/item.c:70: warning: passing argument 1 of 'coord_set_iplug' discards qualifiers from pointer target type
-
-...
-
-
-Some more but the rest exist in Linus git so I assume these are known.
-
-
-Regards,
-
-Gabriel C
