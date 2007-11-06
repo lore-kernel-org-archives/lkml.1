@@ -1,84 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756407AbXKFIVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756036AbXKFIZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756407AbXKFIVb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 03:21:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755982AbXKFIVU
+	id S1756036AbXKFIZb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 03:25:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753417AbXKFIZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 03:21:20 -0500
-Received: from py-out-1112.google.com ([64.233.166.183]:39548 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755629AbXKFIVS (ORCPT
+	Tue, 6 Nov 2007 03:25:24 -0500
+Received: from sa15.bezeqint.net ([192.115.104.30]:60331 "EHLO
+	sa15.bezeqint.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752605AbXKFIZX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 03:21:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:from;
-        b=CDY+OzoVlZraDUZ5mGpClOxk0okjonxifmMTpG0/79c10mDJ/PSRsyiQEicnviF+uQNgiJBy78mWRmufeqG6g9Wc0fd7xmnXyJqa7hBnyTLDAhQ6UNpmcRHaYhx3Li8j15rL9V8m+hicahKS1XLssT5tWIorrl28W/IcrLOPUvc=
-Message-ID: <473023FE.8020501@networksentry.co.za>
-Date: Tue, 06 Nov 2007 10:21:18 +0200
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 6 Nov 2007 03:25:23 -0500
+Message-ID: <473024D2.6080105@panasas.com>
+Date: Tue, 06 Nov 2007 10:24:50 +0200
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Odd Ooops jbd ??
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Steve Dickson <SteveD@redhat.com>
+CC: Alexander Viro <aviro@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       linux-fsdevel@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, nfs@lists.sourceforge.net,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>
+Subject: Re: [PATCH] NFS: Stop sillyname renames and unmounts from racing
+References: <472C56E5.1040901@RedHat.com> <20071105210636.2fc72e14.akpm@linux-foundation.org>
+In-Reply-To: <20071105210636.2fc72e14.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Gregory Nietsky <gregnietsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-here is a error i keep bumping into with 2.6.24-rc1 (git11)
+On Nov. 06, 2007, 7:06 +0200, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Sat, 03 Nov 2007 07:09:25 -0400 Steve Dickson <SteveD@redhat.com> wrote:
+> 
+>> The following patch stops NFS sillyname renames and umounts from racing.
+> 
+> (appropriate cc's added)
+> 
+>> I have a test script does the following:
+>>      1) start nfs server
+>>       2) mount loopback
+>>       3) open file in background
+>>       4) remove file
+>>       5) stop nfs server
+>>       6) kill -9 process which has file open
+>>       7) restart nfs server
+>>       8) umount looback mount.
+>>
+>> After umount I got the "VFS: Busy inodes after unmount" message
+>> because the processing of the rename has not finished.
+>>
+>> Below is a patch that the uses the new silly_count mechanism to
+>> synchronize sillyname processing and umounts. The patch introduces a
+>> nfs_put_super() routine that waits until the nfsi->silly_count count
+>> is zero.
+>>
+>> A side-effect of finding and waiting for all the inode to
+>> find the sillyname processing, is I need to traverse
+>> the sb->s_inodes list in the supper block. To do that
+>> safely the inode_lock spin lock has to be held. So for
+>> modules to be able to "see" that lock I needed to
+>> EXPORT_SYMBOL_GPL() it.
+>>
+>> Any objections to exporting the inode_lock spin lock?
+>> If so, how should modules _safely_ access the s_inode list?
+>>
+>> steved.
+>>
+>>
+>> Author: Steve Dickson <steved@redhat.com>
+>> Date:   Wed Oct 31 12:19:26 2007 -0400
+>>
+>>      Close a unlink/sillyname rename and umount race by added a
+>>      nfs_put_super routine that will run through all the inode
+>>      currently on the super block, waiting for those that are
+>>      in the middle of a sillyname rename or removal.
+>>
+>>      This patch stop the infamous "VFS: Busy inodes after unmount... "
+>>      warning during umounts.
+>>
+>>      Signed-off-by: Steve Dickson <steved@redhat.com>
+>>
+>> diff --git a/fs/inode.c b/fs/inode.c
+>> index ed35383..da9034a 100644
+>> --- a/fs/inode.c
+>> +++ b/fs/inode.c
+>> @@ -81,6 +81,7 @@ static struct hlist_head *inode_hashtable __read_mostly;
+>>    * the i_state of an inode while it is in use..
+>>    */
+>>   DEFINE_SPINLOCK(inode_lock);
+>> +EXPORT_SYMBOL_GPL(inode_lock);
+> 
+> That's going to make hch unhappy.
+> 
+> Your email client is performing space-stuffing.
+> See http://mbligh.org/linuxdocs/Email/Clients/Thunderbird
+> 
+>>   static struct file_system_type nfs_fs_type = {
+>>   	.owner		= THIS_MODULE,
+>> @@ -223,6 +225,7 @@ static const struct super_operations nfs_sops = {
+>>   	.alloc_inode	= nfs_alloc_inode,
+>>   	.destroy_inode	= nfs_destroy_inode,
+>>   	.write_inode	= nfs_write_inode,
+>> +	.put_super	= nfs_put_super,
+>>   	.statfs		= nfs_statfs,
+>>   	.clear_inode	= nfs_clear_inode,
+>>   	.umount_begin	= nfs_umount_begin,
+>> @@ -1767,6 +1770,30 @@ static void nfs4_kill_super(struct super_block *sb)
+>>   	nfs_free_server(server);
+>>   }
+>>
+>> +void nfs_put_super(struct super_block *sb)
+> 
+> This was (correctly) declared to be static.  We should define it that way
+> too (I didn't know you could do this, actually).
+> 
+>> +{
+>> +	struct inode *inode;
+>> +	struct nfs_inode *nfsi;
+>> +	/*
+>> +	 * Make sure there are no outstanding renames
+>> +	 */
+>> +relock:
+>> +	spin_lock(&inode_lock);
+>> +	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+>> +		nfsi = NFS_I(inode);
+>> +		if (atomic_read(&nfsi->silly_count) > 0) {
+>> +			/* Keep this inode around  during the wait */
+>> +			atomic_inc(&inode->i_count);
+>> +			spin_unlock(&inode_lock);
+>> +			wait_event(nfsi->waitqueue,
+>> +				atomic_read(&nfsi->silly_count) == 1);
+>> +			iput(inode);
+>> +			goto relock;
+>> +		}
+>> +	}
+>> +	spin_unlock(&inode_lock);
+>> +}
+> 
+> That's an O(n^2) search.  If it is at all possible to hit a catastrophic
+> slowdown in here, you can bet that someone out there will indeed hit it in
+> real life.
+> 
+> I'm too lazy to look, but we might need to check things like I_FREEING
+> and I_CLEAR before taking a ref on this inode.
 
-the trigger is a ISDN call from one port to another (loopback cable) 
-within asterisk i have not been able to replicate it in any other way 
-the error may be in the ISDN
-what i cant understand is why it would affect the fs.
+It'd be very nice if the silly renamed inodes (with silly_count > 1) were moved
+to a different list in the first pass, under the inode_lock, and then waited on
+until silly_count <= 1 in a second pass only on the filtered list.  This will
+provide you with O(1).
 
-shortly after this occurs there many oopses letting it run yesterday 
-corrupted the superblock on the / fs
-
-i will continue to try narrow it down any ideas are welcome.
-
-printing eip: c0177656 *pde = 00000000
-Oops: 0000 [#1] PREEMPT SMP
-
-...
-
-Pid: 564, comm: kjournald Not tainted (2.6.24-rc1-git11-i386-smp #4)
-EIP: 0060:[<c0177656>] EFLAGS: 00010006 CPU: 1
-EIP is at kmem_cache_alloc+0x5d/0xa6
-EAX: 00000000 EBX: 00000282 ECX: c03621d0 EDX: 74736e69
-ESI: c1c164fc EDI: 74736e69 EBP: c03621d0 ESP: c359de80
- DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-Process kjournald (pid: 564, ti=c359c000 task=c352d800 task.ti=c359c000)
-Stack: c352d800 00000001 74736e69 00011200 00000092 c2035600 c3179380 
-00000001
-       00011210 c015d385 00000010 c019797d 00000001 00000002 c359dee8 
-c019797d
-       00000000 c3179380 00000001 00000000 c019a0fa 00000000 c201c2a0 
-00000010
-Call Trace:
- [<c015d385>] mempool_alloc+0x24/0xc2
- [<c019797d>] sync_buffer+0x0/0x33
- [<c019797d>] sync_buffer+0x0/0x33
- [<c019a0fa>] bio_alloc_bioset+0x8c/0xe6
- [<c011e0cb>] __wake_up_common+0x38/0x5d
- [<c019a15f>] bio_alloc+0xb/0x17
- [<c0196959>] submit_bh+0x6b/0xf5
- [<f88c2b47>] journal_do_submit_data+0x23/0x2b [jbd]
- [<f88c3054>] journal_commit_transaction+0x4a7/0xcff [jbd]
- [<c010316d>] __switch_to+0x94/0x10b
- [<c02b49b7>] schedule+0x4b9/0x4f2
- [<c012d019>] lock_timer_base+0x19/0x35
- [<c012d079>] try_to_del_timer_sync+0x44/0x4a
- [<f88c61f3>] kjournald+0xb0/0x1ec [jbd]
- [<c01362a4>] autoremove_wake_function+0x0/0x33
- [<f88c6143>] kjournald+0x0/0x1ec [jbd]
- [<c01361d5>] kthread+0x38/0x5f
- [<c013619d>] kthread+0x0/0x5f
- [<c0105347>] kernel_thread_helper+0x7/0x10
- =======================
-Code: 3e 85 ff 89 7c 24 08 75 1b 89 14 24 8b 54 24 0c 83 c9 ff 89 e8 89 
-74 24 04 e8 d8 f8 ff ff 89 44 24 08 eb 0c 8b 54 24 08 8b 46 0c <8b> 04 
-82 89 06 89 d8
-50 9d 0f 1f 84 00 00 00 00 00 66 83 7c 24
-EIP: [<c0177656>] kmem_cache_alloc+0x5d/0xa6 SS:ESP 0068:c359de80
