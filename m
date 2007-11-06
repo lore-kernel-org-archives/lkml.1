@@ -1,53 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756907AbXKFD5Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757198AbXKFEAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756907AbXKFD5Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 22:57:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbXKFD5B
+	id S1757198AbXKFEAh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 23:00:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbXKFEAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 22:57:01 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:39669 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752968AbXKFD5A (ORCPT
+	Mon, 5 Nov 2007 23:00:30 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56463 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754258AbXKFEA3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 22:57:00 -0500
-Date: Mon, 5 Nov 2007 22:55:25 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: the value in exporting unused header files?
-Message-ID: <Pine.LNX.4.64.0711052252280.31528@localhost.localdomain>
+	Mon, 5 Nov 2007 23:00:29 -0500
+Date: Mon, 5 Nov 2007 20:00:28 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: WANG Cong <xiyou.wangcong@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Andrew Morton <akpm@osdl.org>, Dong Pu <cocobear.cn@gmail.com>
+Subject: Re: [git Patch] mm/util.c: Remove needless code
+In-Reply-To: <20071106031207.GA2478@hacking>
+Message-ID: <Pine.LNX.4.64.0711051958380.23689@schroedinger.engr.sgi.com>
+References: <20071106031207.GA2478@hacking>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 6 Nov 2007, WANG Cong wrote:
 
-  as part of the output of yet another cleanup script i have, we
-notice that:
 
-$ grep -r if_wanpipe *
-Documentation/networking/wan-router.txt:        if_wanpipe.h    WANPIPE Socket definitions
-include/linux/Kbuild:unifdef-y += if_wanpipe.h
-include/linux/if_wanpipe.h:* if_wanpipe.h       Header file for the Sangoma AF_WANPIPE Socket
-$
+> If the code can be executed there, 'new_size' is always larger
+> than 'ks'. Thus min() is needless.
 
-  in other words, a header file that is not included by any other file
-in the tree is still being exported to user space.  is that normal?
+Correct.
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+Acked-by: Christoph Lameter <clameter@sgi.com>
