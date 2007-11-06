@@ -1,65 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756545AbXKFJcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755658AbXKFJje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756545AbXKFJcX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 04:32:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbXKFJcQ
+	id S1755658AbXKFJje (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 04:39:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbXKFJj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 04:32:16 -0500
-Received: from pip9.gyao.ne.jp ([61.122.117.247]:30229 "EHLO mx.gate01.com"
+	Tue, 6 Nov 2007 04:39:27 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:51128 "EHLO relay.atmel.no"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753773AbXKFJcP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 04:32:15 -0500
-Date: Tue, 6 Nov 2007 18:32:04 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Andrew Morton <akpm@linux-foundation.org>
+	id S1750999AbXKFJj0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 04:39:26 -0500
+Date: Tue, 6 Nov 2007 10:39:11 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Adrian Bunk <bunk@kernel.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: lib: Move bitmap.o from lib-y to obj-y.
-Message-ID: <20071106093204.GA6119@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Subject: Re: [2.6 patch] avr32: remove UID16 option
+Message-ID: <20071106103911.0b923374@dhcp-255-175.norway.atmel.com>
+In-Reply-To: <20071105170612.GW12045@stusta.de>
+References: <20071105170612.GW12045@stusta.de>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mac80211 has a reference to __bitmap_empty() via bitmap_empty().
-In lib/bitmap.c this is flagged with an EXPORT_SYMBOL(), but
-this is ultimately ineffective due to bitmap.o being linked in
-lib-y, resulting in:
+On Mon, 5 Nov 2007 18:06:12 +0100
+Adrian Bunk <bunk@kernel.org> wrote:
 
-ERROR: "__bitmap_empty" [net/mac80211/mac80211.ko] undefined!
+> avr32 already sees the option from init/Kconfig.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Moving bitmap.o to obj-y fixes this up.
+Indeed. Applied, thanks.
 
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-
----
-
- lib/Makefile |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/lib/Makefile b/lib/Makefile
-index 3a0983b..b6793ed 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -4,7 +4,7 @@
- 
- lib-y := ctype.o string.o vsprintf.o cmdline.o \
- 	 rbtree.o radix-tree.o dump_stack.o \
--	 idr.o int_sqrt.o bitmap.o extable.o prio_tree.o \
-+	 idr.o int_sqrt.o extable.o prio_tree.o \
- 	 sha1.o irq_regs.o reciprocal_div.o argv_split.o \
- 	 proportions.o prio_heap.o
- 
-@@ -14,7 +14,7 @@ lib-$(CONFIG_SMP) += cpumask.o
- lib-y	+= kobject.o kref.o klist.o
- 
- obj-y += div64.o sort.o parser.o halfmd4.o debug_locks.o random32.o \
--	 bust_spinlocks.o hexdump.o kasprintf.o
-+	 bust_spinlocks.o hexdump.o kasprintf.o bitmap.o
- 
- ifeq ($(CONFIG_DEBUG_KOBJECT),y)
- CFLAGS_kobject.o += -DDEBUG
+Håvard
