@@ -1,65 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025AbXKFScT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756171AbXKFSem@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756025AbXKFScT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 13:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754654AbXKFScM
+	id S1756171AbXKFSem (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 13:34:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754759AbXKFSec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 13:32:12 -0500
-Received: from mail-dub.bigfish.com ([213.199.154.10]:28598 "EHLO
-	mail160-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752973AbXKFScL (ORCPT
+	Tue, 6 Nov 2007 13:34:32 -0500
+Received: from mx0.starentnetworks.com ([12.38.223.203]:33821 "EHLO
+	mx0.starentnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752613AbXKFSeb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 13:32:11 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
-X-Server-Uuid: DF9F24A0-1A5C-40A5-8B0A-DEB676E72ECF
-Date: Tue, 6 Nov 2007 19:31:53 +0100
-From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-To: "Zou Nan hai" <nanhai.zou@intel.com>
-cc: "LKML" <linux-kernel@vger.kernel.org>, "Andrew Morton" <akpm@osdl.org>
-Subject: Re: [Patch1/2] fix wrong proc cpuinfo on x64
-Message-ID: <20071106183153.GC15369@alberich.amd.com>
-References: <1194333939.3046.36.camel@linux-znh>
+	Tue, 6 Nov 2007 13:34:31 -0500
 MIME-Version: 1.0
-In-Reply-To: <1194333939.3046.36.camel@linux-znh>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 06 Nov 2007 18:31:48.0521 (UTC)
- FILETIME=[4AB54190:01C820A3]
-X-WSS-ID: 6B2E6C9C07S1610171-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18224.46001.836006.507154@zeus.sw.starentnetworks.com>
+Date: Tue, 6 Nov 2007 13:34:25 -0500
+From: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
+To: "Ramkrishna Vepa" <Ramkrishna.Vepa@neterion.com>
+Cc: "David Miller" <davem@davemloft.net>, <linux-kernel@vger.kernel.org>,
+       <netdev@vger.kernel.org>, <bguo@sw.starentnetworks.com>
+Subject: RE: [PATCH 2/2] NET: Re-add VLAN tag for devices incapable of keeping it
+In-Reply-To: <78C9135A3D2ECE4B8162EBDCE82CAD77027E9E9E@nekter>
+References: <78C9135A3D2ECE4B8162EBDCE82CAD77027E9D5E@nekter>
+	<78C9135A3D2ECE4B8162EBDCE82CAD77027E9E9E@nekter>
+X-Mailer: VM 7.17 under 21.4 (patch 17) "Jumbo Shrimp" XEmacs Lucid
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 06, 2007 at 03:25:39PM +0800, Zou Nan hai wrote:
+Ramkrishna Vepa writes:
+> Dave,
 > 
-> in 2.6.24-rc1 kernel, 
-> The /proc/cpuinfo display is wrong.
-> 
-> One issue is every processor id appears to be 0.
-> 
-> That is because smp_store_cpu_info will set cpuinfo_x86->cpu_index
-> to cpu id then call identify_cpu
-> identify_cpu will call early_identify_cpu which set c->cpu_index back to
-> 0.
+> If you can remove the patch for the s2io driver, we can submit a patch
+> that can dynamically program Xframe to strip or not strip the vlan tag
+> based on whether the vlan group is not NULL or NULL respectively. For
+> this, we have to modify the initialization as well as the vlan
+> registration.
 
-This issue should already be fixed with this patch
-
-http://marc.info/?l=linux-kernel&m=119392088227245
-
-
-Regards,
-
-Andreas
+Sure, not having this hardware I didn't want to attempt a complicated
+change.  I'll let you take care of this.
 
 -- 
-Operating | AMD Saxony Limited Liability Company & Co. KG,
-  System  | Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- Research | Register Court Dresden: HRA 4896, General Partner authorized
-  Center  | to represent: AMD Saxony LLC (Wilmington, Delaware, US)
-  (OSRC)  | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
-
-
+Dave Johnson
+Starent Networks
 
