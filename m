@@ -1,72 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756927AbXKFTlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756461AbXKFTqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756927AbXKFTlV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 14:41:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754933AbXKFTlH
+	id S1756461AbXKFTqy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 14:46:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754759AbXKFTqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 14:41:07 -0500
-Received: from THUNK.ORG ([69.25.196.29]:46254 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754586AbXKFTlD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 14:41:03 -0500
-Date: Tue, 6 Nov 2007 14:40:12 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: [RFC] [PATCH 3/3] Recursive mtime for ext3
-Message-ID: <20071106194012.GE12857@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Jan Kara <jack@suse.cz>,
-	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-References: <20071106171537.GD23689@duck.suse.cz> <20071106171945.GG23689@duck.suse.cz>
+	Tue, 6 Nov 2007 14:46:46 -0500
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:42629 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754589AbXKFTqp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 14:46:45 -0500
+Date: Wed, 7 Nov 2007 01:16:13 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Badari Pulavarty <pbadari@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, mm-commits@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: mm snapshot broken-out-2007-11-06-02-32.tar.gz uploaded - build failure - rpadlpar_sysfs
+Message-ID: <20071106194613.GA13674@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org> <4730896A.9060701@linux.vnet.ibm.com> <1194373168.25901.3.camel@dyn9047017100.beaverton.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071106171945.GG23689@duck.suse.cz>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <1194373168.25901.3.camel@dyn9047017100.beaverton.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 06, 2007 at 06:19:45PM +0100, Jan Kara wrote:
-> Intended use case is that application which wants to watch any
-> modification in a subtree scans the subtree and sets flags for all
-> inodes there. Next time, it just needs to recurse in directories
-> having rtime newer than the start of the previous scan. There it can
-> handle modifications and set the flag again. It is up to application
-> to watch out for hardlinked files. It can e.g.  build their list and
-> check their mtime separately (when a hardlink to a file is created
-> its inode is modified and rtimes properly updated and thus any
-> application has an effective way of finding new hardlinked files).
+On Tue, Nov 06, 2007 at 10:19:28AM -0800, Badari Pulavarty wrote:
+> On Tue, 2007-11-06 at 21:04 +0530, Kamalesh Babulal wrote:
+> > Hi Andrew,
+> > 
+> > The build fails with following error
+> >  
+> >   CC      drivers/pci/hotplug/rpadlpar_sysfs.o
+> > drivers/pci/hotplug/rpadlpar_sysfs.c:133: error: initializer element is not constant
+> > drivers/pci/hotplug/rpadlpar_sysfs.c:133: error: (near initialization for `dlpar_io_kset.kobj.parent')
+> > drivers/pci/hotplug/rpadlpar_sysfs.c:133: error: initializer element is not constant
+> > drivers/pci/hotplug/rpadlpar_sysfs.c:133: error: (near initialization for `dlpar_io_kset.kobj')
+> > drivers/pci/hotplug/rpadlpar_sysfs.c:134: error: unknown field `ktype' specified in initializer
+> > drivers/pci/hotplug/rpadlpar_sysfs.c:134: warning: initialization from incompatible pointer type
+> > make[3]: *** [drivers/pci/hotplug/rpadlpar_sysfs.o] Error 1
+> > make[2]: *** [drivers/pci/hotplug] Error 2
+> > make[1]: *** [drivers/pci] Error 2
+> > make: *** [drivers] Error 2
+> > 
+> > The patch, gregkh-driver-kset-convert-pci-hotplug-to-use-kset_create_and_register.patch
+> > is causing the build failure.
+> 
+> Here is the fix (against 24-rc1 mm-brokenout). Can you try it ?
+> 
+> Thanks,
+> Badari
 
-Umm, yuck.
+Hi Badari,
 
-What if more than one application wants to use this facility?
+This patch fixes the buidl failure.
 
-The application is using a global per-inode flag that is written out
-to disk.  So sweeping the entire subtree and setting this flag will
-involve a lot of disk i/o; as does setting a mod-time, since it could
-potentially require a large number of inode updates, and then the
-application needs to sweep through the subtree and reset the flags
-(resulting in more disk i/o).  The performance would seem to me to be
-really pessimal.  
+Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> 
+Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com> 
+---
+ drivers/pci/hotplug/rpadlpar_sysfs.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-In addition, after you crash, there might not be any application
-waiting to watch modifications in that subtree, and yet the flags
-would still be set so the system would still be paying the performance
-penalties of needing to propagate modtimes until all of the flags
-disappear --- and for a large subtree, that might not be for a long,
-long time.
+Index: linux-2.6.24-rc1/drivers/pci/hotplug/rpadlpar_sysfs.c
+===================================================================
+--- linux-2.6.24-rc1.orig/drivers/pci/hotplug/rpadlpar_sysfs.c	2007-11-06 10:09:10.000000000 -0800
++++ linux-2.6.24-rc1/drivers/pci/hotplug/rpadlpar_sysfs.c	2007-11-06 10:11:33.000000000 -0800
+@@ -129,14 +129,13 @@ struct kobj_type ktype_dlpar_io = {
+ };
 
-So if the goal is some kind of modification notification system that
-watches a subtree efficiently, avoiding some of the deficiencies of
-inotify and dnotify, the interface doesn't seem to be the right way to
-go about things.  The fact that only one application at a time can use
-this interface, even if you ignore the issues of hard links and the
-performance problems and the lack of cleanup after a reboot, seems in
-my mind to just be a irreparable fatal flaw to this particular scheme.
+ struct kset dlpar_io_kset = {
+-	.kobj = {.ktype = &ktype_dlpar_io,
+-		 .parent = &pci_hotplug_slots_kset->kobj},
+-	.ktype = &ktype_dlpar_io,
++	.kobj = {.ktype = &ktype_dlpar_io},
+ };
 
-Regards,
+ int dlpar_sysfs_init(void)
+ {
+ 	kobject_set_name(&dlpar_io_kset.kobj, DLPAR_KOBJ_NAME);
++	dlpar_io_kset.kobj.parent = &pci_hotplug_slots_kset->kobj;
+ 	if (kset_register(&dlpar_io_kset)) {
+ 		printk(KERN_ERR "rpadlpar_io: cannot register kset for %s\n",
+ 				kobject_name(&dlpar_io_kset.kobj));
 
-						- Ted
+
