@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759089AbXKFUBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758008AbXKFUBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759089AbXKFUBW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 15:01:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757533AbXKFTwh
+	id S1758008AbXKFUBi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 15:01:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757535AbXKFTwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 14:52:37 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45388 "EHLO
+	Tue, 6 Nov 2007 14:52:38 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45386 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755827AbXKFTwB (ORCPT
+	with ESMTP id S1755799AbXKFTwB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 6 Nov 2007 14:52:01 -0500
-Message-Id: <20071106195200.858225561@sgi.com>
+Message-Id: <20071106195200.625597439@sgi.com>
 References: <20071106195144.983665861@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 06 Nov 2007 11:51:58 -0800
+Date: Tue, 06 Nov 2007 11:51:57 -0800
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
 Cc: linux-mm@vger.kernel.org
@@ -21,91 +21,70 @@ Cc: linux-kernel@vger.kernel.org
 Cc: David Miller <davem@davemloft.net>
 Cc: Eric Dumazet <dada1@cosmosbay.com>
 Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 14/28] cpu alloc: SRCU
-Content-Disposition: inline; filename=cpu_alloc_rcu
+Subject: [patch 13/28] cpu alloc: blktrace conversion
+Content-Disposition: inline; filename=cpu_alloc_blktrace
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- kernel/rcutorture.c |    4 ++--
- kernel/srcu.c       |   13 +++++++------
- 2 files changed, 9 insertions(+), 8 deletions(-)
+ block/blktrace.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-Index: linux-2.6/kernel/srcu.c
+Index: linux-2.6/block/blktrace.c
 ===================================================================
---- linux-2.6.orig/kernel/srcu.c	2007-11-04 19:32:38.000000000 -0800
-+++ linux-2.6/kernel/srcu.c	2007-11-04 19:38:09.000000000 -0800
-@@ -26,7 +26,7 @@
- 
- #include <linux/module.h>
- #include <linux/mutex.h>
+--- linux-2.6.orig/block/blktrace.c	2007-11-04 13:14:44.000000000 -0800
++++ linux-2.6/block/blktrace.c	2007-11-04 13:16:22.000000000 -0800
+@@ -18,12 +18,12 @@
+ #include <linux/kernel.h>
+ #include <linux/blkdev.h>
+ #include <linux/blktrace_api.h>
 -#include <linux/percpu.h>
+ #include <linux/init.h>
+ #include <linux/mutex.h>
+ #include <linux/debugfs.h>
+ #include <linux/time.h>
+ #include <asm/uaccess.h>
 +#include <linux/cpu_alloc.h>
- #include <linux/preempt.h>
- #include <linux/rcupdate.h>
- #include <linux/sched.h>
-@@ -46,7 +46,8 @@ int init_srcu_struct(struct srcu_struct 
- {
- 	sp->completed = 0;
- 	mutex_init(&sp->mutex);
--	sp->per_cpu_ref = alloc_percpu(struct srcu_struct_array);
-+	sp->per_cpu_ref = CPU_ALLOC(struct srcu_struct_array,
-+						GFP_KERNEL|__GFP_ZERO);
- 	return (sp->per_cpu_ref ? 0 : -ENOMEM);
+ 
+ static DEFINE_PER_CPU(unsigned long long, blk_trace_cpu_offset) = { 0, };
+ static unsigned int blktrace_seq __read_mostly = 1;
+@@ -155,7 +155,7 @@ void __blk_add_trace(struct blk_trace *b
+ 	t = relay_reserve(bt->rchan, sizeof(*t) + pdu_len);
+ 	if (t) {
+ 		cpu = smp_processor_id();
+-		sequence = per_cpu_ptr(bt->sequence, cpu);
++		sequence = CPU_PTR(bt->sequence, cpu);
+ 
+ 		t->magic = BLK_IO_TRACE_MAGIC | BLK_IO_TRACE_VERSION;
+ 		t->sequence = ++(*sequence);
+@@ -227,7 +227,7 @@ static void blk_trace_cleanup(struct blk
+ 	relay_close(bt->rchan);
+ 	debugfs_remove(bt->dropped_file);
+ 	blk_remove_tree(bt->dir);
+-	free_percpu(bt->sequence);
++	CPU_FREE(bt->sequence);
+ 	kfree(bt);
  }
  
-@@ -62,7 +63,7 @@ static int srcu_readers_active_idx(struc
+@@ -338,7 +338,7 @@ int do_blk_trace_setup(struct request_qu
+ 	if (!bt)
+ 		goto err;
  
- 	sum = 0;
- 	for_each_possible_cpu(cpu)
--		sum += per_cpu_ptr(sp->per_cpu_ref, cpu)->c[idx];
-+		sum += CPU_PTR(sp->per_cpu_ref, cpu)->c[idx];
- 	return sum;
- }
+-	bt->sequence = alloc_percpu(unsigned long);
++	bt->sequence = CPU_ALLOC(unsigned long, GFP_KERNEL | __GFP_ZERO);
+ 	if (!bt->sequence)
+ 		goto err;
  
-@@ -94,7 +95,7 @@ void cleanup_srcu_struct(struct srcu_str
- 	WARN_ON(sum);  /* Leakage unless caller handles error. */
- 	if (sum != 0)
- 		return;
--	free_percpu(sp->per_cpu_ref);
-+	CPU_FREE(sp->per_cpu_ref);
- 	sp->per_cpu_ref = NULL;
- }
- 
-@@ -113,7 +114,7 @@ int srcu_read_lock(struct srcu_struct *s
- 	preempt_disable();
- 	idx = sp->completed & 0x1;
- 	barrier();  /* ensure compiler looks -once- at sp->completed. */
--	per_cpu_ptr(sp->per_cpu_ref, smp_processor_id())->c[idx]++;
-+	THIS_CPU(sp->per_cpu_ref)->c[idx]++;
- 	srcu_barrier();  /* ensure compiler won't misorder critical section. */
- 	preempt_enable();
- 	return idx;
-@@ -133,7 +134,7 @@ void srcu_read_unlock(struct srcu_struct
- {
- 	preempt_disable();
- 	srcu_barrier();  /* ensure compiler won't misorder critical section. */
--	per_cpu_ptr(sp->per_cpu_ref, smp_processor_id())->c[idx]--;
-+	THIS_CPU(sp->per_cpu_ref)->c[idx]--;
- 	preempt_enable();
- }
- 
-Index: linux-2.6/kernel/rcutorture.c
-===================================================================
---- linux-2.6.orig/kernel/rcutorture.c	2007-11-04 19:32:38.000000000 -0800
-+++ linux-2.6/kernel/rcutorture.c	2007-11-04 19:33:51.000000000 -0800
-@@ -441,8 +441,8 @@ static int srcu_torture_stats(char *page
- 		       torture_type, TORTURE_FLAG, idx);
- 	for_each_possible_cpu(cpu) {
- 		cnt += sprintf(&page[cnt], " %d(%d,%d)", cpu,
--			       per_cpu_ptr(srcu_ctl.per_cpu_ref, cpu)->c[!idx],
--			       per_cpu_ptr(srcu_ctl.per_cpu_ref, cpu)->c[idx]);
-+			       CPU_PTR(srcu_ctl.per_cpu_ref, cpu)->c[!idx],
-+			       CPU_PTR(srcu_ctl.per_cpu_ref, cpu)->c[idx]);
- 	}
- 	cnt += sprintf(&page[cnt], "\n");
- 	return cnt;
+@@ -387,7 +387,7 @@ err:
+ 	if (bt) {
+ 		if (bt->dropped_file)
+ 			debugfs_remove(bt->dropped_file);
+-		free_percpu(bt->sequence);
++		CPU_FREE(bt->sequence);
+ 		if (bt->rchan)
+ 			relay_close(bt->rchan);
+ 		kfree(bt);
 
 -- 
