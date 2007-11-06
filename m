@@ -1,107 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756953AbXKFE0H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757196AbXKFEdY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756953AbXKFE0H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Nov 2007 23:26:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754802AbXKFEZy
+	id S1757196AbXKFEdY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Nov 2007 23:33:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755615AbXKFEdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Nov 2007 23:25:54 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57041 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754749AbXKFEZx (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Mon, 5 Nov 2007 23:25:53 -0500
-Date: Tue, 6 Nov 2007 15:25:27 +1100
-From: David Chinner <dgc@sgi.com>
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-Cc: David Chinner <dgc@sgi.com>, Peter Zijlstra <peterz@infradead.org>,
-       Fengguang Wu <wfg@mail.ustc.edu.cn>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: writeout stalls in current -git
-Message-ID: <20071106042527.GT995458@sgi.com>
-References: <393903856.06449@ustc.edu.cn> <64bb37e0711011120i63cdfe3ci18995d57b6649a8@mail.gmail.com> <64bb37e0711011200n228e708eg255640388f83da22@mail.gmail.com> <E1InmAI-0003ME-2i@localhost> <1193998532.27652.343.camel@twins> <64bb37e0711021222q7d12c825mc62d433c4fe19e8@mail.gmail.com> <20071102204258.GR995458@sgi.com> <64bb37e0711040319l5de285c3xea64474540a51b6e@mail.gmail.com> <20071105014510.GU66820511@sgi.com> <64bb37e0711051027v49869699s9593ea54713b15ff@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <64bb37e0711051027v49869699s9593ea54713b15ff@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 5 Nov 2007 23:33:16 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:44345 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754631AbXKFEdQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Nov 2007 23:33:16 -0500
+Date: Mon, 5 Nov 2007 23:31:39 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: a list of non-existent but included include/linux header files
+Message-ID: <Pine.LNX.4.64.0711052327090.6602@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 05, 2007 at 07:27:16PM +0100, Torsten Kaiser wrote:
-> On 11/5/07, David Chinner <dgc@sgi.com> wrote:
-> > Ok, so it's probably a side effect of the writeback changes.
-> >
-> > Attached are two patches (two because one was in a separate patchset as
-> > a standalone change) that should prevent async writeback from blocking
-> > on locked inode cluster buffers. Apply the xfs-factor-inotobp patch first.
-> > Can you see if this fixes the problem?
-> 
-> Now testing v2.6.24-rc1-650-gb55d1b1+ the fix for the missapplied raid5-patch
-> Applying your two patches ontop of that does not fix the stalls.
 
-So you are having RAID5 problems as well?
+  this list is short enough that i'll just post it here -- attempts to
+include header files under include/linux when those header files
+simply don't exist.  obviously, there might be false positives for one
+reason or another.  (the only manual culling i did of the list was to
+remove inclusions of autoconf.h and utsrelease.h -- i assumed those
+weren't an issue for anyone.)
 
-I'm struggling to understand what possible changed in XFS or writeback that
-would lead to stalls like this, esp. as you appear to be removing files when
-the stalls occur. Rather than vmstat, can you use something like iostat to
-show how busy your disks are?  i.e. are we seeing RMW cycles in the raid5 or
-some such issue.
+=== Missing: include/linux/blk.h ===
+arch/frv/kernel/setup.c:#include <linux/blk.h>
+=== Missing: include/linux/cachefs.h ===
+fs/afs/cache.h:#include <linux/cachefs.h>
+=== Missing: include/linux/compile.h ===
+arch/x86/boot/version.c:#include <linux/compile.h>
+init/version.c:#include <linux/compile.h>
+=== Missing: include/linux/debugger.h ===
+arch/blackfin/kernel/kgdb.c:#include <linux/debugger.h>
+=== Missing: include/linux/ioctl32.h ===
+drivers/video/sis/sis.h:#include <linux/ioctl32.h>
+=== Missing: include/linux/kdb.h ===
+drivers/acpi/osl.c:#include <linux/kdb.h>
+=== Missing: include/linux/kgdb.h ===
+arch/blackfin/kernel/kgdb.c:#include <linux/kgdb.h>
+arch/blackfin/mach-common/ints-priority-dc.c:#include <linux/kgdb.h>
+arch/blackfin/mach-common/ints-priority-sc.c:#include <linux/kgdb.h>
+drivers/serial/bfin_5xx.c:#include <linux/kgdb.h>
+=== Missing: include/linux/l3/l3.h ===
+sound/arm/sa11xx-uda1341.c:#include <linux/l3/l3.h>
+sound/i2c/l3/uda1341.c:#include <linux/l3/l3.h>
+=== Missing: include/linux/mtd/mtdram.h ===
+arch/cris/arch-v32/drivers/axisflashmap.c:#include <linux/mtd/mtdram.h>
+arch/cris/arch-v10/drivers/axisflashmap.c:#include <linux/mtd/mtdram.h>
+=== Missing: include/linux/pkthook.h ===
+arch/ppc/8xx_io/fec.c:#include <linux/pkthook.h>
+=== Missing: include/linux/segment.h ===
+arch/sparc/kernel/sys_sunos.c:#include <linux/segment.h>
+=== Missing: include/linux/serial_ip3106.h ===
+arch/mips/philips/pnx8550/common/gdb_hook.c:#include <linux/serial_ip3106.h>
+=== Missing: include/linux/spi/tsc2102.h ===
+arch/arm/mach-omap1/board-palmte.c:#include <linux/spi/tsc2102.h>
+=== Missing: include/linux/squashfs_fs.h ===
+arch/mips/pmc-sierra/msp71xx/msp_prom.c:#include <linux/squashfs_fs.h>
+=== Missing: include/linux/tqueue.h ===
+drivers/pcmcia/au1000_xxs1500.c:#include <linux/tqueue.h>
+drivers/pcmcia/au1000_pb1x00.c:#include <linux/tqueue.h>
+=== Missing: include/linux/usb_gadget.h ===
+drivers/i2c/chips/isp1301_omap.c:#include <linux/usb_gadget.h>
+=== Missing: include/linux/usb_isp1362.h ===
+arch/blackfin/mach-bf533/boards/ezkit.c:#include <linux/usb_isp1362.h>
+arch/blackfin/mach-bf533/boards/stamp.c:#include <linux/usb_isp1362.h>
+arch/blackfin/mach-bf533/boards/cm_bf533.c:#include <linux/usb_isp1362.h>
+arch/blackfin/mach-bf533/boards/H8606.c:#include <linux/usb_isp1362.h>
+arch/blackfin/mach-bf537/boards/pnav10.c:#include <linux/usb_isp1362.h>
+arch/blackfin/mach-bf537/boards/generic_board.c:#include <linux/usb_isp1362.h>
+arch/blackfin/mach-bf537/boards/cm_bf537.c:#include <linux/usb_isp1362.h>
+arch/blackfin/mach-bf537/boards/stamp.c:#include <linux/usb_isp1362.h>
+arch/blackfin/mach-bf527/boards/ezkit.c:#include <linux/usb_isp1362.h>
+arch/blackfin/mach-bf561/boards/cm_bf561.c:#include <linux/usb_isp1362.h>
+=== Missing: include/linux/usb/musb.h ===
+arch/blackfin/mach-bf548/boards/ezkit.c:#include <linux/usb/musb.h>
+arch/arm/mach-omap2/usb-tusb6010.c:#include <linux/usb/musb.h>
+=== Missing: include/linux/usb_sl811.h ===
+arch/blackfin/mach-bf527/boards/ezkit.c:#include <linux/usb_sl811.h>
 
-OOC, what is the 'xfs_info <mtpt>' output for your filesystem? 
 
-> vmstat 10 output from unmerging (uninstalling) a kernel:
->  1  0      0 3512188    332 192644    0    0   185    12  368  735 10  3 85  1
-> -> emerge starts to remove the kernel source files
->  3  0      0 3506624    332 192836    0    0    15  9825 2458 8307  7 12 81  0
->  0  0      0 3507212    332 192836    0    0     0   554  630 1233  0  1 99  0
->  0  0      0 3507292    332 192836    0    0     0   537  580 1328  0  1 99  0
->  0  0      0 3507168    332 192836    0    0     0   633  626 1380  0  1 99  0
->  0  0      0 3507116    332 192836    0    0     0  1510  768 2030  1  2 97  0
->  0  0      0 3507596    332 192836    0    0     0   524  540 1544  0  0 99  0
-> procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
->  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
->  0  0      0 3507540    332 192836    0    0     0   489  551 1293  0  0 99  0
->  0  0      0 3507528    332 192836    0    0     0   527  510 1432  1  1 99  0
->  0  0      0 3508052    332 192840    0    0     0  2088  910 2964  2  3 95  0
->  0  0      0 3507888    332 192840    0    0     0   442  565 1383  1  1 99  0
->  0  0      0 3508704    332 192840    0    0     0   497  529 1479  0  0 99  0
->  0  0      0 3508704    332 192840    0    0     0   594  595 1458  0  0 99  0
->  0  0      0 3511492    332 192840    0    0     0  2381 1028 2941  2  3 95  0
->  0  0      0 3510684    332 192840    0    0     0   699  600 1390  0  0 99  0
->  0  0      0 3511636    332 192840    0    0     0   741  661 1641  0  0 100  0
->  0  0      0 3524020    332 192840    0    0     0  2452 1080 3910  2  3 95  0
->  0  0      0 3524040    332 192844    0    0     0   530  617 1297  0  0 99  0
->  0  0      0 3524128    332 192844    0    0     0   812  674 1667  0  1 99  0
->  0  0      0 3527000    332 193672    0    0   339   721  754 1681  3  2 93  1
-> -> emerge is finished, no dirty or writeback data in /proc/meminfo
-
-At this point, can you run a "sync" and see how long that takes to
-complete? The only thing I can think that woul dbe written out after
-this point is inodes, but even then it seems to go on for a long,
-long time and it really doesn't seem like XFS is holding up the
-inode writes.
-
-Another option is to use blktrace/blkparse to determine which process is
-issuing this I/O.
-
->  0  0      0 3583780    332 195060    0    0     0   494  555 1080  0  1 99  0
->  0  0      0 3584352    332 195060    0    0     0    99  347  559  0  0 99  0
->  0  0      0 3585232    332 195060    0    0     0    11  301  621  0  0 99  0
-> -> disks go idle.
-> 
-> So these patches do not seem to be the source of these excessive disk writes...
-
-Well, the patches I posted should prevent blocking in the places that it
-was seen, so if that does not stop the slowdowns then either the writeback
-code is not feeding us inodes fast enough or the block device below is
-having some kind of problem....
-
-Cheers,
-
-Dave.
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
