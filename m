@@ -1,39 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756074AbXKFJMq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756332AbXKFJOQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756074AbXKFJMq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 04:12:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbXKFJMc
+	id S1756332AbXKFJOQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 04:14:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754008AbXKFJOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 04:12:32 -0500
-Received: from miranda.se.axis.com ([193.13.178.8]:47433 "EHLO
-	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752201AbXKFJMb (ORCPT
+	Tue, 6 Nov 2007 04:14:06 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42488 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753762AbXKFJOD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 04:12:31 -0500
-Date: Tue, 6 Nov 2007 10:12:02 +0100
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mikael Starvik <mikael.starvik@axis.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 11/16] CRIS architecture: Correct compile errors
-Message-ID: <20071106091202.GS7621@axis.com>
-References: <20071030093353.GN11960@axis.com> <1194338443.24746.43.camel@pmac.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1194338443.24746.43.camel@pmac.infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 6 Nov 2007 04:14:03 -0500
+Date: Tue, 6 Nov 2007 01:12:39 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jan Kara <jack@suse.cz>
+Cc: Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
+       miklos@szeredi.hu, hch@infradead.org, Jan Kara <jack@ucw.cz>
+Subject: Re: [PATCH 16/27]
+ r-o-bind-mounts-elevate-write-count-for-some-ioctls
+Message-Id: <20071106011239.40d376ea.akpm@linux-foundation.org>
+In-Reply-To: <20071106090102.GA32704@atrey.karlin.mff.cuni.cz>
+References: <20071101230826.9A4F6E00@kernel>
+	<20071101230847.1CD52DBD@kernel>
+	<20071105152346.9060641a.akpm@linux-foundation.org>
+	<20071106090102.GA32704@atrey.karlin.mff.cuni.cz>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 06, 2007 at 08:40:43AM +0000, David Woodhouse wrote:
-> You don't need #ifdef __KERNEL__ on a file which isn't exported to
-> userspace. Having removed that, I've applied it to my tree.
+On Tue, 6 Nov 2007 10:01:02 +0100 Jan Kara <jack@suse.cz> wrote:
 
-Ok, thanks, I'll do the same change in our internal CVS.
+>   Why there's no modification for reiserfs?
 
-> dwmw2
-
-/^JN - Jesper Nilsson
---
-               Jesper Nilsson -- jesper.nilsson@axis.com
+I fixed that in the base patch while repairing some rejects.
