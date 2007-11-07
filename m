@@ -1,15 +1,15 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755421AbXKGPod (ORCPT <rfc822;ralf@linux-mips.org>);
-	Wed, 7 Nov 2007 10:44:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753067AbXKGPoY
+	id S1757984AbXKGQLg (ORCPT <rfc822;ralf@linux-mips.org>);
+	Wed, 7 Nov 2007 11:11:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbXKGQL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 10:44:24 -0500
-Received: from linksky60.com ([67.15.203.23]:49405 "EHLO skyline.linksky60.com"
+	Wed, 7 Nov 2007 11:11:27 -0500
+Received: from linksky60.com ([67.15.203.23]:53384 "EHLO skyline.linksky60.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751925AbXKGPoY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 10:44:24 -0500
-Message-ID: <20071107093902.8cmvlhri80o0sgkw@pokersiteonline.com>
-Date: Wed, 07 Nov 2007 09:39:02 -0600
+	id S1754047AbXKGQL0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 11:11:26 -0500
+Message-ID: <20071107100819.6oc3qhuqs4kogggw@pokersiteonline.com>
+Date: Wed, 07 Nov 2007 10:08:19 -0600
 From: "Mss.Sodic Lasy" <sabadelltrust01@yahoo.es>
 To: undisclosed-recipients:;
 Subject: YOU 'VE WON
@@ -32,7 +32,7 @@ X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
 X-AntiAbuse: Sender Address Domain - yahoo.es
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755421AbXKGPod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757984AbXKGQLg@vger.kernel.org>
 
 
 
