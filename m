@@ -1,41 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758828AbXKGRP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757413AbXKGR2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758828AbXKGRP7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 12:15:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755639AbXKGRPh
+	id S1757413AbXKGR2m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 12:28:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbXKGR2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 12:15:37 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:32861 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754802AbXKGRPg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 12:15:36 -0500
-Date: Wed, 7 Nov 2007 09:08:20 -0800
-From: Greg KH <greg@kroah.com>
-To: Stephane Eranian <eranian@hpl.hp.com>
-Cc: Andrew Morton <akpm@osdl.org>, perfmon@napali.hpl.hp.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix up perfmon to build on -mm
-Message-ID: <20071107170820.GB8358@kroah.com>
-References: <20071107003454.GA13374@kroah.com> <20071107134255.GE14646@frankl.hpl.hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071107134255.GE14646@frankl.hpl.hp.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 7 Nov 2007 12:28:34 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:51138 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751110AbXKGR2e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 12:28:34 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20071107165300.6eeea2d8@the-village.bc.nu>
+References: <20071107165300.6eeea2d8@the-village.bc.nu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org, torvalds@osdl.org
+Subject: Re: [PATCH] frv: Remove bogus NO_IRQ = -1 define
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Wed, 07 Nov 2007 17:28:22 +0000
+Message-ID: <30708.1194456502@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 07, 2007 at 05:42:55AM -0800, Stephane Eranian wrote:
-> Greg,
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+
+> The old NO_IRQ define some platforms had was long ago declared obsolete
+> and wrong. FRV should therefore not be re-introducing this, especially as
+> IRQs are usually unsigned in the kernel. The "no IRQ" case is defined to be
+> zero and Linus made this rather clear at the time.
 > 
-> Perfmon sysfs document has been updated following your adivce.
-> you can check out in my perfmon tree  the following commit:
-> 
-> 	e83278f879e52ecee025effe9ad509fd51e4a516
+> arch/frv shows no dependancy on this but it might show up driver fixes
+> needing doing I guess
 
-Where is this git tree located?  On git.kernel.org somewhere?
+FRV doesn't use IRQ 0, so using 0 instead is fine.
 
-thanks,
-
-greg k-h
+Acked-by: David Howells <dhowells@redhat.com>
