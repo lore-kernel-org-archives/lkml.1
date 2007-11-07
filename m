@@ -1,40 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757413AbXKGR2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758017AbXKGRax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757413AbXKGR2m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 12:28:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbXKGR2e
+	id S1758017AbXKGRax (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 12:30:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753682AbXKGRan
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 12:28:34 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:51138 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751110AbXKGR2e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 12:28:34 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20071107165300.6eeea2d8@the-village.bc.nu>
-References: <20071107165300.6eeea2d8@the-village.bc.nu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org, torvalds@osdl.org
-Subject: Re: [PATCH] frv: Remove bogus NO_IRQ = -1 define
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Wed, 07 Nov 2007 17:28:22 +0000
-Message-ID: <30708.1194456502@redhat.com>
+	Wed, 7 Nov 2007 12:30:43 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:35083 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752678AbXKGRam (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 12:30:42 -0500
+Date: Wed, 7 Nov 2007 17:30:40 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: hch@infradead.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       crispin@crispincowan.com
+Subject: Re: Problem with accessing namespace_sem from LSM.
+Message-ID: <20071107173039.GA25560@infradead.org>
+References: <200711060400.lA640fuE078356@www262.sakura.ne.jp> <20071106133559.GA13366@infradead.org> <200711062352.CIJ34385.LSOHJFOVFFOtMQ@I-love.SAKURA.ne.jp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200711062352.CIJ34385.LSOHJFOVFFOtMQ@I-love.SAKURA.ne.jp>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-
-> The old NO_IRQ define some platforms had was long ago declared obsolete
-> and wrong. FRV should therefore not be re-introducing this, especially as
-> IRQs are usually unsigned in the kernel. The "no IRQ" case is defined to be
-> zero and Linus made this rather clear at the time.
+On Tue, Nov 06, 2007 at 11:52:40PM +0900, Tetsuo Handa wrote:
+> Hello.
 > 
-> arch/frv shows no dependancy on this but it might show up driver fixes
-> needing doing I guess
+> Christoph Hellwig wrote:
+> > Any code except VFS internals has no business using it at all and doesn't
+> > do that in mainline either.  I'd start looking for design bugs in whatever
+> > code you have using it first.
+> Isn't security_inode_create() a part of VFS internals?
 
-FRV doesn't use IRQ 0, so using 0 instead is fine.
-
-Acked-by: David Howells <dhowells@redhat.com>
+It's not.  security_inode_create is part of the LSM infrastructure, and
+the actual methods are part of security modules and definitively not
+VFS internals.
