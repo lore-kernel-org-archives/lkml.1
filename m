@@ -1,45 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757905AbXKGKbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756780AbXKGKfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757905AbXKGKbS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 05:31:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753435AbXKGKbA
+	id S1756780AbXKGKfU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 05:35:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbXKGKfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 05:31:00 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52633
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753325AbXKGKa7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 05:30:59 -0500
-Date: Wed, 07 Nov 2007 02:30:58 -0800 (PST)
-Message-Id: <20071107.023058.164903330.davem@davemloft.net>
-To: alan@lxorguk.ukuu.org.uk
-Cc: bunk@kernel.org, jgarzik@pobox.com, netdev@vger.kernel.org,
+	Wed, 7 Nov 2007 05:35:08 -0500
+Received: from madara.hpl.hp.com ([192.6.19.124]:53890 "EHLO madara.hpl.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751673AbXKGKfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 05:35:07 -0500
+Date: Wed, 7 Nov 2007 02:34:49 -0800
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: Greg KH <greg@kroah.com>
+Cc: Andrew Morton <akpm@osdl.org>, perfmon@napali.hpl.hp.com,
        linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] remove Documentation/networking/pt.txt
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071105171757.278bcec7@the-village.bc.nu>
-References: <20071105170557.GT12045@stusta.de>
-	<20071105171757.278bcec7@the-village.bc.nu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Subject: Re: [PATCH] fix up perfmon to build on -mm
+Message-ID: <20071107103449.GB14646@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <20071107003454.GA13374@kroah.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071107003454.GA13374@kroah.com>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date: Mon, 5 Nov 2007 17:17:57 +0000
+Greg,
 
-> On Mon, 5 Nov 2007 18:05:57 +0100
-> Adrian Bunk <bunk@kernel.org> wrote:
+On Tue, Nov 06, 2007 at 04:34:54PM -0800, Greg KH wrote:
+> Here's a patch against my current tree that gets the perfmon code
+> building and hopefully working.
 > 
-> > There's no no point in keeping documentation for a driver that was 
-> > removed many years ago.
-> > 
-> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> Defintiely very dead
-> 
-> Acked-by: Alan Cox <alan@redhat.com>
+Thanks for your quick help.
 
-Applied.
+> Note, it needs the kobject_create_and_register() patch which is in my
+> tree, but I do not think it made it to -mm yet.  The next -mm cycle
+> should have it.
+> 
+> Also, the sysfs usage in the perfmon code is quite strange and not
+> documented at all.  Yes, there is a little bit in the documentation
+> about what a few of the files do, but there are _way_ more files and
+> even directories being created under /sys/kernel/perfmon/ that are not
+> documented at all here.
+> 
+The full documentation for /sys/kernel/perfmon is in Documentation/perfmon2.txt
+
+> If you document this stuff, I think I can clean up your sysfs code a
+> lot, making things simpler, easier to extend, and easier to understand.
+> But as it is, I don't want to break anything as it's totally unknown how
+> this stuff is supposed to work...
+> 
+I certainly welcome your help.
+
+> Hint, use the Documentation/ABI directory to document your sysfs
+> interfaces, that is what it is there for...
+> 
+I will move the description from perfmon2.txt to its own file in
+ABI/testing.
+
+--
+-Stephane
