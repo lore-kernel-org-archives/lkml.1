@@ -1,42 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758268AbXKGWpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758443AbXKGWtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758268AbXKGWpg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 17:45:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbXKGWp0
+	id S1758443AbXKGWtR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 17:49:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbXKGWtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 17:45:26 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:42710 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752605AbXKGWpZ (ORCPT
+	Wed, 7 Nov 2007 17:49:07 -0500
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:55242 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752816AbXKGWtG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 17:45:25 -0500
-Date: Wed, 7 Nov 2007 22:45:23 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: hch@infradead.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       crispin@crispincowan.com
-Subject: Re: Problem with accessing namespace_sem from LSM.
-Message-ID: <20071107224523.GA8223@infradead.org>
-References: <200711060400.lA640fuE078356@www262.sakura.ne.jp> <20071106133559.GA13366@infradead.org> <200711062352.CIJ34385.LSOHJFOVFFOtMQ@I-love.SAKURA.ne.jp> <20071107173039.GA25560@infradead.org> <200711080704.CHC65673.OOtFJFFSHQVOML@I-love.SAKURA.ne.jp>
-Mime-Version: 1.0
+	Wed, 7 Nov 2007 17:49:06 -0500
+Date: Wed, 7 Nov 2007 23:48:08 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>, Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [PATCH] r8169 fix regression on ASUS motherboards (updated)
+Message-ID: <20071107224808.GC15367@electric-eye.fr.zoreil.com>
+References: <4731E2AB.5080703@rtr.ca> <4731FDB7.8010505@rtr.ca> <20071107220455.GA15367@electric-eye.fr.zoreil.com> <47323A69.5050206@rtr.ca> <47323B6B.9000909@rtr.ca>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200711080704.CHC65673.OOtFJFFSHQVOML@I-love.SAKURA.ne.jp>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <47323B6B.9000909@rtr.ca>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 08, 2007 at 07:04:23AM +0900, Tetsuo Handa wrote:
-> The reason why I want to access namespace_sem inside security_inode_create() is that
-> it doesn't receive "struct vfsmount" parameter.
-> If "struct vfsmount" *were* passed to security_inode_create(), 
-> I have no need to access namespace_sem.
+Mark Lord <lkml@rtr.ca> :
+> Mark Lord wrote:
+> >Francois Romieu wrote:
+> >..
+> >>I am not convinced, the broken ones include some RTL_GIGA_MAC_VER_12
+> >>too, namely XID = 0x38000000.
+> ..
+> 
+> Here is the updated patch for both VER_11 and VER_12.
+> Let's get this in, as the driver has been broken for weeks now.
 
-Same argument as with the AA folks: it does not have any business looking
-at the vfsmount.  If you create a file it can and in many setups will
-show up in multiple vfsmounts, so making decisions based on the particular
-one this creat happens through is wrong and actually dangerous.
+I have not been waiting for you and I am not interested in your
+controversy.
 
+I'll find the offending commit and revert it. It is that simple.
+
+-- 
+Ueimor
