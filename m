@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbXKGSei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759383AbXKGSey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758141AbXKGSei (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 13:34:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbXKGSea
+	id S1759383AbXKGSey (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 13:34:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbXKGSep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 13:34:30 -0500
-Received: from smtp-out2.tiscali.nl ([195.241.79.177]:42872 "EHLO
-	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752357AbXKGSea (ORCPT
+	Wed, 7 Nov 2007 13:34:45 -0500
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59705 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752151AbXKGSeo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 13:34:30 -0500
-Message-ID: <47320533.4020400@tiscali.nl>
-Date: Wed, 07 Nov 2007 19:34:27 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Wed, 7 Nov 2007 13:34:44 -0500
+Date: Wed, 7 Nov 2007 10:34:42 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Johannes Weiner <hannes-kernel@saeurebad.de>
+cc: akpm@linux-foundatin.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Mel Gorman <mel@skynet.ie>
+Subject: Re: [patch 12/23] SLUB: Trigger defragmentation from memory reclaim
+In-Reply-To: <20071107092822.GC6243@cataract>
+Message-ID: <Pine.LNX.4.64.0711071032460.9857@schroedinger.engr.sgi.com>
+References: <20071107011130.382244340@sgi.com> <20071107011229.423714790@sgi.com>
+ <20071107092822.GC6243@cataract>
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fix incorrect test in trident_ac97_set(); sound/oss/trident.c
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If count reaches zero, the loop ends, but the postfix decrement subtracts it.
-so, testing for 'count == 0' will not work.
+On Wed, 7 Nov 2007, Johannes Weiner wrote:
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/sound/oss/trident.c b/sound/oss/trident.c
-index 96adc47..94b5fb4 100644
---- a/sound/oss/trident.c
-+++ b/sound/oss/trident.c
-@@ -2939,7 +2939,7 @@ trident_ac97_set(struct ac97_codec *codec, u8 reg, u16 val)
- 
- 	data |= (mask | (reg & AC97_REG_ADDR));
- 
--	if (count == 0) {
-+	if (count == -1) {
- 		printk(KERN_ERR "trident: AC97 CODEC write timed out.\n");
- 		spin_unlock_irqrestore(&card->lock, flags);
- 		return;
-@@ -2999,7 +2999,7 @@ trident_ac97_get(struct ac97_codec *codec, u8 reg)
- 	} while (count--);
- 	spin_unlock_irqrestore(&card->lock, flags);
- 
--	if (count == 0) {
-+	if (count == -1) {
- 		printk(KERN_ERR "trident: AC97 CODEC read timed out.\n");
- 		data = 0;
- 	}
+> > @@ -210,6 +218,8 @@ unsigned long shrink_slab(unsigned long
+> >                 shrinker->nr += total_scan;
+> >         }
+> >         up_read(&shrinker_rwsem);
+> > +       if (gfp_mask & __GFP_FS)
+> > +               kmem_cache_defrag(zone ? zone_to_nid(zone) : -1);
+> >         return ret;
+> >  }
+> 
+> What about the objects that kmem_cache_defrag() releases?  Shouldn't
+> they be counted too?
+> 
+>      ret += kmem_cache_defrag(...)
+> 
+> Or am I overseeing something here?
+
+kmem_cache_defrag returns the number of pages that were released by defrag 
+actions.
+
+shrink_slab returns the number of objects released by the shrinkers. 
+kmem_cache_defrag has no way of knowing how many objects where released by 
+the kick methods. The kick method may have chosen to reallocate the 
+object.
+
 
