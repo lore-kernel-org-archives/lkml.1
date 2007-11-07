@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759227AbXKGX3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759603AbXKGXav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759227AbXKGX3R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 18:29:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbXKGX3E
+	id S1759603AbXKGXav (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 18:30:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbXKGXao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 18:29:04 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37878 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753453AbXKGX3D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 18:29:03 -0500
-Date: Wed, 7 Nov 2007 15:28:33 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Brown <lkml@davidb.org>
-Cc: linux-kernel@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>,
-       Michael Kerrisk <mtk-manpages@gmx.net>
-Subject: Re: compat_sys_times() bogus until jiffies >= 0.
-Message-Id: <20071107152833.6f302c2a.akpm@linux-foundation.org>
-In-Reply-To: <20071107224722.GA20204@old.davidb.org>
-References: <20071107224722.GA20204@old.davidb.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Nov 2007 18:30:44 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52474 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757187AbXKGXan (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 18:30:43 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1194473220.11490.93.camel@pmac.infradead.org>
+References: <1194473220.11490.93.camel@pmac.infradead.org> <20071107174323.31820.65054.stgit@warthog.procyon.org.uk> <20071107174328.31820.62935.stgit@warthog.procyon.org.uk>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: dhowells@redhat.com, torvalds@osdl.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-am33-list@redhat.com
+Subject: Re: [PATCH 1/2] Suppress A.OUT library support in ELF binfmt if !CONFIG_BINFMT_AOUT [try #3]
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Wed, 07 Nov 2007 23:30:33 +0000
+Message-ID: <1784.1194478233@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 7 Nov 2007 14:47:22 -0800 David Brown <lkml@davidb.org> wrote:
-> compat_sys_times() has bogus return until jiffies is >= 0.  I discovered
-> this running LTP within 5 minutes of booting.
-> 
-> The return result
-> 
-> 	return compat_jiffies_to_clock_t(jiffies);
-> 
-> will return '-1' to user space and set the negated clock_t value to errno.
-> 
-> I'm not sure what the correct fix for this is.  I can come up with a patch
-> if anyone has ideas on how to fix it.
-> 
-> At minimum, perhaps it should return a sane errno value.
+David Woodhouse <dwmw2@infradead.org> wrote:
 
-RETURN VALUE
-       times()  returns  the  number of clock ticks that have elapsed since an
-       arbitrary point in the past.  For Linux 2.4 and earlier this  point  is
-       the  moment  the  system  was  booted.   Since Linux 2.6, this point is
-       (2^32/HZ) - 300 (i.e., about 429 million) seconds  before  system  boot
-       time.   The  return  value  may  overflow  the  possible  range of type
-       clock_t.  On error, (clock_t) -1 is returned, and errno is  set  appro-
-       priately.
+> Ew, no. This is horridly broken. You should never use CONFIG_xxx_MODULE
+> in the static kernel at all -- and you should _especially_ not be using
+> it in header files which are exported to userspace.
 
+AOUT support can be mostly built into a module, but a small part of it that is
+arch-specific still gets built into the main kernel.  *That* is the main thing
+that is wrong.
 
-Perhaps this is a bug in glibc: it is interpreting the times() return value
-in the same way as other syscalls.
+I suppose it might be possible to move those bits of the main kernel into
+inline functions in asm/a.out.h and thus include them directly in
+binfmt_aout.ko.
 
-It would have been sensible for us to add INITIAL_JIFFIES to the value
-instead of exposing this kernel-only detail to the world, although the
-problem will of course reoccur once jiffies hits 0x80000000.  Unfortunately
-we've even gone and enshrined this bogon in the manpage.
+> This abomination certainly doesn't seem to have any direct relation to
+> mn10300 support -- I think all you really need there is not to attempt
+> to export {asm,linux}/a.out.h if asm/a.out.h doesn't exist, which is
+> something you haven't attempted here anyway.
 
-Proposed fix:
+No, it's not that simple.  If asm/a.out.h doesn't exist, then various bits of
+the kernel break that shouldn't.  fs/binfmt_elf.c for example.  fs/exec.c for
+another.  They *expect* bits of the asm/a.out.h and linux/a.out.h to exist -
+which they shouldn't.
 
--        return compat_jiffies_to_clock_t(jiffies);
-+        return compat_jiffies_to_clock_t((jiffies + INITIAL_JIFFIES) &
-+						0x7fffffff);
+Not exporting them isn't by itself sufficient.  The required constants
+themselves are not defined for an arch that doesn't have the support, and so
+the core code must not depend on them.  This patch fixes that.
 
-?
+Furthermore, STACK_TOP and STACK_TOP_MAX don't belong in asm/a.out.h as far as
+I can tell.  They should probably be wherever TASK_SIZE resides (ie:
+asm/processor.h).
+
+David
