@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757888AbXKGPZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758150AbXKGP23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757888AbXKGPZA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 10:25:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753896AbXKGPYw
+	id S1758150AbXKGP23 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 10:28:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754045AbXKGP2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 10:24:52 -0500
-Received: from pip9.gyao.ne.jp ([61.122.117.247]:47894 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753885AbXKGPYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 10:24:51 -0500
-Date: Thu, 8 Nov 2007 00:24:39 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Steve Grubb <sgrubb@redhat.com>
-Cc: Yuichi Nakamura <ynakam@hitachisoft.jp>, linux-kernel@vger.kernel.org,
-       linuxsh-dev@lists.sourceforge.net, Al Viro <aviro@redhat.com>
-Subject: Re: [patch] audit support for SH
-Message-ID: <20071107152439.GA28272@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Steve Grubb <sgrubb@redhat.com>,
-	Yuichi Nakamura <ynakam@hitachisoft.jp>,
-	linux-kernel@vger.kernel.org, linuxsh-dev@lists.sourceforge.net,
-	Al Viro <aviro@redhat.com>
-References: <20071107135743.C1BD.YNAKAM@hitachisoft.jp> <200711071015.33765.sgrubb@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200711071015.33765.sgrubb@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 7 Nov 2007 10:28:21 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48302 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753815AbXKGP2U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 10:28:20 -0500
+Date: Wed, 7 Nov 2007 15:28:29 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Mark Lord <lkml@rtr.ca>, Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linuxsh-dev@lists.sourceforge.net
+Subject: Re: [PATCH 1/2] libata: Support PIO polling-only hosts.
+Message-ID: <20071107152829.244afe30@the-village.bc.nu>
+In-Reply-To: <20071107145326.GA27752@linux-sh.org>
+References: <20071107081052.GA25913@linux-sh.org>
+	<20071107130940.16b5ea86@the-village.bc.nu>
+	<20071107132702.GA27488@linux-sh.org>
+	<4731C71A.4000406@rtr.ca>
+	<20071107145326.GA27752@linux-sh.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 07, 2007 at 10:15:33AM -0500, Steve Grubb wrote:
-> On Wednesday 07 November 2007 12:04:46 am Yuichi Nakamura wrote:
-> > I found syscall audit does not work on SH(SuperH).
-> > I made patch to support syscall audit for SH.
-> 
-> I think this is close, but it looks like you missed the syscall classification 
-> piece. You can find an example here:
-> 
-> arch/x86_64/kernel/audit.c
-> 
-> Its used for determining which syscalls we are interested in for watches. 
-> 
-Looking at this, it seems like the classification stuff for 32-bit is
-generic, it's just the compat bits that are special cased and wrap back
-in through the 32-bit classifier.
+> So I'll change the check to IRQ#0 == invalid, but if that's to be
+> enforced kernel-wide, then all of the existing NO_IRQ cases should be
+> ripped out and set to 0. This way at least people are getting screwed
+> consistently, rather than just in particular subsystems.
 
-Is there any point in keeping the 32-bit audit.c rather than simply
-moving it to kernel/ or lib/ and leaving the arch/ bits as compat
-wrappers only?
+Thats been gradually happening. Its now pretty clean except for powerpc
+and odd bits of ARM stuff
 
-At least powerpc, x86, and ia64 look like they could go that way.
+Alan
