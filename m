@@ -1,87 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbXKGBUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758019AbXKGBVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758263AbXKGBUi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 20:20:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757397AbXKGBQS
+	id S1758019AbXKGBVA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 20:21:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758039AbXKGBUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 20:16:18 -0500
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:33563 "EHLO
-	outbound7-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756316AbXKGBQP (ORCPT
+	Tue, 6 Nov 2007 20:20:36 -0500
+Received: from wr-out-0506.google.com ([64.233.184.233]:34917 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756507AbXKGBUe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 20:16:15 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
-X-Server-Uuid: DF9F24A0-1A5C-40A5-8B0A-DEB676E72ECF
-Date: Wed, 7 Nov 2007 02:12:58 +0100
-From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-To: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-cc: linux-kernel@vger.kernel.org, "Akinobu Mita" <akinobu.mita@gmail.com>,
-       "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>
-Subject: [PATCH] x86: fix cpu-hotplug regression
-Message-ID: <20071107011258.GA31607@alberich.amd.com>
+	Tue, 6 Nov 2007 20:20:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=T/tRnfMG7OCuDjo3k13Xn3NB+5DE5Z9OnZP96MCRAYuMA9zoIu6XUP0zkdZzIMZ8s7LE/ZIPrIug6iqpsRXOtBrLY5JDm3kCpAbrFUizHd44U900Q+PFsHuD3QluVYh8UOH3TBAYRtHTAVcmC1e0sye+v7qtNMLz8e8b5z35G/E=
+Message-ID: <a8e1da0711061720m170e2cc9heecf58ebb2e079f@mail.gmail.com>
+Date: Wed, 7 Nov 2007 09:20:33 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Marcel Holtmann" <marcel@holtmann.org>
+Subject: Re: [PATCH]bluetooth rfcomm_dev refcount bug fix
+Cc: linux-kernel@vger.kernel.org, bluez-devel@lists.sourceforge.net
+In-Reply-To: <1194356030.4763.18.camel@aeonflux>
 MIME-Version: 1.0
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 07 Nov 2007 01:12:50.0731 (UTC)
- FILETIME=[50E71FB0:01C820DB]
-X-WSS-ID: 6B2FCE9F07S1658046-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071106060028.GA3176@darkstar.te-china.tietoenator.com>
+	 <1194356030.4763.18.camel@aeonflux>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] x86: fix cpu-hotplug regression
+On Nov 6, 2007 9:33 PM, Marcel Holtmann <marcel@holtmann.org> wrote:
+> Hi Dave,
+>
+> > I'm afraid to be considered as spam ;)
+> >
+> > (Due to timezone offset, I have to mail again and cann't wait for your
+> > reply, sorry for the annoying)
+>
+> I am in a different timezone every other week. So nevermind ;)
+>
+> > I think the rfcomm_dev_put could be seperated from the rfcomm_dev_put,
+> > it will be more straitforward then.
+> >
+> > please consider below patch, tested on my side. thanks.
+>
+> That one looks totally wrong to me. Without even testing it, it will
+> have side effects that you haven't run into yet. Unless the TTY core
+> changed so much, this comments are there for a really good reason and
+> the code is tested a lot.
+What side effects?
 
-Commit d435d862baca3e25e5eec236762a43251b1e7ffc
-("cpu hotplug: mce: fix cpu hotplug error handling")
-changed the error handling in mce_cpu_callback.
+Anyway, the refcnt is wrong in rfcomm_release_dev. We could either
+remove the rfcomm_dev_del in rfcomm_tty_hangup or remove the
+rfcomm_dev_put in the end of rfcomm_release_dev, or the rfcomm_dev
+will be destructed, and  the later callback of rfcomm_tty_close could
+cause oops.
 
-In cases where not all CPUs are brought up during
-boot (e.g. using maxcpus and additional_cpus parameters)
-mce_cpu_callback now returns NOTFIY_BAD because
-for such CPUs cpu_data is not completely filled when
-the notifier is called. Thus mce_create_device fails right
-at its beginning:
+>
+> Also if you have to do two rfcomm_dev_put() in a row, then we are doing
+> something really wrong and this tries to hide a real bug somewhere.
+One is for device deletion (1->0), one is for the get/put pairs,
+actually same as before.
 
-        if (!mce_available(&cpu_data[cpu]))
-                return -EIO;
+Main reason of doing so in this patch is that if I remove the last
+rfcomm_dev_put in rfcomm_release_dev, then it looks like get device
+<-->  del device, so relace it with set deletion flag and then put
+the device like "get device <--> put device" which is straitforward.
 
-As a quick fix I suggest to check boot_cpu_data for MCE.
-
-To reproduce this regression:
-
-(1) boot with maxcpus=2 addtional_cpus=2 on a 4 CPU x86-64 system
-(2) # echo 1 >/sys/devices/system/cpu/cpu2/online
-  -bash: echo: write error: Invalid argument
-
-dmesg shows:
-
-_cpu_up: attempt to bring up CPU 2 failed
-
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
----
- arch/x86/kernel/cpu/mcheck/mce_64.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/mcheck/mce_64.c b/arch/x86/kernel/cpu/mcheck/mce_64.c
-index b9f802e..5112a70 100644
---- a/arch/x86/kernel/cpu/mcheck/mce_64.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce_64.c
-@@ -808,7 +808,7 @@ static __cpuinit int mce_create_device(unsigned int cpu)
- 	int err;
- 	int i;
- 
--	if (!mce_available(&cpu_data(cpu)))
-+	if (!mce_available(&boot_cpu_data))
- 		return -EIO;
- 
- 	memset(&per_cpu(device_mce, cpu).kobj, 0, sizeof(struct kobject));
--- 
-1.5.3.4
-
-
-
-
+>
+> Regards
+>
+> Marcel
+>
+>
+>
