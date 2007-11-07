@@ -1,37 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757188AbXKGQes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756153AbXKGQkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757188AbXKGQes (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 11:34:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753750AbXKGQem
+	id S1756153AbXKGQkA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 11:40:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbXKGQjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 11:34:42 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:52960 "EHLO mx1.redhat.com"
+	Wed, 7 Nov 2007 11:39:51 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38178 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753486AbXKGQel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 11:34:41 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1194448467.3140.6.camel@albrecht.rdi1.com>
-References: <1194448467.3140.6.camel@albrecht.rdi1.com> <1194445911.2705.2.camel@albrecht.rdi1.com> <200711070644.lA76iodZ005491@agora.fsl.cs.sunysb.edu> <30212.1194447844@redhat.com>
-To: Paul Albrecht <albrecht@rdi1.com>
-Cc: dhowells@redhat.com, Erez Zadok <ezk@cs.sunysb.edu>,
-       akpm@linux-foundation.org, unionfs@filesystems.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Unionfs] Re: [PATCH] IGET: Stop UnionFS from using iget() and read_inode()
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Wed, 07 Nov 2007 16:34:27 +0000
-Message-ID: <30403.1194453267@redhat.com>
+	id S1753300AbXKGQjt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 11:39:49 -0500
+Message-ID: <4731EA2B.5000806@redhat.com>
+Date: Wed, 07 Nov 2007 11:39:07 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?BERTRAND_Jo=EBl?= <joel.bertrand@systella.fr>
+CC: Neil Brown <neilb@suse.de>, Justin Piszcz <jpiszcz@lucidpixels.com>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: 2.6.23.1: mdadm/raid5 hung/d-state
+References: <Pine.LNX.4.64.0711040658180.30831@p34.internal.lan> <18222.16003.92062.970530@notabene.brown> <472ED613.8050101@systella.fr>
+In-Reply-To: <472ED613.8050101@systella.fr>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Albrecht <albrecht@rdi1.com> wrote:
+On 11/05/2007 03:36 AM, BERTRAND Joël wrote:
+> Neil Brown wrote:
+>> On Sunday November 4, jpiszcz@lucidpixels.com wrote:
+>>> # ps auxww | grep D
+>>> USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+>>> root       273  0.0  0.0      0     0 ?        D    Oct21  14:40
+>>> [pdflush]
+>>> root       274  0.0  0.0      0     0 ?        D    Oct21  13:00
+>>> [pdflush]
+>>>
+>>> After several days/weeks, this is the second time this has happened,
+>>> while doing regular file I/O (decompressing a file), everything on
+>>> the device went into D-state.
+>>
+>> At a guess (I haven't looked closely) I'd say it is the bug that was
+>> meant to be fixed by
+>>
+>> commit 4ae3f847e49e3787eca91bced31f8fd328d50496
+>>
+>> except that patch applied badly and needed to be fixed with
+>> the following patch (not in git yet).
+>> These have been sent to stable@ and should be in the queue for 2.6.23.2
+> 
+>     My linux-2.6.23/drivers/md/raid5.c contains your patch for a long
+> time :
+> 
+> ...
+>         spin_lock(&sh->lock);
+>         clear_bit(STRIPE_HANDLE, &sh->state);
+>         clear_bit(STRIPE_DELAYED, &sh->state);
+> 
+>         s.syncing = test_bit(STRIPE_SYNCING, &sh->state);
+>         s.expanding = test_bit(STRIPE_EXPAND_SOURCE, &sh->state);
+>         s.expanded = test_bit(STRIPE_EXPAND_READY, &sh->state);
+>         /* Now to look around and see what can be done */
+> 
+>         /* clean-up completed biofill operations */
+>         if (test_bit(STRIPE_OP_BIOFILL, &sh->ops.complete)) {
+>                 clear_bit(STRIPE_OP_BIOFILL, &sh->ops.pending);
+>                 clear_bit(STRIPE_OP_BIOFILL, &sh->ops.ack);
+>                 clear_bit(STRIPE_OP_BIOFILL, &sh->ops.complete);
+>         }
+> 
+>         rcu_read_lock();
+>         for (i=disks; i--; ) {
+>                 mdk_rdev_t *rdev;
+>                 struct r5dev *dev = &sh->dev[i];
+> ...
+> 
+> but it doesn't fix this bug.
+> 
 
-> Without ... what's the difference? I asked a specific question about the
-> test set that was used to validate unionfs and your fix.  
+Did that chunk starting with "clean-up completed biofill operations" end
+up where it belongs? The patch with the big context moves it to a different
+place from where the original one puts it when applied to 2.6.23...
 
-I was just checking it wasn't something my patch introduced.
+Lately I've seen several problems where the context isn't enough to make
+a patch apply properly when some offsets have changed. In some cases a
+patch won't apply at all because two nearly-identical areas are being
+changed and the first chunk gets applied where the second one should,
+leaving nowhere for the second chunk to apply.
 
-David
