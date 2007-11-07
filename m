@@ -1,43 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbXKGBIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756093AbXKGBMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756027AbXKGBIT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 20:08:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754990AbXKGBIJ
+	id S1756093AbXKGBMn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 20:12:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755176AbXKGBM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 20:08:09 -0500
-Received: from exchange.columbia.tresys.com ([216.250.243.126]:3684 "HELO
-	exchange.columbia.tresys.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754884AbXKGBII (ORCPT
+	Tue, 6 Nov 2007 20:12:28 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33721 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755106AbXKGBM1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 20:08:08 -0500
-Message-ID: <47310FF3.3080003@manicmethod.com>
-Date: Tue, 06 Nov 2007 20:08:03 -0500
-From: Joshua Brindle <method@manicmethod.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: casey@schaufler-ca.com
-CC: akpm@osdl.org, torvalds@osdl.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, paul.moore@hp.com
-Subject: Re: [PATCH] NetLabel: Introduce a new kernel configuration API for
- NetLabel - For 2.6.24-rc-git11 - Smack Version 10
-References: <472BF1D0.3070108@schaufler-ca.com>
-In-Reply-To: <472BF1D0.3070108@schaufler-ca.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Nov 2007 01:08:06.0764 (UTC) FILETIME=[A7A532C0:01C820DA]
+	Tue, 6 Nov 2007 20:12:27 -0500
+Message-Id: <20071107011130.382244340@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 06 Nov 2007 17:11:30 -0800
+From: Christoph Lameter <clameter@sgi.com>
+To: akpm@linux-foundatin.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org
+Cc: Mel Gorman <mel@skynet.ie>
+Subject: [patch 00/23] Slab defragmentation V6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey Schaufler wrote:
-> From: Paul Moore <paul.moore@hp.com>
->
-> Add a new set of configuration functions to the NetLabel/LSM API so that
-> LSMs can perform their own configuration of the NetLabel subsystem without
-> relying on assistance from userspace.
->   
-I'm still not receiving the actual patch email on lsm (perhaps its too 
-long and should be split up..) so I'll just respond on this email. Using 
-the v10 patches on your website I'm still seeing strange behavior where 
-echo foo > /proc/self/attr/current changes the label of every process on 
-the system to foo (verified with both ps -AZ and cat /proc/1/attr/current).
+Slab defragmentation is mainly an issue if Linux is used as a fileserver
+and large amounts of dentries, inodes and buffer heads accumulate. In some
+load situations the slabs become very sparsely populated so that a lot of
+memory is wasted by slabs that only contain one or a few objects. In
+extreme cases the performance of a machine will become sluggish since
+we are continually running reclaim. Slab defragmentation adds the
+capability to recover wasted memory.
 
+With lumpy reclaim slab defragmentation can be used to enhance the
+ability to recover larger contiguous areas of memory. Lumpy reclaim currently
+cannot do anything if a slab page is encountered. With slab defragmentation
+that slab page can be removed and a large contiguous page freed. It may
+be possible to have slab pages also part of ZONE_MOVABLE (Mel's defrag
+scheme in 2.6.23) or the MOVABLE areas (antifrag patches in mm).
+
+The patchset is also available via git
+
+git pull git://git.kernel.org/pub/scm/linux/kernel/git/christoph/slab.git defrag
+
+
+Currently memory reclaim from the following slab caches is possible:
+
+1. dentry cache
+2. inode cache (with a generic interface to allow easy setup of more
+   filesystems than the currently supported ext2/3/4 reiserfs, XFS
+   and proc)
+3. buffer_heads
+
+One typical mechanism that triggers slab defragmentation on my systems
+is the daily run of
+
+	updatedb
+
+Updatedb scans all files on the system which causes a high inode and dentry
+use. After updatedb is complete we need to go back to the regular use
+patterns (typical on my machine: kernel compiles). Those need the memory now
+for different purposes. The inodes and dentries used for updatedb will
+gradually be aged by the dentry/inode reclaim algorithm which will free
+up the dentries and inode entries randomly through the slabs that were
+allocated. As a result the slabs will become sparsely populated. If they
+become empty then they can be freed but a lot of them will remain sparsely
+populated. That is where slab defrag comes in: It removes the slabs with
+just a few entries reclaiming more memory for other uses.
+
+V5->V6
+- Rediff against 2.6.24-rc2 + mm slub patches.
+- Add reviewed by lines.
+- Take out the experimental code to make slab pages movable. That
+  has to wait until this has been considered by Mel.
+
+V4->V5:
+- Support lumpy reclaim for slabs
+- Support reclaim via slab_shrink()
+- Add constructors to insure a consistent object state at all times.
+
+V3->V4:
+- Optimize scan for slabs that need defragmentation
+- Add /sys/slab/*/defrag_ratio to allow setting defrag limits
+  per slab.
+- Add support for buffer heads.
+- Describe how the cleanup after the daily updatedb can be
+  improved by slab defragmentation.
+
+V2->V3
+- Support directory reclaim
+- Add infrastructure to trigger defragmentation after slab shrinking if we
+  have slabs with a high degree of fragmentation.
+
+V1->V2
+- Clean up control flow using a state variable. Simplify API. Back to 2
+  functions that now take arrays of objects.
+- Inode defrag support for a set of filesystems
+- Fix up dentry defrag support to work on negative dentries by adding
+  a new dentry flag that indicates that a dentry is not in the process
+  of being freed or allocated.
+
+-- 
