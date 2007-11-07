@@ -1,102 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756686AbXKGFkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757395AbXKGFkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756686AbXKGFkZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 00:40:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751110AbXKGFkN
+	id S1757395AbXKGFkj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 00:40:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755254AbXKGFkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 00:40:13 -0500
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:62463 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750821AbXKGFkM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 00:40:12 -0500
-Subject: 2.6.23.1-rt9 (and others)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Gregory Haskins <ghaskins@novell.com>
-Content-Type: text/plain
-Date: Wed, 07 Nov 2007 00:39:19 -0500
-Message-Id: <1194413959.8827.66.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+	Wed, 7 Nov 2007 00:40:17 -0500
+Received: from il.qumranet.com ([82.166.9.18]:36985 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754765AbXKGFkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 00:40:15 -0500
+Message-ID: <47314FBD.1070505@qumranet.com>
+Date: Wed, 07 Nov 2007 07:40:13 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Gregory Haskins <gregory.haskins.ml@gmail.com>
+CC: Anthony Liguori <aliguori@us.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Dor Laor <dor.laor@qumranet.com>,
+       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: Use of virtio device IDs
+References: <4730A15A.6070001@us.ibm.com> <4730B753.2000901@us.ibm.com> <4731334A.6090405@gmail.com>
+In-Reply-To: <4731334A.6090405@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Wed, 07 Nov 2007 07:40:14 +0200 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a special announcement for the latest -rt patches. This is
-actually announcing more than one tree (pay close attention to the
-differences between -rt7, -rt8 and -rt9).
+Gregory Haskins wrote:
+> Anthony Liguori wrote:
+>
+>   
+>> Right now, we would have to have every PCI vendor/device ID pair in the
+>> virtio PCI driver ID table for every virtio device.
+>>     
+>
+> I realize you guys are probably far down this road in the design
+> process,
 
-  2.6.23.1-rt6
+That doesn't mean we can't change it if it's wrong.
 
-   - Removed BUG_ON in exit (Steven Rostedt and Daniel Walker)
+>  but FWIW: This is a major motivation for the reason that the
+> IOQ stuff I posted a while back used strings for device identification
+> instead of a fixed length, centrally managed namespace like PCI
+> vendor/dev-id.  Then you can just name your device something reasonably
+> unique (e.g. "qumranet::veth", or "ibm-pvirt-clock").
+>   
 
-   -  Turn RCU preempt boost on by default (Steven Rostedt)
-      (for when RCU PREEMPT is enabled)
+I dislike strings.  They make it look as if you have a nice extensible
+interface, where in reality you have a poorly documented interface which
+leads to poor interoperability.
 
-   - Fixes for PowerPC (Paul McKenney)
+I prefer nice structure where you can see all the limitations immediately.
 
+> (I realize that if you are going to do PCI, you need to make it
+> PCI-like.  But I think using PCI in the first place is probably the
+> wrong direction.  IMHO, there's really not a lot of reason to be
+> constrained by a hardware specification once you decide to go PV.  This
+> is even more true if you want to support as many platforms as possible
+> (i.e. platforms that don't have PCI natively).
+>
+>   
 
-  2.6.23.1-rt7
+PCI means that you can reuse all of the platform's infrastructure for
+irq allocation, discovery, device hotplug, and management.  You can
+write it for new guests but backporting it to older guests will be a
+huge task.
 
-   - Found that there's a flaw in the PowerPC patch so
-     it was pulled from the tree.
+We will support non-pci for s390, but in order to support Windows and
+older Linux PCI is necessary.
 
-  2.6.23.1-rt8
-
-   - More aggressive RT Balancing (Gregory Haskins)
-
-  2.6.23.1-rt9
-
-   - RT balancing by CPU priorities (Gregory Haskins)
-
-
-Now benchmarks against 2.6.23.1-rt7 -rt8 and -rt9 would be greatly
-appreciated.  These three are all present in
-
-  http://www.kernel.org/pub/linux/kernel/projects/rt/
-
-Gregory and I have been having disagreements on how to solve RT task
-balancing among CPUS. Although we shared ideas back and forth, and both
-our methods have been greatly influenced by each other, the real answer
-comes from actual numbers. So these three versions are posted for your
-convenience to see which actually do the best. I would be happy to tell
-Gregory he's right, if the numbers prove it.
-
-Currently, what we do to test RT latencies is to run Thomas Gleixner's
-cyclictest
-(http://git.kernel.org/?p=linux/kernel/git/tglx/rt-tests.git;a=summary)
-as well as hackbench, to see what the maximum latencies we get are.
-
-Other tests are welcomed too.
-
-
-to build a 2.6.23.1-rt7 tree, the following patches should be applied:
-
-  http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.23.1.tar.bz2 
-  http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.23.1-rt7.bz2
-
-to build a 2.6.23.1-rt8 tree, the following patches should be applied:
-
-  http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.23.1.tar.bz2 
-  http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.23.1-rt8.bz2
-
-to build a 2.6.23.1-rt9 tree, the following patches should be applied:
-
-  http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.23.1.tar.bz2 
-  http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.23.1-rt9.bz2
-
-
-And like always, my RT version of Matt Mackall's ketchup will get this
-for you nicely:
-
-  http://people.redhat.com/srostedt/rt/tools/ketchup-0.9.8-rt1
-
-The broken out patches are also available.
-
-Thanks!
-
--- Steve
-
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
