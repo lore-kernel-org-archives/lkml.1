@@ -1,91 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760033AbXKGSii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760124AbXKGSiw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760033AbXKGSii (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 13:38:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759060AbXKGShR
+	id S1760124AbXKGSiw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 13:38:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758141AbXKGShk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 13:37:17 -0500
-Received: from saraswathi.solana.com ([198.99.130.12]:60201 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759000AbXKGShP (ORCPT
+	Wed, 7 Nov 2007 13:37:40 -0500
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:53555 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759592AbXKGShi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 13:37:15 -0500
-Date: Wed, 7 Nov 2007 13:36:37 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>
-Subject: [PATCH 1/5] UML - Delete some unused headers
-Message-ID: <20071107183637.GA8462@c2.user-mode-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+	Wed, 7 Nov 2007 13:37:38 -0500
+Message-ID: <473205D2.3080703@linux.vnet.ibm.com>
+Date: Thu, 08 Nov 2007 00:07:06 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+MIME-Version: 1.0
+To: akpm@linux-foundation.org
+CC: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kay.sievers@vrfy.org, gregkh@suse.de, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: mm snapshot broken-out-2007-11-06-02-32 build failure init/do_mount
+References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
+In-Reply-To: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Day noticed a few unused headers in UML, so this gets rid of them.
+Hi Andrew,
 
-Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
----
- arch/um/include/misc_constants.h |    6 ------
- arch/um/include/signal_kern.h    |   22 ----------------------
- arch/um/include/skas/mode-skas.h |   11 -----------
- 3 files changed, 39 deletions(-)
+The kernel build fails with randconfig, with folllowing error
 
-Index: linux-2.6/arch/um/include/misc_constants.h
-===================================================================
---- linux-2.6.orig/arch/um/include/misc_constants.h	2007-03-27 17:07:26.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,6 +0,0 @@
--#ifndef __MISC_CONSTANT_H_
--#define __MISC_CONSTANT_H_
--
--#include <user_constants.h>
--
--#endif
-Index: linux-2.6/arch/um/include/signal_kern.h
-===================================================================
---- linux-2.6.orig/arch/um/include/signal_kern.h	2007-03-27 17:07:26.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,22 +0,0 @@
--/* 
-- * Copyright (C) 2001, 2002 Jeff Dike (jdike@karaya.com)
-- * Licensed under the GPL
-- */
--
--#ifndef __SIGNAL_KERN_H__
--#define __SIGNAL_KERN_H__
--
--extern int have_signals(void *t);
--
--#endif
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6/arch/um/include/skas/mode-skas.h
-===================================================================
---- linux-2.6.orig/arch/um/include/skas/mode-skas.h	2007-11-05 14:01:47.000000000 -0500
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,11 +0,0 @@
--/*
-- * Copyright (C) 2002 - 2007 Jeff Dike (jdike@{linux.intel,addtoit}.com)
-- * Licensed under the GPL
-- */
--
--#ifndef __MODE_SKAS_H__
--#define __MODE_SKAS_H__
--
--extern void kill_off_processes_skas(void);
--
--#endif
+init/do_mounts.c: In function ‘name_to_dev_t’:
+init/do_mounts.c:110: error: implicit declaration of function ‘blk_lookup_devt’
+make[1]: *** [init/do_mounts.o] Error 1
+make: *** [init] Error 2
+
+This is caused by gregkh-driver-block-device.patch, where the function 
+blk_lookup_devt is declared within #ifdef CONFIG_BLOCK and randconfig has
+not set the CONFIG_BLOCK it.
+
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
