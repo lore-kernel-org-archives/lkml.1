@@ -1,108 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755197AbXKGPtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755830AbXKGPzO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755197AbXKGPtk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 10:49:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbXKGPtd
+	id S1755830AbXKGPzO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 10:55:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbXKGPzD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 10:49:33 -0500
-Received: from saraswathi.solana.com ([198.99.130.12]:59219 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750830AbXKGPtc (ORCPT
+	Wed, 7 Nov 2007 10:55:03 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:49248 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753805AbXKGPzB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 10:49:32 -0500
-Date: Wed, 7 Nov 2007 10:48:39 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, Chuck Ebbert <76306.1226@compuserve.com>,
-       Roland McGrath <roland@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86 - 32-bit ptrace emulation mishandles 6th arg
-Message-ID: <20071107154839.GA5981@c2.user-mode-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+	Wed, 7 Nov 2007 10:55:01 -0500
+Date: Wed, 7 Nov 2007 10:54:58 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Hannes Reinecke <hare@suse.de>
+cc: Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Re: BUG in: Driver core: convert block from raw kobjects to core
+ devices (fwd)
+In-Reply-To: <4731ADC8.3040208@suse.de>
+Message-ID: <Pine.LNX.4.44L0.0711071051560.4444-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chuck Ebbert <76306.1226@compuserve.com>
+On Wed, 7 Nov 2007, Hannes Reinecke wrote:
 
-[ jdike - Pushing Chuck's patch - see
-http://lkml.org/lkml/2005/9/16/261 for some history and a test
-program.  UML is also broken without this patch - its processes get
-SIGBUS from the corrupt 6th argument to mmap being interpretted as a
-file offset ]
+> Alan Stern wrote:
+> > 
+> > Thus we have a cycle:
+> > 
+> > 	1&2: request_queue isn't released before scsi_device;
+> > 
+> > 	3: scsi_device isn't released before gendisk;
+> > 
+> > 	4: gendisk isn't released before request_queue.
+> > 
+> > The dependency in 1&2 is hard-coded into the SCSI core.  If I 
+> > understand correctly, the core really does need the request_queue to 
+> > hang around as long as the scsi_device is still present.  According to 
+> > James Bottomley, any block device driver should be expected to have a 
+> > similar requirement.
+> > 
+> This is actually true, but as other block device drivers create the
+> LUN (or the equivalent thereof), the request queue, and the block device
+> at the same time or under control of the driver itself they don't have
+> this problem.
+> It's only due to the decoupling of the block driver from the underlying
+> device (ie sd driver and scsi_device) when this problem arises.
 
-When the 32-bit vDSO is used to make a system call, the %ebp register for
-the 6th syscall arg has to be loaded from the user stack (where it's pushed
-by the vDSO user code).  The native i386 kernel always does this before
-stopping for syscall tracing, so %ebp can be seen and modified via ptrace
-to access the 6th syscall argument.  The x86-64 kernel fails to do this,
-presenting the stack address to ptrace instead.  This makes the %rbp value
-seen by 64-bit ptrace of a 32-bit process, and the %ebp value seen by a
-32-bit caller of ptrace, both differ from the native i386 behavior.
+I don't understand your reasoning.  If the same parent-child
+relationships exist then it doesn't matter who creates the data
+stuctures.  All that matters is that the block device's reference to
+the request_queue isn't dropped until the device is released.
 
-This patch fixes the problem by putting the word loaded from the user stack
-into %rbp before calling syscall_trace_enter, and reloading the 6th syscall
-argument from there afterwards (so ptrace can change it).  This makes the
-behavior match that of i386 kernels.
+> > But the dependencies in 3 and 4 are unnecessary.  They are artifacts,
+> > caused by the fact that a kobject doesn't drop its reference to its
+> > parent until it is released.  If instead the reference to the parent
+> > were dropped when the kobject was removed then 3 and 4 wouldn't apply.
+> > 
+> And should be okay as the device isn't accessible from userland
+> anyway after doing a device_del(). And the implication is that it's
+> going to be remove soon entirely. So we're just moving the timing
+> of the eventual call to the ->release() function; the events will
+> be triggered by device_del() and won't be changed.
+> And if some device actually requires a reference to the parent
+> during ->release() it can as well acquire it manually and shouldn't
+> rely on the core logic to do that automatically.
 
-Signed-off-by: Chuck Ebbert <76306.1226@compuserve.com>
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-Original-Patch-By: Roland McGrath <roland@redhat.com>
----
- arch/x86_64/ia32/ia32entry.S |   19 ++++++-------------
- 1 file changed, 6 insertions(+), 13 deletions(-)
+My thinking exactly.
 
-diff --git a/arch/x86/ia32/ia32entry.S b/arch/x86/ia32/ia32entry.S
-index 18b2318..df588f0 100644
---- a/arch/x86/ia32/ia32entry.S
-+++ b/arch/x86/ia32/ia32entry.S
-@@ -159,20 +159,16 @@ sysenter_do_call:
- 
- sysenter_tracesys:
- 	CFI_RESTORE_STATE
-+	xchgl	%r9d,%ebp
- 	SAVE_REST
- 	CLEAR_RREGS
-+	movq	%r9,R9(%rsp)
- 	movq	$-ENOSYS,RAX(%rsp)	/* really needed? */
- 	movq	%rsp,%rdi        /* &pt_regs -> arg1 */
- 	call	syscall_trace_enter
- 	LOAD_ARGS32 ARGOFFSET  /* reload args from stack in case ptrace changed it */
- 	RESTORE_REST
--	movl	%ebp, %ebp
--	/* no need to do an access_ok check here because rbp has been
--	   32bit zero extended */ 
--1:	movl	(%rbp),%r9d
--	.section __ex_table,"a"
--	.quad 1b,ia32_badarg
--	.previous
-+	xchgl	%ebp,%r9d
- 	jmp	sysenter_do_call
- 	CFI_ENDPROC
- ENDPROC(ia32_sysenter_target)
-@@ -262,20 +258,17 @@ cstar_do_call:
- 	
- cstar_tracesys:	
- 	CFI_RESTORE_STATE
-+	xchgl %r9d,%ebp
- 	SAVE_REST
- 	CLEAR_RREGS
-+	movq %r9,R9(%rsp)
- 	movq $-ENOSYS,RAX(%rsp)	/* really needed? */
- 	movq %rsp,%rdi        /* &pt_regs -> arg1 */
- 	call syscall_trace_enter
- 	LOAD_ARGS32 ARGOFFSET  /* reload args from stack in case ptrace changed it */
- 	RESTORE_REST
-+	xchgl %ebp,%r9d
- 	movl RSP-ARGOFFSET(%rsp), %r8d
--	/* no need to do an access_ok check here because r8 has been
--	   32bit zero extended */ 
--1:	movl	(%r8),%r9d
--	.section __ex_table,"a"
--	.quad 1b,ia32_badarg
--	.previous
- 	jmp cstar_do_call
- END(ia32_cstar_target)
- 				
+Alan Stern
+
