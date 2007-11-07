@@ -1,49 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759345AbXKGWfO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758268AbXKGWpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759345AbXKGWfO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 17:35:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756446AbXKGWfA
+	id S1758268AbXKGWpg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 17:45:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbXKGWp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 17:35:00 -0500
-Received: from smtp109.sbc.mail.mud.yahoo.com ([68.142.198.208]:48641 "HELO
-	smtp109.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754954AbXKGWe6 (ORCPT
+	Wed, 7 Nov 2007 17:45:26 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:42710 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752605AbXKGWpZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 17:34:58 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Lbpp55VpHIjx+EEeeePIvEx2BFpnAMCm0zhZGwkzuADvsYLGPyUZi7IFGAdOm/nnX2WWCiAExlncbHIdysTcmBxF3XZaHAcYLAC32pV8fgGZQ3cHClqzjfa1cHFmkkeJ99eanQ7PSomJ0j9k2UrSa0jYOAvhXqC9WyLV4MaiPMI=  ;
-X-YMail-OSG: nGLJA6cVM1l196BLsefbSldZliJHld3eCvBdKgSw.Z6V2HAPr6QRq_elYOUZ7zJ5AzVihhjJeA--
-From: David Brownell <david-b@pacbell.net>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: build #337 failed for 2.6.24-rc1-gb1d08ac In function `usbnet_set_settings':
-Date: Wed, 7 Nov 2007 14:34:52 -0800
-User-Agent: KMail/1.9.6
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>,
-       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>
-References: <200711012024.57412.toralf.foerster@gmx.de> <200711021230.22588.david-b@pacbell.net> <20071102195517.GW30287@stusta.de>
-In-Reply-To: <20071102195517.GW30287@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Nov 2007 17:45:25 -0500
+Date: Wed, 7 Nov 2007 22:45:23 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: hch@infradead.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       crispin@crispincowan.com
+Subject: Re: Problem with accessing namespace_sem from LSM.
+Message-ID: <20071107224523.GA8223@infradead.org>
+References: <200711060400.lA640fuE078356@www262.sakura.ne.jp> <20071106133559.GA13366@infradead.org> <200711062352.CIJ34385.LSOHJFOVFFOtMQ@I-love.SAKURA.ne.jp> <20071107173039.GA25560@infradead.org> <200711080704.CHC65673.OOtFJFFSHQVOML@I-love.SAKURA.ne.jp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711071434.52607.david-b@pacbell.net>
+In-Reply-To: <200711080704.CHC65673.OOtFJFFSHQVOML@I-love.SAKURA.ne.jp>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > But on the other hand, it seems that only the ASIX code will work
-> > right; the DM9601 and MCS7830 Kconfig is different/wrong.
-> 
-> I'm not seeing the problem.
-> 
-> Which configuration will be handled wrongly?
+On Thu, Nov 08, 2007 at 07:04:23AM +0900, Tetsuo Handa wrote:
+> The reason why I want to access namespace_sem inside security_inode_create() is that
+> it doesn't receive "struct vfsmount" parameter.
+> If "struct vfsmount" *were* passed to security_inode_create(), 
+> I have no need to access namespace_sem.
 
-Notice how only the ASIX kconfig depended on NET_ETHERNET...
-since MII depends on NET_ETHERNET, and (last I knew) the
-reverse dependencies didn't capture the complete dependency
-tree, selecting only MII would leave out some stuff.
-
+Same argument as with the AA folks: it does not have any business looking
+at the vfsmount.  If you create a file it can and in many setups will
+show up in multiple vfsmounts, so making decisions based on the particular
+one this creat happens through is wrong and actually dangerous.
 
