@@ -1,42 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759673AbXKGXHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759479AbXKGXLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759673AbXKGXHk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 18:07:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759299AbXKGXHP
+	id S1759479AbXKGXLR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 18:11:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbXKGXLI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 18:07:15 -0500
-Received: from mtl.rackplans.net ([69.90.0.18]:40831 "EHLO mtl.rackplans.net"
+	Wed, 7 Nov 2007 18:11:08 -0500
+Received: from main.gmane.org ([80.91.229.2]:45561 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759262AbXKGXHN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 18:07:13 -0500
-X-Greylist: delayed 1651 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Nov 2007 18:07:13 EST
-Date: Wed, 7 Nov 2007 17:39:41 -0500 (EST)
-From: Gerhard Mack <gmack@innerfire.net>
-X-X-Sender: gmack@mtl.rackplans.net
+	id S1753025AbXKGXLG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 18:11:06 -0500
+X-Injected-Via-Gmane: http://gmane.org/
 To: linux-kernel@vger.kernel.org
-Subject: 2.6.24-rc2 breaks nVidia MCP51 High Definition Audio 
-Message-ID: <alpine.DEB.0.999.0711071737030.552@mtl.rackplans.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+From: ciol <ciol13@gmail.com>
+Subject: Re: [poll] Is the megafreeze development model broken?
+Date: Thu, 08 Nov 2007 00:11:42 +0100
+Message-ID: <fgtglu$kfn$1@ger.gmane.org>
+References: <fgtfqa$h9j$1@ger.gmane.org> <20071107180607.11dcc25b@bree.surriel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 91.164.115.245
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070622)
+In-Reply-To: <20071107180607.11dcc25b@bree.surriel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hello,
+Rik van Riel wrote:
+> On Wed, 07 Nov 2007 23:56:57 +0100
+> ciol <ciol13@gmail.com> wrote:
+> 
+>> * Wouldn't you prefer they ...
+> 
+> http://en.wikipedia.org/wiki/Push_poll
+> 
 
-This worked fine in 2.6.23 but now the kernel no longer sees my audio 
-controller.
+http://en.wikipedia.org/wiki/Paranoia
 
-00:10.1 Audio device: nVidia Corporation MCP51 High Definition Audio (rev 
-a2)
-00:10.1 0403: 10de:026c (rev a2)
-
-Let me know if I can provide more info or test patches.
-
-	Gerhard
-
---
-Gerhard Mack
-
-gmack@innerfire.net
-
-<>< As a computer I find your faith in technology amusing.
