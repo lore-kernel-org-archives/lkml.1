@@ -1,124 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753788AbXKGKWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754253AbXKGK0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753788AbXKGKWo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 05:22:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbXKGKWh
+	id S1754253AbXKGK0e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 05:26:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbXKGK0Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 05:22:37 -0500
-Received: from lazybastard.de ([212.112.238.170]:40496 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752064AbXKGKWg (ORCPT
+	Wed, 7 Nov 2007 05:26:24 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35840
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751382AbXKGK0X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 05:22:36 -0500
-Date: Wed, 7 Nov 2007 11:17:48 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundatin.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Mel Gorman <mel@skynet.ie>
-Subject: Re: [patch 14/23] inodes: Support generic defragmentation
-Message-ID: <20071107101748.GC7374@lazybastard.org>
-References: <20071107011130.382244340@sgi.com> <20071107011229.893091119@sgi.com>
+	Wed, 7 Nov 2007 05:26:23 -0500
+Date: Wed, 07 Nov 2007 02:26:22 -0800 (PST)
+Message-Id: <20071107.022622.105062875.davem@davemloft.net>
+To: bunk@kernel.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] remove Documentation/networking/Configurable
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071105170510.GR12045@stusta.de>
+References: <20071105170510.GR12045@stusta.de>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20071107011229.893091119@sgi.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 November 2007 17:11:44 -0800, Christoph Lameter wrote:
->  
-> +void *get_inodes(struct kmem_cache *s, int nr, void **v)
-> +{
-> +	int i;
-> +
-> +	spin_lock(&inode_lock);
-> +	for (i = 0; i < nr; i++) {
-> +		struct inode *inode = v[i];
-> +
-> +		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE))
-> +			v[i] = NULL;
-> +		else
-> +			__iget(inode);
-> +	}
-> +	spin_unlock(&inode_lock);
-> +	return NULL;
-> +}
-> +EXPORT_SYMBOL(get_inodes);
+From: Adrian Bunk <bunk@kernel.org>
+Date: Mon, 5 Nov 2007 18:05:11 +0100
 
-What purpose does the return type have?
+> After more than 11 years this file does no longer contain much useful 
+> information.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-> +/*
-> + * Function for filesystems that embedd struct inode into their own
-> + * structures. The offset is the offset of the struct inode in the fs inode.
-> + */
-> +void *fs_get_inodes(struct kmem_cache *s, int nr, void **v,
-> +						unsigned long offset)
-> +{
-> +	int i;
-> +
-> +	for (i = 0; i < nr; i++)
-> +		v[i] += offset;
-> +
-> +	return get_inodes(s, nr, v);
-> +}
-> +EXPORT_SYMBOL(fs_get_inodes);
-
-The fact that all pointers get changed makes me a bit uneasy:
-	struct foo_inode v[20];
-	...
-	fs_get_inodes(..., v, ...);
-	...
-	v[0].foo_field = bar;
-	
-No warning, but spectacular fireworks.
-
-> +void kick_inodes(struct kmem_cache *s, int nr, void **v, void *private)
-> +{
-> +	struct inode *inode;
-> +	int i;
-> +	int abort = 0;
-> +	LIST_HEAD(freeable);
-> +	struct super_block *sb;
-> +
-> +	for (i = 0; i < nr; i++) {
-> +		inode = v[i];
-> +		if (!inode)
-> +			continue;
-
-NULL is legal here?  Then fs_get_inodes should check for NULL as well
-and not add the offset to NULL pointers, I guess.
-
-> +		if (inode_has_buffers(inode) || inode->i_data.nrpages) {
-> +			if (remove_inode_buffers(inode))
-> +				invalidate_mapping_pages(&inode->i_data,
-> +								0, -1);
-
-This linebreak can be removed.
-
-> +		}
-> +
-> +		/* Invalidate children and dentry */
-> +		if (S_ISDIR(inode->i_mode)) {
-> +			struct dentry *d = d_find_alias(inode);
-> +
-> +			if (d) {
-> +				d_invalidate(d);
-> +				dput(d);
-> +			}
-> +		}
-> +
-> +		if (inode->i_state & I_DIRTY)
-> +			write_inode_now(inode, 1);
-
-Once more the three-bit I_DIRTY is used like a boolean value.  I don't
-hold it against you, specifically.  A general review/cleanup is
-necessary for that.
-
-Jörn
-
--- 
-"[One] doesn't need to know [...] how to cause a headache in order
-to take an aspirin."
--- Scott Culp, Manager of the Microsoft Security Response Center, 2001
+Applied.
