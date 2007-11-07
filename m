@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758090AbXKGSaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759422AbXKGSak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758090AbXKGSaZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 13:30:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbXKGSaN
+	id S1759422AbXKGSak (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 13:30:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758777AbXKGSa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 13:30:13 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53128 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753262AbXKGSaL (ORCPT
+	Wed, 7 Nov 2007 13:30:27 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:39223 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758341AbXKGSa0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 13:30:11 -0500
-Date: Wed, 7 Nov 2007 10:30:10 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Johannes Weiner <hannes-kernel@saeurebad.de>
-cc: akpm@linux-foundatin.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Mel Gorman <mel@skynet.ie>
-Subject: Re: [patch 07/23] SLUB: Add defrag_ratio field and sysfs support.
-In-Reply-To: <20071107085545.GB6243@cataract>
-Message-ID: <Pine.LNX.4.64.0711071030040.9857@schroedinger.engr.sgi.com>
-References: <20071107011130.382244340@sgi.com> <20071107011228.102370371@sgi.com>
- <20071107085545.GB6243@cataract>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 7 Nov 2007 13:30:26 -0500
+Date: Wed, 7 Nov 2007 13:30:01 -0500
+Message-Id: <200711071830.lA7IU1Di023742@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Paul Albrecht <albrecht@rdi1.com>
+Cc: David Howells <dhowells@redhat.com>, Erez Zadok <ezk@cs.sunysb.edu>,
+       akpm@linux-foundation.org, unionfs@filesystems.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Unionfs] Re: [PATCH] IGET: Stop UnionFS from using iget() and read_inode() 
+In-reply-to: Your message of "Wed, 07 Nov 2007 09:14:27 CST."
+             <1194448467.3140.6.camel@albrecht.rdi1.com> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Nov 2007, Johannes Weiner wrote:
-
-> Hi Christoph,
+In message <1194448467.3140.6.camel@albrecht.rdi1.com>, Paul Albrecht writes:
+> On Wed, 2007-11-07 at 15:04 +0000, David Howells wrote:
+> > Paul Albrecht <albrecht@rdi1.com> wrote:
+> > 
+> > > Does your test set include readahead-list? I can't get it to work with a
+> > > union mounted filesystem without segfault'ing and kernel oops'ing.
+> > 
+> > Is that with or without this patch?
 > 
-> On Tue, Nov 06, 2007 at 05:11:37PM -0800, Christoph Lameter wrote:
-> > --- linux-2.6.orig/include/linux/slub_def.h	2007-11-06 12:36:28.000000000 -0800
-> > +++ linux-2.6/include/linux/slub_def.h	2007-11-06 12:37:44.000000000 -0800
-> > @@ -53,6 +53,13 @@ struct kmem_cache {
-> >  	void (*ctor)(struct kmem_cache *, void *);
-> >  	int inuse;		/* Offset to metadata */
-> >  	int align;		/* Alignment */
-> > +	int defrag_ratio;	/*
-> > +				 * objects/possible-objects limit. If we have
-> > +				 * less that the specified percentage of
+> Without ... what's the difference? I asked a specific question about the
+> test set that was used to validate unionfs and your fix.  
 > 
-> That should be `less than', I guess.
+> Paul Albrecht
 
-Correct.
+Paul,
 
+I'll check out the readahead stuff shortly.  I doubt the iget patch has
+anything to do with it.
+
+Cheers,
+Erez.
