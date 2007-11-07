@@ -1,125 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755889AbXKGFA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbXKGFG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755889AbXKGFA6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 00:00:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750698AbXKGFAu
+	id S1755913AbXKGFG3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 00:06:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750745AbXKGFGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 00:00:50 -0500
-Received: from lessem.org ([206.124.10.8]:36912 "EHLO shiner.lessem.org"
+	Wed, 7 Nov 2007 00:06:21 -0500
+Received: from lixom.net ([66.141.50.11]:39421 "EHLO mail.lixom.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750695AbXKGFAt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 00:00:49 -0500
-Message-ID: <47314653.80905@Lessem.org>
-Date: Tue, 06 Nov 2007 22:00:03 -0700
-From: Jeff Lessem <Jeff@Lessem.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+	id S1750698AbXKGFGU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 00:06:20 -0500
+Date: Tue, 6 Nov 2007 23:15:40 -0600
+From: Olof Johansson <olof@lixom.net>
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] fat: silence warning for 64KB PAGE_SIZE builds
+Message-ID: <20071107051540.GB24266@lixom.net>
 MIME-Version: 1.0
-To: Dan Williams <dan.j.williams@intel.com>
-CC: =?UTF-8?B?QkVSVFJBTkQgSm/Dq2w=?= <joel.bertrand@systella.fr>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>, Neil Brown <neilb@suse.de>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: 2.6.23.1: mdadm/raid5 hung/d-state
-References: <Pine.LNX.4.64.0711040658180.30831@p34.internal.lan>	 <18222.16003.92062.970530@notabene.brown>	 <Pine.LNX.4.64.0711041651250.23496@p34.internal.lan>	 <e9c3a7c20711051035m78ba90ck68f4fbc10480462a@mail.gmail.com>	 <Pine.LNX.4.64.0711051335450.11422@p34.internal.lan>	 <e9c3a7c20711051619u7054aab9l208b604b9e58fb61@mail.gmail.com>	 <47303FB8.7000801@systella.fr> <1194398700.2970.18.camel@dwillia2-linux.ch.intel.com>
-In-Reply-To: <1194398700.2970.18.camel@dwillia2-linux.ch.intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (shiner.lessem.org [192.168.169.3]); Tue, 06 Nov 2007 22:00:21 -0700 (MST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Williams wrote:
- > The following patch, also attached, cleans up cases where the code looks
- > at sh->ops.pending when it should be looking at the consistent
- > stack-based snapshot of the operations flags.
+Annoying gcc warning:
 
-I tried this patch (against a stock 2.6.23), and it did not work for
-me.  Not only did I/O to the effected RAID5 & XFS partition stop, but
-also I/O to all other disks.  I was not able to capture any debugging
-information, but I should be able to do that tomorrow when I can hook
-a serial console to the machine.
+fs/fat/inode.c: In function 'fat_fill_super':
+fs/fat/inode.c:1222: warning: comparison is always false due to limited range of data type
 
-I'm not sure if my problem is identical to these others, as mine only
-seems to manifest with RAID5+XFS.  The RAID rebuilds with no problem,
-and I've not had any problems with RAID5+ext3.
+logical_sector_size can never be more than 16 bits worth, but switching
+it to an int silences gcc. It's a sanity check that can never fail with
+64KB PAGE_SIZE but it seems like it'd still be useful for other page
+sizes, so it's worth keeping:
 
- >
- >
- > ---
- >
- >  drivers/md/raid5.c |   16 +++++++++-------
- >  1 files changed, 9 insertions(+), 7 deletions(-)
- >
- > diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
- > index 496b9a3..e1a3942 100644
- > --- a/drivers/md/raid5.c
- > +++ b/drivers/md/raid5.c
- > @@ -693,7 +693,8 @@ ops_run_prexor(struct stripe_head *sh, struct 
-dma_async_tx_descriptor *tx)
- >  }
- >
- >  static struct dma_async_tx_descriptor *
- > -ops_run_biodrain(struct stripe_head *sh, struct dma_async_tx_descriptor *tx)
- > +ops_run_biodrain(struct stripe_head *sh, struct dma_async_tx_descriptor *tx,
- > +		 unsigned long pending)
- >  {
- >  	int disks = sh->disks;
- >  	int pd_idx = sh->pd_idx, i;
- > @@ -701,7 +702,7 @@ ops_run_biodrain(struct stripe_head *sh, struct 
-dma_async_tx_descriptor *tx)
- >  	/* check if prexor is active which means only process blocks
- >  	 * that are part of a read-modify-write (Wantprexor)
- >  	 */
- > -	int prexor = test_bit(STRIPE_OP_PREXOR, &sh->ops.pending);
- > +	int prexor = test_bit(STRIPE_OP_PREXOR, &pending);
- >
- >  	pr_debug("%s: stripe %llu\n", __FUNCTION__,
- >  		(unsigned long long)sh->sector);
- > @@ -778,7 +779,8 @@ static void ops_complete_write(void *stripe_head_ref)
- >  }
- >
- >  static void
- > -ops_run_postxor(struct stripe_head *sh, struct dma_async_tx_descriptor *tx)
- > +ops_run_postxor(struct stripe_head *sh, struct dma_async_tx_descriptor *tx,
- > +		unsigned long pending)
- >  {
- >  	/* kernel stack size limits the total number of disks */
- >  	int disks = sh->disks;
- > @@ -786,7 +788,7 @@ ops_run_postxor(struct stripe_head *sh, struct 
-dma_async_tx_descriptor *tx)
- >
- >  	int count = 0, pd_idx = sh->pd_idx, i;
- >  	struct page *xor_dest;
- > -	int prexor = test_bit(STRIPE_OP_PREXOR, &sh->ops.pending);
- > +	int prexor = test_bit(STRIPE_OP_PREXOR, &pending);
- >  	unsigned long flags;
- >  	dma_async_tx_callback callback;
- >
- > @@ -813,7 +815,7 @@ ops_run_postxor(struct stripe_head *sh, struct 
-dma_async_tx_descriptor *tx)
- >  	}
- >
- >  	/* check whether this postxor is part of a write */
- > -	callback = test_bit(STRIPE_OP_BIODRAIN, &sh->ops.pending) ?
- > +	callback = test_bit(STRIPE_OP_BIODRAIN, &pending) ?
- >  		ops_complete_write : ops_complete_postxor;
- >
- >  	/* 1/ if we prexor'd then the dest is reused as a source
- > @@ -901,12 +903,12 @@ static void raid5_run_ops(struct stripe_head *sh, 
-unsigned long pending)
- >  		tx = ops_run_prexor(sh, tx);
- >
- >  	if (test_bit(STRIPE_OP_BIODRAIN, &pending)) {
- > -		tx = ops_run_biodrain(sh, tx);
- > +		tx = ops_run_biodrain(sh, tx, pending);
- >  		overlap_clear++;
- >  	}
- >
- >  	if (test_bit(STRIPE_OP_POSTXOR, &pending))
- > -		ops_run_postxor(sh, tx);
- > +		ops_run_postxor(sh, tx, pending);
- >
- >  	if (test_bit(STRIPE_OP_CHECK, &pending))
- >  		ops_run_check(sh);
- >
- >
+        if (!is_power_of_2(logical_sector_size)
+            || (logical_sector_size < 512)
+            || (PAGE_CACHE_SIZE < logical_sector_size)) {
+                if (!silent)
+                        printk(KERN_ERR "FAT: bogus logical sector size %u\n",
+                               logical_sector_size);
+                brelse(bh);
+                goto out_invalid;
+        }
 
+
+Signed-off-by: Olof Johansson <olof@lixom.net>
+
+diff --git a/fs/fat/inode.c b/fs/fat/inode.c
+index 920a576..6aae680 100644
+--- a/fs/fat/inode.c
++++ b/fs/fat/inode.c
+@@ -1158,7 +1158,7 @@ int fat_fill_super(struct super_block *sb, void *data, int silent,
+ 	struct buffer_head *bh;
+ 	struct fat_boot_sector *b;
+ 	struct msdos_sb_info *sbi;
+-	u16 logical_sector_size;
++	int logical_sector_size;
+ 	u32 total_sectors, total_clusters, fat_clusters, rootdir_sectors;
+ 	int debug;
+ 	unsigned int media;
