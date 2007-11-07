@@ -1,67 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759375AbXKGOyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758712AbXKGPDA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759375AbXKGOyX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 09:54:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759184AbXKGOyN
+	id S1758712AbXKGPDA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 10:03:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbXKGPCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 09:54:13 -0500
-Received: from styx.suse.cz ([82.119.242.94]:44172 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759158AbXKGOyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 09:54:11 -0500
-Date: Wed, 7 Nov 2007 15:54:10 +0100
-From: Jan Kara <jack@suse.cz>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: [RFC] [PATCH 3/3] Recursive mtime for ext3
-Message-ID: <20071107145410.GE22214@duck.suse.cz>
-References: <20071106171537.GD23689@duck.suse.cz> <20071106171945.GG23689@duck.suse.cz> <20071106180100.GJ8181@ftp.linux.org.uk>
+	Wed, 7 Nov 2007 10:02:53 -0500
+Received: from mail.parknet.ad.jp ([210.171.162.6]:55940 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753696AbXKGPCw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 10:02:52 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Olof Johansson <olof@lixom.net>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] fat: silence warning for 64KB PAGE_SIZE builds
+References: <20071107051540.GB24266@lixom.net>
+	<87prymqfwa.fsf@duaron.myhome.or.jp> <20071107150120.GA2677@lixom.net>
+Date: Thu, 08 Nov 2007 00:02:48 +0900
+In-Reply-To: <20071107150120.GA2677@lixom.net> (Olof Johansson's message of
+	"Wed, 7 Nov 2007 09:01:20 -0600")
+Message-ID: <87d4umqesn.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071106180100.GJ8181@ftp.linux.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 06-11-07 18:01:00, Al Viro wrote:
-> On Tue, Nov 06, 2007 at 06:19:45PM +0100, Jan Kara wrote:
-> > Implement recursive mtime (rtime) feature for ext3. The feature works as
-> > follows: In each directory we keep a flag EXT3_RTIME_FL (modifiable by a user)
-> > whether rtime should be updated. In case a directory or a file in it is
-> > modified and when the flag is set, directory's rtime is updated, the flag is
-> > cleared, and we move to the parent. If the flag is set there, we clear it,
-> > update rtime and continue upwards upto the root of the filesystem. In case a
-> > regular file or symlink is modified, we pick arbitrary of its parents (actually
-> > the one that happens to be at the head of i_dentry list) and start the rtime
-> > update algorith there.
-> 
-> *ewwww*
-> 
-> Nothing like undeterministic behaviour, is there?
-  Oh yes, there is :) But I tried to argue it does not really matter -
-application would have to handle hardlinks in a special way but I find that
-acceptable given how rare they are...
+Olof Johansson <olof@lixom.net> writes:
 
-> > Intended use case is that application which wants to watch any modification in
-> > a subtree scans the subtree and sets flags for all inodes there. Next time, it
-> > just needs to recurse in directories having rtime newer than the start of the
-> > previous scan. There it can handle modifications and set the flag again. It is
-> > up to application to watch out for hardlinked files. It can e.g.  build their
-> > list and check their mtime separately (when a hardlink to a file is created its
-> > inode is modified and rtimes properly updated and thus any application has an
-> > effective way of finding new hardlinked files).
-> 
-> You know, you can do that with aush^H^Hdit right now...
-  Interesting idea, no I have not thought about this. I guess you mean
-watching all the VFS modification events and then do the checking and propagation
-from user space... My first feeling is that the performance penalty would be
-considerably higher (currently I am at 1% performance penalty for quite
-pessimistic test case) but in case the current patch would be considered
-unacceptable, I can try how large the penalty would be. Thanks for
-suggestion.
+> Annoying gcc warning:
+>
+> fs/fat/inode.c: In function 'fat_fill_super':
+> fs/fat/inode.c:1222: warning: comparison is always false due to limited range of data type
+>
+> Change it to compare with 4K instead of PAGE_CACHE_SIZE, as suggested
+> by OGAWA-san.
+>
+>
+> Signed-off-by: Olof Johansson <olof@lixom.net>
+>
+> ---
+>
+> On Wed, Nov 07, 2007 at 11:39:01PM +0900, OGAWA Hirofumi wrote:
+>> Olof Johansson <olof@lixom.net> writes:
+>> 
+>> > logical_sector_size can never be more than 16 bits worth, but switching
+>> > it to an int silences gcc. It's a sanity check that can never fail with
+>> > 64KB PAGE_SIZE but it seems like it'd still be useful for other page
+>> > sizes, so it's worth keeping:
+> [...]
+>> 
+>> Please use 4096 instead of allowing it, at least for now.
+>
+> Sure. New patch.
+>
+>
+> Thanks,
+>
+> -Olof
+>
+> diff --git a/fs/fat/inode.c b/fs/fat/inode.c
+> index 920a576..61e2874 100644
+> --- a/fs/fat/inode.c
+> +++ b/fs/fat/inode.c
+> @@ -1219,7 +1219,7 @@ int fat_fill_super(struct super_block *sb, void *data, int silent,
+>  		le16_to_cpu(get_unaligned((__le16 *)&b->sector_size));
+>  	if (!is_power_of_2(logical_sector_size)
+>  	    || (logical_sector_size < 512)
+> -	    || (PAGE_CACHE_SIZE < logical_sector_size)) {
+> +	    || (logical_sector_size > 4096)) {
+>  		if (!silent)
+>  			printk(KERN_ERR "FAT: bogus logical sector size %u\n",
+>  			       logical_sector_size);
 
-									Honza
+Acked-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+
+Thanks a lot.
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
