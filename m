@@ -1,87 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757897AbXKGJDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757454AbXKGJNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757897AbXKGJDb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 04:03:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756319AbXKGJDM
+	id S1757454AbXKGJNW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 04:13:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbXKGJNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 04:03:12 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:46333 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753122AbXKGJDL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 04:03:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=GC5pwjgbNa0XU8oU1yH6ETDdPRi2tpeIOxBa6vOQ2bNMjE6hMLhmm2/y+uUPTB5KKDeb+nQ2AJloyj/XawNWzuEwGe+GpAIOGb36lXPcBpCLHy8BzhjenJ9LUxLVqv53fZ0RE7t1fRsK4RKYWg2HlcMuIG0jy14Tus9qwaRgemw=
-Message-ID: <47317F4B.1070405@gmail.com>
-Date: Wed, 07 Nov 2007 10:03:07 +0100
-From: Jiri Olsa <olsajiri@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Wed, 7 Nov 2007 04:13:10 -0500
+Received: from koto.vergenet.net ([210.128.90.7]:50840 "EHLO koto.vergenet.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750745AbXKGJNI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 04:13:08 -0500
+Date: Wed, 7 Nov 2007 18:13:04 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Luming Yu <luming.yu@gmail.com>
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Yu Luming <luming.yu@intel.com>, David Miller <davem@davemloft.net>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@linux.intel.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [patch] ia64: remove per_cpu_offset()
+Message-ID: <20071107091302.GA3795@verge.net.au>
+References: <20071107064627.GD3571@verge.net.au> <3877989d0711062255r45bdd437ic115fc52d064c59b@mail.gmail.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kernel: Removing duplicit #includes
-References: <473178B5.6090405@gmail.com>
-In-Reply-To: <473178B5.6090405@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3877989d0711062255r45bdd437ic115fc52d064c59b@mail.gmail.com>
+User-Agent: mutt-ng/devel-r804 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sorry, the patch is mangled, I will resend another 
+On Wed, Nov 07, 2007 at 02:55:24PM +0800, Luming Yu wrote:
+> NAK for now.
+> 
+> I'm trying to add lockdep , so please don't delete it until it could
+> be proved really useless...
+> Please don't hurry...
 
-Jiri Olsa wrote:
-> Removing duplicit #includes for kernel/
-> Signed-off-by: Jiri Olsa <olsajiri@gmail.com>
-> ---
-> kernel/printk.c  |    1 -
-> kernel/profile.c |    2 --
-> kernel/sysctl.c  |    1 -
-> 3 files changed, 0 insertions(+), 4 deletions(-)
-> 
-> diff --git a/kernel/printk.c b/kernel/printk.c
-> index a30fe33..3f06748 100644
-> --- a/kernel/printk.c
-> +++ b/kernel/printk.c
-> @@ -32,7 +32,6 @@
-> #include <linux/security.h>
-> #include <linux/bootmem.h>
-> #include <linux/syscalls.h>
-> -#include <linux/jiffies.h>
-> 
-> #include <asm/uaccess.h>
-> 
-> diff --git a/kernel/profile.c b/kernel/profile.c
-> index 5e95330..92b71ea 100644
-> --- a/kernel/profile.c
-> +++ b/kernel/profile.c
-> @@ -20,7 +20,6 @@
-> #include <linux/mm.h>
-> #include <linux/cpumask.h>
-> #include <linux/cpu.h>
-> -#include <linux/profile.h>
-> #include <linux/highmem.h>
-> #include <linux/mutex.h>
-> #include <asm/sections.h>
-> @@ -425,7 +424,6 @@ void profile_tick(int type)
-> #ifdef CONFIG_PROC_FS
-> #include <linux/proc_fs.h>
-> #include <asm/uaccess.h>
-> -#include <asm/ptrace.h>
-> 
-> static int prof_cpu_mask_read_proc (char *page, char **start, off_t off,
->                        int count, int *eof, void *data)
-> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-> index 3b4efbe..5aec15e 100644
-> --- a/kernel/sysctl.c
-> +++ b/kernel/sysctl.c
-> @@ -37,7 +37,6 @@
-> #include <linux/highuid.h>
-> #include <linux/writeback.h>
-> #include <linux/hugetlb.h>
-> -#include <linux/security.h>
-> #include <linux/initrd.h>
-> #include <linux/times.h>
-> #include <linux/limits.h>
-> 
+Ok, in that case I Re-ack your typo fix patch.
+Sorry for the noise.
+
+-- 
+Horms
+  H: http://www.vergenet.net/~horms/
+  W: http://www.valinux.co.jp/en/
 
