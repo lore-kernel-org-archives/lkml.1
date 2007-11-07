@@ -1,75 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758134AbXKGJhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757919AbXKGJmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758134AbXKGJhr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 04:37:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755492AbXKGJhj
+	id S1757919AbXKGJmg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 04:42:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754884AbXKGJm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 04:37:39 -0500
-Received: from crystal.sipsolutions.net ([195.210.38.204]:37987 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755323AbXKGJhi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 04:37:38 -0500
-Subject: Re: 2.6.24-rc1-git15 Kernel build fails on powerpc - Unrecognized
-	opcode: `dssall'
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
-       sam@ravnborg.org, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20071106154439.GK5080@shadowen.org>
-References: <47304343.2010709@linux.vnet.ibm.com>
-	 <661de9470711060246s3040f68drf0a6310aeec4e1e8@mail.gmail.com>
-	 <1194346486.4066.13.camel@johannes.berg>
-	 <20071106.031001.189578769.davem@davemloft.net>
-	 <47304FE5.2010309@linux.vnet.ibm.com> <47306E9C.4090202@linux.vnet.ibm.com>
-	 <20071106154439.GK5080@shadowen.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-yyWM7j9Zq7eK+k39kw1Q"
-Date: Wed, 07 Nov 2007 10:38:43 +0100
-Message-Id: <1194428323.4055.3.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Wed, 7 Nov 2007 04:42:28 -0500
+Received: from nic2.axis.se ([193.13.178.10]:50027 "EHLO krynn.se.axis.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753246AbXKGJm2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 04:42:28 -0500
+Date: Wed, 7 Nov 2007 10:42:13 +0100
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Mikael Starvik <mikael.starvik@axis.com>,
+       Jesper Nilsson <jesper.nilsson@axis.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] CRISv10 Fix timer interrupt parameters
+Message-ID: <20071107094213.GA6347@axis.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix timer interrupt parameters for CRIS v10.
 
---=-yyWM7j9Zq7eK+k39kw1Q
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+- irq_handler_t only takes two arguments, use get_irq_regs to get
+  regs for profiling.
+- Call update_process_times.
+- Remove CVS tag.
 
+Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
+---
+ time.c |   11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
+diff --git a/arch/cris/arch-v10/kernel/time.c b/arch/cris/arch-v10/kernel/time.c
+index 575a14b..466e6b7 100644
+--- a/arch/cris/arch-v10/kernel/time.c
++++ b/arch/cris/arch-v10/kernel/time.c
+@@ -1,5 +1,4 @@
+-/* $Id: time.c,v 1.5 2004/09/29 06:12:46 starvik Exp $
+- *
++/*
+  *  linux/arch/cris/arch-v10/kernel/time.c
+  *
+  *  Copyright (C) 1991, 1992, 1995  Linus Torvalds
+@@ -20,6 +19,7 @@
+ #include <asm/io.h>
+ #include <asm/delay.h>
+ #include <asm/rtc.h>
++#include <asm/irq_regs.h>
+ 
+ /* define this if you need to use print_timestamp */
+ /* it will make jiffies at 96 hz instead of 100 hz though */
+@@ -201,8 +201,9 @@ static long last_rtc_update = 0;
+ extern void cris_do_profile(struct pt_regs *regs);
+ 
+ static inline irqreturn_t
+-timer_interrupt(int irq, void *dev_id, struct pt_regs *regs)
++timer_interrupt(int irq, void *dev_id)
+ {
++	struct pt_regs *regs = get_irq_regs();
+ 	/* acknowledge the timer irq */
+ 
+ #ifdef USE_CASCADE_TIMERS
+@@ -221,9 +222,11 @@ timer_interrupt(int irq, void *dev_id, struct pt_regs *regs)
+ #endif
+ 
+ 	/* reset watchdog otherwise it resets us! */
+-
+ 	reset_watchdog();
+ 	
++	/* Update statistics. */
++	update_process_times(user_mode(regs));
++
+ 	/* call the real timer interrupt handler */
+ 
+ 	do_timer(1);
 
-> So that sounds like a Kconfig problem then?  That HIBERATION requires
-> ALITIVEC and yet does not depend on it or set it.
-
-Yes. I'm guessing that it broke with Rafael's hibernation/suspend
-Kconfig changes but will take a look. I think it used to depend on
-powermac.
-
-johannes
-
---=-yyWM7j9Zq7eK+k39kw1Q
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUARzGHoqVg1VMiehFYAQJYNA/+Mx3H4kj3FC7hYVt24kvlgrUPQR7JnR7B
-9gBirtakOE3Zjq/GhQiX3z5JxYDMIjIeWkAZdPmZ2uIE+sqb6nzA+7gJcdq8/0vs
-QcJfwa0QZiQU3OCflFK/gTiNHNNLCVBDIOZgpIlwG7tWtNo1MJ/FFJltndkOnqpf
-gxnB5TDKRio4c6K7L9L6IQSZiLsPmHnbP/ez7r7i6JKq8EoKkm/ZXehaeVjU0DwE
-rM4ySRmsQhsMBMqLtymLy06AS8vSMfiZvFLZh54KTGo6kDbMqWf6lI/W6LtL59nD
-EBjTlNkML8xLGswEQTo/IWgUFdGO0vhfriqICM2zfbOi8NmQIwBLqOO6CfZOgXFV
-e6vO+vdrHOlyjTpwoXdfPoC68PNmdASappPIl5718kTRzJ78jcPkQhJJ0PxA382T
-SvFzDXjs6xPgOvWYDuVsqROkrzTAAzv6XlHul7KDi4yK4EvBMqbDZHeB7RAWeP+l
-ibLuyb7KjHTfSD5NOWgKJay2/mykqKYWW9SQhakN4Rw7v3NLpnKq9DNza3PJ7M5Y
-VN1S2FmIVpNiWjqdqD7SReKfigkOC+8JZp3SZvJYq2cC9TzA6mzBn7MQyQukJzr2
-aE5M+LEyaetvLFwjdrfkKN4ePH1m6NsdLB+LgyRDM8uXLt3IPwtSwcoS5Q3jy05x
-D/bTbZCUliM=
-=EVAc
------END PGP SIGNATURE-----
-
---=-yyWM7j9Zq7eK+k39kw1Q--
-
+/^JN - Jesper Nilsson
+--
+               Jesper Nilsson -- jesper.nilsson@axis.com
