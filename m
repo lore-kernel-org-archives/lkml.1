@@ -1,106 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758656AbXKGRbK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758572AbXKGRcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758656AbXKGRbK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 12:31:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757902AbXKGRaw
+	id S1758572AbXKGRcw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 12:32:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755312AbXKGRcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 12:30:52 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:36733 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757475AbXKGRav (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 12:30:51 -0500
-Message-ID: <4731F64A.7080309@us.ibm.com>
-Date: Wed, 07 Nov 2007 11:30:50 -0600
-From: Anthony Liguori <aliguori@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Wed, 7 Nov 2007 12:32:45 -0500
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:42688 "EHLO
+	outbound4-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755001AbXKGRcn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 12:32:43 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
+X-Server-Uuid: DF9F24A0-1A5C-40A5-8B0A-DEB676E72ECF
+Date: Wed, 7 Nov 2007 18:27:48 +0100
+From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: fix compile error if !CONFIG_ACPI
+Message-ID: <20071107172748.GA6229@alberich.amd.com>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Dor Laor <dor.laor@qumranet.com>, linux-kernel@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, lguest <lguest@ozlabs.org>
-Subject: Re: [PATCH] virtio config_ops refactoring
-References: <4730A8F3.6020008@us.ibm.com> <200711070957.44165.rusty__13109.5125260346$1194390035$gmane$org@rustcorp.com.au> <4730F351.5060006@us.ibm.com> <200711071704.09752.rusty@rustcorp.com.au>
-In-Reply-To: <200711071704.09752.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 07 Nov 2007 17:27:38.0344 (UTC)
+ FILETIME=[7E3C9E80:01C82163]
+X-WSS-ID: 6B2F2A4C07S1758381-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> After discussion with Anthony, the virtio config has been simplified.  We
-> lose some minor features (the virtio_net address must now be 6 bytes) but
-> it turns out to be a wash in terms of complexity, while simplifying PCI.
->   
+Following patch is against cleanup branch of the x86 tree.
 
-Hi Rusty,
-
-Thanks for posting this!  It's really simplified things for me.
-
-> -
->  /**
-> - * virtio_use_bit - helper to use a feature bit in a bitfield value.
-> - * @dev: the virtio device
-> - * @token: the token as returned from vdev->config->find().
-> - * @len: the length of the field.
-> - * @bitnum: the bit to test.
-> + * __virtio_config_val - get a single virtio config without feature check.
-> + * @vdev: the virtio device
-> + * @offset: the type to search for.
-> + * @val: a pointer to the value to fill in.
->   *
-> - * If handed a NULL token, it returns false, otherwise returns bit status.
-> - * If it's one, it sets the mirroring acknowledgement bit. */
-> -int virtio_use_bit(struct virtio_device *vdev,
-> -		   void *token, unsigned int len, unsigned int bitnum);
-> + * The value is endian-corrected and returned in v. */
-> +#define __virtio_config_val(vdev, offset, v) do {			\
-> +	BUILD_BUG_ON(sizeof(*(v)) != 1 && sizeof(*(v)) != 2		\
-> +		     && sizeof(*(v)) != 4 && sizeof(*(v)) != 8);	\
-> +	(vdev)->config->get((vdev), (offset), (v), sizeof(*(v)));	\
-> +	switch (sizeof(*(v))) {						\
-> +	case 2: le16_to_cpus((__u16 *) v); break;			\
-> +	case 4: le32_to_cpus((__u32 *) v); break;			\
-> +	case 8: le64_to_cpus((__u64 *) v); break;			\
-> +	}								\
-> +} while(0)
->   
-
-I would prefer that the virtio API not expose a little endian standard.  
-I'm currently converting config->get() ops to ioreadXX depending on the 
-size which already does the endianness conversion for me so this just 
-messes things up.  I think it's better to let the backend deal with 
-endianness since it's trivial to handle for both the PCI backend and the 
-lguest backend (lguest doesn't need to do any endianness conversion).
 
 Regards,
 
-Anthony Liguori
+Andreas
 
->  #endif /* __KERNEL__ */
->  #endif /* _LINUX_VIRTIO_CONFIG_H */
-> diff --git a/include/linux/virtio_net.h b/include/linux/virtio_net.h
-> index ae469ae..8bf1602 100644
-> --- a/include/linux/virtio_net.h
-> +++ b/include/linux/virtio_net.h
-> @@ -5,16 +5,16 @@
->  /* The ID for virtio_net */
->  #define VIRTIO_ID_NET	1
->
-> -/* The bitmap of config for virtio net */
-> -#define VIRTIO_CONFIG_NET_F	0x40
-> +/* The feature bitmap for virtio net */
->  #define VIRTIO_NET_F_NO_CSUM	0
->  #define VIRTIO_NET_F_TSO4	1
->  #define VIRTIO_NET_F_UFO	2
->  #define VIRTIO_NET_F_TSO4_ECN	3
->  #define VIRTIO_NET_F_TSO6	4
-> +#define VIRTIO_NET_F_MAC	5
->
-> -/* The config defining mac address. */
-> -#define VIRTIO_CONFIG_NET_MAC_F	0x41
-> +/* The config defining mac address (6 bytes) */
-> +#define VIRTIO_CONFIG_NET_MAC_F	0
->
->  /* This is the first element of the scatter-gather list.  If you don't
->   * specify GSO or CSUM features, you can simply ignore the header. */
->   
+--
+[PATCH] x86: fix compile error if !CONFIG_ACPI
+
+  arch/x86/kernel/setup_64.c: In setup_:
+  arch/x86/kernel/setup_64.c:412: error: implicit declaration of function early_
+  quirks
+
+Move declaration of early_quirks to the corresponding PCI header file.
+IMHO, this is where it really belongs to.
+
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ include/asm-x86/acpi_32.h |    2 --
+ include/asm-x86/acpi_64.h |    2 --
+ include/asm-x86/pci.h     |    1 +
+ 3 files changed, 1 insertions(+), 4 deletions(-)
+
+diff --git a/include/asm-x86/acpi_32.h b/include/asm-x86/acpi_32.h
+index 4f8730e..c8afeea 100644
+--- a/include/asm-x86/acpi_32.h
++++ b/include/asm-x86/acpi_32.h
+@@ -79,8 +79,6 @@ int __acpi_release_global_lock(unsigned int *lock);
+         :"=r"(n_hi), "=r"(n_lo)     \
+         :"0"(n_hi), "1"(n_lo))
+ 
+-extern void early_quirks(void);
+-
+ #ifdef CONFIG_ACPI
+ extern int acpi_lapic;
+ extern int acpi_ioapic;
+diff --git a/include/asm-x86/acpi_64.h b/include/asm-x86/acpi_64.h
+index e2f3411..58114ed 100644
+--- a/include/asm-x86/acpi_64.h
++++ b/include/asm-x86/acpi_64.h
+@@ -78,8 +78,6 @@ int __acpi_release_global_lock(unsigned int *lock);
+         :"=r"(n_hi), "=r"(n_lo)     \
+         :"0"(n_hi), "1"(n_lo))
+ 
+-extern void early_quirks(void);
+-
+ #ifdef CONFIG_ACPI
+ extern int acpi_lapic;
+ extern int acpi_ioapic;
+diff --git a/include/asm-x86/pci.h b/include/asm-x86/pci.h
+index e883619..7d011db 100644
+--- a/include/asm-x86/pci.h
++++ b/include/asm-x86/pci.h
+@@ -66,6 +66,7 @@ extern int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
+ 
+ 
+ #ifdef CONFIG_PCI
++extern void early_quirks(void);
+ static inline void pci_dma_burst_advice(struct pci_dev *pdev,
+ 					enum pci_dma_burst_strategy *strat,
+ 					unsigned long *strategy_parameter)
+-- 
+1.5.3.4
+
+
+
 
