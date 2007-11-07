@@ -1,73 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756778AbXKGUjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759018AbXKGUjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756778AbXKGUjk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 15:39:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbXKGUjc
+	id S1759018AbXKGUjy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 15:39:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758728AbXKGUjk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 15:39:32 -0500
-Received: from madara.hpl.hp.com ([192.6.19.124]:55148 "EHLO madara.hpl.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754123AbXKGUjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 15:39:31 -0500
-Date: Wed, 7 Nov 2007 12:39:22 -0800
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: Greg KH <greg@kroah.com>
-Cc: Andrew Morton <akpm@osdl.org>, perfmon@napali.hpl.hp.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix up perfmon to build on -mm
-Message-ID: <20071107203922.GB16046@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <20071107003454.GA13374@kroah.com> <20071107134255.GE14646@frankl.hpl.hp.com> <20071107174747.GA9918@kroah.com> <20071107175742.GJ14646@frankl.hpl.hp.com> <20071107195320.GA5823@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071107195320.GA5823@kroah.com>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+	Wed, 7 Nov 2007 15:39:40 -0500
+Received: from wx-out-0506.google.com ([66.249.82.239]:63259 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758688AbXKGUji (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 15:39:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=usl8KtHZ6l3QnDZ84PeICsM3QFMxHXNDEPeColi3dgAN6kMpPLNfhuwjNXXTc1FyF+cHBxWS+LKcJ9aSdQZ3xLLLG+Ck/KyqRcuL2OP/RT4Ow9oI2dJKw6QJDWCdCikG6brk6ZkvC20WqWve2UfKYHzF8hB+VzayCpux3wyBna0=
+Message-ID: <47322262.8000101@gmail.com>
+Date: Wed, 07 Nov 2007 15:38:58 -0500
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Avi Kivity <avi@qumranet.com>
+CC: Gregory Haskins <gregory.haskins.ml@gmail.com>,
+       Anthony Liguori <aliguori@us.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Dor Laor <dor.laor@qumranet.com>,
+       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: Use of virtio device IDs
+References: <4730A15A.6070001@us.ibm.com> <4730B753.2000901@us.ibm.com> <4731334A.6090405@gmail.com> <47314FBD.1070505@qumranet.com>
+In-Reply-To: <47314FBD.1070505@qumranet.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+From: Gregory Haskins <gregory.haskins.ml@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg,
-
-On Wed, Nov 07, 2007 at 11:53:20AM -0800, Greg KH wrote:
-> > > 
-> > > Do you want me to send you patches based on this tree to help clean up
-> > > the sysfs usage now that it's documented?
-> > > 
-> > Yes, send me the patches. But from what you were saying earlier it seems
-> > I would need an extra sysfs patches to make this compile. Is that particular
-> > patch already in Linus's tree?
+Avi Kivity wrote:
 > 
-> No, it's in my tree, and will be in the next -mm.  You will need a few
-> patches to get this to work, not just a single patch.
-> 
-Could you send them to me? if they are not too intrusive I could add them
-to my tree. Yet I don't want something to distant from Linus's tree which
-I pull from. My goal is to ensure that my tree still compiles and works.
+> I dislike strings.  They make it look as if you have a nice extensible
+> interface, where in reality you have a poorly documented interface which
+> leads to poor interoperability.
 
-> > > Also, a lot of your per-cpu sysfs files should probably move to debugfs
-> > > as they are for debugging only, right?  No need to clutter up sysfs with
-> > > them when only the very few perfmon developers would be needing access
-> > > to them.
-> > > 
-> > Yes, this is mostly debugging. If debugfs is meant for this, then I'll
-> > be happy to move this stuff over there. Is there some good example of how
-> > I could do that based on my current sysfs code?
-> 
-> There is documentation for debugfs in the kernel api document :)
-> 
-> And, there are many in-kernel users of debugfs, a grep for
-> "debugfs_create_" should show you some examples of how to use this.  If
-> you have any questions, please let me know.
-> 
-Ok, I'll look at that next.
+Its not really a full fledged interface, but rather just a simple id
+mechanism.  A decentralized id mechanism with less administrative burden.
 
-Thanks,
+On the flip side, a centralized namespace has the advantage of
+controlling collisions at the expense of administrative overhead.  After
+designing systems both ways in the past, I prefer to reduce the admin
+burden, but that is just me.
 
--- 
 
--Stephane
+> PCI means that you can reuse all of the platform's infrastructure for
+> irq allocation, discovery, device hotplug, and management.
+
+Its tempting to use, yes.  However, most of that infrastructure is
+completely inappropriate for a PV implementation, IMHO.  You are
+probably better off designing something that is PV specific instead of
+shoehorning it in to fit a different model (at least for the things I
+have in mind).  Its not a heck of a lot of code to write a pv-centric
+version of these facilities.
+
+> You can write it for new guests but backporting it to older guests will be a
+> huge task.
+> 
+> We will support non-pci for s390, but in order to support Windows and
+> older Linux PCI is necessary.
+
+I don't know if I would agree with "necessary".  "Easier" perhaps. ;) By
+definition once you are PV you are hypervisor aware.  Now its just a
+matter of plugging in the appropriate plumbing to bridge the hypervisor
+to the guest-os.  Some might be easier than others, sure.  But all
+should be extensible to a degree.
+
+But I digress.  I haven't really had much of a chance to follow the
+latest developments here as I have been lost in -rt land for a few
+months now.  But I know Anthony and Rusty are top-notch, so I'm sure you
+guys have it under control.  Hopefully, one day soon I will be able to
+join you guys again (perhaps to the KVM team's dismay ;).
+
+Regards,
+-Greg
+
+
