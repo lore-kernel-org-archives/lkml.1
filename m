@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbXKGDHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbXKGDKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756920AbXKGDHl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 22:07:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755339AbXKGDHR
+	id S1756856AbXKGDKb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 22:10:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754861AbXKGDKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 22:07:17 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37455 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755247AbXKGDHQ (ORCPT
+	Tue, 6 Nov 2007 22:10:23 -0500
+Received: from web36609.mail.mud.yahoo.com ([209.191.85.26]:46869 "HELO
+	web36609.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755002AbXKGDKW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 22:07:16 -0500
-Date: Tue, 6 Nov 2007 19:07:15 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Adrian Bunk <bunk@kernel.org>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Mel Gorman <mel@skynet.ie>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: [patch 09/23] SLUB: Add get() and kick() methods
-In-Reply-To: <20071107023709.GU26163@stusta.de>
-Message-ID: <Pine.LNX.4.64.0711061906290.5565@schroedinger.engr.sgi.com>
-References: <20071107011130.382244340@sgi.com> <20071107011228.605750914@sgi.com>
- <20071107023709.GU26163@stusta.de>
+	Tue, 6 Nov 2007 22:10:22 -0500
+X-YMail-OSG: w6CorLcVM1mtycZOFPhFlgdm4AiO92_hy0rNVBK4nMyk9aavezwlZa7RtKnEub8YiYMdb5mcag--
+X-RocketYMMF: rancidfat
+Date: Tue, 6 Nov 2007 19:10:21 -0800 (PST)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH] NetLabel: Introduce a new kernel configuration API for NetLabel - For 2.6.24-rc-git11 - Smack Version 10
+To: Joshua Brindle <method@manicmethod.com>, casey@schaufler-ca.com
+Cc: akpm@osdl.org, torvalds@osdl.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, paul.moore@hp.com
+In-Reply-To: <473119E6.7070904@manicmethod.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <570441.41117.qm@web36609.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Nov 2007, Adrian Bunk wrote:
 
-> A static inline dummy function for CONFIG_SLUB=n seems to be missing?
+--- Joshua Brindle <method@manicmethod.com> wrote:
 
-Correct. This patch is needed so that building with SLAB will work.
+> Joshua Brindle wrote:
+> > Casey Schaufler wrote:
+> >> From: Paul Moore <paul.moore@hp.com>
+> >>
+> >> Add a new set of configuration functions to the NetLabel/LSM API so that
+> >> LSMs can perform their own configuration of the NetLabel subsystem 
+> >> without
+> >> relying on assistance from userspace.
+> >>   
+> > I'm still not receiving the actual patch email on lsm (perhaps its too 
+> > long and should be split up..) so I'll just respond on this email. 
+> > Using the v10 patches on your website I'm still seeing strange 
+> > behavior where echo foo > /proc/self/attr/current changes the label of 
+> > every process on the system to foo (verified with both ps -AZ and cat 
+> > /proc/1/attr/current).
+> >
+> Actually I'm getting more strange behavior:
+> 
+> On terminal 1 I do:
+> echo foo > /proc/self/attr/current
+> then ps -AZ shows foo for every process
+> touch somefile; attr -S -g SMACK64 somefile says foo
+> 
+> On terminal 2 I do:
+> ps -AZ and everything shows up as _
+> cat /proc/$pid of bash on term 1/attr/current is _
+
+Now this I can explain. Every task has it's own correct
+label. The problem is a missing smack_getprocattr() hook.
+ps is getting the value for "current" on the current process,
+not that of the named process. Interestingly, the Smack label
+of /proc/<xxx>/attr/current is correct.
+
+So the fix is to put in the smack_getprocattr() hook.
+Easily accomplished. Thank you for the informative and
+helpful report.
 
 
-Slab defrag: Provide empty kmem_cache_setup_defrag function for SLAB.
-
-Provide an empty function to satisfy dependencies for Slab defrag.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>?
-
----
- mm/slab.c |    7 +++++++
- 1 file changed, 7 insertions(+)
-
-Index: linux-2.6/mm/slab.c
-===================================================================
---- linux-2.6.orig/mm/slab.c	2007-11-06 18:57:22.000000000 -0800
-+++ linux-2.6/mm/slab.c	2007-11-06 18:58:40.000000000 -0800
-@@ -2535,6 +2535,13 @@ static int __cache_shrink(struct kmem_ca
- 	return (ret ? 1 : 0);
- }
- 
-+void kmem_cache_setup_defrag(struct kmem_cache *s,
-+	void *(*get)(struct kmem_cache *, int nr, void **),
-+	void (*kick)(struct kmem_cache *, int nr, void **, void *private))
-+{
-+}
-+EXPORT_SYMBOL(kmem_cache_setup_defrag);
-+
- /**
-  * kmem_cache_shrink - Shrink a cache.
-  * @cachep: The cache to shrink.
+Casey Schaufler
+casey@schaufler-ca.com
