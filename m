@@ -1,80 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757865AbXKGIfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757987AbXKGIf5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757865AbXKGIfU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 03:35:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756700AbXKGIfI
+	id S1757987AbXKGIf5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 03:35:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756928AbXKGIfu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 03:35:08 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:6618 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756659AbXKGIfH (ORCPT
+	Wed, 7 Nov 2007 03:35:50 -0500
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:29196 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756935AbXKGIft (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 03:35:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
-        b=H7Ae/Rsx9g5qK6lvd2MDU8Cp3v0LLMgA3TqOzZFgSOiAtZVlb9n1J1OqnKHv134F2AyFxk7+PHspOB72/9jLiu+2W5dZ7J054/2evrKEbFUTW1AFOfyIcTtst5/Xt6ihhmY2iG7Hs+Zk0k/kT6dHr3/p69cML0yHkhH7x8X1MnM=
-Message-ID: <473178B5.6090405@gmail.com>
-Date: Wed, 07 Nov 2007 09:35:01 +0100
-From: Jiri Olsa <olsajiri@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Wed, 7 Nov 2007 03:35:49 -0500
+In-Reply-To: <20071106223119.GC31367@localhost.localdomain>
+References: <OF6FC435A0.F59C9AD9-ONC125738B.002A5195-C125738B.002A424A@de.ibm.com>	<200711061606.04402.hnguyen@linux.vnet.ibm.com> <20071106223119.GC31367@localhost.localdomain>
+Subject: Re: [ofa-general] Re: problem in follow_hugetlb_page on ppc64	architecture
+ with get_user_pages
+To: David Gibson <dwg@au1.ibm.com>
+Cc: general@lists.openfabrics.org, general-bounces@lists.openfabrics.org,
+       Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>,
+       Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Roland Dreier <rdreier@cisco.com>
+X-Mailer: Lotus Notes Release 8.0 August 02, 2007
+Message-ID: <OF5896F13F.53CE0380-ONC125738C.002C57D6-C125738C.002CB369@de.ibm.com>
+From: Christoph Raisch <RAISCH@de.ibm.com>
+Date: Wed, 7 Nov 2007 09:35:44 +0100
+X-MIMETrack: Serialize by Router on D12ML067/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
+ 07/11/2007 09:35:45
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] kernel: Removing duplicit #includes
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Removing duplicit #includes for kernel/
-Signed-off-by: Jiri Olsa <olsajiri@gmail.com>
----
- kernel/printk.c  |    1 -
- kernel/profile.c |    2 --
- kernel/sysctl.c  |    1 -
- 3 files changed, 0 insertions(+), 4 deletions(-)
 
-diff --git a/kernel/printk.c b/kernel/printk.c
-index a30fe33..3f06748 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -32,7 +32,6 @@
- #include <linux/security.h>
- #include <linux/bootmem.h>
- #include <linux/syscalls.h>
--#include <linux/jiffies.h>
- 
- #include <asm/uaccess.h>
- 
-diff --git a/kernel/profile.c b/kernel/profile.c
-index 5e95330..92b71ea 100644
---- a/kernel/profile.c
-+++ b/kernel/profile.c
-@@ -20,7 +20,6 @@
- #include <linux/mm.h>
- #include <linux/cpumask.h>
- #include <linux/cpu.h>
--#include <linux/profile.h>
- #include <linux/highmem.h>
- #include <linux/mutex.h>
- #include <asm/sections.h>
-@@ -425,7 +424,6 @@ void profile_tick(int type)
- #ifdef CONFIG_PROC_FS
- #include <linux/proc_fs.h>
- #include <asm/uaccess.h>
--#include <asm/ptrace.h>
- 
- static int prof_cpu_mask_read_proc (char *page, char **start, off_t off,
-                        int count, int *eof, void *data)
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 3b4efbe..5aec15e 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -37,7 +37,6 @@
- #include <linux/highuid.h>
- #include <linux/writeback.h>
- #include <linux/hugetlb.h>
--#include <linux/security.h>
- #include <linux/initrd.h>
- #include <linux/times.h>
- #include <linux/limits.h>
+general-bounces@lists.openfabrics.org wrote on 06.11.2007 23:31:19:
+
+
+> We should cut this down to the bare necessary and fold it into the
+> libhugetlbfs testsuite.
+
+Well, this testcase is already pretty close to the bare minimum
+what's needed to run IB/RDMA queues.
+You can compare this to for example ibv_rc_pingpong in libibverbs...
+
+Maybe it's possible to test this with anything else than IB?
+
+> --
+Gruss / Regards
+Christoph R
+
