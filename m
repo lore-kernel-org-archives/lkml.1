@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759922AbXKGWIY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759512AbXKGWLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759922AbXKGWIY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 17:08:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758984AbXKGWIJ
+	id S1759512AbXKGWLR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 17:11:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753831AbXKGWLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 17:08:09 -0500
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:43348 "EHLO
-	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758360AbXKGWII (ORCPT
+	Wed, 7 Nov 2007 17:11:06 -0500
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:56980 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751414AbXKGWLD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 17:08:08 -0500
-Date: Wed, 7 Nov 2007 23:08:03 +0100
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: cecco <f.cecco77@tiscali.it>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: r8169:  NFG in 2.6.24-rc2
-Message-ID: <20071107220803.GB15367@electric-eye.fr.zoreil.com>
-References: <4731E2AB.5080703@rtr.ca> <loom.20071107T205845-239@post.gmane.org>
+	Wed, 7 Nov 2007 17:11:03 -0500
+Date: Wed, 7 Nov 2007 17:10:07 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, mingo@elte.hu,
+       pwil3058@bigpond.net.au, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sched: avoid large irq-latencies in smp-balancing
+Message-ID: <20071107221007.GA31008@goodmis.org>
+References: <1194434956.6289.111.camel@twins> <1194437820.6289.114.camel@twins> <20071107102725.64514fde.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <loom.20071107T205845-239@post.gmane.org>
-X-Organisation: Land of Sunshine Inc.
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20071107102725.64514fde.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cecco <f.cecco77@tiscali.it> :
-[...]
-> I have a asus a6t with RTL8111/8168B 
-> PCI Express Gigabit and I have had a similar 
-> problem.
-> PCI-MSI-edge seems to break this ethernet card.
-> My card has stopped to work, I have powered off
-> my notebook for hours, but I am not been lucky, 
-> because it has showed up only one time and then in 
-> next reboot with kernel  2.6.23 is disappeared again
-> (in this kernel there is not problem with this 
-> ethernet card ).
+On Wed, Nov 07, 2007 at 10:27:25AM -0800, Andrew Morton wrote:
+> > On Wed, 07 Nov 2007 13:17:00 +0100 Peter Zijlstra <peterz@infradead.org> wrote:
+> > +	{
+> > +		.ctl_name	= CTL_UNNUMBERED,
+> > +		.procname	= "sched_nr_migrate",
+> > +		.data		= &sysctl_sched_nr_migrate,
+> > +		.maxlen		= sizeof(unsigned int),
+> > +		.mode		= 644,
+> > +		.proc_handler	= &proc_dointvec,
+> > +	},
+> 
+> This (and all the other stuff in that table) should be described in
+> Documentation/, please.
+> 
+> It would be nice if sched_nr_migrate didn't exist, really.  It's hard to
+> imagine anyone wanting to tweak it, apart from developers.
 
-Did you unplug the battery ?
+I'm not so sure about that. It is a tunable for RT. That is we can tweak
+this value to be smaller if we don't like the latencies it gives us.
 
--- 
-Ueimor
+This is one of those things that sacrifices performance for latency.
+The higher the number, the better it can spread tasks around, but it
+also causes large latencies.
+
+I've just included this patch into 2.6.23.1-rt11 and it brought down an
+unbounded latency to just 42us. (previously we got into the
+milliseconds!).
+
+Perhaps when this feature matures, we can come to a good defined value
+that would be good for all. But until then, I recommend keeping this a
+tunable.
+
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
+
+-- Steve
+
