@@ -1,98 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758970AbXKGWy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759364AbXKGWzN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758970AbXKGWy3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 17:54:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbXKGWyV
+	id S1759364AbXKGWzN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 17:55:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755237AbXKGWy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 17:54:21 -0500
-Received: from mcclure-nat.wal.novell.com ([130.57.22.22]:36015 "EHLO
-	mcclure.wal.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753057AbXKGWyU convert rfc822-to-8bit (ORCPT
+	Wed, 7 Nov 2007 17:54:58 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46430 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752816AbXKGWy5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 17:54:20 -0500
-Message-Id: <4731FB1B.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Wed, 07 Nov 2007 17:51:23 -0500
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>,
-       "LKML" <linux-kernel@vger.kernel.org>,
-       "RT" <linux-rt-users@vger.kernel.org>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: 2.6.23.1-rt9 (and others)
-References: <1194413959.8827.66.camel@localhost.localdomain>
- <Pine.LNX.4.58.0711071040210.8572@gandalf.stny.rr.com>
-In-Reply-To: <Pine.LNX.4.58.0711071040210.8572@gandalf.stny.rr.com>
+	Wed, 7 Nov 2007 17:54:57 -0500
+Date: Wed, 7 Nov 2007 22:54:53 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Mark Lord <liml@rtr.ca>
+Cc: Denys Fedoryshchenko <denys@visp.net.lb>,
+       James Andrewartha <jamesa@daa.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, htejun@gmail.com
+Subject: Re: SC1200 failure in 2.6.23 and 2.6.24-rc1-git10
+Message-ID: <20071107225453.34f8f340@the-village.bc.nu>
+In-Reply-To: <47323CAF.2030102@rtr.ca>
+References: <20071101213013.M54162@visp.net.lb>
+	<20071106221521.4f64a066.akpm@linux-foundation.org>
+	<20071107132630.M65286@visp.net.lb>
+	<4731D85E.70201@daa.com.au>
+	<20071107160426.M31617@visp.net.lb>
+	<47320E37.8010106@rtr.ca>
+	<20071107211932.M35475@visp.net.lb>
+	<47323CAF.2030102@rtr.ca>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Wed, Nov 7, 2007 at 10:41 AM, in message
-<Pine.LNX.4.58.0711071040210.8572@gandalf.stny.rr.com>, Steven Rostedt
-<rostedt@goodmis.org> wrote: 
-
+> CFA spec requires 848a in word[0], not 844a, which explains
+> why hdparm thought it might be ATAPI.  I've updated my hdparm
+> source to detect this for hdparm-7.8 (unreleased).
+> That card (16MB) is definitely buggy.
+> But your other (1GB) card looks fine.
 > 
-> So please compare -rt7, -rt8 and -rt10.
+> Thanks.  Somebody else may help with the libata issue.
 
-Here are my results from running:
+848A is the preferred configuration value
 
-sudo chrt -f 80 ./cyclictest -n -p 90 -t 8 -d 100 -i 100
+The use of 044A is also allowed in the case of it being non-removable.
+Guess someone got muddled up in the middle.
 
-with
+844A is a bit iffy and it should still be detectable as Word 83 bit 2
+should be set ?
 
-while true; do make mrproper; make allmodconfig; make -j 128 > /dev/null; done
- on a plain kernel.org kernel
 
-running in the background on an 8-way (4core x2) C2D Xeon 5335 system
+As to the old IDE (not libata ?) issue - I suspect a convertor without
+DMA support as a first guess.
 
-23.1-rt7
----------------------------
-
-  144.60 135.30 116.38 30/814 8184
-
-  T: 0 ( 5990) P:90 I:100 C:11560415 Min:2 Act:  5 Avg: 4 Max:  83
-  T: 1 ( 5991) P:89 I:200 C:5780208 Min: 2 Act:  5 Avg: 4 Max:  66
-  T: 2 ( 5992) P:88 I:300 C:3853472 Min: 2 Act:  5 Avg: 5 Max:  89
-  T: 3 ( 5993) P:87 I:400 C:2890104 Min: 2 Act:  6 Avg: 5 Max:  70
-  T: 4 ( 5994) P:86 I:500 C:2312083 Min: 2 Act:  4 Avg: 5 Max:  91
-  T: 5 ( 5995) P:85 I:600 C:1926736 Min: 2 Act:  5 Avg: 5 Max:  94
-  T: 6 ( 5996) P:84 I:700 C:1651488 Min: 2 Act: 12 Avg: 5 Max: 115
-  T: 7 ( 5997) P:83 I:800 C:1445052 Min: 2 Act:  6 Avg: 5 Max:  79
-
-23.1-rt8
----------------------------
-  119.95 106.56 107.98 37/811 18445
-
-  T: 0 ( 5052) P:90 I:100 C:29592746 Min: 2 Act: 21 Avg: 4 Max:  78
-  T: 1 ( 5053) P:89 I:200 C:14796374 Min: 2 Act:  6 Avg: 4 Max:  81
-  T: 2 ( 5054) P:88 I:300 C:9864249 Min:  2 Act: 10 Avg: 4 Max:  88
-  T: 3 ( 5055) P:87 I:400 C:7398187 Min:  2 Act:  6 Avg: 4 Max:  86
-  T: 4 ( 5056) P:86 I:500 C:5918550 Min:  2 Act: 13 Avg: 9 Max:  69
-  T: 5 ( 5057) P:85 I:600 C:4932125 Min:  2 Act: 11 Avg: 4 Max:  71
-  T: 6 ( 5058) P:84 I:700 C:4227536 Min:  2 Act:  8 Avg: 5 Max:  65
-  T: 7 ( 5059) P:83 I:800 C:3699094 Min:  2 Act:  4 Avg: 4 Max: 114
-
-23.1-rt10
----------------------------
-  143.39 123.49 117.92 22/791 5802
-
-  T: 0 ( 5305) P:90 I:100 C:45332860 Min: 2 Act:  4 Avg: 4 Max: 89
-  T: 1 ( 5306) P:89 I:200 C:22666431 Min: 2 Act:  3 Avg: 5 Max: 49
-  T: 2 ( 5307) P:88 I:300 C:15110954 Min: 2 Act:  6 Avg: 5 Max: 76
-  T: 3 ( 5308) P:87 I:400 C:11333216 Min: 2 Act:  7 Avg: 5 Max: 81
-  T: 4 ( 5309) P:86 I:500 C:9066572 Min:  2 Act:  8 Avg: 5 Max: 57
-  T: 5 ( 5310) P:85 I:600 C:7555477 Min:  2 Act:  8 Avg: 5 Max: 55
-  T: 6 ( 5311) P:84 I:700 C:6476123 Min:  2 Act: 14 Avg: 6 Max: 73
-  T: 7 ( 5312) P:83 I:800 C:5666608 Min:  2 Act:  5 Avg: 6 Max: 78
-
-note that the rt10 image was running for a much longer duration than the other two...which generally will push the max higher.  I know in general if I let -rt7 go that long it will hit 120-150+.  This means these tests were biased towards -rt7 and -rt8 performing better, but they still came in with higher latencies.
-
-I will officially test -rt11 next, tho in my small runs so far it looks great.
-
-HTH
-
-Regards,
--Greg
-
+Alan
