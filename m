@@ -1,101 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756093AbXKGBMn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756501AbXKGBM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756093AbXKGBMn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 20:12:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755176AbXKGBM2
+	id S1756501AbXKGBM5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 20:12:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755201AbXKGBM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 20:12:28 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33721 "EHLO
+	Tue, 6 Nov 2007 20:12:29 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33722 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755106AbXKGBM1 (ORCPT
+	with ESMTP id S1755110AbXKGBM1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 6 Nov 2007 20:12:27 -0500
-Message-Id: <20071107011130.382244340@sgi.com>
+Message-Id: <20071107011226.617922306@sgi.com>
+References: <20071107011130.382244340@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 06 Nov 2007 17:11:30 -0800
+Date: Tue, 06 Nov 2007 17:11:31 -0800
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundatin.org
 Cc: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org
 Cc: Mel Gorman <mel@skynet.ie>
-Subject: [patch 00/23] Slab defragmentation V6
+Subject: [patch 01/23] SLUB: Move count_partial()
+Content-Disposition: inline; filename=0002-slab_defrag_move_count_partial.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Slab defragmentation is mainly an issue if Linux is used as a fileserver
-and large amounts of dentries, inodes and buffer heads accumulate. In some
-load situations the slabs become very sparsely populated so that a lot of
-memory is wasted by slabs that only contain one or a few objects. In
-extreme cases the performance of a machine will become sluggish since
-we are continually running reclaim. Slab defragmentation adds the
-capability to recover wasted memory.
+Move the counting function for objects in partial slabs so that it is placed
+before kmem_cache_shrink. We will need to use it to establish the
+fragmentation ratio of per node slab lists.
 
-With lumpy reclaim slab defragmentation can be used to enhance the
-ability to recover larger contiguous areas of memory. Lumpy reclaim currently
-cannot do anything if a slab page is encountered. With slab defragmentation
-that slab page can be removed and a large contiguous page freed. It may
-be possible to have slab pages also part of ZONE_MOVABLE (Mel's defrag
-scheme in 2.6.23) or the MOVABLE areas (antifrag patches in mm).
+[This patch is already in mm]
 
-The patchset is also available via git
+Reviewed-by: Rik van Riel <riel@redhat.com>
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+---
+ mm/slub.c |   26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
 
-git pull git://git.kernel.org/pub/scm/linux/kernel/git/christoph/slab.git defrag
-
-
-Currently memory reclaim from the following slab caches is possible:
-
-1. dentry cache
-2. inode cache (with a generic interface to allow easy setup of more
-   filesystems than the currently supported ext2/3/4 reiserfs, XFS
-   and proc)
-3. buffer_heads
-
-One typical mechanism that triggers slab defragmentation on my systems
-is the daily run of
-
-	updatedb
-
-Updatedb scans all files on the system which causes a high inode and dentry
-use. After updatedb is complete we need to go back to the regular use
-patterns (typical on my machine: kernel compiles). Those need the memory now
-for different purposes. The inodes and dentries used for updatedb will
-gradually be aged by the dentry/inode reclaim algorithm which will free
-up the dentries and inode entries randomly through the slabs that were
-allocated. As a result the slabs will become sparsely populated. If they
-become empty then they can be freed but a lot of them will remain sparsely
-populated. That is where slab defrag comes in: It removes the slabs with
-just a few entries reclaiming more memory for other uses.
-
-V5->V6
-- Rediff against 2.6.24-rc2 + mm slub patches.
-- Add reviewed by lines.
-- Take out the experimental code to make slab pages movable. That
-  has to wait until this has been considered by Mel.
-
-V4->V5:
-- Support lumpy reclaim for slabs
-- Support reclaim via slab_shrink()
-- Add constructors to insure a consistent object state at all times.
-
-V3->V4:
-- Optimize scan for slabs that need defragmentation
-- Add /sys/slab/*/defrag_ratio to allow setting defrag limits
-  per slab.
-- Add support for buffer heads.
-- Describe how the cleanup after the daily updatedb can be
-  improved by slab defragmentation.
-
-V2->V3
-- Support directory reclaim
-- Add infrastructure to trigger defragmentation after slab shrinking if we
-  have slabs with a high degree of fragmentation.
-
-V1->V2
-- Clean up control flow using a state variable. Simplify API. Back to 2
-  functions that now take arrays of objects.
-- Inode defrag support for a set of filesystems
-- Fix up dentry defrag support to work on negative dentries by adding
-  a new dentry flag that indicates that a dentry is not in the process
-  of being freed or allocated.
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c	2007-11-06 12:34:13.000000000 -0800
++++ linux-2.6/mm/slub.c	2007-11-06 12:35:37.000000000 -0800
+@@ -2758,6 +2758,19 @@ void kfree(const void *x)
+ }
+ EXPORT_SYMBOL(kfree);
+ 
++static unsigned long count_partial(struct kmem_cache_node *n)
++{
++	unsigned long flags;
++	unsigned long x = 0;
++	struct page *page;
++
++	spin_lock_irqsave(&n->list_lock, flags);
++	list_for_each_entry(page, &n->partial, lru)
++		x += page->inuse;
++	spin_unlock_irqrestore(&n->list_lock, flags);
++	return x;
++}
++
+ /*
+  * kmem_cache_shrink removes empty slabs from the partial lists and sorts
+  * the remaining slabs by the number of items in use. The slabs with the
+@@ -3615,19 +3628,6 @@ static int list_locations(struct kmem_ca
+ 	return n;
+ }
+ 
+-static unsigned long count_partial(struct kmem_cache_node *n)
+-{
+-	unsigned long flags;
+-	unsigned long x = 0;
+-	struct page *page;
+-
+-	spin_lock_irqsave(&n->list_lock, flags);
+-	list_for_each_entry(page, &n->partial, lru)
+-		x += page->inuse;
+-	spin_unlock_irqrestore(&n->list_lock, flags);
+-	return x;
+-}
+-
+ enum slab_stat_type {
+ 	SL_FULL,
+ 	SL_PARTIAL,
 
 -- 
