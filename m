@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759248AbXKGRuI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759371AbXKGRuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759248AbXKGRuI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 12:50:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbXKGRt5
+	id S1759371AbXKGRuj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 12:50:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758098AbXKGRua
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 12:49:57 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:1404 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753102AbXKGRt4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 12:49:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=uTOxXC6ZC1mI/Cp/9xXldL3ORba4vwCRvzPEBOIdLCf9lWHqsvT4jA4Z6CeNSDea7BdanrsMV3Q0tweeprJ3DWrwcBj9+drMBtETKb0cgRcKLaOnqacVJZCRyWijYEZJ6gzfi7ufLnM2bksCP9qahsF6kXpnuLJaHkY1rqXH5xc=
-Message-ID: <86802c440711070949pc09d49ar36d0b9f32a506e20@mail.gmail.com>
-Date: Wed, 7 Nov 2007 09:49:55 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: pxeboot broken by commit "x86 setup: handle boot loaders which set up the stack incorrectly"
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200711070708.lA778VtP029664@terminus.zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Nov 2007 12:50:30 -0500
+Received: from madara.hpl.hp.com ([192.6.19.124]:62287 "EHLO madara.hpl.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758009AbXKGRu3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 12:50:29 -0500
+Date: Wed, 7 Nov 2007 09:50:21 -0800
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: Greg KH <greg@kroah.com>
+Cc: Andrew Morton <akpm@osdl.org>, perfmon@napali.hpl.hp.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix up perfmon to build on -mm
+Message-ID: <20071107175021.GI14646@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <20071107003454.GA13374@kroah.com> <20071107134255.GE14646@frankl.hpl.hp.com> <20071107170820.GB8358@kroah.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200711070708.lA778VtP029664@terminus.zytor.com>
+In-Reply-To: <20071107170820.GB8358@kroah.com>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 6, 2007 11:08 PM, H. Peter Anvin <hpa@zytor.com> wrote:
-> Ah, right - this was a longstanding bug in syslinux which was fixed in 3.50-pre7.  The workaround for abug in old LILO exposed a bug in old syslinux.  Joy.
->
-> --
-> Sent from my cellphone (pardon any lack of formatting)
->
->
-> -----Original Message-----
-> From: Yinghai Lu <yhlu.kernel@gmail.com>
-> Sent: Tuesday, November 06, 2007 20:12
-> To: H. Peter Anvin <hpa@zytor.com>
-> Subject: Re: pxeboot broken by commit "x86 setup: handle boot loaders which set up the stack incorrectly"
->
->
-> On Nov 6, 2007 6:49 PM, H. Peter Anvin <hpa@zytor.com> wrote:
-> > Could you check if 3.52 is affected as well?
-> >
-> > --
-> 3.52 works
->
-> YH
->
->
+On Wed, Nov 07, 2007 at 09:08:20AM -0800, Greg KH wrote:
+> On Wed, Nov 07, 2007 at 05:42:55AM -0800, Stephane Eranian wrote:
+> > Greg,
+> > 
+> > Perfmon sysfs document has been updated following your adivce.
+> > you can check out in my perfmon tree  the following commit:
+> > 
+> > 	e83278f879e52ecee025effe9ad509fd51e4a516
+> 
+> Where is this git tree located?  On git.kernel.org somewhere?
+> 
+	http://git.kernel.org/?p=linux/kernel/git/eranian/linux-2.6.git
 
-good to know. everyone need to update to 3.52 now...
-but i still can not understand why that mcp55 system works but the
-ck804 based doesn't on 3.10
-
-YH
+-- 
+-Stephane
