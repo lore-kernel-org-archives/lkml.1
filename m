@@ -1,87 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759045AbXKGRsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759248AbXKGRuI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759045AbXKGRsy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 12:48:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754843AbXKGRsq
+	id S1759248AbXKGRuI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 12:50:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbXKGRt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 12:48:46 -0500
-Received: from mail.issp.bas.bg ([195.96.236.10]:33971 "EHLO mail.issp.bas.bg"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754783AbXKGRsq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 12:48:46 -0500
-X-Greylist: delayed 1670 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Nov 2007 12:48:45 EST
-From: Marin Mitov <mitov@issp.bas.bg>
-Organization: Institute of Solid State Physics
-To: linux-kernel@vger.kernel.org
-Subject: is minimum udelay() not respected in preemptible SMP kernel-2.6.23?
-User-Agent: KMail/1.9.7
+	Wed, 7 Nov 2007 12:49:57 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:1404 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753102AbXKGRt4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 12:49:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=uTOxXC6ZC1mI/Cp/9xXldL3ORba4vwCRvzPEBOIdLCf9lWHqsvT4jA4Z6CeNSDea7BdanrsMV3Q0tweeprJ3DWrwcBj9+drMBtETKb0cgRcKLaOnqacVJZCRyWijYEZJ6gzfi7ufLnM2bksCP9qahsF6kXpnuLJaHkY1rqXH5xc=
+Message-ID: <86802c440711070949pc09d49ar36d0b9f32a506e20@mail.gmail.com>
+Date: Wed, 7 Nov 2007 09:49:55 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: pxeboot broken by commit "x86 setup: handle boot loaders which set up the stack incorrectly"
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200711070708.lA778VtP029664@terminus.zytor.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Date: Wed, 7 Nov 2007 19:21:52 +0200
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200711071921.52330.mitov@issp.bas.bg>
+Content-Disposition: inline
+References: <200711070708.lA778VtP029664@terminus.zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Nov 6, 2007 11:08 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Ah, right - this was a longstanding bug in syslinux which was fixed in 3.50-pre7.  The workaround for abug in old LILO exposed a bug in old syslinux.  Joy.
+>
+> --
+> Sent from my cellphone (pardon any lack of formatting)
+>
+>
+> -----Original Message-----
+> From: Yinghai Lu <yhlu.kernel@gmail.com>
+> Sent: Tuesday, November 06, 2007 20:12
+> To: H. Peter Anvin <hpa@zytor.com>
+> Subject: Re: pxeboot broken by commit "x86 setup: handle boot loaders which set up the stack incorrectly"
+>
+>
+> On Nov 6, 2007 6:49 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> > Could you check if 3.52 is affected as well?
+> >
+> > --
+> 3.52 works
+>
+> YH
+>
+>
 
-I have written a linux device driver for a frame grabber I use in my 
-every day experimental work.
+good to know. everyone need to update to 3.52 now...
+but i still can not understand why that mcp55 system works but the
+ck804 based doesn't on 3.10
 
-In my device driver I have to write to a MMIO register, wait for a while 
-(using udelay(65)) for data being written to an internal register (i2c?)
-and test a flag (in another MMIO register) if the operation has completed. 
-(The hardware guarantees that the operation has completed in less than 
-65 usec). If the flag is not reset I write a message via printk.
-After switching to the kernel-2.6.23 (compiled as PREEMPTIBLE SMP i686)
-(AMD dual core) I see this message in dmesg output sometime.
-
-Testing with rdtscll() before and after udelay(65) shows the expected
-delay of 65 usec (after dividing by CPU frequency) when all is OK, but
-gives a big value (in the tenths msec range) when the error message 
-shows itself in dmesg. 
-
-Bracketing udelay(65) by:
-
-local_irq_disable();
-udelay(65);
-local_irq_enable();
-
-as well as by
-
-preempt_disable();
-udelay(65); 
-preempt_enable();
-
-leads to message disappearing.
-
-I believe the hardware is working correctly, so if the flag is not reset 
-I think udelay(65) returns prematurely (the flag clears some time latter)
-And it does not matter if I use udelay(65) or udelay(100).
-
-What could be the reason for such a behavior?
-Is this a bug in udelay() due to preemption?
-(udelay() being preempted and migrated to another processor)
-
-All my previous kernels used were SMP (but not PREEMPTIBLE)
-
-My kernel is compiled with:
-CONFIG_PREEMPT=y
-CONFIG_IRQBALANCE=y
-CONFIG_HPET_TIMER=y
-
-And I have this line in dmesg:
-Time: acpi_pm clocksource has been installed.
-Switched to high resolution mode on CPU 0
-Switched to high resolution mode on CPU 1
-
-The south bridge is: VIA VT8237 (Asus A8V Delux)
-
-Thank you in advance for your help in understanding  where
-the problem is coming from.
-
-Best regards.
-
-Marin Mitov
+YH
