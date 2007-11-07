@@ -1,62 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756689AbXKGGoo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbXKGGp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756689AbXKGGoo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 01:44:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754724AbXKGGof
+	id S1757283AbXKGGp0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 01:45:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755441AbXKGGpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 01:44:35 -0500
-Received: from koto.vergenet.net ([210.128.90.7]:50711 "EHLO koto.vergenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750695AbXKGGoe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 01:44:34 -0500
-Date: Wed, 7 Nov 2007 15:44:31 +0900
-From: Simon Horman <horms@verge.net.au>
-To: David Miller <davem@davemloft.net>
-Cc: luming.yu@gmail.com, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] fix typo in per_cpu_offset
-Message-ID: <20071107064429.GC3571@verge.net.au>
-References: <3877989d0710230015x1640388aod98cae2fa3fc82c2@mail.gmail.com> <20071030071513.GE5361@verge.net.au> <20071030.003622.265888160.davem@davemloft.net> <20071030085054.GE10635@verge.net.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071030085054.GE10635@verge.net.au>
-User-Agent: mutt-ng/devel-r804 (Debian)
+	Wed, 7 Nov 2007 01:45:11 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:45858 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755414AbXKGGpJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 01:45:09 -0500
+Date: Wed, 7 Nov 2007 01:44:50 -0500
+Message-Id: <200711070644.lA76iodZ005491@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: David Howells <dhowells@redhat.com>
+Cc: akpm@linux-foundation.org, ezk@cs.sunysb.edu, unionfs@filesystems.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] IGET: Stop UnionFS from using iget() and read_inode() 
+In-reply-to: Your message of "Tue, 06 Nov 2007 14:52:34 GMT."
+             <20071106145234.4807.69325.stgit@warthog.procyon.org.uk> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 30, 2007 at 05:50:56PM +0900, Simon Horman wrote:
-> On Tue, Oct 30, 2007 at 12:36:22AM -0700, David Miller wrote:
-> > From: Simon Horman <horms@verge.net.au>
-> > Date: Tue, 30 Oct 2007 16:15:13 +0900
-> > 
-> > > Though curiuously with my config nothing uses per_cpu_offset()
-> > > (I added a bogus call to produce an error.) Is it actually
-> > > used on ia64?
-> > 
-> > It is unused, and in that regard should probably be deleted.
-> > 
-> > include/asm-generic/percpu.h defines a seemingly similarly
-> > unused per_cpu_offset() macro define as well
+In message <20071106145234.4807.69325.stgit@warthog.procyon.org.uk>, David Howells writes:
+> From: David Howells <dhowells@redhat.com>
 > 
-> It looks like they were both added by "[PATCH] lockdep: add per_cpu_offset()"
-> (a875a69f8b00a38b4f40d9632a4fc71a159f0e0d)
+> Stop the UnionFS filesystem from using iget() and read_inode().  Replace
+> unionfs_read_inode() with unionfs_iget(), and call that instead of iget().
+> unionfs_iget() then uses iget_locked() directly and returns a proper error code
+> instead of an inode in the event of an error.
 > 
-> Perhaps they were used at that time?
+> unionfs_fill_super() returns any error incurred when getting the root inode
+> instead of EINVAL.
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
+[...]
 
-I looked into this a little further:
+Thanks.  I tested this code and it passed all my tests.  I'll shortly submit
+a slightly revised patch which applies cleanly against the unionfs code in
+-mm.
 
-I'm pretty much convinced that the asm-ia64 version of per_cpu_offset()
-is unused as ia64 doesn't have lockdep. I will send a patch to get rid
-of it. The generic version might be used on mips, sh or arm with
-CONFIG_SMP, as these architectures have lockdep. I did managed to
-produce a compiler error on mips by removing the asm-generic version of
-per_cpu_offset().
-
--- 
-Horms
-  H: http://www.vergenet.net/~horms/
-  W: http://www.valinux.co.jp/en/
-
+Cheers,
+Erez.
