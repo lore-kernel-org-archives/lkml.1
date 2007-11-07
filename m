@@ -1,77 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbXKGUW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757901AbXKGUYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754704AbXKGUW0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 15:22:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbXKGUWS
+	id S1757901AbXKGUYR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 15:24:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbXKGUYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 15:22:18 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:46793 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753487AbXKGUWQ (ORCPT
+	Wed, 7 Nov 2007 15:24:00 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55189 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753846AbXKGUX7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 15:22:16 -0500
-Message-ID: <47321763.4050802@linux.vnet.ibm.com>
-Date: Thu, 08 Nov 2007 01:22:03 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
-MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
-       benh@kernel.crashing.org, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: mm snapshot broken-out-2007-11-06-02-32 powerpc - axon_msi build
- faliure
-References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
-In-Reply-To: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
-Content-Type: text/plain; charset=windows-1252
+	Wed, 7 Nov 2007 15:23:59 -0500
+Date: Wed, 7 Nov 2007 12:23:19 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Marek Kierdelewicz <marek@koba.pl>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.23.1-smp  kernel panic (network-related)
+Message-Id: <20071107122319.6b342763.akpm@linux-foundation.org>
+In-Reply-To: <20071107175211.1a12c8c9@catlap>
+References: <20071107175211.1a12c8c9@catlap>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+(cc netdev)
 
-The kernel build fails with randconfig, with folllowing error
-
-  CC      arch/powerpc/platforms/cell/axon_msi.o
-arch/powerpc/platforms/cell/axon_msi.c:69: error: expected specifier-qualifier-list before ‘dcr_host_t’
-arch/powerpc/platforms/cell/axon_msi.c: In function ‘msic_dcr_write’:
-arch/powerpc/platforms/cell/axon_msi.c:80: error: implicit declaration of function ‘dcr_write’
-arch/powerpc/platforms/cell/axon_msi.c:80: error: ‘struct axon_msic’ has no member named ‘dcr_host’
-arch/powerpc/platforms/cell/axon_msi.c: In function ‘axon_msi_cascade’:
-arch/powerpc/platforms/cell/axon_msi.c:89: error: implicit declaration of function ‘dcr_read’
-arch/powerpc/platforms/cell/axon_msi.c:89: error: ‘struct axon_msic’ has no member named ‘dcr_host’
-arch/powerpc/platforms/cell/axon_msi.c:95: error: ‘struct axon_msic’ has no member named ‘read_offset’
-arch/powerpc/platforms/cell/axon_msi.c:96: error: ‘struct axon_msic’ has no member named ‘read_offset’
-arch/powerpc/platforms/cell/axon_msi.c:101: error: ‘struct axon_msic’ has no member named ‘read_offset’
-arch/powerpc/platforms/cell/axon_msi.c:103: error: ‘struct axon_msic’ has no member named ‘read_offset’
-arch/powerpc/platforms/cell/axon_msi.c:104: error: ‘struct axon_msic’ has no member named ‘read_offset’
-arch/powerpc/platforms/cell/axon_msi.c: In function ‘axon_msi_notify_reboot’:
-arch/powerpc/platforms/cell/axon_msi.c:301: error: ‘struct axon_msic’ has no member named ‘list’
-arch/powerpc/platforms/cell/axon_msi.c:301: warning: type defaults to ‘int’ in declaration of ‘__mptr’
-arch/powerpc/platforms/cell/axon_msi.c:301: warning: initialization from incompatible pointer type
-arch/powerpc/platforms/cell/axon_msi.c:301: error: ‘struct axon_msic’ has no member named ‘list’
-arch/powerpc/platforms/cell/axon_msi.c:301: error: ‘struct axon_msic’ has no member named ‘list’
-arch/powerpc/platforms/cell/axon_msi.c:301: error: ‘struct axon_msic’ has no member named ‘list’
-arch/powerpc/platforms/cell/axon_msi.c:301: error: ‘struct axon_msic’ has no member named ‘list’
-arch/powerpc/platforms/cell/axon_msi.c:301: warning: type defaults to ‘int’ in declaration of ‘__mptr’
-arch/powerpc/platforms/cell/axon_msi.c:301: error: ‘struct axon_msic’ has no member named ‘list’
-arch/powerpc/platforms/cell/axon_msi.c:301: error: ‘struct axon_msic’ has no member named ‘list’
-arch/powerpc/platforms/cell/axon_msi.c:304: error: ‘struct axon_msic’ has no member named ‘dcr_host’
-arch/powerpc/platforms/cell/axon_msi.c: In function ‘axon_msi_setup_one’:
-arch/powerpc/platforms/cell/axon_msi.c:332: error: implicit declaration of function ‘dcr_resource_start’
-arch/powerpc/platforms/cell/axon_msi.c:333: error: implicit declaration of function ‘dcr_resource_len’
-arch/powerpc/platforms/cell/axon_msi.c:342: error: ‘struct axon_msic’ has no member named ‘dcr_host’
-arch/powerpc/platforms/cell/axon_msi.c:342: error: implicit declaration of function ‘dcr_map’
-arch/powerpc/platforms/cell/axon_msi.c:343: error: implicit declaration of function ‘DCR_MAP_OK’
-arch/powerpc/platforms/cell/axon_msi.c:343: error: ‘struct axon_msic’ has no member named ‘dcr_host’
-arch/powerpc/platforms/cell/axon_msi.c:388: error: ‘struct axon_msic’ has no member named ‘list’
-make[2]: *** [arch/powerpc/platforms/cell/axon_msi.o] Error 1
-make[1]: *** [arch/powerpc/platforms/cell] Error 2
-make: *** [arch/powerpc/platforms] Error 2
-
-This is because of the #ifdef CONFIG_PPC_DCR in the asm-powerpc/dcr.h.
-
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+> On Wed, 7 Nov 2007 17:52:11 +0100 Marek Kierdelewicz <marek@koba.pl> wrote:
+> Hi there,
+> 
+> My company's (ISP) bussines model requires dynamic resizing of the
+> client queues. It's achieved by regenerating shaping rules and loading
+> then using batch mode of a tc binary. On production systems it's done
+> once every 1 or 2 minutes. Unfortunately this causes smp kernels to
+> panic. Non-smp kernels don't have such problems. Bug is around a long
+> time. I first noticed it after migrating to shaping configs that use
+> IFB, it might have been 2.6.18 "era".
+> 
+> Test scenario:
+> 
+> I've put together a test machine with configuration copied from
+> production router. I'm feeding the machine with production traffic
+> by means of port mirroring. Test machine has the same config as
+> production one (including mac addresses), so it tries to route the
+> incoming traffic.
+> 
+> Tested kernels were 2.6.31.1 and 2.6.20.6 (config from 2.6.20.6 is in
+> attachment). Both panicked if compiled with SMP support and work stable
+> otherwise. Problem occurs only with cyclic "shaping restarts". For the
+> test, reload operation using "tc -b ..." was executed in an infinite
+> loop. 
+> 
+> Box's CPU usage was approximately 15%. Panics occur with few hours -
+> one day intervals.
+> 
+> 
+> Below I attach the panic message captured via serial console:
+> ----------------------------------------------------------------------
+> printk: 63 messages suppressed.
+> dst cache overflow
+> SMP
+> Modules linked in: ipt_LOG xt_hashlimit ipt_MASQUERADE ip_set_macipmap
+> ip_set_ipmap xt_state w83627hf hwmon_vid eeprom ifb ipt_SET ipt_set
+> ip_set ipip tunnel4 ip_gre e1000 i2c_i801 i2c_core CPU:    1 EIP:
+> 0060:[<f255c08f>]    Not tainted VLI EFLAGS: 00010202   (2.6.23.1-smp
+> #2) EIP is at 0xf255c08f
+> eax: c196a000   ebx: 00000100   ecx: ef2f408c   edx: f3630000
+> esi: f0332029   edi: f255c08c   ebp: 00000001   esp: f3631ea8
+> ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
+> Process tc (pid: 27695, ti=f3630000 task=f26a9560 task.ti=f3630000)
+> Stack: c01280ad f26a9560 00000001 f3631eb4 c0106f57 ef2f408c f0e8c08c
+> 00000031 c0495308 0000000a c0124eb6 00000046 00000000 f7657740 f3630000
+> c0124f4c c180f120 c0114e62 00000000 00000000 f7bfd224 f74ed95c c01047e0
+> f7bfd224 Call Trace:
+>  [<c01280ad>] run_timer_softirq+0xf5/0x154
+>  [<c0106f57>] profile_pc+0x21/0x4a
+>  [<c0124eb6>] __do_softirq+0x5d/0xc1
+>  [<c0124f4c>] do_softirq+0x32/0x36
+>  [<c0114e62>] smp_apic_timer_interrupt+0x74/0x80
+>  [<c01047e0>] apic_timer_interrupt+0x28/0x30
+>  [<c014c82e>] remove_vma+0x1c/0x36
+>  [<c014c912>] exit_mmap+0xca/0xe1
+>  [<c011eedc>] mmput+0x1d/0x75
+>  [<c0123688>] do_exit+0x1be/0x68a
+>  [<c0123bc0>] sys_exit_group+0x0/0xd
+>  [<c0103d12>] sysenter_past_esp+0x5f/0x85
+>  =======================
+> Code: 00 52 41 f7 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> 00 00 00 00 00 00 fa 00 00 00 ea 05 00 00 7f 00 00 00 34 a5 96 <c1> 8c
+> 00 fd f3 a5 2b 09 00 d1 d8 32 c0 00 c0 55 f2 00 a0 96 c1 EIP:
+> [<f255c08f>] 0xf255c08f SS:ESP 0068:f3631ea8 Kernel panic - not
+> syncing: Fatal exception in interrupt
+> ----------------------------------------------------------------------
+> 
+> 
+> -- 
+> Marek Kierdelewicz
+> Kierownik DziaÅ‚u SystemÃ³w Sieciowych, KoBa
+> Manager of Network Systems Department, KoBa
+> tel. (85) 7406466; fax. (85) 7406467
+> e-mail: admin@koba.pl
+> 
