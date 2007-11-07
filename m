@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758954AbXKGRd3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759112AbXKGRdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758954AbXKGRd3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 12:33:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753122AbXKGRdQ
+	id S1759112AbXKGRdv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 12:33:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757676AbXKGRdl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 12:33:16 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:35121 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757142AbXKGRdO (ORCPT
+	Wed, 7 Nov 2007 12:33:41 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45500 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753122AbXKGRdk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 12:33:14 -0500
-Date: Wed, 7 Nov 2007 17:33:07 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
-Cc: Andreas Schwab <schwab@suse.de>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/1] aacraid: don't assign cpu_to_le32(int) to u8
-Message-ID: <20071107173307.GB25560@infradead.org>
-References: <jefxzqqeha.fsf@sykes.suse.de> <AE4F746F2AECFC4DA4AADD66A1DFEF01F95EF7@otce2k301.adaptec.com>
+	Wed, 7 Nov 2007 12:33:40 -0500
+Date: Wed, 7 Nov 2007 09:33:13 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg KH <greg@kroah.com>
+Cc: eranian@hpl.hp.com, perfmon@napali.hpl.hp.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix up perfmon to build on -mm
+Message-Id: <20071107093313.b10e60c8.akpm@linux-foundation.org>
+In-Reply-To: <20071107170820.GB8358@kroah.com>
+References: <20071107003454.GA13374@kroah.com>
+	<20071107134255.GE14646@frankl.hpl.hp.com>
+	<20071107170820.GB8358@kroah.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <AE4F746F2AECFC4DA4AADD66A1DFEF01F95EF7@otce2k301.adaptec.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 07, 2007 at 10:58:12AM -0500, Salyzyn, Mark wrote:
-> Good point, thanks. The intent of the management applications
-> utilization of this AIF report is to observe the LSB of the value of
-> integer value in BlinkLED. The actions of the cpu_to_le32 actually
-> breaks this and reports the wrong content in swapped architectures.
+> On Wed, 7 Nov 2007 09:08:20 -0800 Greg KH <greg@kroah.com> wrote:
+> On Wed, Nov 07, 2007 at 05:42:55AM -0800, Stephane Eranian wrote:
+> > Greg,
+> > 
+> > Perfmon sysfs document has been updated following your adivce.
+> > you can check out in my perfmon tree  the following commit:
+> > 
+> > 	e83278f879e52ecee025effe9ad509fd51e4a516
 > 
-> This attached follow-up patch is against current scsi-misc-2.6 *after*
-> the application of the 'don't assign cpu_to_le32(constant) to u8' patch
-> submitted by Stephen Rothwell which has already been taken by the -mm
-> tree. Inspection of other areas of the aacraid driver came up blank for
-> similar style bugs.
+> Where is this git tree located?  On git.kernel.org somewhere?
+> 
 
-Did anyone run the driver through sparse to see if we have more issues like
-this?
 
+I get mine from git+ssh://master.kernel.org/pub/scm/linux/kernel/git/eranian/linux-2.6.git
