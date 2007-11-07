@@ -1,77 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756502AbXKGDR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbXKGDRj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756502AbXKGDR1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 22:17:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754281AbXKGDRT
+	id S1757184AbXKGDRj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 22:17:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755110AbXKGDRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 22:17:19 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:46102 "EHLO mx1.redhat.com"
+	Tue, 6 Nov 2007 22:17:21 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:53870 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753815AbXKGDRS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 22:17:18 -0500
-Date: Tue, 6 Nov 2007 22:17:10 -0500
-From: Rik van Riel <riel@redhat.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [RFC PATCH 3/10] define page_file_cache
-Message-ID: <20071106221710.3f9b8dd6@bree.surriel.com>
-In-Reply-To: <Pine.LNX.4.64.0711061856400.5565@schroedinger.engr.sgi.com>
-References: <20071103184229.3f20e2f0@bree.surriel.com>
-	<20071103185516.24832ab0@bree.surriel.com>
-	<Pine.LNX.4.64.0711061821010.5249@schroedinger.engr.sgi.com>
-	<20071106215552.4ab7df81@bree.surriel.com>
-	<Pine.LNX.4.64.0711061856400.5565@schroedinger.engr.sgi.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	id S1754650AbXKGDRU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 22:17:20 -0500
+Date: Wed, 7 Nov 2007 14:17:17 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: David <david@unsolicited.net>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: 2.6.24-rc1 - Regularly getting processes stuck in D state on
+ startup
+Message-Id: <20071107141717.6eb0dc25.sfr@canb.auug.org.au>
+In-Reply-To: <394337271.18157@ustc.edu.cn>
+References: <472F5F8B.7090200@unsolicited.net>
+	<E1IpJLy-0002ag-TL@localhost>
+	<394337271.18157@ustc.edu.cn>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__7_Nov_2007_14_17_17_+1100_cd3VFckq_koP_sdC"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Nov 2007 19:02:47 -0800 (PST)
-Christoph Lameter <clameter@sgi.com> wrote:
-> On Tue, 6 Nov 2007, Rik van Riel wrote:
-> 
-> > > I think we could add a flag to the bdi to indicate wheter the backing 
-> > > store is a disk file. In fact you can also deduce if if a device has
-> > > no writeback capability set in the BDI.
-> > > 
-> > > > Unfortunately this needs to use a page flag, since the
-> > > > PG_swapbacked state needs to be preserved all the way
-> > > > to the point where the page is last removed from the
-> > > > LRU.  Trying to derive the status from other info in
-> > > > the page resulted in wrong VM statistics in earlier
-> > > > split VM patchsets.
-> > > 
-> > > The bdi may avoid that extra flag.
-> > 
-> > The bdi will no longer be accessible by the time a page
-> > makes it to free_hot_cold_page, which is one place in the
-> > kernel where this information is needed.
-> 
-> At that point you need only information about which list the page
-> was put on. Dont we need something like PageLRU -> PageFileLRU
-> and PageMemLRU?
+--Signature=_Wed__7_Nov_2007_14_17_17_+1100_cd3VFckq_koP_sdC
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-That is exactly why we need a page flag.  If you have a better
-name for the page flag, please let me know.
+On Tue, Nov 06, 2007 at 04:00:06PM +0800, Fengguang Wu wrote:
+>=20
+> Could you try with the attached 4 patches? Two of them are expected to
+> fix your problem, another two are debugging ones(in case the problem
+> persists).
 
-Note that the kind of page needs to be separate from PageLRU,
-since pages are taken off of and put back onto LRUs all the
-time.
- 
-> The page may change its nature I think? What if a page becomes
-> swap backed?
+Applying these four patches fixes it for me.  Obviously the reiserfs patch =
+was not relevant in  my case (only using ext3).
 
-Every anonymous, tmpfs or shared memory segment page is potentially
-swap backed. That is the whole point of the PG_swapbacked flag.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-A page from a filesystem like ext3 or NFS cannot suddenly turn into
-a swap backed page.  This page "nature" is not changed during the
-lifetime of a page.
+--Signature=_Wed__7_Nov_2007_14_17_17_+1100_cd3VFckq_koP_sdC
+Content-Type: application/pgp-signature
 
--- 
-"Debugging is twice as hard as writing the code in the first place.
-Therefore, if you write the code as cleverly as possible, you are,
-by definition, not smart enough to debug it." - Brian W. Kernighan
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHMS5BTgG2atn1QN8RAuILAJ40AbDXGWfKwlyRJElk1N6lsQnDwACeP9MG
+mahlfBm+a0UKtugKF8a0hoY=
+=64OE
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__7_Nov_2007_14_17_17_+1100_cd3VFckq_koP_sdC--
