@@ -1,79 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757536AbXKGUaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754554AbXKGUbm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757536AbXKGUaZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 15:30:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbXKGUaN
+	id S1754554AbXKGUbm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 15:31:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbXKGUbf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 15:30:13 -0500
-Received: from gate.crashing.org ([63.228.1.57]:42319 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753082AbXKGUaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 15:30:11 -0500
-Subject: Re: mm snapshot broken-out-2007-11-06-02-32 powerpc - axon_msi
-	build faliure
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <47321763.4050802@linux.vnet.ibm.com>
-References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
-	 <47321763.4050802@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 08 Nov 2007 07:28:43 +1100
-Message-Id: <1194467323.6523.55.camel@pasglop>
+	Wed, 7 Nov 2007 15:31:35 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33261 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752707AbXKGUbe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 15:31:34 -0500
+Date: Wed, 7 Nov 2007 12:30:45 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Marin Mitov <mitov@issp.bas.bg>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>
+Subject: Re: is minimum udelay() not respected in preemptible SMP
+ kernel-2.6.23?
+Message-Id: <20071107123045.c6d4b855.akpm@linux-foundation.org>
+In-Reply-To: <200711071921.52330.mitov@issp.bas.bg>
+References: <200711071921.52330.mitov@issp.bas.bg>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2007-11-08 at 01:22 +0530, Kamalesh Babulal wrote:
-> Hi Andrew,
+> On Wed, 7 Nov 2007 19:21:52 +0200 Marin Mitov <mitov@issp.bas.bg> wrote:
+> Hi all,
 > 
-> The kernel build fails with randconfig, with folllowing error
-
-Why cares about randconfig crap ? I don't much. Especially not if you
-don't provide the actual config that triggered the error.
-
->   CC      arch/powerpc/platforms/cell/axon_msi.o
-> arch/powerpc/platforms/cell/axon_msi.c:69: error: expected specifier-qualifier-list before ‘dcr_host_t’
-> arch/powerpc/platforms/cell/axon_msi.c: In function ‘msic_dcr_write’:
-> arch/powerpc/platforms/cell/axon_msi.c:80: error: implicit declaration of function ‘dcr_write’
-> arch/powerpc/platforms/cell/axon_msi.c:80: error: ‘struct axon_msic’ has no member named ‘dcr_host’
-> arch/powerpc/platforms/cell/axon_msi.c: In function ‘axon_msi_cascade’:
-> arch/powerpc/platforms/cell/axon_msi.c:89: error: implicit declaration of function ‘dcr_read’
-> arch/powerpc/platforms/cell/axon_msi.c:89: error: ‘struct axon_msic’ has no member named ‘dcr_host’
-> arch/powerpc/platforms/cell/axon_msi.c:95: error: ‘struct axon_msic’ has no member named ‘read_offset’
-> arch/powerpc/platforms/cell/axon_msi.c:96: error: ‘struct axon_msic’ has no member named ‘read_offset’
-> arch/powerpc/platforms/cell/axon_msi.c:101: error: ‘struct axon_msic’ has no member named ‘read_offset’
-> arch/powerpc/platforms/cell/axon_msi.c:103: error: ‘struct axon_msic’ has no member named ‘read_offset’
-> arch/powerpc/platforms/cell/axon_msi.c:104: error: ‘struct axon_msic’ has no member named ‘read_offset’
-> arch/powerpc/platforms/cell/axon_msi.c: In function ‘axon_msi_notify_reboot’:
-> arch/powerpc/platforms/cell/axon_msi.c:301: error: ‘struct axon_msic’ has no member named ‘list’
-> arch/powerpc/platforms/cell/axon_msi.c:301: warning: type defaults to ‘int’ in declaration of ‘__mptr’
-> arch/powerpc/platforms/cell/axon_msi.c:301: warning: initialization from incompatible pointer type
-> arch/powerpc/platforms/cell/axon_msi.c:301: error: ‘struct axon_msic’ has no member named ‘list’
-> arch/powerpc/platforms/cell/axon_msi.c:301: error: ‘struct axon_msic’ has no member named ‘list’
-> arch/powerpc/platforms/cell/axon_msi.c:301: error: ‘struct axon_msic’ has no member named ‘list’
-> arch/powerpc/platforms/cell/axon_msi.c:301: error: ‘struct axon_msic’ has no member named ‘list’
-> arch/powerpc/platforms/cell/axon_msi.c:301: warning: type defaults to ‘int’ in declaration of ‘__mptr’
-> arch/powerpc/platforms/cell/axon_msi.c:301: error: ‘struct axon_msic’ has no member named ‘list’
-> arch/powerpc/platforms/cell/axon_msi.c:301: error: ‘struct axon_msic’ has no member named ‘list’
-> arch/powerpc/platforms/cell/axon_msi.c:304: error: ‘struct axon_msic’ has no member named ‘dcr_host’
-> arch/powerpc/platforms/cell/axon_msi.c: In function ‘axon_msi_setup_one’:
-> arch/powerpc/platforms/cell/axon_msi.c:332: error: implicit declaration of function ‘dcr_resource_start’
-> arch/powerpc/platforms/cell/axon_msi.c:333: error: implicit declaration of function ‘dcr_resource_len’
-> arch/powerpc/platforms/cell/axon_msi.c:342: error: ‘struct axon_msic’ has no member named ‘dcr_host’
-> arch/powerpc/platforms/cell/axon_msi.c:342: error: implicit declaration of function ‘dcr_map’
-> arch/powerpc/platforms/cell/axon_msi.c:343: error: implicit declaration of function ‘DCR_MAP_OK’
-> arch/powerpc/platforms/cell/axon_msi.c:343: error: ‘struct axon_msic’ has no member named ‘dcr_host’
-> arch/powerpc/platforms/cell/axon_msi.c:388: error: ‘struct axon_msic’ has no member named ‘list’
-> make[2]: *** [arch/powerpc/platforms/cell/axon_msi.o] Error 1
-> make[1]: *** [arch/powerpc/platforms/cell] Error 2
-> make: *** [arch/powerpc/platforms] Error 2
+> I have written a linux device driver for a frame grabber I use in my 
+> every day experimental work.
 > 
-> This is because of the #ifdef CONFIG_PPC_DCR in the asm-powerpc/dcr.h.
+> In my device driver I have to write to a MMIO register, wait for a while 
+> (using udelay(65)) for data being written to an internal register (i2c?)
+> and test a flag (in another MMIO register) if the operation has completed. 
+> (The hardware guarantees that the operation has completed in less than 
+> 65 usec). If the flag is not reset I write a message via printk.
+> After switching to the kernel-2.6.23 (compiled as PREEMPTIBLE SMP i686)
+> (AMD dual core) I see this message in dmesg output sometime.
+> 
+> Testing with rdtscll() before and after udelay(65) shows the expected
+> delay of 65 usec (after dividing by CPU frequency) when all is OK, but
+> gives a big value (in the tenths msec range) when the error message 
+> shows itself in dmesg. 
+> 
+> Bracketing udelay(65) by:
+> 
+> local_irq_disable();
+> udelay(65);
+> local_irq_enable();
+> 
+> as well as by
+> 
+> preempt_disable();
+> udelay(65); 
+> preempt_enable();
+> 
+> leads to message disappearing.
+> 
+> I believe the hardware is working correctly, so if the flag is not reset 
+> I think udelay(65) returns prematurely (the flag clears some time latter)
+> And it does not matter if I use udelay(65) or udelay(100).
+> 
+> What could be the reason for such a behavior?
+> Is this a bug in udelay() due to preemption?
+> (udelay() being preempted and migrated to another processor)
+> 
+> All my previous kernels used were SMP (but not PREEMPTIBLE)
+> 
+> My kernel is compiled with:
+> CONFIG_PREEMPT=y
+> CONFIG_IRQBALANCE=y
+> CONFIG_HPET_TIMER=y
+> 
+> And I have this line in dmesg:
+> Time: acpi_pm clocksource has been installed.
+> Switched to high resolution mode on CPU 0
+> Switched to high resolution mode on CPU 1
+> 
+> The south bridge is: VIA VT8237 (Asus A8V Delux)
+> 
+> Thank you in advance for your help in understanding  where
+> the problem is coming from.
 > 
 
+Ow.  Yes, from my reading delay_tsc() can return early (or after
+heat-death-of-the-universe) if the TSCs are offset and if preemption
+migrates the calling task between CPUs.
+
+I suppose a lameo fix would be to disable preemption in delay_tsc().
