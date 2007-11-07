@@ -1,41 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759227AbXKGXU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759580AbXKGXV6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759227AbXKGXU7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 18:20:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759273AbXKGXUr
+	id S1759580AbXKGXV6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 18:21:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756689AbXKGXVu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 18:20:47 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:59265 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759220AbXKGXUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 18:20:46 -0500
-Date: Wed, 7 Nov 2007 18:20:45 -0500
-From: Jeff Garzik <jeff@garzik.org>
-To: Mark Lord <liml@rtr.ca>
-Cc: Denys Fedoryshchenko <denys@visp.net.lb>,
-       James Andrewartha <jamesa@daa.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, alan@lxorguk.ukuu.org.uk, htejun@gmail.com
-Subject: Re: SC1200 failure in 2.6.23 and 2.6.24-rc1-git10
-Message-ID: <20071107232045.GA26706@havoc.gtf.org>
-References: <20071101213013.M54162@visp.net.lb> <20071106221521.4f64a066.akpm@linux-foundation.org> <20071107132630.M65286@visp.net.lb> <4731D85E.70201@daa.com.au> <20071107160426.M31617@visp.net.lb> <47320E37.8010106@rtr.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47320E37.8010106@rtr.ca>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Wed, 7 Nov 2007 18:21:50 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46904 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756278AbXKGXVt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 18:21:49 -0500
+Date: Wed, 7 Nov 2007 15:21:27 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gerhard Mack <gmack@innerfire.net>
+Cc: linux-kernel@vger.kernel.org, Jaroslav Kysela <perex@suse.cz>,
+       Takashi Iwai <tiwai@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.24-rc2 breaks nVidia MCP51 High Definition Audio
+Message-Id: <20071107152127.6d012c6c.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.0.999.0711071737030.552@mtl.rackplans.net>
+References: <alpine.DEB.0.999.0711071737030.552@mtl.rackplans.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 07, 2007 at 02:12:55PM -0500, Mark Lord wrote:
-> That cannot be correct (??).  Is this with hdparm-7.7 (latest sourceforge) 
-> ??
-> Can you show us the "hdparm --Istdout" output as well, please.
+> On Wed, 7 Nov 2007 17:39:41 -0500 (EST) Gerhard Mack <gmack@innerfire.net> wrote:
+> hello,
+> 
+> This worked fine in 2.6.23 but now the kernel no longer sees my audio 
+> controller.
+> 
+> 00:10.1 Audio device: nVidia Corporation MCP51 High Definition Audio (rev 
+> a2)
+> 00:10.1 0403: 10de:026c (rev a2)
+> 
+> Let me know if I can provide more info or test patches.
+> 
 
-If this is applicable...  FWIW hdparm was only recently (in past <72
-hours) updated from 6.9 to 7.7 in Fedora...
+Please provide the output of `dmesg -s 1000000' for both 2.6.23
+and 2.6.24-rc3, thanks.
 
-	Jeff
-
-
-
+Are you sure that the driver is suitably configured?  Sometimes
+we like to fiddle config options so that a `make oldconfig' will go and
+unconfigure drivers which you need.
