@@ -1,61 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759364AbXKGWzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758563AbXKGXAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759364AbXKGWzN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 17:55:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755237AbXKGWy6
+	id S1758563AbXKGXAe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 18:00:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753811AbXKGXA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 17:54:58 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46430 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752816AbXKGWy5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 17:54:57 -0500
-Date: Wed, 7 Nov 2007 22:54:53 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Mark Lord <liml@rtr.ca>
-Cc: Denys Fedoryshchenko <denys@visp.net.lb>,
-       James Andrewartha <jamesa@daa.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, htejun@gmail.com
-Subject: Re: SC1200 failure in 2.6.23 and 2.6.24-rc1-git10
-Message-ID: <20071107225453.34f8f340@the-village.bc.nu>
-In-Reply-To: <47323CAF.2030102@rtr.ca>
-References: <20071101213013.M54162@visp.net.lb>
-	<20071106221521.4f64a066.akpm@linux-foundation.org>
-	<20071107132630.M65286@visp.net.lb>
-	<4731D85E.70201@daa.com.au>
-	<20071107160426.M31617@visp.net.lb>
-	<47320E37.8010106@rtr.ca>
-	<20071107211932.M35475@visp.net.lb>
-	<47323CAF.2030102@rtr.ca>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 7 Nov 2007 18:00:27 -0500
+Received: from main.gmane.org ([80.91.229.2]:50410 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753473AbXKGXA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 18:00:26 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: ciol <ciol13@gmail.com>
+Subject: [poll] Is the megafreeze development model broken?
+Date: Wed, 07 Nov 2007 23:56:57 +0100
+Message-ID: <fgtfqa$h9j$1@ger.gmane.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 91.164.115.245
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070622)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> CFA spec requires 848a in word[0], not 844a, which explains
-> why hdparm thought it might be ATAPI.  I've updated my hdparm
-> source to detect this for hdparm-7.8 (unreleased).
-> That card (16MB) is definitely buggy.
-> But your other (1GB) card looks fine.
-> 
-> Thanks.  Somebody else may help with the libata issue.
+Hi, I'd like to ask you a few questions:
 
-848A is the preferred configuration value
+* Do you like the way linux distributions integrate the kernel?
 
-The use of 044A is also allowed in the case of it being non-removable.
-Guess someone got muddled up in the middle.
+* Wouldn't you prefer they ship with the stable and still maintained 
+2.6.16.X, while providing optionally the latest kernel for those who 
+want or just have a new hardware?
 
-844A is a bit iffy and it should still be detectable as Word 83 bit 2
-should be set ?
+* Do you think the megafreeze development model [1] and the "I don't 
+trust in upstream" development model are broken? (And why)
 
 
-As to the old IDE (not libata ?) issue - I suspect a convertor without
-DMA support as a first guess.
 
-Alan
+[1] http://www.modeemi.fi/~tuomov/b/archives/2007/03/03/T19_15_26/
+
+
+(I'm going to ask this for several projects, not only the kernel)
+
