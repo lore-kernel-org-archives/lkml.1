@@ -1,66 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756639AbXKGLvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbXKGMRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756639AbXKGLvW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 06:51:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbXKGLvO
+	id S1755259AbXKGMRS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 07:17:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750882AbXKGMRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 06:51:14 -0500
-Received: from styx.suse.cz ([82.119.242.94]:59289 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753241AbXKGLvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 06:51:13 -0500
-Date: Wed, 7 Nov 2007 12:51:10 +0100
-From: Jan Kara <jack@suse.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: [RFC] [PATCH 3/3] Recursive mtime for ext3
-Message-ID: <20071107115110.GC22214@duck.suse.cz>
-References: <20071106171537.GD23689@duck.suse.cz> <20071106171945.GG23689@duck.suse.cz> <20071106094056.3352a574@laptopd505.fenrus.org> <4730ACBF.6050606@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4730ACBF.6050606@zytor.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 7 Nov 2007 07:17:10 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:53748 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750830AbXKGMRJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 07:17:09 -0500
+Subject: Re: [PATCH] sched: avoid large irq-latencies in smp-balancing
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Williams <pwil3058@bigpond.net.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1194434956.6289.111.camel@twins>
+References: <1194434956.6289.111.camel@twins>
+Content-Type: text/plain
+Date: Wed, 07 Nov 2007 13:17:00 +0100
+Message-Id: <1194437820.6289.114.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 06-11-07 10:04:47, H. Peter Anvin wrote:
-> Arjan van de Ven wrote:
-> >On Tue, 6 Nov 2007 18:19:45 +0100
-> >Jan Kara <jack@suse.cz> wrote:
-> >
-> >>Implement recursive mtime (rtime) feature for ext3. The feature works
-> >>as follows: In each directory we keep a flag EXT3_RTIME_FL
-> >>(modifiable by a user) whether rtime should be updated. In case a
-> >>directory or a file in it is modified and when the flag is set,
-> >>directory's rtime is updated, the flag is cleared, and we move to the
-> >>parent. If the flag is set there, we clear it, update rtime and
-> >>continue upwards upto the root of the filesystem. In case a regular
-> >>file or symlink is modified, we pick arbitrary of its parents
-> >>(actually the one that happens to be at the head of i_dentry list)
-> >>and start the rtime update algorith there.
-> >
-> >Ok since mtime (and rtime) are part of the inode and not the dentry...
-> >how do you deal with hardlinks? And with cases of files that have been
-> >unlinked? (ok the later is a wash obviously other than not crashing)
-  Unlinked files are easy - you just don't propagate the rtime anywhere.
-For hardlinks see below.
+Bah, missed a hunk
 
-> There is only one possible answer... he only updates the directory path 
-> that was used to touch the particular file involved.  Thus, the 
-> semantics gets grotty not just in the presence of hard links, but also 
-> in the presence of bind- and other non-root mounts.
-  Update of recursive mtime does not pass filesystem boundaries (i.e.
-mountpoints) so bind mounts and such are non-issue (hmm, at least that was
-my original idea but as I'm looking now I don't handle bind mounts properly
-so that needs to be fixed). With hardlinks, you are right that the
-behaviour is undeterministic - I tried to argue in the text of the mail
-that this does not actually matter - there are not many hardlinks on usual
-system and so the application can check hardlinked files in the old way -
-i.e. look at mtime.
+---
+Subject: sched: avoid large irq-latencies in smp-balancing
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+SMP balancing is done with IRQs disabled and can iterate the full rq. When rqs
+are large this can cause large irq-latencies. Limit the nr of iterations on
+each run.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Peter Williams <pwil3058@bigpond.net.au>
+---
+ include/linux/sched.h |    1 +
+ kernel/sched.c        |   15 ++++++++++-----
+ kernel/sysctl.c       |    8 ++++++++
+ 3 files changed, 19 insertions(+), 5 deletions(-)
+
+Index: linux-2.6-2/kernel/sched.c
+===================================================================
+--- linux-2.6-2.orig/kernel/sched.c
++++ linux-2.6-2/kernel/sched.c
+@@ -474,6 +474,12 @@ const_debug unsigned int sysctl_sched_fe
+ #define sched_feat(x) (sysctl_sched_features & SCHED_FEAT_##x)
+ 
+ /*
++ * Number of tasks to iterate in a single balance run.
++ * Limited because this is done with IRQs disabled.
++ */
++const_debug unsigned int sysctl_sched_nr_migrate = 32;
++
++/*
+  * For kernel-internal use: high-speed (but slightly incorrect) per-cpu
+  * clock constructed from sched_clock():
+  */
+@@ -2237,7 +2243,7 @@ balance_tasks(struct rq *this_rq, int th
+ 	      enum cpu_idle_type idle, int *all_pinned,
+ 	      int *this_best_prio, struct rq_iterator *iterator)
+ {
+-	int pulled = 0, pinned = 0, skip_for_load;
++	int loops = 0, pulled = 0, pinned = 0, skip_for_load;
+ 	struct task_struct *p;
+ 	long rem_load_move = max_load_move;
+ 
+@@ -2251,10 +2257,10 @@ balance_tasks(struct rq *this_rq, int th
+ 	 */
+ 	p = iterator->start(iterator->arg);
+ next:
+-	if (!p)
++	if (!p || loops++ > sysctl_sched_nr_migrate)
+ 		goto out;
+ 	/*
+-	 * To help distribute high priority tasks accross CPUs we don't
++	 * To help distribute high priority tasks across CPUs we don't
+ 	 * skip a task if it will be the highest priority task (i.e. smallest
+ 	 * prio value) on its new queue regardless of its load weight
+ 	 */
+@@ -2271,8 +2277,7 @@ next:
+ 	rem_load_move -= p->se.load.weight;
+ 
+ 	/*
+-	 * We only want to steal up to the prescribed number of tasks
+-	 * and the prescribed amount of weighted load.
++	 * We only want to steal up to the prescribed amount of weighted load.
+ 	 */
+ 	if (rem_load_move > 0) {
+ 		if (p->prio < *this_best_prio)
+Index: linux-2.6-2/kernel/sysctl.c
+===================================================================
+--- linux-2.6-2.orig/kernel/sysctl.c
++++ linux-2.6-2/kernel/sysctl.c
+@@ -298,6 +298,14 @@ static struct ctl_table kern_table[] = {
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec,
+ 	},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "sched_nr_migrate",
++		.data		= &sysctl_sched_nr_migrate,
++		.maxlen		= sizeof(unsigned int),
++		.mode		= 644,
++		.proc_handler	= &proc_dointvec,
++	},
+ #endif
+ 	{
+ 		.ctl_name	= CTL_UNNUMBERED,
+Index: linux-2.6-2/include/linux/sched.h
+===================================================================
+--- linux-2.6-2.orig/include/linux/sched.h
++++ linux-2.6-2/include/linux/sched.h
+@@ -1466,6 +1466,7 @@ extern unsigned int sysctl_sched_batch_w
+ extern unsigned int sysctl_sched_child_runs_first;
+ extern unsigned int sysctl_sched_features;
+ extern unsigned int sysctl_sched_migration_cost;
++extern unsigned int sysctl_sched_nr_migrate;
+ #endif
+ 
+ extern unsigned int sysctl_sched_compat_yield;
+
+
