@@ -1,63 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757086AbXKGDSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbXKGDV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757086AbXKGDSV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 22:18:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754573AbXKGDSM
+	id S1756767AbXKGDV1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 22:21:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754589AbXKGDVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 22:18:12 -0500
-Received: from py-out-1112.google.com ([64.233.166.176]:13272 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752398AbXKGDSL (ORCPT
+	Tue, 6 Nov 2007 22:21:19 -0500
+Received: from web36612.mail.mud.yahoo.com ([209.191.85.29]:32373 "HELO
+	web36612.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754542AbXKGDVS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 22:18:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ChHRM0Wc+jmo2tR8MOOtB9gFAJIBRha1DYLPNVlyxhc4FfcoqnH6ata+cMxjql3T3MaMpvAS7sRQ617x9RguOh0X5P/+hAwEaD03jzMggxwBhn/j4tp6+86mnX4gGKPpFR+1cBTIIsstiZvodGTvTY2azHwOoURmcOvbwPcGXWM=
-Message-ID: <386072610711061918r4d4435b3n719894eda6d43a19@mail.gmail.com>
-Date: Wed, 7 Nov 2007 11:18:09 +0800
-From: "Bryan Wu" <cooloney.lkml@gmail.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: [2.6 patch] blackfin: unexport get_wchan
-Cc: bryan.wu@analog.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20071105170753.GX12045@stusta.de>
+	Tue, 6 Nov 2007 22:21:18 -0500
+X-YMail-OSG: vI3s3IQVM1nOFxOPu31TtC_H1MycfUXi25W9xMrxvtkl1Kfv8Q7OCKP7amDH8dyzLAf5gNqO0Q--
+X-RocketYMMF: rancidfat
+Date: Tue, 6 Nov 2007 19:21:17 -0800 (PST)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH] NetLabel: Introduce a new kernel configuration API for NetLabel - For 2.6.24-rc-git11 - Smack Version 10
+To: casey@schaufler-ca.com, Joshua Brindle <method@manicmethod.com>
+Cc: akpm@osdl.org, torvalds@osdl.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, paul.moore@hp.com
+In-Reply-To: <570441.41117.qm@web36609.mail.mud.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071105170753.GX12045@stusta.de>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <399501.53617.qm@web36612.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 6, 2007 1:07 AM, Adrian Bunk <bunk@kernel.org> wrote:
-> This patch removes the unused EXPORT_SYMBOL(get_wchan).
->
-It should be. "The only user of get_wchan I was able to find is the
-proc fs - and proc
-can't be built modular." You said before, right?
 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
->
-Acked-by: Bryan Wu <bryan.wu@analog.com>
+--- Casey Schaufler <casey@schaufler-ca.com> wrote:
 
-> ---
-> 6acc2faa1f25d2d5fbf6c5e435c222a79f753afa
-> diff --git a/arch/blackfin/kernel/bfin_ksyms.c b/arch/blackfin/kernel/bfin_ksyms.c
-> index 99ea57c..5dad9d3 100644
-> --- a/arch/blackfin/kernel/bfin_ksyms.c
-> +++ b/arch/blackfin/kernel/bfin_ksyms.c
-> @@ -65,7 +65,6 @@ EXPORT_SYMBOL(memset);
->  EXPORT_SYMBOL(memcmp);
->  EXPORT_SYMBOL(memmove);
->  EXPORT_SYMBOL(memchr);
-> -EXPORT_SYMBOL(get_wchan);
->
->  /*
->   * libgcc functions - functions that are used internally by the
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+> 
+> --- Joshua Brindle <method@manicmethod.com> wrote:
+> 
+> > Joshua Brindle wrote:
+> > > Casey Schaufler wrote:
+> > >> From: Paul Moore <paul.moore@hp.com>
+> > >>
+> > >> Add a new set of configuration functions to the NetLabel/LSM API so that
+> > >> LSMs can perform their own configuration of the NetLabel subsystem 
+> > >> without
+> > >> relying on assistance from userspace.
+> > >>   
+> > > I'm still not receiving the actual patch email on lsm (perhaps its too 
+> > > long and should be split up..) so I'll just respond on this email. 
+> > > Using the v10 patches on your website I'm still seeing strange 
+> > > behavior where echo foo > /proc/self/attr/current changes the label of 
+> > > every process on the system to foo (verified with both ps -AZ and cat 
+> > > /proc/1/attr/current).
+> > >
+> > Actually I'm getting more strange behavior:
+> > 
+> > On terminal 1 I do:
+> > echo foo > /proc/self/attr/current
+> > then ps -AZ shows foo for every process
+> > touch somefile; attr -S -g SMACK64 somefile says foo
+> > 
+> > On terminal 2 I do:
+> > ps -AZ and everything shows up as _
+> > cat /proc/$pid of bash on term 1/attr/current is _
+> 
+> Now this I can explain. Every task has it's own correct
+> label. The problem is a missing smack_getprocattr() hook.
+> ps is getting the value for "current" on the current process,
+> not that of the named process. Interestingly, the Smack label
+> of /proc/<xxx>/attr/current is correct.
+
+That's what I get for responding too quickly. There is a
+smack_getprocattr() hook, it's just wrong. Fixed for the
+next version. 
+
+Thank you again. 
+
+
+Casey Schaufler
+casey@schaufler-ca.com
