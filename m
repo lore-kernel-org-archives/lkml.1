@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759299AbXKGR56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759525AbXKGR6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759299AbXKGR56 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 12:57:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754703AbXKGR5u
+	id S1759525AbXKGR6U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 12:58:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759045AbXKGR55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 12:57:50 -0500
-Received: from madara.hpl.hp.com ([192.6.19.124]:62776 "EHLO madara.hpl.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754536AbXKGR5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 12:57:49 -0500
-Date: Wed, 7 Nov 2007 09:57:42 -0800
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: Greg KH <greg@kroah.com>
-Cc: Andrew Morton <akpm@osdl.org>, perfmon@napali.hpl.hp.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix up perfmon to build on -mm
-Message-ID: <20071107175742.GJ14646@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <20071107003454.GA13374@kroah.com> <20071107134255.GE14646@frankl.hpl.hp.com> <20071107174747.GA9918@kroah.com>
+	Wed, 7 Nov 2007 12:57:57 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:51088 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758881AbXKGR54 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 12:57:56 -0500
+Subject: Re: [PATCH 1/1] V4L: stk11xx, add a new webcam driver
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <47304694.2040904@gmail.com>
+References: <300725321593711206@pripojeni.net>
+	 <20071105234017.fcc10791.akpm@linux-foundation.org>
+	 <47304694.2040904@gmail.com>
+Content-Type: text/plain
+Date: Wed, 07 Nov 2007 15:57:37 -0200
+Message-Id: <1194458257.11579.21.camel@gaivota>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071107174747.GA9918@kroah.com>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+X-Mailer: Evolution 2.21.1-1mdv2008.1 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg,
 
-On Wed, Nov 07, 2007 at 09:47:47AM -0800, Greg KH wrote:
-> On Wed, Nov 07, 2007 at 05:42:55AM -0800, Stephane Eranian wrote:
-> > Greg,
+> > Seem that something in git-dvb (or mainline) broke this driver:
 > > 
-> > Perfmon sysfs document has been updated following your adivce.
-> > you can check out in my perfmon tree  the following commit:
-> > 
-> > 	e83278f879e52ecee025effe9ad509fd51e4a516
-> 
-> Thanks, that looks a lot better.
-> 
-> Do you want me to send you patches based on this tree to help clean up
-> the sysfs usage now that it's documented?
-> 
-Yes, send me the patches. But from what you were saying earlier it seems
-I would need an extra sysfs patches to make this compile. Is that particular
-patch already in Linus's tree?
+> > drivers/media/video/stk11xx-core.c: In function 'show_contrast':
+> > drivers/media/video/stk11xx-core.c:707: warning: initialization from incompatible pointer type
+> > drivers/media/video/stk11xx-core.c: In function 'show_whitebalance':
+> > drivers/media/video/stk11xx-core.c:714: warning: initialization from incompatible pointer type
+> > drivers/media/video/stk11xx-core.c: In function 'stk11xx_create_sysfs_file':
+> > drivers/media/video/stk11xx-core.c:727: warning: passing argument 1 of 'class_device_create_file' from incompatible pointer type
+> > drivers/media/video/stk11xx-core.c: In function 'stk11xx_usb_disconnect':
+> > drivers/media/video/stk11xx-core.c:851: warning: passing argument 1 of 'class_device_remove_file' from incompatible pointer type
+> > drivers/media/video/stk11xx-core.c:853: warning: passing argument 1 of 'class_device_remove_file' from incompatible pointer type
 
+Those breakages were caused by some changes at sysfs that happened in
+mainstream.
 
-> Also, a lot of your per-cpu sysfs files should probably move to debugfs
-> as they are for debugging only, right?  No need to clutter up sysfs with
-> them when only the very few perfmon developers would be needing access
-> to them.
+> > Also, please ask the v4l/dvb guys to look at this driver - there's not a lot
+> > of point in sending it just to me.
 > 
-Yes, this is mostly debugging. If debugfs is meant for this, then I'll
-be happy to move this stuff over there. Is there some good example of how
-I could do that based on my current sysfs code?
+> Dvb fellows reviewed it some time ago, but the problem is, that it converts
+> one color space to another in kernelspace. We are developping an userspace
+> library for drivers such this one, but it takes longer than I expect. Lets
+> have it dropped, after the library will be done I'll merge it through v4l tree.
 
-Thanks.
+Seems the proper way also to me.
 
 -- 
--Stephane
+Cheers,
+Mauro
+
