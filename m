@@ -1,94 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417AbXKGL3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbXKGLtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755417AbXKGL3o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 06:29:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbXKGL3h
+	id S1755401AbXKGLtX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 06:49:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbXKGLtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 06:29:37 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:38808 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752064AbXKGL3g (ORCPT
+	Wed, 7 Nov 2007 06:49:15 -0500
+Received: from vms040pub.verizon.net ([206.46.252.40]:52730 "EHLO
+	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751209AbXKGLtO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 06:29:36 -0500
-Subject: [PATCH] sched: avoid large irq-latencies in smp-balancing
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>, Peter Williams <pwil3058@bigpond.net.au>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 07 Nov 2007 12:29:16 +0100
-Message-Id: <1194434956.6289.111.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Nov 2007 06:49:14 -0500
+Date: Wed, 07 Nov 2007 06:49:01 -0500
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: 2.6.24-rc2=another train wreck with amanda
+To: linux-kernel@vger.kernel.org
+Message-id: <200711070649.02136.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+User-Agent: KMail/1.9.7
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: sched: avoid large irq-latencies in smp-balancing
+Greetings;
 
-SMP balancing is done with IRQs disabled and can iterate the full rq. When rqs
-are large this can cause large irq-latencies. Limit the nr of iterations on
-each run.
+I have this line in my /etc/modprobe.conf:
+options dm-mod major=238
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Peter Williams <pwil3058@bigpond.net.au>
----
- kernel/sched.c  |   10 ++++++++--
- kernel/sysctl.c |    8 ++++++++
- 2 files changed, 16 insertions(+), 2 deletions(-)
+And I had a fsckup while building 2.6.24-rc2 cuz I thought it needed to be 
+based on 2.6.23.1 that has made 2.6.24-rc2 the only kernel that will boot 
+without a panic, killing init message.
 
-Index: linux-2.6-2/kernel/sched.c
-===================================================================
---- linux-2.6-2.orig/kernel/sched.c
-+++ linux-2.6-2/kernel/sched.c
-@@ -474,6 +474,12 @@ const_debug unsigned int sysctl_sched_fe
- #define sched_feat(x) (sysctl_sched_features & SCHED_FEAT_##x)
- 
- /*
-+ * Number of tasks to iterate in a single balance run.
-+ * Limited because this is done with IRQs disabled.
-+ */
-+const_debug unsigned int sysctl_sched_nr_migrate = 32;
-+
-+/*
-  * For kernel-internal use: high-speed (but slightly incorrect) per-cpu
-  * clock constructed from sched_clock():
-  */
-@@ -2237,7 +2243,7 @@ balance_tasks(struct rq *this_rq, int th
- 	      enum cpu_idle_type idle, int *all_pinned,
- 	      int *this_best_prio, struct rq_iterator *iterator)
- {
--	int pulled = 0, pinned = 0, skip_for_load;
-+	int loops = 0, pulled = 0, pinned = 0, skip_for_load;
- 	struct task_struct *p;
- 	long rem_load_move = max_load_move;
- 
-@@ -2251,7 +2257,7 @@ balance_tasks(struct rq *this_rq, int th
- 	 */
- 	p = iterator->start(iterator->arg);
- next:
--	if (!p)
-+	if (!p || loops++ > sysctl_sched_nr_migrate)
- 		goto out;
- 	/*
- 	 * To help distribute high priority tasks accross CPUs we don't
-Index: linux-2.6-2/kernel/sysctl.c
-===================================================================
---- linux-2.6-2.orig/kernel/sysctl.c
-+++ linux-2.6-2/kernel/sysctl.c
-@@ -298,6 +298,14 @@ static struct ctl_table kern_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= &proc_dointvec,
- 	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "sched_nr_migrate",
-+		.data		= &sysctl_sched_nr_migrate,
-+		.maxlen		= sizeof(unsigned int),
-+		.mode		= 644,
-+		.proc_handler	= &proc_dointvec,
-+	},
- #endif
- 	{
- 		.ctl_name	= CTL_UNNUMBERED,
+I can survive that, but amanda (tar) went bonkers last night and tried to do a 
+level 0 on everything, which is about 50GB, but its virtual tape size is only 
+11GB.
 
+The last time this happened that line above fixed the device mapper to a 
+stable address at a major of 238 which tar was happy with.
 
+An ls -l of /dev/mapper:
+[root@coyote /]# ls -l /dev/mapper
+total 0
+crw------- 1 root root  10, 62 Nov  6 23:40 control
+brw-rw---- 1 root disk 238,  0 Nov  6 23:40 VolGroup00-LogVol00
+brw-rw---- 1 root disk 238,  1 Nov  6 23:40 VolGroup00-LogVol01
+
+So that hasn't changed, so what did?  Amanda itself hasn't been changed in 
+several months, running the 20070727 snapshot of amanda-2.5.2p1 all this 
+time.  Tar was updated by smart or yumex 2 or 3 days back, so it worked 
+correctly after the update.  That leaves something in 2.6.24-rc2.  I didn't 
+build rc1.
+
+Other than that, rc2 seems stable.  But auditd failed to start in the bootup 
+sequence. I think that's minor and may predate this particular kernel.  
+However, selinux did a relabel before it booted, could that be the cause?
+
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+An adequate bootstrap is a contradiction in terms.
