@@ -1,61 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755471AbXKGAoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756007AbXKGApZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755471AbXKGAoY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 19:44:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754263AbXKGAoP
+	id S1756007AbXKGApZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 19:45:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754712AbXKGApO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 19:44:15 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:58272 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754178AbXKGAoO (ORCPT
+	Tue, 6 Nov 2007 19:45:14 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:59322 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751079AbXKGApM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 19:44:14 -0500
-Date: Wed, 7 Nov 2007 01:43:50 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Ahmed S. Darwish" <darwish.07@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       Casey Schaufler <casey@schaufler-ca.com>, akpm@linux-foundation.org,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser
-Message-ID: <20071107004350.GS26163@stusta.de>
-References: <20071103164303.GA26707@ubuntu> <20071104122848.GC3921@ucw.cz> <20071105094007.GA19367@ubuntu> <alpine.LFD.0.999.0711050818200.15101@woody.linux-foundation.org> <20071106080637.GB26163@stusta.de> <alpine.LFD.0.999.0711060738270.15101@woody.linux-foundation.org> <20071106230044.GO26163@stusta.de> <alpine.LFD.0.999.0711061506550.15101@woody.linux-foundation.org> <20071107000705.GQ26163@stusta.de> <alpine.LFD.0.999.0711061626410.15101@woody.linux-foundation.org>
+	Tue, 6 Nov 2007 19:45:12 -0500
+Date: Tue, 6 Nov 2007 16:34:54 -0800
+From: Greg KH <greg@kroah.com>
+To: Andrew Morton <akpm@osdl.org>, Stephane Eranian <eranian@hpl.hp.com>
+Cc: perfmon@napali.hpl.hp.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] fix up perfmon to build on -mm
+Message-ID: <20071107003454.GA13374@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LFD.0.999.0711061626410.15101@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 06, 2007 at 04:27:19PM -0800, Linus Torvalds wrote:
-> 
-> 
-> On Wed, 7 Nov 2007, Adrian Bunk wrote:
-> > 
-> > But if you want to match "one character" (like TOMOYO does) or want to 
-> > check for printable characters except space (like Smack does) you must 
-> > know whether the byte string 0xC3 0xA0 is the character à or a sequence 
-> > of two characters with the second one being NBSP.
-> 
-> No you don't. You just check the binary value, and decide that ' ', '\t' 
-> and '\n' are special.
-> 
-> Don't go get excited.
+Here's a patch against my current tree that gets the perfmon code
+building and hopefully working.
 
-How should TOMOYO implement it's "match one character" in a pattern
-(used to allow or deny access in a name-based MAC)?
+Note, it needs the kobject_create_and_register() patch which is in my
+tree, but I do not think it made it to -mm yet.  The next -mm cycle
+should have it.
 
-> 		Linus
+Also, the sysfs usage in the perfmon code is quite strange and not
+documented at all.  Yes, there is a little bit in the documentation
+about what a few of the files do, but there are _way_ more files and
+even directories being created under /sys/kernel/perfmon/ that are not
+documented at all here.
 
-cu
-Adrian
+If you document this stuff, I think I can clean up your sysfs code a
+lot, making things simpler, easier to extend, and easier to understand.
+But as it is, I don't want to break anything as it's totally unknown how
+this stuff is supposed to work...
 
--- 
+Hint, use the Documentation/ABI directory to document your sysfs
+interfaces, that is what it is there for...
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+thanks,
 
+greg k-h
+
+---------------
+From: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: perfmon: fix up some static kobject usages
+
+This gets the perfmon code to build properly on the latest -mm tree, as
+well as removing some static kobjects.
+
+A lot of future kobject cleanups can be done on this code, but the
+documentation for the perfmon sysfs interface is very limited and does
+not describe all of the different files and subdirectories at all.
+
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ perfmon/perfmon_sysfs.c |   37 +++++++++++++++----------------------
+ 1 file changed, 15 insertions(+), 22 deletions(-)
+
+--- a/perfmon/perfmon_sysfs.c
++++ b/perfmon/perfmon_sysfs.c
+@@ -76,7 +76,8 @@ EXPORT_SYMBOL(pfm_controls);
+ 
+ DECLARE_PER_CPU(struct pfm_stats, pfm_stats);
+ 
+-static struct kobject pfm_kernel_kobj, pfm_kernel_fmt_kobj;
++static struct kobject *pfm_kernel_kobj;
++static struct kobject *pfm_kernel_fmt_kobj;
+ 
+ static void pfm_reset_stats(int cpu)
+ {
+@@ -402,31 +403,23 @@ static struct attribute_group pfm_kernel
+ 
+ int __init pfm_init_sysfs(void)
+ {
+-	int ret;
++	int ret = -ENOMEM;
+ 	int i, cpu = -1;
+ 
+-	kobject_init(&pfm_kernel_kobj);
+-	kobject_init(&pfm_kernel_fmt_kobj);
+-
+-	pfm_kernel_kobj.parent = &kernel_subsys.kobj;
+-	kobject_set_name(&pfm_kernel_kobj, "perfmon");
+-
+-	pfm_kernel_fmt_kobj.parent = &pfm_kernel_kobj;
+-	kobject_set_name(&pfm_kernel_fmt_kobj, "formats");
+-
+-	ret = kobject_add(&pfm_kernel_kobj);
+-	if (ret) {
+-		PFM_INFO("cannot add kernel object: %d", ret);
++	pfm_kernel_kobj = kobject_create_and_register("perfmon", kernel_kobj);
++	if (!pfm_kernel_kobj) {
++		PFM_INFO("cannot create perfmon kernel object");
+ 		goto error;
+ 	}
+ 
+-	ret = kobject_add(&pfm_kernel_fmt_kobj);
+-	if (ret) {
+-		PFM_INFO("cannot add fmt object: %d", ret);
++	pfm_kernel_fmt_kobj = kobject_create_and_register("formats",
++							  pfm_kernel_kobj);
++	if (!pfm_kernel_fmt_kobj) {
++		PFM_INFO("cannot add fmt object");
+ 		goto error_fmt;
+ 	}
+ 
+-	ret = sysfs_create_group(&pfm_kernel_kobj, &pfm_kernel_attr_group);
++	ret = sysfs_create_group(pfm_kernel_kobj, &pfm_kernel_attr_group);
+ 	if (ret) {
+ 		PFM_INFO("cannot create kernel group");
+ 		goto error_group;
+@@ -449,9 +442,9 @@ int __init pfm_init_sysfs(void)
+ 	return 0;
+ 
+ error_group:
+-	kobject_del(&pfm_kernel_fmt_kobj);
++	kobject_unregister(pfm_kernel_fmt_kobj);
+ error_fmt:
+-	kobject_del(&pfm_kernel_kobj);
++	kobject_unregister(pfm_kernel_kobj);
+ 
+ 	for (i=0; i < cpu; i++)
+ 		pfm_sysfs_del_cpu(i);
+@@ -683,7 +676,7 @@ int pfm_sysfs_add_fmt(struct pfm_smpl_fm
+ 
+ 	kobject_set_name(&fmt->kobj, fmt->fmt_name);
+ 	//kobj_set_kset_s(fmt, pfm_fmt_subsys);
+-	fmt->kobj.parent = &pfm_kernel_fmt_kobj;
++	fmt->kobj.parent = pfm_kernel_fmt_kobj;
+ 
+ 	ret = kobject_add(&fmt->kobj);
+ 	if (ret)
+@@ -861,7 +854,7 @@ int pfm_sysfs_add_pmu(struct pfm_pmu_con
+ 	kobject_init(&pmu->kobj);
+ 	kobject_set_name(&pmu->kobj, "pmu_desc");
+ 	//kobj_set_kset_s(pmu, pfm_pmu_subsys);
+-	pmu->kobj.parent = &pfm_kernel_kobj;
++	pmu->kobj.parent = pfm_kernel_kobj;
+ 
+ 	ret = kobject_add(&pmu->kobj);
+ 	if (ret)
