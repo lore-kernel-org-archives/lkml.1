@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbXKGDKb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756502AbXKGDR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756856AbXKGDKb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 22:10:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754861AbXKGDKX
+	id S1756502AbXKGDR1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 22:17:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754281AbXKGDRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 22:10:23 -0500
-Received: from web36609.mail.mud.yahoo.com ([209.191.85.26]:46869 "HELO
-	web36609.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755002AbXKGDKW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 22:10:22 -0500
-X-YMail-OSG: w6CorLcVM1mtycZOFPhFlgdm4AiO92_hy0rNVBK4nMyk9aavezwlZa7RtKnEub8YiYMdb5mcag--
-X-RocketYMMF: rancidfat
-Date: Tue, 6 Nov 2007 19:10:21 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] NetLabel: Introduce a new kernel configuration API for NetLabel - For 2.6.24-rc-git11 - Smack Version 10
-To: Joshua Brindle <method@manicmethod.com>, casey@schaufler-ca.com
-Cc: akpm@osdl.org, torvalds@osdl.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, paul.moore@hp.com
-In-Reply-To: <473119E6.7070904@manicmethod.com>
-MIME-Version: 1.0
+	Tue, 6 Nov 2007 22:17:19 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:46102 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753815AbXKGDRS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 22:17:18 -0500
+Date: Tue, 6 Nov 2007 22:17:10 -0500
+From: Rik van Riel <riel@redhat.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [RFC PATCH 3/10] define page_file_cache
+Message-ID: <20071106221710.3f9b8dd6@bree.surriel.com>
+In-Reply-To: <Pine.LNX.4.64.0711061856400.5565@schroedinger.engr.sgi.com>
+References: <20071103184229.3f20e2f0@bree.surriel.com>
+	<20071103185516.24832ab0@bree.surriel.com>
+	<Pine.LNX.4.64.0711061821010.5249@schroedinger.engr.sgi.com>
+	<20071106215552.4ab7df81@bree.surriel.com>
+	<Pine.LNX.4.64.0711061856400.5565@schroedinger.engr.sgi.com>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <570441.41117.qm@web36609.mail.mud.yahoo.com>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Joshua Brindle <method@manicmethod.com> wrote:
-
-> Joshua Brindle wrote:
-> > Casey Schaufler wrote:
-> >> From: Paul Moore <paul.moore@hp.com>
-> >>
-> >> Add a new set of configuration functions to the NetLabel/LSM API so that
-> >> LSMs can perform their own configuration of the NetLabel subsystem 
-> >> without
-> >> relying on assistance from userspace.
-> >>   
-> > I'm still not receiving the actual patch email on lsm (perhaps its too 
-> > long and should be split up..) so I'll just respond on this email. 
-> > Using the v10 patches on your website I'm still seeing strange 
-> > behavior where echo foo > /proc/self/attr/current changes the label of 
-> > every process on the system to foo (verified with both ps -AZ and cat 
-> > /proc/1/attr/current).
-> >
-> Actually I'm getting more strange behavior:
+On Tue, 6 Nov 2007 19:02:47 -0800 (PST)
+Christoph Lameter <clameter@sgi.com> wrote:
+> On Tue, 6 Nov 2007, Rik van Riel wrote:
 > 
-> On terminal 1 I do:
-> echo foo > /proc/self/attr/current
-> then ps -AZ shows foo for every process
-> touch somefile; attr -S -g SMACK64 somefile says foo
+> > > I think we could add a flag to the bdi to indicate wheter the backing 
+> > > store is a disk file. In fact you can also deduce if if a device has
+> > > no writeback capability set in the BDI.
+> > > 
+> > > > Unfortunately this needs to use a page flag, since the
+> > > > PG_swapbacked state needs to be preserved all the way
+> > > > to the point where the page is last removed from the
+> > > > LRU.  Trying to derive the status from other info in
+> > > > the page resulted in wrong VM statistics in earlier
+> > > > split VM patchsets.
+> > > 
+> > > The bdi may avoid that extra flag.
+> > 
+> > The bdi will no longer be accessible by the time a page
+> > makes it to free_hot_cold_page, which is one place in the
+> > kernel where this information is needed.
 > 
-> On terminal 2 I do:
-> ps -AZ and everything shows up as _
-> cat /proc/$pid of bash on term 1/attr/current is _
+> At that point you need only information about which list the page
+> was put on. Dont we need something like PageLRU -> PageFileLRU
+> and PageMemLRU?
 
-Now this I can explain. Every task has it's own correct
-label. The problem is a missing smack_getprocattr() hook.
-ps is getting the value for "current" on the current process,
-not that of the named process. Interestingly, the Smack label
-of /proc/<xxx>/attr/current is correct.
+That is exactly why we need a page flag.  If you have a better
+name for the page flag, please let me know.
 
-So the fix is to put in the smack_getprocattr() hook.
-Easily accomplished. Thank you for the informative and
-helpful report.
+Note that the kind of page needs to be separate from PageLRU,
+since pages are taken off of and put back onto LRUs all the
+time.
+ 
+> The page may change its nature I think? What if a page becomes
+> swap backed?
 
+Every anonymous, tmpfs or shared memory segment page is potentially
+swap backed. That is the whole point of the PG_swapbacked flag.
 
-Casey Schaufler
-casey@schaufler-ca.com
+A page from a filesystem like ext3 or NFS cannot suddenly turn into
+a swap backed page.  This page "nature" is not changed during the
+lifetime of a page.
+
+-- 
+"Debugging is twice as hard as writing the code in the first place.
+Therefore, if you write the code as cleverly as possible, you are,
+by definition, not smart enough to debug it." - Brian W. Kernighan
