@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759306AbXKGOj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759404AbXKGOkB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759306AbXKGOj2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 09:39:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758649AbXKGOjK
+	id S1759404AbXKGOkB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 09:40:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758519AbXKGOjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 09:39:10 -0500
-Received: from mail.parknet.ad.jp ([210.171.162.6]:46206 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758808AbXKGOjJ (ORCPT
+	Wed, 7 Nov 2007 09:39:52 -0500
+Received: from wx-out-0506.google.com ([66.249.82.231]:9435 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758524AbXKGOjv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 09:39:09 -0500
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Olof Johansson <olof@lixom.net>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fat: silence warning for 64KB PAGE_SIZE builds
-References: <20071107051540.GB24266@lixom.net>
-Date: Wed, 07 Nov 2007 23:39:01 +0900
-In-Reply-To: <20071107051540.GB24266@lixom.net> (Olof Johansson's message of
-	"Tue, 6 Nov 2007 23:15:40 -0600")
-Message-ID: <87prymqfwa.fsf@duaron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
+	Wed, 7 Nov 2007 09:39:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=L1IKMY3WpNZd1PkPle/G53ZslxUVWAIZCQYcxsmS8Ca6BF2rbpGb6eVeLZegUxFLnr9XjSYGgJT7p+DIYZvW2khuThVMA5Xw+8ZUcYvXMiOzD+nOmHylNLFVISWX4W23XSPDXbcmDFUReGVIu4jON2snCzJ6e51CWqZZOysZKSg=
+Message-ID: <961aa3350711070639p18cb51f9gc2a3f31e264b7e27@mail.gmail.com>
+Date: Wed, 7 Nov 2007 23:39:49 +0900
+From: "Akinobu Mita" <akinobu.mita@gmail.com>
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       "Christoph Lameter" <clameter@sgi.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] slab: fix typo in allocation failure handling
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Olof Johansson <olof@lixom.net> writes:
+This patch fixes wrong array index in allocation failure handling.
 
-> logical_sector_size can never be more than 16 bits worth, but switching
-> it to an int silences gcc. It's a sanity check that can never fail with
-> 64KB PAGE_SIZE but it seems like it'd still be useful for other page
-> sizes, so it's worth keeping:
->
->         if (!is_power_of_2(logical_sector_size)
->             || (logical_sector_size < 512)
->             || (PAGE_CACHE_SIZE < logical_sector_size)) {
->                 if (!silent)
->                         printk(KERN_ERR "FAT: bogus logical sector size %u\n",
->                                logical_sector_size);
->                 brelse(bh);
->                 goto out_invalid;
->         }
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 
-Please use 4096 instead of allowing it, at least for now.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+---
+ mm/slab.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: 2.6-git/mm/slab.c
+===================================================================
+--- 2.6-git.orig/mm/slab.c
++++ 2.6-git/mm/slab.c
+@@ -1043,7 +1043,7 @@ static struct array_cache **alloc_alien_
+ 			}
+ 			ac_ptr[i] = alloc_arraycache(node, limit, 0xbaadf00d);
+ 			if (!ac_ptr[i]) {
+-				for (i--; i <= 0; i--)
++				for (i--; i >= 0; i--)
+ 					kfree(ac_ptr[i]);
+ 				kfree(ac_ptr);
+ 				return NULL;
