@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759320AbXKGWEi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759344AbXKGWFk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759320AbXKGWEi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 17:04:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757027AbXKGWE2
+	id S1759344AbXKGWFk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 17:05:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755133AbXKGWFc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 17:04:28 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:52301 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756131AbXKGWE0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 17:04:26 -0500
-To: hch@infradead.org
-Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, crispin@crispincowan.com
-Subject: Re: Problem with accessing namespace_sem from LSM.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <200711060400.lA640fuE078356@www262.sakura.ne.jp>
-	<20071106133559.GA13366@infradead.org>
-	<200711062352.CIJ34385.LSOHJFOVFFOtMQ@I-love.SAKURA.ne.jp>
-	<20071107173039.GA25560@infradead.org>
-In-Reply-To: <20071107173039.GA25560@infradead.org>
-Message-Id: <200711080704.CHC65673.OOtFJFFSHQVOML@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Thu, 8 Nov 2007 07:04:23 +0900
-Mime-Version: 1.0
+	Wed, 7 Nov 2007 17:05:32 -0500
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:40091 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755110AbXKGWFb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 17:05:31 -0500
+Date: Wed, 7 Nov 2007 23:04:55 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>, Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [PATCH] r8169 fix regression on ASUS motherboards
+Message-ID: <20071107220455.GA15367@electric-eye.fr.zoreil.com>
+References: <4731E2AB.5080703@rtr.ca> <4731FDB7.8010505@rtr.ca>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4731FDB7.8010505@rtr.ca>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Mark Lord <lkml@rtr.ca> :
+> Fix r8169 regression on ASUS motherboards.
+> 
+> The r8169 ethernet driver worked fine in 2.6.23, but fails
+> in 2.6.24-rc* for the onboard ethernet of ASUS P5B series motherboards.
+> This patch fixes it again.
+[...]
+> --- broken/drivers/net/r8169.c	2007-11-07 12:32:29.000000000 -0500
+> +++ linux/drivers/net/r8169.c	2007-11-07 12:55:07.000000000 -0500
+> @@ -1325,6 +1325,7 @@
+> 		rtl8169sb_hw_phy_config(ioaddr);
+> 		break;
+> 	case RTL_GIGA_MAC_VER_11:
+> +		break;
+> 	case RTL_GIGA_MAC_VER_12:
+> 	case RTL_GIGA_MAC_VER_17:
+> 		rtl8168b_hw_phy_config(ioaddr);
 
-Christoph Hellwig wrote:
-> > Isn't security_inode_create() a part of VFS internals?
-> It's not.  security_inode_create is part of the LSM infrastructure, and
-> the actual methods are part of security modules and definitively not
-> VFS internals.
-The reason why I want to access namespace_sem inside security_inode_create() is that
-it doesn't receive "struct vfsmount" parameter.
-If "struct vfsmount" *were* passed to security_inode_create(), 
-I have no need to access namespace_sem.
+I am not convinced, the broken ones include some RTL_GIGA_MAC_VER_12
+too, namely XID = 0x38000000.
 
-And now, since calling down_read(&namespace_sem) causes deadlock, I'm looking for a solution.
-What you said ("I'd start looking for design bugs in whatever code you have using it first.")
-sounds "never try to implement pathname based access control at security_inode_create()",
-which makes AppArmor (for OpenSuSE 10.1/10.2) and TOMOYO unable to apply access control.
+I would much prefer to revert the broken commit completely (which I am
+currently isolating).
 
-At first, I thought that this lockdep's warning is a false positive,
-since "struct inode" is allocated/freed dynamically.
-But the warning still appears even after I disabled freeing memory
-at destroy_inode() in fs/namei.c (so that address of locking object
-in "struct inode" never be reused), it is likely genuine.
 
-Regards.
-
+-- 
+Ueimor
