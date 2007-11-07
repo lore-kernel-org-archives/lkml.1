@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759422AbXKGSak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759507AbXKGSbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759422AbXKGSak (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 13:30:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758777AbXKGSa1
+	id S1759507AbXKGSbY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 13:31:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753765AbXKGSbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 13:30:27 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:39223 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758341AbXKGSa0 (ORCPT
+	Wed, 7 Nov 2007 13:31:16 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51799 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753578AbXKGSbO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 13:30:26 -0500
-Date: Wed, 7 Nov 2007 13:30:01 -0500
-Message-Id: <200711071830.lA7IU1Di023742@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Paul Albrecht <albrecht@rdi1.com>
-Cc: David Howells <dhowells@redhat.com>, Erez Zadok <ezk@cs.sunysb.edu>,
-       akpm@linux-foundation.org, unionfs@filesystems.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Unionfs] Re: [PATCH] IGET: Stop UnionFS from using iget() and read_inode() 
-In-reply-to: Your message of "Wed, 07 Nov 2007 09:14:27 CST."
-             <1194448467.3140.6.camel@albrecht.rdi1.com> 
-X-MailKey: Erez_Zadok
+	Wed, 7 Nov 2007 13:31:14 -0500
+Date: Wed, 7 Nov 2007 10:30:28 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gene Heskett <gene.heskett@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>
+Subject: Re: 2.6.24-rc2=another train wreck with amanda
+Message-Id: <20071107103028.f5166fd3.akpm@linux-foundation.org>
+In-Reply-To: <200711070649.02136.gene.heskett@gmail.com>
+References: <200711070649.02136.gene.heskett@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <1194448467.3140.6.camel@albrecht.rdi1.com>, Paul Albrecht writes:
-> On Wed, 2007-11-07 at 15:04 +0000, David Howells wrote:
-> > Paul Albrecht <albrecht@rdi1.com> wrote:
-> > 
-> > > Does your test set include readahead-list? I can't get it to work with a
-> > > union mounted filesystem without segfault'ing and kernel oops'ing.
-> > 
-> > Is that with or without this patch?
+> On Wed, 07 Nov 2007 06:49:01 -0500 Gene Heskett <gene.heskett@gmail.com> wrote:
+> Greetings;
 > 
-> Without ... what's the difference? I asked a specific question about the
-> test set that was used to validate unionfs and your fix.  
+> I have this line in my /etc/modprobe.conf:
+> options dm-mod major=238
 > 
-> Paul Albrecht
+> And I had a fsckup while building 2.6.24-rc2 cuz I thought it needed to be 
+> based on 2.6.23.1 that has made 2.6.24-rc2 the only kernel that will boot 
+> without a panic, killing init message.
+> 
+> I can survive that, but amanda (tar) went bonkers last night and tried to do a 
+> level 0 on everything, which is about 50GB, but its virtual tape size is only 
+> 11GB.
+> 
+> The last time this happened that line above fixed the device mapper to a 
+> stable address at a major of 238 which tar was happy with.
+> 
+> An ls -l of /dev/mapper:
+> [root@coyote /]# ls -l /dev/mapper
+> total 0
+> crw------- 1 root root  10, 62 Nov  6 23:40 control
+> brw-rw---- 1 root disk 238,  0 Nov  6 23:40 VolGroup00-LogVol00
+> brw-rw---- 1 root disk 238,  1 Nov  6 23:40 VolGroup00-LogVol01
+> 
+> So that hasn't changed, so what did?  Amanda itself hasn't been changed in 
+> several months, running the 20070727 snapshot of amanda-2.5.2p1 all this 
+> time.  Tar was updated by smart or yumex 2 or 3 days back, so it worked 
+> correctly after the update.  That leaves something in 2.6.24-rc2.  I didn't 
+> build rc1.
+> 
+> Other than that, rc2 seems stable.  But auditd failed to start in the bootup 
+> sequence. I think that's minor and may predate this particular kernel.  
+> However, selinux did a relabel before it booted, could that be the cause?
+> 
 
-Paul,
+An selinux relabelling could well have caused a full backup by amanda.
 
-I'll check out the readahead stuff shortly.  I doubt the iget patch has
-anything to do with it.
+There's a way of forcing a relabelling so that you can confirm this, but I
+forget what it is (cc's added, please).
 
-Cheers,
-Erez.
+But we don't know why the relabelling happened, do we?
