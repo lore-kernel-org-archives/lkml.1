@@ -1,65 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759795AbXKGSoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759503AbXKGSqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759795AbXKGSoP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 13:44:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754820AbXKGSoA
+	id S1759503AbXKGSqS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 13:46:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754252AbXKGSqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 13:44:00 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:57235 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753262AbXKGSn7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 13:43:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=LRv/ez5hhwRPdJ47W49AKfJ/k2hJo3UUYC2hWfKkAbvTqBlaHtBk73NOVgLSmRJo7MqwLXcMuARuzgjKwSoYj4D5UJx1tJp2CG3AgXdu79KvUgVRCDe/wRN78uwoqDv0N6jrQ+3S0pM+nlP23a+CrPbJNtznk3Fx8aJwRvdB9gg=
-Message-ID: <2c0942db0711071043p7cd31f6di9031816c1fed81ca@mail.gmail.com>
-Date: Wed, 7 Nov 2007 10:43:56 -0800
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Roel Kluin" <12o3l@tiscali.nl>
-Subject: Re: [PATCH] fix incorrect test in trident_ac97_set(); sound/oss/trident.c
-Cc: lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <47320533.4020400@tiscali.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Wed, 7 Nov 2007 13:46:09 -0500
+Received: from mga03.intel.com ([143.182.124.21]:55707 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754254AbXKGSqI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 13:46:08 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,385,1188802800"; 
+   d="scan'208";a="313803281"
+Subject: [PATCH] dmaengine: Fix broken device refcounting
+From: Dan Williams <dan.j.williams@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Shannon Nelson <shannon.nelson@intel.com>, hskinnemoen@atmel.com,
+       stable@kernel.org
+Content-Type: text/plain
+Date: Wed, 07 Nov 2007 11:46:07 -0700
+Message-Id: <1194461167.8489.6.camel@dwillia2-linux.ch.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47320533.4020400@tiscali.nl>
-X-Google-Sender-Auth: 4cd3c4efa94b03a6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 7, 2007 10:34 AM, Roel Kluin <12o3l@tiscali.nl> wrote:
-> If count reaches zero, the loop ends, but the postfix decrement subtracts it.
-> so, testing for 'count == 0' will not work.
->
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> ---
-> diff --git a/sound/oss/trident.c b/sound/oss/trident.c
-> index 96adc47..94b5fb4 100644
-> --- a/sound/oss/trident.c
-> +++ b/sound/oss/trident.c
-> @@ -2939,7 +2939,7 @@ trident_ac97_set(struct ac97_codec *codec, u8 reg, u16 val)
->
->         data |= (mask | (reg & AC97_REG_ADDR));
->
-> -       if (count == 0) {
-> +       if (count == -1) {
->                 printk(KERN_ERR "trident: AC97 CODEC write timed out.\n");
->                 spin_unlock_irqrestore(&card->lock, flags);
->                 return;
-> @@ -2999,7 +2999,7 @@ trident_ac97_get(struct ac97_codec *codec, u8 reg)
->         } while (count--);
->         spin_unlock_irqrestore(&card->lock, flags);
->
-> -       if (count == 0) {
-> +       if (count == -1) {
->                 printk(KERN_ERR "trident: AC97 CODEC read timed out.\n");
->                 data = 0;
->         }
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
 
-You didn't test this: count is unsigned. Change the loop condition to
-be --count instead.
+When a DMA device is unregistered, its reference count is decremented
+twice for each channel: Once dma_class_dev_release() and once in
+dma_chan_cleanup(). This may result in the DMA device driver's
+remove() function completing before all channels have been cleaned
+up, causing lots of use-after-free fun.
 
-Ray
+Fix it by incrementing the device's reference count twice for each
+channel during registration.
+
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+[dan.j.williams@intel.com: kill unnecessary client refcounting]
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+Cc: stable@kernel.org
+---
+
+This fixes dmaengine refcounting in 2.6.23.y and 2.6.24-rc.
+
+ drivers/dma/dmaengine.c |   17 ++++++-----------
+ 1 files changed, 6 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+index 84257f7..ec7e871 100644
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -186,10 +186,9 @@ static void dma_client_chan_alloc(struct dma_client *client)
+ 				/* we are done once this client rejects
+ 				 * an available resource
+ 				 */
+-				if (ack == DMA_ACK) {
++				if (ack == DMA_ACK)
+ 					dma_chan_get(chan);
+-					kref_get(&device->refcount);
+-				} else if (ack == DMA_NAK)
++				else if (ack == DMA_NAK)
+ 					return;
+ 			}
+ 		}
+@@ -276,11 +275,8 @@ static void dma_clients_notify_removed(struct dma_chan *chan)
+ 		/* client was holding resources for this channel so
+ 		 * free it
+ 		 */
+-		if (ack == DMA_ACK) {
++		if (ack == DMA_ACK)
+ 			dma_chan_put(chan);
+-			kref_put(&chan->device->refcount,
+-				dma_async_device_cleanup);
+-		}
+ 	}
+ 
+ 	mutex_unlock(&dma_list_mutex);
+@@ -320,11 +316,8 @@ void dma_async_client_unregister(struct dma_client *client)
+ 			ack = client->event_callback(client, chan,
+ 				DMA_RESOURCE_REMOVED);
+ 
+-			if (ack == DMA_ACK) {
++			if (ack == DMA_ACK)
+ 				dma_chan_put(chan);
+-				kref_put(&chan->device->refcount,
+-					dma_async_device_cleanup);
+-			}
+ 		}
+ 
+ 	list_del(&client->global_node);
+@@ -401,6 +394,8 @@ int dma_async_device_register(struct dma_device *device)
+ 			goto err_out;
+ 		}
+ 
++		/* One for the channel, one of the class device */
++		kref_get(&device->refcount);
+ 		kref_get(&device->refcount);
+ 		kref_init(&chan->refcount);
+ 		chan->slow_ref = 0;
