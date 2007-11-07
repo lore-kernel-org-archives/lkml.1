@@ -1,126 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757229AbXKGP6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755670AbXKGQFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757229AbXKGP6Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 10:58:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbXKGP6P
+	id S1755670AbXKGQFA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 11:05:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbXKGQEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 10:58:15 -0500
-Received: from ts.adaptec.com ([162.62.93.58]:52083 "EHLO mail-gw3.adaptec.com"
+	Wed, 7 Nov 2007 11:04:53 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:38322 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754203AbXKGP6O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 10:58:14 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----_=_NextPart_001_01C82157.000DDF72"
-Subject: [PATCH 1/1] aacraid: don't assign cpu_to_le32(int) to u8
-Date: Wed, 7 Nov 2007 10:58:12 -0500
-Message-ID: <AE4F746F2AECFC4DA4AADD66A1DFEF01F95EF7@otce2k301.adaptec.com>
-In-Reply-To: <jefxzqqeha.fsf@sykes.suse.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 1/1] aacraid: don't assign cpu_to_le32(int) to u8
-Thread-Index: Acgci4Yt2iA4UnBvSre5X+z3cyv6rAEyZGvw
-References: <20071031150216.88cecc21.sfr@canb.auug.org.au><20071101173221.2e1fea42.sfr@canb.auug.org.au> <jefxzqqeha.fsf@sykes.suse.de>
-From: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
-To: "Andreas Schwab" <schwab@suse.de>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>
-Cc: <linux-scsi@vger.kernel.org>, "LKML" <linux-kernel@vger.kernel.org>
+	id S1751079AbXKGQEw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 11:04:52 -0500
+Date: Wed, 7 Nov 2007 17:06:29 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: unification of cfufreq/Kconfig
+Message-ID: <20071107160629.GA17238@uranus.ravnborg.org>
+References: <11943900793940-git-send-email-sam@ravnborg.org> <20071107060220.GX26163@stusta.de> <20071107070644.GA13937@uranus.ravnborg.org> <20071107071801.GY26163@stusta.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071107071801.GY26163@stusta.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+On Wed, Nov 07, 2007 at 08:18:01AM +0100, Adrian Bunk wrote:
+> On Wed, Nov 07, 2007 at 08:06:44AM +0100, Sam Ravnborg wrote:
+> > On Wed, Nov 07, 2007 at 07:02:20AM +0100, Adrian Bunk wrote:
+> > > On Wed, Nov 07, 2007 at 12:01:12AM +0100, Sam Ravnborg wrote:
+> > > >...
+> > > >  config X86_SPEEDSTEP_CENTRINO
+> > > > -	tristate "Intel Enhanced SpeedStep"
+> > > > +	tristate "Intel Enhanced SpeedStep (deprecated)"
+> > > >  	select CPU_FREQ_TABLE
+> > > > -	select X86_SPEEDSTEP_CENTRINO_TABLE
+> > > > +	select X86_SPEEDSTEP_CENTRINO_TABLE if X86_32
+> > > > +	depends on X86_64 && ACPI_PROCESSOR
+> > > >...
+> > > 
+> > > No.
+> > > 
+> > > 	depends on ACPI_PROCESSOR if X86_64
+> > 
+> > Gives syntax error.
+> 
+> That happens when you review something without trying it...
+> 
+> 	depends on (ACPI_PROCESSOR || !X86_64)
 
-------_=_NextPart_001_01C82157.000DDF72
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Got confused by the if and did the wrong conversion.
+To make it look like the other config options I will use:
 
-Good point, thanks. The intent of the management applications
-utilization of this AIF report is to observe the LSB of the value of
-integer value in BlinkLED. The actions of the cpu_to_le32 actually
-breaks this and reports the wrong content in swapped architectures.
+	depends on X86_64 || (X86_32 && ACPI_PROCESSOR)
 
-This attached follow-up patch is against current scsi-misc-2.6 *after*
-the application of the 'don't assign cpu_to_le32(constant) to u8' patch
-submitted by Stephen Rothwell which has already been taken by the -mm
-tree. Inspection of other areas of the aacraid driver came up blank for
-similar style bugs.
+It is longer but simpler.
 
-ObligatoryDisclaimer: Please accept my condolences regarding Outlook's
-handling of patch attachments (inline gets damaged, use attachment).
-
-Signed-off-by: Mark Salyzyn <aacraid@adaptec.com>
-
- drivers/scsi/aacraid/commsup.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff -ru a/drivers/scsi/aacraid/commsup.c
-b/drivers/scsi/aacraid/commsup.c
---- a/drivers/scsi/aacraid/commsup.c    2007-11-07 10:35:16.603727464
--0500
-+++ b/drivers/scsi/aacraid/commsup.c    2007-11-07 10:37:50.540311107
--0500
-@@ -1342,7 +1342,7 @@
-                        aif->data[0] =3D AifEnExpEvent;
-                        aif->data[1] =3D AifExeFirmwarePanic;
-                        aif->data[2] =3D AifHighPriority;
--                       aif->data[3] =3D cpu_to_le32(BlinkLED);
-+                       aif->data[3] =3D BlinkLED;
-
-                        /*
-                         * Put the FIB onto the
-
-Sincerely -- Mark Salyzyn
-
-> -----Original Message-----
-> From: Andreas Schwab [mailto:schwab@suse.de]=20
-> Sent: Thursday, November 01, 2007 9:31 AM
-> To: Stephen Rothwell
-> Cc: AACRAID; linux-scsi@vger.kernel.org; LKML
-> Subject: Re: [PATCHv2] aacraid: don't assign=20
-> cpu_to_le32(constant) to u8
->=20
-> Stephen Rothwell <sfr@canb.auug.org.au> writes:
->=20
-> > diff --git a/drivers/scsi/aacraid/commsup.c=20
-> b/drivers/scsi/aacraid/commsup.c
-> > index 240a0bb..3c2dbc0 100644
-> > --- a/drivers/scsi/aacraid/commsup.c
-> > +++ b/drivers/scsi/aacraid/commsup.c
-> > @@ -1339,9 +1339,9 @@ int aac_check_health(struct aac_dev * aac)
-> >  			aif =3D (struct aac_aifcmd *)hw_fib->data;
-> >  			aif->command =3D cpu_to_le32(AifCmdEventNotify);
-> >  		 	aif->seqnum =3D cpu_to_le32(0xFFFFFFFF);
-> > -		 	aif->data[0] =3D cpu_to_le32(AifEnExpEvent);
-> > -			aif->data[1] =3D cpu_to_le32(AifExeFirmwarePanic);
-> > -		 	aif->data[2] =3D cpu_to_le32(AifHighPriority);
-> > +			aif->data[0] =3D AifEnExpEvent;
-> > +			aif->data[1] =3D AifExeFirmwarePanic;
-> > +			aif->data[2] =3D AifHighPriority;
-> >  			aif->data[3] =3D cpu_to_le32(BlinkLED);
->=20
-> What about the last line?
->=20
-> Andreas.
-
-------_=_NextPart_001_01C82157.000DDF72
-Content-Type: application/octet-stream;
-	name="aacraid_BlinkLED.patch"
-Content-Transfer-Encoding: base64
-Content-Description: aacraid_BlinkLED.patch
-Content-Disposition: attachment;
-	filename="aacraid_BlinkLED.patch"
-
-ZGlmZiAtcnUgYS9kcml2ZXJzL3Njc2kvYWFjcmFpZC9jb21tc3VwLmMgYi9kcml2ZXJzL3Njc2kv
-YWFjcmFpZC9jb21tc3VwLmMKLS0tIGEvZHJpdmVycy9zY3NpL2FhY3JhaWQvY29tbXN1cC5jCTIw
-MDctMTEtMDcgMTA6MzU6MTYuNjAzNzI3NDY0IC0wNTAwCisrKyBiL2RyaXZlcnMvc2NzaS9hYWNy
-YWlkL2NvbW1zdXAuYwkyMDA3LTExLTA3IDEwOjM3OjUwLjU0MDMxMTEwNyAtMDUwMApAQCAtMTM0
-Miw3ICsxMzQyLDcgQEAKIAkJCWFpZi0+ZGF0YVswXSA9IEFpZkVuRXhwRXZlbnQ7CiAJCQlhaWYt
-PmRhdGFbMV0gPSBBaWZFeGVGaXJtd2FyZVBhbmljOwogCQkJYWlmLT5kYXRhWzJdID0gQWlmSGln
-aFByaW9yaXR5OwotCQkJYWlmLT5kYXRhWzNdID0gY3B1X3RvX2xlMzIoQmxpbmtMRUQpOworCQkJ
-YWlmLT5kYXRhWzNdID0gQmxpbmtMRUQ7CiAKIAkJCS8qCiAJCQkgKiBQdXQgdGhlIEZJQiBvbnRv
-IHRoZQo=
-
-------_=_NextPart_001_01C82157.000DDF72--
+Thanks,
+	Sam
