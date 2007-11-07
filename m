@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbXKGLtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756639AbXKGLvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755401AbXKGLtX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 06:49:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbXKGLtP
+	id S1756639AbXKGLvW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 06:51:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbXKGLvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 06:49:15 -0500
-Received: from vms040pub.verizon.net ([206.46.252.40]:52730 "EHLO
-	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751209AbXKGLtO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 06:49:14 -0500
-Date: Wed, 07 Nov 2007 06:49:01 -0500
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: 2.6.24-rc2=another train wreck with amanda
-To: linux-kernel@vger.kernel.org
-Message-id: <200711070649.02136.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-User-Agent: KMail/1.9.7
+	Wed, 7 Nov 2007 06:51:14 -0500
+Received: from styx.suse.cz ([82.119.242.94]:59289 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753241AbXKGLvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 06:51:13 -0500
+Date: Wed, 7 Nov 2007 12:51:10 +0100
+From: Jan Kara <jack@suse.cz>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: [RFC] [PATCH 3/3] Recursive mtime for ext3
+Message-ID: <20071107115110.GC22214@duck.suse.cz>
+References: <20071106171537.GD23689@duck.suse.cz> <20071106171945.GG23689@duck.suse.cz> <20071106094056.3352a574@laptopd505.fenrus.org> <4730ACBF.6050606@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4730ACBF.6050606@zytor.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings;
+On Tue 06-11-07 10:04:47, H. Peter Anvin wrote:
+> Arjan van de Ven wrote:
+> >On Tue, 6 Nov 2007 18:19:45 +0100
+> >Jan Kara <jack@suse.cz> wrote:
+> >
+> >>Implement recursive mtime (rtime) feature for ext3. The feature works
+> >>as follows: In each directory we keep a flag EXT3_RTIME_FL
+> >>(modifiable by a user) whether rtime should be updated. In case a
+> >>directory or a file in it is modified and when the flag is set,
+> >>directory's rtime is updated, the flag is cleared, and we move to the
+> >>parent. If the flag is set there, we clear it, update rtime and
+> >>continue upwards upto the root of the filesystem. In case a regular
+> >>file or symlink is modified, we pick arbitrary of its parents
+> >>(actually the one that happens to be at the head of i_dentry list)
+> >>and start the rtime update algorith there.
+> >
+> >Ok since mtime (and rtime) are part of the inode and not the dentry...
+> >how do you deal with hardlinks? And with cases of files that have been
+> >unlinked? (ok the later is a wash obviously other than not crashing)
+  Unlinked files are easy - you just don't propagate the rtime anywhere.
+For hardlinks see below.
 
-I have this line in my /etc/modprobe.conf:
-options dm-mod major=238
+> There is only one possible answer... he only updates the directory path 
+> that was used to touch the particular file involved.  Thus, the 
+> semantics gets grotty not just in the presence of hard links, but also 
+> in the presence of bind- and other non-root mounts.
+  Update of recursive mtime does not pass filesystem boundaries (i.e.
+mountpoints) so bind mounts and such are non-issue (hmm, at least that was
+my original idea but as I'm looking now I don't handle bind mounts properly
+so that needs to be fixed). With hardlinks, you are right that the
+behaviour is undeterministic - I tried to argue in the text of the mail
+that this does not actually matter - there are not many hardlinks on usual
+system and so the application can check hardlinked files in the old way -
+i.e. look at mtime.
 
-And I had a fsckup while building 2.6.24-rc2 cuz I thought it needed to be 
-based on 2.6.23.1 that has made 2.6.24-rc2 the only kernel that will boot 
-without a panic, killing init message.
-
-I can survive that, but amanda (tar) went bonkers last night and tried to do a 
-level 0 on everything, which is about 50GB, but its virtual tape size is only 
-11GB.
-
-The last time this happened that line above fixed the device mapper to a 
-stable address at a major of 238 which tar was happy with.
-
-An ls -l of /dev/mapper:
-[root@coyote /]# ls -l /dev/mapper
-total 0
-crw------- 1 root root  10, 62 Nov  6 23:40 control
-brw-rw---- 1 root disk 238,  0 Nov  6 23:40 VolGroup00-LogVol00
-brw-rw---- 1 root disk 238,  1 Nov  6 23:40 VolGroup00-LogVol01
-
-So that hasn't changed, so what did?  Amanda itself hasn't been changed in 
-several months, running the 20070727 snapshot of amanda-2.5.2p1 all this 
-time.  Tar was updated by smart or yumex 2 or 3 days back, so it worked 
-correctly after the update.  That leaves something in 2.6.24-rc2.  I didn't 
-build rc1.
-
-Other than that, rc2 seems stable.  But auditd failed to start in the bootup 
-sequence. I think that's minor and may predate this particular kernel.  
-However, selinux did a relabel before it booted, could that be the cause?
-
+								Honza
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-An adequate bootstrap is a contradiction in terms.
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
