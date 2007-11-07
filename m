@@ -1,65 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759997AbXKGTBN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758987AbXKGTEv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759997AbXKGTBN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 14:01:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754389AbXKGTA7
+	id S1758987AbXKGTEv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 14:04:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbXKGTEp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 14:00:59 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60121 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754041AbXKGTA6 (ORCPT
+	Wed, 7 Nov 2007 14:04:45 -0500
+Received: from nf-out-0910.google.com ([64.233.182.190]:24959 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752707AbXKGTEo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 14:00:58 -0500
-Date: Wed, 7 Nov 2007 11:00:56 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-cc: Johannes Weiner <hannes-kernel@saeurebad.de>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Mel Gorman <mel@skynet.ie>
-Subject: Re: [patch 04/23] dentries: Extract common code to remove dentry
- from lru
-In-Reply-To: <20071107185452.GD8918@lazybastard.org>
-Message-ID: <Pine.LNX.4.64.0711071100350.12363@schroedinger.engr.sgi.com>
-References: <20071107011130.382244340@sgi.com> <20071107011227.298491275@sgi.com>
- <20071107085027.GA6243@cataract> <20071107094348.GB7374@lazybastard.org>
- <Pine.LNX.4.64.0711071054240.11906@schroedinger.engr.sgi.com>
- <20071107185452.GD8918@lazybastard.org>
+	Wed, 7 Nov 2007 14:04:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Ql+xWJvYBfiMotmEDFydoD4lEmYWGLQrQnCWwY3XEy82xCDTJTXXwBaR9Hp4xQbkIG6+lrNeTBX4KC2Y//y93RZGG4wdRYH/Qqo3+XtefrKpukcQumLpo4Rgp6ZUBRxVPWNL2cxE/Yb6GtZ2YiaNdeJPvyy7Uhpg4hhbfRCSYyc=
+Message-ID: <2c0942db0711071104x4360c38s930f6f9d494d4bb6@mail.gmail.com>
+Date: Wed, 7 Nov 2007 11:04:41 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Roel Kluin" <12o3l@tiscali.nl>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] fix incorrect test in trident_ac97_set(); sound/oss/trident.c
+Cc: lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <473208ED.9000707@tiscali.nl>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1700579579-535107522-1194462056=:12363"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47320533.4020400@tiscali.nl>
+	 <2c0942db0711071043p7cd31f6di9031816c1fed81ca@mail.gmail.com>
+	 <473208ED.9000707@tiscali.nl>
+X-Google-Sender-Auth: 0aac1e41cca6b60b
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Nov 7, 2007 10:50 AM, Roel Kluin <12o3l@tiscali.nl> wrote:
+> If count reaches zero, the loop ends, but the postfix decrement still subtracts:
+> testing for 'count == 0' will not work.
+>
+> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> ---
+> diff --git a/sound/oss/trident.c b/sound/oss/trident.c
+> index 96adc47..6959ee1 100644
+> --- a/sound/oss/trident.c
+> +++ b/sound/oss/trident.c
+> @@ -2935,7 +2935,7 @@ trident_ac97_set(struct ac97_codec *codec, u8 reg, u16 val)
+>         do {
+>                 if ((inw(TRID_REG(card, address)) & busy) == 0)
+>                         break;
+> -       } while (count--);
+> +       } while (--count);
+>
+>         data |= (mask | (reg & AC97_REG_ADDR));
+>
+> @@ -2996,7 +2996,7 @@ trident_ac97_get(struct ac97_codec *codec, u8 reg)
+>                 data = inl(TRID_REG(card, address));
+>                 if ((data & busy) == 0)
+>                         break;
+> -       } while (count--);
+> +       } while (--count);
+>
+>         spin_unlock_irqrestore(&card->lock, flags);
+>
+>         if (count == 0) {
+>
 
----1700579579-535107522-1194462056=:12363
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Thanks, much better. In the future, please also CC: the appropriate
+maintainers, or Andrew Morton if you're at a loss...
 
-On Wed, 7 Nov 2007, J=F6rn Engel wrote:
-
-> > Acked-by: Joern Engel <joern@logfs.org>
-> > Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> >=20
-> > Index: linux-2.6/fs/dcache.c
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- linux-2.6.orig/fs/dcache.c=092007-11-07 10:26:20.000000000 -0800
-> > +++ linux-2.6/fs/dcache.c=092007-11-07 10:26:27.000000000 -0800
-> > @@ -610,7 +610,7 @@ static void shrink_dcache_for_umount_sub
-> >  =09=09=09spin_lock(&dcache_lock);
-> >  =09=09=09list_for_each_entry(loop, &dentry->d_subdirs,
-> >  =09=09=09=09=09    d_u.d_child) {
-> > -=09=09=09=09dentry_lru_remove(dentry);
-> > +=09=09=09=09dentry_lru_remove(loop);
-> >  =09=09=09=09__d_drop(loop);
-> >  =09=09=09=09cond_resched_lock(&dcache_lock);
-> >  =09=09=09}
->=20
-> Erm - wouldn't this break git-bisect?
-
-Well Andrew will merge it into the earlier patch.
-
----1700579579-535107522-1194462056=:12363--
+Reviewed-by: Ray Lee <ray-lk@madrabbit.org>
