@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759512AbXKGWLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759426AbXKGWNn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759512AbXKGWLR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 17:11:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753831AbXKGWLG
+	id S1759426AbXKGWNn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 17:13:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754321AbXKGWNg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 17:11:06 -0500
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:56980 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751414AbXKGWLD (ORCPT
+	Wed, 7 Nov 2007 17:13:36 -0500
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36668 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753082AbXKGWNf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 17:11:03 -0500
-Date: Wed, 7 Nov 2007 17:10:07 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, mingo@elte.hu,
-       pwil3058@bigpond.net.au, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sched: avoid large irq-latencies in smp-balancing
-Message-ID: <20071107221007.GA31008@goodmis.org>
-References: <1194434956.6289.111.camel@twins> <1194437820.6289.114.camel@twins> <20071107102725.64514fde.akpm@linux-foundation.org>
+	Wed, 7 Nov 2007 17:13:35 -0500
+Date: Wed, 7 Nov 2007 14:13:34 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: akpm@linux-foundation.org
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Mel Gorman <mel@skynet.ie>
+Subject: Re: [patch 11/23] SLUB: Slab defrag core
+In-Reply-To: <20071107011229.197917117@sgi.com>
+Message-ID: <Pine.LNX.4.64.0711071412400.4000@schroedinger.engr.sgi.com>
+References: <20071107011130.382244340@sgi.com> <20071107011229.197917117@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071107102725.64514fde.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 07, 2007 at 10:27:25AM -0800, Andrew Morton wrote:
-> > On Wed, 07 Nov 2007 13:17:00 +0100 Peter Zijlstra <peterz@infradead.org> wrote:
-> > +	{
-> > +		.ctl_name	= CTL_UNNUMBERED,
-> > +		.procname	= "sched_nr_migrate",
-> > +		.data		= &sysctl_sched_nr_migrate,
-> > +		.maxlen		= sizeof(unsigned int),
-> > +		.mode		= 644,
-> > +		.proc_handler	= &proc_dointvec,
-> > +	},
-> 
-> This (and all the other stuff in that table) should be described in
-> Documentation/, please.
-> 
-> It would be nice if sched_nr_migrate didn't exist, really.  It's hard to
-> imagine anyone wanting to tweak it, apart from developers.
+This was so far only in the slab defrag git tree.
 
-I'm not so sure about that. It is a tunable for RT. That is we can tweak
-this value to be smaller if we don't like the latencies it gives us.
+>From 8cc487b646e45da0644f432d7489ad8791164b5f Mon Sep 17 00:00:00 2001
+From: Christoph Lameter <christoph@graphe.net>
+Date: Tue, 6 Nov 2007 23:19:40 -0800
+Subject: [PATCH] Fix two issues
 
-This is one of those things that sacrifices performance for latency.
-The higher the number, the better it can spread tasks around, but it
-also causes large latencies.
+1. Check inverted in kmem_cache_create
 
-I've just included this patch into 2.6.23.1-rt11 and it brought down an
-unbounded latency to just 42us. (previously we got into the
-milliseconds!).
+2. partial counter not decremented in __kmem_cache_shrink
 
-Perhaps when this feature matures, we can come to a good defined value
-that would be good for all. But until then, I recommend keeping this a
-tunable.
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+---
+ mm/slub.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
+diff --git a/mm/slub.c b/mm/slub.c
+index 06fa4ed..de0557d 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -2789,7 +2789,7 @@ static int kmem_cache_vacate(struct page *page, void *scratch)
+ 	BUG_ON(!PageSlab(page));
+ 	local_irq_save(flags);
+ 	state = slab_lock(page);
+-	BUG_ON(state & FROZEN);
++	BUG_ON(!(state & FROZEN));
+ 
+ 	s = page->slab;
+ 	map = scratch + max_defrag_slab_objects * sizeof(void **);
+@@ -2902,6 +2902,7 @@ static unsigned long __kmem_cache_shrink(struct kmem_cache *s,
+ 
+ 		} else {
+ 			list_del(&page->lru);
++			n->nr_partial--;
+ 			slab_unlock(page, state);
+ 			discard_slab(s, page);
+ 			freed++;
+-- 
+1.5.3.4
 
--- Steve
 
