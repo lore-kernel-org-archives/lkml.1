@@ -1,131 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751168AbXKGM2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbXKGMn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751168AbXKGM2S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 07:28:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbXKGM2J
+	id S1755470AbXKGMn1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 07:43:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750882AbXKGMnT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 07:28:09 -0500
-Received: from mx1.suse.de ([195.135.220.2]:33294 "EHLO mx1.suse.de"
+	Wed, 7 Nov 2007 07:43:19 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:58782 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752447AbXKGM2I convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 07:28:08 -0500
-From: Jean Delvare <jdelvare@suse.de>
-Organization: SuSE Linux
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: mm snapshot broken-out-2007-11-06-02-32 - ACPI functions broken
-Date: Wed, 7 Nov 2007 13:29:49 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
-       linux-kernel@vger.kernel.org, trenn@suse.de, mhoffman@lightlink.com,
-       lenb@kernel.org, Andy Whitcroft <apw@shadowen.org>
-References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org> <4730DF4B.6090905@linux.vnet.ibm.com>
-In-Reply-To: <4730DF4B.6090905@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+	id S1750830AbXKGMnS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 07:43:18 -0500
+Date: Wed, 7 Nov 2007 16:48:55 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Nick <gentuu@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cfq: fix IOPRIO_CLASS_IDLE delays
+Message-ID: <20071107134855.GA5947@tv-sign.ru>
+References: <20071106200510.GA11435@tv-sign.ru> <20071106192611.GS1767@kernel.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711071329.49726.jdelvare@suse.de>
+In-Reply-To: <20071106192611.GS1767@kernel.dk>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kamalesh,
+On 11/06, Jens Axboe wrote:
+>
+> On Tue, Nov 06 2007, Oleg Nesterov wrote:
+> >
+> > (I guess this patch is not complete, overflow is still possible)
+>
+> Hmm, where would it overflow?
 
-Le mardi 06 novembre 2007, Kamalesh Babulal a écrit :
-> Hi Andrew,
-> 
-> The kernel build fails, on powerpc while compiling the kernel with allyesconfig option
-> 
-> drivers/hwmon/w83627hf.c:1631: error: implicit declaration of function ‘acpi_check_resource_conflict’
-> make[2]: *** [drivers/hwmon/w83627hf.o] Error 1
-> make[1]: *** [drivers/hwmon] Error 2
-> make: *** [drivers] Error 2
->   CC      fs/xfs/xfs_error.o
-> drivers/hwmon/w83627hf.c:1631: error: implicit declaration of function ‘acpi_check_resource_conflict’
-> make[2]: *** [drivers/hwmon/w83627hf.o] Error 1
-> make[1]: *** [drivers/hwmon] Error 2
-> make: *** [drivers] Error 2
-> drivers/i2c/busses/i2c-ali1535.c:163: error: implicit declaration of function ‘acpi_check_region’
-> make[3]: *** [drivers/i2c/busses/i2c-ali1535.o] Error 1
-> make[2]: *** [drivers/i2c/busses] Error 2
-> make[1]: *** [drivers/i2c] Error 2
-> drivers/hwmon/dme1737.c:2231: error: implicit declaration of function ‘acpi_check_resource_conflict’
-> make[2]: *** [drivers/hwmon/dme1737.o] Error 1
-> make[1]: *** [drivers/hwmon] Error 2
-> make: *** [drivers] Error 2
+What if the queue was idle long enough (no !CLASS_IDLE requests) so that
+jiffies wraps into the past wrt ->last_end_request?
 
-Odd. Thanks for reporting.
+IOW, perhaps something like the patch below makes some sense. Of course,
+this is only a theoretical problem, I'm not sure we really need a fix.
 
-> The patches check-for-acpi-resource-conflicts-in-hwmon-drivers and 
-> check-for-acpi-resource-conflicts-in-i2c-bus-drivers.patch, causes this build failure.
-> The declaration of the functions are under ifdef CONFIG_ACPI.
+Oleg.
 
-There's an #else after that, and the functions are defined as inlines
-doing nothing in the non-ACPI case. The code looks OK to me, but I can
-reproduce the problem on x86_64 with CONFIG_ACPI=n.
 
-Aha, I see it now, there are nested #ifdef CONFIG_ACPI in acpi.h,
-so the inner one is a no-op (and its #else counterpart is never
-evaluated.) That's pretty confusing, I'll send a patch fixing this.
+[PATCH] cfq_idle_class_timer: add paranoid checks for jiffies overflow
 
-In the meantime, here's a quick fix so that you can go on testing
-the mm snapshot. Apply this at the top of the series:
+In theory, if the queue was idle long enough, cfq_idle_class_timer may have
+a false (and very long) timeout because jiffies can wrap into the past wrt
+->last_end_request.
 
-Fix the <linux/acpi.h> breakage for CONFIG_ACPI=n.
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-Signed-off-by: Jean Delvare <jdelvare@suse.de>
----
- include/linux/acpi.h |   23 ++++++++++++-----------
- 1 file changed, 12 insertions(+), 11 deletions(-)
-
---- linux-2.6.24-rc1.orig/include/linux/acpi.h	2007-11-07 12:45:47.000000000 +0100
-+++ linux-2.6.24-rc1/include/linux/acpi.h	2007-11-07 13:23:06.000000000 +0100
-@@ -26,6 +26,7 @@
- #define _LINUX_ACPI_H
- 
- 
-+#include <linux/ioport.h>
- #ifdef	CONFIG_ACPI
- 
- #ifndef _LINUX
-@@ -134,17 +135,6 @@ int acpi_check_mem_region(resource_size_
- 
- #define acpi_mp_config	0
- 
--static inline int acpi_check_resource_conflict(struct resource *res)
--{ return 0; }
--
--static inline int acpi_check_region(resource_size_t start, resource_size_t n,
--				    const char *name)
--{ return 0; }
--
--static inline int acpi_check_mem_region(resource_size_t start,
--					resource_size_t n, const char *name)
--{ return 0; }
--
- #endif 	/* !CONFIG_ACPI */
- 
- int acpi_register_gsi (u32 gsi, int triggering, int polarity);
-@@ -239,5 +229,16 @@ static inline int acpi_boot_table_init(v
- 	return 0;
+--- cfq/block/cfq-iosched.c~	2007-11-07 15:04:44.000000000 +0300
++++ cfq/block/cfq-iosched.c	2007-11-07 16:04:08.000000000 +0300
+@@ -789,6 +789,20 @@ static inline void cfq_slice_expired(str
+ 		__cfq_slice_expired(cfqd, cfqq, timed_out);
  }
  
-+static inline int acpi_check_resource_conflict(struct resource *res)
-+{ return 0; }
++static int start_idle_class_timer(struct cfq_data *cfqd)
++{
++	unsigned long end = cfqd->last_end_request + CFQ_IDLE_GRACE;
++	unsigned long now = jiffies;
 +
-+static inline int acpi_check_region(resource_size_t start, resource_size_t n,
-+				    const char *name)
-+{ return 0; }
++	if (time_before(now, end) &&
++	    time_after_eq(now, cfqd->last_end_request)) {
++		mod_timer(&cfqd->idle_class_timer, end);
++		return 1;
++	}
 +
-+static inline int acpi_check_mem_region(resource_size_t start,
-+					resource_size_t n, const char *name)
-+{ return 0; }
++	return 0;
++}
 +
- #endif	/* CONFIG_ACPI */
- #endif	/*_LINUX_ACPI_H*/
+ /*
+  * Get next queue for service. Unless we have a queue preemption,
+  * we'll simply select the first cfqq in the service tree.
+@@ -805,19 +819,14 @@ static struct cfq_queue *cfq_get_next_qu
+ 	cfqq = rb_entry(n, struct cfq_queue, rb_node);
+ 
+ 	if (cfq_class_idle(cfqq)) {
+-		unsigned long end;
+-
+ 		/*
+ 		 * if we have idle queues and no rt or be queues had
+ 		 * pending requests, either allow immediate service if
+ 		 * the grace period has passed or arm the idle grace
+ 		 * timer
+ 		 */
+-		end = cfqd->last_end_request + CFQ_IDLE_GRACE;
+-		if (time_before(jiffies, end)) {
+-			mod_timer(&cfqd->idle_class_timer, end);
++		if (start_idle_class_timer(cfqd))
+ 			cfqq = NULL;
+-		}
+ 	}
+ 
+ 	return cfqq;
+@@ -2033,17 +2042,14 @@ out_cont:
+ static void cfq_idle_class_timer(unsigned long data)
+ {
+ 	struct cfq_data *cfqd = (struct cfq_data *) data;
+-	unsigned long flags, end;
++	unsigned long flags;
+ 
+ 	spin_lock_irqsave(cfqd->queue->queue_lock, flags);
+ 
+ 	/*
+ 	 * race with a non-idle queue, reset timer
+ 	 */
+-	end = cfqd->last_end_request + CFQ_IDLE_GRACE;
+-	if (!time_after_eq(jiffies, end))
+-		mod_timer(&cfqd->idle_class_timer, end);
+-	else
++	if (!start_idle_class_timer(cfqd))
+ 		cfq_schedule_dispatch(cfqd);
+ 
+ 	spin_unlock_irqrestore(cfqd->queue->queue_lock, flags);
 
-
--- 
-Jean Delvare
-Suse L3
