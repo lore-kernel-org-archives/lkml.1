@@ -1,56 +1,55 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756508AbXKFNOh (ORCPT <rfc822;ralf@linux-mips.org>);
-	Tue, 6 Nov 2007 08:14:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbXKFNO1
+	id S1755421AbXKGPod (ORCPT <rfc822;ralf@linux-mips.org>);
+	Wed, 7 Nov 2007 10:44:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753067AbXKGPoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 08:14:27 -0500
-Received: from smtp03.aspadmin.com ([66.240.201.18]:47318 "EHLO
-	smtp03.aspadmin.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751209AbXKFNO0 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 08:14:26 -0500
-X-Greylist: delayed 27277 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Nov 2007 08:14:26 EST
-Message-ID: <4114-22007112653151913@admin-412537a00>
-Reply-To: "QUE TE IMPORTO" <info@mexlogistica.com>
-Organisation: QUE TE IMPORTO
-From: "QUE TE IMPORTO" <publicidad@chiverito.com>
-To: linux-kernel@vger.kernel.org
-Subject: IMPORTACIONES Y CURSOS
-Date: Mon, 5 Nov 2007 23:31:51 -0600
+	Wed, 7 Nov 2007 10:44:24 -0500
+Received: from linksky60.com ([67.15.203.23]:49405 "EHLO skyline.linksky60.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751925AbXKGPoY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 10:44:24 -0500
+Message-ID: <20071107093902.8cmvlhri80o0sgkw@pokersiteonline.com>
+Date: Wed, 07 Nov 2007 09:39:02 -0600
+From: "Mss.Sodic Lasy" <sabadelltrust01@yahoo.es>
+To: undisclosed-recipients:;
+Subject: YOU 'VE WON
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.3)
+X-cPanel-MailScanner-Information: Please contact the ISP for more information
+X-cPanel-MailScanner: Not scanned: please contact your Internet E-Mail Service Provider for details
+X-cPanel-MailScanner-SpamCheck: 
+X-cPanel-MailScanner-From: sabadelltrust01@yahoo.es
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - skyline.linksky60.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - yahoo.es
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1756508AbXKFNOh@vger.kernel.org>
-
-WWW.MEXLOGISTICA.COM=20
-TEL (81) 8998-6589 & 8394-7238=20
-info@mexlogistica.com=20
-nextel id. 52*168008*1=20
-
-AGENCIA ADUANAL EN MEXICO Y EUA: LAREDO, MONTERREY, MEXICO Y MAS...
-COMERCIALIZADORA: PERMISOS DE IMPORTACION, PADRON GENERAL Y SECTORIAL
-IMPORTACIONES & EXPORTACIONES: NORMAL Y CON PEQUE=D1A IMPORTACION
-HACEMOS TUS COMPRAS EN EL EXTRANJERO Y POR INTERNET
-
-CURSOS PRACTICOS EN MONTERREY, NL MEXICO
-IMPORTACIONES EFECTIVAS (9 NOV)
-VENTAS EFECTIVAS  (8 NOV)=20
-CLASIFICACION DE MERCANCIAS Y LLENADO DE TLCAN (7 NOV)
-SEMINARIO EN LOG=CDSTICA Y TRANSPORTE (17 NOV)
-SEMINARIO PRACTICO EN IMPORTACIONES (24 NOV)
-Detalles en: www.mexlogistica.com/cursos=20
-
-WWW.MEXLOGISTICA.COM=20
-TEL (81) 8998-6589 & 8394-7238=20
-info@mexlogistica.com=20
-nextel id. 52*168008*1=20
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755421AbXKGPod@vger.kernel.org>
 
 
--
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+
+YOU 'VE WON.
+
+You have won ?655,000.00 EUROS  in DE EUROMILLIONES ONLINE INT.LOTTERY
+SPAIN.For further development for Clearification and procedure please
+Contact,Dr.Pauly Anderson.E-mail:(sabadelltrust01@yahoo.es)OR
+(webmaster@sabadelltrust.zzn.com) TEL:+34-692-486-797.
+
+(1) Tic Nr: 6460DGH
+(2) Sr Nr: 0909AOB09
+(3) LU Nr: 726726XZJHN
+(4) BT Nr: 2GH267XZZ1-5-42
+(5) RF Nr 9527BCV-33-7-7-7
+
+Regards.
+Mss.Sodic Lasy
+
+
