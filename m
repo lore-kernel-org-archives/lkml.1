@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754554AbXKGUbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758608AbXKGUdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754554AbXKGUbm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 15:31:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbXKGUbf
+	id S1758608AbXKGUdZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 15:33:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbXKGUdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 15:31:35 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33261 "EHLO
+	Wed, 7 Nov 2007 15:33:17 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58683 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752707AbXKGUbe (ORCPT
+	by vger.kernel.org with ESMTP id S1753800AbXKGUdQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 15:31:34 -0500
-Date: Wed, 7 Nov 2007 12:30:45 -0800
+	Wed, 7 Nov 2007 15:33:16 -0500
+Date: Wed, 7 Nov 2007 12:32:37 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Marin Mitov <mitov@issp.bas.bg>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>
-Subject: Re: is minimum udelay() not respected in preemptible SMP
- kernel-2.6.23?
-Message-Id: <20071107123045.c6d4b855.akpm@linux-foundation.org>
-In-Reply-To: <200711071921.52330.mitov@issp.bas.bg>
-References: <200711071921.52330.mitov@issp.bas.bg>
+To: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
+Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+Subject: Re: BUG: usb Mouse continual disconnect (2.6.22.10) leading to
+ eventual crash?
+Message-Id: <20071107123237.d318cdbf.akpm@linux-foundation.org>
+In-Reply-To: <F1D642E5A91BC94D9504EC83AE19E6B0B89760@ecqcmtlmail3.quebec.int.ec.gc.ca>
+References: <F1D642E5A91BC94D9504EC83AE19E6B0B89760@ecqcmtlmail3.quebec.int.ec.gc.ca>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,67 +26,80 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 7 Nov 2007 19:21:52 +0200 Marin Mitov <mitov@issp.bas.bg> wrote:
+(+linux-usb-devel)
+
+> On Wed, 7 Nov 2007 13:19:47 -0500 "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA> wrote:
 > Hi all,
 > 
-> I have written a linux device driver for a frame grabber I use in my 
-> every day experimental work.
+> I'm having a preblem with a few workstations that are hard freezing from
+> time to time since about a week.  Curiously since then we upgraded from
+> 2.6.20.6 to 2.6.20.10...
 > 
-> In my device driver I have to write to a MMIO register, wait for a while 
-> (using udelay(65)) for data being written to an internal register (i2c?)
-> and test a flag (in another MMIO register) if the operation has completed. 
-> (The hardware guarantees that the operation has completed in less than 
-> 65 usec). If the flag is not reset I write a message via printk.
-> After switching to the kernel-2.6.23 (compiled as PREEMPTIBLE SMP i686)
-> (AMD dual core) I see this message in dmesg output sometime.
+> While investigating I found out that there seems to be a problem,
+> occuring randomly on some workstations after a certain amount time, that
+> the mouse gets disconnected continously (see full log attached):
+> Nov  7 00:09:36 mammatus kernel: [22055.357104] usb 2-1: USB disconnect,
+> address 2
+> Nov  7 00:09:37 mammatus kernel: [22055.596974] usb 2-1: new low speed
+> USB device using uhci_hcd and address 3
+> Nov  7 00:09:37 mammatus kernel: [22055.777831] usb 2-1: configuration
+> #1 chosen from 1 choice
+> Nov  7 00:09:37 mammatus kernel: [22055.793905] input: Logitech USB-PS/2
+> Optical Mouse as /class/input/input5
+> Nov  7 00:09:37 mammatus kernel: [22055.793994] input: USB HID v1.10
+> Mouse [Logitech USB-PS/2 Optical Mouse] on usb-0000:00:1d.0-1
+> Nov  7 00:10:11 mammatus kernel: [22090.368722] usb 2-1: USB disconnect,
+> address 3
+> Nov  7 00:10:12 mammatus kernel: [22090.608588] usb 2-1: new low speed
+> USB device using uhci_hcd and address 4
+> Nov  7 00:10:12 mammatus kernel: [22090.784671] usb 2-1: configuration
+> #1 chosen from 1 choice
+> Nov  7 00:10:12 mammatus kernel: [22090.800881] input: Logitech USB-PS/2
+> Optical Mouse as /class/input/input6
+> Nov  7 00:10:12 mammatus kernel: [22090.800982] input: USB HID v1.10
+> Mouse [Logitech USB-PS/2 Optical Mouse] on usb-0000:00:1d.0-1
+> [.....]
+> Nov  7 17:57:28 mammatus kernel: [86097.543960] input: Logitech USB-PS/2
+> Optical Mouse as /class/input/input596
+> Nov  7 17:57:28 mammatus kernel: [86097.544050] input: USB HID v1.10
+> Mouse [Logitech USB-PS/2 Optical Mouse] on usb-0000:00:1d.0-1
+> Nov  7 17:59:07 mammatus kernel: [86196.161272] usb 2-1: USB disconnect,
+> address 112
+> Nov  7 17:59:07 mammatus kernel: [86196.401142] usb 2-1: new low speed
+> USB device using uhci_hcd and address 113
+> Nov  7 17:59:08 mammatus kernel: [86196.577674] usb 2-1: configuration
+> #1 chosen from 1 choice
+> Nov  7 17:59:08 mammatus kernel: [86196.593834] input: Logitech USB-PS/2
+> Optical Mouse as /class/input/input597
+> Nov  7 17:59:08 mammatus kernel: [86196.593939] input: USB HID v1.10
+> Mouse [Logitech USB-PS/2 Optical Mouse] on usb-0000:00:1d.0-1
+> Nov  7 17:59:13 mammatus kernel: [86202.206449] usb 2-1: USB disconnect,
+> address 113
+> Nov  7 17:59:13 mammatus kernel: [86202.446319] usb 2-1: new low speed
+> USB device using uhci_hcd and address 114
+> Nov  7 17:59:14 mammatus kernel: [86202.623309] usb 2-1: configuration
+> #1 chosen from 1 choice
+> Nov  7 17:59:14 mammatus kernel: [86202.638402] input: Logitech USB-PS/2
+> Optical Mouse as /class/input/input598
+> Nov  7 17:59:14 mammatus kernel: [86202.638493] input: USB HID v1.10
+> Mouse [Logitech USB-PS/2 Optical Mouse] on usb-0000:00:1d.0-1
 > 
-> Testing with rdtscll() before and after udelay(65) shows the expected
-> delay of 65 usec (after dividing by CPU frequency) when all is OK, but
-> gives a big value (in the tenths msec range) when the error message 
-> shows itself in dmesg. 
+> There are some occasionnal connect/disconnect due to the fact that we
+> recently bought an ergonomic mouse (Evoluent Vertical Mouse 3 Rev. 2)
+> that some people plug-in the workstation they are working for the
+> duration of their day/night shift... but nothing like 600 disconnect /
+> day / workstations?  And actually, the source workstation of this log as
+> not yet got the mouse connected to it since it's last reboot.
 > 
-> Bracketing udelay(65) by:
+> Looking at the changes between 2.6.20.6 and 2.6.20.10 I only found this
+> USB related:
+> http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.22.y.git;a=co
+> mmit;h=0e22438a5adfdf32b3bb1c75c81c01a29fba9770
 > 
-> local_irq_disable();
-> udelay(65);
-> local_irq_enable();
+> I'm presuming that maybie eventually it might hit a input max barrier
+> (like a max of 1024) and then the kernel would be crashing?
 > 
-> as well as by
-> 
-> preempt_disable();
-> udelay(65); 
-> preempt_enable();
-> 
-> leads to message disappearing.
-> 
-> I believe the hardware is working correctly, so if the flag is not reset 
-> I think udelay(65) returns prematurely (the flag clears some time latter)
-> And it does not matter if I use udelay(65) or udelay(100).
-> 
-> What could be the reason for such a behavior?
-> Is this a bug in udelay() due to preemption?
-> (udelay() being preempted and migrated to another processor)
-> 
-> All my previous kernels used were SMP (but not PREEMPTIBLE)
-> 
-> My kernel is compiled with:
-> CONFIG_PREEMPT=y
-> CONFIG_IRQBALANCE=y
-> CONFIG_HPET_TIMER=y
-> 
-> And I have this line in dmesg:
-> Time: acpi_pm clocksource has been installed.
-> Switched to high resolution mode on CPU 0
-> Switched to high resolution mode on CPU 1
-> 
-> The south bridge is: VIA VT8237 (Asus A8V Delux)
-> 
-> Thank you in advance for your help in understanding  where
-> the problem is coming from.
-> 
+> Help very much appreciated!
 
-Ow.  Yes, from my reading delay_tsc() can return early (or after
-heat-death-of-the-universe) if the TSCs are offset and if preemption
-migrates the calling task between CPUs.
-
-I suppose a lameo fix would be to disable preemption in delay_tsc().
+People are going to want to know if this is still happening in 2.6.23
+or 2.6.24-rc2, please.
