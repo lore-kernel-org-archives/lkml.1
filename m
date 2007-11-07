@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758867AbXKGTSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758987AbXKGTU5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758867AbXKGTSv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 14:18:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbXKGTSn
+	id S1758987AbXKGTU5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 14:20:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754715AbXKGTUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 14:18:43 -0500
-Received: from rtr.ca ([76.10.145.34]:4823 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752707AbXKGTSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 14:18:43 -0500
-Message-ID: <47320F92.3060108@rtr.ca>
-Date: Wed, 07 Nov 2007 14:18:42 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Wed, 7 Nov 2007 14:20:50 -0500
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:48549 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754703AbXKGTUu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 14:20:50 -0500
+Date: Wed, 7 Nov 2007 14:20:03 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: bbpetkov@yahoo.de, Andy Whitcroft <apw@shadowen.org>,
+       linux-kernel@vger.kernel.org,
+       Jeremy Fitzhardinge <jeremy@xensource.com>
+Subject: Re: [PATCH] mm/memory.c: remove warning from an uninitialized
+	spinlock. was: Re: 2.6.21-rc7-mm2
+Message-ID: <20071107192003.GA22286@goodmis.org>
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <20070426182519.GA4532@gollum.tnic> <20070427172230.94b82829.akpm@linux-foundation.org> <4633DD55.1020006@shadowen.org> <20070429065049.GB4446@gollum.tnic> <20070429022440.cb8fc8c4.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Bongani Hlope <bonganilinux@mweb.co.za>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: irq 21: nobody cared 2.6.24-rc1
-References: <200710251045.37040.bonganilinux@mweb.co.za> <20071101133238.16bb9a3f.akpm@linux-foundation.org> <200711020133.28907.bonganilinux@mweb.co.za>
-In-Reply-To: <200711020133.28907.bonganilinux@mweb.co.za>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070429022440.cb8fc8c4.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bongani Hlope wrote:
-> On Thursday 01 November 2007 22:32:38 Andrew Morton wrote:
->> On Thu, 25 Oct 2007 10:45:36 +0200
->>
->> Bongani Hlope <bonganilinux@mweb.co.za> wrote:
->>> Booting with irqpoll works
->>>
->>> ls /proc/irq/21/ (with irqpoll)
->>> ehci_hcd:usb1/  smp_affinity  uhci_hcd:usb2/  uhci_hcd:usb3/ 
->>> uhci_hcd:usb4/
->>>
->>>  Disabling IRQ #21
->> Was any earlier kernel version OK?  2.6.23?
 > 
-> Yes the 2.6.23 kernel works fine. This seems to happen when I boot the 
-> 2.6.24-rc1 kernel with an iPod attached (hope this helps), but the 2.6.23 
-> kernel doesn't experience this problem.
-..
+> Introduce a macro for suppressing gcc from generating a warning about a
+> probable uninitialized state of a variable.
+> 
+> Example:
+> 
+> -	spinlock_t *ptl;
+> +	spinlock_t *uninitialized_var(ptl);
+> 
+> Not a happy solution, but those warnings are obnoxious.
+> 
+> - Using the usual pointlessly-set-it-to-zero approach wastes several
+>   bytes of text.
+> 
+> - Using a macro means we can (hopefully) do something else if gcc changes
+>   cause the `x = x' hack to stop working
+> 
+> - Using a macro means that people who are worried about hiding true bugs
+>   can easily turn it off.
+> 
+> Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
-Something in 2.6.24-rc* seems to be a lot more fussy about this kind
-of situation than in 2.6.23.   I have a driver (sata_qstor) that manages
-a piece of hardware that unfortunately generates spurious interrupts
-regularly.
+I just stumbled across this being in the kernel. Well, I'm finally glad
+it made it in, even though it was suggested one year earlier ;-)
 
-With 2.6.23, it was only rarely bad enough to cause the "Disabling IRQ #nn"
-event to occur.  But in 2.6.24-rc*, it happens almost immediately now
-(so, yes, I've gone and put a workaround into the driver for it).
+  http://lkml.org/lkml/2006/5/11/50
 
-Something's different.
+-- Steve
+
