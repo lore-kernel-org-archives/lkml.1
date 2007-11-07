@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758198AbXKGWG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759192AbXKGWHY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758198AbXKGWG6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 17:06:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755150AbXKGWGu
+	id S1759192AbXKGWHY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 17:07:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758928AbXKGWHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 17:06:50 -0500
-Received: from pne-smtpout2-sn1.fre.skanova.net ([81.228.11.159]:58402 "EHLO
-	pne-smtpout2-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755065AbXKGWGt (ORCPT
+	Wed, 7 Nov 2007 17:07:08 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:39598 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755133AbXKGWHH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 17:06:49 -0500
-Date: Wed, 7 Nov 2007 23:06:47 +0100 (CET)
-From: Peter Osterlund <petero2@telia.com>
-X-X-Sender: petero@quad.localdomain
-To: Tejun Heo <htejun@gmail.com>
-cc: Thomas Maier <balagi@justmail.de>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, gregkh@suse.de
-Subject: Re: pktcdvd oops
-In-Reply-To: <4731269B.6010509@gmail.com>
-Message-ID: <Pine.LNX.4.64.0711072303080.6991@quad.localdomain>
-References: <20071105092018.GD5359@kernel.dk> <Pine.LNX.4.64.0711052312410.5445@quad.localdomain>
- <47302E9F.6020708@gmail.com> <op.t1d2aurziudtyh@master>
- <Pine.LNX.4.64.0711062229490.5800@quad.localdomain> <4731269B.6010509@gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed, 7 Nov 2007 17:07:07 -0500
+Subject: Re: [PATCH 1/2] Suppress A.OUT library support in ELF binfmt if
+	!CONFIG_BINFMT_AOUT [try #3]
+From: David Woodhouse <dwmw2@infradead.org>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@osdl.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-am33-list@redhat.com
+In-Reply-To: <20071107174328.31820.62935.stgit@warthog.procyon.org.uk>
+References: <20071107174323.31820.65054.stgit@warthog.procyon.org.uk>
+	 <20071107174328.31820.62935.stgit@warthog.procyon.org.uk>
+Content-Type: text/plain
+Date: Wed, 07 Nov 2007 22:07:00 +0000
+Message-Id: <1194473220.11490.93.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Nov 2007, Tejun Heo wrote:
+On Wed, 2007-11-07 at 17:43 +0000, David Howells wrote:
+> --- a/include/linux/a.out.h
+> +++ b/include/linux/a.out.h
+> @@ -1,6 +1,11 @@
+>  #ifndef __A_OUT_GNU_H__
+>  #define __A_OUT_GNU_H__
+>  
+> +#if defined(CONFIG_BINFMT_AOUT) || \
+> +       defined(CONFIG_BINFMT_AOUT_MODULE) || \
+> +       defined(CONFIG_IA32_AOUT) || \
+> +       defined(CONFIG_IA32_AOUT_MODULE)
+> +
+>  #define __GNU_EXEC_MACROS__
+>  
+>  #ifndef __STRUCT_EXEC_OVERRIDE__
 
-> Peter Osterlund wrote:
->> If the
->> __module_get() is not safe because the module code could have already
->> been unloaded, how can it possibly be made safe by adding more code to
->> the pktcdvd module? If the module is unloaded, trying to execute its
->> code can't be a good thing no matter what the code does.
->
-> sysfs itself is now out of module lifespan rules.  sysfs callbacks are
-> guaranteed to stay in memory while running by sysfs node removal waiting
-> for completion of in-flight operations before returning.  In pktcdvd's
-> case, class_destroy() call in pkt_sysfs_cleanup() will wait for all
-> in-flight sysfs r/w ops to complete.
->
-> So, even while sysfs callbacks are executing, the module beneath can die
-> but it will stay in memory till all the callbacks return.  You need to
-> test module liveness using try_module_get() (and it can fail) if you
-> want to grab module reference from sysfs callbacks.
+Ew, no. This is horridly broken. You should never use CONFIG_xxx_MODULE
+in the static kernel at all -- and you should _especially_ not be using
+it in header files which are exported to userspace.
 
-Thanks for the explanation.
-
-Given that explanation, I think the patch is correct and it does fix the 
-BUG on my computer. Can you please push it upstream?
-
-In any case:
-
-Acked-by: Peter Osterlund <petero2@telia.com>
+This abomination certainly doesn't seem to have any direct relation to
+mn10300 support -- I think all you really need there is not to attempt
+to export {asm,linux}/a.out.h if asm/a.out.h doesn't exist, which is
+something you haven't attempted here anyway.
 
 -- 
-Peter Osterlund - petero2@telia.com
-http://web.telia.com/~u89404340
+dwmw2
+
