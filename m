@@ -1,54 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbXKGQcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757188AbXKGQes@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755339AbXKGQcS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 11:32:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753750AbXKGQcE
+	id S1757188AbXKGQes (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 11:34:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753750AbXKGQem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 11:32:04 -0500
-Received: from anchor-post-37.mail.demon.net ([194.217.242.87]:48216 "EHLO
-	anchor-post-37.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751079AbXKGQcD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 11:32:03 -0500
-Message-ID: <4731E880.6010303@lougher.demon.co.uk>
-Date: Wed, 07 Nov 2007 16:32:00 +0000
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
-MIME-Version: 1.0
-To: maximilian attems <max@stro.at>
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [ANN] Squashfs 3.3 released
-References: <472EFACA.1090308@lougher.demon.co.uk> <20071105115624.GJ14432@baikonur.stro.at>
-In-Reply-To: <20071105115624.GJ14432@baikonur.stro.at>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Nov 2007 11:34:42 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52960 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753486AbXKGQel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 11:34:41 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1194448467.3140.6.camel@albrecht.rdi1.com>
+References: <1194448467.3140.6.camel@albrecht.rdi1.com> <1194445911.2705.2.camel@albrecht.rdi1.com> <200711070644.lA76iodZ005491@agora.fsl.cs.sunysb.edu> <30212.1194447844@redhat.com>
+To: Paul Albrecht <albrecht@rdi1.com>
+Cc: dhowells@redhat.com, Erez Zadok <ezk@cs.sunysb.edu>,
+       akpm@linux-foundation.org, unionfs@filesystems.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Unionfs] Re: [PATCH] IGET: Stop UnionFS from using iget() and read_inode()
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Wed, 07 Nov 2007 16:34:27 +0000
+Message-ID: <30403.1194453267@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-maximilian attems wrote:
-> On Mon, Nov 05, 2007 at 11:13:14AM +0000, Phillip Lougher wrote:
->
->> The next stage after this release is to fix the one remaining blocking issue
->> (filesystem endianness), and then try to get Squashfs mainlined into the
->> Linux kernel again.
->>
-> 
-> that would be very cool!
+Paul Albrecht <albrecht@rdi1.com> wrote:
 
-Yes, it would be cool :)  Five years is a long time to maintain
-something out of tree, especially recently when there's been
-so many minor changes to the VFS interface between kernel releases.
+> Without ... what's the difference? I asked a specific question about the
+> test set that was used to validate unionfs and your fix.  
 
-> with my hat as debian kernel maintainer i'd be very relieved to see it
-> mainlined. i don't know of any major distro that doesn't ship it.
-> 
+I was just checking it wasn't something my patch introduced.
 
-I don't know of any major distro that doesn't ship Squashfs either
-(except arguably Slackware).  Putting my other hat on (one of the
-Ubuntu kernel maintainers) I don't think Squashfs has caused
-distros that many problems because it is an easy patch to apply
-(it doesn't touch that many kernel files), but it is always good
-to minimise the differences from the stock kernel.org kernel.
-
-Phillip
-
+David
