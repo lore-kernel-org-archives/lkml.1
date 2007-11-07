@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbXKGBul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbXKGB7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755970AbXKGBul (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 20:50:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754263AbXKGBuc
+	id S1756039AbXKGB7q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 20:59:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754774AbXKGB7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 20:50:32 -0500
-Received: from exchange.columbia.tresys.com ([216.250.243.126]:4657 "HELO
-	exchange.columbia.tresys.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754121AbXKGBub (ORCPT
+	Tue, 6 Nov 2007 20:59:37 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:45693 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754712AbXKGB7g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 20:50:31 -0500
-Message-ID: <473119E6.7070904@manicmethod.com>
-Date: Tue, 06 Nov 2007 20:50:30 -0500
-From: Joshua Brindle <method@manicmethod.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 6 Nov 2007 20:59:36 -0500
+Date: Wed, 7 Nov 2007 02:59:12 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Ahmed S. Darwish" <darwish.07@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Casey Schaufler <casey@schaufler-ca.com>, akpm@linux-foundation.org,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser
+Message-ID: <20071107015912.GT26163@stusta.de>
+References: <20071105094007.GA19367@ubuntu> <alpine.LFD.0.999.0711050818200.15101@woody.linux-foundation.org> <20071106080637.GB26163@stusta.de> <alpine.LFD.0.999.0711060738270.15101@woody.linux-foundation.org> <20071106230044.GO26163@stusta.de> <alpine.LFD.0.999.0711061506550.15101@woody.linux-foundation.org> <20071107000705.GQ26163@stusta.de> <alpine.LFD.0.999.0711061626410.15101@woody.linux-foundation.org> <20071107004350.GS26163@stusta.de> <alpine.LFD.0.999.0711061705340.15101@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: casey@schaufler-ca.com
-CC: akpm@osdl.org, torvalds@osdl.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, paul.moore@hp.com
-Subject: Re: [PATCH] NetLabel: Introduce a new kernel configuration API for
- NetLabel - For 2.6.24-rc-git11 - Smack Version 10
-References: <472BF1D0.3070108@schaufler-ca.com> <47310FF3.3080003@manicmethod.com>
-In-Reply-To: <47310FF3.3080003@manicmethod.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Nov 2007 01:50:30.0437 (UTC) FILETIME=[93CAE550:01C820E0]
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0711061705340.15101@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joshua Brindle wrote:
-> Casey Schaufler wrote:
->> From: Paul Moore <paul.moore@hp.com>
->>
->> Add a new set of configuration functions to the NetLabel/LSM API so that
->> LSMs can perform their own configuration of the NetLabel subsystem 
->> without
->> relying on assistance from userspace.
->>   
-> I'm still not receiving the actual patch email on lsm (perhaps its too 
-> long and should be split up..) so I'll just respond on this email. 
-> Using the v10 patches on your website I'm still seeing strange 
-> behavior where echo foo > /proc/self/attr/current changes the label of 
-> every process on the system to foo (verified with both ps -AZ and cat 
-> /proc/1/attr/current).
->
-Actually I'm getting more strange behavior:
+On Tue, Nov 06, 2007 at 05:06:23PM -0800, Linus Torvalds wrote:
+> 
+> 
+> On Wed, 7 Nov 2007, Adrian Bunk wrote:
+> >
+> > How should TOMOYO implement it's "match one character" in a pattern
+> > (used to allow or deny access in a name-based MAC)?
+> 
+> .. I think such a design is fundamentally bogus. You don't have 
+> "characters". You have "bytes".
 
-On terminal 1 I do:
-echo foo > /proc/self/attr/current
-then ps -AZ shows foo for every process
-touch somefile; attr -S -g SMACK64 somefile says foo
+Users are used to work on characters, not on bytes.
 
-On terminal 2 I do:
-ps -AZ and everything shows up as _
-cat /proc/$pid of bash on term 1/attr/current is _
+> So you either implement "match one byte", or you go crazy. It's that 
+> simple.
 
+Sure, you can limit what is possible and what not.
 
+But there are still many pitfalls, e.g. if someone would allow the 
+construct "[abc]" in patterns for matching one of these characters you'd 
+have to ensure that your syntax contains explicit character delimiters 
+or a pattern might match something completely different from what was 
+intended.
+
+My opinion is that extended parsing of non-ASCII strings will cause too 
+many problems, but it seems we can only agree to disagree on this.
+
+> 		Linus
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
