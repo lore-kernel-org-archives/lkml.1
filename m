@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758766AbXKGVx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758631AbXKGV47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758766AbXKGVx5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 16:53:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754683AbXKGVxu
+	id S1758631AbXKGV47 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 16:56:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753608AbXKGV4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 16:53:50 -0500
-Received: from zakalwe.fi ([80.83.5.154]:50221 "EHLO zakalwe.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754554AbXKGVxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 16:53:49 -0500
-Date: Wed, 7 Nov 2007 23:53:48 +0200
-From: Heikki Orsila <shdl@zakalwe.fi>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: net: skge breakage on 2.6.24-rc1
-Message-ID: <20071107215348.GB8865@zakalwe.fi>
-References: <20071107214621.GA8865@zakalwe.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20071107214621.GA8865@zakalwe.fi>
-User-Agent: Mutt/1.5.11
+	Wed, 7 Nov 2007 16:56:50 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41911 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754253AbXKGV4t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 16:56:49 -0500
+Date: Wed, 7 Nov 2007 13:55:37 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
+       k.shutemov@gmail.com, apw@shadowen.org
+Subject: Re: mm snapshot broken-out-2007-11-06-02-32 make header check fails
+Message-Id: <20071107135537.08ece5bb.akpm@linux-foundation.org>
+In-Reply-To: <47322340.702@linux.vnet.ibm.com>
+References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
+	<47322340.702@linux.vnet.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 07, 2007 at 11:46:21PM +0200, Heikki Orsila wrote:
-> After some bisecting, I found that net skge driver broke on
+> On Thu, 08 Nov 2007 02:12:40 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> Hi Andrew,
 > 
-> commit 7fb7ac241162dc51ec0f7644d4a97b2855213c32
+> The build fails with error
 > 
-> My network card is:
+>   CHECK   include/asm-generic/siginfo.h
+>   CHECK   include/asm-generic/resource.h
+>   CHECK   include/asm-generic/statfs.h
+>   CHECK   include/asm-generic/signal.h
+>   CHECK   include/asm-generic/poll.h
+>   CHECK   include/asm-generic/mman.h
+>   CHECK   include/asm-generic/ioctl.h
+>   CHECK   include/asm-generic/fcntl.h
+>   CHECK   include/asm-generic/errno.h
+>   CHECK   include/asm-generic/errno-base.h
+>   CHECK   include/asm/cputable.h
+>   CHECK   include/asm/byteorder.h
+>   CHECK   include/asm/bootx.h
+>   CHECK   include/asm/auxvec.h
+>   CHECK   include/asm/asm-compat.h
+>   CHECK   include/asm/a.out.h
+>   CHECK   include/asm/ucontext.h
+>   CHECK   include/asm/ps3fb.h
+>   CHECK   include/asm/linkage.h
+>   CHECK   include/asm/elf.h
+> /home/test/kernels/linux-2.6.24-rc1/patches/linux-2.6.24-rc1/usr/include/asm/elf.h requires asm/page.h, which does not exist in exported headers
+> make[3]: *** [/home/test/kernels/linux-2.6.24-rc1/patches/linux-2.6.24-rc1/usr/include/asm/.check.elf.h] Error 1
+> make[2]: *** [asm-powerpc] Error 2
+> make[1]: *** [headers_check] Error 2
+> make: *** [vmlinux] Error 2
 > 
-> 0000:00:0e.0 Ethernet controller: 3Com Corporation 3c940 10/100/1000Base-T [Marvell] (rev 12)
-> 
-> Linux cheradenine 2.6.24-rc1-dirty #15 Wed Nov 7 23:39:28 EET 2007 x86_64 GNU/Linux
 
-Sorry, forgot to say what the problem is. Doing
+I am going to guess that you're building for powerpc here.
 
-	nc host port < /dev/zero
-
-on a sending machine (not skge) to an skge machine that is receiving:
-
-	nc -l -p port >/dev/null
-
-with ~60 MiB/s speed, causes the interface go malfunct. A slow 
-transfer doesn't cause a problem.
-
-Also, after some fiddling, I noticed that not changing the register 
-write order on patch:
-
-+       skge_write32(hw, RB_ADDR(q, RB_END), end);
-        skge_write32(hw, RB_ADDR(q, RB_WP), start);
-        skge_write32(hw, RB_ADDR(q, RB_RP), start);
--       skge_write32(hw, RB_ADDR(q, RB_END), end);
-
-fixes the visible effect.. Possibly not the root cause of the problem, 
-but changing the order back fixes networking here.
-
--- 
-Heikki Orsila			Barbie's law:
-heikki.orsila@iki.fi		"Math is hard, let's go shopping!"
-http://www.iki.fi/shd
+It looks like ia64 broke too.  I'll drop the patch, thanks.
