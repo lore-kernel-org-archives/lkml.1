@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758615AbXKGS2x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758090AbXKGSaZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758615AbXKGS2x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 13:28:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbXKGS2n
+	id S1758090AbXKGSaZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 13:30:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbXKGSaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 13:28:43 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42131 "EHLO
+	Wed, 7 Nov 2007 13:30:13 -0500
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53128 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757896AbXKGS2m (ORCPT
+	with ESMTP id S1753262AbXKGSaL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 13:28:42 -0500
-Date: Wed, 7 Nov 2007 10:28:40 -0800 (PST)
+	Wed, 7 Nov 2007 13:30:11 -0500
+Date: Wed, 7 Nov 2007 10:30:10 -0800 (PST)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: akpm@linux-foundatin.org
-cc: Johannes Weiner <hannes-kernel@saeurebad.de>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Mel Gorman <mel@skynet.ie>
-Subject: Re: [patch 04/23] dentries: Extract common code to remove dentry
- from lru
-In-Reply-To: <20071107085027.GA6243@cataract>
-Message-ID: <Pine.LNX.4.64.0711071024260.9857@schroedinger.engr.sgi.com>
-References: <20071107011130.382244340@sgi.com> <20071107011227.298491275@sgi.com>
- <20071107085027.GA6243@cataract>
+To: Johannes Weiner <hannes-kernel@saeurebad.de>
+cc: akpm@linux-foundatin.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Mel Gorman <mel@skynet.ie>
+Subject: Re: [patch 07/23] SLUB: Add defrag_ratio field and sysfs support.
+In-Reply-To: <20071107085545.GB6243@cataract>
+Message-ID: <Pine.LNX.4.64.0711071030040.9857@schroedinger.engr.sgi.com>
+References: <20071107011130.382244340@sgi.com> <20071107011228.102370371@sgi.com>
+ <20071107085545.GB6243@cataract>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -31,40 +30,18 @@ On Wed, 7 Nov 2007, Johannes Weiner wrote:
 
 > Hi Christoph,
 > 
-> On Tue, Nov 06, 2007 at 05:11:34PM -0800, Christoph Lameter wrote:
-> > @@ -613,11 +606,7 @@ static void shrink_dcache_for_umount_sub
-> >  			spin_lock(&dcache_lock);
-> >  			list_for_each_entry(loop, &dentry->d_subdirs,
-> >  					    d_u.d_child) {
-> > -				if (!list_empty(&loop->d_lru)) {
-> > -					dentry_stat.nr_unused--;
-> > -					list_del_init(&loop->d_lru);
-> > -				}
-> > -
-> > +				dentry_lru_remove(dentry);
+> On Tue, Nov 06, 2007 at 05:11:37PM -0800, Christoph Lameter wrote:
+> > --- linux-2.6.orig/include/linux/slub_def.h	2007-11-06 12:36:28.000000000 -0800
+> > +++ linux-2.6/include/linux/slub_def.h	2007-11-06 12:37:44.000000000 -0800
+> > @@ -53,6 +53,13 @@ struct kmem_cache {
+> >  	void (*ctor)(struct kmem_cache *, void *);
+> >  	int inuse;		/* Offset to metadata */
+> >  	int align;		/* Alignment */
+> > +	int defrag_ratio;	/*
+> > +				 * objects/possible-objects limit. If we have
+> > +				 * less that the specified percentage of
 > 
-> Shouldn't this be dentry_lru_remove(loop)?
+> That should be `less than', I guess.
 
-Correct. Andrew: This needs to go into your tree to fix the patch that is 
-already there:
+Correct.
 
-
-[PATCH] dcache: use the correct variable.
-
-We need to use "loop" instead of "dentry"
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
-Index: linux-2.6/fs/dcache.c
-===================================================================
---- linux-2.6.orig/fs/dcache.c	2007-11-07 10:26:20.000000000 -0800
-+++ linux-2.6/fs/dcache.c	2007-11-07 10:26:27.000000000 -0800
-@@ -610,7 +610,7 @@ static void shrink_dcache_for_umount_sub
- 			spin_lock(&dcache_lock);
- 			list_for_each_entry(loop, &dentry->d_subdirs,
- 					    d_u.d_child) {
--				dentry_lru_remove(dentry);
-+				dentry_lru_remove(loop);
- 				__d_drop(loop);
- 				cond_resched_lock(&dcache_lock);
- 			}
