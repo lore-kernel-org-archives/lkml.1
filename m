@@ -1,76 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756412AbXKGCul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbXKGCvk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756412AbXKGCul (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 21:50:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464AbXKGCuc
+	id S1756695AbXKGCvk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 21:51:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464AbXKGCvd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 21:50:32 -0500
-Received: from fep03.mfe.bur.connect.com.au ([203.63.86.23]:61460 "EHLO
-	fep03.mfe.bur.connect.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751441AbXKGCub (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 21:50:31 -0500
-Message-ID: <4731361D.9030504@ii.net>
-Date: Wed, 07 Nov 2007 11:50:53 +0800
-From: Cliffe <cliffe@ii.net>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Peter Dolding <oiaohm@gmail.com>
-CC: Crispin Cowan <crispin@crispincowan.com>, Simon Arlott <simon@fire.lp0.eu>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: Defense in depth: LSM *modules*, not a static interface
-References: <10965.80.126.27.205.1193684677.squirrel@webmail.xs4all.nl>	 <4726377A.4080807@crispincowan.com>	 <e7d8f83e0710292213h4cf9cddw6e373d60fbab41f9@mail.gmail.com>	 <4726D9D9.2000909@ii.net> <29685.simon.1193747418@5ec7c279.invalid>	 <472FE383.70103@crispincowan.com> <47301739.3010604@ii.net> <e7d8f83e0711061559l26ff4d27gc97f809af6d8b979@mail.gmail.com>
-In-Reply-To: <e7d8f83e0711061559l26ff4d27gc97f809af6d8b979@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 6 Nov 2007 21:51:33 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:40306 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751140AbXKGCvc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 21:51:32 -0500
+Date: Tue, 6 Nov 2007 21:51:27 -0500
+From: Rik van Riel <riel@redhat.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 0/10] split anon and file LRUs
+Message-ID: <20071106215127.29e90ecd@bree.surriel.com>
+In-Reply-To: <Pine.LNX.4.64.0711061834340.5424@schroedinger.engr.sgi.com>
+References: <20071103184229.3f20e2f0@bree.surriel.com>
+	<Pine.LNX.4.64.0711061808460.5249@schroedinger.engr.sgi.com>
+	<20071106212305.6aa3a4fe@bree.surriel.com>
+	<Pine.LNX.4.64.0711061834340.5424@schroedinger.engr.sgi.com>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As good an idea POSIX capabilities might be, not all security problems 
-can be solved with a bitmap of on/off permissions.
+On Tue, 6 Nov 2007 18:40:46 -0800 (PST)
+Christoph Lameter <clameter@sgi.com> wrote:
 
-Peter Dolding wrote:
-> "AppArmor profile denies all network traffic to a specific
-> application"  Ok why should AppArmor be required to do this.  Would it
-> not be better as as part of Capabilities that is always there and is
-> application controllable.  It would be a security advantage if data
-> processing threads that don't do network access inside a application
-> don't have it.  Basically this feature could be done in mirror.  Allow
-> Network access Capabilities flag.  Not set application cannot access
-> network at all.  All LSM's would be able to use that to cut of network
-> access to applications.  As a standard feature of kernel if a new
-> network stack or some other alteration is done LSM hooks would not
-> need altering.  Lot of LSM hooks would disappear.  Need for LSM to
-> monitor and run different code to kernel in a lot of places would also
-> disappear.
->
-> With Capabilities expand it to point that applications cannot do
-> anything without permissions.  Both models are do able.  Restrictive
-> can be done in a Permissive model effectively if the starting point of
-> the Permissive is that you cannot do anything without permissions
-> being granted.  Big different is that the Permissive Model is the
-> kernel default.  Some LSM are design in conflict with the main model
-> of the OS.  You really only want one model from speed point of view
+> On Tue, 6 Nov 2007, Rik van Riel wrote:
+> 
+> > Also, a factor 16 increase in page size is not going to help
+> > if memory sizes also increase by a factor 16, since we already 
+> > have trouble with today's memory sizes.
+> 
+> Note that a factor 16 increase usually goes hand in hand with
+> more processors. The synchronization of multiple processors becomes a 
+> concern. If you have an 8p and each of them tries to get the zone locks 
+> for reclaim then we are already in trouble. And given the immaturity
+> of the handling of cacheline contention in current commodity hardware this 
+> is likely to result in livelocks and/or starvation on some level.
 
-Ok but what happens to the principle of least privilege?
+Which is why we need to greatly reduce the number of pages
+scanned to free a page.  In all workloads.
 
-What if we want AppArmor to confine that application to use a particular 
-set of ports?
+> > > We do not have an accepted standard load. So how would we figure that one 
+> > > out?
+> > 
+> > The current worst case is where we need to scan all of memory, 
+> > just to find a few pages we can swap out.  With the effects of
+> > lock contention figured in, this can take hours on huge systems.
+> 
+> Right but I think this looks like a hopeless situation regardless of the 
+> algorithm if you have a couple of million pages and are trying to free 
+> one. Now image a series of processors going on the hunt for the few pages 
+> that can be reclaimed.
 
-Do you propose having a capability for each port? how about protocols?
+An algorithm that only clears the referenced bit and then
+moves the anonymous page from the active to the inactive
+list will do a lot less work than an algorithm that needs
+to scan the *whole* active list because all of the pages
+on it are referenced.
 
-So unless my understanding of capabilities is fundamentally flawed 
-(which it may be - I have not spent time reviewing recent changes) 
-obviously Linux capabilities does not provide a solution to every problem.
+This is not a theoretical situation: every anonymous page
+starts out referenced!
 
-Regards,
+Add in a relatively small inactive list on huge memory
+systems, and we could have something of an acceptable
+algorithmic complexity.
 
-Cliffe.
-
---
-
-Z. Cliffe Schreuders
-BSc Comp Sci (Hons) & Int Comp
-PhD Candidate, Casual Tutor
-School of IT
-Murdoch University
+-- 
+"Debugging is twice as hard as writing the code in the first place.
+Therefore, if you write the code as cleverly as possible, you are,
+by definition, not smart enough to debug it." - Brian W. Kernighan
