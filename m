@@ -1,66 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758384AbXKGVMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758674AbXKGVNM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758384AbXKGVMd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 16:12:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755237AbXKGVMM
+	id S1758674AbXKGVNM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 16:13:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754545AbXKGVM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 16:12:12 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:56996 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755066AbXKGVMK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 16:12:10 -0500
-Message-ID: <47322340.702@linux.vnet.ibm.com>
-Date: Thu, 08 Nov 2007 02:12:40 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Wed, 7 Nov 2007 16:12:57 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36414 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754536AbXKGVM4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 16:12:56 -0500
 MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
-       k.shutemov@gmail.com, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: mm snapshot broken-out-2007-11-06-02-32 make header check fails
-References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
-In-Reply-To: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Jeff Dike <jdike@addtoit.com>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@osdl.org>, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, Chuck Ebbert <76306.1226@compuserve.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86 - 32-bit ptrace emulation mishandles 6th arg
+In-Reply-To: Jeff Dike's message of  Wednesday, 7 November 2007 10:48:39 -0500 <20071107154839.GA5981@c2.user-mode-linux.org>
+References: <20071107154839.GA5981@c2.user-mode-linux.org>
+X-Zippy-Says: As a FAD follower, my BEVERAGE choices are rich and fulfilling!
+Message-Id: <20071107211222.B95634D0564@magilla.localdomain>
+Date: Wed,  7 Nov 2007 13:12:22 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
-
-The build fails with error
-
-  CHECK   include/asm-generic/siginfo.h
-  CHECK   include/asm-generic/resource.h
-  CHECK   include/asm-generic/statfs.h
-  CHECK   include/asm-generic/signal.h
-  CHECK   include/asm-generic/poll.h
-  CHECK   include/asm-generic/mman.h
-  CHECK   include/asm-generic/ioctl.h
-  CHECK   include/asm-generic/fcntl.h
-  CHECK   include/asm-generic/errno.h
-  CHECK   include/asm-generic/errno-base.h
-  CHECK   include/asm/cputable.h
-  CHECK   include/asm/byteorder.h
-  CHECK   include/asm/bootx.h
-  CHECK   include/asm/auxvec.h
-  CHECK   include/asm/asm-compat.h
-  CHECK   include/asm/a.out.h
-  CHECK   include/asm/ucontext.h
-  CHECK   include/asm/ps3fb.h
-  CHECK   include/asm/linkage.h
-  CHECK   include/asm/elf.h
-/home/test/kernels/linux-2.6.24-rc1/patches/linux-2.6.24-rc1/usr/include/asm/elf.h requires asm/page.h, which does not exist in exported headers
-make[3]: *** [/home/test/kernels/linux-2.6.24-rc1/patches/linux-2.6.24-rc1/usr/include/asm/.check.elf.h] Error 1
-make[2]: *** [asm-powerpc] Error 2
-make[1]: *** [headers_check] Error 2
-make: *** [vmlinux] Error 2
+Sure has my ACK.  
+I never really understood why my old patch was not taken 2.5 years ago.
 
 
-The patch unexport-asm-pageh.patch might be causing the failure.
-This one was discussed on http://lkml.org/lkml/2007/1/4/336
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Thanks,
+Roland
