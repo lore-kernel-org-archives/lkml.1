@@ -1,135 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758644AbXKGRON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758668AbXKGRPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758644AbXKGRON (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 12:14:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbXKGRN6
+	id S1758668AbXKGRPo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 12:15:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755237AbXKGRPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 12:13:58 -0500
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:41670 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755136AbXKGRN4 (ORCPT
+	Wed, 7 Nov 2007 12:15:36 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:32860 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754495AbXKGRPg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 12:13:56 -0500
-Message-ID: <4731F235.9030408@linux.vnet.ibm.com>
-Date: Wed, 07 Nov 2007 22:43:25 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Wed, 7 Nov 2007 12:15:36 -0500
+Date: Wed, 7 Nov 2007 09:07:34 -0800
+From: Greg KH <greg@kroah.com>
+To: Stephane Eranian <eranian@hpl.hp.com>
+Cc: Andrew Morton <akpm@osdl.org>, perfmon@napali.hpl.hp.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix up perfmon to build on -mm
+Message-ID: <20071107170734.GA8358@kroah.com>
+References: <20071107003454.GA13374@kroah.com> <20071107103449.GB14646@frankl.hpl.hp.com>
 MIME-Version: 1.0
-To: Jean Delvare <jdelvare@suse.de>
-CC: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
-       linux-kernel@vger.kernel.org, trenn@suse.de, mhoffman@lightlink.com,
-       lenb@kernel.org, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: mm snapshot broken-out-2007-11-06-02-32 - ACPI functions broken
-References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org> <4730DF4B.6090905@linux.vnet.ibm.com> <200711071329.49726.jdelvare@suse.de>
-In-Reply-To: <200711071329.49726.jdelvare@suse.de>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071107103449.GB14646@frankl.hpl.hp.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean Delvare wrote:
-> Hi Kamalesh,
+On Wed, Nov 07, 2007 at 02:34:49AM -0800, Stephane Eranian wrote:
+> Greg,
 > 
-> Le mardi 06 novembre 2007, Kamalesh Babulal a écrit :
->> Hi Andrew,
->>
->> The kernel build fails, on powerpc while compiling the kernel with allyesconfig option
->>
->> drivers/hwmon/w83627hf.c:1631: error: implicit declaration of function ‘acpi_check_resource_conflict’
->> make[2]: *** [drivers/hwmon/w83627hf.o] Error 1
->> make[1]: *** [drivers/hwmon] Error 2
->> make: *** [drivers] Error 2
->>   CC      fs/xfs/xfs_error.o
->> drivers/hwmon/w83627hf.c:1631: error: implicit declaration of function ‘acpi_check_resource_conflict’
->> make[2]: *** [drivers/hwmon/w83627hf.o] Error 1
->> make[1]: *** [drivers/hwmon] Error 2
->> make: *** [drivers] Error 2
->> drivers/i2c/busses/i2c-ali1535.c:163: error: implicit declaration of function ‘acpi_check_region’
->> make[3]: *** [drivers/i2c/busses/i2c-ali1535.o] Error 1
->> make[2]: *** [drivers/i2c/busses] Error 2
->> make[1]: *** [drivers/i2c] Error 2
->> drivers/hwmon/dme1737.c:2231: error: implicit declaration of function ‘acpi_check_resource_conflict’
->> make[2]: *** [drivers/hwmon/dme1737.o] Error 1
->> make[1]: *** [drivers/hwmon] Error 2
->> make: *** [drivers] Error 2
+> On Tue, Nov 06, 2007 at 04:34:54PM -0800, Greg KH wrote:
+> > Here's a patch against my current tree that gets the perfmon code
+> > building and hopefully working.
+> > 
+> Thanks for your quick help.
 > 
-> Odd. Thanks for reporting.
-> 
->> The patches check-for-acpi-resource-conflicts-in-hwmon-drivers and 
->> check-for-acpi-resource-conflicts-in-i2c-bus-drivers.patch, causes this build failure.
->> The declaration of the functions are under ifdef CONFIG_ACPI.
-> 
-> There's an #else after that, and the functions are defined as inlines
-> doing nothing in the non-ACPI case. The code looks OK to me, but I can
-> reproduce the problem on x86_64 with CONFIG_ACPI=n.
-> 
-> Aha, I see it now, there are nested #ifdef CONFIG_ACPI in acpi.h,
-> so the inner one is a no-op (and its #else counterpart is never
-> evaluated.) That's pretty confusing, I'll send a patch fixing this.
-> 
-> In the meantime, here's a quick fix so that you can go on testing
-> the mm snapshot. Apply this at the top of the series:
-> 
-> Fix the <linux/acpi.h> breakage for CONFIG_ACPI=n.
-> 
-> Signed-off-by: Jean Delvare <jdelvare@suse.de>
-> ---
->  include/linux/acpi.h |   23 ++++++++++++-----------
->  1 file changed, 12 insertions(+), 11 deletions(-)
-> 
-> --- linux-2.6.24-rc1.orig/include/linux/acpi.h	2007-11-07 12:45:47.000000000 +0100
-> +++ linux-2.6.24-rc1/include/linux/acpi.h	2007-11-07 13:23:06.000000000 +0100
-> @@ -26,6 +26,7 @@
->  #define _LINUX_ACPI_H
-> 
-> 
-> +#include <linux/ioport.h>
->  #ifdef	CONFIG_ACPI
-> 
->  #ifndef _LINUX
-> @@ -134,17 +135,6 @@ int acpi_check_mem_region(resource_size_
-> 
->  #define acpi_mp_config	0
-> 
-> -static inline int acpi_check_resource_conflict(struct resource *res)
-> -{ return 0; }
-> -
-> -static inline int acpi_check_region(resource_size_t start, resource_size_t n,
-> -				    const char *name)
-> -{ return 0; }
-> -
-> -static inline int acpi_check_mem_region(resource_size_t start,
-> -					resource_size_t n, const char *name)
-> -{ return 0; }
-> -
->  #endif 	/* !CONFIG_ACPI */
-> 
->  int acpi_register_gsi (u32 gsi, int triggering, int polarity);
-> @@ -239,5 +229,16 @@ static inline int acpi_boot_table_init(v
->  	return 0;
->  }
-> 
-> +static inline int acpi_check_resource_conflict(struct resource *res)
-> +{ return 0; }
-> +
-> +static inline int acpi_check_region(resource_size_t start, resource_size_t n,
-> +				    const char *name)
-> +{ return 0; }
-> +
-> +static inline int acpi_check_mem_region(resource_size_t start,
-> +					resource_size_t n, const char *name)
-> +{ return 0; }
-> +
->  #endif	/* CONFIG_ACPI */
->  #endif	/*_LINUX_ACPI_H*/
-> 
-> 
-Hi Jean,
+> > Note, it needs the kobject_create_and_register() patch which is in my
+> > tree, but I do not think it made it to -mm yet.  The next -mm cycle
+> > should have it.
+> > 
+> > Also, the sysfs usage in the perfmon code is quite strange and not
+> > documented at all.  Yes, there is a little bit in the documentation
+> > about what a few of the files do, but there are _way_ more files and
+> > even directories being created under /sys/kernel/perfmon/ that are not
+> > documented at all here.
+> > 
+> The full documentation for /sys/kernel/perfmon is in Documentation/perfmon2.txt
 
-Thanks for the quick fix.
+That is what I was referring to, that file does not describe all of the
+sysfs files in /sys/kernel/perfmon by far.
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+> > If you document this stuff, I think I can clean up your sysfs code a
+> > lot, making things simpler, easier to extend, and easier to understand.
+> > But as it is, I don't want to break anything as it's totally unknown how
+> > this stuff is supposed to work...
+> > 
+> I certainly welcome your help.
+> 
+> > Hint, use the Documentation/ABI directory to document your sysfs
+> > interfaces, that is what it is there for...
+> > 
+> I will move the description from perfmon2.txt to its own file in
+> ABI/testing.
+
+That would be great to have, thanks.
+
+greg k-h
