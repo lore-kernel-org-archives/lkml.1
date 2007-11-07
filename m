@@ -1,47 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758090AbXKGQpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758156AbXKGQtv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758090AbXKGQpZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 11:45:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754694AbXKGQpQ
+	id S1758156AbXKGQtv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 11:49:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750819AbXKGQti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 11:45:16 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:37163 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754682AbXKGQpO (ORCPT
+	Wed, 7 Nov 2007 11:49:38 -0500
+Received: from rayleigh.systella.fr ([213.41.184.253]:41662 "EHLO
+	rayleigh.systella.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750755AbXKGQth (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 11:45:14 -0500
-Date: Wed, 7 Nov 2007 11:45:14 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Daniel Drake <dsd@gentoo.org>
-cc: rjw@sisk.pl, <linux-pm@lists.linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, <kay.sievers@vrfy.org>,
-       <linux-hotplug-devel@lists.sourceforge.net>, <greg@kroah.com>,
-       <oneukum@suse.de>
-Subject: Re: [PATCH] create /sys/.../power when CONFIG_PM is set
-In-Reply-To: <20071107101043.2E64C9D4ECC@zog.reactivated.net>
-Message-ID: <Pine.LNX.4.44L0.0711071143200.4444-100000@iolanthe.rowland.org>
+	Wed, 7 Nov 2007 11:49:37 -0500
+Message-ID: <4731EC64.3050903@systella.fr>
+Date: Wed, 07 Nov 2007 17:48:36 +0100
+From: =?ISO-8859-1?Q?BERTRAND_Jo=EBl?= <joel.bertrand@systella.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux sparc64; fr-FR; rv:1.8.1.6) Gecko/20070802 Iceape/1.1.4 (Debian-1.1.4-1)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: Neil Brown <neilb@suse.de>, Justin Piszcz <jpiszcz@lucidpixels.com>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: 2.6.23.1: mdadm/raid5 hung/d-state
+References: <Pine.LNX.4.64.0711040658180.30831@p34.internal.lan> <18222.16003.92062.970530@notabene.brown> <472ED613.8050101@systella.fr> <4731EA2B.5000806@redhat.com>
+In-Reply-To: <4731EA2B.5000806@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-3.1.8 (rayleigh.systella.fr [192.168.254.1]); Wed, 07 Nov 2007 17:48:42 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Nov 2007, Daniel Drake wrote:
-
-> The CONFIG_SUSPEND changes in 2.6.23 caused a regression under certain
-> configuration conditions (SUSPEND=n, USB_AUTOSUSPEND=y) where all USB device
-> attributes in sysfs (idVendor, idProduct, ...) silently disappeared, causing
-> udev breakage and more.
+Chuck Ebbert wrote:
+> On 11/05/2007 03:36 AM, BERTRAND Joël wrote:
+>> Neil Brown wrote:
+>>> On Sunday November 4, jpiszcz@lucidpixels.com wrote:
+>>>> # ps auxww | grep D
+>>>> USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+>>>> root       273  0.0  0.0      0     0 ?        D    Oct21  14:40
+>>>> [pdflush]
+>>>> root       274  0.0  0.0      0     0 ?        D    Oct21  13:00
+>>>> [pdflush]
+>>>>
+>>>> After several days/weeks, this is the second time this has happened,
+>>>> while doing regular file I/O (decompressing a file), everything on
+>>>> the device went into D-state.
+>>> At a guess (I haven't looked closely) I'd say it is the bug that was
+>>> meant to be fixed by
+>>>
+>>> commit 4ae3f847e49e3787eca91bced31f8fd328d50496
+>>>
+>>> except that patch applied badly and needed to be fixed with
+>>> the following patch (not in git yet).
+>>> These have been sent to stable@ and should be in the queue for 2.6.23.2
+>>     My linux-2.6.23/drivers/md/raid5.c contains your patch for a long
+>> time :
+>>
+>> ...
+>>         spin_lock(&sh->lock);
+>>         clear_bit(STRIPE_HANDLE, &sh->state);
+>>         clear_bit(STRIPE_DELAYED, &sh->state);
+>>
+>>         s.syncing = test_bit(STRIPE_SYNCING, &sh->state);
+>>         s.expanding = test_bit(STRIPE_EXPAND_SOURCE, &sh->state);
+>>         s.expanded = test_bit(STRIPE_EXPAND_READY, &sh->state);
+>>         /* Now to look around and see what can be done */
+>>
+>>         /* clean-up completed biofill operations */
+>>         if (test_bit(STRIPE_OP_BIOFILL, &sh->ops.complete)) {
+>>                 clear_bit(STRIPE_OP_BIOFILL, &sh->ops.pending);
+>>                 clear_bit(STRIPE_OP_BIOFILL, &sh->ops.ack);
+>>                 clear_bit(STRIPE_OP_BIOFILL, &sh->ops.complete);
+>>         }
+>>
+>>         rcu_read_lock();
+>>         for (i=disks; i--; ) {
+>>                 mdk_rdev_t *rdev;
+>>                 struct r5dev *dev = &sh->dev[i];
+>> ...
+>>
+>> but it doesn't fix this bug.
+>>
 > 
-> The cause of this is that the /sys/.../power subdirectory is now only created
-> when CONFIG_PM_SLEEP is set, however, it should be created whenever CONFIG_PM
-> is set to handle the above situation. The following patch fixes the
-> regression.
+> Did that chunk starting with "clean-up completed biofill operations" end
+> up where it belongs? The patch with the big context moves it to a different
+> place from where the original one puts it when applied to 2.6.23...
 > 
-> Signed-off-by: Daniel Drake <dsd@gentoo.org>
+> Lately I've seen several problems where the context isn't enough to make
+> a patch apply properly when some offsets have changed. In some cases a
+> patch won't apply at all because two nearly-identical areas are being
+> changed and the first chunk gets applied where the second one should,
+> leaving nowhere for the second chunk to apply.
 
-I haven't tried applying this, but it looks okay to me.  There may be 
-some conflict with other changes already merged in the PM core.
+	I always apply this kind of patches by hands, and no by patch command. 
+Last patch sent here seems to fix this bug :
 
-Alan Stern
+gershwin:[/usr/scripts] > cat /proc/mdstat
+Personalities : [raid1] [raid6] [raid5] [raid4]
+md7 : active raid1 sdi1[2] md_d0p1[0]
+       1464725632 blocks [2/1] [U_]
+       [=====>...............]  recovery = 27.1% (396992504/1464725632) 
+finish=1040.3min speed=17104K/sec
 
+	Regards,
+
+	JKB
