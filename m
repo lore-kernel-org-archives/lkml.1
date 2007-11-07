@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758393AbXKGS7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759814AbXKGS7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758393AbXKGS7U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 13:59:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754389AbXKGS7O
+	id S1759814AbXKGS7w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 13:59:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758384AbXKGS7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 13:59:14 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:40379 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754041AbXKGS7N (ORCPT
+	Wed, 7 Nov 2007 13:59:42 -0500
+Received: from lazybastard.de ([212.112.238.170]:43086 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754086AbXKGS7m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 13:59:13 -0500
-Subject: Re: [PATCH] sched: avoid large irq-latencies in smp-balancing
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: mingo@elte.hu, pwil3058@bigpond.net.au, linux-kernel@vger.kernel.org
-In-Reply-To: <20071107102725.64514fde.akpm@linux-foundation.org>
-References: <1194434956.6289.111.camel@twins>
-	 <1194437820.6289.114.camel@twins>
-	 <20071107102725.64514fde.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 07 Nov 2007 19:58:53 +0100
-Message-Id: <1194461933.6289.120.camel@twins>
+	Wed, 7 Nov 2007 13:59:42 -0500
+Date: Wed, 7 Nov 2007 19:54:53 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
+       Johannes Weiner <hannes-kernel@saeurebad.de>, akpm@linux-foundatin.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Mel Gorman <mel@skynet.ie>
+Subject: Re: [patch 04/23] dentries: Extract common code to remove dentry from lru
+Message-ID: <20071107185452.GD8918@lazybastard.org>
+References: <20071107011130.382244340@sgi.com> <20071107011227.298491275@sgi.com> <20071107085027.GA6243@cataract> <20071107094348.GB7374@lazybastard.org> <Pine.LNX.4.64.0711071054240.11906@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.64.0711071054240.11906@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-11-07 at 10:27 -0800, Andrew Morton wrote:
-> > On Wed, 07 Nov 2007 13:17:00 +0100 Peter Zijlstra <peterz@infradead.org> wrote:
-> > +	{
-> > +		.ctl_name	= CTL_UNNUMBERED,
-> > +		.procname	= "sched_nr_migrate",
-> > +		.data		= &sysctl_sched_nr_migrate,
-> > +		.maxlen		= sizeof(unsigned int),
-> > +		.mode		= 644,
-> > +		.proc_handler	= &proc_dointvec,
-> > +	},
+On Wed, 7 November 2007 10:55:09 -0800, Christoph Lameter wrote:
 > 
-> This (and all the other stuff in that table) should be described in
-> Documentation/, please.
+> From: Christoph Lameter <clameter@sgi.com>
+> Subject: dcache: use the correct variable.
 > 
-> It would be nice if sched_nr_migrate didn't exist, really.  It's hard to
-> imagine anyone wanting to tweak it, apart from developers.
+> We need to use "loop" instead of "dentry"
+> 
+> Acked-by: Joern Engel <joern@logfs.org>
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> 
+> Index: linux-2.6/fs/dcache.c
+> ===================================================================
+> --- linux-2.6.orig/fs/dcache.c	2007-11-07 10:26:20.000000000 -0800
+> +++ linux-2.6/fs/dcache.c	2007-11-07 10:26:27.000000000 -0800
+> @@ -610,7 +610,7 @@ static void shrink_dcache_for_umount_sub
+>  			spin_lock(&dcache_lock);
+>  			list_for_each_entry(loop, &dentry->d_subdirs,
+>  					    d_u.d_child) {
+> -				dentry_lru_remove(dentry);
+> +				dentry_lru_remove(loop);
+>  				__d_drop(loop);
+>  				cond_resched_lock(&dcache_lock);
+>  			}
 
-Right, most of these SCHED_DEBUG sysctls are only interesting to
-developers, although stuff like sched_latency might be interesting to
-some users.
+Erm - wouldn't this break git-bisect?
 
-I'll try and write up a documentation thingy before .24 hits the street.
+Jörn
 
-
-
+-- 
+Joern's library part 5:
+http://www.faqs.org/faqs/compression-faq/part2/section-9.html
