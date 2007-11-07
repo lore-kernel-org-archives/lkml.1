@@ -1,74 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756249AbXKGCk4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756131AbXKGCpF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756249AbXKGCk4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 21:40:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754223AbXKGCks
+	id S1756131AbXKGCpF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 21:45:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464AbXKGCoy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 21:40:48 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36596 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752410AbXKGCkr (ORCPT
+	Tue, 6 Nov 2007 21:44:54 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:56113 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752398AbXKGCox (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 21:40:47 -0500
-Date: Tue, 6 Nov 2007 18:40:46 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Rik van Riel <riel@redhat.com>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 0/10] split anon and file LRUs
-In-Reply-To: <20071106212305.6aa3a4fe@bree.surriel.com>
-Message-ID: <Pine.LNX.4.64.0711061834340.5424@schroedinger.engr.sgi.com>
-References: <20071103184229.3f20e2f0@bree.surriel.com>
- <Pine.LNX.4.64.0711061808460.5249@schroedinger.engr.sgi.com>
- <20071106212305.6aa3a4fe@bree.surriel.com>
+	Tue, 6 Nov 2007 21:44:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=YtvvedDmz/tR+7V4AJXUUbqi0CpRW3yGqzaZG0Qr7i9BiQddwEc0SZgsfswn/QSEGuq1iwgNoi/E/Vhf+z1k5D4yCftXlYzeqb0dn/7jfsOfzpHTCbBjdLw0cyqnkCPBQTRyrOhODRpJACzYo5cu/8Up0XN4HgOinzstfWFJ1bQ=
+Message-ID: <4731269B.6010509@gmail.com>
+Date: Wed, 07 Nov 2007 11:44:43 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Peter Osterlund <petero2@telia.com>
+CC: Thomas Maier <balagi@justmail.de>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, gregkh@suse.de
+Subject: Re: pktcdvd oops
+References: <20071105092018.GD5359@kernel.dk> <Pine.LNX.4.64.0711052312410.5445@quad.localdomain> <47302E9F.6020708@gmail.com> <op.t1d2aurziudtyh@master> <Pine.LNX.4.64.0711062229490.5800@quad.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0711062229490.5800@quad.localdomain>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Nov 2007, Rik van Riel wrote:
-
-> Also, a factor 16 increase in page size is not going to help
-> if memory sizes also increase by a factor 16, since we already 
-> have trouble with today's memory sizes.
-
-Note that a factor 16 increase usually goes hand in hand with
-more processors. The synchronization of multiple processors becomes a 
-concern. If you have an 8p and each of them tries to get the zone locks 
-for reclaim then we are already in trouble. And given the immaturity
-of the handling of cacheline contention in current commodity hardware this 
-is likely to result in livelocks and/or starvation on some level.
-
-> > I think that is the most urgent issue at hand. At least for us.
+Peter Osterlund wrote:
+> On Tue, 6 Nov 2007, Thomas Maier wrote:
 > 
-> For some workloads this is the most urgent change, indeed.
-> Since the patches for this already exist, integrating them
-> is at the top of my list.  Expect this to be integrated into
-> the split VM patch series by the end of this week.
+>> Hello,
+>>
+>> have not tested it yet, but i quess, the code mentioned by Peter
+>> is in pkt_new_dev() that is called by pkt_setup_dev():
+>>
+>>     /* This is safe, since we have a reference from open(). */
+>>         __module_get(THIS_MODULE);
+>>
+>>
+>> So, now, there must be checks in every sysfs operation in the module
+>> code,
+>> to ensure that the module is still loaded?
+>
+> I haven't tested it either yet. What I don't understand is this: If the
+> __module_get() is not safe because the module code could have already
+> been unloaded, how can it possibly be made safe by adding more code to
+> the pktcdvd module? If the module is unloaded, trying to execute its
+> code can't be a good thing no matter what the code does.
+>
 
-Good to hear.
- 
-> > > - switch to SEQ replacement for the anon LRU lists, so the
-> > >   worst case number of pages to scan is reduced greatly.
-> > 
-> > No idea what that is?
+sysfs itself is now out of module lifespan rules.  sysfs callbacks are
+guaranteed to stay in memory while running by sysfs node removal waiting
+for completion of in-flight operations before returning.  In pktcdvd's
+case, class_destroy() call in pkt_sysfs_cleanup() will wait for all
+in-flight sysfs r/w ops to complete.
+
+So, even while sysfs callbacks are executing, the module beneath can die
+but it will stay in memory till all the callbacks return.  You need to
+test module liveness using try_module_get() (and it can fail) if you
+want to grab module reference from sysfs callbacks.
+
+>> BTW: the bug report says:
+>>
+>>  Steps to reproduce:
+>>
+>>   modprobe pktcdvd
+>>   echo 22:0 >/sys/class/pktcdvd/add
+>>
+>> Is there any module unload??? Why is the module not available after
+>> the modprobe, but the sysfs entries, generated by the module? Confused ;)
 > 
-> See http://linux-mm.org/PageReplacementDesign
+> I think the purpose of the BUG_ON in __module_get() is to catch cases
+> that are unsafe, even if the call would have happened to work in this
+> particular case.
 
-A bit sparse but limiting the scanning if we cannot do much is certainly 
-the right thing to do. The percentage of memory taken up by anonymous 
-pages varies depending on the load. HPC applications may consume all of 
-memory with anonymous pages. But there the pain is already so bad that 
-many users go to huge pages already which bypasses the VM.
+The BUG_ON is detecting valid condition here.  If you rmmod pktcdvd
+after sysfs write has begun but before __module_get() ran, device node
+will be created after the module is killed and scheduled to be unloaded.
 
-> > We do not have an accepted standard load. So how would we figure that one 
-> > out?
-> 
-> The current worst case is where we need to scan all of memory, 
-> just to find a few pages we can swap out.  With the effects of
-> lock contention figured in, this can take hours on huge systems.
+Thanks.
 
-Right but I think this looks like a hopeless situation regardless of the 
-algorithm if you have a couple of million pages and are trying to free 
-one. Now image a series of processors going on the hunt for the few pages 
-that can be reclaimed.
+-- 
+tejun
