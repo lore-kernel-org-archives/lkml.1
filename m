@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbXKGD3G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756723AbXKGDfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757279AbXKGD3G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 22:29:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755199AbXKGD24
+	id S1756723AbXKGDfp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 22:35:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbXKGDfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 22:28:56 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:53084 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754232AbXKGD2z (ORCPT
+	Tue, 6 Nov 2007 22:35:36 -0500
+Received: from web36604.mail.mud.yahoo.com ([209.191.85.21]:36219 "HELO
+	web36604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752398AbXKGDff (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 22:28:55 -0500
-Date: Wed, 7 Nov 2007 04:28:31 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Bryan Wu <cooloney.lkml@gmail.com>
-Cc: bryan.wu@analog.com, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] blackfin: remove dump_thread()
-Message-ID: <20071107032831.GW26163@stusta.de>
-References: <20071105170750.GW12045@stusta.de> <386072610711061907q7809db9ct51d00fe2d6ec6c6b@mail.gmail.com>
+	Tue, 6 Nov 2007 22:35:35 -0500
+X-YMail-OSG: ef0JqssVM1lpd_OS9ZIr4VnWq6N7RfAUBiVRvY8bGMKXGKaUjTPK_brQ4u_YfhnRYkwbzSaQGg--
+X-RocketYMMF: rancidfat
+Date: Tue, 6 Nov 2007 19:35:34 -0800 (PST)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: Defense in depth: LSM *modules*, not a static interface
+To: Cliffe <cliffe@ii.net>, Peter Dolding <oiaohm@gmail.com>
+Cc: Crispin Cowan <crispin@crispincowan.com>, Simon Arlott <simon@fire.lp0.eu>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+In-Reply-To: <4731361D.9030504@ii.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <386072610711061907q7809db9ct51d00fe2d6ec6c6b@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <671729.27434.qm@web36604.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 07, 2007 at 11:07:06AM +0800, Bryan Wu wrote:
-> On 11/6/07, Adrian Bunk <bunk@kernel.org> wrote:
-> > This patch removes the unused dump_thread().
-> >
+
+--- Cliffe <cliffe@ii.net> wrote:
+
+> As good an idea POSIX capabilities might be,
+
+Now that's a refreshing comment. Thank you.
+
+> not all security problems 
+> can be solved with a bitmap of on/off permissions.
+
+There are people (I'm not one of them) who figure that you
+can solve all the security problems by applying sufficiently
+fine granularity of on/off permissions.
+
+> Peter Dolding wrote:
+> <lots o stuff>
 > 
-> Why only remove it from Blackfin? any more reason?
-
-The only user is the a.out support.
-
-It was therefore removed prior to the blackfin merge from all 
-architectures not supporting a.out.
-
-> I found this in latest 2.6.24-rc2:
+> Ok but what happens to the principle of least privilege?
 > 
-> --
-> Cscope tag: dump_thread
->    #   line  filename / context / line
->    1    324  arch/alpha/kernel/process.c <<dump_thread>>
->              dump_thread(struct pt_regs * pt, struct user * dump)
->    2    373  arch/arm/kernel/process.c <<dump_thread>>
->              void dump_thread(struct pt_regs * regs, struct user * dump)
->    3    244  arch/blackfin/kernel/process.c <<dump_thread>>
->              void dump_thread(struct pt_regs *regs, struct user *dump)
->    4    321  arch/m68k/kernel/process.c <<dump_thread>>
->              void dump_thread(struct pt_regs * regs, struct user * dump)
->    5    572  arch/sparc/kernel/process.c <<dump_thread>>
->              void dump_thread(struct pt_regs * regs, struct user * dump)
->    6    731  arch/sparc64/kernel/process.c <<dump_thread>>
->              void dump_thread(struct pt_regs * regs, struct user * dump)
->    7    306  arch/um/kernel/process.c <<dump_thread>>
->              void dump_thread(struct pt_regs *regs, struct user *u)
->    8    519  arch/x86/kernel/process_32.c <<dump_thread>>
->              void dump_thread(struct pt_regs * regs, struct user * dump)
-> --
+> What if we want AppArmor to confine that application to use a particular 
+> set of ports?
 > 
-> Regards,
-> -Bryan
+> Do you propose having a capability for each port? how about protocols?
 
-cu
-Adrian
+While you're at it, how about a capability for each possible
+directory entry name?
 
--- 
+> So unless my understanding of capabilities is fundamentally flawed 
+> (which it may be - I have not spent time reviewing recent changes) 
+> obviously Linux capabilities does not provide a solution to every problem.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Of course they don't. The only problem they are intended
+to solve, and I really mean this, is the association of uid 0
+with privilege. That's it. You would be better off with a single
+CAP_GODLIKE than with uid 0 having all privilege all the time.
+Fine grained capabilities are a bonus, and there are lots of
+people who think that it would be really nifty if there were a
+separate capability for each "if" in the kernel. I personally
+don't see need for more than about 20. That is a matter of taste.
+DG/UX ended up with 330 and I say that's too many.
 
+
+
+Casey Schaufler
+casey@schaufler-ca.com
