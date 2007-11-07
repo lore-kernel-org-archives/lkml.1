@@ -1,44 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759417AbXKGSv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758637AbXKGSzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759417AbXKGSv5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 13:51:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbXKGSvs
+	id S1758637AbXKGSzY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 13:55:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbXKGSzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 13:51:48 -0500
-Received: from mail-gw3.adaptec.com ([162.62.93.58]:56881 "EHLO
-	mail-gw3.adaptec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752973AbXKGSvr convert rfc822-to-8bit (ORCPT
+	Wed, 7 Nov 2007 13:55:13 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43741 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753362AbXKGSzM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 13:51:47 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 7 Nov 2007 13:55:12 -0500
+Date: Wed, 7 Nov 2007 10:55:09 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+cc: Johannes Weiner <hannes-kernel@saeurebad.de>, akpm@linux-foundatin.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Mel Gorman <mel@skynet.ie>
+Subject: Re: [patch 04/23] dentries: Extract common code to remove dentry
+ from lru
+In-Reply-To: <20071107094348.GB7374@lazybastard.org>
+Message-ID: <Pine.LNX.4.64.0711071054240.11906@schroedinger.engr.sgi.com>
+References: <20071107011130.382244340@sgi.com> <20071107011227.298491275@sgi.com>
+ <20071107085027.GA6243@cataract> <20071107094348.GB7374@lazybastard.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 1/1] aacraid: don't assign cpu_to_le32(int) to u8
-Date: Wed, 7 Nov 2007 13:51:44 -0500
-Message-ID: <AE4F746F2AECFC4DA4AADD66A1DFEF01F95F54@otce2k301.adaptec.com>
-In-Reply-To: <20071107173307.GB25560@infradead.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 1/1] aacraid: don't assign cpu_to_le32(int) to u8
-Thread-Index: AcghZEdeLQ1O1P4NRgGI+ti40lAVigACjmLg
-References: <jefxzqqeha.fsf@sykes.suse.de> <AE4F746F2AECFC4DA4AADD66A1DFEF01F95EF7@otce2k301.adaptec.com> <20071107173307.GB25560@infradead.org>
-From: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
-To: "Christoph Hellwig" <hch@infradead.org>
-Cc: "Andreas Schwab" <schwab@suse.de>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>, <linux-scsi@vger.kernel.org>,
-       "LKML" <linux-kernel@vger.kernel.org>
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1700579579-711890388-1194461709=:11906"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig [mailto:hch@infradead.org] sez:
-> Did anyone run the driver through sparse to see if we have 
-> more issues like this?
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-There are some warnings from sparse, none like this one. I will deal
-with the warnings ...
+---1700579579-711890388-1194461709=:11906
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-Sincerely -- Mark Salyzyn
+On Wed, 7 Nov 2007, J=F6rn Engel wrote:
 
+> Looks like it.  Once this is fixed, feel free to add
+> Acked-by: Joern Engel <joern@logfs.org>
+
+Its in the slab defrag git now. I added the spelling fix and this one as a=
+=20
+result of the discussions today.
+
+
+From: Christoph Lameter <clameter@sgi.com>
+Subject: dcache: use the correct variable.
+
+We need to use "loop" instead of "dentry"
+
+Acked-by: Joern Engel <joern@logfs.org>
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+Index: linux-2.6/fs/dcache.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.orig/fs/dcache.c=092007-11-07 10:26:20.000000000 -0800
++++ linux-2.6/fs/dcache.c=092007-11-07 10:26:27.000000000 -0800
+@@ -610,7 +610,7 @@ static void shrink_dcache_for_umount_sub
+ =09=09=09spin_lock(&dcache_lock);
+ =09=09=09list_for_each_entry(loop, &dentry->d_subdirs,
+ =09=09=09=09=09    d_u.d_child) {
+-=09=09=09=09dentry_lru_remove(dentry);
++=09=09=09=09dentry_lru_remove(loop);
+ =09=09=09=09__d_drop(loop);
+ =09=09=09=09cond_resched_lock(&dcache_lock);
+ =09=09=09}
+---1700579579-711890388-1194461709=:11906--
