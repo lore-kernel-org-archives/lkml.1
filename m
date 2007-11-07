@@ -1,53 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758009AbXKGTNO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758392AbXKGTRE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758009AbXKGTNO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 14:13:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbXKGTM6
+	id S1758392AbXKGTRE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 14:17:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbXKGTQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 14:12:58 -0500
-Received: from rtr.ca ([76.10.145.34]:1402 "EHLO mail.rtr.ca"
+	Wed, 7 Nov 2007 14:16:55 -0500
+Received: from www.tglx.de ([62.245.132.106]:39141 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754045AbXKGTM5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 14:12:57 -0500
-Message-ID: <47320E37.8010106@rtr.ca>
-Date: Wed, 07 Nov 2007 14:12:55 -0500
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	id S1752204AbXKGTQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 14:16:54 -0500
+Date: Wed, 7 Nov 2007 20:16:43 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: fix compile error if !CONFIG_ACPI
+In-Reply-To: <20071107172748.GA6229@alberich.amd.com>
+Message-ID: <alpine.LRH.0.999.0711072015120.25592@www.tglx.de>
+References: <20071107172748.GA6229@alberich.amd.com>
 MIME-Version: 1.0
-To: Denys Fedoryshchenko <denys@visp.net.lb>
-Cc: James Andrewartha <jamesa@daa.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, alan@lxorguk.ukuu.org.uk, htejun@gmail.com
-Subject: Re: SC1200 failure in 2.6.23 and 2.6.24-rc1-git10
-References: <20071101213013.M54162@visp.net.lb> <20071106221521.4f64a066.akpm@linux-foundation.org> <20071107132630.M65286@visp.net.lb> <4731D85E.70201@daa.com.au> <20071107160426.M31617@visp.net.lb>
-In-Reply-To: <20071107160426.M31617@visp.net.lb>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> WRAP ~ #./hdparm -I /dev/hda
+On Wed, 7 Nov 2007, Andreas Herrmann wrote:
+
+> Following patch is against cleanup branch of the x86 tree.
+> [PATCH] x86: fix compile error if !CONFIG_ACPI
 > 
-> /dev/hda:
+>   arch/x86/kernel/setup_64.c: In setup_:
+>   arch/x86/kernel/setup_64.c:412: error: implicit declaration of function early_
+>   quirks
 > 
-> ATAPI Write-once device, with non-removable media
->         Model Number:       SanDisk SDP3B-16
->         Serial Number:      24313671615
->         Firmware Revision:  vdd 1.00
-> Standards:
->         Likely used: 3
-> Configuration:
->         DRQ response: 50us.
->         Packet size: Unknown
-> Capabilities:
->         LBA, IORDY(may be)(cannot be disabled)
->         Buffer size: 1.0kB      bytes avail on r/w long: 4
->         DMA: not supported
->         PIO: pio0 pio1
+> Move declaration of early_quirks to the corresponding PCI header file.
+> IMHO, this is where it really belongs to.
 
-"ATAPI Write-once device"  ???
+Good point. Applied, thanks
 
-That cannot be correct (??).  Is this with hdparm-7.7 (latest sourceforge) ??
-Can you show us the "hdparm --Istdout" output as well, please.
+	tglx
 
-thanks.
+> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> ---
+>  include/asm-x86/acpi_32.h |    2 --
+>  include/asm-x86/acpi_64.h |    2 --
+>  include/asm-x86/pci.h     |    1 +
+>  3 files changed, 1 insertions(+), 4 deletions(-)
+> 
+> diff --git a/include/asm-x86/acpi_32.h b/include/asm-x86/acpi_32.h
+> index 4f8730e..c8afeea 100644
+> --- a/include/asm-x86/acpi_32.h
+> +++ b/include/asm-x86/acpi_32.h
+> @@ -79,8 +79,6 @@ int __acpi_release_global_lock(unsigned int *lock);
+>          :"=r"(n_hi), "=r"(n_lo)     \
+>          :"0"(n_hi), "1"(n_lo))
+>  
+> -extern void early_quirks(void);
+> -
+>  #ifdef CONFIG_ACPI
+>  extern int acpi_lapic;
+>  extern int acpi_ioapic;
+> diff --git a/include/asm-x86/acpi_64.h b/include/asm-x86/acpi_64.h
+> index e2f3411..58114ed 100644
+> --- a/include/asm-x86/acpi_64.h
+> +++ b/include/asm-x86/acpi_64.h
+> @@ -78,8 +78,6 @@ int __acpi_release_global_lock(unsigned int *lock);
+>          :"=r"(n_hi), "=r"(n_lo)     \
+>          :"0"(n_hi), "1"(n_lo))
+>  
+> -extern void early_quirks(void);
+> -
+>  #ifdef CONFIG_ACPI
+>  extern int acpi_lapic;
+>  extern int acpi_ioapic;
+> diff --git a/include/asm-x86/pci.h b/include/asm-x86/pci.h
+> index e883619..7d011db 100644
+> --- a/include/asm-x86/pci.h
+> +++ b/include/asm-x86/pci.h
+> @@ -66,6 +66,7 @@ extern int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
+>  
+>  
+>  #ifdef CONFIG_PCI
+> +extern void early_quirks(void);
+>  static inline void pci_dma_burst_advice(struct pci_dev *pdev,
+>  					enum pci_dma_burst_strategy *strat,
+>  					unsigned long *strategy_parameter)
+> -- 
+> 1.5.3.4
+> 
+> 
+> 
+> 
