@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757593AbXKGGKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757267AbXKGGQE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757593AbXKGGKU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 01:10:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755387AbXKGGKE
+	id S1757267AbXKGGQE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 01:16:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751023AbXKGGPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 01:10:04 -0500
-Received: from 1wt.eu ([62.212.114.60]:3747 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750821AbXKGGKB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 01:10:01 -0500
-Date: Wed, 7 Nov 2007 07:09:41 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Romano Giannetti <romano@dea.icai.upcomillas.es>
-Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, Roland Dreier <rdreier@cisco.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.34-rc1 eat my photo SD card :-(
-Message-ID: <20071107060941.GA22707@1wt.eu>
-References: <1194168583.10245.15.camel@rukbat> <ada8x5ec7oh.fsf@cisco.com> <1194259886.6927.9.camel@localhost> <20071105132218.495f244e@poseidon.drzeus.cx> <1194270393.27789.2.camel@localhost> <20071105162633.09e54290@poseidon.drzeus.cx> <1194343121.6953.6.camel@rukbat> <20071106195148.GD1045@1wt.eu> <1194385693.12938.5.camel@rukbat> <1194387459.5205.2.camel@rukbat>
+	Wed, 7 Nov 2007 01:15:53 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56616 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750826AbXKGGPw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 01:15:52 -0500
+Date: Tue, 6 Nov 2007 22:15:09 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "werner" <werner@copaya.yi.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: crash 2.6.24-rc1-git10
+Message-Id: <20071106221509.a9c5c674.akpm@linux-foundation.org>
+In-Reply-To: <1193943446.4959@copaya.yi.org>
+References: <1193943446.4959@copaya.yi.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1194387459.5205.2.camel@rukbat>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 06, 2007 at 11:17:39PM +0100, Romano Giannetti wrote:
-> On Tue, 2007-11-06 at 22:48 +0100, Romano Giannetti wrote:
+> On Thu, 01 Nov 2007 15:57:27 -0300 (GFT) "werner" <werner@copaya.yi.org> wrote:
+> Kernel Crash -- Details see below
+> globc 2.7  glib2 2.14.2
+> W.Landgraf
+> www.copaya.yi.org
+> =============================================================================================================
+> 2.6.24-rc1-git10
+> EIP 0600: <c0407284> EFLAGS 00010212 CPU 0
+> EIUP is at xor_sse_2+0x34/0x200
+> EAX: 10 EBX fffedb22 ECX c183f000 EDX c183c000 ESS 8005003b EDI c0929614 EBP c183f000 ESP c1823ef0   
+> DS 7b ES 7b FS d8 GS 0 SS 68
+> Process swapper  pid 1  ti: c182200  task c1820000 task.ti c=1822000
+> Stack:  8x 0    8x 0   fffedb22  0  c04067b3  10  c0849b62  c1030780  c183f000  c183c000
+> call trace
+> c0 4067b3 do_xor_speed+0x53/0xd0
+>    9a9582 calibrate_xor_blocks 0xe2/0x100 (or 1a0 ?)
+>   191594  register_filesystem =0X44/0X70
+>   991565 kernel_init+0x125/0x2f0
+>    10420a  ret_from_fork +0x6/0x1c  (or 0xb ...)
+>   991440 kernel_init+0x0/0x2f0
+>        " again
+>    c0104edf  kernel_thread_helper+0x7/0x18
+> code  08 89 74 24 44 0f 20 cf 0f 06 (or 0b) 0f 11 04 24 0f 11 4c 34 10 0f 11 54 24 20 0f 11 5c 24 30 0f 18 82 00
+> 01 00 00 0f 18 82 20 01 00 00 <00> 20x 0
+> EIP c0407284 xor_sse_2+0x34/0x200 SS ESP 068: c1823ef0
+> kernel panic
+> ====================System.map==================================================================================
 > 
-> > I do really suspect a software bug.
-> >
 > 
-> Well, I started bisecting it. It will be a long shot, I suspect...
-> 
-> 	Romano
-> 
-> BTW: I noticed that if I change EXTRAVERSION, doing a make rebuild
-> almost all the kernel. Is it normal?
 
-yes I think, because it changes version.h which is included directly or
-indirectly by every file.
+Five days, no reply?
 
-> And it seems to me that the same
-> thing happens if a make oldconfig results in a changed .config...
-
-this should not happen IMHO. If you post a simple reproducible case, maybe
-some people can investigate it.
-
-Regards,
-Willy
-
+Is this still reproducible in latest mainline?  If so, please make a fuss.
