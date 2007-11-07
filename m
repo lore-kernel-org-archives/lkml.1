@@ -1,71 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758809AbXKGOfs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759165AbXKGOgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758809AbXKGOfs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 09:35:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757730AbXKGOfl
+	id S1759165AbXKGOgT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 09:36:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758598AbXKGOgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 09:35:41 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:32881 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756173AbXKGOfk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 09:35:40 -0500
-Date: Wed, 7 Nov 2007 09:35:27 -0500
-From: Rik van Riel <riel@redhat.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [RFC PATCH 3/10] define page_file_cache
-Message-ID: <20071107093527.0d312903@bree.surriel.com>
-In-Reply-To: <Pine.LNX.4.64.0711061920510.5746@schroedinger.engr.sgi.com>
-References: <20071103184229.3f20e2f0@bree.surriel.com>
-	<20071103185516.24832ab0@bree.surriel.com>
-	<Pine.LNX.4.64.0711061821010.5249@schroedinger.engr.sgi.com>
-	<20071106215552.4ab7df81@bree.surriel.com>
-	<Pine.LNX.4.64.0711061856400.5565@schroedinger.engr.sgi.com>
-	<20071106221710.3f9b8dd6@bree.surriel.com>
-	<Pine.LNX.4.64.0711061920510.5746@schroedinger.engr.sgi.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Nov 2007 09:36:08 -0500
+Received: from styx.suse.cz ([82.119.242.94]:54070 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758064AbXKGOgG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 09:36:06 -0500
+Date: Wed, 7 Nov 2007 15:36:05 +0100
+From: Jan Kara <jack@suse.cz>
+To: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: [RFC] [PATCH 3/3] Recursive mtime for ext3
+Message-ID: <20071107143605.GD22214@duck.suse.cz>
+References: <20071106171537.GD23689@duck.suse.cz> <20071106171945.GG23689@duck.suse.cz> <20071106194012.GE12857@thunk.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071106194012.GE12857@thunk.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Nov 2007 19:26:33 -0800 (PST)
-Christoph Lameter <clameter@sgi.com> wrote:
-> n Tue, 6 Nov 2007, Rik van Riel wrote:
+On Tue 06-11-07 14:40:12, Theodore Tso wrote:
+> On Tue, Nov 06, 2007 at 06:19:45PM +0100, Jan Kara wrote:
+> > Intended use case is that application which wants to watch any
+> > modification in a subtree scans the subtree and sets flags for all
+> > inodes there. Next time, it just needs to recurse in directories
+> > having rtime newer than the start of the previous scan. There it can
+> > handle modifications and set the flag again. It is up to application
+> > to watch out for hardlinked files. It can e.g.  build their list and
+> > check their mtime separately (when a hardlink to a file is created
+> > its inode is modified and rtimes properly updated and thus any
+> > application has an effective way of finding new hardlinked files).
 > 
-> > Every anonymous, tmpfs or shared memory segment page is potentially
-> > swap backed. That is the whole point of the PG_swapbacked flag.
+> Umm, yuck.
 > 
-> One of the current issues with anonymous pages is the accounting when 
-> they become file backed and get dirty.
+> What if more than one application wants to use this facility?
+  That should be fine - let's see: Each application keeps somewhere a time when
+it started a scan of a subtree (or it can actually remember a time when it
+set the flag for each directory), during the scan, it sets the flag on
+each directory. When it wakes up to recheck the subtree it just compares
+the rtime against the stored time - if rtime is greater, subtree has been
+modified since the last scan and we recurse in it and when we are finished
+with it we set the flag. Now notice that we don't care about the flag when
+we check for changes - we care only for rtime - so if there are several
+applications interested in the same subtree, the flag just gets set more
+often and thus the update of rtime happens more often but the same scheme
+still works fine.
 
-What are you talking about?
+> The application is using a global per-inode flag that is written out
+> to disk.  So sweeping the entire subtree and setting this flag will
+> involve a lot of disk i/o; as does setting a mod-time, since it could
+> potentially require a large number of inode updates, and then the
+> application needs to sweep through the subtree and reset the flags
+> (resulting in more disk i/o).  The performance would seem to me to be
+> really pessimal.  
+  I don't get it here - you need to scan the whole subtree and set the flag
+only during the initial scan. Later, you need to scan and set the flag only
+for directories in whose subtree something changed. Similarty rtime needs
+to be updated for each inode at most once after the scan. Maybe we have
+different different ideas of use-cases: I consider this useful for larger
+subtrees which change only seldom (or only their small parts) or you want
+to check for changes only once per some longer time - so uses like backup
+with rsync, updatedb, cachefiles for trees with config files (like KDE has)
+etc. There the penalty for additional IO is during rtime updates is quite
+negligible - if you have some usecase you'd like to measure, please propose
+it and I'll measure it. I have tested the following:
+  Create a tree of depth 5 where each directory has 5 subdirectories and
+the leaf directories have 10 files in it. You set the flag on all
+directories (umount and mount again) and then touch one file in every directory.
+  With the feature enabled this takes 36.1176s (average from 5 tests) with
+deviation 0.29509. Without the feature it takes 35.75480 with deviation
+0.15433. So the difference in performance is 1% which is just slightly
+above the error and I'd find this test case quite pesimistic for the
+intended usage... 
 
-How exactly can an anonymous page ever become file backed?
+> In addition, after you crash, there might not be any application
+> waiting to watch modifications in that subtree, and yet the flags
+> would still be set so the system would still be paying the performance
+> penalties of needing to propagate modtimes until all of the flags
+> disappear --- and for a large subtree, that might not be for a long,
+> long time.
+  I don't quite understand what you are afraid here - I think we
+misunderstand a bit - are you aware that we don't propagate the
+modification up once we hit a directory with a flag not set - hence all
+possible updates in future will write each inode at most once? 
 
-> There are performance issue with swap writeout
+> So if the goal is some kind of modification notification system that
+> watches a subtree efficiently, avoiding some of the deficiencies of
+> inotify and dnotify, the interface doesn't seem to be the right way to
+> go about things.  The fact that only one application at a time can use
+> this interface, even if you ignore the issues of hard links and the
+> performance problems and the lack of cleanup after a reboot, seems in
+> my mind to just be a irreparable fatal flaw to this particular scheme.
+  I hope I've refuted most of your objections ;) Thanks for having look
+at the feature.
 
-That is one of the reasons everything that is ram/swap backed
-goes onto a different set of LRU lists from everything that is
-backed by a disk or network filesystem.
-
-> Do ramfs pages count as memory backed?
-
-Since ramfs pages cannot be evicted from memory at all, they
-should go into the "noreclaim" page set.
-
-> > A page from a filesystem like ext3 or NFS cannot suddenly turn into
-> > a swap backed page.  This page "nature" is not changed during the
-> > lifetime of a page.
-> 
-> Well COW sortof does that but then its a new page.
-
-Exactly.  As far as I know, a page never changes from a file
-page into an anonymous page, or the other way around.
-
+								Honza
 -- 
-"Debugging is twice as hard as writing the code in the first place.
-Therefore, if you write the code as cleverly as possible, you are,
-by definition, not smart enough to debug it." - Brian W. Kernighan
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
