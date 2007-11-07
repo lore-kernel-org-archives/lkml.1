@@ -1,48 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757481AbXKGTxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758090AbXKGTy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757481AbXKGTxo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 14:53:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754253AbXKGTxh
+	id S1758090AbXKGTy2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 14:54:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086AbXKGTyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 14:53:37 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:39528 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754184AbXKGTxg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 14:53:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=PzkRgWObg7vPwRTQNQoLM91Zt/Zq6hgDug1gloCsbD+XGIxcWkFb9FI2SLug0BjGAaaiN6eCQl/HBn9We1SKZMhUdXW1fahhFSvvCmKfqVIPLwwkPhe13I7voteu/T8VeEBL8D9szcqWH9dx5zO2pu2O7j6wF1ts1U1CgRPledc=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Paul Albrecht <albrecht@rdi1.com>
-Subject: Re: unionfs and sys_readahead
-Date: Wed, 7 Nov 2007 19:53:25 +0000
-User-Agent: KMail/1.9.1
-Cc: LKML <linux-kernel@vger.kernel.org>
-References: <1194386482.7489.5.camel@albrecht.rdi1.com>
-In-Reply-To: <1194386482.7489.5.camel@albrecht.rdi1.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Wed, 7 Nov 2007 14:54:20 -0500
+Received: from mummy.ncsc.mil ([144.51.88.129]:63817 "EHLO jazzhorn.ncsc.mil"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753262AbXKGTyT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 14:54:19 -0500
+Subject: Re: 2.6.24-rc2=another train wreck with amanda
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
+       James Morris <jmorris@namei.org>
+In-Reply-To: <20071107103028.f5166fd3.akpm@linux-foundation.org>
+References: <200711070649.02136.gene.heskett@gmail.com>
+	 <20071107103028.f5166fd3.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Wed, 07 Nov 2007 14:47:03 -0500
+Message-Id: <1194464823.3956.136.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711071953.25716.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 06 November 2007 22:01, Paul Albrecht wrote:
-> Hi,
+On Wed, 2007-11-07 at 10:30 -0800, Andrew Morton wrote:
+> > On Wed, 07 Nov 2007 06:49:01 -0500 Gene Heskett <gene.heskett@gmail.com> wrote:
+> > Greetings;
+> > 
+> > I have this line in my /etc/modprobe.conf:
+> > options dm-mod major=238
+> > 
+> > And I had a fsckup while building 2.6.24-rc2 cuz I thought it needed to be 
+> > based on 2.6.23.1 that has made 2.6.24-rc2 the only kernel that will boot 
+> > without a panic, killing init message.
+> > 
+> > I can survive that, but amanda (tar) went bonkers last night and tried to do a 
+> > level 0 on everything, which is about 50GB, but its virtual tape size is only 
+> > 11GB.
+> > 
+> > The last time this happened that line above fixed the device mapper to a 
+> > stable address at a major of 238 which tar was happy with.
+> > 
+> > An ls -l of /dev/mapper:
+> > [root@coyote /]# ls -l /dev/mapper
+> > total 0
+> > crw------- 1 root root  10, 62 Nov  6 23:40 control
+> > brw-rw---- 1 root disk 238,  0 Nov  6 23:40 VolGroup00-LogVol00
+> > brw-rw---- 1 root disk 238,  1 Nov  6 23:40 VolGroup00-LogVol01
+> > 
+> > So that hasn't changed, so what did?  Amanda itself hasn't been changed in 
+> > several months, running the 20070727 snapshot of amanda-2.5.2p1 all this 
+> > time.  Tar was updated by smart or yumex 2 or 3 days back, so it worked 
+> > correctly after the update.  That leaves something in 2.6.24-rc2.  I didn't 
+> > build rc1.
+> > 
+> > Other than that, rc2 seems stable.  But auditd failed to start in the bootup 
+> > sequence. I think that's minor and may predate this particular kernel.  
+> > However, selinux did a relabel before it booted, could that be the cause?
+> > 
 > 
-> Whenever I use readahead-list on a union mounted file system I get a
-> segfault and kernel oops so I'm wondering whether or not the linux
-> unionfs supports sys_readahead.
+> An selinux relabelling could well have caused a full backup by amanda.
 > 
-> Anyone know? I'm not usually subscribed to the lkml so please cc me in
-> your response. Thanks.
+> There's a way of forcing a relabelling so that you can confirm this, but I
+> forget what it is (cc's added, please).
+> 
+> But we don't know why the relabelling happened, do we?
 
-Please show actual oops output.
+Gene took his question to fedora-selinux-list, which is appropriate
+since the autorelabel stuff is distro-specific.
 
-Also: what kernel version do you use? any extra patch(es) applied? .config?
---
-vda
+In Fedora, rc.sysinit will perform a relabel if /.autorelabel exists or
+autorelabel was passed on the kernel command line.  /.autorelabel can be
+created by the user, by rc.sysinit itself (if you boot with SELinux
+disabled, to force a relabel if you ever re-enable SELinux later), or by
+utilities like system-config-{securitylevel,selinux} in response to
+changing settings.  Merely installing and booting a new kernel shouldn't
+trigger it.
+
+Even when triggered, a relabel shouldn't call setxattr on the file
+unless its existing on-disk label doesn't match the file contexts
+specification in policy.  There is a force option that unconditionally
+sets the label on all files, but I don't see that being used by the
+autorelabel support.
+
+-- 
+Stephen Smalley
+National Security Agency
+
