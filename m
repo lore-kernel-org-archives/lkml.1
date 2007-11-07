@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758987AbXKGTEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758009AbXKGTNO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758987AbXKGTEv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 14:04:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbXKGTEp
+	id S1758009AbXKGTNO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 14:13:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbXKGTM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 14:04:45 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:24959 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752707AbXKGTEo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 14:04:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=Ql+xWJvYBfiMotmEDFydoD4lEmYWGLQrQnCWwY3XEy82xCDTJTXXwBaR9Hp4xQbkIG6+lrNeTBX4KC2Y//y93RZGG4wdRYH/Qqo3+XtefrKpukcQumLpo4Rgp6ZUBRxVPWNL2cxE/Yb6GtZ2YiaNdeJPvyy7Uhpg4hhbfRCSYyc=
-Message-ID: <2c0942db0711071104x4360c38s930f6f9d494d4bb6@mail.gmail.com>
-Date: Wed, 7 Nov 2007 11:04:41 -0800
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Roel Kluin" <12o3l@tiscali.nl>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] fix incorrect test in trident_ac97_set(); sound/oss/trident.c
-Cc: lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <473208ED.9000707@tiscali.nl>
+	Wed, 7 Nov 2007 14:12:58 -0500
+Received: from rtr.ca ([76.10.145.34]:1402 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754045AbXKGTM5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 14:12:57 -0500
+Message-ID: <47320E37.8010106@rtr.ca>
+Date: Wed, 07 Nov 2007 14:12:55 -0500
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Denys Fedoryshchenko <denys@visp.net.lb>
+Cc: James Andrewartha <jamesa@daa.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, alan@lxorguk.ukuu.org.uk, htejun@gmail.com
+Subject: Re: SC1200 failure in 2.6.23 and 2.6.24-rc1-git10
+References: <20071101213013.M54162@visp.net.lb> <20071106221521.4f64a066.akpm@linux-foundation.org> <20071107132630.M65286@visp.net.lb> <4731D85E.70201@daa.com.au> <20071107160426.M31617@visp.net.lb>
+In-Reply-To: <20071107160426.M31617@visp.net.lb>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47320533.4020400@tiscali.nl>
-	 <2c0942db0711071043p7cd31f6di9031816c1fed81ca@mail.gmail.com>
-	 <473208ED.9000707@tiscali.nl>
-X-Google-Sender-Auth: 0aac1e41cca6b60b
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 7, 2007 10:50 AM, Roel Kluin <12o3l@tiscali.nl> wrote:
-> If count reaches zero, the loop ends, but the postfix decrement still subtracts:
-> testing for 'count == 0' will not work.
->
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> ---
-> diff --git a/sound/oss/trident.c b/sound/oss/trident.c
-> index 96adc47..6959ee1 100644
-> --- a/sound/oss/trident.c
-> +++ b/sound/oss/trident.c
-> @@ -2935,7 +2935,7 @@ trident_ac97_set(struct ac97_codec *codec, u8 reg, u16 val)
->         do {
->                 if ((inw(TRID_REG(card, address)) & busy) == 0)
->                         break;
-> -       } while (count--);
-> +       } while (--count);
->
->         data |= (mask | (reg & AC97_REG_ADDR));
->
-> @@ -2996,7 +2996,7 @@ trident_ac97_get(struct ac97_codec *codec, u8 reg)
->                 data = inl(TRID_REG(card, address));
->                 if ((data & busy) == 0)
->                         break;
-> -       } while (count--);
-> +       } while (--count);
->
->         spin_unlock_irqrestore(&card->lock, flags);
->
->         if (count == 0) {
->
+> WRAP ~ #./hdparm -I /dev/hda
+> 
+> /dev/hda:
+> 
+> ATAPI Write-once device, with non-removable media
+>         Model Number:       SanDisk SDP3B-16
+>         Serial Number:      24313671615
+>         Firmware Revision:  vdd 1.00
+> Standards:
+>         Likely used: 3
+> Configuration:
+>         DRQ response: 50us.
+>         Packet size: Unknown
+> Capabilities:
+>         LBA, IORDY(may be)(cannot be disabled)
+>         Buffer size: 1.0kB      bytes avail on r/w long: 4
+>         DMA: not supported
+>         PIO: pio0 pio1
 
-Thanks, much better. In the future, please also CC: the appropriate
-maintainers, or Andrew Morton if you're at a loss...
+"ATAPI Write-once device"  ???
 
-Reviewed-by: Ray Lee <ray-lk@madrabbit.org>
+That cannot be correct (??).  Is this with hdparm-7.7 (latest sourceforge) ??
+Can you show us the "hdparm --Istdout" output as well, please.
+
+thanks.
