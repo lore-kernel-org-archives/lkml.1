@@ -1,85 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758396AbXKGNj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758130AbXKGNnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758396AbXKGNj4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 08:39:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755924AbXKGNjt
+	id S1758130AbXKGNnT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 08:43:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbXKGNnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 08:39:49 -0500
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:54320 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755539AbXKGNjs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 08:39:48 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAEpOMUdMROHU/2dsb2JhbACBWw
-Date: Wed, 7 Nov 2007 08:39:45 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH] Move Kconfig.instrumentation to arch/Kconfig and
-	init/Kconfig fix
-Message-ID: <20071107133945.GA28283@Krystal>
-References: <20071106203724.620893371@polymtl.ca> <20071106204152.754044476@polymtl.ca> <20071107140953.6b2cb1fa@dhcp-255-175.norway.atmel.com>
+	Wed, 7 Nov 2007 08:43:10 -0500
+Received: from madara.hpl.hp.com ([192.6.19.124]:63760 "EHLO madara.hpl.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754657AbXKGNnI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 08:43:08 -0500
+Date: Wed, 7 Nov 2007 05:42:55 -0800
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: Greg KH <greg@kroah.com>
+Cc: Andrew Morton <akpm@osdl.org>, perfmon@napali.hpl.hp.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix up perfmon to build on -mm
+Message-ID: <20071107134255.GE14646@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <20071107003454.GA13374@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071107140953.6b2cb1fa@dhcp-255-175.norway.atmel.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 08:38:22 up 3 days, 18:43,  2 users,  load average: 3.13, 1.26,
-	0.65
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20071107003454.GA13374@kroah.com>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move Kconfig.instrumentation to arch/Kconfig and init/Kconfig fix
+Greg,
 
-Haavard Skinnemoen <hskinnemoen@atmel.com>:
-> Index: linux-2.6-lttng/init/Kconfig
-> ===================================================================
-> --- linux-2.6-lttng.orig/init/Kconfig 2007-11-02 13:16:41.000000000 -0400
-> +++ linux-2.6-lttng/init/Kconfig      2007-11-02 13:16:55.000000000 -0400
-> @@ -644,6 +644,20 @@ config SLOB
+Perfmon sysfs document has been updated following your adivce.
+you can check out in my perfmon tree  the following commit:
 
-> +source "ltt/Kconfig"
+	e83278f879e52ecee025effe9ad509fd51e4a516
 
-This one seems to be new, and I can't seem to find ltt/Kconfig
-anywhere. Wouldn't it be better to move it to a separate patch?
+Thanks.
 
+On Tue, Nov 06, 2007 at 04:34:54PM -0800, Greg KH wrote:
+> Here's a patch against my current tree that gets the perfmon code
+> building and hopefully working.
+> 
+> Note, it needs the kobject_create_and_register() patch which is in my
+> tree, but I do not think it made it to -mm yet.  The next -mm cycle
+> should have it.
+> 
+> Also, the sysfs usage in the perfmon code is quite strange and not
+> documented at all.  Yes, there is a little bit in the documentation
+> about what a few of the files do, but there are _way_ more files and
+> even directories being created under /sys/kernel/perfmon/ that are not
+> documented at all here.
+> 
+> If you document this stuff, I think I can clean up your sysfs code a
+> lot, making things simpler, easier to extend, and easier to understand.
+> But as it is, I don't want to break anything as it's totally unknown how
+> this stuff is supposed to work...
+> 
+> Hint, use the Documentation/ABI directory to document your sysfs
+> interfaces, that is what it is there for...
+> 
+> thanks,
+> 
+> greg k-h
+> 
+> ---------------
+> From: Greg Kroah-Hartman <gregkh@suse.de>
+> Subject: perfmon: fix up some static kobject usages
+> 
+> This gets the perfmon code to build properly on the latest -mm tree, as
+> well as removing some static kobjects.
+> 
+> A lot of future kobject cleanups can be done on this code, but the
+> documentation for the perfmon sysfs interface is very limited and does
+> not describe all of the different files and subdirectories at all.
+> 
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> ---
+>  perfmon/perfmon_sysfs.c |   37 +++++++++++++++----------------------
+>  1 file changed, 15 insertions(+), 22 deletions(-)
+> 
+> --- a/perfmon/perfmon_sysfs.c
+> +++ b/perfmon/perfmon_sysfs.c
+> @@ -76,7 +76,8 @@ EXPORT_SYMBOL(pfm_controls);
+>  
+>  DECLARE_PER_CPU(struct pfm_stats, pfm_stats);
+>  
+> -static struct kobject pfm_kernel_kobj, pfm_kernel_fmt_kobj;
+> +static struct kobject *pfm_kernel_kobj;
+> +static struct kobject *pfm_kernel_fmt_kobj;
+>  
+>  static void pfm_reset_stats(int cpu)
+>  {
+> @@ -402,31 +403,23 @@ static struct attribute_group pfm_kernel
+>  
+>  int __init pfm_init_sysfs(void)
+>  {
+> -	int ret;
+> +	int ret = -ENOMEM;
+>  	int i, cpu = -1;
+>  
+> -	kobject_init(&pfm_kernel_kobj);
+> -	kobject_init(&pfm_kernel_fmt_kobj);
+> -
+> -	pfm_kernel_kobj.parent = &kernel_subsys.kobj;
+> -	kobject_set_name(&pfm_kernel_kobj, "perfmon");
+> -
+> -	pfm_kernel_fmt_kobj.parent = &pfm_kernel_kobj;
+> -	kobject_set_name(&pfm_kernel_fmt_kobj, "formats");
+> -
+> -	ret = kobject_add(&pfm_kernel_kobj);
+> -	if (ret) {
+> -		PFM_INFO("cannot add kernel object: %d", ret);
+> +	pfm_kernel_kobj = kobject_create_and_register("perfmon", kernel_kobj);
+> +	if (!pfm_kernel_kobj) {
+> +		PFM_INFO("cannot create perfmon kernel object");
+>  		goto error;
+>  	}
+>  
+> -	ret = kobject_add(&pfm_kernel_fmt_kobj);
+> -	if (ret) {
+> -		PFM_INFO("cannot add fmt object: %d", ret);
+> +	pfm_kernel_fmt_kobj = kobject_create_and_register("formats",
+> +							  pfm_kernel_kobj);
+> +	if (!pfm_kernel_fmt_kobj) {
+> +		PFM_INFO("cannot add fmt object");
+>  		goto error_fmt;
+>  	}
+>  
+> -	ret = sysfs_create_group(&pfm_kernel_kobj, &pfm_kernel_attr_group);
+> +	ret = sysfs_create_group(pfm_kernel_kobj, &pfm_kernel_attr_group);
+>  	if (ret) {
+>  		PFM_INFO("cannot create kernel group");
+>  		goto error_group;
+> @@ -449,9 +442,9 @@ int __init pfm_init_sysfs(void)
+>  	return 0;
+>  
+>  error_group:
+> -	kobject_del(&pfm_kernel_fmt_kobj);
+> +	kobject_unregister(pfm_kernel_fmt_kobj);
+>  error_fmt:
+> -	kobject_del(&pfm_kernel_kobj);
+> +	kobject_unregister(pfm_kernel_kobj);
+>  
+>  	for (i=0; i < cpu; i++)
+>  		pfm_sysfs_del_cpu(i);
+> @@ -683,7 +676,7 @@ int pfm_sysfs_add_fmt(struct pfm_smpl_fm
+>  
+>  	kobject_set_name(&fmt->kobj, fmt->fmt_name);
+>  	//kobj_set_kset_s(fmt, pfm_fmt_subsys);
+> -	fmt->kobj.parent = &pfm_kernel_fmt_kobj;
+> +	fmt->kobj.parent = pfm_kernel_fmt_kobj;
+>  
+>  	ret = kobject_add(&fmt->kobj);
+>  	if (ret)
+> @@ -861,7 +854,7 @@ int pfm_sysfs_add_pmu(struct pfm_pmu_con
+>  	kobject_init(&pmu->kobj);
+>  	kobject_set_name(&pmu->kobj, "pmu_desc");
+>  	//kobj_set_kset_s(pmu, pfm_pmu_subsys);
+> -	pmu->kobj.parent = &pfm_kernel_kobj;
+> +	pmu->kobj.parent = pfm_kernel_kobj;
+>  
+>  	ret = kobject_add(&pmu->kobj);
+>  	if (ret)
 
-Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>:
-Yes, it has nothing to do in this patch. I missed this one. This fix should be
-folded with "Move Kconfig.instrumentation to arch/Kconfig and init/Kconfig".
-
-Thanks!
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Haavard Skinnemoen <hskinnemoen@atmel.com>
-CC: akpm@linux-foundation.org
-CC: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Sam Ravnborg <sam@ravnborg.org>
----
- init/Kconfig |    2 --
- 1 file changed, 2 deletions(-)
-
-Index: linux-2.6-lttng/init/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/init/Kconfig	2007-11-07 08:33:55.000000000 -0500
-+++ linux-2.6-lttng/init/Kconfig	2007-11-07 08:34:13.000000000 -0500
-@@ -656,8 +656,6 @@ config MARKERS
- 	  Place an empty function call at each marker site. Can be
- 	  dynamically changed for a probe function.
- 
--source "ltt/Kconfig"
--
- source "arch/Kconfig"
- 
- endmenu		# General setup
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+
+-Stephane
