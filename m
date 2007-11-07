@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757849AbXKGISc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758207AbXKGIU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757849AbXKGISc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 03:18:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756491AbXKGISY
+	id S1758207AbXKGIU2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 03:20:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756700AbXKGIUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 03:18:24 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47441 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756441AbXKGISY (ORCPT
+	Wed, 7 Nov 2007 03:20:16 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56746
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756345AbXKGIUP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 03:18:24 -0500
-From: Akio Takebe <takebe_akio@jp.fujitsu.com>
-To: Glauber de Oliveira Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org
-Cc: jeremy@goop.org, hollisb@us.ibm.com, kvm-devel@lists.sourceforge.net,
-       avi@qumranet.com
-Subject: Re: [kvm-devel] include files for kvmclock
-Date: Wed, 07 Nov 2007 17:16:37 +0900
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 7 Nov 2007 03:20:15 -0500
+Date: Wed, 07 Nov 2007 00:20:07 -0800 (PST)
+Message-Id: <20071107.002007.00442348.davem@davemloft.net>
+To: david-b@pacbell.net
+Cc: randy.dunlap@oracle.com, toralf.foerster@gmx.de,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, greg@kroah.com
+Subject: Re: build #337 failed for 2.6.24-rc1-gb1d08ac In function
+ `usbnet_set_settings':
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200711011632.18333.david-b@pacbell.net>
+References: <200711012024.57412.toralf.foerster@gmx.de>
+	<20071101141124.0cbe2897.randy.dunlap@oracle.com>
+	<200711011632.18333.david-b@pacbell.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: HidemaruMail 4.60 (WinNT,501)
-In-Reply-To: <11943875433821-git-send-email-gcosta@redhat.com>
-References: <11943875362987-git-send-email-gcosta@redhat.com> <11943875433821-git-send-email-gcosta@redhat.com>
-Message-Id: <1DC8211684B62Btakebe_akio@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Glauber
 
-This is interesting facility. :-)
+David, I hate to say this and point you out like this, but you are a
+real cancer for bug fixes to USB things in the kernel, and I'm very
+tired of seeing things stuck in the mud (and engineering resources
+wasted) because of how you handle things.  It's very bad for Linux,
+and the USB code in particular.
 
->+#define KVM_HCALL_REGISTER_CLOCK	1
->+
->+union kvm_hv_clock {
->+	struct {
->+		u64 tsc_mult;
->+		u64 now_ns;
->+		/* That's the wall clock, not the water closet */
->+		u64 wc_sec;
->+		u64 wc_nsec;
->+		u64 last_tsc;
->+		/* At first, we could use the tsc value as a marker, but Jeremy
->+		 * well noted that it will cause us locking problems in 32-bit
->+		 * sys, so we have a special version field */
->+		u32 version;
->+	};
->+	char page_align[PAGE_SIZE];
->+};
->+
-Why does kvm_hv_clock need page_align?
-And also the kvm_hv_clock is alloced with kvm_vcpu,
-so the align is not enough, isn't it?
-I thik __atribute__((__aligne__(PAGE_SIZE)))) is better than it.
+If I had a nickel for every patch from someone else you grinded into
+the ground and stalled I'd truly be a millionare.
 
-Best Regards,
+You absolutely stifle development progress.  I thought my OHCI
+deadlock patch was an isolated case (and nothing is still applied,
+which is just awesome, my original patch was posted more than a month
+ago), but you're doing the same exact thing to Adrian here too.
 
-Akio Takebe
-
+You want to see things fixed your way.  But you can get away with the
+if, and only if, you can spend every day working on your own version
+of fixes when you don't like the submitters version.  But unlike me
+you don't have that luxury so you have to give patch submitters a
+larger level of freedom and, plainly, just "let go".
