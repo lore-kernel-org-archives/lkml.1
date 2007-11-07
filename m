@@ -1,67 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755501AbXKFUIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbXKFUKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755501AbXKFUIv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 15:08:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754534AbXKFUIl
+	id S1757119AbXKFUKd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 15:10:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbXKFUKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 15:08:41 -0500
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:55070 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756717AbXKFUIi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 15:08:38 -0500
-Date: Wed, 7 Nov 2007 01:38:07 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: akpm@linux-foundation.org
-Cc: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux390@de.ibm.com, linux-s390@vger.kernel.org, dhowells@redhat.com,
-       hch@lst.de, apw@shadowen.org
-Subject: [PATCH] mm snapshot broken-out-2007-11-06-02-32 - conflict in vxfs_iget ()
-Message-ID: <20071106200807.GC13674@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+	Tue, 6 Nov 2007 15:10:24 -0500
+Received: from [212.12.190.150] ([212.12.190.150]:48186 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754314AbXKFUKY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 15:10:24 -0500
+From: Al Boldi <a1426z@gawab.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] init: Introduce rootdir bootparm to select which dir to sys_chroot
+Date: Wed, 7 Nov 2007 23:10:20 +0300
+User-Agent: KMail/1.5
+Cc: hpa@zytor.com, akpm@linux-foundation.org
+References: <200711061340.26112.a1426z@gawab.com>
+In-Reply-To: <200711061340.26112.a1426z@gawab.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200711072310.20715.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Al Boldi wrote:
+> This patch introduces a rootdir kernel boot parameter, which specifies the
+> path to the kernel sys_chroot boot dir.
+>
+> This is useful for systems that have more than one distribution installed
+> on the same fs/partition.
+>
+>
+> Cc: H. Peter Anvin <hpa@zytor.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: Al Boldi <a1426z@gawab.com>
+>
+> ---
+>
+> --- a/init/do_mounts.c
+> +++ b/init/do_mounts.c
+> @@ -252,6 +252,15 @@ __setup("rootflags=", root_data_setup);
+>  __setup("rootfstype=", fs_names_setup);
+>  __setup("rootdelay=", root_delay_setup);
+>
+> +static char * __initdata root_dir;
+> +static int __init root_dir_setup(char *str)
+> +{
+> +	root_dir = strcat("./",str);
 
-The kernel build fails on S390, with error 
+This line is probably using an overloaded function that does not exist.
+Use this instead:
 
- CC [M]  fs/freevxfs/vxfs_inode.o
-fs/freevxfs/vxfs_inode.c:298: error: conflicting types for 'vxfs_iget'
-fs/freevxfs/vxfs_extern.h:61: error: previous declaration of 'vxfs_iget' was here
-fs/freevxfs/vxfs_inode.c:298: error: conflicting types for 'vxfs_iget'
-fs/freevxfs/vxfs_extern.h:61: error: previous declaration of 'vxfs_iget' was here
-make[2]: *** [fs/freevxfs/vxfs_inode.o] Error 1
-make[1]: *** [fs/freevxfs] Error 2
-make: *** [fs] Error 2
+static char __initdata root_dir[128];
+static int __init root_dir_setup(char *str)
+{
+	strcpy(root_dir, "./");
+	strlcat(root_dir, str, sizeof(root_dir) - strlen(root_dir) - 1);
+	return 1;
+}
 
-This error is caused by iget-stop-freevxfs-from-using-iget-and-read_inode.patch,
-where the function proto type is declared as 
-vxfs_iget(struct super_block *, unsigned long) and defined as 
-vxfs_iget(struct super_block *sbp, ino_t ino)
+> +__setup("rootdir=", root_dir_setup);
+> +
+>  static void __init get_fs_names(char *page)
+>  {
+>  	char *s = page;
+> @@ -469,6 +478,10 @@ void __init prepare_namespace(void)
+>  	mount_root();
+>  out:
+>  	sys_mount(".", "/", NULL, MS_MOVE, NULL);
+> +
+> +	if(root_dir)
+> +		sys_chdir(root_dir);
+> +
+>  	sys_chroot(".");
+>  	security_sb_post_mountroot();
+>  }
 
-This patch has been tested for the buid failure.
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Thanks!
+
 --
---- linux-2.6.24-rc1/fs/freevxfs/vxfs_extern.h	2007-11-06 17:04:04.000000000 +0530
-+++ linux-2.6.24-rc1/fs/freevxfs/~vxfs_extern.h	2007-11-07 00:45:09.000000000 +0530
-@@ -58,7 +58,7 @@ extern struct inode *		vxfs_get_fake_ino
- extern void			vxfs_put_fake_inode(struct inode *);
- extern struct vxfs_inode_info *	vxfs_blkiget(struct super_block *, u_long, ino_t);
- extern struct vxfs_inode_info *	vxfs_stiget(struct super_block *, ino_t);
--extern struct inode *		vxfs_iget(struct super_block *, unsigned long);
-+extern struct inode *		vxfs_iget(struct super_block *sbp, ino_t ino);
- extern void			vxfs_clear_inode(struct inode *);
- 
- /* vxfs_lookup.c */
+Al
 
---
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
