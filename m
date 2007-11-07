@@ -1,15 +1,15 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757984AbXKGQLg (ORCPT <rfc822;ralf@linux-mips.org>);
-	Wed, 7 Nov 2007 11:11:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbXKGQL1
+	id S1758082AbXKGQmQ (ORCPT <rfc822;ralf@linux-mips.org>);
+	Wed, 7 Nov 2007 11:42:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbXKGQl7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 11:11:27 -0500
-Received: from linksky60.com ([67.15.203.23]:53384 "EHLO skyline.linksky60.com"
+	Wed, 7 Nov 2007 11:41:59 -0500
+Received: from linksky60.com ([67.15.203.23]:58014 "EHLO skyline.linksky60.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754047AbXKGQL0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 11:11:26 -0500
-Message-ID: <20071107100819.6oc3qhuqs4kogggw@pokersiteonline.com>
-Date: Wed, 07 Nov 2007 10:08:19 -0600
+	id S1753574AbXKGQl6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 11:41:58 -0500
+Message-ID: <20071107104100.hj7m4lqgeckoksw0@pokersiteonline.com>
+Date: Wed, 07 Nov 2007 10:41:00 -0600
 From: "Mss.Sodic Lasy" <sabadelltrust01@yahoo.es>
 To: undisclosed-recipients:;
 Subject: YOU 'VE WON
@@ -32,7 +32,7 @@ X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
 X-AntiAbuse: Sender Address Domain - yahoo.es
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757984AbXKGQLg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1758082AbXKGQmQ@vger.kernel.org>
 
 
 
@@ -41,7 +41,8 @@ YOU 'VE WON.
 You have won ?655,000.00 EUROS  in DE EUROMILLIONES ONLINE INT.LOTTERY
 SPAIN.For further development for Clearification and procedure please
 Contact,Dr.Pauly Anderson.E-mail:(sabadelltrust01@yahoo.es)OR
-(webmaster@sabadelltrust.zzn.com) TEL:+34-692-486-797.
+(Webmaster@sabadelltrust.zzn.com)
+  TEL:+34-692-486-797.
 
 (1) Tic Nr: 6460DGH
 (2) Sr Nr: 0909AOB09
@@ -51,5 +52,6 @@ Contact,Dr.Pauly Anderson.E-mail:(sabadelltrust01@yahoo.es)OR
 
 Regards.
 Mss.Sodic Lasy
+
 
 
