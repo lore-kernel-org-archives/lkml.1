@@ -1,76 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759349AbXKGSnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759795AbXKGSoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759349AbXKGSnR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 13:43:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbXKGSnD
+	id S1759795AbXKGSoP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 13:44:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754820AbXKGSoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 13:43:03 -0500
-Received: from mga03.intel.com ([143.182.124.21]:55477 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753896AbXKGSnC convert rfc822-to-8bit (ORCPT
+	Wed, 7 Nov 2007 13:44:00 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:57235 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753262AbXKGSn7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 13:43:02 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,385,1188802800"; 
-   d="scan'208";a="313801894"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: x86_64 ten times slower than i386
-Date: Wed, 7 Nov 2007 11:38:25 -0700
-User-Agent: KMail/1.9.7
-Cc: Ray Lee <ray-lk@madrabbit.org>,
-       Bo =?iso-8859-1?q?Brant=E9n?= <bosse@acc.umu.se>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <Pine.A41.4.64.0711031329490.397338@stalin.acc.umu.se> <2c0942db0711050832t5207ea8bib1f75e59e071ade2@mail.gmail.com> <20071106002647.GA27182@one.firstfloor.org>
-In-Reply-To: <20071106002647.GA27182@one.firstfloor.org>
+	Wed, 7 Nov 2007 13:43:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=LRv/ez5hhwRPdJ47W49AKfJ/k2hJo3UUYC2hWfKkAbvTqBlaHtBk73NOVgLSmRJo7MqwLXcMuARuzgjKwSoYj4D5UJx1tJp2CG3AgXdu79KvUgVRCDe/wRN78uwoqDv0N6jrQ+3S0pM+nlP23a+CrPbJNtznk3Fx8aJwRvdB9gg=
+Message-ID: <2c0942db0711071043p7cd31f6di9031816c1fed81ca@mail.gmail.com>
+Date: Wed, 7 Nov 2007 10:43:56 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Roel Kluin" <12o3l@tiscali.nl>
+Subject: Re: [PATCH] fix incorrect test in trident_ac97_set(); sound/oss/trident.c
+Cc: lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <47320533.4020400@tiscali.nl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711071038.26263.jesse.barnes@intel.com>
+References: <47320533.4020400@tiscali.nl>
+X-Google-Sender-Auth: 4cd3c4efa94b03a6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, November 05, 2007 4:26 Andi Kleen wrote:
-> On Mon, Nov 05, 2007 at 08:32:24AM -0800, Ray Lee wrote:
-> > (Don't trim cc:s.)
-> >
-> > On Nov 5, 2007 8:00 AM, Bo Brantén <bosse@acc.umu.se> wrote:
-> > >> Intel Core 2 Quad
-> > >> and I noticed that the 64-bit versions was at least 10 times
-> > >> slower than the 32-bit versions,
-> > >
-> > > After I uppgraded the BIOS the mtrr looks like below, and now it
-> > > works if I boot with mem=4736M so I can use all memory but it
-> > > still doesn't work without the mem parameter then it will run as
-> > > slow as before.
+On Nov 7, 2007 10:34 AM, Roel Kluin <12o3l@tiscali.nl> wrote:
+> If count reaches zero, the loop ends, but the postfix decrement subtracts it.
+> so, testing for 'count == 0' will not work.
 >
-> Then the BIOS is still broken Comapl in to your motherboard vendor.
+> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> ---
+> diff --git a/sound/oss/trident.c b/sound/oss/trident.c
+> index 96adc47..94b5fb4 100644
+> --- a/sound/oss/trident.c
+> +++ b/sound/oss/trident.c
+> @@ -2939,7 +2939,7 @@ trident_ac97_set(struct ac97_codec *codec, u8 reg, u16 val)
 >
-> > > reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
-> > > reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
-> > > reg02: base=0xc0000000 (3072MB), size= 256MB: write-back, count=1
-> > > reg03: base=0xcf800000 (3320MB), size=   8MB: uncachable, count=1
-> > > reg04: base=0xcf700000 (3319MB), size=   1MB: uncachable, count=1
-> > > reg05: base=0x100000000 (4096MB), size= 512MB: write-back,
-> > > count=1 reg06: base=0x120000000 (4608MB), size= 128MB:
-> > > write-back, count=1
-> >
-> > Jesse Barnes (cc:d) wrote a patch to address this, I think (x86:
-> > trim memory not covered by WB MTRRs), but as far as I can tell it
-> > hasn't been merged yet. System is Intel, 4gb of RAM.
+>         data |= (mask | (reg & AC97_REG_ADDR));
 >
-> It wasn't merged because it broke booting on some systems.
-> Besides the memory would be still lost -- all it did was to automate
-> the "mem=XXXX" line.
+> -       if (count == 0) {
+> +       if (count == -1) {
+>                 printk(KERN_ERR "trident: AC97 CODEC write timed out.\n");
+>                 spin_unlock_irqrestore(&card->lock, flags);
+>                 return;
+> @@ -2999,7 +2999,7 @@ trident_ac97_get(struct ac97_codec *codec, u8 reg)
+>         } while (count--);
+>         spin_unlock_irqrestore(&card->lock, flags);
+>
+> -       if (count == 0) {
+> +       if (count == -1) {
+>                 printk(KERN_ERR "trident: AC97 CODEC read timed out.\n");
+>                 data = 0;
+>         }
 
-Andi, do you have any details on which system broke and how?  I haven't 
-heard back from you on my last message on the subject... the patch was 
-in -mm for awhile with no complaints.
+You didn't test this: count is unsigned. Change the loop condition to
+be --count instead.
 
-Ultimately, this is a broken BIOS issue, but still, it would be nice if 
-the kernel handled it better.
-
-Thanks,
-Jesse
+Ray
