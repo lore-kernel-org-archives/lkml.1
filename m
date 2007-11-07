@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758631AbXKGV47@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758822AbXKGV6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758631AbXKGV47 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 16:56:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753608AbXKGV4u
+	id S1758822AbXKGV6l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 16:58:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbXKGV6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 16:56:50 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41911 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754253AbXKGV4t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 16:56:49 -0500
-Date: Wed, 7 Nov 2007 13:55:37 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
-       k.shutemov@gmail.com, apw@shadowen.org
-Subject: Re: mm snapshot broken-out-2007-11-06-02-32 make header check fails
-Message-Id: <20071107135537.08ece5bb.akpm@linux-foundation.org>
-In-Reply-To: <47322340.702@linux.vnet.ibm.com>
-References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
-	<47322340.702@linux.vnet.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 7 Nov 2007 16:58:31 -0500
+Received: from ns.suse.de ([195.135.220.2]:48736 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753068AbXKGV6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 16:58:30 -0500
+From: Neil Brown <neilb@suse.de>
+To: Al Boldi <a1426z@gawab.com>
+Date: Thu, 8 Nov 2007 08:58:22 +1100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18226.13566.548126.927574@notabene.brown>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Massive slowdown when re-querying large nfs dir
+In-Reply-To: message from Al Boldi on Wednesday November 7
+References: <200711050758.38090.a1426z@gawab.com>
+	<20071106221939.cfa79f9e.akpm@linux-foundation.org>
+	<18225.26935.146395.366451@notabene.brown>
+	<200711071236.26780.a1426z@gawab.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 08 Nov 2007 02:12:40 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-> Hi Andrew,
+On Wednesday November 7, a1426z@gawab.com wrote:
+> Neil Brown wrote:
+> >
+> > I would suggest getting a 'tcpdump -s0' trace and seeing (with
+> > wireshark) what is different between the various cases.
 > 
-> The build fails with error
-> 
->   CHECK   include/asm-generic/siginfo.h
->   CHECK   include/asm-generic/resource.h
->   CHECK   include/asm-generic/statfs.h
->   CHECK   include/asm-generic/signal.h
->   CHECK   include/asm-generic/poll.h
->   CHECK   include/asm-generic/mman.h
->   CHECK   include/asm-generic/ioctl.h
->   CHECK   include/asm-generic/fcntl.h
->   CHECK   include/asm-generic/errno.h
->   CHECK   include/asm-generic/errno-base.h
->   CHECK   include/asm/cputable.h
->   CHECK   include/asm/byteorder.h
->   CHECK   include/asm/bootx.h
->   CHECK   include/asm/auxvec.h
->   CHECK   include/asm/asm-compat.h
->   CHECK   include/asm/a.out.h
->   CHECK   include/asm/ucontext.h
->   CHECK   include/asm/ps3fb.h
->   CHECK   include/asm/linkage.h
->   CHECK   include/asm/elf.h
-> /home/test/kernels/linux-2.6.24-rc1/patches/linux-2.6.24-rc1/usr/include/asm/elf.h requires asm/page.h, which does not exist in exported headers
-> make[3]: *** [/home/test/kernels/linux-2.6.24-rc1/patches/linux-2.6.24-rc1/usr/include/asm/.check.elf.h] Error 1
-> make[2]: *** [asm-powerpc] Error 2
-> make[1]: *** [headers_check] Error 2
-> make: *** [vmlinux] Error 2
-> 
+> Thanks Neil for looking into this.  Your suggestion has already been answered 
+> in a previous post, where the difference has been attributed to "ls -l" 
+> inducing lookup for the first try, which is fast, and getattr for later 
+> tries, which is super-slow.
 
-I am going to guess that you're building for powerpc here.
+Not really a credible difference as the reported difference is between
+two *clients* and the speed of getattr vs lookup would depend on the
+*server*. 
 
-It looks like ia64 broke too.  I'll drop the patch, thanks.
+> 
+> Now it's easy to blame the userland rpc.nfs.V2 server for this, but what's 
+> not clear is how come 2.4.31 handles getattr faster than 2.6.23?
+
+I suspect a more detailed analysis of the traces is in order.  I
+strongly suspect you will see a difference between the two clients,
+and you have only reported a difference between the first and second
+"ls -l" (unless I missed some email).
+
+It seems most likely that 2.6 is issuing substantially more GETATTR
+requests than 2.4.  There have certainly been reports of this in the
+past and they have been either fixed or justified.
+This may be a new situation.  Or it may be that 2.4 was being fast by
+being incorrect in some way.  Only an analysis of the logs would tell.
+
+Maybe you would like to post the (binary, using "-s 0") traces for
+both 2.4 and 2.6....
+
+NeilBrown
