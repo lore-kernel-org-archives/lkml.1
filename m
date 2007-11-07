@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759525AbXKGR6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759364AbXKGSAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759525AbXKGR6U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 12:58:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759045AbXKGR55
+	id S1759364AbXKGSAb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 13:00:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbXKGSAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 12:57:57 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:51088 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758881AbXKGR54 (ORCPT
+	Wed, 7 Nov 2007 13:00:22 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60821 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753390AbXKGSAV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 12:57:56 -0500
-Subject: Re: [PATCH 1/1] V4L: stk11xx, add a new webcam driver
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <47304694.2040904@gmail.com>
-References: <300725321593711206@pripojeni.net>
-	 <20071105234017.fcc10791.akpm@linux-foundation.org>
-	 <47304694.2040904@gmail.com>
-Content-Type: text/plain
-Date: Wed, 07 Nov 2007 15:57:37 -0200
-Message-Id: <1194458257.11579.21.camel@gaivota>
+	Wed, 7 Nov 2007 13:00:21 -0500
+Date: Wed, 7 Nov 2007 09:59:45 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: clameter@sgi.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 0/10] split anon and file LRUs
+Message-Id: <20071107095945.c9b870fc.akpm@linux-foundation.org>
+In-Reply-To: <20071106215127.29e90ecd@bree.surriel.com>
+References: <20071103184229.3f20e2f0@bree.surriel.com>
+	<Pine.LNX.4.64.0711061808460.5249@schroedinger.engr.sgi.com>
+	<20071106212305.6aa3a4fe@bree.surriel.com>
+	<Pine.LNX.4.64.0711061834340.5424@schroedinger.engr.sgi.com>
+	<20071106215127.29e90ecd@bree.surriel.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.1-1mdv2008.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> > Seem that something in git-dvb (or mainline) broke this driver:
-> > 
-> > drivers/media/video/stk11xx-core.c: In function 'show_contrast':
-> > drivers/media/video/stk11xx-core.c:707: warning: initialization from incompatible pointer type
-> > drivers/media/video/stk11xx-core.c: In function 'show_whitebalance':
-> > drivers/media/video/stk11xx-core.c:714: warning: initialization from incompatible pointer type
-> > drivers/media/video/stk11xx-core.c: In function 'stk11xx_create_sysfs_file':
-> > drivers/media/video/stk11xx-core.c:727: warning: passing argument 1 of 'class_device_create_file' from incompatible pointer type
-> > drivers/media/video/stk11xx-core.c: In function 'stk11xx_usb_disconnect':
-> > drivers/media/video/stk11xx-core.c:851: warning: passing argument 1 of 'class_device_remove_file' from incompatible pointer type
-> > drivers/media/video/stk11xx-core.c:853: warning: passing argument 1 of 'class_device_remove_file' from incompatible pointer type
-
-Those breakages were caused by some changes at sysfs that happened in
-mainstream.
-
-> > Also, please ask the v4l/dvb guys to look at this driver - there's not a lot
-> > of point in sending it just to me.
+> On Tue, 6 Nov 2007 21:51:27 -0500 Rik van Riel <riel@redhat.com> wrote:
+> On Tue, 6 Nov 2007 18:40:46 -0800 (PST)
+> Christoph Lameter <clameter@sgi.com> wrote:
 > 
-> Dvb fellows reviewed it some time ago, but the problem is, that it converts
-> one color space to another in kernelspace. We are developping an userspace
-> library for drivers such this one, but it takes longer than I expect. Lets
-> have it dropped, after the library will be done I'll merge it through v4l tree.
+> > On Tue, 6 Nov 2007, Rik van Riel wrote:
+> > 
+> > > Also, a factor 16 increase in page size is not going to help
+> > > if memory sizes also increase by a factor 16, since we already 
+> > > have trouble with today's memory sizes.
+> > 
+> > Note that a factor 16 increase usually goes hand in hand with
+> > more processors. The synchronization of multiple processors becomes a 
+> > concern. If you have an 8p and each of them tries to get the zone locks 
+> > for reclaim then we are already in trouble. And given the immaturity
+> > of the handling of cacheline contention in current commodity hardware this 
+> > is likely to result in livelocks and/or starvation on some level.
+> 
+> Which is why we need to greatly reduce the number of pages
+> scanned to free a page.  In all workloads.
 
-Seems the proper way also to me.
+It strikes me that splitting one list into two lists will not provide
+sufficient improvement in search efficiency to do that.  I mean, a naive
+guess would be that it will, on average, halve the amount of work which
+needs to be done.
 
--- 
-Cheers,
-Mauro
+But we need multiple-orders-of-magnitude improvements to address the
+pathological worst-cases which you're looking at there.  Where is this
+coming from?
 
+Or is the problem which you're seeing due to scanning of mapped pages
+at low "distress" levels?
+
+Would be interested in seeing more details on all of this, please.
