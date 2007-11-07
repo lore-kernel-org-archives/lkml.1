@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbXKGCd2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755871AbXKGChl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755625AbXKGCd2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 21:33:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbXKGCdT
+	id S1755871AbXKGChl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 21:37:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753750AbXKGChe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 21:33:19 -0500
-Received: from ra.tuxdriver.com ([70.61.120.52]:4015 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753625AbXKGCdS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 21:33:18 -0500
-Date: Tue, 6 Nov 2007 21:32:53 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Miguel =?iso-8859-1?Q?Bot=F3n?= <mboton.lkml@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org, mb@bu3sch.de
-Subject: Re: [PATCH 1/2] ssb: Add "ssb_pci_set_power_state" function
-Message-ID: <20071107023253.GA30169@tuxdriver.com>
-References: <200710242131.21959.mboton.lkml@gmail.com>
+	Tue, 6 Nov 2007 21:37:34 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:49233 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751441AbXKGChd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Nov 2007 21:37:33 -0500
+Date: Wed, 7 Nov 2007 03:37:09 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: akpm@linux-foundatin.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Mel Gorman <mel@skynet.ie>, Rik van Riel <riel@redhat.com>
+Subject: Re: [patch 09/23] SLUB: Add get() and kick() methods
+Message-ID: <20071107023709.GU26163@stusta.de>
+References: <20071107011130.382244340@sgi.com> <20071107011228.605750914@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200710242131.21959.mboton.lkml@gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20071107011228.605750914@sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miguel,
-
-Along with the style point Michael suggested, I'll need you to repost
-both this one and the b44 patch with at least a Signed-off-by line.
-
-	http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt
-
-Also, please include the patches as plain text using a mailer that
-does not damage whitespace.
-
-Thanks,
-
-John
-
-On Wed, Oct 24, 2007 at 09:31:21PM +0200, Miguel Botón wrote:
-> Add "ssb_pci_set_power_state" function. This allows set the power state of a 
-> PCI device (for example b44 ethernet device).
+On Tue, Nov 06, 2007 at 05:11:39PM -0800, Christoph Lameter wrote:
+> Add the two methods needed for defragmentation and add the display of the
+> methods via the proc interface.
 > 
-> diff -ruN linux-2.6.23/include/linux/ssb/ssb.h 
-> linux-2.6.23.orig/include/linux/ssb/ssb.h
-> --- linux-2.6.23.orig/include/linux/ssb/ssb.h	2007-10-24 19:02:33.000000000 
-> +0200
-> +++ linux-2.6.23/include/linux/ssb/ssb.h	2007-10-24 19:49:37.000000000 +0200
-> @@ -402,6 +402,14 @@
->  {
->  	pci_unregister_driver(driver);
->  }
-> +
-> +/* Set PCI device power state */
-> +static inline
-> +void ssb_pci_set_power_state(struct ssb_device *dev, pci_power_t state)
-> +{
-> +	if(dev->bus->bustype == SSB_BUSTYPE_PCI)
-> +		pci_set_power_state(dev->bus->host_pci, state);
-> +}
->  #endif /* CONFIG_SSB_PCIHOST */
->  
->  
+> Add documentation explaining the use of these methods.
 > 
-> -- 
-> 	Miguel Botón
+> Reviewed-by: Rik van Riel <riel@redhat.com>
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> ---
+>  include/linux/slab.h     |    3 +++
+>  include/linux/slub_def.h |   31 +++++++++++++++++++++++++++++++
+>  mm/slub.c                |   32 ++++++++++++++++++++++++++++++--
+>  3 files changed, 64 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6/include/linux/slab.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/slab.h	2007-10-17 13:35:53.000000000 -0700
+> +++ linux-2.6/include/linux/slab.h	2007-11-06 12:37:51.000000000 -0800
+> @@ -56,6 +56,9 @@ struct kmem_cache *kmem_cache_create(con
+>  			void (*)(struct kmem_cache *, void *));
+>  void kmem_cache_destroy(struct kmem_cache *);
+>  int kmem_cache_shrink(struct kmem_cache *);
+> +void kmem_cache_setup_defrag(struct kmem_cache *s,
+> +	void *(*get)(struct kmem_cache *, int nr, void **),
+> +	void (*kick)(struct kmem_cache *, int nr, void **, void *private));
+>  void kmem_cache_free(struct kmem_cache *, void *);
+>  unsigned int kmem_cache_size(struct kmem_cache *);
+>  const char *kmem_cache_name(struct kmem_cache *);
+>...
+
+A static inline dummy function for CONFIG_SLUB=n seems to be missing?
+
+cu
+Adrian
 
 -- 
-John W. Linville
-linville@tuxdriver.com
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
