@@ -1,112 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758298AbXKGNSq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757905AbXKGNXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758298AbXKGNSq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 08:18:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754033AbXKGNSi
+	id S1757905AbXKGNXT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 08:23:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbXKGNXC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 08:18:38 -0500
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:17360 "EHLO
-	outbound2-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751107AbXKGNSh (ORCPT
+	Wed, 7 Nov 2007 08:23:02 -0500
+Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:51799 "EHLO
+	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753602AbXKGNXA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 08:18:37 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-Server-Uuid: D6C75999-9DAF-4D89-B9AC-C25E3A0BB76A
-Date: Wed, 7 Nov 2007 14:18:36 +0100
-From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-To: "Andi Kleen" <ak@suse.de>
-cc: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       "Akinobu Mita" <akinobu.mita@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] x86: fix cpu-hotplug regression
-Message-ID: <20071107131836.GB31607@alberich.amd.com>
-References: <20071107011258.GA31607@alberich.amd.com>
- <200711070335.44416.ak@suse.de>
+	Wed, 7 Nov 2007 08:23:00 -0500
+Date: Wed, 7 Nov 2007 13:22:48 +0000 (GMT)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+cc: Adam Belay <ambx1@neo.rr.com>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [RFC] [PATCH] PNP: request ioport and iomem resources used by
+ active devices
+In-Reply-To: <200710291525.31475.bjorn.helgaas@hp.com>
+Message-ID: <Pine.LNX.4.64N.0711071252500.14970@blysk.ds.pg.gda.pl>
+References: <200710291525.31475.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
-In-Reply-To: <200711070335.44416.ak@suse.de>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 07 Nov 2007 13:18:27.0012 (UTC)
- FILETIME=[AE8C6840:01C82140]
-X-WSS-ID: 6B2F64AF24S1692785-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 07, 2007 at 03:35:43AM +0100, Andi Kleen wrote:
-> On Wednesday 07 November 2007 02:12, Andreas Herrmann wrote:
-> 
-> > In cases where not all CPUs are brought up during
-> > boot (e.g. using maxcpus and additional_cpus parameters)
-> > mce_cpu_callback now returns NOTFIY_BAD because
-> > for such CPUs cpu_data is not completely filled when
-> > the notifier is called. Thus mce_create_device fails right
-> > at its beginning:
-> >
-> >         if (!mce_available(&cpu_data[cpu]))
-> >                 return -EIO;
-> >
-> > As a quick fix I suggest to check boot_cpu_data for MCE.
-> 
-> I guess it would be better to just move the device creation
-> to after the CPU has booted. AKA call mce_create_dev() on CPU_ONLINE
-> instead.
+On Mon, 29 Oct 2007, Bjorn Helgaas wrote:
 
-Yes, and this was the old behaviour. The mentioned patch changed it -
-("do mce_create_device in CPU_UP_PREPARE instead of CPU_ONLINE").
+>     0000-001f : dma1		<-- built-in resource includes 2 controllers
+>       0000-000f : 00:02		<-- PNP reports only one DMA controller
+[...]
+>     0060-006f : keyboard	<-- built-in resource groups several things
+>       0060-0060 : 00:04		<-- PNP reports 8042 controller data register
+>       0061-0061 : 00:03		<-- PNP reports AT-style speaker
+>       0064-0064 : 00:04		<-- PNP reports 8042 controller status register
 
-Thinking twice about the problem it seems obvious that this part
-of the patch should just be reverted.
+ Note that the built-in resources are requested according to how the PC/AT 
+architecture defined address decoding for the relevant subsystems.  In 
+particular, there was always a single DMA controller at 0x0000 and the 
+8042 controller was decoded at 0x0060.  No full decoding was done and 
+unused locations aliased to the corresponding ones with the don't-care 
+bits set to the other value.  I do not recall all the details of the port 
+B (named after the original from the 8255 as used in the PC/XT) at 0x0061 
+as implemented in the PC/AT and I do not have a reference handy, but it is 
+a bunch of GPIO bits, some being r/o and some r/w, possibly with 
+side-effects.  I believe it was a set of additional latches sub-decoded 
+from the 8042 controller range for compatibility with how the 8255 was 
+wired and programmed.
 
-Attached is a new fix (diff against 2.6.24-rc2).
+ Anyway, PNP may provide a more accurate picture of the address ranges in 
+a particular system... if it gets it right!  Which is a lost hope, I 
+suppose, as even the above is questionable -- "AT-style speaker" is a 
+misnomer as most of the GPIO bits involved deal with the handling of 
+system error interrupts normally routed to NMI.
 
+ The patch itself is useful and makes sense though.  Have you passed it 
+through `scripts/checkpatch.pl'?
 
-Regards,
-
-Andreas
-
---
-[PATCH] x86: fix cpu hotplug regression (don't call mce_create_device on CPU_UP_PREPARE)
-
-Fix regression introduced with d435d862baca3e25e5eec236762a43251b1e7ffc
-("cpu hotplug: mce: fix cpu hotplug error handling").
-
-For CPUs not brought up during boot (using maxcpus and additional_cpus
-parameters) we don't know whether mce is supported or not at "CPU_UP_PREPARE"-time.
-Thus mce_cpu_callback should be called after the CPU is online.
-
-
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
----
- arch/x86/kernel/cpu/mcheck/mce_64.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/mcheck/mce_64.c b/arch/x86/kernel/cpu/mcheck/mce_64.c
-index b9f802e..8e83070 100644
---- a/arch/x86/kernel/cpu/mcheck/mce_64.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce_64.c
-@@ -855,12 +855,10 @@ mce_cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
- 	int err = 0;
- 
- 	switch (action) {
--	case CPU_UP_PREPARE:
--	case CPU_UP_PREPARE_FROZEN:
-+	case CPU_ONLINE:
-+	case CPU_ONLINE_FROZEN:
- 		err = mce_create_device(cpu);
- 		break;
--	case CPU_UP_CANCELED:
--	case CPU_UP_CANCELED_FROZEN:
- 	case CPU_DEAD:
- 	case CPU_DEAD_FROZEN:
- 		mce_remove_device(cpu);
--- 
-1.5.3.4
-
-
-
-
+  Maciej
