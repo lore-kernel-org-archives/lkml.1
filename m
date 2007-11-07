@@ -1,91 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756272AbXKGMVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756890AbXKGMZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756272AbXKGMVj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 07:21:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbXKGMVc
+	id S1756890AbXKGMZN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 07:25:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbXKGMY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 07:21:32 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:55261 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750882AbXKGMVb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 07:21:31 -0500
-Message-ID: <4731ADC8.3040208@suse.de>
-Date: Wed, 07 Nov 2007 13:21:28 +0100
-From: Hannes Reinecke <hare@suse.de>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	Wed, 7 Nov 2007 07:24:58 -0500
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:59161 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751763AbXKGMY5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 07:24:57 -0500
+Message-ID: <4731AE65.2030206@linux.vnet.ibm.com>
+Date: Wed, 07 Nov 2007 17:54:05 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Re: BUG in: Driver core: convert block from raw kobjects to core
- devices (fwd)
-References: <Pine.LNX.4.44L0.0711061419090.8694-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0711061419090.8694-100000@iolanthe.rowland.org>
-X-Enigmail-Version: 0.94.0.0
+To: balbir@linux.vnet.ibm.com
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [BUG] Linux 2.6.24-rc2 - oom-killer gets invoked
+References: <alpine.LFD.0.999.0711061601180.15101@woody.linux-foundation.org> <4731667C.2020302@linux.vnet.ibm.com> <47316F72.1000401@linux.vnet.ibm.com>
+In-Reply-To: <47316F72.1000401@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern wrote:
-> On Mon, 5 Nov 2007, Greg KH wrote:
-> 
->> On Mon, Nov 05, 2007 at 04:49:21PM -0500, Alan Stern wrote:
->>> Greg:
->>>
->>> So what's our status?  Do you think it's worthwhile adding the 
->>> "drop reference to parent kobject at remove time instead of release 
->>> time" patch?
->> No.
+Balbir Singh wrote:
+> Kamalesh Babulal wrote:
+>> Hi,
 >>
->> I still need to take the time and read this thread and find the real
->> problem here.  The fact that the issue does not show up for other,
->> non-scsi block devices, makes me feel this is a scsi-specific problem
->> with how it deals with the driver model, but I need to take the time to
->> sit down and figure it out for sure.
+>> oom-killer got invoked while running ltp-runall on the 2.6.24-rc2 kernel.
+>>
+>> python invoked oom-killer: gfp_mask=0x1201d2, order=0, oomkilladj=0
+>>
+>> Call Trace:
+>>  [<ffffffff8026b03b>] oom_kill_process+0x4f/0xf5
+>>  [<ffffffff8026b517>] out_of_memory+0x1bc/0x22d
+>>  [<ffffffff8026dfa2>] __alloc_pages+0x282/0x313
+>>  [<ffffffff804e453c>] __wait_on_bit_lock+0x5b/0x66
+>>  [<ffffffff8026fad8>] __do_page_cache_readahead+0x7c/0x18f
+>>  [<ffffffff8026a723>] filemap_fault+0x15d/0x317
+>>  [<ffffffff8027513e>] __do_fault+0x68/0x3bb
+>>  [<ffffffff80276d44>] handle_mm_fault+0x325/0x694
+>>  [<ffffffff804e739f>] do_page_fault+0x3c5/0x764
+>>  [<ffffffff802118c7>] arch_get_unmapped_area+0x184/0x1f9
+>>  [<ffffffff804e5939>] error_exit+0x0/0x51
+>>
+>> Mem-info:
+>> Node 0 DMA per-cpu:
+>> CPU    0: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+>> CPU    1: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+>> CPU    2: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+>> CPU    3: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+>> Node 0 DMA32 per-cpu:
+>> CPU    0: Hot: hi:  186, btch:  31 usd:  29   Cold: hi:   62, btch:  15 usd:  14
+>> CPU    1: Hot: hi:  186, btch:  31 usd:  95   Cold: hi:   62, btch:  15 usd:  52
+>> CPU    2: Hot: hi:  186, btch:  31 usd:  33   Cold: hi:   62, btch:  15 usd:  51
+>> CPU    3: Hot: hi:  186, btch:  31 usd: 101   Cold: hi:   62, btch:  15 usd:  50
+>> Active:118809 inactive:124570 dirty:0 writeback:1882 unstable:0
 > 
-[ .. ]
+> The active/inactive page count looks good.
 > 
-> Thus we have a cycle:
+>>  free:2358 slab:2831 mapped:41 pagetables:2058 bounce:0
+>> Node 0 DMA free:3972kB min:28kB low:32kB high:40kB active:996kB inactive:3036kB present:7552kB pages_scanned:0 all_unreclaimable? no
+>> lowmem_reserve[]: 0 992 992 992
+>> Node 0 DMA32 free:177860kB min:4012kB low:5012kB high:6016kB active:408456kB inactive:388372kB present:1015864kB pages_scanned:640 all_unreclaimable? no
+>> lowmem_reserve[]: 0 0 0 0
 > 
-> 	1&2: request_queue isn't released before scsi_device;
+> Free memory also looks good, specially Node 0 DMA32 and the order is 0.
 > 
-> 	3: scsi_device isn't released before gendisk;
+>> Node 0 DMA: 57*4kB 39*8kB 25*16kB 10*32kB 2*64kB 3*128kB 1*256kB 0*512kB 1*1024kB 1*2048kB 0*4096kB = 5100kB
+>> Node 0 DMA32: 1597*4kB 1029*8kB 544*16kB 348*32kB 296*64kB 363*128kB 305*256kB 253*512kB 134*1024kB 73*2048kB 0*4096kB = 594204kB
+>> Swap cache: add 841053, delete 835135, find 529/803, race 0+0
+>> Free swap  = 1986640kB
+>> Total swap = 2031640kB
+>> Free swap:       1986640kB
+>> 262093 pages of RAM
+>> 6981 reserved pages
+>> 190 pages shared
+>> 5918 pages swap cached
+>> Out of memory: kill process 23256 (mem01) score 46673 or a child
+>> Killed process 23256 (mem01)
+>>
 > 
-> 	4: gendisk isn't released before request_queue.
+> You don't see the problem with 2.6.24-rc1 right? Any chance of you
+> being able to do a git-bisect?
 > 
-> The dependency in 1&2 is hard-coded into the SCSI core.  If I 
-> understand correctly, the core really does need the request_queue to 
-> hang around as long as the scsi_device is still present.  According to 
-> James Bottomley, any block device driver should be expected to have a 
-> similar requirement.
-> 
-This is actually true, but as other block device drivers create the
-LUN (or the equivalent thereof), the request queue, and the block device
-at the same time or under control of the driver itself they don't have
-this problem.
-It's only due to the decoupling of the block driver from the underlying
-device (ie sd driver and scsi_device) when this problem arises.
+>> and during the bootup, following call trace was seen 
+>>
+>> sysctl table check failed: /net/token-ring .3.14 procname does not match binary path procname
+>>
+>> Call Trace:
+>>  [<ffffffff8024dae9>] set_fail+0x3f/0x47
+>>  [<ffffffff8024dfbc>] sysctl_check_table+0x4cb/0x51e
+>>  [<ffffffff8024da9b>] sysctl_check_lookup+0xc9/0xd8
+>>  [<ffffffff8024dfca>] sysctl_check_table+0x4d9/0x51e
+>>  [<ffffffff8023d283>] sysctl_set_parent+0x1f/0x32
+>>  [<ffffffff808baf17>] sysctl_init+0x1e/0x22
+>>  [<ffffffff808aa656>] kernel_init+0x195/0x307
+>>  [<ffffffff8020cc88>] child_rip+0xa/0x12
+>>  [<ffffffff808aa4c1>] kernel_init+0x0/0x307
+>>  [<ffffffff8020cc7e>] child_rip+0x0/0x12
+Hi Balbir,
 
-> But the dependencies in 3 and 4 are unnecessary.  They are artifacts,
-> caused by the fact that a kobject doesn't drop its reference to its
-> parent until it is released.  If instead the reference to the parent
-> were dropped when the kobject was removed then 3 and 4 wouldn't apply.
-> 
-And should be okay as the device isn't accessible from userland
-anyway after doing a device_del(). And the implication is that it's
-going to be remove soon entirely. So we're just moving the timing
-of the eventual call to the ->release() function; the events will
-be triggered by device_del() and won't be changed.
-And if some device actually requires a reference to the parent
-during ->release() it can as well acquire it manually and shouldn't
-rely on the core logic to do that automatically.
+I have started doing the git-bisect and will update the results.
 
-Cheers,
 
-Hannes
 -- 
-Dr. Hannes Reinecke		      zSeries & Storage
-hare@suse.de			      +49 911 74053 688
-SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: Markus Rex, HRB 16746 (AG Nürnberg)
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
