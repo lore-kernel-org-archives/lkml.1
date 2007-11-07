@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756581AbXKGGhw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756689AbXKGGoo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756581AbXKGGhw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 01:37:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754774AbXKGGhp
+	id S1756689AbXKGGoo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 01:44:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754724AbXKGGof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 01:37:45 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:35938 "EHLO smtp.drzeus.cx"
+	Wed, 7 Nov 2007 01:44:35 -0500
+Received: from koto.vergenet.net ([210.128.90.7]:50711 "EHLO koto.vergenet.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752336AbXKGGho (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 01:37:44 -0500
-Date: Wed, 7 Nov 2007 07:35:31 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alex Dubov <oakad@yahoo.com>, linux-kernel@vger.kernel.org
-Subject: Re: MemoryStick / Pro support
-Message-ID: <20071107073531.1226457d@poseidon.drzeus.cx>
-In-Reply-To: <20071106221537.12bffbac.akpm@linux-foundation.org>
-References: <331462.7246.qm@web36703.mail.mud.yahoo.com>
-	<20071106221537.12bffbac.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_hera.drzeus.cx-15133-1194417335-0001-2"
+	id S1750695AbXKGGoe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 01:44:34 -0500
+Date: Wed, 7 Nov 2007 15:44:31 +0900
+From: Simon Horman <horms@verge.net.au>
+To: David Miller <davem@davemloft.net>
+Cc: luming.yu@gmail.com, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] fix typo in per_cpu_offset
+Message-ID: <20071107064429.GC3571@verge.net.au>
+References: <3877989d0710230015x1640388aod98cae2fa3fc82c2@mail.gmail.com> <20071030071513.GE5361@verge.net.au> <20071030.003622.265888160.davem@davemloft.net> <20071030085054.GE10635@verge.net.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071030085054.GE10635@verge.net.au>
+User-Agent: mutt-ng/devel-r804 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Tue, Oct 30, 2007 at 05:50:56PM +0900, Simon Horman wrote:
+> On Tue, Oct 30, 2007 at 12:36:22AM -0700, David Miller wrote:
+> > From: Simon Horman <horms@verge.net.au>
+> > Date: Tue, 30 Oct 2007 16:15:13 +0900
+> > 
+> > > Though curiuously with my config nothing uses per_cpu_offset()
+> > > (I added a bogus call to produce an error.) Is it actually
+> > > used on ia64?
+> > 
+> > It is unused, and in that regard should probably be deleted.
+> > 
+> > include/asm-generic/percpu.h defines a seemingly similarly
+> > unused per_cpu_offset() macro define as well
+> 
+> It looks like they were both added by "[PATCH] lockdep: add per_cpu_offset()"
+> (a875a69f8b00a38b4f40d9632a4fc71a159f0e0d)
+> 
+> Perhaps they were used at that time?
 
---=_hera.drzeus.cx-15133-1194417335-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+I looked into this a little further:
 
-On Tue, 6 Nov 2007 22:15:37 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+I'm pretty much convinced that the asm-ia64 version of per_cpu_offset()
+is unused as ia64 doesn't have lockdep. I will send a patch to get rid
+of it. The generic version might be used on mips, sh or arm with
+CONFIG_SMP, as these architectures have lockdep. I did managed to
+produce a compiler error on mips by removing the asm-generic version of
+per_cpu_offset().
 
-> > On Fri, 2 Nov 2007 06:23:48 -0700 (PDT) Alex Dubov <oakad@yahoo.com> wr=
-ote:
-> >=20
-> > I also wonder, where do I send the patches if nobody currently maintain=
-s this thing?
-> >=20
->=20
-> Me, Pierre, lkml?
+-- 
+Horms
+  H: http://www.vergenet.net/~horms/
+  W: http://www.valinux.co.jp/en/
 
-I'm not sure sending it through me is a good idea. I'm having trouble findi=
-ng time for my current projects, so I will be a bottle neck.
-
-That's not a "no", but you have been warned. ;)
-
-Rgds
-Pierre
-
---=_hera.drzeus.cx-15133-1194417335-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFHMVyz7b8eESbyJLgRAhGQAJ9gbPgtkbOSBGFZXbsOvQ3yG9dRpgCcCVkj
-F6ww0t7Eo5bDmi9s59q5k+k=
-=b+W6
------END PGP SIGNATURE-----
-
---=_hera.drzeus.cx-15133-1194417335-0001-2--
