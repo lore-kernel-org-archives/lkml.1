@@ -1,123 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757939AbXKGBUI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbXKGBUi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757939AbXKGBUI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 20:20:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756231AbXKGBMu
+	id S1758263AbXKGBUi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 20:20:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757397AbXKGBQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 20:12:50 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:44734 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755439AbXKGBMe (ORCPT
+	Tue, 6 Nov 2007 20:16:18 -0500
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:33563 "EHLO
+	outbound7-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756316AbXKGBQP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Nov 2007 20:12:34 -0500
-Message-Id: <20071107011232.167279850@sgi.com>
-References: <20071107011130.382244340@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 06 Nov 2007 17:11:53 -0800
-From: Christoph Lameter <clameter@sgi.com>
-To: akpm@linux-foundatin.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org
-Cc: Mel Gorman <mel@skynet.ie>
-Subject: [patch 23/23] SLUB: Add SlabReclaimable() to avoid repeated reclaim attempts
-Content-Disposition: inline; filename=0013-slab_defrag_reclaim_flag.patch
+	Tue, 6 Nov 2007 20:16:15 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
+X-Server-Uuid: DF9F24A0-1A5C-40A5-8B0A-DEB676E72ECF
+Date: Wed, 7 Nov 2007 02:12:58 +0100
+From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+cc: linux-kernel@vger.kernel.org, "Akinobu Mita" <akinobu.mita@gmail.com>,
+       "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>
+Subject: [PATCH] x86: fix cpu-hotplug regression
+Message-ID: <20071107011258.GA31607@alberich.amd.com>
+MIME-Version: 1.0
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 07 Nov 2007 01:12:50.0731 (UTC)
+ FILETIME=[50E71FB0:01C820DB]
+X-WSS-ID: 6B2FCE9F07S1658046-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a flag RECLAIMABLE to be set on slabs with a defragmentation method
+[PATCH] x86: fix cpu-hotplug regression
 
-Clear the flag if a reclaim action is not successful in reducing the
-number of objects in a slab.
+Commit d435d862baca3e25e5eec236762a43251b1e7ffc
+("cpu hotplug: mce: fix cpu hotplug error handling")
+changed the error handling in mce_cpu_callback.
 
-The reclaim flag is set again when all objeccts of the slab have been
-allocated and it is removed from the partial lists.
+In cases where not all CPUs are brought up during
+boot (e.g. using maxcpus and additional_cpus parameters)
+mce_cpu_callback now returns NOTFIY_BAD because
+for such CPUs cpu_data is not completely filled when
+the notifier is called. Thus mce_create_device fails right
+at its beginning:
 
-Reviewed-by: Rik van Riel <riel@redhat.com>
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+        if (!mce_available(&cpu_data[cpu]))
+                return -EIO;
+
+As a quick fix I suggest to check boot_cpu_data for MCE.
+
+To reproduce this regression:
+
+(1) boot with maxcpus=2 addtional_cpus=2 on a 4 CPU x86-64 system
+(2) # echo 1 >/sys/devices/system/cpu/cpu2/online
+  -bash: echo: write error: Invalid argument
+
+dmesg shows:
+
+_cpu_up: attempt to bring up CPU 2 failed
+
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 ---
- mm/slub.c |   20 +++++++++++++++++---
- 1 file changed, 17 insertions(+), 3 deletions(-)
+ arch/x86/kernel/cpu/mcheck/mce_64.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Index: linux-2.6/mm/slub.c
-===================================================================
---- linux-2.6.orig/mm/slub.c	2007-11-06 17:06:46.000000000 -0800
-+++ linux-2.6/mm/slub.c	2007-11-06 17:07:54.000000000 -0800
-@@ -102,6 +102,7 @@
+diff --git a/arch/x86/kernel/cpu/mcheck/mce_64.c b/arch/x86/kernel/cpu/mcheck/mce_64.c
+index b9f802e..5112a70 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce_64.c
++++ b/arch/x86/kernel/cpu/mcheck/mce_64.c
+@@ -808,7 +808,7 @@ static __cpuinit int mce_create_device(unsigned int cpu)
+ 	int err;
+ 	int i;
  
- #define FROZEN (1 << PG_active)
- #define LOCKED (1 << PG_locked)
-+#define RECLAIMABLE (1 << PG_dirty)
+-	if (!mce_available(&cpu_data(cpu)))
++	if (!mce_available(&boot_cpu_data))
+ 		return -EIO;
  
- #ifdef CONFIG_SLUB_DEBUG
- #define SLABDEBUG (1 << PG_error)
-@@ -1100,6 +1101,8 @@ static noinline struct page *new_slab(st
- 	if (s->flags & (SLAB_DEBUG_FREE | SLAB_RED_ZONE | SLAB_POISON |
- 			SLAB_STORE_USER | SLAB_TRACE))
- 		state |= SLABDEBUG;
-+	if (s->kick)
-+		state |= RECLAIMABLE;
- 
- 	start = page_address(page);
- 	page->end = start + 1;
-@@ -1176,6 +1179,7 @@ static void discard_slab(struct kmem_cac
- 
- 	atomic_long_dec(&n->nr_slabs);
- 	reset_page_mapcount(page);
-+	page->flags &= ~RECLAIMABLE;
- 	__ClearPageSlab(page);
- 	free_slab(s, page);
- }
-@@ -1408,8 +1412,11 @@ static void unfreeze_slab(struct kmem_ca
- 
- 		if (page->freelist != page->end)
- 			add_partial(s, page, tail);
--		else
-+		else {
- 			add_full(s, page, state);
-+			if (s->kick && !(state & RECLAIMABLE))
-+				state |= RECLAIMABLE;
-+		}
- 		slab_unlock(page, state);
- 
- 	} else {
-@@ -2633,7 +2640,7 @@ out:
-  * Check if the given state is that of a reclaimable slab page.
-  *
-  * This is only true if this is indeed a slab page and if
-- * the page has not been frozen.
-+ * the page has not been frozen or marked as unreclaimable.
-  */
- static inline int reclaimable_slab(unsigned long state)
- {
-@@ -2643,7 +2650,7 @@ static inline int reclaimable_slab(unsig
- 	if (state & FROZEN)
- 		return 0;
- 
--	return 1;
-+	return state & RECLAIMABLE;
- }
- 
-  /*
-@@ -2958,6 +2965,8 @@ out:
- 	 * Check the result and unfreeze the slab
- 	 */
- 	leftover = page->inuse;
-+	if (leftover)
-+		state &= ~RECLAIMABLE;
- 	unfreeze_slab(s, page, leftover > 0, state);
- 	local_irq_restore(flags);
- 	return leftover;
-@@ -3012,6 +3021,11 @@ static unsigned long __kmem_cache_shrink
- 		if (!state)
- 			continue;
- 
-+		if (!(state & RECLAIMABLE)) {
-+			slab_unlock(page, state);
-+			continue;
-+		}
-+
- 		if (page->inuse) {
- 
- 			list_move(&page->lru, &zaplist);
-
+ 	memset(&per_cpu(device_mce, cpu).kobj, 0, sizeof(struct kobject));
 -- 
+1.5.3.4
+
+
+
+
