@@ -1,106 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757333AbXKGBOu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757201AbXKGBPM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757333AbXKGBOu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Nov 2007 20:14:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755406AbXKGBMg
+	id S1757201AbXKGBPM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Nov 2007 20:15:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755830AbXKGBMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Nov 2007 20:12:36 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:44698 "EHLO
+	Tue, 6 Nov 2007 20:12:37 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33735 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755118AbXKGBM3 (ORCPT
+	with ESMTP id S1755216AbXKGBM3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 6 Nov 2007 20:12:29 -0500
-Message-Id: <20071107011228.102370371@sgi.com>
+Message-Id: <20071107011228.355540572@sgi.com>
 References: <20071107011130.382244340@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 06 Nov 2007 17:11:37 -0800
+Date: Tue, 06 Nov 2007 17:11:38 -0800
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundatin.org
 Cc: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org
 Cc: Mel Gorman <mel@skynet.ie>
-Subject: [patch 07/23] SLUB: Add defrag_ratio field and sysfs support.
-Content-Disposition: inline; filename=0004-slab_defrag_add_defrag_ratio.patch
+Subject: [patch 08/23] SLUB: Replace ctor field with ops field in /sys/slab/:0000008 /sys/slab/:0000016 /sys/slab/:0000024 /sys/slab/:0000032 /sys/slab/:0000040 /sys/slab/:0000048 /sys/slab/:0000056 /sys/slab/:0000064 /sys/slab/:0000072 /sys/slab/:0000080 /sys/slab/:0000088 /sys/slab/:0000096 /sys/slab/:0000104 /sys/slab/:0000128 /sys/slab/:0000144 /sys/slab/:0000184 /sys/slab/:0000192 /sys/slab/:0000216 /sys/slab/:0000256 /sys/slab/:0000344 /sys/slab/:0000384 /sys/slab/:0000448 /sys/slab/:0000512 /sys/slab/:0000768 /sys/slab/:0000968 /sys/slab/:0001024 /sys/slab/:0001152 /sys/slab/:0001312 /sys/slab/:0001536 /sys/slab/:0002048 /sys/slab/:0003072 /sys/slab/:0004096 /sys/slab/:a-0000016 /sys/slab/:a-0000024 /sys/slab/:a-0000056 /sys/slab/:a-0000080 /sys/slab/:a-0000128 /sys/slab/Acpi-Namespace /sys/slab/Acpi-Operand /sys/slab/Acpi-Parse /sys/slab/Acpi-ParseExt /sys/slab/Acpi-State /sys/slab/RAW /sys/slab/TCP /sys/slab/UDP /sys/slab/UDP-Lite /sys/slab/UNIX /sys/slab/anon_vma /s
+ ys/slab/arp_cache /sys/slab/bdev_cache /sys/slab/bio /sys/slab/biovec-1 /sys/slab/biovec-128 /sys/slab/biovec-16 /sys/slab/biovec-256 /sys/slab/biovec-4 /sys/slab/biovec-64 /sys/slab/blkdev_ioc /sys/slab/blkdev_queue /sys/slab/blkdev_requests /sys/slab/buffer_head /sys/slab/cfq_io_context /sys/slab/cfq_queue /sys/slab/dentry /sys/slab/eventpoll_epi /sys/slab/eventpoll_pwq /sys/slab/ext2_inode_cache /sys/slab/ext3_inode_cache /sys/slab/fasync_cache /sys/slab/file_lock_cache /sys/slab/files_cache /sys/slab/filp /sys/slab/flow_cache /sys/slab/fs_cache /sys/slab/idr_layer_cache /sys/slab/inet_peer_cache /sys/slab/inode_cache /sys/slab/inotify_event_cache /sys/slab/inotify_watch_cache /sys/slab/ip_dst_cache /sys/slab/ip_fib_alias /sys/slab/ip_fib_hash /sys/slab/jbd_1k /sys/slab/jbd_4k /sys/slab/journal_handle /sys/slab/journal_head /sys/slab/kiocb /sys/slab/kioctx /sys/slab/kmalloc-1024 /sys/slab/kmalloc-128 /sys/slab/kmalloc-16 /sys/slab/kmalloc-192 /sys/slab/kmalloc-2048 /sys/s
+ lab/kmalloc-256 /sys/slab/kmalloc-32 /sys/slab/kmalloc-512 /sys/slab/kmalloc-64 /sys/slab/kmalloc-8 /sys/slab/kmalloc-96 /sys/slab/mm_struct /sys/slab/mnt_cache /sys/slab/mqueue_inode_cache /sys/slab/names_cache /sys/slab/net_namespace /sys/slab/nfs_direct_cache /sys/slab/nfs_inode_cache /sys/slab/nfs_page /sys/slab/nfs_read_data /sys/slab/nfs_write_data /sys/slab/nfsd4_delegations /sys/slab/nfsd4_files /sys/slab/nfsd4_stateids /sys/slab/nfsd4_stateowners /sys/slab/nsproxy /sys/slab/pid /sys/slab/posix_timers_cache /sys/slab/proc_inode_cache /sys/slab/radix_tree_node /sys/slab/request_sock_TCP /sys/slab/revoke_record /sys/slab/revoke_table /sys/slab/rpc_buffers /sys/slab/rpc_inode_cache /sys/slab/rpc_tasks /sys/slab/scsi_cmd_cache /sys/slab/scsi_io_context /sys/slab/secpath_cache /sys/slab/sgpool-128 /sys/slab/sgpool-16 /sys/slab/sgpool-32 /sys/slab/sgpool-64 /sys/slab/sgpool-8 /sys/slab/shmem_inode_cache /sys/slab/sighand_cache /sys/slab/signal_cache /sys/slab/sigqueue /sys
+ /slab/skbuff_fclone_cache /sys/slab/skbuff_head_cache /sys/slab/sock_inode_cache /sys/slab/sysfs_dir_cache /sys/slab/task_struct /sys/slab/tcp_bind_bucket /sys/slab/tw_sock_TCP /sys/slab/uhci_urb_priv /sys/slab/uid_cache /sys/slab/vm_area_struct /sys/slab/xfrm_dst_cache
+Content-Disposition: inline; filename=0005-slab_defrag_ops_field.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The defrag_ratio is used to set the threshold at which defragmentation
-should be run on a slabcache.
-
-The allocation ratio is measured in a percentage of the available slots.
-The percentage will be lower for slabs that are more fragmented.
-
-Add a defrag ratio field and set it to 30% by default. A limit of 30% specified
-that less than 3 out of 10 available slots for objects are in use before
-reclaim occurs.
+Create an ops field in /sys/slab/*/ops to contain all the operations defined
+on a slab. This will be used to display the additional operations that will
+be defined soon.
 
 Reviewed-by: Rik van Riel <riel@redhat.com>
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- include/linux/slub_def.h |    7 +++++++
- mm/slub.c                |   18 ++++++++++++++++++
- 2 files changed, 25 insertions(+)
+ mm/slub.c |   16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
 
-Index: linux-2.6/include/linux/slub_def.h
-===================================================================
---- linux-2.6.orig/include/linux/slub_def.h	2007-11-06 12:36:28.000000000 -0800
-+++ linux-2.6/include/linux/slub_def.h	2007-11-06 12:37:44.000000000 -0800
-@@ -53,6 +53,13 @@ struct kmem_cache {
- 	void (*ctor)(struct kmem_cache *, void *);
- 	int inuse;		/* Offset to metadata */
- 	int align;		/* Alignment */
-+	int defrag_ratio;	/*
-+				 * objects/possible-objects limit. If we have
-+				 * less that the specified percentage of
-+				 * objects allocated then defrag passes
-+				 * will start to occur during reclaim.
-+				 */
-+
- 	const char *name;	/* Name (only for display!) */
- 	struct list_head list;	/* List of slab caches */
- #ifdef CONFIG_SLUB_DEBUG
 Index: linux-2.6/mm/slub.c
 ===================================================================
---- linux-2.6.orig/mm/slub.c	2007-11-06 12:37:25.000000000 -0800
-+++ linux-2.6/mm/slub.c	2007-11-06 12:37:44.000000000 -0800
-@@ -2363,6 +2363,7 @@ static int kmem_cache_open(struct kmem_c
- 		goto error;
- 
- 	s->refcount = 1;
-+	s->defrag_ratio = 30;
- #ifdef CONFIG_NUMA
- 	s->remote_node_defrag_ratio = 100;
- #endif
-@@ -4005,6 +4006,22 @@ static ssize_t free_calls_show(struct km
+--- linux-2.6.orig/mm/slub.c	2007-11-06 12:37:44.000000000 -0800
++++ linux-2.6/mm/slub.c	2007-11-06 12:37:47.000000000 -0800
+@@ -3789,16 +3789,18 @@ static ssize_t order_show(struct kmem_ca
  }
- SLAB_ATTR_RO(free_calls);
+ SLAB_ATTR_RO(order);
  
-+static ssize_t defrag_ratio_show(struct kmem_cache *s, char *buf)
-+{
-+	return sprintf(buf, "%d\n", s->defrag_ratio);
-+}
-+
-+static ssize_t defrag_ratio_store(struct kmem_cache *s,
-+				const char *buf, size_t length)
-+{
-+	int n = simple_strtoul(buf, NULL, 10);
-+
-+	if (n < 100)
-+		s->defrag_ratio = n;
-+	return length;
-+}
-+SLAB_ATTR(defrag_ratio);
-+
- #ifdef CONFIG_NUMA
- static ssize_t remote_node_defrag_ratio_show(struct kmem_cache *s, char *buf)
+-static ssize_t ctor_show(struct kmem_cache *s, char *buf)
++static ssize_t ops_show(struct kmem_cache *s, char *buf)
  {
-@@ -4047,6 +4064,7 @@ static struct attribute * slab_attrs[] =
- 	&shrink_attr.attr,
- 	&alloc_calls_attr.attr,
- 	&free_calls_attr.attr,
-+	&defrag_ratio_attr.attr,
- #ifdef CONFIG_ZONE_DMA
- 	&cache_dma_attr.attr,
- #endif
+-	if (s->ctor) {
+-		int n = sprint_symbol(buf, (unsigned long)s->ctor);
++	int x = 0;
+ 
+-		return n + sprintf(buf + n, "\n");
++	if (s->ctor) {
++		x += sprintf(buf + x, "ctor : ");
++		x += sprint_symbol(buf + x, (unsigned long)s->ops->ctor);
++		x += sprintf(buf + x, "\n");
+ 	}
+-	return 0;
++	return x;
+ }
+-SLAB_ATTR_RO(ctor);
++SLAB_ATTR_RO(ops);
+ 
+ static ssize_t aliases_show(struct kmem_cache *s, char *buf)
+ {
+@@ -4049,7 +4051,7 @@ static struct attribute * slab_attrs[] =
+ 	&slabs_attr.attr,
+ 	&partial_attr.attr,
+ 	&cpu_slabs_attr.attr,
+-	&ctor_attr.attr,
++	&ops_attr.attr,
+ 	&aliases_attr.attr,
+ 	&align_attr.attr,
+ 	&sanity_checks_attr.attr,
 
 -- 
