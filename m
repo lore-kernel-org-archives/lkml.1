@@ -1,41 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759938AbXKGXYc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759227AbXKGX3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759938AbXKGXYc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 18:24:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbXKGXYY
+	id S1759227AbXKGX3R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 18:29:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbXKGX3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 18:24:24 -0500
-Received: from rtr.ca ([76.10.145.34]:4456 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752336AbXKGXYX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 18:24:23 -0500
-Message-ID: <47324926.4070809@rtr.ca>
-Date: Wed, 07 Nov 2007 18:24:22 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Mark Lord <liml@rtr.ca>, Denys Fedoryshchenko <denys@visp.net.lb>,
-       James Andrewartha <jamesa@daa.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, alan@lxorguk.ukuu.org.uk, htejun@gmail.com
-Subject: Re: SC1200 failure in 2.6.23 and 2.6.24-rc1-git10
-References: <20071101213013.M54162@visp.net.lb> <20071106221521.4f64a066.akpm@linux-foundation.org> <20071107132630.M65286@visp.net.lb> <4731D85E.70201@daa.com.au> <20071107160426.M31617@visp.net.lb> <47320E37.8010106@rtr.ca> <20071107232045.GA26706@havoc.gtf.org>
-In-Reply-To: <20071107232045.GA26706@havoc.gtf.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 7 Nov 2007 18:29:04 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37878 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753453AbXKGX3D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 18:29:03 -0500
+Date: Wed, 7 Nov 2007 15:28:33 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Brown <lkml@davidb.org>
+Cc: linux-kernel@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>,
+       Michael Kerrisk <mtk-manpages@gmx.net>
+Subject: Re: compat_sys_times() bogus until jiffies >= 0.
+Message-Id: <20071107152833.6f302c2a.akpm@linux-foundation.org>
+In-Reply-To: <20071107224722.GA20204@old.davidb.org>
+References: <20071107224722.GA20204@old.davidb.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> On Wed, Nov 07, 2007 at 02:12:55PM -0500, Mark Lord wrote:
->> That cannot be correct (??).  Is this with hdparm-7.7 (latest sourceforge) 
->> ??
->> Can you show us the "hdparm --Istdout" output as well, please.
+> On Wed, 7 Nov 2007 14:47:22 -0800 David Brown <lkml@davidb.org> wrote:
+> compat_sys_times() has bogus return until jiffies is >= 0.  I discovered
+> this running LTP within 5 minutes of booting.
 > 
-> If this is applicable...  FWIW hdparm was only recently (in past <72
-> hours) updated from 6.9 to 7.7 in Fedora...
+> The return result
 > 
-> 	Jeff
+> 	return compat_jiffies_to_clock_t(jiffies);
+> 
+> will return '-1' to user space and set the negated clock_t value to errno.
+> 
+> I'm not sure what the correct fix for this is.  I can come up with a patch
+> if anyone has ideas on how to fix it.
+> 
+> At minimum, perhaps it should return a sane errno value.
 
-Woo-hoo!
+RETURN VALUE
+       times()  returns  the  number of clock ticks that have elapsed since an
+       arbitrary point in the past.  For Linux 2.4 and earlier this  point  is
+       the  moment  the  system  was  booted.   Since Linux 2.6, this point is
+       (2^32/HZ) - 300 (i.e., about 429 million) seconds  before  system  boot
+       time.   The  return  value  may  overflow  the  possible  range of type
+       clock_t.  On error, (clock_t) -1 is returned, and errno is  set  appro-
+       priately.
+
+
+Perhaps this is a bug in glibc: it is interpreting the times() return value
+in the same way as other syscalls.
+
+It would have been sensible for us to add INITIAL_JIFFIES to the value
+instead of exposing this kernel-only detail to the world, although the
+problem will of course reoccur once jiffies hits 0x80000000.  Unfortunately
+we've even gone and enshrined this bogon in the manpage.
+
+Proposed fix:
+
+-        return compat_jiffies_to_clock_t(jiffies);
++        return compat_jiffies_to_clock_t((jiffies + INITIAL_JIFFIES) &
++						0x7fffffff);
+
+?
