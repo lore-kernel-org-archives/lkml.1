@@ -1,76 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762242AbXKHSUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762187AbXKHSWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762242AbXKHSUM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 13:20:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760777AbXKHST7
+	id S1762187AbXKHSWz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 13:22:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761190AbXKHSWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 13:19:59 -0500
-Received: from crystal.sipsolutions.net ([195.210.38.204]:36648 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759962AbXKHST7 (ORCPT
+	Thu, 8 Nov 2007 13:22:46 -0500
+Received: from cavan.codon.org.uk ([78.32.9.130]:41709 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760963AbXKHSWo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 13:19:59 -0500
-Subject: Re: [linux-pm] Re: [PATCH (2.6.25) 1/2] hibernation: clean up
-	Kconfig
-From: Johannes Berg <johannes@sipsolutions.net>
+	Thu, 8 Nov 2007 13:22:44 -0500
+Date: Thu, 8 Nov 2007 18:22:18 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1194545496.4793.28.camel@johannes.berg>
-References: <20071107135758.100171000@sipsolutions.net>
-	 <200711072317.48023.rjw@sisk.pl> <1194533053.6294.42.camel@johannes.berg>
-	 <20071108092149.e27c5ba3.akpm@linux-foundation.org>
-	 <1194543003.4793.19.camel@johannes.berg>
-	 <20071108100618.40e6c0af.akpm@linux-foundation.org>
-	 <1194545496.4793.28.camel@johannes.berg>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Fxs+GwkwhlcTvDleuKru"
-Date: Thu, 08 Nov 2007 19:21:15 +0100
-Message-Id: <1194546075.4793.34.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Cc: Jeff Garzik <jeff@garzik.org>, roppedisano@infracomspa.it,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, rjw@sisk.pl,
+       linux-acpi@vger.kernel.org
+Message-ID: <20071108182217.GA2685@srcf.ucam.org>
+References: <4731C86B.1040704@infracomspa.it> <20071107121355.5eaf4496.akpm@linux-foundation.org> <47333CCF.1050403@infracomspa.it> <20071108094958.5c9b1b22.akpm@linux-foundation.org> <20071108180256.GB3491@havoc.gtf.org> <20071108101341.6c4f88d4.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071108101341.6c4f88d4.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: libata: cdrw/dvdrom disabed after s2ram (2.6.24-rc2)
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Nov 08, 2007 at 10:13:41AM -0800, Andrew Morton wrote:
 
---=-Fxs+GwkwhlcTvDleuKru
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> I suspect it wold be best to disable the feature for the 2.6.24 release,
+> then reenable it afterwards and keep doing this until the code is
+> sufficiently stable.
 
+GTF method execution failure currently looks like it's fatal, when it 
+probably shouldn't be. I'll send a patch shortly.
 
-> No, it wasn't, I diffed it against -rc1. I tested the Kconfig changes
-> with "make ARCH=3Dx86_64 menuconfig" and "make ARCH=3Di386 menuconfig". A=
-s
-> far as I understand, the new x86 arch depends on being called as
-> ARCH=3Di386 or ARCH=3Dx86_64. I may have misunderstood how the x86
-> architecture works but hoped Rafael would know more and tell me if I was
-> wrong.
-
-ok, so Christoph Hellwig and others tell me "it's being worked on".
-Please ignore these patches, I'll send new ones once that architecture
-has worked out how it wants to work.
-
-johannes
-
---=-Fxs+GwkwhlcTvDleuKru
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUARzNTmqVg1VMiehFYAQKVGQ//UBIbchx9QwX8ELGEuciQwcMegeGa+jOP
-Uw3X0sOwYc5Ah2sl5vBYsA0IJQ1mYzrhWhuvNgFOtYqdUnlJC577qZJ5/8FZM8KW
-2RZ/+Xs1oy8eXyqNa1/ZRXq9lN4G3PkUowZ4PheOztoRErI1j9pAIRUdhvYJdcIA
-LJ49bxCD2JzQlW/RKfguaPHHFVA1yf5BBsWKMIlK6wfFKgv+f4zL1S8c5HXCtHBW
-MtoVxQr8MQSQ79DMvM9YQSriX6DC3CoeBsWEin4syYwhjGt9BWNha3OxLh8EDi4v
-Y4KEsv3whdoeZyi0OW7hJahOEKVE30Wk2AxueufB42xndi2MuTtJzI0LfJ2Wces3
-iYD+rZE1FIeZBe+hQ15JA5CJgyU8EHuLLt+AAwXgt6ltv/64Ja6Az5NTrZpTREs1
-dReiC1jDz9Vt1IQTdxPZ+KNneBIeCGD+k+I04g2DO1/HbHcrwl3BG24SxmFRau/r
-Bv9FFrOHtA9Xiww6XL2LPghIpdI9CrTW9S7oPTkl/XwV2Y/oxn1EfX88hMoKz4xk
-s0dF4bOvkyqXSrBZr1KaYP/l/pzU2v9Y1vuXxCiJxz/fAVemUjzo6voKZFp6vut5
-2pkGrI6jbLWk+BZhuLOy0Bum4j/pbnZuGZZiAFbGaCHPK1SF6oa7XhEdujEdq6G3
-9MELhXun8gA=
-=M3Bf
------END PGP SIGNATURE-----
-
---=-Fxs+GwkwhlcTvDleuKru--
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
