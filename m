@@ -1,54 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762235AbXKHWdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762593AbXKHWdr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762235AbXKHWdb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 17:33:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760070AbXKHWdW
+	id S1762593AbXKHWdr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 17:33:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756082AbXKHWdg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 17:33:22 -0500
-Received: from lazybastard.de ([212.112.238.170]:51974 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760121AbXKHWdV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 17:33:21 -0500
-Date: Thu, 8 Nov 2007 23:28:24 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Przemyslaw Wegrzyn <czajnik@czajsoft.pl>
-Cc: linux-kernel@vger.kernel.org, Steve French <smfrench@austin.rr.com>
-Subject: Re: Buffer overflow in CIFS VFS.
-Message-ID: <20071108222824.GD18903@lazybastard.org>
-References: <47337D83.5040706@czajsoft.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Thu, 8 Nov 2007 17:33:36 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:52656 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760375AbXKHWdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 17:33:35 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: CSights <csights@fastmail.fm>
+Subject: Re: cannot "hibernate" if program being debugged in gdb is paused after SIGABRT in linux 2.6.23 (but can in 2.6.22.7)
+Date: Thu, 8 Nov 2007 23:50:51 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org
+References: <200710252103.27675.csights@fastmail.fm> <200710281958.57460.rjw@sisk.pl> <200710301034.08268.csights@fastmail.fm>
+In-Reply-To: <200710301034.08268.csights@fastmail.fm>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <47337D83.5040706@czajsoft.pl>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200711082350.52010.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Not everyone has the time to read lkml.  Added Steve to Cc:, just in
-case.
-
-On Thu, 8 November 2007 22:20:03 +0100, Przemyslaw Wegrzyn wrote:
+On Tuesday, 30 of October 2007, CSights wrote:
+> >
+> > Thanks, I'll try to reproduce the problem here and fix it.
 > 
-> I was looking at CIFS VFS code recently, trying to solve other issue,
-> just to find something that looks like a buffer overflow  bug.
-> The problem is in SendReceive() function in transport.c - it memcpy's
-> message payload into a buffer passed via out_buf param. The function
-> assumes that all buffers are of size (CIFSMaxBufSize +
-> MAX_CIFS_HDR_SIZE) , unfortunately it is also called with smaller
-> (MAX_CIFS_SMALL_BUFFER_SIZE) buffers.
-> 
-> To check this finding I patched Samba server to send oversized logoffX
-> messages. With ~ 16kB messages the client running 2.6.23.1 crashed upon
-> unmounting.
-> 
-> I've done a quick fix, available here:
-> http://czajnick.sitenet.pl/cifs-buffer-overflow-fix.patch.gz
+> No really, thank you!
 
-Jörn
+Sorry for the long delay.
 
--- 
-When in doubt, punt.  When somebody actually complains, go back and fix it...
-The 90% solution is a good thing.
--- Rob Landley
+Can you please check if you are able to reproduce the problem with 2.6.24-rc2?
+
+Thanks,
+Rafael
