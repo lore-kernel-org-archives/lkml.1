@@ -1,118 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762246AbXKHTnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762633AbXKHTp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762246AbXKHTnS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 14:43:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbXKHTnJ
+	id S1762633AbXKHTp2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 14:45:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758555AbXKHTpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 14:43:09 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40842 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754133AbXKHTnI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 14:43:08 -0500
-Subject: Re: KPROBES: Instrumenting a function's call site
-From: Avishay Traeger <atraeger@cs.sunysb.edu>
-To: ananth@in.ibm.com
-Cc: prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com, davem@davemloft.net,
-       linux-kernel@vger.kernel.org,
-       Ivan de Jesus Deras Tabora <ideras@gmail.com>
-In-Reply-To: <20070926043933.GA6460@in.ibm.com>
-References: <1190758358.30061.13.camel@rockstar.fsl.cs.sunysb.edu>
-	 <20070926043933.GA6460@in.ibm.com>
-Content-Type: text/plain
-Date: Thu, 08 Nov 2007 14:42:33 -0500
-Message-Id: <1194550953.22695.15.camel@rockstar.fsl.cs.sunysb.edu>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Thu, 8 Nov 2007 14:45:20 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45140 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754214AbXKHTpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 14:45:18 -0500
+Message-ID: <4733673C.6010904@redhat.com>
+Date: Thu, 08 Nov 2007 13:45:00 -0600
+From: David Smith <dsmith@redhat.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       systemtap@sources.redhat.com
+Subject: Re: [PATCH] markers: modpost
+References: <20071015194120.GA22562@redhat.com> <20071015231209.GA18994@Krystal> <20071015235033.321E84D0389@magilla.localdomain> <20071025191722.GA6114@Krystal> <20071026142810.GA14814@redhat.com> <20071101010624.54D8D4D04AE@magilla.localdomain> <20071101024622.GA3343@Krystal> <20071101093725.891F34D04AE@magilla.localdomain> <20071101112407.GA24217@Krystal> <47336413.5030505@redhat.com> <20071108193617.GA31172@Krystal>
+In-Reply-To: <20071108193617.GA31172@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for reviving a thread from two months ago... :)
+Mathieu Desnoyers wrote:
+> * David Smith (dsmith@redhat.com) wrote:
+>> Mathieu Desnoyers wrote:
+>>> * Roland McGrath (roland@redhat.com) wrote:
+>>>>> If we want to do it safely, I think we should iterate from
+>>>>> __start___markers to __stop___markers symbols of vmlinux and get the
+>>>>> pointers to the name/format string pairs.
+>>>>>
+>>>>> The same can then be done with modules using the __markers section.
+>>>>>
+>>>>> Or maybe is there some reason not to do that ?
+>>>> It's just rather a pain in the ass, a whole lot more fiddly work.
+>>>> cf "somewhat crude" and "foreseeable future" in my patch's log entry.
+>>>> Knock yourself out if you're looking for more tedious hacking to do in
+>>>> modpost.c, but I say fix it when it breaks.
+>>>>
+>>> Hmmmm, I have rarely seen code go into mainline without addressing valid
+>>> technical criticism first. Please fix.
+>>>
+>>> I'll look into it if I find the time.
+>>>
+>>> Mathieu
+>> Mathieu,
+>>
+>> Here's an updated patch, written by Roland (that I tested for him), that
+>> looks for all marker symbols in the __markers_strings section.  It doesn't
+>> get the pointers from the __markers section because that is very difficult
+>> to do in modpost (having to handle the architecture-dependent relocations
+>> applied to those pointers).
+>>
+> 
+> Hrm, what would happen if a gcc optimization eventually decides to mix
+> the memory layout of the strings ? Is there something that specifies
+> that they won't ?
 
-On Wed, 2007-09-26 at 10:09 +0530, Ananth N Mavinakayanahalli wrote:
-> On Tue, Sep 25, 2007 at 06:12:38PM -0400, Avishay Traeger wrote:
-> > Hello,
-> > I am trying to use kprobes to measure the latency of a function by
-> > instrumenting its call site.  Basically, I find the call instruction,
-> > and insert a kprobe with a pre-handler and post-handler at that point.
-> > The pre-handler measures the latency (reads the TSC counter).  The
-> > post-handler measures the latency again, and subtracts the value that
-> > was read in the pre-handler to compute the total latency of the called
-> > function.
-> 
-> This sounds ok...
-> 
-> > So to measure the latency of foo(), I basically want kprobes to do this:
-> > pre_handler();
-> > foo();
-> > post_handler();
-> > 
-> > The problem is that the latencies that I am getting are consistently low
-> > (~10,000 cycles).  When I manually instrument the functions, the latency
-> > is about 20,000,000 cycles.  Clearly something is not right here.
-> 
-> Is foo() called from too many different places? If so, are you
-> interested with only the invocation of foo() from a specific callsite?
->  
-> > Is this a known issue?  Instead of using the post-handler, I can try to
-> > add a kprobe to the following instruction with a pre-handler.  I was
-> > just curious if there was something fundamentally wrong with the
-> > approach I took, or maybe a bug that you should be made aware of.
-> 
-> I am not too sure... single-stepping a "call" instruction from a
-> different memory location (single-stepping out of line) requires some
-> fixups and kprobes handles such fixups just fine (see resume_execution()
-> in arch/<arch>/kernel/kprobes.c)
-> 
-> You could try a a couple of approaches for starters.
-> 
-> a. As you mention above, a kprobe on the function invocation and the
-> other on the instruction following the call; both need just pre_handlers. 
-> 
-> b.
-> - Insert a kprobe and a kretprobe on foo()
-> - The kprobe needs to have only a pre_handler that'll measure the latency
-> - A similar handler for the kretprobe handler can measure the latency
-> again and their difference will give you foo()'s latency.
-> 
-> <b> though will require you to do some housekeeping in case foo() is
-> reentrant to track which return instance corresponds to which call.
-> 
-> Ananth
-> 
-> PS: There was a thought of providing a facility to run a handler at
-> function entry even when just a kretprobe is used. Maybe we need to
-> relook at that; it'd have been useful in this case.
+I don't believe there is anything in gcc that specifies that the strings
+won't get mixed around.  But, I believe this code is good for the
+foreseeable future.  We could fix this code if the future breakage does
+happen.
 
-The approach that we took until now is (a):
-
-kprobe1.pre_handler();
-foo();
-kprobe2.pre_handler();
-
-However, my colleague Ivan has come up with another approach that I
-think it pretty novel:
-- kprob1.pre-handler is placed at the call site as before.
-- A post-handler is also added to this same kprobe, which saves foo's
-return value, and modifies it to point to a new function.  This new
-function contains the code that used to be in kprobe2.pre_handler
-(reading the TSC register a second time and computing the latency).
-This new function then returns to the original return location.
-
-The only caveat is that to handle recursion, you need to save a stack of
-return addresses.
-
-This has 2 main benefits:
-1. It guarantees that the code contained in the second kprobe is
-executed only when the first is (in case there is a jump in the code to
-the location of the 2nd kprobe).
-2. We only need one kprobe instead of two, which speeds things up.
-
-We have tested this, and it works great.  Just wanted to let you know
-about this technique in case this issue comes up again.  Have you ever
-seen kprobes used in this way?
-
-Thanks,
-Avishay
-
+-- 
+David Smith
+dsmith@redhat.com
+Red Hat
+http://www.redhat.com
+256.217.0141 (direct)
+256.837.0057 (fax)
