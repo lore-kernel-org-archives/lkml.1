@@ -1,70 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761400AbXKHSCs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761987AbXKHSDF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761400AbXKHSCs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 13:02:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759866AbXKHSCi
+	id S1761987AbXKHSDF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 13:03:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761244AbXKHSCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 13:02:38 -0500
-Received: from an-out-0708.google.com ([209.85.132.242]:4401 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759955AbXKHSCh (ORCPT
+	Thu, 8 Nov 2007 13:02:46 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60355 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761215AbXKHSCp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 13:02:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=IYmHbIdKcr6HCMbkIlMiZTZcjgal/zr3BC3WmhEbh5LLzTJHaM+71lhn1eAuCXqFU89eZVpnk3zeMksATRrV46SQP54Vk6YFMcrgE1Hgol2wQjdg1GBQ8I2VxzzdiYPZl92nZJ3v3vtMWMoqwebFxGSB2CHb5y23beRsDHfnNOU=
-Message-ID: <e9c3a7c20711081002k5c3be41doa700afce7c1a7a6e@mail.gmail.com>
-Date: Thu, 8 Nov 2007 11:02:36 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Bill Davidsen" <davidsen@tmr.com>
-Subject: Re: 2.6.23.1: mdadm/raid5 hung/d-state
-Cc: "Jeff Lessem" <Jeff@lessem.org>,
-       "=?ISO-8859-1?Q?BERTRAND_Jo=EBl?=" <joel.bertrand@systella.fr>,
-       "Justin Piszcz" <jpiszcz@lucidpixels.com>, "Neil Brown" <neilb@suse.de>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-In-Reply-To: <47334B46.7000809@tmr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 8 Nov 2007 13:02:45 -0500
+Date: Thu, 8 Nov 2007 10:02:12 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: mgross@linux.intel.com, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-mm1 breaks C-state support on Intel T7200 x86_64
+Message-Id: <20071108100212.0cbff318.akpm@linux-foundation.org>
+In-Reply-To: <3624.1194542384@turing-police.cc.vt.edu>
+References: <3624.1194542384@turing-police.cc.vt.edu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0711040658180.30831@p34.internal.lan>
-	 <18222.16003.92062.970530@notabene.brown>
-	 <Pine.LNX.4.64.0711041651250.23496@p34.internal.lan>
-	 <e9c3a7c20711051035m78ba90ck68f4fbc10480462a@mail.gmail.com>
-	 <Pine.LNX.4.64.0711051335450.11422@p34.internal.lan>
-	 <e9c3a7c20711051619u7054aab9l208b604b9e58fb61@mail.gmail.com>
-	 <47303FB8.7000801@systella.fr>
-	 <1194398700.2970.18.camel@dwillia2-linux.ch.intel.com>
-	 <47314653.80905@Lessem.org> <47334B46.7000809@tmr.com>
-X-Google-Sender-Auth: 211c3939a6477d05
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/8/07, Bill Davidsen <davidsen@tmr.com> wrote:
-> Jeff Lessem wrote:
-> > Dan Williams wrote:
-> > > The following patch, also attached, cleans up cases where the code
-> > looks
-> > > at sh->ops.pending when it should be looking at the consistent
-> > > stack-based snapshot of the operations flags.
-> >
-> > I tried this patch (against a stock 2.6.23), and it did not work for
-> > me.  Not only did I/O to the effected RAID5 & XFS partition stop, but
-> > also I/O to all other disks.  I was not able to capture any debugging
-> > information, but I should be able to do that tomorrow when I can hook
-> > a serial console to the machine.
->
-> That can't be good! This is worrisome because Joel is giddy with joy
-> because it fixes his iSCSI problems. I was going to try it with nbd, but
-> perhaps I'll wait a week or so and see if others have more information.
-> Applying patches before a holiday weekend is a good way to avoid time
-> off. :-(
+> On Thu, 08 Nov 2007 12:19:44 -0500 Valdis.Kletnieks@vt.edu wrote:
+> (Sorry for not reporting this sooner - I haven't been running off battery
+> much in the last 3 weeks, so I didn't notice it till now...)
+> 
+> Dell Latitude D820 laptop, T7200 Core2 Duo CPU, x86_64 kernel.
+> 
+> As reported by 'powertop' on a basically idle machine:
+> 
+> 2.6.23-mm1:
+> 
+> Cn                Avg residency       P-states (frequencies)
+> C0 (cpu running)        (100.0%)        2.00 Ghz     0.8%
+> C1                0.0ms ( 0.0%)         1.67 Ghz     0.0%
+> C2                0.0ms ( 0.0%)         1333 Mhz     0.0%
+> C3                0.0ms ( 0.0%)         1000 Mhz    99.2%
+> 
+> 2.6.23-rc8-mm2:
+> 
+> Cn                Avg residency       P-states (frequencies)
+> C0 (cpu running)        ( 0.3%)         2.00 Ghz     0.0%
+> C1                0.0ms ( 0.0%)         1.67 Ghz     0.0%
+> C2                0.0ms ( 0.0%)         1333 Mhz     0.0%
+> C3               31.5ms (99.7%)         1000 Mhz   100.0%
+> 
+> In addition, the ACPI power estimate reported about 25 watts for 23-mm1,
+> but only 21 watts for -rc8-mm2, a significant regression.
+> 
+> I bisected this down to this set of patches:
+> 
+> pm-qos-infrastructure-and-interface.patch
+> pm-qos-infrastructure-and-interface-fix.patch
+> pm-qos-infrastructure-and-interface-vs-git-acpi.patch
+> pm-qos-infrastructure-and-interface-vs-git-acpi-2.patch
+> latencyc-use-qos-infrastructure.patch
+> 
+> The patch says:
+> 
+>   To register the default pm_qos target for the specific parameter, the
+>   process must open one of /dev/[cpu_dma_latency, network_latency,
+>   network_throughput]
+> 
+>   As long as the device node is held open that process has a registered
+>   requirement on the parameter.  The name of the requirement is
+>   "process_<PID>" derived from the current->pid from within the open system
+>   call.
+> 
+> I shouldn't have to have a process open a /dev/file, write a number, and then
+> stay around forever so the file doesn't close in order to get the same behavior
+> I was getting by default before.  What needs to happen to get this to not
+> be a behavior regression/change?
+> 
 
-We need to see more information on the failure that Jeff is seeing,
-and whether it goes away with the two known patches applied.  He
-applied this most recent patch against stock 2.6.23 which means that
-the platform was still open to the first biofill flags issue.
+That's a great report, thanks.  Over to you, Mark ;)
 
---
-Dan
+btw, I also have a note here that these patches caused Rafael to see an
+smp_call_function() inside local_irq_save().  Did that get fixed?
