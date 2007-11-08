@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758595AbXKHBlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757942AbXKHByS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758595AbXKHBlf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 20:41:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbXKHBl0
+	id S1757942AbXKHByS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 20:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752556AbXKHByG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 20:41:26 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:34281 "EHLO
-	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750818AbXKHBlZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 20:41:25 -0500
-Date: Wed, 07 Nov 2007 19:41:15 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: SC1200 failure in 2.6.23 and 2.6.24-rc1-git10
-In-reply-to: <fa.FFqM2AneKZLH2d3/UIeCMjE/RLE@ifi.uio.no>
-To: Denys <denys@visp.net.lb>
-Cc: linux-kernel@vger.kernel.org, ide <linux-ide@vger.kernel.org>
-Message-id: <4732693B.1070509@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=KOI8-R; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.FFqM2AneKZLH2d3/UIeCMjE/RLE@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 7 Nov 2007 20:54:06 -0500
+Received: from ozlabs.org ([203.10.76.45]:60688 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752143AbXKHByF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 20:54:05 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18226.27701.782268.375231@cargo.ozlabs.ibm.com>
+Date: Thu, 8 Nov 2007 12:53:57 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lkml@davidb.org, linux-kernel@vger.kernel.org, drepper@redhat.com,
+       mtk-manpages@gmx.net
+Subject: Re: compat_sys_times() bogus until jiffies >= 0.
+In-Reply-To: <20071107161853.044b6e8f.akpm@linux-foundation.org>
+References: <20071107224722.GA20204@old.davidb.org>
+	<20071107152833.6f302c2a.akpm@linux-foundation.org>
+	<20071107161853.044b6e8f.akpm@linux-foundation.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Denys wrote:
-> Finally i got full DMESG with 1GB card till end. Seems not readable too.
-> 
+Andrew Morton writes:
 
-..
+> Given all this stuff, the return value from sys_times() doesn't seem a
+> particularly useful or reliable kernel interface.
 
+I think the best thing would be to ignore any error from copy_to_user
+and always return the number of clock ticks.  We should call
+force_successful_syscall_return, and glibc on x86 should be taught not
+to interpret negative values as an error.
 
-> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-> ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 cdb 0x0 data 4096 in
->          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> ata1.00: status: { DRDY }
-> ata1: soft resetting link
-> ata1.00: configured for MWDMA1
-> sd 0:0:0:0: [sda] Result: hostbyte=0x00 driverbyte=0x08
-> sd 0:0:0:0: [sda] Sense Key : 0xb [current] [descriptor]
-> Descriptor sense data with sense descriptors (in hex):
->         72 0b 00 00 00 00 00 0c 00 0a 80 00 00 00 00 00
->         00 00 00 00
-> sd 0:0:0:0: [sda] ASC=0x0 ASCQ=0x0
-> end_request: I/O error, dev sda, sector 0
-> Buffer I/O error on device sda, logical block 0
-> ata1: EH complete
+POSIX doesn't require us to return an EFAULT error if the buf argument
+is bogus.  If userspace does supply a bogus buf pointer, then either
+it will dereference it itself and get a segfault, or it won't
+dereference it, in which case it obviously didn't care about the
+values we tried to put there.
 
-I'm guessing that your CF-to-IDE adapter doesn't have the correct lines 
-wired up for DMA to work properly, and the card indicates DMA support, 
-which libata tries to use but which doesn't work. It looks like it never 
-tried falling back to PIO after DMA failed. Seems like a deficiency in 
-the speed-down logic?
+If we try to return an error under some circumstances, then there is
+at least one 32-bit value for the number of ticks that will cause
+confusion.  We can either change that value (or values) to some other
+value, which seems pretty bogus, or we can just decide not to return
+any errors.  The latter seems to me to have no significant downside
+and to be the simplest solution to the problem.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+Paul.
