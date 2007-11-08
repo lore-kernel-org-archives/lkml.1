@@ -1,108 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762627AbXKHVkW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762907AbXKHVkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762627AbXKHVkW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 16:40:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761043AbXKHVkJ
+	id S1762907AbXKHVkh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 16:40:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761394AbXKHVkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 16:40:09 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56617 "EHLO mx1.redhat.com"
+	Thu, 8 Nov 2007 16:40:12 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56621 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757637AbXKHVkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 16:40:07 -0500
+	id S1761207AbXKHVkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 16:40:10 -0500
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: jeremy@goop.org, avi@qumranet.com, aliguori@us.ibm.com,
        kvm-devel@lists.sourceforge.net, hollisb@us.ibm.com,
        Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: [PATCH 1/3] include files for kvmclock
-Date: Thu,  8 Nov 2007 20:39:21 -0200
-Message-Id: <11945615703593-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 2/3] kvmclock - the host part.
+Date: Thu,  8 Nov 2007 20:39:22 -0200
+Message-Id: <11945615751747-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <11945615632624-git-send-email-gcosta@redhat.com>
-References: <11945615632624-git-send-email-gcosta@redhat.com>
+In-Reply-To: <11945615703593-git-send-email-gcosta@redhat.com>
+References: <11945615632624-git-send-email-gcosta@redhat.com> <11945615703593-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch introduces the include files for kvm clock.
-They'll be needed for both guest and host part.
+This is the host part of kvm clocksource implementation. As it does
+not include clockevents, it is a fairly simple implementation. We
+only have to register a per-vcpu area, and start writting to it periodically.
 
 Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 ---
- include/asm-x86/kvm_para.h |   25 +++++++++++++++++++++++++
- include/linux/kvm.h        |    1 +
- include/linux/kvm_para.h   |    2 ++
- 3 files changed, 28 insertions(+), 0 deletions(-)
+ drivers/kvm/kvm_main.c |    1 +
+ drivers/kvm/x86.c      |   32 ++++++++++++++++++++++++++++++++
+ drivers/kvm/x86.h      |    4 ++++
+ 3 files changed, 37 insertions(+), 0 deletions(-)
 
-diff --git a/include/asm-x86/kvm_para.h b/include/asm-x86/kvm_para.h
-index c6f3fd8..0f6b813 100644
---- a/include/asm-x86/kvm_para.h
-+++ b/include/asm-x86/kvm_para.h
-@@ -10,15 +10,40 @@
-  * paravirtualization, the appropriate feature bit should be checked.
-  */
- #define KVM_CPUID_FEATURES	0x40000001
-+#define KVM_FEATURE_CLOCKSOURCE 0
+diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
+index d095002..c2c79b8 100644
+--- a/drivers/kvm/kvm_main.c
++++ b/drivers/kvm/kvm_main.c
+@@ -1243,6 +1243,7 @@ static long kvm_dev_ioctl(struct file *filp,
+ 		case KVM_CAP_MMU_SHADOW_CACHE_CONTROL:
+ 		case KVM_CAP_USER_MEMORY:
+ 		case KVM_CAP_SET_TSS_ADDR:
++		case KVM_CAP_CLOCKSOURCE:
+ 			r = 1;
+ 			break;
+ 		default:
+diff --git a/drivers/kvm/x86.c b/drivers/kvm/x86.c
+index e905d46..ef31fed 100644
+--- a/drivers/kvm/x86.c
++++ b/drivers/kvm/x86.c
+@@ -19,6 +19,7 @@
+ #include "segment_descriptor.h"
+ #include "irq.h"
  
- #ifdef __KERNEL__
- #include <asm/processor.h>
-+extern void kvmclock_init(void);
++#include <linux/clocksource.h>
+ #include <linux/kvm.h>
+ #include <linux/fs.h>
+ #include <linux/vmalloc.h>
+@@ -1628,6 +1629,28 @@ int kvm_emulate_halt(struct kvm_vcpu *vcpu)
+ }
+ EXPORT_SYMBOL_GPL(kvm_emulate_halt);
+ 
++static void kvm_write_guest_time(struct kvm_vcpu *vcpu)
++{
++	struct timespec ts;
++	int r;
 +
-+/*
-+ * Guest has page alignment and padding requirements. At the host, it will
-+ * only lead to wasted space at the vcpu struct. For this reason, the struct
-+ * is not anonymous
-+ */
-+union kvm_hv_clock {
-+	struct kvm_hv_clock_s {
-+		u64 tsc_mult;
-+		u64 now_ns;
-+		/* That's the wall clock, not the water closet */
-+		u64 wc_sec;
-+		u64 last_tsc;
-+		/* At first, we could use the tsc value as a marker, but Jeremy
-+		 * well noted that it will cause us locking problems in 32-bit
-+		 * sys, so we have a special version field */
-+		u32 version;
-+	} fields;
-+	char page_align[PAGE_SIZE];
-+};
++	if (!vcpu->clock_gpa)
++		return;
 +
- 
- /* This instruction is vmcall.  On non-VT architectures, it will generate a
-  * trap that we will then rewrite to the appropriate instruction.
-  */
- #define KVM_HYPERCALL ".byte 0x0f,0x01,0xc1"
- 
-+#define KVM_HCALL_REGISTER_CLOCK	1
++	/* Updates version to the next odd number, indicating we're writing */
++	vcpu->hv_clock.version++;
++	kvm_write_guest(vcpu->kvm, vcpu->clock_gpa, &vcpu->hv_clock, PAGE_SIZE);
 +
- /* For KVM hypercalls, a three-byte sequence of either the vmrun or the vmmrun
-  * instruction.  The hypervisor may replace it with something else but only the
-  * instructions are guaranteed to be supported.
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index 71d33d6..9862241 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -359,6 +359,7 @@ struct kvm_signal_mask {
- #define KVM_CAP_MMU_SHADOW_CACHE_CONTROL 2
- #define KVM_CAP_USER_MEMORY 3
- #define KVM_CAP_SET_TSS_ADDR 4
-+#define KVM_CAP_CLOCKSOURCE	  5
++	kvm_get_msr(vcpu, MSR_IA32_TIME_STAMP_COUNTER,
++			  &vcpu->hv_clock.last_tsc);
++
++	ktime_get_ts(&ts);
++	vcpu->hv_clock.now_ns = ts.tv_nsec + (NSEC_PER_SEC * (u64)ts.tv_sec);
++	vcpu->hv_clock.wc_sec = get_seconds();
++	vcpu->hv_clock.version++;
++	kvm_write_guest(vcpu->kvm, vcpu->clock_gpa, &vcpu->hv_clock, PAGE_SIZE);
++}
++
+ int kvm_emulate_hypercall(struct kvm_vcpu *vcpu)
+ {
+ 	unsigned long nr, a0, a1, a2, a3, ret;
+@@ -1648,7 +1671,15 @@ int kvm_emulate_hypercall(struct kvm_vcpu *vcpu)
+ 		a3 &= 0xFFFFFFFF;
+ 	}
  
- /*
-  * ioctls for VM fds
-diff --git a/include/linux/kvm_para.h b/include/linux/kvm_para.h
-index e4db25f..094efc7 100644
---- a/include/linux/kvm_para.h
-+++ b/include/linux/kvm_para.h
-@@ -11,6 +11,8 @@
++	ret = 0;
+ 	switch (nr) {
++	case  KVM_HCALL_REGISTER_CLOCK:
++
++		vcpu->clock_gpa = a0 << PAGE_SHIFT;
++		vcpu->hv_clock.tsc_mult = clocksource_khz2mult(tsc_khz, 22);
++
++		break;
++
+ 	default:
+ 		ret = -KVM_ENOSYS;
+ 		break;
+@@ -1924,6 +1955,7 @@ out:
+ 		goto preempted;
+ 	}
  
- /* Return values for hypercalls */
- #define KVM_ENOSYS		1000
-+#define KVM_EINVAL		1019
-+#define KVM_ENODEV		1022
++	kvm_write_guest_time(vcpu);
+ 	post_kvm_run_save(vcpu, kvm_run);
  
- #ifdef __KERNEL__
- /*
+ 	return r;
+diff --git a/drivers/kvm/x86.h b/drivers/kvm/x86.h
+index 663b822..fd77b66 100644
+--- a/drivers/kvm/x86.h
++++ b/drivers/kvm/x86.h
+@@ -83,6 +83,10 @@ struct kvm_vcpu {
+ 	/* emulate context */
+ 
+ 	struct x86_emulate_ctxt emulate_ctxt;
++
++	struct kvm_hv_clock_s hv_clock;
++	gpa_t clock_gpa; /* guest frame number, physical addr */
++
+ };
+ 
+ int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gva_t gva, u32 error_code);
 -- 
 1.5.0.6
 
