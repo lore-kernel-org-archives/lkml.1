@@ -1,54 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761708AbXKHT5G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762924AbXKHT6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761708AbXKHT5G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 14:57:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759901AbXKHT4y
+	id S1762924AbXKHT6X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 14:58:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760941AbXKHT6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 14:56:54 -0500
-Received: from usermail.globalproof.net ([194.146.153.18]:36950 "EHLO
-	usermail.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759541AbXKHT4x (ORCPT
+	Thu, 8 Nov 2007 14:58:16 -0500
+Received: from mr1-143.email.admail.net ([129.41.234.143]:54454 "HELO
+	email.admail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754133AbXKHT6P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 14:56:53 -0500
-From: "Denys Fedoryshchenko" <denys@visp.net.lb>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Mark Lord <liml@rtr.ca>,
-       James Andrewartha <jamesa@daa.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, htejun@gmail.com
-Subject: Re: SC1200 failure in 2.6.23 and 2.6.24-rc1-git10
-Date: Thu, 8 Nov 2007 21:56:32 +0200
-Message-Id: <20071108195605.M20599@visp.net.lb>
-In-Reply-To: <20071108173139.GA1932@havoc.gtf.org>
-References: <20071101213013.M54162@visp.net.lb> <20071107232045.GA26706@havoc.gtf.org> <20071107235548.M95675@visp.net.lb> <200711080130.54143.bzolnier@gmail.com> <20071108071204.M66693@visp.net.lb> <20071108104813.78ca4d65@the-village.bc.nu> <20071108164320.M82021@visp.net.lb> <20071108173139.GA1932@havoc.gtf.org>
-X-Mailer: OpenWebMail 2.52 20060502
-X-OriginatingIP: 195.69.208.251 (denys@visp.net.lb)
+	Thu, 8 Nov 2007 14:58:15 -0500
+X-Greylist: delayed 12878 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Nov 2007 14:58:15 EST
+Comment: DomainKeys? See http://antispam.yahoo.com/domainkeys
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=default; d=email.admail.net;
+  b=B1kYD2tPcMohWg6NKTaZHGOJ9bH4BdoSdk2B9CHZLwXvMei/UHQ67sV2vZ1zUaNAo00gHgwCesgWmboKQJ+c9U0cQd46uJruRvEfJmmjHb1h/2ng73QSbfbec5krfSF0  ;
+Message-ID: <20071108150740.52024.qmail@email.admail.net>
+Content-Disposition: inline
+Content-Transfer-Encoding: binary
+Content-Type: text/plain
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=koi8-r
+Date: Thu, 8 Nov 2007 15:07:40 UT
+From: "Millennium Information Technol" 
+	<Millennium_Information_Technologies@email.admail.net>
+Reply-To: "Millennium Information Technol" 
+	  <reply-35533.15303@email.admail.net>
+Subject: Loading...
+To: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks, it works like that.
+Are your out of service equipment being disposed of properly?  
 
-Seems in libata there is no fall-back to non-DMA mode, if DMA didn't work.
+Millennium Information Technologies follows EPA guidelines for recycling and disposal of all hardware.
 
-On Thu, 8 Nov 2007 12:31:39 -0500, Jeff Garzik wrote
-> On Thu, Nov 08, 2007 at 06:44:31PM +0200, Denys Fedoryshchenko wrote:
-> > Doesn't help
-> > 
-> > WRAP ~ #cat /proc/cmdline
-> > console=ttyS0,38400n8 libata.dma_mask=3
-> 
-> It's "libata.dma" if its built into the kernel, or 'dma' module 
-> option if built as a kernel module.
-> 
-> 	Jeff
+We are interested in purchasing surplus or corporate owned technology that is no longer in service or is scheduled to be de-installed anytime in the near future. Millennium buys all types of technology including networking hardware, PC's, printers, phones, PBX's, scanners, laptops, servers, and more in large volume. 
+
+We can help offset tech costs by giving a substantial return on your old equipment while helping you remain GREEN.
+
+Please let us know if you have anything we can help you with.
+
+Thank You 
+
+Lisa O'Connor
+Millennium Information Technologies
+1272 Old Alpharetta Road
+Alpharetta, GA 30005
+www.minfotech.com
+AOL IM:  LisaByDefault
+678-578-6076 Direct
+678-297-9823 Phone
+678-297-9824 FAX
 
 
---
-Denys Fedoryshchenko
-Technical Manager
-Virtual ISP S.A.L.
+_______________________________________________________
 
+   Click the following link to update your information
+   or stop future mailings.
+   http://www.admail.net/mailprefs/b3770f/4d4a4d/
+
+       Millennium Information Technologies
+       1885 McFarland Road
+       Alpharetta, GA 30005
+
+   Powered by Admail.net
+_______________________________________________________
