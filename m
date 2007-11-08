@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760934AbXKHOnE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761241AbXKHOnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760934AbXKHOnE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 09:43:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756693AbXKHOmy
+	id S1761241AbXKHOnu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 09:43:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759002AbXKHOnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 09:42:54 -0500
-Received: from crystal.sipsolutions.net ([195.210.38.204]:44661 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754198AbXKHOmy (ORCPT
+	Thu, 8 Nov 2007 09:43:42 -0500
+Received: from zcars04f.nortel.com ([47.129.242.57]:53393 "EHLO
+	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758848AbXKHOnm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 09:42:54 -0500
-Subject: Re: [PATCH (2.6.25) 0/2] suspend/hibernate Kconfig cleanups
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <200711072317.48023.rjw@sisk.pl>
-References: <20071107135758.100171000@sipsolutions.net>
-	 <200711072317.48023.rjw@sisk.pl>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-LPCf6j2vx5LlscfbT5zp"
-Date: Thu, 08 Nov 2007 15:44:13 +0100
-Message-Id: <1194533053.6294.42.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Thu, 8 Nov 2007 09:43:42 -0500
+Message-ID: <4733206C.8030903@nortel.com>
+Date: Thu, 08 Nov 2007 08:42:52 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Andreas Schwab <schwab@suse.de>
+CC: David Miller <davem@davemloft.net>, paulus@samba.org,
+       akpm@linux-foundation.org, lkml@davidb.org,
+       linux-kernel@vger.kernel.org, drepper@redhat.com, mtk-manpages@gmx.net
+Subject: Re: compat_sys_times() bogus until jiffies >= 0.
+References: <20071107152833.6f302c2a.akpm@linux-foundation.org> <20071107161853.044b6e8f.akpm@linux-foundation.org> <18226.27701.782268.375231@cargo.ozlabs.ibm.com> <20071107.180918.263752219.davem@davemloft.net> <jetznxt4wu.fsf@sykes.suse.de>
+In-Reply-To: <jetznxt4wu.fsf@sykes.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 08 Nov 2007 14:42:56.0955 (UTC) FILETIME=[A6E210B0:01C82215]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andreas Schwab wrote:
 
---=-LPCf6j2vx5LlscfbT5zp
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> A possible remedy is to return the ticks since process start time, which
+> delays the wrap around much further.  POSIX only demands consistency
+> within the same process.
+
+This would be an interesting solution.
+
+The man page for linux states that the return code is time since system 
+boot, so that could realistically be expected to correlate between 
+different processes.
+
+Could we get away with changing the man page and breaking any apps 
+relying on this previously-documented behaviour?
 
 
-> Since they touch a couple of architectures, I think it's better to merge =
-them
-> through -mm.
 
-Ok. Andrew, do you want them now or wait until .24 settles down more?
-
-johannes
-
---=-LPCf6j2vx5LlscfbT5zp
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUARzMgvKVg1VMiehFYAQKgPA/+Iaa4nHI7amYle6KYasUesMWv/KrXu7YR
-Qemvujly6ESTF76sXrMKRKEvtE2/JznozQah7fZ1e2sP50g0MpluxUAWRIdz5Hfc
-HrGgpWInShFbqlRyJJ5JKiZEbnNWy0V29rvZxS22zdyx+Kfz1AFA+vJAUh2yx47d
-IJCO9v3Gqv+XBMIbwkFVzYwRsmRU8Ww/rukvyHb9Gy/eAYQDnr09Ph1w9eSV1l7Q
-/sJHeB68RbLXwboIL1w1D/95n0VxgTOQEzpYAq6nUCYECoIzybZ+cr9B6DPVsOkk
-0sZreWt3SHLi5qtu9jf92yTWMC6KX15I+MwesbJldtzr+tKnB7cF+HBbVp2Bg9Fh
-GenoXgLM5Mvnxxihs8Ii7ft5c7N2/KnO3ytScqkMA9XM1XEo8opdttGOJYqERJmr
-8IVOk5tp3GPUGoKCEC1m0clyOsjcFKA7bUADeTbQNEeGdObZvyBEHHnvoXFjYlzJ
-bt4F5JfYlhjBXbUNBI/IatwmmsTuOre34QdBOcHkMKOpeQtvhIxMHCf7VGXak1CX
-dPUoAxYMpnEmXtXLmXG9LHbop95KULtt4s7Zr/zEQDyfXXE7rDncfzqXaKI3LQ7M
-ZLNYDtvlA2HORjr5RPIOBa5BunO4e3MUvM7NkYOTX1KEArti+bzd18u2at8WFFNx
-p2IpBVIDoWA=
-=R6Mx
------END PGP SIGNATURE-----
-
---=-LPCf6j2vx5LlscfbT5zp--
-
+Chris
