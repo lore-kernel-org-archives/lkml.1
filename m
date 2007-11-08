@@ -1,100 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761195AbXKHOj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760934AbXKHOnE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761195AbXKHOj2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 09:39:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758848AbXKHOjC
+	id S1760934AbXKHOnE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 09:43:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756693AbXKHOmy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 09:39:02 -0500
-Received: from THUNK.ORG ([69.25.196.29]:59337 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754198AbXKHOjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 09:39:00 -0500
-Date: Thu, 8 Nov 2007 09:37:59 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: [RFC] [PATCH 3/3] Recursive mtime for ext3
-Message-ID: <20071108143759.GF7728@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Jan Kara <jack@suse.cz>,
-	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-References: <20071106171537.GD23689@duck.suse.cz> <20071106171945.GG23689@duck.suse.cz> <20071106194012.GE12857@thunk.org> <20071107143605.GD22214@duck.suse.cz> <20071108002037.GA7728@thunk.org> <20071108105642.GB6781@duck.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071108105642.GB6781@duck.suse.cz>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Thu, 8 Nov 2007 09:42:54 -0500
+Received: from crystal.sipsolutions.net ([195.210.38.204]:44661 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754198AbXKHOmy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 09:42:54 -0500
+Subject: Re: [PATCH (2.6.25) 0/2] suspend/hibernate Kconfig cleanups
+From: Johannes Berg <johannes@sipsolutions.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200711072317.48023.rjw@sisk.pl>
+References: <20071107135758.100171000@sipsolutions.net>
+	 <200711072317.48023.rjw@sisk.pl>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-LPCf6j2vx5LlscfbT5zp"
+Date: Thu, 08 Nov 2007 15:44:13 +0100
+Message-Id: <1194533053.6294.42.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ah, OK, so the two things that I didn't get from your patch
-description are:
 
-1) the rtime flag and rtime field are only set on directories
-2) the intended use is not trackerd and its ilk, but rsync and updatedb,
-   so it is desirable that scan/queries be persistent across reboots
+--=-LPCf6j2vx5LlscfbT5zp
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-But then the major hole in this scheme is still the issue of hard
-links.  The rsync program is still going to have to scan the entire
-subtree looking for hard links, since an inode with multiple links
-into the directory tree can't guarantee that all of its parent
-directories will have their rtime field updated.
 
-A program like updatedb which only cares about filenames will be OK,
-since that means it really only cares about knowing when directories
-have changed, and you can't have hard links to directories.
+> Since they touch a couple of architectures, I think it's better to merge =
+them
+> through -mm.
 
-The other problem, of course, is that this feature would become ext
-2/3/4 specific, and I could see future filesystems possibly wanting
-this.  So this raises the question of whether the interface should be
-at the VFS layer or not --- and if so, how to handle querying whether
-a particulra filesystem supports it, and what happens if you have a
-subtree which is covered by a filesystem that doesn't support rtime?
+Ok. Andrew, do you want them now or wait until .24 settles down more?
 
-So a program like rsync would need to scan /proc/self/mounts to see
-whether or not it would be safe to use this feature in the first
-place.  And, of course, rsync would need to know whether it has write
-access to the tree in order to set flags in the directory, and what to
-do if some portion of the subtree isn't writeable by rsync.
+johannes
 
-On Thu, Nov 08, 2007 at 11:56:42AM +0100, Jan Kara wrote:
-> > Note by the way that since you need to own the file/directory to set
-> > flags, this means that only programs that are running as root or
-> > running as the uid who owns the entire subtree will be able to use
-> > this scheme.  One advantage of doing in kernel memory is that you
-> > might be able to support watching a tree that is not owned by the
-> > watcher.
->   Yes, that is the advantage. On the other hand we could allow setting that
-> particular flag even without being an owner of the inode. In fact, I
-> don't currently see use case where you won't be either root (rsync,
-> updatedb) or an owner of the files (watching config file trees) but I guess
-> people would find some :).
+--=-LPCf6j2vx5LlscfbT5zp
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Sometimes people like to use rsync to copy a subtree to which they
-have read access but not write access.  (And here note that it's not
-enough to have write access, you actually need to *own* all of the
-directories in the subtree).
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-Yes, it's safe to let any user *set* the rtime flag, but we couldn't
-let them clear the rtime flag, since then they would be able to hide a
-file modification from some other (potentially privileged) process.
-Speaking of security, I assume your patch will never allow rtime to go
-backwards (for example if the user attempts to backdate a file's mtime
-field using the utime() or utimes() system call)?
+iQIVAwUARzMgvKVg1VMiehFYAQKgPA/+Iaa4nHI7amYle6KYasUesMWv/KrXu7YR
+Qemvujly6ESTF76sXrMKRKEvtE2/JznozQah7fZ1e2sP50g0MpluxUAWRIdz5Hfc
+HrGgpWInShFbqlRyJJ5JKiZEbnNWy0V29rvZxS22zdyx+Kfz1AFA+vJAUh2yx47d
+IJCO9v3Gqv+XBMIbwkFVzYwRsmRU8Ww/rukvyHb9Gy/eAYQDnr09Ph1w9eSV1l7Q
+/sJHeB68RbLXwboIL1w1D/95n0VxgTOQEzpYAq6nUCYECoIzybZ+cr9B6DPVsOkk
+0sZreWt3SHLi5qtu9jf92yTWMC6KX15I+MwesbJldtzr+tKnB7cF+HBbVp2Bg9Fh
+GenoXgLM5Mvnxxihs8Ii7ft5c7N2/KnO3ytScqkMA9XM1XEo8opdttGOJYqERJmr
+8IVOk5tp3GPUGoKCEC1m0clyOsjcFKA7bUADeTbQNEeGdObZvyBEHHnvoXFjYlzJ
+bt4F5JfYlhjBXbUNBI/IatwmmsTuOre34QdBOcHkMKOpeQtvhIxMHCf7VGXak1CX
+dPUoAxYMpnEmXtXLmXG9LHbop95KULtt4s7Zr/zEQDyfXXE7rDncfzqXaKI3LQ7M
+ZLNYDtvlA2HORjr5RPIOBa5BunO4e3MUvM7NkYOTX1KEArti+bzd18u2at8WFFNx
+p2IpBVIDoWA=
+=R6Mx
+-----END PGP SIGNATURE-----
 
-I guess I'm convinced that updatedb could use this facility, but there
-are enough asteriks around it that I'm not sure that rsync could
-safely use this feature in production.  I don't doubt that in a cold
-cache case, it would speed up rsync, but because it doesn't handle
-hard links, it's not reliable.  Since rsync often gets used for
-backups, this is a big deal.  There are also questions about what to
-do if rsync doesn't have write access to the filesystem, or if there
-is a non-rtime capable filesystem mounted in the subtree, etc., that
-can be worked around, but would add a lot of complexity and grottiness
-to the rsync source tree.  Is the rsync maintainer really willing to
-add all of the necessary hair to support this rtime facility into
-their program?
+--=-LPCf6j2vx5LlscfbT5zp--
 
-						- Ted
