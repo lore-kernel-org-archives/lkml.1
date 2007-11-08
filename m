@@ -1,40 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760475AbXKHGNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760267AbXKHGVD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760475AbXKHGNQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 01:13:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbXKHGNA
+	id S1760267AbXKHGVD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 01:21:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbXKHGUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 01:13:00 -0500
-Received: from il.qumranet.com ([82.166.9.18]:55315 "EHLO il.qumranet.com"
+	Thu, 8 Nov 2007 01:20:53 -0500
+Received: from main.gmane.org ([80.91.229.2]:53223 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751748AbXKHGM7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 01:12:59 -0500
-Message-ID: <4732A8E5.6090307@qumranet.com>
-Date: Thu, 08 Nov 2007 08:12:53 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Anthony Liguori <aliguori@us.ibm.com>
-CC: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rusycorp.com.au>,
-       virtualization@lists.osdl.org, kvm-devel@lists.sourceforge.net
-Subject: Re: [kvm-devel] [PATCH 3/3] virtio PCI device
-References: <11944899922822-git-send-email-aliguori@us.ibm.com>	<11944900141678-git-send-email-aliguori@us.ibm.com>	<11944900152750-git-send-email-aliguori@us.ibm.com> <11944900163817-git-send-email-aliguori@us.ibm.com>
-In-Reply-To: <11944900163817-git-send-email-aliguori@us.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+	id S1751295AbXKHGUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 01:20:53 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: [poll] Is the megafreeze development model broken?
+Date: Wed, 7 Nov 2007 22:18:51 -0800
+Organization: Linux Foundation
+Message-ID: <20071107221851.0d831573@freepuppy.rosehill>
+References: <fgtfqa$h9j$1@ger.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Thu, 08 Nov 2007 08:12:53 +0200 (IST)
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 069-064-229-129.pdx.net
+In-Reply-To: <fgtfqa$h9j$1@ger.gmane.org>
+X-Newsreader: Claws Mail 3.0.2 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anthony Liguori wrote:
-> This is a PCI device that implements a transport for virtio.  It allows virtio
-> devices to be used by QEMU based VMMs like KVM or Xen.
->
->   
+On Wed, 07 Nov 2007 23:56:57 +0100
+ciol <ciol13@gmail.com> wrote:
 
-Didn't see support for dma. I think that with Amit's pvdma patches you
-can support dma-capable devices as well without too much fuss.
+> Hi, I'd like to ask you a few questions:
+> 
+> * Do you like the way linux distributions integrate the kernel?
+> 
+> * Wouldn't you prefer they ship with the stable and still maintained 
+> 2.6.16.X, while providing optionally the latest kernel for those who 
+> want or just have a new hardware?
+> 
+> * Do you think the megafreeze development model [1] and the "I don't 
+> trust in upstream" development model are broken? (And why)
+> 
+> 
+> 
+> [1] http://www.modeemi.fi/~tuomov/b/archives/2007/03/03/T19_15_26/
+> 
+> 
+> (I'm going to ask this for several projects, not only the kernel)
+> 
+
+It's a free world, do what you want.
 
 -- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+Stephen Hemminger <shemminger@linux-foundation.org>
 
