@@ -1,91 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760285AbXKHBHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760173AbXKHBIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760285AbXKHBHS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 20:07:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758012AbXKHBHA
+	id S1760173AbXKHBIh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 20:08:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757544AbXKHBIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 20:07:00 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:11030 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757570AbXKHBG7 (ORCPT
+	Wed, 7 Nov 2007 20:08:30 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:36109 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757492AbXKHBI3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 20:06:59 -0500
-Date: Wed, 7 Nov 2007 17:06:40 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "werner" <werner@copaya.yi.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Fwd: same problem with 2.6.24-rc2
-Message-Id: <20071107170640.ca861b15.randy.dunlap@oracle.com>
-In-Reply-To: <1194481962.7222@copaya.yi.org>
-References: <1194481962.7222@copaya.yi.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 7 Nov 2007 20:08:29 -0500
+Message-ID: <473260F6.6090808@zytor.com>
+Date: Wed, 07 Nov 2007 17:05:58 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
+       bugme-daemon@bugzilla.kernel.org,
+       Samuel Thibault <samuel.thibault@ens-lyon.org>, hannibal@astral.lodz.pl,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Bill Nottingham <notting@redhat.com>
+Subject: Re: [Bugme-new] [Bug 9319] New: National characters are not displayed
+ under console.
+References: <bug-9319-10286@http.bugzilla.kernel.org/> <20071107140450.fc6a5cb5.akpm@linux-foundation.org>
+In-Reply-To: <20071107140450.fc6a5cb5.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 07 Nov 2007 21:32:43 -0300 (GFT) werner wrote:
+This isn't a regression.  It's an intentional default change.
 
-> On 7/Nov/2007 20:10 werner wrote ..
-> > With 2.6.23-rc2 is the same problem:  it crashed at the beginning:  EIP 060 c03fdea4
-> > EFLAGS 00010212 EIP is at xor_sse_2+0x34/0x200
-> > Again during the compilation was reclaimed that <source-dir>/arch/x86/Makefile.o
-> > cannot be found and were certain dependencies on it not made, such a file isn't
-> > present in the source code (present are, f.ex. Makefile_32 , Makefile_64 ), nor
-> > was generated automaticaly during compilation, I think this is incorrect and the
-> > reason for the problems
+The default console mode changed from 8-bit legacy to UTF-8 in 2.6.24.
 
-Hi,
+Apparently this user is using a legacy character set (note that it's a 
+Slackware machine), and isn't explicitly setting the character set via 
+the appropriate escape sequence.
 
-Please provide the complete build log (with V=1 if possible) for the
-missing Makefile.o problem.
+The new default can be overridden via 
+/sys/module/vt/parameters/default_utf8 or something like that...
 
-E.g.:
+	-hpa
 
-make V=1 all >build.log 2>&1
-
-Make sure that build.log contains the error message and then send
-the complete build.log file to us at linux-kernel@vger.kernel.org .
-
-
-> > wl
-> > werner@copaya.yi.org
-> > =============================================================================
-> > On 7/Nov/2007 16:14 Andrew Morton wrote ..
-> > > > On Wed, 07 Nov 2007 15:55:12 -0300 (GFT) "werner" <werner@copaya.yi.org> wrote:
-> > > > I really don't know what's happening.  I don't understand nothing about the
-> > kernel
-> > > error reporting system.   Because of this, always when there is a problem, I
-> > report
-> > > it via e-mail to  linux-kernel@vger.kernel.org .  I don't know what people there
-> > > do with my messages.     
-> > > 
-> > > 
-> > > It went like this:
-> > > 
-> > > 1: you sent an email to linux-kernel
-> > > 
-> > > 2: I sent a reply to you and linux-kernel
-> > > 
-> > > 3: you sent a reply to me, but NOT linux-kernel!
-> > > 
-> > > In other words, you did "reply", not "reply to all", thus you removed three
-> > > thousand people from the discussion.  One of those people is the person who
-> > > created the bug which you're hitting, and that person no longer knows
-> > > what's happening.
-> > > 
-> > > 
-> > > So please go back and resend all those emails, and retain ALL Cc:'s.  Don't
-> > > just send them only to me.  Keep all indivisuals and all mailing lists on
-> > > the email Cc: list.
-
-
-
----
-~Randy
+Andrew Morton wrote:
+>> On Wed,  7 Nov 2007 13:19:16 -0800 (PST) bugme-daemon@bugzilla.kernel.org wrote:
+>> http://bugzilla.kernel.org/show_bug.cgi?id=9319
+>>
+>>            Summary: National characters are not displayed under console.
+>>            Product: Drivers
+>>            Version: 2.5
+>>      KernelVersion: 2.6.24-rcX
+>>           Platform: All
+>>         OS/Version: Linux
+>>               Tree: Mainline
+>>             Status: NEW
+>>           Severity: normal
+>>           Priority: P1
+>>          Component: Console/Framebuffers
+>>         AssignedTo: jsimmons@infradead.org
+>>         ReportedBy: hannibal@astral.lodz.pl
+>>
+>>
+>> Most recent kernel where this bug did not occur: 2.6.23
+>>
+>> Distribution: Slackware
+>>
+>> Hardware Environment:
+>> Toshiba Tecra M1
+>> Pentium M 1.6 512MB RAM, ICH4-M chipset, Trident CyberBlade XP4 video card
+>>
+>> Software Environment: Slackware-current (kbd-1.12, glibs 2.5)
+>>
+>> Problem Description:
+>> The national characters like "ą", "ł" or "ż" are not displayed corectlly
+>> under console (no matter vesa framebuffer, or standard vga). Instead of them
+>> "?" on strange background is displayed. Problem begins on 2.6.24-rc1 and
+>> continues on 2.6.24-rc2. On 2.6.23 everything is OK.
+>>
+>> Steps to reproduce:
+>> Run 2.6.24-rcX kernel and set national console font by setfont.
+>>
+> 
+> Another post-2.6.23 regression.  Possible culprits cc'ed?
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
