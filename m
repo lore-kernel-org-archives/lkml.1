@@ -1,125 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761443AbXKHPHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761329AbXKHPLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761443AbXKHPHW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 10:07:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759406AbXKHPHK
+	id S1761329AbXKHPLq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 10:11:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759471AbXKHPLj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 10:07:10 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:48473 "EHLO gir.skynet.ie"
+	Thu, 8 Nov 2007 10:11:39 -0500
+Received: from waste.org ([66.93.16.53]:39073 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759150AbXKHPHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 10:07:08 -0500
-Date: Thu, 8 Nov 2007 15:07:05 +0000
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundatin.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 07/23] SLUB: Add defrag_ratio field and sysfs support.
-Message-ID: <20071108150705.GD2591@skynet.ie>
-References: <20071107011130.382244340@sgi.com> <20071107011228.102370371@sgi.com>
+	id S1759031AbXKHPLi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 10:11:38 -0500
+Date: Thu, 8 Nov 2007 09:10:03 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Avi Kivity <avi@qumranet.com>
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Marin Mitov <mitov@issp.bas.bg>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: is minimum udelay() not respected in preemptible SMP kernel-2.6.23?
+Message-ID: <20071108151003.GS19691@waste.org>
+References: <200711071921.52330.mitov@issp.bas.bg> <20071107123045.c6d4b855.akpm@linux-foundation.org> <20071108002027.GV17536@waste.org> <200711080131.01243.ak@suse.de> <4732F728.8020707@qumranet.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071107011228.102370371@sgi.com>
+In-Reply-To: <4732F728.8020707@qumranet.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (06/11/07 17:11), Christoph Lameter didst pronounce:
-> The defrag_ratio is used to set the threshold at which defragmentation
-> should be run on a slabcache.
+On Thu, Nov 08, 2007 at 01:46:48PM +0200, Avi Kivity wrote:
+> Andi Kleen wrote:
+> >On Thursday 08 November 2007 01:20, Matt Mackall wrote:
+> >  
+> >>On Wed, Nov 07, 2007 at 12:30:45PM -0800, Andrew Morton wrote:
+> >>    
+> >>>Ow.  Yes, from my reading delay_tsc() can return early (or after
+> >>>heat-death-of-the-universe) if the TSCs are offset and if preemption
+> >>>migrates the calling task between CPUs.
+> >>>
+> >>>I suppose a lameo fix would be to disable preemption in delay_tsc().
+> >>>      
+> >>preempt_disable is lousy documentation here. This and other cases
+> >>(lots of per_cpu users, IIRC) actually want a migrate_disable() which
+> >>is a proper subset. We can simply implement migrate_disable() as
+> >>preempt_disable() for now and come back later and implement a proper
+> >>migrate_disable() that still allows preemption (and thus avoids the
+> >>latency).
+> >>    
+> >
+> >We could actually do this right now. migrate_disable() can be just changing
+> >the cpu affinity of the current thread to current cpu and then restoring 
+> >it afterwards. That should even work from interrupt context.
+> >
+> >get_cpu() etc. could be changed to use this then too.
+> >
+> >  
 > 
+> What if some other thread calls sched_setaffinity() on the 
+> migrate_disable()d cpu?  we'd need to detect this to avoid 
+> migrate_enable() stomping on sched_setaffinity()'s work.
 
-I'm thick, I would like to see a quick note here on what defragmentation
-means. Also, this defrag_ratio seems to have a significantly different
-meaning to the other defrag_ratio which isn't helping my poor head at
-all.
-
-"The defrag_ratio sets a threshold at which a slab will be vacated of all
-it's objects and the pages freed during memory reclaim."
-
-?
-
-> The allocation ratio is measured in a percentage of the available slots.
-> The percentage will be lower for slabs that are more fragmented.
-> 
-> Add a defrag ratio field and set it to 30% by default. A limit of 30% specified
-> that less than 3 out of 10 available slots for objects are in use before
-> reclaim occurs.
-> 
-> Reviewed-by: Rik van Riel <riel@redhat.com>
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> ---
->  include/linux/slub_def.h |    7 +++++++
->  mm/slub.c                |   18 ++++++++++++++++++
->  2 files changed, 25 insertions(+)
-> 
-> Index: linux-2.6/include/linux/slub_def.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/slub_def.h	2007-11-06 12:36:28.000000000 -0800
-> +++ linux-2.6/include/linux/slub_def.h	2007-11-06 12:37:44.000000000 -0800
-> @@ -53,6 +53,13 @@ struct kmem_cache {
->  	void (*ctor)(struct kmem_cache *, void *);
->  	int inuse;		/* Offset to metadata */
->  	int align;		/* Alignment */
-> +	int defrag_ratio;	/*
-> +				 * objects/possible-objects limit. If we have
-> +				 * less that the specified percentage of
-> +				 * objects allocated then defrag passes
-> +				 * will start to occur during reclaim.
-> +				 */
-> +
->  	const char *name;	/* Name (only for display!) */
->  	struct list_head list;	/* List of slab caches */
->  #ifdef CONFIG_SLUB_DEBUG
-> Index: linux-2.6/mm/slub.c
-> ===================================================================
-> --- linux-2.6.orig/mm/slub.c	2007-11-06 12:37:25.000000000 -0800
-> +++ linux-2.6/mm/slub.c	2007-11-06 12:37:44.000000000 -0800
-> @@ -2363,6 +2363,7 @@ static int kmem_cache_open(struct kmem_c
->  		goto error;
->  
->  	s->refcount = 1;
-> +	s->defrag_ratio = 30;
->  #ifdef CONFIG_NUMA
->  	s->remote_node_defrag_ratio = 100;
->  #endif
-> @@ -4005,6 +4006,22 @@ static ssize_t free_calls_show(struct km
->  }
->  SLAB_ATTR_RO(free_calls);
->  
-> +static ssize_t defrag_ratio_show(struct kmem_cache *s, char *buf)
-> +{
-> +	return sprintf(buf, "%d\n", s->defrag_ratio);
-> +}
-> +
-> +static ssize_t defrag_ratio_store(struct kmem_cache *s,
-> +				const char *buf, size_t length)
-> +{
-> +	int n = simple_strtoul(buf, NULL, 10);
-> +
-> +	if (n < 100)
-> +		s->defrag_ratio = n;
-> +	return length;
-> +}
-> +SLAB_ATTR(defrag_ratio);
-> +
->  #ifdef CONFIG_NUMA
->  static ssize_t remote_node_defrag_ratio_show(struct kmem_cache *s, char *buf)
->  {
-> @@ -4047,6 +4064,7 @@ static struct attribute * slab_attrs[] =
->  	&shrink_attr.attr,
->  	&alloc_calls_attr.attr,
->  	&free_calls_attr.attr,
-> +	&defrag_ratio_attr.attr,
->  #ifdef CONFIG_ZONE_DMA
->  	&cache_dma_attr.attr,
->  #endif
-> 
-> -- 
-> 
+Yep, there are a bunch of problems with actually touching the affinity
+mask.
 
 -- 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Mathematics is the supreme nostalgia of our time.
