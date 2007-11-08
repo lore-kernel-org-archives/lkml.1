@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759878AbXKHKOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760328AbXKHKPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759878AbXKHKOR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 05:14:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750708AbXKHKOG
+	id S1760328AbXKHKPl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 05:15:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756655AbXKHKPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 05:14:06 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:57814 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753450AbXKHKOF convert rfc822-to-8bit (ORCPT
+	Thu, 8 Nov 2007 05:15:34 -0500
+Received: from mail-dub.bigfish.com ([213.199.154.10]:42278 "EHLO
+	mail45-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754116AbXKHKPd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 05:14:05 -0500
-Date: Thu, 8 Nov 2007 12:14:13 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Philippe Elie <phil.el@wanadoo.fr>
-Cc: oprofile-list@lists.sourceforge.net, kernel@avr32linux.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC/PATCH] AVR32: Oprofile support
-Message-ID: <20071108121413.4919e4a3@siona>
-In-Reply-To: <20071108092806.GB2889@zaniah>
-References: <1194444333-9264-1-git-send-email-hskinnemoen@atmel.com>
-	<20071108092806.GB2889@zaniah>
-Organization: Atmel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 8 Nov 2007 05:15:33 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: D6C75999-9DAF-4D89-B9AC-C25E3A0BB76A
+Date: Thu, 8 Nov 2007 11:14:57 +0100
+From: "Robert Richter" <robert.richter@amd.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+cc: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, "LKML" <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 1/6] x86: apicdef unification: some constants made
+ unsigned
+Message-ID: <20071108101457.GF20836@erda.amd.com>
+References: <20071106183645.951275000@amd.com>
+ <20071106183646.064906000@amd.com> <473222E5.7020808@goop.org>
+MIME-Version: 1.0
+In-Reply-To: <473222E5.7020808@goop.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 08 Nov 2007 10:14:57.0928 (UTC)
+ FILETIME=[37094080:01C821F0]
+X-WSS-ID: 6B2C3E2A24S1815381-02-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Nov 2007 10:28:06 +0100
-Philippe Elie <phil.el@wanadoo.fr> wrote:
-
-> On Wed, 07 Nov 2007 at 15:05 +0000, Haavard Skinnemoen wrote:
-> > +	/* PCCNT */
-> > +	if (ctr->enabled && (pccr & ctr->flag_mask)) {
-> > +		sysreg_write(PCCNT, -ctr->count);
-> > +		oprofile_add_sample(regs, PCCNT);
-> > +	}
-> > +	ctr++;
-> > +	/* PCNT0 */
-> > +	if (ctr->enabled && (pccr & ctr->flag_mask)) {
-> > +		sysreg_write(PCNT0, -ctr->count);
-> > +		oprofile_add_sample(regs, PCNT0);
-> > +	}
-> > +	ctr++;
-> > +	/* PCNT1 */
-> > +	if (ctr->enabled && (pccr & ctr->flag_mask)) {
-> > +		sysreg_write(PCNT1, -ctr->count);
-> > +		oprofile_add_sample(regs, PCNT1);
-> > +	}
+On 07.11.07 12:41:09, Jeremy Fitzhardinge wrote:
+> > -#define			GET_APIC_VERSION(x)	((x)&0xFF)
+> > -#define			GET_APIC_MAXLVT(x)	(((x)>>16)&0xFF)
+> > -#define			APIC_INTEGRATED(x)	((x)&0xF0)
+> > +#define			GET_APIC_VERSION(x)	((x)&0xFFu)
+> > +#define			GET_APIC_MAXLVT(x)	(((x)>>16)&0xFFu)
+> > +#define			APIC_INTEGRATED(x)	((x)&0xF0u)
 > 
-> Why not a loop here ?
+> Can these ever be used in .S files?  Might be better to use the _AC stuff.
 
-The system register is coded into the instruction as an immediate, so
-it would have to be a loop with a switch in it. And with only three
-counters, I thought it looked cleaner (and faster) this way.
+I did not want to make functional changes, just do a simple
+merge. However there are already updated files in the x86/cleanup
+tree, so these patches are obsolete.
 
-Håvard
+-Robert
+
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
+
