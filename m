@@ -1,63 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760479AbXKHDap@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759288AbXKHENs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760479AbXKHDap (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 22:30:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754123AbXKHDaf
+	id S1759288AbXKHENs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 23:13:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753412AbXKHENk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 22:30:35 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:44271 "EHLO
+	Wed, 7 Nov 2007 23:13:40 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:50565 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753846AbXKHDae (ORCPT
+	with ESMTP id S1753241AbXKHENj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 22:30:34 -0500
-Date: Thu, 8 Nov 2007 04:30:10 +0100
+	Wed, 7 Nov 2007 23:13:39 -0500
+Date: Thu, 8 Nov 2007 05:13:14 +0100
 From: Adrian Bunk <bunk@kernel.org>
-To: David Brownell <david-b@pacbell.net>, David Miller <davem@davemloft.net>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>,
-       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>
-Subject: Re: build #337 failed for 2.6.24-rc1-gb1d08ac In function
-	`usbnet_set_settings':
-Message-ID: <20071108033010.GF26163@stusta.de>
-References: <200711012024.57412.toralf.foerster@gmx.de> <200711021230.22588.david-b@pacbell.net> <20071102195517.GW30287@stusta.de> <200711071434.52607.david-b@pacbell.net> <20071107225232.GB26163@stusta.de>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@osdl.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-am33-list@redhat.com
+Subject: Re: [PATCH 0/2] MN10300: Add the MN10300 architecture to Linux
+	kernel [try #3]
+Message-ID: <20071108041314.GG26163@stusta.de>
+References: <20071107174323.31820.65054.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20071107225232.GB26163@stusta.de>
+In-Reply-To: <20071107174323.31820.65054.stgit@warthog.procyon.org.uk>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 07, 2007 at 11:52:32PM +0100, Adrian Bunk wrote:
-> On Wed, Nov 07, 2007 at 02:34:52PM -0800, David Brownell wrote:
-> > > > But on the other hand, it seems that only the ASIX code will work
-> > > > right; the DM9601 and MCS7830 Kconfig is different/wrong.
-> > > 
-> > > I'm not seeing the problem.
-> > > 
-> > > Which configuration will be handled wrongly?
-> > 
-> > Notice how only the ASIX kconfig depended on NET_ETHERNET...
-> > since MII depends on NET_ETHERNET, and (last I knew) the
-> > reverse dependencies didn't capture the complete dependency
-> > tree, selecting only MII would leave out some stuff.
+On Wed, Nov 07, 2007 at 05:43:23PM +0000, David Howells wrote:
 > 
-> Except for one s390 net driver (I'll check why it's doing this) the 
-> NET_ETHERNET option does not influence what code is being generated - 
-> it's just a Kconfig-internal option allowing to disable a huge bunch
-> of drivers at once.
+> 
+> These patches add the MEI/Panasonic MN10300/AM33 architecture to the Linux
+> kernel.
+> 
+> The first patch suppresses AOUT support in the kernel if CONFIG_BINFMT_AOUT=n
+> and CONFIG_IA32_AOUT=n.  MN10300 does not support the AOUT binfmt, so the ELF
+> binfmt should not be permitted to go looking for AOUT libraries to load, nor
+> should random bits of the kernel depend on asm/a.out.h.
+> 
+> The second patch adds the architecture itself, to be selected by ARCH=mn10300
+> on the make command line.
+> 
+> The patches can also be downloaded from:
+> 
+> 	http://people.redhat.com/~dhowells/mn10300/mn10300-arch.tar.bz2
 
-Damn, I shouldn't have only grep'ed under drivers/.
 
-@davem:
+The patch to include/asm-generic/Kbuild.asm doesn't seem to be required.
 
-Please look at net/ipv4/arp.c:arp_process()
 
-Am I right that CONFIG_NET_ETHERNET=n and CONFIG_NETDEV_1000=y or 
-CONFIG_NETDEV_10000=y will not be handled correctly there?
++#elif defined(__mn10300__)
 
-And the best solution is to nuke all #ifdef's in this function and make 
-the code unconditionally available?
+Please use a CONFIG_ variable in such cases.
+
+
+The parts outside arch/mn10300/ and include/asm-mn10300/ (except for the 
+trivial "&& {,!}MN10300" Kconfig changes) should go separately through 
+the maintainers or get ACKs from the maintainers, even more since they 
+also contain cleanups like
+
+-               .regions = {ERASEINFO(0x01000,64),
++               .regions        = {
++                       ERASEINFO(0x01000,64),
+                }
+
+
+--- a/include/linux/kprobes.h
++++ b/include/linux/kprobes.h
+...
++extern void __kprobes arch_remove_kprobe(struct kprobe *p);
+
+This looks as if it will break compilation on avr32 and sparc64.
+
+
+> A suitable toolchain can be downloaded from:
+> 
+> 	ftp://ftp.redhat.com/pub/redhat/gnupro/AM33/
+>...
+
+What is the status of support in upstream GNU binutils and GNU gcc?
+
+> David
 
 cu
 Adrian
