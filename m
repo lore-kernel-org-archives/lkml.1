@@ -1,55 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759868AbXKHAiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759130AbXKHAub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759868AbXKHAiv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 19:38:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755387AbXKHAim
+	id S1759130AbXKHAub (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 19:50:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754441AbXKHAuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 19:38:42 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33419 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753831AbXKHAil (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 19:38:41 -0500
-Date: Thu, 8 Nov 2007 11:38:11 +1100
-From: David Chinner <dgc@sgi.com>
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-Cc: David Chinner <dgc@sgi.com>, Fengguang Wu <wfg@mail.ustc.edu.cn>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: writeout stalls in current -git
-Message-ID: <20071108003811.GP995458@sgi.com>
-References: <64bb37e0711011120i63cdfe3ci18995d57b6649a8@mail.gmail.com> <64bb37e0711011200n228e708eg255640388f83da22@mail.gmail.com> <E1InmAI-0003ME-2i@localhost> <1193998532.27652.343.camel@twins> <64bb37e0711021222q7d12c825mc62d433c4fe19e8@mail.gmail.com> <394340668.31055@ustc.edu.cn> <64bb37e0711061353g4a8b881cgd78fef3a11378b9c@mail.gmail.com> <20071106233114.GB995458@sgi.com> <20071107021324.GD995458@sgi.com> <64bb37e0711062315jef9efd7xc2ffc11b6d6c60fa@mail.gmail.com>
+	Wed, 7 Nov 2007 19:50:23 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40408
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754253AbXKHAuX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 19:50:23 -0500
+Date: Wed, 07 Nov 2007 16:50:22 -0800 (PST)
+Message-Id: <20071107.165022.69369307.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: lkml@davidb.org, linux-kernel@vger.kernel.org, drepper@redhat.com,
+       mtk-manpages@gmx.net
+Subject: Re: compat_sys_times() bogus until jiffies >= 0.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071107152833.6f302c2a.akpm@linux-foundation.org>
+References: <20071107224722.GA20204@old.davidb.org>
+	<20071107152833.6f302c2a.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <64bb37e0711062315jef9efd7xc2ffc11b6d6c60fa@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 07, 2007 at 08:15:06AM +0100, Torsten Kaiser wrote:
-> On 11/7/07, David Chinner <dgc@sgi.com> wrote:
-> > Ok, so it's not synchronous writes that we are doing - we're just
-> > submitting bio's tagged as WRITE_SYNC to get the I/O issued quickly.
-> > The "synchronous" nature appears to be coming from higher level
-> > locking when reclaiming inodes (on the flush lock). It appears that
-> > inode write clustering is failing completely so we are writing the
-> > same block multiple times i.e. once for each inode in the cluster we
-> > have to write.
-> 
-> Works for me. The only remaining stalls are sub second and look
-> completely valid, considering the amount of files being removed.
-....
-> Tested-by: Torsten Kaiser <just.for.lkml@googlemail.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Wed, 7 Nov 2007 15:28:33 -0800
 
-Great - thanks for reporting the problem and testing the fix.
+> Perhaps this is a bug in glibc: it is interpreting the times() return value
+> in the same way as other syscalls.
 
-Cheers,
+The problem is more likely that we are failing to
+invoke force_successful_syscall_return() here.
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Otherwise the syscall return path interprets negative
+values as errors, and sets the cpu condition codes.
+
+And that is what userspace is actually checking for
+to determine if there is an error or not.
