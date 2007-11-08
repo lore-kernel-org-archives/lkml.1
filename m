@@ -1,80 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762922AbXKHUK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762193AbXKHUPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762922AbXKHUK5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 15:10:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759563AbXKHUKu
+	id S1762193AbXKHUPt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 15:15:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761177AbXKHUPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 15:10:50 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:38543 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757013AbXKHUKt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 15:10:49 -0500
-Date: Thu, 8 Nov 2007 20:10:47 +0000
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundatin.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 02/23] SLUB: Rename NUMA defrag_ratio to remote_node_defrag_ratio
-Message-ID: <20071108201047.GE23882@skynet.ie>
-References: <20071107011130.382244340@sgi.com> <20071107011226.844437184@sgi.com> <20071108145044.GB2591@skynet.ie> <Pine.LNX.4.64.0711081053250.8954@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0711081053250.8954@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+	Thu, 8 Nov 2007 15:15:41 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33685 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761024AbXKHUPl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 15:15:41 -0500
+Date: Thu, 8 Nov 2007 12:15:36 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: mgross@linux.intel.com
+Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-mm1 breaks C-state support on Intel T7200 x86_64
+Message-Id: <20071108121536.8eeafb62.akpm@linux-foundation.org>
+In-Reply-To: <20071108200352.GA5538@linux.intel.com>
+References: <3624.1194542384@turing-police.cc.vt.edu>
+	<20071108100212.0cbff318.akpm@linux-foundation.org>
+	<20071108200352.GA5538@linux.intel.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (08/11/07 10:56), Christoph Lameter didst pronounce:
-> On Thu, 8 Nov 2007, Mel Gorman wrote:
-> 
-> > On (06/11/07 17:11), Christoph Lameter didst pronounce:
-> > > We need the defrag ratio for the non NUMA situation now. The NUMA defrag works
-> > > by allocating objects from partial slabs on remote nodes. Rename it to
+> On Thu, 8 Nov 2007 12:03:52 -0800 Mark Gross <mgross@linux.intel.com> wrote:
+> ...
+> > >   call.
 > > > 
-> > > 	remote_node_defrag_ratio
+> > > I shouldn't have to have a process open a /dev/file, write a number, and then
+> > > stay around forever so the file doesn't close in order to get the same behavior
+> > > I was getting by default before.  What needs to happen to get this to not
+> > > be a behavior regression/change?
 > > > 
 > > 
-> > I'm not too keen on the defrag name here largely because I cannot tell what
-> > it has to do with defragmention or ratios. It's really about working out
-> > when it is better to pack objects into a remote slab than reclaim objects
-> > from a local slab, right? It's also not clear what it is a ratio of what to
-> > what. I thought it might be clock cycles but that isn't very clear either.
-> > If we are renaming this can it be something like remote_packing_cost_limit ?
-> 
-> In a NUMA situation we have a choice between 
-> 
-> 1. Allocating a page from the local node (which consumes more memory and 
-> is advantageous performance wise.
-> 
-> 2. Not allocating from the local node but see if any other node has 
->    available partially allocated slabs. If we allocate from them then
->    we save memory and reduce the amount of partial slabs on the remote 
->    node. Thus the fragmentation ratio is reduced.
->  
-
-Ok, I get the logic somewhat now, thanks.
-
-> > How about
+> > That's a great report, thanks.  Over to you, Mark ;)
 > > 
-> > /*
-> >  * When packing objects into slabs, it may become necessary to
-> >  * reclaim objects on a local slab or allocate from a remote node.
-> >  * The remote_packing_cost_limit is the maximum cost of remote
-> >  * accesses that should be paid before it becomes worthwhile to
-> >  * reclaim instead
-> >  */
-> > int remote_packing_cost_limit;
-> > 
-> > ?
+> > btw, I also have a note here that these patches caused Rafael to see an
+> > smp_call_function() inside local_irq_save().  Did that get fixed?
 > 
-> That is not what this is about. And the functionality has been in SLUB 
-> since the beginning.
-> 
+> Ah, I see the problem.  I think I posted a fix to this.  The problem is
+> that what's in the mm1 tree has a parameter PM_QOS_IDLE that needed to
+> be PM_QOS_CPU_DMA_LATENCY. 
 
-Yeah, my understanding of SLUB is crap. Sorry for the noise.
+That doesn't ring a bell.
 
--- 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+> I'm not sure what's in the current MM tree at this point so I can't say
+> its been fixed.  Is there an easy way from me to see what's currently in
+> MM?  
+
+Not terribly. 
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-11-06-02-32.tar.gz
+is from two days ago.
+
+> FWIW I think I fixed this when I fixed up Rafael's issue.  Would you
+> like me to send out a re-fresh patch against 2.6.23-mm1?
+
+sure.
