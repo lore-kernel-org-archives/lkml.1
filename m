@@ -1,36 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762486AbXKHV2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762243AbXKHVco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762486AbXKHV2m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 16:28:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759563AbXKHV2d
+	id S1762243AbXKHVco (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 16:32:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761265AbXKHVch
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 16:28:33 -0500
-Received: from relay1.corp.sgi.com ([192.48.171.29]:39689 "EHLO relay.sgi.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759323AbXKHV2c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 16:28:32 -0500
-Date: Thu, 8 Nov 2007 13:28:31 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Matt Mackall <mpm@selenic.com>
-cc: Mel Gorman <mel@skynet.ie>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 02/23] SLUB: Rename NUMA defrag_ratio to remote_node_defrag_ratio
-In-Reply-To: <20071108210348.GX19691@waste.org>
-Message-ID: <Pine.LNX.4.64.0711081328121.10596@schroedinger.engr.sgi.com>
-References: <20071107011130.382244340@sgi.com> <20071107011226.844437184@sgi.com>
- <20071108145044.GB2591@skynet.ie> <20071108172548.GW17536@waste.org>
- <Pine.LNX.4.64.0711081116060.9279@schroedinger.engr.sgi.com>
- <20071108194735.GW19691@waste.org> <Pine.LNX.4.64.0711081159120.9966@schroedinger.engr.sgi.com>
- <20071108210348.GX19691@waste.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 8 Nov 2007 16:32:37 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:34584 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761251AbXKHVcg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 16:32:36 -0500
+Message-Id: <200711082131.lA8LVgkb015134@imap1.linux-foundation.org>
+Subject: [patch 1/2] get_task_comm(): return the result
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, drepper@redhat.com, mingo@elte.hu,
+       roland@redhat.com
+From: akpm@linux-foundation.org
+Date: Thu, 08 Nov 2007 13:31:42 -0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Nov 2007, Matt Mackall wrote:
+From: Andrew Morton <akpm@linux-foundation.org>
 
-> But perhaps I should just add a lightweight RNG to random.c and be
-> done with it.
+It was dumb to make get_task_comm() return void.  Change it to return a
+pointer to the resulting output for caller convenience.
 
-It would be appreciated.
+Cc: Ulrich Drepper <drepper@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Roland McGrath <roland@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/exec.c             |    3 ++-
+ include/linux/sched.h |    2 +-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+diff -puN include/linux/sched.h~get_task_comm-return-the-result include/linux/sched.h
+--- a/include/linux/sched.h~get_task_comm-return-the-result
++++ a/include/linux/sched.h
+@@ -1692,7 +1692,7 @@ extern long do_fork(unsigned long, unsig
+ struct task_struct *fork_idle(int);
+ 
+ extern void set_task_comm(struct task_struct *tsk, char *from);
+-extern void get_task_comm(char *to, struct task_struct *tsk);
++extern char *get_task_comm(char *to, struct task_struct *tsk);
+ 
+ #ifdef CONFIG_SMP
+ extern void wait_task_inactive(struct task_struct * p);
+diff -puN fs/exec.c~get_task_comm-return-the-result fs/exec.c
+--- a/fs/exec.c~get_task_comm-return-the-result
++++ a/fs/exec.c
+@@ -947,12 +947,13 @@ static void flush_old_files(struct files
+ 	spin_unlock(&files->file_lock);
+ }
+ 
+-void get_task_comm(char *buf, struct task_struct *tsk)
++char *get_task_comm(char *buf, struct task_struct *tsk)
+ {
+ 	/* buf must be at least sizeof(tsk->comm) in size */
+ 	task_lock(tsk);
+ 	strncpy(buf, tsk->comm, sizeof(tsk->comm));
+ 	task_unlock(tsk);
++	return buf;
+ }
+ 
+ void set_task_comm(struct task_struct *tsk, char *buf)
+_
