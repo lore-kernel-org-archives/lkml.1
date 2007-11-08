@@ -1,47 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932107AbXKHXus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932204AbXKHXvO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932107AbXKHXus (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 18:50:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762060AbXKHXue
+	id S932204AbXKHXvO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 18:51:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763420AbXKHXvA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 18:50:34 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43962
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1760274AbXKHXud (ORCPT
+	Thu, 8 Nov 2007 18:51:00 -0500
+Received: from nf-out-0910.google.com ([64.233.182.188]:27710 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762060AbXKHXu7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 18:50:33 -0500
-Date: Thu, 08 Nov 2007 15:26:55 -0800 (PST)
-Message-Id: <20071108.152655.205050648.davem@davemloft.net>
-To: clameter@sgi.com
-Cc: peterz@infradead.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 01/28] cpu alloc: The allocator
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0711081222340.10228@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0711081030380.7871@schroedinger.engr.sgi.com>
-	<1194553148.20832.10.camel@lappy>
-	<Pine.LNX.4.64.0711081222340.10228@schroedinger.engr.sgi.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 8 Nov 2007 18:50:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:reply-to:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=rh0CN9YXjBCfXJ12Sej5Vtt1FjueRymdmva0VuC32f2WB2hr28VZ4i7IDuJP9N0eWoCy97hEBdYw7Mwxau1NC6iGSIzVAIqj7ncdebX9v/eywzSwpZ0egvtaeYpwTkdongXTdcaaZQBL/kV/gSUAVXlW2zCsuWmzdDulEP8eSTk=
+Message-ID: <47339F20.6010602@qumranet.com>
+Date: Fri, 09 Nov 2007 01:43:28 +0200
+Reply-To: dor.laor@qumranet.com
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Anthony Liguori <aliguori@us.ibm.com>
+CC: Avi Kivity <avi@qumranet.com>, Rusty Russell <rusty@rusycorp.com.au>,
+       virtualization@lists.osdl.org, linux-kernel@vger.kernel.org,
+       kvm-devel@lists.sourceforge.net
+Subject: Re: [kvm-devel] [PATCH 3/3] virtio PCI device
+References: <11944899922822-git-send-email-aliguori@us.ibm.com>	<11944900141678-git-send-email-aliguori@us.ibm.com>	<11944900152750-git-send-email-aliguori@us.ibm.com>	<11944900163817-git-send-email-aliguori@us.ibm.com>	<4732A8E5.6090307@qumranet.com> <47331531.8070709@us.ibm.com>
+In-Reply-To: <47331531.8070709@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+From: Dor Laor <dor.laor@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Lameter <clameter@sgi.com>
-Date: Thu, 8 Nov 2007 12:24:22 -0800 (PST)
+Anthony Liguori wrote:
+> Avi Kivity wrote:
+>   
+>> Anthony Liguori wrote:
+>>   
+>>     
+>>> This is a PCI device that implements a transport for virtio.  It allows virtio
+>>> devices to be used by QEMU based VMMs like KVM or Xen.
+>>>
+>>>   
+>>>     
+>>>       
+>> Didn't see support for dma.
+>>     
+>
+> Not sure what you're expecting there.  Using dma_ops in virtio_ring?
+>
+>   
+>>  I think that with Amit's pvdma patches you
+>> can support dma-capable devices as well without too much fuss.
+>>   
+>>     
+>
+> What is the use case you're thinking of?  A semi-paravirt driver that 
+> does dma directly to a device?
+>
+> Regards,
+>
+> Anthony Liguori
+>
+>   
+You would also lose performance since pv-dma will trigger an exit for 
+each virtio io while
+virtio kicks the hypervisor after several IOs were queued.
+>
+> -------------------------------------------------------------------------
+> This SF.net email is sponsored by: Splunk Inc.
+> Still grepping through log files to find problems?  Stop.
+> Now Search log events and configuration files using AJAX and a browser.
+> Download your FREE copy of Splunk now >> http://get.splunk.com/
+> _______________________________________________
+> kvm-devel mailing list
+> kvm-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/kvm-devel
+>
+>   
 
-> On Thu, 8 Nov 2007, Peter Zijlstra wrote:
-> 
-> > > The convention for macros is to use upper case.
-> > 
-> > We have plent macros that look like regular functions. And as a primary
-> > interface to this functionality these shouting things look really out of
-> > place.
-> 
-> One point of the patchset is to clean up the messy handling of the 
-> allocpercpu interface which uses lower case for macros. It is a bit 
-> confusing that a function like alloc_percpu() can take a type argument. 
-> I think this needs to be uppercase for clarity.
-
-Without a doubt.
