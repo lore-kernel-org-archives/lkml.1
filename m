@@ -1,107 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762789AbXKHV7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760809AbXKHWD0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762789AbXKHV7Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 16:59:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758984AbXKHV7F
+	id S1760809AbXKHWD0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 17:03:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758083AbXKHWDS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 16:59:05 -0500
-Received: from mail.atlantis.sk ([80.94.52.35]:34749 "EHLO mail.atlantis.sk"
+	Thu, 8 Nov 2007 17:03:18 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:37853 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757692AbXKHV7E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 16:59:04 -0500
-From: Ondrej Zary <linux@rainbow-software.org>
-To: linux-parport@lists.infradead.org
-Subject: [PATCH] pf broken
-Date: Thu, 8 Nov 2007 22:58:54 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
+	id S1757942AbXKHWDS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 17:03:18 -0500
+Date: Thu, 8 Nov 2007 23:04:55 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@osdl.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-am33-list@redhat.com
+Subject: Re: [PATCH 0/6] MN10300: Add the MN10300 architecture to Linux kernel [try #4]
+Message-ID: <20071108220455.GB28242@uranus.ravnborg.org>
+References: <20071108182937.GA26852@uranus.ravnborg.org> <20071108171612.26590.4348.stgit@warthog.procyon.org.uk> <16966.1194549065@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Length: 1387
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200711082258.55946.linux@rainbow-software.org>
+In-Reply-To: <16966.1194549065@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-the pf driver for parallel port floppy drives seems to be broken. At least 
-with Imation SuperDisk with EPAT chip, the driver calls pi_connect() and 
-pi_disconnect after each transferred sector. At least with EPAT, this 
-operation is very expensive - causes drive recalibration. Thus, transferring 
-even a single byte (dd if=/dev/pf0 of=/dev/null bs=1 count=1) takes 20 
-seconds, making the driver useless.
+Hi David.
 
-The pf_next_buf() function seems to be broken as it returns 1 always (except 
-when pf_run is non-zero), causing the loop in do_pf_read_drq (and 
-do_pf_write_drq) to be executed only once.
+> > arch/mn10300/Makefile:
+> > 
+> > 1) Use KBUILD_CFLAGS & KBUILD_AFLAGS & KBUILD_CPPFLAGS - they
+> > have replaced the former xFLAGS.
+> 
+> Done.  What about ASFLAGS and LDFLAGS?
+kbuild does not know anything about ASFLAGS.
+In the whole kernel tree I only see frv assign them but the
+value is never used.
 
-The following patch fixes this problem. It also fixes swapped descriptions in 
-pf_lock() function and removes DBMSG macro, which seems useless.
+LDFLAGS has not been changed - it was not such an easy cut.
+And we anyway use the linker in much more ways so when to
+use it and when not...
 
--- 
-Ondrej Zary
+> > 4) Drop the symlinks - they are evil...
+> > Use a structure like:
+> > include/asm-mn10300/asb2303/proc/*.h
+> 
+> No.  I think all the arch headers should really appear to be #included under
+> asm/.  That means that the structure would have to be:
+> 
+> 	include/asm-mn10300/asb2303/asm/proc/*.h
+> 
+> That then puts all these header files several levels further down, which isn't
+> that good.
+I would prefer that any day as replacement for the symlinks.
+But as everyone else seems so happy with the symlinks do whatever you prefer.
 
---- linux-2.6.23-orig/drivers/block/paride/pf.c	2007-10-09 22:31:38.000000000 
-+0200
-+++ linux/drivers/block/paride/pf.c	2007-11-08 22:29:31.000000000 +0100
-@@ -488,13 +488,11 @@
- 	return r;
- }
- 
--#define DBMSG(msg)      ((verbose>1)?(msg):NULL)
--
- static void pf_lock(struct pf_unit *pf, int func)
- {
- 	char lo_cmd[12] = { ATAPI_LOCK, pf->lun << 5, 0, 0, func, 0, 0, 0, 0, 0, 0, 
-0 };
- 
--	pf_atapi(pf, lo_cmd, 0, pf_scratch, func ? "unlock" : "lock");
-+	pf_atapi(pf, lo_cmd, 0, pf_scratch, func ? "lock" : "unlock");
- }
- 
- static void pf_eject(struct pf_unit *pf)
-@@ -555,7 +553,7 @@
- 	    { ATAPI_MODE_SENSE, pf->lun << 5, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0 };
- 	char buf[8];
- 
--	pf_atapi(pf, ms_cmd, 8, buf, DBMSG("mode sense"));
-+	pf_atapi(pf, ms_cmd, 8, buf, "mode sense");
- 	pf->media_status = PF_RW;
- 	if (buf[3] & 0x80)
- 		pf->media_status = PF_RO;
-@@ -591,7 +589,7 @@
- 	char buf[8];
- 	int bs;
- 
--	if (pf_atapi(pf, rc_cmd, 8, buf, DBMSG("get capacity"))) {
-+	if (pf_atapi(pf, rc_cmd, 8, buf, "get capacity")) {
- 		pf->media_status = PF_NM;
- 		return;
- 	}
-@@ -804,13 +802,18 @@
- 	pf_buf += 512;
- 	pf_block++;
- 	if (!pf_run)
--		return 0;
--	if (!pf_count)
- 		return 1;
--	spin_lock_irqsave(&pf_spin_lock, saved_flags);
--	pf_end_request(1);
--	spin_unlock_irqrestore(&pf_spin_lock, saved_flags);
--	return 1;
-+	if (!pf_count) {
-+		spin_lock_irqsave(&pf_spin_lock, saved_flags);
-+		pf_end_request(1);
-+		pf_req = elv_next_request(pf_queue);
-+		spin_unlock_irqrestore(&pf_spin_lock, saved_flags);
-+		if (!pf_req)
-+			return 1;
-+		pf_count = pf_req->current_nr_sectors;
-+		pf_buf = pf_req->buffer;
-+	}
-+	return 0;
- }
- 
- static inline void next_request(int success)
+> > Then you adjust -I include/asm-mn10300/asb2303
+> > and no symlinks needed.
+> > And if you change processor kbuild will notice
+> > and recompile everything.
+> 
+> That's the only plus, but it's a smaller plus than not interpolating several
+> levels of almost empty directory into the paths for the proc- and unit-specific
+> headers.
+> 
+> > No-one else does it this way but mn10300 could show how to do it.
+> 
+> I could.  Or I could do what everyone else does.
+> 
+> Actually, what you perhaps ought to do for a start is to move the individual
+> include/asm-$ARCH dirs to arch/$ARCH/asm and then you can avoid that symlink
+> too.
+
+It will wait until we save ARCH so we can detect
+ARCH changes.
+
+> 
+> > 5)
+> > +zImage: vmlinux
+> > +	$(Q)$(MAKE) $(build)=$(boot) $(KBUILD_IMAGE)
+> > +
+> > +all: zImage
+> > +
+> > +Image: vmlinux
+> > +	$(Q)$(MAKE) $(build)=arch/mn10300/boot $@
+> > 
+> > This could be done as:
+> > +Image zImage: vmlinux
+> > +	$(Q)$(MAKE) $(build)=$(boot) $(boot)/$@
+> 
+> Done.
+> 
+> > And then modify boot/Makefile accordingly
+> 
+> I don't see why it needs modification.  $(KBUILD_IMAGE) == $(boot)/zImage for
+> the zImage target.
+For the Image target it is Image without $(boot)/ but that target
+was never supported anyway.
+
+> > 1) You can safely remove the copyright of Linus..
+> >    Same goes for other places where his copyright are kept but filecontent
+> >    is new.
+> 
+> The copyright assignment on some of these files was made by MEI.  I'm not sure
+> I can change them.
+
+It just seemed stupid that someone having copyright on a file
+where the person only had contributed the copyright linei (for said file).
+
+	Sam
