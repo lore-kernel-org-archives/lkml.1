@@ -1,107 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762143AbXKHUGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762547AbXKHUJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762143AbXKHUGW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 15:06:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761281AbXKHUGO
+	id S1762547AbXKHUJu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 15:09:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758198AbXKHUJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 15:06:14 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:48695 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761075AbXKHUGN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 15:06:13 -0500
-Date: Thu, 8 Nov 2007 20:06:07 +0000
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>, akpm@linux-foundatin.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: Plans for Onezonelist patch series ???
-Message-ID: <20071108200607.GD23882@skynet.ie>
-References: <20071107011130.382244340@sgi.com> <1194535612.6214.9.camel@localhost> <1194537674.5295.8.camel@localhost> <Pine.LNX.4.64.0711081033570.7871@schroedinger.engr.sgi.com> <20071108184009.GC23882@skynet.ie> <Pine.LNX.4.64.0711081043420.7871@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0711081043420.7871@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+	Thu, 8 Nov 2007 15:09:43 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:37181 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754177AbXKHUJm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 15:09:42 -0500
+Subject: Re: 2.6.23 git current compile error on UP
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: Avi Kivity <avi@qumranet.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>,
+       aliguori <aliguori@linux.vnet.ibm.com>
+In-Reply-To: <1194551749.7078.78.camel@localhost>
+References: <1194551749.7078.78.camel@localhost>
+Organization: Bull S.A.S.
+Date: Thu, 08 Nov 2007 21:09:16 +0100
+Message-Id: <1194552556.32517.3.camel@frecb07144>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 08/11/2007 21:16:37,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 08/11/2007 21:16:39,
+	Serialize complete at 08/11/2007 21:16:39
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-SGMPHemMv2UaxLtiXWlK"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (08/11/07 10:43), Christoph Lameter didst pronounce:
-> On Thu, 8 Nov 2007, Mel Gorman wrote:
-> 
-> > There was two bugs that were resolved but I didn't repost after that as
-> > mainline + -mm had gone to hell in a hand-basket and I didn't want to
-> > add to the mess.
-> 
-> Hell? I must have missed it.
-> 
 
-Some time after rc1, things appeared in a mess - at least I didn't have
-much luck figuring out what was going on when I looked. Admittedly, being
-very ill at the time I didn't spend much effort on it. Either way things
-were churning enough that there seemed to be enough going on without adding
-one-zonelist to the mix.
+--=-SGMPHemMv2UaxLtiXWlK
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-I've rebased the patches to mm-broken-out-2007-11-06-02-32. However, the
-vanilla -mm and the one with onezonelist applied are locking up in the
-same manner. I'm way too behind at the moment to guess if it is a new bug
-or reported already. At best, I can say the patches are not making things
-any worse :) I'll go through the archives in the morning and do a bit more
-testing to see what happens.
+Le jeudi 08 novembre 2007 =C3=A0 11:55 -0800, Dave Hansen a =C3=A9crit :
+> drivers/kvm/kvm_main.c: In function `kvm_flush_remote_tlbs':
+> drivers/kvm/kvm_main.c:220: error: implicit declaration of function `smp_=
+call_function_mask'
+> make[2]: *** [drivers/kvm/kvm_main.o] Error 1
+> make[1]: *** [drivers/kvm] Error 2
+>=20
+> http://sr71.net/~dave/linux/config-kvm-up
+>=20
+> Looks like that function calls smp_call_function_mask() which is never
+> defined for UP.  Nobody else uses it that way, so I'm not sure what the
+> right fix is.  I'm not even sure kvm_flush_remote_tlbs() is safe with
+> its raw_smp_processor_id() use.  Is there a reason it can't get
+> preempted?
 
-In case this is familiar to people, the lockup I see is;
+Avi has already posted a patch to correct this.
 
-[  115.548908] BUG: spinlock bad magic on CPU#0, sshd/2752
-[  115.611371]  lock: c20029c8, .magic: ffffffff, .owner: <none>/-1, .owner_cpu: -1066669496
-[  115.709027]  [<c010526a>] show_trace_log_lvl+0x1a/0x30
-[  115.770560]  [<c0105c02>] show_trace+0x12/0x20
-[  115.823787]  [<c0105d16>] dump_stack+0x16/0x20
-[  115.877011]  [<c022c226>] spin_bug+0x96/0xf0
-[  115.928172]  [<c022c429>] _raw_spin_lock+0x69/0x140
-[  115.986580]  [<c033f05f>] _spin_lock+0x4f/0x60
-[  116.039809]  [<c0224bae>] kobject_add+0x4e/0x1a0
-[  116.095112]  [<c01314b4>] uids_user_create+0x54/0x80
-[  116.154555]  [<c01318e2>] alloc_uid+0xd2/0x150
-[  116.207784]  [<c01356db>] set_user+0x2b/0xb0
-[  116.258951]  [<c01373c1>] sys_setreuid+0x141/0x150
-[  116.316305]  [<c010429e>] syscall_call+0x7/0xb
-[  116.369544]  =======================
-[  127.680346] BUG: soft lockup - CPU#0 stuck for 11s! [sshd:2752]
-[  127.750987] 
-[  127.768781] Pid: 2752, comm: sshd Not tainted (2.6.24-rc1-mm1 #1)
-[  127.841498] EIP: 0060:[<c02298c1>] EFLAGS: 00000246 CPU: 0
-[  127.906948] EIP is at delay_tsc+0x1/0x20
-[  127.953754] EAX: 00000001 EBX: c20029c8 ECX: b0953e83 EDX: 2b35cb6d
-[  128.028533] ESI: 04b81d83 EDI: 00000000 EBP: c30f1ec4 ESP: c30f1ebc
-[  128.103305]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-[  128.167717] CR0: 80050033 CR2: b7e45544 CR3: 02153000 CR4: 00000690
-[  128.242490] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-[  128.317253] DR6: ffff0ff0 DR7: 00000400
-[  128.363010]  [<c010526a>] show_trace_log_lvl+0x1a/0x30
-[  128.424541]  [<c0105c02>] show_trace+0x12/0x20
-[  128.477767]  [<c010250c>] show_regs+0x1c/0x20
-[  128.529948]  [<c015ab6b>] softlockup_tick+0x11b/0x150
-[  128.590446]  [<c0130fb2>] run_local_timers+0x12/0x20
-[  128.649888]  [<c0131182>] update_process_times+0x42/0x90
-[  128.713461]  [<c01440f5>] tick_periodic+0x25/0x80
-[  128.769812]  [<c0144169>] tick_handle_periodic+0x19/0x80
-[  128.833397]  [<c0107519>] timer_interrupt+0x49/0x50
-[  128.891802]  [<c015aeb8>] handle_IRQ_event+0x28/0x60
-[  128.951246]  [<c015c7f8>] handle_level_irq+0x78/0xe0
-[  129.010693]  [<c01065f0>] do_IRQ+0x40/0x80
-[  129.059782]  [<c0104c5f>] common_interrupt+0x23/0x28
-[  129.119229]  [<c022c472>] _raw_spin_lock+0xb2/0x140
-[  129.177635]  [<c033f05f>] _spin_lock+0x4f/0x60
-[  129.230851]  [<c0224bae>] kobject_add+0x4e/0x1a0
-[  129.286175]  [<c01314b4>] uids_user_create+0x54/0x80
-[  129.345598]  [<c01318e2>] alloc_uid+0xd2/0x150
-[  129.398830]  [<c01356db>] set_user+0x2b/0xb0
-[  129.450005]  [<c01373c1>] sys_setreuid+0x141/0x150
-[  129.507380]  [<c010429e>] syscall_call+0x7/0xb
-[  129.560605]  =======================
+http://lkml.org/lkml/2007/10/24/95
 
+Laurent
 
--- 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+--=-SGMPHemMv2UaxLtiXWlK
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: Ceci est une partie de message
+	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHM2zs9Kffa9pFVzwRAhp2AKCu6T+aDZDNz68fqHRdLavv2IPKFQCffNwy
+9JG6+YungRvnZLlo8g1hR7I=
+=6LRK
+-----END PGP SIGNATURE-----
+
+--=-SGMPHemMv2UaxLtiXWlK--
+
