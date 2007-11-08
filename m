@@ -1,86 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763159AbXKHT7f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762928AbXKHUBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763159AbXKHT7f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 14:59:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763016AbXKHT7X
+	id S1762928AbXKHUBf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 15:01:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759421AbXKHUB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 14:59:23 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:34066 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763014AbXKHT7V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 14:59:21 -0500
-Date: Thu, 8 Nov 2007 11:58:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mark Lord <liml@rtr.ca>
-Cc: jeff@garzik.org, roppedisano@infracomspa.it, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, rjw@sisk.pl, linux-acpi@vger.kernel.org
-Subject: Re: libata: cdrw/dvdrom disabed after s2ram (2.6.24-rc2)
-Message-Id: <20071108115850.32e7adf3.akpm@linux-foundation.org>
-In-Reply-To: <4733684D.6080108@rtr.ca>
-References: <4731C86B.1040704@infracomspa.it>
-	<20071107121355.5eaf4496.akpm@linux-foundation.org>
-	<47333CCF.1050403@infracomspa.it>
-	<20071108094958.5c9b1b22.akpm@linux-foundation.org>
-	<20071108180256.GB3491@havoc.gtf.org>
-	<20071108101341.6c4f88d4.akpm@linux-foundation.org>
-	<20071108181905.GA4895@havoc.gtf.org>
-	<20071108110240.df3214e7.akpm@linux-foundation.org>
-	<4733684D.6080108@rtr.ca>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Nov 2007 15:01:27 -0500
+Received: from relay1.corp.sgi.com ([192.48.171.29]:41932 "EHLO relay.sgi.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754214AbXKHUB0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 15:01:26 -0500
+Date: Thu, 8 Nov 2007 12:01:24 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Matt Mackall <mpm@selenic.com>
+cc: Mel Gorman <mel@skynet.ie>, akpm@linux-foundatin.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 02/23] SLUB: Rename NUMA defrag_ratio to remote_node_defrag_ratio
+In-Reply-To: <20071108194735.GW19691@waste.org>
+Message-ID: <Pine.LNX.4.64.0711081159120.9966@schroedinger.engr.sgi.com>
+References: <20071107011130.382244340@sgi.com> <20071107011226.844437184@sgi.com>
+ <20071108145044.GB2591@skynet.ie> <20071108172548.GW17536@waste.org>
+ <Pine.LNX.4.64.0711081116060.9279@schroedinger.engr.sgi.com>
+ <20071108194735.GW19691@waste.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 08 Nov 2007 14:49:33 -0500 Mark Lord <liml@rtr.ca> wrote:
-> Andrew Morton wrote:
-> >> On Thu, 8 Nov 2007 13:19:05 -0500 Jeff Garzik <jeff@garzik.org> wrote:
-> >> On Thu, Nov 08, 2007 at 10:13:41AM -0800, Andrew Morton wrote:
-> >>>> On Thu, 8 Nov 2007 13:02:56 -0500 Jeff Garzik <jeff@garzik.org> wrote:
-> >>>> On Thu, Nov 08, 2007 at 09:49:58AM -0800, Andrew Morton wrote:
-> ..
-> >>> I suspect it wold be best to disable the feature for the 2.6.24 release,
-> >>> then reenable it afterwards and keep doing this until the code is
-> >>> sufficiently stable.
-> >> Re-read my message :)
-> >>
-> >> The code is stable.  Behavior _by definition_ will vary by BIOS.
-> >>
-> >> This feature (a) enables suspend/resume, but (b) now sends random
-> >> unvalidated shite to the device that we hope will work.
-> >>
-> >> Look at all the messages where turning on ACPI in libata _fixed_
-> >> suspend/resume (because its obviously required for many, including
-> >> laptops).
-> > 
-> > We fixed a somewhat-known number of machines and broke an unknown number. 
-> > Linus will come after you with a pointy stick if he finds out.
-> > 
-> > Fixing previously-broken machines is nice, but breaking previously-working
-> > ones gets people a lot more upset.
-> > 
-> >> So it's not an easy "turn it off" answer, you break shitloads of
-> >> suspend/resume that way, that we just fixed.
-> >>
-> >> The message "_GTF unexpected object type" indicates a broken BIOS, so
-> >> IMO we should proceed in that direction, blacklisting that platform.
-> >>
-> > 
-> > Suggest that the feature be disabled until we have most of these
-> > blacklistings in place.
-> ..
-> 
-> The problem is, this code has already sat out the last release,
-> and nobody noticed problems exactly because it was not enabled before.
-> 
-> If Jeff disables it again, then it will sit out another cycle without
-> anybody exercising it.  At some point, we need to turn it on, and collect
-> information about where there are problems (and fix them).
-> 
+On Thu, 8 Nov 2007, Matt Mackall wrote:
 
-We get a decent amount of testing during the -rc's.  I think it's OK to turn
-a feature on during -rc and off for release while it gets settled in.
+> Not really. drivers/char/random.c does:
+> 
+> __get_cpu_var(trickle_count)++ & 0xfff
 
-Hopefully Matthew's fix will address this particular problem.
+That is incremented on each call to add_timer_randomness. Not a high 
+enough resolution there. I guess I am stuck with get_cycles().
+
