@@ -1,105 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758416AbXKHBgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758595AbXKHBlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758416AbXKHBgh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 20:36:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbXKHBg3
+	id S1758595AbXKHBlf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 20:41:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbXKHBl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 20:36:29 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:37887 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754039AbXKHBg3 (ORCPT
+	Wed, 7 Nov 2007 20:41:26 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:34281 "EHLO
+	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750818AbXKHBlZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 20:36:29 -0500
-Date: Thu, 8 Nov 2007 02:36:05 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: ciol <ciol13@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [poll] Is the megafreeze development model broken?
-Message-ID: <20071108013605.GD26163@stusta.de>
-References: <fgtfqa$h9j$1@ger.gmane.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <fgtfqa$h9j$1@ger.gmane.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 7 Nov 2007 20:41:25 -0500
+Date: Wed, 07 Nov 2007 19:41:15 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: SC1200 failure in 2.6.23 and 2.6.24-rc1-git10
+In-reply-to: <fa.FFqM2AneKZLH2d3/UIeCMjE/RLE@ifi.uio.no>
+To: Denys <denys@visp.net.lb>
+Cc: linux-kernel@vger.kernel.org, ide <linux-ide@vger.kernel.org>
+Message-id: <4732693B.1070509@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=KOI8-R; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.FFqM2AneKZLH2d3/UIeCMjE/RLE@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 07, 2007 at 11:56:57PM +0100, ciol wrote:
-> Hi, I'd like to ask you a few questions:
->
-> * Do you like the way linux distributions integrate the kernel?
->
-> * Wouldn't you prefer they ship with the stable and still maintained 
-> 2.6.16.X, while providing optionally the latest kernel for those who want 
-> or just have a new hardware?
+Denys wrote:
+> Finally i got full DMESG with 1GB card till end. Seems not readable too.
+> 
 
-No.
+..
 
-With 2.6.16 "new hardware" roughly equals to "sold during the
-last 2-3 years", so most users would be forced to use this "option".
 
-"providing optionally the latest kernel" would be a horror to support 
-for a distribution.
+> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 cdb 0x0 data 4096 in
+>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+> ata1.00: status: { DRDY }
+> ata1: soft resetting link
+> ata1.00: configured for MWDMA1
+> sd 0:0:0:0: [sda] Result: hostbyte=0x00 driverbyte=0x08
+> sd 0:0:0:0: [sda] Sense Key : 0xb [current] [descriptor]
+> Descriptor sense data with sense descriptors (in hex):
+>         72 0b 00 00 00 00 00 0c 00 0a 80 00 00 00 00 00
+>         00 00 00 00
+> sd 0:0:0:0: [sda] ASC=0x0 ASCQ=0x0
+> end_request: I/O error, dev sda, sector 0
+> Buffer I/O error on device sda, logical block 0
+> ata1: EH complete
 
->From all I hear all big distributions spend 3-6 months of QA work 
-between pushing a kernel into the development branch of their 
-distribution and putting it into a release.
-
-They can't do this work for 4-6 different upstream kernels each year.
-
-And if they'd omit it, their custumers would both blame them for 
-shipping such a buggy distribution and swamp their support with bug
-reports.
-
-> * Do you think the megafreeze development model [1] and the "I don't trust 
-> in upstream" development model are broken? (And why)
->...
-
-Definitely not.
-
-If your "stable base system" contains the kernel you lose the hardware 
-support for recent hardware.
-
-What should be more important for users than having their hardware 
-supported?
-
-And although it's off-topic for linux-kernel, your suggested 
-"well-maintained additional package collections" also sound horrific:
-
-As an example, consider the following:
-- a new version of GNOME might require a new version of GTK+
-- recently GTK+ 2.12 entered Debian testing, and this new version
-  exposed a serious bug in the xfwm4 package that was at that time
-  in testing
-
-There are at least two obvious problems with what you propose:
-- for avoiding breakages for users a huge amount of coordination
-  work between the "additional package collections" would be required
-- most users want their software to work correctly, not crash, etc.
-  when a distribution has a 2-3 months freeze before a release that's 
-  not lost time, that's time where _all_ software that will be shipped 
-  gets tested and bugs fixed
-
-There's one important thing you must have in mind:
-Geeks (like you and me) can get the latest software versions from the 
-development versions of their distribution, but for most users - for 
-whom a computer is a tool that should simply work (no matter whether 
-it's a server or a desktop) and not a toy - the QA work done during a 
-freeze has a _huge_ value.
-
-Fedora, openSUSE and Ubuntu all offer new releases every 6 months, which 
-results in the software in the latest release always being less than
-1 year old plus the user getting the QA work and the resulting stability 
-of a freeze. This seems to be a good solution for desktop user.
-
-cu
-Adrian (2.6.16 maintainer)
+I'm guessing that your CF-to-IDE adapter doesn't have the correct lines 
+wired up for DMA to work properly, and the card indicates DMA support, 
+which libata tries to use but which doesn't work. It looks like it never 
+tried falling back to PIO after DMA failed. Seems like a deficiency in 
+the speed-down logic?
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
