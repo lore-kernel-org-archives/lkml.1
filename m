@@ -1,37 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762143AbXKHUpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761779AbXKHVAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762143AbXKHUpX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 15:45:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760798AbXKHUpM
+	id S1761779AbXKHVAT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 16:00:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757858AbXKHVAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 15:45:12 -0500
-Received: from main.gmane.org ([80.91.229.2]:49737 "EHLO ciao.gmane.org"
+	Thu, 8 Nov 2007 16:00:06 -0500
+Received: from gw.goop.org ([64.81.55.164]:35691 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761013AbXKHUpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 15:45:10 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: ciol <ciol13@gmail.com>
-Subject: Re: [poll] Is the megafreeze development model broken?
-Date: Thu, 08 Nov 2007 21:45:15 +0100
-Message-ID: <fgvsfb$k52$1@ger.gmane.org>
-References: <fgtfqa$h9j$1@ger.gmane.org> <20071108013605.GD26163@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1754516AbXKHVAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 16:00:05 -0500
+Message-ID: <473378B3.1090700@goop.org>
+Date: Thu, 08 Nov 2007 12:59:31 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Glauber de Oliveira Costa <glommer@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Zach Amsden <zach@vmware.com>,
+       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
+Subject: Re: [PATCH RFC 3/7] x86: clean up asm-x86/page*.h
+References: <20071108015008.660012621@goop.org>	 <20071108015310.218076184@goop.org> <5d6222a80711080842i201cb431le966d5069d59db24@mail.gmail.com>
+In-Reply-To: <5d6222a80711080842i201cb431le966d5069d59db24@mail.gmail.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 91.164.107.73
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070622)
-In-Reply-To: <20071108013605.GD26163@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-[...]
+Glauber de Oliveira Costa wrote:
+> On Nov 7, 2007 11:50 PM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>   
+>> +#define PAGETABLE_LEVELS       3
+>> +
+>> +typedef u64    pteval_t;
+>> +typedef u64    pmdval_t;
+>> +typedef u64    pudval_t;
+>> +typedef u64    pgdval_t;
+>> +
+>>     
+>
+>   
+>> -static inline unsigned long long native_pgd_val(pgd_t pgd)
+>> +static inline pgdval_t native_pgd_val(pgd_t pgd)
+>>  {
+>>     
+> Maybe these kind of things, the typedef and native_xxx definitions can
+> go into the common header, after we define the PAGETABLE_LEVELS
+> constant?
+> I think the more goes into common headers, the better.
+>   
 
+You mean put them in a common header, but conditionally by #if
+PAGETABLE_LEVELS?  I don't think that would be much of an improvement;
+it would just add more #ifs, which adds lines and conceptual
+complexity.  If you go that way, you may as well put everything in one
+header wrapped in #ifs, but personally I don't think that would help.
 
-Your reasoning makes sense.
-But it may be not adapted for applications like apache.
-
-Thanks.
-
+    J
