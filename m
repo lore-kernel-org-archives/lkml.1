@@ -1,41 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762258AbXKHUUW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762996AbXKHUVI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762258AbXKHUUW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 15:20:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760864AbXKHUUK
+	id S1762996AbXKHUVI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 15:21:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761075AbXKHUU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 15:20:10 -0500
-Received: from relay1.corp.sgi.com ([192.48.171.29]:47736 "EHLO relay.sgi.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758198AbXKHUUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 15:20:08 -0500
-Date: Thu, 8 Nov 2007 12:20:07 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mel Gorman <mel@skynet.ie>
-cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>, akpm@linux-foundatin.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: Plans for Onezonelist patch series ???
-In-Reply-To: <20071108200607.GD23882@skynet.ie>
-Message-ID: <Pine.LNX.4.64.0711081218250.10074@schroedinger.engr.sgi.com>
-References: <20071107011130.382244340@sgi.com> <1194535612.6214.9.camel@localhost>
- <1194537674.5295.8.camel@localhost> <Pine.LNX.4.64.0711081033570.7871@schroedinger.engr.sgi.com>
- <20071108184009.GC23882@skynet.ie> <Pine.LNX.4.64.0711081043420.7871@schroedinger.engr.sgi.com>
- <20071108200607.GD23882@skynet.ie>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 8 Nov 2007 15:20:56 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:45854 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760864AbXKHUUz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 15:20:55 -0500
+Subject: Re: [patch 01/28] cpu alloc: The allocator
+From: Peter Zijlstra <peterz@infradead.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: akpm@linux-foundation.org, linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0711081030380.7871@schroedinger.engr.sgi.com>
+References: <20071106195144.983665861@sgi.com>
+	 <20071106195157.878563669@sgi.com> <1194522615.6289.136.camel@twins>
+	 <Pine.LNX.4.64.0711081030380.7871@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Thu, 08 Nov 2007 21:19:08 +0100
+Message-Id: <1194553148.20832.10.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Nov 2007, Mel Gorman wrote:
 
-> I've rebased the patches to mm-broken-out-2007-11-06-02-32. However, the
-> vanilla -mm and the one with onezonelist applied are locking up in the
-> same manner. I'm way too behind at the moment to guess if it is a new bug
-> or reported already. At best, I can say the patches are not making things
-> any worse :) I'll go through the archives in the morning and do a bit more
-> testing to see what happens.
+On Thu, 2007-11-08 at 10:31 -0800, Christoph Lameter wrote:
+> On Thu, 8 Nov 2007, Peter Zijlstra wrote:
+> 
+> > > +#define CPU_OFFSET(__cpu) \
+> > > +	((unsigned long)(__cpu) << (CONFIG_CPU_AREA_ORDER + PAGE_SHIFT))
+> > > +
+> > > +#define CPU_PTR(__p, __cpu) ((__typeof__(__p))((void *)(__p) + \
+> > > +							CPU_OFFSET(__cpu)))
+> > > +
+> > > +#define CPU_ALLOC(type, flags)	cpu_alloc(sizeof(type), flags, \
+> > > +					__alignof__(type))
+> > > +#define CPU_FREE(pointer)	cpu_free(pointer, sizeof(*(pointer)))
+> > > +
+> > > +#define THIS_CPU(__p)	CPU_PTR(__p, smp_processor_id())
+> > > +#define __THIS_CPU(__p)	CPU_PTR(__p, raw_smp_processor_id())
+> > > +
+> > > +/*
+> > > + * Raw calls
+> > > + */
+> > > +void *cpu_alloc(unsigned long size, gfp_t gfp, unsigned long align);
+> > > +void cpu_free(void *cpu_pointer, unsigned long size);
+> > > +
+> > > +#endif /* _LINUX_CPU_ALLOC_H_ */
+> > 
+> > I don't like those shouting macros.
+> 
+> The convention for macros is to use upper case.
 
-I usually base my patches on Linus' tree as long as there is no tree 
-available from Andrew. But that means that may have to 
-approximate what is in there by adding this and that.
+We have plent macros that look like regular functions. And as a primary
+interface to this functionality these shouting things look really out of
+place.
+
