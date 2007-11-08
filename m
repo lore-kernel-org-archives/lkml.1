@@ -1,91 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760486AbXKHJJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760273AbXKHJKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760486AbXKHJJd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 04:09:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760124AbXKHJJG
+	id S1760273AbXKHJKg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 04:10:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756112AbXKHJKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 04:09:06 -0500
-Received: from antispam.upcomillas.es ([130.206.70.245]:45035 "EHLO
-	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760071AbXKHJJB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 04:09:01 -0500
-Subject: Re: *SPAM* Re: 2.6.34-rc1 eat my photo SD card :-(
-From: Romano Giannetti <romanol@upcomillas.es>
-To: Roland Dreier <roland@digitalvampire.org>
-Cc: Willy Tarreau <w@1wt.eu>, Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-In-Reply-To: <87zlxpzkxh.fsf@shaolin.home.digitalvampire.org>
-References: <1193918202.8439.7.camel@rukbat>
-	 <20071102182833.2c055446@poseidon.drzeus.cx>
-	 <1194168583.10245.15.camel@rukbat> <ada8x5ec7oh.fsf@cisco.com>
-	 <1194259886.6927.9.camel@localhost>
-	 <20071105132218.495f244e@poseidon.drzeus.cx>
-	 <1194270393.27789.2.camel@localhost>
-	 <20071105162633.09e54290@poseidon.drzeus.cx>
-	 <1194343121.6953.6.camel@rukbat> <20071106195148.GD1045@1wt.eu>
-	 <1194385693.12938.5.camel@rukbat> <1194387459.5205.2.camel@rukbat>
-	 <1194472374.7176.4.camel@rukbat>
-	 <87zlxpzkxh.fsf@shaolin.home.digitalvampire.org>
+	Thu, 8 Nov 2007 04:10:18 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34621 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751059AbXKHJKO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 04:10:14 -0500
+Message-ID: <4732D140.5030205@RedHat.com>
+Date: Thu, 08 Nov 2007 04:05:04 -0500
+From: Steve Dickson <SteveD@redhat.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Alexander Viro <aviro@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, nfs@lists.sourceforge.net,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>
+Subject: Re: [PATCH] NFS: Stop sillyname renames and unmounts from racing
+References: <472C56E5.1040901@RedHat.com> <20071105210636.2fc72e14.akpm@linux-foundation.org> <20071106051532.GA5397@devserv.devel.redhat.com>
+In-Reply-To: <20071106051532.GA5397@devserv.devel.redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Date: Thu, 08 Nov 2007 09:46:07 +0100
-Message-Id: <1194511567.7115.1.camel@rukbat>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2007-11-07 at 15:37 -0800, Roland Dreier wrote:
-> .
+Alexander Viro wrote:
+> On Mon, Nov 05, 2007 at 09:06:36PM -0800, Andrew Morton wrote:
+>>> Any objections to exporting the inode_lock spin lock?
+>>> If so, how should modules _safely_ access the s_inode list?
 > 
-> Pierre, assuming Romano tests this patch successfully, please apply!
+>> That's going to make hch unhappy.
 > 
+> That's going to make me just as unhappy, especially since it's pointless;
+> instead of the entire sorry mess we should just bump sb->s_active to pin
+> the superblock down (we know that it's active at that point, so it's just
+> an atomic_inc(); no games with locking, etc., are needed) and call
+> deactivate_super() on the way out.  And deactivate_super() is exported
+> already.
 
-Hi, the patch below solves the problem with my SD card. 
+Even though Al suggestion did indeed fix the race and was incredibility 
+simple (adding two lines of code), it turns out calling deactivate_super()
+from the rpciod kernel daemon is not good, since it can cause deadlocks 
+with other async tasks.
 
-Tested-by: Romano Giannetti <romano.giannetti@gmail.com>
+Following a suggestion from Trond, I decided to go back to the original idea 
+of using put_super, but keeping all the changes inside the NFS client code.
 
-Thanks!
+So the following patch adds an active/deactive mechanism to the 
+nfs_server structure (very similar to the s_active/deactivate_super()
+mechanism) that any async opt (in this case silly renames) can use
+to stop unmount for occurring before they are finished. 
 
-	Romano
+This means there is no need to expose any spin locks, no need for an
+O(n2) search and all the changes are contained inside the 
+NFS client code. 
 
-> <-- patch below -->
-> 
-> mmc: Fix sg helper copy-and-paste error
-> 
-> Commit 45711f1a ("[SG] Update drivers to use sg helpers") had the
-> following bogus change in drivers/mmc/card/queue.c:
-> 
->     > -			src_buf = page_address(src->page) + src->offset;
->     > +			src_buf = sg_virt(dst);
-> 
-> (Notice that "src" is converted to "dst").  Turn this "dst" back into
-> the intended "src".
-> 
-> Cc: Jens Axboe <jens.axboe@oracle.com>
-> Signed-off-by: Roland Dreier <roland@digitalvampire.org>
-> ---
-> diff --git a/drivers/mmc/card/queue.c b/drivers/mmc/card/queue.c
-> index 9203a0b..1b9c9b6 100644
-> --- a/drivers/mmc/card/queue.c
-> +++ b/drivers/mmc/card/queue.c
-> @@ -310,7 +310,7 @@ static void copy_sg(struct scatterlist *dst, unsigned int dst_len,
->  		}
->  
->  		if (src_size == 0) {
-> -			src_buf = sg_virt(dst);
-> +			src_buf = sg_virt(src);
->  			src_size = src->length;
->  		}
->  
--- 
-Sorry for the disclaimer --- ¡I cannot stop it!
+steved.
+
+[Note: I did make the proposed corrections to my email client, so 
+hopefully space-stuffing will be fixed. ]
+
+Author: Steve Dickson <steved@redhat.com>
+
+    Added an active/deactive mechanism to the nfs_server structure
+    allowing async operations to hold off umount until the
+    operations are done.
+    
+    Signed-off-by: Steve Dickson <steved@redhat.com>
+
+diff --git a/fs/nfs/client.c b/fs/nfs/client.c
+index 70587f3..2ecf726 100644
+--- a/fs/nfs/client.c
++++ b/fs/nfs/client.c
+@@ -593,6 +593,10 @@ static int nfs_init_server(struct nfs_server *server,
+ 	server->namelen  = data->namlen;
+ 	/* Create a client RPC handle for the NFSv3 ACL management interface */
+ 	nfs_init_server_aclclient(server);
++
++	init_waitqueue_head(&server->active_wq);
++	atomic_set(&server->active, 0);
++
+ 	dprintk("<-- nfs_init_server() = 0 [new %p]\n", clp);
+ 	return 0;
+ 
+diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+index fa517ae..e07ac96 100644
+--- a/fs/nfs/super.c
++++ b/fs/nfs/super.c
+@@ -202,6 +202,7 @@ static int nfs_get_sb(struct file_system_type *, int, const char *, void *, stru
+ static int nfs_xdev_get_sb(struct file_system_type *fs_type,
+ 		int flags, const char *dev_name, void *raw_data, struct vfsmount *mnt);
+ static void nfs_kill_super(struct super_block *);
++static void nfs_put_super(struct super_block *);
+ 
+ static struct file_system_type nfs_fs_type = {
+ 	.owner		= THIS_MODULE,
+@@ -223,6 +224,7 @@ static const struct super_operations nfs_sops = {
+ 	.alloc_inode	= nfs_alloc_inode,
+ 	.destroy_inode	= nfs_destroy_inode,
+ 	.write_inode	= nfs_write_inode,
++	.put_super	= nfs_put_super,
+ 	.statfs		= nfs_statfs,
+ 	.clear_inode	= nfs_clear_inode,
+ 	.umount_begin	= nfs_umount_begin,
+@@ -1767,6 +1769,17 @@ static void nfs4_kill_super(struct super_block *sb)
+ 	nfs_free_server(server);
+ }
+ 
++static void nfs_put_super(struct super_block *sb)
++{
++	struct nfs_server *server = NFS_SB(sb);
++	/*
++	 * Make sure there are no outstanding ops to this server.
++	 * If so, wait for them to finish before allowing the
++	 * unmount to continue.
++	 */
++	wait_event(server->active_wq, atomic_read(&server->active) == 0);
++}
++
+ /*
+  * Clone an NFS4 server record on xdev traversal (FSID-change)
+  */
+diff --git a/fs/nfs/unlink.c b/fs/nfs/unlink.c
+index 233ad38..cf12a24 100644
+--- a/fs/nfs/unlink.c
++++ b/fs/nfs/unlink.c
+@@ -29,6 +29,7 @@ struct nfs_unlinkdata {
+ static void
+ nfs_free_unlinkdata(struct nfs_unlinkdata *data)
+ {
++	nfs_sb_deactive(NFS_SERVER(data->dir));
+ 	iput(data->dir);
+ 	put_rpccred(data->cred);
+ 	kfree(data->args.name.name);
+@@ -151,6 +152,7 @@ static int nfs_do_call_unlink(struct dentry *parent, struct inode *dir, struct n
+ 		nfs_dec_sillycount(dir);
+ 		return 0;
+ 	}
++	nfs_sb_active(NFS_SERVER(dir));
+ 	data->args.fh = NFS_FH(dir);
+ 	nfs_fattr_init(&data->res.dir_attr);
+ 
+diff --git a/include/linux/nfs_fs_sb.h b/include/linux/nfs_fs_sb.h
+index 0cac49b..6ef3af8 100644
+--- a/include/linux/nfs_fs_sb.h
++++ b/include/linux/nfs_fs_sb.h
+@@ -4,6 +4,8 @@
+ #include <linux/list.h>
+ #include <linux/backing-dev.h>
+ 
++#include <asm/atomic.h>
++
+ struct nfs_iostats;
+ 
+ /*
+@@ -110,8 +112,23 @@ struct nfs_server {
+ 						   filesystem */
+ #endif
+ 	void (*destroy)(struct nfs_server *);
++
++	atomic_t active; /* Keep trace of any activity to this server */
++	wait_queue_head_t active_wq;  /* Wait for any activity to stop  */
+ };
+ 
++static inline void 
++nfs_sb_active(struct nfs_server *server)
++{
++	atomic_inc(&server->active);
++}
++static inline void 
++nfs_sb_deactive(struct nfs_server *server)
++{
++	if (atomic_dec_and_test(&server->active))
++		wake_up(&server->active_wq);
++}
++
+ /* Server capabilities */
+ #define NFS_CAP_READDIRPLUS	(1U << 0)
+ #define NFS_CAP_HARDLINKS	(1U << 1)
 
 
 
---
-La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
 
-This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
+
+ 
