@@ -1,110 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761191AbXKHPDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761349AbXKHPET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761191AbXKHPDs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 10:03:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754348AbXKHPDf
+	id S1761349AbXKHPET (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 10:04:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760851AbXKHPEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 10:03:35 -0500
-Received: from mx2.mpi-sb.mpg.de ([139.19.1.2]:59840 "EHLO
-	francois.mpi-sb.mpg.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754105AbXKHPDe (ORCPT
+	Thu, 8 Nov 2007 10:04:08 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:47124 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756693AbXKHPEH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 10:03:34 -0500
-X-Greylist: delayed 1876 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Nov 2007 10:03:33 EST
-X-Notes-Item: NOT CHECKED;
- name=$DNSBLSite
-Date: Thu, 8 Nov 2007 15:32:05 +0100
-From: Rainer Jochem <rainer.jochem@mpi-sb.mpg.de>
-To: davem@davemloft.net, kuznet@ms2.inr.ac.ru, jmorris@namei.org,
-       kaber@trash.net
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       pcernko@mpi-sws.mpg.de
-Subject: [PATCH] ipconfig.c : implement DHCP Class-identifier
-Message-ID: <20071108143205.GA22490@mpi-sb.mpg.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+	Thu, 8 Nov 2007 10:04:07 -0500
+Date: Thu, 8 Nov 2007 10:04:05 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
+cc: Andrew Morton <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
+       <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] BUG: usb Mouse continual disconnect (2.6.22.10)
+ leading to eventual crash?
+In-Reply-To: <F1D642E5A91BC94D9504EC83AE19E6B0B89769@ecqcmtlmail3.quebec.int.ec.gc.ca>
+Message-ID: <Pine.LNX.4.44L0.0711080959470.4149-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 7 Nov 2007, Fortier,Vincent [Montreal] wrote:
 
-This patch implements the DHCP Class identifier (see rfc1533) which is
-used by DHCP clients to optionally identify the type and configuration of 
-a DHCP client which is send as a string to the server. For example, the
-identifier may encode the client's hardware configuration. If the newly 
-introduced kernel-parameter 'dhcpclass' is set, then the kernel sends 
-the given string in its DHCP-request to the server.
-If the option is omitted, the behaviour is as before without this patch.
+> > -----Message d'origine-----
+> > De : Andrew Morton [mailto:akpm@linux-foundation.org] 
+> > Envoyé : 7 novembre 2007 15:33
+> > 
+> > (+linux-usb-devel)
+> > 
+> > > On Wed, 7 Nov 2007 13:19:47 -0500 "Fortier,Vincent 
+> > [Montreal]" <Vincent.Fortier1@EC.GC.CA> wrote:
+> > > 
+> > > I'm having a preblem with a few workstations that are hard freezing 
+> > > from time to time since about a week.  Curiously since then we 
+> > > upgraded from
+> > > 2.6.20.6 to 2.6.20.10...
+> > > 
+> 
+> [.....]
+> 
+> > > 
+> > > Looking at the changes between 2.6.20.6 and 2.6.20.10 I only found 
+> > > this USB related:
+> > > 
+> > http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.22.y.git;a=commit;h=0e22438a5adfdf32b3bb1c75c81c01a29fba9770
+> > > 
+> > > I'm presuming that maybie eventually it might hit a input max barrier 
+> > > (like a max of 1024) and then the kernel would be crashing?
+> > > 
+> > > Help very much appreciated!
+> > 
+> > People are going to want to know if this is still happening 
+> > in 2.6.23 or 2.6.24-rc2, please.
+> 
+> I andrew,
+> 
+> (logged-in at wrok to make proper reply)
+> 
+> It might be tricky to test properly on 2.6.23.1 since theses are all
+> operationnal aviation forecaster workstations 24/7 .... And sadly the
+> problem only occur on a few of theses workstations AFAIK randomly ???  
+> Actually many of them did not had any problems using the exact same
+> FAI reinstallation using the same hardware..?!?!.
+> 
+> If someone thinks that the problem might effectively be the usb patch
+> that I mentionned before (or any other patch that might make
+> suddently thoses stations to freeze dur to a change that occur
+> between 2.6.20.6 and .10) I would then be able to push a new kernel
+> on thoses workstations without the offending patch(es) and have a
+> clear answer within a week.
 
+I have no idea what might be causing your problems, however that 
+particular patch you found seems most unlikely to be connected.
 
-Patch applies to:
-Version:	2.6.23.1
-File:		net/ipv4/ipconfig.c
+One reasonably non-invasive way to do more testing is to use usbmon to 
+record those multiple disconnect events.  Instructions are in the 
+kernel source file Documentation/usb/usbmon.txt.
 
-
-Signed-off-by: Rainer Jochem <rainer.jochem@mpi-sb.mpg.de>
-
----
-
---- net/ipv4/ipconfig.c.orig	2007-11-08 14:54:11.001662860 +0100
-+++ net/ipv4/ipconfig.c	2007-11-08 14:54:15.961480524 +0100
-@@ -139,6 +139,8 @@ __be32 ic_servaddr = NONE;	/* Boot serve
- __be32 root_server_addr = NONE;	/* Address of NFS server */
- u8 root_server_path[256] = { 0, };	/* Path to mount as root */
- 
-+char vendor_class_identifier[256] = { 0, }; /* vendor class identifier */
-+
- /* Persistent data: */
- 
- static int ic_proto_used;			/* Protocol used, if any */
-@@ -620,6 +622,17 @@ ic_dhcp_init_options(u8 *options)
- 		*e++ = sizeof(ic_req_params);
- 		memcpy(e, ic_req_params, sizeof(ic_req_params));
- 		e += sizeof(ic_req_params);
-+
-+		// Send it only if the according kernel parameter was set
-+		if (*vendor_class_identifier) {
-+			printk(KERN_INFO "Sending class identifier \"%s\"\n",
-+			       vendor_class_identifier);
-+			*e++ = 60;	/* Class-identifier */
-+			*e++ = strlen(vendor_class_identifier);
-+			memcpy(e, vendor_class_identifier,
-+			       strlen(vendor_class_identifier));
-+			e += strlen(vendor_class_identifier);
-+		}
- 	}
- 
- 	*e++ = 255;	/* End of the list */
-@@ -1507,5 +1520,14 @@ static int __init nfsaddrs_config_setup(
- 	return ip_auto_config_setup(addrs);
- }
- 
-+static int __init vendor_class_identifier_setup(char *addrs)
-+{
-+	if (strlcpy(vendor_class_identifier, addrs, 250) > 250)
-+		printk(KERN_WARNING "vendorclass too long, truncated to \"%s\"",
-+		       vendor_class_identifier);
-+	return 1;
-+}
-+
- __setup("ip=", ip_auto_config_setup);
- __setup("nfsaddrs=", nfsaddrs_config_setup);
-+__setup("dhcpclass=", vendor_class_identifier_setup);
-
-
-
---- ../linux-2.6.23.1/Documentation/kernel-parameters.txt	2007-10-12 18:43:44.000000000 +0200
-+++ Documentation/kernel-parameters.txt	2007-10-24 17:02:22.441454955 +0200
-@@ -533,6 +533,10 @@ and is between 256 and 4096 characters. 
- 	dhash_entries=	[KNL]
- 			Set number of hash buckets for dentry cache.
- 
-+	dhcpclass=	[KNL]
-+			Set DHCP Vendor Class Identifier to be sent
-+			by the client.
-+
- 	digi=		[HW,SERIAL]
- 			IO parameters + enable/disable command.
-
+Alan Stern
 
