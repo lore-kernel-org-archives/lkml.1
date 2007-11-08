@@ -1,79 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759856AbXKHJIx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759934AbXKHJJP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759856AbXKHJIx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 04:08:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbXKHJIk
+	id S1759934AbXKHJJP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 04:09:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759901AbXKHJIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 04:08:40 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45889
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753450AbXKHJIj (ORCPT
+	Thu, 8 Nov 2007 04:08:54 -0500
+Received: from mout0.freenet.de ([195.4.92.90]:51118 "EHLO mout0.freenet.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758911AbXKHJIu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 04:08:39 -0500
-Date: Thu, 08 Nov 2007 01:08:38 -0800 (PST)
-Message-Id: <20071108.010838.266803185.davem@davemloft.net>
-To: nickpiggin@yahoo.com.au
-Cc: frankvm@frankvm.com, linux-kernel@vger.kernel.org
-Subject: Re: VM/networking crash cause #1: page allocation failure
- (order:1, GFP_ATOMIC)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200711081655.38371.nickpiggin@yahoo.com.au>
-References: <200711070901.17839.nickpiggin@yahoo.com.au>
-	<20071107134843.GA14000@janus>
-	<200711081655.38371.nickpiggin@yahoo.com.au>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Nov 2007 04:08:50 -0500
+To: "Peter Osterlund" <petero2@telia.com>, "Tejun Heo" <htejun@gmail.com>
+From: balagi@justmail.de
+Subject: Re: Re: pktcdvd oops
+Cc: "Thomas Maier" <balagi@justmail.de>, "Jens Axboe" <jens.axboe@oracle.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>, gregkh@suse.de
+X-Priority: 3
+X-Abuse: 300631278 / 195.140.123.22
+User-Agent: freenetMail
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-Id: <E1Iq3NN-00049L-8x@www16.emo.freenet-rz.de>
+Date: Thu, 08 Nov 2007 10:08:37 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-Date: Thu, 8 Nov 2007 16:55:38 +1100
+Hello,
 
-> But it's an order-1 allocation, which may not be available due to
-> fragmentation.
+tested it too, running linux 2.6.23 in a qemu instance, and the patch worked.
+But i would prefer to take the try_module_get() stuff into pkt_setup_dev() because
+it is used also in the older procfs interface. Can we run into the same problem here, means
+procfs holds no module references too, like sysfs now?
 
-If the user is using an MTU of only 1500 (and thus not using
-jumbo frames) he may be being bitten by a bug that was recently
-fixed by Herbert Xu that made us use order > 0 pages accidently.
+Maybe also the "/sys/class/pktcdvd/remove" command should be wrapped with an
+try_module_get() ???
 
-His fix is below:
+-Thomas
 
-commit deea84b0ae3d26b41502ae0a39fe7fe134e703d0
-Author: Herbert Xu <herbert@gondor.apana.org.au>
-Date:   Sun Oct 21 16:27:46 2007 -0700
+----- original Nachricht --------
 
-    [NET]: Fix SKB_WITH_OVERHEAD calculation
-    
-    The calculation in SKB_WITH_OVERHEAD is incorrect in that it can cause
-    an overflow across a page boundary which is what it's meant to prevent.
-    In particular, the header length (X) should not be lumped together with
-    skb_shared_info.  The latter needs to be aligned properly while the header
-    has no choice but to sit in front of wherever the payload is.
-    
-    Therefore the correct calculation is to take away the aligned size of
-    skb_shared_info, and then subtract the header length.  The resulting
-    quantity L satisfies the following inequality:
-    
-    	SKB_DATA_ALIGN(L + X) + sizeof(struct skb_shared_info) <= PAGE_SIZE
-    
-    This is the quantity used by alloc_skb to do the actual allocation.
-    
-    Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-    Signed-off-by: David S. Miller <davem@davemloft.net>
+Betreff: Re: pktcdvd oops
+Gesendet: Mi 07 Nov 2007 23:07:10 CET
+Von: "Peter Osterlund"<petero2@telia.com>
 
-diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
-index f93f22b..369f60a 100644
---- a/include/linux/skbuff.h
-+++ b/include/linux/skbuff.h
-@@ -41,8 +41,7 @@
- #define SKB_DATA_ALIGN(X)	(((X) + (SMP_CACHE_BYTES - 1)) & \
- 				 ~(SMP_CACHE_BYTES - 1))
- #define SKB_WITH_OVERHEAD(X)	\
--	(((X) - sizeof(struct skb_shared_info)) & \
--	 ~(SMP_CACHE_BYTES - 1))
-+	((X) - SKB_DATA_ALIGN(sizeof(struct skb_shared_info)))
- #define SKB_MAX_ORDER(X, ORDER) \
- 	SKB_WITH_OVERHEAD((PAGE_SIZE << (ORDER)) - (X))
- #define SKB_MAX_HEAD(X)		(SKB_MAX_ORDER((X), 0))
+> On Wed, 7 Nov 2007, Tejun Heo wrote:
+> 
+> > Peter Osterlund wrote:
+> >> If the
+> >> __module_get() is not safe because the module code could have already
+> >> been unloaded, how can it possibly be made safe by adding more code to
+> >> the pktcdvd module? If the module is unloaded, trying to execute its
+> >> code can't be a good thing no matter what the code does.
+> >
+> > sysfs itself is now out of module lifespan rules.  sysfs callbacks are
+> > guaranteed to stay in memory while running by sysfs node removal waiting
+> > for completion of in-flight operations before returning.  In pktcdvd's
+> > case, class_destroy() call in pkt_sysfs_cleanup() will wait for all
+> > in-flight sysfs r/w ops to complete.
+> >
+> > So, even while sysfs callbacks are executing, the module beneath can die
+> > but it will stay in memory till all the callbacks return.  You need to
+> > test module liveness using try_module_get() (and it can fail) if you
+> > want to grab module reference from sysfs callbacks.
+> 
+> Thanks for the explanation.
+> 
+> Given that explanation, I think the patch is correct and it does fix the 
+> BUG on my computer. Can you please push it upstream?
+> 
+> In any case:
+> 
+> Acked-by: Peter Osterlund <petero2@telia.com>
+> 
+> -- 
+> Peter Osterlund - petero2@telia.com
+> http://web.telia.com/~u89404340
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
+--- original Nachricht Ende ----
+
+
+
+
+
+
+
+
+
