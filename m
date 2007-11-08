@@ -1,130 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763263AbXKHUYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762966AbXKHU0G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763263AbXKHUYo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 15:24:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762817AbXKHUYd
+	id S1762966AbXKHU0G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 15:26:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761348AbXKHUZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 15:24:33 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:52162 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762759AbXKHUYc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 15:24:32 -0500
-Date: Thu, 8 Nov 2007 20:24:30 +0000
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundatin.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 00/23] Slab defragmentation V6
-Message-ID: <20071108202429.GF23882@skynet.ie>
-References: <20071107011130.382244340@sgi.com> <1194535612.6214.9.camel@localhost> <Pine.LNX.4.64.0711081103360.8954@schroedinger.engr.sgi.com>
+	Thu, 8 Nov 2007 15:25:55 -0500
+Received: from nz-out-0506.google.com ([64.233.162.225]:14178 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761281AbXKHUZy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 15:25:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JcoXCcQ+KsmH5/1KGlqmsJakJOAsKTNGDQ4TIVBsOXpv0mWgGfT23WkmYyJEq9T3HEo4fGqLkbXq6nk/L7ziK9QtxTRpvuvMNXOAl6Pkuu8q8zJA19sicMNqpEP+xaSqSlCq6raqJLQCGjn/aHxVICM26NQ6Atr1H+hKzbjRTbI=
+Message-ID: <68676e00711081225n6230538w30bf38d359ddd447@mail.gmail.com>
+Date: Thu, 8 Nov 2007 21:25:49 +0100
+From: "Luca Tettamanti" <kronos.it@gmail.com>
+To: "Tejun Heo" <htejun@gmail.com>
+Subject: Re: sata NCQ blacklist entry
+Cc: jeff@garzik.org, linux-kernel@vger.kernel.org,
+       "IDE/ATA development list" <linux-ide@vger.kernel.org>
+In-Reply-To: <4731B5DD.1060203@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0711081103360.8954@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+References: <20071107111813.GA9064@dudweiler.stuttgart.redhat.com>
+	 <4731B5DD.1060203@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (08/11/07 11:12), Christoph Lameter didst pronounce:
-> On Thu, 8 Nov 2007, Mel Gorman wrote:
-> 
-> > On Tue, 2007-11-06 at 17:11 -0800, Christoph Lameter wrote:
-> > > Slab defragmentation is mainly an issue if Linux is used as a fileserver
-> > 
-> > Was hoping this would get renamed to SLUB Targetted Reclaim from
-> > discussions at VM Summit. As no copying is taking place, it's confusing
-> > to call it defragmentation to me anyway. Not a major deal but it made
-> > reading the patches a little confusing.
-> 
-> The problem is that people are focusing on one feature here and forget 
-> about the rest. Targetted reclaim is one feature that was added later when 
-> lumpy reclaim was added to the kernel. The primary intend of this patchset 
-> was always to reduce the fragmentation. The name is appropriate and the 
-> patchset will support copying of objects as soon as support for that is 
-> added to the kick(). In that case the copying you are looking for will be 
-> there. The simple implementation for the kick() methods is to simply copy
-> pieces of the reclaim code. That is what is included here.
-> 
+On Nov 7, 2007 1:55 PM, Tejun Heo <htejun@gmail.com> wrote:
+> Florian La Roche wrote:
+> > Hello all,
+> >
+> > I've taking email addresses from the last NCQ blacklist changes going
+> > into the kernel.
+> > This Fujitsu drive also gives me spurious command completions. Detailed
+> > output also available at https://bugzilla.redhat.com/show_bug.cgi?id=366181.
+> >
+> > Let me know if you need more info or anything else.
+> >
+> > --- drivers/ata/libata-core.c
+> > +++ drivers/ata/libata-core.c
+> > @@ -4222,6 +4222,7 @@
+> >       { "WDC WD740ADFD-00NLR1", NULL,         ATA_HORKAGE_NONCQ, },
+> >       { "WDC WD3200AAJS-00RYA0", "12.01B01",  ATA_HORKAGE_NONCQ, },
+> >       { "FUJITSU MHV2080BH",  "00840028",     ATA_HORKAGE_NONCQ, },
+> > +     { "FUJITSU MHW2160BJ G2",       NULL,           ATA_HORKAGE_NONCQ },
+> >       { "ST9120822AS",        "3.CLF",        ATA_HORKAGE_NONCQ, },
+> >       { "ST9160821AS",        "3.CLF",        ATA_HORKAGE_NONCQ, },
+> >       { "ST9160821AS",        "3.ALD",        ATA_HORKAGE_NONCQ, },
+>
+> Thanks.  We're currently trying to find out what's actually going on
+> with all these drives.  At first, drives which got blacklisted aren't
+> many and made sense (had other problems with NCQ, etc..) but with new
+> generation drives from many vendors showing the same symptom, we aren't
+> too sure now.
 
-Ok, fair enough logic and it's a bit clearer in my head how to separate them
-out. Thanks
+Is there a way to tell whether Windows is using NCQ or not? I checked
+the system log (or whatever it's called) on my notebook and is clean
+but I'm not sure it's using NCQ (I don't even know if it'd log
+spurious completions somewhere).
 
-> > > With lumpy reclaim slab defragmentation can be used to enhance the
-> > > ability to recover larger contiguous areas of memory. Lumpy reclaim currently
-> > > cannot do anything if a slab page is encountered. With slab defragmentation
-> > > that slab page can be removed and a large contiguous page freed. It may
-> > > be possible to have slab pages also part of ZONE_MOVABLE (Mel's defrag
-> > > scheme in 2.6.23)
-> > 
-> > More terminology nit-pick - ZONE_MOVABLE is not defragmenting anything.
-> > It's just partitioning memory. The slab pages need to be 100%
-> > reclaimable or movable for that to happen but even with targetted
-> > reclaim, some dentries such as the root directory one cannot be
-> > reclaimed, right?
-> 
-> 100%? I am so fond of these categorical statements ....
-> 
-
-Yeah, they are great for all occasions.
-
-In fairness when the time comes, I can do a few tests using the hugepage
-allocation tests with ZONE_MOVABLE and Badari might do a few tests with
-memory hot-remove. Currently, the success rates for these tests are 100%
-within ZONE_MOVABLE although that is without locked pages. Hot-remove
-should be able to deal with locked pages but hugepage allocation wouldn't
-as lumpy-reclaim would fail. If we allow slab pages to use the zone and the
-success rates drop, it'll be obvious which is a plus at least.
-
-> ZONE_MOVABLE also contains mlocked pages that are also not reclaimable. 
-
-True, but they are movable so for example memory hot-remove is able to
-deal with them and the memory compaction patches should have been able
-to deal with it too.
-
-> The question is at what level would it be possible to make them MOVABLE? 
-> It may take some improvements to the kick() methods to make eviction more 
-> reliable. Allowing the moving of objects in the kick() methods will 
-> likely get usthere.
-> 
-
-It certainly can be tried out. However, this is a future problem and
-independent of the current patchset. I don't want to drag us down a blind
-alley about a problem that isn't even at hand.
-
-Right now, I think the set looks in good shape for wider testing and appears
-to solve a major part of the slab fragmentation problem. Assuming I don't
-fall down a hole testing one-zonelist and the mm-broken-out patches, I'll
-get to testing these patches as well.
-
-> > It'd still be valid to leave them as MIGRATE_RECLAIMABLE because that is
-> > what they are. Arguably, MIGRATE_RECLAIMABLE could be dropped in it's
-> > entirety but I'd rather not as reclaimable blocks have significantly
-> > different reclaim costs to pages that are currently marked movable.
-> 
-> Right. That would simplify the antifrag methods. Is there any way to 
-> measure the reclaim costs?
-> 
-
-Regrettably, no.
-
-> > > V5->V6
-> > > - Rediff against 2.6.24-rc2 + mm slub patches.
-> > > - Add reviewed by lines.
-> > > - Take out the experimental code to make slab pages movable. That
-> > >   has to wait until this has been considered by Mel.
-> > > 
-> > 
-> > I still haven't considered them properly. I've been backlogged for I
-> > don't know how long at this point and this is on the increasingly large
-> > todo list :( . I don't believe it is massively urgent at the moment
-> > though and reclaiming to start with is perfectly adequate just as lumpy
-> > reclaim is fine at the moment.
-> 
-> Right. We can defer this for now.
-> 
-
-Agreed.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Luca
