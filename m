@@ -1,101 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762113AbXKHUFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762143AbXKHUGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762113AbXKHUFP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 15:05:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761157AbXKHUFB
+	id S1762143AbXKHUGW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 15:06:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761281AbXKHUGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 15:05:01 -0500
-Received: from mga09.intel.com ([134.134.136.24]:15503 "EHLO mga09.intel.com"
+	Thu, 8 Nov 2007 15:06:14 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:48695 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761075AbXKHUFB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 15:05:01 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,391,1188802800"; 
-   d="scan'208";a="198966242"
-Date: Thu, 8 Nov 2007 12:03:52 -0800
-From: Mark Gross <mgross@linux.intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-mm1 breaks C-state support on Intel T7200 x86_64
-Message-ID: <20071108200352.GA5538@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <3624.1194542384@turing-police.cc.vt.edu> <20071108100212.0cbff318.akpm@linux-foundation.org>
+	id S1761075AbXKHUGN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 15:06:13 -0500
+Date: Thu, 8 Nov 2007 20:06:07 +0000
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>, akpm@linux-foundatin.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: Plans for Onezonelist patch series ???
+Message-ID: <20071108200607.GD23882@skynet.ie>
+References: <20071107011130.382244340@sgi.com> <1194535612.6214.9.camel@localhost> <1194537674.5295.8.camel@localhost> <Pine.LNX.4.64.0711081033570.7871@schroedinger.engr.sgi.com> <20071108184009.GC23882@skynet.ie> <Pine.LNX.4.64.0711081043420.7871@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20071108100212.0cbff318.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <Pine.LNX.4.64.0711081043420.7871@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 08, 2007 at 10:02:12AM -0800, Andrew Morton wrote:
-> > On Thu, 08 Nov 2007 12:19:44 -0500 Valdis.Kletnieks@vt.edu wrote:
-> > (Sorry for not reporting this sooner - I haven't been running off battery
-> > much in the last 3 weeks, so I didn't notice it till now...)
-> > 
-> > Dell Latitude D820 laptop, T7200 Core2 Duo CPU, x86_64 kernel.
-> > 
-> > As reported by 'powertop' on a basically idle machine:
-> > 
-> > 2.6.23-mm1:
-> > 
-> > Cn                Avg residency       P-states (frequencies)
-> > C0 (cpu running)        (100.0%)        2.00 Ghz     0.8%
-> > C1                0.0ms ( 0.0%)         1.67 Ghz     0.0%
-> > C2                0.0ms ( 0.0%)         1333 Mhz     0.0%
-> > C3                0.0ms ( 0.0%)         1000 Mhz    99.2%
-> > 
-> > 2.6.23-rc8-mm2:
-> > 
-> > Cn                Avg residency       P-states (frequencies)
-> > C0 (cpu running)        ( 0.3%)         2.00 Ghz     0.0%
-> > C1                0.0ms ( 0.0%)         1.67 Ghz     0.0%
-> > C2                0.0ms ( 0.0%)         1333 Mhz     0.0%
-> > C3               31.5ms (99.7%)         1000 Mhz   100.0%
-> > 
-> > In addition, the ACPI power estimate reported about 25 watts for 23-mm1,
-> > but only 21 watts for -rc8-mm2, a significant regression.
-> > 
-> > I bisected this down to this set of patches:
-> > 
-> > pm-qos-infrastructure-and-interface.patch
-> > pm-qos-infrastructure-and-interface-fix.patch
-> > pm-qos-infrastructure-and-interface-vs-git-acpi.patch
-> > pm-qos-infrastructure-and-interface-vs-git-acpi-2.patch
-> > latencyc-use-qos-infrastructure.patch
-> > 
-> > The patch says:
-> > 
-> >   To register the default pm_qos target for the specific parameter, the
-> >   process must open one of /dev/[cpu_dma_latency, network_latency,
-> >   network_throughput]
-> > 
-> >   As long as the device node is held open that process has a registered
-> >   requirement on the parameter.  The name of the requirement is
-> >   "process_<PID>" derived from the current->pid from within the open system
-> >   call.
-> > 
-> > I shouldn't have to have a process open a /dev/file, write a number, and then
-> > stay around forever so the file doesn't close in order to get the same behavior
-> > I was getting by default before.  What needs to happen to get this to not
-> > be a behavior regression/change?
-> > 
+On (08/11/07 10:43), Christoph Lameter didst pronounce:
+> On Thu, 8 Nov 2007, Mel Gorman wrote:
 > 
-> That's a great report, thanks.  Over to you, Mark ;)
+> > There was two bugs that were resolved but I didn't repost after that as
+> > mainline + -mm had gone to hell in a hand-basket and I didn't want to
+> > add to the mess.
 > 
-> btw, I also have a note here that these patches caused Rafael to see an
-> smp_call_function() inside local_irq_save().  Did that get fixed?
+> Hell? I must have missed it.
+> 
 
-Ah, I see the problem.  I think I posted a fix to this.  The problem is
-that what's in the mm1 tree has a parameter PM_QOS_IDLE that needed to
-be PM_QOS_CPU_DMA_LATENCY. 
+Some time after rc1, things appeared in a mess - at least I didn't have
+much luck figuring out what was going on when I looked. Admittedly, being
+very ill at the time I didn't spend much effort on it. Either way things
+were churning enough that there seemed to be enough going on without adding
+one-zonelist to the mix.
 
-I'm not sure what's in the current MM tree at this point so I can't say
-its been fixed.  Is there an easy way from me to see what's currently in
-MM?  
+I've rebased the patches to mm-broken-out-2007-11-06-02-32. However, the
+vanilla -mm and the one with onezonelist applied are locking up in the
+same manner. I'm way too behind at the moment to guess if it is a new bug
+or reported already. At best, I can say the patches are not making things
+any worse :) I'll go through the archives in the morning and do a bit more
+testing to see what happens.
 
-FWIW I think I fixed this when I fixed up Rafael's issue.  Would you
-like me to send out a re-fresh patch against 2.6.23-mm1?
+In case this is familiar to people, the lockup I see is;
 
---mgross
+[  115.548908] BUG: spinlock bad magic on CPU#0, sshd/2752
+[  115.611371]  lock: c20029c8, .magic: ffffffff, .owner: <none>/-1, .owner_cpu: -1066669496
+[  115.709027]  [<c010526a>] show_trace_log_lvl+0x1a/0x30
+[  115.770560]  [<c0105c02>] show_trace+0x12/0x20
+[  115.823787]  [<c0105d16>] dump_stack+0x16/0x20
+[  115.877011]  [<c022c226>] spin_bug+0x96/0xf0
+[  115.928172]  [<c022c429>] _raw_spin_lock+0x69/0x140
+[  115.986580]  [<c033f05f>] _spin_lock+0x4f/0x60
+[  116.039809]  [<c0224bae>] kobject_add+0x4e/0x1a0
+[  116.095112]  [<c01314b4>] uids_user_create+0x54/0x80
+[  116.154555]  [<c01318e2>] alloc_uid+0xd2/0x150
+[  116.207784]  [<c01356db>] set_user+0x2b/0xb0
+[  116.258951]  [<c01373c1>] sys_setreuid+0x141/0x150
+[  116.316305]  [<c010429e>] syscall_call+0x7/0xb
+[  116.369544]  =======================
+[  127.680346] BUG: soft lockup - CPU#0 stuck for 11s! [sshd:2752]
+[  127.750987] 
+[  127.768781] Pid: 2752, comm: sshd Not tainted (2.6.24-rc1-mm1 #1)
+[  127.841498] EIP: 0060:[<c02298c1>] EFLAGS: 00000246 CPU: 0
+[  127.906948] EIP is at delay_tsc+0x1/0x20
+[  127.953754] EAX: 00000001 EBX: c20029c8 ECX: b0953e83 EDX: 2b35cb6d
+[  128.028533] ESI: 04b81d83 EDI: 00000000 EBP: c30f1ec4 ESP: c30f1ebc
+[  128.103305]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+[  128.167717] CR0: 80050033 CR2: b7e45544 CR3: 02153000 CR4: 00000690
+[  128.242490] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+[  128.317253] DR6: ffff0ff0 DR7: 00000400
+[  128.363010]  [<c010526a>] show_trace_log_lvl+0x1a/0x30
+[  128.424541]  [<c0105c02>] show_trace+0x12/0x20
+[  128.477767]  [<c010250c>] show_regs+0x1c/0x20
+[  128.529948]  [<c015ab6b>] softlockup_tick+0x11b/0x150
+[  128.590446]  [<c0130fb2>] run_local_timers+0x12/0x20
+[  128.649888]  [<c0131182>] update_process_times+0x42/0x90
+[  128.713461]  [<c01440f5>] tick_periodic+0x25/0x80
+[  128.769812]  [<c0144169>] tick_handle_periodic+0x19/0x80
+[  128.833397]  [<c0107519>] timer_interrupt+0x49/0x50
+[  128.891802]  [<c015aeb8>] handle_IRQ_event+0x28/0x60
+[  128.951246]  [<c015c7f8>] handle_level_irq+0x78/0xe0
+[  129.010693]  [<c01065f0>] do_IRQ+0x40/0x80
+[  129.059782]  [<c0104c5f>] common_interrupt+0x23/0x28
+[  129.119229]  [<c022c472>] _raw_spin_lock+0xb2/0x140
+[  129.177635]  [<c033f05f>] _spin_lock+0x4f/0x60
+[  129.230851]  [<c0224bae>] kobject_add+0x4e/0x1a0
+[  129.286175]  [<c01314b4>] uids_user_create+0x54/0x80
+[  129.345598]  [<c01318e2>] alloc_uid+0xd2/0x150
+[  129.398830]  [<c01356db>] set_user+0x2b/0xb0
+[  129.450005]  [<c01373c1>] sys_setreuid+0x141/0x150
+[  129.507380]  [<c010429e>] syscall_call+0x7/0xb
+[  129.560605]  =======================
 
+
+-- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
