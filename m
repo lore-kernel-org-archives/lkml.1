@@ -1,152 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761024AbXKHTDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762806AbXKHTFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761024AbXKHTDy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 14:03:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762174AbXKHTDf
+	id S1762806AbXKHTFA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 14:05:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761594AbXKHTEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 14:03:35 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53809 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761889AbXKHTDc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 14:03:32 -0500
-Date: Thu, 8 Nov 2007 11:02:40 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: roppedisano@infracomspa.it, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, rjw@sisk.pl, linux-acpi@vger.kernel.org
-Subject: Re: libata: cdrw/dvdrom disabed after s2ram (2.6.24-rc2)
-Message-Id: <20071108110240.df3214e7.akpm@linux-foundation.org>
-In-Reply-To: <20071108181905.GA4895@havoc.gtf.org>
-References: <4731C86B.1040704@infracomspa.it>
-	<20071107121355.5eaf4496.akpm@linux-foundation.org>
-	<47333CCF.1050403@infracomspa.it>
-	<20071108094958.5c9b1b22.akpm@linux-foundation.org>
-	<20071108180256.GB3491@havoc.gtf.org>
-	<20071108101341.6c4f88d4.akpm@linux-foundation.org>
-	<20071108181905.GA4895@havoc.gtf.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 8 Nov 2007 14:04:53 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:54798 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761547AbXKHTEw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 14:04:52 -0500
+Message-ID: <47335DC6.7090603@us.ibm.com>
+Date: Thu, 08 Nov 2007 13:04:38 -0600
+From: Anthony Liguori <aliguori@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>, virtualization@lists.osdl.org
+Subject: Re: [kvm-devel] [PATCH 3/3] virtio PCI device
+References: <11944899922822-git-send-email-aliguori@us.ibm.com> <11944900152750-git-send-email-aliguori@us.ibm.com> <11944900163817-git-send-email-aliguori@us.ibm.com> <200711081846.36821.arnd@arndb.de>
+In-Reply-To: <200711081846.36821.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 8 Nov 2007 13:19:05 -0500 Jeff Garzik <jeff@garzik.org> wrote:
-> On Thu, Nov 08, 2007 at 10:13:41AM -0800, Andrew Morton wrote:
-> > > On Thu, 8 Nov 2007 13:02:56 -0500 Jeff Garzik <jeff@garzik.org> wrote:
-> > > On Thu, Nov 08, 2007 at 09:49:58AM -0800, Andrew Morton wrote:
-> > > > > On Thu, 08 Nov 2007 17:43:59 +0100 Roberto Oppedisano <roppedisano@infracomspa.it> wrote:
-> > > > > Andrew Morton wrote, On 11/07/2007 09:13 PM:
-> > > > > >> On Wed, 07 Nov 2007 15:15:07 +0100 Roberto Oppedisano <roppedisano@infracomspa.it> wrote:
-> > > > > >> Hello.
-> > > > > >> I noticed that after suspending to ram the DVD-ROM/CDRW
-> > > > > >> drive in no more recognized on my laptop. Looking at dmesg
-> > > > > >> after suspend i found:
-> > > > > >>
-> > > > > >> [    5.313446] ata2.00: _GTF unexpected object type 0x1
-> > > > > >> [    5.313453] ata2.00: ACPI on devcfg failed the second time, disabling 
-> > > > > >> (errno=-22)
-> > > > > >> [    5.313457] ata2.00: revalidation failed (errno=1)
-> > > > > >> [    5.313459] ata2.00: disabled
-> > > > > >>
-> > > > > >>
-> > > > > >> Not sure when the bug was introduced or if it has been always been there
-> > > > > >> (but I can investigate if needed).
-> > > > > >>
-> > > > > >> More details on request.
-> > > > > >>
-> > > > > >> Following dmesg pre and after suspend.
-> > > > > > Yes, it would be useful if you could work ot whether this worked OK in an
-> > > > > > earlier kernel, thanks.
-> > > > > Hello Andrew.
-> > > > > The bug has been recently added.
-> > > > > 
-> > > > > I did a git-bisect, but the result is probably not completely useful,
-> > > > > because many kernel did non build with my config, and I marked them as bad.
-> > > > 
-> > > > Those build errors are bad.  Please report them.  They directly prevented
-> > > > you from finding the commit which caused this regression.
-> > > > 
-> > > > The only way in which we'll stop people doing crap like this is to rub
-> > > > their noses (and the person who committed its nose) in it.
-> > > > 
-> > > > > Anyway here's the output of git-bisect:
-> > > > > 
-> > > > > rao@infra-bb:/usr/src/linux-2.6$ git bisect bad
-> > > > > 99874d50481c093adfe74e796436024d88b6a48c is first bad commit
-> > > > > commit 99874d50481c093adfe74e796436024d88b6a48c
-> > > > > Author: Jens Axboe <jens.axboe@oracle.com>
-> > > > > Date:   Fri Oct 12 12:50:41 2007 +0200
-> > > > > 
-> > > > >     [BLOCK] Only include the compat ioctl code if CONFIG_BLOCK is set
-> > > > > 
-> > > > >     Add an extra CONFIG_BLOCK_COMPAT that we can use in the Makefile
-> > > > > 
-> > > > >     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> > > > > 
-> > > > > :040000 040000 f88b7b0e496edb8fbdd4bc74abd1a742a6a1d6d9
-> > > > > 32ead3bd57b52a664cc8ccb662195041868d7632 M      block
-> > > > > 
-> > > > > ...
-> > > > > 
-> > > > > If needed I can do further investigation, changing the assumption of
-> > > > > efefc6eb38d43b8e5daef482f575d767b002004e to good and see if the bisect
-> > > > > points to a different commit.
-> > > > 
-> > > > Yes, it'll be some other commit.  Sorry.
-> > > > 
-> > > > It would help you (and me) if an ata developer could pay some attention.
-> > > > 
-> > > > Rafael, please track this as an ata regression.
-> > > 
-> > > We unfortunately need to bounce this ACPI people.
-> > > 
-> > > We recently turned on ACPI by default in libata, which INTRODUCES the
-> > > ability of the BIOS to pass random, unknown-quality ATA commands to the
-> > > device.
-> > > 
-> > > I highly expect some breakage related to this...  if ACPI folks
-> > > determine it is not an ACPI bug, then its a firmware bug and we will
-> > > have to avoid that firmware on that platform.
-> > > 
-> > > Set module option "noacpi" to 1, to disable ACPI and see if that fixes
-> > > the problem.
-> > > 
-> > > This will be a common diagnosis and workaround, FWIW...
-> > > 
-> > 
-> > I suspect it wold be best to disable the feature for the 2.6.24 release,
-> > then reenable it afterwards and keep doing this until the code is
-> > sufficiently stable.
-> 
-> Re-read my message :)
-> 
-> The code is stable.  Behavior _by definition_ will vary by BIOS.
-> 
-> This feature (a) enables suspend/resume, but (b) now sends random
-> unvalidated shite to the device that we hope will work.
-> 
-> Look at all the messages where turning on ACPI in libata _fixed_
-> suspend/resume (because its obviously required for many, including
-> laptops).
+Arnd Bergmann wrote:
+> On Thursday 08 November 2007, Anthony Liguori wrote:
+>   
+>> +/* A PCI device has it's own struct device and so does a virtio device so
+>> + * we create a place for the virtio devices to show up in sysfs.  I think it
+>> + * would make more sense for virtio to not insist on having it's own device. */
+>> +static struct device virtio_pci_root = {
+>> +       .parent         = NULL,
+>> +       .bus_id         = "virtio-pci",
+>> +};
+>> +
+>> +/* Unique numbering for devices under the kvm root */
+>> +static unsigned int dev_index;
+>> +
+>>     
+>
+> ...
+>
+>   
+>> +/* the PCI probing function */
+>> +static int __devinit virtio_pci_probe(struct pci_dev *pci_dev,
+>> +                                     const struct pci_device_id *id)
+>> +{
+>> +       struct virtio_pci_device *vp_dev;
+>> +       int err;
+>> +
+>> +       /* allocate our structure and fill it out */
+>> +       vp_dev = kzalloc(sizeof(struct virtio_pci_device), GFP_KERNEL);
+>> +       if (vp_dev == NULL)
+>> +               return -ENOMEM;
+>> +
+>> +       vp_dev->pci_dev = pci_dev;
+>> +       vp_dev->vdev.dev.parent = &virtio_pci_root;
+>>     
+>
+> If you use 
+>
+> 	vp_dev->vdev.dev.parent = &pci_dev->dev;
+>
+> Then there is no need for the special kvm root device, and the actual
+> virtio device shows up in a more logical place, under where it is
+> really (virtually) attached.
+>   
 
-We fixed a somewhat-known number of machines and broke an unknown number. 
-Linus will come after you with a pointy stick if he finds out.
+They already show up underneath of the PCI bus.  The issue is that there 
+are two separate 'struct device's for each virtio device.  There's the 
+PCI device (that's part of the pci_dev structure) and then there's the 
+virtio_device one.  I thought that setting the dev.parent of the 
+virtio_device struct device would result in having two separate entries 
+under the PCI bus directory which would be pretty confusing :-)
 
-Fixing previously-broken machines is nice, but breaking previously-working
-ones gets people a lot more upset.
+Regards,
 
-> So it's not an easy "turn it off" answer, you break shitloads of
-> suspend/resume that way, that we just fixed.
-> 
-> The message "_GTF unexpected object type" indicates a broken BIOS, so
-> IMO we should proceed in that direction, blacklisting that platform.
-> 
+Anthony Liguori
 
-Suggest that the feature be disabled until we have most of these
-blacklistings in place.
+> 	Arnd <><
+>   
 
-We have a tremendous number of regressions in 2.6.24 (and they're just the
-ones which we know of) and the regression reports for 2.6.23 are still
-coming in.  At some stage we'll need to get seriosu about this.
