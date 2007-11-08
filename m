@@ -1,50 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759002AbXKHIT2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759516AbXKHIYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759002AbXKHIT2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 03:19:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbXKHITU
+	id S1759516AbXKHIYU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 03:24:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754281AbXKHIYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 03:19:20 -0500
-Received: from www262.sakura.ne.jp ([202.181.97.72]:51883 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753475AbXKHITU (ORCPT
+	Thu, 8 Nov 2007 03:24:12 -0500
+Received: from grex.cyberspace.org ([216.86.77.194]:46698 "EHLO
+	grex.cyberspace.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754102AbXKHIYL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 03:19:20 -0500
-Message-Id: <200711080819.lA88J8Pv072259@www262.sakura.ne.jp>
-Subject: Re: [PATCH] sysctl: Check length at deprecated_sysctl_warning.
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: ebiederm@xmission.com, linux-kernel@vger.kernel.org,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-2022-JP"
-Content-Transfer-Encoding: 7bit
-Date: Thu, 08 Nov 2007 17:19:08 +0900
-References: <200711080257.lA82vQfA015942@www262.sakura.ne.jp> <20071107192211.c1c22e97.akpm@linux-foundation.org>
-In-Reply-To: <20071107192211.c1c22e97.akpm@linux-foundation.org>
+	Thu, 8 Nov 2007 03:24:11 -0500
+Date: Thu, 8 Nov 2007 03:24:10 -0500
+From: Roopesh <roopesh@cyberspace.org>
+To: linux-kernel@vger.kernel.org
+Cc: Pierre Ossman <drzeus-list@drzeus.cx>
+Subject: MMC/SD: Write operation in invalid states by borken cards.
+Message-ID: <20071108082410.GA1875@grex.cyberspace.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+ Hi, 
 
-Thanks for reformatting my patch
-and sorry for surprising you with directory name
-(I meant to type linux-2.6.24-rc2, not linux-2.6.22-rc2).
+ If a write operation fails, shouldnt we still check for the card 
+ state to be 'ready to accept next data'?
 
-According to linux-2.6.23,
-it seems that I should return -ENOTDIR
-for invalid args->nlen value.
+ This question is because I have noticed that some (broken) cards 
+ fail the write command, and the immediately issued subsequent 
+ commands also fail since the card state was never checked before 
+ sending these commands.
+ (There was a discussion about these cards at the thread: "MMC: 
+ CRC Errors with 2GB cards)
 
-I got a question here regarding interpretation of CTL_MAXNAME .
-Is args->nlen == CTL_MAXNAME valid?
-It is treated as invalid while the definition says
+diff -a -u -p -r1.2 block.c
+--- drivers/mmc/card/block.c	22 Oct 2007 10:39:44 -0000	1.2
++++ drivers/mmc/card/block.c	8 Nov 2007 06:55:37 -0000
+@@ -206,6 +206,7 @@ static int mmc_blk_issue_rq(struct mmc_q
+ 	struct mmc_card *card = md->queue.card;
+ 	struct mmc_blk_request brq;
+ 	int ret = 1, sg_pos, data_size;
++	int data_error = 0;
+ 
+ 	mmc_claim_host(card->host);
+ 
+@@ -282,19 +283,19 @@ static int mmc_blk_issue_rq(struct mmc_q
+ 		if (brq.cmd.error) {
+ 			printk(KERN_ERR "%s: error %d sending read/write command\n",
+ 			       req->rq_disk->disk_name, brq.cmd.error);
+-			goto cmd_err;
++			data_error = 1;
+ 		}
+ 
+ 		if (brq.data.error) {
+ 			printk(KERN_ERR "%s: error %d transferring data\n",
+ 			       req->rq_disk->disk_name, brq.data.error);
+-			goto cmd_err;
++			data_error = 1;
+ 		}
+ 
+ 		if (brq.stop.error) {
+ 			printk(KERN_ERR "%s: error %d sending stop command\n",
+ 			       req->rq_disk->disk_name, brq.stop.error);
+-			goto cmd_err;
++			data_error = 1;
+ 		}
+ 
+ 		if (rq_data_dir(req) != READ) {
+@@ -320,6 +321,9 @@ static int mmc_blk_issue_rq(struct mmc_q
+ 				goto cmd_err;
+ #endif
+ 		}
++
++		if (data_error == 1)
++			goto cmd_err;
+ 
+ 		/*
+ 		 * A block was successfully transferred.
+ 
 
-  /* how many path components do we allow in a
-     call to sysctl?   In other words, what is
-     the largest acceptable value for the nlen
-     member of a struct __sysctl_args to have? */
-
-If "name[CTL_MAXNAME];" is what the author intended,
-I think args->nlen == CTL_MAXNAME is valid.
-
-Regards.
+ Thanks,
+ Roopesh.
