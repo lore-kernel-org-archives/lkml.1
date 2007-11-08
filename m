@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759758AbXKHGAj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759328AbXKHGGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759758AbXKHGAj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 01:00:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbXKHGAc
+	id S1759328AbXKHGGn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 01:06:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750919AbXKHGGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 01:00:32 -0500
-Received: from mail.davidb.org ([66.93.32.219]:55096 "EHLO mail.davidb.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751152AbXKHGAc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 01:00:32 -0500
-Date: Wed, 7 Nov 2007 22:00:29 -0800
-From: David Brown <lkml@davidb.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>,
-       Michael Kerrisk <mtk-manpages@gmx.net>
-Subject: Re: compat_sys_times() bogus until jiffies >= 0.
-Message-ID: <20071108060029.GB3307@old.davidb.org>
-References: <20071107224722.GA20204@old.davidb.org> <20071107152833.6f302c2a.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Thu, 8 Nov 2007 01:06:35 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:22002 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750857AbXKHGGe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 01:06:34 -0500
+Date: Thu, 8 Nov 2007 08:06:31 +0200
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Ray Lee <ray-lk@madrabbit.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Roel Kluin <12o3l@tiscali.nl>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fix incorrect test in trident_ac97_set(); sound/oss/trident.c
+Message-ID: <20071108060631.GD30021@rhun.ibm.com>
+References: <47320533.4020400@tiscali.nl> <2c0942db0711071043p7cd31f6di9031816c1fed81ca@mail.gmail.com> <473208ED.9000707@tiscali.nl> <2c0942db0711071104x4360c38s930f6f9d494d4bb6@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071107152833.6f302c2a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <2c0942db0711071104x4360c38s930f6f9d494d4bb6@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 07, 2007 at 03:28:33PM -0800, Andrew Morton wrote:
->> On Wed, 7 Nov 2007 14:47:22 -0800 David Brown <lkml@davidb.org> wrote:
+On Wed, Nov 07, 2007 at 11:04:41AM -0800, Ray Lee wrote:
 
->> will return '-1' to user space and set the negated clock_t value to errno.
->>
->> At minimum, perhaps it should return a sane errno value.
->
->RETURN VALUE
->       times()  returns  the  number of clock ticks that have elapsed since an
->       arbitrary point in the past.  For Linux 2.4 and earlier this  point  is
->       the  moment  the  system  was  booted.   Since Linux 2.6, this point is
->       (2^32/HZ) - 300 (i.e., about 429 million) seconds  before  system  boot
->       time.   The  return  value  may  overflow  the  possible  range of type
->       clock_t.  On error, (clock_t) -1 is returned, and errno is  set  appro-
->       priately.
+> On Nov 7, 2007 10:50 AM, Roel Kluin <12o3l@tiscali.nl> wrote:
 
-The strange -1 behavior is enshrined in history.  I think a better answer
-is to tell people to use getrusage() if they want a return result without
-this problem.
+> > If count reaches zero, the loop ends, but the postfix decrement
+> > still subtracts: testing for 'count == 0' will not work.
+> >
+> > Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> > ---
+> > diff --git a/sound/oss/trident.c b/sound/oss/trident.c
+> > index 96adc47..6959ee1 100644
+> > --- a/sound/oss/trident.c
+> > +++ b/sound/oss/trident.c
+> > @@ -2935,7 +2935,7 @@ trident_ac97_set(struct ac97_codec *codec, u8 reg, u16 val)
+> >         do {
+> >                 if ((inw(TRID_REG(card, address)) & busy) == 0)
+> >                         break;
+> > -       } while (count--);
+> > +       } while (--count);
+> >
+> >         data |= (mask | (reg & AC97_REG_ADDR));
+> >
+> > @@ -2996,7 +2996,7 @@ trident_ac97_get(struct ac97_codec *codec, u8 reg)
+> >                 data = inl(TRID_REG(card, address));
+> >                 if ((data & busy) == 0)
+> >                         break;
+> > -       } while (count--);
+> > +       } while (--count);
+> >
+> >         spin_unlock_irqrestore(&card->lock, flags);
+> >
+> >         if (count == 0) {
+> >
+> 
+> Thanks, much better. In the future, please also CC: the appropriate
+> maintainers, or Andrew Morton if you're at a loss...
 
-Adding INITIAL_JIFFIES will fix the case where an embedded system is booted
-up to run a test and then shut down, and the mask, although it causes
-discontinuities periodically at least moves them away from the early boot.
+Indeed.
 
-INITIAL_JIFFIES was a good idea, but it is probably best to keep it inside
-of the kernel.
+> Reviewed-by: Ray Lee <ray-lk@madrabbit.org>
 
-David Brown
+Acked-by: Muli Ben-Yehuda <muli@il.ibm.com>
+
+Andrew, can you please push to Linus?
+
+Thanks,
+Muli
