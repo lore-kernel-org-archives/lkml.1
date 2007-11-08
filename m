@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759582AbXKHFXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758360AbXKHFgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759582AbXKHFXU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 00:23:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750889AbXKHFXN
+	id S1758360AbXKHFgY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 00:36:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750738AbXKHFgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 00:23:13 -0500
-Received: from mx2.suse.de ([195.135.220.15]:54223 "EHLO mx2.suse.de"
+	Thu, 8 Nov 2007 00:36:16 -0500
+Received: from ozlabs.org ([203.10.76.45]:47260 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750738AbXKHFXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 00:23:12 -0500
-Date: Wed, 7 Nov 2007 21:24:18 -0800
-From: Greg KH <gregkh@suse.de>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Peter Osterlund <petero2@telia.com>, Thomas Maier <balagi@justmail.de>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] pktcdvd: fix BUG caused by sysfs module reference
-	semantics change
-Message-ID: <20071108052418.GA5670@suse.de>
-References: <20071105092018.GD5359@kernel.dk> <Pine.LNX.4.64.0711052312410.5445@quad.localdomain> <47302E9F.6020708@gmail.com> <op.t1d2aurziudtyh@master> <Pine.LNX.4.64.0711062229490.5800@quad.localdomain> <4731269B.6010509@gmail.com> <Pine.LNX.4.64.0711072303080.6991@quad.localdomain> <47327404.9010008@gmail.com>
+	id S1750754AbXKHFgP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 00:36:15 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47327404.9010008@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18226.41032.912666.467900@cargo.ozlabs.ibm.com>
+Date: Thu, 8 Nov 2007 16:36:08 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lkml@davidb.org, linux-kernel@vger.kernel.org, drepper@redhat.com,
+       mtk-manpages@gmx.net
+Subject: Re: compat_sys_times() bogus until jiffies >= 0.
+In-Reply-To: <20071107212005.f039c279.akpm@linux-foundation.org>
+References: <20071107224722.GA20204@old.davidb.org>
+	<20071107152833.6f302c2a.akpm@linux-foundation.org>
+	<20071107161853.044b6e8f.akpm@linux-foundation.org>
+	<18226.27701.782268.375231@cargo.ozlabs.ibm.com>
+	<20071107190714.9c404e28.akpm@linux-foundation.org>
+	<18226.38816.486372.52353@cargo.ozlabs.ibm.com>
+	<20071107212005.f039c279.akpm@linux-foundation.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 08, 2007 at 11:27:16AM +0900, Tejun Heo wrote:
-> pkt_setup_dev() expects module reference to be held on invocation.
-> This used to be true for sysfs callbacks but not anymore.  Test and
-> grab module reference around pkt_setup_dev() in
-> class_pktcdvd_store_add().
-> 
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> Acked-by: Peter Osterlund <petero2@telia.com>
-> ---
-> Greg, can you please push this patch through your tree? 
-> Thanks a lot.
-> 
->  drivers/block/pktcdvd.c |    9 +++++++++
->  1 file changed, 9 insertions(+)
+Andrew Morton writes:
 
-Why through my tree?  I don't do block devices :)
+> Yup.  But userspace will already have a fit if either the start or end time
+> advanced into the glibc-thought-that-was-an-error range.
 
-Shouldn't Jens or at least Andrew take it?
+Not nearly as much of a fit.  The effect on x86 is that values between
+-4095 and -1 are reported as -1, so the end-start difference will be
+out by less than 41 seconds.  That's not nearly as dramatic as a
+difference of 21 million seconds (over 16 years). :)
 
-thanks,
+I really think that wrapping at 0x7fffffff makes the situation worse,
+not better.
 
-greg k-h
+Paul.
