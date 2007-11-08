@@ -1,59 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760535AbXKHCfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760521AbXKHCfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760535AbXKHCfU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 21:35:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760230AbXKHCdl
+	id S1760521AbXKHCfs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 21:35:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760236AbXKHCdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 21:33:41 -0500
-Received: from gw.goop.org ([64.81.55.164]:57078 "EHLO mail.goop.org"
+	Wed, 7 Nov 2007 21:33:42 -0500
+Received: from gw.goop.org ([64.81.55.164]:57077 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760205AbXKHCdk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1760211AbXKHCdk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 7 Nov 2007 21:33:40 -0500
-Message-Id: <20071108015008.660012621@goop.org>
+Message-Id: <20071108015310.059598778@goop.org>
+References: <20071108015008.660012621@goop.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 07 Nov 2007 17:50:08 -0800
+Date: Wed, 07 Nov 2007 17:50:10 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>, Zach Amsden <zach@vmware.com>,
-       Glauber de Oliveira Costa <glommer@gmail.com>
-Subject: [PATCH RFC 0/7] Unify asm-x86/pgtable.h and page.h
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
+Subject: [PATCH RFC 2/7] x86: clean up mm/init_32.c
+Content-Disposition: inline; filename=x86-cleanup-mm-init_32.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-NB: RFC ONLY.  DO NOT APPLY.
+Some code reformatting in init_32.c.  No functional change.
 
-This series unifies many definitions in asm-x86/pgtable.h and page.h.
-Later in the series, I take advantage of some of the earlier
-infrastructure to simplify paravirt.h and bits of the Xen code.
+Signed-off-by: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
 
-This patch applies on top of Glauber's 64-bit pvops unification, so it
-won't apply directly to the current tree.
+---
+ arch/x86/mm/init_32.c |   31 +++++++++++++++++++++----------
+ 1 file changed, 21 insertions(+), 10 deletions(-)
 
-I've tested all the 32-bit combinations
-(paravirt/non-paravirt/PAE/non-PAE), but haven't set up a 64-bit test
-box yet.
+===================================================================
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -165,16 +165,25 @@ static void __init kernel_physical_mappi
+ 		pmd = one_md_table_init(pgd);
+ 		if (pfn >= max_low_pfn)
+ 			continue;
+-		for (pmd_idx = 0; pmd_idx < PTRS_PER_PMD && pfn < max_low_pfn; pmd++, pmd_idx++) {
++		for (pmd_idx = 0;
++		     pmd_idx < PTRS_PER_PMD && pfn < max_low_pfn;
++		     pmd++, pmd_idx++) {
+ 			unsigned int address = pfn * PAGE_SIZE + PAGE_OFFSET;
+ 
+-			/* Map with big pages if possible, otherwise create normal page tables. */
++			/* Map with big pages if possible, otherwise
++			   create normal page tables. */
+ 			if (cpu_has_pse) {
+-				unsigned int address2 = (pfn + PTRS_PER_PTE - 1) * PAGE_SIZE + PAGE_OFFSET + PAGE_SIZE-1;
+-				if (is_kernel_text(address) || is_kernel_text(address2))
+-					set_pmd(pmd, pfn_pmd(pfn, PAGE_KERNEL_LARGE_EXEC));
+-				else
+-					set_pmd(pmd, pfn_pmd(pfn, PAGE_KERNEL_LARGE));
++				unsigned int address2;
++				pgprot_t prot = PAGE_KERNEL_LARGE;
++
++				address2 = (pfn + PTRS_PER_PTE - 1) * PAGE_SIZE +
++					PAGE_OFFSET + PAGE_SIZE-1;
++
++				if (is_kernel_text(address) ||
++				    is_kernel_text(address2))
++					prot = PAGE_KERNEL_LARGE_EXEC;
++
++				set_pmd(pmd, pfn_pmd(pfn, prot));
+ 
+ 				pfn += PTRS_PER_PTE;
+ 			} else {
+@@ -183,10 +192,12 @@ static void __init kernel_physical_mappi
+ 				for (pte_ofs = 0;
+ 				     pte_ofs < PTRS_PER_PTE && pfn < max_low_pfn;
+ 				     pte++, pfn++, pte_ofs++, address += PAGE_SIZE) {
++					pgprot_t prot = PAGE_KERNEL;
++
+ 					if (is_kernel_text(address))
+-						set_pte(pte, pfn_pte(pfn, PAGE_KERNEL_EXEC));
+-					else
+-						set_pte(pte, pfn_pte(pfn, PAGE_KERNEL));
++						prot = PAGE_KERNEL_EXEC;
++
++					set_pte(pte, pfn_pte(pfn, prot));
+ 				}
+ 			}
+ 		}
 
-The diffstat of the pure unification bits is nice:
- arch/x86/mm/init_32.c            |   31 ++-
- arch/x86/mm/init_64.c            |    3 
- arch/x86/xen/enlighten.c         |    8 
- arch/x86/xen/mmu.c               |   67 +++-----
- arch/x86/xen/mmu.h               |   26 ---
- include/asm-x86/page.h           |   49 ++++-
- include/asm-x86/page_32.h        |   77 +++++----
- include/asm-x86/page_64.h        |   37 +---
- include/asm-x86/paravirt.h       |  324 ++++++++++++++++-----------------------
- include/asm-x86/pgtable-2level.h |   21 --
- include/asm-x86/pgtable-3level.h |   40 ----
- include/asm-x86/pgtable.h        |  318 ++++++++++++++++++++++++++++++++++++++
- include/asm-x86/pgtable_32.h     |  204 ------------------------
- include/asm-x86/pgtable_64.h     |  234 ----------------------------
- 14 files changed, 630 insertions(+), 809 deletions(-)
-
-(The code formatting patch adds a pile of lines because it splits long
-single lints into multiline code.)
-
-	J
 -- 
 
