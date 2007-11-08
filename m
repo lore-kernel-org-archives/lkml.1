@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761779AbXKHVAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762069AbXKHVER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761779AbXKHVAT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 16:00:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757858AbXKHVAG
+	id S1762069AbXKHVER (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 16:04:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761251AbXKHVEG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 16:00:06 -0500
-Received: from gw.goop.org ([64.81.55.164]:35691 "EHLO mail.goop.org"
+	Thu, 8 Nov 2007 16:04:06 -0500
+Received: from waste.org ([66.93.16.53]:60806 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754516AbXKHVAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 16:00:05 -0500
-Message-ID: <473378B3.1090700@goop.org>
-Date: Thu, 08 Nov 2007 12:59:31 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	id S1758686AbXKHVEF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 16:04:05 -0500
+Date: Thu, 8 Nov 2007 15:03:48 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Mel Gorman <mel@skynet.ie>, akpm@linux-foundatin.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 02/23] SLUB: Rename NUMA defrag_ratio to remote_node_defrag_ratio
+Message-ID: <20071108210348.GX19691@waste.org>
+References: <20071107011130.382244340@sgi.com> <20071107011226.844437184@sgi.com> <20071108145044.GB2591@skynet.ie> <20071108172548.GW17536@waste.org> <Pine.LNX.4.64.0711081116060.9279@schroedinger.engr.sgi.com> <20071108194735.GW19691@waste.org> <Pine.LNX.4.64.0711081159120.9966@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Glauber de Oliveira Costa <glommer@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Zach Amsden <zach@vmware.com>,
-       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
-Subject: Re: [PATCH RFC 3/7] x86: clean up asm-x86/page*.h
-References: <20071108015008.660012621@goop.org>	 <20071108015310.218076184@goop.org> <5d6222a80711080842i201cb431le966d5069d59db24@mail.gmail.com>
-In-Reply-To: <5d6222a80711080842i201cb431le966d5069d59db24@mail.gmail.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0711081159120.9966@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Glauber de Oliveira Costa wrote:
-> On Nov 7, 2007 11:50 PM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->   
->> +#define PAGETABLE_LEVELS       3
->> +
->> +typedef u64    pteval_t;
->> +typedef u64    pmdval_t;
->> +typedef u64    pudval_t;
->> +typedef u64    pgdval_t;
->> +
->>     
->
->   
->> -static inline unsigned long long native_pgd_val(pgd_t pgd)
->> +static inline pgdval_t native_pgd_val(pgd_t pgd)
->>  {
->>     
-> Maybe these kind of things, the typedef and native_xxx definitions can
-> go into the common header, after we define the PAGETABLE_LEVELS
-> constant?
-> I think the more goes into common headers, the better.
->   
+On Thu, Nov 08, 2007 at 12:01:24PM -0800, Christoph Lameter wrote:
+> On Thu, 8 Nov 2007, Matt Mackall wrote:
+> 
+> > Not really. drivers/char/random.c does:
+> > 
+> > __get_cpu_var(trickle_count)++ & 0xfff
+> 
+> That is incremented on each call to add_timer_randomness. Not a high 
+> enough resolution there. I guess I am stuck with get_cycles().
 
-You mean put them in a common header, but conditionally by #if
-PAGETABLE_LEVELS?  I don't think that would be much of an improvement;
-it would just add more #ifs, which adds lines and conceptual
-complexity.  If you go that way, you may as well put everything in one
-header wrapped in #ifs, but personally I don't think that would help.
+I'm not suggesting you use trickle_count, silly. I'm suggesting you
+use a similar approach.
 
-    J
+But perhaps I should just add a lightweight RNG to random.c and be
+done with it.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
