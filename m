@@ -1,87 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761349AbXKHPET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761366AbXKHPGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761349AbXKHPET (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 10:04:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760851AbXKHPEI
+	id S1761366AbXKHPGU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 10:06:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759031AbXKHPGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 10:04:08 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:47124 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756693AbXKHPEH (ORCPT
+	Thu, 8 Nov 2007 10:06:09 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:40399 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757920AbXKHPGH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 10:04:07 -0500
-Date: Thu, 8 Nov 2007 10:04:05 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
-cc: Andrew Morton <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
-       <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] BUG: usb Mouse continual disconnect (2.6.22.10)
- leading to eventual crash?
-In-Reply-To: <F1D642E5A91BC94D9504EC83AE19E6B0B89769@ecqcmtlmail3.quebec.int.ec.gc.ca>
-Message-ID: <Pine.LNX.4.44L0.0711080959470.4149-100000@iolanthe.rowland.org>
+	Thu, 8 Nov 2007 10:06:07 -0500
+Message-ID: <473325EB.5090907@us.ibm.com>
+Date: Thu, 08 Nov 2007 09:06:19 -0600
+From: Anthony Liguori <aliguori@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Avi Kivity <avi@qumranet.com>
+CC: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rusycorp.com.au>,
+       virtualization@lists.osdl.org, kvm-devel@lists.sourceforge.net
+Subject: Re: [kvm-devel] [PATCH 3/3] virtio PCI device
+References: <11944899922822-git-send-email-aliguori@us.ibm.com>	<11944900141678-git-send-email-aliguori@us.ibm.com>	<11944900152750-git-send-email-aliguori@us.ibm.com> <11944900163817-git-send-email-aliguori@us.ibm.com> <4732A8E5.6090307@qumranet.com> <47331531.8070709@us.ibm.com> <47331F47.70304@qumranet.com>
+In-Reply-To: <47331F47.70304@qumranet.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Nov 2007, Fortier,Vincent [Montreal] wrote:
+Avi Kivity wrote:
+> If a pci device is capable of dma (or issuing interrupts), it will be 
+> useless with pv pci.
 
-> > -----Message d'origine-----
-> > De : Andrew Morton [mailto:akpm@linux-foundation.org] 
-> > Envoyé : 7 novembre 2007 15:33
-> > 
-> > (+linux-usb-devel)
-> > 
-> > > On Wed, 7 Nov 2007 13:19:47 -0500 "Fortier,Vincent 
-> > [Montreal]" <Vincent.Fortier1@EC.GC.CA> wrote:
-> > > 
-> > > I'm having a preblem with a few workstations that are hard freezing 
-> > > from time to time since about a week.  Curiously since then we 
-> > > upgraded from
-> > > 2.6.20.6 to 2.6.20.10...
-> > > 
-> 
-> [.....]
-> 
-> > > 
-> > > Looking at the changes between 2.6.20.6 and 2.6.20.10 I only found 
-> > > this USB related:
-> > > 
-> > http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.22.y.git;a=commit;h=0e22438a5adfdf32b3bb1c75c81c01a29fba9770
-> > > 
-> > > I'm presuming that maybie eventually it might hit a input max barrier 
-> > > (like a max of 1024) and then the kernel would be crashing?
-> > > 
-> > > Help very much appreciated!
-> > 
-> > People are going to want to know if this is still happening 
-> > in 2.6.23 or 2.6.24-rc2, please.
-> 
-> I andrew,
-> 
-> (logged-in at wrok to make proper reply)
-> 
-> It might be tricky to test properly on 2.6.23.1 since theses are all
-> operationnal aviation forecaster workstations 24/7 .... And sadly the
-> problem only occur on a few of theses workstations AFAIK randomly ???  
-> Actually many of them did not had any problems using the exact same
-> FAI reinstallation using the same hardware..?!?!.
-> 
-> If someone thinks that the problem might effectively be the usb patch
-> that I mentionned before (or any other patch that might make
-> suddently thoses stations to freeze dur to a change that occur
-> between 2.6.20.6 and .10) I would then be able to push a new kernel
-> on thoses workstations without the offending patch(es) and have a
-> clear answer within a week.
+Hrm, I think we may be talking about different things.  Are you thinking 
+that the driver I posted allows you to do PCI pass-through over virtio?  
+That's not what it is.
 
-I have no idea what might be causing your problems, however that 
-particular patch you found seems most unlikely to be connected.
+The driver I posted is a virtio implementation that uses a PCI device.  
+This lets you use virtio-blk and virtio-net under KVM.  The alternative 
+to this virtio PCI device would be a virtio transport built with 
+hypercalls like lguest has.  I choose a PCI device because it ensured 
+that each virtio device showed up like a normal PCI device.
 
-One reasonably non-invasive way to do more testing is to use usbmon to 
-record those multiple disconnect events.  Instructions are in the 
-kernel source file Documentation/usb/usbmon.txt.
+Am I misunderstanding what you're asking about?
 
-Alan Stern
+Regards,
+
+Anthony Liguori
+
+>
+>>>  I think that with Amit's pvdma patches you
+>>> can support dma-capable devices as well without too much fuss.
+>>>   
+>>
+>> What is the use case you're thinking of?  A semi-paravirt driver that 
+>> does dma directly to a device?
+>
+> No, an unmodified driver that, by using clever tricks with dma_ops, 
+> can do dma directly to guest memory.  See Amit's patches.
+>
+> In fact, why do a virtio transport at all?  It can be done either with 
+> trap'n'emulate, or by directly mapping the device mmio space into the 
+> guest.
+>
+>
+> (what use case are you considering? devices without interrupts and 
+> dma? pci door stoppers?)
+>
 
