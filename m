@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760328AbXKHLHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760269AbXKHLYO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760328AbXKHLHA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 06:07:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756698AbXKHLGv
+	id S1760269AbXKHLYO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 06:24:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758577AbXKHLYD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 06:06:51 -0500
-Received: from [222.73.24.84] ([222.73.24.84]:49488 "EHLO song.cn.fujitsu.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755670AbXKHLGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 06:06:50 -0500
-Message-ID: <4732EDD2.2050406@cn.fujitsu.com>
-Date: Thu, 08 Nov 2007 19:06:58 +0800
-From: Miao Xie <miaox@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Thu, 8 Nov 2007 06:24:03 -0500
+Received: from mail.issp.bas.bg ([195.96.236.10]:37083 "EHLO mail.issp.bas.bg"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758461AbXKHLYB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 06:24:01 -0500
+From: Marin Mitov <mitov@issp.bas.bg>
+To: linux-kernel@vger.kernel.org
+Subject: Re: is minimum udelay() not respected in preemptible SMP kernel-2.6.23?
+Date: Thu, 8 Nov 2007 13:24:49 +0200
+User-Agent: KMail/1.9.7
+References: <200711071921.52330.mitov@issp.bas.bg> <20071107123045.c6d4b855.akpm@linux-foundation.org>
+In-Reply-To: <20071107123045.c6d4b855.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: gregkh@suse.de
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] sysfs: fix  off-by-one error in fill_read_buffer
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711081324.49130.mitov@issp.bas.bg>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,everyone.
-   I found that there is a off-by-one problem in the following code.
+Hi all,
 
-Version:	2.6.24-rc2
-File:		fs/sysfs/file.c:118-122
-Function:	fill_read_buffer
---------------------------------------------------------------------
-	count = ops->show(kobj, attr_sd->s_attr.attr, buffer->page);
+Thanks to all of you answering to my post.
 
-	sysfs_put_active_two(attr_sd);
+On 7.11.2007, Andrew Morton wrote:
+> Ow.  Yes, from my reading delay_tsc() can return early (or after
+> heat-death-of-the-universe) if the TSCs are offset and if preemption
+> migrates the calling task between CPUs.
+>
+> I suppose a lameo fix would be to disable preemption in delay_tsc().
 
-	BUG_ON(count > (ssize_t)PAGE_SIZE);
---------------------------------------------------------------------
-Because according to the specification of the sysfs and the implement of the
-show methods, the show methods return the number of bytes which would be
-generated for the given input, excluding the trailing null.So if the return
-value of the show methods equals PAGE_SIZE - 1, the buffer is full in fact.
-And if the return value equals PAGE_SIZE, the resulting string was already
-truncated,or buffer overflow occurred.
+I have seen the problem in delay_tsc(), but I was pusled by these lines
+in my dmesg:
 
-This patch fixes an off-by-one error in fill_read_buffer.
+> Time: acpi_pm clocksource has been installed.
+> Switched to high resolution mode on CPU 0
+> Switched to high resolution mode on CPU 1
 
-Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+I thought (sort of) acpi_pm (but not tsc) is used in udelay().
 
----
-  fs/sysfs/file.c |    2 +-
-  1 files changed, 1 insertions(+), 1 deletions(-)
+The same delay_tsc() is used in both arches: i386 & x86_64
+(and as I see from the proposed patches in -mm, also for 
+the new x86 arch). Should the patch be applied for all of them?
 
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index 27d1785..f98d66d 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -119,7 +119,7 @@ static int fill_read_buffer(struct dentry * dentry, struct sysfs_buffer * buffer
+Quite similar function ia64_itc_udelay() is used in IA64, but one
+find a coment before it:
+/*
+ * Generic udelay assumes that if preemption is allowed and the thread
+ * migrates to another CPU, that the ITC values are synchronized across
+ * all CPUs.
+ */
 
-  	sysfs_put_active_two(attr_sd);
+Are they really synchronized or similar patch: preempt_disable/enable()
+should be applied?
 
--	BUG_ON(count > (ssize_t)PAGE_SIZE);
-+	BUG_ON(count >= (ssize_t)PAGE_SIZE);
-  	if (count >= 0) {
-  		buffer->needs_read_fill = 0;
-  		buffer->count = count;
--- 
-1.5.3
+What about all other arches?
 
+Thanks.
 
-
+Marin Mitov
