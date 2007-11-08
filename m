@@ -1,137 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760873AbXKHP1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761179AbXKHP2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760873AbXKHP1Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 10:27:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754234AbXKHP1C
+	id S1761179AbXKHP2d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 10:28:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759006AbXKHP2Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 10:27:02 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:42259 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752999AbXKHP1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 10:27:00 -0500
-Subject: Re: [patch 00/23] Slab defragmentation V6
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundatin.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <20071107011130.382244340@sgi.com>
-References: <20071107011130.382244340@sgi.com>
-Content-Type: text/plain
-Date: Thu, 08 Nov 2007 15:26:52 +0000
-Message-Id: <1194535612.6214.9.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Nov 2007 10:28:25 -0500
+Received: from styx.suse.cz ([82.119.242.94]:54228 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753751AbXKHP2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 10:28:24 -0500
+Date: Thu, 8 Nov 2007 16:28:22 +0100
+From: Jan Kara <jack@suse.cz>
+To: Theodore Tso <tytso@mit.edu>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: [RFC] [PATCH 3/3] Recursive mtime for ext3
+Message-ID: <20071108152822.GF6781@duck.suse.cz>
+References: <20071106171537.GD23689@duck.suse.cz> <20071106171945.GG23689@duck.suse.cz> <20071106194012.GE12857@thunk.org> <20071107143605.GD22214@duck.suse.cz> <20071108002037.GA7728@thunk.org> <20071108105642.GB6781@duck.suse.cz> <20071108143759.GF7728@thunk.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071108143759.GF7728@thunk.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-11-06 at 17:11 -0800, Christoph Lameter wrote:
-> Slab defragmentation is mainly an issue if Linux is used as a fileserver
+On Thu 08-11-07 09:37:59, Theodore Tso wrote:
+> Ah, OK, so the two things that I didn't get from your patch
+> description are:
+> 
+> 1) the rtime flag and rtime field are only set on directories
+> 2) the intended use is not trackerd and its ilk, but rsync and updatedb,
+>    so it is desirable that scan/queries be persistent across reboots
+> 
+> But then the major hole in this scheme is still the issue of hard
+> links.  The rsync program is still going to have to scan the entire
+> subtree looking for hard links, since an inode with multiple links
+> into the directory tree can't guarantee that all of its parent
+> directories will have their rtime field updated.
+  Not really - initially rsync can scan a tree for hardlinks and remember
+where they are. If a hardlink to a file is created, an rtime update is
+sent up the tree via the path used to create the link. So during next scan,
+rsync will see the file is modified and finds out that its nlink is > 1
+and adds it to the list of hardlinked files.
+  So for things like regular backups hardlinks can be dealt with
+efficiently.
 
-Was hoping this would get renamed to SLUB Targetted Reclaim from
-discussions at VM Summit. As no copying is taking place, it's confusing
-to call it defragmentation to me anyway. Not a major deal but it made
-reading the patches a little confusing.
+> A program like updatedb which only cares about filenames will be OK,
+> since that means it really only cares about knowing when directories
+> have changed, and you can't have hard links to directories.
+> 
+> The other problem, of course, is that this feature would become ext
+> 2/3/4 specific, and I could see future filesystems possibly wanting
+> this.  So this raises the question of whether the interface should be
+> at the VFS layer or not --- and if so, how to handle querying whether
+> a particulra filesystem supports it, and what happens if you have a
+> subtree which is covered by a filesystem that doesn't support rtime?
+> 
+> So a program like rsync would need to scan /proc/self/mounts to see
+> whether or not it would be safe to use this feature in the first
+  Yes, being filesystem specific and thus requiring special handling of
+mount points is a disadvantage of this approach.
 
-> and large amounts of dentries, inodes and buffer heads accumulate. In some
-> load situations the slabs become very sparsely populated so that a lot of
-> memory is wasted by slabs that only contain one or a few objects. In
-> extreme cases the performance of a machine will become sluggish since
-> we are continually running reclaim. Slab defragmentation adds the
-> capability to recover wasted memory.
-> 
+> place.  And, of course, rsync would need to know whether it has write
+> access to the tree in order to set flags in the directory, and what to
+> do if some portion of the subtree isn't writeable by rsync.
+  Yes, the cases where we cannot modify the flag in a tree would have to be
+handled (similarly as the cases where the filesystem simply does not
+support the feature). I don't think it wouldn't be too complicated but I have
+not the modification for rsync yet, so I can underestimate...
 
-When reading this first, I expected to find how slab objects get copied
-around and packed which is my problem with the defragmentation name.
-Again, not really that relevant to the code.
+> On Thu, Nov 08, 2007 at 11:56:42AM +0100, Jan Kara wrote:
+> > > Note by the way that since you need to own the file/directory to set
+> > > flags, this means that only programs that are running as root or
+> > > running as the uid who owns the entire subtree will be able to use
+> > > this scheme.  One advantage of doing in kernel memory is that you
+> > > might be able to support watching a tree that is not owned by the
+> > > watcher.
+> >   Yes, that is the advantage. On the other hand we could allow setting that
+> > particular flag even without being an owner of the inode. In fact, I
+> > don't currently see use case where you won't be either root (rsync,
+> > updatedb) or an owner of the files (watching config file trees) but I guess
+> > people would find some :).
+> 
+> Sometimes people like to use rsync to copy a subtree to which they
+> have read access but not write access.  (And here note that it's not
+> enough to have write access, you actually need to *own* all of the
+> directories in the subtree).
+  Yes, so in such cases my feature won't be able to help. But I think
+there are still enough cases where it would help.
 
-> With lumpy reclaim slab defragmentation can be used to enhance the
-> ability to recover larger contiguous areas of memory. Lumpy reclaim currently
-> cannot do anything if a slab page is encountered. With slab defragmentation
-> that slab page can be removed and a large contiguous page freed. It may
-> be possible to have slab pages also part of ZONE_MOVABLE (Mel's defrag
-> scheme in 2.6.23)
+> Yes, it's safe to let any user *set* the rtime flag, but we couldn't
+> let them clear the rtime flag, since then they would be able to hide a
+> file modification from some other (potentially privileged) process.
+  Good point.
 
-More terminology nit-pick - ZONE_MOVABLE is not defragmenting anything.
-It's just partitioning memory. The slab pages need to be 100%
-reclaimable or movable for that to happen but even with targetted
-reclaim, some dentries such as the root directory one cannot be
-reclaimed, right?
+> Speaking of security, I assume your patch will never allow rtime to go
+> backwards (for example if the user attempts to backdate a file's mtime
+> field using the utime() or utimes() system call)?
+  No, the patch does not allow this. But anyway in case user has enough
+rights to change file's mtime, would it really be a security concern?
 
->
->  or the MOVABLE areas (antifrag patches in mm).
-> 
-
-It'd still be valid to leave them as MIGRATE_RECLAIMABLE because that is
-what they are. Arguably, MIGRATE_RECLAIMABLE could be dropped in it's
-entirety but I'd rather not as reclaimable blocks have significantly
-different reclaim costs to pages that are currently marked movable.
-
-> The patchset is also available via git
-> 
-> git pull git://git.kernel.org/pub/scm/linux/kernel/git/christoph/slab.git defrag
-> 
-> 
-> Currently memory reclaim from the following slab caches is possible:
-> 
-> 1. dentry cache
-> 2. inode cache (with a generic interface to allow easy setup of more
->    filesystems than the currently supported ext2/3/4 reiserfs, XFS
->    and proc)
-> 3. buffer_heads
-> 
-> One typical mechanism that triggers slab defragmentation on my systems
-> is the daily run of
-> 
-> 	updatedb
-> 
-> Updatedb scans all files on the system which causes a high inode and dentry
-> use. After updatedb is complete we need to go back to the regular use
-> patterns (typical on my machine: kernel compiles). Those need the memory now
-> for different purposes. The inodes and dentries used for updatedb will
-> gradually be aged by the dentry/inode reclaim algorithm which will free
-> up the dentries and inode entries randomly through the slabs that were
-> allocated. As a result the slabs will become sparsely populated. If they
-> become empty then they can be freed but a lot of them will remain sparsely
-> populated. That is where slab defrag comes in: It removes the slabs with
-> just a few entries reclaiming more memory for other uses.
-> 
-> V5->V6
-> - Rediff against 2.6.24-rc2 + mm slub patches.
-> - Add reviewed by lines.
-> - Take out the experimental code to make slab pages movable. That
->   has to wait until this has been considered by Mel.
-> 
-
-I still haven't considered them properly. I've been backlogged for I
-don't know how long at this point and this is on the increasingly large
-todo list :( . I don't believe it is massively urgent at the moment
-though and reclaiming to start with is perfectly adequate just as lumpy
-reclaim is fine at the moment.
-
-> V4->V5:
-> - Support lumpy reclaim for slabs
-> - Support reclaim via slab_shrink()
-> - Add constructors to insure a consistent object state at all times.
-> 
-> V3->V4:
-> - Optimize scan for slabs that need defragmentation
-> - Add /sys/slab/*/defrag_ratio to allow setting defrag limits
->   per slab.
-> - Add support for buffer heads.
-> - Describe how the cleanup after the daily updatedb can be
->   improved by slab defragmentation.
-> 
-> V2->V3
-> - Support directory reclaim
-> - Add infrastructure to trigger defragmentation after slab shrinking if we
->   have slabs with a high degree of fragmentation.
-> 
-> V1->V2
-> - Clean up control flow using a state variable. Simplify API. Back to 2
->   functions that now take arrays of objects.
-> - Inode defrag support for a set of filesystems
-> - Fix up dentry defrag support to work on negative dentries by adding
->   a new dentry flag that indicates that a dentry is not in the process
->   of being freed or allocated.
-> 
-
+> I guess I'm convinced that updatedb could use this facility, but there
+> are enough asteriks around it that I'm not sure that rsync could
+> safely use this feature in production.  I don't doubt that in a cold
+> cache case, it would speed up rsync, but because it doesn't handle
+> hard links, it's not reliable.  Since rsync often gets used for
+> backups, this is a big deal.  There are also questions about what to
+> do if rsync doesn't have write access to the filesystem, or if there
+> is a non-rtime capable filesystem mounted in the subtree, etc., that
+> can be worked around, but would add a lot of complexity and grottiness
+> to the rsync source tree.  Is the rsync maintainer really willing to
+> add all of the necessary hair to support this rtime facility into
+> their program?
+  Hardlinks can be worked-around as I wrote above and there would have to
+be a fallback in case we cannot set the flag. So I agree the code would be
+more complicated but I think it could be done in a quite clean way - but of
+course that has to be proven by a patch which I don't have yet. I have not
+spoken to rsync maintainers about this - first I want to have at least a
+preliminary version of a patch for rsync so that we have something to
+talk about...
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
