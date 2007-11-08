@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762389AbXKHWs5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762765AbXKHWtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762389AbXKHWs5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 17:48:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758366AbXKHWst
+	id S1762765AbXKHWtR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 17:49:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760889AbXKHWsw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 17:48:49 -0500
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:18080 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758083AbXKHWss (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 17:48:48 -0500
-X-IronPort-AV: E=Sophos;i="4.21,391,1188802800"; 
-   d="scan'208";a="185677937"
-To: linux-kernel@vger.kernel.org, Takashi Iwai <tiwai@suse.de>
-Subject: snd_hda_intel 2.6.24-rc2 bug: interrupts don't always work on Lenovo X60s
-X-Message-Flag: Warning: May contain useful information
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 08 Nov 2007 14:48:32 -0800
-Message-ID: <ada1wb05p6n.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Thu, 8 Nov 2007 17:48:52 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:48012 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760770AbXKHWsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 17:48:51 -0500
+Message-ID: <4733925E.3050208@us.ibm.com>
+Date: Thu, 08 Nov 2007 16:49:02 -0600
+From: Anthony Liguori <aliguori@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 08 Nov 2007 22:48:36.0080 (UTC) FILETIME=[7F27AF00:01C82259]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+To: ron minnich <rminnich@gmail.com>
+CC: Anthony Liguori <anthony@codemonkey.ws>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       virtualization@lists.linux-foundation.org, lguest <lguest@ozlabs.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Lguest] [PATCH] virtio config_ops refactoring
+References: <4730A8F3.6020008@us.ibm.com> <200711081320.35844.rusty__6233.15023626692$1194488552$gmane$org@rustcorp.com.au>  <4732774C.6020903@codemonkey.ws>  <200711090924.28659.rusty@rustcorp.com.au>  <47338EA0.6050100@codemonkey.ws> <13426df10711081447o688550a4jc01be2d7f06209e0@mail.gmail.com>
+In-Reply-To: <13426df10711081447o688550a4jc01be2d7f06209e0@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With 2.6.24-rc2 on my Lenovo X60s, I sometimes get:
+ron minnich wrote:
+> Hi, I'm sorry, I've been stuck on other things (NFS RDMA anyone?) and
+> missed part of this discussion.
+>
+> Is it really the case that operations on virtio devices will involve
+> outl/inl etc.?
+>   
 
-    hda_intel: No response from codec, disabling MSI: last cmd=0x002f0d00
-    hda_intel: azx_get_response timeout, switching to polling mode: last cmd=0x002f0d00
+No, this is just for the PCI virtio transport.  lguest's virtio 
+transport uses hypercalls and shared memory.
 
-when loading snd_hda_intel.  Sound still works but interrupts aren't generated.
+Regards,
 
-I tried bisecting but I haven't gotten good info yet because it seems
-that this is not completely reproducible -- sometimes when I load the
-module, it works fine, and other times I get the message.
+Anthony Liguori
 
-I think this is a regression, since I don't recall ever seeing the
-message with 2.6.22 or so.
+> Apologies in advance for my failure to pay attention.
+>
+> thanks
+>
+> ron
+>   
 
-Any idea on how to help debug this?
-
-Thanks,
-  Roland
