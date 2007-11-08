@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762704AbXKHS7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762655AbXKHTAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762704AbXKHS7h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 13:59:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761325AbXKHS7a
+	id S1762655AbXKHTAm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 14:00:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761299AbXKHTAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 13:59:30 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44165 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761075AbXKHS7a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 13:59:30 -0500
-Date: Thu, 8 Nov 2007 10:59:29 -0800 (PST)
+	Thu, 8 Nov 2007 14:00:35 -0500
+Received: from relay1.corp.sgi.com ([192.48.171.29]:40505 "EHLO relay.sgi.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1761609AbXKHTAe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 14:00:34 -0500
+Date: Thu, 8 Nov 2007 11:00:32 -0800 (PST)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
 To: Mel Gorman <mel@skynet.ie>
 cc: akpm@linux-foundatin.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 07/23] SLUB: Add defrag_ratio field and sysfs support.
-In-Reply-To: <20071108150705.GD2591@skynet.ie>
-Message-ID: <Pine.LNX.4.64.0711081057290.8954@schroedinger.engr.sgi.com>
-References: <20071107011130.382244340@sgi.com> <20071107011228.102370371@sgi.com>
- <20071108150705.GD2591@skynet.ie>
+Subject: Re: [patch 12/23] SLUB: Trigger defragmentation from memory reclaim
+In-Reply-To: <20071108151249.GE2591@skynet.ie>
+Message-ID: <Pine.LNX.4.64.0711081059420.8954@schroedinger.engr.sgi.com>
+References: <20071107011130.382244340@sgi.com> <20071107011229.423714790@sgi.com>
+ <20071108151249.GE2591@skynet.ie>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,22 +26,12 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Thu, 8 Nov 2007, Mel Gorman wrote:
 
-> On (06/11/07 17:11), Christoph Lameter didst pronounce:
-> > The defrag_ratio is used to set the threshold at which defragmentation
-> > should be run on a slabcache.
-> > 
+> >  	up_read(&shrinker_rwsem);
+> > +	if (gfp_mask & __GFP_FS)
+> > +		kmem_cache_defrag(zone ? zone_to_nid(zone) : -1);
 > 
-> I'm thick, I would like to see a quick note here on what defragmentation
-> means. Also, this defrag_ratio seems to have a significantly different
-> meaning to the other defrag_ratio which isn't helping my poor head at
-> all.
+> Does this make an assumption that only filesystem-related slabs may be
+> targetted for reclaim? What if there is a slab that can free its objects
+> without ever caring about a filesystem?
 
-Yes that is why they have different names. The remote_node_defrag ratio 
-controls the amount of remote allocs we do to reduce fragmentation.
- 
-> "The defrag_ratio sets a threshold at which a slab will be vacated of all
-> it's objects and the pages freed during memory reclaim."
-
-Sortof. If a slab is beyond the threshold during reclaim then reclaim will 
-attempt to free the remaining objects in the slab to reclaim the whole 
-slab.
+Correct. Currently only filesystem related slabs support slab defragy.
