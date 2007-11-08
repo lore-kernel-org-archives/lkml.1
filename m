@@ -1,285 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761876AbXKHR2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762044AbXKHR2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761876AbXKHR2N (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 12:28:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760907AbXKHR15
+	id S1762044AbXKHR2x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 12:28:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761040AbXKHR2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 12:27:57 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:53331 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759437AbXKHR1z (ORCPT
+	Thu, 8 Nov 2007 12:28:45 -0500
+Received: from crystal.sipsolutions.net ([195.210.38.204]:41328 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761047AbXKHR2o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 12:27:55 -0500
-Date: Thu, 8 Nov 2007 17:27:47 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Andreas Schwab <schwab@suse.de>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-scsi@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/1] aacraid: don't assign cpu_to_le32(int) to u8
-Message-ID: <20071108172747.GA4054@infradead.org>
-References: <jefxzqqeha.fsf@sykes.suse.de> <AE4F746F2AECFC4DA4AADD66A1DFEF01F95EF7@otce2k301.adaptec.com> <20071107173307.GB25560@infradead.org> <AE4F746F2AECFC4DA4AADD66A1DFEF01F95F54@otce2k301.adaptec.com>
+	Thu, 8 Nov 2007 12:28:44 -0500
+Subject: [PATCH (2.6.25) 1/2] hibernation: clean up Kconfig
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: rjw@sisk.pl, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071108092149.e27c5ba3.akpm@linux-foundation.org>
+References: <20071107135758.100171000@sipsolutions.net>
+	 <200711072317.48023.rjw@sisk.pl> <1194533053.6294.42.camel@johannes.berg>
+	 <20071108092149.e27c5ba3.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 08 Nov 2007 18:30:03 +0100
+Message-Id: <1194543003.4793.19.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <AE4F746F2AECFC4DA4AADD66A1DFEF01F95F54@otce2k301.adaptec.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 07, 2007 at 01:51:44PM -0500, Salyzyn, Mark wrote:
-> Christoph Hellwig [mailto:hch@infradead.org] sez:
-> > Did anyone run the driver through sparse to see if we have 
-> > more issues like this?
-> 
-> There are some warnings from sparse, none like this one. I will deal
-> with the warnings ...
+This cleans up the hibernation Kconfig and removes the need to
+declare centrally which architectures support hibernation. All
+architectures that currently support hibernation are modified
+accordingly.
 
-Actually there are a lot of endianess warnings, fortunately most of them
-harmless.  The patch below fixes all of them up (including the ones in
-the patch I replied to), except for aac_init_adapter which is really odd
-and I don't know what to do.
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Acked-by: Paul Mackerras <paulus@samba.org>
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: linuxppc-dev@ozlabs.org
+Cc: linux-pm@lists.linux-foundation.org
+---
+ arch/i386/Kconfig    |    4 ++++
+ arch/powerpc/Kconfig |   14 ++++++++++++--
+ arch/x86_64/Kconfig  |    3 +++
+ kernel/power/Kconfig |   18 +++---------------
+ 4 files changed, 22 insertions(+), 17 deletions(-)
 
-
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-
-Index: linux-2.6/drivers/scsi/aacraid/aachba.c
-===================================================================
---- linux-2.6.orig/drivers/scsi/aacraid/aachba.c	2007-11-08 17:09:50.000000000 +0100
-+++ linux-2.6/drivers/scsi/aacraid/aachba.c	2007-11-08 17:14:43.000000000 +0100
-@@ -981,7 +981,7 @@
- 	aac_fib_init(fib);
- 	readcmd = (struct aac_read *) fib_data(fib);
- 	readcmd->command = cpu_to_le32(VM_CtBlockRead);
--	readcmd->cid = cpu_to_le16(scmd_id(cmd));
-+	readcmd->cid = cpu_to_le32(scmd_id(cmd));
- 	readcmd->block = cpu_to_le32((u32)(lba&0xffffffff));
- 	readcmd->count = cpu_to_le32(count * 512);
+--- everything.orig/arch/powerpc/Kconfig	2007-11-08 16:47:42.231537111 +0100
++++ everything/arch/powerpc/Kconfig	2007-11-08 17:17:04.151557021 +0100
+@@ -140,9 +140,19 @@ config DEFAULT_UIMAGE
+ 	  Used to allow a board to specify it wants a uImage built by default
+ 	default n
  
-@@ -1072,7 +1072,7 @@
- 	aac_fib_init(fib);
- 	writecmd = (struct aac_write *) fib_data(fib);
- 	writecmd->command = cpu_to_le32(VM_CtBlockWrite);
--	writecmd->cid = cpu_to_le16(scmd_id(cmd));
-+	writecmd->cid = cpu_to_le32(scmd_id(cmd));
- 	writecmd->block = cpu_to_le32((u32)(lba&0xffffffff));
- 	writecmd->count = cpu_to_le32(count * 512);
- 	writecmd->sg.count = cpu_to_le32(1);
-@@ -1306,8 +1306,8 @@
- 			  dev->supplement_adapter_info.VpdInfo.Tsid);
- 		}
- 		if (!aac_check_reset ||
--		  (dev->supplement_adapter_info.SupportedOptions2 &
--		  le32_to_cpu(AAC_OPTION_IGNORE_RESET))) {
-+		    (dev->supplement_adapter_info.SupportedOptions2 &
-+		     cpu_to_le32(AAC_OPTION_IGNORE_RESET))) {
- 			printk(KERN_INFO "%s%d: Reset Adapter Ignored\n",
- 			  dev->name, dev->id);
- 		}
-Index: linux-2.6/drivers/scsi/aacraid/commsup.c
-===================================================================
---- linux-2.6.orig/drivers/scsi/aacraid/commsup.c	2007-11-08 17:09:50.000000000 +0100
-+++ linux-2.6/drivers/scsi/aacraid/commsup.c	2007-11-08 17:14:43.000000000 +0100
-@@ -796,13 +796,13 @@
- 	 */
- 	switch (le32_to_cpu(aifcmd->command)) {
- 	case AifCmdDriverNotify:
--		switch (le32_to_cpu(((u32 *)aifcmd->data)[0])) {
-+		switch (le32_to_cpu(((__le32 *)aifcmd->data)[0])) {
- 		/*
- 		 *	Morph or Expand complete
- 		 */
- 		case AifDenMorphComplete:
- 		case AifDenVolumeExtendComplete:
--			container = le32_to_cpu(((u32 *)aifcmd->data)[1]);
-+			container = le32_to_cpu(((__le32 *)aifcmd->data)[1]);
- 			if (container >= dev->maximum_num_containers)
- 				break;
+-config PPC64_SWSUSP
++config HIBERNATE_32
+ 	bool
+-	depends on PPC64 && (BROKEN || (PPC_PMAC64 && EXPERIMENTAL))
++	depends on (PPC_PMAC && !SMP) || BROKEN
++	default y
++
++config HIBERNATE_64
++	bool
++	depends on BROKEN || (PPC_PMAC64 && EXPERIMENTAL)
++	default y
++
++config ARCH_HIBERNATION_POSSIBLE
++	bool
++	depends on (PPC64 && HIBERNATE_64) || (PPC32 && HIBERNATE_32)
+ 	default y
  
-@@ -835,25 +835,25 @@
- 			if (container >= dev->maximum_num_containers)
- 				break;
- 			if ((dev->fsa_dev[container].config_waiting_on ==
--			    le32_to_cpu(*(u32 *)aifcmd->data)) &&
-+			    le32_to_cpu(*(__le32 *)aifcmd->data)) &&
- 			 time_before(jiffies, dev->fsa_dev[container].config_waiting_stamp + AIF_SNIFF_TIMEOUT))
- 				dev->fsa_dev[container].config_waiting_on = 0;
- 		} else for (container = 0;
- 		    container < dev->maximum_num_containers; ++container) {
- 			if ((dev->fsa_dev[container].config_waiting_on ==
--			    le32_to_cpu(*(u32 *)aifcmd->data)) &&
-+			    le32_to_cpu(*(__le32 *)aifcmd->data)) &&
- 			 time_before(jiffies, dev->fsa_dev[container].config_waiting_stamp + AIF_SNIFF_TIMEOUT))
- 				dev->fsa_dev[container].config_waiting_on = 0;
- 		}
- 		break;
+ config PPC_DCR_NATIVE
+--- everything.orig/kernel/power/Kconfig	2007-11-08 16:47:42.411527399 +0100
++++ everything/kernel/power/Kconfig	2007-11-08 17:17:04.151557021 +0100
+@@ -63,7 +63,8 @@ config PM_TRACE
  
- 	case AifCmdEventNotify:
--		switch (le32_to_cpu(((u32 *)aifcmd->data)[0])) {
-+		switch (le32_to_cpu(((__le32 *)aifcmd->data)[0])) {
- 		/*
- 		 *	Add an Array.
- 		 */
- 		case AifEnAddContainer:
--			container = le32_to_cpu(((u32 *)aifcmd->data)[1]);
-+			container = le32_to_cpu(((__le32 *)aifcmd->data)[1]);
- 			if (container >= dev->maximum_num_containers)
- 				break;
- 			dev->fsa_dev[container].config_needed = ADD;
-@@ -866,7 +866,7 @@
- 		 *	Delete an Array.
- 		 */
- 		case AifEnDeleteContainer:
--			container = le32_to_cpu(((u32 *)aifcmd->data)[1]);
-+			container = le32_to_cpu(((__le32 *)aifcmd->data)[1]);
- 			if (container >= dev->maximum_num_containers)
- 				break;
- 			dev->fsa_dev[container].config_needed = DELETE;
-@@ -880,7 +880,7 @@
- 		 * waiting on something else, setup to wait on a Config Change.
- 		 */
- 		case AifEnContainerChange:
--			container = le32_to_cpu(((u32 *)aifcmd->data)[1]);
-+			container = le32_to_cpu(((__le32 *)aifcmd->data)[1]);
- 			if (container >= dev->maximum_num_containers)
- 				break;
- 			if (dev->fsa_dev[container].config_waiting_on &&
-@@ -905,13 +905,13 @@
- 			if (container >= dev->maximum_num_containers)
- 				break;
- 			if ((dev->fsa_dev[container].config_waiting_on ==
--			    le32_to_cpu(*(u32 *)aifcmd->data)) &&
-+			    le32_to_cpu(*(__le32 *)aifcmd->data)) &&
- 			 time_before(jiffies, dev->fsa_dev[container].config_waiting_stamp + AIF_SNIFF_TIMEOUT))
- 				dev->fsa_dev[container].config_waiting_on = 0;
- 		} else for (container = 0;
- 		    container < dev->maximum_num_containers; ++container) {
- 			if ((dev->fsa_dev[container].config_waiting_on ==
--			    le32_to_cpu(*(u32 *)aifcmd->data)) &&
-+			    le32_to_cpu(*(__le32 *)aifcmd->data)) &&
- 			 time_before(jiffies, dev->fsa_dev[container].config_waiting_stamp + AIF_SNIFF_TIMEOUT))
- 				dev->fsa_dev[container].config_waiting_on = 0;
- 		}
-@@ -926,9 +926,9 @@
- 		 * wait for a container change.
- 		 */
+ config PM_SLEEP_SMP
+ 	bool
+-	depends on SUSPEND_SMP_POSSIBLE || HIBERNATION_SMP_POSSIBLE
++	depends on SMP
++	depends on SUSPEND_SMP_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
+ 	depends on PM_SLEEP
+ 	select HOTPLUG_CPU
+ 	default y
+@@ -97,22 +98,9 @@ config SUSPEND
+ 	  powered and thus its contents are preserved, such as the
+ 	  suspend-to-RAM state (i.e. the ACPI S3 state).
  
--		if ((((u32 *)aifcmd->data)[1] == cpu_to_le32(AifJobCtrZero))
--		 && ((((u32 *)aifcmd->data)[6] == ((u32 *)aifcmd->data)[5])
--		  || (((u32 *)aifcmd->data)[4] == cpu_to_le32(AifJobStsSuccess)))) {
-+		if (((__le32 *)aifcmd->data)[1] == cpu_to_le32(AifJobCtrZero) &&
-+		    (((__le32 *)aifcmd->data)[6] == ((__le32 *)aifcmd->data)[5] ||
-+		     ((__le32 *)aifcmd->data)[4] == cpu_to_le32(AifJobStsSuccess))) {
- 			for (container = 0;
- 			    container < dev->maximum_num_containers;
- 			    ++container) {
-@@ -943,9 +943,9 @@
- 					jiffies;
- 			}
- 		}
--		if ((((u32 *)aifcmd->data)[1] == cpu_to_le32(AifJobCtrZero))
--		 && (((u32 *)aifcmd->data)[6] == 0)
--		 && (((u32 *)aifcmd->data)[4] == cpu_to_le32(AifJobStsRunning))) {
-+		if (((__le32 *)aifcmd->data)[1] == cpu_to_le32(AifJobCtrZero) &&
-+		    ((__le32 *)aifcmd->data)[6] == 0 &&
-+		    ((__le32 *)aifcmd->data)[4] == cpu_to_le32(AifJobStsRunning)) {
- 			for (container = 0;
- 			    container < dev->maximum_num_containers;
- 			    ++container) {
-@@ -1339,10 +1339,10 @@
- 			aif = (struct aac_aifcmd *)hw_fib->data;
- 			aif->command = cpu_to_le32(AifCmdEventNotify);
- 		 	aif->seqnum = cpu_to_le32(0xFFFFFFFF);
--		 	aif->data[0] = cpu_to_le32(AifEnExpEvent);
--			aif->data[1] = cpu_to_le32(AifExeFirmwarePanic);
--		 	aif->data[2] = cpu_to_le32(AifHighPriority);
--			aif->data[3] = cpu_to_le32(BlinkLED);
-+		 	aif->data[0] = AifEnExpEvent;
-+			aif->data[1] = AifExeFirmwarePanic;
-+		 	aif->data[2] = AifHighPriority;
-+			aif->data[3] = BlinkLED;
- 
- 			/*
- 			 * Put the FIB onto the
-@@ -1373,8 +1373,8 @@
- 	printk(KERN_ERR "%s: Host adapter BLINK LED 0x%x\n", aac->name, BlinkLED);
- 
- 	if (!aac_check_reset ||
--		(aac->supplement_adapter_info.SupportedOptions2 &
--			le32_to_cpu(AAC_OPTION_IGNORE_RESET)))
-+	    (aac->supplement_adapter_info.SupportedOptions2 &
-+	     cpu_to_le32(AAC_OPTION_IGNORE_RESET)))
- 		goto out;
- 	host = aac->scsi_host_ptr;
- 	if (aac->thread->pid != current->pid)
-@@ -1655,11 +1655,11 @@
- 				struct fib *fibptr;
- 
- 				if ((fibptr = aac_fib_alloc(dev))) {
--					u32 * info;
-+					__le32 *info;
- 
- 					aac_fib_init(fibptr);
- 
--					info = (u32 *) fib_data(fibptr);
-+					info = (__le32 *) fib_data(fibptr);
- 					if (now.tv_usec > 500000)
- 						++now.tv_sec;
- 
-Index: linux-2.6/drivers/scsi/aacraid/dpcsup.c
-===================================================================
---- linux-2.6.orig/drivers/scsi/aacraid/dpcsup.c	2007-11-08 17:09:50.000000000 +0100
-+++ linux-2.6/drivers/scsi/aacraid/dpcsup.c	2007-11-08 17:14:43.000000000 +0100
-@@ -229,11 +229,9 @@
-  *	all QE there are and wake up all the waiters before exiting.
-  */
- 
--unsigned int aac_intr_normal(struct aac_dev * dev, u32 Index)
-+unsigned int aac_intr_normal(struct aac_dev * dev, u32 index)
- {
--	u32 index = le32_to_cpu(Index);
+-config HIBERNATION_UP_POSSIBLE
+-	bool
+-	depends on X86 || PPC64_SWSUSP || PPC32
+-	depends on !SMP
+-	default y
 -
--	dprintk((KERN_INFO "aac_intr_normal(%p,%x)\n", dev, Index));
-+	dprintk((KERN_INFO "aac_intr_normal(%p,%x)\n", dev, index));
- 	if ((index & 0x00000002L)) {
- 		struct hw_fib * hw_fib;
- 		struct fib * fib;
-@@ -301,7 +299,7 @@
+-config HIBERNATION_SMP_POSSIBLE
+-	bool
+-	depends on (X86 && !X86_VOYAGER) || PPC64_SWSUSP
+-	depends on SMP
+-	default y
+-
+ config HIBERNATION
+ 	bool "Hibernation (aka 'suspend to disk')"
+-	depends on PM && SWAP
+-	depends on HIBERNATION_UP_POSSIBLE || HIBERNATION_SMP_POSSIBLE
++	depends on PM && SWAP && ARCH_HIBERNATION_POSSIBLE
+ 	---help---
+ 	  Enable the suspend to disk (STD) functionality, which is usually
+ 	  called "hibernation" in user interfaces.  STD checkpoints the
+--- everything.orig/arch/i386/Kconfig	2007-11-08 16:47:42.301538141 +0100
++++ everything/arch/i386/Kconfig	2007-11-08 17:17:04.161529298 +0100
+@@ -1319,3 +1319,7 @@ config X86_TRAMPOLINE
+ config KTIME_SCALAR
+ 	bool
+ 	default y
++
++config ARCH_HIBERNATION_POSSIBLE
++	def_bool y
++	depends on !SMP || !X86_VOYAGER
+--- everything.orig/arch/x86_64/Kconfig	2007-11-08 16:47:42.371532987 +0100
++++ everything/arch/x86_64/Kconfig	2007-11-08 17:17:04.161529298 +0100
+@@ -716,6 +716,9 @@ menu "Power management options"
  
- 		if (hwfib->header.Command == cpu_to_le16(NuFileSystem))
- 		{
--			u32 *pstatus = (u32 *)hwfib->data;
-+			__le32 *pstatus = (__le32 *)hwfib->data;
- 			if (*pstatus & cpu_to_le32(0xffff0000))
- 				*pstatus = cpu_to_le32(ST_OK);
- 		}
-Index: linux-2.6/drivers/scsi/aacraid/linit.c
-===================================================================
---- linux-2.6.orig/drivers/scsi/aacraid/linit.c	2007-11-08 17:09:50.000000000 +0100
-+++ linux-2.6/drivers/scsi/aacraid/linit.c	2007-11-08 17:14:43.000000000 +0100
-@@ -584,8 +584,8 @@
- 	 * support a register, instead of a commanded, reset.
- 	 */
- 	if ((aac->supplement_adapter_info.SupportedOptions2 &
--	  le32_to_cpu(AAC_OPTION_MU_RESET|AAC_OPTION_IGNORE_RESET)) ==
--	  le32_to_cpu(AAC_OPTION_MU_RESET))
-+	     cpu_to_le32(AAC_OPTION_MU_RESET|AAC_OPTION_IGNORE_RESET)) ==
-+	     cpu_to_le32(AAC_OPTION_MU_RESET))
- 		aac_reset_adapter(aac, 2); /* Bypass wait for command quiesce */
- 	return SUCCESS; /* Cause an immediate retry of the command with a ten second delay after successful tur */
- }
-Index: linux-2.6/drivers/scsi/aacraid/rx.c
-===================================================================
---- linux-2.6.orig/drivers/scsi/aacraid/rx.c	2007-11-08 17:09:50.000000000 +0100
-+++ linux-2.6/drivers/scsi/aacraid/rx.c	2007-11-08 17:14:43.000000000 +0100
-@@ -465,7 +465,7 @@
- 	u32 var;
+ source kernel/power/Kconfig
  
- 	if (!(dev->supplement_adapter_info.SupportedOptions2 &
--	  le32_to_cpu(AAC_OPTION_MU_RESET)) || (bled >= 0) || (bled == -2)) {
-+	    cpu_to_le32(AAC_OPTION_MU_RESET)) || (bled >= 0) || (bled == -2)) {
- 		if (bled)
- 			printk(KERN_ERR "%s%d: adapter kernel panic'd %x.\n",
- 				dev->name, dev->id, bled);
++config ARCH_HIBERNATION_POSSIBLE
++	def_bool y
++
+ config ARCH_HIBERNATION_HEADER
+ 	bool
+ 	depends on HIBERNATION
+
+
