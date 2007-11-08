@@ -1,92 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758952AbXKGXo6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758713AbXKGXtg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758952AbXKGXo6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 18:44:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754928AbXKGXou
+	id S1758713AbXKGXtg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 18:49:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbXKGXt2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 18:44:50 -0500
-Received: from qmta02.westchester.pa.mail.comcast.net ([76.96.62.24]:38836
-	"EHLO QMTA02.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753057AbXKGXot (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 18:44:49 -0500
-X-Greylist: delayed 420 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Nov 2007 18:44:49 EST
-X-Authority-Analysis: v=1.0 c=1 a=nC8wNrFDaxoL5NeRbdEA:9 a=cMBJlfT9c5yBcPcNrAgA:7 a=GYE9Ro36lc6mDo8FuAzFGXYE2nYA:4 a=7DSvI1NPTFQA:10 a=JTUSPwgBgNAA:10 a=oCUJXWGl-OwA:10
-To: Romano Giannetti <romanol@upcomillas.es>
-Cc: Willy Tarreau <w@1wt.eu>, Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: 2.6.34-rc1 eat my photo SD card :-(
-X-Message-Flag: Warning: May contain useful information
-X-Priority: 1
-X-MSMail-Priority: High
-References: <1193918202.8439.7.camel@rukbat>
-	<20071102182833.2c055446@poseidon.drzeus.cx>
-	<1194168583.10245.15.camel@rukbat> <ada8x5ec7oh.fsf@cisco.com>
-	<1194259886.6927.9.camel@localhost>
-	<20071105132218.495f244e@poseidon.drzeus.cx>
-	<1194270393.27789.2.camel@localhost>
-	<20071105162633.09e54290@poseidon.drzeus.cx>
-	<1194343121.6953.6.camel@rukbat> <20071106195148.GD1045@1wt.eu>
-	<1194385693.12938.5.camel@rukbat> <1194387459.5205.2.camel@rukbat>
-	<1194472374.7176.4.camel@rukbat>
-From: Roland Dreier <roland@digitalvampire.org>
-Date: Wed, 07 Nov 2007 15:37:46 -0800
-In-Reply-To: <1194472374.7176.4.camel@rukbat> (Romano Giannetti's message of "Wed, 07 Nov 2007 22:52:54 +0100")
-Message-ID: <87zlxpzkxh.fsf@shaolin.home.digitalvampire.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Wed, 7 Nov 2007 18:49:28 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:48073 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751925AbXKGXt1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 18:49:27 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Grant Wilson <grant.wilson@zen.co.uk>
+Subject: Re: 2.6.24-rc1-gb4f5550 oops
+Date: Thu, 8 Nov 2007 01:06:21 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20071105061158.3174d24d@worthy.swandive.local>
+In-Reply-To: <20071105061158.3174d24d@worthy.swandive.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711080106.21580.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Well, I spent the last 36 hours (more or less) trying to bisect the SD
- > problem. The method I used was to insert the card, umount it, and make 8 dd
- > in a row; the kernel is "bad" if they differs, "good" if they are the same. 
- > 
- > I could not finish the bisect. The last pair good/bad were:
- > 
- > bad:   [7aeacf982203fb4dea2f3434eefdc268cfd5d6d9] 
- >        [BLOCK] blk_rq_map_sg: force clear termination bit
- > good:  [e38f981758118d829cd40cfe9c09e3fa81e422aa] 
- >        exportfs: update documentation
+On Monday, 5 of November 2007, Grant Wilson wrote:
+> Hi,
+> I got this oops on 2.6.24-rc1-641-gb4f5550:
 
-Thanks, that helps.  I read over the mmc changes in between those two
-commits, and I think I found the problem... could you please try the
-patch below (on top of the latest kernel) and report back how it
-works?  Unfortunately I am traveling and I don't have an SD card with
-me to test on my laptop...
+(1) Is this reproducible?
+(2) Did it happen previously on your system?
 
-Pierre, assuming Romano tests this patch successfully, please apply!
 
-Thanks,
-  Roland
-
-<-- patch below -->
-
-mmc: Fix sg helper copy-and-paste error
-
-Commit 45711f1a ("[SG] Update drivers to use sg helpers") had the
-following bogus change in drivers/mmc/card/queue.c:
-
-    > -			src_buf = page_address(src->page) + src->offset;
-    > +			src_buf = sg_virt(dst);
-
-(Notice that "src" is converted to "dst").  Turn this "dst" back into
-the intended "src".
-
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Signed-off-by: Roland Dreier <roland@digitalvampire.org>
----
-diff --git a/drivers/mmc/card/queue.c b/drivers/mmc/card/queue.c
-index 9203a0b..1b9c9b6 100644
---- a/drivers/mmc/card/queue.c
-+++ b/drivers/mmc/card/queue.c
-@@ -310,7 +310,7 @@ static void copy_sg(struct scatterlist *dst, unsigned int dst_len,
- 		}
- 
- 		if (src_size == 0) {
--			src_buf = sg_virt(dst);
-+			src_buf = sg_virt(src);
- 			src_size = src->length;
- 		}
- 
+> [18073.371126] Unable to handle kernel NULL pointer dereference at 0000000000000120 RIP: 
+> [18073.371134]  [<ffffffff8023572e>] check_preempt_wakeup+0x6e/0x110
+> [18073.371144] PGD 81f9067 PUD 81c8067 PMD 0 
+> [18073.371151] Oops: 0000 [1] PREEMPT SMP 
+> [18073.371157] CPU 2 
+> [18073.371161] Modules linked in: vfat fat
+> [18073.371168] Pid: 4639, comm: kwin Not tainted 2.6.24-rc1 #1
+> [18073.371171] RIP: 0010:[<ffffffff8023572e>]  [<ffffffff8023572e>] check_preempt_wakeup+0x6e/0x110
+> [18073.371177] RSP: 0018:ffff810008531a78  EFLAGS: 00010006
+> [18073.371179] RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000000
+> [18073.371183] RDX: ffff810004441bf0 RSI: ffff81000801e860 RDI: ffff81000444ab80
+> [18073.371186] RBP: ffff810008531aa8 R08: 000000d0d47a4a90 R09: 0000000000000000
+> [18073.371188] R10: ffff810004441bf0 R11: 0000000000000001 R12: ffff810006520400
+> [18073.371190] R13: ffff81000801e860 R14: ffff81000a63a000 R15: ffff81000443d8e0
+> [18073.371193] FS:  00002b7d646a86f0(0000) GS:ffff810004c11780(0000) knlGS:0000000000000000
+> [18073.371196] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> [18073.371199] CR2: 0000000000000120 CR3: 0000000008495000 CR4: 00000000000006e0
+> [18073.371202] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> [18073.371211] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> [18073.371214] Process kwin (pid: 4639, threadinfo ffff810008530000, task ffff81000840a860)
+> [18073.371216] Stack:  ffff81000444ab80 0000000000000001 ffff81000801e860 ffff81000444ab80
+> [18073.371231]  0000000000000002 ffff81000443d8e0 ffff810008531b38 ffffffff8023061e
+> [18073.371238]  0000000000000000 ffff810004441b80 0000000000000002 0000000100000000
+> [18073.371245] Call Trace:
+> [18073.371250]  [<ffffffff8023061e>] try_to_wake_up+0x2fe/0x3a0
+> [18073.371253]  [<ffffffff802306cd>] default_wake_function+0xd/0x10
+> [18073.371257]  [<ffffffff8022daca>] __wake_up_common+0x5a/0x90
+> [18073.371260]  [<ffffffff8023095a>] __wake_up_sync+0x4a/0x70
+> [18073.371264]  [<ffffffff80602c3f>] unix_write_space+0x8f/0xa0
+> [18073.371269]  [<ffffffff80593359>] sock_wfree+0x49/0x50
+> [18073.371272]  [<ffffffff805951d9>] __kfree_skb+0x69/0xe0
+> [18073.371275]  [<ffffffff80595267>] kfree_skb+0x17/0x30
+> [18073.371278]  [<ffffffff80601347>] unix_stream_recvmsg+0x267/0x610
+> [18073.371283]  [<ffffffff8058e0b7>] sock_aio_read+0x107/0x110
+> [18073.371287]  [<ffffffff802929a1>] do_sync_read+0xf1/0x130
+> [18073.371291]  [<ffffffff8058e230>] sock_ioctl+0x0/0x260
+> [18073.371295]  [<ffffffff80251830>] autoremove_wake_function+0x0/0x40
+> [18073.371299]  [<ffffffff80600522>] unix_ioctl+0xb2/0xf0
+> [18073.371302]  [<ffffffff8058e301>] sock_ioctl+0xd1/0x260
+> [18073.371305]  [<ffffffff802a00c1>] do_ioctl+0x31/0x90
+> [18073.371308]  [<ffffffff802932f6>] vfs_read+0x156/0x160
+> [18073.371311]  [<ffffffff80293700>] sys_read+0x50/0x90
+> [18073.371315]  [<ffffffff8020bd7e>] system_call+0x7e/0x83
+> [18073.371317] 
+> [18073.371319] 
+> [18073.371319] Code: 48 8b 90 20 01 00 00 48 39 93 20 01 00 00 75 e2 48 81 3b 00 
+> [18073.371346] RIP  [<ffffffff8023572e>] check_preempt_wakeup+0x6e/0x110
+> [18073.371351]  RSP <ffff810008531a78>
+> [18073.371354] CR2: 0000000000000120
+> [18073.371358] note: kwin[4639] exited with preempt_count 3
