@@ -1,96 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760801AbXKHHQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758964AbXKHHiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760801AbXKHHQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 02:16:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892AbXKHHQu
+	id S1758964AbXKHHiq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 02:38:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbXKHHih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 02:16:50 -0500
-Received: from usermail.globalproof.net ([194.146.153.18]:51988 "EHLO
-	usermail.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751811AbXKHHQs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 02:16:48 -0500
-From: "Denys Fedoryshchenko" <denys@visp.net.lb>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Mark Lord <liml@rtr.ca>,
-       James Andrewartha <jamesa@daa.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, alan@lxorguk.ukuu.org.uk, htejun@gmail.com
-Subject: Re: SC1200 failure in 2.6.23 and 2.6.24-rc1-git10
-Date: Thu, 8 Nov 2007 09:16:35 +0200
-Message-Id: <20071108071204.M66693@visp.net.lb>
-In-Reply-To: <200711080130.54143.bzolnier@gmail.com>
-References: <20071101213013.M54162@visp.net.lb> <20071107232045.GA26706@havoc.gtf.org> <20071107235548.M95675@visp.net.lb> <200711080130.54143.bzolnier@gmail.com>
-X-Mailer: OpenWebMail 2.52 20060502
-X-OriginatingIP: 195.69.208.251 (denys@visp.net.lb)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=koi8-r
+	Thu, 8 Nov 2007 02:38:37 -0500
+Received: from gate.crashing.org ([63.228.1.57]:51454 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753475AbXKHHig (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 02:38:36 -0500
+In-Reply-To: <Pine.LNX.4.64.0711020927530.25341@blarg.am.freescale.net>
+References: <CBDE987B-0713-4D62-8122-054183E75410@kernel.crashing.org>  <1193188894.27073.20.camel@heimdal.trondhjem.org>  <1954B8FA-6E29-4FB7-86B0-EA43AF8F2AAF@kernel.crashing.org>  <2B2C1270-60FB-4830-A62C-D0357D2E1FB3@kernel.crashing.org> <1193335168.7705.39.camel@heimdal.trondhjem.org> <Pine.LNX.4.64.0711020927530.25341@blarg.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <39F21091-B0FC-46D2-AA5B-19491053A8B8@kernel.crashing.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       nfs@lists.sourceforge.net, neilb@suse.de, bfields@fieldses.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, chuck.lever@oracle.com,
+       Andrew Morton <akpm@osdl.org>
+Content-Transfer-Encoding: 7bit
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: LTP ustat01 test fails on NFSROOT
+Date: Thu, 8 Nov 2007 01:36:45 -0600
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Does it work as kernel parameter?
 
-I tried libata_dma_mask=0x4 and to set 0xf or 0xff - doesn't help. How to 
-disable DMA in libata, if it is compiled in kernel?
+On Nov 2, 2007, at 9:28 AM, Kumar Gala wrote:
 
-On Thu, 8 Nov 2007 01:30:53 +0100, Bartlomiej Zolnierkiewicz wrote
-> On Thursday 08 November 2007, Denys Fedoryshchenko wrote:
-> > 2.6.24-rc2 not working very well
-> > 
-> > 
-> > dmesg
-> > [   12.386395] Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
-> > [   12.405579] ide: Assuming 33MHz system bus speed for PIO modes; 
-override 
-> > with idebus=xx
-> > [   12.430441] SC1200: IDE controller (0x100b:0x0502 rev 0x01) at  PCI 
-slot 
-> > 0000:00:12.2
-> > [   12.454070] SC1200: not 100% native mode: will probe irqs later
-> > [   12.471947]     ide0: BM-DMA at 0xfc00-0xfc07, BIOS settings: hda:pio, 
-> > hdb:pio
-> > [   12.493873]     ide1: BM-DMA at 0xfc08-0xfc0f, BIOS settings: hdc:pio, 
-> > hdd:pio
-> > [   12.515810] Probing IDE interface ide0...
-> > [   12.528810] Clocksource tsc unstable (delta = -497423729 ns)
-> > [   12.545888] Time: pit clocksource has been installed.
-> > [   12.563379] hda: SanDisk SDCFH-1024, CFA DISK drive
-> > [   12.578340] hda: applying conservative PIO "downgrade"
-> > [   12.593869] hda: host max PIO4 wanted PIO255(auto-tune) selected PIO1
-> > [   12.594006] hda: MW DMA 2 mode selected
-> > [   12.594297] ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
-> > [   12.608778] Probing IDE interface ide1...
-> > [   12.623192] hda: max request size: 128KiB
-> > [   12.635322] hda: 2001888 sectors (1024 MB) w/1KiB Cache, CHS=1986/16/
-63, 
-> > DMA
-> > [   12.657134]  hda:<4>hda: dma_timer_expiry: dma status == 0x21
-> > [   12.865846] hda: DMA timeout error
-> > [   12.876092]  ide_dma_end dma_stat=21 err=1 newerr=0
-> > [   12.890753] hda: dma timeout error: status=0x58 { DriveReady 
-SeekComplete 
-> > DataRequest }
-> > [   12.914977] ide: failed opcode was: unknown
-> > [   12.927743] hda: DMA disabled
-> > [   12.937035] ide0: reset: success
-> > [   12.948324]  hda1
-> > 
-> > Mounting taking long time on 1GB card cause of DMA issues. In dmesg i am 
-not 
-> > sure about timestamp showing few seconds, in real life it took about 2 
-> > minutes.
-> 
-> Please try booting with "hda=nodma".
-> 
-> It could be a hardware problem (CF adapter without DMA lines).
-> 
-> Thanks,
-> Bart
+> On Thu, 25 Oct 2007, Trond Myklebust wrote:
+>
+>> Could you please try the following patch?
+>>
+>> Cheers
+>>   Trond
+>
+> Its a new month so I'll ping again about sending this fix upstream to
+> linus for 2.6.24 :) ?
+>
+> - k
 
+Trond,
 
---
-Denys Fedoryshchenko
-Technical Manager
-Virtual ISP S.A.L.
+any update on sending this to Linus for 2.6.24?
+
+- k
+
+>> --------------------------------- CUT HERE  
+>> -----------------------------
+>> From: Trond Myklebust <Trond.Myklebust@netapp.com>
+>> Date: Thu, 25 Oct 2007 13:56:10 -0400
+>> NFS: Fix the ustat() regression
+>>
+>> Since 2.6.18, the superblock sb->s_root has been a dummy dentry  
+>> with a
+>> dummy inode. This breaks ustat(), which actually uses sb->s_root in a
+>> vfstat() call.
+>>
+>> Fix this by making the s_root a dummy alias to the directory inode  
+>> that was
+>> used when creating the superblock.
+>>
+>> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+>> ---
+>>
+>>  fs/nfs/getroot.c |   81 +++++++++++++++++ 
+>> +------------------------------------
+>>  1 files changed, 27 insertions(+), 54 deletions(-)
+>>
+>> diff --git a/fs/nfs/getroot.c b/fs/nfs/getroot.c
+>> index 522e5ad..0ee4384 100644
+>> --- a/fs/nfs/getroot.c
+>> +++ b/fs/nfs/getroot.c
+>> @@ -43,6 +43,25 @@
+>>  #define NFSDBG_FACILITY		NFSDBG_CLIENT
+>>
+>>  /*
+>> + * Set the superblock root dentry.
+>> + * Note that this function frees the inode in case of error.
+>> + */
+>> +static int nfs_superblock_set_dummy_root(struct super_block *sb,  
+>> struct inode *inode)
+>> +{
+>> +	/* The mntroot acts as the dummy root dentry for this superblock */
+>> +	if (sb->s_root == NULL) {
+>> +		sb->s_root = d_alloc_root(inode);
+>> +		if (sb->s_root == NULL) {
+>> +			iput(inode);
+>> +			return -ENOMEM;
+>> +		}
+>> +		/* Circumvent igrab(): we know the inode is not being freed */
+>> +		atomic_inc(&inode->i_count);
+>> +	}
+>> +	return 0;
+>> +}
+>> +
+>> +/*
+>>   * get an NFS2/NFS3 root dentry from the root filehandle
+>>   */
+>>  struct dentry *nfs_get_root(struct super_block *sb, struct nfs_fh  
+>> *mntfh)
+>> @@ -54,33 +73,6 @@ struct dentry *nfs_get_root(struct super_block  
+>> *sb, struct nfs_fh *mntfh)
+>>  	struct inode *inode;
+>>  	int error;
+>>
+>> -	/* create a dummy root dentry with dummy inode for this  
+>> superblock */
+>> -	if (!sb->s_root) {
+>> -		struct nfs_fh dummyfh;
+>> -		struct dentry *root;
+>> -		struct inode *iroot;
+>> -
+>> -		memset(&dummyfh, 0, sizeof(dummyfh));
+>> -		memset(&fattr, 0, sizeof(fattr));
+>> -		nfs_fattr_init(&fattr);
+>> -		fattr.valid = NFS_ATTR_FATTR;
+>> -		fattr.type = NFDIR;
+>> -		fattr.mode = S_IFDIR | S_IRUSR | S_IWUSR;
+>> -		fattr.nlink = 2;
+>> -
+>> -		iroot = nfs_fhget(sb, &dummyfh, &fattr);
+>> -		if (IS_ERR(iroot))
+>> -			return ERR_PTR(PTR_ERR(iroot));
+>> -
+>> -		root = d_alloc_root(iroot);
+>> -		if (!root) {
+>> -			iput(iroot);
+>> -			return ERR_PTR(-ENOMEM);
+>> -		}
+>> -
+>> -		sb->s_root = root;
+>> -	}
+>> -
+>>  	/* get the actual root for this mount */
+>>  	fsinfo.fattr = &fattr;
+>>
+>> @@ -96,6 +88,10 @@ struct dentry *nfs_get_root(struct super_block  
+>> *sb, struct nfs_fh *mntfh)
+>>  		return ERR_PTR(PTR_ERR(inode));
+>>  	}
+>>
+>> +	error = nfs_superblock_set_dummy_root(sb, inode);
+>> +	if (error != 0)
+>> +		return ERR_PTR(error);
+>> +
+>>  	/* root dentries normally start off anonymous and get spliced in  
+>> later
+>>  	 * if the dentry tree reaches them; however if the dentry already
+>>  	 * exists, we'll pick it up at this point and use it as the root
+>> @@ -241,33 +237,6 @@ struct dentry *nfs4_get_root(struct  
+>> super_block *sb, struct nfs_fh *mntfh)
+>>
+>>  	dprintk("--> nfs4_get_root()\n");
+>>
+>> -	/* create a dummy root dentry with dummy inode for this  
+>> superblock */
+>> -	if (!sb->s_root) {
+>> -		struct nfs_fh dummyfh;
+>> -		struct dentry *root;
+>> -		struct inode *iroot;
+>> -
+>> -		memset(&dummyfh, 0, sizeof(dummyfh));
+>> -		memset(&fattr, 0, sizeof(fattr));
+>> -		nfs_fattr_init(&fattr);
+>> -		fattr.valid = NFS_ATTR_FATTR;
+>> -		fattr.type = NFDIR;
+>> -		fattr.mode = S_IFDIR | S_IRUSR | S_IWUSR;
+>> -		fattr.nlink = 2;
+>> -
+>> -		iroot = nfs_fhget(sb, &dummyfh, &fattr);
+>> -		if (IS_ERR(iroot))
+>> -			return ERR_PTR(PTR_ERR(iroot));
+>> -
+>> -		root = d_alloc_root(iroot);
+>> -		if (!root) {
+>> -			iput(iroot);
+>> -			return ERR_PTR(-ENOMEM);
+>> -		}
+>> -
+>> -		sb->s_root = root;
+>> -	}
+>> -
+>>  	/* get the info about the server and filesystem */
+>>  	error = nfs4_server_capabilities(server, mntfh);
+>>  	if (error < 0) {
+>> @@ -289,6 +258,10 @@ struct dentry *nfs4_get_root(struct  
+>> super_block *sb, struct nfs_fh *mntfh)
+>>  		return ERR_PTR(PTR_ERR(inode));
+>>  	}
+>>
+>> +	error = nfs_superblock_set_dummy_root(sb, inode);
+>> +	if (error != 0)
+>> +		return ERR_PTR(error);
+>> +
+>>  	/* root dentries normally start off anonymous and get spliced in  
+>> later
+>>  	 * if the dentry tree reaches them; however if the dentry already
+>>  	 * exists, we'll pick it up at this point and use it as the root
+>>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux- 
+> kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
