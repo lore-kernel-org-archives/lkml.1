@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760267AbXKHGVD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760414AbXKHGW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760267AbXKHGVD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 01:21:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbXKHGUx
+	id S1760414AbXKHGW6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 01:22:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbXKHGWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 01:20:53 -0500
-Received: from main.gmane.org ([80.91.229.2]:53223 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751295AbXKHGUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 01:20:53 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: [poll] Is the megafreeze development model broken?
-Date: Wed, 7 Nov 2007 22:18:51 -0800
-Organization: Linux Foundation
-Message-ID: <20071107221851.0d831573@freepuppy.rosehill>
-References: <fgtfqa$h9j$1@ger.gmane.org>
+	Thu, 8 Nov 2007 01:22:50 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36606
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751329AbXKHGWt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 01:22:49 -0500
+Date: Wed, 07 Nov 2007 22:22:48 -0800 (PST)
+Message-Id: <20071107.222248.29361088.davem@davemloft.net>
+To: paulus@samba.org
+Cc: akpm@linux-foundation.org, lkml@davidb.org, linux-kernel@vger.kernel.org,
+       drepper@redhat.com, mtk-manpages@gmx.net
+Subject: Re: compat_sys_times() bogus until jiffies >= 0.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <18226.38816.486372.52353@cargo.ozlabs.ibm.com>
+References: <18226.27701.782268.375231@cargo.ozlabs.ibm.com>
+	<20071107190714.9c404e28.akpm@linux-foundation.org>
+	<18226.38816.486372.52353@cargo.ozlabs.ibm.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 069-064-229-129.pdx.net
-In-Reply-To: <fgtfqa$h9j$1@ger.gmane.org>
-X-Newsreader: Claws Mail 3.0.2 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 07 Nov 2007 23:56:57 +0100
-ciol <ciol13@gmail.com> wrote:
+From: Paul Mackerras <paulus@samba.org>
+Date: Thu, 8 Nov 2007 15:59:12 +1100
 
-> Hi, I'd like to ask you a few questions:
-> 
-> * Do you like the way linux distributions integrate the kernel?
-> 
-> * Wouldn't you prefer they ship with the stable and still maintained 
-> 2.6.16.X, while providing optionally the latest kernel for those who 
-> want or just have a new hardware?
-> 
-> * Do you think the megafreeze development model [1] and the "I don't 
-> trust in upstream" development model are broken? (And why)
-> 
-> 
-> 
-> [1] http://www.modeemi.fi/~tuomov/b/archives/2007/03/03/T19_15_26/
-> 
-> 
-> (I'm going to ask this for several projects, not only the kernel)
-> 
+> Not on powerpc.  On powerpc the error indication is carried separately
+> in a condition register bit.  So a force_successful_syscall_return()
+> call will make glibc automatically do the right thing without any
+> glibc changes on powerpc.
 
-It's a free world, do what you want.
+It still won't fix the problem.
 
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
-
+When the return value is (clock_t) -1, all the
+force_successful_syscall_return() calls and glibc condition
+codes checks in the world are not going to fix the application
+code which checks for error using -1.
