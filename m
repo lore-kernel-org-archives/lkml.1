@@ -1,48 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761702AbXKHRyM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761400AbXKHSCs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761702AbXKHRyM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 12:54:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759781AbXKHRx6
+	id S1761400AbXKHSCs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 13:02:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759866AbXKHSCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 12:53:58 -0500
-Received: from www.tglx.de ([62.245.132.106]:56656 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758744AbXKHRx6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 12:53:58 -0500
-Date: Thu, 8 Nov 2007 18:53:46 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Robert Richter <robert.richter@amd.com>
-cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 0/6] x86: apicdef.h unification
-In-Reply-To: <20071108102411.GG20836@erda.amd.com>
-Message-ID: <alpine.LRH.0.999.0711081852170.1314@www.tglx.de>
-References: <20071106183645.951275000@amd.com>
- <alpine.LFD.0.9999.0711062130200.3628@localhost.localdomain>
- <20071108102411.GG20836@erda.amd.com>
+	Thu, 8 Nov 2007 13:02:38 -0500
+Received: from an-out-0708.google.com ([209.85.132.242]:4401 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759955AbXKHSCh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 13:02:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=IYmHbIdKcr6HCMbkIlMiZTZcjgal/zr3BC3WmhEbh5LLzTJHaM+71lhn1eAuCXqFU89eZVpnk3zeMksATRrV46SQP54Vk6YFMcrgE1Hgol2wQjdg1GBQ8I2VxzzdiYPZl92nZJ3v3vtMWMoqwebFxGSB2CHb5y23beRsDHfnNOU=
+Message-ID: <e9c3a7c20711081002k5c3be41doa700afce7c1a7a6e@mail.gmail.com>
+Date: Thu, 8 Nov 2007 11:02:36 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Bill Davidsen" <davidsen@tmr.com>
+Subject: Re: 2.6.23.1: mdadm/raid5 hung/d-state
+Cc: "Jeff Lessem" <Jeff@lessem.org>,
+       "=?ISO-8859-1?Q?BERTRAND_Jo=EBl?=" <joel.bertrand@systella.fr>,
+       "Justin Piszcz" <jpiszcz@lucidpixels.com>, "Neil Brown" <neilb@suse.de>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+In-Reply-To: <47334B46.7000809@tmr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0711040658180.30831@p34.internal.lan>
+	 <18222.16003.92062.970530@notabene.brown>
+	 <Pine.LNX.4.64.0711041651250.23496@p34.internal.lan>
+	 <e9c3a7c20711051035m78ba90ck68f4fbc10480462a@mail.gmail.com>
+	 <Pine.LNX.4.64.0711051335450.11422@p34.internal.lan>
+	 <e9c3a7c20711051619u7054aab9l208b604b9e58fb61@mail.gmail.com>
+	 <47303FB8.7000801@systella.fr>
+	 <1194398700.2970.18.camel@dwillia2-linux.ch.intel.com>
+	 <47314653.80905@Lessem.org> <47334B46.7000809@tmr.com>
+X-Google-Sender-Auth: 211c3939a6477d05
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 11/8/07, Bill Davidsen <davidsen@tmr.com> wrote:
+> Jeff Lessem wrote:
+> > Dan Williams wrote:
+> > > The following patch, also attached, cleans up cases where the code
+> > looks
+> > > at sh->ops.pending when it should be looking at the consistent
+> > > stack-based snapshot of the operations flags.
+> >
+> > I tried this patch (against a stock 2.6.23), and it did not work for
+> > me.  Not only did I/O to the effected RAID5 & XFS partition stop, but
+> > also I/O to all other disks.  I was not able to capture any debugging
+> > information, but I should be able to do that tomorrow when I can hook
+> > a serial console to the machine.
+>
+> That can't be good! This is worrisome because Joel is giddy with joy
+> because it fixes his iSCSI problems. I was going to try it with nbd, but
+> perhaps I'll wait a week or so and see if others have more information.
+> Applying patches before a holiday weekend is a good way to avoid time
+> off. :-(
 
+We need to see more information on the failure that Jeff is seeing,
+and whether it goes away with the two known patches applied.  He
+applied this most recent patch against stock 2.6.23 which means that
+the platform was still open to the first biofill flags issue.
 
-On Thu, 8 Nov 2007, Robert Richter wrote:
-
-> Thomas,
-> 
-> On 06.11.07 21:32:12, Thomas Gleixner wrote:
-> > Thanks for doing this, but please check the x86 git repository
-> > (cleanup / mm branch) for stuff which has been worked on already.
-> > 
-> > Maybe we need some coordination for this.
-> 
-> Is it for sure that the x86/cleanup tree will go upstream soon and the
-> source will not change as much? The question is what code base to use
-> for new patches? I want to keep the porting effort as small as
-> possible.
-
-We'll add patches on top of the cleanup branch. There should be not much 
-changes, except if we have real functional changes.
-
-	tglx
+--
+Dan
