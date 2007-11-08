@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758083AbXKHWrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762389AbXKHWs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758083AbXKHWrk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 17:47:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758922AbXKHWrc
+	id S1762389AbXKHWs5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 17:48:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758366AbXKHWst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 17:47:32 -0500
-Received: from nz-out-0506.google.com ([64.233.162.237]:37214 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751395AbXKHWrb (ORCPT
+	Thu, 8 Nov 2007 17:48:49 -0500
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:18080 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758083AbXKHWss (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 17:47:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bW9wZv2gLVxus25Am9fZy1ue29cxun6EVldgu7xTZLSlC8+NgyXFPnbIHOeFVtr9lrV/Ai9jQZb2JfATiJmM/AwKTecK5ptD8w7iFIPpYrkK1TL7mQ+6V7dli2ZRDv5rPXn4Z4YXPyd9irxXm1tdKpVXkpeIrDL4byQ5cVh3Ab4=
-Message-ID: <13426df10711081447o688550a4jc01be2d7f06209e0@mail.gmail.com>
-Date: Thu, 8 Nov 2007 14:47:30 -0800
-From: "ron minnich" <rminnich@gmail.com>
-To: "Anthony Liguori" <anthony@codemonkey.ws>
-Subject: Re: [Lguest] [PATCH] virtio config_ops refactoring
-Cc: "Rusty Russell" <rusty@rustcorp.com.au>,
-       "Anthony Liguori" <aliguori@us.ibm.com>,
-       virtualization@lists.linux-foundation.org, lguest <lguest@ozlabs.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <47338EA0.6050100@codemonkey.ws>
+	Thu, 8 Nov 2007 17:48:48 -0500
+X-IronPort-AV: E=Sophos;i="4.21,391,1188802800"; 
+   d="scan'208";a="185677937"
+To: linux-kernel@vger.kernel.org, Takashi Iwai <tiwai@suse.de>
+Subject: snd_hda_intel 2.6.24-rc2 bug: interrupts don't always work on Lenovo X60s
+X-Message-Flag: Warning: May contain useful information
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 08 Nov 2007 14:48:32 -0800
+Message-ID: <ada1wb05p6n.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4730A8F3.6020008@us.ibm.com>
-	 <200711081320.35844.rusty__6233.15023626692$1194488552$gmane$org@rustcorp.com.au>
-	 <4732774C.6020903@codemonkey.ws>
-	 <200711090924.28659.rusty@rustcorp.com.au>
-	 <47338EA0.6050100@codemonkey.ws>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 08 Nov 2007 22:48:36.0080 (UTC) FILETIME=[7F27AF00:01C82259]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, I'm sorry, I've been stuck on other things (NFS RDMA anyone?) and
-missed part of this discussion.
+With 2.6.24-rc2 on my Lenovo X60s, I sometimes get:
 
-Is it really the case that operations on virtio devices will involve
-outl/inl etc.?
+    hda_intel: No response from codec, disabling MSI: last cmd=0x002f0d00
+    hda_intel: azx_get_response timeout, switching to polling mode: last cmd=0x002f0d00
 
-Apologies in advance for my failure to pay attention.
+when loading snd_hda_intel.  Sound still works but interrupts aren't generated.
 
-thanks
+I tried bisecting but I haven't gotten good info yet because it seems
+that this is not completely reproducible -- sometimes when I load the
+module, it works fine, and other times I get the message.
 
-ron
+I think this is a regression, since I don't recall ever seeing the
+message with 2.6.22 or so.
+
+Any idea on how to help debug this?
+
+Thanks,
+  Roland
