@@ -1,38 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762928AbXKHUBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762113AbXKHUFP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762928AbXKHUBf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 15:01:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759421AbXKHUB1
+	id S1762113AbXKHUFP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 15:05:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761157AbXKHUFB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 15:01:27 -0500
-Received: from relay1.corp.sgi.com ([192.48.171.29]:41932 "EHLO relay.sgi.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754214AbXKHUB0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 15:01:26 -0500
-Date: Thu, 8 Nov 2007 12:01:24 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Matt Mackall <mpm@selenic.com>
-cc: Mel Gorman <mel@skynet.ie>, akpm@linux-foundatin.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 02/23] SLUB: Rename NUMA defrag_ratio to remote_node_defrag_ratio
-In-Reply-To: <20071108194735.GW19691@waste.org>
-Message-ID: <Pine.LNX.4.64.0711081159120.9966@schroedinger.engr.sgi.com>
-References: <20071107011130.382244340@sgi.com> <20071107011226.844437184@sgi.com>
- <20071108145044.GB2591@skynet.ie> <20071108172548.GW17536@waste.org>
- <Pine.LNX.4.64.0711081116060.9279@schroedinger.engr.sgi.com>
- <20071108194735.GW19691@waste.org>
+	Thu, 8 Nov 2007 15:05:01 -0500
+Received: from mga09.intel.com ([134.134.136.24]:15503 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761075AbXKHUFB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 15:05:01 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,391,1188802800"; 
+   d="scan'208";a="198966242"
+Date: Thu, 8 Nov 2007 12:03:52 -0800
+From: Mark Gross <mgross@linux.intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-mm1 breaks C-state support on Intel T7200 x86_64
+Message-ID: <20071108200352.GA5538@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <3624.1194542384@turing-police.cc.vt.edu> <20071108100212.0cbff318.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071108100212.0cbff318.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Nov 2007, Matt Mackall wrote:
-
-> Not really. drivers/char/random.c does:
+On Thu, Nov 08, 2007 at 10:02:12AM -0800, Andrew Morton wrote:
+> > On Thu, 08 Nov 2007 12:19:44 -0500 Valdis.Kletnieks@vt.edu wrote:
+> > (Sorry for not reporting this sooner - I haven't been running off battery
+> > much in the last 3 weeks, so I didn't notice it till now...)
+> > 
+> > Dell Latitude D820 laptop, T7200 Core2 Duo CPU, x86_64 kernel.
+> > 
+> > As reported by 'powertop' on a basically idle machine:
+> > 
+> > 2.6.23-mm1:
+> > 
+> > Cn                Avg residency       P-states (frequencies)
+> > C0 (cpu running)        (100.0%)        2.00 Ghz     0.8%
+> > C1                0.0ms ( 0.0%)         1.67 Ghz     0.0%
+> > C2                0.0ms ( 0.0%)         1333 Mhz     0.0%
+> > C3                0.0ms ( 0.0%)         1000 Mhz    99.2%
+> > 
+> > 2.6.23-rc8-mm2:
+> > 
+> > Cn                Avg residency       P-states (frequencies)
+> > C0 (cpu running)        ( 0.3%)         2.00 Ghz     0.0%
+> > C1                0.0ms ( 0.0%)         1.67 Ghz     0.0%
+> > C2                0.0ms ( 0.0%)         1333 Mhz     0.0%
+> > C3               31.5ms (99.7%)         1000 Mhz   100.0%
+> > 
+> > In addition, the ACPI power estimate reported about 25 watts for 23-mm1,
+> > but only 21 watts for -rc8-mm2, a significant regression.
+> > 
+> > I bisected this down to this set of patches:
+> > 
+> > pm-qos-infrastructure-and-interface.patch
+> > pm-qos-infrastructure-and-interface-fix.patch
+> > pm-qos-infrastructure-and-interface-vs-git-acpi.patch
+> > pm-qos-infrastructure-and-interface-vs-git-acpi-2.patch
+> > latencyc-use-qos-infrastructure.patch
+> > 
+> > The patch says:
+> > 
+> >   To register the default pm_qos target for the specific parameter, the
+> >   process must open one of /dev/[cpu_dma_latency, network_latency,
+> >   network_throughput]
+> > 
+> >   As long as the device node is held open that process has a registered
+> >   requirement on the parameter.  The name of the requirement is
+> >   "process_<PID>" derived from the current->pid from within the open system
+> >   call.
+> > 
+> > I shouldn't have to have a process open a /dev/file, write a number, and then
+> > stay around forever so the file doesn't close in order to get the same behavior
+> > I was getting by default before.  What needs to happen to get this to not
+> > be a behavior regression/change?
+> > 
 > 
-> __get_cpu_var(trickle_count)++ & 0xfff
+> That's a great report, thanks.  Over to you, Mark ;)
+> 
+> btw, I also have a note here that these patches caused Rafael to see an
+> smp_call_function() inside local_irq_save().  Did that get fixed?
 
-That is incremented on each call to add_timer_randomness. Not a high 
-enough resolution there. I guess I am stuck with get_cycles().
+Ah, I see the problem.  I think I posted a fix to this.  The problem is
+that what's in the mm1 tree has a parameter PM_QOS_IDLE that needed to
+be PM_QOS_CPU_DMA_LATENCY. 
+
+I'm not sure what's in the current MM tree at this point so I can't say
+its been fixed.  Is there an easy way from me to see what's currently in
+MM?  
+
+FWIW I think I fixed this when I fixed up Rafael's issue.  Would you
+like me to send out a re-fresh patch against 2.6.23-mm1?
+
+--mgross
 
