@@ -1,244 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760873AbXKHOP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760981AbXKHOQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760873AbXKHOP2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 09:15:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756670AbXKHOPU
+	id S1760981AbXKHOQV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 09:16:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757920AbXKHOQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 09:15:20 -0500
-Received: from sceptre.pobox.com ([207.106.133.20]:34345 "EHLO
-	sceptre.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754110AbXKHOPS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 09:15:18 -0500
-Message-ID: <473319F3.30706@hp.com>
-Date: Thu, 08 Nov 2007 09:15:15 -0500
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-Reply-To: Alan.Brunelle@hp.com
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Thu, 8 Nov 2007 09:16:14 -0500
+Received: from rtr.ca ([76.10.145.34]:2209 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753487AbXKHOQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 09:16:13 -0500
+Message-ID: <47331A2C.6050005@rtr.ca>
+Date: Thu, 08 Nov 2007 09:16:12 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Cc: dm-devel@redhat.com, btrace <linux-btrace@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH] Add UNPLUG traces to all appropriate places
+To: Francois Romieu <romieu@fr.zoreil.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>, Linus Torvalds <torvalds@osdl.org>
+Subject: [PATCH] r8169 fix regression on ASUS motherboards (updated again)
+References: <4731E2AB.5080703@rtr.ca> <4731FDB7.8010505@rtr.ca> <20071107220455.GA15367@electric-eye.fr.zoreil.com> <47323A69.5050206@rtr.ca> <47323B6B.9000909@rtr.ca> <47324843.4050602@rtr.ca> <20071108002112.GD15367@electric-eye.fr.zoreil.com>
+In-Reply-To: <20071108002112.GD15367@electric-eye.fr.zoreil.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added blk_unplug interface, allowing all invocations of unplugs to result
-in a generated blktrace UNPLUG. Previously, we saw a PLUG on each of the
-underlying devices, and an UNPLUG on the volume. This patch ensures that
-we see the UNPLUG calls for each of the underlying devices.
+Francois Romieu wrote:
+>
+> Ok, I have pushed the patch below for Jeff to pull at korg.
+> 
+>>From 1dd7681bc2ff171341ea5cae957f8ecb5c0c102e Mon Sep 17 00:00:00 2001
+> From: Mark Lord <mlord@pobox.com>
+> Date: Thu, 8 Nov 2007 01:03:04 +0100
+> Subject: [PATCH] r8169: revert 7da97ec96a0934319c7fbedd3d38baf533e20640 (partly)
+> 
+> Various symptoms depending on the .config options:
+> - the card stops working after some (short) time
+> - the card does not work at all
+> - the card disappears (nothing in lspci/dmesg)
+> 
+> A real power-off is needed to recover the card.
+> 
+> Signed-off-by: Mark Lord <mlord@pobox.com>
+> Signed-off-by: Francois Romieu <romieu@fr.zoreil.com>
+> ---
+>  drivers/net/r8169.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+> index 9dbab3f..a37cf82 100644
+> --- a/drivers/net/r8169.c
+> +++ b/drivers/net/r8169.c
+> @@ -1328,6 +1328,7 @@ static void rtl_hw_phy_config(struct net_device *dev)
+>  		break;
+>  	case RTL_GIGA_MAC_VER_11:
+>  	case RTL_GIGA_MAC_VER_12:
+> +		break;
+>  	case RTL_GIGA_MAC_VER_17:
+>  		rtl8168b_hw_phy_config(ioaddr);
+>  		break;
+..
 
-Signed-off-by: Alan D. Brunelle <Alan.Brunelle@hp.com>
----
- block/ll_rw_blk.c      |   24 +++++++++++++++---------
- drivers/md/bitmap.c    |    3 +--
- drivers/md/dm-table.c  |    3 +--
- drivers/md/linear.c    |    3 +--
- drivers/md/md.c        |    4 ++--
- drivers/md/multipath.c |    3 +--
- drivers/md/raid0.c     |    3 +--
- drivers/md/raid1.c     |    3 +--
- drivers/md/raid10.c    |    3 +--
- drivers/md/raid5.c     |    3 +--
- include/linux/blkdev.h |    1 +
- 11 files changed, 26 insertions(+), 27 deletions(-)
+Stop the presses:  Another person has now reported back to me.
+This guy has the VER_17 chip inside a notebook, and the same problem.
 
-diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
-index 75c98d5..37f8e9c 100644
---- a/block/ll_rw_blk.c
-+++ b/block/ll_rw_blk.c
-@@ -1634,15 +1634,7 @@ static void blk_backing_dev_unplug(struct 
-backing_dev_info *bdi,
+So the unified fix for all of these is to just get rid of rtl8168b_hw_phy_config(),
+as that code is all that is really different from 2.6.23 (where all is okay).
+
+Updated patch below.
+
+* * * * *
+
+Fix r8169B regression on ASUS motherboards (and MSI, and..)
+
+Third/final iteration.
+This replaces the earlier versions of this patch.
+This one fixes *all* versions of r6169 *B* variant,
+restoring the init code back to what it was in 2.6.23.
+
+The r8169 ethernet driver worked fine in 2.6.23, but fails
+in 2.6.24-rc* for the onboard ethernet of some ASUS (MAC_VER_11)
+and MSI (MAC_VER_12) motherboards, and also for some notebooks
+(MAC_VER_17) that use this chip.
+
+Various symptoms depending on the .config options:
+- the card stops working after some (short) time
+- the card does not work at all
+- the card disappears (nothing in lspci/dmesg)
+
+A real power-off is needed to recover the card.
+
+This patch fixes it again.
+
+Signed-off-by: Mark Lord <mlord@pobox.com>
+
+--- linux-2.6.24-rc2/drivers/net/r8169.c	2007-11-06 22:56:24.000000000 -0500
++++ linux/drivers/net/r8169.c	2007-11-08 09:05:08.000000000 -0500
+@@ -1247,13 +1247,6 @@
+ }
+ static void rtl8168b_hw_phy_config(void __iomem *ioaddr)
  {
-     struct request_queue *q = bdi->unplug_io_data;
- 
--    /*
--     * devices don't necessarily have an ->unplug_fn defined
--     */
--    if (q->unplug_fn) {
--        blk_add_trace_pdu_int(q, BLK_TA_UNPLUG_IO, NULL,
--                    q->rq.count[READ] + q->rq.count[WRITE]);
+-	struct phy_reg phy_reg_init[] = {
+-		{ 0x1f, 0x0000 },
+-		{ 0x10, 0xf41b },
+-		{ 0x1f, 0x0000 }
+-	};
 -
--        q->unplug_fn(q);
--    }
-+    blk_unplug(q);
+-	rtl_phy_write(ioaddr, phy_reg_init, ARRAY_SIZE(phy_reg_init));
  }
  
- static void blk_unplug_work(struct work_struct *work)
-@@ -1666,6 +1658,20 @@ static void blk_unplug_timeout(unsigned long data)
-     kblockd_schedule_work(&q->unplug_work);
- }
- 
-+void blk_unplug(struct request_queue *q)
-+{
-+    /*
-+     * devices don't necessarily have an ->unplug_fn defined
-+     */
-+    if (q->unplug_fn) {
-+        blk_add_trace_pdu_int(q, BLK_TA_UNPLUG_IO, NULL,
-+                    q->rq.count[READ] + q->rq.count[WRITE]);
-+
-+        q->unplug_fn(q);
-+    }
-+}
-+EXPORT_SYMBOL(blk_unplug);
-+
- /**
-  * blk_start_queue - restart a previously stopped queue
-  * @q:    The &struct request_queue in question
-diff --git a/drivers/md/bitmap.c b/drivers/md/bitmap.c
-index 7c426d0..1b1ef31 100644
---- a/drivers/md/bitmap.c
-+++ b/drivers/md/bitmap.c
-@@ -1207,8 +1207,7 @@ int bitmap_startwrite(struct bitmap *bitmap, 
-sector_t offset, unsigned long sect
-             prepare_to_wait(&bitmap->overflow_wait, &__wait,
-                     TASK_UNINTERRUPTIBLE);
-             spin_unlock_irq(&bitmap->lock);
--            bitmap->mddev->queue
--                ->unplug_fn(bitmap->mddev->queue);
-+            blk_unplug(bitmap->mddev->queue);
-             schedule();
-             finish_wait(&bitmap->overflow_wait, &__wait);
-             continue;
-diff --git a/drivers/md/dm-table.c b/drivers/md/dm-table.c
-index 5a7eb65..e298d8d 100644
---- a/drivers/md/dm-table.c
-+++ b/drivers/md/dm-table.c
-@@ -1000,8 +1000,7 @@ void dm_table_unplug_all(struct dm_table *t)
-         struct dm_dev *dd = list_entry(d, struct dm_dev, list);
-         struct request_queue *q = bdev_get_queue(dd->bdev);
- 
--        if (q->unplug_fn)
--            q->unplug_fn(q);
-+        blk_unplug(q);
-     }
- }
- 
-diff --git a/drivers/md/linear.c b/drivers/md/linear.c
-index 56a11f6..3dac1cf 100644
---- a/drivers/md/linear.c
-+++ b/drivers/md/linear.c
-@@ -87,8 +87,7 @@ static void linear_unplug(struct request_queue *q)
- 
-     for (i=0; i < mddev->raid_disks; i++) {
-         struct request_queue *r_queue = 
-bdev_get_queue(conf->disks[i].rdev->bdev);
--        if (r_queue->unplug_fn)
--            r_queue->unplug_fn(r_queue);
-+        blk_unplug(r_queue);
-     }
- }
- 
-diff --git a/drivers/md/md.c b/drivers/md/md.c
-index 808cd95..cef9ebd 100644
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -5445,7 +5445,7 @@ void md_do_sync(mddev_t *mddev)
-          * about not overloading the IO subsystem. (things like an
-          * e2fsck being done on the RAID array should execute fast)
-          */
--        mddev->queue->unplug_fn(mddev->queue);
-+        blk_unplug(mddev->queue);
-         cond_resched();
- 
-         currspeed = ((unsigned long)(io_sectors-mddev->resync_mark_cnt))/2
-@@ -5464,7 +5464,7 @@ void md_do_sync(mddev_t *mddev)
-      * this also signals 'finished resyncing' to md_stop
-      */
-  out:
--    mddev->queue->unplug_fn(mddev->queue);
-+    blk_unplug(mddev->queue);
- 
-     wait_event(mddev->recovery_wait, 
-!atomic_read(&mddev->recovery_active));
- 
-diff --git a/drivers/md/multipath.c b/drivers/md/multipath.c
-index b35731c..eb631eb 100644
---- a/drivers/md/multipath.c
-+++ b/drivers/md/multipath.c
-@@ -125,8 +125,7 @@ static void unplug_slaves(mddev_t *mddev)
-             atomic_inc(&rdev->nr_pending);
-             rcu_read_unlock();
- 
--            if (r_queue->unplug_fn)
--                r_queue->unplug_fn(r_queue);
-+            blk_unplug(r_queue);
- 
-             rdev_dec_pending(rdev, mddev);
-             rcu_read_lock();
-diff --git a/drivers/md/raid0.c b/drivers/md/raid0.c
-index c111105..f8e5917 100644
---- a/drivers/md/raid0.c
-+++ b/drivers/md/raid0.c
-@@ -35,8 +35,7 @@ static void raid0_unplug(struct request_queue *q)
-     for (i=0; i<mddev->raid_disks; i++) {
-         struct request_queue *r_queue = bdev_get_queue(devlist[i]->bdev);
- 
--        if (r_queue->unplug_fn)
--            r_queue->unplug_fn(r_queue);
-+        blk_unplug(r_queue);
-     }
- }
- 
-diff --git a/drivers/md/raid1.c b/drivers/md/raid1.c
-index 85478d6..4a69c41 100644
---- a/drivers/md/raid1.c
-+++ b/drivers/md/raid1.c
-@@ -549,8 +549,7 @@ static void unplug_slaves(mddev_t *mddev)
-             atomic_inc(&rdev->nr_pending);
-             rcu_read_unlock();
- 
--            if (r_queue->unplug_fn)
--                r_queue->unplug_fn(r_queue);
-+            blk_unplug(r_queue);
- 
-             rdev_dec_pending(rdev, mddev);
-             rcu_read_lock();
-diff --git a/drivers/md/raid10.c b/drivers/md/raid10.c
-index fc6607a..5cdcc93 100644
---- a/drivers/md/raid10.c
-+++ b/drivers/md/raid10.c
-@@ -593,8 +593,7 @@ static void unplug_slaves(mddev_t *mddev)
-             atomic_inc(&rdev->nr_pending);
-             rcu_read_unlock();
- 
--            if (r_queue->unplug_fn)
--                r_queue->unplug_fn(r_queue);
-+            blk_unplug(r_queue);
- 
-             rdev_dec_pending(rdev, mddev);
-             rcu_read_lock();
-diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
-index 82af346..1cfc984 100644
---- a/drivers/md/raid5.c
-+++ b/drivers/md/raid5.c
-@@ -3186,8 +3186,7 @@ static void unplug_slaves(mddev_t *mddev)
-             atomic_inc(&rdev->nr_pending);
-             rcu_read_unlock();
- 
--            if (r_queue->unplug_fn)
--                r_queue->unplug_fn(r_queue);
-+            blk_unplug(r_queue);
- 
-             rdev_dec_pending(rdev, mddev);
-             rcu_read_lock();
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index 8396db2..d18ee67 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -697,6 +697,7 @@ extern int blk_execute_rq(struct request_queue *, 
-struct gendisk *,
- extern void blk_execute_rq_nowait(struct request_queue *, struct gendisk *,
-                   struct request *, int, rq_end_io_fn *);
- extern int blk_verify_command(unsigned char *, int);
-+extern void blk_unplug(struct request_queue *q);
- 
- static inline struct request_queue *bdev_get_queue(struct block_device 
-*bdev)
- {
--- 
-1.5.2.5
-
+ static void rtl8168cp_hw_phy_config(void __iomem *ioaddr)
