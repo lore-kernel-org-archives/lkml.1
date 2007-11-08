@@ -1,67 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762662AbXKHVc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762791AbXKHVd3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762662AbXKHVc4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 16:32:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761283AbXKHVci
+	id S1762791AbXKHVd3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 16:33:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761315AbXKHVdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 16:32:38 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37432 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761253AbXKHVch (ORCPT
+	Thu, 8 Nov 2007 16:33:20 -0500
+Received: from mail8.dotsterhost.com ([66.11.233.1]:35495 "HELO
+	mail8.dotsterhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1761283AbXKHVdS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 16:32:37 -0500
-Message-Id: <200711082131.lA8LVhnk015137@imap1.linux-foundation.org>
-Subject: [patch 2/2] clone: prepare to recycle CLONE_DETACHED and CLONE_STOPPED
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, drepper@redhat.com, mingo@elte.hu,
-       roland@redhat.com
-From: akpm@linux-foundation.org
-Date: Thu, 08 Nov 2007 13:31:43 -0800
+	Thu, 8 Nov 2007 16:33:18 -0500
+Message-ID: <473380AD.5070801@crispincowan.com>
+Date: Thu, 08 Nov 2007 13:33:33 -0800
+From: Crispin Cowan <crispin@crispincowan.com>
+Organization: Crispin's Labs
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       LSM ML <linux-security-module@vger.kernel.org>,
+       apparmor-dev <apparmor-dev@forge.novell.com>
+Subject: AppArmor Security Goal
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
+re-sent due to a typo in addressing.
 
-Ulrich says that we never used these clone flags and that nothing should be
-using them.
+AppArmor Security Goal
+Crispin Cowan, PhD
+MercenaryLinux.com
 
-As we're down to only a single bit left in clone's flags argument, let's add a
-warning to check that no userspace is actually using these.  Hopefully we will
-be able to recycle them.
+This document is intended to specify the security goal that AppArmor is
+intended to achieve, so that users can evaluate whether AppArmor will
+meet their needs, and kernel developers can evaluate whether AppArmor is
+living up to its claims. This document is *not* a general purpose
+explanation of how AppArmor works, nor is it an explanation for why one
+might want to use AppArmor rather than some other system.
 
-Cc: Ulrich Drepper <drepper@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Roland McGrath <roland@redhat.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
+AppArmor is intended to protect systems from attackers exploiting
+vulnerabilities in applications that the system hosts. The threat is
+that an attacker can cause a vulnerable application to do something
+unexpected and undesirable. AppArmor addresses this threat by confining
+the application to access only the resources it needs to access to
+execute properly, effectively imposing "least privilege" execution on
+the application.
 
- kernel/fork.c |   16 ++++++++++++----
- 1 file changed, 12 insertions(+), 4 deletions(-)
+Applications have access to a number of resources including files,
+interprocess communication, networking, capabilities, and execution of
+other applications. The purpose of least privilege is to bound the
+damage that a malicious user or code can do by removing access to all
+resources that the application does not need for its intended function.
+For instance, a policy for a web server might grant read only access to
+most web documents, preventing an attacker who can corrupt the web
+server from defacing the web pages.
 
-diff -puN kernel/fork.c~clone-prepare-to-recycle-clone_detached-and-clone_stopped kernel/fork.c
---- a/kernel/fork.c~clone-prepare-to-recycle-clone_detached-and-clone_stopped
-+++ a/kernel/fork.c
-@@ -1420,10 +1420,18 @@ long do_fork(unsigned long clone_flags,
- 	int trace = 0;
- 	long nr;
- 
--	if (unlikely(current->ptrace)) {
--		trace = fork_traceflag (clone_flags);
--		if (trace)
--			clone_flags |= CLONE_PTRACE;
-+	/*
-+	 * We hope to recycle these flags after 2.6.26
-+	 */
-+	if (unlikely(clone_flags & (CLONE_DETACHED|CLONE_STOPPED))) {
-+		if (printk_ratelimit()) {
-+			char comm[TASK_COMM_LEN];
-+
-+			printk(KERN_INFO "fork(): process `%s' used deprecated "
-+					"clone flags 0x%lx\n",
-+				get_task_comm(comm, current),
-+				clone_flags & (CLONE_DETACHED|CLONE_STOPPED));
-+		}
- 	}
- 
- 	p = copy_process(clone_flags, stack_start, regs, stack_size,
-_
+An "application" is one or more related processes performing a function,
+e.g. the gang of processes that constitute an Apache web server, or a
+Postfix mail server. AppArmor *only* confines processes that the
+AppArmor policy says it should confine, and other processes are
+permitted to do anything that DAC permits. This is sometimes known as a
+targeted security policy.
+
+AppArmor does not provide a "default" policy that applies to all
+processes. So to defend an entire host, you have to piece-wise confine
+each process that is exposed to potential attack. For instance, to
+defend a system against network attack, place AppArmor profiles around
+every application that accesses the network. This limits the damage a
+network attacker can do to the file system to only those files granted
+by the profiles for the network-available applications. Similarly, to
+defend a system against attack from the console, place AppArmor profiles
+around every application that accessed the keyboard and mouse. The
+system is "defended" in that the worst the attacker can do to corrupt
+the system is limited to the transitive closure of what the confined
+processes are allowed to access.
+
+AppArmor currently mediates access to files, ability to use POSIX.1e
+Capabilities, and coarse-grained control on network access. This is
+sufficient to prevent a confined process from *directly* corrupting the
+file system. It is not sufficient to prevent a confined process from
+*indirectly* corrupting the system by influencing some other process to
+do the dirty deed. But to do so requires a complicit process that can be
+manipulated through another channel such as IPC. A "complicit" process
+is either a malicious process the attacker somehow got control of, or is
+a process that is actively listening to IPC of some kind and can be
+corrupted via IPC.
+
+The only IPC that AppArmor mediates is access to named sockets, FIFOs,
+etc. that appear in the file system name space, a side effect of
+AppArmor's file access mediation. Future versions of AppArmor will
+mediate more resources, including finer grained network access controls,
+and controls on various forms of IPC.
+
+AppArmor specifies the programs to be confined and the resources they
+can access in a syntax similar to how users are accustomed to accessing
+those resources. So file access controls are specified using absolute
+paths with respect to the name space the process is in. POSIX.1e
+capabilities are specified by name. Network access controls currently
+are specified by simply naming the protocol that can be used e.g. tcp,
+udp, and in the future will be more general, resembling firewall rules.
+
+Thus the AppArmor security goal should be considered piecewise from the
+point of view of a single confined process: that process should only be
+able to access the resources specified in its profile:
+
+    * can only access files that are reachable in its name space by path
+      names matching its profile, and only with the permitted modes:
+      read, append, write, memory map, execute, and link
+    * can only use the POSIX.1e capabilities listed in the profile
+    * can only perform the network operations listed in the profile
+
+Security issues that AppArmor explicitly does *not* address:
+
+    * Processes that are not confined by AppArmor are not restricted in
+      any way by AppArmor. If an unconfined process is considered an
+      unacceptable threat, then confine additional applications until
+      adequate security is achieved.
+    * A process that is not permitted to directly access a resource can
+      influence some other process that does have access to the resource
+      may do so, if the "influence" is a permitted action.
+    * A confined process may only access a file if it has at least one
+      of the files aliases specified in its profile.  If a file alias is
+      not specified in the profile then it can not be accessed by that
+      path.  The creation of aliases needs to be tightly controlled in
+      confined applications, hard links creation should be limited to
+      provide adequate security.
+    * A confined process can operate on a file descriptor passed to it
+      by an unconfined process, even if it manipulates a file not in the
+      confined process's profile. To block this attack, confine the
+      process that passed the file descriptor.
+    * Process activities not currently mediated by AppArmor are
+      permitted, e.g. confined processes can perform any IPC that DAC
+      permits, other than signals as mediated by CAP_KILL.
+    * Manipulating AppArmor policy requires being both root privileged
+      and not being confined by AppArmor, thus there is explicitly no
+      capability for non-privileged users to change AppArmor policy.
+    * AppArmor confines processes if they are children of a confined
+      process, or if the name of the exec'd child matches the name of an
+      AppArmor profile. Another process could copy a program to a
+      different path name and then execute it without confinement, but
+      the other process would have to have permission to do so in the
+      first place. To prevent this, confine the other process and
+      additional applications until adequate security is achieved.
+    * Mount and namespace manipulations can be used to arbitrarily
+      change the pathnames that files appear at, and thus completely
+      bypass AppArmor policy. To prevent this, processes confined by
+      AppArmor are currently not permitted to call mount or manipulate
+      name spaces at all. A future development may provide more granular
+      controls on mount and namespace manipulations.
+    * AppArmor does not slice bread, cure cancer, or bring world peace.
+      This list may be expanded :-)
+
+-- 
+Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin
+CEO, Mercenary Linux		   http://mercenarylinux.com/
+	       Itanium. Vista. GPLv3. Complexity at work
+
+
