@@ -1,72 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760994AbXKHPpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759507AbXKHPq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760994AbXKHPpx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 10:45:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757649AbXKHPpq
+	id S1759507AbXKHPq0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 10:46:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761237AbXKHPqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 10:45:46 -0500
-Received: from waste.org ([66.93.16.53]:35191 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755715AbXKHPpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 10:45:45 -0500
-Date: Thu, 8 Nov 2007 09:43:53 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Marin Mitov <mitov@issp.bas.bg>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>
-Subject: Re: is minimum udelay() not respected in preemptible SMP kernel-2.6.23?
-Message-ID: <20071108154353.GT19691@waste.org>
-References: <200711071921.52330.mitov@issp.bas.bg> <20071107123045.c6d4b855.akpm@linux-foundation.org> <20071108002027.GV17536@waste.org> <1194513081.6289.130.camel@twins>
+	Thu, 8 Nov 2007 10:46:12 -0500
+Received: from stinky.trash.net ([213.144.137.162]:63001 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761006AbXKHPqL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 10:46:11 -0500
+Message-ID: <47332F1F.5040401@trash.net>
+Date: Thu, 08 Nov 2007 16:45:35 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1194513081.6289.130.camel@twins>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Rainer Jochem <rainer.jochem@mpi-sb.mpg.de>
+CC: davem@davemloft.net, kuznet@ms2.inr.ac.ru, jmorris@namei.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       pcernko@mpi-sws.mpg.de
+Subject: Re: [PATCH] ipconfig.c : implement DHCP Class-identifier
+References: <20071108143205.GA22490@mpi-sb.mpg.de>
+In-Reply-To: <20071108143205.GA22490@mpi-sb.mpg.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 08, 2007 at 10:11:21AM +0100, Peter Zijlstra wrote:
-> On Wed, 2007-11-07 at 18:20 -0600, Matt Mackall wrote:
+Rainer Jochem wrote:
+> --- net/ipv4/ipconfig.c.orig	2007-11-08 14:54:11.001662860 +0100
+> +++ net/ipv4/ipconfig.c	2007-11-08 14:54:15.961480524 +0100
+> @@ -139,6 +139,8 @@ __be32 ic_servaddr = NONE;	/* Boot serve
+>  __be32 root_server_addr = NONE;	/* Address of NFS server */
+>  u8 root_server_path[256] = { 0, };	/* Path to mount as root */
+>  
+> +char vendor_class_identifier[256] = { 0, }; /* vendor class identifier */
+
+static please, no need to initialize.
+
+> +
+>  /* Persistent data: */
+>  
+>  static int ic_proto_used;			/* Protocol used, if any */
+> @@ -620,6 +622,17 @@ ic_dhcp_init_options(u8 *options)
+>  		*e++ = sizeof(ic_req_params);
+>  		memcpy(e, ic_req_params, sizeof(ic_req_params));
+>  		e += sizeof(ic_req_params);
+> +
+> +		// Send it only if the according kernel parameter was set
+> +		if (*vendor_class_identifier) {
+> +			printk(KERN_INFO "Sending class identifier \"%s\"\n",
+> +			       vendor_class_identifier);
+
+Seems like useless noise.
+
+> +			*e++ = 60;	/* Class-identifier */
+> +			*e++ = strlen(vendor_class_identifier);
+> +			memcpy(e, vendor_class_identifier,
+> +			       strlen(vendor_class_identifier));
+> +			e += strlen(vendor_class_identifier);
+
+You could avoid these three strlen calls by using a temporary
+variable to hold the length.
+
+> +		}
+>  	}
+>  
+>  	*e++ = 255;	/* End of the list */
+> @@ -1507,5 +1520,14 @@ static int __init nfsaddrs_config_setup(
+>  	return ip_auto_config_setup(addrs);
+>  }
+>  
+> +static int __init vendor_class_identifier_setup(char *addrs)
+> +{
+> +	if (strlcpy(vendor_class_identifier, addrs, 250) > 250)
+
+sizeof(vendor_class_identifier). Why are you using 250 but the
+array is 256 bytes large?
+
+> +		printk(KERN_WARNING "vendorclass too long, truncated to \"%s\"",
+> +		       vendor_class_identifier);
+> +	return 1;
+> +}
+> +
+>  __setup("ip=", ip_auto_config_setup);
+>  __setup("nfsaddrs=", nfsaddrs_config_setup);
+> +__setup("dhcpclass=", vendor_class_identifier_setup);
 > 
-> >  This and other cases
-> > (lots of per_cpu users, IIRC) actually want a migrate_disable() which
-> > is a proper subset. 
 > 
-> The disadvantage of migrate_disable() is that it complicates the
-> load-balancer
+> 
+> --- ../linux-2.6.23.1/Documentation/kernel-parameters.txt	2007-10-12 18:43:44.000000000 +0200
+> +++ Documentation/kernel-parameters.txt	2007-10-24 17:02:22.441454955 +0200
+> @@ -533,6 +533,10 @@ and is between 256 and 4096 characters. 
+>  	dhash_entries=	[KNL]
+>  			Set number of hash buckets for dentry cache.
+>  
+> +	dhcpclass=	[KNL]
 
-Hmm, I'm surprised it's more than a one-liner. Something like
+[IP_PNP]
 
-if (cannot_migrate(task))
-	continue;
+> +			Set DHCP Vendor Class Identifier to be sent
+> +			by the client.
+> +
+>  	digi=		[HW,SERIAL]
+>  			IO parameters + enable/disable command.
+> 
+> 
 
-But I'm certainly not the expert here. Perhaps this one-liner introduces the
-"unplannable O(N) overhead" Ingo mentions in the email you referenced.
-
-> but more importantly, that it does bring a form of latencies with it
-> that are hard to measure. Using preempt_disable() for these current
-> per-cpu users basically forces them to keep it short.
-
-Ok, so maybe we've got implementation issues to tackle. But still: a)
-preempt_disable is inherently misdocumentation (preemption is not the
-real problem) and b) preemption is a bigger hammer than needed. At the
-very least, we should introduce migrate_disable as an alias for
-preempt_disable so we can document intent.
-
-At any rate, in the current context, we're talking about actually
-disabling preempt in a *delay loop*. Let's find a fix for that.
-
-> Also see:
-> http://lkml.org/lkml/2007/7/23/338
-
-Heh, I'd completely forgotten about this thread and thought I was
-having an original idea! Must have never seen Ingo's followup.
-
-Ingo's complaint about it being "a per-task BKL" is interesting. I've
-occassionally wondered if it makes sense to make some of these
-primitives take a "documentation parameter" - a pointer to an object
-that does nothing more than indicate the object of interest.
-
--- 
-Mathematics is the supreme nostalgia of our time.
