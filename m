@@ -1,43 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932386AbXKIABr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763501AbXKIAac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932386AbXKIABr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 19:01:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763419AbXKIABk
+	id S1763501AbXKIAac (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 19:30:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757889AbXKIAaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 19:01:40 -0500
-Received: from waste.org ([66.93.16.53]:50169 "EHLO waste.org"
+	Thu, 8 Nov 2007 19:30:23 -0500
+Received: from v32413.1blu.de ([88.84.155.73]:36460 "EHLO mail.lenk.info"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762591AbXKIABj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 19:01:39 -0500
-Date: Thu, 8 Nov 2007 17:08:41 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Mel Gorman <mel@skynet.ie>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 02/23] SLUB: Rename NUMA defrag_ratio to remote_node_defrag_ratio
-Message-ID: <20071108230841.GZ19691@waste.org>
-References: <20071107011130.382244340@sgi.com> <20071107011226.844437184@sgi.com> <20071108145044.GB2591@skynet.ie> <20071108172548.GW17536@waste.org> <Pine.LNX.4.64.0711081116060.9279@schroedinger.engr.sgi.com> <20071108194735.GW19691@waste.org> <Pine.LNX.4.64.0711081159120.9966@schroedinger.engr.sgi.com> <20071108210348.GX19691@waste.org> <Pine.LNX.4.64.0711081328121.10596@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0711081328121.10596@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1754177AbXKIAaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 19:30:22 -0500
+X-Greylist: delayed 3377 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Nov 2007 19:30:19 EST
+From: Frank Lichtenheld <frank@lichtenheld.de>
+To: Michal Januszewski <spock@gentoo.org>
+Cc: linux-kernel@vger.kernel.org, Frank Lichtenheld <frank@lichtenheld.de>
+Subject: [PATCH] uvesafb: Fix warnings about unused variables on non-x86
+Date: Fri,  9 Nov 2007 00:08:19 +0100
+Message-Id: <1194563299-19768-1-git-send-email-frank@lichtenheld.de>
+X-Mailer: git-send-email 1.5.3.4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 08, 2007 at 01:28:31PM -0800, Christoph Lameter wrote:
-> On Thu, 8 Nov 2007, Matt Mackall wrote:
-> 
-> > But perhaps I should just add a lightweight RNG to random.c and be
-> > done with it.
-> 
-> It would be appreciated.
+Variables that are only used in #ifdef CONFIG_X86 should also
+only be declared there.
 
-As someone pointed out privately, there's a random32() in lib/random32.c.
+Signed-off-by: Frank Lichtenheld <frank@lichtenheld.de>
+---
+ drivers/video/uvesafb.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-Unfortunately, this function is too heavy for many fast-path uses and
-too weak for most other uses. I'll see if I can come up with something
-better..
-
+diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
+index b983d26..d1d6c0f 100644
+--- a/drivers/video/uvesafb.c
++++ b/drivers/video/uvesafb.c
+@@ -926,8 +926,10 @@ static int uvesafb_setpalette(struct uvesafb_pal_entry *entries, int count,
+ 		int start, struct fb_info *info)
+ {
+ 	struct uvesafb_ktask *task;
++#ifdef CONFIG_X86
+ 	struct uvesafb_par *par = info->par;
+ 	int i = par->mode_idx;
++#endif
+ 	int err = 0;
+ 
+ 	/*
+@@ -1103,11 +1105,11 @@ static int uvesafb_pan_display(struct fb_var_screeninfo *var,
+ 
+ static int uvesafb_blank(int blank, struct fb_info *info)
+ {
+-	struct uvesafb_par *par = info->par;
+ 	struct uvesafb_ktask *task;
+ 	int err = 1;
+-
+ #ifdef CONFIG_X86
++	struct uvesafb_par *par = info->par;
++
+ 	if (par->vbe_ib.capabilities & VBE_CAP_VGACOMPAT) {
+ 		int loop = 10000;
+ 		u8 seq = 0, crtc17 = 0;
 -- 
-Mathematics is the supreme nostalgia of our time.
+1.5.3.4
+
