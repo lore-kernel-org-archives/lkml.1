@@ -1,346 +1,461 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760483AbXKHCeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760578AbXKHCee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760483AbXKHCeQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 21:34:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758388AbXKHCdc
+	id S1760578AbXKHCee (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 21:34:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760198AbXKHCdj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 21:33:32 -0500
-Received: from gw.goop.org ([64.81.55.164]:57058 "EHLO mail.goop.org"
+	Wed, 7 Nov 2007 21:33:39 -0500
+Received: from gw.goop.org ([64.81.55.164]:57057 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756441AbXKHCdb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 21:33:31 -0500
-Message-Id: <20071108015310.218076184@goop.org>
+	id S1756240AbXKHCdh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 21:33:37 -0500
+Message-Id: <20071108015310.467868276@goop.org>
 References: <20071108015008.660012621@goop.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 07 Nov 2007 17:50:11 -0800
+Date: Wed, 07 Nov 2007 17:50:13 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>, Zach Amsden <zach@vmware.com>,
        Glauber de Oliveira Costa <glommer@gmail.com>,
        Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
-Subject: [PATCH RFC 3/7] x86: clean up asm-x86/page*.h
-Content-Disposition: inline; filename=x86-unify-page_h.patch
+Subject: [PATCH RFC 5/7] x86: simplify pagetable-related operationsin paravirt.h
+Content-Disposition: inline; filename=x86-simplify-paravirt_h.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Unify common definitions in page*.h.  To simplify other code, I added
-typedefs for the value of pte/pmd/pud/pgd values, so they can be used
-symbolically elsewhere without needing to have lots of 32/64/PAE
-tests.
+Simplify paravirt.h using the unified page/pgtable.h infrastructure.
+This removes a fair amount of duplication of the ops function pointers
+themselves, but also of PVOP_*CALL* wrappers.
 
-Also, add PAGETABLE_LEVELS define so that other definitions can test
-for it directly rather than using indirect 32/64/PAE tests.
+The wrappers are complicated by the fact that on a 32-bit PAE system,
+literal 64-bit values are passed in two arguments, and so a different
+form of the call must be used compared to 64-bit or 32-bit non-PAE,
+where all the arguments are less than or equal to the native register
+size.
+
+The code chooses the appropriate form to use by using the compile-time
+comparison of sizeof(pteval_t) and sizeof(unsigned long).  This does
+not need to be done for calls which are either PAE or 64-bit specific.
 
 Signed-off-by: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
 
 ---
- include/asm-x86/page.h    |   49 ++++++++++++++++++++++------
- include/asm-x86/page_32.h |   77 +++++++++++++++++++++++++--------------------
- include/asm-x86/page_64.h |   37 +++++++--------------
- 3 files changed, 95 insertions(+), 68 deletions(-)
+ include/asm-x86/paravirt.h |  324 +++++++++++++++++++-------------------------
+ 1 file changed, 141 insertions(+), 183 deletions(-)
 
 ===================================================================
---- a/include/asm-x86/page.h
-+++ b/include/asm-x86/page.h
-@@ -1,13 +1,42 @@
-+#ifndef _ASM_X86_PAGE_H
-+#define _ASM_X86_PAGE_H
-+
-+#include <linux/const.h>
-+
-+/* PAGE_SHIFT determines the page size */
-+#define PAGE_SHIFT	12
-+#define PAGE_SIZE	(_AC(1,UL) << PAGE_SHIFT)
-+#define PAGE_MASK	(~(PAGE_SIZE-1))
-+#define PHYSICAL_PAGE_MASK	(~(PAGE_SIZE-1) & __PHYSICAL_MASK)
-+
-+#define LARGE_PAGE_MASK (~(LARGE_PAGE_SIZE-1))
-+#define LARGE_PAGE_SIZE (_AC(1,UL) << PMD_SHIFT)
-+
- #ifdef __KERNEL__
--# ifdef CONFIG_X86_32
--#  include "page_32.h"
--# else
--#  include "page_64.h"
--# endif
-+
-+#ifdef CONFIG_X86_32
-+# include "page_32.h"
- #else
--# ifdef __i386__
--#  include "page_32.h"
--# else
--#  include "page_64.h"
--# endif
-+# include "page_64.h"
- #endif
-+
-+#ifndef CONFIG_PARAVIRT
-+#define pgd_val(x)	native_pgd_val(x)
-+#define __pgd(x)	native_make_pgd(x)
-+
-+#ifndef __PAGETABLE_PUD_FOLDED
-+#define pud_val(x)	native_pud_val(x)
-+#define __pud(x)	native_make_pud(x)
-+#endif
-+
-+#ifndef __PAGETABLE_PMD_FOLDED
-+#define pmd_val(x)	native_pmd_val(x)
-+#define __pmd(x)	native_make_pmd(x)
-+#endif
-+
-+#define pte_val(x)	native_pte_val(x)
-+#define __pte(x)	native_make_pte(x)
-+#endif	/* CONFIG_PARAVIRT */
-+
-+#endif	/* __KERNEL__ */
-+#endif	/* _ASM_X86_PAGE_H */
-===================================================================
---- a/include/asm-x86/page_32.h
-+++ b/include/asm-x86/page_32.h
-@@ -1,16 +1,13 @@
- #ifndef _I386_PAGE_H
- #define _I386_PAGE_H
+--- a/include/asm-x86/paravirt.h
++++ b/include/asm-x86/paravirt.h
+@@ -240,40 +240,38 @@ struct pv_mmu_ops {
+ 	void (*pte_update_defer)(struct mm_struct *mm,
+ 				 unsigned long addr, pte_t *ptep);
  
--/* PAGE_SHIFT determines the page size */
--#define PAGE_SHIFT	12
--#define PAGE_SIZE	(1UL << PAGE_SHIFT)
--#define PAGE_MASK	(~(PAGE_SIZE-1))
-+#ifndef _ASM_X86_PAGE_H
-+#error Include asm/page.h
-+#endif
- 
--#define LARGE_PAGE_MASK (~(LARGE_PAGE_SIZE-1))
--#define LARGE_PAGE_SIZE (1UL << PMD_SHIFT)
-+#ifndef __ASSEMBLY__
- 
--#ifdef __KERNEL__
--#ifndef __ASSEMBLY__
-+#include <linux/types.h>
- 
- #ifdef CONFIG_X86_USE_3DNOW
- 
-@@ -43,71 +40,86 @@
-  */
- extern int nx_enabled;
- 
-+/* macro to avoid #include hell */
-+#define native_pud_val(pud)	native_pgd_val((pud).pgd)
++	pteval_t (*pte_val)(pte_t);
++	pgdval_t (*pgd_val)(pgd_t);
 +
++	pte_t (*make_pte)(pteval_t pte);
++	pgd_t (*make_pgd)(pgdval_t pgd);
++
++#if PAGETABLE_LEVELS >= 3
  #ifdef CONFIG_X86_PAE
-+#define PAGETABLE_LEVELS	3
-+
-+typedef u64	pteval_t;
-+typedef u64	pmdval_t;
-+typedef u64	pudval_t;
-+typedef u64	pgdval_t;
-+
- typedef struct { unsigned long pte_low, pte_high; } pte_t;
--typedef struct { unsigned long long pmd; } pmd_t;
--typedef struct { unsigned long long pgd; } pgd_t;
-+typedef struct { pmdval_t pmd; } pmd_t;
-+typedef struct { pgdval_t pgd; } pgd_t;
- typedef struct { unsigned long long pgprot; } pgprot_t;
- 
--static inline unsigned long long native_pgd_val(pgd_t pgd)
-+static inline pgdval_t native_pgd_val(pgd_t pgd)
- {
- 	return pgd.pgd;
- }
- 
--static inline unsigned long long native_pmd_val(pmd_t pmd)
-+static inline pmdval_t native_pmd_val(pmd_t pmd)
- {
- 	return pmd.pmd;
- }
- 
--static inline unsigned long long native_pte_val(pte_t pte)
-+static inline pteval_t native_pte_val(pte_t pte)
- {
- 	return pte.pte_low | ((unsigned long long)pte.pte_high << 32);
- }
- 
--static inline pgd_t native_make_pgd(unsigned long long val)
-+static inline pgd_t native_make_pgd(pgdval_t val)
- {
- 	return (pgd_t) { val };
- }
- 
--static inline pmd_t native_make_pmd(unsigned long long val)
-+static inline pmd_t native_make_pmd(pmdval_t val)
- {
- 	return (pmd_t) { val };
- }
- 
--static inline pte_t native_make_pte(unsigned long long val)
-+static inline pte_t native_make_pte(pteval_t val)
- {
- 	return (pte_t) { .pte_low = val, .pte_high = (val >> 32) } ;
- }
- 
--#ifndef CONFIG_PARAVIRT
--#define pmd_val(x)	native_pmd_val(x)
--#define __pmd(x)	native_make_pmd(x)
--#endif
--
- #define HPAGE_SHIFT	21
- #include <asm-generic/pgtable-nopud.h>
- #else  /* !CONFIG_X86_PAE */
-+
-+#define PAGETABLE_LEVELS	2
-+
-+typedef u32	pteval_t;
-+typedef u32	pmdval_t;
-+typedef u32	pgdval_t;
-+
- typedef struct { unsigned long pte_low; } pte_t;
- typedef struct { unsigned long pgd; } pgd_t;
- typedef struct { unsigned long pgprot; } pgprot_t;
- #define boot_pte_t pte_t /* or would you rather have a typedef */
- 
--static inline unsigned long native_pgd_val(pgd_t pgd)
-+static inline pgdval_t native_pgd_val(pgd_t pgd)
- {
- 	return pgd.pgd;
- }
- 
--static inline unsigned long native_pte_val(pte_t pte)
-+static inline pteval_t native_pte_val(pte_t pte)
- {
- 	return pte.pte_low;
- }
- 
--static inline pgd_t native_make_pgd(unsigned long val)
-+/* macro to avoid #include hell */
-+#define native_pmd_val(pmd)	native_pud_val((pmd).pud)
-+
-+static inline pgd_t native_make_pgd(pgdval_t val)
- {
- 	return (pgd_t) { val };
- }
- 
--static inline pte_t native_make_pte(unsigned long val)
-+static inline pte_t native_make_pte(pteval_t val)
- {
- 	return (pte_t) { .pte_low = val };
- }
-@@ -127,13 +139,6 @@ static inline pte_t native_make_pte(unsi
- 
- #define pgprot_val(x)	((x).pgprot)
- #define __pgprot(x)	((pgprot_t) { (x) } )
--
--#ifndef CONFIG_PARAVIRT
--#define pgd_val(x)	native_pgd_val(x)
--#define __pgd(x)	native_make_pgd(x)
--#define pte_val(x)	native_pte_val(x)
--#define __pte(x)	native_make_pte(x)
--#endif
- 
- #endif /* !__ASSEMBLY__ */
- 
-@@ -175,6 +180,13 @@ extern int page_is_ram(unsigned long pag
- #define __PAGE_OFFSET		((unsigned long)CONFIG_PAGE_OFFSET)
+ 	void (*set_pte_atomic)(pte_t *ptep, pte_t pteval);
+ 	void (*set_pte_present)(struct mm_struct *mm, unsigned long addr,
+ 				pte_t *ptep, pte_t pte);
  #endif
- 
-+#ifdef CONFIG_X86_PAE
-+#define __PHYSICAL_MASK_SHIFT	36
-+#else
-+#define __PHYSICAL_MASK_SHIFT	32
-+#endif
+-#if defined(CONFIG_X86_PAE) || defined(CONFIG_X86_64)
+-	void (*set_pud)(pud_t *pudp, pud_t pudval);
 +
-+#define __PHYSICAL_MASK		((_AC(1,ULL) << __PHYSICAL_MASK_SHIFT) - 1)
+ 	void (*pte_clear)(struct mm_struct *mm, unsigned long addr, pte_t *ptep);
+ 	void (*pmd_clear)(pmd_t *pmdp);
  
- #define PAGE_OFFSET		((unsigned long)__PAGE_OFFSET)
- #define VMALLOC_RESERVE		((unsigned long)__VMALLOC_RESERVE)
-@@ -201,6 +213,5 @@ extern int page_is_ram(unsigned long pag
- #include <asm-generic/page.h>
+-	unsigned long long (*pte_val)(pte_t);
+-	unsigned long long (*pmd_val)(pmd_t);
+-	unsigned long long (*pgd_val)(pgd_t);
++	pmdval_t (*pmd_val)(pmd_t);
++	pmd_t (*make_pmd)(pmdval_t pmd);
  
- #define __HAVE_ARCH_GATE_AREA 1
--#endif /* __KERNEL__ */
- 
- #endif /* _I386_PAGE_H */
-===================================================================
---- a/include/asm-x86/page_64.h
-+++ b/include/asm-x86/page_64.h
-@@ -1,13 +1,13 @@
- #ifndef _X86_64_PAGE_H
- #define _X86_64_PAGE_H
- 
-+#ifndef _ASM_X86_PAGE_H
-+#error Include asm/page.h
-+#endif
+-	pte_t (*make_pte)(unsigned long long pte);
+-	pmd_t (*make_pmd)(unsigned long long pmd);
+-	pgd_t (*make_pgd)(unsigned long long pgd);
+-  #ifdef CONFIG_X86_64
++	void (*set_pud)(pud_t *pudp, pud_t pudval);
 +
- #include <linux/const.h>
++#if PAGETABLE_LEVELS == 4
+ 	void (*set_pgd)(pgd_t *pgdp, pgd_t pgdval);
  
--/* PAGE_SHIFT determines the page size */
--#define PAGE_SHIFT	12
--#define PAGE_SIZE	(_AC(1,UL) << PAGE_SHIFT)
--#define PAGE_MASK	(~(PAGE_SIZE-1))
--#define PHYSICAL_PAGE_MASK	(~(PAGE_SIZE-1) & __PHYSICAL_MASK)
-+#define PAGETABLE_LEVELS	4
+ 	void (*pud_clear)(pud_t *pudp);
+ 	void (*pgd_clear)(pgd_t *pgdp);
  
- #define THREAD_ORDER 1 
- #define THREAD_SIZE  (PAGE_SIZE << THREAD_ORDER)
-@@ -29,16 +29,14 @@
- #define MCE_STACK 5
- #define N_EXCEPTION_STACKS 5  /* hw limit: 7 */
+-	unsigned long long (*pud_val)(pud_t);
++	pudval_t (*pud_val)(pud_t);
  
--#define LARGE_PAGE_MASK (~(LARGE_PAGE_SIZE-1))
--#define LARGE_PAGE_SIZE (_AC(1,UL) << PMD_SHIFT)
+-	pud_t (*make_pud)(unsigned long long pud);
+-  #endif
+-#else
+-	unsigned long (*pte_val)(pte_t);
+-	unsigned long (*pgd_val)(pgd_t);
 -
- #define HPAGE_SHIFT PMD_SHIFT
- #define HPAGE_SIZE	(_AC(1,UL) << HPAGE_SHIFT)
- #define HPAGE_MASK	(~(HPAGE_SIZE - 1))
- #define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT - PAGE_SHIFT)
+-	pte_t (*make_pte)(unsigned long pte);
+-	pgd_t (*make_pgd)(unsigned long pgd);
+-#endif
++	pud_t (*make_pud)(pudval_t pud);
++#endif	/* PAGETABLE_LEVELS == 4 */
++#endif	/* PAGETABLE_LEVELS >= 3 */
  
--#ifdef __KERNEL__
- #ifndef __ASSEMBLY__
-+
-+#include <linux/types.h>
+ #ifdef CONFIG_HIGHPTE
+ 	void *(*kmap_atomic_pte)(struct page *page, enum km_type type);
+@@ -958,85 +956,137 @@ static inline void pte_update_defer(stru
+ 	PVOP_VCALL3(pv_mmu_ops.pte_update_defer, mm, addr, ptep);
+ }
  
- extern unsigned long end_pfn;
- 
-@@ -59,6 +57,11 @@ typedef struct { unsigned long pud; } pu
- typedef struct { unsigned long pud; } pud_t;
- typedef struct { unsigned long pgd; } pgd_t;
- #define PTE_MASK	PHYSICAL_PAGE_MASK
-+
-+typedef u64	pteval_t;
-+typedef u64	pmdval_t;
-+typedef u64	pudval_t;
-+typedef u64	pgdval_t;
- 
- typedef struct { unsigned long pgprot; } pgprot_t;
- 
-@@ -104,20 +107,6 @@ static inline pgd_t native_make_pgd(unsi
+-#ifdef CONFIG_X86_PAE
+-static inline pte_t __pte(unsigned long long val)
++/*
++ * Pagetable manipulators
++ *
++ * There are three cases to deal with:
++ * 32-bit processor, non-PAE:	2-level pagetable with 32-bit entries
++ * 32-bit processor, PAE:	3-level pagetable with 64-bit entries
++ * 64-bit processor:		4-level pagetable with 64-bit entries
++ *
++ * In 32-bit mode, passing 64-bit parameters must be done in two
++ * 32-bit chunks, so we need to use a separate PVOP_CALLx macro from
++ * either 64-bit mode or 32-bit/non-PAE.
++ *
++ * We rely on the predefined native_make_X/native_X_val to do
++ * packing/unpacking of the current pagetable type.
++ */
++static inline pte_t __pte(pteval_t val)
  {
- 	return (pgd_t){ pgd };
+-	unsigned long long ret = PVOP_CALL2(unsigned long long,
+-					    pv_mmu_ops.make_pte,
+-					    val, val >> 32);
+-	return (pte_t) { ret, ret >> 32 };
++	pteval_t ret;
++
++	if (sizeof(val) > sizeof(unsigned long))
++		ret = PVOP_CALL2(pteval_t, pv_mmu_ops.make_pte,
++				 val, (u64)val>>32);
++	else
++		ret = PVOP_CALL1(pteval_t, pv_mmu_ops.make_pte, val);
++
++	return native_make_pte(ret);
+ }
+ 
+-static inline pmd_t __pmd(unsigned long long val)
++static inline pteval_t pte_val(pte_t x)
+ {
+-	return (pmd_t) { PVOP_CALL2(unsigned long long, pv_mmu_ops.make_pmd,
+-				    val, val >> 32) };
++	pteval_t val = native_pte_val(x);
++	if (sizeof(pteval_t) > sizeof(unsigned long))
++		return PVOP_CALL2(pteval_t, pv_mmu_ops.pte_val,
++				  val, (u64)val>>32);
++	else
++		return PVOP_CALL1(pteval_t, pv_mmu_ops.pte_val, val);
+ }
+ 
+-static inline pgd_t __pgd(unsigned long long val)
++static inline pgd_t __pgd(pgdval_t val)
+ {
+-	return (pgd_t) { PVOP_CALL2(unsigned long long, pv_mmu_ops.make_pgd,
+-				    val, val >> 32) };
++	pgdval_t pgd;
++
++	if (sizeof(val) > sizeof(unsigned long))
++		pgd = PVOP_CALL2(pgdval_t, pv_mmu_ops.make_pgd,
++				 val, (u64)val>>32);
++	else
++		pgd = PVOP_CALL1(pgdval_t, pv_mmu_ops.make_pgd, val);
++
++	return native_make_pgd(pgd);
+ }
+ 
+-static inline unsigned long long pte_val(pte_t x)
++static inline pgdval_t pgd_val(pgd_t x)
+ {
+-	return PVOP_CALL2(unsigned long long, pv_mmu_ops.pte_val,
+-			  x.pte_low, x.pte_high);
+-}
+-
+-static inline unsigned long long pmd_val(pmd_t x)
+-{
+-	return PVOP_CALL2(unsigned long long, pv_mmu_ops.pmd_val,
+-			  x.pmd, x.pmd >> 32);
+-}
+-
+-static inline unsigned long long pgd_val(pgd_t x)
+-{
+-	return PVOP_CALL2(unsigned long long, pv_mmu_ops.pgd_val,
+-			  x.pgd, x.pgd >> 32);
++	pgdval_t val = native_pgd_val(x);
++	if (sizeof(pgdval_t) > sizeof(unsigned long))
++		return PVOP_CALL2(pgdval_t, pv_mmu_ops.pgd_val,
++				  val, (u64)val>>32);
++	else
++		return PVOP_CALL1(pgdval_t, pv_mmu_ops.pgd_val, val);
+ }
+ 
+ static inline void set_pte(pte_t *ptep, pte_t pteval)
+ {
+-	PVOP_VCALL3(pv_mmu_ops.set_pte, ptep, pteval.pte_low, pteval.pte_high);
++	pteval_t val = native_pte_val(pteval);
++	if (sizeof(pteval_t) > sizeof(unsigned long))
++		PVOP_VCALL3(pv_mmu_ops.set_pte, ptep, val, (u64)val>>32);
++	else
++		PVOP_VCALL2(pv_mmu_ops.set_pte, ptep, val);
+ }
+ 
+ static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
+ 			      pte_t *ptep, pte_t pteval)
+ {
+-	/* 5 arg words */
+-	pv_mmu_ops.set_pte_at(mm, addr, ptep, pteval);
++	if (sizeof(pteval_t) > sizeof(unsigned long))
++		pv_mmu_ops.set_pte_at(mm, addr, ptep, pteval);
++	else
++		PVOP_VCALL4(pv_mmu_ops.set_pte_at, mm, addr,
++			    ptep, native_pte_val(pteval));
++}
++
++static inline void set_pmd(pmd_t *pmdp, pmd_t pmdval)
++{
++	pmdval_t val = native_pmd_val(pmdval);
++	if (sizeof(val) > sizeof(unsigned long))
++		PVOP_VCALL3(pv_mmu_ops.set_pmd, pmdp, val, (u64)val>>32);
++	else
++		PVOP_VCALL2(pv_mmu_ops.set_pmd, pmdp, val);
++}
++
++#if PAGETABLE_LEVELS >= 3
++#ifdef CONFIG_X86_PAE
++static inline void set_pte_present(struct mm_struct *mm, unsigned long addr,
++				   pte_t *ptep, pte_t pte)
++{
++	pv_mmu_ops.set_pte_present(mm, addr, ptep, pte);
+ }
+ 
+ static inline void set_pte_atomic(pte_t *ptep, pte_t pteval)
+ {
+-	PVOP_VCALL3(pv_mmu_ops.set_pte_atomic, ptep,
+-		    pteval.pte_low, pteval.pte_high);
++	pteval_t val = native_pte_val(pteval);
++
++	PVOP_VCALL3(pv_mmu_ops.set_pte_atomic, ptep, val, (u64)val>>32);
  }
 -
--#ifdef CONFIG_PARAVIRT
--#include <asm/paravirt.h>
--#else
--#define pte_val(x)	native_pte_val(x)
--#define pmd_val(x)	native_pmd_val(x)
--#define pud_val(x)	native_pud_val(x)
--#define pgd_val(x)	native_pgd_val(x)
+-static inline void set_pte_present(struct mm_struct *mm, unsigned long addr,
+-				   pte_t *ptep, pte_t pte)
+-{
+-	/* 5 arg words */
+-	pv_mmu_ops.set_pte_present(mm, addr, ptep, pte);
+-}
 -
--#define __pte(x) ((pte_t) { (x) } )
--#define __pmd(x) ((pmd_t) { (x) } )
--#define __pud(x) ((pud_t) { (x) } )
--#define __pgd(x) ((pgd_t) { (x) } )
--#endif /* CONFIG_PARAVIRT */
- 
- #define pgprot_val(x)	((x).pgprot)
- #define __pgprot(x)	((pgprot_t) { (x) } )
-@@ -185,6 +174,4 @@ extern unsigned long __phys_addr(unsigne
- #include <asm-generic/memory_model.h>
- #include <asm-generic/page.h>
- 
--#endif /* __KERNEL__ */
+-static inline void set_pmd(pmd_t *pmdp, pmd_t pmdval)
+-{
+-	PVOP_VCALL3(pv_mmu_ops.set_pmd, pmdp,
+-		    pmdval.pmd, pmdval.pmd >> 32);
+-}
 -
- #endif /* _X86_64_PAGE_H */
+-static inline void set_pud(pud_t *pudp, pud_t pudval)
+-{
+-	PVOP_VCALL3(pv_mmu_ops.set_pud, pudp,
+-		    pudval.pgd.pgd, pudval.pgd.pgd >> 32);
+-}
++#endif	/* X86_PAE */
+ 
+ static inline void pte_clear(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
+ {
+ 	PVOP_VCALL3(pv_mmu_ops.pte_clear, mm, addr, ptep);
++}
++
++static inline pmd_t __pmd(pmdval_t val)
++{
++	pmdval_t pmd;
++
++	if (sizeof(val) > sizeof(unsigned long))
++		pmd = PVOP_CALL2(pmdval_t, pv_mmu_ops.make_pmd,
++				 val, (u64)val>>32);
++	else
++		pmd = PVOP_CALL1(pmdval_t, pv_mmu_ops.make_pmd, val);
++
++	return native_make_pmd(pmd);
++}
++
++static inline pmdval_t pmd_val(pmd_t x)
++{
++	pmdval_t val = native_pmd_val(x);
++	if (sizeof(val) > sizeof(unsigned long))
++		return PVOP_CALL2(pmdval_t, pv_mmu_ops.pmd_val,
++				  val, (u64)val>>32);
++	else
++		return PVOP_CALL1(pmdval_t, pv_mmu_ops.pmd_val, val);
+ }
+ 
+ static inline void pmd_clear(pmd_t *pmdp)
+@@ -1044,95 +1094,25 @@ static inline void pmd_clear(pmd_t *pmdp
+ 	PVOP_VCALL1(pv_mmu_ops.pmd_clear, pmdp);
+ }
+ 
+-#elif defined(CONFIG_X86_64)
+-/* FIXME: There ought to be a way to do it that duplicate less code */
+-static inline pte_t __pte(unsigned long long val)
++static inline void set_pud(pud_t *pudp, pud_t pudval)
+ {
+-	unsigned long long ret;
+-	ret = PVOP_CALL1(unsigned long long, pv_mmu_ops.make_pte, val);
+-	return (pte_t) { ret };
++	pudval_t val = native_pud_val(pudval);
++
++	if (sizeof(val) > sizeof(unsigned long))
++		PVOP_VCALL3(pv_mmu_ops.set_pud, pudp, val, (u64)val>>32);
++	else
++		PVOP_VCALL2(pv_mmu_ops.set_pud, pudp, val);
+ }
+ 
+-static inline pmd_t __pmd(unsigned long long val)
+-{
+-	unsigned long long ret;
+-	ret = PVOP_CALL1(unsigned long long, pv_mmu_ops.make_pmd, val);
+-	return (pmd_t) { ret };
+-}
+-
+-static inline pud_t __pud(unsigned long long val)
+-{
+-	unsigned long long ret;
+-	ret = PVOP_CALL1(unsigned long long, pv_mmu_ops.make_pud, val);
+-	return (pud_t) { ret };
+-}
+-
+-static inline pgd_t __pgd(unsigned long long val)
+-{
+-	unsigned long long ret;
+-	ret = PVOP_CALL1(unsigned long long, pv_mmu_ops.make_pgd, val);
+-	return (pgd_t) { ret };
+-}
+-
+-static inline unsigned long long pte_val(pte_t x)
+-{
+-	return PVOP_CALL1(unsigned long long, pv_mmu_ops.pte_val, x.pte);
+-}
+-
+-static inline unsigned long long pmd_val(pmd_t x)
+-{
+-	return PVOP_CALL1(unsigned long long, pv_mmu_ops.pmd_val, x.pmd);
+-}
+-
+-static inline unsigned long long pud_val(pud_t x)
+-{
+-	return PVOP_CALL1(unsigned long long, pv_mmu_ops.pud_val, x.pud);
+-}
+-
+-static inline unsigned long long pgd_val(pgd_t x)
+-{
+-	return PVOP_CALL1(unsigned long long, pv_mmu_ops.pgd_val, x.pgd);
+-}
+-
+-static inline void set_pte(pte_t *ptep, pte_t pteval)
+-{
+-	PVOP_VCALL2(pv_mmu_ops.set_pte, ptep, pteval.pte);
+-}
+-
+-static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
+-			      pte_t *ptep, pte_t pteval)
+-{
+-	PVOP_VCALL4(pv_mmu_ops.set_pte_at, mm, addr, ptep, pteval.pte);
+-}
+-
+-static inline void set_pmd(pmd_t *pmdp, pmd_t pmdval)
+-{
+-	PVOP_VCALL2(pv_mmu_ops.set_pmd, pmdp, pmdval.pmd);
+-}
+-
+-static inline void set_pud(pud_t *pudp, pud_t pudval)
+-{
+-	PVOP_VCALL2(pv_mmu_ops.set_pud, pudp, pudval.pud);
+-}
++#if PAGETABLE_LEVELS == 4
++/* Always 64-bit processor, so param passing needs no special handling */
++#ifdef CONFIG_X86_32
++#error 4 level pagetables in 32-bit mode?!
++#endif
+ 
+ static inline void set_pgd(pgd_t *pgdp, pgd_t pgdval)
+ {
+-	PVOP_VCALL2(pv_mmu_ops.set_pgd, pgdp, pgdval.pgd);
+-}
+-
+-static inline void pte_clear(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
+-{
+-	PVOP_VCALL3(pv_mmu_ops.pte_clear, mm, addr, ptep);
+-}
+-
+-static inline void pmd_clear(pmd_t *pmdp)
+-{
+-	PVOP_VCALL1(pv_mmu_ops.pmd_clear, pmdp);
+-}
+-
+-static inline void pud_clear(pud_t *pudp)
+-{
+-	PVOP_VCALL1(pv_mmu_ops.pud_clear, pudp);
++	PVOP_VCALL2(pv_mmu_ops.set_pgd, pgdp, native_pgd_val(pgdval));
+ }
+ 
+ static inline void pgd_clear(pgd_t *pgdp)
+@@ -1140,44 +1120,22 @@ static inline void pgd_clear(pgd_t *pgdp
+ 	PVOP_VCALL1(pv_mmu_ops.pgd_clear, pgdp);
+ }
+ 
+-#else  /* !CONFIG_X86_PAE && !CONFIG_X86_64*/
+-
+-static inline pte_t __pte(unsigned long val)
++static inline pud_t __pud(pudval_t val)
+ {
+-	return (pte_t) { PVOP_CALL1(unsigned long, pv_mmu_ops.make_pte, val) };
++	return native_make_pud(PVOP_CALL1(pudval_t, pv_mmu_ops.make_pud, val));
+ }
+ 
+-static inline pgd_t __pgd(unsigned long val)
++static inline pudval_t pud_val(pud_t x)
+ {
+-	return (pgd_t) { PVOP_CALL1(unsigned long, pv_mmu_ops.make_pgd, val) };
++	return PVOP_CALL1(pudval_t, pv_mmu_ops.pud_val, native_pud_val(x));
+ }
+ 
+-static inline unsigned long pte_val(pte_t x)
++static inline void pud_clear(pud_t *pudp)
+ {
+-	return PVOP_CALL1(unsigned long, pv_mmu_ops.pte_val, x.pte_low);
++	PVOP_VCALL1(pv_mmu_ops.pud_clear, pudp);
+ }
+-
+-static inline unsigned long pgd_val(pgd_t x)
+-{
+-	return PVOP_CALL1(unsigned long, pv_mmu_ops.pgd_val, x.pgd);
+-}
+-
+-static inline void set_pte(pte_t *ptep, pte_t pteval)
+-{
+-	PVOP_VCALL2(pv_mmu_ops.set_pte, ptep, pteval.pte_low);
+-}
+-
+-static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
+-			      pte_t *ptep, pte_t pteval)
+-{
+-	PVOP_VCALL4(pv_mmu_ops.set_pte_at, mm, addr, ptep, pteval.pte_low);
+-}
+-
+-static inline void set_pmd(pmd_t *pmdp, pmd_t pmdval)
+-{
+-	PVOP_VCALL2(pv_mmu_ops.set_pmd, pmdp, pmdval.pud.pgd.pgd);
+-}
+-#endif	/* CONFIG_X86_PAE */
++#endif	/* PAGETABLE_LEVELS == 4 */
++#endif	/* PAGETABLE_LEVELS >= 3 */
+ 
+ /* Lazy mode for batching updates / context switch */
+ enum paravirt_lazy_mode {
 
 -- 
 
