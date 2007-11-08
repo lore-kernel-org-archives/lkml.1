@@ -1,42 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762491AbXKHSOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762548AbXKHSPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762491AbXKHSOk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 13:14:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762343AbXKHSOa
+	id S1762548AbXKHSPo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 13:15:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761006AbXKHSPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 13:14:30 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:54308 "EHLO havoc.gtf.org"
+	Thu, 8 Nov 2007 13:15:36 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38046 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761744AbXKHSO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 13:14:29 -0500
-Date: Thu, 8 Nov 2007 13:14:28 -0500
-From: Jeff Garzik <jeff@garzik.org>
-To: Paul Mundt <lethal@linux-sh.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linuxsh-dev@lists.sourceforge.net
-Subject: Re: [PATCH 1/2 take #2] libata: Support PIO polling-only hosts.
-Message-ID: <20071108181428.GF3491@havoc.gtf.org>
-References: <20071108021456.GA30648@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071108021456.GA30648@linux-sh.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	id S1755186AbXKHSPf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 13:15:35 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20071108171637.26590.27076.stgit@warthog.procyon.org.uk>
+References: <20071108171637.26590.27076.stgit@warthog.procyon.org.uk> <20071108171612.26590.4348.stgit@warthog.procyon.org.uk>
+To: torvalds@osdl.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-am33-list@redhat.com
+Cc: dhowells@redhat.com
+Subject: Re: [PATCH 5/6] MN10300: Add the MN10300/AM33 architecture to the kernel [try #4]
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Thu, 08 Nov 2007 18:15:27 +0000
+Message-ID: <28143.1194545727@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 08, 2007 at 11:14:56AM +0900, Paul Mundt wrote:
-> By default ata_host_activate() expects a valid IRQ in order to
-> successfully register the host. This patch enables a special case
-> for registering polling-only hosts that either don't have IRQs
-> or have buggy IRQ generation (either in terms of handling or
-> sensing), which otherwise work fine.
-> 
-> Hosts that want to use polling mode can simply set ATA_FLAG_PIO_POLLING
-> and pass in an invalid IRQ.
-> 
-> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-> 
 
-applied 1-2
+For those who've asked, if patch 5/6 didn't reach them because it's too big,
+it can be obtained from here instead:
 
+	http://people.redhat.com/~dhowells/mn10300/mn10300-arch.tar.bz2
+
+David
