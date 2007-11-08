@@ -1,92 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761871AbXKHShu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762110AbXKHSjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761871AbXKHShu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 13:37:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760820AbXKHShk
+	id S1762110AbXKHSjk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 13:39:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759955AbXKHSjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 13:37:40 -0500
-Received: from cavan.codon.org.uk ([78.32.9.130]:53609 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756322AbXKHShj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 13:37:39 -0500
-Date: Thu, 8 Nov 2007 18:37:07 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jeff Garzik <jeff@garzik.org>, roppedisano@infracomspa.it,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, rjw@sisk.pl,
-       linux-acpi@vger.kernel.org
-Message-ID: <20071108183707.GA3008@srcf.ucam.org>
-References: <4731C86B.1040704@infracomspa.it> <20071107121355.5eaf4496.akpm@linux-foundation.org> <47333CCF.1050403@infracomspa.it> <20071108094958.5c9b1b22.akpm@linux-foundation.org> <20071108180256.GB3491@havoc.gtf.org> <20071108101341.6c4f88d4.akpm@linux-foundation.org> <20071108182217.GA2685@srcf.ucam.org>
+	Thu, 8 Nov 2007 13:39:33 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:54564 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759866AbXKHSjd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 13:39:33 -0500
+Date: Thu, 8 Nov 2007 18:39:30 +0000
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundatin.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: Plans for Onezonelist patch series ???
+Message-ID: <20071108183930.GB23882@skynet.ie>
+References: <20071107011130.382244340@sgi.com> <1194535612.6214.9.camel@localhost> <1194537674.5295.8.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20071108182217.GA2685@srcf.ucam.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: [PATCH] Don't fail ata device revalidation for bad _GTF methods
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+In-Reply-To: <1194537674.5295.8.camel@localhost>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Experience suggests that the _GTF method may be bad. We currently fail 
-device revalidation in that case, which seems excessive.
+On (08/11/07 11:01), Lee Schermerhorn didst pronounce:
+> Mel [anyone?]
+> 
+> Do you know what the plans are for your "onezonelist" patch series?
+> 
 
-Signed-off-by: Matthew Garrett <mjg59@srcf.ucam.org>
+I was holding off trying to add new features to current mainline or -mm as
+there were a number of stability issues and one-zonelist touches a number
+of areas.  Minimally, I was waiting for another -mm to come out and rebase
+to that.  I'll rebase to latest git tomorrow, see how that looks and post
+it if passes regression tests on Monday.
 
----
+> Are they going into -mm for, maybe, .25?  Or have they been dropped.  
+> 
+> I carry the last posting in my mempolicy tree--sometimes below my
+> patches; sometimes above.  Our patches touch some of the same places in
+> mempolicy.c and require reject resolution when changing the order.  I
+> can save Andrew some work if I knew that your patches were going to be
+> in the next -mm by holding off and doing the rebase myself.
+> 
 
-diff --git a/drivers/ata/libata-acpi.c b/drivers/ata/libata-acpi.c
-index 08a52dd..545ea86 100644
---- a/drivers/ata/libata-acpi.c
-+++ b/drivers/ata/libata-acpi.c
-@@ -312,7 +312,7 @@ EXPORT_SYMBOL_GPL(ata_acpi_stm);
-  *
-  * RETURNS:
-  * Number of taskfiles on success, 0 if _GTF doesn't exist or doesn't
-- * contain valid data.  -errno on other errors.
-+ * contain valid data.
-  */
- static int ata_dev_get_GTF(struct ata_device *dev, struct ata_acpi_gtf **gtf,
- 			   void **ptr_to_free)
-@@ -339,7 +339,6 @@ static int ata_dev_get_GTF(struct ata_device *dev, struct ata_acpi_gtf **gtf,
- 			ata_dev_printk(dev, KERN_WARNING,
- 				       "_GTF evaluation failed (AE 0x%x)\n",
- 				       status);
--			rc = -EIO;
- 		}
- 		goto out_free;
- 	}
-@@ -359,7 +358,6 @@ static int ata_dev_get_GTF(struct ata_device *dev, struct ata_acpi_gtf **gtf,
- 		ata_dev_printk(dev, KERN_WARNING,
- 			       "_GTF unexpected object type 0x%x\n",
- 			       out_obj->type);
--		rc = -EINVAL;
- 		goto out_free;
- 	}
- 
-@@ -367,7 +365,6 @@ static int ata_dev_get_GTF(struct ata_device *dev, struct ata_acpi_gtf **gtf,
- 		ata_dev_printk(dev, KERN_WARNING,
- 			       "unexpected _GTF length (%d)\n",
- 			       out_obj->buffer.length);
--		rc = -EINVAL;
- 		goto out_free;
- 	}
- 
-@@ -511,10 +508,7 @@ static int ata_acpi_exec_tfs(struct ata_device *dev)
- 	int gtf_count, i, rc;
- 
- 	/* get taskfiles */
--	rc = ata_dev_get_GTF(dev, &gtf, &ptr_to_free);
--	if (rc < 0)
--		return rc;
--	gtf_count = rc;
-+	gtf_count = ata_dev_get_GTF(dev, &gtf, &ptr_to_free);
- 
- 	/* execute them */
- 	for (i = 0, rc = 0; i < gtf_count; i++) {
+The one-zonelist stuff is likely to be more controversial than what you
+are doing. It may be best if the one-zonelist patches are based on top
+of yours than the other way around.
+
+Thanks
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
