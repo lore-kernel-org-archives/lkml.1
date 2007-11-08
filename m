@@ -1,39 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761956AbXKHRW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761580AbXKHR0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761956AbXKHRW7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 12:22:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761486AbXKHRWu
+	id S1761580AbXKHR0v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 12:26:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759955AbXKHR0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 12:22:50 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37180 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760989AbXKHRWt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 12:22:49 -0500
-Date: Thu, 8 Nov 2007 09:21:49 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: rjw@sisk.pl, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH (2.6.25) 0/2] suspend/hibernate Kconfig cleanups
-Message-Id: <20071108092149.e27c5ba3.akpm@linux-foundation.org>
-In-Reply-To: <1194533053.6294.42.camel@johannes.berg>
-References: <20071107135758.100171000@sipsolutions.net>
-	<200711072317.48023.rjw@sisk.pl>
-	<1194533053.6294.42.camel@johannes.berg>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Nov 2007 12:26:44 -0500
+Received: from waste.org ([66.93.16.53]:47015 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759871AbXKHR0n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 12:26:43 -0500
+Date: Thu, 8 Nov 2007 11:25:48 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Mel Gorman <mel@skynet.ie>
+Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundatin.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 02/23] SLUB: Rename NUMA defrag_ratio to remote_node_defrag_ratio
+Message-ID: <20071108172548.GW17536@waste.org>
+References: <20071107011130.382244340@sgi.com> <20071107011226.844437184@sgi.com> <20071108145044.GB2591@skynet.ie>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071108145044.GB2591@skynet.ie>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 08 Nov 2007 15:44:13 +0100 Johannes Berg <johannes@sipsolutions.net> wrote:
+On Thu, Nov 08, 2007 at 02:50:44PM +0000, Mel Gorman wrote:
+> > -	if (!s->defrag_ratio || get_cycles() % 1024 > s->defrag_ratio)
+> > +	if (!s->remote_node_defrag_ratio ||
+> > +			get_cycles() % 1024 > s->remote_node_defrag_ratio)
 > 
-> > Since they touch a couple of architectures, I think it's better to merge them
-> > through -mm.
-> 
-> Ok. Andrew, do you want them now or wait until .24 settles down more?
-> 
+> I cannot figure out what the number of cycles currently showing on the TSC
+> have to do with a ratio :(. I could semi-understand if we were counting up
+> how many cycles were being spent trying to pack objects but that does not
+> appear to be the case. The comment didn't help a whole lot either. It felt
+> like a cost for packing, not a ratio
 
-I don't know what you're referring to but whatever - send it over.
+It's just a random number generator. And a bad one: lots of arches
+return 0. And I believe at least one of them has some NUMA support.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
