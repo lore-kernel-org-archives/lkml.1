@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758585AbXKHFUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759582AbXKHFXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758585AbXKHFUo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 00:20:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750827AbXKHFUh
+	id S1759582AbXKHFXU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 00:23:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750889AbXKHFXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 00:20:37 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51757 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750788AbXKHFUg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 00:20:36 -0500
-Date: Wed, 7 Nov 2007 21:20:05 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Mackerras <paulus@samba.org>
-Cc: lkml@davidb.org, linux-kernel@vger.kernel.org, drepper@redhat.com,
-       mtk-manpages@gmx.net
-Subject: Re: compat_sys_times() bogus until jiffies >= 0.
-Message-Id: <20071107212005.f039c279.akpm@linux-foundation.org>
-In-Reply-To: <18226.38816.486372.52353@cargo.ozlabs.ibm.com>
-References: <20071107224722.GA20204@old.davidb.org>
-	<20071107152833.6f302c2a.akpm@linux-foundation.org>
-	<20071107161853.044b6e8f.akpm@linux-foundation.org>
-	<18226.27701.782268.375231@cargo.ozlabs.ibm.com>
-	<20071107190714.9c404e28.akpm@linux-foundation.org>
-	<18226.38816.486372.52353@cargo.ozlabs.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Nov 2007 00:23:13 -0500
+Received: from mx2.suse.de ([195.135.220.15]:54223 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750738AbXKHFXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 00:23:12 -0500
+Date: Wed, 7 Nov 2007 21:24:18 -0800
+From: Greg KH <gregkh@suse.de>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Peter Osterlund <petero2@telia.com>, Thomas Maier <balagi@justmail.de>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] pktcdvd: fix BUG caused by sysfs module reference
+	semantics change
+Message-ID: <20071108052418.GA5670@suse.de>
+References: <20071105092018.GD5359@kernel.dk> <Pine.LNX.4.64.0711052312410.5445@quad.localdomain> <47302E9F.6020708@gmail.com> <op.t1d2aurziudtyh@master> <Pine.LNX.4.64.0711062229490.5800@quad.localdomain> <4731269B.6010509@gmail.com> <Pine.LNX.4.64.0711072303080.6991@quad.localdomain> <47327404.9010008@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47327404.9010008@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 8 Nov 2007 15:59:12 +1100 Paul Mackerras <paulus@samba.org> wrote:
-> Andrew Morton writes:
+On Thu, Nov 08, 2007 at 11:27:16AM +0900, Tejun Heo wrote:
+> pkt_setup_dev() expects module reference to be held on invocation.
+> This used to be true for sysfs callbacks but not anymore.  Test and
+> grab module reference around pkt_setup_dev() in
+> class_pktcdvd_store_add().
 > 
-> > "the latter" is what my protopatch does isn't it?  It wraps at 0x7fffffff.
-> > It appears that glibc treats all of 0x80000000-0xffffffff as an error.
+> Signed-off-by: Tejun Heo <htejun@gmail.com>
+> Acked-by: Peter Osterlund <petero2@telia.com>
+> ---
+> Greg, can you please push this patch through your tree? 
+> Thanks a lot.
 > 
-> Not on powerpc.  On powerpc the error indication is carried separately
-> in a condition register bit.  So a force_successful_syscall_return()
-> call will make glibc automatically do the right thing without any
-> glibc changes on powerpc.
+>  drivers/block/pktcdvd.c |    9 +++++++++
+>  1 file changed, 9 insertions(+)
 
-OK
+Why through my tree?  I don't do block devices :)
 
-> Wrapping at 0x7fffffff will cause programs to see large negative
-> deltas between successive calls when the wrap occurs.  I can see that
-> giving userspace fits. :)
-> 
+Shouldn't Jens or at least Andrew take it?
 
-Yup.  But userspace will already have a fit if either the start or end time
-advanced into the glibc-thought-that-was-an-error range.
+thanks,
 
+greg k-h
