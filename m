@@ -1,133 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759964AbXKHMos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760094AbXKHNiZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759964AbXKHMos (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 07:44:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbXKHMoi
+	id S1760094AbXKHNiZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 08:38:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756492AbXKHNiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 07:44:38 -0500
-Received: from lucidpixels.com ([75.144.35.66]:36934 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753388AbXKHMoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 07:44:37 -0500
-Date: Thu, 8 Nov 2007 07:44:36 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: =?ISO-8859-1?Q?BERTRAND_Jo=EBl?= <joel.bertrand@systella.fr>
-cc: Chuck Ebbert <cebbert@redhat.com>, Neil Brown <neilb@suse.de>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: 2.6.23.1: mdadm/raid5 hung/d-state
-In-Reply-To: <4732F643.9030507@systella.fr>
-Message-ID: <Pine.LNX.4.64.0711080744070.575@p34.internal.lan>
-References: <Pine.LNX.4.64.0711040658180.30831@p34.internal.lan>
- <18222.16003.92062.970530@notabene.brown> <472ED613.8050101@systella.fr>
- <4731EA2B.5000806@redhat.com> <4731EC64.3050903@systella.fr>
- <4732F643.9030507@systella.fr>
+	Thu, 8 Nov 2007 08:38:15 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:33247 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754198AbXKHNiP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 08:38:15 -0500
+Message-ID: <4733113E.4090806@davidnewall.com>
+Date: Fri, 09 Nov 2007 00:08:06 +1030
+From: David Newall <david@davidnewall.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463747160-699739752-1194525876=:575"
+To: ciol <ciol13@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [poll] Is the megafreeze development model broken?
+References: <fgtfqa$h9j$1@ger.gmane.org>
+In-Reply-To: <fgtfqa$h9j$1@ger.gmane.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+ciol wrote:
+> * Do you think the megafreeze development model [1] and the "I don't 
+> trust in upstream" development model are broken? (And why) 
 
----1463747160-699739752-1194525876=:575
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-
-
-
-On Thu, 8 Nov 2007, BERTRAND Jo=EBl wrote:
-
-> BERTRAND Jo=EBl wrote:
->> Chuck Ebbert wrote:
->>> On 11/05/2007 03:36 AM, BERTRAND Jo=EBl wrote:
->>>> Neil Brown wrote:
->>>>> On Sunday November 4, jpiszcz@lucidpixels.com wrote:
->>>>>> # ps auxww | grep D
->>>>>> USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME=20
->>>>>> COMMAND
->>>>>> root       273  0.0  0.0      0     0 ?        D    Oct21  14:40
->>>>>> [pdflush]
->>>>>> root       274  0.0  0.0      0     0 ?        D    Oct21  13:00
->>>>>> [pdflush]
->>>>>>=20
->>>>>> After several days/weeks, this is the second time this has happened,
->>>>>> while doing regular file I/O (decompressing a file), everything on
->>>>>> the device went into D-state.
->>>>> At a guess (I haven't looked closely) I'd say it is the bug that was
->>>>> meant to be fixed by
->>>>>=20
->>>>> commit 4ae3f847e49e3787eca91bced31f8fd328d50496
->>>>>=20
->>>>> except that patch applied badly and needed to be fixed with
->>>>> the following patch (not in git yet).
->>>>> These have been sent to stable@ and should be in the queue for 2.6.23=
-=2E2
->>>>     My linux-2.6.23/drivers/md/raid5.c contains your patch for a long
->>>> time :
->>>>=20
->>>> ...
->>>>         spin_lock(&sh->lock);
->>>>         clear_bit(STRIPE_HANDLE, &sh->state);
->>>>         clear_bit(STRIPE_DELAYED, &sh->state);
->>>>
->>>>         s.syncing =3D test_bit(STRIPE_SYNCING, &sh->state);
->>>>         s.expanding =3D test_bit(STRIPE_EXPAND_SOURCE, &sh->state);
->>>>         s.expanded =3D test_bit(STRIPE_EXPAND_READY, &sh->state);
->>>>         /* Now to look around and see what can be done */
->>>>
->>>>         /* clean-up completed biofill operations */
->>>>         if (test_bit(STRIPE_OP_BIOFILL, &sh->ops.complete)) {
->>>>                 clear_bit(STRIPE_OP_BIOFILL, &sh->ops.pending);
->>>>                 clear_bit(STRIPE_OP_BIOFILL, &sh->ops.ack);
->>>>                 clear_bit(STRIPE_OP_BIOFILL, &sh->ops.complete);
->>>>         }
->>>>
->>>>         rcu_read_lock();
->>>>         for (i=3Ddisks; i--; ) {
->>>>                 mdk_rdev_t *rdev;
->>>>                 struct r5dev *dev =3D &sh->dev[i];
->>>> ...
->>>>=20
->>>> but it doesn't fix this bug.
->>>>=20
->>>=20
->>> Did that chunk starting with "clean-up completed biofill operations" en=
-d
->>> up where it belongs? The patch with the big context moves it to a=20
->>> different
->>> place from where the original one puts it when applied to 2.6.23...
->>>=20
->>> Lately I've seen several problems where the context isn't enough to mak=
-e
->>> a patch apply properly when some offsets have changed. In some cases a
->>> patch won't apply at all because two nearly-identical areas are being
->>> changed and the first chunk gets applied where the second one should,
->>> leaving nowhere for the second chunk to apply.
->>
->>     I always apply this kind of patches by hands, and no by patch comman=
-d.=20
->> Last patch sent here seems to fix this bug :
->>=20
->> gershwin:[/usr/scripts] > cat /proc/mdstat
->> Personalities : [raid1] [raid6] [raid5] [raid4]
->> md7 : active raid1 sdi1[2] md_d0p1[0]
->>       1464725632 blocks [2/1] [U_]
->>       [=3D=3D=3D=3D=3D>...............]  recovery =3D 27.1% (396992504/1=
-464725632)=20
->> finish=3D1040.3min speed=3D17104K/sec
->
-> =09Resync done. Patch fix this bug.
->
-> =09Regards,
->
-> =09JKB
->
-
-Excellent!
-
-I cannot easily re-produce the bug on my system so I will wait for the=20
-next stable patch set to include it and let everyone know if it happens=20
-again, thanks.
-
----1463747160-699739752-1194525876=:575--
+I'm new to LKML, and because this is "my first release" I've held off 
+saying that the development model scares me.  No doubt I need to see it 
+through a couple of releases, minimum.  If I was less sanguine I might 
+say something about how often "this is tested and ready to be pushed 
+upstream" presages "the system is broken and doesn't work."  I think if 
+most CIOs monitored the list they'd never let Linux anywhere near their 
+business systems.  It's scary!
