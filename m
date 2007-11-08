@@ -1,82 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760696AbXKHHB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760791AbXKHHCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760696AbXKHHB7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 02:01:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755237AbXKHHBu
+	id S1760791AbXKHHCU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 02:02:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758226AbXKHHBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 02:01:50 -0500
-Received: from usermail.globalproof.net ([194.146.153.18]:39075 "EHLO
-	usermail.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751811AbXKHHBt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 02:01:49 -0500
-From: "Denys Fedoryshchenko" <denys@visp.net.lb>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: linux-kernel@vger.kernel.org, ide <linux-ide@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: SC1200 failure in 2.6.23 and 2.6.24-rc1-git10
-Date: Thu, 8 Nov 2007 09:01:38 +0200
-Message-Id: <20071108065119.M10146@visp.net.lb>
-In-Reply-To: <4732693B.1070509@shaw.ca>
-References: <fa.FFqM2AneKZLH2d3/UIeCMjE/RLE@ifi.uio.no> <4732693B.1070509@shaw.ca>
-X-Mailer: OpenWebMail 2.52 20060502
-X-OriginatingIP: 195.69.208.251 (denys@visp.net.lb)
+	Thu, 8 Nov 2007 02:01:54 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:29030 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757775AbXKHHBx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 02:01:53 -0500
+Date: Thu, 8 Nov 2007 08:01:49 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Roland Dreier <roland@digitalvampire.org>
+Cc: Romano Giannetti <romanol@upcomillas.es>, Willy Tarreau <w@1wt.eu>,
+       Pierre Ossman <drzeus-mmc@drzeus.cx>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.34-rc1 eat my photo SD card :-(
+Message-ID: <20071108070149.GC5011@kernel.dk>
+References: <1194259886.6927.9.camel@localhost> <20071105132218.495f244e@poseidon.drzeus.cx> <1194270393.27789.2.camel@localhost> <20071105162633.09e54290@poseidon.drzeus.cx> <1194343121.6953.6.camel@rukbat> <20071106195148.GD1045@1wt.eu> <1194385693.12938.5.camel@rukbat> <1194387459.5205.2.camel@rukbat> <1194472374.7176.4.camel@rukbat> <87zlxpzkxh.fsf@shaolin.home.digitalvampire.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=koi8-r
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87zlxpzkxh.fsf@shaolin.home.digitalvampire.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You are right, seems no dma lines in adapter. hda=nodma helped, no errors 
-anymore. I will try now also libata_dma_mask and will mail result. Btw there 
-is no notes in Documentation/kernel-parameters.txt about it.
-
-In any case it is complete board, WRAP.2C made by PCEngines in 2003. Kind of 
-popular and mass produced, before was widely used by StarOS, probably known 
-GPL violator, who didn't bother himself to supply patches, but at same time 
-used it in his projects.
-
-If it is valid for all board with this revision, maybe it is better to put it 
-in some kind of fixup/quirk/black list, or how it is called?
-
-On Wed, 07 Nov 2007 19:41:15 -0600, Robert Hancock wrote
-> Denys wrote:
-> > Finally i got full DMESG with 1GB card till end. Seems not readable too.
-> >
+On Wed, Nov 07 2007, Roland Dreier wrote:
+>  > Well, I spent the last 36 hours (more or less) trying to bisect the SD
+>  > problem. The method I used was to insert the card, umount it, and make 8 dd
+>  > in a row; the kernel is "bad" if they differs, "good" if they are the same. 
+>  > 
+>  > I could not finish the bisect. The last pair good/bad were:
+>  > 
+>  > bad:   [7aeacf982203fb4dea2f3434eefdc268cfd5d6d9] 
+>  >        [BLOCK] blk_rq_map_sg: force clear termination bit
+>  > good:  [e38f981758118d829cd40cfe9c09e3fa81e422aa] 
+>  >        exportfs: update documentation
 > 
-> ...
+> Thanks, that helps.  I read over the mmc changes in between those two
+> commits, and I think I found the problem... could you please try the
+> patch below (on top of the latest kernel) and report back how it
+> works?  Unfortunately I am traveling and I don't have an SD card with
+> me to test on my laptop...
 > 
-> > ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-> > ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 cdb 0x0 data 4096 
-in
-> >          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> > ata1.00: status: { DRDY }
-> > ata1: soft resetting link
-> > ata1.00: configured for MWDMA1
-> > sd 0:0:0:0: [sda] Result: hostbyte=0x00 driverbyte=0x08
-> > sd 0:0:0:0: [sda] Sense Key : 0xb [current] [descriptor]
-> > Descriptor sense data with sense descriptors (in hex):
-> >         72 0b 00 00 00 00 00 0c 00 0a 80 00 00 00 00 00
-> >         00 00 00 00
-> > sd 0:0:0:0: [sda] ASC=0x0 ASCQ=0x0
-> > end_request: I/O error, dev sda, sector 0
-> > Buffer I/O error on device sda, logical block 0
-> > ata1: EH complete
+> Pierre, assuming Romano tests this patch successfully, please apply!
 > 
-> I'm guessing that your CF-to-IDE adapter doesn't have the correct 
-> lines wired up for DMA to work properly, and the card indicates DMA 
-> support, which libata tries to use but which doesn't work. It looks 
-> like it never tried falling back to PIO after DMA failed. Seems like 
-> a deficiency in the speed-down logic?
+> Thanks,
+>   Roland
 > 
-> -- 
-> Robert Hancock      Saskatoon, SK, Canada
-> To email, remove "nospam" from hancockr@nospamshaw.ca
-> Home Page: http://www.roberthancock.com/
+> <-- patch below -->
+> 
+> mmc: Fix sg helper copy-and-paste error
+> 
+> Commit 45711f1a ("[SG] Update drivers to use sg helpers") had the
+> following bogus change in drivers/mmc/card/queue.c:
+> 
+>     > -			src_buf = page_address(src->page) + src->offset;
+>     > +			src_buf = sg_virt(dst);
+> 
+> (Notice that "src" is converted to "dst").  Turn this "dst" back into
+> the intended "src".
+> 
+> Cc: Jens Axboe <jens.axboe@oracle.com>
+> Signed-off-by: Roland Dreier <roland@digitalvampire.org>
+> ---
+> diff --git a/drivers/mmc/card/queue.c b/drivers/mmc/card/queue.c
+> index 9203a0b..1b9c9b6 100644
+> --- a/drivers/mmc/card/queue.c
+> +++ b/drivers/mmc/card/queue.c
+> @@ -310,7 +310,7 @@ static void copy_sg(struct scatterlist *dst, unsigned int dst_len,
+>  		}
+>  
+>  		if (src_size == 0) {
+> -			src_buf = sg_virt(dst);
+> +			src_buf = sg_virt(src);
+>  			src_size = src->length;
+>  		}
+>  
 
+How embarassing, sorry about that! Pierre, shall I shove this upstream
+or will you?
 
---
-Denys Fedoryshchenko
-Technical Manager
-Virtual ISP S.A.L.
+-- 
+Jens Axboe
 
