@@ -1,51 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763244AbXKHU3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761768AbXKHUlM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763244AbXKHU3r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 15:29:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761140AbXKHU3k
+	id S1761768AbXKHUlM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 15:41:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758198AbXKHUk6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 15:29:40 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:60891 "EHLO gir.skynet.ie"
+	Thu, 8 Nov 2007 15:40:58 -0500
+Received: from main.gmane.org ([80.91.229.2]:51682 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760887AbXKHU3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 15:29:39 -0500
-Date: Thu, 8 Nov 2007 20:29:37 +0000
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>, akpm@linux-foundatin.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: Plans for Onezonelist patch series ???
-Message-ID: <20071108202936.GG23882@skynet.ie>
-References: <20071107011130.382244340@sgi.com> <1194535612.6214.9.camel@localhost> <1194537674.5295.8.camel@localhost> <Pine.LNX.4.64.0711081033570.7871@schroedinger.engr.sgi.com> <20071108184009.GC23882@skynet.ie> <Pine.LNX.4.64.0711081043420.7871@schroedinger.engr.sgi.com> <20071108200607.GD23882@skynet.ie> <Pine.LNX.4.64.0711081218250.10074@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0711081218250.10074@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+	id S1754516AbXKHUk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 15:40:57 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: ciol <ciol13@gmail.com>
+Subject: Re: [poll] Is the megafreeze development model broken?
+Date: Thu, 08 Nov 2007 21:41:13 +0100
+Message-ID: <fgvs7p$j0d$1@ger.gmane.org>
+References: <fgtfqa$h9j$1@ger.gmane.org> <47331CA2.9000403@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 91.164.107.73
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070622)
+In-Reply-To: <47331CA2.9000403@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (08/11/07 12:20), Christoph Lameter didst pronounce:
-> On Thu, 8 Nov 2007, Mel Gorman wrote:
-> 
-> > I've rebased the patches to mm-broken-out-2007-11-06-02-32. However, the
-> > vanilla -mm and the one with onezonelist applied are locking up in the
-> > same manner. I'm way too behind at the moment to guess if it is a new bug
-> > or reported already. At best, I can say the patches are not making things
-> > any worse :) I'll go through the archives in the morning and do a bit more
-> > testing to see what happens.
-> 
-> I usually base my patches on Linus' tree as long as there is no tree 
-> available from Andrew. But that means that may have to 
-> approximate what is in there by adding this and that.
-> 
+Chris Snook wrote:
 
-Unfortunately for me, there are several collisions with the patches when
-applied against -mm if the patches are based on latest git. They are mainly in
-mm/vmscan.c due to the memory controller work. For the purposes of testing and
-merging, it makes more sense for me to work against -mm as much as possible.
+> Why are you asking the developers?  We do this for the sake of the users.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+
+The kernel is the software of the developers.
+It's important to know how they want it to be distributed.
+
