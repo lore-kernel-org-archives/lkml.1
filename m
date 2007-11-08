@@ -1,159 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760863AbXKHOuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761268AbXKHOvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760863AbXKHOuz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 09:50:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbXKHOur
+	id S1761268AbXKHOvz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 09:51:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758615AbXKHOvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 09:50:47 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:36108 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752087AbXKHOuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 09:50:46 -0500
-Date: Thu, 8 Nov 2007 14:50:44 +0000
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundatin.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 02/23] SLUB: Rename NUMA defrag_ratio to remote_node_defrag_ratio
-Message-ID: <20071108145044.GB2591@skynet.ie>
-References: <20071107011130.382244340@sgi.com> <20071107011226.844437184@sgi.com>
+	Thu, 8 Nov 2007 09:51:47 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:47515 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758614AbXKHOvq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 09:51:46 -0500
+Date: Thu, 8 Nov 2007 15:51:20 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: unification of cfufreq/Kconfig
+Message-ID: <20071108145119.GI26163@stusta.de>
+References: <11943900793940-git-send-email-sam@ravnborg.org> <20071107060220.GX26163@stusta.de> <20071107070644.GA13937@uranus.ravnborg.org> <20071107071801.GY26163@stusta.de> <20071107160629.GA17238@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20071107011226.844437184@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+In-Reply-To: <20071107160629.GA17238@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (06/11/07 17:11), Christoph Lameter didst pronounce:
-> We need the defrag ratio for the non NUMA situation now. The NUMA defrag works
-> by allocating objects from partial slabs on remote nodes. Rename it to
+On Wed, Nov 07, 2007 at 05:06:29PM +0100, Sam Ravnborg wrote:
+> On Wed, Nov 07, 2007 at 08:18:01AM +0100, Adrian Bunk wrote:
+> > On Wed, Nov 07, 2007 at 08:06:44AM +0100, Sam Ravnborg wrote:
+> > > On Wed, Nov 07, 2007 at 07:02:20AM +0100, Adrian Bunk wrote:
+> > > > On Wed, Nov 07, 2007 at 12:01:12AM +0100, Sam Ravnborg wrote:
+> > > > >...
+> > > > >  config X86_SPEEDSTEP_CENTRINO
+> > > > > -	tristate "Intel Enhanced SpeedStep"
+> > > > > +	tristate "Intel Enhanced SpeedStep (deprecated)"
+> > > > >  	select CPU_FREQ_TABLE
+> > > > > -	select X86_SPEEDSTEP_CENTRINO_TABLE
+> > > > > +	select X86_SPEEDSTEP_CENTRINO_TABLE if X86_32
+> > > > > +	depends on X86_64 && ACPI_PROCESSOR
+> > > > >...
+> > > > 
+> > > > No.
+> > > > 
+> > > > 	depends on ACPI_PROCESSOR if X86_64
+> > > 
+> > > Gives syntax error.
+> > 
+> > That happens when you review something without trying it...
+> > 
+> > 	depends on (ACPI_PROCESSOR || !X86_64)
 > 
-> 	remote_node_defrag_ratio
+> Got confused by the if and did the wrong conversion.
+> To make it look like the other config options I will use:
 > 
-
-I'm not too keen on the defrag name here largely because I cannot tell what
-it has to do with defragmention or ratios. It's really about working out
-when it is better to pack objects into a remote slab than reclaim objects
-from a local slab, right? It's also not clear what it is a ratio of what to
-what. I thought it might be clock cycles but that isn't very clear either.
-If we are renaming this can it be something like remote_packing_cost_limit ?
-
-> to be clear about this.
+> 	depends on X86_64 || (X86_32 && ACPI_PROCESSOR)
 > 
-> [This patch is already in mm]
-> 
-> Reviewed-by: Rik van Riel <riel@redhat.com>
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> ---
->  include/linux/slub_def.h |    5 ++++-
->  mm/slub.c                |   17 +++++++++--------
->  2 files changed, 13 insertions(+), 9 deletions(-)
-> 
-> Index: linux-2.6/include/linux/slub_def.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/slub_def.h	2007-11-06 12:34:13.000000000 -0800
-> +++ linux-2.6/include/linux/slub_def.h	2007-11-06 12:36:28.000000000 -0800
-> @@ -60,7 +60,10 @@ struct kmem_cache {
->  #endif
->  
->  #ifdef CONFIG_NUMA
-> -	int defrag_ratio;
-> +	/*
-> +	 * Defragmentation by allocating from a remote node.
-> +	 */
-> +	int remote_node_defrag_ratio;
+> It is longer but simpler.
 
-How about
+But wrong...
 
-/*
- * When packing objects into slabs, it may become necessary to
- * reclaim objects on a local slab or allocate from a remote node.
- * The remote_packing_cost_limit is the maximum cost of remote
- * accesses that should be paid before it becomes worthwhile to
- * reclaim instead
- */
-int remote_packing_cost_limit;
+	depends on X86_32 || (X86_64 && ACPI_PROCESSOR)
 
-?
+> Thanks,
+> 	Sam
 
-I still don't see what get_cycles() has to do with anything but this
-could be because my understanding of SLUB sucks.
-
->  	struct kmem_cache_node *node[MAX_NUMNODES];
->  #endif
->  #ifdef CONFIG_SMP
-> Index: linux-2.6/mm/slub.c
-> ===================================================================
-> --- linux-2.6.orig/mm/slub.c	2007-11-06 12:36:16.000000000 -0800
-> +++ linux-2.6/mm/slub.c	2007-11-06 12:37:25.000000000 -0800
-> @@ -1345,7 +1345,8 @@ static unsigned long get_any_partial(str
->  	 * expensive if we do it every time we are trying to find a slab
->  	 * with available objects.
->  	 */
-> -	if (!s->defrag_ratio || get_cycles() % 1024 > s->defrag_ratio)
-> +	if (!s->remote_node_defrag_ratio ||
-> +			get_cycles() % 1024 > s->remote_node_defrag_ratio)
-
-I cannot figure out what the number of cycles currently showing on the TSC
-have to do with a ratio :(. I could semi-understand if we were counting up
-how many cycles were being spent trying to pack objects but that does not
-appear to be the case. The comment didn't help a whole lot either. It felt
-like a cost for packing, not a ratio
-
->  		return 0;
->  
->  	zonelist = &NODE_DATA(slab_node(current->mempolicy))
-> @@ -2363,7 +2364,7 @@ static int kmem_cache_open(struct kmem_c
->  
->  	s->refcount = 1;
->  #ifdef CONFIG_NUMA
-> -	s->defrag_ratio = 100;
-> +	s->remote_node_defrag_ratio = 100;
->  #endif
->  	if (!init_kmem_cache_nodes(s, gfpflags & ~SLUB_DMA))
->  		goto error;
-> @@ -4005,21 +4006,21 @@ static ssize_t free_calls_show(struct km
->  SLAB_ATTR_RO(free_calls);
->  
->  #ifdef CONFIG_NUMA
-> -static ssize_t defrag_ratio_show(struct kmem_cache *s, char *buf)
-> +static ssize_t remote_node_defrag_ratio_show(struct kmem_cache *s, char *buf)
->  {
-> -	return sprintf(buf, "%d\n", s->defrag_ratio / 10);
-> +	return sprintf(buf, "%d\n", s->remote_node_defrag_ratio / 10);
->  }
->  
-> -static ssize_t defrag_ratio_store(struct kmem_cache *s,
-> +static ssize_t remote_node_defrag_ratio_store(struct kmem_cache *s,
->  				const char *buf, size_t length)
->  {
->  	int n = simple_strtoul(buf, NULL, 10);
->  
->  	if (n < 100)
-> -		s->defrag_ratio = n * 10;
-> +		s->remote_node_defrag_ratio = n * 10;
->  	return length;
->  }
-> -SLAB_ATTR(defrag_ratio);
-> +SLAB_ATTR(remote_node_defrag_ratio);
->  #endif
->  
->  static struct attribute * slab_attrs[] = {
-> @@ -4050,7 +4051,7 @@ static struct attribute * slab_attrs[] =
->  	&cache_dma_attr.attr,
->  #endif
->  #ifdef CONFIG_NUMA
-> -	&defrag_ratio_attr.attr,
-> +	&remote_node_defrag_ratio_attr.attr,
->  #endif
->  	NULL
->  };
-> 
-> -- 
-> 
+cu
+Adrian
 
 -- 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
