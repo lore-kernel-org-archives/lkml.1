@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760188AbXKHJz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759878AbXKHKOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760188AbXKHJz5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 04:55:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758464AbXKHJzs
+	id S1759878AbXKHKOR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 05:14:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750708AbXKHKOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 04:55:48 -0500
-Received: from ic0245.upco.es ([130.206.70.245]:45924 "EHLO
-	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758465AbXKHJzq (ORCPT
+	Thu, 8 Nov 2007 05:14:06 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:57814 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753450AbXKHKOF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 04:55:46 -0500
-Subject: 2.6.24-rc2 (esthetic?) regression: auto select interrupt spams my
-	logs
-From: Romano Giannetti <romanol@upcomillas.es>
-To: astarikovskiy@suse.de, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Date: Thu, 08 Nov 2007 10:55:44 +0100
-Message-Id: <1194515744.7115.12.camel@rukbat>
+	Thu, 8 Nov 2007 05:14:05 -0500
+Date: Thu, 8 Nov 2007 12:14:13 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Philippe Elie <phil.el@wanadoo.fr>
+Cc: oprofile-list@lists.sourceforge.net, kernel@avr32linux.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC/PATCH] AVR32: Oprofile support
+Message-ID: <20071108121413.4919e4a3@siona>
+In-Reply-To: <20071108092806.GB2889@zaniah>
+References: <1194444333-9264-1-git-send-email-hskinnemoen@atmel.com>
+	<20071108092806.GB2889@zaniah>
+Organization: Atmel
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 8 Nov 2007 10:28:06 +0100
+Philippe Elie <phil.el@wanadoo.fr> wrote:
 
-Hi,
+> On Wed, 07 Nov 2007 at 15:05 +0000, Haavard Skinnemoen wrote:
+> > +	/* PCCNT */
+> > +	if (ctr->enabled && (pccr & ctr->flag_mask)) {
+> > +		sysreg_write(PCCNT, -ctr->count);
+> > +		oprofile_add_sample(regs, PCCNT);
+> > +	}
+> > +	ctr++;
+> > +	/* PCNT0 */
+> > +	if (ctr->enabled && (pccr & ctr->flag_mask)) {
+> > +		sysreg_write(PCNT0, -ctr->count);
+> > +		oprofile_add_sample(regs, PCNT0);
+> > +	}
+> > +	ctr++;
+> > +	/* PCNT1 */
+> > +	if (ctr->enabled && (pccr & ctr->flag_mask)) {
+> > +		sysreg_write(PCNT1, -ctr->count);
+> > +		oprofile_add_sample(regs, PCNT1);
+> > +	}
+> 
+> Why not a loop here ?
 
-After the ACPI changes between 2.6.24-rc1 and -rc2 I have my logs
-"spammed" (every 2-3 seconds) by: 
+The system register is coded into the instruction as an immediate, so
+it would have to be a loop with a switch in it. And with only three
+counters, I thought it looked cleaner (and faster) this way.
 
-[  423.112903] ACPI: EC: missing IBF_1 confirmations,switch off interrupt mode.
-[  423.113020] ACPI: EC: non-query interrupt received, switching to interrupt mode
-[  426.078972] ACPI: EC: missing IBF_1 confirmations,switch off interrupt mode.
-[  426.079645] ACPI: EC: non-query interrupt received, switching to interrupt mode
-[  426.622773] ACPI: EC: missing IBF_1 confirmations,switch off interrupt mode.
-[  426.622889] ACPI: EC: non-query interrupt received, switching to interrupt mode
-
-It seems that no harm is done, apart (but it could be another thing)
-that gnome-panel is much slower on startup. 
-
-Romano  
-
-
--- 
-Sorry for the disclaimer --- ¡I cannot stop it!
-
-
-
---
-La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
-
-This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
+HÃ¥vard
