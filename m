@@ -1,94 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762206AbXKHSI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762271AbXKHSJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762206AbXKHSI6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 13:08:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761140AbXKHSIu
+	id S1762271AbXKHSJm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 13:09:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760887AbXKHSJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 13:08:50 -0500
-Received: from mga06.intel.com ([134.134.136.21]:23310 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760662AbXKHSIt (ORCPT
+	Thu, 8 Nov 2007 13:09:33 -0500
+Received: from mail-gw3.adaptec.com ([162.62.93.58]:57480 "EHLO
+	mail-gw3.adaptec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760490AbXKHSJb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 13:08:49 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,390,1188802800"; 
-   d="scan'208";a="266114649"
-Date: Thu, 8 Nov 2007 10:07:39 -0800
-From: Mark Gross <mgross@linux.intel.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-mm1 breaks C-state support on Intel T7200 x86_64
-Message-ID: <20071108180739.GA5062@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <3624.1194542384@turing-police.cc.vt.edu>
+	Thu, 8 Nov 2007 13:09:31 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3624.1194542384@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/1] aacraid: don't assign cpu_to_le32(int) to u8
+Date: Thu, 8 Nov 2007 13:09:29 -0500
+Message-ID: <AE4F746F2AECFC4DA4AADD66A1DFEF01F9604C@otce2k301.adaptec.com>
+In-Reply-To: <20071108172747.GA4054@infradead.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/1] aacraid: don't assign cpu_to_le32(int) to u8
+Thread-Index: AcgiLLNkBuWnu8zJRLawS+fD74g9IwABOfAw
+References: <jefxzqqeha.fsf@sykes.suse.de> <AE4F746F2AECFC4DA4AADD66A1DFEF01F95EF7@otce2k301.adaptec.com> <20071107173307.GB25560@infradead.org> <AE4F746F2AECFC4DA4AADD66A1DFEF01F95F54@otce2k301.adaptec.com> <20071108172747.GA4054@infradead.org>
+From: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
+To: "Christoph Hellwig" <hch@infradead.org>
+Cc: "Andreas Schwab" <schwab@suse.de>,
+       "Stephen Rothwell" <sfr@canb.auug.org.au>, <linux-scsi@vger.kernel.org>,
+       "LKML" <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 08, 2007 at 12:19:44PM -0500, Valdis.Kletnieks@vt.edu wrote:
-> (Sorry for not reporting this sooner - I haven't been running off battery
-> much in the last 3 weeks, so I didn't notice it till now...)
-> 
-> Dell Latitude D820 laptop, T7200 Core2 Duo CPU, x86_64 kernel.
-> 
-> As reported by 'powertop' on a basically idle machine:
-> 
-> 2.6.23-mm1:
-> 
-> Cn                Avg residency       P-states (frequencies)
-> C0 (cpu running)        (100.0%)        2.00 Ghz     0.8%
-> C1                0.0ms ( 0.0%)         1.67 Ghz     0.0%
-> C2                0.0ms ( 0.0%)         1333 Mhz     0.0%
-> C3                0.0ms ( 0.0%)         1000 Mhz    99.2%
-> 
-> 2.6.23-rc8-mm2:
-> 
-> Cn                Avg residency       P-states (frequencies)
-> C0 (cpu running)        ( 0.3%)         2.00 Ghz     0.0%
-> C1                0.0ms ( 0.0%)         1.67 Ghz     0.0%
-> C2                0.0ms ( 0.0%)         1333 Mhz     0.0%
-> C3               31.5ms (99.7%)         1000 Mhz   100.0%
-> 
-> In addition, the ACPI power estimate reported about 25 watts for 23-mm1,
-> but only 21 watts for -rc8-mm2, a significant regression.
+Resounding ACK.
 
-well, thats because you burn less watts if you get into C3.  
+I just finished *exactly* the same set of changes, composed the patch
+and was about to hit send when this one came over the wire from you!
+There was absolutely no differences between our patches (save for the
+fact I did not place the AIF ones in as they are already in the queue,
+one is already on -mm).
 
-> 
-> I bisected this down to this set of patches:
-> 
-> pm-qos-infrastructure-and-interface.patch
-> pm-qos-infrastructure-and-interface-fix.patch
-> pm-qos-infrastructure-and-interface-vs-git-acpi.patch
-> pm-qos-infrastructure-and-interface-vs-git-acpi-2.patch
-> latencyc-use-qos-infrastructure.patch
+I am going to return to this at some future date and figure out the
+problems surrounding the context imbalances that are present, making
+code that determines which context it is called from (sysfs, error
+recovery or from the background thread) and plays with the various locks
+confuses sparse. Rewriting so that the contexts are less programmatic is
+in order...
 
-yipes!  I'll look at it right away.  It looks like an integration issue
-with CPU-IDLE patches (those control the C-state entry).  I'll get it
-fixed up.
+Sincerely -- Mark Salyzyn
 
+> -----Original Message-----
+> From: Christoph Hellwig [mailto:hch@infradead.org] 
+> Sent: Thursday, November 08, 2007 12:28 PM
+> To: Salyzyn, Mark
+> Cc: Christoph Hellwig; Andreas Schwab; Stephen Rothwell; 
+> linux-scsi@vger.kernel.org; LKML
+> Subject: Re: [PATCH 1/1] aacraid: don't assign cpu_to_le32(int) to u8
 > 
-> The patch says:
+> On Wed, Nov 07, 2007 at 01:51:44PM -0500, Salyzyn, Mark wrote:
+> > Christoph Hellwig [mailto:hch@infradead.org] sez:
+> > > Did anyone run the driver through sparse to see if we have 
+> > > more issues like this?
+> > 
+> > There are some warnings from sparse, none like this one. I will deal
+> > with the warnings ...
 > 
->   To register the default pm_qos target for the specific parameter, the
->   process must open one of /dev/[cpu_dma_latency, network_latency,
->   network_throughput]
+> Actually there are a lot of endianess warnings, fortunately 
+> most of them
+> harmless.  The patch below fixes all of them up (including the ones in
+> the patch I replied to), except for aac_init_adapter which is 
+> really odd
+> and I don't know what to do.
 > 
->   As long as the device node is held open that process has a registered
->   requirement on the parameter.  The name of the requirement is
->   "process_<PID>" derived from the current->pid from within the open system
->   call.
-> 
-> I shouldn't have to have a process open a /dev/file, write a number, and then
-> stay around forever so the file doesn't close in order to get the same behavior
-> I was getting by default before.  What needs to happen to get this to not
-> be a behavior regression/change?
->
-you won't have such a process (at least I highly doubt you do)  I need
-to fix this.  Thanks for taking the time to bisect it and reporting it to me!
-
---mgross
