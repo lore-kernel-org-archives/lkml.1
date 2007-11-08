@@ -1,72 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759773AbXKHAVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756689AbXKHAVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759773AbXKHAVk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Nov 2007 19:21:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbXKHAVb
+	id S1756689AbXKHAVx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Nov 2007 19:21:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758372AbXKHAVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Nov 2007 19:21:31 -0500
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:35651 "EHLO
-	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752336AbXKHAVa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Nov 2007 19:21:30 -0500
-Date: Thu, 8 Nov 2007 01:21:12 +0100
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>, Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH] r8169 fix regression on ASUS motherboards (updated)
-Message-ID: <20071108002112.GD15367@electric-eye.fr.zoreil.com>
-References: <4731E2AB.5080703@rtr.ca> <4731FDB7.8010505@rtr.ca> <20071107220455.GA15367@electric-eye.fr.zoreil.com> <47323A69.5050206@rtr.ca> <47323B6B.9000909@rtr.ca> <47324843.4050602@rtr.ca>
+	Wed, 7 Nov 2007 19:21:36 -0500
+Received: from THUNK.ORG ([69.25.196.29]:38029 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757477AbXKHAVe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Nov 2007 19:21:34 -0500
+Date: Wed, 7 Nov 2007 19:20:38 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: [RFC] [PATCH 3/3] Recursive mtime for ext3
+Message-ID: <20071108002037.GA7728@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Jan Kara <jack@suse.cz>,
+	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+References: <20071106171537.GD23689@duck.suse.cz> <20071106171945.GG23689@duck.suse.cz> <20071106194012.GE12857@thunk.org> <20071107143605.GD22214@duck.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47324843.4050602@rtr.ca>
-X-Organisation: Land of Sunshine Inc.
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20071107143605.GD22214@duck.suse.cz>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord <lkml@rtr.ca> :
-[...]
-> I've now received a couple of private emails from people reporting
-> full success with this patch.
+On Wed, Nov 07, 2007 at 03:36:05PM +0100, Jan Kara wrote:
+> > What if more than one application wants to use this facility?
+>
+>   That should be fine - let's see: Each application keeps somewhere a time when
+> it started a scan of a subtree (or it can actually remember a time when it
+> set the flag for each directory), during the scan, it sets the flag on
+> each directory. When it wakes up to recheck the subtree it just compares
+> the rtime against the stored time - if rtime is greater, subtree has been
+> modified since the last scan and we recurse in it and when we are finished
+> with it we set the flag. Now notice that we don't care about the flag when
+> we check for changes - we care only for rtime - so if there are several
+> applications interested in the same subtree, the flag just gets set more
+> often and thus the update of rtime happens more often but the same scheme
+> still works fine.
 
-Ok, I have pushed the patch below for Jeff to pull at korg.
+OK, so in this case you don't need to set rtime on the every single
+file inode, but only directory inode, right?  Because you're only
+using checking the rtime at the directory level, and not the flag.
+And it's just as easy for you to check the rtime flag for the file's
+containing directory (modulo magic vis-a-vis hard links) as the file's
+inode.
 
->From 1dd7681bc2ff171341ea5cae957f8ecb5c0c102e Mon Sep 17 00:00:00 2001
-From: Mark Lord <mlord@pobox.com>
-Date: Thu, 8 Nov 2007 01:03:04 +0100
-Subject: [PATCH] r8169: revert 7da97ec96a0934319c7fbedd3d38baf533e20640 (partly)
+I'm just really wishing that rtime and the rtime flag didn't have live
+on disk, but could rather be in memory.  If you only needed to save
+the directory flags and rtimes, that might actually be doable.
 
-Various symptoms depending on the .config options:
-- the card stops working after some (short) time
-- the card does not work at all
-- the card disappears (nothing in lspci/dmesg)
+Note by the way that since you need to own the file/directory to set
+flags, this means that only programs that are running as root or
+running as the uid who owns the entire subtree will be able to use
+this scheme.  One advantage of doing in kernel memory is that you
+might be able to support watching a tree that is not owned by the
+watcher.
 
-A real power-off is needed to recover the card.
+>   I don't get it here - you need to scan the whole subtree and set the flag
+> only during the initial scan. Later, you need to scan and set the flag only
+> for directories in whose subtree something changed. Similarty rtime needs
+> to be updated for each inode at most once after the scan. 
 
-Signed-off-by: Mark Lord <mlord@pobox.com>
-Signed-off-by: Francois Romieu <romieu@fr.zoreil.com>
----
- drivers/net/r8169.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+OK, so in the worst case every single file in a kernel source tree
+might change after doing an extreme git checkout.  That means around
+36k of files get updated.  So if you have to set/clear the rtime flag
+during the checkout process 36k file inodes would have to have their
+rtime flag cleared, plus 2k worth of directory inodes; but those would
+probably be folded into other changes made to the inodes anyway.  But
+then when trackerd goes back and scans the subtree, if you are
+actually setting rtime flags for every single file inode, then that's
+38k of indoes that need updating.  If you only need to set the rtime
+flags for directories, that's only 2k worth of extra gratuitous inode
+updates.
 
-diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
-index 9dbab3f..a37cf82 100644
---- a/drivers/net/r8169.c
-+++ b/drivers/net/r8169.c
-@@ -1328,6 +1328,7 @@ static void rtl_hw_phy_config(struct net_device *dev)
- 		break;
- 	case RTL_GIGA_MAC_VER_11:
- 	case RTL_GIGA_MAC_VER_12:
-+		break;
- 	case RTL_GIGA_MAC_VER_17:
- 		rtl8168b_hw_phy_config(ioaddr);
- 		break;
--- 
-1.5.3.3
-
--- 
-Ueimor
+							- Ted
