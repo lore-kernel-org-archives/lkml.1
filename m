@@ -1,66 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761340AbXKHQJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761607AbXKHQJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761340AbXKHQJS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 11:09:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759983AbXKHQJE
+	id S1761607AbXKHQJc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 11:09:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761351AbXKHQJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 11:09:04 -0500
-Received: from ryu.zarb.org ([212.85.153.228]:58385 "EHLO ryu.zarb.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759531AbXKHQJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 11:09:03 -0500
-X-Greylist: delayed 555 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Nov 2007 11:09:03 EST
-Subject: [PATCH] cm40x0_cs.c: fix debug macros
-From: Pascal Terjan <pterjan@mandriva.com>
-To: Harald Welte <laforge@gnumonks.org>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: Mandriva
-Date: Thu, 08 Nov 2007 16:59:44 +0100
-Message-Id: <1194537585.4870.35.camel@plop>
+	Thu, 8 Nov 2007 11:09:18 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:11448 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761269AbXKHQJQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 11:09:16 -0500
+Date: Thu, 8 Nov 2007 08:08:03 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: David Brownell <david-b@pacbell.net>, David Miller <davem@davemloft.net>,
+       Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
+       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>
+Subject: Re: build #337 failed for 2.6.24-rc1-gb1d08ac In function
+ `usbnet_set_settings':
+Message-Id: <20071108080803.a2b1201d.randy.dunlap@oracle.com>
+In-Reply-To: <20071108033010.GF26163@stusta.de>
+References: <200711012024.57412.toralf.foerster@gmx.de>
+	<200711021230.22588.david-b@pacbell.net>
+	<20071102195517.GW30287@stusta.de>
+	<200711071434.52607.david-b@pacbell.net>
+	<20071107225232.GB26163@stusta.de>
+	<20071108033010.GF26163@stusta.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.1-1mdv2008.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When PCMCIA_DEBUG is set, cm40x0_cs.c and cm4000_cs.c don't build because
-the definition of reader_to_dev uses a non-existent handle field of the
-struct pcmcia_device in the call to handle_to_dev.
-As handle_to_dev works on struct pcmcia_device, the fix is quite trivial.
+On Thu, 8 Nov 2007 04:30:10 +0100 Adrian Bunk wrote:
 
-Signed-off-by: Pascal Terjan <pterjan@mandriva.com>
+> On Wed, Nov 07, 2007 at 11:52:32PM +0100, Adrian Bunk wrote:
+> > On Wed, Nov 07, 2007 at 02:34:52PM -0800, David Brownell wrote:
+> > > > > But on the other hand, it seems that only the ASIX code will work
+> > > > > right; the DM9601 and MCS7830 Kconfig is different/wrong.
+> > > > 
+> > > > I'm not seeing the problem.
+> > > > 
+> > > > Which configuration will be handled wrongly?
+> > > 
+> > > Notice how only the ASIX kconfig depended on NET_ETHERNET...
+> > > since MII depends on NET_ETHERNET, and (last I knew) the
+> > > reverse dependencies didn't capture the complete dependency
+> > > tree, selecting only MII would leave out some stuff.
+> > 
+> > Except for one s390 net driver (I'll check why it's doing this) the 
+> > NET_ETHERNET option does not influence what code is being generated - 
+> > it's just a Kconfig-internal option allowing to disable a huge bunch
+> > of drivers at once.
+> 
+> Damn, I shouldn't have only grep'ed under drivers/.
+> 
+> @davem:
+> 
+> Please look at net/ipv4/arp.c:arp_process()
+> 
+> Am I right that CONFIG_NET_ETHERNET=n and CONFIG_NETDEV_1000=y or 
+> CONFIG_NETDEV_10000=y will not be handled correctly there?
+
+I'd say yes, you are correct.
+
+> And the best solution is to nuke all #ifdef's in this function and make 
+> the code unconditionally available?
+
+
+
 ---
- drivers/char/pcmcia/cm4000_cs.c |    2 +-
- drivers/char/pcmcia/cm4040_cs.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/char/pcmcia/cm4000_cs.c b/drivers/char/pcmcia/cm4000_cs.c
-index cc5d777..02518da 100644
---- a/drivers/char/pcmcia/cm4000_cs.c
-+++ b/drivers/char/pcmcia/cm4000_cs.c
-@@ -47,7 +47,7 @@
- /* #define ATR_CSUM */
- 
- #ifdef PCMCIA_DEBUG
--#define reader_to_dev(x)	(&handle_to_dev(x->p_dev->handle))
-+#define reader_to_dev(x)	(&handle_to_dev(x->p_dev))
- static int pc_debug = PCMCIA_DEBUG;
- module_param(pc_debug, int, 0600);
- #define DEBUGP(n, rdr, x, args...) do { 				\
-diff --git a/drivers/char/pcmcia/cm4040_cs.c b/drivers/char/pcmcia/cm4040_cs.c
-index a0b9c87..5f291bf 100644
---- a/drivers/char/pcmcia/cm4040_cs.c
-+++ b/drivers/char/pcmcia/cm4040_cs.c
-@@ -41,7 +41,7 @@
- 
-
- #ifdef PCMCIA_DEBUG
--#define reader_to_dev(x)	(&handle_to_dev(x->p_dev->handle))
-+#define reader_to_dev(x)	(&handle_to_dev(x->p_dev))
- static int pc_debug = PCMCIA_DEBUG;
- module_param(pc_debug, int, 0600);
- #define DEBUGP(n, rdr, x, args...) do { 				\
--- 
-1.5.3.5
-
+~Randy
