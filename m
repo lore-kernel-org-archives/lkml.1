@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762682AbXKHS4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762596AbXKHS6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762682AbXKHS4h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 13:56:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761348AbXKHS41
+	id S1762596AbXKHS6q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 13:58:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761325AbXKHS6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 13:56:27 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43990 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761227AbXKHS40 (ORCPT
+	Thu, 8 Nov 2007 13:58:37 -0500
+Received: from mail8.dotsterhost.com ([66.11.233.1]:60035 "HELO
+	mail8.dotsterhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1761114AbXKHS6f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 13:56:26 -0500
-Date: Thu, 8 Nov 2007 10:56:24 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mel Gorman <mel@skynet.ie>
-cc: akpm@linux-foundatin.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 02/23] SLUB: Rename NUMA defrag_ratio to remote_node_defrag_ratio
-In-Reply-To: <20071108145044.GB2591@skynet.ie>
-Message-ID: <Pine.LNX.4.64.0711081053250.8954@schroedinger.engr.sgi.com>
-References: <20071107011130.382244340@sgi.com> <20071107011226.844437184@sgi.com>
- <20071108145044.GB2591@skynet.ie>
+	Thu, 8 Nov 2007 13:58:35 -0500
+Message-ID: <47335C67.2070107@crispincowan.com>
+Date: Thu, 08 Nov 2007 10:58:47 -0800
+From: Crispin Cowan <crispin@crispincowan.com>
+Organization: Crispin's Labs
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Christoph Hellwig <hch@infradead.org>
+CC: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Problem with accessing namespace_sem from LSM.
+References: <200711060400.lA640fuE078356@www262.sakura.ne.jp> <20071106133559.GA13366@infradead.org> <200711062352.CIJ34385.LSOHJFOVFFOtMQ@I-love.SAKURA.ne.jp> <20071107173039.GA25560@infradead.org> <200711080704.CHC65673.OOtFJFFSHQVOML@I-love.SAKURA.ne.jp> <20071107224523.GA8223@infradead.org>
+In-Reply-To: <20071107224523.GA8223@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Nov 2007, Mel Gorman wrote:
+Christoph Hellwig wrote:
+> On Thu, Nov 08, 2007 at 07:04:23AM +0900, Tetsuo Handa wrote:  
+>> The reason why I want to access namespace_sem inside security_inode_create() is that
+>> it doesn't receive "struct vfsmount" parameter.
+>> If "struct vfsmount" *were* passed to security_inode_create(), 
+>> I have no need to access namespace_sem.
+>>     
+> Same argument as with the AA folks: it does not have any business looking
+> at the vfsmount.  If you create a file it can and in many setups will
+> show up in multiple vfsmounts, so making decisions based on the particular
+> one this creat happens through is wrong and actually dangerous.
+>   
+This has been said many times, and I have never been able to translate
+it into anything other than "pathname access control is bad".
 
-> On (06/11/07 17:11), Christoph Lameter didst pronounce:
-> > We need the defrag ratio for the non NUMA situation now. The NUMA defrag works
-> > by allocating objects from partial slabs on remote nodes. Rename it to
-> > 
-> > 	remote_node_defrag_ratio
-> > 
-> 
-> I'm not too keen on the defrag name here largely because I cannot tell what
-> it has to do with defragmention or ratios. It's really about working out
-> when it is better to pack objects into a remote slab than reclaim objects
-> from a local slab, right? It's also not clear what it is a ratio of what to
-> what. I thought it might be clock cycles but that isn't very clear either.
-> If we are renaming this can it be something like remote_packing_cost_limit ?
+Pathname-based access control systems, among other things, let you write
+a policy that says "you may create files under /foo/bar/baz". So when
+you attempt to create a file "/foo/bar/baz/biff" the LSM needs to know
+which VFS mount you are creating it in.
 
-In a NUMA situation we have a choice between 
+Multiple mount points, bind mounts, and other fun with mounting, do in
+fact allow you to create aliases. Because of that, an LSM that set a
+policy of "you can create files anywhere *except* /foo/bar/baz" would be
+trivially bypassable. But a policy that says "You may *only* create
+files under /foo/bar/baz" (plus whatever other explicit permissions it
+grants) does not seem to create any problems, so long as the confined
+processes are not permitted to create arbitrary aliases by using fun
+with mount.
 
-1. Allocating a page from the local node (which consumes more memory and 
-is advantageous performance wise.
+So just exactly what is dangerous about this?
 
-2. Not allocating from the local node but see if any other node has 
-   available partially allocated slabs. If we allocate from them then
-   we save memory and reduce the amount of partial slabs on the remote 
-   node. Thus the fragmentation ratio is reduced.
- 
-> How about
-> 
-> /*
->  * When packing objects into slabs, it may become necessary to
->  * reclaim objects on a local slab or allocate from a remote node.
->  * The remote_packing_cost_limit is the maximum cost of remote
->  * accesses that should be paid before it becomes worthwhile to
->  * reclaim instead
->  */
-> int remote_packing_cost_limit;
-> 
-> ?
+Caveat: complaints that you can create a policy that is bypassable are
+not interesting, you can do that with any policy system. To show
+"dangerous" you would have to show how a reasonable policy that should
+be secure is in fact bypassable. This threat from mount point aliases,
+this has often been conjectured but has never been shown.
 
-That is not what this is about. And the functionality has been in SLUB 
-since the beginning.
+Crispin
+
+-- 
+Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin
+CEO, Mercenary Linux		   http://mercenarylinux.com/
+	       Itanium. Vista. GPLv3. Complexity at work
+
