@@ -1,72 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761185AbXKHKgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760926AbXKHKhK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761185AbXKHKgq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 05:36:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759693AbXKHKfL
+	id S1760926AbXKHKhK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 05:37:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759507AbXKHKgz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 05:35:11 -0500
-Received: from il.qumranet.com ([82.166.9.18]:52473 "EHLO il.qumranet.com"
+	Thu, 8 Nov 2007 05:36:55 -0500
+Received: from sa2.bezeqint.net ([192.115.104.16]:58152 "EHLO sa2.bezeqint.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758464AbXKHKfD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 05:35:03 -0500
-From: Avi Kivity <avi@qumranet.com>
-To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 5/5] KVM: SVM: Intercept the 'invd' and 'wbinvd' instructions
-Date: Thu,  8 Nov 2007 12:35:30 +0200
-Message-Id: <11945181301496-git-send-email-avi@qumranet.com>
-X-Mailer: git-send-email 1.5.3
-In-Reply-To: <11945181301744-git-send-email-avi@qumranet.com>
-References: <11945181301744-git-send-email-avi@qumranet.com>
+	id S1761207AbXKHKgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 05:36:53 -0500
+Message-ID: <4732E6BA.8060001@panasas.com>
+Date: Thu, 08 Nov 2007 12:36:42 +0200
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: Coding Style: indenting with tabs vs. spaces
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-'invd' can destroy host data, and 'wbinvd' allows the guest to induce
-long (milliseconds) latencies.
+Greetings,
 
-Noted by Ben Serebrin.
+I would like to hear peoples opinion about the indentation convention
+described below that I personally found the most practical with
+several different editors.
 
-Signed-off-by: Avi Kivity <avi@qumranet.com>
----
- drivers/kvm/svm.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+The gist of it is that tabs should be used for nesting, not for decoration.
+Indent your code with as many tabs as your nesting level, where all statements
+will begin, and from there on use space characters.
+The rational behind it is to be tab-width agnostic so regardless of your
+tab expansion setup, the code will look correct and will make sense.
 
-diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
-index 7376805..7a6eead 100644
---- a/drivers/kvm/svm.c
-+++ b/drivers/kvm/svm.c
-@@ -494,6 +494,7 @@ static void init_vmcb(struct vmcb *vmcb)
- 		 */
- 		/*              (1ULL << INTERCEPT_SELECTIVE_CR0) | */
- 				(1ULL << INTERCEPT_CPUID) |
-+				(1ULL << INTERCEPT_INVD) |
- 				(1ULL << INTERCEPT_HLT) |
- 				(1ULL << INTERCEPT_INVLPGA) |
- 				(1ULL << INTERCEPT_IOIO_PROT) |
-@@ -507,6 +508,7 @@ static void init_vmcb(struct vmcb *vmcb)
- 				(1ULL << INTERCEPT_STGI) |
- 				(1ULL << INTERCEPT_CLGI) |
- 				(1ULL << INTERCEPT_SKINIT) |
-+				(1ULL << INTERCEPT_WBINVD) |
- 				(1ULL << INTERCEPT_MONITOR) |
- 				(1ULL << INTERCEPT_MWAIT);
- 
-@@ -1247,6 +1249,7 @@ static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
- 	[SVM_EXIT_VINTR]			= interrupt_window_interception,
- 	/* [SVM_EXIT_CR0_SEL_WRITE]		= emulate_on_interception, */
- 	[SVM_EXIT_CPUID]			= cpuid_interception,
-+	[SVM_EXIT_INVD]                         = emulate_on_interception,
- 	[SVM_EXIT_HLT]				= halt_interception,
- 	[SVM_EXIT_INVLPG]			= emulate_on_interception,
- 	[SVM_EXIT_INVLPGA]			= invalid_op_interception,
-@@ -1261,6 +1264,7 @@ static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
- 	[SVM_EXIT_STGI]				= invalid_op_interception,
- 	[SVM_EXIT_CLGI]				= invalid_op_interception,
- 	[SVM_EXIT_SKINIT]			= invalid_op_interception,
-+	[SVM_EXIT_WBINVD]                       = emulate_on_interception,
- 	[SVM_EXIT_MONITOR]			= invalid_op_interception,
- 	[SVM_EXIT_MWAIT]			= invalid_op_interception,
- };
--- 
-1.5.3
+When you break a line and want the new line text to start below a specific point
+relative to the previous line (I consider that "decorating") then start the new
+line with the same number of tabs as the previous one and then just use space
+characters as their width is the same as any character in the previous line,
+(assuming fixed-width fonts of course).
+
+For example:
+
+{
+	if (very_long_expression &&
+	    it_needs_to_be_broken_into_several_lines)
+		return a_very_long_result +
+		       the_remainder_of_it_that_spilled_off +
+		       to_the_next_lines;
+
+	return printk("just my %d cents\n",
+	              2);
+}
+
+Thanks,
+
+Benny
 
