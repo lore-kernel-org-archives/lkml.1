@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758151AbXKIWPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757479AbXKIWbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758151AbXKIWPk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 17:15:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754663AbXKIWPd
+	id S1757479AbXKIWbS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 17:31:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754313AbXKIWbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 17:15:33 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:40672 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754486AbXKIWPc (ORCPT
+	Fri, 9 Nov 2007 17:31:10 -0500
+Received: from station18k.dscga.com ([192.24.222.18]:57001 "EHLO
+	suzuka.mcnaught.org" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751435AbXKIWbJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 17:15:32 -0500
-Date: Fri, 9 Nov 2007 13:38:29 -0800
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: eranian@hpl.hp.com, perfmon@napali.hpl.hp.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix up perfmon to build on -mm
-Message-ID: <20071109213829.GC28276@kroah.com>
-References: <20071107003454.GA13374@kroah.com> <20071109120627.60ec9ab4.akpm@linux-foundation.org>
+	Fri, 9 Nov 2007 17:31:09 -0500
+X-Greylist: delayed 2220 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Nov 2007 17:31:09 EST
+To: "Tobias Brox" <tobixen@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: OOM killer problem - how to read the kernel log?
+References: <ef2af3100711091335y35c3d514u4faec75528fcec5b@mail.gmail.com>
+From: Douglas McNaught <doug@mcnaught.org>
+Date: Fri, 09 Nov 2007 16:54:08 -0500
+In-Reply-To: <ef2af3100711091335y35c3d514u4faec75528fcec5b@mail.gmail.com> (Tobias
+ Brox's message of "Fri, 9 Nov 2007 22:35:14 +0100")
+Message-ID: <87k5orf5kv.fsf@suzuka.mcnaught.org>
+User-Agent: Gnus/5.1006 (Gnus v5.10.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071109120627.60ec9ab4.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 09, 2007 at 12:06:27PM -0800, Andrew Morton wrote:
-> On Tue, 6 Nov 2007 16:34:54 -0800
-> Greg KH <greg@kroah.com> wrote:
-> 
-> > Here's a patch against my current tree that gets the perfmon code
-> > building and hopefully working.
-> 
-> Unfortunately I still haven't merged perfmon due to recently-occurring
-> minor conflicts with Tony's ia64 tree and more major recently-occurring
-> conflicts with the x86 tree.
-> 
-> There's not really a lot which Stephane can practically do about this -
-> normally I'll just get down and fix stuff like this up.  But the impression
-> I get from various people is that the perfmon tree in its present form
-> would not be a popular merge.
-> 
-> The impression which people have (and I admit to sharing it) is that
-> there's just too much stuff in there and it might not all be justifiable. 
-> But I suspect that people have largely forgotten what is in there, and why
-> it is in there.
-> 
-> We really need to get this ball rolling, and that will require a sustained
-> effort from more people than just Stephane.  I suppose as a starting point
-> we could yet again review the existing patches, please.  People will mainly
-> concentrate upon the changelogging to understand which features are being
-> proposed and why, so that submission should describe these things pretty
-> carefully: what are the features and why do we need each of them.
+"Tobias Brox" <tobixen@gmail.com> writes:
 
-Is there some way to rebase these patches/git tree to be a bit more easy
-to review?  Right now there are over 75 patches in the tree and many (if
-not most) can be removed by merging them with previous patches.
+> We have a database server which we've had some problems with, we've
+> had some serious crashes (particularly during postgres vacuuming)
+> which couldn't be fixed without hardware reboot.  We assumed that the
+> problem would go away by itself after upgrading the server to a new
+> box with 32G of RAM ... but, alas, one of the first days in operation
+> it first killed lots of postgres children during the evening, and
+> finally it crashed and required hardware reboot.  The box is certainly
+> not out of memory, but after reading some posts here, I've understood
+> that memory management is a complex issue.
+>
+> We're running 32 bits linux, maybe it would help to upgrade to 64 bits?
 
-If someone could break this stuff down into reviewable pieces, it would
-go a very long way toward making it acceptable.
+Big-time.  There are a lot of "artificial" internal kernel memory
+limits in the 32-bit architecture, so you can run up against those
+(triggering the OOM killer) even if you have plenty of application
+memory.
 
-Is there any way to just provide a basic framework that everyone can
-agree on and then add on more stuff as time goes on?  Do we have to have
-every different processor/arch with support to start with?
+32GB in the box actually might be counter-productive unless you're
+running 64-bit, because just tracking that much memory will consume
+precious low kernel RAM.
 
-thanks,
-
-greg k-h
+-Doug
