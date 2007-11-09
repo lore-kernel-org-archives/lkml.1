@@ -1,96 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764347AbXKIXp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764165AbXKIXqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764347AbXKIXp4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 18:45:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764282AbXKIXpc
+	id S1764165AbXKIXqU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 18:46:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764284AbXKIXpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 18:45:32 -0500
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:42149 "EHLO
-	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763887AbXKIXp2 (ORCPT
+	Fri, 9 Nov 2007 18:45:34 -0500
+Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:57215 "EHLO
+	server.generalnetworks.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764223AbXKIXpc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 18:45:28 -0500
-Date: Sat, 10 Nov 2007 00:45:07 +0100
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: j gleacher <jgleacher@yahoo.com>
-Cc: jeff@garzik.org, drnlmuller+bugs@gmail.com,
-       netdev <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: SIS190.c
-Message-ID: <20071109234507.GA4196@electric-eye.fr.zoreil.com>
-References: <327198.23103.qm@web57010.mail.re3.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <327198.23103.qm@web57010.mail.re3.yahoo.com>
-X-Organisation: Land of Sunshine Inc.
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Fri, 9 Nov 2007 18:45:32 -0500
+Message-id: <2351011721234832519.slaby@pripojeni.net>
+In-reply-to: <10551261882075921134.slaby@pripojeni.net>
+Subject: [RFC 4/13] Char: nozomi, tty index cleanup
+From: Jiri Slaby <jirislaby@gmail.com>
+To: <linux-kernel@vger.kernel.org>
+Cc: Frank Seidel <fseidel@suse.de>
+Date: Fri, 9 Nov 2007 18:45:32 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-j gleacher <jgleacher@yahoo.com> :
-[sorry for the delay, I was busy]
-> I'm not sure how to properly send you this information about subject,
-> but with a new Acer Desktop I needed to add 0x0968 to the below to
-> get the eth0 recognized.
+nozomi, tty index cleanup
 
-Ok. Can you check the patch below against 2.6.24-rc2 ?
+- don't store unneeded copy of tty->index into port structure, tty->index
+  is available everywhere
+- mod tty->index by MAX_PORT where expected (otherwise array index out of
+  bounds)
 
-diff --git a/drivers/net/sis190.c b/drivers/net/sis190.c
-index 7200883..51bbb60 100644
---- a/drivers/net/sis190.c
-+++ b/drivers/net/sis190.c
-@@ -1549,28 +1549,31 @@ static int __devinit sis190_get_mac_addr_from_eeprom(struct pci_dev *pdev,
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+
+---
+commit 3afb47133874a0979f57928d7450612fa982a6c5
+tree 8d9ea282ddbffed0d75c946b3ae046e3bdcc7456
+parent 14e887763c076e45f4f768348361a37c10709902
+author Jiri Slaby <jirislaby@gmail.com> Sun, 28 Oct 2007 22:15:22 +0100
+committer Jiri Slaby <jirislaby@gmail.com> Fri, 09 Nov 2007 23:09:04 +0100
+
+ drivers/char/nozomi.c |   47 +++++++++++++++++++----------------------------
+ 1 files changed, 19 insertions(+), 28 deletions(-)
+
+diff --git a/drivers/char/nozomi.c b/drivers/char/nozomi.c
+index e33f21e..d19b5c5 100644
+--- a/drivers/char/nozomi.c
++++ b/drivers/char/nozomi.c
+@@ -411,7 +411,6 @@ struct port {
+ 	struct semaphore tty_sem;
+ 	wait_queue_head_t tty_wait;
+ 	struct async_icount tty_icount;
+-	int tty_index;
+ };
+ 
+ /* Private data one for each card in the system */
+@@ -1782,22 +1781,22 @@ static void __devexit nozomi_card_exit(struct pci_dev *pdev)
+ static void set_rts(int index, int rts)
+ {
+ 	struct nozomi *dc = get_dc_by_index(index);
+-	int devindex = index % NTTY_TTY_MINORS;
++	struct port *port = &dc->port[index % MAX_PORT];
+ 
+-	dc->port[devindex].ctrl_ul.RTS = rts;
+-	dc->port[devindex].update_flow_control = 1;
++	port->ctrl_ul.RTS = rts;
++	port->update_flow_control = 1;
+ 	enable_transmit_ul(PORT_CTRL, dc);
  }
  
- /**
-- *	sis190_get_mac_addr_from_apc - Get MAC address for SiS965 model
-+ *	sis190_get_mac_addr_from_apc - Get MAC address for SiS96x model
-  *	@pdev: PCI device
-  *	@dev:  network device to get address for
-  *
-- *	SiS965 model, use APC CMOS RAM to store MAC address.
-+ *	SiS96x model, use APC CMOS RAM to store MAC address.
-  *	APC CMOS RAM is accessed through ISA bridge.
-  *	MAC address is read into @net_dev->dev_addr.
-  */
- static int __devinit sis190_get_mac_addr_from_apc(struct pci_dev *pdev,
- 						  struct net_device *dev)
+ static void set_dtr(int index, int dtr)
  {
-+	static const u16 __devinitdata ids[] = { 0x0965, 0x0966, 0x0968 };
- 	struct sis190_private *tp = netdev_priv(dev);
- 	struct pci_dev *isa_bridge;
- 	u8 reg, tmp8;
--	int i;
-+	unsigned int i;
+ 	struct nozomi *dc = get_dc_by_index(index);
+-	int devindex = index % NTTY_TTY_MINORS;
++	struct port *port = &dc->port[index % MAX_PORT];
  
- 	net_probe(tp, KERN_INFO "%s: Read MAC address from APC.\n",
- 		  pci_name(pdev));
+ 	DBG1("SETTING DTR index: %d, dtr: %d", index, dtr);
  
--	isa_bridge = pci_get_device(PCI_VENDOR_ID_SI, 0x0965, NULL);
--	if (!isa_bridge)
--		isa_bridge = pci_get_device(PCI_VENDOR_ID_SI, 0x0966, NULL);
-+	for (i = 0; i < ARRAY_SIZE(ids); i++) {
-+		isa_bridge = pci_get_device(PCI_VENDOR_ID_SI, ids[i], NULL);
-+		if (isa_bridge)
-+			break;
-+	}
+-	dc->port[devindex].ctrl_ul.DTR = dtr;
+-	dc->port[devindex].update_flow_control = 1;
++	port->ctrl_ul.DTR = dtr;
++	port->update_flow_control = 1;
+ 	enable_transmit_ul(PORT_CTRL, dc);
+ }
  
- 	if (!isa_bridge) {
- 		net_probe(tp, KERN_INFO "%s: Can not find ISA bridge.\n",
-
-> While this enables the interface, the performance is horrible as my
-> wlan0 if much faster and eth0 frequently hangs.  I'm learning about
-> drivers, so I could help if there is a need to troubleshoot this type
-> of issue. 
-
-"hangs" == no network or no computer ?
-
-Please send:
-- a complete dmesg (from boot to poor behavior)
-- the output of lspci -vvvxxxx
-- the output of mii-diag -v ethX
-- the content of /proc/interrupts
-
--- 
-Ueimor
+@@ -1828,7 +1827,6 @@ static int ntty_open(struct tty_struct *tty, struct file *file)
+ 		tty->low_latency = 1;
+ 		tty->driver_data = port;
+ 		port->tty = tty;
+-		port->tty_index = tty->index;
+ 		DBG1("open: %d", port->token_dl);
+ 		spin_lock_irqsave(&dc->spin_mutex, flags);
+ 		dc->last_ier =
+@@ -1918,14 +1916,13 @@ static int ntty_write(struct tty_struct *tty, const unsigned char *buffer,
+ 	if (port == &(dc->port[PORT_MDM])) {
+ 		if (port->ctrl_dl.CTS) {
+ 			DBG4("Enable interrupt");
+-			enable_transmit_ul(port->tty_index % NTTY_TTY_MINORS,
+-									dc);
++			enable_transmit_ul(tty->index % MAX_PORT, dc);
+ 		} else {
+ 			dev_err(&dc->pdev->dev,
+ 				"CTS not active on modem port?\n");
+ 		}
+ 	} else {
+-		enable_transmit_ul(port->tty_index % NTTY_TTY_MINORS, dc);
++		enable_transmit_ul(tty->index % MAX_PORT, dc);
+ 	}
+ 	spin_unlock_irqrestore(&dc->spin_mutex, flags);
+ 
+@@ -1980,17 +1977,15 @@ static int ntty_tiocmget(struct tty_struct *tty, struct file *file)
+ static int ntty_tiocmset(struct tty_struct *tty, struct file *file,
+ 	unsigned int set, unsigned int clear)
+ {
+-	struct port *port = (struct port *)tty->driver_data;
+-
+ 	if (set & TIOCM_RTS)
+-		set_rts(port->tty_index, 1);
++		set_rts(tty->index, 1);
+ 	else if (clear & TIOCM_RTS)
+-		set_rts(port->tty_index, 0);
++		set_rts(tty->index, 0);
+ 
+ 	if (set & TIOCM_DTR)
+-		set_dtr(port->tty_index, 1);
++		set_dtr(tty->index, 1);
+ 	else if (clear & TIOCM_DTR)
+-		set_dtr(port->tty_index, 0);
++		set_dtr(tty->index, 0);
+ 
+ 	return 0;
+ }
+@@ -2064,7 +2059,6 @@ static int ntty_ioctl_tiocgicount(struct tty_struct *tty, struct file *file,
+ static int ntty_ioctl(struct tty_struct *tty, struct file *file,
+ 		      unsigned int cmd, unsigned long arg)
+ {
+-	struct port *port = tty->driver_data;
+ 	struct nozomi *dc = get_dc_by_tty(tty);
+ 	unsigned long flags;
+ 	int mask;
+@@ -2094,9 +2088,9 @@ static int ntty_ioctl(struct tty_struct *tty, struct file *file,
+ 
+ 		spin_lock_irqsave(&dc->spin_mutex, flags);
+ 		if (mask & TIOCM_RTS)
+-			set_rts(port->tty_index, 0);
++			set_rts(tty->index, 0);
+ 		if (mask & TIOCM_DTR)
+-			set_dtr(port->tty_index, 0);
++			set_dtr(tty->index, 0);
+ 		spin_unlock_irqrestore(&dc->spin_mutex, flags);
+ 		rval = 0;
+ 		break;
+@@ -2106,9 +2100,9 @@ static int ntty_ioctl(struct tty_struct *tty, struct file *file,
+ 
+ 		spin_lock_irqsave(&dc->spin_mutex, flags);
+ 		if (mask & TIOCM_RTS)
+-			set_rts(port->tty_index, 1);
++			set_rts(tty->index, 1);
+ 		if (mask & TIOCM_DTR)
+-			set_dtr(port->tty_index, 1);
++			set_dtr(tty->index, 1);
+ 		spin_unlock_irqrestore(&dc->spin_mutex, flags);
+ 		rval = 0;
+ 		break;
+@@ -2126,15 +2120,13 @@ static int ntty_ioctl(struct tty_struct *tty, struct file *file,
+  */
+ static void ntty_unthrottle(struct tty_struct *tty)
+ {
+-	struct port *port = (struct port *)tty->driver_data;
+ 	struct nozomi *dc = get_dc_by_tty(tty);
+ 	unsigned long flags;
+ 
+ 	DBG1("UNTHROTTLE");
+ 	spin_lock_irqsave(&dc->spin_mutex, flags);
+-	enable_transmit_dl(port->tty_index % NTTY_TTY_MINORS, dc);
+-	set_rts(port->tty_index, 1);
+-
++	enable_transmit_dl(tty->index % MAX_PORT, dc);
++	set_rts(tty->index, 1);
+ 	spin_unlock_irqrestore(&dc->spin_mutex, flags);
+ }
+ 
+@@ -2144,13 +2136,12 @@ static void ntty_unthrottle(struct tty_struct *tty)
+  */
+ static void ntty_throttle(struct tty_struct *tty)
+ {
+-	struct port *port = (struct port *)tty->driver_data;
+ 	struct nozomi *dc = get_dc_by_tty(tty);
+ 	unsigned long flags;
+ 
+ 	DBG1("THROTTLE");
+ 	spin_lock_irqsave(&dc->spin_mutex, flags);
+-	set_rts(port->tty_index, 0);
++	set_rts(tty->index, 0);
+ 	spin_unlock_irqrestore(&dc->spin_mutex, flags);
+ }
+ 
