@@ -1,61 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756855AbXKITlO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756534AbXKITun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756855AbXKITlO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 14:41:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755402AbXKITk7
+	id S1756534AbXKITun (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 14:50:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752345AbXKITuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 14:40:59 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:47788 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755344AbXKITk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 14:40:58 -0500
-Date: Fri, 9 Nov 2007 20:42:38 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: unification of cfufreq/Kconfig
-Message-ID: <20071109194238.GB3809@uranus.ravnborg.org>
-References: <11943900793940-git-send-email-sam@ravnborg.org> <20071106230451.GA10886@uranus.ravnborg.org> <20071109183602.GD1988@alberich.amd.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071109183602.GD1988@alberich.amd.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 9 Nov 2007 14:50:35 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:58336 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752326AbXKITue (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 14:50:34 -0500
+Message-ID: <4734BA06.5050008@zytor.com>
+Date: Fri, 09 Nov 2007 11:50:30 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.23: GRUB reports "Setup signature not found"
+References: <47348F54.2080507@redhat.com>
+In-Reply-To: <47348F54.2080507@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 09, 2007 at 07:36:02PM +0100, Andreas Herrmann wrote:
-> On Wed, Nov 07, 2007 at 12:04:51AM +0100, Sam Ravnborg wrote:
-> > This serie of patches unify the X86 Kconfig files.
-> > Next step is to enable use of "make ARCH=x86" and kill
-> > "make ARCH=i386/x86_64".
-> > But that will wait till tomorrow.
-> > 
-> > The allmodconfig kernel is still building here.
-> > Testing / reviews appreciated.
-> > 
-> > Comments from former patchset is addressed - see
-> > changelog entries.
+Chuck Ebbert wrote:
+> Multiple people have now reported this error message with 2.6.23.
+> Updating GRUB fixes it:
 > 
-> Just some kind of feedback wrt your patch set.
-> I did several hundred randconfig kernel compiles based
-> on 2.6.24-rc2 with your patches on top plus those additional
-> minor fixes mentioned on lkml.
-> 
-> >From what I've seen there were no compile failures that seem
-> to be caused by your adaptations.
-> 
-> Mostly I have seen the ususal suspects (e.g. missing firmware and
-> lots of failed configs due to conflicting types for net_free 
-> - AFAIK that is already solved in netdev tree - and due to the
-> "kvm-smp_call_function-issue").
-> 
-> The rest (5 failed configs) was not specific to x86 but driver
-> related (e.g. v4l).
+> https://bugzilla.redhat.com/show_bug.cgi?id=370391
+> https://bugzilla.redhat.com/show_bug.cgi?id=371321
 
-Hi Andreas.
+This is indeed a known problem with very old versions of grub.  It would 
+appear that Red Hat's rpms for grub don't actually update (some parts 
+of?) grub, so it leaves an ancient grub on the system and in use.
 
-Thanks for your testing effort. This is great!
+	-hpa
 
-	Sam
