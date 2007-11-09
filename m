@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762906AbXKIPIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763246AbXKIPIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762906AbXKIPIQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 10:08:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbXKIPIB
+	id S1763246AbXKIPIr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 10:08:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761923AbXKIPIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 10:08:01 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:45035 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752807AbXKIPIA (ORCPT
+	Fri, 9 Nov 2007 10:08:39 -0500
+Received: from nz-out-0506.google.com ([64.233.162.238]:49967 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762868AbXKIPIi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 10:08:00 -0500
-Date: Fri, 9 Nov 2007 07:06:09 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: prasanna@in.ibm.com, ananth@in.ibm.com, anil.s.keshavamurthy@intel.com,
-       davem@davemloft.net, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] x86 kprobes_64.c: make 3 functions static
-Message-ID: <20071109070609.3ff46629@laptopd505.fenrus.org>
-In-Reply-To: <20071109060326.GV26163@stusta.de>
-References: <20071109060326.GV26163@stusta.de>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 9 Nov 2007 10:08:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Hl8+lK6K+hFmRn0xFN241TWk+pEeiMkJIrfbBNDmYaYuepCTphRekkNKabixpvfm/OG3qR8c5rVjgqH1dlXmZZXmL4tcQI1d80Grk5cEAQs+/Jige+oEAX3WPOQrwgXAXIzRCN+/K9t50x684vwhtJICCQoYcjTctaYARFSosis=
+Message-ID: <f881070f0711090708u1b77a78dlcdb504a724b22fcf@mail.gmail.com>
+Date: Fri, 9 Nov 2007 17:08:37 +0200
+From: "Alexandru Damian" <ddalex@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: kernel BUG message while using jffs2
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Nov 2007 07:03:26 +0100
-Adrian Bunk <bunk@kernel.org> wrote:
+Hello,
 
-> This patch makes the following needlessly global functions static:
-> - kprobe_handler()
-> - trampoline_probe_handler()
-> - post_kprobe_handler()
-> 
+Sorry for posting here, it seems the best spot; if I need to redirect
+this to mtd-utils team, please tell me.
+
+I'm playing around with some jffs2 files. While trying to mount (via
+block2mtd, loop) a jffs2 system, a "kernel BUG message" appeared in
+dmesg, with these lines:
+
+kernel BUG at mm/slub.c:2204!
+invalid opcode: 0000 [#1]
+SMP
+
+Call trace is
+
+Call Trace:
+ [<c0477358>] __kmalloc+0xd/0x64
+ [<f950d626>] jffs2_scan_medium+0x2a5/0x131a [jffs2]
+ [<c046137d>] __alloc_pages+0x68/0x2a0
+ [<f9516f4b>] jffs2_sum_init+0x50/0x9d [jffs2]
 
 
-while I appreciate your cleanups, I would like to ask you to be a bit
-careful with the x86/ ones; some of these are for now deliberate to
-make unification between the 32 and 64 ones possible.. eg we're working
-on getting the more cosmetic (and in this context, removing a static is
-more or less cosmetic) changes away so that "diff" shows us the *real*
-differences between the 32 and 64 bit versions... adding back in the
-static is the opposite direction ;)
+If someone is interested in digging deeper in this, please contact me
+directly by email (I'm not subscribed to the list) for more
+information
 
-So.. if you find ones that are real for both 32 and 64 bit, by all
-means, but otherwise be a bit careful..
-
-Greetings,
-   Arjan van de Ven
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Cheers,
+Alex
