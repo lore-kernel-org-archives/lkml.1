@@ -1,170 +1,282 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932167AbXKIXrO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764442AbXKIXro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932167AbXKIXrO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 18:47:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764407AbXKIXqy
+	id S1764442AbXKIXro (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 18:47:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762791AbXKIXre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 18:46:54 -0500
-Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:57225 "EHLO
+	Fri, 9 Nov 2007 18:47:34 -0500
+Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:57233 "EHLO
 	server.generalnetworks.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764290AbXKIXqx (ORCPT
+	with ESMTP id S932199AbXKIXrd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 18:46:53 -0500
-Message-id: <29761185991768728185.slaby@pripojeni.net>
+	Fri, 9 Nov 2007 18:47:33 -0500
+Message-id: <2694611355132233895.slaby@pripojeni.net>
 In-reply-to: <10551261882075921134.slaby@pripojeni.net>
-Subject: [RFC 6/13] Char: nozomi, reorder and cleanup probe, remove
+Subject: [RFC 7/13] Char: nozomi, remove struct irq
 From: Jiri Slaby <jirislaby@gmail.com>
 To: <linux-kernel@vger.kernel.org>
 Cc: Frank Seidel <fseidel@suse.de>
-Date: Fri, 9 Nov 2007 18:46:53 -0500
+Date: Fri, 9 Nov 2007 18:47:33 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-nozomi, reorder and cleanup probe, remove
+nozomi, remove struct irq
 
-- remap space after requesting region, to not map something we cannot use
-  anyway
-- init spin lock before request_irq, because due to shared irq debug, isr
-  might be called immediately, where the lock is being held
-- remove INIT_LIST_HEAD before list_add, it's useless, because list_add
-  re-sets prev and next
-- reorder cleanup to be the same as fail path of probe (or in other words,
-  the reverse of probe)
-- no need to call nozomi_setup_private_data in remove, pointers are set in
-  probe
+struct irq (named as my_irq) is used only in ISR and its called functions.
+We might silently use u16 variable on stack and remove all references to
+this structure. This is the first step of struct nozomi_devices removal.
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 
 ---
-commit 662a9d19654d8d79fbaeab13d7afe7fe021e6b42
-tree 3c73690a8715ce52b8125413b94ea24b8f0013d3
-parent 2470e477561f2577137d557aa4dcf92b0229a745
-author Jiri Slaby <jirislaby@gmail.com> Fri, 02 Nov 2007 09:29:38 +0100
-committer Jiri Slaby <jirislaby@gmail.com> Fri, 09 Nov 2007 23:20:25 +0100
+commit 9f9d7197e901ea00771812b7e903b14b95f54e40
+tree fd36411ffccd536721bc42464489ffe2d3517dc2
+parent 662a9d19654d8d79fbaeab13d7afe7fe021e6b42
+author Jiri Slaby <jirislaby@gmail.com> Fri, 02 Nov 2007 10:57:49 +0100
+committer Jiri Slaby <jirislaby@gmail.com> Fri, 09 Nov 2007 23:22:01 +0100
 
- drivers/char/nozomi.c |   52 ++++++++++++++++++++-----------------------------
- 1 files changed, 21 insertions(+), 31 deletions(-)
+ drivers/char/nozomi.c |   85 ++++++++++++++++++++++---------------------------
+ 1 files changed, 39 insertions(+), 46 deletions(-)
 
 diff --git a/drivers/char/nozomi.c b/drivers/char/nozomi.c
-index 3f4ae3d..eaa65fc 100644
+index eaa65fc..49e16c7 100644
 --- a/drivers/char/nozomi.c
 +++ b/drivers/char/nozomi.c
-@@ -1579,7 +1579,6 @@ static int __devinit nozomi_card_init(struct pci_dev *pdev,
+@@ -454,16 +454,10 @@ static struct pci_device_id nozomi_pci_tbl[] = {
  
- 	dc->pdev = pdev;
- 	newdev->my_dev = dc;
--	pci_set_drvdata(pdev, newdev);
+ MODULE_DEVICE_TABLE(pci, nozomi_pci_tbl);
  
- 	/* Find out what card type it is */
- 	nozomi_get_card_type(dc);
-@@ -1596,22 +1595,18 @@ static int __devinit nozomi_card_init(struct pci_dev *pdev,
- 		goto err_disable_device;
+-/* Used to store interrupt variables */
+-struct irq {
+-	u16 read_iir;		/* Holds current interrupt tokens */
+-};
+-
+ /* Representing the pci device of interest */
+ struct nozomi_devices {
+ 	struct list_head list;
+ 	struct nozomi *my_dev;
+-	struct irq my_irq;
+ 	int index_start;
+ };
+ static atomic_t cards_found = ATOMIC_INIT(0);
+@@ -1125,7 +1119,7 @@ static char *interrupt2str(u16 interrupt)
+  * Receive flow control
+  * Return 1 - If ok, else 0
+  */
+-static int receive_flow_control(struct nozomi *dc, struct irq *m)
++static int receive_flow_control(struct nozomi *dc)
+ {
+ 	enum port_type port = PORT_MDM;
+ 	struct ctrl_dl ctrl_dl;
+@@ -1262,28 +1256,28 @@ static int send_flow_control(struct nozomi *dc)
+  * Return 1 - ok
+  * Return 0 - toggle fields are out of sync
+  */
+-static int handle_data_dl(struct nozomi *dc, struct irq *m, enum port_type port,
+-			  u8 *toggle, u16 mask1, u16 mask2)
++static int handle_data_dl(struct nozomi *dc, enum port_type port, u8 *toggle,
++		u16 read_iir, u16 mask1, u16 mask2)
+ {
+-	if (*toggle == 0 && m->read_iir & mask1) {
++	if (*toggle == 0 && read_iir & mask1) {
+ 		if (receive_data(port, dc)) {
+ 			writew(mask1, dc->reg_fcr);
+ 			*toggle = !(*toggle);
+ 		}
+ 
+-		if (m->read_iir & mask2) {
++		if (read_iir & mask2) {
+ 			if (receive_data(port, dc)) {
+ 				writew(mask2, dc->reg_fcr);
+ 				*toggle = !(*toggle);
+ 			}
+ 		}
+-	} else if (*toggle == 1 && m->read_iir & mask2) {
++	} else if (*toggle == 1 && read_iir & mask2) {
+ 		if (receive_data(port, dc)) {
+ 			writew(mask2, dc->reg_fcr);
+ 			*toggle = !(*toggle);
+ 		}
+ 
+-		if (m->read_iir & mask1) {
++		if (read_iir & mask1) {
+ 			if (receive_data(port, dc)) {
+ 				writew(mask1, dc->reg_fcr);
+ 				*toggle = !(*toggle);
+@@ -1302,11 +1296,11 @@ static int handle_data_dl(struct nozomi *dc, struct irq *m, enum port_type port,
+  * Return 1 - ok
+  * Return 0 - toggle field are out of sync
+  */
+-static int handle_data_ul(struct nozomi *dc, struct irq *m, enum port_type port)
++static int handle_data_ul(struct nozomi *dc, enum port_type port, u16 read_iir)
+ {
+ 	u8 *toggle = &(dc->port[port].toggle_ul);
+ 
+-	if (*toggle == 0 && m->read_iir & MDM_UL1) {
++	if (*toggle == 0 && read_iir & MDM_UL1) {
+ 		dc->last_ier &= ~MDM_UL;
+ 		writew(dc->last_ier, dc->reg_ier);
+ 		if (send_data(port, dc)) {
+@@ -1316,7 +1310,7 @@ static int handle_data_ul(struct nozomi *dc, struct irq *m, enum port_type port)
+ 			*toggle = !*toggle;
+ 		}
+ 
+-		if (m->read_iir & MDM_UL2) {
++		if (read_iir & MDM_UL2) {
+ 			dc->last_ier &= ~MDM_UL;
+ 			writew(dc->last_ier, dc->reg_ier);
+ 			if (send_data(port, dc)) {
+@@ -1328,7 +1322,7 @@ static int handle_data_ul(struct nozomi *dc, struct irq *m, enum port_type port)
+ 			}
+ 		}
+ 
+-	} else if (*toggle == 1 && m->read_iir & MDM_UL2) {
++	} else if (*toggle == 1 && read_iir & MDM_UL2) {
+ 		dc->last_ier &= ~MDM_UL;
+ 		writew(dc->last_ier, dc->reg_ier);
+ 		if (send_data(port, dc)) {
+@@ -1338,7 +1332,7 @@ static int handle_data_ul(struct nozomi *dc, struct irq *m, enum port_type port)
+ 			*toggle = !*toggle;
+ 		}
+ 
+-		if (m->read_iir & MDM_UL1) {
++		if (read_iir & MDM_UL1) {
+ 			dc->last_ier &= ~MDM_UL;
+ 			writew(dc->last_ier, dc->reg_ier);
+ 			if (send_data(port, dc)) {
+@@ -1350,7 +1344,7 @@ static int handle_data_ul(struct nozomi *dc, struct irq *m, enum port_type port)
+ 			}
+ 		}
+ 	} else {
+-		writew(m->read_iir & MDM_UL, dc->reg_fcr);
++		writew(read_iir & MDM_UL, dc->reg_fcr);
+ 		dev_err(&dc->pdev->dev, "port out of sync!\n");
+ 		return 0;
  	}
+@@ -1361,34 +1355,33 @@ static irqreturn_t interrupt_handler(int irq, void *dev_id)
+ {
+ 	struct nozomi_devices *ndev = dev_id;
+ 	struct nozomi *dc;
+-	struct irq *m;
++	u16 read_iir;
  
--	dc->base_addr = ioremap(start, dc->card_type);
--	if (!dc->base_addr) {
--		dev_err(&pdev->dev, "Unable to map card MMIO\n");
--		ret = -ENODEV;
--		goto err_disable_device;
--	}
--
--	dc->open_ttys = 0;
--
--	nozomi_setup_private_data(dc);
--
- 	ret = pci_request_regions(dc->pdev, NOZOMI_NAME);
- 	if (ret) {
- 		dev_err(&pdev->dev, "I/O address 0x%04x already in use\n",
- 			(int) /* nozomi_private.io_addr */ 0);
--		goto err_unmap;
-+		goto err_disable_device;
-+	}
-+
-+	dc->base_addr = ioremap(start, dc->card_type);
-+	if (!dc->base_addr) {
-+		dev_err(&pdev->dev, "Unable to map card MMIO\n");
-+		ret = -ENODEV;
-+		goto err_rel_regs;
+ 	if (!ndev)
+ 		return IRQ_NONE;
+ 
+ 	dc = ndev->my_dev;
+-	m = &ndev->my_irq;
+ 
+ 	spin_lock(&dc->spin_mutex);
+-	m->read_iir = readw(dc->reg_iir);
++	read_iir = readw(dc->reg_iir);
+ 
+ 	/* Card removed */
+-	if (m->read_iir == (u16)-1)
++	if (read_iir == (u16)-1)
+ 		goto none;
+ 	/*
+ 	 * Just handle interrupt enabled in IER
+ 	 * (by masking with dc->last_ier)
+ 	 */
+-	m->read_iir &= dc->last_ier;
++	read_iir &= dc->last_ier;
+ 
+-	if (m->read_iir == 0)
++	if (read_iir == 0)
+ 		goto none;
+ 
+ 
+-	DBG4("%s irq:0x%04X, prev:0x%04X", interrupt2str(m->read_iir),
+-	   m->read_iir, dc->last_ier);
++	DBG4("%s irq:0x%04X, prev:0x%04X", interrupt2str(read_iir), read_iir,
++			dc->last_ier);
+ 
+-	if (m->read_iir & RESET) {
++	if (read_iir & RESET) {
+ 		if (unlikely(!nozomi_read_config_table(dc))) {
+ 			dc->last_ier = 0x0;
+ 			writew(dc->last_ier, dc->reg_ier);
+@@ -1400,7 +1393,7 @@ static irqreturn_t interrupt_handler(int irq, void *dev_id)
+ 		/* No more useful info if this was the reset interrupt. */
+ 		goto exit_handler;
  	}
- 
- 	dc->send_buf = kmalloc(SEND_BUF_MAX, GFP_KERNEL);
-@@ -1621,6 +1616,10 @@ static int __devinit nozomi_card_init(struct pci_dev *pdev,
- 		goto err_free_sbuf;
+-	if (m->read_iir & CTRL_UL) {
++	if (read_iir & CTRL_UL) {
+ 		DBG1("CTRL_UL");
+ 		dc->last_ier &= ~CTRL_UL;
+ 		writew(dc->last_ier, dc->reg_ier);
+@@ -1410,33 +1403,33 @@ static irqreturn_t interrupt_handler(int irq, void *dev_id)
+ 			writew(dc->last_ier, dc->reg_ier);
+ 		}
  	}
- 
-+	spin_lock_init(&dc->spin_mutex);
-+
-+	nozomi_setup_private_data(dc);
-+
- 	/* Disable all interrupts */
- 	dc->last_ier = 0;
- 	writew(dc->last_ier, dc->reg_ier);
-@@ -1634,8 +1633,6 @@ static int __devinit nozomi_card_init(struct pci_dev *pdev,
- 
- 	DBG1("base_addr: %p", dc->base_addr);
- 
--	spin_lock_init(&dc->spin_mutex);
--
- 	new_index = get_free_index();
- 	if (new_index < 0) {
- 		dev_err(&pdev->dev, "already reached maximum card count.\n");
-@@ -1670,7 +1667,6 @@ static int __devinit nozomi_card_init(struct pci_dev *pdev,
- 	dc->last_ier = RESET;
- 	writew(dc->last_ier, dc->reg_ier);
- 
--	INIT_LIST_HEAD(&newdev->list);
- 	list_add_tail(&newdev->list, &my_devices);
- 
- 	pci_set_drvdata(pdev, newdev);
-@@ -1686,10 +1682,9 @@ err_free_irq:
- 			kfifo_free(dc->port[i].fifo_ul);
- err_free_sbuf:
- 	kfree(dc->send_buf);
--	pci_release_regions(pdev);
--err_unmap:
- 	iounmap(dc->base_addr);
--	dc->base_addr = NULL;
-+err_rel_regs:
-+	pci_release_regions(pdev);
- err_disable_device:
- 	pci_disable_device(pdev);
- err_free:
-@@ -1753,18 +1748,12 @@ static void __devexit nozomi_card_exit(struct pci_dev *pdev)
- 	DBG1("sending flow control 0x%04X", *((u16 *)&ctrl));
- 
- 	/* Setup dc->reg addresses to we can use defines here */
--	nozomi_setup_private_data(dc);
- 	write_mem32(dc->port[PORT_CTRL].ul_addr[0], (u32 *)&ctrl, 2);
- 	writew(CTRL_UL, dc->reg_fcr);	/* push the token to the card. */
- 
--	DBG1("pci_release_regions");
--	pci_release_regions(pdev);
--
--	if (dc->base_addr)
--		iounmap(dc->base_addr);
-+	list_del(&deventry->list);
- 
--	DBG1("pci_disable_device");
--	pci_disable_device(pdev);
-+	remove_sysfs_files(dc);
- 
- 	free_irq(pdev->irq, deventry);
- 
-@@ -1774,12 +1763,13 @@ static void __devexit nozomi_card_exit(struct pci_dev *pdev)
- 
- 	kfree(dc->send_buf);
- 
--	remove_sysfs_files(dc);
-+	iounmap(dc->base_addr);
- 
--	kfree(dc);
--	deventry->my_dev = 0;
-+	pci_release_regions(pdev);
- 
--	list_del(&deventry->list);
-+	pci_disable_device(pdev);
-+
-+	kfree(dc);
- 	kfree(deventry);
- 
- 	atomic_dec(&cards_found);
+-	if (m->read_iir & CTRL_DL) {
+-		receive_flow_control(dc, m);
++	if (read_iir & CTRL_DL) {
++		receive_flow_control(dc);
+ 		writew(CTRL_DL, dc->reg_fcr);
+ 	}
+-	if (m->read_iir & MDM_DL) {
+-		if (!handle_data_dl(dc, m, PORT_MDM,
+-				&(dc->port[PORT_MDM].toggle_dl), MDM_DL1,
+-				MDM_DL2)) {
++	if (read_iir & MDM_DL) {
++		if (!handle_data_dl(dc, PORT_MDM,
++				&(dc->port[PORT_MDM].toggle_dl), read_iir,
++				MDM_DL1, MDM_DL2)) {
+ 			dev_err(&dc->pdev->dev, "MDM_DL out of sync!\n");
+ 			goto exit_handler;
+ 		}
+ 	}
+-	if (m->read_iir & MDM_UL) {
+-		if (!handle_data_ul(dc, m, PORT_MDM)) {
++	if (read_iir & MDM_UL) {
++		if (!handle_data_ul(dc, PORT_MDM, read_iir)) {
+ 			dev_err(&dc->pdev->dev, "MDM_UL out of sync!\n");
+ 			goto exit_handler;
+ 		}
+ 	}
+-	if (m->read_iir & DIAG_DL) {
+-		if (!handle_data_dl(dc, m, PORT_DIAG,
+-				&(dc->port[PORT_DIAG].toggle_dl), DIAG_DL1,
+-				DIAG_DL2)) {
++	if (read_iir & DIAG_DL) {
++		if (!handle_data_dl(dc, PORT_DIAG,
++				&(dc->port[PORT_DIAG].toggle_dl), read_iir,
++				DIAG_DL1, DIAG_DL2)) {
+ 			dev_err(&dc->pdev->dev, "DIAG_DL out of sync!\n");
+ 			goto exit_handler;
+ 		}
+ 	}
+-	if (m->read_iir & DIAG_UL) {
++	if (read_iir & DIAG_UL) {
+ 		dc->last_ier &= ~DIAG_UL;
+ 		writew(dc->last_ier, dc->reg_ier);
+ 		if (send_data(PORT_DIAG, dc)) {
+@@ -1445,11 +1438,11 @@ static irqreturn_t interrupt_handler(int irq, void *dev_id)
+ 			writew(dc->last_ier, dc->reg_ier);
+ 		}
+ 	}
+-	if (m->read_iir & APP1_DL) {
++	if (read_iir & APP1_DL) {
+ 		if (receive_data(PORT_APP1, dc))
+ 			writew(APP1_DL, dc->reg_fcr);
+ 	}
+-	if (m->read_iir & APP1_UL) {
++	if (read_iir & APP1_UL) {
+ 		dc->last_ier &= ~APP1_UL;
+ 		writew(dc->last_ier, dc->reg_ier);
+ 		if (send_data(PORT_APP1, dc)) {
+@@ -1458,11 +1451,11 @@ static irqreturn_t interrupt_handler(int irq, void *dev_id)
+ 			writew(dc->last_ier, dc->reg_ier);
+ 		}
+ 	}
+-	if (m->read_iir & APP2_DL) {
++	if (read_iir & APP2_DL) {
+ 		if (receive_data(PORT_APP2, dc))
+ 			writew(APP2_DL, dc->reg_fcr);
+ 	}
+-	if (m->read_iir & APP2_UL) {
++	if (read_iir & APP2_UL) {
+ 		dc->last_ier &= ~APP2_UL;
+ 		writew(dc->last_ier, dc->reg_ier);
+ 		if (send_data(PORT_APP2, dc)) {
