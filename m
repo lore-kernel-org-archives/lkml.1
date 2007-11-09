@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761088AbXKILM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761714AbXKILQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761088AbXKILM2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 06:12:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbXKILMR
+	id S1761714AbXKILQV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 06:16:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbXKILQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 06:12:17 -0500
-Received: from smtp27.orange.fr ([80.12.242.95]:53548 "EHLO smtp27.orange.fr"
+	Fri, 9 Nov 2007 06:16:14 -0500
+Received: from smtp2a.orange.fr ([80.12.242.139]:18438 "EHLO smtp2a.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751668AbXKILMP convert rfc822-to-8bit (ORCPT
+	id S1751859AbXKILQN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 06:12:15 -0500
-X-ME-UUID: 20071109111212770.BC0F61C00093@mwinf2714.orange.fr
-Date: Fri, 9 Nov 2007 12:07:25 +0100
+	Fri, 9 Nov 2007 06:16:13 -0500
+X-ME-UUID: 20071109111611476.745A7700008F@mwinf2a07.orange.fr
+Date: Fri, 9 Nov 2007 12:11:29 +0100
 From: Philippe Elie <phil.el@wanadoo.fr>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Barry Kasindorf <barry.kasindorf@amd.com>,
-       Robert Richter <robert.richter@amd.com>
-Subject: [PATCH] oProfile: support for AMD family10
-Message-ID: <20071109110725.GA2890@zaniah>
+       Sami Farin <safari-kernel@safari.iki.fi>
+Subject: [PATCH 1/1]: oProfile: oops when profile_pc() return ~0LU
+Message-ID: <20071109111129.GB2890@zaniah>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -28,86 +27,82 @@ User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Barry Kasindorf <barry.kasindorf@amd.com>
+From: Philippe Elie <phil.el@wanadoo.fr>
 
-oProfile Driver Module Patch for AMD Family10h Kernel 2.6.23
-This patch is for controlling the upper 32bits of the event ctrl msrs.
-This includes the upper 4 bits of the event select and the Guest Only
-and Host Only bits
-This patch is necessary to make Event Based Profiling work reliably on a
-Family10h processor
+Instruction pointer returned by profile_pc() can be a random value. This
+break the assumption than we can safely set struct op_sample.eip field to
+a magic value to signal to the per-cpu buffer reader side special event
+like task switch ending up in a segfault in get_task_mm() when profile_pc()
+return ~0UL. Fixed by sanitizing the sampled eip and reject/log invalid eip.
 
-Signed-off-by: Barry Kasindorf <barry.kasindorf@amd.com>
-Signed-off-by: Robert Richter <robert.richter@amd.com>
+Problem reported by Sami Farin, patch tested by him.
+
 Signed-off-by: Philippe Elie <phil.el@wanadoo.fr>
 
 ---
 
- arch/x86/oprofile/op_model_athlon.c |   22 ++++++++++++++++------
- 1 files changed, 16 insertions(+), 6 deletions(-)
+ drivers/oprofile/cpu_buffer.c     |    7 +++++++
+ drivers/oprofile/cpu_buffer.h     |    1 +
+ drivers/oprofile/oprofile_stats.c |    4 ++++
+ 3 files changed, 12 insertions(+), 0 deletions(-)
 
-Patch originally sent here: http://marc.info/?l=linux-kernel&m=119247216420600&w=2 but it didn't apply cleanly, this one only change spacing.
-
-
-diff --git a/arch/x86/oprofile/op_model_athlon.c b/arch/x86/oprofile/op_model_athlon.c
-index 3057a19..068541d 100644
---- a/arch/x86/oprofile/op_model_athlon.c
-+++ b/arch/x86/oprofile/op_model_athlon.c
-@@ -1,6 +1,6 @@
- /**
-  * @file op_model_athlon.h
-- * athlon / K7 model-specific MSR operations
-+ * athlon / K7 / K8 / Family 10h model-specific MSR operations
-  *
-  * @remark Copyright 2002 OProfile authors
-  * @remark Read the file COPYING
-@@ -31,12 +31,16 @@
- #define CTRL_WRITE(l,h,msrs,c) do {wrmsr(msrs->controls[(c)].addr, (l), (h));} while (0)
- #define CTRL_SET_ACTIVE(n) (n |= (1<<22))
- #define CTRL_SET_INACTIVE(n) (n &= ~(1<<22))
--#define CTRL_CLEAR(x) (x &= (1<<21))
-+#define CTRL_CLEAR_LO(x) (x &= (1<<21))
-+#define CTRL_CLEAR_HI(x) (x &= 0xfffffcf0)
- #define CTRL_SET_ENABLE(val) (val |= 1<<20)
- #define CTRL_SET_USR(val,u) (val |= ((u & 1) << 16))
- #define CTRL_SET_KERN(val,k) (val |= ((k & 1) << 17))
- #define CTRL_SET_UM(val, m) (val |= (m << 8))
--#define CTRL_SET_EVENT(val, e) (val |= e)
-+#define CTRL_SET_EVENT_LOW(val, e) (val |= (e & 0xff))
-+#define CTRL_SET_EVENT_HIGH(val, e) (val |= ((e >> 8) & 0xf))
-+#define CTRL_SET_HOST_ONLY(val, h) (val |= ((h & 1) << 9))
-+#define CTRL_SET_GUEST_ONLY(val, h) (val |= ((h & 1) << 8))
- 
- static unsigned long reset_value[NUM_COUNTERS];
-  
-@@ -70,7 +74,8 @@ static void athlon_setup_ctrs(struct op_msrs const * const msrs)
- 		if (unlikely(!CTRL_IS_RESERVED(msrs,i)))
- 			continue;
- 		CTRL_READ(low, high, msrs, i);
--		CTRL_CLEAR(low);
-+		CTRL_CLEAR_LO(low);
-+		CTRL_CLEAR_HI(high);
- 		CTRL_WRITE(low, high, msrs, i);
+diff --git a/drivers/oprofile/cpu_buffer.c b/drivers/oprofile/cpu_buffer.c
+index a83c3db..c93d3d2 100644
+--- a/drivers/oprofile/cpu_buffer.c
++++ b/drivers/oprofile/cpu_buffer.c
+@@ -64,6 +64,8 @@ int alloc_cpu_buffers(void)
+ 		b->head_pos = 0;
+ 		b->sample_received = 0;
+ 		b->sample_lost_overflow = 0;
++		b->backtrace_aborted = 0;
++		b->sample_invalid_eip = 0;
+ 		b->cpu = i;
+ 		INIT_DELAYED_WORK(&b->work, wq_sync_buffer);
  	}
+@@ -175,6 +177,11 @@ static int log_sample(struct oprofile_cpu_buffer * cpu_buf, unsigned long pc,
  
-@@ -89,12 +94,17 @@ static void athlon_setup_ctrs(struct op_msrs const * const msrs)
- 			CTR_WRITE(counter_config[i].count, msrs, i);
+ 	cpu_buf->sample_received++;
  
- 			CTRL_READ(low, high, msrs, i);
--			CTRL_CLEAR(low);
-+			CTRL_CLEAR_LO(low);
-+			CTRL_CLEAR_HI(high);
- 			CTRL_SET_ENABLE(low);
- 			CTRL_SET_USR(low, counter_config[i].user);
- 			CTRL_SET_KERN(low, counter_config[i].kernel);
- 			CTRL_SET_UM(low, counter_config[i].unit_mask);
--			CTRL_SET_EVENT(low, counter_config[i].event);
-+			CTRL_SET_EVENT_LOW(low, counter_config[i].event);
-+			CTRL_SET_EVENT_HIGH(high, counter_config[i].event);
-+			CTRL_SET_HOST_ONLY(high, 0);
-+			CTRL_SET_GUEST_ONLY(high, 0);
++	if (pc == ESCAPE_CODE) {
++		cpu_buf->sample_invalid_eip++;
++		return 0;
++	}
 +
- 			CTRL_WRITE(low, high, msrs, i);
- 		} else {
- 			reset_value[i] = 0;
+ 	if (nr_available_slots(cpu_buf) < 3) {
+ 		cpu_buf->sample_lost_overflow++;
+ 		return 0;
+diff --git a/drivers/oprofile/cpu_buffer.h b/drivers/oprofile/cpu_buffer.h
+index 49900d9..c66c025 100644
+--- a/drivers/oprofile/cpu_buffer.h
++++ b/drivers/oprofile/cpu_buffer.h
+@@ -42,6 +42,7 @@ struct oprofile_cpu_buffer {
+ 	unsigned long sample_received;
+ 	unsigned long sample_lost_overflow;
+ 	unsigned long backtrace_aborted;
++	unsigned long sample_invalid_eip;
+ 	int cpu;
+ 	struct delayed_work work;
+ } ____cacheline_aligned;
+diff --git a/drivers/oprofile/oprofile_stats.c b/drivers/oprofile/oprofile_stats.c
+index f0acb66..d1f6d77 100644
+--- a/drivers/oprofile/oprofile_stats.c
++++ b/drivers/oprofile/oprofile_stats.c
+@@ -26,6 +26,8 @@ void oprofile_reset_stats(void)
+ 		cpu_buf = &cpu_buffer[i]; 
+ 		cpu_buf->sample_received = 0;
+ 		cpu_buf->sample_lost_overflow = 0;
++		cpu_buf->backtrace_aborted = 0;
++		cpu_buf->sample_invalid_eip = 0;
+ 	}
+  
+ 	atomic_set(&oprofile_stats.sample_lost_no_mm, 0);
+@@ -61,6 +63,8 @@ void oprofile_create_stats_files(struct super_block * sb, struct dentry * root)
+ 			&cpu_buf->sample_lost_overflow);
+ 		oprofilefs_create_ro_ulong(sb, cpudir, "backtrace_aborted",
+ 			&cpu_buf->backtrace_aborted);
++		oprofilefs_create_ro_ulong(sb, cpudir, "sample_invalid_eip",
++			&cpu_buf->sample_invalid_eip);
+ 	}
+  
+ 	oprofilefs_create_ro_atomic(sb, dir, "sample_lost_no_mm",
 
