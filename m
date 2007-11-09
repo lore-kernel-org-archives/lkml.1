@@ -1,43 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756932AbXKIQKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756685AbXKIQPL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756932AbXKIQKz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 11:10:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754428AbXKIQKs
+	id S1756685AbXKIQPL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 11:15:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755143AbXKIQO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 11:10:48 -0500
-Received: from vena.lwn.net ([206.168.112.25]:34167 "EHLO vena.lwn.net"
+	Fri, 9 Nov 2007 11:14:59 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:51957 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752045AbXKIQKs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 11:10:48 -0500
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: Patch tags [was writeout stalls in current -git] 
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-From: corbet@lwn.net (Jonathan Corbet)
-In-reply-to: Your message of "Wed, 07 Nov 2007 00:26:51 +0100."
-             <20071106232651.GP26163@stusta.de> 
-Date: Fri, 09 Nov 2007 09:10:47 -0700
-Message-ID: <7192.1194624647@lwn.net>
+	id S1754695AbXKIQO6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 11:14:58 -0500
+Date: Fri, 9 Nov 2007 16:14:55 +0000
+To: Christoph Lameter <clameter@sgi.com>
+Cc: akpm@linux-foundation.org, Lee.Schermerhorn@hp.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
+       nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 6/6] Use one zonelist that is filtered by nodemask
+Message-ID: <20071109161455.GB32088@skynet.ie>
+References: <20071109143226.23540.12907.sendpatchset@skynet.skynet.ie> <20071109143426.23540.44459.sendpatchset@skynet.skynet.ie> <Pine.LNX.4.64.0711090741120.13932@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0711090741120.13932@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk <bunk@kernel.org> wrote:
-
-> What's missing is a definition which of them are formal tags that must 
-> be explicitely given (look at point 13 in SubmittingPatches).
+On (09/11/07 07:45), Christoph Lameter didst pronounce:
+> On Fri, 9 Nov 2007, Mel Gorman wrote:
 > 
-> Signed-off-by: and Reviewed-by: are the formal tags someone must have 
-> explicitely given and that correspond to some statement.
+> >  struct page * fastcall
+> >  __alloc_pages(gfp_t gfp_mask, unsigned int order,
+> >  		struct zonelist *zonelist)
+> >  {
+> > +	/*
+> > +	 * Use a temporary nodemask for __GFP_THISNODE allocations. If the
+> > +	 * cost of allocating on the stack or the stack usage becomes
+> > +	 * noticable, allocate the nodemasks per node at boot or compile time
+> > +	 */
+> > +	if (unlikely(gfp_mask & __GFP_THISNODE)) {
+> > +		nodemask_t nodemask;
 > 
-> OTOH, I can translate a "sounds fine" or "works for me" someone else 
-> gave me into an Acked-by: resp. Tested-by: tag.
+> Hmmm.. This places a potentially big structure on the stack. nodemask can 
+> contain up to 1024 bits which means 128 bytes. Maybe keep an array of 
+> gfp_thisnode nodemasks (node_nodemask?) and use node_nodemask[nid]?
+> 
 
-The discussion of the Cc: tag says:
+That is what I was hinting at in the comment as a possible solution.
 
-	This is the only tag which might be added without an explicit
-	action by the person it names.
+> > +
+> > +		return __alloc_pages_internal(gfp_mask, order,
+> > +			zonelist, nodemask_thisnode(numa_node_id(), &nodemask));
+> 
+> Argh.... GFP_THISNODE must use the nid passed to alloc_pages_node and 
+> *not* the local numa node id. Only if the node specified to alloc_pages 
+> nodes is -1 will this work.
+> 
 
-I think that addresses your comment, no?  Certainly I wouldn't feel that
-I could add any of the other tags to a patch I posted - that's the job
-of the person named there.  
+alloc_pages_node() calls __alloc_pages_nodemask() though where in this
+function if I'm reading it right is called without a node id. Given no
+other details on the nid, the current one seemed a logical choice.
 
-jon
+What I did notice when rechecking is I left the warning about THISNODE
+in by accident :(
+
+-- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
