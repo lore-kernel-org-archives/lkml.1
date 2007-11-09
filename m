@@ -1,39 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755642AbXKIRsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755967AbXKIRt6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755642AbXKIRsb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 12:48:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbXKIRsX
+	id S1755967AbXKIRt6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 12:49:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751032AbXKIRtv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 12:48:23 -0500
-Received: from tetsuo.zabbo.net ([207.173.201.20]:54462 "EHLO tetsuo.zabbo.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753971AbXKIRsX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 12:48:23 -0500
-Message-ID: <47349D66.2040109@oracle.com>
-Date: Fri, 09 Nov 2007 09:48:22 -0800
-From: Zach Brown <zach.brown@oracle.com>
-User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
+	Fri, 9 Nov 2007 12:49:51 -0500
+Received: from relay1.corp.sgi.com ([192.48.171.29]:47969 "EHLO relay.sgi.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750968AbXKIRtv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 12:49:51 -0500
+Date: Fri, 9 Nov 2007 09:49:49 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc2 slab vs slob tbench numbers
+In-Reply-To: <Pine.LNX.4.64.0711090712440.13823@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0711090928270.14601@schroedinger.engr.sgi.com>
+References: <200711092336.56172.nickpiggin@yahoo.com.au>
+ <Pine.LNX.4.64.0711090712440.13823@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-CC: Peter Zijlstra <peterz@infradead.org>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-aio@kvack.org, Chris Mason <chris.mason@oracle.com>
-Subject: Re: dio_get_page() lockdep complaints
-References: <20070419073828.GB20928@kernel.dk>	 <1194627742.6289.175.camel@twins>  <4734992C.7000408@oracle.com> <1194630300.7459.65.camel@heimdal.trondhjem.org>
-In-Reply-To: <1194630300.7459.65.camel@heimdal.trondhjem.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On an 8p 2.6.24-rc2 I see even a 50% regression on tbench SLAB vs. SLUB 
+when specifying 8 threads. 
 
->> So reiser and NFS need to be fixed.  No?
-> 
-> Actually, it is rather mmap() needs to be fixed.
+Interestingly nothing changes the performance numbers regardless of 
+debugging on or off etc etc. Usually debugging should reduce performance 
+but nada. May have something to do with the localhost interface? Something 
+is effectively throttling SLUB here.
 
-Sure, I'm willing to have that demonstrated.  My point was that DIO
-getting the mmap_sem inside i_mutex is currently correct.
+2.6.23 SLUB	           2159.62 MB/sec
+2.6.24-rc2-slab head SLUB  1260.80 MB/sec
 
-reiserfs, though, seems to be out on a more precarious limb ;).
+2.6.24 SLUB should be faster than 2.6.23 SLUB. Still trying to figure out 
+what is going on....
 
-- z
