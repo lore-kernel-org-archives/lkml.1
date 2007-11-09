@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761497AbXKIL7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761594AbXKIMEm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761497AbXKIL7i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 06:59:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbXKIL7b
+	id S1761594AbXKIMEm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 07:04:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbXKIMEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 06:59:31 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:60353 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752169AbXKIL7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 06:59:30 -0500
-Date: Fri, 9 Nov 2007 17:41:57 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-Cc: sukadev@us.ibm.com, balbir@in.ibm.com,
-       Containers <containers@lists.osdl.org>, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, dhaval@linux.vnet.ibm.com,
-       "Ingo Molnar" <mingo@elte.hu>, efault@gmx.de
-Subject: Re: [BUG]: Crash with CONFIG_FAIR_CGROUP_SCHED=y
-Message-ID: <20071109121157.GA24630@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <20071108234805.GA2240@us.ibm.com> <20071109070214.GO3143@linux.vnet.ibm.com> <b647ffbd0711090045o5ebf4681q78f939f5c1e71fe1@mail.gmail.com> <20071109101437.GA22544@linux.vnet.ibm.com> <b647ffbd0711090259u7f2f2f64qe8b6330e55d4b99f@mail.gmail.com>
+	Fri, 9 Nov 2007 07:04:33 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35440 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751578AbXKIMEc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 07:04:32 -0500
+Date: Fri, 9 Nov 2007 12:04:25 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Mark Lord <liml@rtr.ca>, Riki Oktarianto <rkoktarianto@gmail.com>,
+       linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH] Add quirk to set AHCI mode on ICH boards
+Message-ID: <20071109120425.543971bf@the-village.bc.nu>
+In-Reply-To: <20071109034622.GB25581@havoc.gtf.org>
+References: <20071109020235.GA2031@ceren>
+	<20071109023129.GA25581@havoc.gtf.org>
+	<4733D421.7000505@rtr.ca>
+	<20071109034622.GB25581@havoc.gtf.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b647ffbd0711090259u7f2f2f64qe8b6330e55d4b99f@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 09, 2007 at 11:59:15AM +0100, Dmitry Adamushko wrote:
-> > - The second problem exposed by this test is that task_new_fair()
-> >   assumes that parent and child will be part of the same group (which
-> >   needn't be as this test shows). As a result, cfs_rq->curr can be NULL
-> >   for the child.
+On Thu, 8 Nov 2007 22:46:22 -0500
+Jeff Garzik <jeff@garzik.org> wrote:
+
+> On Thu, Nov 08, 2007 at 10:29:37PM -0500, Mark Lord wrote:
+> > And I might even privately patch my own kernels to map the ACHI BAR
+> > in the cases where the BIOS didn't...
 > 
-> Would it be better, logically-wise, to use is_same_group() instead?
-> Although, we can't have 2 groups with cfs_rq->curr != NULL on the same
-> CPU... so if the child belongs to another group, it's cfs_rq->curr is
-> automatically NULL indeed.
+> The inability to do this in the general case is the main reason why
+> AHCI was not unconditionally enabled, even in IDE mode, when it was
+> originally added...  :/
 
-Yeah ..I feel safe with an explicit !curr check, perhaps with a comment like
-below added to explain when curr can be NULL?
-
-
----
- kernel/sched_fair.c |    1 +
- 1 files changed, 1 insertion(+)
-
-Index: current/kernel/sched_fair.c
-===================================================================
---- current.orig/kernel/sched_fair.c
-+++ current/kernel/sched_fair.c
-@@ -1022,6 +1022,7 @@ static void task_new_fair(struct rq *rq,
- 	update_curr(cfs_rq);
- 	place_entity(cfs_rq, se, 1);
- 
-+	/* 'curr' will be NULL if the child belongs to a different group */
- 	if (sysctl_sched_child_runs_first && this_cpu == task_cpu(p) &&
- 			curr && curr->vruntime < se->vruntime) {
- 		/*
-
-
-
--- 
-Regards,
-vatsa
+We've done it all the time for various devices without problems (eg S3
+video cards). I'd like to see it go in - although perhaps attached to a
+force_ahci boot param initially
