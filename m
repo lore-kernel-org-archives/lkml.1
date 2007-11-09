@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751913AbXKIGCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752260AbXKIGDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751913AbXKIGCz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 01:02:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbXKIGC2
+	id S1752260AbXKIGDR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 01:03:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbXKIGCg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 01:02:28 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:52839 "EHLO
+	Fri, 9 Nov 2007 01:02:36 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:52849 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751355AbXKIGC0 (ORCPT
+	with ESMTP id S1751490AbXKIGCf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 01:02:26 -0500
-Date: Fri, 9 Nov 2007 07:02:02 +0100
+	Fri, 9 Nov 2007 01:02:35 -0500
+Date: Fri, 9 Nov 2007 07:02:11 +0100
 From: Adrian Bunk <bunk@kernel.org>
-To: gregkh@suse.de, dougthompson@xmission.com
-Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       bluesmoke-devel@lists.sourceforge.net
-Subject: [2.6 patch] always export pci_scan_single_device
-Message-ID: <20071109060202.GO26163@stusta.de>
+To: lenb@kernel.org, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] x86: acpi_pciprobe_dmi_table[] must be __devinitdata
+Message-ID: <20071109060211.GP26163@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,43 +23,33 @@ User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following build error with CONFIG_HOTPLUG=n:
+This patch fixes the following section mismatches with CONFIG_HOTPLUG=n:
 
 <--  snip  -->
 
 ...
-  MODPOST 2137 modules
-ERROR: "pci_scan_single_device" [drivers/edac/i82875p_edac.ko] undefined!
-make[2]: *** [__modpost] Error 1
+WARNING: vmlinux.o(.data+0x23640): Section mismatch: reference to .init.text.20:can_skip_ioresource_align (between 'acpi_pciprobe_dmi_table' and 'pcibios_irq_mask')
+WARNING: vmlinux.o(.data+0x2366c): Section mismatch: reference to .init.text.20:can_skip_ioresource_align (between 'acpi_pciprobe_dmi_table' and 'pcibios_irq_mask')
+WARNING: vmlinux.o(.data+0x23698): Section mismatch: reference to .init.text.20:can_skip_ioresource_align (between 'acpi_pciprobe_dmi_table' and 'pcibios_irq_mask')
+...
 
 <--  snip  -->
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-
- drivers/pci/probe.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-f80ae6568224bd5e4d2387ec162d37c8e7fd545a 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 463a5a9..de33a02 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -1012,6 +1012,7 @@ struct pci_dev *pci_scan_single_device(struct pci_bus *bus, int devfn)
- 
- 	return dev;
+3225b3c19396e0e45f496dfe82e85ebc86951d91 
+diff --git a/arch/x86/pci/acpi.c b/arch/x86/pci/acpi.c
+index 2d88f7c..a7536dc 100644
+--- a/arch/x86/pci/acpi.c
++++ b/arch/x86/pci/acpi.c
+@@ -13,7 +13,7 @@ static int __devinit can_skip_ioresource_align(const struct dmi_system_id *d)
+ 	return 0;
  }
-+EXPORT_SYMBOL(pci_scan_single_device);
  
- /**
-  * pci_scan_slot - scan a PCI slot on a bus for devices.
-@@ -1200,7 +1201,6 @@ EXPORT_SYMBOL(pci_add_new_bus);
- EXPORT_SYMBOL(pci_do_scan_bus);
- EXPORT_SYMBOL(pci_scan_slot);
- EXPORT_SYMBOL(pci_scan_bridge);
--EXPORT_SYMBOL(pci_scan_single_device);
- EXPORT_SYMBOL_GPL(pci_scan_child_bus);
- #endif
- 
+-static struct dmi_system_id acpi_pciprobe_dmi_table[] = {
++static struct dmi_system_id acpi_pciprobe_dmi_table[] __devinitdata = {
+ /*
+  * Systems where PCI IO resource ISA alignment can be skipped
+  * when the ISA enable bit in the bridge control is not set
 
