@@ -1,87 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754949AbXKIQqI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbXKIQrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754949AbXKIQqI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 11:46:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754103AbXKIQpx
+	id S1755385AbXKIQrt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 11:47:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754242AbXKIQrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 11:45:53 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:39624 "EHLO e4.ny.us.ibm.com"
+	Fri, 9 Nov 2007 11:47:42 -0500
+Received: from nef2.ens.fr ([129.199.96.40]:3893 "EHLO nef2.ens.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754068AbXKIQpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 11:45:53 -0500
-Date: Fri, 9 Nov 2007 08:45:37 -0800
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Mel Gorman <mel@skynet.ie>
-Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
-       Lee.Schermerhorn@hp.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, rientjes@google.com, kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 6/6] Use one zonelist that is filtered by nodemask
-Message-ID: <20071109164537.GG7507@us.ibm.com>
-References: <20071109143226.23540.12907.sendpatchset@skynet.skynet.ie> <20071109143426.23540.44459.sendpatchset@skynet.skynet.ie> <Pine.LNX.4.64.0711090741120.13932@schroedinger.engr.sgi.com> <20071109161455.GB32088@skynet.ie>
-MIME-Version: 1.0
+	id S1754229AbXKIQrm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 11:47:42 -0500
+X-Greylist: delayed 1429 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Nov 2007 11:47:41 EST
+Date: Fri, 9 Nov 2007 17:23:48 +0100
+From: David Madore <david.madore@ens.fr>
+To: Linux Kernel Mailing-List <linux-kernel@vger.kernel.org>
+Subject: any help on RTC-related config? (and "rtc_cmos: probe of 00:03 failed with error -16" error message)
+Message-ID: <20071109162348.GA13051@clipper.ens.fr>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071109161455.GB32088@skynet.ie>
-X-Operating-System: Linux 2.6.24-rc1-gb55d1b18 (x86_64)
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.1.4 (nef2.ens.fr [129.199.96.32]); Fri, 09 Nov 2007 17:23:49 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09.11.2007 [16:14:55 +0000], Mel Gorman wrote:
-> On (09/11/07 07:45), Christoph Lameter didst pronounce:
-> > On Fri, 9 Nov 2007, Mel Gorman wrote:
-> > 
-> > >  struct page * fastcall
-> > >  __alloc_pages(gfp_t gfp_mask, unsigned int order,
-> > >  		struct zonelist *zonelist)
-> > >  {
-> > > +	/*
-> > > +	 * Use a temporary nodemask for __GFP_THISNODE allocations. If the
-> > > +	 * cost of allocating on the stack or the stack usage becomes
-> > > +	 * noticable, allocate the nodemasks per node at boot or compile time
-> > > +	 */
-> > > +	if (unlikely(gfp_mask & __GFP_THISNODE)) {
-> > > +		nodemask_t nodemask;
-> > 
-> > Hmmm.. This places a potentially big structure on the stack. nodemask can 
-> > contain up to 1024 bits which means 128 bytes. Maybe keep an array of 
-> > gfp_thisnode nodemasks (node_nodemask?) and use node_nodemask[nid]?
-> > 
-> 
-> That is what I was hinting at in the comment as a possible solution.
-> 
-> > > +
-> > > +		return __alloc_pages_internal(gfp_mask, order,
-> > > +			zonelist, nodemask_thisnode(numa_node_id(), &nodemask));
-> > 
-> > Argh.... GFP_THISNODE must use the nid passed to alloc_pages_node
-> > and *not* the local numa node id. Only if the node specified to
-> > alloc_pages nodes is -1 will this work.
-> > 
-> 
-> alloc_pages_node() calls __alloc_pages_nodemask() though where in this
-> function if I'm reading it right is called without a node id. Given no
-> other details on the nid, the current one seemed a logical choice.
+Hi all,
 
-Yeah, I guess the context here matters (and is a little hard to follow
-because thare are a few places that change in different ways here):
+I'm extremely confused as to what all the RTC-related config variables
+in the kernel mean and what I'm supposed to do with them, and I wonder
+if someone can help me or point me to some doc beside rtc.txt (which
+I've read, of course).
 
-For allocating pages from a particular node (GFP_THISNODE with nid),
-the nid clearly must be specified. This only happens with
-alloc_pages_node(), AFAICT. So, in that interface, the right thing is
-done and the appropriate nodemask will be built.
+I understand (from reading Documentation/rtc.txt) that there are two
+different RTC driver systems for Linux: an "old" one, supporting only
+one PC-AT-compatible RTC source, which drives /dev/rtc, and a "new"
+one, supporting different sources, which drives /dev/rtc[0123...].
+But I'm not sure which configuration variables enable which, whether
+they should be enabled together or whether I should choose between the
+twain, and what I should be using on my system anyway.
 
-On the other hand, if we call alloc_pages() with GFP_THISNODE set, there
-is no nid to base the allocation on, so we "fallback" to numa_node_id()
-[ almost like the nid had been specified as -1 ].
+I sort of gathered (I hope not too incorrectly) that the "genrtc"
+module is brought by the CONFIG_GEN_RTC configuration choice and that
+it contains the "old" driver, whereas the "new" driver is split
+between modules such as "rtc", "rtc_lib", "rtc_core" and actual
+drivers like "rtc_cmos" - right? - and configured by such switches as
+CONFIG_RTC_CLASS, CONFIG_RTC_LIB and CONFIG_RTC_DRV_CMOS.  There might
+also be a CONFIG_RTC variable, about which I'm not sure.
 
-So I guess this is logical -- but I wonder, do we have any callers of
-alloc_pages(GFP_THISNODE) ? It seems like an odd thing to do, when
-alloc_pages_node() exists?
+I'm also very confused about how HPET's tie into this, and what
+CONFIG_HPET_EMULATE_RTC does, for example.
 
-Thanks,
-Nish
+Now how do I know what's on my system?  (It's an ASUS P5W64 WS Pro
+based x86_64.)  I certainly have some kind of CMOS clock that I can
+configure in my BIOS, but I don't know about HPET's or other kind of
+RTC sources.
+
+I tried using the following config (this is all with 2.6.22.10):
+
+CONFIG_RTC=m
+CONFIG_GEN_RTC=m
+CONFIG_GEN_RTC_X=y
+CONFIG_HPET=y
+# CONFIG_HPET_RTC_IRQ is not set
+CONFIG_RTC_LIB=m
+CONFIG_RTC_CLASS=m
+CONFIG_RTC_INTF_SYSFS=y
+CONFIG_RTC_INTF_PROC=y
+CONFIG_RTC_INTF_DEV=y
+CONFIG_RTC_INTF_DEV_UIE_EMUL=y
+CONFIG_RTC_DRV_TEST=m
+CONFIG_RTC_DRV_CMOS=m
+# CONFIG_RTC_DRV_DS1553 is not set
+# CONFIG_RTC_DRV_DS1742 is not set
+# CONFIG_RTC_DRV_M48T86 is not set
+# CONFIG_RTC_DRV_V3020 is not set
+
+Now if I load the genrtc module (to use the "old" driver?), I get a
+/dev/rtc which may or may not be satisfactory but the
+dev.rtc.max-user-freq sysctl does not exist and ALSA does not use
+snd_rtctimer.  If I try unloading genrtc and instead loading the rtc,
+rtc_lib, rtc_core and rtc_cmos modules (to use the "new" driver?), I
+get the following error in dmesg:
+
+Real Time Clock Driver v1.12ac
+rtc_cmos 00:03: rtc core: registered rtc_cmos as rtc0
+rtc_cmos: probe of 00:03 failed with error -16
+
+After what attempts to, e.g., play a MIDI file with ALSA, fail (only a
+single note is played) and the following error occurs in dmesg:
+
+rtc: lost some interrupts at 1024Hz.
+
+So, why does rtc_cmos fail that way?  And how am I supposed to
+configure RTC as a whole?  (I will, of course, gladly provide more
+information if requested.)
+
+Thanks for any help!
 
 -- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
+     David A. Madore
+    (david.madore@ens.fr,
+     http://www.madore.org/~david/ )
