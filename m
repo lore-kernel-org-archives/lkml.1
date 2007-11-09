@@ -1,49 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759154AbXKIBT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760432AbXKIBZL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759154AbXKIBT4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 20:19:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbXKIBTs
+	id S1760432AbXKIBZL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 20:25:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbXKIBY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 20:19:48 -0500
-Received: from igraine.blacknight.ie ([81.17.252.25]:40389 "EHLO
-	igraine.blacknight.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751395AbXKIBTr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 20:19:47 -0500
-Date: Fri, 9 Nov 2007 00:53:49 +0000
-From: Robert Fitzsimons <robfitz@273k.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Robert Fitzsimons <robfitz@273k.net>, linux-kernel@vger.kernel.org,
-       jblunck@suse.de, ak@suse.de, mingo@elte.hu, tglx@linutronix.de,
-       Philippe Elie <phil.el@wanadoo.fr>
-Subject: Re: oops in oprofile/dump_trace/X86 with 2.6.24-rcX
-Message-ID: <20071109005349.GA2653@localhost>
-References: <20071108014527.GA2474@localhost> <20071108105418.8b58306d.akpm@linux-foundation.org>
+	Thu, 8 Nov 2007 20:24:58 -0500
+Received: from gw.goop.org ([64.81.55.164]:53626 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752973AbXKIBY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 20:24:58 -0500
+Message-ID: <4733A7A5.9000900@goop.org>
+Date: Thu, 08 Nov 2007 16:19:49 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071108105418.8b58306d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-blacknight-igraine-MailScanner-Information: Please contact the ISP for more information
-X-blacknight-igraine-MailScanner: Found to be clean
-X-blacknight-igraine-MailScanner-SpamCheck: not spam,
-	SpamAssassin (not cached, score=-1.512, required 7,
-	autolearn=disabled, RCVD_IN_NERDS_IE -3.50, RCVD_IN_SORBS_DUL 1.99)
-X-MailScanner-From: robfitz@273k.net
+To: Andi Kleen <ak@suse.de>
+CC: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: Some interesting observations when trying to optimize vmstat
+ handling
+References: <Pine.LNX.4.64.0711081141180.9694@schroedinger.engr.sgi.com> <200711090007.43424.ak@suse.de>
+In-Reply-To: <200711090007.43424.ak@suse.de>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Philippe, on Sun, 21 Oct you sent a "[patch 1/2] oProfile: oops when
-> profile_pc() return ~0LU" which as far as I can tell never got applied.
+Andi Kleen wrote:
+> The only problem is that there might be some code who relies on 
+> restore_flags() restoring other flags that IF, but at least for interrupts
+> and local_irq_save/restore it should be fine to change.
+>   
 
-This patch applied on it own doesn't fix the problem causing my oops.
+I don't think so.  We don't bother to save/restore the other flags in
+Xen paravirt and it doesn't seem to cause a problem.  The semantics
+really are specific to the state of the interrupt flag.
 
-> I've queued the below revert of Jan's change, in case your lost [2/2] doesn't
-> address Robert's oops.
-> 
-> Robert, can you please test this?
-
-This revert patch applied on it own does fix the oops.
-
-Robert
-
+    J
