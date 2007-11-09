@@ -1,42 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762445AbXKIOVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762777AbXKIOYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762445AbXKIOVn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 09:21:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759848AbXKIOVg
+	id S1762777AbXKIOYT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 09:24:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754550AbXKIOYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 09:21:36 -0500
-Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:55366 "EHLO
-	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753804AbXKIOVf (ORCPT
+	Fri, 9 Nov 2007 09:24:11 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:55617 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752529AbXKIOYK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 09:21:35 -0500
-Date: Fri, 9 Nov 2007 14:21:26 +0000 (GMT)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Alberto Gonzalez <info@gnebu.es>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Laptop's HDD
-In-Reply-To: <200711040002.25784.info@gnebu.es>
-Message-ID: <Pine.LNX.4.64N.0711091416570.914@blysk.ds.pg.gda.pl>
-References: <200711040002.25784.info@gnebu.es>
+	Fri, 9 Nov 2007 09:24:10 -0500
+Date: Fri, 9 Nov 2007 15:23:46 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: funaho@jurai.org, zippel@linux-m68k.org, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] kill drivers/nubus/nubus_syms.c
+Message-ID: <20071109142346.GD26163@stusta.de>
+References: <20071105170759.GZ12045@stusta.de> <Pine.LNX.4.64.0711060930430.13400@anakin>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0711060930430.13400@anakin>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 Nov 2007, Alberto Gonzalez wrote:
+On Tue, Nov 06, 2007 at 09:32:16AM +0100, Geert Uytterhoeven wrote:
+> On Mon, 5 Nov 2007, Adrian Bunk wrote:
+> > EXPORT_SYMBOL's belong to the actual code.
+> 
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> if you add a #include <linux/module.h> to drivers/nubus/proc.c.
+> 
+> I fixed it myself and added your 7 patches to my queue.
 
-> The problem comes from a very high rate of load/unload cycles of the heads 
-> that reaches the 300.000-600.000 limit in 2-3 years (with smartmontools it 
-> can checked it with "smartctl -A /dev/sda")  . There are reports of HDD dying 
-> even earlier for this problem [2]
+Ups, thanks for spotting and fixing.
 
- I use:
+> Gr{oetje,eeting}s,
+> 
+> 						Geert
 
-# hdparm -B 255 /dev/hda
+cu
+Adrian
 
-to get rid of the problem with an ATA disk where I do not care that much 
-about power consumption.  I do not know what the equivalent for a SATA 
-disk would be, but chances are it will be easier to track it down with the 
-reference above.
+-- 
 
-  Maciej
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
