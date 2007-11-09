@@ -1,94 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763896AbXKIXpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764347AbXKIXp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763896AbXKIXpi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 18:45:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759526AbXKIXpP
+	id S1764347AbXKIXp4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 18:45:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764282AbXKIXpc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 18:45:15 -0500
-Received: from an-out-0708.google.com ([209.85.132.245]:1943 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763989AbXKIXpN (ORCPT
+	Fri, 9 Nov 2007 18:45:32 -0500
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:42149 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763887AbXKIXp2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 18:45:13 -0500
-Message-ID: <4734F122.8000102@codemonkey.ws>
-Date: Fri, 09 Nov 2007 17:45:38 -0600
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Fri, 9 Nov 2007 18:45:28 -0500
+Date: Sat, 10 Nov 2007 00:45:07 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: j gleacher <jgleacher@yahoo.com>
+Cc: jeff@garzik.org, drnlmuller+bugs@gmail.com,
+       netdev <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: SIS190.c
+Message-ID: <20071109234507.GA4196@electric-eye.fr.zoreil.com>
+References: <327198.23103.qm@web57010.mail.re3.yahoo.com>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: lguest <lguest@ozlabs.org>, linux-kernel@vger.kernel.org,
-       Dor Laor <dor.laor@qumranet.com>,
-       virtualization@lists.linux-foundation.org
-Subject: Re: [PATCH] virtio config_ops refactoring
-References: <4730A8F3.6020008@us.ibm.com> <200711090924.28659.rusty@rustcorp.com.au> <47338EA0.6050100@codemonkey.ws> <200711092254.08099.rusty@rustcorp.com.au>
-In-Reply-To: <200711092254.08099.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <327198.23103.qm@web57010.mail.re3.yahoo.com>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Friday 09 November 2007 09:33:04 Anthony Liguori wrote:
->   
->> switch (addr) {
->> case VIRTIO_BLK_CONFIG_MAX_SEG:
->>    return vdev->max_seg & 0xFF;
->> case VIRTIO_BLK_CONFIG_MAX_SEG + 1:
->>    return (vdev->max_seg >> 8) & 0xFF;
->> case VIRTIO_BLK_CONFIG_MAX_SEG + 2:
->>    return (vdev->max_seg >> 16) & 0xFF;
->> case VIRTIO_BLK_CONFIG_MAX_SEG + 3:
->>    return (vdev->max_seg >> 24) & 0xFF;
->> case VIRTIO_BLK_CONFIG_MAX_SIZE:
->>    return vdev->max_size & 0xFF;
->> case VIRTIO_BLK_CONFIG_MAX_SIZE + 1:
->>    return (vdev->max_size >> 8) & 0xFF;
->> case VIRTIO_BLK_CONFIG_MAX_SIZE + 2:
->>    return (vdev->max_size >> 16) & 0xFF;
->> case VIRTIO_BLK_CONFIG_MAX_SIZE + 3:
->>    return (vdev->max_size >> 24) & 0xFF;
->> ...
->>     
->
-> 	struct virtio_blk_config
-> 	{
-> 		uint32_t max_seg, max_size;
-> 	};
->
-> 	...
-> 	struct virtio_blk_config conf = { vdev->max_seg, vdev->max_size };
->
-> 	return ((unsigned char *)&conf)[addr];
->
-> (Which strongly implies our headers should expose that nominal struct, rather 
-> than numerical constants).
->   
+j gleacher <jgleacher@yahoo.com> :
+[sorry for the delay, I was busy]
+> I'm not sure how to properly send you this information about subject,
+> but with a new Acer Desktop I needed to add 0x0968 to the below to
+> get the eth0 recognized.
 
-The problem is the ABI.  We can either require that PCI configuration 
-values are accessed with natural instructions, or it makes very little 
-sense to use the PCI configuration space for virtio configuration 
-information.  If we really can't find a way to do this (and I think my 
-current implementation is the best compromise since it hides this from 
-everything else), then I think I'll switch over to just writing a PFN 
-into a PCI configuration slot and then have that page store the virtio 
-configuration information (much like is done with lguest).
+Ok. Can you check the patch below against 2.6.24-rc2 ?
 
-Either virtio config looks like a shared memory area (as lguest 
-currently implements it), or it looks like hardware registers (like 
-virtio-pci implements it).  After thinking about it for a while, I don't 
-think the two can be reconciled.  There are subtle differences between 
-the two that can't be hidden in the virtio interface.  For instance, in 
-the PCI model, you get notified when values are read/written whereas in 
-the lguest model, you don't and need explicit status bits.
+diff --git a/drivers/net/sis190.c b/drivers/net/sis190.c
+index 7200883..51bbb60 100644
+--- a/drivers/net/sis190.c
++++ b/drivers/net/sis190.c
+@@ -1549,28 +1549,31 @@ static int __devinit sis190_get_mac_addr_from_eeprom(struct pci_dev *pdev,
+ }
+ 
+ /**
+- *	sis190_get_mac_addr_from_apc - Get MAC address for SiS965 model
++ *	sis190_get_mac_addr_from_apc - Get MAC address for SiS96x model
+  *	@pdev: PCI device
+  *	@dev:  network device to get address for
+  *
+- *	SiS965 model, use APC CMOS RAM to store MAC address.
++ *	SiS96x model, use APC CMOS RAM to store MAC address.
+  *	APC CMOS RAM is accessed through ISA bridge.
+  *	MAC address is read into @net_dev->dev_addr.
+  */
+ static int __devinit sis190_get_mac_addr_from_apc(struct pci_dev *pdev,
+ 						  struct net_device *dev)
+ {
++	static const u16 __devinitdata ids[] = { 0x0965, 0x0966, 0x0968 };
+ 	struct sis190_private *tp = netdev_priv(dev);
+ 	struct pci_dev *isa_bridge;
+ 	u8 reg, tmp8;
+-	int i;
++	unsigned int i;
+ 
+ 	net_probe(tp, KERN_INFO "%s: Read MAC address from APC.\n",
+ 		  pci_name(pdev));
+ 
+-	isa_bridge = pci_get_device(PCI_VENDOR_ID_SI, 0x0965, NULL);
+-	if (!isa_bridge)
+-		isa_bridge = pci_get_device(PCI_VENDOR_ID_SI, 0x0966, NULL);
++	for (i = 0; i < ARRAY_SIZE(ids); i++) {
++		isa_bridge = pci_get_device(PCI_VENDOR_ID_SI, ids[i], NULL);
++		if (isa_bridge)
++			break;
++	}
+ 
+ 	if (!isa_bridge) {
+ 		net_probe(tp, KERN_INFO "%s: Can not find ISA bridge.\n",
 
-If you're very against the switch() magic, then I'll switch over to just 
-using a shared memory area.
+> While this enables the interface, the performance is horrible as my
+> wlan0 if much faster and eth0 frequently hangs.  I'm learning about
+> drivers, so I could help if there is a need to troubleshoot this type
+> of issue. 
 
-Regards,
+"hangs" == no network or no computer ?
 
-Anthony Liguori
+Please send:
+- a complete dmesg (from boot to poor behavior)
+- the output of lspci -vvvxxxx
+- the output of mii-diag -v ethX
+- the content of /proc/interrupts
 
-> Rusty.
->
->   
-
+-- 
+Ueimor
