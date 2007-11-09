@@ -1,111 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753021AbXKIKVf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbXKIKcy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753021AbXKIKVf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 05:21:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbXKIKV1
+	id S1752912AbXKIKcy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 05:32:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbXKIKcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 05:21:27 -0500
-Received: from proxy3.bredband.net ([195.54.101.73]:36718 "EHLO
-	proxy3.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751595AbXKIKV1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 05:21:27 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAOLCM0dV4pmXRmdsb2JhbAAMhx2HTgEBATc
-Message-ID: <473434F1.50509@purplescout.se>
-Date: Fri, 09 Nov 2007 11:22:41 +0100
-From: Jonas Stare <jonas.stare@purplescout.se>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Fri, 9 Nov 2007 05:32:47 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60495 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751316AbXKIKcq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 05:32:46 -0500
+Date: Fri, 9 Nov 2007 11:25:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>, sukadev@us.ibm.com,
+       balbir@in.ibm.com, Containers <containers@lists.osdl.org>,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       dhaval@linux.vnet.ibm.com, efault@gmx.de
+Subject: Re: [BUG]: Crash with CONFIG_FAIR_CGROUP_SCHED=y
+Message-ID: <20071109102523.GA10903@elte.hu>
+References: <20071108234805.GA2240@us.ibm.com> <20071109070214.GO3143@linux.vnet.ibm.com> <b647ffbd0711090045o5ebf4681q78f939f5c1e71fe1@mail.gmail.com> <20071109101437.GA22544@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: torvalds@osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] drivers/ide/ide-probe.c, kernel 2.6.23.1
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071109101437.GA22544@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
 
-This week I ran into a strange hardware problem. During boot I got a 35 
-second delay while waiting for IDE-disks that weren't there to report 
-that they were not in a BSY state. The problem was most likely in the 
-hardware but this patch enables you to ignore waiting for disks by 
-setting hdX=noprobe (and not setting the geometry by hand) as a kernel 
-option.
+* Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
 
-If no noprobe-option is set the code will work (more or less) as the 
-original but if set the code will skip the ide_wait_not_busy() for that 
-drive. Even if there would be a drive there and it is still BSY 
-afterwards it should not matter since it isn't probed for later.
+> With the patch below, I could run ns_exec() fine w/o a crash.
+> 
+> Suka, can you verify whether this patch fixes your problem?
 
-There are other ways to get around the "35-seconds-of-waiting-in-vain", 
-like actually fix the hardware, insert a second drive that works or 
-recompile the kernel with edd-support builtin (atleast I've seen that 
-solution on a forum) and possibly others. But this patch would allow 
-people to get Linux to boot quickly on wonky hardware without having to 
-recompile anything.
+thanks, applied. I'll wait for confirmation from Suka before sending it 
+to Linus.
 
-(The code also honors the MAX_DRIVES variable instead of assuming that 
-ther will be 2 drives on the bus.)
-
-I will be happy for all the comments I can get. :) But be gentle, this 
-is my first patch...
-
-   Best regards
-   Jonas Stare
-
-Signed-off-by: Jonas Stare <jonas.stare@purplescout.se>
---
-diff -u linux-2.6.23.1-orig/drivers/ide/ide-probe.c 
-linux-2.6.23.1/drivers/ide/ide-probe.c
---- linux-2.6.23.1-orig/drivers/ide/ide-probe.c 2007-10-12 
-18:43:44.000000000 +0200
-+++ linux-2.6.23.1/drivers/ide/ide-probe.c      2007-11-09 
-10:43:16.000000000 +0100
-@@ -643,6 +643,7 @@
-  static int wait_hwif_ready(ide_hwif_t *hwif)
-  {
-         int rc;
-+       int unit;
-
-         printk(KERN_DEBUG "Probing IDE interface %s...\n", hwif->name);
-
-@@ -659,20 +660,24 @@
-                 return rc;
-
-         /* Now make sure both master & slave are ready */
--       SELECT_DRIVE(&hwif->drives[0]);
--       hwif->OUTB(8, hwif->io_ports[IDE_CONTROL_OFFSET]);
--       mdelay(2);
--       rc = ide_wait_not_busy(hwif, 35000);
--       if (rc)
--               return rc;
--       SELECT_DRIVE(&hwif->drives[1]);
--       hwif->OUTB(8, hwif->io_ports[IDE_CONTROL_OFFSET]);
--       mdelay(2);
--       rc = ide_wait_not_busy(hwif, 35000);
-+       for (unit = 0; unit < MAX_DRIVES; ++unit) {
-+               /* Ignore disks that we will not probe for later. */
-+               if (!hwif->drives[unit].noprobe ||
-+                   hwif->drives[unit].forced_geom) {
-+                       SELECT_DRIVE(&hwif->drives[unit]);
-+                       hwif->OUTB(8, hwif->io_ports[IDE_CONTROL_OFFSET]);
-+                       mdelay(2);
-+                       rc = ide_wait_not_busy(hwif, 35000);
-+                       /* Exit function with master selected (let's be 
-sane) */
-+                       SELECT_DRIVE(&hwif->drives[0]);
-+                       if (rc)
-+                               return rc;
-+               } else {
-+                       printk(KERN_DEBUG "Skip ide_wait_not_busy for 
-%s:%d\n",
-+                         hwif->name, unit);
-+               }
-+       }
-
--       /* Exit function with master reselected (let's be sane) */
--       SELECT_DRIVE(&hwif->drives[0]);
--
-         return rc;
-  }
+	Ingo
