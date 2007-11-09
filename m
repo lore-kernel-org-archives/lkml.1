@@ -1,40 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763229AbXKIPst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763090AbXKIQAW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763229AbXKIPst (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 10:48:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760720AbXKIPsl
+	id S1763090AbXKIQAW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 11:00:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758716AbXKIQAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 10:48:41 -0500
-Received: from mailgw.infracomspa.it ([217.12.183.244]:2257 "EHLO
-	svkmg019i.infracomspa.it" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752807AbXKIPsk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 10:48:40 -0500
-Message-ID: <47348151.3040202@infracomspa.it>
-Date: Fri, 09 Nov 2007 16:48:33 +0100
-From: Roberto Oppedisano <roppedisano@infracomspa.it>
-User-Agent: Icedove 1.5.0.12 (X11/20070607)
+	Fri, 9 Nov 2007 11:00:09 -0500
+Received: from ns1.suse.de ([195.135.220.2]:33332 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753196AbXKIQAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 11:00:08 -0500
+From: Andi Kleen <ak@suse.de>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: Some interesting observations when trying to optimize vmstat handling
+Date: Fri, 9 Nov 2007 16:56:26 +0100
+User-Agent: KMail/1.9.1
+Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+References: <Pine.LNX.4.64.0711081141180.9694@schroedinger.engr.sgi.com> <200711090007.43424.ak@suse.de> <4733A7A5.9000900@goop.org>
+In-Reply-To: <4733A7A5.9000900@goop.org>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: libata: cdrw/dvdrom disabed after s2ram (2.6.24-rc2)
-References: <4731C86B.1040704@infracomspa.it> <20071107121355.5eaf4496.akpm@linux-foundation.org> <47333CCF.1050403@infracomspa.it> <20071108094958.5c9b1b22.akpm@linux-foundation.org> <20071108180256.GB3491@havoc.gtf.org>
-In-Reply-To: <20071108180256.GB3491@havoc.gtf.org>
-X-MIMETrack: Itemize by SMTP Server on Venere/InfracomSpA/IT(Release 6.5.6|March 06, 2007) at
- 11/09/2007 04:48:34 PM,
-	Serialize by Router on Bacco/InfracomSpA/IT(Release 6.5.6|March 06, 2007) at
- 09/11/2007 16.48.40,
-	Serialize complete at 09/11/2007 16.48.40
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Disposition: inline
+Message-Id: <200711091656.26908.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote, On 11/08/2007 07:02 PM:
-> Set module option "noacpi" to 1, to disable ACPI and see if that fixes
-> the problem.
->   
-Booting with libata.noacpi=1 fixes the problem too.
+On Friday 09 November 2007 01:19, Jeremy Fitzhardinge wrote:
+> Andi Kleen wrote:
+> > The only problem is that there might be some code who relies on
+> > restore_flags() restoring other flags that IF, but at least for
+> > interrupts and local_irq_save/restore it should be fine to change.
+>
+> I don't think so.  We don't bother to save/restore the other flags in
+> Xen paravirt and it doesn't seem to cause a problem.  The semantics
+> really are specific to the state of the interrupt flag.
 
-R
+Yes i checked the code and only case I found is actually save_flags, not 
+restore_flags
+
+(and that particular case is even unnecessary) 
+
+-Andi
+
