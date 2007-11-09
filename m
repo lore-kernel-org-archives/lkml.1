@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760002AbXKIXbd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761520AbXKIXcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760002AbXKIXbd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 18:31:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755966AbXKIXb0
+	id S1761520AbXKIXcV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 18:32:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756959AbXKIXcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 18:31:26 -0500
-Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:57057 "EHLO
+	Fri, 9 Nov 2007 18:32:06 -0500
+Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:57066 "EHLO
 	server.generalnetworks.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754313AbXKIXb0 (ORCPT
+	with ESMTP id S1757092AbXKIXcF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 18:31:26 -0500
-Message-id: <4827138842526222333@pripojeni.net>
-Subject: [PATCH 1/5] Net: ibm_newemac, remove SPIN_LOCK_UNLOCKED
+	Fri, 9 Nov 2007 18:32:05 -0500
+Message-id: <7981323273222714582@pripojeni.net>
+In-reply-to: <4827138842526222333@pripojeni.net>
+Subject: [PATCH 2/5] Watchdog: bfin_wdt, remove SPIN_LOCK_UNLOCKED
 From: Jiri Slaby <jirislaby@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: <linux-kernel@vger.kernel.org>
-Cc: Jeff Garzik <jgarzik@pobox.com>
-Cc: <netdev@vger.kernel.org>
-Cc: <bryan.wu@analog.com>
-Date: Fri, 9 Nov 2007 18:31:26 -0500
+Cc: Wim Van Sebroeck <wim@iguana.be>
+Cc: <michael.frysinger@analog.com>
+Cc: <vapier.adi@gmail.com>
+Date: Fri, 9 Nov 2007 18:32:05 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ibm_newemac, remove SPIN_LOCK_UNLOCKED
+bfin_wdt, remove SPIN_LOCK_UNLOCKED
 
 SPIN_LOCK_UNLOCKED is deprecated, use DEFINE_SPINLOCK instead
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Jeff Garzik <jgarzik@pobox.com>
+Cc: Wim Van Sebroeck <wim@iguana.be>
 
 ---
-commit aefcf0f6b6ab925184e7cebff8b609e4da1f5c0d
-tree 9e1e6240f26c759826959e8812885726c520019d
-parent f87566db6dd9613dde8de59380cd2f423166511e
-author Jiri Slaby <jirislaby@gmail.com> Thu, 25 Oct 2007 11:54:41 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Thu, 25 Oct 2007 11:54:41 +0200
+commit 5290a0e1fffeb61f0062ebca98e45a6a5ba75711
+tree 4d377ca30153b48b32b4d2c079ab884983c0091d
+parent aefcf0f6b6ab925184e7cebff8b609e4da1f5c0d
+author Jiri Slaby <jirislaby@gmail.com> Thu, 25 Oct 2007 11:55:29 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Thu, 25 Oct 2007 11:55:29 +0200
 
- drivers/net/ibm_newemac/debug.c |    2 +-
+ drivers/watchdog/bfin_wdt.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/ibm_newemac/debug.c b/drivers/net/ibm_newemac/debug.c
-index 170524e..ada13cd 100644
---- a/drivers/net/ibm_newemac/debug.c
-+++ b/drivers/net/ibm_newemac/debug.c
-@@ -21,7 +21,7 @@
+diff --git a/drivers/watchdog/bfin_wdt.c b/drivers/watchdog/bfin_wdt.c
+index 309d279..31dc7a6 100644
+--- a/drivers/watchdog/bfin_wdt.c
++++ b/drivers/watchdog/bfin_wdt.c
+@@ -71,7 +71,7 @@ static int nowayout = WATCHDOG_NOWAYOUT;
+ static struct watchdog_info bfin_wdt_info;
+ static unsigned long open_check;
+ static char expect_close;
+-static spinlock_t bfin_wdt_spinlock = SPIN_LOCK_UNLOCKED;
++static DEFINE_SPINLOCK(bfin_wdt_spinlock);
  
- #include "core.h"
- 
--static spinlock_t emac_dbg_lock = SPIN_LOCK_UNLOCKED;
-+static DEFINE_SPINLOCK(emac_dbg_lock);
- 
- static void emac_desc_dump(struct emac_instance *p)
- {
+ /**
+  *	bfin_wdt_keepalive - Keep the Userspace Watchdog Alive
