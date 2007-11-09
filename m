@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762777AbXKIOYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762962AbXKIOZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762777AbXKIOYT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 09:24:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754550AbXKIOYL
+	id S1762962AbXKIOZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 09:25:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760068AbXKIOZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 09:24:11 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:55617 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752529AbXKIOYK (ORCPT
+	Fri, 9 Nov 2007 09:25:19 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52520 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760067AbXKIOZS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 09:24:10 -0500
-Date: Fri, 9 Nov 2007 15:23:46 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: funaho@jurai.org, zippel@linux-m68k.org, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] kill drivers/nubus/nubus_syms.c
-Message-ID: <20071109142346.GD26163@stusta.de>
-References: <20071105170759.GZ12045@stusta.de> <Pine.LNX.4.64.0711060930430.13400@anakin>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0711060930430.13400@anakin>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 9 Nov 2007 09:25:18 -0500
+Date: Fri, 9 Nov 2007 14:25:00 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Frank Seidel <fseidel@suse.de>
+Cc: linux-kernel@vger.kernel.org, greg@kroah.com, p.hardwick@option.com,
+       Marcel Holtmann <marcel@holtmann.org>
+Subject: Re: nozomi version 2.1c for review
+Message-ID: <20071109142500.0201fe4a@the-village.bc.nu>
+In-Reply-To: <200711091449.24648.fseidel@suse.de>
+References: <200711091449.24648.fseidel@suse.de>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 06, 2007 at 09:32:16AM +0100, Geert Uytterhoeven wrote:
-> On Mon, 5 Nov 2007, Adrian Bunk wrote:
-> > EXPORT_SYMBOL's belong to the actual code.
-> 
-> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> if you add a #include <linux/module.h> to drivers/nubus/proc.c.
-> 
-> I fixed it myself and added your 7 patches to my queue.
+> and already in Gregs git repository) i resolved and removed all those
+> GET_* and SET_* macros.
 
-Ups, thanks for spotting and fixing.
+Oh good, that was long overdue.
 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
+> +	switch (port) {
+> +	case PORT_MDM:
+> +		dc->last_ier = (dc->last_ier & ~MDM_UL) | MDM_UL;
+> +		break;
 
-cu
-Adrian
+	The & ~xxx is unneeded if you then set it again always
 
--- 
+Could also clean up to be
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+	u8 mask[NR_PORTS] = { DIAG_UGL, APP1_UL, ... }
+	dc->last_ier |= mask[port];
 
+instead of the switch - ditto disable transmit_ul etc
+
+> +	case PORT_DIAG:
+> +		dc->last_ier = (dc->last_ier & ~DIAG_UL) | DIAG_UL;
+> +		break;
+> +	case PORT_APP1:
+> +		dc->last_ier = (dc->last_ier & ~APP1_UL) | APP1_UL;
+
+
+Looking a lot better than before and with plenty of scope for more
+improvement now it can be read.
+
+Alan
