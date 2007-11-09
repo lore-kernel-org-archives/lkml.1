@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbXKIShz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756105AbXKISlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756051AbXKIShz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 13:37:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbXKIShs
+	id S1756105AbXKISlO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 13:41:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754603AbXKISk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 13:37:48 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:38268 "EHLO
+	Fri, 9 Nov 2007 13:40:59 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:38326 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751253AbXKIShr (ORCPT
+	with ESMTP id S1754288AbXKISk6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 13:37:47 -0500
-Message-ID: <4734A8F5.7080702@zytor.com>
-Date: Fri, 09 Nov 2007 10:37:41 -0800
+	Fri, 9 Nov 2007 13:40:58 -0500
+Message-ID: <4734A9B6.1080404@zytor.com>
+Date: Fri, 09 Nov 2007 10:40:54 -0800
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
@@ -38,9 +38,11 @@ Randy Dunlap wrote:
 > Thanks for the info.
 > A better fix IMHO would be if one could get lilo to work.  :)
 > 
+> ---
+> ~Randy [who is fed up with grub]
 
-There is a fix in 2.6.24 series (norminated for 2.6.23.2) that makes it 
-work with old versions of LILO -- and unfortunately breaks old 
-syslinux... Either way, current versions of LILO should work just fine.
+BTW, I definitely can agree with your feeling about grub (which is part 
+of why I maintain a different boot loader suite.)  However, if you know 
+of any LILO problems, please speak up.
 
 	-hpa
