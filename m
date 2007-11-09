@@ -1,61 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762962AbXKIOZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762819AbXKIOcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762962AbXKIOZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 09:25:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760068AbXKIOZT
+	id S1762819AbXKIOcj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 09:32:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759998AbXKIOcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 09:25:19 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52520 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760067AbXKIOZS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 09:25:18 -0500
-Date: Fri, 9 Nov 2007 14:25:00 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Frank Seidel <fseidel@suse.de>
-Cc: linux-kernel@vger.kernel.org, greg@kroah.com, p.hardwick@option.com,
-       Marcel Holtmann <marcel@holtmann.org>
-Subject: Re: nozomi version 2.1c for review
-Message-ID: <20071109142500.0201fe4a@the-village.bc.nu>
-In-Reply-To: <200711091449.24648.fseidel@suse.de>
-References: <200711091449.24648.fseidel@suse.de>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Nov 2007 09:32:31 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:56045 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753378AbXKIOca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 09:32:30 -0500
+From: Mel Gorman <mel@csn.ul.ie>
+To: akpm@linux-foundation.org
+Cc: Lee.Schermerhorn@hp.com, Mel Gorman <mel@csn.ul.ie>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
+       nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com
+Message-Id: <20071109143226.23540.12907.sendpatchset@skynet.skynet.ie>
+Subject: [PATCH 0/6] Use one zonelist per node instead of multiple zonelists v9
+Date: Fri,  9 Nov 2007 14:32:26 +0000 (GMT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> and already in Gregs git repository) i resolved and removed all those
-> GET_* and SET_* macros.
+This is basically a rebase to the broken-out -mm tree. Since v8, two fixes
+have been applied that showed up during testing. Most machines I test -mm
+on are failing to boot for a variety of reasons but on the two machines
+that did work, they appeared to work fine.
 
-Oh good, that was long overdue.
+Changelog since V8
+  o Rebase to 2.6.24-rc2
+  o Added ack for the OOM changes
+  o Behave correctly when GFP_THISNODE and a node ID are specified
+  o Clear up warning over type of nodes_intersects() function
 
-> +	switch (port) {
-> +	case PORT_MDM:
-> +		dc->last_ier = (dc->last_ier & ~MDM_UL) | MDM_UL;
-> +		break;
+Changelog since V7
+  o Rebase to 2.6.23-rc8-mm2
 
-	The & ~xxx is unneeded if you then set it again always
+Changelog since V6
+  o Fix build bug in relation to memory controller combined with one-zonelist
+  o Use while() instead of a stupid looking for()
+  o Instead of encoding zone index information in a pointer, this version
+    introduces a structure that stores a zone pointer and its index 
 
-Could also clean up to be
+Changelog since V5
+  o Rebase to 2.6.23-rc4-mm1
+  o Drop patch that replaces inline functions with macros
 
-	u8 mask[NR_PORTS] = { DIAG_UGL, APP1_UL, ... }
-	dc->last_ier |= mask[port];
+Changelog since V4
+  o Rebase to -mm kernel. Host of memoryless patches collisions dealt with
+  o Do not call wakeup_kswapd() for every zone in a zonelist
+  o Dropped the FASTCALL removal
+  o Have cursor in iterator advance earlier
+  o Use nodes_and in cpuset_nodes_valid_mems_allowed()
+  o Use defines instead of inlines, noticably better performance on gcc-3.4
+    No difference on later compilers such as gcc 4.1
+  o Dropped gfp_skip patch until it is proven to be of benefit. Tests are
+    currently inconclusive but it definitly consumes at least one cache
+    line
 
-instead of the switch - ditto disable transmit_ul etc
+Changelog since V3
+  o Fix compile error in the parisc change
+  o Calculate gfp_zone only once in __alloc_pages
+  o Calculate classzone_idx properly in get_page_from_freelist
+  o Alter check so that zone id embedded may still be used on UP
+  o Use Kamezawa-sans suggestion for skipping zones in zonelist
+  o Add __alloc_pages_nodemask() to filter zonelist based on a nodemask. This
+    removes the need for MPOL_BIND to have a custom zonelist
+  o Move zonelist iterators and helpers to mm.h
+  o Change _zones from struct zone * to unsigned long
+  
+Changelog since V2
+  o shrink_zones() uses zonelist instead of zonelist->zones
+  o hugetlb uses zonelist iterator
+  o zone_idx information is embedded in zonelist pointers
+  o replace NODE_DATA(nid)->node_zonelist with node_zonelist(nid)
 
-> +	case PORT_DIAG:
-> +		dc->last_ier = (dc->last_ier & ~DIAG_UL) | DIAG_UL;
-> +		break;
-> +	case PORT_APP1:
-> +		dc->last_ier = (dc->last_ier & ~APP1_UL) | APP1_UL;
+Changelog since V1
+  o Break up the patch into 3 patches
+  o Introduce iterators for zonelists
+  o Performance regression test
 
+The following patches replace multiple zonelists per node with one zonelist
+that is filtered based on the GFP flags. The patches as a set fix a bug
+with regard to the use of MPOL_BIND and ZONE_MOVABLE. With this patchset,
+the MPOL_BIND will apply to the two highest zones when the highest zone
+is ZONE_MOVABLE. This should be considered as an alternative fix for the
+MPOL_BIND+ZONE_MOVABLE in 2.6.23 to the previously discussed hack that
+filters only custom zonelists. As a bonus, the patchset reduces the cache
+footprint of the kernel and should improve performance in a number of cases.
 
-Looking a lot better than before and with plenty of scope for more
-improvement now it can be read.
+The first patch cleans up an inconsitency where direct reclaim uses
+zonelist->zones where other places use zonelist. The second patch introduces
+a helper function node_zonelist() for looking up the appropriate zonelist
+for a GFP mask which simplifies patches later in the set.
 
-Alan
+The third patch replaces multiple zonelists with two zonelists that are
+filtered. The two zonelists are due to the fact that the memoryless patchset
+introduces a second set of zonelists for __GFP_THISNODE.
+
+The fourth patch introduces helper macros for retrieving the zone and node indices of entries in a zonelist.
+
+The fifth patch introduces filtering of the zonelists based on a nodemask.
+
+The final patch replaces the two zonelists with one zonelist. A nodemask is
+created when __GFP_THISNODE is specified to filter the list. The nodelists
+could be pre-allocated with one-per-node but it's not clear that __GFP_THISNODE
+is used often enough to be worth the effort.
+
+Performance results varied depending on the machine configuration but were
+usually small performance gains. In real workloads the gain/loss will depend
+on how much the userspace portion of the benchmark benefits from having more
+cache available due to reduced referencing of zonelists.
+
+These are the range of performance losses/gains when running against
+2.6.23-rc3-mm1. The set and these machines are a mix of i386, x86_64 and
+ppc64 both NUMA and non-NUMA.
+
+Total CPU time on Kernbench: -0.67% to  3.05%
+Elapsed   time on Kernbench: -0.25% to  2.96%
+page_test from aim9:         -6.98% to  5.60%
+brk_test  from aim9:         -3.94% to  4.11%
+fork_test from aim9:         -5.72% to  4.14%
+exec_test from aim9:         -1.02% to  1.56%
+
+The TBench figures were too variable between runs to draw conclusions from but
+there didn't appear to be any regressions there. The hackbench results for both
+sockets and pipes were within noise.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
