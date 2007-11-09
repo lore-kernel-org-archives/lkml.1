@@ -1,40 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760432AbXKIBZL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760867AbXKIBaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760432AbXKIBZL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 20:25:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbXKIBY6
+	id S1760867AbXKIBaf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 20:30:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbXKIBa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 20:24:58 -0500
-Received: from gw.goop.org ([64.81.55.164]:53626 "EHLO mail.goop.org"
+	Thu, 8 Nov 2007 20:30:27 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:57727 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752973AbXKIBY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 20:24:58 -0500
-Message-ID: <4733A7A5.9000900@goop.org>
-Date: Thu, 08 Nov 2007 16:19:49 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	id S1753563AbXKIBa1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 20:30:27 -0500
+Message-ID: <4733A6A6.5000605@redhat.com>
+Date: Thu, 08 Nov 2007 19:15:34 -0500
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: Some interesting observations when trying to optimize vmstat
- handling
-References: <Pine.LNX.4.64.0711081141180.9694@schroedinger.engr.sgi.com> <200711090007.43424.ak@suse.de>
-In-Reply-To: <200711090007.43424.ak@suse.de>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=UTF-8
+To: ciol <ciol13@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [poll] Is the megafreeze development model broken?
+References: <fgtfqa$h9j$1@ger.gmane.org> <47331CA2.9000403@redhat.com> <fgvs7p$j0d$1@ger.gmane.org>
+In-Reply-To: <fgvs7p$j0d$1@ger.gmane.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> The only problem is that there might be some code who relies on 
-> restore_flags() restoring other flags that IF, but at least for interrupts
-> and local_irq_save/restore it should be fine to change.
->   
+ciol wrote:
+> Chris Snook wrote:
+> 
+>> Why are you asking the developers?  We do this for the sake of the users.
+> 
+> 
+> The kernel is the software of the developers.
 
-I don't think so.  We don't bother to save/restore the other flags in
-Xen paravirt and it doesn't seem to cause a problem.  The semantics
-really are specific to the state of the interrupt flag.
+The kernel is a technology.  A distribution is a product.  When decisions about 
+technology and decisions about products are made *entirely* by the same people, 
+the result is never good.
 
-    J
+> It's important to know how they want it to be distributed.
+
+For commercial distributions, the answer is: "In whichever way results in the 
+largest paycheck with the least amount of stress and effort", which means doing 
+it the way that's best for the customer.
+
+Non-commercial distributions have less of this pressure, but the same principle 
+applies if they care about their users.  If you're not interested in the users 
+but you are interested in the technology, you should be doing your work 
+upstream, so the distribution is irrelevant.
+
+Don't get me wrong, I think stable kernel trees like 2.6.16 are a good thing. 
+They serve very well a whole bunch of different niches where users are willing 
+to sacrifice the support benefits of a distribution kernel for the control of an 
+upstream kernel, while maintaining the stability of their installed base.  These 
+users have little interest in the general-purpose distribution kernel anyway, 
+aside from perhaps wishing it included some config or patch that its maintainers 
+have elected not to include.
+
+	-- Chris
