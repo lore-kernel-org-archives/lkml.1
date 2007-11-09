@@ -1,49 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763566AbXKIXzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761658AbXKJAFG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763566AbXKIXzh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 18:55:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbXKIXz3
+	id S1761658AbXKJAFG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 19:05:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755090AbXKJAEw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 18:55:29 -0500
-Received: from mail.gmx.net ([213.165.64.20]:49953 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751214AbXKIXz2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 18:55:28 -0500
-X-Authenticated: #12956409
-X-Provags-ID: V01U2FsdGVkX1/vgroMpQzvvm1GX49z3/5ewrhUNFr+tMVWZMxNFq
-	+RuuumWPsWUaC+
-Message-ID: <4734F397.7080802@gmx.net>
-Date: Sat, 10 Nov 2007 00:56:07 +0100
-From: Cyrus Massoumi <cyrusm@gmx.net>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Fri, 9 Nov 2007 19:04:52 -0500
+Received: from enyo.dsw2k3.info ([195.71.86.239]:45320 "EHLO enyo.dsw2k3.info"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754611AbXKJAEv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 19:04:51 -0500
+X-Greylist: delayed 1942 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Nov 2007 19:04:50 EST
+Date: Sat, 10 Nov 2007 00:32:15 +0100
+From: Matthias Schniedermeyer <ms@citd.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Jeff Garzik <jeff@garzik.org>, Mark Lord <liml@rtr.ca>,
+       Riki Oktarianto <rkoktarianto@gmail.com>, linux-kernel@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-ide@vger.kernel.org
+Subject: Re: [PATCH] Add quirk to set AHCI mode on ICH boards
+Message-ID: <20071109233215.GA22498@citd.de>
+References: <20071109020235.GA2031@ceren> <20071109023129.GA25581@havoc.gtf.org> <4733D421.7000505@rtr.ca> <20071109034622.GB25581@havoc.gtf.org> <20071109120425.543971bf@the-village.bc.nu>
 MIME-Version: 1.0
-To: Micah Dowty <micah@vmware.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: High priority tasks break SMP balancer?
-References: <20071109223417.GB16250@vmware.com>
-In-Reply-To: <20071109223417.GB16250@vmware.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071109120425.543971bf@the-village.bc.nu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Micah
+On 09.11.2007 12:04, Alan Cox wrote:
+> On Thu, 8 Nov 2007 22:46:22 -0500
+> Jeff Garzik <jeff@garzik.org> wrote:
+> 
+> > On Thu, Nov 08, 2007 at 10:29:37PM -0500, Mark Lord wrote:
+> > > And I might even privately patch my own kernels to map the ACHI BAR
+> > > in the cases where the BIOS didn't...
+> > 
+> > The inability to do this in the general case is the main reason why
+> > AHCI was not unconditionally enabled, even in IDE mode, when it was
+> > originally added...  :/
+> 
+> We've done it all the time for various devices without problems (eg S3
+> video cards). I'd like to see it go in - although perhaps attached to a
+> force_ahci boot param initially
 
-> On my machine (2-way Opteron with a vanilla 2.6.23.1 kernel) this test
-> program will reliably put the scheduler into a state where one CPU has
-> both of the busy-looping processes in its runqueue, and the other CPU
-> is usually idle. The usually-idle CPU will have a very high cpu_load,
-> as reported by /proc/sched_debug.
+I second that.
 
-I tried your program on my machine (C2D, 2.6.17, O(1) scheduler).
+My computer/mainboard @work has such a "broken" BIOS. Of the 5 
+SATA-Ports this MB has only 1 (and 1 "missing" that is reported by linux 
+but i can't find on the MB) is configured as AHCI which means that with 
+a HDD & a DVD-ROM connected to 2 of the 4 "piix"-ports, i only have 1 
+hot-pluggable port instead of the possible 3. And for some temporary 
+work i would really need at least 2 hot-pluggable ports.
 
-Both CPUs are 100% busy all the time. Each busy-looping thread is 
-running on its own CPU. I've been watching top output for 10 minutes, 
-the spreading is stable and the threads don't bounce at all.
+So as a work-around i will try a Promise 150 TX4 controller as it is 
+supposed to support hotplug since 2.6.23.
+
+After having hotplug @home from the date the linux-kernel supporting it 
+was released, i don't want to live without it, as i use it daily.
 
 
-greetings
-Cyrus
+And on the topic of "broken" BIOSes. I have a little empathy for the MB 
+manufactures as non-RAID AHCI royaly screws Windos, so not supporting it 
+reduces their support costs enough to overlook screwing the non-windos 
+faction.
 
+
+
+
+
+Bis denn
+
+-- 
+Real Programmers consider "what you see is what you get" to be just as 
+bad a concept in Text Editors as it is in women. No, the Real Programmer
+wants a "you asked for it, you got it" text editor -- complicated, 
+cryptic, powerful, unforgiving, dangerous.
 
