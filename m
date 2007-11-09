@@ -1,75 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762103AbXKICMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761590AbXKICR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762103AbXKICMh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 21:12:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756922AbXKICM3
+	id S1761590AbXKICR0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 21:17:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758165AbXKICRR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 21:12:29 -0500
-Received: from py-out-1112.google.com ([64.233.166.178]:7703 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751023AbXKICM3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 21:12:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RNx0NdPafPSPmSkF03PuYld+w0yIS2k+aT8yHbfebYECL9o2Or6iH3WHpSds0lBtn5nbB5gi+F4ZsuUp8XNqUa923KndMY3M8QB+G4yujpP70emRe+7q1bA/igbMMgWJScgh4Ld+LEEuGwQKwksz4OFprMEJmNNBsiNzUEb/010=
-Message-ID: <524f69650711081812j20580247kce68334b778c73c7@mail.gmail.com>
-Date: Thu, 8 Nov 2007 20:12:25 -0600
-From: "Steve French" <smfrench@gmail.com>
-To: "Przemyslaw Wegrzyn" <czajnik@czajsoft.pl>
-Subject: Re: Fw: Buffer overflow in CIFS VFS.
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, joern@logfs.org
-In-Reply-To: <OFA6B04F1D.DE8E7DD9-ON8725738E.00065BC2-8625738E.00066CD4@us.ibm.com>
+	Thu, 8 Nov 2007 21:17:17 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:37049 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757267AbXKICRR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 21:17:17 -0500
+Message-ID: <4733C340.8080208@us.ibm.com>
+Date: Thu, 08 Nov 2007 20:17:36 -0600
+From: Anthony Liguori <aliguori@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: dor.laor@qumranet.com
+CC: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rusycorp.com.au>,
+       virtualization@lists.osdl.org, kvm-devel@lists.sourceforge.net
+Subject: Re: [kvm-devel] [PATCH 3/3] virtio PCI device
+References: <11944899922822-git-send-email-aliguori@us.ibm.com>	<11944900141678-git-send-email-aliguori@us.ibm.com>	<11944900152750-git-send-email-aliguori@us.ibm.com> <11944900163817-git-send-email-aliguori@us.ibm.com> <4733AC3A.20701@qumranet.com>
+In-Reply-To: <4733AC3A.20701@qumranet.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <OFA6B04F1D.DE8E7DD9-ON8725738E.00065BC2-8625738E.00066CD4@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You are correct that the CIFS code calls SendReceive in cases in which
-the buffer may be too small to fit a large SMB response, and that
-should be fixed (e.g. to avoid possible overflows due to a server
-bug), None of the eight cases (SMB TreeDisconnect, SMB uLogoff, SMB
-Close, SMB FindClose etc.) in which a small buffer is passed in to
-SendReceive return more than a few dozen bytes (and they are fixed
-size responses), but I agree that we have to be safe (and we have seen
-at least one server corrupt the bcc in the ulogoffX response and
-another on the NTCreateX response) so it would be good to fix.
+Dor Laor wrote:
+> Anthony Liguori wrote:
+>> This is a PCI device that implements a transport for virtio.  It 
+>> allows virtio
+>> devices to be used by QEMU based VMMs like KVM or Xen.
+>>
+>> ....
+>>   
+> While it's a little premature, we can start thinking of irq path 
+> improvements.
+> The current patch acks a private isr and afterwards apic eoi will also 
+> be hit since its
+> a level trig irq. This means 2 vmexits per irq.
+> We can start with regular pci irqs and move afterwards to msi.
+> Some other ugly hack options [we're better use msi]:
+>    - Read the eoi directly from apic and save the first private isr ack
 
-There are probably better ways to handle this though than passing in
-the buffer size as your patch does.   Since there are only two buffer
-sizes that CIFS uses - it would be easier to pass in (or out) a flag
-which indicates the buffer size.  But the function SendReceive2
-already does that - and the easier way to handle this seems to be
-changing the eight places in fs/cifs/cifssmb.c which call
-small_smb_init and then call SendReceive, to call SendReceive2
-instead.
+I must admit, that I don't know a whole lot about interrupt delivery.  
+If we can avoid the private ISR ack then that would certainly be a good 
+thing to do!  I think that would involve adding another bit to the 
+virtqueues to indicate whether or not there is work to be handled.  It's 
+really just moving the ISR to shared memory so that there's no plenty 
+for accessing it.
 
-> From: Przemyslaw Wegrzyn <czajnik@czajsoft.pl>
-> To: linux-kernel@vger.kernel.org
-> Subject: Buffer overflow in CIFS VFS.
+Regards,
+
+Anthony Liguori
+
+>    - Convert the specific irq line to edge triggered and dont share it
+> What do you guys think?
+>> +/* A small wrapper to also acknowledge the interrupt when it's handled.
+>> + * I really need an EIO hook for the vring so I can ack the 
+>> interrupt once we
+>> + * know that we'll be handling the IRQ but before we invoke the 
+>> callback since
+>> + * the callback may notify the host which results in the host 
+>> attempting to
+>> + * raise an interrupt that we would then mask once we acknowledged the
+>> + * interrupt. */
+>> +static irqreturn_t vp_interrupt(int irq, void *opaque)
+>> +{
+>> +    struct virtio_pci_device *vp_dev = opaque;
+>> +    struct virtio_pci_vq_info *info;
+>> +    irqreturn_t ret = IRQ_NONE;
+>> +    u8 isr;
+>> +
+>> +    /* reading the ISR has the effect of also clearing it so it's very
+>> +     * important to save off the value. */
+>> +    isr = ioread8(vp_dev->ioaddr + VIRTIO_PCI_ISR);
+>> +
+>> +    /* It's definitely not us if the ISR was not high */
+>> +    if (!isr)
+>> +        return IRQ_NONE;
+>> +
+>> +    spin_lock(&vp_dev->lock);
+>> +    list_for_each_entry(info, &vp_dev->virtqueues, node) {
+>> +        if (vring_interrupt(irq, info->vq) == IRQ_HANDLED)
+>> +            ret = IRQ_HANDLED;
+>> +    }
+>> +    spin_unlock(&vp_dev->lock);
+>> +
+>> +    return ret;
+>> +}
+>>   
 >
-> just to find something that looks like a buffer overflow  bug.
-> The problem is in SendReceive() function in transport.c - it memcpy's
-> message payload into a buffer passed via out_buf param. The function
-> assumes that all buffers are of size (CIFSMaxBufSize +
-> MAX_CIFS_HDR_SIZE) , unfortunately it is also called with smaller
-> (MAX_CIFS_SMALL_BUFFER_SIZE) buffers.
->
-> To check this finding I patched Samba server to send oversized logoffX
-> messages. With ~ 16kB messages the client running 2.6.23.1 crashed upon
-> unmounting.
->
-> I've done a quick fix, available here:
-> http://czajnick.sitenet.pl/cifs-buffer-overflow-fix.patch.gz
 
-
-
--- 
-Thanks,
-
-Steve
