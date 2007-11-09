@@ -1,81 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761258AbXKIBGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761114AbXKIBGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761258AbXKIBGR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 20:06:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbXKIBGC
+	id S1761114AbXKIBGb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 20:06:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbXKIBGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 20:06:02 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:63160 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751079AbXKIBGA (ORCPT
+	Thu, 8 Nov 2007 20:06:04 -0500
+Received: from nz-out-0506.google.com ([64.233.162.232]:36137 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751346AbXKIBGA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 8 Nov 2007 20:06:00 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:reply-to:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=S3ORUiThEsBQqotae7jO01lTTMITmj4Ygsi6LpH5gnp7UcmgoM9Rzd/zS+8Bn1PJzH6IJhV9oU6hPbBZWPxHzVigdmoGLD1fWOWKMwNVL4yNUccnc6wQIOiIizMlXhWFDfvCiMvFo3pyMZvUEZJzAdcTzIBP2JpJ3aVUti0rXk0=
-Message-ID: <4733AC3A.20701@qumranet.com>
-Date: Fri, 09 Nov 2007 02:39:22 +0200
-Reply-To: dor.laor@qumranet.com
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jyGNu0Am4y+XMztQBhZSRlm1OMB/8doqDZZyxbyRwe8n5PtORCvjzxrYgx3YLJduZY7r4SxsJXQI/s0yjzWb1mZTppjmZRmmd4pWlRO2cg3VJyGogU1ZtMqrA6mLiYIt4Q+TdIOhExTrS8o6LwwCM57pt/lUwYawbLM80aomg4Y=
+Message-ID: <68676e00711081608w53c497aciec60d19f2e71d230@mail.gmail.com>
+Date: Fri, 9 Nov 2007 01:08:26 +0100
+From: "Luca Tettamanti" <kronos.it@gmail.com>
+To: "Robert Hancock" <hancockr@shaw.ca>
+Subject: Re: sata NCQ blacklist entry
+Cc: "Tejun Heo" <htejun@gmail.com>, jeff@garzik.org,
+       linux-kernel@vger.kernel.org,
+       "IDE/ATA development list" <linux-ide@vger.kernel.org>
+In-Reply-To: <47339C88.9050300@shaw.ca>
 MIME-Version: 1.0
-To: Anthony Liguori <aliguori@us.ibm.com>
-CC: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rusycorp.com.au>,
-       virtualization@lists.osdl.org, kvm-devel@lists.sourceforge.net
-Subject: Re: [kvm-devel] [PATCH 3/3] virtio PCI device
-References: <11944899922822-git-send-email-aliguori@us.ibm.com>	<11944900141678-git-send-email-aliguori@us.ibm.com>	<11944900152750-git-send-email-aliguori@us.ibm.com> <11944900163817-git-send-email-aliguori@us.ibm.com>
-In-Reply-To: <11944900163817-git-send-email-aliguori@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-From: Dor Laor <dor.laor@gmail.com>
+Content-Disposition: inline
+References: <fa.GsS7Kps/lQSHlhBlf0yXpLzcPLQ@ifi.uio.no>
+	 <fa.V2tP3GajMjY9gJUCTCoOjOocw+0@ifi.uio.no>
+	 <fa.N0UZia/Lx8cvsvXXK1g9So2J6rk@ifi.uio.no> <47339C88.9050300@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anthony Liguori wrote:
-> This is a PCI device that implements a transport for virtio.  It allows virtio
-> devices to be used by QEMU based VMMs like KVM or Xen.
+On Nov 9, 2007 12:32 AM, Robert Hancock <hancockr@shaw.ca> wrote:
+> Luca Tettamanti wrote:
+> > On Nov 7, 2007 1:55 PM, Tejun Heo <htejun@gmail.com> wrote:
+> >> Florian La Roche wrote:
+> >>> Hello all,
+> >>>
+> >>> I've taking email addresses from the last NCQ blacklist changes going
+> >>> into the kernel.
+> >>> This Fujitsu drive also gives me spurious command completions. Detailed
+> >>> output also available at https://bugzilla.redhat.com/show_bug.cgi?id=366181.
+> >>>
+> >>> Let me know if you need more info or anything else.
+> >>>
+> >>> --- drivers/ata/libata-core.c
+> >>> +++ drivers/ata/libata-core.c
+> >>> @@ -4222,6 +4222,7 @@
+> >>>       { "WDC WD740ADFD-00NLR1", NULL,         ATA_HORKAGE_NONCQ, },
+> >>>       { "WDC WD3200AAJS-00RYA0", "12.01B01",  ATA_HORKAGE_NONCQ, },
+> >>>       { "FUJITSU MHV2080BH",  "00840028",     ATA_HORKAGE_NONCQ, },
+> >>> +     { "FUJITSU MHW2160BJ G2",       NULL,           ATA_HORKAGE_NONCQ },
+> >>>       { "ST9120822AS",        "3.CLF",        ATA_HORKAGE_NONCQ, },
+> >>>       { "ST9160821AS",        "3.CLF",        ATA_HORKAGE_NONCQ, },
+> >>>       { "ST9160821AS",        "3.ALD",        ATA_HORKAGE_NONCQ, },
+> >> Thanks.  We're currently trying to find out what's actually going on
+> >> with all these drives.  At first, drives which got blacklisted aren't
+> >> many and made sense (had other problems with NCQ, etc..) but with new
+> >> generation drives from many vendors showing the same symptom, we aren't
+> >> too sure now.
+> >
+> > Is there a way to tell whether Windows is using NCQ or not? I checked
+> > the system log (or whatever it's called) on my notebook and is clean
+> > but I'm not sure it's using NCQ (I don't even know if it'd log
+> > spurious completions somewhere).
 >
-> ....
->   
-While it's a little premature, we can start thinking of irq path 
-improvements.
-The current patch acks a private isr and afterwards apic eoi will also 
-be hit since its
-a level trig irq. This means 2 vmexits per irq.
-We can start with regular pci irqs and move afterwards to msi.
-Some other ugly hack options [we're better use msi]:
-    - Read the eoi directly from apic and save the first private isr ack
-    - Convert the specific irq line to edge triggered and dont share it
-What do you guys think?
-> +/* A small wrapper to also acknowledge the interrupt when it's handled.
-> + * I really need an EIO hook for the vring so I can ack the interrupt once we
-> + * know that we'll be handling the IRQ but before we invoke the callback since
-> + * the callback may notify the host which results in the host attempting to
-> + * raise an interrupt that we would then mask once we acknowledged the
-> + * interrupt. */
-> +static irqreturn_t vp_interrupt(int irq, void *opaque)
-> +{
-> +	struct virtio_pci_device *vp_dev = opaque;
-> +	struct virtio_pci_vq_info *info;
-> +	irqreturn_t ret = IRQ_NONE;
-> +	u8 isr;
-> +
-> +	/* reading the ISR has the effect of also clearing it so it's very
-> +	 * important to save off the value. */
-> +	isr = ioread8(vp_dev->ioaddr + VIRTIO_PCI_ISR);
-> +
-> +	/* It's definitely not us if the ISR was not high */
-> +	if (!isr)
-> +		return IRQ_NONE;
-> +
-> +	spin_lock(&vp_dev->lock);
-> +	list_for_each_entry(info, &vp_dev->virtqueues, node) {
-> +		if (vring_interrupt(irq, info->vq) == IRQ_HANDLED)
-> +			ret = IRQ_HANDLED;
-> +	}
-> +	spin_unlock(&vp_dev->lock);
-> +
-> +	return ret;
-> +}
->   
+> Which driver is installed for the SATA controller in Windows, the
+> chipset-manufacturer-provided AHCI driver or the default Microsoft
+> driver? You'd need the AHCI driver installed for NCQ to be used.
 
+I'm aware of this. I'm using the AHCI driver (from Intel). Still, I
+don't know if it's really used or limited like under Linux.
+
+Luca
