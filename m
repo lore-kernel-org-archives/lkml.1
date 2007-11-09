@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbXKIURT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755669AbXKIUXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754819AbXKIURT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 15:17:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750898AbXKIURK
+	id S1755669AbXKIUXR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 15:23:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbXKIUXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 15:17:10 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55880 "EHLO
+	Fri, 9 Nov 2007 15:23:00 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35241 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750807AbXKIURJ (ORCPT
+	by vger.kernel.org with ESMTP id S1751442AbXKIUW6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 15:17:09 -0500
-Date: Fri, 9 Nov 2007 12:16:34 -0800
+	Fri, 9 Nov 2007 15:22:58 -0500
+Date: Fri, 9 Nov 2007 12:22:08 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: "Akinobu Mita" <akinobu.mita@gmail.com>
-Cc: andreas.herrmann3@amd.com, ak@suse.de, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: fix cpu-hotplug regression
-Message-Id: <20071109121634.c7812697.akpm@linux-foundation.org>
-In-Reply-To: <961aa3350711070615m4a165546k4fa888cb546846f6@mail.gmail.com>
-References: <20071107011258.GA31607@alberich.amd.com>
-	<200711070335.44416.ak@suse.de>
-	<20071107131836.GB31607@alberich.amd.com>
-	<961aa3350711070615m4a165546k4fa888cb546846f6@mail.gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, bernd@bzed.de,
+       joy@entuzijast.net, fabbione@ubuntu.com, arnd@arndb.de,
+       stable@kernel.org
+Subject: Re: Fix for sparc64 cpu hangs.
+Message-Id: <20071109122208.5b6794ea.akpm@linux-foundation.org>
+In-Reply-To: <20071106.211356.60087540.davem@davemloft.net>
+References: <20071106.203433.144763156.davem@davemloft.net>
+	<20071106.211356.60087540.davem@davemloft.net>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,38 +29,60 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Nov 2007 23:15:38 +0900
-"Akinobu Mita" <akinobu.mita@gmail.com> wrote:
+On Tue, 06 Nov 2007 21:13:56 -0800 (PST)
+David Miller <davem@davemloft.net> wrote:
 
-> > [PATCH] x86: fix cpu hotplug regression (don't call mce_create_device on CPU_UP_PREPARE)
-> >
-> > Fix regression introduced with d435d862baca3e25e5eec236762a43251b1e7ffc
-> > ("cpu hotplug: mce: fix cpu hotplug error handling").
-> >
-> > For CPUs not brought up during boot (using maxcpus and additional_cpus
-> > parameters) we don't know whether mce is supported or not at "CPU_UP_PREPARE"-time.
-> > Thus mce_cpu_callback should be called after the CPU is online.
+> From: David Miller <davem@davemloft.net>
+> Date: Tue, 06 Nov 2007 20:34:33 -0800 (PST)
 > 
-> Thank you for finding and fixing the problem.
-> I added two fixes to your patch:
+> > [FUTEX]: Fix address computation in compat code.
 > 
-> - Avoid mce_remove_device() for the CPU that is not correctly initialized
->   by mce_create_device() failure.
+> Sorry, I just noticed there is a second handle_futex_death()
+> call in compat_exit_robust_list() which has the same
+> address computation bug.
 > 
-> - make CPU_ONLINE callback always return NOTIFY_OK.
->   Because CPU_ONLINE callback return value is always ignored.
+> Here is an updated patch:
 > 
-> > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> [FUTEX]: Fix address computation in compat code.
 > 
-> [akinobu.mita@gmail.com: make CPU_ONLINE callback always return NOTIFY_OK]
-> [akinobu.mita@gmail.com: avoid mce_remove_device() for not initialized device]
+> compat_exit_robust_list() computes a pointer to the
+> futex entry in userspace as follows:
 > 
-> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> 	(void __user *)entry + futex_offset
+> 
+> 'entry' is a 'struct robust_list __user *', and
+> 'futex_offset' is a 'compat_long_t' (typically a 's32').
+> 
+> Things explode if the 32-bit sign bit is set in futex_offset.
+> 
+> Type promotion sign extends futex_offset to a 64-bit value before
+> adding it to 'entry'.
+> 
+> This triggered a problem on sparc64 running 32-bit applications which
+> would lock up a cpu looping forever in the fault handling for the
+> userspace load in handle_futex_death().
+> 
+> Compat userspace runs with address masking (wherein the cpu zeros out
+> the top 32-bits of every effective address given to a memory operation
+> instruction) so the sparc64 fault handler accounts for this by
+> zero'ing out the top 32-bits of the fault address too.
+> 
+> Since the kernel properly uses the compat_uptr interfaces, kernel side
+> accesses to compat userspace work too since they will only use
+> addresses with the top 32-bit clear.
+> 
+> Because of this compat futex layer bug we get into the following loop
+> when executing the get_user() load near the top of handle_futex_death():
+> 
+> 1) load from address '0xfffffffff7f16bd8', FAULT
+> 2) fault handler clears upper 32-bits, processes fault
+>    for address '0xf7f16bd8' which succeeds
+> 3) goto #1
+> 
+> I want to thank Bernd Zeimetz, Josip Rodin, and Fabio Massimo Di Nitto
+> for their tireless efforts helping me track down this bug.
+> 
 
-Andreas, could you please review and preferably runtime-test this new
-version?
+I tagged this as needed-in-2.6.23.x.  Please let me know if that is not
+appropriate.
 
-Assuming that all goes well could one of you please prepare a final patch
-with a complete changelog?
-
-Thanks.
