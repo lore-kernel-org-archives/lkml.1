@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760271AbXKIXc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763030AbXKIXdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760271AbXKIXc4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 18:32:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757943AbXKIXcq
+	id S1763030AbXKIXdf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 18:33:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756291AbXKIXd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 18:32:46 -0500
-Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:57077 "EHLO
+	Fri, 9 Nov 2007 18:33:26 -0500
+Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:57085 "EHLO
 	server.generalnetworks.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757913AbXKIXcp (ORCPT
+	with ESMTP id S1756283AbXKIXdZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 18:32:45 -0500
-Message-id: <1482721921242938628@pripojeni.net>
+	Fri, 9 Nov 2007 18:33:25 -0500
+Message-id: <468229952380128680@pripojeni.net>
 In-reply-to: <4827138842526222333@pripojeni.net>
-Subject: [PATCH 3/5] Sbus: cpwatchdog, remove SPIN_LOCK_UNLOCKED
+Subject: [PATCH 4/5] FS: sysfs, remove SPIN_LOCK_UNLOCKED
 From: Jiri Slaby <jirislaby@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: <linux-kernel@vger.kernel.org>
-Cc: Wim Van Sebroeck <wim@iguana.be>
-Date: Fri, 9 Nov 2007 18:32:45 -0500
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Date: Fri, 9 Nov 2007 18:33:25 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cpwatchdog, remove SPIN_LOCK_UNLOCKED
+sysfs, remove SPIN_LOCK_UNLOCKED
 
-SPIN_LOCK_UNLOCKED is deprecated, use __SPIN_LOCK_UNLOCKED with an unique
-name instead
+SPIN_LOCK_UNLOCKED is deprecated, use DEFINE_SPINLOCK instead
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Wim Van Sebroeck <wim@iguana.be>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
-commit 4e91ba06c53856bfaab065aaf9fd8f5b0dd59f6f
-tree ff123ed71958d9331623876dfc20efa86c639498
-parent 5290a0e1fffeb61f0062ebca98e45a6a5ba75711
-author Jiri Slaby <jirislaby@gmail.com> Thu, 25 Oct 2007 11:56:54 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Thu, 25 Oct 2007 11:56:54 +0200
+commit 828042d12cc0aa515e049889aa76d4066df100c0
+tree 85652493f11a06d0a1cda316d0f88a2ee7117d50
+parent 4e91ba06c53856bfaab065aaf9fd8f5b0dd59f6f
+author Jiri Slaby <jirislaby@gmail.com> Thu, 25 Oct 2007 11:58:48 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Thu, 25 Oct 2007 11:58:48 +0200
 
- drivers/sbus/char/cpwatchdog.c |    2 +-
+ fs/sysfs/file.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/sbus/char/cpwatchdog.c b/drivers/sbus/char/cpwatchdog.c
-index 7b5773d..a4e7581 100644
---- a/drivers/sbus/char/cpwatchdog.c
-+++ b/drivers/sbus/char/cpwatchdog.c
-@@ -154,7 +154,7 @@ struct wd_device {
- };
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index 6d31ac6..cb7eadf 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -37,7 +37,7 @@ void sysfs_printk_last_file(void)
+  * sysfs_dirent->s_attr.open points to sysfs_open_dirent.  s_attr.open
+  * is protected by sysfs_open_dirent_lock.
+  */
+-static spinlock_t sysfs_open_dirent_lock = SPIN_LOCK_UNLOCKED;
++static DEFINE_SPINLOCK(sysfs_open_dirent_lock);
  
- static struct wd_device wd_dev = { 
--		0, SPIN_LOCK_UNLOCKED, 0, 0, 0, 0,
-+		0, __SPIN_LOCK_UNLOCKED(wd_dev.lock), 0, 0, 0, 0,
- };
- 
- static struct timer_list wd_timer;
+ struct sysfs_open_dirent {
+ 	atomic_t		refcnt;
