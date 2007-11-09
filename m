@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753240AbXKIKqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbXKIK7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753240AbXKIKqc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 05:46:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbXKIKqY
+	id S1754203AbXKIK7Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 05:59:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbXKIK7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 05:46:24 -0500
-Received: from madara.hpl.hp.com ([192.6.19.124]:64152 "EHLO madara.hpl.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751651AbXKIKqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 05:46:22 -0500
-Date: Fri, 9 Nov 2007 02:44:38 -0800
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: perfmon2-devel@lists.sourceforge.net
-Cc: perfmon@napali.hpl.hp.com, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org, Stephane Eranian <eranian@hpl.hp.com>
-Subject: conflict between tickless and perfmon2
-Message-ID: <20071109104438.GB18909@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 9 Nov 2007 05:59:17 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:25227 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751668AbXKIK7Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 05:59:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=dylZrlMFZXLdMjluvZ0FVUpDpavdAvgBrTJhZUCU9DxbbX1SWcemiXRABNv15Leob1UjZTn7VCld0a085ToQUs39CZgKqCay+Qt0sdr1KSGT42cLyBEZv5T6pQtcXDYIKgUugZmeFv/x7Pv96mBPG66NM1TN99RMLHOsR525SKE=
+Message-ID: <b647ffbd0711090259u7f2f2f64qe8b6330e55d4b99f@mail.gmail.com>
+Date: Fri, 9 Nov 2007 11:59:15 +0100
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: vatsa@linux.vnet.ibm.com
+Subject: Re: [BUG]: Crash with CONFIG_FAIR_CGROUP_SCHED=y
+Cc: sukadev@us.ibm.com, balbir@in.ibm.com,
+       Containers <containers@lists.osdl.org>, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, dhaval@linux.vnet.ibm.com,
+       "Ingo Molnar" <mingo@elte.hu>, efault@gmx.de
+In-Reply-To: <20071109101437.GA22544@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+References: <20071108234805.GA2240@us.ibm.com>
+	 <20071109070214.GO3143@linux.vnet.ibm.com>
+	 <b647ffbd0711090045o5ebf4681q78f939f5c1e71fe1@mail.gmail.com>
+	 <20071109101437.GA22544@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On 09/11/2007, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
+> [ ... ]
+>
+>   As a solution to this problem, I moved sched_fork() call, which
+>   initializes scheduler related fields on a new task, before
+>   copy_namespaces(). I am not sure though whether moving up will
+>   cause other side-effects. Do you see any issue?
 
-We have identified a conflict between TICKLESS (CONFIG_NO_HZ) and
-the current perfmon2 implementation. The problem impacts system-wide
-sessions using timeout-based event set multiplexing.
+Should be ok (IMHO and at first glance :-)
 
-Event set multiplexing allows monitoring tools to measure more events
-than there are actual performance counters on the processor. Events
-are grouped in sets which are then multiplexed onto the actual counters.
-Switching can be triggered either by a timeout or by a counter overflow.
-This is supported for per-thread and system-wide sessions.
+> - The second problem exposed by this test is that task_new_fair()
+>   assumes that parent and child will be part of the same group (which
+>   needn't be as this test shows). As a result, cfs_rq->curr can be NULL
+>   for the child.
 
-For timeout-based switching, the duration expressed in nanoseconds is
-meant to represent wall-clock time in system-wide mode, and execution
-time in per-thread mode. Granularity is limited by HZ.
+Would it be better, logically-wise, to use is_same_group() instead?
+Although, we can't have 2 groups with cfs_rq->curr != NULL on the same
+CPU... so if the child belongs to another group, it's cfs_rq->curr is
+automatically NULL indeed.
 
-The current implementation for timeout is a simple hook on the timer
-interrupt path in apic_*.c:smp_local_timer_interrupt(). Unfortunately,
-this does not work when tickless is enabled: we get much less set
-switches than expected on an idle system.
 
-It looks like a solution would be to change the implementation of
-timeout-based switching to use HR timers instead. Similar to what is
-done for ITIMER_REAL and ITIMER_VIRTUAL.
-
-Unless someone has a better proposal, I will experiment with this on
-2.6.24-rc2.
-
-Thanks.
 
 -- 
--Stephane
+Best regards,
+Dmitry Adamushko
