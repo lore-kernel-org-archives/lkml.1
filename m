@@ -1,186 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763816AbXKIPhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932105AbXKIPpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763816AbXKIPhN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 10:37:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763769AbXKIPgi
+	id S932105AbXKIPpo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 10:45:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbXKIPpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 10:36:38 -0500
-Received: from nic2.axis.se ([193.13.178.10]:42040 "EHLO krynn.se.axis.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763749AbXKIPgh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 10:36:37 -0500
-Date: Fri, 9 Nov 2007 16:36:27 +0100
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Mikael Starvik <mikael.starvik@axis.com>,
-       Jesper Nilsson <jesper.nilsson@axis.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] CRISv32: Add cache flush operations
-Message-ID: <20071109153627.GE6347@axis.com>
+	Fri, 9 Nov 2007 10:45:36 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37225 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753943AbXKIPpf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 10:45:35 -0500
+Date: Fri, 9 Nov 2007 07:45:33 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: akpm@linux-foundation.org, Lee.Schermerhorn@hp.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
+       nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 6/6] Use one zonelist that is filtered by nodemask
+In-Reply-To: <20071109143426.23540.44459.sendpatchset@skynet.skynet.ie>
+Message-ID: <Pine.LNX.4.64.0711090741120.13932@schroedinger.engr.sgi.com>
+References: <20071109143226.23540.12907.sendpatchset@skynet.skynet.ie>
+ <20071109143426.23540.44459.sendpatchset@skynet.skynet.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add cache flush operations for CRISv32.
+On Fri, 9 Nov 2007, Mel Gorman wrote:
 
-These are needed due to a cache bug, and can be used to make sure
-that the DMA descriptors are flushed to memory and can be safely
-handled by DMA.
+>  struct page * fastcall
+>  __alloc_pages(gfp_t gfp_mask, unsigned int order,
+>  		struct zonelist *zonelist)
+>  {
+> +	/*
+> +	 * Use a temporary nodemask for __GFP_THISNODE allocations. If the
+> +	 * cost of allocating on the stack or the stack usage becomes
+> +	 * noticable, allocate the nodemasks per node at boot or compile time
+> +	 */
+> +	if (unlikely(gfp_mask & __GFP_THISNODE)) {
+> +		nodemask_t nodemask;
 
-flush_dma_descr - Flush one DMA descriptor.
-flush_dma_list - Flush a complete list of DMA descriptors.
-cris_flush_cache - Flush the complete cache.
-cris_flush_cache_range - Flush only the specified range
+Hmmm.. This places a potentially big structure on the stack. nodemask can 
+contain up to 1024 bits which means 128 bytes. Maybe keep an array of 
+gfp_thisnode nodemasks (node_nodemask?) and use node_nodemask[nid]?
 
-Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
+> +
+> +		return __alloc_pages_internal(gfp_mask, order,
+> +			zonelist, nodemask_thisnode(numa_node_id(), &nodemask));
 
----
- cache.c      |   33 ++++++++++++++++++++
- cacheflush.S |   94 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 127 insertions(+)
+Argh.... GFP_THISNODE must use the nid passed to alloc_pages_node and 
+*not* the local numa node id. Only if the node specified to alloc_pages 
+nodes is -1 will this work.
 
-diff --git a/arch/cris/arch-v32/kernel/cache.c b/arch/cris/arch-v32/kernel/cache.c
-new file mode 100644
-index 0000000..80da7b8
---- /dev/null
-+++ b/arch/cris/arch-v32/kernel/cache.c
-@@ -0,0 +1,33 @@
-+#include <linux/module.h>
-+#include <asm/io.h>
-+#include <asm/arch/cache.h>
-+#include <asm/arch/hwregs/dma.h>
-+
-+/* This file is used to workaround a cache bug, Guinness TR 106. */
-+
-+inline void flush_dma_descr(struct dma_descr_data *descr, int flush_buf)
-+{
-+	/* Flush descriptor to make sure we get correct in_eop and after. */
-+	asm volatile ("ftagd [%0]" :: "r" (descr));
-+	/* Flush buffer pointed out by descriptor. */
-+	if (flush_buf)
-+		cris_flush_cache_range(phys_to_virt((unsigned)descr->buf),
-+				(unsigned)(descr->after - descr->buf));
-+}
-+EXPORT_SYMBOL(flush_dma_descr);
-+
-+void flush_dma_list(struct dma_descr_data *descr)
-+{
-+	while (1) {
-+		flush_dma_descr(descr, 1);
-+		if (descr->eol)
-+			break;
-+		descr = phys_to_virt((unsigned)descr->next);
-+	}
-+}
-+EXPORT_SYMBOL(flush_dma_list);
-+
-+/* From cacheflush.S */
-+EXPORT_SYMBOL(cris_flush_cache);
-+/* From cacheflush.S */
-+EXPORT_SYMBOL(cris_flush_cache_range);
-diff --git a/arch/cris/arch-v32/kernel/cacheflush.S b/arch/cris/arch-v32/kernel/cacheflush.S
-new file mode 100644
-index 0000000..956e8fb
---- /dev/null
-+++ b/arch/cris/arch-v32/kernel/cacheflush.S
-@@ -0,0 +1,94 @@
-+	.global cris_flush_cache_range
-+cris_flush_cache_range:
-+	move.d 1024, $r12
-+	cmp.d $r11, $r12
-+	bhi cris_flush_1KB
-+	nop
-+	add.d $r10, $r11
-+	ftagd [$r10]
-+cris_flush_last:
-+	addq 32, $r10
-+	cmp.d $r11, $r10
-+	blt cris_flush_last
-+	ftagd [$r10]
-+	ret
-+	nop
-+cris_flush_1KB:
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ftagd [$r10]
-+	addq 32, $r10
-+	ba cris_flush_cache_range
-+	sub.d $r12, $r11
-+
-+	.global cris_flush_cache
-+cris_flush_cache:
-+	moveq 0, $r10
-+cris_flush_line:
-+	move.d 16*1024, $r11
-+	addq 16, $r10
-+	cmp.d $r10, $r11
-+	blt cris_flush_line
-+	fidxd [$r10]
-+	ret
-+	nop
-
-/^JN - Jesper Nilsson
---
-               Jesper Nilsson -- jesper.nilsson@axis.com
