@@ -1,83 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756649AbXKISl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbXKISop@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756649AbXKISl2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 13:41:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbXKISlD
+	id S1756205AbXKISop (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 13:44:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbXKISoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 13:41:03 -0500
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:50232 "EHLO
-	outbound3-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754706AbXKISlA (ORCPT
+	Fri, 9 Nov 2007 13:44:37 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:54168 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751420AbXKISog (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 13:41:00 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
-X-Server-Uuid: DF9F24A0-1A5C-40A5-8B0A-DEB676E72ECF
-Date: Fri, 9 Nov 2007 19:36:02 +0100
-From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-To: "Sam Ravnborg" <sam@ravnborg.org>
-cc: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, "LKML" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: unification of cfufreq/Kconfig
-Message-ID: <20071109183602.GD1988@alberich.amd.com>
-References: <11943900793940-git-send-email-sam@ravnborg.org>
- <20071106230451.GA10886@uranus.ravnborg.org>
-MIME-Version: 1.0
-In-Reply-To: <20071106230451.GA10886@uranus.ravnborg.org>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 09 Nov 2007 18:35:42.0444 (UTC)
- FILETIME=[556052C0:01C822FF]
-X-WSS-ID: 6B2A770807S2030204-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
+	Fri, 9 Nov 2007 13:44:36 -0500
+Subject: Re: OOPSes + WARNING: at fs/file_table.c:262 __fput() in -mm
+	2007-11-06-02-32++
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200711091823.lA9IN9Bp000989@agora.fsl.cs.sunysb.edu>
+References: <200711091823.lA9IN9Bp000989@agora.fsl.cs.sunysb.edu>
+Content-Type: text/plain
+Date: Fri, 09 Nov 2007 10:44:13 -0800
+Message-Id: <1194633853.7078.109.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 07, 2007 at 12:04:51AM +0100, Sam Ravnborg wrote:
-> This serie of patches unify the X86 Kconfig files.
-> Next step is to enable use of "make ARCH=x86" and kill
-> "make ARCH=i386/x86_64".
-> But that will wait till tomorrow.
+On Fri, 2007-11-09 at 13:23 -0500, Erez Zadok wrote:
 > 
-> The allmodconfig kernel is still building here.
-> Testing / reviews appreciated.
+> Setup: FC6 system with MM snapshot broken-out-2007-11-06-02-32 and
+> these two
+> patches added:
 > 
-> Comments from former patchset is addressed - see
-> changelog entries.
+> r-o-bind-mounts-track-number-of-mount-writer-fix-buggy-loop.patch
+> r-o-bind-mounts-track-number-of-mount-writer-fix-buggy-loop-checkpatch-fixes.patch
+> 
+> All I do is  boot the system with said kernel, wait a few seconds,
+> then shut
+> it down with "init 0".  As services shutdown, I get this:
+> 
+> Stopping RPC idmapd:
+> 
+> kernel: __fput() of writeable file with no mnt_want_write()
+> kernel: WARNING: at fs/file_table.c:262 __fput()
+> kernel:  [<c010283e>] show_trace_log_lvl+0x12/0x25
+> kernel:  [<c0103042>] show_trace+0xd/0x10
+> kernel:  [<c010313e>] dump_stack+0x15/0x17
+> kernel:  [<c01491a4>] __fput+0x153/0x203
+> kernel:  [<c014952d>] fput+0x2d/0x32
+> kernel:  [<c0146c8a>] filp_close+0x50/0x5a
+> kernel:  [<c01104fc>] put_files_struct+0x7c/0xbe
+> kernel:  [<c0110575>] __exit_files+0x37/0x3c
+> kernel:  [<c01115de>] do_exit+0x1ed/0x653
+> kernel:  [<c0111ab2>] sys_exit_group+0x0/0x11
+> kernel:  [<c01183fc>] get_signal_to_deliver+0x3c4/0x3e8
+> kernel:  [<c0101873>] do_notify_resume+0x8c/0x6c4
+> kernel:  [<c0102339>] work_notifysig+0x13/0x1a 
 
-Just some kind of feedback wrt your patch set.
-I did several hundred randconfig kernel compiles based
-on 2.6.24-rc2 with your patches on top plus those additional
-minor fixes mentioned on lkml.
+This looks like RPC idmapd had a file open for write when it tried to
+exit.  However, that file never had a mnt_want_write() taken for it.
+This isn't a new bug, but the new debugging code found it much faster.
 
->From what I've seen there were no compile failures that seem
-to be caused by your adaptations.
+I'm looking for a fix now.
 
-Mostly I have seen the ususal suspects (e.g. missing firmware and
-lots of failed configs due to conflicting types for net_free 
-- AFAIK that is already solved in netdev tree - and due to the
-"kvm-smp_call_function-issue").
-
-The rest (5 failed configs) was not specific to x86 but driver
-related (e.g. v4l).
-
-
-Regards,
-
-Andreas
-
-PS: Looking forward to test the ARCH=x86 enabled kbuild.
-BTW, what is the right git tree to pull this stuff from?
-Is it your x86.git tree? But that one is not up to date, is it?
-
--- 
-Operating | AMD Saxony Limited Liability Company & Co. KG,
-  System  | Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- Research | Register Court Dresden: HRA 4896, General Partner authorized
-  Center  | to represent: AMD Saxony LLC (Wilmington, Delaware, US)
-  (OSRC)  | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
-
-
+-- Dave
 
