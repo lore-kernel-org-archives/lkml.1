@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbXKIR0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbXKIRa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755342AbXKIR0S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 12:26:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754484AbXKIR0F
+	id S1755593AbXKIRa1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 12:30:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbXKIRaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 12:26:05 -0500
-Received: from relay1.corp.sgi.com ([192.48.171.29]:45233 "EHLO relay.sgi.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754195AbXKIR0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 12:26:05 -0500
-Date: Fri, 9 Nov 2007 09:26:01 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: Nishanth Aravamudan <nacc@us.ibm.com>, Mel Gorman <mel@skynet.ie>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, rientjes@google.com, kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 6/6] Use one zonelist that is filtered by nodemask
-In-Reply-To: <1194628732.5296.14.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0711090924210.14572@schroedinger.engr.sgi.com>
-References: <20071109143226.23540.12907.sendpatchset@skynet.skynet.ie> 
- <20071109143426.23540.44459.sendpatchset@skynet.skynet.ie> 
- <Pine.LNX.4.64.0711090741120.13932@schroedinger.engr.sgi.com> 
- <20071109161455.GB32088@skynet.ie>  <20071109164537.GG7507@us.ibm.com>
- <1194628732.5296.14.camel@localhost>
+	Fri, 9 Nov 2007 12:30:20 -0500
+Received: from tetsuo.zabbo.net ([207.173.201.20]:59928 "EHLO tetsuo.zabbo.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754596AbXKIRaT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 12:30:19 -0500
+Message-ID: <4734992C.7000408@oracle.com>
+Date: Fri, 09 Nov 2007 09:30:20 -0800
+From: Zach Brown <zach.brown@oracle.com>
+User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, linux-aio@kvack.org,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Chris Mason <chris.mason@oracle.com>
+Subject: Re: dio_get_page() lockdep complaints
+References: <20070419073828.GB20928@kernel.dk> <1194627742.6289.175.camel@twins>
+In-Reply-To: <1194627742.6289.175.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Nov 2007, Lee Schermerhorn wrote:
 
-> > On the other hand, if we call alloc_pages() with GFP_THISNODE set, there
-> > is no nid to base the allocation on, so we "fallback" to numa_node_id()
-> > [ almost like the nid had been specified as -1 ].
-> > 
-> > So I guess this is logical -- but I wonder, do we have any callers of
-> > alloc_pages(GFP_THISNODE) ? It seems like an odd thing to do, when
-> > alloc_pages_node() exists?
-> 
-> I don't know if we have any current callers that do this, but absent any
-> documentation specifying otherwise, Mel's implementation matches what
-> I'd expect the behavior to be if I DID call alloc_pages with 'THISNODE.
-> However, we could specify that THISNODE is ignored in __alloc_pages()
-> and recommend the use of alloc_pages_node() passing numa_node_id() as
-> the nid parameter to achieve the behavior.  This would eliminate the
-> check for 'THISNODE in __alloc_pages().  Just mask it off before calling
-> down to __alloc_pages_internal().
-> 
-> Does this make sense?
+So, reiserfs and NFS are nesting i_mutex inside the mmap_sem.
 
-I like consistency. If someone absolutely wants a local page then 
-specifying GFP_THISNODE to __alloc_pages is okay. Leave as is I guess. 
+>>        [<b038c6e5>] mutex_lock+0x1c/0x1f
+>>        [<b01b17e9>] reiserfs_file_release+0x54/0x447
+>>        [<b016afe7>] __fput+0x53/0x101
+>>        [<b016b0ee>] fput+0x19/0x1c
+>>        [<b015bcd5>] remove_vma+0x3b/0x4d
+>>        [<b015c659>] do_munmap+0x17f/0x1cf
 
-What happens though if an MPOL_BIND policy is in effect? The node used 
-must then be the nearest node from the policy mask....
+>        [<ffffffff802686a1>] _mutex_lock+0x28/0x34
+>        [<ffffffff883e71d0>] nfs_revalidate_mapping+0x6d/0xac [nfs]
+>        [<ffffffff883e4b51>] nfs_file_mmap+0x5c/0x74 [nfs]
+>        [<ffffffff8020df7e>] do_mmap_pgoff+0x51a/0x817
+>        [<ffffffff80225d19>] sys_mmap+0x90/0x119
 
+I think i_mutex is fundamentally nested outside of the mmap_sem because
+of faulting in the buffered write path.  I think these warnings could be
+reproduced with a careful test app which tries buffered writes from an
+address which will fault.
 
+DIO just tripped it up because it *always* performs get_user_pages() on
+the memory.
+
+So reiser and NFS need to be fixed.  No?
+
+(reiser is grabbing i_mutex from any final fput?  brave!)
+
+- z
