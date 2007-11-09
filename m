@@ -1,74 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760612AbXKILyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761497AbXKIL7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760612AbXKILyf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 06:54:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbXKILy1
+	id S1761497AbXKIL7i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 06:59:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbXKIL7b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 06:54:27 -0500
-Received: from ozlabs.org ([203.10.76.45]:32905 "EHLO ozlabs.org"
+	Fri, 9 Nov 2007 06:59:31 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:60353 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751937AbXKILy0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 06:54:26 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Anthony Liguori <anthony@codemonkey.ws>
-Subject: Re: [PATCH] virtio config_ops refactoring
-Date: Fri, 9 Nov 2007 22:54:07 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Anthony Liguori <aliguori@us.ibm.com>, lguest <lguest@ozlabs.org>,
-       linux-kernel@vger.kernel.org, Dor Laor <dor.laor@qumranet.com>,
-       virtualization@lists.linux-foundation.org
-References: <4730A8F3.6020008@us.ibm.com> <200711090924.28659.rusty@rustcorp.com.au> <47338EA0.6050100@codemonkey.ws>
-In-Reply-To: <47338EA0.6050100@codemonkey.ws>
-MIME-Version: 1.0
+	id S1752169AbXKIL7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 06:59:30 -0500
+Date: Fri, 9 Nov 2007 17:41:57 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+Cc: sukadev@us.ibm.com, balbir@in.ibm.com,
+       Containers <containers@lists.osdl.org>, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, dhaval@linux.vnet.ibm.com,
+       "Ingo Molnar" <mingo@elte.hu>, efault@gmx.de
+Subject: Re: [BUG]: Crash with CONFIG_FAIR_CGROUP_SCHED=y
+Message-ID: <20071109121157.GA24630@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20071108234805.GA2240@us.ibm.com> <20071109070214.GO3143@linux.vnet.ibm.com> <b647ffbd0711090045o5ebf4681q78f939f5c1e71fe1@mail.gmail.com> <20071109101437.GA22544@linux.vnet.ibm.com> <b647ffbd0711090259u7f2f2f64qe8b6330e55d4b99f@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200711092254.08099.rusty@rustcorp.com.au>
+In-Reply-To: <b647ffbd0711090259u7f2f2f64qe8b6330e55d4b99f@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 09 November 2007 09:33:04 Anthony Liguori wrote:
-> I really want to make sure that if a guest tries
-> to read a 4-byte PCI config field, that it does so using an "outl"
-> instruction so that in my QEMU backend
+On Fri, Nov 09, 2007 at 11:59:15AM +0100, Dmitry Adamushko wrote:
+> > - The second problem exposed by this test is that task_new_fair()
+> >   assumes that parent and child will be part of the same group (which
+> >   needn't be as this test shows). As a result, cfs_rq->curr can be NULL
+> >   for the child.
+> 
+> Would it be better, logically-wise, to use is_same_group() instead?
+> Although, we can't have 2 groups with cfs_rq->curr != NULL on the same
+> CPU... so if the child belongs to another group, it's cfs_rq->curr is
+> automatically NULL indeed.
 
-So you want to enforce PCI requirements onto virtio config accesses.  This 
-doesn't seem very nice: the fact that PCI accesses use different namespaces 
-for different sizes makes sense from a primitive hardware point of view, but 
-sucks for software.  Fortunately, if you insist on byte-at-a-time they're the 
-same.
+Yeah ..I feel safe with an explicit !curr check, perhaps with a comment like
+below added to explain when curr can be NULL?
 
-> switch (addr) {
-> case VIRTIO_BLK_CONFIG_MAX_SEG:
->    return vdev->max_seg & 0xFF;
-> case VIRTIO_BLK_CONFIG_MAX_SEG + 1:
->    return (vdev->max_seg >> 8) & 0xFF;
-> case VIRTIO_BLK_CONFIG_MAX_SEG + 2:
->    return (vdev->max_seg >> 16) & 0xFF;
-> case VIRTIO_BLK_CONFIG_MAX_SEG + 3:
->    return (vdev->max_seg >> 24) & 0xFF;
-> case VIRTIO_BLK_CONFIG_MAX_SIZE:
->    return vdev->max_size & 0xFF;
-> case VIRTIO_BLK_CONFIG_MAX_SIZE + 1:
->    return (vdev->max_size >> 8) & 0xFF;
-> case VIRTIO_BLK_CONFIG_MAX_SIZE + 2:
->    return (vdev->max_size >> 16) & 0xFF;
-> case VIRTIO_BLK_CONFIG_MAX_SIZE + 3:
->    return (vdev->max_size >> 24) & 0xFF;
-> ...
 
-	struct virtio_blk_config
-	{
-		uint32_t max_seg, max_size;
-	};
+---
+ kernel/sched_fair.c |    1 +
+ 1 files changed, 1 insertion(+)
 
-	...
-	struct virtio_blk_config conf = { vdev->max_seg, vdev->max_size };
+Index: current/kernel/sched_fair.c
+===================================================================
+--- current.orig/kernel/sched_fair.c
++++ current/kernel/sched_fair.c
+@@ -1022,6 +1022,7 @@ static void task_new_fair(struct rq *rq,
+ 	update_curr(cfs_rq);
+ 	place_entity(cfs_rq, se, 1);
+ 
++	/* 'curr' will be NULL if the child belongs to a different group */
+ 	if (sysctl_sched_child_runs_first && this_cpu == task_cpu(p) &&
+ 			curr && curr->vruntime < se->vruntime) {
+ 		/*
 
-	return ((unsigned char *)&conf)[addr];
 
-(Which strongly implies our headers should expose that nominal struct, rather 
-than numerical constants).
 
-Rusty.
+-- 
+Regards,
+vatsa
