@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756306AbXKISxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756795AbXKISys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756306AbXKISxq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 13:53:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbXKISxi
+	id S1756795AbXKISys (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 13:54:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755105AbXKISyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 13:53:38 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:48758 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751885AbXKISxi (ORCPT
+	Fri, 9 Nov 2007 13:54:41 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:54694 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754881AbXKISyk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 13:53:38 -0500
-Message-ID: <4734ACAD.3060001@zytor.com>
-Date: Fri, 09 Nov 2007 10:53:33 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Randy Dunlap <rdunlap@xenotime.net>
-CC: Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.23: GRUB reports "Setup signature not found"
-References: <47348F54.2080507@redhat.com>	<20071109085905.3c2a78cd.rdunlap@xenotime.net>	<4734A9B6.1080404@zytor.com> <20071109104635.11e504d2.rdunlap@xenotime.net>
-In-Reply-To: <20071109104635.11e504d2.rdunlap@xenotime.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 9 Nov 2007 13:54:40 -0500
+Date: Fri, 9 Nov 2007 13:53:27 -0500
+From: Chris Mason <chris.mason@oracle.com>
+To: Zach Brown <zach.brown@oracle.com>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, linux-aio@kvack.org
+Subject: Re: dio_get_page() lockdep complaints
+Message-ID: <20071109135327.01bca1d9@think.oraclecorp.com>
+In-Reply-To: <4734A858.2010307@oracle.com>
+References: <20070419073828.GB20928@kernel.dk>
+	<1194627742.6289.175.camel@twins>
+	<4734992C.7000408@oracle.com>
+	<1194630300.7459.65.camel@heimdal.trondhjem.org>
+	<47349D66.2040109@oracle.com>
+	<20071109130156.4b05a652@think.oraclecorp.com>
+	<4734A858.2010307@oracle.com>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> On Fri, 09 Nov 2007 10:40:54 -0800 H. Peter Anvin wrote:
-> 
->> Randy Dunlap wrote:
->>> On Fri, 09 Nov 2007 11:48:20 -0500 Chuck Ebbert wrote:
->>>
->>>> Multiple people have now reported this error message with 2.6.23.
->>>> Updating GRUB fixes it:
->>>>
->>>> https://bugzilla.redhat.com/show_bug.cgi?id=370391
->>>> https://bugzilla.redhat.com/show_bug.cgi?id=371321
->>> Thanks for the info.
->>> A better fix IMHO would be if one could get lilo to work.  :)
->>>
->>> ---
->>> ~Randy [who is fed up with grub]
->> BTW, I definitely can agree with your feeling about grub (which is part 
->> of why I maintain a different boot loader suite.)  However, if you know 
->> of any LILO problems, please speak up.
-> 
-> I don't know of any lilo-specific problems and didn't mean to imply
-> that LILO is at fault.
-> 
-> The problems that I have seen when I have tried to switch from
-> grub to LILO are more like config issues:
-> either "can't find root device" or
-> "cannot open /dev/console" or other initrd/initramfs issues.
-> 
+On Fri, 09 Nov 2007 10:35:04 -0800
+Zach Brown <zach.brown@oracle.com> wrote:
 
-OK.  I'd be interested in your experience if you'd be willing to try out 
-syslinux (extlinux).
+> > Without getting into a huge patch, the best fix would just be
+> > switching to try lock.  If the tail doesn't get packed, the world
+> > doesn't end.
+> 
+> So, something like this?
 
-	-hpa
+Reviewed-by: Chris Mason <chris.mason@oracle.com>
+
+-chris
