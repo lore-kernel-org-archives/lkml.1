@@ -1,69 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756612AbXKIU1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755933AbXKIUh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756612AbXKIU1w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 15:27:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbXKIU1o
+	id S1755933AbXKIUh3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 15:37:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbXKIUhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 15:27:44 -0500
-Received: from [198.99.130.12] ([198.99.130.12]:44263 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1750761AbXKIU1n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 15:27:43 -0500
-Date: Fri, 9 Nov 2007 15:26:37 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH] UML - Fix symlink loops
-Message-ID: <20071109202637.GA7652@c2.user-mode-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+	Fri, 9 Nov 2007 15:37:16 -0500
+Received: from lessem.org ([206.124.10.8]:47294 "EHLO shiner.lessem.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751074AbXKIUhO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 15:37:14 -0500
+Message-ID: <4734C4BB.1050000@Lessem.org>
+Date: Fri, 09 Nov 2007 13:36:11 -0700
+From: Jeff Lessem <Jeff@Lessem.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071008)
+MIME-Version: 1.0
+To: Dan Williams <dan.j.williams@intel.com>
+CC: Bill Davidsen <davidsen@tmr.com>,
+       =?ISO-8859-1?Q?BERTRAND_Jo=EBl?= <joel.bertrand@systella.fr>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>, Neil Brown <neilb@suse.de>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: 2.6.23.1: mdadm/raid5 hung/d-state
+References: <Pine.LNX.4.64.0711040658180.30831@p34.internal.lan>	 <18222.16003.92062.970530@notabene.brown>	 <Pine.LNX.4.64.0711041651250.23496@p34.internal.lan>	 <e9c3a7c20711051035m78ba90ck68f4fbc10480462a@mail.gmail.com>	 <Pine.LNX.4.64.0711051335450.11422@p34.internal.lan>	 <e9c3a7c20711051619u7054aab9l208b604b9e58fb61@mail.gmail.com>	 <47303FB8.7000801@systella.fr>	 <1194398700.2970.18.camel@dwillia2-linux.ch.intel.com>	 <47314653.80905@Lessem.org> <47334B46.7000809@tmr.com> <e9c3a7c20711081002k5c3be41doa700afce7c1a7a6e@mail.gmail.com>
+In-Reply-To: <e9c3a7c20711081002k5c3be41doa700afce7c1a7a6e@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (shiner.lessem.org [192.168.169.3]); Fri, 09 Nov 2007 13:36:25 -0700 (MST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ This should go into 2.6.24 - it's simple enough and people are
-complaining about this ]
+Dan Williams wrote:
+ > On 11/8/07, Bill Davidsen <davidsen@tmr.com> wrote:
+ >> Jeff Lessem wrote:
+ >>> Dan Williams wrote:
+ >>>> The following patch, also attached, cleans up cases where the code
+ >>> looks
+ >>>> at sh->ops.pending when it should be looking at the consistent
+ >>>> stack-based snapshot of the operations flags.
+ >>> I tried this patch (against a stock 2.6.23), and it did not work for
+ >>> me.  Not only did I/O to the effected RAID5 & XFS partition stop, but
+ >>> also I/O to all other disks.  I was not able to capture any debugging
+ >>> information, but I should be able to do that tomorrow when I can hook
+ >>> a serial console to the machine.
+ >> That can't be good! This is worrisome because Joel is giddy with joy
+ >> because it fixes his iSCSI problems. I was going to try it with nbd, but
+ >> perhaps I'll wait a week or so and see if others have more information.
+ >> Applying patches before a holiday weekend is a good way to avoid time
+ >> off. :-(
+ >
+ > We need to see more information on the failure that Jeff is seeing,
+ > and whether it goes away with the two known patches applied.  He
+ > applied this most recent patch against stock 2.6.23 which means that
+ > the platform was still open to the first biofill flags issue.
 
-symlinks to directories in the non-O= case were lacking -n, which
-meant that, when the link already existed, a new link pointing at
-itself was created in the target directory.
+I applied both of the patches.  The biofill one did not apply cleanly,
+as it was adding biofill to one section, and removing it from another,
+but it appears that biofill does not need to be removed from a stock
+2.6.23 kernel.  The second patch applies with a slight offset, but no
+errors.
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
----
- arch/um/Makefile |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+I can report success so far with both patches applied.  I created an
+1100GB RAID5, formated it XFS, and successfully "tar c | tar x" 895GB
+of data onto it.  I'm also in the process of rsync-ing the 895GB of
+data from the (slightly changed) original.  In the past, I would
+always get a hang within 0-50GB of data transfer.
 
-Index: linux-2.6/arch/um/Makefile
-===================================================================
---- linux-2.6.orig/arch/um/Makefile	2007-11-09 14:32:36.000000000 -0500
-+++ linux-2.6/arch/um/Makefile	2007-11-09 14:34:05.000000000 -0500
-@@ -168,7 +168,7 @@ ifneq ($(KBUILD_SRC),)
- 	$(Q)mkdir -p $(objtree)/include/asm-um
- 	$(Q)ln -fsn $(srctree)/include/asm-$(HEADER_ARCH) include/asm-um/arch
- else
--	$(Q)cd $(TOPDIR)/include/asm-um && ln -sf ../asm-$(HEADER_ARCH) arch
-+	$(Q)cd $(TOPDIR)/include/asm-um && ln -fsn ../asm-$(SUBARCH) arch
- endif
- 
- $(objtree)/$(ARCH_DIR)/include:
-@@ -180,7 +180,7 @@ $(ARCH_DIR)/include/sysdep: $(objtree)/$
- ifneq ($(KBUILD_SRC),)
- 	$(Q)ln -fsn $(srctree)/$(ARCH_DIR)/include/sysdep-$(SUBARCH) $(ARCH_DIR)/include/sysdep
- else
--	$(Q)cd $(ARCH_DIR)/include && ln -sf sysdep-$(SUBARCH) sysdep
-+	$(Q)cd $(ARCH_DIR)/include && ln -fsn sysdep-$(SUBARCH) sysdep
- endif
- 
- $(ARCH_DIR)/os:
-@@ -188,7 +188,7 @@ $(ARCH_DIR)/os:
- ifneq ($(KBUILD_SRC),)
- 	$(Q)ln -fsn $(srctree)/$(ARCH_DIR)/os-$(OS) $(ARCH_DIR)/os
- else
--	$(Q)cd $(ARCH_DIR) && ln -sf os-$(OS) os
-+	$(Q)cd $(ARCH_DIR) && ln -fsn os-$(OS) os
- endif
- 
- # Generated files
+For each drive in the RAID I also:
+
+echo 128 > /sys/block/"$i"/queue/max_sectors_kb
+echo 512 > /sys/block/"$i"/queue/nr_requests
+echo 1 > /sys/block/"$i"/device/queue_depth
+blockdev --setra 65536 /dev/md3
+echo 16384 > /sys/block/md3/md/stripe_cache_size
+
+These changes appear to improve performance, along with a RAID5 chunk
+size of 1024k, but these changes alone (without the patches) do not
+fix the problem.
