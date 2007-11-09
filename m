@@ -1,414 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763643AbXKIOek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762923AbXKIOnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763643AbXKIOek (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 09:34:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760647AbXKIOe3
+	id S1762923AbXKIOnR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 09:43:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760142AbXKIOnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 09:34:29 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:56203 "EHLO gir.skynet.ie"
+	Fri, 9 Nov 2007 09:43:05 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:40366 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762943AbXKIOe2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 09:34:28 -0500
-From: Mel Gorman <mel@csn.ul.ie>
-To: akpm@linux-foundation.org
-Cc: Lee.Schermerhorn@hp.com, Mel Gorman <mel@csn.ul.ie>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
-       nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com
-Message-Id: <20071109143426.23540.44459.sendpatchset@skynet.skynet.ie>
-In-Reply-To: <20071109143226.23540.12907.sendpatchset@skynet.skynet.ie>
-References: <20071109143226.23540.12907.sendpatchset@skynet.skynet.ie>
-Subject: [PATCH 6/6] Use one zonelist that is filtered by nodemask
-Date: Fri,  9 Nov 2007 14:34:26 +0000 (GMT)
+	id S1760130AbXKIOnC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 09:43:02 -0500
+Date: Fri, 9 Nov 2007 14:42:59 +0000
+To: "Zou, Nanhai" <nanhai.zou@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, Dave Jones <davej@redhat.com>,
+       Martin Ebourne <fedora@ebourne.me.uk>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [Patch] Allocate sparse vmemmap block above 4G
+Message-ID: <20071109144259.GA23553@skynet.ie>
+References: <1194483127.3046.1471.camel@linux-znh> <20071108140705.GA2591@skynet.ie> <10EA09EFD8728347A513008B6B0DA77A01751532@pdsmsx411.ccr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <10EA09EFD8728347A513008B6B0DA77A01751532@pdsmsx411.ccr.corp.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On (09/11/07 09:28), Zou, Nanhai didst pronounce:
 
-Two zonelists exist so that GFP_THISNODE allocations will be guaranteed
-to use memory only from a node local to the CPU. As we can now filter the
-zonelist based on a nodemask, we filter the standard node zonelist for zones
-on the local node when GFP_THISNODE is specified.
+> > Wrong markup there I believe. The __meminit markup is for functions
+> > that are needed at runtime when memory is hot-added or hot-removed.
+> > Bootmem functions do not qualify. __init is sufficient.
+> > 
+> __meminit here is to avoid section link warning here.
+> this function is called by vmemmap_alloc_block which is a __meminit function,
+> so if I mark it as __meminit, there were be warning about section mismatch, 
+> although this function will not be called during memory hotplug time.
+> 
 
-When GFP_THISNODE is used, a temporary nodemask is created. By default, it
-will only contain zones local to the CPU. If a node ID is specified by the
-caller, that node is used. This allows us to eliminate the second zonelist.
+Ok, that is fair enough and good enough reason to mark it __meminit.
+It's a pity in one sense because a dead function remains in the loaded
+kernel image but I can't think of a nice way around it right now.
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Acked-by: Christoph Lameter <clameter@sgi.com>
----
+> > The name is confusing as well. I don't know what a high node is, but I
+> > think you mean alloc_bootmem_highmem  or alloc_bootmem_highmem_zone.
+> > That in *itself* is confusing on x86_64 because the memory above 4GiB is
+> > ZONE_NORMAL, not ZONE_HIGHMEM. Calling it alloc_bootmem_nondma() makes
+> > it worse.
+> > 
+> > I think you need to rework this to have an arch-specific function
+> > like arch_alloc_vmemmap_block() that by default allocates with
+> > ____alloc_bootmem_node() and otherwise uses an arch-specific function.
+> > In this case, it would know to call __alloc_bootmem_core() with the proper
+> > addressing limits.
+> > 
+> > > +        return __alloc_bootmem_core(pgdat->bdata, size,
+> > > +                        align, (4UL*1024*1024*1024), 0, 1);
+> > > +}
+> > 
+> > More magic values, both the 4GiB address here and the magic "1" at the
+> > end are problems.
+> > 
+> Yes, the 4UL*1024*1024*1024 could be a define here.
+> 
+> However I think define constant for a boolean parameter is overkilling. Look at kernel code, 
+> e.g.
+> the force parameter in get_user_pages
+> and 
+> the sync parameter in try_to_wake_up 
+> we don't do things like
+> #define TRY_TO_WAKEUP_SYNC 1
+> #define TRY_TO_WAKEUP_NOSYNC 0 
+> 
+> There are other examples in kernel code. I believe it is a common practice not to define constant for a Boolean parameter.
+> How do you think?
+> 
 
- drivers/char/sysrq.c      |    2 -
- fs/buffer.c               |    5 +--
- include/linux/gfp.h       |   30 +++++++++-----------
- include/linux/mempolicy.h |    2 -
- include/linux/mmzone.h    |   14 ---------
- mm/mempolicy.c            |    8 ++---
- mm/page_alloc.c           |   59 ++++++++++++++++++++++-------------------
- mm/slab.c                 |    2 -
- mm/slub.c                 |    2 -
- mm/vmscan.c               |    2 -
- 10 files changed, 58 insertions(+), 68 deletions(-)
+I guess it's a question of personal taste. I am not a fan of magic numbers
+because it's not clear from the call-site what "1" means. It could be a
+value of 1 or a boolean true requiring that I double check the function
+being called. I would have used either a #define or defined
 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc1-mm-030_filter_nodemask/drivers/char/sysrq.c linux-2.6.24-rc1-mm-040_use_one_zonelist/drivers/char/sysrq.c
---- linux-2.6.24-rc1-mm-030_filter_nodemask/drivers/char/sysrq.c	2007-11-08 19:08:12.000000000 +0000
-+++ linux-2.6.24-rc1-mm-040_use_one_zonelist/drivers/char/sysrq.c	2007-11-08 19:23:21.000000000 +0000
-@@ -271,7 +271,7 @@ static struct sysrq_key_op sysrq_term_op
- 
- static void moom_callback(struct work_struct *ignored)
- {
--	out_of_memory(node_zonelist(0, GFP_KERNEL), GFP_KERNEL, 0);
-+	out_of_memory(node_zonelist(0), GFP_KERNEL, 0);
- }
- 
- static DECLARE_WORK(moom_work, moom_callback);
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc1-mm-030_filter_nodemask/fs/buffer.c linux-2.6.24-rc1-mm-040_use_one_zonelist/fs/buffer.c
---- linux-2.6.24-rc1-mm-030_filter_nodemask/fs/buffer.c	2007-11-08 19:21:22.000000000 +0000
-+++ linux-2.6.24-rc1-mm-040_use_one_zonelist/fs/buffer.c	2007-11-08 19:23:21.000000000 +0000
-@@ -375,11 +375,10 @@ static void free_more_memory(void)
- 	yield();
- 
- 	for_each_online_node(nid) {
--		zrefs = first_zones_zonelist(node_zonelist(nid, GFP_NOFS),
-+		zrefs = first_zones_zonelist(node_zonelist(nid),
- 						NULL, gfp_zone(GFP_NOFS));
- 		if (zrefs->zone)
--			try_to_free_pages(node_zonelist(nid, GFP_NOFS), 0,
--						GFP_NOFS);
-+			try_to_free_pages(node_zonelist(nid), 0, GFP_NOFS);
- 	}
- }
- 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc1-mm-030_filter_nodemask/include/linux/gfp.h linux-2.6.24-rc1-mm-040_use_one_zonelist/include/linux/gfp.h
---- linux-2.6.24-rc1-mm-030_filter_nodemask/include/linux/gfp.h	2007-11-08 19:21:22.000000000 +0000
-+++ linux-2.6.24-rc1-mm-040_use_one_zonelist/include/linux/gfp.h	2007-11-08 19:23:21.000000000 +0000
-@@ -150,28 +150,16 @@ static inline gfp_t set_migrateflags(gfp
-  * virtual kernel addresses to the allocated page(s).
-  */
- 
--static inline enum zone_type gfp_zonelist(gfp_t flags)
--{
--	int base = 0;
--
--	if (NUMA_BUILD && (flags & __GFP_THISNODE))
--		base = 1;
--
--	return base;
--}
--
- /*
-- * We get the zone list from the current node and the gfp_mask.
-+ * We get the zone list based on a node ID as there is one zone list per node.
-  * This zone list contains a maximum of MAXNODES*MAX_NR_ZONES zones.
-- * There are two zonelists per node, one for all zones with memory and
-- * one containing just zones from the node the zonelist belongs to.
-  *
-  * For the normal case of non-DISCONTIGMEM systems the NODE_DATA() gets
-  * optimized to &contig_page_data at compile-time.
-  */
--static inline struct zonelist *node_zonelist(int nid, gfp_t flags)
-+static inline struct zonelist *node_zonelist(int nid)
- {
--	return NODE_DATA(nid)->node_zonelists + gfp_zonelist(flags);
-+	return &NODE_DATA(nid)->node_zonelist;
- }
- 
- #ifndef HAVE_ARCH_FREE_PAGE
-@@ -187,6 +175,7 @@ FASTCALL(__alloc_pages(gfp_t, unsigned i
- extern struct page *
- FASTCALL(__alloc_pages_nodemask(gfp_t, unsigned int,
- 				struct zonelist *, nodemask_t *nodemask));
-+extern nodemask_t *nodemask_thisnode(int nid, nodemask_t *nodemask);
- 
- static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
- 						unsigned int order)
-@@ -198,7 +187,16 @@ static inline struct page *alloc_pages_n
- 	if (nid < 0)
- 		nid = numa_node_id();
- 
--	return __alloc_pages(gfp_mask, order, node_zonelist(nid, gfp_mask));
-+	/* Use a temporary nodemask for __GFP_THISNODE allocations */
-+	if (unlikely(gfp_mask & __GFP_THISNODE)) {
-+		nodemask_t nodemask;
-+
-+		return __alloc_pages_nodemask(gfp_mask, order,
-+				node_zonelist(nid),
-+				nodemask_thisnode(nid, &nodemask));
-+	}
-+
-+	return __alloc_pages(gfp_mask, order, node_zonelist(nid));
- }
- 
- #ifdef CONFIG_NUMA
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc1-mm-030_filter_nodemask/include/linux/mempolicy.h linux-2.6.24-rc1-mm-040_use_one_zonelist/include/linux/mempolicy.h
---- linux-2.6.24-rc1-mm-030_filter_nodemask/include/linux/mempolicy.h	2007-11-08 19:21:22.000000000 +0000
-+++ linux-2.6.24-rc1-mm-040_use_one_zonelist/include/linux/mempolicy.h	2007-11-08 19:23:21.000000000 +0000
-@@ -240,7 +240,7 @@ static inline void mpol_fix_fork_child_f
- static inline struct zonelist *huge_zonelist(struct vm_area_struct *vma,
-  		unsigned long addr, gfp_t gfp_flags, struct mempolicy **mpol)
- {
--	return node_zonelist(0, gfp_flags);
-+	return node_zonelist(0);
- }
- 
- static inline int do_migrate_pages(struct mm_struct *mm,
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc1-mm-030_filter_nodemask/include/linux/mmzone.h linux-2.6.24-rc1-mm-040_use_one_zonelist/include/linux/mmzone.h
---- linux-2.6.24-rc1-mm-030_filter_nodemask/include/linux/mmzone.h	2007-11-08 19:21:22.000000000 +0000
-+++ linux-2.6.24-rc1-mm-040_use_one_zonelist/include/linux/mmzone.h	2007-11-08 19:23:21.000000000 +0000
-@@ -388,17 +388,6 @@ static inline int zone_is_oom_locked(con
- #define MAX_ZONES_PER_ZONELIST (MAX_NUMNODES * MAX_NR_ZONES)
- 
- #ifdef CONFIG_NUMA
--
--/*
-- * The NUMA zonelists are doubled becausse we need zonelists that restrict the
-- * allocations to a single node for GFP_THISNODE.
-- *
-- * [0]	: Zonelist with fallback
-- * [1]	: No fallback (GFP_THISNODE)
-- */
--#define MAX_ZONELISTS 2
--
--
- /*
-  * We cache key information from each zonelist for smaller cache
-  * footprint when scanning for free pages in get_page_from_freelist().
-@@ -464,7 +453,6 @@ struct zonelist_cache {
- 	unsigned long last_full_zap;		/* when last zap'd (jiffies) */
- };
- #else
--#define MAX_ZONELISTS 1
- struct zonelist_cache;
- #endif
- 
-@@ -529,7 +517,7 @@ extern struct page *mem_map;
- struct bootmem_data;
- typedef struct pglist_data {
- 	struct zone node_zones[MAX_NR_ZONES];
--	struct zonelist node_zonelists[MAX_ZONELISTS];
-+	struct zonelist node_zonelist;
- 	int nr_zones;
- #ifdef CONFIG_FLAT_NODE_MEM_MAP
- 	struct page *node_mem_map;
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc1-mm-030_filter_nodemask/mm/mempolicy.c linux-2.6.24-rc1-mm-040_use_one_zonelist/mm/mempolicy.c
---- linux-2.6.24-rc1-mm-030_filter_nodemask/mm/mempolicy.c	2007-11-08 19:21:22.000000000 +0000
-+++ linux-2.6.24-rc1-mm-040_use_one_zonelist/mm/mempolicy.c	2007-11-08 19:23:21.000000000 +0000
-@@ -1153,7 +1153,7 @@ static struct zonelist *zonelist_policy(
- 		nd = 0;
- 		BUG();
- 	}
--	return node_zonelist(nd, gfp);
-+	return node_zonelist(nd);
- }
- 
- /* Do dynamic interleaving for a process */
-@@ -1190,7 +1190,7 @@ unsigned slab_node(struct mempolicy *pol
- 		struct zonelist *zonelist;
- 		struct zoneref *z;
- 		enum zone_type highest_zoneidx = gfp_zone(GFP_KERNEL);
--		zonelist = &NODE_DATA(numa_node_id())->node_zonelists[0];
-+		zonelist = &NODE_DATA(numa_node_id())->node_zonelist;
- 		z = first_zones_zonelist(zonelist, &policy->v.nodes,
- 							highest_zoneidx);
- 		return zonelist_node_idx(z);
-@@ -1274,7 +1274,7 @@ struct zonelist *huge_zonelist(struct vm
- 
- 		nid = interleave_nid(pol, vma, addr, HPAGE_SHIFT);
- 		__mpol_free(pol);		/* finished with pol */
--		return node_zonelist(nid, gfp_flags);
-+		return node_zonelist(nid);
- 	}
- 
- 	zl = zonelist_policy(GFP_HIGHUSER, pol);
-@@ -1296,7 +1296,7 @@ static struct page *alloc_page_interleav
- 	struct zonelist *zl;
- 	struct page *page;
- 
--	zl = node_zonelist(nid, gfp);
-+	zl = node_zonelist(nid);
- 	page = __alloc_pages(gfp, order, zl);
- 	if (page && page_zone(page) == zonelist_zone(&zl->_zonerefs[0]))
- 		inc_zone_page_state(page, NUMA_INTERLEAVE_HIT);
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc1-mm-030_filter_nodemask/mm/page_alloc.c linux-2.6.24-rc1-mm-040_use_one_zonelist/mm/page_alloc.c
---- linux-2.6.24-rc1-mm-030_filter_nodemask/mm/page_alloc.c	2007-11-08 19:21:23.000000000 +0000
-+++ linux-2.6.24-rc1-mm-040_use_one_zonelist/mm/page_alloc.c	2007-11-08 19:23:21.000000000 +0000
-@@ -1720,10 +1720,31 @@ got_pg:
- 	return page;
- }
- 
-+/* Creates a nodemask suitable for GFP_THISNODE allocations */
-+nodemask_t *nodemask_thisnode(int nid, nodemask_t *nodemask)
-+{
-+	nodes_clear(*nodemask);
-+	node_set(nid, *nodemask);
-+
-+	return nodemask;
-+}
-+
- struct page * fastcall
- __alloc_pages(gfp_t gfp_mask, unsigned int order,
- 		struct zonelist *zonelist)
- {
-+	/*
-+	 * Use a temporary nodemask for __GFP_THISNODE allocations. If the
-+	 * cost of allocating on the stack or the stack usage becomes
-+	 * noticable, allocate the nodemasks per node at boot or compile time
-+	 */
-+	if (unlikely(gfp_mask & __GFP_THISNODE)) {
-+		nodemask_t nodemask;
-+
-+		return __alloc_pages_internal(gfp_mask, order,
-+			zonelist, nodemask_thisnode(numa_node_id(), &nodemask));
-+	}
-+
- 	return __alloc_pages_internal(gfp_mask, order, zonelist, NULL);
- }
- 
-@@ -1731,6 +1752,9 @@ struct page * fastcall
- __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
- 		struct zonelist *zonelist, nodemask_t *nodemask)
- {
-+	/* Specifying both __GFP_THISNODE and nodemask is stupid. Warn user */
-+	WARN_ON(gfp_mask & __GFP_THISNODE);
-+
- 	return __alloc_pages_internal(gfp_mask, order, zonelist, nodemask);
- }
- 
-@@ -1807,7 +1831,7 @@ static unsigned int nr_free_zone_pages(i
- 	/* Just pick one node, since fallback list is circular */
- 	unsigned int sum = 0;
- 
--	struct zonelist *zonelist = node_zonelist(numa_node_id(), GFP_KERNEL);
-+	struct zonelist *zonelist = node_zonelist(numa_node_id());
- 
- 	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx) {
- 		unsigned long size = zone->present_pages;
-@@ -2171,7 +2195,7 @@ static void build_zonelists_in_node_orde
- 	int j;
- 	struct zonelist *zonelist;
- 
--	zonelist = &pgdat->node_zonelists[0];
-+	zonelist = &pgdat->node_zonelist;
- 	for (j = 0; zonelist->_zonerefs[j].zone != NULL; j++)
- 		;
- 	j = build_zonelists_node(NODE_DATA(node), zonelist, j,
-@@ -2180,19 +2204,6 @@ static void build_zonelists_in_node_orde
- }
- 
- /*
-- * Build gfp_thisnode zonelists
-- */
--static void build_thisnode_zonelists(pg_data_t *pgdat)
--{
--	int j;
--	struct zonelist *zonelist;
--
--	zonelist = &pgdat->node_zonelists[1];
--	j = build_zonelists_node(pgdat, zonelist, 0, MAX_NR_ZONES - 1);
--	zonelist->_zonerefs[j].zone = NULL;
--}
--
--/*
-  * Build zonelists ordered by zone and nodes within zones.
-  * This results in conserving DMA zone[s] until all Normal memory is
-  * exhausted, but results in overflowing to remote node while memory
-@@ -2207,7 +2218,7 @@ static void build_zonelists_in_zone_orde
- 	struct zone *z;
- 	struct zonelist *zonelist;
- 
--	zonelist = &pgdat->node_zonelists[0];
-+	zonelist = &pgdat->node_zonelist;
- 	pos = 0;
- 	for (zone_type = MAX_NR_ZONES - 1; zone_type >= 0; zone_type--) {
- 		for (j = 0; j < nr_nodes; j++) {
-@@ -2287,17 +2298,14 @@ static void set_zonelist_order(void)
- static void build_zonelists(pg_data_t *pgdat)
- {
- 	int j, node, load;
--	enum zone_type i;
- 	nodemask_t used_mask;
- 	int local_node, prev_node;
- 	struct zonelist *zonelist;
- 	int order = current_zonelist_order;
- 
- 	/* initialize zonelists */
--	for (i = 0; i < MAX_ZONELISTS; i++) {
--		zonelist = pgdat->node_zonelists + i;
--		zonelist->_zonerefs[0].zone = NULL;
--	}
-+	zonelist = &pgdat->node_zonelist;
-+	zonelist->_zonerefs[0].zone = NULL;
- 
- 	/* NUMA-aware ordering of nodes */
- 	local_node = pgdat->node_id;
-@@ -2339,8 +2347,6 @@ static void build_zonelists(pg_data_t *p
- 		/* calculate node order -- i.e., DMA last! */
- 		build_zonelists_in_zone_order(pgdat, j);
- 	}
--
--	build_thisnode_zonelists(pgdat);
- }
- 
- /* Construct the zonelist performance cache - see further mmzone.h */
-@@ -2350,7 +2356,7 @@ static void build_zonelist_cache(pg_data
- 	struct zonelist_cache *zlc;
- 	struct zoneref *z;
- 
--	zonelist = &pgdat->node_zonelists[0];
-+	zonelist = &pgdat->node_zonelist;
- 	zonelist->zlcache_ptr = zlc = &zonelist->zlcache;
- 	bitmap_zero(zlc->fullzones, MAX_ZONES_PER_ZONELIST);
- 	for (z = zonelist->_zonerefs; z->zone; z++)
-@@ -2373,7 +2379,7 @@ static void build_zonelists(pg_data_t *p
- 
- 	local_node = pgdat->node_id;
- 
--	zonelist = &pgdat->node_zonelists[0];
-+	zonelist = &pgdat->node_zonelist;
- 	j = build_zonelists_node(pgdat, zonelist, 0, MAX_NR_ZONES - 1);
- 
- 	/*
-@@ -2403,8 +2409,7 @@ static void build_zonelists(pg_data_t *p
- /* non-NUMA variant of zonelist performance cache - just NULL zlcache_ptr */
- static void build_zonelist_cache(pg_data_t *pgdat)
- {
--	pgdat->node_zonelists[0].zlcache_ptr = NULL;
--	pgdat->node_zonelists[1].zlcache_ptr = NULL;
-+	pgdat->node_zonelist.zlcache_ptr = NULL;
- }
- 
- #endif	/* CONFIG_NUMA */
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc1-mm-030_filter_nodemask/mm/slab.c linux-2.6.24-rc1-mm-040_use_one_zonelist/mm/slab.c
---- linux-2.6.24-rc1-mm-030_filter_nodemask/mm/slab.c	2007-11-08 19:18:27.000000000 +0000
-+++ linux-2.6.24-rc1-mm-040_use_one_zonelist/mm/slab.c	2007-11-08 19:23:21.000000000 +0000
-@@ -3248,7 +3248,7 @@ static void *fallback_alloc(struct kmem_
- 	if (flags & __GFP_THISNODE)
- 		return NULL;
- 
--	zonelist = node_zonelist(slab_node(current->mempolicy), flags);
-+	zonelist = node_zonelist(slab_node(current->mempolicy));
- 	local_flags = flags & (GFP_CONSTRAINT_MASK|GFP_RECLAIM_MASK);
- 
- retry:
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc1-mm-030_filter_nodemask/mm/slub.c linux-2.6.24-rc1-mm-040_use_one_zonelist/mm/slub.c
---- linux-2.6.24-rc1-mm-030_filter_nodemask/mm/slub.c	2007-11-08 19:18:27.000000000 +0000
-+++ linux-2.6.24-rc1-mm-040_use_one_zonelist/mm/slub.c	2007-11-08 19:23:21.000000000 +0000
-@@ -1351,7 +1351,7 @@ static unsigned long get_any_partial(str
- 			get_cycles() % 1024 > s->remote_node_defrag_ratio)
- 		return 0;
- 
--	zonelist = node_zonelist(slab_node(current->mempolicy), flags);
-+	zonelist = node_zonelist(slab_node(current->mempolicy));
- 	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx) {
- 		struct kmem_cache_node *n;
- 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc1-mm-030_filter_nodemask/mm/vmscan.c linux-2.6.24-rc1-mm-040_use_one_zonelist/mm/vmscan.c
---- linux-2.6.24-rc1-mm-030_filter_nodemask/mm/vmscan.c	2007-11-08 19:19:59.000000000 +0000
-+++ linux-2.6.24-rc1-mm-040_use_one_zonelist/mm/vmscan.c	2007-11-08 19:25:24.000000000 +0000
-@@ -1377,7 +1377,7 @@ unsigned long try_to_free_mem_cgroup_pag
- 	int node = numa_node_id();
- 	struct zonelist *zonelist;
- 
--	zonelist = &NODE_DATA(node)->node_zonelists[0];
-+	zonelist = &NODE_DATA(node)->node_zonelist;
- 	if (do_try_to_free_pages(zonelist, sc.gfp_mask, &sc))
- 		return 1;
- 	return 0;
+__something() - internal to a C file
+something()   - non-strict version
+something_strict() - the strict version
+
+so it's obvious from the call-site what the intention is. However, I
+imagine there are people puking at that notion too.
+
+Fix up the 4GB magic number at least so it reflects that it is DMA32 you
+are talking about.
+
+> > > +
+> > >  #ifdef CONFIG_MEMORY_HOTPLUG
+> > >  /*
+> > >   * Memory is added always to NORMAL zone. This means you will never get
+> > > diff -Nraup a/include/linux/bootmem.h b/include/linux/bootmem.h
+> > > --- a/include/linux/bootmem.h	2007-11-06 16:06:31.000000000 +0800
+> > > +++ b/include/linux/bootmem.h	2007-11-06 15:50:36.000000000 +0800
+> > > @@ -61,6 +61,10 @@ extern void *__alloc_bootmem_core(struct
+> > >  				  unsigned long limit,
+> > >  				  int strict_goal);
+> > >
+> > > +extern void *alloc_bootmem_high_node(pg_data_t *pgdat,
+> > > +                unsigned long size,
+> > > +                unsigned long align);
+> > > +
+> > 
+> > Confusing. Your declaration here makes it look like a bootmem API
+> > function but it is an arch-specific function that only exists for
+> > x86-64. I know it gets overridden later when a weak symbol but the more
+> > common approach is to have Kconfig define something like
+> > ARCH_HIGHMEM_VMEMMAP and
+> > 
+> > #ifdef CONFIG_ARCH_HIGHMEM_VMEMMAP
+> > extern void *alloc_bootmem_high_node(pg_data_t *pgdat,
+> >                 unsigned long size,
+> >                 unsigned long align);
+> > #else
+> > static inline void *alloc_bootmem_high_node(pg_data_t *pgdat,
+> > 		unsigned long size,
+> > 		unsigned long align) {
+> I was told by Andrew that 
+> > 	return NULL;
+> > }
+> > #endif /* CONFIG_ARCH_HIGHMEM_VMEMMAP
+> > 
+> > It's be similar if you have an arch-specific callback for vmalloc block
+> > allocations instead of extending the bootmem API.
+> > 
+> I was told by Andrew that ARCH_HAS_XXX is not preferred half a year before in
+> http://lkml.org/lkml/2007/5/17/287
+> So I reworked that patch to the preferred __attribute__ ((weak)))
+> .....
+> 
+
+Ok, my bad. I wasn't aware of that.
+
+> 
+> > >
+> > >  #ifndef CONFIG_HAVE_ARCH_BOOTMEM_NODE
+> > >  extern void reserve_bootmem(unsigned long addr, unsigned long size);
+> > >  #define alloc_bootmem(x) \
+> > > diff -Nraup a/mm/bootmem.c b/mm/bootmem.c
+> > > --- a/mm/bootmem.c	2007-11-06 16:06:31.000000000 +0800
+> > > +++ b/mm/bootmem.c	2007-11-06 15:49:20.000000000 +0800
+> > > @@ -492,3 +492,11 @@ void * __init __alloc_bootmem_low_node(p
+> > >  	return __alloc_bootmem_core(pgdat->bdata, size, align, goal,
+> > >  				    ARCH_LOW_ADDRESS_LIMIT, 0);
+> > >  }
+> > > +
+> > > +__attribute__((weak)) __meminit
+> > 
+> > __meminit vs _init again
+> > 
+> > > +void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size,
+> > > +        unsigned long align)
+> > > +{
+> > > +        return NULL;
+> > > +}
+> > > +
+> > > diff -Nraup a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
+> > > --- a/mm/sparse-vmemmap.c	2007-11-06 15:16:12.000000000 +0800
+> > > +++ b/mm/sparse-vmemmap.c	2007-11-06 16:08:52.000000000 +0800
+> > > @@ -43,9 +43,13 @@ void * __meminit vmemmap_alloc_block(uns
+> > >  		if (page)
+> > >  			return page_address(page);
+> > >  		return NULL;
+> > > -	} else
+> > > +	} else {
+> > > +		void *p = alloc_bootmem_high_node(NODE_DATA(node), size, size);
+> > > +		if (p)
+> > > +			return p;
+> > >  		return __alloc_bootmem_node(NODE_DATA(node), size, size,
+> > >  				__pa(MAX_DMA_ADDRESS));
+> > 
+> > If you had an arch-specific function, I guess this would turn into
+> > 
+> > 	} else {
+> > 		return arch_vmemmap_alloc_block(...);
+> > 	}
+> > 
+> > > +	}
+> > >  }
+> > >
+> > >  void __meminit vmemmap_verify(pte_t *pte, int node,
+> > >
+> > >
+> > >
+> > >
+> > 
+> > --
+> > --
+> > Mel Gorman
+> > Part-time Phd Student                          Linux Technology Center
+> > University of Limerick                         IBM Dublin Software Lab
+> 
+
+-- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
