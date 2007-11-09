@@ -1,29 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758177AbXKIEfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760062AbXKIEge@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758177AbXKIEfr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 23:35:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754652AbXKIEfh
+	id S1760062AbXKIEge (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 23:36:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758774AbXKIEgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 23:35:37 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47349 "EHLO
+	Thu, 8 Nov 2007 23:36:23 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52239 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753190AbXKIEfg (ORCPT
+	by vger.kernel.org with ESMTP id S1751778AbXKIEgW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 23:35:36 -0500
-Date: Thu, 8 Nov 2007 20:34:51 -0800
+	Thu, 8 Nov 2007 23:36:22 -0500
+Date: Thu, 8 Nov 2007 20:35:52 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Alexey Starikovskiy <astarikovskiy@suse.de>
-Cc: rjw@sisk.pl, hannes-kernel@saeurebad.de, listen@selfservix.org,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Len Brown <lenb@kernel.org>
-Subject: Re: 2.6.24-rc1: OOPS at  acpi_battery_update
-Message-Id: <20071108203451.1b7f28c0.akpm@linux-foundation.org>
-In-Reply-To: <47333ACB.6070408@suse.de>
-References: <1193652664.22149.4.camel@localhost>
-	<200711050118.34610.rjw@sisk.pl>
-	<20071108155344.GA12231@cataract>
-	<200711081717.00421.rjw@sisk.pl>
-	<47333ACB.6070408@suse.de>
+To: Jochen Friedrich <jochen@scram.de>
+Cc: linuxppc-embedded@ozlabs.org, linux-kernel@vger.kernel.org,
+       marcelo@kvack.org, scottwood@freescale.com, jeff@garzik.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] [POWERPC] Fix typo #ifdef -> #ifndef
+Message-Id: <20071108203552.bcc1e5a8.akpm@linux-foundation.org>
+In-Reply-To: <472CC914.3030709@scram.de>
+References: <472CC914.3030709@scram.de>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -31,21 +27,20 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A> On Thu, 08 Nov 2007 19:35:23 +0300 Alexey Starikovskiy <astarikovskiy@suse.de> wrote:
-> [remove_cycle_at_battery_removal.patch  text/x-patch (1.7KB)]
-> ACPI: Battery: remove cycle from battery removal.
-> 
-> From: Alexey Starikovskiy <astarikovskiy@suse.de>
-> 
-> get_property() should not call battery_update() on absent battery to
-> avoid cycle and oops.
-> 
-> Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
-> Tested-by: Rolf Eike Beer <eike-kernel@sf-tec.de>
+> On Sat, 03 Nov 2007 20:16:36 +0100 Jochen Friedrich <jochen@scram.de> wrote:
+> Subject: [PATCH] [POWERPC] Fix typo #ifdef -> #ifndef
 
-A patch similar to this one but with an identical changelog was merged into
-Len's tree on November 2.
+Please put the "powerpc" outside the [].  Because things inside [] get
+removed when the receiver applies the patch, but the subsystem
+identification ("powerpc") is useful information which we want to carry
+into the permanent git record. (Although Paul might add it anyway - some
+git tree maintainers do).
 
-If it had been promptly merged into mainline then quite a lot of people's
-time would not have been wasted.
+> User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+
+This seems to be setting a record for MUA vandalism.  Leading spaces were
+removed and various esoteric whitespace transformations were made.  The
+diffs were small so I fixed them by hand.
+
+Please strangle your email client.
 
