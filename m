@@ -1,59 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751856AbXKIIiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751888AbXKIIpc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751856AbXKIIiV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 03:38:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751113AbXKIIiN
+	id S1751888AbXKIIpc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 03:45:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbXKIIpY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 03:38:13 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53885 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751081AbXKIIiM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 03:38:12 -0500
-Message-ID: <47341C4A.30508@redhat.com>
-Date: Fri, 09 Nov 2007 09:37:30 +0100
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Fri, 9 Nov 2007 03:45:24 -0500
+Received: from wa-out-1112.google.com ([209.85.146.181]:8282 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750966AbXKIIpX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 03:45:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rc5hjua0n1tx3ekWRSW4vCzHwsvtxJqkVxMgmFF6g+yomhxb1x5IZVkaNOfjwW6W1fkeq3c6KofdYraHDLZ84VGoUtgkCzoz9S3+YZ+J2G+tVi0aTG7aFbM1F9nyV2lpkLI6k7ooLTzxCUIKwpwOcSbPspsD07LxjupgnanIVAk=
+Message-ID: <b647ffbd0711090045o5ebf4681q78f939f5c1e71fe1@mail.gmail.com>
+Date: Fri, 9 Nov 2007 09:45:21 +0100
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: vatsa@linux.vnet.ibm.com
+Subject: Re: [BUG]: Crash with CONFIG_FAIR_CGROUP_SCHED=y
+Cc: sukadev@us.ibm.com, balbir@in.ibm.com,
+       Containers <containers@lists.osdl.org>, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, dhaval@linux.vnet.ibm.com,
+       "Ingo Molnar" <mingo@elte.hu>, efault@gmx.de
+In-Reply-To: <20071109070214.GO3143@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Glauber de Oliveira Costa <gcosta@redhat.com>
-CC: linux-kernel@vger.kernel.org, jeremy@goop.org, avi@qumranet.com,
-       aliguori@us.ibm.com, kvm-devel@lists.sourceforge.net,
-       hollisb@us.ibm.com
-Subject: Re: [PATCH 1/3] include files for kvmclock
-References: <11945615632624-git-send-email-gcosta@redhat.com> <11945615703593-git-send-email-gcosta@redhat.com>
-In-Reply-To: <11945615703593-git-send-email-gcosta@redhat.com>
-X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071108234805.GA2240@us.ibm.com>
+	 <20071109070214.GO3143@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +/*
-> + * Guest has page alignment and padding requirements. At the host, it will
-> + * only lead to wasted space at the vcpu struct. For this reason, the struct
-> + * is not anonymous
-> + */
-> +union kvm_hv_clock {
-> +	struct kvm_hv_clock_s {
-> +		u64 tsc_mult;
-> +		u64 now_ns;
-> +		/* That's the wall clock, not the water closet */
-> +		u64 wc_sec;
-> +		u64 last_tsc;
-> +		/* At first, we could use the tsc value as a marker, but Jeremy
-> +		 * well noted that it will cause us locking problems in 32-bit
-> +		 * sys, so we have a special version field */
-> +		u32 version;
-> +	} fields;
-> +	char page_align[PAGE_SIZE];
-> +};
+Hi Srivatsa,
 
-What is the point in using a whole page per vcpu?  You probably don't
-want struct kvm_hv_clock_s cross a page border.  Is that the only reason
-or are there other constrains too?
+> [ ... ]
+> --
+>
+> current task is not present in its runqueue in case of sched_fair class
+> tasks. Take care of this fact in rt_mutex_setprio(),
+> sched_setscheduler() and sched_move_task() routines.
+>
+> Signed-off-by : Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+>
+>
+> ---
+>  kernel/sched.c |   45 +++++++++++++++++++++++++--------------------
+>  1 files changed, 25 insertions(+), 20 deletions(-)
+>
+> Index: current/kernel/sched.c
+> ===================================================================
+> --- current.orig/kernel/sched.c
+> +++ current/kernel/sched.c
+> @@ -3986,11 +3986,13 @@ void rt_mutex_setprio(struct task_struct
+>         oldprio = p->prio;
+>         on_rq = p->se.on_rq;
+>         running = task_running(rq, p);
+> -       if (on_rq) {
+> +       if (on_rq)
+>                 dequeue_task(rq, p, 0);
+> -               if (running)
+> -                       p->sched_class->put_prev_task(rq, p);
+> -       }
+> +       /* current task is not kept in its runqueue in case of sched_fair class.
+> +        * Hence we need the 'on_rq?' and 'running?' tests to be separate.
 
-As the kvm clock looks quite simliar to what xen does, how about making
-the structs binary-compatible or simply reuse the xen version (struct
-vcpu_time_info in xen/interface/xen.h)?
+Humm... the 'current' is not kept within the tree but
+current->se.on_rq is supposed to be '1' ,
+so the old code looks ok to me (at least for the 'leaf' elements).
 
-cheers,
-  Gerd
+Maybe you were able to get more useful oops on your site?
+
+
+> --
+> Regards,
+> vatsa
+>
+
+-- 
+Best regards,
+Dmitry Adamushko
