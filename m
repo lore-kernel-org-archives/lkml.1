@@ -1,535 +1,304 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760089AbXKIViA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763549AbXKIVi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760089AbXKIViA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 16:38:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760369AbXKIVeI
+	id S1763549AbXKIVi0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 16:38:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758143AbXKIVfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 16:34:08 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:42705 "EHLO mx1.redhat.com"
+	Fri, 9 Nov 2007 16:35:20 -0500
+Received: from mail0.lsil.com ([147.145.40.20]:36643 "EHLO mail0.lsil.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757066AbXKIVeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 16:34:05 -0500
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
-       mingo@elte.hu, rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
-       avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
-       kvm-devel@lists.sourceforge.net, zach@vmware.com,
-       jun.nakajima@intel.com, Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 6/24] Add debugreg/load_rsp native hooks
-Date: Fri,  9 Nov 2007 16:42:47 -0200
-Message-Id: <11946338212915-git-send-email-gcosta@redhat.com>
-X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <1194633815833-git-send-email-gcosta@redhat.com>
-References: <11946337851964-git-send-email-gcosta@redhat.com> <11946337933104-git-send-email-gcosta@redhat.com> <11946337991750-git-send-email-gcosta@redhat.com> <11946338053158-git-send-email-gcosta@redhat.com> <11946338103068-git-send-email-gcosta@redhat.com> <1194633815833-git-send-email-gcosta@redhat.com>
+	id S1762615AbXKIVfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 16:35:16 -0500
+Subject: [PATCH 5/6] scsi: megaraid_sas - support for poll_mode_io
+	(reducedinterrupt)
+From: bo yang <bo.yang@lsi.com>
+To: linux-scsi@vger.kernel.org
+Cc: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       Bo.yang@lsi.com, Sumant.patro@lsi.com
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 09 Nov 2007 04:40:16 -0500
+Message-Id: <1194601216.6297.12.camel@dhcp-75-884.se.lsil.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-35.el4) 
+X-OriginalArrivalTime: 09 Nov 2007 21:34:35.0275 (UTC) FILETIME=[52A45DB0:01C82318]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds native hooks for debugreg handling functions,
-and for the native load_rsp0 function. The later also have its
-call sites patched. There's some room for consolidation in the
-processor*.h headers, and it is done, for paravirt related functions
+Added module parameter "poll_mode_io" to support for "polling" (reduced interrupt operation).
+        In this mode, IO completion interrupts are delayed. At the end of initiating IOs,
+        the driver schedules for cmd completion if there are pending cmds.
+        A timer-based interrupt has also been added to prevent IO completion from
+        being delayed indefinitely in the case that no new IOs are initiated. 
+Some formatting issues in resume, suspend comment block also corrected
 
-Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-Acked-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Signed-off-by: Bo Yang <bo.yang@lsi.com>
+
 ---
- arch/x86/kernel/process_64.c   |    2 +-
- arch/x86/kernel/smpboot_64.c   |    2 +-
- include/asm-x86/msr.h          |   67 ------------------
- include/asm-x86/processor.h    |  146 ++++++++++++++++++++++++++++++++++++++++
- include/asm-x86/processor_32.h |  138 +-------------------------------------
- include/asm-x86/processor_64.h |   32 ++++-----
- 6 files changed, 165 insertions(+), 222 deletions(-)
+ drivers/scsi/megaraid/megaraid_sas.c |  152 ++++++++++++++++++++++++-
+ drivers/scsi/megaraid/megaraid_sas.h |    3
+ 2 files changed, 149 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index 6472f37..9647a10 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -589,7 +589,7 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
- 	/*
- 	 * Reload esp0, LDT and the page table pointer:
- 	 */
--	tss->rsp0 = next->rsp0;
-+	load_esp0(tss, next);
+diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c	2007-11-07 02:37:20.964596296 -0500
++++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c	2007-11-07 02:37:52.930736704 -0500
+@@ -46,6 +46,14 @@
+ #include <scsi/scsi_host.h>
+ #include "megaraid_sas.h"
  
- 	/* 
- 	 * Switch DS and ES.
-diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
-index 17e54fa..8fb0f90 100644
---- a/arch/x86/kernel/smpboot_64.c
-+++ b/arch/x86/kernel/smpboot_64.c
-@@ -613,7 +613,7 @@ do_rest:
- 	start_rip = setup_trampoline();
- 
- 	init_rsp = c_idle.idle->thread.rsp;
--	per_cpu(init_tss,cpu).rsp0 = init_rsp;
-+	load_esp0(&per_cpu(init_tss, cpu), &c_idle.idle->thread);
- 	initial_code = start_secondary;
- 	clear_tsk_thread_flag(c_idle.idle, TIF_FORK);
- 
-diff --git a/include/asm-x86/msr.h b/include/asm-x86/msr.h
-index ba4b314..48f73c7 100644
---- a/include/asm-x86/msr.h
-+++ b/include/asm-x86/msr.h
-@@ -253,73 +253,6 @@ static inline int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
- 			  : "=a" (low), "=d" (high) \
- 			  : "c" (counter))
- 
--static inline void cpuid(int op, unsigned int *eax, unsigned int *ebx,
--			 unsigned int *ecx, unsigned int *edx)
--{
--	__asm__("cpuid"
--		: "=a" (*eax),
--		  "=b" (*ebx),
--		  "=c" (*ecx),
--		  "=d" (*edx)
--		: "0" (op));
--}
--
--/* Some CPUID calls want 'count' to be placed in ecx */
--static inline void cpuid_count(int op, int count, int *eax, int *ebx, int *ecx,
--			       int *edx)
--{
--	__asm__("cpuid"
--		: "=a" (*eax),
--		  "=b" (*ebx),
--		  "=c" (*ecx),
--		  "=d" (*edx)
--		: "0" (op), "c" (count));
--}
--
--/*
-- * CPUID functions returning a single datum
-- */
--static inline unsigned int cpuid_eax(unsigned int op)
--{
--	unsigned int eax;
--
--	__asm__("cpuid"
--		: "=a" (eax)
--		: "0" (op)
--		: "bx", "cx", "dx");
--	return eax;
--}
--static inline unsigned int cpuid_ebx(unsigned int op)
--{
--	unsigned int eax, ebx;
--
--	__asm__("cpuid"
--		: "=a" (eax), "=b" (ebx)
--		: "0" (op)
--		: "cx", "dx" );
--	return ebx;
--}
--static inline unsigned int cpuid_ecx(unsigned int op)
--{
--	unsigned int eax, ecx;
--
--	__asm__("cpuid"
--		: "=a" (eax), "=c" (ecx)
--		: "0" (op)
--		: "bx", "dx" );
--	return ecx;
--}
--static inline unsigned int cpuid_edx(unsigned int op)
--{
--	unsigned int eax, edx;
--
--	__asm__("cpuid"
--		: "=a" (eax), "=d" (edx)
--		: "0" (op)
--		: "bx", "cx");
--	return edx;
--}
--
- #ifdef CONFIG_SMP
- void rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
- void wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
-diff --git a/include/asm-x86/processor.h b/include/asm-x86/processor.h
-index 46e1c04..a576a72 100644
---- a/include/asm-x86/processor.h
-+++ b/include/asm-x86/processor.h
-@@ -1,5 +1,151 @@
-+#ifndef _X86_PROCESSOR_H_
-+#define _X86_PROCESSOR_H_
-+
-+#include <linux/kernel.h>
-+#include <asm/bug.h>
-+
-+static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
-+				unsigned int *ecx, unsigned int *edx)
-+{
-+	/* ecx is often an input as well as an output. */
-+	__asm__("cpuid"
-+		: "=a" (*eax),
-+		  "=b" (*ebx),
-+		  "=c" (*ecx),
-+		  "=d" (*edx)
-+		: "0" (*eax), "2" (*ecx));
-+}
-+
-+static inline unsigned long native_get_debugreg(int regno)
-+{
-+	unsigned long val = 0; 	/* Damn you, gcc! */
-+
-+	switch (regno) {
-+	case 0:
-+		asm volatile ("mov %%db0, %0" :"=r" (val)); break;
-+	case 1:
-+		asm volatile ("mov %%db1, %0" :"=r" (val)); break;
-+	case 2:
-+		asm volatile ("mov %%db2, %0" :"=r" (val)); break;
-+	case 3:
-+		asm volatile ("mov %%db3, %0" :"=r" (val)); break;
-+	case 6:
-+		asm volatile ("mov %%db6, %0" :"=r" (val)); break;
-+	case 7:
-+		asm volatile ("mov %%db7, %0" :"=r" (val)); break;
-+	default:
-+		WARN_ON(1);
-+	}
-+	return val;
-+}
-+
-+static inline void native_set_debugreg(int regno, unsigned long value)
-+{
-+	switch (regno) {
-+	case 0:
-+		asm("mov %0,%%db0"	:  :"r" (value) : "memory");
-+		break;
-+	case 1:
-+		asm("mov %0,%%db1"	:  :"r" (value) : "memory");
-+		break;
-+	case 2:
-+		asm("mov %0,%%db2"	:  :"r" (value) : "memory");
-+		break;
-+	case 3:
-+		asm("mov %0,%%db3"	:  :"r" (value) : "memory");
-+		break;
-+	case 6:
-+		asm("mov %0,%%db6"	:  :"r" (value) : "memory");
-+		break;
-+	case 7:
-+		asm("mov %0,%%db7"	:  :"r" (value) : "memory");
-+		break;
-+	default:
-+		WARN_ON(1);
-+	}
-+}
-+
- #ifdef CONFIG_X86_32
- # include "processor_32.h"
- #else
- # include "processor_64.h"
- #endif
-+
-+#ifdef CONFIG_PARAVIRT
-+#include <asm/paravirt.h>
-+#else
-+#define paravirt_enabled() 0
-+#define __cpuid native_cpuid
-+#define SWAPGS	swapgs
-+
-+static inline void load_esp0(struct tss_struct *tss,
-+			     struct thread_struct *thread)
-+{
-+	native_load_esp0(tss, thread);
-+}
-+
 +/*
-+ * These special macros can be used to get or set a debugging register
++ * poll_mode_io:1- schedule complete completion from q cmd
 + */
-+#define get_debugreg(var, register)				\
-+	(var) = native_get_debugreg(register)
-+#define set_debugreg(value, register)				\
-+	native_set_debugreg(register, value)
++static unsigned int poll_mode_io;
++module_param_named(poll_mode_io, poll_mode_io, int, 0);
++MODULE_PARM_DESC(poll_mode_io,
++	"Complete cmds from IO path, (default=0)");
 +
-+#define set_iopl_mask native_set_iopl_mask
-+#endif /* CONFIG_PARAVIRT */
-+
-+/*
-+ * Generic CPUID function
-+ * clear %ecx since some cpus (Cyrix MII) do not set or clear %ecx
-+ * resulting in stale register contents being returned.
-+ */
-+static inline void cpuid(unsigned int op, unsigned int *eax, unsigned int *ebx,
-+			 unsigned int *ecx, unsigned int *edx)
-+{
-+	*eax = op;
-+	*ecx = 0;
-+	__cpuid(eax, ebx, ecx, edx);
-+}
-+
-+/* Some CPUID calls want 'count' to be placed in ecx */
-+static inline void cpuid_count(int op, int count, unsigned *eax,
-+			       unsigned *ebx, unsigned *ecx, unsigned *edx)
-+{
-+	*eax = op;
-+	*ecx = count;
-+	__cpuid(eax, ebx, ecx, edx);
-+}
-+
-+/*
-+ * CPUID functions returning a single datum
-+ */
-+static inline unsigned int cpuid_eax(unsigned int op)
-+{
-+	unsigned int eax, ebx, ecx, edx;
-+
-+	cpuid(op, &eax, &ebx, &ecx, &edx);
-+	return eax;
-+}
-+static inline unsigned int cpuid_ebx(unsigned int op)
-+{
-+	unsigned int eax, ebx, ecx, edx;
-+
-+	cpuid(op, &eax, &ebx, &ecx, &edx);
-+	return ebx;
-+}
-+static inline unsigned int cpuid_ecx(unsigned int op)
-+{
-+	unsigned int eax, ebx, ecx, edx;
-+
-+	cpuid(op, &eax, &ebx, &ecx, &edx);
-+	return ecx;
-+}
-+static inline unsigned int cpuid_edx(unsigned int op)
-+{
-+	unsigned int eax, ebx, ecx, edx;
-+
-+	cpuid(op, &eax, &ebx, &ecx, &edx);
-+	return edx;
-+}
-+#endif
-diff --git a/include/asm-x86/processor_32.h b/include/asm-x86/processor_32.h
-index 3b51a18..233fee3 100644
---- a/include/asm-x86/processor_32.h
-+++ b/include/asm-x86/processor_32.h
-@@ -132,17 +132,6 @@ extern void detect_ht(struct cpuinfo_x86 *c);
- static inline void detect_ht(struct cpuinfo_x86 *c) {}
- #endif
+ MODULE_LICENSE("GPL");
+ MODULE_VERSION(MEGASAS_VERSION);
+ MODULE_AUTHOR("megaraidlinux@lsi.com");
+@@ -859,6 +867,12 @@ megasas_queue_command(struct scsi_cmnd *
+ 	atomic_inc(&instance->fw_outstanding);
  
--static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
--					 unsigned int *ecx, unsigned int *edx)
--{
--	/* ecx is often an input as well as an output. */
--	__asm__("cpuid"
--		: "=a" (*eax),
--		  "=b" (*ebx),
--		  "=c" (*ecx),
--		  "=d" (*edx)
--		: "0" (*eax), "2" (*ecx));
--}
+ 	instance->instancet->fire_cmd(cmd->frame_phys_addr ,cmd->frame_count-1,instance->reg_set);
++	/*
++	 * Check if we have pend cmds to be completed
++	 */
++	if (poll_mode_io && atomic_read(&instance->fw_outstanding))
++		tasklet_schedule(&instance->isr_tasklet);
++
  
- #define load_cr3(pgdir) write_cr3(__pa(pgdir))
+ 	return 0;
  
-@@ -505,56 +494,6 @@ static inline void native_load_esp0(struct tss_struct *tss, struct thread_struct
- 	}
+@@ -1891,6 +1905,47 @@ fail_fw_init:
  }
  
--
--static inline unsigned long native_get_debugreg(int regno)
--{
--	unsigned long val = 0; 	/* Damn you, gcc! */
--
--	switch (regno) {
--	case 0:
--		asm("movl %%db0, %0" :"=r" (val)); break;
--	case 1:
--		asm("movl %%db1, %0" :"=r" (val)); break;
--	case 2:
--		asm("movl %%db2, %0" :"=r" (val)); break;
--	case 3:
--		asm("movl %%db3, %0" :"=r" (val)); break;
--	case 6:
--		asm("movl %%db6, %0" :"=r" (val)); break;
--	case 7:
--		asm("movl %%db7, %0" :"=r" (val)); break;
--	default:
--		BUG();
--	}
--	return val;
--}
--
--static inline void native_set_debugreg(int regno, unsigned long value)
--{
--	switch (regno) {
--	case 0:
--		asm("movl %0,%%db0"	: /* no output */ :"r" (value));
--		break;
--	case 1:
--		asm("movl %0,%%db1"	: /* no output */ :"r" (value));
--		break;
--	case 2:
--		asm("movl %0,%%db2"	: /* no output */ :"r" (value));
--		break;
--	case 3:
--		asm("movl %0,%%db3"	: /* no output */ :"r" (value));
--		break;
--	case 6:
--		asm("movl %0,%%db6"	: /* no output */ :"r" (value));
--		break;
--	case 7:
--		asm("movl %0,%%db7"	: /* no output */ :"r" (value));
--		break;
--	default:
--		BUG();
--	}
--}
--
- /*
-  * Set IOPL bits in EFLAGS from given mask
+ /**
++ * megasas_start_timer - Initializes a timer object
++ * @instance:		Adapter soft state
++ * @timer:		timer object to be initialized
++ * @fn:			timer function
++ * @interval:		time interval between timer function call
++ */
++static inline void
++megasas_start_timer(struct megasas_instance *instance,
++			struct timer_list *timer,
++			void *fn, unsigned long interval)
++{
++	init_timer(timer);
++	timer->expires = jiffies + interval;
++	timer->data = (unsigned long)instance;
++	timer->function = fn;
++	add_timer(timer);
++}
++
++/**
++ * megasas_io_completion_timer - Timer fn
++ * @instance_addr:	Address of adapter soft state
++ *
++ * Schedules tasklet for cmd completion
++ * if poll_mode_io is set
++ */
++static void
++megasas_io_completion_timer(unsigned long instance_addr)
++{
++	struct megasas_instance *instance =
++			(struct megasas_instance *)instance_addr;
++
++	if (atomic_read(&instance->fw_outstanding))
++		tasklet_schedule(&instance->isr_tasklet);
++
++	/* Restart timer */
++	if (poll_mode_io)
++		mod_timer(&instance->io_completion_timer,
++			jiffies + MEGASAS_COMPLETION_TIMER_INTERVAL);
++}
++
++/**
+  * megasas_init_mfi -	Initializes the FW
+  * @instance:		Adapter soft state
+  *
+@@ -2016,8 +2071,14 @@ static int megasas_init_mfi(struct megas
+ 	* Setup tasklet for cmd completion
+ 	*/
+ 
+-        tasklet_init(&instance->isr_tasklet, megasas_complete_cmd_dpc,
+-                        (unsigned long)instance);
++	tasklet_init(&instance->isr_tasklet, megasas_complete_cmd_dpc,
++		(unsigned long)instance);
++
++	/* Initialize the cmd completion timer */
++	if (poll_mode_io)
++		megasas_start_timer(instance, &instance->io_completion_timer,
++				megasas_io_completion_timer,
++				MEGASAS_COMPLETION_TIMER_INTERVAL);
+ 	return 0;
+ 
+       fail_fw_init:
+@@ -2577,8 +2638,8 @@ static void megasas_shutdown_controller(
+ }
+ 
+ /**
+- * megasas_suspend -    driver suspend entry point
+- * @pdev:               PCI device structure
++ * megasas_suspend -	driver suspend entry point
++ * @pdev:		PCI device structure
+  * @state:		PCI power state to suspend routine
   */
-@@ -571,82 +510,9 @@ static inline void native_set_iopl_mask(unsigned mask)
- 				: "i" (~X86_EFLAGS_IOPL), "r" (mask));
- }
+ static int __devinit
+@@ -2590,6 +2651,9 @@ megasas_suspend(struct pci_dev *pdev, pm
+ 	instance = pci_get_drvdata(pdev);
+ 	host = instance->host;
  
--#ifdef CONFIG_PARAVIRT
--#include <asm/paravirt.h>
--#else
--#define paravirt_enabled() 0
--#define __cpuid native_cpuid
--
--static inline void load_esp0(struct tss_struct *tss, struct thread_struct *thread)
--{
--	native_load_esp0(tss, thread);
--}
--
--/*
-- * These special macros can be used to get or set a debugging register
-- */
--#define get_debugreg(var, register)				\
--	(var) = native_get_debugreg(register)
--#define set_debugreg(value, register)				\
--	native_set_debugreg(register, value)
--
--#define set_iopl_mask native_set_iopl_mask
--#endif /* CONFIG_PARAVIRT */
--
--/*
-- * Generic CPUID function
-- * clear %ecx since some cpus (Cyrix MII) do not set or clear %ecx
-- * resulting in stale register contents being returned.
-- */
--static inline void cpuid(unsigned int op,
--			 unsigned int *eax, unsigned int *ebx,
--			 unsigned int *ecx, unsigned int *edx)
--{
--	*eax = op;
--	*ecx = 0;
--	__cpuid(eax, ebx, ecx, edx);
--}
--
--/* Some CPUID calls want 'count' to be placed in ecx */
--static inline void cpuid_count(unsigned int op, int count,
--			       unsigned int *eax, unsigned int *ebx,
--			       unsigned int *ecx, unsigned int *edx)
--{
--	*eax = op;
--	*ecx = count;
--	__cpuid(eax, ebx, ecx, edx);
--}
--
--/*
-- * CPUID functions returning a single datum
-- */
--static inline unsigned int cpuid_eax(unsigned int op)
--{
--	unsigned int eax, ebx, ecx, edx;
--
--	cpuid(op, &eax, &ebx, &ecx, &edx);
--	return eax;
--}
--static inline unsigned int cpuid_ebx(unsigned int op)
--{
--	unsigned int eax, ebx, ecx, edx;
--
--	cpuid(op, &eax, &ebx, &ecx, &edx);
--	return ebx;
--}
--static inline unsigned int cpuid_ecx(unsigned int op)
--{
--	unsigned int eax, ebx, ecx, edx;
--
--	cpuid(op, &eax, &ebx, &ecx, &edx);
--	return ecx;
--}
--static inline unsigned int cpuid_edx(unsigned int op)
-+/* We don't really have one */
-+static inline void native_swapgs(void)
++	if (poll_mode_io)
++		del_timer_sync(&instance->io_completion_timer);
++
+ 	megasas_flush_cache(instance);
+ 	megasas_shutdown_controller(instance, MR_DCMD_HIBERNATE_SHUTDOWN);
+ 	tasklet_kill(&instance->isr_tasklet);
+@@ -2676,6 +2740,11 @@ megasas_resume(struct pci_dev *pdev)
+ 	if (megasas_start_aen(instance))
+ 		printk(KERN_ERR "megasas: Start AEN failed\n");
+ 
++	/* Initialize the cmd completion timer */
++	if (poll_mode_io)
++		megasas_start_timer(instance, &instance->io_completion_timer,
++				megasas_io_completion_timer,
++				MEGASAS_COMPLETION_TIMER_INTERVAL);
+ 	return 0;
+ 
+ fail_irq:
+@@ -2714,6 +2783,9 @@ static void megasas_detach_one(struct pc
+ 	instance = pci_get_drvdata(pdev);
+ 	host = instance->host;
+ 
++	if (poll_mode_io)
++		del_timer_sync(&instance->io_completion_timer);
++
+ 	scsi_remove_host(instance->host);
+ 	megasas_flush_cache(instance);
+ 	megasas_shutdown_controller(instance, MR_DCMD_CTRL_SHUTDOWN);
+@@ -3187,7 +3259,7 @@ static DRIVER_ATTR(release_date, S_IRUGO
+ static ssize_t
+ megasas_sysfs_show_dbg_lvl(struct device_driver *dd, char *buf)
  {
--	unsigned int eax, ebx, ecx, edx;
--
--	cpuid(op, &eax, &ebx, &ecx, &edx);
--	return edx;
+-	return sprintf(buf,"%u",megasas_dbg_lvl);
++	return sprintf(buf, "%u\n", megasas_dbg_lvl);
  }
  
- /* generic versions from gas */
-diff --git a/include/asm-x86/processor_64.h b/include/asm-x86/processor_64.h
-index 6c0d96a..befecc6 100644
---- a/include/asm-x86/processor_64.h
-+++ b/include/asm-x86/processor_64.h
-@@ -114,21 +114,13 @@ extern unsigned long mmu_cr4_features;
- static inline void set_in_cr4 (unsigned long mask)
- {
- 	mmu_cr4_features |= mask;
--	__asm__("movq %%cr4,%%rax\n\t"
--		"orq %0,%%rax\n\t"
--		"movq %%rax,%%cr4\n"
--		: : "irg" (mask)
--		:"ax");
-+	write_cr4(read_cr4() | mask);
+ static ssize_t
+@@ -3202,7 +3274,65 @@ megasas_sysfs_set_dbg_lvl(struct device_
  }
  
- static inline void clear_in_cr4 (unsigned long mask)
- {
- 	mmu_cr4_features &= ~mask;
--	__asm__("movq %%cr4,%%rax\n\t"
--		"andq %0,%%rax\n\t"
--		"movq %%rax,%%cr4\n"
--		: : "irg" (~mask)
--		:"ax");
-+	write_cr4(read_cr4() & ~mask);
- }
- 
- 
-@@ -249,6 +241,12 @@ struct thread_struct {
- 	.rsp0 = (unsigned long)&init_stack + sizeof(init_stack) \
- }
- 
-+static inline void native_load_esp0(struct tss_struct *tss,
-+				    struct thread_struct *thread)
+ static DRIVER_ATTR(dbg_lvl, S_IRUGO|S_IWUGO, megasas_sysfs_show_dbg_lvl,
+-		   megasas_sysfs_set_dbg_lvl);
++		megasas_sysfs_set_dbg_lvl);
++
++static ssize_t
++megasas_sysfs_show_poll_mode_io(struct device_driver *dd, char *buf)
 +{
-+	tss->rsp0 = thread->rsp0;
++	return sprintf(buf, "%u\n", poll_mode_io);
 +}
 +
- #define INIT_MMAP \
- { &init_mm, 0, 0, NULL, PAGE_SHARED, VM_READ | VM_WRITE | VM_EXEC, 1, NULL, NULL }
- 
-@@ -264,13 +262,13 @@ struct thread_struct {
- 	set_fs(USER_DS);							 \
- } while(0) 
- 
--#define get_debugreg(var, register)				\
--		__asm__("movq %%db" #register ", %0"		\
--			:"=r" (var))
--#define set_debugreg(value, register)			\
--		__asm__("movq %0,%%db" #register		\
--			: /* no output */			\
--			:"r" (value))
-+extern void native_swapgs(void);
-+
-+/* We have it for simmetry with i386 code, but we don't really use it */
-+static inline void native_set_iopl_mask(unsigned mask)
++static ssize_t
++megasas_sysfs_set_poll_mode_io(struct device_driver *dd,
++				const char *buf, size_t count)
 +{
++	int retval = count;
++	int tmp = poll_mode_io;
++	int i;
++	struct megasas_instance *instance;
 +
++	if (sscanf(buf, "%u", &poll_mode_io) < 1) {
++		printk(KERN_ERR "megasas: could not set poll_mode_io\n");
++		retval = -EINVAL;
++	}
++
++	/*
++	 * Check if poll_mode_io is already set or is same as previous value
++	 */
++	if ((tmp && poll_mode_io) || (tmp == poll_mode_io))
++		goto out;
++
++	if (poll_mode_io) {
++		/*
++		 * Start timers for all adapters
++		 */
++		for (i = 0; i < megasas_mgmt_info.max_index; i++) {
++			instance = megasas_mgmt_info.instance[i];
++			if (instance) {
++				megasas_start_timer(instance,
++					&instance->io_completion_timer,
++					megasas_io_completion_timer,
++					MEGASAS_COMPLETION_TIMER_INTERVAL);
++			}
++		}
++	} else {
++		/*
++		 * Delete timers for all adapters
++		 */
++		for (i = 0; i < megasas_mgmt_info.max_index; i++) {
++			instance = megasas_mgmt_info.instance[i];
++			if (instance)
++				del_timer_sync(&instance->io_completion_timer);
++		}
++	}
++
++out:
++	return retval;
 +}
++
++static DRIVER_ATTR(poll_mode_io, S_IRUGO|S_IWUGO,
++		megasas_sysfs_show_poll_mode_io,
++		megasas_sysfs_set_poll_mode_io);
  
- struct task_struct;
- struct mm_struct;
--- 
-1.4.4.2
+ /**
+  * megasas_init - Driver load entry point
+@@ -3253,8 +3383,16 @@ static int __init megasas_init(void)
+ 				  &driver_attr_dbg_lvl);
+ 	if (rval)
+ 		goto err_dcf_dbg_lvl;
++	rval = driver_create_file(&megasas_pci_driver.driver,
++				  &driver_attr_poll_mode_io);
++	if (rval)
++		goto err_dcf_poll_mode_io;
+ 
+ 	return rval;
++
++err_dcf_poll_mode_io:
++	driver_remove_file(&megasas_pci_driver.driver,
++			   &driver_attr_dbg_lvl);
+ err_dcf_dbg_lvl:
+ 	driver_remove_file(&megasas_pci_driver.driver,
+ 			   &driver_attr_release_date);
+@@ -3273,6 +3411,8 @@ err_pcidrv:
+ static void __exit megasas_exit(void)
+ {
+ 	driver_remove_file(&megasas_pci_driver.driver,
++			   &driver_attr_poll_mode_io);
++	driver_remove_file(&megasas_pci_driver.driver,
+ 			   &driver_attr_dbg_lvl);
+ 	driver_remove_file(&megasas_pci_driver.driver,
+ 			   &driver_attr_release_date);
+diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
+--- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h	2007-11-07 02:37:21.548507528 -0500
++++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h	2007-11-07 02:37:52.932736400 -0500
+@@ -572,6 +572,7 @@ struct megasas_ctrl_info {
+ 
+ #define MFI_OB_INTR_STATUS_MASK			0x00000002
+ #define MFI_POLL_TIMEOUT_SECS			60
++#define MEGASAS_COMPLETION_TIMER_INTERVAL      (HZ/10)
+ 
+ #define MFI_REPLY_1078_MESSAGE_INTERRUPT	0x80000000
+ 
+@@ -1111,6 +1112,8 @@ struct megasas_instance {
+ 
+ 	u8 flag;
+ 	unsigned long last_time;
++
++	struct timer_list io_completion_timer;
+ };
+ 
+ #define MEGASAS_IS_LOGICAL(scp)						\
+
 
