@@ -1,75 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763044AbXKIPWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763196AbXKIP0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763044AbXKIPWS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 10:22:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760658AbXKIPWE
+	id S1763196AbXKIP0q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 10:26:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760358AbXKIP0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 10:22:04 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42751 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758360AbXKIPWD (ORCPT
+	Fri, 9 Nov 2007 10:26:39 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:35723 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760130AbXKIP0i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 10:22:03 -0500
-Date: Fri, 9 Nov 2007 16:21:39 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: prasanna@in.ibm.com, ananth@in.ibm.com, anil.s.keshavamurthy@intel.com,
-       davem@davemloft.net, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] x86 kprobes_64.c: make 3 functions static
-Message-ID: <20071109152139.GF26163@stusta.de>
-References: <20071109060326.GV26163@stusta.de> <20071109070609.3ff46629@laptopd505.fenrus.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20071109070609.3ff46629@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 9 Nov 2007 10:26:38 -0500
+Date: Fri, 9 Nov 2007 10:26:20 -0500
+Message-Id: <200711091526.lA9FQKFe022018@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH mm] unionfs: clear partial read 
+In-reply-to: Your message of "Fri, 09 Nov 2007 07:31:07 GMT."
+             <Pine.LNX.4.64.0711090728130.22720@blonde.wat.veritas.com> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 09, 2007 at 07:06:09AM -0800, Arjan van de Ven wrote:
-> On Fri, 9 Nov 2007 07:03:26 +0100
-> Adrian Bunk <bunk@kernel.org> wrote:
+In message <Pine.LNX.4.64.0711090728130.22720@blonde.wat.veritas.com>, Hugh Dickins writes:
+> unionfs_do_readpage forgot to clear the rest of the page when vfs_read
+> does not fill the page: fix that.
 > 
-> > This patch makes the following needlessly global functions static:
-> > - kprobe_handler()
-> > - trampoline_probe_handler()
-> > - post_kprobe_handler()
-> > 
+> Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> ---
 > 
+>  fs/unionfs/mmap.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 > 
-> while I appreciate your cleanups, I would like to ask you to be a bit
-> careful with the x86/ ones; some of these are for now deliberate to
-> make unification between the 32 and 64 ones possible.. eg we're working
-> on getting the more cosmetic (and in this context, removing a static is
-> more or less cosmetic) changes away so that "diff" shows us the *real*
-> differences between the 32 and 64 bit versions... adding back in the
-> static is the opposite direction ;)
-> 
-> So.. if you find ones that are real for both 32 and 64 bit, by all
-> means, but otherwise be a bit careful..
+> --- 2.6.24-rc1-mm1/fs/unionfs/mmap.c	2007-11-04 13:48:02.000000000 +0000
+> +++ linux/fs/unionfs/mmap.c	2007-11-06 13:51:02.000000000 +0000
+> @@ -176,7 +176,8 @@ static int unionfs_do_readpage(struct fi
+>  	err = vfs_read(lower_file, page_data, PAGE_CACHE_SIZE,
+>  		       &lower_file->f_pos);
+>  	set_fs(old_fs);
+> -
+> +	if (err >= 0 && err < PAGE_CACHE_SIZE)
+> +		memset(page_data + err, 0, PAGE_CACHE_SIZE - err);
+>  	kunmap(page);
+>  
+>  	if (err < 0)
 
-I tried to ensure that my cleanup patches do not make the 32 and 64 bit 
-versions more different.
+Agreed.
 
-And e.g. in this case the kprobe_handler() and post_kprobe_handler() 
-statifications remove the cosmetic difference of the 64bit ones not 
-being static.  ;-)
-
-Anyway, if any or all of my patches conflict with any other work simply 
-ignore them and I'll resend them after 2.6.25-rc1 (if they still both 
-apply and make sense).
-
-> Greetings,
->    Arjan van de Ven
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Erez.
