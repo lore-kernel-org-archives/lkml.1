@@ -1,860 +1,407 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbXKITxL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757598AbXKITx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757298AbXKITxL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 14:53:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbXKITww
+	id S1757598AbXKITx3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 14:53:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbXKITwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 14:52:52 -0500
-Received: from smtp107.sbc.mail.mud.yahoo.com ([68.142.198.206]:32894 "HELO
+	Fri, 9 Nov 2007 14:52:53 -0500
+Received: from smtp107.sbc.mail.mud.yahoo.com ([68.142.198.206]:32907 "HELO
 	smtp107.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756668AbXKITws (ORCPT
+	by vger.kernel.org with SMTP id S1756726AbXKITwt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 14:52:48 -0500
+	Fri, 9 Nov 2007 14:52:49 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=2reT8/qMepxnUc/KiigtjqEOaidqR5Dl9Sw2jGubknOxCLHErFZ591KPMFM44mD77PlrQdvmkFshQ54i20htS0tADaeiMrKRnQl2BwrLUy9K1W3Ar4cbDV9vO9wlcHB5w93O9tjr5Y3EMhOZHY3CXBJBqRDBjTli1XXrwNGoz1s=  ;
-X-YMail-OSG: IfqZ8iQVM1kmxjOFXGVQQffSDd9OQGjw4x8oagLy1EPfU78cRF4ad1V283fhu6wPcDNmPobqEQ--
+  b=Sh/yYRgm96X2vidhKrzruyXmRCuhnvBl+SpFRRI6hgptXYO2hpLaAH8UmkY0IBt8Y/4Cuzubmnf/6aMfnPUB2vUb9kOxUs5/nEkaknOX1Mqwac0QIy74s9np3+igIBKNZKi3GooZSwcOhoptiALD8djE8Ex4wiZpPURbADYLwd0=  ;
+X-YMail-OSG: 26xC_40VM1lx3RccLehjh9bFAEXinuFpGylaUUKXCoyBxgia67ONAtPj6lOz7mlJipb8QLTZEA--
 From: David Brownell <david-b@pacbell.net>
 To: Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: [patch 2.6.24-rc2 1/3] generic gpio -- gpio_chip support
-Date: Fri, 9 Nov 2007 11:36:19 -0800
+Subject: [patch 2.6.24-rc2 2/3] avr32 uses gpio_chip
+Date: Fri, 9 Nov 2007 11:41:36 -0800
 User-Agent: KMail/1.9.6
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Florian Fainelli <florian.fainelli@telecomint.eu>,
        Haavard Skinnemoen <hskinnemoen@atmel.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711091136.20051.david-b@pacbell.net>
+Message-Id: <200711091141.36821.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide new implementation infrastructure that platforms may choose to use
-when implementing the GPIO programming interface.  Platforms can update their
-GPIO support to use this.  In many cases the incremental cost to access a
-non-inlined GPIO should be on the order of a dozen instructions, so it won't
-normally be a problem.  The upside is:
+Teach AVR32 to use the "GPIO Library" when exposing its GPIOs, so that
+signals on external chips (like GPIO expanders) can easily be used.
 
-  * Providing two features which were "want to have (but OK to defer)" when
-    GPIO interfaces were first discussed in November 2006:
+This mostly reorganizes some existing logic, with two minor changes
+in behavior:
 
-    -	A "struct gpio_chip" to plug in GPIOs that aren't directly supported
-	by SOC platforms, but come from FPGAs or other multifunction devices
-	using conventional device registers (like UCB-1x00 or SM501 GPIOs,
-	and southbridges in PCs with more open specs than usual).
+ - The PSR registers are used instead of the previous "gpio_mask" values,
+   matching AT91 behavior and removing some duplication between that role
+   and that of "pinmux_mask".
 
-    -	Full support for message-based GPIO expanders, where registers are
-	accessed through sleeping I/O calls.  Previous support for these
-	"cansleep" calls was just stubs.  (One example: the widely used
-	pcf8574 I2C chips, with 8 GPIOs each.)
+ - NR_IRQs grew to acommodate a bank of external GPIOs.  Eventually this
+   number should probably become a config option.
 
-  * Including a non-stub implementation of the gpio_{request,free}() calls,
-    making those calls much more useful.  The diagnostic labels are also
-    recorded given DEBUG_FS, so /sys/kernel/debug/gpio can show a snapshot
-    of all GPIOs known to this infrastructure.
-
-The driver programming interfaces introduced in 2.6.21 do not change at all;
-this infrastructure is entirely below those covers.
-
-This opens the door to an augmented programming interface, addressing GPIOs
-by chip and index.  That could be used as a performance tweak (lookup once
-then cache, avoiding locking and lookup overheads) or to support transient
-GPIOs not registered in the integer GPIO namespace (maybe a USB-to-GPIO
-adapter, or GPIOs coupled to some other type of add-on card).
+There's a debugfs dump of status for the built-in GPIOs, showing which
+pins have deglitching, pullups, or open drain drive enabled, as well as
+the ID string used when requesting each IRQ.
 
 Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 ---
- Documentation/gpio.txt     |   15 -
- include/asm-generic/gpio.h |  127 ++++++++++
- lib/Kconfig                |    6 
- lib/Kconfig.debug          |    9 
- lib/Makefile               |    2 
- lib/gpiolib.c              |  538 +++++++++++++++++++++++++++++++++++++++++++++
- 6 files changed, 693 insertions(+), 4 deletions(-)
+ arch/avr32/Kconfig                         |    1 
+ arch/avr32/mach-at32ap/pio.c               |  169 +++++++++++++++--------------
+ arch/avr32/mach-at32ap/pio.h               |    2 
+ include/asm-avr32/arch-at32ap/at32ap7000.h |    2 
+ include/asm-avr32/arch-at32ap/gpio.h       |   34 ++++-
+ include/asm-avr32/arch-at32ap/irq.h        |    4 
+ 6 files changed, 118 insertions(+), 94 deletions(-)
 
---- a/Documentation/gpio.txt	2007-11-05 19:44:55.000000000 -0800
-+++ b/Documentation/gpio.txt	2007-11-05 19:44:57.000000000 -0800
-@@ -63,7 +63,9 @@ and that can be critical for glue logic.
- Plus, this doesn't define an implementation framework, just an interface.
- One platform might implement it as simple inline functions accessing chip
- registers; another might implement it by delegating through abstractions
--used for several very different kinds of GPIO controller.
-+used for several very different kinds of GPIO controller.  (There is some
-+library code supporting such an implementation strategy, but drivers acting
-+as clients to the GPIO interface should not care how it's implemented.)
+--- a/arch/avr32/Kconfig	2007-11-02 14:25:24.000000000 -0700
++++ b/arch/avr32/Kconfig	2007-11-05 19:50:05.000000000 -0800
+@@ -86,6 +86,7 @@ config PLATFORM_AT32AP
+ 	select SUBARCH_AVR32B
+ 	select MMU
+ 	select PERFORMANCE_COUNTERS
++	select GPIO_LIB
  
- That said, if the convention is supported on their platform, drivers should
- use it when possible.  Platforms should declare GENERIC_GPIO support in
-@@ -133,6 +135,7 @@ Spinlock-Safe GPIO access
- -------------------------
- Most GPIO controllers can be accessed with memory read/write instructions.
- That doesn't need to sleep, and can safely be done from inside IRQ handlers.
-+(That includes hardirq contexts on RT kernels.)
+ choice
+ 	prompt "AVR32 CPU type"
+--- a/arch/avr32/mach-at32ap/pio.c	2007-11-02 14:25:24.000000000 -0700
++++ b/arch/avr32/mach-at32ap/pio.c	2007-11-05 19:50:05.000000000 -0800
+@@ -28,7 +28,7 @@ struct pio_device {
+ 	const struct platform_device *pdev;
+ 	struct clk *clk;
+ 	u32 pinmux_mask;
+-	u32 gpio_mask;
++	struct gpio_chip chip;
+ 	char name[8];
+ };
  
- Use these calls to access such GPIOs:
+@@ -64,7 +64,8 @@ void __init at32_select_periph(unsigned 
+ 		goto fail;
+ 	}
  
-@@ -223,6 +226,9 @@ Note that requesting a GPIO does NOT cau
- way; it just marks that GPIO as in use.  Separate code must handle any
- pin setup (e.g. controlling which pin the GPIO uses, pullup/pulldown).
+-	if (unlikely(test_and_set_bit(pin_index, &pio->pinmux_mask))) {
++	if (unlikely(test_and_set_bit(pin_index, &pio->pinmux_mask)
++			 || gpiochip_is_requested(&pio->chip, pin_index))) {
+ 		printk("%s: pin %u is busy\n", pio->name, pin_index);
+ 		goto fail;
+ 	}
+@@ -79,9 +80,6 @@ void __init at32_select_periph(unsigned 
+ 	if (!(flags & AT32_GPIOF_PULLUP))
+ 		pio_writel(pio, PUDR, mask);
  
-+Also note that it's your responsibility to have stopped using a GPIO
-+before you free it.
-+
+-	/* gpio_request NOT allowed */
+-	set_bit(pin_index, &pio->gpio_mask);
+-
+ 	return;
  
- GPIOs mapped to IRQs
- --------------------
-@@ -238,7 +244,7 @@ map between them using calls like:
+ fail:
+@@ -130,9 +128,6 @@ void __init at32_select_gpio(unsigned in
  
- Those return either the corresponding number in the other namespace, or
- else a negative errno code if the mapping can't be done.  (For example,
--some GPIOs can't used as IRQs.)  It is an unchecked error to use a GPIO
-+some GPIOs can't be used as IRQs.)  It is an unchecked error to use a GPIO
- number that wasn't set up as an input using gpio_direction_input(), or
- to use an IRQ number that didn't originally come from gpio_to_irq().
+ 	pio_writel(pio, PER, mask);
  
-@@ -299,6 +305,7 @@ Related to multiplexing is configuration
- pulldowns integrated on some platforms.  Not all platforms support them,
- or support them in the same way; and any given board might use external
- pullups (or pulldowns) so that the on-chip ones should not be used.
-+(When a circuit needs 5 kOhm, on-chip 100 kOhm resistors won't do.)
+-	/* gpio_request now allowed */
+-	clear_bit(pin_index, &pio->gpio_mask);
+-
+ 	return;
  
- There are other system-specific mechanisms that are not specified here,
- like the aforementioned options for input de-glitching and wire-OR output.
-@@ -308,8 +315,8 @@ commonly grouped in banks of 16 or 32, w
- banks.)  Some systems can trigger IRQs from output GPIOs.  Code relying on
- such mechanisms will necessarily be nonportable.
+ fail:
+@@ -166,96 +161,50 @@ fail:
  
--Dynamic definition of GPIOs is not currently supported; for example, as
-+Dynamic definition of GPIOs is not currently standard; for example, as
- a side effect of configuring an add-on board with some GPIO expanders.
+ /* GPIO API */
  
- These calls are purely for kernel space, but a userspace API could be built
--on top of it.
-+on top of them.
---- a/include/asm-generic/gpio.h	2007-11-05 19:44:55.000000000 -0800
-+++ b/include/asm-generic/gpio.h	2007-11-05 19:44:57.000000000 -0800
-@@ -1,6 +1,131 @@
- #ifndef _ASM_GENERIC_GPIO_H
- #define _ASM_GENERIC_GPIO_H
+-int gpio_request(unsigned int gpio, const char *label)
++static int direction_input(struct gpio_chip *chip, unsigned offset)
+ {
+-	struct pio_device *pio;
+-	unsigned int pin;
+-
+-	pio = gpio_to_pio(gpio);
+-	if (!pio)
+-		return -ENODEV;
++	struct pio_device *pio = container_of(chip, struct pio_device, chip);
++	u32 mask = 1 << offset;
  
-+#ifdef CONFIG_GPIO_LIB
-+
-+/* Platforms may implement their GPIO interface with library code,
-+ * at a small performance cost for non-inlined operations.
-+ *
-+ * While the GPIO programming interface defines valid GPIO numbers
-+ * to be in the range 0..MAX_INT, this library restricts them to the
-+ * smaller range 0..ARCH_NR_GPIOS and allocates them in groups of
-+ * ARCH_GPIOS_PER_CHIP (which will usually be the word size used for
-+ * each bank of a SOC processor's integrated GPIO modules).
-+ */
-+
-+#ifndef ARCH_NR_GPIOS
-+#define ARCH_NR_GPIOS		512
-+#endif
-+
-+#ifndef ARCH_GPIOS_PER_CHIP
-+#define ARCH_GPIOS_PER_CHIP	BITS_PER_LONG
-+#endif
-+
-+struct seq_file;
-+
-+/**
-+ * struct gpio_chip - abstract a GPIO controller
-+ * @label: for diagnostics
-+ * @direction_input: configures signal "offset" as input, or returns error
-+ * @get: returns value for signal "offset"; for output signals this
-+ *	returns either the value actually sensed, or zero
-+ * @direction_output: configures signal "offset" as output, or returns error
-+ * @set: assigns output value for signal "offset"
-+ * @dbg_show: optional routine to show contents in debugfs; default code
-+ *	will be used when this is omitted, but custom code can show extra
-+ *	state (such as pullup/pulldown configuration).
-+ * @base: identifies the first GPIO number handled by this chip; or, if
-+ *	negative during registration, requests dynamic ID allocation.
-+ * @ngpio: the number of GPIOs handled by this controller; the value must
-+ *	be at most ARCH_GPIOS_PER_CHIP, so the last GPIO handled is
-+ *	(base + ngpio - 1).
-+ * @can_sleep: flag must be set iff get()/set() methods sleep, as they
-+ *	must while accessing GPIO expander chips over I2C or SPI
-+ * @is_out: bit array where bit N is true iff GPIO with offset N has been
-+ *	 called successfully to configure this as an output
-+ *
-+ * A gpio_chip can help platforms abstract various sources of GPIOs so
-+ * they can all be accessed through a common programing interface.
-+ * Example sources would be SOC controllers, FPGAs, multifunction
-+ * chips, dedicated GPIO expanders, and so on.
-+ *
-+ * Each chip controls a number of signals, numbered 0..@ngpio, which are
-+ * identified in method calls by an "offset" value.  When those signals
-+ * are referenced through calls like gpio_get_value(gpio), the offset
-+ * is calculated by subtracting @base from the gpio number.
-+ */
-+struct gpio_chip {
-+	char			*label;
-+
-+	int			(*direction_input)(struct gpio_chip *chip,
-+						unsigned offset);
-+	int			(*get)(struct gpio_chip *chip,
-+						unsigned offset);
-+	int			(*direction_output)(struct gpio_chip *chip,
-+						unsigned offset, int value);
-+	void			(*set)(struct gpio_chip *chip,
-+						unsigned offset, int value);
-+	void			(*dbg_show)(struct seq_file *s,
-+						struct gpio_chip *chip);
-+	int			base;
-+	u16			ngpio;
-+	unsigned		can_sleep:1;
-+
-+	/* other fields are modified by the gpio library only */
-+	DECLARE_BITMAP(is_out, ARCH_GPIOS_PER_CHIP);
-+
-+#ifdef CONFIG_DEBUG_FS
-+	/* fat bits */
-+	const char		*requested[ARCH_GPIOS_PER_CHIP];
-+#else
-+	/* thin bits */
-+	DECLARE_BITMAP(requested, ARCH_GPIOS_PER_CHIP);
-+#endif
-+};
-+
-+/* returns true iff a given gpio signal has been requested;
-+ * primarily for code dumping gpio_chip state.
-+ */
-+static inline int
-+gpiochip_is_requested(struct gpio_chip *chip, unsigned offset)
-+{
-+#ifdef CONFIG_DEBUG_FS
-+	return chip->requested[offset] != NULL;
-+#else
-+	return test_bit(offset, chip->requested);
-+#endif
-+}
-+
-+/* add/remove chips */
-+extern int gpiochip_add(struct gpio_chip *chip);
-+extern int __must_check gpiochip_remove(struct gpio_chip *chip);
-+
-+
-+/* Always use the library code for GPIO management calls,
-+ * or when sleeping may be involved.
-+ */
-+extern int gpio_request(unsigned gpio, const char *label);
-+extern void gpio_free(unsigned gpio);
-+
-+extern int gpio_direction_input(unsigned gpio);
-+extern int gpio_direction_output(unsigned gpio, int value);
-+
-+extern int gpio_get_value_cansleep(unsigned gpio);
-+extern void gpio_set_value_cansleep(unsigned gpio, int value);
-+
-+
-+/* A platform's <asm/gpio.h> code may want to inline the I/O calls when
-+ * the GPIO is constant and refers to some always-present controller,
-+ * giving direct access to chip registers and tight bitbanging loops.
-+ */
-+extern int __gpio_get_value(unsigned gpio);
-+extern void __gpio_set_value(unsigned gpio, int value);
-+
-+extern int __gpio_cansleep(unsigned gpio);
-+
-+
-+#else
-+
- /* platforms that don't directly support access to GPIOs through I2C, SPI,
-  * or other blocking infrastructure can use these wrappers.
-  */
-@@ -22,4 +147,6 @@ static inline void gpio_set_value_cansle
- 	gpio_set_value(gpio, value);
+-	pin = gpio & 0x1f;
+-	if (test_and_set_bit(pin, &pio->gpio_mask))
+-		return -EBUSY;
++	if (!(pio_readl(pio, PSR) & mask))
++		return -EINVAL;
+ 
++	pio_writel(pio, ODR, mask);
+ 	return 0;
  }
+-EXPORT_SYMBOL(gpio_request);
  
-+#endif
-+
- #endif /* _ASM_GENERIC_GPIO_H */
---- a/lib/Kconfig	2007-11-05 19:44:55.000000000 -0800
-+++ b/lib/Kconfig	2007-11-05 19:44:57.000000000 -0800
-@@ -141,4 +141,10 @@ config HAS_DMA
- config CHECK_SIGNATURE
- 	bool
+-void gpio_free(unsigned int gpio)
++static int gpio_get(struct gpio_chip *chip, unsigned offset)
+ {
+-	struct pio_device *pio;
+-	unsigned int pin;
+-
+-	pio = gpio_to_pio(gpio);
+-	if (!pio) {
+-		printk(KERN_ERR
+-		       "gpio: attempted to free invalid pin %u\n", gpio);
+-		return;
+-	}
++	struct pio_device *pio = container_of(chip, struct pio_device, chip);
  
-+#
-+# gpiolib is selected if needed
-+#
-+config GPIO_LIB
-+	boolean
-+
- endmenu
---- a/lib/Kconfig.debug	2007-11-05 19:44:55.000000000 -0800
-+++ b/lib/Kconfig.debug	2007-11-05 19:44:57.000000000 -0800
-@@ -156,6 +156,15 @@ config DEBUG_SLAB
- 	  allocation as well as poisoning memory on free to catch use of freed
- 	  memory. This can make kmalloc/kfree-intensive workloads much slower.
+-	pin = gpio & 0x1f;
+-	if (!test_and_clear_bit(pin, &pio->gpio_mask))
+-		printk(KERN_ERR "gpio: freeing free or non-gpio pin %s-%u\n",
+-		       pio->name, pin);
++	return (pio_readl(pio, PDSR) >> offset) & 1;
+ }
+-EXPORT_SYMBOL(gpio_free);
  
-+config DEBUG_GPIO
-+	bool "Debug GPIO calls"
-+	depends on DEBUG_KERNEL && GPIO_LIB
-+	help
-+	  Say Y here to add some extra checks to GPIO calls, ensuring that
-+	  GPIOs have been properly initialized before they are used and
-+	  that sleeping calls aren't made from nonsleeping contexts.  This
-+	  can make bitbanged serial protocols slower.
-+
- config DEBUG_SLAB_LEAK
- 	bool "Memory leak debugging"
- 	depends on DEBUG_SLAB
---- a/lib/Makefile	2007-11-05 19:44:55.000000000 -0800
-+++ b/lib/Makefile	2007-11-05 19:44:57.000000000 -0800
-@@ -68,6 +68,8 @@ obj-$(CONFIG_FAULT_INJECTION) += fault-i
+-int gpio_direction_input(unsigned int gpio)
+-{
+-	struct pio_device *pio;
+-	unsigned int pin;
+-
+-	pio = gpio_to_pio(gpio);
+-	if (!pio)
+-		return -ENODEV;
+-
+-	pin = gpio & 0x1f;
+-	pio_writel(pio, ODR, 1 << pin);
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL(gpio_direction_input);
++static void gpio_set(struct gpio_chip *chip, unsigned offset, int value);
  
- lib-$(CONFIG_GENERIC_BUG) += bug.o
+-int gpio_direction_output(unsigned int gpio, int value)
++static int direction_output(struct gpio_chip *chip, unsigned offset, int value)
+ {
+-	struct pio_device *pio;
+-	unsigned int pin;
+-
+-	pio = gpio_to_pio(gpio);
+-	if (!pio)
+-		return -ENODEV;
+-
+-	gpio_set_value(gpio, value);
++	struct pio_device *pio = container_of(chip, struct pio_device, chip);
++	u32 mask = 1 << offset;
  
-+lib-$(CONFIG_GPIO_LIB) += gpiolib.o
-+
- hostprogs-y	:= gen_crc32table
- clean-files	:= crc32table.h
- 
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ b/lib/gpiolib.c	2007-11-05 19:44:57.000000000 -0800
-@@ -0,0 +1,538 @@
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/irq.h>
-+#include <linux/spinlock.h>
-+
-+#include <asm/gpio.h>
-+
-+
-+/* Optional implementation infrastructure for GPIO interfaces.
-+ *
-+ * Platforms may want to use this if they tend to use very many GPIOs
-+ * that aren't part of a System-On-Chip core; or across I2C/SPI/etc.
-+ *
-+ * When kernel footprint or instruction count is an issue, simpler
-+ * implementations may be preferred.  The GPIO programming interface
-+ * allows for inlining speed-critical get/set operations for common
-+ * cases, so that access to SOC-integrated GPIOs can sometimes cost
-+ * only an instruction or two per bit.
-+ */
-+
-+
-+/* When debugging, extend minimal trust to callers and platform code.
-+ * Otherwise, minimize overhead in what may be bitbanging codepaths.
-+ */
-+#ifdef	CONFIG_DEBUG_GPIO
-+#define	extra_checks	1
-+#else
-+#define	extra_checks	0
-+#endif
-+
-+/* gpio_lock protects the table of chips and to gpio_chip->requested.
-+ * While any gpio is requested, its gpio_chip is not removable.  It's
-+ * a raw spinlock to ensure safe access from hardirq contexts, and to
-+ * shrink bitbang overhead:  per-bit preemption would be very wrong.
-+ */
-+static raw_spinlock_t gpio_lock = __RAW_SPIN_LOCK_UNLOCKED;
-+static struct gpio_chip *chips[DIV_ROUND_UP(ARCH_NR_GPIOS,
-+					ARCH_GPIOS_PER_CHIP)];
-+
-+
-+/* Warn when drivers omit gpio_request() calls -- legal but
-+ * ill-advised when setting direction, and otherwise illegal.
-+ */
-+static void gpio_ensure_requested(struct gpio_chip *chip, unsigned offset)
-+{
-+	int		requested;
-+
-+#ifdef CONFIG_DEBUG_FS
-+	requested = (int) chip->requested[offset];
-+	if (!requested)
-+		chip->requested[offset] = "[auto]";
-+#else
-+	requested = test_and_set_bit(offset, chip->requested);
-+#endif
-+
-+	if (!requested)
-+		printk(KERN_DEBUG "GPIO-%d autorequested\n",
-+				chip->base + offset);
-+}
-+
-+/* caller holds gpio_lock */
-+static inline struct gpio_chip *gpio_to_chip(unsigned gpio)
-+{
-+	return chips[gpio / ARCH_GPIOS_PER_CHIP];
-+}
-+
-+/**
-+ * gpiochip_add() - register a gpio_chip
-+ * @chip: the chip to register, with chip->base initialized
-+ * Context: potentially before irqs or kmalloc will work
-+ *
-+ * Returns a negative errno if the chip can't be registered, such as
-+ * because the chip->base is invalid or already associated with a
-+ * different chip.  Otherwise it returns zero as a success code.
-+ */
-+int gpiochip_add(struct gpio_chip *chip)
-+{
-+	unsigned long	flags;
-+	int		status = 0;
-+	unsigned	id;
-+
-+	if (chip->base < 0 || (chip->base % ARCH_GPIOS_PER_CHIP) != 0)
+-	pin = gpio & 0x1f;
+-	pio_writel(pio, OER, 1 << pin);
++	if (!(pio_readl(pio, PSR) & mask))
 +		return -EINVAL;
-+	if ((chip->base + chip->ngpio) >= ARCH_NR_GPIOS)
-+		return -EINVAL;
-+	if (chip->ngpio > ARCH_GPIOS_PER_CHIP)
-+		return -EINVAL;
-+
-+	local_irq_save(flags);
-+	__raw_spin_lock(&gpio_lock);
-+
-+	id = chip->base / ARCH_GPIOS_PER_CHIP;
-+	if (chips[id] == NULL)
-+		chips[id] = chip;
-+	else
-+		status = -EBUSY;
-+
-+	__raw_spin_unlock(&gpio_lock);
-+	local_irq_restore(flags);
-+	return status;
-+}
-+EXPORT_SYMBOL_GPL(gpiochip_add);
-+
-+/**
-+ * gpiochip_remove() - unregister a gpio_chip
-+ * @chip: the chip to unregister
-+ *
-+ * A gpio_chip with any GPIOs still requested may not be removed.
-+ */
-+int gpiochip_remove(struct gpio_chip *chip)
-+{
-+	unsigned long	flags;
-+	int		status = 0;
-+	int		offset;
-+	unsigned	id = chip->base / ARCH_GPIOS_PER_CHIP;
-+
-+	local_irq_save(flags);
-+	__raw_spin_lock(&gpio_lock);
-+
-+	for (offset = 0; offset < chip->ngpio; offset++) {
-+		if (gpiochip_is_requested(chip, offset)) {
-+			status = -EBUSY;
-+			break;
-+		}
-+	}
-+
-+	if (status == 0) {
-+		if (chips[id] == chip)
-+			chips[id] = NULL;
-+		else
-+			status = -EINVAL;
-+	}
-+
-+	__raw_spin_unlock(&gpio_lock);
-+	local_irq_restore(flags);
-+	return status;
-+}
-+EXPORT_SYMBOL_GPL(gpiochip_remove);
-+
-+
-+/* These "optional" allocation calls help prevent drivers from stomping
-+ * on each other, and help provide better diagnostics in debugfs.
-+ * They're called even less than the "set direction" calls.
-+ */
-+int gpio_request(unsigned gpio, const char *label)
-+{
-+	struct gpio_chip	*chip;
-+	int			status = -EINVAL;
-+	unsigned long		flags;
-+
-+	local_irq_save(flags);
-+	__raw_spin_lock(&gpio_lock);
-+
-+	chip = gpio_to_chip(gpio);
-+	if (!chip)
-+		goto done;
-+	gpio -= chip->base;
-+	if (gpio >= chip->ngpio)
-+		goto done;
-+
-+	/* NOTE:  gpio_request() can be called in early boot,
-+	 * before IRQs are enabled.
-+	 */
-+
-+	status = 0;
-+#ifdef CONFIG_DEBUG_FS
-+	if (!label)
-+		label = "?";
-+	if (chip->requested[gpio])
-+		status = -EBUSY;
-+	else
-+		chip->requested[gpio] = label;
-+#else
-+	if (test_and_set_bit(gpio, chip->requested))
-+		status = -EBUSY;
-+#endif
-+
-+done:
-+	__raw_spin_unlock(&gpio_lock);
-+	local_irq_restore(flags);
-+	return status;
-+}
-+EXPORT_SYMBOL_GPL(gpio_request);
-+
-+void gpio_free(unsigned gpio)
-+{
-+	unsigned long		flags;
-+	struct gpio_chip	*chip;
-+
-+	local_irq_save(flags);
-+	__raw_spin_lock(&gpio_lock);
-+
-+	chip = gpio_to_chip(gpio);
-+	if (!chip)
-+		goto done;
-+	gpio -= chip->base;
-+	if (gpio >= chip->ngpio)
-+		goto done;
-+
-+#ifdef CONFIG_DEBUG_FS
-+	if (chip->requested[gpio])
-+		chip->requested[gpio] = NULL;
-+	else
-+		chip = NULL;
-+#else
-+	if (!test_and_clear_bit(gpio, chip->requested))
-+		chip = NULL;
-+#endif
-+	WARN_ON(extra_checks && chip == NULL);
-+done:
-+	__raw_spin_unlock(&gpio_lock);
-+	local_irq_restore(flags);
-+}
-+EXPORT_SYMBOL_GPL(gpio_free);
-+
-+
-+
-+/* Drivers MUST make configuration calls before get/set calls
-+ *
-+ * As a rule these aren't called more than once (except for drivers
-+ * using the open-drain emulation idiom) so these are natural places
-+ * to accumulate extra debugging checks.  Note that we can't rely on
-+ * gpio_request() having been called beforehand.
-+ */
-+
-+int gpio_direction_input(unsigned gpio)
-+{
-+	unsigned long		flags;
-+	struct gpio_chip	*chip;
-+	int			status = -EINVAL;
-+
-+	local_irq_save(flags);
-+	__raw_spin_lock(&gpio_lock);
-+
-+	chip = gpio_to_chip(gpio);
-+	if (!chip || !chip->get || !chip->direction_input)
-+		goto fail;
-+	gpio -= chip->base;
-+	if (gpio >= chip->ngpio)
-+		goto fail;
-+	gpio_ensure_requested(chip, gpio);
-+
-+	/* now we know the gpio is valid and chip won't vanish */
-+
-+	__raw_spin_unlock(&gpio_lock);
-+	local_irq_restore(flags);
-+
-+	might_sleep_if(extra_checks && chip->can_sleep);
-+
-+	status = chip->direction_input(chip, gpio);
-+	if (status == 0)
-+		clear_bit(gpio, chip->is_out);
-+	return status;
-+fail:
-+	__raw_spin_unlock(&gpio_lock);
-+	local_irq_restore(flags);
-+	return status;
-+}
-+EXPORT_SYMBOL_GPL(gpio_direction_input);
-+
-+int gpio_direction_output(unsigned gpio, int value)
-+{
-+	unsigned long		flags;
-+	struct gpio_chip	*chip;
-+	int			status = -EINVAL;
-+
-+	local_irq_save(flags);
-+	__raw_spin_lock(&gpio_lock);
-+
-+	chip = gpio_to_chip(gpio);
-+	if (!chip || !chip->set || !chip->direction_output)
-+		goto fail;
-+	gpio -= chip->base;
-+	if (gpio >= chip->ngpio)
-+		goto fail;
-+	gpio_ensure_requested(chip, gpio);
-+
-+	/* now we know the gpio is valid and chip won't vanish */
-+
-+	__raw_spin_unlock(&gpio_lock);
-+	local_irq_restore(flags);
-+
-+	might_sleep_if(extra_checks && chip->can_sleep);
-+
-+	status = chip->direction_output(chip, gpio, value);
-+	if (status == 0)
-+		set_bit(gpio, chip->is_out);
-+	return status;
-+fail:
-+	__raw_spin_unlock(&gpio_lock);
-+	local_irq_restore(flags);
-+	return status;
-+}
-+EXPORT_SYMBOL_GPL(gpio_direction_output);
-+
-+
-+/* I/O calls are only valid after configuration completed; the relevant
-+ * "is this a valid GPIO" error checks should already have been done.
-+ *
-+ * "Get" operations are often inlinable as reading a pin value register,
-+ * and masking the relevant bit in that register.
-+ *
-+ * When "set" operations are inlinable, they involve writing that mask to
-+ * one register to set a low value, or a different register to set it high.
-+ * Otherwise locking is needed, so there may be little value to inlining.
-+ */
-+int __gpio_get_value(unsigned gpio)
-+{
-+	unsigned long		flags;
-+	struct gpio_chip	*chip;
-+
-+	local_irq_save(flags);
-+	__raw_spin_lock(&gpio_lock);
-+
-+	chip = gpio_to_chip(gpio);
-+	if (extra_checks)
-+		gpio_ensure_requested(chip, gpio - chip->base);
-+
-+	__raw_spin_unlock(&gpio_lock);
-+	local_irq_restore(flags);
-+
-+	WARN_ON(extra_checks && chip->can_sleep);
-+	return chip->get(chip, gpio - chip->base);
-+}
-+EXPORT_SYMBOL_GPL(__gpio_get_value);
-+
-+void __gpio_set_value(unsigned gpio, int value)
-+{
-+	unsigned long		flags;
-+	struct gpio_chip	*chip;
-+
-+	local_irq_save(flags);
-+	__raw_spin_lock(&gpio_lock);
-+
-+	chip = gpio_to_chip(gpio);
-+	if (extra_checks)
-+		gpio_ensure_requested(chip, gpio - chip->base);
-+
-+	__raw_spin_unlock(&gpio_lock);
-+	local_irq_restore(flags);
-+
-+	WARN_ON(extra_checks && chip->can_sleep);
-+	chip->set(chip, gpio - chip->base, value);
-+}
-+EXPORT_SYMBOL_GPL(__gpio_set_value);
-+
-+int __gpio_cansleep(unsigned gpio)
-+{
-+	unsigned long		flags;
-+	struct gpio_chip	*chip;
-+
-+	local_irq_save(flags);
-+	__raw_spin_lock(&gpio_lock);
-+
-+	chip = gpio_to_chip(gpio);
-+	if (extra_checks)
-+		gpio_ensure_requested(chip, gpio - chip->base);
-+
-+	__raw_spin_unlock(&gpio_lock);
-+	local_irq_restore(flags);
-+
-+	return chip->can_sleep;
-+}
-+EXPORT_SYMBOL_GPL(__gpio_cansleep);
-+
-+
-+
-+/* There's no value in inlining GPIO calls that may sleep.
-+ * Common examples include ones connected to I2C or SPI chips.
-+ */
-+
-+int gpio_get_value_cansleep(unsigned gpio)
-+{
-+	unsigned long		flags;
-+	struct gpio_chip	*chip;
-+
-+	might_sleep_if(extra_checks);
-+
-+	local_irq_save(flags);
-+	__raw_spin_lock(&gpio_lock);
-+
-+	chip = gpio_to_chip(gpio);
-+	if (extra_checks)
-+		gpio_ensure_requested(chip, gpio - chip->base);
-+
-+	__raw_spin_unlock(&gpio_lock);
-+	local_irq_restore(flags);
-+
-+	return chip->get(chip, gpio - chip->base);
-+}
-+EXPORT_SYMBOL_GPL(gpio_get_value_cansleep);
-+
-+void gpio_set_value_cansleep(unsigned gpio, int value)
-+{
-+	unsigned long		flags;
-+	struct gpio_chip	*chip;
-+
-+	might_sleep_if(extra_checks);
-+
-+	local_irq_save(flags);
-+	__raw_spin_lock(&gpio_lock);
-+
-+	chip = gpio_to_chip(gpio);
-+	if (extra_checks)
-+		gpio_ensure_requested(chip, gpio - chip->base);
-+
-+	__raw_spin_unlock(&gpio_lock);
-+	local_irq_restore(flags);
-+
-+	chip->set(chip, gpio - chip->base, value);
-+}
-+EXPORT_SYMBOL_GPL(gpio_set_value_cansleep);
-+
-+
+ 
++	gpio_set(chip, offset, value);
++	pio_writel(pio, OER, mask);
+ 	return 0;
+ }
+-EXPORT_SYMBOL(gpio_direction_output);
+-
+-int gpio_get_value(unsigned int gpio)
+-{
+-	struct pio_device *pio = &pio_dev[gpio >> 5];
+ 
+-	return (pio_readl(pio, PDSR) >> (gpio & 0x1f)) & 1;
+-}
+-EXPORT_SYMBOL(gpio_get_value);
+-
+-void gpio_set_value(unsigned int gpio, int value)
++static void gpio_set(struct gpio_chip *chip, unsigned offset, int value)
+ {
+-	struct pio_device *pio = &pio_dev[gpio >> 5];
+-	u32 mask;
++	struct pio_device *pio = container_of(chip, struct pio_device, chip);
++	u32 mask = 1 << offset;
+ 
+-	mask = 1 << (gpio & 0x1f);
+ 	if (value)
+ 		pio_writel(pio, SODR, mask);
+ 	else
+ 		pio_writel(pio, CODR, mask);
+ }
+-EXPORT_SYMBOL(gpio_set_value);
+ 
+ /*--------------------------------------------------------------------------*/
+ 
+@@ -339,6 +288,60 @@ gpio_irq_setup(struct pio_device *pio, i
+ 
+ /*--------------------------------------------------------------------------*/
+ 
 +#ifdef CONFIG_DEBUG_FS
 +
-+#include <linux/debugfs.h>
 +#include <linux/seq_file.h>
 +
-+
-+static void gpiolib_dbg_show(struct seq_file *s, struct gpio_chip *chip)
++/*
++ * This shows more info than the generic gpio dump code:
++ * pullups, deglitching, open drain drive.
++ */
++static void pio_bank_show(struct seq_file *s, struct gpio_chip *chip)
 +{
-+	unsigned	i;
++	struct pio_device *pio = container_of(chip, struct pio_device, chip);
++	u32			psr, osr, imr, pdsr, pusr, ifsr, mdsr;
++	unsigned		i;
++	u32			mask;
++	char			bank;
 +
-+	for (i = 0; i < chip->ngpio; i++) {
-+		unsigned	gpio;
-+		int		is_out;
++	psr = pio_readl(pio, PSR);
++	osr = pio_readl(pio, OSR);
++	imr = pio_readl(pio, IMR);
++	pdsr = pio_readl(pio, PDSR);
++	pusr = pio_readl(pio, PUSR);
++	ifsr = pio_readl(pio, IFSR);
++	mdsr = pio_readl(pio, MDSR);
 +
-+		if (!chip->requested[i])
++	bank = 'A' + pio->pdev->id;
++
++	for (i = 0, mask = 1; i < 32; i++, mask <<= 1) {
++		if (!gpiochip_is_requested(chip, i))
 +			continue;
 +
-+		gpio = chip->base + i;
-+		is_out = test_bit(i, chip->is_out);
-+
-+		seq_printf(s, " gpio-%-3d (%-12s) %s %s",
-+			gpio, chip->requested[i],
-+			is_out ? "out" : "in ",
-+			chip->get
-+				? (chip->get(chip, i) ? "hi" : "lo")
-+				: "?  ");
-+
-+		if (!is_out) {
-+			int		irq = gpio_to_irq(gpio);
-+			struct irq_desc	*desc = irq_desc + irq;
-+
-+			/* This races with request_irq(), set_irq_type(),
-+			 * and set_irq_wake() ... but those are "rare".
-+			 *
-+			 * More significantly, trigger type flags aren't
-+			 * currently maintained by genirq.
-+			 */
-+			if (irq >= 0 && desc->action) {
-+				char *trigger;
-+
-+				switch (desc->status & IRQ_TYPE_SENSE_MASK) {
-+				case IRQ_TYPE_NONE:
-+					trigger = "(default)";
-+					break;
-+				case IRQ_TYPE_EDGE_FALLING:
-+					trigger = "edge-falling";
-+					break;
-+				case IRQ_TYPE_EDGE_RISING:
-+					trigger = "edge-rising";
-+					break;
-+				case IRQ_TYPE_EDGE_BOTH:
-+					trigger = "edge-both";
-+					break;
-+				case IRQ_TYPE_LEVEL_HIGH:
-+					trigger = "level-high";
-+					break;
-+				case IRQ_TYPE_LEVEL_LOW:
-+					trigger = "level-low";
-+					break;
-+				default:
-+					trigger = "?trigger?";
-+					break;
-+				}
-+
-+				seq_printf(s, " irq-%d %s%s",
-+					irq, trigger,
-+					(desc->status & IRQ_WAKEUP)
-+						? " wakeup" : "");
-+			}
-+		}
-+
++		seq_printf(s, " gpio-%-3d P%c%-2d (%-12s) %s %s %s",
++			chip->base + i, bank, i,
++			chip->requested[i],
++			(osr & mask) ? "out" : "in ",
++			(mask & pdsr) ? "hi" : "lo",
++			(mask & pusr) ? "  " : "up");
++		if (ifsr & mask)
++			seq_printf(s, " deglitch");
++		if ((osr & mdsr) & mask)
++			seq_printf(s, " open-drain");
++		if (imr & mask)
++			seq_printf(s, " irq-%d edge-both",
++				gpio_to_irq(chip->base + i));
 +		seq_printf(s, "\n");
 +	}
 +}
 +
-+static int gpiolib_show(struct seq_file *s, void *unused)
++#else
++#define pio_bank_show	NULL
++#endif
++
++
++/*--------------------------------------------------------------------------*/
++
+ static int __init pio_probe(struct platform_device *pdev)
+ {
+ 	struct pio_device *pio = NULL;
+@@ -349,6 +352,18 @@ static int __init pio_probe(struct platf
+ 	pio = &pio_dev[pdev->id];
+ 	BUG_ON(!pio->regs);
+ 
++	pio->chip.label = pio->name;
++	pio->chip.base = pdev->id * 32;
++	pio->chip.ngpio = 32;
++
++	pio->chip.direction_input = direction_input;
++	pio->chip.get = gpio_get;
++	pio->chip.direction_output = direction_output;
++	pio->chip.set = gpio_set;
++	pio->chip.dbg_show = pio_bank_show;
++
++	gpiochip_add(&pio->chip);
++
+ 	gpio_irq_setup(pio, irq, gpio_irq_base);
+ 
+ 	platform_set_drvdata(pdev, pio);
+@@ -406,12 +421,6 @@ void __init at32_init_pio(struct platfor
+ 	pio->pdev = pdev;
+ 	pio->regs = ioremap(regs->start, regs->end - regs->start + 1);
+ 
+-	/*
+-	 * request_gpio() is only valid for pins that have been
+-	 * explicitly configured as GPIO and not previously requested
+-	 */
+-	pio->gpio_mask = ~0UL;
+-
+ 	/* start with irqs disabled and acked */
+ 	pio_writel(pio, IDR, ~0UL);
+ 	(void) pio_readl(pio, ISR);
+--- a/arch/avr32/mach-at32ap/pio.h	2007-11-02 14:25:24.000000000 -0700
++++ b/arch/avr32/mach-at32ap/pio.h	2007-11-05 19:50:05.000000000 -0800
+@@ -19,7 +19,7 @@
+ #define PIO_OSR                                0x0018
+ #define PIO_IFER                               0x0020
+ #define PIO_IFDR                               0x0024
+-#define PIO_ISFR                               0x0028
++#define PIO_IFSR                               0x0028
+ #define PIO_SODR                               0x0030
+ #define PIO_CODR                               0x0034
+ #define PIO_ODSR                               0x0038
+--- a/include/asm-avr32/arch-at32ap/at32ap7000.h	2007-11-02 14:25:24.000000000 -0700
++++ b/include/asm-avr32/arch-at32ap/at32ap7000.h	2007-11-05 19:50:05.000000000 -0800
+@@ -13,8 +13,6 @@
+ #define GPIO_PERIPH_A	0
+ #define GPIO_PERIPH_B	1
+ 
+-#define NR_GPIO_CONTROLLERS	4
+-
+ /*
+  * Pin numbers identifying specific GPIO pins on the chip. They can
+  * also be converted to IRQ numbers by passing them through
+--- a/include/asm-avr32/arch-at32ap/gpio.h	2007-11-02 14:25:24.000000000 -0700
++++ b/include/asm-avr32/arch-at32ap/gpio.h	2007-11-05 19:56:33.000000000 -0800
+@@ -5,20 +5,36 @@
+ #include <asm/irq.h>
+ 
+ 
+-/* Arch-neutral GPIO API */
+-int __must_check gpio_request(unsigned int gpio, const char *label);
+-void gpio_free(unsigned int gpio);
++/* Some GPIO chips can manage IRQs; some can't.  The exact numbers can
++ * be changed if needed, but for the moment they're not configurable.
++ */
++#define ARCH_NR_GPIOS	(NR_GPIO_IRQS + 2 * ARCH_GPIOS_PER_CHIP)
+ 
+-int gpio_direction_input(unsigned int gpio);
+-int gpio_direction_output(unsigned int gpio, int value);
+-int gpio_get_value(unsigned int gpio);
+-void gpio_set_value(unsigned int gpio, int value);
+ 
+-#include <asm-generic/gpio.h>		/* cansleep wrappers */
++/* Arch-neutral GPIO API, supporting both "native" and external GPIOs. */
++#include <asm-generic/gpio.h>
++
++static inline int gpio_get_value(unsigned int gpio)
 +{
-+	struct gpio_chip	*chip;
-+	unsigned		id;
-+	int			started = 0;
-+
-+	/* REVISIT this isn't locked against gpio_chip removal ... */
-+
-+	for (id = 0; id < ARRAY_SIZE(chips); id++) {
-+		chip = chips[id];
-+		if (!chip)
-+			continue;
-+
-+		seq_printf(s, "%sGPIOs %d-%d, %s%s:\n",
-+				started ? "\n" : "",
-+				chip->base, chip->base + chip->ngpio - 1,
-+				chip->label ? : "generic",
-+				chip->can_sleep ? ", can sleep" : "");
-+		started = 1;
-+		if (chip->dbg_show)
-+			chip->dbg_show(s, chip);
-+		else
-+			gpiolib_dbg_show(s, chip);
-+	}
-+	return 0;
++	return __gpio_get_value(gpio);
 +}
 +
-+static int gpiolib_open(struct inode *inode, struct file *file)
++static inline void gpio_set_value(unsigned int gpio, int value)
 +{
-+	return single_open(file, gpiolib_show, NULL);
++	__gpio_set_value(gpio, value);
 +}
 +
-+static struct file_operations gpiolib_operations = {
-+	.open		= gpiolib_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+static int __init gpiolib_debugfs_init(void)
++static inline int gpio_cansleep(unsigned int gpio)
 +{
-+	/* /sys/kernel/debug/gpio */
-+	(void) debugfs_create_file("gpio", S_IFREG | S_IRUGO,
-+				NULL, NULL, &gpiolib_operations);
-+	return 0;
++	return __gpio_cansleep(gpio);
 +}
-+postcore_initcall(gpiolib_debugfs_init);
 +
-+#endif	/* DEBUG_FS */
+ 
+ static inline int gpio_to_irq(unsigned int gpio)
+ {
+-	return gpio + GPIO_IRQ_BASE;
++	if (gpio < NR_GPIO_IRQS)
++		return gpio + GPIO_IRQ_BASE;
++	return -EINVAL;
+ }
+ 
+ static inline int irq_to_gpio(unsigned int irq)
+--- a/include/asm-avr32/arch-at32ap/irq.h	2007-11-02 14:25:24.000000000 -0700
++++ b/include/asm-avr32/arch-at32ap/irq.h	2007-11-05 19:50:05.000000000 -0800
+@@ -3,11 +3,11 @@
+ 
+ #define EIM_IRQ_BASE	NR_INTERNAL_IRQS
+ #define NR_EIM_IRQS	32
+-
+ #define AT32_EXTINT(n)	(EIM_IRQ_BASE + (n))
+ 
+ #define GPIO_IRQ_BASE	(EIM_IRQ_BASE + NR_EIM_IRQS)
+-#define NR_GPIO_IRQS	(5 * 32)
++#define NR_GPIO_CTLR	(5 /*internal*/ + 1 /*external*/)
++#define NR_GPIO_IRQS	(NR_GPIO_CTLR * 32)
+ 
+ #define NR_IRQS		(GPIO_IRQ_BASE + NR_GPIO_IRQS)
+ 
