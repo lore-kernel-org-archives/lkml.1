@@ -1,119 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751898AbXKII5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752116AbXKIJOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751898AbXKII5c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 03:57:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbXKII5Y
+	id S1752116AbXKIJOt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 04:14:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbXKIJOb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 03:57:24 -0500
-Received: from relay.lloydadriatico.it ([194.185.101.20]:17507 "EHLO
-	relay.lloydadriatico.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751081AbXKII5X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 03:57:23 -0500
-X-Greylist: delayed 617 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Nov 2007 03:57:23 EST
-X-IronPort-AV: E=Sophos;i="4.21,394,1188770400"; 
-   d="scan'208";a="5958559"
-Message-ID: <2C8305E0BE090E47A2BAD52A48AC911D17BCE242@exchange1.lloyd.com>
-From: SANGOI DINO LEONARDO <dino.leonardo.sangoi@allianz.it>
-To: linux-kernel@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>
-Subject: 2.6.24-rc1 and 2.6.24.rc2 hangs while running udev on my laptop
-Date: Fri, 9 Nov 2007 09:47:02 +0100 
+	Fri, 9 Nov 2007 04:14:31 -0500
+Received: from lucidpixels.com ([75.144.35.66]:56630 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751440AbXKIJO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 04:14:29 -0500
+Date: Fri, 9 Nov 2007 04:14:27 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Carlos Carvalho <carlos@fisica.ufpr.br>
+cc: Jeff Lessem <Jeff@Lessem.org>, root@c3sl.ufpr.br,
+       Dan Williams <dan.j.williams@intel.com>,
+       =?iso-8859-1?Q?BERTRAND_Jo=EBl?= <joel.bertrand@systella.fr>,
+       Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: 2.6.23.1: mdadm/raid5 hung/d-state
+In-Reply-To: <18227.33346.994456.270194@fisica.ufpr.br>
+Message-ID: <Pine.LNX.4.64.0711090414090.26103@p34.internal.lan>
+References: <Pine.LNX.4.64.0711040658180.30831@p34.internal.lan>
+ <18222.16003.92062.970530@notabene.brown> <Pine.LNX.4.64.0711041651250.23496@p34.internal.lan>
+ <e9c3a7c20711051035m78ba90ck68f4fbc10480462a@mail.gmail.com>
+ <Pine.LNX.4.64.0711051335450.11422@p34.internal.lan>
+ <e9c3a7c20711051619u7054aab9l208b604b9e58fb61@mail.gmail.com>
+ <47303FB8.7000801@systella.fr> <1194398700.2970.18.camel@dwillia2-linux.ch.intel.com>
+ <47314653.80905@Lessem.org> <18227.33346.994456.270194@fisica.ufpr.br>
 MIME-Version: 1.0
-X-Mailer: Internet Mail Service (5.5.2653.19)
-Content-Type: text/plain
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
- 
-My laptop (an HP nx6125) doesn't boot with kernels 2.6.24-rc1 and
-2.6.24.rc2. 
-It works fine with 2.6.23 and older.
 
-I seen this bug first while running fedora rawhide, so you can find hardware
 
-info and boot logs at https://bugzilla.redhat.com/show_bug.cgi?id=312201.
+On Thu, 8 Nov 2007, Carlos Carvalho wrote:
 
-I did a git bisect, and got this:
+> Jeff Lessem (Jeff@Lessem.org) wrote on 6 November 2007 22:00:
+> >Dan Williams wrote:
+> > > The following patch, also attached, cleans up cases where the code looks
+> > > at sh->ops.pending when it should be looking at the consistent
+> > > stack-based snapshot of the operations flags.
+> >
+> >I tried this patch (against a stock 2.6.23), and it did not work for
+> >me.  Not only did I/O to the effected RAID5 & XFS partition stop, but
+> >also I/O to all other disks.  I was not able to capture any debugging
+> >information, but I should be able to do that tomorrow when I can hook
+> >a serial console to the machine.
+> >
+> >I'm not sure if my problem is identical to these others, as mine only
+> >seems to manifest with RAID5+XFS.  The RAID rebuilds with no problem,
+> >and I've not had any problems with RAID5+ext3.
+>
+> Us too! We're stuck trying to build a disk server with several disks
+> in a raid5 array, and the rsync from the old machine stops writing to
+> the new filesystem. It only happens under heavy IO. We can make it
+> lock without rsync, using 8 simultaneous dd's to the array. All IO
+> stops, including the resync after a newly created raid or after an
+> unclean reboot.
+>
+> We could not trigger the problem with ext3 or reiser3; it only happens
+> with xfs.
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
-$ git bisect bad
-4f86d3a8e297205780cca027e974fd5f81064780 is first bad commit
-commit 4f86d3a8e297205780cca027e974fd5f81064780
-Author: Len Brown <len.brown@intel.com>
-Date:   Wed Oct 3 18:58:00 2007 -0400
-
-    cpuidle: consolidate 2.6.22 cpuidle branch into one patch
-[SNIP full commit log]
-
-:040000 040000 fadedf003c64838a73d172d6b7c0046d88dedd5e
-ebb8a32b3bc49d731c13f2812148ae553bc1a533 M	arch
-:040000 040000 039a15fe07324bb0481eb1006571f6523c56c254
-e3251f5abcc19417472488f523da968e37698ddd M	drivers
-:040000 040000 89a350e5adc6dfd82adbb9c2f327557cd7a95334
-14c738510d6c772e9a8db4bc494ce8fb3434a5fb M	include
-:040000 040000 e1d33c4a2558da0fb68f7e98145abf69e885ba94
-7987a9110d0749aa7442a3f4c8c6c7d7a3df9426 M	kernel
-
-$ git bisect log
-git-bisect start
-# bad: [b4f555081fdd27d13e6ff39d455d5aefae9d2c0c] Merge branch 'for-linus'
-of git://git.kernel.dk/linux-2.6-block
-git-bisect bad b4f555081fdd27d13e6ff39d455d5aefae9d2c0c
-# good: [bbf25010f1a6b761914430f5fca081ec8c7accd1] Linux 2.6.23
-git-bisect good bbf25010f1a6b761914430f5fca081ec8c7accd1
-# good: [1f06862e11f23ebc99438c592be9c92560d78548] rt2x00: Add new rt73usb
-USB ID
-git-bisect good 1f06862e11f23ebc99438c592be9c92560d78548
-# good: [2c6221483169ddd4c04797cd7296ed4fe52fcdd7] Fix discrepancy between
-VDSO based gettimeofday() and sys_gettimeofday().
-git-bisect good 2c6221483169ddd4c04797cd7296ed4fe52fcdd7
-# bad: [56d61a0e26c5a61c66d1ac259a59960295939da9] Merge branch 'for-linus'
-of git://git390.osdl.marist.edu/pub/scm/linux-2.6
-git-bisect bad 56d61a0e26c5a61c66d1ac259a59960295939da9
-# good: [ec2626815bf9a9922e49820b03e670e833f3ca3c] Merge
-git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched
-git-bisect good ec2626815bf9a9922e49820b03e670e833f3ca3c
-# bad: [c00046c279a2521075250fad682ca0acc10d4fd7] Merge
-git://git.kernel.org/pub/scm/linux/kernel/git/bunk/trivial
-git-bisect bad c00046c279a2521075250fad682ca0acc10d4fd7
-# bad: [e9a404580ccaeb31dd2a976f9929c4f9eb6f3540] nfs: Fix build break with
-CONFIG_NFS_V4=n
-git-bisect bad e9a404580ccaeb31dd2a976f9929c4f9eb6f3540
-# bad: [4800be295c34268fd3211d49828bfaa6bf62867f] Merge
-git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild
-git-bisect bad 4800be295c34268fd3211d49828bfaa6bf62867f
-# good: [a2883dfa2e4a94b24109b2bfe735561e50cc44b4] Pull thermal into release
-branch
-git-bisect good a2883dfa2e4a94b24109b2bfe735561e50cc44b4
-# good: [731aa5fd9971a5163845fbe55de63d686a11da0a] Pull bugzilla-8709 into
-release branch
-git-bisect good 731aa5fd9971a5163845fbe55de63d686a11da0a
-# good: [910b40468a9ce3f2f5d48c5d260329c27d45adb5] kbuild: introduce
-cc-cross-prefix
-git-bisect good 910b40468a9ce3f2f5d48c5d260329c27d45adb5
-# bad: [00a2b433557f10736e8a02de619b3e9052556c12] Pull acpica into test
-branch
-git-bisect bad 00a2b433557f10736e8a02de619b3e9052556c12
-# bad: [de85871a9a53c00cae4c3a70849b5eaad0eb38b2] Pull cpuidle into test
-branch
-git-bisect bad de85871a9a53c00cae4c3a70849b5eaad0eb38b2
-# bad: [e196441bdf2dbf0526b28a6829c39557c236d611] ACPI: cpuidle: port idle
-timer suspend/resume workaround to cpuidle
-git-bisect bad e196441bdf2dbf0526b28a6829c39557c236d611
-# bad: [4f86d3a8e297205780cca027e974fd5f81064780] cpuidle: consolidate
-2.6.22 cpuidle branch into one patch
-git-bisect bad 4f86d3a8e297205780cca027e974fd5f81064780
---------
-
-Config is taken from Fedora kernel. CONFIG_CPU_IDLE is set to y (tell me if
-full config is needed).
-
-If I use 'nolapic' parameter, kernel 2.6.24-rc1 boots fine. 
-Setting CONFIG_CPU_IDLE=n also gives me a working kernel.
-
-Ask me if more info is needed (please CC me).
-
-Thanks,
-
-Dino
+Including XFS mailing list as well can you provide more information to 
+them?
