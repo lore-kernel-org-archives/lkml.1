@@ -1,78 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762842AbXKIMgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762385AbXKIMmJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762842AbXKIMgh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 07:36:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754556AbXKIMgR
+	id S1762385AbXKIMmJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 07:42:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbXKIMl5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 07:36:17 -0500
-Received: from web32607.mail.mud.yahoo.com ([68.142.207.234]:31804 "HELO
-	web32607.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753363AbXKIMgQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 07:36:16 -0500
-X-YMail-OSG: T1yG5HkVM1kZtVof9uttRNDgqkwDpzcaJUE2uYqnmcAuy8FJyZWq_t8rJk1R1Aoa6zd02ERXDiubCyQ3YmmNEQT18w--
-X-Mailer: YahooMailRC/818.27 YahooMailWebService/0.7.152
-Date: Fri, 9 Nov 2007 04:36:14 -0800 (PST)
-From: Martin Knoblauch <knobi@knobisoft.de>
-Subject: Re: iozone write 50% regression in kernel 2.6.24-rc1
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>, a.p.zijlstra@chello.nl
-Cc: LKML <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
+	Fri, 9 Nov 2007 07:41:57 -0500
+Received: from main.gmane.org ([80.91.229.2]:44379 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754083AbXKIMl4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 07:41:56 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: DM <dm.n9107@gmail.com>
+Subject: Re: [PATCH] sched: avoid large irq-latencies in smp-balancing
+Date: Fri, 9 Nov 2007 12:41:28 +0000 (UTC)
+Message-ID: <loom.20071109T123749-481@post.gmane.org>
+References: <1194434956.6289.111.camel@twins> <1194437820.6289.114.camel@twins>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <337294.80877.qm@web32607.mail.mud.yahoo.com>
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 62.168.138.60 (Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30))
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message ----
-> From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-> To: a.p.zijlstra@chello.nl
-> Cc: LKML <linux-kernel@vger.kernel.org>
-> Sent: Friday, November 9, 2007 10:47:52 AM
-> Subject: iozone write 50% regression in kernel 2.6.24-rc1
+Peter Zijlstra <peterz <at> infradead.org> writes:
+> @@ -2237,7 +2243,7 @@ balance_tasks(struct rq *this_rq, int th
+>  	      enum cpu_idle_type idle, int *all_pinned,
+>  	      int *this_best_prio, struct rq_iterator *iterator)
+>  {
+> -	int pulled = 0, pinned = 0, skip_for_load;
+> +	int loops = 0, pulled = 0, pinned = 0, skip_for_load;
+>  	struct task_struct *p;
+>  	long rem_load_move = max_load_move;
 > 
-> Comparing with 2.6.23, iozone sequential write/rewrite (512M) has
-> 50%
-> 
- regression
-> in kernel 2.6.24-rc1. 2.6.24-rc2 has the same regression.
-> 
-> My machine has 8 processor cores and 8GB memory.
-> 
-> By bisect, I located patch
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=
-> 04fbfdc14e5f48463820d6b9807daa5e9c92c51f.
-> 
-> 
-> Another behavior: with kernel 2.6.23, if I run iozone for many
-> times
-> 
- after rebooting machine,
-> the result looks stable. But with 2.6.24-rc1, the first run of
-> iozone
-> 
- got a very small result and
-> following run has 4Xorig_result.
-> 
-> What I reported is the regression of 2nd/3rd run, because first run
-> has
-> 
- bigger regression.
-> 
-> I also tried to change
-> /proc/sys/vm/dirty_ratio,dirty_backgroud_ratio
-> 
- and didn't get improvement.
-> 
-> -yanmin
-> -
-Hi Yanmin,
+> @@ -2251,10 +2257,10 @@ balance_tasks(struct rq *this_rq, int th
+>  	 */
+>  	p = iterator->start(iterator->arg);
+>  next:
+> -	if (!p)
+> +	if (!p || loops++ > sysctl_sched_nr_migrate)
+>  		goto out;
 
- could you tell us the exact iozone command you are using? I would like to repeat it on my setup, because I definitely see the opposite behaviour in 2.6.24-rc1/rc2. The speed there is much better than in 2.6.22 and before (I skipped 2.6.23, because I was waiting for the per-bdi changes). I definitely do not see the difference between 1st and subsequent runs. But then, I do my tests with 5GB file sizes like:
+Looks to me like an off-by-one thingy. If sysctl_sched_nr_migrate is zero we 
+can still migrate one task. Feature or bug?
 
-iozone3_283/src/current/iozone -t 5 -F /scratch/X1 /scratch/X2 /scratch/X3 /scratch/X4 /scratch/X5 -s 5000M -r 1024 -c -e -i 0 -i 1
-
-Kind regards
-Martin
-
+/dm
 
 
