@@ -1,104 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754976AbXKIRUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755455AbXKIRVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754976AbXKIRUR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 12:20:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbXKIRUF
+	id S1755455AbXKIRVx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 12:21:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754103AbXKIRVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 12:20:05 -0500
-Received: from palrel12.hp.com ([156.153.255.237]:47765 "EHLO palrel12.hp.com"
+	Fri, 9 Nov 2007 12:21:46 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:60685 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753864AbXKIRUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 12:20:03 -0500
-Subject: Re: [PATCH 6/6] Use one zonelist that is filtered by nodemask
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Nishanth Aravamudan <nacc@us.ibm.com>
-Cc: Mel Gorman <mel@skynet.ie>, Christoph Lameter <clameter@sgi.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, rientjes@google.com, kamezawa.hiroyu@jp.fujitsu.com
-In-Reply-To: <20071109164537.GG7507@us.ibm.com>
-References: <20071109143226.23540.12907.sendpatchset@skynet.skynet.ie>
-	 <20071109143426.23540.44459.sendpatchset@skynet.skynet.ie>
-	 <Pine.LNX.4.64.0711090741120.13932@schroedinger.engr.sgi.com>
-	 <20071109161455.GB32088@skynet.ie>  <20071109164537.GG7507@us.ibm.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Fri, 09 Nov 2007 12:18:52 -0500
-Message-Id: <1194628732.5296.14.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	id S1752431AbXKIRVp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 12:21:45 -0500
+Date: Fri, 9 Nov 2007 12:21:35 -0500
+To: Przemyslaw Wegrzyn <czajnik@czajsoft.pl>
+Cc: Steve French <smfrench@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, joern@logfs.org
+Subject: Re: Fw: Buffer overflow in CIFS VFS.
+Message-ID: <20071109172135.GD26826@fieldses.org>
+References: <OFA6B04F1D.DE8E7DD9-ON8725738E.00065BC2-8625738E.00066CD4@us.ibm.com> <524f69650711081812j20580247kce68334b778c73c7@mail.gmail.com> <47343DA2.90306@czajsoft.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47343DA2.90306@czajsoft.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-11-09 at 08:45 -0800, Nishanth Aravamudan wrote:
-> On 09.11.2007 [16:14:55 +0000], Mel Gorman wrote:
-> > On (09/11/07 07:45), Christoph Lameter didst pronounce:
-> > > On Fri, 9 Nov 2007, Mel Gorman wrote:
-> > > 
-> > > >  struct page * fastcall
-> > > >  __alloc_pages(gfp_t gfp_mask, unsigned int order,
-> > > >  		struct zonelist *zonelist)
-> > > >  {
-> > > > +	/*
-> > > > +	 * Use a temporary nodemask for __GFP_THISNODE allocations. If the
-> > > > +	 * cost of allocating on the stack or the stack usage becomes
-> > > > +	 * noticable, allocate the nodemasks per node at boot or compile time
-> > > > +	 */
-> > > > +	if (unlikely(gfp_mask & __GFP_THISNODE)) {
-> > > > +		nodemask_t nodemask;
-> > > 
-> > > Hmmm.. This places a potentially big structure on the stack. nodemask can 
-> > > contain up to 1024 bits which means 128 bytes. Maybe keep an array of 
-> > > gfp_thisnode nodemasks (node_nodemask?) and use node_nodemask[nid]?
-> > > 
-> > 
-> > That is what I was hinting at in the comment as a possible solution.
-> > 
-> > > > +
-> > > > +		return __alloc_pages_internal(gfp_mask, order,
-> > > > +			zonelist, nodemask_thisnode(numa_node_id(), &nodemask));
-> > > 
-> > > Argh.... GFP_THISNODE must use the nid passed to alloc_pages_node
-> > > and *not* the local numa node id. Only if the node specified to
-> > > alloc_pages nodes is -1 will this work.
-> > > 
-> > 
-> > alloc_pages_node() calls __alloc_pages_nodemask() though where in this
-> > function if I'm reading it right is called without a node id. Given no
-> > other details on the nid, the current one seemed a logical choice.
-> 
-> Yeah, I guess the context here matters (and is a little hard to follow
-> because thare are a few places that change in different ways here):
-> 
-> For allocating pages from a particular node (GFP_THISNODE with nid),
-> the nid clearly must be specified. This only happens with
-> alloc_pages_node(), AFAICT. So, in that interface, the right thing is
-> done and the appropriate nodemask will be built.
+On Fri, Nov 09, 2007 at 11:59:46AM +0100, Przemyslaw Wegrzyn wrote:
+> Steve French wrote:
+> > You are correct that the CIFS code calls SendReceive in cases in which
+> > the buffer may be too small to fit a large SMB response, and that
+> > should be fixed (e.g. to avoid possible overflows due to a server
+> > bug), None of the eight cases (SMB TreeDisconnect, SMB uLogoff, SMB
+> > Close, SMB FindClose etc.) in which a small buffer is passed in to
+> > SendReceive return more than a few dozen bytes (and they are fixed
+> > size responses), but I agree that we have to be safe (and we have seen
+> > at least one server corrupt the bcc in the ulogoffX response and
+> > another on the NTCreateX response) so it would be good to fix.
+> >   
+> Well, mounting shares from untrusted server is quite uncommon, still
+> buffer overrun shall be considered a serious issue, imho.
 
-I agree.  In an earlier patch, Mel was ignoring nid and using
-numa_node_id() here.  This was causing your [Nish's] hugetlb pool
-allocation patches to fail.  Mel fixed that ~9oct07.  
+Also, a compromised machine on the same network could forge the
+malicious reply in some cases, right?
 
-> 
-> On the other hand, if we call alloc_pages() with GFP_THISNODE set, there
-> is no nid to base the allocation on, so we "fallback" to numa_node_id()
-> [ almost like the nid had been specified as -1 ].
-> 
-> So I guess this is logical -- but I wonder, do we have any callers of
-> alloc_pages(GFP_THISNODE) ? It seems like an odd thing to do, when
-> alloc_pages_node() exists?
-
-I don't know if we have any current callers that do this, but absent any
-documentation specifying otherwise, Mel's implementation matches what
-I'd expect the behavior to be if I DID call alloc_pages with 'THISNODE.
-However, we could specify that THISNODE is ignored in __alloc_pages()
-and recommend the use of alloc_pages_node() passing numa_node_id() as
-the nid parameter to achieve the behavior.  This would eliminate the
-check for 'THISNODE in __alloc_pages().  Just mask it off before calling
-down to __alloc_pages_internal().
-
-Does this make sense?
-
-Lee
-
-
+--b.
