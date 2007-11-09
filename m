@@ -1,27 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758288AbXKIWt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758922AbXKIWu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758288AbXKIWt7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 17:49:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755062AbXKIWtw
+	id S1758922AbXKIWu0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 17:50:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755062AbXKIWuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 17:49:52 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:60013 "EHLO
+	Fri, 9 Nov 2007 17:50:07 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60016 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752125AbXKIWtv (ORCPT
+	with ESMTP id S1754313AbXKIWuG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 17:49:51 -0500
-Subject: Re: [PATCH 2/6] MTD: Add support for the SST 39VF1601 flash chip
-	[try #5]
+	Fri, 9 Nov 2007 17:50:06 -0500
+Subject: Re: kernel BUG message while using jffs2
 From: David Woodhouse <dwmw2@infradead.org>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@osdl.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-am33-list@redhat.com
-In-Reply-To: <20071109153442.20803.51684.stgit@warthog.procyon.org.uk>
-References: <20071109153432.20803.69832.stgit@warthog.procyon.org.uk>
-	 <20071109153442.20803.51684.stgit@warthog.procyon.org.uk>
+To: Alexandru Damian <ddalex@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <f881070f0711090708u1b77a78dlcdb504a724b22fcf@mail.gmail.com>
+References: <f881070f0711090708u1b77a78dlcdb504a724b22fcf@mail.gmail.com>
 Content-Type: text/plain
-Date: Fri, 09 Nov 2007 17:34:41 -0500
-Message-Id: <1194647681.2588.38.camel@shinybook.infradead.org>
+Date: Fri, 09 Nov 2007 17:39:23 -0500
+Message-Id: <1194647963.2588.41.camel@shinybook.infradead.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
@@ -31,12 +28,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 2007-11-09 at 15:34 +0000, David Howells wrote:
-> Add support for the SST 39VF1601 flash chip.
+On Fri, 2007-11-09 at 17:08 +0200, Alexandru Damian wrote:
+> Hello,
 > 
-> Signed-off-by: David Howells <dhowells@redhat.com>
+> Sorry for posting here, it seems the best spot; if I need to redirect
+> this to mtd-utils team, please tell me.
+> 
+> I'm playing around with some jffs2 files. While trying to mount (via
+> block2mtd, loop) a jffs2 system, a "kernel BUG message" appeared in
+> dmesg, with these lines:
+> 
+> kernel BUG at mm/slub.c:2204!
 
-Applied.
+I don't see a BUG() or BUG_ON() anywhere near that line. What version of
+the kernel? Precisely what is at that line?
 
 -- 
 dwmw2
