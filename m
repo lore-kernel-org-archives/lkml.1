@@ -1,55 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762222AbXKIGHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751385AbXKIGuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762222AbXKIGHn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 01:07:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbXKIGHd
+	id S1751385AbXKIGuS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 01:50:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750902AbXKIGuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 01:07:33 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:53720 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750700AbXKIGHc (ORCPT
+	Fri, 9 Nov 2007 01:50:06 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:51427 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750843AbXKIGuE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 01:07:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=M2IbvVOyPVg89ux7F6mL5UfDgMkgPpTVb3pAZG1bpi0VObmIx7qdtT37wbun8yFlVemnbo59ZjWh3F0ps4CWPe2C2z43g6MgLci5j8gYxptc9msmR3ZhudOUPqYCD4jRizk/++C1FKVE1FWB0XdVfIBqHG3a2Yby2Rvbc/we8zo=
-Message-ID: <f17812d70711082207p455c5bc9v25fea9a0585ba152@mail.gmail.com>
-Date: Fri, 9 Nov 2007 14:07:31 +0800
-From: "eric miao" <eric.y.miao@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] make ds1wm driver to check ds1wm_platform_data pointer against NULL
-Cc: "Szabolcs Gyurko" <szabolcs.gyurko@tlt.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Nov 2007 01:50:04 -0500
+Date: Fri, 9 Nov 2007 12:32:14 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: sukadev@us.ibm.com
+Cc: balbir@in.ibm.com, Containers <containers@lists.osdl.org>,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       dhaval@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
+       dmitry.adamushko@gmail.com, efault@gmx.de
+Subject: Re: [BUG]: Crash with CONFIG_FAIR_CGROUP_SCHED=y
+Message-ID: <20071109070214.GO3143@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20071108234805.GA2240@us.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20071108234805.GA2240@us.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do a sanity check for the "struct ds1wm_platform_data" pointer passed in
-by the platform_device, and so to enforce each platform to provide a
-valid structure.
+On Thu, Nov 08, 2007 at 03:48:05PM -0800, sukadev@us.ibm.com wrote:
+> With CONFIG_FAIR_CGROUP_SCHED=y, following commands on 2.6.24-rc1 crash
+> the system.
 
-Signed-off-by: eric miao <eric.miao@marvell.com>
+Thanks for reporting the problem. It was caused because of the fact that
+current task isn't kept in its runqueue in case of sched_fair class
+tasks.
+
+With the patch below, I could run ns_exec w/o any crash. Can you pls
+verify it works for you as well?
+
+Ingo,
+	Once Suka verifies that the patch fixes his crash, I would request you 
+to include the same in your tree and route it to Linus.
+
+--
+
+current task is not present in its runqueue in case of sched_fair class
+tasks. Take care of this fact in rt_mutex_setprio(),
+sched_setscheduler() and sched_move_task() routines.
+
+Signed-off-by : Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+
+
 ---
- drivers/w1/masters/ds1wm.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ kernel/sched.c |   45 +++++++++++++++++++++++++--------------------
+ 1 files changed, 25 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/w1/masters/ds1wm.c b/drivers/w1/masters/ds1wm.c
-index 5747997..11ce9ec 100644
---- a/drivers/w1/masters/ds1wm.c
-+++ b/drivers/w1/masters/ds1wm.c
-@@ -351,6 +351,10 @@ static int ds1wm_probe(struct platform_device *pdev)
- 		goto err0;
- 	}
- 	plat = pdev->dev.platform_data;
-+	if (!plat) {
-+		ret = -ENXIO;
-+		goto err0;
-+	}
- 	ds1wm_data->bus_shift = plat->bus_shift;
- 	ds1wm_data->pdev = pdev;
- 	ds1wm_data->pdata = plat;
+Index: current/kernel/sched.c
+===================================================================
+--- current.orig/kernel/sched.c
++++ current/kernel/sched.c
+@@ -3986,11 +3986,13 @@ void rt_mutex_setprio(struct task_struct
+ 	oldprio = p->prio;
+ 	on_rq = p->se.on_rq;
+ 	running = task_running(rq, p);
+-	if (on_rq) {
++	if (on_rq)
+ 		dequeue_task(rq, p, 0);
+-		if (running)
+-			p->sched_class->put_prev_task(rq, p);
+-	}
++	/* current task is not kept in its runqueue in case of sched_fair class.
++	 * Hence we need the 'on_rq?' and 'running?' tests to be separate.
++	 */
++	if (running)
++		p->sched_class->put_prev_task(rq, p);
+ 
+ 	if (rt_prio(prio))
+ 		p->sched_class = &rt_sched_class;
+@@ -3999,9 +4001,9 @@ void rt_mutex_setprio(struct task_struct
+ 
+ 	p->prio = prio;
+ 
++	if (running)
++		p->sched_class->set_curr_task(rq);
+ 	if (on_rq) {
+-		if (running)
+-			p->sched_class->set_curr_task(rq);
+ 		enqueue_task(rq, p, 0);
+ 		inc_load(rq, p);
+ 		/*
+@@ -4298,18 +4300,20 @@ recheck:
+ 	update_rq_clock(rq);
+ 	on_rq = p->se.on_rq;
+ 	running = task_running(rq, p);
+-	if (on_rq) {
++	if (on_rq)
+ 		deactivate_task(rq, p, 0);
+-		if (running)
+-			p->sched_class->put_prev_task(rq, p);
+-	}
++	/* current task is not kept in its runqueue in case of sched_fair class.
++	 * Hence we need the 'on_rq?' and 'running?' tests to be separate.
++	 */
++	if (running)
++		p->sched_class->put_prev_task(rq, p);
+ 
+ 	oldprio = p->prio;
+ 	__setscheduler(rq, p, policy, param->sched_priority);
+ 
++	if (running)
++		p->sched_class->set_curr_task(rq);
+ 	if (on_rq) {
+-		if (running)
+-			p->sched_class->set_curr_task(rq);
+ 		activate_task(rq, p, 0);
+ 		/*
+ 		 * Reschedule if we are currently running on this runqueue and
+@@ -7036,19 +7040,20 @@ void sched_move_task(struct task_struct 
+ 	running = task_running(rq, tsk);
+ 	on_rq = tsk->se.on_rq;
+ 
+-	if (on_rq) {
++	if (on_rq)
+ 		dequeue_task(rq, tsk, 0);
+-		if (unlikely(running))
+-			tsk->sched_class->put_prev_task(rq, tsk);
+-	}
++	/* current task is not kept in its runqueue in case of sched_fair class.
++	 * Hence we need the 'on_rq?' and 'running?' tests to be separate.
++	 */
++	if (unlikely(running))
++		tsk->sched_class->put_prev_task(rq, tsk);
+ 
+ 	set_task_cfs_rq(tsk);
+ 
+-	if (on_rq) {
+-		if (unlikely(running))
+-			tsk->sched_class->set_curr_task(rq);
++	if (unlikely(running))
++		tsk->sched_class->set_curr_task(rq);
++	if (on_rq)
+ 		enqueue_task(rq, tsk, 0);
+-	}
+ 
+ done:
+ 	task_rq_unlock(rq, &flags);
+
+
 -- 
-1.5.2.5.GIT
+Regards,
+vatsa
