@@ -1,55 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761365AbXKINJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761735AbXKINf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761365AbXKINJX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 08:09:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247AbXKINJP
+	id S1761735AbXKINf3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 08:35:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbXKINfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 08:09:15 -0500
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:41585 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753226AbXKINJO (ORCPT
+	Fri, 9 Nov 2007 08:35:18 -0500
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:24977 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753924AbXKINfP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 08:09:14 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=vkYMcRW07FU5HwsRtAV+OOIcKlJQNnfz3aF+YLp86IfgmzK33rA9gCbpiqg7Nm7/XK9bD1/bPbzZ9YeHayTGrH9DLD0l3xbtTNmbh+rBHswoad718Ot8jV2y3kQ9qY9anUXUgne/3K+5yALmAS63I/aEvK8P9Uw/404nxDKx6p0=  ;
-X-YMail-OSG: Te4pqIAVM1kafGDoRtVgu17d0pNonKga9HsfxVSqWHU1ZnqZu3KDPutX5xtdCvSbVjm6CNwUbg--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Gregory Haskins <gregory.haskins.ml@gmail.com>
-Subject: Re: [PATCH] sched: avoid large irq-latencies in smp-balancing
-Date: Sat, 10 Nov 2007 00:09:55 +1100
-User-Agent: KMail/1.9.5
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <1194434956.6289.111.camel@twins> <1194437820.6289.114.camel@twins> <4732929D.604@gmail.com>
-In-Reply-To: <4732929D.604@gmail.com>
+	Fri, 9 Nov 2007 08:35:15 -0500
+From: Thomas Klein <osstklei@de.ibm.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH] ehea: Add kdump support
+Date: Fri, 9 Nov 2007 14:33:50 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Christoph Raisch <raisch@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       netdev <netdev@vger.kernel.org>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Michael Ellermann <michael@ellerman.id.au>,
+       Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711100009.56215.nickpiggin@yahoo.com.au>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200711091433.51259.osstklei@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 08 November 2007 15:37, Gregory Haskins wrote:
-> Peter Zijlstra wrote:
-> > Bah, missed a hunk
-> >
-> > ---
-> > Subject: sched: avoid large irq-latencies in smp-balancing
-> >
-> > SMP balancing is done with IRQs disabled and can iterate the full rq.
-> > When rqs are large this can cause large irq-latencies. Limit the nr of
-> > iterations on each run.
-> >
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > CC: Peter Williams <pwil3058@bigpond.net.au>
->
-> Tested-by: Gregory Haskins <ghaskins@novell.com> (as part of 23.1-rt11)
+To support ehea driver reloading in a kdump kernel the driver has to perform
+firmware handle deregistrations when the original kernel crashes. As there's
+currently no notifier chain for machine crashes this patch enables kdump support
+in the ehea driver by bending the ppc_md.machine_crash_shutdown hook to its own
+machine crash handler. The original machine_crash_shutdown() fn is called
+afterwards. This works fine as long as the ehea driver is the only one which
+does so. Problems may occur if other drivers do the same and unload regularly.
+This patch enables 2.6.24-rc2 to use kdump with ehea and only puts a very
+low risk on base kernel. In 2.6.24 we know ehea is the only user of this
+mechanism. The next step for 2.6.25 would be to add a proper notifier chain.
+The full solution might be that register_reboot_notifier() provides sth
+like a SYS_CRASH action. Please apply.
 
-OK, but let's not make this default for mainline just yet please. There
-are so many performance regression possibilities in 2.6.24 already that
-we should go a little bit slower for now IMO.
+Signed-off-by: Thomas Klein <tklein@de.ibm.com>
+
+---
+ drivers/net/ehea/ehea.h      |    2 +-
+ drivers/net/ehea/ehea_main.c |   28 ++++++++++++++++++++++++++++
+ 2 files changed, 29 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
+index f78e5bf..5935899 100644
+--- a/drivers/net/ehea/ehea.h
++++ b/drivers/net/ehea/ehea.h
+@@ -40,7 +40,7 @@
+ #include <asm/io.h>
+ 
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0080"
++#define DRV_VERSION	"EHEA_0081"
+ 
+ /* eHEA capability flags */
+ #define DLPAR_PORT_ADD_REM 1
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index f0319f1..40a732e 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -37,6 +37,7 @@
+ #include <linux/reboot.h>
+ 
+ #include <net/ip.h>
++#include <asm-powerpc/machdep.h>
+ 
+ #include "ehea.h"
+ #include "ehea_qmr.h"
+@@ -98,6 +99,7 @@ static int port_name_cnt = 0;
+ static LIST_HEAD(adapter_list);
+ u64 ehea_driver_flags = 0;
+ struct work_struct ehea_rereg_mr_task;
++static void (*orig_machine_crash_shutdown)(struct pt_regs *regs);
+ 
+ struct semaphore dlpar_mem_lock;
+ 
+@@ -3312,6 +3314,29 @@ static struct notifier_block ehea_reboot_nb = {
+         .notifier_call = ehea_reboot_notifier,
+ };
+ 
++void ehea_crash_notifier(struct pt_regs *regs)
++{
++	ehea_info("Machine crash: freeing all eHEA resources");
++	ibmebus_unregister_driver(&ehea_driver);
++	orig_machine_crash_shutdown(regs);
++}
++
++void ehea_register_crash_notifier(void)
++{
++#ifdef CONFIG_KEXEC
++	orig_machine_crash_shutdown =
++               (void*)__xchg_u64((unsigned long*)&ppc_md.machine_crash_shutdown,
++				 (unsigned long)ehea_crash_notifier);
++#endif
++}
++
++void ehea_unregister_crash_notifier(void)
++{
++#ifdef CONFIG_KEXEC
++	ppc_md.machine_crash_shutdown = orig_machine_crash_shutdown;
++#endif
++}
++
+ static int check_module_parm(void)
+ {
+ 	int ret = 0;
+@@ -3369,6 +3394,7 @@ int __init ehea_module_init(void)
+ 		goto out;
+ 
+ 	register_reboot_notifier(&ehea_reboot_nb);
++	ehea_register_crash_notifier();
+ 
+ 	ret = ibmebus_register_driver(&ehea_driver);
+ 	if (ret) {
+@@ -3382,6 +3408,7 @@ int __init ehea_module_init(void)
+ 		ehea_error("failed to register capabilities attribute, ret=%d",
+ 			   ret);
+ 		unregister_reboot_notifier(&ehea_reboot_nb);
++		ehea_unregister_crash_notifier();
+ 		ibmebus_unregister_driver(&ehea_driver);
+ 		goto out;
+ 	}
+@@ -3396,6 +3423,7 @@ static void __exit ehea_module_exit(void)
+ 	driver_remove_file(&ehea_driver.driver, &driver_attr_capabilities);
+ 	ibmebus_unregister_driver(&ehea_driver);
+ 	unregister_reboot_notifier(&ehea_reboot_nb);
++	ehea_unregister_crash_notifier();
+ 	ehea_destroy_busmap();
+ }
+ 
+-- 
+1.5.2
