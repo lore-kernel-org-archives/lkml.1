@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757916AbXKIV2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758360AbXKIV26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757916AbXKIV2n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 16:28:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757228AbXKIV22
+	id S1758360AbXKIV26 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 16:28:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757442AbXKIV2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 16:28:28 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:52036 "EHLO mx1.redhat.com"
+	Fri, 9 Nov 2007 16:28:34 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52053 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757171AbXKIV21 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 16:28:27 -0500
+	id S1757402AbXKIV2c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 16:28:32 -0500
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
@@ -16,38 +16,45 @@ Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
        avi@qumranet.com, anthony@codemonkey.ws,
        virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
        kvm-devel@lists.sourceforge.net, zach@vmware.com,
-       jun.nakajima@intel.com
-Subject: [PATCH 0/24] paravirt_ops for unified x86 - that's me again!
-Date: Fri,  9 Nov 2007 16:42:41 -0200
-Message-Id: <11946337851964-git-send-email-gcosta@redhat.com>
+       jun.nakajima@intel.com, Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH 1/24] mm/sparse-vmemmap.c: make sure init_mm is included
+Date: Fri,  9 Nov 2007 16:42:42 -0200
+Message-Id: <11946337933104-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.4.4.2
+In-Reply-To: <11946337851964-git-send-email-gcosta@redhat.com>
+References: <11946337851964-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey folks,
+mm/sparse-vmemmap.c uses init_mm in some places.  However, it is not
+present in any of the headers currently included in the file.
 
-Here's a new spin of the pvops64 patch series.
-We didn't get that many comments from the last time,
-so it should be probably almost ready to get in. Heya!
+init_mm is defined as extern in sched.h, so we add it to the headers list
 
->From the last version, the most notable changes are:
-* consolidation of system.h, merging jeremy's comments about ordering
-  concerns
-* consolidation of smp functions that goes through smp_ops. They're sharing
-  a bunch of code now.
+Up to now, this problem was masked by the fact that functions like
+set_pte_at() and pmd_populate_kernel() are usually macros that expand to
+simpler variants that does not use the first parameter at all.
 
-Other than that, just some issues that arose from the rebase.
+Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+---
+ mm/sparse-vmemmap.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Please, not that this patch series _does not_ apply over linus git anymore,
-but rather, over tglx cleanup series.
-
-The first patch in this series is already on linus', but not on tglx', so
-I'm sending it again, because you'll need it if you want to compile it
-anyway.
-
-tglx, in the absense of any outstanding NACKs, or any very big call for
-improvements, could you please pull it in your tree?
-
-Have fun,
-
+diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
+index d3b718b..22620f6 100644
+--- a/mm/sparse-vmemmap.c
++++ b/mm/sparse-vmemmap.c
+@@ -24,6 +24,7 @@
+ #include <linux/module.h>
+ #include <linux/spinlock.h>
+ #include <linux/vmalloc.h>
++#include <linux/sched.h>
+ #include <asm/dma.h>
+ #include <asm/pgalloc.h>
+ #include <asm/pgtable.h>
+-- 
+1.4.4.2
 
