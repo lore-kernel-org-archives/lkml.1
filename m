@@ -1,62 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763501AbXKIAac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761258AbXKIBGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763501AbXKIAac (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 19:30:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757889AbXKIAaX
+	id S1761258AbXKIBGR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 20:06:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbXKIBGC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 19:30:23 -0500
-Received: from v32413.1blu.de ([88.84.155.73]:36460 "EHLO mail.lenk.info"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754177AbXKIAaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 19:30:22 -0500
-X-Greylist: delayed 3377 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Nov 2007 19:30:19 EST
-From: Frank Lichtenheld <frank@lichtenheld.de>
-To: Michal Januszewski <spock@gentoo.org>
-Cc: linux-kernel@vger.kernel.org, Frank Lichtenheld <frank@lichtenheld.de>
-Subject: [PATCH] uvesafb: Fix warnings about unused variables on non-x86
-Date: Fri,  9 Nov 2007 00:08:19 +0100
-Message-Id: <1194563299-19768-1-git-send-email-frank@lichtenheld.de>
-X-Mailer: git-send-email 1.5.3.4
+	Thu, 8 Nov 2007 20:06:02 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:63160 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751079AbXKIBGA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 20:06:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:reply-to:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=S3ORUiThEsBQqotae7jO01lTTMITmj4Ygsi6LpH5gnp7UcmgoM9Rzd/zS+8Bn1PJzH6IJhV9oU6hPbBZWPxHzVigdmoGLD1fWOWKMwNVL4yNUccnc6wQIOiIizMlXhWFDfvCiMvFo3pyMZvUEZJzAdcTzIBP2JpJ3aVUti0rXk0=
+Message-ID: <4733AC3A.20701@qumranet.com>
+Date: Fri, 09 Nov 2007 02:39:22 +0200
+Reply-To: dor.laor@qumranet.com
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Anthony Liguori <aliguori@us.ibm.com>
+CC: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rusycorp.com.au>,
+       virtualization@lists.osdl.org, kvm-devel@lists.sourceforge.net
+Subject: Re: [kvm-devel] [PATCH 3/3] virtio PCI device
+References: <11944899922822-git-send-email-aliguori@us.ibm.com>	<11944900141678-git-send-email-aliguori@us.ibm.com>	<11944900152750-git-send-email-aliguori@us.ibm.com> <11944900163817-git-send-email-aliguori@us.ibm.com>
+In-Reply-To: <11944900163817-git-send-email-aliguori@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+From: Dor Laor <dor.laor@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Variables that are only used in #ifdef CONFIG_X86 should also
-only be declared there.
-
-Signed-off-by: Frank Lichtenheld <frank@lichtenheld.de>
----
- drivers/video/uvesafb.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
-index b983d26..d1d6c0f 100644
---- a/drivers/video/uvesafb.c
-+++ b/drivers/video/uvesafb.c
-@@ -926,8 +926,10 @@ static int uvesafb_setpalette(struct uvesafb_pal_entry *entries, int count,
- 		int start, struct fb_info *info)
- {
- 	struct uvesafb_ktask *task;
-+#ifdef CONFIG_X86
- 	struct uvesafb_par *par = info->par;
- 	int i = par->mode_idx;
-+#endif
- 	int err = 0;
- 
- 	/*
-@@ -1103,11 +1105,11 @@ static int uvesafb_pan_display(struct fb_var_screeninfo *var,
- 
- static int uvesafb_blank(int blank, struct fb_info *info)
- {
--	struct uvesafb_par *par = info->par;
- 	struct uvesafb_ktask *task;
- 	int err = 1;
--
- #ifdef CONFIG_X86
-+	struct uvesafb_par *par = info->par;
-+
- 	if (par->vbe_ib.capabilities & VBE_CAP_VGACOMPAT) {
- 		int loop = 10000;
- 		u8 seq = 0, crtc17 = 0;
--- 
-1.5.3.4
+Anthony Liguori wrote:
+> This is a PCI device that implements a transport for virtio.  It allows virtio
+> devices to be used by QEMU based VMMs like KVM or Xen.
+>
+> ....
+>   
+While it's a little premature, we can start thinking of irq path 
+improvements.
+The current patch acks a private isr and afterwards apic eoi will also 
+be hit since its
+a level trig irq. This means 2 vmexits per irq.
+We can start with regular pci irqs and move afterwards to msi.
+Some other ugly hack options [we're better use msi]:
+    - Read the eoi directly from apic and save the first private isr ack
+    - Convert the specific irq line to edge triggered and dont share it
+What do you guys think?
+> +/* A small wrapper to also acknowledge the interrupt when it's handled.
+> + * I really need an EIO hook for the vring so I can ack the interrupt once we
+> + * know that we'll be handling the IRQ but before we invoke the callback since
+> + * the callback may notify the host which results in the host attempting to
+> + * raise an interrupt that we would then mask once we acknowledged the
+> + * interrupt. */
+> +static irqreturn_t vp_interrupt(int irq, void *opaque)
+> +{
+> +	struct virtio_pci_device *vp_dev = opaque;
+> +	struct virtio_pci_vq_info *info;
+> +	irqreturn_t ret = IRQ_NONE;
+> +	u8 isr;
+> +
+> +	/* reading the ISR has the effect of also clearing it so it's very
+> +	 * important to save off the value. */
+> +	isr = ioread8(vp_dev->ioaddr + VIRTIO_PCI_ISR);
+> +
+> +	/* It's definitely not us if the ISR was not high */
+> +	if (!isr)
+> +		return IRQ_NONE;
+> +
+> +	spin_lock(&vp_dev->lock);
+> +	list_for_each_entry(info, &vp_dev->virtqueues, node) {
+> +		if (vring_interrupt(irq, info->vq) == IRQ_HANDLED)
+> +			ret = IRQ_HANDLED;
+> +	}
+> +	spin_unlock(&vp_dev->lock);
+> +
+> +	return ret;
+> +}
+>   
 
