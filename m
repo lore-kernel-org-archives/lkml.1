@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757166AbXKIUZI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756612AbXKIU1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757166AbXKIUZI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 15:25:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbXKIUYz
+	id S1756612AbXKIU1w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 15:27:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbXKIU1o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 15:24:55 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:60350 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756749AbXKIUYy (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 15:24:54 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: mgross@linux.intel.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-mm1 breaks C-state support on Intel T7200 x86_64
-In-Reply-To: Your message of "Thu, 08 Nov 2007 14:30:07 PST."
-             <20071108223007.GB5775@linux.intel.com>
-From: Valdis.Kletnieks@vt.edu
-References: <3624.1194542384@turing-police.cc.vt.edu>
-            <20071108223007.GB5775@linux.intel.com>
+	Fri, 9 Nov 2007 15:27:44 -0500
+Received: from [198.99.130.12] ([198.99.130.12]:44263 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1750761AbXKIU1n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 15:27:43 -0500
+Date: Fri, 9 Nov 2007 15:26:37 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: [PATCH] UML - Fix symlink loops
+Message-ID: <20071109202637.GA7652@c2.user-mode-linux.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1194639884_4484P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Fri, 09 Nov 2007 15:24:44 -0500
-Message-ID: <6010.1194639884@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1194639884_4484P
-Content-Type: text/plain; charset=us-ascii
+[ This should go into 2.6.24 - it's simple enough and people are
+complaining about this ]
 
-On Thu, 08 Nov 2007 14:30:07 PST, Mark Gross said:
+symlinks to directories in the non-O= case were lacking -n, which
+meant that, when the link already existed, a new link pointing at
+itself was created in the target directory.
 
-> wing patch fixes up the cpuidle / pm-qos integration.
-> 
-> I suspect that this is folded into another mm patch but it should fix
-> C-state issue identified.
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+---
+ arch/um/Makefile |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Confirming that patch left my CPUs mostly in C3 again. Thanks.
-
-I'll have to let Mark and Andrew figure out this code's status in the -mm queue.
-
---==_Exmh_1194639884_4484P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHNMIMcC3lWbTT17ARAul3AKCdgc9INn6KdQvnlkuNNixOJauSWgCgmCgm
-SfuMkYaMXG6/9dhntHrDGVo=
-=EJ9/
------END PGP SIGNATURE-----
-
---==_Exmh_1194639884_4484P--
+Index: linux-2.6/arch/um/Makefile
+===================================================================
+--- linux-2.6.orig/arch/um/Makefile	2007-11-09 14:32:36.000000000 -0500
++++ linux-2.6/arch/um/Makefile	2007-11-09 14:34:05.000000000 -0500
+@@ -168,7 +168,7 @@ ifneq ($(KBUILD_SRC),)
+ 	$(Q)mkdir -p $(objtree)/include/asm-um
+ 	$(Q)ln -fsn $(srctree)/include/asm-$(HEADER_ARCH) include/asm-um/arch
+ else
+-	$(Q)cd $(TOPDIR)/include/asm-um && ln -sf ../asm-$(HEADER_ARCH) arch
++	$(Q)cd $(TOPDIR)/include/asm-um && ln -fsn ../asm-$(SUBARCH) arch
+ endif
+ 
+ $(objtree)/$(ARCH_DIR)/include:
+@@ -180,7 +180,7 @@ $(ARCH_DIR)/include/sysdep: $(objtree)/$
+ ifneq ($(KBUILD_SRC),)
+ 	$(Q)ln -fsn $(srctree)/$(ARCH_DIR)/include/sysdep-$(SUBARCH) $(ARCH_DIR)/include/sysdep
+ else
+-	$(Q)cd $(ARCH_DIR)/include && ln -sf sysdep-$(SUBARCH) sysdep
++	$(Q)cd $(ARCH_DIR)/include && ln -fsn sysdep-$(SUBARCH) sysdep
+ endif
+ 
+ $(ARCH_DIR)/os:
+@@ -188,7 +188,7 @@ $(ARCH_DIR)/os:
+ ifneq ($(KBUILD_SRC),)
+ 	$(Q)ln -fsn $(srctree)/$(ARCH_DIR)/os-$(OS) $(ARCH_DIR)/os
+ else
+-	$(Q)cd $(ARCH_DIR) && ln -sf os-$(OS) os
++	$(Q)cd $(ARCH_DIR) && ln -fsn os-$(OS) os
+ endif
+ 
+ # Generated files
