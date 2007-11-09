@@ -1,68 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763272AbXKIVhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763430AbXKIVhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763272AbXKIVhJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 16:37:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757764AbXKIVaR
+	id S1763430AbXKIVhk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 16:37:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757801AbXKIVaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 16:30:17 -0500
-Received: from ns.suse.de ([195.135.220.2]:46110 "EHLO mx1.suse.de"
+	Fri, 9 Nov 2007 16:30:21 -0500
+Received: from mail0.lsil.com ([147.145.40.20]:36196 "EHLO mail0.lsil.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756828AbXKIVaP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 16:30:15 -0500
-Date: Fri, 9 Nov 2007 22:30:10 +0100
-From: Jan Blunck <jblunck@suse.de>
-To: Robert Fitzsimons <robfitz@273k.net>
-Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       akpm@linux-foundation.org
-Subject: Re: oops in oprofile/dump_trace/X86 with 2.6.24-rcX
-Message-ID: <20071109213010.GJ18693@hasse.suse.de>
-References: <20071108014527.GA2474@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071108014527.GA2474@localhost>
-Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG
-	Nuernberg)
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1757705AbXKIVaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 16:30:18 -0500
+Subject: [PATCH 4/6] scsi: megaraid_sas - call cmd completion from reset
+From: bo yang <bo.yang@lsi.com>
+To: linux-scsi@vger.kernel.org
+Cc: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       Bo.yang@lsi.com, Sumant.patro@lsi.com
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 09 Nov 2007 04:35:44 -0500
+Message-Id: <1194600944.6297.8.camel@dhcp-75-884.se.lsil.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-35.el4) 
+X-OriginalArrivalTime: 09 Nov 2007 21:30:03.0593 (UTC) FILETIME=[B0B4FB90:01C82317]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 08, Robert Fitzsimons wrote:
+Driver will call cmd completion routine from Reset path without waiting for cmd completion from isr context.
 
-> A couple of days ago I tried to use oprofile with a recent build of
-> 2.6.24-rc1, this resulted in a oops 'BUG: unable to handle kernel paging
-> request at virtual address'.
+Signed-off-by: Bo Yang <bo.yang@lsi.com>
 
-Sorry,
-
-this only happens 32bit. Somehow I broke this when I introduced
-stack_pointer(). Here is a patch that fixes the problem.
-
-Thanks,
-Jan
-
---
-Subject: oprofile: Fix oops on x86 32-bit
-
-x86 32-bit isn't saving the stack pointer to pt_regs->esp on when an
-interrupt occures.
-
-Signed-off-by: Jan Blunck <jblunck@suse.de>
 ---
- include/asm-x86/ptrace.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/scsi/megaraid/megaraid_sas.c |  122 +++++++++++++------------
+ drivers/scsi/megaraid/megaraid_sas.h |    2
+ 2 files changed, 70 insertions(+), 54 deletions(-)
 
-Index: b/include/asm-x86/ptrace.h
-===================================================================
---- a/include/asm-x86/ptrace.h
-+++ b/include/asm-x86/ptrace.h
-@@ -60,7 +60,7 @@ static inline int v8086_mode(struct pt_r
+diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c	2007-11-07 02:33:01.252078600 -0500
++++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c	2007-11-07 02:33:32.746290752 -0500
+@@ -76,6 +76,10 @@ static DEFINE_MUTEX(megasas_async_queue_
  
- #define instruction_pointer(regs) ((regs)->eip)
- #define frame_pointer(regs) ((regs)->ebp)
--#define stack_pointer(regs) ((regs)->esp)
-+#define stack_pointer(regs) ((unsigned long)(regs))
- #define regs_return_value(regs) ((regs)->eax)
+ static u32 megasas_dbg_lvl;
  
- extern unsigned long profile_pc(struct pt_regs *regs);
++static void
++megasas_complete_cmd(struct megasas_instance *instance, struct megasas_cmd *cmd,
++		     u8 alt_status);
++
+ /**
+  * megasas_get_cmd -	Get a command from the free pool
+  * @instance:		Adapter soft state
+@@ -886,6 +890,64 @@ static int megasas_slave_configure(struc
+ }
+ 
+ /**
++ * megasas_complete_cmd_dpc	 -	Returns FW's controller structure
++ * @instance_addr:			Address of adapter soft state
++ *
++ * Tasklet to complete cmds
++ */
++static void megasas_complete_cmd_dpc(unsigned long instance_addr)
++{
++	u32 producer;
++	u32 consumer;
++	u32 context;
++	struct megasas_cmd *cmd;
++	struct megasas_instance *instance =
++				(struct megasas_instance *)instance_addr;
++	unsigned long flags;
++
++	/* If we have already declared adapter dead, donot complete cmds */
++	if (instance->hw_crit_error)
++		return;
++
++	spin_lock_irqsave(&instance->completion_lock, flags);
++
++	producer = *instance->producer;
++	consumer = *instance->consumer;
++
++	while (consumer != producer) {
++		context = instance->reply_queue[consumer];
++
++		cmd = instance->cmd_list[context];
++
++		megasas_complete_cmd(instance, cmd, DID_OK);
++
++		consumer++;
++		if (consumer == (instance->max_fw_cmds + 1)) {
++			consumer = 0;
++		}
++	}
++
++	*instance->consumer = producer;
++
++	spin_unlock_irqrestore(&instance->completion_lock, flags);
++
++	/*
++	 * Check if we can restore can_queue
++	 */
++	if (instance->flag & MEGASAS_FW_BUSY
++		&& time_after(jiffies, instance->last_time + 5 * HZ)
++		&& atomic_read(&instance->fw_outstanding) < 17) {
++
++		spin_lock_irqsave(instance->host->host_lock, flags);
++		instance->flag &= ~MEGASAS_FW_BUSY;
++		instance->host->can_queue =
++				instance->max_fw_cmds - MEGASAS_INT_CMDS;
++
++		spin_unlock_irqrestore(instance->host->host_lock, flags);
++	}
++}
++
++/**
+  * megasas_wait_for_outstanding -	Wait for all outstanding cmds
+  * @instance:				Adapter soft state
+  *
+@@ -908,6 +970,11 @@ static int megasas_wait_for_outstanding(
+ 		if (!(i % MEGASAS_RESET_NOTICE_INTERVAL)) {
+ 			printk(KERN_NOTICE "megasas: [%2d]waiting for %d "
+ 			       "commands to complete\n",i,outstanding);
++			/*
++			 * Call cmd completion routine. Cmd to be
++			 * be completed directly without depending on isr.
++			 */
++			megasas_complete_cmd_dpc((unsigned long)instance);
+ 		}
+ 
+ 		msleep(1000);
+@@ -1749,60 +1816,6 @@ megasas_get_ctrl_info(struct megasas_ins
+ }
+ 
+ /**
+- * megasas_complete_cmd_dpc	 -	Returns FW's controller structure
+- * @instance_addr:			Address of adapter soft state
+- *
+- * Tasklet to complete cmds
+- */
+-static void megasas_complete_cmd_dpc(unsigned long instance_addr)
+-{
+-	u32 producer;
+-	u32 consumer;
+-	u32 context;
+-	struct megasas_cmd *cmd;
+-	struct megasas_instance *instance = (struct megasas_instance *)instance_addr;
+-	unsigned long flags;
+-
+-	/* If we have already declared adapter dead, donot complete cmds */
+-	if (instance->hw_crit_error)
+-		return;
+-
+-	producer = *instance->producer;
+-	consumer = *instance->consumer;
+-
+-	while (consumer != producer) {
+-		context = instance->reply_queue[consumer];
+-
+-		cmd = instance->cmd_list[context];
+-
+-		megasas_complete_cmd(instance, cmd, DID_OK);
+-
+-		consumer++;
+-		if (consumer == (instance->max_fw_cmds + 1)) {
+-			consumer = 0;
+-		}
+-	}
+-
+-	*instance->consumer = producer;
+-
+-	/*
+-	 * Check if we can restore can_queue
+-	 */
+-	if (instance->flag & MEGASAS_FW_BUSY
+-		&& time_after(jiffies, instance->last_time + 5 * HZ)
+-		&& atomic_read(&instance->fw_outstanding) < 17) {
+-
+-		spin_lock_irqsave(instance->host->host_lock, flags);
+-		instance->flag &= ~MEGASAS_FW_BUSY;
+-		instance->host->can_queue =
+-				instance->max_fw_cmds - MEGASAS_INT_CMDS;
+-
+-		spin_unlock_irqrestore(instance->host->host_lock, flags);
+-	}
+-
+-}
+-
+-/**
+  * megasas_issue_init_mfi -	Initializes the FW
+  * @instance:		Adapter soft state
+  *
+@@ -2394,6 +2407,7 @@ megasas_probe_one(struct pci_dev *pdev, 
+ 	init_waitqueue_head(&instance->abort_cmd_wait_q);
+ 
+ 	spin_lock_init(&instance->cmd_pool_lock);
++	spin_lock_init(&instance->completion_lock);
+ 
+ 	sema_init(&instance->aen_mutex, 1);
+ 	sema_init(&instance->ioctl_sem, MEGASAS_INT_CMDS);
+diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
+--- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h	2007-11-07 02:33:01.711008832 -0500
++++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h	2007-11-07 02:33:32.748290448 -0500
+@@ -1084,6 +1084,8 @@ struct megasas_instance {
+ 	struct megasas_cmd **cmd_list;
+ 	struct list_head cmd_pool;
+ 	spinlock_t cmd_pool_lock;
++	/* used to synch producer, consumer ptrs in dpc */
++	spinlock_t completion_lock;
+ 	struct dma_pool *frame_dma_pool;
+ 	struct dma_pool *sense_dma_pool;
+ 
+
+
