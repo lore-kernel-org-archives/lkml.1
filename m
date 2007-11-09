@@ -1,40 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760820AbXKID3t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760932AbXKIDqd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760820AbXKID3t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 22:29:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbXKID3k
+	id S1760932AbXKIDqd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 22:46:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbXKIDqY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 22:29:40 -0500
-Received: from rtr.ca ([76.10.145.34]:3343 "EHLO mail.rtr.ca"
+	Thu, 8 Nov 2007 22:46:24 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:56378 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751843AbXKID3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 22:29:39 -0500
-Message-ID: <4733D421.7000505@rtr.ca>
-Date: Thu, 08 Nov 2007 22:29:37 -0500
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
+	id S1753369AbXKIDqX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 22:46:23 -0500
+Date: Thu, 8 Nov 2007 22:46:22 -0500
+From: Jeff Garzik <jeff@garzik.org>
+To: Mark Lord <liml@rtr.ca>
 Cc: Riki Oktarianto <rkoktarianto@gmail.com>, linux-kernel@vger.kernel.org,
        Greg Kroah-Hartman <gregkh@suse.de>, linux-ide@vger.kernel.org
 Subject: Re: [PATCH] Add quirk to set AHCI mode on ICH boards
-References: <20071109020235.GA2031@ceren> <20071109023129.GA25581@havoc.gtf.org>
-In-Reply-To: <20071109023129.GA25581@havoc.gtf.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Message-ID: <20071109034622.GB25581@havoc.gtf.org>
+References: <20071109020235.GA2031@ceren> <20071109023129.GA25581@havoc.gtf.org> <4733D421.7000505@rtr.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4733D421.7000505@rtr.ca>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> On Fri, Nov 09, 2007 at 09:02:35AM +0700, Riki Oktarianto wrote:
->> Some BIOSen map AHCI ABAR but lock the SATA controller to IDE mode.
->> This patch add quirk to set AHCI mode on ICH board with such case.
->>
->> Tested on Macbook2,1 (ICH7M)
-> 
-> Intel will complain but it's awful tempting...
+On Thu, Nov 08, 2007 at 10:29:37PM -0500, Mark Lord wrote:
+> And I might even privately patch my own kernels to map the ACHI BAR
+> in the cases where the BIOS didn't...
 
-*Very* tempting.
+The inability to do this in the general case is the main reason why
+AHCI was not unconditionally enabled, even in IDE mode, when it was
+originally added...  :/
 
-And I might even privately patch my own kernels to map the ACHI BAR
-in the cases where the BIOS didn't...
+	Jeff, taking a trip down memory lane
+
+
+
