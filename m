@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762720AbXKIMp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761365AbXKINJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762720AbXKIMp6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 07:45:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758344AbXKIMpu
+	id S1761365AbXKINJX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 08:09:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247AbXKINJP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 07:45:50 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:56245 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756580AbXKIMps (ORCPT
+	Fri, 9 Nov 2007 08:09:15 -0500
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:41585 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753226AbXKINJO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 07:45:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=hUWQwXAFx3X3W/VyMz4EN+r08nEncQlGWmStxyQ1MlDiT8OIZf/Q/7f3y+eHnLnWjS/DGjkYrej4XKPFCkVpMcBulAHrAH02tE6Sp++SJwbmRU83zPiNk/bML6DNXLW2FG4NWL1UUQPYzBsmG4OYeiQB53OT6sdQN3LdM6mtA+Q=
-Date: Fri, 9 Nov 2007 19:45:33 +0700
-From: Riki Oktarianto <rkoktarianto@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH] Add quirk to set AHCI mode on ICH boards
-Message-ID: <20071109124533.GA6665@ceren>
-References: <20071109020235.GA2031@ceren> <20071109023129.GA25581@havoc.gtf.org>
+	Fri, 9 Nov 2007 08:09:14 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=vkYMcRW07FU5HwsRtAV+OOIcKlJQNnfz3aF+YLp86IfgmzK33rA9gCbpiqg7Nm7/XK9bD1/bPbzZ9YeHayTGrH9DLD0l3xbtTNmbh+rBHswoad718Ot8jV2y3kQ9qY9anUXUgne/3K+5yALmAS63I/aEvK8P9Uw/404nxDKx6p0=  ;
+X-YMail-OSG: Te4pqIAVM1kafGDoRtVgu17d0pNonKga9HsfxVSqWHU1ZnqZu3KDPutX5xtdCvSbVjm6CNwUbg--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Gregory Haskins <gregory.haskins.ml@gmail.com>
+Subject: Re: [PATCH] sched: avoid large irq-latencies in smp-balancing
+Date: Sat, 10 Nov 2007 00:09:55 +1100
+User-Agent: KMail/1.9.5
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <1194434956.6289.111.camel@twins> <1194437820.6289.114.camel@twins> <4732929D.604@gmail.com>
+In-Reply-To: <4732929D.604@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071109023129.GA25581@havoc.gtf.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Message-Id: <200711100009.56215.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 08, 2007 at 09:31:30PM -0500, Jeff Garzik wrote:
-> On Fri, Nov 09, 2007 at 09:02:35AM +0700, Riki Oktarianto wrote:
-> > Some BIOSen map AHCI ABAR but lock the SATA controller to IDE mode.
-> > This patch add quirk to set AHCI mode on ICH board with such case.
-> > 
-> > Tested on Macbook2,1 (ICH7M)
-> 
-> Intel will complain but it's awful tempting...
-> 
-> 	Jeff
-> 
-> 
+On Thursday 08 November 2007 15:37, Gregory Haskins wrote:
+> Peter Zijlstra wrote:
+> > Bah, missed a hunk
+> >
+> > ---
+> > Subject: sched: avoid large irq-latencies in smp-balancing
+> >
+> > SMP balancing is done with IRQs disabled and can iterate the full rq.
+> > When rqs are large this can cause large irq-latencies. Limit the nr of
+> > iterations on each run.
+> >
+> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > CC: Peter Williams <pwil3058@bigpond.net.au>
+>
+> Tested-by: Gregory Haskins <ghaskins@novell.com> (as part of 23.1-rt11)
 
-Then the tempted users will complain back :)
-
--- 
-Riki Oktarianto
+OK, but let's not make this default for mainline just yet please. There
+are so many performance regression possibilities in 2.6.24 already that
+we should go a little bit slower for now IMO.
