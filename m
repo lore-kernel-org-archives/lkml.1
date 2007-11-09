@@ -1,77 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755933AbXKIUh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbXKIUom@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755933AbXKIUh3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 15:37:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbXKIUhQ
+	id S1755849AbXKIUom (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 15:44:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbXKIUob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 15:37:16 -0500
-Received: from lessem.org ([206.124.10.8]:47294 "EHLO shiner.lessem.org"
+	Fri, 9 Nov 2007 15:44:31 -0500
+Received: from mail0.lsil.com ([147.145.40.20]:65332 "EHLO mail0.lsil.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751074AbXKIUhO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 15:37:14 -0500
-Message-ID: <4734C4BB.1050000@Lessem.org>
-Date: Fri, 09 Nov 2007 13:36:11 -0700
-From: Jeff Lessem <Jeff@Lessem.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071008)
+	id S1751233AbXKIUoa convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 15:44:30 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Dan Williams <dan.j.williams@intel.com>
-CC: Bill Davidsen <davidsen@tmr.com>,
-       =?ISO-8859-1?Q?BERTRAND_Jo=EBl?= <joel.bertrand@systella.fr>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>, Neil Brown <neilb@suse.de>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: 2.6.23.1: mdadm/raid5 hung/d-state
-References: <Pine.LNX.4.64.0711040658180.30831@p34.internal.lan>	 <18222.16003.92062.970530@notabene.brown>	 <Pine.LNX.4.64.0711041651250.23496@p34.internal.lan>	 <e9c3a7c20711051035m78ba90ck68f4fbc10480462a@mail.gmail.com>	 <Pine.LNX.4.64.0711051335450.11422@p34.internal.lan>	 <e9c3a7c20711051619u7054aab9l208b604b9e58fb61@mail.gmail.com>	 <47303FB8.7000801@systella.fr>	 <1194398700.2970.18.camel@dwillia2-linux.ch.intel.com>	 <47314653.80905@Lessem.org> <47334B46.7000809@tmr.com> <e9c3a7c20711081002k5c3be41doa700afce7c1a7a6e@mail.gmail.com>
-In-Reply-To: <e9c3a7c20711081002k5c3be41doa700afce7c1a7a6e@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (shiner.lessem.org [192.168.169.3]); Fri, 09 Nov 2007 13:36:25 -0700 (MST)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: PATCH [2/8] scsi: megaraid_sas - add module param fast_load
+Date: Fri, 9 Nov 2007 13:43:56 -0700
+Message-ID: <9738BCBE884FDB42801FAD8A7769C26501CA22B8@NAMAIL1.ad.lsil.com>
+In-Reply-To: <20071107173939.GD25560@infradead.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: PATCH [2/8] scsi: megaraid_sas - add module param fast_load
+Thread-Index: AcghZS/9usHzjygjSeSNkMZluAkeugBqG/5A
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: <James.Bottomley@SteelEye.com>
+Cc: <linux-scsi@vger.kernel.org>, <akpm@osdl.org>,
+       <linux-kernel@vger.kernel.org>, "Christoph Hellwig" <hch@infradead.org>
+X-OriginalArrivalTime: 09 Nov 2007 20:43:59.0740 (UTC) FILETIME=[41527BC0:01C82311]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Williams wrote:
- > On 11/8/07, Bill Davidsen <davidsen@tmr.com> wrote:
- >> Jeff Lessem wrote:
- >>> Dan Williams wrote:
- >>>> The following patch, also attached, cleans up cases where the code
- >>> looks
- >>>> at sh->ops.pending when it should be looking at the consistent
- >>>> stack-based snapshot of the operations flags.
- >>> I tried this patch (against a stock 2.6.23), and it did not work for
- >>> me.  Not only did I/O to the effected RAID5 & XFS partition stop, but
- >>> also I/O to all other disks.  I was not able to capture any debugging
- >>> information, but I should be able to do that tomorrow when I can hook
- >>> a serial console to the machine.
- >> That can't be good! This is worrisome because Joel is giddy with joy
- >> because it fixes his iSCSI problems. I was going to try it with nbd, but
- >> perhaps I'll wait a week or so and see if others have more information.
- >> Applying patches before a holiday weekend is a good way to avoid time
- >> off. :-(
- >
- > We need to see more information on the failure that Jeff is seeing,
- > and whether it goes away with the two known patches applied.  He
- > applied this most recent patch against stock 2.6.23 which means that
- > the platform was still open to the first biofill flags issue.
+James,
 
-I applied both of the patches.  The biofill one did not apply cleanly,
-as it was adding biofill to one section, and removing it from another,
-but it appears that biofill does not need to be removed from a stock
-2.6.23 kernel.  The second patch applies with a slight offset, but no
-errors.
+We are re-submitting those patches with the two patches (patch [2/8]--
+"add module param fast_load" and patch [3/8] -- "add module param
+max_sectors, cmd_per_lun" ) droped for now.  Later on we may implement
+the module params as suggested by the community members.
 
-I can report success so far with both patches applied.  I created an
-1100GB RAID5, formated it XFS, and successfully "tar c | tar x" 895GB
-of data onto it.  I'm also in the process of rsync-ing the 895GB of
-data from the (slightly changed) original.  In the past, I would
-always get a hang within 0-50GB of data transfer.
+Regards.
 
-For each drive in the RAID I also:
+Bo Yang   
 
-echo 128 > /sys/block/"$i"/queue/max_sectors_kb
-echo 512 > /sys/block/"$i"/queue/nr_requests
-echo 1 > /sys/block/"$i"/device/queue_depth
-blockdev --setra 65536 /dev/md3
-echo 16384 > /sys/block/md3/md/stripe_cache_size
 
-These changes appear to improve performance, along with a RAID5 chunk
-size of 1024k, but these changes alone (without the patches) do not
-fix the problem.
+-----Original Message-----
+From: Christoph Hellwig [mailto:hch@infradead.org] 
+Sent: Wednesday, November 07, 2007 12:40 PM
+To: Yang, Bo
+Cc: Christoph Hellwig; linux-scsi@vger.kernel.org;
+James.Bottomley@SteelEye.com; akpm@osdl.org;
+linux-kernel@vger.kernel.org
+Subject: Re: PATCH [2/8] scsi: megaraid_sas - add module param fast_load
+
+On Tue, Nov 06, 2007 at 12:04:31PM -0700, Yang, Bo wrote:
+> I see that scsi_scan_host_selected is in scsi_priv.h and currently is 
+> not used by any other driver. The scsi_priv.h is not part of the 
+> include dir (/include/scsi). One of the major Linux distro's don't 
+> even include this file in /usr/src/kernels. Also it looks like at this
+
+> time this function may not be available (not exported?) for driver
+modules to use.
+> Even if I include scsi_priv.h I get "unknown symbol" for this function
+
+> while loading.
+
+Yes, it would have to be exported and moved to a public header.
+
+> May be in the long run we can solve all these issues to call 
+> scsi_scan_host_selected. However, the current implementation works 
+> fine and has been tested by LSI and others. This implementation 
+> doesn't break any protocol nor does it adversely affect any driver
+functionality.
+
+Your implementation adds state to scanning that could easily break and
+makes the driver complex for things that don't belong into a driver, so
+there's a clear NACK for this from me.
