@@ -1,129 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbXKIVF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754120AbXKIVFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756030AbXKIVF1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 16:05:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbXKIVFM
+	id S1754120AbXKIVFm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 16:05:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705AbXKIVFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 16:05:12 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:53040 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751213AbXKIVFK (ORCPT
+	Fri, 9 Nov 2007 16:05:20 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:33370 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754247AbXKIVFS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 16:05:10 -0500
-Subject: [PATCH 1/2] create file_drop_write_access() helper
+	Fri, 9 Nov 2007 16:05:18 -0500
+Subject: [PATCH 2/2] fix up new filp allocators
 To: ezk@cs.sunysb.edu
 Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, hch@infradead.org,
        Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Fri, 09 Nov 2007 13:04:39 -0800
-Message-Id: <20071109210439.122065A3@kernel>
+Date: Fri, 09 Nov 2007 13:04:40 -0800
+References: <20071109210439.122065A3@kernel>
+In-Reply-To: <20071109210439.122065A3@kernel>
+Message-Id: <20071109210440.497630FB@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-These should fix the bug that Erez Zadok <ezk@cs.sunysb.edu>
-reported:
+Some new uses of get_empty_filp() have crept in, and are
+not properly taking mnt_want_write()s.  This fixes them
+up.
 
-Stopping RPC idmapd:
-
-kernel: __fput() of writeable file with no mnt_want_write()
-kernel: WARNING: at fs/file_table.c:262 __fput()
-kernel:  [<c010283e>] show_trace_log_lvl+0x12/0x25
-kernel:  [<c0103042>] show_trace+0xd/0x10
-...
-
-The actual bug was a missed mnt_want_write() when a
-filp was allocated with get_empty_filp() and then
-made writable.  Using alloc_file(), instead, fixes
-that.
-
---
-
-If someone decides to demote a file from r/w to just
-r/o, they can use this same code as __fput().
-
-NFS does just that, and will use this in the next
-patch.
+We really need to kill get_empty_filp().
 
 Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 ---
 
- linux-2.6.git-dave/fs/file_table.c      |   46 +++++++++++++++++++++-----------
- linux-2.6.git-dave/include/linux/file.h |    1 
- 2 files changed, 32 insertions(+), 15 deletions(-)
+ linux-2.6.git-dave/fs/anon_inodes.c    |   16 ++++++----------
+ linux-2.6.git-dave/fs/file_table.c     |    6 ++++++
+ linux-2.6.git-dave/fs/nfsd/nfs4state.c |    3 ++-
+ linux-2.6.git-dave/fs/pipe.c           |   17 +++++++----------
+ 4 files changed, 21 insertions(+), 21 deletions(-)
 
-diff -puN fs/file_table.c~create-file_drop_write_access fs/file_table.c
---- linux-2.6.git/fs/file_table.c~create-file_drop_write_access	2007-11-09 12:12:44.000000000 -0800
-+++ linux-2.6.git-dave/fs/file_table.c	2007-11-09 12:39:27.000000000 -0800
-@@ -223,6 +223,34 @@ void fastcall fput(struct file *file)
+diff -puN fs/anon_inodes.c~fix-idmapd-bug fs/anon_inodes.c
+--- linux-2.6.git/fs/anon_inodes.c~fix-idmapd-bug	2007-11-09 12:13:15.000000000 -0800
++++ linux-2.6.git-dave/fs/anon_inodes.c	2007-11-09 12:13:15.000000000 -0800
+@@ -81,13 +81,10 @@ int anon_inode_getfd(int *pfd, struct in
  
- EXPORT_SYMBOL(fput);
+ 	if (IS_ERR(anon_inode_inode))
+ 		return -ENODEV;
+-	file = get_empty_filp();
+-	if (!file)
+-		return -ENFILE;
  
-+/**
-+ * drop_file_write_access - give up ability to write to a file
-+ * @file: the file to which we will stop writing
+ 	error = get_unused_fd();
+ 	if (error < 0)
+-		goto err_put_filp;
++		return error;
+ 	fd = error;
+ 
+ 	/*
+@@ -114,14 +111,15 @@ int anon_inode_getfd(int *pfd, struct in
+ 	dentry->d_flags &= ~DCACHE_UNHASHED;
+ 	d_instantiate(dentry, anon_inode_inode);
+ 
+-	file->f_path.mnt = mntget(anon_inode_mnt);
+-	file->f_path.dentry = dentry;
++	error = -ENFILE;
++	file = alloc_file(anon_inode_mnt, dentry,
++			  FMODE_READ | FMODE_WRITE, fops);
++	if (!file)
++		goto err_put_unused_fd;
+ 	file->f_mapping = anon_inode_inode->i_mapping;
+ 
+ 	file->f_pos = 0;
+ 	file->f_flags = O_RDWR;
+-	file->f_op = fops;
+-	file->f_mode = FMODE_READ | FMODE_WRITE;
+ 	file->f_version = 0;
+ 	file->private_data = priv;
+ 
+@@ -134,8 +132,6 @@ int anon_inode_getfd(int *pfd, struct in
+ 
+ err_put_unused_fd:
+ 	put_unused_fd(fd);
+-err_put_filp:
+-	put_filp(file);
+ 	return error;
+ }
+ EXPORT_SYMBOL_GPL(anon_inode_getfd);
+diff -puN fs/file_table.c~fix-idmapd-bug fs/file_table.c
+--- linux-2.6.git/fs/file_table.c~fix-idmapd-bug	2007-11-09 12:13:15.000000000 -0800
++++ linux-2.6.git-dave/fs/file_table.c	2007-11-09 12:13:15.000000000 -0800
+@@ -89,6 +89,12 @@ int proc_nr_files(ctl_table *table, int 
+ /* Find an unused file structure and return a pointer to it.
+  * Returns NULL, if there are no more free file structures or
+  * we run out of memory.
 + *
-+ * This is a central place which will give up the ability
-+ * to write to @file, along with access to write through
-+ * its vfsmount.
-+ */
-+void drop_file_write_access(struct file *file)
-+{
-+	struct dentry *dentry = file->f_path.dentry;
-+	struct vfsmount *mnt = file->f_path.mnt;
-+	struct inode *inode = dentry->d_inode;
-+
-+	put_write_access(inode);
-+	if (!special_file(inode->i_mode)) {
-+		if (file->f_mnt_write_state == FILE_MNT_WRITE_TAKEN) {
-+			mnt_drop_write(mnt);
-+			file->f_mnt_write_state |= FILE_MNT_WRITE_RELEASED;
-+		} else {
-+			printk(KERN_WARNING "dropping write access on "
-+					"file with no mnt_want_write()\n");
-+			WARN_ON(1);
-+		}
-+	}
-+}
-+EXPORT_SYMBOL_GPL(drop_file_write_access);
-+
- /* __fput is called from task context when aio completion releases the last
-  * last use of a struct file *.  Do not use otherwise.
++ * Be very careful using this.  You are responsible for
++ * getting write access to any mount that you might assign
++ * to this filp, if it is opened for write.  If this is not
++ * done, you will imbalance int the mount's writer count
++ * and a warning at __fput() time.
   */
-@@ -248,21 +276,9 @@ void fastcall __fput(struct file *file)
- 	if (unlikely(S_ISCHR(inode->i_mode) && inode->i_cdev != NULL))
- 		cdev_put(inode->i_cdev);
- 	fops_put(file->f_op);
--	if (file->f_mode & FMODE_WRITE) {
--		put_write_access(inode);
--		if (!special_file(inode->i_mode)) {
--			if (file->f_mnt_write_state == FILE_MNT_WRITE_TAKEN) {
--				mnt_drop_write(mnt);
--				file->f_mnt_write_state |=
--					FILE_MNT_WRITE_RELEASED;
--			} else {
--				printk(KERN_WARNING "__fput() of writeable "
--						"file with no "
--						"mnt_want_write()\n");
--				WARN_ON(1);
--			}
--		}
--	}
-+	if (file->f_mode & FMODE_WRITE)
-+		drop_file_write_access(file);
+ struct file *get_empty_filp(void)
+ {
+diff -puN fs/nfsd/nfs4state.c~fix-idmapd-bug fs/nfsd/nfs4state.c
+--- linux-2.6.git/fs/nfsd/nfs4state.c~fix-idmapd-bug	2007-11-09 12:13:15.000000000 -0800
++++ linux-2.6.git-dave/fs/nfsd/nfs4state.c	2007-11-09 12:13:15.000000000 -0800
+@@ -41,6 +41,7 @@
+ #include <linux/sunrpc/svc.h>
+ #include <linux/nfsd/nfsd.h>
+ #include <linux/nfsd/cache.h>
++#include <linux/file.h>
+ #include <linux/mount.h>
+ #include <linux/workqueue.h>
+ #include <linux/smp_lock.h>
+@@ -1303,7 +1304,7 @@ static inline void
+ nfs4_file_downgrade(struct file *filp, unsigned int share_access)
+ {
+ 	if (share_access & NFS4_SHARE_ACCESS_WRITE) {
+-		put_write_access(filp->f_path.dentry->d_inode);
++		drop_file_write_access(filp);
+ 		filp->f_mode = (filp->f_mode | FMODE_READ) & ~FMODE_WRITE;
+ 	}
+ }
+diff -puN fs/pipe.c~fix-idmapd-bug fs/pipe.c
+--- linux-2.6.git/fs/pipe.c~fix-idmapd-bug	2007-11-09 12:13:15.000000000 -0800
++++ linux-2.6.git-dave/fs/pipe.c	2007-11-09 12:13:15.000000000 -0800
+@@ -959,13 +959,10 @@ struct file *create_write_pipe(void)
+ 	struct dentry *dentry;
+ 	struct qstr name = { .name = "" };
+ 
+-	f = get_empty_filp();
+-	if (!f)
+-		return ERR_PTR(-ENFILE);
+ 	err = -ENFILE;
+ 	inode = get_pipe_inode();
+ 	if (!inode)
+-		goto err_file;
++		goto err;
+ 
+ 	err = -ENOMEM;
+ 	dentry = d_alloc(pipe_mnt->mnt_sb->s_root, &name);
+@@ -980,13 +977,14 @@ struct file *create_write_pipe(void)
+ 	 */
+ 	dentry->d_flags &= ~DCACHE_UNHASHED;
+ 	d_instantiate(dentry, inode);
+-	f->f_path.mnt = mntget(pipe_mnt);
+-	f->f_path.dentry = dentry;
 +
- 	put_pid(file->f_owner.pid);
- 	file_kill(file);
- 	file->f_path.dentry = NULL;
-diff -puN include/linux/file.h~create-file_drop_write_access include/linux/file.h
---- linux-2.6.git/include/linux/file.h~create-file_drop_write_access	2007-11-09 12:12:44.000000000 -0800
-+++ linux-2.6.git-dave/include/linux/file.h	2007-11-09 12:12:44.000000000 -0800
-@@ -61,6 +61,7 @@ extern struct kmem_cache *filp_cachep;
++	f = alloc_file(pipe_mnt, dentry, FMODE_WRITE, &write_pipe_fops);
++	err = -ENFILE;
++	if (!f)
++		goto err_inode;
+ 	f->f_mapping = inode->i_mapping;
  
- extern void FASTCALL(__fput(struct file *));
- extern void FASTCALL(fput(struct file *));
-+extern void drop_file_write_access(struct file *file);
+ 	f->f_flags = O_WRONLY;
+-	f->f_op = &write_pipe_fops;
+-	f->f_mode = FMODE_WRITE;
+ 	f->f_version = 0;
  
- struct file_operations;
- struct vfsmount;
+ 	return f;
+@@ -994,8 +992,7 @@ struct file *create_write_pipe(void)
+  err_inode:
+ 	free_pipe_info(inode);
+ 	iput(inode);
+- err_file:
+-	put_filp(f);
++ err:
+ 	return ERR_PTR(err);
+ }
+ 
 _
