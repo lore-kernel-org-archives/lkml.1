@@ -1,33 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761925AbXKICV5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761932AbXKICbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761925AbXKICV5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Nov 2007 21:21:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758686AbXKICVt
+	id S1761932AbXKICbl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Nov 2007 21:31:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758820AbXKICbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Nov 2007 21:21:49 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:58642 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756532AbXKICVs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Nov 2007 21:21:48 -0500
-Message-ID: <4733C460.202@austin.rr.com>
-Date: Thu, 08 Nov 2007 20:22:24 -0600
-From: Steve French <smfrench@austin.rr.com>
-User-Agent: Mozilla Thunderbird 1.0 (Windows/20041206)
-X-Accept-Language: en-us, en
+	Thu, 8 Nov 2007 21:31:31 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:60872 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758638AbXKICbb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Nov 2007 21:31:31 -0500
+Date: Thu, 8 Nov 2007 21:31:30 -0500
+From: Jeff Garzik <jeff@garzik.org>
+To: Riki Oktarianto <rkoktarianto@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH] Add quirk to set AHCI mode on ICH boards
+Message-ID: <20071109023129.GA25581@havoc.gtf.org>
+References: <20071109020235.GA2031@ceren>
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>, v@iki.fi
-Subject: Re: smbfs/cifs large file support history?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071109020235.GA2031@ceren>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Does anyone remember when linux smbfs (or cifs) gained large file 
-> (>2GB, >4GB) file support?
+On Fri, Nov 09, 2007 at 09:02:35AM +0700, Riki Oktarianto wrote:
+> Some BIOSen map AHCI ABAR but lock the SATA controller to IDE mode.
+> This patch add quirk to set AHCI mode on ICH board with such case.
+> 
+> Tested on Macbook2,1 (ICH7M)
 
-The Linux CIFS client implementation has always had large file support (cifs.ko was added to the kernel first in 2.5.42), although of course some old server's do not support large (> 2GB) files.
+Intel will complain but it's awful tempting...
 
-I thought smbfs added it late in the 2.4 series, but don't remember, it might have been in 2.5.
+	Jeff
+
 
 
