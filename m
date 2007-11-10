@@ -1,209 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbXKJFPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752529AbXKJFca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753446AbXKJFPS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 00:15:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbXKJFPG
+	id S1752529AbXKJFca (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 00:32:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbXKJFcT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 00:15:06 -0500
-Received: from ns1.suse.de ([195.135.220.2]:56959 "EHLO mx1.suse.de"
+	Sat, 10 Nov 2007 00:32:19 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:36656 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751252AbXKJFPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 00:15:04 -0500
-Date: Sat, 10 Nov 2007 06:15:01 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [patch 2/2] fs: buffer trylock rename
-Message-ID: <20071110051501.GB16018@wotan.suse.de>
-References: <20071110051222.GA16018@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071110051222.GA16018@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+	id S1751007AbXKJFcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Nov 2007 00:32:18 -0500
+Message-ID: <47354258.30501@garzik.org>
+Date: Sat, 10 Nov 2007 00:32:08 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, roppedisano@infracomspa.it,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, rjw@sisk.pl,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH] Don't fail ata device revalidation for bad _GTF methods
+References: <4731C86B.1040704@infracomspa.it> <20071107121355.5eaf4496.akpm@linux-foundation.org> <47333CCF.1050403@infracomspa.it> <20071108094958.5c9b1b22.akpm@linux-foundation.org> <20071108180256.GB3491@havoc.gtf.org> <20071108101341.6c4f88d4.akpm@linux-foundation.org> <20071108182217.GA2685@srcf.ucam.org> <20071108183707.GA3008@srcf.ucam.org>
+In-Reply-To: <20071108183707.GA3008@srcf.ucam.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Matthew Garrett wrote:
+> Experience suggests that the _GTF method may be bad. We currently fail 
+> device revalidation in that case, which seems excessive.
+> 
+> Signed-off-by: Matthew Garrett <mjg59@srcf.ucam.org>
 
-fs: rename buffer trylock
+applied
 
-Converting the buffer lock to new bitops also requires name change, so convert
-the raw test_and_set bitop to a trylock.
 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-
----
- fs/buffer.c                 |    4 ++--
- fs/jbd/commit.c             |    2 +-
- fs/jbd2/commit.c            |    2 +-
- fs/ntfs/aops.c              |    2 +-
- fs/ntfs/compress.c          |    2 +-
- fs/ntfs/mft.c               |    4 ++--
- fs/reiserfs/inode.c         |    2 +-
- fs/reiserfs/journal.c       |    4 ++--
- include/linux/buffer_head.h |    8 ++++++--
- 9 files changed, 17 insertions(+), 13 deletions(-)
-
-Index: linux-2.6/fs/jbd/commit.c
-===================================================================
---- linux-2.6.orig/fs/jbd/commit.c
-+++ linux-2.6/fs/jbd/commit.c
-@@ -208,7 +208,7 @@ write_out_data:
- 		 * blocking lock_buffer().
- 		 */
- 		if (buffer_dirty(bh)) {
--			if (test_set_buffer_locked(bh)) {
-+			if (!trylock_buffer(bh)) {
- 				BUFFER_TRACE(bh, "needs blocking lock");
- 				spin_unlock(&journal->j_list_lock);
- 				/* Write out all data to prevent deadlocks */
-Index: linux-2.6/fs/jbd2/commit.c
-===================================================================
---- linux-2.6.orig/fs/jbd2/commit.c
-+++ linux-2.6/fs/jbd2/commit.c
-@@ -208,7 +208,7 @@ write_out_data:
- 		 * blocking lock_buffer().
- 		 */
- 		if (buffer_dirty(bh)) {
--			if (test_set_buffer_locked(bh)) {
-+			if (!trylock_buffer(bh)) {
- 				BUFFER_TRACE(bh, "needs blocking lock");
- 				spin_unlock(&journal->j_list_lock);
- 				/* Write out all data to prevent deadlocks */
-Index: linux-2.6/fs/buffer.c
-===================================================================
---- linux-2.6.orig/fs/buffer.c
-+++ linux-2.6/fs/buffer.c
-@@ -1688,7 +1688,7 @@ static int __block_write_full_page(struc
- 		 */
- 		if (wbc->sync_mode != WB_SYNC_NONE || !wbc->nonblocking) {
- 			lock_buffer(bh);
--		} else if (test_set_buffer_locked(bh)) {
-+		} else if (!trylock_buffer(bh)) {
- 			redirty_page_for_writepage(wbc, page);
- 			continue;
- 		}
-@@ -2943,7 +2943,7 @@ void ll_rw_block(int rw, int nr, struct 
- 
- 		if (rw == SWRITE)
- 			lock_buffer(bh);
--		else if (test_set_buffer_locked(bh))
-+		else if (!trylock_buffer(bh))
- 			continue;
- 
- 		if (rw == WRITE || rw == SWRITE) {
-Index: linux-2.6/include/linux/buffer_head.h
-===================================================================
---- linux-2.6.orig/include/linux/buffer_head.h
-+++ linux-2.6/include/linux/buffer_head.h
-@@ -115,7 +115,6 @@ BUFFER_FNS(Uptodate, uptodate)
- BUFFER_FNS(Dirty, dirty)
- TAS_BUFFER_FNS(Dirty, dirty)
- BUFFER_FNS(Lock, locked)
--TAS_BUFFER_FNS(Lock, locked)
- BUFFER_FNS(Req, req)
- TAS_BUFFER_FNS(Req, req)
- BUFFER_FNS(Mapped, mapped)
-@@ -318,10 +317,15 @@ static inline void wait_on_buffer(struct
- 		__wait_on_buffer(bh);
- }
- 
-+static inline int trylock_buffer(struct buffer_head *bh)
-+{
-+	return likely(!test_and_set_bit(BH_Lock, &bh->b_state));
-+}
-+
- static inline void lock_buffer(struct buffer_head *bh)
- {
- 	might_sleep();
--	if (test_set_buffer_locked(bh))
-+	if (!trylock_buffer(bh))
- 		__lock_buffer(bh);
- }
- 
-Index: linux-2.6/fs/ntfs/aops.c
-===================================================================
---- linux-2.6.orig/fs/ntfs/aops.c
-+++ linux-2.6/fs/ntfs/aops.c
-@@ -1191,7 +1191,7 @@ lock_retry_remap:
- 		tbh = bhs[i];
- 		if (!tbh)
- 			continue;
--		if (unlikely(test_set_buffer_locked(tbh)))
-+		if (!trylock_buffer(tbh))
- 			BUG();
- 		/* The buffer dirty state is now irrelevant, just clean it. */
- 		clear_buffer_dirty(tbh);
-Index: linux-2.6/fs/ntfs/compress.c
-===================================================================
---- linux-2.6.orig/fs/ntfs/compress.c
-+++ linux-2.6/fs/ntfs/compress.c
-@@ -665,7 +665,7 @@ lock_retry_remap:
- 	for (i = 0; i < nr_bhs; i++) {
- 		struct buffer_head *tbh = bhs[i];
- 
--		if (unlikely(test_set_buffer_locked(tbh)))
-+		if (!trylock_buffer(tbh))
- 			continue;
- 		if (unlikely(buffer_uptodate(tbh))) {
- 			unlock_buffer(tbh);
-Index: linux-2.6/fs/ntfs/mft.c
-===================================================================
---- linux-2.6.orig/fs/ntfs/mft.c
-+++ linux-2.6/fs/ntfs/mft.c
-@@ -586,7 +586,7 @@ int ntfs_sync_mft_mirror(ntfs_volume *vo
- 		for (i_bhs = 0; i_bhs < nr_bhs; i_bhs++) {
- 			struct buffer_head *tbh = bhs[i_bhs];
- 
--			if (unlikely(test_set_buffer_locked(tbh)))
-+			if (!trylock_buffer(tbh))
- 				BUG();
- 			BUG_ON(!buffer_uptodate(tbh));
- 			clear_buffer_dirty(tbh);
-@@ -779,7 +779,7 @@ int write_mft_record_nolock(ntfs_inode *
- 	for (i_bhs = 0; i_bhs < nr_bhs; i_bhs++) {
- 		struct buffer_head *tbh = bhs[i_bhs];
- 
--		if (unlikely(test_set_buffer_locked(tbh)))
-+		if (!trylock_buffer(tbh))
- 			BUG();
- 		BUG_ON(!buffer_uptodate(tbh));
- 		clear_buffer_dirty(tbh);
-Index: linux-2.6/fs/reiserfs/inode.c
-===================================================================
---- linux-2.6.orig/fs/reiserfs/inode.c
-+++ linux-2.6/fs/reiserfs/inode.c
-@@ -2433,7 +2433,7 @@ static int reiserfs_write_full_page(stru
- 		if (wbc->sync_mode != WB_SYNC_NONE || !wbc->nonblocking) {
- 			lock_buffer(bh);
- 		} else {
--			if (test_set_buffer_locked(bh)) {
-+			if (!trylock_buffer(bh)) {
- 				redirty_page_for_writepage(wbc, page);
- 				continue;
- 			}
-Index: linux-2.6/fs/reiserfs/journal.c
-===================================================================
---- linux-2.6.orig/fs/reiserfs/journal.c
-+++ linux-2.6/fs/reiserfs/journal.c
-@@ -857,7 +857,7 @@ static int write_ordered_buffers(spinloc
- 		jh = JH_ENTRY(list->next);
- 		bh = jh->bh;
- 		get_bh(bh);
--		if (test_set_buffer_locked(bh)) {
-+		if (!trylock_buffer(bh)) {
- 			if (!buffer_dirty(bh)) {
- 				list_move(&jh->list, &tmp);
- 				goto loop_next;
-@@ -3877,7 +3877,7 @@ int reiserfs_prepare_for_journal(struct 
- {
- 	PROC_INFO_INC(p_s_sb, journal.prepare);
- 
--	if (test_set_buffer_locked(bh)) {
-+	if (!trylock_buffer(bh)) {
- 		if (!wait)
- 			return 0;
- 		lock_buffer(bh);
