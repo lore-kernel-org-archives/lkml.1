@@ -1,85 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754091AbXKJTBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754434AbXKJTEp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754091AbXKJTBB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 14:01:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbXKJTAw
+	id S1754434AbXKJTEp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 14:04:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbXKJTEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 14:00:52 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:23203 "EHLO
-	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752004AbXKJTAv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 14:00:51 -0500
-Date: Sat, 10 Nov 2007 13:00:54 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH] sata_nv,ahci: add the ahci legacy mode support to sata_nv
-In-reply-to: <47353AE8.5050900@garzik.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: peer chen <peerchen@gmail.com>, Kuan Luo <kluo@nvidia.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Message-id: <4735FFE6.6020705@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <200709251323031982245@gmail.com> <470FE47B.5060505@garzik.org>
- <cfaab6210710160108x1328086cse991f668e23e569e@mail.gmail.com>
- <47181CE1.4000802@garzik.org>
- <cfaab6210710182358t4de355f9wd6d605a7b8076ace@mail.gmail.com>
- <47185BFD.2010909@garzik.org>
- <cfaab6210710211855q7a2de35co13d3017b2a07d4cc@mail.gmail.com>
- <47352DD8.6040607@garzik.org> <47353AE8.5050900@garzik.org>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Sat, 10 Nov 2007 14:04:36 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:43772 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752736AbXKJTEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Nov 2007 14:04:35 -0500
+Message-ID: <473600B6.5070103@garzik.org>
+Date: Sat, 10 Nov 2007 14:04:22 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Allen Martin <AMartin@nvidia.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Mark Lord <liml@rtr.ca>,
+       Riki Oktarianto <rkoktarianto@gmail.com>, linux-kernel@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-ide@vger.kernel.org
+Subject: Re: [PATCH] Add quirk to set AHCI mode on ICH boards
+References: <20071109020235.GA2031@ceren>	<20071109023129.GA25581@havoc.gtf.org>	<4733D421.7000505@rtr.ca>	<20071109034622.GB25581@havoc.gtf.org> <20071109120425.543971bf@the-village.bc.nu> <47351FE1.4000001@garzik.org> <DBFABB80F7FD3143A911F9E6CFD477B0329351A3@hqemmail02.nvidia.com>
+In-Reply-To: <DBFABB80F7FD3143A911F9E6CFD477B0329351A3@hqemmail02.nvidia.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Jeff Garzik wrote:
->> The proposed sata_nv patch does the opposite -- guarantees we must 
->> support the continually problematic legacy IDE interface ad infinitum. 
->> Such patches are OK for the test lab, but in this specific case users 
->> /suffer/ when not running AHCI mode.
-> 
-> Just to reinforce...
-> 
-> sata_nv support and bug fixes are primarily done right now through the 
-> valiant efforts of Robert Hancock (with assists from Alan, Tejun, and 
-> others).
-> 
-> Robert's job is difficult, because he has no hardware documentation[1], 
-> and NVIDIA does not seem to be helping out much with driver bug reports 
-> on the lists or in bugzillas.
+Allen Martin wrote:
+> At least for NVIDIA controllers, loading the AHCI driver when the BIOS
+> is set to IDE mode is not recommended by NVIDIA.  Any AHCI workarounds
+> in the BIOS are likely to be disabled when set to IDE mode.  In practice
 
-Right, I don't have anything. Unless the original incomplete ADMA driver 
-release from NVIDIA counts as documentation, lol.
+What workarounds, if any, are needed?
 
-And yes, I've CC'ed NVIDIA people about a few ADMA-related issues and 
-been met with silence. It would be nice if they were as responsive about 
-ADMA issues as I must say Kuan and Peer have been on the SWNCQ side of 
-things..
+We need those in the driver not BIOS anyway, in order to fully support 
+suspend/resume and host controller reset during runtime operation.
 
-> 
-> As far as I know, I am the only one in the universe outside of NVIDIA 
-> with any SATA docs at all, and those docs _only_ cover ADMA registers 
-> and DMA structures, no PCI config info, no errata, nothing on SWNCQ or 
-> legacy IDE (well, half a page).
-> 
-> NVIDIA has indeed become more engaged in sata_nv in recent times, and 
-> that's a positive sign.  You, Kuon and Ayaz have all been noticeably 
-> more responsive in email.  Thanks.  Users have definitely benefited, 
-> particularly from your help addressing a couple SWNCQ issues.
-> 
-> But at this point in time, being asked to choose between sata_nv and 
-> ahci is no choice at all.  One has public documentation, wide industry 
-> support and little-or-no bugs.  The other has several open issues, no 
-> documentation, and support obstacles.
 
-They're not even equivalent interfaces in this case, in the proposed 
-AHCI legacy mode patch these controllers are supported in the default 
-SFF mode only, no ADMA or SWNCQ, so you don't get any NCQ support..
+> we don't expect to see a lot of users running an AHCI controller in IDE
+> mode unless they have explicitly disabled AHCI from the BIOS or the
+> system builder has some specific reason for shipping IDE mode by default
+> (like support for some legacy DOS or Win9x tools)
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+That's the situation we run into the most:  the system is in IDE mode 
+not because AHCI doesn't work, but for legacy compatibility.  We even 
+run into cases (MacBook, Dell servers) where the user is never offered 
+the option to turn on AHCI, even though the silicon supports it.
+
+As such, the user winds up being forced to into the inferior mode for no 
+reason related to their own setup (since they are obviously running Linux).
+
+In Linux at least, we have a bunch of open sata_nv issues, so forcing 
+users' interface into AHCI mode as a default future policy seems like 
+the most stable choice on NVIDIA AHCI platforms.
+
+	Jeff
+
 
