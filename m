@@ -1,62 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754434AbXKJTEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754168AbXKJTOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754434AbXKJTEp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 14:04:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbXKJTEg
+	id S1754168AbXKJTOw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 14:14:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbXKJTOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 14:04:36 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:43772 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752736AbXKJTEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 14:04:35 -0500
-Message-ID: <473600B6.5070103@garzik.org>
-Date: Sat, 10 Nov 2007 14:04:22 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Allen Martin <AMartin@nvidia.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Mark Lord <liml@rtr.ca>,
-       Riki Oktarianto <rkoktarianto@gmail.com>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-ide@vger.kernel.org
-Subject: Re: [PATCH] Add quirk to set AHCI mode on ICH boards
-References: <20071109020235.GA2031@ceren>	<20071109023129.GA25581@havoc.gtf.org>	<4733D421.7000505@rtr.ca>	<20071109034622.GB25581@havoc.gtf.org> <20071109120425.543971bf@the-village.bc.nu> <47351FE1.4000001@garzik.org> <DBFABB80F7FD3143A911F9E6CFD477B0329351A3@hqemmail02.nvidia.com>
-In-Reply-To: <DBFABB80F7FD3143A911F9E6CFD477B0329351A3@hqemmail02.nvidia.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Sat, 10 Nov 2007 14:14:44 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:4863 "EHLO
+	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752980AbXKJTOn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Nov 2007 14:14:43 -0500
+Date: Sat, 10 Nov 2007 13:14:41 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: x86_64 SATA DVD drive + libata trouble
+In-reply-to: <fa.8uxz0HU0qK8mBG2Y3elfa/Plk4k@ifi.uio.no>
+To: Bernd Strieder <strieder@informatik.uni-kl.de>
+Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Message-id: <47360321.2060803@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.8uxz0HU0qK8mBG2Y3elfa/Plk4k@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allen Martin wrote:
-> At least for NVIDIA controllers, loading the AHCI driver when the BIOS
-> is set to IDE mode is not recommended by NVIDIA.  Any AHCI workarounds
-> in the BIOS are likely to be disabled when set to IDE mode.  In practice
+Bernd Strieder wrote:
+> Hello,
+> 
+> please CC me, I'm not subscribed.
+> 
+> If any kernel developer is interested in more specific information 
+> please mail me, I can build kernels, I can apply patches, though 
+> have not done it regularly.
+> 
+> I'd like to get the DVD drive working somehow. I have googled a lot 
+> and did not find any more ideas what to do. Some good keywords to 
+> find a solution would suffice at that end.
+> 
+> Rough problem description:
+> 
+> I have a Tyan mainboard with NVIDIA chipset CK804. The only 
+> SATA/IDE device is a SATA DVD combo, the harddisks are on a RAID 
+> controller from 3ware. The harddisks are fine.
+> 
+> The openSuSE 10.3 boot dvds fail after booting from the BIOS, the 
+> installation kernel cannot use the DVD drive. That kernel uses 
+> libata and sata_nv pata_amd as drivers. The drive is recognized 
+> but it cannot be used. This is the situation probably during 
+> install from DVD and now in the running system after a network 
+> install it persists.
+> 
+> Reading from the dvd device /dev/sr0 with dd stops after at most 
+> 119kb of rubbish read. Mounting fails with superblock not found.
+> When trying to remove the pata_amd module I get an Oops. I tried to 
+> remove the modules to have a chance to reload them with other 
+> options (atapi_enable), but that did not help, even after 
+> rebooting.
+> 
+> A vanilla 2.6.23.1 kernel behaves even less friendly, the dd 
+> on /dev/sr0 causes a hard reset.
+> 
+> So there are clearly some problems with libata in this system.
+> 
+> I have failed switching away from libata getting the drive to be 
+> recognized at all.
 
-What workarounds, if any, are needed?
+There is a known problem with ATAPI devices on CK804 chipsets which have 
+memory above the 4GB mark, being debugged here:
 
-We need those in the driver not BIOS anyway, in order to fully support 
-suspend/resume and host controller reset during runtime operation.
+https://bugzilla.redhat.com/show_bug.cgi?id=351451
 
+If you are running into that one you can workaround it for now by 
+passing the adma=0 parameter to the sata_nv module (not sure how this 
+would be done on Suse's setup) or pass sata_nv.adma=0 on the kernel 
+command line if sata_nv is built into the kernel. If that does help, I 
+could ask you to test patches :-)
 
-> we don't expect to see a lot of users running an AHCI controller in IDE
-> mode unless they have explicitly disabled AHCI from the BIOS or the
-> system builder has some specific reason for shipping IDE mode by default
-> (like support for some legacy DOS or Win9x tools)
-
-That's the situation we run into the most:  the system is in IDE mode 
-not because AHCI doesn't work, but for legacy compatibility.  We even 
-run into cases (MacBook, Dell servers) where the user is never offered 
-the option to turn on AHCI, even though the silicon supports it.
-
-As such, the user winds up being forced to into the inferior mode for no 
-reason related to their own setup (since they are obviously running Linux).
-
-In Linux at least, we have a bunch of open sata_nv issues, so forcing 
-users' interface into AHCI mode as a default future policy seems like 
-the most stable choice on NVIDIA AHCI platforms.
-
-	Jeff
-
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
