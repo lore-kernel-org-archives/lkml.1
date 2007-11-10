@@ -1,58 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763371AbXKJBSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932108AbXKJB0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763371AbXKJBSR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 20:18:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754793AbXKJBSF
+	id S932108AbXKJB0j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 20:26:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753623AbXKJB0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 20:18:05 -0500
-Received: from mga01.intel.com ([192.55.52.88]:2128 "EHLO mga01.intel.com"
+	Fri, 9 Nov 2007 20:26:30 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58349 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754747AbXKJBSE convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 20:18:04 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,397,1188802800"; 
-   d="scan'208";a="376689952"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1751442AbXKJB03 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 20:26:29 -0500
+Message-ID: <473508E3.1050903@redhat.com>
+Date: Fri, 09 Nov 2007 23:26:59 -0200
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070811)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: 
-Date: Fri, 9 Nov 2007 17:18:01 -0800
-Message-ID: <617E1C2C70743745A92448908E030B2A02E9A31C@scsmsx411.amr.corp.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Index: AcgjN4lTkJ0M9AaITyWTzL8DQQGf5g==
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "LKML" <linux-kernel@vger.kernel.org>
-Cc: <dada1@cosmosbay.com>
-X-OriginalArrivalTime: 10 Nov 2007 01:18:02.0600 (UTC) FILETIME=[8A07CE80:01C82337]
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: linux-kernel@vger.kernel.org, lguest@ozlabs.org,
+       kvm-devel@lists.sourceforge.net, ak@suse.de,
+       virtualization@lists.linux-foundation.org, chrisw@sous-sol.org,
+       tglx@linutronix.de, anthony@codemonkey.ws, akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu
+Subject: Re: [PATCH 1/24] mm/sparse-vmemmap.c: make sure init_mm is included
+References: <11946337851964-git-send-email-gcosta@redhat.com> <11946337933104-git-send-email-gcosta@redhat.com> <4734E6A0.6070508@goop.org>
+In-Reply-To: <4734E6A0.6070508@goop.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just pulled latest git tree from Linus and a few ia64 configurations
-(anything with CONFIG_NUMA=y) won't build.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-The offending commit appears to be:
+Jeremy Fitzhardinge escreveu:
+> Glauber de Oliveira Costa wrote:
+>> mm/sparse-vmemmap.c uses init_mm in some places.  However, it is not
+>> present in any of the headers currently included in the file.
+>>
+>> init_mm is defined as extern in sched.h, so we add it to the headers list
+>>
+>> Up to now, this problem was masked by the fact that functions like
+>> set_pte_at() and pmd_populate_kernel() are usually macros that expand to
+>> simpler variants that does not use the first parameter at all.
+>>
+>> Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+>> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>> Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+>> ---
+>>  mm/sparse-vmemmap.c |    1 +
+>>  1 files changed, 1 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
+>> index d3b718b..22620f6 100644
+>> --- a/mm/sparse-vmemmap.c
+>> +++ b/mm/sparse-vmemmap.c
+>> @@ -24,6 +24,7 @@
+>>  #include <linux/module.h>
+>>  #include <linux/spinlock.h>
+>>  #include <linux/vmalloc.h>
+>> +#include <linux/sched.h>
+>>   
+> 
+> This is already in git.
+> 
+>     J
+As I told in the 0th message, yes, I'm aware.
+Just it does not seem to be in tglx's , so if people are willing to try
+this out, they'll needed. Thus it's included in the series.
 
-    230140cffa7feae90ad50bf259db1fa07674f3a7
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Remi - http://enigmail.mozdev.org
 
-Here's the error messages from the compiler:
-
-  CC [M]  drivers/infiniband/core/cma.o
-In file included from include/net/tcp.h:35,
-                 from drivers/infiniband/core/cma.c:40:
-include/net/inet_hashtables.h: In function `inet_ehash_locks_alloc':
-include/net/inet_hashtables.h:165: error: implicit declaration of
-function `vmalloc'
-include/net/inet_hashtables.h:165: warning: assignment makes pointer
-from integer without a cast
-include/net/inet_hashtables.h: In function `inet_ehash_locks_free':
-include/net/inet_hashtables.h:186: error: implicit declaration of
-function `vfree'
-make[3]: *** [drivers/infiniband/core/cma.o] Error 1
-
-
--Tony
+iD8DBQFHNQjijYI8LaFUWXMRAn+UAJ48V1EyWoXkWu1+J0Y0ze59H7ZG2QCcDdgW
+4qVJgJcQDfJrvZk8TSo901s=
+=RwdO
+-----END PGP SIGNATURE-----
