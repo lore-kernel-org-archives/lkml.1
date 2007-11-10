@@ -1,118 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbXKJGHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbXKJGyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754103AbXKJGHQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 01:07:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbXKJGHF
+	id S1752822AbXKJGyt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 01:54:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbXKJGyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 01:07:05 -0500
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:41377 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751402AbXKJGHD (ORCPT
+	Sat, 10 Nov 2007 01:54:39 -0500
+Received: from fk-out-0910.google.com ([209.85.128.191]:48838 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751393AbXKJGyi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 01:07:03 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=UZhZdVSXyrXkAyruylU9ewItNbO4g7ce6RD7AnCRHacAP+tfV1CBf5i5+zmT6T4SR9jIa1t8u6JolAb6gU6SS5jxjaNamx2xnLk4/AfhHJ4O2BZ7hBfvEjWcg8E+DQRolBbur1BW0gpff3/i11hOWth7eAVbVBpmg8/RMdYOJxY=  ;
-X-YMail-OSG: uHKyxwIVM1kZuXx2O1FqGPrBqWCL.NVQWqeIyshJ7afitR_PpmnK6MqCtDDFGZ2DZu.xlM8B2A--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Christoph Lameter <clameter@sgi.com>, netdev@vger.kernel.org
-Subject: Re: 2.6.24-rc2: Network commit causes SLUB performance regression with tbench
-Date: Sat, 10 Nov 2007 14:28:25 +1100
-User-Agent: KMail/1.9.5
-Cc: "David S. Miller" <davem@davemloft.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org
-References: <200711092336.56172.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0711091533300.17621@schroedinger.engr.sgi.com> <200711101229.35822.nickpiggin@yahoo.com.au>
-In-Reply-To: <200711101229.35822.nickpiggin@yahoo.com.au>
+	Sat, 10 Nov 2007 01:54:38 -0500
+Message-ID: <7e0fb38c0711092254v19678f41vf91d5c2c6fa96991@mail.gmail.com>
+Date: Sat, 10 Nov 2007 01:54:36 -0500
+From: "Eric Paris" <eparis@parisplace.org>
+To: casey@schaufler-ca.com
+Subject: Re: [PATCH 2/2] Version 11 (2.6.24-rc2) Smack: Simplified Mandatory Access Control Kernel
+Cc: akpm@osdl.org, torvalds@osdl.org, method@manicmethod.com,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+In-Reply-To: <4733E6B4.8010108@schaufler-ca.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711101428.25295.nickpiggin@yahoo.com.au>
+References: <4733E6B4.8010108@schaufler-ca.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 10 November 2007 12:29, Nick Piggin wrote:
-> cc'ed linux-netdev
+[snip from fs/super.c:vfs_kern_mount() just for reference]
+        if (data) {
+                secdata = alloc_secdata();
+                if (!secdata)
+                        goto out_mnt;
 
-Err, make that 'netdev' :P
+                error = security_sb_copy_data(type, data, secdata);
+                if (error)
+                        goto out_free_secdata;
+        }
 
-> On Saturday 10 November 2007 10:46, Christoph Lameter wrote:
-> > commit deea84b0ae3d26b41502ae0a39fe7fe134e703d0 seems to cause a drop
-> > in SLUB tbench performance:
-> >
-> > 8p x86_64 system:
-> >
-> > 2.6.24-rc2:
-> > 	1260.80 MB/sec
-> >
-> > After reverting the patch:
-> > 	2350.04 MB/sec
-> >
-> > SLAB performance (which is at 2435.58 MB/sec, ~3% better than SLUB) is
-> > not affected by the patch.
->
-> Ah, I didn't realise this was a regression. Thanks for bisecting it.
->
-> > Since this is an alignment change it seems that tbench performance is
-> > sensitive to the data layout? SLUB packs data more tightly than SLAB. So
-> > 8 byte allocations could result in cacheline contention if adjacent
-> > objects are allocated from different cpus. SLABs minimum size is 32
-> > bytes so the cacheline contention is likely more limited.
-> >
-> > Maybe we need to allocate a mininum of one cacheline to the skb head? Or
-> > padd it out to a full cacheline?
->
-> The data should already be cacheline aligned. It is kmalloced, and
-> with a minimum size of somewhere around 200 bytes on a 64-bit machine.
-> So it will hit a cacheline aligned kmalloc slab AFAIKS  -- cacheline
-> interference is probably not the problem. (To verify, I built slub with
-> minimum kmalloc size set to 32 like slab and it's no real difference)
->
-> But I can't see why restricting the allocation to PAGE_SIZE would help
-> either. Maybe the macros are used in some other areas.
->
-> BTW. your size-2048 kmalloc cache is order-1 in the default setup,
-> wheras kmalloc(1024) or kmalloc(4096) will be order-0 allocations. And
-> SLAB also uses order-0 for size-2048. It would be nice if SLUB did the
-> same...
->
-> > commit deea84b0ae3d26b41502ae0a39fe7fe134e703d0
-> > Author: Herbert Xu <herbert@gondor.apana.org.au>
-> > Date:   Sun Oct 21 16:27:46 2007 -0700
-> >
-> >     [NET]: Fix SKB_WITH_OVERHEAD calculation
-> >
-> >     The calculation in SKB_WITH_OVERHEAD is incorrect in that it can
-> > cause an overflow across a page boundary which is what it's meant to
-> > prevent. In particular, the header length (X) should not be lumped
-> > together with skb_shared_info.  The latter needs to be aligned properly
-> > while the header has no choice but to sit in front of wherever the
-> > payload is.
-> >
-> >     Therefore the correct calculation is to take away the aligned size of
-> >     skb_shared_info, and then subtract the header length.  The resulting
-> >     quantity L satisfies the following inequality:
-> >
-> >         SKB_DATA_ALIGN(L + X) + sizeof(struct skb_shared_info) <=
-> > PAGE_SIZE
-> >
-> >     This is the quantity used by alloc_skb to do the actual allocation.
-> >     Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-> >     Signed-off-by: David S. Miller <davem@davemloft.net>
-> >
-> > diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
-> > index f93f22b..369f60a 100644
-> > --- a/include/linux/skbuff.h
-> > +++ b/include/linux/skbuff.h
-> > @@ -41,8 +41,7 @@
-> >  #define SKB_DATA_ALIGN(X)      (((X) + (SMP_CACHE_BYTES - 1)) & \
-> >                                  ~(SMP_CACHE_BYTES - 1))
-> >  #define SKB_WITH_OVERHEAD(X)   \
-> > -       (((X) - sizeof(struct skb_shared_info)) & \
-> > -        ~(SMP_CACHE_BYTES - 1))
-> > +       ((X) - SKB_DATA_ALIGN(sizeof(struct skb_shared_info)))
-> >  #define SKB_MAX_ORDER(X, ORDER) \
-> >         SKB_WITH_OVERHEAD((PAGE_SIZE << (ORDER)) - (X))
-> >  #define SKB_MAX_HEAD(X)                (SKB_MAX_ORDER((X), 0))
+        error = type->get_sb(type, flags, name, data, mnt);
+        if (error < 0)
+                goto out_free_secdata;
+        BUG_ON(!mnt->mnt_sb);
+
+        error = security_sb_kern_mount(mnt->mnt_sb, secdata);
+        if (error)
+                goto out_sb;
+[end snip]
+
+> +/**
+> + * smack_sb_copy_data - copy mount options data for processing
+> + * @type: file system type
+> + * @orig: where to start
+> + * @smackopts
+> + *
+> + * Returns 0 on success or -ENOMEM on error.
+> + *
+> + * Copy the Smack specific mount options out of the mount
+> + * options list.
+> + */
+> +static int smack_sb_copy_data(struct file_system_type *type, void *orig,
+> +                             void *smackopts)
+> +{
+> +       char *cp, *commap, *otheropts, *dp;
+> +
+> +       /* Binary mount data: just copy */
+> +       if (type->fs_flags & FS_BINARY_MOUNTDATA) {
+> +               copy_page(smackopts, orig);
+> +               return 0;
+> +       }
+
+So given NFS, which may have passed you a nfs_mount_data,
+nfs_parsed_mount_data, or a nfs_clone_mount struct one page is going
+to get coppied back out to the VFS.
+> +
+> +       otheropts = (char *)get_zeroed_page(GFP_KERNEL);
+> +       if (otheropts == NULL)
+> +               return -ENOMEM;
+> +
+> +       for (cp = orig, commap = orig; commap != NULL; cp = commap + 1) {
+> +               if (strstr(cp, SMK_FSDEFAULT) == cp)
+> +                       dp = smackopts;
+> +               else if (strstr(cp, SMK_FSFLOOR) == cp)
+> +                       dp = smackopts;
+> +               else if (strstr(cp, SMK_FSHAT) == cp)
+> +                       dp = smackopts;
+> +               else if (strstr(cp, SMK_FSROOT) == cp)
+> +                       dp = smackopts;
+> +               else
+> +                       dp = otheropts;
+> +
+> +               commap = strchr(cp, ',');
+> +               if (commap != NULL)
+> +                       *commap = '\0';
+> +
+> +               if (*dp != '\0')
+> +                       strcat(dp, ",");
+> +               strcat(dp, cp);
+> +       }
+> +
+> +       strcpy(orig, otheropts);
+> +       free_page((unsigned long)otheropts);
+> +
+> +       return 0;
+> +}
+> +
+> +/**
+> + * smack_sb_kern_mount - Smack specific mount processing
+> + * @sb: the file system superblock
+> + * @data: the smack mount options
+> + *
+> + * Returns 0 on success, an error code on failure
+> + */
+> +static int smack_sb_kern_mount(struct super_block *sb, void *data)
+> +{
+> +       struct dentry *root = sb->s_root;
+> +       struct inode *inode = root->d_inode;
+> +       struct superblock_smack *sp = sb->s_security;
+> +       struct inode_smack *isp;
+> +       char *op;
+> +       char *commap;
+> +       char *nsp;
+> +
+> +       spin_lock(&sp->smk_sblock);
+> +       if (sp->smk_initialized != 0) {
+> +               spin_unlock(&sp->smk_sblock);
+> +               return 0;
+> +       }
+> +       sp->smk_initialized = 1;
+> +       spin_unlock(&sp->smk_sblock);
+> +
+> +       for (op = data; op != NULL; op = commap) {
+
+Here you walk this page of binary NFS data looking for your stuff.
+And while I assume its unlikely you find anything you like on this
+page and go wrong, its not impossible.
+
+SELinux tried to solve this problem right here in its equivalent
+function years ago, but it has since been despised by the FS people
+and now i'm trying to make everyone happy.  I'd love you comment on
+how you plan to support NFS and other filesystems which use
+FS_BINARY_MOUNTDATA)
+
+> +               commap = strchr(op, ',');
+> +               if (commap != NULL)
+> +                       *commap++ = '\0';
+> +
+> +               if (strncmp(op, SMK_FSHAT, strlen(SMK_FSHAT)) == 0) {
+> +                       op += strlen(SMK_FSHAT);
+> +                       nsp = smk_import(op, 0);
+> +                       if (nsp != NULL)
+> +                               sp->smk_hat = nsp;
+> +               } else if (strncmp(op, SMK_FSFLOOR, strlen(SMK_FSFLOOR)) == 0) {
+> +                       op += strlen(SMK_FSFLOOR);
+> +                       nsp = smk_import(op, 0);
+> +                       if (nsp != NULL)
+> +                               sp->smk_floor = nsp;
+> +               } else if (strncmp(op, SMK_FSDEFAULT,
+> +                                  strlen(SMK_FSDEFAULT)) == 0) {
+> +                       op += strlen(SMK_FSDEFAULT);
+> +                       nsp = smk_import(op, 0);
+> +                       if (nsp != NULL)
+> +                               sp->smk_default = nsp;
+> +               } else if (strncmp(op, SMK_FSROOT, strlen(SMK_FSROOT)) == 0) {
+> +                       op += strlen(SMK_FSROOT);
+> +                       nsp = smk_import(op, 0);
+> +                       if (nsp != NULL)
+> +                               sp->smk_root = nsp;
+> +               }
+> +       }
+> +
+> +       /*
+> +        * Initialize the root inode.
+> +        */
+> +       isp = inode->i_security;
+> +       if (isp == NULL)
+> +               inode->i_security = new_inode_smack(sp->smk_root);
+> +       else
+> +               isp->smk_inode = sp->smk_root;
+> +
+> +       return 0;
+> +}
+> +
