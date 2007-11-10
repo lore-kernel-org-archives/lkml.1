@@ -1,59 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755097AbXKJVS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbXKJVVG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755097AbXKJVS7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 16:18:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754163AbXKJVSv
+	id S1755186AbXKJVVG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 16:21:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754420AbXKJVU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 16:18:51 -0500
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:37560
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754106AbXKJVSv (ORCPT
+	Sat, 10 Nov 2007 16:20:56 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:4651 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754231AbXKJVUz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 16:18:51 -0500
-Date: Sat, 10 Nov 2007 13:28:25 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Andi Kleen <andi@firstfloor.org>
-cc: Crispin Cowan <crispin@crispincowan.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       LSM ML <linux-security-module@vger.kernel.org>,
-       apparmor-dev <apparmor-dev@forge.novell.com>
-Subject: Re: AppArmor Security Goal
-In-Reply-To: <p73tzntzuak.fsf@bingen.suse.de>
-Message-ID: <Pine.LNX.4.64.0711101325240.4780@asgard.lang.hm>
-References: <473380AD.5070801@crispincowan.com> <p73tzntzuak.fsf@bingen.suse.de>
+	Sat, 10 Nov 2007 16:20:55 -0500
+Date: Sat, 10 Nov 2007 16:20:53 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Mark Lord <lkml@rtr.ca>
+cc: linux-usb-users@lists.sourceforge.net,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       <mdharm-usb@one-eyed-alien.net>, <dbrownell@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Linux-usb-users] USB storage: corrupted data transfers
+In-Reply-To: <47361D24.8020708@rtr.ca>
+Message-ID: <Pine.LNX.4.44L0.0711101611290.9084-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 Nov 2007, Andi Kleen wrote:
+On Sat, 10 Nov 2007, Mark Lord wrote:
 
-> Crispin Cowan <crispin@crispincowan.com> writes:
->
-> The document should be a good base for a merge.
->
->>     * A confined process can operate on a file descriptor passed to it
->>       by an unconfined process, even if it manipulates a file not in the
->>       confined process's profile. To block this attack, confine the
->>       process that passed the file descriptor.
->
-> That is the only thing that tripped me up a bit while reading the document.
-> Can you expand a bit on the reasons why the fd is not rechecked in
-> the context of the target process? Best do it in a new version of the
-> document.
+> Something may be broken in USB / usb-storage land.
+> 
+> I've got a 2GB USB stick here.
+> I want to copy it to an image file on my hard drive:
+> 
+>     cat /dev/sdb > usbkey.image1
+> 
+> Make a second copy, with or without unplugging/replugging the stick:
+> 
+>     cat /dev/sdb > usbkey.image2
+> 
+> After doing this, the two copies *differ*.
+> 
+> So I wrote a little program to compare them and determine *how* they differ,
+> and the result is very interesting.
+> 
+> Periodically, or or the other file has 8192 *zero* bytes inserted
+> in place of it's data.   Not replacing it's data, just inserted
+> into the stream, causing the real data (which follows) to be offset by 8192.
 
-from prior discussions I understand that the problem is that it's not easy 
-(or nessasarily possible) to figure out the path to the fd, so what do you 
-check?
+That's strange.  It happens periodically, you say?  What's the period?
 
-if the file has been removed there _is_ no path to the fd.
+> If one skips over the inserted 8192 bytes in the file, the data from that point
+> onward matches the other file, until another 8192 zeros are encountered.
+> 
+> The total sizes of the two image files match each other,
+> but that's probably just due to the logic in the 'cat' program.
+> 
+> I wonder where those extraneous pairs of zero pages are coming from?
 
-with hard links there could be many paths to the fd, the only way to find 
-them would be to search the entire filesystem.
+Me too.  It seems rather unlikely that they are coming from the USB
+device or the transport, since at that level everything is addressed in
+terms of sector numbers.  I don't see how 16 extra sectors could just
+get inserted.  More believable would be a problem in the block layer,
+the filesystem, or the application.
 
-as a result App Armor has decided not to try and address this, but is 
-documenting it as a limitation.
+> This makes USB drives somewhat unreliable for backups and the like,
+> which unfortunately is exactly what just about everybody uses them for.
 
-David Lang
+Or it makes all drives somewhat unreliable, depending on just where the 
+problem is.
+
+> This (so far) is with 2.6.23.1 (w/slab allocater), and 2.6.24-rc2,
+> on two different machines (both Intel based, but different chipset, CPU, RAM, ...).
+> 
+> I suspect not all brands/models of USB sticks would give the same results,
+> but it is rather worrisome that it happens at all.
+
+You could try doing a more specific test.  Write a program to access
+the block device sector-by-sector and store a distinct recognizable
+byte pattern to each sector.  (Maybe just repeat the 4-byte sector 
+number over and over.)  Then write another program to read the
+data back and see what bytes ended up in which sectors.
+
+At the same time, use the usbmon facility (see
+Documentation/usb/usbmon.txt) to record exactly what data gets sent
+to/from the stick.  That should at least be sufficient to determine the
+problem is in the stick itself, in the SCSI/USB layers, or someplace
+higher up.
+
+Alan Stern
+
