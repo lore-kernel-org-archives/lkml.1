@@ -1,64 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755053AbXKJVFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754882AbXKJVQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755053AbXKJVFu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 16:05:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754189AbXKJVFn
+	id S1754882AbXKJVQv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 16:16:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbXKJVQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 16:05:43 -0500
-Received: from rtr.ca ([76.10.145.34]:2534 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753852AbXKJVFm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 16:05:42 -0500
-Message-ID: <47361D24.8020708@rtr.ca>
-Date: Sat, 10 Nov 2007 16:05:40 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: linux-usb-users@lists.sourceforge.net,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       mdharm-usb@one-eyed-alien.net, dbrownell@users.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: USB storage: corrupted data transfers
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 10 Nov 2007 16:16:43 -0500
+Received: from moutng.kundenserver.de ([212.227.126.174]:60571 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754116AbXKJVQm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Nov 2007 16:16:42 -0500
+Date: Sat, 10 Nov 2007 22:16:29 +0100
+From: Chris Friedhoff <chris@friedhoff.org>
+To: linux-kernel@vger.kernel.org
+Cc: chris@friedhoff.org
+Subject: 2.6.24-rc2 STD with s2disk fails to activate suspended system after
+ loading
+Message-Id: <20071110221629.1d180480.chris@friedhoff.org>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.10.13; i486-slackware-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19PKnictc9DOfUquiYI8eaYf2AmKejWzAP0bE7
+ iZl9p1CmuYjssvQ9I5vHB4luQyLnfUQdLljiPEdE4vBzGpI1bN
+ IWdKYyABDHqiAN4XgxTg+7APixibIbk
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Something may be broken in USB / usb-storage land.
+please cc me, I'm not not subscribed to LKML
 
-I've got a 2GB USB stick here.
-I want to copy it to an image file on my hard drive:
+Hello,
 
-    cat /dev/sdb > usbkey.image1
+with kernel 2.6.24-rc2 STD with s2disk suspends the system to disk, but
+when I start the system and the suspended systemimage is loaded, it
+fails to "activate" this suspended systemimage and continues after some
+time with following the normal boot sequence.
 
-Make a second copy, with or without unplugging/replugging the stick:
+I can sucessfully STD the system with the following sequence
+  echo platform > /sys/power/disk
+  echo disk > /sys/power/state
+and when I start the laptop the suspended system is sucessfully
+restored.
 
-    cat /dev/sdb > usbkey.image2
+Both behaviors are reliable reproducable.
 
-After doing this, the two copies *differ*.
+googling for >"Freezing of tasks failed" swapper< brought
+"Nigel Cunningham - PID namespaces break initrd+hibernate combination?"
+http://lkml.org/lkml/2007/11/4/140
 
-So I wrote a little program to compare them and determine *how* they differ,
-and the result is very interesting.
+dmesg output:
+<<snip>>
+RAMDISK: ext2 filesystem found at block 0
+RAMDISK: Loading 2000KiB [1 disk] into ram disk... done.
+EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended
+VFS: Mounted root (ext2 filesystem).
+swsusp: Marking nosave pages: 000000000009f000 - 0000000000100000
+swsusp: Basic memory bitmaps created
+Clocksource tsc unstable (delta = -128791628 ns)
+Syncing filesystems ... done.
+Freezing user space processes ... (elapsed 0.00 seconds) done.
+Freezing remaining freezable tasks ... 
+Freezing of tasks failed after 20.00 seconds (1 tasks refusing to
+freeze): task                PC stack   pid father
+swapper       S c1835a88     0     1      0
+       00000000 00000046 c0118c80 c1835a88 00000004 00000001 c011e875
+00000286 c01025a6 00000000 00000000 c1835b64 00000000 ffffffff c1835a90
+00000001 00000000 00000000 00000000 00000000 0000007b 00000000 c1835a90
+c0118c80 Call Trace:
+ [<c0118c80>] default_wake_function+0x0/0x10
+ [<c011e875>] do_wait+0x335/0xac0
+ [<c01025a6>] kernel_thread+0x96/0xb0
+ [<c0118c80>] default_wake_function+0x0/0x10
+ [<c011f031>] sys_wait4+0x31/0x40
+ [<c04b7a23>] initrd_load+0x1b3/0x3a0
+ [<c04b5108>] prepare_namespace+0x98/0x1b0
+ [<c016090f>] sys_access+0x1f/0x30
+ [<c04b47c6>] kernel_init+0x166/0x260
+ [<c0103f4a>] ret_from_fork+0x6/0x1c
+ [<c04b4660>] kernel_init+0x0/0x260
+ [<c04b4660>] kernel_init+0x0/0x260
+ [<c0104b8f>] kernel_thread_helper+0x7/0x18
+ =======================
+kthreadd      S 0000038f     0     2      0
+       00000000 00000046 c0487790 0000038f c183ff1c 00000000 c012d81b
+c012d7b0 00000000 00000000 c0104b8f 00000000 00000000 00000000 00000000
+00000000 00000000 
+Call Trace:
+ [<c012d81b>] kthreadd+0x6b/0xd0
+ [<c012d7b0>] kthreadd+0x0/0xd0
+ [<c0104b8f>] kernel_thread_helper+0x7/0x18
+ =======================
+ksoftirqd/0   S 00000000     0     3      2
+       00000000 00000046 fffffffc 00000000 c0120f00 00000000 c0120f7a
+c012d782 c012d740 00000000 00000000 c0104b8f c183ff3c 00000000 00000000
+00000000 00000000 00000000 
+Call Trace:
+ [<c0120f00>] ksoftirqd+0x0/0x80
+ [<c0120f7a>] ksoftirqd+0x7a/0x80
+ [<c012d782>] kthread+0x42/0x70
+ [<c012d740>] kthread+0x0/0x70
+ [<c0104b8f>] kernel_thread_helper+0x7/0x18
 
-Periodically, or or the other file has 8192 *zero* bytes inserted
-in place of it's data.   Not replacing it's data, just inserted
-into the stream, causing the real data (which follows) to be offset by 8192.
+<<snip>>
 
-If one skips over the inserted 8192 bytes in the file, the data from that point
-onward matches the other file, until another 8192 zeros are encountered.
-
-The total sizes of the two image files match each other,
-but that's probably just due to the logic in the 'cat' program.
-
-I wonder where those extraneous pairs of zero pages are coming from?
-
-This makes USB drives somewhat unreliable for backups and the like,
-which unfortunately is exactly what just about everybody uses them for.
-
-This (so far) is with 2.6.23.1 (w/slab allocater), and 2.6.24-rc2,
-on two different machines (both Intel based, but different chipset, CPU, RAM, ...).
-
-I suspect not all brands/models of USB sticks would give the same results,
-but it is rather worrisome that it happens at all.
-
-Mmmmmm  ????
+--------------------
+Chris Friedhoff
+chris@friedhoff.org
