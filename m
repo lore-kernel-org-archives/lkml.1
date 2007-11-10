@@ -1,40 +1,234 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752529AbXKJFca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753312AbXKJFnz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752529AbXKJFca (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 00:32:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbXKJFcT
+	id S1753312AbXKJFnz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 00:43:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbXKJFnr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 00:32:19 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:36656 "EHLO mail.dvmed.net"
+	Sat, 10 Nov 2007 00:43:47 -0500
+Received: from ns1.suse.de ([195.135.220.2]:58427 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751007AbXKJFcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 00:32:18 -0500
-Message-ID: <47354258.30501@garzik.org>
-Date: Sat, 10 Nov 2007 00:32:08 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, roppedisano@infracomspa.it,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, rjw@sisk.pl,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH] Don't fail ata device revalidation for bad _GTF methods
-References: <4731C86B.1040704@infracomspa.it> <20071107121355.5eaf4496.akpm@linux-foundation.org> <47333CCF.1050403@infracomspa.it> <20071108094958.5c9b1b22.akpm@linux-foundation.org> <20071108180256.GB3491@havoc.gtf.org> <20071108101341.6c4f88d4.akpm@linux-foundation.org> <20071108182217.GA2685@srcf.ucam.org> <20071108183707.GA3008@srcf.ucam.org>
-In-Reply-To: <20071108183707.GA3008@srcf.ucam.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	id S1751243AbXKJFnq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Nov 2007 00:43:46 -0500
+Date: Sat, 10 Nov 2007 06:43:43 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [patch 1/2] mm: page trylock rename
+Message-ID: <20071110054343.GA17803@wotan.suse.de>
+References: <20071110051222.GA16018@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071110051222.GA16018@wotan.suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett wrote:
-> Experience suggests that the _GTF method may be bad. We currently fail 
-> device revalidation in that case, which seems excessive.
-> 
-> Signed-off-by: Matthew Garrett <mjg59@srcf.ucam.org>
+Here's a little something to make up for the occasional extra cacheline
+write in add_to_page_cache. Saves an atomic operation and 2 memory barriers
+for every add_to_page_cache().
 
-applied
+I suspect lockdepifying the page lock will also barf without this, too...
 
+---
+Setting and clearing the page locked when inserting it into swapcache /
+pagecache when it has no other references can use non-atomic page flags
+operatoins because no other CPU may be operating on it at this time.
 
+Also, remove comments in add_to_swap_cache that suggest the contrary, and
+rename it to add_to_swap_cache_lru(), better matching the filemap code,
+and which meaks it more clear that the page has no other references yet.
+
+Also, the comments in add_to_page_cache aren't really correct. It is not
+just called for new pages, but for tmpfs pages as well. They are locked
+when called, so it is OK for atomic bitflag access, but we can't do
+non-atomic access. Split this into add_to_page_cache_locked, for tmpfs.
+
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+---
+Index: linux-2.6/mm/filemap.c
+===================================================================
+--- linux-2.6.orig/mm/filemap.c
++++ linux-2.6/mm/filemap.c
+@@ -426,29 +426,28 @@ int filemap_write_and_wait_range(struct 
+ }
+ 
+ /**
+- * add_to_page_cache - add newly allocated pagecache pages
++ * add_to_page_cache_locked - add a locked page to pagecache
+  * @page:	page to add
+  * @mapping:	the page's address_space
+  * @offset:	page index
+  * @gfp_mask:	page allocation mode
+  *
+- * This function is used to add newly allocated pagecache pages;
+- * the page is new, so we can just run set_page_locked() against it.
+- * The other page state flags were set by rmqueue().
+- *
++ * This function is used to add a page to the pagecache. It must be locked.
+  * This function does not add the page to the LRU.  The caller must do that.
+  */
+-int add_to_page_cache(struct page *page, struct address_space *mapping,
++int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
+ 		pgoff_t offset, gfp_t gfp_mask)
+ {
+-	int error = radix_tree_preload(gfp_mask & ~__GFP_HIGHMEM);
++	int error;
++
++	VM_BUG_ON(!PageLocked(page));
+ 
++	error = radix_tree_preload(gfp_mask & ~__GFP_HIGHMEM);
+ 	if (error == 0) {
+ 		write_lock_irq(&mapping->tree_lock);
+ 		error = radix_tree_insert(&mapping->page_tree, offset, page);
+ 		if (!error) {
+ 			page_cache_get(page);
+-			set_page_locked(page);
+ 			page->mapping = mapping;
+ 			page->index = offset;
+ 			mapping->nrpages++;
+@@ -459,7 +458,7 @@ int add_to_page_cache(struct page *page,
+ 	}
+ 	return error;
+ }
+-EXPORT_SYMBOL(add_to_page_cache);
++EXPORT_SYMBOL(add_to_page_cache_locked);
+ 
+ int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
+ 				pgoff_t offset, gfp_t gfp_mask)
+Index: linux-2.6/mm/swap_state.c
+===================================================================
+--- linux-2.6.orig/mm/swap_state.c
++++ linux-2.6/mm/swap_state.c
+@@ -95,7 +95,7 @@ static int __add_to_swap_cache(struct pa
+ 	return error;
+ }
+ 
+-static int add_to_swap_cache(struct page *page, swp_entry_t entry)
++static int add_to_swap_cache_lru(struct page *page, swp_entry_t entry)
+ {
+ 	int error;
+ 
+@@ -104,19 +104,18 @@ static int add_to_swap_cache(struct page
+ 		INC_CACHE_INFO(noent_race);
+ 		return -ENOENT;
+ 	}
+-	set_page_locked(page);
++	__set_page_locked(page);
+ 	error = __add_to_swap_cache(page, entry, GFP_KERNEL);
+-	/*
+-	 * Anon pages are already on the LRU, we don't run lru_cache_add here.
+-	 */
+ 	if (error) {
+-		clear_page_locked(page);
++		__clear_page_locked(page);
+ 		swap_free(entry);
+ 		if (error == -EEXIST)
+ 			INC_CACHE_INFO(exist_race);
+ 		return error;
+ 	}
+ 	INC_CACHE_INFO(add_total);
++	lru_cache_add_active(page);
++
+ 	return 0;
+ }
+ 
+@@ -235,7 +234,7 @@ int move_to_swap_cache(struct page *page
+ int move_from_swap_cache(struct page *page, unsigned long index,
+ 		struct address_space *mapping)
+ {
+-	int err = add_to_page_cache(page, mapping, index, GFP_ATOMIC);
++	int err = add_to_page_cache_locked(page, mapping, index, GFP_ATOMIC);
+ 	if (!err) {
+ 		delete_from_swap_cache(page);
+ 		/* shift page from clean_pages to dirty_pages list */
+@@ -353,12 +352,11 @@ struct page *read_swap_cache_async(swp_e
+ 		 * the just freed swap entry for an existing page.
+ 		 * May fail (-ENOMEM) if radix-tree node allocation failed.
+ 		 */
+-		err = add_to_swap_cache(new_page, entry);
++		err = add_to_swap_cache_lru(new_page, entry);
+ 		if (!err) {
+ 			/*
+ 			 * Initiate read into locked page and return.
+ 			 */
+-			lru_cache_add_active(new_page);
+ 			swap_readpage(NULL, new_page);
+ 			return new_page;
+ 		}
+Index: linux-2.6/include/linux/pagemap.h
+===================================================================
+--- linux-2.6.orig/include/linux/pagemap.h
++++ linux-2.6/include/linux/pagemap.h
+@@ -133,13 +133,6 @@ static inline struct page *read_mapping_
+ 	return read_cache_page(mapping, index, filler, data);
+ }
+ 
+-int add_to_page_cache(struct page *page, struct address_space *mapping,
+-				pgoff_t index, gfp_t gfp_mask);
+-int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
+-				pgoff_t index, gfp_t gfp_mask);
+-extern void remove_from_page_cache(struct page *page);
+-extern void __remove_from_page_cache(struct page *page);
+-
+ /*
+  * Return byte-offset into filesystem object for page.
+  */
+@@ -160,14 +153,17 @@ extern void FASTCALL(__lock_page(struct 
+ extern void FASTCALL(__lock_page_nosync(struct page *page));
+ extern void FASTCALL(unlock_page(struct page *page));
+ 
+-static inline void set_page_locked(struct page *page)
++static inline void __set_page_locked(struct page *page)
+ {
+-	set_bit(PG_locked, &page->flags);
++	/* concurrent access would cause data loss with non-atomic bitop */
++	VM_BUG_ON(page_count(page) != 1);
++	__set_bit(PG_locked, &page->flags);
+ }
+ 
+-static inline void clear_page_locked(struct page *page)
++static inline void __clear_page_locked(struct page *page)
+ {
+-	clear_bit(PG_locked, &page->flags);
++	VM_BUG_ON(page_count(page) != 1);
++	__clear_bit(PG_locked, &page->flags);
+ }
+ 
+ static inline int trylock_page(struct page *page)
+@@ -226,6 +222,32 @@ static inline void wait_on_page_writebac
+ 
+ extern void end_page_writeback(struct page *page);
+ 
++
++int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
++				pgoff_t index, gfp_t gfp_mask);
++int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
++				pgoff_t index, gfp_t gfp_mask);
++extern void remove_from_page_cache(struct page *page);
++extern void __remove_from_page_cache(struct page *page);
++
++/*
++ * Like add_to_page_cache_locked, but used to add newly allocated pages: the
++ * page is new, so we can just run __set_page_locked() against it.
++ */
++static inline int add_to_page_cache(struct page *page, struct address_space *mapping,
++		pgoff_t offset, gfp_t gfp_mask)
++{
++	int error;
++
++	__set_page_locked(page);
++	error = add_to_page_cache_locked(page, mapping, offset, gfp_mask);
++	if (unlikely(error))
++		__clear_page_locked(page);
++
++	return error;
++}
++
++
+ /*
+  * Fault a userspace page into pagetables.  Return non-zero on a fault.
+  *
