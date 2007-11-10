@@ -1,83 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbXKJEuQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759151AbXKJEyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757275AbXKJEuQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 23:50:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbXKJEuE
+	id S1759151AbXKJEyl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 23:54:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbXKJEyd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 23:50:04 -0500
-Received: from smtp4.tpgi.com.au ([220.244.226.114]:49424 "EHLO
-	mail4.tpgi.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751420AbXKJEuD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 23:50:03 -0500
-X-Greylist: delayed 599 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Nov 2007 23:50:03 EST
-X-TPG-Antivirus: Passed
-Subject: cd/dvd inaccessible in 2.6.24-rc2
-From: Will Trives <will@trivescon.com.au>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Sat, 10 Nov 2007 15:27:11 +1100
-Message-Id: <1194668831.3436.14.camel@Athas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Nov 2007 23:54:33 -0500
+Received: from namei.org ([69.55.235.186]:38415 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751592AbXKJEyd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 23:54:33 -0500
+Date: Sat, 10 Nov 2007 15:54:21 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: casey@schaufler-ca.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       method@manicmethod.com
+Subject: Re: [PATCH 1/2]  NetLabel: Introduce a new kernel configuration API
+ for NetLabel - Version 11 (2.6.24-rc2) Smack: Simplified Mandatory Access
+ Control Kernel
+In-Reply-To: <20071109165119.f40248b3.akpm@linux-foundation.org>
+Message-ID: <Xine.LNX.4.64.0711101553330.28789@us.intercode.com.au>
+References: <4733E6A3.2070307@schaufler-ca.com> <20071109165119.f40248b3.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 9 Nov 2007, Andrew Morton wrote:
 
-Hello,
+> On Thu, 08 Nov 2007 20:48:35 -0800
+> Casey Schaufler <casey@schaufler-ca.com> wrote:
+> 
+> > From: Paul Moore <paul.moore@hp.com>
+> > 
+> > Add a new set of configuration functions to the NetLabel/LSM API so that
+> > LSMs can perform their own configuration of the NetLabel subsystem without
+> > relying on assistance from userspace.
+> > 
+> > Signed-off-by: Paul Moore <paul.moore@hp.com>
+> 
+> You sent it, so this patch needs a Signed-off-by:you, please.
 
-Motherboard: Gigabyte GA-P35-DS4 (rev. 1.1)
-Chipset: Intel P35 + ICH9R 
-PATA port runs off JMicron controller
-CD/DVD Device: BENQ DW1640 16X
+Also add
 
-I cannot access my dvd burner under 2.6.24-rc2, I have no problems under
-2.6.23. Basically the drive is detected OK, everything looks ok but as
-soon as I go to use it errors like this occur:
-
-
-ata9.00: qc timeout (cmd 0xa0)
-ata9.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata9.00: cmd a0/00:00:00:02:00/00:00:00:00:00/a0 tag 0 cdb 0x5a data 2
-in
-         res 51/54:03:00:02:00/00:00:00:00:00/a0 Emask 0x5 (timeout)
-ata9.00: status: { DRDY ERR }
-ata9: soft resetting link
-ata9.00: revalidation failed (errno=-2)
-ata9: failed to recover some devices, retrying in 5 secs
-ata9: soft resetting link
-ata9.00: qc timeout (cmd 0xa1)
-ata9.00: failed to IDENTIFY (I/O error, err_mask=0x4)
-ata9.00: revalidation failed (errno=-5)
-ata9: failed to recover some devices, retrying in 5 secs
-ata9: soft resetting link
-ata9.00: qc timeout (cmd 0xa1)
-ata9.00: failed to IDENTIFY (I/O error, err_mask=0x4)
-ata9.00: revalidation failed (errno=-5)
-ata9.00: disabled
-ata9: soft resetting link
-ata9: EH complete
-
-The drive is locked up after the first attempt to access it occurs, the
-tray cannot be ejected. 
+Reviewed-by: James Morris <jmorris@namei.org>
 
 
-dmesg output
-
-http://paste.ubuntu-nl.org/43948/
-
-kernel .config
-
-http://paste.ubuntu-nl.org/43944/
-
-lspci -vvvxxxx
-
-http://paste.ubuntu-nl.org/43950/
-
-
-
-Regards,
-
-Will Trives
-
+-- 
+James Morris
+<jmorris@namei.org>
