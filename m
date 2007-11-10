@@ -1,78 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763568AbXKJDu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763728AbXKJDwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763568AbXKJDu5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 22:50:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750976AbXKJDuu
+	id S1763728AbXKJDwj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 22:52:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750976AbXKJDwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 22:50:50 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:36134 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750813AbXKJDut (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 22:50:49 -0500
-Date: Sat, 10 Nov 2007 04:50:25 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/11 v3] enable "make ARCH=x86"
-Message-ID: <20071110035025.GI26163@stusta.de>
-References: <20071109230812.GA5176@uranus.ravnborg.org> <4735242B.1010801@garzik.org>
+	Fri, 9 Nov 2007 22:52:32 -0500
+Received: from www.tglx.de ([62.245.132.106]:53214 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750813AbXKJDwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 22:52:31 -0500
+Date: Sat, 10 Nov 2007 04:52:08 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [GIT pull] x86 updates
+Message-ID: <alpine.LRH.0.999.0711100450020.28218@www.tglx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4735242B.1010801@garzik.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 09, 2007 at 10:23:23PM -0500, Jeff Garzik wrote:
-> Sam Ravnborg wrote:
->> This is the patch that get rid of ARCH=i386 and ARCH=x86_64
->> and introduce ARCH=x86.
->> It touches several files but the changes are all one or two-liners.
->>
->>       x86: drop backward compatibility symlinks to i386/boot and x86_64/boot
->>       kbuild: sanity check the specified arch
->
->
-> IMO it negatives impacts the workflow when you -remove- the ability to set 
-> 32/64-bit on the make command line.
->
-> Building and testing for both architectures now requires the additional 
-> step of editing .config, which is a clear workflow negative impact at least 
-> for me.
->
-> I switch between other cross-compiled arches (alpha, usually) on the 
-> makefile command line
->
-> Yes, I know other 32/64-bit arches require .config editing.  That doesn't 
-> change the basic fact that this is a workflow regression.
+Linus, 
 
-With KCONFIG_ALLCONFIG you can avoid the editing of the .config and set 
-32/64-bit on the make command line - and it's not limited to the 
-32/64-bit choice:
+please pull x86 updates from:
 
-$ cat /home/jeff/myi386config
-CONFIG_HIGHMEM64G=y
-CONFIG_X86_32=y 
-CONFIG_SMP=n
-CONFIG_PCI=n
-CONFIG_IPV6=m
-$ make allyesconfig KCONFIG_ALLCONFIG=/home/jeff/myi386config
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git master
 
-> 	Jeff
+Thanks,
 
-cu
-Adrian
+	tglx
 
--- 
+Chuck Ebbert (1):
+      x86 - 32-bit ptrace emulation mishandles 6th arg
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Randy Dunlap (1):
+      voyager: use struct instead of PARAM
 
+Roland McGrath (1):
+      x86_64: ia32 ptrace THREAD_AREA fix
+
+ arch/x86/ia32/ia32entry.S                 |   19 ++++++-------------
+ arch/x86/ia32/ptrace32.c                  |   10 ++--------
+ include/asm-x86/mach-voyager/setup_arch.h |    4 +++-
+ 3 files changed, 11 insertions(+), 22 deletions(-)
+diff --git a/arch/x86/ia32/ia32entry.S b/arch/x86/ia32/ia32entry.S
+index 18b2318..df588f0 100644
+--- a/arch/x86/ia32/ia32entry.S
++++ b/arch/x86/ia32/ia32entry.S
+@@ -159,20 +159,16 @@ sysenter_do_call:
+ 
+ sysenter_tracesys:
+ 	CFI_RESTORE_STATE
++	xchgl	%r9d,%ebp
+ 	SAVE_REST
+ 	CLEAR_RREGS
++	movq	%r9,R9(%rsp)
+ 	movq	$-ENOSYS,RAX(%rsp)	/* really needed? */
+ 	movq	%rsp,%rdi        /* &pt_regs -> arg1 */
+ 	call	syscall_trace_enter
+ 	LOAD_ARGS32 ARGOFFSET  /* reload args from stack in case ptrace changed it */
+ 	RESTORE_REST
+-	movl	%ebp, %ebp
+-	/* no need to do an access_ok check here because rbp has been
+-	   32bit zero extended */ 
+-1:	movl	(%rbp),%r9d
+-	.section __ex_table,"a"
+-	.quad 1b,ia32_badarg
+-	.previous
++	xchgl	%ebp,%r9d
+ 	jmp	sysenter_do_call
+ 	CFI_ENDPROC
+ ENDPROC(ia32_sysenter_target)
+@@ -262,20 +258,17 @@ cstar_do_call:
+ 	
+ cstar_tracesys:	
+ 	CFI_RESTORE_STATE
++	xchgl %r9d,%ebp
+ 	SAVE_REST
+ 	CLEAR_RREGS
++	movq %r9,R9(%rsp)
+ 	movq $-ENOSYS,RAX(%rsp)	/* really needed? */
+ 	movq %rsp,%rdi        /* &pt_regs -> arg1 */
+ 	call syscall_trace_enter
+ 	LOAD_ARGS32 ARGOFFSET  /* reload args from stack in case ptrace changed it */
+ 	RESTORE_REST
++	xchgl %ebp,%r9d
+ 	movl RSP-ARGOFFSET(%rsp), %r8d
+-	/* no need to do an access_ok check here because r8 has been
+-	   32bit zero extended */ 
+-1:	movl	(%r8),%r9d
+-	.section __ex_table,"a"
+-	.quad 1b,ia32_badarg
+-	.previous
+ 	jmp cstar_do_call
+ END(ia32_cstar_target)
+ 				
+diff --git a/arch/x86/ia32/ptrace32.c b/arch/x86/ia32/ptrace32.c
+index f52770e..4a233ad 100644
+--- a/arch/x86/ia32/ptrace32.c
++++ b/arch/x86/ia32/ptrace32.c
+@@ -228,8 +228,6 @@ static long ptrace32_siginfo(unsigned request, u32 pid, u32 addr, u32 data)
+ 	return ret;
+ }
+ 
+-#define COMPAT_GDT_ENTRY_TLS_MIN 6
+-
+ asmlinkage long sys32_ptrace(long request, u32 pid, u32 addr, u32 data)
+ {
+ 	struct task_struct *child;
+@@ -248,6 +246,8 @@ asmlinkage long sys32_ptrace(long request, u32 pid, u32 addr, u32 data)
+ 	case PTRACE_SYSCALL:
+ 	case PTRACE_OLDSETOPTIONS:
+ 	case PTRACE_SETOPTIONS:
++	case PTRACE_SET_THREAD_AREA:
++	case PTRACE_GET_THREAD_AREA:
+ 		return sys_ptrace(request, pid, addr, data); 
+ 
+ 	default:
+@@ -271,12 +271,6 @@ asmlinkage long sys32_ptrace(long request, u32 pid, u32 addr, u32 data)
+ 	case PTRACE_SETSIGINFO:
+ 	case PTRACE_GETSIGINFO:
+ 		return ptrace32_siginfo(request, pid, addr, data);
+-
+-	case PTRACE_SET_THREAD_AREA:
+-	case PTRACE_GET_THREAD_AREA:
+-		return sys_ptrace(request, pid,
+-			addr + GDT_ENTRY_TLS_MIN - COMPAT_GDT_ENTRY_TLS_MIN,
+-			data);
+ 	}
+ 
+ 	child = ptrace_get_task_struct(pid);
+diff --git a/include/asm-x86/mach-voyager/setup_arch.h b/include/asm-x86/mach-voyager/setup_arch.h
+index 84d01ad..1710ae1 100644
+--- a/include/asm-x86/mach-voyager/setup_arch.h
++++ b/include/asm-x86/mach-voyager/setup_arch.h
+@@ -1,5 +1,7 @@
+ #include <asm/voyager.h>
+-#define VOYAGER_BIOS_INFO ((struct voyager_bios_info *)(PARAM+0x40))
++#include <asm/setup_32.h>
++#define VOYAGER_BIOS_INFO ((struct voyager_bios_info *) \
++			(&boot_params.apm_bios_info))
+ 
+ /* Hook to call BIOS initialisation function */
+ 
