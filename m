@@ -1,99 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754381AbXKJTpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754492AbXKJTts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754381AbXKJTpY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 14:45:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753347AbXKJTpK
+	id S1754492AbXKJTts (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 14:49:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbXKJTtj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 14:45:10 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:55343 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753153AbXKJTpI (ORCPT
+	Sat, 10 Nov 2007 14:49:39 -0500
+Received: from fk-out-0910.google.com ([209.85.128.185]:37751 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753086AbXKJTti convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 14:45:08 -0500
+	Sat, 10 Nov 2007 14:49:38 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=E6iTzMkxvxQTw5arex3efVHmFIFi1MMqcHRUO8k12gDKPtdrDIo0XuCwBGvUqvpWrFn4eQ7bPGko2UVNBt3maV5qtuv0X2JlNwRB+JgzudGvPJQ6QIl5auP0WFo8e8v+ULG3T61XZ9DAYSmN9+x+jpWqqeSCUsm/9pFU+zUcr8o=
-Message-ID: <1865922a0711101145g768fe96p74b400e31f4120a1@mail.gmail.com>
-Date: Sat, 10 Nov 2007 21:45:06 +0200
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
-To: "Jakob Oestergaard" <jakob@unthought.net>
-Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser(2)
-Cc: "Casey Schaufler" <casey@schaufler-ca.com>, akpm@osdl.org,
-       torvalds@osdl.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Al Viro" <viro@ftp.linux.org.uk>
-In-Reply-To: <20071110170557.GA21977@unthought.net>
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=fZa5GGNzinuyjz89wt4ezYIWfVqgcFmi4ukfiHx7hIpGPrMTy4HPg81kCW9pc28No2s8G1DSGCKTZJZj/7lu6DKdyOZK5g4yhcVb4+howCJY0sfLHqJz+/MAjSpIeNbxvW7s25ISQPUgpYRnS9q0yR2q2oWxwKsiyo84tsR9bpA=
+From: Miguel =?iso-8859-1?q?Bot=F3n?= <mboton.lkml@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] iwlwifi: Remove unnecessary code in iwl3945 and iwl4965 drivers
+Date: Sat, 10 Nov 2007 20:49:32 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-wireless@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <472B8DAF.9080706@schaufler-ca.com> <20071103164303.GA26707@ubuntu>
-	 <20071105005625.GA18030@ubuntu> <20071110170557.GA21977@unthought.net>
+Message-Id: <200711102049.32921.mboton.lkml@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 10, 2007 7:05 PM, Jakob Oestergaard <jakob@unthought.net> wrote:
-> ...
-> > I've double-checked the code for any possible off-by-one/overflow
-> > errors.
-> ...
->
-> Two things caught my eye.
->
-> ...
-> > +             case bol:
-> > +             case subject:
-> > +                     if (*label_len >= SMK_MAXLEN)
-> > +                             goto out;
-> > +                     subjectstr[(*label_len)++] = data[i];
->
-> Why is the '>' necessary?  Could it happen that you had incremented past the
-> point of equality?
->
-> If that could not happen, then in my oppinion '>=' is very misleading when '=='
-> is really what is needed.
->
+Remove unnecesary code in iwl3945 and iwl4965 drivers.
 
-Indeed, you're absolutely right.
+"final_mode" variable is already initialized with the value of the "mode" variable.
 
-> ...
-> > +             case object:
-> > +                     if (*prevstate == blank) {
-> > +                             subjectstr[*label_len] = '\0';
-> > +                             *label_len = 0;
-> > +                     }
->
-> I wonder why it is valid to uncritically use the already incremented label_len
-> here, without checking its value (like is done above).
->
-> It seems strangely asymmetrical. I'm not saying it's wrong, because there may
-> be a subtle reason as to why it's not, but if that's the case then I think that
-> subtle reason should be documented with a comment.
->
+Signed-off-by: Miguel Boton <mboton@gmail.com>
 
-Maximum value label_len could reach is "SMK_MAXLEN". The subjectstr
-and objectstr arrays are of "SMK_MAXLEN + 1" length. So I think no
-danger is here.
-
-Yes, this deserved a comment.
-
-> ...
-> > +             case access:
-> > +                     if (*prevstate == blank) {
-> > +                             objectstr[*label_len] = '\0';
-> > +                             *label_len = 0;
-> > +                     }
->
-> Same applies here.
->
->  / jakob
->
-
-Good spots, thanks a lot for the review.
-
-Regards,
+Index: linux-2.6.24-rc2/drivers/net/wireless/iwlwifi/iwl3945-base.c
+===================================================================
+--- linux-2.6.24-rc2.orig/drivers/net/wireless/iwlwifi/iwl3945-base.c
++++ linux-2.6.24-rc2/drivers/net/wireless/iwlwifi/iwl3945-base.c
+@@ -2377,9 +2377,6 @@
+ 	case IWL_POWER_AC:
+ 		final_mode = IWL_POWER_MODE_CAM;
+ 		break;
+-	default:
+-		final_mode = mode;
+-		break;
+ 	}
+ 
+ 	iwl_update_power_cmd(priv, &cmd, final_mode);
+Index: linux-2.6.24-rc2/drivers/net/wireless/iwlwifi/iwl4965-base.c
+===================================================================
+--- linux-2.6.24-rc2.orig/drivers/net/wireless/iwlwifi/iwl4965-base.c
++++ linux-2.6.24-rc2/drivers/net/wireless/iwlwifi/iwl4965-base.c
+@@ -2233,9 +2233,6 @@
+ 	case IWL_POWER_AC:
+ 		final_mode = IWL_POWER_MODE_CAM;
+ 		break;
+-	default:
+-		final_mode = mode;
+-		break;
+ 	}
+ 
+ 	cmd.keep_alive_beacons = 0;
 
 -- 
-Ahmed S. Darwish
-Homepage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
+	Miguel Botón
