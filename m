@@ -1,85 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764045AbXKJENV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbXKJEuQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764045AbXKJENV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 23:13:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755271AbXKJENN
+	id S1757275AbXKJEuQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 23:50:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbXKJEuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 23:13:13 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:43402 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751181AbXKJENM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 23:13:12 -0500
-Message-ID: <47352FC9.9080701@garzik.org>
-Date: Fri, 09 Nov 2007 23:12:57 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Brian Gerst <bgerst@didntduck.org>
-CC: Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/11 v3] enable "make ARCH=x86"
-References: <20071109230812.GA5176@uranus.ravnborg.org> <4735242B.1010801@garzik.org> <47352DF2.5000409@didntduck.org>
-In-Reply-To: <47352DF2.5000409@didntduck.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 9 Nov 2007 23:50:04 -0500
+Received: from smtp4.tpgi.com.au ([220.244.226.114]:49424 "EHLO
+	mail4.tpgi.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751420AbXKJEuD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 23:50:03 -0500
+X-Greylist: delayed 599 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Nov 2007 23:50:03 EST
+X-TPG-Antivirus: Passed
+Subject: cd/dvd inaccessible in 2.6.24-rc2
+From: Will Trives <will@trivescon.com.au>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Sat, 10 Nov 2007 15:27:11 +1100
+Message-Id: <1194668831.3436.14.camel@Athas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brian Gerst wrote:
-> Jeff Garzik wrote:
->> Sam Ravnborg wrote:
->>> This is the patch that get rid of ARCH=i386 and ARCH=x86_64
->>> and introduce ARCH=x86.
->>> It touches several files but the changes are all one or two-liners.
->>>
->>>       x86: drop backward compatibility symlinks to i386/boot and
->>> x86_64/boot
->>>       kbuild: sanity check the specified arch
->>
->> IMO it negatives impacts the workflow when you -remove- the ability to
->> set 32/64-bit on the make command line.
->>
->> Building and testing for both architectures now requires the additional
->> step of editing .config, which is a clear workflow negative impact at
->> least for me.
->>
->> I switch between other cross-compiled arches (alpha, usually) on the
->> makefile command line
->>
->> Yes, I know other 32/64-bit arches require .config editing.  That
->> doesn't change the basic fact that this is a workflow regression.
->>
->>     Jeff
-> 
-> You can use:
-> 
-> make i386_defconfig
-> make x86_64_defconfig
 
-Does that work for alpha too?
+Hello,
+
+Motherboard: Gigabyte GA-P35-DS4 (rev. 1.1)
+Chipset: Intel P35 + ICH9R 
+PATA port runs off JMicron controller
+CD/DVD Device: BENQ DW1640 16X
+
+I cannot access my dvd burner under 2.6.24-rc2, I have no problems under
+2.6.23. Basically the drive is detected OK, everything looks ok but as
+soon as I go to use it errors like this occur:
 
 
-> In any other case you'd be editing the .config anyways.
+ata9.00: qc timeout (cmd 0xa0)
+ata9.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata9.00: cmd a0/00:00:00:02:00/00:00:00:00:00/a0 tag 0 cdb 0x5a data 2
+in
+         res 51/54:03:00:02:00/00:00:00:00:00/a0 Emask 0x5 (timeout)
+ata9.00: status: { DRDY ERR }
+ata9: soft resetting link
+ata9.00: revalidation failed (errno=-2)
+ata9: failed to recover some devices, retrying in 5 secs
+ata9: soft resetting link
+ata9.00: qc timeout (cmd 0xa1)
+ata9.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+ata9.00: revalidation failed (errno=-5)
+ata9: failed to recover some devices, retrying in 5 secs
+ata9: soft resetting link
+ata9.00: qc timeout (cmd 0xa1)
+ata9.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+ata9.00: revalidation failed (errno=-5)
+ata9.00: disabled
+ata9: soft resetting link
+ata9: EH complete
 
-No, that's a logic rathole down which I will not follow :)
-
-You can make any argument along those lines command line usage is really 
-an art, not a science.  Its a user interface, and that involves human 
-taste rather than logic.
-
-I've been bouncing between architectures using ARCH= for years, and my 
-fingers and brain have been trained.  It's just disappointing and a pain 
-to change this nice user interface that has served so well for years.
-
-This is /not/ a cleanup, it's a user interface change.
-
-	Jeff
+The drive is locked up after the first attempt to access it occurs, the
+tray cannot be ejected. 
 
 
+dmesg output
+
+http://paste.ubuntu-nl.org/43948/
+
+kernel .config
+
+http://paste.ubuntu-nl.org/43944/
+
+lspci -vvvxxxx
+
+http://paste.ubuntu-nl.org/43950/
+
+
+
+Regards,
+
+Will Trives
 
