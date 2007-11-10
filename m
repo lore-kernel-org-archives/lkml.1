@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763526AbXKJDIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763452AbXKJDXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763526AbXKJDIW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 22:08:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754431AbXKJDIN
+	id S1763452AbXKJDXq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 22:23:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbXKJDXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 22:08:13 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:49248 "EHLO mail.dvmed.net"
+	Fri, 9 Nov 2007 22:23:37 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:49718 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752392AbXKJDIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 22:08:12 -0500
-Message-ID: <47352095.4010502@garzik.org>
-Date: Fri, 09 Nov 2007 22:08:05 -0500
+	id S1752838AbXKJDXh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 22:23:37 -0500
+Message-ID: <4735242B.1010801@garzik.org>
+Date: Fri, 09 Nov 2007 22:23:23 -0500
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Matthias Schniedermeyer <ms@citd.de>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Mark Lord <liml@rtr.ca>,
-       Riki Oktarianto <rkoktarianto@gmail.com>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-ide@vger.kernel.org
-Subject: Re: [PATCH] Add quirk to set AHCI mode on ICH boards
-References: <20071109020235.GA2031@ceren> <20071109023129.GA25581@havoc.gtf.org> <4733D421.7000505@rtr.ca> <20071109034622.GB25581@havoc.gtf.org> <20071109120425.543971bf@the-village.bc.nu> <20071109233215.GA22498@citd.de>
-In-Reply-To: <20071109233215.GA22498@citd.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/11 v3] enable "make ARCH=x86"
+References: <20071109230812.GA5176@uranus.ravnborg.org>
+In-Reply-To: <20071109230812.GA5176@uranus.ravnborg.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -29,13 +30,27 @@ X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthias Schniedermeyer wrote:
-> And on the topic of "broken" BIOSes. I have a little empathy for the MB 
-> manufactures as non-RAID AHCI royaly screws Windos, so not supporting it 
-> reduces their support costs enough to overlook screwing the non-windos 
-> faction.
+Sam Ravnborg wrote:
+> This is the patch that get rid of ARCH=i386 and ARCH=x86_64
+> and introduce ARCH=x86.
+> It touches several files but the changes are all one or two-liners.
+> 
+>       x86: drop backward compatibility symlinks to i386/boot and x86_64/boot
+>       kbuild: sanity check the specified arch
 
-non-RAID AHCI works just fine on Windows.
+
+IMO it negatives impacts the workflow when you -remove- the ability to 
+set 32/64-bit on the make command line.
+
+Building and testing for both architectures now requires the additional 
+step of editing .config, which is a clear workflow negative impact at 
+least for me.
+
+I switch between other cross-compiled arches (alpha, usually) on the 
+makefile command line
+
+Yes, I know other 32/64-bit arches require .config editing.  That 
+doesn't change the basic fact that this is a workflow regression.
 
 	Jeff
 
