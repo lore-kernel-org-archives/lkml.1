@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755852AbXKJWtq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755651AbXKJWzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755852AbXKJWtq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 17:49:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754884AbXKJWth
+	id S1755651AbXKJWzM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 17:55:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754738AbXKJWzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 17:49:37 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44569 "EHLO
+	Sat, 10 Nov 2007 17:55:00 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52803 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754760AbXKJWtf (ORCPT
+	by vger.kernel.org with ESMTP id S1754704AbXKJWy7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 17:49:35 -0500
-Date: Sat, 10 Nov 2007 14:49:23 -0800
+	Sat, 10 Nov 2007 17:54:59 -0500
+Date: Sat, 10 Nov 2007 14:54:44 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Will Trives <will@trivescon.com.au>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: cd/dvd inaccessible in 2.6.24-rc2
-Message-Id: <20071110144923.beb7bbae.akpm@linux-foundation.org>
-In-Reply-To: <1194668831.3436.14.camel@Athas>
-References: <1194668831.3436.14.camel@Athas>
+To: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       WU Fengguang <wfg@mail.ustc.edu.cn>
+Subject: Re: Temporary lockup on loopback block device
+Message-Id: <20071110145444.a6993df1.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0711102025440.17691@artax.karlin.mff.cuni.cz>
+References: <Pine.LNX.4.64.0711102025440.17691@artax.karlin.mff.cuni.cz>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,62 +26,73 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 Nov 2007 15:27:11 +1100 Will Trives <will@trivescon.com.au> wrote:
+On Sat, 10 Nov 2007 20:51:31 +0100 (CET) Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz> wrote:
 
+> Hi
 > 
-> Hello,
+> I am experiencing a transient lockup in 'D' state with loopback device. It 
+> happens when process writes to a filesystem in loopback with command like
+> dd if=/dev/zero of=/s/fill bs=4k 
 > 
-> Motherboard: Gigabyte GA-P35-DS4 (rev. 1.1)
-> Chipset: Intel P35 + ICH9R 
-> PATA port runs off JMicron controller
-> CD/DVD Device: BENQ DW1640 16X
+> CPU is idle, disk is idle too, yet the dd process is waiting in 'D' in 
+> congestion_wait called from balance_dirty_pages.
 > 
-> I cannot access my dvd burner under 2.6.24-rc2, I have no problems under
-> 2.6.23. Basically the drive is detected OK, everything looks ok but as
-> soon as I go to use it errors like this occur:
+> After about 30 seconds, the lockup is gone and dd resumes, but it locks up 
+> soon again.
 > 
+> I added a printk to the balance_dirty_pages
+> printk("wait: nr_reclaimable %d, nr_writeback %d, dirty_thresh %d, 
+> pages_written %d, write_chunk %d\n", nr_reclaimable, 
+> global_page_state(NR_WRITEBACK), dirty_thresh, pages_written, 
+> write_chunk);
 > 
-> ata9.00: qc timeout (cmd 0xa0)
-> ata9.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-> ata9.00: cmd a0/00:00:00:02:00/00:00:00:00:00/a0 tag 0 cdb 0x5a data 2
-> in
->          res 51/54:03:00:02:00/00:00:00:00:00/a0 Emask 0x5 (timeout)
-> ata9.00: status: { DRDY ERR }
-> ata9: soft resetting link
-> ata9.00: revalidation failed (errno=-2)
-> ata9: failed to recover some devices, retrying in 5 secs
-> ata9: soft resetting link
-> ata9.00: qc timeout (cmd 0xa1)
-> ata9.00: failed to IDENTIFY (I/O error, err_mask=0x4)
-> ata9.00: revalidation failed (errno=-5)
-> ata9: failed to recover some devices, retrying in 5 secs
-> ata9: soft resetting link
-> ata9.00: qc timeout (cmd 0xa1)
-> ata9.00: failed to IDENTIFY (I/O error, err_mask=0x4)
-> ata9.00: revalidation failed (errno=-5)
-> ata9.00: disabled
-> ata9: soft resetting link
-> ata9: EH complete
+> and it shows this during the lockup:
 > 
-> The drive is locked up after the first attempt to access it occurs, the
-> tray cannot be ejected. 
+> wait: nr_reclaimable 3099, nr_writeback 0, dirty_thresh 2985, 
+> pages_written 1021, write_chunk 1522
+> wait: nr_reclaimable 3099, nr_writeback 0, dirty_thresh 2985, 
+> pages_written 1021, write_chunk 1522
+> wait: nr_reclaimable 3099, nr_writeback 0, dirty_thresh 2985, 
+> pages_written 1021, write_chunk 1522
 > 
+> What apparently happens:
 > 
-> dmesg output
+> writeback_inodes syncs inodes only on the given wbc->bdi, however 
+> balance_dirty_pages checks against global counts of dirty pages. So if 
+> there's nothing to sync on a given device, but there are other dirty pages 
+> so that the counts are over the limit, it will loop without doing any 
+> work.
 > 
-> http://paste.ubuntu-nl.org/43948/
-> 
-> kernel .config
-> 
-> http://paste.ubuntu-nl.org/43944/
-> 
-> lspci -vvvxxxx
-> 
-> http://paste.ubuntu-nl.org/43950/
-> 
+> To reproduce it, you need totally idle machine (no GUI, etc.) -- if 
+> something writes to the backing device, it flushes the dirty pages 
+> generated by the loopback and the lockup is gone. If you add printk, don't 
+> forget to stop klogd, otherwise logging would end the lockup.
 
-Thanks for letting us know.
+erk.
 
-Added linux-ide Cc.
+> The hotfix (that I verified to work) is to not set wbc->bdi, so that all 
+> devices are flushed ... but the code probably needs some redesign (i.e. 
+> either account per-device and flush per-device, or account-global and 
+> flush-global).
+> 
+> Mikulas
+> 
+> 
+> diff -u -r ../x/linux-2.6.23.1/mm/page-writeback.c mm/page-writeback.c
+> --- ../x/linux-2.6.23.1/mm/page-writeback.c     2007-10-12 18:43:44.000000000 +0200
+> +++ mm/page-writeback.c 2007-11-10 20:32:43.000000000 +0100
+> @@ -214,7 +214,6 @@
+> 
+> 	for (;;) {
+> 		struct writeback_control wbc = {
+> -			.bdi            = bdi,
+> 			.sync_mode      = WB_SYNC_NONE,
+> 			.older_than_this = NULL,
+> 			.nr_to_write    = write_chunk,
 
-Rafael, it looks like another regression.
+Arguably we just have the wrong backing-device here, and what we should do
+is to propagate the real backing device's pointer through up into the
+filesystem.  There's machinery for this which things like DM stacks use.
+
+I wonder if the post-2.6.23 changes happened to make this problem go away.
+
