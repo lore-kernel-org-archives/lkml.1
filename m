@@ -1,67 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752810AbXKJJm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751823AbXKJKN5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752810AbXKJJm1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 04:42:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbXKJJmT
+	id S1751823AbXKJKN5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 05:13:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751173AbXKJKNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 04:42:19 -0500
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:60043 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750805AbXKJJmS (ORCPT
+	Sat, 10 Nov 2007 05:13:49 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:35885 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751060AbXKJKNt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 04:42:18 -0500
-Date: Sat, 10 Nov 2007 15:11:49 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       dada1@cosmosbay.com, davem@davemloft.net, apw@shadowen.org
-Subject: [PATCH](resend) 2.6.24-rc2-git1 Build fails in selinux/hooks.
-Message-ID: <20071110094149.GA25923@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+	Sat, 10 Nov 2007 05:13:49 -0500
+Date: Sat, 10 Nov 2007 11:13:24 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/11 v3] enable "make ARCH=x86"
+Message-ID: <20071110101324.GK26163@stusta.de>
+References: <20071109230812.GA5176@uranus.ravnborg.org> <4735242B.1010801@garzik.org> <20071110075444.GA5707@uranus.ravnborg.org> <47356A84.9020106@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <47356A84.9020106@garzik.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, Nov 10, 2007 at 03:23:32AM -0500, Jeff Garzik wrote:
+> Sam Ravnborg wrote:
+>> Keeping ARCH=i386 and ARCH=x86_64 around is just a way to pretend
+>> this is two diffrent architectures which is no longer the case.
+>
+> They _are_ different in the real world...  that's why
+>
+> 	make ARCH=i386
+>
+> is so often used.
 
-The 2.6.24-rc2-git1 kernel build fails, with following error
+I for one use i386 simply because I do not have any computer that would 
+support 64bit. But when I'll see a 32/64bit question during
+"make oldconfig" I'll also know what to answer.
 
-  CC      security/selinux/hooks.o
-In file included from include/net/tcp.h:35,
-                 from security/selinux/hooks.c:52:
-include/net/inet_hashtables.h: In function 'inet_ehash_locks_alloc':
-include/net/inet_hashtables.h:165: error: implicit declaration of function 'vmalloc'
-include/net/inet_hashtables.h:165: warning: assignment makes pointer from integer without a cast
-include/net/inet_hashtables.h: In function 'inet_ehash_locks_free':
-include/net/inet_hashtables.h:186: error: implicit declaration of function 'vfree'
-make[2]: *** [security/selinux/hooks.o] Error 1
-make[1]: *** [security/selinux] Error 2
-make: *** [security] Error 2
+>> Do we need a way to say "build a kernel that is 64 bit"?
+>> If we need this then we should look at the most intuitive way
+>> to say so and this should work across x86, powerpc and s390.
+>>
+>> 	make 64BIT=y ARCH=x86
+>>
+>> looks so much more intuitive. And it is generic.
+>> This is just a proposal.
+>
+> Or the short and straightforward
+>
+> 	make ARCH=x86_64
+>
+> to do the same thing (and incidentally what we've been doing up until this 
+> point).
+>
+> Don't get so hung up on "architecture" and actually look at what people do 
+> _today_.
+>
+> All other solutions proposed are simply _longer_ ways to do exact the same 
+> thing.  "more work for same outcome" isn't optimal.
 
-The commit 230140cffa7feae90ad50bf259db1fa07674f3a7 ([INET]: Remove per
-bucket rwlock in tcp/dccp ehash table.) caused this build
-failure.
+Let's check who the "people" affected are:
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
---
-diff --git a/include/net/inet_hashtables.h b/include/net/inet_hashtables.h
-index 8461cda..469216d 100644
---- a/include/net/inet_hashtables.h
-+++ b/include/net/inet_hashtables.h
-@@ -23,6 +23,7 @@
- #include <linux/spinlock.h>
- #include <linux/types.h>
- #include <linux/wait.h>
-+#include <linux/vmalloc.h>
- 
- #include <net/inet_connection_sock.h>
- #include <net/inet_sock.h>
+Aunt Tillie isn't affected since she doesn't compile her own kernel.
+
+People compiling kernels have to learn that the choice went from 
+ARCH={i386,x86_64} to a Kconfig option. I'd say it's more consistent 
+that the 32/64bit question is now handled the same way as the 
+K6/K7/K8/... question. And there doesn't seem to be any "longer" or 
+"more work" in this case.
+
+What's left are kernel developers who have not read the toplevel README 
+and who do therefore not know about KCONFIG_ALLCONFIG. Getting people to 
+write documentation is a hard task, but it's only second to getting 
+people to read documentation....
+
+And although you might argue that you have a few characters more to type 
+when using KCONFIG_ALLCONFIG it has the advantage that it's generic,
+and it e.g. allows you to create a CONFIG_X86_32=y, CONFIG_SMP=n 
+allyesconfig configuration.
+
+> 	Jeff
+
+cu
+Adrian
 
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
