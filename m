@@ -1,70 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751670AbXKJJMF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751796AbXKJJWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751670AbXKJJMF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 04:12:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750937AbXKJJLv
+	id S1751796AbXKJJWS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 04:22:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750857AbXKJJWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 04:11:51 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:44269 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750882AbXKJJLu (ORCPT
+	Sat, 10 Nov 2007 04:22:07 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42696 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750805AbXKJJWF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 04:11:50 -0500
-Date: Sat, 10 Nov 2007 09:10:57 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Paul Mundt <lethal@linux-sh.org>,
+	Sat, 10 Nov 2007 04:22:05 -0500
+Date: Sat, 10 Nov 2007 10:21:41 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Paul Mundt <lethal@linux-sh.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Jeff Garzik <jeff@garzik.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Robert Schwebel <robert@schwebel.de>,
-       Sascha Hauer <s.hauer@pengutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: ARM defconfig bogosity in current git
-Message-ID: <20071110091057.GA10446@flint.arm.linux.org.uk>
-References: <20071110080629.GA18520@linux-sh.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/11 v3] enable "make ARCH=x86"
+Message-ID: <20071110092140.GJ26163@stusta.de>
+References: <20071109230812.GA5176@uranus.ravnborg.org> <4735242B.1010801@garzik.org> <20071110075444.GA5707@uranus.ravnborg.org> <20071110082152.GA18632@linux-sh.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20071110080629.GA18520@linux-sh.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20071110082152.GA18632@linux-sh.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 10, 2007 at 05:06:29PM +0900, Paul Mundt wrote:
-> The last ARM merge contained this gem:
+On Sat, Nov 10, 2007 at 05:21:52PM +0900, Paul Mundt wrote:
+> On Sat, Nov 10, 2007 at 08:54:44AM +0100, Sam Ravnborg wrote:
+> > On Fri, Nov 09, 2007 at 10:23:23PM -0500, Jeff Garzik wrote:
+> > > Sam Ravnborg wrote:
+> > > >This is the patch that get rid of ARCH=i386 and ARCH=x86_64
+> > > >and introduce ARCH=x86.
+> > > >It touches several files but the changes are all one or two-liners.
+> > > >
+> > > >      x86: drop backward compatibility symlinks to i386/boot and 
+> > > >      x86_64/boot
+> > > >      kbuild: sanity check the specified arch
+> > > 
+> > > 
+> > > IMO it negatives impacts the workflow when you -remove- the ability to 
+> > > set 32/64-bit on the make command line.
+> > > 
+> > > Building and testing for both architectures now requires the additional 
+> > > step of editing .config, which is a clear workflow negative impact at 
+> > > least for me.
+> > When it was decided to unify i386 and x86_64 it was at the same time
+> > decided to handle them as a *single* architecture.
+> > 
+> > Keeping ARCH=i386 and ARCH=x86_64 around is just a way to pretend
+> > this is two diffrent architectures which is no longer the case.
 > 
-> commit f33bac8dd4573428b94c67149c5607be489092d1
-> Author: Robert Schwebel <robert@schwebel.de>
-> Date:   Mon Nov 5 17:59:25 2007 +0100
-> 
->     [ARM] 4642/2: netX: default config for netx based boards
->     
->     This patch updates the default config file for netx based boards.
->     
->     Signed-off-by: Robert Schwebel <r.schwebel@pengutronix.de>
->     Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
->     Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> 
-> diff --git a/arm/configs/netx_defconfig b/arm/configs/netx_defconfig
-> new file mode 100644
-> index 0000000..57f32f3
-> --- /dev/null
-> +++ b/arm/configs/netx_defconfig
-> 
-> ...
-> 
-> Isn't there something in Documentation/ about -p1 being a good idea
-> precisely so this sort of silliness is avoided?
+> If you do that, then things like randconfigs will randomly break if you
+> happen to use a toolchain targetted specifically at i386 or so.
+>...
 
--p1 doesn't avoid this when the patch just contains new files.
-Unfortunately, you have to rely both on people spotting such things
-and whoever's generating the patch doing the right thing.
+If you want to know how to restrict randconfig to CONFIG_X86_32 with an 
+unified architecture you should either read the toplevel README in the 
+kernel sources or an older email of mine in this thread...
 
-There will be times when things slip through though.
-
-> Currently this breaks tab completion on arch/, which is very much a
-> regression ;-)
-
-Robert?
+cu
+Adrian
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
