@@ -1,53 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755639AbXKJW6s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756095AbXKJXDO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755639AbXKJW6s (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 17:58:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbXKJW6k
+	id S1756095AbXKJXDO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 18:03:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755345AbXKJXC7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 17:58:40 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39076 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754830AbXKJW6j (ORCPT
+	Sat, 10 Nov 2007 18:02:59 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55451 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755304AbXKJXC6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 17:58:39 -0500
-Date: Sat, 10 Nov 2007 22:57:55 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Crispin Cowan <crispin@crispincowan.com>
-Cc: "Dr. David Alan Gilbert" <linux@treblig.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       LSM ML <linux-security-module@vger.kernel.org>,
-       apparmor-dev <apparmor-dev@forge.novell.com>
-Subject: Re: AppArmor Security Goal
-Message-ID: <20071110225755.5dd9b52b@the-village.bc.nu>
-In-Reply-To: <47363381.4030103@crispincowan.com>
-References: <473380AD.5070801@crispincowan.com>
-	<20071110220455.GB24195@gallifrey>
-	<47362C7C.2050202@crispincowan.com>
-	<20071110222414.GC24195@gallifrey>
-	<47363381.4030103@crispincowan.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Sat, 10 Nov 2007 18:02:58 -0500
+Subject: Re: Temporary lockup on loopback block device
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>,
+       linux-kernel@vger.kernel.org, WU Fengguang <wfg@mail.ustc.edu.cn>,
+       Miklos Szeredi <miklos@szeredi.hu>
+In-Reply-To: <20071110145444.a6993df1.akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0711102025440.17691@artax.karlin.mff.cuni.cz>
+	 <20071110145444.a6993df1.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Sun, 11 Nov 2007 00:02:32 +0100
+Message-Id: <1194735752.5828.1.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Can you explain why you want a non-privileged user to be able to edit
-> policy? I would like to better understand the problem here.
 
-Because root doesn't trust users who in turn may not trust apps they run
-or wish to control things. I don't see a problem with that viewpoint in
-terms of forbidding things providing the user (or process tree) does not
-get to undo rules merely add more restrictions.
+On Sat, 2007-11-10 at 14:54 -0800, Andrew Morton wrote:
+> On Sat, 10 Nov 2007 20:51:31 +0100 (CET) Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz> wrote:
+> 
+> > Hi
+> > 
+> > I am experiencing a transient lockup in 'D' state with loopback device. It 
+> > happens when process writes to a filesystem in loopback with command like
+> > dd if=/dev/zero of=/s/fill bs=4k 
+> > 
+> > CPU is idle, disk is idle too, yet the dd process is waiting in 'D' in 
+> > congestion_wait called from balance_dirty_pages.
+> > 
+> > After about 30 seconds, the lockup is gone and dd resumes, but it locks up 
+> > soon again.
+> > 
+> > I added a printk to the balance_dirty_pages
+> > printk("wait: nr_reclaimable %d, nr_writeback %d, dirty_thresh %d, 
+> > pages_written %d, write_chunk %d\n", nr_reclaimable, 
+> > global_page_state(NR_WRITEBACK), dirty_thresh, pages_written, 
+> > write_chunk);
+> > 
+> > and it shows this during the lockup:
+> > 
+> > wait: nr_reclaimable 3099, nr_writeback 0, dirty_thresh 2985, 
+> > pages_written 1021, write_chunk 1522
+> > wait: nr_reclaimable 3099, nr_writeback 0, dirty_thresh 2985, 
+> > pages_written 1021, write_chunk 1522
+> > wait: nr_reclaimable 3099, nr_writeback 0, dirty_thresh 2985, 
+> > pages_written 1021, write_chunk 1522
+> > 
+> > What apparently happens:
+> > 
+> > writeback_inodes syncs inodes only on the given wbc->bdi, however 
+> > balance_dirty_pages checks against global counts of dirty pages. So if 
+> > there's nothing to sync on a given device, but there are other dirty pages 
+> > so that the counts are over the limit, it will loop without doing any 
+> > work.
+> > 
+> > To reproduce it, you need totally idle machine (no GUI, etc.) -- if 
+> > something writes to the backing device, it flushes the dirty pages 
+> > generated by the loopback and the lockup is gone. If you add printk, don't 
+> > forget to stop klogd, otherwise logging would end the lockup.
+> 
+> erk.
 
-> non-privileged user to further tighten the profile on a program. To me,
-> that adds complexity with not much value, but if lots of users want it,
-> then I'm wrong :)
+known issue.
 
-Assuming you have any value in the first place, which is another topic, I
-can see value for this in all the security models.
+> > The hotfix (that I verified to work) is to not set wbc->bdi, so that all 
+> > devices are flushed ... but the code probably needs some redesign (i.e. 
+> > either account per-device and flush per-device, or account-global and 
+> > flush-global).
+
+.24 will have the per-device solution.
+
+> > 
+> > diff -u -r ../x/linux-2.6.23.1/mm/page-writeback.c mm/page-writeback.c
+> > --- ../x/linux-2.6.23.1/mm/page-writeback.c     2007-10-12 18:43:44.000000000 +0200
+> > +++ mm/page-writeback.c 2007-11-10 20:32:43.000000000 +0100
+> > @@ -214,7 +214,6 @@
+> > 
+> > 	for (;;) {
+> > 		struct writeback_control wbc = {
+> > -			.bdi            = bdi,
+> > 			.sync_mode      = WB_SYNC_NONE,
+> > 			.older_than_this = NULL,
+> > 			.nr_to_write    = write_chunk,
+> 
+> Arguably we just have the wrong backing-device here, and what we should do
+> is to propagate the real backing device's pointer through up into the
+> filesystem.  There's machinery for this which things like DM stacks use.
+> 
+> I wonder if the post-2.6.23 changes happened to make this problem go away.
+
+The per BDI dirty stuff in 24 should make this work, I just checked and
+loopback thingies seem to have their own BDI, so all should be well.
+
 
