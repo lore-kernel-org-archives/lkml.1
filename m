@@ -1,78 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761658AbXKJAFG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759517AbXKJALQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761658AbXKJAFG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 19:05:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755090AbXKJAEw
+	id S1759517AbXKJALQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 19:11:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751064AbXKJALE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 19:04:52 -0500
-Received: from enyo.dsw2k3.info ([195.71.86.239]:45320 "EHLO enyo.dsw2k3.info"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754611AbXKJAEv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 19:04:51 -0500
-X-Greylist: delayed 1942 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Nov 2007 19:04:50 EST
-Date: Sat, 10 Nov 2007 00:32:15 +0100
-From: Matthias Schniedermeyer <ms@citd.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jeff Garzik <jeff@garzik.org>, Mark Lord <liml@rtr.ca>,
-       Riki Oktarianto <rkoktarianto@gmail.com>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-ide@vger.kernel.org
-Subject: Re: [PATCH] Add quirk to set AHCI mode on ICH boards
-Message-ID: <20071109233215.GA22498@citd.de>
-References: <20071109020235.GA2031@ceren> <20071109023129.GA25581@havoc.gtf.org> <4733D421.7000505@rtr.ca> <20071109034622.GB25581@havoc.gtf.org> <20071109120425.543971bf@the-village.bc.nu>
+	Fri, 9 Nov 2007 19:11:04 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:43534 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750941AbXKJALD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 19:11:03 -0500
+Date: Fri, 9 Nov 2007 16:11:03 -0800
+From: Micah Dowty <micah@vmware.com>
+To: Cyrus Massoumi <cyrusm@gmx.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: High priority tasks break SMP balancer?
+Message-ID: <20071110001103.GD16250@vmware.com>
+References: <20071109223417.GB16250@vmware.com> <4734F397.7080802@gmx.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071109120425.543971bf@the-village.bc.nu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <4734F397.7080802@gmx.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09.11.2007 12:04, Alan Cox wrote:
-> On Thu, 8 Nov 2007 22:46:22 -0500
-> Jeff Garzik <jeff@garzik.org> wrote:
-> 
-> > On Thu, Nov 08, 2007 at 10:29:37PM -0500, Mark Lord wrote:
-> > > And I might even privately patch my own kernels to map the ACHI BAR
-> > > in the cases where the BIOS didn't...
-> > 
-> > The inability to do this in the general case is the main reason why
-> > AHCI was not unconditionally enabled, even in IDE mode, when it was
-> > originally added...  :/
-> 
-> We've done it all the time for various devices without problems (eg S3
-> video cards). I'd like to see it go in - although perhaps attached to a
-> force_ahci boot param initially
+On Sat, Nov 10, 2007 at 12:56:07AM +0100, Cyrus Massoumi wrote:
+> I tried your program on my machine (C2D, 2.6.17, O(1) scheduler).
+>
+> Both CPUs are 100% busy all the time. Each busy-looping thread is running 
+> on its own CPU. I've been watching top output for 10 minutes, the spreading 
+> is stable and the threads don't bounce at all.
 
-I second that.
+As I said, YMMV. I haven't been able to find a single set of
+parameters for the demo program which cause the problem to occur 100%
+of the time on all systems.
 
-My computer/mainboard @work has such a "broken" BIOS. Of the 5 
-SATA-Ports this MB has only 1 (and 1 "missing" that is reported by linux 
-but i can't find on the MB) is configured as AHCI which means that with 
-a HDD & a DVD-ROM connected to 2 of the 4 "piix"-ports, i only have 1 
-hot-pluggable port instead of the possible 3. And for some temporary 
-work i would really need at least 2 hot-pluggable ports.
+In general, boosting the MAINTHREAD_PRIORITY even more and increasing
+the WAKE_HZ should exaggerate the problem. These parameters reproduce
+the problem very reliably on my system:
 
-So as a work-around i will try a Promise 150 TX4 controller as it is 
-supposed to support hotplug since 2.6.23.
+#define NUM_BUSY_THREADS            2
+#define MAINTHREAD_PRIORITY       -20
+#define MAINTHREAD_WAKE_HZ       1024
+#define MAINTHREAD_LOAD_PERCENT     5
+#define MAINTHREAD_LOAD_CYCLES      2
 
-After having hotplug @home from the date the linux-kernel supporting it 
-was released, i don't want to live without it, as i use it daily.
+It's also possible this problem doesn't occur on 2.6.17. I have only
+tested this example on 2.6.23.1 and 2.6.20 so far.
 
-
-And on the topic of "broken" BIOSes. I have a little empathy for the MB 
-manufactures as non-RAID AHCI royaly screws Windos, so not supporting it 
-reduces their support costs enough to overlook screwing the non-windos 
-faction.
-
-
-
-
-
-Bis denn
-
--- 
-Real Programmers consider "what you see is what you get" to be just as 
-bad a concept in Text Editors as it is in women. No, the Real Programmer
-wants a "you asked for it, you got it" text editor -- complicated, 
-cryptic, powerful, unforgiving, dangerous.
-
+Thanks,
+--Micah
