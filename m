@@ -1,108 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754882AbXKJVQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755097AbXKJVS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754882AbXKJVQv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 16:16:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbXKJVQn
+	id S1755097AbXKJVS7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 16:18:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754163AbXKJVSv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 16:16:43 -0500
-Received: from moutng.kundenserver.de ([212.227.126.174]:60571 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754116AbXKJVQm (ORCPT
+	Sat, 10 Nov 2007 16:18:51 -0500
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:37560
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754106AbXKJVSv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 16:16:42 -0500
-Date: Sat, 10 Nov 2007 22:16:29 +0100
-From: Chris Friedhoff <chris@friedhoff.org>
-To: linux-kernel@vger.kernel.org
-Cc: chris@friedhoff.org
-Subject: 2.6.24-rc2 STD with s2disk fails to activate suspended system after
- loading
-Message-Id: <20071110221629.1d180480.chris@friedhoff.org>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.10.13; i486-slackware-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19PKnictc9DOfUquiYI8eaYf2AmKejWzAP0bE7
- iZl9p1CmuYjssvQ9I5vHB4luQyLnfUQdLljiPEdE4vBzGpI1bN
- IWdKYyABDHqiAN4XgxTg+7APixibIbk
+	Sat, 10 Nov 2007 16:18:51 -0500
+Date: Sat, 10 Nov 2007 13:28:25 -0800 (PST)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Andi Kleen <andi@firstfloor.org>
+cc: Crispin Cowan <crispin@crispincowan.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       LSM ML <linux-security-module@vger.kernel.org>,
+       apparmor-dev <apparmor-dev@forge.novell.com>
+Subject: Re: AppArmor Security Goal
+In-Reply-To: <p73tzntzuak.fsf@bingen.suse.de>
+Message-ID: <Pine.LNX.4.64.0711101325240.4780@asgard.lang.hm>
+References: <473380AD.5070801@crispincowan.com> <p73tzntzuak.fsf@bingen.suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-please cc me, I'm not not subscribed to LKML
+On Sat, 10 Nov 2007, Andi Kleen wrote:
 
-Hello,
+> Crispin Cowan <crispin@crispincowan.com> writes:
+>
+> The document should be a good base for a merge.
+>
+>>     * A confined process can operate on a file descriptor passed to it
+>>       by an unconfined process, even if it manipulates a file not in the
+>>       confined process's profile. To block this attack, confine the
+>>       process that passed the file descriptor.
+>
+> That is the only thing that tripped me up a bit while reading the document.
+> Can you expand a bit on the reasons why the fd is not rechecked in
+> the context of the target process? Best do it in a new version of the
+> document.
 
-with kernel 2.6.24-rc2 STD with s2disk suspends the system to disk, but
-when I start the system and the suspended systemimage is loaded, it
-fails to "activate" this suspended systemimage and continues after some
-time with following the normal boot sequence.
+from prior discussions I understand that the problem is that it's not easy 
+(or nessasarily possible) to figure out the path to the fd, so what do you 
+check?
 
-I can sucessfully STD the system with the following sequence
-  echo platform > /sys/power/disk
-  echo disk > /sys/power/state
-and when I start the laptop the suspended system is sucessfully
-restored.
+if the file has been removed there _is_ no path to the fd.
 
-Both behaviors are reliable reproducable.
+with hard links there could be many paths to the fd, the only way to find 
+them would be to search the entire filesystem.
 
-googling for >"Freezing of tasks failed" swapper< brought
-"Nigel Cunningham - PID namespaces break initrd+hibernate combination?"
-http://lkml.org/lkml/2007/11/4/140
+as a result App Armor has decided not to try and address this, but is 
+documenting it as a limitation.
 
-dmesg output:
-<<snip>>
-RAMDISK: ext2 filesystem found at block 0
-RAMDISK: Loading 2000KiB [1 disk] into ram disk... done.
-EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended
-VFS: Mounted root (ext2 filesystem).
-swsusp: Marking nosave pages: 000000000009f000 - 0000000000100000
-swsusp: Basic memory bitmaps created
-Clocksource tsc unstable (delta = -128791628 ns)
-Syncing filesystems ... done.
-Freezing user space processes ... (elapsed 0.00 seconds) done.
-Freezing remaining freezable tasks ... 
-Freezing of tasks failed after 20.00 seconds (1 tasks refusing to
-freeze): task                PC stack   pid father
-swapper       S c1835a88     0     1      0
-       00000000 00000046 c0118c80 c1835a88 00000004 00000001 c011e875
-00000286 c01025a6 00000000 00000000 c1835b64 00000000 ffffffff c1835a90
-00000001 00000000 00000000 00000000 00000000 0000007b 00000000 c1835a90
-c0118c80 Call Trace:
- [<c0118c80>] default_wake_function+0x0/0x10
- [<c011e875>] do_wait+0x335/0xac0
- [<c01025a6>] kernel_thread+0x96/0xb0
- [<c0118c80>] default_wake_function+0x0/0x10
- [<c011f031>] sys_wait4+0x31/0x40
- [<c04b7a23>] initrd_load+0x1b3/0x3a0
- [<c04b5108>] prepare_namespace+0x98/0x1b0
- [<c016090f>] sys_access+0x1f/0x30
- [<c04b47c6>] kernel_init+0x166/0x260
- [<c0103f4a>] ret_from_fork+0x6/0x1c
- [<c04b4660>] kernel_init+0x0/0x260
- [<c04b4660>] kernel_init+0x0/0x260
- [<c0104b8f>] kernel_thread_helper+0x7/0x18
- =======================
-kthreadd      S 0000038f     0     2      0
-       00000000 00000046 c0487790 0000038f c183ff1c 00000000 c012d81b
-c012d7b0 00000000 00000000 c0104b8f 00000000 00000000 00000000 00000000
-00000000 00000000 
-Call Trace:
- [<c012d81b>] kthreadd+0x6b/0xd0
- [<c012d7b0>] kthreadd+0x0/0xd0
- [<c0104b8f>] kernel_thread_helper+0x7/0x18
- =======================
-ksoftirqd/0   S 00000000     0     3      2
-       00000000 00000046 fffffffc 00000000 c0120f00 00000000 c0120f7a
-c012d782 c012d740 00000000 00000000 c0104b8f c183ff3c 00000000 00000000
-00000000 00000000 00000000 
-Call Trace:
- [<c0120f00>] ksoftirqd+0x0/0x80
- [<c0120f7a>] ksoftirqd+0x7a/0x80
- [<c012d782>] kthread+0x42/0x70
- [<c012d740>] kthread+0x0/0x70
- [<c0104b8f>] kernel_thread_helper+0x7/0x18
-
-<<snip>>
-
---------------------
-Chris Friedhoff
-chris@friedhoff.org
+David Lang
