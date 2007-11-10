@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757082AbXKJA2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758517AbXKJAa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757082AbXKJA2b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 19:28:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750941AbXKJA2X
+	id S1758517AbXKJAa1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 19:30:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbXKJAaT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 19:28:23 -0500
-Received: from gw.goop.org ([64.81.55.164]:35523 "EHLO mail.goop.org"
+	Fri, 9 Nov 2007 19:30:19 -0500
+Received: from gw.goop.org ([64.81.55.164]:57264 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750850AbXKJA2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 19:28:23 -0500
-Message-ID: <4734FAF4.40800@goop.org>
-Date: Fri, 09 Nov 2007 16:27:32 -0800
+	id S1750850AbXKJAaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 19:30:18 -0500
+Message-ID: <4734FB67.8080500@goop.org>
+Date: Fri, 09 Nov 2007 16:29:27 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: problem with x86-prepare-kprobes-code-for-unification.patch
+To: Glauber de Oliveira Costa <gcosta@redhat.com>
+CC: linux-kernel@vger.kernel.org, lguest@ozlabs.org,
+       kvm-devel@lists.sourceforge.net, ak@suse.de,
+       virtualization@lists.linux-foundation.org, chrisw@sous-sol.org,
+       tglx@linutronix.de, anthony@codemonkey.ws, akpm@linux-foundation.org,
+       mingo@elte.hu
+Subject: Re: [PATCH 5/24] smp x86 consolidation
+References: <11946337851964-git-send-email-gcosta@redhat.com>	<11946337933104-git-send-email-gcosta@redhat.com>	<11946337991750-git-send-email-gcosta@redhat.com>	<11946338053158-git-send-email-gcosta@redhat.com>	<11946338103068-git-send-email-gcosta@redhat.com> <1194633815833-git-send-email-gcosta@redhat.com>
+In-Reply-To: <1194633815833-git-send-email-gcosta@redhat.com>
 X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Glauber de Oliveira Costa wrote:
+> This patch consolidates part of the pieces of smp for both architectures.
+> (i386 and x86_64). It makes part the calls go through smp_ops, and shares
+> code for those functions in smpcommon.c
+>
+> There's more room for code sharing here, but it is left as an exercise to
+> the reader ;-)
+>   
 
-This code in kprobes_64.c from
-x86-prepare-kprobes-code-for-unification.patch is problematic:
+I'm getting link errors in 32-bit:
 
-+static __always_inline int is_IF_modifier(kprobe_opcode_t *insn)
-+{
-+	switch (*insn) {
-+	case 0xfa:		/* cli */
-+	case 0xfb:		/* sti */
-+	case 0xcf:		/* iret/iretd */
-+	case 0x9d:		/* popf/popfd */
-+		return 1;
-+	}
-+
-+	/*
-+	 * on 64 bit x86, 0x40-0x4f are prefixes so we need to look
-+	 * at the next byte instead.. but of course not recurse infinitely
-+	 */
-+	if (*insn  >= 0x40 && *insn <= 0x4f && *insn > 0x4f)
-+		return is_IF_modifier(++insn);
-+	return 0;
-+}
+arch/x86/kernel/built-in.o: In function `native_smp_send_reschedule':
+/home/jeremy/hg/xen/paravirt/linux/arch/x86/kernel/smpcommon.c:262: undefined reference to `genapic'
+arch/x86/kernel/built-in.o: In function `native_smp_call_function_mask':
+/home/jeremy/hg/xen/paravirt/linux/arch/x86/kernel/smpcommon.c:113: undefined reference to `genapic'
 
-
-Firstly, the conditional in the if() doesn't seem to make much sense. 
-It appears to be miscopied from:
-
--	if (*insn  >= 0x40 && *insn <= 0x4f && *++insn == 0xcf)
--		return 1;
-
-
-Secondly, the recursive inlining is making 4.0.2 complain:
-
-/home/jeremy/hg/xen/paravirt/linux/arch/x86/kernel/kprobes_64.c: In function 'set_current_kprobe':
-/home/jeremy/hg/xen/paravirt/linux/arch/x86/kernel/kprobes_64.c:152: sorry, unimplemented: inlining failed in call to 'is_IF_modifier': recursive inlining
-/home/jeremy/hg/xen/paravirt/linux/arch/x86/kernel/kprobes_64.c:166: sorry, unimplemented: called from here
 
     J
