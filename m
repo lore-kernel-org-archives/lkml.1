@@ -1,115 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764198AbXKJEIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764045AbXKJENV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764198AbXKJEIV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 23:08:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760167AbXKJEIN
+	id S1764045AbXKJENV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 23:13:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755271AbXKJENN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 23:08:13 -0500
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:26766 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756617AbXKJEIM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 23:08:12 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=te5McDG/kXMQZbtyeODfldnJpmY9kvVDYBjmKEd7g6+NogqD48BOGpSy1Z8kg3A1/vu+DVyfd0kteaS2F31e0heptNv1R4bqWg1gb5nYP0hSqnhPAzfS6WwRzOpSjUmIYhvAtCLbL/tgl7pY2m/HTPsHMGdom2LSr2Gk/elc+7o=  ;
-X-YMail-OSG: GFoY.VwVM1n9D0tTHAyOBS1u9SKS1Jnnq7MsVGnNFtjnvYvIkL8e4DLbewzEpcznJFbV0IgWBg--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Christoph Lameter <clameter@sgi.com>, linux-netdev@vger.kernel.org
-Subject: Re: 2.6.24-rc2: Network commit causes SLUB performance regression with tbench
-Date: Sat, 10 Nov 2007 12:29:35 +1100
-User-Agent: KMail/1.9.5
-Cc: "David S. Miller" <davem@davemloft.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org
-References: <200711092336.56172.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0711090928270.14601@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0711091533300.17621@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0711091533300.17621@schroedinger.engr.sgi.com>
+	Fri, 9 Nov 2007 23:13:13 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:43402 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751181AbXKJENM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 23:13:12 -0500
+Message-ID: <47352FC9.9080701@garzik.org>
+Date: Fri, 09 Nov 2007 23:12:57 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Brian Gerst <bgerst@didntduck.org>
+CC: Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/11 v3] enable "make ARCH=x86"
+References: <20071109230812.GA5176@uranus.ravnborg.org> <4735242B.1010801@garzik.org> <47352DF2.5000409@didntduck.org>
+In-Reply-To: <47352DF2.5000409@didntduck.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711101229.35822.nickpiggin@yahoo.com.au>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cc'ed linux-netdev
+Brian Gerst wrote:
+> Jeff Garzik wrote:
+>> Sam Ravnborg wrote:
+>>> This is the patch that get rid of ARCH=i386 and ARCH=x86_64
+>>> and introduce ARCH=x86.
+>>> It touches several files but the changes are all one or two-liners.
+>>>
+>>>       x86: drop backward compatibility symlinks to i386/boot and
+>>> x86_64/boot
+>>>       kbuild: sanity check the specified arch
+>>
+>> IMO it negatives impacts the workflow when you -remove- the ability to
+>> set 32/64-bit on the make command line.
+>>
+>> Building and testing for both architectures now requires the additional
+>> step of editing .config, which is a clear workflow negative impact at
+>> least for me.
+>>
+>> I switch between other cross-compiled arches (alpha, usually) on the
+>> makefile command line
+>>
+>> Yes, I know other 32/64-bit arches require .config editing.  That
+>> doesn't change the basic fact that this is a workflow regression.
+>>
+>>     Jeff
+> 
+> You can use:
+> 
+> make i386_defconfig
+> make x86_64_defconfig
 
-On Saturday 10 November 2007 10:46, Christoph Lameter wrote:
-> commit deea84b0ae3d26b41502ae0a39fe7fe134e703d0 seems to cause a drop
-> in SLUB tbench performance:
->
-> 8p x86_64 system:
->
-> 2.6.24-rc2:
-> 	1260.80 MB/sec
->
-> After reverting the patch:
-> 	2350.04 MB/sec
->
-> SLAB performance (which is at 2435.58 MB/sec, ~3% better than SLUB) is not
-> affected by the patch.
-
-Ah, I didn't realise this was a regression. Thanks for bisecting it.
-
-
-> Since this is an alignment change it seems that tbench performance is
-> sensitive to the data layout? SLUB packs data more tightly than SLAB. So
-> 8 byte allocations could result in cacheline contention if adjacent
-> objects are allocated from different cpus. SLABs minimum size is 32
-> bytes so the cacheline contention is likely more limited.
-
-> Maybe we need to allocate a mininum of one cacheline to the skb head? Or
-> padd it out to a full cacheline?
-
-The data should already be cacheline aligned. It is kmalloced, and
-with a minimum size of somewhere around 200 bytes on a 64-bit machine.
-So it will hit a cacheline aligned kmalloc slab AFAIKS  -- cacheline
-interference is probably not the problem. (To verify, I built slub with
-minimum kmalloc size set to 32 like slab and it's no real difference)
-
-But I can't see why restricting the allocation to PAGE_SIZE would help
-either. Maybe the macros are used in some other areas.
-
-BTW. your size-2048 kmalloc cache is order-1 in the default setup,
-wheras kmalloc(1024) or kmalloc(4096) will be order-0 allocations. And
-SLAB also uses order-0 for size-2048. It would be nice if SLUB did the
-same...
+Does that work for alpha too?
 
 
-> commit deea84b0ae3d26b41502ae0a39fe7fe134e703d0
-> Author: Herbert Xu <herbert@gondor.apana.org.au>
-> Date:   Sun Oct 21 16:27:46 2007 -0700
->
->     [NET]: Fix SKB_WITH_OVERHEAD calculation
->
->     The calculation in SKB_WITH_OVERHEAD is incorrect in that it can cause
->     an overflow across a page boundary which is what it's meant to prevent.
->     In particular, the header length (X) should not be lumped together with
->     skb_shared_info.  The latter needs to be aligned properly while the
-> header has no choice but to sit in front of wherever the payload is.
->
->     Therefore the correct calculation is to take away the aligned size of
->     skb_shared_info, and then subtract the header length.  The resulting
->     quantity L satisfies the following inequality:
->
->         SKB_DATA_ALIGN(L + X) + sizeof(struct skb_shared_info) <= PAGE_SIZE
->
->     This is the quantity used by alloc_skb to do the actual allocation.
->     Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
->     Signed-off-by: David S. Miller <davem@davemloft.net>
->
-> diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
-> index f93f22b..369f60a 100644
-> --- a/include/linux/skbuff.h
-> +++ b/include/linux/skbuff.h
-> @@ -41,8 +41,7 @@
->  #define SKB_DATA_ALIGN(X)      (((X) + (SMP_CACHE_BYTES - 1)) & \
->                                  ~(SMP_CACHE_BYTES - 1))
->  #define SKB_WITH_OVERHEAD(X)   \
-> -       (((X) - sizeof(struct skb_shared_info)) & \
-> -        ~(SMP_CACHE_BYTES - 1))
-> +       ((X) - SKB_DATA_ALIGN(sizeof(struct skb_shared_info)))
->  #define SKB_MAX_ORDER(X, ORDER) \
->         SKB_WITH_OVERHEAD((PAGE_SIZE << (ORDER)) - (X))
->  #define SKB_MAX_HEAD(X)                (SKB_MAX_ORDER((X), 0))
+> In any other case you'd be editing the .config anyways.
+
+No, that's a logic rathole down which I will not follow :)
+
+You can make any argument along those lines command line usage is really 
+an art, not a science.  Its a user interface, and that involves human 
+taste rather than logic.
+
+I've been bouncing between architectures using ARCH= for years, and my 
+fingers and brain have been trained.  It's just disappointing and a pain 
+to change this nice user interface that has served so well for years.
+
+This is /not/ a cleanup, it's a user interface change.
+
+	Jeff
+
+
+
