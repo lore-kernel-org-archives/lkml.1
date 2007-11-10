@@ -1,72 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753806AbXKJQtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753501AbXKJQuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753806AbXKJQtp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 11:49:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbXKJQti
+	id S1753501AbXKJQuY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 11:50:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbXKJQuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 11:49:38 -0500
-Received: from smtp01.cdmon.com ([212.36.75.232]:55393 "EHLO smtp01.cdmon.com"
+	Sat, 10 Nov 2007 11:50:11 -0500
+Received: from main.gmane.org ([80.91.229.2]:50332 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752627AbXKJQth (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 11:49:37 -0500
-Date: Sat, 10 Nov 2007 17:50:17 +0100
-From: DervishD <lkml@dervishd.net>
-To: Xavier Bestel <xavier.bestel@free.fr>
-Cc: Benny Halevy <bhalevy@panasas.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Coding Style: indenting with tabs vs. spaces
-Message-ID: <20071110165017.GB16090@DervishD>
-Mail-Followup-To: Xavier Bestel <xavier.bestel@free.fr>,
-	Benny Halevy <bhalevy@panasas.com>,
-	lkml <linux-kernel@vger.kernel.org>
-References: <4732E6BA.8060001@panasas.com> <20071110120424.GA16067@DervishD> <1194697674.6176.1.camel@bip.parateam.prv>
+	id S1752937AbXKJQuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Nov 2007 11:50:09 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: "Alexander E. Patrakov" <patrakov@gmail.com>
+Subject: Re: [PATCH] Include header required for INT_MAX
+Date: Sat, 10 Nov 2007 21:48:50 +0500
+Message-ID: <fh4ndi$t0i$1@ger.gmane.org>
+References: <20071110145627.C6FE347A7C@mail.koeller.dyndns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1194697674.6176.1.camel@bip.parateam.prv>
-User-Agent: Mutt/1.4.2.3i
-Organization: DervishD
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 90.150.237.183
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); ru-RU; rv:1.8.0.13pre) Gecko/20070505 Iceape/1.0.9 (Debian-1.0.10~pre070720-0etch3+lenny1) Mnenhy/0.7.5.666
+In-Reply-To: <20071110145627.C6FE347A7C@mail.koeller.dyndns.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-    Bonjour Xavier :)
+Thomas Koeller wrote:
+> cdrom.h uses INT_MAX, so it must include kernel.h or
+> limits.h (userspace) for a definition.
 
- * Xavier Bestel <xavier.bestel@free.fr> dixit:
-> Le samedi 10 novembre 2007 à 13:04 +0100, DervishD a écrit :
-> >  * Benny Halevy <bhalevy@panasas.com> dixit:
-> > > I would like to hear peoples opinion about the indentation convention
-> > > described below that I personally found the most practical with
-> > > several different editors.
-> > 
-> > While I respect you opinion about tabs, I find tab indentation the most
-> > evil thing ever invented. Even if done right (that is, not indenting
-> > using a mixture of spaces and tabs), the only advantage is that you save
-> > a few bytes.
-> 
-> Who cares ?
+No, it must be fixed so that it doesn't use this #defined constant. Debian has this:
 
-About the space saving? Not me, of course. It's just that I didn't see
-any other advantage.
-
-> The only advantage is that people can make tabs as big (or as small)
-> as they wish. Tabs become "logical indentation". So one's indentation
-> isn't forced on anotherone's editor.
-
-The only way of having a sane indentation using tabs is to make sure
-that ALL indentation are tabs, not a mix of tabs and spaces (spaces, if
-any, should be at the end of indentation for aesthetical purposes, but
-should be removed without the logical indentation being lost). A good
-editor can ensure that all indentation are tabs and not a mix, but a
-good editor can adapt indentation to your likings when loading the file
-and save the file translating your favourite indentation back to spaces
-or whatever.
-
-If everybody used tabs correctly, indenting using tabs would be great,
-but IMHO indenting with spaces is much better.
-
-    Raúl Núñez de Arenas Coronado
+/* Special codes used when specifying changer slots. */
+#define CDSL_NONE               ((int) (~0U>>1)-1)
+#define CDSL_CURRENT            ((int) (~0U>>1))
 
 -- 
-Linux Registered User 88736 | http://www.dervishd.net
-It's my PC and I'll cry if I want to... RAmen!
-We are waiting for 13 Feb 2009 23:31:30 +0000 ...
+Alexander E. Patrakov
+
