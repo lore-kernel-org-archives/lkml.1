@@ -1,40 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753552AbXKJOq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752767AbXKJPRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753552AbXKJOq3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 09:46:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbXKJOqU
+	id S1752767AbXKJPRU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 10:17:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbXKJPRL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 09:46:20 -0500
-Received: from mailrelay002.isp.belgacom.be ([195.238.6.175]:49862 "EHLO
-	mailrelay002.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751385AbXKJOqT (ORCPT
+	Sat, 10 Nov 2007 10:17:11 -0500
+Received: from mx01.hansenet.de ([213.191.73.25]:40668 "EHLO
+	webmail.hansenet.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751564AbXKJPRK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 09:46:19 -0500
-X-Belgacom-Dynamic: yes
-Date: Sat, 10 Nov 2007 15:46:17 +0100
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/5] Sbus: cpwatchdog, remove SPIN_LOCK_UNLOCKED
-Message-ID: <20071110144617.GB2654@infomag.infomag.iguana.be>
-References: <4827138842526222333@pripojeni.net> <1482721921242938628@pripojeni.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 10 Nov 2007 10:17:10 -0500
+X-Greylist: delayed 1254 seconds by postgrey-1.27 at vger.kernel.org; Sat, 10 Nov 2007 10:17:10 EST
+From: Thomas Koeller <thomas@koeller.dyndns.org>
+Date: Sat, 10 Nov 2007 15:55:15 +0100
+Subject: [PATCH] Include header required for INT_MAX
+X-Length: 770
+To: axboe@kernel.dk
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1482721921242938628@pripojeni.net>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <20071110145627.C6FE347A7C@mail.koeller.dyndns.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+cdrom.h uses INT_MAX, so it must include kernel.h or
+limits.h (userspace) for a definition.
 
-> cpwatchdog, remove SPIN_LOCK_UNLOCKED
-> 
-> SPIN_LOCK_UNLOCKED is deprecated, use __SPIN_LOCK_UNLOCKED with an unique
-> name instead
+Signed-off-by: Thomas Koeller <thomas@koeller.dyndns.org>
 
-Added to linux-2.6-watchdog-mm git tree.
-
-Greetings,
-Wim.
+diff --git a/include/linux/cdrom.h b/include/linux/cdrom.h
+index c6d3e22..bd8064a 100644
+--- a/include/linux/cdrom.h
++++ b/include/linux/cdrom.h
+@@ -12,6 +12,11 @@
+ #define	_LINUX_CDROM_H
+ 
+ #include <asm/byteorder.h>
++#ifdef __KERNEL__
++#include <linux/kernel.h>
++#else
++#include <limits.h>
++#endif
+ 
+ /*******************************************************
+  * As of Linux 2.1.x, all Linux CD-ROM application programs will use this 
+-- 
+1.5.3.4
 
