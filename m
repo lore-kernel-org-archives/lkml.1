@@ -1,82 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753491AbXKJRbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753360AbXKJSBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753491AbXKJRbM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 12:31:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbXKJRa6
+	id S1753360AbXKJSBV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 13:01:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751204AbXKJSBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 12:30:58 -0500
-Received: from unthought.net ([212.97.129.88]:56558 "EHLO unthought.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751593AbXKJRa5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 12:30:57 -0500
-X-Greylist: delayed 1499 seconds by postgrey-1.27 at vger.kernel.org; Sat, 10 Nov 2007 12:30:57 EST
-Date: Sat, 10 Nov 2007 18:05:57 +0100
-From: Jakob Oestergaard <jakob@unthought.net>
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>
-Cc: Casey Schaufler <casey@schaufler-ca.com>, akpm@osdl.org, torvalds@osdl.org,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser(2)
-Message-ID: <20071110170557.GA21977@unthought.net>
-Mail-Followup-To: Jakob Oestergaard <jakob@unthought.net>,
-	"Ahmed S. Darwish" <darwish.07@gmail.com>,
-	Casey Schaufler <casey@schaufler-ca.com>, akpm@osdl.org,
-	torvalds@osdl.org, linux-security-module@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>
-References: <472B8DAF.9080706@schaufler-ca.com> <20071103164303.GA26707@ubuntu> <20071105005625.GA18030@ubuntu>
+	Sat, 10 Nov 2007 13:01:13 -0500
+Received: from wx-out-0506.google.com ([66.249.82.236]:57094 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751083AbXKJSBM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Nov 2007 13:01:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=MJ3TrTLZXWDp7jMaXNAuyJOZ6Oy9hZWy/k1BCX4PvzJ+Ws3qS6LyNgBNH+DYKtI8y4MeoMRL6OQbhYN8mIB5Jbln8jjOuB82aizgiapMxrzk+5sWy525SMBmK6N0ky3kjMOVAr37PWEgBpmcBO8F6k9u4JBfNBpE8tOUMeIxni8=
+Message-ID: <88ee31b70711101001g21727d01qb967804162800c47@mail.gmail.com>
+Date: Sun, 11 Nov 2007 03:01:10 +0900
+From: "Jerome Pinot" <ngc891@gmail.com>
+To: "Linus Torvalds" <torvalds@osdl.org>
+Subject: [PATCH] ACPI: add documentation for deprecated /proc/acpi/battery in ACPI_PROCFS
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Trivial Patch" <trivial@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071105005625.GA18030@ubuntu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-...
-> I've double-checked the code for any possible off-by-one/overflow 
-> errors.
-...
+From: Jerome Pinot <ngc891@gmail.com>
 
-Two things caught my eye.
+Add documentation in Kconfig help about the move of /proc/acpi/battery
+to /sys/class/power_supply
+when selecting ACPI_PROCFS. This will impact a lot of users and should
+be documented.
 
-...
-> +		case bol:
-> +		case subject:
-> +			if (*label_len >= SMK_MAXLEN)
-> +				goto out;
-> +			subjectstr[(*label_len)++] = data[i];
+Signed-off-by: Jerome Pinot <ngc891@gmail.com>
+---
 
-Why is the '>' necessary?  Could it happen that you had incremented past the
-point of equality?
-
-If that could not happen, then in my oppinion '>=' is very misleading when '=='
-is really what is needed.
-
-...
-> +		case object:
-> +			if (*prevstate == blank) {
-> +				subjectstr[*label_len] = '\0';
-> +				*label_len = 0;
-> +			}
-
-I wonder why it is valid to uncritically use the already incremented label_len
-here, without checking its value (like is done above).
-
-It seems strangely asymmetrical. I'm not saying it's wrong, because there may
-be a subtle reason as to why it's not, but if that's the case then I think that
-subtle reason should be documented with a comment.
-
-...
-> +		case access:
-> +			if (*prevstate == blank) {
-> +				objectstr[*label_len] = '\0';
-> +				*label_len = 0;
-> +			}
-
-Same applies here.
-
-
--- 
-
- / jakob
-
+diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+index da3a08f..ce9dead 100644
+--- a/drivers/acpi/Kconfig
++++ b/drivers/acpi/Kconfig
+@@ -60,6 +60,7 @@ config ACPI_PROCFS
+ 	  /proc/acpi/info (/sys/modules/acpi/parameters/acpica_version)
+ 	  /proc/acpi/dsdt (/sys/firmware/acpi/tables/DSDT)
+ 	  /proc/acpi/fadt (/sys/firmware/acpi/tables/FACP)
++	  /proc/acpi/battery (/sys/class/power_supply)
+ 	  /proc/acpi/debug_layer (/sys/module/acpi/parameters/debug_layer)
+ 	  /proc/acpi/debug_level (/sys/module/acpi/parameters/debug_level)
