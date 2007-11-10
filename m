@@ -1,42 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512AbXKJPz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbXKJP4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754512AbXKJPz1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 10:55:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbXKJPzT
+	id S1754713AbXKJP4Y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 10:56:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbXKJP4Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 10:55:19 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:33701 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751824AbXKJPzR (ORCPT
+	Sat, 10 Nov 2007 10:56:16 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60293 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751913AbXKJP4P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 10:55:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=dVml/pzqW+3W1RRo98RWiaFltGSvlA0z9IH/BnmbdacZ0Uvxxvlxo58e1Dypc6yn/KRaJcqKCjW0eDxCdEjIUoxOrJiyqN0xI2QaQo48ats2qyTDDj46SemwqcO9NI26/7EavBMxLlqIvyteHRu8i4hsbJ/b5NAAse0c+n0f/XU=
-Message-ID: <4735D461.8000309@gmail.com>
-Date: Sat, 10 Nov 2007 16:55:13 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Frank Seidel <fseidel@suse.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [RFC 1/13] Char: nozomi, remove unneded stuff
-References: <10551261882075921134.slaby@pripojeni.net> <200711101641.03858.fseidel@suse.de>
-In-Reply-To: <200711101641.03858.fseidel@suse.de>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	Sat, 10 Nov 2007 10:56:15 -0500
+Date: Sat, 10 Nov 2007 15:56:13 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Thomas Koeller <thomas@koeller.dyndns.org>
+Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Include header required for INT_MAX
+Message-ID: <20071110155613.GB22418@infradead.org>
+References: <20071110145627.C6FE347A7C@mail.koeller.dyndns.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071110145627.C6FE347A7C@mail.koeller.dyndns.org>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/10/2007 04:41 PM, Frank Seidel wrote:
-> I also added you to the header of the complete patch
-> (also with your Signed-off-by), is that ok?
+On Sat, Nov 10, 2007 at 03:55:15PM +0100, Thomas Koeller wrote:
+> cdrom.h uses INT_MAX, so it must include kernel.h or
+> limits.h (userspace) for a definition.
 
-No problem here.
+Nack, we shoiuld never include userspace headers in kernel headers,
+an even more never add !__KERNEL__ ifdefs.  Just make sure your
+programs include limit.h before including linux/cdrom.h.
 
-thanks,
--- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
