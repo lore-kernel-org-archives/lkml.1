@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752767AbXKJPRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752996AbXKJPlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752767AbXKJPRU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 10:17:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbXKJPRL
+	id S1752996AbXKJPlT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 10:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbXKJPlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 10:17:11 -0500
-Received: from mx01.hansenet.de ([213.191.73.25]:40668 "EHLO
-	webmail.hansenet.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751564AbXKJPRK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 10:17:10 -0500
-X-Greylist: delayed 1254 seconds by postgrey-1.27 at vger.kernel.org; Sat, 10 Nov 2007 10:17:10 EST
-From: Thomas Koeller <thomas@koeller.dyndns.org>
-Date: Sat, 10 Nov 2007 15:55:15 +0100
-Subject: [PATCH] Include header required for INT_MAX
-X-Length: 770
-To: axboe@kernel.dk
+	Sat, 10 Nov 2007 10:41:08 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:51141 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751703AbXKJPlH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Nov 2007 10:41:07 -0500
+From: Frank Seidel <fseidel@suse.de>
+Organization: SUSE LINUX Products GmbH
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [RFC 1/13] Char: nozomi, remove unneded stuff
+Date: Sat, 10 Nov 2007 16:41:02 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Cc: linux-kernel@vger.kernel.org
+References: <10551261882075921134.slaby@pripojeni.net>
+In-Reply-To: <10551261882075921134.slaby@pripojeni.net>
 MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <20071110145627.C6FE347A7C@mail.koeller.dyndns.org>
+Message-Id: <200711101641.03858.fseidel@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cdrom.h uses INT_MAX, so it must include kernel.h or
-limits.h (userspace) for a definition.
+On Samstag 10 November 2007 00:43:29, you (Jiri Slaby) wrote:
+> Frank, could you comment (and test) following changes to the nozomi driver?
+> I did them before you post the updated version and rediffed them a while
+> ago, I hope I haven't done any mistake while doing it.
 
-Signed-off-by: Thomas Koeller <thomas@koeller.dyndns.org>
+Great thanks for all this! I went through all of them,
+put some comments in, ran tests and incorporated them
+(nearly completely and unchanged).
+They really catched a great number of issues.
 
-diff --git a/include/linux/cdrom.h b/include/linux/cdrom.h
-index c6d3e22..bd8064a 100644
---- a/include/linux/cdrom.h
-+++ b/include/linux/cdrom.h
-@@ -12,6 +12,11 @@
- #define	_LINUX_CDROM_H
- 
- #include <asm/byteorder.h>
-+#ifdef __KERNEL__
-+#include <linux/kernel.h>
-+#else
-+#include <limits.h>
-+#endif
- 
- /*******************************************************
-  * As of Linux 2.1.x, all Linux CD-ROM application programs will use this 
--- 
-1.5.3.4
+I also added you to the header of the complete patch
+(also with your Signed-off-by), is that ok?
+After some final tests are through i'll repost the complete patch in
+the review thread and in CC to Greg again.
 
+> --
+> 
+> nozomi, remove unneded stuff
+> 
+> - tty_termios* are set to tty struct, but tty_register_driver overwrites it
+>   with its own values (or NULLs), no need to have these pointers stored
+> - [rt]x_data are updated but never used
+
+completely agree
+
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> 
+> ---
+all applied without a change
+
+Many thanks again,
+Frank
