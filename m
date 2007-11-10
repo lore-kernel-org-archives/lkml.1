@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762936AbXKJBEI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763371AbXKJBSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762936AbXKJBEI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 20:04:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761766AbXKJBDz
+	id S1763371AbXKJBSR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 20:18:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754793AbXKJBSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 20:03:55 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43640 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761718AbXKJBDy (ORCPT
+	Fri, 9 Nov 2007 20:18:05 -0500
+Received: from mga01.intel.com ([192.55.52.88]:2128 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754747AbXKJBSE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 20:03:54 -0500
-Date: Fri, 9 Nov 2007 17:02:38 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "eric miao" <eric.y.miao@gmail.com>
-Cc: linux-kernel@vger.kernel.org, szabolcs.gyurko@tlt.hu,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [PATCH] make ds1wm driver to check ds1wm_platform_data pointer
- against NULL
-Message-Id: <20071109170238.628fdf0d.akpm@linux-foundation.org>
-In-Reply-To: <f17812d70711082207p455c5bc9v25fea9a0585ba152@mail.gmail.com>
-References: <f17812d70711082207p455c5bc9v25fea9a0585ba152@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Nov 2007 20:18:04 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,397,1188802800"; 
+   d="scan'208";a="376689952"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: 
+Date: Fri, 9 Nov 2007 17:18:01 -0800
+Message-ID: <617E1C2C70743745A92448908E030B2A02E9A31C@scsmsx411.amr.corp.intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Index: AcgjN4lTkJ0M9AaITyWTzL8DQQGf5g==
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "LKML" <linux-kernel@vger.kernel.org>
+Cc: <dada1@cosmosbay.com>
+X-OriginalArrivalTime: 10 Nov 2007 01:18:02.0600 (UTC) FILETIME=[8A07CE80:01C82337]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Nov 2007 14:07:31 +0800
-"eric miao" <eric.y.miao@gmail.com> wrote:
+Just pulled latest git tree from Linus and a few ia64 configurations
+(anything with CONFIG_NUMA=y) won't build.
 
-> Do a sanity check for the "struct ds1wm_platform_data" pointer passed in
-> by the platform_device, and so to enforce each platform to provide a
-> valid structure.
-> 
-> Signed-off-by: eric miao <eric.miao@marvell.com>
-> ---
->  drivers/w1/masters/ds1wm.c |    4 ++++
->  1 files changed, 4 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/w1/masters/ds1wm.c b/drivers/w1/masters/ds1wm.c
-> index 5747997..11ce9ec 100644
-> --- a/drivers/w1/masters/ds1wm.c
-> +++ b/drivers/w1/masters/ds1wm.c
-> @@ -351,6 +351,10 @@ static int ds1wm_probe(struct platform_device *pdev)
->  		goto err0;
->  	}
->  	plat = pdev->dev.platform_data;
-> +	if (!plat) {
-> +		ret = -ENXIO;
-> +		goto err0;
-> +	}
->  	ds1wm_data->bus_shift = plat->bus_shift;
->  	ds1wm_data->pdev = pdev;
->  	ds1wm_data->pdata = plat;
+The offending commit appears to be:
 
-I don't understand this change.  Could you please provide some more details
-regarding what problem it is solving?  How can pdev->dev.platform_data==NULL
-come about?
+    230140cffa7feae90ad50bf259db1fa07674f3a7
 
-Thanks.
+Here's the error messages from the compiler:
+
+  CC [M]  drivers/infiniband/core/cma.o
+In file included from include/net/tcp.h:35,
+                 from drivers/infiniband/core/cma.c:40:
+include/net/inet_hashtables.h: In function `inet_ehash_locks_alloc':
+include/net/inet_hashtables.h:165: error: implicit declaration of
+function `vmalloc'
+include/net/inet_hashtables.h:165: warning: assignment makes pointer
+from integer without a cast
+include/net/inet_hashtables.h: In function `inet_ehash_locks_free':
+include/net/inet_hashtables.h:186: error: implicit declaration of
+function `vfree'
+make[3]: *** [drivers/infiniband/core/cma.o] Error 1
+
+
+-Tony
