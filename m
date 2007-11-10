@@ -1,68 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754980AbXKJH2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753154AbXKJHxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754980AbXKJH2Q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 02:28:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbXKJH2E
+	id S1753154AbXKJHxS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 02:53:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbXKJHxH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 02:28:04 -0500
-Received: from ozlabs.org ([203.10.76.45]:33747 "EHLO ozlabs.org"
+	Sat, 10 Nov 2007 02:53:07 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:46557 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751593AbXKJH2D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 02:28:03 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jan Glauber <jang@linux.vnet.ibm.com>
-Subject: Re: Module init call vs symbols exporting race?
-Date: Sat, 10 Nov 2007 18:27:47 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Jon Masters <jonathan@jonmasters.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pavel Emelyanov <xemul@openvz.org>
-References: <473031FA.2060707@openvz.org> <1194608640.9377.104.camel@perihelion> <1194610607.5000.9.camel@localhost.localdomain>
-In-Reply-To: <1194610607.5000.9.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	id S1751007AbXKJHxG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Nov 2007 02:53:06 -0500
+Date: Sat, 10 Nov 2007 08:54:44 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/11 v3] enable "make ARCH=x86"
+Message-ID: <20071110075444.GA5707@uranus.ravnborg.org>
+References: <20071109230812.GA5176@uranus.ravnborg.org> <4735242B.1010801@garzik.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711101827.47874.rusty@rustcorp.com.au>
+In-Reply-To: <4735242B.1010801@garzik.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 09 November 2007 23:16:47 Jan Glauber wrote:
-> On Fri, 2007-11-09 at 06:44 -0500, Jon Masters wrote:
-> > On Thu, 2007-11-08 at 13:10 +1100, Rusty Russell wrote:
-> > > On Wednesday 07 November 2007 21:01:30 Jan Glauber wrote:
-> > > > Hi Rusty,
-> > > >
-> > > > I've seen a symbol-resolving race on s390. The qeth module uses
-> > > > symbols from qdio and although the loading order seems correct and
-> > > > the qdio symbols should be available the following error appears:
-> > > >
-> > > > qdio: loading QDIO base support version 2
-> > > > qeth: Unknown symbol qdio_synchronize
-> > >
-> > > Looks like qdio does something which triggers qeth to load, but of
-> > > course qdio isn't finished initializing yet so its symbols aren't
-> > > available.
-> > >
-> > > It's not obvious what's triggering the load, but you could probably
-> > > find it by using printk's through qdio.c's init_QDIO().
+On Fri, Nov 09, 2007 at 10:23:23PM -0500, Jeff Garzik wrote:
+> Sam Ravnborg wrote:
+> >This is the patch that get rid of ARCH=i386 and ARCH=x86_64
+> >and introduce ARCH=x86.
+> >It touches several files but the changes are all one or two-liners.
 > >
-> > Jan - did you get anything?
->
-> I still think this is a bug in the module loader since qdio does not
-> depent on qeth, qdio can be modprobe'd without automatically loading
-> qeth. Adding a printk to the end of init_QDIO() inidicates that
-> qeth_init() runs _after_ init_QDIO() is finished.
+> >      x86: drop backward compatibility symlinks to i386/boot and 
+> >      x86_64/boot
+> >      kbuild: sanity check the specified arch
+> 
+> 
+> IMO it negatives impacts the workflow when you -remove- the ability to 
+> set 32/64-bit on the make command line.
+> 
+> Building and testing for both architectures now requires the additional 
+> step of editing .config, which is a clear workflow negative impact at 
+> least for me.
+When it was decided to unify i386 and x86_64 it was at the same time
+decided to handle them as a *single* architecture.
 
-Of course it does: it has to.
+Keeping ARCH=i386 and ARCH=x86_64 around is just a way to pretend
+this is two diffrent architectures which is no longer the case.
 
-qeth needs qdio, and qdio hasn't finished init when qeth tries to load.  
-Something tries to load qeth again, and this time it works (qdio's init has 
-presumably finished).
+Do we need a way to say "build a kernel that is 64 bit"?
+If we need this then we should look at the most intuitive way
+to say so and this should work across x86, powerpc and s390.
 
-We fail rather than sleep in the "dependency isn't ready" case.  Partially 
-because it's not happened before, but partially because we risk nasty loops.
+	make 64BIT=y ARCH=x86
 
-Cheers,
-Rusty.
+looks so much more intuitive. And it is generic.
+This is just a proposal.
+
+But lets focus on finding a generic solution and not try
+to hang around in old habbits.
+
+
+I can certainly look into enabling a generic syntax but
+that is a bit down on my TODO list (and most items above
+this has something to do with the kids and not Linux btw).
+
+If we go for the proposed syntax then it
+should be a matter of teaching kconfig to look for
+"64BIT" and set the 64BIT symbol accordingly.
+And thenthe Kconfig files needs to be modified
+so the they use "64BIT" to select between kernel
+bit size.
+
+	Sam
