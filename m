@@ -1,234 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753312AbXKJFnz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbXKJGHQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753312AbXKJFnz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 00:43:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbXKJFnr
+	id S1754103AbXKJGHQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 01:07:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbXKJGHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 00:43:47 -0500
-Received: from ns1.suse.de ([195.135.220.2]:58427 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751243AbXKJFnq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 00:43:46 -0500
-Date: Sat, 10 Nov 2007 06:43:43 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patch 1/2] mm: page trylock rename
-Message-ID: <20071110054343.GA17803@wotan.suse.de>
-References: <20071110051222.GA16018@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 10 Nov 2007 01:07:05 -0500
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:41377 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751402AbXKJGHD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Nov 2007 01:07:03 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=UZhZdVSXyrXkAyruylU9ewItNbO4g7ce6RD7AnCRHacAP+tfV1CBf5i5+zmT6T4SR9jIa1t8u6JolAb6gU6SS5jxjaNamx2xnLk4/AfhHJ4O2BZ7hBfvEjWcg8E+DQRolBbur1BW0gpff3/i11hOWth7eAVbVBpmg8/RMdYOJxY=  ;
+X-YMail-OSG: uHKyxwIVM1kZuXx2O1FqGPrBqWCL.NVQWqeIyshJ7afitR_PpmnK6MqCtDDFGZ2DZu.xlM8B2A--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Christoph Lameter <clameter@sgi.com>, netdev@vger.kernel.org
+Subject: Re: 2.6.24-rc2: Network commit causes SLUB performance regression with tbench
+Date: Sat, 10 Nov 2007 14:28:25 +1100
+User-Agent: KMail/1.9.5
+Cc: "David S. Miller" <davem@davemloft.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org
+References: <200711092336.56172.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0711091533300.17621@schroedinger.engr.sgi.com> <200711101229.35822.nickpiggin@yahoo.com.au>
+In-Reply-To: <200711101229.35822.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071110051222.GA16018@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200711101428.25295.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's a little something to make up for the occasional extra cacheline
-write in add_to_page_cache. Saves an atomic operation and 2 memory barriers
-for every add_to_page_cache().
+On Saturday 10 November 2007 12:29, Nick Piggin wrote:
+> cc'ed linux-netdev
 
-I suspect lockdepifying the page lock will also barf without this, too...
+Err, make that 'netdev' :P
 
----
-Setting and clearing the page locked when inserting it into swapcache /
-pagecache when it has no other references can use non-atomic page flags
-operatoins because no other CPU may be operating on it at this time.
-
-Also, remove comments in add_to_swap_cache that suggest the contrary, and
-rename it to add_to_swap_cache_lru(), better matching the filemap code,
-and which meaks it more clear that the page has no other references yet.
-
-Also, the comments in add_to_page_cache aren't really correct. It is not
-just called for new pages, but for tmpfs pages as well. They are locked
-when called, so it is OK for atomic bitflag access, but we can't do
-non-atomic access. Split this into add_to_page_cache_locked, for tmpfs.
-
-Signed-off-by: Nick Piggin <npiggin@suse.de>
----
-Index: linux-2.6/mm/filemap.c
-===================================================================
---- linux-2.6.orig/mm/filemap.c
-+++ linux-2.6/mm/filemap.c
-@@ -426,29 +426,28 @@ int filemap_write_and_wait_range(struct 
- }
- 
- /**
-- * add_to_page_cache - add newly allocated pagecache pages
-+ * add_to_page_cache_locked - add a locked page to pagecache
-  * @page:	page to add
-  * @mapping:	the page's address_space
-  * @offset:	page index
-  * @gfp_mask:	page allocation mode
-  *
-- * This function is used to add newly allocated pagecache pages;
-- * the page is new, so we can just run set_page_locked() against it.
-- * The other page state flags were set by rmqueue().
-- *
-+ * This function is used to add a page to the pagecache. It must be locked.
-  * This function does not add the page to the LRU.  The caller must do that.
-  */
--int add_to_page_cache(struct page *page, struct address_space *mapping,
-+int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
- 		pgoff_t offset, gfp_t gfp_mask)
- {
--	int error = radix_tree_preload(gfp_mask & ~__GFP_HIGHMEM);
-+	int error;
-+
-+	VM_BUG_ON(!PageLocked(page));
- 
-+	error = radix_tree_preload(gfp_mask & ~__GFP_HIGHMEM);
- 	if (error == 0) {
- 		write_lock_irq(&mapping->tree_lock);
- 		error = radix_tree_insert(&mapping->page_tree, offset, page);
- 		if (!error) {
- 			page_cache_get(page);
--			set_page_locked(page);
- 			page->mapping = mapping;
- 			page->index = offset;
- 			mapping->nrpages++;
-@@ -459,7 +458,7 @@ int add_to_page_cache(struct page *page,
- 	}
- 	return error;
- }
--EXPORT_SYMBOL(add_to_page_cache);
-+EXPORT_SYMBOL(add_to_page_cache_locked);
- 
- int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
- 				pgoff_t offset, gfp_t gfp_mask)
-Index: linux-2.6/mm/swap_state.c
-===================================================================
---- linux-2.6.orig/mm/swap_state.c
-+++ linux-2.6/mm/swap_state.c
-@@ -95,7 +95,7 @@ static int __add_to_swap_cache(struct pa
- 	return error;
- }
- 
--static int add_to_swap_cache(struct page *page, swp_entry_t entry)
-+static int add_to_swap_cache_lru(struct page *page, swp_entry_t entry)
- {
- 	int error;
- 
-@@ -104,19 +104,18 @@ static int add_to_swap_cache(struct page
- 		INC_CACHE_INFO(noent_race);
- 		return -ENOENT;
- 	}
--	set_page_locked(page);
-+	__set_page_locked(page);
- 	error = __add_to_swap_cache(page, entry, GFP_KERNEL);
--	/*
--	 * Anon pages are already on the LRU, we don't run lru_cache_add here.
--	 */
- 	if (error) {
--		clear_page_locked(page);
-+		__clear_page_locked(page);
- 		swap_free(entry);
- 		if (error == -EEXIST)
- 			INC_CACHE_INFO(exist_race);
- 		return error;
- 	}
- 	INC_CACHE_INFO(add_total);
-+	lru_cache_add_active(page);
-+
- 	return 0;
- }
- 
-@@ -235,7 +234,7 @@ int move_to_swap_cache(struct page *page
- int move_from_swap_cache(struct page *page, unsigned long index,
- 		struct address_space *mapping)
- {
--	int err = add_to_page_cache(page, mapping, index, GFP_ATOMIC);
-+	int err = add_to_page_cache_locked(page, mapping, index, GFP_ATOMIC);
- 	if (!err) {
- 		delete_from_swap_cache(page);
- 		/* shift page from clean_pages to dirty_pages list */
-@@ -353,12 +352,11 @@ struct page *read_swap_cache_async(swp_e
- 		 * the just freed swap entry for an existing page.
- 		 * May fail (-ENOMEM) if radix-tree node allocation failed.
- 		 */
--		err = add_to_swap_cache(new_page, entry);
-+		err = add_to_swap_cache_lru(new_page, entry);
- 		if (!err) {
- 			/*
- 			 * Initiate read into locked page and return.
- 			 */
--			lru_cache_add_active(new_page);
- 			swap_readpage(NULL, new_page);
- 			return new_page;
- 		}
-Index: linux-2.6/include/linux/pagemap.h
-===================================================================
---- linux-2.6.orig/include/linux/pagemap.h
-+++ linux-2.6/include/linux/pagemap.h
-@@ -133,13 +133,6 @@ static inline struct page *read_mapping_
- 	return read_cache_page(mapping, index, filler, data);
- }
- 
--int add_to_page_cache(struct page *page, struct address_space *mapping,
--				pgoff_t index, gfp_t gfp_mask);
--int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
--				pgoff_t index, gfp_t gfp_mask);
--extern void remove_from_page_cache(struct page *page);
--extern void __remove_from_page_cache(struct page *page);
--
- /*
-  * Return byte-offset into filesystem object for page.
-  */
-@@ -160,14 +153,17 @@ extern void FASTCALL(__lock_page(struct 
- extern void FASTCALL(__lock_page_nosync(struct page *page));
- extern void FASTCALL(unlock_page(struct page *page));
- 
--static inline void set_page_locked(struct page *page)
-+static inline void __set_page_locked(struct page *page)
- {
--	set_bit(PG_locked, &page->flags);
-+	/* concurrent access would cause data loss with non-atomic bitop */
-+	VM_BUG_ON(page_count(page) != 1);
-+	__set_bit(PG_locked, &page->flags);
- }
- 
--static inline void clear_page_locked(struct page *page)
-+static inline void __clear_page_locked(struct page *page)
- {
--	clear_bit(PG_locked, &page->flags);
-+	VM_BUG_ON(page_count(page) != 1);
-+	__clear_bit(PG_locked, &page->flags);
- }
- 
- static inline int trylock_page(struct page *page)
-@@ -226,6 +222,32 @@ static inline void wait_on_page_writebac
- 
- extern void end_page_writeback(struct page *page);
- 
-+
-+int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
-+				pgoff_t index, gfp_t gfp_mask);
-+int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
-+				pgoff_t index, gfp_t gfp_mask);
-+extern void remove_from_page_cache(struct page *page);
-+extern void __remove_from_page_cache(struct page *page);
-+
-+/*
-+ * Like add_to_page_cache_locked, but used to add newly allocated pages: the
-+ * page is new, so we can just run __set_page_locked() against it.
-+ */
-+static inline int add_to_page_cache(struct page *page, struct address_space *mapping,
-+		pgoff_t offset, gfp_t gfp_mask)
-+{
-+	int error;
-+
-+	__set_page_locked(page);
-+	error = add_to_page_cache_locked(page, mapping, offset, gfp_mask);
-+	if (unlikely(error))
-+		__clear_page_locked(page);
-+
-+	return error;
-+}
-+
-+
- /*
-  * Fault a userspace page into pagetables.  Return non-zero on a fault.
-  *
+> On Saturday 10 November 2007 10:46, Christoph Lameter wrote:
+> > commit deea84b0ae3d26b41502ae0a39fe7fe134e703d0 seems to cause a drop
+> > in SLUB tbench performance:
+> >
+> > 8p x86_64 system:
+> >
+> > 2.6.24-rc2:
+> > 	1260.80 MB/sec
+> >
+> > After reverting the patch:
+> > 	2350.04 MB/sec
+> >
+> > SLAB performance (which is at 2435.58 MB/sec, ~3% better than SLUB) is
+> > not affected by the patch.
+>
+> Ah, I didn't realise this was a regression. Thanks for bisecting it.
+>
+> > Since this is an alignment change it seems that tbench performance is
+> > sensitive to the data layout? SLUB packs data more tightly than SLAB. So
+> > 8 byte allocations could result in cacheline contention if adjacent
+> > objects are allocated from different cpus. SLABs minimum size is 32
+> > bytes so the cacheline contention is likely more limited.
+> >
+> > Maybe we need to allocate a mininum of one cacheline to the skb head? Or
+> > padd it out to a full cacheline?
+>
+> The data should already be cacheline aligned. It is kmalloced, and
+> with a minimum size of somewhere around 200 bytes on a 64-bit machine.
+> So it will hit a cacheline aligned kmalloc slab AFAIKS  -- cacheline
+> interference is probably not the problem. (To verify, I built slub with
+> minimum kmalloc size set to 32 like slab and it's no real difference)
+>
+> But I can't see why restricting the allocation to PAGE_SIZE would help
+> either. Maybe the macros are used in some other areas.
+>
+> BTW. your size-2048 kmalloc cache is order-1 in the default setup,
+> wheras kmalloc(1024) or kmalloc(4096) will be order-0 allocations. And
+> SLAB also uses order-0 for size-2048. It would be nice if SLUB did the
+> same...
+>
+> > commit deea84b0ae3d26b41502ae0a39fe7fe134e703d0
+> > Author: Herbert Xu <herbert@gondor.apana.org.au>
+> > Date:   Sun Oct 21 16:27:46 2007 -0700
+> >
+> >     [NET]: Fix SKB_WITH_OVERHEAD calculation
+> >
+> >     The calculation in SKB_WITH_OVERHEAD is incorrect in that it can
+> > cause an overflow across a page boundary which is what it's meant to
+> > prevent. In particular, the header length (X) should not be lumped
+> > together with skb_shared_info.  The latter needs to be aligned properly
+> > while the header has no choice but to sit in front of wherever the
+> > payload is.
+> >
+> >     Therefore the correct calculation is to take away the aligned size of
+> >     skb_shared_info, and then subtract the header length.  The resulting
+> >     quantity L satisfies the following inequality:
+> >
+> >         SKB_DATA_ALIGN(L + X) + sizeof(struct skb_shared_info) <=
+> > PAGE_SIZE
+> >
+> >     This is the quantity used by alloc_skb to do the actual allocation.
+> >     Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+> >     Signed-off-by: David S. Miller <davem@davemloft.net>
+> >
+> > diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
+> > index f93f22b..369f60a 100644
+> > --- a/include/linux/skbuff.h
+> > +++ b/include/linux/skbuff.h
+> > @@ -41,8 +41,7 @@
+> >  #define SKB_DATA_ALIGN(X)      (((X) + (SMP_CACHE_BYTES - 1)) & \
+> >                                  ~(SMP_CACHE_BYTES - 1))
+> >  #define SKB_WITH_OVERHEAD(X)   \
+> > -       (((X) - sizeof(struct skb_shared_info)) & \
+> > -        ~(SMP_CACHE_BYTES - 1))
+> > +       ((X) - SKB_DATA_ALIGN(sizeof(struct skb_shared_info)))
+> >  #define SKB_MAX_ORDER(X, ORDER) \
+> >         SKB_WITH_OVERHEAD((PAGE_SIZE << (ORDER)) - (X))
+> >  #define SKB_MAX_HEAD(X)                (SKB_MAX_ORDER((X), 0))
