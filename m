@@ -1,64 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763343AbXKJB3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763201AbXKJBnI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763343AbXKJB3p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 20:29:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759034AbXKJB3g
+	id S1763201AbXKJBnI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 20:43:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755369AbXKJBm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 20:29:36 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58428 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755862AbXKJB3g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 20:29:36 -0500
-Message-ID: <4735098B.7040305@redhat.com>
-Date: Fri, 09 Nov 2007 23:29:47 -0200
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070811)
+	Fri, 9 Nov 2007 20:42:57 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:57764 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751442AbXKJBm4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 20:42:56 -0500
+Message-ID: <47350C92.80505@cosmosbay.com>
+Date: Sat, 10 Nov 2007 02:42:42 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: linux-kernel@vger.kernel.org, lguest@ozlabs.org,
-       kvm-devel@lists.sourceforge.net, ak@suse.de,
-       virtualization@lists.linux-foundation.org, chrisw@sous-sol.org,
-       tglx@linutronix.de, anthony@codemonkey.ws, akpm@linux-foundation.org,
-       mingo@elte.hu
-Subject: Re: [PATCH 5/24] smp x86 consolidation
-References: <11946337851964-git-send-email-gcosta@redhat.com>	<11946337933104-git-send-email-gcosta@redhat.com>	<11946337991750-git-send-email-gcosta@redhat.com>	<11946338053158-git-send-email-gcosta@redhat.com>	<11946338103068-git-send-email-gcosta@redhat.com> <1194633815833-git-send-email-gcosta@redhat.com> <4734FB67.8080500@goop.org>
-In-Reply-To: <4734FB67.8080500@goop.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+To: "Luck, Tony" <tony.luck@intel.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: 
+References: <617E1C2C70743745A92448908E030B2A02E9A31C@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <617E1C2C70743745A92448908E030B2A02E9A31C@scsmsx411.amr.corp.intel.com>
+Content-Type: multipart/mixed;
+ boundary="------------040101090409020109010808"
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sat, 10 Nov 2007 02:42:50 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+This is a multi-part message in MIME format.
+--------------040101090409020109010808
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Jeremy Fitzhardinge escreveu:
-> Glauber de Oliveira Costa wrote:
->> This patch consolidates part of the pieces of smp for both architectures.
->> (i386 and x86_64). It makes part the calls go through smp_ops, and shares
->> code for those functions in smpcommon.c
->>
->> There's more room for code sharing here, but it is left as an exercise to
->> the reader ;-)
->>   
+Luck, Tony a écrit :
+> Just pulled latest git tree from Linus and a few ia64 configurations
+> (anything with CONFIG_NUMA=y) won't build.
 > 
-> I'm getting link errors in 32-bit:
+> The offending commit appears to be:
 > 
-> arch/x86/kernel/built-in.o: In function `native_smp_send_reschedule':
-> /home/jeremy/hg/xen/paravirt/linux/arch/x86/kernel/smpcommon.c:262: undefined reference to `genapic'
-> arch/x86/kernel/built-in.o: In function `native_smp_call_function_mask':
-> /home/jeremy/hg/xen/paravirt/linux/arch/x86/kernel/smpcommon.c:113: undefined reference to `genapic'
+>     230140cffa7feae90ad50bf259db1fa07674f3a7
 > 
-Ok, it compiled just fine here. I bet it's due to  one of that i386 lots
-of variants.
-Which subarchitecture are you compiling for, jeremy ?
->     J
+> Here's the error messages from the compiler:
+> 
+>   CC [M]  drivers/infiniband/core/cma.o
+> In file included from include/net/tcp.h:35,
+>                  from drivers/infiniband/core/cma.c:40:
+> include/net/inet_hashtables.h: In function `inet_ehash_locks_alloc':
+> include/net/inet_hashtables.h:165: error: implicit declaration of
+> function `vmalloc'
+> include/net/inet_hashtables.h:165: warning: assignment makes pointer
+> from integer without a cast
+> include/net/inet_hashtables.h: In function `inet_ehash_locks_free':
+> include/net/inet_hashtables.h:186: error: implicit declaration of
+> function `vfree'
+> make[3]: *** [drivers/infiniband/core/cma.o] Error 1
+> 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Remi - http://enigmail.mozdev.org
+Hi Tony
 
-iD8DBQFHNQmKjYI8LaFUWXMRAlrLAKCHOb28oE/veBkbVeJZDCbjE8OADwCg81ye
-nsBfBe2iLOFHF6dxT4mRauc=
-=xjo4
------END PGP SIGNATURE-----
+Seems an include is missing.
+
+Could you please apply this patch ?
+
+Thank you
+
+[NET] adds a missing include <linux/vmalloc.h>
+
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+
+
+--------------040101090409020109010808
+Content-Type: text/plain;
+ name="include.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="include.patch"
+
+diff --git a/include/net/inet_hashtables.h b/include/net/inet_hashtables.h
+index 8461cda..469216d 100644
+--- a/include/net/inet_hashtables.h
++++ b/include/net/inet_hashtables.h
+@@ -23,6 +23,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/types.h>
+ #include <linux/wait.h>
++#include <linux/vmalloc.h>
+ 
+ #include <net/inet_connection_sock.h>
+ #include <net/inet_sock.h>
+
+--------------040101090409020109010808--
