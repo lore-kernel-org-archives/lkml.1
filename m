@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbXKJLxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753438AbXKJMOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753946AbXKJLxY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 06:53:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbXKJLxQ
+	id S1753438AbXKJMOR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 07:14:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbXKJMOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 06:53:16 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:35593 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751508AbXKJLxP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 06:53:15 -0500
-Subject: Re: [patch 1/2] mm: page trylock rename
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20071110054343.GA17803@wotan.suse.de>
-References: <20071110051222.GA16018@wotan.suse.de>
-	 <20071110054343.GA17803@wotan.suse.de>
-Content-Type: text/plain
-Date: Sat, 10 Nov 2007 12:51:35 +0100
-Message-Id: <1194695495.20832.27.camel@lappy>
+	Sat, 10 Nov 2007 07:14:06 -0500
+Received: from smtp02.cdmon.com ([212.36.74.229]:62104 "EHLO smtp02.cdmon.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751278AbXKJMOF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Nov 2007 07:14:05 -0500
+X-Greylist: delayed 618 seconds by postgrey-1.27 at vger.kernel.org; Sat, 10 Nov 2007 07:14:05 EST
+Date: Sat, 10 Nov 2007 13:04:24 +0100
+From: DervishD <lkml@dervishd.net>
+To: Benny Halevy <bhalevy@panasas.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Coding Style: indenting with tabs vs. spaces
+Message-ID: <20071110120424.GA16067@DervishD>
+Mail-Followup-To: Benny Halevy <bhalevy@panasas.com>,
+	lkml <linux-kernel@vger.kernel.org>
+References: <4732E6BA.8060001@panasas.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4732E6BA.8060001@panasas.com>
+User-Agent: Mutt/1.4.2.3i
+Organization: DervishD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+    Hi Benny :)
 
-On Sat, 2007-11-10 at 06:43 +0100, Nick Piggin wrote:
-> Here's a little something to make up for the occasional extra cacheline
-> write in add_to_page_cache. Saves an atomic operation and 2 memory barriers
-> for every add_to_page_cache().
-> 
-> I suspect lockdepifying the page lock will also barf without this, too...
+ * Benny Halevy <bhalevy@panasas.com> dixit:
+> I would like to hear peoples opinion about the indentation convention
+> described below that I personally found the most practical with
+> several different editors.
 
-Yeah, I had a rather ugly trylock_page() in there. Was planning on doing
-something similar to this, never got round to actually doing it,
-thanks! 
+While I respect you opinion about tabs, I find tab indentation the most
+evil thing ever invented. Even if done right (that is, not indenting
+using a mixture of spaces and tabs), the only advantage is that you save
+a few bytes.
 
-> ---
-> Setting and clearing the page locked when inserting it into swapcache /
-> pagecache when it has no other references can use non-atomic page flags
-> operatoins because no other CPU may be operating on it at this time.
-> 
-> Also, remove comments in add_to_swap_cache that suggest the contrary, and
-> rename it to add_to_swap_cache_lru(), better matching the filemap code,
-> and which meaks it more clear that the page has no other references yet.
-> 
-> Also, the comments in add_to_page_cache aren't really correct. It is not
-> just called for new pages, but for tmpfs pages as well. They are locked
-> when called, so it is OK for atomic bitflag access, but we can't do
-> non-atomic access. Split this into add_to_page_cache_locked, for tmpfs.
-> 
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
+So my opinion is: use spaces. The code indentation will look the same on
+every editor no matter the tab settings.
 
-Reviewed-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+    Raúl Núñez de Arenas Coronado
 
+-- 
+Linux Registered User 88736 | http://www.dervishd.net
+It's my PC and I'll cry if I want to... RAmen!
+We are waiting for 13 Feb 2009 23:31:30 +0000 ...
