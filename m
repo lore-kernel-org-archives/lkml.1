@@ -1,68 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754492AbXKJTts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbXKJTvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754492AbXKJTts (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 14:49:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbXKJTtj
+	id S1754551AbXKJTvl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 14:51:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbXKJTvd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 14:49:39 -0500
-Received: from fk-out-0910.google.com ([209.85.128.185]:37751 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753086AbXKJTti convert rfc822-to-8bit (ORCPT
+	Sat, 10 Nov 2007 14:51:33 -0500
+Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:57539 "EHLO
+	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753347AbXKJTvc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 14:49:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=fZa5GGNzinuyjz89wt4ezYIWfVqgcFmi4ukfiHx7hIpGPrMTy4HPg81kCW9pc28No2s8G1DSGCKTZJZj/7lu6DKdyOZK5g4yhcVb4+howCJY0sfLHqJz+/MAjSpIeNbxvW7s25ISQPUgpYRnS9q0yR2q2oWxwKsiyo84tsR9bpA=
-From: Miguel =?iso-8859-1?q?Bot=F3n?= <mboton.lkml@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] iwlwifi: Remove unnecessary code in iwl3945 and iwl4965 drivers
-Date: Sat, 10 Nov 2007 20:49:32 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-wireless@vger.kernel.org
+	Sat, 10 Nov 2007 14:51:32 -0500
+Date: Sat, 10 Nov 2007 20:51:31 +0100 (CET)
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+To: linux-kernel@vger.kernel.org
+Subject: Temporary lockup on loopback block device
+Message-ID: <Pine.LNX.4.64.0711102025440.17691@artax.karlin.mff.cuni.cz>
+X-Personality-Disorder: Schizoid
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200711102049.32921.mboton.lkml@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove unnecesary code in iwl3945 and iwl4965 drivers.
+Hi
 
-"final_mode" variable is already initialized with the value of the "mode" variable.
+I am experiencing a transient lockup in 'D' state with loopback device. It 
+happens when process writes to a filesystem in loopback with command like
+dd if=/dev/zero of=/s/fill bs=4k 
 
-Signed-off-by: Miguel Boton <mboton@gmail.com>
+CPU is idle, disk is idle too, yet the dd process is waiting in 'D' in 
+congestion_wait called from balance_dirty_pages.
 
-Index: linux-2.6.24-rc2/drivers/net/wireless/iwlwifi/iwl3945-base.c
-===================================================================
---- linux-2.6.24-rc2.orig/drivers/net/wireless/iwlwifi/iwl3945-base.c
-+++ linux-2.6.24-rc2/drivers/net/wireless/iwlwifi/iwl3945-base.c
-@@ -2377,9 +2377,6 @@
- 	case IWL_POWER_AC:
- 		final_mode = IWL_POWER_MODE_CAM;
- 		break;
--	default:
--		final_mode = mode;
--		break;
- 	}
- 
- 	iwl_update_power_cmd(priv, &cmd, final_mode);
-Index: linux-2.6.24-rc2/drivers/net/wireless/iwlwifi/iwl4965-base.c
-===================================================================
---- linux-2.6.24-rc2.orig/drivers/net/wireless/iwlwifi/iwl4965-base.c
-+++ linux-2.6.24-rc2/drivers/net/wireless/iwlwifi/iwl4965-base.c
-@@ -2233,9 +2233,6 @@
- 	case IWL_POWER_AC:
- 		final_mode = IWL_POWER_MODE_CAM;
- 		break;
--	default:
--		final_mode = mode;
--		break;
- 	}
- 
- 	cmd.keep_alive_beacons = 0;
+After about 30 seconds, the lockup is gone and dd resumes, but it locks up 
+soon again.
 
--- 
-	Miguel Botón
+I added a printk to the balance_dirty_pages
+printk("wait: nr_reclaimable %d, nr_writeback %d, dirty_thresh %d, 
+pages_written %d, write_chunk %d\n", nr_reclaimable, 
+global_page_state(NR_WRITEBACK), dirty_thresh, pages_written, 
+write_chunk);
+
+and it shows this during the lockup:
+
+wait: nr_reclaimable 3099, nr_writeback 0, dirty_thresh 2985, 
+pages_written 1021, write_chunk 1522
+wait: nr_reclaimable 3099, nr_writeback 0, dirty_thresh 2985, 
+pages_written 1021, write_chunk 1522
+wait: nr_reclaimable 3099, nr_writeback 0, dirty_thresh 2985, 
+pages_written 1021, write_chunk 1522
+
+What apparently happens:
+
+writeback_inodes syncs inodes only on the given wbc->bdi, however 
+balance_dirty_pages checks against global counts of dirty pages. So if 
+there's nothing to sync on a given device, but there are other dirty pages 
+so that the counts are over the limit, it will loop without doing any 
+work.
+
+To reproduce it, you need totally idle machine (no GUI, etc.) -- if 
+something writes to the backing device, it flushes the dirty pages 
+generated by the loopback and the lockup is gone. If you add printk, don't 
+forget to stop klogd, otherwise logging would end the lockup.
+
+The hotfix (that I verified to work) is to not set wbc->bdi, so that all 
+devices are flushed ... but the code probably needs some redesign (i.e. 
+either account per-device and flush per-device, or account-global and 
+flush-global).
+
+Mikulas
+
+
+diff -u -r ../x/linux-2.6.23.1/mm/page-writeback.c mm/page-writeback.c
+--- ../x/linux-2.6.23.1/mm/page-writeback.c     2007-10-12 18:43:44.000000000 +0200
++++ mm/page-writeback.c 2007-11-10 20:32:43.000000000 +0100
+@@ -214,7 +214,6 @@
+
+	for (;;) {
+		struct writeback_control wbc = {
+-			.bdi            = bdi,
+			.sync_mode      = WB_SYNC_NONE,
+			.older_than_this = NULL,
+			.nr_to_write    = write_chunk,
+
