@@ -1,81 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754911AbXKJUl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754390AbXKJUmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754911AbXKJUl7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 15:41:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754175AbXKJUlu
+	id S1754390AbXKJUmU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 15:42:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbXKJUlv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 15:41:50 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:33962 "EHLO pasmtpA.tele.dk"
+	Sat, 10 Nov 2007 15:41:51 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:33961 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754072AbXKJUlt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753848AbXKJUlt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 10 Nov 2007 15:41:49 -0500
 From: Sam Ravnborg <sam@ravnborg.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH] x86: Use CONFIG_64BIT to select between 32 and 64 bit in Kconfig
-Date: Sat, 10 Nov 2007 21:43:27 +0100
-Message-Id: <11947274093213-git-send-email-sam@ravnborg.org>
+Subject: [PATCH] kconfig: factor out code in confdata.c
+Date: Sat, 10 Nov 2007 21:43:25 +0100
+Message-Id: <11947274093185-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <11947274091127-git-send-email-sam@ravnborg.org>
-References: <20071110204038.GA13140@uranus.ravnborg.org> <11947274093185-git-send-email-sam@ravnborg.org> <11947274091127-git-send-email-sam@ravnborg.org>
+In-Reply-To: <20071110204038.GA13140@uranus.ravnborg.org>
+References: <20071110204038.GA13140@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This change allow us to use the new syntax:
-make K64BIT={n,y} to select between 32 and 64 bit.
+This patch introduce no functional changes.
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: Roman Zippel <zippel@linux-m68k.org>
 ---
- arch/x86/Kconfig |   26 ++++++++------------------
- 1 files changed, 8 insertions(+), 18 deletions(-)
+ scripts/kconfig/confdata.c |  119 +++++++++++++++++++++++--------------------
+ 1 files changed, 64 insertions(+), 55 deletions(-)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 153c26c..0d86611 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1,34 +1,24 @@
- # x86 configuration
+diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
+index b2913e9..e0f402f 100644
+--- a/scripts/kconfig/confdata.c
++++ b/scripts/kconfig/confdata.c
+@@ -83,6 +83,68 @@ char *conf_get_default_confname(void)
+ 	return name;
+ }
  
- # Select 32 or 64 bit
--choice
--	bool "Select 32 or 64 bit"
--	default X86_32
-+config 64BIT
-+	bool "64 Bit kernel"
-+	default n
-+	help
-+	  Say yes to build a 64 bit kernel - formerly known as x86_64
-+	  Say no to build a 32 bit kernel - formerly known as i386
- 
- config X86_32
--	bool "32 bit (former ARCH=i386)"
--	help
--	  This is Linux's home port.  Linux was originally native to the Intel
--	  386, and runs on all the later x86 processors including the Intel
--	  486, 586, Pentiums, and various instruction-set-compatible chips by
--	  AMD, Cyrix, and others.
-+	def_bool !64BIT
- 
- config X86_64
--	bool "64 bit (former ARCH=x86_64)"
--	help
--	  Port to the x86-64 architecture. x86-64 is a 64-bit extension to the
--	  classical 32-bit x86 architecture. For details see
--	  <http://www.x86-64.org/>.
--endchoice
-+	def_bool 64BIT
- 
- ### Arch settings
- config X86
- 	bool
- 	default y
- 
--config 64BIT
--	def_bool X86_64
--
- config GENERIC_TIME
- 	bool
- 	default y
++static int conf_set_sym_val(struct symbol *sym, int def, int def_flags, char *p)
++{
++	char *p2;
++
++	switch (sym->type) {
++	case S_TRISTATE:
++		if (p[0] == 'm') {
++			sym->def[def].tri = mod;
++			sym->flags |= def_flags;
++			break;
++		}
++	case S_BOOLEAN:
++		if (p[0] == 'y') {
++			sym->def[def].tri = yes;
++			sym->flags |= def_flags;
++			break;
++		}
++		if (p[0] == 'n') {
++			sym->def[def].tri = no;
++			sym->flags |= def_flags;
++			break;
++		}
++		conf_warning("symbol value '%s' invalid for %s", p, sym->name);
++		break;
++	case S_OTHER:
++		if (*p != '"') {
++			for (p2 = p; *p2 && !isspace(*p2); p2++)
++				;
++			sym->type = S_STRING;
++			goto done;
++		}
++	case S_STRING:
++		if (*p++ != '"')
++			break;
++		for (p2 = p; (p2 = strpbrk(p2, "\"\\")); p2++) {
++			if (*p2 == '"') {
++				*p2 = 0;
++				break;
++			}
++			memmove(p2, p2 + 1, strlen(p2));
++		}
++		if (!p2) {
++			conf_warning("invalid string found");
++			return 1;
++		}
++	case S_INT:
++	case S_HEX:
++	done:
++		if (sym_string_valid(sym, p)) {
++			sym->def[def].val = strdup(p);
++			sym->flags |= def_flags;
++		} else {
++			conf_warning("symbol value '%s' invalid for %s", p, sym->name);
++			return 1;
++		}
++		break;
++	default:
++		;
++	}
++	return 0;
++}
++
+ int conf_read_simple(const char *name, int def)
+ {
+ 	FILE *in = NULL;
+@@ -213,61 +275,8 @@ load:
+ 				conf_warning("trying to reassign symbol %s", sym->name);
+ 				break;
+ 			}
+-			switch (sym->type) {
+-			case S_TRISTATE:
+-				if (p[0] == 'm') {
+-					sym->def[def].tri = mod;
+-					sym->flags |= def_flags;
+-					break;
+-				}
+-			case S_BOOLEAN:
+-				if (p[0] == 'y') {
+-					sym->def[def].tri = yes;
+-					sym->flags |= def_flags;
+-					break;
+-				}
+-				if (p[0] == 'n') {
+-					sym->def[def].tri = no;
+-					sym->flags |= def_flags;
+-					break;
+-				}
+-				conf_warning("symbol value '%s' invalid for %s", p, sym->name);
+-				break;
+-			case S_OTHER:
+-				if (*p != '"') {
+-					for (p2 = p; *p2 && !isspace(*p2); p2++)
+-						;
+-					sym->type = S_STRING;
+-					goto done;
+-				}
+-			case S_STRING:
+-				if (*p++ != '"')
+-					break;
+-				for (p2 = p; (p2 = strpbrk(p2, "\"\\")); p2++) {
+-					if (*p2 == '"') {
+-						*p2 = 0;
+-						break;
+-					}
+-					memmove(p2, p2 + 1, strlen(p2));
+-				}
+-				if (!p2) {
+-					conf_warning("invalid string found");
+-					continue;
+-				}
+-			case S_INT:
+-			case S_HEX:
+-			done:
+-				if (sym_string_valid(sym, p)) {
+-					sym->def[def].val = strdup(p);
+-					sym->flags |= def_flags;
+-				} else {
+-					conf_warning("symbol value '%s' invalid for %s", p, sym->name);
+-					continue;
+-				}
+-				break;
+-			default:
+-				;
+-			}
++			if (conf_set_sym_val(sym, def, def_flags, p))
++				continue;
+ 			break;
+ 		case '\r':
+ 		case '\n':
 -- 
 1.5.3.4.1157.g0e74-dirty
 
