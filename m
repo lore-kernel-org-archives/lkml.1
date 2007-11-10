@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759151AbXKJEyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752098AbXKJFAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759151AbXKJEyl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 23:54:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbXKJEyd
+	id S1752098AbXKJFAi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 00:00:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750774AbXKJFA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 23:54:33 -0500
-Received: from namei.org ([69.55.235.186]:38415 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751592AbXKJEyd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 23:54:33 -0500
-Date: Sat, 10 Nov 2007 15:54:21 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: casey@schaufler-ca.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       method@manicmethod.com
-Subject: Re: [PATCH 1/2]  NetLabel: Introduce a new kernel configuration API
- for NetLabel - Version 11 (2.6.24-rc2) Smack: Simplified Mandatory Access
- Control Kernel
-In-Reply-To: <20071109165119.f40248b3.akpm@linux-foundation.org>
-Message-ID: <Xine.LNX.4.64.0711101553330.28789@us.intercode.com.au>
-References: <4733E6A3.2070307@schaufler-ca.com> <20071109165119.f40248b3.akpm@linux-foundation.org>
+	Sat, 10 Nov 2007 00:00:29 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:51656 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750767AbXKJFA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Nov 2007 00:00:28 -0500
+Message-ID: <47353AE8.5050900@garzik.org>
+Date: Sat, 10 Nov 2007 00:00:24 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: peer chen <peerchen@gmail.com>, Kuan Luo <kluo@nvidia.com>,
+       Robert Hancock <hancockr@shaw.ca>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH] sata_nv,ahci: add the ahci legacy mode support to sata_nv
+References: <200709251323031982245@gmail.com> <470FE47B.5060505@garzik.org>	 <cfaab6210710160108x1328086cse991f668e23e569e@mail.gmail.com>	 <47181CE1.4000802@garzik.org>	 <cfaab6210710182358t4de355f9wd6d605a7b8076ace@mail.gmail.com>	 <47185BFD.2010909@garzik.org> <cfaab6210710211855q7a2de35co13d3017b2a07d4cc@mail.gmail.com> <47352DD8.6040607@garzik.org>
+In-Reply-To: <47352DD8.6040607@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Nov 2007, Andrew Morton wrote:
+Jeff Garzik wrote:
+> The proposed sata_nv patch does the opposite -- guarantees we must 
+> support the continually problematic legacy IDE interface ad infinitum. 
+> Such patches are OK for the test lab, but in this specific case users 
+> /suffer/ when not running AHCI mode.
 
-> On Thu, 08 Nov 2007 20:48:35 -0800
-> Casey Schaufler <casey@schaufler-ca.com> wrote:
-> 
-> > From: Paul Moore <paul.moore@hp.com>
-> > 
-> > Add a new set of configuration functions to the NetLabel/LSM API so that
-> > LSMs can perform their own configuration of the NetLabel subsystem without
-> > relying on assistance from userspace.
-> > 
-> > Signed-off-by: Paul Moore <paul.moore@hp.com>
-> 
-> You sent it, so this patch needs a Signed-off-by:you, please.
+Just to reinforce...
 
-Also add
+sata_nv support and bug fixes are primarily done right now through the 
+valiant efforts of Robert Hancock (with assists from Alan, Tejun, and 
+others).
 
-Reviewed-by: James Morris <jmorris@namei.org>
+Robert's job is difficult, because he has no hardware documentation[1], 
+and NVIDIA does not seem to be helping out much with driver bug reports 
+on the lists or in bugzillas.
+
+As far as I know, I am the only one in the universe outside of NVIDIA 
+with any SATA docs at all, and those docs _only_ cover ADMA registers 
+and DMA structures, no PCI config info, no errata, nothing on SWNCQ or 
+legacy IDE (well, half a page).
+
+NVIDIA has indeed become more engaged in sata_nv in recent times, and 
+that's a positive sign.  You, Kuon and Ayaz have all been noticeably 
+more responsive in email.  Thanks.  Users have definitely benefited, 
+particularly from your help addressing a couple SWNCQ issues.
+
+But at this point in time, being asked to choose between sata_nv and 
+ahci is no choice at all.  One has public documentation, wide industry 
+support and little-or-no bugs.  The other has several open issues, no 
+documentation, and support obstacles.
+
+	Jeff
 
 
--- 
-James Morris
-<jmorris@namei.org>
+[1] Robert, please correct me if I'm wrong...
+
