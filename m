@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbXKJWzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755639AbXKJW6s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755987AbXKJWzh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 17:55:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754830AbXKJWzZ
+	id S1755639AbXKJW6s (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 17:58:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbXKJW6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 17:55:25 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47866 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755175AbXKJWzX (ORCPT
+	Sat, 10 Nov 2007 17:58:40 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39076 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754830AbXKJW6j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 17:55:23 -0500
-Date: Sat, 10 Nov 2007 14:54:52 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Cc: linux-kernel@vger.kernel.org, Dave Hansen <haveblue@us.ibm.com>,
-       Greg KH <greg@kroah.com>
-Subject: Re: WARNING: at lib/kref.c:33 kref_get() (-mm 2007-11-06-02-32++)
-Message-Id: <20071110145452.f6cf6326.akpm@linux-foundation.org>
-In-Reply-To: <200711100212.lAA2Cll0015004@agora.fsl.cs.sunysb.edu>
-References: <200711100212.lAA2Cll0015004@agora.fsl.cs.sunysb.edu>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Sat, 10 Nov 2007 17:58:39 -0500
+Date: Sat, 10 Nov 2007 22:57:55 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Crispin Cowan <crispin@crispincowan.com>
+Cc: "Dr. David Alan Gilbert" <linux@treblig.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       LSM ML <linux-security-module@vger.kernel.org>,
+       apparmor-dev <apparmor-dev@forge.novell.com>
+Subject: Re: AppArmor Security Goal
+Message-ID: <20071110225755.5dd9b52b@the-village.bc.nu>
+In-Reply-To: <47363381.4030103@crispincowan.com>
+References: <473380AD.5070801@crispincowan.com>
+	<20071110220455.GB24195@gallifrey>
+	<47362C7C.2050202@crispincowan.com>
+	<20071110222414.GC24195@gallifrey>
+	<47363381.4030103@crispincowan.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Nov 2007 21:12:47 -0500 Erez Zadok <ezk@cs.sunysb.edu> wrote:
+> Can you explain why you want a non-privileged user to be able to edit
+> policy? I would like to better understand the problem here.
 
-> Setup: FC6 system with MM snapshot broken-out-2007-11-06-02-32
+Because root doesn't trust users who in turn may not trust apps they run
+or wish to control things. I don't see a problem with that viewpoint in
+terms of forbidding things providing the user (or process tree) does not
+get to undo rules merely add more restrictions.
 
-That's a bit old.
+> non-privileged user to further tighten the profile on a program. To me,
+> that adds complexity with not much value, but if lots of users want it,
+> then I'm wrong :)
 
-> and these two
-> patches added:
-> 
-> r-o-bind-mounts-track-number-of-mount-writer-fix-buggy-loop.patch
-> r-o-bind-mounts-track-number-of-mount-writer-fix-buggy-loop-checkpatch-fixes.patch
-> 
-> Booting the machine, waiting a few minutes (not logging in or doing anything
-> else).  I get:
-> 
-> WARNING: at lib/kref.c:33 kref_get()
->  [<c020282a>] show_trace_log_lvl+0x12/0x25
->  [<c0203024>] show_trace+0xd/0x10
->  [<c0203120>] dump_stack+0x15/0x17
->  [<c02c7f85>] kref_get+0x26/0x30
->  [<c02c731b>] kobject_get+0x12/0x17
->  [<c02c7770>] kobject_add+0x97/0x162
->  [<c02164e5>] uids_user_create+0x41/0x5d
->  [<c0216850>] alloc_uid+0xc9/0x171
->  [<c0219b50>] set_user+0x1f/0x93
->  [<c021b445>] sys_setuid+0x4b/0xcb
->  [<c02021fe>] sysenter_past_esp+0x5f/0x91
->  =======================
-> 
-> There's no other indication where the setuid(2) came from, perhaps cron?
-> 
+Assuming you have any value in the first place, which is another topic, I
+can see value for this in all the security models.
 
-I have a feeling that this was reported before and that Dave and/or Greg
-looked into it.  Were those two patches which Dave sent yesterday applied?
-
-It might be worth checking my current tree:
-http://userweb.kernel.org/~akpm/mmotm/
