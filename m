@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755660AbXKJWfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755848AbXKJWgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755660AbXKJWfA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 17:35:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754860AbXKJWex
+	id S1755848AbXKJWgw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 17:36:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbXKJWgo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 17:34:53 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:43465 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754856AbXKJWew (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 17:34:52 -0500
-Date: Sat, 10 Nov 2007 14:33:02 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Jeff Garzik <jeff@garzik.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 0/5] introduce K64BIT=y and backward compatibility
- ARCH={i386,x86_64} for x86
-Message-Id: <20071110143302.73b571d6.randy.dunlap@oracle.com>
-In-Reply-To: <20071110204038.GA13140@uranus.ravnborg.org>
-References: <20071110204038.GA13140@uranus.ravnborg.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Sat, 10 Nov 2007 17:36:44 -0500
+Received: from mx.treblig.org ([80.68.94.177]:2476 "EHLO mx.treblig.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754889AbXKJWgn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Nov 2007 17:36:43 -0500
+Date: Sat, 10 Nov 2007 22:04:55 +0000
+From: "Dr. David Alan Gilbert" <linux@treblig.org>
+To: Crispin Cowan <crispin@crispincowan.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       LSM ML <linux-security-module@vger.kernel.org>,
+       apparmor-dev <apparmor-dev@forge.novell.com>
+Subject: Re: AppArmor Security Goal
+Message-ID: <20071110220455.GB24195@gallifrey>
+References: <473380AD.5070801@crispincowan.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <473380AD.5070801@crispincowan.com>
+X-Chocolate: 70 percent or better cocoa solids preferably
+X-Operating-System: Linux/2.6.20.3-bytemark-uml-2 (i686)
+X-Uptime: 22:00:14 up 16 days, 12:30,  2 users,  load average: 0.68, 0.58, 0.57
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 Nov 2007 21:40:38 +0100 Sam Ravnborg wrote:
+* Crispin Cowan (crispin@crispincowan.com) wrote:
 
-> As discussed in another thread the right thing is to add a generic solution
-> to select between 32 and 64 bit - useable for powerpc, s390, ppc et al.
-> 
-> First step was to teach kconfig how to force 64BIT to a specific value.
-> The x86 Kconfig file needed a small twist to use 64BIT as the symbol
-> to seelct 32 or 64 bit.
-> Then it was simple to add backward compatibility ARCH= settings.
-> 
-> The patchset is not yet pushed out - I will await a bit feedback first.
-> 
-> Shortlog and diffstat.
->       kconfig: factor out code in confdata.c
->       kconfig: use $K64BIT to set 64BIT with all*config targets
->       x86: Use CONFIG_64BIT to select between 32 and 64 bit in Kconfig
->       kconfig: document make K64BIT=y in README
->       x86: introduce ARCH=i386,ARCH=x86_64 to select 32/64 bit
+<snip>
 
-Hi Sam,
-Looks good to me and should satisfy our habits^w usages models.
+>     * Manipulating AppArmor policy requires being both root privileged
+>       and not being confined by AppArmor, thus there is explicitly no
+>       capability for non-privileged users to change AppArmor policy.
 
-The one minor question is the environment variable name (K64BIT or
-something else, like Guillaume brought up).  Personally I don't
-care how it's spelled.  IOW, K64BIT is sufficient, but if there is a
-goal to be able to place any CONFIG_symbol on the command line or
-as an env. variable, they might as well all be named with CONFIG_*.
+It's a pity that there is no way to do this; it would be nice to restrict
+web browsers, document editors etc but allow them
+to access the places you commonly store documents etc.
 
-Thanks,
----
-~Randy
+Similarly I'd like to be able to split applications so that
+the 'preferences' editing facilities are done by separate
+envrionments so that there is no way that a fault in parsing
+external data could edit the config (e.g. change home page or
+proxy in a browser or default document in an editor).
+
+Dave
+-- 
+ -----Open up your eyes, open up your mind, open up your code -------   
+/ Dr. David Alan Gilbert    | Running GNU/Linux on Alpha,68K| Happy  \ 
+\ gro.gilbert @ treblig.org | MIPS,x86,ARM,SPARC,PPC & HPPA | In Hex /
+ \ _________________________|_____ http://www.treblig.org   |_______/
