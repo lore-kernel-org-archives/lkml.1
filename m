@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764027AbXKJDxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763933AbXKJDzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764027AbXKJDxf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 22:53:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760108AbXKJDxZ
+	id S1763933AbXKJDzq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 22:55:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759779AbXKJDzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 22:53:25 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46480 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759562AbXKJDxY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 22:53:24 -0500
-Date: Fri, 9 Nov 2007 19:53:03 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-am33-list@redhat.com
-Subject: Re: [PATCH 5/6] MN10300: Add the MN10300/AM33 architecture to the
- kernel [try #5]
-Message-Id: <20071109195303.edbdc631.akpm@linux-foundation.org>
-In-Reply-To: <20071109153458.20803.10594.stgit@warthog.procyon.org.uk>
-References: <20071109153432.20803.69832.stgit@warthog.procyon.org.uk>
-	<20071109153458.20803.10594.stgit@warthog.procyon.org.uk>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Nov 2007 22:55:38 -0500
+Received: from THUNK.ORG ([69.25.196.29]:46338 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758064AbXKJDzh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Nov 2007 22:55:37 -0500
+Date: Fri, 9 Nov 2007 22:54:24 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Mark Lord <liml@rtr.ca>,
+       Riki Oktarianto <rkoktarianto@gmail.com>, linux-kernel@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-ide@vger.kernel.org
+Subject: Re: [PATCH] Add quirk to set AHCI mode on ICH boards
+Message-ID: <20071110035424.GB28975@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Mark Lord <liml@rtr.ca>, Riki Oktarianto <rkoktarianto@gmail.com>,
+	linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
+	linux-ide@vger.kernel.org
+References: <20071109020235.GA2031@ceren> <20071109023129.GA25581@havoc.gtf.org> <4733D421.7000505@rtr.ca> <20071109034622.GB25581@havoc.gtf.org> <20071109120425.543971bf@the-village.bc.nu> <47351FE1.4000001@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47351FE1.4000001@garzik.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 09 Nov 2007 15:34:58 +0000 David Howells <dhowells@redhat.com> wrote:
+On Fri, Nov 09, 2007 at 10:05:05PM -0500, Jeff Garzik wrote:
+> By forcing AHCI, your PATA devices will be inaccessible, in a common 
+> configuration.  It also means shuffling users from one driver to another, 
+> which induces breakage.
+>
+> I was speaking wishfully.  Real life intrudes, alas.
 
-> Add architecture support for the MN10300/AM33 CPUs produced by MEI to the
-> kernel.
+Not even as boot-time option?  I'm curious whether it might allow me
+to use AHCI mode on a T60p laptop; right now I can't because in AHCI
+mode the Ultrabay hard drive device becomes invisible to Linux
+(although not to Windows, interestingly).  I'm currently travelling
+and I don't carry the T60 around anymore, so I can't do the experiment
+right this moment, but given that this would allow the T60 to take
+advantage of ALPM if this works, it would be awfully tempting....
 
-hm, kprobes and gdb support.
-
-ho hum, I've seen worse-looking code ;).  There's quite a bit of the usual
-stuff in there: use of SPIN_LOCK_UNLOCKED, a forest of fishy-looking
-volatiles, but I don't need to sit here and emulate checkpatch.pl.
-
-
-I googled a bit but most of the mn10300 info pertains to linux kernel and
-gcc.  Who is using this CPU and in what applications?
+   	   	       	  	- Ted
