@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764138AbXKJEFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761892AbXKJEGB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764138AbXKJEFq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Nov 2007 23:05:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760349AbXKJEFi
+	id S1761892AbXKJEGB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Nov 2007 23:06:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763711AbXKJEFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Nov 2007 23:05:38 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:35727 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750976AbXKJEFi (ORCPT
+	Fri, 9 Nov 2007 23:05:52 -0500
+Received: from quark.didntduck.org ([69.55.226.66]:33233 "EHLO
+	quark.didntduck.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750976AbXKJEFv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Nov 2007 23:05:38 -0500
-Subject: Re: [PATCH 6/6] MN10300: Add MTD flash support for the ASB2303
-	board [try #5]
-From: David Woodhouse <dwmw2@infradead.org>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@osdl.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-am33-list@redhat.com
-In-Reply-To: <20071109153503.20803.69203.stgit@warthog.procyon.org.uk>
-References: <20071109153432.20803.69832.stgit@warthog.procyon.org.uk>
-	 <20071109153503.20803.69203.stgit@warthog.procyon.org.uk>
-Content-Type: text/plain
-Date: Fri, 09 Nov 2007 23:05:38 -0500
-Message-Id: <1194667538.2588.49.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8.dwmw2.1) 
+	Fri, 9 Nov 2007 23:05:51 -0500
+Message-ID: <47352DF2.5000409@didntduck.org>
+Date: Fri, 09 Nov 2007 23:05:06 -0500
+From: Brian Gerst <bgerst@didntduck.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070926)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/11 v3] enable "make ARCH=x86"
+References: <20071109230812.GA5176@uranus.ravnborg.org> <4735242B.1010801@garzik.org>
+In-Reply-To: <4735242B.1010801@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dunno why it's called "try #5" when I haven't directly received it even
-once yet.
+Jeff Garzik wrote:
+> Sam Ravnborg wrote:
+>> This is the patch that get rid of ARCH=i386 and ARCH=x86_64
+>> and introduce ARCH=x86.
+>> It touches several files but the changes are all one or two-liners.
+>>
+>>       x86: drop backward compatibility symlinks to i386/boot and
+>> x86_64/boot
+>>       kbuild: sanity check the specified arch
+> 
+> 
+> IMO it negatives impacts the workflow when you -remove- the ability to
+> set 32/64-bit on the make command line.
+> 
+> Building and testing for both architectures now requires the additional
+> step of editing .config, which is a clear workflow negative impact at
+> least for me.
+> 
+> I switch between other cross-compiled arches (alpha, usually) on the
+> makefile command line
+> 
+> Yes, I know other 32/64-bit arches require .config editing.  That
+> doesn't change the basic fact that this is a workflow regression.
+> 
+>     Jeff
 
-On Fri, 2007-11-09 at 15:35 +0000, David Howells wrote:
-> Add MTD flash support for the ASB2303 board.
+You can use:
 
-We're trying to avoid taking new simple map drivers -- you should be
-able to use a platform device instead.
+make i386_defconfig
+make x86_64_defconfig
 
-> --- a/drivers/mtd/chips/jedec_probe.c
-> +++ b/drivers/mtd/chips/jedec_probe.c
-> @@ -1883,11 +1883,13 @@ static inline __u8 finfo_uaddr(const struct amd_flash_info *finfo, int device_ty
->  
->  	uaddr = finfo->uaddr[uaddr_idx];
->  
-> +#ifndef CONFIG_MN10300_UNIT_ASB2303
->  	if (uaddr != MTD_UADDR_NOT_SUPPORTED ) {
->  		/* ASSERT("The unlock addresses for non-8-bit mode
->  		   are bollocks. We don't really need an array."); */
->  		uaddr = finfo->uaddr[0];
->  	}
-> +#endif
+In any other case you'd be editing the .config anyways.
 
-I think this is a NOP for the chip in question anyway, isn't it?
-
--- 
-dwmw2
-
+--
+				Brian Gerst
