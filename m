@@ -1,77 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753154AbXKJHxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755271AbXKJH6o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753154AbXKJHxS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 02:53:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbXKJHxH
+	id S1755271AbXKJH6o (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 02:58:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbXKJH6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 02:53:07 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:46557 "EHLO pasmtpA.tele.dk"
+	Sat, 10 Nov 2007 02:58:35 -0500
+Received: from ozlabs.org ([203.10.76.45]:43499 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751007AbXKJHxG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 02:53:06 -0500
-Date: Sat, 10 Nov 2007 08:54:44 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/11 v3] enable "make ARCH=x86"
-Message-ID: <20071110075444.GA5707@uranus.ravnborg.org>
-References: <20071109230812.GA5176@uranus.ravnborg.org> <4735242B.1010801@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751243AbXKJH6f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Nov 2007 02:58:35 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Anthony Liguori <anthony@codemonkey.ws>
+Subject: Re: [PATCH] virtio config_ops refactoring
+Date: Sat, 10 Nov 2007 18:58:18 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: lguest <lguest@ozlabs.org>, linux-kernel@vger.kernel.org,
+       Dor Laor <dor.laor@qumranet.com>,
+       virtualization@lists.linux-foundation.org
+References: <4730A8F3.6020008@us.ibm.com> <200711092254.08099.rusty@rustcorp.com.au> <4734F122.8000102@codemonkey.ws>
+In-Reply-To: <4734F122.8000102@codemonkey.ws>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4735242B.1010801@garzik.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200711101858.19069.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 09, 2007 at 10:23:23PM -0500, Jeff Garzik wrote:
-> Sam Ravnborg wrote:
-> >This is the patch that get rid of ARCH=i386 and ARCH=x86_64
-> >and introduce ARCH=x86.
-> >It touches several files but the changes are all one or two-liners.
-> >
-> >      x86: drop backward compatibility symlinks to i386/boot and 
-> >      x86_64/boot
-> >      kbuild: sanity check the specified arch
-> 
-> 
-> IMO it negatives impacts the workflow when you -remove- the ability to 
-> set 32/64-bit on the make command line.
-> 
-> Building and testing for both architectures now requires the additional 
-> step of editing .config, which is a clear workflow negative impact at 
-> least for me.
-When it was decided to unify i386 and x86_64 it was at the same time
-decided to handle them as a *single* architecture.
+On Saturday 10 November 2007 10:45:38 Anthony Liguori wrote:
+> The problem is the ABI.  We can either require that PCI configuration
+> values are accessed with natural instructions, or it makes very little
+> sense to use the PCI configuration space for virtio configuration
+> information.
 
-Keeping ARCH=i386 and ARCH=x86_64 around is just a way to pretend
-this is two diffrent architectures which is no longer the case.
+To me it seems logical and simplest to allow any accesses, lay out your 
+structure and emulate it in the obvious way.
 
-Do we need a way to say "build a kernel that is 64 bit"?
-If we need this then we should look at the most intuitive way
-to say so and this should work across x86, powerpc and s390.
+You can put the configuration information somewhere else, but the PCI config 
+space seems the logical place.
 
-	make 64BIT=y ARCH=x86
+> Either virtio config looks like a shared memory area (as lguest
+> currently implements it), or it looks like hardware registers (like
+> virtio-pci implements it).  After thinking about it for a while, I don't
+> think the two can be reconciled.  There are subtle differences between
+> the two that can't be hidden in the virtio interface.  For instance, in
+> the PCI model, you get notified when values are read/written whereas in
+> the lguest model, you don't and need explicit status bits.
 
-looks so much more intuitive. And it is generic.
-This is just a proposal.
+No.  You need those status bits even if you have your register model, 
+otherwise you can't tell when the configuration as a whole is stable.  
+Consider the feature bits.  Worse, consider extending the feature bits beyond 
+32 bits.
 
-But lets focus on finding a generic solution and not try
-to hang around in old habbits.
+(We will have to deal with dynamic configuration changes in future; I was 
+planning on using some status bits.  But it's pretty clear that it's going to 
+require an explicit ack of some form.)
 
-
-I can certainly look into enabling a generic syntax but
-that is a bit down on my TODO list (and most items above
-this has something to do with the kids and not Linux btw).
-
-If we go for the proposed syntax then it
-should be a matter of teaching kconfig to look for
-"64BIT" and set the 64BIT symbol accordingly.
-And thenthe Kconfig files needs to be modified
-so the they use "64BIT" to select between kernel
-bit size.
-
-	Sam
+Hope that clarifies,
+Rusty.
