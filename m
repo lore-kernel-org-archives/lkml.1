@@ -1,79 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756723AbXKKJRJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756810AbXKKJdx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756723AbXKKJRJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 04:17:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbXKKJQ4
+	id S1756810AbXKKJdx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 04:33:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753776AbXKKJdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 04:16:56 -0500
-Received: from il.qumranet.com ([82.166.9.18]:43101 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753408AbXKKJQz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 04:16:55 -0500
-Message-ID: <4736C847.90000@qumranet.com>
-Date: Sun, 11 Nov 2007 11:15:51 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Sun, 11 Nov 2007 04:33:45 -0500
+Received: from anchor-post-34.mail.demon.net ([194.217.242.92]:3537 "EHLO
+	anchor-post-34.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753413AbXKKJdo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Nov 2007 04:33:44 -0500
+X-Greylist: delayed 633 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Nov 2007 04:33:44 EST
+Message-ID: <4736CA1D.9020507@superbug.co.uk>
+Date: Sun, 11 Nov 2007 09:23:41 +0000
+From: James Courtier-Dutton <James@superbug.co.uk>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-To: Gerd Hoffmann <kraxel@redhat.com>
-CC: Glauber de Oliveira Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, jeremy@goop.org, aliguori@us.ibm.com,
-       kvm-devel@lists.sourceforge.net, hollisb@us.ibm.com
-Subject: Re: [PATCH 1/3] include files for kvmclock
-References: <11945615632624-git-send-email-gcosta@redhat.com> <11945615703593-git-send-email-gcosta@redhat.com> <47341C4A.30508@redhat.com>
-In-Reply-To: <47341C4A.30508@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Xavier Bestel <xavier.bestel@free.fr>, Benny Halevy <bhalevy@panasas.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Coding Style: indenting with tabs vs. spaces
+References: <4732E6BA.8060001@panasas.com> <20071110120424.GA16067@DervishD> <1194697674.6176.1.camel@bip.parateam.prv> <20071110165017.GB16090@DervishD>
+In-Reply-To: <20071110165017.GB16090@DervishD>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gerd Hoffmann wrote:
->> +/*
->> + * Guest has page alignment and padding requirements. At the host, it will
->> + * only lead to wasted space at the vcpu struct. For this reason, the struct
->> + * is not anonymous
->> + */
->> +union kvm_hv_clock {
->> +	struct kvm_hv_clock_s {
->> +		u64 tsc_mult;
->> +		u64 now_ns;
->> +		/* That's the wall clock, not the water closet */
->> +		u64 wc_sec;
->> +		u64 last_tsc;
->> +		/* At first, we could use the tsc value as a marker, but Jeremy
->> +		 * well noted that it will cause us locking problems in 32-bit
->> +		 * sys, so we have a special version field */
->> +		u32 version;
->> +	} fields;
->> +	char page_align[PAGE_SIZE];
->> +};
+DervishD wrote:
+>     Bonjour Xavier :)
+>
+>  * Xavier Bestel <xavier.bestel@free.fr> dixit:
+>   
+>> Le samedi 10 novembre 2007 à 13:04 +0100, DervishD a écrit :
+>>     
+>>>  * Benny Halevy <bhalevy@panasas.com> dixit:
+>>>       
+>>>> I would like to hear peoples opinion about the indentation convention
+>>>> described below that I personally found the most practical with
+>>>> several different editors.
+>>>>         
+>>> While I respect you opinion about tabs, I find tab indentation the most
+>>> evil thing ever invented. Even if done right (that is, not indenting
+>>> using a mixture of spaces and tabs), the only advantage is that you save
+>>> a few bytes.
+>>>       
+>> Who cares ?
 >>     
 >
-> What is the point in using a whole page per vcpu?  You probably don't
-> want struct kvm_hv_clock_s cross a page border.  Is that the only reason
-> or are there other constrains too?
+> About the space saving? Not me, of course. It's just that I didn't see
+> any other advantage.
+>
+>   
+>> The only advantage is that people can make tabs as big (or as small)
+>> as they wish. Tabs become "logical indentation". So one's indentation
+>> isn't forced on anotherone's editor.
+>>     
+>
+> The only way of having a sane indentation using tabs is to make sure
+> that ALL indentation are tabs, not a mix of tabs and spaces (spaces, if
+> any, should be at the end of indentation for aesthetical purposes, but
+> should be removed without the logical indentation being lost). A good
+> editor can ensure that all indentation are tabs and not a mix, but a
+> good editor can adapt indentation to your likings when loading the file
+> and save the file translating your favourite indentation back to spaces
+> or whatever.
+>
+> If everybody used tabs correctly, indenting using tabs would be great,
+> but IMHO indenting with spaces is much better.
+>
+>     Raúl Núñez de Arenas Coronado
+>
 >   
 
-We don't even have the cross-page-boundary constraint.
+Just use the linux
 
-The real issue is that on i386 physical addresses are 64-bit while 
-hypercall arguments are 32-bit.  A page frame number is 32-bit and so 
-poses no issues.
+./scripts/checkpatch.pl --file
 
-I see two workarounds for this:
-- make the first hypercall argument a u64 rather than a long (using two 
-registers on i386)
-- use an msr for registering the clock address
+It does all the indent checks for you before you submit a patch.
+I.e. I checks that one has not mixed tabs with spaces etc.
+So, any patches to the Linux kernel will have tabs used correctly.
+Where is the problem?
 
-The first is more general, while the second has the nice property of 
-taking care of live migration automatically.
+James
 
-> As the kvm clock looks quite simliar to what xen does, how about making
-> the structs binary-compatible or simply reuse the xen version (struct
-> vcpu_time_info in xen/interface/xen.h)?
->   
-
-If there are no technical issues, I have no objections.
-
--- 
-error compiling committee.c: too many arguments to function
 
