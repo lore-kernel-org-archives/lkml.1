@@ -1,1345 +1,1038 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757927AbXKKTuQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757891AbXKKTxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757927AbXKKTuQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 14:50:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756361AbXKKTuA
+	id S1757891AbXKKTxQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 14:53:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754277AbXKKTw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 14:50:00 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:35176 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756296AbXKKTt5 (ORCPT
+	Sun, 11 Nov 2007 14:52:59 -0500
+Received: from py-out-1112.google.com ([64.233.166.181]:8162 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754385AbXKKTw5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 14:49:57 -0500
-Subject: Re: dio_get_page() lockdep complaints
-From: Peter Zijlstra <peterz@infradead.org>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Zach Brown <zach.brown@oracle.com>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-aio@kvack.org, Chris Mason <chris.mason@oracle.com>,
-       linux-mm <linux-mm@kvack.org>, Hugh Dickins <hugh@veritas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-In-Reply-To: <1194630300.7459.65.camel@heimdal.trondhjem.org>
-References: <20070419073828.GB20928@kernel.dk>
-	 <1194627742.6289.175.camel@twins>  <4734992C.7000408@oracle.com>
-	 <1194630300.7459.65.camel@heimdal.trondhjem.org>
-Content-Type: text/plain
-Date: Sun, 11 Nov 2007 20:49:06 +0100
-Message-Id: <1194810546.6098.6.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Sun, 11 Nov 2007 14:52:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=PAIO++0smccEK+ua1x4WSPJwaMcdM9xX8F100T8q/1pd19SFF7iJrOWcGVG/ybRkFn16ruy9Z/UPYBQZV8SK3IYkuoETG3T0Be80s7se6wtgCALG+BgEehdfXCYE0xBTSlTFojdb6O1KfYzIzO2RjCgzns4vYzfObulS5sqqy4w=
+Message-ID: <8b67d60711111152he10da17o44bb124e96373ebc@mail.gmail.com>
+Date: Sun, 11 Nov 2007 19:52:55 +0000
+From: "Adrian McMenamin" <lkmladrian@gmail.com>
+To: linux-kernel@vger.kernel.org, linuxsh-dev@lists.sourceforge.net
+Subject: Race in setup_irq?
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I am writing a device driver for the Dreamcast CD Drive (the "GD Rom")
+and I am hitting what looks like some sort of race in
+kernel/irq/manage.c. Can anybody point me in the right direction or is
+there a bug here?
 
-On Fri, 2007-11-09 at 12:45 -0500, Trond Myklebust wrote:
-> On Fri, 2007-11-09 at 09:30 -0800, Zach Brown wrote:
-> > So, reiserfs and NFS are nesting i_mutex inside the mmap_sem.
-> > 
-> > >>        [<b038c6e5>] mutex_lock+0x1c/0x1f
-> > >>        [<b01b17e9>] reiserfs_file_release+0x54/0x447
-> > >>        [<b016afe7>] __fput+0x53/0x101
-> > >>        [<b016b0ee>] fput+0x19/0x1c
-> > >>        [<b015bcd5>] remove_vma+0x3b/0x4d
-> > >>        [<b015c659>] do_munmap+0x17f/0x1cf
-> > 
-> > >        [<ffffffff802686a1>] _mutex_lock+0x28/0x34
-> > >        [<ffffffff883e71d0>] nfs_revalidate_mapping+0x6d/0xac [nfs]
-> > >        [<ffffffff883e4b51>] nfs_file_mmap+0x5c/0x74 [nfs]
-> > >        [<ffffffff8020df7e>] do_mmap_pgoff+0x51a/0x817
-> > >        [<ffffffff80225d19>] sys_mmap+0x90/0x119
-> > 
-> > I think i_mutex is fundamentally nested outside of the mmap_sem because
-> > of faulting in the buffered write path.  I think these warnings could be
-> > reproduced with a careful test app which tries buffered writes from an
-> > address which will fault.
-> > 
-> > DIO just tripped it up because it *always* performs get_user_pages() on
-> > the memory.
-> > 
-> > So reiser and NFS need to be fixed.  No?
-> 
-> Actually, it is rather mmap() needs to be fixed. It is cold calling the
-> filesystem while holding all sorts of nasty locks. It needs to be
-> migrated to the same sort of syscall layout as read() and write().
-> 
-> You _first_ call the filesystem so that it can make whatever
-> preparations it needs outside the lock. The filesystem then calls the
-> VM, which can then call the filesystem back if needed.
+This never seems to return in setup_irq:
 
-Right, which gets us into all kinds of trouble because some sites need
-mmap_sem to resolve some races, notably s390 31-bit and shm.
+	spin_unlock_irqrestore(&desc->lock, flags);
 
-Quick proto-type that moves mmap_sem into do_mmap{,_pgoff} and provides
-_locked functions for those few icky sites.
+(line 597)
 
-The !_locked functions also call f_op->mmap_prepare() before taking the
-mmap_sem. Which makes for some ugly asymetry :-/
+I cannot see any reason why it would fail, though. And I know how
+difficult these things are to debug - but if I put a printk either
+side, it works for all interrupt set ups, but not this one.
 
-Anyway, I'm not comming up with anything nicer atm, hopefully a nice
-idea will present itself soon.
+Here is the calling code:
 
-(compile tested only - mostly for illustrational purposes)
+static int gdrom_set_command_interrupt_handler(void)
+{
+	int err;
+#ifdef GDROMDEBUG
+	printk("%s\n", __FUNCTION__);
+#endif
+	/* need a queue to wait in */
+	init_waitqueue_head(&command_queue);	
+	err = request_irq(HW_EVENT_GDROM_CMD, gdrom_command_interrupt,
+IRQF_PROBE_SHARED, "gdrom", gd.disk);
+	if (err)
+		return -err;
+#ifdef GDROMDEBUG
+	printk("Interrupt is registered\n");
+#endif
 
-Not-signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- arch/alpha/kernel/osf_sys.c         |    2 -
- arch/arm/kernel/sys_arm.c           |    2 -
- arch/avr32/kernel/sys_avr32.c       |    2 -
- arch/blackfin/kernel/sys_bfin.c     |    2 -
- arch/cris/kernel/sys_cris.c         |    2 -
- arch/frv/kernel/sys_frv.c           |    4 --
- arch/h8300/kernel/sys_h8300.c       |    4 --
- arch/ia64/ia32/sys_ia32.c           |   30 +++++-----------
- arch/ia64/kernel/sys_ia64.c         |    2 -
- arch/m32r/kernel/sys_m32r.c         |    2 -
- arch/m68k/kernel/sys_m68k.c         |    4 --
- arch/m68knommu/kernel/sys_m68k.c    |    2 -
- arch/mips/kernel/irixelf.c          |   10 -----
- arch/mips/kernel/linux32.c          |    2 -
- arch/mips/kernel/syscall.c          |    2 -
- arch/mips/kernel/sysirix.c          |    5 --
- arch/parisc/kernel/sys_parisc.c     |    2 -
- arch/powerpc/kernel/syscalls.c      |    2 -
- arch/s390/kernel/compat_linux.c     |    5 +-
- arch/s390/kernel/sys_s390.c         |    2 -
- arch/sh/kernel/sys_sh.c             |    2 -
- arch/sh64/kernel/sys_sh64.c         |    2 -
- arch/sparc/kernel/sys_sparc.c       |    2 -
- arch/sparc/kernel/sys_sunos.c       |    2 -
- arch/sparc64/kernel/binfmt_aout32.c |    6 ---
- arch/sparc64/kernel/sys_sparc.c     |    2 -
- arch/sparc64/kernel/sys_sunos32.c   |    2 -
- arch/sparc64/solaris/misc.c         |    2 -
- arch/um/kernel/syscall.c            |    2 -
- arch/v850/kernel/syscalls.c         |    2 -
- arch/x86/ia32/ia32_aout.c           |    6 ---
- arch/x86/ia32/sys_ia32.c            |    5 --
- arch/x86/kernel/sys_i386_32.c       |    2 -
- arch/x86/kernel/sys_x86_64.c        |    2 -
- arch/xtensa/kernel/syscall.c        |    2 -
- drivers/char/drm/drm_bufs.c         |    4 --
- drivers/char/drm/i810_dma.c         |    2 -
- fs/aio.c                            |    4 +-
- fs/binfmt_aout.c                    |    6 ---
- fs/binfmt_elf.c                     |    6 ---
- fs/binfmt_elf_fdpic.c               |    9 ----
- fs/binfmt_flat.c                    |    6 +--
- fs/binfmt_som.c                     |    6 ---
- fs/nfs/file.c                       |   25 +++++++++----
- include/linux/fs.h                  |    1 
- include/linux/mm.h                  |   13 ++++++-
- ipc/shm.c                           |    2 -
- mm/mmap.c                           |   65 +++++++++++++++++++++++++++++++++---
- 48 files changed, 109 insertions(+), 169 deletions(-)
+	return 0;
+}
 
-Index: linux-2.6-2/arch/alpha/kernel/osf_sys.c
-===================================================================
---- linux-2.6-2.orig/arch/alpha/kernel/osf_sys.c
-+++ linux-2.6-2/arch/alpha/kernel/osf_sys.c
-@@ -193,9 +193,7 @@ osf_mmap(unsigned long addr, unsigned lo
- 			goto out;
- 	}
- 	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
--	down_write(&current->mm->mmap_sem);
- 	ret = do_mmap(file, addr, len, prot, flags, off);
--	up_write(&current->mm->mmap_sem);
- 	if (file)
- 		fput(file);
-  out:
-Index: linux-2.6-2/arch/arm/kernel/sys_arm.c
-===================================================================
---- linux-2.6-2.orig/arch/arm/kernel/sys_arm.c
-+++ linux-2.6-2/arch/arm/kernel/sys_arm.c
-@@ -72,9 +72,7 @@ inline long do_mmap2(
- 			goto out;
- 	}
- 
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
--	up_write(&current->mm->mmap_sem);
- 
- 	if (file)
- 		fput(file);
-Index: linux-2.6-2/arch/avr32/kernel/sys_avr32.c
-===================================================================
---- linux-2.6-2.orig/arch/avr32/kernel/sys_avr32.c
-+++ linux-2.6-2/arch/avr32/kernel/sys_avr32.c
-@@ -41,9 +41,7 @@ asmlinkage long sys_mmap2(unsigned long 
- 			return error;
- 	}
- 
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap_pgoff(file, addr, len, prot, flags, offset);
--	up_write(&current->mm->mmap_sem);
- 
- 	if (file)
- 		fput(file);
-Index: linux-2.6-2/arch/blackfin/kernel/sys_bfin.c
-===================================================================
---- linux-2.6-2.orig/arch/blackfin/kernel/sys_bfin.c
-+++ linux-2.6-2/arch/blackfin/kernel/sys_bfin.c
-@@ -78,9 +78,7 @@ do_mmap2(unsigned long addr, unsigned lo
- 			goto out;
- 	}
- 
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
--	up_write(&current->mm->mmap_sem);
- 
- 	if (file)
- 		fput(file);
-Index: linux-2.6-2/arch/cris/kernel/sys_cris.c
-===================================================================
---- linux-2.6-2.orig/arch/cris/kernel/sys_cris.c
-+++ linux-2.6-2/arch/cris/kernel/sys_cris.c
-@@ -60,9 +60,7 @@ do_mmap2(unsigned long addr, unsigned lo
-                         goto out;
-         }
- 
--        down_write(&current->mm->mmap_sem);
-         error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
--        up_write(&current->mm->mmap_sem);
- 
-         if (file)
-                 fput(file);
-Index: linux-2.6-2/arch/frv/kernel/sys_frv.c
-===================================================================
---- linux-2.6-2.orig/arch/frv/kernel/sys_frv.c
-+++ linux-2.6-2/arch/frv/kernel/sys_frv.c
-@@ -69,9 +69,7 @@ asmlinkage long sys_mmap2(unsigned long 
- 
- 	pgoff >>= (PAGE_SHIFT - 12);
- 
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
--	up_write(&current->mm->mmap_sem);
- 
- 	if (file)
- 		fput(file);
-@@ -114,9 +112,7 @@ asmlinkage long sys_mmap64(struct mmap_a
- 	}
- 	a.flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
- 
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap_pgoff(file, a.addr, a.len, a.prot, a.flags, pgoff);
--	up_write(&current->mm->mmap_sem);
- 	if (file)
- 		fput(file);
- out:
-Index: linux-2.6-2/arch/h8300/kernel/sys_h8300.c
-===================================================================
---- linux-2.6-2.orig/arch/h8300/kernel/sys_h8300.c
-+++ linux-2.6-2/arch/h8300/kernel/sys_h8300.c
-@@ -60,9 +60,7 @@ static inline long do_mmap2(
- 			goto out;
- 	}
- 
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
--	up_write(&current->mm->mmap_sem);
- 
- 	if (file)
- 		fput(file);
-@@ -147,9 +145,7 @@ asmlinkage long sys_mmap64(struct mmap_a
- 	}
- 	a.flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
- 
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap_pgoff(file, a.addr, a.len, a.prot, a.flags, pgoff);
--	up_write(&current->mm->mmap_sem);
- 	if (file)
- 		fput(file);
- out:
-Index: linux-2.6-2/arch/ia64/ia32/sys_ia32.c
-===================================================================
---- linux-2.6-2.orig/arch/ia64/ia32/sys_ia32.c
-+++ linux-2.6-2/arch/ia64/ia32/sys_ia32.c
-@@ -212,12 +212,8 @@ mmap_subpage (struct file *file, unsigne
- 	if (old_prot)
- 		copy_from_user(page, (void __user *) PAGE_START(start), PAGE_SIZE);
- 
--	down_write(&current->mm->mmap_sem);
--	{
--		ret = do_mmap(NULL, PAGE_START(start), PAGE_SIZE, prot | PROT_WRITE,
--			      flags | MAP_FIXED | MAP_ANONYMOUS, 0);
--	}
--	up_write(&current->mm->mmap_sem);
-+	ret = do_mmap(NULL, PAGE_START(start), PAGE_SIZE, prot | PROT_WRITE,
-+			flags | MAP_FIXED | MAP_ANONYMOUS, 0);
- 
- 	if (IS_ERR((void *) ret))
- 		goto out;
-@@ -821,16 +817,14 @@ emulate_mmap (struct file *file, unsigne
- 	DBG("mmap_body: mapping [0x%lx-0x%lx) %s with poff 0x%llx\n", pstart, pend,
- 	    is_congruent ? "congruent" : "not congruent", poff);
- 
--	down_write(&current->mm->mmap_sem);
--	{
--		if (!(flags & MAP_ANONYMOUS) && is_congruent)
--			ret = do_mmap(file, pstart, pend - pstart, prot, flags | MAP_FIXED, poff);
--		else
--			ret = do_mmap(NULL, pstart, pend - pstart,
--				      prot | ((flags & MAP_ANONYMOUS) ? 0 : PROT_WRITE),
--				      flags | MAP_FIXED | MAP_ANONYMOUS, 0);
-+	if (!(flags & MAP_ANONYMOUS) && is_congruent) {
-+		ret = do_mmap(file, pstart, pend - pstart, prot,
-+			       	flags | MAP_FIXED, poff);
-+	} else {
-+		ret = do_mmap(NULL, pstart, pend - pstart,
-+			prot | ((flags & MAP_ANONYMOUS) ? 0 : PROT_WRITE),
-+			flags | MAP_FIXED | MAP_ANONYMOUS, 0);
- 	}
--	up_write(&current->mm->mmap_sem);
- 
- 	if (IS_ERR((void *) ret))
- 		return ret;
-@@ -904,11 +898,7 @@ ia32_do_mmap (struct file *file, unsigne
- 	}
- 	mutex_unlock(&ia32_mmap_mutex);
- #else
--	down_write(&current->mm->mmap_sem);
--	{
--		addr = do_mmap(file, addr, len, prot, flags, offset);
--	}
--	up_write(&current->mm->mmap_sem);
-+	addr = do_mmap(file, addr, len, prot, flags, offset);
- #endif
- 	DBG("ia32_do_mmap: returning 0x%lx\n", addr);
- 	return addr;
-Index: linux-2.6-2/arch/ia64/kernel/sys_ia64.c
-===================================================================
---- linux-2.6-2.orig/arch/ia64/kernel/sys_ia64.c
-+++ linux-2.6-2/arch/ia64/kernel/sys_ia64.c
-@@ -209,9 +209,7 @@ do_mmap2 (unsigned long addr, unsigned l
- 		goto out;
- 	}
- 
--	down_write(&current->mm->mmap_sem);
- 	addr = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
--	up_write(&current->mm->mmap_sem);
- 
- out:	if (file)
- 		fput(file);
-Index: linux-2.6-2/arch/m32r/kernel/sys_m32r.c
-===================================================================
---- linux-2.6-2.orig/arch/m32r/kernel/sys_m32r.c
-+++ linux-2.6-2/arch/m32r/kernel/sys_m32r.c
-@@ -110,9 +110,7 @@ asmlinkage long sys_mmap2(unsigned long 
- 			goto out;
- 	}
- 
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
--	up_write(&current->mm->mmap_sem);
- 
- 	if (file)
- 		fput(file);
-Index: linux-2.6-2/arch/m68k/kernel/sys_m68k.c
-===================================================================
---- linux-2.6-2.orig/arch/m68k/kernel/sys_m68k.c
-+++ linux-2.6-2/arch/m68k/kernel/sys_m68k.c
-@@ -63,9 +63,7 @@ static inline long do_mmap2(
- 			goto out;
- 	}
- 
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
--	up_write(&current->mm->mmap_sem);
- 
- 	if (file)
- 		fput(file);
-@@ -150,9 +148,7 @@ asmlinkage long sys_mmap64(struct mmap_a
- 	}
- 	a.flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
- 
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap_pgoff(file, a.addr, a.len, a.prot, a.flags, pgoff);
--	up_write(&current->mm->mmap_sem);
- 	if (file)
- 		fput(file);
- out:
-Index: linux-2.6-2/arch/m68knommu/kernel/sys_m68k.c
-===================================================================
---- linux-2.6-2.orig/arch/m68knommu/kernel/sys_m68k.c
-+++ linux-2.6-2/arch/m68knommu/kernel/sys_m68k.c
-@@ -61,9 +61,7 @@ static inline long do_mmap2(
- 			goto out;
- 	}
- 
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
--	up_write(&current->mm->mmap_sem);
- 
- 	if (file)
- 		fput(file);
-Index: linux-2.6-2/arch/mips/kernel/irixelf.c
-===================================================================
---- linux-2.6-2.orig/arch/mips/kernel/irixelf.c
-+++ linux-2.6-2/arch/mips/kernel/irixelf.c
-@@ -342,12 +342,10 @@ static unsigned int load_irix_interp(str
- 			         (unsigned long)
- 			         (eppnt->p_offset & 0xfffff000));
- 
--			down_write(&current->mm->mmap_sem);
- 			error = do_mmap(interpreter, vaddr,
- 			eppnt->p_filesz + (eppnt->p_vaddr & 0xfff),
- 			elf_prot, elf_type,
- 			eppnt->p_offset & 0xfffff000);
--			up_write(&current->mm->mmap_sem);
- 
- 			if (error < 0 && error > -1024) {
- 				printk("Aieee IRIX interp mmap error=%d\n",
-@@ -514,12 +512,10 @@ static inline void map_executable(struct
- 		prot  = (epp->p_flags & PF_R) ? PROT_READ : 0;
- 		prot |= (epp->p_flags & PF_W) ? PROT_WRITE : 0;
- 		prot |= (epp->p_flags & PF_X) ? PROT_EXEC : 0;
--	        down_write(&current->mm->mmap_sem);
- 		(void) do_mmap(fp, (epp->p_vaddr & 0xfffff000),
- 			       (epp->p_filesz + (epp->p_vaddr & 0xfff)),
- 			       prot, EXEC_MAP_FLAGS,
- 			       (epp->p_offset & 0xfffff000));
--	        up_write(&current->mm->mmap_sem);
- 
- 		/* Fixup location tracking vars. */
- 		if ((epp->p_vaddr & 0xfffff000) < *estack)
-@@ -798,10 +794,8 @@ static int load_irix_binary(struct linux
- 	 * Since we do not have the power to recompile these, we
- 	 * emulate the SVr4 behavior.  Sigh.
- 	 */
--	down_write(&current->mm->mmap_sem);
- 	(void) do_mmap(NULL, 0, 4096, PROT_READ | PROT_EXEC,
- 		       MAP_FIXED | MAP_PRIVATE, 0);
--	up_write(&current->mm->mmap_sem);
- #endif
- 
- 	start_thread(regs, elf_entry, bprm->p);
-@@ -871,14 +865,12 @@ static int load_irix_library(struct file
- 	while (elf_phdata->p_type != PT_LOAD) elf_phdata++;
- 
- 	/* Now use mmap to map the library into memory. */
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap(file,
- 			elf_phdata->p_vaddr & 0xfffff000,
- 			elf_phdata->p_filesz + (elf_phdata->p_vaddr & 0xfff),
- 			PROT_READ | PROT_WRITE | PROT_EXEC,
- 			MAP_FIXED | MAP_PRIVATE | MAP_DENYWRITE,
- 			elf_phdata->p_offset & 0xfffff000);
--	up_write(&current->mm->mmap_sem);
- 
- 	k = elf_phdata->p_vaddr + elf_phdata->p_filesz;
- 	if (k > elf_bss) elf_bss = k;
-@@ -959,12 +951,10 @@ unsigned long irix_mapelf(int fd, struct
- 		prot |= (flags & PF_W) ? PROT_WRITE : 0;
- 		prot |= (flags & PF_X) ? PROT_EXEC : 0;
- 
--		down_write(&current->mm->mmap_sem);
- 		retval = do_mmap(filp, (vaddr & 0xfffff000),
- 				 (filesz + (vaddr & 0xfff)),
- 				 prot, (MAP_FIXED | MAP_PRIVATE | MAP_DENYWRITE),
- 				 (offset & 0xfffff000));
--		up_write(&current->mm->mmap_sem);
- 
- 		if (retval != (vaddr & 0xfffff000)) {
- 			printk("irix_mapelf: do_mmap fails with %d!\n", retval);
-Index: linux-2.6-2/arch/mips/kernel/linux32.c
-===================================================================
---- linux-2.6-2.orig/arch/mips/kernel/linux32.c
-+++ linux-2.6-2/arch/mips/kernel/linux32.c
-@@ -119,9 +119,7 @@ sys32_mmap2(unsigned long addr, unsigned
- 	}
- 	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
- 
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
--	up_write(&current->mm->mmap_sem);
- 	if (file)
- 		fput(file);
- 
-Index: linux-2.6-2/arch/mips/kernel/syscall.c
-===================================================================
---- linux-2.6-2.orig/arch/mips/kernel/syscall.c
-+++ linux-2.6-2/arch/mips/kernel/syscall.c
-@@ -136,9 +136,7 @@ do_mmap2(unsigned long addr, unsigned lo
- 			goto out;
- 	}
- 
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
--	up_write(&current->mm->mmap_sem);
- 
- 	if (file)
- 		fput(file);
-Index: linux-2.6-2/arch/mips/kernel/sysirix.c
-===================================================================
---- linux-2.6-2.orig/arch/mips/kernel/sysirix.c
-+++ linux-2.6-2/arch/mips/kernel/sysirix.c
-@@ -1051,9 +1051,7 @@ asmlinkage unsigned long irix_mmap32(uns
- 
- 	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
- 
--	down_write(&current->mm->mmap_sem);
- 	retval = do_mmap(file, addr, len, prot, flags, offset);
--	up_write(&current->mm->mmap_sem);
- 	if (file)
- 		fput(file);
- 
-@@ -1536,10 +1534,7 @@ asmlinkage int irix_mmap64(struct pt_reg
- 
- 	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
- 
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
--	up_write(&current->mm->mmap_sem);
--
- 	if (file)
- 		fput(file);
- 
-Index: linux-2.6-2/arch/parisc/kernel/sys_parisc.c
-===================================================================
---- linux-2.6-2.orig/arch/parisc/kernel/sys_parisc.c
-+++ linux-2.6-2/arch/parisc/kernel/sys_parisc.c
-@@ -137,9 +137,7 @@ static unsigned long do_mmap2(unsigned l
- 
- 	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
- 
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
--	up_write(&current->mm->mmap_sem);
- 
- 	if (file != NULL)
- 		fput(file);
-Index: linux-2.6-2/arch/powerpc/kernel/syscalls.c
-===================================================================
---- linux-2.6-2.orig/arch/powerpc/kernel/syscalls.c
-+++ linux-2.6-2/arch/powerpc/kernel/syscalls.c
-@@ -175,9 +175,7 @@ static inline unsigned long do_mmap2(uns
- 
- 	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
- 
--	down_write(&current->mm->mmap_sem);
- 	ret = do_mmap_pgoff(file, addr, len, prot, flags, off);
--	up_write(&current->mm->mmap_sem);
- 	if (file)
- 		fput(file);
- out:
-Index: linux-2.6-2/arch/s390/kernel/compat_linux.c
-===================================================================
---- linux-2.6-2.orig/arch/s390/kernel/compat_linux.c
-+++ linux-2.6-2/arch/s390/kernel/compat_linux.c
-@@ -860,14 +860,15 @@ static inline long do_mmap2(
- 			goto out;
- 	}
- 
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
- 	if (!IS_ERR((void *) error) && error + len >= 0x80000000ULL) {
- 		/* Result is out of bounds.  */
-+		/* XXX fix race - APZ */
-+		down_write(&current->mm->mmap_sem);
- 		do_munmap(current->mm, addr, len);
-+		up_write(&current->mm->mmap_sem);
- 		error = -ENOMEM;
- 	}
--	up_write(&current->mm->mmap_sem);
- 
- 	if (file)
- 		fput(file);
-Index: linux-2.6-2/arch/s390/kernel/sys_s390.c
-===================================================================
---- linux-2.6-2.orig/arch/s390/kernel/sys_s390.c
-+++ linux-2.6-2/arch/s390/kernel/sys_s390.c
-@@ -65,9 +65,7 @@ static inline long do_mmap2(
- 			goto out;
- 	}
- 
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
--	up_write(&current->mm->mmap_sem);
- 
- 	if (file)
- 		fput(file);
-Index: linux-2.6-2/arch/sh/kernel/sys_sh.c
-===================================================================
---- linux-2.6-2.orig/arch/sh/kernel/sys_sh.c
-+++ linux-2.6-2/arch/sh/kernel/sys_sh.c
-@@ -153,9 +153,7 @@ do_mmap2(unsigned long addr, unsigned lo
- 			goto out;
- 	}
- 
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
--	up_write(&current->mm->mmap_sem);
- 
- 	if (file)
- 		fput(file);
-Index: linux-2.6-2/arch/sh64/kernel/sys_sh64.c
-===================================================================
---- linux-2.6-2.orig/arch/sh64/kernel/sys_sh64.c
-+++ linux-2.6-2/arch/sh64/kernel/sys_sh64.c
-@@ -148,9 +148,7 @@ static inline long do_mmap2(
- 			goto out;
- 	}
- 
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
--	up_write(&current->mm->mmap_sem);
- 
- 	if (file)
- 		fput(file);
-Index: linux-2.6-2/arch/sparc/kernel/sys_sparc.c
-===================================================================
---- linux-2.6-2.orig/arch/sparc/kernel/sys_sparc.c
-+++ linux-2.6-2/arch/sparc/kernel/sys_sparc.c
-@@ -252,9 +252,7 @@ static unsigned long do_mmap2(unsigned l
- 	len = PAGE_ALIGN(len);
- 	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
- 
--	down_write(&current->mm->mmap_sem);
- 	retval = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
--	up_write(&current->mm->mmap_sem);
- 
- 	if (file)
- 		fput(file);
-Index: linux-2.6-2/arch/sparc/kernel/sys_sunos.c
-===================================================================
---- linux-2.6-2.orig/arch/sparc/kernel/sys_sunos.c
-+++ linux-2.6-2/arch/sparc/kernel/sys_sunos.c
-@@ -120,9 +120,7 @@ asmlinkage unsigned long sunos_mmap(unsi
- 	}
- 
- 	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
--	down_write(&current->mm->mmap_sem);
- 	retval = do_mmap(file, addr, len, prot, flags, off);
--	up_write(&current->mm->mmap_sem);
- 	if (!ret_type)
- 		retval = ((retval < PAGE_OFFSET) ? 0 : retval);
- 
-Index: linux-2.6-2/arch/sparc64/kernel/binfmt_aout32.c
-===================================================================
---- linux-2.6-2.orig/arch/sparc64/kernel/binfmt_aout32.c
-+++ linux-2.6-2/arch/sparc64/kernel/binfmt_aout32.c
-@@ -290,24 +290,20 @@ static int load_aout32_binary(struct lin
- 			goto beyond_if;
- 		}
- 
--	        down_write(&current->mm->mmap_sem);
- 		error = do_mmap(bprm->file, N_TXTADDR(ex), ex.a_text,
- 			PROT_READ | PROT_EXEC,
- 			MAP_FIXED | MAP_PRIVATE | MAP_DENYWRITE | MAP_EXECUTABLE,
- 			fd_offset);
--	        up_write(&current->mm->mmap_sem);
- 
- 		if (error != N_TXTADDR(ex)) {
- 			send_sig(SIGKILL, current, 0);
- 			return error;
- 		}
- 
--	        down_write(&current->mm->mmap_sem);
-  		error = do_mmap(bprm->file, N_DATADDR(ex), ex.a_data,
- 				PROT_READ | PROT_WRITE | PROT_EXEC,
- 				MAP_FIXED | MAP_PRIVATE | MAP_DENYWRITE | MAP_EXECUTABLE,
- 				fd_offset + ex.a_text);
--	        up_write(&current->mm->mmap_sem);
- 		if (error != N_DATADDR(ex)) {
- 			send_sig(SIGKILL, current, 0);
- 			return error;
-@@ -379,12 +375,10 @@ static int load_aout32_library(struct fi
- 	start_addr =  ex.a_entry & 0xfffff000;
- 
- 	/* Now use mmap to map the library into memory. */
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap(file, start_addr, ex.a_text + ex.a_data,
- 			PROT_READ | PROT_WRITE | PROT_EXEC,
- 			MAP_FIXED | MAP_PRIVATE | MAP_DENYWRITE,
- 			N_TXTOFF(ex));
--	up_write(&current->mm->mmap_sem);
- 	retval = error;
- 	if (error != start_addr)
- 		goto out;
-Index: linux-2.6-2/arch/sparc64/kernel/sys_sparc.c
-===================================================================
---- linux-2.6-2.orig/arch/sparc64/kernel/sys_sparc.c
-+++ linux-2.6-2/arch/sparc64/kernel/sys_sparc.c
-@@ -576,9 +576,7 @@ asmlinkage unsigned long sys_mmap(unsign
- 	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
- 	len = PAGE_ALIGN(len);
- 
--	down_write(&current->mm->mmap_sem);
- 	retval = do_mmap(file, addr, len, prot, flags, off);
--	up_write(&current->mm->mmap_sem);
- 
- 	if (file)
- 		fput(file);
-Index: linux-2.6-2/arch/sparc64/kernel/sys_sunos32.c
-===================================================================
---- linux-2.6-2.orig/arch/sparc64/kernel/sys_sunos32.c
-+++ linux-2.6-2/arch/sparc64/kernel/sys_sunos32.c
-@@ -99,12 +99,10 @@ asmlinkage u32 sunos_mmap(u32 addr, u32 
- 	flags &= ~_MAP_NEW;
- 
- 	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
--	down_write(&current->mm->mmap_sem);
- 	retval = do_mmap(file,
- 			 (unsigned long) addr, (unsigned long) len,
- 			 (unsigned long) prot, (unsigned long) flags,
- 			 (unsigned long) off);
--	up_write(&current->mm->mmap_sem);
- 	if (!ret_type)
- 		retval = ((retval < 0xf0000000) ? 0 : retval);
- out_putf:
-Index: linux-2.6-2/arch/sparc64/solaris/misc.c
-===================================================================
---- linux-2.6-2.orig/arch/sparc64/solaris/misc.c
-+++ linux-2.6-2/arch/sparc64/solaris/misc.c
-@@ -95,12 +95,10 @@ static u32 do_solaris_mmap(u32 addr, u32
- 	ret_type = flags & _MAP_NEW;
- 	flags &= ~_MAP_NEW;
- 
--	down_write(&current->mm->mmap_sem);
- 	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
- 	retval = do_mmap(file,
- 			 (unsigned long) addr, (unsigned long) len,
- 			 (unsigned long) prot, (unsigned long) flags, off);
--	up_write(&current->mm->mmap_sem);
- 	if(!ret_type)
- 		retval = ((retval < STACK_TOP32) ? 0 : retval);
- 	                        
-Index: linux-2.6-2/arch/um/kernel/syscall.c
-===================================================================
---- linux-2.6-2.orig/arch/um/kernel/syscall.c
-+++ linux-2.6-2/arch/um/kernel/syscall.c
-@@ -54,9 +54,7 @@ long sys_mmap2(unsigned long addr, unsig
- 			goto out;
- 	}
- 
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
--	up_write(&current->mm->mmap_sem);
- 
- 	if (file)
- 		fput(file);
-Index: linux-2.6-2/arch/v850/kernel/syscalls.c
-===================================================================
---- linux-2.6-2.orig/arch/v850/kernel/syscalls.c
-+++ linux-2.6-2/arch/v850/kernel/syscalls.c
-@@ -164,9 +164,7 @@ do_mmap2 (unsigned long addr, size_t len
- 			goto out;
- 	}
- 	
--	down_write (&current->mm->mmap_sem);
- 	ret = do_mmap_pgoff (file, addr, len, prot, flags, pgoff);
--	up_write (&current->mm->mmap_sem);
- 	if (file)
- 		fput (file);
- out:
-Index: linux-2.6-2/arch/x86/ia32/ia32_aout.c
-===================================================================
---- linux-2.6-2.orig/arch/x86/ia32/ia32_aout.c
-+++ linux-2.6-2/arch/x86/ia32/ia32_aout.c
-@@ -374,24 +374,20 @@ static int load_aout_binary(struct linux
- 			goto beyond_if;
- 		}
- 
--		down_write(&current->mm->mmap_sem);
- 		error = do_mmap(bprm->file, N_TXTADDR(ex), ex.a_text,
- 			PROT_READ | PROT_EXEC,
- 			MAP_FIXED | MAP_PRIVATE | MAP_DENYWRITE | MAP_EXECUTABLE | MAP_32BIT,
- 			fd_offset);
--		up_write(&current->mm->mmap_sem);
- 
- 		if (error != N_TXTADDR(ex)) {
- 			send_sig(SIGKILL, current, 0);
- 			return error;
- 		}
- 
--		down_write(&current->mm->mmap_sem);
-  		error = do_mmap(bprm->file, N_DATADDR(ex), ex.a_data,
- 				PROT_READ | PROT_WRITE | PROT_EXEC,
- 				MAP_FIXED | MAP_PRIVATE | MAP_DENYWRITE | MAP_EXECUTABLE | MAP_32BIT,
- 				fd_offset + ex.a_text);
--		up_write(&current->mm->mmap_sem);
- 		if (error != N_DATADDR(ex)) {
- 			send_sig(SIGKILL, current, 0);
- 			return error;
-@@ -488,12 +484,10 @@ static int load_aout_library(struct file
- 		goto out;
- 	}
- 	/* Now use mmap to map the library into memory. */
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap(file, start_addr, ex.a_text + ex.a_data,
- 			PROT_READ | PROT_WRITE | PROT_EXEC,
- 			MAP_FIXED | MAP_PRIVATE | MAP_DENYWRITE | MAP_32BIT,
- 			N_TXTOFF(ex));
--	up_write(&current->mm->mmap_sem);
- 	retval = error;
- 	if (error != start_addr)
- 		goto out;
-Index: linux-2.6-2/arch/x86/ia32/sys_ia32.c
-===================================================================
---- linux-2.6-2.orig/arch/x86/ia32/sys_ia32.c
-+++ linux-2.6-2/arch/x86/ia32/sys_ia32.c
-@@ -242,13 +242,10 @@ sys32_mmap(struct mmap_arg_struct __user
- 	}
- 	
- 	mm = current->mm; 
--	down_write(&mm->mmap_sem); 
- 	retval = do_mmap_pgoff(file, a.addr, a.len, a.prot, a.flags, a.offset>>PAGE_SHIFT);
- 	if (file)
- 		fput(file);
- 
--	up_write(&mm->mmap_sem); 
--
- 	return retval;
- }
- 
-@@ -708,9 +705,7 @@ asmlinkage long sys32_mmap2(unsigned lon
- 			return -EBADF;
- 	}
- 
--	down_write(&mm->mmap_sem);
- 	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
--	up_write(&mm->mmap_sem);
- 
- 	if (file)
- 		fput(file);
-Index: linux-2.6-2/arch/x86/kernel/sys_i386_32.c
-===================================================================
---- linux-2.6-2.orig/arch/x86/kernel/sys_i386_32.c
-+++ linux-2.6-2/arch/x86/kernel/sys_i386_32.c
-@@ -54,9 +54,7 @@ asmlinkage long sys_mmap2(unsigned long 
- 			goto out;
- 	}
- 
--	down_write(&mm->mmap_sem);
- 	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
--	up_write(&mm->mmap_sem);
- 
- 	if (file)
- 		fput(file);
-Index: linux-2.6-2/arch/x86/kernel/sys_x86_64.c
-===================================================================
---- linux-2.6-2.orig/arch/x86/kernel/sys_x86_64.c
-+++ linux-2.6-2/arch/x86/kernel/sys_x86_64.c
-@@ -51,9 +51,7 @@ asmlinkage long sys_mmap(unsigned long a
- 		if (!file)
- 			goto out;
- 	}
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap_pgoff(file, addr, len, prot, flags, off >> PAGE_SHIFT);
--	up_write(&current->mm->mmap_sem);
- 
- 	if (file)
- 		fput(file);
-Index: linux-2.6-2/arch/xtensa/kernel/syscall.c
-===================================================================
---- linux-2.6-2.orig/arch/xtensa/kernel/syscall.c
-+++ linux-2.6-2/arch/xtensa/kernel/syscall.c
-@@ -72,9 +72,7 @@ asmlinkage long xtensa_mmap2(unsigned lo
- 			goto out;
- 	}
- 
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
--	up_write(&current->mm->mmap_sem);
- 
- 	if (file)
- 		fput(file);
-Index: linux-2.6-2/drivers/char/drm/drm_bufs.c
-===================================================================
---- linux-2.6-2.orig/drivers/char/drm/drm_bufs.c
-+++ linux-2.6-2/drivers/char/drm/drm_bufs.c
-@@ -1517,18 +1517,14 @@ int drm_mapbufs(struct drm_device *dev, 
- 				retcode = -EINVAL;
- 				goto done;
- 			}
--			down_write(&current->mm->mmap_sem);
- 			virtual = do_mmap(file_priv->filp, 0, map->size,
- 					  PROT_READ | PROT_WRITE,
- 					  MAP_SHARED,
- 					  token);
--			up_write(&current->mm->mmap_sem);
- 		} else {
--			down_write(&current->mm->mmap_sem);
- 			virtual = do_mmap(file_priv->filp, 0, dma->byte_count,
- 					  PROT_READ | PROT_WRITE,
- 					  MAP_SHARED, 0);
--			up_write(&current->mm->mmap_sem);
- 		}
- 		if (virtual > -1024UL) {
- 			/* Real error */
-Index: linux-2.6-2/drivers/char/drm/i810_dma.c
-===================================================================
---- linux-2.6-2.orig/drivers/char/drm/i810_dma.c
-+++ linux-2.6-2/drivers/char/drm/i810_dma.c
-@@ -131,7 +131,6 @@ static int i810_map_buffer(struct drm_bu
- 	if (buf_priv->currently_mapped == I810_BUF_MAPPED)
- 		return -EINVAL;
- 
--	down_write(&current->mm->mmap_sem);
- 	old_fops = file_priv->filp->f_op;
- 	file_priv->filp->f_op = &i810_buffer_fops;
- 	dev_priv->mmap_buffer = buf;
-@@ -146,7 +145,6 @@ static int i810_map_buffer(struct drm_bu
- 		retcode = PTR_ERR(buf_priv->virtual);
- 		buf_priv->virtual = NULL;
- 	}
--	up_write(&current->mm->mmap_sem);
- 
- 	return retcode;
- }
-Index: linux-2.6-2/fs/aio.c
-===================================================================
---- linux-2.6-2.orig/fs/aio.c
-+++ linux-2.6-2/fs/aio.c
-@@ -129,18 +129,18 @@ static int aio_setup_ring(struct kioctx 
- 
- 	info->mmap_size = nr_pages * PAGE_SIZE;
- 	dprintk("attempting mmap of %lu bytes\n", info->mmap_size);
--	down_write(&ctx->mm->mmap_sem);
-+	WARN_ON(ctx->mm != current->mm);
- 	info->mmap_base = do_mmap(NULL, 0, info->mmap_size, 
- 				  PROT_READ|PROT_WRITE, MAP_ANONYMOUS|MAP_PRIVATE,
- 				  0);
- 	if (IS_ERR((void *)info->mmap_base)) {
--		up_write(&ctx->mm->mmap_sem);
- 		info->mmap_size = 0;
- 		aio_free_ring(ctx);
- 		return -EAGAIN;
- 	}
- 
- 	dprintk("mmap address: 0x%08lx\n", info->mmap_base);
-+	down_write(&ctx->mm->mmap_sem);
- 	info->nr_pages = get_user_pages(current, ctx->mm,
- 					info->mmap_base, nr_pages, 
- 					1, 0, info->ring_pages, NULL);
-Index: linux-2.6-2/fs/binfmt_aout.c
-===================================================================
---- linux-2.6-2.orig/fs/binfmt_aout.c
-+++ linux-2.6-2/fs/binfmt_aout.c
-@@ -403,24 +403,20 @@ static int load_aout_binary(struct linux
- 			goto beyond_if;
- 		}
- 
--		down_write(&current->mm->mmap_sem);
- 		error = do_mmap(bprm->file, N_TXTADDR(ex), ex.a_text,
- 			PROT_READ | PROT_EXEC,
- 			MAP_FIXED | MAP_PRIVATE | MAP_DENYWRITE | MAP_EXECUTABLE,
- 			fd_offset);
--		up_write(&current->mm->mmap_sem);
- 
- 		if (error != N_TXTADDR(ex)) {
- 			send_sig(SIGKILL, current, 0);
- 			return error;
- 		}
- 
--		down_write(&current->mm->mmap_sem);
-  		error = do_mmap(bprm->file, N_DATADDR(ex), ex.a_data,
- 				PROT_READ | PROT_WRITE | PROT_EXEC,
- 				MAP_FIXED | MAP_PRIVATE | MAP_DENYWRITE | MAP_EXECUTABLE,
- 				fd_offset + ex.a_text);
--		up_write(&current->mm->mmap_sem);
- 		if (error != N_DATADDR(ex)) {
- 			send_sig(SIGKILL, current, 0);
- 			return error;
-@@ -518,12 +514,10 @@ static int load_aout_library(struct file
- 		goto out;
- 	}
- 	/* Now use mmap to map the library into memory. */
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap(file, start_addr, ex.a_text + ex.a_data,
- 			PROT_READ | PROT_WRITE | PROT_EXEC,
- 			MAP_FIXED | MAP_PRIVATE | MAP_DENYWRITE,
- 			N_TXTOFF(ex));
--	up_write(&current->mm->mmap_sem);
- 	retval = error;
- 	if (error != start_addr)
- 		goto out;
-Index: linux-2.6-2/fs/binfmt_elf.c
-===================================================================
---- linux-2.6-2.orig/fs/binfmt_elf.c
-+++ linux-2.6-2/fs/binfmt_elf.c
-@@ -303,7 +303,6 @@ static unsigned long elf_map(struct file
- 	unsigned long map_addr;
- 	unsigned long pageoffset = ELF_PAGEOFFSET(eppnt->p_vaddr);
- 
--	down_write(&current->mm->mmap_sem);
- 	/* mmap() will return -EINVAL if given a zero size, but a
- 	 * segment with zero filesize is perfectly valid */
- 	if (eppnt->p_filesz + pageoffset)
-@@ -312,7 +311,6 @@ static unsigned long elf_map(struct file
- 				   eppnt->p_offset - pageoffset);
- 	else
- 		map_addr = ELF_PAGESTART(addr);
--	up_write(&current->mm->mmap_sem);
- 	return(map_addr);
- }
- 
-@@ -1026,10 +1024,8 @@ static int load_elf_binary(struct linux_
- 		   and some applications "depend" upon this behavior.
- 		   Since we do not have the power to recompile these, we
- 		   emulate the SVr4 behavior. Sigh. */
--		down_write(&current->mm->mmap_sem);
- 		error = do_mmap(NULL, 0, PAGE_SIZE, PROT_READ | PROT_EXEC,
- 				MAP_FIXED | MAP_PRIVATE, 0);
--		up_write(&current->mm->mmap_sem);
- 	}
- 
- #ifdef ELF_PLAT_INIT
-@@ -1125,7 +1121,6 @@ static int load_elf_library(struct file 
- 		eppnt++;
- 
- 	/* Now use mmap to map the library into memory. */
--	down_write(&current->mm->mmap_sem);
- 	error = do_mmap(file,
- 			ELF_PAGESTART(eppnt->p_vaddr),
- 			(eppnt->p_filesz +
-@@ -1134,7 +1129,6 @@ static int load_elf_library(struct file 
- 			MAP_FIXED | MAP_PRIVATE | MAP_DENYWRITE,
- 			(eppnt->p_offset -
- 			 ELF_PAGEOFFSET(eppnt->p_vaddr)));
--	up_write(&current->mm->mmap_sem);
- 	if (error != ELF_PAGESTART(eppnt->p_vaddr))
- 		goto out_free_ph;
- 
-Index: linux-2.6-2/fs/binfmt_elf_fdpic.c
-===================================================================
---- linux-2.6-2.orig/fs/binfmt_elf_fdpic.c
-+++ linux-2.6-2/fs/binfmt_elf_fdpic.c
-@@ -370,14 +370,12 @@ static int load_elf_fdpic_binary(struct 
- 	if (stack_size < PAGE_SIZE * 2)
- 		stack_size = PAGE_SIZE * 2;
- 
--	down_write(&current->mm->mmap_sem);
- 	current->mm->start_brk = do_mmap(NULL, 0, stack_size,
- 					 PROT_READ | PROT_WRITE | PROT_EXEC,
- 					 MAP_PRIVATE | MAP_ANONYMOUS | MAP_GROWSDOWN,
- 					 0);
- 
- 	if (IS_ERR_VALUE(current->mm->start_brk)) {
--		up_write(&current->mm->mmap_sem);
- 		retval = current->mm->start_brk;
- 		current->mm->start_brk = 0;
- 		goto error_kill;
-@@ -385,6 +383,7 @@ static int load_elf_fdpic_binary(struct 
- 
- 	/* expand the stack mapping to use up the entire allocation granule */
- 	fullsize = ksize((char *) current->mm->start_brk);
-+	down_write(&current->mm->mmap_sem);
- 	if (!IS_ERR_VALUE(do_mremap(current->mm->start_brk, stack_size,
- 				    fullsize, 0, 0)))
- 		stack_size = fullsize;
-@@ -904,10 +903,8 @@ static int elf_fdpic_map_file_constdisp_
- 	if (params->flags & ELF_FDPIC_FLAG_EXECUTABLE)
- 		mflags |= MAP_EXECUTABLE;
- 
--	down_write(&mm->mmap_sem);
- 	maddr = do_mmap(NULL, load_addr, top - base,
- 			PROT_READ | PROT_WRITE | PROT_EXEC, mflags, 0);
--	up_write(&mm->mmap_sem);
- 	if (IS_ERR_VALUE(maddr))
- 		return (int) maddr;
- 
-@@ -1050,10 +1047,8 @@ static int elf_fdpic_map_file_by_direct_
- 
- 		/* create the mapping */
- 		disp = phdr->p_vaddr & ~PAGE_MASK;
--		down_write(&mm->mmap_sem);
- 		maddr = do_mmap(file, maddr, phdr->p_memsz + disp, prot, flags,
- 				phdr->p_offset - disp);
--		up_write(&mm->mmap_sem);
- 
- 		kdebug("mmap[%d] <file> sz=%lx pr=%x fl=%x of=%lx --> %08lx",
- 		       loop, phdr->p_memsz + disp, prot, flags,
-@@ -1096,10 +1091,8 @@ static int elf_fdpic_map_file_by_direct_
- 			unsigned long xmaddr;
- 
- 			flags |= MAP_FIXED | MAP_ANONYMOUS;
--			down_write(&mm->mmap_sem);
- 			xmaddr = do_mmap(NULL, xaddr, excess - excess1,
- 					 prot, flags, 0);
--			up_write(&mm->mmap_sem);
- 
- 			kdebug("mmap[%d] <anon>"
- 			       " ad=%lx sz=%lx pr=%x fl=%x of=0 --> %08lx",
-Index: linux-2.6-2/fs/binfmt_flat.c
-===================================================================
---- linux-2.6-2.orig/fs/binfmt_flat.c
-+++ linux-2.6-2/fs/binfmt_flat.c
-@@ -531,9 +531,7 @@ static int load_flat_file(struct linux_b
- 		 */
- 		DBG_FLT("BINFMT_FLAT: ROM mapping of file (we hope)\n");
- 
--		down_write(&current->mm->mmap_sem);
- 		textpos = do_mmap(bprm->file, 0, text_len, PROT_READ|PROT_EXEC, MAP_PRIVATE, 0);
--		up_write(&current->mm->mmap_sem);
- 		if (!textpos  || textpos >= (unsigned long) -4096) {
- 			if (!textpos)
- 				textpos = (unsigned long) -ENOMEM;
-@@ -544,7 +542,7 @@ static int load_flat_file(struct linux_b
- 
- 		len = data_len + extra + MAX_SHARED_LIBS * sizeof(unsigned long);
- 		down_write(&current->mm->mmap_sem);
--		realdatastart = do_mmap(0, 0, len,
-+		realdatastart = do_mmap_locked(0, 0, len,
- 			PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE, 0);
- 		/* Remap to use all availabe slack region space */
- 		if (realdatastart && (realdatastart < (unsigned long)-4096)) {
-@@ -596,7 +594,7 @@ static int load_flat_file(struct linux_b
- 
- 		len = text_len + data_len + extra + MAX_SHARED_LIBS * sizeof(unsigned long);
- 		down_write(&current->mm->mmap_sem);
--		textpos = do_mmap(0, 0, len,
-+		textpos = do_mmap_locked(0, 0, len,
- 			PROT_READ | PROT_EXEC | PROT_WRITE, MAP_PRIVATE, 0);
- 		/* Remap to use all availabe slack region space */
- 		if (textpos && (textpos < (unsigned long) -4096)) {
-Index: linux-2.6-2/fs/binfmt_som.c
-===================================================================
---- linux-2.6-2.orig/fs/binfmt_som.c
-+++ linux-2.6-2/fs/binfmt_som.c
-@@ -148,10 +148,8 @@ static int map_som_binary(struct file *f
- 	code_size = SOM_PAGEALIGN(hpuxhdr->exec_tsize);
- 	current->mm->start_code = code_start;
- 	current->mm->end_code = code_start + code_size;
--	down_write(&current->mm->mmap_sem);
- 	retval = do_mmap(file, code_start, code_size, prot,
- 			flags, SOM_PAGESTART(hpuxhdr->exec_tfile));
--	up_write(&current->mm->mmap_sem);
- 	if (retval < 0 && retval > -1024)
- 		goto out;
- 
-@@ -159,20 +157,16 @@ static int map_som_binary(struct file *f
- 	data_size = SOM_PAGEALIGN(hpuxhdr->exec_dsize);
- 	current->mm->start_data = data_start;
- 	current->mm->end_data = bss_start = data_start + data_size;
--	down_write(&current->mm->mmap_sem);
- 	retval = do_mmap(file, data_start, data_size,
- 			prot | PROT_WRITE, flags,
- 			SOM_PAGESTART(hpuxhdr->exec_dfile));
--	up_write(&current->mm->mmap_sem);
- 	if (retval < 0 && retval > -1024)
- 		goto out;
- 
- 	som_brk = bss_start + SOM_PAGEALIGN(hpuxhdr->exec_bsize);
- 	current->mm->start_brk = current->mm->brk = som_brk;
--	down_write(&current->mm->mmap_sem);
- 	retval = do_mmap(NULL, bss_start, som_brk - bss_start,
- 			prot | PROT_WRITE, MAP_FIXED | MAP_PRIVATE, 0);
--	up_write(&current->mm->mmap_sem);
- 	if (retval > 0 || retval < -1024)
- 		retval = 0;
- out:
-Index: linux-2.6-2/fs/nfs/file.c
-===================================================================
---- linux-2.6-2.orig/fs/nfs/file.c
-+++ linux-2.6-2/fs/nfs/file.c
-@@ -41,6 +41,9 @@
- static int nfs_file_open(struct inode *, struct file *);
- static int nfs_file_release(struct inode *, struct file *);
- static loff_t nfs_file_llseek(struct file *file, loff_t offset, int origin);
-+static int
-+nfs_file_mmap_prepare(struct file * file, unsigned long addr, unsigned long len,
-+		unsigned long prot, unsigned long flags, unsigned long pgoff);
- static int  nfs_file_mmap(struct file *, struct vm_area_struct *);
- static ssize_t nfs_file_splice_read(struct file *filp, loff_t *ppos,
- 					struct pipe_inode_info *pipe,
-@@ -64,6 +67,7 @@ const struct file_operations nfs_file_op
- 	.write		= do_sync_write,
- 	.aio_read	= nfs_file_read,
- 	.aio_write	= nfs_file_write,
-+	.mmap_prepare	= nfs_file_mmap_prepare,
- 	.mmap		= nfs_file_mmap,
- 	.open		= nfs_file_open,
- 	.flush		= nfs_file_flush,
-@@ -270,7 +274,8 @@ nfs_file_splice_read(struct file *filp, 
- }
- 
- static int
--nfs_file_mmap(struct file * file, struct vm_area_struct * vma)
-+nfs_file_mmap_prepare(struct file * file, unsigned long addr, unsigned long len,
-+		unsigned long prot, unsigned long flags, unsigned long pgoff)
- {
- 	struct dentry *dentry = file->f_path.dentry;
- 	struct inode *inode = dentry->d_inode;
-@@ -279,13 +284,17 @@ nfs_file_mmap(struct file * file, struct
- 	dfprintk(VFS, "nfs: mmap(%s/%s)\n",
- 		dentry->d_parent->d_name.name, dentry->d_name.name);
- 
--	status = nfs_revalidate_mapping(inode, file->f_mapping);
--	if (!status) {
--		vma->vm_ops = &nfs_file_vm_ops;
--		vma->vm_flags |= VM_CAN_NONLINEAR;
--		file_accessed(file);
--	}
--	return status;
-+	return nfs_revalidate_mapping(inode, file->f_mapping);
-+}
-+
-+static int
-+nfs_file_mmap(struct file *file, struct vm_area_struct *vma)
-+{
-+	vma->vm_ops = &nfs_file_vm_ops;
-+	vma->vm_flags |= VM_CAN_NONLINEAR;
-+	file_accessed(file);
-+
-+	return 0;
- }
- 
- /*
-Index: linux-2.6-2/include/linux/fs.h
-===================================================================
---- linux-2.6-2.orig/include/linux/fs.h
-+++ linux-2.6-2/include/linux/fs.h
-@@ -1172,6 +1172,7 @@ struct file_operations {
- 	int (*ioctl) (struct inode *, struct file *, unsigned int, unsigned long);
- 	long (*unlocked_ioctl) (struct file *, unsigned int, unsigned long);
- 	long (*compat_ioctl) (struct file *, unsigned int, unsigned long);
-+	int (*mmap_prepare) (struct file *, unsigned long addr, unsigned long len, unsigned long prot, unsigned long flags, unsigned long pgoff);
- 	int (*mmap) (struct file *, struct vm_area_struct *);
- 	int (*open) (struct inode *, struct file *);
- 	int (*flush) (struct file *, fl_owner_t id);
-Index: linux-2.6-2/include/linux/mm.h
-===================================================================
---- linux-2.6-2.orig/include/linux/mm.h
-+++ linux-2.6-2/include/linux/mm.h
-@@ -980,6 +980,10 @@ extern int install_special_mapping(struc
- 
- extern unsigned long get_unmapped_area(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
- 
-+extern unsigned long do_mmap_pgoff_locked(
-+	struct file *file, unsigned long addr,
-+	unsigned long len, unsigned long prot,
-+	unsigned long flag, unsigned long pgoff);
- extern unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
- 	unsigned long len, unsigned long prot,
- 	unsigned long flag, unsigned long pgoff);
-@@ -988,7 +992,7 @@ extern unsigned long mmap_region(struct 
- 	unsigned int vm_flags, unsigned long pgoff,
- 	int accountable);
- 
--static inline unsigned long do_mmap(struct file *file, unsigned long addr,
-+static inline unsigned long do_mmap_locked(struct file *file, unsigned long addr,
- 	unsigned long len, unsigned long prot,
- 	unsigned long flag, unsigned long offset)
- {
-@@ -996,11 +1000,16 @@ static inline unsigned long do_mmap(stru
- 	if ((offset + PAGE_ALIGN(len)) < offset)
- 		goto out;
- 	if (!(offset & ~PAGE_MASK))
--		ret = do_mmap_pgoff(file, addr, len, prot, flag, offset >> PAGE_SHIFT);
-+		ret = do_mmap_pgoff_locked(file, addr, len, prot,
-+				flag, offset >> PAGE_SHIFT);
- out:
- 	return ret;
- }
- 
-+extern unsigned long do_mmap(struct file *file, unsigned long addr,
-+	unsigned long len, unsigned long prot,
-+	unsigned long flag, unsigned long offset);
-+
- extern int do_munmap(struct mm_struct *, unsigned long, size_t);
- 
- extern unsigned long do_brk(unsigned long, unsigned long);
-Index: linux-2.6-2/ipc/shm.c
-===================================================================
---- linux-2.6-2.orig/ipc/shm.c
-+++ linux-2.6-2/ipc/shm.c
-@@ -1012,7 +1012,7 @@ long do_shmat(int shmid, char __user *sh
- 			goto invalid;
- 	}
- 		
--	user_addr = do_mmap (file, addr, size, prot, flags, 0);
-+	user_addr = do_mmap_locked (file, addr, size, prot, flags, 0);
- 	*raddr = user_addr;
- 	err = 0;
- 	if (IS_ERR_VALUE(user_addr))
-Index: linux-2.6-2/mm/mmap.c
-===================================================================
---- linux-2.6-2.orig/mm/mmap.c
-+++ linux-2.6-2/mm/mmap.c
-@@ -888,9 +888,10 @@ void vm_stat_account(struct mm_struct *m
-  * The caller must hold down_write(current->mm->mmap_sem).
-  */
- 
--unsigned long do_mmap_pgoff(struct file * file, unsigned long addr,
--			unsigned long len, unsigned long prot,
--			unsigned long flags, unsigned long pgoff)
-+static unsigned long __do_mmap_pgoff_locked(
-+		struct file * file, unsigned long addr,
-+		unsigned long len, unsigned long prot,
-+		unsigned long flags, unsigned long pgoff)
- {
- 	struct mm_struct * mm = current->mm;
- 	struct inode *inode;
-@@ -1026,10 +1027,66 @@ unsigned long do_mmap_pgoff(struct file 
- 	return mmap_region(file, addr, len, flags, vm_flags, pgoff,
- 			   accountable);
- }
-+
-+unsigned long do_mmap_pgoff_locked(struct file * file, unsigned long addr,
-+		unsigned long len, unsigned long prot,
-+		unsigned long flags, unsigned long pgoff)
-+{
-+	WARN_ON(file && file->f_op->mmap_prepare);
-+	return __do_mmap_pgoff_locked(file, addr, len, prot, flags, pgoff);
-+}
-+EXPORT_SYMBOL(do_mmap_pgoff_locked);
-+
-+unsigned long do_mmap_pgoff(struct file * file, unsigned long addr,
-+			unsigned long len, unsigned long prot,
-+			unsigned long flags, unsigned long pgoff)
-+{
-+	struct mm_struct *mm = current->mm;
-+	unsigned long ret;
-+
-+	if (file && file->f_op->mmap_prepare) {
-+		ret = file->f_op->mmap_prepare(file, addr,
-+				len, prot, flags, pgoff);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	down_write(&mm->mmap_sem);
-+	ret = __do_mmap_pgoff_locked(file, addr, len, prot, flags, pgoff);
-+	up_write(&mm->mmap_sem);
-+
-+	return ret;
-+}
- EXPORT_SYMBOL(do_mmap_pgoff);
- 
-+unsigned long do_mmap(struct file *file, unsigned long addr,
-+		unsigned long len, unsigned long prot,
-+		unsigned long flags, unsigned long offset)
-+{
-+	struct mm_struct *mm = current->mm;
-+	unsigned long ret = -EINVAL;
-+	unsigned long pgoff = offset >> PAGE_SHIFT;
-+
-+	if ((offset + PAGE_ALIGN(len)) < offset || (offset & ~PAGE_MASK))
-+		return ret;
-+
-+	if (file && file->f_op->mmap_prepare) {
-+		ret = file->f_op->mmap_prepare(file, addr,
-+				len, prot, flags, pgoff);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	down_write(&mm->mmap_sem);
-+	ret = __do_mmap_pgoff_locked(file, addr, len, prot, flags, pgoff);
-+	up_write(&mm->mmap_sem);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(do_mmap);
-+
- /*
-- * Some shared mappigns will want the pages marked read-only
-+ * Some shared mappings will want the pages marked read-only
-  * to track write events. If so, we'll downgrade vm_page_prot
-  * to the private version (using protection_map[] without the
-  * VM_SHARED bit).
+Here is the .config file:
 
+#
+# Automatically generated make config: don't edit
+# Linux kernel version: 2.6.24-rc2
+# Sun Nov 11 17:50:05 2007
+#
+CONFIG_SUPERH=y
+CONFIG_RWSEM_GENERIC_SPINLOCK=y
+CONFIG_GENERIC_BUG=y
+CONFIG_GENERIC_FIND_NEXT_BIT=y
+CONFIG_GENERIC_HWEIGHT=y
+CONFIG_GENERIC_HARDIRQS=y
+CONFIG_GENERIC_IRQ_PROBE=y
+CONFIG_GENERIC_CALIBRATE_DELAY=y
+CONFIG_GENERIC_TIME=y
+CONFIG_GENERIC_CLOCKEVENTS=y
+CONFIG_SYS_SUPPORTS_PCI=y
+CONFIG_STACKTRACE_SUPPORT=y
+CONFIG_LOCKDEP_SUPPORT=y
+# CONFIG_ARCH_HAS_ILOG2_U32 is not set
+# CONFIG_ARCH_HAS_ILOG2_U64 is not set
+CONFIG_ARCH_NO_VIRT_TO_BUS=y
+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
 
+#
+# General setup
+#
+CONFIG_EXPERIMENTAL=y
+CONFIG_BROKEN_ON_SMP=y
+CONFIG_LOCK_KERNEL=y
+CONFIG_INIT_ENV_ARG_LIMIT=32
+CONFIG_LOCALVERSION=""
+CONFIG_LOCALVERSION_AUTO=y
+CONFIG_SWAP=y
+CONFIG_SYSVIPC=y
+CONFIG_SYSVIPC_SYSCTL=y
+# CONFIG_POSIX_MQUEUE is not set
+CONFIG_BSD_PROCESS_ACCT=y
+# CONFIG_BSD_PROCESS_ACCT_V3 is not set
+# CONFIG_TASKSTATS is not set
+# CONFIG_USER_NS is not set
+# CONFIG_AUDIT is not set
+# CONFIG_IKCONFIG is not set
+CONFIG_LOG_BUF_SHIFT=14
+# CONFIG_CGROUPS is not set
+CONFIG_FAIR_GROUP_SCHED=y
+CONFIG_FAIR_USER_SCHED=y
+# CONFIG_FAIR_CGROUP_SCHED is not set
+CONFIG_SYSFS_DEPRECATED=y
+# CONFIG_RELAY is not set
+# CONFIG_BLK_DEV_INITRD is not set
+# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
+CONFIG_SYSCTL=y
+CONFIG_EMBEDDED=y
+CONFIG_UID16=y
+# CONFIG_SYSCTL_SYSCALL is not set
+CONFIG_KALLSYMS=y
+# CONFIG_KALLSYMS_EXTRA_PASS is not set
+CONFIG_HOTPLUG=y
+CONFIG_PRINTK=y
+CONFIG_BUG=y
+CONFIG_ELF_CORE=y
+CONFIG_BASE_FULL=y
+CONFIG_FUTEX=y
+CONFIG_ANON_INODES=y
+CONFIG_EPOLL=y
+CONFIG_SIGNALFD=y
+CONFIG_EVENTFD=y
+CONFIG_SHMEM=y
+CONFIG_VM_EVENT_COUNTERS=y
+CONFIG_SLAB=y
+# CONFIG_SLUB is not set
+# CONFIG_SLOB is not set
+CONFIG_RT_MUTEXES=y
+# CONFIG_TINY_SHMEM is not set
+CONFIG_BASE_SMALL=0
+CONFIG_MODULES=y
+CONFIG_MODULE_UNLOAD=y
+# CONFIG_MODULE_FORCE_UNLOAD is not set
+# CONFIG_MODVERSIONS is not set
+# CONFIG_MODULE_SRCVERSION_ALL is not set
+CONFIG_KMOD=y
+CONFIG_BLOCK=y
+# CONFIG_LBD is not set
+# CONFIG_BLK_DEV_IO_TRACE is not set
+# CONFIG_LSF is not set
+# CONFIG_BLK_DEV_BSG is not set
+
+#
+# IO Schedulers
+#
+CONFIG_IOSCHED_NOOP=y
+CONFIG_IOSCHED_AS=y
+# CONFIG_IOSCHED_DEADLINE is not set
+# CONFIG_IOSCHED_CFQ is not set
+CONFIG_DEFAULT_AS=y
+# CONFIG_DEFAULT_DEADLINE is not set
+# CONFIG_DEFAULT_CFQ is not set
+# CONFIG_DEFAULT_NOOP is not set
+CONFIG_DEFAULT_IOSCHED="anticipatory"
+
+#
+# System type
+#
+CONFIG_CPU_SH4=y
+# CONFIG_CPU_SUBTYPE_SH7619 is not set
+# CONFIG_CPU_SUBTYPE_SH7206 is not set
+# CONFIG_CPU_SUBTYPE_SH7705 is not set
+# CONFIG_CPU_SUBTYPE_SH7706 is not set
+# CONFIG_CPU_SUBTYPE_SH7707 is not set
+# CONFIG_CPU_SUBTYPE_SH7708 is not set
+# CONFIG_CPU_SUBTYPE_SH7709 is not set
+# CONFIG_CPU_SUBTYPE_SH7710 is not set
+# CONFIG_CPU_SUBTYPE_SH7712 is not set
+# CONFIG_CPU_SUBTYPE_SH7720 is not set
+# CONFIG_CPU_SUBTYPE_SH7750 is not set
+CONFIG_CPU_SUBTYPE_SH7091=y
+# CONFIG_CPU_SUBTYPE_SH7750R is not set
+# CONFIG_CPU_SUBTYPE_SH7750S is not set
+# CONFIG_CPU_SUBTYPE_SH7751 is not set
+# CONFIG_CPU_SUBTYPE_SH7751R is not set
+# CONFIG_CPU_SUBTYPE_SH7760 is not set
+# CONFIG_CPU_SUBTYPE_SH4_202 is not set
+# CONFIG_CPU_SUBTYPE_SH7770 is not set
+# CONFIG_CPU_SUBTYPE_SH7780 is not set
+# CONFIG_CPU_SUBTYPE_SH7785 is not set
+# CONFIG_CPU_SUBTYPE_SHX3 is not set
+# CONFIG_CPU_SUBTYPE_SH7343 is not set
+# CONFIG_CPU_SUBTYPE_SH7722 is not set
+
+#
+# Memory management options
+#
+CONFIG_QUICKLIST=y
+CONFIG_MMU=y
+CONFIG_PAGE_OFFSET=0x80000000
+CONFIG_MEMORY_START=0x0c000000
+CONFIG_MEMORY_SIZE=0x01000000
+CONFIG_VSYSCALL=y
+CONFIG_ARCH_FLATMEM_ENABLE=y
+CONFIG_ARCH_SPARSEMEM_ENABLE=y
+CONFIG_ARCH_SPARSEMEM_DEFAULT=y
+CONFIG_MAX_ACTIVE_REGIONS=1
+CONFIG_ARCH_POPULATES_NODE_MAP=y
+CONFIG_ARCH_SELECT_MEMORY_MODEL=y
+CONFIG_PAGE_SIZE_4KB=y
+# CONFIG_PAGE_SIZE_8KB is not set
+# CONFIG_PAGE_SIZE_64KB is not set
+CONFIG_HUGETLB_PAGE_SIZE_64K=y
+# CONFIG_HUGETLB_PAGE_SIZE_256K is not set
+# CONFIG_HUGETLB_PAGE_SIZE_1MB is not set
+# CONFIG_HUGETLB_PAGE_SIZE_4MB is not set
+# CONFIG_HUGETLB_PAGE_SIZE_64MB is not set
+CONFIG_SELECT_MEMORY_MODEL=y
+CONFIG_FLATMEM_MANUAL=y
+# CONFIG_DISCONTIGMEM_MANUAL is not set
+# CONFIG_SPARSEMEM_MANUAL is not set
+CONFIG_FLATMEM=y
+CONFIG_FLAT_NODE_MEM_MAP=y
+CONFIG_SPARSEMEM_STATIC=y
+# CONFIG_SPARSEMEM_VMEMMAP_ENABLE is not set
+CONFIG_SPLIT_PTLOCK_CPUS=4
+# CONFIG_RESOURCES_64BIT is not set
+CONFIG_ZONE_DMA_FLAG=0
+CONFIG_NR_QUICK=2
+
+#
+# Cache configuration
+#
+CONFIG_SH_DIRECT_MAPPED=y
+CONFIG_CACHE_WRITEBACK=y
+# CONFIG_CACHE_WRITETHROUGH is not set
+# CONFIG_CACHE_OFF is not set
+
+#
+# Processor features
+#
+CONFIG_CPU_LITTLE_ENDIAN=y
+# CONFIG_CPU_BIG_ENDIAN is not set
+CONFIG_SH_FPU=y
+CONFIG_SH_STORE_QUEUES=y
+CONFIG_CPU_HAS_INTEVT=y
+CONFIG_CPU_HAS_SR_RB=y
+CONFIG_CPU_HAS_PTEA=y
+CONFIG_CPU_HAS_FPU=y
+
+#
+# Board support
+#
+CONFIG_SH_DREAMCAST=y
+
+#
+# Timer and clock configuration
+#
+CONFIG_SH_TMU=y
+CONFIG_SH_TIMER_IRQ=16
+CONFIG_SH_PCLK_FREQ=49876504
+# CONFIG_TICK_ONESHOT is not set
+# CONFIG_NO_HZ is not set
+# CONFIG_HIGH_RES_TIMERS is not set
+CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
+
+#
+# CPU Frequency scaling
+#
+CONFIG_CPU_FREQ=y
+CONFIG_CPU_FREQ_TABLE=y
+# CONFIG_CPU_FREQ_DEBUG is not set
+# CONFIG_CPU_FREQ_STAT is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
+CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+# CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE is not set
+CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+# CONFIG_CPU_FREQ_GOV_POWERSAVE is not set
+# CONFIG_CPU_FREQ_GOV_USERSPACE is not set
+CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+# CONFIG_CPU_FREQ_GOV_CONSERVATIVE is not set
+CONFIG_SH_CPU_FREQ=y
+
+#
+# DMA support
+#
+CONFIG_SH_DMA_API=y
+CONFIG_SH_DMA=y
+CONFIG_NR_ONCHIP_DMA_CHANNELS=4
+CONFIG_NR_DMA_CHANNELS_BOOL=y
+CONFIG_NR_DMA_CHANNELS=9
+
+#
+# Companion Chips
+#
+
+#
+# Additional SuperH Device Drivers
+#
+# CONFIG_HEARTBEAT is not set
+# CONFIG_PUSH_SWITCH is not set
+
+#
+# Kernel features
+#
+# CONFIG_HZ_100 is not set
+CONFIG_HZ_250=y
+# CONFIG_HZ_300 is not set
+# CONFIG_HZ_1000 is not set
+CONFIG_HZ=250
+# CONFIG_KEXEC is not set
+# CONFIG_CRASH_DUMP is not set
+# CONFIG_PREEMPT_NONE is not set
+# CONFIG_PREEMPT_VOLUNTARY is not set
+CONFIG_PREEMPT=y
+CONFIG_PREEMPT_BKL=y
+CONFIG_GUSA=y
+
+#
+# Boot options
+#
+CONFIG_ZERO_PAGE_OFFSET=0x00001000
+CONFIG_BOOT_LINK_OFFSET=0x00800000
+# CONFIG_UBC_WAKEUP is not set
+CONFIG_CMDLINE_BOOL=y
+CONFIG_CMDLINE="console=ttySC1 panic=5 root=/dev/nf rw
+nfsaddrs=192.168.61.55:192.168.61.50:192.168.61.50: earlyprintk=serial
+video=pvr2fb:640x480-32@60"
+
+#
+# Bus options
+#
+CONFIG_MAPLE=y
+CONFIG_PCI=y
+CONFIG_SH_PCIDMA_NONCOHERENT=y
+CONFIG_PCI_AUTO=y
+# CONFIG_ARCH_SUPPORTS_MSI is not set
+CONFIG_PCI_LEGACY=y
+# CONFIG_PCCARD is not set
+# CONFIG_HOTPLUG_PCI is not set
+
+#
+# Executable file formats
+#
+CONFIG_BINFMT_ELF=y
+# CONFIG_BINFMT_MISC is not set
+
+#
+# Networking
+#
+CONFIG_NET=y
+
+#
+# Networking options
+#
+CONFIG_PACKET=y
+# CONFIG_PACKET_MMAP is not set
+CONFIG_UNIX=y
+# CONFIG_NET_KEY is not set
+CONFIG_INET=y
+# CONFIG_IP_MULTICAST is not set
+# CONFIG_IP_ADVANCED_ROUTER is not set
+CONFIG_IP_FIB_HASH=y
+CONFIG_IP_PNP=y
+CONFIG_IP_PNP_DHCP=y
+# CONFIG_IP_PNP_BOOTP is not set
+# CONFIG_IP_PNP_RARP is not set
+# CONFIG_NET_IPIP is not set
+# CONFIG_NET_IPGRE is not set
+# CONFIG_ARPD is not set
+# CONFIG_SYN_COOKIES is not set
+# CONFIG_INET_AH is not set
+# CONFIG_INET_ESP is not set
+# CONFIG_INET_IPCOMP is not set
+# CONFIG_INET_XFRM_TUNNEL is not set
+# CONFIG_INET_TUNNEL is not set
+# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
+# CONFIG_INET_XFRM_MODE_TUNNEL is not set
+# CONFIG_INET_XFRM_MODE_BEET is not set
+# CONFIG_INET_LRO is not set
+# CONFIG_INET_DIAG is not set
+# CONFIG_TCP_CONG_ADVANCED is not set
+CONFIG_TCP_CONG_CUBIC=y
+CONFIG_DEFAULT_TCP_CONG="cubic"
+# CONFIG_TCP_MD5SIG is not set
+# CONFIG_IPV6 is not set
+# CONFIG_INET6_XFRM_TUNNEL is not set
+# CONFIG_INET6_TUNNEL is not set
+# CONFIG_NETWORK_SECMARK is not set
+# CONFIG_NETFILTER is not set
+# CONFIG_IP_DCCP is not set
+# CONFIG_IP_SCTP is not set
+# CONFIG_TIPC is not set
+# CONFIG_ATM is not set
+# CONFIG_BRIDGE is not set
+# CONFIG_VLAN_8021Q is not set
+# CONFIG_DECNET is not set
+# CONFIG_LLC2 is not set
+# CONFIG_IPX is not set
+# CONFIG_ATALK is not set
+# CONFIG_X25 is not set
+# CONFIG_LAPB is not set
+# CONFIG_ECONET is not set
+# CONFIG_WAN_ROUTER is not set
+# CONFIG_NET_SCHED is not set
+
+#
+# Network testing
+#
+# CONFIG_NET_PKTGEN is not set
+# CONFIG_HAMRADIO is not set
+# CONFIG_IRDA is not set
+# CONFIG_BT is not set
+# CONFIG_AF_RXRPC is not set
+
+#
+# Wireless
+#
+# CONFIG_CFG80211 is not set
+# CONFIG_WIRELESS_EXT is not set
+# CONFIG_MAC80211 is not set
+# CONFIG_IEEE80211 is not set
+# CONFIG_RFKILL is not set
+# CONFIG_NET_9P is not set
+
+#
+# Device Drivers
+#
+
+#
+# Generic Driver Options
+#
+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+# CONFIG_STANDALONE is not set
+CONFIG_PREVENT_FIRMWARE_BUILD=y
+CONFIG_FW_LOADER=y
+# CONFIG_SYS_HYPERVISOR is not set
+# CONFIG_CONNECTOR is not set
+# CONFIG_MTD is not set
+# CONFIG_PARPORT is not set
+CONFIG_BLK_DEV=y
+CONFIG_GDROM=m
+# CONFIG_BLK_CPQ_CISS_DA is not set
+# CONFIG_BLK_DEV_DAC960 is not set
+# CONFIG_BLK_DEV_UMEM is not set
+# CONFIG_BLK_DEV_COW_COMMON is not set
+# CONFIG_BLK_DEV_LOOP is not set
+# CONFIG_BLK_DEV_NBD is not set
+# CONFIG_BLK_DEV_SX8 is not set
+# CONFIG_BLK_DEV_RAM is not set
+# CONFIG_CDROM_PKTCDVD is not set
+# CONFIG_ATA_OVER_ETH is not set
+# CONFIG_MISC_DEVICES is not set
+# CONFIG_IDE is not set
+
+#
+# SCSI device support
+#
+# CONFIG_RAID_ATTRS is not set
+# CONFIG_SCSI is not set
+# CONFIG_SCSI_DMA is not set
+# CONFIG_SCSI_NETLINK is not set
+# CONFIG_ATA is not set
+# CONFIG_MD is not set
+# CONFIG_FUSION is not set
+
+#
+# IEEE 1394 (FireWire) support
+#
+# CONFIG_FIREWIRE is not set
+# CONFIG_IEEE1394 is not set
+# CONFIG_I2O is not set
+CONFIG_NETDEVICES=y
+# CONFIG_NETDEVICES_MULTIQUEUE is not set
+# CONFIG_DUMMY is not set
+# CONFIG_BONDING is not set
+# CONFIG_MACVLAN is not set
+# CONFIG_EQUALIZER is not set
+# CONFIG_TUN is not set
+# CONFIG_VETH is not set
+# CONFIG_IP1000 is not set
+# CONFIG_ARCNET is not set
+# CONFIG_PHYLIB is not set
+CONFIG_NET_ETHERNET=y
+CONFIG_MII=y
+# CONFIG_STNIC is not set
+# CONFIG_HAPPYMEAL is not set
+# CONFIG_SUNGEM is not set
+# CONFIG_CASSINI is not set
+# CONFIG_NET_VENDOR_3COM is not set
+# CONFIG_SMC91X is not set
+# CONFIG_SMC911X is not set
+# CONFIG_NET_TULIP is not set
+# CONFIG_HP100 is not set
+# CONFIG_IBM_NEW_EMAC_ZMII is not set
+# CONFIG_IBM_NEW_EMAC_RGMII is not set
+# CONFIG_IBM_NEW_EMAC_TAH is not set
+# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
+CONFIG_NET_PCI=y
+# CONFIG_PCNET32 is not set
+# CONFIG_AMD8111_ETH is not set
+# CONFIG_ADAPTEC_STARFIRE is not set
+# CONFIG_B44 is not set
+# CONFIG_FORCEDETH is not set
+# CONFIG_EEPRO100 is not set
+# CONFIG_E100 is not set
+# CONFIG_FEALNX is not set
+# CONFIG_NATSEMI is not set
+# CONFIG_NE2K_PCI is not set
+# CONFIG_8139CP is not set
+CONFIG_8139TOO=y
+# CONFIG_8139TOO_PIO is not set
+# CONFIG_8139TOO_TUNE_TWISTER is not set
+# CONFIG_8139TOO_8129 is not set
+# CONFIG_8139_OLD_RX_RESET is not set
+# CONFIG_SIS900 is not set
+# CONFIG_EPIC100 is not set
+# CONFIG_SUNDANCE is not set
+# CONFIG_TLAN is not set
+# CONFIG_VIA_RHINE is not set
+# CONFIG_SC92031 is not set
+# CONFIG_NETDEV_1000 is not set
+# CONFIG_NETDEV_10000 is not set
+# CONFIG_TR is not set
+
+#
+# Wireless LAN
+#
+# CONFIG_WLAN_PRE80211 is not set
+# CONFIG_WLAN_80211 is not set
+# CONFIG_WAN is not set
+# CONFIG_FDDI is not set
+# CONFIG_HIPPI is not set
+# CONFIG_PPP is not set
+# CONFIG_SLIP is not set
+# CONFIG_SHAPER is not set
+# CONFIG_NETCONSOLE is not set
+# CONFIG_NETPOLL is not set
+# CONFIG_NET_POLL_CONTROLLER is not set
+# CONFIG_ISDN is not set
+# CONFIG_PHONE is not set
+
+#
+# Input device support
+#
+CONFIG_INPUT=y
+# CONFIG_INPUT_FF_MEMLESS is not set
+# CONFIG_INPUT_POLLDEV is not set
+
+#
+# Userland interfaces
+#
+# CONFIG_INPUT_MOUSEDEV is not set
+# CONFIG_INPUT_JOYDEV is not set
+# CONFIG_INPUT_EVDEV is not set
+# CONFIG_INPUT_EVBUG is not set
+
+#
+# Input Device Drivers
+#
+CONFIG_INPUT_KEYBOARD=y
+# CONFIG_KEYBOARD_ATKBD is not set
+# CONFIG_KEYBOARD_SUNKBD is not set
+# CONFIG_KEYBOARD_LKKBD is not set
+# CONFIG_KEYBOARD_XTKBD is not set
+# CONFIG_KEYBOARD_NEWTON is not set
+# CONFIG_KEYBOARD_STOWAWAY is not set
+CONFIG_KEYBOARD_MAPLE=y
+# CONFIG_INPUT_MOUSE is not set
+# CONFIG_INPUT_JOYSTICK is not set
+# CONFIG_INPUT_TABLET is not set
+# CONFIG_INPUT_TOUCHSCREEN is not set
+# CONFIG_INPUT_MISC is not set
+
+#
+# Hardware I/O ports
+#
+CONFIG_SERIO=y
+# CONFIG_SERIO_I8042 is not set
+# CONFIG_SERIO_SERPORT is not set
+# CONFIG_SERIO_PCIPS2 is not set
+CONFIG_SERIO_LIBPS2=y
+# CONFIG_SERIO_RAW is not set
+# CONFIG_GAMEPORT is not set
+
+#
+# Character devices
+#
+CONFIG_VT=y
+CONFIG_VT_CONSOLE=y
+CONFIG_HW_CONSOLE=y
+# CONFIG_VT_HW_CONSOLE_BINDING is not set
+# CONFIG_SERIAL_NONSTANDARD is not set
+
+#
+# Serial drivers
+#
+# CONFIG_SERIAL_8250 is not set
+
+#
+# Non-8250 serial port support
+#
+CONFIG_SERIAL_SH_SCI=y
+CONFIG_SERIAL_SH_SCI_NR_UARTS=2
+CONFIG_SERIAL_SH_SCI_CONSOLE=y
+CONFIG_SERIAL_CORE=y
+CONFIG_SERIAL_CORE_CONSOLE=y
+# CONFIG_SERIAL_JSM is not set
+CONFIG_UNIX98_PTYS=y
+CONFIG_LEGACY_PTYS=y
+CONFIG_LEGACY_PTY_COUNT=256
+# CONFIG_IPMI_HANDLER is not set
+CONFIG_HW_RANDOM=y
+# CONFIG_R3964 is not set
+# CONFIG_APPLICOM is not set
+# CONFIG_RAW_DRIVER is not set
+# CONFIG_TCG_TPM is not set
+CONFIG_DEVPORT=y
+# CONFIG_I2C is not set
+
+#
+# SPI support
+#
+# CONFIG_SPI is not set
+# CONFIG_SPI_MASTER is not set
+# CONFIG_W1 is not set
+# CONFIG_POWER_SUPPLY is not set
+# CONFIG_HWMON is not set
+CONFIG_WATCHDOG=y
+# CONFIG_WATCHDOG_NOWAYOUT is not set
+
+#
+# Watchdog Device Drivers
+#
+# CONFIG_SOFT_WATCHDOG is not set
+# CONFIG_SH_WDT is not set
+
+#
+# PCI-based Watchdog Cards
+#
+# CONFIG_PCIPCWATCHDOG is not set
+# CONFIG_WDTPCI is not set
+
+#
+# Sonics Silicon Backplane
+#
+CONFIG_SSB_POSSIBLE=y
+# CONFIG_SSB is not set
+
+#
+# Multifunction device drivers
+#
+# CONFIG_MFD_SM501 is not set
+
+#
+# Multimedia devices
+#
+# CONFIG_VIDEO_DEV is not set
+# CONFIG_DVB_CORE is not set
+# CONFIG_DAB is not set
+
+#
+# Graphics support
+#
+# CONFIG_DRM is not set
+# CONFIG_VGASTATE is not set
+CONFIG_VIDEO_OUTPUT_CONTROL=m
+CONFIG_FB=y
+CONFIG_FIRMWARE_EDID=y
+# CONFIG_FB_DDC is not set
+CONFIG_FB_CFB_FILLRECT=y
+CONFIG_FB_CFB_COPYAREA=y
+CONFIG_FB_CFB_IMAGEBLIT=y
+# CONFIG_FB_CFB_REV_PIXELS_IN_BYTE is not set
+# CONFIG_FB_SYS_FILLRECT is not set
+# CONFIG_FB_SYS_COPYAREA is not set
+# CONFIG_FB_SYS_IMAGEBLIT is not set
+# CONFIG_FB_SYS_FOPS is not set
+CONFIG_FB_DEFERRED_IO=y
+# CONFIG_FB_SVGALIB is not set
+# CONFIG_FB_MACMODES is not set
+# CONFIG_FB_BACKLIGHT is not set
+# CONFIG_FB_MODE_HELPERS is not set
+# CONFIG_FB_TILEBLITTING is not set
+
+#
+# Frame buffer hardware drivers
+#
+# CONFIG_FB_CIRRUS is not set
+# CONFIG_FB_PM2 is not set
+# CONFIG_FB_CYBER2000 is not set
+# CONFIG_FB_ASILIANT is not set
+# CONFIG_FB_IMSTT is not set
+CONFIG_FB_PVR2=y
+# CONFIG_FB_S1D13XXX is not set
+# CONFIG_FB_NVIDIA is not set
+# CONFIG_FB_RIVA is not set
+# CONFIG_FB_MATROX is not set
+# CONFIG_FB_RADEON is not set
+# CONFIG_FB_ATY128 is not set
+# CONFIG_FB_ATY is not set
+# CONFIG_FB_S3 is not set
+# CONFIG_FB_SAVAGE is not set
+# CONFIG_FB_SIS is not set
+# CONFIG_FB_NEOMAGIC is not set
+# CONFIG_FB_KYRO is not set
+# CONFIG_FB_3DFX is not set
+# CONFIG_FB_VOODOO1 is not set
+# CONFIG_FB_VT8623 is not set
+# CONFIG_FB_TRIDENT is not set
+# CONFIG_FB_ARK is not set
+# CONFIG_FB_PM3 is not set
+# CONFIG_FB_VIRTUAL is not set
+# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
+
+#
+# Display device support
+#
+# CONFIG_DISPLAY_SUPPORT is not set
+
+#
+# Console display driver support
+#
+CONFIG_DUMMY_CONSOLE=y
+CONFIG_FRAMEBUFFER_CONSOLE=y
+# CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY is not set
+# CONFIG_FRAMEBUFFER_CONSOLE_ROTATION is not set
+# CONFIG_FONTS is not set
+CONFIG_FONT_8x8=y
+CONFIG_FONT_8x16=y
+CONFIG_LOGO=y
+# CONFIG_LOGO_LINUX_MONO is not set
+# CONFIG_LOGO_LINUX_VGA16 is not set
+# CONFIG_LOGO_LINUX_CLUT224 is not set
+# CONFIG_LOGO_SUPERH_MONO is not set
+# CONFIG_LOGO_SUPERH_VGA16 is not set
+CONFIG_LOGO_SUPERH_CLUT224=y
+
+#
+# Sound
+#
+CONFIG_SOUND=m
+
+#
+# Advanced Linux Sound Architecture
+#
+CONFIG_SND=m
+CONFIG_SND_TIMER=m
+CONFIG_SND_PCM=m
+# CONFIG_SND_SEQUENCER is not set
+CONFIG_SND_OSSEMUL=y
+CONFIG_SND_MIXER_OSS=m
+CONFIG_SND_PCM_OSS=m
+CONFIG_SND_PCM_OSS_PLUGINS=y
+# CONFIG_SND_DYNAMIC_MINORS is not set
+# CONFIG_SND_SUPPORT_OLD_API is not set
+CONFIG_SND_VERBOSE_PROCFS=y
+# CONFIG_SND_VERBOSE_PRINTK is not set
+# CONFIG_SND_DEBUG is not set
+
+#
+# Generic devices
+#
+# CONFIG_SND_DUMMY is not set
+# CONFIG_SND_MTPAV is not set
+# CONFIG_SND_SERIAL_U16550 is not set
+# CONFIG_SND_MPU401 is not set
+
+#
+# PCI devices
+#
+# CONFIG_SND_AD1889 is not set
+# CONFIG_SND_ALS300 is not set
+# CONFIG_SND_ALI5451 is not set
+# CONFIG_SND_ATIIXP is not set
+# CONFIG_SND_ATIIXP_MODEM is not set
+# CONFIG_SND_AU8810 is not set
+# CONFIG_SND_AU8820 is not set
+# CONFIG_SND_AU8830 is not set
+# CONFIG_SND_AZT3328 is not set
+# CONFIG_SND_BT87X is not set
+# CONFIG_SND_CA0106 is not set
+# CONFIG_SND_CMIPCI is not set
+# CONFIG_SND_CS4281 is not set
+# CONFIG_SND_CS46XX is not set
+# CONFIG_SND_DARLA20 is not set
+# CONFIG_SND_GINA20 is not set
+# CONFIG_SND_LAYLA20 is not set
+# CONFIG_SND_DARLA24 is not set
+# CONFIG_SND_GINA24 is not set
+# CONFIG_SND_LAYLA24 is not set
+# CONFIG_SND_MONA is not set
+# CONFIG_SND_MIA is not set
+# CONFIG_SND_ECHO3G is not set
+# CONFIG_SND_INDIGO is not set
+# CONFIG_SND_INDIGOIO is not set
+# CONFIG_SND_INDIGODJ is not set
+# CONFIG_SND_EMU10K1 is not set
+# CONFIG_SND_EMU10K1X is not set
+# CONFIG_SND_ENS1370 is not set
+# CONFIG_SND_ENS1371 is not set
+# CONFIG_SND_ES1938 is not set
+# CONFIG_SND_ES1968 is not set
+# CONFIG_SND_FM801 is not set
+# CONFIG_SND_HDA_INTEL is not set
+# CONFIG_SND_HDSP is not set
+# CONFIG_SND_HDSPM is not set
+# CONFIG_SND_ICE1712 is not set
+# CONFIG_SND_ICE1724 is not set
+# CONFIG_SND_INTEL8X0 is not set
+# CONFIG_SND_INTEL8X0M is not set
+# CONFIG_SND_KORG1212 is not set
+# CONFIG_SND_MAESTRO3 is not set
+# CONFIG_SND_MIXART is not set
+# CONFIG_SND_NM256 is not set
+# CONFIG_SND_PCXHR is not set
+# CONFIG_SND_RIPTIDE is not set
+# CONFIG_SND_RME32 is not set
+# CONFIG_SND_RME96 is not set
+# CONFIG_SND_RME9652 is not set
+# CONFIG_SND_SONICVIBES is not set
+# CONFIG_SND_TRIDENT is not set
+# CONFIG_SND_VIA82XX is not set
+# CONFIG_SND_VIA82XX_MODEM is not set
+# CONFIG_SND_VX222 is not set
+# CONFIG_SND_YMFPCI is not set
+
+#
+# SUPERH devices
+#
+CONFIG_SND_AICA=m
+
+#
+# System on Chip audio support
+#
+# CONFIG_SND_SOC is not set
+
+#
+# SoC Audio support for SuperH
+#
+
+#
+# Open Sound System
+#
+# CONFIG_SOUND_PRIME is not set
+# CONFIG_HID_SUPPORT is not set
+# CONFIG_USB_SUPPORT is not set
+# CONFIG_MMC is not set
+# CONFIG_NEW_LEDS is not set
+# CONFIG_INFINIBAND is not set
+# CONFIG_RTC_CLASS is not set
+
+#
+# Userspace I/O
+#
+# CONFIG_UIO is not set
+
+#
+# File systems
+#
+# CONFIG_EXT2_FS is not set
+# CONFIG_EXT3_FS is not set
+# CONFIG_EXT4DEV_FS is not set
+# CONFIG_REISERFS_FS is not set
+# CONFIG_JFS_FS is not set
+CONFIG_FS_POSIX_ACL=y
+# CONFIG_XFS_FS is not set
+# CONFIG_GFS2_FS is not set
+# CONFIG_OCFS2_FS is not set
+# CONFIG_MINIX_FS is not set
+# CONFIG_ROMFS_FS is not set
+# CONFIG_INOTIFY is not set
+# CONFIG_QUOTA is not set
+# CONFIG_DNOTIFY is not set
+# CONFIG_AUTOFS_FS is not set
+# CONFIG_AUTOFS4_FS is not set
+# CONFIG_FUSE_FS is not set
+
+#
+# CD-ROM/DVD Filesystems
+#
+CONFIG_ISO9660_FS=y
+# CONFIG_JOLIET is not set
+# CONFIG_ZISOFS is not set
+# CONFIG_UDF_FS is not set
+
+#
+# DOS/FAT/NT Filesystems
+#
+# CONFIG_MSDOS_FS is not set
+# CONFIG_VFAT_FS is not set
+# CONFIG_NTFS_FS is not set
+
+#
+# Pseudo filesystems
+#
+CONFIG_PROC_FS=y
+CONFIG_PROC_KCORE=y
+CONFIG_PROC_SYSCTL=y
+CONFIG_SYSFS=y
+CONFIG_TMPFS=y
+# CONFIG_TMPFS_POSIX_ACL is not set
+CONFIG_HUGETLBFS=y
+CONFIG_HUGETLB_PAGE=y
+# CONFIG_CONFIGFS_FS is not set
+
+#
+# Miscellaneous filesystems
+#
+# CONFIG_ADFS_FS is not set
+# CONFIG_AFFS_FS is not set
+# CONFIG_HFS_FS is not set
+# CONFIG_HFSPLUS_FS is not set
+# CONFIG_BEFS_FS is not set
+# CONFIG_BFS_FS is not set
+# CONFIG_EFS_FS is not set
+# CONFIG_CRAMFS is not set
+# CONFIG_VXFS_FS is not set
+# CONFIG_HPFS_FS is not set
+# CONFIG_QNX4FS_FS is not set
+# CONFIG_SYSV_FS is not set
+# CONFIG_UFS_FS is not set
+CONFIG_NETWORK_FILESYSTEMS=y
+CONFIG_NFS_FS=y
+CONFIG_NFS_V3=y
+CONFIG_NFS_V3_ACL=y
+CONFIG_NFS_V4=y
+# CONFIG_NFS_DIRECTIO is not set
+# CONFIG_NFSD is not set
+CONFIG_ROOT_NFS=y
+CONFIG_LOCKD=y
+CONFIG_LOCKD_V4=y
+CONFIG_NFS_ACL_SUPPORT=y
+CONFIG_NFS_COMMON=y
+CONFIG_SUNRPC=y
+CONFIG_SUNRPC_GSS=y
+# CONFIG_SUNRPC_BIND34 is not set
+CONFIG_RPCSEC_GSS_KRB5=y
+# CONFIG_RPCSEC_GSS_SPKM3 is not set
+# CONFIG_SMB_FS is not set
+# CONFIG_CIFS is not set
+# CONFIG_NCP_FS is not set
+# CONFIG_CODA_FS is not set
+# CONFIG_AFS_FS is not set
+
+#
+# Partition Types
+#
+# CONFIG_PARTITION_ADVANCED is not set
+CONFIG_MSDOS_PARTITION=y
+# CONFIG_NLS is not set
+# CONFIG_DLM is not set
+# CONFIG_INSTRUMENTATION is not set
+
+#
+# Kernel hacking
+#
+CONFIG_TRACE_IRQFLAGS_SUPPORT=y
+CONFIG_PRINTK_TIME=y
+CONFIG_ENABLE_WARN_DEPRECATED=y
+CONFIG_ENABLE_MUST_CHECK=y
+# CONFIG_MAGIC_SYSRQ is not set
+# CONFIG_UNUSED_SYMBOLS is not set
+# CONFIG_DEBUG_FS is not set
+# CONFIG_HEADERS_CHECK is not set
+# CONFIG_DEBUG_KERNEL is not set
+# CONFIG_DEBUG_BUGVERBOSE is not set
+# CONFIG_SAMPLES is not set
+# CONFIG_SH_STANDARD_BIOS is not set
+CONFIG_EARLY_SCIF_CONSOLE=y
+CONFIG_EARLY_SCIF_CONSOLE_PORT=0xffe80000
+CONFIG_EARLY_PRINTK=y
+# CONFIG_SH_KGDB is not set
+
+#
+# Security options
+#
+# CONFIG_KEYS is not set
+# CONFIG_SECURITY is not set
+# CONFIG_SECURITY_FILE_CAPABILITIES is not set
+CONFIG_CRYPTO=y
+CONFIG_CRYPTO_ALGAPI=y
+CONFIG_CRYPTO_BLKCIPHER=y
+CONFIG_CRYPTO_MANAGER=y
+# CONFIG_CRYPTO_HMAC is not set
+# CONFIG_CRYPTO_XCBC is not set
+# CONFIG_CRYPTO_NULL is not set
+# CONFIG_CRYPTO_MD4 is not set
+CONFIG_CRYPTO_MD5=y
+# CONFIG_CRYPTO_SHA1 is not set
+# CONFIG_CRYPTO_SHA256 is not set
+# CONFIG_CRYPTO_SHA512 is not set
+# CONFIG_CRYPTO_WP512 is not set
+# CONFIG_CRYPTO_TGR192 is not set
+# CONFIG_CRYPTO_GF128MUL is not set
+# CONFIG_CRYPTO_ECB is not set
+CONFIG_CRYPTO_CBC=y
+# CONFIG_CRYPTO_PCBC is not set
+# CONFIG_CRYPTO_LRW is not set
+# CONFIG_CRYPTO_XTS is not set
+# CONFIG_CRYPTO_CRYPTD is not set
+CONFIG_CRYPTO_DES=y
+# CONFIG_CRYPTO_FCRYPT is not set
+# CONFIG_CRYPTO_BLOWFISH is not set
+# CONFIG_CRYPTO_TWOFISH is not set
+# CONFIG_CRYPTO_SERPENT is not set
+# CONFIG_CRYPTO_AES is not set
+# CONFIG_CRYPTO_CAST5 is not set
+# CONFIG_CRYPTO_CAST6 is not set
+# CONFIG_CRYPTO_TEA is not set
+# CONFIG_CRYPTO_ARC4 is not set
+# CONFIG_CRYPTO_KHAZAD is not set
+# CONFIG_CRYPTO_ANUBIS is not set
+# CONFIG_CRYPTO_SEED is not set
+# CONFIG_CRYPTO_DEFLATE is not set
+# CONFIG_CRYPTO_MICHAEL_MIC is not set
+# CONFIG_CRYPTO_CRC32C is not set
+# CONFIG_CRYPTO_CAMELLIA is not set
+# CONFIG_CRYPTO_TEST is not set
+# CONFIG_CRYPTO_AUTHENC is not set
+# CONFIG_CRYPTO_HW is not set
+
+#
+# Library routines
+#
+CONFIG_BITREVERSE=y
+# CONFIG_CRC_CCITT is not set
+# CONFIG_CRC16 is not set
+# CONFIG_CRC_ITU_T is not set
+CONFIG_CRC32=y
+# CONFIG_CRC7 is not set
+# CONFIG_LIBCRC32C is not set
+CONFIG_PLIST=y
+CONFIG_HAS_IOMEM=y
+CONFIG_HAS_IOPORT=y
+CONFIG_HAS_DMA=y
