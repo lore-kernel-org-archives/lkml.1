@@ -1,64 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756937AbXKKGuO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756011AbXKKHCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756937AbXKKGuO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 01:50:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbXKKGtH
+	id S1756011AbXKKHCT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 02:02:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752397AbXKKHCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 01:49:07 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:32868 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752951AbXKKGtE (ORCPT
+	Sun, 11 Nov 2007 02:02:11 -0500
+Received: from sitemail2.everyone.net ([216.200.145.36]:48404 "EHLO
+	omta16.mta.everyone.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751994AbXKKHCK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 01:49:04 -0500
-Date: Sun, 11 Nov 2007 07:48:40 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: "Rumen G. Bogdanovski" <rumen@voicecho.com>, wensong@linux-vs.org,
-       horms@verge.net.au, ja@ssi.bg
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] net/ipv4/ipvs/: remove unused exports
-Message-ID: <20071111064840.GJ21669@stusta.de>
+	Sun, 11 Nov 2007 02:02:10 -0500
+X-Eon-Dm: dm51
+X-Eon-Sig: AQF97PZHNqjw5I7q/QIAAAAD,76b4680a3a39af671c2c033c9cf5f162
+Message-ID: <4736A8ED.6090407@smsglobal.net>
+Date: Sun, 11 Nov 2007 15:02:05 +0800
+From: "Rogelio M. Serrano Jr." <rogelio@smsglobal.net>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       LSM ML <linux-security-module@vger.kernel.org>,
+       apparmor-dev <apparmor-dev@forge.novell.com>
+Subject: Re: AppArmor Security Goal
+References: <473380AD.5070801@crispincowan.com> <20071110220455.GB24195@gallifrey> <47362C7C.2050202@crispincowan.com> <20071110222414.GC24195@gallifrey> <47363381.4030103@crispincowan.com> <20071110232545.GD24195@gallifrey>
+In-Reply-To: <20071110232545.GD24195@gallifrey>
+X-Enigmail-Version: 0.95.3
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigBEE1F2E416952AAEF38536AA"
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the following unused EXPORT_SYMBOL's:
-- ip_vs_try_bind_dest
-- ip_vs_find_dest
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigBEE1F2E416952AAEF38536AA
+Content-Type: multipart/mixed;
+ boundary="------------030808090109080108080209"
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+This is a multi-part message in MIME format.
+--------------030808090109080108080209
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
----
+Dr. David Alan Gilbert wrote:
+>
+>
+> Allowing a user to tweak (under constraints) their settings might allow=
 
- net/ipv4/ipvs/ip_vs_conn.c |    1 -
- net/ipv4/ipvs/ip_vs_ctl.c  |    1 -
- 2 files changed, 2 deletions(-)
+> them to do something like create two mozilla profiles which are isolate=
+d
+> from each other, so that the profile they use for general web surfing
+> is isolated from the one they use for online banking.
+>
+>  =20
+Doesnt this allow the user to shoot their own foot? The exact thing
+mandatory access control are supposed to prevent?
 
-ad9f400d4f66ea3423f97e609d6ef2572055c603 
-diff --git a/net/ipv4/ipvs/ip_vs_conn.c b/net/ipv4/ipvs/ip_vs_conn.c
-index b7eeae6..0a9f3c3 100644
---- a/net/ipv4/ipvs/ip_vs_conn.c
-+++ b/net/ipv4/ipvs/ip_vs_conn.c
-@@ -441,7 +441,6 @@ struct ip_vs_dest *ip_vs_try_bind_dest(struct ip_vs_conn *cp)
- 	} else
- 		return NULL;
- }
--EXPORT_SYMBOL(ip_vs_try_bind_dest);
- 
- 
- /*
-diff --git a/net/ipv4/ipvs/ip_vs_ctl.c b/net/ipv4/ipvs/ip_vs_ctl.c
-index 3c4d22a..b64cf45 100644
---- a/net/ipv4/ipvs/ip_vs_ctl.c
-+++ b/net/ipv4/ipvs/ip_vs_ctl.c
-@@ -604,7 +604,6 @@ struct ip_vs_dest *ip_vs_find_dest(__be32 daddr, __be16 dport,
- 	ip_vs_service_put(svc);
- 	return dest;
- }
--EXPORT_SYMBOL(ip_vs_find_dest);
- 
- /*
-  *  Lookup dest by {svc,addr,port} in the destination trash.
+> Dave
+>  =20
 
+
+--=20
+Democracy is about two wolves and a sheep deciding what to eat for dinner=
+=2E
+
+
+--------------030808090109080108080209
+Content-Type: text/x-vcard; charset=utf-8;
+ name="rogelio.vcf"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="rogelio.vcf"
+
+YmVnaW46dmNhcmQNCmZuOlJvZ2VsaW8gTS4gU2VycmFubyBKcg0KbjpNLiBTZXJyYW5vIEpy
+O1JvZ2VsaW8NCm9yZzpTTVNHIENvbW11bmljYXRpb25zIFBoaWxpcHBpbmVzO1RlY2huaWNh
+bCBEZXBhcnRtZW50DQphZHI6Ozs7Ozs7UmVwdWJsaWMgb2YgdGhlIFBoaWxpcHBpbmVzDQpl
+bWFpbDtpbnRlcm5ldDpyb2dlbGlvQHNtc2dsb2JhbC5uZXQNCnRpdGxlOlByb2dyYW1tZXIN
+CnRlbDt3b3JrOis2MzI3NTM0MTQ1DQp0ZWw7aG9tZTorNjMyOTUyNzAyNg0KdGVsO2NlbGw6
+KzYzOTIwOTIwMjI2Nw0KeC1tb3ppbGxhLWh0bWw6RkFMU0UNCnZlcnNpb246Mi4xDQplbmQ6
+dmNhcmQNCg0K
+--------------030808090109080108080209--
+
+--------------enigBEE1F2E416952AAEF38536AA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFHNqjtyihxuQOYt8wRAv3NAJ0Q3WlY27Q3dSPzUQCC+tjC5VAePQCdHMYt
+OBFaj8b6zgn9sAnUgJlHdrE=
+=haMI
+-----END PGP SIGNATURE-----
+
+--------------enigBEE1F2E416952AAEF38536AA--
