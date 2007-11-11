@@ -1,42 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758052AbXKKUR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757928AbXKKU2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758052AbXKKUR3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 15:17:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756818AbXKKURW
+	id S1757928AbXKKU2V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 15:28:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbXKKU2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 15:17:22 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:35133 "EHLO ogre.sisk.pl"
+	Sun, 11 Nov 2007 15:28:13 -0500
+Received: from nn7.de ([85.214.94.156]:57920 "EHLO nn7.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756637AbXKKURV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 15:17:21 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: 2.6.24-rc2: Reported regressions from 2.6.23 (updated)
-Date: Sun, 11 Nov 2007 21:34:36 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: LKML <linux-kernel@vger.kernel.org>,
+	id S1754508AbXKKU2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Nov 2007 15:28:12 -0500
+Subject: Re: 2.6.23: no more free evdev devices - evdev leak?
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <200711112058.28043.rjw@sisk.pl> <20071111200935.1384c24d@the-village.bc.nu>
-In-Reply-To: <20071111200935.1384c24d@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+       Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0711061551570.16120@twin.jikos.cz>
+References: <1193848484.5070.41.camel@localhost>
+	 <20071105191341.9b9dd857.akpm@linux-foundation.org>
+	 <d120d5000711060606h66adacd8q4c1576f98389bf41@mail.gmail.com>
+	 <Pine.LNX.4.64.0711061551570.16120@twin.jikos.cz>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711112134.37508.rjw@sisk.pl>
+Date: Sun, 11 Nov 2007 21:28:06 +0100
+Message-Id: <1194812886.5404.5.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 11 of November 2007, Alan Cox wrote:
-> > Subject		: 2.6.24-rc1: pata_acpi fails to activate DMA for DVD-ROM on ALi M5229 secondary channel
-> > Submitter	: Andrey Borzenkov <arvidjaar@mail.ru>
-> > References	: http://marc.info/?l=linux-kernel&m=119342005216716&w=2
-> > 		  http://bugzilla.kernel.org/show_bug.cgi?id=9252
-> > Handled-By	: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> > Patch		: 
-> > Note		: pata_acpi was not present in 2.6.23
+On Tue, 2007-11-06 at 15:52 +0100, Jiri Kosina wrote:
+> On Tue, 6 Nov 2007, Dmitry Torokhov wrote:
 > 
-> As I said before pata_acpi was not present in 2.6.23 -> Not a regression.
+> > Could you please try sticking a printk in 
+> > hidinput_disconnect(drivers/hid/hid-input.c) to verify that 
+> > input_unregister_device is in fact being called?
+> 
+> Also, is 2.6.23 the only kernel you are experiencing this with please?
 
-OK, dropped.
+So far yes. I am now on 2.6.24rc2 and although the input device numbers
+steadily increase s2ram does reliably work even when done >10 times in a
+row and no problems with evdev devices not being available.
+
+However resume is slower as some ata device (I think my cdrom) is timing
+out. So it could be related to a too fast resume from suspend.
+
+So the problem may re-appear if matthew garrets fix for
+[PATCH] Don't fail ata device revalidation for bad _GTF methods
+
+will be committed.
+
+Is there still a need to do tests with the printk's in 2.6.23?
+
+Soeren
