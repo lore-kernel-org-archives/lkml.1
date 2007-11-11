@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758091AbXKKUp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758038AbXKKUtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758091AbXKKUp0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 15:45:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755322AbXKKUpR
+	id S1758038AbXKKUtj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 15:49:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757071AbXKKUtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 15:45:17 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50935 "EHLO mx2.mail.elte.hu"
+	Sun, 11 Nov 2007 15:49:31 -0500
+Received: from gate.crashing.org ([63.228.1.57]:51598 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754979AbXKKUpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 15:45:15 -0500
-Date: Sun, 11 Nov 2007 21:44:19 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ulrich Drepper <drepper@redhat.com>, Roland McGrath <roland@redhat.com>,
-       "Andrew G. Morgan" <morgan@kernel.org>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       Chris Wright <chrisw@sous-sol.org>, James Morris <jmorris@namei.org>,
-       Serge Hallyn <serue@us.ibm.com>, Stephen Smalley <sds@tycho.nsa.gov>
-Subject: Re: [PATCH] kernel/capability.c get_task_comm compile error (MMOTM)
-Message-ID: <20071111204419.GA18829@elte.hu>
-References: <20071111141510.GA29126@elte.hu> <200711111711.lABHB7xo002409@agora.fsl.cs.sunysb.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200711111711.lABHB7xo002409@agora.fsl.cs.sunysb.edu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1753970AbXKKUtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Nov 2007 15:49:31 -0500
+Subject: Re: [PATCH, RFC] improved hacks to allow -rt to run kernbench on
+	POWER
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       tony@bakeyournoodle.com, paulus@samba.org, dino@in.ibm.com,
+       tytso@us.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com, antonb@us.ibm.com
+In-Reply-To: <Pine.LNX.4.58.0711110943510.12853@gandalf.stny.rr.com>
+References: <20071109181028.GA26800@linux.vnet.ibm.com>
+	 <1194641524.21340.14.camel@pasglop>
+	 <20071109220717.GJ8826@linux.vnet.ibm.com>
+	 <1194753541.21340.26.camel@pasglop>
+	 <Pine.LNX.4.58.0711110943510.12853@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Mon, 12 Nov 2007 07:48:45 +1100
+Message-Id: <1194814125.6510.14.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Erez Zadok <ezk@cs.sunysb.edu> wrote:
-
-> Ingo, I don't see how it can return NULL.  This is what get_task_comm 
-> looks like in MMOTM-2007-11-10-19-05:
+On Sun, 2007-11-11 at 09:45 -0500, Steven Rostedt wrote:
+> > Well, I suppose the patch could go in, maybe with some ifdef's
+> around
+> > the bits in _switch_to, there's little point in doing that on non-rt
+> > kernels.
 > 
-> char *get_task_comm(char *buf, struct task_struct *tsk)
-> {
-> 	/* buf must be at least sizeof(tsk->comm) in size */
-> 	task_lock(tsk);
-> 	strncpy(buf, tsk->comm, sizeof(tsk->comm));
-> 	task_unlock(tsk);
-> 	return buf;
-> }
-> 
-> The only way it'd return NULL is if a null buf was passed, in which 
-> case the strncpy will oops first.
+> As Nick Piggin already stated, and I'll even state it for the RT
+> kernel,
+> we do not allow preemption in switch_to. So it is safe to remove those
+> "preempt_disable" bits from the patch
 
-hm, here it says in include/linux/sched.h:
+Sure, I know that, I'm not talking about that, I'm talking about the
+added code that flush pending batches & save the batch state, since on
+non-rt kernel, this is not useful (the batch is only ever active within
+a spinlocked section, which cannot be preempted on non-rt).
 
- extern void get_task_comm(char *to, struct task_struct *tsk);
+Ben.
+ 
 
-HEAD ecd744eec3a.
-
-	Ingo
