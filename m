@@ -1,41 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755816AbXKKOCP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755354AbXKKONl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755816AbXKKOCP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 09:02:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbXKKOCA
+	id S1755354AbXKKONl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 09:13:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbXKKONd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 09:02:00 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:37671 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751434AbXKKOCA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 09:02:00 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1194667538.2588.49.camel@shinybook.infradead.org>
-References: <1194667538.2588.49.camel@shinybook.infradead.org> <20071109153432.20803.69832.stgit@warthog.procyon.org.uk> <20071109153503.20803.69203.stgit@warthog.procyon.org.uk>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: dhowells@redhat.com, torvalds@osdl.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-am33-list@redhat.com
-Subject: Re: [PATCH 6/6] MN10300: Add MTD flash support for the ASB2303 board [try #5]
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Sun, 11 Nov 2007 14:01:50 +0000
-Message-ID: <1529.1194789710@redhat.com>
+	Sun, 11 Nov 2007 09:13:33 -0500
+Received: from mailp1.server.telpin.com.ar ([201.219.64.3]:44897 "EHLO
+	mailp1.server.telpin.com.ar" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752921AbXKKONc convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Nov 2007 09:13:32 -0500
+Message-ID: <3821-2200711011133831432@ojala-38b74ea68>
+Reply-To: "Jesus en Dibujitos" <agentinajesucristo@yahoo.com.ar>
+From: "Jesus en Dibujitos" <pe@telpin.com.ar>
+To: linux-kernel@vger.kernel.org
+Subject: http://mx.geocities.com/biografiadecristo/
+Date: Sun, 11 Nov 2007 10:38:31 -0300
+MIME-Version: 1.0
+Content-type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse <dwmw2@infradead.org> wrote:
+http://mx.geocities.com/biografiadecristo/
 
-> Dunno why it's called "try #5" when I haven't directly received it even
-> once yet.
-
-As far as LKML is concerned, it's part of patchset try #5.
-
-> We're trying to avoid taking new simple map drivers -- you should be
-> able to use a platform device instead.
-
-Example?
-
-David
