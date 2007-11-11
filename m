@@ -1,79 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756217AbXKKEnB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753034AbXKKFKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756217AbXKKEnB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 23:43:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbXKKEmy
+	id S1753034AbXKKFKX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 00:10:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750733AbXKKFKM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 23:42:54 -0500
-Received: from mail4.tpgi.com.au ([203.12.160.61]:35084 "EHLO
-	mail4.tpgi.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751080AbXKKEmx (ORCPT
+	Sun, 11 Nov 2007 00:10:12 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:48187 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750711AbXKKFKK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 23:42:53 -0500
-X-Greylist: delayed 87222 seconds by postgrey-1.27 at vger.kernel.org; Sat, 10 Nov 2007 23:42:53 EST
-X-TPG-Antivirus: Passed
-Subject: Re: cd/dvd inaccessible in 2.6.24-rc2
-From: Will Trives <will@trivescon.com.au>
-To: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <47364059.8000003@garzik.org>
-References: <1194668831.3436.14.camel@Athas>  <47364059.8000003@garzik.org>
-Content-Type: text/plain
-Date: Sun, 11 Nov 2007 15:40:33 +1100
-Message-Id: <1194756033.5042.15.camel@Athas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Sun, 11 Nov 2007 00:10:10 -0500
+Date: Sun, 11 Nov 2007 06:09:45 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 0/5] introduce K64BIT=y and backward compatibility
+	ARCH={i386,x86_64} for x86
+Message-ID: <20071111050945.GB21669@stusta.de>
+References: <20071110204038.GA13140@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20071110204038.GA13140@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Jeff,
+On Sat, Nov 10, 2007 at 09:40:38PM +0100, Sam Ravnborg wrote:
 
-Yes it is. I'll keep testing with previous kernels.
+> As discussed in another thread the right thing is to add a generic solution
+> to select between 32 and 64 bit - useable for powerpc, s390, ppc et al.
+>...
 
-Dmesg does look different with 2.6.23 vs 2.6.24-rc2
+I seriously question this would be "the right thing".
 
-This is 2.6.23 :
+32/64bit isn't that special that this and only this option would require
+special casing, and the KISS principle of having only one way to specify 
+something like this has it's advantages.
 
-scsi8 : pata_jmicron
-scsi9 : pata_jmicron
-ata9: PATA max UDMA/100 cmd 0x000000000001c000 ctl 0x000000000001c102 bmdma 0x000000000001c400 irq 17
-ata10: PATA max UDMA/100 cmd 0x000000000001c200 ctl 0x000000000001c302 bmdma 0x000000000001c408 irq 17
-ata9.00: ATAPI: BENQ    DVD DD DW1640, BSRB, max UDMA/33
-ata9.00: configured for UDMA/33
-ata9: EH pending after completion, repeating EH (cnt=4)
-scsi 8:0:0:0: CD-ROM            BENQ     DVD DD DW1640    BSRB PQ: 0 ANSI: 5
+> 	Sam
 
+cu
+Adrian
 
-This is 2.6.24-rc2 :
+-- 
 
-scsi8 : pata_jmicron
-scsi9 : pata_jmicron
-ata9: PATA max UDMA/100 cmd 0xc000 ctl 0xc100 bmdma 0xc400 irq 17
-ata10: PATA max UDMA/100 cmd 0xc200 ctl 0xc300 bmdma 0xc408 irq 17
-ata9.00: ATAPI: BENQ DVD DD DW1640, BSRB, max UDMA/33
-ata9.00: configured for UDMA/33
-scsi 8:0:0:0: CD-ROM BENQ DVD DD DW1640 BSRB PQ: 0 ANSI: 5
-
-Regards,
-
-Will Trives
-
-On Sat, 2007-11-10 at 18:35 -0500, Jeff Garzik wrote:
-> Will Trives wrote:
-> > Hello,
-> > 
-> > Motherboard: Gigabyte GA-P35-DS4 (rev. 1.1)
-> > Chipset: Intel P35 + ICH9R 
-> > PATA port runs off JMicron controller
-> > CD/DVD Device: BENQ DW1640 16X
-> > 
-> > I cannot access my dvd burner under 2.6.24-rc2, I have no problems under
-> > 2.6.23. Basically the drive is detected OK, everything looks ok but as
-> > soon as I go to use it errors like this occur:
-> 
-> Is 2.6.24-rc1 also broken?
-> 
-> 	Jeff
-> 
-> 
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
