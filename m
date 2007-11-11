@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757999AbXKKUnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758091AbXKKUp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757999AbXKKUnT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 15:43:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756830AbXKKUnE
+	id S1758091AbXKKUp0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 15:45:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755322AbXKKUpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 15:43:04 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50655 "EHLO mx2.mail.elte.hu"
+	Sun, 11 Nov 2007 15:45:17 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50935 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755698AbXKKUnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 15:43:01 -0500
-Date: Sun, 11 Nov 2007 21:42:29 +0100
+	id S1754979AbXKKUpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Nov 2007 15:45:15 -0500
+Date: Sun, 11 Nov 2007 21:44:19 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrey Borzenkov <arvidjaar@mail.ru>, Thomas Meyer <thomas@m3y3r.de>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Len Brown <lenb@kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>
-Subject: Re: [regression] v2.6.24-rc1-497-gb1d08ac: kde battery icon gone
-Message-ID: <20071111204229.GA17289@elte.hu>
-References: <472B5C01.7090508@m3y3r.de> <20071103110452.GA8658@elte.hu> <200711041015.24689.arvidjaar@mail.ru> <200711041413.52876.rjw@sisk.pl>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ulrich Drepper <drepper@redhat.com>, Roland McGrath <roland@redhat.com>,
+       "Andrew G. Morgan" <morgan@kernel.org>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       Chris Wright <chrisw@sous-sol.org>, James Morris <jmorris@namei.org>,
+       Serge Hallyn <serue@us.ibm.com>, Stephen Smalley <sds@tycho.nsa.gov>
+Subject: Re: [PATCH] kernel/capability.c get_task_comm compile error (MMOTM)
+Message-ID: <20071111204419.GA18829@elte.hu>
+References: <20071111141510.GA29126@elte.hu> <200711111711.lABHB7xo002409@agora.fsl.cs.sunysb.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200711041413.52876.rjw@sisk.pl>
+In-Reply-To: <200711111711.lABHB7xo002409@agora.fsl.cs.sunysb.edu>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,50 +38,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+* Erez Zadok <ezk@cs.sunysb.edu> wrote:
 
-> > See this commit:
-> > 
-> > commit fb804714560463534ebcb538a3b0a3c687a830ec
-> > Author: Len Brown <len.brown@intel.com>
-> > Date:   Tue Jul 24 01:50:46 2007 -0400
-> > 
-> >     ACPI: Kconfig: CONFIG_ACPI_PROCFS now defaults to N
-> > 
-> >     delete "default y" from CONFIG_ACPI_PROCFS
-> >     (effectively making the default 'N')
-> > 
-> >     List exactly what /proc files this option controls,
-> >     and clarify that it doesn't change non-deprecated files.
-> > 
-> >     Signed-off-by: Len Brown <len.brown@intel.com>
-> > 
-> > So at least battery change should have added /proc/acpi/battery to this list.
+> Ingo, I don't see how it can return NULL.  This is what get_task_comm 
+> looks like in MMOTM-2007-11-10-19-05:
 > 
-> IMHO, the source of the problem is the battery change that has 
-> introduced the dependency on ACPI_PROCFS _although_ it's unset by 
-> default and that is a regression (ie. confuses users with older user 
-> space).
-
-"older user space" meaning just about every Linux box that is out there 
-at the moment. So this is a regression, the user does not care why it 
-happened, and needs fixing.
-
-> > May be we need separate ACPI_PROCFS_xxx for every subsystem.
+> char *get_task_comm(char *buf, struct task_struct *tsk)
+> {
+> 	/* buf must be at least sizeof(tsk->comm) in size */
+> 	task_lock(tsk);
+> 	strncpy(buf, tsk->comm, sizeof(tsk->comm));
+> 	task_unlock(tsk);
+> 	return buf;
+> }
 > 
-> Well, I'm not sure.  I think that documenting the dependency should be 
-> sufficient.
+> The only way it'd return NULL is if a null buf was passed, in which 
+> case the strncpy will oops first.
 
-No. We never remove a bit of relied-on API from the kernel like that. At 
-minimum it must go through a long deprecation cycle before it's turned 
-off by default. Really, is this some sort of weird "how can we piss off 
-and lose as many beta testers as possible in the shortest amount of 
-time" contest? Will people search for a few new lines of documentation 
-(out of the 1 million lines of kernel code that 2.6.24 changes) when 
-'make oldconfig' breaks their laptop setup - or will they just go over 
-to a more tester-friendly project? Compatibility is our utmost priority 
-(and your regressions list is a very good tool for us to keep 
-compatibility), especially in an incredibly easy case like this where 
-the fix is 1 changed byte with no harm done to anyone.
+hm, here it says in include/linux/sched.h:
+
+ extern void get_task_comm(char *to, struct task_struct *tsk);
+
+HEAD ecd744eec3a.
 
 	Ingo
