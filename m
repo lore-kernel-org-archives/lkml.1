@@ -1,44 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757194AbXKKXmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757401AbXKKXn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757194AbXKKXmg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 18:42:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755126AbXKKXm3
+	id S1757401AbXKKXn3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 18:43:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755126AbXKKXnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 18:42:29 -0500
-Received: from hpsmtp-eml19.kpnxchange.com ([213.75.38.84]:28130 "EHLO
-	hpsmtp-eml19.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755032AbXKKXm2 (ORCPT
+	Sun, 11 Nov 2007 18:43:22 -0500
+Received: from ausc60ps301.us.dell.com ([143.166.148.206]:63296 "EHLO
+	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752485AbXKKXnV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 18:42:28 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Subject: Re: Bind mount bug?
-Date: Mon, 12 Nov 2007 00:42:26 +0100
-User-Agent: KMail/1.9.7
-Cc: Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200711111106.53494.elendil@planet.nl> <Pine.LNX.4.64.0711112326030.25431@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0711112326030.25431@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sun, 11 Nov 2007 18:43:21 -0500
+DomainKey-Signature: s=smtpout; d=dell.com; c=nofws; q=dns; b=NY5VCyCWsYa3YErZcJ3KrUMYN9xdmv/3wNxOJQuDjv1cyrIFynb5zEzq8mp4Co+oS5gILPb8SXh06SJgkbJaiQBYgvQQCYMER0QLRa/0POKjZ3+RBj5Gpx9JexR2UOmP;
+X-IronPort-AV: E=Sophos;i="4.21,402,1188795600"; 
+   d="scan'208";a="412549876"
+Date: Sun, 11 Nov 2007 17:43:13 -0600
+From: Matt Domsch <Matt_Domsch@dell.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Keith Chew <keith.chew@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: PCI card initialisation at boot
+Message-ID: <20071111234313.GB15880@auslistsprd01.us.dell.com>
+References: <20f65d530711110722k3d2bf658hb44ceaa036b9962c@mail.gmail.com> <20071111164644.7b2c743c@the-village.bc.nu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711120042.26861.elendil@planet.nl>
-X-OriginalArrivalTime: 11 Nov 2007 23:42:27.0418 (UTC) FILETIME=[846BFBA0:01C824BC]
+In-Reply-To: <20071111164644.7b2c743c@the-village.bc.nu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 11 November 2007, Jan Engelhardt wrote:
-> >This mounts the bindtest/ tree on test/ _without_ copying the mount
-> >points which are found on subtrees. This is necessary to avoid loops
-> >in the filesystem (bind mounts are somewhat like hardlinks on
-> >directories, just without the headaches).
->
-> What you seek is mount --rbind.
+On Sun, Nov 11, 2007 at 04:46:44PM +0000, Alan Cox wrote:
+> Linux by default uses the BIOS resource assignments. It doesn't know
+> where those came from other than "the BIOS".
 
-Thanks! That works fine with mount from util-linux-ng.
+Slightly tangential, but I'm starting to hear requests to have the OS
+re-assign resources when it might make better sense.  For example, if
+you have a graphics card with a 1GB memory allocation, the BIOS may
+assign it into address ranges below 4GB because it doesn't know
+if the OS will be 32-bit or 64-bit capable.  But, it would be
+beneficial to have it located above 4GB, and to fill in the (new) hole
+below 4GB with RAM.  Linux right now doesn't have a way to do this.
+It will assign resources for cards that the BIOS left unassigned, but
+won't intentionally move resources.
 
-Busybox' mount (at least Debian's admittedly old 1.1.3 version) seems to 
-fail to do the recursing. I'll file a BR against busybox in Debian and 
-check that again when we have a more current version.
+
+-- 
+Matt Domsch
+Linux Technology Strategist, Dell Office of the CTO
+linux.dell.com & www.dell.com/linux
