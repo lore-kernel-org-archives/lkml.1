@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758079AbXKKUbP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758033AbXKKUeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758079AbXKKUbP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 15:31:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757273AbXKKUbA
+	id S1758033AbXKKUeS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 15:34:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756998AbXKKUeI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 15:31:00 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54977 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757192AbXKKUa7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 15:30:59 -0500
-Date: Sun, 11 Nov 2007 21:30:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
+	Sun, 11 Nov 2007 15:34:08 -0500
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:32866 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756904AbXKKUeH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Nov 2007 15:34:07 -0500
+Date: Sun, 11 Nov 2007 21:33:13 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: 2.6.24-rc2: Reported regressions from 2.6.23 (updated)
-Message-ID: <20071111203039.GA16925@elte.hu>
+Message-ID: <20071111203313.GA18969@electric-eye.fr.zoreil.com>
 References: <200711112058.28043.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <200711112058.28043.rjw@sisk.pl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rafael J. Wysocki <rjw@sisk.pl> :
+> [Note: Due to git.kernel.org not responding I'm unable to check which fixes
+> have already been merged since the last report.]
+[...]
+> Subject	: 2.6.24-rc1 kills onboard r8169 (rtl8111b) NIC
+> Submitter	: "Sergey S. Kostyliov" <rathamahata@gmail.com>
+> References	: http://lkml.org/lkml/2007/10/28/144
+> 		  http://bugzilla.kernel.org/show_bug.cgi?id=9257
+> Handled-By	: Francois Romieu <romieu@fr.zoreil.com>
+> Patch		: http://bugzilla.kernel.org/attachment.cgi?id=13441&action=view
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+Fixed and merged in Linus's tree as:
+- 50d84c2dc00e48ff9ba018ed0dd23276cf79e566
+- b9d04e2401bf308df921d3bbbdacab40fadc27bb
 
-> Subject		: [regression] v2.6.24-rc1-497-gb1d08ac: kde battery icon gone
-> Submitter	: Thomas Meyer <thomas@m3y3r.de>
-> References	: http://lkml.org/lkml/2007/11/2/165
-> 		  http://bugzilla.kernel.org/show_bug.cgi?id=9297
-> Handled-By	: Andrey Borzenkov <arvidjaar@mail.ru>
-> 		  Ingo Molnar <mingo@elte.hu>
-> Patch		: 
-> Note		: goes away if ACPI_PROCFS is set
-
-should be fixed by acpi-make-acpi_procfs-default-to-y.patch in -mm. (not 
-yet upstream i think, but should before v2.6.24)
-
-	Ingo
+-- 
+Ueimor
