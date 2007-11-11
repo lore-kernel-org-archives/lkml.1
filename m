@@ -1,73 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756462AbXKKA2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756599AbXKKAbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756462AbXKKA2p (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 19:28:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755556AbXKKA2g
+	id S1756599AbXKKAbQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 19:31:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755856AbXKKAbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 19:28:36 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:37744 "EHLO
+	Sat, 10 Nov 2007 19:31:04 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:37907 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755547AbXKKA2g (ORCPT
+	with ESMTP id S1755598AbXKKAbD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 19:28:36 -0500
-Date: Sat, 10 Nov 2007 19:27:37 -0500
-Message-Id: <200711110027.lAB0RbY0005475@agora.fsl.cs.sunysb.edu>
+	Sat, 10 Nov 2007 19:31:03 -0500
+Date: Sat, 10 Nov 2007 19:30:57 -0500
+Message-Id: <200711110030.lAB0UvLx006968@agora.fsl.cs.sunysb.edu>
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, linux-kernel@vger.kernel.org,
-       Dave Hansen <haveblue@us.ibm.com>, Greg KH <greg@kroah.com>
-Subject: Re: WARNING: at lib/kref.c:33 kref_get() (-mm 2007-11-06-02-32++) 
-In-reply-to: Your message of "Sat, 10 Nov 2007 14:54:52 PST."
-             <20071110145452.f6cf6326.akpm@linux-foundation.org> 
+Cc: linux-kernel@vger.kernel.org, apw@shadowen.org
+Subject: Warning: commit message does not conform to UTF-8. (mmotm "10-Nov-2007 22:46")
 X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <20071110145452.f6cf6326.akpm@linux-foundation.org>, Andrew Morton writes:
-> On Fri, 9 Nov 2007 21:12:47 -0500 Erez Zadok <ezk@cs.sunysb.edu> wrote:
-> 
-> > Setup: FC6 system with MM snapshot broken-out-2007-11-06-02-32
-> 
-> That's a bit old.
-> 
-> > and these two
-> > patches added:
-> > 
-> > r-o-bind-mounts-track-number-of-mount-writer-fix-buggy-loop.patch
-> > r-o-bind-mounts-track-number-of-mount-writer-fix-buggy-loop-checkpatch-fixes.patch
-> > 
-> > Booting the machine, waiting a few minutes (not logging in or doing anything
-> > else).  I get:
-> > 
-> > WARNING: at lib/kref.c:33 kref_get()
-> >  [<c020282a>] show_trace_log_lvl+0x12/0x25
-> >  [<c0203024>] show_trace+0xd/0x10
-> >  [<c0203120>] dump_stack+0x15/0x17
-> >  [<c02c7f85>] kref_get+0x26/0x30
-> >  [<c02c731b>] kobject_get+0x12/0x17
-> >  [<c02c7770>] kobject_add+0x97/0x162
-> >  [<c02164e5>] uids_user_create+0x41/0x5d
-> >  [<c0216850>] alloc_uid+0xc9/0x171
-> >  [<c0219b50>] set_user+0x1f/0x93
-> >  [<c021b445>] sys_setuid+0x4b/0xcb
-> >  [<c02021fe>] sysenter_past_esp+0x5f/0x91
-> >  =======================
-> > 
-> > There's no other indication where the setuid(2) came from, perhaps cron?
-> > 
-> 
-> I have a feeling that this was reported before and that Dave and/or Greg
-> looked into it.  Were those two patches which Dave sent yesterday applied?
+Andrew,
 
-Yes, both of Dave's patches were applied.  I'll give the latest -mm a try
-first and see report comes up.
+I'm getting minor warnings when applying two patches from
+<http://userweb.kernel.org/~akpm/mmotm/>
 
-> It might be worth checking my current tree:
-> http://userweb.kernel.org/~akpm/mmotm/
+It's probably not serious but I wonder if checkpatch catches this.
 
-The above URL is very useful.  Thanks!
+Applying patch..git-net.patch
+Warning: commit message does not conform to UTF-8.
+You may want to amend it after fixing the message, or set the config
+variable i18n.commitencoding to the encoding your project uses.
 
-I've got comments on my experience w/ the above URL, but I'll send those as
-separate emails shortly.
+Applying patch..mnt_unbindable-fix.patch
+Warning: commit message does not conform to UTF-8.
+You may want to amend it after fixing the message, or set the config
+variable i18n.commitencoding to the encoding your project uses.
 
 Erez.
