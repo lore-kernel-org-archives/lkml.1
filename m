@@ -1,77 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757322AbXKKSZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757457AbXKKS3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757322AbXKKSZA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 13:25:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbXKKSYu
+	id S1757457AbXKKS3R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 13:29:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbXKKS3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 13:24:50 -0500
-Received: from enyo.dsw2k3.info ([195.71.86.239]:49312 "EHLO enyo.dsw2k3.info"
+	Sun, 11 Nov 2007 13:29:05 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:34766 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751494AbXKKSYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 13:24:48 -0500
-Date: Sun, 11 Nov 2007 19:24:35 +0100
-From: Matthias Schniedermeyer <ms@citd.de>
-To: Thorsten Leemhuis <thl@ct.heise.de>
-Cc: Mark Lord <liml@rtr.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Jeff Garzik <jeff@garzik.org>, Riki Oktarianto <rkoktarianto@gmail.com>,
-       linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH] Add quirk to set AHCI mode on ICH boards
-Message-ID: <20071111182435.GA2265@citd.de>
-References: <20071109020235.GA2031@ceren> <20071109023129.GA25581@havoc.gtf.org> <4733D421.7000505@rtr.ca> <20071109034622.GB25581@havoc.gtf.org> <20071109120425.543971bf@the-village.bc.nu> <20071109233215.GA22498@citd.de> <4735F1E8.1070009@rtr.ca> <20071110183805.GA28230@citd.de> <47370C2A.108@ct.heise.de>
+	id S1751220AbXKKS3C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Nov 2007 13:29:02 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Chris Friedhoff <chris@friedhoff.org>
+Subject: Re: 2.6.24-rc2 STD with s2disk fails to activate suspended system after loading
+Date: Sun, 11 Nov 2007 19:45:06 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, Nigel Cunningham <nigel@suspend2.net>
+References: <20071110221629.1d180480.chris@friedhoff.org>
+In-Reply-To: <20071110221629.1d180480.chris@friedhoff.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47370C2A.108@ct.heise.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200711111945.06745.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11.11.2007 15:05, Thorsten Leemhuis wrote:
-> On 10.11.2007 00:32, Matthias Schniedermeyer wrote:
-> >  [...]
-> > My computer/mainboard @work has such a "broken" BIOS. Of the 5 
-> > SATA-Ports this MB has only 1 (and 1 "missing" that is reported by
-> > linux but i can't find on the MB) is configured as AHCI [...]
+On Saturday, 10 of November 2007, Chris Friedhoff wrote:
+> please cc me, I'm not not subscribed to LKML
 > 
-> There is nothing "broken" here. You have a ICH8 (without R) that drives
-> four SATA ports, which are handled by ata_piix.
+> Hello,
 > 
-> Then you have a Jmicron JMB363 -- it handles the PATA-Channel and two
-> SATA-Ports -- one internal (near the battery)/next to the PCI-Slot and a
-> external eSATA port. Seems you configured it in AHCI-Mode in the
-> BIOS-Setup. Linux will work just fine if you connect the hard disc to
-> that port. But if you want to install Windows XP you need a driver from
-> Jmicron.
+> with kernel 2.6.24-rc2 STD with s2disk suspends the system to disk, but
+> when I start the system and the suspended systemimage is loaded, it
+> fails to "activate" this suspended systemimage and continues after some
+> time with following the normal boot sequence.
 > 
-> There were BIOSes for the P5B where you could enabled AHCI for the ICH8
-> as well. It seems Asus removed it in the later BIOS-versions again as
-> Intel doesn't provide a Windows-AHCI driver for the basic ICH8.
+> I can sucessfully STD the system with the following sequence
+>   echo platform > /sys/power/disk
+>   echo disk > /sys/power/state
+> and when I start the laptop the suspended system is sucessfully
+> restored.
+> 
+> Both behaviors are reliable reproducable.
 
-I don't have an P5B @work, but i guess MSI cooks with water too. :-)
+Thanks for the report.
 
-But i have a (1 year old) P5B @home and it is exactly like you said.
+> googling for >"Freezing of tasks failed" swapper< brought
+> "Nigel Cunningham - PID namespaces break initrd+hibernate combination?"
+> http://lkml.org/lkml/2007/11/4/140
 
-My main point is still the same, if Linux could force AHCI mode, i 
-wouldn't have to switch between those modes when booting Wintendo to 
-play some games. (And i could use AHCI @work where i can't switch it in 
-BIOS)
+Yes, this looks similarly.
 
+> dmesg output:
+> <<snip>>
+> RAMDISK: ext2 filesystem found at block 0
+> RAMDISK: Loading 2000KiB [1 disk] into ram disk... done.
+> EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended
+> VFS: Mounted root (ext2 filesystem).
+> swsusp: Marking nosave pages: 000000000009f000 - 0000000000100000
+> swsusp: Basic memory bitmaps created
+> Clocksource tsc unstable (delta = -128791628 ns)
+> Syncing filesystems ... done.
+> Freezing user space processes ... (elapsed 0.00 seconds) done.
+> Freezing remaining freezable tasks ... 
+> Freezing of tasks failed after 20.00 seconds (1 tasks refusing to
+> freeze): task                PC stack   pid father
+> swapper       S c1835a88     0     1      0
+>        00000000 00000046 c0118c80 c1835a88 00000004 00000001 c011e875
+> 00000286 c01025a6 00000000 00000000 c1835b64 00000000 ffffffff c1835a90
+> 00000001 00000000 00000000 00000000 00000000 0000007b 00000000 c1835a90
+> c0118c80 Call Trace:
+>  [<c0118c80>] default_wake_function+0x0/0x10
+>  [<c011e875>] do_wait+0x335/0xac0
+>  [<c01025a6>] kernel_thread+0x96/0xb0
+>  [<c0118c80>] default_wake_function+0x0/0x10
+>  [<c011f031>] sys_wait4+0x31/0x40
+>  [<c04b7a23>] initrd_load+0x1b3/0x3a0
+>  [<c04b5108>] prepare_namespace+0x98/0x1b0
+>  [<c016090f>] sys_access+0x1f/0x30
+>  [<c04b47c6>] kernel_init+0x166/0x260
+>  [<c0103f4a>] ret_from_fork+0x6/0x1c
+>  [<c04b4660>] kernel_init+0x0/0x260
+>  [<c04b4660>] kernel_init+0x0/0x260
+>  [<c0104b8f>] kernel_thread_helper+0x7/0x18
+>  =======================
+> kthreadd      S 0000038f     0     2      0
+>        00000000 00000046 c0487790 0000038f c183ff1c 00000000 c012d81b
+> c012d7b0 00000000 00000000 c0104b8f 00000000 00000000 00000000 00000000
+> 00000000 00000000 
+> Call Trace:
+>  [<c012d81b>] kthreadd+0x6b/0xd0
+>  [<c012d7b0>] kthreadd+0x0/0xd0
+>  [<c0104b8f>] kernel_thread_helper+0x7/0x18
+>  =======================
+> ksoftirqd/0   S 00000000     0     3      2
+>        00000000 00000046 fffffffc 00000000 c0120f00 00000000 c0120f7a
+> c012d782 c012d740 00000000 00000000 c0104b8f c183ff3c 00000000 00000000
+> 00000000 00000000 00000000 
+> Call Trace:
+>  [<c0120f00>] ksoftirqd+0x0/0x80
+>  [<c0120f7a>] ksoftirqd+0x7a/0x80
+>  [<c012d782>] kthread+0x42/0x70
+>  [<c012d740>] kthread+0x0/0x70
+>  [<c0104b8f>] kernel_thread_helper+0x7/0x18
+> 
+> <<snip>>
 
-On a side note, with the mainboard i had before the P5B (ASUS, 925X 
-Chipset, ICH 6 or 7) Linux worked in AHCI-mode and Wintendo worked also 
-without problems. (IOW: I did not need to switch modes in BIOS!)
+Can you please attach your kernel configuration file to the bugzilla entry
+at http://bugzilla.kernel.org/show_bug.cgi?id=9345 ?
 
-
-
-
-
-
-Bis denn
-
--- 
-Real Programmers consider "what you see is what you get" to be just as 
-bad a concept in Text Editors as it is in women. No, the Real Programmer
-wants a "you asked for it, you got it" text editor -- complicated, 
-cryptic, powerful, unforgiving, dangerous.
-
+Thanks,
+Rafael
