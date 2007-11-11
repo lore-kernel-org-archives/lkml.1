@@ -1,66 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757291AbXKKRWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757316AbXKKRvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757291AbXKKRWV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 12:22:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754260AbXKKRWM
+	id S1757316AbXKKRvU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 12:51:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbXKKRvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 12:22:12 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:43206 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754460AbXKKRWL (ORCPT
+	Sun, 11 Nov 2007 12:51:10 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43598 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755320AbXKKRvJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 12:22:11 -0500
-Date: Sun, 11 Nov 2007 12:11:07 -0500
-Message-Id: <200711111711.lABHB7xo002409@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>,
-       Roland McGrath <roland@redhat.com>,
-       "Andrew G. Morgan" <morgan@kernel.org>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       Chris Wright <chrisw@sous-sol.org>, James Morris <jmorris@namei.org>,
-       Serge Hallyn <serue@us.ibm.com>, Stephen Smalley <sds@tycho.nsa.gov>
-Subject: Re: [PATCH] kernel/capability.c get_task_comm compile error (MMOTM) 
-In-reply-to: Your message of "Sun, 11 Nov 2007 15:15:10 +0100."
-             <20071111141510.GA29126@elte.hu> 
-X-MailKey: Erez_Zadok
+	Sun, 11 Nov 2007 12:51:09 -0500
+Date: Sun, 11 Nov 2007 09:50:23 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+cc: Robert Schwebel <r.schwebel@pengutronix.de>, Adrian Bunk <bunk@kernel.org>,
+       Paul Mundt <lethal@linux-sh.org>, Sascha Hauer <s.hauer@pengutronix.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] netx: remove bogus defconfig patch with wrong -p
+In-Reply-To: <20071111094111.GA12332@flint.arm.linux.org.uk>
+Message-ID: <alpine.LFD.0.9999.0711110949340.30499@woody.linux-foundation.org>
+References: <20071110080629.GA18520@linux-sh.org> <20071110091057.GA10446@flint.arm.linux.org.uk> <20071110112632.GQ8087@pengutronix.de> <20071110114953.GL26163@stusta.de> <20071110134048.GR8087@pengutronix.de> <20071110134154.GS8087@pengutronix.de>
+ <20071111094111.GA12332@flint.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <20071111141510.GA29126@elte.hu>, Ingo Molnar writes:
-> 
-> * Erez Zadok <ezk@cs.sunysb.edu> wrote:
-> 
-> > Small patch below fixes compile error.
-> 
-> > +			char name[sizeof(current->comm)];
-> >  			warned++;
-> >  			printk(KERN_INFO
-> >  			       "warning: process `%s' sets w/ old libcap\n",
-> > -			       get_task_comm(current));
-> > +			       get_task_comm(name, current));
-> 
-> that's buggy - get_task_comm() returns void.
-> 
-> the proper fix would be to first do a get_task_comm() then pass in 
-> 'name' as an argument to printk.
-> 
-> 	Ingo
 
-Ingo, I don't see how it can return NULL.  This is what get_task_comm looks
-like in MMOTM-2007-11-10-19-05:
 
-char *get_task_comm(char *buf, struct task_struct *tsk)
-{
-	/* buf must be at least sizeof(tsk->comm) in size */
-	task_lock(tsk);
-	strncpy(buf, tsk->comm, sizeof(tsk->comm));
-	task_unlock(tsk);
-	return buf;
-}
+On Sun, 11 Nov 2007, Russell King wrote:
+>
+> So what's happening with this?  Who's going to merge it?
 
-The only way it'd return NULL is if a null buf was passed, in which case the
-strncpy will oops first.
+Well, I already removed the bogus file. 
 
-Erez.
+But whether the defconfig file in arch/arm needs updating or not is up to 
+you guys.
+
+		Linus
