@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbXKKPRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756828AbXKKPT2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756521AbXKKPRV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 10:17:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbXKKPRN
+	id S1756828AbXKKPT2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 10:19:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754336AbXKKPTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 10:17:13 -0500
-Received: from wr-out-0506.google.com ([64.233.184.224]:38730 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754308AbXKKPRM (ORCPT
+	Sun, 11 Nov 2007 10:19:20 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52745 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754601AbXKKPTU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 10:17:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=Ir5okkAEI7fOEeUNwA+8fdxp4ETT7vYfzk0UWQUoqFlj0lA1nCv8ltlz8mOoI6w7Z98wUaLRuKsKLsQjjR8gXzH5zIT02e0VuiUq2ebUxE5j64/IZaGLxsYWlvJlaDES0sxzsHOirftzKJC9RXZImu2lvU/Qz8SOJ4fxG1OtgDY=
-Message-ID: <7d01f9f00711110717x3eced6b2n8497476bcb17be1b@mail.gmail.com>
-Date: Sun, 11 Nov 2007 16:17:04 +0100
-From: "Thibaut VARENE" <T-Bone@parisc-linux.org>
-To: "dave chung" <ponstrip@gmail.com>
-Subject: Re: [PATCH] drivers/video/s1d13xxxfb.c as module with dbg
-Cc: "Stanislav Brabec" <utx@penguin.cz>, linux-kernel@vger.kernel.org
-In-Reply-To: <d7b238da0711101529s3384cb6bx928c74cfef8fde0f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Sun, 11 Nov 2007 10:19:20 -0500
+Date: Sun, 11 Nov 2007 15:18:35 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Howells <dhowells@redhat.com>
+Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-am33-list@redhat.com
+Subject: Re: [PATCH 5/6] MN10300: Add the MN10300/AM33 architecture to the
+ kernel [try #5]
+Message-ID: <20071111151835.7917a565@the-village.bc.nu>
+In-Reply-To: <1658.1194792517@redhat.com>
+References: <20071110200935.60d375de@the-village.bc.nu>
+	<20071109195303.edbdc631.akpm@linux-foundation.org>
+	<20071109153432.20803.69832.stgit@warthog.procyon.org.uk>
+	<20071109153458.20803.10594.stgit@warthog.procyon.org.uk>
+	<24343.1194697130@redhat.com>
+	<1658.1194792517@redhat.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1194709875.4486.8.camel@utx.utx.cz>
-	 <d7b238da0711101529s3384cb6bx928c74cfef8fde0f@mail.gmail.com>
-X-Google-Sender-Auth: cec9cf83872fdc9c
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 11, 2007 12:29 AM, dave chung <ponstrip@gmail.com> wrote:
+> So you would say change the global h/w register variables[*] to be addresses
+> instead, and change all the references to be readX and writeX?  I'm wary of
 
-> we also need to look at splitting out the "chip revision", which is
-> currently hard set, as I have had very good results with this driver
-> and  chip  S1D13506, which is functionally similar but without the
-> external clocking and without teh internal ram.
+Ok so these are not addresses but magic registers in the processor ? Then
+I guess volatile makes complete sense.
 
-Well I wrote the initial driver mostly as a rather quick hack. I
-didn't have access to other hw from the s1d13 family (other than the
-806) at that time, and could only guess that supporting them shouldn't
-be too complicated. Nowadays I don't even have access to the 806
-itself anymore, so I'm afraid I won't be of much help.
+> > Similarly spin_lock/unlock are store barriers so for ring buffers should
+> > be sufficient unless you have cache management requirements in which case
+> > the dma_* APIs will handle those bits.
+> 
+> I don't actually need locks, but sticking smp_rmb()/smp_wmb() is probably the
+> right thing to do now that I know how to use them.  This code was written five
+> or six years ago and I haven't really thought about changing that since.
+> 
+> I don't see how the dma_* APIs would help.  The buffer is filled by a higher
+> priority interrupt routine that does 'virtual DMA'.  It's not actually done by
+> real DMA.  Normal interrupt disablement doesn't really disable interrupts, it
+> justs excludes normal priority interrupts.
 
-HTH
+For real DMA the dma_ APIs keep coherency
 
-T-Bone
+> The virtual DMA is done is ASM as it has to be really quick.  It's unfortunate,
+> but, the on-chip serial ports don't have a FIFO.
 
--- 
-Thibaut VARENE
-http://www.parisc-linux.org/~varenet/
+For PIO (virtual DMA or otherwise) the locking does that. Because
+spin_unlock and spin_lock are compiler barriers the need to use volatile
+shouldn't normally be there. If you are doing it via asm without locks
+then I would expect atomic_t because the sematics of volatile are
+horribly vague on their own ?
+
