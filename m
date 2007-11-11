@@ -1,86 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756810AbXKKJdx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756898AbXKKJhI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756810AbXKKJdx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 04:33:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753776AbXKKJdp
+	id S1756898AbXKKJhI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 04:37:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbXKKJgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 04:33:45 -0500
-Received: from anchor-post-34.mail.demon.net ([194.217.242.92]:3537 "EHLO
-	anchor-post-34.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753413AbXKKJdo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 04:33:44 -0500
-X-Greylist: delayed 633 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Nov 2007 04:33:44 EST
-Message-ID: <4736CA1D.9020507@superbug.co.uk>
-Date: Sun, 11 Nov 2007 09:23:41 +0000
-From: James Courtier-Dutton <James@superbug.co.uk>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Sun, 11 Nov 2007 04:36:54 -0500
+Received: from pip10.gyao.ne.jp ([61.122.117.248]:46891 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753090AbXKKJgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Nov 2007 04:36:53 -0500
+Date: Sun, 11 Nov 2007 18:36:26 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Magnus Damm <damm@igel.co.jp>, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org, linuxsh-dev@lists.sourceforge.net,
+       linuxsh-shmedia-dev@lists.sourceforge.net, netdev@vger.kernel.org
+Subject: Re: drivers/net/ax88796.c compile error on sh64
+Message-ID: <20071111093625.GA25796@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Adrian Bunk <bunk@kernel.org>, Magnus Damm <damm@igel.co.jp>,
+	Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+	linuxsh-dev@lists.sourceforge.net,
+	linuxsh-shmedia-dev@lists.sourceforge.net, netdev@vger.kernel.org
+References: <20071111090620.GK21669@stusta.de>
 MIME-Version: 1.0
-To: Xavier Bestel <xavier.bestel@free.fr>, Benny Halevy <bhalevy@panasas.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Coding Style: indenting with tabs vs. spaces
-References: <4732E6BA.8060001@panasas.com> <20071110120424.GA16067@DervishD> <1194697674.6176.1.camel@bip.parateam.prv> <20071110165017.GB16090@DervishD>
-In-Reply-To: <20071110165017.GB16090@DervishD>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071111090620.GK21669@stusta.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-DervishD wrote:
->     Bonjour Xavier :)
->
->  * Xavier Bestel <xavier.bestel@free.fr> dixit:
->   
->> Le samedi 10 novembre 2007 à 13:04 +0100, DervishD a écrit :
->>     
->>>  * Benny Halevy <bhalevy@panasas.com> dixit:
->>>       
->>>> I would like to hear peoples opinion about the indentation convention
->>>> described below that I personally found the most practical with
->>>> several different editors.
->>>>         
->>> While I respect you opinion about tabs, I find tab indentation the most
->>> evil thing ever invented. Even if done right (that is, not indenting
->>> using a mixture of spaces and tabs), the only advantage is that you save
->>> a few bytes.
->>>       
->> Who cares ?
->>     
->
-> About the space saving? Not me, of course. It's just that I didn't see
-> any other advantage.
->
->   
->> The only advantage is that people can make tabs as big (or as small)
->> as they wish. Tabs become "logical indentation". So one's indentation
->> isn't forced on anotherone's editor.
->>     
->
-> The only way of having a sane indentation using tabs is to make sure
-> that ALL indentation are tabs, not a mix of tabs and spaces (spaces, if
-> any, should be at the end of indentation for aesthetical purposes, but
-> should be removed without the logical indentation being lost). A good
-> editor can ensure that all indentation are tabs and not a mix, but a
-> good editor can adapt indentation to your likings when loading the file
-> and save the file translating your favourite indentation back to spaces
-> or whatever.
->
-> If everybody used tabs correctly, indenting using tabs would be great,
-> but IMHO indenting with spaces is much better.
->
->     Raúl Núñez de Arenas Coronado
->
->   
-
-Just use the linux
-
-./scripts/checkpatch.pl --file
-
-It does all the indent checks for you before you submit a patch.
-I.e. I checks that one has not mixed tabs with spaces etc.
-So, any patches to the Linux kernel will have tabs used correctly.
-Where is the problem?
-
-James
-
-
+On Sun, Nov 11, 2007 at 10:06:21AM +0100, Adrian Bunk wrote:
+> Commit 8687991a734a67f1638782c968f46fff0f94bb1f causes the following 
+> compile error on sh64:
+> 
+> <--  snip  -->
+> 
+> ...
+>   CC [M]  drivers/net/ax88796.o
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/net/ax88796.c: In function 'ax_get_8390_hdr':
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/net/ax88796.c:187: error: implicit declaration of function 'readsw'
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/net/ax88796.c:189: error: implicit declaration of function 'readsb'
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/net/ax88796.c: In function 'ax_block_output':
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/net/ax88796.c:275: error: implicit declaration of function 'writesw'
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/net/ax88796.c:277: error: implicit declaration of function 'writesb'
+> make[3]: *** [drivers/net/ax88796.o] Error 1
+> 
+> <--  snip -->
+> 
+That's a pretty good argument for the PLAT_HAS_xxx stuff in the Kconfig
+space. We could have a if (CONFIG_SUPERH && !CONFIG_SUPERH64) thing here,
+but there's probably not much point. I'm planning on merging them in the
+2.6.25 time period anyways, so adding a stop-gap solution to hide this
+driver's visibility doesn't really seem like a worthwhile endeavour.
