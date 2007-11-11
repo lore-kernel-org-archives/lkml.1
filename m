@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754618AbXKKCOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbXKKCRl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754618AbXKKCOr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 21:14:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbXKKCOj
+	id S1755239AbXKKCRl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 21:17:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbXKKCRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 21:14:39 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45358 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751350AbXKKCOi (ORCPT
+	Sat, 10 Nov 2007 21:17:32 -0500
+Received: from web36602.mail.mud.yahoo.com ([209.191.85.19]:43020 "HELO
+	web36602.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751407AbXKKCRb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 21:14:38 -0500
-Date: Sat, 10 Nov 2007 18:14:16 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-am33-list@redhat.com
-Subject: Re: [PATCH 1/6] Suppress A.OUT library support if
- !CONFIG_BINFMT_AOUT [try #5]
-Message-Id: <20071110181416.31dc2614.akpm@linux-foundation.org>
-In-Reply-To: <20071109153437.20803.55096.stgit@warthog.procyon.org.uk>
-References: <20071109153432.20803.69832.stgit@warthog.procyon.org.uk>
-	<20071109153437.20803.55096.stgit@warthog.procyon.org.uk>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
+	Sat, 10 Nov 2007 21:17:31 -0500
+X-YMail-OSG: PgJ80TIVM1mkmMl3drni1zhpxwpxHSwOskr0uXrJA33daxvd5t7kl1QxlUiR.moGQS.sKCt3YA--
+X-RocketYMMF: rancidfat
+Date: Sat, 10 Nov 2007 18:17:30 -0800 (PST)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: AppArmor Security Goal
+To: Crispin Cowan <crispin@crispincowan.com>,
+       "Dr. David Alan Gilbert" <linux@treblig.org>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       LSM ML <linux-security-module@vger.kernel.org>,
+       apparmor-dev <apparmor-dev@forge.novell.com>
+In-Reply-To: <47363381.4030103@crispincowan.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Message-ID: <601618.10362.qm@web36602.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 09 Nov 2007 15:34:37 +0000 David Howells <dhowells@redhat.com> wrote:
 
-> --- a/include/linux/Kbuild
-> +++ b/include/linux/Kbuild
-> @@ -1,3 +1,4 @@
-> +# -*- makefile -*-
+--- Crispin Cowan <crispin@crispincowan.com> wrote:
 
-what's that?
+> Dr. David Alan Gilbert wrote:
+> ...
+>
+> Can you explain why you want a non-privileged user to be able to edit
+> policy? I would like to better understand the problem here.
+> 
+> Note that John Johansen is also interested in allowing non-privileged
+> users to manipulate AppArmor policy, but his view was to only allow a
+> non-privileged user to further tighten the profile on a program. To me,
+> that adds complexity with not much value, but if lots of users want it,
+> then I'm wrong :)
 
->  header-y += byteorder/
->  header-y += dvb/
->  header-y += hdlc/
-> @@ -17,7 +18,9 @@ header-y += usb/
->  
->  header-y += affs_hardblocks.h
->  header-y += aio_abi.h
-> +ifeq ($(wildcard include/asm-$(SRCARCH)/a.out.h),include/asm-$(SRCARCH)/a.out.h)
->  header-y += a.out.h
-> +endif
+Now this is getting interesting. It looks to me as if you've implemented
+a mandatory access control scheme that some people would like to be able
+to use as a discretionary access control scheme. This is creepy after
+seeing the MCS implementation in SELinux, which is also a DAC scheme
+wacked out of a MAC scheme. Very interesting indeed.
 
-Note that because of unexport-asm-pageh.patch I turned the above hunk into
 
-ifeq ($(wildcard include/asm-$(SRCARCH)/a.out.h),include/asm-$(SRCARCH)/a.out.h)
-unifdef-y += a.out.h
-endif
-
-which seems logical to me.  We'll see how it tests out.
+Casey Schaufler
+casey@schaufler-ca.com
