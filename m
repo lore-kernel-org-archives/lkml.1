@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756373AbXKKOs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbXKKPAK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756373AbXKKOs4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 09:48:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020AbXKKOst
+	id S1755980AbXKKPAK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 10:00:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbXKKO75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 09:48:49 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53243 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753528AbXKKOss (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 09:48:48 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20071110200935.60d375de@the-village.bc.nu>
-References: <20071110200935.60d375de@the-village.bc.nu> <20071109195303.edbdc631.akpm@linux-foundation.org> <20071109153432.20803.69832.stgit@warthog.procyon.org.uk> <20071109153458.20803.10594.stgit@warthog.procyon.org.uk> <24343.1194697130@redhat.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-am33-list@redhat.com
-Subject: Re: [PATCH 5/6] MN10300: Add the MN10300/AM33 architecture to the kernel [try #5]
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Sun, 11 Nov 2007 14:48:37 +0000
-Message-ID: <1658.1194792517@redhat.com>
+	Sun, 11 Nov 2007 09:59:57 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:2209 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754081AbXKKO74 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Nov 2007 09:59:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=QpWOQtUgHFPW+FgF7CCUNq5LFQx9U7uEtlFKZuLjJGbXx10t37UvgsPfY83i12NObKGAsnepcdqIgyIyhHF/wMT8NmpwN6Y7HHJoQR0VS1CfQDHv30B1UCTJwI+cscdkFYzAXhGwFMPZPdhd1+04T0Zp/qv6Nt+UJ81hYwWraO8=
+Message-ID: <3d8471ca0711110659w20b6dd8epfa49cd3fcb814d0e@mail.gmail.com>
+Date: Sun, 11 Nov 2007 15:59:54 +0100
+From: "Guillaume Chazarain" <guichaz@yahoo.fr>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: [PATCH] kconfig: use $K64BIT to set 64BIT with all*config targets
+Cc: "Sam Ravnborg" <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071111130714.GN21669@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071110204038.GA13140@uranus.ravnborg.org>
+	 <11947274093185-git-send-email-sam@ravnborg.org>
+	 <11947274091127-git-send-email-sam@ravnborg.org>
+	 <3d8471ca0711101255m1647e27cm241f358cc49a9921@mail.gmail.com>
+	 <20071111051408.GC21669@stusta.de>
+	 <3d8471ca0711110443v46084714m709b2b713a536b19@mail.gmail.com>
+	 <20071111130714.GN21669@stusta.de>
+X-Google-Sender-Auth: 429a48b7df851ca4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+On 11/11/07, Adrian Bunk <bunk@kernel.org> wrote:
+> Another important point is that users that know about and see CONFIG_*
+> variables are kernel hackers, not the normal kconfig users.
 
-> memory mapped registers should be read with readw and friends and that
-> should contain the volatile not the public code.
+But kconfig is mainly for kernel hackers, otherwise it would be
+called CML2 ;-)
 
-So you would say change the global h/w register variables[*] to be addresses
-instead, and change all the references to be readX and writeX?  I'm wary of
-doing that in case some special logic needs to be inserted in there to handle
-funny buses differently.  I used to have code like that in there, though
-there's none at the moment.  On the other hand, since the CPU addresses are for
-the most part constants, I can probably do something clever with
-__builtin_const_p() if it comes to that.
+> > Also, when working on a specific feature of the kernel, I tend to
+> > install both a kernel with the CONFIG_ option set and one with
+> > the option unset. Scripts to do that can twiddle the .config file,
+> > but it would be more convenient if kbuild could avoid that.
+>
+> I'm wondering why you don't use two different O= output directories
+> instead?
+>
+> Depending on the CONFIG_ option in question this might even greatly
+> reduce your compile times.
 
- [*] This includes auxiliary CPU control registers, though I suppose that
-     doesn't make any difference.
+/me is filled with wonder at the discovery that .config is saved in the O=
+directory. Thanks a lot Adrian for this time saver. So it's not strictly an
+output directory, more a build directory.
 
-> Similarly spin_lock/unlock are store barriers so for ring buffers should
-> be sufficient unless you have cache management requirements in which case
-> the dma_* APIs will handle those bits.
+I still think "make oldconfig CONFIG_FOO=bar" is useful for the occasional
+config change, but thanks again for this great tip.
 
-I don't actually need locks, but sticking smp_rmb()/smp_wmb() is probably the
-right thing to do now that I know how to use them.  This code was written five
-or six years ago and I haven't really thought about changing that since.
-
-I don't see how the dma_* APIs would help.  The buffer is filled by a higher
-priority interrupt routine that does 'virtual DMA'.  It's not actually done by
-real DMA.  Normal interrupt disablement doesn't really disable interrupts, it
-justs excludes normal priority interrupts.
-
-The virtual DMA is done is ASM as it has to be really quick.  It's unfortunate,
-but, the on-chip serial ports don't have a FIFO.
-
-David
+-- 
+Guillaume
