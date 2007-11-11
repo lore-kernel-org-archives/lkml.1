@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbXKKBSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754618AbXKKCOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754881AbXKKBSc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 20:18:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751064AbXKKBSX
+	id S1754618AbXKKCOr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 21:14:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbXKKCOj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 20:18:23 -0500
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:54699
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750839AbXKKBSV (ORCPT
+	Sat, 10 Nov 2007 21:14:39 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45358 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751350AbXKKCOi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 20:18:21 -0500
-Date: Sat, 10 Nov 2007 17:27:51 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: "Dr. David Alan Gilbert" <linux@treblig.org>,
-       Crispin Cowan <crispin@crispincowan.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       LSM ML <linux-security-module@vger.kernel.org>,
-       apparmor-dev <apparmor-dev@forge.novell.com>
-Subject: Re: AppArmor Security Goal
-In-Reply-To: <20071110235609.00958d87@the-village.bc.nu>
-Message-ID: <Pine.LNX.4.64.0711101720100.4780@asgard.lang.hm>
-References: <473380AD.5070801@crispincowan.com> <20071110220455.GB24195@gallifrey>
- <47362C7C.2050202@crispincowan.com> <20071110222414.GC24195@gallifrey>
- <47363381.4030103@crispincowan.com> <20071110232545.GD24195@gallifrey>
- <Pine.LNX.4.64.0711101546400.4780@asgard.lang.hm> <20071110235609.00958d87@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Sat, 10 Nov 2007 21:14:38 -0500
+Date: Sat, 10 Nov 2007 18:14:16 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-am33-list@redhat.com
+Subject: Re: [PATCH 1/6] Suppress A.OUT library support if
+ !CONFIG_BINFMT_AOUT [try #5]
+Message-Id: <20071110181416.31dc2614.akpm@linux-foundation.org>
+In-Reply-To: <20071109153437.20803.55096.stgit@warthog.procyon.org.uk>
+References: <20071109153432.20803.69832.stgit@warthog.procyon.org.uk>
+	<20071109153437.20803.55096.stgit@warthog.procyon.org.uk>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 Nov 2007, Alan Cox wrote:
+On Fri, 09 Nov 2007 15:34:37 +0000 David Howells <dhowells@redhat.com> wrote:
 
->> but how can the system know if the directory the user wants to add is
->> reasonable or not? what if the user says they want to store their
->> documents in /etc?
->
-> A more clear example is wanting to wrap a specific tool with temporary
-> rules. Those rules would depend on the exact file being edited at this
-> moment - something root cannot know in advance
-> (although with apparmor I guess mv $my_file apparmour_magic.name ; foo;
-> mv it back might work 8))
+> --- a/include/linux/Kbuild
+> +++ b/include/linux/Kbuild
+> @@ -1,3 +1,4 @@
+> +# -*- makefile -*-
 
-the mechanism being desired was that the system administrator would setup 
-a restrictive policy and a user who wanted a more permissive policy would 
-have the ability to make it more permissive.
+what's that?
 
-this sort of thing is a disaster waiting to happen.
+>  header-y += byteorder/
+>  header-y += dvb/
+>  header-y += hdlc/
+> @@ -17,7 +18,9 @@ header-y += usb/
+>  
+>  header-y += affs_hardblocks.h
+>  header-y += aio_abi.h
+> +ifeq ($(wildcard include/asm-$(SRCARCH)/a.out.h),include/asm-$(SRCARCH)/a.out.h)
+>  header-y += a.out.h
+> +endif
 
-however, if App Armor sets things up so that there can be a system policy 
-that users cannot touch, but users can have a secondary policy that layers 
-over the system one to restrict things further it could be safe.
+Note that because of unexport-asm-pageh.patch I turned the above hunk into
 
-if a sysadmin wants to have 'soft' and 'hard' limits of what a user can 
-do, they could put the 'hard' limits in the system policy (and the users 
-_cannot_ violate these limits), and then set the 'soft' limits in the 
-users default setup (similar to how .profile is set by default). if a user 
-wants to make things less restrictive they could edit or remove the 
-per-user policy, but would still not be able to violate the system policy.
+ifeq ($(wildcard include/asm-$(SRCARCH)/a.out.h),include/asm-$(SRCARCH)/a.out.h)
+unifdef-y += a.out.h
+endif
 
-however, while this seems attractive, I'm not sure that madness isn't down 
-the road a little bit. since the users policy would only apply to 
-themselves, you have the situation that (DAC permissions permitting) the 
-files are available to other confined processes becouse they are running 
-as other users. this sort of thing will surprise people if the 
-explinations aren't done very carefully.
-
-David Lang
+which seems logical to me.  We'll see how it tests out.
