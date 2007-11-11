@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756593AbXKKAv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756791AbXKKAvm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756593AbXKKAv1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 19:51:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755885AbXKKAvN
+	id S1756791AbXKKAvm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 19:51:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756010AbXKKAvT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 19:51:13 -0500
-Received: from py-out-1112.google.com ([64.233.166.176]:61683 "EHLO
+	Sat, 10 Nov 2007 19:51:19 -0500
+Received: from py-out-1112.google.com ([64.233.166.183]:61912 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755873AbXKKAvL (ORCPT
+	with ESMTP id S1755894AbXKKAvO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 19:51:11 -0500
+	Sat, 10 Nov 2007 19:51:14 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:from:to:cc:subject:date:mime-version:content-type:content-transfer-encoding:x-mailer:x-mimeole:thread-index:message-id;
-        b=Rs6cblkCJ1dfZpKSmA6QGXXaf57n5dRvaSXb+w6SpSpMe1N0jKWKQexyrie7tzNgn4lUjzc3Vf/pO8U3X2G9kjGXC9UcJk/NRsDtBldOXYGaTofH5+wpIHy0oAqpen3TBkSGdITLc6nZVDerPUy/BSoakI/u2N9tMnm4XRVsiwo=
+        b=sYut65KVYjFfvXtugP+4AQUXhmjEfCIHbfYGQd+RYPyMDW0n+g+AChURrBCJGTsuCu+izTygwjbPFz+0dZLblSx2tk71omA1+uFfSYbd4nFS9kjpB+vNXr57p8uApLKBxJlZ/4KNjNGgYWcdWdn8csBZfxhEu2z6G1pfQmzjXdw=
 From: "Joonwoo Park" <joonwpark81@gmail.com>
 To: "'David Miller'" <davem@davemloft.net>, <netdev@vger.kernel.org>
 Cc: "'Dave Johnson'" <djohnson+linux-kernel@sw.starentnetworks.com>,
        <linux-kernel@vger.kernel.org>, <e1000-devel@lists.sourceforge.net>
-Subject: [PATCH 1/2] [VLAN] Don't drop an unclassfied vlan packet as PACKET_OTHERHOST
+Subject: [PATCH 2/2] [e1000 VLAN] Disable vlan hw accel when promiscuous mode
 Date: Sun, 11 Nov 2007 09:51:20 +0900
 MIME-Version: 1.0
 Content-Type: text/plain;
@@ -26,107 +26,75 @@ Content-Type: text/plain;
 Content-Transfer-Encoding: 7bit
 X-Mailer: Microsoft Office Outlook, Build 11.0.5510
 X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-Thread-Index: Acgj/PXFq+o2L5kUQCqZnyixrdZtmw==
-Message-ID: <473651fd.0f10240a.0686.2169@mx.google.com>
+Thread-Index: Acgj/PSbazJSWk9CQZW6q+XEgEJHlg==
+Message-ID: <47365200.0f10240a.0686.2173@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-IMHO linux should not drop unclassified vlan packets to pass these to sniffers. isn't it?
-But, since the __vlan_hwaccel_rx drops unclassified vlan packets, sniffers cannot see them.
-This make the __vlan_hwaccel_rx receive and process an unclassified vlan packet as a PACKET_OTHERHOST.
+IMHO even though netdevice is in the promiscuous mode, we should receive all of ingress packets.
+This disable the vlan filtering feature when a vlan hw accel configured e1000 device goes into promiscuous mode.
+This make packets visible to sniffers though it's not vlan id of itself.
 Any check, comments will be appreciated.
 Thanks.
 
-Signed-off-by: Joonwoo Park <joonwpark81@gmail.com> 
+Signed-off-by: Joonwoo Park <joonwpark81@gmail.com>
 ---
- include/linux/if_vlan.h |   61 ++++++++++++++++++++++++++--------------------
- 1 files changed, 34 insertions(+), 27 deletions(-)
+ drivers/net/e1000/e1000_main.c |   26 ++++++++++++++++++++------
+ 1 files changed, 20 insertions(+), 6 deletions(-)
 
-diff --git a/include/linux/if_vlan.h b/include/linux/if_vlan.h
-index 976d4b1..e1db5bc 100644
---- a/include/linux/if_vlan.h
-+++ b/include/linux/if_vlan.h
-@@ -170,21 +170,26 @@ static inline int __vlan_hwaccel_rx(struct sk_buff *skb,
- 				    unsigned short vlan_tag, int polling)
- {
- 	struct net_device_stats *stats;
-+	struct net_device *vlan_dev;
+diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c index 72deff0..cdd5c84 100644
+--- a/drivers/net/e1000/e1000_main.c
++++ b/drivers/net/e1000/e1000_main.c
+@@ -2424,7 +2424,7 @@ e1000_set_multi(struct net_device *netdev)
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	struct dev_mc_list *mc_ptr;
+-	uint32_t rctl;
++	uint32_t rctl, ctrl;
+ 	uint32_t hash_value;
+ 	int i, rar_entries = E1000_RAR_ENTRIES;
+ 	int mta_reg_count = (hw->mac_type == e1000_ich8lan) ?
+@@ -2441,14 +2441,25 @@ e1000_set_multi(struct net_device *netdev)
+ 	/* Check for Promiscuous and All Multicast modes */
  
- 	if (skb_bond_should_drop(skb)) {
- 		dev_kfree_skb_any(skb);
- 		return NET_RX_DROP;
+ 	rctl = E1000_READ_REG(hw, RCTL);
++	ctrl = E1000_READ_REG(&adapter->hw, CTRL);
+ 
+ 	if (netdev->flags & IFF_PROMISC) {
+ 		rctl |= (E1000_RCTL_UPE | E1000_RCTL_MPE);
+-	} else if (netdev->flags & IFF_ALLMULTI) {
+-		rctl |= E1000_RCTL_MPE;
+-		rctl &= ~E1000_RCTL_UPE;
++		if (adapter->hw.mac_type != e1000_ich8lan) {
++			if (ctrl & E1000_CTRL_VME)
++				rctl &= ~E1000_RCTL_VFE;
++		}
+ 	} else {
+-		rctl &= ~(E1000_RCTL_UPE | E1000_RCTL_MPE);
++		if (adapter->hw.mac_type != e1000_ich8lan) {
++			if (ctrl & E1000_CTRL_VME)
++				rctl |= E1000_RCTL_VFE;
++		}
++		if (netdev->flags & IFF_ALLMULTI) {
++			rctl |= E1000_RCTL_MPE;
++			rctl &= ~E1000_RCTL_UPE;
++		} else {
++			rctl &= ~(E1000_RCTL_UPE | E1000_RCTL_MPE);
++		}
  	}
  
--	skb->dev = vlan_group_get_device(grp, vlan_tag & VLAN_VID_MASK);
--	if (skb->dev == NULL) {
--		dev_kfree_skb_any(skb);
-+	vlan_dev = vlan_group_get_device(grp, vlan_tag & VLAN_VID_MASK);
-+	if (vlan_dev == NULL) {
-+		if (skb->dev == NULL) {
-+			dev_kfree_skb_any(skb);
- 
--		/* Not NET_RX_DROP, this is not being dropped
--		 * due to congestion.
--		 */
--		return 0;
--	}
-+			/* Not NET_RX_DROP, this is not being dropped
-+			 * due to congestion.
-+			 */
-+			return 0;
-+		}
-+		skb->pkt_type = PACKET_OTHERHOST;
-+	} else
-+		skb->dev = vlan_dev;
- 
- 	skb->dev->last_rx = jiffies;
- 
-@@ -192,25 +197,27 @@ static inline int __vlan_hwaccel_rx(struct sk_buff *skb,
- 	stats->rx_packets++;
- 	stats->rx_bytes += skb->len;
- 
--	skb->priority = vlan_get_ingress_priority(skb->dev, vlan_tag);
--	switch (skb->pkt_type) {
--	case PACKET_BROADCAST:
--		break;
--
--	case PACKET_MULTICAST:
--		stats->multicast++;
--		break;
--
--	case PACKET_OTHERHOST:
--		/* Our lower layer thinks this is not local, let's make sure.
--		 * This allows the VLAN to have a different MAC than the underlying
--		 * device, and still route correctly.
--		 */
--		if (!compare_ether_addr(eth_hdr(skb)->h_dest,
--				       	skb->dev->dev_addr))
--			skb->pkt_type = PACKET_HOST;
--		break;
--	};
-+	if (vlan_dev) {
-+		skb->priority = vlan_get_ingress_priority(skb->dev, vlan_tag);
-+		switch (skb->pkt_type) {
-+		case PACKET_BROADCAST:
-+			break;
-+
-+		case PACKET_MULTICAST:
-+			stats->multicast++;
-+			break;
-+
-+		case PACKET_OTHERHOST:
-+			/* Our lower layer thinks this is not local, let's make sure.
-+			 * This allows the VLAN to have a different MAC than the underlying
-+			 * device, and still route correctly.
-+			 */
-+			if (!compare_ether_addr(eth_hdr(skb)->h_dest,
-+							skb->dev->dev_addr))
-+				skb->pkt_type = PACKET_HOST;
-+			break;
-+		};
-+	}
- 
- 	return (polling ? netif_receive_skb(skb) : netif_rx(skb));
- }
+ 	E1000_WRITE_REG(hw, RCTL, rctl);
+@@ -4952,7 +4963,10 @@ e1000_vlan_rx_register(struct net_device *netdev, struct vlan_group *grp)
+ 		if (adapter->hw.mac_type != e1000_ich8lan) {
+ 			/* enable VLAN receive filtering */
+ 			rctl = E1000_READ_REG(&adapter->hw, RCTL);
+-			rctl |= E1000_RCTL_VFE;
++			if (netdev->flags & IFF_PROMISC)
++				rctl &= ~E1000_RCTL_VFE;
++			else
++				rctl |= E1000_RCTL_VFE;
+ 			rctl &= ~E1000_RCTL_CFIEN;
+ 			E1000_WRITE_REG(&adapter->hw, RCTL, rctl);
+ 			e1000_update_mng_vlan(adapter);
 ---
 
