@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbXKKOZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755989AbXKKOcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756223AbXKKOZQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 09:25:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528AbXKKOZD
+	id S1755989AbXKKOcv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 09:32:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbXKKOcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 09:25:03 -0500
-Received: from basicbox7.server-home.net ([195.137.212.29]:52170 "EHLO
-	basicbox7.server-home.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753232AbXKKOZB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 09:25:01 -0500
-X-Greylist: delayed 1167 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Nov 2007 09:25:00 EST
-Message-ID: <47370C2A.108@ct.heise.de>
-Date: Sun, 11 Nov 2007 15:05:30 +0100
-From: Thorsten Leemhuis <thl@ct.heise.de>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070926)
-MIME-Version: 1.0
-To: Matthias Schniedermeyer <ms@citd.de>
-Cc: Mark Lord <liml@rtr.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Jeff Garzik <jeff@garzik.org>, Riki Oktarianto <rkoktarianto@gmail.com>,
-       linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH] Add quirk to set AHCI mode on ICH boards
-References: <20071109020235.GA2031@ceren> <20071109023129.GA25581@havoc.gtf.org> <4733D421.7000505@rtr.ca> <20071109034622.GB25581@havoc.gtf.org> <20071109120425.543971bf@the-village.bc.nu> <20071109233215.GA22498@citd.de> <4735F1E8.1070009@rtr.ca> <20071110183805.GA28230@citd.de>
-In-Reply-To: <20071110183805.GA28230@citd.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Sun, 11 Nov 2007 09:32:43 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:43990 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751869AbXKKOcm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Nov 2007 09:32:42 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20071110114320.1fa6e94c.akpm@linux-foundation.org>
+References: <20071110114320.1fa6e94c.akpm@linux-foundation.org> <20071109195303.edbdc631.akpm@linux-foundation.org> <20071109153432.20803.69832.stgit@warthog.procyon.org.uk> <20071109153458.20803.10594.stgit@warthog.procyon.org.uk> <24343.1194697130@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dhowells@redhat.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-am33-list@redhat.com
+Subject: Re: [PATCH 5/6] MN10300: Add the MN10300/AM33 architecture to the kernel [try #5]
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Sun, 11 Nov 2007 14:32:37 +0000
+Message-ID: <1631.1194791557@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10.11.2007 00:32, Matthias Schniedermeyer wrote:
->  [...]
-> My computer/mainboard @work has such a "broken" BIOS. Of the 5 
-> SATA-Ports this MB has only 1 (and 1 "missing" that is reported by
-> linux but i can't find on the MB) is configured as AHCI [...]
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-There is nothing "broken" here. You have a ICH8 (without R) that drives
-four SATA ports, which are handled by ata_piix.
+> If it is indeed the case that this architecture is used internally by a
+> single organisation then perhaps it doesn't make sense for us to merge it.
 
-Then you have a Jmicron JMB363 -- it handles the PATA-Channel and two
-SATA-Ports -- one internal (near the battery)/next to the PCI-Slot and a
-external eSATA port. Seems you configured it in AHCI-Mode in the
-BIOS-Setup. Linux will work just fine if you connect the hard disc to
-that port. But if you want to install Windows XP you need a driver from
-Jmicron.
+I don't know that this is so.  I can ask them, but I don't know if they'll
+tell me that.
 
-There were BIOSes for the P5B where you could enabled AHCI for the ICH8
-as well. It seems Asus removed it in the later BIOS-versions again as
-Intel doesn't provide a Windows-AHCI driver for the basic ICH8.
+Furthermore, it's better to have the code upstream[*].  That way the person
+wanting to make a sweeping change across all arches who knows how the change
+should be made can have a go at making the change, rather than someone who's
+constantly playing catchup and may not understand fully.
 
-HTH and clarifies some of your problems.
+ [*] As people keep saying.
 
-Cu
-knurd
+Constantly playing catchup really isn't fun, as I'm sure you appreciate with
+maintaining the -mm tree.  You, after all, do it on a much larger scale than
+everyone else.
 
--- 
-Thorsten Leemhuis
- c't- Magazin für Computertechnik       web    http://www.heise.de/ct/
- Heise Zeitschriften Verlag GmbH&Co.KG  phone  +49 (0)511 5352 666
- Helstorfer Str. 7                      icq    140593172
- D-30625 Hannover, Germany              jabber thl_at_work@jabber.ccc.de
+> I guess if it were possible to install a self-built kernel into a Panasonic
+> gadget then we could look at it on that basis.  Do you know if that's the
+> case?
 
-/* Heise Zeitschriften Verlag GmbH & Co. KG, Registergericht:
-   Amtsgericht Hannover HRA 26709; Persönlich haftende Gesellschafterin:
-   Heise Zeitschriften Verlag Geschäftsführung GmbH, Registergericht:
-   Amtsgericht Hannover, HRB 60405 Geschäftsführer: Ansgar Heise,
-   Steven P. Steinkraus, Dr. Alfons Schräder                          */
+I don't, no.  Besides, I *do* have Panasonic devices I can install random
+software and hardware on to:-)  But it's not COTS stuff.
+
+David
