@@ -1,81 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755790AbXKKNHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753742AbXKKNo4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755790AbXKKNHs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 08:07:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbXKKNHj
+	id S1753742AbXKKNo4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 08:44:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbXKKNos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 08:07:39 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:60088 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754227AbXKKNHi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 08:07:38 -0500
-Date: Sun, 11 Nov 2007 14:07:14 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Guillaume Chazarain <guichaz@yahoo.fr>
-Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kconfig: use $K64BIT to set 64BIT with all*config
-	targets
-Message-ID: <20071111130714.GN21669@stusta.de>
-References: <20071110204038.GA13140@uranus.ravnborg.org> <11947274093185-git-send-email-sam@ravnborg.org> <11947274091127-git-send-email-sam@ravnborg.org> <3d8471ca0711101255m1647e27cm241f358cc49a9921@mail.gmail.com> <20071111051408.GC21669@stusta.de> <3d8471ca0711110443v46084714m709b2b713a536b19@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <3d8471ca0711110443v46084714m709b2b713a536b19@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sun, 11 Nov 2007 08:44:48 -0500
+Received: from main.gmane.org ([80.91.229.2]:35345 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751203AbXKKNos (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Nov 2007 08:44:48 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Thomas <gimpel@sonnenkinder.org>
+Subject: Re: pdflush stuck in D state with v2.6.24-rc1-192-gef49c32
+Date: Sun, 11 Nov 2007 13:43:27 +0000 (UTC)
+Message-ID: <loom.20071111T133858-314@post.gmane.org>
+References: <E1In7S9-0001rv-NO@localhost> <20071031121606.GR25561@iucha.net> <20071031175318.GU25561@iucha.net> <E1InUH6-0001vE-1Y@localhost> <20071101122558.GX25561@iucha.net> <E1InZht-0004lr-NN@localhost> <20071101141414.GZ25561@iucha.net> <E1InlPV-0001f1-SL@localhost> <20071102021002.GF25561@iucha.net> <E1Inw51-0001e8-PS@localhost> <20071102133239.GI25561@iucha.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 82.135.2.202 (Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.9) Gecko/20071105 Firefox/2.0.0.9)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 11, 2007 at 01:43:28PM +0100, Guillaume Chazarain wrote:
-> Hi Adrian,
+Florin Iucha <florin <at> iucha.net> writes:
 
-Hi Guillaume,
-
-> On 11/11/07, Adrian Bunk <bunk@kernel.org> wrote:
-> > What exactly are the use cases where someone would need this?
+> > It's really curious - I tried your .config and commands, and still
+> > could not trigger the high iowait. I'm running 64bit Intel Core 2,
+> > and kernel 2.6.24-rc1-git6 with the above patch.
 > 
-> Glad you asked. Today, when I want to recompile a kernel while
-> changing a CONFIG_ option, I manually edit the .config,
-> remove the appropriate line and then run make oldconfig.
-> I'd like to be able to do: make oldconfig CONFIG_FOO=bar.
+> Curious but 100% reproducible, at least on my box.  What I'm going to
+> try is booting into the kernel with your patch and just doing the find
+> / md5sum.  It would be really interesting if the read-only access
+> triggers it.
+> 
+> florin
+> 
 
-first of all it's obvious that there can't be any guarantee that your 
-CONFIG_FOO variable will actually get the value bar since dependencies 
-might enable or disable it despite you wanting the opposite.
+I can confirm this issue too on any .24-rc. I'm also using reiserfs on a LVM.
 
-Another important point is that users that know about and see CONFIG_* 
-variables are kernel hackers, not the normal kconfig users.
+And there is one more user on Gentoo forums having the same issue.
+http://forums.gentoo.org/viewtopic-t-612959.html
 
-> Also, when working on a specific feature of the kernel, I tend to
-> install both a kernel with the CONFIG_ option set and one with
-> the option unset. Scripts to do that can twiddle the .config file,
-> but it would be more convenient if kbuild could avoid that.
-
-I'm wondering why you don't use two different O= output directories 
-instead?
-
-Depending on the CONFIG_ option in question this might even greatly 
-reduce your compile times.
-
-And you won't upgrade the kernel you work against that
-often compared to working on and testing of your own changes when 
-developing code.
-
-> As you see, I'm more interested in make oldconfig than
-> make all*config.
-
-That's clear.
-
-> Cheers.
-> Guillaume
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+So you are not alone, florian.
 
