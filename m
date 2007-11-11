@@ -1,88 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756103AbXKKOWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbXKKOZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756103AbXKKOWi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 09:22:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbXKKOWb
+	id S1756223AbXKKOZQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 09:25:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528AbXKKOZD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 09:22:31 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42363 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752056AbXKKOWa (ORCPT
+	Sun, 11 Nov 2007 09:25:03 -0500
+Received: from basicbox7.server-home.net ([195.137.212.29]:52170 "EHLO
+	basicbox7.server-home.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753232AbXKKOZB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 09:22:30 -0500
-Date: Sun, 11 Nov 2007 15:22:05 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@osdl.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-am33-list@redhat.com
-Subject: Re: [PATCH 1/6] Suppress A.OUT library support if
-	!CONFIG_BINFMT_AOUT [try #5]
-Message-ID: <20071111142205.GO21669@stusta.de>
-References: <20071111112538.GL21669@stusta.de> <20071109153432.20803.69832.stgit@warthog.procyon.org.uk> <20071109153437.20803.55096.stgit@warthog.procyon.org.uk> <1505.1194789569@redhat.com>
+	Sun, 11 Nov 2007 09:25:01 -0500
+X-Greylist: delayed 1167 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Nov 2007 09:25:00 EST
+Message-ID: <47370C2A.108@ct.heise.de>
+Date: Sun, 11 Nov 2007 15:05:30 +0100
+From: Thorsten Leemhuis <thl@ct.heise.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070926)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1505.1194789569@redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Matthias Schniedermeyer <ms@citd.de>
+Cc: Mark Lord <liml@rtr.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jeff Garzik <jeff@garzik.org>, Riki Oktarianto <rkoktarianto@gmail.com>,
+       linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH] Add quirk to set AHCI mode on ICH boards
+References: <20071109020235.GA2031@ceren> <20071109023129.GA25581@havoc.gtf.org> <4733D421.7000505@rtr.ca> <20071109034622.GB25581@havoc.gtf.org> <20071109120425.543971bf@the-village.bc.nu> <20071109233215.GA22498@citd.de> <4735F1E8.1070009@rtr.ca> <20071110183805.GA28230@citd.de>
+In-Reply-To: <20071110183805.GA28230@citd.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 11, 2007 at 01:59:29PM +0000, David Howells wrote:
-> Adrian Bunk <bunk@kernel.org> wrote:
-> 
-> > - too many cleanups lumped into one patch
-> 
-> Perhaps, but unfortunately a lot of them are related and required for a
-> compilable patch.  I can probably split it up 4 ways if you really want me
-> to, in order:
-> 
->  (1) Move STACK_TOP[_MAX].
-> 
->  (2) Rename dump_thread() -> aout_dump_thread().
+On 10.11.2007 00:32, Matthias Schniedermeyer wrote:
+>  [...]
+> My computer/mainboard @work has such a "broken" BIOS. Of the 5 
+> SATA-Ports this MB has only 1 (and 1 "missing" that is reported by
+> linux but i can't find on the MB) is configured as AHCI [...]
 
-It's BTW not an improvement that you do not only rename them but change 
-such big functions to static inline functions in header files.
+There is nothing "broken" here. You have a ICH8 (without R) that drives
+four SATA ports, which are handled by ata_piix.
 
->  (3) Everything else.
-> 
->  (4) Remove obsolete a.out.h inclusions.
-> 
-> I don't think it's really worth splitting (2) from (3) though.
+Then you have a Jmicron JMB363 -- it handles the PATA-Channel and two
+SATA-Ports -- one internal (near the battery)/next to the PCI-Slot and a
+external eSATA port. Seems you configured it in AHCI-Mode in the
+BIOS-Setup. Linux will work just fine if you connect the hard disc to
+that port. But if you want to install Windows XP you need a driver from
+Jmicron.
 
-Something like this.
+There were BIOSes for the P5B where you could enabled AHCI for the ICH8
+as well. It seems Asus removed it in the later BIOS-versions again as
+Intel doesn't provide a Windows-AHCI driver for the basic ICH8.
 
-> > - it adds #ifdef's in fs/binfmt_elf.c for code that is anyway
-> >   scheduled for removal in 2.6.25
-> 
-> Yes, but that patch isn't there now, and won't be there in the next version -
-> assuming this arch has a hope of getting in on that one - according to your
-> statement.
+HTH and clarifies some of your problems.
 
-I'm not the one to decide, but the only excuse for getting that late 
-into 2.6.24 would be "it can't cause any regression".
-
-The arch/mn10300/ and include/asm-mn10300/ additions can't cause 
-regressions, and for all the drivers/ parts it seems to be easily 
-verifiable that they can't cause regressions.
-
-But changes to binfmt_elf.c after the merge window that might introduce 
-regressions (e.g. you (ab)use CONFIG_BINFMT_AOUT where you might have to 
-introduce an CONFIG_ARCH_SUPPORTS_AOUT instead) decrease your chances of 
-being merged that late.
-
-But you might be able to do something like a
-  cp include/asm-xtensa/a.out.h include/asm-mn10300/
-instead.
-
-> David
-
-cu
-Adrian
+Cu
+knurd
 
 -- 
+Thorsten Leemhuis
+ c't- Magazin für Computertechnik       web    http://www.heise.de/ct/
+ Heise Zeitschriften Verlag GmbH&Co.KG  phone  +49 (0)511 5352 666
+ Helstorfer Str. 7                      icq    140593172
+ D-30625 Hannover, Germany              jabber thl_at_work@jabber.ccc.de
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+/* Heise Zeitschriften Verlag GmbH & Co. KG, Registergericht:
+   Amtsgericht Hannover HRA 26709; Persönlich haftende Gesellschafterin:
+   Heise Zeitschriften Verlag Geschäftsführung GmbH, Registergericht:
+   Amtsgericht Hannover, HRB 60405 Geschäftsführer: Ansgar Heise,
+   Steven P. Steinkraus, Dr. Alfons Schräder                          */
