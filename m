@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757541AbXKKSdq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757518AbXKKSh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757541AbXKKSdq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 13:33:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbXKKSdi
+	id S1757518AbXKKSh1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 13:37:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633AbXKKShO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 13:33:38 -0500
-Received: from eazy.amigager.de ([213.239.192.238]:60626 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751974AbXKKSdh (ORCPT
+	Sun, 11 Nov 2007 13:37:14 -0500
+Received: from rv-out-0910.google.com ([209.85.198.184]:61469 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753765AbXKKShM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 13:33:37 -0500
-Date: Sun, 11 Nov 2007 19:33:35 +0100
-From: Tino Keitel <tino.keitel@gmx.de>
-To: linux-kernel@vger.kernel.org
-Subject: Strage buffer behaviour
-Message-ID: <20071111183334.GA6770@dose.home.local>
-Mail-Followup-To: linux-kernel@vger.kernel.org
+	Sun, 11 Nov 2007 13:37:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gshNkrkMZjNaZchxcgcDf8XG/IqDEJbJ3yHsXBsNz8OXR46fDIwz58cVIaEnGCGiWx4aabG8XKX4RvGanxIbsSzgG6ETZ3MnCZsbf5Gsn9MZToTxtzA7LWlB30AZh+1uoJQhC84bjJtJgKvVaHDuvLJDDlJvk6iqgGODXqNXgG0=
+Message-ID: <1865922a0711111037q6a58e607m1c7f4eacf0daef96@mail.gmail.com>
+Date: Sun, 11 Nov 2007 20:37:11 +0200
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Subject: Re: [PATCH] Smackv10: Smack rules grammar + their stateful parser(2)
+Cc: "Casey Schaufler" <casey@schaufler-ca.com>, akpm@osdl.org,
+       torvalds@osdl.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "Al Viro" <viro@ftp.linux.org.uk>
+In-Reply-To: <20071111124409.GA5141@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <472B8DAF.9080706@schaufler-ca.com> <20071103164303.GA26707@ubuntu>
+	 <20071105005625.GA18030@ubuntu> <20071111124409.GA5141@ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folks,
+Hi Pavel,
 
-I noticed that the kernel (2.6.23.1) seems to buffer only certain
-partitions on my system:
+On Nov 11, 2007 2:44 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
+>
+> > > A Smack Rule in an "egrep" format is:
+> > >
+> > > "^[:space:]*Subject[:space:]+Object[:space:]+[rwxaRWXA-]+[:space:]*\n"
+>
+> Perhaps you should make it space, not 'space or tab', and only allow
+> lowercase permissions? That way, parser will be slightly simpler, and
+> you'll still have a chance to use 'R' as 'slightly different r'.
+>
 
-$ for i in 1 2 3 4 ; do for j in 1 2 ; do dd if=/dev/sda$i of=/dev/null
-bs=1024k count=100 ; done ; done
-100+0 records in
-100+0 records out
-104857600 bytes (105 MB) copied, 3.01471 seconds, 34.8 MB/s
-100+0 records in
-100+0 records out
-104857600 bytes (105 MB) copied, 2.86945 seconds, 36.5 MB/s
-100+0 records in
-100+0 records out
-104857600 bytes (105 MB) copied, 2.92038 seconds, 35.9 MB/s
-100+0 records in
-100+0 records out
-104857600 bytes (105 MB) copied, 3.00272 seconds, 34.9 MB/s
-100+0 records in
-100+0 records out
-104857600 bytes (105 MB) copied, 4.07722 seconds, 25.7 MB/s
-100+0 records in
-100+0 records out
-104857600 bytes (105 MB) copied, 0.0944248 seconds, 1.1 GB/s
-100+0 records in
-100+0 records out
-104857600 bytes (105 MB) copied, 5.61527 seconds, 18.7 MB/s
-100+0 records in
-100+0 records out
-104857600 bytes (105 MB) copied, 0.331822 seconds, 316 MB/s
+Thanks for your care about this. It seems not a lot of people have
+noticed, but to stop any objections not related to the core smack
+code, Casey decided to let the parsing be done in a user-space utility
+that sends the rules to the kernel in a predefined strict format.
 
-The dd command reads 100 MB from each partition two times in a row. It
-looks like sda1 and sda2 are not bufferd (the first 4 dd runs), but
-sda3 and sda4 are (the last 4 dd runs).
-
-The computer is a Mac mini with a 2,5" SATA hard disk. The first 2
-partitions contain EFI and MacOS X, and are unused in Linux. The last 2
-partitions are an ext3 partition for / and an LVM for the rest of the
-sytem.
-
-Any hints how the dd/buffering behaviour could be explained? The system
-was mostly idle, and the numbers are reproducible across reboots.
+You can find how the whole story in the smackv11 announcement here:
+http://article.gmane.org/gmane.linux.kernel.lsm/4463
 
 Regards,
-Tino
+
+-- 
+Ahmed S. Darwish
+Homepage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
