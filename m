@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757440AbXKKTDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757494AbXKKTGp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757440AbXKKTDu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 14:03:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032AbXKKTDm
+	id S1757494AbXKKTGp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 14:06:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755387AbXKKTGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 14:03:42 -0500
-Received: from smtp-vbr4.xs4all.nl ([194.109.24.24]:4024 "EHLO
-	smtp-vbr4.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753619AbXKKTDl (ORCPT
+	Sun, 11 Nov 2007 14:06:35 -0500
+Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:58238 "EHLO
+	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753603AbXKKTGe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 14:03:41 -0500
-X-Greylist: delayed 870 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Nov 2007 14:03:40 EST
-Message-ID: <47374EA4.1060009@xs4all.nl>
-Date: Sun, 11 Nov 2007 19:49:08 +0100
-From: Udo van den Heuvel <udovdh@xs4all.nl>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: enable dual rng on VIA C7
-X-Enigmail-Version: 0.95.5
-OpenPGP: id=8300CC02
-Content-Type: multipart/mixed;
- boundary="------------030008010503010803080505"
+	Sun, 11 Nov 2007 14:06:34 -0500
+Date: Sun, 11 Nov 2007 20:06:29 +0100
+From: =?ISO-8859-15?Q?Thomas_B=E4chler?= <thomas@archlinux.org>
+Subject: Re: 2.6.24-rc1-g74521c28: oops during boot [<ffffffff881c03e4>]
+ :power_supply:power_supply_show_property+0x94/0x150
+In-reply-to: <200711112019.21853.rjw@sisk.pl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: =?ISO-8859-15?Q?Thomas_B=E4chler?= <thomas@archlinux.org>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Message-id: <473752B5.4050304@archlinux.org>
+MIME-version: 1.0
+Content-type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary=------------enigF52A8B1000F5A8E6856CFC36
+X-IronPort-AV: E=Sophos;i="4.21,402,1188770400";
+ d="asc'?scan'208";a="20724416"
+X-Enigmail-Version: 0.95.1
+References: <472C5C2D.9010700@archlinux.org> <4736EE1C.3010500@archlinux.org>
+ <473750B2.4060208@archlinux.org> <200711112019.21853.rjw@sisk.pl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071015)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030008010503010803080505
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigF52A8B1000F5A8E6856CFC36
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-Hello,
+Rafael J. Wysocki schrieb:
+>> Replying to myself again. Apparently, a fix for this bug was applied t=
+o
+>> the linux-acpi tree independently of my bug report, see here:
+>> http://git.kernel.org/?p=3Dlinux/kernel/git/lenb/linux-acpi-2.6.git;a=3D=
+commit;h=3D4c41d3ad6544f1c9aec37c441af04f5d0ad3a731
+>=20
+> I'm having some problems with accessing git.kernel.org right now.  I'll=
+ have a
+> look when it works again.
 
-Any reason why the second rng on the VIA C7 CPU is not enabled?
+Same problem here, it took me some time until I could view it. I forgot
+to mention that the patch actually fixes the bug in my case, I can boot
+2.6.24 without oopses now.
 
-Kind regards,
-Udo
 
---------------030008010503010803080505
-Content-Type: text/plain;
- name="via-rng.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="via-rng.patch"
+--------------enigF52A8B1000F5A8E6856CFC36
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
---- old/drivers/char/hw_random/via-rng.c	2007-11-11 19:39:49.000000000 +0100
-+++ new/drivers/char/hw_random/via-rng.c	2007-11-11 19:40:41.000000000 +0100
-@@ -41,6 +41,7 @@
- 	VIA_STRFILT_ENABLE	= (1 << 14),
- 	VIA_RAWBITS_ENABLE	= (1 << 13),
- 	VIA_RNG_ENABLE		= (1 << 6),
-+	VIA_RNG_DUAL            = (1 << 9),
- 	VIA_XSTORE_CNT_MASK	= 0x0F,
- 
- 	VIA_RNG_CHUNK_8		= 0x00,	/* 64 rand bits, 64 stored bits */
-@@ -128,6 +129,7 @@
- 	lo &= ~(0x7f << VIA_STRFILT_CNT_SHIFT);
- 	lo &= ~VIA_XSTORE_CNT_MASK;
- 	lo &= ~(VIA_STRFILT_ENABLE | VIA_STRFILT_FAIL | VIA_RAWBITS_ENABLE);
-+	lo |= VIA_RNG_DUAL;
- 	lo |= VIA_RNG_ENABLE;
- 
- 	if (lo != old_lo)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
---------------030008010503010803080505--
+iD8DBQFHN1K1Eda5KzHP/VARCFZQAJwL4L2Z/Udr7qHLbPyq7GqZO18oBwCdFU24
+eD4qVmATkva/uMNhpNp+mvg=
+=D9CO
+-----END PGP SIGNATURE-----
+
+--------------enigF52A8B1000F5A8E6856CFC36--
