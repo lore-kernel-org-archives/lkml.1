@@ -1,68 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbXKKVVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756078AbXKKWKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755992AbXKKVVR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 16:21:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbXKKVVF
+	id S1756078AbXKKWKE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 17:10:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754798AbXKKWJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 16:21:05 -0500
-Received: from py-out-1112.google.com ([64.233.166.178]:21322 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753440AbXKKVVC (ORCPT
+	Sun, 11 Nov 2007 17:09:53 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:58710 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754780AbXKKWJw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 16:21:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=thMVv+rxvGSb8uxb0pzOHVb3XZY5tSJSSBl/oeASVc7V05ye8BmPyGhDFZ6Ha7Z+xfWqG3SxYQh97mckUpFU9iX5YKsjtDRHjorH9R3FU4LurcS2UGq59fzTHnyjJiyK9BcVOxEaeXADt4iX+wb8A8vRNruriDVvLfvUL39LLIU=
-Message-ID: <8b67d60711111321j293a0a81r41cf4c604f47932c@mail.gmail.com>
-Date: Sun, 11 Nov 2007 21:21:01 +0000
-From: "Adrian McMenamin" <lkmladrian@gmail.com>
-To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-Subject: Re: Race in setup_irq?
-Cc: linux-kernel@vger.kernel.org, linuxsh-dev@lists.sourceforge.net
-In-Reply-To: <b647ffbd0711111311x4e35f854g3ecfb8f07748d934@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 11 Nov 2007 17:09:52 -0500
+Date: Sun, 11 Nov 2007 23:09:33 +0100
+From: Chris Friedhoff <chris@friedhoff.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24-rc2 STD with s2disk fails to activate suspended system
+ after loading
+Message-Id: <20071111230933.5fe7369c.chris@friedhoff.org>
+In-Reply-To: <200711111945.06745.rjw@sisk.pl>
+References: <20071110221629.1d180480.chris@friedhoff.org>
+	<200711111945.06745.rjw@sisk.pl>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.10.14; i486-slackware-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <8b67d60711111152he10da17o44bb124e96373ebc@mail.gmail.com>
-	 <b647ffbd0711111311x4e35f854g3ecfb8f07748d934@mail.gmail.com>
+X-Provags-ID: V01U2FsdGVkX1+qRXMDdpMmmHOxpTUjnR5VO9P2BgVqIUaXdvN
+ 8tXclWxjokJ0mKbsjumO4zJtNR47aBGPAidup0IjD0GF0VK/Ji
+ jKzb2cU1iUovDuwCOOJauDGMdWdKkyW
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/11/2007, Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
-> On 11/11/2007, Adrian McMenamin <lkmladrian@gmail.com> wrote
-> > I am writing a device driver for the Dreamcast CD Drive (the "GD Rom")
-> > and I am hitting what looks like some sort of race in
-> > kernel/irq/manage.c. Can anybody point me in the right direction or is
-> > there a bug here?
-> >
-> > This never seems to return in setup_irq:
-> >
-> >         spin_unlock_irqrestore(&desc->lock, flags);
-> >
-> > (line 597)
->
-> I guess, you are referring to setup_irq() (the line without a
-> particular kernel version doesn't make much sense).
->
+kernel config attached to comment#2 for bugreport 9345
+s2disk comes from suspend-0.7 package
+
+Thanks,
+Chris
+
+On Sun, 11 Nov 2007 19:45:06 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+> On Saturday, 10 of November 2007, Chris Friedhoff wrote:
+> > please cc me, I'm not not subscribed to LKML
+> > 
+> > Hello,
+> > 
+> > with kernel 2.6.24-rc2 STD with s2disk suspends the system to disk, but
+> > when I start the system and the suspended systemimage is loaded, it
+> > fails to "activate" this suspended systemimage and continues after some
+> > time with following the normal boot sequence.
+> > 
+> > I can sucessfully STD the system with the following sequence
+> >   echo platform > /sys/power/disk
+> >   echo disk > /sys/power/state
+> > and when I start the laptop the suspended system is sucessfully
+> > restored.
+> > 
+> > Both behaviors are reliable reproducable.
+> 
+> Thanks for the report.
+> 
+> > googling for >"Freezing of tasks failed" swapper< brought
+> > "Nigel Cunningham - PID namespaces break initrd+hibernate combination?"
+> > http://lkml.org/lkml/2007/11/4/140
+> 
+> Yes, this looks similarly.
+> 
+> > dmesg output:
+> > <<snip>>
+> > RAMDISK: ext2 filesystem found at block 0
+> > RAMDISK: Loading 2000KiB [1 disk] into ram disk... done.
+> > EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended
+> > VFS: Mounted root (ext2 filesystem).
+> > swsusp: Marking nosave pages: 000000000009f000 - 0000000000100000
+> > swsusp: Basic memory bitmaps created
+> > Clocksource tsc unstable (delta = -128791628 ns)
+> > Syncing filesystems ... done.
+> > Freezing user space processes ... (elapsed 0.00 seconds) done.
+> > Freezing remaining freezable tasks ... 
+> > Freezing of tasks failed after 20.00 seconds (1 tasks refusing to
+> > freeze): task                PC stack   pid father
+> > swapper       S c1835a88     0     1      0
+> >        00000000 00000046 c0118c80 c1835a88 00000004 00000001 c011e875
+> > 00000286 c01025a6 00000000 00000000 c1835b64 00000000 ffffffff c1835a90
+> > 00000001 00000000 00000000 00000000 00000000 0000007b 00000000 c1835a90
+> > c0118c80 Call Trace:
+> >  [<c0118c80>] default_wake_function+0x0/0x10
+> >  [<c011e875>] do_wait+0x335/0xac0
+> >  [<c01025a6>] kernel_thread+0x96/0xb0
+> >  [<c0118c80>] default_wake_function+0x0/0x10
+> >  [<c011f031>] sys_wait4+0x31/0x40
+> >  [<c04b7a23>] initrd_load+0x1b3/0x3a0
+> >  [<c04b5108>] prepare_namespace+0x98/0x1b0
+> >  [<c016090f>] sys_access+0x1f/0x30
+> >  [<c04b47c6>] kernel_init+0x166/0x260
+> >  [<c0103f4a>] ret_from_fork+0x6/0x1c
+> >  [<c04b4660>] kernel_init+0x0/0x260
+> >  [<c04b4660>] kernel_init+0x0/0x260
+> >  [<c0104b8f>] kernel_thread_helper+0x7/0x18
+> >  =======================
+> > kthreadd      S 0000038f     0     2      0
+> >        00000000 00000046 c0487790 0000038f c183ff1c 00000000 c012d81b
+> > c012d7b0 00000000 00000000 c0104b8f 00000000 00000000 00000000 00000000
+> > 00000000 00000000 
+> > Call Trace:
+> >  [<c012d81b>] kthreadd+0x6b/0xd0
+> >  [<c012d7b0>] kthreadd+0x0/0xd0
+> >  [<c0104b8f>] kernel_thread_helper+0x7/0x18
+> >  =======================
+> > ksoftirqd/0   S 00000000     0     3      2
+> >        00000000 00000046 fffffffc 00000000 c0120f00 00000000 c0120f7a
+> > c012d782 c012d740 00000000 00000000 c0104b8f c183ff3c 00000000 00000000
+> > 00000000 00000000 00000000 
+> > Call Trace:
+> >  [<c0120f00>] ksoftirqd+0x0/0x80
+> >  [<c0120f7a>] ksoftirqd+0x7a/0x80
+> >  [<c012d782>] kthread+0x42/0x70
+> >  [<c012d740>] kthread+0x0/0x70
+> >  [<c0104b8f>] kernel_thread_helper+0x7/0x18
+> > 
+> > <<snip>>
+> 
+> Can you please attach your kernel configuration file to the bugzilla entry
+> at http://bugzilla.kernel.org/show_bug.cgi?id=9345 ?
+> 
+> Thanks,
+> Rafael
 
 
-Sorry, it was in the config: 2.6.24-rc2
-
-> What do you mean by "never seems to return"? Does your machine hang?
->
-
-
-
-> If so, the reason might be some kind of (logical) error in your ISR.
-> spin_unlock_irqrestore() unmasks the interrupts and your target device
-> might have already generated an interrupt by this moment (sure, it
-> depends on the initialization logic of your code and device spec.)...
-> --> ISR runs and due to some error e.g. loops endlessly/deadlocks/etc.
->
-> Tried placing printk() at the beginning of ISR?
->
-
-You are absolutely right. Sorry for wasting evetybody's time and
-thanks for the tip!
+--------------------
+Chris Friedhoff
+chris@friedhoff.org
