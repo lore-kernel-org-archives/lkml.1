@@ -1,94 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbXKKLxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755427AbXKKL53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754892AbXKKLxZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 06:53:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752935AbXKKLxQ
+	id S1755427AbXKKL53 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 06:57:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbXKKL5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 06:53:16 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:41862 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751891AbXKKLxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 06:53:15 -0500
-Date: Sun, 11 Nov 2007 12:54:53 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Jeff Garzik <jeff@garzik.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 0/5] introduce K64BIT=y and backward compatibility ARCH={i386,x86_64} for x86
-Message-ID: <20071111115453.GA8112@uranus.ravnborg.org>
-References: <20071110204038.GA13140@uranus.ravnborg.org> <20071111050945.GB21669@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071111050945.GB21669@stusta.de>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 11 Nov 2007 06:57:21 -0500
+Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:55568 "EHLO
+	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752935AbXKKL5U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Nov 2007 06:57:20 -0500
+Date: Sun, 11 Nov 2007 12:57:16 +0100
+From: =?ISO-8859-15?Q?Thomas_B=E4chler?= <thomas@archlinux.org>
+Subject: Re: 2.6.24-rc1-g74521c28: oops during boot [<ffffffff881c03e4>]
+ :power_supply:power_supply_show_property+0x94/0x150
+In-reply-to: <472CC005.4070609@archlinux.org>
+To: =?ISO-8859-15?Q?Thomas_B=E4chler?= <thomas@archlinux.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Message-id: <4736EE1C.3010500@archlinux.org>
+MIME-version: 1.0
+Content-type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary=------------enig9AB15FC5CEB74FBE31037014
+X-IronPort-AV: E=Sophos;i="4.21,401,1188770400";
+ d="asc'?scan'208";a="33859777"
+X-Enigmail-Version: 0.95.1
+References: <472C5C2D.9010700@archlinux.org> <200711031926.01665.rjw@sisk.pl>
+ <472CC005.4070609@archlinux.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071015)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 11, 2007 at 06:09:45AM +0100, Adrian Bunk wrote:
-> On Sat, Nov 10, 2007 at 09:40:38PM +0100, Sam Ravnborg wrote:
-> 
-> > As discussed in another thread the right thing is to add a generic solution
-> > to select between 32 and 64 bit - useable for powerpc, s390, ppc et al.
-> >...
-> 
-> I seriously question this would be "the right thing".
-> 
-> 32/64bit isn't that special that this and only this option would require
-> special casing, and the KISS principle of having only one way to specify 
-> something like this has it's advantages.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig9AB15FC5CEB74FBE31037014
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-"The right thing" in the correct context.
-It was discussed to keep ARCH={i386,x86_64} and the point I have
-is that if we are going to extend ARCH=... to be useable to
-specify kernel bit size then it should be done in a generic way
-and not like it was done before on x86.
+Thomas B=E4chler schrieb:
+> Rafael J. Wysocki schrieb:
+>> On Saturday, 3 November 2007 12:31, Thomas B=E4chler wrote:
+>>> I am trying to boot 2.6.24-rc1-g74521c28 from the linux-2.6 git tree.=
 
-I do not consider the discussion about keeping/dropping
-ARCH={i386,x86_64} as concluded.
+>>> During boot, I get a kernel oops when udevtrigger is running, thus mo=
+st
+>>> devices are not created and the boot stalls.
+>>>
+>>> Fortunately, the services are still started (though I don't see anyth=
+ing
+>>> due to missing ttys) and syslog caught the oops. The logfile and conf=
+ig
+>>> are attached.
+>> Can you please attach these files to the bugzilla entry at:
+>>
+>> http://bugzilla.kernel.org/show_bug.cgi?id=3D9299
+>=20
+> Done.
 
-And if we decide on keeping ARCH={i386,x86_64} then I have
-questioned the semantics. Clear opinions are missing..
+I just tested again (with 2.6.24-rc2-gecd744ee). If I only load the 'ac'
+kernel module and not the 'battery' kernel module, then the system boots
+fine. However, if I load the 'battery' module during boot or later, I
+still get the oops.
 
-ARCH= semantic
-
-Impact                   before             now
-================================================
-32/64 bit                 yes               yes
-bzImage location          yes               no
-different Kconfig files   yes               no
-decide defconfig          yes               yes
-asm symlink               no                no
-build option              yes               no [1]
-
-[did I miss anything? I think I did]
-
-[1] ARCH=... select 32/64-bit during configuration.
-    There is no difference between ARCH={x86,i386,x86_64}
-    when building the kernel because the 32/64 bit
-    choice is done at configuration time.
-
-The table above reflect the [now] semantics with the
-patches that is present at lkml.
-
-And the patch needed to implment the above
-semantic (after the preparational stuff which
-is generic) are:
-
-$ git diff --stat HEAD~1..HEAD
- Makefile                 |   18 ++++++++++++++----
- arch/x86/Makefile        |    8 ++++++--
- scripts/kconfig/Makefile |    2 +-
- 3 files changed, 21 insertions(+), 7 deletions(-)
+I am running 2.6.24-rc2-gecd744ee right now, but without the battery
+module. I am forwarding this to the ACPI list as well.
 
 
-The scripts/kconfig/Makefile change is a bugfix that maybe
-should be included in another patch. It is not x86 specific.
+--------------enig9AB15FC5CEB74FBE31037014
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-So 19 additional lines and 5 deleted lines to introduce the
-ARCH= semantics above.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-	Sam
+iD8DBQFHNu4cEda5KzHP/VARCGxEAJ9A9vYN5f1Lyhw0NAjcZrIGm/+WDACfZP7e
+NEUArz1OFSJAPXsummeJOyk=
+=tA6m
+-----END PGP SIGNATURE-----
 
+--------------enig9AB15FC5CEB74FBE31037014--
