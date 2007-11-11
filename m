@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757153AbXKKTC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757440AbXKKTDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757153AbXKKTC3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 14:02:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753603AbXKKTCT
+	id S1757440AbXKKTDu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 14:03:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032AbXKKTDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 14:02:19 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:34898 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752543AbXKKTCS convert rfc822-to-8bit (ORCPT
+	Sun, 11 Nov 2007 14:03:42 -0500
+Received: from smtp-vbr4.xs4all.nl ([194.109.24.24]:4024 "EHLO
+	smtp-vbr4.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753619AbXKKTDl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 14:02:18 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas =?iso-8859-15?q?B=E4chler?= <thomas@archlinux.org>
-Subject: Re: 2.6.24-rc1-g74521c28: oops during boot [<ffffffff881c03e4>] :power_supply:power_supply_show_property+0x94/0x150
-Date: Sun, 11 Nov 2007 20:19:21 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-References: <472C5C2D.9010700@archlinux.org> <4736EE1C.3010500@archlinux.org> <473750B2.4060208@archlinux.org>
-In-Reply-To: <473750B2.4060208@archlinux.org>
+	Sun, 11 Nov 2007 14:03:41 -0500
+X-Greylist: delayed 870 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Nov 2007 14:03:40 EST
+Message-ID: <47374EA4.1060009@xs4all.nl>
+Date: Sun, 11 Nov 2007 19:49:08 +0100
+From: Udo van den Heuvel <udovdh@xs4all.nl>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200711112019.21853.rjw@sisk.pl>
+To: linux-kernel@vger.kernel.org
+Subject: enable dual rng on VIA C7
+X-Enigmail-Version: 0.95.5
+OpenPGP: id=8300CC02
+Content-Type: multipart/mixed;
+ boundary="------------030008010503010803080505"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 11 of November 2007, Thomas Bächler wrote:
-> >>> http://bugzilla.kernel.org/show_bug.cgi?id=9299
-> > 
-> > I just tested again (with 2.6.24-rc2-gecd744ee). If I only load the 'ac'
-> > kernel module and not the 'battery' kernel module, then the system boots
-> > fine. However, if I load the 'battery' module during boot or later, I
-> > still get the oops.
-> > 
-> > I am running 2.6.24-rc2-gecd744ee right now, but without the battery
-> > module. I am forwarding this to the ACPI list as well.
-> > 
-> 
-> Replying to myself again. Apparently, a fix for this bug was applied to
-> the linux-acpi tree independently of my bug report, see here:
-> http://git.kernel.org/?p=linux/kernel/git/lenb/linux-acpi-2.6.git;a=commit;h=4c41d3ad6544f1c9aec37c441af04f5d0ad3a731
+This is a multi-part message in MIME format.
+--------------030008010503010803080505
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-I'm having some problems with accessing git.kernel.org right now.  I'll have a
-look when it works again.
+Hello,
 
-Thanks,
-Rafael
+Any reason why the second rng on the VIA C7 CPU is not enabled?
+
+Kind regards,
+Udo
+
+--------------030008010503010803080505
+Content-Type: text/plain;
+ name="via-rng.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="via-rng.patch"
+
+--- old/drivers/char/hw_random/via-rng.c	2007-11-11 19:39:49.000000000 +0100
++++ new/drivers/char/hw_random/via-rng.c	2007-11-11 19:40:41.000000000 +0100
+@@ -41,6 +41,7 @@
+ 	VIA_STRFILT_ENABLE	= (1 << 14),
+ 	VIA_RAWBITS_ENABLE	= (1 << 13),
+ 	VIA_RNG_ENABLE		= (1 << 6),
++	VIA_RNG_DUAL            = (1 << 9),
+ 	VIA_XSTORE_CNT_MASK	= 0x0F,
+ 
+ 	VIA_RNG_CHUNK_8		= 0x00,	/* 64 rand bits, 64 stored bits */
+@@ -128,6 +129,7 @@
+ 	lo &= ~(0x7f << VIA_STRFILT_CNT_SHIFT);
+ 	lo &= ~VIA_XSTORE_CNT_MASK;
+ 	lo &= ~(VIA_STRFILT_ENABLE | VIA_STRFILT_FAIL | VIA_RAWBITS_ENABLE);
++	lo |= VIA_RNG_DUAL;
+ 	lo |= VIA_RNG_ENABLE;
+ 
+ 	if (lo != old_lo)
+
+--------------030008010503010803080505--
