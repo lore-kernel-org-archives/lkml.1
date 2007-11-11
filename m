@@ -1,56 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbXKKJG7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756723AbXKKJRJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756753AbXKKJG7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 04:06:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbXKKJGr
+	id S1756723AbXKKJRJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 04:17:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbXKKJQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 04:06:47 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:40435 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752980AbXKKJGp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 04:06:45 -0500
-Date: Sun, 11 Nov 2007 10:06:21 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Magnus Damm <damm@igel.co.jp>, Jeff Garzik <jeff@garzik.org>,
-       lethal@linux-sh.org
-Cc: linux-kernel@vger.kernel.org, linuxsh-shmedia-dev@lists.sourceforge.net,
-       netdev@vger.kernel.org
-Subject: drivers/net/ax88796.c compile error on sh64
-Message-ID: <20071111090620.GK21669@stusta.de>
+	Sun, 11 Nov 2007 04:16:56 -0500
+Received: from il.qumranet.com ([82.166.9.18]:43101 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753408AbXKKJQz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Nov 2007 04:16:55 -0500
+Message-ID: <4736C847.90000@qumranet.com>
+Date: Sun, 11 Nov 2007 11:15:51 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Gerd Hoffmann <kraxel@redhat.com>
+CC: Glauber de Oliveira Costa <gcosta@redhat.com>,
+       linux-kernel@vger.kernel.org, jeremy@goop.org, aliguori@us.ibm.com,
+       kvm-devel@lists.sourceforge.net, hollisb@us.ibm.com
+Subject: Re: [PATCH 1/3] include files for kvmclock
+References: <11945615632624-git-send-email-gcosta@redhat.com> <11945615703593-git-send-email-gcosta@redhat.com> <47341C4A.30508@redhat.com>
+In-Reply-To: <47341C4A.30508@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 8687991a734a67f1638782c968f46fff0f94bb1f causes the following 
-compile error on sh64:
+Gerd Hoffmann wrote:
+>> +/*
+>> + * Guest has page alignment and padding requirements. At the host, it will
+>> + * only lead to wasted space at the vcpu struct. For this reason, the struct
+>> + * is not anonymous
+>> + */
+>> +union kvm_hv_clock {
+>> +	struct kvm_hv_clock_s {
+>> +		u64 tsc_mult;
+>> +		u64 now_ns;
+>> +		/* That's the wall clock, not the water closet */
+>> +		u64 wc_sec;
+>> +		u64 last_tsc;
+>> +		/* At first, we could use the tsc value as a marker, but Jeremy
+>> +		 * well noted that it will cause us locking problems in 32-bit
+>> +		 * sys, so we have a special version field */
+>> +		u32 version;
+>> +	} fields;
+>> +	char page_align[PAGE_SIZE];
+>> +};
+>>     
+>
+> What is the point in using a whole page per vcpu?  You probably don't
+> want struct kvm_hv_clock_s cross a page border.  Is that the only reason
+> or are there other constrains too?
+>   
 
-<--  snip  -->
+We don't even have the cross-page-boundary constraint.
 
-...
-  CC [M]  drivers/net/ax88796.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/net/ax88796.c: In function 'ax_get_8390_hdr':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/net/ax88796.c:187: error: implicit declaration of function 'readsw'
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/net/ax88796.c:189: error: implicit declaration of function 'readsb'
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/net/ax88796.c: In function 'ax_block_output':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/net/ax88796.c:275: error: implicit declaration of function 'writesw'
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/net/ax88796.c:277: error: implicit declaration of function 'writesb'
-make[3]: *** [drivers/net/ax88796.o] Error 1
+The real issue is that on i386 physical addresses are 64-bit while 
+hypercall arguments are 32-bit.  A page frame number is 32-bit and so 
+poses no issues.
 
-<--  snip -->
+I see two workarounds for this:
+- make the first hypercall argument a u64 rather than a long (using two 
+registers on i386)
+- use an msr for registering the clock address
 
+The first is more general, while the second has the nice property of 
+taking care of live migration automatically.
 
-cu
-Adrian
+> As the kvm clock looks quite simliar to what xen does, how about making
+> the structs binary-compatible or simply reuse the xen version (struct
+> vcpu_time_info in xen/interface/xen.h)?
+>   
+
+If there are no technical issues, I have no objections.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+error compiling committee.c: too many arguments to function
 
