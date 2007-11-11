@@ -1,97 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756011AbXKKHCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbXKKHeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756011AbXKKHCT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 02:02:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752397AbXKKHCL
+	id S1754837AbXKKHeu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 02:34:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbXKKHem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 02:02:11 -0500
-Received: from sitemail2.everyone.net ([216.200.145.36]:48404 "EHLO
-	omta16.mta.everyone.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751994AbXKKHCK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 02:02:10 -0500
-X-Eon-Dm: dm51
-X-Eon-Sig: AQF97PZHNqjw5I7q/QIAAAAD,76b4680a3a39af671c2c033c9cf5f162
-Message-ID: <4736A8ED.6090407@smsglobal.net>
-Date: Sun, 11 Nov 2007 15:02:05 +0800
-From: "Rogelio M. Serrano Jr." <rogelio@smsglobal.net>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Sun, 11 Nov 2007 02:34:42 -0500
+Received: from pip15.gyao.ne.jp ([61.122.117.253]:40280 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751407AbXKKHel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Nov 2007 02:34:41 -0500
+Date: Sun, 11 Nov 2007 16:34:22 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC: 2.6 patch] add -fno-tree-scev-cprop to KBUILD_CFLAGS
+Message-ID: <20071111073422.GA25323@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Adrian Bunk <bunk@kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
+	linux-kernel@vger.kernel.org
+References: <20071111064829.GG21669@stusta.de>
 MIME-Version: 1.0
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       LSM ML <linux-security-module@vger.kernel.org>,
-       apparmor-dev <apparmor-dev@forge.novell.com>
-Subject: Re: AppArmor Security Goal
-References: <473380AD.5070801@crispincowan.com> <20071110220455.GB24195@gallifrey> <47362C7C.2050202@crispincowan.com> <20071110222414.GC24195@gallifrey> <47363381.4030103@crispincowan.com> <20071110232545.GD24195@gallifrey>
-In-Reply-To: <20071110232545.GD24195@gallifrey>
-X-Enigmail-Version: 0.95.3
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigBEE1F2E416952AAEF38536AA"
-To: undisclosed-recipients:;
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071111064829.GG21669@stusta.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigBEE1F2E416952AAEF38536AA
-Content-Type: multipart/mixed;
- boundary="------------030808090109080108080209"
-
-This is a multi-part message in MIME format.
---------------030808090109080108080209
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-Dr. David Alan Gilbert wrote:
->
->
-> Allowing a user to tweak (under constraints) their settings might allow=
-
-> them to do something like create two mozilla profiles which are isolate=
-d
-> from each other, so that the profile they use for general web surfing
-> is isolated from the one they use for online banking.
->
->  =20
-Doesnt this allow the user to shoot their own foot? The exact thing
-mandatory access control are supposed to prevent?
-
-> Dave
->  =20
-
-
---=20
-Democracy is about two wolves and a sheep deciding what to eat for dinner=
-=2E
-
-
---------------030808090109080108080209
-Content-Type: text/x-vcard; charset=utf-8;
- name="rogelio.vcf"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="rogelio.vcf"
-
-YmVnaW46dmNhcmQNCmZuOlJvZ2VsaW8gTS4gU2VycmFubyBKcg0KbjpNLiBTZXJyYW5vIEpy
-O1JvZ2VsaW8NCm9yZzpTTVNHIENvbW11bmljYXRpb25zIFBoaWxpcHBpbmVzO1RlY2huaWNh
-bCBEZXBhcnRtZW50DQphZHI6Ozs7Ozs7UmVwdWJsaWMgb2YgdGhlIFBoaWxpcHBpbmVzDQpl
-bWFpbDtpbnRlcm5ldDpyb2dlbGlvQHNtc2dsb2JhbC5uZXQNCnRpdGxlOlByb2dyYW1tZXIN
-CnRlbDt3b3JrOis2MzI3NTM0MTQ1DQp0ZWw7aG9tZTorNjMyOTUyNzAyNg0KdGVsO2NlbGw6
-KzYzOTIwOTIwMjI2Nw0KeC1tb3ppbGxhLWh0bWw6RkFMU0UNCnZlcnNpb246Mi4xDQplbmQ6
-dmNhcmQNCg0K
---------------030808090109080108080209--
-
---------------enigBEE1F2E416952AAEF38536AA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFHNqjtyihxuQOYt8wRAv3NAJ0Q3WlY27Q3dSPzUQCC+tjC5VAePQCdHMYt
-OBFaj8b6zgn9sAnUgJlHdrE=
-=haMI
------END PGP SIGNATURE-----
-
---------------enigBEE1F2E416952AAEF38536AA--
+On Sun, Nov 11, 2007 at 07:48:29AM +0100, Adrian Bunk wrote:
+> But the kernel does (at least on some architectures) not link with 
+> libgcc or ship other code providing the required libgcc functions.
+> 
+> Richard Guenther suggested in gcc bug #32044 to use -fno-tree-scev-cprop 
+> (new option in gcc 4.3) as a workaround and I confirmed that it fixes 
+> the compilation.
+> 
+And some architectures do link it in, so the call to libgcc code doesn't
+necessarily matter. Perhaps the architectures that don't link in libgcc
+can turn this flag on conditionally, it shouldn't be forced on the
+architectures that do link it in.
