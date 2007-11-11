@@ -1,66 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756345AbXKKAWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756462AbXKKA2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756345AbXKKAWd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Nov 2007 19:22:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755641AbXKKAWZ
+	id S1756462AbXKKA2p (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Nov 2007 19:28:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755556AbXKKA2g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Nov 2007 19:22:25 -0500
-Received: from bravo667.server4you.de ([85.25.132.126]:46733 "EHLO
-	mail.sitenet.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755556AbXKKAWZ (ORCPT
+	Sat, 10 Nov 2007 19:28:36 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:37744 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755547AbXKKA2g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Nov 2007 19:22:25 -0500
-Message-ID: <47364B57.5010409@czajsoft.pl>
-Date: Sun, 11 Nov 2007 01:22:47 +0100
-From: Przemyslaw Wegrzyn <czajnik@czajsoft.pl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Steve French <smfrench@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, joern@logfs.org,
-       linux-cifs-client@lists.samba.org
-Subject: Re: Fw: Buffer overflow in CIFS VFS.
-References: <OFA6B04F1D.DE8E7DD9-ON8725738E.00065BC2-8625738E.00066CD4@us.ibm.com>	 <524f69650711081812j20580247kce68334b778c73c7@mail.gmail.com>	 <47343DA2.90306@czajsoft.pl>	 <524f69650711091444t4d02e6d8g7dd15dbe2637d714@mail.gmail.com>	 <4735AC13.9030206@czajsoft.pl> <524f69650711101154s67e19fe6wa1803b8ded2ff632@mail.gmail.com>
-In-Reply-To: <524f69650711101154s67e19fe6wa1803b8ded2ff632@mail.gmail.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 10 Nov 2007 19:28:36 -0500
+Date: Sat, 10 Nov 2007 19:27:37 -0500
+Message-Id: <200711110027.lAB0RbY0005475@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, linux-kernel@vger.kernel.org,
+       Dave Hansen <haveblue@us.ibm.com>, Greg KH <greg@kroah.com>
+Subject: Re: WARNING: at lib/kref.c:33 kref_get() (-mm 2007-11-06-02-32++) 
+In-reply-to: Your message of "Sat, 10 Nov 2007 14:54:52 PST."
+             <20071110145452.f6cf6326.akpm@linux-foundation.org> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steve French wrote:
-> On Nov 10, 2007 7:03 AM, Przemyslaw Wegrzyn <czajnik@czajsoft.pl> wrote:
->   
->> Steve French wrote:
->>     
->>> That might be better, although without memory pools, this would perform
->>> much worse
->>>
->>>       
->> Why ? I don't get your point here.
->>     
-> What I meant is that two fixed size memory pools rather variable size
-> kmallocs helps performance.  By using two fixed size buffers (small -
-> which fits the typical smb request and response, and large which fits
-> the maximum size request other than write which is handled via an
-> iovec) and taking advantage of memory pools, cifs can always make
-> progress even in low memory situations (reducing the likelihood of
-> deadlock) and it reduces the number of times that cifs has to do the
-> very expensive allocation of 16.5K.  If cifs only used variable size
-> request and response buffers, since they are frequently more than one
-> page in size we would be forcing the memory manager to find contiguous
-> pages which can be very slow.
->   
-That was not really my intention to allocate variable size buffers -
-it's perfectly Ok for me to have 2 fixed-size pools. What I meant was to
-allocate buffers with some kind of header containing buffer size and
-type of buffer or whatever needed info. Obviously, you could use
-pointers to buffer body all over the code, functions/macros that need to
-access the header would move the pointer back by sizeof(header). Then
-one could e.g. provide a single function for disposing the buffer, and
-no longer care which pool is it allocated from, for the additional
-memory cost - the function would look into the header to check that for
-you. Hope it's clear now (my English is far from perfect).
+In message <20071110145452.f6cf6326.akpm@linux-foundation.org>, Andrew Morton writes:
+> On Fri, 9 Nov 2007 21:12:47 -0500 Erez Zadok <ezk@cs.sunysb.edu> wrote:
+> 
+> > Setup: FC6 system with MM snapshot broken-out-2007-11-06-02-32
+> 
+> That's a bit old.
+> 
+> > and these two
+> > patches added:
+> > 
+> > r-o-bind-mounts-track-number-of-mount-writer-fix-buggy-loop.patch
+> > r-o-bind-mounts-track-number-of-mount-writer-fix-buggy-loop-checkpatch-fixes.patch
+> > 
+> > Booting the machine, waiting a few minutes (not logging in or doing anything
+> > else).  I get:
+> > 
+> > WARNING: at lib/kref.c:33 kref_get()
+> >  [<c020282a>] show_trace_log_lvl+0x12/0x25
+> >  [<c0203024>] show_trace+0xd/0x10
+> >  [<c0203120>] dump_stack+0x15/0x17
+> >  [<c02c7f85>] kref_get+0x26/0x30
+> >  [<c02c731b>] kobject_get+0x12/0x17
+> >  [<c02c7770>] kobject_add+0x97/0x162
+> >  [<c02164e5>] uids_user_create+0x41/0x5d
+> >  [<c0216850>] alloc_uid+0xc9/0x171
+> >  [<c0219b50>] set_user+0x1f/0x93
+> >  [<c021b445>] sys_setuid+0x4b/0xcb
+> >  [<c02021fe>] sysenter_past_esp+0x5f/0x91
+> >  =======================
+> > 
+> > There's no other indication where the setuid(2) came from, perhaps cron?
+> > 
+> 
+> I have a feeling that this was reported before and that Dave and/or Greg
+> looked into it.  Were those two patches which Dave sent yesterday applied?
 
-Przemyslaw
+Yes, both of Dave's patches were applied.  I'll give the latest -mm a try
+first and see report comes up.
 
+> It might be worth checking my current tree:
+> http://userweb.kernel.org/~akpm/mmotm/
+
+The above URL is very useful.  Thanks!
+
+I've got comments on my experience w/ the above URL, but I'll send those as
+separate emails shortly.
+
+Erez.
