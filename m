@@ -1,53 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbXKKFOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbXKKFTI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753904AbXKKFOj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 00:14:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbXKKFOc
+	id S1754213AbXKKFTI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 00:19:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339AbXKKFS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 00:14:32 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:48195 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751068AbXKKFOc (ORCPT
+	Sun, 11 Nov 2007 00:18:56 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38048
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750750AbXKKFSz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 00:14:32 -0500
-Date: Sun, 11 Nov 2007 06:14:08 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Guillaume Chazarain <guichaz@yahoo.fr>
-Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kconfig: use $K64BIT to set 64BIT with all*config
-	targets
-Message-ID: <20071111051408.GC21669@stusta.de>
-References: <20071110204038.GA13140@uranus.ravnborg.org> <11947274093185-git-send-email-sam@ravnborg.org> <11947274091127-git-send-email-sam@ravnborg.org> <3d8471ca0711101255m1647e27cm241f358cc49a9921@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <3d8471ca0711101255m1647e27cm241f358cc49a9921@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sun, 11 Nov 2007 00:18:55 -0500
+Date: Sat, 10 Nov 2007 21:18:54 -0800 (PST)
+Message-Id: <20071110.211854.38040624.davem@davemloft.net>
+To: dada1@cosmosbay.com
+Cc: tony.luck@intel.com, linux-kernel@vger.kernel.org
+Subject: Re: 
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <47350C92.80505@cosmosbay.com>
+References: <617E1C2C70743745A92448908E030B2A02E9A31C@scsmsx411.amr.corp.intel.com>
+	<47350C92.80505@cosmosbay.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 10, 2007 at 09:55:06PM +0100, Guillaume Chazarain wrote:
-> Hi,
+From: Eric Dumazet <dada1@cosmosbay.com>
+Date: Sat, 10 Nov 2007 02:42:42 +0100
+
+> [NET] adds a missing include <linux/vmalloc.h>
 > 
-> On 11/10/07, Sam Ravnborg <sam@ravnborg.org> wrote:
-> > The variable K64BIT can now be used to select the
-> > value of CONFIG_64BIT.
-> 
-> Why not calling the environment variable CONFIG_64BIT,
-> in preparation of the day when all CONFIG_ variables can
-> be passed by environment variables?
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
 
-What exactly are the use cases where someone would need this?
-
-> Guillaume
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Applied, thanks Eric.
