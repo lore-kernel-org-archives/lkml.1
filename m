@@ -1,39 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756724AbXKKPIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbXKKPRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756724AbXKKPIR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 10:08:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbXKKPIE
+	id S1756521AbXKKPRV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 10:17:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbXKKPRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 10:08:04 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:46530 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754286AbXKKPIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 10:08:01 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20071110200935.60d375de@the-village.bc.nu>
-References: <20071110200935.60d375de@the-village.bc.nu> <20071109195303.edbdc631.akpm@linux-foundation.org> <20071109153432.20803.69832.stgit@warthog.procyon.org.uk> <20071109153458.20803.10594.stgit@warthog.procyon.org.uk> <24343.1194697130@redhat.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-am33-list@redhat.com
-Subject: Re: [PATCH 5/6] MN10300: Add the MN10300/AM33 architecture to the kernel [try #5]
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Sun, 11 Nov 2007 15:07:51 +0000
-Message-ID: <1745.1194793671@redhat.com>
+	Sun, 11 Nov 2007 10:17:13 -0500
+Received: from wr-out-0506.google.com ([64.233.184.224]:38730 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754308AbXKKPRM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Nov 2007 10:17:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Ir5okkAEI7fOEeUNwA+8fdxp4ETT7vYfzk0UWQUoqFlj0lA1nCv8ltlz8mOoI6w7Z98wUaLRuKsKLsQjjR8gXzH5zIT02e0VuiUq2ebUxE5j64/IZaGLxsYWlvJlaDES0sxzsHOirftzKJC9RXZImu2lvU/Qz8SOJ4fxG1OtgDY=
+Message-ID: <7d01f9f00711110717x3eced6b2n8497476bcb17be1b@mail.gmail.com>
+Date: Sun, 11 Nov 2007 16:17:04 +0100
+From: "Thibaut VARENE" <T-Bone@parisc-linux.org>
+To: "dave chung" <ponstrip@gmail.com>
+Subject: Re: [PATCH] drivers/video/s1d13xxxfb.c as module with dbg
+Cc: "Stanislav Brabec" <utx@penguin.cz>, linux-kernel@vger.kernel.org
+In-Reply-To: <d7b238da0711101529s3384cb6bx928c74cfef8fde0f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1194709875.4486.8.camel@utx.utx.cz>
+	 <d7b238da0711101529s3384cb6bx928c74cfef8fde0f@mail.gmail.com>
+X-Google-Sender-Auth: cec9cf83872fdc9c
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+On Nov 11, 2007 12:29 AM, dave chung <ponstrip@gmail.com> wrote:
 
-> memory mapped registers should be read with readw and friends and that
-> should contain the volatile not the public code.
+> we also need to look at splitting out the "chip revision", which is
+> currently hard set, as I have had very good results with this driver
+> and  chip  S1D13506, which is functionally similar but without the
+> external clocking and without teh internal ram.
 
-Actually, I can think of a good reason for *not* doing that.  What I have at
-the moment encodes the size of the register to be accessed in the type.  What
-you're suggesting does not.
+Well I wrote the initial driver mostly as a rather quick hack. I
+didn't have access to other hw from the s1d13 family (other than the
+806) at that time, and could only guess that supporting them shouldn't
+be too complicated. Nowadays I don't even have access to the 806
+itself anymore, so I'm afraid I won't be of much help.
 
-David
+HTH
+
+T-Bone
+
+-- 
+Thibaut VARENE
+http://www.parisc-linux.org/~varenet/
