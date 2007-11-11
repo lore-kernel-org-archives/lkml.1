@@ -1,87 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbXKKI1I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbXKKIf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756197AbXKKI1I (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 03:27:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbXKKI0y
+	id S1756590AbXKKIf1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 03:35:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbXKKIfO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 03:26:54 -0500
-Received: from koto.vergenet.net ([210.128.90.7]:32841 "EHLO koto.vergenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751451AbXKKI0x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 03:26:53 -0500
-Date: Sun, 11 Nov 2007 16:09:40 +0900
-From: Simon Horman <horms@verge.net.au>
+	Sun, 11 Nov 2007 03:35:14 -0500
+Received: from mtagate1.uk.ibm.com ([195.212.29.134]:14779 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752840AbXKKIfM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Nov 2007 03:35:12 -0500
+Date: Sun, 11 Nov 2007 10:35:01 +0200
+From: Muli Ben-Yehuda <muli@il.ibm.com>
 To: Adrian Bunk <bunk@kernel.org>
-Cc: "Rumen G. Bogdanovski" <rumen@voicecho.com>, wensong@linux-vs.org,
-       ja@ssi.bg, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>,
-       LVS Development mailing list 
-	<lvs-devel@linuxvirtualserver.org>
-Subject: Re: [2.6 patch] net/ipv4/ipvs/: remove unused exports
-Message-ID: <20071111070939.GA25304@verge.net.au>
-References: <20071111064840.GJ21669@stusta.de>
-MIME-Version: 1.0
+Cc: jdmason@kudzu.us, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] x86 pci-calgary_64.c: make a variable static
+Message-ID: <20071111083501.GG30021@rhun.ibm.com>
+References: <20071109060330.GX26163@stusta.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071111064840.GJ21669@stusta.de>
-User-Agent: mutt-ng/devel-r804 (Debian)
+In-Reply-To: <20071109060330.GX26163@stusta.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 11, 2007 at 07:48:40AM +0100, Adrian Bunk wrote:
-> This patch removes the following unused EXPORT_SYMBOL's:
-> - ip_vs_try_bind_dest
-> - ip_vs_find_dest
+On Fri, Nov 09, 2007 at 07:03:30AM +0100, Adrian Bunk wrote:
+> "debugging" is a horrible name for a global variable - thankfully it can 
+> become static.
+> 
+> Also put it out of __read_mostly so that gcc no longer has to emit it
+> at all.
 > 
 > Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Looks fine to me.
+Thanks, applied. Will push with my next batch of Calgary updates.
 
-Should Dave Miller put this in his tree,
-or do you want to handle it a different way?
-
-Acked-by: Simon Horman <horms@verge.net.au>
-
-> 
-> ---
-> 
->  net/ipv4/ipvs/ip_vs_conn.c |    1 -
->  net/ipv4/ipvs/ip_vs_ctl.c  |    1 -
->  2 files changed, 2 deletions(-)
-> 
-> ad9f400d4f66ea3423f97e609d6ef2572055c603 
-> diff --git a/net/ipv4/ipvs/ip_vs_conn.c b/net/ipv4/ipvs/ip_vs_conn.c
-> index b7eeae6..0a9f3c3 100644
-> --- a/net/ipv4/ipvs/ip_vs_conn.c
-> +++ b/net/ipv4/ipvs/ip_vs_conn.c
-> @@ -441,7 +441,6 @@ struct ip_vs_dest *ip_vs_try_bind_dest(struct ip_vs_conn *cp)
->  	} else
->  		return NULL;
->  }
-> -EXPORT_SYMBOL(ip_vs_try_bind_dest);
->  
->  
->  /*
-> diff --git a/net/ipv4/ipvs/ip_vs_ctl.c b/net/ipv4/ipvs/ip_vs_ctl.c
-> index 3c4d22a..b64cf45 100644
-> --- a/net/ipv4/ipvs/ip_vs_ctl.c
-> +++ b/net/ipv4/ipvs/ip_vs_ctl.c
-> @@ -604,7 +604,6 @@ struct ip_vs_dest *ip_vs_find_dest(__be32 daddr, __be16 dport,
->  	ip_vs_service_put(svc);
->  	return dest;
->  }
-> -EXPORT_SYMBOL(ip_vs_find_dest);
->  
->  /*
->   *  Lookup dest by {svc,addr,port} in the destination trash.
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
--- 
-Horms
-  H: http://www.vergenet.net/~horms/
-  W: http://www.valinux.co.jp/en/
-
+Cheers,
+Muli
