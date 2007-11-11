@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbXKKMCZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755138AbXKKMnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755542AbXKKMCZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 07:02:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbXKKMCR
+	id S1755138AbXKKMnk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 07:43:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbXKKMnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 07:02:17 -0500
-Received: from ensim03.bon.m2soft.com ([195.38.20.12]:58299 "EHLO
-	ensim03.bon.m2soft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751891AbXKKMCQ (ORCPT
+	Sun, 11 Nov 2007 07:43:31 -0500
+Received: from nf-out-0910.google.com ([64.233.182.189]:40516 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753471AbXKKMna (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 07:02:16 -0500
-X-Greylist: delayed 534 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Nov 2007 07:02:16 EST
-X-ClientAddr: 85.124.174.38
-Date: Sun, 11 Nov 2007 12:51:32 +0100
-From: Nicolas Kaiser <nikai@nikai.net>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] fs/hfs: remove duplicated defines
-Message-ID: <20071111125132.1ce29211@lucky.kitzblitz>
-Organization: -
-X-Face: "fF&[w2"Nws:JNH4'g|:gVhgGKLhj|X}}&w&V?]0=,7n`jy8D6e[Jh=7+ca|4~t5e[ItpL5
- N'y~Mvi-vJm`"1T5fi1^b!&EG]6nW~C!FN},=$G?^U2t~n[3;u\"5-|~H{-5]IQ2
-X-Mailer: Claws Mail (Linux)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 11 Nov 2007 07:43:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=oEc4t6B2z4iNu/k6Q0DHzwH1k2pAkBZVu6UIOved9P52pPrS1V+7/PzRN29tlCEF7Sj9zf70jGi6J2OprgBnWeJIn8GF4KfncTlFV0RZ3u2IwdGyZ4twKeeihW2HE0vH0OWXqHqaHARue/6AISvZyqwYGU3bGvWmeUS+Ibf2Gnw=
+Message-ID: <3d8471ca0711110443v46084714m709b2b713a536b19@mail.gmail.com>
+Date: Sun, 11 Nov 2007 13:43:28 +0100
+From: "Guillaume Chazarain" <guichaz@yahoo.fr>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: [PATCH] kconfig: use $K64BIT to set 64BIT with all*config targets
+Cc: "Sam Ravnborg" <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071111051408.GC21669@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-M2Soft-MailScanner-Information: Please contact the ISP for more information
-X-M2Soft-MailScanner: Not scanned: please contact your Internet E-Mail Service Provider for details
-X-MailScanner-From: nikai@nikai.net
+Content-Disposition: inline
+References: <20071110204038.GA13140@uranus.ravnborg.org>
+	 <11947274093185-git-send-email-sam@ravnborg.org>
+	 <11947274091127-git-send-email-sam@ravnborg.org>
+	 <3d8471ca0711101255m1647e27cm241f358cc49a9921@mail.gmail.com>
+	 <20071111051408.GC21669@stusta.de>
+X-Google-Sender-Auth: 96f47ebb9b2182cf
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove duplicated defines.
+Hi Adrian,
 
-Signed-off-by: Nicolas Kaiser <nikai@nikai.net>
----
+On 11/11/07, Adrian Bunk <bunk@kernel.org> wrote:
+> What exactly are the use cases where someone would need this?
 
- fs/hfs/btree.h |    5 -----
- 1 file changed, 5 deletions(-)
+Glad you asked. Today, when I want to recompile a kernel while
+changing a CONFIG_ option, I manually edit the .config,
+remove the appropriate line and then run make oldconfig.
+I'd like to be able to do: make oldconfig CONFIG_FOO=bar.
 
---- a/fs/hfs/btree.h	2007-10-09 22:31:38.000000000 +0200
-+++ b/fs/hfs/btree.h	2007-11-11 12:42:59.000000000 +0100
-@@ -153,11 +153,6 @@
- 	u32 reserved3[16];
- } __packed;
- 
--#define HFS_NODE_INDEX	0x00	/* An internal (index) node */
--#define HFS_NODE_HEADER	0x01	/* The tree header node (node 0) */
--#define HFS_NODE_MAP		0x02	/* Holds part of the bitmap of used nodes */
--#define HFS_NODE_LEAF		0xFF	/* A leaf (ndNHeight==1) node */
--
- #define BTREE_ATTR_BADCLOSE	0x00000001	/* b-tree not closed properly. not
- 						   used by hfsplus. */
- #define HFS_TREE_BIGKEYS	0x00000002	/* key length is u16 instead of u8.
+Also, when working on a specific feature of the kernel, I tend to
+install both a kernel with the CONFIG_ option set and one with
+the option unset. Scripts to do that can twiddle the .config file,
+but it would be more convenient if kbuild could avoid that.
+
+As you see, I'm more interested in make oldconfig than
+make all*config.
+
+Cheers.
+
+-- 
+Guillaume
