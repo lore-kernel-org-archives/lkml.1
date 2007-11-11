@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756955AbXKKKSr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbXKKKWs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756955AbXKKKSr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 05:18:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754131AbXKKKSj
+	id S1756824AbXKKKWs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 05:22:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbXKKKWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 05:18:39 -0500
-Received: from il.qumranet.com ([82.166.9.18]:38842 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753408AbXKKKSi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 05:18:38 -0500
-Message-ID: <4736D6C0.8040408@qumranet.com>
-Date: Sun, 11 Nov 2007 12:17:36 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Sun, 11 Nov 2007 05:22:41 -0500
+Received: from hpsmtp-eml19.kpnxchange.com ([213.75.38.84]:11206 "EHLO
+	hpsmtp-eml19.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752437AbXKKKWl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Nov 2007 05:22:41 -0500
+From: Frans Pop <elendil@planet.nl>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Bind mount bug?
+Date: Sun, 11 Nov 2007 11:22:36 +0100
+User-Agent: KMail/1.9.7
+References: <200711111106.53494.elendil@planet.nl>
+In-Reply-To: <200711111106.53494.elendil@planet.nl>
 MIME-Version: 1.0
-To: Glauber de Oliveira Costa <gcosta@redhat.com>
-CC: linux-kernel@vger.kernel.org, jeremy@goop.org, aliguori@us.ibm.com,
-       kvm-devel@lists.sourceforge.net, hollisb@us.ibm.com
-Subject: Re: [PATCH 2/3] kvmclock - the host part.
-References: <11945615632624-git-send-email-gcosta@redhat.com> <11945615703593-git-send-email-gcosta@redhat.com> <11945615751747-git-send-email-gcosta@redhat.com>
-In-Reply-To: <11945615751747-git-send-email-gcosta@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711111122.36573.elendil@planet.nl>
+X-OriginalArrivalTime: 11 Nov 2007 10:22:39.0059 (UTC) FILETIME=[C9218230:01C8244C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Glauber de Oliveira Costa wrote:
-> This is the host part of kvm clocksource implementation. As it does
-> not include clockevents, it is a fairly simple implementation. We
-> only have to register a per-vcpu area, and start writting to it periodically.
->
->   
+On Sunday 11 November 2007, Frans Pop wrote:
+> I'd expected the last command to list "foo", but it shows an empty dir.
+> Shouldn't it also show the original contents of test (as they were before
+> the first bind mount)?
 
-Missing live migration support  (a way for userspace to read and write 
-the guest clock address).  Should probably be in a separate patch.
+The problem is of course also that any changes made into /test/test will get 
+lost into thin space:
 
-> @@ -1924,6 +1955,7 @@ out:
->  		goto preempted;
->  	}
->  
-> +	kvm_write_guest_time(vcpu);
->  	post_kvm_run_save(vcpu, kvm_run);
->   
-
-Why here?  Seems like we're leaving the guest for a while at this place.
-
-Suggest putting it on top of __vcpu_run(), guarded by a flag, and 
-setting the flag every time we put the vcpu.
-
- 
-
-
-
--- 
-error compiling committee.c: too many arguments to function
-
+# touch test/test/baz
+# ls bindtest/test
+foo
+# umount test
+# ls test
+foo
+#
