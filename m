@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756902AbXKLAAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754642AbXKLABW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756902AbXKLAAZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 19:00:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754496AbXKLAAJ
+	id S1754642AbXKLABW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 19:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755633AbXKLABL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 19:00:09 -0500
-Received: from accolon.hansenpartnership.com ([64.109.89.108]:37481 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752748AbXKLAAI (ORCPT
+	Sun, 11 Nov 2007 19:01:11 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:61413 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755720AbXKLABK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 19:00:08 -0500
-Subject: Re: [PATCH] Fix problem with size of allocation in libsas
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <200711120024.54773.jesper.juhl@gmail.com>
-References: <200711120024.54773.jesper.juhl@gmail.com>
-Content-Type: text/plain
-Date: Sun, 11 Nov 2007 18:00:03 -0600
-Message-Id: <1194825603.3445.21.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+	Sun, 11 Nov 2007 19:01:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=T1R40ijGdKckd5ENcsWuHHGRr+ghrwT2By9ylitGXAX9ygFzRoZ6fHlqlpBW00xMPo/H+8/BKAZdbez/5h7d7yvH7ILvwkSlwAHWWklcTUGrrBIp5pxx5MK/VEWXWfMuJeg6Hqt2IPNHa+PxwK7+LqVa7XUIY9nrY9eRtC8v57c=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Let 'make help' output info about includecheck
+Date: Mon, 12 Nov 2007 00:56:35 +0100
+User-Agent: KMail/1.9.7
+Cc: Sam Ravnborg <sam@ravnborg.org>, trivial@kernel.org,
+       Jesper Juhl <jesper.juhl@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711120056.35359.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-11-12 at 00:24 +0100, Jesper Juhl wrote:
-> From: Jesper Juhl <jesper.juhl@gmail.com>
-> 
-> in sas_get_phy_change_count(), the line
-> 	disc_resp = alloc_smp_resp(DISCOVER_RESP_SIZE);
-> will allocate 56 bytes due to this define:
-> 	#define DISCOVER_RESP_SIZE 56
-> But, the struct is actually 60 bytes in size.
-> 
-> So change the define to be 
-> 	#define DISCOVER_RESP_SIZE sizeof(struct smp_resp)
-> so we always get the correct size even when people 
-> fiddle with the structure.
-> 
-> This change also fixes the same problem in 
-> sas_get_phy_attached_sas_addr()
-> 
-> (Found by the Coverity checker. Compile tested only)
+From: Jesper Juhl <jesper.juhl@gmail.com>
 
-Well, your fix is definitely wrong.
+'make includecheck' is useful and we want people to run it, so 
+let 'make help' output information about its existence.
 
-Could you explain the problem a little more?  The discover response SMP
-frame is 56 bytes as mandated by the standard.  I don't see anywhere in
-the code where we're actually using a value beyond the 56th byte ...
-where is the problem use?
 
-James
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
+
+ Makefile |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Makefile b/Makefile
+index e28dde8..2e5eba0 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1181,6 +1181,7 @@ help:
+ 	@echo  ''
+ 	@echo  'Static analysers'
+ 	@echo  '  checkstack      - Generate a list of stack hogs'
++	@echo  '  includecheck    - Generate a list of files with duplicate header includes'
+ 	@echo  '  namespacecheck  - Name space analysis on compiled kernel'
+ 	@echo  '  export_report   - List the usages of all exported symbols'
+ 	@if [ -r $(srctree)/include/asm-$(SRCARCH)/Kbuild ]; then \
 
 
