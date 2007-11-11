@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757277AbXKKRId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757291AbXKKRWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757277AbXKKRId (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 12:08:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754460AbXKKRIY
+	id S1757291AbXKKRWV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 12:22:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754260AbXKKRWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 12:08:24 -0500
-Received: from mail0.scram.de ([78.47.204.202]:59698 "EHLO mail0.scram.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754291AbXKKRIX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 12:08:23 -0500
-X-Spam-Score: -3.876
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
- * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
- *      [score: 0.0000]
- *  0.5 AWL AWL: From: address is in the auto white-list
-Message-ID: <473736FB.7090609@scram.de>
-Date: Sun, 11 Nov 2007 18:08:11 +0100
-From: Jochen Friedrich <jochen@scram.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
-MIME-Version: 1.0
-To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
-CC: linux-kernel@vger.kernel.org, Scott Wood <scottwood@freescale.com>,
-       paulus@samba.org
-Subject: [PATCH] powerpc: Add support for PORTA sor and PORTB odr registers
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 11 Nov 2007 12:22:12 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:43206 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754460AbXKKRWL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Nov 2007 12:22:11 -0500
+Date: Sun, 11 Nov 2007 12:11:07 -0500
+Message-Id: <200711111711.lABHB7xo002409@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>,
+       Roland McGrath <roland@redhat.com>,
+       "Andrew G. Morgan" <morgan@kernel.org>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       Chris Wright <chrisw@sous-sol.org>, James Morris <jmorris@namei.org>,
+       Serge Hallyn <serue@us.ibm.com>, Stephen Smalley <sds@tycho.nsa.gov>
+Subject: Re: [PATCH] kernel/capability.c get_task_comm compile error (MMOTM) 
+In-reply-to: Your message of "Sun, 11 Nov 2007 15:15:10 +0100."
+             <20071111141510.GA29126@elte.hu> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PORTA has an so register and PORTB had an odr register, as well.
-However, the PORTB odr register is only 16bit.
+In message <20071111141510.GA29126@elte.hu>, Ingo Molnar writes:
+> 
+> * Erez Zadok <ezk@cs.sunysb.edu> wrote:
+> 
+> > Small patch below fixes compile error.
+> 
+> > +			char name[sizeof(current->comm)];
+> >  			warned++;
+> >  			printk(KERN_INFO
+> >  			       "warning: process `%s' sets w/ old libcap\n",
+> > -			       get_task_comm(current));
+> > +			       get_task_comm(name, current));
+> 
+> that's buggy - get_task_comm() returns void.
+> 
+> the proper fix would be to first do a get_task_comm() then pass in 
+> 'name' as an argument to printk.
+> 
+> 	Ingo
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
- arch/powerpc/sysdev/commproc.c |    9 ++++++++-
- 1 files changed, 8 insertions(+), 1 deletions(-)
+Ingo, I don't see how it can return NULL.  This is what get_task_comm looks
+like in MMOTM-2007-11-10-19-05:
 
-diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
-index f6a6378..a9f5fcf 100644
---- a/arch/powerpc/sysdev/commproc.c
-+++ b/arch/powerpc/sysdev/commproc.c
-@@ -438,6 +438,13 @@ static void cpm1_set_pin32(int port, int pin, int flags)
- 	else
- 		clrbits32(&iop->par, pin);
- 
-+	if (port == CPM_PORTB) {
-+		if (flags & CPM_PIN_OPENDRAIN)
-+			setbits16(&mpc8xx_immr->im_cpm.cp_pbodr, pin);
-+		else
-+			clrbits16(&mpc8xx_immr->im_cpm.cp_pbodr, pin);
-+	}
-+
- 	if (port == CPM_PORTE) {
- 		if (flags & CPM_PIN_SECONDARY)
- 			setbits32(&iop->sor, pin);
-@@ -471,7 +478,7 @@ static void cpm1_set_pin16(int port, int pin, int flags)
- 	else
- 		clrbits16(&iop->par, pin);
- 
--	if (port == CPM_PORTC) {
-+	if ((port == CPM_PORTA) || (port == CPM_PORTC)) {
- 		if (flags & CPM_PIN_SECONDARY)
- 			setbits16(&iop->sor, pin);
- 		else
--- 
-1.5.3.5
+char *get_task_comm(char *buf, struct task_struct *tsk)
+{
+	/* buf must be at least sizeof(tsk->comm) in size */
+	task_lock(tsk);
+	strncpy(buf, tsk->comm, sizeof(tsk->comm));
+	task_unlock(tsk);
+	return buf;
+}
 
+The only way it'd return NULL is if a null buf was passed, in which case the
+strncpy will oops first.
+
+Erez.
