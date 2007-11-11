@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757025AbXKKWk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756970AbXKKWp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757025AbXKKWk5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 17:40:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755796AbXKKWks
+	id S1756970AbXKKWp7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 17:45:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755498AbXKKWpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 17:40:48 -0500
-Received: from hpsmtp-eml15.kpnxchange.com ([213.75.38.115]:16404 "EHLO
-	hpsmtp-eml15.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755788AbXKKWkr convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 17:40:47 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de>
-Subject: Re: Bind mount bug?
-Date: Sun, 11 Nov 2007 23:40:44 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
-References: <200711111106.53494.elendil@planet.nl> <09A755B9-27C1-4B54-834C-FDA9EE806042@e18.physik.tu-muenchen.de>
-In-Reply-To: <09A755B9-27C1-4B54-834C-FDA9EE806042@e18.physik.tu-muenchen.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200711112340.45400.elendil@planet.nl>
-X-OriginalArrivalTime: 11 Nov 2007 22:40:45.0778 (UTC) FILETIME=[E6128B20:01C824B3]
+	Sun, 11 Nov 2007 17:45:50 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:42490 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755263AbXKKWpt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Nov 2007 17:45:49 -0500
+Date: Sun, 11 Nov 2007 14:45:23 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Eric Piel <Eric.Piel@lifl.fr>
+Cc: Thomas Renninger <trenn@suse.de>, linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: Kernel panic at boot with ondemand governor as default
+ (2.6.24-rc2)
+Message-ID: <20071111144523.14164575@laptopd505.fenrus.org>
+In-Reply-To: <4737539F.2070401@lifl.fr>
+References: <4737539F.2070401@lifl.fr>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 11 November 2007, Roland Kuhn wrote:
-> This mounts the bindtest/ tree on test/ _without_ copying the mount
-> points which are found on subtrees.
+On Sun, 11 Nov 2007 20:10:23 +0100
+Eric Piel <Eric.Piel@lifl.fr> wrote:
 
-Right. I guess this is the key point that tripped me up.
+> Hello,
+> 
+> I've tried kernel 2.6.24-rc2 and I have a problem with the new option 
+> for setting up the cpufreq ondemand governor as default: a kernel
+> panic happens early at boot time. If I boot first with performance
+> governor and later change to ondemand, everything is fine (as usual).
+> 
+> This seems related to the delayed_workqueue. The kernel panic message 
+> finishes by:
+> EIP: [<c012aa60>] wq_per_cpu+0x0/0x10 SS:ESP 0068:c191be58
+> Kernel panic - not syncing: Attempted to kill init!
+> 
+> A picture of the whole message is available here:
+> http://pieleric.free.fr/unorder/1162-ondemand-panic.jpg
+> 
+> My computer is a x86 using speedstep-ich, and you can find the full 
+> .config leading to the panic attached.
+> 
+> Does anyone has any idea was it going wrong?
+> Thanks,
+> Eric
+> 
+> PS: I haven't tried 2.6.24-rc1.
+> 
 
-> So, you see, test/test/test/a was (as it should) physically created  
-> in test/test, where it is shadowed by the bind mount as long as that  
-> is not removed.
+has ondemand ever worked for you?
 
-Which means that to continue the example from my follw-up mail:
 
-> # ls bindtest/test
-> foo
-> # umount test
-> # ls test
-> foo
-# umount bindtest/test
-# ls bindtest/test
-baz
-
-And there indeed is the missing file.
-
-> Nothing vanishes into "thin air" ;-)
-
-Yeah, I saw that syntax error after sending the mail "into space" would have 
-been OK too, but not my combining the two :-)
-
-Thanks for the explanation!
-
-Cheers,
-FJP
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
