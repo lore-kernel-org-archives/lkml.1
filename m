@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757549AbXKKT7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757963AbXKKUDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757549AbXKKT7Y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 14:59:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754385AbXKKT7P
+	id S1757963AbXKKUDY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 15:03:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756842AbXKKUDP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 14:59:15 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54571 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753637AbXKKT7O (ORCPT
+	Sun, 11 Nov 2007 15:03:15 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54094 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756145AbXKKUDO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 14:59:14 -0500
-Date: Sun, 11 Nov 2007 11:58:17 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Cc: David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Unionfs: stop using iget() and read_inode()
-Message-Id: <20071111115817.b1862bc9.akpm@linux-foundation.org>
-In-Reply-To: <200711111838.lABIc4Im012713@agora.fsl.cs.sunysb.edu>
-References: <200711070648.lA76miPW005794@agora.fsl.cs.sunysb.edu>
-	<200711111838.lABIc4Im012713@agora.fsl.cs.sunysb.edu>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Sun, 11 Nov 2007 15:03:14 -0500
+Date: Sun, 11 Nov 2007 20:02:36 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.24-rc1: pata_acpi fails to activate DMA for DVD-ROM on ALi
+ M5229 secondary channel
+Message-ID: <20071111200236.4cece127@the-village.bc.nu>
+In-Reply-To: <200711112223.13542.arvidjaar@mail.ru>
+References: <200710262130.03567.arvidjaar@mail.ru>
+	<20071026202559.01161aa9@the-village.bc.nu>
+	<200711112223.13542.arvidjaar@mail.ru>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 11 Nov 2007 13:38:04 -0500 Erez Zadok <ezk@cs.sunysb.edu> wrote:
+> BTW in rc2 it does not even boot - it babbles something about
+> Unable to determine IRQ for 00:04.0  (which is IDE controller) and that is
+> the end of story. No IDE device is found.
 
-> Andrew, the following small patch is critical to have after:
-> 
-> iget-stop-unionfs-from-using-iget-and-read_inode.patch
+Thats not an IDE breakage I suspect. Various people are reporting IRQ
+related breakage with -rc2 so you should probably report that to the main
+linux-kernel list
 
-Thanks
+Doesn't explain the ALi DMA problem but I think its unrelated
 
-> Question: since the above patch isn't in my unionfs.git tree (not until the
-> whole iget series makes it to Linus), then do you prefer if I give you a
-> replacement patch to the above patch, or a small incremental one; either
-> way, you can choose to fold the above and below patches into one.
-
-Incrementals are usually preferred.  But it's usually more convenient for the
-originator to generate a new patch, and I will almost always turn that into
-an incremental so that I can review what was changed.  The downside to this
-is that nobody else will be able to see what was changed.
-
-So there are pros and cons and I'm not particularly fussed either way,
-really.  But if a patch is large and has already had some testing and
-review and has been in -mm for a while then that's when wholesale
-replacement becomes problematic: it pretty much sets us back to square one.
+Alan
