@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757099AbXKKGtx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756937AbXKKGuO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757099AbXKKGtx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 01:49:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756632AbXKKGs6
+	id S1756937AbXKKGuO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 01:50:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbXKKGtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 01:48:58 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:32863 "EHLO
+	Sun, 11 Nov 2007 01:49:07 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:32868 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756598AbXKKGs5 (ORCPT
+	with ESMTP id S1752951AbXKKGtE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 01:48:57 -0500
-Date: Sun, 11 Nov 2007 07:48:34 +0100
+	Sun, 11 Nov 2007 01:49:04 -0500
+Date: Sun, 11 Nov 2007 07:48:40 +0100
 From: Adrian Bunk <bunk@kernel.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] sched_fair.c: make sched_nr_latency static
-Message-ID: <20071111064834.GH21669@stusta.de>
+To: "Rumen G. Bogdanovski" <rumen@voicecho.com>, wensong@linux-vs.org,
+       horms@verge.net.au, ja@ssi.bg
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] net/ipv4/ipvs/: remove unused exports
+Message-ID: <20071111064840.GJ21669@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,23 +24,41 @@ User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sched_nr_latency can now become static.
+This patch removes the following unused EXPORT_SYMBOL's:
+- ip_vs_try_bind_dest
+- ip_vs_find_dest
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-fc6c112552b2eb423a29c2b0d100e97db3a47c45 
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index d3c0307..ee00da2 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -43,7 +43,7 @@ unsigned int sysctl_sched_min_granularity = 1000000ULL;
- /*
-  * is kept at sysctl_sched_latency / sysctl_sched_min_granularity
-  */
--unsigned int sched_nr_latency = 20;
-+static unsigned int sched_nr_latency = 20;
+
+ net/ipv4/ipvs/ip_vs_conn.c |    1 -
+ net/ipv4/ipvs/ip_vs_ctl.c  |    1 -
+ 2 files changed, 2 deletions(-)
+
+ad9f400d4f66ea3423f97e609d6ef2572055c603 
+diff --git a/net/ipv4/ipvs/ip_vs_conn.c b/net/ipv4/ipvs/ip_vs_conn.c
+index b7eeae6..0a9f3c3 100644
+--- a/net/ipv4/ipvs/ip_vs_conn.c
++++ b/net/ipv4/ipvs/ip_vs_conn.c
+@@ -441,7 +441,6 @@ struct ip_vs_dest *ip_vs_try_bind_dest(struct ip_vs_conn *cp)
+ 	} else
+ 		return NULL;
+ }
+-EXPORT_SYMBOL(ip_vs_try_bind_dest);
+ 
  
  /*
-  * After fork, child runs first. (default) If set to 0 then
+diff --git a/net/ipv4/ipvs/ip_vs_ctl.c b/net/ipv4/ipvs/ip_vs_ctl.c
+index 3c4d22a..b64cf45 100644
+--- a/net/ipv4/ipvs/ip_vs_ctl.c
++++ b/net/ipv4/ipvs/ip_vs_ctl.c
+@@ -604,7 +604,6 @@ struct ip_vs_dest *ip_vs_find_dest(__be32 daddr, __be16 dport,
+ 	ip_vs_service_put(svc);
+ 	return dest;
+ }
+-EXPORT_SYMBOL(ip_vs_find_dest);
+ 
+ /*
+  *  Lookup dest by {svc,addr,port} in the destination trash.
 
