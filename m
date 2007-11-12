@@ -1,41 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755126AbXKLPVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757749AbXKLPVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755126AbXKLPVS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 10:21:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbXKLPVG
+	id S1757749AbXKLPVd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 10:21:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755489AbXKLPVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 10:21:06 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:36832 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751745AbXKLPVD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 10:21:03 -0500
-Date: Mon, 12 Nov 2007 15:21:00 +0000
-From: Alasdair G Kergon <agk@redhat.com>
-To: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: build #338 failed for 2.6.24-rc2-g6e800af in linux/drivers/md/dm-mpath-hp-sw.c
-Message-ID: <20071112152100.GA22847@agk.fab.redhat.com>
-Mail-Followup-To: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
-	dm-devel@redhat.com, linux-kernel@vger.kernel.org
-References: <200711121333.24398.toralf.foerster@gmx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Mon, 12 Nov 2007 10:21:22 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:60387 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755286AbXKLPVV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 10:21:21 -0500
+Date: Mon, 12 Nov 2007 16:20:57 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Tuomo Valkonen <tuomov@iki.fi>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [poll] Is the megafreeze development model broken?
+Message-ID: <20071112152057.GJ9771@stusta.de>
+References: <fgtfqa$h9j$1@ger.gmane.org> <m1sl3b4t5k.fsf@ebiederm.dsl.xmission.com> <slrnfjgmit.l07.tuomov@jolt.modeemi.cs.tut.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200711121333.24398.toralf.foerster@gmx.de>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+In-Reply-To: <slrnfjgmit.l07.tuomov@jolt.modeemi.cs.tut.fi>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 12, 2007 at 01:33:21PM +0100, Toralf Förster wrote:
-> the build with the attached .config failed, make ends with:
-> drivers/built-in.o: In function `hp_sw_end_io':
-> dm-mpath-hp-sw.c:(.text+0xb0596): undefined reference to `__scsi_print_sense'
-> make: *** [.tmp_vmlinux1] Error 1
- 
-Does this patch fix it?
-  http://www.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/dm-mpath-hp-requires-scsi.patch
+On Mon, Nov 12, 2007 at 01:51:25PM +0000, Tuomo Valkonen wrote:
+> On 2007-11-12, Eric W. Biederman <ebiederm@xmission.com> wrote:
+> > I think a megafreeze development model is sane.  Finding a collection
+> > of software versions that are all known to work together is very
+> > interesting, and useful.  Making it so you can deliver something that
+> > just works to end users is always interesting.
+> 
+> The distros only do that for the most important and most popular
+> packages, most of which have become rather "generic" and faceless
+> behemots in the sense that they do not have definite authors and so
+> on, and for which it takes years to respond to bug reports in any case
+> (if someone even bothers to enter the bug in registration-required
+> Suckzilla, Debian's reportbug becoming much more usable in this case,
+> even though it typically takes another year for the package maintainer
+> to report things back upstream, if it ever even happens).
+> 
+> Other more marginal software with a face, the distros just throw in
+> and expect the author to deal with users having problems with ancient
+> development snapshots and even bugs in stable versions that the distros
+> simply refuse to fix. They should not distribute that kind of software
+> at all. That is, distros should stick to providing stable base systems, 
+> and fully supported (and renamed if not generic) customised versions of
+> other software for their target audience. For the rest, there should
+> be better mechanisms for authors to distribute binary or otherwise
+> easily and reliably installable packages of their software. 
 
-Alasdair
+The problem is not what the distributions ship, the problem is simply 
+that problems with distribution packaged software should be reported 
+to the distribution, not upstream.
+
+And for becoming at least marginally on-topic again:
+Assuming your "stable base systems" contains the Linux kernel, how would
+you prevent users from reporting bugs in their ancient kernels [1] here?
+
+> Closed-source operating systems are more decentralised than Linux,
+> where the par^W^W a few big distros have de facto central control 
+> over the software that users can conveniently install.
+
+You should rephrase it:
+Closed-source operating systems offer less software both available for 
+convenient installation and supported by the vendor of the operating 
+system.
+
+Noone forces any users to install the software their distribution 
+supports - people can (and sometimes do) install other software or
+other versions of some software when they need it.
+
+But the good thing about open source software is that when you believe 
+your ideas are better than what current distributions do you can 
+implement your ideas and create your own distribution. Then time will 
+tell whether you were right or wrong.
+
+> Tuomo
+
+cu
+Adrian
+
+[1] keep in mind that when using a 6 months old kernel, this kernel
+    differs by more than one million lines of code (sic) from the 
+    current kernel
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
