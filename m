@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757552AbXKLTpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757935AbXKLTqj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757552AbXKLTpZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 14:45:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbXKLTpI
+	id S1757935AbXKLTqj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 14:46:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbXKLTqc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 14:45:08 -0500
-Received: from an-out-0708.google.com ([209.85.132.248]:32471 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751687AbXKLTpG (ORCPT
+	Mon, 12 Nov 2007 14:46:32 -0500
+Received: from nz-out-0506.google.com ([64.233.162.228]:60693 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751178AbXKLTqb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 14:45:06 -0500
+	Mon, 12 Nov 2007 14:46:31 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=JpIv7Q9q8q/8t8hQugm23nZ6aLu7nCzQ8z8BMaqv0MbTLV6kAPa4jQUAYRAlCRjZjNCt/TtLI8+L6jgQQTkc+blMryslP/+2MdM+w9qC+LEBZR3JBYq8IfFIAbgoy2zSSbgx//akXbxdOJUXCxqQ9c4rv8VvMPti8hbWdkc/d04=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Tino Keitel <tino.keitel@gmx.de>
-Subject: Re: Strage buffer behaviour
-Date: Mon, 12 Nov 2007 12:44:53 -0700
-User-Agent: KMail/1.9.1
-Cc: linux-kernel@vger.kernel.org
-References: <20071111183334.GA6770@dose.home.local>
-In-Reply-To: <20071111183334.GA6770@dose.home.local>
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=LtRS5xIjnf77AXmcIJ23Zg002aGyLBwxkkwWALwXGSh1ElX4wEgTkqiqwLB1oBxwukPmHQwsVLAuGh7HvLbWlas799pwstWYH93MbyisBA6gev8a/YnQeht8eUtuE79/L8bYBAItNvIRaDe94B538HFODKI8B5uTyNpx+6/XVww=
+Message-ID: <8bd0f97a0711121146w30b88cdcs8abf3f5b6bff2d14@mail.gmail.com>
+Date: Mon, 12 Nov 2007 14:46:30 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Andy Whitcroft" <apw@shadowen.org>
+Subject: checkpatch.pl and no newline handling
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711121244.54251.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 11 November 2007 11:33, Tino Keitel wrote:
-> The dd command reads 100 MB from each partition two times in a row. It
-> looks like sda1 and sda2 are not bufferd (the first 4 dd runs), but
-> sda3 and sda4 are (the last 4 dd runs).
->
-> The computer is a Mac mini with a 2,5" SATA hard disk. The first 2
-> partitions contain EFI and MacOS X, and are unused in Linux. The last 2
-> partitions are an ext3 partition for / and an LVM for the rest of the
-> sytem.
->
-> Any hints how the dd/buffering behaviour could be explained? The system
-> was mostly idle, and the numbers are reproducible across reboots.
+the current checkpatch.pl does not reject new files that lack a
+newline, yet rejects patches that fix newlines in files ... quite the
+opposite of what we actually want
 
-IIRC only mounted partitions' reads are cached.
---
-vda
+$ echo -n moo > no-newline
+$ diff -Nu /dev/null no-newline
+--- /dev/null   2007-11-10 20:02:36.248000000 -0500
++++ no-newline  2007-11-12 14:44:19.000000000 -0500
+@@ -0,0 +1 @@
++moo
+\ No newline at end of file
+$ (diff -Nu /dev/null no-newline; echo Signed-off-by:) |
+./scripts/checkpatch.pl -
+Your patch has no obvious style problems and is ready for submission.
+
+lies!
+
+$ echo moo > newline
+$ diff -u no-newline newline
+--- no-newline  2007-11-12 14:44:19.000000000 -0500
++++ newline     2007-11-12 14:44:27.000000000 -0500
+@@ -1 +1 @@
+-moo
+\ No newline at end of file
++moo
+$ (diff -u no-newline newline; echo Signed-off-by:) | ./scripts/checkpatch.pl -
+ERROR: patch seems to be corrupt (line wrapped?)
+#5: FILE: newline:0:
+\ No newline at end of file
+
+total: 1 errors, 0 warnings, 3 lines checked
+Your patch has style problems, please review.  If any of these errors
+are false positives report them to the maintainer, see
+CHECKPATCH in MAINTAINERS.
+-mike
