@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758855AbXKLPXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755297AbXKLPcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758855AbXKLPXo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 10:23:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753932AbXKLPX0
+	id S1755297AbXKLPcq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 10:32:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbXKLPci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 10:23:26 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:10373 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750907AbXKLPXZ (ORCPT
+	Mon, 12 Nov 2007 10:32:38 -0500
+Received: from michael.checkpoint.com ([194.29.32.68]:39561 "EHLO
+	michael.checkpoint.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751407AbXKLPci (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 10:23:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=gnUv/Nw8C9AWcNpeCSUoZSzNQg7Q1tJRA89/fdTUgO4q5NoGLj22nYQ5NavsmM3xmhxUQFvSB6zRIZ2jsyK6OOpIpljzNEnBW7bwcXcxYrXqvYgyapzOs4KI0JNhJszAuZ4jxFXaVAJWiOo70IUBVoW4QnVW6+qX0l0cC8RzIGQ=
-Message-ID: <47386FE4.3080907@gmail.com>
-Date: Tue, 13 Nov 2007 00:23:16 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 12 Nov 2007 10:32:38 -0500
+Message-ID: <47387214.2010200@checkpoint.com>
+Date: Mon, 12 Nov 2007 17:32:36 +0200
+From: Yoav Artzi <yoavar@checkpoint.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Will Trives <will@trivescon.com.au>
-CC: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
-Subject: Re: cd/dvd inaccessible in 2.6.24-rc2
-References: <1194668831.3436.14.camel@Athas>  <47364059.8000003@garzik.org>	 <1194756033.5042.15.camel@Athas> <1194847209.5012.2.camel@Athas>
-In-Reply-To: <1194847209.5012.2.camel@Athas>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: PAGE_SIZE on 64bit and 32bit machines
+References: <473865BE.2070806@checkpoint.com> <47386DC9.4020905@gmail.com>
+In-Reply-To: <47386DC9.4020905@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Will Trives wrote:
-> Hello,
-> 
-> 
-> My mistake, it looks like the issue is to do with writing only.
-> 
-> Mounting a standard DVD works fine with 2.6.24-rc2-git2.
-> 
-> As soon as I try to use wodim or load k3b, that's when drive gets locked
-> up.
-> 
-> The issue was still there with 2.6.23-git15 , I will continue to test
-> with previous ones.
+Well, since the size of the kernel stack is one page, I figured it will 
+grow when switching to 64-bit, because some of the types grow and a 
+similar flow/stack will be bigger in 64-bit in comparison to 32-bit.
 
-I think I now know what's wrong with all these ATAPI issues.  I'm
-working on generic solution.  Please standby a bit.
+Keeping the page size at 4kb and so keeping the stack at 4kb is a bit 
+dangerous. Isn't it?
 
-Thanks.
+I know that using one page for a kernel stack is a optional feature, but:
 
--- 
-tejun
+a) It's a good feature
+
+b) It's already used by major distros, e.g. Red Hat
+
+
+
+-------- Original Message  --------
+
+Subject: Re: PAGE_SIZE on 64bit and 32bit machines
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Yoav Artzi <yoavar@checkpoint.com>
+Date: Monday, November 12, 2007 5:14:17 PM
+
+> On 11/12/2007 03:39 PM, Yoav Artzi wrote:
+>   
+>> According to my knowledge the PAGE_SIZE on 32bit architectures in 4KB.
+>> Logically, the PAGE_SIZE on 64bit architectures should be 8KB. That's at
+>> least the way I understand it. However, looking at the kernel code of
+>> x86_64, I see the PAGE_SIZE is 4KB.
+>>     
+>
+> Yes, it stood unchanged, the only difference is 4-level page tables.
+>
+>   
+>> Can anyone explain to me what am I missing here?
+>>     
+>
+> What led you to that it must be 8k?
+>
+> regards,
+>   
+
