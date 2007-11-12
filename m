@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758505AbXKLKkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758469AbXKLKqX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758505AbXKLKkZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 05:40:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756779AbXKLKkP
+	id S1758469AbXKLKqX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 05:46:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756449AbXKLKqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 05:40:15 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:40086 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753131AbXKLKkN (ORCPT
+	Mon, 12 Nov 2007 05:46:15 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:60048 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755903AbXKLKqO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 05:40:13 -0500
-Subject: Re: Problems using quickcam_messenger on ARM (FYI)
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Markus Hirschmann <mh@durtro.de>
-Cc: jayakumar.video@gmail.com, Christian Magnusson <mag@mag.cx>, dtor@mail.ru,
-       linux-kernel@vger.kernel.org, Thierry MERLE <thierry.merle@free.fr>
-In-Reply-To: <4730A379.9060706@durtro.de>
-References: <4730A379.9060706@durtro.de>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 12 Nov 2007 08:39:51 -0200
-Message-Id: <1194863992.8662.65.camel@gaivota>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 12 Nov 2007 05:46:14 -0500
+Date: Mon, 12 Nov 2007 11:45:51 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: unification of cfufreq/Kconfig
+Message-ID: <20071112104551.GH9771@stusta.de>
+References: <11943900793940-git-send-email-sam@ravnborg.org> <20071106230451.GA10886@uranus.ravnborg.org> <20071109183602.GD1988@alberich.amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20071109183602.GD1988@alberich.amd.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Nov 09, 2007 at 07:36:02PM +0100, Andreas Herrmann wrote:
+>...
+> Mostly I have seen the ususal suspects (e.g. missing firmware and
+>...
 
-Em Ter, 2007-11-06 às 18:25 +0100, Markus Hirschmann escreveu:
-> Hello Kernel-Developer,
+Not related to this patch, but you can set CONFIG_STANDALONE=y with 
+KCONFIG_ALLCONFIG for your randconfig compiles.
+
+> Regards,
 > 
-> Module quickcam_messenger seems to be broken (tried 2.6.18 and 2.6.22)
-> on 2 different NSLU2 (ARM). Picture is attached. Same kernel and module 
-> can be used without any problems on x86 here. I don't have any ARM 
-> device beside the NSLU2, so I cannot check.
-> 
-> The solution was to use Christian Magnusson's quickcam module. 
-> Everything worked without any problem. Webcam is:
+> Andreas
 
-Hmm... you're mentioning the quickcam module, but some of your logs are
-related to usbvideo driver.
-
-On a quick glance, I didn't find anything that could explain your
-troubles. It seems to be related to a wrong order at the output format
-(for example, the driver is sending RGB, instead of BGR).
-
-It may also be an issue at the userspace application that is using the
-wrong logic to deal with Big Endian.
+cu
+Adrian
 
 -- 
-Cheers,
-Mauro
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
