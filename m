@@ -1,33 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757463AbXKLU7O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758778AbXKLU7f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757463AbXKLU7O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 15:59:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbXKLU66
+	id S1758778AbXKLU7f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 15:59:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbXKLU67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 15:58:58 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:43471 "EHLO pasmtpB.tele.dk"
+	Mon, 12 Nov 2007 15:58:59 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:39804 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752314AbXKLU65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752625AbXKLU65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 12 Nov 2007 15:58:57 -0500
 From: Sam Ravnborg <sam@ravnborg.org>
 To: lkml <linux-kernel@vger.kernel.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
        Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86: add X86_64 dependency to x86_64 specific symbols in Kconfig.x86_64
-Date: Mon, 12 Nov 2007 22:00:28 +0100
-Message-Id: <1194901236-22820-5-git-send-email-sam@ravnborg.org>
+Subject: [PATCH] x86: add X86_32 dependency to i386 specific symbols in Kconfig.i386
+Date: Mon, 12 Nov 2007 22:00:27 +0100
+Message-Id: <1194901236-22820-4-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.5.3.5.628.ga1309
-In-Reply-To: <1194901236-22820-4-git-send-email-sam@ravnborg.org>
+In-Reply-To: <1194901236-22820-3-git-send-email-sam@ravnborg.org>
 References: <20071112205451.GA22528@uranus.ravnborg.org>
  <1194901236-22820-1-git-send-email-sam@ravnborg.org>
  <1194901236-22820-2-git-send-email-sam@ravnborg.org>
  <1194901236-22820-3-git-send-email-sam@ravnborg.org>
- <1194901236-22820-4-git-send-email-sam@ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 To ease unification of Kconfig.i386 and Kconfig.x86_64
-add X86_64 dependencies to all x86_64 specific symbols.
+add X86_32 dependencies to all i386 specific symbols.
 
 This patch introduce no functional changes but is one step
 towards unification. This smaller step is used to ease
@@ -38,157 +37,413 @@ Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Ingo Molnar <mingo@redhat.com>
 Cc: "H. Peter Anvin" <hpa@zytor.com>
 ---
- arch/x86/Kconfig.x86_64 |   34 +++++++++++++++++-----------------
- 1 files changed, 17 insertions(+), 17 deletions(-)
+ arch/x86/Kconfig.i386 |   90 +++++++++++++++++++++++++++++--------------------
+ 1 files changed, 53 insertions(+), 37 deletions(-)
 
-diff --git a/arch/x86/Kconfig.x86_64 b/arch/x86/Kconfig.x86_64
-index cdd1458..36bb856 100644
---- a/arch/x86/Kconfig.x86_64
-+++ b/arch/x86/Kconfig.x86_64
-@@ -18,7 +18,7 @@ config X86_64
- 	  <http://www.x86-64.org/>.
+diff --git a/arch/x86/Kconfig.i386 b/arch/x86/Kconfig.i386
+index 9fe63f1..174b909 100644
+--- a/arch/x86/Kconfig.i386
++++ b/arch/x86/Kconfig.i386
+@@ -137,6 +137,7 @@ config X86_PC
  
- config 64BIT
--	def_bool y
-+	def_bool X86_64
+ config X86_ELAN
+ 	bool "AMD Elan"
++	depends on X86_32
+ 	help
+ 	  Select this for an AMD Elan processor.
  
- config X86
- 	bool
-@@ -129,7 +129,7 @@ config X86_PC
+@@ -146,6 +147,7 @@ config X86_ELAN
  
- config X86_VSMP
- 	bool "Support for ScaleMP vSMP"
--	depends on PCI
-+	depends on X86_64 && PCI
- 	 help
- 	  Support for ScaleMP vSMP systems.  Say 'Y' here if this kernel is
- 	  supposed to run on these EM64T-based machines.  Only choose this option
-@@ -275,7 +275,7 @@ config NUMA
+ config X86_VOYAGER
+ 	bool "Voyager (NCR)"
++	depends on X86_32
+ 	select SMP if !BROKEN
+ 	help
+ 	  Voyager is an MCA-based 32-way capable SMP architecture proprietary
+@@ -160,6 +162,7 @@ config X86_NUMAQ
+ 	bool "NUMAQ (IBM/Sequent)"
+ 	select SMP
+ 	select NUMA
++	depends on X86_32
+ 	help
+ 	  This option is used for getting Linux to run on a (IBM/Sequent) NUMA
+ 	  multiquad box. This changes the way that processors are bootstrapped,
+@@ -169,7 +172,7 @@ config X86_NUMAQ
  
- config K8_NUMA
-        bool "Old style AMD Opteron NUMA detection"
--       depends on NUMA && PCI
-+       depends on X86_64 && NUMA && PCI
-        default y
+ config X86_SUMMIT
+ 	bool "Summit/EXA (IBM x440)"
+-	depends on SMP
++	depends on X86_32 && SMP
+ 	help
+ 	  This option is needed for IBM systems that use the Summit/EXA chipset.
+ 	  In particular, it is needed for the x440.
+@@ -179,7 +182,7 @@ config X86_SUMMIT
+ 
+ config X86_BIGSMP
+ 	bool "Support for other sub-arch SMP systems with more than 8 CPUs"
+-	depends on SMP
++	depends on X86_32 && SMP
+ 	help
+ 	  This option is needed for the systems that have more than 8 CPUs
+ 	  and if the system is not of any sub-arch type above.
+@@ -188,6 +191,7 @@ config X86_BIGSMP
+ 
+ config X86_VISWS
+ 	bool "SGI 320/540 (Visual Workstation)"
++	depends on X86_32
+ 	help
+ 	  The SGI Visual Workstation series is an IA32-based workstation
+ 	  based on SGI systems chips with some legacy PC hardware attached.
+@@ -199,6 +203,7 @@ config X86_VISWS
+ 
+ config X86_GENERICARCH
+        bool "Generic architecture (Summit, bigsmp, ES7000, default)"
++	depends on X86_32
         help
- 	 Enable K8 NUMA node topology detection.  You should say Y here if
-@@ -286,14 +286,14 @@ config K8_NUMA
+           This option compiles in the Summit, bigsmp, ES7000, default subarchitectures.
+ 	  It is intended for a generic binary kernel.
+@@ -206,7 +211,7 @@ config X86_GENERICARCH
+ 
+ config X86_ES7000
+ 	bool "Support for Unisys ES7000 IA32 series"
+-	depends on SMP
++	depends on X86_32 && SMP
+ 	help
+ 	  Support for Unisys ES7000 systems.  Say 'Y' here if this kernel is
+ 	  supposed to run on an IA32-based Unisys ES7000 system.
+@@ -218,6 +223,7 @@ endchoice
+ config SCHED_NO_NO_OMIT_FRAME_POINTER
+ 	bool "Single-depth WCHAN output"
+ 	default y
++	depends on X86_32
+ 	help
+ 	  Calculate simpler /proc/<PID>/wchan values. If this option
+ 	  is disabled then wchan values will recurse back to the
+@@ -228,7 +234,7 @@ config SCHED_NO_NO_OMIT_FRAME_POINTER
+ 
+ config PARAVIRT
+ 	bool
+-	depends on !(X86_VISWS || X86_VOYAGER)
++	depends on X86_32 && !(X86_VISWS || X86_VOYAGER)
+ 	help
+ 	  This changes the kernel so it can modify itself when it is run
+ 	  under a hypervisor, potentially improving performance significantly
+@@ -237,6 +243,7 @@ config PARAVIRT
+ 
+ menuconfig PARAVIRT_GUEST
+ 	bool "Paravirtualized guest support"
++	depends on X86_32
+ 	help
+ 	  Say Y here to get to see options related to running Linux under
+ 	  various hypervisors.  This option alone does not add any kernel code.
+@@ -264,7 +271,7 @@ endif
+ config ACPI_SRAT
+ 	bool
+ 	default y
+-	depends on ACPI && NUMA && (X86_SUMMIT || X86_GENERICARCH)
++	depends on X86_32 && ACPI && NUMA && (X86_SUMMIT || X86_GENERICARCH)
+ 	select ACPI_NUMA
+ 
+ config HAVE_ARCH_PARSE_SRAT
+@@ -275,12 +282,12 @@ config HAVE_ARCH_PARSE_SRAT
+ config X86_SUMMIT_NUMA
+ 	bool
+ 	default y
+-	depends on NUMA && (X86_SUMMIT || X86_GENERICARCH)
++	depends on X86_32 && NUMA && (X86_SUMMIT || X86_GENERICARCH)
+ 
+ config X86_CYCLONE_TIMER
+ 	bool
+ 	default y
+-	depends on X86_SUMMIT || X86_GENERICARCH
++	depends on X86_32 && X86_SUMMIT || X86_GENERICARCH
+ 
+ config ES7000_CLUSTERED_APIC
+ 	bool
+@@ -290,7 +297,8 @@ config ES7000_CLUSTERED_APIC
+ source "arch/x86/Kconfig.cpu"
+ 
+ config HPET_TIMER
+-	bool "HPET Timer Support"
++	bool
++	prompt "HPET Timer Support" if X86_32
+ 	help
+ 	  This enables the use of the HPET for the kernel's internal timer.
+ 	  HPET is the next generation timer replacing legacy 8254s.
+@@ -341,7 +349,7 @@ source "kernel/Kconfig.preempt"
+ 
+ config X86_UP_APIC
+ 	bool "Local APIC support on uniprocessors"
+-	depends on !SMP && !(X86_VISWS || X86_VOYAGER || X86_GENERICARCH)
++	depends on X86_32 && !SMP && !(X86_VISWS || X86_VOYAGER || X86_GENERICARCH)
+ 	help
+ 	  A local APIC (Advanced Programmable Interrupt Controller) is an
+ 	  integrated interrupt controller in the CPU. If you have a single-CPU
+@@ -366,17 +374,17 @@ config X86_UP_IOAPIC
+ 
+ config X86_LOCAL_APIC
+ 	bool
+-	depends on X86_UP_APIC || ((X86_VISWS || SMP) && !X86_VOYAGER) || X86_GENERICARCH
++	depends on X86_32 && (X86_UP_APIC || ((X86_VISWS || SMP) && !X86_VOYAGER) || X86_GENERICARCH)
+ 	default y
+ 
+ config X86_IO_APIC
+ 	bool
+-	depends on X86_UP_IOAPIC || (SMP && !(X86_VISWS || X86_VOYAGER)) || X86_GENERICARCH
++	depends on X86_32 && (X86_UP_IOAPIC || (SMP && !(X86_VISWS || X86_VOYAGER)) || X86_GENERICARCH)
+ 	default y
+ 
+ config X86_VISWS_APIC
+ 	bool
+-	depends on X86_VISWS
++	depends on X86_32 && X86_VISWS
+ 	default y
+ 
+ config X86_MCE
+@@ -398,7 +406,7 @@ config X86_MCE
+ 
+ config X86_MCE_NONFATAL
+ 	tristate "Check for non-fatal errors on AMD Athlon/Duron / Intel Pentium 4"
+-	depends on X86_MCE
++	depends on X86_32 && X86_MCE
+ 	help
+ 	  Enabling this feature starts a timer that triggers every 5 seconds which
+ 	  will look at the machine check registers to see if anything happened.
+@@ -411,14 +419,15 @@ config X86_MCE_NONFATAL
+ 
+ config X86_MCE_P4THERMAL
+ 	bool "check for P4 thermal throttling interrupt."
+-	depends on X86_MCE && (X86_UP_APIC || SMP) && !X86_VISWS
++	depends on X86_32 && X86_MCE && (X86_UP_APIC || SMP) && !X86_VISWS
+ 	help
+ 	  Enabling this feature will cause a message to be printed when the P4
+ 	  enters thermal throttling.
+ 
+ config VM86
+-	default y
+ 	bool "Enable VM86 support" if EMBEDDED
++	default y
++	depends on X86_32
+ 	help
+           This option is required by programs like DOSEMU to run 16-bit legacy
+ 	  code on X86 processors. It also may be needed by software like
+@@ -427,6 +436,7 @@ config VM86
+ 
+ config TOSHIBA
+ 	tristate "Toshiba Laptop support"
++	depends on X86_32
+ 	---help---
+ 	  This adds a driver to safely access the System Management Mode of
+ 	  the CPU on Toshiba portables with a genuine Toshiba BIOS. It does
+@@ -442,6 +452,7 @@ config TOSHIBA
+ 
+ config I8K
+ 	tristate "Dell laptop support"
++	depends on X86_32
+ 	---help---
+ 	  This adds a driver to safely access the System Management Mode
+ 	  of the CPU on the Dell Inspiron 8000. The System Management Mode
+@@ -462,7 +473,7 @@ config I8K
+ 
+ config X86_REBOOTFIXUPS
+ 	bool "Enable X86 board specific fixups for reboot"
+-	depends on X86
++	depends on X86_32 && X86
+ 	default n
+ 	---help---
+ 	  This enables chipset and/or board specific fixups to be done
+@@ -521,6 +532,7 @@ choice
+ 	prompt "High Memory Support"
+ 	default HIGHMEM4G if !X86_NUMAQ
+ 	default HIGHMEM64G if X86_NUMAQ
++	depends on X86_32
+ 
+ config NOHIGHMEM
+ 	bool "off"
+@@ -580,6 +592,7 @@ choice
+ 	depends on EXPERIMENTAL
+ 	prompt "Memory split" if EMBEDDED
+ 	default VMSPLIT_3G
++	depends on X86_32
+ 	help
+ 	  Select the desired split between kernel and user memory.
+ 
+@@ -617,16 +630,17 @@ config PAGE_OFFSET
+ 	default 0x78000000 if VMSPLIT_2G_OPT
+ 	default 0x40000000 if VMSPLIT_1G
+ 	default 0xC0000000
++	depends on X86_32
+ 
+ config HIGHMEM
+ 	bool
+-	depends on HIGHMEM64G || HIGHMEM4G
++	depends on X86_32 && (HIGHMEM64G || HIGHMEM4G)
+ 	default y
+ 
+ config X86_PAE
+ 	bool "PAE (Physical Address Extension) Support"
+ 	default n
+-	depends on !HIGHMEM4G
++	depends on X86_32 && !HIGHMEM4G
+ 	select RESOURCES_64BIT
+ 	help
+ 	  PAE is required for NX support, and furthermore enables
+@@ -637,7 +651,7 @@ config X86_PAE
+ # Common NUMA Features
+ config NUMA
+ 	bool "Numa Memory Allocation and Scheduler Support (EXPERIMENTAL)"
+-	depends on SMP && HIGHMEM64G && (X86_NUMAQ || (X86_SUMMIT || X86_GENERICARCH) && ACPI) && EXPERIMENTAL
++	depends on X86_32 && SMP && HIGHMEM64G && (X86_NUMAQ || (X86_SUMMIT || X86_GENERICARCH) && ACPI) && EXPERIMENTAL
+ 	default n if X86_PC
+ 	default y if (X86_NUMAQ || X86_SUMMIT)
+ 	help
+@@ -646,7 +660,7 @@ config NUMA
+ 	  cause boot failures.
+ 
+ comment "NUMA (Summit) requires SMP, 64GB highmem support, ACPI"
+-	depends on X86_SUMMIT && (!HIGHMEM64G || !ACPI)
++	depends on X86_32 && X86_SUMMIT && (!HIGHMEM64G || !ACPI)
  
  config NODES_SHIFT
  	int
--	default "6"
-+	default "6" if X86_64
- 	depends on NEED_MULTIPLE_NODES
+@@ -656,27 +670,27 @@ config NODES_SHIFT
  
- # Dummy CONFIG option to select ACPI_NUMA from drivers/acpi/Kconfig.
- 
- config X86_64_ACPI_NUMA
-        bool "ACPI NUMA detection"
--       depends on NUMA
-+       depends on X86_64 && NUMA
-        select ACPI 
- 	select PCI
-        select ACPI_NUMA
-@@ -303,7 +303,7 @@ config X86_64_ACPI_NUMA
- 
- config NUMA_EMU
- 	bool "NUMA emulation"
+ config HAVE_ARCH_BOOTMEM_NODE
+ 	bool
 -	depends on NUMA
-+	depends on X86_64 && NUMA
- 	help
- 	  Enable NUMA emulation. A flat machine will be split
- 	  into virtual nodes when booted with "numa=fake=N", where N is the
-@@ -324,7 +324,7 @@ config ARCH_SPARSEMEM_ENABLE
- 	select SPARSEMEM_VMEMMAP_ENABLE
++	depends on X86_32 && NUMA
+ 	default y
  
- config ARCH_MEMORY_PROBE
--	def_bool y
-+	def_bool X86_64
- 	depends on MEMORY_HOTPLUG
+ config ARCH_HAVE_MEMORY_PRESENT
+ 	bool
+-	depends on DISCONTIGMEM
++	depends on X86_32 && DISCONTIGMEM
+ 	default y
+ 
+ config NEED_NODE_MEMMAP_SIZE
+ 	bool
+-	depends on DISCONTIGMEM || SPARSEMEM
++	depends on X86_32 && (DISCONTIGMEM || SPARSEMEM)
+ 	default y
+ 
+ config HAVE_ARCH_ALLOC_REMAP
+ 	bool
+-	depends on NUMA
++	depends on X86_32 && NUMA
+ 	default y
  
  config ARCH_FLATMEM_ENABLE
-@@ -334,15 +334,15 @@ config ARCH_FLATMEM_ENABLE
- source "mm/Kconfig"
+ 	def_bool y
+-	depends on (ARCH_SELECT_MEMORY_MODEL && X86_PC)
++	depends on X86_32 && ARCH_SELECT_MEMORY_MODEL && X86_PC
  
- config MEMORY_HOTPLUG_RESERVE
--	def_bool y
-+	def_bool X86_64
- 	depends on (MEMORY_HOTPLUG && DISCONTIGMEM)
+ config ARCH_DISCONTIGMEM_ENABLE
+ 	def_bool y
+@@ -689,11 +703,11 @@ config ARCH_DISCONTIGMEM_DEFAULT
+ config ARCH_SPARSEMEM_ENABLE
+ 	def_bool y
+ 	depends on (NUMA || (X86_PC && EXPERIMENTAL))
+-	select SPARSEMEM_STATIC
++	select SPARSEMEM_STATIC if X86_32
  
- config HAVE_ARCH_EARLY_PFN_TO_NID
--	def_bool y
-+	def_bool X86_64
- 	depends on NUMA
+ config ARCH_SELECT_MEMORY_MODEL
+ 	def_bool y
+-	depends on ARCH_SPARSEMEM_ENABLE
++	depends on X86_32 && ARCH_SPARSEMEM_ENABLE
  
- config OUT_OF_LINE_PFN_TO_PAGE
--	def_bool y
-+	def_bool X86_64
- 	depends on DISCONTIGMEM
+ config ARCH_POPULATES_NODE_MAP
+ 	def_bool y
+@@ -702,7 +716,7 @@ source "mm/Kconfig"
  
- config NR_CPUS
-@@ -360,7 +360,7 @@ config NR_CPUS
+ config HIGHPTE
+ 	bool "Allocate 3rd-level pagetables from highmem"
+-	depends on HIGHMEM4G || HIGHMEM64G
++	depends on X86_32 && (HIGHMEM4G || HIGHMEM64G)
+ 	help
+ 	  The VM uses one page table entry for each page of physical memory.
+ 	  For systems with a lot of RAM, this can be wasteful of precious
+@@ -710,7 +724,8 @@ config HIGHPTE
+ 	  entries in high memory.
+ 
+ config MATH_EMULATION
+-	bool "Math emulation"
++	bool
++	prompt "Math emulation" if X86_32
+ 	---help---
+ 	  Linux can emulate a math coprocessor (used for floating point
+ 	  operations) if you don't have one. 486DX and Pentium processors have
+@@ -770,7 +785,7 @@ config MTRR
+ 
+ config EFI
+ 	bool "Boot from EFI support"
+-	depends on ACPI
++	depends on X86_32 && ACPI
+ 	default n
+ 	---help---
+ 	This enables the kernel to boot on EFI platforms using
+@@ -788,7 +803,7 @@ config EFI
+ 
+ config IRQBALANCE
+  	bool "Enable kernel irq balancing"
+-	depends on SMP && X86_IO_APIC
++	depends on X86_32 && SMP && X86_IO_APIC
+ 	default y
+ 	help
+  	  The default yes will allow the kernel to do irq load balancing.
+@@ -798,7 +813,7 @@ config IRQBALANCE
+ # Summit needs it only when NUMA is on
+ config BOOT_IOREMAP
+ 	bool
+-	depends on (((X86_SUMMIT || X86_GENERICARCH) && NUMA) || (X86 && EFI))
++	depends on X86_32 && (((X86_SUMMIT || X86_GENERICARCH) && NUMA) || (X86 && EFI))
+ 	default y
+ 
+ config SECCOMP
+@@ -907,7 +922,8 @@ config RELOCATABLE
+ 	  kernel.
  
  config PHYSICAL_ALIGN
- 	hex
--	default "0x200000"
-+	default "0x200000" if X86_64
- 
- config HOTPLUG_CPU
- 	bool "Support for suspend on SMP and hot-pluggable CPUs (EXPERIMENTAL)"
-@@ -399,7 +399,7 @@ config GART_IOMMU
+-	hex "Alignment value to which kernel should be aligned"
++	hex
++	prompt "Alignment value to which kernel should be aligned" if X86_32
+ 	default "0x100000"
+ 	range 0x2000 0x400000
+ 	help
+@@ -940,6 +956,7 @@ config HOTPLUG_CPU
+ config COMPAT_VDSO
+ 	bool "Compat VDSO support"
  	default y
- 	select SWIOTLB
- 	select AGP
--	depends on PCI
-+	depends on X86_64 && PCI
++	depends on X86_32
  	help
- 	  Support for full DMA access of devices with 32bit memory access only
- 	  on systems with more than 3GB. This is usually needed for USB,
-@@ -414,7 +414,7 @@ config GART_IOMMU
- config CALGARY_IOMMU
- 	bool "IBM Calgary IOMMU support"
- 	select SWIOTLB
--	depends on PCI && EXPERIMENTAL
-+	depends on X86_64 && PCI && EXPERIMENTAL
- 	help
- 	  Support for hardware IOMMUs in IBM's xSeries x366 and x460
- 	  systems. Needed to run systems with more than 3GB of memory
-@@ -461,7 +461,7 @@ config X86_MCE
+ 	  Map the VDSO to the predictable old-style address too.
+ 	---help---
+@@ -974,7 +991,7 @@ config GENERIC_PENDING_IRQ
  
- config X86_MCE_INTEL
- 	bool "Intel MCE features"
--	depends on X86_MCE && X86_LOCAL_APIC
-+	depends on X86_64 && X86_MCE && X86_LOCAL_APIC
+ config X86_SMP
+ 	bool
+-	depends on SMP && !X86_VOYAGER
++	depends on X86_32 && SMP && !X86_VOYAGER
  	default y
- 	help
- 	   Additional support for intel specific MCE features such as
-@@ -469,7 +469,7 @@ config X86_MCE_INTEL
  
- config X86_MCE_AMD
- 	bool "AMD MCE features"
--	depends on X86_MCE && X86_LOCAL_APIC
-+	depends on X86_64 && X86_MCE && X86_LOCAL_APIC
+ config X86_HT
+@@ -984,7 +1001,7 @@ config X86_HT
+ 
+ config X86_BIOS_REBOOT
+ 	bool
+-	depends on !(X86_VISWS || X86_VOYAGER)
++	depends on X86_32 && !(X86_VISWS || X86_VOYAGER)
  	default y
- 	help
- 	   Additional support for AMD specific MCE features such as
-@@ -576,7 +576,7 @@ config SECCOMP
  
- config CC_STACKPROTECTOR
- 	bool "Enable -fstack-protector buffer overflow detection (EXPERIMENTAL)"
--	depends on EXPERIMENTAL
-+	depends on X86_64 && EXPERIMENTAL
- 	help
-          This option turns on the -fstack-protector GCC feature. This
- 	  feature puts, at the beginning of critical functions, a canary
-@@ -601,7 +601,7 @@ config CC_STACKPROTECTOR_ALL
- source kernel/Kconfig.hz
+ config X86_TRAMPOLINE
+@@ -993,7 +1010,6 @@ config X86_TRAMPOLINE
+ 	default y
  
- config K8_NB
--	def_bool y
-+	def_bool X86_64
- 	depends on AGP_AMD64 || GART_IOMMU || (PCI && NUMA)
+ config KTIME_SCALAR
+-	bool
+-	default y
++	def_bool X86_32
  
- endmenu
+ source "arch/x86/Kconfig"
 -- 
 1.5.3.4.1157.g0e74-dirty
 
