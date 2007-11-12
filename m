@@ -1,64 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758219AbXKLJpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756333AbXKLJpw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758219AbXKLJpi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 04:45:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbXKLJpa
+	id S1756333AbXKLJpw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 04:45:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757068AbXKLJpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 04:45:30 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:43107 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755484AbXKLJp3 (ORCPT
+	Mon, 12 Nov 2007 04:45:34 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:57174 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756449AbXKLJpd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 04:45:29 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sysctl: Check length at deprecated_sysctl_warning.
-References: <200711080257.lA82vQfA015942@www262.sakura.ne.jp>
-	<20071107192211.c1c22e97.akpm@linux-foundation.org>
-	<200711080819.lA88J8Pv072259@www262.sakura.ne.jp>
-Date: Mon, 12 Nov 2007 02:44:36 -0700
-In-Reply-To: <200711080819.lA88J8Pv072259@www262.sakura.ne.jp> (Tetsuo Handa's
-	message of "Thu, 08 Nov 2007 17:19:08 +0900")
-Message-ID: <m14pfr6bnf.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 12 Nov 2007 04:45:33 -0500
+Subject: Re: iozone write 50% regression in kernel 2.6.24-rc1
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1194833640.20251.80.camel@ymzhang>
+References: <1194601672.20251.60.camel@ymzhang>
+	 <1194602064.6289.157.camel@twins>  <1194833640.20251.80.camel@ymzhang>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-5Qp5c6IbYhgVi5Rs+bsN"
+Date: Mon, 12 Nov 2007 10:45:28 +0100
+Message-Id: <1194860728.7179.6.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp> writes:
 
-> Hello.
+--=-5Qp5c6IbYhgVi5Rs+bsN
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+
+On Mon, 2007-11-12 at 10:14 +0800, Zhang, Yanmin wrote:
+
+> > Subject: mm: speed up writeback ramp-up on clean systems
 >
-> Thanks for reformatting my patch
-> and sorry for surprising you with directory name
-> (I meant to type linux-2.6.24-rc2, not linux-2.6.22-rc2).
+> I tested kernel 2.6.23, 2,6,24-rc2, 2.6.24-rc2_peter(2.6.24-rc2+this patc=
+h).
+>=20
+> 1) Compare among first/second/following running
+> 2.6.23: second run of iozone will get about 28% improvement than first ru=
+n.
+> 	Following run is very stable like 2nd run.
+> 2.6.24-rc2: second run of iozone will get about 170% improvement than fir=
+st run. 3rd run
+> 	will get about 80% improvement than 2nd. Following run is very stable li=
+ke 3rd run.
+> 2.6.24-rc2_peter: second run of iozone will get about 14% improvement tha=
+n first run. Following
+> 	run is mostly stable like 2nd run.
+> So the new patch really improves the first run result. Comparing wiht 2.6=
+.24-rc2, 2.6.24-rc2_peter
+> has 330% improvement on the first run.
+>=20
+> 2) Compare among different kernels(based on the stable highest result):
+> 2.6.24-rc2 has about 50% regression than 2.6.23.
+> 2.6.24-rc2_peter has the same result like 2.6.24-rc2.
 >
-> According to linux-2.6.23,
-> it seems that I should return -ENOTDIR
-> for invalid args->nlen value.
->
-> I got a question here regarding interpretation of CTL_MAXNAME .
-> Is args->nlen == CTL_MAXNAME valid?
-> It is treated as invalid while the definition says
->
->   /* how many path components do we allow in a
->      call to sysctl?   In other words, what is
->      the largest acceptable value for the nlen
->      member of a struct __sysctl_args to have? */
->
-> If "name[CTL_MAXNAME];" is what the author intended,
-> I think args->nlen == CTL_MAXNAME is valid.
+> From this point of view, above patch has no improvement. :)
 
-name[CTL_MAXNAME} is not valid.
-name[0...CTL_MAXNAME-1] is valid.
+Drad, still good test results though.
+
+Could you describe you system in detail, that is, you have 8GB of memory
+and 8 cpus (2*quad?). How many disks does it have and are those
+aggregated using md or dm? What filesystem do you use?
 
 
-The check that got lost in the refactoring was specfically:
 
--       if (tmp.nlen <= 0 || tmp.nlen >= CTL_MAXNAME)
--               return -ENOTDIR;
+--=-5Qp5c6IbYhgVi5Rs+bsN
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Eric
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHOCC4XA2jU0ANEf4RAiBIAJ4kTQx8Y9P1Zmdnyyjx4YI1dR0GigCfVJZ4
+CLjeSv7ZdFnrpKMV3LmYYuU=
+=/jLp
+-----END PGP SIGNATURE-----
+
+--=-5Qp5c6IbYhgVi5Rs+bsN--
 
