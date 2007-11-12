@@ -1,46 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758644AbXKLUS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756903AbXKLU07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758644AbXKLUS4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 15:18:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbXKLUSr
+	id S1756903AbXKLU07 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 15:26:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbXKLU0v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 15:18:47 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:53676 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751484AbXKLUSq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 15:18:46 -0500
-Message-ID: <4738B509.9000305@cosmosbay.com>
-Date: Mon, 12 Nov 2007 21:18:17 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 12 Nov 2007 15:26:51 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:60705 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751434AbXKLU0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 15:26:50 -0500
+Date: Mon, 12 Nov 2007 15:26:29 -0500
+From: Dave Jones <davej@redhat.com>
+To: Thomas Renninger <trenn@suse.de>
+Cc: Eric Piel <Eric.Piel@lifl.fr>, linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       cpufreq <cpufreq@lists.linux.org.uk>
+Subject: Re: Kernel panic at boot with ondemand governor as default
+	(2.6.24-rc2)
+Message-ID: <20071112202629.GA31763@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Thomas Renninger <trenn@suse.de>, Eric Piel <Eric.Piel@lifl.fr>,
+	linux-kernel@vger.kernel.org,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	cpufreq <cpufreq@lists.linux.org.uk>
+References: <4737539F.2070401@lifl.fr> <1194859012.4590.595.camel@queen.suse.de> <47385D05.20705@lifl.fr> <1194880989.5474.12.camel@queen.suse.de>
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Herbert Xu <herbert@gondor.apana.org.au>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       mathieu.desnoyers@polymtl.ca, penberg@cs.helsinki.fi
-Subject: Re: [patch 0/7] [RFC] SLUB: Improve allocpercpu to reduce per cpu
- access overhead
-References: <E1IrWuB-0005nS-00@gondolin.me.apana.org.au> <Pine.LNX.4.64.0711121112410.26682@schroedinger.engr.sgi.com> <4738AE04.1030506@cosmosbay.com> <Pine.LNX.4.64.0711121154270.27051@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0711121154270.27051@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Mon, 12 Nov 2007 21:18:27 +0100 (CET)
+In-Reply-To: <1194880989.5474.12.camel@queen.suse.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter a écrit :
-> On Mon, 12 Nov 2007, Eric Dumazet wrote:
->> For example, I do think using a per cpu memory storage on net_device refcnt &
->> last_rx could give us some speedups.
-> 
-> Note that there was a new patchset posted (titled cpu alloc v1) that 
-> provides on demand extension of the cpu areas.
-> 
-> See http://marc.info/?l=linux-kernel&m=119438261304093&w=2
+On Mon, Nov 12, 2007 at 04:23:09PM +0100, Thomas Renninger wrote:
+ > On Mon, 2007-11-12 at 15:02 +0100, Eric Piel wrote:
+ > > 11/12/2007 10:16 AM, Thomas Renninger wrote/a écrit:
+ > > > On Sun, 2007-11-11 at 20:10 +0100, Eric Piel wrote:
+ > > >> Hello,
+ > > >>
+ > > >> I've tried kernel 2.6.24-rc2 and I have a problem with the new option 
+ > > >> for setting up the cpufreq ondemand governor as default: a kernel panic 
+ > > >> happens early at boot time. If I boot first with performance governor 
+ > > >> and later change to ondemand, everything is fine (as usual).
+ > > >>
+ > > >> This seems related to the delayed_workqueue. The kernel panic message 
+ > > >> finishes by:
+ > > >> EIP: [<c012aa60>] wq_per_cpu+0x0/0x10 SS:ESP 0068:c191be58
+ > > >> Kernel panic - not syncing: Attempted to kill init!
+ > > >>
+ > > >> A picture of the whole message is available here:
+ > > >> http://pieleric.free.fr/unorder/1162-ondemand-panic.jpg
+ > > >>
+ > > >> My computer is a x86 using speedstep-ich, and you can find the full 
+ > > >> .config leading to the panic attached.
+ > > >>
+ > > >> Does anyone has any idea was it going wrong?
+ > > > 
+ > > > Does it work if you compile speedstep-ich as a module?
+ > > > If you load it, ondemand governor should still be set up automatically.
+ > > > If this works, could it be that the kernel does not like that
+ > > > queue_delayed_work_on is called that early?
+ > > 
+ > > Yes, it works if I compile speedstep-ich as module. I've put the module 
+ > > in initramfs and as soon it is loaded, the ondemand governor is selected 
+ > > and works.
+ > > 
+ > > However, do you think it's ok to prevent cpufreq drivers to be built-in 
+ > > if ondemand governor is selected as default?
+ > > Another way would be to 
+ > > reorganise the initialisation code so that workqueue is initialised 
+ > > before the cpufreq framework is started, do you think it's possible?
+ > Making all this work with low-level drivers built in would be perfect of
+ > course...
+ > If nobody answers the next days, could you open a bug at
+ > bugzilla.kernel.org, so that this does not get lost, pls.
+ > Add myself and Venkatesh to CC...
+ > I try to have a look at it ASAP.
+ > If someone already finds out more, this would be great.
 
-Thank you Christoph. I was traveling last week so I missed that.
+I'm actually surprised that speedstep-ich works with a low enough
+latency for ondemand.  On the kernel that works, can you boot
+with cpufreq.debug=7 and send the cpufreq messages from dmesg?
 
-This new patchset looks very interesting, you did a fantastic job !
+	Dave
 
+-- 
+http://www.codemonkey.org.uk
