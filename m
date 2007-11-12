@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754477AbXKLSCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757090AbXKLSCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754477AbXKLSCS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 13:02:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751178AbXKLSCH
+	id S1757090AbXKLSCf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 13:02:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754950AbXKLSCW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 13:02:07 -0500
-Received: from main.gmane.org ([80.91.229.2]:38030 "EHLO ciao.gmane.org"
+	Mon, 12 Nov 2007 13:02:22 -0500
+Received: from mga02.intel.com ([134.134.136.20]:43018 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751171AbXKLSCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 13:02:06 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Tuomo Valkonen <tuomov@iki.fi>
-Subject: Re: [poll] Is the megafreeze development model broken?
-Date: Mon, 12 Nov 2007 17:53:06 +0000 (UTC)
-Message-ID: <slrnfjh4o1.c8q.tuomov@jolt.modeemi.cs.tut.fi>
-References: <fgtfqa$h9j$1@ger.gmane.org> <m1sl3b4t5k.fsf@ebiederm.dsl.xmission.com> <slrnfjgmit.l07.tuomov@jolt.modeemi.cs.tut.fi> <20071112152057.GJ9771@stusta.de> <20071112160254.GA31972@jolt.modeemi.cs.tut.fi> <47388F5A.20206@smsglobal.net>
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: jolt.modeemi.cs.tut.fi
-User-Agent: slrn/0.9.8.1pl1 (Debian)
+	id S1754514AbXKLSCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 13:02:19 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,406,1188802800"; 
+   d="scan'208";a="268859166"
+Message-ID: <4738950D.7070902@intel.com>
+Date: Mon, 12 Nov 2007 10:01:49 -0800
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
+MIME-Version: 1.0
+To: Patrick McHardy <kaber@trash.net>
+CC: e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+       "'Dave Johnson'" <djohnson+linux-kernel@sw.starentnetworks.com>,
+       linux-kernel@vger.kernel.org, Joonwoo Park <joonwpark81@gmail.com>,
+       "'David Miller'" <davem@davemloft.net>
+Subject: Re: [E1000-devel] [PATCH 2/2] [e1000 VLAN] Disable vlan hw accel
+ when promiscuous mode
+References: <47365200.0f10240a.0686.2173@mx.google.com>	<47388988.1000506@intel.com> <47388B9F.7050308@trash.net>
+In-Reply-To: <47388B9F.7050308@trash.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Nov 2007 18:02:17.0620 (UTC) FILETIME=[29A5B540:01C82556]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007-11-12, Rogelio M. Serrano Jr. <rogelio@smsglobal.net> wrote:
-> I dont understand. You are supposed to go to jail for looking at closed
-> source, right? And licenses are very expensive. I could not afford them
-> when i started out but now i would rather spend the money on other
-> things like FPGA's.
+Patrick McHardy wrote:
+> Kok, Auke wrote:
+>> Joonwoo Park wrote:
+>>> IMHO even though netdevice is in the promiscuous mode, we should receive all of ingress packets.
+>>> This disable the vlan filtering feature when a vlan hw accel configured e1000 device goes into promiscuous mode.
+>>> This make packets visible to sniffers though it's not vlan id of itself.
+>>> Any check, comments will be appreciated.
+>> Actually I think this patch removes a choice from the user.
+>>
+>> Before this patch, the user can sniff all traffic by disabling vlans, or a
+>> specific vlan only by leaving vlans on when going into promisc mode.
+>>
+>> After this patch, the user has no choice but to sniff all vlans at all times.
+>>
+>> I don't think that that is such a good improvement.
+> 
+> 
+> Do you really consider that a realistic choice? Who is going to
+> remove interfaces that are in use just to see traffic for other
+> VLANs? Sniffing specific VLANs can always be done on the VLAN
+> device itself.
 
-The complement of "open source" is not closed source, or at least
-"source not available". (And I doubt it's even illegal to look at
-source you have somehow got.) It includes so-called license-free 
-or license-less software [1] as well -- something I'm likely to do
-with any of my future work, if I release the source at all.
+right, I had not thought of that.
 
-> really? i work very hard at it. and it seems to get better steadily.
+> IMO its more a question of what we want promiscous mode to mean,
+> and I tend to agree with Joonwoo that it should receive all packets.
 
-It's been a constant downfall ever since I started using Linux in '95
-or so. None of the gripes I had then have been fixed (the bloatware
-known as the X server is still allowed to hang the system), and many 
-other things have been turned into crap, largely due to world domination
-plans. (See the "idiot box Linux" link in one of the recent posts.)
+OK, Joonwoo: can you submit a patch against e1000e as well?
 
-> You might as well
-> start ignoring Linux and the BSD's since Microsoft is already offering
-> an alternative. At least you dont have to deal with that problem there.
-
-Indeed, Microsoft is offering the only alternative to the suffocating
-monoculturist hegemony promoted by the major FOSS projects. (OS X
-is too much like Gnome.)
-
-
-  [1]: http://www.thedjbway.org/license_free.html
-
--- 
-Tuomo
-
+Auke
