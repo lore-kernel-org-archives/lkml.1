@@ -1,98 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757503AbXKLEhK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757880AbXKLEzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757503AbXKLEhK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 23:37:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbXKLEg5
+	id S1757880AbXKLEzg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 23:55:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754798AbXKLEzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 23:36:57 -0500
-Received: from mx1.suse.de ([195.135.220.2]:55622 "EHLO mx1.suse.de"
+	Sun, 11 Nov 2007 23:55:25 -0500
+Received: from koto.vergenet.net ([210.128.90.7]:33612 "EHLO koto.vergenet.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752858AbXKLEg4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 23:36:56 -0500
-Date: Mon, 12 Nov 2007 05:36:44 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Hugh Dickins <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ia64@vger.kernel.org,
-       rth@twiddle.net, Jaya Kumar <jayakumar.lkml@gmail.com>, krh@redhat.com,
-       stefanr@s5r6.in-berlin.de, rolandd@cisco.com, mshefty@ichips.intel.com,
-       hal.rosenstock@gmail.com, avi@qumranet.com, mchehab@infradead.org,
-       dgilbert@interlog.com, Greg Kroah-Hartman <greg@kroah.com>,
-       Takashi Iwai <tiwai@suse.de>, perex@perex.cz,
-       Karsten Wiese <annabellesgarden@yahoo.de>
-Subject: Re: [rfc][patch] remove nopage
-Message-ID: <20071112043644.GA20602@wotan.suse.de>
-References: <20071112015643.GA9291@wotan.suse.de> <4737B4AD.9070809@pobox.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4737B4AD.9070809@pobox.com>
-User-Agent: Mutt/1.5.9i
+	id S1754149AbXKLEzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Nov 2007 23:55:25 -0500
+From: Simon Horman <horms@verge.net.au>
+To: linux-ia64@vger.kernel.org, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+Cc: Tony Luck <tony.luck@intel.com>, Vivek Goyal <vgoyal@in.ibm.com>,
+       Haren Myneni <hbabu@us.ibm.com>
+Subject: [patch] ia64: Guard elfcorehdr_addr with #if CONFIG_PROC_FS
+Message-Id: <20071112045521.2BAF54F9EB@tabatha.lab.ultramonkey.org>
+Date: Mon, 12 Nov 2007 13:55:21 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 11, 2007 at 09:04:29PM -0500, Jeff Garzik wrote:
-> Nick Piggin wrote:
-> >Index: linux-2.6/sound/oss/via82cxxx_audio.c
-> >===================================================================
-> >--- linux-2.6.orig/sound/oss/via82cxxx_audio.c
-> >+++ linux-2.6/sound/oss/via82cxxx_audio.c
-> >@@ -2099,8 +2099,7 @@ static void via_dsp_cleanup (struct via_
-> > }
-> > 
-> > 
-> >-static struct page * via_mm_nopage (struct vm_area_struct * vma,
-> >-				    unsigned long address, int *type)
-> >+static int via_mm_fault (struct vm_area_struct *vma, struct vm_fault *vmf)
-> > {
-> > 	struct via_info *card = vma->vm_private_data;
-> > 	struct via_channel *chan = &card->ch_out;
-> >@@ -2108,22 +2107,14 @@ static struct page * via_mm_nopage (stru
-> > 	unsigned long pgoff;
-> > 	int rd, wr;
-> > 
-> >-	DPRINTK ("ENTER, start %lXh, ofs %lXh, pgoff %ld, addr %lXh\n",
-> >-		 vma->vm_start,
-> >-		 address - vma->vm_start,
-> >-		 (address - vma->vm_start) >> PAGE_SHIFT,
-> >-		 address);
-> >-
-> >-        if (address > vma->vm_end) {
-> >-		DPRINTK ("EXIT, returning NOPAGE_SIGBUS\n");
-> >-		return NOPAGE_SIGBUS; /* Disallow mremap */
-> >-	}
-> >+	DPRINTK ("ENTER, pgoff %ld\n", vmf->pgoff);
-> >+
-> >         if (!card) {
-> >-		DPRINTK ("EXIT, returning NOPAGE_SIGBUS\n");
-> >-		return NOPAGE_SIGBUS;	/* Nothing allocated */
-> >+		DPRINTK ("EXIT, returning VM_FAULT_SIGBUS\n");
-> >+		return VM_FAULT_SIGBUS;	/* Nothing allocated */
-> > 	}
-> > 
-> >-	pgoff = vma->vm_pgoff + ((address - vma->vm_start) >> PAGE_SHIFT);
-> >+	pgoff = vmf->pgoff;
-> > 	rd = card->ch_in.is_mapped;
-> > 	wr = card->ch_out.is_mapped;
-> > 
-> >@@ -2150,9 +2141,8 @@ static struct page * via_mm_nopage (stru
-> > 	DPRINTK ("EXIT, returning page %p for cpuaddr %lXh\n",
-> > 		 dmapage, (unsigned long) chan->pgtbl[pgoff].cpuaddr);
-> > 	get_page (dmapage);
-> >-	if (type)
-> >-		*type = VM_FAULT_MINOR;
-> >-	return dmapage;
-> >+	vmf->page = dmapage;
-> >+	return 0;
-> > }
-> 
-> 
-> Although the overall concept looks nice (ACK, good work), the above 
-> change does not build.  The code continues to reference via_mm_nopage(), 
-> which has been renamed to via_mm_fault() in your patch.
+Access to elfcorehdr_addr needs to be guarded by #if CONFIG_PROC_FS
+as well as the existing #if guards.
 
-Ah dang, it was just the .nopage in the same file that I missed.
-Fixed. Thanks.
+Fixes the following build problem:
+
+arch/ia64/hp/common/built-in.o: In function
+`sba_init':arch/ia64/hp/common/sba_iommu.c:2043: undefined reference to `elfcorehdr_addr'
+:arch/ia64/hp/common/sba_iommu.c:2043: undefined reference to `elfcorehdr_addr'
+
+Signed-off-by: Simon Horman <horms@verge.net.au>
+
+Index: net-2.6/arch/ia64/hp/common/sba_iommu.c
+===================================================================
+--- net-2.6.orig/arch/ia64/hp/common/sba_iommu.c	2007-11-12 12:49:23.000000000 +0900
++++ net-2.6/arch/ia64/hp/common/sba_iommu.c	2007-11-12 13:29:07.000000000 +0900
+@@ -2034,7 +2034,8 @@ sba_init(void)
+ 	if (!ia64_platform_is("hpzx1") && !ia64_platform_is("hpzx1_swiotlb"))
+ 		return 0;
+ 
+-#if defined(CONFIG_IA64_GENERIC) && defined(CONFIG_CRASH_DUMP)
++#if defined(CONFIG_IA64_GENERIC) && defined(CONFIG_CRASH_DUMP) && \
++        defined(CONFIG_PROC_FS)
+ 	/* If we are booting a kdump kernel, the sba_iommu will
+ 	 * cause devices that were not shutdown properly to MCA
+ 	 * as soon as they are turned back on.  Our only option for
