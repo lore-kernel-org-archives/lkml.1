@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759861AbXKLRGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759568AbXKLRJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759861AbXKLRGy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 12:06:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758072AbXKLRGq
+	id S1759568AbXKLRJc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 12:09:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755174AbXKLRJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 12:06:46 -0500
-Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:41214 "EHLO
-	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754277AbXKLRGp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 12:06:45 -0500
-Date: Mon, 12 Nov 2007 17:06:31 +0000 (GMT)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-cc: Adam Belay <ambx1@neo.rr.com>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [RFC] [PATCH] PNP: request ioport and iomem resources used by
- active devices
-In-Reply-To: <200711070915.35743.bjorn.helgaas@hp.com>
-Message-ID: <Pine.LNX.4.64N.0711121700070.30102@blysk.ds.pg.gda.pl>
-References: <200710291525.31475.bjorn.helgaas@hp.com>
- <Pine.LNX.4.64N.0711071252500.14970@blysk.ds.pg.gda.pl>
- <200711070915.35743.bjorn.helgaas@hp.com>
+	Mon, 12 Nov 2007 12:09:25 -0500
+Received: from rtr.ca ([76.10.145.34]:1650 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753942AbXKLRJY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 12:09:24 -0500
+Message-ID: <473888C2.8070709@rtr.ca>
+Date: Mon, 12 Nov 2007 12:09:22 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Alberto Gonzalez <info@gnebu.es>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Laptop's HDD
+References: <200711040002.25784.info@gnebu.es> <Pine.LNX.4.64N.0711091416570.914@blysk.ds.pg.gda.pl>
+In-Reply-To: <Pine.LNX.4.64N.0711091416570.914@blysk.ds.pg.gda.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Nov 2007, Bjorn Helgaas wrote:
-
-> There will undoubtedly be errors in what the firmware reports.  But if
-> firmware tells us about some non PC/AT device, we should believe it at
-> least enough to avoid placing some other device on top of it.
+Maciej W. Rozycki wrote:
+> On Sun, 4 Nov 2007, Alberto Gonzalez wrote:
 > 
-> If we have PNPBIOS or ACPI, the built-in stuff reserved in
-> request_standard_resources() should be superfluous.  In theory.
-> But I doubt there's any benefit in skipping request_standard_resources().
-> Possibly it could be done *after* the PNP reservations, so the
-> hierarchy would make more sense, but I don't know if even that
-> is worth the trouble.
+>> The problem comes from a very high rate of load/unload cycles of the heads 
+>> that reaches the 300.000-600.000 limit in 2-3 years (with smartmontools it 
+>> can checked it with "smartctl -A /dev/sda")  . There are reports of HDD dying 
+>> even earlier for this problem [2]
+> 
+>  I use:
+> 
+> # hdparm -B 255 /dev/hda
+> 
+> to get rid of the problem with an ATA disk where I do not care that much 
+> about power consumption.  I do not know what the equivalent for a SATA 
+> disk would be, but chances are it will be easier to track it down with the 
+> reference above.
+..
 
- In practice it is resources above 0x00ff that really matter here as using 
-the motherboard range for device allocation is unsafe anyway (the whole 
-range may be actively decoded by the south bridge).  So whatever is 
-reported between 0x0000 and 0x00ff is mostly informational; with some 
-protection against driver bugs perhaps (that assuming they have got error 
-handling right for reservations).  I second it is not worth the hassle.
+The exact same command works with SATA drives.
 
-  Maciej
+-ml
