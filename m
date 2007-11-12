@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757090AbXKLSCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758745AbXKLSD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757090AbXKLSCf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 13:02:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754950AbXKLSCW
+	id S1758745AbXKLSD7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 13:03:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbXKLSDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 13:02:22 -0500
-Received: from mga02.intel.com ([134.134.136.20]:43018 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754514AbXKLSCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 13:02:19 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,406,1188802800"; 
-   d="scan'208";a="268859166"
-Message-ID: <4738950D.7070902@intel.com>
-Date: Mon, 12 Nov 2007 10:01:49 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
+	Mon, 12 Nov 2007 13:03:52 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:60324 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751133AbXKLSDv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 13:03:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=sGVe4yWaqolCMvx9Wfs/3C7yWVTcU0XPazWKTqWdbQ7ImecCMh7wXhFcBYN9joF1p2oDG6lKzR0Rnj49Y/fsyLCy7Up46+/4PyUut6h/7bJTkUy/VdlAoNFjak9HWnvIhzrWmf5TRhNlz+3b5ldwELBH+hd3XxLf15/D0pJQFyk=
+Message-ID: <93d1fdd10711121003t2286493bob25a3acd12134720@mail.gmail.com>
+Date: Mon, 12 Nov 2007 13:03:50 -0500
+From: "Ron Yorgason" <yorgasor@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Better support for Delkin cardbus CF adapters -- IDE layer
 MIME-Version: 1.0
-To: Patrick McHardy <kaber@trash.net>
-CC: e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
-       "'Dave Johnson'" <djohnson+linux-kernel@sw.starentnetworks.com>,
-       linux-kernel@vger.kernel.org, Joonwoo Park <joonwpark81@gmail.com>,
-       "'David Miller'" <davem@davemloft.net>
-Subject: Re: [E1000-devel] [PATCH 2/2] [e1000 VLAN] Disable vlan hw accel
- when promiscuous mode
-References: <47365200.0f10240a.0686.2173@mx.google.com>	<47388988.1000506@intel.com> <47388B9F.7050308@trash.net>
-In-Reply-To: <47388B9F.7050308@trash.net>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Nov 2007 18:02:17.0620 (UTC) FILETIME=[29A5B540:01C82556]
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick McHardy wrote:
-> Kok, Auke wrote:
->> Joonwoo Park wrote:
->>> IMHO even though netdevice is in the promiscuous mode, we should receive all of ingress packets.
->>> This disable the vlan filtering feature when a vlan hw accel configured e1000 device goes into promiscuous mode.
->>> This make packets visible to sniffers though it's not vlan id of itself.
->>> Any check, comments will be appreciated.
->> Actually I think this patch removes a choice from the user.
->>
->> Before this patch, the user can sniff all traffic by disabling vlans, or a
->> specific vlan only by leaving vlans on when going into promisc mode.
->>
->> After this patch, the user has no choice but to sniff all vlans at all times.
->>
->> I don't think that that is such a good improvement.
-> 
-> 
-> Do you really consider that a realistic choice? Who is going to
-> remove interfaces that are in use just to see traffic for other
-> VLANs? Sniffing specific VLANs can always be done on the VLAN
-> device itself.
+Please CC me with any responses, I'm not on the lkml.
 
-right, I had not thought of that.
+I'm trying to build a budget SSD using cardbus CF adapters & fast CF
+cards.  The latest CF adapters support UDMA and PIO access methods,
+and CF cards support these too.  The latest Delkin model boasts speeds
+of 45MB/s.
 
-> IMO its more a question of what we want promiscous mode to mean,
-> and I tend to agree with Joonwoo that it should receive all packets.
+I currently own this card from Synchrotech,
+http://www.synchrotech.com/products/media-adapters-pcmcia-memory-cards_01.html
+as well as the latest Delkin model.  The Synchrotech is recognized as
+a Delkin, with PCI vendor id =0x1145, device id = 0xf021.  The new
+Delkin has device id 0xf103.  I presume that in order to have the new
+Delkin recognized, I just need to add the appropriate line to the
+struct pci_device_id table.
 
-OK, Joonwoo: can you submit a patch against e1000e as well?
+But I'm concerned about performance.  The delkin_cb.c file states:
 
-Auke
+ *  This is slightly peculiar, in that it is a PCI driver,
+ *  but is NOT an IDE PCI driver -- the IDE layer does not directly
+ *  support hot insertion/removal of PCI interfaces, so this driver
+ *  is unable to use the IDE PCI interfaces.  Instead, it uses the
+ *  same interfaces as the ide-cs (PCMCIA) driver uses.
+ *  On the plus side, the driver is also smaller/simpler this way.
+
+
+My attempts to use hdparm to turn on DMA for my device have failed.  I
+assume this means DMA is not currently supported.  In my tests, read
+support seems fast enough, but writing maxes out around 2MB/s.  And if
+there is a lot of reading and writing going on (ie, trying to compile
+the kernel), performance is pretty abysmal.  What would it take to get
+proper DMA support?  Is it an architecture problem, in that this
+doesn't use the normal IDE PCI driver?  Is it a lack of documentation
+on card specs?  What can I do to help?
+
+--Ron
