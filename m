@@ -1,41 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbXKLK5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758527AbXKLLIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758683AbXKLK5U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 05:57:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbXKLK5N
+	id S1758527AbXKLLIA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 06:08:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757068AbXKLLHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 05:57:13 -0500
-Received: from mtagate2.uk.ibm.com ([195.212.29.135]:28198 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757399AbXKLK5M (ORCPT
+	Mon, 12 Nov 2007 06:07:51 -0500
+Received: from relay.lloydadriatico.it ([194.185.101.20]:28857 "EHLO
+	relay.lloydadriatico.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757014AbXKLLHu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 05:57:12 -0500
-Date: Mon, 12 Nov 2007 12:56:37 +0200
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Amit Shah <amit.shah@qumranet.com>
-Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [PATCH 5/8] KVM: PVDMA: Update dma_alloc_coherent to make it paravirt-aware
-Message-ID: <20071112105637.GH3299@rhun.haifa.ibm.com>
-References: <d1c72ce6e3a0e73c18993c3f066d1350b147f726.1194445109.git.amit.shah@qumranet.com> <e2f5f0c08d08cf66a39c8b452410078617e611f7.1194445109.git.amit.shah@qumranet.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e2f5f0c08d08cf66a39c8b452410078617e611f7.1194445109.git.amit.shah@qumranet.com>
-User-Agent: Mutt/1.5.11
+	Mon, 12 Nov 2007 06:07:50 -0500
+X-Greylist: delayed 619 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Nov 2007 06:07:49 EST
+X-IronPort-AV: E=Sophos;i="4.21,404,1188770400"; 
+   d="scan'208";a="5987646"
+Message-ID: <2C8305E0BE090E47A2BAD52A48AC911D17BCEB92@exchange1.lloyd.com>
+From: SANGOI DINO LEONARDO <dino.leonardo.sangoi@allianz.it>
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       SANGOI DINO LEONARDO <dino.leonardo.sangoi@allianz.it>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "Brown, Len" <len.brown@intel.com>,
+       linux-acpi@vger.kernel.org
+Subject: RE: 2.6.24-rc1 and 2.6.24.rc2 hangs while running udev on my lapt
+	op
+Date: Mon, 12 Nov 2007 11:57:19 +0100
+MIME-Version: 1.0
+X-Mailer: Internet Mail Service (5.5.2653.19)
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 07, 2007 at 04:21:06PM +0200, Amit Shah wrote:
+On Saturday, November 10, 2007 1:53 AM, Venki Pallipadi
+[mailto:venkatesh.pallipadi@intel.com] wrote:
+> 
+> Dino,
+> 
+> Can you try the patch below over rc2 and see whether it fixes 
+> the problem.
+> Looking at the code, it should fix the problem. If it does 
+> not, can you send me the output of acpidump from your system. 
+> That will help to look further into this. You can get 
+> acpidump from latest pmtools package here.
+> www.kernel.org/pub/linux/kernel/people/lenb/acpi/utils/
+> 
+Venki,
 
-> Of all the DMA calls, only dma_alloc_coherent might not actually
-> call dma_ops->alloc_coherent. We make sure that gets called if the
-> device that's being worked on is a PV device
+Thanks, but sadly your patch does not fix the problem.
 
-I always thougt that's a mess... the reason it's done this way is that
-Andi Kleen preferred it for some reason at the time. How about trying
-to fix it cleanly so that dma_alloc_coherent always gets called rather
-than adding a hack to work around a hack? It will require auditing all
-of the different x86 dma-ops but I can help with that.
+I have created a new bugzilla bug in the kernel bugtraker
+(http://bugzilla.kernel.org/show_bug.cgi?id=9355), where you can find the
+acpi dump and config.
 
-Cheers,
-Muli
+Ask me if I can try something else.
+
+Thanks,
+
+Dino
