@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755297AbXKLPcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756305AbXKLPex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755297AbXKLPcq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 10:32:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbXKLPci
+	id S1756305AbXKLPex (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 10:34:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbXKLPeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 10:32:38 -0500
-Received: from michael.checkpoint.com ([194.29.32.68]:39561 "EHLO
-	michael.checkpoint.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751407AbXKLPci (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 10:32:38 -0500
-Message-ID: <47387214.2010200@checkpoint.com>
-Date: Mon, 12 Nov 2007 17:32:36 +0200
-From: Yoav Artzi <yoavar@checkpoint.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: PAGE_SIZE on 64bit and 32bit machines
-References: <473865BE.2070806@checkpoint.com> <47386DC9.4020905@gmail.com>
-In-Reply-To: <47386DC9.4020905@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Nov 2007 10:34:46 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:48571 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751170AbXKLPep (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 10:34:45 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20071110181416.31dc2614.akpm@linux-foundation.org>
+References: <20071110181416.31dc2614.akpm@linux-foundation.org> <20071109153432.20803.69832.stgit@warthog.procyon.org.uk> <20071109153437.20803.55096.stgit@warthog.procyon.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dhowells@redhat.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-am33-list@redhat.com
+Subject: Re: [PATCH 1/6] Suppress A.OUT library support if !CONFIG_BINFMT_AOUT [try #5]
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Mon, 12 Nov 2007 15:34:40 +0000
+Message-ID: <6214.1194881680@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well, since the size of the kernel stack is one page, I figured it will 
-grow when switching to 64-bit, because some of the types grow and a 
-similar flow/stack will be bigger in 64-bit in comparison to 32-bit.
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Keeping the page size at 4kb and so keeping the stack at 4kb is a bit 
-dangerous. Isn't it?
+> > +# -*- makefile -*-
+> 
+> what's that?
 
-I know that using one page for a kernel stack is a optional feature, but:
+Ah...  That tells emacs that it's a makefile.  In Kbuild.asm emacs thinks its
+an Assembly file and not a makefile.  This causes it to attempt to do
+automatic indentation on it.  Do you want me to drop these annotation
+comments?
 
-a) It's a good feature
+> Note that because of unexport-asm-pageh.patch I turned the above hunk into
+> 
+> ifeq ($(wildcard include/asm-$(SRCARCH)/a.out.h),include/asm-$(SRCARCH)/a.out.h)
+> unifdef-y += a.out.h
+> endif
+> 
+> which seems logical to me.  We'll see how it tests out.
 
-b) It's already used by major distros, e.g. Red Hat
+Are you talking about in linux/Kbuild or in asm-generic/Kbuild.asm or both?
 
+Anyway, it sounds reasonable.
 
-
--------- Original Message  --------
-
-Subject: Re: PAGE_SIZE on 64bit and 32bit machines
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Yoav Artzi <yoavar@checkpoint.com>
-Date: Monday, November 12, 2007 5:14:17 PM
-
-> On 11/12/2007 03:39 PM, Yoav Artzi wrote:
->   
->> According to my knowledge the PAGE_SIZE on 32bit architectures in 4KB.
->> Logically, the PAGE_SIZE on 64bit architectures should be 8KB. That's at
->> least the way I understand it. However, looking at the kernel code of
->> x86_64, I see the PAGE_SIZE is 4KB.
->>     
->
-> Yes, it stood unchanged, the only difference is 4-level page tables.
->
->   
->> Can anyone explain to me what am I missing here?
->>     
->
-> What led you to that it must be 8k?
->
-> regards,
->   
-
+David
