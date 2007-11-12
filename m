@@ -1,82 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757673AbXKLURq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758644AbXKLUS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757673AbXKLURq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 15:17:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbXKLURi
+	id S1758644AbXKLUS4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 15:18:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbXKLUSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 15:17:38 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:39851 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751427AbXKLURh (ORCPT
+	Mon, 12 Nov 2007 15:18:47 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:53676 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751484AbXKLUSq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 15:17:37 -0500
-Date: Mon, 12 Nov 2007 14:17:36 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Greg KH <greg@kroah.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org
-Subject: Re: mm snapshot broken-out-2007-11-06-02-32.tar.gz uploaded
-Message-ID: <20071112201736.GA7693@sergelap.austin.ibm.com>
-References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org> <4730CB42.4090106@googlemail.com> <20071106134052.71bf12d6.akpm@linux-foundation.org> <20071106210712.GA5993@kroah.com>
+	Mon, 12 Nov 2007 15:18:46 -0500
+Message-ID: <4738B509.9000305@cosmosbay.com>
+Date: Mon, 12 Nov 2007 21:18:17 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071106210712.GA5993@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Christoph Lameter <clameter@sgi.com>
+CC: Herbert Xu <herbert@gondor.apana.org.au>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       mathieu.desnoyers@polymtl.ca, penberg@cs.helsinki.fi
+Subject: Re: [patch 0/7] [RFC] SLUB: Improve allocpercpu to reduce per cpu
+ access overhead
+References: <E1IrWuB-0005nS-00@gondolin.me.apana.org.au> <Pine.LNX.4.64.0711121112410.26682@schroedinger.engr.sgi.com> <4738AE04.1030506@cosmosbay.com> <Pine.LNX.4.64.0711121154270.27051@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0711121154270.27051@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Mon, 12 Nov 2007 21:18:27 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Greg KH (greg@kroah.com):
-> On Tue, Nov 06, 2007 at 01:40:52PM -0800, Andrew Morton wrote:
-> > > On Tue, 06 Nov 2007 21:14:58 +0100 Gabriel C <nix.or.die@googlemail.com> wrote:
-> > > After some hours uptime I got the following Oops :
-> > > 
-> > > [15745.009673] BUG: unable to handle kernel paging request at virtual address 63383166
-> > 
-> > An all-ascii address: "c81f".
-> > 
-> > > [15745.009683] printing eip: c01c50a2 *pde = 00000000
-> > > [15745.009692] Oops: 0002 [#1] SMP
-> > > [15745.009699] last sysfs file: /sys/devices/pci0000:00/0000:00:1e.0/0000:04:0b.0/irq
-> > > [15745.009705] Modules linked in: fuse pc87360 hwmon_vid eeprom adm1021 ext4dev jbd2 crc16 loop lp intel_agp sr_mod agpgart 3c59x parport_pc iTCO_wdt mii parport iTCO_vendor_support cdrom i82860_edac watchdog_core edac_core dcdbas pcspkr i2c_i801 watchdog_dev shpchp evdev pci_hotplug
-> > > [15745.009742]
-> > > [15745.009746] Pid: 6277, comm: su Not tainted (2.6.24-rc1-mm1 #2)
-> > > [15745.009751] EIP: 0060:[<c01c50a2>] EFLAGS: 00210206 CPU: 1
-> > > [15745.009761] EIP is at kobject_add+0xae/0x160
-> > > [15745.009765] EAX: c186c300 EBX: cf81a0b0 ECX: 63383166 EDX: cf81a0b8
-> > > [15745.009769] ESI: cf81a0b0 EDI: cf81a0d0 EBP: c03b4bcc ESP: cfa37f40
-> > > [15745.009773]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> > > [15745.009778] Process su (pid: 6277, ti=cfa36000 task=c354c000 task.ti=cfa36000)
-> > > [15745.009781] Stack: fffffffe c186c30c cf81a080 cf81a0b0 cf81a0d0 c03b4bcc c011fba1 cf81a0b0
-> > > [15745.009793]        c0368fd1 00000013 cf81a080 cf81a080 00000013 00000000 c011fe94 00000013
-> > > [15745.009804]        00000013 00000001 00000000 c0122e0d 00000013 00000000 09756508 c0124688
-> > > [15745.009815] Call Trace:
-> > > [15745.009820]  [<c011fba1>] uids_user_create+0x41/0x5a
-> > > [15745.009833]  [<c011fe94>] alloc_uid+0xad/0x121
-> > > [15745.009840]  [<c0122e0d>] set_user+0x1d/0x93
-> > > [15745.009847]  [<c0124688>] sys_setuid+0x47/0xc5
-> > > [15745.009855]  [<c0103d32>] sysenter_past_esp+0x5f/0x85
-> > > [15745.009868]  =======================
-> > > [15745.009870] Code: d4 13 00 83 7c 24 04 00 75 0f 8b 43 14 83 c0 0c e8 fc fb ff ff 89 44 24 04 8b 43 14 8b 48 04 8d 53 08 89 50 04 89 43 08 89 4b 0c <89> 11 8b 43 14 83 c0 08 c6 00 01 8b 44 24 04 89 43 10 c7 04 24
-> > > [15745.009928] EIP: [<c01c50a2>] kobject_add+0xae/0x160 SS:ESP 0068:cfa37f40
-> > > 
-> > 
-> > Don't knowm sorry - we'll need to wait until someone can hit it more
-> > reliably :(
+Christoph Lameter a écrit :
+> On Mon, 12 Nov 2007, Eric Dumazet wrote:
+>> For example, I do think using a per cpu memory storage on net_device refcnt &
+>> last_rx could give us some speedups.
 > 
-> Ah, I have a fix for that, Kay found it.  Do you want an add-on to your
-
-(Sorry, it feels like there must be an obvious place to look for it, but
-I can't seem to find it...)
-
-Was the fix ever posted?  If it isn't completely obsolete could you
-please send it?
-
-> tree, or a whole new version of one of the patches?
+> Note that there was a new patchset posted (titled cpu alloc v1) that 
+> provides on demand extension of the cpu areas.
 > 
-> And it's pretty easy to hit, just start printing a lot of individual
-> files with a local printer to cups.  My daughter showed me in painful
-> detail how easy it was... :)
+> See http://marc.info/?l=linux-kernel&m=119438261304093&w=2
 
-thanks,
--serge
+Thank you Christoph. I was traveling last week so I missed that.
+
+This new patchset looks very interesting, you did a fantastic job !
+
