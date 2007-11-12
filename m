@@ -1,80 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757953AbXKLArU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758035AbXKLAsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757953AbXKLArU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 19:47:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756165AbXKLArM
+	id S1758035AbXKLAsW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 19:48:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756466AbXKLAsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 19:47:12 -0500
-Received: from mga10.intel.com ([192.55.52.92]:52939 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756134AbXKLArL (ORCPT
+	Sun, 11 Nov 2007 19:48:10 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:18182 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756439AbXKLAsH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 19:47:11 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,402,1188802800"; 
-   d="scan'208";a="378727816"
-Subject: Re: iozone write 50% regression in kernel 2.6.24-rc1
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Martin Knoblauch <knobi@knobisoft.de>
-Cc: a.p.zijlstra@chello.nl, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <337294.80877.qm@web32607.mail.mud.yahoo.com>
-References: <337294.80877.qm@web32607.mail.mud.yahoo.com>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 12 Nov 2007 08:45:57 +0800
-Message-Id: <1194828357.20251.63.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+	Sun, 11 Nov 2007 19:48:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PtPJsz2JcS+rWFx0l5dVu3WuR9jlbhyD/D90C76zQLSqElU1rnth+eQ8iCUTIQmJgNU9jEuPwC9F8k9BJLZzAkR8xKKcMK1wDZfm+Ti2FKEDwid8AX7TY9Aw7lTWZSV+WO1dMA53v/0HsMUuh0/nxiqPJkv0U+ZgvRqoixqQ8ok=
+Message-ID: <9a8748490711111648n25669b34s3be3b48b5725398e@mail.gmail.com>
+Date: Mon, 12 Nov 2007 01:48:07 +0100
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
+Subject: Re: [PATCH] Fix problem with size of allocation in libsas
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1194827826.3445.32.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200711120024.54773.jesper.juhl@gmail.com>
+	 <1194825603.3445.21.camel@localhost.localdomain>
+	 <9a8748490711111613s50f9e212k18f8106ee127e809@mail.gmail.com>
+	 <1194827826.3445.32.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-11-09 at 04:36 -0800, Martin Knoblauch wrote:
-> ----- Original Message ----
-> > From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-> > To: a.p.zijlstra@chello.nl
-> > Cc: LKML <linux-kernel@vger.kernel.org>
-> > Sent: Friday, November 9, 2007 10:47:52 AM
-> > Subject: iozone write 50% regression in kernel 2.6.24-rc1
-> > 
-> > Comparing with 2.6.23, iozone sequential write/rewrite (512M) has
-> > 50%
-> > 
->  regression
-> > in kernel 2.6.24-rc1. 2.6.24-rc2 has the same regression.
-> > 
-> > My machine has 8 processor cores and 8GB memory.
-> > 
-> > By bisect, I located patch
-> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=
-> > 04fbfdc14e5f48463820d6b9807daa5e9c92c51f.
-> > 
-> > 
-> > Another behavior: with kernel 2.6.23, if I run iozone for many
-> > times
-> > 
->  after rebooting machine,
-> > the result looks stable. But with 2.6.24-rc1, the first run of
-> > iozone
-> > 
->  got a very small result and
-> > following run has 4Xorig_result.
-> > 
-> > What I reported is the regression of 2nd/3rd run, because first run
-> > has
-> > 
->  bigger regression.
-> > 
-> > I also tried to change
-> > /proc/sys/vm/dirty_ratio,dirty_backgroud_ratio
-> > 
->  and didn't get improvement.
->  could you tell us the exact iozone command you are using?
-iozone -i 0 -r 4k -s 512m
+On 12/11/2007, James Bottomley <James.Bottomley@hansenpartnership.com> wrote:
+> On Mon, 2007-11-12 at 01:13 +0100, Jesper Juhl wrote:
+> > On 12/11/2007, James Bottomley <James.Bottomley@hansenpartnership.com> wrote:
+> > > On Mon, 2007-11-12 at 00:24 +0100, Jesper Juhl wrote:
+> > > > From: Jesper Juhl <jesper.juhl@gmail.com>
+> > > >
+> > > > in sas_get_phy_change_count(), the line
+> > > >       disc_resp = alloc_smp_resp(DISCOVER_RESP_SIZE);
+> > > > will allocate 56 bytes due to this define:
+> > > >       #define DISCOVER_RESP_SIZE 56
+> > > > But, the struct is actually 60 bytes in size.
+> > > >
+> > > > So change the define to be
+> > > >       #define DISCOVER_RESP_SIZE sizeof(struct smp_resp)
+> > > > so we always get the correct size even when people
+> > > > fiddle with the structure.
+> > > >
+> > > > This change also fixes the same problem in
+> > > > sas_get_phy_attached_sas_addr()
+> > > >
+> > > > (Found by the Coverity checker. Compile tested only)
+> > >
+> > > Well, your fix is definitely wrong.
+> > >
+> > > Could you explain the problem a little more?  The discover response SMP
+> > > frame is 56 bytes as mandated by the standard.  I don't see anywhere in
+> > > the code where we're actually using a value beyond the 56th byte ...
+> > > where is the problem use?
+> > >
+> >
+> > I haven't found any actual problem *use*, I just looked at the size of
+> > 'struct smp_resp' and noticed that coverity seemed to be right that 56
+> > bytes are not sufficient to hold the members of the struct.
+>
+> There are 11 current (well, as of the 1.1 standard) SMP frame responses.
+> Each of them is actually a different length.  This driver treats SMP
+> frame response underruns as errors, so the fix you propose would cause
+> the whole discovery process to collapse.
+>
+> >   There are
+> > 32 bytes in the first members + the union and I don't see how that can
+> > ever stay at 56 bytes...?  So, we are allocating memory and storing it
+> > in a 'struct smp_resp *', but we are allocating less than
+> > sizeof(smp_resp) - how is that not a (potential) problem?
+>
+> We're not storing anything.  We're allocating a byte area for the driver
+> to deposit a response frame, we know we just sent a SMP DISCOVER
+> request, so we'd better get a discover response back (and the driver
+> will error on underrun or overrun, so we know if it returns successfully
+> that's exatly what we have).  The struct smp_resp contains the SMP
+> invariant header and then a union of all the other response data types,
+> so as long as we use either the header or the disc piece of the union,
+> there's no possibility of error, is there?
+>
+No, as long as the driver will err on underrun and overrun (of 56
+bytes) and we only use those parts of the structure that lie within
+the first 56 bytes, then I don't see how it could fail.
 
+But it still makes the hairs on the back of my head stand on end to
+see memory allocated, and pointed to by a "struct foo *", that is less
+than "sizeof(struct foo)"...
 
->  I would like to repeat it on my setup, because I definitely see the opposite behaviour in 2.6.24-rc1/rc2. The speed there is much better than in 2.6.22 and before (I skipped 2.6.23, because I was waiting for the per-bdi changes). I definitely do not see the difference between 1st and subsequent runs. But then, I do my tests with 5GB file sizes like:
-> 
-> iozone3_283/src/current/iozone -t 5 -F /scratch/X1 /scratch/X2 /scratch/X3 /scratch/X4 /scratch/X5 -s 5000M -r 1024 -c -e -i 0 -i 1
-My machine uses SATA (AHCI) disk.
-
--yanmin
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
