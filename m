@@ -1,58 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754642AbXKLABW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757216AbXKLANp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754642AbXKLABW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 19:01:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755633AbXKLABL
+	id S1757216AbXKLANp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 19:13:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755449AbXKLANf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 19:01:11 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:61413 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755720AbXKLABK (ORCPT
+	Sun, 11 Nov 2007 19:13:35 -0500
+Received: from nz-out-0506.google.com ([64.233.162.235]:27794 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755314AbXKLANe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 19:01:10 -0500
+	Sun, 11 Nov 2007 19:13:34 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=T1R40ijGdKckd5ENcsWuHHGRr+ghrwT2By9ylitGXAX9ygFzRoZ6fHlqlpBW00xMPo/H+8/BKAZdbez/5h7d7yvH7ILvwkSlwAHWWklcTUGrrBIp5pxx5MK/VEWXWfMuJeg6Hqt2IPNHa+PxwK7+LqVa7XUIY9nrY9eRtC8v57c=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Let 'make help' output info about includecheck
-Date: Mon, 12 Nov 2007 00:56:35 +0100
-User-Agent: KMail/1.9.7
-Cc: Sam Ravnborg <sam@ravnborg.org>, trivial@kernel.org,
-       Jesper Juhl <jesper.juhl@gmail.com>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=KBaRpo/PzMqk+i7U6arFUY5Wp2gT4SNIe64AqaDfg5uFQ3icweKxzKSbIpyj7oyVFxoUqT1zb09ghiLA28TbHwc43C66Y8b7ZB+aCFnpdcmGAetw3eQMLtevr6U0obexzllPTLjgIjGNkQ03Glt9LAT3TRbxUlEImE98hjUq03Q=
+Message-ID: <9a8748490711111613s50f9e212k18f8106ee127e809@mail.gmail.com>
+Date: Mon, 12 Nov 2007 01:13:33 +0100
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
+Subject: Re: [PATCH] Fix problem with size of allocation in libsas
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1194825603.3445.21.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711120056.35359.jesper.juhl@gmail.com>
+References: <200711120024.54773.jesper.juhl@gmail.com>
+	 <1194825603.3445.21.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jesper Juhl <jesper.juhl@gmail.com>
+On 12/11/2007, James Bottomley <James.Bottomley@hansenpartnership.com> wrote:
+> On Mon, 2007-11-12 at 00:24 +0100, Jesper Juhl wrote:
+> > From: Jesper Juhl <jesper.juhl@gmail.com>
+> >
+> > in sas_get_phy_change_count(), the line
+> >       disc_resp = alloc_smp_resp(DISCOVER_RESP_SIZE);
+> > will allocate 56 bytes due to this define:
+> >       #define DISCOVER_RESP_SIZE 56
+> > But, the struct is actually 60 bytes in size.
+> >
+> > So change the define to be
+> >       #define DISCOVER_RESP_SIZE sizeof(struct smp_resp)
+> > so we always get the correct size even when people
+> > fiddle with the structure.
+> >
+> > This change also fixes the same problem in
+> > sas_get_phy_attached_sas_addr()
+> >
+> > (Found by the Coverity checker. Compile tested only)
+>
+> Well, your fix is definitely wrong.
+>
+> Could you explain the problem a little more?  The discover response SMP
+> frame is 56 bytes as mandated by the standard.  I don't see anywhere in
+> the code where we're actually using a value beyond the 56th byte ...
+> where is the problem use?
+>
 
-'make includecheck' is useful and we want people to run it, so 
-let 'make help' output information about its existence.
+I haven't found any actual problem *use*, I just looked at the size of
+'struct smp_resp' and noticed that coverity seemed to be right that 56
+bytes are not sufficient to hold the members of the struct.  There are
+32 bytes in the first members + the union and I don't see how that can
+ever stay at 56 bytes...?  So, we are allocating memory and storing it
+in a 'struct smp_resp *', but we are allocating less than
+sizeof(smp_resp) - how is that not a (potential) problem?
 
-
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
-
- Makefile |    1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/Makefile b/Makefile
-index e28dde8..2e5eba0 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1181,6 +1181,7 @@ help:
- 	@echo  ''
- 	@echo  'Static analysers'
- 	@echo  '  checkstack      - Generate a list of stack hogs'
-+	@echo  '  includecheck    - Generate a list of files with duplicate header includes'
- 	@echo  '  namespacecheck  - Name space analysis on compiled kernel'
- 	@echo  '  export_report   - List the usages of all exported symbols'
- 	@if [ -r $(srctree)/include/asm-$(SRCARCH)/Kbuild ]; then \
-
-
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
