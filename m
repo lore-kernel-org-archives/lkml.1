@@ -1,49 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758997AbXKLQcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759212AbXKLQkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758997AbXKLQcp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 11:32:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbXKLQci
+	id S1759212AbXKLQkz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 11:40:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755261AbXKLQkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 11:32:38 -0500
-Received: from mga10.intel.com ([192.55.52.92]:19201 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751250AbXKLQch (ORCPT
+	Mon, 12 Nov 2007 11:40:47 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:54577 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752426AbXKLQkq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 11:32:37 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,406,1188802800"; 
-   d="scan'208";a="379447183"
-Date: Sun, 11 Nov 2007 20:26:18 -0800
-From: mark gross <mgross@linux.intel.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-mm1 breaks C-state support on Intel T7200 x86_64
-Message-ID: <20071112042618.GA439@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <3624.1194542384@turing-police.cc.vt.edu> <20071108223007.GB5775@linux.intel.com> <6010.1194639884@turing-police.cc.vt.edu>
+	Mon, 12 Nov 2007 11:40:46 -0500
+Date: Mon, 12 Nov 2007 17:40:23 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Bernd Schmidt <bernds_cb1@t-online.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC: 2.6 patch] add -fno-tree-scev-cprop to KBUILD_CFLAGS
+Message-ID: <20071112164023.GL9771@stusta.de>
+References: <20071111064829.GG21669@stusta.de> <47387E32.4050206@t-online.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <6010.1194639884@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <47387E32.4050206@t-online.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 09, 2007 at 03:24:44PM -0500, Valdis.Kletnieks@vt.edu wrote:
-> On Thu, 08 Nov 2007 14:30:07 PST, Mark Gross said:
-> 
-> > wing patch fixes up the cpuidle / pm-qos integration.
+On Mon, Nov 12, 2007 at 05:24:18PM +0100, Bernd Schmidt wrote:
+> Adrian Bunk wrote:
+> > The gcc from svn that will become gcc 4.3 generates libgcc calls in 
+> > cases like the following (on 32bit architectures):
 > > 
-> > I suspect that this is folded into another mm patch but it should fix
-> > C-state issue identified.
+> > <--  snip  -->
+> > 
+> > static inline void timespec_add_ns(struct timespec *a, u64 ns)
+> > {
+> > ...
+> >         while(ns >= NSEC_PER_SEC) {
+> >                 ns -= NSEC_PER_SEC;
+> >                 a->tv_sec++;
+> >         }
+> > ...
+> > 
+> > <--  snip  -->
+> > 
+> > It can make sense to emit assembler code doing division for such C code -
+> > that doesn't seem to be something that would generally be wrong.
 > 
-> Confirming that patch left my CPUs mostly in C3 again. Thanks.
-> 
-> I'll have to let Mark and Andrew figure out this code's status in the -mm queue.
+> It can be a pretty huge performance regression, so gcc ought to be fixed.
 
-I checked on this last week, I'm pretty sure its in Andrew's current
-tree.
+What is better depends on the values of ns and NSEC_PER_SEC.
 
-Thanks again for looking at this.
+It can be a performance regression, but there are also cases where it 
+can improve performance. If gcc produces lower performance code that
+would be a bug in gcc that should be reported, but using a division is 
+not generally wrong.
 
---mgross
+A more clearer example might be:
+
+<--  snip  -->
+
+void foo(u64 ns)
+{
+	if (ns < 10000)
+		return;
+
+	while(ns >= 3) {
+		ns -= 3;
+#ifdef DEBUG
+		bar(ns);
+#endif
+	}
+}
+
+<--  snip  -->
+
+With DEBUG not defined you can hardly argue gcc should be fixed to not 
+use a division for performance reasons.
+
+> Bernd
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
