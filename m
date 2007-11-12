@@ -1,56 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757177AbXKLVex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758028AbXKLVhO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757177AbXKLVex (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 16:34:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbXKLVep
+	id S1758028AbXKLVhO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 16:37:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbXKLVhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 16:34:45 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:62766 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752072AbXKLVep (ORCPT
+	Mon, 12 Nov 2007 16:37:00 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47549 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752322AbXKLVg7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 16:34:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=dsyKxiIcJOxt3TC8a9ZGwvgGa0O6QuVlhfkftxBCU8yRQkvf4ne0MHxnvC5zXmgUufJzF2DyqMKFXi3amkzEH6VP1vK4vLvQzSc4U0T9Y1st8CffRcPidknmWe9/vmRySsnTfxSwuCVCWbddrZDNYwcAwlFOCEj1kJZPuM5XSsM=
-Date: Tue, 13 Nov 2007 00:34:31 +0300
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: mel@csn.ul.ie, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@vger.kernel.org
-Subject: Re: Major mke2fs slowdown (reproducable, bisected)
-Message-ID: <20071112213431.GE11244@martell.zuzino.mipt.ru>
-References: <20071112182526.GC11244@martell.zuzino.mipt.ru> <alpine.LFD.0.9999.0711121034220.30499@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.9999.0711121034220.30499@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
+	Mon, 12 Nov 2007 16:36:59 -0500
+Date: Mon, 12 Nov 2007 13:36:38 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Florian Fainelli <florian.fainelli@telecomint.eu>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: [patch 2.6.24-rc2 1/3] generic gpio -- gpio_chip support
+Message-Id: <20071112133638.ff671fa0.akpm@linux-foundation.org>
+In-Reply-To: <200711091136.20051.david-b@pacbell.net>
+References: <200711091136.20051.david-b@pacbell.net>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 12, 2007 at 10:39:15AM -0800, Linus Torvalds wrote:
-> On Mon, 12 Nov 2007, Alexey Dobriyan wrote:
-> >
-> > Cross-compile farm here migrated to .ccache and build dir on separate
-> > disks and now I have a way to blow up .ccache without waiting half an
-> > hour for rm(1) to finish. It's called mke2fs(8).
-> > 
-> > However, in e.g 2.6.24-rc2 mke2fs is amazingly slow if done right after
-> > several fat cross-compile builds. Normally it takes ~11 seconds to
-> > finish. After commit 5adc5be7cd1bcef6bb64f5255d2a33f20a3cf5be aka
-> > "Bias the placement of kernel pages at lower PFNs" it takes several
-> > minutes. 2.6.24-rc2 without this patch also gives normal mkfs speeds.
-> > I'm pretty sure bisection wasn't screwed up.
-> 
-> Can you (just to make sure) do a "git revert" of this commit on top of the 
-> current tree, and verify that that makes it all work fine again too? If 
-> so, let's just revert it.
-> 
-> I just want to make sure that there isn't some subtle interaction with 
-> anything else in there.
+On Fri, 9 Nov 2007 11:36:19 -0800 David Brownell <david-b@pacbell.net> wrote:
 
-OK, with 2.6.24-rc2-6e800af233e0bdf108efb7bd23c11ea6fa34cdeb
-mkfs took 4m6.915s seconds. With just "lower PFNs" patch reverted it's
-back to 10 seconds.
+> Provide new implementation infrastructure that platforms may choose to use
+> when implementing the GPIO programming interface.  Platforms can update their
+> GPIO support to use this.  In many cases the incremental cost to access a
+> non-inlined GPIO should be on the order of a dozen instructions, so it won't
+> normally be a problem.  The upside is:
+> 
+>   * Providing two features which were "want to have (but OK to defer)" when
+>     GPIO interfaces were first discussed in November 2006:
+> 
+>     -	A "struct gpio_chip" to plug in GPIOs that aren't directly supported
+> 	by SOC platforms, but come from FPGAs or other multifunction devices
+> 	using conventional device registers (like UCB-1x00 or SM501 GPIOs,
+> 	and southbridges in PCs with more open specs than usual).
+> 
+>     -	Full support for message-based GPIO expanders, where registers are
+> 	accessed through sleeping I/O calls.  Previous support for these
+> 	"cansleep" calls was just stubs.  (One example: the widely used
+> 	pcf8574 I2C chips, with 8 GPIOs each.)
+> 
+>   * Including a non-stub implementation of the gpio_{request,free}() calls,
+>     making those calls much more useful.  The diagnostic labels are also
+>     recorded given DEBUG_FS, so /sys/kernel/debug/gpio can show a snapshot
+>     of all GPIOs known to this infrastructure.
+> 
+> The driver programming interfaces introduced in 2.6.21 do not change at all;
+> this infrastructure is entirely below those covers.
+> 
+> This opens the door to an augmented programming interface, addressing GPIOs
+> by chip and index.  That could be used as a performance tweak (lookup once
+> then cache, avoiding locking and lookup overheads) or to support transient
+> GPIOs not registered in the integer GPIO namespace (maybe a USB-to-GPIO
+> adapter, or GPIOs coupled to some other type of add-on card).
+> 
+> ...
+>
+> +
+> +/* gpio_lock protects the table of chips and to gpio_chip->requested.
+> + * While any gpio is requested, its gpio_chip is not removable.  It's
+> + * a raw spinlock to ensure safe access from hardirq contexts, and to
+> + * shrink bitbang overhead:  per-bit preemption would be very wrong.
+> + */
+> +static raw_spinlock_t gpio_lock = __RAW_SPIN_LOCK_UNLOCKED;
+
+Well that's weird.
+
+For starters, this initialisation will confound lockdep: it should use
+DEFINE_SPINLOCK.
+
+And the rationale seems dubious.  All you're saving here is a couple of
+accesses to task_struct at spin_unlock()-time.  If the current task has a
+preemption pending then yes, we'll schedule away but that's a very rare
+thing and that's just what we're supposed to do.
+
+So please tell us more about this.  Perhaps there are performance problems
+with the current core preemption machinery.
+
+> +	local_irq_save(flags);
+> +	__raw_spin_lock(&gpio_lock);
+>
+> ...
+> +	__raw_spin_unlock(&gpio_lock);
+> +	local_irq_restore(flags);
+> +	return status;
+> +}
+
+And of course if this code is converted to conventional locking, the above
+becomes spin_lock_irqsave()/spin_lock_irqrestore() in many places.
+
+> +/* There's no value in inlining GPIO calls that may sleep.
+
+There's no value in inlining anything, hardly ;)
+
+> +postcore_initcall(gpiolib_debugfs_init);
+
+postcore_initcall() is unusual, hence a comment describing why it was
+employed would be a good thing to have.
