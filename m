@@ -1,41 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758647AbXKLKwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758670AbXKLKx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758647AbXKLKwS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 05:52:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757671AbXKLKwF
+	id S1758670AbXKLKx7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 05:53:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755484AbXKLKxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 05:52:05 -0500
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:11744 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757485AbXKLKwE (ORCPT
+	Mon, 12 Nov 2007 05:53:50 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:4313 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753131AbXKLKxu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 05:52:04 -0500
-Date: Mon, 12 Nov 2007 12:52:01 +0200
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Amit Shah <amit.shah@qumranet.com>
-Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [PATCH 4/8] KVM: PVDMA: Introduce is_pv_device() dma operation
-Message-ID: <20071112105201.GG3299@rhun.haifa.ibm.com>
-References: <d1c72ce6e3a0e73c18993c3f066d1350b147f726.1194445109.git.amit.shah@qumranet.com> <218cf425feff1d4daf23d3f25df1eb224108a1a3.1194445109.git.amit.shah@qumranet.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <218cf425feff1d4daf23d3f25df1eb224108a1a3.1194445109.git.amit.shah@qumranet.com>
-User-Agent: Mutt/1.5.11
+	Mon, 12 Nov 2007 05:53:50 -0500
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: davem@davemloft.net (David Miller)
+Subject: Re: [patch 0/7] [RFC] SLUB: Improve allocpercpu to reduce per cpu access overhead
+Cc: clameter@sgi.com, akpm@linux-foundation.org, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
+       penberg@cs.helsinki.fi
+Organization: Core
+In-Reply-To: <20071101.155805.65012933.davem@davemloft.net>
+X-Newsgroups: apana.lists.os.linux.kernel
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1IrWuB-0005nS-00@gondolin.me.apana.org.au>
+Date: Mon, 12 Nov 2007 18:52:35 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 07, 2007 at 04:21:05PM +0200, Amit Shah wrote:
+David Miller <davem@davemloft.net> wrote:
+> 
+> Each IP compression tunnel instance does an alloc_percpu().
 
-> A guest can call dma_ops->is_pv_device() to find out if a device is
-> a passthrough'ed device (device passed on to a guest by the
-> host). If this is true, a hypercall will be made to translate DMA
-> mapping operations.
+Actually all IPComp tunnels share one set of objects which are
+allocated per-cpu.  So only the first tunnel would do that.
 
-Doesn't really belong in the DMA mapping API. Instead what I think we
-should do is to cache this (per device) value in the pci_device struct
-(or device struct?) and in the dma-ops implementation inspect it to
-decide exactly how to do DMA mapping for this device.
+In fact that was precisely the reason why per-cpu is used in
+IPComp as otherwise we can just allocate normal memory.
 
 Cheers,
-Muli
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
