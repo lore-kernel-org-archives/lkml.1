@@ -1,58 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760042AbXKLWfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758828AbXKLWoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760042AbXKLWfZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 17:35:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755325AbXKLWfL
+	id S1758828AbXKLWoQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 17:44:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755575AbXKLWn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 17:35:11 -0500
-Received: from ns.suse.de ([195.135.220.2]:42613 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755226AbXKLWfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 17:35:09 -0500
-From: Neil Brown <neilb@suse.de>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Date: Tue, 13 Nov 2007 09:35:01 +1100
+	Mon, 12 Nov 2007 17:43:57 -0500
+Received: from zrtps0kn.nortel.com ([47.140.192.55]:61219 "EHLO
+	zrtps0kn.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755285AbXKLWnz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 17:43:55 -0500
+Message-ID: <4738D70C.4060404@nortel.com>
+Date: Mon, 12 Nov 2007 16:43:24 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: David Miller <davem@davemloft.net>
+CC: kaber@trash.net, auke-jan.h.kok@intel.com, joonwpark81@gmail.com,
+       netdev@vger.kernel.org, djohnson+linux-kernel@sw.starentnetworks.com,
+       linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net
+Subject: Re: [PATCH 2/2] [e1000 VLAN] Disable vlan hw accel when promiscuous
+ mode
+References: <47365200.0f10240a.0686.2173@mx.google.com> <47388988.1000506@intel.com>	<47388B9F.7050308@trash.net> <20071112.143342.10809862.davem@davemloft.net>
+In-Reply-To: <20071112.143342.10809862.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <18232.54549.271030.214405@notabene.brown>
-Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: nfsd bugfixes
-In-Reply-To: message from J. Bruce Fields on Monday November 12
-References: <1194901503-23105-1-git-send-email-bfields@citi.umich.edu>
-	<18232.52970.213438.902011@notabene.brown>
-	<20071112221349.GA2645@fieldses.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+X-OriginalArrivalTime: 12 Nov 2007 22:43:28.0076 (UTC) FILETIME=[713900C0:01C8257D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Miller wrote:
 
-(CC: trimmed - as Bruce says: separate discussion)
+> When you select VLAN, you by definition are asking for non-VLAN
+> traffic to be elided.  It is like plugging the ethernet cable
+> into one switch or another.
 
-On Monday November 12, bfields@fieldses.org wrote:
-> On Tue, Nov 13, 2007 at 09:08:42AM +1100, Neil Brown wrote:
-> > Calling nfsd_setuser an extra time does open us up for a very tiny
-> > possibility of an ENOMEM at an awkward time.
-> 
-> Hm.  Could you give an example of possible consequences?
+For max functionality it seems like the raw eth device should show 
+everything on the wire in promiscuous mode.
 
-Just that you could get an ENOMEM in the middle of a NFSv4 COMPOUND.
-I guess that should result in NFSERR_RESOURCE and we just hope the
-client is able to cope and resend the remainder of the compound.
-Though looking at the code, ENOMEM becomes nfserr_dropit... does that
-mean the we would drop the whole request and the client would need to
-resend, possibly duplicating non-idempotent portions?
+If we want to sniff only the traffic for a specific vlan, we can sniff 
+the vlan device.
 
-Mainly, it just feels unclean.
-
-> 
-> (Though note this is somewhat of a separate discussion, since this
-> particular patch doesn't add a call to nfsd_setuser().)
-
-Hmm, you are right, we already call nfsd_setuser in both paths, you we
-just adding the check for privileged port - doh ;-)
-
-NeilBrown
+Chris
