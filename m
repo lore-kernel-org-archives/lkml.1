@@ -1,86 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757687AbXKLAh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757585AbXKLAmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757687AbXKLAh0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 19:37:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755733AbXKLAhN
+	id S1757585AbXKLAmp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 19:42:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756134AbXKLAmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 19:37:13 -0500
-Received: from accolon.hansenpartnership.com ([64.109.89.108]:45554 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755575AbXKLAhL (ORCPT
+	Sun, 11 Nov 2007 19:42:37 -0500
+Received: from mx1.univ-lille1.fr ([193.49.225.19]:48965 "EHLO
+	mx1.univ-lille1.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755733AbXKLAmg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 19:37:11 -0500
-Subject: Re: [PATCH] Fix problem with size of allocation in libsas
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <9a8748490711111613s50f9e212k18f8106ee127e809@mail.gmail.com>
-References: <200711120024.54773.jesper.juhl@gmail.com>
-	 <1194825603.3445.21.camel@localhost.localdomain>
-	 <9a8748490711111613s50f9e212k18f8106ee127e809@mail.gmail.com>
-Content-Type: text/plain
-Date: Sun, 11 Nov 2007 18:37:06 -0600
-Message-Id: <1194827826.3445.32.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Sun, 11 Nov 2007 19:42:36 -0500
+Message-ID: <4737A09C.1030200@lifl.fr>
+Date: Mon, 12 Nov 2007 01:38:52 +0100
+From: Eric Piel <Eric.Piel@lifl.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; fr-FR; rv:1.8.1.6) Gecko/20071101 Mandriva/2.0.0.6-5mdv2008.1 (2008.1) Thunderbird/2.0.0.6 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Thomas Renninger <trenn@suse.de>, linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: Kernel panic at boot with ondemand governor as default (2.6.24-rc2)
+References: <4737539F.2070401@lifl.fr> <20071111144523.14164575@laptopd505.fenrus.org>
+In-Reply-To: <20071111144523.14164575@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender DNS name whitelisted, not delayed by milter-greylist-2.0.2 (mx1.univ-lille1.fr [193.49.225.19]); Mon, 12 Nov 2007 01:38:55 +0100 (CET)
+X-USTL-MailScanner-Information: Please contact the ISP for more information
+X-USTL-MailScanner: Found to be clean
+X-USTL-MailScanner-From: eric.piel@lifl.fr
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-11-12 at 01:13 +0100, Jesper Juhl wrote:
-> On 12/11/2007, James Bottomley <James.Bottomley@hansenpartnership.com> wrote:
-> > On Mon, 2007-11-12 at 00:24 +0100, Jesper Juhl wrote:
-> > > From: Jesper Juhl <jesper.juhl@gmail.com>
-> > >
-> > > in sas_get_phy_change_count(), the line
-> > >       disc_resp = alloc_smp_resp(DISCOVER_RESP_SIZE);
-> > > will allocate 56 bytes due to this define:
-> > >       #define DISCOVER_RESP_SIZE 56
-> > > But, the struct is actually 60 bytes in size.
-> > >
-> > > So change the define to be
-> > >       #define DISCOVER_RESP_SIZE sizeof(struct smp_resp)
-> > > so we always get the correct size even when people
-> > > fiddle with the structure.
-> > >
-> > > This change also fixes the same problem in
-> > > sas_get_phy_attached_sas_addr()
-> > >
-> > > (Found by the Coverity checker. Compile tested only)
-> >
-> > Well, your fix is definitely wrong.
-> >
-> > Could you explain the problem a little more?  The discover response SMP
-> > frame is 56 bytes as mandated by the standard.  I don't see anywhere in
-> > the code where we're actually using a value beyond the 56th byte ...
-> > where is the problem use?
-> >
+2007年11月11日 23:45, Arjan van de Ven wrote/a écrit:
+> On Sun, 11 Nov 2007 20:10:23 +0100
+> Eric Piel <Eric.Piel@lifl.fr> wrote:
 > 
-> I haven't found any actual problem *use*, I just looked at the size of
-> 'struct smp_resp' and noticed that coverity seemed to be right that 56
-> bytes are not sufficient to hold the members of the struct.
+>> Hello,
+>>
+>> I've tried kernel 2.6.24-rc2 and I have a problem with the new option 
+>> for setting up the cpufreq ondemand governor as default: a kernel
+>> panic happens early at boot time. If I boot first with performance
+>> governor and later change to ondemand, everything is fine (as usual).
+>>
+>> This seems related to the delayed_workqueue. The kernel panic message 
+>> finishes by:
+>> EIP: [<c012aa60>] wq_per_cpu+0x0/0x10 SS:ESP 0068:c191be58
+>> Kernel panic - not syncing: Attempted to kill init!
+>>
+>> A picture of the whole message is available here:
+>> http://pieleric.free.fr/unorder/1162-ondemand-panic.jpg
+>>
+>> My computer is a x86 using speedstep-ich, and you can find the full 
+>> .config leading to the panic attached.
 
-There are 11 current (well, as of the 1.1 standard) SMP frame responses.
-Each of them is actually a different length.  This driver treats SMP
-frame response underruns as errors, so the fix you propose would cause
-the whole discovery process to collapse.
+> 
+> has ondemand ever worked for you?
+Yes, ondemand works perfectly fine on this computer. The panic happens 
+only if selecting it as the _default_ governor (which has been 
+introduced by commit 1c2562459faedc35927546cfa5273ec6c2884cce).
 
->   There are
-> 32 bytes in the first members + the union and I don't see how that can
-> ever stay at 56 bytes...?  So, we are allocating memory and storing it
-> in a 'struct smp_resp *', but we are allocating less than
-> sizeof(smp_resp) - how is that not a (potential) problem?
-
-We're not storing anything.  We're allocating a byte area for the driver
-to deposit a response frame, we know we just sent a SMP DISCOVER
-request, so we'd better get a discover response back (and the driver
-will error on underrun or overrun, so we know if it returns successfully
-that's exatly what we have).  The struct smp_resp contains the SMP
-invariant header and then a union of all the other response data types,
-so as long as we use either the header or the disc piece of the union,
-there's no possibility of error, is there?
-
-James
+Eric
 
 
