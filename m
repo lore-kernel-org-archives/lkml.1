@@ -1,118 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759631AbXKLRNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759908AbXKLROn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759631AbXKLRNY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 12:13:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757818AbXKLRNN
+	id S1759908AbXKLROn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 12:14:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757355AbXKLROf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 12:13:13 -0500
-Received: from mga02.intel.com ([134.134.136.20]:25084 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752850AbXKLRNL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 12:13:11 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,406,1188802800"; 
-   d="scan'208";a="232671436"
-Message-ID: <47388988.1000506@intel.com>
-Date: Mon, 12 Nov 2007 09:12:40 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
+	Mon, 12 Nov 2007 12:14:35 -0500
+Received: from mis011-1.exch011.intermedia.net ([64.78.21.128]:44634 "EHLO
+	mis011-1.exch011.intermedia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752426AbXKLROe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 12:14:34 -0500
+From: Amit Shah <amit.shah@qumranet.com>
+Organization: Qumranet Technologies
+To: "Joerg Roedel" <joerg.roedel@amd.com>
+Subject: Re: [kvm-devel] [PATCH 1/8] KVM: PVDMA Host: Handle reqeusts for guest DMA mappings
+Date: Mon, 12 Nov 2007 22:37:29 +0530
+User-Agent: KMail/1.9.6
+Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <1194445269752-git-send-email-amit.shah@qumranet.com> <d1c72ce6e3a0e73c18993c3f066d1350b147f726.1194445109.git.amit.shah@qumranet.com> <20071112155522.GF6466@amd.com>
+In-Reply-To: <20071112155522.GF6466@amd.com>
 MIME-Version: 1.0
-To: Joonwoo Park <joonwpark81@gmail.com>
-CC: "'David Miller'" <davem@davemloft.net>, netdev@vger.kernel.org,
-       "'Dave Johnson'" <djohnson+linux-kernel@sw.starentnetworks.com>,
-       linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net
-Subject: Re: [PATCH 2/2] [e1000 VLAN] Disable vlan hw accel when promiscuous
- mode
-References: <47365200.0f10240a.0686.2173@mx.google.com>
-In-Reply-To: <47365200.0f10240a.0686.2173@mx.google.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Nov 2007 17:13:11.0111 (UTC) FILETIME=[4D641D70:01C8254F]
+Content-Disposition: inline
+Message-Id: <200711122237.29369.amit.shah@qumranet.com>
+X-OriginalArrivalTime: 12 Nov 2007 17:14:33.0557 (UTC) FILETIME=[7E886050:01C8254F]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joonwoo Park wrote:
-> IMHO even though netdevice is in the promiscuous mode, we should receive all of ingress packets.
-> This disable the vlan filtering feature when a vlan hw accel configured e1000 device goes into promiscuous mode.
-> This make packets visible to sniffers though it's not vlan id of itself.
-> Any check, comments will be appreciated.
+On Monday 12 November 2007 21:25:22 Joerg Roedel wrote:
+> On Wed, Nov 07, 2007 at 04:21:02PM +0200, Amit Shah wrote:
+> > @@ -1649,6 +1913,15 @@ int kvm_emulate_hypercall(struct kvm_vcpu *vcpu)
+> >  	}
+> >
+> >  	switch (nr) {
+> > +	case KVM_PV_DMA_MAP:
+> > +		ret = pv_map_hypercall(vcpu, a0, a1);
+> > +		break;
+> > +	case KVM_PV_DMA_UNMAP:
+> > +		ret = pv_unmap_hypercall(vcpu, a0);
+> > +		break;
+> > +	case KVM_PV_PCI_DEVICE:
+> > +		ret = pv_mapped_pci_device_hypercall(vcpu, a0);
+> > +		break;
+> >  	default:
+> >  		ret = -KVM_ENOSYS;
+> >  		break;
+>
+> How does synchronization work with that design? I don't see a hypercall
+> to synchronize de DMA buffers. It will only work if GART is used as the
+> dma_ops backend on the host side and not with SWIOTLB. But GART can be
+> configured away.  Or do I miss something?
 
-Actually I think this patch removes a choice from the user.
-
-Before this patch, the user can sniff all traffic by disabling vlans, or a
-specific vlan only by leaving vlans on when going into promisc mode.
-
-After this patch, the user has no choice but to sniff all vlans at all times.
-
-I don't think that that is such a good improvement.
-
-Auke
-
-
-> Thanks.
-> 
-> Signed-off-by: Joonwoo Park <joonwpark81@gmail.com>
-> ---
->  drivers/net/e1000/e1000_main.c |   26 ++++++++++++++++++++------
->  1 files changed, 20 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c index 72deff0..cdd5c84 100644
-> --- a/drivers/net/e1000/e1000_main.c
-> +++ b/drivers/net/e1000/e1000_main.c
-> @@ -2424,7 +2424,7 @@ e1000_set_multi(struct net_device *netdev)
->  	struct e1000_adapter *adapter = netdev_priv(netdev);
->  	struct e1000_hw *hw = &adapter->hw;
->  	struct dev_mc_list *mc_ptr;
-> -	uint32_t rctl;
-> +	uint32_t rctl, ctrl;
->  	uint32_t hash_value;
->  	int i, rar_entries = E1000_RAR_ENTRIES;
->  	int mta_reg_count = (hw->mac_type == e1000_ich8lan) ?
-> @@ -2441,14 +2441,25 @@ e1000_set_multi(struct net_device *netdev)
->  	/* Check for Promiscuous and All Multicast modes */
->  
->  	rctl = E1000_READ_REG(hw, RCTL);
-> +	ctrl = E1000_READ_REG(&adapter->hw, CTRL);
->  
->  	if (netdev->flags & IFF_PROMISC) {
->  		rctl |= (E1000_RCTL_UPE | E1000_RCTL_MPE);
-> -	} else if (netdev->flags & IFF_ALLMULTI) {
-> -		rctl |= E1000_RCTL_MPE;
-> -		rctl &= ~E1000_RCTL_UPE;
-> +		if (adapter->hw.mac_type != e1000_ich8lan) {
-> +			if (ctrl & E1000_CTRL_VME)
-> +				rctl &= ~E1000_RCTL_VFE;
-> +		}
->  	} else {
-> -		rctl &= ~(E1000_RCTL_UPE | E1000_RCTL_MPE);
-> +		if (adapter->hw.mac_type != e1000_ich8lan) {
-> +			if (ctrl & E1000_CTRL_VME)
-> +				rctl |= E1000_RCTL_VFE;
-> +		}
-> +		if (netdev->flags & IFF_ALLMULTI) {
-> +			rctl |= E1000_RCTL_MPE;
-> +			rctl &= ~E1000_RCTL_UPE;
-> +		} else {
-> +			rctl &= ~(E1000_RCTL_UPE | E1000_RCTL_MPE);
-> +		}
->  	}
->  
->  	E1000_WRITE_REG(hw, RCTL, rctl);
-> @@ -4952,7 +4963,10 @@ e1000_vlan_rx_register(struct net_device *netdev, struct vlan_group *grp)
->  		if (adapter->hw.mac_type != e1000_ich8lan) {
->  			/* enable VLAN receive filtering */
->  			rctl = E1000_READ_REG(&adapter->hw, RCTL);
-> -			rctl |= E1000_RCTL_VFE;
-> +			if (netdev->flags & IFF_PROMISC)
-> +				rctl &= ~E1000_RCTL_VFE;
-> +			else
-> +				rctl |= E1000_RCTL_VFE;
->  			rctl &= ~E1000_RCTL_CFIEN;
->  			E1000_WRITE_REG(&adapter->hw, RCTL, rctl);
->  			e1000_update_mng_vlan(adapter);
-> ---
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+A per-VM lock is needed while mapping or unmapping. It's one of the TODOs.
