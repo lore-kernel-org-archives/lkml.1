@@ -1,48 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757307AbXKLAWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757476AbXKLAf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757307AbXKLAWh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 19:22:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbXKLAW3
+	id S1757476AbXKLAf6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 19:35:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755998AbXKLAfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 19:22:29 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:41428 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755449AbXKLAW2 (ORCPT
+	Sun, 11 Nov 2007 19:35:48 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55927 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755958AbXKLAfr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 19:22:28 -0500
-Message-ID: <47379CB7.6010404@zytor.com>
-Date: Sun, 11 Nov 2007 16:22:15 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
+	Sun, 11 Nov 2007 19:35:47 -0500
+Message-ID: <47379F67.2030504@torque.net>
+Date: Sun, 11 Nov 2007 19:33:43 -0500
+From: Douglas Gilbert <dougg@torque.net>
+Reply-To: dougg@torque.net
 User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Matt Domsch <Matt_Domsch@dell.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Keith Chew <keith.chew@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: PCI card initialisation at boot
-References: <20f65d530711110722k3d2bf658hb44ceaa036b9962c@mail.gmail.com> <20071111164644.7b2c743c@the-village.bc.nu> <20071111234313.GB15880@auslistsprd01.us.dell.com>
-In-Reply-To: <20071111234313.GB15880@auslistsprd01.us.dell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Jesper Juhl <jesper.juhl@gmail.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fix problem with size of allocation in libsas
+References: <200711120024.54773.jesper.juhl@gmail.com> <1194825603.3445.21.camel@localhost.localdomain>
+In-Reply-To: <1194825603.3445.21.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Domsch wrote:
-> On Sun, Nov 11, 2007 at 04:46:44PM +0000, Alan Cox wrote:
->> Linux by default uses the BIOS resource assignments. It doesn't know
->> where those came from other than "the BIOS".
+James Bottomley wrote:
+> On Mon, 2007-11-12 at 00:24 +0100, Jesper Juhl wrote:
+>> From: Jesper Juhl <jesper.juhl@gmail.com>
+>>
+>> in sas_get_phy_change_count(), the line
+>> 	disc_resp = alloc_smp_resp(DISCOVER_RESP_SIZE);
+>> will allocate 56 bytes due to this define:
+>> 	#define DISCOVER_RESP_SIZE 56
+>> But, the struct is actually 60 bytes in size.
+>>
+>> So change the define to be 
+>> 	#define DISCOVER_RESP_SIZE sizeof(struct smp_resp)
+>> so we always get the correct size even when people 
+>> fiddle with the structure.
+>>
+>> This change also fixes the same problem in 
+>> sas_get_phy_attached_sas_addr()
+>>
+>> (Found by the Coverity checker. Compile tested only)
 > 
-> Slightly tangential, but I'm starting to hear requests to have the OS
-> re-assign resources when it might make better sense.  For example, if
-> you have a graphics card with a 1GB memory allocation, the BIOS may
-> assign it into address ranges below 4GB because it doesn't know
-> if the OS will be 32-bit or 64-bit capable.  But, it would be
-> beneficial to have it located above 4GB, and to fill in the (new) hole
-> below 4GB with RAM.  Linux right now doesn't have a way to do this.
-> It will assign resources for cards that the BIOS left unassigned, but
-> won't intentionally move resources.
+> Well, your fix is definitely wrong.
 > 
+> Could you explain the problem a little more?  The discover response SMP
+> frame is 56 bytes as mandated by the standard.  I don't see anywhere in
+> the code where we're actually using a value beyond the 56th byte ...
+> where is the problem use?
 
-Not really.  If the OS is 64-bit capable, it can just use the RAM above 
-4 GB.
+The response size of SMP DISCOVER keeps growing with
+each rev. Currently in SAS-2 revision 12 it is 112 bytes long!
+The original SAS standard and SAS 1.1 have implicit response
+sizes and for DISCOVER that is 56 bytes.
 
-	-hpa
+To be compliant with SAS-2 the code should read byte 3 of
+a DISCOVER response. If it is zero then the response length
+is 56 bytes, otherwise the response length is that many
+dwords (i.e. 4 byte units) plus 4 bytes for the CRC.
+[Similar logic applies to many other SMP responses.]
+
+I have tables for all SMP requests and response (up until
+SAS-2 rev 12) in my smp_utils package, see the smp_lib.c
+file.
+
+Doug Gilbert
