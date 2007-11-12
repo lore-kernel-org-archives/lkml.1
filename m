@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756305AbXKLPex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755724AbXKLPiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756305AbXKLPex (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 10:34:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbXKLPeq
+	id S1755724AbXKLPiW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 10:38:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751609AbXKLPiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 10:34:46 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:48571 "EHLO mx1.redhat.com"
+	Mon, 12 Nov 2007 10:38:15 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:49117 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751170AbXKLPep (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 10:34:45 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20071110181416.31dc2614.akpm@linux-foundation.org>
-References: <20071110181416.31dc2614.akpm@linux-foundation.org> <20071109153432.20803.69832.stgit@warthog.procyon.org.uk> <20071109153437.20803.55096.stgit@warthog.procyon.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dhowells@redhat.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-am33-list@redhat.com
-Subject: Re: [PATCH 1/6] Suppress A.OUT library support if !CONFIG_BINFMT_AOUT [try #5]
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Mon, 12 Nov 2007 15:34:40 +0000
-Message-ID: <6214.1194881680@redhat.com>
+	id S1751133AbXKLPiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 10:38:14 -0500
+Date: Mon, 12 Nov 2007 10:38:06 -0500
+To: Benny Halevy <bhalevy@panasas.com>
+Cc: James Courtier-Dutton <James@superbug.co.uk>,
+       Xavier Bestel <xavier.bestel@free.fr>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Coding Style: indenting with tabs vs. spaces
+Message-ID: <20071112153806.GA27855@fieldses.org>
+References: <4732E6BA.8060001@panasas.com> <20071110120424.GA16067@DervishD> <1194697674.6176.1.camel@bip.parateam.prv> <20071110165017.GB16090@DervishD> <4736CA1D.9020507@superbug.co.uk> <47380B14.3010604@panasas.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47380B14.3010604@panasas.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> > +# -*- makefile -*-
+On Mon, Nov 12, 2007 at 10:13:08AM +0200, Benny Halevy wrote:
+> checkpatch allows to indent with any number of tabs and up to 7 spaces.
+> This is consistent with Documentation/CodingStyle and therefore can be
+> considered "correct".  However, forcing everybody to the same tab expansion
+> setup is too limiting, especially when working in several environments
+> at the same time where some of them may not be the linux kernel.
 > 
-> what's that?
-
-Ah...  That tells emacs that it's a makefile.  In Kbuild.asm emacs thinks its
-an Assembly file and not a makefile.  This causes it to attempt to do
-automatic indentation on it.  Do you want me to drop these annotation
-comments?
-
-> Note that because of unexport-asm-pageh.patch I turned the above hunk into
+> Using only spaces as DervishD suggested works around that using brute force
+> by forcing the user to the author's preference which is legitimate but
+> may not be the most productive way.
 > 
-> ifeq ($(wildcard include/asm-$(SRCARCH)/a.out.h),include/asm-$(SRCARCH)/a.out.h)
-> unifdef-y += a.out.h
-> endif
-> 
-> which seems logical to me.  We'll see how it tests out.
+> I think that my proposal of using tabs as logical indents only (as Xav put it)
+> and spaces for decorative alignment provides the best of both worlds.
+> One can expand the tabs to any number of spaces as one likes and then
+> the trailing spaces will work on any editor setup as long as you use
+> fixed-width font.  That's not considered "correct" as per checkpatch but
+> works much better for me.
 
-Are you talking about in linux/Kbuild or in asm-generic/Kbuild.asm or both?
+The tabs-for-indent, spaces-for-alignment policy been proposed before;
+this:
 
-Anyway, it sounds reasonable.
+	http://marc.info/?t=119251728100004&r=1&w=2
 
-David
+was only on the git mailing list, but we could probably dig up similar
+discussions on lkml with some more work.
+
+Speaking as someone who doesn't care, but doesn't see it as a
+particularly interesting discussion, either....
+
+--b.
