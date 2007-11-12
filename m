@@ -1,47 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758228AbXKLKC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758269AbXKLKIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758228AbXKLKC2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 05:02:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755727AbXKLKCW
+	id S1758269AbXKLKIA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 05:08:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756285AbXKLKHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 05:02:22 -0500
-Received: from pD9E86146.dip.t-dialin.net ([217.232.97.70]:3219 "EHLO
-	xenon.ts.pxnet.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755732AbXKLKCV (ORCPT
+	Mon, 12 Nov 2007 05:07:52 -0500
+Received: from mail-dub.bigfish.com ([213.199.154.10]:65338 "EHLO
+	mail40-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756258AbXKLKHv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 05:02:21 -0500
-X-Greylist: delayed 404 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Nov 2007 05:02:21 EST
-Subject: [PATCH] USB: power-management.txt - disconnect clarification
-From: Tilman Schmidt <tilman@imap.cc>
-To: Alan Stern <stern@rowland.harvard.edu>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Message-Id: <20071112095535.B778111004B@xenon.ts.pxnet.com>
-Date: Mon, 12 Nov 2007 10:55:35 +0100 (CET)
+	Mon, 12 Nov 2007 05:07:51 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: DF9F24A0-1A5C-40A5-8B0A-DEB676E72ECF
+Date: Mon, 12 Nov 2007 11:07:33 +0100
+From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+cc: "Akinobu Mita" <akinobu.mita@gmail.com>, ak@suse.de, tglx@linutronix.de,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: fix cpu-hotplug regression
+Message-ID: <20071112100733.GA5560@alberich.amd.com>
+References: <20071107011258.GA31607@alberich.amd.com>
+ <200711070335.44416.ak@suse.de>
+ <20071107131836.GB31607@alberich.amd.com>
+ <961aa3350711070615m4a165546k4fa888cb546846f6@mail.gmail.com>
+ <20071109121634.c7812697.akpm@linux-foundation.org>
+MIME-Version: 1.0
+In-Reply-To: <20071109121634.c7812697.akpm@linux-foundation.org>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 12 Nov 2007 10:07:33.0629 (UTC)
+ FILETIME=[D7DD9AD0:01C82513]
+X-WSS-ID: 6B26FA6207S2198852-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tilman Schmidt <tilman@imap.cc>
+On Fri, Nov 09, 2007 at 12:16:34PM -0800, Andrew Morton wrote:
+> On Wed, 7 Nov 2007 23:15:38 +0900
+> "Akinobu Mita" <akinobu.mita@gmail.com> wrote:
+> 
+> > > [PATCH] x86: fix cpu hotplug regression (don't call mce_create_device on CPU_UP_PREPARE)
+> > >
+> > > Fix regression introduced with d435d862baca3e25e5eec236762a43251b1e7ffc
+> > > ("cpu hotplug: mce: fix cpu hotplug error handling").
+> > >
+> > > For CPUs not brought up during boot (using maxcpus and additional_cpus
+> > > parameters) we don't know whether mce is supported or not at "CPU_UP_PREPARE"-time.
+> > > Thus mce_cpu_callback should be called after the CPU is online.
+> > 
+> > Thank you for finding and fixing the problem.
+> > I added two fixes to your patch:
+> > 
+> > - Avoid mce_remove_device() for the CPU that is not correctly initialized
+> >   by mce_create_device() failure.
+> > 
+> > - make CPU_ONLINE callback always return NOTIFY_OK.
+> >   Because CPU_ONLINE callback return value is always ignored.
+> > 
+> > > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> > 
+> > [akinobu.mita@gmail.com: make CPU_ONLINE callback always return NOTIFY_OK]
+> > [akinobu.mita@gmail.com: avoid mce_remove_device() for not initialized device]
+> > 
+> > Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> 
+> Andreas, could you please review and preferably runtime-test this new
+> version?
 
-Add a paragraph to Documentation/usb/power-management.txt about the
-interaction between suspend and disconnect.
+I'll test it today ...
 
-Signed-off-by: Tilman Schmidt <tilman@imap.cc>
----
+> Assuming that all goes well could one of you please prepare a final patch
+> with a complete changelog?
 
---- linux-2.6/Documentation/usb/power-management.txt	2007-10-14 00:41:08.000000000 +0200
-+++ linux-2.6.24-rc2-work/Documentation/usb/power-management.txt	2007-11-12 10:27:30.000000000 +0100
-@@ -278,6 +278,12 @@
- 	(although the interfaces will be in the same altsettings as
- 	before the suspend).
- 
-+If the device is disconnected or powered down while it is suspended,
-+the disconnect method will be called instead of the resume or
-+reset_resume method.  This will also happen if the system is resumed
-+from hibernation, as the device could have been disconnected without
-+the system being able to detect it.
-+
- The reset_resume method is used by the USB Persist facility (see
- Documentation/usb/persist.txt) and it can also be used under certain
- circumstances when CONFIG_USB_PERSIST is not enabled.  Currently, if a
+... and can send a final patch after successful testing.
+
+
+Regards,
+
+Andreas
+
+
+-- 
+Operating | AMD Saxony Limited Liability Company & Co. KG,
+  System  | Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ Research | Register Court Dresden: HRA 4896, General Partner authorized
+  Center  | to represent: AMD Saxony LLC (Wilmington, Delaware, US)
+  (OSRC)  | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
+
+
