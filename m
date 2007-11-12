@@ -1,91 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757568AbXKLXk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758781AbXKLXkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757568AbXKLXk0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 18:40:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbXKLXkO
+	id S1758781AbXKLXkv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 18:40:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758030AbXKLXkj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 18:40:14 -0500
-Received: from enyo.dsw2k3.info ([195.71.86.239]:34696 "EHLO enyo.dsw2k3.info"
+	Mon, 12 Nov 2007 18:40:39 -0500
+Received: from mga02.intel.com ([134.134.136.20]:3057 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751814AbXKLXkM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 18:40:12 -0500
-Date: Tue, 13 Nov 2007 00:39:55 +0100
-From: Matthias Schniedermeyer <ms@citd.de>
-To: Tuomo Valkonen <tuomov@iki.fi>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [poll] Is the megafreeze development model broken?
-Message-ID: <20071112233955.GA25059@citd.de>
-References: <fgtfqa$h9j$1@ger.gmane.org> <m1sl3b4t5k.fsf@ebiederm.dsl.xmission.com> <slrnfjgmit.l07.tuomov@jolt.modeemi.cs.tut.fi> <20071112152057.GJ9771@stusta.de> <47387BB5.4090908@smsglobal.net> <20071112171456.GN9771@stusta.de> <slrnfjh2nn.aam.tuomov@jolt.modeemi.cs.tut.fi>
+	id S1758017AbXKLXkh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 18:40:37 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,407,1188802800"; 
+   d="scan'208";a="269129426"
+Message-ID: <4738E404.8020105@intel.com>
+Date: Mon, 12 Nov 2007 15:38:44 -0800
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <slrnfjh2nn.aam.tuomov@jolt.modeemi.cs.tut.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Willy Tarreau <w@1wt.eu>
+CC: David Miller <davem@davemloft.net>, cfriesen@nortel.com, kaber@trash.net,
+       joonwpark81@gmail.com, netdev@vger.kernel.org,
+       djohnson+linux-kernel@sw.starentnetworks.com,
+       linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net
+Subject: Re: [PATCH 2/2] [e1000 VLAN] Disable vlan hw accel when promiscuous
+ mode
+References: <4738D70C.4060404@nortel.com> <20071112.145716.06352378.davem@davemloft.net> <20071112231516.GA15227@1wt.eu> <20071112.151923.77768525.davem@davemloft.net> <20071112233257.GA15524@1wt.eu>
+In-Reply-To: <20071112233257.GA15524@1wt.eu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Nov 2007 23:39:05.0476 (UTC) FILETIME=[3677D440:01C82585]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12.11.2007 17:18, Tuomo Valkonen wrote:
-> On 2007-11-12, Adrian Bunk <bunk@kernel.org> wrote:
-> > Geeks like you and me want the latest software
-> > (I'm using Debian unstable/testing).
-> >
-> > But most users want a Linux installation that simply works - and this 
-> > includes all software on the system at all times.
+Willy Tarreau wrote:
+> On Mon, Nov 12, 2007 at 03:19:23PM -0800, David Miller wrote:
+>> From: Willy Tarreau <w@1wt.eu>
+>> Date: Tue, 13 Nov 2007 00:15:16 +0100
+>>
+>>> I can say that sometimes you'd like to be aware that one of your
+>>> VLANs is wrong and you'd simply like to sniff the wire to guess the
+>>> correct tag. And on production, you simply cannot remove other
+>>> VLANs, otherwise you disrupt the service.
+>> If you were plugged into the wrong physical switch, how might
+>> you debug that problem in production? :-)
 > 
-> I'm not in either category. I want a truly stable (as in "quality", not
-> as in "static" as the distros use the term) base system that simply 
-> works, but I want to follow certain interesting software more closely.
+> tcpdump on an unfiltered RJ45 tells you a lot of things. Some switches
+> for instance send keepalive packets (ether proto 9000) with their own
+> MAC as source+dest, others send CDP packets, etc... I've very rarely
+> stayed plugged to the wrong switch for too long before discovering it.
+> But that requires the ability to sniff.
+> 
+>> Really, it's the same issue, just virtualized, as in the name
+>> for the feature, VLAN.
+> 
+> No, it's not the same, because as soon as you pass through a switch
+> which is not configured for VLANs, it does not make any distinction,
+> and the same DMAC is considered on a single port whatever the VLAN.
+> This is not true with multiple switches. Also, sometimes, being able
+> to see that your port gets flooded with traffic for a VLAN on which
+> you're not configured helps you understand why you cannot fill the
+> port.
+> 
+> I'd like that we can use the hardware correctly without having to
+> buy TAPs. It reminds me the discussions about TOE. You claim
+> yourself that TOE is bad in part because you have little if any
+> control on the bugs on the TCP stack on the chip. This is the same
+> here. If I know that the chip does not send me what it receives
+> when configured in promiscuous mode, I can I swear it never received
+> the missing packet ? There's always a doubt. Maybe sometimes the
+> filter is buggy, maybe it only passes tags when the remaining bits
+> are all zero, etc... Promiscuous mode generally means that you're
+> the closest possible to the wire. We already do not receive pause
+> frames and sometimes that's annoying. But having no control over
+> what we want to see is frustrating.
+> 
+> At least, being able to disable the feature at module load time
+> would be acceptable. Many people who often need to sniff on decent
+> machines would always keep it disabled.
 
-That's the problem(tm).
+I really do not want to add another module parameter to the driver for this. It
+seems bogus as well: if we can agree on one sane choice it's much better, and if
+we don't then we should use ethtool to provide a uniform way of implementing this
+for all drivers sanely.
 
-Contrary to Closed Source Software all(!) OSS-Software is 
-interdependent. There is no "Stand-Alone"-Software. There is always at 
-least "libc". (Scripts depend on a script-interpreter, which in turn 
-depends at least on libc, so there is nothing(tm) that doesn't depend on 
-libc)
-
-Where is not uncommon for Closed Source Software to not have external 
-dependencies or to bring along it's dependent librarys.
-
-e.g. (On Debian sid, *)
-"kdebase" has a nice little total dependency-list of only 254 packages.
-or
-"openoffice.org" just 265 dependent packages.
-
-"gimp" comes with light backage, only 146 packages.
-
-Not to speak about such nice little (meta-)packages like "kde" or
-"gnome" that are 649 and 684 packages.
-
-All that interdependency form a nice little (:-) web.
-(Sometimes called the dependency hell)
-
-What i want to say is this: You can't say that you only want to update a
-specific region of your web, at least not without the risk of ripping
-your web here and there.
-
-I'm using Linux since 1995, i can life with it's problems and i like 
-Linux more that ever. :-)
-
-And despite me always using the latest kernel and Debian SID/unstable 
-for the past few years, for home & work, i have neven been badly burned. 
-Not that there weren't a few bruises here and there. There is nothing 
-like a fried X for breakfast. (Which Debian managed at least 2 or 3 
-times in the past years)
-;-)
-
-
-
-*:
-apt-rdepends <(meta)packagename> | grep "  Depends" | cut -d '(' -f0,1 | perl -pe 's/ +$//' | sort | uniq | wc -l
-e.g.
-apt-rdepends kde | grep "  Depends" | cut -d '(' -f0,1 | sort | perl -pe 's/ +$//' | uniq | wc -l
-
-Bis denn
-
--- 
-Real Programmers consider "what you see is what you get" to be just as 
-bad a concept in Text Editors as it is in women. No, the Real Programmer
-wants a "you asked for it, you got it" text editor -- complicated, 
-cryptic, powerful, unforgiving, dangerous.
-
+Auke
