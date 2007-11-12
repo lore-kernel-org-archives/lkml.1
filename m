@@ -1,32 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757497AbXKLIRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758108AbXKLIRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757497AbXKLIRQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 03:17:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbXKLIRA
+	id S1758108AbXKLIRg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 03:17:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754989AbXKLIRZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 03:17:00 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56395
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751114AbXKLIQ7 (ORCPT
+	Mon, 12 Nov 2007 03:17:25 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:46322 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754240AbXKLIRY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 03:16:59 -0500
-Date: Mon, 12 Nov 2007 00:16:59 -0800 (PST)
-Message-Id: <20071112.001659.246861520.davem@davemloft.net>
-To: linux-kernel@vger.kernel.org
-CC: trond.myklebust@fys.uio.no, neilb@suse.de, bfields@fieldses.org
-Subject: linux-nfs created at vger
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 12 Nov 2007 03:17:24 -0500
+Subject: Re: [rfc][patch] remove nopage
+From: Jon Masters <jonathan@jonmasters.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071112015643.GA9291@wotan.suse.de>
+References: <20071112015643.GA9291@wotan.suse.de>
+Content-Type: text/plain
+Organization: World Organi[sz]ation Of Broken Dreams
+Date: Mon, 12 Nov 2007 03:16:48 -0500
+Message-Id: <1194855408.5946.88.camel@perihelion>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
 Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 74.92.29.237
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2007-11-12 at 02:56 +0100, Nick Piggin wrote:
 
-Because the sourceforge lists are a huge collection of spam and
-subscriber-posting only, and someone reminded me of this recently,
-I've decided to sort-of force the issue wrt. the NFS mailing lists by
-putting up a linux-nfs@vger.kernel.org
+> This is a patch to remove 'nopage' from the tree.
 
-I'll let the masses decide whether to use it or not :-)
+Interesting, but why now? What precipitated this?
+
+Jon.
+
+
