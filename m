@@ -1,51 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758691AbXKLWI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759037AbXKLWJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758691AbXKLWI7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 17:08:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757513AbXKLWIv
+	id S1759037AbXKLWJj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 17:09:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755140AbXKLWJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 17:08:51 -0500
-Received: from ns2.suse.de ([195.135.220.15]:54525 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754088AbXKLWIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 17:08:50 -0500
-From: Neil Brown <neilb@suse.de>
-To: "J. Bruce Fields" <bfields@citi.umich.edu>
-Date: Tue, 13 Nov 2007 09:08:42 +1100
+	Mon, 12 Nov 2007 17:09:31 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:53077 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755117AbXKLWJa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 17:09:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:organization:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
+        b=ZWBhUB/bjTyoQqbZP6w2/29X4jh1ktROsEl6ktlp9k5HcACq1p+XxG1KJ1v6TCaRNko0ZoymAskOXQSZbGj/zJnFcTGkFdfbGDu9nZUQSzuPtA5PADT01nEpOMyXeu8FEIGA+OQD6tCZSEAZCXH9dgrYHyjy/S0lTz1BfOblpi4=
+Message-ID: <4738CF15.10707@gmail.com>
+Date: Tue, 13 Nov 2007 01:09:25 +0300
+From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+Organization: DmVo Home
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [RFC][PATCH] Replace the goto-based loop by a do-while statement
+Content-Type: text/plain; charset=KOI8-R; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <18232.52970.213438.902011@notabene.brown>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, nfs@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: nfsd bugfixes
-In-Reply-To: message from J. Bruce Fields on Monday November 12
-References: <1194901503-23105-1-git-send-email-bfields@citi.umich.edu>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday November 12, bfields@citi.umich.edu wrote:
-> The following two patches are nfsd bugfixes that I believe are
-> appropriate for 2.6.24 and 2.6.23.y.
-> 
-> --b.
-> 
+Hi list,
 
-Both
-  Reviewed-By: NeilBrown <neilb@suse.de>
+It looks like using the goto statement in constructs like
 
-Calling nfsd_setuser an extra time does open us up for a very tiny
-possibility of an ENOMEM at an awkward time.
-We could remove that entirely for NFSEXP_ALLSQUASH by allocating an
-empty group_info at export time and just using a reference to that.
-It would be more awkward to pre-allocate for the NFSEXP_ROOTSQUASH
-case as the group_info has to be at least as big as the one in the RPC
-request, and would could need a different one of each concurrent
-request.... not sure if that is worth "fixing".
+restart:
+	// DO SOMETHING
+if (condition)
+	goto restart;
 
-Thanks,
-NeilBrown
+should be frowned upon and the loop
+
+do {
+	// DO SOMETHING
+} while (condition);
+
+is more appropriate in such situation.
+
+However, in the __do_softirq() routine located in `kernel/softirq.c' the goto construct was chosen in favor of the do-while loop.
+
+The patch included below replaces the goto-based loop by the do-while statement.
+
+If the goto is really necessary here, I would be very grateful if someone could explain why.
+
+Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+--
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index bd89bc4..b0d0431 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -219,28 +219,28 @@ asmlinkage void __do_softirq(void)
+ 	trace_softirq_enter();
+ 
+ 	cpu = smp_processor_id();
+-restart:
+-	/* Reset the pending bitmask before enabling irqs */
+-	set_softirq_pending(0);
+ 
+-	local_irq_enable();
++	do {
++		/* Reset the pending bitmask before enabling irqs */
++		set_softirq_pending(0);
+ 
+-	h = softirq_vec;
++		local_irq_enable();
+ 
+-	do {
+-		if (pending & 1) {
+-			h->action(h);
+-			rcu_bh_qsctr_inc(cpu);
+-		}
+-		h++;
+-		pending >>= 1;
+-	} while (pending);
++		h = softirq_vec;
+ 
+-	local_irq_disable();
++		do {
++			if (pending & 1) {
++				h->action(h);
++				rcu_bh_qsctr_inc(cpu);
++			}
++			h++;
++			pending >>= 1;
++		} while (pending);
+ 
+-	pending = local_softirq_pending();
+-	if (pending && --max_restart)
+-		goto restart;
++		local_irq_disable();
++
++		pending = local_softirq_pending();
++	} while (pending && --max_restart);
+ 
+ 	if (pending)
+ 		wakeup_softirqd();
