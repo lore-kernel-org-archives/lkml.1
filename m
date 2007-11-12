@@ -1,73 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757216AbXKLANp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757307AbXKLAWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757216AbXKLANp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 19:13:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755449AbXKLANf
+	id S1757307AbXKLAWh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 19:22:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbXKLAW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 19:13:35 -0500
-Received: from nz-out-0506.google.com ([64.233.162.235]:27794 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755314AbXKLANe (ORCPT
+	Sun, 11 Nov 2007 19:22:29 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:41428 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755449AbXKLAW2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 19:13:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KBaRpo/PzMqk+i7U6arFUY5Wp2gT4SNIe64AqaDfg5uFQ3icweKxzKSbIpyj7oyVFxoUqT1zb09ghiLA28TbHwc43C66Y8b7ZB+aCFnpdcmGAetw3eQMLtevr6U0obexzllPTLjgIjGNkQ03Glt9LAT3TRbxUlEImE98hjUq03Q=
-Message-ID: <9a8748490711111613s50f9e212k18f8106ee127e809@mail.gmail.com>
-Date: Mon, 12 Nov 2007 01:13:33 +0100
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
-Subject: Re: [PATCH] Fix problem with size of allocation in libsas
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1194825603.3445.21.camel@localhost.localdomain>
+	Sun, 11 Nov 2007 19:22:28 -0500
+Message-ID: <47379CB7.6010404@zytor.com>
+Date: Sun, 11 Nov 2007 16:22:15 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Matt Domsch <Matt_Domsch@dell.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Keith Chew <keith.chew@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: PCI card initialisation at boot
+References: <20f65d530711110722k3d2bf658hb44ceaa036b9962c@mail.gmail.com> <20071111164644.7b2c743c@the-village.bc.nu> <20071111234313.GB15880@auslistsprd01.us.dell.com>
+In-Reply-To: <20071111234313.GB15880@auslistsprd01.us.dell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200711120024.54773.jesper.juhl@gmail.com>
-	 <1194825603.3445.21.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/11/2007, James Bottomley <James.Bottomley@hansenpartnership.com> wrote:
-> On Mon, 2007-11-12 at 00:24 +0100, Jesper Juhl wrote:
-> > From: Jesper Juhl <jesper.juhl@gmail.com>
-> >
-> > in sas_get_phy_change_count(), the line
-> >       disc_resp = alloc_smp_resp(DISCOVER_RESP_SIZE);
-> > will allocate 56 bytes due to this define:
-> >       #define DISCOVER_RESP_SIZE 56
-> > But, the struct is actually 60 bytes in size.
-> >
-> > So change the define to be
-> >       #define DISCOVER_RESP_SIZE sizeof(struct smp_resp)
-> > so we always get the correct size even when people
-> > fiddle with the structure.
-> >
-> > This change also fixes the same problem in
-> > sas_get_phy_attached_sas_addr()
-> >
-> > (Found by the Coverity checker. Compile tested only)
->
-> Well, your fix is definitely wrong.
->
-> Could you explain the problem a little more?  The discover response SMP
-> frame is 56 bytes as mandated by the standard.  I don't see anywhere in
-> the code where we're actually using a value beyond the 56th byte ...
-> where is the problem use?
->
+Matt Domsch wrote:
+> On Sun, Nov 11, 2007 at 04:46:44PM +0000, Alan Cox wrote:
+>> Linux by default uses the BIOS resource assignments. It doesn't know
+>> where those came from other than "the BIOS".
+> 
+> Slightly tangential, but I'm starting to hear requests to have the OS
+> re-assign resources when it might make better sense.  For example, if
+> you have a graphics card with a 1GB memory allocation, the BIOS may
+> assign it into address ranges below 4GB because it doesn't know
+> if the OS will be 32-bit or 64-bit capable.  But, it would be
+> beneficial to have it located above 4GB, and to fill in the (new) hole
+> below 4GB with RAM.  Linux right now doesn't have a way to do this.
+> It will assign resources for cards that the BIOS left unassigned, but
+> won't intentionally move resources.
+> 
 
-I haven't found any actual problem *use*, I just looked at the size of
-'struct smp_resp' and noticed that coverity seemed to be right that 56
-bytes are not sufficient to hold the members of the struct.  There are
-32 bytes in the first members + the union and I don't see how that can
-ever stay at 56 bytes...?  So, we are allocating memory and storing it
-in a 'struct smp_resp *', but we are allocating less than
-sizeof(smp_resp) - how is that not a (potential) problem?
+Not really.  If the OS is 64-bit capable, it can just use the RAM above 
+4 GB.
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+	-hpa
