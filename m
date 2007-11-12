@@ -1,122 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759350AbXKLSZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbXKLSad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759350AbXKLSZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 13:25:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755867AbXKLSZk
+	id S1756038AbXKLSad (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 13:30:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbXKLSaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 13:25:40 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:17160 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754160AbXKLSZj (ORCPT
+	Mon, 12 Nov 2007 13:30:20 -0500
+Received: from rutherford.zen.co.uk ([212.23.3.142]:52134 "EHLO
+	rutherford.zen.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752473AbXKLSaR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 13:25:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
-        b=D/b9sNmqR1oOhEi1tDWvIATShHQ/2utLb8pCWmrSdUnotfDlNx6N0GfGw6UK3HrPQAP3H8WwN8LXWg/awpz7tgJZywNAb4jsphoowPPvIakmhbn+eE/P2RhgMjIPYCcJaxw71JDXjIU6gB1PcIvNCdZXH+OA68FYz6m+83IH+GA=
-Date: Mon, 12 Nov 2007 21:25:26 +0300
-To: mel@csn.ul.ie, akpm@osdl.org
-Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org
-Subject: Major mke2fs slowdown (reproducable, bisected)
-Message-ID: <20071112182526.GC11244@martell.zuzino.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
+	Mon, 12 Nov 2007 13:30:17 -0500
+Date: Mon, 12 Nov 2007 18:28:18 +0000
+From: Grant Wilson <grant.wilson@zen.co.uk>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       netdev <netdev@vger.kernel.org>, vatsa <vatsa@linux.vnet.ibm.com>
+Subject: Re: 2.6.24-rc1-gb4f5550 oops
+Message-ID: <20071112182818.182d739f@worthy.swandive.local>
+In-Reply-To: <1194890749.9713.17.camel@twins>
+References: <20071105061158.3174d24d@worthy.swandive.local>
+	<200711082242.21869.rjw@sisk.pl>
+	<20071108221951.71224bd8@worthy.swandive.local>
+	<200711082349.19344.rjw@sisk.pl>
+	<1194890749.9713.17.camel@twins>
+X-Mailer: Claws Mail 3.1.0-rc1 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Originating-Rutherford-IP: [82.71.45.175]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cross-compile farm here migrated to .ccache and build dir on separate
-disks and now I have a way to blow up .ccache without waiting half an
-hour for rm(1) to finish. It's called mke2fs(8).
+On Mon, 12 Nov 2007 19:05:49 +0100
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-However, in e.g 2.6.24-rc2 mke2fs is amazingly slow if done right after
-several fat cross-compile builds. Normally it takes ~11 seconds to
-finish. After commit 5adc5be7cd1bcef6bb64f5255d2a33f20a3cf5be aka
-"Bias the placement of kernel pages at lower PFNs" it takes several
-minutes. 2.6.24-rc2 without this patch also gives normal mkfs speeds.
-I'm pretty sure bisection wasn't screwed up.
+> 
+> On Thu, 2007-11-08 at 23:49 +0100, Rafael J. Wysocki wrote:
+> > On Thursday, 8 of November 2007, Grant Wilson wrote:
+> > > On Thu, 8 Nov 2007 22:42:21 +0100
+> > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > > 
+> > > > On Thursday, 8 of November 2007, Grant Wilson wrote:
+> > > > > On Thu, 8 Nov 2007 16:53:10 +0100
+> > > > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > > > > 
+> > > > > > On Thursday, 8 of November 2007, Grant Wilson wrote:
+> > > > > > > On Thu, 8 Nov 2007 01:06:21 +0100
+> > > > > > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > > > > > > 
+> > > > > > > > On Monday, 5 of November 2007, Grant Wilson wrote:
+> > > > > > > > > Hi,
+> > > > > > > > > I got this oops on 2.6.24-rc1-641-gb4f5550:
+> > > > > > > > 
+> > > > > > > > (1) Is this reproducible?
+> > > > > > > > (2) Did it happen previously on your system?
+> > > > > > > >
+> > > > > > > > [18073.371126] Unable to handle kernel NULL pointer dereference at 0000000000000120 RIP: 
+> > > > > > > > [18073.371134]  [<ffffffff8023572e>] check_preempt_wakeup+0x6e/0x110
+> > > > > > > 
+> > > > > > > This has now happened twice - the second time was last night when
+> > > > > > > running 2.6.24-rc2.
+> > > > > > > 
+> > > > > > > Here's that second occurrence:
+> > > > > > > 
+> > > > > [snip]
+> > > > > > 
+> > > > > > Hmm.
+> > > > > > 
+> > > > > > Please run "gdb vmlinux" and see what code corresponds to
+> > > > > > check_preempt_wakeup+0x6e in your kernel.
+> > > > >
+> > > > > 
+> > > > > Dump of assembler code for function check_preempt_wakeup:
+> > > > 
+> > > > Well, thanks, but I meant the source code.  Please do "gdb vmlinux" and then
+> > > > "l *check_preempt_wakeup+0x6e" in gdb.
+> > > 
+> > > Here's the requested output:
+> > > 
+> > > (gdb) l *check_preempt_wakeup+0x6e
+> > > 0xffffffff802329ae is in check_preempt_wakeup (kernel/sched_fair.c:668).
+> > > 663
+> > > 664     /* Do the two (enqueued) entities belong to the same group ? */
+> > > 665     static inline int
+> > > 666     is_same_group(struct sched_entity *se, struct sched_entity *pse)
+> > > 667     {
+> > > 668             if (se->cfs_rq == pse->cfs_rq)
+> > > 669                     return 1;
+> > > 670
+> > > 671             return 0;
+> > > 672     }
+> > 
+> > Well, it looks like either se or pse is NULL.
+> > 
+> > Ingo, can you please have a look?
+> 
+> Most puzzling this, it should be guaranteed that the top sched_entities
+> are of the same group, therefore avoiding this loop into NULL. Obviously
+> something has gone wrong.
+> 
+> Grant, is there anything specific you can tell us about how to reproduce
+> this?
 
+I'm afraid not.  It has only happened twice and both times I was away
+from the box in question at the time of failure, so it wasn't doing a
+great deal.
 
-Details:
+I'm running 2.6.24-rc2 on two boxes and both times it happened on the
+box running a quad core processor.
 
-	Core 2 Duo on x86_64, no debugging
-	4G RAM
-	30G ext2 .ccache partition with noatime
-	100G ext2 partition with source tree and build dirs with noatime
+Grant
 
-I build alpha-allnoconfig, alpha-defconfig and 4 allmodconfigs
-(SMP=y/n x DEBUG_KERNEL=y/n).
-
-Right after compilation finishes, free(1) reports more or less the same
-picture (VM hackers, please, tell me which info you need):
-
-             total       used       free     shared    buffers     cached
-Mem:       4032320    2802604    1229716          0      97160    2424816
--/+ buffers/cache:     280628    3751692
-Swap:      7823644          0    7823644
-
-Last steps of build script are:
-
-	umount /home/ad/.ccache
-	sudo mkfs.ext2 -m 0 	<=== this is slow
-
-I can prepare standalone script with more affordable x86_64 configs if
-needed.
-
-
-commit 5adc5be7cd1bcef6bb64f5255d2a33f20a3cf5be
-Author: Mel Gorman <mel@csn.ul.ie>
-Date:   Tue Oct 16 01:25:54 2007 -0700
-
-    Bias the placement of kernel pages at lower PFNs
-    
-    This patch chooses blocks with lower PFNs when placing kernel allocations.
-    This is particularly important during fallback in low memory situations to
-    stop unmovable pages being placed throughout the entire address space.
-    
-    Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 676aec9..e1d87ee 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -765,6 +765,23 @@ int move_freepages_block(struct zone *zone, struct page *page, int migratetype)
- 	return move_freepages(zone, start_page, end_page, migratetype);
- }
- 
-+/* Return the page with the lowest PFN in the list */
-+static struct page *min_page(struct list_head *list)
-+{
-+	unsigned long min_pfn = -1UL;
-+	struct page *min_page = NULL, *page;;
-+
-+	list_for_each_entry(page, list, lru) {
-+		unsigned long pfn = page_to_pfn(page);
-+		if (pfn < min_pfn) {
-+			min_pfn = pfn;
-+			min_page = page;
-+		}
-+	}
-+
-+	return min_page;
-+}
-+
- /* Remove an element from the buddy allocator from the fallback list */
- static struct page *__rmqueue_fallback(struct zone *zone, int order,
- 						int start_migratetype)
-@@ -795,8 +812,11 @@ retry:
- 			if (list_empty(&area->free_list[migratetype]))
- 				continue;
- 
-+			/* Bias kernel allocations towards low pfns */
- 			page = list_entry(area->free_list[migratetype].next,
- 					struct page, lru);
-+			if (unlikely(start_migratetype != MIGRATE_MOVABLE))
-+				page = min_page(&area->free_list[migratetype]);
- 			area->nr_free--;
- 
- 			/*
