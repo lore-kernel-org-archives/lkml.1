@@ -1,52 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759259AbXKLSqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbXKLTHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759259AbXKLSqw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 13:46:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbXKLSqo
+	id S1754864AbXKLTHS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 14:07:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbXKLTHG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 13:46:44 -0500
-Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:15265 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751250AbXKLSqn (ORCPT
+	Mon, 12 Nov 2007 14:07:06 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54899 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751029AbXKLTHE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 13:46:43 -0500
-X-IronPort-AV: E=Sophos;i="4.21,406,1188802800"; 
-   d="scan'208";a="31704121"
-To: Takashi Iwai <tiwai@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: snd_hda_intel 2.6.24-rc2 bug: interrupts don't always work on Lenovo X60s
-X-Message-Flag: Warning: May contain useful information
-References: <ada1wb05p6n.fsf@cisco.com> <s5hbq9zyktm.wl%tiwai@suse.de>
-	<adak5on2yd6.fsf@cisco.com> <s5hwssnvaw1.wl%tiwai@suse.de>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 12 Nov 2007 10:46:40 -0800
-In-Reply-To: <s5hwssnvaw1.wl%tiwai@suse.de> (Takashi Iwai's message of "Mon, 12 Nov 2007 14:41:50 +0100")
-Message-ID: <adafxzb2tf3.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Mon, 12 Nov 2007 14:07:04 -0500
+Date: Mon, 12 Nov 2007 11:07:00 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mel Gorman <mel@skynet.ie>
+cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Nishanth Aravamudan <nacc@us.ibm.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 6/6] Use one zonelist that is filtered by nodemask
+In-Reply-To: <20071111141609.GA6967@skynet.ie>
+Message-ID: <Pine.LNX.4.64.0711121106250.26682@schroedinger.engr.sgi.com>
+References: <20071109143226.23540.12907.sendpatchset@skynet.skynet.ie>
+ <20071109143426.23540.44459.sendpatchset@skynet.skynet.ie>
+ <Pine.LNX.4.64.0711090741120.13932@schroedinger.engr.sgi.com>
+ <20071109161455.GB32088@skynet.ie> <20071109164537.GG7507@us.ibm.com>
+ <1194628732.5296.14.camel@localhost> <Pine.LNX.4.64.0711090924210.14572@schroedinger.engr.sgi.com>
+ <20071111141609.GA6967@skynet.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 12 Nov 2007 18:46:41.0048 (UTC) FILETIME=[5D2C9180:01C8255C]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > >     [ 2311.759856] ACPI: PCI Interrupt 0000:00:1b.0[B] -> GSI 17 (level, low) -> IRQ 21
- > >     [ 2311.759866] hda_intel: probe_mask set to 0x1 for device 17aa:2010
- > >     [ 2311.759886] PCI: Setting latency timer of device 0000:00:1b.0 to 64
- > >     [ 2312.911309] hda_intel: azx_get_response timeout, switching to polling mode: last cmd=0x003f000c
- > 
- > Hm, strange, NID 0x03 shouldn't be accessed via AD1981 codec, at
- > least, thinkpad model.  Did you enable CONFIG_SND_HDA_CODEC_ANALOG?
- > Otherwise it won't work.
+On Sun, 11 Nov 2007, Mel Gorman wrote:
 
-Yes, I have
+> If MPOL_BIND is in effect, the allocation will be filtered based on the
+> current allowed nodemask. If they specify THISNODE and the specified
+> node or current node is not in the mask, I would expect the allocation
+> to fail. Is that unexpected to anybody?
 
-    CONFIG_SND_HDA_CODEC_ANALOG=y
+Currently GFP_THISNODE with MPOL_BIND results an allocation on the first 
+node.
 
-in my .config.
-
-By the way, the "polling mode" seems to work OK: I still get normal
-playback of music etc.
-
- - R.
