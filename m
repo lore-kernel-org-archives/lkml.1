@@ -1,87 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759652AbXKLTUE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755363AbXKLT0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759652AbXKLTUE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 14:20:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbXKLTTy
+	id S1755363AbXKLT0L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 14:26:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751090AbXKLTZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 14:19:54 -0500
-Received: from mho-02-bos.mailhop.org ([63.208.196.179]:64851 "EHLO
-	mho-02-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751029AbXKLTTy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 14:19:54 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 18.85.9.127
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1/I3V9S2VPJbCjLNUuOHb6w
-Message-ID: <4738A755.5000704@reed.com>
-Date: Mon, 12 Nov 2007 14:19:49 -0500
-From: "David P. Reed" <dpreed@reed.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.5) Gecko/20070727 Fedora/2.0.0.5-2.fc7 Thunderbird/2.0.0.5 Mnenhy/0.7.5.0
+	Mon, 12 Nov 2007 14:25:58 -0500
+Received: from mail.gmx.net ([213.165.64.20]:36808 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751133AbXKLTZ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 14:25:57 -0500
+X-Authenticated: #5108953
+X-Provags-ID: V01U2FsdGVkX185EdQFvq05hXw6PP9VLv59/O7omfLd645lrhqu2R
+	SaJs2mEPZnoKBG
+From: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>
+To: dm-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: build #338 failed for 2.6.24-rc2-g6e800af in linux/drivers/md/dm-mpath-hp-sw.c
+Date: Mon, 12 Nov 2007 20:25:49 +0100
+User-Agent: KMail/1.9.7
+References: <200711121333.24398.toralf.foerster@gmx.de> <20071112152100.GA22847@agk.fab.redhat.com>
+In-Reply-To: <20071112152100.GA22847@agk.fab.redhat.com>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-CC: Allessandro Zummo <a.zummo@towertech.it>
-Subject: [PATCH] time: fix typo that makes sync_cmos_clock erratic
-References: <466F0941.9060201@reed.com> <1181682498.8176.224.camel@chaos>	 <469578CD.3080609@reed.com>  <1184216528.12353.203.camel@chaos>	 <1184218962.12353.209.camel@chaos>  <46964352.7040301@reed.com>	 <1184253339.12353.223.camel@chaos>  <469697C6.50903@reed.com> <1184274754.12353.254.camel@chaos>
-In-Reply-To: <1184274754.12353.254.camel@chaos>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart2346727.1e5LIsNFWz";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200711122025.53221.toralf.foerster@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David P. Reed
+--nextPart2346727.1e5LIsNFWz
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Fix a typo in ntp.c that has caused updating of the persistent (RTC)
-clock when synced to NTP to behave erratically.
+Am Montag, 12. November 2007 schrieb Alasdair G Kergon:
+> On Mon, Nov 12, 2007 at 01:33:21PM +0100, Toralf F=F6rster wrote:
+> > the build with the attached .config failed, make ends with:
+> > drivers/built-in.o: In function `hp_sw_end_io':
+> > dm-mpath-hp-sw.c:(.text+0xb0596): undefined reference to `__scsi_print_=
+sense'
+> > make: *** [.tmp_vmlinux1] Error 1
+> =20
+> Does this patch fix it?
+>   http://www.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/d=
+m-mpath-hp-requires-scsi.patch
+>=20
+> Alasdair
+>=20
 
-Signed-off-by: David P. Reed
+Oh yes :-)
 
----
-When debugging a freeze that arises on my AMD64 machines when I run the
-ntpd service, I added a number of printk's to monitor the
-sync_cmos_clock procedure.  I discovered that it was not syncing to cmos
-RTC every 11 minutes as documented, but instead would keep trying every
-second for hours at a time.   The reason turned out to be a typo in
-sync_cmos_clock, where it attempts to ensure that
-update_persistent_clock is called very close to 500 msec. after a 1
-second boundary (required by the PC RTC's spec). That typo referred to
-"xtime" in one spot, rather than "now", which is derived from "xtime"
-but not equal to it.  This makes the test erratic, creating a
-"coin-flip" that decides when update_persistent_clock is called - when
-it is called, which is rarely, it may be at any time during the one
-second period, rather than close to 500 msec, so the value written is
-needlessly incorrect, too.
+=2D-=20
+MfG/Sincerely
 
-I rewrote the code to fix the typo and to be a little more clear about
-the logic that was intended here.  I have thoroughly tested this on
-several x86_64 machines, and also on one 32-bit machine.  I have also
-submitted a patch to fix the freeze cited above, but both patches are
-independent, and should be treated separately.
+Toralf F=F6rster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
 
-The patch works in 2.6.24rc2, but it should also work in 2.6.23.
+--nextPart2346727.1e5LIsNFWz
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-Index: linux-2.6/kernel/time/ntp.c
-===================================================================
---- linux-2.6.orig/kernel/time/ntp.c
-+++ linux-2.6/kernel/time/ntp.c
-@@ -188,6 +188,7 @@ static DEFINE_TIMER(sync_cmos_timer, syn
-static void sync_cmos_clock(unsigned long dummy)
-{
-     struct timespec now, next;
-+    long delta_from_target_time;
-     int fail = 1;
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-     /*
-@@ -205,7 +206,10 @@ static void sync_cmos_clock(unsigned lon
-         return;
+iD8DBQBHOKi9hyrlCH22naMRAg4GAKCqPVhcCiC8TwV/hSBsUO7nDKCKewCfZU3k
+TiIhP0mdph3wiOVrlLkN/7Q=
+=W8nR
+-----END PGP SIGNATURE-----
 
-     getnstimeofday(&now);
--    if (abs(xtime.tv_nsec - (NSEC_PER_SEC / 2)) <= tick_nsec / 2)
-+    delta_from_target_time = abs(now.tv_nsec - (NSEC_PER_SEC / 2));
-+
-+    /* set CMOS clock, only if close enough to 500 msec point */
-+    if (delta_from_target_time <= tick_nsec / 2)
-         fail = update_persistent_clock(now);
-
-     next.tv_nsec = (NSEC_PER_SEC / 2) - now.tv_nsec;
-
+--nextPart2346727.1e5LIsNFWz--
