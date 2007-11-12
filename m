@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759311AbXKLVDL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759777AbXKLVDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759311AbXKLVDL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 16:03:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757590AbXKLU7Q
+	id S1759777AbXKLVDe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 16:03:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757871AbXKLU7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 15:59:16 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:43501 "EHLO pasmtpB.tele.dk"
+	Mon, 12 Nov 2007 15:59:17 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:39827 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752921AbXKLU66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 15:58:58 -0500
+	id S1753016AbXKLU67 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 15:58:59 -0500
 From: Sam Ravnborg <sam@ravnborg.org>
 To: lkml <linux-kernel@vger.kernel.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
        Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86: enable "make ARCH=x86"
-Date: Mon, 12 Nov 2007 22:00:36 +0100
-Message-Id: <1194901236-22820-13-git-send-email-sam@ravnborg.org>
+Subject: [PATCH] x86: do not use $(ARCH) when not needed
+Date: Mon, 12 Nov 2007 22:00:35 +0100
+Message-Id: <1194901236-22820-12-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.5.3.5.628.ga1309
-In-Reply-To: <1194901236-22820-12-git-send-email-sam@ravnborg.org>
+In-Reply-To: <1194901236-22820-11-git-send-email-sam@ravnborg.org>
 References: <20071112205451.GA22528@uranus.ravnborg.org>
  <1194901236-22820-1-git-send-email-sam@ravnborg.org>
  <1194901236-22820-2-git-send-email-sam@ravnborg.org>
@@ -30,164 +30,186 @@ References: <20071112205451.GA22528@uranus.ravnborg.org>
  <1194901236-22820-9-git-send-email-sam@ravnborg.org>
  <1194901236-22820-10-git-send-email-sam@ravnborg.org>
  <1194901236-22820-11-git-send-email-sam@ravnborg.org>
- <1194901236-22820-12-git-send-email-sam@ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After unification of the Kconfig files and
-introducing K64BIT support in kconfig
-it required only trivial changes to enable
-"make ARCH=x86".
-
-With this patch you can build for x86_64 in several ways:
-1) make ARCH=x86_64
-2) make ARCH=x86 K64BIT=y
-3) make ARCH=x86 menuconfig
-   => select 64-bit
-
-Likewise for i386 with the addition that
-i386 is default is you say ARCH=x86.
+For x86 ARCH may say i386 or x86_64 and soon x86.
+Rely on CONFIG_X64_32 to select between 32/64 or just
+hardcode the value as appropriate.
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Ingo Molnar <mingo@redhat.com>
 Cc: "H. Peter Anvin" <hpa@zytor.com>
 ---
- Makefile                 |    4 +++-
- arch/x86/Kconfig         |   18 +++++++++++++++---
- arch/x86/Kconfig.i386    |   18 ------------------
- arch/x86/Kconfig.x86_64  |   20 --------------------
- scripts/kconfig/Makefile |    7 +------
- 5 files changed, 19 insertions(+), 48 deletions(-)
- delete mode 100644 arch/x86/Kconfig.i386
- delete mode 100644 arch/x86/Kconfig.x86_64
+ Makefile                    |    9 +++++++--
+ arch/x86/Makefile           |   10 +++++++---
+ arch/x86/Makefile_32        |    8 ++++----
+ arch/x86/Makefile_64        |    8 ++++----
+ arch/x86/boot/Makefile      |    6 +++---
+ arch/x86/kernel/Makefile_32 |    3 ++-
+ arch/x86/kernel/Makefile_64 |    2 ++
+ arch/x86/vdso/Makefile      |    2 +-
+ 8 files changed, 30 insertions(+), 18 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index b32963a..9c9c4bf 100644
+index e28dde8..b32963a 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -200,9 +200,11 @@ SRCARCH 	:= $(ARCH)
- # Additional ARCH settings for x86
- ifeq ($(ARCH),i386)
-         SRCARCH := x86
-+        K64BIT  := n
- endif
- ifeq ($(ARCH),x86_64)
-         SRCARCH := x86
-+        K64BIT  := y
- endif
+@@ -197,8 +197,13 @@ CROSS_COMPILE	?=
+ UTS_MACHINE 	:= $(ARCH)
+ SRCARCH 	:= $(ARCH)
+ 
+-# for i386 and x86_64 we use SRCARCH equal to x86
+-SRCARCH := $(if $(filter x86_64 i386,$(SRCARCH)),x86,$(SRCARCH))
++# Additional ARCH settings for x86
++ifeq ($(ARCH),i386)
++        SRCARCH := x86
++endif
++ifeq ($(ARCH),x86_64)
++        SRCARCH := x86
++endif
  
  KCONFIG_CONFIG	?= .config
-@@ -339,7 +341,7 @@ KERNELRELEASE = $(shell cat include/config/kernel.release 2> /dev/null)
- KERNELVERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)
  
- export VERSION PATCHLEVEL SUBLEVEL KERNELRELEASE KERNELVERSION
--export ARCH SRCARCH CONFIG_SHELL HOSTCC HOSTCFLAGS CROSS_COMPILE AS LD CC
-+export ARCH SRCARCH K64BIT CONFIG_SHELL HOSTCC HOSTCFLAGS CROSS_COMPILE AS LD CC
- export CPP AR NM STRIP OBJCOPY OBJDUMP MAKE AWK GENKSYMS PERL UTS_MACHINE
- export HOSTCXX HOSTCXXFLAGS LDFLAGS_MODULE CHECK CHECKFLAGS
+diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+index 3095973..116b03a 100644
+--- a/arch/x86/Makefile
++++ b/arch/x86/Makefile
+@@ -1,12 +1,16 @@
+ # Unified Makefile for i386 and x86_64
  
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 34517bf..1eb5997 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1,13 +1,25 @@
- # x86 configuration
-+mainmenu "Linux Kernel Configuration for x86"
+ # select defconfig based on actual architecture
+-KBUILD_DEFCONFIG := $(ARCH)_defconfig
++ifeq ($(ARCH),x86)
++        KBUILD_DEFCONFIG := i386_defconfig
++else
++        KBUILD_DEFCONFIG := $(ARCH)_defconfig
++endif
+ 
+-# # No need to remake these files
++# No need to remake these files
+ $(srctree)/arch/x86/Makefile%: ;
+ 
+-ifeq ($(ARCH),i386)
++ifeq ($(CONFIG_X86_32),y)
+         include $(srctree)/arch/x86/Makefile_32
+ else
+         include $(srctree)/arch/x86/Makefile_64
+diff --git a/arch/x86/Makefile_32 b/arch/x86/Makefile_32
+index 346ac07..50394da 100644
+--- a/arch/x86/Makefile_32
++++ b/arch/x86/Makefile_32
+@@ -160,7 +160,7 @@ archclean:
+ 	$(Q)$(MAKE) $(clean)=arch/x86/boot
+ 
+ define archhelp
+-  echo  '* bzImage	- Compressed kernel image (arch/$(ARCH)/boot/bzImage)'
++  echo  '* bzImage	- Compressed kernel image (arch/x86/boot/bzImage)'
+   echo  '  install	- Install kernel using'
+   echo  '		   (your) ~/bin/installkernel or'
+   echo  '		   (distribution) /sbin/installkernel or'
+@@ -170,6 +170,6 @@ define archhelp
+   echo  '  isoimage     - Create a boot CD-ROM image'
+ endef
+ 
+-CLEAN_FILES += arch/$(ARCH)/boot/fdimage \
+-	       arch/$(ARCH)/boot/image.iso \
+-	       arch/$(ARCH)/boot/mtools.conf
++CLEAN_FILES += arch/x86/boot/fdimage \
++	       arch/x86/boot/image.iso \
++	       arch/x86/boot/mtools.conf
+diff --git a/arch/x86/Makefile_64 b/arch/x86/Makefile_64
+index 57e714a..a804860 100644
+--- a/arch/x86/Makefile_64
++++ b/arch/x86/Makefile_64
+@@ -127,7 +127,7 @@ archclean:
+ 	$(Q)$(MAKE) $(clean)=$(boot)
+ 
+ define archhelp
+-  echo  '* bzImage	- Compressed kernel image (arch/$(ARCH)/boot/bzImage)'
++  echo  '* bzImage	- Compressed kernel image (arch/x86/boot/bzImage)'
+   echo  '  install	- Install kernel using'
+   echo  '		   (your) ~/bin/installkernel or'
+   echo  '		   (distribution) /sbin/installkernel or'
+@@ -137,8 +137,8 @@ define archhelp
+   echo  '  isoimage     - Create a boot CD-ROM image'
+ endef
+ 
+-CLEAN_FILES += arch/$(ARCH)/boot/fdimage \
+-	       arch/$(ARCH)/boot/image.iso \
+-	       arch/$(ARCH)/boot/mtools.conf
++CLEAN_FILES += arch/x86/boot/fdimage \
++	       arch/x86/boot/image.iso \
++	       arch/x86/boot/mtools.conf
+ 
+ 
+diff --git a/arch/x86/boot/Makefile b/arch/x86/boot/Makefile
+index 89dbf97..7a3116c 100644
+--- a/arch/x86/boot/Makefile
++++ b/arch/x86/boot/Makefile
+@@ -49,10 +49,10 @@ HOSTCFLAGS_build.o := $(LINUXINCLUDE)
+ 
+ # How to compile the 16-bit code.  Note we always compile for -march=i386,
+ # that way we can complain to the user if the CPU is insufficient.
+-cflags-i386   := 
+-cflags-x86_64 := -m32
++cflags-$(CONFIG_X86_32) :=
++cflags-$(CONFIG_X86_64) := -m32
+ KBUILD_CFLAGS	:= $(LINUXINCLUDE) -g -Os -D_SETUP -D__KERNEL__ \
+-		   $(cflags-$(ARCH)) \
++		   $(cflags-y) \
+ 		   -Wall -Wstrict-prototypes \
+ 		   -march=i386 -mregparm=3 \
+ 		   -include $(srctree)/$(src)/code16gcc.h \
+diff --git a/arch/x86/kernel/Makefile_32 b/arch/x86/kernel/Makefile_32
+index b9d6798..a7bc93c 100644
+--- a/arch/x86/kernel/Makefile_32
++++ b/arch/x86/kernel/Makefile_32
+@@ -3,6 +3,7 @@
+ #
+ 
+ extra-y := head_32.o init_task.o vmlinux.lds
++CPPFLAGS_vmlinux.lds += -Ui386
+ 
+ obj-y	:= process_32.o signal_32.o entry_32.o traps_32.o irq_32.o \
+ 		ptrace_32.o time_32.o ioport_32.o ldt_32.o setup_32.o i8259_32.o sys_i386_32.o \
+@@ -60,7 +61,7 @@ quiet_cmd_syscall = SYSCALL $@
+       cmd_syscall = $(CC) -m elf_i386 -nostdlib $(SYSCFLAGS_$(@F)) \
+ 		          -Wl,-T,$(filter-out FORCE,$^) -o $@
+ 
+-export CPPFLAGS_vsyscall_32.lds += -P -C -U$(ARCH)
++export CPPFLAGS_vsyscall_32.lds += -P -C -Ui386
+ 
+ vsyscall-flags = -shared -s -Wl,-soname=linux-gate.so.1 \
+ 		 $(call ld-option, -Wl$(comma)--hash-style=sysv)
+diff --git a/arch/x86/kernel/Makefile_64 b/arch/x86/kernel/Makefile_64
+index 24671c3..5a88890 100644
+--- a/arch/x86/kernel/Makefile_64
++++ b/arch/x86/kernel/Makefile_64
+@@ -3,7 +3,9 @@
+ #
+ 
+ extra-y 	:= head_64.o head64.o init_task.o vmlinux.lds
++CPPFLAGS_vmlinux.lds += -Ux86_64
+ EXTRA_AFLAGS	:= -traditional
 +
-+# Select 32 or 64 bit
-+config 64BIT
-+	bool "64-bit kernel"
-+	default n
-+	help
-+	  Say yes to build a 64-bit kernel - formerly known as x86_64
-+	  Say no to build a 32-bit kernel - formerly known as i386
-+
-+config X86_32
-+	def_bool !64BIT
-+
-+config X86_64
-+	def_bool 64BIT
+ obj-y	:= process_64.o signal_64.o entry_64.o traps_64.o irq_64.o \
+ 		ptrace_64.o time_64.o ioport_64.o ldt_64.o setup_64.o i8259_64.o sys_x86_64.o \
+ 		x8664_ksyms_64.o i387_64.o syscall_64.o vsyscall_64.o \
+diff --git a/arch/x86/vdso/Makefile b/arch/x86/vdso/Makefile
+index 7a2ba45..e7bff0f 100644
+--- a/arch/x86/vdso/Makefile
++++ b/arch/x86/vdso/Makefile
+@@ -20,7 +20,7 @@ quiet_cmd_syscall = SYSCALL $@
+       cmd_syscall = $(CC) -m elf_x86_64 -nostdlib $(SYSCFLAGS_$(@F)) \
+ 		          -Wl,-T,$(filter-out FORCE,$^) -o $@
  
- ### Arch settings
- config X86
- 	bool
- 	default y
+-export CPPFLAGS_vdso.lds += -P -C -U$(ARCH)
++export CPPFLAGS_vdso.lds += -P -C
  
--config 64BIT
--	def_bool X86_64
--
- config GENERIC_TIME
- 	bool
- 	default y
-diff --git a/arch/x86/Kconfig.i386 b/arch/x86/Kconfig.i386
-deleted file mode 100644
-index 7b8dc26..0000000
---- a/arch/x86/Kconfig.i386
-+++ /dev/null
-@@ -1,18 +0,0 @@
--#
--# For a description of the syntax of this configuration file,
--# see Documentation/kbuild/kconfig-language.txt.
--#
--
--mainmenu "Linux Kernel Configuration"
--
--config X86_32
--	bool
--	default y
--	help
--	  This is Linux's home port.  Linux was originally native to the Intel
--	  386, and runs on all the later x86 processors including the Intel
--	  486, 586, Pentiums, and various instruction-set-compatible chips by
--	  AMD, Cyrix, and others.
--
--
--source "arch/x86/Kconfig"
-diff --git a/arch/x86/Kconfig.x86_64 b/arch/x86/Kconfig.x86_64
-deleted file mode 100644
-index b262aae..0000000
---- a/arch/x86/Kconfig.x86_64
-+++ /dev/null
-@@ -1,20 +0,0 @@
--#
--# For a description of the syntax of this configuration file,
--# see Documentation/kbuild/kconfig-language.txt.
--#
--# Note: ISA is disabled and will hopefully never be enabled.
--# If you managed to buy an ISA x86-64 box you'll have to fix all the
--# ISA drivers you need yourself.
--#
--
--mainmenu "Linux Kernel Configuration"
--
--config X86_64
--	bool
--	default y
--	help
--	  Port to the x86-64 architecture. x86-64 is a 64-bit extension to the
--	  classical 32-bit x86 architecture. For details see
--	  <http://www.x86-64.org/>.
--
--source "arch/x86/Kconfig"
-diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
-index 5959412..1ad6f7f 100644
---- a/scripts/kconfig/Makefile
-+++ b/scripts/kconfig/Makefile
-@@ -4,12 +4,7 @@
- 
- PHONY += oldconfig xconfig gconfig menuconfig config silentoldconfig update-po-config
- 
--# If a arch/$(SRCARCH)/Kconfig.$(ARCH) file exist use it
--ifneq ($(wildcard $(srctree)/arch/$(SRCARCH)/Kconfig.$(ARCH)),)
--        Kconfig := arch/$(SRCARCH)/Kconfig.$(ARCH)
--else
--        Kconfig := arch/$(SRCARCH)/Kconfig
--endif
-+Kconfig := arch/$(SRCARCH)/Kconfig
- 
- xconfig: $(obj)/qconf
- 	$< $(Kconfig)
+ vdso-flags = -fPIC -shared -Wl,-soname=linux-vdso.so.1 \
+ 		 $(call ld-option, -Wl$(comma)--hash-style=sysv) \
 -- 
 1.5.3.4.1157.g0e74-dirty
 
