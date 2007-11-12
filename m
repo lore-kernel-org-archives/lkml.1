@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758532AbXKLMAE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758747AbXKLMHD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758532AbXKLMAE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 07:00:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbXKLL7y
+	id S1758747AbXKLMHD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 07:07:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758011AbXKLMGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 06:59:54 -0500
-Received: from mis011-1.exch011.intermedia.net ([64.78.21.128]:42869 "EHLO
-	mis011-1.exch011.intermedia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752858AbXKLL7x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 06:59:53 -0500
-From: Amit Shah <amit.shah@qumranet.com>
-Organization: Qumranet Technologies
-To: Muli Ben-Yehuda <muli@il.ibm.com>
-Subject: Re: [kvm-devel] [PATCH 5/8] KVM: PVDMA: Update dma_alloc_coherent to make it paravirt-aware
-Date: Mon, 12 Nov 2007 17:29:33 +0530
-User-Agent: KMail/1.9.6
-Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <d1c72ce6e3a0e73c18993c3f066d1350b147f726.1194445109.git.amit.shah@qumranet.com> <e2f5f0c08d08cf66a39c8b452410078617e611f7.1194445109.git.amit.shah@qumranet.com> <20071112105637.GH3299@rhun.haifa.ibm.com>
-In-Reply-To: <20071112105637.GH3299@rhun.haifa.ibm.com>
+	Mon, 12 Nov 2007 07:06:53 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:53335 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754149AbXKLMGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 07:06:52 -0500
+From: Andreas Schwab <schwab@suse.de>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>, axboe@kernel.dk,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH] Include header required for INT_MAX
+References: <Pine.LNX.4.64.0711112349580.15517@fbirervta.pbzchgretzou.qr>
+	<jeabpj3fn1.fsf@sykes.suse.de>
+	<alpine.LFD.0.9999.0711120551380.23072@localhost.localdomain>
+X-Yow: Inside, I'm already SOBBING!
+Date: Mon, 12 Nov 2007 13:06:50 +0100
+In-Reply-To: <alpine.LFD.0.9999.0711120551380.23072@localhost.localdomain>
+	(Robert P. J. Day's message of "Mon\, 12 Nov 2007 05\:51\:54 -0500
+	\(EST\)")
+Message-ID: <je1wav3bxh.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711121729.33458.amit.shah@qumranet.com>
-X-OriginalArrivalTime: 12 Nov 2007 11:59:52.0707 (UTC) FILETIME=[88AB4D30:01C82523]
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 November 2007 16:26:37 Muli Ben-Yehuda wrote:
-> On Wed, Nov 07, 2007 at 04:21:06PM +0200, Amit Shah wrote:
-> > Of all the DMA calls, only dma_alloc_coherent might not actually
-> > call dma_ops->alloc_coherent. We make sure that gets called if the
-> > device that's being worked on is a PV device
+"Robert P. J. Day" <rpjday@crashcourse.ca> writes:
+
+> On Mon, 12 Nov 2007, Andreas Schwab wrote:
 >
-> I always thougt that's a mess... the reason it's done this way is that
-> Andi Kleen preferred it for some reason at the time. How about trying
-> to fix it cleanly so that dma_alloc_coherent always gets called rather
-> than adding a hack to work around a hack? It will require auditing all
-> of the different x86 dma-ops but I can help with that.
-
-Hmm, nice to know it's like that just because of "not necessary now".
-
-Fixing this along with stacking dma_ops and making 32-bit also dma_ops-ready 
-will greatly simplify things.
-
+>> Jan Engelhardt <jengelh@computergmbh.de> writes:
+>>
+>> > No, because I be damn sure that some developers try compiling programs
+>> > in non-linux environments (cygwin, solaris, andyourpersonaldistro, you
+>> > name it) which do not have to adhere to <limits.h>. It might use
+>> > <cosmiclimits.h> instead, or whatever.
+>>
+>> Every C compiler has <limit.h>.
 >
-> Cheers,
-> Muli
+> i'm assuming you mean <limits.h>, no?
 
+Yes, sorry for the typo.
 
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
