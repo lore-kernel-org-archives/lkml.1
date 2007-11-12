@@ -1,89 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752349AbXKLXvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759211AbXKLXwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752349AbXKLXvN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 18:51:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753124AbXKLXu6
+	id S1759211AbXKLXwY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 18:52:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbXKLXwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 18:50:58 -0500
-Received: from mail8.dotsterhost.com ([66.11.233.1]:53982 "HELO
-	mail8.dotsterhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750938AbXKLXu5 (ORCPT
+	Mon, 12 Nov 2007 18:52:16 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42856 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751325AbXKLXwP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 18:50:57 -0500
-Message-ID: <4738E6E3.5090404@crispincowan.com>
-Date: Mon, 12 Nov 2007 15:50:59 -0800
-From: Crispin Cowan <crispin@crispincowan.com>
-Organization: Crispin's Labs
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 12 Nov 2007 18:52:15 -0500
+Date: Mon, 12 Nov 2007 15:52:14 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: ak@suse.de
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Mel Gorman <mel@csn.ul.ie>, Andy Whitcroft <apw@shadowen.org>
+Subject: x86_64: Make sparsemem/vmemmap the default memory model
+Message-ID: <Pine.LNX.4.64.0711121549370.29178@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: "Dr. David Alan Gilbert" <linux@treblig.org>
-CC: Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       LSM ML <linux-security-module@vger.kernel.org>,
-       apparmor-dev <apparmor-dev@forge.novell.com>
-Subject: Re: AppArmor Security Goal
-References: <473380AD.5070801@crispincowan.com> <20071110220455.GB24195@gallifrey> <47362C7C.2050202@crispincowan.com> <20071110222414.GC24195@gallifrey> <47363381.4030103@crispincowan.com> <20071110232545.GD24195@gallifrey>
-In-Reply-To: <20071110232545.GD24195@gallifrey>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dr. David Alan Gilbert wrote:
-> * Crispin Cowan (crispin@crispincowan.com) wrote:
->   
->> I mostly don't see this as a serious limitation, because almost everyone
->> has their own workstation, and thus has root on that workstation. There
->> are 2 major exceptions:
->>
->>     * Schools, where the "workstations" are thin client X terminals and
->>       everyone is logged into a giant shared machine. Sorry, AppArmor is
->>       not a good choice for that environment, but it is a pretty scarce
->>       environment.
->>     * Enterprises, where workers get their own workstation, but they
->>       don't get root. Well, the reason the worker doesn't get root is
->>       the enterprise doesn't trust them with it, and so not letting them
->>       edit security policy is probably a good idea.
->>     
-> I don't actually see your distinction here between those two environments;
-> why does it matter if there is one non-priveliged user or many?
->   
-Because it is easier to solve if there is only one non-privileged user:
-you just give them privilege (fun with chmod and sudo) to edit the
-system policies, and you're done (assuming you are happy allowing the
-non-privileged user to edit policy at all).
+Use sparsemem as the only memory model for UP, SMP and NUMA.
 
-If there are lots of non-privileged users sharing a computer, then I
-submit that solutions are either insecure, intractable, or purely
-restrictive.
+Measurements indicate that DISCONTIGMEM has a higher
+overhead than sparsemem. And FLATMEMs benefits are minimal. So I think its
+best to simply standardize on sparsemem.
 
->> Can you explain why you want a non-privileged user to be able to edit
->> policy? I would like to better understand the problem here.
->>     
-> I think it might depend on how strict the users starting point is;
-> you could say:
->    1 This document editor can read and write any part of the users home
->      directory other than the . files.
->
-> or you could say:
->    2 This document editor can read any files but only write to the
->      'Documents directory'.
->
-> If the adminisrator set something up with (2) as the starting point it
-> would seem reasonable for the user to be able to add the ability to edit
-> documents in extra directories for their style of organising documents
-> they work on; but they would be restricted in what they could add
-> so that they couldn't add the ability to write to their settings
-> files.
->   
-Ok, I can see where that would be useful in theory. But solving it is
-VERY hard in practice, and AppArmor is not attempting to address this
-problem of user extensibility of mandatory access controls.
+Results of page allocator tests (test can be had via git from the slab git
+tree on git.kernel.org. See the branch tests)
 
-Crispin
+Measurements in cycle counts. 1000 allocations were performed and then the
+average cycle count was calculated.
 
--- 
-Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin
-CEO, Mercenary Linux		   http://mercenarylinux.com/
-	       Itanium. Vista. GPLv3. Complexity at work
+Order	FlatMem	Discontig	SparseMem
+0	  639	  665		  641
+1	  567	  647		  593
+2	  679	  774		  692
+3	  763	  967		  781
+4	  961	 1501		  962
+5	 1356	 2344		 1392
+6	 2224	 3982		 2336
+7	 4869	 7225		 5074
+8	12500	14048		12732
+9	27926	28223		28165
+10	58578	58714		58682
 
+If this patch is accepted then we can remove the code for discontig and
+flatmem support from x86_64.
+
+(Not sure if I got all the config settings right. Andy?)
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+---
+ arch/x86/Kconfig.x86_64 |   13 +------------
+ 1 file changed, 1 insertion(+), 12 deletions(-)
+
+Index: linux-2.6/arch/x86/Kconfig.x86_64
+===================================================================
+--- linux-2.6.orig/arch/x86/Kconfig.x86_64	2007-11-12 15:17:50.721767735 -0800
++++ linux-2.6/arch/x86/Kconfig.x86_64	2007-11-12 15:21:16.659017509 -0800
+@@ -390,28 +390,17 @@ config NUMA_EMU
+ 	  into virtual nodes when booted with "numa=fake=N", where N is the
+ 	  number of nodes. This is only useful for debugging.
+ 
+-config ARCH_DISCONTIGMEM_ENABLE
+-       bool
+-       depends on NUMA
+-       default y
+-
+-config ARCH_DISCONTIGMEM_DEFAULT
++config ARCH_SPARSEMEM_DEFAULT
+ 	def_bool y
+-	depends on NUMA
+ 
+ config ARCH_SPARSEMEM_ENABLE
+ 	def_bool y
+-	depends on (NUMA || EXPERIMENTAL)
+ 	select SPARSEMEM_VMEMMAP_ENABLE
+ 
+ config ARCH_MEMORY_PROBE
+ 	def_bool y
+ 	depends on MEMORY_HOTPLUG
+ 
+-config ARCH_FLATMEM_ENABLE
+-	def_bool y
+-	depends on !NUMA
+-
+ source "mm/Kconfig"
+ 
+ config MEMORY_HOTPLUG_RESERVE
