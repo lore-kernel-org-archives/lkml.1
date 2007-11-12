@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbXKLOyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752937AbXKLPLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754017AbXKLOyf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 09:54:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbXKLOy1
+	id S1752937AbXKLPLo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 10:11:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750941AbXKLPLg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 09:54:27 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58262 "EHLO mx1.redhat.com"
+	Mon, 12 Nov 2007 10:11:36 -0500
+Received: from cantor.suse.de ([195.135.220.2]:35393 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751192AbXKLOy0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 09:54:26 -0500
-Message-ID: <47386907.5080101@redhat.com>
-Date: Mon, 12 Nov 2007 15:53:59 +0100
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	id S1750854AbXKLPLf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 10:11:35 -0500
+From: Frank Seidel <fseidel@suse.de>
+Organization: SUSE LINUX Products GmbH
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [RFC 7/13] Char: nozomi, remove struct irq
+Date: Mon, 12 Nov 2007 16:11:31 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org
+References: <2694611355132233895.slaby@pripojeni.net>
+In-Reply-To: <2694611355132233895.slaby@pripojeni.net>
 MIME-Version: 1.0
-To: Muli Ben-Yehuda <muli@il.ibm.com>
-CC: Amit Shah <amit.shah@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [PATCH 3/8] KVM: PVDMA Guest: Guest-side routines
- for paravirtualized DMA
-References: <d1c72ce6e3a0e73c18993c3f066d1350b147f726.1194445109.git.amit.shah@qumranet.com>	<609d5d611a5fb58ab5a7184be7b6d29494023ba0.1194445109.git.amit.shah@qumranet.com> <20071112105001.GF3299@rhun.haifa.ibm.com>
-In-Reply-To: <20071112105001.GF3299@rhun.haifa.ibm.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711121611.32544.fseidel@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Muli Ben-Yehuda wrote:
-> On Wed, Nov 07, 2007 at 04:21:04PM +0200, Amit Shah wrote:
-> 
->> We make the dma_mapping_ops structure to point to our structure so
->> that every DMA access goes through us. (This is the reason this only
->> works for 64-bit guest. 32-bit guest doesn't yet have a dma_ops
->> struct.)
-> 
-> I need the same facility for Calgary for falling back to swiotlb if a
-> translation is disabled on some slot, and IB needs the same facility
-> for some IB adapters (e.g., ipath). Perhaps it's time to consider
-> stackable dma-ops (unless someone has a better idea...).
+On Samstag 10 November 2007 00:47:31, you (Jiri Slaby) wrote:
+> nozomi, remove struct irq
+> struct irq (named as my_irq) is used only in ISR and its called functions.
+> We might silently use u16 variable on stack and remove all references to
+> this structure. This is the first step of struct nozomi_devices removal.
 
-Hmm, at least the later sounds like for per-device dma_ops would be more
-useful that stackable ones, as each stack instance just checks "should I
-do something for device $foo, if not, call the next one ...".
+As this u16 is kind of local (just handed around from interrupt_handler) and
+the structs value was anyway overwritten always/on every interrupt call
+this seems to be totally ok.
+Just to be sure i ran a whole testseries and it really didn't show anything
+unusual => So, applied without changes.
 
-cheers,
-  Gerd
-
+Thanks,
+Frank
