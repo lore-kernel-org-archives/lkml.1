@@ -1,125 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756899AbXKLUxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757463AbXKLU7O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756899AbXKLUxX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 15:53:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbXKLUxP
+	id S1757463AbXKLU7O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 15:59:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbXKLU66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 15:53:15 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:38000 "EHLO pasmtpA.tele.dk"
+	Mon, 12 Nov 2007 15:58:58 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:43471 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751437AbXKLUxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 15:53:15 -0500
-Date: Mon, 12 Nov 2007 21:54:51 +0100
+	id S1752314AbXKLU65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 15:58:57 -0500
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Jeff Garzik <jeff@garzik.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <rdunlap@xenotime.net>, david@lang.hm,
-       Christoph Hellwig <hch@infradead.org>, Frans Pop <elendil@planet.nl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH revised] enable make ARCH=x86 (and stay backward compatible)
-Message-ID: <20071112205451.GA22528@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] x86: add X86_64 dependency to x86_64 specific symbols in Kconfig.x86_64
+Date: Mon, 12 Nov 2007 22:00:28 +0100
+Message-Id: <1194901236-22820-5-git-send-email-sam@ravnborg.org>
+X-Mailer: git-send-email 1.5.3.5.628.ga1309
+In-Reply-To: <1194901236-22820-4-git-send-email-sam@ravnborg.org>
+References: <20071112205451.GA22528@uranus.ravnborg.org>
+ <1194901236-22820-1-git-send-email-sam@ravnborg.org>
+ <1194901236-22820-2-git-send-email-sam@ravnborg.org>
+ <1194901236-22820-3-git-send-email-sam@ravnborg.org>
+ <1194901236-22820-4-git-send-email-sam@ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This revised patchset does the followings things:
+To ease unification of Kconfig.i386 and Kconfig.x86_64
+add X86_64 dependencies to all x86_64 specific symbols.
 
-o unify the i386 and x86_64 Kconfig files
-o introduce support for K64BIT to set CONFIG_64BIT on command line
-o introdue support for "make ARCH=x86"
-o degraded ARCH={i386,x86_64} to select between 32/64 for all*targets
-  and otherwise just selecting the x86 architecture
+This patch introduce no functional changes but is one step
+towards unification. This smaller step is used to ease
+review of the patch set.
 
-I suggest we should merge this despite being at -rc2 so we can start
-teaching distributors to use "ARCH=x86" - but I leave it to the
-x86 Maintainers to decide.
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+---
+ arch/x86/Kconfig.x86_64 |   34 +++++++++++++++++-----------------
+ 1 files changed, 17 insertions(+), 17 deletions(-)
 
-I have always thought that the x86 merge could not be considered ready
-until we could do a "make ARCH=x86" becasue it is so intuitive
-if you have not typed "make ARCH=i386" one thousand times.
-
-
-Based on feedback from previous submissions the following have changed:
-- The backwards compatibility links are kept
-- The backwards compatibility ARCH={i386,x86_64} are kept but degraded
-  to select 32/64 bit during configuration for all*config targets.
-- ARCH={i386,x86_64} are not broken by any patches so bisect will
-  not choke
-- patchset shrinked to 13 logical patches
-
-
-With this change we have a setup where we have a common Kconfig
-for 32-bit and 64-bit x86 like all other architectures.
-And we can configure and build a kernel using ARCH="name of arch dir"
-
-As an added bonus "make update-po-config" is fixed :-)
-
-The diffstat tells it own story:
- 19 files changed, 684 insertions(+), 1235 deletions(-)
-
-And this is with new functionality added...
-
-The patches explained...
-
-Unification of Kconfig.i386 + Kconfig.x86_64:
-      x86: unification of cfufreq/Kconfig
-      x86: start unification of arch/x86/Kconfig.*
-      x86: arch/x86/Kconfig.cpu unification
-      x86: add X86_32 dependency to i386 specific symbols in Kconfig.i386
-      x86: add X86_64 dependency to x86_64 specific symbols in Kconfig.x86_64
-      x86: copy x86_64 specific Kconfig symbols to Kconfig.i386
-      x86: move all simple arch settings to Kconfig
-      x86: move the rest of the menu's to Kconfig
-
-Adding support for K64BIT=y on commandline
-      kconfig: factor out code in confdata.c
-      kconfig: add helper to set config symbol from environment variable
-      kconfig: use $K64BIT to set 64BIT with all*config targets
-
-Preparational patch that just clean up a few bits in x86:
-      x86: do not use $(ARCH) when not needed
-
-Introducing "make ARCH=x86"
-      x86: enable "make ARCH=x86"
-
-After the preparation then introducing "make ARCH=x86" actually
-deleted more lines than is added (last patch):
-    5 files changed, 19 insertions(+), 49 deletions(-)
-
-
-The patchset is available at:
-
-	git://git.kernel.org/pub/scm/linux/kernel/git/sam/x86.git
-
-Patches will be sent to lkml for another review round.
-
-	Sam
-
-
-Diffstat:
-
- Makefile                                           |   13 +-
- README                                             |    2 +
- arch/x86/{Kconfig.i386 => Kconfig}                 |  567 ++++++++++----
- arch/x86/Kconfig.cpu                               |  121 ++--
- arch/x86/Kconfig.x86_64                            |  839 --------------------
- arch/x86/Makefile                                  |   10 +-
- arch/x86/Makefile_32                               |    8 +-
- arch/x86/Makefile_64                               |    8 +-
- arch/x86/boot/Makefile                             |    6 +-
- arch/x86/boot/cpucheck.c                           |    6 -
- arch/x86/kernel/Makefile_32                        |    3 +-
- arch/x86/kernel/Makefile_64                        |    2 +
- .../x86/kernel/cpu/cpufreq/{Kconfig_32 => Kconfig} |   69 ++-
- arch/x86/kernel/cpu/cpufreq/Kconfig_64             |  108 ---
- arch/x86/vdso/Makefile                             |    2 +-
- scripts/kconfig/Makefile                           |    7 +-
- scripts/kconfig/conf.c                             |    1 +
- scripts/kconfig/confdata.c                         |  146 +++--
- scripts/kconfig/lkc_proto.h                        |    1 +
- 19 files changed, 684 insertions(+), 1235 deletions(-)
+diff --git a/arch/x86/Kconfig.x86_64 b/arch/x86/Kconfig.x86_64
+index cdd1458..36bb856 100644
+--- a/arch/x86/Kconfig.x86_64
++++ b/arch/x86/Kconfig.x86_64
+@@ -18,7 +18,7 @@ config X86_64
+ 	  <http://www.x86-64.org/>.
+ 
+ config 64BIT
+-	def_bool y
++	def_bool X86_64
+ 
+ config X86
+ 	bool
+@@ -129,7 +129,7 @@ config X86_PC
+ 
+ config X86_VSMP
+ 	bool "Support for ScaleMP vSMP"
+-	depends on PCI
++	depends on X86_64 && PCI
+ 	 help
+ 	  Support for ScaleMP vSMP systems.  Say 'Y' here if this kernel is
+ 	  supposed to run on these EM64T-based machines.  Only choose this option
+@@ -275,7 +275,7 @@ config NUMA
+ 
+ config K8_NUMA
+        bool "Old style AMD Opteron NUMA detection"
+-       depends on NUMA && PCI
++       depends on X86_64 && NUMA && PCI
+        default y
+        help
+ 	 Enable K8 NUMA node topology detection.  You should say Y here if
+@@ -286,14 +286,14 @@ config K8_NUMA
+ 
+ config NODES_SHIFT
+ 	int
+-	default "6"
++	default "6" if X86_64
+ 	depends on NEED_MULTIPLE_NODES
+ 
+ # Dummy CONFIG option to select ACPI_NUMA from drivers/acpi/Kconfig.
+ 
+ config X86_64_ACPI_NUMA
+        bool "ACPI NUMA detection"
+-       depends on NUMA
++       depends on X86_64 && NUMA
+        select ACPI 
+ 	select PCI
+        select ACPI_NUMA
+@@ -303,7 +303,7 @@ config X86_64_ACPI_NUMA
+ 
+ config NUMA_EMU
+ 	bool "NUMA emulation"
+-	depends on NUMA
++	depends on X86_64 && NUMA
+ 	help
+ 	  Enable NUMA emulation. A flat machine will be split
+ 	  into virtual nodes when booted with "numa=fake=N", where N is the
+@@ -324,7 +324,7 @@ config ARCH_SPARSEMEM_ENABLE
+ 	select SPARSEMEM_VMEMMAP_ENABLE
+ 
+ config ARCH_MEMORY_PROBE
+-	def_bool y
++	def_bool X86_64
+ 	depends on MEMORY_HOTPLUG
+ 
+ config ARCH_FLATMEM_ENABLE
+@@ -334,15 +334,15 @@ config ARCH_FLATMEM_ENABLE
+ source "mm/Kconfig"
+ 
+ config MEMORY_HOTPLUG_RESERVE
+-	def_bool y
++	def_bool X86_64
+ 	depends on (MEMORY_HOTPLUG && DISCONTIGMEM)
+ 
+ config HAVE_ARCH_EARLY_PFN_TO_NID
+-	def_bool y
++	def_bool X86_64
+ 	depends on NUMA
+ 
+ config OUT_OF_LINE_PFN_TO_PAGE
+-	def_bool y
++	def_bool X86_64
+ 	depends on DISCONTIGMEM
+ 
+ config NR_CPUS
+@@ -360,7 +360,7 @@ config NR_CPUS
+ 
+ config PHYSICAL_ALIGN
+ 	hex
+-	default "0x200000"
++	default "0x200000" if X86_64
+ 
+ config HOTPLUG_CPU
+ 	bool "Support for suspend on SMP and hot-pluggable CPUs (EXPERIMENTAL)"
+@@ -399,7 +399,7 @@ config GART_IOMMU
+ 	default y
+ 	select SWIOTLB
+ 	select AGP
+-	depends on PCI
++	depends on X86_64 && PCI
+ 	help
+ 	  Support for full DMA access of devices with 32bit memory access only
+ 	  on systems with more than 3GB. This is usually needed for USB,
+@@ -414,7 +414,7 @@ config GART_IOMMU
+ config CALGARY_IOMMU
+ 	bool "IBM Calgary IOMMU support"
+ 	select SWIOTLB
+-	depends on PCI && EXPERIMENTAL
++	depends on X86_64 && PCI && EXPERIMENTAL
+ 	help
+ 	  Support for hardware IOMMUs in IBM's xSeries x366 and x460
+ 	  systems. Needed to run systems with more than 3GB of memory
+@@ -461,7 +461,7 @@ config X86_MCE
+ 
+ config X86_MCE_INTEL
+ 	bool "Intel MCE features"
+-	depends on X86_MCE && X86_LOCAL_APIC
++	depends on X86_64 && X86_MCE && X86_LOCAL_APIC
+ 	default y
+ 	help
+ 	   Additional support for intel specific MCE features such as
+@@ -469,7 +469,7 @@ config X86_MCE_INTEL
+ 
+ config X86_MCE_AMD
+ 	bool "AMD MCE features"
+-	depends on X86_MCE && X86_LOCAL_APIC
++	depends on X86_64 && X86_MCE && X86_LOCAL_APIC
+ 	default y
+ 	help
+ 	   Additional support for AMD specific MCE features such as
+@@ -576,7 +576,7 @@ config SECCOMP
+ 
+ config CC_STACKPROTECTOR
+ 	bool "Enable -fstack-protector buffer overflow detection (EXPERIMENTAL)"
+-	depends on EXPERIMENTAL
++	depends on X86_64 && EXPERIMENTAL
+ 	help
+          This option turns on the -fstack-protector GCC feature. This
+ 	  feature puts, at the beginning of critical functions, a canary
+@@ -601,7 +601,7 @@ config CC_STACKPROTECTOR_ALL
+ source kernel/Kconfig.hz
+ 
+ config K8_NB
+-	def_bool y
++	def_bool X86_64
+ 	depends on AGP_AMD64 || GART_IOMMU || (PCI && NUMA)
+ 
+ endmenu
+-- 
+1.5.3.4.1157.g0e74-dirty
 
