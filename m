@@ -1,100 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757645AbXKLGCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757496AbXKLGPO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757645AbXKLGCw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 01:02:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbXKLGCo
+	id S1757496AbXKLGPO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 01:15:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbXKLGO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 01:02:44 -0500
-Received: from mail4.tpgi.com.au ([203.12.160.61]:55299 "EHLO
-	mail4.tpgi.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751942AbXKLGCn (ORCPT
+	Mon, 12 Nov 2007 01:14:59 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:51886 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751285AbXKLGO6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 01:02:43 -0500
-X-TPG-Antivirus: Passed
-Subject: Re: cd/dvd inaccessible in 2.6.24-rc2
-From: Will Trives <will@trivescon.com.au>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1194756033.5042.15.camel@Athas>
-References: <1194668831.3436.14.camel@Athas>  <47364059.8000003@garzik.org>
-	 <1194756033.5042.15.camel@Athas>
-Content-Type: text/plain
-Date: Mon, 12 Nov 2007 17:00:09 +1100
-Message-Id: <1194847209.5012.2.camel@Athas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Nov 2007 01:14:58 -0500
+Date: Mon, 12 Nov 2007 07:14:34 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Paul Mundt <lethal@linux-sh.org>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: the kernel, gcc and libgcc
+Message-ID: <20071112061434.GB9771@stusta.de>
+References: <20071111064829.GG21669@stusta.de> <20071111073422.GA25323@linux-sh.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20071111073422.GA25323@linux-sh.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+[ linux-arch added to the Cc,
+  a copy of my original email is at the bottom ]
 
-
-My mistake, it looks like the issue is to do with writing only.
-
-Mounting a standard DVD works fine with 2.6.24-rc2-git2.
-
-As soon as I try to use wodim or load k3b, that's when drive gets locked
-up.
-
-The issue was still there with 2.6.23-git15 , I will continue to test
-with previous ones.
-
-
-Regards,
-
-Will Trives
-
-
-On Sun, 2007-11-11 at 15:40 +1100, Will Trives wrote:
-> Hello Jeff,
-> 
-> Yes it is. I'll keep testing with previous kernels.
-> 
-> Dmesg does look different with 2.6.23 vs 2.6.24-rc2
-> 
-> This is 2.6.23 :
-> 
-> scsi8 : pata_jmicron
-> scsi9 : pata_jmicron
-> ata9: PATA max UDMA/100 cmd 0x000000000001c000 ctl 0x000000000001c102 bmdma 0x000000000001c400 irq 17
-> ata10: PATA max UDMA/100 cmd 0x000000000001c200 ctl 0x000000000001c302 bmdma 0x000000000001c408 irq 17
-> ata9.00: ATAPI: BENQ    DVD DD DW1640, BSRB, max UDMA/33
-> ata9.00: configured for UDMA/33
-> ata9: EH pending after completion, repeating EH (cnt=4)
-> scsi 8:0:0:0: CD-ROM            BENQ     DVD DD DW1640    BSRB PQ: 0 ANSI: 5
-> 
-> 
-> This is 2.6.24-rc2 :
-> 
-> scsi8 : pata_jmicron
-> scsi9 : pata_jmicron
-> ata9: PATA max UDMA/100 cmd 0xc000 ctl 0xc100 bmdma 0xc400 irq 17
-> ata10: PATA max UDMA/100 cmd 0xc200 ctl 0xc300 bmdma 0xc408 irq 17
-> ata9.00: ATAPI: BENQ DVD DD DW1640, BSRB, max UDMA/33
-> ata9.00: configured for UDMA/33
-> scsi 8:0:0:0: CD-ROM BENQ DVD DD DW1640 BSRB PQ: 0 ANSI: 5
-> 
-> Regards,
-> 
-> Will Trives
-> 
-> On Sat, 2007-11-10 at 18:35 -0500, Jeff Garzik wrote:
-> > Will Trives wrote:
-> > > Hello,
-> > > 
-> > > Motherboard: Gigabyte GA-P35-DS4 (rev. 1.1)
-> > > Chipset: Intel P35 + ICH9R 
-> > > PATA port runs off JMicron controller
-> > > CD/DVD Device: BENQ DW1640 16X
-> > > 
-> > > I cannot access my dvd burner under 2.6.24-rc2, I have no problems under
-> > > 2.6.23. Basically the drive is detected OK, everything looks ok but as
-> > > soon as I go to use it errors like this occur:
+On Sun, Nov 11, 2007 at 04:34:22PM +0900, Paul Mundt wrote:
+> On Sun, Nov 11, 2007 at 07:48:29AM +0100, Adrian Bunk wrote:
+> > But the kernel does (at least on some architectures) not link with 
+> > libgcc or ship other code providing the required libgcc functions.
 > > 
-> > Is 2.6.24-rc1 also broken?
+> > Richard Guenther suggested in gcc bug #32044 to use -fno-tree-scev-cprop 
+> > (new option in gcc 4.3) as a workaround and I confirmed that it fixes 
+> > the compilation.
 > > 
-> > 	Jeff
-> > 
-> > 
+> And some architectures do link it in, so the call to libgcc code doesn't
+> necessarily matter. Perhaps the architectures that don't link in libgcc
+> can turn this flag on conditionally, it shouldn't be forced on the
+> architectures that do link it in.
+
+We seem to have 3 different kinds of architectures:
+- does not provide libgcc at all
+- provides part of libgcc itself
+- links with libgcc
+
+And we also _might_ get away without requiring -fno-tree-scev-cprop on 
+some of the 64bit architectures that do not provide or link with libgcc.
+
+This all is horrible fragile, with the root of the problem being a 
+disagreement between what gcc expects an environment to provide and what 
+the kernel provides.
+
+After all, the real question is not whether we are able to limit the 
+workaround of disabling a minor optimization to fewer architectures,
+but to get this fixed properly.
+
+Ideally, we solve the latter making my patch not required on any 
+architecture.
+
+cu
+Adrian
+
+
+
+<--  snip  -->
+
+
+The gcc from svn that will become gcc 4.3 generates libgcc calls in 
+cases like the following (on 32bit architectures):
+
+<--  snip  -->
+
+static inline void timespec_add_ns(struct timespec *a, u64 ns)
+{
+...
+        while(ns >= NSEC_PER_SEC) {
+                ns -= NSEC_PER_SEC;
+                a->tv_sec++;
+        }
+...
+
+<--  snip  -->
+
+It can make sense to emit assembler code doing division for such C code -
+that doesn't seem to be something that would generally be wrong.
+
+But the kernel does (at least on some architectures) not link with 
+libgcc or ship other code providing the required libgcc functions.
+
+Richard Guenther suggested in gcc bug #32044 to use -fno-tree-scev-cprop 
+(new option in gcc 4.3) as a workaround and I confirmed that it fixes 
+the compilation.
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+f2357fcb8addd855f1be6ac9fdf4ef3c3ab8256d 
+diff --git a/Makefile b/Makefile
+index e28dde8..9d8a831 100644
+--- a/Makefile
++++ b/Makefile
+@@ -527,6 +527,9 @@ KBUILD_CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
+ # disable pointer signed / unsigned warnings in gcc 4.0
+ KBUILD_CFLAGS += $(call cc-option,-Wno-pointer-sign,)
+ 
++# workaround to avoid gcc 4.3 emitting libgcc calls (see gcc bug #32044)
++KBUILD_CFLAGS += $(call cc-option,-fno-tree-scev-cprop,)
++
+ # Add user supplied CPPFLAGS, AFLAGS and CFLAGS as the last assignments
+ # But warn user when we do so
+ warn-assign = \
 
