@@ -1,57 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758456AbXKLKzL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbXKLK5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758456AbXKLKzL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 05:55:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758023AbXKLKy6
+	id S1758683AbXKLK5U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 05:57:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbXKLK5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 05:54:58 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:33528 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755484AbXKLKy6 (ORCPT
+	Mon, 12 Nov 2007 05:57:13 -0500
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:28198 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757399AbXKLK5M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 05:54:58 -0500
-Date: Mon, 12 Nov 2007 05:51:54 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Andreas Schwab <schwab@suse.de>
-cc: Jan Engelhardt <jengelh@computergmbh.de>, axboe@kernel.dk,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH] Include header required for INT_MAX
-In-Reply-To: <jeabpj3fn1.fsf@sykes.suse.de>
-Message-ID: <alpine.LFD.0.9999.0711120551380.23072@localhost.localdomain>
-References: <Pine.LNX.4.64.0711112349580.15517@fbirervta.pbzchgretzou.qr> <jeabpj3fn1.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Mon, 12 Nov 2007 05:57:12 -0500
+Date: Mon, 12 Nov 2007 12:56:37 +0200
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Amit Shah <amit.shah@qumranet.com>
+Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] [PATCH 5/8] KVM: PVDMA: Update dma_alloc_coherent to make it paravirt-aware
+Message-ID: <20071112105637.GH3299@rhun.haifa.ibm.com>
+References: <d1c72ce6e3a0e73c18993c3f066d1350b147f726.1194445109.git.amit.shah@qumranet.com> <e2f5f0c08d08cf66a39c8b452410078617e611f7.1194445109.git.amit.shah@qumranet.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e2f5f0c08d08cf66a39c8b452410078617e611f7.1194445109.git.amit.shah@qumranet.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Nov 2007, Andreas Schwab wrote:
+On Wed, Nov 07, 2007 at 04:21:06PM +0200, Amit Shah wrote:
 
-> Jan Engelhardt <jengelh@computergmbh.de> writes:
->
-> > No, because I be damn sure that some developers try compiling programs
-> > in non-linux environments (cygwin, solaris, andyourpersonaldistro, you
-> > name it) which do not have to adhere to <limits.h>. It might use
-> > <cosmiclimits.h> instead, or whatever.
->
-> Every C compiler has <limit.h>.
+> Of all the DMA calls, only dma_alloc_coherent might not actually
+> call dma_ops->alloc_coherent. We make sure that gets called if the
+> device that's being worked on is a PV device
 
-i'm assuming you mean <limits.h>, no?
+I always thougt that's a mess... the reason it's done this way is that
+Andi Kleen preferred it for some reason at the time. How about trying
+to fix it cleanly so that dma_alloc_coherent always gets called rather
+than adding a hack to work around a hack? It will require auditing all
+of the different x86 dma-ops but I can help with that.
 
-rday
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+Cheers,
+Muli
