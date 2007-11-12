@@ -1,95 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759211AbXKLXwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758126AbXKLX6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759211AbXKLXwY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 18:52:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbXKLXwQ
+	id S1758126AbXKLX6e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 18:58:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbXKLX6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 18:52:16 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42856 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751325AbXKLXwP (ORCPT
+	Mon, 12 Nov 2007 18:58:25 -0500
+Received: from mail8.dotsterhost.com ([66.11.233.1]:56573 "HELO
+	mail8.dotsterhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752494AbXKLX6Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 18:52:15 -0500
-Date: Mon, 12 Nov 2007 15:52:14 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: ak@suse.de
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Mel Gorman <mel@csn.ul.ie>, Andy Whitcroft <apw@shadowen.org>
-Subject: x86_64: Make sparsemem/vmemmap the default memory model
-Message-ID: <Pine.LNX.4.64.0711121549370.29178@schroedinger.engr.sgi.com>
+	Mon, 12 Nov 2007 18:58:24 -0500
+Message-ID: <4738E8A2.1060004@crispincowan.com>
+Date: Mon, 12 Nov 2007 15:58:26 -0800
+From: Crispin Cowan <crispin@crispincowan.com>
+Organization: Crispin's Labs
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: david@lang.hm, "Dr. David Alan Gilbert" <linux@treblig.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       LSM ML <linux-security-module@vger.kernel.org>,
+       apparmor-dev <apparmor-dev@forge.novell.com>
+Subject: Re: AppArmor Security Goal
+References: <473380AD.5070801@crispincowan.com>	<20071110220455.GB24195@gallifrey>	<47362C7C.2050202@crispincowan.com>	<20071110222414.GC24195@gallifrey>	<47363381.4030103@crispincowan.com>	<20071110232545.GD24195@gallifrey>	<Pine.LNX.4.64.0711101546400.4780@asgard.lang.hm> <20071110235609.00958d87@the-village.bc.nu>
+In-Reply-To: <20071110235609.00958d87@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use sparsemem as the only memory model for UP, SMP and NUMA.
+Alan Cox wrote:
+>> but how can the system know if the directory the user wants to add is 
+>> reasonable or not? what if the user says they want to store their 
+>> documents in /etc?
+>>     
+> A more clear example is wanting to wrap a specific tool with temporary
+> rules. Those rules would depend on the exact file being edited at this
+> moment - something root cannot know in advance
+> (although with apparmor I guess mv $my_file apparmour_magic.name ; foo;
+> mv it back might work 8))
+>   
+If you have unconfined root privilege on an AppArmor box, then setting
+up a temporary profile is trivial. As Alan suggests, you could just have
+a standard profile for /home/crispin/bin/foo and fun with mv would
+switch programs in and out of it. Or for more control, just draft a new
+policy and load it; it just takes a few seconds to cp the profile for
+something else and edit it a bit, and then load it.
 
-Measurements indicate that DISCONTIGMEM has a higher
-overhead than sparsemem. And FLATMEMs benefits are minimal. So I think its
-best to simply standardize on sparsemem.
+The big difference between the former and latter is that the former is
+inflexible (it either works or it doesn't) and the latter requires
+privilege.
 
-Results of page allocator tests (test can be had via git from the slab git
-tree on git.kernel.org. See the branch tests)
+Crispin
 
-Measurements in cycle counts. 1000 allocations were performed and then the
-average cycle count was calculated.
+-- 
+Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin
+CEO, Mercenary Linux		   http://mercenarylinux.com/
+	       Itanium. Vista. GPLv3. Complexity at work
 
-Order	FlatMem	Discontig	SparseMem
-0	  639	  665		  641
-1	  567	  647		  593
-2	  679	  774		  692
-3	  763	  967		  781
-4	  961	 1501		  962
-5	 1356	 2344		 1392
-6	 2224	 3982		 2336
-7	 4869	 7225		 5074
-8	12500	14048		12732
-9	27926	28223		28165
-10	58578	58714		58682
-
-If this patch is accepted then we can remove the code for discontig and
-flatmem support from x86_64.
-
-(Not sure if I got all the config settings right. Andy?)
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
----
- arch/x86/Kconfig.x86_64 |   13 +------------
- 1 file changed, 1 insertion(+), 12 deletions(-)
-
-Index: linux-2.6/arch/x86/Kconfig.x86_64
-===================================================================
---- linux-2.6.orig/arch/x86/Kconfig.x86_64	2007-11-12 15:17:50.721767735 -0800
-+++ linux-2.6/arch/x86/Kconfig.x86_64	2007-11-12 15:21:16.659017509 -0800
-@@ -390,28 +390,17 @@ config NUMA_EMU
- 	  into virtual nodes when booted with "numa=fake=N", where N is the
- 	  number of nodes. This is only useful for debugging.
- 
--config ARCH_DISCONTIGMEM_ENABLE
--       bool
--       depends on NUMA
--       default y
--
--config ARCH_DISCONTIGMEM_DEFAULT
-+config ARCH_SPARSEMEM_DEFAULT
- 	def_bool y
--	depends on NUMA
- 
- config ARCH_SPARSEMEM_ENABLE
- 	def_bool y
--	depends on (NUMA || EXPERIMENTAL)
- 	select SPARSEMEM_VMEMMAP_ENABLE
- 
- config ARCH_MEMORY_PROBE
- 	def_bool y
- 	depends on MEMORY_HOTPLUG
- 
--config ARCH_FLATMEM_ENABLE
--	def_bool y
--	depends on !NUMA
--
- source "mm/Kconfig"
- 
- config MEMORY_HOTPLUG_RESERVE
