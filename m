@@ -1,51 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758789AbXKLTtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756571AbXKLTyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758789AbXKLTtT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 14:49:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755122AbXKLTtD
+	id S1756571AbXKLTyU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 14:54:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbXKLTyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 14:49:03 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:35438 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752193AbXKLTtB (ORCPT
+	Mon, 12 Nov 2007 14:54:09 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39921 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752579AbXKLTyI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 14:49:01 -0500
-Message-ID: <4738AE04.1030506@cosmosbay.com>
-Date: Mon, 12 Nov 2007 20:48:20 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Herbert Xu <herbert@gondor.apana.org.au>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       mathieu.desnoyers@polymtl.ca, penberg@cs.helsinki.fi
-Subject: Re: [patch 0/7] [RFC] SLUB: Improve allocpercpu to reduce per cpu
- access overhead
-References: <E1IrWuB-0005nS-00@gondolin.me.apana.org.au> <Pine.LNX.4.64.0711121112410.26682@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0711121112410.26682@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Mon, 12 Nov 2007 20:48:34 +0100 (CET)
+	Mon, 12 Nov 2007 14:54:08 -0500
+Date: Mon, 12 Nov 2007 11:53:53 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-am33-list@redhat.com
+Subject: Re: [PATCH 1/6] Suppress A.OUT library support if
+ !CONFIG_BINFMT_AOUT [try #5]
+Message-Id: <20071112115353.227f35cb.akpm@linux-foundation.org>
+In-Reply-To: <6214.1194881680@redhat.com>
+References: <20071110181416.31dc2614.akpm@linux-foundation.org>
+	<20071109153432.20803.69832.stgit@warthog.procyon.org.uk>
+	<20071109153437.20803.55096.stgit@warthog.procyon.org.uk>
+	<6214.1194881680@redhat.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter a écrit :
-> On Mon, 12 Nov 2007, Herbert Xu wrote:
+On Mon, 12 Nov 2007 15:34:40 +0000 David Howells <dhowells@redhat.com> wrote:
+
+> Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
->> David Miller <davem@davemloft.net> wrote:
->>> Each IP compression tunnel instance does an alloc_percpu().
->> Actually all IPComp tunnels share one set of objects which are
->> allocated per-cpu.  So only the first tunnel would do that.
+> > > +# -*- makefile -*-
+> > 
+> > what's that?
 > 
-> Ahh so the need to be able to expand per cpu memory storage on demand 
-> is not as critical as we thought.
+> Ah...  That tells emacs that it's a makefile.  In Kbuild.asm emacs thinks its
+> an Assembly file and not a makefile.  This causes it to attempt to do
+> automatic indentation on it.  Do you want me to drop these annotation
+> comments?
+
+Doesn't worry me, but I'd suggest that such annotation be added to all such
+files in a single separate patch.
+
+otoh it'd be pretty dumb of emacs if there wasn't some way of telling it
+the type of a file external from that file itself.
+
+> > Note that because of unexport-asm-pageh.patch I turned the above hunk into
+> > 
+> > ifeq ($(wildcard include/asm-$(SRCARCH)/a.out.h),include/asm-$(SRCARCH)/a.out.h)
+> > unifdef-y += a.out.h
+> > endif
+> > 
+> > which seems logical to me.  We'll see how it tests out.
 > 
+> Are you talking about in linux/Kbuild or in asm-generic/Kbuild.asm or both?
 
-Yes, but still desirable for future optimizations.
+I forget which Kbuild file that was.  But with the above change, both
+include/asm-generic/Kbuild.asm and include/linux/Kbuild are using
+unifdef-y.
 
-For example, I do think using a per cpu memory storage on net_device refcnt & 
-last_rx could give us some speedups.
-
-
-
+> Anyway, it sounds reasonable.
+> 
+> David
