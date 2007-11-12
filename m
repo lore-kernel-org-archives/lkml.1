@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757964AbXKLJRI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757643AbXKLJ1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757964AbXKLJRI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 04:17:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbXKLJQ4
+	id S1757643AbXKLJ1u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 04:27:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755130AbXKLJ1l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 04:16:56 -0500
-Received: from mx2.suse.de ([195.135.220.15]:60044 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753027AbXKLJQz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 04:16:55 -0500
-Subject: Re: Kernel panic at boot with ondemand governor as default
-	(2.6.24-rc2)
-From: Thomas Renninger <trenn@suse.de>
-Reply-To: trenn@suse.de
-To: Eric Piel <Eric.Piel@lifl.fr>
-Cc: linux-kernel@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Dave Jones <davej@redhat.com>
-In-Reply-To: <4737539F.2070401@lifl.fr>
-References: <4737539F.2070401@lifl.fr>
+	Mon, 12 Nov 2007 04:27:41 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60745 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753131AbXKLJ1k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 04:27:40 -0500
+Subject: Re: dio_get_page() lockdep complaints
+From: Peter Zijlstra <peterz@infradead.org>
+To: schwidefsky@de.ibm.com
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Zach Brown <zach.brown@oracle.com>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-aio@kvack.org, Chris Mason <chris.mason@oracle.com>,
+       linux-mm <linux-mm@kvack.org>, Hugh Dickins <hugh@veritas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <1194857152.972.5.camel@localhost>
+References: <20070419073828.GB20928@kernel.dk>
+	 <1194627742.6289.175.camel@twins>  <4734992C.7000408@oracle.com>
+	 <1194630300.7459.65.camel@heimdal.trondhjem.org>
+	 <1194810546.6098.6.camel@lappy>  <1194857152.972.5.camel@localhost>
 Content-Type: text/plain
-Organization: Novell/SUSE
-Date: Mon, 12 Nov 2007 10:16:52 +0100
-Message-Id: <1194859012.4590.595.camel@queen.suse.de>
+Date: Mon, 12 Nov 2007 10:27:22 +0100
+Message-Id: <1194859642.7179.1.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-11-11 at 20:10 +0100, Eric Piel wrote:
-> Hello,
-> 
-> I've tried kernel 2.6.24-rc2 and I have a problem with the new option 
-> for setting up the cpufreq ondemand governor as default: a kernel panic 
-> happens early at boot time. If I boot first with performance governor 
-> and later change to ondemand, everything is fine (as usual).
-> 
-> This seems related to the delayed_workqueue. The kernel panic message 
-> finishes by:
-> EIP: [<c012aa60>] wq_per_cpu+0x0/0x10 SS:ESP 0068:c191be58
-> Kernel panic - not syncing: Attempted to kill init!
-> 
-> A picture of the whole message is available here:
-> http://pieleric.free.fr/unorder/1162-ondemand-panic.jpg
-> 
-> My computer is a x86 using speedstep-ich, and you can find the full 
-> .config leading to the panic attached.
-> 
-> Does anyone has any idea was it going wrong?
 
-Does it work if you compile speedstep-ich as a module?
-If you load it, ondemand governor should still be set up automatically.
-If this works, could it be that the kernel does not like that
-queue_delayed_work_on is called that early?
+On Mon, 2007-11-12 at 09:45 +0100, Martin Schwidefsky wrote:
+> On Sun, 2007-11-11 at 20:49 +0100, Peter Zijlstra wrote:
+> > Right, which gets us into all kinds of trouble because some sites need
+> > mmap_sem to resolve some races, notably s390 31-bit and shm.
+> 
+> You are refering to the mmap_sem use in compat_linux.c:do_mmap2, aren't
+> you? That check for adresses > 2GB after the call to do_mmap_pgoff can
+> be removed since arch_get_unmapped_area already checks against
+> TASK_SIZE. The result of the do_mmap_pgoff call will never be out of
+> range. This check is a left-over from the early days of the s390 compat
+> code.
 
-   Thomas
+Correct, that is the one I was referring to. Thanks for the explanation,
+I'll clean it up when I take this patch forward.
+
+
 
