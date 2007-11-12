@@ -1,42 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757200AbXKLTss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758789AbXKLTtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757200AbXKLTss (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 14:48:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbXKLTsk
+	id S1758789AbXKLTtT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 14:49:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755122AbXKLTtD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 14:48:40 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35080 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751687AbXKLTsk (ORCPT
+	Mon, 12 Nov 2007 14:49:03 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:35438 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752193AbXKLTtB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 14:48:40 -0500
-Date: Mon, 12 Nov 2007 19:48:06 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Ron Yorgason" <yorgasor@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Better support for Delkin cardbus CF adapters -- IDE layer
-Message-ID: <20071112194806.4cb9c688@the-village.bc.nu>
-In-Reply-To: <93d1fdd10711121003t2286493bob25a3acd12134720@mail.gmail.com>
-References: <93d1fdd10711121003t2286493bob25a3acd12134720@mail.gmail.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Nov 2007 14:49:01 -0500
+Message-ID: <4738AE04.1030506@cosmosbay.com>
+Date: Mon, 12 Nov 2007 20:48:20 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Christoph Lameter <clameter@sgi.com>
+CC: Herbert Xu <herbert@gondor.apana.org.au>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       mathieu.desnoyers@polymtl.ca, penberg@cs.helsinki.fi
+Subject: Re: [patch 0/7] [RFC] SLUB: Improve allocpercpu to reduce per cpu
+ access overhead
+References: <E1IrWuB-0005nS-00@gondolin.me.apana.org.au> <Pine.LNX.4.64.0711121112410.26682@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0711121112410.26682@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Mon, 12 Nov 2007 20:48:34 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> the kernel), performance is pretty abysmal.  What would it take to get
-> proper DMA support?  Is it an architecture problem, in that this
-> doesn't use the normal IDE PCI driver?  Is it a lack of documentation
-> on card specs?  What can I do to help?
+Christoph Lameter a écrit :
+> On Mon, 12 Nov 2007, Herbert Xu wrote:
+> 
+>> David Miller <davem@davemloft.net> wrote:
+>>> Each IP compression tunnel instance does an alloc_percpu().
+>> Actually all IPComp tunnels share one set of objects which are
+>> allocated per-cpu.  So only the first tunnel would do that.
+> 
+> Ahh so the need to be able to expand per cpu memory storage on demand 
+> is not as critical as we thought.
+> 
 
-Persuade Delkin to provide specifications either publically or under NDA
-(but allowing a GPL source code driver) with one of the ATA developers.
+Yes, but still desirable for future optimizations.
 
-For a fairly typical SFF style controller it shouldn't take long to
-produce a test driver.
+For example, I do think using a per cpu memory storage on net_device refcnt & 
+last_rx could give us some speedups.
 
-Alan
+
+
