@@ -1,572 +1,1627 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759635AbXKLSIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754514AbXKLSSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759635AbXKLSIr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 13:08:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbXKLSIj
+	id S1754514AbXKLSSU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 13:18:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbXKLSSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 13:08:39 -0500
-Received: from mailgw1.uni-kl.de ([131.246.120.220]:51869 "EHLO
-	mailgw1.uni-kl.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751320AbXKLSIh (ORCPT
+	Mon, 12 Nov 2007 13:18:05 -0500
+Received: from fk-out-0910.google.com ([209.85.128.187]:61888 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751250AbXKLSSA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 13:08:37 -0500
-From: Bernd Strieder <strieder@informatik.uni-kl.de>
-Organization: TU Kaiserlautern
-To: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: x86_64 SATA DVD drive + libata trouble
-Date: Mon, 12 Nov 2007 19:08:22 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-References: <fa.8uxz0HU0qK8mBG2Y3elfa/Plk4k@ifi.uio.no> <47360321.2060803@shaw.ca>
-In-Reply-To: <47360321.2060803@shaw.ca>
-Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Mon, 12 Nov 2007 13:18:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=LCHNcBEQ0mFBb3fCjG7154cVfZP81cu/c+YAT2GNs+w5lYbB/WMTLxHAeWbHTjuPuFZO7fmdYtsjLZARVcKuX7rnIBN7Kusxy05qaZ4l1mV2FvlB86TKspufw1GXMpRuT7/UJiok2xLTlnZyCz9zhUtfG4GvdiU+WY5XtMTh1Pk=
+Date: Mon, 12 Nov 2007 21:17:47 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/1] [IA32-EMU] Remove trailing spaces
+Message-ID: <20071112181747.GE7296@cvg>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_XaJOHEIHGmfzz8W"
-Message-Id: <200711121908.23111.strieder@informatik.uni-kl.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_XaJOHEIHGmfzz8W
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+This patch does remove trailing spaces from
+source files.
 
-Hello,
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
+ arch/x86/ia32/fpu32.c              |   46 ++++++------
+ arch/x86/ia32/ia32_aout.c          |   38 +++++-----
+ arch/x86/ia32/ia32_binfmt.c        |    2 +-
+ arch/x86/ia32/ia32_signal.c        |  132 ++++++++++++++++++------------------
+ arch/x86/ia32/ia32entry.S          |  100 ++++++++++++++--------------
+ arch/x86/ia32/ptrace32.c           |  122 +++++++++++++++++-----------------
+ arch/x86/ia32/sys_ia32.c           |   98 +++++++++++++-------------
+ arch/x86/ia32/syscall32.c          |   16 ++--
+ arch/x86/ia32/tls32.c              |   18 +++---
+ arch/x86/ia32/vsyscall-sigreturn.S |    4 +-
+ arch/x86/ia32/vsyscall.lds         |    4 +-
+ 11 files changed, 290 insertions(+), 290 deletions(-)
 
-sorry for the large amount of files in my last mail, which will be 
-outdated by this mail. Had I only read a little bit further on the 
-bugzilla page.
+diff --git a/arch/x86/ia32/fpu32.c b/arch/x86/ia32/fpu32.c
+index 2c8209a..7ab8969 100644
+--- a/arch/x86/ia32/fpu32.c
++++ b/arch/x86/ia32/fpu32.c
+@@ -1,8 +1,8 @@
+-/* 
++/*
+  * Copyright 2002 Andi Kleen, SuSE Labs.
+  * FXSAVE<->i387 conversion support. Based on code by Gareth Hughes.
+  * This is used for ptrace, signals and coredumps in 32bit emulation.
+- */ 
++ */
+ 
+ #include <linux/sched.h>
+ #include <asm/sigcontext32.h>
+@@ -13,7 +13,7 @@
+ static inline unsigned short twd_i387_to_fxsr(unsigned short twd)
+ {
+ 	unsigned int tmp; /* to avoid 16 bit prefixes in the code */
+- 
++
+ 	/* Transform each pair of bits into 01 (valid) or 00 (empty) */
+         tmp = ~twd;
+         tmp = (tmp | (tmp>>1)) & 0x5555; /* 0V0V0V0V0V0V0V0V */
+@@ -91,8 +91,8 @@ static inline int convert_fxsr_from_user(struct i387_fxsave_struct *fxsave,
+ 	G(5, fxsave->rdp);
+ 	/* 6: ds ignored */
+ #undef G
+-	if (err) 
+-		return -1; 
++	if (err)
++		return -1;
+ 
+ 	to = (struct _fpxreg *)&fxsave->st_space[0];
+ 	from = &buf->_st[0];
+@@ -112,31 +112,31 @@ static inline int convert_fxsr_to_user(struct _fpstate_ia32 __user *buf,
+ 	struct _fpreg __user *to;
+ 	struct _fpxreg *from;
+ 	int i;
+-	u16 cs,ds; 
+-	int err = 0; 
++	u16 cs,ds;
++	int err = 0;
+ 
+ 	if (tsk == current) {
+ 		/* should be actually ds/cs at fpu exception time,
+ 		   but that information is not available in 64bit mode. */
+-		asm("movw %%ds,%0 " : "=r" (ds)); 
+-		asm("movw %%cs,%0 " : "=r" (cs)); 		
++		asm("movw %%ds,%0 " : "=r" (ds));
++		asm("movw %%cs,%0 " : "=r" (cs));
+ 	} else { /* ptrace. task has stopped. */
+ 		ds = tsk->thread.ds;
+ 		cs = regs->cs;
+-	} 
++	}
+ 
+ #define P(num,val) err |= __put_user(val, num + (u32 __user *)buf)
+ 	P(0, (u32)fxsave->cwd | 0xffff0000);
+ 	P(1, (u32)fxsave->swd | 0xffff0000);
+ 	P(2, twd_fxsr_to_i387(fxsave));
+ 	P(3, (u32)fxsave->rip);
+-	P(4,  cs | ((u32)fxsave->fop) << 16); 
++	P(4,  cs | ((u32)fxsave->fop) << 16);
+ 	P(5, fxsave->rdp);
+ 	P(6, 0xffff0000 | ds);
+ #undef P
+ 
+-	if (err) 
+-		return -1; 
++	if (err)
++		return -1;
+ 
+ 	to = &buf->_st[0];
+ 	from = (struct _fpxreg *) &fxsave->st_space[0];
+@@ -147,22 +147,22 @@ static inline int convert_fxsr_to_user(struct _fpstate_ia32 __user *buf,
+ 	return 0;
+ }
+ 
+-int restore_i387_ia32(struct task_struct *tsk, struct _fpstate_ia32 __user *buf, int fsave) 
+-{ 
++int restore_i387_ia32(struct task_struct *tsk, struct _fpstate_ia32 __user *buf, int fsave)
++{
+ 	clear_fpu(tsk);
+-	if (!fsave) { 
+-		if (__copy_from_user(&tsk->thread.i387.fxsave, 
++	if (!fsave) {
++		if (__copy_from_user(&tsk->thread.i387.fxsave,
+ 				     &buf->_fxsr_env[0],
+ 				     sizeof(struct i387_fxsave_struct)))
+ 			return -1;
+ 		tsk->thread.i387.fxsave.mxcsr &= mxcsr_feature_mask;
+ 		set_stopped_child_used_math(tsk);
+-	} 
++	}
+ 	return convert_fxsr_from_user(&tsk->thread.i387.fxsave, buf);
+-}  
++}
+ 
+-int save_i387_ia32(struct task_struct *tsk, 
+-		   struct _fpstate_ia32 __user *buf, 
++int save_i387_ia32(struct task_struct *tsk,
++		   struct _fpstate_ia32 __user *buf,
+ 		   struct pt_regs *regs,
+ 		   int fsave)
+ {
+@@ -174,8 +174,8 @@ int save_i387_ia32(struct task_struct *tsk,
+ 	if (fsave)
+ 		return 0;
+ 	err |= __put_user(tsk->thread.i387.fxsave.swd, &buf->status);
+-	if (fsave) 
+-		return err ? -1 : 1; 	
++	if (fsave)
++		return err ? -1 : 1;
+ 	err |= __put_user(X86_FXSR_MAGIC, &buf->magic);
+ 	err |= __copy_to_user(&buf->_fxsr_env[0], &tsk->thread.i387.fxsave,
+ 			      sizeof(struct i387_fxsave_struct));
+diff --git a/arch/x86/ia32/ia32_aout.c b/arch/x86/ia32/ia32_aout.c
+index f82e1a9..a7e0ac5 100644
+--- a/arch/x86/ia32/ia32_aout.c
++++ b/arch/x86/ia32/ia32_aout.c
+@@ -57,14 +57,14 @@ static void dump_thread32(struct pt_regs * regs, struct user32 * dump)
+ 	dump->u_dsize = ((unsigned long) (current->mm->brk + (PAGE_SIZE-1))) >> PAGE_SHIFT;
+ 	dump->u_dsize -= dump->u_tsize;
+ 	dump->u_ssize = 0;
+-	dump->u_debugreg[0] = current->thread.debugreg0;  
+-	dump->u_debugreg[1] = current->thread.debugreg1;  
+-	dump->u_debugreg[2] = current->thread.debugreg2;  
+-	dump->u_debugreg[3] = current->thread.debugreg3;  
+-	dump->u_debugreg[4] = 0;  
+-	dump->u_debugreg[5] = 0;  
+-	dump->u_debugreg[6] = current->thread.debugreg6;  
+-	dump->u_debugreg[7] = current->thread.debugreg7;  
++	dump->u_debugreg[0] = current->thread.debugreg0;
++	dump->u_debugreg[1] = current->thread.debugreg1;
++	dump->u_debugreg[2] = current->thread.debugreg2;
++	dump->u_debugreg[3] = current->thread.debugreg3;
++	dump->u_debugreg[4] = 0;
++	dump->u_debugreg[5] = 0;
++	dump->u_debugreg[6] = current->thread.debugreg6;
++	dump->u_debugreg[7] = current->thread.debugreg7;
+ 
+ 	if (dump->start_stack < 0xc0000000)
+ 		dump->u_ssize = ((unsigned long) (0xc0000000 - dump->start_stack)) >> PAGE_SHIFT;
+@@ -79,7 +79,7 @@ static void dump_thread32(struct pt_regs * regs, struct user32 * dump)
+ 	dump->regs.ds = current->thread.ds;
+ 	dump->regs.es = current->thread.es;
+ 	asm("movl %%fs,%0" : "=r" (fs)); dump->regs.fs = fs;
+-	asm("movl %%gs,%0" : "=r" (gs)); dump->regs.gs = gs; 
++	asm("movl %%gs,%0" : "=r" (gs)); dump->regs.gs = gs;
+ 	dump->regs.orig_eax = regs->orig_rax;
+ 	dump->regs.eip = regs->rip;
+ 	dump->regs.cs = regs->cs;
+@@ -291,13 +291,13 @@ static int load_aout_binary(struct linux_binprm * bprm, struct pt_regs * regs)
+ 	if (retval)
+ 		return retval;
+ 
+-	regs->cs = __USER32_CS; 
++	regs->cs = __USER32_CS;
+ 	regs->r8 = regs->r9 = regs->r10 = regs->r11 = regs->r12 =
+ 		regs->r13 = regs->r14 = regs->r15 = 0;
+ 
+ 	/* OK, This is the point of no return */
+ 	set_personality(PER_LINUX);
+-	set_thread_flag(TIF_IA32); 
++	set_thread_flag(TIF_IA32);
+ 	clear_thread_flag(TIF_ABI_PENDING);
+ 
+ 	current->mm->end_code = ex.a_text +
+@@ -338,7 +338,7 @@ static int load_aout_binary(struct linux_binprm * bprm, struct pt_regs * regs)
+ 			send_sig(SIGKILL, current, 0);
+ 			return error;
+ 		}
+-			 
++
+ 		flush_icache_range(text_addr, text_addr+ex.a_text+ex.a_data);
+ 	} else {
+ #ifdef WARN_OLD
+@@ -353,7 +353,7 @@ static int load_aout_binary(struct linux_binprm * bprm, struct pt_regs * regs)
+ 		if ((fd_offset & ~PAGE_MASK) != 0 &&
+ 		    (jiffies-error_time) > 5*HZ)
+ 		{
+-			printk(KERN_WARNING 
++			printk(KERN_WARNING
+ 			       "fd_offset is not page aligned. Please convert program: %s\n",
+ 			       bprm->file->f_path.dentry->d_name.name);
+ 			error_time = jiffies;
+@@ -403,9 +403,9 @@ beyond_if:
+ 	set_brk(current->mm->start_brk, current->mm->brk);
+ 
+ 	retval = setup_arg_pages(bprm, IA32_STACK_TOP, EXSTACK_DEFAULT);
+-	if (retval < 0) { 
+-		/* Someone check-me: is this error path enough? */ 
+-		send_sig(SIGKILL, current, 0); 
++	if (retval < 0) {
++		/* Someone check-me: is this error path enough? */
++		send_sig(SIGKILL, current, 0);
+ 		return retval;
+ 	}
+ 
+@@ -414,7 +414,7 @@ beyond_if:
+ 	/* start thread */
+ 	asm volatile("movl %0,%%fs" :: "r" (0)); \
+ 	asm volatile("movl %0,%%es; movl %0,%%ds": :"r" (__USER32_DS));
+-	load_gs_index(0); 
++	load_gs_index(0);
+ 	(regs)->rip = ex.a_entry;
+ 	(regs)->rsp = current->mm->start_stack;
+ 	(regs)->eflags = 0x200;
+@@ -469,7 +469,7 @@ static int load_aout_library(struct file *file)
+ 		static unsigned long error_time;
+ 		if ((jiffies-error_time) > 5*HZ)
+ 		{
+-			printk(KERN_WARNING 
++			printk(KERN_WARNING
+ 			       "N_TXTOFF is not page aligned. Please convert library: %s\n",
+ 			       file->f_path.dentry->d_name.name);
+ 			error_time = jiffies;
+@@ -478,7 +478,7 @@ static int load_aout_library(struct file *file)
+ 		down_write(&current->mm->mmap_sem);
+ 		do_brk(start_addr, ex.a_text + ex.a_data + ex.a_bss);
+ 		up_write(&current->mm->mmap_sem);
+-		
++
+ 		file->f_op->read(file, (char __user *)start_addr,
+ 			ex.a_text + ex.a_data, &pos);
+ 		flush_icache_range((unsigned long) start_addr,
+diff --git a/arch/x86/ia32/ia32_binfmt.c b/arch/x86/ia32/ia32_binfmt.c
+index 55822d2..a628aa2 100644
+--- a/arch/x86/ia32/ia32_binfmt.c
++++ b/arch/x86/ia32/ia32_binfmt.c
+@@ -277,7 +277,7 @@ static ctl_table abi_root_table2[] = {
+ };
+ 
+ static __init int ia32_binfmt_init(void)
+-{ 
++{
+ 	register_sysctl_table(abi_root_table2);
+ 	return 0;
+ }
+diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
+index 6ea19c2..ce27379 100644
+--- a/arch/x86/ia32/ia32_signal.c
++++ b/arch/x86/ia32/ia32_signal.c
+@@ -76,10 +76,10 @@ int copy_siginfo_to_user32(compat_siginfo_t __user *to, siginfo_t *from)
+ 			err |= __put_user(from->si_uid, &to->si_uid);
+ 			break;
+ 		case __SI_POLL >> 16:
+-			err |= __put_user(from->si_fd, &to->si_fd); 
++			err |= __put_user(from->si_fd, &to->si_fd);
+ 			break;
+ 		case __SI_TIMER >> 16:
+-			err |= __put_user(from->si_overrun, &to->si_overrun); 
++			err |= __put_user(from->si_overrun, &to->si_overrun);
+ 			err |= __put_user(ptr_to_compat(from->si_ptr),
+ 					&to->si_ptr);
+ 			break;
+@@ -130,13 +130,13 @@ sys32_sigsuspend(int history0, int history1, old_sigset_t mask)
+ 
+ asmlinkage long
+ sys32_sigaltstack(const stack_ia32_t __user *uss_ptr,
+-		  stack_ia32_t __user *uoss_ptr, 
++		  stack_ia32_t __user *uoss_ptr,
+ 		  struct pt_regs *regs)
+ {
+-	stack_t uss,uoss; 
++	stack_t uss,uoss;
+ 	int ret;
+-	mm_segment_t seg; 
+-	if (uss_ptr) { 
++	mm_segment_t seg;
++	if (uss_ptr) {
+ 		u32 ptr;
+ 		memset(&uss,0,sizeof(stack_t));
+ 		if (!access_ok(VERIFY_READ,uss_ptr,sizeof(stack_ia32_t)) ||
+@@ -146,18 +146,18 @@ sys32_sigaltstack(const stack_ia32_t __user *uss_ptr,
+ 			return -EFAULT;
+ 		uss.ss_sp = compat_ptr(ptr);
+ 	}
+-	seg = get_fs(); 
+-	set_fs(KERNEL_DS); 
++	seg = get_fs();
++	set_fs(KERNEL_DS);
+ 	ret = do_sigaltstack(uss_ptr ? &uss : NULL, &uoss, regs->rsp);
+-	set_fs(seg); 
++	set_fs(seg);
+ 	if (ret >= 0 && uoss_ptr)  {
+ 		if (!access_ok(VERIFY_WRITE,uoss_ptr,sizeof(stack_ia32_t)) ||
+ 		    __put_user(ptr_to_compat(uoss.ss_sp), &uoss_ptr->ss_sp) ||
+ 		    __put_user(uoss.ss_flags, &uoss_ptr->ss_flags) ||
+ 		    __put_user(uoss.ss_size, &uoss_ptr->ss_size))
+ 			ret = -EFAULT;
+-	} 	
+-	return ret;	
++	}
++	return ret;
+ }
+ 
+ /*
+@@ -190,7 +190,7 @@ static int
+ ia32_restore_sigcontext(struct pt_regs *regs, struct sigcontext_ia32 __user *sc, unsigned int *peax)
+ {
+ 	unsigned int err = 0;
+-	
++
+ 	/* Always make any pending restarted system calls return -EINTR */
+ 	current_thread_info()->restart_block.fn = do_no_restart_syscall;
+ 
+@@ -213,29 +213,29 @@ ia32_restore_sigcontext(struct pt_regs *regs, struct sigcontext_ia32 __user *sc,
+ 	  if (pre != cur) loadsegment(seg,pre); }
+ 
+ 	/* Reload fs and gs if they have changed in the signal handler.
+-	   This does not handle long fs/gs base changes in the handler, but 
+-	   does not clobber them at least in the normal case. */ 
+-	
++	   This does not handle long fs/gs base changes in the handler, but
++	   does not clobber them at least in the normal case. */
++
+ 	{
+-		unsigned gs, oldgs; 
++		unsigned gs, oldgs;
+ 		err |= __get_user(gs, &sc->gs);
+-		gs |= 3; 
++		gs |= 3;
+ 		asm("movl %%gs,%0" : "=r" (oldgs));
+ 		if (gs != oldgs)
+-		load_gs_index(gs); 
+-	} 
++		load_gs_index(gs);
++	}
+ 	RELOAD_SEG(fs,3);
+ 	RELOAD_SEG(ds,3);
+ 	RELOAD_SEG(es,3);
+ 
+ 	COPY(di); COPY(si); COPY(bp); COPY(sp); COPY(bx);
+ 	COPY(dx); COPY(cx); COPY(ip);
+-	/* Don't touch extended registers */ 
+-	
+-	err |= __get_user(regs->cs, &sc->cs); 
+-	regs->cs |= 3;  
+-	err |= __get_user(regs->ss, &sc->ss); 
+-	regs->ss |= 3; 
++	/* Don't touch extended registers */
++
++	err |= __get_user(regs->cs, &sc->cs);
++	regs->cs |= 3;
++	err |= __get_user(regs->ss, &sc->ss);
++	regs->ss |= 3;
+ 
+ 	{
+ 		unsigned int tmpflags;
+@@ -262,7 +262,7 @@ ia32_restore_sigcontext(struct pt_regs *regs, struct sigcontext_ia32 __user *sc,
+ 		}
+ 	}
+ 
+-	{ 
++	{
+ 		u32 tmp;
+ 		err |= __get_user(tmp, &sc->eax);
+ 		*peax = tmp;
+@@ -292,7 +292,7 @@ asmlinkage long sys32_sigreturn(struct pt_regs *regs)
+ 	current->blocked = set;
+ 	recalc_sigpending();
+ 	spin_unlock_irq(&current->sighand->siglock);
+-	
++
+ 	if (ia32_restore_sigcontext(regs, &frame->sc, &eax))
+ 		goto badframe;
+ 	return eax;
+@@ -300,7 +300,7 @@ asmlinkage long sys32_sigreturn(struct pt_regs *regs)
+ badframe:
+ 	signal_fault(regs, frame, "32bit sigreturn");
+ 	return 0;
+-}	
++}
+ 
+ asmlinkage long sys32_rt_sigreturn(struct pt_regs *regs)
+ {
+@@ -321,7 +321,7 @@ asmlinkage long sys32_rt_sigreturn(struct pt_regs *regs)
+ 	current->blocked = set;
+ 	recalc_sigpending();
+ 	spin_unlock_irq(&current->sighand->siglock);
+-	
++
+ 	if (ia32_restore_sigcontext(regs, &frame->uc.uc_mcontext, &eax))
+ 		goto badframe;
+ 
+@@ -334,7 +334,7 @@ asmlinkage long sys32_rt_sigreturn(struct pt_regs *regs)
+ badframe:
+ 	signal_fault(regs,frame,"32bit rt sigreturn");
+ 	return 0;
+-}	
++}
+ 
+ /*
+  * Set up a signal frame.
+@@ -375,7 +375,7 @@ ia32_setup_sigcontext(struct sigcontext_ia32 __user *sc, struct _fpstate_ia32 __
+ 	tmp = save_i387_ia32(current, fpstate, regs, 0);
+ 	if (tmp < 0)
+ 		err = -EFAULT;
+-	else { 
++	else {
+ 		clear_used_math();
+ 		stts();
+ 		err |= __put_user(ptr_to_compat(tmp ? fpstate : NULL),
+@@ -448,32 +448,32 @@ int ia32_setup_frame(int sig, struct k_sigaction *ka,
+ 		goto give_sigsegv;
+ 
+ 	/* Return stub is in 32bit vsyscall page */
+-	{ 
++	{
+ 		void __user *restorer;
+ 		if (current->binfmt->hasvdso)
+ 			restorer = VSYSCALL32_SIGRETURN;
+ 		else
+ 			restorer = (void *)&frame->retcode;
+ 		if (ka->sa.sa_flags & SA_RESTORER)
+-			restorer = ka->sa.sa_restorer;       
++			restorer = ka->sa.sa_restorer;
+ 		err |= __put_user(ptr_to_compat(restorer), &frame->pretcode);
+ 	}
+-	/* These are actually not used anymore, but left because some 
++	/* These are actually not used anymore, but left because some
+ 	   gdb versions depend on them as a marker. */
+-	{ 
++	{
+ 		/* copy_to_user optimizes that into a single 8 byte store */
+-		static const struct { 
++		static const struct {
+ 			u16 poplmovl;
+ 			u32 val;
+-			u16 int80;    
+-			u16 pad; 
+-		} __attribute__((packed)) code = { 
++			u16 int80;
++			u16 pad;
++		} __attribute__((packed)) code = {
+ 			0xb858,		 /* popl %eax ; movl $...,%eax */
+-			__NR_ia32_sigreturn,   
++			__NR_ia32_sigreturn,
+ 			0x80cd,		/* int $0x80 */
+ 			0,
+-		}; 
+-		err |= __copy_to_user(frame->retcode, &code, 8); 
++		};
++		err |= __copy_to_user(frame->retcode, &code, 8);
+ 	}
+ 	if (err)
+ 		goto give_sigsegv;
+@@ -487,11 +487,11 @@ int ia32_setup_frame(int sig, struct k_sigaction *ka,
+ 	regs->rdx = 0;
+ 	regs->rcx = 0;
+ 
+-	asm volatile("movl %0,%%ds" :: "r" (__USER32_DS)); 
+-	asm volatile("movl %0,%%es" :: "r" (__USER32_DS)); 
++	asm volatile("movl %0,%%ds" :: "r" (__USER32_DS));
++	asm volatile("movl %0,%%es" :: "r" (__USER32_DS));
+ 
+-	regs->cs = __USER32_CS; 
+-	regs->ss = __USER32_DS; 
++	regs->cs = __USER32_CS;
++	regs->ss = __USER32_DS;
+ 
+ 	set_fs(USER_DS);
+ 	regs->eflags &= ~TF_MASK;
+@@ -549,33 +549,33 @@ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 	if (err)
+ 		goto give_sigsegv;
+ 
+-	
+-	{ 
+-		void __user *restorer = VSYSCALL32_RTSIGRETURN; 
++
++	{
++		void __user *restorer = VSYSCALL32_RTSIGRETURN;
+ 		if (ka->sa.sa_flags & SA_RESTORER)
+-			restorer = ka->sa.sa_restorer;       
++			restorer = ka->sa.sa_restorer;
+ 		err |= __put_user(ptr_to_compat(restorer), &frame->pretcode);
+ 	}
+ 
+ 	/* This is movl $,%eax ; int $0x80 */
+ 	/* Not actually used anymore, but left because some gdb versions
+-	   need it. */ 
+-	{ 
++	   need it. */
++	{
+ 		/* __copy_to_user optimizes that into a single 8 byte store */
+-		static const struct { 
+-			u8 movl; 
+-			u32 val; 
+-			u16 int80; 
++		static const struct {
++			u8 movl;
++			u32 val;
++			u16 int80;
+ 			u16 pad;
+-			u8  pad2;				
+-		} __attribute__((packed)) code = { 
++			u8  pad2;
++		} __attribute__((packed)) code = {
+ 			0xb8,
+ 			__NR_ia32_rt_sigreturn,
+ 			0x80cd,
+ 			0,
+-		}; 
+-		err |= __copy_to_user(frame->retcode, &code, 8); 
+-	} 
++		};
++		err |= __copy_to_user(frame->retcode, &code, 8);
++	}
+ 	if (err)
+ 		goto give_sigsegv;
+ 
+@@ -593,11 +593,11 @@ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 	regs->rdx = (unsigned long) &frame->info;
+ 	regs->rcx = (unsigned long) &frame->uc;
+ 
+-	asm volatile("movl %0,%%ds" :: "r" (__USER32_DS)); 
+-	asm volatile("movl %0,%%es" :: "r" (__USER32_DS)); 
+-	
+-	regs->cs = __USER32_CS; 
+-	regs->ss = __USER32_DS; 
++	asm volatile("movl %0,%%ds" :: "r" (__USER32_DS));
++	asm volatile("movl %0,%%es" :: "r" (__USER32_DS));
++
++	regs->cs = __USER32_CS;
++	regs->ss = __USER32_DS;
+ 
+ 	set_fs(USER_DS);
+ 	regs->eflags &= ~TF_MASK;
+diff --git a/arch/x86/ia32/ia32entry.S b/arch/x86/ia32/ia32entry.S
+index df588f0..2ee994b 100644
+--- a/arch/x86/ia32/ia32entry.S
++++ b/arch/x86/ia32/ia32entry.S
+@@ -1,16 +1,16 @@
+ /*
+- * Compatibility mode system call entry point for x86-64. 
+- * 		
++ * Compatibility mode system call entry point for x86-64.
++ *
+  * Copyright 2000-2002 Andi Kleen, SuSE Labs.
+- */		 
++ */
+ 
+ #include <asm/dwarf2.h>
+ #include <asm/calling.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/current.h>
+ #include <asm/errno.h>
+-#include <asm/ia32_unistd.h>	
+-#include <asm/thread_info.h>	
++#include <asm/ia32_unistd.h>
++#include <asm/thread_info.h>
+ #include <asm/segment.h>
+ #include <asm/vsyscall32.h>
+ #include <asm/irqflags.h>
+@@ -27,9 +27,9 @@
+ 	xchg	%ecx,%esi
+ 	movl	%ebx,%edi
+ 	movl	%edx,%edx	/* zero extension */
+-	.endm 
++	.endm
+ 
+-	/* clobbers %eax */	
++	/* clobbers %eax */
+ 	.macro  CLEAR_RREGS
+ 	xorl 	%eax,%eax
+ 	movq	%rax,R11(%rsp)
+@@ -49,7 +49,7 @@
+ 	movl \offset+64(%rsp),%edi
+ 	movl \offset+72(%rsp),%eax
+ 	.endm
+-	
++
+ 	.macro CFI_STARTPROC32 simple
+ 	CFI_STARTPROC	\simple
+ 	CFI_UNDEFINED	r8
+@@ -73,14 +73,14 @@
+  * %esi Arg4
+  * %edi Arg5
+  * %ebp user stack
+- * 0(%ebp) Arg6	
+- * 	
++ * 0(%ebp) Arg6
++ *
+  * Interrupts off.
+- *	
++ *
+  * This is purely a fast path. For anything complicated we use the int 0x80
+  * path below.	Set up a complete hardware stack frame to share code
+  * with the int 0x80 path.
+- */ 	
++ */
+ ENTRY(ia32_sysenter_target)
+ 	CFI_STARTPROC32	simple
+ 	CFI_SIGNAL_FRAME
+@@ -88,12 +88,12 @@ ENTRY(ia32_sysenter_target)
+ 	CFI_REGISTER	rsp,rbp
+ 	swapgs
+ 	movq	%gs:pda_kernelstack, %rsp
+-	addq	$(PDA_STACKOFFSET),%rsp	
++	addq	$(PDA_STACKOFFSET),%rsp
+ 	/*
+ 	 * No need to follow this irqs on/off section: the syscall
+ 	 * disabled irqs, here we enable it straight after entry:
+ 	 */
+-	sti	
++	sti
+  	movl	%ebp,%ebp		/* zero extension */
+ 	pushq	$__USER32_DS
+ 	CFI_ADJUST_CFA_OFFSET 8
+@@ -118,17 +118,17 @@ ENTRY(ia32_sysenter_target)
+ 	cld
+ 	SAVE_ARGS 0,0,1
+  	/* no need to do an access_ok check here because rbp has been
+- 	   32bit zero extended */ 
++ 	   32bit zero extended */
+ 1:	movl	(%rbp),%r9d
+  	.section __ex_table,"a"
+  	.quad 1b,ia32_badarg
+- 	.previous	
++ 	.previous
+ 	GET_THREAD_INFO(%r10)
+ 	orl    $TS_COMPAT,threadinfo_status(%r10)
+ 	testl  $(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP),threadinfo_flags(%r10)
+ 	CFI_REMEMBER_STATE
+ 	jnz  sysenter_tracesys
+-sysenter_do_call:	
++sysenter_do_call:
+ 	cmpl	$(IA32_NR_syscalls-1),%eax
+ 	ja	ia32_badsys
+ 	IA32_ARG_FIXUP 1
+@@ -141,7 +141,7 @@ sysenter_do_call:
+ 	jnz	int_ret_from_sys_call
+ 	andl    $~TS_COMPAT,threadinfo_status(%r10)
+ 	/* clear IF, that popfq doesn't enable interrupts early */
+-	andl  $~0x200,EFLAGS-R11(%rsp) 
++	andl  $~0x200,EFLAGS-R11(%rsp)
+ 	RESTORE_ARGS 1,24,1,1,1,1
+ 	popfq
+ 	CFI_ADJUST_CFA_OFFSET -8
+@@ -179,20 +179,20 @@ ENDPROC(ia32_sysenter_target)
+  * Arguments:
+  * %eax	System call number.
+  * %ebx Arg1
+- * %ecx return EIP 
++ * %ecx return EIP
+  * %edx Arg3
+  * %esi Arg4
+  * %edi Arg5
+  * %ebp Arg2    [note: not saved in the stack frame, should not be touched]
+- * %esp user stack 
++ * %esp user stack
+  * 0(%esp) Arg6
+- * 	
++ *
+  * Interrupts off.
+- *	
++ *
+  * This is purely a fast path. For anything complicated we use the int 0x80
+  * path below.	Set up a complete hardware stack frame to share code
+- * with the int 0x80 path.	
+- */ 	
++ * with the int 0x80 path.
++ */
+ ENTRY(ia32_cstar_target)
+ 	CFI_STARTPROC32	simple
+ 	CFI_SIGNAL_FRAME
+@@ -219,21 +219,21 @@ ENTRY(ia32_cstar_target)
+ 	movq	$__USER32_DS,SS-ARGOFFSET(%rsp)
+ 	movq	%r11,EFLAGS-ARGOFFSET(%rsp)
+ 	/*CFI_REL_OFFSET rflags,EFLAGS-ARGOFFSET*/
+-	movq	%r8,RSP-ARGOFFSET(%rsp)	
++	movq	%r8,RSP-ARGOFFSET(%rsp)
+ 	CFI_REL_OFFSET rsp,RSP-ARGOFFSET
+ 	/* no need to do an access_ok check here because r8 has been
+-	   32bit zero extended */ 
+-	/* hardware stack frame is complete now */	
++	   32bit zero extended */
++	/* hardware stack frame is complete now */
+ 1:	movl	(%r8),%r9d
+ 	.section __ex_table,"a"
+ 	.quad 1b,ia32_badarg
+-	.previous	
++	.previous
+ 	GET_THREAD_INFO(%r10)
+ 	orl   $TS_COMPAT,threadinfo_status(%r10)
+ 	testl $(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP),threadinfo_flags(%r10)
+ 	CFI_REMEMBER_STATE
+ 	jnz   cstar_tracesys
+-cstar_do_call:	
++cstar_do_call:
+ 	cmpl $IA32_NR_syscalls-1,%eax
+ 	ja  ia32_badsys
+ 	IA32_ARG_FIXUP 1
+@@ -248,15 +248,15 @@ cstar_do_call:
+ 	RESTORE_ARGS 1,-ARG_SKIP,1,1,1
+ 	movl RIP-ARGOFFSET(%rsp),%ecx
+ 	CFI_REGISTER rip,rcx
+-	movl EFLAGS-ARGOFFSET(%rsp),%r11d	
++	movl EFLAGS-ARGOFFSET(%rsp),%r11d
+ 	/*CFI_REGISTER rflags,r11*/
+ 	TRACE_IRQS_ON
+ 	movl RSP-ARGOFFSET(%rsp),%esp
+ 	CFI_RESTORE rsp
+ 	swapgs
+ 	sysretl
+-	
+-cstar_tracesys:	
++
++cstar_tracesys:
+ 	CFI_RESTORE_STATE
+ 	xchgl %r9d,%ebp
+ 	SAVE_REST
+@@ -271,16 +271,16 @@ cstar_tracesys:
+ 	movl RSP-ARGOFFSET(%rsp), %r8d
+ 	jmp cstar_do_call
+ END(ia32_cstar_target)
+-				
++
+ ia32_badarg:
+ 	movq $-EFAULT,%rax
+ 	jmp ia32_sysret
+ 	CFI_ENDPROC
+ 
+-/* 
+- * Emulated IA32 system calls via int 0x80. 
++/*
++ * Emulated IA32 system calls via int 0x80.
+  *
+- * Arguments:	 
++ * Arguments:
+  * %eax	System call number.
+  * %ebx Arg1
+  * %ecx Arg2
+@@ -290,13 +290,13 @@ ia32_badarg:
+  * %ebp Arg6    [note: not saved in the stack frame, should not be touched]
+  *
+  * Notes:
+- * Uses the same stack frame as the x86-64 version.	
++ * Uses the same stack frame as the x86-64 version.
+  * All registers except %eax must be saved (but ptrace may violate that)
+  * Arguments are zero extended. For system calls that want sign extension and
+  * take long arguments a wrapper is needed. Most calls can just be called
+  * directly.
+- * Assumes it is only called from user space and entered with interrupts off.	
+- */ 				
++ * Assumes it is only called from user space and entered with interrupts off.
++ */
+ 
+ ENTRY(ia32_syscall)
+ 	CFI_STARTPROC32	simple
+@@ -324,16 +324,16 @@ ENTRY(ia32_syscall)
+ 	orl   $TS_COMPAT,threadinfo_status(%r10)
+ 	testl $(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP),threadinfo_flags(%r10)
+ 	jnz ia32_tracesys
+-ia32_do_syscall:	
++ia32_do_syscall:
+ 	cmpl $(IA32_NR_syscalls-1),%eax
+ 	ja  ia32_badsys
+ 	IA32_ARG_FIXUP
+ 	call *ia32_sys_call_table(,%rax,8) # xxx: rip relative
+ ia32_sysret:
+ 	movq %rax,RAX-ARGOFFSET(%rsp)
+-	jmp int_ret_from_sys_call 
++	jmp int_ret_from_sys_call
+ 
+-ia32_tracesys:			 
++ia32_tracesys:
+ 	SAVE_REST
+ 	CLEAR_RREGS
+ 	movq $-ENOSYS,RAX(%rsp)	/* really needed? */
+@@ -353,13 +353,13 @@ quiet_ni_syscall:
+ 	movq $-ENOSYS,%rax
+ 	ret
+ 	CFI_ENDPROC
+-	
++
+ 	.macro PTREGSCALL label, func, arg
+ 	.globl \label
+ \label:
+ 	leaq \func(%rip),%rax
+ 	leaq -ARGOFFSET+8(%rsp),\arg	/* 8 for return address */
+-	jmp  ia32_ptregs_common	
++	jmp  ia32_ptregs_common
+ 	.endm
+ 
+ 	CFI_STARTPROC32
+@@ -435,7 +435,7 @@ ia32_sys_call_table:
+ 	.quad quiet_ni_syscall	/* old stty syscall holder */
+ 	.quad quiet_ni_syscall	/* old gtty syscall holder */
+ 	.quad sys_access
+-	.quad sys_nice	
++	.quad sys_nice
+ 	.quad quiet_ni_syscall	/* 35 */	/* old ftime syscall holder */
+ 	.quad sys_sync
+ 	.quad sys32_kill
+@@ -514,7 +514,7 @@ ia32_sys_call_table:
+ 	.quad stub32_iopl		/* 110 */
+ 	.quad sys_vhangup
+ 	.quad quiet_ni_syscall	/* old "idle" system call */
+-	.quad sys32_vm86_warning	/* vm86old */ 
++	.quad sys32_vm86_warning	/* vm86old */
+ 	.quad compat_sys_wait4
+ 	.quad sys_swapoff		/* 115 */
+ 	.quad compat_sys_sysinfo
+@@ -567,7 +567,7 @@ ia32_sys_call_table:
+ 	.quad sys_mremap
+ 	.quad sys_setresuid16
+ 	.quad sys_getresuid16	/* 165 */
+-	.quad sys32_vm86_warning	/* vm86 */ 
++	.quad sys32_vm86_warning	/* vm86 */
+ 	.quad quiet_ni_syscall	/* query_module */
+ 	.quad sys_poll
+ 	.quad compat_sys_nfsservctl
+@@ -622,10 +622,10 @@ ia32_sys_call_table:
+ 	.quad sys_mincore
+ 	.quad sys_madvise
+ 	.quad compat_sys_getdents64	/* 220 getdents64 */
+-	.quad compat_sys_fcntl64	
++	.quad compat_sys_fcntl64
+ 	.quad quiet_ni_syscall		/* tux */
+ 	.quad quiet_ni_syscall    	/* security */
+-	.quad sys_gettid	
++	.quad sys_gettid
+ 	.quad sys32_readahead	/* 225 */
+ 	.quad sys_setxattr
+ 	.quad sys_lsetxattr
+@@ -640,7 +640,7 @@ ia32_sys_call_table:
+ 	.quad sys_lremovexattr
+ 	.quad sys_fremovexattr
+ 	.quad sys_tkill
+-	.quad sys_sendfile64 
++	.quad sys_sendfile64
+ 	.quad compat_sys_futex		/* 240 */
+ 	.quad compat_sys_sched_setaffinity
+ 	.quad compat_sys_sched_getaffinity
+diff --git a/arch/x86/ia32/ptrace32.c b/arch/x86/ia32/ptrace32.c
+index 4a233ad..283332f 100644
+--- a/arch/x86/ia32/ptrace32.c
++++ b/arch/x86/ia32/ptrace32.c
+@@ -1,13 +1,13 @@
+-/* 
++/*
+  * 32bit ptrace for x86-64.
+  *
+  * Copyright 2001,2002 Andi Kleen, SuSE Labs.
+- * Some parts copied from arch/i386/kernel/ptrace.c. See that file for earlier 
++ * Some parts copied from arch/i386/kernel/ptrace.c. See that file for earlier
+  * copyright.
+- * 
+- * This allows to access 64bit processes too; but there is no way to see the extended 
++ *
++ * This allows to access 64bit processes too; but there is no way to see the extended
+  * register contents.
+- */ 
++ */
+ 
+ #include <linux/kernel.h>
+ #include <linux/stddef.h>
+@@ -45,30 +45,30 @@ static int putreg32(struct task_struct *child, unsigned regno, u32 val)
+ 
+ 	switch (regno) {
+ 	case offsetof(struct user32, regs.fs):
+-		if (val && (val & 3) != 3) return -EIO; 
++		if (val && (val & 3) != 3) return -EIO;
+ 		child->thread.fsindex = val & 0xffff;
+ 		break;
+ 	case offsetof(struct user32, regs.gs):
+-		if (val && (val & 3) != 3) return -EIO; 
++		if (val && (val & 3) != 3) return -EIO;
+ 		child->thread.gsindex = val & 0xffff;
+ 		break;
+ 	case offsetof(struct user32, regs.ds):
+-		if (val && (val & 3) != 3) return -EIO; 
++		if (val && (val & 3) != 3) return -EIO;
+ 		child->thread.ds = val & 0xffff;
+ 		break;
+ 	case offsetof(struct user32, regs.es):
+ 		child->thread.es = val & 0xffff;
+ 		break;
+-	case offsetof(struct user32, regs.ss): 
++	case offsetof(struct user32, regs.ss):
+ 		if ((val & 3) != 3) return -EIO;
+         	stack[offsetof(struct pt_regs, ss)/8] = val & 0xffff;
+ 		break;
+-	case offsetof(struct user32, regs.cs): 
++	case offsetof(struct user32, regs.cs):
+ 		if ((val & 3) != 3) return -EIO;
+ 		stack[offsetof(struct pt_regs, cs)/8] = val & 0xffff;
+ 		break;
+ 
+-	R32(ebx, rbx); 
++	R32(ebx, rbx);
+ 	R32(ecx, rcx);
+ 	R32(edx, rdx);
+ 	R32(edi, rdi);
+@@ -86,7 +86,7 @@ static int putreg32(struct task_struct *child, unsigned regno, u32 val)
+ 		break;
+ 	}
+ 
+-	case offsetof(struct user32, u_debugreg[4]): 
++	case offsetof(struct user32, u_debugreg[4]):
+ 	case offsetof(struct user32, u_debugreg[5]):
+ 		return -EIO;
+ 
+@@ -108,7 +108,7 @@ static int putreg32(struct task_struct *child, unsigned regno, u32 val)
+ 
+ 	case offsetof(struct user32, u_debugreg[6]):
+ 		child->thread.debugreg6 = val;
+-		break; 
++		break;
+ 
+ 	case offsetof(struct user32, u_debugreg[7]):
+ 		val &= ~DR_CONTROL_RESERVED;
+@@ -117,19 +117,19 @@ static int putreg32(struct task_struct *child, unsigned regno, u32 val)
+ 		for(i=0; i<4; i++)
+ 			if ((0x5454 >> ((val >> (16 + 4*i)) & 0xf)) & 1)
+ 			       return -EIO;
+-		child->thread.debugreg7 = val; 
++		child->thread.debugreg7 = val;
+ 		if (val)
+ 			set_tsk_thread_flag(child, TIF_DEBUG);
+ 		else
+ 			clear_tsk_thread_flag(child, TIF_DEBUG);
+-		break; 
+-		    
++		break;
++
+ 	default:
+ 		if (regno > sizeof(struct user32) || (regno & 3))
+ 			return -EIO;
+-	       
+-		/* Other dummy fields in the virtual user structure are ignored */ 
+-		break; 		
++
++		/* Other dummy fields in the virtual user structure are ignored */
++		break;
+ 	}
+ 	return 0;
+ }
+@@ -159,7 +159,7 @@ static int getreg32(struct task_struct *child, unsigned regno, u32 *val)
+ 
+ 	R32(cs, cs);
+ 	R32(ss, ss);
+-	R32(ebx, rbx); 
++	R32(ebx, rbx);
+ 	R32(ecx, rcx);
+ 	R32(edx, rdx);
+ 	R32(edi, rdi);
+@@ -171,32 +171,32 @@ static int getreg32(struct task_struct *child, unsigned regno, u32 *val)
+ 	R32(eflags, eflags);
+ 	R32(esp, rsp);
+ 
+-	case offsetof(struct user32, u_debugreg[0]): 
+-		*val = child->thread.debugreg0; 
+-		break; 
+-	case offsetof(struct user32, u_debugreg[1]): 
+-		*val = child->thread.debugreg1; 
+-		break; 
+-	case offsetof(struct user32, u_debugreg[2]): 
+-		*val = child->thread.debugreg2; 
+-		break; 
+-	case offsetof(struct user32, u_debugreg[3]): 
+-		*val = child->thread.debugreg3; 
+-		break; 
+-	case offsetof(struct user32, u_debugreg[6]): 
+-		*val = child->thread.debugreg6; 
+-		break; 
+-	case offsetof(struct user32, u_debugreg[7]): 
+-		*val = child->thread.debugreg7; 
+-		break; 
+-		    
++	case offsetof(struct user32, u_debugreg[0]):
++		*val = child->thread.debugreg0;
++		break;
++	case offsetof(struct user32, u_debugreg[1]):
++		*val = child->thread.debugreg1;
++		break;
++	case offsetof(struct user32, u_debugreg[2]):
++		*val = child->thread.debugreg2;
++		break;
++	case offsetof(struct user32, u_debugreg[3]):
++		*val = child->thread.debugreg3;
++		break;
++	case offsetof(struct user32, u_debugreg[6]):
++		*val = child->thread.debugreg6;
++		break;
++	case offsetof(struct user32, u_debugreg[7]):
++		*val = child->thread.debugreg7;
++		break;
++
+ 	default:
+ 		if (regno > sizeof(struct user32) || (regno & 3))
+ 			return -EIO;
+ 
+-		/* Other dummy fields in the virtual user structure are ignored */ 
++		/* Other dummy fields in the virtual user structure are ignored */
+ 		*val = 0;
+-		break; 		
++		break;
+ 	}
+ 	return 0;
+ }
+@@ -207,7 +207,7 @@ static long ptrace32_siginfo(unsigned request, u32 pid, u32 addr, u32 data)
+ {
+ 	int ret;
+ 	compat_siginfo_t __user *si32 = compat_ptr(data);
+-	siginfo_t ssi; 
++	siginfo_t ssi;
+ 	siginfo_t __user *si = compat_alloc_user_space(sizeof(siginfo_t));
+ 	if (request == PTRACE_SETSIGINFO) {
+ 		memset(&ssi, 0, sizeof(siginfo_t));
+@@ -231,12 +231,12 @@ static long ptrace32_siginfo(unsigned request, u32 pid, u32 addr, u32 data)
+ asmlinkage long sys32_ptrace(long request, u32 pid, u32 addr, u32 data)
+ {
+ 	struct task_struct *child;
+-	struct pt_regs *childregs; 
++	struct pt_regs *childregs;
+ 	void __user *datap = compat_ptr(data);
+ 	int ret;
+ 	__u32 val;
+ 
+-	switch (request) { 
++	switch (request) {
+ 	case PTRACE_TRACEME:
+ 	case PTRACE_ATTACH:
+ 	case PTRACE_KILL:
+@@ -248,7 +248,7 @@ asmlinkage long sys32_ptrace(long request, u32 pid, u32 addr, u32 data)
+ 	case PTRACE_SETOPTIONS:
+ 	case PTRACE_SET_THREAD_AREA:
+ 	case PTRACE_GET_THREAD_AREA:
+-		return sys_ptrace(request, pid, addr, data); 
++		return sys_ptrace(request, pid, addr, data);
+ 
+ 	default:
+ 		return -EINVAL;
+@@ -257,7 +257,7 @@ asmlinkage long sys32_ptrace(long request, u32 pid, u32 addr, u32 data)
+ 	case PTRACE_PEEKDATA:
+ 	case PTRACE_POKEDATA:
+ 	case PTRACE_POKETEXT:
+-	case PTRACE_POKEUSR:       
++	case PTRACE_POKEUSR:
+ 	case PTRACE_PEEKUSR:
+ 	case PTRACE_GETREGS:
+ 	case PTRACE_SETREGS:
+@@ -290,14 +290,14 @@ asmlinkage long sys32_ptrace(long request, u32 pid, u32 addr, u32 data)
+ 		if (access_process_vm(child, addr, &val, sizeof(u32), 0)!=sizeof(u32))
+ 			ret = -EIO;
+ 		else
+-			ret = put_user(val, (unsigned int __user *)datap); 
+-		break; 
++			ret = put_user(val, (unsigned int __user *)datap);
++		break;
+ 
+ 	case PTRACE_POKEDATA:
+ 	case PTRACE_POKETEXT:
+ 		ret = 0;
+ 		if (access_process_vm(child, addr, &data, sizeof(u32), 1)!=sizeof(u32))
+-			ret = -EIO; 
++			ret = -EIO;
+ 		break;
+ 
+ 	case PTRACE_PEEKUSR:
+@@ -332,7 +332,7 @@ asmlinkage long sys32_ptrace(long request, u32 pid, u32 addr, u32 data)
+ 			ret = -EIO;
+ 			break;
+ 		}
+-		ret = 0; 
++		ret = 0;
+ 		for ( i = 0; i <= 16*4; i += sizeof(u32) ) {
+ 			ret |= __get_user(tmp, (u32 __user *)datap);
+ 			putreg32(child, i, tmp);
+@@ -342,17 +342,17 @@ asmlinkage long sys32_ptrace(long request, u32 pid, u32 addr, u32 data)
+ 	}
+ 
+ 	case PTRACE_GETFPREGS:
+-		ret = -EIO; 
+-		if (!access_ok(VERIFY_READ, compat_ptr(data), 
++		ret = -EIO;
++		if (!access_ok(VERIFY_READ, compat_ptr(data),
+ 			       sizeof(struct user_i387_struct)))
+ 			break;
+ 		save_i387_ia32(child, datap, childregs, 1);
+-		ret = 0; 
++		ret = 0;
+ 			break;
+ 
+ 	case PTRACE_SETFPREGS:
+ 		ret = -EIO;
+-		if (!access_ok(VERIFY_WRITE, datap, 
++		if (!access_ok(VERIFY_WRITE, datap,
+ 			       sizeof(struct user_i387_struct)))
+ 			break;
+ 		ret = 0;
+@@ -360,9 +360,9 @@ asmlinkage long sys32_ptrace(long request, u32 pid, u32 addr, u32 data)
+ 		restore_i387_ia32(child, datap, 1);
+ 		break;
+ 
+-	case PTRACE_GETFPXREGS: { 
++	case PTRACE_GETFPXREGS: {
+ 		struct user32_fxsr_struct __user *u = datap;
+-		init_fpu(child); 
++		init_fpu(child);
+ 		ret = -EIO;
+ 		if (!access_ok(VERIFY_WRITE, u, sizeof(*u)))
+ 			break;
+@@ -370,10 +370,10 @@ asmlinkage long sys32_ptrace(long request, u32 pid, u32 addr, u32 data)
+ 		if (__copy_to_user(u, &child->thread.i387.fxsave, sizeof(*u)))
+ 			break;
+ 		ret = __put_user(childregs->cs, &u->fcs);
+-		ret |= __put_user(child->thread.ds, &u->fos); 
+-		break; 
+-	} 
+-	case PTRACE_SETFPXREGS: { 
++		ret |= __put_user(child->thread.ds, &u->fos);
++		break;
++	}
++	case PTRACE_SETFPXREGS: {
+ 		struct user32_fxsr_struct __user *u = datap;
+ 		unlazy_fpu(child);
+ 		ret = -EIO;
+@@ -385,7 +385,7 @@ asmlinkage long sys32_ptrace(long request, u32 pid, u32 addr, u32 data)
+ 			;
+ 		set_stopped_child_used_math(child);
+ 		child->thread.i387.fxsave.mxcsr &= mxcsr_feature_mask;
+-		ret = 0; 
++		ret = 0;
+ 		break;
+ 	}
+ 
+diff --git a/arch/x86/ia32/sys_ia32.c b/arch/x86/ia32/sys_ia32.c
+index bee96d6..0cee460 100644
+--- a/arch/x86/ia32/sys_ia32.c
++++ b/arch/x86/ia32/sys_ia32.c
+@@ -1,6 +1,6 @@
+ /*
+  * sys_ia32.c: Conversion between 32bit and 64bit native syscalls. Based on
+- *             sys_sparc32 
++ *             sys_sparc32
+  *
+  * Copyright (C) 2000		VA Linux Co
+  * Copyright (C) 2000		Don Dugger <n0ano@valinux.com>
+@@ -9,21 +9,21 @@
+  * Copyright (C) 1997 		David S. Miller (davem@caip.rutgers.edu)
+  * Copyright (C) 2000		Hewlett-Packard Co.
+  * Copyright (C) 2000		David Mosberger-Tang <davidm@hpl.hp.com>
+- * Copyright (C) 2000,2001,2002	Andi Kleen, SuSE Labs (x86-64 port) 
++ * Copyright (C) 2000,2001,2002	Andi Kleen, SuSE Labs (x86-64 port)
+  *
+  * These routines maintain argument size conversion between 32bit and 64bit
+- * environment. In 2.5 most of this should be moved to a generic directory. 
++ * environment. In 2.5 most of this should be moved to a generic directory.
+  *
+  * This file assumes that there is a hole at the end of user address space.
+- * 
++ *
+  * Some of the functions are LE specific currently. These are hopefully all marked.
+  * This should be fixed.
+  */
+ 
+ #include <linux/kernel.h>
+ #include <linux/sched.h>
+-#include <linux/fs.h> 
+-#include <linux/file.h> 
++#include <linux/fs.h>
++#include <linux/file.h>
+ #include <linux/signal.h>
+ #include <linux/syscalls.h>
+ #include <linux/resource.h>
+@@ -122,7 +122,7 @@ sys32_ftruncate64(unsigned int fd, unsigned long offset_low, unsigned long offse
+        return sys_ftruncate(fd, ((loff_t) offset_high << 32) | offset_low);
+ }
+ 
+-/* Another set for IA32/LFS -- x86_64 struct stat is different due to 
++/* Another set for IA32/LFS -- x86_64 struct stat is different due to
+    support for 64bit inode numbers. */
+ 
+ static int
+@@ -233,29 +233,29 @@ sys32_mmap(struct mmap_arg_struct __user *arg)
+ 		return -EFAULT;
+ 
+ 	if (a.offset & ~PAGE_MASK)
+-		return -EINVAL; 
++		return -EINVAL;
+ 
+ 	if (!(a.flags & MAP_ANONYMOUS)) {
+ 		file = fget(a.fd);
+ 		if (!file)
+ 			return -EBADF;
+ 	}
+-	
+-	mm = current->mm; 
+-	down_write(&mm->mmap_sem); 
++
++	mm = current->mm;
++	down_write(&mm->mmap_sem);
+ 	retval = do_mmap_pgoff(file, a.addr, a.len, a.prot, a.flags, a.offset>>PAGE_SHIFT);
+ 	if (file)
+ 		fput(file);
+ 
+-	up_write(&mm->mmap_sem); 
++	up_write(&mm->mmap_sem);
+ 
+ 	return retval;
+ }
+ 
+-asmlinkage long 
++asmlinkage long
+ sys32_mprotect(unsigned long start, size_t len, unsigned long prot)
+ {
+-	return sys_mprotect(start,len,prot); 
++	return sys_mprotect(start,len,prot);
+ }
+ 
+ asmlinkage long
+@@ -383,7 +383,7 @@ sys32_rt_sigprocmask(int how, compat_sigset_t __user *set,
+ 	compat_sigset_t s32;
+ 	int ret;
+ 	mm_segment_t old_fs = get_fs();
+-	
++
+ 	if (set) {
+ 		if (copy_from_user (&s32, set, sizeof(compat_sigset_t)))
+ 			return -EFAULT;
+@@ -398,7 +398,7 @@ sys32_rt_sigprocmask(int how, compat_sigset_t __user *set,
+ 	ret = sys_rt_sigprocmask(how,
+ 				 set ? (sigset_t __user *)&s : NULL,
+ 				 oset ? (sigset_t __user *)&s : NULL,
+-				 sigsetsize); 
++				 sigsetsize);
+ 	set_fs (old_fs);
+ 	if (ret) return ret;
+ 	if (oset) {
+@@ -417,23 +417,23 @@ sys32_rt_sigprocmask(int how, compat_sigset_t __user *set,
+ static inline long
+ get_tv32(struct timeval *o, struct compat_timeval __user *i)
+ {
+-	int err = -EFAULT; 
+-	if (access_ok(VERIFY_READ, i, sizeof(*i))) { 
++	int err = -EFAULT;
++	if (access_ok(VERIFY_READ, i, sizeof(*i))) {
+ 		err = __get_user(o->tv_sec, &i->tv_sec);
+ 		err |= __get_user(o->tv_usec, &i->tv_usec);
+ 	}
+-	return err; 
++	return err;
+ }
+ 
+ static inline long
+ put_tv32(struct compat_timeval __user *o, struct timeval *i)
+ {
+ 	int err = -EFAULT;
+-	if (access_ok(VERIFY_WRITE, o, sizeof(*o))) { 
++	if (access_ok(VERIFY_WRITE, o, sizeof(*o))) {
+ 		err = __put_user(i->tv_sec, &o->tv_sec);
+ 		err |= __put_user(i->tv_usec, &o->tv_usec);
+-	} 
+-	return err; 
++	}
++	return err;
+ }
+ 
+ extern unsigned int alarm_setitimer(unsigned int seconds);
+@@ -529,7 +529,7 @@ sys32_sched_rr_get_interval(compat_pid_t pid, struct compat_timespec __user *int
+ 	struct timespec t;
+ 	int ret;
+ 	mm_segment_t old_fs = get_fs ();
+-	
++
+ 	set_fs (KERNEL_DS);
+ 	ret = sys_sched_rr_get_interval(pid, (struct timespec __user *)&t);
+ 	set_fs (old_fs);
+@@ -545,7 +545,7 @@ sys32_rt_sigpending(compat_sigset_t __user *set, compat_size_t sigsetsize)
+ 	compat_sigset_t s32;
+ 	int ret;
+ 	mm_segment_t old_fs = get_fs();
+-		
++
+ 	set_fs (KERNEL_DS);
+ 	ret = sys_rt_sigpending((sigset_t __user *)&s, sigsetsize);
+ 	set_fs (old_fs);
+@@ -568,7 +568,7 @@ sys32_rt_sigqueueinfo(int pid, int sig, compat_siginfo_t __user *uinfo)
+ 	siginfo_t info;
+ 	int ret;
+ 	mm_segment_t old_fs = get_fs();
+-	
++
+ 	if (copy_siginfo_from_user32(&info, uinfo))
+ 		return -EFAULT;
+ 	set_fs (KERNEL_DS);
+@@ -643,7 +643,7 @@ sys32_sysctl(struct sysctl_ia32 __user *args32)
+ }
+ #endif
+ 
+-/* warning: next two assume little endian */ 
++/* warning: next two assume little endian */
+ asmlinkage long
+ sys32_pread(unsigned int fd, char __user *ubuf, u32 count, u32 poslo, u32 poshi)
+ {
+@@ -663,7 +663,7 @@ asmlinkage long
+ sys32_personality(unsigned long personality)
+ {
+ 	int ret;
+-	if (personality(current->personality) == PER_LINUX32 && 
++	if (personality(current->personality) == PER_LINUX32 &&
+ 		personality == PER_LINUX)
+ 		personality = PER_LINUX32;
+ 	ret = sys_personality(personality);
+@@ -678,18 +678,18 @@ sys32_sendfile(int out_fd, int in_fd, compat_off_t __user *offset, s32 count)
+ 	mm_segment_t old_fs = get_fs();
+ 	int ret;
+ 	off_t of;
+-	
++
+ 	if (offset && get_user(of, offset))
+ 		return -EFAULT;
+-		
++
+ 	set_fs(KERNEL_DS);
+ 	ret = sys_sendfile(out_fd, in_fd, offset ? (off_t __user *)&of : NULL,
+ 			   count);
+ 	set_fs(old_fs);
+-	
++
+ 	if (offset && put_user(of, offset))
+ 		return -EFAULT;
+-		
++
+ 	return ret;
+ }
+ 
+@@ -725,7 +725,7 @@ asmlinkage long sys32_olduname(struct oldold_utsname __user * name)
+ 		return -EFAULT;
+ 	if (!access_ok(VERIFY_WRITE, name, sizeof(struct oldold_utsname)))
+ 		return -EFAULT;
+-  
++
+   	down_read(&uts_sem);
+ 
+ 	err = __copy_to_user(&name->sysname,&utsname()->sysname,
+@@ -744,7 +744,7 @@ asmlinkage long sys32_olduname(struct oldold_utsname __user * name)
+ 		char *arch = "x86_64";
+ 		if (personality(current->personality) == PER_LINUX32)
+ 			arch = "i686";
+-		 
++
+ 		err |= __copy_to_user(&name->machine, arch, strlen(arch)+1);
+ 	}
+ 
+@@ -763,7 +763,7 @@ long sys32_uname(struct old_utsname __user * name)
+ 	down_read(&uts_sem);
+ 	err = copy_to_user(name, utsname(), sizeof (*name));
+ 	up_read(&uts_sem);
+-	if (personality(current->personality) == PER_LINUX32) 
++	if (personality(current->personality) == PER_LINUX32)
+ 		err |= copy_to_user(&name->machine, "i686", 5);
+ 	return err?-EFAULT:0;
+ }
+@@ -773,13 +773,13 @@ long sys32_ustat(unsigned dev, struct ustat32 __user *u32p)
+ 	struct ustat u;
+ 	mm_segment_t seg;
+ 	int ret;
+-	
+-	seg = get_fs(); 
+-	set_fs(KERNEL_DS); 
++
++	seg = get_fs();
++	set_fs(KERNEL_DS);
+ 	ret = sys_ustat(dev, (struct ustat __user *)&u);
+ 	set_fs(seg);
+-	if (ret >= 0) { 
+-		if (!access_ok(VERIFY_WRITE,u32p,sizeof(struct ustat32)) || 
++	if (ret >= 0) {
++		if (!access_ok(VERIFY_WRITE,u32p,sizeof(struct ustat32)) ||
+ 		    __put_user((__u32) u.f_tfree, &u32p->f_tfree) ||
+ 		    __put_user((__u32) u.f_tinode, &u32p->f_tfree) ||
+ 		    __copy_to_user(&u32p->f_fname, u.f_fname, sizeof(u.f_fname)) ||
+@@ -787,7 +787,7 @@ long sys32_ustat(unsigned dev, struct ustat32 __user *u32p)
+ 			ret = -EFAULT;
+ 	}
+ 	return ret;
+-} 
++}
+ 
+ asmlinkage long sys32_execve(char __user *name, compat_uptr_t __user *argv,
+ 			     compat_uptr_t __user *envp, struct pt_regs *regs)
+@@ -821,7 +821,7 @@ asmlinkage long sys32_clone(unsigned int clone_flags, unsigned int newsp,
+ 
+ /*
+  * Some system calls that need sign extended arguments. This could be done by a generic wrapper.
+- */ 
++ */
+ 
+ long sys32_lseek (unsigned int fd, int offset, unsigned int whence)
+ {
+@@ -832,27 +832,27 @@ long sys32_kill(int pid, int sig)
+ {
+ 	return sys_kill(pid, sig);
+ }
+- 
+-long sys32_fadvise64_64(int fd, __u32 offset_low, __u32 offset_high, 
++
++long sys32_fadvise64_64(int fd, __u32 offset_low, __u32 offset_high,
+ 			__u32 len_low, __u32 len_high, int advice)
+-{ 
++{
+ 	return sys_fadvise64_64(fd,
+ 			       (((u64)offset_high)<<32) | offset_low,
+ 			       (((u64)len_high)<<32) | len_low,
+-			       advice); 
+-} 
++			       advice);
++}
+ 
+ long sys32_vm86_warning(void)
+-{ 
++{
+ 	struct task_struct *me = current;
+ 	static char lastcomm[sizeof(me->comm)];
+ 	if (strncmp(lastcomm, me->comm, sizeof(lastcomm))) {
+ 		compat_printk(KERN_INFO "%s: vm86 mode not supported on 64 bit kernel\n",
+ 		       me->comm);
+ 		strncpy(lastcomm, me->comm, sizeof(lastcomm));
+-	} 
++	}
+ 	return -ENOSYS;
+-} 
++}
+ 
+ long sys32_lookup_dcookie(u32 addr_low, u32 addr_high,
+ 			  char __user * buf, size_t len)
+diff --git a/arch/x86/ia32/syscall32.c b/arch/x86/ia32/syscall32.c
+index 15013ba..6df8ec7 100644
+--- a/arch/x86/ia32/syscall32.c
++++ b/arch/x86/ia32/syscall32.c
+@@ -1,6 +1,6 @@
+ /* Copyright 2002,2003 Andi Kleen, SuSE Labs */
+ 
+-/* vsyscall handling for 32bit processes. Map a stub page into it 
++/* vsyscall handling for 32bit processes. Map a stub page into it
+    on demand because 32bit cannot reach the kernel's fixmaps */
+ 
+ #include <linux/mm.h>
+@@ -50,10 +50,10 @@ int syscall32_setup_pages(struct linux_binprm *bprm, int exstack)
+ }
+ 
+ static int __init init_syscall32(void)
+-{ 
++{
+ 	char *syscall32_page = (void *)get_zeroed_page(GFP_KERNEL);
+-	if (!syscall32_page) 
+-		panic("Cannot allocate syscall32 page"); 
++	if (!syscall32_page)
++		panic("Cannot allocate syscall32 page");
+ 	syscall32_pages[0] = virt_to_page(syscall32_page);
+  	if (use_sysenter > 0) {
+  		memcpy(syscall32_page, syscall32_sysenter,
+@@ -61,11 +61,11 @@ static int __init init_syscall32(void)
+  	} else {
+   		memcpy(syscall32_page, syscall32_syscall,
+   		       syscall32_syscall_end - syscall32_syscall);
+-  	}	
++  	}
+ 	return 0;
+-} 
+-	
+-__initcall(init_syscall32); 
++}
++
++__initcall(init_syscall32);
+ 
+ /* May not be __init: called during resume */
+ void syscall32_cpu_init(void)
+diff --git a/arch/x86/ia32/tls32.c b/arch/x86/ia32/tls32.c
+index 1cc4340..54a6047 100644
+--- a/arch/x86/ia32/tls32.c
++++ b/arch/x86/ia32/tls32.c
+@@ -26,7 +26,7 @@ static int get_free_idx(void)
+ 
+ /*
+  * Set a given TLS descriptor:
+- * When you want addresses > 32bit use arch_prctl() 
++ * When you want addresses > 32bit use arch_prctl()
+  */
+ int do_set_thread_area(struct thread_struct *t, struct user_desc __user *u_info)
+ {
+@@ -76,9 +76,9 @@ int do_set_thread_area(struct thread_struct *t, struct user_desc __user *u_info)
+ }
+ 
+ asmlinkage long sys32_set_thread_area(struct user_desc __user *u_info)
+-{ 
+-	return do_set_thread_area(&current->thread, u_info); 
+-} 
++{
++	return do_set_thread_area(&current->thread, u_info);
++}
+ 
+ 
+ /*
+@@ -93,7 +93,7 @@ asmlinkage long sys32_set_thread_area(struct user_desc __user *u_info)
+ #define GET_LIMIT(desc) ( \
+ 	((desc)->a & 0x0ffff) | \
+ 	 ((desc)->b & 0xf0000) )
+-	
++
+ #define GET_32BIT(desc)		(((desc)->b >> 22) & 1)
+ #define GET_CONTENTS(desc)	(((desc)->b >> 10) & 3)
+ #define GET_WRITABLE(desc)	(((desc)->b >>  9) & 1)
+@@ -135,7 +135,7 @@ int do_get_thread_area(struct thread_struct *t, struct user_desc __user *u_info)
+ asmlinkage long sys32_get_thread_area(struct user_desc __user *u_info)
+ {
+ 	return do_get_thread_area(&current->thread, u_info);
+-} 
++}
+ 
+ 
+ int ia32_child_tls(struct task_struct *p, struct pt_regs *childregs)
+@@ -144,17 +144,17 @@ int ia32_child_tls(struct task_struct *p, struct pt_regs *childregs)
+ 	struct user_desc info;
+ 	struct user_desc __user *cp;
+ 	int idx;
+-	
++
+ 	cp = (void __user *)childregs->rsi;
+ 	if (copy_from_user(&info, cp, sizeof(info)))
+ 		return -EFAULT;
+ 	if (LDT_empty(&info))
+ 		return -EINVAL;
+-	
++
+ 	idx = info.entry_number;
+ 	if (idx < GDT_ENTRY_TLS_MIN || idx > GDT_ENTRY_TLS_MAX)
+ 		return -EINVAL;
+-	
++
+ 	desc = (struct n_desc_struct *)(p->thread.tls_array) + idx - GDT_ENTRY_TLS_MIN;
+ 	desc->a = LDT_entry_a(&info);
+ 	desc->b = LDT_entry_b(&info);
+diff --git a/arch/x86/ia32/vsyscall-sigreturn.S b/arch/x86/ia32/vsyscall-sigreturn.S
+index b383be0..a71a4a4 100644
+--- a/arch/x86/ia32/vsyscall-sigreturn.S
++++ b/arch/x86/ia32/vsyscall-sigreturn.S
+@@ -68,9 +68,9 @@ __kernel_rt_sigreturn:
+ 	   be the value of the stack pointer in the caller.  This means
+ 	   that we must define the CFA of this body of code to be the
+ 	   saved value of the stack pointer in the sigcontext.  Which
+-	   also means that there is no fixed relation to the other 
++	   also means that there is no fixed relation to the other
+ 	   saved registers, which means that we must use DW_CFA_expression
+-	   to compute their addresses.  It also means that when we 
++	   to compute their addresses.  It also means that when we
+ 	   adjust the stack with the popl, we have to do it all over again.  */
+ 
+ #define do_cfa_expr(offset)						\
+diff --git a/arch/x86/ia32/vsyscall.lds b/arch/x86/ia32/vsyscall.lds
+index 1dc86ff..d9ba318 100644
+--- a/arch/x86/ia32/vsyscall.lds
++++ b/arch/x86/ia32/vsyscall.lds
+@@ -23,7 +23,7 @@ SECTIONS
+      space for the dynamic symbol table et al.  If this amount
+      is insufficient, ld -shared will barf.  Just increase it here.  */
+   . = VSYSCALL_BASE + 0x400;
+-  
++
+   .text.vsyscall   : { *(.text.vsyscall) } 	:text =0x90909090
+ 
+   /* This is an 32bit object and we cannot easily get the offsets
+@@ -36,7 +36,7 @@ SECTIONS
+   . = VSYSCALL_BASE + 0x600;
+ 
+   .text.rtsigreturn : { *(.text.rtsigreturn) }   :text =0x90909090
+-	
++
+   .note		  : { *(.note.*) }		:text :note
+   .eh_frame_hdr   : { *(.eh_frame_hdr) }	:text :eh_frame_hdr
+   .eh_frame       : { KEEP (*(.eh_frame)) }	:text
 
-Robert Hancock wrote:
-> There is a known problem with ATAPI devices on CK804 chipsets
-> which have memory above the 4GB mark, being debugged here:
->
-> https://bugzilla.redhat.com/show_bug.cgi?id=351451
-
-There is a second patch on this bugzilla page which I did not see 
-in the first place.
-
-https://bugzilla.redhat.com/attachment.cgi?id=254191
-
-This patch gives me a working 2.6.24-rc1-git10 kernel WITH adma and 
-with the full 8GB of RAM. See the attached dmesg text file below.
-
->
-> If you are running into that one you can workaround it for now
-> by passing the adma=0 parameter to the sata_nv module (not sure
-> how this would be done on Suse's setup) or pass sata_nv.adma=0
-> on the kernel command line if sata_nv is built into the kernel.
-> If that does help, I could ask you to test patches :-)
-
-Obviously there is no need for more patches to get the drive 
-working. I will probably just use that working kernel after some 
-testing. And if I get to know that the patch gets upstream, then I 
-will probably use 2.6.24 when it is finished.
-
-If there are more patches to test on this problem please let me 
-hear. Now I have a setup that makes testing a patch taking a lot 
-less time than before.
-
-Thanks for the help,
-
-Bernd Strieder
-
-
---Boundary-00=_XaJOHEIHGmfzz8W
-Content-Type: text/plain;
-  charset="iso-8859-1";
-  name="dmesg.2.6.24-rc1-git10-patch2Hancock-noadma=0"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="dmesg.2.6.24-rc1-git10-patch2Hancock-noadma=0"
-
-Linux version 2.6.24-rc1-git10-default (root@euklid) (gcc version 4.2.1 (SUSE Linux)) #1 SMP Mon Nov 12 15:55:37 CET 2007
-Command line: root=/dev/disk/by-id/scsi-1AMCC_0278095931E5540026BE-part2 vga=0x31a    resume=/dev/sda1 splash=silent 3
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 000000000009ac00 (usable)
- BIOS-e820: 000000000009ac00 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000da000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 000000007ff00000 (usable)
- BIOS-e820: 000000007ff00000 - 000000007ff11000 (ACPI data)
- BIOS-e820: 000000007ff11000 - 000000007ff80000 (ACPI NVS)
- BIOS-e820: 000000007ff80000 - 0000000080000000 (reserved)
- BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
- BIOS-e820: 00000000fec00000 - 00000000fec00400 (reserved)
- BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
- BIOS-e820: 00000000fff80000 - 0000000100000000 (reserved)
- BIOS-e820: 0000000100000000 - 0000000280000000 (usable)
-Entering add_active_range(0, 0, 154) 0 entries of 3200 used
-Entering add_active_range(0, 256, 524032) 1 entries of 3200 used
-Entering add_active_range(0, 1048576, 2621440) 2 entries of 3200 used
-end_pfn_map = 2621440
-DMI present.
-ACPI: RSDP 000F78C0, 0014 (r0 PTLTD )
-ACPI: RSDT 7FF0B188, 0040 (r1 PTLTD    RSDT    6040000  LTP        0)
-ACPI: FACP 7FF10A3E, 0074 (r1 NVIDIA CK8S      6040000 PTL_    F4240)
-ACPI: DSDT 7FF0B1C8, 5876 (r1 NVIDIA      CK8  6040000 MSFT  100000E)
-ACPI: FACS 7FF11FC0, 0040
-ACPI: SRAT 7FF10AB2, 0110 (r1 AMD    HAMMER    6040000 AMD         1)
-ACPI: SPCR 7FF10BC2, 0050 (r1 PTLTD  $UCRTBL$  6040000 PTL         1)
-ACPI: MCFG 7FF10C12, 003C (r1 PTLTD    MCFG    6040000             0)
-ACPI: APIC 7FF10C4E, 009E (r1 PTLTD  	 APIC    6040000  LTP        0)
-ACPI: BOOT 7FF10CEC, 0028 (r1 PTLTD  $SBFTBL$  6040000  LTP        1)
-ACPI: SSDT 7FF10D14, 02EC (r1 PTLTD  POWERNOW  6040000  LTP        1)
-SRAT: PXM 0 -> APIC 0 -> Node 0
-SRAT: PXM 0 -> APIC 1 -> Node 0
-SRAT: PXM 1 -> APIC 2 -> Node 1
-SRAT: PXM 1 -> APIC 3 -> Node 1
-SRAT: Node 0 PXM 0 0-a0000
-Entering add_active_range(0, 0, 154) 0 entries of 3200 used
-SRAT: Node 0 PXM 0 0-80000000
-Entering add_active_range(0, 0, 154) 1 entries of 3200 used
-Entering add_active_range(0, 256, 524032) 1 entries of 3200 used
-SRAT: Node 0 PXM 0 0-180000000
-Entering add_active_range(0, 0, 154) 2 entries of 3200 used
-Entering add_active_range(0, 256, 524032) 2 entries of 3200 used
-Entering add_active_range(0, 1048576, 1572864) 2 entries of 3200 used
-SRAT: Node 1 PXM 1 180000000-280000000
-Entering add_active_range(1, 1572864, 2621440) 3 entries of 3200 used
-NUMA: Using 31 for the hash shift.
-Bootmem setup node 0 0000000000000000-0000000180000000
-Bootmem setup node 1 0000000180000000-0000000280000000
-Zone PFN ranges:
-  DMA             0 ->     4096
-  DMA32        4096 ->  1048576
-  Normal    1048576 ->  2621440
-Movable zone start PFN for each node
-early_node_map[4] active PFN ranges
-    0:        0 ->      154
-    0:      256 ->   524032
-    0:  1048576 ->  1572864
-    1:  1572864 ->  2621440
-On node 0 totalpages: 1048218
-  DMA zone: 56 pages used for memmap
-  DMA zone: 1028 pages reserved
-  DMA zone: 2910 pages, LIFO batch:0
-  DMA32 zone: 14280 pages used for memmap
-  DMA32 zone: 505656 pages, LIFO batch:31
-  Normal zone: 7168 pages used for memmap
-  Normal zone: 517120 pages, LIFO batch:31
-  Movable zone: 0 pages used for memmap
-On node 1 totalpages: 1048576
-  DMA zone: 0 pages used for memmap
-  DMA32 zone: 0 pages used for memmap
-  Normal zone: 14336 pages used for memmap
-  Normal zone: 1034240 pages, LIFO batch:31
-  Movable zone: 0 pages used for memmap
-Nvidia board detected. Ignoring ACPI timer override.
-If you got timer trouble try acpi_use_timer_override
-ACPI: PM-Timer IO Port: 0x8008
-ACPI: Local APIC address 0xfee00000
-ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
-Processor #0 (Bootup-CPU)
-ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
-Processor #1
-ACPI: LAPIC (acpi_id[0x02] lapic_id[0x02] enabled)
-Processor #2
-ACPI: LAPIC (acpi_id[0x03] lapic_id[0x03] enabled)
-Processor #3
-ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x01] high edge lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x02] high edge lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x03] high edge lint[0x1])
-ACPI: IOAPIC (id[0x04] address[0xfec00000] gsi_base[0])
-IOAPIC[0]: apic_id 4, address 0xfec00000, GSI 0-23
-ACPI: IOAPIC (id[0x05] address[0xc0000000] gsi_base[24])
-IOAPIC[1]: apic_id 5, address 0xc0000000, GSI 24-27
-ACPI: IOAPIC (id[0x06] address[0xc0001000] gsi_base[28])
-IOAPIC[2]: apic_id 6, address 0xc0001000, GSI 28-31
-ACPI: IOAPIC (id[0x07] address[0xc4000000] gsi_base[32])
-IOAPIC[3]: apic_id 7, address 0xc4000000, GSI 32-55
-ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 low level)
-ACPI: IRQ9 used by override.
-Setting APIC routing to flat
-Using ACPI (MADT) for SMP configuration information
-Allocating PCI resources starting at 88000000 (gap: 80000000:60000000)
-SMP: Allowing 4 CPUs, 0 hotplug CPUs
-PERCPU: Allocating 30240 bytes of per cpu data
-Built 2 zonelists in Zone order, mobility grouping on.  Total pages: 2059926
-Policy zone: Normal
-Kernel command line: root=/dev/disk/by-id/scsi-1AMCC_0278095931E5540026BE-part2 vga=0x31a    resume=/dev/sda1 splash=silent 3
-Initializing CPU#0
-PID hash table entries: 4096 (order: 12, 32768 bytes)
-TSC calibrated against PM_TIMER
-Marking TSC unstable due to TSCs unsynchronized
-time.c: Detected 2009.259 MHz processor.
-Console: colour dummy device 80x25
-console [tty0] enabled
-Checking aperture...
-CPU 0: aperture @ 8e000000 size 32 MB
-Aperture too small (32 MB)
-No AGP bridge found
-Your BIOS doesn't leave a aperture memory hole
-Please enable the IOMMU option in the BIOS setup
-This costs you 64 MB of RAM
-Mapping aperture over 65536 KB of RAM @ 4000000
-Memory: 8166248k/10485760k available (2035k kernel code, 220928k reserved, 951k data, 292k init)
-Calibrating delay using timer specific routine.. 4021.00 BogoMIPS (lpj=8042019)
-Security Framework initialized
-Dentry cache hash table entries: 1048576 (order: 11, 8388608 bytes)
-Inode-cache hash table entries: 524288 (order: 10, 4194304 bytes)
-Mount-cache hash table entries: 256
-CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
-CPU: L2 Cache: 1024K (64 bytes/line)
-CPU 0/0 -> Node 0
-CPU: Physical Processor ID: 0
-CPU: Processor Core ID: 0
-SMP alternatives: switching to UP code
-ACPI: Core revision 20070126
-Parsing all Control Methods:
-Table [DSDT](id 0001) - 757 Objects with 95 Devices 280 Methods 29 Regions
-Parsing all Control Methods:
-Table [SSDT](id 0002) - 12 Objects with 0 Devices 0 Methods 0 Regions
- tbxface-0598 [00] tb_load_namespace     : ACPI Tables successfully acquired
-evxfevnt-0091 [00] enable                : Transition to ACPI mode successful
-Using local APIC timer interrupts.
-APIC timer calibration result 12557886
-Detected 12.557 MHz APIC timer.
-SMP alternatives: switching to SMP code
-Booting processor 1/4 APIC 0x1
-Initializing CPU#1
-Calibrating delay using timer specific routine.. 4018.55 BogoMIPS (lpj=8037106)
-CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
-CPU: L2 Cache: 1024K (64 bytes/line)
-CPU 1/1 -> Node 0
-CPU: Physical Processor ID: 0
-CPU: Processor Core ID: 1
-Dual Core AMD Opteron(tm) Processor 270 stepping 02
-SMP alternatives: switching to SMP code
-Booting processor 2/4 APIC 0x2
-Initializing CPU#2
-Calibrating delay using timer specific routine.. 4018.55 BogoMIPS (lpj=8037109)
-CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
-CPU: L2 Cache: 1024K (64 bytes/line)
-CPU 2/2 -> Node 1
-CPU: Physical Processor ID: 1
-CPU: Processor Core ID: 0
-Dual Core AMD Opteron(tm) Processor 270 stepping 02
-SMP alternatives: switching to SMP code
-Booting processor 3/4 APIC 0x3
-Initializing CPU#3
-Calibrating delay using timer specific routine.. 4018.55 BogoMIPS (lpj=8037115)
-CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
-CPU: L2 Cache: 1024K (64 bytes/line)
-CPU 3/3 -> Node 1
-CPU: Physical Processor ID: 1
-CPU: Processor Core ID: 1
-Dual Core AMD Opteron(tm) Processor 270 stepping 02
-Brought up 4 CPUs
-CPU0 attaching sched-domain:
- domain 0: span 03
-  groups: 01 02
-  domain 1: span 0f
-   groups: 03 0c
-CPU1 attaching sched-domain:
- domain 0: span 03
-  groups: 02 01
-  domain 1: span 0f
-   groups: 03 0c
-CPU2 attaching sched-domain:
- domain 0: span 0c
-  groups: 04 08
-  domain 1: span 0f
-   groups: 0c 03
-CPU3 attaching sched-domain:
- domain 0: span 0c
-  groups: 08 04
-  domain 1: span 0f
-   groups: 0c 03
-net_namespace: 120 bytes
-NET: Registered protocol family 16
-ACPI: bus type pci registered
-PCI: Using MMCONFIG at e0000000 - e07fffff
-PCI: No mmconfig possible on device 00:18
-PCI: No mmconfig possible on device 00:19
-evgpeblk-0956 [00] ev_create_gpe_block   : GPE 00 to 1F [_GPE] 4 regs on int 0x9
-evgpeblk-1052 [00] ev_initialize_gpe_bloc: Found 7 Wake, Enabled 0 Runtime GPEs in this block
-ACPI: EC: Look up EC in DSDT
-Completing Region/Field/Buffer/Package initialization:....................................................................................
-Initialized 24/29 Regions 2/2 Fields 29/29 Buffers 29/41 Packages (778 nodes)
-Initializing Device/Processor/Thermal objects by executing _INI methods:
-Executed 0 _INI methods requiring 0 _STA executions (examined 101 objects)
-ACPI: Interpreter enabled
-ACPI: (supports S0 S1 S5)
-ACPI: Using IOAPIC for interrupt routing
-ACPI: PCI Root Bridge [PCI0] (0000:00)
-PCI: Transparent bridge - 0000:00:09.0
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.P2P0._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.XVR0._PRT]
-ACPI: PCI Root Bridge [PCI2] (0000:10)
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI2.G0PA._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI2.G0PB._PRT]
-ACPI: PCI Root Bridge [PCI1] (0000:80)
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI1._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI1.XVR0._PRT]
-ACPI: PCI Interrupt Link [LNK1] (IRQs 16 17 18 19) *0
-ACPI: PCI Interrupt Link [LNK2] (IRQs 16 17 18 19) *0, disabled.
-ACPI: PCI Interrupt Link [LNK3] (IRQs 16 17 18 19) *0
-ACPI: PCI Interrupt Link [LNK4] (IRQs 16 17 18 19) *0, disabled.
-ACPI: PCI Interrupt Link [LNK5] (IRQs 16 17 18 19) *0, disabled.
-ACPI: PCI Interrupt Link [LSMB] (IRQs 20 21 22 23) *0, disabled.
-ACPI: PCI Interrupt Link [LUS0] (IRQs 20 21 22 23) *0
-ACPI: PCI Interrupt Link [LUS2] (IRQs 20 21 22 23) *0
-ACPI: PCI Interrupt Link [LMAC] (IRQs 20 21 22 23) *0
-ACPI: PCI Interrupt Link [LACI] (IRQs 20 21 22 23) *0
-ACPI: PCI Interrupt Link [LMCI] (IRQs 20 21 22 23) *0, disabled.
-ACPI: PCI Interrupt Link [LPID] (IRQs 20 21 22 23) *0, disabled.
-ACPI: PCI Interrupt Link [LTID] (IRQs 20 21 22 23) *0
-ACPI: PCI Interrupt Link [LSI1] (IRQs 20 21 22 23) *0
-ACPI: PCI Interrupt Link [APCP] (IRQs 20 21 22 23) *0, disabled.
-ACPI: PCI Interrupt Link [LNK1] (IRQs 48 49 50 51) *0, disabled.
-ACPI: PCI Interrupt Link [LNK2] (IRQs 48 49 50 51) *0, disabled.
-ACPI: PCI Interrupt Link [LNK3] (IRQs 48 49 50 51) *0, disabled.
-ACPI: PCI Interrupt Link [LNK4] (IRQs 48 49 50 51) *0, disabled.
-ACPI: PCI Interrupt Link [LNK5] (IRQs 48 49 50 51) *0, disabled.
-ACPI: PCI Interrupt Link [LUS0] (IRQs 52 53 54 55) *0, disabled.
-ACPI: PCI Interrupt Link [LUS2] (IRQs 52 53 54 55) *0, disabled.
-ACPI: PCI Interrupt Link [LMAC] (IRQs 52 53 54 55) *0, disabled.
-ACPI: PCI Interrupt Link [LACI] (IRQs 52 53 54 55) *0, disabled.
-ACPI: PCI Interrupt Link [LMCI] (IRQs 52 53 54 55) *0, disabled.
-ACPI: PCI Interrupt Link [LPID] (IRQs 52 53 54 55) *0, disabled.
-ACPI: PCI Interrupt Link [LTID] (IRQs 52 53 54 55) *0, disabled.
-ACPI: PCI Interrupt Link [LSI1] (IRQs 52 53 54 55) *0, disabled.
-Linux Plug and Play Support v0.97 (c) Adam Belay
-pnp: PnP ACPI init
-ACPI: bus type pnp registered
-pnp: PnP ACPI: found 14 devices
-ACPI: ACPI bus type pnp unregistered
-PCI: Using ACPI for IRQ routing
-PCI: If a device doesn't work, try "pci=routeirq".  If it helps, post a report
-PCI-DMA: Disabling AGP.
-PCI-DMA: aperture base @ 4000000 size 65536 KB
-PCI-DMA: using GART IOMMU.
-PCI-DMA: Reserving 64MB of IOMMU area in the AGP aperture
-ACPI: RTC can wake from S4
-system 00:00: iomem range 0xffc00000-0xffffffff could not be reserved
-system 00:00: iomem range 0xfec00000-0xfec00fff could not be reserved
-system 00:00: iomem range 0xfee00000-0xfeefffff could not be reserved
-system 00:00: iomem range 0xfefff000-0xfeffffff has been reserved
-system 00:02: ioport range 0x8000-0x807f has been reserved
-system 00:02: ioport range 0x8080-0x80ff has been reserved
-system 00:02: ioport range 0x8400-0x847f has been reserved
-system 00:02: ioport range 0x8480-0x84ff has been reserved
-system 00:02: ioport range 0x8800-0x887f has been reserved
-system 00:02: ioport range 0x8880-0x88ff has been reserved
-system 00:02: ioport range 0xa000-0xa03f has been reserved
-system 00:02: ioport range 0xa040-0xa07f has been reserved
-PCI: Bridge: 0000:00:09.0
-  IO window: disabled.
-  MEM window: disabled.
-  PREFETCH window: disabled.
-PCI: Failed to allocate mem resource #6:20000@93000000 for 0000:02:00.0
-PCI: Bridge: 0000:00:0e.0
-  IO window: disabled.
-  MEM window: 91000000-92ffffff
-  PREFETCH window: a0000000-bfffffff
-PCI: Setting latency timer of device 0000:00:09.0 to 64
-PCI: Setting latency timer of device 0000:00:0e.0 to 64
-PCI: Bridge: 0000:10:0a.0
-  IO window: disabled.
-  MEM window: disabled.
-  PREFETCH window: disabled.
-PCI: Bridge: 0000:10:0b.0
-  IO window: 2000-2fff
-  MEM window: c0100000-c01fffff
-  PREFETCH window: c2000000-c3ffffff
-PCI: Bridge: 0000:80:0e.0
-  IO window: disabled.
-  MEM window: disabled.
-  PREFETCH window: disabled.
-PCI: Setting latency timer of device 0000:80:0e.0 to 64
-NET: Registered protocol family 2
-Time: acpi_pm clocksource has been installed.
-IP route cache hash table entries: 262144 (order: 9, 2097152 bytes)
-TCP established hash table entries: 524288 (order: 11, 12582912 bytes)
-TCP bind hash table entries: 65536 (order: 8, 1048576 bytes)
-TCP: Hash tables configured (established 524288 bind 65536)
-TCP reno registered
-Unpacking initramfs... done
-Freeing initrd memory: 7454k freed
-Simple Boot Flag at 0x36 set to 0x1
-audit: initializing netlink socket (disabled)
-audit(1194888408.988:1): initialized
-Total HugeTLB memory allocated, 0
-VFS: Disk quotas dquot_6.5.1
-Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
-io scheduler noop registered
-io scheduler anticipatory registered
-io scheduler deadline registered
-io scheduler cfq registered (default)
-PCI: Found disabled HT MSI Mapping on 0000:00:0e.0
-PCI: Found enabled HT MSI Mapping on 0000:00:00.0
-PCI: Linking AER extended capability on 0000:00:0e.0
-Boot video device is 0000:02:00.0
-PCI: MSI quirk detected. PCI_BUS_FLAGS_NO_MSI set for 0000:10:0a.0 subordinate bus.
-PCI: MSI quirk detected. PCI_BUS_FLAGS_NO_MSI set for 0000:10:0b.0 subordinate bus.
-PCI: Found disabled HT MSI Mapping on 0000:80:0e.0
-PCI: Found enabled HT MSI Mapping on 0000:80:00.0
-PCI: Setting latency timer of device 0000:00:0e.0 to 64
-assign_interrupt_mode Found MSI capability
-Allocate Port Service[0000:00:0e.0:pcie00]
-Allocate Port Service[0000:00:0e.0:pcie01]
-Allocate Port Service[0000:00:0e.0:pcie03]
-PCI: Setting latency timer of device 0000:80:0e.0 to 64
-assign_interrupt_mode Found MSI capability
-Allocate Port Service[0000:80:0e.0:pcie00]
-AER service couldn't init device 0000:00:0e.0:pcie01 - no _OSC support
-vesafb: framebuffer at 0xa0000000, mapped to 0xffffc20002400000, using 5120k, total 131072k
-vesafb: mode is 1280x1024x16, linelength=2560, pages=1
-vesafb: scrolling: redraw
-vesafb: Truecolor: size=0:5:6:5, shift=0:11:5:0
-Console: switching to colour frame buffer device 160x64
-fb0: VESA VGA frame buffer device
-Real Time Clock Driver v1.12ac
-Non-volatile memory driver v1.2
-Linux agpgart interface v0.102
-Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing disabled
-serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-00:08: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-PNP: PS/2 Controller [PNP0303:PS2K,PNP0f13:PS2M] at 0x60,0x64 irq 1,12
-serio: i8042 KBD port at 0x60,0x64 irq 1
-mice: PS/2 mouse device common for all mice
-input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input0
-NET: Registered protocol family 1
-registered taskstats version 1
-Freeing unused kernel memory: 292k freed
-SCSI subsystem initialized
-3ware 9000 Storage Controller device driver for Linux v2.26.02.010.
-ACPI: PCI Interrupt 0000:12:04.0[A] -> GSI 28 (level, low) -> IRQ 28
-scsi0 : 3ware 9000 Storage Controller
-3w-9xxx: scsi0: Found a 3ware 9000 Storage Controller at 0xc0100000, IRQ: 28.
-3w-9xxx: scsi0: Firmware FE9X 3.04.00.005, BIOS BE9X 3.04.00.002, Ports: 8.
-scsi 0:0:0:0: Direct-Access     AMCC     9550SXU-8L DISK  3.04 PQ: 0 ANSI: 3
-BIOS EDD facility v0.16 2004-Jun-25, 6 devices found
-usbcore: registered new interface driver usbfs
-usbcore: registered new interface driver hub
-usbcore: registered new device driver usb
-ACPI: PCI Interrupt Link [LUS2] enabled at IRQ 23
-ACPI: PCI Interrupt 0000:00:02.1[B] -> Link [LUS2] -> GSI 23 (level, high) -> IRQ 23
-PCI: Setting latency timer of device 0000:00:02.1 to 64
-ehci_hcd 0000:00:02.1: EHCI Host Controller
-ehci_hcd 0000:00:02.1: new USB bus registered, assigned bus number 1
-ehci_hcd 0000:00:02.1: debug port 1
-PCI: cache line size of 64 is not supported by device 0000:00:02.1
-ehci_hcd 0000:00:02.1: irq 23, io mem 0x90001000
-ehci_hcd 0000:00:02.1: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
-usb usb1: configuration #1 chosen from 1 choice
-hub 1-0:1.0: USB hub found
-ohci_hcd: 2006 August 04 USB 1.1 'Open' Host Controller (OHCI) Driver
-hub 1-0:1.0: 10 ports detected
-sd 0:0:0:0: [sda] 624955392 512-byte hardware sectors (319977 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 23 00 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: disabled, doesn't support DPO or FUA
-sd 0:0:0:0: [sda] 624955392 512-byte hardware sectors (319977 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 23 00 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: disabled, doesn't support DPO or FUA
- sda: sda1 sda2 sda3
-sd 0:0:0:0: [sda] Attached SCSI disk
-ACPI: PCI Interrupt Link [LUS0] enabled at IRQ 22
-ACPI: PCI Interrupt 0000:00:02.0[A] -> Link [LUS0] -> GSI 22 (level, high) -> IRQ 22
-PCI: Setting latency timer of device 0000:00:02.0 to 64
-ohci_hcd 0000:00:02.0: OHCI Host Controller
-ohci_hcd 0000:00:02.0: new USB bus registered, assigned bus number 2
-ohci_hcd 0000:00:02.0: irq 22, io mem 0x90000000
-usb usb2: configuration #1 chosen from 1 choice
-hub 2-0:1.0: USB hub found
-hub 2-0:1.0: 10 ports detected
-usb 2-1: new low speed USB device using ohci_hcd and address 2
-usb 2-1: configuration #1 chosen from 1 choice
-usbcore: registered new interface driver hiddev
-input: Logitech USB-PS/2 Optical Mouse as /devices/pci0000:00/0000:00:02.0/usb2/2-1/2-1:1.0/input/input1
-input: USB HID v1.10 Mouse [Logitech USB-PS/2 Optical Mouse] on usb-0000:00:02.0-1
-usbcore: registered new interface driver usbhid
-drivers/hid/usbhid/hid-core.c: v2.6:USB HID core driver
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on sda2, internal journal
-EXT3-fs: mounted filesystem with ordered data mode.
-sd 0:0:0:0: Attached scsi generic sg0 type 0
-rtc_cmos: probe of 00:06 failed with error -16
-libata version 3.00 loaded.
-input: Power Button (FF) as /devices/virtual/input/input2
-forcedeth: Reverse Engineered nForce ethernet driver. Version 0.61.
-ACPI: PCI Interrupt Link [LMAC] enabled at IRQ 21
-ACPI: PCI Interrupt 0000:00:0a.0[A] -> Link [LMAC] -> GSI 21 (level, high) -> IRQ 21
-PCI: Setting latency timer of device 0000:00:0a.0 to 64
-ACPI: Power Button (FF) [PWRF]
-input: Power Button (CM) as /devices/virtual/input/input3
-ACPI: Power Button (CM) [PWRB]
-forcedeth 0000:00:0a.0: ifname eth0, PHY OUI 0x5043 @ 1, addr 00:e0:81:78:bf:48
-forcedeth 0000:00:0a.0: highdma csum timirq gbit lnktim desc-v3
-sata_nv 0000:00:07.0: version 3.5
-ACPI: PCI Interrupt Link [LTID] enabled at IRQ 20
-ACPI: PCI Interrupt 0000:00:07.0[A] -> Link [LTID] -> GSI 20 (level, high) -> IRQ 20
-sata_nv 0000:00:07.0: Using ADMA mode
-PCI: Setting latency timer of device 0000:00:07.0 to 64
-scsi1 : sata_nv
-scsi2 : sata_nv
-ata1: SATA max UDMA/133 cmd 0x1c40 ctl 0x1c34 bmdma 0x1c10 irq 20
-ata2: SATA max UDMA/133 cmd 0x1c38 ctl 0x1c30 bmdma 0x1c18 irq 20
-ata1: SATA link down (SStatus 0 SControl 310)
-ata2: SATA link down (SStatus 0 SControl 310)
-ACPI: PCI Interrupt Link [LSI1] enabled at IRQ 23
-ACPI: PCI Interrupt 0000:00:08.0[A] -> Link [LSI1] -> GSI 23 (level, high) -> IRQ 23
-sata_nv 0000:00:08.0: Using ADMA mode
-PCI: Setting latency timer of device 0000:00:08.0 to 64
-scsi3 : sata_nv
-scsi4 : sata_nv
-ata3: SATA max UDMA/133 cmd 0x1c58 ctl 0x1c4c bmdma 0x1c20 irq 23
-ata4: SATA max UDMA/133 cmd 0x1c50 ctl 0x1c48 bmdma 0x1c28 irq 23
-ata3: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-ata3.00: ATAPI: TSSTcorp CDDVDW SH-S203B, SB00, max UDMA/100
-ata3.00: configured for UDMA/100
-ata4: SATA link down (SStatus 0 SControl 310)
-scsi 3:0:0:0: CD-ROM            TSSTcorp CDDVDW SH-S203B  SB00 PQ: 0 ANSI: 5
-ata3: bounce limit 0xFFFFFFFF, segment boundary 0xFFFF, hw segs 127
-scsi 3:0:0:0: Attached scsi generic sg1 type 5
-i2c-adapter i2c-0: nForce2 SMBus adapter at 0xa000
-i2c-adapter i2c-1: nForce2 SMBus adapter at 0xa040
-pata_amd 0000:00:06.0: version 0.3.9
-PCI: Setting latency timer of device 0000:00:06.0 to 64
-scsi5 : pata_amd
-scsi6 : pata_amd
-ata5: PATA max UDMA/133 cmd 0x1f0 ctl 0x3f6 bmdma 0x1c00 irq 14
-ata6: PATA max UDMA/133 cmd 0x170 ctl 0x376 bmdma 0x1c08 irq 15
-ACPI: PCI Interrupt Link [LMAC] enabled at IRQ 55
-ACPI: PCI Interrupt 0000:80:0a.0[A] -> Link [LMAC] -> GSI 55 (level, high) -> IRQ 55
-ACPI: PCI Interrupt Link [LACI] enabled at IRQ 22
-ACPI: PCI Interrupt 0000:00:04.0[A] -> Link [LACI] -> GSI 22 (level, high) -> IRQ 22
-PCI: Setting latency timer of device 0000:80:0a.0 to 64
-PCI: Setting latency timer of device 0000:00:04.0 to 64
-intel8x0_measure_ac97_clock: measured 54809 usecs
-intel8x0: clocking to 46979
-forcedeth 0000:80:0a.0: ifname eth1, PHY OUI 0x5043 @ 1, addr 00:e0:81:78:bf:49
-forcedeth 0000:80:0a.0: highdma csum timirq gbit lnktim desc-v3
-Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
-ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
-sr0: scsi3-mmc drive: 48x/48x writer dvd-ram cd/rw xa/form2 cdda tray
-Uniform CD-ROM driver Revision: 3.20
-sr 3:0:0:0: Attached scsi CD-ROM sr0
-Adding 2104472k swap on /dev/sda1.  Priority:-1 extents:1 across:2104472k
-device-mapper: ioctl: 4.12.0-ioctl (2007-10-02) initialised: dm-devel@redhat.com
-loop: module loaded
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on sda3, internal journal
-EXT3-fs: mounted filesystem with ordered data mode.
-powernow-k8: Found 2 Dual Core AMD Opteron(tm) Processor 270 processors (4 cpu cores) (version 2.00.00)
-powernow-k8:    0 : fid 0xc (2000 MHz), vid 0x8
-powernow-k8:    1 : fid 0xa (1800 MHz), vid 0xa
-powernow-k8:    2 : fid 0x2 (1000 MHz), vid 0x12
-powernow-k8:    0 : fid 0xc (2000 MHz), vid 0x8
-powernow-k8:    1 : fid 0xa (1800 MHz), vid 0xa
-powernow-k8:    2 : fid 0x2 (1000 MHz), vid 0x12
-Clocksource tsc unstable (delta = -104028719 ns)
-ip6_tables: (C) 2000-2006 Netfilter Core Team
-ip_tables: (C) 2000-2006 Netfilter Core Team
-audit(1194888425.330:2): audit_backlog_limit=320 old=64 by auid=4294967295 res=1
-audit(1194888425.826:3): audit_pid=3163 old=0 by auid=4294967295
-
---Boundary-00=_XaJOHEIHGmfzz8W--
