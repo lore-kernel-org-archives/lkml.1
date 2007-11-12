@@ -1,64 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757935AbXKLTqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757200AbXKLTss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757935AbXKLTqj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 14:46:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbXKLTqc
+	id S1757200AbXKLTss (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 14:48:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbXKLTsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 14:46:32 -0500
-Received: from nz-out-0506.google.com ([64.233.162.228]:60693 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751178AbXKLTqb (ORCPT
+	Mon, 12 Nov 2007 14:48:40 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35080 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751687AbXKLTsk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 14:46:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=LtRS5xIjnf77AXmcIJ23Zg002aGyLBwxkkwWALwXGSh1ElX4wEgTkqiqwLB1oBxwukPmHQwsVLAuGh7HvLbWlas799pwstWYH93MbyisBA6gev8a/YnQeht8eUtuE79/L8bYBAItNvIRaDe94B538HFODKI8B5uTyNpx+6/XVww=
-Message-ID: <8bd0f97a0711121146w30b88cdcs8abf3f5b6bff2d14@mail.gmail.com>
-Date: Mon, 12 Nov 2007 14:46:30 -0500
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Andy Whitcroft" <apw@shadowen.org>
-Subject: checkpatch.pl and no newline handling
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 12 Nov 2007 14:48:40 -0500
+Date: Mon, 12 Nov 2007 19:48:06 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Ron Yorgason" <yorgasor@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Better support for Delkin cardbus CF adapters -- IDE layer
+Message-ID: <20071112194806.4cb9c688@the-village.bc.nu>
+In-Reply-To: <93d1fdd10711121003t2286493bob25a3acd12134720@mail.gmail.com>
+References: <93d1fdd10711121003t2286493bob25a3acd12134720@mail.gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-the current checkpatch.pl does not reject new files that lack a
-newline, yet rejects patches that fix newlines in files ... quite the
-opposite of what we actually want
+> the kernel), performance is pretty abysmal.  What would it take to get
+> proper DMA support?  Is it an architecture problem, in that this
+> doesn't use the normal IDE PCI driver?  Is it a lack of documentation
+> on card specs?  What can I do to help?
 
-$ echo -n moo > no-newline
-$ diff -Nu /dev/null no-newline
---- /dev/null   2007-11-10 20:02:36.248000000 -0500
-+++ no-newline  2007-11-12 14:44:19.000000000 -0500
-@@ -0,0 +1 @@
-+moo
-\ No newline at end of file
-$ (diff -Nu /dev/null no-newline; echo Signed-off-by:) |
-./scripts/checkpatch.pl -
-Your patch has no obvious style problems and is ready for submission.
+Persuade Delkin to provide specifications either publically or under NDA
+(but allowing a GPL source code driver) with one of the ATA developers.
 
-lies!
+For a fairly typical SFF style controller it shouldn't take long to
+produce a test driver.
 
-$ echo moo > newline
-$ diff -u no-newline newline
---- no-newline  2007-11-12 14:44:19.000000000 -0500
-+++ newline     2007-11-12 14:44:27.000000000 -0500
-@@ -1 +1 @@
--moo
-\ No newline at end of file
-+moo
-$ (diff -u no-newline newline; echo Signed-off-by:) | ./scripts/checkpatch.pl -
-ERROR: patch seems to be corrupt (line wrapped?)
-#5: FILE: newline:0:
-\ No newline at end of file
-
-total: 1 errors, 0 warnings, 3 lines checked
-Your patch has style problems, please review.  If any of these errors
-are false positives report them to the maintainer, see
-CHECKPATCH in MAINTAINERS.
--mike
+Alan
