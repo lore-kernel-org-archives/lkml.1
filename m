@@ -1,64 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757585AbXKLAmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757819AbXKLAp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757585AbXKLAmp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Nov 2007 19:42:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756134AbXKLAmh
+	id S1757819AbXKLAp7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Nov 2007 19:45:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755873AbXKLApt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Nov 2007 19:42:37 -0500
-Received: from mx1.univ-lille1.fr ([193.49.225.19]:48965 "EHLO
-	mx1.univ-lille1.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755733AbXKLAmg (ORCPT
+	Sun, 11 Nov 2007 19:45:49 -0500
+Received: from accolon.hansenpartnership.com ([64.109.89.108]:56484 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755620AbXKLAps (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Nov 2007 19:42:36 -0500
-Message-ID: <4737A09C.1030200@lifl.fr>
-Date: Mon, 12 Nov 2007 01:38:52 +0100
-From: Eric Piel <Eric.Piel@lifl.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; fr-FR; rv:1.8.1.6) Gecko/20071101 Mandriva/2.0.0.6-5mdv2008.1 (2008.1) Thunderbird/2.0.0.6 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Thomas Renninger <trenn@suse.de>, linux-kernel@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Dave Jones <davej@redhat.com>
-Subject: Re: Kernel panic at boot with ondemand governor as default (2.6.24-rc2)
-References: <4737539F.2070401@lifl.fr> <20071111144523.14164575@laptopd505.fenrus.org>
-In-Reply-To: <20071111144523.14164575@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender DNS name whitelisted, not delayed by milter-greylist-2.0.2 (mx1.univ-lille1.fr [193.49.225.19]); Mon, 12 Nov 2007 01:38:55 +0100 (CET)
-X-USTL-MailScanner-Information: Please contact the ISP for more information
-X-USTL-MailScanner: Found to be clean
-X-USTL-MailScanner-From: eric.piel@lifl.fr
+	Sun, 11 Nov 2007 19:45:48 -0500
+Subject: Re: [PATCH] Fix problem with size of allocation in libsas
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: dougg@torque.net
+Cc: Jesper Juhl <jesper.juhl@gmail.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <47379F67.2030504@torque.net>
+References: <200711120024.54773.jesper.juhl@gmail.com>
+	 <1194825603.3445.21.camel@localhost.localdomain>
+	 <47379F67.2030504@torque.net>
+Content-Type: text/plain
+Date: Sun, 11 Nov 2007 18:45:45 -0600
+Message-Id: <1194828345.3445.35.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007年11月11日 23:45, Arjan van de Ven wrote/a écrit:
-> On Sun, 11 Nov 2007 20:10:23 +0100
-> Eric Piel <Eric.Piel@lifl.fr> wrote:
+On Sun, 2007-11-11 at 19:33 -0500, Douglas Gilbert wrote:
+> James Bottomley wrote:
+> > On Mon, 2007-11-12 at 00:24 +0100, Jesper Juhl wrote:
+> >> From: Jesper Juhl <jesper.juhl@gmail.com>
+> >>
+> >> in sas_get_phy_change_count(), the line
+> >> 	disc_resp = alloc_smp_resp(DISCOVER_RESP_SIZE);
+> >> will allocate 56 bytes due to this define:
+> >> 	#define DISCOVER_RESP_SIZE 56
+> >> But, the struct is actually 60 bytes in size.
+> >>
+> >> So change the define to be 
+> >> 	#define DISCOVER_RESP_SIZE sizeof(struct smp_resp)
+> >> so we always get the correct size even when people 
+> >> fiddle with the structure.
+> >>
+> >> This change also fixes the same problem in 
+> >> sas_get_phy_attached_sas_addr()
+> >>
+> >> (Found by the Coverity checker. Compile tested only)
+> > 
+> > Well, your fix is definitely wrong.
+> > 
+> > Could you explain the problem a little more?  The discover response SMP
+> > frame is 56 bytes as mandated by the standard.  I don't see anywhere in
+> > the code where we're actually using a value beyond the 56th byte ...
+> > where is the problem use?
 > 
->> Hello,
->>
->> I've tried kernel 2.6.24-rc2 and I have a problem with the new option 
->> for setting up the cpufreq ondemand governor as default: a kernel
->> panic happens early at boot time. If I boot first with performance
->> governor and later change to ondemand, everything is fine (as usual).
->>
->> This seems related to the delayed_workqueue. The kernel panic message 
->> finishes by:
->> EIP: [<c012aa60>] wq_per_cpu+0x0/0x10 SS:ESP 0068:c191be58
->> Kernel panic - not syncing: Attempted to kill init!
->>
->> A picture of the whole message is available here:
->> http://pieleric.free.fr/unorder/1162-ondemand-panic.jpg
->>
->> My computer is a x86 using speedstep-ich, and you can find the full 
->> .config leading to the panic attached.
-
+> The response size of SMP DISCOVER keeps growing with
+> each rev. Currently in SAS-2 revision 12 it is 112 bytes long!
+> The original SAS standard and SAS 1.1 have implicit response
+> sizes and for DISCOVER that is 56 bytes.
 > 
-> has ondemand ever worked for you?
-Yes, ondemand works perfectly fine on this computer. The panic happens 
-only if selecting it as the _default_ governor (which has been 
-introduced by commit 1c2562459faedc35927546cfa5273ec6c2884cce).
+> To be compliant with SAS-2 the code should read byte 3 of
+> a DISCOVER response. If it is zero then the response length
+> is 56 bytes, otherwise the response length is that many
+> dwords (i.e. 4 byte units) plus 4 bytes for the CRC.
+> [Similar logic applies to many other SMP responses.]
+> 
+> I have tables for all SMP requests and response (up until
+> SAS-2 rev 12) in my smp_utils package, see the smp_lib.c
+> file.
 
-Eric
+Right at the moment, we're requiring the 1.1 56 byte response because
+the request has byte three zeroed (sas 2 requires responders to return
+the 1.1 response frame in this case).  I suppose if we ever need to do
+zoning, there might be a case to move to larger sizes, but at the moment
+it would just tell us about features we're not using anyway (plus we're
+bound to confuse some older expanders).
+
+James
 
 
