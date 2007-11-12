@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758616AbXKLO2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752082AbXKLOfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758616AbXKLO2r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 09:28:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbXKLO2g
+	id S1752082AbXKLOfV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 09:35:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbXKLOfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 09:28:36 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:36607 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751712AbXKLO2f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 09:28:35 -0500
-Subject: Re: [v4l-dvb-maintainer] [RFC: 2.6 patch] remove saa7134-oss
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org,
-       Linux and Kernel Video <video4linux-list@redhat.com>,
-       DVB ML <linux-dvb@linuxtv.org>
-In-Reply-To: <20071109060309.GR26163@stusta.de>
-References: <20071109060309.GR26163@stusta.de>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 12 Nov 2007 12:28:21 -0200
-Message-Id: <1194877701.8662.109.camel@gaivota>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 12 Nov 2007 09:35:08 -0500
+Received: from main.gmane.org ([80.91.229.2]:33695 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750836AbXKLOfG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 09:35:06 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Tuomo Valkonen <tuomov@iki.fi>
+Subject: Re: [poll] Is the megafreeze development model broken?
+Date: Mon, 12 Nov 2007 13:51:25 +0000 (UTC)
+Message-ID: <slrnfjgmit.l07.tuomov@jolt.modeemi.cs.tut.fi>
+References: <fgtfqa$h9j$1@ger.gmane.org> <m1sl3b4t5k.fsf@ebiederm.dsl.xmission.com>
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: jolt.modeemi.cs.tut.fi
+User-Agent: slrn/0.9.8.1pl1 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Adrian,
+On 2007-11-12, Eric W. Biederman <ebiederm@xmission.com> wrote:
+> I think a megafreeze development model is sane.  Finding a collection
+> of software versions that are all known to work together is very
+> interesting, and useful.  Making it so you can deliver something that
+> just works to end users is always interesting.
 
-Em Sex, 2007-11-09 às 07:03 +0100, Adrian Bunk escreveu:
-> The saa7134-oss is deprecated for quite some time, it's the only 
-> remaining OSS user outside of sound/oss/, and considering how few and 
-> what kind of soundcards are left supported by OSS I hardly see any use 
-> cases left.
+The distros only do that for the most important and most popular
+packages, most of which have become rather "generic" and faceless
+behemots in the sense that they do not have definite authors and so
+on, and for which it takes years to respond to bug reports in any case
+(if someone even bothers to enter the bug in registration-required
+Suckzilla, Debian's reportbug becoming much more usable in this case,
+even though it typically takes another year for the package maintainer
+to report things back upstream, if it ever even happens).
 
-Since saa7134-alsa seems to do the job, it seems ok to remove
-saa7134-oss.
+Other more marginal software with a face, the distros just throw in
+and expect the author to deal with users having problems with ancient
+development snapshots and even bugs in stable versions that the distros
+simply refuse to fix. They should not distribute that kind of software
+at all. That is, distros should stick to providing stable base systems, 
+and fully supported (and renamed if not generic) customised versions of
+other software for their target audience. For the rest, there should
+be better mechanisms for authors to distribute binary or otherwise
+easily and reliably installable packages of their software. 
 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-Acked-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+Closed-source operating systems are more decentralised than Linux,
+where the par^W^W a few big distros have de facto central control 
+over the software that users can conveniently install.
 
-I'll commit this patch soon at my tree.
-
-Cheers,
-Mauro
+-- 
+Tuomo
 
