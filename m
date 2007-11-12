@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755077AbXKLRDO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759656AbXKLRFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755077AbXKLRDO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 12:03:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758338AbXKLRCo
+	id S1759656AbXKLRFv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 12:05:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbXKLRFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 12:02:44 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:41713 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753530AbXKLRCm (ORCPT
+	Mon, 12 Nov 2007 12:05:43 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:35842 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753063AbXKLRFm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 12:02:42 -0500
-Date: Mon, 12 Nov 2007 17:01:51 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Erez Zadok <ezk@cs.sunysb.edu>
-cc: Dave Hansen <haveblue@us.ibm.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Ryan Finnie <ryan@finnie.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, cjwatson@ubuntu.com, linux-mm@kvack.org
-Subject: Re: msync(2) bug(?), returns AOP_WRITEPAGE_ACTIVATE to userland 
-In-Reply-To: <200711090605.lA965B1S024066@agora.fsl.cs.sunysb.edu>
-Message-ID: <Pine.LNX.4.64.0711121645090.14138@blonde.wat.veritas.com>
-References: <200711090605.lA965B1S024066@agora.fsl.cs.sunysb.edu>
+	Mon, 12 Nov 2007 12:05:42 -0500
+Date: Mon, 12 Nov 2007 09:05:21 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       tony@bakeyournoodle.com, paulus@samba.org, dino@in.ibm.com,
+       tytso@us.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com, antonb@us.ibm.com
+Subject: Re: [PATCH, RFC] improved hacks to allow -rt to run kernbench on POWER
+Message-ID: <20071112170521.GA11113@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20071109181028.GA26800@linux.vnet.ibm.com> <1194641524.21340.14.camel@pasglop> <20071109220717.GJ8826@linux.vnet.ibm.com> <1194753541.21340.26.camel@pasglop> <Pine.LNX.4.58.0711110943510.12853@gandalf.stny.rr.com> <1194814125.6510.14.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1194814125.6510.14.camel@pasglop>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Nov 2007, Erez Zadok wrote:
-> In message <Pine.LNX.4.64.0711051358440.7629@blonde.wat.veritas.com>, Hugh Dickins writes:
+On Mon, Nov 12, 2007 at 07:48:45AM +1100, Benjamin Herrenschmidt wrote:
 > 
-> > Three, I believe you need to add a flush_dcache_page(lower_page)
-> > after the copy_highpage(lower_page): some architectures will need
-> > that to see the new data if they have lower_page mapped (though I
-> > expect it's anyway shaky ground to be accessing through the lower
-> > mount at the same time as modifying through the upper).
+> On Sun, 2007-11-11 at 09:45 -0500, Steven Rostedt wrote:
+> > > Well, I suppose the patch could go in, maybe with some ifdef's
+> > around
+> > > the bits in _switch_to, there's little point in doing that on non-rt
+> > > kernels.
+> > 
+> > As Nick Piggin already stated, and I'll even state it for the RT
+> > kernel,
+> > we do not allow preemption in switch_to. So it is safe to remove those
+> > "preempt_disable" bits from the patch
 > 
-> OK.
+> Sure, I know that, I'm not talking about that, I'm talking about the
+> added code that flush pending batches & save the batch state, since on
+> non-rt kernel, this is not useful (the batch is only ever active within
+> a spinlocked section, which cannot be preempted on non-rt).
 
-While looking into something else entirely, I realize that _here_
-you are missing a SetPageUptodate(lower_page): should go in after
-the flush_dcache_page(lower_page) I'm suggesting.  (Nick would argue
-for some kind of barrier there too, but I don't think unionfs has a
-special need to be ahead of the pack on that issue.)
+Ah, I need a bit of conditional compilation.  Will fix.
 
-Think about it:
-when find_or_create_page has created a fresh page in the cache,
-and you've just done copy_highpage to put the data into it, you
-now need to mark it as Uptodate: otherwise a subsequent vfs_read
-or whatever on the lower level will find that page !Uptodate and
-read stale data back from disk instead of what you just copied in,
-unless its dirtiness has got it written back to disk meanwhile.
-
-Odd that that hasn't been noticed at all: I guess it may be hard
-to get testing to reclaim lower/upper pages in such a way as to
-test out such paths thoroughly.
-
-Hugh
+							Thanx, Paul
