@@ -1,53 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759056AbXKLTLa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758023AbXKLTOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759056AbXKLTLa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 14:11:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbXKLTLW
+	id S1758023AbXKLTOS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 14:14:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbXKLTOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 14:11:22 -0500
-Received: from rtr.ca ([76.10.145.34]:3624 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751170AbXKLTLV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 14:11:21 -0500
-Message-ID: <4738A558.1040304@rtr.ca>
-Date: Mon, 12 Nov 2007 14:11:20 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Mon, 12 Nov 2007 14:14:08 -0500
+Received: from relay1.corp.sgi.com ([192.48.171.29]:43628 "EHLO relay.sgi.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751250AbXKLTOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 14:14:07 -0500
+Date: Mon, 12 Nov 2007 11:14:06 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Herbert Xu <herbert@gondor.apana.org.au>
+cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       mathieu.desnoyers@polymtl.ca, penberg@cs.helsinki.fi
+Subject: Re: [patch 0/7] [RFC] SLUB: Improve allocpercpu to reduce per cpu
+ access overhead
+In-Reply-To: <E1IrWuB-0005nS-00@gondolin.me.apana.org.au>
+Message-ID: <Pine.LNX.4.64.0711121112410.26682@schroedinger.engr.sgi.com>
+References: <E1IrWuB-0005nS-00@gondolin.me.apana.org.au>
 MIME-Version: 1.0
-To: Ron Yorgason <yorgasor@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Better support for Delkin cardbus CF adapters -- IDE layer
-References: <93d1fdd10711121003t2286493bob25a3acd12134720@mail.gmail.com>
-In-Reply-To: <93d1fdd10711121003t2286493bob25a3acd12134720@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ron Yorgason wrote:
-> But I'm concerned about performance.  The delkin_cb.c file states:
-> 
->  *  This is slightly peculiar, in that it is a PCI driver,
->  *  but is NOT an IDE PCI driver -- the IDE layer does not directly
->  *  support hot insertion/removal of PCI interfaces, so this driver
->  *  is unable to use the IDE PCI interfaces.  Instead, it uses the
->  *  same interfaces as the ide-cs (PCMCIA) driver uses.
->  *  On the plus side, the driver is also smaller/simpler this way.
-> 
-> 
-> My attempts to use hdparm to turn on DMA for my device have failed.  I
-> assume this means DMA is not currently supported.  In my tests, read
-> support seems fast enough, but writing maxes out around 2MB/s.  And if
-> there is a lot of reading and writing going on (ie, trying to compile
-> the kernel), performance is pretty abysmal.  What would it take to get
-> proper DMA support?  Is it an architecture problem, in that this
-> doesn't use the normal IDE PCI driver?  Is it a lack of documentation
-> on card specs?  What can I do to help?
-..
+On Mon, 12 Nov 2007, Herbert Xu wrote:
 
-The problem is total lack of documentation.
+> David Miller <davem@davemloft.net> wrote:
+> > 
+> > Each IP compression tunnel instance does an alloc_percpu().
+> 
+> Actually all IPComp tunnels share one set of objects which are
+> allocated per-cpu.  So only the first tunnel would do that.
 
-If you can find some docs, then we can fully support it,
-both in old IDE (as current), and in the newer libata (not there at all now).
+Ahh so the need to be able to expand per cpu memory storage on demand 
+is not as critical as we thought.
 
-Cheers 
