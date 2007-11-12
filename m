@@ -1,52 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759522AbXKLW0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759928AbXKLW1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759522AbXKLW0R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 17:26:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755763AbXKLW0F
+	id S1759928AbXKLW1e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 17:27:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757691AbXKLW11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 17:26:05 -0500
-Received: from mx10.go2.pl ([193.17.41.74]:40191 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755575AbXKLW0E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 17:26:04 -0500
-Message-ID: <4738D398.8050402@o2.pl>
-Date: Mon, 12 Nov 2007 23:28:40 +0100
-From: Jarek Poplawski <jarkao2@o2.pl>
-User-Agent: Icedove 1.5.0.14pre (X11/20071020)
-MIME-Version: 1.0
-To: =?ISO-8859-2?Q?Tomasz_K=B3oczko?= <kloczek@rudy.mif.pg.gda.pl>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: top lies ?
-References: <Pine.BSO.4.63.0711121843170.3123@rudy.mif.pg.gda.pl>
-In-Reply-To: <Pine.BSO.4.63.0711121843170.3123@rudy.mif.pg.gda.pl>
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8bit
+	Mon, 12 Nov 2007 17:27:27 -0500
+Received: from relay1.corp.sgi.com ([192.48.171.29]:33635 "EHLO relay.sgi.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755600AbXKLW10 (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 17:27:26 -0500
+Date: Tue, 13 Nov 2007 09:27:20 +1100
+From: David Chinner <dgc@sgi.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: XFS related Oops
+Message-ID: <20071112222720.GG995458@sgi.com>
+References: <20071112064706.GA23595@dose.home.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071112064706.GA23595@dose.home.local>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tomasz K³oczko wrote, On 11/12/2007 06:57 PM:
-
-> Some data showed by top command looks like completly trashed.
-> Fragment from top output:
+On Mon, Nov 12, 2007 at 07:47:06AM +0100, Tino Keitel wrote:
+> Hi,
 > 
-> Mem:   2075784k total,  2053352k used,    22432k free,    19260k buffers
-> Swap:  2096472k total,      136k used,  2096336k free,  1335080k cached
+> after resume from suspend with 2.6.23.1, I got the following Oops:
 > 
->    PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  SWAP nFLT WCHAN     COMMAND
-> 14515 mysql     20   0 1837m 563m 4132 S   39 27.8  27:14.20 1.2g   18 -         mysqld
+> BUG: unable to handle kernel paging request at virtual address 3e0d204c
+>  printing eip:
+> c022807f
+> *pde = 00000000
+> Oops: 0000 [#1]
+> SMP 
+> Modules linked in: dvb_usb_cinergyT2 i915 drm cpufreq_stats usblp
+> firewire_ohci firewire_core dvb_usb crc_itu_t evdev snd_hda_intel
+> rtc_cmos sky2 dvb_core applesmc led_class coretemp hwmon
+> CPU:    0
+> EIP:    0060:[<c022807f>]    Not tainted VLI
+> EFLAGS: 00010202   (2.6.23.1 #4)
+> EIP is at xfs_iget_core+0x6f/0x690
+> eax: 0033f000   ebx: 3e0d2010   ecx: f7826000   edx: 0033f000
+> esi: 001346d7   edi: 00000000   ebp: f7525214   esp: f68b7cb4
+> ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> Process squid (pid: 2967, ti=f68b6000 task=f6833030 task.ti=f68b6000)
+> Stack: c024f1b1 00000001 f6a3d6c0 001346d7 f789ce00 c18993d8 c04fb280
+> f7525218 
+>        00000000 00000000 f7826000 e652c240 00000000 3e0d2010 e652c25c
+> e652c240 
+>        001346d7 f7826000 c0228774 001346d7 00000000 00000000 00000000
+> f68b7d80 
+> Call Trace:
+>  [<c024f1b1>] kmem_zone_alloc+0x51/0xb0
+>  [<c0228774>] xfs_iget+0xd4/0x160
+>  [<c024474b>] xfs_dir_lookup_int+0x9b/0x100
+>  [<c0247ec5>] xfs_lookup+0x75/0xa0
+>  [<c0256874>] xfs_vn_lookup+0x54/0x90
+>  [<c0177a32>] do_lookup+0x122/0x1a0
+>  [<c01794d4>] __link_path_walk+0x784/0xd80
+>  [<c0273072>] __next_cpu+0x12/0x30
+>  [<c0121dbd>] find_busiest_group+0x19d/0x6a0
+>  [<c0179b15>] link_path_walk+0x45/0xc0
+>  [<c0131350>] process_timeout+0x0/0x10
+>  [<c016eb62>] get_unused_fd_flags+0x52/0xc0
+>  [<c0179db3>] do_path_lookup+0x73/0x1b0
+>  [<c01719b8>] get_empty_filp+0x58/0x120
+>  [<c017a9d1>] __path_lookup_intent_open+0x51/0xa0
+>  [<c017aab0>] path_lookup_open+0x20/0x30
+>  [<c017abb6>] open_namei+0x66/0x640
+>  [<c0131697>] lock_timer_base+0x27/0x60
+>  [<c0131715>] try_to_del_timer_sync+0x45/0x50
+>  [<c016ee7e>] do_filp_open+0x2e/0x60
+>  [<c0131350>] process_timeout+0x0/0x10
+>  [<c016eb62>] get_unused_fd_flags+0x52/0xc0
+>  [<c016eefc>] do_sys_open+0x4c/0xe0
+>  [<c016efcc>] sys_open+0x1c/0x20
+>  [<c010428e>] sysenter_past_esp+0x5f/0x85
+>  =======================
+> Code: 44 24 1c 8b 44 24 1c e8 60 92 1b 00 8b 5d 00 85 db 89 5c 24 34 75
+> 14 e9 90 00 00 00 8b 5b 04 85 db 89 5c 24 34 0f 84 81 00 00 00 <8b> 53
+> 3c 8b 43 38 31 fa 31 f0 09 c2 75 e3 8d 83 dc 00 00 00 e8 
+> EIP: [<c022807f>] xfs_iget_core+0x6f/0x690 SS:ESP 0068:f68b7cb4
 > 
-> How it is possible that swap ussage is 136k and swapped out portion of (in 
-> this case) mysqld process is 1.2g ?
+> Does this ring any bells?
 
-It seems this bigger SWAP is virtual (not necessarily used yet), something
-similar like here:
+No. I'd say something got screwed up during suspend/resume. Is it
+reproducable?
 
->From man ps:
+Cheers,
 
- 
-"size      SZ     approximate amount of swap space that would be required if the process were to dirty
-                  all writable pages and then be swapped out. This number is very rough!"
- 
-
-Regards,
-Jarek P.
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
