@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758139AbXKLQW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758826AbXKLQ3O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758139AbXKLQW7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 11:22:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753637AbXKLQWw
+	id S1758826AbXKLQ3O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 11:29:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbXKLQ26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 11:22:52 -0500
-Received: from michael.checkpoint.com ([194.29.32.68]:51205 "EHLO
-	michael.checkpoint.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752737AbXKLQWv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 11:22:51 -0500
-Message-ID: <47387DC7.9090001@checkpoint.com>
-Date: Mon, 12 Nov 2007 18:22:31 +0200
-From: Yoav Artzi <yoavar@checkpoint.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Kyle McMartin <kyle@mcmartin.ca>
-CC: Adrian Bunk <bunk@kernel.org>, Jiri Slaby <jirislaby@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: PAGE_SIZE on 64bit and 32bit machines
-References: <473865BE.2070806@checkpoint.com> <47386DC9.4020905@gmail.com> <47387214.2010200@checkpoint.com> <20071112153908.GK9771@stusta.de> <47387810.3060503@checkpoint.com> <20071112161106.GB24243@fattire.cabal.ca>
-In-Reply-To: <20071112161106.GB24243@fattire.cabal.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Nov 2007 11:28:58 -0500
+Received: from smtp02.cdmon.com ([212.36.74.229]:62326 "EHLO smtp02.cdmon.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751484AbXKLQ26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 11:28:58 -0500
+Date: Mon, 12 Nov 2007 17:30:16 +0100
+From: DervishD <lkml@dervishd.net>
+To: Benny Halevy <bhalevy@panasas.com>
+Cc: James Courtier-Dutton <James@superbug.co.uk>,
+       Xavier Bestel <xavier.bestel@free.fr>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Coding Style: indenting with tabs vs. spaces
+Message-ID: <20071112163016.GC1073@DervishD>
+Mail-Followup-To: Benny Halevy <bhalevy@panasas.com>,
+	James Courtier-Dutton <James@superbug.co.uk>,
+	Xavier Bestel <xavier.bestel@free.fr>,
+	lkml <linux-kernel@vger.kernel.org>
+References: <4732E6BA.8060001@panasas.com> <20071110120424.GA16067@DervishD> <1194697674.6176.1.camel@bip.parateam.prv> <20071110165017.GB16090@DervishD> <4736CA1D.9020507@superbug.co.uk> <47380B14.3010604@panasas.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <47380B14.3010604@panasas.com>
+User-Agent: Mutt/1.4.2.3i
+Organization: DervishD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I see. Thanks, guys.
+    Hi Benny :)
 
+ * Benny Halevy <bhalevy@panasas.com> dixit:
+> Using only spaces as DervishD suggested works around that using brute
+> force by forcing the user to the author's preference which is
+> legitimate but may not be the most productive way.
 
--------- Original Message  --------
+I admit it.
 
-Subject: Re: PAGE_SIZE on 64bit and 32bit machines
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Yoav Artzi <yoavar@checkpoint.com>
-Date: Monday, November 12, 2007 6:11:06 PM
+> I think that my proposal of using tabs as logical indents only (as Xav
+> put it) and spaces for decorative alignment provides the best of both
+> worlds.
 
-> On Mon, Nov 12, 2007 at 05:58:08PM +0200, Yoav Artzi wrote:
->   
->> Looking at the source, I see:
->>
->> #ifdef CONFIG_4KSTACKS
->> #define THREAD_SIZE            (4096)
->> #else
->> #define THREAD_SIZE        (8192)
->> #endif
->>
->>
->> So if I configure the option CONFIG_4KSTACK, I will get a 4KB kernel 
->> stack. Am I missing something here?
->>
->>     
->
-> This is only on i386 (32-bit x86...)[1] On x86-64, we have 8K kernel
-> stacks (THREAD_ORDER 1), and 16K irqstacks (IRQSTACK_ORDER 2).
->
-> The relevant defines are found in <asm-x86/page_64.h> for x86_64, and
-> <asm-x86/thread_info_32.h> for i386.
->
-> Cheers,
-> 	Kyle
->
-> 1. That is, stack size is only configurable on 32bit.
->
-> Scanned by Check Point VPN-1 UTM NGX R65 with Messaging Security
->
->   
+Yes, you're right, and it is the only "mix" of tabs and spaces that
+won't cause headaches. I still don't like tabs for indenting but that's
+a matter of personal taste. Sometimes I use tabs for indenting when I
+have to share code.
 
+    Raúl Núñez de Arenas Coronado
+
+-- 
+Linux Registered User 88736 | http://www.dervishd.net
+It's my PC and I'll cry if I want to... RAmen!
+We are waiting for 13 Feb 2009 23:31:30 +0000 ...
