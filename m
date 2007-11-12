@@ -1,43 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752937AbXKLPLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755228AbXKLPMM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752937AbXKLPLo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 10:11:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750941AbXKLPLg
+	id S1755228AbXKLPMM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 10:12:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbXKLPL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 10:11:36 -0500
-Received: from cantor.suse.de ([195.135.220.2]:35393 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750854AbXKLPLf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 10:11:35 -0500
-From: Frank Seidel <fseidel@suse.de>
-Organization: SUSE LINUX Products GmbH
-To: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [RFC 7/13] Char: nozomi, remove struct irq
-Date: Mon, 12 Nov 2007 16:11:31 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org
-References: <2694611355132233895.slaby@pripojeni.net>
-In-Reply-To: <2694611355132233895.slaby@pripojeni.net>
+	Mon, 12 Nov 2007 10:11:56 -0500
+Received: from rv-out-0910.google.com ([209.85.198.187]:54196 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753637AbXKLPLz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 10:11:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=RoQnCjVKscTjLrp6T+0KEKtRaxg4iIn1Ekxd1hEXUcUW6sNyV09b7XASzsUiUQoJUteca+l03X8hp0qRTk5YoK9snKiPwy46OoLiItdwg9411OR067gB8WlWyoI7jpb/FM8b6fFcFvMxtjSr6o2EB89+szxpwuuaZffv2hdH5E8=
+Message-ID: <47386D2E.5090202@gmail.com>
+Date: Tue, 13 Nov 2007 00:11:42 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Adrian Bunk <bunk@kernel.org>
+CC: jgarzik@pobox.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] libata: remove unused functions
+References: <20071111112956.GM21669@stusta.de>
+In-Reply-To: <20071111112956.GM21669@stusta.de>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711121611.32544.fseidel@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Samstag 10 November 2007 00:47:31, you (Jiri Slaby) wrote:
-> nozomi, remove struct irq
-> struct irq (named as my_irq) is used only in ISR and its called functions.
-> We might silently use u16 variable on stack and remove all references to
-> this structure. This is the first step of struct nozomi_devices removal.
+Adrian Bunk wrote:
+> This patch removes the following obsolete functions:
+> - libata-core.c: __sata_phy_reset()
+> - libata-core.c: sata_phy_reset()
+> - libata-eh.c: ata_qc_timeout()
+> - libata-eh.c: ata_eng_timeout()
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-As this u16 is kind of local (just handed around from interrupt_handler) and
-the structs value was anyway overwritten always/on every interrupt call
-this seems to be totally ok.
-Just to be sure i ran a whole testseries and it really didn't show anything
-unusual => So, applied without changes.
+Queued in #tj-upstream-fixes which will be merged into 2.6.24.
 
-Thanks,
-Frank
+Thanks.
+
+-- 
+tejun
