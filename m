@@ -1,134 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758348AbXKMASb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760561AbXKMATF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758348AbXKMASb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 19:18:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755084AbXKMASX
+	id S1760561AbXKMATF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 19:19:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755321AbXKMASw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 19:18:23 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:56798 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752915AbXKMASW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 19:18:22 -0500
-Date: Mon, 12 Nov 2007 16:17:55 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: sam@ravnborg.org
-Subject: [PATCH/RFC] kconfig hints/tips/tricks
-Message-Id: <20071112161755.430633a2.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 12 Nov 2007 19:18:52 -0500
+Received: from palrel13.hp.com ([156.153.255.238]:51154 "EHLO palrel13.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752915AbXKMASu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 19:18:50 -0500
+Date: Mon, 12 Nov 2007 17:18:48 -0700
+From: Alex Chiang <achiang@hp.com>
+To: gregkh@suse.de, kristen.c.accardi@intel.com, lenb@kernel.org,
+       matthew@wil.cx, rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org,
+       achiang@hp.com
+Subject: [PATCH 5/5] Add pci_slot_add_hotplug() interface
+Message-ID: <20071113001848.GF13341@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>, gregkh@suse.de,
+	kristen.c.accardi@intel.com, lenb@kernel.org, matthew@wil.cx,
+	rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+	linux-pci@atrey.karlin.mff.cuni.cz,
+	pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
+References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113001707.GE13341@ldl.fc.hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071113001707.GE13341@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm not very happy with hint #2.  I struggled with ways to express it
-and finally decided to ship it^W^W release early/release often.  :)
-Suggestions welcome.
 
+Change the semantics of pci_create_slot() such that it does not
+require a hotplug release() method when creating a slot. Now, we
+can use this interface to create a pci_slot for any physical PCI
+slots, not just hotpluggable ones.
+
+Add new pci_slot_add_hotplug() interface so that various PCI hotplug
+drivers can add hotplug release() methods to pre-existing physical
+slots.
+
+Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
-From: Randy Dunlap <randy.dunlap@oracle.com>
+ drivers/pci/hotplug/pci_hotplug_core.c |    2 +-
+ drivers/pci/slot.c                     |   39 +++++++++++++++++++++++++++-----
+ include/linux/pci.h                    |    4 ++-
+ 3 files changed, 37 insertions(+), 8 deletions(-)
 
-Add a section on kconfig hints: how to do <something> in Kconfig files.
+diff --git a/drivers/pci/hotplug/pci_hotplug_core.c b/drivers/pci/hotplug/pci_hotplug_core.c
+index 96c21e2..91afa8e 100644
+--- a/drivers/pci/hotplug/pci_hotplug_core.c
++++ b/drivers/pci/hotplug/pci_hotplug_core.c
+@@ -568,7 +568,7 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr)
+ 		return -EINVAL;
+ 	}
+ 
+-	pci_slot = pci_create_slot(bus, slot_nr, slot->name, hotplug_release);
++	pci_slot = pci_slot_add_hotplug(bus, slot_nr, hotplug_release);
+ 	if (IS_ERR(pci_slot))
+ 		return PTR_ERR(pci_slot);
+ 	slot->pci_slot = pci_slot;
+diff --git a/drivers/pci/slot.c b/drivers/pci/slot.c
+index 5d830d4..3e91491 100644
+--- a/drivers/pci/slot.c
++++ b/drivers/pci/slot.c
+@@ -70,20 +70,48 @@ static int create_sysfs_files(struct pci_slot *slot)
+ 	return result;
+ }
+ 
++struct pci_slot *pci_slot_add_hotplug(struct pci_bus *parent, int slot_nr,
++				      void (*release)(struct pci_slot *))
++{
++	struct pci_slot *slot;
++	int found = 0;
++
++	down_write(&pci_bus_sem);
++
++	/* This slot should have already been created, so look for it. If
++	 * we can't find it, return -EEXIST.
++	 */
++	for (slot = parent->slot; slot; slot = slot->next)
++		if (slot->number == slot_nr) {
++			found = 1;
++			break;
++		}
++
++	if (!found) {
++		slot = ERR_PTR(-EEXIST);
++		goto out;
++	}
++
++	slot->release = release;
++ out:
++	up_write(&pci_bus_sem);
++	return slot;
++}
++EXPORT_SYMBOL_GPL(pci_slot_add_hotplug);
++
+ struct pci_slot *pci_create_slot(struct pci_bus *parent, int slot_nr,
+-			const char *name, void (*release)(struct pci_slot *))
++				 const char *name)
+ {
+ 	struct pci_slot *slot;
+ 	int err;
+ 
+ 	down_write(&pci_bus_sem);
+ 
+-	/* If we've already created this slot, return -EEXIST.  The same slot
+-	 * may be described twice (eg, by ACPI and PCIe) */
++	/* If we've already created this slot, just return. */
+ 	for (slot = parent->slot; slot; slot = slot->next) {
+-		if (slot->number != slot_nr)
++		if (slot->number != slot_nr) {
+ 			continue;
+-		slot = ERR_PTR(-EEXIST);
++		}
+ 		goto out;
+ 	}
+ 
+@@ -95,7 +123,6 @@ struct pci_slot *pci_create_slot(struct pci_bus *parent, int slot_nr,
+ 
+ 	slot->bus = parent;
+ 	slot->number = slot_nr;
+-	slot->release = release;
+ 
+ 	kobject_set_name(&slot->kobj, "%s", name);
+ 	kobj_set_kset_s(slot, pci_slots_subsys);
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index a075667..62116a5 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -483,7 +483,9 @@ static inline struct pci_bus *pci_scan_bus(int bus, struct pci_ops *ops, void *s
+ struct pci_bus *pci_create_bus(struct device *parent, int bus, struct pci_ops *ops, void *sysdata);
+ struct pci_bus * pci_add_new_bus(struct pci_bus *parent, struct pci_dev *dev, int busnr);
+ struct pci_slot *pci_create_slot(struct pci_bus *parent, int slot_nr,
+-		const char *name, void (*release)(struct pci_slot *));
++				 const char *name);
++struct pci_slot *pci_slot_add_hotplug(struct pci_bus *parent, int slot_nr,
++				    void (*release)(struct pci_slot *));
+ int pci_scan_slot(struct pci_bus *bus, int devfn);
+ struct pci_dev * pci_scan_single_device(struct pci_bus *bus, int devfn);
+ void pci_device_add(struct pci_dev *dev, struct pci_bus *bus);
+-- 
+1.5.3.1.1.g1e61
 
-Fix a few typos/spellos.
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- Documentation/kbuild/kconfig-language.txt |   54 ++++++++++++++++++++---
- 1 file changed, 48 insertions(+), 6 deletions(-)
-
---- linux-2.6.24-rc2-git2.orig/Documentation/kbuild/kconfig-language.txt
-+++ linux-2.6.24-rc2-git2/Documentation/kbuild/kconfig-language.txt
-@@ -24,7 +24,7 @@ visible if its parent entry is also visi
- Menu entries
- ------------
- 
--Most entries define a config option, all other entries help to organize
-+Most entries define a config option; all other entries help to organize
- them. A single configuration option is defined like this:
- 
- config MODVERSIONS
-@@ -50,7 +50,7 @@ applicable everywhere (see syntax).
- 
- - type definition: "bool"/"tristate"/"string"/"hex"/"int"
-   Every config option must have a type. There are only two basic types:
--  tristate and string, the other types are based on these two. The type
-+  tristate and string; the other types are based on these two. The type
-   definition optionally accepts an input prompt, so these two examples
-   are equivalent:
- 
-@@ -108,7 +108,7 @@ applicable everywhere (see syntax).
- 	equal to 'y' without visiting the dependencies. So abusing
- 	select you are able to select a symbol FOO even if FOO depends
- 	on BAR that is not set. In general use select only for
--	non-visible symbols (no promts anywhere) and for symbols with
-+	non-visible symbols (no prompts anywhere) and for symbols with
- 	no dependencies. That will limit the usefulness but on the
- 	other hand avoid the illegal configurations all over. kconfig
- 	should one day warn about such things.
-@@ -162,9 +162,9 @@ An expression can have a value of 'n', '
- respectively for calculations). A menu entry becomes visible when it's
- expression evaluates to 'm' or 'y'.
- 
--There are two types of symbols: constant and nonconstant symbols.
--Nonconstant symbols are the most common ones and are defined with the
--'config' statement. Nonconstant symbols consist entirely of alphanumeric
-+There are two types of symbols: constant and non-constant symbols.
-+Non-constant symbols are the most common ones and are defined with the
-+'config' statement. Non-constant symbols consist entirely of alphanumeric
- characters or underscores.
- Constant symbols are only part of expressions. Constant symbols are
- always surrounded by single or double quotes. Within the quote, any
-@@ -301,3 +301,45 @@ mainmenu:
- 
- This sets the config program's title bar if the config program chooses
- to use it.
-+
-+
-+Kconfig hints
-+-------------
-+This is a collection of Kconfig tips, most of which aren't obvious at
-+first glance and most of which have become idioms in several Kconfig
-+files.
-+
-+Build as module only
-+~~~~~~~~~~~~~~~~~~~~
-+To restrict a component build to module-only, qualify its config symbol
-+with "depends on m".  E.g.:
-+
-+config FOO
-+	depends on BAR && m
-+
-+limits FOO to module (=m) or disabled (=n).
-+
-+
-+Build limited by a third config symbol which may be =y or =m
-+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+A common idiom that we see (and sometimes have problems with) is this:
-+
-+When option C in B (module or subsystem) uses interfaces from A (module
-+or subsystem), and both A and B are tristate (could be =y or =m if they
-+were independent of each other, but they aren't), then we need to limit
-+C such that it cannot be built statically if A is built as a loadable
-+module.  (C already depends on B, so there is no dependency issue to
-+take care of here.)
-+
-+If A is linked statically into the kernel image, C can be built
-+statically or as loadable module(s).  However, if A is built as loadable
-+module(s), then C must be restricted to loadable module(s) also.  This
-+can be expressed in kconfig language as:
-+
-+config C
-+	depends on A = y || A = B
-+
-+or for real examples, use this command in a kernel tree:
-+
-+$ find . -name Kconfig\* | xargs grep -ns "depends on.*=.*||.*=" | grep -v orig
-+
