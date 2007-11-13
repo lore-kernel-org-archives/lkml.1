@@ -1,114 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758874AbXKMSdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760622AbXKMSdj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758874AbXKMSdW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 13:33:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757789AbXKMScv
+	id S1760622AbXKMSdj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 13:33:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759671AbXKMSdD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 13:32:51 -0500
-Received: from mail0.scram.de ([78.47.204.202]:60629 "EHLO mail0.scram.de"
+	Tue, 13 Nov 2007 13:33:03 -0500
+Received: from madara.hpl.hp.com ([192.6.19.124]:59177 "EHLO madara.hpl.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756705AbXKMScr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 13:32:47 -0500
-X-Spam-Score: -3.883
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
- * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
- *      [score: 0.0000]
- *  0.5 AWL AWL: From: address is in the auto white-list
-Message-ID: <4739EDA8.6020800@scram.de>
-Date: Tue, 13 Nov 2007 19:32:08 +0100
-From: Jochen Friedrich <jochen@scram.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
-MIME-Version: 1.0
-To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
-CC: Marcelo Tosatti <marcelo@kvack.org>, Scott Wood <scottwood@freescale.com>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       netdev <netdev@vger.kernel.org>, akpm@linux-foundation.org
-Subject: [PATCH] powerpc: Fix fs_enet module build
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1759589AbXKMSc6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 13:32:58 -0500
+Date: Tue, 13 Nov 2007 10:32:39 -0800
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: Robert Richter <robert.richter@amd.com>
+Cc: Andi Kleen <andi@firstfloor.org>, gregkh@suse.de, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, perfmon2-devel@lists.sourceforge.net,
+       perfmon@napali.hpl.hp.com
+Subject: Re: perfmon2 merge news
+Message-ID: <20071113183239.GF4319@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <20071107003454.GA13374@kroah.com> <20071109120627.60ec9ab4.akpm@linux-foundation.org> <20071109213829.GC28276@kroah.com> <p73abpl2654.fsf@bingen.suse.de> <20071113151718.GA3804@erda.amd.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071113151718.GA3804@erda.amd.com>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If fs_enet is build as module, on PPC_CPM_NEW_BINDING platforms
-mii-fec/mii-bitbang should be build as module, as well. On other
-platforms, mii-fec/mii-bitbang must be included into the main module.
-Otherwise some symbols remain undefined. Additionally, fs_enet uses
-libphy, so add a select PHYLIB.
+Hello,
 
-  Building modules, stage 2.
-  MODPOST 5 modules
-ERROR: "fs_scc_ops" [drivers/net/fs_enet/fs_enet.ko] undefined!
-make[1]: *** [__modpost] Error 1
-make: *** [modules] Error 2
+On Tue, Nov 13, 2007 at 04:17:18PM +0100, Robert Richter wrote:
+> On 10.11.07 21:32:39, Andi Kleen wrote:
+> > It would be really good to extract a core perfmon and start with
+> > that and then add stuff as it makes sense.
+> > 
+> > e.g. core perfmon could be something simple like just support
+> > to context switch state and initialize counters in a basic way 
+> > and perhaps get counter numbers for RDPMC in ring3 on x86[1]
+> 
+> Perhaps a core could provide also as much functionality so that
+> Perfmon can be used with an *unpatched* kernel using loadable modules?
+> One drawback with today's Perfmon is that it can not be used with a
+> vanilla kernel. But maybe such a core is by far too complex for a
+> first merge.
+> 
+Note that I am not against the gradual approach such as:
+	- system-wide only counting
+	- per-thread counting
+	- user-level sampling support
+	- in-kernel sampling buffer support
+	- in-kernel customizable sampling buffer formats via modules
+	- event set multiplexing
+	- PMU description modules
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
+It would obvisouly cause a lot of troubles to existing perfmon libraries and
+applications (e.g. PAPI). It would also be fairly tricky to do because you'd 
+have to make sure that in the beginning, you leave enough flexiblity such that
+you can add the rest while maintaining total backward compatibility. But given
+that we already have the full solution, it could just be a matter of dropping
+features without disrupting the user level API. Of course there would be a bigger
+burden on the maintainer because he would have two trees to maintain but I think
+that is already commonplace in many of the kernel-related projects.
 
-This patch replaces powerpc-fs_enet-select-phylib-as-the-driver-needs-it.patch
-from -mm.
+Let's take a simple example. The set of syscalls necessary to control a system-wide
+monitoring session is exactly the same as for a per-thread session. The difference is
+just a flag when the session is created. Thus, we could keep the same set of syscalls,
+but only accept system-wide sessions. Later on, when we add per-thread, we would just
+have to expose the per-thread session flag.
 
- drivers/net/fs_enet/Kconfig  |   11 ++++++++++-
- drivers/net/fs_enet/Makefile |   15 ++++++++++++---
- 2 files changed, 22 insertions(+), 4 deletions(-)
+Having said that, does not mean that this is necessarily what we will do. I am just
+try to present my understanding of the comments from Andrew, Andi and others.
 
-diff --git a/drivers/net/fs_enet/Kconfig b/drivers/net/fs_enet/Kconfig
-index 2765e49..562ea68 100644
---- a/drivers/net/fs_enet/Kconfig
-+++ b/drivers/net/fs_enet/Kconfig
-@@ -2,6 +2,7 @@ config FS_ENET
-        tristate "Freescale Ethernet Driver"
-        depends on CPM1 || CPM2
-        select MII
-+       select PHYLIB
- 
- config FS_ENET_HAS_SCC
- 	bool "Chip has an SCC usable for ethernet"
-@@ -11,11 +12,19 @@ config FS_ENET_HAS_SCC
- config FS_ENET_HAS_FCC
- 	bool "Chip has an FCC usable for ethernet"
- 	depends on FS_ENET && CPM2
--	select MDIO_BITBANG
- 	default y
- 
- config FS_ENET_HAS_FEC
- 	bool "Chip has an FEC usable for ethernet"
- 	depends on FS_ENET && CPM1
-+	select FS_ENET_MDIO_FEC
- 	default y
- 
-+config FS_ENET_MDIO_FEC
-+	tristate "MDIO driver for FEC"
-+	depends on FS_ENET && CPM1
-+
-+config FS_ENET_MDIO_FCC
-+	tristate "MDIO driver for FCC"
-+	depends on FS_ENET && CPM2
-+	select MDIO_BITBANG
-diff --git a/drivers/net/fs_enet/Makefile b/drivers/net/fs_enet/Makefile
-index 02d4dc1..1ffbe07 100644
---- a/drivers/net/fs_enet/Makefile
-+++ b/drivers/net/fs_enet/Makefile
-@@ -4,7 +4,16 @@
- 
- obj-$(CONFIG_FS_ENET) += fs_enet.o
- 
--obj-$(CONFIG_8xx) += mac-fec.o mac-scc.o mii-fec.o
--obj-$(CONFIG_CPM2) += mac-fcc.o mii-bitbang.o
-+fs_enet-$(CONFIG_FS_ENET_HAS_SCC) += mac-scc.o
-+fs_enet-$(CONFIG_FS_ENET_HAS_FEC) += mac-fec.o
-+fs_enet-$(CONFIG_FS_ENET_HAS_FCC) += mac-fcc.o
- 
--fs_enet-objs := fs_enet-main.o
-+ifeq ($(CONFIG_PPC_CPM_NEW_BINDING),y)
-+obj-$(CONFIG_FS_ENET_MDIO_FEC) += mii-fec.o
-+obj-$(CONFIG_FS_ENET_MDIO_FCC) += mii-bitbang.o
-+else
-+fs_enet-$(CONFIG_FS_ENET_MDIO_FEC) += mii-fec.o
-+fs_enet-$(CONFIG_FS_ENET_MDIO_FCC) += mii-bitbang.o
-+endif
-+
-+fs_enet-objs := fs_enet-main.o $(fs_enet-m)
+I think that going with a kernel module will not address the 'complexity/bloat' perception
+that some people have. There is a logic to that, I did not just wakeup one day saying
+'wouldn't it be cool to add set multiplexing?'. There was a true need expressed by users or
+developers and it was justfied by what the hardware offered then. This unfortunately still
+stands today. I admit that justification is not necessarily spelled out clearly in the code. So
+I understand most of those worries and I am trying to figure out how we could best address them.
+
 -- 
-1.5.3.5
-
-
+-Stephane
