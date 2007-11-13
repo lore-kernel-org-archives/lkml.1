@@ -1,100 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762831AbXKMXQr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762211AbXKMXSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762831AbXKMXQr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 18:16:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757943AbXKMXQh
+	id S1762211AbXKMXSh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 18:18:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758771AbXKMXSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 18:16:37 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:52227 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759507AbXKMXQg (ORCPT
+	Tue, 13 Nov 2007 18:18:24 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58244 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755846AbXKMXSW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 18:16:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:in-reply-to:references:organization:x-mailer:mime-version:content-type:content-transfer-encoding:from;
-        b=Tpky/7GG27HmH6sO+8pvdcAlrtsGa7SzOAgy+sHDOoQDRz+QIbYKnradRBLOsTVDpdKAQCH3GrEwxvEgsTjP7wUef/OZrMxTasJcmYxTyNfVd6q/h90f5eSfkYXujgyaHTBrBJOPkz0OiiRpv+y5BDtW0fHbrEpmSQ+QkEhJaBM=
-Date: Wed, 14 Nov 2007 00:21:02 +0100
-To: "dave chung" <ponstrip@gmail.com>
-Cc: "Stanislav Brabec" <utx@penguin.cz>, linux-kernel@vger.kernel.org,
-       "Thibaut VARENE" <varenet@parisc-linux.org>
-Subject: Re: [PATCH] drivers/video/s1d13xxxfb.c as module with dbg
-Message-Id: <20071114002102.5e829113.Kristoffer.ericson@gmail.com>
-In-Reply-To: <d7b238da0711101529s3384cb6bx928c74cfef8fde0f@mail.gmail.com>
-References: <1194709875.4486.8.camel@utx.utx.cz>
-	<d7b238da0711101529s3384cb6bx928c74cfef8fde0f@mail.gmail.com>
-Organization: JLime
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i686-pc-linux-gnu)
+	Tue, 13 Nov 2007 18:18:22 -0500
+Date: Tue, 13 Nov 2007 15:17:29 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: David Miller <davem@davemloft.net>, alsa-devel@alsa-project.org,
+       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org, protasnb@gmail.com,
+       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: [BUG] New Kernel Bugs
+Message-Id: <20071113151729.3291c889.akpm@linux-foundation.org>
+In-Reply-To: <20071113230936.GI1356@flint.arm.linux.org.uk>
+References: <20071113034916.2556edd7.akpm@linux-foundation.org>
+	<20071113.035824.40509981.davem@davemloft.net>
+	<20071113041259.79c9a8c5.akpm@linux-foundation.org>
+	<20071113.043207.44732743.davem@davemloft.net>
+	<20071113193219.GC1356@flint.arm.linux.org.uk>
+	<20071113125222.9eb53ac8.akpm@linux-foundation.org>
+	<20071113221801.GF1356@flint.arm.linux.org.uk>
+	<20071113143201.9441c940.akpm@linux-foundation.org>
+	<20071113230936.GI1356@flint.arm.linux.org.uk>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 11 Nov 2007 07:29:35 +0800
-"dave chung" <ponstrip@gmail.com> wrote:
+On Tue, 13 Nov 2007 23:09:37 +0000 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
 
-> On 11/10/07, Stanislav Brabec <utx@penguin.cz> wrote:
-> > Attached patch fixes two compilation problems of s1d13xxxfb.c:
-> > - Fixes outdated dbg() message to fix compilation error with debugging enabled.
-> > - Do not read kernel command line options when compiled as module.
-> >
-> > Signed-off-by: Stanislav Brabec <utx@penguin.cz>
-> >
-> > --- linux-2.6.23/drivers/video/s1d13xxxfb.c     2007-10-09 22:31:38.000000000 +0200
-> > +++ linux-2.6.23/drivers/video/s1d13xxxfb.c     2007-11-02 16:48:34.000000000 +0100
-> > @@ -540,7 +540,7 @@
-> >         int ret = 0;
-> >         u8 revision;
-> >
-> > -       dbg("probe called: device is %p\n", dev);
-> > +       dbg("probe called: device is %p\n", pdev);
-> >
-> >         printk(KERN_INFO "Epson S1D13XXX FB Driver\n");
-> >
-> > @@ -753,8 +753,11 @@
-> >  static int __init
-> >  s1d13xxxfb_init(void)
-> >  {
-> > +
-> > +#ifndef MODULE
-> >         if (fb_get_options("s1d13xxxfb", NULL))
-> >                 return -ENODEV;
-> > +#endif
-> >
-> >         return platform_driver_register(&s1d13xxxfb_driver);
-> >  }
-> >
-> >
-> >________________________________________________________________________
-> > Stanislav Brabec
-> > http://www.penguin.cz/~utx
-> >
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> >
+> On Tue, Nov 13, 2007 at 02:32:01PM -0800, Andrew Morton wrote:
+> > On Tue, 13 Nov 2007 22:18:01 +0000 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+> > > On Tue, Nov 13, 2007 at 12:52:22PM -0800, Andrew Morton wrote:
+> > > > On Tue, 13 Nov 2007 19:32:19 +0000 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+> > No, I don't mean that at all and this was very plainly obviously from my very
+> > clearly written email.  Let me try again.
 > 
-> we also need to look at splitting out the "chip revision", which is
-> currently hard set, as I have had very good results with this driver
-> and  chip  S1D13506, which is functionally similar but without the
-> external clocking and without teh internal ram.
->  We also have some build dependancies related to  "CONFIG_FB_S1D13XXX"
-> and  ics1523 , this chip is not used on the full range of S1D13XXX and
-> causes errors in the build , for chips such as S1D13506.
-> potentially we could re-use most of the code, but would need a way to
-> pass in S1D_CHIP_REV and one or 2 other chip specific data items.
-
-Im all for that. Got 2 platforms (Mobilepro 900c & HP Jornada 720) with both uses S1D13... based chipsets. The driver should
-make more room for similiar versions.
-
+> If you screen all bugzilla reports then you'll know that bug #9356 arrived
+> at about 1400 GMT yesterday.  It's hardly surprising then that your utterly
+> crappy responses to Natalie's message (which, incidentally, wasn't copied
+> to me) sent within 24 hours of that report cause *great* annoyance.
 > 
-> Steve
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> > No, no subsystem developer needs to monitor new bugzilla reports.  This is
+> > because *I do it for them*.  I will actively make them aware of new reports
+> > which I believe are legitimate and which contain sufficient information for
+> > them to be able to take further action.
+> 
+> On the whole you do an excellent job with feeding the bug reports to
+> people, and while I recognise that you're only human, things do
+> occasionally go wrong.  For instance, sending clearly marked Samsung
+> S3C bugs to me rather than Ben Dooks (who's in MAINTAINERS for those
+> platforms.)
+
+
+Well whatever, sorry.  But this is in the noise floor.  Point is: many bug
+reports aren't being attended to.
+
+
+> > > > > It would be far more productive if the ARM category was deleted from
+> > > > > bugzilla and the few people who use bugzilla reported their bugs on the
+> > > > > mailing list.  We've a couple of thousand people on the ARM kernel
+> > > > > mailing list at the moment - that's 3 orders of magnitude more of eyes
+> > > > > than look at bugzilla.
+> > > > 
+> > > > Is that linux-arm-kernel@lists.arm.linux.org.uk?
+> > > 
+> > > Yes.
+> > > 
+> > > > If so, MANITAINERS claims that it is subscribers-only.  That would cause
+> > > > some bug reporters to give up and go away.
+> > > 
+> > > Find some other mailing list; I'm not hosting *nor* am I willing to run a
+> > > non-subscribers only mailing list.  Period.  Not negotiable, so don't even
+> > > try to change my mind.
+> > 
+> > Making a list subscribers-only will cause some bug reports to be lost.
+> > 
+> > Tradeoffs are involved, against which decisions must be made.  You have
+> > made yours.
+> 
+> So how are they lost when they're held in a moderation queue and are
+> either accepted, a useful response given to the original poster, or
+> are forwarded to someone who can deal with the issue.
+> 
+> I don't think "subscribers only" describes my lists - we don't devnull
+> stuff just because the poster is not a subscriber.
+
+Oh, OK, as long as there really is a human paying attention to those things
+then that's fine.  When one is on the sending end of these things one never
+knows how long it will take, not whether it will even happen.
+
