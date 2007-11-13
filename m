@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754175AbXKMKL2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754676AbXKMKLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754175AbXKMKL2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 05:11:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbXKMKKs
+	id S1754676AbXKMKLl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 05:11:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbXKMKKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 05:10:48 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:50669 "EHLO
+	Tue, 13 Nov 2007 05:10:53 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:50686 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751741AbXKMKKp (ORCPT
+	with ESMTP id S1752677AbXKMKKv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 05:10:45 -0500
+	Tue, 13 Nov 2007 05:10:51 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@ftp.linux.org.uk, hch@infradead.org,
-       Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 2/9] Unionfs: use i_size wrappers
-Date: Tue, 13 Nov 2007 05:10:21 -0500
-Message-Id: <11949486291981-git-send-email-ezk@cs.sunysb.edu>
+       Erez Zadok <ezk@cs.sunysb.edu>, Hugh Dickins <hugh@veritas.com>
+Subject: [PATCH 1/9] Unionfs: flush and release updates
+Date: Tue, 13 Nov 2007 05:10:20 -0500
+Message-Id: <11949486282427-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11949486283697-git-send-email-ezk@cs.sunysb.edu>
@@ -25,131 +25,122 @@ References: <11949486283697-git-send-email-ezk@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Remove the totalopens counter which was intended to reduce unnecessary
+processing of d_deleted dentries.  Move that processing from file_release to
+flush.
+
+Cc: Hugh Dickins <hugh@veritas.com>
+
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/commonfops.c |   10 +++++-----
- fs/unionfs/inode.c      |    4 ++--
- fs/unionfs/rdstate.c    |    4 ++--
- fs/unionfs/rename.c     |    4 ++--
- fs/unionfs/super.c      |    2 +-
- 5 files changed, 12 insertions(+), 12 deletions(-)
+ fs/unionfs/commonfops.c |   30 +++++++++++-------------------
+ fs/unionfs/union.h      |    2 --
+ 2 files changed, 11 insertions(+), 21 deletions(-)
 
 diff --git a/fs/unionfs/commonfops.c b/fs/unionfs/commonfops.c
-index ba84529..624f920 100644
+index 50e5775..ba84529 100644
 --- a/fs/unionfs/commonfops.c
 +++ b/fs/unionfs/commonfops.c
-@@ -72,7 +72,8 @@ retry:
- 	dput(tmp_dentry);
+@@ -551,9 +551,6 @@ int unionfs_open(struct inode *inode, struct file *file)
+ 	bstart = fbstart(file) = dbstart(dentry);
+ 	bend = fbend(file) = dbend(dentry);
  
- 	err = copyup_named_file(dentry->d_parent->d_inode, file, name, bstart,
--				bindex, file->f_path.dentry->d_inode->i_size);
-+				bindex,
-+				i_size_read(file->f_path.dentry->d_inode));
+-	/* increment, so that we can flush appropriately */
+-	atomic_inc(&UNIONFS_I(dentry->d_inode)->totalopens);
+-
+ 	/*
+ 	 * open all directories and make the unionfs file struct point to
+ 	 * these lower file structs
+@@ -565,7 +562,6 @@ int unionfs_open(struct inode *inode, struct file *file)
+ 
+ 	/* freeing the allocated resources, and fput the opened files */
  	if (err) {
- 		if (unlikely(err == -EEXIST))
- 			goto retry;
-@@ -199,7 +200,6 @@ static int open_highest_file(struct file *file, bool willwrite)
- 	struct dentry *dentry = file->f_path.dentry;
- 	struct inode *parent_inode = dentry->d_parent->d_inode;
- 	struct super_block *sb = dentry->d_sb;
--	size_t inode_size = dentry->d_inode->i_size;
+-		atomic_dec(&UNIONFS_I(dentry->d_inode)->totalopens);
+ 		for (bindex = bstart; bindex <= bend; bindex++) {
+ 			lower_file = unionfs_lower_file_idx(file, bindex);
+ 			if (!lower_file)
+@@ -606,6 +602,7 @@ int unionfs_file_release(struct inode *inode, struct file *file)
+ 	struct unionfs_file_info *fileinfo;
+ 	struct unionfs_inode_info *inodeinfo;
+ 	struct super_block *sb = inode->i_sb;
++	struct dentry *dentry = file->f_path.dentry;
+ 	int bindex, bstart, bend;
+ 	int fgen, err = 0;
  
- 	bstart = dbstart(dentry);
- 	bend = dbend(dentry);
-@@ -208,7 +208,7 @@ static int open_highest_file(struct file *file, bool willwrite)
- 	if (willwrite && IS_WRITE_FLAG(file->f_flags) && is_robranch(dentry)) {
- 		for (bindex = bstart - 1; bindex >= 0; bindex--) {
- 			err = copyup_file(parent_inode, file, bstart, bindex,
--					  inode_size);
-+					  i_size_read(dentry->d_inode));
- 			if (!err)
- 				break;
- 		}
-@@ -243,7 +243,6 @@ static int do_delayed_copyup(struct file *file)
- 	int bindex, bstart, bend, err = 0;
- 	struct dentry *dentry = file->f_path.dentry;
- 	struct inode *parent_inode = dentry->d_parent->d_inode;
--	loff_t inode_size = dentry->d_inode->i_size;
- 
+@@ -628,6 +625,7 @@ int unionfs_file_release(struct inode *inode, struct file *file)
  	bstart = fbstart(file);
  	bend = fbend(file);
-@@ -255,7 +254,8 @@ static int do_delayed_copyup(struct file *file)
- 	for (bindex = bstart - 1; bindex >= 0; bindex--) {
- 		if (!d_deleted(dentry))
- 			err = copyup_file(parent_inode, file, bstart,
--					  bindex, inode_size);
-+					  bindex,
-+					  i_size_read(dentry->d_inode));
- 		else
- 			err = copyup_deleted_file(file, dentry, bstart,
- 						  bindex);
-diff --git a/fs/unionfs/inode.c b/fs/unionfs/inode.c
-index bcefe45..223a64a 100644
---- a/fs/unionfs/inode.c
-+++ b/fs/unionfs/inode.c
-@@ -312,7 +312,7 @@ docopyup:
- 					    old_dentry, old_bstart,
- 					    bindex, old_dentry->d_name.name,
- 					    old_dentry->d_name.len, NULL,
--					    old_dentry->d_inode->i_size);
-+					    i_size_read(old_dentry->d_inode));
- 			if (!err) {
- 				lower_new_dentry =
- 					create_parents(dir, new_dentry,
-@@ -1043,7 +1043,7 @@ static int unionfs_setattr(struct dentry *dentry, struct iattr *ia)
- 				continue;
- 			/* Only if its the leftmost file, copyup the file */
- 			for (i = bstart - 1; i >= 0; i--) {
--				loff_t size = dentry->d_inode->i_size;
-+				loff_t size = i_size_read(dentry->d_inode);
- 				if (ia->ia_valid & ATTR_SIZE)
- 					size = ia->ia_size;
- 				err = copyup_dentry(dentry->d_parent->d_inode,
-diff --git a/fs/unionfs/rdstate.c b/fs/unionfs/rdstate.c
-index 0df5f52..bdf335d 100644
---- a/fs/unionfs/rdstate.c
-+++ b/fs/unionfs/rdstate.c
-@@ -76,10 +76,10 @@ static int guesstimate_hash_size(struct inode *inode)
- 		if (!lower_inode)
- 			continue;
  
--		if (lower_inode->i_size == DENTPAGE)
-+		if (i_size_read(lower_inode) == DENTPAGE)
- 			hashsize += DENTPERONEPAGE;
- 		else
--			hashsize += (lower_inode->i_size / DENTPAGE) *
-+			hashsize += (i_size_read(lower_inode) / DENTPAGE) *
- 				DENTPERPAGE;
++	unionfs_lock_dentry(dentry);
+ 	for (bindex = bstart; bindex <= bend; bindex++) {
+ 		lower_file = unionfs_lower_file_idx(file, bindex);
+ 
+@@ -635,7 +633,15 @@ int unionfs_file_release(struct inode *inode, struct file *file)
+ 			fput(lower_file);
+ 			branchput(sb, bindex);
+ 		}
++
++		/* if there are no more refs to the dentry, dput it */
++		if (d_deleted(dentry)) {
++			dput(unionfs_lower_dentry_idx(dentry, bindex));
++			unionfs_set_lower_dentry_idx(dentry, bindex, NULL);
++		}
  	}
++	unionfs_unlock_dentry(dentry);
++
+ 	kfree(fileinfo->lower_files);
+ 	kfree(fileinfo->saved_branch_ids);
  
-diff --git a/fs/unionfs/rename.c b/fs/unionfs/rename.c
-index 4a35b5e..452d1e7 100644
---- a/fs/unionfs/rename.c
-+++ b/fs/unionfs/rename.c
-@@ -234,8 +234,8 @@ static int do_unionfs_rename(struct inode *old_dir,
- 			err = copyup_dentry(old_dentry->d_parent->d_inode,
- 					    old_dentry, old_bstart, bindex,
- 					    old_dentry->d_name.name,
--					    old_dentry->d_name.len,
--					    NULL, old_dentry->d_inode->i_size);
-+					    old_dentry->d_name.len, NULL,
-+					    i_size_read(old_dentry->d_inode));
- 			/* if copyup failed, try next branch to the left */
+@@ -799,11 +805,6 @@ int unionfs_flush(struct file *file, fl_owner_t id)
+ 		goto out;
+ 	unionfs_check_file(file);
+ 
+-	if (!atomic_dec_and_test(&UNIONFS_I(dentry->d_inode)->totalopens))
+-		goto out;
+-
+-	unionfs_lock_dentry(dentry);
+-
+ 	bstart = fbstart(file);
+ 	bend = fbend(file);
+ 	for (bindex = bstart; bindex <= bend; bindex++) {
+@@ -813,14 +814,7 @@ int unionfs_flush(struct file *file, fl_owner_t id)
+ 		    lower_file->f_op->flush) {
+ 			err = lower_file->f_op->flush(lower_file, id);
  			if (err)
- 				continue;
-diff --git a/fs/unionfs/super.c b/fs/unionfs/super.c
-index 7d28045..70487bf 100644
---- a/fs/unionfs/super.c
-+++ b/fs/unionfs/super.c
-@@ -69,7 +69,7 @@ static void unionfs_read_inode(struct inode *inode)
-  */
- static void unionfs_delete_inode(struct inode *inode)
- {
--	inode->i_size = 0;	/* every f/s seems to do that */
-+	i_size_write(inode, 0);	/* every f/s seems to do that */
+-				goto out_lock;
+-
+-			/* if there are no more refs to the dentry, dput it */
+-			if (d_deleted(dentry)) {
+-				dput(unionfs_lower_dentry_idx(dentry, bindex));
+-				unionfs_set_lower_dentry_idx(dentry, bindex,
+-							     NULL);
+-			}
++				goto out;
+ 		}
  
- 	if (inode->i_data.nrpages)
- 		truncate_inode_pages(&inode->i_data, 0);
+ 	}
+@@ -830,8 +824,6 @@ int unionfs_flush(struct file *file, fl_owner_t id)
+ 	/* parent time could have changed too (async) */
+ 	unionfs_copy_attr_times(dentry->d_parent->d_inode);
+ 
+-out_lock:
+-	unionfs_unlock_dentry(dentry);
+ out:
+ 	unionfs_read_unlock(dentry->d_sb);
+ 	unionfs_check_file(file);
+diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
+index 0476f97..09b9ac9 100644
+--- a/fs/unionfs/union.h
++++ b/fs/unionfs/union.h
+@@ -102,8 +102,6 @@ struct unionfs_inode_info {
+ 
+ 	/* The lower inodes */
+ 	struct inode **lower_inodes;
+-	/* to keep track of reads/writes for unlinks before closes */
+-	atomic_t totalopens;
+ 
+ 	struct inode vfs_inode;
+ };
 -- 
 1.5.2.2
 
