@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761505AbXKMSr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761584AbXKMSrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761505AbXKMSr1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 13:47:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757611AbXKMSrP
+	id S1761584AbXKMSrl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 13:47:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761482AbXKMSrX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 13:47:15 -0500
-Received: from rtr.ca ([76.10.145.34]:3650 "EHLO mail.rtr.ca"
+	Tue, 13 Nov 2007 13:47:23 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:53658 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758597AbXKMSrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 13:47:12 -0500
-Message-ID: <4739F12E.5020807@rtr.ca>
-Date: Tue, 13 Nov 2007 13:47:10 -0500
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, protasnb@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [BUG] New Kernel Bugs
-References: <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca> <20071113164650.GA28493@elte.hu> <4739E3D0.10201@rtr.ca> <20071113181228.GF4250@stusta.de> <4739EA83.5040006@rtr.ca> <20071113183605.GG4250@stusta.de>
-In-Reply-To: <20071113183605.GG4250@stusta.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1761472AbXKMSrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 13:47:22 -0500
+Message-Id: <20071113184627.667866257@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Tue, 13 Nov 2007 13:46:27 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [patch 00/11] Text Edit Lock
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 13 Nov 2007 18:47:18 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-...
-> I did bisecting myself, and I know that it costs time and work.
-> 
-> But the first point is the above one that it makes otherwise nearly 
-> undebuggable problems debuggable and fixable.
-..
+Hi Andrew,
 
-Definitely useful, no question.
+Here is a repost of the Text Edit Lock. It is required by the immediate values.
 
-But the problem is now that kernel devs are addicted to it,
-many won't even consider resolving a problem any other way.
+It applies on top of 2.6.24-rc2-git3 in this order :
 
-That's not "maintaining" (or supporting) one's code.
+#Text Edit Lock
+#for -mm
+kprobes-use-mutex-for-insn-pages.patch
+kprobes-dont-use-kprobes-mutex-in-arch-code.patch
+kprobes-declare-kprobes-mutex-static.patch
+declare-array.patch
+text-edit-lock-architecture-independent-code.patch
+text-edit-lock-alternative-i386-and-x86_64.patch
+text-edit-lock-kprobes-architecture-independent.patch
+text-edit-lock-kprobes-i386.patch
+text-edit-lock-kprobes-x86_64.patch
+text-edit-lock-i386-standardize-debug-rodata.patch
+text-edit-lock-x86_64-standardize-debug-rodata.patch
 
-And when a "maintainer" is too busy to find/fix their own bugs,
-that could be a sign that they've bitten off too big of a chunk
-of the kernel, and it's time for them to distribute code maintainership.
+Mathieu
 
-Cheers
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
