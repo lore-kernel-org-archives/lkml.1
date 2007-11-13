@@ -1,76 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760465AbXKMR4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760309AbXKMR6I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760465AbXKMR4r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 12:56:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757078AbXKMR4f
+	id S1760309AbXKMR6I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 12:58:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755900AbXKMR54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 12:56:35 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:44119 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755986AbXKMR4e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 12:56:34 -0500
-Date: Tue, 13 Nov 2007 18:56:10 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Theodore Tso <tytso@mit.edu>, Benoit Boissinot <bboissin@gmail.com>,
-       Mark Lord <liml@rtr.ca>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, protasnb@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071113175610.GE4250@stusta.de>
-References: <20071113031553.3c7b5c16.akpm@linux-foundation.org> <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca> <40f323d00711130752k19cab8eauc3456721274b3267@mail.gmail.com> <20071113171356.GA25824@thunk.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Tue, 13 Nov 2007 12:57:56 -0500
+Received: from madara.hpl.hp.com ([192.6.19.124]:57419 "EHLO madara.hpl.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754830AbXKMR5z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 12:57:55 -0500
+Date: Tue, 13 Nov 2007 09:55:45 -0800
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: William Cohen <wcohen@redhat.com>
+Cc: Robert Richter <robert.richter@amd.com>, akpm@osdl.org,
+       Andi Kleen <andi@firstfloor.org>, gregkh@suse.de,
+       perfmon2-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       perfmon@napali.hpl.hp.com
+Subject: Re: [perfmon2] perfmon2 merge news
+Message-ID: <20071113175545.GD4319@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <20071107003454.GA13374@kroah.com> <20071109120627.60ec9ab4.akpm@linux-foundation.org> <20071109213829.GC28276@kroah.com> <p73abpl2654.fsf@bingen.suse.de> <20071113151718.GA3804@erda.amd.com> <4739C42F.8030208@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071113171356.GA25824@thunk.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <4739C42F.8030208@redhat.com>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 12:13:56PM -0500, Theodore Tso wrote:
-> On Tue, Nov 13, 2007 at 04:52:32PM +0100, Benoit Boissinot wrote:
-> > Btw, I used to test every -mm kernel. But since I've switched distros
-> > (gentoo->ubuntu)
-> > and I have less time, I feel it's harder to test -rc or -mm kernels (I
-> > know this isn't a lkml problem
-> > but more a distro problem, but I would love having an ubuntu blessed
-> > repo with current dev kernel
-> > for the latest stable ubuntu release).
+Hello,
+
+On Tue, Nov 13, 2007 at 10:35:11AM -0500, William Cohen wrote:
+> Robert Richter wrote:
+> > On 10.11.07 21:32:39, Andi Kleen wrote:
+> >> It would be really good to extract a core perfmon and start with
+> >> that and then add stuff as it makes sense.
+> >>
+> >> e.g. core perfmon could be something simple like just support
+> >> to context switch state and initialize counters in a basic way 
+> >> and perhaps get counter numbers for RDPMC in ring3 on x86[1]
+> > 
+> > Perhaps a core could provide also as much functionality so that
+> > Perfmon can be used with an *unpatched* kernel using loadable modules?
+> > One drawback with today's Perfmon is that it can not be used with a
+> > vanilla kernel. But maybe such a core is by far too complex for a
+> > first merge.
+> > 
+> > -Robert
+> > 
 > 
-> There are two parts to this.  One is a Ubuntu development kernel which
-> we can give to large numbers of people to expand our testing pool.
-> But if we don't do a better job of responding to bug reports that
-> would be generated by expanded testing this won't necessarily help us.
->...
+> Hi Robert,
+> 
+> In the past I suggested that it might be useful to have a version of perfmon2 
+> that only set up the perfmon on a global basis. That would allow the patches for 
+> context switches to be added as a separate step, splitting up the patch into 
+> smaller set of patches.
+> 
+> Perfmon2 uses a set of system calls to control the performance monitoring 
+> hardware. This would make it difficult to use an unpatch kernel unless perfmon 
+> changed the mechanism used to control the performance monitoring hardware.
+>
+Yes, that would be a possibility but as you pointed out there are some problems:
 
-The main problem aren't missing testers [1] - we already have relatively 
-experienced people testing kernels and/or reporting bugs, and we slowly 
-scare them away due to the many bug reports without any reaction.
+	- perfmon2 uses system calls. So unless you can dynamically patch the
+	  syscall table we would have to go back to the ioctl() and driver model.
+	  I was under the impression that people did not quite like multiplexing
+	  syscalls such as ioctl(). I also do prefer the multi syscall approach.
 
-The main problem is finding experienced developers who spend time on 
-looking into bug reports.
+	- perfmon2 needs to install a PMU interrupt handler. On X86, this is not just
+	  an external device interrupts. There needs to be some APIC and interrupt
+	  gate setup. There maybe other constraints on other architectures as well.
+	  Not sure if all functions/structures necessary for this are available to
+	  modules.
 
-Getting many relatively unexperienced users (who need more guidance for 
-debugging issues) as additional testers is therefore IMHO not 
-necessarily a good idea.
-
-> 						- Ted
-
-cu
-Adrian
-
-[1] and e.g. when Greg says he has a few hundred people who want to
-    write drivers it would most likely be possible to find a few
-    dozen additional -rc testers among them
+	- we could not support per-thread mode with the kernel module approach due to
+	  link to the context switch code. I do believe per-thread is a key value-add
+	  for performance monitoring.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+-Stephane
