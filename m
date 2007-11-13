@@ -1,67 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751995AbXKMHmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752264AbXKMHrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751995AbXKMHmQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 02:42:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbXKMHmA
+	id S1752264AbXKMHrT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 02:47:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbXKMHrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 02:42:00 -0500
-Received: from [212.12.190.99] ([212.12.190.99]:41201 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750810AbXKMHmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 02:42:00 -0500
-From: Al Boldi <a1426z@gawab.com>
-To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-Subject: Re: top lies ?
-Date: Tue, 13 Nov 2007 10:38:26 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org
-References: <200711131008.56627.a1426z@gawab.com> <661de9470711122319m1b8704d1y2f06b1199a21dd52@mail.gmail.com>
-In-Reply-To: <661de9470711122319m1b8704d1y2f06b1199a21dd52@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Nov 2007 02:47:09 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:50276 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750954AbXKMHrI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 02:47:08 -0500
+Date: Tue, 13 Nov 2007 13:29:46 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Paul Menage <menage@google.com>, containers@lists.linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Revert for cgroups CPU accounting subsystem patch
+Message-ID: <20071113075946.GA14731@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <6599ad830711122125u576e85a6w428466a0ab46dbc6@mail.gmail.com> <20071113060038.GC3359@linux.vnet.ibm.com> <6599ad830711122205g88aae4fua8dd76cf6e8ab84d@mail.gmail.com> <47394B84.8030008@linux.vnet.ibm.com> <6599ad830711122310nf7530cfs5ef1fea061b1252c@mail.gmail.com> <47395277.1060006@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711131038.26436.a1426z@gawab.com>
+In-Reply-To: <47395277.1060006@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> On Nov 13, 2007 12:38 PM, Al Boldi <a1426z@gawab.com> wrote:
-> > kloczek wrote:
-> > > Some data showed by top command looks like completly trashed.
-> > > Fragment from top output:
-> > >
-> > > Mem:   2075784k total,  2053352k used,    22432k free,    19260k
-> > > buffers Swap:  2096472k total,      136k used,  2096336k free, 
-> > > 1335080k cached
-> > >
-> > >    PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  SWAP nFLT WCHAN     COMMAND
-> > >  14515 mysql     20   0 1837m 563m 4132 S   39  27.8 27:14.20 1.2g   18 -         mysqld
-> > >
-> > > How it is possible that swap ussage is 136k and swapped out portion of
-> > > (in this case) mysqld process is 1.2g ?
-> >
-> > Welcome to OverCommit, aka OOM-nirvana.
-> >
-> > Try this:
-> > # echo 2 > /proc/sys/vm/overcommit_memory
-> > # echo 0 > /proc/sys/vm/overcommit_ratio
-> >
-> > But make sure you have enough swap.
-> >
-> >
-> > Thanks!
->
-> The swap cache looks pretty big, may be top is including that data
-> while reporting swap usage.
+On Tue, Nov 13, 2007 at 12:59:59PM +0530, Balbir Singh wrote:
+> Paul Menage wrote:
+> > On Nov 12, 2007 11:00 PM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> >> Right now, one of the limitations of the CPU controller is that
+> >> the moment you create another control group, the bandwidth gets
+> >> divided by the default number of shares. We can't create groups
+> >> just for monitoring.
+> > 
+> > Could we get around this with, say, a flag that always treats a CFS
+> > schedulable entity as having a weight equal to the number of runnable
+> > tasks in it? So CPU bandwidth would be shared between groups in
+> > proportion to the number of runnable tasks, which would distribute the
+> > cycles approximately equivalently to them all being separate
+> > schedulable entities.
+> > 
+> 
+> I think it's a good hack, but not sure about the complexity to implement
+> the code.
 
-I don't think so.  top reports correctly, it's the VM that is lying.
-I guess you can tell what happens when push comes to shove...
+I agree that it would be adding unnecessary complexity, just to meet the
+accounting needs.
 
+Thinking of it more, this requirement to "group tasks for only accounting
+purpose" may be required for other resources (mem, io, network etc) as well?
+Should we have a generic accounting controller which can provide these
+various resource usgae stats for a group (cpu, mem etc) by iterating thr' the 
+task list for the group and summing up the corresponding stats already present 
+in task structure?
 
-Thanks!
-
---
-Al
-
+-- 
+Regards,
+vatsa
