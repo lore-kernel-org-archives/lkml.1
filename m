@@ -1,102 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762211AbXKMXSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759963AbXKMX3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762211AbXKMXSh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 18:18:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758771AbXKMXSY
+	id S1759963AbXKMX3S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 18:29:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754423AbXKMX3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 18:18:24 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58244 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755846AbXKMXSW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 18:18:22 -0500
-Date: Tue, 13 Nov 2007 15:17:29 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: David Miller <davem@davemloft.net>, alsa-devel@alsa-project.org,
-       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-kernel@vger.kernel.org, protasnb@gmail.com,
-       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz
-Subject: Re: [BUG] New Kernel Bugs
-Message-Id: <20071113151729.3291c889.akpm@linux-foundation.org>
-In-Reply-To: <20071113230936.GI1356@flint.arm.linux.org.uk>
-References: <20071113034916.2556edd7.akpm@linux-foundation.org>
-	<20071113.035824.40509981.davem@davemloft.net>
-	<20071113041259.79c9a8c5.akpm@linux-foundation.org>
-	<20071113.043207.44732743.davem@davemloft.net>
-	<20071113193219.GC1356@flint.arm.linux.org.uk>
-	<20071113125222.9eb53ac8.akpm@linux-foundation.org>
-	<20071113221801.GF1356@flint.arm.linux.org.uk>
-	<20071113143201.9441c940.akpm@linux-foundation.org>
-	<20071113230936.GI1356@flint.arm.linux.org.uk>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Nov 2007 18:29:04 -0500
+Received: from mail.gmx.net ([213.165.64.20]:37158 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754064AbXKMX3D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 18:29:03 -0500
+X-Authenticated: #24128601
+X-Provags-ID: V01U2FsdGVkX18WFcY8S3EWxYgWmAigB9AuLFDDyrFtChhdimVmuI
+	N/7hYNaOtu5OIP
+Date: Wed, 14 Nov 2007 00:28:59 +0100
+From: Sebastian Kemper <sebastian_ml@gmx.net>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: libata/PATA: GPCMD_SET_STREAMING via SG_IO does nothing
+Message-ID: <20071113232859.GA4681@section-eight>
+References: <20071113164323.GA5252@section-eight> <20071113212230.77cadecd@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071113212230.77cadecd@the-village.bc.nu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Nov 2007 23:09:37 +0000 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+Hi Alan!
 
-> On Tue, Nov 13, 2007 at 02:32:01PM -0800, Andrew Morton wrote:
-> > On Tue, 13 Nov 2007 22:18:01 +0000 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-> > > On Tue, Nov 13, 2007 at 12:52:22PM -0800, Andrew Morton wrote:
-> > > > On Tue, 13 Nov 2007 19:32:19 +0000 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-> > No, I don't mean that at all and this was very plainly obviously from my very
-> > clearly written email.  Let me try again.
+On Tue, Nov 13, 2007 at 09:22:30PM +0000, Alan Cox wrote:
+> It isn't a known issue, and it suprises me as SG_IO basically passes
+> commands through to the drive. We don't support speed change via xfermode
+> setting but GPCMD_SET_STREAMING sohuld behave.
 > 
-> If you screen all bugzilla reports then you'll know that bug #9356 arrived
-> at about 1400 GMT yesterday.  It's hardly surprising then that your utterly
-> crappy responses to Natalie's message (which, incidentally, wasn't copied
-> to me) sent within 24 hours of that report cause *great* annoyance.
-> 
-> > No, no subsystem developer needs to monitor new bugzilla reports.  This is
-> > because *I do it for them*.  I will actively make them aware of new reports
-> > which I believe are legitimate and which contain sufficient information for
-> > them to be able to take further action.
-> 
-> On the whole you do an excellent job with feeding the bug reports to
-> people, and while I recognise that you're only human, things do
-> occasionally go wrong.  For instance, sending clearly marked Samsung
-> S3C bugs to me rather than Ben Dooks (who's in MAINTAINERS for those
-> platforms.)
+> Do you have a simple code example that shows the problem ?
 
+http://svn.mplayerhq.hu/mplayer/trunk/stream/stream_dvd.c?view=markup
 
-Well whatever, sorry.  But this is in the noise floor.  Point is: many bug
-reports aren't being attended to.
+See dvd_set_speed(). The drive I'm using is an Optiarc DVD RW AD-7170A.
+With the "old" ATA driver dvd_set_speed() works, with libata it doesn't.
 
-
-> > > > > It would be far more productive if the ARM category was deleted from
-> > > > > bugzilla and the few people who use bugzilla reported their bugs on the
-> > > > > mailing list.  We've a couple of thousand people on the ARM kernel
-> > > > > mailing list at the moment - that's 3 orders of magnitude more of eyes
-> > > > > than look at bugzilla.
-> > > > 
-> > > > Is that linux-arm-kernel@lists.arm.linux.org.uk?
-> > > 
-> > > Yes.
-> > > 
-> > > > If so, MANITAINERS claims that it is subscribers-only.  That would cause
-> > > > some bug reporters to give up and go away.
-> > > 
-> > > Find some other mailing list; I'm not hosting *nor* am I willing to run a
-> > > non-subscribers only mailing list.  Period.  Not negotiable, so don't even
-> > > try to change my mind.
-> > 
-> > Making a list subscribers-only will cause some bug reports to be lost.
-> > 
-> > Tradeoffs are involved, against which decisions must be made.  You have
-> > made yours.
-> 
-> So how are they lost when they're held in a moderation queue and are
-> either accepted, a useful response given to the original poster, or
-> are forwarded to someone who can deal with the issue.
-> 
-> I don't think "subscribers only" describes my lists - we don't devnull
-> stuff just because the poster is not a subscriber.
-
-Oh, OK, as long as there really is a human paying attention to those things
-then that's fine.  When one is on the sending end of these things one never
-knows how long it will take, not whether it will even happen.
-
+Regards
+Sebastian
