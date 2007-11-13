@@ -1,70 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761402AbXKMSoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761445AbXKMSp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761402AbXKMSoh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 13:44:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761224AbXKMSn6
+	id S1761445AbXKMSp3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 13:45:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756499AbXKMSpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 13:43:58 -0500
-Received: from rtr.ca ([76.10.145.34]:2526 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758861AbXKMSn4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 13:43:56 -0500
-Message-ID: <4739F069.6050102@rtr.ca>
-Date: Tue, 13 Nov 2007 13:43:53 -0500
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Tue, 13 Nov 2007 13:45:19 -0500
+Received: from flatline.sindominio.net ([82.144.4.26]:44649 "EHLO
+	flatline.sindominio.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753661AbXKMSpR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 13:45:17 -0500
+Date: Tue, 13 Nov 2007 19:45:03 +0100
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: rolandd@cisco.com, mshefty@ichips.intel.com, hal.rosenstock@gmail.com,
+       general@lists.openfabrics.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] QLogic InfiniPath: convert ipath_eep_sem to mutex
+Message-ID: <20071113184503.GE30483@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	rolandd@cisco.com, mshefty@ichips.intel.com,
+	hal.rosenstock@gmail.com, general@lists.openfabrics.org,
+	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Ingo Molnar <mingo@elte.hu>, alsa-devel@alsa-project.org,
-       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-kernel@vger.kernel.org, protasnb@gmail.com,
-       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [BUG] New Kernel Bugs
-References: <20071113031553.3c7b5c16.akpm@linux-foundation.org> <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca> <20071113164650.GA28493@elte.hu> <4739E3D0.10201@rtr.ca> <20071113183925.GF17785@parisc-linux.org>
-In-Reply-To: <20071113183925.GF17785@parisc-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
-> On Tue, Nov 13, 2007 at 12:50:08PM -0500, Mark Lord wrote:
->> It's a 540MByte download over a slow link for everyone else.
-> 
-> Where do you get this number from?
-> $ du -sh .git/objects/pack/
-> 249M    .git/objects/pack/
-> $ du -sh .git/objects/
-> 253M    .git/objects/
-> 
-> ie about half what you claim.
-..
+QLogic InfiniPath: convert the semaphore ipath_eep_sem to the mutex
+API
 
-No, it's from earlier in this very thread:
+Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
 
-Adrian Bunk wrote:
-> The small instruction below is enough for everyone who is able to 
-> build his own kernel to do a git bisect.
-..
-> <--  snip  -->
-> 
-> 
-> # install git
-> 
-> # clone Linus' tree:
-> git clone \ 
-> git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-..
+--
 
-mkdir t
-cd t
-git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-(wait half an hour)
-/usr/bin/du -s linux-2.6
-522732  linux-2.6
+diff --git a/drivers/infiniband/hw/ipath/ipath_eeprom.c b/drivers/infiniband/hw/ipath/ipath_eeprom.c
+index e7c25db..a5b6299 100644
+--- a/drivers/infiniband/hw/ipath/ipath_eeprom.c
++++ b/drivers/infiniband/hw/ipath/ipath_eeprom.c
+@@ -510,10 +510,10 @@ int ipath_eeprom_read(struct ipath_devdata *dd, u8 eeprom_offset,
+ {
+ 	int ret;
+ 
+-	ret = down_interruptible(&dd->ipath_eep_sem);
++	ret = mutex_lock_interruptible(&dd->ipath_eep_lock);
+ 	if (!ret) {
+ 		ret = ipath_eeprom_internal_read(dd, eeprom_offset, buff, len);
+-		up(&dd->ipath_eep_sem);
++		mutex_unlock(&dd->ipath_eep_lock);
+ 	}
+ 
+ 	return ret;
+@@ -524,10 +524,10 @@ int ipath_eeprom_write(struct ipath_devdata *dd, u8 eeprom_offset,
+ {
+ 	int ret;
+ 
+-	ret = down_interruptible(&dd->ipath_eep_sem);
++	ret = mutex_lock_interruptible(&dd->ipath_eep_lock);
+ 	if (!ret) {
+ 		ret = ipath_eeprom_internal_write(dd, eeprom_offset, buff, len);
+-		up(&dd->ipath_eep_sem);
++		mutex_unlock(&dd->ipath_eep_lock);
+ 	}
+ 
+ 	return ret;
+@@ -616,9 +616,9 @@ void ipath_get_eeprom_info(struct ipath_devdata *dd)
+ 		goto bail;
+ 	}
+ 
+-	down(&dd->ipath_eep_sem);
++	mutex_lock(&dd->ipath_eep_lock);
+ 	eep_stat = ipath_eeprom_internal_read(dd, 0, buf, len);
+-	up(&dd->ipath_eep_sem);
++	mutex_unlock(&dd->ipath_eep_lock);
+ 
+ 	if (eep_stat) {
+ 		ipath_dev_err(dd, "Failed reading GUID from eeprom\n");
+@@ -764,14 +764,14 @@ int ipath_update_eeprom_log(struct ipath_devdata *dd)
+ 	/* Grab semaphore and read current EEPROM. If we get an
+ 	 * error, let go, but if not, keep it until we finish write.
+ 	 */
+-	ret = down_interruptible(&dd->ipath_eep_sem);
++	ret = mutex_lock_interruptible(&dd->ipath_eep_lock);
+ 	if (ret) {
+ 		ipath_dev_err(dd, "Unable to acquire EEPROM for logging\n");
+ 		goto free_bail;
+ 	}
+ 	ret = ipath_eeprom_internal_read(dd, 0, buf, len);
+ 	if (ret) {
+-		up(&dd->ipath_eep_sem);
++		mutex_unlock(&dd->ipath_eep_lock);
+ 		ipath_dev_err(dd, "Unable read EEPROM for logging\n");
+ 		goto free_bail;
+ 	}
+@@ -779,7 +779,7 @@ int ipath_update_eeprom_log(struct ipath_devdata *dd)
+ 
+ 	csum = flash_csum(ifp, 0);
+ 	if (csum != ifp->if_csum) {
+-		up(&dd->ipath_eep_sem);
++		mutex_unlock(&dd->ipath_eep_lock);
+ 		ipath_dev_err(dd, "EEPROM cks err (0x%02X, S/B 0x%02X)\n",
+ 				csum, ifp->if_csum);
+ 		ret = 1;
+@@ -849,7 +849,7 @@ int ipath_update_eeprom_log(struct ipath_devdata *dd)
+ 		csum = flash_csum(ifp, 1);
+ 		ret = ipath_eeprom_internal_write(dd, 0, buf, hi_water + 1);
+ 	}
+-	up(&dd->ipath_eep_sem);
++	mutex_unlock(&dd->ipath_eep_lock);
+ 	if (ret)
+ 		ipath_dev_err(dd, "Failed updating EEPROM\n");
+ 
+diff --git a/drivers/infiniband/hw/ipath/ipath_init_chip.c b/drivers/infiniband/hw/ipath/ipath_init_chip.c
+index 9dd0bac..9e9d6fa 100644
+--- a/drivers/infiniband/hw/ipath/ipath_init_chip.c
++++ b/drivers/infiniband/hw/ipath/ipath_init_chip.c
+@@ -348,7 +348,7 @@ static int init_chip_first(struct ipath_devdata *dd,
+ 
+ 	spin_lock_init(&dd->ipath_gpio_lock);
+ 	spin_lock_init(&dd->ipath_eep_st_lock);
+-	sema_init(&dd->ipath_eep_sem, 1);
++	mutex_init(&dd->ipath_eep_lock);
+ 
+ done:
+ 	*pdp = pd;
+diff --git a/drivers/infiniband/hw/ipath/ipath_kernel.h b/drivers/infiniband/hw/ipath/ipath_kernel.h
+index 8786dd7..a6e7a60 100644
+--- a/drivers/infiniband/hw/ipath/ipath_kernel.h
++++ b/drivers/infiniband/hw/ipath/ipath_kernel.h
+@@ -41,6 +41,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/pci.h>
+ #include <linux/dma-mapping.h>
++#include <linux/mutex.h>
+ #include <asm/io.h>
+ #include <rdma/ib_verbs.h>
+ 
+@@ -616,7 +617,7 @@ struct ipath_devdata {
+ 	/* control access to actual counters, timer */
+ 	spinlock_t ipath_eep_st_lock;
+ 	/* control high-level access to EEPROM */
+-	struct semaphore ipath_eep_sem;
++	struct mutex ipath_eep_lock;
+ 	/* Below inc'd by ipath_snap_cntrs(), locked by ipath_eep_st_lock */
+ 	uint64_t ipath_traffic_wds;
+ 	/* active time is kept in seconds, but logged in hours */
 
+-- 
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
 
-
+     La libertad es como la mañana. Hay quienes esperan dormidos a que
+   llegue, pero hay quienes desvelan y caminan la noche para alcanzarla
+                        (Subcomandante Marcos)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
