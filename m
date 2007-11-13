@@ -1,72 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754893AbXKMNZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbXKMNZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754893AbXKMNZf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 08:25:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753792AbXKMNZ1
+	id S1756574AbXKMNZs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 08:25:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754600AbXKMNZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 08:25:27 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51159 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753527AbXKMNZ0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 08:25:26 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>, ebiederm@xmission.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sysctl: Check length at deprecated_sysctl_warning.
-References: <200711080257.lA82vQfA015942@www262.sakura.ne.jp>
-	<20071107192211.c1c22e97.akpm@linux-foundation.org>
-	<200711080819.lA88J8Pv072259@www262.sakura.ne.jp>
-	<m14pfr6bnf.fsf@ebiederm.dsl.xmission.com>
-	<200711130307.lAD37Nee045340@www262.sakura.ne.jp>
-	<20071112191320.55e49462.akpm@linux-foundation.org>
-	<200711130350.lAD3oWnt054039@www262.sakura.ne.jp>
-Date: Tue, 13 Nov 2007 06:24:39 -0700
-In-Reply-To: <200711130350.lAD3oWnt054039@www262.sakura.ne.jp> (Tetsuo Handa's
-	message of "Tue, 13 Nov 2007 12:50:32 +0900")
-Message-ID: <m1bq9y2s88.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 13 Nov 2007 08:25:33 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:47582 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754475AbXKMNZc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 08:25:32 -0500
+Date: Tue, 13 Nov 2007 14:27:12 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: cscope build warning [Was: mm snapshot broken-out-2007-11-13-04-14.tar.gz uploaded]
+Message-ID: <20071113132712.GA31270@uranus.ravnborg.org>
+References: <200711131215.lADCFfht009739@imap1.linux-foundation.org> <47399B4D.5040208@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <47399B4D.5040208@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp> writes:
+On Tue, Nov 13, 2007 at 01:40:45PM +0100, Jiri Slaby wrote:
+> On 11/13/2007 01:15 PM, akpm@linux-foundation.org wrote:
+> > The mm snapshot broken-out-2007-11-13-04-14.tar.gz has been uploaded to
+> 
+> $ uname -a
+> Linux bellona 2.6.23-rc8-mm2_64 #58 SMP Fri Sep 28 08:52:12 CEST 2007 x86_64
+> x86_64 x86_64 GNU/Linux
+> $ make O=../bu cscope
+>   FILELST cscope.files
+> find: /home/l/latest/xxx/arch/x86_64: není souborem ani adresářem
+>   MAKE    cscope.out
+> 
 
-> Hello.
->
-> Andrew Morton wrote:
->> I believe (args->nlen > CTL_MAXNAME) was correct.
-> I'll leave it to you.
-> But if you want to allow args->nlen == CTL_MAXNAME,
-> you also need to update do_sysctl().
+I have following fix queued in my inbox:
 
-Which has been that way since before I decided to touch it. 2.6.12-rc1.
-I haven't tracked it before then as I don't expect to see anything.
+This patch fixed the following errors when doing "make cscope" and
+"make cscope ARCH=um".
 
-And that is why -ENOTDIR.  That is the historical error code from sysctl in
-this case.
+  FILELST cscope.files
+find: arch/i386: No such file or directory
+  MAKE    cscope.out
 
-> int do_sysctl(int __user *name, int nlen, void __user *oldval, size_t __user
-> *oldlenp,
->                void __user *newval, size_t newlen)
-> {
->         ...
->         if (nlen <= 0 || nlen >= CTL_MAXNAME)
->                 return -ENOTDIR;
->         ...
-> }
 
-CTL_MAXNAME is fairly arbitrary, and since the set of binary paths is fixed.
-So it feels to me like the code really should read:
+  FILELST cscope.files
+find: include/asm-i386: No such file or directory
+  MAKE    cscope.out
 
-        if (nlen <= 0 || nlen > CTL_MAXNAME)
-                return -ENOTDIR;
 
-In both places. Just because that is what the comment describes.
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
 
-I think in reality CTL_MAXNAME is actually 5 but I would have to look a little
-more closely to confirm that.
+---
 
-Eric
+diff --git a/Makefile b/Makefile
+index e28dde8..01335ca 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1322,6 +1322,7 @@ ALLINCLUDE_ARCHS := $(ARCH) $(SUBARCH)
+ else
+ ALLINCLUDE_ARCHS := $(SRCARCH)
+ endif
++ALLINCLUDE_ARCHS := $(shell echo $(ALLINCLUDE_ARCHS)|sed -e "s/i386/x86/" -e "s/x86_64/x86/")
+ else
+ #Allow user to specify only ALLSOURCE_PATHS on the command line, keeping existing behavour.
+ ALLINCLUDE_ARCHS := $(ALLSOURCE_ARCHS)
+@@ -1331,7 +1332,7 @@ endif
+ ifeq ($(ARCH), $(SRCARCH))
+ ALLSOURCE_ARCHS := $(ARCH)
+ else
+-ALLSOURCE_ARCHS := $(ARCH) $(SRCARCH)
++ALLSOURCE_ARCHS := $(shell echo $(ARCH) $(SRCARCH)|sed -e "s/i386/x86/" -e "s/x86_64/x86/")
+ endif
+ 
+ define find-sources
+
