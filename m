@@ -1,64 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762970AbXKMWbN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762302AbXKMWdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762970AbXKMWbN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 17:31:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757127AbXKMWa5
+	id S1762302AbXKMWdS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 17:33:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758133AbXKMWc7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 17:30:57 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:32796 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756935AbXKMWa4 (ORCPT
+	Tue, 13 Nov 2007 17:32:59 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59183 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757144AbXKMWc5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 17:30:56 -0500
-Date: Tue, 13 Nov 2007 14:22:42 -0800
-From: Greg KH <greg@kroah.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, dm-devel@redhat.com,
-       linux-kernel@vger.kernel.org, Milan Broz <mbroz@redhat.com>,
-       Guido Guenther <agx@sigxcpu.org>, Kevin Corry <kevcorry@us.ibm.com>,
-       stable@kernel.org
-Subject: Re: [stable] [2.6.24 PATCH 02/25] dm io:ctl use constant struct
-	size
-Message-ID: <20071113222242.GB6132@kroah.com>
-References: <20071012170509.GM24157@agk.fab.redhat.com> <200710130016.29937.arnd@arndb.de> <20071015012621.GD10006@agk.fab.redhat.com> <200710150934.09842.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710150934.09842.arnd@arndb.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 13 Nov 2007 17:32:57 -0500
+Date: Tue, 13 Nov 2007 14:32:01 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: David Miller <davem@davemloft.net>, alsa-devel@alsa-project.org,
+       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org, protasnb@gmail.com,
+       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: [BUG] New Kernel Bugs
+Message-Id: <20071113143201.9441c940.akpm@linux-foundation.org>
+In-Reply-To: <20071113221801.GF1356@flint.arm.linux.org.uk>
+References: <20071113034916.2556edd7.akpm@linux-foundation.org>
+	<20071113.035824.40509981.davem@davemloft.net>
+	<20071113041259.79c9a8c5.akpm@linux-foundation.org>
+	<20071113.043207.44732743.davem@davemloft.net>
+	<20071113193219.GC1356@flint.arm.linux.org.uk>
+	<20071113125222.9eb53ac8.akpm@linux-foundation.org>
+	<20071113221801.GF1356@flint.arm.linux.org.uk>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15, 2007 at 09:34:09AM +0200, Arnd Bergmann wrote:
-> On Monday 15 October 2007, Alasdair G Kergon wrote:
-> > The underlying ABI is not changing, I hope - the trailing padding in the
-> > struct should not affect the processing of the data by dm, and I see no
-> > reason to continue maintaining the fiction that the 32-bit and 64-bit
-> > ioctls are in some way incompatible with each other when they aren't
-> > AFAIK.
-> 
-> It's a corner case of some sort, as DM uses ioctl numbers differently
-> from most subsystems by splitting to code from the size argument
-> during processing. Your change is certainly not an _incompatible_
-> change to the ABI, but 32 bit binaries compiled against the new
-> headers will use different ioctl numbers from those built against
-> older headers.
-> 
-> This may break other code that expects a specific number, even
-> if your handler does not care. The old compat code handles both
-> variants (no variable size arguments), but /usr/bin/strace may have
-> encoded only one set of numbers AFAICT.
-> 
-> > And yes, a follow-up patch can clean up our use of the compatibility
-> > mechanism, going a little bit further than the patch you attached, I
-> > hope.
-> 
-> Ok, sounds good. I don't think it's the kind of patch that should go
-> into stable backports though.
+On Tue, 13 Nov 2007 22:18:01 +0000 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
 
-Ok, I've not added this patch (2/25) to the queue at all.  If this is
-incorrect, please let me know.
+> On Tue, Nov 13, 2007 at 12:52:22PM -0800, Andrew Morton wrote:
+> > On Tue, 13 Nov 2007 19:32:19 +0000 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+> > > There's another issue I want to raise concerning bugzilla.  We have the
+> > > classic case of "not enough people reading bugzilla bugs" - which is one
+> > > of the biggest problems with bugzilla.  Virtually no one in the ARM
+> > > community looks for ARM bugs in bugzilla.
+> > 
+> > Nor should they.
+> 
+> So what you're saying is...
+> 
+> > > Let's not forget that it would be a waste of time for people to manually
+> > > check bugzilla for ARM bugs.  There's soo few people reporting ARM bugs
+> > > into bugzilla that a weekly manual check by every maintainer would just
+> > > return the same old boring results for months and months at a time.
+> > 
+> > I screen all bugzilla reports.  100% of them.
+> > 
+> > - I'll try to establish whether it is a regression
+> > 
+> > - I'll solicit any extra information which I believe the reveloper will need
+> > 
+> > - I'll ensure that an appropriate developer has seen the report
+> > 
+> > And yes, the number of arm-specific reports in there is very small.
+> 
+> that just because you do this everyone in a select clique, who you include
+> me in, should be doing this as well.
+> 
+> No.  Thank.  You.
 
-thanks,
+No, I don't mean that at all and this was very plainly obviously from my very
+clearly written email.  Let me try again.
 
-greg k-h
+No, no subsystem developer needs to monitor new bugzilla reports.  This is
+because *I do it for them*.  I will actively make them aware of new reports
+which I believe are legitimate and which contain sufficient information for
+them to be able to take further action.
+
+> > > It would be far more productive if the ARM category was deleted from
+> > > bugzilla and the few people who use bugzilla reported their bugs on the
+> > > mailing list.  We've a couple of thousand people on the ARM kernel
+> > > mailing list at the moment - that's 3 orders of magnitude more of eyes
+> > > than look at bugzilla.
+> > 
+> > Is that linux-arm-kernel@lists.arm.linux.org.uk?
+> 
+> Yes.
+> 
+> > If so, MANITAINERS claims that it is subscribers-only.  That would cause
+> > some bug reporters to give up and go away.
+> 
+> Find some other mailing list; I'm not hosting *nor* am I willing to run a
+> non-subscribers only mailing list.  Period.  Not negotiable, so don't even
+> try to change my mind.
+
+Making a list subscribers-only will cause some bug reports to be lost.
+
+Tradeoffs are involved, against which decisions must be made.  You have
+made yours.
+
