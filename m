@@ -1,116 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762933AbXKMVUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762650AbXKMVXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762933AbXKMVUl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 16:20:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759684AbXKMVUb
+	id S1762650AbXKMVXU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 16:23:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759796AbXKMVXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 16:20:31 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:59122 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759670AbXKMVU3 (ORCPT
+	Tue, 13 Nov 2007 16:23:11 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35720 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759677AbXKMVXJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 16:20:29 -0500
-Date: Tue, 13 Nov 2007 22:20:06 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Mark Lord <liml@rtr.ca>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, protasnb@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071113212006.GM4250@stusta.de>
-References: <20071113164650.GA28493@elte.hu> <4739E3D0.10201@rtr.ca> <20071113181228.GF4250@stusta.de> <4739EA83.5040006@rtr.ca> <20071113183605.GG4250@stusta.de> <4739F12E.5020807@rtr.ca> <20071113190428.GH4250@stusta.de> <4739FA4D.1050900@rtr.ca> <20071113200028.GJ4250@stusta.de> <473A057A.90802@rtr.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <473A057A.90802@rtr.ca>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 13 Nov 2007 16:23:09 -0500
+Date: Tue, 13 Nov 2007 21:22:30 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Sebastian Kemper <sebastian_ml@gmx.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: libata/PATA: GPCMD_SET_STREAMING via SG_IO does nothing
+Message-ID: <20071113212230.77cadecd@the-village.bc.nu>
+In-Reply-To: <20071113164323.GA5252@section-eight>
+References: <20071113164323.GA5252@section-eight>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 03:13:46PM -0500, Mark Lord wrote:
-> Adrian Bunk wrote:
->> On Tue, Nov 13, 2007 at 02:26:05PM -0500, Mark Lord wrote:
-> ..
->>> If you've been making significant updates to a driver/subsystem,
->>> and people are reporting that it is now broken for them,
->>
->> What are "significant updates"?
->>
->> Sometimes one person makes one small patch and this patch contains
->> a typo.
-> ..
->
-> Then that person should double check their changes against
-> the problems reported, and re-convince themselves that the
-> breakage wasn't from those.  Simple. 
+> while trying to limit the speed of DVD drives during DVD playback I've
+> come under the impression that GPCMD_SET_STREAMING via SG_IO doesn't yet
+> work with libata/PATA (AMD/NVIDIA PATA support). I tested on an NForce2
+> board (all IDE, no SATA) and kernel 2.6.22.12. When I use the "old" ATA
+> kernel driver my drive slows down, with libata it doesn't. Is this a
+> known issue or has this slipped by unnoticed?
 
-Simple?
+It isn't a known issue, and it suprises me as SG_IO basically passes
+commands through to the drive. We don't support speed change via xfermode
+setting but GPCMD_SET_STREAMING sohuld behave.
 
-Everything you have in mind with "should double check their changes" is 
-simply not realistic with dozens of known unfixed regressions within 
-more than half a million changed or new lines of code written by more 
-than 800 people - all numbers only counted since 2.6.23.
+> 
+> I tried with mplayer dvd:// -dvd-device /dev/sr0 -dvd-speed BTW . I get
+> no errors in syslog/dmesg. Also mplayer doesn't report a problem (so
+> ioctl(fd, SG_IO, &sghdr) doesn't have a return < 0).
 
->...
->>> The reporters can help,
->>> and many may even git-bisect or send patches.  But you cannot *expect* or 
->>> *insist* upon them doing your job.
->>
->> Bullshit.
->>
->> Bug fixing is not about finding someone to blame, it's about getting the 
->> bug fixed.
-> ..
->
-> It's not about blame, it's about paying attention to breakages in code that a
-> person claims to be supporting, and then doing their best to resolve the issues.
-
-Maintainers are just humans with limited time. 
-
-You were the one who suggested to "distribute code maintainership", 
-so you should explain how to find the additional maintainers.
-
-> Again, if one has the time to actively write/modify code such that something breaks,
-> then that person should also make time to fix the breakages.
-
-code writer != subsystem maintainer
-
-And git-bisect is the tool that tells you who broke it.
-
->> The bug reporter is the person who can reproduce the problem, and if it's 
->> a regression then bisecting is the natural way of getting nearer at 
->> getting it fixed.
-> ..
-> For the third time, no disagreement here.  git-bsect can help in many cases,
-> but not in all cases.  And it requires a great time commitment from somebody
-> who's system used to work and now doesn't work.  The person who broke it has
-> a fair bit of responsibility there, too.
-
-git-bisect can help only for regressions, and it can help for most 
-regressions.
-
-And you shouldn't try to make a problem out of something that isn't a 
-problem:
-
-Bug submitters are either volunteers who test -rc or even -git or -mm 
-kernels for finding bugs or people who want a problem they experience 
-fixed.
-
-In both cases the submitters are usually willing to invest some time for 
-helping to get the bug fixed.
-
-> cheers
-
-cu
-Adrian
-
---
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Do you have a simple code example that shows the problem ?
