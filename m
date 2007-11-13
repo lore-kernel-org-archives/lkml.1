@@ -1,84 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbXKMQDK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbXKMQDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757511AbXKMQDK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 11:03:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752565AbXKMQC6
+	id S1758242AbXKMQDk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 11:03:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbXKMQD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 11:02:58 -0500
-Received: from wa-out-1112.google.com ([209.85.146.178]:40131 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750776AbXKMQC5 (ORCPT
+	Tue, 13 Nov 2007 11:03:28 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:30265 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754466AbXKMQD0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 11:02:57 -0500
+	Tue, 13 Nov 2007 11:03:26 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HhE2wqjcwHAr3AZZWqbZl2Ebim8vF0Mg6gfdMoRixHR3O8k+Ozh2VLXMRUY3jUdrHLN8XpPa8OXSPHgdqxS8frAcalDEAQ2aDB6s13cU9X1lPqOumNdWANew+cdM0vdqUwuKk4WqTtNbY+K6B7/UVufQduyBv3xJeaP0GuE05IU=
-Message-ID: <b647ffbd0711130802g2f1e9659kd73756538e15ce09@mail.gmail.com>
-Date: Tue, 13 Nov 2007 17:02:56 +0100
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Florian Boelstler" <kernel@boelstler.net>
-Subject: Re: Strange delays / what usually happens every 10 min?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <fhcc39$51b$1@ger.gmane.org>
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=mlmiWteGf+0+3fFR3SMuiaWfX4nTi2pSan7YSxv0+D7hE4OwGIRZbc1HnqUa5Dkz4BsIxct4bxTpmXO9YWo/CuIJR1J9WcoGaxBLR4kig9ockiyhZ0xPVxnMeXtM9TI8jxVS8WHDKYC4LS1NEJnq1LEUAT5R+8iva/L33zETgf4=
+Message-ID: <2c0942db0711130803o4f0048d6l6631349aa8987681@mail.gmail.com>
+Date: Tue, 13 Nov 2007 08:03:24 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: Shish <shish@shishnet.org>
+Subject: Re: Weird network problems with 2.6.23-rc2
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <20070811083959.305b0421.shish@shishnet.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <fhcc39$51b$1@ger.gmane.org>
+References: <20070811083959.305b0421.shish@shishnet.org>
+X-Google-Sender-Auth: 55c44467a4e6bcc9
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13/11/2007, Florian Boelstler <kernel@boelstler.net> wrote:
-> Hi,
+Hello there Shish,
+
+On Aug 10, 2007 11:39 PM, Shish <shish@shishnet.org> wrote:
+> Something seems to have broken in 2.6.23-rc2, and I'm not sure what, or
+> where I should look for further debugging. The info I have:
 >
-> this issue has been already discussed on the kernelnewbies mailing list
-> [1],[2] and suggested to be further discussed here.
+> On my 2.6.23-rc2 desktop, things run fine.
 >
-> I am currently working on a MPC8540-based custom board, which runs Linux
-> 2.6.15 (arch/ppc). The original Linux sources have been modified to
-> support that custom board. (Additional patches to support LTT are
-> applied as well, though disabled in the running kernel)
+> On my test server, built from the same source tree, networking goes
+> strange every few minutes, with the following symptoms:
 >
-> I set up a periodically running kernel thread, which is delayed for a
-> single jiffy using schedule_timeout() in an infinite loop. It is used to
-> measure delays between invocations of that thread. For measuring the
-> distance in time the PPC's time base lower half register is used
-> (obtained using get_cycles() defined in asm/timex.h).
+> o) running ping against the server, the first ping goes through;
+> further pings go AWOL until about icmp_seq=30, when I get 4-5 icmp
+> replies (marked as DUP!), then no pings for a while, then dups, and so
+> on.
 >
-> The thread calculates the delay to the previous run and only outputs the
-> result if a new maximum value has been determined (in respect to all
-> previous cycles). Further the thread outputs a warning if a very "high"
-> delay was determined. I.e. a delay greater than 5ms.
+> o) the server doesn't see ARP replies. According to tcpdump, the server
+> will send eg "who has 192.168.0.2? tell 192.168.0.1"; the client in
+> question will recieve the packet and send a response, but nothing shows
+> up in the server-side tcpdump.
 >
-> While running that test driver a delay of about 10ms _exactly_ occurs
-> every 10 minutes.
-> And now the funny part starts.
-> I got a response from Bruce Rowen on kernelnewbies, telling me that he
-> came across the same problem. He increased his AMD-Geode-based platform
-> to 1GB of RAM (256MB before) and also hit the 10-minutes-issue a few
-> month ago (using Linux 2.6.13).
-> Going back to 256MB cured the problem. I did the same thing by
-> instructing the boot loader in order to only use 256 MB of RAM (instead
-> of 512MB) and yes, the 10-minutes-issue was gone as well.
+> o) after a few minutes of random network troubles, everything will work
+> fine again, (ping is normal, arp replies are seen, tcp sessions work)
+> for a few minutes.
+>
+> o) The server's dmesg shows lots of "short udp packet" messages
+>
+> o) ifdown then ifup'ing the interfaces fixes things, temporarily.
+>
+> Reverting to 2.6.22, everything seems to be running fine (but no lguest,
+> which is what I came for :( )
+>
+> I've also tried with the latest code from git, the behaviour is the same
+> as 2.6.23-rc2.
 
-Not necessarily gone. I'd say, the question is not whether you still
-have 'delays' (> 5 ms. in your case) once in a fixed interval (10
-minutes) but whether you have noticeable blips, which are significant
-wrt maximum 'delays' you otherwise observe between those points of
-time.
+Several questions. What network card do you have on your server? Is
+this still reproducible with the latest code from git? If so, it would
+be extremely helpful if you could do a bisect between 2.6.22 and
+2.6.23-rc2. Feel free to ask for help if you need it.
 
-What are maximum 'delays' you see before hitting this "once in 10
-minutes" point?
-
-say, with 256 Mb. the blips could just become lower (e.g. 2 ms.) and
-are not reported as "big ones" (>5 ms. in your terms)...
-
-Quite often the source of high periodic latency is SMI (System
-Management Interrupts)... I don't know though, whether any of SMI
-activities are somehow dependent on the size of RAM.
-
-
--- 
-Best regards,
-Dmitry Adamushko
+Ray
