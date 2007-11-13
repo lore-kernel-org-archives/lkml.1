@@ -1,49 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760685AbXKMS1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756135AbXKMS3P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760685AbXKMS1a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 13:27:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755114AbXKMS1T
+	id S1756135AbXKMS3P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 13:29:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118AbXKMS3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 13:27:19 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47990 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753179AbXKMS1S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 13:27:18 -0500
-Date: Tue, 13 Nov 2007 18:25:16 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Mark Lord <liml@rtr.ca>,
-       alsa-devel@alsa-project.org, netdev@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Natalie Protasevich <protasnb@gmail.com>, linux-ide@vger.kernel.org,
-       bugme-daemon@bugzilla.kernel.org, linux-input@atrey.karlin.mff.cuni.cz,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071113182516.250de873@the-village.bc.nu>
-In-Reply-To: <20071113181053.GB1356@flint.arm.linux.org.uk>
-References: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com>
-	<20071113031553.3c7b5c16.akpm@linux-foundation.org>
-	<4739ADA2.4060604@rtr.ca>
-	<alpine.LFD.0.9999.0711131521590.3265@localhost.localdomain>
-	<20071113181053.GB1356@flint.arm.linux.org.uk>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 13 Nov 2007 13:29:00 -0500
+Received: from mail0.scram.de ([78.47.204.202]:56299 "EHLO mail0.scram.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751947AbXKMS27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 13:28:59 -0500
+X-Spam-Score: -3.885
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+ * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+ *      [score: 0.0000]
+ *  0.5 AWL AWL: From: address is in the auto white-list
+Message-ID: <4739ECDA.4010200@scram.de>
+Date: Tue, 13 Nov 2007 19:28:42 +0100
+From: Jochen Friedrich <jochen@scram.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+MIME-Version: 1.0
+To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+CC: linux-kernel@vger.kernel.org, Scott Wood <scottwood@freescale.com>,
+       paulus@samba.org
+Subject: [PATCH] powerpc: Add support for PORTA and PORTB odr registers
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Given the wide range of ARM platforms today, it is utterly idiotic to
-> expect a single person to be able to provide responses for all ARM bugs.
-> I for one wish I'd never *VOLUNTEERED* to be a part of the kernel
-> bugzilla, and really *WISH* I could pull out of that function.
+PORTA and PORTB have odr registers, as well. However, the PORTB odr
+register is only 16bit.
 
-You can. Perhaps that bugzilla needs to point to some kind of
-arm-maintainers@vger.kernel.org list for the various ARM platform
-maintainers ?
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+---
+ arch/powerpc/sysdev/commproc.c |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
 
-Alan
+diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
+index d5a0dcf..3694a69 100644
+--- a/arch/powerpc/sysdev/commproc.c
++++ b/arch/powerpc/sysdev/commproc.c
+@@ -441,6 +441,13 @@ static void cpm1_set_pin32(int port, int pin, int flags)
+ 	else
+ 		clrbits32(&iop->par, pin);
+ 
++	if (port == CPM_PORTB) {
++		if (flags & CPM_PIN_OPENDRAIN)
++			setbits16(&mpc8xx_immr->im_cpm.cp_pbodr, pin);
++		else
++			clrbits16(&mpc8xx_immr->im_cpm.cp_pbodr, pin);
++	}
++
+ 	if (port == CPM_PORTE) {
+ 		if (flags & CPM_PIN_SECONDARY)
+ 			setbits32(&iop->sor, pin);
+@@ -474,6 +481,12 @@ static void cpm1_set_pin16(int port, int pin, int flags)
+ 	else
+ 		clrbits16(&iop->par, pin);
+ 
++	if (port == CPM_PORTA) {
++		if (flags & CPM_PIN_OPENDRAIN)
++			setbits16(&iop->odr, pin);
++		else
++			clrbits16(&iop->odr, pin);
++	}
+ 	if (port == CPM_PORTC) {
+ 		if (flags & CPM_PIN_SECONDARY)
+ 			setbits16(&iop->sor, pin);
+-- 
+1.5.3.5
+
