@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761659AbXKMXtL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761139AbXKMXx2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761659AbXKMXtL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 18:49:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758445AbXKMXs5
+	id S1761139AbXKMXx2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 18:53:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758133AbXKMXxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 18:48:57 -0500
-Received: from wa-out-1112.google.com ([209.85.146.178]:14131 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755374AbXKMXs4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 18:48:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=N0ONzq4E8f4xbh7VqYoTlPSU9AOhDQs0lifOlb+4MZ9brNRBDqtumv0W2TvqL8rXJRvCis9V2PIPEsnbiOrXSvMMk6GUmGlcjEY5tP0Xf68UFwC7C9l0OJfEr8e1Tq8aVxv2bgbS1Jhmfv4pwzsTP0HNlfBrt+/i+itM9bQ+RhA=
-Message-ID: <93d1fdd10711131548q41ea3418rd8ceb04345e4f006@mail.gmail.com>
-Date: Tue, 13 Nov 2007 18:48:56 -0500
-From: "Ron Yorgason" <yorgasor@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Better support for Delkin cardbus CF adapters -- IDE layer
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20071113225722.36ed3a30@the-village.bc.nu>
+	Tue, 13 Nov 2007 18:53:19 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:41388 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755374AbXKMXxS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 18:53:18 -0500
+Date: Tue, 13 Nov 2007 17:53:18 -0600
+From: "Serge E. Hallyn" <sergeh@us.ibm.com>
+To: Chris Friedhoff <chris@friedhoff.org>
+Cc: Serge E Hallyn <sergeh@us.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Posix file capabilities in 2.6.24rc2
+Message-ID: <20071113235318.GA6477@sergelap.austin.ibm.com>
+References: <20071113230720.22c6a036.chris@friedhoff.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <93d1fdd10711121003t2286493bob25a3acd12134720@mail.gmail.com>
-	 <20071112194806.4cb9c688@the-village.bc.nu>
-	 <93d1fdd10711131404u4bdf1d08pb3f579e370c125f0@mail.gmail.com>
-	 <20071113225722.36ed3a30@the-village.bc.nu>
+In-Reply-To: <20071113230720.22c6a036.chris@friedhoff.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bah, you're right.  He gave me the name for the wrong device.  It's
-really an Interfirm HS-CF32 device.  He said the company has gone out
-of business, but a quick google shows an interfirm.co.jp site with
-this HS-CF32 device on it.  I'll try and get specifications there.
+Quoting Chris Friedhoff (chris@friedhoff.org):
+> Hello,
+> 
+> everything works as expected, but ...
+> 
+> closing X and no capabilities set for xinit does shutdown only the
+> windowmanager and not the X server (Xorg server 1.4)
+> Consolemessage is:
+> xinit:  Operation not permitted (errno 1): Can't kill X server
+> 
+> 
+> the xattr capability is removed, when the file is chown'ed.
 
---Ron
+Hi Chris,
 
-On Nov 13, 2007 5:57 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> On Tue, 13 Nov 2007 17:04:57 -0500
-> "Ron Yorgason" <yorgasor@gmail.com> wrote:
->
-> > I received a response from Synchrotech, the supplier of one of my
-> > cards.  He said that they were under NDA with their manufacturing
-> > partner and couldn't offer the full specs.  However he could tell me
-> > the specific bridge chip:
-> >
-> > JMicron JMB368 PCIe to PATA controller
->
-> Seems odd for the cardbus controller as cardbus is PCI not PCIe but would
-> make sense for Expresscard devices. In theory a Jmicron plug in card
-> would just work.
->
->
+yes on chown the capability is removed.  I'm not quite sure what
+you're asking?  Is your setup depending on being able to chown
+while keeping file capabilities?  Can you give some more details?
+
+thanks,
+-serge
