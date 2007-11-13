@@ -1,43 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763403AbXKMWaB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762970AbXKMWbN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763403AbXKMWaB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 17:30:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762187AbXKMW3i
+	id S1762970AbXKMWbN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 17:31:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757127AbXKMWa5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 17:29:38 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:60991 "EHLO
+	Tue, 13 Nov 2007 17:30:57 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:32796 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761947AbXKMW3g (ORCPT
+	with ESMTP id S1756935AbXKMWa4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 17:29:36 -0500
-Date: Tue, 13 Nov 2007 22:29:29 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Stephane Eranian <eranian@hpl.hp.com>
-Cc: Robert Richter <robert.richter@amd.com>, Andi Kleen <andi@firstfloor.org>,
-       gregkh@suse.de, akpm@osdl.org, linux-kernel@vger.kernel.org,
-       perfmon2-devel@lists.sourceforge.net, perfmon@napali.hpl.hp.com
-Subject: Re: perfmon2 merge news
-Message-ID: <20071113222929.GC1322@infradead.org>
-References: <20071107003454.GA13374@kroah.com> <20071109120627.60ec9ab4.akpm@linux-foundation.org> <20071109213829.GC28276@kroah.com> <p73abpl2654.fsf@bingen.suse.de> <20071113151718.GA3804@erda.amd.com> <20071113183239.GF4319@frankl.hpl.hp.com>
-Mime-Version: 1.0
+	Tue, 13 Nov 2007 17:30:56 -0500
+Date: Tue, 13 Nov 2007 14:22:42 -0800
+From: Greg KH <greg@kroah.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org, Milan Broz <mbroz@redhat.com>,
+       Guido Guenther <agx@sigxcpu.org>, Kevin Corry <kevcorry@us.ibm.com>,
+       stable@kernel.org
+Subject: Re: [stable] [2.6.24 PATCH 02/25] dm io:ctl use constant struct
+	size
+Message-ID: <20071113222242.GB6132@kroah.com>
+References: <20071012170509.GM24157@agk.fab.redhat.com> <200710130016.29937.arnd@arndb.de> <20071015012621.GD10006@agk.fab.redhat.com> <200710150934.09842.arnd@arndb.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071113183239.GF4319@frankl.hpl.hp.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <200710150934.09842.arnd@arndb.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 10:32:39AM -0800, Stephane Eranian wrote:
-> It would obvisouly cause a lot of troubles to existing perfmon libraries and
-> applications (e.g. PAPI). It would also be fairly tricky to do because you'd 
-> have to make sure that in the beginning, you leave enough flexiblity such that
-> you can add the rest while maintaining total backward compatibility. But given
-> that we already have the full solution, it could just be a matter of dropping
-> features without disrupting the user level API.
+On Mon, Oct 15, 2007 at 09:34:09AM +0200, Arnd Bergmann wrote:
+> On Monday 15 October 2007, Alasdair G Kergon wrote:
+> > The underlying ABI is not changing, I hope - the trailing padding in the
+> > struct should not affect the processing of the data by dm, and I see no
+> > reason to continue maintaining the fiction that the 32-bit and 64-bit
+> > ioctls are in some way incompatible with each other when they aren't
+> > AFAIK.
+> 
+> It's a corner case of some sort, as DM uses ioctl numbers differently
+> from most subsystems by splitting to code from the size argument
+> during processing. Your change is certainly not an _incompatible_
+> change to the ABI, but 32 bit binaries compiled against the new
+> headers will use different ioctl numbers from those built against
+> older headers.
+> 
+> This may break other code that expects a specific number, even
+> if your handler does not care. The old compat code handles both
+> variants (no variable size arguments), but /usr/bin/strace may have
+> encoded only one set of numbers AFAICT.
+> 
+> > And yes, a follow-up patch can clean up our use of the compatibility
+> > mechanism, going a little bit further than the patch you attached, I
+> > hope.
+> 
+> Ok, sounds good. I don't think it's the kind of patch that should go
+> into stable backports though.
 
-There no way we'll keep this completely idiotic userland API.  If people start
-to use out of tree APIs they can pretty much expect that they're not going
-to stay around.  And in this case they most certainly won't.
+Ok, I've not added this patch (2/25) to the queue at all.  If this is
+incorrect, please let me know.
 
+thanks,
+
+greg k-h
