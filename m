@@ -1,119 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758856AbXKMRg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759948AbXKMRhS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758856AbXKMRg0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 12:36:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755604AbXKMRgS
+	id S1759948AbXKMRhS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 12:37:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755604AbXKMRhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 12:36:18 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:64344 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754267AbXKMRgR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 12:36:17 -0500
-Date: Tue, 13 Nov 2007 09:34:42 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jiri Slaby <jirislaby@gmail.com>, steved@redhat.com
-Cc: trond.myklebust@fys.uio.no,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] nfs functions undefined [Was: mm snapshot
- broken-out-2007-11-13-04-14.tar.gz uploaded]
-Message-Id: <20071113093442.bc2554c6.randy.dunlap@oracle.com>
-In-Reply-To: <47399DA8.2060501@gmail.com>
-References: <200711131215.lADCFfht009739@imap1.linux-foundation.org>
-	<47399DA8.2060501@gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 13 Nov 2007 12:37:04 -0500
+Received: from mga11.intel.com ([192.55.52.93]:55499 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753617AbXKMRhA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 12:37:00 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,411,1188802800"; 
+   d="scan'208";a="381485533"
+Message-ID: <4739DF29.6010901@intel.com>
+Date: Tue, 13 Nov 2007 09:30:17 -0800
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
+MIME-Version: 1.0
+To: Patrick McHardy <kaber@trash.net>
+CC: Herbert Xu <herbert@gondor.apana.org.au>,
+       David Miller <davem@davemloft.net>, joonwpark81@gmail.com, w@1wt.eu,
+       cfriesen@nortel.com, netdev@vger.kernel.org,
+       djohnson+linux-kernel@sw.starentnetworks.com,
+       linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net
+Subject: Re: [PATCH 2/2] [e1000 VLAN] Disable vlan hw accel when promiscuous
+ mode
+References: <E1Irtdz-0000DX-00@gondolin.me.apana.org.au> <20071113.033611.73195922.davem@davemloft.net> <20071113120328.GB1086@gondor.apana.org.au> <20071113.040624.43544149.davem@davemloft.net> <20071113121647.GA1330@gondor.apana.org.au> <4739961E.90708@trash.net> <4739D3A5.4020503@intel.com> <4739DE29.2030507@trash.net>
+In-Reply-To: <4739DE29.2030507@trash.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-OriginalArrivalTime: 13 Nov 2007 17:30:46.0824 (UTC) FILETIME=[ED0EE280:01C8261A]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Nov 2007 13:50:48 +0100 Jiri Slaby wrote:
-
-> On 11/13/2007 01:15 PM, akpm@linux-foundation.org wrote:
-> > The mm snapshot broken-out-2007-11-13-04-14.tar.gz has been uploaded to
+Patrick McHardy wrote:
+> Kok, Auke wrote:
+>> Patrick McHardy wrote:
+>>
+>>> I already posted a patch for this, not sure what happened to it.
+>>> Auke, any news on merging the secondary unicast address support?
+>>
+>> I dropped the ball on that one. Care to resend it and send me one for
+>> e1000e as well?
 > 
-> ERROR: "nfs_put_super" [fs/nfs/nfs.ko] undefined!
-> ERROR: "nfs_sb_deactive" [fs/nfs/nfs.ko] undefined!
-> make[2]: *** [__modpost] Error 1
-> make[1]: *** [modules] Error 2
+> Patch for e1000 attached.
 > 
-> config:
-> http://www.fi.muni.cz/~xslaby/sklad/config_64
+> Does e1000e also work with PCI cards if I add the proper IDs?
+> Otherwise I could only send an untested patch.
+> 
 
+no, e1000e will only work with pci-e adapters. The code however is largely the
+same, so if you can dish me out (off-list) some test cases I can have our labs do
+the testing and add this to our test repertoire.
 
+Cheers,
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
-
-nfs_put_super() and nfs_sb_deactive() should not be inside an
-ifdef CONFIG_NFS_V4 block.
-
-ERROR: "nfs_put_super" [fs/nfs/nfs.ko] undefined!
-ERROR: "nfs_sb_deactive" [fs/nfs/nfs.ko] undefined!
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- fs/nfs/super.c |   34 +++++++++++++++++-----------------
- 1 file changed, 17 insertions(+), 17 deletions(-)
-
---- linux-2624-rc2-mmbo.orig/fs/nfs/super.c
-+++ linux-2624-rc2-mmbo/fs/nfs/super.c
-@@ -1499,6 +1499,23 @@ error_splat_super:
- 	return error;
- }
- 
-+static void nfs_put_super(struct super_block *sb)
-+{
-+	struct nfs_server *server = NFS_SB(sb);
-+	/*
-+	 * Make sure there are no outstanding ops to this server.
-+	 * If so, wait for them to finish before allowing the
-+	 * unmount to continue.
-+	 */
-+	wait_event(server->active_wq, atomic_read(&server->active) == 0);
-+}
-+
-+void nfs_sb_deactive(struct nfs_server *server)
-+{
-+	if (atomic_dec_and_test(&server->active))
-+		wake_up(&server->active_wq);
-+}
-+
- #ifdef CONFIG_NFS_V4
- 
- /*
-@@ -1771,17 +1788,6 @@ static void nfs4_kill_super(struct super
- 	nfs_free_server(server);
- }
- 
--static void nfs_put_super(struct super_block *sb)
--{
--	struct nfs_server *server = NFS_SB(sb);
--	/*
--	 * Make sure there are no outstanding ops to this server.
--	 * If so, wait for them to finish before allowing the
--	 * unmount to continue.
--	 */
--	wait_event(server->active_wq, atomic_read(&server->active) == 0);
--}
--
- /*
-  * Clone an NFS4 server record on xdev traversal (FSID-change)
-  */
-@@ -1929,10 +1935,4 @@ error_splat_super:
- 	return error;
- }
- 
--void nfs_sb_deactive(struct nfs_server *server)
--{
--	if (atomic_dec_and_test(&server->active))
--		wake_up(&server->active_wq);
--}
--
- #endif /* CONFIG_NFS_V4 */
+Auke
