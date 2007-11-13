@@ -1,98 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757111AbXKMAms@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758453AbXKMAnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757111AbXKMAms (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 19:42:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbXKMAmj
+	id S1758453AbXKMAnF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 19:43:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757419AbXKMAmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 19:42:39 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45123 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751029AbXKMAmi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 19:42:38 -0500
-Date: Mon, 12 Nov 2007 16:42:37 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <ak@suse.de>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Mel Gorman <mel@csn.ul.ie>, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: x86_64: Make sparsemem/vmemmap the default memory model
-In-Reply-To: <200711130059.34346.ak@suse.de>
-Message-ID: <Pine.LNX.4.64.0711121615120.29328@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0711121549370.29178@schroedinger.engr.sgi.com>
- <200711130059.34346.ak@suse.de>
+	Mon, 12 Nov 2007 19:42:51 -0500
+Received: from mail.cs.tut.fi ([130.230.4.42]:54166 "EHLO mail.cs.tut.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757299AbXKMAmt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 19:42:49 -0500
+Date: Tue, 13 Nov 2007 02:12:23 +0200
+From: Tuomo Valkonen <tuomov@iki.fi>
+To: Matthias Schniedermeyer <ms@citd.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [poll] Is the megafreeze development model broken?
+Message-ID: <20071113001223.GA15663@jolt.modeemi.cs.tut.fi>
+References: <fgtfqa$h9j$1@ger.gmane.org> <m1sl3b4t5k.fsf@ebiederm.dsl.xmission.com> <slrnfjgmit.l07.tuomov@jolt.modeemi.cs.tut.fi> <20071112152057.GJ9771@stusta.de> <47387BB5.4090908@smsglobal.net> <20071112171456.GN9771@stusta.de> <slrnfjh2nn.aam.tuomov@jolt.modeemi.cs.tut.fi> <20071112233955.GA25059@citd.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20071112233955.GA25059@citd.de>
+X-Archive: encrypt
+X-PGP-Fingerprint: 3B2A 89E6 9468 6DC4 FEEF  D6F6 D00C A21E C004 251B
+X-PGP-Key: http://modeemi.fi/~tuomov/gpg.txt.asc
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Nov 2007, Andi Kleen wrote:
-
-> On Tuesday 13 November 2007 00:52:14 Christoph Lameter wrote:
-> > Use sparsemem as the only memory model for UP, SMP and NUMA.
-> > 
-> > Measurements indicate that DISCONTIGMEM has a higher
-> > overhead than sparsemem. And FLATMEMs benefits are minimal. So I think its
-> > best to simply standardize on sparsemem.
+On 2007-11-13 00:39 +0100, Matthias Schniedermeyer wrote:
+> That's the problem(tm).
 > 
-> How about the memory overhead? Is it the same too?
-> And code size vs flatmem?
+> Contrary to Closed Source Software all(!) OSS-Software is 
+> interdependent. There is no "Stand-Alone"-Software. There is always at 
+> least "libc". (Scripts depend on a script-interpreter, which in turn 
+> depends at least on libc, so there is nothing(tm) that doesn't depend on 
+> libc)
 
-SMP Sparsemem
--------------
+Closed source software also depends on other software, but the
+non-standard dependencies are usually distributed along with the
+main program, which are more often big applications than small 
+combinable utilities, than in FOSS.
 
-Kernel size:
+In FOSS, OTOH, dependencies are no distributed along with the main
+software, and now when programs depend on different versions of
+a library, the brain-damaged all-in-one-basket *nix file system 
+hierarchy results in trouble.
 
-   text    data     bss     dec     hex filename
-3849268  397739 1264856 5511863  541ab7 vmlinux
+An intermediate is needed between those two extremes: separately
+distributed dependencies that do not conflict. If packages lived 
+in their own directories, and were relocatable, multiple versions
+could more easily coexist, and packages specify the versions they
+work with (or rather, more abstract cryptographically identified
+capabilities that they require). Of course, there are other 
+potential conflicts besides library versions and their locations,
+such as the protocol used by some essential system daemon, but 
+these are encountered far less often, and could sometimes be 
+solved by e.g. a package providing a wrapper capability.
 
-             total       used       free     shared    buffers     cached
-Mem:       8242252      41164    8201088          0        352      11512
--/+ buffers/cache:      29300    8212952
-Swap:      9775512          0    9775512
+Also, what if distributions would simply go in, say, /debian-etch/,
+/fedora-core4/, and so on? You could then to a great extent run 
+multiple simultaneously, just having to choose a few services 
+from one of them that the others would have to use, and hopefully
+work with, as well as a kernel. The problems are not insurmountable:
+you can already run another OS in a virtual machine and set DISPLAY 
+point to your main OS, although it's a bit cumbersome.
 
-SMP Flatmem
------------
-
-Kernel size:
-
-   text    data     bss     dec     hex filename
-3844612  397739 1264536 5506887  540747 vmlinux
-
-So 4.5k growth in text size vs. FLATMEM.
-
-             total       used       free     shared    buffers     cached
-Mem:       8244052      40544    8203508          0        352      11484
--/+ buffers/cache:      28708    8215344
-
-2k growth in overall memory use after boot.
-
-
-
-NUMA discontig:
-
-   text    data     bss     dec     hex filename
-3888124  470659 1276504 5635287  55fcd7 vmlinux
-
-             total       used       free     shared    buffers     cached
-Mem:       8256256      56908    8199348          0        352      11496
--/+ buffers/cache:      45060    8211196
-Swap:      9775512          0    9775512
-
-NUMA sparse:
-
-   text    data     bss     dec     hex filename
-3896428  470659 1276824 5643911  561e87 vmlinux
-
-
-8k text growth. Given that we fully inline virt_to_page and friends now 
-that is rather good.
-
-             total       used       free     shared    buffers     cached
-Mem:       8264720      57240    8207480          0        352      11516
--/+ buffers/cache:      45372    8219348
-Swap:      9775512          0    9775512
-
-Hmmm... More memory free? How did that happen? More pages cached for some 
-reason. The total available memory is increased by 8k.
-
+-- 
+Tuomo
