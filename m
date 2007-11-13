@@ -1,41 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbXKMLkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757773AbXKMLki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757355AbXKMLkV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 06:40:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755116AbXKMLj4
+	id S1757773AbXKMLki (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 06:40:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757379AbXKMLkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 06:39:56 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:34813 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754812AbXKMLjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 06:39:55 -0500
-Date: Tue, 13 Nov 2007 12:41:35 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: linux-kernel@vger.kernel.org, josh@freedesktop.org
-Subject: Re: [2.6.24-rc2] make C=1 killed by sparse 0.4 choking on kernel/sched.c
-Message-ID: <20071113114135.GA30627@uranus.ravnborg.org>
-References: <47398255.3030309@imap.cc>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 13 Nov 2007 06:40:22 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:38359 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756062AbXKMLkU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 06:40:20 -0500
+Date: Tue, 13 Nov 2007 12:39:57 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Jakub Jelinek <jakub@redhat.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC: 2.6 patch] add -fno-tree-scev-cprop to KBUILD_CFLAGS
+Message-ID: <20071113113957.GB4250@stusta.de>
+References: <20071111064829.GG21669@stusta.de> <20071112165843.GF5451@devserv.devel.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <47398255.3030309@imap.cc>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20071112165843.GF5451@devserv.devel.redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Nov 12, 2007 at 11:58:43AM -0500, Jakub Jelinek wrote:
+> On Sun, Nov 11, 2007 at 07:48:29AM +0100, Adrian Bunk wrote:
+> > The gcc from svn that will become gcc 4.3 generates libgcc calls in 
+> > cases like the following (on 32bit architectures):
+> > 
+> > <--  snip  -->
+> > 
+> > static inline void timespec_add_ns(struct timespec *a, u64 ns)
+> > {
+> > ...
+> >         while(ns >= NSEC_PER_SEC) {
+> >                 ns -= NSEC_PER_SEC;
+> >                 a->tv_sec++;
+> >         }
+> > ...
+> > 
+> > <--  snip  -->
 > 
-> I don't quite know what to make of this. It looks like a bug in
-> sparse, but kernel/sched.c is perhaps not quite innocent either.
-> Also it doesn't seem right that the entire kernel compilation
-> aborts just because of a failed sparse run.
-> 
-> Opinions?
+> Blindly using -fno-tree-scev-cprop just to get rid of one case where
+> this turns out to be a pessimization when kernel knows ns is usually very
+> small is IMHO a wrong thing, you'd lose many cases where this optimization
+> can actually improve performance.
 
-With "make C=1" you can always do "make kernel/sched.o"
-And then continue with "make C=1"
+It's not about performance, it's about a build error.
 
-It is on purpose it stops so you are forced to fix your bugs.
-It is not designed with sparse errors in mind :-)
+> Instead, for this exact case just
+> add an optimization barrier to avoid gcc doing this.
+> Adding asm ("" : "=r" (ns) : "0" (ns)); (or hide it in some macro) into the
+> loop will do the job just fine.
 
-	Sam
+The problem is that this is very fragile - imagine what might happen 
+when a frequently used struct member gets changed from int to u64.
+
+After all, when looking at current practice, the kernel will support 
+being built with gcc 4.3 until 2013 or 2014.
+
+> 	Jakub
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
