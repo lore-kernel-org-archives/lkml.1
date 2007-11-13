@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759333AbXKMDHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760039AbXKMDJw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759333AbXKMDHj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 22:07:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbXKMDHb
+	id S1760039AbXKMDJw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 22:09:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754389AbXKMDJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 22:07:31 -0500
-Received: from www262.sakura.ne.jp ([202.181.97.72]:63608 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752138AbXKMDHa (ORCPT
+	Mon, 12 Nov 2007 22:09:44 -0500
+Received: from nz-out-0506.google.com ([64.233.162.233]:58468 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753209AbXKMDJn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 22:07:30 -0500
-Message-Id: <200711130307.lAD37Nee045340@www262.sakura.ne.jp>
-Subject: [PATCH] sysctl: Check length at deprecated_sysctl_warning.
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-To: akpm@linux-foundation.org
-Cc: ebiederm@xmission.com, linux-kernel@vger.kernel.org
+	Mon, 12 Nov 2007 22:09:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=o54Awx6lxkKVFfngR/DM/tL+ehmkgEQ3Ao8YWoKBBTcDjAMDDrQADZMOQdDmeAWYijp3gM2itTwzdv1YRBSYk9ge70wEWk6kq/vgSV5qYgC3SR5glq5R50vaaKJWG26oXvd+qChVVaY5BuTVK4uK4P3g1PM5TCmPxGphSaZSmec=
+Message-ID: <ed10ee420711121909y3e0f84d0hd07c331a9a0aba66@mail.gmail.com>
+Date: Mon, 12 Nov 2007 19:09:42 -0800
+From: "SL Baur" <steve@xemacs.org>
+To: "David Howells" <dhowells@redhat.com>
+Subject: Re: [PATCH 1/6] Suppress A.OUT library support if !CONFIG_BINFMT_AOUT [try #5]
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-am33-list@redhat.com
+In-Reply-To: <17306.1194909291@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-2022-JP"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Tue, 13 Nov 2007 12:07:23 +0900
-References: <200711080257.lA82vQfA015942@www262.sakura.ne.jp> <20071107192211.c1c22e97.akpm@linux-foundation.org> <200711080819.lA88J8Pv072259@www262.sakura.ne.jp> <m14pfr6bnf.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m14pfr6bnf.fsf@ebiederm.dsl.xmission.com>
+Content-Disposition: inline
+References: <20071110181416.31dc2614.akpm@linux-foundation.org>
+	 <20071109153432.20803.69832.stgit@warthog.procyon.org.uk>
+	 <20071109153437.20803.55096.stgit@warthog.procyon.org.uk>
+	 <6214.1194881680@redhat.com>
+	 <20071112115353.227f35cb.akpm@linux-foundation.org>
+	 <ed10ee420711121450m5aec7c06vf4481ebad944d706@mail.gmail.com>
+	 <17306.1194909291@redhat.com>
+X-Google-Sender-Auth: b7f4aeed4aef5d03
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew, please replace previous patch with this one.
-This one returns -ENOTDIR.
-----------
+On 11/12/07, David Howells <dhowells@redhat.com> wrote:
+> SL Baur <steve@xemacs.org> wrote:
+>
+> > (push '("/Kbuild" . makefile-mode) auto-mode-alist)
+>
+> Does that work for Kbuild.asm too, more to the point?
 
-Original patch forgot to check args->nlen.
-I don't know why args->nlen == CTL_MAXNAME is rejected,
-but it has been rejected traditionally.
+Of course.  It works for any filename beginning with the string "Kbuild".  Major
+mode rules are on a first match basis, so you have to make sure this rule is
+ahead of the .asm rule.  I'll push a patch to the XEmacs guys so it works this
+way by default, someone else can deal with Stallman.
 
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
+Please take the emacsism out of the file as it bothers Andrew and others.
 
- kernel/sysctl.c |    4 ++++
- 1 file changed, 4 insertions(+)
-
-diff -puN kernel/sysctl.c~sysctl-check-length-at-deprecated_sysctl_warning kernel/sysctl.c
---- a/kernel/sysctl.c~sysctl-check-length-at-deprecated_sysctl_warning
-+++ a/kernel/sysctl.c
-@@ -2609,6 +2609,10 @@ static int deprecated_sysctl_warning(str
- 	int name[CTL_MAXNAME];
- 	int i;
- 
-+	/* Check args->nlen. */
-+	if (args->nlen <= 0 || args->nlen >= CTL_MAXNAME)
-+		return -ENOTDIR;
-+
- 	/* Read in the sysctl name for better debug message logging */
- 	for (i = 0; i < args->nlen; i++)
- 		if (get_user(name[i], args->name + i))
+-sb
