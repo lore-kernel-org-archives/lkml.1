@@ -1,57 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762347AbXKMVAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762140AbXKMVCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762347AbXKMVAn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 16:00:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756717AbXKMVAf
+	id S1762140AbXKMVCS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 16:02:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759148AbXKMVCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 16:00:35 -0500
-Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:2601 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759380AbXKMVAe (ORCPT
+	Tue, 13 Nov 2007 16:02:10 -0500
+Received: from www17.your-server.de ([213.133.104.17]:60213 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757407AbXKMVCJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 16:00:34 -0500
-Date: Tue, 13 Nov 2007 22:00:30 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: "Mark M. Hoffman" <mhoffman@lightlink.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>
-Subject: Re: [lm-sensors] [GIT PATCH] hwmon updates against v2.6.24-rc2
-Message-ID: <20071113220030.6dd5e0d7@hyperion.delvare>
-In-Reply-To: <20071113131210.GA2674@jupiter.solarsys.private>
-References: <20071113131210.GA2674@jupiter.solarsys.private>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 13 Nov 2007 16:02:09 -0500
+Message-ID: <473A10C2.6040102@m3y3r.de>
+Date: Tue, 13 Nov 2007 22:01:54 +0100
+From: Thomas Meyer <thomas@m3y3r.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: v2.6.24-rc2-409-g9418d5d: attempt to access beyond end of device
+References: <4739F112.5060604@m3y3r.de>
+In-Reply-To: <4739F112.5060604@m3y3r.de>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mark,
+Thomas Meyer schrieb:
+> i get these errors in the kernel log while trying to copy a file from an
+> iso9660 file system (/dev/sr0) to my intenal hard disk. This is the
+> second cd/dvd that gives me this error. kernel 2.6.23 works without any
+> problems, so i think this is not an medium error:
+>
+> ISO 9660 Extensions: Microsoft Joliet Level 3
+> ISOFS: changing to secondary root
+> attempt to access beyond end of device
+> sr0: rw=0, want=81220, limit=40944
+> Buffer I/O error on device sr0, logical block 20304
+> attempt to access beyond end of device
+> sr0: rw=0, want=81224, limit=40944
+> Buffer I/O error on device sr0, logical block 20305
+> attempt to access beyond end of device
+> sr0: rw=0, want=81228, limit=40944
+> Buffer I/O error on device sr0, logical block 20306
+> attempt to access beyond end of device
+> sr0: rw=0, want=81232, limit=40944
+> Buffer I/O error on device sr0, logical block 20307
+> attempt to access beyond end of device
+> sr0: rw=0, want=81236, limit=40944
+> Buffer I/O error on device sr0, logical block 20308
+> attempt to access beyond end of device
+> sr0: rw=0, want=81240, limit=40944
+> Buffer I/O error on device sr0, logical block 20309
+> attempt to access beyond end of device
+> sr0: rw=0, want=81244, limit=40944
+> Buffer I/O error on device sr0, logical block 20310
+> attempt to access beyond end of device
+> sr0: rw=0, want=81248, limit=40944
+> Buffer I/O error on device sr0, logical block 20311
+> attempt to access beyond end of device
+> sr0: rw=0, want=81220, limit=40944
+> Buffer I/O error on device sr0, logical block 20304
+> attempt to access beyond end of device
+> sr0: rw=0, want=81224, limit=40944
+> Buffer I/O error on device sr0, logical block 20305
+> attempt to access beyond end of device
+> sr0: rw=0, want=1028968, limit=40944
+> Buffer I/O error on device sr0, logical block 257241
+> attempt to access beyond end of device
+> sr0: rw=0, want=1028972, limit=40944
+> Buffer I/O error on device sr0, logical block 257242
+> attempt to access beyond end of device
+> sr0: rw=0, want=1028976, limit=40944
+> attempt to access beyond end of device
+> sr0: rw=0, want=1028980, limit=40944
+> attempt to access beyond end of device
+> sr0: rw=0, want=1028984, limit=40944
+> attempt to access beyond end of device
+> sr0: rw=0, want=1028988, limit=40944
+> attempt to access beyond end of device
+> sr0: rw=0, want=1028992, limit=40944
+> attempt to access beyond end of device
+> sr0: rw=0, want=1028996, limit=40944
+> attempt to access beyond end of device
+> sr0: rw=0, want=1028968, limit=40944
+> attempt to access beyond end of device
+> sr0: rw=0, want=1028972, limit=40944
+>
+> does anybody have similiar problems with current linus kernel?
+>   
+I have a question: How to find out between which two tags a given commit
+lies?
 
-On Tue, 13 Nov 2007 08:12:10 -0500, Mark M. Hoffman wrote:
-> Hi Linus:
-> 
-> Please pull from:
-> 	git://lm-sensors.org/kernel/mhoffman/hwmon-2.6.git release
-> 
-> You'll get one new driver, a few cleanups, and a few bugfixes.  This
-> takes care of all known regressions; hopefully it's the last you hear
-> from me before 2.6.24-final.
-> 
-> Note: the f75375s/n2100 patches especially are critical to avoid
-> possible overheating problems on that platform (yay crappy BIOS).
-> 
-> All of these patches have spent considerable time in -mm.
+E.g. commit 6f5391c283d7fdcf24bf40786ea79061919d1e1d ([SCSI] Get rid of
+scsi_cmnd->done), which is the last commit that changed drivers/scsi/sr.c
 
-Let me have a doubt, considering that the last public -mm kernel was
-released over a month ago (October 12th), which is before your previous
-pull request (October 14th). I don't think that any of these patches
-has been in even one public -mm tree, so in practice they probably
-didn't receive any public testing at all.
+i now discovered (using gitk and a lot of scolling) that above commit is
+after v2.6.23 but before v2.6.24-rc1 (so it is a possible offender)
 
-Now let's hope that nothing breaks.
+You see i am just too lazy to bisect (and reboot 20th times or so) and i
+just wanted to try my luck and revert the last
+ commit and see if this fixes my problem.
 
--- 
-Jean Delvare
+By the way:
+Reverting commit 6f5391c283d7fdcf24bf40786ea79061919d1e1d makes the same
+cd medium readable again on v2.6.24-rc2-409-g9418d5d.
+
+mfg
+thomas
