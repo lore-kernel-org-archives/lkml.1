@@ -1,122 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762609AbXKMTnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762733AbXKMTnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762609AbXKMTnZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 14:43:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761316AbXKMTlU
+	id S1762733AbXKMTnm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 14:43:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761079AbXKMTmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 14:41:20 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:47710 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760217AbXKMTlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 14:41:18 -0500
-Message-Id: <20071113194025.807441753@polymtl.ca>
-References: <20071113193349.214098508@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Tue, 13 Nov 2007 14:33:56 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mike Mason <mmlnx@us.ibm.com>, David Wilder <dwilder@us.ibm.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [RFC 7/7] Add Markers Into Semaphore Primitives
-Content-Disposition: inline; filename=add-markers-into-semaphore-primitives.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 13 Nov 2007 19:40:26 +0000
+	Tue, 13 Nov 2007 14:42:12 -0500
+Received: from postfix2-g20.free.fr ([212.27.60.43]:43230 "EHLO
+	postfix2-g20.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761969AbXKMTmL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 14:42:11 -0500
+Message-ID: <4739FDBA.5010102@free.fr>
+Date: Tue, 13 Nov 2007 20:40:42 +0100
+From: Thierry Merle <thierry.merle@free.fr>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
+MIME-Version: 1.0
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+CC: Markus Hirschmann <mh@durtro.de>, jayakumar.video@gmail.com,
+       Christian Magnusson <mag@mag.cx>, dtor@mail.ru,
+       linux-kernel@vger.kernel.org
+Subject: Re: Problems using quickcam_messenger on ARM (FYI)
+References: <4730A379.9060706@durtro.de> <1194863992.8662.65.camel@gaivota>
+In-Reply-To: <1194863992.8662.65.camel@gaivota>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds several markers around semaphore primitives.
-Along with a tracing application this patch can be useful for measuring
-kernel semaphore usage and contention.
+Hi Mauro,
+Mauro Carvalho Chehab a écrit :
+> Em Ter, 2007-11-06 às 18:25 +0100, Markus Hirschmann escreveu:
+>   
+>> Hello Kernel-Developer,
+>>
+>> Module quickcam_messenger seems to be broken (tried 2.6.18 and 2.6.22)
+>> on 2 different NSLU2 (ARM). Picture is attached. Same kernel and module 
+>> can be used without any problems on x86 here. I don't have any ARM 
+>> device beside the NSLU2, so I cannot check.
+>>
+>> The solution was to use Christian Magnusson's quickcam module. 
+>> Everything worked without any problem. Webcam is:
+>>     
+>
+> Hmm... you're mentioning the quickcam module, but some of your logs are
+> related to usbvideo driver.
+>
+> On a quick glance, I didn't find anything that could explain your
+> troubles. It seems to be related to a wrong order at the output format
+> (for example, the driver is sending RGB, instead of BGR).
+>
+> It may also be an issue at the userspace application that is using the
+> wrong logic to deal with Big Endian.
+>
+>   
+The NSLU2 is based on a IXP420 processor that can change its endianess.
+I suppose Markus has installed the debian-arm distribution on his NSLU2
+so it is configured as little-endian.
+Nevertheless, I took a look at the code of quickcam messenger that is in
+usbvideo/
+This macro: RGB24_PUTPIXEL puts in memory the following bytes:
+                *pf++ = (vb);
+                *pf++ = (vg);
+                *pf++ = (vr);
+vb, vg, vr are blue, green, red values.
+Since the driver is still v4l1 this can be normal(?)
 
-Signed-off-by: Mike Mason <mmlnx@us.ibm.com>
-Signed-off-by: David Wilder <dwilder@us.ibm.com>
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
----
- lib/semaphore-sleepers.c |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
-
-diff --git a/lib/semaphore-sleepers.c b/lib/semaphore-sleepers.c
-index 1281805..5343a96 100644
---- a/lib/semaphore-sleepers.c
-+++ b/lib/semaphore-sleepers.c
-@@ -15,6 +15,7 @@
- #include <linux/sched.h>
- #include <linux/err.h>
- #include <linux/init.h>
-+#include <linux/marker.h>
- #include <asm/semaphore.h>
- 
- /*
-@@ -50,6 +51,7 @@
- 
- fastcall void __up(struct semaphore *sem)
- {
-+	trace_mark(sem_up, "%p", sem);
- 	wake_up(&sem->wait);
- }
- 
-@@ -59,6 +61,7 @@ fastcall void __sched __down(struct semaphore * sem)
- 	DECLARE_WAITQUEUE(wait, tsk);
- 	unsigned long flags;
- 
-+	trace_mark(sem_down, "%p", sem);
- 	tsk->state = TASK_UNINTERRUPTIBLE;
- 	spin_lock_irqsave(&sem->wait.lock, flags);
- 	add_wait_queue_exclusive_locked(&sem->wait, &wait);
-@@ -73,12 +76,14 @@ fastcall void __sched __down(struct semaphore * sem)
- 		 * the wait_queue_head.
- 		 */
- 		if (!atomic_add_negative(sleepers - 1, &sem->count)) {
-+			trace_mark(sem_down_resume, "%p", sem);
- 			sem->sleepers = 0;
- 			break;
- 		}
- 		sem->sleepers = 1;	/* us - see -1 above */
- 		spin_unlock_irqrestore(&sem->wait.lock, flags);
- 
-+		trace_mark(sem_down_sched, "%p", sem);
- 		schedule();
- 
- 		spin_lock_irqsave(&sem->wait.lock, flags);
-@@ -97,6 +102,7 @@ fastcall int __sched __down_interruptible(struct semaphore * sem)
- 	DECLARE_WAITQUEUE(wait, tsk);
- 	unsigned long flags;
- 
-+	trace_mark(sem_down_intr, "%p", sem);
- 	tsk->state = TASK_INTERRUPTIBLE;
- 	spin_lock_irqsave(&sem->wait.lock, flags);
- 	add_wait_queue_exclusive_locked(&sem->wait, &wait);
-@@ -113,6 +119,7 @@ fastcall int __sched __down_interruptible(struct semaphore * sem)
- 		 * and exit.
- 		 */
- 		if (signal_pending(current)) {
-+			trace_mark(sem_down_intr_fail, "%p", sem);
- 			retval = -EINTR;
- 			sem->sleepers = 0;
- 			atomic_add(sleepers, &sem->count);
-@@ -126,12 +133,14 @@ fastcall int __sched __down_interruptible(struct semaphore * sem)
- 		 * still hoping to get the semaphore.
- 		 */
- 		if (!atomic_add_negative(sleepers - 1, &sem->count)) {
-+			trace_mark(sem_down_intr_resume, "%p", sem);
- 			sem->sleepers = 0;
- 			break;
- 		}
- 		sem->sleepers = 1;	/* us - see -1 above */
- 		spin_unlock_irqrestore(&sem->wait.lock, flags);
- 
-+		trace_mark(sem_down_intr_sched, "%p", sem);
- 		schedule();
- 
- 		spin_lock_irqsave(&sem->wait.lock, flags);
-
-
--
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Cheers,
+Thierry
