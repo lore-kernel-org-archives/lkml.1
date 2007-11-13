@@ -1,120 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763522AbXKMVfe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763583AbXKMVgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763522AbXKMVfe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 16:35:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760724AbXKMVfV
+	id S1763583AbXKMVgV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 16:36:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759723AbXKMVgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 16:35:21 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:59597 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760860AbXKMVfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 16:35:18 -0500
-Date: Tue, 13 Nov 2007 22:35:14 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: rolandd@cisco.com, mshefty@ichips.intel.com, halr@voltaire.com,
-       openib-general@openib.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 3/4] drivers/infiniband: Drop redundant includes of moduleparam.h
-Message-ID: <Pine.LNX.4.64.0711132234110.18337@ask.diku.dk>
+	Tue, 13 Nov 2007 16:36:10 -0500
+Received: from wrzx28.rz.uni-wuerzburg.de ([132.187.3.28]:58495 "EHLO
+	mailrelay.rz.uni-wuerzburg.de" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1759657AbXKMVgJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 16:36:09 -0500
+Message-ID: <473A18C1.3030501@durtro.de>
+Date: Tue, 13 Nov 2007 22:36:01 +0100
+From: Markus Hirschmann <mh@durtro.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Thierry Merle <thierry.merle@free.fr>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, jayakumar.video@gmail.com,
+       Christian Magnusson <mag@mag.cx>, dtor@mail.ru,
+       linux-kernel@vger.kernel.org
+Subject: Re: Problems using quickcam_messenger on ARM (FYI)
+References: <4730A379.9060706@durtro.de> <1194863992.8662.65.camel@gaivota> <4739FDBA.5010102@free.fr>
+In-Reply-To: <4739FDBA.5010102@free.fr>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+Hi Thierry
 
-Drop #include <linux/moduleparam.h> in files that also include #include
-<linux/module.h>.  module.h includes moduleparam.h already.
+Thierry Merle wrote:
+> Hi Mauro,
+> Mauro Carvalho Chehab a écrit :
+>> Em Ter, 2007-11-06 às 18:25 +0100, Markus Hirschmann escreveu:
+>>   
+>>> Hello Kernel-Developer,
+>>>
+>>> Module quickcam_messenger seems to be broken (tried 2.6.18 and 2.6.22)
+>>> on 2 different NSLU2 (ARM). Picture is attached. Same kernel and module 
+>>> can be used without any problems on x86 here. I don't have any ARM 
+>>> device beside the NSLU2, so I cannot check.
+>>>
+>>> The solution was to use Christian Magnusson's quickcam module. 
+>>> Everything worked without any problem. Webcam is:
+>>>     
+>> Hmm... you're mentioning the quickcam module, but some of your logs are
+>> related to usbvideo driver.
+>>
+>> On a quick glance, I didn't find anything that could explain your
+>> troubles. It seems to be related to a wrong order at the output format
+>> (for example, the driver is sending RGB, instead of BGR).
+>>
+>> It may also be an issue at the userspace application that is using the
+>> wrong logic to deal with Big Endian.
+>>
+>>   
+> The NSLU2 is based on a IXP420 processor that can change its endianess.
+> I suppose Markus has installed the debian-arm distribution on his NSLU2
+> so it is configured as little-endian.
+> Nevertheless, I took a look at the code of quickcam messenger that is in
+> usbvideo/
+> This macro: RGB24_PUTPIXEL puts in memory the following bytes:
+>                 *pf++ = (vb);
+>                 *pf++ = (vg);
+>                 *pf++ = (vr);
+> vb, vg, vr are blue, green, red values.
+> Since the driver is still v4l1 this can be normal(?)
 
-The semantic patch implementing this change is as follows:
+Right, I forgot. Installed is the Debian ARM distribution. And I tried 
+serveral different applications (motion, vgrabbj).
 
-@ includesmodule @
-@@
+Best regards
 
-#include <linux/module.h>
-
-@ depends on includesmodule @
-@@
-
-- #include <linux/moduleparam.h>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
----
-
-diff -u -p -b -B a/drivers/infiniband/hw/amso1100/c2.c b/drivers/infiniband/hw/amso1100/c2.c
---- a/drivers/infiniband/hw/amso1100/c2.c 2007-10-22 11:25:09.000000000 +0200
-+++ b/drivers/infiniband/hw/amso1100/c2.c 2007-11-13 17:50:03.000000000 +0100
-@@ -31,7 +31,6 @@
-   * SOFTWARE.
-   */
-  #include <linux/module.h>
--#include <linux/moduleparam.h>
-  #include <linux/pci.h>
-  #include <linux/netdevice.h>
-  #include <linux/etherdevice.h>
-diff -u -p -b -B a/drivers/infiniband/hw/amso1100/c2_provider.c b/drivers/infiniband/hw/amso1100/c2_provider.c
---- a/drivers/infiniband/hw/amso1100/c2_provider.c 2007-10-22 11:25:09.000000000 +0200
-+++ b/drivers/infiniband/hw/amso1100/c2_provider.c 2007-11-13 17:50:05.000000000 +0100
-@@ -33,7 +33,6 @@
-   */
-
-  #include <linux/module.h>
--#include <linux/moduleparam.h>
-  #include <linux/pci.h>
-  #include <linux/netdevice.h>
-  #include <linux/etherdevice.h>
-diff -u -p -b -B a/drivers/infiniband/hw/amso1100/c2_rnic.c b/drivers/infiniband/hw/amso1100/c2_rnic.c
---- a/drivers/infiniband/hw/amso1100/c2_rnic.c 2007-02-09 17:34:09.000000000 +0100
-+++ b/drivers/infiniband/hw/amso1100/c2_rnic.c 2007-11-13 17:50:06.000000000 +0100
-@@ -34,7 +34,6 @@
-
-
-  #include <linux/module.h>
--#include <linux/moduleparam.h>
-  #include <linux/pci.h>
-  #include <linux/netdevice.h>
-  #include <linux/etherdevice.h>
-diff -u -p -b -B a/drivers/infiniband/hw/ehca/ehca_tools.h b/drivers/infiniband/hw/ehca/ehca_tools.h
---- a/drivers/infiniband/hw/ehca/ehca_tools.h 2007-10-22 11:25:09.000000000 +0200
-+++ b/drivers/infiniband/hw/ehca/ehca_tools.h 2007-11-13 17:50:06.000000000 +0100
-@@ -52,7 +52,6 @@
-  #include <linux/mm.h>
-  #include <linux/mman.h>
-  #include <linux/module.h>
--#include <linux/moduleparam.h>
-  #include <linux/vmalloc.h>
-  #include <linux/version.h>
-  #include <linux/notifier.h>
-diff -u -p -b -B a/drivers/infiniband/hw/mthca/mthca_profile.c b/drivers/infiniband/hw/mthca/mthca_profile.c
---- a/drivers/infiniband/hw/mthca/mthca_profile.c 2007-06-02 22:32:12.000000000 +0200
-+++ b/drivers/infiniband/hw/mthca/mthca_profile.c 2007-11-13 17:50:23.000000000 +0100
-@@ -34,7 +34,6 @@
-   */
-
-  #include <linux/module.h>
--#include <linux/moduleparam.h>
-  #include <linux/string.h>
-  #include <linux/slab.h>
-
-diff -u -p -b -B a/drivers/infiniband/hw/cxgb3/iwch.c b/drivers/infiniband/hw/cxgb3/iwch.c
---- a/drivers/infiniband/hw/cxgb3/iwch.c 2007-06-02 22:32:12.000000000 +0200
-+++ b/drivers/infiniband/hw/cxgb3/iwch.c 2007-11-13 17:50:25.000000000 +0100
-@@ -30,7 +30,6 @@
-   * SOFTWARE.
-   */
-  #include <linux/module.h>
--#include <linux/moduleparam.h>
-
-  #include <rdma/ib_verbs.h>
-
-diff -u -p -b -B a/drivers/infiniband/hw/cxgb3/iwch_provider.c b/drivers/infiniband/hw/cxgb3/iwch_provider.c
---- a/drivers/infiniband/hw/cxgb3/iwch_provider.c 2007-07-20 17:45:46.000000000 +0200
-+++ b/drivers/infiniband/hw/cxgb3/iwch_provider.c 2007-11-13 17:50:27.000000000 +0100
-@@ -30,7 +30,6 @@
-   * SOFTWARE.
-   */
-  #include <linux/module.h>
--#include <linux/moduleparam.h>
-  #include <linux/device.h>
-  #include <linux/netdevice.h>
-  #include <linux/etherdevice.h>
+Markus
