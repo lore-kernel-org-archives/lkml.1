@@ -1,96 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762270AbXKMUnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762320AbXKMUpd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762270AbXKMUnb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 15:43:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756857AbXKMUnV
+	id S1762320AbXKMUpd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 15:45:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759599AbXKMUpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 15:43:21 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39763 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756705AbXKMUnU (ORCPT
+	Tue, 13 Nov 2007 15:45:21 -0500
+Received: from smtp02.colorado.edu ([128.138.128.142]:40850 "EHLO
+	smtp02.Colorado.EDU" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757874AbXKMUpU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 15:43:20 -0500
-Date: Tue, 13 Nov 2007 12:43:02 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Introduce ext4_find_next_bit
-Message-Id: <20071113124302.3eb4aa9d.akpm@linux-foundation.org>
-In-Reply-To: <4739F6C7.90408@linux.vnet.ibm.com>
-References: <11903523063349-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-	<20071112235910.35a635e4.akpm@linux-foundation.org>
-	<4739F6C7.90408@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 13 Nov 2007 15:45:20 -0500
+X-Greylist: delayed 1184 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Nov 2007 15:45:20 EST
+X-ASG-Debug-ID: 1194985533-5acd010f0000-xx1T2L
+X-Barracuda-URL: http://128.138.128.142:8000/cgi-bin/mark.cgi
+Message-ID: <473A07E4.3050004@colorado.edu>
+Date: Tue, 13 Nov 2007 13:24:04 -0700
+From: Eric Schoeller <eric.schoeller@colorado.edu>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+X-ASG-Orig-Subj: Enabling Magic SysRq Key on boot before INIT
+Subject: Enabling Magic SysRq Key on boot before INIT
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Barracuda-Connect: omr-raz-2-pub.colorado.edu[128.138.123.155]
+X-Barracuda-Start-Time: 1194985533
+X-Barracuda-Virus-Scanned: by Barracuda Spam Firewall at Colorado.EDU
+X-Barracuda-Spam-Score: 0.00
+X-Barracuda-Spam-Status: No, SCORE=0.00 using global scores of TAG_LEVEL=1000.0 QUARANTINE_LEVEL=1000.0 KILL_LEVEL=8.0 tests=
+X-Barracuda-Spam-Report: Code version 3.1, rules version 3.1.33804
+	Rule breakdown below
+	 pts rule name              description
+	---- ---------------------- --------------------------------------------------
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Nov 2007 00:41:03 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+Hello,
 
-> 
-> 
-> Andrew Morton wrote:
-> > On Fri, 21 Sep 2007 10:55:05 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
-> > 
-> >> Also add generic_find_next_le_bit
-> >>
-> >> This gets used by the ext4 multi block allocator patches.
-> >>
-> > 
-> > arm allmodconfig:
-> > 
-> > fs/ext4/mballoc.c: In function `ext4_mb_generate_buddy':
-> > fs/ext4/mballoc.c:836: error: implicit declaration of function `ext2_find_next_bit'
-> > 
-> > This patch makes my head spin.
-> > 
-> > Why did we declare generic_find_next_le_bit() in
-> > include/asm-powerpc/bitops.h (wrong) as well as in
-> > include/asm-generic/bitops/le.h (presumably correct)?
-> > 
-> 
-> I was following the coding style used for rest of the APIs
-> like ext4_set_bit.
+I would like to enable the Magic SysRq key immediately when the linux
+kernel starts to boot, not when INIT begins. So, I am familiar with the
+sysctl command and /etc/sysctl.conf - but I'd like to modify these types
+of kernel variables earlier in the boot process. I thought that I could,
+perhaps, pass an argument to my "kernel" line in my bootloader (grub)
+configuration, but I have not been able to figure that out.
 
-Well.  There's quite a bit of cruft in there.  If you do come across
-something which isn't right, please do try to find the time to fix it up
-first.
+Is this possible?
 
-That might be non-trivial - powerpc does seem to have gone off on a strange
-tangent there.
+Thanks,
 
-> 
-> > Why is it touching a powerpc file and no any other architectures? 
-> > Something screwed up in powerpc land?
-> > 
-> > And why did arm break?
-> 
-> arm and below list of arch doesn't include the asm-generic/bitops/ext2-non-atomic.h 
-> 
-> I did a grep and that list the below architectures as also affected.
-> arm, m68k, m68knommu, s390
-> 
-> > 
-> > Shudder.  Anyway, please fix, and if that fix requires that various
-> > braindamaged be repaired, please repair the braindamage rather than going
-> > along with it.
-> > 
-> > 
-> 
-> That should be a separate patch altogether. I wanted to do the cleanup
-> along with the usages such as but never got time to do the same.
-> 
-> #define ocfs2_set_bit ext2_set_bit
-> #define udf_set_bit(nr,addr) ext2_set_bit(nr,addr)
-> direct usage in mb
-> md/bitmap.c +799
-> md/dm-log.c +177
-> 
-> I will send a patch tomorrow that fix  arm and other architectures. I guess the cleanup
-> can be a separate patch ? 
-> 
-
-Yes, that's a separate work, thanks.
+Eric Schoeller
+Infrastructure Systems and Services
+University of Colorado, Boulder
 
