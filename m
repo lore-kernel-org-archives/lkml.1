@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758113AbXKMPfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758485AbXKMPhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758113AbXKMPfi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 10:35:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754498AbXKMPfb
+	id S1758485AbXKMPhz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 10:37:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbXKMPho
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 10:35:31 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:46628 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754039AbXKMPfa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 10:35:30 -0500
-Message-ID: <4739C42F.8030208@redhat.com>
-Date: Tue, 13 Nov 2007 10:35:11 -0500
-From: William Cohen <wcohen@redhat.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070926)
-MIME-Version: 1.0
-To: Robert Richter <robert.richter@amd.com>
-CC: Andi Kleen <andi@firstfloor.org>, akpm@osdl.org, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, perfmon2-devel@lists.sourceforge.net
-Subject: Re: [perfmon2] perfmon2 merge news
-References: <20071107003454.GA13374@kroah.com>	<20071109120627.60ec9ab4.akpm@linux-foundation.org>	<20071109213829.GC28276@kroah.com> <p73abpl2654.fsf@bingen.suse.de> <20071113151718.GA3804@erda.amd.com>
-In-Reply-To: <20071113151718.GA3804@erda.amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 13 Nov 2007 10:37:44 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35586 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754044AbXKMPhn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 10:37:43 -0500
+Date: Tue, 13 Nov 2007 15:36:31 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Natalie Protasevich" <protasnb@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, alsa-devel@alsa-project.org,
+       linux-ide@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-input@atrey.karlin.mff.cuni.cz, bugme-daemon@bugzilla.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+Message-ID: <20071113153631.55b2ece2@the-village.bc.nu>
+In-Reply-To: <20071113031553.3c7b5c16.akpm@linux-foundation.org>
+References: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com>
+	<20071113031553.3c7b5c16.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Richter wrote:
-> On 10.11.07 21:32:39, Andi Kleen wrote:
->> It would be really good to extract a core perfmon and start with
->> that and then add stuff as it makes sense.
->>
->> e.g. core perfmon could be something simple like just support
->> to context switch state and initialize counters in a basic way 
->> and perhaps get counter numbers for RDPMC in ring3 on x86[1]
+> > pata_pdc202xx_old excessive ATA bus errors
+> > http://bugzilla.kernel.org/show_bug.cgi?id=9337
+> > 2.6.24-rc2
 > 
-> Perhaps a core could provide also as much functionality so that
-> Perfmon can be used with an *unpatched* kernel using loadable modules?
-> One drawback with today's Perfmon is that it can not be used with a
-> vanilla kernel. But maybe such a core is by far too complex for a
-> first merge.
+> No response from developers
+
+Untrue. We've been discussing it on list in the past and its now on
+bugzilla. Not obvious from outside I realise. That one I'm afraid is
+probably a longer term item.
+
+> > DVD-RAM umount and disk free bug
+> > http://bugzilla.kernel.org/show_bug.cgi?id=9265
+> > Kernel: 2.6.15  (asked to try current kernel)
 > 
-> -Robert
+> No response from developers
+
+Not actually sure who is looking after this now ?
+
+> > LPC IT8705 POST port making noise on parallel port
+> > http://bugzilla.kernel.org/show_bug.cgi?id=9306
+> > Kernel: 2.6.16+
+> > 
 > 
+> No response from developers
 
-Hi Robert,
-
-In the past I suggested that it might be useful to have a version of perfmon2 
-that only set up the perfmon on a global basis. That would allow the patches for 
-context switches to be added as a separate step, splitting up the patch into 
-smaller set of patches.
-
-Perfmon2 uses a set of system calls to control the performance monitoring 
-hardware. This would make it difficult to use an unpatch kernel unless perfmon 
-changed the mechanism used to control the performance monitoring hardware.
-
--Will
+Not sure who really owns parallel. Have grabbed and will sort
+out.
