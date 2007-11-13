@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761532AbXKMS4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761642AbXKMS5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761532AbXKMS4e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 13:56:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756717AbXKMS4X
+	id S1761642AbXKMS5v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 13:57:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759410AbXKMS5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 13:56:23 -0500
-Received: from thunk.org ([69.25.196.29]:37435 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755947AbXKMS4V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 13:56:21 -0500
-Date: Tue, 13 Nov 2007 13:55:47 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Larry Finger <larry.finger@lwfinger.net>
-Cc: Benoit Boissinot <bboissin@gmail.com>, Mark Lord <liml@rtr.ca>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+	Tue, 13 Nov 2007 13:57:41 -0500
+Received: from fk-out-0910.google.com ([209.85.128.188]:18295 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757427AbXKMS5i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 13:57:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=fIL2WVC4ZlAp0qcfemF/rerxxTPA0opicDyPMUm3UHetyS7dGu9aIT6qT7LAzR1LmNsOrJgaTbgwmAl1WlUM1dK+xhBtUScFN20OsGEAZ8LO/eDv1Uofr8ade99NBEgQj8bvazHoQ9RzBqMv/BPgdcGySObSoNjnprn0f6WIDNY=
+Message-ID: <4739F399.2010605@googlemail.com>
+Date: Tue, 13 Nov 2007 19:57:29 +0100
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071004)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+CC: Theodore Tso <tytso@mit.edu>, Benoit Boissinot <bboissin@gmail.com>,
+       Mark Lord <liml@rtr.ca>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
        David Miller <davem@davemloft.net>, protasnb@gmail.com,
        linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
        alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
        linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
        bugme-daemon@bugzilla.kernel.org
 Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071113185547.GC25824@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Larry Finger <larry.finger@lwfinger.net>,
-	Benoit Boissinot <bboissin@gmail.com>, Mark Lord <liml@rtr.ca>,
-	Ingo Molnar <mingo@elte.hu>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Miller <davem@davemloft.net>, protasnb@gmail.com,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
-	linux-pcmcia@lists.infradead.org,
-	linux-input@atrey.karlin.mff.cuni.cz,
-	bugme-daemon@bugzilla.kernel.org
-References: <20071113031553.3c7b5c16.akpm@linux-foundation.org> <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca> <40f323d00711130752k19cab8eauc3456721274b3267@mail.gmail.com> <20071113171356.GA25824@thunk.org> <4739DFF8.3090702@lwfinger.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4739DFF8.3090702@lwfinger.net>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+References: <20071113031553.3c7b5c16.akpm@linux-foundation.org> <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca> <40f323d00711130752k19cab8eauc3456721274b3267@mail.gmail.com> <20071113171356.GA25824@thunk.org> <20071113175610.GE4250@stusta.de>
+In-Reply-To: <20071113175610.GE4250@stusta.de>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 11:33:44AM -0600, Larry Finger wrote:
-> I'm very encouraged to read of your expanded testing efforts. As a
-> bcm43xx developer, Ubuntu has been our problem distro, mostly
-> because your standard kernels have debugging turned off for bcm43xx.
-> When a Ubuntu user reports a problem and we ask for the relevant
-> output from dmesg, they have no information. I ask two things of all
-> distros: (1) Turn on debugging - we don't spam the logs that badly,
-> and (2) forward any bugs found by your testing to the maintainer,
-> and/or the bcm43xx mailing list.
+Adrian Bunk wrote:
+> On Tue, Nov 13, 2007 at 12:13:56PM -0500, Theodore Tso wrote:
+>> On Tue, Nov 13, 2007 at 04:52:32PM +0100, Benoit Boissinot wrote:
+>>> Btw, I used to test every -mm kernel. But since I've switched distros
+>>> (gentoo->ubuntu)
+>>> and I have less time, I feel it's harder to test -rc or -mm kernels (I
+>>> know this isn't a lkml problem
+>>> but more a distro problem, but I would love having an ubuntu blessed
+>>> repo with current dev kernel
+>>> for the latest stable ubuntu release).
+>> There are two parts to this.  One is a Ubuntu development kernel which
+>> we can give to large numbers of people to expand our testing pool.
+>> But if we don't do a better job of responding to bug reports that
+>> would be generated by expanded testing this won't necessarily help us.
+>> ...
+> 
+> The main problem is finding experienced developers who spend time on 
+> looking into bug reports.
 
-Heh. I hadn't enabled CONFIG_BCM43XX_DEBUG myself, but I just changed
-it for my next kernel build.  This is a slightly different issue,
-which is that sometimes _DEBUG options shouldn't be turned on by
-default (because they really trash performance and bloat log size),
-and sometimes they are painless to turn on and don't cost much.
+There are already. IMO the problem is the development model.
 
-If that is the case, I'd suggest removing the option and just making
-it compiled in by default with a run-time option to enable it.
+There are tons new features in each new kernel release and 'tons new bugs'
+which are not fixed during the release cycle nor in the .XX stable kernels.
 
-   	       	  	       	 	  - Ted
+Maybe after XX kernel releases there should be one just with bug-fixes _without_ any
+new features , eg: cleaning bugs from bugzilla , know regressions , cleaning up code , 
+removing broken drivers and the like.
 
 
-   	      
+> cu
+> Adrian
 
+Gabriel 
