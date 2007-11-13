@@ -1,48 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761346AbXKMSry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761850AbXKMSs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761346AbXKMSry (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 13:47:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761486AbXKMSrZ
+	id S1761850AbXKMSs1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 13:48:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761671AbXKMSrx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 13:47:25 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:53672 "EHLO smtp.polymtl.ca"
+	Tue, 13 Nov 2007 13:47:53 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:53849 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761480AbXKMSrX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 13:47:23 -0500
-Message-Id: <20071113184718.877027139@polymtl.ca>
+	id S1761661AbXKMSrw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 13:47:52 -0500
+Message-Id: <20071113184721.242245124@polymtl.ca>
 References: <20071113184627.667866257@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 13 Nov 2007 13:46:31 -0500
+Date: Tue, 13 Nov 2007 13:46:38 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 04/11] Add INIT_ARRAY() to kernel.h
-Content-Disposition: inline; filename=declare-array.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 13 Nov 2007 18:47:19 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Andi Kleen <andi@firstfloor.org>, pageexec@freemail.hu
+Subject: [patch 11/11] Text Edit Lock - x86_64 standardize debug rodata
+Content-Disposition: inline; filename=text-edit-lock-x86_64-standardize-debug-rodata.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 13 Nov 2007 18:47:21 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add initialization of an array, which needs brackets that would pollute kernel
-code, to kernel.h. It is used to declare arguments passed as function parameters
-such as:
-text_poke(addr, INIT_ARRAY(unsigned char, 0xf0, len), len);
+Standardize DEBUG_RODATA, removing special cases for hotplug and kprobes.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Andi Kleen <andi@firstfloor.org>
+CC: pageexec@freemail.hu
 ---
- include/linux/kernel.h |    2 ++
- 1 file changed, 2 insertions(+)
+ arch/x86_64/mm/init.c |   23 +++++------------------
+ 1 file changed, 5 insertions(+), 18 deletions(-)
 
-Index: linux-2.6-lttng/include/linux/kernel.h
+Index: linux-2.6-lttng/arch/x86/mm/init_64.c
 ===================================================================
---- linux-2.6-lttng.orig/include/linux/kernel.h	2007-11-13 09:25:29.000000000 -0500
-+++ linux-2.6-lttng/include/linux/kernel.h	2007-11-13 09:45:38.000000000 -0500
-@@ -421,4 +421,6 @@ struct sysinfo {
- #define NUMA_BUILD 0
- #endif
+--- linux-2.6-lttng.orig/arch/x86/mm/init_64.c	2007-09-24 11:00:01.000000000 -0400
++++ linux-2.6-lttng/arch/x86/mm/init_64.c	2007-09-24 11:00:02.000000000 -0400
+@@ -592,25 +592,11 @@ void free_initmem(void)
  
-+#define INIT_ARRAY(type, val, len) ((type [len]) { [0 ... (len)-1] = (val) })
+ void mark_rodata_ro(void)
+ {
+-	unsigned long start = (unsigned long)_stext, end;
++	unsigned long start = PFN_ALIGN(_stext);
++	unsigned long end = PFN_ALIGN(__end_rodata);
+ 
+-#ifdef CONFIG_HOTPLUG_CPU
+-	/* It must still be possible to apply SMP alternatives. */
+-	if (num_possible_cpus() > 1)
+-		start = (unsigned long)_etext;
+-#endif
+-
+-#ifdef CONFIG_KPROBES
+-	start = (unsigned long)__start_rodata;
+-#endif
+-	
+-	end = (unsigned long)__end_rodata;
+-	start = (start + PAGE_SIZE - 1) & PAGE_MASK;
+-	end &= PAGE_MASK;
+-	if (end <= start)
+-		return;
+-
+-	change_page_attr_addr(start, (end - start) >> PAGE_SHIFT, PAGE_KERNEL_RO);
++	change_page_attr_addr(start, (end - start) >> PAGE_SHIFT,
++				PAGE_KERNEL_RO);
+ 
+ 	printk(KERN_INFO "Write protecting the kernel read-only data: %luk\n",
+ 	       (end - start) >> 10);
+@@ -623,6 +609,7 @@ void mark_rodata_ro(void)
+ 	 */
+ 	global_flush_tlb();
+ }
 +
  #endif
+ 
+ #ifdef CONFIG_BLK_DEV_INITRD
 
 -- 
 Mathieu Desnoyers
