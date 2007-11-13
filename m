@@ -1,73 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753650AbXKMKUO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567AbXKMKVw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753650AbXKMKUO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 05:20:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbXKMKT7
+	id S1755567AbXKMKVw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 05:21:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbXKMKVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 05:19:59 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:51189 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751741AbXKMKT5 (ORCPT
+	Tue, 13 Nov 2007 05:21:42 -0500
+Received: from stinky.trash.net ([213.144.137.162]:41083 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751562AbXKMKVl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 05:19:57 -0500
-Date: Tue, 13 Nov 2007 05:18:49 -0500
-Message-Id: <200711131018.lADAInYN017695@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, Dave Hansen <haveblue@us.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ryan Finnie <ryan@finnie.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, cjwatson@ubuntu.com, linux-mm@kvack.org
-Subject: Re: msync(2) bug(?), returns AOP_WRITEPAGE_ACTIVATE to userland 
-In-reply-to: Your message of "Mon, 12 Nov 2007 17:01:51 GMT."
-             <Pine.LNX.4.64.0711121645090.14138@blonde.wat.veritas.com> 
-X-MailKey: Erez_Zadok
+	Tue, 13 Nov 2007 05:21:41 -0500
+Message-ID: <47397AB3.90705@trash.net>
+Date: Tue, 13 Nov 2007 11:21:39 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+MIME-Version: 1.0
+To: Joonwoo Park <joonwpark81@gmail.com>
+CC: David Miller <davem@davemloft.net>, w@1wt.eu, cfriesen@nortel.com,
+       auke-jan.h.kok@intel.com, netdev@vger.kernel.org,
+       djohnson+linux-kernel@sw.starentnetworks.com,
+       linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net
+Subject: Re: [PATCH 2/2] [e1000 VLAN] Disable vlan hw accel when promiscuous
+ mode
+References: <20071112231516.GA15227@1wt.eu>	 <20071112.151923.77768525.davem@davemloft.net>	 <20071112233257.GA15524@1wt.eu>	 <20071112.154046.117031917.davem@davemloft.net> <b25c3fa70711121721o32bcab0fldf64ff0434a44a3c@mail.gmail.com>
+In-Reply-To: <b25c3fa70711121721o32bcab0fldf64ff0434a44a3c@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <Pine.LNX.4.64.0711121645090.14138@blonde.wat.veritas.com>, Hugh Dickins writes:
-> On Fri, 9 Nov 2007, Erez Zadok wrote:
-> > In message <Pine.LNX.4.64.0711051358440.7629@blonde.wat.veritas.com>, Hugh Dickins writes:
-> > 
-> > > Three, I believe you need to add a flush_dcache_page(lower_page)
-> > > after the copy_highpage(lower_page): some architectures will need
-> > > that to see the new data if they have lower_page mapped (though I
-> > > expect it's anyway shaky ground to be accessing through the lower
-> > > mount at the same time as modifying through the upper).
-> > 
-> > OK.
-> 
-> While looking into something else entirely, I realize that _here_
-> you are missing a SetPageUptodate(lower_page): should go in after
-> the flush_dcache_page(lower_page) I'm suggesting.  (Nick would argue
-> for some kind of barrier there too, but I don't think unionfs has a
-> special need to be ahead of the pack on that issue.)
-> 
-> Think about it:
-> when find_or_create_page has created a fresh page in the cache,
-> and you've just done copy_highpage to put the data into it, you
-> now need to mark it as Uptodate: otherwise a subsequent vfs_read
-> or whatever on the lower level will find that page !Uptodate and
-> read stale data back from disk instead of what you just copied in,
-> unless its dirtiness has got it written back to disk meanwhile.
+Joonwoo Park wrote:
+> 2007/11/13, David Miller <davem@davemloft.net>:
+>   
+>> From: Willy Tarreau <w@1wt.eu>
+>> Date: Tue, 13 Nov 2007 00:32:57 +0100
+>>
+>>     
+>>> At least, being able to disable the feature at module load time
+>>> would be acceptable. Many people who often need to sniff on decent
+>>> machines would always keep it disabled.
+>>>       
+>> I'm willing to accept the feature, in whatever form, as long
+>> as the performance issue is dealt with properly.
+>>     
+>
+> I agree with disabling the hw acceleration feature by manually would
+> be a non-negative solution.
+> IMO implementation in the ethtool seems better than module param.
+> As like Auke mentioned.
+> If you guys confirm it, I'll try it.
+>   
 
-Hehe.  Funny, you mention this...  A few days ago, while I was doing your other
-recommended pageuptodate cleanups, I also added the same call to
-SetPageUptodate(lower_page) as you suggested.  I tested that change along w/
-the other changes you suggested, and they all seem to work great all the way
-from my 2.6.9 backport to 2.6.24-rc2 and -mm (modulo the fact that I had to
-work around or fix more non-unionfs bugs in -mm than unionfs ones to get it
-to work :-)
+I still think promiscous mode should disable all filters (which would
+also provide a consistent view between accerlated and non-accerlated
+devices), but an ethtool option is better than nothing :)
 
-I posted all of these patches just now.  You're CC'ed.  Hopefully Andrew can
-pull from my unionfs.git branch soon.
-
-You also reported in your previous emails some hangs/oopses while doing make
--j 20 in unionfs on top of a single tmpfs, using -mm.  After several days,
-I've not been able to reproduce this w/ my latest set of patches.  If you
-can send me your .config and the specs on the h/w you're using (cpus, mem,
-etc.), I'll see if I can find something similar to it on my end and run the
-same tests.
-
-Cheers,
-Erez.
