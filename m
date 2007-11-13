@@ -1,86 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760309AbXKMR6I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760604AbXKMSAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760309AbXKMR6I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 12:58:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755900AbXKMR54
+	id S1760604AbXKMSAd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 13:00:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759486AbXKMSAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 12:57:56 -0500
-Received: from madara.hpl.hp.com ([192.6.19.124]:57419 "EHLO madara.hpl.hp.com"
+	Tue, 13 Nov 2007 13:00:14 -0500
+Received: from main.gmane.org ([80.91.229.2]:49762 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754830AbXKMR5z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 12:57:55 -0500
-Date: Tue, 13 Nov 2007 09:55:45 -0800
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: William Cohen <wcohen@redhat.com>
-Cc: Robert Richter <robert.richter@amd.com>, akpm@osdl.org,
-       Andi Kleen <andi@firstfloor.org>, gregkh@suse.de,
-       perfmon2-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       perfmon@napali.hpl.hp.com
-Subject: Re: [perfmon2] perfmon2 merge news
-Message-ID: <20071113175545.GD4319@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <20071107003454.GA13374@kroah.com> <20071109120627.60ec9ab4.akpm@linux-foundation.org> <20071109213829.GC28276@kroah.com> <p73abpl2654.fsf@bingen.suse.de> <20071113151718.GA3804@erda.amd.com> <4739C42F.8030208@redhat.com>
+	id S1759447AbXKMSAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 13:00:13 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Florian Boelstler <kernel@boelstler.net>
+Subject: Re: Strange delays / what usually happens every 10 min?
+Date: Tue, 13 Nov 2007 18:58:35 +0100
+Message-ID: <fhcok9$jv0$3@ger.gmane.org>
+References: <fhcc39$51b$1@ger.gmane.org> <4739CBF0.8000500@redhat.com> <4739D5E1.5060108@anagramm.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4739C42F.8030208@redhat.com>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: fw-emea.rohde-schwarz.com
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+In-Reply-To: <4739D5E1.5060108@anagramm.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi Clemens,
 
-On Tue, Nov 13, 2007 at 10:35:11AM -0500, William Cohen wrote:
-> Robert Richter wrote:
-> > On 10.11.07 21:32:39, Andi Kleen wrote:
-> >> It would be really good to extract a core perfmon and start with
-> >> that and then add stuff as it makes sense.
-> >>
-> >> e.g. core perfmon could be something simple like just support
-> >> to context switch state and initialize counters in a basic way 
-> >> and perhaps get counter numbers for RDPMC in ring3 on x86[1]
-> > 
-> > Perhaps a core could provide also as much functionality so that
-> > Perfmon can be used with an *unpatched* kernel using loadable modules?
-> > One drawback with today's Perfmon is that it can not be used with a
-> > vanilla kernel. But maybe such a core is by far too complex for a
-> > first merge.
-> > 
-> > -Robert
-> > 
+Clemens Koller wrote:
+>  > This is precisely the sort of thing that BIOS/firmware-level SMI
+>  > handlers do, particularly those that have monitoring or management
+>  > features.  Try to determine if the kernel is doing anything during this
+>  > time.  If the entire kernel seems to be frozen, talk to the people who
+>  > wrote the firmware.
 > 
-> Hi Robert,
-> 
-> In the past I suggested that it might be useful to have a version of perfmon2 
-> that only set up the perfmon on a global basis. That would allow the patches for 
-> context switches to be added as a separate step, splitting up the patch into 
-> smaller set of patches.
-> 
-> Perfmon2 uses a set of system calls to control the performance monitoring 
-> hardware. This would make it difficult to use an unpatch kernel unless perfmon 
-> changed the mechanism used to control the performance monitoring hardware.
->
-Yes, that would be a possibility but as you pointed out there are some problems:
+> There is no such thing as BIOS on this MPC8540 embedded system.
+> I guess he is also using some bootloader which just gives full
+> control to the linux kernel.
 
-	- perfmon2 uses system calls. So unless you can dynamically patch the
-	  syscall table we would have to go back to the ioctl() and driver model.
-	  I was under the impression that people did not quite like multiplexing
-	  syscalls such as ioctl(). I also do prefer the multi syscall approach.
+Correct, it's the U-Boot boot loader.
 
-	- perfmon2 needs to install a PMU interrupt handler. On X86, this is not just
-	  an external device interrupts. There needs to be some APIC and interrupt
-	  gate setup. There maybe other constraints on other architectures as well.
-	  Not sure if all functions/structures necessary for this are available to
-	  modules.
+> Florian:
+> Check the IP route chache flushes, as Eric mentioned.
+> I'm working on the MPC854x as well. If you send me your scripts,
+> I can give them a run here to gather more information.
+> (I'm about to update my kernels here)
 
-	- we could not support per-thread mode with the kernel module approach due to
-	  link to the context switch code. I do believe per-thread is a key value-add
-	  for performance monitoring.
+Thanks, the rhash_entries argument seems to have cured the problem.
 
--- 
--Stephane
+Cheers,
+
+   Florian
+
