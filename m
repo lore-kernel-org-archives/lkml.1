@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762861AbXKMUrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763286AbXKMUsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762861AbXKMUrW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 15:47:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758678AbXKMUrN
+	id S1763286AbXKMUsA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 15:48:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757243AbXKMUrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 15:47:13 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:39052 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756214AbXKMUrM (ORCPT
+	Tue, 13 Nov 2007 15:47:51 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33365 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755818AbXKMUru (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 15:47:12 -0500
-Subject: Re: [PATCH 1/6] Suppress A.OUT library support if
-	!CONFIG_BINFMT_AOUT [try #5]
-From: Peter Zijlstra <peterz@infradead.org>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>, SL Baur <steve@xemacs.org>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-am33-list@redhat.com
-In-Reply-To: <20071113204059.GZ17536@waste.org>
-References: <20071110181416.31dc2614.akpm@linux-foundation.org>
-	 <20071109153432.20803.69832.stgit@warthog.procyon.org.uk>
-	 <20071109153437.20803.55096.stgit@warthog.procyon.org.uk>
-	 <6214.1194881680@redhat.com>
-	 <20071112115353.227f35cb.akpm@linux-foundation.org>
-	 <ed10ee420711121450m5aec7c06vf4481ebad944d706@mail.gmail.com>
-	 <17306.1194909291@redhat.com> <18662.1194951451@redhat.com>
-	 <20071113031835.54d558f9.akpm@linux-foundation.org>
-	 <1194958006.8255.1.camel@twins>  <20071113204059.GZ17536@waste.org>
-Content-Type: text/plain
-Date: Tue, 13 Nov 2007 21:46:58 +0100
-Message-Id: <1194986818.8255.29.camel@twins>
+	Tue, 13 Nov 2007 15:47:50 -0500
+Date: Tue, 13 Nov 2007 12:46:56 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Florian Fainelli <florian.fainelli@telecomint.eu>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [patch 2.6.24-rc2 1/3] generic gpio -- gpio_chip support
+Message-Id: <20071113124656.3c333bdd.akpm@linux-foundation.org>
+In-Reply-To: <200711131122.45950.david-b@pacbell.net>
+References: <200711091136.20051.david-b@pacbell.net>
+	<200711121726.39263.david-b@pacbell.net>
+	<20071113093414.GA5270@elte.hu>
+	<200711131122.45950.david-b@pacbell.net>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 13 Nov 2007 11:22:45 -0800 David Brownell <david-b@pacbell.net> wrote:
 
-On Tue, 2007-11-13 at 14:40 -0600, Matt Mackall wrote:
-> On Tue, Nov 13, 2007 at 01:46:46PM +0100, Peter Zijlstra wrote:
+> On Tuesday 13 November 2007, Ingo Molnar wrote:
 > > 
-> > On Tue, 2007-11-13 at 03:18 -0800, Andrew Morton wrote:
-> > > On Tue, 13 Nov 2007 10:57:31 +0000 David Howells <dhowells@redhat.com> wrote:
-> > > 
-> > > > SL Baur <steve@xemacs.org> wrote:
-> > > > 
-> > > > > Please take the emacsism out of the file as it bothers Andrew and others.
-> > > > 
-> > > > I thought Andrew said it didn't bother him.  I assume he was curious.
-> > > > 
-> > > 
-> > > Well it's just one line - hardly a big deal.
-> > > 
-> > > However if that line was a good one then we should get organised and
-> > > annotate all Kbuild files in the tree and appoint you
-> > > kbuild-makefile-tag-maintainer.
-> > > 
-> > > And if it wasn't a good line then it shouldn't have been added.
+> > * David Brownell <david-b@pacbell.net> wrote:
 > > 
-> > IFF we're going to annotate files like this, then also add the magic
-> > incantation to make vim do the right thing :-)
+> > > > > I speculate that either the design has changed (without fanfare), 
+> > > > > or else that stuff is in RT kernels and has not yet gone upstream.
+> > > > 
+> > > > Well whatever.  We shouldn't have to resort to caller-side party 
+> > > > tricks like this to get acceptable performance.
+> > > 
+> > > I'd be happy if, as originally presented, it were possible to just 
+> > > pass a raw_spinlock_t to spin_lock_irqsave() and friends.
+> > 
+> > that's a spinlock type abstraction of PREEMPT_RT, not of mainline.
 > 
-> How about we change its name to something more sensible instead? We
-> only need this hack because the file has a .asm extension. It is
-> entirely reasonable for an editor (or a person!) to conclude that a
-> file with a .asm extension contains assembly language.
+> Any reason that stuff shouldn't move into mainline?
+> 
+> 
+> > 	 Why do you want to use raw_spinlock_t?
+> 
+> Already answered elsewhere in this thread ...
 
-Bah, an entirely too sensical suggestion :-)
+Can't say I really understood the answer.  I don't think we actually know
+where all of this extra time is being spent?
+
+> I'll highlight the
+> point that such bitops shouldn't be preemption points.
+
+Disagree.  *everything* should be a preemption point.  For
+internal-implementation details we do need to disable preemtion sometimes
+(to prevent deadlocks and to protect per-cpu resources).  But those
+preemption-off periods should be minimised.
 
