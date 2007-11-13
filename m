@@ -1,65 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754265AbXKMM0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753794AbXKMMcX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754265AbXKMM0X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 07:26:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbXKMM0L
+	id S1753794AbXKMMcX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 07:32:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbXKMMcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 07:26:11 -0500
-Received: from mis011-1.exch011.intermedia.net ([64.78.21.128]:33863 "EHLO
-	mis011-1.exch011.intermedia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751916AbXKMM0J (ORCPT
+	Tue, 13 Nov 2007 07:32:10 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35351
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751288AbXKMMcI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 07:26:09 -0500
-Message-ID: <473993B3.4060508@qumranet.com>
-Date: Tue, 13 Nov 2007 14:08:19 +0200
-From: Izik Eidus <izike@qumranet.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070926)
-MIME-Version: 1.0
-To: Glauber de Oliveira Costa <gcosta@redhat.com>
-CC: "Dong, Eddie" <eddie.dong@intel.com>, kvm-devel@lists.sourceforge.net,
-       jeremy@goop.org, linux-kernel@vger.kernel.org, hollisb@us.ibm.com,
-       avi@qumranet.com
-Subject: Re: [kvm-devel] [PATCH 2/3] kvmclock - the host part.
-References: <11945615632624-git-send-email-gcosta@redhat.com><11945615703593-git-send-email-gcosta@redhat.com>	<11945615751747-git-send-email-gcosta@redhat.com>	<10EA09EFD8728347A513008B6B0DA77A025DF8A2@pdsmsx411.ccr.corp.intel.com> <4739906B.2080103@redhat.com>
-In-Reply-To: <4739906B.2080103@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 13 Nov 2007 07:32:08 -0500
+Date: Tue, 13 Nov 2007 04:32:07 -0800 (PST)
+Message-Id: <20071113.043207.44732743.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: protasnb@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071113041259.79c9a8c5.akpm@linux-foundation.org>
+References: <20071113034916.2556edd7.akpm@linux-foundation.org>
+	<20071113.035824.40509981.davem@davemloft.net>
+	<20071113041259.79c9a8c5.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Nov 2007 12:09:56.0590 (UTC) FILETIME=[1B0648E0:01C825EE]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Glauber de Oliveira Costa wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
-> Dong, Eddie escreveu:
->   
->>> +static void kvm_write_guest_time(struct kvm_vcpu *vcpu) +{
->>> +	struct timespec ts;
->>> +	int r;
->>> +
->>> +	if (!vcpu->clock_gpa)
->>> +		return;
->>> +
->>> +	/* Updates version to the next odd number, indicating
->>> we're writing */
->>> +	vcpu->hv_clock.version++;
->>> +	kvm_write_guest(vcpu->kvm, vcpu->clock_gpa,
->>> &vcpu->hv_clock, PAGE_SIZE);
->>> +
->>> +	kvm_get_msr(vcpu, MSR_IA32_TIME_STAMP_COUNTER,
->>> +			  &vcpu->hv_clock.last_tsc);
->>> +
->>> +	ktime_get_ts(&ts);
->>>       
->> Do we need to disable preemption here?
->>     
-> After thinking for a little while, you are theoretically right.
-> In the current state, we could even be preempted between all operations
-> ;-) Maybe after avi's suggestion of moving the call to it it will end up
-> in a preempt safe region, but anyway, it's safer to add the preempt
-> markers here.
-> I'll put it in next version, thanks
->   
-note that you cant call to kvm_write_guest with preemption disabled 
-(witch you do few lines below)
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Tue, 13 Nov 2007 04:12:59 -0800
+
+> On Tue, 13 Nov 2007 03:58:24 -0800 (PST) David Miller <davem@davemloft.net> wrote:
+> 
+> > From: Andrew Morton <akpm@linux-foundation.org>
+> > Date: Tue, 13 Nov 2007 03:49:16 -0800
+> > 
+> > > Do you believe that our response to bug reports is adequate?
+> > 
+> > Do you feel that making us feel and look like shit helps?
+> 
+> That doesn't answer my question.
+> 
+> See, first we need to work out whether we have a problem.  If we do this,
+> then we can then have a think about what to do about it.
+> 
+> I tried to convince the 2006 KS attendees that we have a problem and I
+> resoundingly failed.  People seemed to think that we're doing OK.
+> 
+> But it appears that data such as this contradicts that belief.
+> 
+> This is not a minor matter.  If the kernel _is_ slowly deteriorating then
+> this won't become readily apparent until it has been happening for a number
+> of years.  By that stage there will be so much work to do to get us back to
+> an acceptable level that it will take a huge effort.  And it will take a
+> long time after that for the kerel to get its reputation back.
+> 
+> So it is important that we catch deterioration *early* if it is happening.
+
+You tell me what I should spend my time working on, and I promise to
+do it OK? :-)
+
+For example, if I have a choice between a TCP crash just about anyone
+can hit and some obscure issue only reported with some device nearly
+nobody has, which one should I analyze and work on?
+
+That's the problem.  All of us prioritize and it means the chaff
+collects at the bottom.  You cannot fix that except by getting more
+bug fixers so that the chaff pile has a chance to get smaller.
+
+Luckily if the report being ignored isn't chaff, it will show up again
+(and again and again) and this triggers a reprioritization because not
+only is the bug no longer chaff, it also now got a lot of information
+tagged to it so it's a double worthwhile investment to work on the
+problem.
+
+I think a lot of bugs that "aren't getting looked at" are simply
+sitting in some early stage of this process.
