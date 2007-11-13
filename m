@@ -1,223 +1,370 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763223AbXKMTIF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764193AbXKMTIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763223AbXKMTIF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 14:08:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762957AbXKMTH2
+	id S1764193AbXKMTIc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 14:08:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763977AbXKMTHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 14:07:28 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:45475 "EHLO smtp.polymtl.ca"
+	Tue, 13 Nov 2007 14:07:41 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:45547 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762609AbXKMTHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 14:07:25 -0500
-Message-Id: <20071113190642.800729273@polymtl.ca>
+	id S1763222AbXKMTHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 14:07:39 -0500
+Message-Id: <20071113190642.486774218@polymtl.ca>
 References: <20071113190302.988259011@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 13 Nov 2007 14:03:05 -0500
+Date: Tue, 13 Nov 2007 14:03:04 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [RFC 3/3] Linux Kernel Markers - Use Immediate Values
-Content-Disposition: inline; filename=linux-kernel-markers-immediate-values.patch
+Cc: Roland McGrath <roland@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [RFC 2/3] Linux Kernel Markers - Create modpost file
+Content-Disposition: inline; filename=linux-kernel-markers-create-modpost-file.patch
 X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 13 Nov 2007 19:06:43 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make markers use immediate values.
+This adds some new magic in the MODPOST phase for CONFIG_MARKERS.
+Analogous to the Module.symvers file, the build will now write a
+Module.markers file when CONFIG_MARKERS=y is set.  This file lists
+the name, defining module, and format string of each marker,
+separated by \t characters.  This simple text file can be used by
+offline build procedures for instrumentation code, analogous to
+how System.map and Module.symvers can be useful to have for
+kernels other than the one you are running right now.
 
+The strings are made easy to extract by having the __trace_mark macro
+define the name and format together in a single array called __mstrtab_*
+in the __markers_strings section.  This is straightforward and reliable
+as long as the marker structs are always defined by this macro.  It is
+an unreasonable amount of hairy work to extract the string pointers from
+the __markers section structs, which entails handling a relocation type
+for every machine under the sun.
+
+Mathieu :
+- Ran through checkpatch.pl
+
+Signed-off-by: Roland McGrath <roland@redhat.com>
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- Documentation/markers.txt |   17 +++++++++++++----
- include/linux/marker.h    |   42 ++++++++++++++++++++++++++++++++----------
- kernel/marker.c           |    8 ++++++--
- kernel/module.c           |    1 +
- 4 files changed, 52 insertions(+), 16 deletions(-)
+ include/linux/marker.h   |    9 --
+ scripts/Makefile.modpost |   11 +++
+ scripts/mod/modpost.c    |  164 ++++++++++++++++++++++++++++++++++++++++++++++-
+ scripts/mod/modpost.h    |    3 
+ 4 files changed, 180 insertions(+), 7 deletions(-)
 
 Index: linux-2.6-lttng/include/linux/marker.h
 ===================================================================
---- linux-2.6-lttng.orig/include/linux/marker.h	2007-11-13 09:49:15.000000000 -0500
-+++ linux-2.6-lttng/include/linux/marker.h	2007-11-13 09:49:16.000000000 -0500
-@@ -12,6 +12,7 @@
-  * See the file COPYING for more details.
+--- linux-2.6-lttng.orig/include/linux/marker.h	2007-11-13 09:38:34.000000000 -0500
++++ linux-2.6-lttng/include/linux/marker.h	2007-11-13 09:38:36.000000000 -0500
+@@ -61,15 +61,12 @@ struct marker {
   */
- 
-+#include <linux/immediate.h>
- #include <linux/types.h>
- 
- struct module;
-@@ -42,7 +43,7 @@ struct marker {
- 	const char *format;	/* Marker format string, describing the
- 				 * variable argument list.
- 				 */
--	char state;		/* Marker state. */
-+	DEFINE_IMMEDIATE(char, state);	/* Immediate value state. */
- 	char ptype;		/* probe type : 0 : single, 1 : multi */
- 	void (*call)(const struct marker *mdata,	/* Probe wrapper */
- 		void *private_data, const char *fmt, ...);
-@@ -53,13 +54,14 @@ struct marker {
- #ifdef CONFIG_MARKERS
- 
- /*
-+ * Generic marker flavor always available.
-  * Note : the empty asm volatile with read constraint is used here instead of a
-  * "used" attribute to fix a gcc 4.1.x bug.
-  * Make sure the alignment of the structure in the __markers section will
-  * not add unwanted padding between the beginning of the section and the
-  * structure. Force alignment to the same alignment as the section start.
-  */
--#define __trace_mark(name, call_data, format, args...)			\
-+#define __trace_mark(generic, name, call_data, format, args...)		\
+ #define __trace_mark(name, call_data, format, args...)			\
  	do {								\
- 		static const char __mstrtab_##name[]			\
+-		static const char __mstrtab_name_##name[]		\
++		static const char __mstrtab_##name[]			\
  		__attribute__((section("__markers_strings")))		\
-@@ -70,17 +72,23 @@ struct marker {
+-		= #name;						\
+-		static const char __mstrtab_format_##name[]		\
+-		__attribute__((section("__markers_strings")))		\
+-		= format;						\
++		= #name "\0" format;					\
+ 		static struct marker __mark_##name			\
+ 		__attribute__((section("__markers"), aligned(8))) =	\
+-		{ __mstrtab_name_##name, __mstrtab_format_##name,	\
++		{ __mstrtab_##name, &__mstrtab_##name[sizeof(#name)],	\
  		0, 0, marker_probe_cb,					\
  		{ __mark_empty_function, NULL}, NULL };			\
  		__mark_check_format(format, ## args);			\
--		if (unlikely(__mark_##name.state)) {			\
--			(*__mark_##name.call)				\
--				(&__mark_##name, call_data,		\
--				format, ## args);			\
-+		if (!generic) {						\
-+			if (unlikely(immediate_read(__mark_##name.state))) \
-+				(*__mark_##name.call)			\
-+					(&__mark_##name, call_data,	\
-+					format, ## args);		\
-+		} else {						\
-+			if (unlikely(_immediate_read(__mark_##name.state))) \
-+				(*__mark_##name.call)			\
-+					(&__mark_##name, call_data,	\
-+					format, ## args);		\
- 		}							\
- 	} while (0)
- 
- extern void marker_update_probe_range(struct marker *begin,
- 	struct marker *end);
- #else /* !CONFIG_MARKERS */
--#define __trace_mark(name, call_data, format, args...) \
-+#define __trace_mark(generic, name, call_data, format, args...) \
- 		__mark_check_format(format, ## args)
- static inline void marker_update_probe_range(struct marker *begin,
- 	struct marker *end)
-@@ -88,15 +96,29 @@ static inline void marker_update_probe_r
- #endif /* CONFIG_MARKERS */
- 
- /**
-- * trace_mark - Marker
-+ * trace_mark - Marker using code patching
-  * @name: marker name, not quoted.
-  * @format: format string
-  * @args...: variable argument list
-  *
-- * Places a marker.
-+ * Places a marker using optimized code patching technique (immediate_read())
-+ * to be enabled.
-  */
- #define trace_mark(name, format, args...) \
--	__trace_mark(name, NULL, format, ## args)
-+	__trace_mark(0, name, NULL, format, ## args)
-+
-+/**
-+ * _trace_mark - Marker using variable read
-+ * @name: marker name, not quoted.
-+ * @format: format string
-+ * @args...: variable argument list
-+ *
-+ * Places a marker using a standard memory read (_immediate_read()) to be
-+ * enabled. Should be used for markers in __init and __exit functions and in
-+ * lockdep code.
-+ */
-+#define _trace_mark(name, format, args...) \
-+	__trace_mark(1, name, NULL, format, ## args)
- 
- /**
-  * MARK_NOARGS - Format string for a marker with no argument.
-Index: linux-2.6-lttng/kernel/marker.c
+Index: linux-2.6-lttng/scripts/Makefile.modpost
 ===================================================================
---- linux-2.6-lttng.orig/kernel/marker.c	2007-11-13 09:48:41.000000000 -0500
-+++ linux-2.6-lttng/kernel/marker.c	2007-11-13 09:49:16.000000000 -0500
-@@ -23,6 +23,7 @@
- #include <linux/rcupdate.h>
- #include <linux/marker.h>
- #include <linux/err.h>
-+#include <linux/immediate.h>
+--- linux-2.6-lttng.orig/scripts/Makefile.modpost	2007-11-13 09:25:30.000000000 -0500
++++ linux-2.6-lttng/scripts/Makefile.modpost	2007-11-13 09:38:36.000000000 -0500
+@@ -13,6 +13,7 @@
+ # 2) modpost is then used to
+ # 3)  create one <module>.mod.c file pr. module
+ # 4)  create one Module.symvers file with CRC for all exported symbols
++# 4a) [CONFIG_MARKERS] create one Module.markers file listing defined markers
+ # 5) compile all <module>.mod.c files
+ # 6) final link of the module to a <module.ko> file
  
- extern struct marker __start___markers[];
- extern struct marker __stop___markers[];
-@@ -534,7 +535,7 @@ static int set_marker(struct marker_entr
- 	 */
- 	smp_wmb();
- 	elem->ptype = (*entry)->ptype;
--	elem->state = active;
-+	elem->state__immediate = active;
+@@ -45,6 +46,10 @@ include scripts/Makefile.lib
  
+ kernelsymfile := $(objtree)/Module.symvers
+ modulesymfile := $(firstword $(KBUILD_EXTMOD))/Module.symvers
++kernelmarkersfile := $(objtree)/Module.markers
++modulemarkersfile := $(firstword $(KBUILD_EXTMOD))/Module.markers
++
++markersfile = $(if $(KBUILD_EXTMOD),$(modulemarkersfile),$(kernelmarkersfile))
+ 
+ # Step 1), find all modules listed in $(MODVERDIR)/
+ __modules := $(sort $(shell grep -h '\.ko' /dev/null $(wildcard $(MODVERDIR)/*.mod)))
+@@ -62,6 +67,8 @@ modpost = scripts/mod/modpost           
+  $(if $(KBUILD_EXTMOD),-i,-o) $(kernelsymfile)   \
+  $(if $(KBUILD_EXTMOD),-I $(modulesymfile))      \
+  $(if $(KBUILD_EXTMOD),-o $(modulesymfile))      \
++ $(if $(CONFIG_MARKERS),-K $(kernelmarkersfile)) \
++ $(if $(CONFIG_MARKERS),-M $(markersfile))	 \
+  $(if $(KBUILD_EXTMOD)$(KBUILD_MODPOST_WARN),-w)
+ 
+ quiet_cmd_modpost = MODPOST $(words $(filter-out vmlinux FORCE, $^)) modules
+@@ -81,6 +88,10 @@ vmlinux.o: FORCE
+ $(symverfile):         __modpost ;
+ $(modules:.ko=.mod.c): __modpost ;
+ 
++ifdef CONFIG_MARKERS
++$(markersfile):	       __modpost ;
++endif
++
+ 
+ # Step 5), compile all *.mod.c files
+ 
+Index: linux-2.6-lttng/scripts/mod/modpost.c
+===================================================================
+--- linux-2.6-lttng.orig/scripts/mod/modpost.c	2007-11-13 09:25:30.000000000 -0500
++++ linux-2.6-lttng/scripts/mod/modpost.c	2007-11-13 09:41:23.000000000 -0500
+@@ -11,6 +11,8 @@
+  * Usage: modpost vmlinux module1.o module2.o ...
+  */
+ 
++#define _GNU_SOURCE
++#include <stdio.h>
+ #include <ctype.h>
+ #include "modpost.h"
+ #include "../../include/linux/license.h"
+@@ -424,6 +426,8 @@ static int parse_elf(struct elf_info *in
+ 			info->export_unused_gpl_sec = i;
+ 		else if (strcmp(secname, "__ksymtab_gpl_future") == 0)
+ 			info->export_gpl_future_sec = i;
++		else if (strcmp(secname, "__markers_strings") == 0)
++			info->markers_strings_sec = i;
+ 
+ 		if (sechdrs[i].sh_type != SHT_SYMTAB)
+ 			continue;
+@@ -1249,6 +1253,62 @@ static int exit_section_ref_ok(const cha
  	return 0;
  }
-@@ -548,7 +549,7 @@ static int set_marker(struct marker_entr
- static void disable_marker(struct marker *elem)
+ 
++static void get_markers(struct elf_info *info, struct module *mod)
++{
++	const Elf_Shdr *sh = &info->sechdrs[info->markers_strings_sec];
++	const char *strings = (const char *) info->hdr + sh->sh_offset;
++	const Elf_Sym *sym, *first_sym, *last_sym;
++	size_t n;
++
++	if (!info->markers_strings_sec)
++		return;
++
++	/*
++	 * First count the strings.  We look for all the symbols defined
++	 * in the __markers_strings section named __mstrtab_*.  For
++	 * these local names, the compiler puts a random .NNN suffix on,
++	 * so the names don't correspond exactly.
++	 */
++	first_sym = last_sym = NULL;
++	n = 0;
++	for (sym = info->symtab_start; sym < info->symtab_stop; sym++)
++		if (ELF_ST_TYPE(sym->st_info) == STT_OBJECT &&
++		    sym->st_shndx == info->markers_strings_sec &&
++		    !strncmp(info->strtab + sym->st_name,
++			     "__mstrtab_", sizeof "__mstrtab_" - 1)) {
++			if (first_sym == NULL)
++				first_sym = sym;
++			last_sym = sym;
++			++n;
++		}
++
++	if (n == 0)
++		return;
++
++	/*
++	 * Now collect each name and format into a line for the output.
++	 * Lines look like:
++	 *	marker_name	vmlinux	marker %s format %d
++	 * The format string after the second \t can use whitespace.
++	 */
++	mod->markers = NOFAIL(malloc(sizeof mod->markers[0] * n));
++	mod->nmarkers = n;
++
++	n = 0;
++	for (sym = first_sym; sym <= last_sym; sym++)
++		if (ELF_ST_TYPE(sym->st_info) == STT_OBJECT &&
++		    sym->st_shndx == info->markers_strings_sec &&
++		    !strncmp(info->strtab + sym->st_name,
++			     "__mstrtab_", sizeof "__mstrtab_" - 1)) {
++			const char *name = strings + sym->st_value;
++			const char *fmt = strchr(name, '\0') + 1;
++			char *line = NULL;
++			asprintf(&line, "%s\t%s\t%s\n", name, mod->name, fmt);
++			NOFAIL(line);
++			mod->markers[n++] = line;
++		}
++}
++
+ static void read_symbols(char *modname)
  {
- 	/* leave "call" as is. It is known statically. */
--	elem->state = 0;
-+	elem->state__immediate = 0;
- 	elem->single.func = __mark_empty_function;
- 	/* Update the function before setting the ptype */
- 	smp_wmb();
-@@ -615,6 +616,9 @@ static void marker_update_probes(void)
- 	marker_update_probe_range(__start___markers, __stop___markers);
- 	/* Markers in modules. */
- 	module_update_markers();
-+	/* Update immediate values */
-+	core_immediate_update();
-+	module_immediate_update();
+ 	const char *symname;
+@@ -1301,6 +1361,8 @@ static void read_symbols(char *modname)
+ 		get_src_version(modname, mod->srcversion,
+ 				sizeof(mod->srcversion)-1);
+ 
++	get_markers(&info, mod);
++
+ 	parse_elf_finish(&info);
+ 
+ 	/* Our trick to get versioning for struct_module - it's
+@@ -1649,6 +1711,92 @@ static void write_dump(const char *fname
+ 	write_if_changed(&buf, fname);
  }
  
- /**
-Index: linux-2.6-lttng/Documentation/markers.txt
++static void add_marker(struct module *mod, const char *name, const char *fmt)
++{
++	char *line = NULL;
++	asprintf(&line, "%s\t%s\t%s\n", name, mod->name, fmt);
++	NOFAIL(line);
++
++	mod->markers = NOFAIL(realloc(mod->markers, ((mod->nmarkers + 1) *
++						     sizeof mod->markers[0])));
++	mod->markers[mod->nmarkers++] = line;
++}
++
++static void read_markers(const char *fname)
++{
++	unsigned long size, pos = 0;
++	void *file = grab_file(fname, &size);
++	char *line;
++
++	if (!file)		/* No old markers, silently ignore */
++		return;
++
++	while ((line = get_next_line(&pos, file, size))) {
++		char *marker, *modname, *fmt;
++		struct module *mod;
++
++		marker = line;
++		modname = strchr(marker, '\t');
++		if (!modname)
++			goto fail;
++		*modname++ = '\0';
++		fmt = strchr(modname, '\t');
++		if (!fmt)
++			goto fail;
++		*fmt++ = '\0';
++		if (*marker == '\0' || *modname == '\0')
++			goto fail;
++
++		mod = find_module(modname);
++		if (!mod) {
++			if (is_vmlinux(modname))
++				have_vmlinux = 1;
++			mod = new_module(NOFAIL(strdup(modname)));
++			mod->skip = 1;
++		}
++
++		add_marker(mod, marker, fmt);
++	}
++	return;
++fail:
++	fatal("parse error in markers list file\n");
++}
++
++static int compare_strings(const void *a, const void *b)
++{
++	return strcmp(*(const char **) a, *(const char **) b);
++}
++
++static void write_markers(const char *fname)
++{
++	struct buffer buf = { };
++	struct module *mod;
++	size_t i;
++
++	for (mod = modules; mod; mod = mod->next)
++		if ((!external_module || !mod->skip) && mod->markers != NULL) {
++			/*
++			 * Sort the strings so we can skip duplicates when
++			 * we write them out.
++			 */
++			qsort(mod->markers, mod->nmarkers,
++			      sizeof mod->markers[0], &compare_strings);
++			for (i = 0; i < mod->nmarkers; ++i) {
++				char *line = mod->markers[i];
++				buf_write(&buf, line, strlen(line));
++				while (i + 1 < mod->nmarkers &&
++				       !strcmp(mod->markers[i],
++					       mod->markers[i + 1]))
++					free(mod->markers[i++]);
++				free(mod->markers[i]);
++			}
++			free(mod->markers);
++			mod->markers = NULL;
++		}
++
++	write_if_changed(&buf, fname);
++}
++
+ int main(int argc, char **argv)
+ {
+ 	struct module *mod;
+@@ -1656,10 +1804,12 @@ int main(int argc, char **argv)
+ 	char fname[SZ];
+ 	char *kernel_read = NULL, *module_read = NULL;
+ 	char *dump_write = NULL;
++	char *markers_read = NULL;
++	char *markers_write = NULL;
+ 	int opt;
+ 	int err;
+ 
+-	while ((opt = getopt(argc, argv, "i:I:mso:aw")) != -1) {
++	while ((opt = getopt(argc, argv, "i:I:mso:awM:K:")) != -1) {
+ 		switch(opt) {
+ 			case 'i':
+ 				kernel_read = optarg;
+@@ -1683,6 +1833,12 @@ int main(int argc, char **argv)
+ 			case 'w':
+ 				warn_unresolved = 1;
+ 				break;
++			case 'M':
++				markers_write = optarg;
++				break;
++			case 'K':
++				markers_read = optarg;
++				break;
+ 			default:
+ 				exit(1);
+ 		}
+@@ -1724,5 +1880,11 @@ int main(int argc, char **argv)
+ 	if (dump_write)
+ 		write_dump(dump_write);
+ 
++	if (markers_read)
++		read_markers(markers_read);
++
++	if (markers_write)
++		write_markers(markers_write);
++
+ 	return err;
+ }
+Index: linux-2.6-lttng/scripts/mod/modpost.h
 ===================================================================
---- linux-2.6-lttng.orig/Documentation/markers.txt	2007-11-13 09:30:13.000000000 -0500
-+++ linux-2.6-lttng/Documentation/markers.txt	2007-11-13 09:49:16.000000000 -0500
-@@ -15,10 +15,12 @@ provide at runtime. A marker can be "on"
- (no probe is attached). When a marker is "off" it has no effect, except for
- adding a tiny time penalty (checking a condition for a branch) and space
- penalty (adding a few bytes for the function call at the end of the
--instrumented function and adds a data structure in a separate section).  When a
--marker is "on", the function you provide is called each time the marker is
--executed, in the execution context of the caller. When the function provided
--ends its execution, it returns to the caller (continuing from the marker site).
-+instrumented function and adds a data structure in a separate section). The
-+immediate values are used to minimize the impact on data cache, encoding the
-+condition in the instruction stream. When a marker is "on", the function you
-+provide is called each time the marker is executed, in the execution context of
-+the caller. When the function provided ends its execution, it returns to the
-+caller (continuing from the marker site).
+--- linux-2.6-lttng.orig/scripts/mod/modpost.h	2007-11-13 09:25:30.000000000 -0500
++++ linux-2.6-lttng/scripts/mod/modpost.h	2007-11-13 09:38:36.000000000 -0500
+@@ -110,6 +110,8 @@ struct module {
+ 	int has_init;
+ 	int has_cleanup;
+ 	struct buffer dev_table_buf;
++	char **markers;
++	size_t nmarkers;
+ 	char	     srcversion[25];
+ };
  
- You can put markers at important locations in the code. Markers are
- lightweight hooks that can pass an arbitrary number of parameters,
-@@ -69,6 +71,13 @@ a printk warning which identifies the in
- "Format mismatch for probe probe_name (format), marker (format)"
- 
- 
-+* Optimization for a given architecture
-+
-+To force use of a non-optimized version of the markers, _trace_mark() should be
-+used. It takes the same parameters as the normal markers, but it does not use
-+the immediate values based on code patching.
-+
-+
- * Probe / marker example
- 
- See the example provided in samples/markers/src
-Index: linux-2.6-lttng/kernel/module.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/module.c	2007-11-13 09:48:41.000000000 -0500
-+++ linux-2.6-lttng/kernel/module.c	2007-11-13 09:49:16.000000000 -0500
-@@ -2003,6 +2003,7 @@ static struct module *load_module(void _
- 			mod->markers + mod->num_markers);
- #endif
- #ifdef CONFIG_IMMEDIATE
-+		/* Immediate values must be updated after markers */
- 		immediate_update_range(mod->immediate,
- 			mod->immediate + mod->num_immediate);
- #endif
+@@ -124,6 +126,7 @@ struct elf_info {
+ 	Elf_Section  export_gpl_sec;
+ 	Elf_Section  export_unused_gpl_sec;
+ 	Elf_Section  export_gpl_future_sec;
++	Elf_Section  markers_strings_sec;
+ 	const char   *strtab;
+ 	char	     *modinfo;
+ 	unsigned int modinfo_len;
 
 -- 
 Mathieu Desnoyers
