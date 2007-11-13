@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755141AbXKMKL4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751870AbXKMKMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755141AbXKMKL4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 05:11:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbXKMKKz
+	id S1751870AbXKMKMV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 05:12:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbXKMKK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 05:10:55 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:50687 "EHLO
+	Tue, 13 Nov 2007 05:10:57 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:50692 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752739AbXKMKKv (ORCPT
+	with ESMTP id S1753217AbXKMKKw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 05:10:51 -0500
+	Tue, 13 Nov 2007 05:10:52 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@ftp.linux.org.uk, hch@infradead.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 7/9] Unionfs: remove unnecessary lower atime updates
-Date: Tue, 13 Nov 2007 05:10:26 -0500
-Message-Id: <11949486312861-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 3/9] Unionfs: update cache-coherency detection heuristics
+Date: Tue, 13 Nov 2007 05:10:22 -0500
+Message-Id: <1194948629600-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11949486283697-git-send-email-ezk@cs.sunysb.edu>
@@ -25,58 +25,116 @@ References: <11949486283697-git-send-email-ezk@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No need for this because our readpage calls vfs_read on the lower objects,
-which would update the atime as/if needed.
+Use a small delay to reduce the number of times unionfs has to detect
+changed mtime's/ctime's, and also reduce the potential for false positives.
+See Documentation/filesystems/unionfs/concepts.txt for a detailed
+discussion.
 
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/file.c |    8 --------
- fs/unionfs/mmap.c |    6 ------
- 2 files changed, 0 insertions(+), 14 deletions(-)
+ Documentation/filesystems/unionfs/concepts.txt |   18 ++++++++++++++
+ fs/unionfs/dentry.c                            |   29 ++++++++++++++---------
+ fs/unionfs/union.h                             |    3 ++
+ 3 files changed, 39 insertions(+), 11 deletions(-)
 
-diff --git a/fs/unionfs/file.c b/fs/unionfs/file.c
-index 126df5e..809e0f1 100644
---- a/fs/unionfs/file.c
-+++ b/fs/unionfs/file.c
-@@ -31,10 +31,6 @@ static ssize_t unionfs_read(struct file *file, char __user *buf,
+diff --git a/Documentation/filesystems/unionfs/concepts.txt b/Documentation/filesystems/unionfs/concepts.txt
+index 37a62d8..7654ccc 100644
+--- a/Documentation/filesystems/unionfs/concepts.txt
++++ b/Documentation/filesystems/unionfs/concepts.txt
+@@ -177,5 +177,23 @@ would be really nice if the VFS would export an optional file system hook
+ ->file_revalidate (similarly to dentry->d_revalidate) that will be called
+ before each VFS op that has a "struct file" in it.
  
- 	err = do_sync_read(file, buf, count, ppos);
++Certain file systems have micro-second granularity (or better) for inode
++times, and asynchronous actions could cause those times to change with some
++small delay.  In such cases, Unionfs may see a changed inode time that only
++differs by a tiny fraction of a second: such a change may be a false
++positive indication that the lower object has changed, whereas if unionfs
++waits a little longer, that false indication will not be seen.  (These false
++positives are harmless, because they would at most cause unionfs to
++re-validate an object that may need no revalidation, and print a debugging
++message that clutters the console/logs.)  Therefore, to minimize the chances
++of these situations, we delay the detection of changed times by a small
++factor of a few seconds, called UNIONFS_MIN_CC_TIME (which defaults to 3
++seconds, as does NFS).  This means that we will detect the change, only a
++couple of seconds later, if indeed the time change persists in the lower
++file object.  This delayed detection has an added performance benefit: we
++reduce the number of times that unionfs has to revalidate objects, in case
++there's a lot of concurrent activity on both the upper and lower objects,
++for the same file(s).  Lastly, this delayed time attribute detection is
++similar to how NFS clients operate (e.g., acregmin).
  
--	if (err >= 0)
--		touch_atime(unionfs_lower_mnt(file->f_path.dentry),
--			    unionfs_lower_dentry(file->f_path.dentry));
--
- out:
- 	unionfs_read_unlock(file->f_path.dentry->d_sb);
- 	unionfs_check_file(file);
-@@ -58,10 +54,6 @@ static ssize_t unionfs_aio_read(struct kiocb *iocb, const struct iovec *iov,
- 	if (err == -EIOCBQUEUED)
- 		err = wait_on_sync_kiocb(iocb);
+ For more information, see <http://unionfs.filesystems.org/>.
+diff --git a/fs/unionfs/dentry.c b/fs/unionfs/dentry.c
+index a3d7b6e..aed4d39 100644
+--- a/fs/unionfs/dentry.c
++++ b/fs/unionfs/dentry.c
+@@ -192,6 +192,16 @@ out:
+ /*
+  * Determine if the lower inode objects have changed from below the unionfs
+  * inode.  Return true if changed, false otherwise.
++ *
++ * We check if the mtime or ctime have changed.  However, the inode times
++ * can be changed by anyone without much protection, including
++ * asynchronously.  This can sometimes cause unionfs to find that the lower
++ * file system doesn't change its inode times quick enough, resulting in a
++ * false positive indication (which is harmless, it just makes unionfs do
++ * extra work in re-validating the objects).  To minimize the chances of
++ * these situations, we delay the detection of changed times by
++ * UNIONFS_MIN_CC_TIME (which defaults to 3 seconds, as with NFS's
++ * acregmin).
+  */
+ bool is_newer_lower(const struct dentry *dentry)
+ {
+@@ -211,26 +221,23 @@ bool is_newer_lower(const struct dentry *dentry)
+ 		lower_inode = unionfs_lower_inode_idx(inode, bindex);
+ 		if (!lower_inode)
+ 			continue;
+-		/*
+-		 * We may want to apply other tests to determine if the
+-		 * lower inode's data has changed, but checking for changed
+-		 * ctime and mtime on the lower inode should be enough.
+-		 */
+-		if (unlikely(timespec_compare(&inode->i_mtime,
+-					      &lower_inode->i_mtime) < 0)) {
++
++		/* check if mtime/ctime have changed */
++		if (unlikely((lower_inode->i_mtime.tv_sec -
++			      inode->i_mtime.tv_sec) > UNIONFS_MIN_CC_TIME)) {
+ 			pr_info("unionfs: new lower inode mtime "
+ 				"(bindex=%d, name=%s)\n", bindex,
+ 				dentry->d_name.name);
+ 			show_dinode_times(dentry);
+-			return true; /* mtime changed! */
++			return true;
+ 		}
+-		if (unlikely(timespec_compare(&inode->i_ctime,
+-					      &lower_inode->i_ctime) < 0)) {
++		if (unlikely((lower_inode->i_ctime.tv_sec -
++			      inode->i_ctime.tv_sec) > UNIONFS_MIN_CC_TIME)) {
+ 			pr_info("unionfs: new lower inode ctime "
+ 				"(bindex=%d, name=%s)\n", bindex,
+ 				dentry->d_name.name);
+ 			show_dinode_times(dentry);
+-			return true; /* ctime changed! */
++			return true;
+ 		}
+ 	}
+ 	return false;		/* default: lower is not newer */
+diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
+index 09b9ac9..f61e32d 100644
+--- a/fs/unionfs/union.h
++++ b/fs/unionfs/union.h
+@@ -63,6 +63,9 @@
+ /* maximum number of branches we support, to avoid memory blowup */
+ #define UNIONFS_MAX_BRANCHES	128
  
--	if (err >= 0)
--		touch_atime(unionfs_lower_mnt(file->f_path.dentry),
--			    unionfs_lower_dentry(file->f_path.dentry));
--
- out:
- 	unionfs_read_unlock(file->f_path.dentry->d_sb);
- 	unionfs_check_file(file);
-diff --git a/fs/unionfs/mmap.c b/fs/unionfs/mmap.c
-index bb00fd5..34fd8aa 100644
---- a/fs/unionfs/mmap.c
-+++ b/fs/unionfs/mmap.c
-@@ -212,12 +212,6 @@ static int unionfs_readpage(struct file *file, struct page *page)
- 
- 	err = unionfs_do_readpage(file, page);
- 
--	if (!err) {
--		touch_atime(unionfs_lower_mnt(file->f_path.dentry),
--			    unionfs_lower_dentry(file->f_path.dentry));
--		unionfs_copy_attr_times(file->f_path.dentry->d_inode);
--	}
--
- 	/*
- 	 * we have to unlock our page, b/c we _might_ have gotten a locked
- 	 * page.  but we no longer have to wakeup on our page here, b/c
++/* minimum time (seconds) required for time-based cache-coherency */
++#define UNIONFS_MIN_CC_TIME	3
++
+ /* Operations vectors defined in specific files. */
+ extern struct file_operations unionfs_main_fops;
+ extern struct file_operations unionfs_dir_fops;
 -- 
 1.5.2.2
 
