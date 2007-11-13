@@ -1,64 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763421AbXKMWXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763499AbXKMWYL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763421AbXKMWXj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 17:23:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763120AbXKMWX1
+	id S1763499AbXKMWYL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 17:24:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761000AbXKMWXy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 17:23:27 -0500
-Received: from hpsmtp-eml11.KPNXCHANGE.COM ([213.75.38.111]:45746 "EHLO
-	hpsmtp-eml11.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763114AbXKMWX0 (ORCPT
+	Tue, 13 Nov 2007 17:23:54 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:47887 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760233AbXKMWXx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 17:23:26 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH revised] enable make ARCH=x86 (and stay backward compatible)
-Date: Tue, 13 Nov 2007 23:23:22 +0100
-User-Agent: KMail/1.9.7
-Cc: Jeff Garzik <jeff@garzik.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <rdunlap@xenotime.net>, david@lang.hm,
-       Christoph Hellwig <hch@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <20071112205451.GA22528@uranus.ravnborg.org>
-In-Reply-To: <20071112205451.GA22528@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Nov 2007 17:23:53 -0500
+Date: Tue, 13 Nov 2007 22:18:01 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, alsa-devel@alsa-project.org,
+       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org, protasnb@gmail.com,
+       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: [BUG] New Kernel Bugs
+Message-ID: <20071113221801.GF1356@flint.arm.linux.org.uk>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	David Miller <davem@davemloft.net>, alsa-devel@alsa-project.org,
+	netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+	linux-kernel@vger.kernel.org, protasnb@gmail.com,
+	linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
+	linux-input@atrey.karlin.mff.cuni.cz
+References: <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113.043207.44732743.davem@davemloft.net> <20071113193219.GC1356@flint.arm.linux.org.uk> <20071113125222.9eb53ac8.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711132323.23835.elendil@planet.nl>
-X-OriginalArrivalTime: 13 Nov 2007 22:23:24.0121 (UTC) FILETIME=[CE05CC90:01C82643]
+In-Reply-To: <20071113125222.9eb53ac8.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 November 2007, Sam Ravnborg wrote:
-> This revised patchset does the followings things:
-> o unify the i386 and x86_64 Kconfig files
-> o introduce support for K64BIT to set CONFIG_64BIT on command line
-> o introdue support for "make ARCH=x86"
-> o degraded ARCH={i386,x86_64} to select between 32/64 for all*targets
->   and otherwise just selecting the x86 architecture
->
-> Based on feedback from previous submissions the following have changed:
-> - The backwards compatibility links are kept
-> - The backwards compatibility ARCH={i386,x86_64} are kept but degraded
->   to select 32/64 bit during configuration for all*config targets.
-> - ARCH={i386,x86_64} are not broken by any patches so bisect will
->   not choke
+On Tue, Nov 13, 2007 at 12:52:22PM -0800, Andrew Morton wrote:
+> On Tue, 13 Nov 2007 19:32:19 +0000 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+> > There's another issue I want to raise concerning bugzilla.  We have the
+> > classic case of "not enough people reading bugzilla bugs" - which is one
+> > of the biggest problems with bugzilla.  Virtually no one in the ARM
+> > community looks for ARM bugs in bugzilla.
+> 
+> Nor should they.
 
-Great! Thanks for being so responsive to comments Sam.
+So what you're saying is...
 
-I've just built v2.6.24-rc2-409-g9418d5d + your patchset for both amd64 and 
-i386 using Debian's kernel-package and both went without problems.
+> > Let's not forget that it would be a waste of time for people to manually
+> > check bugzilla for ARM bugs.  There's soo few people reporting ARM bugs
+> > into bugzilla that a weekly manual check by every maintainer would just
+> > return the same old boring results for months and months at a time.
+> 
+> I screen all bugzilla reports.  100% of them.
+> 
+> - I'll try to establish whether it is a regression
+> 
+> - I'll solicit any extra information which I believe the reveloper will need
+> 
+> - I'll ensure that an appropriate developer has seen the report
+> 
+> And yes, the number of arm-specific reports in there is very small.
 
-One (minor) issue. If I start out with a .config for i386, the first make 
-oldconfig will ask to set 64-BIT:
-    64-bit kernel (64BIT) [N/y/?] (NEW)
-It would be nice if that could be avoided somehow.
+that just because you do this everyone in a select clique, who you include
+me in, should be doing this as well.
 
-I'm compiling the 32-bit kernel in an i386 chroot on an x86_64 system.
+No.  Thank.  You.
 
-Cheers,
-FJP
+> > It would be far more productive if the ARM category was deleted from
+> > bugzilla and the few people who use bugzilla reported their bugs on the
+> > mailing list.  We've a couple of thousand people on the ARM kernel
+> > mailing list at the moment - that's 3 orders of magnitude more of eyes
+> > than look at bugzilla.
+> 
+> Is that linux-arm-kernel@lists.arm.linux.org.uk?
+
+Yes.
+
+> If so, MANITAINERS claims that it is subscribers-only.  That would cause
+> some bug reporters to give up and go away.
+
+Find some other mailing list; I'm not hosting *nor* am I willing to run a
+non-subscribers only mailing list.  Period.  Not negotiable, so don't even
+try to change my mind.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
