@@ -1,77 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757876AbXKMPYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758552AbXKMPZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757876AbXKMPYz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 10:24:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754931AbXKMPYo
+	id S1758552AbXKMPZn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 10:25:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754446AbXKMPZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 10:24:44 -0500
-Received: from orion2.pixelized.ch ([195.190.190.13]:35584 "EHLO
-	mail.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754307AbXKMPYn (ORCPT
+	Tue, 13 Nov 2007 10:25:34 -0500
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:37916 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754493AbXKMPZd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 10:24:43 -0500
-Message-ID: <4739C1B0.8000803@cateee.net>
-Date: Tue, 13 Nov 2007 16:24:32 +0100
-From: "Giacomo A. Catenazzi" <cate@cateee.net>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, protasnb@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [BUG] New Kernel Bugs
-References: <20071113031553.3c7b5c16.akpm@linux-foundation.org> <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca>
-In-Reply-To: <4739AFE0.20705@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 13 Nov 2007 10:25:33 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FALZQOUdMROHU/2dsb2JhbACBWw
+Date: Tue, 13 Nov 2007 10:25:30 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "David J. Wilder" <dwilder@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Add markers into semaphore primitives
+Message-ID: <20071113152530.GA21915@Krystal>
+References: <1194915156.913.4.camel@lc4eb748232119.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1194915156.913.4.camel@lc4eb748232119.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 10:23:58 up 9 days, 20:29,  3 users,  load average: 0.40, 0.71,
+	0.65
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Ingo Molnar wrote:
-> ..
->> This is all QA-101 that _cannot be argued against on a rational 
->> basis_, it's just that these sorts of things have been largely ignored 
->> for years, in favor of the all-too-easy "open source means many 
->> eyeballs and that is our QA" answer, which is a _good_ answer but by 
->> far not the most intelligent answer! Today "many eyeballs" is simply 
->> not good enough and nature (and other OS projects) will route us 
->> around if we dont change.
-> ..
+* David J. Wilder (dwilder@us.ibm.com) wrote:
+> This patch adds several markers around semaphore primitives.
+> Along with a tracing application this patch can be useful for measuring
+> kernel semaphore usage and contention.
 > 
-> QA-101 and "many eyeballs" are not at all in opposition.
-> The latter is how we find out about bugs on uncommon hardware,
-> and the former is what we need to track them and overall quality.
+
+Yup, looks good. I'll take it into my instrumentation patchset.
+
+I'll soon submit the markers-over-immediate values. The performance
+tests should be done upon this optimized version.
+
+Mathieu
+
+> Signed-off-by: Mike Mason <mmlnx@us.ibm.com>
+> Signed-off-by: David Wilder <dwilder@us.ibm.com>
+> ---
+>  lib/semaphore-sleepers.c |    9 +++++++++
+>  1 files changed, 9 insertions(+), 0 deletions(-)
 > 
-> A HUGE problem I have with current "efforts", is that once someone
-> reports a bug, the onus seems to be 99% on the *reporter* to find
-> the exact line of code or commit.  Ghad what a repressive method.
+> diff --git a/lib/semaphore-sleepers.c b/lib/semaphore-sleepers.c
+> index 1281805..5343a96 100644
+> --- a/lib/semaphore-sleepers.c
+> +++ b/lib/semaphore-sleepers.c
+> @@ -15,6 +15,7 @@
+>  #include <linux/sched.h>
+>  #include <linux/err.h>
+>  #include <linux/init.h>
+> +#include <linux/marker.h>
+>  #include <asm/semaphore.h>
+>  
+>  /*
+> @@ -50,6 +51,7 @@
+>  
+>  fastcall void __up(struct semaphore *sem)
+>  {
+> +	trace_mark(sem_up, "%p", sem);
+>  	wake_up(&sem->wait);
+>  }
+>  
+> @@ -59,6 +61,7 @@ fastcall void __sched __down(struct semaphore * sem)
+>  	DECLARE_WAITQUEUE(wait, tsk);
+>  	unsigned long flags;
+>  
+> +	trace_mark(sem_down, "%p", sem);
+>  	tsk->state = TASK_UNINTERRUPTIBLE;
+>  	spin_lock_irqsave(&sem->wait.lock, flags);
+>  	add_wait_queue_exclusive_locked(&sem->wait, &wait);
+> @@ -73,12 +76,14 @@ fastcall void __sched __down(struct semaphore * sem)
+>  		 * the wait_queue_head.
+>  		 */
+>  		if (!atomic_add_negative(sleepers - 1, &sem->count)) {
+> +			trace_mark(sem_down_resume, "%p", sem);
+>  			sem->sleepers = 0;
+>  			break;
+>  		}
+>  		sem->sleepers = 1;	/* us - see -1 above */
+>  		spin_unlock_irqrestore(&sem->wait.lock, flags);
+>  
+> +		trace_mark(sem_down_sched, "%p", sem);
+>  		schedule();
+>  
+>  		spin_lock_irqsave(&sem->wait.lock, flags);
+> @@ -97,6 +102,7 @@ fastcall int __sched __down_interruptible(struct semaphore * sem)
+>  	DECLARE_WAITQUEUE(wait, tsk);
+>  	unsigned long flags;
+>  
+> +	trace_mark(sem_down_intr, "%p", sem);
+>  	tsk->state = TASK_INTERRUPTIBLE;
+>  	spin_lock_irqsave(&sem->wait.lock, flags);
+>  	add_wait_queue_exclusive_locked(&sem->wait, &wait);
+> @@ -113,6 +119,7 @@ fastcall int __sched __down_interruptible(struct semaphore * sem)
+>  		 * and exit.
+>  		 */
+>  		if (signal_pending(current)) {
+> +			trace_mark(sem_down_intr_fail, "%p", sem);
+>  			retval = -EINTR;
+>  			sem->sleepers = 0;
+>  			atomic_add(sleepers, &sem->count);
+> @@ -126,12 +133,14 @@ fastcall int __sched __down_interruptible(struct semaphore * sem)
+>  		 * still hoping to get the semaphore.
+>  		 */
+>  		if (!atomic_add_negative(sleepers - 1, &sem->count)) {
+> +			trace_mark(sem_down_intr_resume, "%p", sem);
+>  			sem->sleepers = 0;
+>  			break;
+>  		}
+>  		sem->sleepers = 1;	/* us - see -1 above */
+>  		spin_unlock_irqrestore(&sem->wait.lock, flags);
+>  
+> +		trace_mark(sem_down_intr_sched, "%p", sem);
+>  		schedule();
+>  
+>  		spin_lock_irqsave(&sem->wait.lock, flags);
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-
-As a long time kernel tester, I see some problem with the
-newer "new development model". In the short merge windows,
-after to much time, there are to many patches.
-So there are problem to bisect bugs, and to have attention
-of developers. My impression is that in a week there are
-many more messages in lkml and to much bugs to be
-handled in these few days.
-
-I've two proposal:
-
-- better patch quality. I would like that every commit
-would compile. So an automatic commit test and public
-blames could increase the quality of first commits.
-[bisecting with non compilable point it is not a trivial
-task]
-
-- a slow down the patch inclusion on the merge windows
-(aka: not to much big changes in the first days).
-As tester I prefer that some big changes would be
-included in a "secondary window" (pre o rc release),
-in an other period as the big patch rush.
-
-ciao
-	cate
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
