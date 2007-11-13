@@ -1,71 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757156AbXKMOtF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755230AbXKMPMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757156AbXKMOtF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 09:49:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbXKMOsz
+	id S1755230AbXKMPMa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 10:12:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbXKMPMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 09:48:55 -0500
-Received: from il.qumranet.com ([82.166.9.18]:53564 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750776AbXKMOsz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 09:48:55 -0500
-Message-ID: <4739B916.4000405@qumranet.com>
-Date: Tue, 13 Nov 2007 16:47:50 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 13 Nov 2007 10:12:22 -0500
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:54216 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752936AbXKMPMV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 10:12:21 -0500
+Date: Tue, 13 Nov 2007 20:41:20 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: akpm@linux-foundation.org
+Cc: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org, gregkh@suse.de,
+       apw@shadowen.org
+Subject: Re: mm snapshot broken-out-2007-11-13-04-14 Build Fails due kobject cleanup
+Message-ID: <20071113151120.GA32528@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <200711131215.lADCFfht009739@imap1.linux-foundation.org>
 MIME-Version: 1.0
-To: Glauber de Oliveira Costa <gcosta@redhat.com>
-CC: "Dong, Eddie" <eddie.dong@intel.com>, linux-kernel@vger.kernel.org,
-       jeremy@goop.org, hollisb@us.ibm.com, kvm-devel@lists.sourceforge.net
-Subject: Re: [kvm-devel] [PATCH 2/3] kvmclock - the host part.
-References: <11945615632624-git-send-email-gcosta@redhat.com><11945615703593-git-send-email-gcosta@redhat.com> <11945615751747-git-send-email-gcosta@redhat.com> <10EA09EFD8728347A513008B6B0DA77A025DF8A2@pdsmsx411.ccr.corp.intel.com> <4739906B.2080103@redhat.com>
-In-Reply-To: <4739906B.2080103@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200711131215.lADCFfht009739@imap1.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Glauber de Oliveira Costa wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
-> Dong, Eddie escreveu:
->   
->>> +static void kvm_write_guest_time(struct kvm_vcpu *vcpu) +{
->>> +	struct timespec ts;
->>> +	int r;
->>> +
->>> +	if (!vcpu->clock_gpa)
->>> +		return;
->>> +
->>> +	/* Updates version to the next odd number, indicating
->>> we're writing */
->>> +	vcpu->hv_clock.version++;
->>> +	kvm_write_guest(vcpu->kvm, vcpu->clock_gpa,
->>> &vcpu->hv_clock, PAGE_SIZE);
->>> +
->>> +	kvm_get_msr(vcpu, MSR_IA32_TIME_STAMP_COUNTER,
->>> +			  &vcpu->hv_clock.last_tsc);
->>> +
->>> +	ktime_get_ts(&ts);
->>>       
->> Do we need to disable preemption here?
->>     
-> After thinking for a little while, you are theoretically right.
-> In the current state, we could even be preempted between all operations
-> ;-) Maybe after avi's suggestion of moving the call to it it will end up
-> in a preempt safe region, but anyway, it's safer to add the preempt
-> markers here.
-> I'll put it in next version, thanks
->
->   
+Hi Andrew,
 
-Well, you can't kvm_write_guest() with preemption enabled.
+The build fails, with the build error
 
-preempt notifiers to the rescue!  We have a callout during preemption, 
-so you can just zero out a flag there, and when we're scheduled again 
-retry the whole thing.
+drivers/pci/hotplug/rpadlpar_sysfs.c:28: warning: ˜struct kobjet declared inside parameter list
+drivers/pci/hotplug/rpadlpar_sysfs.c:28: warning: its scope is only this definition or declaration, which is probably not what you want
+drivers/pci/hotplug/rpadlpar_sysfs.c:59: warning: ˜struct kobjet declared inside parameter list
+drivers/pci/hotplug/rpadlpar_sysfs.c: In function ˜remove_slot_store: 
+drivers/pci/hotplug/rpadlpar_sysfs.c:79: error: expected ˜; before ˜return
+drivers/pci/hotplug/rpadlpar_sysfs.c: At top level:
+drivers/pci/hotplug/rpadlpar_sysfs.c:89: warning: initialization from incompatible pointer type
+drivers/pci/hotplug/rpadlpar_sysfs.c:92: warning: initialization from incompatible pointer type
+drivers/pci/hotplug/rpadlpar_sysfs.c: In function ˜remove_slot_store:
+drivers/pci/hotplug/rpadlpar_sysfs.c:80: warning: control reaches end of
+non-void function
+make[3]: *** [drivers/pci/hotplug/rpadlpar_sysfs.o] Error 1
+make[2]: *** [drivers/pci/hotplug] Error 2
+make[1]: *** [drivers/pci] Error 2
+make: *** [drivers] Error 2
+
+This is caused by the patch gregkh-driver-kobject-clean-up-rpadlpar-horrid-sysfs-abuse.patch.
+
+Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+--
+--- drivers/pci/hotplug/rpadlpar_sysfs.c	2007-11-13 19:42:26.000000000 +0530
++++ drivers/pci/hotplug/~rpadlpar_sysfs.c	2007-11-13 20:29:09.000000000 +0530
+@@ -54,7 +54,7 @@ static ssize_t add_slot_show(struct kobj
+ 	return sprintf(buf, "0\n");
+ }
+ 
+-static ssize_t remove_slot_store(struct kobjet *kobj,
++static ssize_t remove_slot_store(struct kobject *kobj,
+ 				 struct kobj_attribute *attr,
+ 				 const char *buf, size_t nbytes)
+ {
+@@ -74,7 +74,7 @@ static ssize_t remove_slot_store(struct 
+ 
+ 	rc = dlpar_remove_slot(drc_name);
+ 	if (rc)
+-		return rc
++		return rc;
+ 
+ 	return nbytes;
+ }
 
 -- 
-error compiling committee.c: too many arguments to function
-
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
