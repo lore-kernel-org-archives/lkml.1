@@ -1,67 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761118AbXKMURP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762558AbXKMUS2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761118AbXKMURP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 15:17:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbXKMUQ5
+	id S1762558AbXKMUS2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 15:18:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757926AbXKMUSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 15:16:57 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40059 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755899AbXKMUQ4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 15:16:56 -0500
-Date: Tue, 13 Nov 2007 12:15:54 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: ananth@in.ibm.com
-Cc: lkml <linux-kernel@vger.kernel.org>, hch@infradead.org,
-       randy.dunlap@oracle.com,
-       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
-       mathieu.desnoyers@polymtl.ca, davem@davemloft.net,
-       Prasanna S Panchamukhi <prasanna@in.ibm.com>
-Subject: Re: [PATCH] Move kprobes examples to samples/ (resend)
-Message-Id: <20071113121554.ee51b6c6.akpm@linux-foundation.org>
-In-Reply-To: <20071113153924.GA25095@in.ibm.com>
-References: <20071021123919.GA7648@in.ibm.com>
-	<20071113040045.0440e575.akpm@linux-foundation.org>
-	<20071113153924.GA25095@in.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 13 Nov 2007 15:18:16 -0500
+Received: from rtr.ca ([76.10.145.34]:4526 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756829AbXKMUSP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 15:18:15 -0500
+Message-ID: <473A067F.3090007@rtr.ca>
+Date: Tue, 13 Nov 2007 15:18:07 -0500
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, alsa-devel@alsa-project.org,
+       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org, protasnb@gmail.com,
+       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [BUG] New Kernel Bugs
+References: <20071113031553.3c7b5c16.akpm@linux-foundation.org> <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca> <20071113193750.GD1356@flint.arm.linux.org.uk>
+In-Reply-To: <20071113193750.GD1356@flint.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Nov 2007 21:09:25 +0530 Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
-
-> On Tue, Nov 13, 2007 at 04:00:45AM -0800, Andrew Morton wrote:
-> > On Sun, 21 Oct 2007 18:09:19 +0530 Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
-> > 
-> > > Move kprobes examples from Documentation/kprobes.txt to under samples/.
-> > > Patch originally by Randy Dunlap.
-> > > 
-> > > In addition, I have
-> > > 
-> > > o Updated the patch to apply on 2.6.23-mm1
-> > > o Modified examples code to build on multiple architectures. Currently,
-> > >   the examples code works for x86_64, x86_32 and powerpc
-> > > o Cleaned up unneeded #includes
-> > 
-> > Could you please take a look at what's needed to get this working on sparc64?
-> > 
-> > samples/kprobes/kretprobe_example.c: In function `ret_handler':
-> > samples/kprobes/kretprobe_example.c:19: error: implicit declaration of function `regs_return_value'
-> > 
-> > Thanks.
+Russell King wrote:
+> On Tue, Nov 13, 2007 at 09:08:32AM -0500, Mark Lord wrote:
+>> Ingo Molnar wrote:
+>> ..
+>>> This is all QA-101 that _cannot be argued against on a rational basis_, 
+>>> it's just that these sorts of things have been largely ignored for 
+>>> years, in favor of the all-too-easy "open source means many eyeballs and 
+>>> that is our QA" answer, which is a _good_ answer but by far not the most 
+>>> intelligent answer! Today "many eyeballs" is simply not good enough and 
+>>> nature (and other OS projects) will route us around if we dont change.
+>> ..
+>>
+>> QA-101 and "many eyeballs" are not at all in opposition.
+>> The latter is how we find out about bugs on uncommon hardware,
+>> and the former is what we need to track them and overall quality.
+>>
+>> A HUGE problem I have with current "efforts", is that once someone
+>> reports a bug, the onus seems to be 99% on the *reporter* to find
+>> the exact line of code or commit.  Ghad what a repressive method.
 > 
-> As Davem mentions, these are a fallout of sparc64 not having kretprobe
-> support. As a followup to this mail, I am sending a couple of patches
-> that should fix the issue (sparc64 cross compile works fine with the
-> patches).
+> 99% on the reporter?  Is that why I always try to understand the
+> reporters problem (*provided* it's in an area I know about) and come
+> up with a patch to test a theory or fix the issue?
+..
+
+Same here.
+
+I just find it weird that something can be known broken for several -rc*
+kernels before I happen to install it, discover it's broken on my own machine,
+and then I track it down, fix it, and submit the patch, generally all within a
+couple of hours.  Where the heck was the dude(ess) that broke it ??  AWOL.
+
+And when I receive hostility from the "maintainers" of said code for fixing
+their bugs, well.. that really motivates me to continue reporting new ones..
+
+> I'm _less_ inclined to provide such a "service" for lazy maintainers
+> who've moved off into new and wonderfully exciting technologies, to
+> churn out more patches for me to merge (and eventually provide a free
+> to them bug fixing service for.)
+> 
+> That's "less" inclined, not "won't".
 > 
 
-Thanks.
-
-> This patch depends on Mathieu Desnoyers' "Instrumentation menu removal"
-> patchset (http://marc.info/?l=linux-kernel&m=119496432229633&w=2)
-
-argh.  OK, I'll look at this later in the week.
