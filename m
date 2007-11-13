@@ -1,71 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756785AbXKMLhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756365AbXKMLj7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756785AbXKMLhY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 06:37:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbXKMLhK
+	id S1756365AbXKMLj7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 06:39:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbXKMLjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 06:37:10 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:41307 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753449AbXKMLhH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 06:37:07 -0500
-Message-ID: <47398C4A.40806@redhat.com>
-Date: Tue, 13 Nov 2007 09:36:42 -0200
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070811)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu, rusty@rustcorp.com.au,
-       chrisw@sous-sol.org, avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
-       kvm-devel@lists.sourceforge.net, zach@vmware.com,
-       jun.nakajima@intel.com, Steven Rostedt <rostedt@goodmis.org>,
-       kiran@scalemp.com
-Subject: Re: [PATCH 24/24] make vsmp a paravirt client
-References: <11946338683305-git-send-email-gcosta@redhat.com> <1194633873306-git-send-email-gcosta@redhat.com> <1194633878886-git-send-email-gcosta@redhat.com> <11946338832681-git-send-email-gcosta@redhat.com> <1194633888761-git-send-email-gco!sta@redhat.com> <11946338932611-git-send-email-gcosta@redhat.com> <1194633898545-git-send-email-gcosta@redhat.com> <11946339033567-git-send-email-gcosta@redhat.com> <11946339082711-git-send-email-gcosta@redhat.com> <11946339142999-git-send-email-gcosta@redhat.com> <20071111180709.GG22277@bingen.suse.de>
-In-Reply-To: <20071111180709.GG22277@bingen.suse.de>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 13 Nov 2007 06:39:48 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56951
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752122AbXKMLjq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 06:39:46 -0500
+Date: Tue, 13 Nov 2007 03:39:46 -0800 (PST)
+Message-Id: <20071113.033946.114918709.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: protasnb@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071113031553.3c7b5c16.akpm@linux-foundation.org>
+References: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com>
+	<20071113031553.3c7b5c16.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Tue, 13 Nov 2007 03:15:53 -0800
 
-Andi Kleen escreveu:
-> On Fri, Nov 09, 2007 at 04:43:05PM -0200, Glauber de Oliveira Costa wrote:
->> This patch makes vsmp a paravirt client. It now uses the whole
->> infrastructure provided by pvops. When we detect we're running
->> a vsmp box, we change the irq-related paravirt operations (and so,
->> it have to happen quite early), and the patching function
+> > NETWORKING===========================================================
+> > 
+> > RTNLGRP_ND_USEROPT does not report ifindex (IPv6)
+> > http://bugzilla.kernel.org/show_bug.cgi?id=9349
+> > Kernel: 2.6.24+
 > 
-> The PARAVIRT ifdefs look wrong. Surely you don't need them at all
-> because it cannot work at all without paravirt.
+> No response from developers
 
-The vsmp_64.c file is now compiled unconditionally, according to which
-me and kiran agreed to. The detection code is always run, but will only
-trigger when a suitable box is found. Accordingly, the paravirt structs
-are only touched when PARAVIRT is on. Otherwise, we don't even have the
-symbols.
+That's funny, then how come there was a proper patch fix posted
+and it's now in my tree ready to go to Linus?
 
-> Also you got some white space damage.
-
-Thanks, will fix.
-
-> And the "EM64T based comment" is wrong because there are AMD based 
-> vSMPs too.
-Just got it as-is from the old Kconfig. Do you think it should be fixed
-as well?
-
-> -Andi
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Remi - http://enigmail.mozdev.org
-
-iD8DBQFHOYxKjYI8LaFUWXMRApS3AJwJSYjW4Lw3dnPR4yMNfXABnMoQQQCcDMnf
-3wBQoPjGO/8HO1Os4Y21vIU=
-=S+KO
------END PGP SIGNATURE-----
+I think you like just saying "No response from developers" over and
+over again to make some of point about how developers are ignoring
+lots of bugs.  That's fine, but at least be accurate about it :-)
