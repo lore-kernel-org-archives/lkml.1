@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763193AbXKMTon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761923AbXKMTqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763193AbXKMTon (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 14:44:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761574AbXKMTod
+	id S1761923AbXKMTqH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 14:46:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758801AbXKMTpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 14:44:33 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52914 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763018AbXKMTob (ORCPT
+	Tue, 13 Nov 2007 14:45:54 -0500
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:61752 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758140AbXKMTpx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 14:44:31 -0500
-Date: Tue, 13 Nov 2007 11:43:32 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, steved@redhat.com,
-       trond.myklebust@fys.uio.no,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] nfs functions undefined [Was: mm snapshot
- broken-out-2007-11-13-04-14.tar.gz uploaded]
-Message-Id: <20071113114332.808bdc4a.akpm@linux-foundation.org>
-In-Reply-To: <20071113093442.bc2554c6.randy.dunlap@oracle.com>
-References: <200711131215.lADCFfht009739@imap1.linux-foundation.org>
-	<47399DA8.2060501@gmail.com>
-	<20071113093442.bc2554c6.randy.dunlap@oracle.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 13 Nov 2007 14:45:53 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HAJ6NOUdMROHU/2dsb2JhbACBWw
+Date: Tue, 13 Nov 2007 14:45:50 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@muc.de>, Chuck Ebbert <cebbert@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [patch 5/8] Immediate Values - x86 Optimization
+Message-ID: <20071113194550.GA4400@Krystal>
+References: <20071113185800.436425570@polymtl.ca> <20071113190040.740103668@polymtl.ca> <4739F609.50501@zytor.com> <20071113192445.GA1463@Krystal> <4739FCA0.4040702@zytor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <4739FCA0.4040702@zytor.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:42:20 up 10 days, 47 min,  7 users,  load average: 0.95, 1.26,
+	1.90
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Nov 2007 09:34:42 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+* H. Peter Anvin (hpa@zytor.com) wrote:
+> Mathieu Desnoyers wrote:
+>>> - Use "=g" constraint for char immediate value inline assembly.
+>>>
+>>> "=g" is the same as "=rmi" which is inherently bogus.  In your actual 
+>>> code you use "=r", the correct constraint is "=q".
+>> q
+>>     Any register accessible as rl. In 32-bit mode, a, b, c, and d; in 
+>> 64-bit mode, any integer register. I am worried that "=q" might exclude 
+>> the si and di registers in 32-bit mode.
+>> What exactly is wrong with "=r" ?
+>
+> For "char" (8-bit) values, sp/bp/si/di are illegal in 32-bit mode.
+>
+> Hence "=q".
+>
 
-> On Tue, 13 Nov 2007 13:50:48 +0100 Jiri Slaby wrote:
-> 
-> > On 11/13/2007 01:15 PM, akpm@linux-foundation.org wrote:
-> > > The mm snapshot broken-out-2007-11-13-04-14.tar.gz has been uploaded to
-> > 
-> > ERROR: "nfs_put_super" [fs/nfs/nfs.ko] undefined!
-> > ERROR: "nfs_sb_deactive" [fs/nfs/nfs.ko] undefined!
-> > make[2]: *** [__modpost] Error 1
-> > make[1]: *** [modules] Error 2
+Ah! yep, I see, so we say:
 
-Argh, that's me trying to fix Steve's fix to Steve's fix.
+1 byte : "=q"
+2 bytes : "=r"
+4 bytes : "=r"
+8 bytes : "=r"
 
-> > config:
-> > http://www.fi.muni.cz/~xslaby/sklad/config_64
-> 
-> 
-> 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> nfs_put_super() and nfs_sb_deactive() should not be inside an
-> ifdef CONFIG_NFS_V4 block.
+? (si and di appear to be legal for 2 and 4 bytes in 32-bit mode)
 
-<queues nfs-stop-sillyname-renames-and-unmounts-from-racing-fix-fix-fix.patch>
 
-Thanks.
+
+
+> 	-hpa
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
