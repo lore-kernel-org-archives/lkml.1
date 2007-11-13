@@ -1,91 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761123AbXKMSrD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761505AbXKMSr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761123AbXKMSrD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 13:47:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756042AbXKMSqx
+	id S1761505AbXKMSr1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 13:47:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757611AbXKMSrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 13:46:53 -0500
-Received: from www17.your-server.de ([213.133.104.17]:60511 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755496AbXKMSqw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 13:46:52 -0500
-Message-ID: <4739F112.5060604@m3y3r.de>
-Date: Tue, 13 Nov 2007 19:46:42 +0100
-From: Thomas Meyer <thomas@m3y3r.de>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
+	Tue, 13 Nov 2007 13:47:15 -0500
+Received: from rtr.ca ([76.10.145.34]:3650 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758597AbXKMSrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 13:47:12 -0500
+Message-ID: <4739F12E.5020807@rtr.ca>
+Date: Tue, 13 Nov 2007 13:47:10 -0500
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: v2.6.24-rc2-409-g9418d5d: attempt to access beyond end of device
-Content-Type: text/plain; charset=ISO-8859-15
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, protasnb@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+References: <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca> <20071113164650.GA28493@elte.hu> <4739E3D0.10201@rtr.ca> <20071113181228.GF4250@stusta.de> <4739EA83.5040006@rtr.ca> <20071113183605.GG4250@stusta.de>
+In-Reply-To: <20071113183605.GG4250@stusta.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-i get these errors in the kernel log while trying to copy a file from an
-iso9660 file system (/dev/sr0) to my intenal hard disk. This is the
-second cd/dvd that gives me this error. kernel 2.6.23 works without any
-problems, so i think this is not an medium error:
+Adrian Bunk wrote:
+...
+> I did bisecting myself, and I know that it costs time and work.
+> 
+> But the first point is the above one that it makes otherwise nearly 
+> undebuggable problems debuggable and fixable.
+..
 
-ISO 9660 Extensions: Microsoft Joliet Level 3
-ISOFS: changing to secondary root
-attempt to access beyond end of device
-sr0: rw=0, want=81220, limit=40944
-Buffer I/O error on device sr0, logical block 20304
-attempt to access beyond end of device
-sr0: rw=0, want=81224, limit=40944
-Buffer I/O error on device sr0, logical block 20305
-attempt to access beyond end of device
-sr0: rw=0, want=81228, limit=40944
-Buffer I/O error on device sr0, logical block 20306
-attempt to access beyond end of device
-sr0: rw=0, want=81232, limit=40944
-Buffer I/O error on device sr0, logical block 20307
-attempt to access beyond end of device
-sr0: rw=0, want=81236, limit=40944
-Buffer I/O error on device sr0, logical block 20308
-attempt to access beyond end of device
-sr0: rw=0, want=81240, limit=40944
-Buffer I/O error on device sr0, logical block 20309
-attempt to access beyond end of device
-sr0: rw=0, want=81244, limit=40944
-Buffer I/O error on device sr0, logical block 20310
-attempt to access beyond end of device
-sr0: rw=0, want=81248, limit=40944
-Buffer I/O error on device sr0, logical block 20311
-attempt to access beyond end of device
-sr0: rw=0, want=81220, limit=40944
-Buffer I/O error on device sr0, logical block 20304
-attempt to access beyond end of device
-sr0: rw=0, want=81224, limit=40944
-Buffer I/O error on device sr0, logical block 20305
-attempt to access beyond end of device
-sr0: rw=0, want=1028968, limit=40944
-Buffer I/O error on device sr0, logical block 257241
-attempt to access beyond end of device
-sr0: rw=0, want=1028972, limit=40944
-Buffer I/O error on device sr0, logical block 257242
-attempt to access beyond end of device
-sr0: rw=0, want=1028976, limit=40944
-attempt to access beyond end of device
-sr0: rw=0, want=1028980, limit=40944
-attempt to access beyond end of device
-sr0: rw=0, want=1028984, limit=40944
-attempt to access beyond end of device
-sr0: rw=0, want=1028988, limit=40944
-attempt to access beyond end of device
-sr0: rw=0, want=1028992, limit=40944
-attempt to access beyond end of device
-sr0: rw=0, want=1028996, limit=40944
-attempt to access beyond end of device
-sr0: rw=0, want=1028968, limit=40944
-attempt to access beyond end of device
-sr0: rw=0, want=1028972, limit=40944
+Definitely useful, no question.
 
-does anybody have similiar problems with current linus kernel?
+But the problem is now that kernel devs are addicted to it,
+many won't even consider resolving a problem any other way.
 
-mfg
-thomas
+That's not "maintaining" (or supporting) one's code.
 
+And when a "maintainer" is too busy to find/fix their own bugs,
+that could be a sign that they've bitten off too big of a chunk
+of the kernel, and it's time for them to distribute code maintainership.
 
+Cheers
