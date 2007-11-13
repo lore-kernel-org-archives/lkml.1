@@ -1,47 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762450AbXKMTm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762609AbXKMTnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762450AbXKMTm6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 14:42:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761310AbXKMTlS
+	id S1762609AbXKMTnZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 14:43:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761316AbXKMTlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 14:41:18 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:55265 "EHLO fieldses.org"
+	Tue, 13 Nov 2007 14:41:20 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:47710 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758519AbXKMTlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 14:41:14 -0500
-Date: Tue, 13 Nov 2007 14:41:13 -0500
-To: Christian Kujau <lists@nerdbynature.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: stuck nfsd processes with 2.6.24-rc2
-Message-ID: <20071113194113.GA22590@fieldses.org>
-References: <alpine.DEB.0.9999.0711131955530.27452@sheep.housecafe.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.0.9999.0711131955530.27452@sheep.housecafe.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	id S1760217AbXKMTlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 14:41:18 -0500
+Message-Id: <20071113194025.807441753@polymtl.ca>
+References: <20071113193349.214098508@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Tue, 13 Nov 2007 14:33:56 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Mike Mason <mmlnx@us.ibm.com>, David Wilder <dwilder@us.ibm.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [RFC 7/7] Add Markers Into Semaphore Primitives
+Content-Disposition: inline; filename=add-markers-into-semaphore-primitives.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 13 Nov 2007 19:40:26 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 08:07:55PM +0100, Christian Kujau wrote:
-> I noticed that I cannot use kernel nfsd any more with 2.6.24-rc2, last 
-> working kernel as of now is 2.6.23.1. First I was using nfsv4 but switching 
-> to nfsv3 did not help either: exported shares can be mounted (client: 
-> 2.6-git/powerpc32, nfs-common-1.1.1~git-20070709-3ubuntu1), but running "ls 
-> /mountpoint" (even without "-l") on the client is enough to get the [nfsd] 
-> processes in "D" state.
-> Restarting the rpc.nfsd process on the does not help much, the new rpc.nfsd 
-> processes get stuck quickly.
->
-> For more details please see http://nerdbynature.de/bits/2.6.24-rc2/nfsd/
->
-> I haven't seen this particular issue on the list recently, hence my post.
-> I'll try to git-bisect my way through the changesets, but it'll take some 
-> time...
+This patch adds several markers around semaphore primitives.
+Along with a tracing application this patch can be useful for measuring
+kernel semaphore usage and contention.
 
-Could you get a sysrq-T trace?  (First get the [nfsd] processes in [D]
-state.  Then type sysrq-T, or "echo t >/proc/sysrq-trigger".  Then
-extract the stuff that's dumped to the logs.)
+Signed-off-by: Mike Mason <mmlnx@us.ibm.com>
+Signed-off-by: David Wilder <dwilder@us.ibm.com>
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ lib/semaphore-sleepers.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
---b.
+diff --git a/lib/semaphore-sleepers.c b/lib/semaphore-sleepers.c
+index 1281805..5343a96 100644
+--- a/lib/semaphore-sleepers.c
++++ b/lib/semaphore-sleepers.c
+@@ -15,6 +15,7 @@
+ #include <linux/sched.h>
+ #include <linux/err.h>
+ #include <linux/init.h>
++#include <linux/marker.h>
+ #include <asm/semaphore.h>
+ 
+ /*
+@@ -50,6 +51,7 @@
+ 
+ fastcall void __up(struct semaphore *sem)
+ {
++	trace_mark(sem_up, "%p", sem);
+ 	wake_up(&sem->wait);
+ }
+ 
+@@ -59,6 +61,7 @@ fastcall void __sched __down(struct semaphore * sem)
+ 	DECLARE_WAITQUEUE(wait, tsk);
+ 	unsigned long flags;
+ 
++	trace_mark(sem_down, "%p", sem);
+ 	tsk->state = TASK_UNINTERRUPTIBLE;
+ 	spin_lock_irqsave(&sem->wait.lock, flags);
+ 	add_wait_queue_exclusive_locked(&sem->wait, &wait);
+@@ -73,12 +76,14 @@ fastcall void __sched __down(struct semaphore * sem)
+ 		 * the wait_queue_head.
+ 		 */
+ 		if (!atomic_add_negative(sleepers - 1, &sem->count)) {
++			trace_mark(sem_down_resume, "%p", sem);
+ 			sem->sleepers = 0;
+ 			break;
+ 		}
+ 		sem->sleepers = 1;	/* us - see -1 above */
+ 		spin_unlock_irqrestore(&sem->wait.lock, flags);
+ 
++		trace_mark(sem_down_sched, "%p", sem);
+ 		schedule();
+ 
+ 		spin_lock_irqsave(&sem->wait.lock, flags);
+@@ -97,6 +102,7 @@ fastcall int __sched __down_interruptible(struct semaphore * sem)
+ 	DECLARE_WAITQUEUE(wait, tsk);
+ 	unsigned long flags;
+ 
++	trace_mark(sem_down_intr, "%p", sem);
+ 	tsk->state = TASK_INTERRUPTIBLE;
+ 	spin_lock_irqsave(&sem->wait.lock, flags);
+ 	add_wait_queue_exclusive_locked(&sem->wait, &wait);
+@@ -113,6 +119,7 @@ fastcall int __sched __down_interruptible(struct semaphore * sem)
+ 		 * and exit.
+ 		 */
+ 		if (signal_pending(current)) {
++			trace_mark(sem_down_intr_fail, "%p", sem);
+ 			retval = -EINTR;
+ 			sem->sleepers = 0;
+ 			atomic_add(sleepers, &sem->count);
+@@ -126,12 +133,14 @@ fastcall int __sched __down_interruptible(struct semaphore * sem)
+ 		 * still hoping to get the semaphore.
+ 		 */
+ 		if (!atomic_add_negative(sleepers - 1, &sem->count)) {
++			trace_mark(sem_down_intr_resume, "%p", sem);
+ 			sem->sleepers = 0;
+ 			break;
+ 		}
+ 		sem->sleepers = 1;	/* us - see -1 above */
+ 		spin_unlock_irqrestore(&sem->wait.lock, flags);
+ 
++		trace_mark(sem_down_intr_sched, "%p", sem);
+ 		schedule();
+ 
+ 		spin_lock_irqsave(&sem->wait.lock, flags);
+
+
+-
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
