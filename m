@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760447AbXKMFL4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760562AbXKMFXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760447AbXKMFL4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 00:11:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbXKMFLr
+	id S1760562AbXKMFXf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 00:23:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbXKMFX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 00:11:47 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:58034 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751167AbXKMFLq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 00:11:46 -0500
-Date: Tue, 13 Nov 2007 16:11:45 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: David <david@unsolicited.net>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: 2.6.24-rc1 - Regularly getting processes stuck in D state on
- startup
-Message-Id: <20071113161145.6433e1c1.sfr@canb.auug.org.au>
-In-Reply-To: <394418014.24002@ustc.edu.cn>
-References: <472F5F8B.7090200@unsolicited.net>
-	<E1IpJLy-0002ag-TL@localhost>
-	<394337271.18157@ustc.edu.cn>
-	<20071107141717.6eb0dc25.sfr@canb.auug.org.au>
-	<20071107142609.071532ad.sfr@canb.auug.org.au>
-	<394418014.24002@ustc.edu.cn>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i486-pc-linux-gnu)
+	Tue, 13 Nov 2007 00:23:27 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54478 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751950AbXKMFX0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 00:23:26 -0500
+Date: Mon, 12 Nov 2007 21:23:15 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: davem@davemloft.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3]: tty - fix network driver interactions with
+ TCGET/SET calls
+Message-Id: <20071112212315.e23dfe7d.akpm@linux-foundation.org>
+In-Reply-To: <20071102153329.1a236477@the-village.bc.nu>
+References: <20071102153329.1a236477@the-village.bc.nu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__13_Nov_2007_16_11_45_+1100_iMoYIdrJy9zD92Uc"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__13_Nov_2007_16_11_45_+1100_iMoYIdrJy9zD92Uc
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, 2 Nov 2007 15:33:29 +0000 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-On Wed, 7 Nov 2007 14:46:47 +0800 Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
->
-> Thank you(including David:-)) for the confirmation.
->=20
-> Andrew: so mm-speed-up-writeback-ramp-up-on-clean-systems.patch is a
-> safe and working patch ;-)
+> Dave Miller noted various cases where line disciplines for things like
+> ppp go poking around in termios themselves in ways that broke with the
+> new termios code. Rather than have them all learning about termios
+> internals provide proper methods for this
+> 
+> - tty_mode_ioctl()
+> 
+> 	This handles all the terminal mode handling for speed/carrier etc
+> and none of the methods are ldisc dependant so they can be called by any
+> user
+> 
+> - tty_perform_flush()
+> 
+> 	This extracts the flush functionality and enables pppd the ppp
+> layer to share it cleanly.
+> 
+> 
+> The existing n_tty_ioctl code is refactored in this patch to provide the
+> new functions and to call them itself appropriately. This patch has no
+> (intended) behaviour changes and simply prepares for the other fixes.
 
-So is anything happening with this patch?  It is really necessary to have
-it (or something equivalent) in 2.6.24.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__13_Nov_2007_16_11_45_+1100_iMoYIdrJy9zD92Uc
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHOTIVTgG2atn1QN8RAuqoAJ9bM213jG3sYj9CQZzRUqqunCmM2wCgiPYQ
-11OpF9BfpFne7+cUQiEG7UI=
-=cNGW
------END PGP SIGNATURE-----
-
---Signature=_Tue__13_Nov_2007_16_11_45_+1100_iMoYIdrJy9zD92Uc--
+net/irda/irnet/irnet_ppp.c: In function 'dev_irnet_ioctl':
+net/irda/irnet/irnet_ppp.c:738: warning: passing argument 2 of 'kernel_termios_to_user_termios_1' from incompatible pointer type
+net/irda/irnet/irnet_ppp.c:750: warning: passing argument 1 of 'user_termios_to_kernel_termios_1' from incompatible pointer type
