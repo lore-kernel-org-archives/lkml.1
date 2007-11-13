@@ -1,110 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759638AbXKMSKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760162AbXKMSNF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759638AbXKMSKf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 13:10:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755581AbXKMSKZ
+	id S1760162AbXKMSNF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 13:13:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756587AbXKMSMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 13:10:25 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:39363 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754952AbXKMSKY (ORCPT
+	Tue, 13 Nov 2007 13:12:52 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:39261 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754830AbXKMSMv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 13:10:24 -0500
-Date: Tue, 13 Nov 2007 18:04:10 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Natalie Protasevich <protasnb@gmail.com>, alsa-devel@alsa-project.org,
-       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       bugme-daemon@bugzilla.kernel.org, linux-input@atrey.karlin.mff.cuni.cz
+	Tue, 13 Nov 2007 13:12:51 -0500
+Date: Tue, 13 Nov 2007 19:12:28 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Mark Lord <liml@rtr.ca>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, protasnb@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
+       bugme-daemon@bugzilla.kernel.org
 Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071113180410.GA1356@flint.arm.linux.org.uk>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	Natalie Protasevich <protasnb@gmail.com>,
-	alsa-devel@alsa-project.org, netdev@vger.kernel.org,
-	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
-	linux-input@atrey.karlin.mff.cuni.cz
-References: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com> <20071113031553.3c7b5c16.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <20071113181228.GF4250@stusta.de>
+References: <20071113031553.3c7b5c16.akpm@linux-foundation.org> <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca> <20071113164650.GA28493@elte.hu> <4739E3D0.10201@rtr.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20071113031553.3c7b5c16.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <4739E3D0.10201@rtr.ca>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 03:15:53AM -0800, Andrew Morton wrote:
-> On Mon, 12 Nov 2007 22:42:32 -0800 "Natalie Protasevich" <protasnb@gmail.com> wrote:
-> > PLATFORM===============================================================
-> > 
-> > xipImage is built so that uBoot cant run it (ARM)
-> > http://bugzilla.kernel.org/show_bug.cgi?id=9356
-> > Kernel: 2.6.21
-> 
-> Zero responses from developers
+On Tue, Nov 13, 2007 at 12:50:08PM -0500, Mark Lord wrote:
+> Ingo Molnar wrote:
+>>
+>> for example git-bisect was godsent. I remember that years ago bisection of 
+>> a bug was a very laborous task so that it was only used as a final, 
+>> last-ditch approach for really nasty bugs. Today we can autonomouly bisect 
+>> build bugs via a simple shell command around "git-bisect run", without any 
+>> human interaction! This freed up testing resources 
+> ..
+>
+> It's only a godsend for the few people who happen to be kernel developers
 
-For christ sake Andrew.  Some of us are not employed to do kernel work
-24h x 365days a year.  You might be, I'm not.
+It's also godsend for users who want a regression they observe fixed.
 
-First thing, it's not a regression.  Second thing, it's *not* a bug.
+If you can tell which patch broke it you often turned a very hard to 
+debug problem into a relatively easy fixable problem.
 
-uboot requires kernel images to be specially wrapped up in their crappy
-formats before uboot will recognise it.  This means that if someone wants
-to boot a binary image with uboot, they need to either:
+As an example, [1] was an issue a normal user could discover, and 
+bisecting made the difference between "nearly undebuggable" and
+"easily fixable by revertng a commit".
 
-1. work out the correct 'mkimage' command and run that program after
-   the kernel build has completed.
+> and who happen to already use git.
 
-2. sort out adding a new target to the kernel makefiles to run this
-   uboot specific 'mkimage' command automatically.
+As already said in thread, the required instructions for bisecting are 
+relatively short and simple (assuming the user can build his own 
+kernels).
 
-And Alexandre (the original feature-missing reporter) has linked to a
-message where a patch was proposed to do (2).  So obviously it's no
-longer a problem for the reporter.
+> It's a 540MByte download over a slow link for everyone else.
 
-> > with CONFIG_NO_HZ and/or CONFIG_HPET_TIMER set kernel 2.6.23 doesn't
-> > boot (ARM, Timer)
-> > http://bugzilla.kernel.org/show_bug.cgi?id=9229
-> > Kernel: 2.6.23
-> 
-> No response from developers
+Not everyone has a slow connection.
 
-Bug was assigned to reporter, so I ignored it on the grounds that the
-reporter was resolving it.  Plus, until recently I didn't have any
-workable PXA systems to test stuff on.
+For me, the speed of cloning a tree from git.kernel.org is completely 
+cpu bound and limited by the speed of the 1.8 Ghz Athlon in my 
+computer...
 
-In the end, a similar issue has been resolved anyway after a lot of
-discussion on the ARM lists about how PXA should handle one-shot mode
-with clockevents. It took absolutely ages to get agreement on what was
-a simple patch.
+But if there is a real life problem like people with extremely slow and 
+expensive internet connections not being able to bisect bugs these 
+problems should be named and fixed (e.g. by sending CDs).
 
-commit 91bc51d8a10b00d8233dd5b6f07d7eb40828b87d
-Author: Russell King <rmk@dyn-67.arm.linux.org.uk>
-Date:   Thu Nov 8 23:35:46 2007 +0000
+> -ml
 
-    [ARM] pxa: fix one-shot timer mode
+cu
+Adrian
 
-    One-shot timer mode on PXA has various bugs which prevent kernels
-    build with NO_HZ enabled booting.  They end up spinning on a
-    permanently asserted timer interrupt because we don't properly
-    clear it down - clearing the OIER bit does not stop the pending
-    interrupt status.  Fix this in the set_mode handler as well.
-
-    Moreover, the code which sets the next expiry point may race with
-    the hardware, and we might not set the match register sufficiently
-    in the future.  If we encounter that situation, return -ETIME so
-    the generic time code retries.
-
-    Acked-by: Thomas Gleixner <tglx@linutronix.de>
-    Acked-by: Nicolas Pitre <nico@cam.org>
-    Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-
-Ergo, the bug can be closed provided the reporter re-tests a recent git
-snapshot.  Sorry, no idea how the above commit relates to Linus' releases
-and/or git snapshots.
+[1] http://lkml.org/lkml/2007/11/12/154
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
