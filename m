@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbXKMOS6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756332AbXKMOXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756818AbXKMOS6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 09:18:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbXKMOSs
+	id S1756332AbXKMOXO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 09:23:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbXKMOW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 09:18:48 -0500
-Received: from rtr.ca ([76.10.145.34]:2280 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753355AbXKMOSq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 09:18:46 -0500
-Message-ID: <4739B245.9040305@rtr.ca>
-Date: Tue, 13 Nov 2007 09:18:45 -0500
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Natalie Protasevich <protasnb@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, alsa-devel@alsa-project.org,
-       linux-ide@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-input@atrey.karlin.mff.cuni.cz, bugme-daemon@bugzilla.kernel.org
-Subject: Re: [BUG] New Kernel Bugs
-References: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com> <20071113031553.3c7b5c16.akpm@linux-foundation.org> <4739ADA2.4060604@rtr.ca>
-In-Reply-To: <4739ADA2.4060604@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Nov 2007 09:22:58 -0500
+Received: from gmp-eb-mail-2.sun.com ([192.18.6.24]:47614 "EHLO
+	gmp-eb-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753362AbXKMOW5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 09:22:57 -0500
+X-Greylist: delayed 769 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Nov 2007 09:22:57 EST
+Date: Tue, 13 Nov 2007 17:09:46 +0300
+From: Alex Tomas <bzzz.tomas@gmail.com>
+Subject: Re: [PATCH] ext4: dir inode reservation V3
+In-reply-to: <4739B0C0.3060907@suse.de>
+To: coyli@suse.de
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-id: <4739B02A.2000209@gmail.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=UTF-8
+Content-transfer-encoding: 7BIT
+References: <4739B0C0.3060907@suse.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.10) Gecko/20070302
+ Fedora/1.5.0.10-1.fc6 pango-text Thunderbird/1.5.0.10 Mnenhy/0.7.5.666
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Andrew Morton wrote:
->> On Mon, 12 Nov 2007 22:42:32 -0800 "Natalie Protasevich" 
->> <protasnb@gmail.com> wrote:
-> ..
-..
->>> Suspend to RAM resume hangs on a tickless (NO_HZ) kernel
->>> http://bugzilla.kernel.org/show_bug.cgi?id=9275
->>> Kernel: 2.6.23
->>> This is HP notebook nc6320 T2400 945GM
->> No response from developers
-> ..
-> 
-> I *still* get very slow resume-from-RAM quite often here
-> (new in 2.6.22 kernel, wasn't there in early 2.6.23-rc*).
-..
+hmm. so you trade 265% degradation of creation for 40% improvement of unlink?
 
-Typo.  That should have said:
+thanks, Alex
 
-> (new in 2.6.23 kernel, wasn't there in early 2.6.23-rc*).
+Coly Li wrote:
+> 			normal ext4			ext4 with dir inode reservation
+> 	mount options:	-o data=writeback		-o data=writeback,dir_ireserve=low
+> 	Create dirs:	real    0m49.101s		real    2m59.703s
+> 	Create files:	real    24m17.962s		real    21m8.161s
+> 	Unlink all:	real    24m43.788s		real    17m29.862s
+> Creating dirs with dir inode reservation is slower than normal ext4 as predicted, because allocating
+> directory inodes in non-linear order will cause extra hard disk seeking and block I/O. Creating
+> files with dir inode reservation is 13% faster than normal ext4. Unlink all the directories and
+> files is 29.2% faster as expected.
+> When number of directories is increased, the performance improvement will be more considerable. More
+> benchmark result will be posted here if necessary, because I need more time to run more test cases.
+
