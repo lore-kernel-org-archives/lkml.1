@@ -1,57 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761239AbXKMXh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761806AbXKMXhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761239AbXKMXh0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 18:37:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756406AbXKMXhK
+	id S1761806AbXKMXhu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 18:37:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761257AbXKMXh1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 18:37:10 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:43490 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755895AbXKMXhI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 18:37:08 -0500
-Date: Tue, 13 Nov 2007 15:22:58 -0800
-From: Greg KH <greg@kroah.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       xen-devel@lists.xensource.com, LKML <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>, Chris Wright <chrisw@sous-sol.org>,
-       virtualization@lists.osdl.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Keir Fraser <keir@xensource.com>, Stable Kernel <stable@kernel.org>
-Subject: Re: [stable] [PATCH 00/12] xen/paravirt_ops patches for 2.6.24
-Message-ID: <20071113232258.GA10338@kroah.com>
-References: <20071015204840.074767068@goop.org> <20071015215406.GA1588@kroah.com> <4713E2D6.90801@goop.org>
+	Tue, 13 Nov 2007 18:37:27 -0500
+Received: from rtr.ca ([76.10.145.34]:3696 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761014AbXKMXhX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 18:37:23 -0500
+Message-ID: <473A3531.3030509@rtr.ca>
+Date: Tue, 13 Nov 2007 18:37:21 -0500
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4713E2D6.90801@goop.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, alsa-devel@alsa-project.org,
+       linux-ide@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-input@atrey.karlin.mff.cuni.cz, bugme-daemon@bugzilla.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+References: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com> <20071113031553.3c7b5c16.akpm@linux-foundation.org> <4739ADA2.4060604@rtr.ca> <alpine.LFD.0.9999.0711131521590.3265@localhost.localdomain> <4739E4E5.2010602@rtr.ca> <alpine.LFD.0.9999.0711132345480.3265@localhost.localdomain>
+In-Reply-To: <alpine.LFD.0.9999.0711132345480.3265@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 15, 2007 at 02:59:50PM -0700, Jeremy Fitzhardinge wrote:
-> Greg KH wrote:
-> > Yeah, but you cc:ed all 12 patches to stable@.  The majority of which we
-> > don't want to take, right?  Which specific ones should stable@ care
-> > about?
+Thomas Gleixner wrote:
+> On Tue, 13 Nov 2007, Mark Lord wrote:
 > 
-> Crap, sorry about that.  I'd just intended to send the overview and the
-> four patches, which have explicit CC: stable lines in the patch
-> descriptions.  They are:
+>> Thomas Gleixner wrote:
+>>> On Tue, 13 Nov 2007, Mark Lord wrote:
+>>>
+>>>>> Andrew Morton wrote:
+>>>>>>> On Mon, 12 Nov 2007 22:42:32 -0800 "Natalie Protasevich"
+>>>>>>> <protasnb@gmail.com> wrote:
+>>>>> ..
+>>>>>>>>> with CONFIG_NO_HZ and/or CONFIG_HPET_TIMER set kernel 2.6.23
+>>>>>> doesn't
+>>>>>>>>> boot (ARM, Timer)
+>>>>>>>>> http://bugzilla.kernel.org/show_bug.cgi?id=9229
+>>>>>>>>> Kernel: 2.6.23
+>>>>>>>>> No response from developers
+>>>>> ..
+>>> The bug report is bogus. ARM has no CONFIG_HPET_TIMER.  
+>>>>> Note:  that same bug exists/existed on i386 back when NO_HZ was
+>>>>> introduced (2.6.21?).  I still see it from time to time on my Quad core
+>>>>> system (very rare), but not any more on my Duo notebook where it used
+>>>>> to happen about 1 in n boots (n < 10).
+>>>>>> AFAICT no fix was ever released for it.
+>>> Hmm, at which point does the boot stop ? 
+>> ..
+>>
+>> Just as it prints out these messages, sometimes one of them,
+>> sometimes both (or all four on the quad core):
+>>
+>> kernel: switched to high resolution mode on cpu 1
+>> kernel: switched to high resolution mode on cpu 0 
 > 
-> Subject: [PATCH 06/12] xen: add batch completion callbacks
-> Subject: [PATCH 07/12] xen: deal with stale cr3 values when unpinning
-> pagetables
-> Subject: [PATCH 10/12] xen: fix incorrect vcpu_register_vcpu_info
-> hypercall argument
-> Subject: [PATCH 12/12] xfs: eagerly remove vmap mappings to avoid
-> upsetting Xen
+> It's completely dead afterwards ?
 
-These don't apply now due to the x86 merge.  Care to backport them and
-send them to the stable@kernel.org address so we can apply them
-properly?
+Yeah.  No magic sysrq key or anything.
+There's gotta be a race somewhere that's causing it,
+but it's not obvious where to look for it.
 
-thanks,
+My regular 2-core notebook no longer suffers from it,
+and subtle .config changes used to make it come and go
+back when it first appeared.
 
-greg k-h
+The quad-core has only done it twice on me thus far.
+
+Tracking this one down looks tricky.  It might require some early lockup
+detection code to be tailor made or something.
+
+Cheers
