@@ -1,60 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761098AbXKMUAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759815AbXKMUBN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761098AbXKMUAe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 15:00:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757407AbXKMUA1
+	id S1759815AbXKMUBN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 15:01:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759054AbXKMUAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 15:00:27 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:37414 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753288AbXKMUA0 (ORCPT
+	Tue, 13 Nov 2007 15:00:54 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:49747 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758140AbXKMUAw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 15:00:26 -0500
-Message-ID: <473A017D.2030501@zytor.com>
-Date: Tue, 13 Nov 2007 11:56:45 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Tue, 13 Nov 2007 15:00:52 -0500
+Date: Tue, 13 Nov 2007 21:00:28 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Mark Lord <liml@rtr.ca>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, protasnb@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+Message-ID: <20071113200028.GJ4250@stusta.de>
+References: <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca> <20071113164650.GA28493@elte.hu> <4739E3D0.10201@rtr.ca> <20071113181228.GF4250@stusta.de> <4739EA83.5040006@rtr.ca> <20071113183605.GG4250@stusta.de> <4739F12E.5020807@rtr.ca> <20071113190428.GH4250@stusta.de> <4739FA4D.1050900@rtr.ca>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@muc.de>, Chuck Ebbert <cebbert@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [patch 5/8] Immediate Values - x86 Optimization
-References: <20071113185800.436425570@polymtl.ca> <20071113190040.740103668@polymtl.ca> <4739F609.50501@zytor.com> <20071113192445.GA1463@Krystal> <4739FCA0.4040702@zytor.com> <20071113194550.GA4400@Krystal>
-In-Reply-To: <20071113194550.GA4400@Krystal>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4739FA4D.1050900@rtr.ca>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> * H. Peter Anvin (hpa@zytor.com) wrote:
->> Mathieu Desnoyers wrote:
->>>> - Use "=g" constraint for char immediate value inline assembly.
->>>>
->>>> "=g" is the same as "=rmi" which is inherently bogus.  In your actual 
->>>> code you use "=r", the correct constraint is "=q".
->>> q
->>>     Any register accessible as rl. In 32-bit mode, a, b, c, and d; in 
->>> 64-bit mode, any integer register. I am worried that "=q" might exclude 
->>> the si and di registers in 32-bit mode.
->>> What exactly is wrong with "=r" ?
->> For "char" (8-bit) values, sp/bp/si/di are illegal in 32-bit mode.
+On Tue, Nov 13, 2007 at 02:26:05PM -0500, Mark Lord wrote:
+> Adrian Bunk wrote:
+>> On Tue, Nov 13, 2007 at 01:47:10PM -0500, Mark Lord wrote:
+>>> Adrian Bunk wrote:
+> ..
+>> Another point is that it shifts the work from the few experienced 
+>> developers to the many users. Users (and voluntary testers) we have
+>> many, but developer time for debugging bug reports is a quite scarce 
+>> resource.
 >>
->> Hence "=q".
+>>> And when a "maintainer" is too busy to find/fix their own bugs,
+>>> that could be a sign that they've bitten off too big of a chunk
+>>> of the kernel, and it's time for them to distribute code maintainership.
 >>
-> 
-> Ah! yep, I see, so we say:
-> 
-> 1 byte : "=q"
-> 2 bytes : "=r"
-> 4 bytes : "=r"
-> 8 bytes : "=r"
-> 
-> ? (si and di appear to be legal for 2 and 4 bytes in 32-bit mode)
-> 
+>> The problem is: Maintainers don't grow on trees.
+> ..
+>
+> Hey, if somebody has time to break things, then they damn well ought
+> to be able to make time to fix them again.  And the best developers
+> here on LKML do just that (fix what they break).
+>
+> You broke it, you fix it.  A simple rule.
+>
+> Translation for the particularly daft:
+>
+> If you've been making significant updates to a driver/subsystem,
+> and people are reporting that it is now broken for them,
 
-That's right.
+What are "significant updates"?
 
-	-hpa
+Sometimes one person makes one small patch and this patch contains
+a typo.
+
+> then it's your job to make it right.
+
+We have some open drivers/ata/ regressions.
+
+I see some person named "Mark Lord" being responsible for 4 commits.
+
+What pubishment do you plan for him if 2.6.24 ships with any libata 
+regressions?
+
+Let George W. Bush wrongly accuse him of possessing weapons of 
+mass destructions and invade Canada?
+
+> The reporters can help,
+> and many may even git-bisect or send patches.  
+> But you cannot *expect* or *insist* upon them doing your job.
+
+Bullshit.
+
+Bug fixing is not about finding someone to blame, it's about getting the 
+bug fixed.
+
+The bug reporter is the person who can reproduce the problem, and if 
+it's a regression then bisecting is the natural way of getting nearer 
+at getting it fixed.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
