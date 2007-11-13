@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762326AbXKMSur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762702AbXKMSvE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762326AbXKMSur (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 13:50:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761742AbXKMSsK
+	id S1762702AbXKMSvE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 13:51:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761756AbXKMSsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 13:48:10 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:48377 "EHLO smtp.polymtl.ca"
+	Tue, 13 Nov 2007 13:48:12 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:48382 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761292AbXKMSsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 13:48:08 -0500
-Message-Id: <20071113184720.142540157@polymtl.ca>
+	id S1761744AbXKMSsK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 13:48:10 -0500
+Message-Id: <20071113184720.462291506@polymtl.ca>
 References: <20071113184627.667866257@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 13 Nov 2007 13:46:35 -0500
+Date: Tue, 13 Nov 2007 13:46:36 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        Andi Kleen <andi@firstfloor.org>, prasanna@in.ibm.com,
        ananth@in.ibm.com, anil.s.keshavamurthy@intel.com, davem@davemloft.net
-Subject: [patch 08/11] Text Edit Lock - kprobes x86_32
-Content-Disposition: inline; filename=text-edit-lock-kprobes-i386.patch
+Subject: [patch 09/11] Text Edit Lock - kprobes x86_64
+Content-Disposition: inline; filename=text-edit-lock-kprobes-x86_64.patch
 X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 13 Nov 2007 18:47:20 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,14 +34,14 @@ CC: ananth@in.ibm.com
 CC: anil.s.keshavamurthy@intel.com
 CC: davem@davemloft.net
 ---
- arch/x86/kernel/kprobes_32.c |    5 +++--
+ arch/x86/kernel/kprobes_64.c |    5 +++--
  1 file changed, 3 insertions(+), 2 deletions(-)
 
-Index: linux-2.6-lttng/arch/x86/kernel/kprobes_32.c
+Index: linux-2.6-lttng/arch/x86/kernel/kprobes_64.c
 ===================================================================
---- linux-2.6-lttng.orig/arch/x86/kernel/kprobes_32.c	2007-11-13 09:45:35.000000000 -0500
-+++ linux-2.6-lttng/arch/x86/kernel/kprobes_32.c	2007-11-13 09:45:44.000000000 -0500
-@@ -176,12 +176,13 @@ int __kprobes arch_prepare_kprobe(struct
+--- linux-2.6-lttng.orig/arch/x86/kernel/kprobes_64.c	2007-11-13 09:45:35.000000000 -0500
++++ linux-2.6-lttng/arch/x86/kernel/kprobes_64.c	2007-11-13 09:45:46.000000000 -0500
+@@ -215,12 +215,13 @@ static void __kprobes arch_copy_kprobe(s
  
  void __kprobes arch_arm_kprobe(struct kprobe *p)
  {
