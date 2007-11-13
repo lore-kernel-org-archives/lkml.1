@@ -1,75 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762850AbXKMTn5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762967AbXKMTo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762850AbXKMTn5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 14:43:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762631AbXKMTn2
+	id S1762967AbXKMTo0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 14:44:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761479AbXKMToE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 14:43:28 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:35807 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762122AbXKMTn1 (ORCPT
+	Tue, 13 Nov 2007 14:44:04 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56275 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760962AbXKMToB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 14:43:27 -0500
-Date: Tue, 13 Nov 2007 19:37:50 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Mark Lord <liml@rtr.ca>
-Cc: Ingo Molnar <mingo@elte.hu>, alsa-devel@alsa-project.org,
-       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-kernel@vger.kernel.org, protasnb@gmail.com,
-       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071113193750.GD1356@flint.arm.linux.org.uk>
-Mail-Followup-To: Mark Lord <liml@rtr.ca>, Ingo Molnar <mingo@elte.hu>,
-	alsa-devel@alsa-project.org, netdev@vger.kernel.org,
-	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-	protasnb@gmail.com, linux-ide@vger.kernel.org,
-	bugme-daemon@bugzilla.kernel.org,
-	linux-input@atrey.karlin.mff.cuni.cz,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Miller <davem@davemloft.net>
-References: <20071113031553.3c7b5c16.akpm@linux-foundation.org> <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca>
+	Tue, 13 Nov 2007 14:44:01 -0500
+Date: Tue, 13 Nov 2007 11:38:52 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+Cc: tigran@aivazian.fsnet.co.uk, viro@ftp.linux.org.uk,
+       Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [BUGS][PATCH] Fixes to the BFS filesystem driver
+Message-Id: <20071113113852.386219f6.akpm@linux-foundation.org>
+In-Reply-To: <4739D1A0.20805@gmail.com>
+References: <4739D1A0.20805@gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4739AFE0.20705@rtr.ca>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 09:08:32AM -0500, Mark Lord wrote:
-> Ingo Molnar wrote:
-> ..
-> > This is all QA-101 that _cannot be argued against on a rational basis_, 
-> > it's just that these sorts of things have been largely ignored for 
-> > years, in favor of the all-too-easy "open source means many eyeballs and 
-> > that is our QA" answer, which is a _good_ answer but by far not the most 
-> > intelligent answer! Today "many eyeballs" is simply not good enough and 
-> > nature (and other OS projects) will route us around if we dont change.
-> ..
+On Tue, 13 Nov 2007 19:32:32 +0300 Dmitri Vorobiev <dmitri.vorobiev@gmail.com> wrote:
+
+> Hi Tigran,
 > 
-> QA-101 and "many eyeballs" are not at all in opposition.
-> The latter is how we find out about bugs on uncommon hardware,
-> and the former is what we need to track them and overall quality.
+> I found a few bugs in the BFS driver. Detailed description of the bugs as well as the steps to reproduce the errors are given in the kernel bugzilla. Please follow these links for more information:
 > 
-> A HUGE problem I have with current "efforts", is that once someone
-> reports a bug, the onus seems to be 99% on the *reporter* to find
-> the exact line of code or commit.  Ghad what a repressive method.
+> http://bugzilla.kernel.org/show_bug.cgi?id=9363
+> http://bugzilla.kernel.org/show_bug.cgi?id=9364
+> http://bugzilla.kernel.org/show_bug.cgi?id=9365
+> http://bugzilla.kernel.org/show_bug.cgi?id=9366
+> 
+> The patch included in this email fixes the bugs described above. Besides, the patch introduces coding style changes to make the BFS driver conform to the requirements specified for Linux kernel code. Finally, I made a few cosmetic changes such as removal of trivial debug output.
+> 
+> Also, the patch removes the fields `si_lf_ioff' and `si_lf_sblk' of the in-core superblock structure. These fields are initialized but never actually used.
+> 
+> If you are wondering why I need BFS, here is the answer: I am using this driver in the context of Linux kernel classes I am teaching in the Moscow State University and in the International Institute of Information Technology in Pune, India.
 
-99% on the reporter?  Is that why I always try to understand the
-reporters problem (*provided* it's in an area I know about) and come
-up with a patch to test a theory or fix the issue?
+I was wondering ;)  BFS users aren't common.  Thanks for the fixes.
 
-I'm _less_ inclined to provide such a "service" for lazy maintainers
-who've moved off into new and wonderfully exciting technologies, to
-churn out more patches for me to merge (and eventually provide a free
-to them bug fixing service for.)
+For future reference: we prefer that an individual patch not do more than
+one thing.  So it would have been preferable to present this work as a
+sequence of patches.
 
-That's "less" inclined, not "won't".
+Probably the high-priority patches (ie: bugfixes) should be the earlier
+patches in a case like this.  Because then we can backport the fix into
+2.6.23 and maybe 2.6.22 with some confidence.  Also, separating out the
+cleanups for the bugfixes makes it easier for people to review and
+understand the bugfixes.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+
+Still, that's a minor detail compared to getting a filesystem bug fixed so
+I merged your change as-is, thanks
+
