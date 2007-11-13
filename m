@@ -1,261 +1,503 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761868AbXKMTBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763367AbXKMTBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761868AbXKMTBf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 14:01:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761909AbXKMTAu
+	id S1763367AbXKMTBt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 14:01:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761931AbXKMTAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 14:00:50 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:38212 "EHLO smtp.polymtl.ca"
+	Tue, 13 Nov 2007 14:00:53 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:38244 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761141AbXKMTAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 14:00:48 -0500
-Message-Id: <20071113190041.382670313@polymtl.ca>
+	id S1761915AbXKMTAv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 14:00:51 -0500
+Message-Id: <20071113190039.477800977@polymtl.ca>
 References: <20071113185800.436425570@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 13 Nov 2007 13:58:07 -0500
+Date: Tue, 13 Nov 2007 13:58:01 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 7/8] Immediate Values - Documentation
-Content-Disposition: inline; filename=immediate-values-documentation.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 13 Nov 2007 19:00:41 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: [patch 1/8] Immediate Values - Architecture Independent Code
+Content-Disposition: inline; filename=immediate-values-architecture-independent-code.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 13 Nov 2007 19:00:40 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Immediate values are used as read mostly variables that are rarely updated. They
+use code patching to modify the values inscribed in the instruction stream. It
+provides a way to save precious cache lines that would otherwise have to be used
+by these variables.
+
+There is a generic _immediate_read() version, which uses standard global
+variables, and optimized per architecture immediate_read() implementations,
+which use a load immediate to remove a data cache hit. When the immediate values
+functionnality is disabled in the kernel, it falls back to global variables.
+
+It adds a new rodata section "__immediate" to place the pointers to the enable
+value. Immediate values activation functions sits in kernel/immediate.c.
+
+Immediate values refer to the memory address of a previously declared integer.
+This integer holds the information about the state of the immediate values
+associated, and must be accessed through the API found in linux/immediate.h.
+
+At module load time, each immediate value is checked to see if it must be
+enabled. It would be the case if the variable they refer to is exported from
+another module and already enabled.
+
+In the early stages of start_kernel(), the immediate values are updated to
+reflect the state of the variable they refer to.
+
+* Why should this be merged *
+
+It improves performances on heavy memory I/O workloads.
+
+An interesting result shows the potential this infrastructure has by
+showing the slowdown a simple system call such as getppid() suffers when it is
+used under heavy user-space cache trashing:
+
+Random walk L1 and L2 trashing surrounding a getppid() call:
+(note: in this test, do_syscal_trace was taken at each system call, see
+Documentation/immediate.txt in these patches for details)
+- No memory pressure :   getppid() takes  1573 cycles
+- With memory pressure : getppid() takes 15589 cycles
+
+We therefore have a slowdown of 10 times just to get the kernel variables from
+memory. Another test on the same architecture (Intel P4) measured the memory
+latency to be 559 cycles. Therefore, each cache line removed from the hot path
+would improve the syscall time of 3.5% in these conditions.
+
 Changelog:
-- Remove immediate_set_early (removed from API).
+
+- section __immediate is already SHF_ALLOC
+- Because of the wonders of ELF, section 0 has sh_addr and sh_size 0.  So
+  the if (immediateindex) is unnecessary here.
+- Remove module_mutex usage: depend on functions implemented in module.c for
+  that.
+- Does not update tainted module's immediate values.
+- remove immediate_*_t types, add DECLARE_IMMEDIATE() and DEFINE_IMMEDIATE().
+  - immediate_read(&var) becomes immediate_read(var) because of this.
+- Adding a new EXPORT_IMMEDIATE_SYMBOL(_GPL).
+- remove immediate_if(). Should use if (unlikely(immediate_read(var))) instead.
+  - Wait until we have gcc support before we add the immediate_if macro, since
+    its form may have to change.
+- Document immediate_set_early(). This design is chosen over immediate_init()
+  because:
+    - We can mark the function __init so it is freed after boot.
+    - Module code patching can also be done by the "normal" function. This is
+      preferred, even if it can be slightly slower, because update performance
+      does not matter.
+    - immediate_init() could confuse users because we can actually "initialize"
+      an immediate value to a certain value, which will be used as initial
+      value. e.g.:
+        static DEFINE_IMMEDIATE(int, var) = 10;
+- Dont't declare the __immediate section in vmlinux.lds.h, just put the content
+  in the rodata section.
+- Simplify interface : remove immediate_set_early, keep track of kernel boot
+  status internally.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Rusty Russell <rusty@rustcorp.com.au>
 ---
- Documentation/immediate.txt |  221 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 221 insertions(+)
+ include/asm-generic/vmlinux.lds.h |    4 +
+ include/linux/immediate.h         |   83 ++++++++++++++++++++++++++++++++++++
+ include/linux/module.h            |   16 +++++++
+ init/main.c                       |    8 +++
+ kernel/Makefile                   |    1 
+ kernel/immediate.c                |   86 ++++++++++++++++++++++++++++++++++++++
+ kernel/module.c                   |   50 +++++++++++++++++++++-
+ 7 files changed, 247 insertions(+), 1 deletion(-)
 
-Index: linux-2.6-lttng/Documentation/immediate.txt
+Index: linux-2.6-lttng/include/linux/immediate.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/Documentation/immediate.txt	2007-11-03 20:28:58.000000000 -0400
-@@ -0,0 +1,221 @@
-+		        Using the Immediate Values
++++ linux-2.6-lttng/include/linux/immediate.h	2007-11-13 09:46:32.000000000 -0500
+@@ -0,0 +1,83 @@
++#ifndef _LINUX_IMMEDIATE_H
++#define _LINUX_IMMEDIATE_H
 +
-+			    Mathieu Desnoyers
++/*
++ * Immediate values, can be updated at runtime and save cache lines.
++ *
++ * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
 +
++#ifdef CONFIG_IMMEDIATE
 +
-+This document introduces Immediate Values and their use.
++#include <asm/immediate.h>
 +
++/**
++ * immediate_set - set immediate variable (with locking)
++ * @name: immediate value name
++ * @i: required value
++ *
++ * Sets the value of @name, taking the module_mutex if required by
++ * the architecture.
++ */
++#define immediate_set(name, i)						\
++	do {								\
++		name##__immediate = (i);				\
++		core_immediate_update();				\
++		module_immediate_update();				\
++	} while (0)
 +
-+* Purpose of immediate values
++/*
++ * Internal update functions.
++ */
++extern void core_immediate_update(void);
++extern void immediate_update_range(const struct __immediate *begin,
++	const struct __immediate *end);
 +
-+An immediate value is used to compile into the kernel variables that sit within
-+the instruction stream. They are meant to be rarely updated but read often.
-+Using immediate values for these variables will save cache lines.
++#else
 +
-+This infrastructure is specialized in supporting dynamic patching of the values
-+in the instruction stream when multiple CPUs are running without disturbing the
-+normal system behavior.
++/*
++ * Generic immediate values: a simple, standard, memory load.
++ */
 +
-+Compiling code meant to be rarely enabled at runtime can be done using
-+if (unlikely(immediate_read(var))) as condition surrounding the code. The
-+smallest data type required for the test (an 8 bits char) is preferred, since
-+some architectures, such as powerpc, only allow up to 16 bits immediate values.
++/**
++ * immediate_read - read immediate variable
++ * @name: immediate value name
++ *
++ * Reads the value of @name.
++ */
++#define immediate_read(name)		_immediate_read(name)
 +
++/**
++ * immediate_set - set immediate variable (with locking)
++ * @name: immediate value name
++ * @i: required value
++ *
++ * Sets the value of @name, taking the module_mutex if required by
++ * the architecture.
++ */
++#define immediate_set(name, i)		(name##__immediate = (i))
 +
-+* Usage
++static inline void core_immediate_update(void) { }
++static inline void module_immediate_update(void) { }
 +
-+In order to use the "immediate" macros, you should include linux/immediate.h.
++#endif
 +
++#define DECLARE_IMMEDIATE(type, name) extern __typeof__(type) name##__immediate
++#define DEFINE_IMMEDIATE(type, name)  __typeof__(type) name##__immediate
++
++#define EXPORT_IMMEDIATE_SYMBOL(name) EXPORT_SYMBOL(name##__immediate)
++#define EXPORT_IMMEDIATE_SYMBOL_GPL(name) EXPORT_SYMBOL_GPL(name##__immediate)
++
++/**
++ * _immediate_read - Read immediate value with standard memory load.
++ * @name: immediate value name
++ *
++ * Force a data read of the immediate value instead of the immediate value
++ * based mechanism. Useful for __init and __exit section data read.
++ */
++#define _immediate_read(name)		(name##__immediate)
++
++#endif
+Index: linux-2.6-lttng/include/linux/module.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/module.h	2007-11-13 09:41:47.000000000 -0500
++++ linux-2.6-lttng/include/linux/module.h	2007-11-13 09:46:32.000000000 -0500
+@@ -15,6 +15,7 @@
+ #include <linux/stringify.h>
+ #include <linux/kobject.h>
+ #include <linux/moduleparam.h>
 +#include <linux/immediate.h>
+ #include <linux/marker.h>
+ #include <asm/local.h>
+ 
+@@ -355,6 +356,10 @@ struct module
+ 	/* The command line arguments (may be mangled).  People like
+ 	   keeping pointers to this stuff */
+ 	char *args;
++#ifdef CONFIG_IMMEDIATE
++	const struct __immediate *immediate;
++	unsigned int num_immediate;
++#endif
+ #ifdef CONFIG_MARKERS
+ 	struct marker *markers;
+ 	unsigned int num_markers;
+@@ -464,6 +469,9 @@ extern void print_modules(void);
+ 
+ extern void module_update_markers(struct module *probe_module, int *refcount);
+ 
++extern void _module_immediate_update(void);
++extern void module_immediate_update(void);
 +
-+DEFINE_IMMEDIATE(char, this_immediate);
-+EXPORT_IMMEDIATE_SYMBOL(this_immediate);
+ #else /* !CONFIG_MODULES... */
+ #define EXPORT_SYMBOL(sym)
+ #define EXPORT_SYMBOL_GPL(sym)
+@@ -568,6 +576,14 @@ static inline void module_update_markers
+ {
+ }
+ 
++static inline void _module_immediate_update(void)
++{
++}
 +
++static inline void module_immediate_update(void)
++{
++}
 +
-+And use, in the body of a function:
+ #endif /* CONFIG_MODULES */
+ 
+ struct device_driver;
+Index: linux-2.6-lttng/kernel/module.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/module.c	2007-11-13 09:41:47.000000000 -0500
++++ linux-2.6-lttng/kernel/module.c	2007-11-13 09:48:06.000000000 -0500
+@@ -33,6 +33,7 @@
+ #include <linux/cpu.h>
+ #include <linux/moduleparam.h>
+ #include <linux/errno.h>
++#include <linux/immediate.h>
+ #include <linux/err.h>
+ #include <linux/vermagic.h>
+ #include <linux/notifier.h>
+@@ -1673,6 +1674,7 @@ static struct module *load_module(void _
+ 	unsigned int unusedcrcindex;
+ 	unsigned int unusedgplindex;
+ 	unsigned int unusedgplcrcindex;
++	unsigned int immediateindex;
+ 	unsigned int markersindex;
+ 	unsigned int markersstringsindex;
+ 	struct module *mod;
+@@ -1771,6 +1773,7 @@ static struct module *load_module(void _
+ #ifdef ARCH_UNWIND_SECTION_NAME
+ 	unwindex = find_sec(hdr, sechdrs, secstrings, ARCH_UNWIND_SECTION_NAME);
+ #endif
++	immediateindex = find_sec(hdr, sechdrs, secstrings, "__immediate");
+ 
+ 	/* Don't keep modinfo section */
+ 	sechdrs[infoindex].sh_flags &= ~(unsigned long)SHF_ALLOC;
+@@ -1922,6 +1925,11 @@ static struct module *load_module(void _
+ 	mod->gpl_future_syms = (void *)sechdrs[gplfutureindex].sh_addr;
+ 	if (gplfuturecrcindex)
+ 		mod->gpl_future_crcs = (void *)sechdrs[gplfuturecrcindex].sh_addr;
++#ifdef CONFIG_IMMEDIATE
++	mod->immediate = (void *)sechdrs[immediateindex].sh_addr;
++	mod->num_immediate =
++		sechdrs[immediateindex].sh_size / sizeof(*mod->immediate);
++#endif
+ 
+ 	mod->unused_syms = (void *)sechdrs[unusedindex].sh_addr;
+ 	if (unusedcrcindex)
+@@ -1989,11 +1997,16 @@ static struct module *load_module(void _
+ 
+ 	add_kallsyms(mod, sechdrs, symindex, strindex, secstrings);
+ 
++	if (!mod->taints) {
+ #ifdef CONFIG_MARKERS
+-	if (!mod->taints)
+ 		marker_update_probe_range(mod->markers,
+ 			mod->markers + mod->num_markers, NULL, NULL);
+ #endif
++#ifdef CONFIG_IMMEDIATE
++		immediate_update_range(mod->immediate,
++			mod->immediate + mod->num_immediate);
++#endif
++	}
+ 	err = module_finalize(hdr, sechdrs, mod);
+ 	if (err < 0)
+ 		goto cleanup;
+@@ -2600,3 +2613,38 @@ void module_update_markers(struct module
+ 	mutex_unlock(&module_mutex);
+ }
+ #endif
 +
-+Use immediate_set(this_immediate) to set the immediate value.
++#ifdef CONFIG_IMMEDIATE
++/**
++ * _module_immediate_update - update all immediate values in the kernel
++ *
++ * Iterate on the kernel core and modules to update the immediate values.
++ * Module_mutex must be held be the caller.
++ */
++void _module_immediate_update(void)
++{
++	struct module *mod;
 +
-+Use immediate_read(this_immediate) to read the immediate value.
++	list_for_each_entry(mod, &modules, list) {
++		if (mod->taints)
++			continue;
++		immediate_update_range(mod->immediate,
++			mod->immediate + mod->num_immediate);
++	}
++}
++EXPORT_SYMBOL_GPL(_module_immediate_update);
 +
-+The immediate mechanism supports inserting multiple instances of the same
-+immediate. Immediate values can be put in inline functions, inlined static
-+functions, and unrolled loops.
++/**
++ * module_immediate_update - update all immediate values in the kernel
++ *
++ * Iterate on the kernel core and modules to update the immediate values.
++ * Takes module_mutex.
++ */
++void module_immediate_update(void)
++{
++	mutex_lock(&module_mutex);
++	_module_immediate_update();
++	mutex_unlock(&module_mutex);
++}
++EXPORT_SYMBOL_GPL(module_immediate_update);
++#endif
+Index: linux-2.6-lttng/kernel/immediate.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/kernel/immediate.c	2007-11-13 09:46:32.000000000 -0500
+@@ -0,0 +1,86 @@
++/*
++ * Copyright (C) 2007 Mathieu Desnoyers
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++#include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/immediate.h>
++#include <linux/memory.h>
 +
-+If you have to read the immediate values from a function declared as __init or
-+__exit, you should explicitly use _immediate_read(), which will fall back on a
-+global variable read. Failing to do so will leave a reference to the __init
-+section after it is freed (it would generate a modpost warning).
++/*
++ * Kernel ready to execute the SMP update that may depend on trap and ipi.
++ */
++static int immediate_early_boot_complete;
 +
-+You can choose to set an initial static value to the immediate by using, for
-+instance:
++extern const struct __immediate __start___immediate[];
++extern const struct __immediate __stop___immediate[];
 +
-+DEFINE_IMMEDIATE(long, myptr) = 10;
++/*
++ * immediate_mutex nests inside module_mutex. immediate_mutex protects builtin
++ * immediates and module immediates.
++ */
++static DEFINE_MUTEX(immediate_mutex);
 +
++/**
++ * immediate_update_range - Update immediate values in a range
++ * @begin: pointer to the beginning of the range
++ * @end: pointer to the end of the range
++ *
++ * Sets a range of immediates to a enabled state : set the enable bit.
++ */
++void immediate_update_range(const struct __immediate *begin,
++		const struct __immediate *end)
++{
++	const struct __immediate *iter;
++	int ret;
++	if (immediate_early_boot_complete) {
++		for (iter = begin; iter < end; iter++) {
++			mutex_lock(&immediate_mutex);
++			kernel_text_lock();
++			ret = arch_immediate_update(iter);
++			kernel_text_unlock();
++			if (ret)
++				printk(KERN_WARNING
++					"Invalid immediate value. "
++					"Variable at %p, "
++					"instruction at %p, size %lu\n",
++					(void *)iter->immediate,
++					(void *)iter->var, iter->size);
++			mutex_unlock(&immediate_mutex);
++		}
++	} else
++		for (iter = begin; iter < end; iter++)
++			arch_immediate_update_early(iter);
++}
++EXPORT_SYMBOL_GPL(immediate_update_range);
 +
-+* Optimization for a given architecture
++/**
++ * immediate_update - update all immediate values in the kernel
++ * @lock: should a module_mutex be taken ?
++ *
++ * Iterate on the kernel core and modules to update the immediate values.
++ */
++void core_immediate_update(void)
++{
++	/* Core kernel immediates */
++	immediate_update_range(__start___immediate, __stop___immediate);
++}
++EXPORT_SYMBOL_GPL(core_immediate_update);
 +
-+One can implement optimized immediate values for a given architecture by
-+replacing asm-$ARCH/immediate.h.
-+
-+
-+* Performance improvement
-+
-+
-+  * Memory hit for a data-based branch
-+
-+Here are the results on a 3GHz Pentium 4:
-+
-+number of tests: 100
-+number of branches per test: 100000
-+memory hit cycles per iteration (mean): 636.611
-+L1 cache hit cycles per iteration (mean): 89.6413
-+instruction stream based test, cycles per iteration (mean): 85.3438
-+Just getting the pointer from a modulo on a pseudo-random value, doing
-+  nothing with it, cycles per iteration (mean): 77.5044
-+
-+So:
-+Base case:                      77.50 cycles
-+instruction stream based test:  +7.8394 cycles
-+L1 cache hit based test:        +12.1369 cycles
-+Memory load based test:         +559.1066 cycles
-+
-+So let's say we have a ping flood coming at
-+(14014 packets transmitted, 14014 received, 0% packet loss, time 1826ms)
-+7674 packets per second. If we put 2 markers for irq entry/exit, it
-+brings us to 15348 markers sites executed per second.
-+
-+(15348 exec/s) * (559 cycles/exec) / (3G cycles/s) = 0.0029
-+We therefore have a 0.29% slowdown just on this case.
-+
-+Compared to this, the instruction stream based test will cause a
-+slowdown of:
-+
-+(15348 exec/s) * (7.84 cycles/exec) / (3G cycles/s) = 0.00004
-+For a 0.004% slowdown.
-+
-+If we plan to use this for memory allocation, spinlock, and all sorts of
-+very high event rate tracing, we can assume it will execute 10 to 100
-+times more sites per second, which brings us to 0.4% slowdown with the
-+instruction stream based test compared to 29% slowdown with the memory
-+load based test on a system with high memory pressure.
-+
-+
-+
-+  * Markers impact under heavy memory load
-+
-+Running a kernel with my LTTng instrumentation set, in a test that
-+generates memory pressure (from userspace) by trashing L1 and L2 caches
-+between calls to getppid() (note: syscall_trace is active and calls
-+a marker upon syscall entry and syscall exit; markers are disarmed).
-+This test is done in user-space, so there are some delays due to IRQs
-+coming and to the scheduler. (UP 2.6.22-rc6-mm1 kernel, task with -20
-+nice level)
-+
-+My first set of results: Linear cache trashing, turned out not to be
-+very interesting, because it seems like the linearity of the memset on a
-+full array is somehow detected and it does not "really" trash the
-+caches.
-+
-+Now the most interesting result: Random walk L1 and L2 trashing
-+surrounding a getppid() call.
-+
-+- Markers compiled out (but syscall_trace execution forced)
-+number of tests: 10000
-+No memory pressure
-+Reading timestamps takes 108.033 cycles
-+getppid: 1681.4 cycles
-+With memory pressure
-+Reading timestamps takes 102.938 cycles
-+getppid: 15691.6 cycles
-+
-+
-+- With the immediate values based markers:
-+number of tests: 10000
-+No memory pressure
-+Reading timestamps takes 108.006 cycles
-+getppid: 1681.84 cycles
-+With memory pressure
-+Reading timestamps takes 100.291 cycles
-+getppid: 11793 cycles
-+
-+
-+- With global variables based markers:
-+number of tests: 10000
-+No memory pressure
-+Reading timestamps takes 107.999 cycles
-+getppid: 1669.06 cycles
-+With memory pressure
-+Reading timestamps takes 102.839 cycles
-+getppid: 12535 cycles
-+
-+The result is quite interesting in that the kernel is slower without
-+markers than with markers. I explain it by the fact that the data
-+accessed is not laid out in the same manner in the cache lines when the
-+markers are compiled in or out. It seems that it aligns the function's
-+data better to compile-in the markers in this case.
-+
-+But since the interesting comparison is between the immediate values and
-+global variables based markers, and because they share the same memory
-+layout, except for the movl being replaced by a movz, we see that the
-+global variable based markers (2 markers) adds 742 cycles to each system
-+call (syscall entry and exit are traced and memory locations for both
-+global variables lie on the same cache line).
-+
-+
-+- Test redone with less iterations, but with error estimates
-+
-+10 runs of 100 iterations each: Tests done on a 3GHz P4. Here I run getppid with
-+syscall trace inactive, comparing the case with memory pressure and without
-+memory pressure. (sorry, my system is not setup to execute syscall_trace this
-+time, but it will make the point anyway).
-+
-+No memory pressure
-+Reading timestamps:     150.92 cycles,     std dev.    1.01 cycles
-+getppid:               1462.09 cycles,     std dev.   18.87 cycles
-+
-+With memory pressure
-+Reading timestamps:     578.22 cycles,     std dev.  269.51 cycles
-+getppid:              17113.33 cycles,     std dev. 1655.92 cycles
-+
-+
-+Now for memory read timing: (10 runs, branches per test: 100000)
-+Memory read based branch:
-+                       644.09 cycles,      std dev.   11.39 cycles
-+L1 cache hit based branch:
-+                        88.16 cycles,      std dev.    1.35 cycles
-+
-+
-+So, now that we have the raw results, let's calculate:
-+
-+Memory read:
-+644.09±11.39 - 88.16±1.35 = 555.93±11.46 cycles
-+
-+Getppid without memory pressure:
-+1462.09±18.87 - 150.92±1.01 = 1311.17±18.90 cycles
-+
-+Getppid with memory pressure:
-+17113.33±1655.92 - 578.22±269.51 = 16535.11±1677.71 cycles
-+
-+Therefore, if we add 2 markers not based on immediate values to the getppid
-+code, which would add 2 memory reads, we would add
-+2 * 555.93±12.74 = 1111.86±25.48 cycles
-+
-+Therefore,
-+
-+1111.86±25.48 / 16535.11±1677.71 = 0.0672
-+ relative error: sqrt(((25.48/1111.86)^2)+((1677.71/16535.11)^2))
-+                     = 0.1040
-+ absolute error: 0.1040 * 0.0672 = 0.0070
-+
-+Therefore: 0.0672±0.0070 * 100% = 6.72±0.70 %
-+
-+We can therefore affirm that adding 2 markers to getppid, on a system with high
-+memory pressure, would have a performance hit of at least 6.0% on the system
-+call time, all within the uncertainty limits of these tests. The same applies to
-+other kernel code paths. The smaller those code paths are, the highest the
-+impact ratio will be.
-+
-+Therefore, not only is it interesting to use the immediate values to dynamically
-+activate dormant code such as the markers, but I think it should also be
-+considered as a replacement for many of the "read-mostly" static variables.
++void __init immediate_init_complete(void)
++{
++	immediate_early_boot_complete = 1;
++}
+Index: linux-2.6-lttng/init/main.c
+===================================================================
+--- linux-2.6-lttng.orig/init/main.c	2007-11-13 09:25:29.000000000 -0500
++++ linux-2.6-lttng/init/main.c	2007-11-13 09:46:32.000000000 -0500
+@@ -57,6 +57,7 @@
+ #include <linux/device.h>
+ #include <linux/kthread.h>
+ #include <linux/sched.h>
++#include <linux/immediate.h>
+ 
+ #include <asm/io.h>
+ #include <asm/bugs.h>
+@@ -101,6 +102,11 @@ static inline void mark_rodata_ro(void) 
+ #ifdef CONFIG_TC
+ extern void tc_init(void);
+ #endif
++#ifdef CONFIG_IMMEDIATE
++extern void immediate_init_complete(void);
++#else
++static inline void immediate_init_complete(void) { }
++#endif
+ 
+ enum system_states system_state;
+ EXPORT_SYMBOL(system_state);
+@@ -518,6 +524,7 @@ asmlinkage void __init start_kernel(void
+ 	unwind_init();
+ 	lockdep_init();
+ 	cgroup_init_early();
++	core_immediate_update();
+ 
+ 	local_irq_disable();
+ 	early_boot_irqs_off();
+@@ -639,6 +646,7 @@ asmlinkage void __init start_kernel(void
+ 	cpuset_init();
+ 	taskstats_init_early();
+ 	delayacct_init();
++	immediate_init_complete();
+ 
+ 	check_bugs();
+ 
+Index: linux-2.6-lttng/kernel/Makefile
+===================================================================
+--- linux-2.6-lttng.orig/kernel/Makefile	2007-11-13 09:25:29.000000000 -0500
++++ linux-2.6-lttng/kernel/Makefile	2007-11-13 09:46:32.000000000 -0500
+@@ -57,6 +57,7 @@ obj-$(CONFIG_RELAY) += relay.o
+ obj-$(CONFIG_SYSCTL) += utsname_sysctl.o
+ obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
+ obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
++obj-$(CONFIG_IMMEDIATE) += immediate.o
+ obj-$(CONFIG_MARKERS) += marker.o
+ 
+ ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
+Index: linux-2.6-lttng/include/asm-generic/vmlinux.lds.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-generic/vmlinux.lds.h	2007-11-13 09:25:28.000000000 -0500
++++ linux-2.6-lttng/include/asm-generic/vmlinux.lds.h	2007-11-13 09:46:32.000000000 -0500
+@@ -25,6 +25,10 @@
+ 		*(.rodata) *(.rodata.*)					\
+ 		*(__vermagic)		/* Kernel version magic */	\
+ 		*(__markers_strings)	/* Markers: strings */		\
++		. = ALIGN(8);						\
++		VMLINUX_SYMBOL(__start___immediate) = .;		\
++		*(__immediate)		/* Immediate values: pointers */ \
++		VMLINUX_SYMBOL(__stop___immediate) = .;			\
+ 	}								\
+ 									\
+ 	.rodata1          : AT(ADDR(.rodata1) - LOAD_OFFSET) {		\
 
 -- 
 Mathieu Desnoyers
