@@ -1,68 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753595AbXKMKLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754175AbXKMKL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753595AbXKMKLA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 05:11:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbXKMKKp
+	id S1754175AbXKMKL2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 05:11:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbXKMKKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 05:10:45 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:50664 "EHLO
+	Tue, 13 Nov 2007 05:10:48 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:50669 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751658AbXKMKKo (ORCPT
+	with ESMTP id S1751741AbXKMKKp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 05:10:44 -0500
+	Tue, 13 Nov 2007 05:10:45 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       viro@ftp.linux.org.uk, hch@infradead.org
-Subject: [GIT PULL -mm] 0/9 Unionfs updates/cleanups/fixes
-Date: Tue, 13 Nov 2007 05:10:19 -0500
-Message-Id: <11949486283697-git-send-email-ezk@cs.sunysb.edu>
+       viro@ftp.linux.org.uk, hch@infradead.org,
+       Erez Zadok <ezk@cs.sunysb.edu>
+Subject: [PATCH 2/9] Unionfs: use i_size wrappers
+Date: Tue, 13 Nov 2007 05:10:21 -0500
+Message-Id: <11949486291981-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
+In-Reply-To: <11949486283697-git-send-email-ezk@cs.sunysb.edu>
+References: <11949486283697-git-send-email-ezk@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-The following is a series of patches related to Unionfs.  The main changes
-here are bug fixes and improved cache-coherency methods.
-
-These patches were tested (where appropriate) on Linus's 2.6.24 latest code
-(as of v2.6.24-rc2-330-g325d22d), for the first time on MM
-(mmotm-2007-11-10-19-05), as well as the backports to
-2.6.{23,22,21,20,19,18,9} on ext2/3/4, xfs, reiserfs, nfs2/3/4, jffs2,
-ramfs, tmpfs, cramfs, and squashfs (where available).  See
-http://unionfs.filesystems.org/ to download backported unionfs code.
-
-Please pull from the 'master' branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/ezk/unionfs.git
-
-to receive the following:
-
-Erez Zadok (9):
-      Unionfs: flush and release updates
-      Unionfs: use i_size wrappers
-      Unionfs: update cache-coherency detection heuristics
-      Unionfs: writepage updates
-      Unionfs: clear partial read in readpage
-      Unionfs: debugging updates
-      Unionfs: remove unnecessary lower atime updates
-      Unionfs: fold do_readpage into unionfs_readpage
-      Unionfs: move debugging checks inside locks
-
- Documentation/filesystems/unionfs/concepts.txt |   18 ++++++
- fs/unionfs/commonfops.c                        |   47 +++++++-----------
- fs/unionfs/debug.c                             |    2 
- fs/unionfs/dentry.c                            |   31 +++++++----
- fs/unionfs/file.c                              |   18 +-----
- fs/unionfs/inode.c                             |   29 +++++------
- fs/unionfs/mmap.c                              |   65 ++++++++-----------------
- fs/unionfs/rdstate.c                           |    4 -
- fs/unionfs/rename.c                            |    4 -
- fs/unionfs/super.c                             |    6 +-
- fs/unionfs/union.h                             |    5 +
- fs/unionfs/xattr.c                             |    8 +--
- 12 files changed, 115 insertions(+), 122 deletions(-)
-
+Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
-Erez Zadok
-ezk@cs.sunysb.edu
+ fs/unionfs/commonfops.c |   10 +++++-----
+ fs/unionfs/inode.c      |    4 ++--
+ fs/unionfs/rdstate.c    |    4 ++--
+ fs/unionfs/rename.c     |    4 ++--
+ fs/unionfs/super.c      |    2 +-
+ 5 files changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/fs/unionfs/commonfops.c b/fs/unionfs/commonfops.c
+index ba84529..624f920 100644
+--- a/fs/unionfs/commonfops.c
++++ b/fs/unionfs/commonfops.c
+@@ -72,7 +72,8 @@ retry:
+ 	dput(tmp_dentry);
+ 
+ 	err = copyup_named_file(dentry->d_parent->d_inode, file, name, bstart,
+-				bindex, file->f_path.dentry->d_inode->i_size);
++				bindex,
++				i_size_read(file->f_path.dentry->d_inode));
+ 	if (err) {
+ 		if (unlikely(err == -EEXIST))
+ 			goto retry;
+@@ -199,7 +200,6 @@ static int open_highest_file(struct file *file, bool willwrite)
+ 	struct dentry *dentry = file->f_path.dentry;
+ 	struct inode *parent_inode = dentry->d_parent->d_inode;
+ 	struct super_block *sb = dentry->d_sb;
+-	size_t inode_size = dentry->d_inode->i_size;
+ 
+ 	bstart = dbstart(dentry);
+ 	bend = dbend(dentry);
+@@ -208,7 +208,7 @@ static int open_highest_file(struct file *file, bool willwrite)
+ 	if (willwrite && IS_WRITE_FLAG(file->f_flags) && is_robranch(dentry)) {
+ 		for (bindex = bstart - 1; bindex >= 0; bindex--) {
+ 			err = copyup_file(parent_inode, file, bstart, bindex,
+-					  inode_size);
++					  i_size_read(dentry->d_inode));
+ 			if (!err)
+ 				break;
+ 		}
+@@ -243,7 +243,6 @@ static int do_delayed_copyup(struct file *file)
+ 	int bindex, bstart, bend, err = 0;
+ 	struct dentry *dentry = file->f_path.dentry;
+ 	struct inode *parent_inode = dentry->d_parent->d_inode;
+-	loff_t inode_size = dentry->d_inode->i_size;
+ 
+ 	bstart = fbstart(file);
+ 	bend = fbend(file);
+@@ -255,7 +254,8 @@ static int do_delayed_copyup(struct file *file)
+ 	for (bindex = bstart - 1; bindex >= 0; bindex--) {
+ 		if (!d_deleted(dentry))
+ 			err = copyup_file(parent_inode, file, bstart,
+-					  bindex, inode_size);
++					  bindex,
++					  i_size_read(dentry->d_inode));
+ 		else
+ 			err = copyup_deleted_file(file, dentry, bstart,
+ 						  bindex);
+diff --git a/fs/unionfs/inode.c b/fs/unionfs/inode.c
+index bcefe45..223a64a 100644
+--- a/fs/unionfs/inode.c
++++ b/fs/unionfs/inode.c
+@@ -312,7 +312,7 @@ docopyup:
+ 					    old_dentry, old_bstart,
+ 					    bindex, old_dentry->d_name.name,
+ 					    old_dentry->d_name.len, NULL,
+-					    old_dentry->d_inode->i_size);
++					    i_size_read(old_dentry->d_inode));
+ 			if (!err) {
+ 				lower_new_dentry =
+ 					create_parents(dir, new_dentry,
+@@ -1043,7 +1043,7 @@ static int unionfs_setattr(struct dentry *dentry, struct iattr *ia)
+ 				continue;
+ 			/* Only if its the leftmost file, copyup the file */
+ 			for (i = bstart - 1; i >= 0; i--) {
+-				loff_t size = dentry->d_inode->i_size;
++				loff_t size = i_size_read(dentry->d_inode);
+ 				if (ia->ia_valid & ATTR_SIZE)
+ 					size = ia->ia_size;
+ 				err = copyup_dentry(dentry->d_parent->d_inode,
+diff --git a/fs/unionfs/rdstate.c b/fs/unionfs/rdstate.c
+index 0df5f52..bdf335d 100644
+--- a/fs/unionfs/rdstate.c
++++ b/fs/unionfs/rdstate.c
+@@ -76,10 +76,10 @@ static int guesstimate_hash_size(struct inode *inode)
+ 		if (!lower_inode)
+ 			continue;
+ 
+-		if (lower_inode->i_size == DENTPAGE)
++		if (i_size_read(lower_inode) == DENTPAGE)
+ 			hashsize += DENTPERONEPAGE;
+ 		else
+-			hashsize += (lower_inode->i_size / DENTPAGE) *
++			hashsize += (i_size_read(lower_inode) / DENTPAGE) *
+ 				DENTPERPAGE;
+ 	}
+ 
+diff --git a/fs/unionfs/rename.c b/fs/unionfs/rename.c
+index 4a35b5e..452d1e7 100644
+--- a/fs/unionfs/rename.c
++++ b/fs/unionfs/rename.c
+@@ -234,8 +234,8 @@ static int do_unionfs_rename(struct inode *old_dir,
+ 			err = copyup_dentry(old_dentry->d_parent->d_inode,
+ 					    old_dentry, old_bstart, bindex,
+ 					    old_dentry->d_name.name,
+-					    old_dentry->d_name.len,
+-					    NULL, old_dentry->d_inode->i_size);
++					    old_dentry->d_name.len, NULL,
++					    i_size_read(old_dentry->d_inode));
+ 			/* if copyup failed, try next branch to the left */
+ 			if (err)
+ 				continue;
+diff --git a/fs/unionfs/super.c b/fs/unionfs/super.c
+index 7d28045..70487bf 100644
+--- a/fs/unionfs/super.c
++++ b/fs/unionfs/super.c
+@@ -69,7 +69,7 @@ static void unionfs_read_inode(struct inode *inode)
+  */
+ static void unionfs_delete_inode(struct inode *inode)
+ {
+-	inode->i_size = 0;	/* every f/s seems to do that */
++	i_size_write(inode, 0);	/* every f/s seems to do that */
+ 
+ 	if (inode->i_data.nrpages)
+ 		truncate_inode_pages(&inode->i_data, 0);
+-- 
+1.5.2.2
+
