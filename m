@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760039AbXKMDJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760009AbXKMDNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760039AbXKMDJw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 22:09:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754389AbXKMDJo
+	id S1760009AbXKMDNe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 22:13:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbXKMDN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 22:09:44 -0500
-Received: from nz-out-0506.google.com ([64.233.162.233]:58468 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753209AbXKMDJn (ORCPT
+	Mon, 12 Nov 2007 22:13:26 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55402 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752138AbXKMDNZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 22:09:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=o54Awx6lxkKVFfngR/DM/tL+ehmkgEQ3Ao8YWoKBBTcDjAMDDrQADZMOQdDmeAWYijp3gM2itTwzdv1YRBSYk9ge70wEWk6kq/vgSV5qYgC3SR5glq5R50vaaKJWG26oXvd+qChVVaY5BuTVK4uK4P3g1PM5TCmPxGphSaZSmec=
-Message-ID: <ed10ee420711121909y3e0f84d0hd07c331a9a0aba66@mail.gmail.com>
-Date: Mon, 12 Nov 2007 19:09:42 -0800
-From: "SL Baur" <steve@xemacs.org>
-To: "David Howells" <dhowells@redhat.com>
-Subject: Re: [PATCH 1/6] Suppress A.OUT library support if !CONFIG_BINFMT_AOUT [try #5]
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-am33-list@redhat.com
-In-Reply-To: <17306.1194909291@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 12 Nov 2007 22:13:25 -0500
+Date: Mon, 12 Nov 2007 19:13:20 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Cc: ebiederm@xmission.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sysctl: Check length at deprecated_sysctl_warning.
+Message-Id: <20071112191320.55e49462.akpm@linux-foundation.org>
+In-Reply-To: <200711130307.lAD37Nee045340@www262.sakura.ne.jp>
+References: <200711080257.lA82vQfA015942@www262.sakura.ne.jp>
+	<20071107192211.c1c22e97.akpm@linux-foundation.org>
+	<200711080819.lA88J8Pv072259@www262.sakura.ne.jp>
+	<m14pfr6bnf.fsf@ebiederm.dsl.xmission.com>
+	<200711130307.lAD37Nee045340@www262.sakura.ne.jp>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071110181416.31dc2614.akpm@linux-foundation.org>
-	 <20071109153432.20803.69832.stgit@warthog.procyon.org.uk>
-	 <20071109153437.20803.55096.stgit@warthog.procyon.org.uk>
-	 <6214.1194881680@redhat.com>
-	 <20071112115353.227f35cb.akpm@linux-foundation.org>
-	 <ed10ee420711121450m5aec7c06vf4481ebad944d706@mail.gmail.com>
-	 <17306.1194909291@redhat.com>
-X-Google-Sender-Auth: b7f4aeed4aef5d03
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/12/07, David Howells <dhowells@redhat.com> wrote:
-> SL Baur <steve@xemacs.org> wrote:
->
-> > (push '("/Kbuild" . makefile-mode) auto-mode-alist)
->
-> Does that work for Kbuild.asm too, more to the point?
+On Tue, 13 Nov 2007 12:07:23 +0900 Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp> wrote:
 
-Of course.  It works for any filename beginning with the string "Kbuild".  Major
-mode rules are on a first match basis, so you have to make sure this rule is
-ahead of the .asm rule.  I'll push a patch to the XEmacs guys so it works this
-way by default, someone else can deal with Stallman.
+> Andrew, please replace previous patch with this one.
+> This one returns -ENOTDIR.
+> ----------
+> 
+> Original patch forgot to check args->nlen.
+> I don't know why args->nlen == CTL_MAXNAME is rejected,
+> but it has been rejected traditionally.
+> 
+> Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+> Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+>  kernel/sysctl.c |    4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff -puN kernel/sysctl.c~sysctl-check-length-at-deprecated_sysctl_warning kernel/sysctl.c
+> --- a/kernel/sysctl.c~sysctl-check-length-at-deprecated_sysctl_warning
+> +++ a/kernel/sysctl.c
+> @@ -2609,6 +2609,10 @@ static int deprecated_sysctl_warning(str
+>  	int name[CTL_MAXNAME];
+>  	int i;
+>  
+> +	/* Check args->nlen. */
+> +	if (args->nlen <= 0 || args->nlen >= CTL_MAXNAME)
 
-Please take the emacsism out of the file as it bothers Andrew and others.
+I believe (args->nlen > CTL_MAXNAME) was correct.
 
--sb
+> +		return -ENOTDIR;
+
+Ho hum.  Why does that code return -ENOTDIR on error anyway?
+
+> +
+>  	/* Read in the sysctl name for better debug message logging */
+>  	for (i = 0; i < args->nlen; i++)
+>  		if (get_user(name[i], args->name + i))
