@@ -1,77 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762758AbXKMUU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760054AbXKMUVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762758AbXKMUU5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 15:20:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762088AbXKMUUZ
+	id S1760054AbXKMUVX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 15:21:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760934AbXKMUVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 15:20:25 -0500
-Received: from ns2.suse.de ([195.135.220.15]:56181 "EHLO mx2.suse.de"
+	Tue, 13 Nov 2007 15:21:05 -0500
+Received: from ns2.suse.de ([195.135.220.15]:56309 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761690AbXKMUUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 15:20:22 -0500
-Date: Tue, 13 Nov 2007 12:19:54 -0800
-From: Greg KH <gregkh@suse.de>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Greg KH <greg@kroah.com>, Alex Chiang <achiang@hp.com>,
-       kristen.c.accardi@intel.com, lenb@kernel.org, richard.jones2@hp.com,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
-Message-ID: <20071113201954.GA26547@suse.de>
-References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113170129.GA20185@kroah.com> <20071113183353.GE17785@parisc-linux.org> <20071113185122.GA22536@kroah.com> <20071113201102.GK17785@parisc-linux.org>
+	id S1761116AbXKMUVA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 15:21:00 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Subject: Re: [patch] x86, ptrace: support for branch trace store(BTS)
+Date: Tue, 13 Nov 2007 21:20:53 +0100
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, hpa@zytor.com,
+       tglx@linutronix.de, markus.t.metzger@intel.com,
+       akpm@linux-foundation.org
+References: <20071113195954.GA2428@linux-os.sc.intel.com>
+In-Reply-To: <20071113195954.GA2428@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071113201102.GK17785@parisc-linux.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200711132120.53458.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 01:11:02PM -0700, Matthew Wilcox wrote:
-> On Tue, Nov 13, 2007 at 10:51:22AM -0800, Greg KH wrote:
-> > Ok, again, I want to see the IBM people sign off on this, after testing
-> > on all of their machines, before I'll consider this, as I know the IBM
-> > acpi tables are "odd".
-> 
-> That seems a little higher standard than patches are normally held to.
-> How about the patches get sent to the appropriate people at IBM (who are
-> they?) and if we haven't heard a NAK from them after a month, then they
-> get applied?
+On Tuesday 13 November 2007 20:59:54 Siddha, Suresh B wrote:
+> Support for Intel's last branch recording to ptrace. This gives debuggers
+> access to this hardware feature and allows them to show an execution trace
+> of the debugged application.
 
-When you are touching code that I know is going to have problems on a
-whole range of different manufacturer's machines, do you expect me to
-just ignore that and let you add a feature that is going to be
-incorrect?
+Cool. Finally someone gets around to supporting this properly.
 
-> > Also, how about Dell machines?  I know they are probably not expecting
-> > this information to show up and who knows if the numbering of their
-> > slots match up with their physical diagrams (I say this based on all of
-> > the eth0/eth1 "issues" with Dell machines over the years...)
-> 
-> I'm pretty sure that Windows uses the _SUN information, so I think this
-> is going to be well-tested.
+Ok mostly properly, the patch needs some improvements.
 
-Again, based on the past history with such things as mis-labeled
-ethernet ports, I have doubts.  I can hope, but I need proof based on
-the major problems we have had in the past.
+But can you please add a mode for tracing kernel code too? I guess
+this means a way to forbid it to user space or allocate the register.
+That would be probably needed by kernel debuggers too anyways, so
+might be better to add it from the begging.
 
-It is better to not show information to users at all, then to give them
-information that is incorrect, don't you think?
+I'm sure some people will suggest now that should be all only
+supported with utrace. My suggestion is to ignore them.
 
-> > IBM sells a program that does this for server rooms.  It's probably part
-> > of some Tivoli package somewhere, sorry I don't remember the name.  I
-> > did see it working many years ago and it required no kernel changes at
-> > all to work properly.
-> 
-> Well, yes, it doesn't take kernel effort if you're willing to build
-> proprietary knowledge into a userspace program.  This seems similar
-> to the argument that filesystems don't need to be in the kernel since
-> they can be implemented in user space.  They work better in the kernel,
-> just like this does.
+Also there was some discussion recently that complex kernel
+interfaces like this need manpages on proposal so that proper review
+of the interfaces is possible. I would suggest to write manpages
+(or manpages patches) and point to them on the next submission.
 
-Don't mix up things like filesystems and exposing pci slots.  That is
-just foolish...
+> Index: linux-2.6/arch/x86/kernel/process_32.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/process_32.c	2007-11-07 09:08:32.%N +0100
+> +++ linux-2.6/arch/x86/kernel/process_32.c	2007-11-07 09:09:36.%N +0100
+> @@ -735,6 +735,18 @@
+>  		__switch_to_xtra(prev_p, next_p, tss);
+>  
+>  	/*
+> +	 * Last branch recording recofiguration of trace hardware and
+> +	 * disentangling of trace data per task.
+> +	 */
+> +	if (unlikely(task_thread_info(prev_p)->flags & _TIF_BTS_TRACE ||
+> +		     task_thread_info(prev_p)->flags & _TIF_BTS_TRACE_TS))
+> +		ptrace_bts_task_departs(prev_p);
+> +
+> +	if (unlikely(task_thread_info(next_p)->flags & _TIF_BTS_TRACE ||
+> +		     task_thread_info(next_p)->flags & _TIF_BTS_TRACE_TS))
+> +		ptrace_bts_task_arrives(next_p);
+> +
 
-thanks,
+Congratulations. You managed to pick exactly the wrong place.  
+Why do you think __switch_to_xtra was invented?  The bits should be in 
+CTXSW_PREV/NEXT and then the checks moved there. Then it would be zero
+cost for the nobody using it case.
 
-greg k-h
+
+> +#ifdef __i386__
+> +static int ptrace_bts_disable_netburst(void)
+> +{
+> +	unsigned long long debugctl_msr = 0;
+> +	rdmsrl(MSR_IA32_DEBUGCTLMSR, debugctl_msr);
+> +	debugctl_msr &=
+> +		~((1 << 2) | /* TR */
+> +		  (1 << 3));  /* BTS */
+> +	wrmsrl(MSR_IA32_DEBUGCTLMSR, debugctl_msr);
+> +
+> +	return 0;
+> +}
+> +
+> +static int ptrace_bts_disable_pentium_m(void)
+> +{
+> +	unsigned long long debugctl_msr = 0;
+> +	rdmsrl(MSR_IA32_DEBUGCTLMSR, debugctl_msr);
+
+etc. Surely it would be faster to cache the value of the MSR in RAM?
+Might matter for the context switch.
+
+> +	if (size_in_records > 4000)
+> +		return -EINVAL;
+
+Nasty undocumented undefined magic numbers.
+
+
+> +
+> +	if (!ptrace_bts_ops.allocate_bts)
+> +		return -EOPNOTSUPP;
+> +	return (*ptrace_bts_ops.allocate_bts)(child, size_in_records);
+> +}
+> +
+> +#ifdef __i386__
+
+etc. The code duplication for i386 is indeed quite ugly. Would
+be good to find some better way to do this. A lot of it seems
+to be just different sizeof(), surely that could be passed around too
+or gotten from the ops structure? 
+
+Also it's unclear why you got different MSR access functions for 32bit 
+and 64bit.
+
+> +static int ptrace_bts_init_intel(void)
+
+This should be probably in the standard CPU initialization code,
+possibly using synthesized feature bits too.
+
+Also do you have user space to use this?
+
+-Andi
