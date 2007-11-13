@@ -1,52 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761364AbXKMTlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761538AbXKMTlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761364AbXKMTlW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 14:41:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758447AbXKMTlJ
+	id S1761538AbXKMTlf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 14:41:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759158AbXKMTlK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 14:41:09 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:47622 "EHLO smtp.polymtl.ca"
+	Tue, 13 Nov 2007 14:41:10 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:47623 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758385AbXKMTlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758519AbXKMTlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 13 Nov 2007 14:41:08 -0500
-Message-Id: <20071113194023.895571147@polymtl.ca>
+Message-Id: <20071113194025.150641834@polymtl.ca>
 References: <20071113193349.214098508@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 13 Nov 2007 14:33:50 -0500
+Date: Tue, 13 Nov 2007 14:33:54 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [RFC 1/7] Include marker.h in kernel.h -- temporary, for code readability
-Content-Disposition: inline; filename=lttng-instrument-kernelh.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 13 Nov 2007 19:40:24 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, linux-mm@kvack.org
+Subject: [RFC 5/7] LTTng instrumentation mm
+Content-Disposition: inline; filename=lttng-instrumentation-mm.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 13 Nov 2007 19:40:25 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is a hack to make my life easier : it lessens the conflicts due to
-header includes that changes between the kernel versions.
-
-The proper way to do this is to include <linux/marker.h> in every file using the
-markers.
-
-NOT FOR UPSTREAM.
+Memory management core events.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: linux-mm@kvack.org
 ---
- include/linux/kernel.h |    1 +
- 1 file changed, 1 insertion(+)
+ mm/filemap.c    |    4 ++++
+ mm/memory.c     |   34 +++++++++++++++++++++++++---------
+ mm/page_alloc.c |    5 +++++
+ mm/page_io.c    |    1 +
+ 4 files changed, 35 insertions(+), 9 deletions(-)
 
-Index: linux-2.6-lttng/include/linux/kernel.h
+Index: linux-2.6-lttng/mm/filemap.c
 ===================================================================
---- linux-2.6-lttng.orig/include/linux/kernel.h	2007-06-15 16:13:48.000000000 -0400
-+++ linux-2.6-lttng/include/linux/kernel.h	2007-06-15 16:14:28.000000000 -0400
-@@ -14,6 +14,7 @@
- #include <linux/compiler.h>
- #include <linux/bitops.h>
- #include <linux/log2.h>
-+#include <linux/marker.h>
- #include <asm/byteorder.h>
- #include <asm/bug.h>
+--- linux-2.6-lttng.orig/mm/filemap.c	2007-11-13 09:25:26.000000000 -0500
++++ linux-2.6-lttng/mm/filemap.c	2007-11-13 09:49:35.000000000 -0500
+@@ -514,9 +514,13 @@ void fastcall wait_on_page_bit(struct pa
+ {
+ 	DEFINE_WAIT_BIT(wait, &page->flags, bit_nr);
  
++	trace_mark(mm_filemap_wait_start, "address %p", page_address(page));
++
+ 	if (test_bit(bit_nr, &page->flags))
+ 		__wait_on_bit(page_waitqueue(page), &wait, sync_page,
+ 							TASK_UNINTERRUPTIBLE);
++
++	trace_mark(mm_filemap_wait_end, "address %p", page_address(page));
+ }
+ EXPORT_SYMBOL(wait_on_page_bit);
+ 
+Index: linux-2.6-lttng/mm/memory.c
+===================================================================
+--- linux-2.6-lttng.orig/mm/memory.c	2007-11-13 09:45:41.000000000 -0500
++++ linux-2.6-lttng/mm/memory.c	2007-11-13 09:49:35.000000000 -0500
+@@ -2072,6 +2072,7 @@ static int do_swap_page(struct mm_struct
+ 	delayacct_set_flag(DELAYACCT_PF_SWAPIN);
+ 	page = lookup_swap_cache(entry);
+ 	if (!page) {
++		trace_mark(mm_swap_in, "address #p%lu", address);
+ 		grab_swap_token(); /* Contend for token _before_ read-in */
+  		swapin_readahead(entry, address, vma);
+  		page = read_swap_cache_async(entry, vma, address);
+@@ -2526,30 +2527,45 @@ unlock:
+ int handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+ 		unsigned long address, int write_access)
+ {
++	int res;
+ 	pgd_t *pgd;
+ 	pud_t *pud;
+ 	pmd_t *pmd;
+ 	pte_t *pte;
+ 
++	trace_mark(mm_handle_fault_entry, "address %lu ip #p%ld",
++		address, KSTK_EIP(current));
++
+ 	__set_current_state(TASK_RUNNING);
+ 
+ 	count_vm_event(PGFAULT);
+ 
+-	if (unlikely(is_vm_hugetlb_page(vma)))
+-		return hugetlb_fault(mm, vma, address, write_access);
++	if (unlikely(is_vm_hugetlb_page(vma))) {
++		res = hugetlb_fault(mm, vma, address, write_access);
++		goto end;
++	}
+ 
+ 	pgd = pgd_offset(mm, address);
+ 	pud = pud_alloc(mm, pgd, address);
+-	if (!pud)
+-		return VM_FAULT_OOM;
++	if (!pud) {
++		res = VM_FAULT_OOM;
++		goto end;
++	}
+ 	pmd = pmd_alloc(mm, pud, address);
+-	if (!pmd)
+-		return VM_FAULT_OOM;
++	if (!pmd) {
++		res = VM_FAULT_OOM;
++		goto end;
++	}
+ 	pte = pte_alloc_map(mm, pmd, address);
+-	if (!pte)
+-		return VM_FAULT_OOM;
++	if (!pte) {
++		res = VM_FAULT_OOM;
++		goto end;
++	}
+ 
+-	return handle_pte_fault(mm, vma, address, pte, pmd, write_access);
++	res = handle_pte_fault(mm, vma, address, pte, pmd, write_access);
++end:
++	trace_mark(mm_handle_fault_exit, MARK_NOARGS);
++	return res;
+ }
+ 
+ #ifndef __PAGETABLE_PUD_FOLDED
+Index: linux-2.6-lttng/mm/page_alloc.c
+===================================================================
+--- linux-2.6-lttng.orig/mm/page_alloc.c	2007-11-13 09:25:26.000000000 -0500
++++ linux-2.6-lttng/mm/page_alloc.c	2007-11-13 09:49:35.000000000 -0500
+@@ -519,6 +519,9 @@ static void __free_pages_ok(struct page 
+ 	int i;
+ 	int reserved = 0;
+ 
++	trace_mark(mm_page_free, "order %u address %p",
++		order, page_address(page));
++
+ 	for (i = 0 ; i < (1 << order) ; ++i)
+ 		reserved += free_pages_check(page + i);
+ 	if (reserved)
+@@ -1639,6 +1642,8 @@ fastcall unsigned long __get_free_pages(
+ 	page = alloc_pages(gfp_mask, order);
+ 	if (!page)
+ 		return 0;
++	trace_mark(mm_page_alloc, "order %u address %p",
++		order, page_address(page));
+ 	return (unsigned long) page_address(page);
+ }
+ 
+Index: linux-2.6-lttng/mm/page_io.c
+===================================================================
+--- linux-2.6-lttng.orig/mm/page_io.c	2007-11-13 09:25:26.000000000 -0500
++++ linux-2.6-lttng/mm/page_io.c	2007-11-13 09:49:35.000000000 -0500
+@@ -114,6 +114,7 @@ int swap_writepage(struct page *page, st
+ 		rw |= (1 << BIO_RW_SYNC);
+ 	count_vm_event(PSWPOUT);
+ 	set_page_writeback(page);
++	trace_mark(mm_swap_out, "address %p", page_address(page));
+ 	unlock_page(page);
+ 	submit_bio(rw, bio);
+ out:
 
 -- 
 Mathieu Desnoyers
