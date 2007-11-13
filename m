@@ -1,78 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761806AbXKMXhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761548AbXKMXjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761806AbXKMXhu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 18:37:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761257AbXKMXh1
+	id S1761548AbXKMXjh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 18:39:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758514AbXKMXj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 18:37:27 -0500
-Received: from rtr.ca ([76.10.145.34]:3696 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761014AbXKMXhX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 18:37:23 -0500
-Message-ID: <473A3531.3030509@rtr.ca>
-Date: Tue, 13 Nov 2007 18:37:21 -0500
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, alsa-devel@alsa-project.org,
-       linux-ide@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-input@atrey.karlin.mff.cuni.cz, bugme-daemon@bugzilla.kernel.org
+	Tue, 13 Nov 2007 18:39:26 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60008 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757721AbXKMXjY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 18:39:24 -0500
+Date: Tue, 13 Nov 2007 15:38:19 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Adrian Bunk <bunk@kernel.org>, David Miller <davem@davemloft.net>,
+       alsa-devel@alsa-project.org, netdev@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+       protasnb@gmail.com, linux-ide@vger.kernel.org,
+       bugme-daemon@bugzilla.kernel.org, linux-input@atrey.karlin.mff.cuni.cz
 Subject: Re: [BUG] New Kernel Bugs
-References: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com> <20071113031553.3c7b5c16.akpm@linux-foundation.org> <4739ADA2.4060604@rtr.ca> <alpine.LFD.0.9999.0711131521590.3265@localhost.localdomain> <4739E4E5.2010602@rtr.ca> <alpine.LFD.0.9999.0711132345480.3265@localhost.localdomain>
-In-Reply-To: <alpine.LFD.0.9999.0711132345480.3265@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <20071113153819.b1ce6d5b.akpm@linux-foundation.org>
+In-Reply-To: <20071113232954.GK1356@flint.arm.linux.org.uk>
+References: <20071113034916.2556edd7.akpm@linux-foundation.org>
+	<20071113.035824.40509981.davem@davemloft.net>
+	<20071113041259.79c9a8c5.akpm@linux-foundation.org>
+	<20071113.043207.44732743.davem@davemloft.net>
+	<20071113193219.GC1356@flint.arm.linux.org.uk>
+	<20071113201319.GL4250@stusta.de>
+	<20071113232954.GK1356@flint.arm.linux.org.uk>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Tue, 13 Nov 2007, Mark Lord wrote:
+On Tue, 13 Nov 2007 23:29:54 +0000 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+
+> On Tue, Nov 13, 2007 at 09:13:19PM +0100, Adrian Bunk wrote:
+> > On Tue, Nov 13, 2007 at 07:32:19PM +0000, Russell King wrote:
+> > >...
+> > > There's another issue I want to raise concerning bugzilla.  We have the
+> > > classic case of "not enough people reading bugzilla bugs" - which is one
+> > > of the biggest problems with bugzilla.  Virtually no one in the ARM
+> > > community looks for ARM bugs in bugzilla.
+> > > 
+> > > Let's not forget that it would be a waste of time for people to manually
+> > > check bugzilla for ARM bugs.  There's soo few people reporting ARM bugs
+> > > into bugzilla that a weekly manual check by every maintainer would just
+> > > return the same old boring results for months and months at a time.
+> > >...
+> > 
+> > What about having all ARM bugs in Bugzilla by default assigned to 
+> > linux-arm-kernel@lists.arm.linux.org.uk? [1]
 > 
->> Thomas Gleixner wrote:
->>> On Tue, 13 Nov 2007, Mark Lord wrote:
->>>
->>>>> Andrew Morton wrote:
->>>>>>> On Mon, 12 Nov 2007 22:42:32 -0800 "Natalie Protasevich"
->>>>>>> <protasnb@gmail.com> wrote:
->>>>> ..
->>>>>>>>> with CONFIG_NO_HZ and/or CONFIG_HPET_TIMER set kernel 2.6.23
->>>>>> doesn't
->>>>>>>>> boot (ARM, Timer)
->>>>>>>>> http://bugzilla.kernel.org/show_bug.cgi?id=9229
->>>>>>>>> Kernel: 2.6.23
->>>>>>>>> No response from developers
->>>>> ..
->>> The bug report is bogus. ARM has no CONFIG_HPET_TIMER.  
->>>>> Note:  that same bug exists/existed on i386 back when NO_HZ was
->>>>> introduced (2.6.21?).  I still see it from time to time on my Quad core
->>>>> system (very rare), but not any more on my Duo notebook where it used
->>>>> to happen about 1 in n boots (n < 10).
->>>>>> AFAICT no fix was ever released for it.
->>> Hmm, at which point does the boot stop ? 
->> ..
->>
->> Just as it prints out these messages, sometimes one of them,
->> sometimes both (or all four on the quad core):
->>
->> kernel: switched to high resolution mode on cpu 1
->> kernel: switched to high resolution mode on cpu 0 
-> 
-> It's completely dead afterwards ?
+> That would also work, probably much better than setting up yet another
+> list.
 
-Yeah.  No magic sysrq key or anything.
-There's gotta be a race somewhere that's causing it,
-but it's not obvious where to look for it.
+cpufreq (at least) does it this way.  I don't know how well it is turning
+out in practice.
 
-My regular 2-core notebook no longer suffers from it,
-and subtle .config changes used to make it come and go
-back when it first appeared.
+It's useful if the initial report makes it clear (ie; to me) that the report
+has already gone to a mailing list so I don't go and forward a duplicate.
 
-The quad-core has only done it twice on me thus far.
+But there are so few arm reports in bugzilla that this is all rather moot.
 
-Tracking this one down looks tricky.  It might require some early lockup
-detection code to be tailor made or something.
+> My experience of trying to get mbligh to do this when I stopped looking
+> after PCMCIA stuff was *extremely* painful.  Wonder if it's become any
+> easier of late?
 
-Cheers
+He's a bad, bad man ;)
+
+But he's been turning these things around pretty rapidly lately.
