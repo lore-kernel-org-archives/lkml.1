@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760293AbXKMXgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758466AbXKMXgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760293AbXKMXgT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 18:36:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbXKMXgE
+	id S1758466AbXKMXgf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 18:36:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758664AbXKMXgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 18:36:04 -0500
-Received: from mga02.intel.com ([134.134.136.20]:10113 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750989AbXKMXgB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 18:36:01 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,412,1188802800"; 
-   d="scan'208";a="270084821"
-Date: Tue, 13 Nov 2007 15:33:14 -0800
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Greg KH <gregkh@suse.de>, Rick Jones <rick.jones2@hp.com>,
-       Greg KH <greg@kroah.com>, Alex Chiang <achiang@hp.com>, lenb@kernel.org,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
-Message-Id: <20071113153314.ba46cdf0.kristen.c.accardi@intel.com>
-In-Reply-To: <20071113230400.GP17785@parisc-linux.org>
-References: <20071113000853.GA13341@ldl.fc.hp.com>
-	<20071113170129.GA20185@kroah.com>
-	<20071113202154.GA22812@ldl.fc.hp.com>
-	<20071113202632.GA3227@kroah.com>
-	<473A2A61.7030303@hp.com>
-	<20071113225605.GA2589@suse.de>
-	<20071113230400.GP17785@parisc-linux.org>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+	Tue, 13 Nov 2007 18:36:12 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:39421 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758133AbXKMXgK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 18:36:10 -0500
+Date: Tue, 13 Nov 2007 23:29:54 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       alsa-devel@alsa-project.org, netdev@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+       protasnb@gmail.com, linux-ide@vger.kernel.org,
+       bugme-daemon@bugzilla.kernel.org, linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: [BUG] New Kernel Bugs
+Message-ID: <20071113232954.GK1356@flint.arm.linux.org.uk>
+Mail-Followup-To: Adrian Bunk <bunk@kernel.org>,
+	David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+	alsa-devel@alsa-project.org, netdev@vger.kernel.org,
+	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+	protasnb@gmail.com, linux-ide@vger.kernel.org,
+	bugme-daemon@bugzilla.kernel.org,
+	linux-input@atrey.karlin.mff.cuni.cz
+References: <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113.043207.44732743.davem@davemloft.net> <20071113193219.GC1356@flint.arm.linux.org.uk> <20071113201319.GL4250@stusta.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071113201319.GL4250@stusta.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Nov 2007 16:04:00 -0700
-Matthew Wilcox <matthew@wil.cx> wrote:
-
-> On Tue, Nov 13, 2007 at 02:56:05PM -0800, Greg KH wrote:
-> > Why not just use the code in the linux firmware kit that does this
-> > already today from userspace (thanks to Kristen for pointing this out to
-> > me on irc.)?
+On Tue, Nov 13, 2007 at 09:13:19PM +0100, Adrian Bunk wrote:
+> On Tue, Nov 13, 2007 at 07:32:19PM +0000, Russell King wrote:
+> >...
+> > There's another issue I want to raise concerning bugzilla.  We have the
+> > classic case of "not enough people reading bugzilla bugs" - which is one
+> > of the biggest problems with bugzilla.  Virtually no one in the ARM
+> > community looks for ARM bugs in bugzilla.
+> > 
+> > Let's not forget that it would be a waste of time for people to manually
+> > check bugzilla for ARM bugs.  There's soo few people reporting ARM bugs
+> > into bugzilla that a weekly manual check by every maintainer would just
+> > return the same old boring results for months and months at a time.
+> >...
 > 
-> So then we have something that works on ACPI-based machines.  Who will
-> add support for all the other kinds of firmware and non-firmware based
-> slots?
-> 
+> What about having all ARM bugs in Bugzilla by default assigned to 
+> linux-arm-kernel@lists.arm.linux.org.uk? [1]
 
-As far as being able to retrieve the slot number (which it seemed from
-the HP manageablity application perspective is the goal here), that
-information is available from userspace as well for at least standard PCI
-and pcie based systems for occupied slots.  For standard pci, you have
-to make something up anyway - for shpchp we just use an incremental 
-number and combine it with the bus number to represent the slot.  For
-pcie, you can get this info from the slot capabilities register.
+That would also work, probably much better than setting up yet another
+list.
+
+My experience of trying to get mbligh to do this when I stopped looking
+after PCMCIA stuff was *extremely* painful.  Wonder if it's become any
+easier of late?
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
