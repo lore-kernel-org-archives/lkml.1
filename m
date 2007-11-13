@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759255AbXKMC71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759333AbXKMDHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759255AbXKMC71 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 21:59:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbXKMC7T
+	id S1759333AbXKMDHj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 22:07:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbXKMDHb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 21:59:19 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:59494 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752023AbXKMC7S (ORCPT
+	Mon, 12 Nov 2007 22:07:31 -0500
+Received: from www262.sakura.ne.jp ([202.181.97.72]:63608 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752138AbXKMDHa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 21:59:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:organization:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=Z46z7/awT8a1AWZtiWuC7FxuvwbmaOizcgxPXf7NoMTg3tjN0km8NAEMiXBHJmwarfwoJVat2U3jTUzPaxui3VpB3Gg6KKtU78io6B+lHn9963cKhWPLEhW1Kx3zqjxvjTqR1ahDp5dItcuGGteGQZMhEeMezMncVoyPVDJCPVw=
-Message-ID: <47391300.7070604@gmail.com>
-Date: Tue, 13 Nov 2007 05:59:12 +0300
-From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-Organization: DmVo Home
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071022)
+	Mon, 12 Nov 2007 22:07:30 -0500
+Message-Id: <200711130307.lAD37Nee045340@www262.sakura.ne.jp>
+Subject: [PATCH] sysctl: Check length at deprecated_sysctl_warning.
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: akpm@linux-foundation.org
+Cc: ebiederm@xmission.com, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: viro@zeniv.linux.org.uk
-CC: Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] loop cleanup in fs/namespace.c
-Content-Type: text/plain; charset=KOI8-R; format=flowed
+Content-Type: text/plain; charset="ISO-2022-JP"
 Content-Transfer-Encoding: 7bit
+Date: Tue, 13 Nov 2007 12:07:23 +0900
+References: <200711080257.lA82vQfA015942@www262.sakura.ne.jp> <20071107192211.c1c22e97.akpm@linux-foundation.org> <200711080819.lA88J8Pv072259@www262.sakura.ne.jp> <m14pfr6bnf.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m14pfr6bnf.fsf@ebiederm.dsl.xmission.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alexander,
+Andrew, please replace previous patch with this one.
+This one returns -ENOTDIR.
+----------
 
-Although the following non-idiomatic and quite cumbersome C language construct
+Original patch forgot to check args->nlen.
+I don't know why args->nlen == CTL_MAXNAME is rejected,
+but it has been rejected traditionally.
 
-label:
-	if (condition) {
-		// DO HARD WORK
-		goto label;
-	}
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-is equivalent to a simple while loop
+ kernel/sysctl.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-while (condition) {
-	// DO HARD WORK
-}
-
-it was the "label-if-goto label" approach chosen to implement the loop in the mntput_no_expire() routine located in `fs/namespace.c'.
-
-The patch enclosed to this message changes the goto-based loop to a while-based one, not only saving us two lines of code, but also making the implementation idiomatic and thus more readable.
-
-Thanks,
-
-Dmitri
-
-Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-
---
-diff --git a/fs/namespace.c b/fs/namespace.c
-index 0608388..6a0cee1 100644
---- a/fs/namespace.c
-+++ b/fs/namespace.c
-@@ -278,8 +278,7 @@ static inline void __mntput(struct vfsmo
+diff -puN kernel/sysctl.c~sysctl-check-length-at-deprecated_sysctl_warning kernel/sysctl.c
+--- a/kernel/sysctl.c~sysctl-check-length-at-deprecated_sysctl_warning
++++ a/kernel/sysctl.c
+@@ -2609,6 +2609,10 @@ static int deprecated_sysctl_warning(str
+ 	int name[CTL_MAXNAME];
+ 	int i;
  
- void mntput_no_expire(struct vfsmount *mnt)
- {
--repeat:
--	if (atomic_dec_and_lock(&mnt->mnt_count, &vfsmount_lock)) {
-+	while (atomic_dec_and_lock(&mnt->mnt_count, &vfsmount_lock)) {
- 		if (likely(!mnt->mnt_pinned)) {
- 			spin_unlock(&vfsmount_lock);
- 			__mntput(mnt);
-@@ -290,7 +289,6 @@ repeat:
- 		spin_unlock(&vfsmount_lock);
- 		acct_auto_close_mnt(mnt);
- 		security_sb_umount_close(mnt);
--		goto repeat;
- 	}
- }
- 
++	/* Check args->nlen. */
++	if (args->nlen <= 0 || args->nlen >= CTL_MAXNAME)
++		return -ENOTDIR;
++
+ 	/* Read in the sysctl name for better debug message logging */
+ 	for (i = 0; i < args->nlen; i++)
+ 		if (get_user(name[i], args->name + i))
