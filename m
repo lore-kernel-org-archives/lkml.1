@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbXKMOIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756641AbXKMOJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754813AbXKMOIq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 09:08:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752973AbXKMOIf
+	id S1756641AbXKMOJT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 09:09:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbXKMOJH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 09:08:35 -0500
-Received: from rtr.ca ([76.10.145.34]:4642 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752314AbXKMOIe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 09:08:34 -0500
-Message-ID: <4739AFE0.20705@rtr.ca>
-Date: Tue, 13 Nov 2007 09:08:32 -0500
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Tue, 13 Nov 2007 09:09:07 -0500
+Received: from mu-out-0910.google.com ([209.85.134.187]:39874 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753792AbXKMOJG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 09:09:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=frvYMbJv9xXOBq48R5bTAhQ7mveBQfzGcz005r5Ag7n/gWNQofSSpchV0MfZ4tNOUHdb3ObiVPz9nkgnPzmm7ggnukUYIWh1650sgPfXDnuw62/MIFWoCQkO6A9058Mgxo3b1rejojRjlkGgp9PYfKYS72vhSSsBWxnyuGI/30E=
+Message-ID: <3d08dbff0711130609u462619c9n5f87e9c0e55eb46@mail.gmail.com>
+Date: Tue, 13 Nov 2007 15:09:04 +0100
+From: "Thomas Lindroth" <thomas.lindroth@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc2: Reported regressions from 2.6.23 (updated)
+In-Reply-To: <20071112171156.da6352bd.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, protasnb@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [BUG] New Kernel Bugs
-References: <20071113031553.3c7b5c16.akpm@linux-foundation.org> <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu>
-In-Reply-To: <20071113134029.GA30978@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200711112058.28043.rjw@sisk.pl>
+	 <20071111200935.1384c24d@the-village.bc.nu>
+	 <200711112322.15537.bzolnier@gmail.com>
+	 <20071111224643.312f8279@the-village.bc.nu>
+	 <20071112171156.da6352bd.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-..
-> This is all QA-101 that _cannot be argued against on a rational basis_, 
-> it's just that these sorts of things have been largely ignored for 
-> years, in favor of the all-too-easy "open source means many eyeballs and 
-> that is our QA" answer, which is a _good_ answer but by far not the most 
-> intelligent answer! Today "many eyeballs" is simply not good enough and 
-> nature (and other OS projects) will route us around if we dont change.
-..
+> > > [PATCH] pata_amd/pata_via: de-couple programming of PIO/MWDMA and UDMA timings
+> > >
+> > > * Don't program UDMA timings when programming PIO or MWDMA modes.
+> > >
+> > >   This has also a nice side-effect of fixing regression added by commit
+> > >   681c80b5d96076f447e8101ac4325c82d8dce508 ("libata: correct handling of
+> > >   SRST reset sequences") (->set_piomode method for PIO0 is called before
+> > >   ->cable_detect method which checks UDMA timings to get the cable type).
+> >
+> > I'm not sure this helps as if the ACPI _GTF method is looking at the
+> > flags and stuff but it has to be worth a try.
+> >
+> >
+> > Works for me as a 2.6.24 band aid
+>
+> I'm looking at that "Untested, please don't merge until it is confirmed to
+> fix the problem." comment..
+>
+> Thomas, can you please give it a try, let us know?
+>
+> Thanks
+>
 
-QA-101 and "many eyeballs" are not at all in opposition.
-The latter is how we find out about bugs on uncommon hardware,
-and the former is what we need to track them and overall quality.
-
-A HUGE problem I have with current "efforts", is that once someone
-reports a bug, the onus seems to be 99% on the *reporter* to find
-the exact line of code or commit.  Ghad what a repressive method.
-
-And if the "developer" who broke the damn thing, or who at least
-"claims" to be supporting that code, cannot "reproduce" the bug,
-they drop it completely.
-
-Contrast that flawed approach with how Linus does things..
-he thinks through the symptoms, matches them to the code,
-and figures out what the few possibilities might be,
-and feeds back some trial balloon patches for the bug reporter to try.
-
-MUCH better. 
-
-Linus also asks for a git bisect, but doesn't insist upon the reporter
-learning an entire new (poorly documented) toolset just to to report a bug.
-
-Blah!
-
-And remember, *I'm* an old-time Linux kernel developer.. just think about
-the people reporting bugs who haven't been around here since 1992..
-
--ml
+I can confirm that the patch "pata_amd/pata_via: de-couple programming
+of PIO/MWDMA and UDMA timings" does fix my issue "pata_amd fails to
+detect 80-pin wire".
