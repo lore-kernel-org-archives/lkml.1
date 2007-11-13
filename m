@@ -1,48 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761139AbXKMXx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762311AbXKMXxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761139AbXKMXx2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 18:53:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758133AbXKMXxT
+	id S1762311AbXKMXxz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 18:53:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761531AbXKMXxj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 18:53:19 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:41388 "EHLO e2.ny.us.ibm.com"
+	Tue, 13 Nov 2007 18:53:39 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:43649 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755374AbXKMXxS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 18:53:18 -0500
-Date: Tue, 13 Nov 2007 17:53:18 -0600
-From: "Serge E. Hallyn" <sergeh@us.ibm.com>
-To: Chris Friedhoff <chris@friedhoff.org>
-Cc: Serge E Hallyn <sergeh@us.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Posix file capabilities in 2.6.24rc2
-Message-ID: <20071113235318.GA6477@sergelap.austin.ibm.com>
-References: <20071113230720.22c6a036.chris@friedhoff.org>
+	id S1752594AbXKMXxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 18:53:38 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Greg KH <greg@kroah.com>
+Subject: Re: [stable] [PATCH 00/12] xen/paravirt_ops patches for 2.6.24
+Date: Wed, 14 Nov 2007 00:53:33 +0100
+User-Agent: KMail/1.9.6
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       xen-devel@lists.xensource.com, LKML <linux-kernel@vger.kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>, virtualization@lists.osdl.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Keir Fraser <keir@xensource.com>, Stable Kernel <stable@kernel.org>
+References: <20071015204840.074767068@goop.org> <4713E2D6.90801@goop.org> <20071113232258.GA10338@kroah.com>
+In-Reply-To: <20071113232258.GA10338@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071113230720.22c6a036.chris@friedhoff.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200711140053.33584.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Chris Friedhoff (chris@friedhoff.org):
-> Hello,
-> 
-> everything works as expected, but ...
-> 
-> closing X and no capabilities set for xinit does shutdown only the
-> windowmanager and not the X server (Xorg server 1.4)
-> Consolemessage is:
-> xinit:  Operation not permitted (errno 1): Can't kill X server
-> 
-> 
-> the xattr capability is removed, when the file is chown'ed.
 
-Hi Chris,
+> > Subject: [PATCH 12/12] xfs: eagerly remove vmap mappings to avoid
+> > upsetting Xen
 
-yes on chown the capability is removed.  I'm not quite sure what
-you're asking?  Is your setup depending on being able to chown
-while keeping file capabilities?  Can you give some more details?
+This patch was the wrong fix anyways as discussed; David Chinner
+finally came up with a better one.
 
-thanks,
--serge
+-Andi
+
