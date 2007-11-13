@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761580AbXKMUq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762861AbXKMUrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761580AbXKMUq3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 15:46:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761144AbXKMUqL
+	id S1762861AbXKMUrW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 15:47:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758678AbXKMUrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 15:46:11 -0500
-Received: from lazybastard.de ([212.112.238.170]:35005 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763098AbXKMUqJ (ORCPT
+	Tue, 13 Nov 2007 15:47:13 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:39052 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756214AbXKMUrM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 15:46:09 -0500
-Date: Tue, 13 Nov 2007 21:41:00 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Ray Lee <ray-lk@madrabbit.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Mel Gorman <mel@csn.ul.ie>, Andi Kleen <ak@suse.de>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: x86_64: Make sparsemem/vmemmap the default memory model
-Message-ID: <20071113204100.GB20167@lazybastard.org>
-References: <Pine.LNX.4.64.0711121549370.29178@schroedinger.engr.sgi.com> <200711130059.34346.ak@suse.de> <Pine.LNX.4.64.0711121615120.29328@schroedinger.engr.sgi.com> <200711130149.54852.ak@suse.de> <Pine.LNX.4.64.0711121940410.30269@schroedinger.engr.sgi.com> <2c0942db0711122027m5b11502cveded5705c0bc4f64@mail.gmail.com> <Pine.LNX.4.64.0711122040380.30724@schroedinger.engr.sgi.com>
+	Tue, 13 Nov 2007 15:47:12 -0500
+Subject: Re: [PATCH 1/6] Suppress A.OUT library support if
+	!CONFIG_BINFMT_AOUT [try #5]
+From: Peter Zijlstra <peterz@infradead.org>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, SL Baur <steve@xemacs.org>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-am33-list@redhat.com
+In-Reply-To: <20071113204059.GZ17536@waste.org>
+References: <20071110181416.31dc2614.akpm@linux-foundation.org>
+	 <20071109153432.20803.69832.stgit@warthog.procyon.org.uk>
+	 <20071109153437.20803.55096.stgit@warthog.procyon.org.uk>
+	 <6214.1194881680@redhat.com>
+	 <20071112115353.227f35cb.akpm@linux-foundation.org>
+	 <ed10ee420711121450m5aec7c06vf4481ebad944d706@mail.gmail.com>
+	 <17306.1194909291@redhat.com> <18662.1194951451@redhat.com>
+	 <20071113031835.54d558f9.akpm@linux-foundation.org>
+	 <1194958006.8255.1.camel@twins>  <20071113204059.GZ17536@waste.org>
+Content-Type: text/plain
+Date: Tue, 13 Nov 2007 21:46:58 +0100
+Message-Id: <1194986818.8255.29.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0711122040380.30724@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 November 2007 20:41:10 -0800, Christoph Lameter wrote:
-> On Mon, 12 Nov 2007, Ray Lee wrote:
-> 
-> > Discontig obviously needs to die. However, FlatMem is consistently
-> > faster, averaging about 2.1% better overall for your numbers above. Is
-> > the page allocator not, erm, a fast path, where that matters?
+
+On Tue, 2007-11-13 at 14:40 -0600, Matt Mackall wrote:
+> On Tue, Nov 13, 2007 at 01:46:46PM +0100, Peter Zijlstra wrote:
 > > 
-> > Order	Flat	Sparse	% diff
-> > 0	639	641	0.3
+> > On Tue, 2007-11-13 at 03:18 -0800, Andrew Morton wrote:
+> > > On Tue, 13 Nov 2007 10:57:31 +0000 David Howells <dhowells@redhat.com> wrote:
+> > > 
+> > > > SL Baur <steve@xemacs.org> wrote:
+> > > > 
+> > > > > Please take the emacsism out of the file as it bothers Andrew and others.
+> > > > 
+> > > > I thought Andrew said it didn't bother him.  I assume he was curious.
+> > > > 
+> > > 
+> > > Well it's just one line - hardly a big deal.
+> > > 
+> > > However if that line was a good one then we should get organised and
+> > > annotate all Kbuild files in the tree and appoint you
+> > > kbuild-makefile-tag-maintainer.
+> > > 
+> > > And if it wasn't a good line then it shouldn't have been added.
+> > 
+> > IFF we're going to annotate files like this, then also add the magic
+> > incantation to make vim do the right thing :-)
 > 
-> IMHO Order 0 currently matters most and the difference is negligible 
-> there.
+> How about we change its name to something more sensible instead? We
+> only need this hack because the file has a .asm extension. It is
+> entirely reasonable for an editor (or a person!) to conclude that a
+> file with a .asm extension contains assembly language.
 
-Is it?  I am a bit concerned about the non-monotonic distribution.
-Difference starts a near-0, grows to 4.4, drops to near-0, grows to 4.9,
-drops to near-0.
+Bah, an entirely too sensical suggestion :-)
 
-Order   Flat    Sparse  % diff
-0       639     641     0.3
-1       567     593     4.4
-2       679     692     1.9
-3       763     781     2.3
-4       961     962     0.1
-5       1356    1392    2.6
-6       2224    2336    4.8
-7       4869    5074    4.0
-8       12500   12732   1.8
-9       27926   28165   0.8
-10      58578   58682   0.2
-
-Is there an explanation for this behaviour?  More to the point, could
-repeated runs also return 4% difference for order-0?
-
-Jörn
-
--- 
-It does not require a majority to prevail, but rather an irate,
-tireless minority keen to set brush fires in people's minds.
--- Samuel Adams
