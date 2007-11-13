@@ -1,83 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762651AbXKMTFN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762939AbXKMTGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762651AbXKMTFN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 14:05:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757764AbXKMTEz
+	id S1762939AbXKMTGj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 14:06:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760623AbXKMTGT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 14:04:55 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:46932 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754454AbXKMTEv (ORCPT
+	Tue, 13 Nov 2007 14:06:19 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:46965 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759447AbXKMTGS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 14:04:51 -0500
-Date: Tue, 13 Nov 2007 20:04:28 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Mark Lord <liml@rtr.ca>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, protasnb@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071113190428.GH4250@stusta.de>
-References: <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca> <20071113164650.GA28493@elte.hu> <4739E3D0.10201@rtr.ca> <20071113181228.GF4250@stusta.de> <4739EA83.5040006@rtr.ca> <20071113183605.GG4250@stusta.de> <4739F12E.5020807@rtr.ca>
+	Tue, 13 Nov 2007 14:06:18 -0500
+Message-ID: <4739F564.5080006@zytor.com>
+Date: Tue, 13 Nov 2007 11:05:08 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4739F12E.5020807@rtr.ca>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 4/8] Add asm-compat.h to x86
+References: <20071113185800.436425570@polymtl.ca> <20071113190040.426268972@polymtl.ca>
+In-Reply-To: <20071113190040.426268972@polymtl.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 01:47:10PM -0500, Mark Lord wrote:
-> Adrian Bunk wrote:
-> ...
->> I did bisecting myself, and I know that it costs time and work.
->>
->> But the first point is the above one that it makes otherwise nearly 
->> undebuggable problems debuggable and fixable.
-> ..
->
-> Definitely useful, no question.
->
-> But the problem is now that kernel devs are addicted to it,
-> many won't even consider resolving a problem any other way.
->
-> That's not "maintaining" (or supporting) one's code.
+Mathieu Desnoyers wrote:
+> In assembly code and in gcc inline assembly, we need .long to express a "c long"
+> type on i386 and a .quad to express the same on x86_64. Use macros similar to
+> powerpc "PPC_LONG" to express those. Name chosen: ASM_LONG. (didn't feel like
+> X86_LONG was required)
 
-What you replaced with two dots contained the answer to this:
+In the x86 queue I already have a patch which adds <asm/asm.h> for this; 
+I used the namespace _ASM_* and the name _ASM_PTR since in Linux it is 
+what holds a pointer.
 
-Another point is that it shifts the work from the few experienced 
-developers to the many users. Users (and voluntary testers) we have
-many, but developer time for debugging bug reports is a quite scarce 
-resource.
-
-> And when a "maintainer" is too busy to find/fix their own bugs,
-> that could be a sign that they've bitten off too big of a chunk
-> of the kernel, and it's time for them to distribute code maintainership.
-
-The problem is: Maintainers don't grow on trees.
-
-You need people who are both technically capable and willing to spend 
-time on the non-sexy task of debugging problems.
-
-Where do you plan to find them?
-
-If you don't believe me, please find a maintainer for the currently 
-unmaintained parallel port support.
-
-Or if you want a harder task, find a maintainer for the floppy driver...
-
-> Cheers
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+	-hpa
 
