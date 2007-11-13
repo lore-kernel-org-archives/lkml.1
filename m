@@ -1,93 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761436AbXKMWu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762279AbXKMWvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761436AbXKMWu6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 17:50:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759507AbXKMWut
+	id S1762279AbXKMWvY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 17:51:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760277AbXKMWux
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 17:50:49 -0500
-Received: from mx2.suse.de ([195.135.220.15]:39836 "EHLO mx2.suse.de"
+	Tue, 13 Nov 2007 17:50:53 -0500
+Received: from ns2.suse.de ([195.135.220.15]:39850 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759542AbXKMWus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 17:50:48 -0500
-Subject: patch xen-fix-register_vcpu_info.patch queued to -stable tree
+	id S1760078AbXKMWuv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 17:50:51 -0500
+Subject: patch xen-handle-lazy-cr3-on-unpin.patch queued to -stable tree
 To: jeremy@goop.org, ak@muc.de, akpm@linux-foundation.org, chrisw@sous-sol.org,
        gregkh@suse.de, jeremy@xensource.com, keir@xensource.com,
-       linux-kernel@vger.kernel.org, mark.williamson@cl.cam.ac.uk,
-       stable@kernel.org, xen-users@morten.bogeskov.dk
+       linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: <stable@kernel.org>, <stable-commits@vger.kernel.org>
 From: <gregkh@suse.de>
-Date: Tue, 13 Nov 2007 14:50:31 -0800
-In-Reply-To: <20071012211148.610399000@goop.org>
-Message-Id: <20071113225043.691F014543E5@imap.suse.de>
+Date: Tue, 13 Nov 2007 14:50:37 -0800
+In-Reply-To: <20071012211148.208637000@goop.org>
+Message-Id: <20071113225049.2776414543E5@imap.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 This is a note to let you know that we have just queued up the patch titled
 
-     Subject: xen: fix incorrect vcpu_register_vcpu_info hypercall argument
+     Subject: xen: deal with stale cr3 values when unpinning pagetables
 
 to the 2.6.23-stable tree.  Its filename is
 
-     xen-fix-register_vcpu_info.patch
+     xen-handle-lazy-cr3-on-unpin.patch
 
 A git repo of this tree can be found at 
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 
->From stable-bounces@linux.kernel.org Fri Oct 12 14:33:49 2007
+>From stable-bounces@linux.kernel.org Fri Oct 12 14:33:57 2007
 From: Jeremy Fitzhardinge <jeremy@goop.org>
-Date: Fri, 12 Oct 2007 14:11:40 -0700
-Subject: xen: fix incorrect vcpu_register_vcpu_info hypercall argument
+Date: Fri, 12 Oct 2007 14:11:37 -0700
+Subject: xen: deal with stale cr3 values when unpinning pagetables
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: xen-devel@lists.xensource.com, virtualization@lists.osdl.org, Mark Williamson <mark.williamson@cl.cam.ac.uk>, Morten Bøgeskov <xen-users@morten.bogeskov.dk>, Chris Wright <chrisw@sous-sol.org>, Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>, Keir Fraser <keir@xensource.com>, Stable Kernel <stable@kernel.org>
-Message-ID: <20071012211148.610399000@goop.org>
-Content-Disposition: inline; filename=xen-fix-register_vcpu_info.patch
+Cc: xen-devel@lists.xensource.com, virtualization@lists.osdl.org, Chris Wright <chrisw@sous-sol.org>, Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>, Keir Fraser <keir@xensource.com>, Stable Kernel <stable@kernel.org>
+Message-ID: <20071012211148.208637000@goop.org>
+Content-Disposition: inline; filename=xen-handle-lazy-cr3-on-unpin.patch
 
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 
-patch e3d2697669abbe26c08dc9b95e2a71c634d096ed in mainline.
+patch 9f79991d4186089e228274196413572cc000143b in mainline.
 
-The kernel's copy of struct vcpu_register_vcpu_info was out of date,
-at best causing the hypercall to fail and the guest kernel to fall
-back to the old mechanism, or worse, causing random memory corruption.
+When a pagetable is no longer in use, it must be unpinned so that its
+pages can be freed.  However, this is only possible if there are no
+stray uses of the pagetable.  The code currently deals with all the
+usual cases, but there's a rare case where a vcpu is changing cr3, but
+is doing so lazily, and the change hasn't actually happened by the time
+the pagetable is unpinned, even though it appears to have been completed.
+
+This change adds a second per-cpu cr3 variable - xen_current_cr3 -
+which tracks the actual state of the vcpu cr3.  It is only updated once
+the actual hypercall to set cr3 has been completed.  Other processors
+wishing to unpin a pagetable can check other vcpu's xen_current_cr3
+values to see if any cross-cpu IPIs are needed to clean things up.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Stable Kernel <stable@kernel.org>
-Cc: Morten =?utf-8?q?B=C3=B8geskov?= <xen-users@morten.bogeskov.dk>
-Cc: Mark Williamson <mark.williamson@cl.cam.ac.uk>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/i386/xen/enlighten.c    |    2 +-
- include/xen/interface/vcpu.h |    5 +++--
- 2 files changed, 4 insertions(+), 3 deletions(-)
+ arch/i386/xen/enlighten.c |   55 +++++++++++++++++++++++++++++++---------------
+ arch/i386/xen/mmu.c       |   29 +++++++++++++++++++++---
+ arch/i386/xen/xen-ops.h   |    1 
+ 3 files changed, 65 insertions(+), 20 deletions(-)
 
 --- a/arch/i386/xen/enlighten.c
 +++ b/arch/i386/xen/enlighten.c
-@@ -116,7 +116,7 @@ static void __init xen_vcpu_setup(int cp
- 	info.mfn = virt_to_mfn(vcpup);
- 	info.offset = offset_in_page(vcpup);
+@@ -56,7 +56,23 @@ DEFINE_PER_CPU(enum paravirt_lazy_mode, 
  
--	printk(KERN_DEBUG "trying to map vcpu_info %d at %p, mfn %x, offset %d\n",
-+	printk(KERN_DEBUG "trying to map vcpu_info %d at %p, mfn %llx, offset %d\n",
- 	       cpu, vcpup, info.mfn, info.offset);
+ DEFINE_PER_CPU(struct vcpu_info *, xen_vcpu);
+ DEFINE_PER_CPU(struct vcpu_info, xen_vcpu_info);
+-DEFINE_PER_CPU(unsigned long, xen_cr3);
++
++/*
++ * Note about cr3 (pagetable base) values:
++ *
++ * xen_cr3 contains the current logical cr3 value; it contains the
++ * last set cr3.  This may not be the current effective cr3, because
++ * its update may be being lazily deferred.  However, a vcpu looking
++ * at its own cr3 can use this value knowing that it everything will
++ * be self-consistent.
++ *
++ * xen_current_cr3 contains the actual vcpu cr3; it is set once the
++ * hypercall to set the vcpu cr3 is complete (so it may be a little
++ * out of date, but it will never be set early).  If one vcpu is
++ * looking at another vcpu's cr3 value, it should use this variable.
++ */
++DEFINE_PER_CPU(unsigned long, xen_cr3);	 /* cr3 stored as physaddr */
++DEFINE_PER_CPU(unsigned long, xen_current_cr3);	 /* actual vcpu cr3 */
  
- 	/* Check to see if the hypervisor will put the vcpu_info
---- a/include/xen/interface/vcpu.h
-+++ b/include/xen/interface/vcpu.h
-@@ -160,8 +160,9 @@ struct vcpu_set_singleshot_timer {
-  */
- #define VCPUOP_register_vcpu_info   10  /* arg == struct vcpu_info */
- struct vcpu_register_vcpu_info {
--    uint32_t mfn;               /* mfn of page to place vcpu_info */
--    uint32_t offset;            /* offset within page */
-+    uint64_t mfn;    /* mfn of page to place vcpu_info */
-+    uint32_t offset; /* offset within page */
-+    uint32_t rsvd;   /* unused */
- };
+ struct start_info *xen_start_info;
+ EXPORT_SYMBOL_GPL(xen_start_info);
+@@ -632,32 +648,36 @@ static unsigned long xen_read_cr3(void)
+ 	return x86_read_percpu(xen_cr3);
+ }
  
- #endif /* __XEN_PUBLIC_VCPU_H__ */
++static void set_current_cr3(void *v)
++{
++	x86_write_percpu(xen_current_cr3, (unsigned long)v);
++}
++
+ static void xen_write_cr3(unsigned long cr3)
+ {
++	struct mmuext_op *op;
++	struct multicall_space mcs;
++	unsigned long mfn = pfn_to_mfn(PFN_DOWN(cr3));
++
+ 	BUG_ON(preemptible());
+ 
+-	if (cr3 == x86_read_percpu(xen_cr3)) {
+-		/* just a simple tlb flush */
+-		xen_flush_tlb();
+-		return;
+-	}
++	mcs = xen_mc_entry(sizeof(*op));  /* disables interrupts */
+ 
++	/* Update while interrupts are disabled, so its atomic with
++	   respect to ipis */
+ 	x86_write_percpu(xen_cr3, cr3);
+ 
++	op = mcs.args;
++	op->cmd = MMUEXT_NEW_BASEPTR;
++	op->arg1.mfn = mfn;
+ 
+-	{
+-		struct mmuext_op *op;
+-		struct multicall_space mcs = xen_mc_entry(sizeof(*op));
+-		unsigned long mfn = pfn_to_mfn(PFN_DOWN(cr3));
+-
+-		op = mcs.args;
+-		op->cmd = MMUEXT_NEW_BASEPTR;
+-		op->arg1.mfn = mfn;
++	MULTI_mmuext_op(mcs.mc, op, 1, NULL, DOMID_SELF);
+ 
+-		MULTI_mmuext_op(mcs.mc, op, 1, NULL, DOMID_SELF);
++	/* Update xen_update_cr3 once the batch has actually
++	   been submitted. */
++	xen_mc_callback(set_current_cr3, (void *)cr3);
+ 
+-		xen_mc_issue(PARAVIRT_LAZY_CPU);
+-	}
++	xen_mc_issue(PARAVIRT_LAZY_CPU);  /* interrupts restored */
+ }
+ 
+ /* Early in boot, while setting up the initial pagetable, assume
+@@ -1113,6 +1133,7 @@ asmlinkage void __init xen_start_kernel(
+ 	/* keep using Xen gdt for now; no urgent need to change it */
+ 
+ 	x86_write_percpu(xen_cr3, __pa(pgd));
++	x86_write_percpu(xen_current_cr3, __pa(pgd));
+ 
+ #ifdef CONFIG_SMP
+ 	/* Don't do the full vcpu_info placement stuff until we have a
+--- a/arch/i386/xen/mmu.c
++++ b/arch/i386/xen/mmu.c
+@@ -515,20 +515,43 @@ static void drop_other_mm_ref(void *info
+ 
+ 	if (__get_cpu_var(cpu_tlbstate).active_mm == mm)
+ 		leave_mm(smp_processor_id());
++
++	/* If this cpu still has a stale cr3 reference, then make sure
++	   it has been flushed. */
++	if (x86_read_percpu(xen_current_cr3) == __pa(mm->pgd)) {
++		load_cr3(swapper_pg_dir);
++		arch_flush_lazy_cpu_mode();
++	}
+ }
+ 
+ static void drop_mm_ref(struct mm_struct *mm)
+ {
++	cpumask_t mask;
++	unsigned cpu;
++
+ 	if (current->active_mm == mm) {
+ 		if (current->mm == mm)
+ 			load_cr3(swapper_pg_dir);
+ 		else
+ 			leave_mm(smp_processor_id());
++		arch_flush_lazy_cpu_mode();
++	}
++
++	/* Get the "official" set of cpus referring to our pagetable. */
++	mask = mm->cpu_vm_mask;
++
++	/* It's possible that a vcpu may have a stale reference to our
++	   cr3, because its in lazy mode, and it hasn't yet flushed
++	   its set of pending hypercalls yet.  In this case, we can
++	   look at its actual current cr3 value, and force it to flush
++	   if needed. */
++	for_each_online_cpu(cpu) {
++		if (per_cpu(xen_current_cr3, cpu) == __pa(mm->pgd))
++			cpu_set(cpu, mask);
+ 	}
+ 
+-	if (!cpus_empty(mm->cpu_vm_mask))
+-		xen_smp_call_function_mask(mm->cpu_vm_mask, drop_other_mm_ref,
+-					   mm, 1);
++	if (!cpus_empty(mask))
++		xen_smp_call_function_mask(mask, drop_other_mm_ref, mm, 1);
+ }
+ #else
+ static void drop_mm_ref(struct mm_struct *mm)
+--- a/arch/i386/xen/xen-ops.h
++++ b/arch/i386/xen/xen-ops.h
+@@ -11,6 +11,7 @@ void xen_copy_trap_info(struct trap_info
+ 
+ DECLARE_PER_CPU(struct vcpu_info *, xen_vcpu);
+ DECLARE_PER_CPU(unsigned long, xen_cr3);
++DECLARE_PER_CPU(unsigned long, xen_current_cr3);
+ 
+ extern struct start_info *xen_start_info;
+ extern struct shared_info *HYPERVISOR_shared_info;
 
 
 Patches currently in stable-queue which might be from jeremy@goop.org are
