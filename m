@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755908AbXKMLdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756022AbXKMLgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755908AbXKMLdS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 06:33:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753766AbXKMLdA
+	id S1756022AbXKMLgW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 06:36:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbXKMLgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 06:33:00 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:38740 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753604AbXKMLc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 06:32:59 -0500
-Date: Tue, 13 Nov 2007 14:33:03 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Natalie Protasevich <protasnb@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071113113303.GB14494@2ka.mipt.ru>
-References: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com> <20071113031553.3c7b5c16.akpm@linux-foundation.org>
+	Tue, 13 Nov 2007 06:36:13 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58736
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753217AbXKMLgM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 06:36:12 -0500
+Date: Tue, 13 Nov 2007 03:36:11 -0800 (PST)
+Message-Id: <20071113.033611.73195922.davem@davemloft.net>
+To: herbert@gondor.apana.org.au
+Cc: kaber@trash.net, joonwpark81@gmail.com, w@1wt.eu, cfriesen@nortel.com,
+       auke-jan.h.kok@intel.com, netdev@vger.kernel.org,
+       djohnson+linux-kernel@sw.starentnetworks.com,
+       linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net
+Subject: Re: [PATCH 2/2] [e1000 VLAN] Disable vlan hw accel when
+ promiscuous mode
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <E1Irtdz-0000DX-00@gondolin.me.apana.org.au>
+References: <47397AB3.90705@trash.net>
+	<E1Irtdz-0000DX-00@gondolin.me.apana.org.au>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071113031553.3c7b5c16.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 03:15:53AM -0800, Andrew Morton (akpm@linux-foundation.org) wrote:
-> > NETWORKING===========================================================
-> > 
-> > RTNLGRP_ND_USEROPT does not report ifindex (IPv6)
-> > http://bugzilla.kernel.org/show_bug.cgi?id=9349
-> > Kernel: 2.6.24+
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Date: Tue, 13 Nov 2007 19:09:23 +0800
+
+> I agree.  People doing a tcpdump don't have to turn on promiscuous
+> mode, that's what the -p option is for.  In other words, having
+> promiscuous mode disable VLAN filtering does not take away the
+> user's options at all.
 > 
-> No response from developers
+> In fact, the very definition of promiscuous is to turn off hardware
+> filtering, albeit the filtering of MAC addresses rather than VLAN
+> tags.  So it would seem logical to have it turn off VLAN filtering
+> too.
 
-Fixed (extended) in the DaveM's tree (or will be soon - patch was
-submitted by Pierre Ynard).
+Ok.
 
-Sorry, others are either driver related (and thus require
-hardware to be tested on and maintainers to be kicked in) 
-or too obscure (like 2.6.11 bug and weird network problem 
-which is undetectible on other systems).
+The performance implications can be pretty severe however.
+I wish we could address this somehow.
 
-Yes, we suck, but we try to recover :)
-
--- 
-	Evgeniy Polyakov
