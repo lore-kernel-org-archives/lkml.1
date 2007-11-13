@@ -1,123 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758942AbXKMCN6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758105AbXKMCUr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758942AbXKMCN6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 21:13:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601AbXKMCNq
+	id S1758105AbXKMCUr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 21:20:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbXKMCUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 21:13:46 -0500
-Received: from cobra.newdream.net ([66.33.216.30]:59711 "EHLO
-	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752565AbXKMCNp (ORCPT
+	Mon, 12 Nov 2007 21:20:40 -0500
+Received: from mga10.intel.com ([192.55.52.92]:11317 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751029AbXKMCUj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 21:13:45 -0500
-X-Greylist: delayed 1359 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Nov 2007 21:13:45 EST
-Date: Mon, 12 Nov 2007 17:51:06 -0800 (PST)
-From: Sage Weil <sage@newdream.net>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: ceph-devel@lists.sourceforge.net
-Subject: [ANNOUNCE] Ceph distributed file system
-Message-ID: <Pine.LNX.4.64.0711121736580.13192@cobra.newdream.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 12 Nov 2007 21:20:39 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,408,1188802800"; 
+   d="scan'208";a="380042365"
+Subject: Re: iozone write 50% regression in kernel 2.6.24-rc1
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Benny Halevy <bhalevy@panasas.com>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       aneesh.kumar@linux.vnet.ibm.com
+In-Reply-To: <1194886100.9713.13.camel@twins>
+References: <1194601672.20251.60.camel@ymzhang>
+	 <1194602064.6289.157.camel@twins>  <1194833640.20251.80.camel@ymzhang>
+	 <1194860728.7179.6.camel@twins>  <1194861112.20251.124.camel@ymzhang>
+	 <1194873980.7179.31.camel@twins>  <47386BC4.3050403@panasas.com>
+	 <1194886100.9713.13.camel@twins>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 13 Nov 2007 10:19:22 +0800
+Message-Id: <1194920362.20251.161.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everyone,
+On Mon, 2007-11-12 at 17:48 +0100, Peter Zijlstra wrote:
+> On Mon, 2007-11-12 at 17:05 +0200, Benny Halevy wrote:
+> > On Nov. 12, 2007, 15:26 +0200, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > > Single socket, dual core opteron, 2GB memory
+> > > Single SATA disk, ext3
+> > > 
+> > > x86_64 kernel and userland
+> > > 
+> > > (dirty_background_ratio, dirty_ratio) tunables
+> > > 
+> > > ---- (5,10) - default
+> > > 
+> > > 2.6.23.1-42.fc8 #1 SMP
+> > > 
+> > >           524288       4   59580   60356
+> > >           524288       4   59247   61101
+> > >           524288       4   61030   62831
+> > > 
+> > > 2.6.24-rc2 #28 SMP PREEMPT
+> > > 
+> > >           524288       4   49277   56582
+> > >           524288       4   50728   61056
+> > >           524288       4   52027   59758
+> > >           524288       4   51520   62426
+> > > 
+> > > 
+> > > ---- (20,40) - similar to your 8GB
+> > > 
+> > > 2.6.23.1-42.fc8 #1 SMP
+> > > 
+> > >           524288       4  225977  447461
+> > >           524288       4  232595  496848
+> > >           524288       4  220608  478076
+> > >           524288       4  203080  445230
+> > > 
+> > > 2.6.24-rc2 #28 SMP PREEMPT
+> > > 
+> > >           524288       4   54043   83585
+> > >           524288       4   69949  516253
+> > >           524288       4   72343  491416
+> > >           524288       4   71775  492653
+> > > 
+> > > ---- (60,80) - overkill
+> > > 
+> > > 2.6.23.1-42.fc8 #1 SMP
+> > > 
+> > >           524288       4  208450  491892
+> > >           524288       4  216262  481135
+> > >           524288       4  221892  543608
+> > >           524288       4  202209  574725
+> > >           524288       4  231730  452482
+> > > 
+> > > 2.6.24-rc2 #28 SMP PREEMPT
+> > > 
+> > >           524288       4   49091   86471
+> > >           524288       4   65071  217566
+> > >           524288       4   72238  492172
+> > >           524288       4   71818  492433
+> > >           524288       4   71327  493954
+> > > 
+> > > 
+> > > While I see that the write speed as reported under .24 ~70MB/s is much
+> > > lower than the one reported under .23 ~200MB/s, I find it very hard to
+> > > believe my poor single SATA disk could actually do the 200MB/s for
+> > > longer than its cache 8/16 MB (not sure).
+> > > 
+> > > vmstat shows that actual IO is done, even though the whole 512MB could
+> > > fit in cache, hence my suspicion that the ~70MB/s is the most realistic
+> > > of the two.
+> > 
+> > Even 70 MB/s seems too high.  What throughput do you see for the
+> > raw disk partition/
+> > 
+> > Also, are the numbers above for successive runs?
+> > It seems like you're seeing some caching effects so
+> > I'd recommend using a file larger than your cache size and
+> > the -e and -c options (to include fsync and close in timings)
+> > to try to eliminate them.
+> 
+> ------ iozone -i 0 -r 4k -s 512m -e -c
+> 
+> .23 (20,40)
+> 
+>           524288       4   31750   33560
+>           524288       4   29786   32114
+>           524288       4   29115   31476
+> 
+> .24 (20,40)
+> 
+>           524288       4   25022   32411
+>           524288       4   25375   31662
+>           524288       4   26407   33871
+> 
+> 
+> ------ iozone -i 0 -r 4k -s 4g -e -c
+> 
+> .23 (20,40)
+> 
+>          4194304       4   39699   35550
+>          4194304       4   40225   36099
+> 
+> 
+> .24 (20,40)
+> 
+>          4194304       4   39961   41656
+>          4194304       4   39244   39673
+> 
+> 
+> Yanmin, for that benchmark you ran, what was it meant to measure?
+> From what I can make of it its just write cache benching.
+Yeah. It's quite related to cache. I did more testing on my stoakley machine (8 cores,
+8GB mem). If I reduce the memory to 4GB, the speed will be far slower.
 
-Ceph is a distributed network file system designed to provide excellent 
-performance, reliability, and scalability with POSIX semantics.  I 
-periodically see frustration on this list with the lack of a scalable GPL 
-distributed file system with sufficiently robust replication and failure 
-recovery to run on commodity hardware, and would like to think that--with 
-a little love--Ceph could fill that gap.  Basic features include:
+> 
+> One thing I don't understand is how the write numbers are so much lower
+> than the rewrite numbers. The iozone code (which gives me headaches,
+> damn what a mess) seems to suggest that the only thing that is different
+> is the lack of block allocation.
+It might be a good direction.
 
- * POSIX semantics.
- * Seamless scaling from a few nodes to many thousands.
- * Gigabytes to petabytes.
- * High availability and reliability.  No single points of failure.
- * N-way replication of all data across multiple nodes.
- * Automatic rebalancing of data on node addition/removal to efficiently 
-   utilize device resources.
- * Easy deployment; most FS components are userspace daemons.
- * Fuse-based client.
- - Lightweight kernel client (in progress).
+> 
+> Linus posted a patch yesterday fixing up a regression in the ext3 bitmap
+> block allocator, /me goes apply that patch and rerun the tests.
+> 
+> > > ---- (20,40) - similar to your 8GB
+> > > 
+> > > 2.6.23.1-42.fc8 #1 SMP
+> > > 
+> > >           524288       4  225977  447461
+> > >           524288       4  232595  496848
+> > >           524288       4  220608  478076
+> > >           524288       4  203080  445230
+> > > 
+> > > 2.6.24-rc2 #28 SMP PREEMPT
+> > > 
+> > >           524288       4   54043   83585
+> > >           524288       4   69949  516253
+> > >           524288       4   72343  491416
+> > >           524288       4   71775  492653
+> 
+> 2.6.24-rc2 +
+>         patches/wu-reiser.patch
+>         patches/writeback-early.patch
+>         patches/bdi-task-dirty.patch
+>         patches/bdi-sysfs.patch
+>         patches/sched-hrtick.patch
+>         patches/sched-rt-entity.patch
+>         patches/sched-watchdog.patch
+>         patches/linus-ext3-blockalloc.patch
+> 
+>           524288       4  179657  487676
+>           524288       4  173989  465682
+>           524288       4  175842  489800
+> 
+> 
+> Linus' patch is the one that makes the difference here. So I'm unsure
+> how you bisected it down to:
+> 
+>   04fbfdc14e5f48463820d6b9807daa5e9c92c51f
+Originally, my test suite is just to pick up the result of first run. Your prior
+patch(speed up writeback ramp-up on clean systems) fixed an issue about first
+run result regression. So my bisect captured it.
 
- - Flexible snapshots on arbitrary subdirectories (soon)
- - Quotas (soon)
- - Strong security (planned)
+However, late on, I found following run have different results. A moment ago,
+I retested 04fbfdc14e5f48463820d6b9807daa5e9c92c51f by:
+#git checkout 04fbfdc14e5f48463820d6b9807daa5e9c92c51f
+#make
 
-(* = current features, - = coming soon)
+Then, reverse your patch. It looks like 04fbfdc14e5f48463820d6b9807daa5e9c92c51f
+is not the root cause of following run regression. I will change my test suite to
+make it run for many times and do a new bisect.
 
-In contrast to cluster filesystems like GFS, OCFS2, and GPFS that rely on 
-symmetric access by all clients to shared block devices, Ceph separates 
-data and metadata management into independent server clusters, similar to 
-Lustre.  Unlike Lustre, however, metadata and storage nodes run entirely 
-in userspace and require no special kernel support.  Storage nodes utilize 
-either a raw block device or large image file to store data objects, or 
-can utilize an existing file system (XFS, etc.) for local object storage 
-(currently with weakened safety semantics).  File data is striped across 
-storage nodes in large chunks to distribute workload and facilitate high 
-throughputs.  When storage nodes fail, data is re-replicated in a 
-distributed fashion by the storage nodes themselves (with some 
-coordination from a cluster monitor), making the system extremely 
-efficient and scalable.  Currently only n-way replication is supported, 
-although initial groundwork has been laid for parity-based data 
-redundancy.
+> These results seem to point to
+> 
+>   7c9e69faa28027913ee059c285a5ea8382e24b5d
+I tested 2.6.24-rc2 which already includes above patch. 2.6.24-rc2 has the same
+regression like 2.6.24-rc1.
 
-Metadata servers effectively form a large, consistent, distributed 
-in-memory cache above the storage cluster that is extremely scalable, 
-dynamically redistributes metadata in response to workload changes, and 
-can tolerate arbitrary (well, non-Byzantine) node failures.  The metadata 
-server takes a somewhat unconventional approach to metadata storage to 
-significantly improve performance for common workloads.  In particular, 
-inodes with only a single link are embedded in directories, allowing 
-entire directories of dentries and inodes to be loaded into its cache with 
-a single I/O operation.  The contents of extremely large directories can 
-be fragmented and managed by independent metadata servers, allowing 
-scalable concurrent access.
-
-Most importantly (in my mind, at least), the system offers automatic data 
-rebalancing/migration when scaling from a small cluster of just a few 
-nodes to many hundreds, without requiring an administrator carve the data 
-set into static volumes or go through the tedious process of migrating 
-data between servers.  When the file system approaches full, new nodes can 
-be easily added and things will "just work."  Moreover, there is an 
-unfortunate scarcity of 'enterprise-grade' features among open source 
-Linux file systems when it comes to scalability, failure recovery, load 
-balancing, and snapshots.  Snapshot support is a particularly sore point 
-for me as block device-based approaches tend to be slow, inefficient, 
-tedious to use, and unusable by the cluster file systems.
-
-The following paper provides a good overview of the architecture:  
-
- http://www.usenix.org/events/osdi06/tech/weil.html
-
-
-Although I have been working on this project for some time (it was the 
-subject of my PhD thesis), I am announcing it to linux-fsdevel and lkml 
-now because we are just (finally) getting started with the implementation 
-of an in-kernel client.  There is a prototype client based on FUSE, but it 
-is limited both in terms of correctness (due to limited control over cache 
-consistency) and performance.  I am hoping to generate interest among file 
-system developers with more kernel experience than I to help guide 
-development as we move forward with porting the client to the kernel.
-
-The kernel-side client code is in its infancy, but the rest of the system 
-is relatively mature.  We have already been able to demonstrate excellent 
-performance and scalability (see the above referenced paper), and the 
-storage and metadata clusters can both tolerate and recover from 
-arbitrary/multiple node failures.  I would describe the code base 
-(weighing in at around 40,000 semicolon-lines) as early alpha quality: 
-there is a healthy amount of debugging work to be done, but the basic 
-features of the system system are complete and can be tested and 
-benchmarked.
-
-If you have any questions, I would be happy to discuss the architecture 
-in more detail.  The paper mentioned above is probably the best overview.  
-The source and more are available at the project web site,
-
- http://ceph.sourceforge.net/
-
-Please let me know what you think.
-
-sage
+-yanmin
