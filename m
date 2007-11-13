@@ -1,549 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756785AbXKNLkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757246AbXKNLl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756785AbXKNLkh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 06:40:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbXKNLk3
+	id S1757246AbXKNLl4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 06:41:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbXKNLlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 06:40:29 -0500
-Received: from sacred.ru ([62.205.161.221]:44206 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751510AbXKNLk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 06:40:28 -0500
-Message-ID: <473ADE54.4010909@openvz.org>
-Date: Wed, 14 Nov 2007 14:39:00 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Wed, 14 Nov 2007 06:41:46 -0500
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:25948 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751801AbXKNLlp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 06:41:45 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=X1OVurZci5NW3Uwcg3+1UbYlr89LpOIG5vQ04jmDQDqlGbypZVPfbwZR7RmtTey3JeXwPlrGV9qkb9kvA8n7VM9dV0+KExxNr1+nWZHr0hYb5pQZO8q1uIgNrz+HOMG2+qCzi9kZvoX4N0TCTKuTK/A34ap2JqgipYEK3NWuY9g=  ;
+X-YMail-OSG: zOZ8a3UVM1lfSdK.RBj85QZtgiEDeAqKGzMmMalmyYRV4t7MkmYHDLEmOSH5TR72TmdPeYPl9w--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: David Miller <davem@davemloft.net>
+Subject: Re: 2.6.24-rc2: Network commit causes SLUB performance regression with tbench
+Date: Wed, 14 Nov 2007 10:39:22 +1100
+User-Agent: KMail/1.9.5
+Cc: clameter@sgi.com, netdev@vger.kernel.org, herbert@gondor.apana.org.au,
+       linux-kernel@vger.kernel.org
+References: <200711140514.28159.nickpiggin@yahoo.com.au> <200711140927.39796.nickpiggin@yahoo.com.au> <20071114.031022.183117678.davem@davemloft.net>
+In-Reply-To: <20071114.031022.183117678.davem@davemloft.net>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: Cedric Le Goater <clg@fr.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 5/6] Cleanup the code managed with PID_NS option
-References: <473ADB5B.50902@openvz.org>
-In-Reply-To: <473ADB5B.50902@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 14 Nov 2007 14:39:00 +0300 (MSK)
+Content-Disposition: inline
+Message-Id: <200711141039.22758.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just like with the user namespaces, move the namespace
-management code into the separate .c file and mark the
-(already existing) PID_NS option as "depend on NAMESPACES"
+On Wednesday 14 November 2007 22:10, David Miller wrote:
+> From: Nick Piggin <nickpiggin@yahoo.com.au>
+> Date: Wed, 14 Nov 2007 09:27:39 +1100
+>
+> > OK, in vanilla kernels, the page allocator definitely shows higher
+> > in the results (than with Herbert's patch reverted).
+>
+>  ...
+>
+> > I can't see that these numbers show much useful, unfortunately.
+>
+> Thanks for all of this data Nick.
+>
+> So the thing that's being effected here in TCP is
+> net/ipv4/tcp.c:select_size(), specifically the else branch:
+>
+> 	int tmp = tp->mss_cache;
+>  ...
+> 		else {
+> 			int pgbreak = SKB_MAX_HEAD(MAX_TCP_HEADER);
+>
+> 			if (tmp >= pgbreak &&
+> 			    tmp <= pgbreak + (MAX_SKB_FRAGS - 1) * PAGE_SIZE)
+> 				tmp = pgbreak;
+> 		}
+>
+> This is deciding, in 'tmp', how much linear sk_buff space to
+> allocate.  'tmp' is initially set to the path MSS, which
+> for loopback is 16K - the space necessary for packet headers.
+>
+> The SKB_MAX_HEAD() value has changed as a result of Herbert's
+> bug fix.   I suspect this 'if' test is passing both with and
+> without the patch.
+>
+> But pgbreak is now smaller, and thus the skb->data linear
+> data area size we choose to use is smaller as well.
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+OK, that makes sense. BTW, are you taking advantage of kmalloc's
+"quantization" into slabs WRT the linear data area? I wonder if
+it would be at all useful...
 
----
 
-diff --git a/include/linux/pid.h b/include/linux/pid.h
-index e29a900..061abb6 100644
---- a/include/linux/pid.h
-+++ b/include/linux/pid.h
-@@ -118,10 +118,10 @@ extern struct pid *find_pid(int nr);
-  */
- extern struct pid *find_get_pid(int nr);
- extern struct pid *find_ge_pid(int nr, struct pid_namespace *);
-+int next_pidmap(struct pid_namespace *pid_ns, int last);
- 
- extern struct pid *alloc_pid(struct pid_namespace *ns);
- extern void FASTCALL(free_pid(struct pid *pid));
--extern void zap_pid_ns_processes(struct pid_namespace *pid_ns);
- 
- /*
-  * the helpers to get the pid's id seen from different namespaces
-diff --git a/include/linux/pid_namespace.h b/include/linux/pid_namespace.h
-index 1689e28..fcd61fa 100644
---- a/include/linux/pid_namespace.h
-+++ b/include/linux/pid_namespace.h
-@@ -39,6 +39,7 @@ static inline struct pid_namespace *get_pid_ns(struct pid_namespace *ns)
- 
- extern struct pid_namespace *copy_pid_ns(unsigned long flags, struct pid_namespace *ns);
- extern void free_pid_ns(struct kref *kref);
-+extern void zap_pid_ns_processes(struct pid_namespace *pid_ns);
- 
- static inline void put_pid_ns(struct pid_namespace *ns)
- {
-@@ -66,6 +67,11 @@ static inline void put_pid_ns(struct pid_namespace *ns)
- {
- }
- 
-+
-+static inline void zap_pid_ns_processes(struct pid_namespace *ns)
-+{
-+	BUG();
-+}
- #endif /* CONFIG_PID_NS */
- 
- static inline struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
-diff --git a/init/Kconfig b/init/Kconfig
-index 825f10c..f21bc4d 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -206,18 +206,6 @@ config TASK_IO_ACCOUNTING
- 
- 	  Say N if unsure.
- 
--config PID_NS
--	bool "PID Namespaces (EXPERIMENTAL)"
--	default n
--	depends on EXPERIMENTAL
--	help
--	  Suport process id namespaces.  This allows having multiple
--	  process with the same pid as long as they are in different
--	  pid namespaces.  This is a building block of containers.
--
--	  Unless you want to work with an experimental feature
--	  say N here.
--
- config AUDIT
- 	bool "Auditing support"
- 	depends on NET
-@@ -426,6 +414,18 @@ config USER_NS
- 	  to provide different user info for different servers.
- 	  If unsure, say N.
- 
-+config PID_NS
-+	bool "PID Namespaces (EXPERIMENTAL)"
-+	default n
-+	depends on NAMESPACES && EXPERIMENTAL
-+	help
-+	  Suport process id namespaces.  This allows having multiple
-+	  process with the same pid as long as they are in different
-+	  pid namespaces.  This is a building block of containers.
-+
-+	  Unless you want to work with an experimental feature
-+	  say N here.
-+
- config BLK_DEV_INITRD
- 	bool "Initial RAM filesystem and RAM disk (initramfs/initrd) support"
- 	depends on BROKEN || !FRV
-diff --git a/kernel/Makefile b/kernel/Makefile
-index d01cb7b..d108027 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -50,6 +50,7 @@ obj-$(CONFIG_AUDIT_TREE) += audit_tree.o
- obj-$(CONFIG_KPROBES) += kprobes.o
- obj-$(CONFIG_UTS_NS) += utsname.o
- obj-$(CONFIG_USER_NS) += user_namespace.o
-+obj-$(CONFIG_PID_NS) += pid_namespace.o
- obj-$(CONFIG_SYSFS) += ksysfs.o
- obj-$(CONFIG_DETECT_SOFTLOCKUP) += softlockup.o
- obj-$(CONFIG_GENERIC_HARDIRQS) += irq/
-diff --git a/kernel/pid.c b/kernel/pid.c
-index f815455..21f027c 100644
---- a/kernel/pid.c
-+++ b/kernel/pid.c
-@@ -41,7 +41,6 @@
- static struct hlist_head *pid_hash;
- static int pidhash_shift;
- struct pid init_struct_pid = INIT_STRUCT_PID;
--static struct kmem_cache *pid_ns_cachep;
- 
- int pid_max = PID_MAX_DEFAULT;
- 
-@@ -181,7 +180,7 @@ static int alloc_pidmap(struct pid_namespace *pid_ns)
- 	return -1;
- }
- 
--static int next_pidmap(struct pid_namespace *pid_ns, int last)
-+int next_pidmap(struct pid_namespace *pid_ns, int last)
- {
- 	int offset;
- 	struct pidmap *map, *end;
-@@ -487,180 +486,6 @@ struct pid *find_ge_pid(int nr, struct pid_namespace *ns)
- }
- EXPORT_SYMBOL_GPL(find_get_pid);
- 
--struct pid_cache {
--	int nr_ids;
--	char name[16];
--	struct kmem_cache *cachep;
--	struct list_head list;
--};
--
--static LIST_HEAD(pid_caches_lh);
--static DEFINE_MUTEX(pid_caches_mutex);
--
--/*
-- * creates the kmem cache to allocate pids from.
-- * @nr_ids: the number of numerical ids this pid will have to carry
-- */
--
--static struct kmem_cache *create_pid_cachep(int nr_ids)
--{
--	struct pid_cache *pcache;
--	struct kmem_cache *cachep;
--
--	mutex_lock(&pid_caches_mutex);
--	list_for_each_entry (pcache, &pid_caches_lh, list)
--		if (pcache->nr_ids == nr_ids)
--			goto out;
--
--	pcache = kmalloc(sizeof(struct pid_cache), GFP_KERNEL);
--	if (pcache == NULL)
--		goto err_alloc;
--
--	snprintf(pcache->name, sizeof(pcache->name), "pid_%d", nr_ids);
--	cachep = kmem_cache_create(pcache->name,
--			sizeof(struct pid) + (nr_ids - 1) * sizeof(struct upid),
--			0, SLAB_HWCACHE_ALIGN, NULL);
--	if (cachep == NULL)
--		goto err_cachep;
--
--	pcache->nr_ids = nr_ids;
--	pcache->cachep = cachep;
--	list_add(&pcache->list, &pid_caches_lh);
--out:
--	mutex_unlock(&pid_caches_mutex);
--	return pcache->cachep;
--
--err_cachep:
--	kfree(pcache);
--err_alloc:
--	mutex_unlock(&pid_caches_mutex);
--	return NULL;
--}
--
--#ifdef CONFIG_PID_NS
--static struct pid_namespace *create_pid_namespace(int level)
--{
--	struct pid_namespace *ns;
--	int i;
--
--	ns = kmem_cache_alloc(pid_ns_cachep, GFP_KERNEL);
--	if (ns == NULL)
--		goto out;
--
--	ns->pidmap[0].page = kzalloc(PAGE_SIZE, GFP_KERNEL);
--	if (!ns->pidmap[0].page)
--		goto out_free;
--
--	ns->pid_cachep = create_pid_cachep(level + 1);
--	if (ns->pid_cachep == NULL)
--		goto out_free_map;
--
--	kref_init(&ns->kref);
--	ns->last_pid = 0;
--	ns->child_reaper = NULL;
--	ns->level = level;
--
--	set_bit(0, ns->pidmap[0].page);
--	atomic_set(&ns->pidmap[0].nr_free, BITS_PER_PAGE - 1);
--
--	for (i = 1; i < PIDMAP_ENTRIES; i++) {
--		ns->pidmap[i].page = 0;
--		atomic_set(&ns->pidmap[i].nr_free, BITS_PER_PAGE);
--	}
--
--	return ns;
--
--out_free_map:
--	kfree(ns->pidmap[0].page);
--out_free:
--	kmem_cache_free(pid_ns_cachep, ns);
--out:
--	return ERR_PTR(-ENOMEM);
--}
--
--static void destroy_pid_namespace(struct pid_namespace *ns)
--{
--	int i;
--
--	for (i = 0; i < PIDMAP_ENTRIES; i++)
--		kfree(ns->pidmap[i].page);
--	kmem_cache_free(pid_ns_cachep, ns);
--}
--
--struct pid_namespace *copy_pid_ns(unsigned long flags, struct pid_namespace *old_ns)
--{
--	struct pid_namespace *new_ns;
--
--	BUG_ON(!old_ns);
--	new_ns = get_pid_ns(old_ns);
--	if (!(flags & CLONE_NEWPID))
--		goto out;
--
--	new_ns = ERR_PTR(-EINVAL);
--	if (flags & CLONE_THREAD)
--		goto out_put;
--
--	new_ns = create_pid_namespace(old_ns->level + 1);
--	if (!IS_ERR(new_ns))
--		new_ns->parent = get_pid_ns(old_ns);
--
--out_put:
--	put_pid_ns(old_ns);
--out:
--	return new_ns;
--}
--
--void free_pid_ns(struct kref *kref)
--{
--	struct pid_namespace *ns, *parent;
--
--	ns = container_of(kref, struct pid_namespace, kref);
--
--	parent = ns->parent;
--	destroy_pid_namespace(ns);
--
--	if (parent != NULL)
--		put_pid_ns(parent);
--}
--#endif /* CONFIG_PID_NS */
--
--void zap_pid_ns_processes(struct pid_namespace *pid_ns)
--{
--	int nr;
--	int rc;
--
--	/*
--	 * The last thread in the cgroup-init thread group is terminating.
--	 * Find remaining pid_ts in the namespace, signal and wait for them
--	 * to exit.
--	 *
--	 * Note:  This signals each threads in the namespace - even those that
--	 * 	  belong to the same thread group, To avoid this, we would have
--	 * 	  to walk the entire tasklist looking a processes in this
--	 * 	  namespace, but that could be unnecessarily expensive if the
--	 * 	  pid namespace has just a few processes. Or we need to
--	 * 	  maintain a tasklist for each pid namespace.
--	 *
--	 */
--	read_lock(&tasklist_lock);
--	nr = next_pidmap(pid_ns, 1);
--	while (nr > 0) {
--		kill_proc_info(SIGKILL, SEND_SIG_PRIV, nr);
--		nr = next_pidmap(pid_ns, nr);
--	}
--	read_unlock(&tasklist_lock);
--
--	do {
--		clear_thread_flag(TIF_SIGPENDING);
--		rc = sys_wait4(-1, NULL, __WALL, NULL);
--	} while (rc != -ECHILD);
--
--
--	/* Child reaper for the pid namespace is going away */
--	pid_ns->child_reaper = NULL;
--	return;
--}
--
- /*
-  * The pid hash table is scaled according to the amount of memory in the
-  * machine.  From a minimum of 16 slots up to 4096 slots at one gigabyte or
-@@ -693,9 +518,6 @@ void __init pidmap_init(void)
- 	set_bit(0, init_pid_ns.pidmap[0].page);
- 	atomic_dec(&init_pid_ns.pidmap[0].nr_free);
- 
--	init_pid_ns.pid_cachep = create_pid_cachep(1);
--	if (init_pid_ns.pid_cachep == NULL)
--		panic("Can't create pid_1 cachep\n");
--
--	pid_ns_cachep = KMEM_CACHE(pid_namespace, SLAB_PANIC);
-+	init_pid_ns.pid_cachep = KMEM_CACHE(pid,
-+			SLAB_HWCACHE_ALIGN | SLAB_PANIC);
- }
-diff --git a/kernel/pid_namespace.c b/kernel/pid_namespace.c
-new file mode 100644
-index 0000000..6d8c859
---- /dev/null
-+++ b/kernel/pid_namespace.c
-@@ -0,0 +1,197 @@
-+/*
-+ * Pid namespaces
-+ *
-+ * Authors:
-+ *    (C) 2007 Pavel Emelyanov <xemul@openvz.org>, OpenVZ, SWsoft Inc.
-+ *    (C) 2007 Sukadev Bhattiprolu <sukadev@us.ibm.com>, IBM
-+ *     Many thanks to Oleg Nesterov for comments and help
-+ *
-+ */
-+
-+#include <linux/pid.h>
-+#include <linux/pid_namespace.h>
-+#include <linux/syscalls.h>
-+#include <linux/err.h>
-+
-+#define BITS_PER_PAGE		(PAGE_SIZE*8)
-+
-+struct pid_cache {
-+	int nr_ids;
-+	char name[16];
-+	struct kmem_cache *cachep;
-+	struct list_head list;
-+};
-+
-+static LIST_HEAD(pid_caches_lh);
-+static DEFINE_MUTEX(pid_caches_mutex);
-+static struct kmem_cache *pid_ns_cachep;
-+
-+/*
-+ * creates the kmem cache to allocate pids from.
-+ * @nr_ids: the number of numerical ids this pid will have to carry
-+ */
-+
-+static struct kmem_cache *create_pid_cachep(int nr_ids)
-+{
-+	struct pid_cache *pcache;
-+	struct kmem_cache *cachep;
-+
-+	mutex_lock(&pid_caches_mutex);
-+	list_for_each_entry (pcache, &pid_caches_lh, list)
-+		if (pcache->nr_ids == nr_ids)
-+			goto out;
-+
-+	pcache = kmalloc(sizeof(struct pid_cache), GFP_KERNEL);
-+	if (pcache == NULL)
-+		goto err_alloc;
-+
-+	snprintf(pcache->name, sizeof(pcache->name), "pid_%d", nr_ids);
-+	cachep = kmem_cache_create(pcache->name,
-+			sizeof(struct pid) + (nr_ids - 1) * sizeof(struct upid),
-+			0, SLAB_HWCACHE_ALIGN, NULL);
-+	if (cachep == NULL)
-+		goto err_cachep;
-+
-+	pcache->nr_ids = nr_ids;
-+	pcache->cachep = cachep;
-+	list_add(&pcache->list, &pid_caches_lh);
-+out:
-+	mutex_unlock(&pid_caches_mutex);
-+	return pcache->cachep;
-+
-+err_cachep:
-+	kfree(pcache);
-+err_alloc:
-+	mutex_unlock(&pid_caches_mutex);
-+	return NULL;
-+}
-+
-+static struct pid_namespace *create_pid_namespace(int level)
-+{
-+	struct pid_namespace *ns;
-+	int i;
-+
-+	ns = kmem_cache_alloc(pid_ns_cachep, GFP_KERNEL);
-+	if (ns == NULL)
-+		goto out;
-+
-+	ns->pidmap[0].page = kzalloc(PAGE_SIZE, GFP_KERNEL);
-+	if (!ns->pidmap[0].page)
-+		goto out_free;
-+
-+	ns->pid_cachep = create_pid_cachep(level + 1);
-+	if (ns->pid_cachep == NULL)
-+		goto out_free_map;
-+
-+	kref_init(&ns->kref);
-+	ns->last_pid = 0;
-+	ns->child_reaper = NULL;
-+	ns->level = level;
-+
-+	set_bit(0, ns->pidmap[0].page);
-+	atomic_set(&ns->pidmap[0].nr_free, BITS_PER_PAGE - 1);
-+
-+	for (i = 1; i < PIDMAP_ENTRIES; i++) {
-+		ns->pidmap[i].page = 0;
-+		atomic_set(&ns->pidmap[i].nr_free, BITS_PER_PAGE);
-+	}
-+
-+	return ns;
-+
-+out_free_map:
-+	kfree(ns->pidmap[0].page);
-+out_free:
-+	kmem_cache_free(pid_ns_cachep, ns);
-+out:
-+	return ERR_PTR(-ENOMEM);
-+}
-+
-+static void destroy_pid_namespace(struct pid_namespace *ns)
-+{
-+	int i;
-+
-+	for (i = 0; i < PIDMAP_ENTRIES; i++)
-+		kfree(ns->pidmap[i].page);
-+	kmem_cache_free(pid_ns_cachep, ns);
-+}
-+
-+struct pid_namespace *copy_pid_ns(unsigned long flags, struct pid_namespace *old_ns)
-+{
-+	struct pid_namespace *new_ns;
-+
-+	BUG_ON(!old_ns);
-+	new_ns = get_pid_ns(old_ns);
-+	if (!(flags & CLONE_NEWPID))
-+		goto out;
-+
-+	new_ns = ERR_PTR(-EINVAL);
-+	if (flags & CLONE_THREAD)
-+		goto out_put;
-+
-+	new_ns = create_pid_namespace(old_ns->level + 1);
-+	if (!IS_ERR(new_ns))
-+		new_ns->parent = get_pid_ns(old_ns);
-+
-+out_put:
-+	put_pid_ns(old_ns);
-+out:
-+	return new_ns;
-+}
-+
-+void free_pid_ns(struct kref *kref)
-+{
-+	struct pid_namespace *ns, *parent;
-+
-+	ns = container_of(kref, struct pid_namespace, kref);
-+
-+	parent = ns->parent;
-+	destroy_pid_namespace(ns);
-+
-+	if (parent != NULL)
-+		put_pid_ns(parent);
-+}
-+
-+void zap_pid_ns_processes(struct pid_namespace *pid_ns)
-+{
-+	int nr;
-+	int rc;
-+
-+	/*
-+	 * The last thread in the cgroup-init thread group is terminating.
-+	 * Find remaining pid_ts in the namespace, signal and wait for them
-+	 * to exit.
-+	 *
-+	 * Note:  This signals each threads in the namespace - even those that
-+	 * 	  belong to the same thread group, To avoid this, we would have
-+	 * 	  to walk the entire tasklist looking a processes in this
-+	 * 	  namespace, but that could be unnecessarily expensive if the
-+	 * 	  pid namespace has just a few processes. Or we need to
-+	 * 	  maintain a tasklist for each pid namespace.
-+	 *
-+	 */
-+	read_lock(&tasklist_lock);
-+	nr = next_pidmap(pid_ns, 1);
-+	while (nr > 0) {
-+		kill_proc_info(SIGKILL, SEND_SIG_PRIV, nr);
-+		nr = next_pidmap(pid_ns, nr);
-+	}
-+	read_unlock(&tasklist_lock);
-+
-+	do {
-+		clear_thread_flag(TIF_SIGPENDING);
-+		rc = sys_wait4(-1, NULL, __WALL, NULL);
-+	} while (rc != -ECHILD);
-+
-+
-+	/* Child reaper for the pid namespace is going away */
-+	pid_ns->child_reaper = NULL;
-+	return;
-+}
-+
-+static __init int pid_namespaces_init(void)
-+{
-+	pid_ns_cachep = KMEM_CACHE(pid_namespace, SLAB_PANIC);
-+	return 0;
-+}
-+
-+__initcall(pid_namespaces_init);
+> You can test if this is precisely what is causing the performance
+> regression by using the old calculation just here in select_size().
+>
+> Add something like this local to net/ipv4/tcp.c:
+>
+> #define OLD_SKB_WITH_OVERHEAD(X)	\
+> 	(((X) - sizeof(struct skb_shared_info)) & \
+> 	 ~(SMP_CACHE_BYTES - 1))
+> #define OLD_SKB_MAX_ORDER(X, ORDER) \
+> 	OLD_SKB_WITH_OVERHEAD((PAGE_SIZE << (ORDER)) - (X))
+> #define OLD_SKB_MAX_HEAD(X)		(OLD_SKB_MAX_ORDER((X), 0))
+>
+> And then use OLD_SKB_MAX_HEAD() in select_size().
+
+That brings performance back up!
+
+I wonder why it isn't causing a problem for SLAB...
