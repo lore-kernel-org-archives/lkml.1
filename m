@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762306AbXKMUXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761804AbXKMUYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762306AbXKMUXW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 15:23:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755986AbXKMUXN
+	id S1761804AbXKMUYs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 15:24:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756606AbXKMUYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 15:23:13 -0500
-Received: from gw.goop.org ([64.81.55.164]:37488 "EHLO mail.goop.org"
+	Tue, 13 Nov 2007 15:24:39 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:59513 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755818AbXKMUXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 15:23:12 -0500
-Message-ID: <473A073C.2020201@goop.org>
-Date: Tue, 13 Nov 2007 12:21:16 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	id S1754698AbXKMUYh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 15:24:37 -0500
+Date: Tue, 13 Nov 2007 14:24:24 -0600
+To: Greg KH <greg@kroah.com>
+Cc: Alex Chiang <achiang@hp.com>, gregkh@suse.de, kristen.c.accardi@intel.com,
+       lenb@kernel.org, matthew@wil.cx, richard.jones2@hp.com,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
+Message-ID: <20071113202424.GE8421@austin.ibm.com>
+References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113170129.GA20185@kroah.com>
 MIME-Version: 1.0
-To: Tobias Powalowski <t.powa@gmx.de>
-CC: linux-kernel@vger.kernel.org, Zachary Amsden <zach@vmware.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH] x86/paravirt: revert exports to restore old behaviour
-References: <200711131139.42791.t.powa@gmx.de>
-In-Reply-To: <200711131139.42791.t.powa@gmx.de>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071113170129.GA20185@kroah.com>
+User-Agent: Mutt/1.5.11
+From: linas@austin.ibm.com (Linas Vepstas)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: x86/paravirt: revert exports to restore old behaviour
-
-Subdividing the paravirt_ops structure caused a regression in certain
-non-GPL modules which try to use mmu_ops and cpu_ops.  This restores
-the old behaviour, and makes it consistent with the
-non-CONFIG_PARAVIRT case.
-
-Tobias's mail:
-> commit to .24 tree:
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=93b1eab3d29e7ea32ee583de3362da84db06ded8
+On Tue, Nov 13, 2007 at 09:01:29AM -0800, Greg KH wrote:
 > 
-> introduces:
-> +EXPORT_SYMBOL_GPL(pv_mmu_ops);
-> +EXPORT_SYMBOL_GPL(pv_cpu_ops);
-> 
-> pv_cpu_ops is for nvidia
-> pv_mmu_ops' is for amd(ati)
-> 
-> which will break 32bit systems with paravirt enabled and trying to compile
-> the binary graphic drivers from amd(ati) and nvidia.
+> Also, some companies already provide userspace tools to get all of this
+> information about the different slots in a system and what is where,
+> from userspace, no kernel changes are needed.  So, why add all this
+> extra complexity to the kernel if it is not needed?
 
-[ Tobias: It would be nice to know exactly which operations the
-  modules you're trying to compile are using. ]
+Second that motion.... I don't get it. What are the goals of this
+patch, really?  Just to get a "slot geographical location" from the
+kernel?  I'm balancing the intellectual appeal of having a kernel
+struct for representing physical objects, against the headache of 
+reading (debugging, modifying) code that has yet another struct 
+doing yet another thing.  So far, the dread of future headaches 
+is winning.
 
-Signed-off-by: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
-Cc: Tobias Powalowski <t.powa@gmx.de>
-Cc: Zach Amsden <zach@vmware.com>
+On pseries systems, I deal with something called the "partitionable
+endpoint", which I think probably usually corresponds to physical 
+slots, but I don't really know.  The hardware guys pitch changeups 
+all the time.  Some of these are soldered onto the planar, 
+so the are not physical slots. But they are, um, "hotpluggable"
+in that you can dynamically add & remove them from the system
+(even though you cannot physically unplug the ones that are 
+soldered on -- you can only assign them to other hardware partitions
+(think hardware VM or hardware Xen)).  So, naively, the physical 
+slot concept doesn't really map to what I have to work with; 
+it just adds one more appendix to it all, one more thing to 
+get confused about.
 
----
- arch/x86/kernel/paravirt.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+To be clear: above remarks are for the PowerPC boxes. I have
+no clue about how things work on the IBM Intel-based boxes.
+And Greg's original "get IBM to agree" remark is about the
+Intel-based boxes.
 
-===================================================================
---- a/arch/x86/kernel/paravirt.c
-+++ b/arch/x86/kernel/paravirt.c
-@@ -440,8 +440,8 @@ struct pv_mmu_ops pv_mmu_ops = {
- };
- 
- EXPORT_SYMBOL_GPL(pv_time_ops);
--EXPORT_SYMBOL_GPL(pv_cpu_ops);
--EXPORT_SYMBOL_GPL(pv_mmu_ops);
-+EXPORT_SYMBOL    (pv_cpu_ops);
-+EXPORT_SYMBOL    (pv_mmu_ops);
- EXPORT_SYMBOL_GPL(pv_apic_ops);
- EXPORT_SYMBOL_GPL(pv_info);
- EXPORT_SYMBOL    (pv_irq_ops);
-
+--linas
