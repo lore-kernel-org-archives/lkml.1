@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567AbXKMKVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbXKMKX1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755567AbXKMKVw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 05:21:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbXKMKVm
+	id S1754799AbXKMKX1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 05:23:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbXKMKXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 05:21:42 -0500
-Received: from stinky.trash.net ([213.144.137.162]:41083 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751562AbXKMKVl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 05:21:41 -0500
-Message-ID: <47397AB3.90705@trash.net>
-Date: Tue, 13 Nov 2007 11:21:39 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
-MIME-Version: 1.0
-To: Joonwoo Park <joonwpark81@gmail.com>
-CC: David Miller <davem@davemloft.net>, w@1wt.eu, cfriesen@nortel.com,
-       auke-jan.h.kok@intel.com, netdev@vger.kernel.org,
-       djohnson+linux-kernel@sw.starentnetworks.com,
-       linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net
-Subject: Re: [PATCH 2/2] [e1000 VLAN] Disable vlan hw accel when promiscuous
- mode
-References: <20071112231516.GA15227@1wt.eu>	 <20071112.151923.77768525.davem@davemloft.net>	 <20071112233257.GA15524@1wt.eu>	 <20071112.154046.117031917.davem@davemloft.net> <b25c3fa70711121721o32bcab0fldf64ff0434a44a3c@mail.gmail.com>
-In-Reply-To: <b25c3fa70711121721o32bcab0fldf64ff0434a44a3c@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 13 Nov 2007 05:23:19 -0500
+Received: from gate.crashing.org ([63.228.1.57]:49435 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751328AbXKMKXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 05:23:18 -0500
+Subject: Re: [PATCH, RFC] improved hacks to allow -rt to run kernbench on
+	POWER
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: paulmck@linux.vnet.ibm.com, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org, tony@bakeyournoodle.com, paulus@samba.org,
+       dino@in.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com,
+       antonb@us.ibm.com, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1194945032.6983.11.camel@twins>
+References: <20071109181028.GA26800@linux.vnet.ibm.com>
+	 <1194641524.21340.14.camel@pasglop>
+	 <20071109220717.GJ8826@linux.vnet.ibm.com>
+	 <1194753541.21340.26.camel@pasglop>
+	 <Pine.LNX.4.58.0711110943510.12853@gandalf.stny.rr.com>
+	 <1194814125.6510.14.camel@pasglop>
+	 <20071112191526.GC11113@linux.vnet.ibm.com>
+	 <1194901925.18185.65.camel@pasglop>  <1194945032.6983.11.camel@twins>
+Content-Type: text/plain
+Date: Tue, 13 Nov 2007 20:43:46 +1100
+Message-Id: <1194947026.18185.95.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joonwoo Park wrote:
-> 2007/11/13, David Miller <davem@davemloft.net>:
->   
->> From: Willy Tarreau <w@1wt.eu>
->> Date: Tue, 13 Nov 2007 00:32:57 +0100
->>
->>     
->>> At least, being able to disable the feature at module load time
->>> would be acceptable. Many people who often need to sniff on decent
->>> machines would always keep it disabled.
->>>       
->> I'm willing to accept the feature, in whatever form, as long
->> as the performance issue is dealt with properly.
->>     
->
-> I agree with disabling the hw acceleration feature by manually would
-> be a non-negative solution.
-> IMO implementation in the ethtool seems better than module param.
-> As like Auke mentioned.
-> If you guys confirm it, I'll try it.
->   
 
-I still think promiscous mode should disable all filters (which would
-also provide a consistent view between accerlated and non-accerlated
-devices), but an ethtool option is better than nothing :)
+On Tue, 2007-11-13 at 10:10 +0100, Peter Zijlstra wrote:
+> 
+> Correct, -rt can't allocate -anything- when preemption if off. That is
+> the cost for having the allocators itself preemptable.
+> 
+> Even radix_tree_preload() will not work as its functionality was based
+> on preempt disable to limit access to a global (per cpu) object
+> reserve.
+> But maybe something similar could be done with a local reserve by
+> using
+> struct radix_tree_context to pass it along.
+> 
+> I'll see if I can come up with anything like that, that is, if that
+> would suffice?
+
+For that specific problem, as long as the radix tree can be made to work
+while non-preemptible, I'm fine :-)
+
+I'm still worried by other cases where things expect GFP_ATOMIC to work
+at any time.
+
+Ben.
+
 
