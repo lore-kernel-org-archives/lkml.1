@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847AbXKMRBJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759146AbXKMRCL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754847AbXKMRBJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 12:01:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754854AbXKMRA5
+	id S1759146AbXKMRCL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 12:02:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbXKMRB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 12:00:57 -0500
-Received: from cantor.suse.de ([195.135.220.2]:48679 "EHLO mx1.suse.de"
+	Tue, 13 Nov 2007 12:01:58 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52064 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754826AbXKMRA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 12:00:56 -0500
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: DMA descriptor alignment
-From: Andi Kleen <andi@firstfloor.org>
-References: <4737EF9C.4010207@lwfinger.net>
-Date: Tue, 13 Nov 2007 18:00:54 +0100
-In-Reply-To: <4737EF9C.4010207@lwfinger.net> (Larry Finger's message of "Mon\, 12 Nov 2007 00\:15\:56 -0600")
-Message-ID: <p731wauyta1.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1754854AbXKMRB5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 12:01:57 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20134.1194968670@redhat.com>
+References: <20134.1194968670@redhat.com> <20071109115207.e435f19b.akpm@linux-foundation.org> <20071106214820.3854.17402.stgit@warthog.procyon.org.uk>
+Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, jdi@l4x.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] FRV: Fix the extern declaration of kallsyms_num_syms
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Tue, 13 Nov 2007 17:01:48 +0000
+Message-ID: <23195.1194973308@redhat.com>
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Larry Finger <Larry.Finger@lwfinger.net> writes:
+David Howells <dhowells@redhat.com> wrote:
 
-> For those variants of BCM43xx cards that use 64-bit DMA, there is a requirement that all descriptor
-> rings must be aligned on an 8K boundary and must fit within an 8K page. On the x86_64 architecture
-> where the page size is 4K, I was getting addresses like 0x67AF000 when using dma_alloc_coherent
-> calls.
+> > > +extern const unsigned long kallsyms_num_syms
+> > > +__nongpreldata __attribute__((weak));
 
-Normally x86-64 dma_alloc_coherent calls the buddy allocator which gives
-you always naturally aligned blocks. But there is a fallback calling
-into swiotlb and swiotlb uses best fit allocation which only guarantees
-single page alignment. That is probably what you're seeing.
+Rather than using __nongpreldata, I should be able to say that it's in
+.rodata - which seems to be more correct anyway - and throw into a comment to
+say why.
 
-My dma zone rework would remove that fallback case and should make it work.
+I can't quite work out, though, how the kernel build stuff gets the datum into
+the kernel build.  I can see there's a script, but I never see the output of
+the script crop up anywhere in the build tree:-/  GDB reports, though, that
+kallsyms_num_syms gets the right value.
 
-> From the description of the dma_pool_create and dma_pool_allocate routines, I thought they
-> would fix my problems; however, even with a dma_pool_create(name, dev, 8192, 8192, 8192) call, I'm
-> still getting 4K rather than 8K alignment, which results in DMA errors.
-
-They cannot give you more alignment than the underlying allocator.
-
-> Is there a bug in these routines, am I using them incorrectly, or do I have a misunderstanding of
-> what it takes to get this kind of alignment?
-
-My suggestion as a short term workaround would be to first allocate 
-8K using dma_alloc_coherent and if that has the wrong alignment get 16K 
-and align yourself. When the driver is loaded later that might be unreliable,
-but near boot or with enough free memory using order 2 should usually work.
- 
-With the dma zone rework that could be removed later.
-
--Andi
+David
