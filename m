@@ -1,205 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763578AbXKNFgo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763768AbXKNFjF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763578AbXKNFgo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 00:36:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757260AbXKNFgg
+	id S1763768AbXKNFjF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 00:39:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758813AbXKNFiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 00:36:36 -0500
-Received: from wr-out-0506.google.com ([64.233.184.235]:23656 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757213AbXKNFgf (ORCPT
+	Wed, 14 Nov 2007 00:38:52 -0500
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:41287 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758738AbXKNFiu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 00:36:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:references:x-google-sender-auth;
-        b=dl+IBRrSd/YbYiStq/Mj6nqYtuK09HTvQAcB6CWf64Xd+GthQwfFWeT/paQ2fat85cGgB3pEVXkIltFn66rqWR69LyFJpeyXlpHEMJqlt3qIbLwoTnDdSeOKIdlzLm/dbwhPf67H3H+2PRjRmLmDUDW+l8klOvOprgATylduvg8=
-Message-ID: <e9c3a7c20711132136t6cc9a91avb1d1ddf257701331@mail.gmail.com>
-Date: Tue, 13 Nov 2007 22:36:30 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: [stable] [PATCH 000 of 2] md: Fixes for md in 2.6.23
-Cc: NeilBrown <neilb@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Stable <stable@kernel.org>
-In-Reply-To: <20071114034325.GA25558@kroah.com>
+	Wed, 14 Nov 2007 00:38:50 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=vReAqtJRNI5PPCYSXqmUBPWyi54JYf9BrN8MZH3Ui7Sk2N9r1z+59T9ftvVfHgSlQZ0QJExTXTjLO6BUIypP4Clcno/mXjm3xEp6njDmUXnCzW21sQjlifuH/E4YshHTnUH9nqVLvAGrpEwqV3KNi/AhEykvP8+YUoDVQ5WK1KM=  ;
+X-YMail-OSG: wWrjJQQVM1l3gFTOqeVJmPHIGPDniP3E5wJoJqEBIgSZ9SfZJis.uEhRgma.MAS9B66YvPdcZw--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: David Miller <davem@davemloft.net>
+Subject: Re: 2.6.24-rc2: Network commit causes SLUB performance regression with tbench
+Date: Wed, 14 Nov 2007 04:36:24 +1100
+User-Agent: KMail/1.9.5
+Cc: clameter@sgi.com, netdev@vger.kernel.org, herbert@gondor.apana.org.au,
+       linux-kernel@vger.kernel.org
+References: <200711101229.35822.nickpiggin@yahoo.com.au> <200711132241.59074.nickpiggin@yahoo.com.au> <20071113.175804.151698768.davem@davemloft.net>
+In-Reply-To: <20071113.175804.151698768.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_243_15664557.1195018590979"
-References: <20071022171426.31103.patches@notabene>
-	 <20071114002214.GA31928@kroah.com> <20071114002308.GB31928@kroah.com>
-	 <e9c3a7c20711131936t3c5f858cm8937b24d97fe998c@mail.gmail.com>
-	 <20071114034325.GA25558@kroah.com>
-X-Google-Sender-Auth: ca6ccf670d8c2dc7
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711140436.24492.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_243_15664557.1195018590979
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-On Nov 13, 2007 8:43 PM, Greg KH <greg@kroah.com> wrote:
+On Wednesday 14 November 2007 12:58, David Miller wrote:
+> From: Nick Piggin <nickpiggin@yahoo.com.au>
+> Date: Tue, 13 Nov 2007 22:41:58 +1100
+>
+> > On Tuesday 13 November 2007 06:44, Christoph Lameter wrote:
+> > > On Sat, 10 Nov 2007, Nick Piggin wrote:
+> > > > BTW. your size-2048 kmalloc cache is order-1 in the default setup,
+> > > > wheras kmalloc(1024) or kmalloc(4096) will be order-0 allocations.
+> > > > And SLAB also uses order-0 for size-2048. It would be nice if SLUB
+> > > > did the same...
+> > >
+> > > You can try to see the effect that order 0 would have by booting with
+> > >
+> > > slub_max_order=0
 > >
-> > Careful, it looks like you cherry picked commit 4ae3f847 "md: raid5:
-> > fix clearing of biofill operations" which ended up misapplied in
-> > Linus' tree,  You should either also pick up def6ae26 "md: fix
-> > misapplied patch in raid5.c" or I can resend the original "raid5: fix
-> > clearing of biofill operations."
-> >
-> > The other patch for -stable "raid5: fix unending write sequence" is
-> > currently in -mm.
+> > Yeah, that didn't help much, but in general I think it would give
+> > more consistent and reliable behaviour from slub.
 >
-> Hm, I've attached the two patches that I have right now in the -stable
-> tree so far (still have over 100 patches to go, so I might not have
-> gotten to them yet if you have sent them).  These were sent to me by
-> Andrew on their way to Linus.  if I should drop either one, or add
-> another one, please let me know.
->
+> Just a note that I'm not ignoring this issue, I just don't have time
+> to get to it yet.
 
-Drop md-raid5-fix-clearing-of-biofill-operations.patch and replace it
-with the attached
-md-raid5-not-raid6-fix-clearing-of-biofill-operations.patch (the
-original sent to Neil).
+No problem. I would like to have helped more, but it's slow going given
+my lack of network stack knowledge. If I get any more interesting data,
+I'll send it.
 
-The critical difference is that the replacement patch touches
-handle_stripe5, not handle_stripe6.  Diffing the patches shows the
-changes for hunk #3:
 
--@@ -2903,6 +2907,13 @@ static void handle_stripe6(struct stripe
-+@@ -2630,6 +2634,13 @@ static void handle_stripe5(struct stripe_head *sh)
+> I suspect the issue is about having a huge skb->data linear area for
+> TCP sends over loopback.  We're likely getting a much smaller
+> skb->data linear data area after the patch in question, the rest using
+> the sk_buff scatterlist pages which are a little bit more expensive to
+> process.
 
-raid5-fix-unending-write-sequence.patch is in -mm and I believe is
-waiting on an Acked-by from Neil?
-
-> thanks,
->
-> greg k-h
-
-Thanks,
-Dan
-
-------=_Part_243_15664557.1195018590979
-Content-Type: text/x-patch;
- name=md-raid5-not-raid6-fix-clearing-of-biofill-operations.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f8zed2xg0
-Content-Disposition: attachment;
- filename=md-raid5-not-raid6-fix-clearing-of-biofill-operations.patch
-
-cmFpZDU6IGZpeCBjbGVhcmluZyBvZiBiaW9maWxsIG9wZXJhdGlvbnMKCkZyb206IERhbiBXaWxs
-aWFtcyA8ZGFuLmoud2lsbGlhbXNAaW50ZWwuY29tPgoKb3BzX2NvbXBsZXRlX2Jpb2ZpbGwoKSBy
-dW5zIG91dHNpZGUgb2Ygc3Bpbl9sb2NrKCZzaC0+bG9jaykgYW5kIGNsZWFycyB0aGUKJ3BlbmRp
-bmcnIGFuZCAnYWNrJyBiaXRzLiAgU2luY2UgdGhlIHRlc3RfYW5kX2Fja19vcCgpIG1hY3JvIG9u
-bHkgY2hlY2tzCmFnYWluc3QgJ2NvbXBsZXRlJyBpdCBjYW4gZ2V0IGFuIGluY29uc2lzdGVudCBz
-bmFwc2hvdCBvZiBwZW5kaW5nIHdvcmsuCgpNb3ZlIHRoZSBjbGVhcmluZyBvZiB0aGVzZSBiaXRz
-IHRvIGhhbmRsZV9zdHJpcGU1KCksIHVuZGVyIHRoZSBsb2NrLgoKU2lnbmVkLW9mZi1ieTogRGFu
-IFdpbGxpYW1zIDxkYW4uai53aWxsaWFtc0BpbnRlbC5jb20+ClRlc3RlZC1ieTogSm9lbCBCZXJ0
-cmFuZCA8am9lbC5iZXJ0cmFuZEBzeXN0ZWxsYS5mcj4KU2lnbmVkLW9mZi1ieTogTmVpbCBCcm93
-biA8bmVpbGJAc3VzZS5kZT4KLS0tCgogZHJpdmVycy9tZC9yYWlkNS5jIHwgICAxNyArKysrKysr
-KysrKysrKy0tLQogMSBmaWxlcyBjaGFuZ2VkLCAxNCBpbnNlcnRpb25zKCspLCAzIGRlbGV0aW9u
-cygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvbWQvcmFpZDUuYyBiL2RyaXZlcnMvbWQvcmFpZDUu
-YwppbmRleCBmOTZkZWE5Li4zODA4ZjUyIDEwMDY0NAotLS0gYS9kcml2ZXJzL21kL3JhaWQ1LmMK
-KysrIGIvZHJpdmVycy9tZC9yYWlkNS5jCkBAIC0zNzcsNyArMzc3LDEyIEBAIHN0YXRpYyB1bnNp
-Z25lZCBsb25nIGdldF9zdHJpcGVfd29yayhzdHJ1Y3Qgc3RyaXBlX2hlYWQgKnNoKQogCQlhY2sr
-KzsKIAogCXNoLT5vcHMuY291bnQgLT0gYWNrOwotCUJVR19PTihzaC0+b3BzLmNvdW50IDwgMCk7
-CisJaWYgKHVubGlrZWx5KHNoLT5vcHMuY291bnQgPCAwKSkgeworCQlwcmludGsoS0VSTl9FUlIg
-InBlbmRpbmc6ICUjbHggb3BzLnBlbmRpbmc6ICUjbHggb3BzLmFjazogJSNseCAiCisJCQkib3Bz
-LmNvbXBsZXRlOiAlI2x4XG4iLCBwZW5kaW5nLCBzaC0+b3BzLnBlbmRpbmcsCisJCQlzaC0+b3Bz
-LmFjaywgc2gtPm9wcy5jb21wbGV0ZSk7CisJCUJVRygpOworCX0KIAogCXJldHVybiBwZW5kaW5n
-OwogfQpAQCAtNTUxLDggKzU1Niw3IEBAIHN0YXRpYyB2b2lkIG9wc19jb21wbGV0ZV9iaW9maWxs
-KHZvaWQgKnN0cmlwZV9oZWFkX3JlZikKIAkJCX0KIAkJfQogCX0KLQljbGVhcl9iaXQoU1RSSVBF
-X09QX0JJT0ZJTEwsICZzaC0+b3BzLmFjayk7Ci0JY2xlYXJfYml0KFNUUklQRV9PUF9CSU9GSUxM
-LCAmc2gtPm9wcy5wZW5kaW5nKTsKKwlzZXRfYml0KFNUUklQRV9PUF9CSU9GSUxMLCAmc2gtPm9w
-cy5jb21wbGV0ZSk7CiAKIAlyZXR1cm5faW8ocmV0dXJuX2JpKTsKIApAQCAtMjYzMCw2ICsyNjM0
-LDEzIEBAIHN0YXRpYyB2b2lkIGhhbmRsZV9zdHJpcGU1KHN0cnVjdCBzdHJpcGVfaGVhZCAqc2gp
-CiAJcy5leHBhbmRlZCA9IHRlc3RfYml0KFNUUklQRV9FWFBBTkRfUkVBRFksICZzaC0+c3RhdGUp
-OwogCS8qIE5vdyB0byBsb29rIGFyb3VuZCBhbmQgc2VlIHdoYXQgY2FuIGJlIGRvbmUgKi8KIAor
-CS8qIGNsZWFuLXVwIGNvbXBsZXRlZCBiaW9maWxsIG9wZXJhdGlvbnMgKi8KKwlpZiAodGVzdF9i
-aXQoU1RSSVBFX09QX0JJT0ZJTEwsICZzaC0+b3BzLmNvbXBsZXRlKSkgeworCQljbGVhcl9iaXQo
-U1RSSVBFX09QX0JJT0ZJTEwsICZzaC0+b3BzLnBlbmRpbmcpOworCQljbGVhcl9iaXQoU1RSSVBF
-X09QX0JJT0ZJTEwsICZzaC0+b3BzLmFjayk7CisJCWNsZWFyX2JpdChTVFJJUEVfT1BfQklPRklM
-TCwgJnNoLT5vcHMuY29tcGxldGUpOworCX0KKwogCXJjdV9yZWFkX2xvY2soKTsKIAlmb3IgKGk9
-ZGlza3M7IGktLTsgKSB7CiAJCW1ka19yZGV2X3QgKnJkZXY7Cg==
-------=_Part_243_15664557.1195018590979
-Content-Type: text/x-patch; name=raid5-fix-unending-write-sequence.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f8zf3ihn1
-Content-Disposition: attachment;
- filename=raid5-fix-unending-write-sequence.patch
-
-cmFpZDU6IGZpeCB1bmVuZGluZyB3cml0ZSBzZXF1ZW5jZQoKRnJvbTogRGFuIFdpbGxpYW1zIDxk
-YW4uai53aWxsaWFtc0BpbnRlbC5jb20+Cgo8ZGVidWcgb3V0cHV0IGZyb20gSm9lbCdzIHN5c3Rl
-bT4KaGFuZGxpbmcgc3RyaXBlIDc2Mjk2OTYsIHN0YXRlPTB4MTQgY250PTEsIHBkX2lkeD0yIG9w
-cz0wOjA6MApjaGVjayA1OiBzdGF0ZSAweDYgdG9yZWFkIDAwMDAwMDAwMDAwMDAwMDAgcmVhZCAw
-MDAwMDAwMDAwMDAwMDAwIHdyaXRlIGZmZmZmODAwZmZjZmZjYzAgd3JpdHRlbiAwMDAwMDAwMDAw
-MDAwMDAwCmNoZWNrIDQ6IHN0YXRlIDB4NiB0b3JlYWQgMDAwMDAwMDAwMDAwMDAwMCByZWFkIDAw
-MDAwMDAwMDAwMDAwMDAgd3JpdGUgZmZmZmY4MDBmZGQ0ZTM2MCB3cml0dGVuIDAwMDAwMDAwMDAw
-MDAwMDAKY2hlY2sgMzogc3RhdGUgMHgxIHRvcmVhZCAwMDAwMDAwMDAwMDAwMDAwIHJlYWQgMDAw
-MDAwMDAwMDAwMDAwMCB3cml0ZSAwMDAwMDAwMDAwMDAwMDAwIHdyaXR0ZW4gMDAwMDAwMDAwMDAw
-MDAwMApjaGVjayAyOiBzdGF0ZSAweDEgdG9yZWFkIDAwMDAwMDAwMDAwMDAwMDAgcmVhZCAwMDAw
-MDAwMDAwMDAwMDAwIHdyaXRlIDAwMDAwMDAwMDAwMDAwMDAgd3JpdHRlbiAwMDAwMDAwMDAwMDAw
-MDAwCmNoZWNrIDE6IHN0YXRlIDB4NiB0b3JlYWQgMDAwMDAwMDAwMDAwMDAwMCByZWFkIDAwMDAw
-MDAwMDAwMDAwMDAgd3JpdGUgZmZmZmY4MDBmZjUxN2U0MCB3cml0dGVuIDAwMDAwMDAwMDAwMDAw
-MDAKY2hlY2sgMDogc3RhdGUgMHg2IHRvcmVhZCAwMDAwMDAwMDAwMDAwMDAwIHJlYWQgMDAwMDAw
-MDAwMDAwMDAwMCB3cml0ZSBmZmZmZjgwMGZkNGNhZTYwIHdyaXR0ZW4gMDAwMDAwMDAwMDAwMDAw
-MApsb2NrZWQ9NCB1cHRvZGF0ZT0yIHRvX3JlYWQ9MCB0b193cml0ZT00IGZhaWxlZD0wIGZhaWxl
-ZF9udW09MApmb3Igc2VjdG9yIDc2Mjk2OTYsIHJtdz0wIHJjdz0wCjwvZGVidWc+CgpUaGVzZSBi
-bG9ja3Mgd2VyZSBwcmVwYXJlZCB0byBiZSB3cml0dGVuIG91dCwgYnV0IHdlcmUgbmV2ZXIgaGFu
-ZGxlZCBpbgpvcHNfcnVuX2Jpb2RyYWluKCksIHNvIHRoZXkgcmVtYWluIGxvY2tlZCBmb3JldmVy
-LiAgVGhlIG9wZXJhdGlvbnMgZmxhZ3MKYXJlIGFsbCBjbGVhciB3aGljaCBtZWFucyBoYW5kbGVf
-c3RyaXBlKCkgdGhpbmtzIG5vdGhpbmcgZWxzZSBuZWVkcyB0byBiZQpkb25lLgoKVGhpcyBzdGF0
-ZSBzdWdnZXN0cyB0aGF0IHRoZSBTVFJJUEVfT1BfUFJFWE9SIGJpdCB3YXMgc2FtcGxlZCAnc2V0
-JyB3aGVuIGl0CnNob3VsZCBub3QgaGF2ZSBiZWVuLiAgVGhpcyBwYXRjaCBjbGVhbnMgdXAgY2Fz
-ZXMgd2hlcmUgdGhlIGNvZGUgbG9va3MgYXQKc2gtPm9wcy5wZW5kaW5nIHdoZW4gaXQgc2hvdWxk
-IGJlIGxvb2tpbmcgYXQgdGhlIGNvbnNpc3RlbnQgc3RhY2stYmFzZWQKc25hcHNob3Qgb2YgdGhl
-IG9wZXJhdGlvbnMgZmxhZ3MuCgpSZXBvcnQgZnJvbSBKb2VsOgoJUmVzeW5jIGRvbmUuIFBhdGNo
-IGZpeCB0aGlzIGJ1Zy4KClNpZ25lZC1vZmYtYnk6IERhbiBXaWxsaWFtcyA8ZGFuLmoud2lsbGlh
-bXNAaW50ZWwuY29tPgpUZXN0ZWQtYnk6IEpvZWwgQmVydHJhbmQgPGpvZWwuYmVydHJhbmRAc3lz
-dGVsbGEuZnI+CkNjOiBzdGFibGVAa2VybmVsLm9yZwotLS0KCiBkcml2ZXJzL21kL3JhaWQ1LmMg
-fCAgIDE2ICsrKysrKysrKy0tLS0tLS0KIDEgZmlsZXMgY2hhbmdlZCwgOSBpbnNlcnRpb25zKCsp
-LCA3IGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvbWQvcmFpZDUuYyBiL2RyaXZl
-cnMvbWQvcmFpZDUuYwppbmRleCAzODA4ZjUyLi5lODZjYWNiIDEwMDY0NAotLS0gYS9kcml2ZXJz
-L21kL3JhaWQ1LmMKKysrIGIvZHJpdmVycy9tZC9yYWlkNS5jCkBAIC02ODksNyArNjg5LDggQEAg
-b3BzX3J1bl9wcmV4b3Ioc3RydWN0IHN0cmlwZV9oZWFkICpzaCwgc3RydWN0IGRtYV9hc3luY190
-eF9kZXNjcmlwdG9yICp0eCkKIH0KIAogc3RhdGljIHN0cnVjdCBkbWFfYXN5bmNfdHhfZGVzY3Jp
-cHRvciAqCi1vcHNfcnVuX2Jpb2RyYWluKHN0cnVjdCBzdHJpcGVfaGVhZCAqc2gsIHN0cnVjdCBk
-bWFfYXN5bmNfdHhfZGVzY3JpcHRvciAqdHgpCitvcHNfcnVuX2Jpb2RyYWluKHN0cnVjdCBzdHJp
-cGVfaGVhZCAqc2gsIHN0cnVjdCBkbWFfYXN5bmNfdHhfZGVzY3JpcHRvciAqdHgsCisJCSB1bnNp
-Z25lZCBsb25nIHBlbmRpbmcpCiB7CiAJaW50IGRpc2tzID0gc2gtPmRpc2tzOwogCWludCBwZF9p
-ZHggPSBzaC0+cGRfaWR4LCBpOwpAQCAtNjk3LDcgKzY5OCw3IEBAIG9wc19ydW5fYmlvZHJhaW4o
-c3RydWN0IHN0cmlwZV9oZWFkICpzaCwgc3RydWN0IGRtYV9hc3luY190eF9kZXNjcmlwdG9yICp0
-eCkKIAkvKiBjaGVjayBpZiBwcmV4b3IgaXMgYWN0aXZlIHdoaWNoIG1lYW5zIG9ubHkgcHJvY2Vz
-cyBibG9ja3MKIAkgKiB0aGF0IGFyZSBwYXJ0IG9mIGEgcmVhZC1tb2RpZnktd3JpdGUgKFdhbnRw
-cmV4b3IpCiAJICovCi0JaW50IHByZXhvciA9IHRlc3RfYml0KFNUUklQRV9PUF9QUkVYT1IsICZz
-aC0+b3BzLnBlbmRpbmcpOworCWludCBwcmV4b3IgPSB0ZXN0X2JpdChTVFJJUEVfT1BfUFJFWE9S
-LCAmcGVuZGluZyk7CiAKIAlwcl9kZWJ1ZygiJXM6IHN0cmlwZSAlbGx1XG4iLCBfX0ZVTkNUSU9O
-X18sCiAJCSh1bnNpZ25lZCBsb25nIGxvbmcpc2gtPnNlY3Rvcik7CkBAIC03NzQsNyArNzc1LDgg
-QEAgc3RhdGljIHZvaWQgb3BzX2NvbXBsZXRlX3dyaXRlKHZvaWQgKnN0cmlwZV9oZWFkX3JlZikK
-IH0KIAogc3RhdGljIHZvaWQKLW9wc19ydW5fcG9zdHhvcihzdHJ1Y3Qgc3RyaXBlX2hlYWQgKnNo
-LCBzdHJ1Y3QgZG1hX2FzeW5jX3R4X2Rlc2NyaXB0b3IgKnR4KQorb3BzX3J1bl9wb3N0eG9yKHN0
-cnVjdCBzdHJpcGVfaGVhZCAqc2gsIHN0cnVjdCBkbWFfYXN5bmNfdHhfZGVzY3JpcHRvciAqdHgs
-CisJCXVuc2lnbmVkIGxvbmcgcGVuZGluZykKIHsKIAkvKiBrZXJuZWwgc3RhY2sgc2l6ZSBsaW1p
-dHMgdGhlIHRvdGFsIG51bWJlciBvZiBkaXNrcyAqLwogCWludCBkaXNrcyA9IHNoLT5kaXNrczsK
-QEAgLTc4Miw3ICs3ODQsNyBAQCBvcHNfcnVuX3Bvc3R4b3Ioc3RydWN0IHN0cmlwZV9oZWFkICpz
-aCwgc3RydWN0IGRtYV9hc3luY190eF9kZXNjcmlwdG9yICp0eCkKIAogCWludCBjb3VudCA9IDAs
-IHBkX2lkeCA9IHNoLT5wZF9pZHgsIGk7CiAJc3RydWN0IHBhZ2UgKnhvcl9kZXN0OwotCWludCBw
-cmV4b3IgPSB0ZXN0X2JpdChTVFJJUEVfT1BfUFJFWE9SLCAmc2gtPm9wcy5wZW5kaW5nKTsKKwlp
-bnQgcHJleG9yID0gdGVzdF9iaXQoU1RSSVBFX09QX1BSRVhPUiwgJnBlbmRpbmcpOwogCXVuc2ln
-bmVkIGxvbmcgZmxhZ3M7CiAJZG1hX2FzeW5jX3R4X2NhbGxiYWNrIGNhbGxiYWNrOwogCkBAIC04
-MDksNyArODExLDcgQEAgb3BzX3J1bl9wb3N0eG9yKHN0cnVjdCBzdHJpcGVfaGVhZCAqc2gsIHN0
-cnVjdCBkbWFfYXN5bmNfdHhfZGVzY3JpcHRvciAqdHgpCiAJfQogCiAJLyogY2hlY2sgd2hldGhl
-ciB0aGlzIHBvc3R4b3IgaXMgcGFydCBvZiBhIHdyaXRlICovCi0JY2FsbGJhY2sgPSB0ZXN0X2Jp
-dChTVFJJUEVfT1BfQklPRFJBSU4sICZzaC0+b3BzLnBlbmRpbmcpID8KKwljYWxsYmFjayA9IHRl
-c3RfYml0KFNUUklQRV9PUF9CSU9EUkFJTiwgJnBlbmRpbmcpID8KIAkJb3BzX2NvbXBsZXRlX3dy
-aXRlIDogb3BzX2NvbXBsZXRlX3Bvc3R4b3I7CiAKIAkvKiAxLyBpZiB3ZSBwcmV4b3InZCB0aGVu
-IHRoZSBkZXN0IGlzIHJldXNlZCBhcyBhIHNvdXJjZQpAQCAtODk3LDEyICs4OTksMTIgQEAgc3Rh
-dGljIHZvaWQgcmFpZDVfcnVuX29wcyhzdHJ1Y3Qgc3RyaXBlX2hlYWQgKnNoLCB1bnNpZ25lZCBs
-b25nIHBlbmRpbmcpCiAJCXR4ID0gb3BzX3J1bl9wcmV4b3Ioc2gsIHR4KTsKIAogCWlmICh0ZXN0
-X2JpdChTVFJJUEVfT1BfQklPRFJBSU4sICZwZW5kaW5nKSkgewotCQl0eCA9IG9wc19ydW5fYmlv
-ZHJhaW4oc2gsIHR4KTsKKwkJdHggPSBvcHNfcnVuX2Jpb2RyYWluKHNoLCB0eCwgcGVuZGluZyk7
-CiAJCW92ZXJsYXBfY2xlYXIrKzsKIAl9CiAKIAlpZiAodGVzdF9iaXQoU1RSSVBFX09QX1BPU1RY
-T1IsICZwZW5kaW5nKSkKLQkJb3BzX3J1bl9wb3N0eG9yKHNoLCB0eCk7CisJCW9wc19ydW5fcG9z
-dHhvcihzaCwgdHgsIHBlbmRpbmcpOwogCiAJaWYgKHRlc3RfYml0KFNUUklQRV9PUF9DSEVDSywg
-JnBlbmRpbmcpKQogCQlvcHNfcnVuX2NoZWNrKHNoKTsK
-------=_Part_243_15664557.1195018590979--
+It didn't seem to be noticeable at 1 client. Unless scatterlist
+processing is going to cause cacheline bouncing, I don't see why this
+hurts more as you add CPUs?
