@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758834AbXKMQuW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758536AbXKMQul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758834AbXKMQuW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 11:50:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754411AbXKMQuG
+	id S1758536AbXKMQul (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 11:50:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757882AbXKMQuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 11:50:06 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41653 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754081AbXKMQuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 11:50:04 -0500
-Date: Tue, 13 Nov 2007 17:49:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Benoit Boissinot <bboissin@gmail.com>
-Cc: Mark Lord <liml@rtr.ca>, Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, protasnb@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071113164939.GA2552@elte.hu>
-References: <20071113031553.3c7b5c16.akpm@linux-foundation.org> <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca> <40f323d00711130752k19cab8eauc3456721274b3267@mail.gmail.com>
+	Tue, 13 Nov 2007 11:50:32 -0500
+Received: from moutng.kundenserver.de ([212.227.126.177]:52432 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754411AbXKMQub (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 11:50:31 -0500
+Message-ID: <4739D5E1.5060108@anagramm.de>
+Date: Tue, 13 Nov 2007 17:50:41 +0100
+From: Clemens Koller <clemens.koller@anagramm.de>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <40f323d00711130752k19cab8eauc3456721274b3267@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Chris Snook <csnook@redhat.com>
+CC: Florian Boelstler <kernel@boelstler.net>, linux-kernel@vger.kernel.org
+Subject: Re: Strange delays / what usually happens every 10 min?
+References: <fhcc39$51b$1@ger.gmane.org> <4739CBF0.8000500@redhat.com>
+In-Reply-To: <4739CBF0.8000500@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V01U2FsdGVkX1/Vl8fV57PfhmGUTSzj66JcanehRK78mNcKgnB
+ 4FEydXdZnClMJRjo7AGAIGSxTVJ/DkneQspphrfm7N3OgKoQAB
+ v8H0tMIW4g6NOI+Xq8dmw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Benoit Boissinot <bboissin@gmail.com> wrote:
+Chris Snook schrieb:
+ > Florian Boelstler wrote:
+ >> While running that test driver a delay of about 10ms _exactly_ occurs
+ >> every 10 minutes.
+ >
+ > This is precisely the sort of thing that BIOS/firmware-level SMI
+ > handlers do, particularly those that have monitoring or management
+ > features.  Try to determine if the kernel is doing anything during this
+ > time.  If the entire kernel seems to be frozen, talk to the people who
+ > wrote the firmware.
 
-> For debugging, maybe it's time someone does an amazon ec2+s3 service 
-> to automate the bisecting and create .deb/.rpm from git, I don't know 
-> how much it would cost though.
+There is no such thing as BIOS on this MPC8540 embedded system.
+I guess he is also using some bootloader which just gives full
+control to the linux kernel.
 
-a few months ago i estimated the costs of this and it's just a few 
-terabytes so within arm's reach. As long as the .deb/.rpm's are built by 
-tracking -git in a rolling fashion CPU time should not be a big issue. 
-The only limit is download bandwidth - but even that problem might be 
-solvable via a huge git repository of ready-to-boot .o's that are linked 
-together on the tester's machine.
+Florian:
+Check the IP route chache flushes, as Eric mentioned.
+I'm working on the MPC854x as well. If you send me your scripts,
+I can give them a run here to gather more information.
+(I'm about to update my kernels here)
 
-	Ingo
+Regards,
+
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
+
