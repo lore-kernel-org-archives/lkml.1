@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757431AbXKMOp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757156AbXKMOtF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757431AbXKMOp6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 09:45:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbXKMOpv
+	id S1757156AbXKMOtF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 09:49:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbXKMOsz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 09:45:51 -0500
-Received: from il.qumranet.com ([82.166.9.18]:39489 "EHLO il.qumranet.com"
+	Tue, 13 Nov 2007 09:48:55 -0500
+Received: from il.qumranet.com ([82.166.9.18]:53564 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752166AbXKMOpu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 09:45:50 -0500
-Message-ID: <4739B85B.2080102@qumranet.com>
-Date: Tue, 13 Nov 2007 16:44:43 +0200
+	id S1750776AbXKMOsz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 09:48:55 -0500
+Message-ID: <4739B916.4000405@qumranet.com>
+Date: Tue, 13 Nov 2007 16:47:50 +0200
 From: Avi Kivity <avi@qumranet.com>
 User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
 To: Glauber de Oliveira Costa <gcosta@redhat.com>
-CC: linux-kernel@vger.kernel.org, jeremy@goop.org, aliguori@us.ibm.com,
-       kvm-devel@lists.sourceforge.net, hollisb@us.ibm.com
-Subject: Re: [PATCH 2/3] kvmclock - the host part.
-References: <11945615632624-git-send-email-gcosta@redhat.com> <11945615703593-git-send-email-gcosta@redhat.com> <11945615751747-git-send-email-gcosta@redhat.com> <4736D6C0.8040408@qumranet.com> <47398A68.8080009@redhat.com>
-In-Reply-To: <47398A68.8080009@redhat.com>
+CC: "Dong, Eddie" <eddie.dong@intel.com>, linux-kernel@vger.kernel.org,
+       jeremy@goop.org, hollisb@us.ibm.com, kvm-devel@lists.sourceforge.net
+Subject: Re: [kvm-devel] [PATCH 2/3] kvmclock - the host part.
+References: <11945615632624-git-send-email-gcosta@redhat.com><11945615703593-git-send-email-gcosta@redhat.com> <11945615751747-git-send-email-gcosta@redhat.com> <10EA09EFD8728347A513008B6B0DA77A025DF8A2@pdsmsx411.ccr.corp.intel.com> <4739906B.2080103@redhat.com>
+In-Reply-To: <4739906B.2080103@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,57 +29,42 @@ Glauber de Oliveira Costa wrote:
 > -----BEGIN PGP SIGNED MESSAGE-----
 > Hash: SHA1
 >
-> Avi Kivity escreveu:
+> Dong, Eddie escreveu:
 >   
->> Glauber de Oliveira Costa wrote:
->>     
->>> This is the host part of kvm clocksource implementation. As it does
->>> not include clockevents, it is a fairly simple implementation. We
->>> only have to register a per-vcpu area, and start writting to it
->>> periodically.
->>>
->>>   
+>>> +static void kvm_write_guest_time(struct kvm_vcpu *vcpu) +{
+>>> +	struct timespec ts;
+>>> +	int r;
+>>> +
+>>> +	if (!vcpu->clock_gpa)
+>>> +		return;
+>>> +
+>>> +	/* Updates version to the next odd number, indicating
+>>> we're writing */
+>>> +	vcpu->hv_clock.version++;
+>>> +	kvm_write_guest(vcpu->kvm, vcpu->clock_gpa,
+>>> &vcpu->hv_clock, PAGE_SIZE);
+>>> +
+>>> +	kvm_get_msr(vcpu, MSR_IA32_TIME_STAMP_COUNTER,
+>>> +			  &vcpu->hv_clock.last_tsc);
+>>> +
+>>> +	ktime_get_ts(&ts);
 >>>       
->> Missing live migration support  (a way for userspace to read and write
->> the guest clock address).  Should probably be in a separate patch.
+>> Do we need to disable preemption here?
 >>     
->
-> I think it's a matter of issuing a hypercall for reading the clock
-> address. It's fair simple, and can be done in a later version of this patch.
-> As for writting, the register hypercall itself can be used. It has no
-> special side-effects we should care about.
->   
-
-kvm live migration is done (at least thus far) without guest 
-involvement.  So you need the host to be able to transfer this state.
-
-
->   
->>> @@ -1924,6 +1955,7 @@ out:
->>>          goto preempted;
->>>      }
->>>  
->>> +    kvm_write_guest_time(vcpu);
->>>      post_kvm_run_save(vcpu, kvm_run);
->>>   
->>>       
->> Why here?  Seems like we're leaving the guest for a while at this place.
->>
->> Suggest putting it on top of __vcpu_run(), guarded by a flag, and
->> setting the flag every time we put the vcpu.
->>     
->
-> No special preference. It just sounded exity enough to me. I can move to
-> where you suggest.
+> After thinking for a little while, you are theoretically right.
+> In the current state, we could even be preempted between all operations
+> ;-) Maybe after avi's suggestion of moving the call to it it will end up
+> in a preempt safe region, but anyway, it's safer to add the preempt
+> markers here.
+> I'll put it in next version, thanks
 >
 >   
 
-It's more than a place, it's a set of rules:
+Well, you can't kvm_write_guest() with preemption enabled.
 
-- if the vcpu is migrated, we need a new timebase
-- ditto if we're descheduled (well that's the same thing)
-- if "some time passes"
-
+preempt notifiers to the rescue!  We have a callout during preemption, 
+so you can just zero out a flag there, and when we're scheduled again 
+retry the whole thing.
 
 -- 
 error compiling committee.c: too many arguments to function
