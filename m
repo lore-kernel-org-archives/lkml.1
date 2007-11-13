@@ -1,67 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760027AbXKMDuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760599AbXKMDus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760027AbXKMDuS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 22:50:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbXKMDuF
+	id S1760599AbXKMDus (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 22:50:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755937AbXKMDuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 22:50:05 -0500
-Received: from [222.73.24.84] ([222.73.24.84]:53083 "EHLO song.cn.fujitsu.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752078AbXKMDuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 22:50:03 -0500
-Message-ID: <47391EFA.4000004@cn.fujitsu.com>
-Date: Tue, 13 Nov 2007 11:50:18 +0800
-From: Miao Xie <miaox@cn.fujitsu.com>
-Reply-To: miaox@cn.fujitsu.com
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 12 Nov 2007 22:50:39 -0500
+Received: from www262.sakura.ne.jp ([202.181.97.72]:58382 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755897AbXKMDui (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 22:50:38 -0500
+Message-Id: <200711130350.lAD3oWnt054039@www262.sakura.ne.jp>
+Subject: Re: [PATCH] sysctl: Check length at deprecated_sysctl_warning.
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: ebiederm@xmission.com, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Tejun Heo <teheo@suse.de>
-CC: gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sysfs: fix  off-by-one error in fill_read_buffer
-References: <4732EDD2.2050406@cn.fujitsu.com> <47385E4A.5030306@suse.de>
-In-Reply-To: <47385E4A.5030306@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="ISO-2022-JP"
 Content-Transfer-Encoding: 7bit
+Date: Tue, 13 Nov 2007 12:50:32 +0900
+References: <200711080257.lA82vQfA015942@www262.sakura.ne.jp> <20071107192211.c1c22e97.akpm@linux-foundation.org> <200711080819.lA88J8Pv072259@www262.sakura.ne.jp> <m14pfr6bnf.fsf@ebiederm.dsl.xmission.com> <200711130307.lAD37Nee045340@www262.sakura.ne.jp> <20071112191320.55e49462.akpm@linux-foundation.org>
+In-Reply-To: <20071112191320.55e49462.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-on 2007-11-12 22:08 Tejun Heo wrote:
-> It isn't strictly a bug.  If the ->show() op fills full PAGE_SIZE and
-> returns PAGE_SIZE, the user will get full PAGE_SIZE bytes correctly, so
-> it will work.  However, considering normal use cases, return value of
-> PAGE_SIZE very likely indicates an error condition, so considering it a
-> BUG condition is a good idea.
-> 
-> Miao, can you please note that the code works fine with PAGE_SIZE return
-> but it's likely to indicate truncated result or overflow in normal use
-> cases as a comment on top of the BUG_ON()?
-> 
-> Thanks.
+Hello.
 
-OK, I did it.
+Andrew Morton wrote:
+> I believe (args->nlen > CTL_MAXNAME) was correct.
+I'll leave it to you.
+But if you want to allow args->nlen == CTL_MAXNAME,
+you also need to update do_sysctl().
 
-Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+int do_sysctl(int __user *name, int nlen, void __user *oldval, size_t __user *oldlenp,
+               void __user *newval, size_t newlen)
+{
+        ...
+        if (nlen <= 0 || nlen >= CTL_MAXNAME)
+                return -ENOTDIR;
+        ...
+}
 
----
-  fs/sysfs/file.c |    4 +++-
-  1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index 27d1785..7f6a8d2 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -119,7 +119,9 @@ static int fill_read_buffer(struct dentry * dentry, struct sysfs_buffer * buffer
-
-  	sysfs_put_active_two(attr_sd);
-
--	BUG_ON(count > (ssize_t)PAGE_SIZE);
-+	/* the code works fine with PAGE_SIZE return but it's likely to
-+	   indicate truncated result or overflow in normal use cases. */
-+	BUG_ON(count >= (ssize_t)PAGE_SIZE);
-  	if (count >= 0) {
-  		buffer->needs_read_fill = 0;
-  		buffer->count = count;
--- 
-1.5.3
-
-
+Thanks.
