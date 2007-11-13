@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763330AbXKMWBY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763897AbXKMWC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763330AbXKMWBY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 17:01:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760247AbXKMWBJ
+	id S1763897AbXKMWC2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 17:02:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761134AbXKMWCT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 17:01:09 -0500
-Received: from palrel10.hp.com ([156.153.255.245]:55136 "EHLO palrel10.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760699AbXKMWBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 17:01:07 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
-Date: Tue, 13 Nov 2007 15:01:01 -0700
-User-Agent: KMail/1.9.6
-Cc: Greg KH <greg@kroah.com>, Alex Chiang <achiang@hp.com>,
-       Matthew Wilcox <matthew@wil.cx>, gregkh@suse.de,
-       kristen.c.accardi@intel.com, lenb@kernel.org, rick.jones2@hp.com,
-       linux-kernel@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
-       linux-acpi@vger.kernel.org
-References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113203645.GB22812@ldl.fc.hp.com> <20071113213049.GA4194@kroah.com>
-In-Reply-To: <20071113213049.GA4194@kroah.com>
+	Tue, 13 Nov 2007 17:02:19 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46327 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760525AbXKMWCS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 17:02:18 -0500
+Date: Tue, 13 Nov 2007 14:02:17 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       linux-mm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       schwidefsky@de.ibm.com
+Subject: Re: [patch 01/28] cpu alloc: The allocator
+In-Reply-To: <473A1DEA.7000307@cosmosbay.com>
+Message-ID: <Pine.LNX.4.64.0711131401030.4176@schroedinger.engr.sgi.com>
+References: <20071106195144.983665861@sgi.com> <20071106195157.878563669@sgi.com>
+ <20071113.031510.151440585.davem@davemloft.net>
+ <Pine.LNX.4.64.0711131339240.3714@schroedinger.engr.sgi.com>
+ <473A1DEA.7000307@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711131501.01320.bjorn.helgaas@hp.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 November 2007 02:30:49 pm Greg KH wrote:
-> On Tue, Nov 13, 2007 at 01:36:45PM -0700, Alex Chiang wrote:
-> > * Greg KH <greg@kroah.com>:
-> > > IBM sells a program that does this for server rooms.  It's
-> > > probably part of some Tivoli package somewhere, sorry I don't
-> > > remember the name.  I did see it working many years ago and it
-> > > required no kernel changes at all to work properly.
+On Tue, 13 Nov 2007, Eric Dumazet wrote:
 
-Do you know how this Tivoli package works or where it gets the
-information?
+> This is because NR_CPUS is defaulted to 32 on i386 (with a limit of 256), so
+> reserving 256*256KB = 64 MB of virtual space might be too much. (this is half
+> the typical vmalloc area)
 
-> > Like I said in an earlier email, HP ia64 systems will require a
-> > kernel change to get this information. Whether it comes via a
-> > generic ACPI access layer like dev_acpi, or something like this
-> > patch series, the kernel will still get touched.
-> 
-> And like I said, I'm pretty sure you don't need to touch the kernel
-> today as there are people doing this just fine from userspace without
-> any kernel changes needed :)
+It defaults to 8 except if you use a NUMA system.
 
-I think you are assuming userspace can just dump the raw ACPI tables
-and extract this information from them.  But I don't think that's
-possible because _SUN is a method that can contain arbitrary AML.
-That AML has to be *executed*, and you can't do that safely in
-userspace.
+config NR_CPUS
+        int "Maximum number of CPUs (2-255)"
+        range 2 255
+        depends on SMP
+        default "32" if X86_NUMAQ || X86_SUMMIT || X86_BIGSMP || X86_ES7000
+        default "8"
 
-Bjorn
