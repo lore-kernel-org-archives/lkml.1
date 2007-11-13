@@ -1,74 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752277AbXKMHfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751995AbXKMHmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752277AbXKMHfn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 02:35:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750810AbXKMHff
+	id S1751995AbXKMHmQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 02:42:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbXKMHmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 02:35:35 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:44862 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750847AbXKMHfd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 02:35:33 -0500
-Date: Tue, 13 Nov 2007 13:18:05 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: "Paul Menage" <menage@google.com>
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>
-Subject: Re: Revert for cgroups CPU accounting subsystem patch
-Message-ID: <20071113074805.GA13499@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <6599ad830711122125u576e85a6w428466a0ab46dbc6@mail.gmail.com> <20071113060038.GC3359@linux.vnet.ibm.com> <6599ad830711122205g88aae4fua8dd76cf6e8ab84d@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 13 Nov 2007 02:42:00 -0500
+Received: from [212.12.190.99] ([212.12.190.99]:41201 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750810AbXKMHmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 02:42:00 -0500
+From: Al Boldi <a1426z@gawab.com>
+To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
+Subject: Re: top lies ?
+Date: Tue, 13 Nov 2007 10:38:26 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org
+References: <200711131008.56627.a1426z@gawab.com> <661de9470711122319m1b8704d1y2f06b1199a21dd52@mail.gmail.com>
+In-Reply-To: <661de9470711122319m1b8704d1y2f06b1199a21dd52@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <6599ad830711122205g88aae4fua8dd76cf6e8ab84d@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+Message-Id: <200711131038.26436.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 12, 2007 at 10:05:24PM -0800, Paul Menage wrote:
-> On Nov 12, 2007 10:00 PM, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
-> >         On second thoughts, this may be a usefull controller of its own.
-> > Say I just want to "monitor" usage (for accounting purpose) of a group of
-> > tasks, but don't want to control their cpu consumption, then cpuacct
-> > controller would come in handy.
+Balbir Singh wrote:
+> On Nov 13, 2007 12:38 PM, Al Boldi <a1426z@gawab.com> wrote:
+> > kloczek wrote:
+> > > Some data showed by top command looks like completly trashed.
+> > > Fragment from top output:
+> > >
+> > > Mem:   2075784k total,  2053352k used,    22432k free,    19260k
+> > > buffers Swap:  2096472k total,      136k used,  2096336k free, 
+> > > 1335080k cached
+> > >
+> > >    PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  SWAP nFLT WCHAN     COMMAND
+> > >  14515 mysql     20   0 1837m 563m 4132 S   39  27.8 27:14.20 1.2g   18 -         mysqld
+> > >
+> > > How it is possible that swap ussage is 136k and swapped out portion of
+> > > (in this case) mysqld process is 1.2g ?
 > >
-> 
-> That's plausible, but having two separate ways of tracking and
-> reporting the CPU usage of a cgroup seems wrong.
-> 
-> How bad would it be in your suggested case if you just give each
-> cgroup the same weight?
+> > Welcome to OverCommit, aka OOM-nirvana.
+> >
+> > Try this:
+> > # echo 2 > /proc/sys/vm/overcommit_memory
+> > # echo 0 > /proc/sys/vm/overcommit_ratio
+> >
+> > But make sure you have enough swap.
+> >
+> >
+> > Thanks!
+>
+> The swap cache looks pretty big, may be top is including that data
+> while reporting swap usage.
 
-That's still introducing a deviation from the normal behavior we would
-have had we allowed all tasks to be part of the same "control" group/runqueue.
+I don't think so.  top reports correctly, it's the VM that is lying.
+I guess you can tell what happens when push comes to shove...
 
-For ex: using nice value to vary bandwidth between tasks makes sense if
-they are all part of the same group.
 
-Also an application with more tasks will get more cpu power (as intended)
-compared to another app with less tasks, provided they are all
-part of the same group.
+Thanks!
 
-Regarding your concern about tracking cpu usage in different ways, it
-could be mitigated if we have cpuacct controller track usage as per
-information present in a task's sched entity structure
-(tsk->se.sum_exec_runtime) i.e call cpuacct_charge() from
-__update_curr() which would accumulate the execution time of the 
-group in a SMP friendly manner (i.e dump it in a per-cpu per-group counter 
-first and then aggregate to a global per-group counter).
+--
+Al
 
-This will let account and control grouping to be independent if desired.
-
-What do you think?
-
-> So there would be fair scheduling between
-> cgroups, which seems as reasonable as any other choice in the event
-> that the CPU is contended.
-
--- 
-Regards,
-vatsa
