@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757962AbXKMMGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756971AbXKMMLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757962AbXKMMGf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 07:06:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbXKMMGZ
+	id S1756971AbXKMMLR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 07:11:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbXKMMLE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 07:06:25 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57117
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753944AbXKMMGY (ORCPT
+	Tue, 13 Nov 2007 07:11:04 -0500
+Received: from rn-out-0910.google.com ([64.233.170.188]:12591 "EHLO
+	rn-out-0102.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752695AbXKMMLC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 07:06:24 -0500
-Date: Tue, 13 Nov 2007 04:06:24 -0800 (PST)
-Message-Id: <20071113.040624.43544149.davem@davemloft.net>
-To: herbert@gondor.apana.org.au
-Cc: kaber@trash.net, joonwpark81@gmail.com, w@1wt.eu, cfriesen@nortel.com,
-       auke-jan.h.kok@intel.com, netdev@vger.kernel.org,
-       djohnson+linux-kernel@sw.starentnetworks.com,
-       linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net
-Subject: Re: [PATCH 2/2] [e1000 VLAN] Disable vlan hw accel when
- promiscuous mode
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071113120328.GB1086@gondor.apana.org.au>
-References: <E1Irtdz-0000DX-00@gondolin.me.apana.org.au>
-	<20071113.033611.73195922.davem@davemloft.net>
-	<20071113120328.GB1086@gondor.apana.org.au>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 13 Nov 2007 07:11:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=ZI6M6yxq/zO033/G5TNVerbb/ENIvwbIL1KWVNkDdIxP/r3HuCJVTAffzvjpPiDFLAaWz9uegtRGDsc4xCH/RfGmBbpwem8lzZJtjLkXlfgi0zpSbtiTNMB/wbuWj+ZAWMu5yCjs1uJf2Ggw3t7vzRueLMrv8nYxB40uBdlt3Qw=
+Message-ID: <e85b9d30711130411s5dd20b9t2e407d9617a36c65@mail.gmail.com>
+Date: Tue, 13 Nov 2007 13:11:00 +0100
+From: Matthew <jackdachef@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: git changelog / shortlog function on www.eu.kernel.org still refers to www.kernel.org server
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
-Date: Tue, 13 Nov 2007 20:03:28 +0800
+Hi everybody on the linux-kernel mailing list,
 
-> On Tue, Nov 13, 2007 at 03:36:11AM -0800, David Miller wrote:
-> >
-> > The performance implications can be pretty severe however.
-> > I wish we could address this somehow.
-> 
-> Or perhaps we should just teach everyone to always run tcpdump
-> with -p, like me :)
+I discovered that the changelog-function of www.eu.kernel.org still
+links / refers to www.kernel.org
 
-:-)
+e.g. if I click on:
 
-> Of course this would still have a negative impact on those who
-> have to be in promiscuous mode all the time (heh) due to multiple
-> unicast MAC addresses and such.  However, we should able to
-> communicate that fact to the driver and the driver can then elect
-> to not disable VLAN acceleration unless we really want to be in
-> promiscuous mode.
+The latest stable version of the Linux kernel is:  	2.6.23.1
+	2007-10-12 16:47 UTC 	F 	V 	  	C 	Changelog <== on the 'C'
 
-We already do with the code Patrick added a while ago so
-that drivers can support multiple MAC addresses in hardware.
+it refers to http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fstable%2Flinux-2.6.23.y.git;a=summary
 
-Now just to get the virtualization technologies and all the
-drivers using it properly.
+shouldn't the link better refer on each 'C' to
+http://git.eu.kernel.org/?p=linux%2Fkernel%2Fgit%2Fstable%2Flinux-2.6.23.y.git;a=summary
+(http://git.eu.kernel.org)
 
-> In other words we can make it so that nobody is in promiscuous
-> mode and therefore have to disable VLAN acceleration *unless*
-> they really want to be in that state.  In which case it would
-> imply that they wish to see everything and therefore we should
-> disable VLAN acceleration.
+that should put less load on the general / US-servers  ...
 
-This is too complicated, we have multiple unicast MAC support
-in the driver API already, let's simply use it.
+... or am I wrong and it is handled via round-robin ?
+
+hope everyone understands what I mean ;)
+
+Cheers
+
+Mat
