@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760391AbXKMAM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760237AbXKMANq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760391AbXKMAM5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 19:12:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759765AbXKMAMr
+	id S1760237AbXKMANq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 19:13:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755184AbXKMANf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 19:12:47 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:57742 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759747AbXKMAMq (ORCPT
+	Mon, 12 Nov 2007 19:13:35 -0500
+Received: from mail8.dotsterhost.com ([66.11.233.1]:34424 "HELO
+	mail8.dotsterhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755135AbXKMANc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 19:12:46 -0500
-Message-ID: <4738EBB6.7060605@zytor.com>
-Date: Mon, 12 Nov 2007 16:11:34 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Mon, 12 Nov 2007 19:13:32 -0500
+Message-ID: <4738EC2E.3030304@crispincowan.com>
+Date: Mon, 12 Nov 2007 16:13:34 -0800
+From: Crispin Cowan <crispin@crispincowan.com>
+Organization: Crispin's Labs
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       akpm@linux-foundation.org
-Subject: Re: [patch] x86: fix taking DNA during 64bit sigreturn
-References: <20071111192758.GA21851@linux-os.sc.intel.com> <alpine.LFD.0.9999.0711121044130.30499@woody.linux-foundation.org> <200711122216.40663.ak@suse.de>
-In-Reply-To: <200711122216.40663.ak@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: david@lang.hm
+CC: "Dr. David Alan Gilbert" <linux@treblig.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       LSM ML <linux-security-module@vger.kernel.org>,
+       apparmor-dev <apparmor-dev@forge.novell.com>
+Subject: Re: AppArmor Security Goal
+References: <473380AD.5070801@crispincowan.com> <20071110220455.GB24195@gallifrey> <47362C7C.2050202@crispincowan.com> <20071110222414.GC24195@gallifrey> <47363381.4030103@crispincowan.com> <20071110232545.GD24195@gallifrey> <Pine.LNX.4.64.0711101546400.4780@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0711101546400.4780@asgard.lang.hm>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> The *real* fix for this is almost certainly to just get rid of the 64-bit 
->> code entirely, and use the 32-bit code as the base for one single unified 
->> setup.
-> 
-> That would likely break the ABI. x86-64 ABI is completely different here --
-> no ibcs, just pure x86 ISA.
-> 
+david@lang.hm wrote:
+> a question for Crispin,
+>   is there a wildcard replacement for username? so that you could
+> grant permission to /home/$user/.mozilla...... and grant each user
+> access to only their own stuff? I realize that in this particular
+> example the underlying DAC will handle it, but I can see other cases
+> where people may want to have users more intermixed (say webserver
+> files or directories for example)
+This is possible, but tricky. There is no internal kernel data structure
+for a UID's home dir. That is parsable at policy load time, so we could
+enhance the language so that a rule of "~/.plan" expanded into a special
+token that corresponded to some table of user home directories at the
+time the policy was loaded. But that is racy, as it becomes invalid if
+anyone's home dir moves, or any users are added or removed.
 
-Different ABIs clearly have to be handled, but I don't think that is a 
-huge deal.  The i387 code overall (not just asm/i387.h) is very 
-different, though, and I find it unlikely that a properly unified code 
-is going to be ready and working in the 2.6.24 timeframe.  I'm exploring 
-if a partial merge with high confidence level is feasible; either way, a 
-proper merge for 2.6.25 is probably the right thing.
+Another way to do it is what JJ posted: enhance the rule language so you
+can have one rule for files that you own, and a different rule for files
+owned by others. The AppArmor community (well, JJ and I :) are debating
+the cost/benefit of this: is the added flexibility worth the added
+complexity?
 
-	-hpa
+Crispin
+
+-- 
+Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin
+CEO, Mercenary Linux		   http://mercenarylinux.com/
+	       Itanium. Vista. GPLv3. Complexity at work
+
