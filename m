@@ -1,89 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763499AbXKMWYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763325AbXKMWZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763499AbXKMWYL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 17:24:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761000AbXKMWXy
+	id S1763325AbXKMWZp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 17:25:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760004AbXKMWZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 17:23:54 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:47887 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760233AbXKMWXx (ORCPT
+	Tue, 13 Nov 2007 17:25:37 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:41867 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754049AbXKMWZg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 17:23:53 -0500
-Date: Tue, 13 Nov 2007 22:18:01 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, alsa-devel@alsa-project.org,
-       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-kernel@vger.kernel.org, protasnb@gmail.com,
-       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz
-Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071113221801.GF1356@flint.arm.linux.org.uk>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	David Miller <davem@davemloft.net>, alsa-devel@alsa-project.org,
-	netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-	linux-kernel@vger.kernel.org, protasnb@gmail.com,
-	linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
-	linux-input@atrey.karlin.mff.cuni.cz
-References: <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113.043207.44732743.davem@davemloft.net> <20071113193219.GC1356@flint.arm.linux.org.uk> <20071113125222.9eb53ac8.akpm@linux-foundation.org>
+	Tue, 13 Nov 2007 17:25:36 -0500
+Date: Tue, 13 Nov 2007 23:25:34 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Stephane Eranian <eranian@hpl.hp.com>
+Cc: Andi Kleen <andi@firstfloor.org>, akpm@osdl.org,
+       Robert Richter <robert.richter@amd.com>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, perfmon@napali.hpl.hp.com,
+       William Cohen <wcohen@redhat.com>, perfmon2-devel@lists.sourceforge.net
+Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
+Message-ID: <20071113222534.GC17145@one.firstfloor.org>
+References: <p73abpl2654.fsf@bingen.suse.de> <20071113151718.GA3804@erda.amd.com> <4739C42F.8030208@redhat.com> <20071113175545.GD4319@frankl.hpl.hp.com> <4739EE13.2090006@redhat.com> <20071113211345.GB5747@frankl.hpl.hp.com> <20071113212902.GA17593@one.firstfloor.org> <20071113214628.GE5747@frankl.hpl.hp.com> <20071113215056.GB17593@one.firstfloor.org> <20071113222234.GH5747@frankl.hpl.hp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071113125222.9eb53ac8.akpm@linux-foundation.org>
+In-Reply-To: <20071113222234.GH5747@frankl.hpl.hp.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 12:52:22PM -0800, Andrew Morton wrote:
-> On Tue, 13 Nov 2007 19:32:19 +0000 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-> > There's another issue I want to raise concerning bugzilla.  We have the
-> > classic case of "not enough people reading bugzilla bugs" - which is one
-> > of the biggest problems with bugzilla.  Virtually no one in the ARM
-> > community looks for ARM bugs in bugzilla.
+On Tue, Nov 13, 2007 at 02:22:34PM -0800, Stephane Eranian wrote:
+> Andi,
+> On Tue, Nov 13, 2007 at 10:50:56PM +0100, Andi Kleen wrote:
+> > > Yes, horribly more complicated because of locking issues within perfmon.
+> > > As soon as you expose a file descriptor, you need some locking to prevent
+> > > multiple user threads (malicious or not) to compete to access the PMU state.
+> > 
+> > Why do you need the file descriptor? 
+> > 
 > 
-> Nor should they.
+> To identify your monitoring session be it system-wide (i.e., per-cpu) or per-thread.
+> file descriptor allows you to use close, read, select, poll and you leverage the
 
-So what you're saying is...
+Surely that could be done with a flag for each call too? Keeping file descriptors
+to pass essentially a boolean seems overkill.
 
-> > Let's not forget that it would be a waste of time for people to manually
-> > check bugzilla for ARM bugs.  There's soo few people reporting ARM bugs
-> > into bugzilla that a weekly manual check by every maintainer would just
-> > return the same old boring results for months and months at a time.
-> 
-> I screen all bugzilla reports.  100% of them.
-> 
-> - I'll try to establish whether it is a regression
-> 
-> - I'll solicit any extra information which I believe the reveloper will need
-> 
-> - I'll ensure that an appropriate developer has seen the report
-> 
-> And yes, the number of arm-specific reports in there is very small.
+> existing file descriptor sharing/inheritance sematics. At the kernel level, a 
+> descriptor provides all the callback necessary to make sure you clean up the perfmon
+> session state on exit.
 
-that just because you do this everyone in a select clique, who you include
-me in, should be doing this as well.
+Didn't you already have a thread destructor for it?
 
-No.  Thank.  You.
-
-> > It would be far more productive if the ARM category was deleted from
-> > bugzilla and the few people who use bugzilla reported their bugs on the
-> > mailing list.  We've a couple of thousand people on the ARM kernel
-> > mailing list at the moment - that's 3 orders of magnitude more of eyes
-> > than look at bugzilla.
-> 
-> Is that linux-arm-kernel@lists.arm.linux.org.uk?
-
-Yes.
-
-> If so, MANITAINERS claims that it is subscribers-only.  That would cause
-> some bug reporters to give up and go away.
-
-Find some other mailing list; I'm not hosting *nor* am I willing to run a
-non-subscribers only mailing list.  Period.  Not negotiable, so don't even
-try to change my mind.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+-Andi
