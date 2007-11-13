@@ -1,91 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760737AbXKMUOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761118AbXKMURP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760737AbXKMUOX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 15:14:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760778AbXKMUNw
+	id S1761118AbXKMURP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 15:17:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbXKMUQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 15:13:52 -0500
-Received: from rtr.ca ([76.10.145.34]:3163 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760239AbXKMUNu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 15:13:50 -0500
-Message-ID: <473A057A.90802@rtr.ca>
-Date: Tue, 13 Nov 2007 15:13:46 -0500
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, protasnb@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [BUG] New Kernel Bugs
-References: <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca> <20071113164650.GA28493@elte.hu> <4739E3D0.10201@rtr.ca> <20071113181228.GF4250@stusta.de> <4739EA83.5040006@rtr.ca> <20071113183605.GG4250@stusta.de> <4739F12E.5020807@rtr.ca> <20071113190428.GH4250@stusta.de> <4739FA4D.1050900@rtr.ca> <20071113200028.GJ4250@stusta.de>
-In-Reply-To: <20071113200028.GJ4250@stusta.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 13 Nov 2007 15:16:57 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40059 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755899AbXKMUQ4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 15:16:56 -0500
+Date: Tue, 13 Nov 2007 12:15:54 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: ananth@in.ibm.com
+Cc: lkml <linux-kernel@vger.kernel.org>, hch@infradead.org,
+       randy.dunlap@oracle.com,
+       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
+       mathieu.desnoyers@polymtl.ca, davem@davemloft.net,
+       Prasanna S Panchamukhi <prasanna@in.ibm.com>
+Subject: Re: [PATCH] Move kprobes examples to samples/ (resend)
+Message-Id: <20071113121554.ee51b6c6.akpm@linux-foundation.org>
+In-Reply-To: <20071113153924.GA25095@in.ibm.com>
+References: <20071021123919.GA7648@in.ibm.com>
+	<20071113040045.0440e575.akpm@linux-foundation.org>
+	<20071113153924.GA25095@in.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Tue, Nov 13, 2007 at 02:26:05PM -0500, Mark Lord wrote:
-..
->> If you've been making significant updates to a driver/subsystem,
->> and people are reporting that it is now broken for them,
+On Tue, 13 Nov 2007 21:09:25 +0530 Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
+
+> On Tue, Nov 13, 2007 at 04:00:45AM -0800, Andrew Morton wrote:
+> > On Sun, 21 Oct 2007 18:09:19 +0530 Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
+> > 
+> > > Move kprobes examples from Documentation/kprobes.txt to under samples/.
+> > > Patch originally by Randy Dunlap.
+> > > 
+> > > In addition, I have
+> > > 
+> > > o Updated the patch to apply on 2.6.23-mm1
+> > > o Modified examples code to build on multiple architectures. Currently,
+> > >   the examples code works for x86_64, x86_32 and powerpc
+> > > o Cleaned up unneeded #includes
+> > 
+> > Could you please take a look at what's needed to get this working on sparc64?
+> > 
+> > samples/kprobes/kretprobe_example.c: In function `ret_handler':
+> > samples/kprobes/kretprobe_example.c:19: error: implicit declaration of function `regs_return_value'
+> > 
+> > Thanks.
 > 
-> What are "significant updates"?
+> As Davem mentions, these are a fallout of sparc64 not having kretprobe
+> support. As a followup to this mail, I am sending a couple of patches
+> that should fix the issue (sparc64 cross compile works fine with the
+> patches).
 > 
-> Sometimes one person makes one small patch and this patch contains
-> a typo.
-..
 
-Then that person should double check their changes against
-the problems reported, and re-convince themselves that the
-breakage wasn't from those.  Simple. 
+Thanks.
 
->> then it's your job to make it right.
-> 
-> We have some open drivers/ata/ regressions.
-..
+> This patch depends on Mathieu Desnoyers' "Instrumentation menu removal"
+> patchset (http://marc.info/?l=linux-kernel&m=119496432229633&w=2)
 
-Yup, but they're more specific than just that entire subsystem,
-and the maintainers are actively pursuing the problems.
-Exactly what should be happening.
-
-> I see some person named "Mark Lord" being responsible for 4 commits.
-> 
-> What pubishment do you plan for him if 2.6.24 ships with any libata 
-> regressions?
-..
-
-If the code I'm touching breaks, then I'll fix it ASAP,
-exactly what the users of that code might expect.
-
->> The reporters can help,
->> and many may even git-bisect or send patches.  
->> But you cannot *expect* or *insist* upon them doing your job.
-> 
-> Bullshit.
-> 
-> Bug fixing is not about finding someone to blame, it's about getting the 
-> bug fixed.
-..
-
-It's not about blame, it's about paying attention to breakages in code that a
-person claims to be supporting, and then doing their best to resolve the issues.
-
-Again, if one has the time to actively write/modify code such that something breaks,
-then that person should also make time to fix the breakages.
-
-> The bug reporter is the person who can reproduce the problem, and if 
-> it's a regression then bisecting is the natural way of getting nearer 
-> at getting it fixed.
-..
-For the third time, no disagreement here.  git-bsect can help in many cases,
-but not in all cases.  And it requires a great time commitment from somebody
-who's system used to work and now doesn't work.  The person who broke it has
-a fair bit of responsibility there, too.
-
-cheers
+argh.  OK, I'll look at this later in the week.
