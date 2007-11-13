@@ -1,91 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760751AbXKME6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbXKMFBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760751AbXKME6e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 23:58:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758049AbXKME6Z
+	id S1753252AbXKMFBR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 00:01:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750701AbXKMFBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 23:58:25 -0500
-Received: from web36601.mail.mud.yahoo.com ([209.191.85.18]:43373 "HELO
-	web36601.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758017AbXKME6Y (ORCPT
+	Tue, 13 Nov 2007 00:01:07 -0500
+Received: from mga03.intel.com ([143.182.124.21]:7542 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750699AbXKMFBG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 23:58:24 -0500
-X-YMail-OSG: Iumkj1YVM1nCHsRn1tELYYWd9Qmhb74GVM50apgKw1T3OvsNAIfxPWveq6vdR4.0ZOxdn5YZzX7MG6fruF6zUo93yw--
-X-RocketYMMF: rancidfat
-Date: Mon, 12 Nov 2007 20:58:23 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: AppArmor Security Goal
-To: Joshua Brindle <method@manicmethod.com>, casey@schaufler-ca.com
-Cc: Crispin Cowan <crispin@crispincowan.com>,
-       "Dr. David Alan Gilbert" <linux@treblig.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       LSM ML <linux-security-module@vger.kernel.org>,
-       apparmor-dev <apparmor-dev@forge.novell.com>
-In-Reply-To: <4738EB67.40304@manicmethod.com>
+	Tue, 13 Nov 2007 00:01:06 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,408,1188802800"; 
+   d="scan'208";a="317151631"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <916293.58775.qm@web36601.mail.mud.yahoo.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [kvm-devel] [PATCH 2/3] kvmclock - the host part.
+Date: Tue, 13 Nov 2007 13:00:10 +0800
+Message-ID: <10EA09EFD8728347A513008B6B0DA77A025DF8A2@pdsmsx411.ccr.corp.intel.com>
+In-Reply-To: <11945615751747-git-send-email-gcosta@redhat.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [kvm-devel] [PATCH 2/3] kvmclock - the host part.
+Thread-Index: AcgiT875b1FvW8jRRSCcZ0xh11GGBADYcupw
+References: <11945615632624-git-send-email-gcosta@redhat.com><11945615703593-git-send-email-gcosta@redhat.com> <11945615751747-git-send-email-gcosta@redhat.com>
+From: "Dong, Eddie" <eddie.dong@intel.com>
+To: "Glauber de Oliveira Costa" <gcosta@redhat.com>,
+       <linux-kernel@vger.kernel.org>
+Cc: <jeremy@goop.org>, <hollisb@us.ibm.com>, <kvm-devel@lists.sourceforge.net>,
+       <avi@qumranet.com>
+X-OriginalArrivalTime: 13 Nov 2007 05:00:13.0080 (UTC) FILETIME=[12DAE180:01C825B2]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---- Joshua Brindle <method@manicmethod.com> wrote:
+> +static void kvm_write_guest_time(struct kvm_vcpu *vcpu) +{
+> +	struct timespec ts;
+> +	int r;
+> +
+> +	if (!vcpu->clock_gpa)
+> +		return;
+> +
+> +	/* Updates version to the next odd number, indicating
+> we're writing */
+> +	vcpu->hv_clock.version++;
+> +	kvm_write_guest(vcpu->kvm, vcpu->clock_gpa,
+> &vcpu->hv_clock, PAGE_SIZE);
+> +
+> +	kvm_get_msr(vcpu, MSR_IA32_TIME_STAMP_COUNTER,
+> +			  &vcpu->hv_clock.last_tsc);
+> +
+> +	ktime_get_ts(&ts);
 
-> Casey Schaufler wrote:
-> > --- Crispin Cowan <crispin@crispincowan.com> wrote:
-> >
-> >   
-> >> Dr. David Alan Gilbert wrote:
-> >> ...
-> >>
-> >> Can you explain why you want a non-privileged user to be able to edit
-> >> policy? I would like to better understand the problem here.
-> >>
-> >> Note that John Johansen is also interested in allowing non-privileged
-> >> users to manipulate AppArmor policy, but his view was to only allow a
-> >> non-privileged user to further tighten the profile on a program. To me,
-> >> that adds complexity with not much value, but if lots of users want it,
-> >> then I'm wrong :)
-> >>     
-> >
-> > Now this is getting interesting. It looks to me as if you've implemented
-> > a mandatory access control scheme that some people would like to be able
-> > to use as a discretionary access control scheme. This is creepy after
-> > seeing the MCS implementation in SELinux, which is also a DAC scheme
-> > wacked out of a MAC scheme. Very interesting indeed.
-> >   
-> 
-> This is the same sort of thing we are trying to do in SELinux with the 
-> policy management server 
-> <http://oss.tresys.com/projects/policy-server/wiki/PolicyServerDesign>, 
-> ofcourse the policy management server enforces SELinux policy on what 
-> can be changed and what can't. We devised a scheme to allow the policy 
-> to become more restrictive without being able to change the policy 
-> 'intent' using a type hierarchy.
-> 
-> In fact I was talking to a coworker today about how this could be done 
-> with smack, using the same kind of hierarchy and allowing unprivileged 
-> users (eg., those without MAC_OVERRIDE) to create new smack labels 
-> 'under' their own which would be restricted. This is interesting because 
-> of the ability to create new smack domains on the fly but since only 
-> privileged users can do it it is of limited use. Imagine if a user could 
-> create a new domain for their webbrowser or anything else they care to. 
-> Since they can't add rules to the policy it would effectively just be a 
-> user sandbox, an interesting use indeed.
+Do we need to disable preemption here?
 
-It would be easy to add a label "owner" the same way that there's
-an optional CIPSO mapping now. Writes to /smack/load would require
-that the writer be the owner of the object label in the rule. I think
-it would still require privilege to assign ownership, a non-parsed
-write to /smack/labelowner should suffice for the mechanism. It seems
-that you might need to support multiple labels for this to be really
-effective, but I'm not sure why I think that. I'm also not sure that
-once you draw a complete picture it won't be indistinguishable from
-POSIX ACLs.
-
-
-Casey Schaufler
-casey@schaufler-ca.com
+> +	vcpu->hv_clock.now_ns = ts.tv_nsec + (NSEC_PER_SEC *
+> (u64)ts.tv_sec); +	vcpu->hv_clock.wc_sec = get_seconds();
+> +	vcpu->hv_clock.version++;
+> +	kvm_write_guest(vcpu->kvm, vcpu->clock_gpa,
+> &vcpu->hv_clock, PAGE_SIZE);
+> +}
+> +
+thx,eddie
