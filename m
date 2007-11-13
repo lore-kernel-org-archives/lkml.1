@@ -1,51 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754607AbXKMKS5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753650AbXKMKUO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754607AbXKMKS5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 05:18:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbXKMKSt
+	id S1753650AbXKMKUO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 05:20:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbXKMKT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 05:18:49 -0500
-Received: from hellhawk.shadowen.org ([80.68.90.175]:3340 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750956AbXKMKSt (ORCPT
+	Tue, 13 Nov 2007 05:19:59 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:51189 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751741AbXKMKT5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 05:18:49 -0500
-Date: Tue, 13 Nov 2007 10:18:58 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: checkpatch.pl and no newline handling
-Message-ID: <20071113101858.GD12003@shadowen.org>
-References: <8bd0f97a0711121146w30b88cdcs8abf3f5b6bff2d14@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8bd0f97a0711121146w30b88cdcs8abf3f5b6bff2d14@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 13 Nov 2007 05:19:57 -0500
+Date: Tue, 13 Nov 2007 05:18:49 -0500
+Message-Id: <200711131018.lADAInYN017695@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, Dave Hansen <haveblue@us.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Ryan Finnie <ryan@finnie.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, cjwatson@ubuntu.com, linux-mm@kvack.org
+Subject: Re: msync(2) bug(?), returns AOP_WRITEPAGE_ACTIVATE to userland 
+In-reply-to: Your message of "Mon, 12 Nov 2007 17:01:51 GMT."
+             <Pine.LNX.4.64.0711121645090.14138@blonde.wat.veritas.com> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 12, 2007 at 02:46:30PM -0500, Mike Frysinger wrote:
-> the current checkpatch.pl does not reject new files that lack a
-> newline, yet rejects patches that fix newlines in files ... quite the
-> opposite of what we actually want
+In message <Pine.LNX.4.64.0711121645090.14138@blonde.wat.veritas.com>, Hugh Dickins writes:
+> On Fri, 9 Nov 2007, Erez Zadok wrote:
+> > In message <Pine.LNX.4.64.0711051358440.7629@blonde.wat.veritas.com>, Hugh Dickins writes:
+> > 
+> > > Three, I believe you need to add a flush_dcache_page(lower_page)
+> > > after the copy_highpage(lower_page): some architectures will need
+> > > that to see the new data if they have lower_page mapped (though I
+> > > expect it's anyway shaky ground to be accessing through the lower
+> > > mount at the same time as modifying through the upper).
+> > 
+> > OK.
+> 
+> While looking into something else entirely, I realize that _here_
+> you are missing a SetPageUptodate(lower_page): should go in after
+> the flush_dcache_page(lower_page) I'm suggesting.  (Nick would argue
+> for some kind of barrier there too, but I don't think unionfs has a
+> special need to be ahead of the pack on that issue.)
+> 
+> Think about it:
+> when find_or_create_page has created a fresh page in the cache,
+> and you've just done copy_highpage to put the data into it, you
+> now need to mark it as Uptodate: otherwise a subsequent vfs_read
+> or whatever on the lower level will find that page !Uptodate and
+> read stale data back from disk instead of what you just copied in,
+> unless its dirtiness has got it written back to disk meanwhile.
 
-Nice.  Just what the world needs.  I wonder what the heck that format
-means.  Obviously the "corrupt" check is wrong as a "\ No newline" line
-is valid not corrupt.  Now when is "\ No newline" a good thing and when
-a bad thing.  It _looks_ like it is 'bound' to the line before, and if
-so then its pretty simple.
+Hehe.  Funny, you mention this...  A few days ago, while I was doing your other
+recommended pageuptodate cleanups, I also added the same call to
+SetPageUptodate(lower_page) as you suggested.  I tested that change along w/
+the other changes you suggested, and they all seem to work great all the way
+from my 2.6.9 backport to 2.6.24-rc2 and -mm (modulo the fact that I had to
+work around or fix more non-unionfs bugs in -mm than unionfs ones to get it
+to work :-)
 
-Bad:
-> +moo
-> \ No newline at end of file
+I posted all of these patches just now.  You're CC'ed.  Hopefully Andrew can
+pull from my unionfs.git branch soon.
 
-Good:
-> -moo
-> \ No newline at end of file
+You also reported in your previous emails some hangs/oopses while doing make
+-j 20 in unionfs on top of a single tmpfs, using -mm.  After several days,
+I've not been able to reproduce this w/ my latest set of patches.  If you
+can send me your .config and the specs on the h/w you're using (cpus, mem,
+etc.), I'll see if I can find something similar to it on my end and run the
+same tests.
 
-/me goes read the source for diff.  Sigh.
-
-Thanks for the report.
-
--apw
+Cheers,
+Erez.
