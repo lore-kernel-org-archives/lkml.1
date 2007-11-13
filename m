@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762938AbXKMWXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763421AbXKMWXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762938AbXKMWXW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 17:23:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760075AbXKMWXM
+	id S1763421AbXKMWXj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 17:23:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763120AbXKMWX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 17:23:12 -0500
-Received: from madara.hpl.hp.com ([192.6.19.124]:54810 "EHLO madara.hpl.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760720AbXKMWXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 17:23:10 -0500
-Date: Tue, 13 Nov 2007 14:22:34 -0800
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: akpm@osdl.org, Robert Richter <robert.richter@amd.com>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, perfmon@napali.hpl.hp.com,
-       William Cohen <wcohen@redhat.com>, perfmon2-devel@lists.sourceforge.net
-Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
-Message-ID: <20071113222234.GH5747@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <20071109213829.GC28276@kroah.com> <p73abpl2654.fsf@bingen.suse.de> <20071113151718.GA3804@erda.amd.com> <4739C42F.8030208@redhat.com> <20071113175545.GD4319@frankl.hpl.hp.com> <4739EE13.2090006@redhat.com> <20071113211345.GB5747@frankl.hpl.hp.com> <20071113212902.GA17593@one.firstfloor.org> <20071113214628.GE5747@frankl.hpl.hp.com> <20071113215056.GB17593@one.firstfloor.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 13 Nov 2007 17:23:27 -0500
+Received: from hpsmtp-eml11.KPNXCHANGE.COM ([213.75.38.111]:45746 "EHLO
+	hpsmtp-eml11.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763114AbXKMWX0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 17:23:26 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH revised] enable make ARCH=x86 (and stay backward compatible)
+Date: Tue, 13 Nov 2007 23:23:22 +0100
+User-Agent: KMail/1.9.7
+Cc: Jeff Garzik <jeff@garzik.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <rdunlap@xenotime.net>, david@lang.hm,
+       Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <20071112205451.GA22528@uranus.ravnborg.org>
+In-Reply-To: <20071112205451.GA22528@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071113215056.GB17593@one.firstfloor.org>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+Message-Id: <200711132323.23835.elendil@planet.nl>
+X-OriginalArrivalTime: 13 Nov 2007 22:23:24.0121 (UTC) FILETIME=[CE05CC90:01C82643]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi,
-On Tue, Nov 13, 2007 at 10:50:56PM +0100, Andi Kleen wrote:
-> > Yes, horribly more complicated because of locking issues within perfmon.
-> > As soon as you expose a file descriptor, you need some locking to prevent
-> > multiple user threads (malicious or not) to compete to access the PMU state.
-> 
-> Why do you need the file descriptor? 
-> 
+On Monday 12 November 2007, Sam Ravnborg wrote:
+> This revised patchset does the followings things:
+> o unify the i386 and x86_64 Kconfig files
+> o introduce support for K64BIT to set CONFIG_64BIT on command line
+> o introdue support for "make ARCH=x86"
+> o degraded ARCH={i386,x86_64} to select between 32/64 for all*targets
+>   and otherwise just selecting the x86 architecture
+>
+> Based on feedback from previous submissions the following have changed:
+> - The backwards compatibility links are kept
+> - The backwards compatibility ARCH={i386,x86_64} are kept but degraded
+>   to select 32/64 bit during configuration for all*config targets.
+> - ARCH={i386,x86_64} are not broken by any patches so bisect will
+>   not choke
 
-To identify your monitoring session be it system-wide (i.e., per-cpu) or per-thread.
-file descriptor allows you to use close, read, select, poll and you leverage the
-existing file descriptor sharing/inheritance sematics. At the kernel level, a 
-descriptor provides all the callback necessary to make sure you clean up the perfmon
-session state on exit.
+Great! Thanks for being so responsive to comments Sam.
 
+I've just built v2.6.24-rc2-409-g9418d5d + your patchset for both amd64 and 
+i386 using Debian's kernel-package and both went without problems.
 
-> One of the main problems with perfmon is the complicated user interface.
-> 
-> Naively I would assume just some thread global state should be sufficient. 
-> 
-> > I think the value add of NMI can be as well achieved with advanced PMU features
-> > such as Intel Core 2 PEBS.
-> 
-> True probably, although only on CPUs that support PEBS. Dropping features
-> for old CPUs is unfortunately quite difficult in Linux, and in this case
-> probably not an option because there are so many of them (e.g. all of AMD
-> not Fam10h) 
-> 
+One (minor) issue. If I start out with a .config for i386, the first make 
+oldconfig will ask to set 64-BIT:
+    64-bit kernel (64BIT) [N/y/?] (NEW)
+It would be nice if that could be avoided somehow.
 
-Yes, I know that. Also note that unfortunately, AMD Fam10h IBS feature does not
-allow you to capture more than one sample in critical sections. It is still
-interrupt based sampling with one entry-deep buffer: one interrupt = one sample.
-Perfmon does support NMI though it is much more expensive to use.
+I'm compiling the 32-bit kernel in an i386 chroot on an x86_64 system.
 
--- 
--Stephane
+Cheers,
+FJP
