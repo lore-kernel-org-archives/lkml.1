@@ -1,45 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759342AbXKMPkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757108AbXKMPos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759342AbXKMPkd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 10:40:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756427AbXKMPkT
+	id S1757108AbXKMPos (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 10:44:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbXKMPok
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 10:40:19 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35594 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755732AbXKMPkS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 10:40:18 -0500
-Date: Tue, 13 Nov 2007 15:39:33 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Tue, 13 Nov 2007 10:44:40 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:60108 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753840AbXKMPok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 10:44:40 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20071109115207.e435f19b.akpm@linux-foundation.org>
+References: <20071109115207.e435f19b.akpm@linux-foundation.org> <20071106214820.3854.17402.stgit@warthog.procyon.org.uk>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: davem@davemloft.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3]: tty - fix network driver interactions with
- TCGET/SET calls
-Message-ID: <20071113153933.2e56057d@the-village.bc.nu>
-In-Reply-To: <20071112212315.e23dfe7d.akpm@linux-foundation.org>
-References: <20071102153329.1a236477@the-village.bc.nu>
-	<20071112212315.e23dfe7d.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Cc: dhowells@redhat.com, torvalds@linux-foundation.org, jdi@l4x.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] FRV: Fix the extern declaration of kallsyms_num_syms
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Tue, 13 Nov 2007 15:44:30 +0000
+Message-ID: <20134.1194968670@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> net/irda/irnet/irnet_ppp.c: In function 'dev_irnet_ioctl':
-> net/irda/irnet/irnet_ppp.c:738: warning: passing argument 2 of 'kernel_termios_to_user_termios_1' from incompatible pointer type
-> net/irda/irnet/irnet_ppp.c:750: warning: passing argument 1 of 'user_termios_to_kernel_termios_1' from incompatible pointer type
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
+> > +extern const unsigned long kallsyms_num_syms
+> > +__nongpreldata __attribute__((weak));
+> 
+> umm, this makes Linux an frv-only operating system...
 
-net/irda isn't tty layer and is completely and totally hosed, has been
-for ages. It fakes some tty bits to fool pppd and does it wrong.
+Oops.  Well... is there any other CPU?  Apart from MN10300, that is... :-)
 
-The warnings are good - they are showing up real standing bugs.
-Unfortunately as its not a real tty device they are not at all easy to
-fix.
+I remember I had to fix a bunch of things like this before... I wonder how I
+did it...
 
-Alan
+David
+
