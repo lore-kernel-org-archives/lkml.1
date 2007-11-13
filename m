@@ -1,73 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbXKMQDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757638AbXKMQIN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758242AbXKMQDk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 11:03:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbXKMQD2
+	id S1757638AbXKMQIN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 11:08:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbXKMQHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 11:03:28 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:30265 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754466AbXKMQD0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 11:03:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=mlmiWteGf+0+3fFR3SMuiaWfX4nTi2pSan7YSxv0+D7hE4OwGIRZbc1HnqUa5Dkz4BsIxct4bxTpmXO9YWo/CuIJR1J9WcoGaxBLR4kig9ockiyhZ0xPVxnMeXtM9TI8jxVS8WHDKYC4LS1NEJnq1LEUAT5R+8iva/L33zETgf4=
-Message-ID: <2c0942db0711130803o4f0048d6l6631349aa8987681@mail.gmail.com>
-Date: Tue, 13 Nov 2007 08:03:24 -0800
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: Shish <shish@shishnet.org>
-Subject: Re: Weird network problems with 2.6.23-rc2
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <20070811083959.305b0421.shish@shishnet.org>
+	Tue, 13 Nov 2007 11:07:55 -0500
+Received: from www.tglx.de ([62.245.132.106]:53079 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751824AbXKMQHy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 11:07:54 -0500
+Date: Tue, 13 Nov 2007 17:07:21 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Mark Lord <liml@rtr.ca>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, alsa-devel@alsa-project.org,
+       linux-ide@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-input@atrey.karlin.mff.cuni.cz, bugme-daemon@bugzilla.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+In-Reply-To: <4739ADA2.4060604@rtr.ca>
+Message-ID: <alpine.LFD.0.9999.0711131521590.3265@localhost.localdomain>
+References: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com> <20071113031553.3c7b5c16.akpm@linux-foundation.org> <4739ADA2.4060604@rtr.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070811083959.305b0421.shish@shishnet.org>
-X-Google-Sender-Auth: 55c44467a4e6bcc9
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello there Shish,
+On Tue, 13 Nov 2007, Mark Lord wrote:
 
-On Aug 10, 2007 11:39 PM, Shish <shish@shishnet.org> wrote:
-> Something seems to have broken in 2.6.23-rc2, and I'm not sure what, or
-> where I should look for further debugging. The info I have:
->
-> On my 2.6.23-rc2 desktop, things run fine.
->
-> On my test server, built from the same source tree, networking goes
-> strange every few minutes, with the following symptoms:
->
-> o) running ping against the server, the first ping goes through;
-> further pings go AWOL until about icmp_seq=30, when I get 4-5 icmp
-> replies (marked as DUP!), then no pings for a while, then dups, and so
-> on.
->
-> o) the server doesn't see ARP replies. According to tcpdump, the server
-> will send eg "who has 192.168.0.2? tell 192.168.0.1"; the client in
-> question will recieve the packet and send a response, but nothing shows
-> up in the server-side tcpdump.
->
-> o) after a few minutes of random network troubles, everything will work
-> fine again, (ping is normal, arp replies are seen, tcp sessions work)
-> for a few minutes.
->
-> o) The server's dmesg shows lots of "short udp packet" messages
->
-> o) ifdown then ifup'ing the interfaces fixes things, temporarily.
->
-> Reverting to 2.6.22, everything seems to be running fine (but no lguest,
-> which is what I came for :( )
->
-> I've also tried with the latest code from git, the behaviour is the same
-> as 2.6.23-rc2.
+> Andrew Morton wrote:
+> > On Mon, 12 Nov 2007 22:42:32 -0800 "Natalie Protasevich"
+> > <protasnb@gmail.com> wrote:
+> ..
+> > > with CONFIG_NO_HZ and/or CONFIG_HPET_TIMER set kernel 2.6.23 doesn't
+> > > boot (ARM, Timer)
+> > > http://bugzilla.kernel.org/show_bug.cgi?id=9229
+> > > Kernel: 2.6.23
+> > 
+> > No response from developers
+> ..
 
-Several questions. What network card do you have on your server? Is
-this still reproducible with the latest code from git? If so, it would
-be extremely helpful if you could do a bisect between 2.6.22 and
-2.6.23-rc2. Feel free to ask for help if you need it.
+The bug report is bogus. ARM has no CONFIG_HPET_TIMER. 
+ 
+> Note:  that same bug exists/existed on i386 back when NO_HZ was
+> introduced (2.6.21?).  I still see it from time to time on my Quad core
+> system (very rare), but not any more on my Duo notebook where it used
+> to happen about 1 in n boots (n < 10).
+> 
+> AFAICT no fix was ever released for it.
 
-Ray
+Hmm, at which point does the boot stop ? 
+
+> > > Suspend to RAM resume hangs on a tickless (NO_HZ) kernel
+> > > http://bugzilla.kernel.org/show_bug.cgi?id=9275
+> > > Kernel: 2.6.23
+> > > This is HP notebook nc6320 T2400 945GM
+> > No response from developers
+> ..
+> 
+> I *still* get very slow resume-from-RAM quite often here
+> (new in 2.6.22 kernel, wasn't there in early 2.6.23-rc*).
+
+Hmm. Which one 22 or 23 ?
+
+> Something eventually times out after a minute or so
+> and it comes back.  Cannot make it happen reliably,
+> unless I'm in a hurry to get something done.  :)
+> I suspect USB here, probably the same loopy bug that
+> we added a "loop limit failsafe" for back in 2.6.21(?).
+
+Do you have a pointer to that please ?
+
+Thanks,
+
+	tglx
