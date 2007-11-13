@@ -1,47 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762650AbXKMVXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760899AbXKMV2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762650AbXKMVXU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 16:23:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759796AbXKMVXL
+	id S1760899AbXKMV2P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 16:28:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbXKMV2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 16:23:11 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35720 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759677AbXKMVXJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 16:23:09 -0500
-Date: Tue, 13 Nov 2007 21:22:30 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Sebastian Kemper <sebastian_ml@gmx.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: libata/PATA: GPCMD_SET_STREAMING via SG_IO does nothing
-Message-ID: <20071113212230.77cadecd@the-village.bc.nu>
-In-Reply-To: <20071113164323.GA5252@section-eight>
-References: <20071113164323.GA5252@section-eight>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Nov 2007 16:28:00 -0500
+Received: from ns2.g-housing.de ([81.169.133.75]:42887 "EHLO mail.g-house.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753987AbXKMV17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 16:27:59 -0500
+Date: Tue, 13 Nov 2007 22:27:49 +0100 (CET)
+From: Christian Kujau <lists@nerdbynature.de>
+X-X-Sender: evil@sheep.housecafe.de
+To: "J. Bruce Fields" <bfields@fieldses.org>
+cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: stuck nfsd processes with 2.6.24-rc2
+In-Reply-To: <20071113194113.GA22590@fieldses.org>
+Message-ID: <alpine.DEB.0.99999.0711132219280.3960@sheep.housecafe.de>
+References: <alpine.DEB.0.9999.0711131955530.27452@sheep.housecafe.de> <20071113194113.GA22590@fieldses.org>
+User-Agent: Alpine 0.99999 (DEB 796 2007-11-08)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> while trying to limit the speed of DVD drives during DVD playback I've
-> come under the impression that GPCMD_SET_STREAMING via SG_IO doesn't yet
-> work with libata/PATA (AMD/NVIDIA PATA support). I tested on an NForce2
-> board (all IDE, no SATA) and kernel 2.6.22.12. When I use the "old" ATA
-> kernel driver my drive slows down, with libata it doesn't. Is this a
-> known issue or has this slipped by unnoticed?
+On Tue, 13 Nov 2007, J. Bruce Fields wrote:
+> Could you get a sysrq-T trace?  (First get the [nfsd] processes in [D]
 
-It isn't a known issue, and it suprises me as SG_IO basically passes
-commands through to the drive. We don't support speed change via xfermode
-setting but GPCMD_SET_STREAMING sohuld behave.
+Ah, I forgot about that. Will do as soon as I get a working kernel again. 
+I'm in the middle of git-bisecting and I had to mark the last 2 versions 
+as "bad" but only because they 1) Oopsed during boot or 2) could not load 
+the kernel image:
 
-> 
-> I tried with mplayer dvd:// -dvd-device /dev/sr0 -dvd-speed BTW . I get
-> no errors in syslog/dmesg. Also mplayer doesn't report a problem (so
-> ioctl(fd, SG_IO, &sghdr) doesn't have a return < 0).
+-------------------------------------
+# git-bisect log
+git-bisect start
+# bad: [6e800af233e0bdf108efb7bd23c11ea6fa34cdeb] ACPI: add documentation for deprecated /proc/acpi/battery in ACPI_PROCFS
+git-bisect bad 6e800af233e0bdf108efb7bd23c11ea6fa34cdeb				0)
+# good: [bbf25010f1a6b761914430f5fca081ec8c7accd1] Linux 2.6.23
+git-bisect good bbf25010f1a6b761914430f5fca081ec8c7accd1			OK
+# good: [fba956c46a72f9e7503fd464ffee43c632307e31] Map volume and brightness events on thinkpads
+git-bisect good fba956c46a72f9e7503fd464ffee43c632307e31			OK
+# bad: [7b1915a989ea4d426d0fd98974ab80f30ef1d779] mm/oom_kill.c: Use list_for_each_entry instead of list_for_each
+git-bisect bad 7b1915a989ea4d426d0fd98974ab80f30ef1d779				1)
+# bad: [c223701cf6c706f42840631c1ca919a18e6e2800] ide: add "hdx=nodma" kernel parameter
+git-bisect bad c223701cf6c706f42840631c1ca919a18e6e2800				2)
 
-Do you have a simple code example that shows the problem ?
+0) was at 2.4.24-rc2 or so
+1) Oops during bootup, but not NFS related, IIRC
+2) Grub could not load the kernel: "linux 'zimage' kernel too big, try
+    'make bzImage'". Maybe related to the x86/i386 merge?
+-------------------------------------
+
+I've built these kernels like so:
+
+  # make mrproper
+  # cp ~/config.2.6.23.1 .config
+  # yes '' | make oldconfig
+  # make
+  # sudo cp arch/i386/boot/bzImage System.map /boot/2.6/
+  # sudo make modules_install
+
+Marking versions as "bad" because of unrelated stuff might poison the 
+results somehow, or make them unusable again. Hm...
+
+@Mathieu: I'll try LTTng later on, many thanks for the hint!
+
+Christian.
+-- 
+BOFH excuse #90:
+
+Budget cuts
