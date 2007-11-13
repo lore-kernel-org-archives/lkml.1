@@ -1,62 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756449AbXKMMwK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677AbXKMM6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756449AbXKMMwK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 07:52:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbXKMMv4
+	id S1754677AbXKMM6i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 07:58:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbXKMM6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 07:51:56 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:40914 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753324AbXKMMvz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 07:51:55 -0500
-Message-ID: <47399DC8.7000504@redhat.com>
-Date: Tue, 13 Nov 2007 10:51:20 -0200
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070811)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu, rusty@rustcorp.com.au,
-       chrisw@sous-sol.org, avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
-       kvm-devel@lists.sourceforge.net, zach@vmware.com,
-       jun.nakajima@intel.com, Steven Rostedt <rostedt@goodmis.org>,
-       kiran@scalemp.com
-Subject: Re: [PATCH 24/24] make vsmp a paravirt client
-References: <11946338683305-git-send-email-gcosta@redhat.com> <20071111180709.GG22277@bingen.suse.de> <47398C4A.40806@redhat.com> <200711131333.41946.ak@suse.de>
-In-Reply-To: <200711131333.41946.ak@suse.de>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 13 Nov 2007 07:58:30 -0500
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:36385 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751932AbXKMM63 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 07:58:29 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAGMuOUdMROHU/2dsb2JhbACBWw
+Date: Tue, 13 Nov 2007 07:53:26 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: David Miller <davem@davemloft.net>
+Cc: akpm@linux-foundation.org, ananth@in.ibm.com, linux-kernel@vger.kernel.org,
+       hch@infradead.org, randy.dunlap@oracle.com,
+       anil.s.keshavamurthy@intel.com, prasanna@in.ibm.com
+Subject: Re: [PATCH] Move kprobes examples to samples/ (resend)
+Message-ID: <20071113125326.GA16455@Krystal>
+References: <20071021123919.GA7648@in.ibm.com> <20071113040045.0440e575.akpm@linux-foundation.org> <20071113.040342.178304306.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20071113.040342.178304306.davem@davemloft.net>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 07:52:07 up 9 days, 17:57,  2 users,  load average: 0.57, 2.02,
+	2.18
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Andi Kleen escreveu:
->> The vsmp_64.c file is now compiled unconditionally, according to which
->> me and kiran agreed to. The detection code is always run, but will only
->> trigger when a suitable box is found. Accordingly, the paravirt structs
->> are only touched when PARAVIRT is on. Otherwise, we don't even have the
->> symbols.
+* David Miller (davem@davemloft.net) wrote:
+> From: Andrew Morton <akpm@linux-foundation.org>
+> Date: Tue, 13 Nov 2007 04:00:45 -0800
 > 
-> That seems dumb. What good is it if it doesn't patch the interrupt code?
+> > On Sun, 21 Oct 2007 18:09:19 +0530 Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
+> > 
+> > > Move kprobes examples from Documentation/kprobes.txt to under samples/.
+> > > Patch originally by Randy Dunlap.
+> > > 
+> > > In addition, I have
+> > > 
+> > > o Updated the patch to apply on 2.6.23-mm1
+> > > o Modified examples code to build on multiple architectures. Currently,
+> > >   the examples code works for x86_64, x86_32 and powerpc
+> > > o Cleaned up unneeded #includes
+> > 
+> > Could you please take a look at what's needed to get this working on sparc64?
+> > 
+> > samples/kprobes/kretprobe_example.c: In function `ret_handler':
+> > samples/kprobes/kretprobe_example.c:19: error: implicit declaration of function `regs_return_value'
+> 
+> kretprobes support most likely, it's on my todo list to implement
+> but it will take a while since I'm busy fixing networking bugs
+> but I can stop doing that if you like.
+> 
+> :-)
 
-If vsmp is selected, PARAVIRT will be too, and the interrupt code will
-be patched.
-the vsmp option triggers a select statement.
+I wonder if compiling this example makes sense when
+ARCH_SUPPORTS_KRETPROBES is not defined ? We could just use a
+obj-$ARCH_SUPPORTS_KRETPROBES to compile the example conditionally.
 
-the ifdef only exists because, as I said, the code itself will be always
-compiled in, to avoid an ifdef in setup_64.c. So it's just a taking it
-from here, putting it there issue. Kiran seem to prefer this way, but I
-don't really have a preference.
+Mathieu
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Remi - http://enigmail.mozdev.org
 
-iD8DBQFHOZ3IjYI8LaFUWXMRAjPkAJ0XosdyMcj1j4h6XW5dVaj95NH7cgCeIW5o
-CGnBnZOTGz9DIu5D997bsZ4=
-=BP57
------END PGP SIGNATURE-----
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
