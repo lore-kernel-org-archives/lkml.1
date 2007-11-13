@@ -1,106 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763019AbXKMVco@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761574AbXKMVdK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763019AbXKMVco (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 16:32:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761462AbXKMVcZ
+	id S1761574AbXKMVdK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 16:33:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763047AbXKMVcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 16:32:25 -0500
-Received: from antispam.upcomillas.es ([130.206.70.245]:51593 "EHLO
-	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760655AbXKMVcV (ORCPT
+	Tue, 13 Nov 2007 16:32:46 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:51604 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763017AbXKMVcp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 16:32:21 -0500
-Subject: Re: [BUG] New Kernel Bugs
-From: Romano Giannetti <romanol@upcomillas.es>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Ray Lee <ray-lk@madrabbit.org>, "Giacomo A. Catenazzi" <cate@cateee.net>,
-       Mark Lord <liml@rtr.ca>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, protasnb@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
-       bugme-daemon@bugzilla.kernel.org
-In-Reply-To: <20071113170141.GD4250@stusta.de>
-References: <20071113031553.3c7b5c16.akpm@linux-foundation.org>
-	 <20071113.033946.114918709.davem@davemloft.net>
-	 <20071113034916.2556edd7.akpm@linux-foundation.org>
-	 <20071113.035824.40509981.davem@davemloft.net>
-	 <20071113041259.79c9a8c5.akpm@linux-foundation.org>
-	 <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca>
-	 <4739C1B0.8000803@cateee.net>
-	 <2c0942db0711130757g295add20re0ee423b84921d28@mail.gmail.com>
-	 <20071113170141.GD4250@stusta.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: Tue, 13 Nov 2007 18:50:38 +0100
-Message-Id: <1194976238.15745.17.camel@rukbat>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 8bit
+	Tue, 13 Nov 2007 16:32:45 -0500
+Date: Tue, 13 Nov 2007 13:30:49 -0800
+From: Greg KH <greg@kroah.com>
+To: Alex Chiang <achiang@hp.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, gregkh@suse.de,
+       kristen.c.accardi@intel.com, lenb@kernel.org, rick.jones2@hp.com,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
+Message-ID: <20071113213049.GA4194@kroah.com>
+References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113170129.GA20185@kroah.com> <20071113183353.GE17785@parisc-linux.org> <20071113185122.GA22536@kroah.com> <20071113203645.GB22812@ldl.fc.hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071113203645.GB22812@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-I jump in this discussion hoping to have some more insight on git and to
-report my experience as a tester. I consider myself as half-literate in
-this (I am here since 1991, more or less, and I am able to compile a
-kernel and even hand-apply a patch, although I am in no way a kernel
-programmer). 
-
-On Tue, 2007-11-13 at 18:01 +0100, Adrian Bunk wrote:
-
-> The small instruction below is enough for everyone who is able to 
-> build his own kernel to do a git bisect.
-
-> # start bisecting:
-> cd linux-2.6
-> git bisect start
-> git bisect bad v2.6.21
-> git bisect good v2.6.20
-> cp /path/to/.config .
+On Tue, Nov 13, 2007 at 01:36:45PM -0700, Alex Chiang wrote:
+> * Greg KH <greg@kroah.com>:
+> > 
+> > Ok, again, I want to see the IBM people sign off on this, after
+> > testing on all of their machines, before I'll consider this, as
+> > I know the IBM acpi tables are "odd".
 > 
+> Who would be a good contact at IBM to get some eyes / machine
+> time on this?
 
-This was what I did in my (in the end almost successful) bisecting when
-trying to find the mmc problem (see the thread named "2.6.24-rc1 eat my
-SD card"). This is true in theory, but it has some problem. The "this
-commit does not compile is the easiest and in man git-bisect it's
-explained how to solve it. The changes in .config options, added or
-removed, are another problem when jumping back and forth from version (I
-was bitten by the gadzillions new options added to hda-intel alsa
-driver, but well, that is solvable with a bit of attention).
+The current 2.4 pci hotplug maintainer?  :)
 
-The main problem I had, and that stopped me to arrive to a definite is
-this situation:
+> > Also, how about Dell machines?  I know they are probably not
+> > expecting this information to show up and who knows if the
+> > numbering of their slots match up with their physical diagrams 
+> 
+> Who would be a good contact at Dell for the same?
 
-j version-bad
-i
-h
-g unrelated (but similar) bug corrected
-f
-e
-d unrelated (but similar) bug introduced
-c
-b
-a version-good 
+Matt has already spoken up for this...
 
-(d was the series to change drivers to use sg helpers, and g was a "fix
-fallout from sg helpers" patch). Now I have a series of kernels (d, e,
-f) that did not work at all and so I cannot mark them good or bad. With
-the number of patches added in the free-for-all week, this is a very
-probable scenario. There is a way out from this using bisect?
+> I don't have as much experience with oddball firmware from
+> various vendors as others on this list, but given the rather
+> stable definition of _SUN in the ACPI spec, I'd be surprised to
+> see vendors abusing that method. [I fully accept the possibility
+> that I'm just naive ;)]
+> 
+> More likely, a vendor will do what the HP Proliant folks did,
+> that being simply omitting a _SUN method altogether.
+> 
+> One more thought on that -- at *worst* my patch series will do no
+> worse than the status quo of what the acpiphp module is doing
+> today. That module walks through the namespace looking for _SUN
+> methods, and when it finds them, it creates an entry in exactly
+> the same spot (/sys/bus/pci/slots/N) that my patch series does.
 
-Romano 
+The acpiphp module is not loaded on zillions of non-pci-hotplug
+machines...
 
-PS as a suggestion, I think that added a "Reported-by", or "Tested-by",
-or "Debugged-by" attribution in the repository, as happened to be in the
-MMC case, is a nice an d welcomed reward for the effort.    
+> What this series adds beyond acpiphp is adding entries for slots
+> that aren't hotpluggable.
 
--- 
-Sorry for the disclaimer --- ¡I cannot stop it!
+How are you going to ensure that the userspace programs that use those
+sysfs files are not going to break into tiny pieces now that you have
+extended this to show all pci slots?
 
+> > IBM sells a program that does this for server rooms.  It's
+> > probably part of some Tivoli package somewhere, sorry I don't
+> > remember the name.  I did see it working many years ago and it
+> > required no kernel changes at all to work properly.
+> 
+> Like I said in an earlier email, HP ia64 systems will require a
+> kernel change to get this information. Whether it comes via a
+> generic ACPI access layer like dev_acpi, or something like this
+> patch series, the kernel will still get touched.
 
+And like I said, I'm pretty sure you don't need to touch the kernel
+today as there are people doing this just fine from userspace without
+any kernel changes needed :)
 
---
-La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
+thanks,
 
-This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
+greg k-h
