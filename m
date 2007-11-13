@@ -1,50 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760468AbXKMEk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760670AbXKMElU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760468AbXKMEk2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 23:40:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754738AbXKMEkP
+	id S1760670AbXKMElU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 23:41:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755783AbXKMElM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 23:40:15 -0500
-Received: from ozlabs.org ([203.10.76.45]:55515 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752400AbXKMEkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 23:40:14 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "Peter Teoh" <htmldeveloper@gmail.com>
-Subject: Re: [PATCH] module loader should not complain about unknown symbol
-Date: Tue, 13 Nov 2007 15:40:06 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: "Jan Glauber" <jang@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Pavel Emelyanov" <xemul@openvz.org>,
-       "Andi Kleen" <andi@firstfloor.org>,
-       "Jon Masters" <jonathan@jonmasters.org>
-References: <1194877107.5656.31.camel@localhost.localdomain> <200711131352.23244.rusty@rustcorp.com.au> <804dabb00711122008t3baa8abbr81ef8ec37e8016a1@mail.gmail.com>
-In-Reply-To: <804dabb00711122008t3baa8abbr81ef8ec37e8016a1@mail.gmail.com>
+	Mon, 12 Nov 2007 23:41:12 -0500
+Received: from relay1.corp.sgi.com ([192.48.171.29]:40998 "EHLO relay.sgi.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755148AbXKMElM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 23:41:12 -0500
+Date: Mon, 12 Nov 2007 20:41:10 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Ray Lee <ray-lk@madrabbit.org>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Mel Gorman <mel@csn.ul.ie>, Andi Kleen <ak@suse.de>,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: x86_64: Make sparsemem/vmemmap the default memory model
+In-Reply-To: <2c0942db0711122027m5b11502cveded5705c0bc4f64@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0711122040380.30724@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0711121549370.29178@schroedinger.engr.sgi.com> 
+ <200711130059.34346.ak@suse.de>  <Pine.LNX.4.64.0711121615120.29328@schroedinger.engr.sgi.com>
+  <200711130149.54852.ak@suse.de>  <Pine.LNX.4.64.0711121940410.30269@schroedinger.engr.sgi.com>
+ <2c0942db0711122027m5b11502cveded5705c0bc4f64@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711131540.07211.rusty@rustcorp.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 November 2007 15:08:35 Peter Teoh wrote:
-> On Nov 13, 2007 10:52 AM, Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > On Tuesday 13 November 2007 09:23:12 Rusty Russell wrote:
-> > > Better might be to put in a waitqueue and wake it up whenever a module
-> > > is deleted or changes status.  Then use_module() can wait if
-> > > strong_try_module_get() returns -EBUSY (up to 30 seconds, then print a
-> > > warning and fail).
->
-> Will it ever go into a deadlock (or likewise DOS scenario) if modA dep
-> on modB, but modB also dep on modA?
+On Mon, 12 Nov 2007, Ray Lee wrote:
 
-No, only if modB requests modA in its init function.  And then only for 30 
-seconds.
+> Discontig obviously needs to die. However, FlatMem is consistently
+> faster, averaging about 2.1% better overall for your numbers above. Is
+> the page allocator not, erm, a fast path, where that matters?
+> 
+> Order	Flat	Sparse	% diff
+> 0	639	641	0.3
 
-modprobe will sort out the A needs B needs A case IIRC.
+IMHO Order 0 currently matters most and the difference is negligible 
+there.
 
-Cheers,
-Rusty.
