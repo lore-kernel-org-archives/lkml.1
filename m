@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758193AbXKMLnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757113AbXKMLsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758193AbXKMLnU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 06:43:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754487AbXKMLnD
+	id S1757113AbXKMLsR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 06:48:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbXKMLsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 06:43:03 -0500
-Received: from mx12.go2.pl ([193.17.41.142]:52692 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754428AbXKMLnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 06:43:00 -0500
-Date: Tue, 13 Nov 2007 12:47:02 +0100
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Natalie Protasevich <protasnb@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, alsa-devel@alsa-project.org,
-       linux-ide@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-input@atrey.karlin.mff.cuni.cz, bugme-daemon@bugzilla.kernel.org
-Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071113114702.GA3865@ff.dom.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 13 Nov 2007 06:48:05 -0500
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:62441 "EHLO
+	outbound1-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753513AbXKMLsE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 06:48:04 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: DF9F24A0-1A5C-40A5-8B0A-DEB676E72ECF
+Date: Tue, 13 Nov 2007 12:44:43 +0100
+From: "Robert Richter" <robert.richter@amd.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+cc: "LKML" <linux-kernel@vger.kernel.org>
+Subject: x86 merge: Keep kernel/cpu for CPU specific code?
+Message-ID: <20071113114443.GG18993@erda.amd.com>
+MIME-Version: 1.0
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 13 Nov 2007 11:44:43.0868 (UTC)
+ FILETIME=[955F39C0:01C825EA]
+X-WSS-ID: 6B2751A507S2361007-01-01
+Content-Type: text/plain;
+ charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071113031553.3c7b5c16.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13-11-2007 12:15, Andrew Morton wrote:
-...
-> Zero responses from developers
-...
-> No response from developers
-...
-> Andreas did some work, seemed to lose interest.
-...
-> Rafael poked Thomas a week ago, to no effect. Thomas has been travelling.
+x86 CPU specific code is currently implemented in different ways for
+64 and 32 bit. While there are almost no CPU specific files for 64
+bit, there is the arch/x86/kernel/cpu/ directory for 32 bit. Is there
+already an idea about whether to use kernel/cpu also for 64 bit?
 
-Looks like very reproducible!
+Thanks,
 
-Maybe you should add this to ...bugzilla?
+-Robert
 
-Regards,
-Jarek P.
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
+
