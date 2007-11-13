@@ -1,117 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755836AbXKMMkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754185AbXKMMlD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755836AbXKMMkh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 07:40:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbXKMMk3
+	id S1754185AbXKMMlD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 07:41:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753329AbXKMMkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 07:40:29 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:21511 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752260AbXKMMk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 07:40:28 -0500
-Message-ID: <47399B30.7080308@sw.ru>
-Date: Tue, 13 Nov 2007 15:40:16 +0300
-From: Konstantin Khorenko <khorenko@sw.ru>
-Reply-To: devel@openvz.org
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Tue, 13 Nov 2007 07:40:52 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:18043 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753281AbXKMMkv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 07:40:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=jVxajxDu9li/1lljlt5oL6yxWuMUVhyRGrnTzUU24oqkrl0QxgSfWPnn4pK0dysFZaMP8NNqUYNwCFEKAmA8JhzWt8+u7z0hawzVL8TK1AES+vM5MvjbDO2A5PbsvdaYK+jV+XXVDuXtZKmV3VDqVF2iTOES3IhvFWR7/0S8jak=
+Message-ID: <47399B4D.5040208@gmail.com>
+Date: Tue, 13 Nov 2007 13:40:45 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: netfilter-devel@vger.kernel.org, Patrick McHardy <kaber@trash.net>,
-       devel@openvz.org
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] [NETFILTER] ipt_SAME: add compat conversion functions
-Content-Type: multipart/mixed;
- boundary="------------050608000001020101020305"
+To: "'Sam Ravnborg'" <sam@ravnborg.org>
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: cscope build warning [Was: mm snapshot broken-out-2007-11-13-04-14.tar.gz
+ uploaded]
+References: <200711131215.lADCFfht009739@imap1.linux-foundation.org>
+In-Reply-To: <200711131215.lADCFfht009739@imap1.linux-foundation.org>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050608000001020101020305
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On 11/13/2007 01:15 PM, akpm@linux-foundation.org wrote:
+> The mm snapshot broken-out-2007-11-13-04-14.tar.gz has been uploaded to
 
-[NETFILTER]: ipt_SAME: add compat conversion functions
+$ uname -a
+Linux bellona 2.6.23-rc8-mm2_64 #58 SMP Fri Sep 28 08:52:12 CEST 2007 x86_64
+x86_64 x86_64 GNU/Linux
+$ make O=../bu cscope
+  FILELST cscope.files
+find: /home/l/latest/xxx/arch/x86_64: není souborem ani adresáøem
+  MAKE    cscope.out
 
-ipt_SAME should have the compat function cause its entry structure (ipt_same_info)
-contains a pointer between data filled/checked in both kernel and userspace.
-
-Signed-off-by: Konstantin Khorenko <khorenko@sw.ru>
-
----
-Thank you,
-	Konstantin Khorenko
-
-SWsoft Virtuozzo/OpenVZ Linux kernel team
-
-
---------------050608000001020101020305
-Content-Type: text/plain;
- name="diff-ms-nf-ipt-SAME-compat-20071110"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="diff-ms-nf-ipt-SAME-compat-20071110"
-
---- ./net/ipv4/netfilter/ipt_SAME.c.SAME	2007-11-06 13:55:16.000000000 +0300
-+++ ./net/ipv4/netfilter/ipt_SAME.c	2007-11-09 16:50:38.000000000 +0300
-@@ -152,6 +152,47 @@ same_target(struct sk_buff *skb,
- 	return nf_nat_setup_info(ct, &newrange, hooknum);
- }
- 
-+#ifdef CONFIG_COMPAT
-+struct compat_ipt_same_info
-+{
-+	unsigned char info;
-+	u_int32_t rangesize;
-+	u_int32_t ipnum;
-+	compat_uptr_t iparray;
-+
-+	/* hangs off end. */
-+	struct nf_nat_range range[IPT_SAME_MAX_RANGE];
-+};
-+
-+static void compat_from_user(void *dst, void *src)
-+{
-+	const struct compat_ipt_same_info *cl = src;
-+	struct ipt_same_info l = {
-+		.info		= cl->info,
-+		.rangesize	= cl->rangesize,
-+		.ipnum		= 0,
-+		.iparray	= NULL,
-+	};
-+
-+	memcpy(l.range, cl->range, sizeof(l.range));
-+	memcpy(dst, &l, sizeof(l));
-+}
-+
-+static int compat_to_user(void __user *dst, void *src)
-+{
-+	const struct ipt_same_info *l = src;
-+	struct compat_ipt_same_info cl = {
-+		.info		= l->info,
-+		.rangesize	= l->rangesize,
-+		.ipnum		= 0,
-+		.iparray	= (compat_uptr_t)NULL,
-+	};
-+
-+	memcpy(cl.range, l->range, sizeof(cl.range));
-+	return copy_to_user(dst, &cl, sizeof(cl)) ? -EFAULT : 0;
-+}
-+#endif /* CONFIG_COMPAT */
-+
- static struct xt_target same_reg __read_mostly = {
- 	.name		= "SAME",
- 	.family		= AF_INET,
-@@ -161,6 +202,11 @@ static struct xt_target same_reg __read_
- 	.hooks		= (1 << NF_IP_PRE_ROUTING | 1 << NF_IP_POST_ROUTING),
- 	.checkentry	= same_check,
- 	.destroy	= same_destroy,
-+#ifdef CONFIG_COMPAT
-+	.compatsize	= sizeof(struct compat_ipt_same_info),
-+	.compat_from_user = compat_from_user,
-+	.compat_to_user	= compat_to_user,
-+#endif
- 	.me		= THIS_MODULE,
- };
- 
-
-
---------------050608000001020101020305--
+regards,
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
