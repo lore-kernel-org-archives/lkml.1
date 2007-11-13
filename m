@@ -1,115 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755732AbXKMQyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759960AbXKMQyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755732AbXKMQyZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 11:54:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751737AbXKMQyL
+	id S1759960AbXKMQyk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 11:54:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759253AbXKMQyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 11:54:11 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:46536 "EHLO gir.skynet.ie"
+	Tue, 13 Nov 2007 11:54:14 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38586 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758933AbXKMQyJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 11:54:09 -0500
-Date: Tue, 13 Nov 2007 16:54:06 +0000
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@osdl.org, torvalds@osdl.org, linux-kernel@vger.kernel.org,
-       linux-mm@vger.kernel.org, apw@shadowen.org
-Subject: Re: Major mke2fs slowdown (reproducable, bisected)
-Message-ID: <20071113165405.GA12837@skynet.ie>
-References: <20071112182526.GC11244@martell.zuzino.mipt.ru>
+	id S1759191AbXKMQyM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 11:54:12 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] FRV: Arrange things such that BRA can reach from the trap
+	table
+To: torvalds@osdl.org, akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com
+Date: Tue, 13 Nov 2007 16:53:36 +0000
+Message-ID: <20071113165336.18722.27037.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20071112182526.GC11244@martell.zuzino.mipt.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alexey,
+From: David Howells <dhowells@redhat.com>
 
-On (12/11/07 21:25), Alexey Dobriyan didst pronounce:
-> Cross-compile farm here migrated to .ccache and build dir on separate
-> disks and now I have a way to blow up .ccache without waiting half an
-> hour for rm(1) to finish. It's called mke2fs(8).
-> 
-> However, in e.g 2.6.24-rc2 mke2fs is amazingly slow if done right after
-> several fat cross-compile builds. Normally it takes ~11 seconds to
-> finish. After commit 5adc5be7cd1bcef6bb64f5255d2a33f20a3cf5be aka
-> "Bias the placement of kernel pages at lower PFNs" it takes several
-> minutes. 2.6.24-rc2 without this patch also gives normal mkfs speeds.
-> I'm pretty sure bisection wasn't screwed up.
-> 
-> 
-> Details:
-> 
-> 	Core 2 Duo on x86_64, no debugging
-> 	4G RAM
-> 	30G ext2 .ccache partition with noatime
-> 	100G ext2 partition with source tree and build dirs with noatime
-> 
-> I build alpha-allnoconfig, alpha-defconfig and 4 allmodconfigs
-> (SMP=y/n x DEBUG_KERNEL=y/n).
-> 
-> Right after compilation finishes, free(1) reports more or less the same
-> picture (VM hackers, please, tell me which info you need):
-> 
->              total       used       free     shared    buffers     cached
-> Mem:       4032320    2802604    1229716          0      97160    2424816
-> -/+ buffers/cache:     280628    3751692
-> Swap:      7823644          0    7823644
-> 
-> Last steps of build script are:
-> 
-> 	umount /home/ad/.ccache
-> 	sudo mkfs.ext2 -m 0 	<=== this is slow
-> 
+Arrange the sections in the FRV arch so that a BRA instruction with a 16-bit
+displacement can always reach from the trap table to entry.S, tlb-miss.S and
+break.S.
 
-Thanks very much for the report and the bisect. I spent the day trying
-to reproduce it but I'm having trouble seeing the same problem using just
-mke2fs. I've tried
+The problem otherwise is that the linker can insert sufficient code between
+the slots in the trap table and the targets of the branch instructions in
+those slots that the displacement field in the instruction isn't sufficiently
+large.  This is because the branch targets were in the .text section along
+with most of the other code in the kernel.
 
-Pentium III x86 machine with 1GB of RAM, 9GB partition
-4-way Opteron with 8GB RAM, 10GB partition
-2-way Opteron with 2GB RAM, 10GB partition
-Pentium D (duel core) with 2GB RAM, 128GB partition
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-In all cases, the comparison between 2.6.23, latest git and latest git
-with patch reverted were the same. For example, on the Pentium D, I got
+ arch/frv/kernel/break.S       |    2 +-
+ arch/frv/kernel/entry.S       |    2 +-
+ arch/frv/kernel/vmlinux.lds.S |   27 +++++++++++++++------------
+ arch/frv/mm/tlb-miss.S        |    2 +-
+ 4 files changed, 18 insertions(+), 15 deletions(-)
 
-2.6.23:			95.672 real, 0.068 user, 10.334 sys
-2.6.24-rc2-git:		96.112 real, 0.08 user, 10.664 sys
-2.6.24-rc2-revert:	96.182 real, 0.072 user, 10.602 sys
+diff --git a/arch/frv/kernel/break.S b/arch/frv/kernel/break.S
+index dac4a5f..bd0bdf9 100644
+--- a/arch/frv/kernel/break.S
++++ b/arch/frv/kernel/break.S
+@@ -63,7 +63,7 @@ __break_trace_through_exceptions:
+ # entry point for Break Exceptions/Interrupts
+ #
+ ###############################################################################
+-	.text
++	.section	.text.break
+ 	.balign		4
+ 	.globl		__entry_break
+ __entry_break:
+diff --git a/arch/frv/kernel/entry.S b/arch/frv/kernel/entry.S
+index 1e74f3c..f926c70 100644
+--- a/arch/frv/kernel/entry.S
++++ b/arch/frv/kernel/entry.S
+@@ -38,7 +38,7 @@
+ 
+ #define nr_syscalls ((syscall_table_size)/4)
+ 
+-	.text
++	.section	.text.entry
+ 	.balign		4
+ 
+ .macro LEDS val
+diff --git a/arch/frv/kernel/vmlinux.lds.S b/arch/frv/kernel/vmlinux.lds.S
+index a62b245..a372e34 100644
+--- a/arch/frv/kernel/vmlinux.lds.S
++++ b/arch/frv/kernel/vmlinux.lds.S
+@@ -76,6 +76,12 @@ SECTIONS
+ 	  *(.data.init_task)
+   }
+ 
++  . = ALIGN(4096);
++  .data.page_aligned : { *(.data.idt) }
++
++  . = ALIGN(L1_CACHE_BYTES);
++  .data.cacheline_aligned : { *(.data.cacheline_aligned) }
++
+   .trap : {
+ 	/* trap table management - read entry-table.S before modifying */
+ 	. = ALIGN(8192);
+@@ -86,28 +92,25 @@ SECTIONS
+ 	*(.trap.break)
+   }
+ 
+-  . = ALIGN(4096);
+-  .data.page_aligned : { *(.data.idt) }
+-
+-  . = ALIGN(L1_CACHE_BYTES);
+-  .data.cacheline_aligned : { *(.data.cacheline_aligned) }
+-
+   /* Text and read-only data */
+   . = ALIGN(4);
+   _text = .;
+   _stext = .;
+   .text : {
+-	*(
+-		.text.start .text.*
++	*(.text.start)
++	*(.text.entry)
++	*(.text.break)
++	*(.text.tlbmiss)
++	TEXT_TEXT
++	SCHED_TEXT
++	LOCK_TEXT
+ #ifdef CONFIG_DEBUG_INFO
++	*(
+ 	.init.text
+ 	.exit.text
+ 	.exitcall.exit
+-#endif
+ 	)
+-	TEXT_TEXT
+-	SCHED_TEXT
+-	LOCK_TEXT
++#endif
+ 	*(.fixup)
+ 	*(.gnu.warning)
+ 	*(.exitcall.exit)
+diff --git a/arch/frv/mm/tlb-miss.S b/arch/frv/mm/tlb-miss.S
+index 04da674..0764348 100644
+--- a/arch/frv/mm/tlb-miss.S
++++ b/arch/frv/mm/tlb-miss.S
+@@ -16,7 +16,7 @@
+ #include <asm/highmem.h>
+ #include <asm/spr-regs.h>
+ 
+-	.section	.text
++	.section	.text.tlbmiss
+ 	.balign		4
+ 
+ 	.globl		__entry_insn_mmu_miss
 
-This is an average of 5 runs on a 128GB partition. Somewhat unexpectedly,
-the revert was fractionally slower. The deviation between runs was around
-the 0.4 second mark so the differences appear to be in the noise.
-
-On the other machines, the reverted version was slightly faster but I was
-seeing about 0.5% of overall running time, not the massive differences you
-were seeing.  Clearly there is still a problem because reverting the patch
-fixes your problem.... As I write this, it occurs to me that it might be
-because your compile-job has created very long free-lists and searching them
-is causing problems.
-
-Can you post the contents of /proc/buddyinfo before and after you run
-mke2fs? It will give an indication of how long the linked lists are being
-searched. After I push send here, I'll be trying the tests after running
-compile-tests similar to yours to see if that reproduces the problem.
-
-Here are some other questions I hope you can answer just to eliminate them
-as possibilities. Can you tell me what sort of disk driver you are using
-(results here are for sata_nv)? Are you using RAID or MD? Is anything running
-in the background while mke2fs is running? What is the output of mke2fs -V,
-gcc --version and ld -v? Finally, can you mail me your .config and I'll try
-it on my machine here.
-
-In the meantime, it is safe to revert this patch. Andy Whitcroft tested
-the behaviour of anti-fragmentation on a number of machines and while the
-results are adversely affected in terms of hugepage allocation success rates,
-they are still pretty decent. We will investigate a less expensive way of
-achieving the same effect of the patch without the potentially long searches.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
