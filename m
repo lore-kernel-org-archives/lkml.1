@@ -1,75 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757773AbXKMLki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757464AbXKMLlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757773AbXKMLki (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 06:40:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757379AbXKMLkW
+	id S1757464AbXKMLlw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 06:41:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753539AbXKMLlp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 06:40:22 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:38359 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756062AbXKMLkU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 06:40:20 -0500
-Date: Tue, 13 Nov 2007 12:39:57 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Jakub Jelinek <jakub@redhat.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC: 2.6 patch] add -fno-tree-scev-cprop to KBUILD_CFLAGS
-Message-ID: <20071113113957.GB4250@stusta.de>
-References: <20071111064829.GG21669@stusta.de> <20071112165843.GF5451@devserv.devel.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20071112165843.GF5451@devserv.devel.redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 13 Nov 2007 06:41:45 -0500
+Received: from gate.crashing.org ([63.228.1.57]:47955 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754180AbXKMLlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 06:41:44 -0500
+Subject: Re: [PATCH, RFC] improved hacks to allow -rt to run kernbench on
+	POWER
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: paulmck@linux.vnet.ibm.com, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org, tony@bakeyournoodle.com, paulus@samba.org,
+       dino@in.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com,
+       antonb@us.ibm.com, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1194948338.6983.20.camel@twins>
+References: <20071109181028.GA26800@linux.vnet.ibm.com>
+	 <1194641524.21340.14.camel@pasglop>
+	 <20071109220717.GJ8826@linux.vnet.ibm.com>
+	 <1194753541.21340.26.camel@pasglop>
+	 <Pine.LNX.4.58.0711110943510.12853@gandalf.stny.rr.com>
+	 <1194814125.6510.14.camel@pasglop>
+	 <20071112191526.GC11113@linux.vnet.ibm.com>
+	 <1194901925.18185.65.camel@pasglop>  <1194945032.6983.11.camel@twins>
+	 <1194948338.6983.20.camel@twins>
+Content-Type: text/plain
+Date: Tue, 13 Nov 2007 22:09:02 +1100
+Message-Id: <1194952142.18185.104.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 12, 2007 at 11:58:43AM -0500, Jakub Jelinek wrote:
-> On Sun, Nov 11, 2007 at 07:48:29AM +0100, Adrian Bunk wrote:
-> > The gcc from svn that will become gcc 4.3 generates libgcc calls in 
-> > cases like the following (on 32bit architectures):
-> > 
-> > <--  snip  -->
-> > 
-> > static inline void timespec_add_ns(struct timespec *a, u64 ns)
-> > {
-> > ...
-> >         while(ns >= NSEC_PER_SEC) {
-> >                 ns -= NSEC_PER_SEC;
-> >                 a->tv_sec++;
-> >         }
-> > ...
-> > 
-> > <--  snip  -->
+
+On Tue, 2007-11-13 at 11:05 +0100, Peter Zijlstra wrote:
+> Looking at the code:
 > 
-> Blindly using -fno-tree-scev-cprop just to get rid of one case where
-> this turns out to be a pessimization when kernel knows ns is usually very
-> small is IMHO a wrong thing, you'd lose many cases where this optimization
-> can actually improve performance.
+> /* radix tree not lockless safe ! we use a brlock-type mecanism
+>  * for now, until we can use a lockless radix tree
+>  */
+> static void irq_radix_wrlock(unsigned long *flags)
+> 
+> The RCU radix tree stuffs have gone upstream long ago.
+> 
+> Anyway, it seems its the generic irq stuff that uses raw_spinlock_t
+> and
+> disables IRQs, so there isn't much we can do from the ARCH level I'm
+> afraid :-(
+> 
+> Ingo, any sane ideas?
 
-It's not about performance, it's about a build error.
+As discussed on IRC< there are a couple of other related issues, though
+part of them go away if I can get rid of the brlock I have in there
+thanks to the new RCU based radix tree.
 
-> Instead, for this exact case just
-> add an optimization barrier to avoid gcc doing this.
-> Adding asm ("" : "=r" (ns) : "0" (ns)); (or hide it in some macro) into the
-> loop will do the job just fine.
+I'll give that some thoughts and come back to you tomorrow or thursday
+hopefully with a patch.
 
-The problem is that this is very fragile - imagine what might happen 
-when a frequently used struct member gets changed from int to u64.
+Cheers,
+Ben.
 
-After all, when looking at current practice, the kernel will support 
-being built with gcc 4.3 until 2013 or 2014.
-
-> 	Jakub
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
