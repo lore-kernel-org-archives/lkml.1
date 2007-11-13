@@ -1,47 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760480AbXKMFs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759175AbXKMGEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760480AbXKMFs1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 00:48:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750765AbXKMFsS
+	id S1759175AbXKMGEx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 01:04:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750704AbXKMGEp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 00:48:18 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:41763 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750748AbXKMFsR (ORCPT
+	Tue, 13 Nov 2007 01:04:45 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:34353 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750699AbXKMGEp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 00:48:17 -0500
-Date: Tue, 13 Nov 2007 11:30:38 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: "Paul Menage" <menage@google.com>
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: Revert for cgroups CPU accounting subsystem patch
-Message-ID: <20071113060038.GC3359@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <6599ad830711122125u576e85a6w428466a0ab46dbc6@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 13 Nov 2007 01:04:45 -0500
+Date: Tue, 13 Nov 2007 07:04:22 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Bernd Schmidt <bernds_cb1@t-online.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC: 2.6 patch] add -fno-tree-scev-cprop to KBUILD_CFLAGS
+Message-ID: <20071113060422.GR9771@stusta.de>
+References: <20071111064829.GG21669@stusta.de> <47387E32.4050206@t-online.de> <20071112164023.GL9771@stusta.de> <4738CEBB.8000501@t-online.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <6599ad830711122125u576e85a6w428466a0ab46dbc6@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <4738CEBB.8000501@t-online.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 12, 2007 at 09:25:32PM -0800, Paul Menage wrote:
-> Hi Linus,
+On Mon, Nov 12, 2007 at 11:07:55PM +0100, Bernd Schmidt wrote:
+> Adrian Bunk wrote:
+> > It can be a performance regression, but there are also cases where it 
+> > can improve performance. If gcc produces lower performance code that
+> > would be a bug in gcc that should be reported, but using a division is 
+> > not generally wrong.
+> > 
+> > A more clearer example might be:
+> > 
+> > <--  snip  -->
+> > 
+> > void foo(u64 ns)
+> > {
+> > 	if (ns < 10000)
+> > 		return;
+> > 
+> > 	while(ns >= 3) {
+> > 		ns -= 3;
+> > #ifdef DEBUG
+> > 		bar(ns);
+> > #endif
+> > 	}
+> > }
+> > 
+> > <--  snip  -->
+> > 
+> > With DEBUG not defined you can hardly argue gcc should be fixed to not 
+> > use a division for performance reasons.
 > 
-> Please can you revert commit 62d0df64065e7c135d0002f069444fbdfc64768f,
-> entitled "Task Control Groups: example CPU accounting subsystem" ?
+> Absent any clear information about the possible values of ns,
+>...
 
-Hi Paul,
-	On second thoughts, this may be a usefull controller of its own.
-Say I just want to "monitor" usage (for accounting purpose) of a group of 
-tasks, but don't want to control their cpu consumption, then cpuacct 
-controller would come in handy.
+In this example, there is clear information about the possible values
+of ns...
+
+> Bernd
+
+cu
+Adrian
 
 -- 
-Regards,
-vatsa
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
