@@ -1,69 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758791AbXKMP2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758267AbXKMP3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758791AbXKMP2h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 10:28:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754446AbXKMP22
+	id S1758267AbXKMP3z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 10:29:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754446AbXKMP3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 10:28:28 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58027 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754106AbXKMP20 (ORCPT
+	Tue, 13 Nov 2007 10:29:46 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:37770 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753637AbXKMP3p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 10:28:26 -0500
-Date: Tue, 13 Nov 2007 15:27:27 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Allen Martin" <AMartin@nvidia.com>
-Cc: "Jeff Garzik" <jeff@garzik.org>, "Mark Lord" <liml@rtr.ca>,
-       "Riki Oktarianto" <rkoktarianto@gmail.com>,
-       <linux-kernel@vger.kernel.org>, "Greg Kroah-Hartman" <gregkh@suse.de>,
-       <linux-ide@vger.kernel.org>
-Subject: Re: [PATCH] Add quirk to set AHCI mode on ICH boards
-Message-ID: <20071113152727.45b71939@the-village.bc.nu>
-In-Reply-To: <F72FA20C31DD4F4C997B91C5B3690A095054A2@hqemmail07.nvidia.com>
-References: <20071109020235.GA2031@ceren>
-	<20071109023129.GA25581@havoc.gtf.org>
-	<4733D421.7000505@rtr.ca>
-	<20071109034622.GB25581@havoc.gtf.org>
-	<20071109120425.543971bf@the-village.bc.nu>
-	<47351FE1.4000001@garzik.org>
-	<DBFABB80F7FD3143A911F9E6CFD477B0329351A3@hqemmail02.nvidia.com>
-	<473600B6.5070103@garzik.org>
-	<F72FA20C31DD4F4C997B91C5B3690A095054A2@hqemmail07.nvidia.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 13 Nov 2007 10:29:45 -0500
+Subject: Re: mm snapshot broken-out-2007-11-13-04-14 Build Fails at memory.c
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
+       linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
+       linux-arch@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
+In-Reply-To: <4739B81A.3050601@linux.vnet.ibm.com>
+References: <200711131215.lADCFfht009739@imap1.linux-foundation.org>
+	 <4739B81A.3050601@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Organization: IBM Corporation
+Date: Tue, 13 Nov 2007 16:29:41 +0100
+Message-Id: <1194967781.3767.4.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> What I'm worred about is SMI traps implemented in the SBIOS for AHCI
-> workarounds that may be disabled when in IDE mode.
+On Tue, 2007-11-13 at 20:13 +0530, Kamalesh Babulal wrote:
+> Hi Andrew,
+> 
+> The kernel build fails, with following build error
+> 
+> mm/memory.c: In function ‘free_pte_range’:
+> mm/memory.c:126: error: implicit declaration of function ‘pmd_pgtable’
+> mm/memory.c:126: warning: initialization makes pointer from integer without a cast
+> mm/memory.c: In function ‘apply_to_pte_range’:
+> mm/memory.c:1389: warning: assignment makes pointer from integer without a cast
+> make[1]: *** [mm/memory.o] Error 1
+> make: *** [mm] Error 2
+> 
+> The patch causing this issue is config_highpte-vs-sub-page-page-tables.patch.
+> Where the marco is defined #ifndef CONFIG_PPC_64K_PAGES.
 
-For Nvidia devices those would only be present if there were problems
-with the AHCI hardware right, which would mean you could simply tell us
-what workarounds to implement.
+Forget the request for the .config. Found the problem, fixup patch
+below.
 
-> I believe most of the issues with sata_nv have been due to lack of
-> documentation of ADMA and swNCQ.  The NVIDA AHCI controllers that
+-- 
+blue skies,
+  Martin.
 
-I am glad Nvidia accept this point. It would be nice to see it fixed.
+"Reality continues to ruin my life." - Calvin.
+---
+diff -urpN linux-2.6/include/asm-powerpc/pgalloc-64.h linux-2.6-patched/include/asm-powerpc/pgalloc-64.h
+--- linux-2.6/include/asm-powerpc/pgalloc-64.h	2007-11-12 17:31:58.000000000 +0100
++++ linux-2.6-patched/include/asm-powerpc/pgalloc-64.h	2007-11-13 16:23:50.000000000 +0100
+@@ -68,6 +68,7 @@ static inline void pmd_populate_kernel(s
+ 
+ #define pmd_populate(mm, pmd, pte_page) \
+ 	pmd_populate_kernel(mm, pmd, page_address(pte_page))
++#define pmd_pgtable(pmd) pmd_page(pmd)
+ 
+ #endif /* CONFIG_PPC_64K_PAGES */
+ 
 
-> I'm with you that AHCI mode is superior and should be used whenever
-> possible, but it probably comes as no suprise that almost all the
-> hardware/BIOS testing is done with Windows, and operating the hardware
-> in a mode that Windows doesn't (enabling AHCI in classcode 0101) seems
-> like asking for trouble.
 
-I agree we must be careful, for example we should put the controller back
-into its boot mode before suspending so that we can reasonably expect the
-BIOS to handle suspend/resume. And we certainly need an override option
-in one direction or the other.
-
-Nevertheless you don't make progress by limiting yourself to avoid
-breaking the most ancient system. We gave up having a man walking in front
-of cars with a red flag a long time ago.
-
-Alan
