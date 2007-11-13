@@ -1,59 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756263AbXKMNgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755462AbXKMNl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756263AbXKMNgW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 08:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbXKMNgN
+	id S1755462AbXKMNl3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 08:41:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbXKMNlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 08:36:13 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:41460 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754883AbXKMNgM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 08:36:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=KOUx45BWkW78BEgoWRPa6umV1WsKceiqqYFa5FonJA6EcL7HljARYi0ZChC5E2aQMLE8qDD9IfjRIXK04RiIDcAE21e0m+nDY9Fgu7da7I4nArMnxQhMLcR6LNBNWA0+8zg8N9kcwNxKpA7yanaU1GiVkrZGimzHHHFUzsbY85g=
-Message-ID: <4739A840.4000902@gmail.com>
-Date: Tue, 13 Nov 2007 14:36:00 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Tue, 13 Nov 2007 08:41:16 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57752 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752992AbXKMNlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 08:41:14 -0500
+Date: Tue, 13 Nov 2007 14:40:29 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, protasnb@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+Message-ID: <20071113134029.GA30978@elte.hu>
+References: <20071113031553.3c7b5c16.akpm@linux-foundation.org> <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: cscope build warning [Was: mm snapshot broken-out-2007-11-13-04-14.tar.gz
- uploaded]
-References: <200711131215.lADCFfht009739@imap1.linux-foundation.org> <47399B4D.5040208@gmail.com> <20071113132712.GA31270@uranus.ravnborg.org>
-In-Reply-To: <20071113132712.GA31270@uranus.ravnborg.org>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071113041259.79c9a8c5.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/13/2007 02:27 PM, Sam Ravnborg wrote:
-> On Tue, Nov 13, 2007 at 01:40:45PM +0100, Jiri Slaby wrote:
->> On 11/13/2007 01:15 PM, akpm@linux-foundation.org wrote:
->>> The mm snapshot broken-out-2007-11-13-04-14.tar.gz has been uploaded to
->> $ uname -a
->> Linux bellona 2.6.23-rc8-mm2_64 #58 SMP Fri Sep 28 08:52:12 CEST 2007 x86_64
->> x86_64 x86_64 GNU/Linux
->> $ make O=../bu cscope
->>   FILELST cscope.files
->> find: /home/l/latest/xxx/arch/x86_64: není souborem ani adresářem
->>   MAKE    cscope.out
->>
-> 
-> I have following fix queued in my inbox:
-> 
-> This patch fixed the following errors when doing "make cscope" and
-> "make cscope ARCH=um".
-> 
->   FILELST cscope.files
-> find: arch/i386: No such file or directory
->   MAKE    cscope.out
 
-Ok, thanks,
--- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
+* Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> > > Do you believe that our response to bug reports is adequate?
+> > 
+> > Do you feel that making us feel and look like shit helps?
+> 
+> That doesn't answer my question.
+> 
+> See, first we need to work out whether we have a problem.  If we do 
+> this, then we can then have a think about what to do about it.
+> 
+> I tried to convince the 2006 KS attendees that we have a problem and I 
+> resoundingly failed.  People seemed to think that we're doing OK.
+> 
+> But it appears that data such as this contradicts that belief.
+> 
+> This is not a minor matter.  If the kernel _is_ slowly deteriorating 
+> then this won't become readily apparent until it has been happening 
+> for a number of years.  By that stage there will be so much work to do 
+> to get us back to an acceptable level that it will take a huge effort.  
+> And it will take a long time after that for the kerel to get its 
+> reputation back.
+> 
+> So it is important that we catch deterioration *early* if it is 
+> happening.
+
+yes, yes, yes, and i agree with you that there is a problem. I tried to 
+make this point at the 2007 KS: not only is degradation in quality not 
+apparent for years, slow degradation in quality can give kernel 
+developers the exact _opposite_ perception! (Fewer testers means fewer 
+bugreports and that results in apparent "improved" quality and fewer 
+reported regressions - while exactly the opposite is happening and 
+testers are leaving us without giving us any indication that this is 
+happening. We just dont notice.)
+
+I'm not moaning about bugs that slip through - those are unavoidable 
+facts of a high flux codebase. I'm moaning about reoccuring, avoidable 
+bugs, i'm moaning about hostility towards testers, i'm moaning about 
+hostility towards automated testing, i'm moaning about unnecessary hoops 
+a willing (but unskilled) tester has to go through to help us out.
+
+I tried to make the point that the only good approach is to remove our 
+current subjective bias from quality metrics and to at least realize 
+what a cavalier attitude we still have to QA. The moment we are able to 
+_measure_ how bad we are, kernel developers will adopt in a second and 
+will improve those metrics. Lets use more debug tools, both static and 
+dynamic ones. Lets measure tester base and we need to measure _lost_ 
+early adopters and the reasons why they are lost. Regression metrics are 
+a very important first step too and i'm very happy about the increasing 
+effort that is being spent on this.
+
+This is all QA-101 that _cannot be argued against on a rational basis_, 
+it's just that these sorts of things have been largely ignored for 
+years, in favor of the all-too-easy "open source means many eyeballs and 
+that is our QA" answer, which is a _good_ answer but by far not the most 
+intelligent answer! Today "many eyeballs" is simply not good enough and 
+nature (and other OS projects) will route us around if we dont change.
+
+We kernel developers have been spoiled by years of abundance in testing 
+resources. We squander tons of resources in this area, and we could be 
+so much more economic about this without hindering our development model 
+in any way. We could be so much better about QA and everyone would 
+benefit without having to compromize on the incoming flux of changes - 
+it's so much easier to write new features for a high quality kernel.
+
+My current guesstimation is that we are utilizing our current testing 
+resources at around 10% efficiency. (i.e. if we did an 'ideal' job we 
+could fix 10 times as many bugs with the same size of tester effort!) It 
+used to be around 5%. (and i mainly attribute the increase from 5% to 
+10% to Andrew and the many other people who do kernel QA - kudos!) 10% 
+is still awful and we very much suck.
+
+Paradoxically, the "end product" is still considerably good quality in 
+absolute terms because other pieces of our infrastructure are so good 
+and powerful, but QA is still a 'weak link' of our path to the user that 
+reduces the quality of the end result. We could _really_ be so much 
+better without any compromises that hurt.
+
+(and this is in no way directed at the networking folks - it holds for 
+all of us. I have one main complaint about networking: the separate 
+netdev list is a bad idea - networking regressions should be discussed 
+and fixed on lkml, like most other subsystems are. Any artificial split 
+of the lk discussion space is bad.)
+
+	Ingo
