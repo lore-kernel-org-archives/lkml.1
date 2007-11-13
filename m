@@ -1,85 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760143AbXKMTiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760855AbXKMTjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760143AbXKMTiW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 14:38:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754498AbXKMTiG
+	id S1760855AbXKMTjz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 14:39:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755528AbXKMTjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 14:38:06 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:54617 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752624AbXKMTiD (ORCPT
+	Tue, 13 Nov 2007 14:39:48 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:52056 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754784AbXKMTjr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 14:38:03 -0500
-Date: Tue, 13 Nov 2007 19:32:19 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: akpm@linux-foundation.org, alsa-devel@alsa-project.org,
-       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-kernel@vger.kernel.org, protasnb@gmail.com,
-       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz
-Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071113193219.GC1356@flint.arm.linux.org.uk>
-Mail-Followup-To: David Miller <davem@davemloft.net>,
-	akpm@linux-foundation.org, alsa-devel@alsa-project.org,
-	netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-	linux-kernel@vger.kernel.org, protasnb@gmail.com,
-	linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
-	linux-input@atrey.karlin.mff.cuni.cz
-References: <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113.043207.44732743.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071113.043207.44732743.davem@davemloft.net>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 13 Nov 2007 14:39:47 -0500
+Message-ID: <4739FCA0.4040702@zytor.com>
+Date: Tue, 13 Nov 2007 11:36:00 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@muc.de>, Chuck Ebbert <cebbert@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [patch 5/8] Immediate Values - x86 Optimization
+References: <20071113185800.436425570@polymtl.ca> <20071113190040.740103668@polymtl.ca> <4739F609.50501@zytor.com> <20071113192445.GA1463@Krystal>
+In-Reply-To: <20071113192445.GA1463@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 04:32:07AM -0800, David Miller wrote:
-> Luckily if the report being ignored isn't chaff, it will show up again
-> (and again and again) and this triggers a reprioritization because not
-> only is the bug no longer chaff, it also now got a lot of information
-> tagged to it so it's a double worthwhile investment to work on the
-> problem.
+Mathieu Desnoyers wrote:
+>> - Use "=g" constraint for char immediate value inline assembly.
+>>
+>> "=g" is the same as "=rmi" which is inherently bogus.  In your actual code 
+>> you use "=r", the correct constraint is "=q".
+> 
+> q
+>     Any register accessible as rl. In 32-bit mode, a, b, c, and d; in 64-bit mode, any integer register. 
+> 
+> 
+> I am worried that "=q" might exclude the si and di registers in 32-bit mode.
+> 
+> What exactly is wrong with "=r" ?
+> 
 
-Strongly agree.
+For "char" (8-bit) values, sp/bp/si/di are illegal in 32-bit mode.
 
-This is exactly what happened to that ARM NO_HZ bug report.  The report
-in bugzilla was rather lacking (and wrong) in ways that have already
-been described.  HPET on ARM? 8)
+Hence "=q".
 
-Then on the morning of 6th November, someone reported on the mailing list
-that "pxa270 doesn't work with oneshot timer" and that was the trigger to
-getting the bug resolved - because it was a narrowly defined bug report.
-
-Since it was a narrowly defined bug report, it became very easy to
-investigate and resolve.  About half an hour of time for an initial
-patch.
-
-
-There's another issue I want to raise concerning bugzilla.  We have the
-classic case of "not enough people reading bugzilla bugs" - which is one
-of the biggest problems with bugzilla.  Virtually no one in the ARM
-community looks for ARM bugs in bugzilla.
-
-Let's not forget that it would be a waste of time for people to manually
-check bugzilla for ARM bugs.  There's soo few people reporting ARM bugs
-into bugzilla that a weekly manual check by every maintainer would just
-return the same old boring results for months and months at a time.
-
-It would be far more productive if the ARM category was deleted from
-bugzilla and the few people who use bugzilla reported their bugs on the
-mailing list.  We've a couple of thousand people on the ARM kernel
-mailing list at the moment - that's 3 orders of magnitude more of eyes
-than look at bugzilla.
-
-(I'm not saying that if the ARM NO_HZ bug as reported in bugzilla had
-been reported on the correct mailing list would've been solved earlier;
-I doubt there'd be much difference.  However, the probability of a
-question being asked of the reporter would've been much higher, and
-_that_ might have led to an earlier resolution.)
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+	-hpa
