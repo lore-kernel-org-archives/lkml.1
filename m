@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762705AbXKMW3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763403AbXKMWaB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762705AbXKMW3q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 17:29:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760419AbXKMW3Y
+	id S1763403AbXKMWaB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 17:30:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762187AbXKMW3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 17:29:24 -0500
-Received: from lazybastard.de ([212.112.238.170]:39312 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759082AbXKMW3W (ORCPT
+	Tue, 13 Nov 2007 17:29:38 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60991 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761947AbXKMW3g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 17:29:22 -0500
-Date: Tue, 13 Nov 2007 23:24:14 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>, Mark Lord <liml@rtr.ca>,
-       Ingo Molnar <mingo@elte.hu>, alsa-devel@alsa-project.org,
-       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-kernel@vger.kernel.org, protasnb@gmail.com,
-       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       David Miller <davem@davemloft.net>
-Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071113222414.GD20167@lazybastard.org>
-References: <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca> <20071113193750.GD1356@flint.arm.linux.org.uk> <473A067F.3090007@rtr.ca> <20071113213358.GC20167@lazybastard.org> <20071113135658.5c9ac7ba.akpm@linux-foundation.org>
+	Tue, 13 Nov 2007 17:29:36 -0500
+Date: Tue, 13 Nov 2007 22:29:29 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Stephane Eranian <eranian@hpl.hp.com>
+Cc: Robert Richter <robert.richter@amd.com>, Andi Kleen <andi@firstfloor.org>,
+       gregkh@suse.de, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       perfmon2-devel@lists.sourceforge.net, perfmon@napali.hpl.hp.com
+Subject: Re: perfmon2 merge news
+Message-ID: <20071113222929.GC1322@infradead.org>
+References: <20071107003454.GA13374@kroah.com> <20071109120627.60ec9ab4.akpm@linux-foundation.org> <20071109213829.GC28276@kroah.com> <p73abpl2654.fsf@bingen.suse.de> <20071113151718.GA3804@erda.amd.com> <20071113183239.GF4319@frankl.hpl.hp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20071113135658.5c9ac7ba.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20071113183239.GF4319@frankl.hpl.hp.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 November 2007 13:56:58 -0800, Andrew Morton wrote:
-> 
-> It's relatively common that a regression in subsystem A will manifest as a
-> failure in subsystem B, and the report initially lands on the desk of the
-> subsystem B developers.
-> 
-> But that's OK.  The subsystem B people are the ones with the expertise to
-> be able to work out where the bug resides and to help the subsystem A
-> people understand what went wrong.
-> 
-> Alas, sometimes the B people will just roll eyes and do nothing because
-> they know the problem wasn't in their code.  Sometimes.
+On Tue, Nov 13, 2007 at 10:32:39AM -0800, Stephane Eranian wrote:
+> It would obvisouly cause a lot of troubles to existing perfmon libraries and
+> applications (e.g. PAPI). It would also be fairly tricky to do because you'd 
+> have to make sure that in the beginning, you leave enough flexiblity such that
+> you can add the rest while maintaining total backward compatibility. But given
+> that we already have the full solution, it could just be a matter of dropping
+> features without disrupting the user level API.
 
-And sometimes the A people will ignore the B people after the root cause
-has been worked out.  Do you have a good idea how to shame A into
-action?  Should I put you on Cc:?  Right now I'm in the eye-rolling
-phase.
+There no way we'll keep this completely idiotic userland API.  If people start
+to use out of tree APIs they can pretty much expect that they're not going
+to stay around.  And in this case they most certainly won't.
 
-Jörn
-
--- 
-The cost of changing business rules is much more expensive for software
-than for a secretaty.
--- unknown
