@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756603AbXKMMCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757129AbXKMMDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756603AbXKMMCk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 07:02:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753738AbXKMMCc
+	id S1757129AbXKMMDu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 07:03:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753449AbXKMMDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 07:02:32 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:33896 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752250AbXKMMCb (ORCPT
+	Tue, 13 Nov 2007 07:03:43 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57089
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753426AbXKMMDn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 07:02:31 -0500
-Date: Tue, 13 Nov 2007 13:02:08 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Robert Richter <robert.richter@amd.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: x86 merge: Keep kernel/cpu for CPU specific code?
-Message-ID: <20071113120208.GC4250@stusta.de>
-References: <20071113114443.GG18993@erda.amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20071113114443.GG18993@erda.amd.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 13 Nov 2007 07:03:43 -0500
+Date: Tue, 13 Nov 2007 04:03:42 -0800 (PST)
+Message-Id: <20071113.040342.178304306.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: ananth@in.ibm.com, linux-kernel@vger.kernel.org, hch@infradead.org,
+       randy.dunlap@oracle.com, anil.s.keshavamurthy@intel.com,
+       mathieu.desnoyers@polymtl.ca, prasanna@in.ibm.com
+Subject: Re: [PATCH] Move kprobes examples to samples/ (resend)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071113040045.0440e575.akpm@linux-foundation.org>
+References: <20071021123919.GA7648@in.ibm.com>
+	<20071113040045.0440e575.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 12:44:43PM +0100, Robert Richter wrote:
-> x86 CPU specific code is currently implemented in different ways for
-> 64 and 32 bit. While there are almost no CPU specific files for 64
-> bit, there is the arch/x86/kernel/cpu/ directory for 32 bit. Is there
-> already an idea about whether to use kernel/cpu also for 64 bit?
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Tue, 13 Nov 2007 04:00:45 -0800
 
-It is also used for 64bit for years.
-
-> Thanks,
+> On Sun, 21 Oct 2007 18:09:19 +0530 Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
 > 
-> -Robert
+> > Move kprobes examples from Documentation/kprobes.txt to under samples/.
+> > Patch originally by Randy Dunlap.
+> > 
+> > In addition, I have
+> > 
+> > o Updated the patch to apply on 2.6.23-mm1
+> > o Modified examples code to build on multiple architectures. Currently,
+> >   the examples code works for x86_64, x86_32 and powerpc
+> > o Cleaned up unneeded #includes
+> 
+> Could you please take a look at what's needed to get this working on sparc64?
+> 
+> samples/kprobes/kretprobe_example.c: In function `ret_handler':
+> samples/kprobes/kretprobe_example.c:19: error: implicit declaration of function `regs_return_value'
 
-cu
-Adrian
+kretprobes support most likely, it's on my todo list to implement
+but it will take a while since I'm busy fixing networking bugs
+but I can stop doing that if you like.
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+:-)
