@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760218AbXKMRwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760029AbXKMRy6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760218AbXKMRwx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 12:52:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756635AbXKMRwq
+	id S1760029AbXKMRy6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 12:54:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755743AbXKMRyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 12:52:46 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54202 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757130AbXKMRwp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 12:52:45 -0500
-Date: Tue, 13 Nov 2007 17:52:01 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: earny@net4u.de
-Cc: list-lkml@net4u.de, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] pcmcia serial_cs no interrupts
-Message-ID: <20071113175201.72995c65@the-village.bc.nu>
-In-Reply-To: <200711131755.25246.list-lkml@net4u.de>
-References: <200711131755.25246.list-lkml@net4u.de>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 13 Nov 2007 12:54:47 -0500
+Received: from rtr.ca ([76.10.145.34]:3290 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753420AbXKMRyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 12:54:46 -0500
+Message-ID: <4739E4E5.2010602@rtr.ca>
+Date: Tue, 13 Nov 2007 12:54:45 -0500
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, alsa-devel@alsa-project.org,
+       linux-ide@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-input@atrey.karlin.mff.cuni.cz, bugme-daemon@bugzilla.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+References: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com> <20071113031553.3c7b5c16.akpm@linux-foundation.org> <4739ADA2.4060604@rtr.ca> <alpine.LFD.0.9999.0711131521590.3265@localhost.localdomain>
+In-Reply-To: <alpine.LFD.0.9999.0711131521590.3265@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Nov 2007 17:55:25 +0100
-Ernst Herzberg <list-lkml@net4u.de> wrote:
-
+Thomas Gleixner wrote:
+> On Tue, 13 Nov 2007, Mark Lord wrote:
 > 
-> This pcmcia-card (UMTS Modem) only works if it shares his interrupt with
-> another device, eg an usb mice. Moving the mice increases the connection
-> speed, unplugging hangs the connection.
+>> > Andrew Morton wrote:
+>>> > > On Mon, 12 Nov 2007 22:42:32 -0800 "Natalie Protasevich"
+>>> > > <protasnb@gmail.com> wrote:
+>> > ..
+>>>> > > > with CONFIG_NO_HZ and/or CONFIG_HPET_TIMER set kernel 2.6.23 doesn't
+>>>> > > > boot (ARM, Timer)
+>>>> > > > http://bugzilla.kernel.org/show_bug.cgi?id=9229
+>>>> > > > Kernel: 2.6.23
+>>> > > 
+>>> > > No response from developers
+>> > ..
+> 
+> The bug report is bogus. ARM has no CONFIG_HPET_TIMER. 
+>  
+>> > Note:  that same bug exists/existed on i386 back when NO_HZ was
+>> > introduced (2.6.21?).  I still see it from time to time on my Quad core
+>> > system (very rare), but not any more on my Duo notebook where it used
+>> > to happen about 1 in n boots (n < 10).
+>> > 
+>> > AFAICT no fix was ever released for it.
+> 
+> Hmm, at which point does the boot stop ? 
+..
 
-Thats consistent with the card not generating interrupts, or the
-interrupts being misrouted. The serial driver polls the interrupt pending
-bits on the chip so the actual serial chip is clearly expecting
-interrupts to go somewhere. Given this seems to be card not laptop
-specific it looks like there is magic intiialisation gloop required by
-this chipset that we don't have.
+Just as it prints out these messages, sometimes one of them,
+sometimes both (or all four on the quad core):
 
-> At the moment this card is my only way to reach the internet, but here in
-> the hospital i have a lot time to test patches;)
+kernel: switched to high resolution mode on cpu 1
+kernel: switched to high resolution mode on cpu 0 
 
-You may want to boot with irqpoll that may help a bit.
-
-Some info at: 
-
-A helpful start would be to know if the setserial command (applied to
-whatever tty your system calls the card) helps as given in:
-
-https://bugs.launchpad.net/ubuntu/+source/pcmciautils/+bug/99479
