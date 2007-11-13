@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758485AbXKMPhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754446AbXKMPkD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758485AbXKMPhz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 10:37:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbXKMPho
+	id S1754446AbXKMPkD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 10:40:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755344AbXKMPjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 10:37:44 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35586 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754044AbXKMPhn (ORCPT
+	Tue, 13 Nov 2007 10:39:54 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:37363 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754163AbXKMPjx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 10:37:43 -0500
-Date: Tue, 13 Nov 2007 15:36:31 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Tue, 13 Nov 2007 10:39:53 -0500
+Date: Tue, 13 Nov 2007 21:09:25 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Natalie Protasevich" <protasnb@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, alsa-devel@alsa-project.org,
-       linux-ide@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-input@atrey.karlin.mff.cuni.cz, bugme-daemon@bugzilla.kernel.org
-Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071113153631.55b2ece2@the-village.bc.nu>
-In-Reply-To: <20071113031553.3c7b5c16.akpm@linux-foundation.org>
-References: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com>
-	<20071113031553.3c7b5c16.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+Cc: lkml <linux-kernel@vger.kernel.org>, hch@infradead.org,
+       randy.dunlap@oracle.com,
+       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
+       mathieu.desnoyers@polymtl.ca, davem@davemloft.net,
+       Prasanna S Panchamukhi <prasanna@in.ibm.com>
+Subject: Re: [PATCH] Move kprobes examples to samples/ (resend)
+Message-ID: <20071113153924.GA25095@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20071021123919.GA7648@in.ibm.com> <20071113040045.0440e575.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071113040045.0440e575.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > pata_pdc202xx_old excessive ATA bus errors
-> > http://bugzilla.kernel.org/show_bug.cgi?id=9337
-> > 2.6.24-rc2
+On Tue, Nov 13, 2007 at 04:00:45AM -0800, Andrew Morton wrote:
+> On Sun, 21 Oct 2007 18:09:19 +0530 Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
 > 
-> No response from developers
-
-Untrue. We've been discussing it on list in the past and its now on
-bugzilla. Not obvious from outside I realise. That one I'm afraid is
-probably a longer term item.
-
-> > DVD-RAM umount and disk free bug
-> > http://bugzilla.kernel.org/show_bug.cgi?id=9265
-> > Kernel: 2.6.15  (asked to try current kernel)
-> 
-> No response from developers
-
-Not actually sure who is looking after this now ?
-
-> > LPC IT8705 POST port making noise on parallel port
-> > http://bugzilla.kernel.org/show_bug.cgi?id=9306
-> > Kernel: 2.6.16+
+> > Move kprobes examples from Documentation/kprobes.txt to under samples/.
+> > Patch originally by Randy Dunlap.
 > > 
+> > In addition, I have
+> > 
+> > o Updated the patch to apply on 2.6.23-mm1
+> > o Modified examples code to build on multiple architectures. Currently,
+> >   the examples code works for x86_64, x86_32 and powerpc
+> > o Cleaned up unneeded #includes
 > 
-> No response from developers
+> Could you please take a look at what's needed to get this working on sparc64?
+> 
+> samples/kprobes/kretprobe_example.c: In function `ret_handler':
+> samples/kprobes/kretprobe_example.c:19: error: implicit declaration of function `regs_return_value'
+> 
+> Thanks.
 
-Not sure who really owns parallel. Have grabbed and will sort
-out.
+As Davem mentions, these are a fallout of sparc64 not having kretprobe
+support. As a followup to this mail, I am sending a couple of patches
+that should fix the issue (sparc64 cross compile works fine with the
+patches).
+
+Ananth
