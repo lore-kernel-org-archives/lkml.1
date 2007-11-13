@@ -1,227 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759989AbXKMBC5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760221AbXKMBDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759989AbXKMBC5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 20:02:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758742AbXKMBC1
+	id S1760221AbXKMBDV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 20:03:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758133AbXKMBCf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 20:02:27 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:57132 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758646AbXKMBCZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 20:02:25 -0500
-Subject: [patch 2/3]  Trace code and documentation
+	Mon, 12 Nov 2007 20:02:35 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:47510 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759186AbXKMBCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Nov 2007 20:02:33 -0500
+Subject: [patch 3/3]  Trace samples
 From: "David J. Wilder" <dwilder@us.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: systemtap@sources.redhat.com
 Content-Type: text/plain
-Date: Mon, 12 Nov 2007 17:02:19 -0800
-Message-Id: <1194915740.913.19.camel@lc4eb748232119.ibm.com>
+Date: Mon, 12 Nov 2007 17:02:22 -0800
+Message-Id: <1194915748.913.20.camel@lc4eb748232119.ibm.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trace - Provides tracing primitives
+Trace example - Adds the trace example to samples/
 
-Signed-off-by: Tom Zanussi <zanussi@us.ibm.com>
-Signed-off-by: Martin Hunt <hunt@redhat.com>
 Signed-off-by: David Wilder <dwilder@us.ibm.com>
 ---
- Documentation/trace.txt |  166 ++++++++++++++
- include/linux/trace.h   |   99 +++++++++
- lib/Kconfig             |    9 +
- lib/Makefile            |    2 +
- lib/trace.c             |  563 +++++++++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 839 insertions(+), 0 deletions(-)
+ samples/Kconfig            |    6 +
+ samples/Makefile           |    1 +
+ samples/trace/Makefile     |    4 +
+ samples/trace/fork_trace.c |  132 ++++++++++++++++++++++++++
+ samples/trace/sem_watch.c  |  224 ++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 367 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/trace.txt b/Documentation/trace.txt
+diff --git a/samples/Kconfig b/samples/Kconfig
+index 57bb223..fa3c453 100644
+--- a/samples/Kconfig
++++ b/samples/Kconfig
+@@ -13,4 +13,10 @@ config SAMPLE_MARKERS
+ 	help
+ 	  This build markers example modules.
+ 
++config SAMPLE_TRACE
++	tristate "Build trace example -- loadable modules only"
++	depends on TRACE && KPROBES && m
++	help
++	  This builds a trace example module.
++
+ endif # SAMPLES
+diff --git a/samples/Makefile b/samples/Makefile
+index 5a4f0b6..8f6d05b 100644
+--- a/samples/Makefile
++++ b/samples/Makefile
+@@ -1,3 +1,4 @@
+ # Makefile for Linux samples code
+ 
+ obj-$(CONFIG_SAMPLES)	+= markers/
++obj-$(CONFIG_SAMPLES)	+= trace/
+diff --git a/samples/trace/Makefile b/samples/trace/Makefile
 new file mode 100644
-index 0000000..5d966d3
+index 0000000..0168641
 --- /dev/null
-+++ b/Documentation/trace.txt
-@@ -0,0 +1,166 @@
-+Trace Setup and Control
-+=======================
-+In the kernel, the trace interface provides a simple mechanism for
-+starting and managing data channels (traces) to user space.  The
-+trace interface builds on the relay interface.  For a complete
-+description of the relay interface, please see:
-+Documentation/filesystems/relay.txt.
++++ b/samples/trace/Makefile
+@@ -0,0 +1,4 @@
++# builds the trace example kernel modules;
++# then to use (as root):  insmod <fork_trace.ko> or <sem_watch.ko>
 +
-+The trace interface provides a single layer in a complete tracing
-+application.  Trace provides a kernel API that can be used for the setup
-+and control of tracing channels.  User of trace must provide a data layer
-+responsible for formatting and writing data into the trace channels.
-+
-+A layered approach to tracing
-+=============================
-+A complete kernel tracing application consists of a data provider and
-+a data consumer.  Both provider and consumer contain three layers; each
-+layer works in tandem with the corresponding layer in the opposite side.
-+The layers are represented in the following diagram.
-+
-+Provider Data layer
-+	Formats raw trace data and provides data-related service.
-+	For example, adding timestamps used by consumer to sort data.
-+
-+Provider Control layer
-+	Provided by the trace interface, this layer creates trace channels
-+	and informs the data layer and consumer of the current state
-+	of the trace channels.
-+
-+Provider Buffering layer
-+	Provided by relay. This layer buffers data in the
-+	kernel for consumption by the consumer's buffer
-+	layer.
-+
-+Provider (in-kernel facility)
-+-----------------------------------------------------------------------------
-+Consumer (user application)
-+
-+
-+Consumer Buffer layer
-+	Reads/consumes data from the provider's data buffers.
-+
-+Consumer Control layer
-+	Communicates to the provider's control layer to control the state
-+	of the trace channels.
-+
-+Consumer Data layer
-+	Sorts and formats data as provided by the provider's data layer.
-+
-+The provider is coded as a kernel facility.  The consumer is coded as
-+a user application.
-+
-+
-+Trace - Features
-+================
-+Trace exploits services and features provided by relay.  These features
-+are:
-+- The creation and destruction of relay channels.
-+- Buffer management.  Overwrite or non-overwrite modes can be selected
-+  as well as global or per-CPU buffering.
-+
-+Overwrite mode can be called "flight recorder mode".  Flight recorder
-+mode is selected by setting the TRACE_FLIGHT_CHANNEL flag when
-+creating trace channels.  In flight mode when a tracing buffer is
-+full, the oldest records in the buffer will be discarded to make room
-+as new records arrive. In the default non-overwrite mode, new records
-+may be written only if the buffer has room.  In either case, to
-+prevent data loss, a user space reader must keep the buffers
-+drained. Trace provides a means to detect the number of records that
-+have been dropped due to a buffer-full condition (non-overwrite mode
-+only).
-+
-+When per-CPU buffers are used, relay creates one debugfs file for each
-+running CPU.  The user-space consumer of the data is responsible for
-+reading the per-CPU buffers and collating the records presumably using
-+a time stamp or sequence number included in the trace records.  The
-+use of global buffers eliminates this extra work of sequencing
-+records; however the provider's data layer must hold a lock when
-+writing records.  The lock prevents writers running on different CPUs
-+from overwriting each other's data.  However, buffering may be slower
-+because writes to the buffer are serialized. Global buffering is
-+selected by setting the TRACE_GLOBAL_CHANNEL flag when creating trace
-+channels.
-+
-+Trace User Interface
-+===================
-+When a trace channel is created and started, the following
-+directories and files are created in the root of the mounted debugfs.
-+
-+/debug (root of the debugfs)
-+	/<trace-root-dir>
-+		/<trace-name>
-+			trace[0...N-1]     Per-CPU trace data, one
-+					   file per CPU.
-+
-+			state		   Start or stop tracing by
-+					   by writing the strings
-+					   "start" or "stop" to this
-+					   file. Read the file to get the
-+					   current state.
-+
-+			dropped		   The number of records dropped
-+					   due to a full-buffer condition,
-+					   for non-TRACE_FLIGHT_CHANNELs
-+					   only.
-+
-+			rewind		   Trigger a rewind by writing
-+					   to this file.  i.e. start
-+					   next read at the beginning
-+					   again. Only available for
-+					   TRACE_FLIGHT_CHANNELS.
-+
-+
-+			nr_sub		   Number of sub-buffers
-+					   in the channel.
-+
-+			sub_size	   Size of sub-buffers in
-+					   the channel.
-+
-+Trace data is gathered from the trace[0...N-1] files using one of the
-+available interfaces provided by relay.
-+
-+When using the read(2) interface, as data is read it is marked as
-+consumed by the relay subsystem.  Therefore, subsequent reads will
-+only return unconsumed data.
-+
-+Trace Kernel API
-+===============
-+An overview of the trace Kernel API is now given. More details of the
-+API can be found in linux/trace.h.
-+
-+The steps a kernel data provider takes to utilize the trace interface are:
-+1) Set up a trace channel - trace_setup()
-+2) Start the trace channel - trace_start()
-+3) Write one or more trace records into the channel (using the relay API).
-+
-+   Important: When writing a trace record the provider must insure that
-+   preemption is disabled and that trace state is  set to "running". A
-+   typical function used to write records into a trace channel should
-+   follow the following semantics:
-+
-+	rcu_read_lock();	    // disables preemption
-+	if (trace_running(trace)){
-+		relay_write(....); // use any available relay data
-+				   // function
-+	}
-+	rcu_read_unlock();	   // enables preemption
-+
-+4) Stop and start tracing as desired - trace_start()/trace_stop()
-+5) Destroy the trace channel and underlying relay channel -
-+   trace_cleanup().
-+
-+Kernel Configuration
-+--------------------
-+To use trace, configure your kernel with CONFIG_TRACE=y. Trace depends on 
-+both CONFIG_RELAY and CONFIG_DEBUG_FS, these will be automatically configured
-+when CONFIG_TRACE is selected (if not already configured).
-+
-+Credits
-+=======
-+Trace is adapted from blktrace authored by Jens Axboe (axboe@kernel.dk).
-+
-+Major contributions were made by:
-+Tom Zanussi <zanussi@us.ibm.com>
-+Martin Hunt <hunt@redhat.com>
-+David Wilder <dwilder@us.ibm.com>
-diff --git a/include/linux/trace.h b/include/linux/trace.h
++obj-$(CONFIG_SAMPLE_TRACE) := fork_trace.o sem_watch.o
+diff --git a/samples/trace/fork_trace.c b/samples/trace/fork_trace.c
 new file mode 100644
-index 0000000..a3a10c9
+index 0000000..71c04c7
 --- /dev/null
-+++ b/include/linux/trace.h
-@@ -0,0 +1,99 @@
++++ b/samples/trace/fork_trace.c
+@@ -0,0 +1,132 @@
 +/*
-+ * TRACE defines and function prototypes
++ * An example of using trace in a kprobes module
 + *
 + * Copyright (C) 2007 IBM Inc.
 + *
-+ *	Tom Zanussi <zanussi@us.ibm.com>
-+ *	Martin Hunt <hunt@redhat.com>
-+ *	David Wilder <dwilder@us.ibm.com>
++ * David Wilder <dwilder@us.ibm.com>
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 as
@@ -236,682 +93,347 @@ index 0000000..a3a10c9
 + * along with this program; if not, write to the Free Software
 + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 + *
-+ */
-+#ifndef _LINUX_TRACE_H
-+#define _LINUX_TRACE_H
-+
-+#include <linux/relay.h>
-+
-+/*
-+ * TRACE channel flags
-+ */
-+#define TRACE_GLOBAL_CHANNEL	0x01
-+#define TRACE_FLIGHT_CHANNEL	0x02
-+#define TRACE_DISABLE_STATE	0x04
-+
-+enum trace_state {
-+	TRACE_SETUP,
-+	TRACE_RUNNING,
-+	TRACE_STOPPED,
-+};
-+
-+#define TRACE_ROOT_NAME_SIZE	64	/* Max root dir identifier */
-+#define TRACE_NAME_SIZE		64	/* Max trace identifier */
-+
-+/*
-+ * Global root user information
-+ */
-+struct trace_root {
-+	struct list_head list;
-+	char name[TRACE_ROOT_NAME_SIZE];
-+	struct dentry *root;
-+	unsigned int users;
-+};
-+
-+/*
-+ * Client information
-+ */
-+struct trace_info {
-+	struct mutex state_mutex; /* Used to protect state changes */
-+	enum trace_state state;
-+	struct dentry *state_file;
-+	struct rchan *rchan;
-+	struct dentry *dir;
-+	struct dentry *dropped_file;
-+	struct dentry *reset_consumed_file;
-+	struct dentry *nr_sub_file;
-+	struct dentry *sub_size_file;
-+	atomic_t dropped;
-+	struct trace_root *root;
-+	void *private_data;
-+	unsigned int flags;
-+	unsigned int buf_size;
-+	unsigned int buf_nr;
-+};
-+
-+#ifdef CONFIG_TRACE
-+static inline int trace_running(struct trace_info *trace)
-+{
-+	return trace->state == TRACE_RUNNING;
-+}
-+struct trace_info *trace_setup(const char *root, const char *name,
-+			       u32 buf_size, u32 buf_nr, u32 flags);
-+int trace_start(struct trace_info *trace);
-+int trace_stop(struct trace_info *trace);
-+void trace_cleanup(struct trace_info *trace);
-+#else
-+static inline struct trace_info *trace_setup(const char *root,
-+					     const char *name, u32 buf_size,
-+					     u32 buf_nr, u32 flags)
-+{
-+	return NULL;
-+}
-+static inline int trace_start(struct trace_info *trace) { return -EINVAL; }
-+static inline int trace_stop(struct trace_info *trace) { return -EINVAL; }
-+static inline int trace_running(struct trace_info *trace) { return 0; }
-+static inline void trace_cleanup(struct trace_info *trace) {}
-+#endif
-+
-+#endif
-diff --git a/lib/Kconfig b/lib/Kconfig
-index ba3d104..ad19f87 100644
---- a/lib/Kconfig
-+++ b/lib/Kconfig
-@@ -141,4 +141,13 @@ config HAS_DMA
- config CHECK_SIGNATURE
- 	bool
- 
-+config TRACE
-+	bool "Trace setup and control"
-+	depends on RELAY && DEBUG_FS
-+	help
-+	  This option provides support for the setup, teardown and control
-+	  of tracing channels from kernel code.  It also provides trace
-+	  information and control to userspace via a set of debugfs control
-+	  files.  If unsure, say N.
-+
- endmenu
-diff --git a/lib/Makefile b/lib/Makefile
-index 3421ee8..e0148b9 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -70,6 +70,8 @@ lib-$(CONFIG_GENERIC_BUG) += bug.o
- 
- obj-$(CONFIG_PROFILE_LIKELY) += likely_prof.o
- 
-+obj-$(CONFIG_TRACE) += trace.o
-+
- hostprogs-y	:= gen_crc32table
- clean-files	:= crc32table.h
- 
-diff --git a/lib/trace.c b/lib/trace.c
-new file mode 100644
-index 0000000..1919229
---- /dev/null
-+++ b/lib/trace.c
-@@ -0,0 +1,563 @@
-+/*
-+ * Based on blktrace code, Copyright (C) 2006 Jens Axboe <axboe@kernel.dk>
-+ * Moved to utt.c by Tom Zanussi <zanussi@us.ibm.com>, 2006
-+ * Additional contributions by:
-+ * Martin Hunt <hunt@redhat.com>, 2007
-+ * David Wilder <dwilder@us.ibm.com>, 2007
-+ * Renamed to trace <dwilder.ibm.com>, 2007
++ * -------
++ * This module creates a trace channel and places a kprobe
++ * on the function do_fork(). The value of current->pid is written to
++ * the trace channel each time the kprobe is hit..
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
++ * How to run the example:
++ * $ mount -t debugfs /debug
++ * $ insmod fork_trace.ko
 + *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ * To view the data produced by the module:
++ * $ cat /debug/trace_example/do_fork/trace0
 + *
 + */
 +
 +#include <linux/kernel.h>
 +#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/mutex.h>
-+#include <linux/debugfs.h>
++#include <linux/kprobes.h>
 +#include <linux/trace.h>
 +
-+static LIST_HEAD(trace_roots);
-+static DEFINE_MUTEX(trace_mutex);
++#define USE_GLOBAL_BUFFERS 1
++#define USE_FLIGHT 1
 +
-+static int state_open(struct inode *inode, struct file *filp)
++#define PROBE_POINT "do_fork"
++
++static struct kprobe kp;
++static struct trace_info *kprobes_trace;
++
++#ifdef USE_GLOBAL_BUFFERS
++static DEFINE_SPINLOCK(trace_lock);
++#endif
++
++/*
++ * Send formatted trace data to trace channel.
++ * @note Preemption must be disabled to use this.
++ */
++static void trace_printf(struct trace_info *trace, const char *format, ...)
 +{
-+	filp->private_data = inode->i_private;
++	va_list ap, aq;
++	char *record;
++	unsigned long flags;
++	int len;
++
++	if (!trace)
++		return;
++
++#ifdef USE_GLOBAL_BUFFERS
++	spin_lock_irqsave(&trace_lock, flags);
++#endif
++	if (trace_running(trace)) {
++		va_start(ap, format);
++		va_copy(aq, ap);
++		len = vsnprintf(NULL, 0, format, aq);
++		va_end(aq);
++		record = relay_reserve(trace->rchan, ++len);
++		if (record)
++			vsnprintf(record, len, format, ap);
++		va_end(ap);
++	}
++#ifdef USE_GLOBAL_BUFFERS
++	spin_unlock_irqrestore(&trace_lock, flags);
++#endif
++}
++
++static int handler_pre(struct kprobe *p, struct pt_regs *regs)
++{
++	rcu_read_lock();
++	trace_printf(kprobes_trace, "%d\n", current->pid);
++	rcu_read_unlock();
 +	return 0;
 +}
 +
-+static ssize_t state_read(struct file *filp, char __user *buffer,
-+			  size_t count, loff_t *ppos)
++int init_module(void)
 +{
-+	struct trace_info *trace = filp->private_data;
-+	char *buf = "trace not started\n";
-+
-+	if (trace->state == TRACE_STOPPED)
-+		buf = "stopped\n";
-+	else if (trace->state == TRACE_RUNNING)
-+		buf = "running\n";
-+	return simple_read_from_buffer(buffer, count, ppos, buf, strlen(buf));
-+}
-+
-+static ssize_t state_write(struct file *filp, const char __user *buffer,
-+			   size_t count, loff_t *ppos)
-+{
-+	struct trace_info *trace = filp->private_data;
-+	char buf[16];
 +	int ret;
++	u32 flags = 0;
 +
-+	if (trace->flags & TRACE_DISABLE_STATE)
-+		return -EINVAL;
++#ifdef USE_GLOBAL_BUFFERS
++	flags |= TRACE_GLOBAL_CHANNEL;
++#endif
 +
-+	if (count > sizeof(buf) - 1)
-+		return -EINVAL;
++#ifdef USE_FLIGHT
++	flags |= TRACE_FLIGHT_CHANNEL;
++#endif
 +
-+	if (copy_from_user(buf, buffer, count))
-+		return -EFAULT;
++	/* setup the trace */
++	kprobes_trace = trace_setup("trace_example", PROBE_POINT,
++				     1024, 8, flags);
++	if (IS_ERR(kprobes_trace))
++		return PTR_ERR(kprobes_trace);
 +
-+	buf[count] = '\0';
++	trace_start(kprobes_trace);
 +
-+	if (strncmp(buf, "start", strlen("start")) == 0) {
-+		ret = trace_start(trace);
-+		if (ret)
-+			return ret;
-+	} else if (strncmp(buf, "stop", strlen("stop")) == 0)
-+		trace_stop(trace);
-+	else
-+		return -EINVAL;
-+
-+	return count;
-+}
-+
-+static struct file_operations state_fops = {
-+	.owner	= THIS_MODULE,
-+	.open	= state_open,
-+	.read	= state_read,
-+	.write	= state_write,
-+};
-+
-+static void remove_root(struct trace_info *trace)
-+{
-+	if (trace->root->root && simple_empty(trace->root->root)) {
-+		debugfs_remove(trace->root->root);
-+		list_del(&trace->root->list);
-+		kfree(trace->root);
-+		trace->root = NULL;
++	/* setup the kprobe */
++	kp.pre_handler = handler_pre;
++	kp.post_handler = NULL;
++	kp.fault_handler = NULL;
++	kp.symbol_name = PROBE_POINT;
++	ret = register_kprobe(&kp);
++	if (ret) {
++		printk(KERN_ERR "fork_trace: register_kprobe failed\n");
++		return ret;
 +	}
++	return 0;
 +}
 +
-+static void remove_tree(struct trace_info *trace)
++void cleanup_module(void)
 +{
-+	mutex_lock(&trace_mutex);
-+	debugfs_remove(trace->dir);
-+
-+	if (trace->root) {
-+		if (--trace->root->users == 0)
-+			remove_root(trace);
-+	}
-+
-+	mutex_unlock(&trace_mutex);
++	unregister_kprobe(&kp);
++	trace_stop(kprobes_trace);
++	trace_cleanup(kprobes_trace);
 +}
-+
++MODULE_LICENSE("GPL");
+diff --git a/samples/trace/sem_watch.c b/samples/trace/sem_watch.c
+new file mode 100644
+index 0000000..279aeb9
+--- /dev/null
++++ b/samples/trace/sem_watch.c
+@@ -0,0 +1,224 @@
 +/*
-+ * Creates the trace_root if it's not found.
++ * An example of using trace with marker probes
++ *
++ * Copyright (C) 2007 IBM Inc.
++ *
++ * David Wilder <dwilder@us.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ *
++ * -------
++ * This example show how trace may be used to collect marker probe data.
++ * For this example to work a series of markers must be placed in
++ * lib/semaphore-sleepers.c. The markers record the execution of semaphore
++ * primitives.  An example patch that places these markers can be
++ * found in the lkml archive.  The data generated by this code can be used
++ * to analyze semaphore contention.
++ *
++ * How to run the example:
++ * $ mount -t debugfs /debug
++ * $ modprobe sem_watch
++ *
++ * To start the recording of trace data:
++ *   echo start > /debug/trace_example/sem_watch/state
++ *
++ * Generate a test load and stop the trace:
++ *   echo stop > /debug/trace_example/sem_watch/state
++ *
++ * Collect the data from the per-cpu trace buffers, sorting chronologically:
++ *   sort --field-separator=: --key=2.1 /debug/trace_example/sem_watch/trace*
++ *
++ * Verify that no data was lost by examining the dropped file:
++ *   cat /debug/trace_example/sem_watch/dropped
++ *
++ * To collect a larger amount of data the trace buffers can be read
++ * continuously using something like:
++ *
++ *	echo start > /debug/trace_example/sem_watch/state
++ *	while [ 1 ] ; do
++ *		sort --field-separator=: --key=2.1 <.....>/trace*
++ *	done
++ *	echo stop > /debug/trace_example/sem_watch/state
++ *
 + */
-+static struct trace_root *lookup_root(const char *root)
-+{
-+	struct list_head *pos;
-+	struct trace_root *r;
 +
-+	list_for_each(pos, &trace_roots) {
-+		r = list_entry(pos, struct trace_root, list);
-+		if (!strcmp(r->name, root))
-+			return r;
-+	}
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/ktime.h>
++#include <linux/marker.h>
++#include <linux/trace.h>
 +
-+	r = kzalloc(sizeof(struct trace_root), GFP_KERNEL);
-+	if (!r)
-+		return ERR_PTR(-ENOMEM);
++#define modname "sem_watch"
 +
-+	strlcpy(r->name, root, sizeof(r->name));
++void probe_sem_generic(const struct marker *, void *, const char *, ...);
 +
-+	r->root = debugfs_create_dir(root, NULL);
-+	if (IS_ERR(r->root))
-+		r->root = NULL;
-+	else
-+		list_add(&r->list, &trace_roots);
++static struct trace_info *sem_trace;
 +
-+	return r;
-+}
-+
-+static struct dentry *create_tree(struct trace_info *trace, const char *root,
-+				  const char *name)
-+{
-+	struct dentry *dir = NULL;
-+
-+	if (root == NULL || name == NULL)
-+		return ERR_PTR(-EINVAL);
-+
-+	mutex_lock(&trace_mutex);
-+
-+	trace->root = lookup_root(root);
-+	if (IS_ERR(trace->root)) {
-+		trace->root = NULL;
-+		goto err;
-+	}
-+
-+	dir = debugfs_create_dir(name, trace->root->root);
-+	if (IS_ERR(dir))
-+		remove_root(trace);
-+	else
-+		trace->root->users++;
-+
-+err:
-+	mutex_unlock(&trace_mutex);
-+	return dir;
-+}
-+
-+static int dropped_open(struct inode *inode, struct file *filp)
-+{
-+	filp->private_data = inode->i_private;
-+
-+	return 0;
-+}
-+
-+static ssize_t dropped_read(struct file *filp, char __user *buffer,
-+			    size_t count, loff_t *ppos)
-+{
-+	struct trace_info *trace = filp->private_data;
-+	char buf[16];
-+
-+	snprintf(buf, sizeof(buf), "%u\n", atomic_read(&trace->dropped));
-+
-+	return simple_read_from_buffer(buffer, count, ppos, buf, strlen(buf));
-+}
-+
-+static struct file_operations dropped_fops = {
-+	.owner	= THIS_MODULE,
-+	.open	= dropped_open,
-+	.read	= dropped_read,
++struct probe_data {
++	const char *name;
++	const char *format;
++	marker_probe_func *probe_func;
 +};
 +
-+static int reset_consumed_open(struct inode *inode, struct file *filp)
++/* marker probes array */
++static struct probe_data probes[] =
 +{
-+	filp->private_data = inode->i_private;
++	{ .name = "sem_up",
++	  .format = "%p",
++	  .probe_func = probe_sem_generic },
 +
-+	return 0;
-+}
++	{ .name = "sem_down",
++	  .format = "%p",
++	  .probe_func = probe_sem_generic },
 +
-+static ssize_t reset_consumed_write(struct file *filp,
-+				    const char __user *buffer,
-+				    size_t count, loff_t *ppos)
-+{
-+	int ret = count;
-+	struct trace_info *trace = filp->private_data;
++	{ .name = "sem_down_sched",
++	  .format = "%p",
++	  .probe_func = probe_sem_generic },
 +
-+	mutex_lock(&trace->state_mutex);
-+	switch (trace->state) {
-+	case TRACE_RUNNING:
-+		trace->state = TRACE_STOPPED;
-+		synchronize_rcu();
-+		relay_flush(trace->rchan);
-+		relay_reset_consumed(trace->rchan);
-+		trace->state = TRACE_RUNNING;
-+		break;
-+	case TRACE_STOPPED:
-+		relay_reset_consumed(trace->rchan);
-+		break;
-+	default:
-+		ret = -EINVAL;
-+	}
-+	mutex_unlock(&trace->state_mutex);
-+	return ret;
-+}
++	{ .name = "sem_down_resume",
++	  .format = "%p",
++	  .probe_func = probe_sem_generic },
 +
-+static struct file_operations reset_consumed_fops = {
-+	.owner	= THIS_MODULE,
-+	.open	= reset_consumed_open,
-+	.write	= reset_consumed_write
++	{ .name = "sem_down_intr",
++	  .format = "%p",
++	  .probe_func = probe_sem_generic },
++
++	{ .name = "sem_down_intr_sched",
++	  .format = "%p",
++	  .probe_func = probe_sem_generic },
++
++	{ .name = "sem_down_intr_fail",
++	  .format = "%p",
++	  .probe_func = probe_sem_generic },
++
++	{ .name = "sem_down_intr_resume",
++	  .format = "%p",
++	  .probe_func = probe_sem_generic }
 +};
 +
-+static int sub_size_open(struct inode *inode, struct file *filp)
++#define NPROBES ARRAY_SIZE(probes)
++
++inline s64 get_time(void)
 +{
-+	filp->private_data = inode->i_private;
-+
-+	return 0;
-+}
-+
-+static ssize_t sub_size_read(struct file *filp, char __user *buffer,
-+			     size_t count, loff_t *ppos)
-+{
-+	struct trace_info *trace = filp->private_data;
-+	char buf[32];
-+
-+	snprintf(buf, sizeof(buf), "%zu\n", trace->rchan->subbuf_size);
-+
-+	return simple_read_from_buffer(buffer, count, ppos, buf, strlen(buf));
-+}
-+
-+static struct file_operations sub_size_fops = {
-+	.owner	= THIS_MODULE,
-+	.open	= sub_size_open,
-+	.read	= sub_size_read,
-+};
-+
-+static int nr_sub_open(struct inode *inode, struct file *filp)
-+{
-+	filp->private_data = inode->i_private;
-+	return 0;
-+}
-+
-+static ssize_t nr_sub_read(struct file *filp, char __user *buffer,
-+			   size_t count, loff_t *ppos)
-+{
-+	struct trace_info *trace = filp->private_data;
-+	char buf[32];
-+
-+	snprintf(buf, sizeof(buf), "%zu\n", trace->rchan->n_subbufs);
-+
-+	return simple_read_from_buffer(buffer, count, ppos, buf, strlen(buf));
-+}
-+
-+static struct file_operations nr_sub_fops = {
-+	.owner	= THIS_MODULE,
-+	.open	= nr_sub_open,
-+	.read	= nr_sub_read,
-+};
-+
-+/*
-+ * Keep track of how many times we encountered a full subbuffer, to aid
-+ * the user space app in telling how many lost events there were.
-+ */
-+static int subbuf_start_callback(struct rchan_buf *buf, void *subbuf,
-+				 void *prev_subbuf, size_t prev_padding)
-+{
-+	struct trace_info *trace = buf->chan->private_data;
-+
-+	if (trace->flags & TRACE_FLIGHT_CHANNEL)
-+		return 1;
-+
-+	if (!relay_buf_full(buf))
-+		return 1;
-+
-+	atomic_inc(&trace->dropped);
-+
-+	return 0;
-+}
-+
-+static int remove_buf_file_callback(struct dentry *dentry)
-+{
-+	debugfs_remove(dentry);
-+
-+	return 0;
-+}
-+
-+static struct dentry *create_buf_file_callback(const char *filename,
-+					       struct dentry *parent, int mode,
-+					       struct rchan_buf *buf,
-+					       int *is_global)
-+{
-+	return debugfs_create_file(filename, mode, parent, buf,
-+				   &relay_file_operations);
-+}
-+
-+static struct dentry *create_global_buf_file_callback(const char *filename,
-+						      struct dentry *parent,
-+						      int mode,
-+						      struct rchan_buf *buf,
-+						      int *is_global)
-+{
-+	*is_global = 1;
-+
-+	return debugfs_create_file(filename, mode, parent, buf,
-+				   &relay_file_operations);
-+}
-+
-+static struct rchan_callbacks relay_callbacks = {
-+	.subbuf_start		= subbuf_start_callback,
-+	.create_buf_file	= create_buf_file_callback,
-+	.remove_buf_file	= remove_buf_file_callback,
-+};
-+static struct rchan_callbacks relay_callbacks_global = {
-+	.subbuf_start		= subbuf_start_callback,
-+	.create_buf_file	= create_global_buf_file_callback,
-+	.remove_buf_file	= remove_buf_file_callback,
-+};
-+
-+static void remove_controls(struct trace_info *trace)
-+{
-+	debugfs_remove(trace->state_file);
-+	debugfs_remove(trace->dropped_file);
-+	debugfs_remove(trace->reset_consumed_file);
-+	debugfs_remove(trace->nr_sub_file);
-+	debugfs_remove(trace->sub_size_file);
-+	remove_tree(trace);
-+}
-+
-+/*
-+ * Setup controls for tracing.
-+ */
-+static struct trace_info *setup_controls(const char *root,
-+					 const char *name, u32 flags)
-+{
-+	struct trace_info *trace;
-+	long ret;
-+
-+	trace = kzalloc(sizeof(*trace), GFP_KERNEL);
-+	if (!trace) {
-+		ret = -ENOMEM;
-+		goto err;
-+	}
-+
-+	trace->dir = create_tree(trace, root, name);
-+	if (IS_ERR(trace->dir)) {
-+		ret = PTR_ERR(trace->dir);
-+		trace->dir = NULL;
-+		goto err;
-+	}
-+
-+	trace->state_file = debugfs_create_file("state", 0444, trace->dir,
-+						 trace, &state_fops);
-+	if (IS_ERR(trace->state_file)) {
-+		ret = PTR_ERR(trace->state_file);
-+		trace->state_file = NULL;
-+		goto err;
-+	}
-+
-+	if (!(flags & TRACE_FLIGHT_CHANNEL)) {
-+		trace->dropped_file = debugfs_create_file("dropped", 0444,
-+							  trace->dir, trace,
-+							  &dropped_fops);
-+		if (IS_ERR(trace->dropped_file)) {
-+			ret = PTR_ERR(trace->dropped_file);
-+			trace->dropped_file = NULL;
-+			goto err;
-+		}
-+	}
-+
-+	if (flags & TRACE_FLIGHT_CHANNEL) {
-+		trace->reset_consumed_file = debugfs_create_file("rewind", 0444,
-+							trace->dir, trace,
-+							&reset_consumed_fops);
-+		if (IS_ERR(trace->reset_consumed_file)) {
-+			ret = PTR_ERR(trace->reset_consumed_file);
-+			trace->reset_consumed_file = NULL;
-+			goto err;
-+		}
-+	}
-+
-+	trace->nr_sub_file = debugfs_create_file("nr_sub", 0444,
-+						 trace->dir, trace,
-+						 &nr_sub_fops);
-+	if (IS_ERR(trace->nr_sub_file)) {
-+		ret = PTR_ERR(trace->nr_sub_file);
-+		trace->nr_sub_file = NULL;
-+		goto err;
-+	}
-+
-+	trace->sub_size_file = debugfs_create_file("sub_size", 0444,
-+						   trace->dir, trace,
-+						   &sub_size_fops);
-+	if (IS_ERR(trace->sub_size_file)) {
-+		ret = PTR_ERR(trace->sub_size_file);
-+		trace->sub_size_file = NULL;
-+		goto err;
-+	}
-+
-+	return trace;
-+err:
-+	if (trace) {
-+		remove_controls(trace);
-+		kfree(trace);
-+	}
-+
-+	return ERR_PTR(ret);
-+}
-+
-+static int trace_setup_channel(struct trace_info *trace, u32 buf_size,
-+				u32 buf_nr, u32 flags)
-+{
-+	if (!buf_size || !buf_nr)
-+		return -EINVAL;
-+
-+	if (flags & TRACE_GLOBAL_CHANNEL)
-+		trace->rchan = relay_open("trace", trace->dir, buf_size,
-+					  buf_nr, &relay_callbacks_global,
-+					  trace);
-+	else
-+		trace->rchan = relay_open("trace", trace->dir, buf_size,
-+					  buf_nr, &relay_callbacks, trace);
-+
-+	if (!trace->rchan)
-+		return -ENOMEM;
-+
-+	trace->flags = flags;
-+	trace->state = TRACE_SETUP;
-+
-+	return 0;
++	struct timespec ts;
++	ktime_get_real_ts(&ts);
++	return (s64) ts.tv_sec * NSEC_PER_SEC + ts.tv_nsec;
 +}
 +
 +/**
-+ *	trace_setup - create a new trace trace handle
-+ *	@root: The root directory name to place trace directories.
-+ *	@name: Trace directory name, created in @root
-+ *	@buf_size: size of the relay sub-buffers
-+ *	@buf_nr: number of relay sub-buffers
-+ *	@flags: Option selection (see trace channel flags definitions)
-+ *
-+ *	returns a trace_info handle or NULL, if setup failed.
-+ *
-+ *	The @root is created (if needed) in the root of the debugfs.
-+ *	The default values when flags=0 are: use per-CPU buffering,
-+ *	use non-overwrite mode. See Documentation/trace.txt for details.
++ * This probe function is called each time one of the semaphore markers is
++ * hit. Using the trace channel, we log a time stamp, the semaphore primitive
++ * (the probe name), address of the semaphore, pid and command name.
++ * For simplicity of the example, all log data is converter to ASCII.
++ * Logging binary data would be much more efficient, but requires a
++ * corresponding user program to interpret the data.
 + */
-+struct trace_info *trace_setup(const char *root, const char *name,
-+			       u32 buf_size, u32 buf_nr, u32 flags)
++void probe_sem_generic(const struct marker *mdata, void *private,
++			const char *format, ...)
 +{
-+	struct trace_info *trace;
++	int len;
++	va_list ap;
++	char *record;
++	void *semaddr;
++	s64 tstamp;
++	struct probe_data *pd = (struct probe_data *) mdata->private;
 +
-+	trace = setup_controls(root, name, flags);
-+	if (IS_ERR(trace))
-+		return trace;
++	if (!sem_trace)
++		return;
 +
-+	trace->buf_size = buf_size;
-+	trace->buf_nr = buf_nr;
-+	trace->flags = flags;
-+	mutex_init(&trace->state_mutex);
-+	trace->state = TRACE_SETUP;
++	if (!trace_running(sem_trace))
++		return;
 +
-+	return trace;
-+}
-+EXPORT_SYMBOL_GPL(trace_setup);
++	va_start(ap, format);
++	semaddr =  va_arg(ap, void *);
++	va_end(ap);
 +
-+/**
-+ *	trace_start - start tracing
-+ *	@trace: trace handle to start.
-+ *
-+ *	returns 0 if successful.
-+ */
-+int trace_start(struct trace_info *trace)
-+{
-+	/*
-+	 * For starting a trace, we can transition from a setup or stopped
-+	 * trace.
++	tstamp = get_time();
++
++	/**
++	 * Log format  :time-stamp:probe-name:semaddr:pid:command-name
 +	 */
-+	if (trace->state == TRACE_RUNNING)
-+		return -EINVAL;
++	len = snprintf(NULL, 0, ":%lld:%s:%p:%d:%s\n",
++	tstamp, pd->name, semaddr, current->pid, current->comm);
 +
-+	mutex_lock(&trace->state_mutex);
-+	if (trace->state == TRACE_SETUP) {
-+		int ret;
++	record = relay_reserve(sem_trace->rchan, ++len);
++	if (record)
++		snprintf(record, len, ":%lld:%s:%p:%d:%s\n",
++		tstamp, pd->name, semaddr, current->pid, current->comm);
++}
 +
-+		ret = trace_setup_channel(trace, trace->buf_size,
-+					  trace->buf_nr, trace->flags);
-+		if (ret) {
-+			mutex_unlock(&trace->state_mutex);
-+			return ret;
++static void clean_up(void)
++{
++	int i;
++
++	/* Deregister marker probes */
++	for (i = 0; i < NPROBES; i++)
++		marker_probe_unregister(probes[i].name);
++
++	synchronize_sched();    /* Wait for probes to finish */
++
++	/* Shut down the trace */
++	trace_stop(sem_trace);
++	trace_cleanup(sem_trace);
++}
++
++/**
++ * Initialize module
++ */
++static int __init sem_watch_init(void)
++{
++	int i, result;
++
++	/* Setup the trace using per-cpu buffering  */
++	sem_trace = trace_setup("trace_example", modname, 2048, 8, 0);
++	if (IS_ERR(sem_trace))
++		return PTR_ERR(sem_trace);
++
++
++	/* Register and arm marker probes */
++	for (i = 0; i < NPROBES; i++) {
++		result = marker_probe_register(probes[i].name, probes[i].format,
++					probes[i].probe_func, &probes[i]);
++		if (result) {
++			printk(KERN_INFO "Unable to register probe %s\n",
++				probes[i].name);
++			break;
++		}
++
++		result = marker_arm(probes[i].name);
++		if (result) {
++			printk(KERN_INFO "Unable to arm probe %s\n",
++				probes[i].name);
++			break;
 +		}
 +	}
 +
-+	trace->state = TRACE_RUNNING;
-+	mutex_unlock(&trace->state_mutex);
++	if (result)
++		clean_up();
 +
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(trace_start);
-+
-+/**
-+ *	trace_stop - stop tracing
-+ *	@trace: trace handle to stop.
-+ *
-+ */
-+int trace_stop(struct trace_info *trace)
-+{
-+	int ret = -EINVAL;
-+
-+	/*
-+	 * For stopping a trace, the state must be running
-+	 */
-+	mutex_lock(&trace->state_mutex);
-+	if (trace->state == TRACE_RUNNING) {
-+		trace->state = TRACE_STOPPED;
-+		/*
-+		 * wait for all cpus to see the change in
-+		 * state before continuing
-+		 */
-+		synchronize_sched();
-+		relay_flush(trace->rchan);
-+		ret = 0;
-+	}
-+	mutex_unlock(&trace->state_mutex);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(trace_stop);
-+
-+static void trace_cleanup_channel(struct trace_info *trace)
-+{
-+	trace_stop(trace);
-+	relay_close(trace->rchan);
-+	trace->rchan = NULL;
++	return result;
 +}
 +
 +/**
-+ *	trace_cleanup - destroys the trace channel, control files and dir
-+ *	@trace: trace handle to cleanup
++ * Exit module
 + */
-+void trace_cleanup(struct trace_info *trace)
++static void __exit sem_watch_exit(void)
 +{
-+	trace_cleanup_channel(trace);
-+	remove_controls(trace);
-+	kfree(trace);
++	clean_up();
 +}
-+EXPORT_SYMBOL_GPL(trace_cleanup);
++
++module_init(sem_watch_init);
++module_exit(sem_watch_exit);
++
++MODULE_LICENSE("GPL");
 
 
