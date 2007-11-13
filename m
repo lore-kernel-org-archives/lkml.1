@@ -1,138 +1,266 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759811AbXKMGfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756826AbXKMGmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759811AbXKMGfa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 01:35:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbXKMGfV
+	id S1756826AbXKMGmt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 01:42:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbXKMGmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 01:35:21 -0500
-Received: from ozlabs.org ([203.10.76.45]:41104 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750765AbXKMGfU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 01:35:20 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: virtualization@lists.linux-foundation.org
-Subject: [PATCH] virtio: fix module/device unloading
-Date: Tue, 13 Nov 2007 17:35:14 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org, lguest <lguest@ozlabs.org>
+	Tue, 13 Nov 2007 01:42:37 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:5659 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750974AbXKMGmf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 01:42:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=ZEHYR16i/m09CuE0xmUGLllsrbugjO1ZGujpMeB2+XEG1zEcSfmL970Pd3baeS+fsBLEHjxIWP9bx5ebLvG1MoBXhD9toiFoUK0EDtbfl0YT4CLb/hXxtoev2ImQ4+YJqsKygPY5+bM2hYzUnInxgCa5gVY2kSsV7s3bBknLq80=
+Message-ID: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com>
+Date: Mon, 12 Nov 2007 22:42:32 -0800
+From: "Natalie Protasevich" <protasnb@gmail.com>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, alsa-devel@alsa-project.org,
+       linux-ide@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-input@atrey.karlin.mff.cuni.cz, bugme-daemon@kernel-bugs.osdl.org
+Subject: [BUG] New Kernel Bugs
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711131735.14501.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The virtio code never hooked through the ->remove callback.  Although
-noone supports device removal at the moment, this code is already
-needed for module unloading.
+This is the listing of the open bugs that are relatively new, around
+2.6.22 and up. They are vaguely classified by specific area.
+(not a full list, there are more :)
 
-This of course also revealed bugs in virtio_blk, virtio_net and lguest
-unloading paths.
+The good part is that reporters of the bugs below are still around and
+haven't dissipated, or disposed of their hardware, so it is a good
+time to get the bugs.
+Those bugzillas that have been started as regressions on Rafael's list
+are not mentioned here so far, since they are being tracked as new
+regressions already.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+It would be appreciated if the corresponding maintenance team could take a
+look, close off any which are fixed and see if they can fix any which aren't.
 
-diff -r e631b63b0e8c drivers/block/virtio_blk.c
---- a/drivers/block/virtio_blk.c	Tue Nov 13 13:57:47 2007 +1100
-+++ b/drivers/block/virtio_blk.c	Tue Nov 13 14:05:50 2007 +1100
-@@ -223,7 +223,7 @@ static int virtblk_probe(struct virtio_d
- 	err = virtio_config_val(vdev, VIRTIO_CONFIG_BLK_F_CAPACITY, &cap);
- 	if (err) {
- 		dev_err(&vdev->dev, "Bad/missing capacity in config\n");
--		goto out_put_disk;
-+		goto out_cleanup_queue;
- 	}
- 
- 	/* If capacity is too big, truncate with warning. */
-@@ -239,7 +239,7 @@ static int virtblk_probe(struct virtio_d
- 		blk_queue_max_segment_size(vblk->disk->queue, v);
- 	else if (err != -ENOENT) {
- 		dev_err(&vdev->dev, "Bad SIZE_MAX in config\n");
--		goto out_put_disk;
-+		goto out_cleanup_queue;
- 	}
- 
- 	err = virtio_config_val(vdev, VIRTIO_CONFIG_BLK_F_SEG_MAX, &v);
-@@ -247,12 +247,14 @@ static int virtblk_probe(struct virtio_d
- 		blk_queue_max_hw_segments(vblk->disk->queue, v);
- 	else if (err != -ENOENT) {
- 		dev_err(&vdev->dev, "Bad SEG_MAX in config\n");
--		goto out_put_disk;
-+		goto out_cleanup_queue;
- 	}
- 
- 	add_disk(vblk->disk);
- 	return 0;
- 
-+out_cleanup_queue:
-+	blk_cleanup_queue(vblk->disk->queue);
- out_put_disk:
- 	put_disk(vblk->disk);
- out_unregister_blkdev:
-@@ -277,6 +279,8 @@ static void virtblk_remove(struct virtio
- 	put_disk(vblk->disk);
- 	unregister_blkdev(major, "virtblk");
- 	mempool_destroy(vblk->pool);
-+	/* There should be nothing in the queue now, so no need to shutdown */
-+	vdev->config->del_vq(vblk->vq);
- 	kfree(vblk);
- }
- 
-diff -r e631b63b0e8c drivers/lguest/lguest_device.c
---- a/drivers/lguest/lguest_device.c	Tue Nov 13 13:57:47 2007 +1100
-+++ b/drivers/lguest/lguest_device.c	Tue Nov 13 14:05:50 2007 +1100
-@@ -247,6 +247,8 @@ static void lg_del_vq(struct virtqueue *
- {
- 	struct lguest_vq_info *lvq = vq->priv;
- 
-+	/* Release the interrupt */
-+	free_irq(lvq->config.irq, vq);
- 	/* Tell virtio_ring.c to free the virtqueue. */
- 	vring_del_virtqueue(vq);
- 	/* Unmap the pages containing the ring. */
-diff -r e631b63b0e8c drivers/net/virtio_net.c
---- a/drivers/net/virtio_net.c	Tue Nov 13 13:57:47 2007 +1100
-+++ b/drivers/net/virtio_net.c	Tue Nov 13 14:05:50 2007 +1100
-@@ -404,8 +404,12 @@ free:
- 
- static void virtnet_remove(struct virtio_device *vdev)
- {
--	unregister_netdev(vdev->priv);
--	free_netdev(vdev->priv);
-+	struct virtnet_info *vi = vdev->priv;
-+
-+	vdev->config->del_vq(vi->svq);
-+	vdev->config->del_vq(vi->rvq);
-+	unregister_netdev(vi->dev);
-+	free_netdev(vi->dev);
- }
- 
- static struct virtio_device_id id_table[] = {
-diff -r e631b63b0e8c drivers/virtio/virtio.c
---- a/drivers/virtio/virtio.c	Tue Nov 13 13:57:47 2007 +1100
-+++ b/drivers/virtio/virtio.c	Tue Nov 13 14:05:50 2007 +1100
-@@ -96,10 +96,23 @@ static int virtio_dev_probe(struct devic
- 	return err;
- }
- 
-+static int virtio_dev_remove(struct device *_d)
-+{
-+	struct virtio_device *dev = container_of(_d,struct virtio_device,dev);
-+	struct virtio_driver *drv = container_of(dev->dev.driver,
-+						 struct virtio_driver, driver);
-+
-+	dev->config->set_status(dev, dev->config->get_status(dev)
-+				& ~VIRTIO_CONFIG_S_DRIVER);
-+	drv->remove(dev);
-+	return 0;
-+}
-+
- int register_virtio_driver(struct virtio_driver *driver)
- {
- 	driver->driver.bus = &virtio_bus;
- 	driver->driver.probe = virtio_dev_probe;
-+	driver->driver.remove = virtio_dev_remove;
- 	return driver_register(&driver->driver);
- }
- EXPORT_SYMBOL_GPL(register_virtio_driver);
+NOTE: when replying to this email, please add the bug number to the Subject in
+the form [Bug 1234] so that bugzilla will capture the discussion.
+Thanks.
+
+ACPI====================================================================
+
+System does not load without acpi=off ide=nodma noapic
+http://bugzilla.kernel.org/show_bug.cgi?id=9358
+Kernel: 2.6.23.1
+
+ACPI Error attaching device data
+http://bugzilla.kernel.org/show_bug.cgi?id=9354
+Kernel: 2.6.24-rc2
+
+/proc/acpi/battery displays Incorrect voltages
+http://bugzilla.kernel.org/show_bug.cgi?id=9341
+Kernel: 2.6.23.1
+
+PATA scan: ACPI Exception AE_AML_PACKAGE_LIMIT... is beyond end of object
+http://bugzilla.kernel.org/show_bug.cgi?id=9320
+Kernel: 2.6.24-rc2
+(Tejun: calling _GTF without calling _STM first.  _GTM doesn't have any
+prerequisite (it can't).  Can someone familiar with ACPI tell me why the method
+is failing?  At any rate, libata should work fine regardless of ACPI failures.
+Maybe it's time to start blacklist to skip ATA-ACPI for some boards to avoid
+those annoying messages during boot)
+
+ACPI Battery Info in /sys but not /proc/acpi
+http://bugzilla.kernel.org/show_bug.cgi?id=9183
+Kernel: 2.6.23-rc8-mm2
+
+When using ACPI on a Compaq Presario V6221EU the laptop goes into
+deadlock after a random amount of time
+http://bugzilla.kernel.org/show_bug.cgi?id=9118
+Kernel: 2.6.23-rc6
+
+ACPI video driver should validate brightness level before setting it via _BCM
+http://bugzilla.kernel.org/show_bug.cgi?id=9277
+Kernel: 2.6.23
+
+VIDEO/DVB
+
+dvb driver reboot system
+http://bugzilla.kernel.org/show_bug.cgi?id=9357
+Kernel: 2.6.21.5
+
+
+PLATFORM===============================================================
+
+xipImage is built so that uBoot cant run it (ARM)
+http://bugzilla.kernel.org/show_bug.cgi?id=9356
+Kernel: 2.6.21
+
+Samsung R20 - ACPI: PCI Root Bridge [PCI0] (0000:00)	
+http://bugzilla.kernel.org/show_bug.cgi?id=9339
+Kernel: 2.6.24
+(boot is very long
+..MP-BIOS bug: 8254 timer not connected to IO-APIC
+then the boot stop at :
+ACPI: PCI Root Bridge [PCI0] (0000:00)
+(during 3 minutes, and boot continue)
+
+system_64.h: switch_to inline asm should be more robbust wrt optimizations
+http://bugzilla.kernel.org/show_bug.cgi?id=9302
+Kernel: 2.6.24-rc1
+
+with CONFIG_NO_HZ and/or CONFIG_HPET_TIMER set kernel 2.6.23 doesn't
+boot (ARM, Timer)
+http://bugzilla.kernel.org/show_bug.cgi?id=9229
+Kernel: 2.6.23
+
+NETWORKING===========================================================
+
+RTNLGRP_ND_USEROPT does not report ifindex (IPv6)
+http://bugzilla.kernel.org/show_bug.cgi?id=9349
+Kernel: 2.6.24+
+
+a kernel error happend in the func: __skb_dequeue when using in
+pfifo_fast_dequeue
+http://bugzilla.kernel.org/show_bug.cgi?id=9342
+Kernel: 2.6.11.1 - reporter asked to try recent kernel
+
+e100 does not work after boot
+http://bugzilla.kernel.org/show_bug.cgi?id=9336
+Kernel: 2.6.23.1
+
+2.6.23.1-smp kernel panic (network-related)
+http://bugzilla.kernel.org/show_bug.cgi?id=9318
+Kernel: 2.6.23.1
+Infiniband panic
+
+sundance -> 4port D-Link System Inc DFE-580TX -> Log errors
+http://bugzilla.kernel.org/show_bug.cgi?id=9311
+Kernel: 2.6.22.9
+
+via-rhine driver stalls with: PHY status 786d, resetting...
+http://bugzilla.kernel.org/show_bug.cgi?id=9300
+Kernel: 2.6.23+
+
+
+Weird network problems with 2.6.23-rc2
+http://bugzilla.kernel.org/show_bug.cgi?id=9080
+http://lkml.org/lkml/2007/8/11/40 - description
+
+rt2500pci: low TCP throughput (wireless)
+http://bugzilla.kernel.org/show_bug.cgi?id=9273
+Kernel: 2.6.24-rc1
+This is a regression
+
+Unable to build wifi network between zd1201 and b43
+http://bugzilla.kernel.org/show_bug.cgi?id=9237
+Kernel: 2.6.24-rc1
+
+Crash after module unload in b43 (wireless)
+http://bugzilla.kernel.org/show_bug.cgi?id=9233
+Kernel: 2.6.24-rc1
+
+(net typhoon) "no descs for cmd, had (needed) 0 (1) cmd, 31 (7) resp"
+http://bugzilla.kernel.org/show_bug.cgi?id=9225
+Kernel: 2.6.23.1
+
+
+IDE/SATA=========================================================
+
+pata_pdc202xx_old excessive ATA bus errors
+http://bugzilla.kernel.org/show_bug.cgi?id=9337
+2.6.24-rc2
+
+Drive seagate ST380011AS needs to be blacklisted
+http://bugzilla.kernel.org/show_bug.cgi?id=9309
+Kernel: 2.6.22.X
+
+DVD-RAM umount and disk free bug
+http://bugzilla.kernel.org/show_bug.cgi?id=9265
+Kernel: 2.6.15  (asked to try current kernel)
+
+FILE SYSTEMS=======================================================
+
+ext4: delalloc space accounting problem drops data
+http://bugzilla.kernel.org/show_bug.cgi?id=9329
+Kernel: 2.6.24-rc1
+
+POSIX Access Control Lists cause bogus file system check errors
+http://bugzilla.kernel.org/show_bug.cgi?id=9241
+Kernel: 2.6.23.1
+
+MEMORY MANAGEMENT================================================
+
+My system hangs when it has no more free memory to allocate via malloc()
+http://bugzilla.kernel.org/show_bug.cgi?id=9316
+Kernel: 2.6.23
+User program, "My system hangs when it has no more free memory to
+allocate via malloc()"
+
+BUG: unable to handle kernel paging request at virtual address
+26121228/kswapd0[231] exited with preempt_count 1
+http://bugzilla.kernel.org/show_bug.cgi?id=9305
+EIP is at free_block+0x6d/0xe4
+Kernel: 2.6.22.6
+
+POWER MANAGEMENT==================================================
+
+IBM X41 looses time after Suspend2Disk
+http://bugzilla.kernel.org/show_bug.cgi?id=9314
+Kernel: 2.6.23
+
+Suspend to RAM resume hangs on a tickless (NO_HZ) kernel
+http://bugzilla.kernel.org/show_bug.cgi?id=9275
+Kernel: 2.6.23
+This is HP notebook nc6320 T2400 945GM
+
+
+VIDEO DRIVERS========================================================
+
+No text consoles with FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
+http://bugzilla.kernel.org/show_bug.cgi?id=9310
+Kernel: 2.6.24-rc1
+This is a regression
+
+
+PARALLEL PORT========================================================
+
+LPC IT8705 POST port making noise on parallel port
+http://bugzilla.kernel.org/show_bug.cgi?id=9306
+Kernel: 2.6.16+
+
+
+I/O STORAGE===========================================================
+
+kernel bug from pktcdvd
+http://bugzilla.kernel.org/show_bug.cgi?id=9294
+Kernel: 2.6.23
+
+After pci-e video card was installed, pci add-on usb card & firewire card fail
+http://bugzilla.kernel.org/show_bug.cgi?id=9223
+Kernel: 2.6.20 (testing of latest kernel requested)
+
+SCSI==================================================================
+
+qla2xxx: driver initialization does not complete when booting with
+Port connected
+http://bugzilla.kernel.org/show_bug.cgi?id=9267
+Kernel: 2.6.23.1
+
+SOUND ALSA============================================================
+
+Unable to load snd-hda-intel module: Unknown symbol in module, or
+unknown parameter
+http://bugzilla.kernel.org/show_bug.cgi?id=9242
+Kernel: 2.6.24-rc1
+
+usbaudio microphone: regular sound distortion on several Logitech Webcams
+http://bugzilla.kernel.org/show_bug.cgi?id=9230
+Kernel: 2.6.22.9
+
+HID====================================================================
+
+Kernel NULL pointer dereference at :usbhid:hiddev_ioctl+0x2f/0xabc
+http://bugzilla.kernel.org/show_bug.cgi?id=9216
+Kernel: 2.6.23.1
+Looks like this is a regression
