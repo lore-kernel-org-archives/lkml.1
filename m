@@ -1,74 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761548AbXKMXjh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760919AbXKMXqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761548AbXKMXjh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 18:39:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758514AbXKMXj0
+	id S1760919AbXKMXqv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 18:46:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755899AbXKMXqk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 18:39:26 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60008 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757721AbXKMXjY (ORCPT
+	Tue, 13 Nov 2007 18:46:40 -0500
+Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:35982 "HELO
+	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755779AbXKMXqj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 18:39:24 -0500
-Date: Tue, 13 Nov 2007 15:38:19 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Adrian Bunk <bunk@kernel.org>, David Miller <davem@davemloft.net>,
-       alsa-devel@alsa-project.org, netdev@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-       protasnb@gmail.com, linux-ide@vger.kernel.org,
-       bugme-daemon@bugzilla.kernel.org, linux-input@atrey.karlin.mff.cuni.cz
-Subject: Re: [BUG] New Kernel Bugs
-Message-Id: <20071113153819.b1ce6d5b.akpm@linux-foundation.org>
-In-Reply-To: <20071113232954.GK1356@flint.arm.linux.org.uk>
-References: <20071113034916.2556edd7.akpm@linux-foundation.org>
-	<20071113.035824.40509981.davem@davemloft.net>
-	<20071113041259.79c9a8c5.akpm@linux-foundation.org>
-	<20071113.043207.44732743.davem@davemloft.net>
-	<20071113193219.GC1356@flint.arm.linux.org.uk>
-	<20071113201319.GL4250@stusta.de>
-	<20071113232954.GK1356@flint.arm.linux.org.uk>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 13 Nov 2007 18:46:39 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=c5AFpY38C4PrvCRv2OV4yqA7rlnVI5GbUon65emCkQzUMg6kbXoJWD9csm9KrD/fq89OTVSInemJmqZHyCPE+d7MvxDW5jyrUXejhJPkhQYv0qfm+p5KqPu4QnTw1nQH9AR9Mr2db2Nq6XXy5HIhRhHYmVuU30EI+PCzNeKBju8=  ;
+X-YMail-OSG: Kup0c_cVM1mFkJG28hUm0bORhSDVSSdjDTDMbbVF13VZiGV9Zhpn6tZ1BwbM5bWJ9k2XsEiAFg--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Matt Mackall <mpm@selenic.com>
+Subject: Re: 2.6.24-rc2 slab vs slob tbench numbers
+Date: Tue, 13 Nov 2007 22:44:17 +1100
+User-Agent: KMail/1.9.5
+Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
+References: <200711092336.56172.nickpiggin@yahoo.com.au> <20071112201322.GX17536@waste.org>
+In-Reply-To: <20071112201322.GX17536@waste.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711132244.17913.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Nov 2007 23:29:54 +0000 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+On Tuesday 13 November 2007 07:13, Matt Mackall wrote:
+> On Fri, Nov 09, 2007 at 11:36:56PM +1100, Nick Piggin wrote:
+> > Hi,
+> >
+> > Just ran some tbench numbers (from dbench-3.04), on a 2 socket, 8
+> > core x86 system, with 1 NUMA node per socket. With kernel 2.6.24-rc2,
+> > comparing slab vs slub allocators.
+>
+> Damn your misleading subject! I thought this was going to be about
+> something interesting.
 
-> On Tue, Nov 13, 2007 at 09:13:19PM +0100, Adrian Bunk wrote:
-> > On Tue, Nov 13, 2007 at 07:32:19PM +0000, Russell King wrote:
-> > >...
-> > > There's another issue I want to raise concerning bugzilla.  We have the
-> > > classic case of "not enough people reading bugzilla bugs" - which is one
-> > > of the biggest problems with bugzilla.  Virtually no one in the ARM
-> > > community looks for ARM bugs in bugzilla.
-> > > 
-> > > Let's not forget that it would be a waste of time for people to manually
-> > > check bugzilla for ARM bugs.  There's soo few people reporting ARM bugs
-> > > into bugzilla that a weekly manual check by every maintainer would just
-> > > return the same old boring results for months and months at a time.
-> > >...
-> > 
-> > What about having all ARM bugs in Bugzilla by default assigned to 
-> > linux-arm-kernel@lists.arm.linux.org.uk? [1]
-> 
-> That would also work, probably much better than setting up yet another
-> list.
-
-cpufreq (at least) does it this way.  I don't know how well it is turning
-out in practice.
-
-It's useful if the initial report makes it clear (ie; to me) that the report
-has already gone to a mailing list so I don't go and forward a duplicate.
-
-But there are so few arm reports in bugzilla that this is all rather moot.
-
-> My experience of trying to get mbligh to do this when I stopped looking
-> after PCMCIA stuff was *extremely* painful.  Wonder if it's become any
-> easier of late?
-
-He's a bad, bad man ;)
-
-But he's been turning these things around pretty rapidly lately.
+Actually I did test slob as well -- it's competitive with slab and
+slub up to about 4 cores, which is nice.
