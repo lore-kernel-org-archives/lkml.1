@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759578AbXKMBsj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760048AbXKMBua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759578AbXKMBsj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Nov 2007 20:48:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757424AbXKMBsb
+	id S1760048AbXKMBua (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Nov 2007 20:50:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757424AbXKMBuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Nov 2007 20:48:31 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33678 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756973AbXKMBsa (ORCPT
+	Mon, 12 Nov 2007 20:50:19 -0500
+Received: from mga10.intel.com ([192.55.52.92]:64793 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756794AbXKMBuS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Nov 2007 20:48:30 -0500
-Date: Mon, 12 Nov 2007 17:47:21 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <ak@suse.de>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] arch/x86/kernel/setup_64.c compile error
- (MMOTM-2007-11-10-19-05)
-Message-Id: <20071112174721.c304264d.akpm@linux-foundation.org>
-In-Reply-To: <200711130232.29900.ak@suse.de>
-References: <200711112234.lABMYo0n004269@agora.fsl.cs.sunysb.edu>
-	<20071112172841.b4dc21b5.akpm@linux-foundation.org>
-	<200711130232.29900.ak@suse.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Mon, 12 Nov 2007 20:50:18 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,408,1188802800"; 
+   d="scan'208";a="202024844"
+Subject: Re: iozone write 50% regression in kernel 2.6.24-rc1
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <47388C6C.4020903@rtr.ca>
+References: <1194601672.20251.60.camel@ymzhang>
+	 <1194602064.6289.157.camel@twins>  <1194833640.20251.80.camel@ymzhang>
+	 <1194860728.7179.6.camel@twins>  <1194861112.20251.124.camel@ymzhang>
+	 <1194873980.7179.31.camel@twins>  <47388C6C.4020903@rtr.ca>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 13 Nov 2007 09:49:04 +0800
+Message-Id: <1194918544.20251.133.camel@ymzhang>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Nov 2007 02:32:29 +0100 Andi Kleen <ak@suse.de> wrote:
-
+On Mon, 2007-11-12 at 12:25 -0500, Mark Lord wrote:
+> Peter Zijlstra wrote:
+> ..
+> > While I see that the write speed as reported under .24 ~70MB/s is much
+> > lower than the one reported under .23 ~200MB/s, I find it very hard to
+> > believe my poor single SATA disk could actually do the 200MB/s for
+> > longer than its cache 8/16 MB (not sure).
+> > 
+> > vmstat shows that actual IO is done, even though the whole 512MB could
+> > fit in cache, hence my suspicion that the ~70MB/s is the most realistic
+> > of the two.
+> ..
 > 
-> > hm, that doesn't seem right.  We want to run the early quirks on non-ACPI
-> > kernel too, surely?
+> Yeah, sequential 70MB/sec is quite realistic for a modern SATA drive.
 > 
-> Most of early-quirks.c makes only sense with ACPI. The only exception would
-> be the ATI timer override check, but frankly it's fairly unlikely that there 
-> are any ATI based boards around who still have mptables. Non ACPI 
-> tables would very likely just run in PIC mode and then need no timer overrides
-> anyways.
-> 
-> Originally on i386 the early quirks equivalent was 100% ACPI specific.
-> 
-
-OK....  But what's The Right Thing To Do here?  Would one be reasonable in
-expecting that one can add a new early quirk which is independent from acpi
-and have it still work on non-acpi builds?
-
-Seems better to decouple the two things if poss?
+> But significantly faster than that (say, 100MB/sec +) is unlikely at present.
+I just use command '#iozone -i 0 -r 4k -s 512m', no '-e -c'. So if
+we consider cache, the speed is very fast. On my machine with 2.6.23, the write speed is
+631M/s, quite fast. :)
