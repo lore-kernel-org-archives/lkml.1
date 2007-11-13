@@ -1,64 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758975AbXKMRFY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757037AbXKMROv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758975AbXKMRFY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 12:05:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbXKMRFL
+	id S1757037AbXKMROv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 12:14:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbXKMROj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 12:05:11 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55622 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754558AbXKMRFJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 12:05:09 -0500
-Date: Tue, 13 Nov 2007 09:01:29 -0800
-From: Greg KH <greg@kroah.com>
-To: Alex Chiang <achiang@hp.com>
-Cc: gregkh@suse.de, kristen.c.accardi@intel.com, lenb@kernel.org,
-       matthew@wil.cx, richard.jones2@hp.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
-Message-ID: <20071113170129.GA20185@kroah.com>
-References: <20071113000853.GA13341@ldl.fc.hp.com>
+	Tue, 13 Nov 2007 12:14:39 -0500
+Received: from thunk.org ([69.25.196.29]:39418 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753270AbXKMROh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 12:14:37 -0500
+Date: Tue, 13 Nov 2007 12:13:56 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Benoit Boissinot <bboissin@gmail.com>
+Cc: Mark Lord <liml@rtr.ca>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, protasnb@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+Message-ID: <20071113171356.GA25824@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Benoit Boissinot <bboissin@gmail.com>, Mark Lord <liml@rtr.ca>,
+	Ingo Molnar <mingo@elte.hu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Miller <davem@davemloft.net>, protasnb@gmail.com,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
+	linux-pcmcia@lists.infradead.org,
+	linux-input@atrey.karlin.mff.cuni.cz,
+	bugme-daemon@bugzilla.kernel.org
+References: <20071113031553.3c7b5c16.akpm@linux-foundation.org> <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca> <40f323d00711130752k19cab8eauc3456721274b3267@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071113000853.GA13341@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <40f323d00711130752k19cab8eauc3456721274b3267@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 12, 2007 at 05:08:53PM -0700, Alex Chiang wrote:
-> Hello,
-> 
-> [this patch series touches a few subsystems; hopefully I got all
-> the right maintainers]
-> 
-> Recently, Matthew Wilcox sent out the following mail about PCI
-> slots:
-> 
->   http://marc.info/?l=linux-pci&m=119432330418980&w=2
-> 
-> The following patch series is a rough first cut at implementing
-> the ideas he outlined, namely, that PCI slots are physical
-> objects that we care about, independent of their hotplug
-> capabilities.
+On Tue, Nov 13, 2007 at 04:52:32PM +0100, Benoit Boissinot wrote:
+> Btw, I used to test every -mm kernel. But since I've switched distros
+> (gentoo->ubuntu)
+> and I have less time, I feel it's harder to test -rc or -mm kernels (I
+> know this isn't a lkml problem
+> but more a distro problem, but I would love having an ubuntu blessed
+> repo with current dev kernel
+> for the latest stable ubuntu release).
 
-I'm still not sold on this idea at all.  I'm really betting that there
-is a lot of incorrect acpi slot information floating around in machines
-and odd things will show up in these slot entries.
+There are two parts to this.  One is a Ubuntu development kernel which
+we can give to large numbers of people to expand our testing pool.
+But if we don't do a better job of responding to bug reports that
+would be generated by expanded testing this won't necessarily help us.
 
-I say this because for a long time there was no "standard" acpi entries
-for hotplug slots and different companies did different things.  Hence
-the "odd" IBM acpi hotplug implementation as one example.  If this is
-going to go anywhere, you need to get IBM to agree that it works
-properly with all their machines...
+The other an automated set of standard pre-built bisection points so
+that testers can more easily localize a bug down to a few hundred
+commits without needing to learn how to use "git bisect" (think Ubuntu
+users).
 
-Also, some companies already provide userspace tools to get all of this
-information about the different slots in a system and what is where,
-from userspace, no kernel changes are needed.  So, why add all this
-extra complexity to the kernel if it is not needed?
+So for the first, I've actually been playing with some plans to put
+together an unofficial kernel that basically "what Ted is using on his
+laptop".  It generally has emergency bug fixes that haven't made it
+into mainline, plus some other trees where I've been more aggressive
+since I want to latest in wireless and powersaving technology, etc.
+It has the property that "if it breaks, you get to keep both pieces
+--- and I've helpfully included the git ID in the package name so you
+can do the bisection yourself".  If you want to try it, the first such
+kernel is here:
 
-thanks,
+       http://www.kernel.org/~tytso/tbek
 
-greg k-h
+I wasn't planning on talking about it until it was more fully baked,
+but if people want something vaguely stable based on 2.6.24-rc2, this
+might be interesting.
+
+As for the second, I was just talking to Arjan over pizza and beer
+last night, and we reached the same conclusion as Ingo, which is this
+really isn't that hard.  It wouldn't be that hard to set up
+infrastructure to do this, and it's just a matter of getting the disk
+space and the network bandwidth togehter in the right place, plus a
+relatively small amount of prgramming at least for the simplest
+iteration of the idea.  (As is quite common when doing designs over
+beer, we talked about some more gradious web-based schemes to do
+custom built kernels that was tied to the kernel bugzilla, but first
+things first. :-)
+
+						- Ted
