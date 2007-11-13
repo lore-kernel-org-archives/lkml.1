@@ -1,81 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761850AbXKMSs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761968AbXKMSsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761850AbXKMSs1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 13:48:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761671AbXKMSrx
+	id S1761968AbXKMSsp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 13:48:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761710AbXKMSr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 13:47:53 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:53849 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761661AbXKMSrw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 13:47:52 -0500
-Message-Id: <20071113184721.242245124@polymtl.ca>
-References: <20071113184627.667866257@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Tue, 13 Nov 2007 13:46:38 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andi Kleen <andi@firstfloor.org>, pageexec@freemail.hu
-Subject: [patch 11/11] Text Edit Lock - x86_64 standardize debug rodata
-Content-Disposition: inline; filename=text-edit-lock-x86_64-standardize-debug-rodata.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 13 Nov 2007 18:47:21 +0000
+	Tue, 13 Nov 2007 13:47:57 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45725 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761699AbXKMSrz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 13:47:55 -0500
+Date: Tue, 13 Nov 2007 10:47:14 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Martin Bligh" <mbligh@google.com>
+Cc: "James Bottomley" <James.Bottomley@hansenpartnership.com>,
+       "Natalie Protasevich" <protasnb@gmail.com>, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [BUG] New Kernel Bugs
+Message-Id: <20071113104714.bf008041.akpm@linux-foundation.org>
+In-Reply-To: <33307c790711130946j3ae10dcx9d776bc9671710f7@mail.gmail.com>
+References: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com>
+	<20071113031553.3c7b5c16.akpm@linux-foundation.org>
+	<1194968001.3416.12.camel@localhost.localdomain>
+	<33307c790711130946j3ae10dcx9d776bc9671710f7@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Standardize DEBUG_RODATA, removing special cases for hotplug and kprobes.
+On Tue, 13 Nov 2007 09:46:08 -0800 "Martin Bligh" <mbligh@google.com> wrote:
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Andi Kleen <andi@firstfloor.org>
-CC: pageexec@freemail.hu
----
- arch/x86_64/mm/init.c |   23 +++++------------------
- 1 file changed, 5 insertions(+), 18 deletions(-)
+> > > > http://bugzilla.kernel.org/show_bug.cgi?id=9267
+> > > > Kernel: 2.6.23.1
+> > >
+> > > No response from developers
+> >
+> > Urm, well, if no-one ever tells the SCSI list it's unrealistic to expect
+> > anyone to be working on it.  As far as I can tell, email was sent to
+> > Andrew Vasquez only on 31 October. However, the fault looks to be
+> > generic, so he probably just dropped it.
 
-Index: linux-2.6-lttng/arch/x86/mm/init_64.c
-===================================================================
---- linux-2.6-lttng.orig/arch/x86/mm/init_64.c	2007-09-24 11:00:01.000000000 -0400
-+++ linux-2.6-lttng/arch/x86/mm/init_64.c	2007-09-24 11:00:02.000000000 -0400
-@@ -592,25 +592,11 @@ void free_initmem(void)
- 
- void mark_rodata_ro(void)
- {
--	unsigned long start = (unsigned long)_stext, end;
-+	unsigned long start = PFN_ALIGN(_stext);
-+	unsigned long end = PFN_ALIGN(__end_rodata);
- 
--#ifdef CONFIG_HOTPLUG_CPU
--	/* It must still be possible to apply SMP alternatives. */
--	if (num_possible_cpus() > 1)
--		start = (unsigned long)_etext;
--#endif
--
--#ifdef CONFIG_KPROBES
--	start = (unsigned long)__start_rodata;
--#endif
--	
--	end = (unsigned long)__end_rodata;
--	start = (start + PAGE_SIZE - 1) & PAGE_MASK;
--	end &= PAGE_MASK;
--	if (end <= start)
--		return;
--
--	change_page_attr_addr(start, (end - start) >> PAGE_SHIFT, PAGE_KERNEL_RO);
-+	change_page_attr_addr(start, (end - start) >> PAGE_SHIFT,
-+				PAGE_KERNEL_RO);
- 
- 	printk(KERN_INFO "Write protecting the kernel read-only data: %luk\n",
- 	       (end - start) >> 10);
-@@ -623,6 +609,7 @@ void mark_rodata_ro(void)
- 	 */
- 	global_flush_tlb();
- }
-+
- #endif
- 
- #ifdef CONFIG_BLK_DEV_INITRD
+I looked at that one and decided not to forward it to anyone because it was
+already sent to Andrew.  Oh well, sorry.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> This is a technical issue with vger.kernel.org mailing lists that I've tried
+> addressing before - maybe davem can help fix it?
+> 
+> What I've tried doing is bouncing relevant postings from my procmail
+> filters to the list, but it seems to drop bounces (probably as spam).
+> Is there any way around this? (like can I get an exception to be allowed
+> to bounce stuff or mark it with some magic X-secret-knock: header?)
+
+Please let me know asap if/when this starts working so I don't start
+forwarding duplicates everywhere.
+
