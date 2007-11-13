@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756971AbXKMMLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756754AbXKMMOJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756971AbXKMMLR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 07:11:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbXKMMLE
+	id S1756754AbXKMMOJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 07:14:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754220AbXKMMNx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 07:11:04 -0500
-Received: from rn-out-0910.google.com ([64.233.170.188]:12591 "EHLO
-	rn-out-0102.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752695AbXKMMLC (ORCPT
+	Tue, 13 Nov 2007 07:13:53 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42842 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754044AbXKMMNv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 07:11:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=ZI6M6yxq/zO033/G5TNVerbb/ENIvwbIL1KWVNkDdIxP/r3HuCJVTAffzvjpPiDFLAaWz9uegtRGDsc4xCH/RfGmBbpwem8lzZJtjLkXlfgi0zpSbtiTNMB/wbuWj+ZAWMu5yCjs1uJf2Ggw3t7vzRueLMrv8nYxB40uBdlt3Qw=
-Message-ID: <e85b9d30711130411s5dd20b9t2e407d9617a36c65@mail.gmail.com>
-Date: Tue, 13 Nov 2007 13:11:00 +0100
-From: Matthew <jackdachef@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: git changelog / shortlog function on www.eu.kernel.org still refers to www.kernel.org server
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 13 Nov 2007 07:13:51 -0500
+Date: Tue, 13 Nov 2007 04:12:59 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+Cc: protasnb@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+Message-Id: <20071113041259.79c9a8c5.akpm@linux-foundation.org>
+In-Reply-To: <20071113.035824.40509981.davem@davemloft.net>
+References: <20071113031553.3c7b5c16.akpm@linux-foundation.org>
+	<20071113.033946.114918709.davem@davemloft.net>
+	<20071113034916.2556edd7.akpm@linux-foundation.org>
+	<20071113.035824.40509981.davem@davemloft.net>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everybody on the linux-kernel mailing list,
+On Tue, 13 Nov 2007 03:58:24 -0800 (PST) David Miller <davem@davemloft.net> wrote:
 
-I discovered that the changelog-function of www.eu.kernel.org still
-links / refers to www.kernel.org
+> From: Andrew Morton <akpm@linux-foundation.org>
+> Date: Tue, 13 Nov 2007 03:49:16 -0800
+> 
+> > Do you believe that our response to bug reports is adequate?
+> 
+> Do you feel that making us feel and look like shit helps?
+> 
 
-e.g. if I click on:
+That doesn't answer my question.
 
-The latest stable version of the Linux kernel is:  	2.6.23.1
-	2007-10-12 16:47 UTC 	F 	V 	  	C 	Changelog <== on the 'C'
+See, first we need to work out whether we have a problem.  If we do this,
+then we can then have a think about what to do about it.
 
-it refers to http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fstable%2Flinux-2.6.23.y.git;a=summary
+I tried to convince the 2006 KS attendees that we have a problem and I
+resoundingly failed.  People seemed to think that we're doing OK.
 
-shouldn't the link better refer on each 'C' to
-http://git.eu.kernel.org/?p=linux%2Fkernel%2Fgit%2Fstable%2Flinux-2.6.23.y.git;a=summary
-(http://git.eu.kernel.org)
+But it appears that data such as this contradicts that belief.
 
-that should put less load on the general / US-servers  ...
 
-... or am I wrong and it is handled via round-robin ?
+This is not a minor matter.  If the kernel _is_ slowly deteriorating then
+this won't become readily apparent until it has been happening for a number
+of years.  By that stage there will be so much work to do to get us back to
+an acceptable level that it will take a huge effort.  And it will take a
+long time after that for the kerel to get its reputation back.
 
-hope everyone understands what I mean ;)
+So it is important that we catch deterioration *early* if it is happening.
 
-Cheers
-
-Mat
