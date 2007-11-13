@@ -1,92 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763369AbXKMVdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763405AbXKMVe2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763369AbXKMVdi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 16:33:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763262AbXKMVdE
+	id S1763405AbXKMVe2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 16:34:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760508AbXKMVeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 16:33:04 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:51623 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763255AbXKMVdB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 16:33:01 -0500
-Date: Tue, 13 Nov 2007 13:32:19 -0800
-From: Greg KH <greg@kroah.com>
-To: Matt Domsch <Matt_Domsch@dell.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, Alex Chiang <achiang@hp.com>,
-       gregkh@suse.de, kristen.c.accardi@intel.com, lenb@kernel.org,
-       richard.jones2@hp.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
-Message-ID: <20071113213219.GB4194@kroah.com>
-References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113170129.GA20185@kroah.com> <20071113183353.GE17785@parisc-linux.org> <20071113185122.GA22536@kroah.com> <20071113211509.GB19146@auslistsprd01.us.dell.com>
+	Tue, 13 Nov 2007 16:34:15 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:49778 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759429AbXKMVeN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 16:34:13 -0500
+Date: Tue, 13 Nov 2007 22:34:09 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: dan@dennedy.org, stefanr@s5r6.in-berlin.de,
+       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 2/4] drivers/ieee1394: Drop redundant includes of moduleparam.h
+Message-ID: <Pine.LNX.4.64.0711132233220.18337@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071113211509.GB19146@auslistsprd01.us.dell.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 03:15:09PM -0600, Matt Domsch wrote:
-> On Tue, Nov 13, 2007 at 10:51:22AM -0800, Greg KH wrote:
-> > On Tue, Nov 13, 2007 at 11:33:53AM -0700, Matthew Wilcox wrote:
-> > > On Tue, Nov 13, 2007 at 09:01:29AM -0800, Greg KH wrote:
-> > > > I'm still not sold on this idea at all.  I'm really betting that there
-> > > > is a lot of incorrect acpi slot information floating around in machines
-> > > > and odd things will show up in these slot entries.
-> > > 
-> > > Is that the end of the world?  Instead of having no information, we'll
-> > > end up with odd information.  If people complain, we can always
-> > > blacklist (indeed, won't the ACPI rolling blacklist catch the majority
-> > > of these machines?)
-> > 
-> > I don't think the rolling blacklist will catch this, as the rest of the
-> > ACPI code is "correct".
-> > 
-> > And yes, incorrect information exported by the kernel is not good at
-> > all, especially if a user expects it to work properly :)
-> > 
-> > > > I say this because for a long time there was no "standard" acpi entries
-> > > > for hotplug slots and different companies did different things.  Hence
-> > > > the "odd" IBM acpi hotplug implementation as one example.  If this is
-> > > > going to go anywhere, you need to get IBM to agree that it works
-> > > > properly with all their machines...
-> > > 
-> > > Not in terms of slot names.  There were various things that ACPI didn't
-> > > specify, like attention and latches, but the description of _SUN hasn't
-> > > changed.
-> > 
-> > Ok, again, I want to see the IBM people sign off on this, after testing
-> > on all of their machines, before I'll consider this, as I know the IBM
-> > acpi tables are "odd".
-> > 
-> > Also, how about Dell machines?  I know they are probably not expecting
-> > this information to show up and who knows if the numbering of their
-> > slots match up with their physical diagrams (I say this based on all of
-> > the eth0/eth1 "issues" with Dell machines over the years...)
-> 
-> 
-> The only reported _SUN problems on Dell systems were on the PE6800 and
-> PE6850 systems, which we've fixed with an updated BIOS several months
-> ago.  IIRC the values weren't always unique which kind of defeated the
-> purpose.
+From: Julia Lawall <julia@diku.dk>
 
-Heh, I can imagine :)
+Drop #include <linux/moduleparam.h> in files that also include #include
+<linux/module.h>.  module.h includes moduleparam.h already.
 
-> The eth0/eth1 "issues" are completely separate, with no relation to
-> ACPI.  That's purely a PCI tree depth-first discovery
-> vs. breadth-first discovery (where it indeed seems everyone except
-> Linux 2.6 uses and expects breadth-first).  We looked at extending
-> ACPI to export device naming preference, but instead extended SMBIOS
-> tables because we could get that change in far easier.
+The semantic patch implementing this change is as follows:
 
-I know they are different, I was using that as an example of trying to
-match up physical descriptions on a machine with the internal kernel
-representation.  It isn't always easy and lots of times things go wrong,
-if for no other reason than no one is checking these things.
+@ includesmodule @
+@@
 
-thanks,
+#include <linux/module.h>
 
-greg k-h
+@ depends on includesmodule @
+@@
+
+- #include <linux/moduleparam.h>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+---
+
+diff -u -p -b -B a/drivers/ieee1394/csr.c b/drivers/ieee1394/csr.c
+--- a/drivers/ieee1394/csr.c 2007-02-09 17:34:08.000000000 +0100
++++ b/drivers/ieee1394/csr.c 2007-11-13 17:49:47.000000000 +0100
+@@ -20,7 +20,6 @@
+  #include <linux/jiffies.h>
+  #include <linux/kernel.h>
+  #include <linux/module.h>
+-#include <linux/moduleparam.h>
+  #include <linux/param.h>
+  #include <linux/spinlock.h>
+  #include <linux/string.h>
+diff -u -p -b -B a/drivers/ieee1394/ieee1394_core.c b/drivers/ieee1394/ieee1394_core.c
+--- a/drivers/ieee1394/ieee1394_core.c 2007-10-22 11:25:09.000000000 +0200
++++ b/drivers/ieee1394/ieee1394_core.c 2007-11-13 17:49:50.000000000 +0100
+@@ -27,7 +27,6 @@
+  #include <linux/slab.h>
+  #include <linux/interrupt.h>
+  #include <linux/module.h>
+-#include <linux/moduleparam.h>
+  #include <linux/bitops.h>
+  #include <linux/kdev_t.h>
+  #include <linux/freezer.h>
+diff -u -p -b -B a/drivers/ieee1394/nodemgr.c b/drivers/ieee1394/nodemgr.c
+--- a/drivers/ieee1394/nodemgr.c 2007-10-22 11:25:09.000000000 +0200
++++ b/drivers/ieee1394/nodemgr.c 2007-11-13 17:49:51.000000000 +0100
+@@ -15,7 +15,6 @@
+  #include <linux/delay.h>
+  #include <linux/kthread.h>
+  #include <linux/module.h>
+-#include <linux/moduleparam.h>
+  #include <linux/mutex.h>
+  #include <linux/freezer.h>
+  #include <asm/atomic.h>
+diff -u -p -b -B a/drivers/ieee1394/ohci1394.c b/drivers/ieee1394/ohci1394.c
+--- a/drivers/ieee1394/ohci1394.c 2007-10-22 11:25:09.000000000 +0200
++++ b/drivers/ieee1394/ohci1394.c 2007-11-13 17:49:52.000000000 +0100
+@@ -89,7 +89,6 @@
+  #include <linux/wait.h>
+  #include <linux/errno.h>
+  #include <linux/module.h>
+-#include <linux/moduleparam.h>
+  #include <linux/pci.h>
+  #include <linux/fs.h>
+  #include <linux/poll.h>
+diff -u -p -b -B a/drivers/ieee1394/pcilynx.c b/drivers/ieee1394/pcilynx.c
+--- a/drivers/ieee1394/pcilynx.c 2007-10-22 11:25:09.000000000 +0200
++++ b/drivers/ieee1394/pcilynx.c 2007-11-13 17:49:54.000000000 +0100
+@@ -36,7 +36,6 @@
+  #include <linux/wait.h>
+  #include <linux/errno.h>
+  #include <linux/module.h>
+-#include <linux/moduleparam.h>
+  #include <linux/init.h>
+  #include <linux/pci.h>
+  #include <linux/fs.h>
+diff -u -p -b -B a/drivers/ieee1394/sbp2.c b/drivers/ieee1394/sbp2.c
+--- a/drivers/ieee1394/sbp2.c 2007-11-08 08:00:51.000000000 +0100
++++ b/drivers/ieee1394/sbp2.c 2007-11-13 17:49:56.000000000 +0100
+@@ -61,7 +61,6 @@
+  #include <linux/list.h>
+  #include <linux/mm.h>
+  #include <linux/module.h>
+-#include <linux/moduleparam.h>
+  #include <linux/sched.h>
+  #include <linux/slab.h>
+  #include <linux/spinlock.h>
