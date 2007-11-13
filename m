@@ -1,109 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762140AbXKMVCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762154AbXKMVE0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762140AbXKMVCS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 16:02:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759148AbXKMVCK
+	id S1762154AbXKMVE0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 16:04:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756781AbXKMVEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 16:02:10 -0500
-Received: from www17.your-server.de ([213.133.104.17]:60213 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757407AbXKMVCJ (ORCPT
+	Tue, 13 Nov 2007 16:04:16 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48467 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756457AbXKMVEP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 16:02:09 -0500
-Message-ID: <473A10C2.6040102@m3y3r.de>
-Date: Tue, 13 Nov 2007 22:01:54 +0100
-From: Thomas Meyer <thomas@m3y3r.de>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: v2.6.24-rc2-409-g9418d5d: attempt to access beyond end of device
-References: <4739F112.5060604@m3y3r.de>
-In-Reply-To: <4739F112.5060604@m3y3r.de>
-Content-Type: text/plain; charset=ISO-8859-15
+	Tue, 13 Nov 2007 16:04:15 -0500
+Date: Tue, 13 Nov 2007 13:04:11 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christian Kujau <lists@nerdbynature.de>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: [BUG] New Kernel Bugs
+Message-Id: <20071113130411.26ccae12.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.0.9999.0711132055550.7865@sheep.housecafe.de>
+References: <20071113034916.2556edd7.akpm@linux-foundation.org>
+	<20071113.035824.40509981.davem@davemloft.net>
+	<20071113041259.79c9a8c5.akpm@linux-foundation.org>
+	<20071113.043207.44732743.davem@davemloft.net>
+	<20071113110259.44c56d42.akpm@linux-foundation.org>
+	<alpine.DEB.0.9999.0711132055550.7865@sheep.housecafe.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Meyer schrieb:
-> i get these errors in the kernel log while trying to copy a file from an
-> iso9660 file system (/dev/sr0) to my intenal hard disk. This is the
-> second cd/dvd that gives me this error. kernel 2.6.23 works without any
-> problems, so i think this is not an medium error:
->
-> ISO 9660 Extensions: Microsoft Joliet Level 3
-> ISOFS: changing to secondary root
-> attempt to access beyond end of device
-> sr0: rw=0, want=81220, limit=40944
-> Buffer I/O error on device sr0, logical block 20304
-> attempt to access beyond end of device
-> sr0: rw=0, want=81224, limit=40944
-> Buffer I/O error on device sr0, logical block 20305
-> attempt to access beyond end of device
-> sr0: rw=0, want=81228, limit=40944
-> Buffer I/O error on device sr0, logical block 20306
-> attempt to access beyond end of device
-> sr0: rw=0, want=81232, limit=40944
-> Buffer I/O error on device sr0, logical block 20307
-> attempt to access beyond end of device
-> sr0: rw=0, want=81236, limit=40944
-> Buffer I/O error on device sr0, logical block 20308
-> attempt to access beyond end of device
-> sr0: rw=0, want=81240, limit=40944
-> Buffer I/O error on device sr0, logical block 20309
-> attempt to access beyond end of device
-> sr0: rw=0, want=81244, limit=40944
-> Buffer I/O error on device sr0, logical block 20310
-> attempt to access beyond end of device
-> sr0: rw=0, want=81248, limit=40944
-> Buffer I/O error on device sr0, logical block 20311
-> attempt to access beyond end of device
-> sr0: rw=0, want=81220, limit=40944
-> Buffer I/O error on device sr0, logical block 20304
-> attempt to access beyond end of device
-> sr0: rw=0, want=81224, limit=40944
-> Buffer I/O error on device sr0, logical block 20305
-> attempt to access beyond end of device
-> sr0: rw=0, want=1028968, limit=40944
-> Buffer I/O error on device sr0, logical block 257241
-> attempt to access beyond end of device
-> sr0: rw=0, want=1028972, limit=40944
-> Buffer I/O error on device sr0, logical block 257242
-> attempt to access beyond end of device
-> sr0: rw=0, want=1028976, limit=40944
-> attempt to access beyond end of device
-> sr0: rw=0, want=1028980, limit=40944
-> attempt to access beyond end of device
-> sr0: rw=0, want=1028984, limit=40944
-> attempt to access beyond end of device
-> sr0: rw=0, want=1028988, limit=40944
-> attempt to access beyond end of device
-> sr0: rw=0, want=1028992, limit=40944
-> attempt to access beyond end of device
-> sr0: rw=0, want=1028996, limit=40944
-> attempt to access beyond end of device
-> sr0: rw=0, want=1028968, limit=40944
-> attempt to access beyond end of device
-> sr0: rw=0, want=1028972, limit=40944
->
-> does anybody have similiar problems with current linus kernel?
->   
-I have a question: How to find out between which two tags a given commit
-lies?
+On Tue, 13 Nov 2007 21:00:30 +0100 (CET) Christian Kujau <lists@nerdbynature.de> wrote:
 
-E.g. commit 6f5391c283d7fdcf24bf40786ea79061919d1e1d ([SCSI] Get rid of
-scsi_cmnd->done), which is the last commit that changed drivers/scsi/sr.c
+> On Tue, 13 Nov 2007, Andrew Morton wrote:
+> > I think that we're fairly good about working the regressions in
+> > Adrian/Michal/Rafael's lists but once Linus releases 2.6.x we tend to let
+> > the unsolved ones slide, and we don't pay as much attention to the
+> > regressions which 2.6.x testers report.
+> 
+> Can't we wait until all regressions[0] are fixed before releasing a new 
+> 2.6.x? I'd consider regressions a *literal* show stopper, and with this 
+> policy they just have be fixed, nothing would "slide"...
+> 
 
-i now discovered (using gitk and a lot of scolling) that above commit is
-after v2.6.23 but before v2.6.24-rc1 (so it is a possible offender)
+Problem is that everyone would then sit around pumping shiny new features
+into their trees waiting until someone else fixes the regressions.
 
-You see i am just too lazy to bisect (and reboot 20th times or so) and i
-just wanted to try my luck and revert the last
- commit and see if this fixes my problem.
+There are a number of process things we _could_ do.  Like
 
-By the way:
-Reverting commit 6f5391c283d7fdcf24bf40786ea79061919d1e1d makes the same
-cd medium readable again on v2.6.24-rc2-409-g9418d5d.
+- have bugfix-only kernel releases
 
-mfg
-thomas
+- Just refuse to merge any non-bugfix patches for a subsystem when it is
+  determined that the subsystem has "too many" regressions.
+
+- Create an "if you added a regression, you should fix some other bug
+  too" rule.
+
+- probably other stuff.
+
+But we can't/shouldn't do any of that until it is generally agreed that we
+have a problem and that the problem is of sufficient magnitude that process
+changes are needed to address it.  We aren't at that stage yet.
+
+
+Here's an important point: developers have a fixed amount of development
+time.  They spend some of that time fixing bugs and the rest of that time
+on <otherstuff>.  And while one could cook up all sorts of wonderful
+process changes, they all would be aimed at a single thing: shifting some
+of the developers' time away from <otherstuff> and onto bugfixing.
+
+At this stage the only tool which is being deployed to attempt to bring
+about that reprioritisation is suasion.  aka "lkml flamewar".
+
