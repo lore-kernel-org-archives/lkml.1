@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762224AbXKMWgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762043AbXKMWjE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762224AbXKMWgI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 17:36:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759409AbXKMWf4
+	id S1762043AbXKMWjE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 17:39:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756997AbXKMWiy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 17:35:56 -0500
-Received: from lazybastard.de ([212.112.238.170]:54692 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758133AbXKMWfz (ORCPT
+	Tue, 13 Nov 2007 17:38:54 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:59850 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753420AbXKMWiy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 17:35:55 -0500
-Date: Tue, 13 Nov 2007 23:30:53 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
-       Ray Lee <ray-lk@madrabbit.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Mel Gorman <mel@csn.ul.ie>, Andi Kleen <ak@suse.de>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: x86_64: Make sparsemem/vmemmap the default memory model
-Message-ID: <20071113223052.GE20167@lazybastard.org>
-References: <Pine.LNX.4.64.0711121549370.29178@schroedinger.engr.sgi.com> <200711130059.34346.ak@suse.de> <Pine.LNX.4.64.0711121615120.29328@schroedinger.engr.sgi.com> <200711130149.54852.ak@suse.de> <Pine.LNX.4.64.0711121940410.30269@schroedinger.engr.sgi.com> <2c0942db0711122027m5b11502cveded5705c0bc4f64@mail.gmail.com> <Pine.LNX.4.64.0711122040380.30724@schroedinger.engr.sgi.com> <20071113204100.GB20167@lazybastard.org> <Pine.LNX.4.64.0711131349300.3714@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0711131349300.3714@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
+	Tue, 13 Nov 2007 17:38:54 -0500
+Message-ID: <473A26A2.7090007@zytor.com>
+Date: Tue, 13 Nov 2007 14:35:14 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@muc.de>, Chuck Ebbert <cebbert@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [patch 5/8] Immediate Values - x86 Optimization (update)
+References: <20071113185800.436425570@polymtl.ca> <20071113190040.740103668@polymtl.ca> <4739F609.50501@zytor.com> <20071113192445.GA1463@Krystal> <4739FCA0.4040702@zytor.com> <20071113194550.GA4400@Krystal> <473A017D.2030501@zytor.com> <20071113204033.GB7450@Krystal> <473A166E.3070708@zytor.com> <20071113220227.GB9057@Krystal>
+In-Reply-To: <20071113220227.GB9057@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 November 2007 13:52:17 -0800, Christoph Lameter wrote:
+Mathieu Desnoyers wrote:
 > 
-> Could you run your own test to verify?
+> Andi seemed to trust gas stability and you answered:
+> 
+> "The comment was referring to x86-64, but I incorrectly remembered that 
+> applying to "movq $imm,%reg" as opposed to loading from an absolute 
+> address.  gas actually has a special opcode (movabs) for the 64-bit 
+> version of the latter variant, which is only available with %rax and its 
+> subregisters.
+> 
+> Nevermind, in other words.  It's still true, though, that the immediate 
+> will always be the last thing in the instruction -- that's a fixture of 
+> the instruction format."
+> 
+> So, in the end, is there a way to make x86_64 use a fixed-size opcode
+> for the 1, 2, 4 and 8 bytes load immediates or we will have to force the
+> use of a specific register ?
+> 
+> (and we can't take a pointer from the end of the instruction, because we
+> need to align the immediate value correctly)
+> 
 
-You bastard!  You know I'm too lazy to do that. ;)
+For a 64-bit load, you'll always have a REX prefix.  For 8-, 16- and 
+32-bit load, the length of the instruction will depend on the register 
+chosen, unless you constrain to either all legacy or all upper 
+registers, or you force gas to generate a prefix, but I don't think 
+there is a way to do that that will work with assemblers all the way 
+back to 2.12, which is at least what we officially support (I have no 
+idea if assemblers that far back actually *work*, mind you.)
 
-As long as the order-0 number is stable across multiple runs I don't
-mind.  The numbers just looked suspiciously as if they were not stable.
-That's all.
-
-Jörn
-
--- 
-Why do musicians compose symphonies and poets write poems?
-They do it because life wouldn't have any meaning for them if they didn't.
-That's why I draw cartoons.  It's my life.
--- Charles Shultz
+	-hpa
