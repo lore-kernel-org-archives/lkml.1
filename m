@@ -1,45 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762843AbXKMWHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761469AbXKMWPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762843AbXKMWHs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 17:07:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757411AbXKMWHk
+	id S1761469AbXKMWPa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 17:15:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758385AbXKMWPR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 17:07:40 -0500
-Received: from moutng.kundenserver.de ([212.227.126.177]:52323 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755401AbXKMWHj (ORCPT
+	Tue, 13 Nov 2007 17:15:17 -0500
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:48563 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757269AbXKMWPP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 17:07:39 -0500
-Date: Tue, 13 Nov 2007 23:07:20 +0100
-From: Chris Friedhoff <chris@friedhoff.org>
-To: "Serge E. Hallyn" <sergeh@us.ibm.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Posix file capabilities in 2.6.24rc2
-Message-Id: <20071113230720.22c6a036.chris@friedhoff.org>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.10.14; i486-slackware-linux-gnu)
+	Tue, 13 Nov 2007 17:15:15 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HAP6vOUdMROHU/2dsb2JhbACBWw
+Date: Tue, 13 Nov 2007 17:10:12 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: pageexec@freemail.hu
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [patch 06/11] Text Edit Lock - Alternative code for x86
+Message-ID: <20071113221012.GC9057@Krystal>
+References: <20071113184719.506949138@polymtl.ca> <473A2B1A.16967.38D5698D@pageexec.freemail.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/dFILJyOogJpDB1fFwLF38EZokQNzvYOpJJ/2
- OP6B5OViUTO0lO9eHT2cSt5YJWalbueZ8i5rqfx3DcpVLJ29W4
- 7B9R6MLqIJbC0IHFW+mVM1wtF6uL3q6
+Content-Disposition: inline
+In-Reply-To: <473A2B1A.16967.38D5698D@pageexec.freemail.hu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 17:04:20 up 10 days,  3:09,  6 users,  load average: 0.26, 0.45,
+	0.78
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+* pageexec@freemail.hu (pageexec@freemail.hu) wrote:
+> On 13 Nov 2007 at 13:46, Mathieu Desnoyers wrote:
+> 
+> > +void *text_poke_early(void *addr, const void *opcode, size_t len)
+> > +{
+> > +	memcpy(addr, opcode, len);
+> > +	text_sync(addr, len);
+> > +	return addr;
+> > +}
+> 
+> why do you need this function (vs. using text_poke throughout)?
+> 
 
-everything works as expected, but ...
+Because it's not safe to use read_cr0() in paravirtualization
+before the alternatives are set.
 
-closing X and no capabilities set for xinit does shutdown only the
-windowmanager and not the X server (Xorg server 1.4)
-Consolemessage is:
-xinit:  Operation not permitted (errno 1): Can't kill X server
+> > +#define kernel_wp_save(cr0)					\
+> > +	do {							\
+> > +		preempt_disable();				\
+> > +		cr0 = read_cr0();				\
+> > +		if (cpu_data(smp_processor_id()).wp_works_ok)	\
+> 
+> why do you need this test? if cr0.wp is ineffective, then it doesn't
+> matter whether it's on or off (in fact, at least the intel manual
+> says that 386s would not even let you change its value, they'll
+> silently ignore attempts of setting the wp bit).
+> 
 
+Ok.. then this test could go away then. I prefered to use a conservative
+approach. Will fix. Thanks for the hint.
 
-the xattr capability is removed, when the file is chown'ed.
+Mathieu
 
+> > +			write_cr0(cr0 & ~X86_CR0_WP);		\
+> > +	} while (0)
+> > +
+> > +#define kernel_wp_restore(cr0)					\
+> > +	do {							\
+> > +		if (cpu_data(smp_processor_id()).wp_works_ok)	\
+> 
+> ditto...
+> 
+> > +			write_cr0(cr0);				\
+> > +		preempt_enable();				\
+> > +	} while (0)
+> >  
+> >  #endif /* _I386_ALTERNATIVE_H */
+> 
+> 
 
-Chris
---------------------
-Chris Friedhoff
-chris@friedhoff.org
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
