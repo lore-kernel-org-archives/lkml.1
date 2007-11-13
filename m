@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761029AbXKMTY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760515AbXKMT0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761029AbXKMTY4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 14:24:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbXKMTYt
+	id S1760515AbXKMT0W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 14:26:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755319AbXKMT0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 14:24:49 -0500
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:48197 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752428AbXKMTYs convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 14:24:48 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq4HAPyIOUdMROHU/2dsb2JhbACBWw
-Date: Tue, 13 Nov 2007 14:24:45 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@muc.de>, Chuck Ebbert <cebbert@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [patch 5/8] Immediate Values - x86 Optimization
-Message-ID: <20071113192445.GA1463@Krystal>
-References: <20071113185800.436425570@polymtl.ca> <20071113190040.740103668@polymtl.ca> <4739F609.50501@zytor.com>
+	Tue, 13 Nov 2007 14:26:10 -0500
+Received: from rtr.ca ([76.10.145.34]:2495 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752594AbXKMT0H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 14:26:07 -0500
+Message-ID: <4739FA4D.1050900@rtr.ca>
+Date: Tue, 13 Nov 2007 14:26:05 -0500
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <4739F609.50501@zytor.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:18:41 up 10 days, 24 min,  6 users,  load average: 4.13, 1.86,
-	0.97
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, protasnb@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+References: <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca> <20071113164650.GA28493@elte.hu> <4739E3D0.10201@rtr.ca> <20071113181228.GF4250@stusta.de> <4739EA83.5040006@rtr.ca> <20071113183605.GG4250@stusta.de> <4739F12E.5020807@rtr.ca> <20071113190428.GH4250@stusta.de>
+In-Reply-To: <20071113190428.GH4250@stusta.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* H. Peter Anvin (hpa@zytor.com) wrote:
-> Mathieu Desnoyers wrote:
-> - Use "=g" constraint for char immediate value inline assembly.
->
-> "=g" is the same as "=rmi" which is inherently bogus.  In your actual code 
-> you use "=r", the correct constraint is "=q".
->
+Adrian Bunk wrote:
+> On Tue, Nov 13, 2007 at 01:47:10PM -0500, Mark Lord wrote:
+>> Adrian Bunk wrote:
+..
+> Another point is that it shifts the work from the few experienced 
+> developers to the many users. Users (and voluntary testers) we have
+> many, but developer time for debugging bug reports is a quite scarce 
+> resource.
+> 
+>> And when a "maintainer" is too busy to find/fix their own bugs,
+>> that could be a sign that they've bitten off too big of a chunk
+>> of the kernel, and it's time for them to distribute code maintainership.
+> 
+> The problem is: Maintainers don't grow on trees.
+..
 
-Hi Peter,
+Hey, if somebody has time to break things, then they damn well ought
+to be able to make time to fix them again.  And the best developers
+here on LKML do just that (fix what they break).
 
-Yup, =g wasn't what I was looking for at all, the header comment is
-bogus.
+You broke it, you fix it.  A simple rule.
 
-From
-http://gcc.gnu.org/onlinedocs/gcc/Simple-Constraints.html#Simple-Constraints
+Translation for the particularly daft:
 
-`r'
-    A register operand is allowed provided that it is in a general register.
+If you've been making significant updates to a driver/subsystem,
+and people are reporting that it is now broken for them,
+then it's your job to make it right.  The reporters can help,
+and many may even git-bisect or send patches.  
 
-From
-http://gcc.gnu.org/onlinedocs/gcc/Machine-Constraints.html#Machine-Constraints
-Intel 386   config/i386/constraints.md
+But you cannot *expect* or *insist* upon them doing your job.
 
-q
-    Any register accessible as rl. In 32-bit mode, a, b, c, and d; in 64-bit mode, any integer register. 
-
-
-I am worried that "=q" might exclude the si and di registers in 32-bit mode.
-
-What exactly is wrong with "=r" ?
-
-
-> 	-hpa
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
