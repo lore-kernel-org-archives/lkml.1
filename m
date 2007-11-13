@@ -1,90 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761469AbXKMWPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761986AbXKMWQ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761469AbXKMWPa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 17:15:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758385AbXKMWPR
+	id S1761986AbXKMWQ4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 17:16:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760233AbXKMWQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 17:15:17 -0500
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:48563 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757269AbXKMWPP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 17:15:15 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq4HAP6vOUdMROHU/2dsb2JhbACBWw
-Date: Tue, 13 Nov 2007 17:10:12 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: pageexec@freemail.hu
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [patch 06/11] Text Edit Lock - Alternative code for x86
-Message-ID: <20071113221012.GC9057@Krystal>
-References: <20071113184719.506949138@polymtl.ca> <473A2B1A.16967.38D5698D@pageexec.freemail.hu>
-Mime-Version: 1.0
+	Tue, 13 Nov 2007 17:16:46 -0500
+Received: from ns2.suse.de ([195.135.220.15]:37750 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754080AbXKMWQp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 17:16:45 -0500
+Date: Tue, 13 Nov 2007 14:16:23 -0800
+From: Greg KH <gregkh@suse.de>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, Greg KH <greg@kroah.com>,
+       Alex Chiang <achiang@hp.com>, Matthew Wilcox <matthew@wil.cx>,
+       kristen.c.accardi@intel.com, lenb@kernel.org, rick.jones2@hp.com,
+       linux-kernel@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
+Message-ID: <20071113221623.GA5965@suse.de>
+References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113203645.GB22812@ldl.fc.hp.com> <20071113213049.GA4194@kroah.com> <200711131501.01320.bjorn.helgaas@hp.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <473A2B1A.16967.38D5698D@pageexec.freemail.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 17:04:20 up 10 days,  3:09,  6 users,  load average: 0.26, 0.45,
-	0.78
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <200711131501.01320.bjorn.helgaas@hp.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* pageexec@freemail.hu (pageexec@freemail.hu) wrote:
-> On 13 Nov 2007 at 13:46, Mathieu Desnoyers wrote:
+On Tue, Nov 13, 2007 at 03:01:01PM -0700, Bjorn Helgaas wrote:
+> On Tuesday 13 November 2007 02:30:49 pm Greg KH wrote:
+> > On Tue, Nov 13, 2007 at 01:36:45PM -0700, Alex Chiang wrote:
+> > > * Greg KH <greg@kroah.com>:
+> > > > IBM sells a program that does this for server rooms.  It's
+> > > > probably part of some Tivoli package somewhere, sorry I don't
+> > > > remember the name.  I did see it working many years ago and it
+> > > > required no kernel changes at all to work properly.
 > 
-> > +void *text_poke_early(void *addr, const void *opcode, size_t len)
-> > +{
-> > +	memcpy(addr, opcode, len);
-> > +	text_sync(addr, len);
-> > +	return addr;
-> > +}
-> 
-> why do you need this function (vs. using text_poke throughout)?
-> 
+> Do you know how this Tivoli package works or where it gets the
+> information?
 
-Because it's not safe to use read_cr0() in paravirtualization
-before the alternatives are set.
+I was told it was just reading the ACPI tables from userspace.  As I saw
+it running on a machine without a modified kernel, I had no reason to
+doubt this, but it might be doing something else for all I know.
 
-> > +#define kernel_wp_save(cr0)					\
-> > +	do {							\
-> > +		preempt_disable();				\
-> > +		cr0 = read_cr0();				\
-> > +		if (cpu_data(smp_processor_id()).wp_works_ok)	\
-> 
-> why do you need this test? if cr0.wp is ineffective, then it doesn't
-> matter whether it's on or off (in fact, at least the intel manual
-> says that 386s would not even let you change its value, they'll
-> silently ignore attempts of setting the wp bit).
-> 
+What I do know is that it somehow does work without any kernel changes
+needed, and is in use today by very large data centers without any
+problems.
 
-Ok.. then this test could go away then. I prefered to use a conservative
-approach. Will fix. Thanks for the hint.
+> > > Like I said in an earlier email, HP ia64 systems will require a
+> > > kernel change to get this information. Whether it comes via a
+> > > generic ACPI access layer like dev_acpi, or something like this
+> > > patch series, the kernel will still get touched.
+> > 
+> > And like I said, I'm pretty sure you don't need to touch the kernel
+> > today as there are people doing this just fine from userspace without
+> > any kernel changes needed :)
+> 
+> I think you are assuming userspace can just dump the raw ACPI tables
+> and extract this information from them.  But I don't think that's
+> possible because _SUN is a method that can contain arbitrary AML.
+> That AML has to be *executed*, and you can't do that safely in
+> userspace.
 
-Mathieu
+Yes, I was assuming that based on the above running code, if this is
+somehow impossible to do from userspace, I don't know what the code is
+doing.
 
-> > +			write_cr0(cr0 & ~X86_CR0_WP);		\
-> > +	} while (0)
-> > +
-> > +#define kernel_wp_restore(cr0)					\
-> > +	do {							\
-> > +		if (cpu_data(smp_processor_id()).wp_works_ok)	\
-> 
-> ditto...
-> 
-> > +			write_cr0(cr0);				\
-> > +		preempt_enable();				\
-> > +	} while (0)
-> >  
-> >  #endif /* _I386_ALTERNATIVE_H */
-> 
-> 
+thanks,
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+greg k-h
