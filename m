@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757815AbXKMHJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759201AbXKMHK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757815AbXKMHJR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 02:09:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbXKMHJF
+	id S1759201AbXKMHK2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 02:10:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbXKMHKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 02:09:05 -0500
-Received: from [212.12.190.48] ([212.12.190.48]:39998 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751221AbXKMHJE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 02:09:04 -0500
-From: Al Boldi <a1426z@gawab.com>
-To: linux-kernel@vger.kernel.org
-Subject: top lies ?
-Date: Tue, 13 Nov 2007 10:08:56 +0300
-User-Agent: KMail/1.5
+	Tue, 13 Nov 2007 02:10:21 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:12170 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751698AbXKMHKU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 02:10:20 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=WSOMgyrtDozV3qlNeJ13ojuMp95LRDRiZMuSgNzOVfNQQp8v0m2CMKVTM5ENBiPyR
+	0ISfBRuA52TvNJ7CXUk3w==
+Message-ID: <6599ad830711122310nf7530cfs5ef1fea061b1252c@mail.gmail.com>
+Date: Mon, 12 Nov 2007 23:10:11 -0800
+From: "Paul Menage" <menage@google.com>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: Revert for cgroups CPU accounting subsystem patch
+Cc: vatsa@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <47394B84.8030008@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200711131008.56627.a1426z@gawab.com>
+Content-Disposition: inline
+References: <6599ad830711122125u576e85a6w428466a0ab46dbc6@mail.gmail.com>
+	 <20071113060038.GC3359@linux.vnet.ibm.com>
+	 <6599ad830711122205g88aae4fua8dd76cf6e8ab84d@mail.gmail.com>
+	 <47394B84.8030008@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kloczek wrote:
-> Some data showed by top command looks like completly trashed.
-> Fragment from top output:
+On Nov 12, 2007 11:00 PM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 >
-> Mem:   2075784k total,  2053352k used,    22432k free,    19260k buffers
-> Swap:  2096472k total,      136k used,  2096336k free,  1335080k cached
->
->    PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  SWAP nFLT
-> WCHAN     COMMAND 14515 mysql     20   0 1837m 563m 4132 S   39 27.8 
-> 27:14.20 1.2g   18 -         mysqld
->
-> How it is possible that swap ussage is 136k and swapped out portion of (in
-> this case) mysqld process is 1.2g ?
+> Right now, one of the limitations of the CPU controller is that
+> the moment you create another control group, the bandwidth gets
+> divided by the default number of shares. We can't create groups
+> just for monitoring.
 
-Welcome to OverCommit, aka OOM-nirvana.
+Could we get around this with, say, a flag that always treats a CFS
+schedulable entity as having a weight equal to the number of runnable
+tasks in it? So CPU bandwidth would be shared between groups in
+proportion to the number of runnable tasks, which would distribute the
+cycles approximately equivalently to them all being separate
+schedulable entities.
 
-Try this:
-# echo 2 > /proc/sys/vm/overcommit_memory
-# echo 0 > /proc/sys/vm/overcommit_ratio
+> cpu_acct fills this gap.
 
-But make sure you have enough swap.
+Agreed, but not in the right way IMO.
 
-
-Thanks!
-
---
-Al
-
+Paul
