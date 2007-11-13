@@ -1,49 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759816AbXKMSjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760327AbXKMSlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759816AbXKMSjj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 13:39:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbXKMSj3
+	id S1760327AbXKMSlz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 13:41:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbXKMSlp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 13:39:29 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:40068 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752658AbXKMSj1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 13:39:27 -0500
-Date: Tue, 13 Nov 2007 11:39:25 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Mark Lord <liml@rtr.ca>
-Cc: Ingo Molnar <mingo@elte.hu>, alsa-devel@alsa-project.org,
-       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-kernel@vger.kernel.org, protasnb@gmail.com,
-       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071113183925.GF17785@parisc-linux.org>
-References: <20071113031553.3c7b5c16.akpm@linux-foundation.org> <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca> <20071113164650.GA28493@elte.hu> <4739E3D0.10201@rtr.ca>
+	Tue, 13 Nov 2007 13:41:45 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:43710 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751785AbXKMSlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 13:41:44 -0500
+Message-ID: <4739EE13.2090006@redhat.com>
+Date: Tue, 13 Nov 2007 13:33:55 -0500
+From: William Cohen <wcohen@redhat.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070926)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4739E3D0.10201@rtr.ca>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: eranian@hpl.hp.com
+CC: akpm@osdl.org, Robert Richter <robert.richter@amd.com>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, perfmon@napali.hpl.hp.com,
+       Andi Kleen <andi@firstfloor.org>, perfmon2-devel@lists.sourceforge.net
+Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
+References: <20071107003454.GA13374@kroah.com>	<20071109120627.60ec9ab4.akpm@linux-foundation.org>	<20071109213829.GC28276@kroah.com> <p73abpl2654.fsf@bingen.suse.de>	<20071113151718.GA3804@erda.amd.com> <4739C42F.8030208@redhat.com> <20071113175545.GD4319@frankl.hpl.hp.com>
+In-Reply-To: <20071113175545.GD4319@frankl.hpl.hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 12:50:08PM -0500, Mark Lord wrote:
-> It's a 540MByte download over a slow link for everyone else.
+Stephane Eranian wrote:
+> Hello,
+> 
+> On Tue, Nov 13, 2007 at 10:35:11AM -0500, William Cohen wrote:
+>> Robert Richter wrote:
+>>> On 10.11.07 21:32:39, Andi Kleen wrote:
+>>>> It would be really good to extract a core perfmon and start with
+>>>> that and then add stuff as it makes sense.
+>>>>
+>>>> e.g. core perfmon could be something simple like just support
+>>>> to context switch state and initialize counters in a basic way 
+>>>> and perhaps get counter numbers for RDPMC in ring3 on x86[1]
+>>> Perhaps a core could provide also as much functionality so that
+>>> Perfmon can be used with an *unpatched* kernel using loadable modules?
+>>> One drawback with today's Perfmon is that it can not be used with a
+>>> vanilla kernel. But maybe such a core is by far too complex for a
+>>> first merge.
+>>>
+>>> -Robert
+>>>
+>> Hi Robert,
+>>
+>> In the past I suggested that it might be useful to have a version of perfmon2 
+>> that only set up the perfmon on a global basis. That would allow the patches for 
+>> context switches to be added as a separate step, splitting up the patch into 
+>> smaller set of patches.
+>>
+>> Perfmon2 uses a set of system calls to control the performance monitoring 
+>> hardware. This would make it difficult to use an unpatch kernel unless perfmon 
+>> changed the mechanism used to control the performance monitoring hardware.
+>>
+> Yes, that would be a possibility but as you pointed out there are some problems:
+> 
+> 	- perfmon2 uses system calls. So unless you can dynamically patch the
+> 	  syscall table we would have to go back to the ioctl() and driver model.
+> 	  I was under the impression that people did not quite like multiplexing
+> 	  syscalls such as ioctl(). I also do prefer the multi syscall approach.
+> 
+> 	- perfmon2 needs to install a PMU interrupt handler. On X86, this is not just
+> 	  an external device interrupts. There needs to be some APIC and interrupt
+> 	  gate setup. There maybe other constraints on other architectures as well.
+> 	  Not sure if all functions/structures necessary for this are available to
+> 	  modules.
 
-Where do you get this number from?
-$ du -sh .git/objects/pack/
-249M    .git/objects/pack/
-$ du -sh .git/objects/
-253M    .git/objects/
+The oprofile module can setup a handler for PMU interrupts. This is done in 
+archi/x86/oprofile/nmi_int:nmi_cpu_setup().  Other modules could do the same. 
+However, it bumps what ever was using the nmi/pmu off, then restores nmi/pmu 
+when oprofile is shut down. Maybe the pmu/nmi resource reservation mechanism 
+should be another self-contained patch.
 
-ie about half what you claim.
+> 	- we could not support per-thread mode with the kernel module approach due to
+> 	  link to the context switch code. I do believe per-thread is a key value-add
+> 	  for performance monitoring.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+The per-thread monitoring is useful to a number of people and many people want 
+it. The thought was how to break the large perfmon patch into set of smaller 
+incremental patches. So it isn't whether to have per-thread pmu virtualization, 
+but rather when/how to get it in.
+
+-Will
