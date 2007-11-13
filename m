@@ -1,69 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763286AbXKMUsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762672AbXKMUt2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763286AbXKMUsA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 15:48:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757243AbXKMUrv
+	id S1762672AbXKMUt2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 15:49:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758352AbXKMUtU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 15:47:51 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33365 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755818AbXKMUru (ORCPT
+	Tue, 13 Nov 2007 15:49:20 -0500
+Received: from tomts25-srv.bellnexxia.net ([209.226.175.188]:62833 "EHLO
+	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756457AbXKMUtT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 15:47:50 -0500
-Date: Tue, 13 Nov 2007 12:46:56 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Florian Fainelli <florian.fainelli@telecomint.eu>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [patch 2.6.24-rc2 1/3] generic gpio -- gpio_chip support
-Message-Id: <20071113124656.3c333bdd.akpm@linux-foundation.org>
-In-Reply-To: <200711131122.45950.david-b@pacbell.net>
-References: <200711091136.20051.david-b@pacbell.net>
-	<200711121726.39263.david-b@pacbell.net>
-	<20071113093414.GA5270@elte.hu>
-	<200711131122.45950.david-b@pacbell.net>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 13 Nov 2007 15:49:19 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HALCbOUdMROHU/2dsb2JhbACBWw
+Date: Tue, 13 Nov 2007 15:49:17 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: LTTng (Linux kernel tracer) tarball, 0.10.0-pre25
+Message-ID: <20071113204917.GD7450@Krystal>
+References: <20071113202002.GA6286@Krystal>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20071113202002.GA6286@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 15:47:47 up 10 days,  1:53,  5 users,  load average: 0.64, 1.71,
+	1.69
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Nov 2007 11:22:45 -0800 David Brownell <david-b@pacbell.net> wrote:
-
-> On Tuesday 13 November 2007, Ingo Molnar wrote:
-> > 
-> > * David Brownell <david-b@pacbell.net> wrote:
-> > 
-> > > > > I speculate that either the design has changed (without fanfare), 
-> > > > > or else that stuff is in RT kernels and has not yet gone upstream.
-> > > > 
-> > > > Well whatever.  We shouldn't have to resort to caller-side party 
-> > > > tricks like this to get acceptable performance.
-> > > 
-> > > I'd be happy if, as originally presented, it were possible to just 
-> > > pass a raw_spinlock_t to spin_lock_irqsave() and friends.
-> > 
-> > that's a spinlock type abstraction of PREEMPT_RT, not of mainline.
+* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
+> Hi,
 > 
-> Any reason that stuff shouldn't move into mainline?
+> I have seen a few threads about unfixed kernel regression lately. I
+> strongly believe that many kernel developers and users could help
+> pinpointing the cause of those bugs much more efficiently by using a
+> tool like LTTng.
 > 
+> If you want to find the code I just released (both for -mm inclusion and
+> as a RFC) tied up in a single tarball, you will find the patchset at the
+> beginning of the LTTng series file there :
 > 
-> > 	 Why do you want to use raw_spinlock_t?
+> http://ltt.polymtl.ca/lttng/patch-2.6.24-rc2-git3-lttng-0.10-pre24.tar.bz2
 > 
-> Already answered elsewhere in this thread ...
 
-Can't say I really understood the answer.  I don't think we actually know
-where all of this extra time is being spent?
+Newer version available, includes the fixes resulting from Peter Anvin's
+comments about immediate values :
 
-> I'll highlight the
-> point that such bitops shouldn't be preemption points.
+http://ltt.polymtl.ca/lttng/patch-2.6.24-rc2-git3-lttng-0.10-pre25.tar.bz2
 
-Disagree.  *everything* should be a preemption point.  For
-internal-implementation details we do need to disable preemtion sometimes
-(to prevent deadlocks and to protect per-cpu resources).  But those
-preemption-off periods should be minimised.
+Mathieu
 
+> This LTTng "pre" version can be used with the following userspace packages :
+> http://ltt.polymtl.ca/lttng/ltt-control-0.46-06112007.tar.gz
+> http://ltt.polymtl.ca/packages/lttv-0.10.0-pre2-07112007.tar.gz
+> 
+> Mathieu
+> 
+> -- 
+> Mathieu Desnoyers
+> Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
