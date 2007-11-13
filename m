@@ -1,60 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753087AbXKMIAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751802AbXKMIXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753087AbXKMIAO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 03:00:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbXKMH77
+	id S1751802AbXKMIXe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 03:23:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbXKMIXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 02:59:59 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:14304 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751022AbXKMH76 (ORCPT
+	Tue, 13 Nov 2007 03:23:25 -0500
+Received: from mail8.dotsterhost.com ([66.11.233.1]:33322 "HELO
+	mail8.dotsterhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750909AbXKMIXY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 02:59:58 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=ycAno50IPWJZtUqNwaS93FfT7jhQWX0f9XsjvpoHODUFXAAseElbQvYL7CmILUb3t
-	w50wKVzDRmn1yDC1CuaTg==
-Message-ID: <6599ad830711122359s5a4397f1ye6df324f57449721@mail.gmail.com>
-Date: Mon, 12 Nov 2007 23:59:50 -0800
-From: "Paul Menage" <menage@google.com>
-To: vatsa@linux.vnet.ibm.com
-Subject: Re: Revert for cgroups CPU accounting subsystem patch
-Cc: "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       containers@lists.linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <20071113075946.GA14731@linux.vnet.ibm.com>
+	Tue, 13 Nov 2007 03:23:24 -0500
+Message-ID: <47395F00.6080507@crispincowan.com>
+Date: Tue, 13 Nov 2007 00:23:28 -0800
+From: Crispin Cowan <crispin@crispincowan.com>
+Organization: Crispin's Labs
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
+To: rmeijer@xs4all.nl, apparmor-dev@forge.novell.com
+CC: Crispin Cowan <crispin@crispincowan.com>,
+       LSM ML <linux-security-module@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [Apparmor-dev] Re: AppArmor Security Goal
+References: <10657.80.126.27.205.1194933072.squirrel@webmail.xs4all.nl>
+In-Reply-To: <10657.80.126.27.205.1194933072.squirrel@webmail.xs4all.nl>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6599ad830711122125u576e85a6w428466a0ab46dbc6@mail.gmail.com>
-	 <20071113060038.GC3359@linux.vnet.ibm.com>
-	 <6599ad830711122205g88aae4fua8dd76cf6e8ab84d@mail.gmail.com>
-	 <47394B84.8030008@linux.vnet.ibm.com>
-	 <6599ad830711122310nf7530cfs5ef1fea061b1252c@mail.gmail.com>
-	 <47395277.1060006@linux.vnet.ibm.com>
-	 <20071113075946.GA14731@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 12, 2007 11:59 PM, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
->
-> Thinking of it more, this requirement to "group tasks for only accounting
-> purpose" may be required for other resources (mem, io, network etc) as well?
-> Should we have a generic accounting controller which can provide these
-> various resource usgae stats for a group (cpu, mem etc) by iterating thr' the
-> task list for the group and summing up the corresponding stats already present
-> in task structure?
+Re-sent with proper addressing ...
 
-In theory it could certainly be useful - but it can only be done if
-something in the kernel is already keeping track of resources on a
-per-task basis. This works for CPU, but isn't really possible for
-memory without doing something lame like just adding up the tasks' RSS
-values (since the page accounting is the hard part - limiting is easy
-once you have accounting).
+Rob Meijer wrote:
+>> The
+>> system is "defended" in that the worst the attacker can do to corrupt
+>> the system is limited to the transitive closure of what the confined
+>> processes are allowed to access.
+>>     
+> The damage the atacker can do would be defined by the authority not the
+> permissions the process has.
+>   
+As far as I can tall, the transitive closure of permissions is precisely
+authority.
 
-Paul
+>>     * AppArmor confines processes if they are children of a confined
+>>       process, or if the name of the exec'd child matches the name of an
+>>       AppArmor profile.
+>>     
+> What is left unspecified here is 'how' a child 'with its own profile' is
+> confined here. Are it is confined to just its own profile, it may that
+> the "complicit process" communication may need to be wider specified to
+> include this.
+>   
+It is deliberately unspecified in this document, because it is a matter
+of policy. And this item that you've excerpted is just one of a list of
+specific disclaimers that were put here in response to criticisms and
+misunderstandings of AppArmor in the past.
+
+Remember, the purpose of *this* document is to define the security goals
+that AppArmor has to live up to. It is fine to use it as a jumping off
+point for design ideas that some system might employ some day, or even
+proposed enhancements to AppArmor itself, but don't over-burden the
+"security goal" document, it needs to be short & comprehensible.
+
+>>     * A confined process can operate on a file descriptor passed to it
+>>       by an unconfined process, even if it manipulates a file not in the
+>>       confined process's profile. To block this attack, confine the
+>>       process that passed the file descriptor.
+>>     
+> This should not count as an 'attack' given that the unconfined process
+> would either be trusted, or be mallicious and fall inside the "influence"
+> of the confined process anyway.
+>   
+It counts as a surprising result, and so is specifically disclaimed. I
+can tell it is surprising, because it surprised Andi Kleen :)
+
+Crispin
+
+-- 
+Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin
+CEO, Mercenary Linux		   http://mercenarylinux.com/
+	       Itanium. Vista. GPLv3. Complexity at work
