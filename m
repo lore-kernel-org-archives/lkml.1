@@ -1,103 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762177AbXKMUJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761589AbXKMULT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762177AbXKMUJU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 15:09:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758062AbXKMUJE
+	id S1761589AbXKMULT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 15:11:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758062AbXKMULI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 15:09:04 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43216 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757789AbXKMUJD (ORCPT
+	Tue, 13 Nov 2007 15:11:08 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:33149 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755818AbXKMULF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 15:09:03 -0500
-Date: Tue, 13 Nov 2007 12:07:28 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Greg KH <gregkh@suse.de>
-Cc: Philip Mucci <mucci@cs.utk.edu>, eranian@hpl.hp.com,
-       William Cohen <wcohen@redhat.com>,
-       Robert Richter <robert.richter@amd.com>, linux-kernel@vger.kernel.org,
-       Perfmon <perfmon@napali.hpl.hp.com>, Andi Kleen <andi@firstfloor.org>,
-       perfmon2-devel@lists.sourceforge.net,
-       OSPAT devel <ospat-devel@cs.utk.edu>,
-       papi list <ptools-perfapi@cs.utk.edu>
-Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
-Message-Id: <20071113120728.4342e7d7.akpm@linux-foundation.org>
-In-Reply-To: <20071113185924.GA22748@suse.de>
-References: <20071107003454.GA13374@kroah.com>
-	<20071109120627.60ec9ab4.akpm@linux-foundation.org>
-	<20071109213829.GC28276@kroah.com>
-	<p73abpl2654.fsf@bingen.suse.de>
-	<20071113151718.GA3804@erda.amd.com>
-	<4739C42F.8030208@redhat.com>
-	<20071113175545.GD4319@frankl.hpl.hp.com>
-	<53F4663B-CFBA-44E4-8283-BAAC8C8F1AFF@cs.utk.edu>
-	<20071113185924.GA22748@suse.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Nov 2007 15:11:05 -0500
+Date: Tue, 13 Nov 2007 13:11:02 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Greg KH <greg@kroah.com>
+Cc: Alex Chiang <achiang@hp.com>, gregkh@suse.de, kristen.c.accardi@intel.com,
+       lenb@kernel.org, richard.jones2@hp.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
+Message-ID: <20071113201102.GK17785@parisc-linux.org>
+References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113170129.GA20185@kroah.com> <20071113183353.GE17785@parisc-linux.org> <20071113185122.GA22536@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071113185122.GA22536@kroah.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Nov 2007 10:59:24 -0800 Greg KH <gregkh@suse.de> wrote:
+On Tue, Nov 13, 2007 at 10:51:22AM -0800, Greg KH wrote:
+> Ok, again, I want to see the IBM people sign off on this, after testing
+> on all of their machines, before I'll consider this, as I know the IBM
+> acpi tables are "odd".
 
-> On Tue, Nov 13, 2007 at 10:47:45AM -0800, Philip Mucci wrote:
-> > Hi folks,
-> >
-> > Well, I can say the mood here at supercomputing'07 is pretty somber in 
-> > regards to the latest exchange of messages regarding the perfmon patches. 
-> 
-> "somber"?
-> 
-> Why?
-> 
-> We (a number of the kernel developers) want to see the perfmon code make
-> it into the kernel tree, unfortunatly, in the current state it is in,
-> that's not going to happen.
-> 
-> Andi specified a way that this can happen, just refactor your patches
-> into smaller bits that can be reviewed and applied.
-> 
-> If you, or anyone else has any questions about this, please let us know.
-> So far, I have not seen any response to his message, so I'm guessing
-> that the perfmon developers either are off working on this, or don't
-> care.
-> 
-> And if they don't care, then yes, I agree with your "somber" feeling...
-> 
+That seems a little higher standard than patches are normally held to.
+How about the patches get sent to the appropriate people at IBM (who are
+they?) and if we haven't heard a NAK from them after a month, then they
+get applied?
 
-Well...  Philip is (I assume) a numerical-computing guy and not a
-kernel-developing guy (probably a wise choice).
+> Also, how about Dell machines?  I know they are probably not expecting
+> this information to show up and who knows if the numbering of their
+> slots match up with their physical diagrams (I say this based on all of
+> the eth0/eth1 "issues" with Dell machines over the years...)
 
-He speaks for quite a few people - they have serious need for this feature
-but they've had to scruff around with out-of-tree patches for years to get
-it, and still there are problems.
+I'm pretty sure that Windows uses the _SUN information, so I think this
+is going to be well-tested.
 
-I was hoping that after the round of release-and-review which Stephane,
-Andi and I did about twelve months ago that we were on track to merge the
-perfmon codebase as-offered.  But now it turns out that the sentiment is
-that the code simply has too many bells-and-whistles to be acceptable.
+> IBM sells a program that does this for server rooms.  It's probably part
+> of some Tivoli package somewhere, sorry I don't remember the name.  I
+> did see it working many years ago and it required no kernel changes at
+> all to work properly.
 
-My problem with that sentiment is that it is quite likely the case that
-those bells-n-whistles are actually useful and needed features.  Perfmon
-has been out there for quite a few years and the code which is in there
-_should_ be in response to real-world in-the-field experience.  Such
-requirements never go away.
+Well, yes, it doesn't take kernel effort if you're willing to build
+proprietary knowledge into a userspace program.  This seems similar
+to the argument that filesystems don't need to be in the kernel since
+they can be implemented in user space.  They work better in the kernel,
+just like this does.
 
+By the way, the end result of this should be a pci-hotplug system that has
+much less code in the drivers, more uniformity between the presentation
+to userspace, more functionality and is easier to understand.
 
-So.  If what I am saying is correct then the best course of action would be
-for Stephane to help us all to understand what these features are and why
-we need them.  The ideal way in which to do this is
-
-[patch] perfmon: core
-[patch] perfmon: whizzy feature #1
-[patch] perfmon: whizzy feature #2
-[patch] perfmon: whizzy feature #3
-
-etc.  Where the changelog in each whizzy-feature-n explains what it does,
-why it does it and why our users need it.
-
-Whatever happens, perfmon is so big and so old and has been out-of-tree for
-so long that it's going to take a pile of work from lots of people to get
-any of it landed.
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
