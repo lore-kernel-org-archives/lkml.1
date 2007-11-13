@@ -1,60 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760286AbXKMTW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761029AbXKMTY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760286AbXKMTW5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 14:22:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbXKMTWt
+	id S1761029AbXKMTY4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 14:24:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbXKMTYt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 14:22:49 -0500
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:32465 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753664AbXKMTWs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 14:22:48 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=UhpmNB6R3PV7DmLDOGwNx4xvwnIG5rJL5eyGnQmEG+491pNpP81lHgFwxzn8SI2SrfQK+YwHImSyRGLBp7xuNYuOJ8f2GRY1jk2AnhGRRuUPHr9bvX4y4IPuIVvQU1MjNPDUwtSlVV4w8sRlH6RFmDm7t+x6oc3W/foh9Wfimfw=  ;
-X-YMail-OSG: JMJ2eR0VM1kwL5rb6f37tbu8IG8atUZ1dhC9CRohmQxh5riJvTrR3GlmURDloHXbgfxLbKdYaw--
-From: David Brownell <david-b@pacbell.net>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 2.6.24-rc2 1/3] generic gpio -- gpio_chip support
-Date: Tue, 13 Nov 2007 11:22:45 -0800
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Florian Fainelli <florian.fainelli@telecomint.eu>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-References: <200711091136.20051.david-b@pacbell.net> <200711121726.39263.david-b@pacbell.net> <20071113093414.GA5270@elte.hu>
-In-Reply-To: <20071113093414.GA5270@elte.hu>
+	Tue, 13 Nov 2007 14:24:49 -0500
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:48197 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752428AbXKMTYs convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 14:24:48 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HAPyIOUdMROHU/2dsb2JhbACBWw
+Date: Tue, 13 Nov 2007 14:24:45 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@muc.de>, Chuck Ebbert <cebbert@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [patch 5/8] Immediate Values - x86 Optimization
+Message-ID: <20071113192445.GA1463@Krystal>
+References: <20071113185800.436425570@polymtl.ca> <20071113190040.740103668@polymtl.ca> <4739F609.50501@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711131122.45950.david-b@pacbell.net>
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <4739F609.50501@zytor.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:18:41 up 10 days, 24 min,  6 users,  load average: 4.13, 1.86,
+	0.97
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 November 2007, Ingo Molnar wrote:
-> 
-> * David Brownell <david-b@pacbell.net> wrote:
-> 
-> > > > I speculate that either the design has changed (without fanfare), 
-> > > > or else that stuff is in RT kernels and has not yet gone upstream.
-> > > 
-> > > Well whatever.  We shouldn't have to resort to caller-side party 
-> > > tricks like this to get acceptable performance.
-> > 
-> > I'd be happy if, as originally presented, it were possible to just 
-> > pass a raw_spinlock_t to spin_lock_irqsave() and friends.
-> 
-> that's a spinlock type abstraction of PREEMPT_RT, not of mainline.
+* H. Peter Anvin (hpa@zytor.com) wrote:
+> Mathieu Desnoyers wrote:
+> - Use "=g" constraint for char immediate value inline assembly.
+>
+> "=g" is the same as "=rmi" which is inherently bogus.  In your actual code 
+> you use "=r", the correct constraint is "=q".
+>
 
-Any reason that stuff shouldn't move into mainline?
+Hi Peter,
+
+Yup, =g wasn't what I was looking for at all, the header comment is
+bogus.
+
+From
+http://gcc.gnu.org/onlinedocs/gcc/Simple-Constraints.html#Simple-Constraints
+
+`r'
+    A register operand is allowed provided that it is in a general register.
+
+From
+http://gcc.gnu.org/onlinedocs/gcc/Machine-Constraints.html#Machine-Constraints
+Intel 386   config/i386/constraints.md
+
+q
+    Any register accessible as rl. In 32-bit mode, a, b, c, and d; in 64-bit mode, any integer register. 
 
 
-> 	 Why do you want to use raw_spinlock_t?
+I am worried that "=q" might exclude the si and di registers in 32-bit mode.
 
-Already answered elsewhere in this thread ... I'll highlight the
-point that such bitops shouldn't be preemption points.
+What exactly is wrong with "=r" ?
+
+
+> 	-hpa
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
