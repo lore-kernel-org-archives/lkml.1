@@ -1,72 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761986AbXKMWQ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762152AbXKMWUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761986AbXKMWQ4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 17:16:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760233AbXKMWQq
+	id S1762152AbXKMWUR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 17:20:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbXKMWUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 17:16:46 -0500
-Received: from ns2.suse.de ([195.135.220.15]:37750 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754080AbXKMWQp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 17:16:45 -0500
-Date: Tue, 13 Nov 2007 14:16:23 -0800
-From: Greg KH <gregkh@suse.de>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz, Greg KH <greg@kroah.com>,
-       Alex Chiang <achiang@hp.com>, Matthew Wilcox <matthew@wil.cx>,
-       kristen.c.accardi@intel.com, lenb@kernel.org, rick.jones2@hp.com,
-       linux-kernel@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
-Message-ID: <20071113221623.GA5965@suse.de>
-References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113203645.GB22812@ldl.fc.hp.com> <20071113213049.GA4194@kroah.com> <200711131501.01320.bjorn.helgaas@hp.com>
+	Tue, 13 Nov 2007 17:20:04 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:46924 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753803AbXKMWUC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 17:20:02 -0500
+Date: Tue, 13 Nov 2007 14:20:02 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: David Miller <davem@davemloft.net>
+cc: akpm@linux-foundation.org, linux-mm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dada1@cosmosbay.com,
+       schwidefsky@de.ibm.com
+Subject: Re: [patch 01/28] cpu alloc: The allocator
+In-Reply-To: <20071113.031510.151440585.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0711131418560.4363@schroedinger.engr.sgi.com>
+References: <20071106195144.983665861@sgi.com> <20071106195157.878563669@sgi.com>
+ <20071113.031510.151440585.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200711131501.01320.bjorn.helgaas@hp.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 03:01:01PM -0700, Bjorn Helgaas wrote:
-> On Tuesday 13 November 2007 02:30:49 pm Greg KH wrote:
-> > On Tue, Nov 13, 2007 at 01:36:45PM -0700, Alex Chiang wrote:
-> > > * Greg KH <greg@kroah.com>:
-> > > > IBM sells a program that does this for server rooms.  It's
-> > > > probably part of some Tivoli package somewhere, sorry I don't
-> > > > remember the name.  I did see it working many years ago and it
-> > > > required no kernel changes at all to work properly.
-> 
-> Do you know how this Tivoli package works or where it gets the
-> information?
+On Tue, 13 Nov 2007, David Miller wrote:
 
-I was told it was just reading the ACPI tables from userspace.  As I saw
-it running on a machine without a modified kernel, I had no reason to
-doubt this, but it might be doing something else for all I know.
+> Yes, I could add virtualized area support to sparc64, but we cannot
+> impose this on every platform.
 
-What I do know is that it somehow does work without any kernel changes
-needed, and is in use today by very large data centers without any
-problems.
+Other platforms do not have the 8MB restriction nor do they have so many 
+processors.
 
-> > > Like I said in an earlier email, HP ia64 systems will require a
-> > > kernel change to get this information. Whether it comes via a
-> > > generic ACPI access layer like dev_acpi, or something like this
-> > > patch series, the kernel will still get touched.
-> > 
-> > And like I said, I'm pretty sure you don't need to touch the kernel
-> > today as there are people doing this just fine from userspace without
-> > any kernel changes needed :)
-> 
-> I think you are assuming userspace can just dump the raw ACPI tables
-> and extract this information from them.  But I don't think that's
-> possible because _SUN is a method that can contain arbitrary AML.
-> That AML has to be *executed*, and you can't do that safely in
-> userspace.
+Here is the draft of a virtual cpu area implementation for sparc64. Uses 
+the VMEMMAP chunks:
 
-Yes, I was assuming that based on the above running code, if this is
-somehow impossible to do from userspace, I don't know what the code is
-doing.
+---
+ arch/sparc64/Kconfig          |   12 ++++++++++++
+ arch/sparc64/mm/init.c        |   34 ++++++++++++++++++++++++++++++++++
+ include/asm-sparc64/pgtable.h |    1 +
+ 3 files changed, 47 insertions(+)
 
-thanks,
-
-greg k-h
+Index: linux-2.6/arch/sparc64/mm/init.c
+===================================================================
+--- linux-2.6.orig/arch/sparc64/mm/init.c	2007-11-13 14:09:44.619500290 -0800
++++ linux-2.6/arch/sparc64/mm/init.c	2007-11-13 14:17:49.794860210 -0800
+@@ -1697,6 +1697,40 @@ int __meminit vmemmap_populate(struct pa
+ }
+ #endif /* CONFIG_SPARSEMEM_VMEMMAP */
+ 
++int cpu_area_populate(void *start, unsigned long size, gfp_t flags, int node)
++{
++	unsigned long vstart = (unsigned long) start;
++	unsigned long vend = (unsigned long) (start + size);
++	unsigned long phys_start = (vstart - CPU_AREA_BASE);
++	unsigned long phys_end = (vend - CPU_AREA_BASE);
++	unsigned long addr = phys_start & VMEMMAP_CHUNK_MASK;
++	unsigned long end = VMEMMAP_ALIGN(phys_end);
++	unsigned long pte_base;
++
++	pte_base = (_PAGE_VALID | _PAGE_SZ4MB_4U |
++		    _PAGE_CP_4U | _PAGE_CV_4U |
++		    _PAGE_P_4U | _PAGE_W_4U);
++	if (tlb_type == hypervisor)
++		pte_base = (_PAGE_VALID | _PAGE_SZ4MB_4V |
++			    _PAGE_CP_4V | _PAGE_CV_4V |
++			    _PAGE_P_4V | _PAGE_W_4V);
++
++	for (; addr < end; addr += VMEMMAP_CHUNK) {
++		unsigned long *vmem_pp =
++			vmemmap_table + (addr >> VMEMMAP_CHUNK_SHIFT);
++		void *block;
++
++		if (!(*vmem_pp & _PAGE_VALID)) {
++			block = vmemmap_alloc_block(1UL << 22, flags, node);
++			if (!block)
++				return -ENOMEM;
++
++			*vmem_pp = pte_base | __pa(block);
++		}
++	}
++	return 0;
++}
++
+ static void prot_init_common(unsigned long page_none,
+ 			     unsigned long page_shared,
+ 			     unsigned long page_copy,
+Index: linux-2.6/arch/sparc64/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/sparc64/Kconfig	2007-11-13 14:12:28.895750307 -0800
++++ linux-2.6/arch/sparc64/Kconfig	2007-11-13 14:18:32.110750142 -0800
+@@ -76,6 +76,18 @@ config GENERIC_HARDIRQS_NO__DO_IRQ
+ 	bool
+ 	def_bool y
+ 
++config CPU_AREA_VIRTUAL
++	bool
++	def_bool y
++
++config CPU_AREA_ORDER
++	int
++	default "10"
++
++config CPU_AREA_ALLOC_ORDER
++	int
++	default "0"
++
+ choice
+ 	prompt "Kernel page size"
+ 	default SPARC64_PAGE_SIZE_8KB
+Index: linux-2.6/include/asm-sparc64/pgtable.h
+===================================================================
+--- linux-2.6.orig/include/asm-sparc64/pgtable.h	2007-11-13 14:11:51.871000018 -0800
++++ linux-2.6/include/asm-sparc64/pgtable.h	2007-11-13 14:12:21.011750241 -0800
+@@ -43,6 +43,7 @@
+ #define VMALLOC_START		_AC(0x0000000100000000,UL)
+ #define VMALLOC_END		_AC(0x0000000200000000,UL)
+ #define VMEMMAP_BASE		_AC(0x0000000200000000,UL)
++#define CPU_AREA_BASE		_AC(0x0000000300000000,UL)
+ 
+ #define vmemmap			((struct page *)VMEMMAP_BASE)
+ 
