@@ -1,40 +1,278 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760857AbXKMFjN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760897AbXKMFmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760857AbXKMFjN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 00:39:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbXKMFi6
+	id S1760897AbXKMFmR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 00:42:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbXKMFmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 00:38:58 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48806 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751960AbXKMFi5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 00:38:57 -0500
-Date: Mon, 12 Nov 2007 21:38:43 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: casey@schaufler-ca.com
-Cc: torvalds@linux-foundation.org, method@manicmethod.com,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 2/2] Version 11 (2.6.24-rc2) Smack: Simplified Mandatory
- Access Control Kernel
-Message-Id: <20071112213843.b52ec6b2.akpm@linux-foundation.org>
-In-Reply-To: <4733E6B4.8010108@schaufler-ca.com>
-References: <4733E6B4.8010108@schaufler-ca.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Nov 2007 00:42:05 -0500
+Received: from zachs.place.org ([66.219.59.183]:34516 "EHLO place.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751433AbXKMFmE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 00:42:04 -0500
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com
+Subject: [PATCH] mtrr use type bool [RESEND AGAIN]
+Date: Mon, 12 Nov 2007 23:42:02 -0600
+From: Paul Jimenez <pj@place.org>
+Message-Id: <20071113054202.458838B2C@place.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 08 Nov 2007 20:48:52 -0800 Casey Schaufler <casey@schaufler-ca.com> wrote:
 
-> Smack is the Simplified Mandatory Access Control Kernel.
+This is a janitorish patch to 1) remove private TRUE/FALSE #def's in
+favor of using the standard enum from linux/stddef.h and 2) switch the
+variables holding those values to type 'bool' (from linux/types.h)
+since it both seems more appropriate and allows for potentially better
+optimization.
 
-This ran afoul of
-http://userweb.kernel.org/~akpm/mmotm/broken-out/vfs-security-rework-inode_getsecurity-and-callers-to.patch
+As a truly minor aside, I removed a couple of comments documenting
+a 'do_safe' parameter that seems to no longer exist.
 
-Until that patch gets merged we'll need to run two smack patches: one
-against mainline and one which updates smack to incorporate that patch's
-API changes, please.
+Signed-off-by: Paul Jimenez <pj@place.org>
+---
+
+Resending because no one picked it up last time.
+
+ arch/x86/kernel/cpu/mtrr/amd.c     |    2 --
+ arch/x86/kernel/cpu/mtrr/generic.c |   16 +++++++---------
+ arch/x86/kernel/cpu/mtrr/if.c      |   15 ++++++++-------
+ arch/x86/kernel/cpu/mtrr/main.c    |    8 +++++---
+ arch/x86/kernel/cpu/mtrr/mtrr.h    |    6 ++----
+ include/asm-x86/mtrr.h             |    8 ++++----
+ 6 files changed, 26 insertions(+), 29 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/mtrr/amd.c b/arch/x86/kernel/cpu/mtrr/amd.c
+index 0949cdb..ee2331b 100644
+--- a/arch/x86/kernel/cpu/mtrr/amd.c
++++ b/arch/x86/kernel/cpu/mtrr/amd.c
+@@ -53,8 +53,6 @@ static void amd_set_mtrr(unsigned int reg, unsigned long base,
+     <base> The base address of the region.
+     <size> The size of the region. If this is 0 the region is disabled.
+     <type> The type of the region.
+-    <do_safe> If TRUE, do the change safely. If FALSE, safety measures should
+-    be done externally.
+     [RETURNS] Nothing.
+ */
+ {
+diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/generic.c
+index 992f08d..1c331c3 100644
+--- a/arch/x86/kernel/cpu/mtrr/generic.c
++++ b/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -188,7 +188,7 @@ static inline void k8_enable_fixed_iorrs(void)
+  * \param changed pointer which indicates whether the MTRR needed to be changed
+  * \param msrwords pointer to the MSR values which the MSR should have
+  */
+-static void set_fixed_range(int msr, int * changed, unsigned int * msrwords)
++static void set_fixed_range(int msr, bool *changed, unsigned int *msrwords)
+ {
+ 	unsigned lo, hi;
+ 
+@@ -200,7 +200,7 @@ static void set_fixed_range(int msr, int * changed, unsigned int * msrwords)
+ 		    ((msrwords[0] | msrwords[1]) & K8_MTRR_RDMEM_WRMEM_MASK))
+ 			k8_enable_fixed_iorrs();
+ 		mtrr_wrmsr(msr, msrwords[0], msrwords[1]);
+-		*changed = TRUE;
++		*changed = true;
+ 	}
+ }
+ 
+@@ -260,7 +260,7 @@ static void generic_get_mtrr(unsigned int reg, unsigned long *base,
+ static int set_fixed_ranges(mtrr_type * frs)
+ {
+ 	unsigned long long *saved = (unsigned long long *) frs;
+-	int changed = FALSE;
++	bool changed = false;
+ 	int block=-1, range;
+ 
+ 	while (fixed_range_blocks[++block].ranges)
+@@ -273,17 +273,17 @@ static int set_fixed_ranges(mtrr_type * frs)
+ 
+ /*  Set the MSR pair relating to a var range. Returns TRUE if
+     changes are made  */
+-static int set_mtrr_var_ranges(unsigned int index, struct mtrr_var_range *vr)
++static bool set_mtrr_var_ranges(unsigned int index, struct mtrr_var_range *vr)
+ {
+ 	unsigned int lo, hi;
+-	int changed = FALSE;
++	bool changed = false;
+ 
+ 	rdmsr(MTRRphysBase_MSR(index), lo, hi);
+ 	if ((vr->base_lo & 0xfffff0ffUL) != (lo & 0xfffff0ffUL)
+ 	    || (vr->base_hi & (size_and_mask >> (32 - PAGE_SHIFT))) !=
+ 		(hi & (size_and_mask >> (32 - PAGE_SHIFT)))) {
+ 		mtrr_wrmsr(MTRRphysBase_MSR(index), vr->base_lo, vr->base_hi);
+-		changed = TRUE;
++		changed = true;
+ 	}
+ 
+ 	rdmsr(MTRRphysMask_MSR(index), lo, hi);
+@@ -292,7 +292,7 @@ static int set_mtrr_var_ranges(unsigned int index, struct mtrr_var_range *vr)
+ 	    || (vr->mask_hi & (size_and_mask >> (32 - PAGE_SHIFT))) !=
+ 		(hi & (size_and_mask >> (32 - PAGE_SHIFT)))) {
+ 		mtrr_wrmsr(MTRRphysMask_MSR(index), vr->mask_lo, vr->mask_hi);
+-		changed = TRUE;
++		changed = true;
+ 	}
+ 	return changed;
+ }
+@@ -417,8 +417,6 @@ static void generic_set_mtrr(unsigned int reg, unsigned long base,
+     <base> The base address of the region.
+     <size> The size of the region. If this is 0 the region is disabled.
+     <type> The type of the region.
+-    <do_safe> If TRUE, do the change safely. If FALSE, safety measures should
+-    be done externally.
+     [RETURNS] Nothing.
+ */
+ {
+diff --git a/arch/x86/kernel/cpu/mtrr/if.c b/arch/x86/kernel/cpu/mtrr/if.c
+index c7d8f17..1453568 100644
+--- a/arch/x86/kernel/cpu/mtrr/if.c
++++ b/arch/x86/kernel/cpu/mtrr/if.c
+@@ -37,7 +37,7 @@ const char *mtrr_attrib_to_str(int x)
+ 
+ static int
+ mtrr_file_add(unsigned long base, unsigned long size,
+-	      unsigned int type, char increment, struct file *file, int page)
++	      unsigned int type, bool increment, struct file *file, int page)
+ {
+ 	int reg, max;
+ 	unsigned int *fcount = FILE_FCOUNT(file); 
+@@ -55,7 +55,7 @@ mtrr_file_add(unsigned long base, unsigned long size,
+ 		base >>= PAGE_SHIFT;
+ 		size >>= PAGE_SHIFT;
+ 	}
+-	reg = mtrr_add_page(base, size, type, 1);
++	reg = mtrr_add_page(base, size, type, true);
+ 	if (reg >= 0)
+ 		++fcount[reg];
+ 	return reg;
+@@ -141,7 +141,7 @@ mtrr_write(struct file *file, const char __user *buf, size_t len, loff_t * ppos)
+ 		size >>= PAGE_SHIFT;
+ 		err =
+ 		    mtrr_add_page((unsigned long) base, (unsigned long) size, i,
+-				  1);
++				  true);
+ 		if (err < 0)
+ 			return err;
+ 		return len;
+@@ -217,7 +217,7 @@ mtrr_ioctl(struct file *file, unsigned int cmd, unsigned long __arg)
+ 		if (!capable(CAP_SYS_ADMIN))
+ 			return -EPERM;
+ 		err =
+-		    mtrr_file_add(sentry.base, sentry.size, sentry.type, 1,
++		    mtrr_file_add(sentry.base, sentry.size, sentry.type, true,
+ 				  file, 0);
+ 		break;
+ 	case MTRRIOC_SET_ENTRY:
+@@ -226,7 +226,7 @@ mtrr_ioctl(struct file *file, unsigned int cmd, unsigned long __arg)
+ #endif
+ 		if (!capable(CAP_SYS_ADMIN))
+ 			return -EPERM;
+-		err = mtrr_add(sentry.base, sentry.size, sentry.type, 0);
++		err = mtrr_add(sentry.base, sentry.size, sentry.type, false);
+ 		break;
+ 	case MTRRIOC_DEL_ENTRY:
+ #ifdef CONFIG_COMPAT
+@@ -270,7 +270,7 @@ mtrr_ioctl(struct file *file, unsigned int cmd, unsigned long __arg)
+ 		if (!capable(CAP_SYS_ADMIN))
+ 			return -EPERM;
+ 		err =
+-		    mtrr_file_add(sentry.base, sentry.size, sentry.type, 1,
++		    mtrr_file_add(sentry.base, sentry.size, sentry.type, true,
+ 				  file, 1);
+ 		break;
+ 	case MTRRIOC_SET_PAGE_ENTRY:
+@@ -279,7 +279,8 @@ mtrr_ioctl(struct file *file, unsigned int cmd, unsigned long __arg)
+ #endif
+ 		if (!capable(CAP_SYS_ADMIN))
+ 			return -EPERM;
+-		err = mtrr_add_page(sentry.base, sentry.size, sentry.type, 0);
++		err =
++		    mtrr_add_page(sentry.base, sentry.size, sentry.type, false);
+ 		break;
+ 	case MTRRIOC_DEL_PAGE_ENTRY:
+ #ifdef CONFIG_COMPAT
+diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
+index 3b20613..5ea0a26 100644
+--- a/arch/x86/kernel/cpu/mtrr/main.c
++++ b/arch/x86/kernel/cpu/mtrr/main.c
+@@ -311,7 +311,7 @@ static void set_mtrr(unsigned int reg, unsigned long base,
+  */
+ 
+ int mtrr_add_page(unsigned long base, unsigned long size, 
+-		  unsigned int type, char increment)
++		  unsigned int type, bool increment)
+ {
+ 	int i, replace, error;
+ 	mtrr_type ltype;
+@@ -394,7 +394,9 @@ int mtrr_add_page(unsigned long base, unsigned long size,
+ 		if (likely(replace < 0))
+ 			usage_table[i] = 1;
+ 		else {
+-			usage_table[i] = usage_table[replace] + !!increment;
++			usage_table[i] = usage_table[replace];
++			if (increment)
++				usage_table[i]++;
+ 			if (unlikely(replace != i)) {
+ 				set_mtrr(replace, 0, 0, 0);
+ 				usage_table[replace] = 0;
+@@ -460,7 +462,7 @@ static int mtrr_check(unsigned long base, unsigned long size)
+ 
+ int
+ mtrr_add(unsigned long base, unsigned long size, unsigned int type,
+-	 char increment)
++	 bool increment)
+ {
+ 	if (mtrr_check(base, size))
+ 		return -EINVAL;
+diff --git a/arch/x86/kernel/cpu/mtrr/mtrr.h b/arch/x86/kernel/cpu/mtrr/mtrr.h
+index 289dfe6..54347e9 100644
+--- a/arch/x86/kernel/cpu/mtrr/mtrr.h
++++ b/arch/x86/kernel/cpu/mtrr/mtrr.h
+@@ -2,10 +2,8 @@
+  * local mtrr defines.
+  */
+ 
+-#ifndef TRUE
+-#define TRUE  1
+-#define FALSE 0
+-#endif
++#include <linux/types.h>
++#include <linux/stddef.h>
+ 
+ #define MTRRcap_MSR     0x0fe
+ #define MTRRdefType_MSR 0x2ff
+diff --git a/include/asm-x86/mtrr.h b/include/asm-x86/mtrr.h
+index e8320e4..262670e 100644
+--- a/include/asm-x86/mtrr.h
++++ b/include/asm-x86/mtrr.h
+@@ -89,9 +89,9 @@ struct mtrr_gentry
+ extern void mtrr_save_fixed_ranges(void *);
+ extern void mtrr_save_state(void);
+ extern int mtrr_add (unsigned long base, unsigned long size,
+-		     unsigned int type, char increment);
++		     unsigned int type, bool increment);
+ extern int mtrr_add_page (unsigned long base, unsigned long size,
+-		     unsigned int type, char increment);
++		     unsigned int type, bool increment);
+ extern int mtrr_del (int reg, unsigned long base, unsigned long size);
+ extern int mtrr_del_page (int reg, unsigned long base, unsigned long size);
+ extern void mtrr_centaur_report_mcr(int mcr, u32 lo, u32 hi);
+@@ -101,12 +101,12 @@ extern void mtrr_bp_init(void);
+ #define mtrr_save_fixed_ranges(arg) do {} while (0)
+ #define mtrr_save_state() do {} while (0)
+ static __inline__ int mtrr_add (unsigned long base, unsigned long size,
+-				unsigned int type, char increment)
++				unsigned int type, bool increment)
+ {
+     return -ENODEV;
+ }
+ static __inline__ int mtrr_add_page (unsigned long base, unsigned long size,
+-				unsigned int type, char increment)
++				unsigned int type, bool increment)
+ {
+     return -ENODEV;
+ }
+-- 
+1.5.2.5
 
