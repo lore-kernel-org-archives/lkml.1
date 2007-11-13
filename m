@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932096AbXKMVhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932185AbXKMVhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932096AbXKMVhb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 16:37:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760467AbXKMVhO
+	id S932185AbXKMVhq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 16:37:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763572AbXKMVhZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 16:37:14 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55353 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760949AbXKMVhM (ORCPT
+	Tue, 13 Nov 2007 16:37:25 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:34925 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763423AbXKMVhX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 16:37:12 -0500
-Date: Tue, 13 Nov 2007 13:36:46 -0800
-From: Greg KH <greg@kroah.com>
-To: Alex Chiang <achiang@hp.com>, Matt Domsch <Matt_Domsch@dell.com>,
-       Matthew Wilcox <matthew@wil.cx>, gregkh@suse.de,
-       kristen.c.accardi@intel.com, lenb@kernel.org, rick.jones2@hp.com,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
-Message-ID: <20071113213646.GB4426@kroah.com>
-References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113170129.GA20185@kroah.com> <20071113183353.GE17785@parisc-linux.org> <20071113185122.GA22536@kroah.com> <20071113211509.GB19146@auslistsprd01.us.dell.com> <20071113213108.GB7541@ldl.fc.hp.com>
+	Tue, 13 Nov 2007 16:37:23 -0500
+Date: Tue, 13 Nov 2007 22:37:01 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christian Kujau <lists@nerdbynature.de>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: [BUG] New Kernel Bugs
+Message-ID: <20071113213701.GN4250@stusta.de>
+References: <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113.043207.44732743.davem@davemloft.net> <20071113110259.44c56d42.akpm@linux-foundation.org> <alpine.DEB.0.9999.0711132055550.7865@sheep.housecafe.de> <20071113130411.26ccae12.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20071113213108.GB7541@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20071113130411.26ccae12.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 02:31:08PM -0700, Alex Chiang wrote:
-> * Matt Domsch <Matt_Domsch@dell.com>:
-> > 
-> > The only reported _SUN problems on Dell systems were on the
-> > PE6800 and PE6850 systems, which we've fixed with an updated
-> > BIOS several months ago.  IIRC the values weren't always unique
-> > which kind of defeated the purpose.
-> 
-> FWIW, the ACPI 2.0 spec did not require uniqueness for _SUN.
-> (although there is a strange table that refers to _SUN as the
-> slot-unique ID (table 6-1 in spec v2.0b), the actual definition
-> of _SUN does not mention uniqueness).
+On Tue, Nov 13, 2007 at 01:04:11PM -0800, Andrew Morton wrote:
+>...
+> Here's an important point: developers have a fixed amount of development
+> time.  They spend some of that time fixing bugs and the rest of that time
+> on <otherstuff>.  And while one could cook up all sorts of wonderful
+> process changes, they all would be aimed at a single thing: shifting some
+> of the developers' time away from <otherstuff> and onto bugfixing.
+>...
 
-Does your code handle if these are not unique?
+There is another possible solution:
+Finding more maintainers.
 
-thanks,
+The problem seems to be that there are many people who want to write 
+drivers for cool shiny new hardware, but not many people willing to
+learn to know and maintain existing code.
 
-greg k-h
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
