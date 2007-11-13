@@ -1,124 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755462AbXKMNl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754600AbXKMNxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755462AbXKMNl3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 08:41:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbXKMNlQ
+	id S1754600AbXKMNxb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 08:53:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbXKMNxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 08:41:16 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57752 "EHLO mx2.mail.elte.hu"
+	Tue, 13 Nov 2007 08:53:23 -0500
+Received: from ns.suse.de ([195.135.220.2]:45983 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752992AbXKMNlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 08:41:14 -0500
-Date: Tue, 13 Nov 2007 14:40:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, protasnb@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071113134029.GA30978@elte.hu>
-References: <20071113031553.3c7b5c16.akpm@linux-foundation.org> <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org>
+	id S1752585AbXKMNxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 08:53:22 -0500
+To: "Robert Richter" <robert.richter@amd.com>
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, "LKML" <linux-kernel@vger.kernel.org>
+Subject: Re: x86 merge: Keep kernel/cpu for CPU specific code?
+From: Andi Kleen <andi@firstfloor.org>
+References: <20071113114443.GG18993@erda.amd.com>
+Date: Tue, 13 Nov 2007 14:53:20 +0100
+In-Reply-To: <20071113114443.GG18993@erda.amd.com> (Robert Richter's message of "Tue\, 13 Nov 2007 12\:44\:43 +0100")
+Message-ID: <p73ejeuz1yn.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071113041259.79c9a8c5.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+"Robert Richter" <robert.richter@amd.com> writes:
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+> x86 CPU specific code is currently implemented in different ways for
+> 64 and 32 bit. While there are almost no CPU specific files for 64
+> bit, there is the arch/x86/kernel/cpu/ directory for 32 bit. Is there
+> already an idea about whether to use kernel/cpu also for 64 bit?
 
-> > > Do you believe that our response to bug reports is adequate?
-> > 
-> > Do you feel that making us feel and look like shit helps?
-> 
-> That doesn't answer my question.
-> 
-> See, first we need to work out whether we have a problem.  If we do 
-> this, then we can then have a think about what to do about it.
-> 
-> I tried to convince the 2006 KS attendees that we have a problem and I 
-> resoundingly failed.  People seemed to think that we're doing OK.
-> 
-> But it appears that data such as this contradicts that belief.
-> 
-> This is not a minor matter.  If the kernel _is_ slowly deteriorating 
-> then this won't become readily apparent until it has been happening 
-> for a number of years.  By that stage there will be so much work to do 
-> to get us back to an acceptable level that it will take a huge effort.  
-> And it will take a long time after that for the kerel to get its 
-> reputation back.
-> 
-> So it is important that we catch deterioration *early* if it is 
-> happening.
+Well it's already used as it has been pointed out. 
 
-yes, yes, yes, and i agree with you that there is a problem. I tried to 
-make this point at the 2007 KS: not only is degradation in quality not 
-apparent for years, slow degradation in quality can give kernel 
-developers the exact _opposite_ perception! (Fewer testers means fewer 
-bugreports and that results in apparent "improved" quality and fewer 
-reported regressions - while exactly the opposite is happening and 
-testers are leaving us without giving us any indication that this is 
-happening. We just dont notice.)
+Regarding the core initialization code:
 
-I'm not moaning about bugs that slip through - those are unavoidable 
-facts of a high flux codebase. I'm moaning about reoccuring, avoidable 
-bugs, i'm moaning about hostility towards testers, i'm moaning about 
-hostility towards automated testing, i'm moaning about unnecessary hoops 
-a willing (but unskilled) tester has to go through to help us out.
+The 32bit set up here is kind of crappy. Initcalls that are commented
+out, weird ordering, unrelated stuff mixed toegether etc. If you
+consider "improving" 64bit here then I would suggest to do some major
+clean up in the 32bit parts first.
 
-I tried to make the point that the only good approach is to remove our 
-current subjective bias from quality metrics and to at least realize 
-what a cavalier attitude we still have to QA. The moment we are able to 
-_measure_ how bad we are, kernel developers will adopt in a second and 
-will improve those metrics. Lets use more debug tools, both static and 
-dynamic ones. Lets measure tester base and we need to measure _lost_ 
-early adopters and the reasons why they are lost. Regression metrics are 
-a very important first step too and i'm very happy about the increasing 
-effort that is being spent on this.
+I personally consider the single file cleaner to hack, but then 64bit
+is already vastly simpler anyways because it has much less CPUs to support.
 
-This is all QA-101 that _cannot be argued against on a rational basis_, 
-it's just that these sorts of things have been largely ignored for 
-years, in favor of the all-too-easy "open source means many eyeballs and 
-that is our QA" answer, which is a _good_ answer but by far not the most 
-intelligent answer! Today "many eyeballs" is simply not good enough and 
-nature (and other OS projects) will route us around if we dont change.
+If anything it would probably make sense to separate out generic
+stuff (like GDT initialization) from CPU specific initialization.
+64bit already separates that better too, but it's also not fully complete.
 
-We kernel developers have been spoiled by years of abundance in testing 
-resources. We squander tons of resources in this area, and we could be 
-so much more economic about this without hindering our development model 
-in any way. We could be so much better about QA and everyone would 
-benefit without having to compromize on the incoming flux of changes - 
-it's so much easier to write new features for a high quality kernel.
-
-My current guesstimation is that we are utilizing our current testing 
-resources at around 10% efficiency. (i.e. if we did an 'ideal' job we 
-could fix 10 times as many bugs with the same size of tester effort!) It 
-used to be around 5%. (and i mainly attribute the increase from 5% to 
-10% to Andrew and the many other people who do kernel QA - kudos!) 10% 
-is still awful and we very much suck.
-
-Paradoxically, the "end product" is still considerably good quality in 
-absolute terms because other pieces of our infrastructure are so good 
-and powerful, but QA is still a 'weak link' of our path to the user that 
-reduces the quality of the end result. We could _really_ be so much 
-better without any compromises that hurt.
-
-(and this is in no way directed at the networking folks - it holds for 
-all of us. I have one main complaint about networking: the separate 
-netdev list is a bad idea - networking regressions should be discussed 
-and fixed on lkml, like most other subsystems are. Any artificial split 
-of the lk discussion space is bad.)
-
-	Ingo
+-Andi
