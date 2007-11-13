@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762984AbXKMSvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763133AbXKMSwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762984AbXKMSvy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 13:51:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762066AbXKMStH
+	id S1763133AbXKMSwR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 13:52:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762574AbXKMSud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 13:49:07 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:53084 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762058AbXKMStE (ORCPT
+	Tue, 13 Nov 2007 13:50:33 -0500
+Received: from server54.tchmachines.com ([72.9.244.106]:40809 "EHLO
+	server54.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762565AbXKMSua (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 13:49:04 -0500
-Date: Tue, 13 Nov 2007 11:49:02 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Mark Lord <liml@rtr.ca>
-Cc: Ingo Molnar <mingo@elte.hu>, alsa-devel@alsa-project.org,
-       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-kernel@vger.kernel.org, protasnb@gmail.com,
-       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071113184902.GG17785@parisc-linux.org>
-References: <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca> <20071113164650.GA28493@elte.hu> <4739E3D0.10201@rtr.ca> <20071113183925.GF17785@parisc-linux.org> <4739F069.6050102@rtr.ca>
+	Tue, 13 Nov 2007 13:50:30 -0500
+Date: Tue, 13 Nov 2007 10:49:25 -0800
+From: Ravikiran Thirumalai <kiran@scalemp.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Glauber de Oliveira Costa <gcosta@redhat.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       glommer@gmail.com, tglx@linutronix.de, mingo@elte.hu,
+       rusty@rustcorp.com.au, chrisw@sous-sol.org, avi@qumranet.com,
+       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
+       lguest@ozlabs.org, kvm-devel@lists.sourceforge.net, zach@vmware.com,
+       jun.nakajima@intel.com, Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 24/24] make vsmp a paravirt client
+Message-ID: <20071113184925.GB10344@localdomain>
+References: <11946338683305-git-send-email-gcosta@redhat.com> <200711131333.41946.ak@suse.de> <47399DC8.7000504@redhat.com> <200711131409.41959.ak@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4739F069.6050102@rtr.ca>
+In-Reply-To: <200711131409.41959.ak@suse.de>
 User-Agent: Mutt/1.5.13 (2006-08-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - server54.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalemp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 01:43:53PM -0500, Mark Lord wrote:
-> Matthew Wilcox wrote:
-> >ie about half what you claim.
-> ..
-> 
-> No, it's from earlier in this very thread:
-> 
-> Adrian Bunk wrote:
-> >git clone \ 
-> >git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-> ..
-> 
-> mkdir t
-> cd t
-> git clone 
-> git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-> (wait half an hour)
-> /usr/bin/du -s linux-2.6
-> 522732  linux-2.6
+On Tue, Nov 13, 2007 at 02:09:41PM +0100, Andi Kleen wrote:
+>
+>> If vsmp is selected, PARAVIRT will be too, and the interrupt code will
+>> be patched.
+>> the vsmp option triggers a select statement.
+>> 
+>> the ifdef only exists because, as I said, the code itself will be always
+>> compiled in, to avoid an ifdef in setup_64.c. So it's just a taking it
+>> from here, putting it there issue.
+>
+>Peeking around needlessly in pci config space at each boot just to avoid an 
+>ifdef is not an good idea.
 
-You're assuming that everything in linux-2.6 was downloaded; that's
-not true.  Everything in linux-2.6/.git was downloaded; but then you do a
-checkout which happens to approximately double the size of the linux-2.6
-directory.  If you do git-clone -n, you'll get a closer estimate to the
-size of the download.
+Agreed.  vsmp_init does not make sense unless the irq ops are patched.  We
+can call vsmp_init under #ifdef CONFIG_PARAVIRT.
 
-I suppose git-clone should grow a -v option that it could pass to rsync
-to let us find out how many bytes are actually transferred, but i'm
-happy to go with 250MB as a close estimate to the amount of data to xfer.
-
-When you compare it to the 60MB tarballs that are published, it's really
-not that bad.
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Thanks,
+Kiran
