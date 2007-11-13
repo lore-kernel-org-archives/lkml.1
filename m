@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763076AbXKMUqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761580AbXKMUq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763076AbXKMUqA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 15:46:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762049AbXKMUpc
+	id S1761580AbXKMUq3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 15:46:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761144AbXKMUqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 15:45:32 -0500
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:61659 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761695AbXKMUpb (ORCPT
+	Tue, 13 Nov 2007 15:46:11 -0500
+Received: from lazybastard.de ([212.112.238.170]:35005 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763098AbXKMUqJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 15:45:31 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq4HALCbOUdMROHU/2dsb2JhbACBWw
-Date: Tue, 13 Nov 2007 15:45:13 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christian Kujau <lists@nerdbynature.de>
-Cc: linux-kernel@vger.kernel.org, bfields@fieldses.org
-Subject: Re: stuck nfsd processes with 2.6.24-rc2
-Message-ID: <20071113204512.GC7450@Krystal>
-References: <alpine.DEB.0.9999.0711131955530.27452@sheep.housecafe.de>
+	Tue, 13 Nov 2007 15:46:09 -0500
+Date: Tue, 13 Nov 2007 21:41:00 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Ray Lee <ray-lk@madrabbit.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Mel Gorman <mel@csn.ul.ie>, Andi Kleen <ak@suse.de>,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: x86_64: Make sparsemem/vmemmap the default memory model
+Message-ID: <20071113204100.GB20167@lazybastard.org>
+References: <Pine.LNX.4.64.0711121549370.29178@schroedinger.engr.sgi.com> <200711130059.34346.ak@suse.de> <Pine.LNX.4.64.0711121615120.29328@schroedinger.engr.sgi.com> <200711130149.54852.ak@suse.de> <Pine.LNX.4.64.0711121940410.30269@schroedinger.engr.sgi.com> <2c0942db0711122027m5b11502cveded5705c0bc4f64@mail.gmail.com> <Pine.LNX.4.64.0711122040380.30724@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.0.9999.0711131955530.27452@sheep.housecafe.de>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 15:42:58 up 10 days,  1:48,  5 users,  load average: 1.53, 2.02,
-	1.66
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.64.0711122040380.30724@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christian Kujau (lists@nerdbynature.de) wrote:
-> Hi there,
->
-> I noticed that I cannot use kernel nfsd any more with 2.6.24-rc2, last 
-> working kernel as of now is 2.6.23.1. First I was using nfsv4 but switching 
-> to nfsv3 did not help either: exported shares can be mounted (client: 
-> 2.6-git/powerpc32, nfs-common-1.1.1~git-20070709-3ubuntu1), but running "ls 
-> /mountpoint" (even without "-l") on the client is enough to get the [nfsd] 
-> processes in "D" state.
-> Restarting the rpc.nfsd process on the does not help much, the new rpc.nfsd 
-> processes get stuck quickly.
->
-> For more details please see http://nerdbynature.de/bits/2.6.24-rc2/nfsd/
->
-> I haven't seen this particular issue on the list recently, hence my post.
-> I'll try to git-bisect my way through the changesets, but it'll take some 
-> time...
->
+On Mon, 12 November 2007 20:41:10 -0800, Christoph Lameter wrote:
+> On Mon, 12 Nov 2007, Ray Lee wrote:
+> 
+> > Discontig obviously needs to die. However, FlatMem is consistently
+> > faster, averaging about 2.1% better overall for your numbers above. Is
+> > the page allocator not, erm, a fast path, where that matters?
+> > 
+> > Order	Flat	Sparse	% diff
+> > 0	639	641	0.3
+> 
+> IMHO Order 0 currently matters most and the difference is negligible 
+> there.
 
-Hrm, sounds like an interesting case for LTTng. Feel free to try it
-and get the text dump of the last events that led to the nfsd hang.
+Is it?  I am a bit concerned about the non-monotonic distribution.
+Difference starts a near-0, grows to 4.4, drops to near-0, grows to 4.9,
+drops to near-0.
 
-See http://ltt.polymtl.ca for the patchset for 2.6.24-rc3-git3,
-just follow the quickstart guide to get started.
+Order   Flat    Sparse  % diff
+0       639     641     0.3
+1       567     593     4.4
+2       679     692     1.9
+3       763     781     2.3
+4       961     962     0.1
+5       1356    1392    2.6
+6       2224    2336    4.8
+7       4869    5074    4.0
+8       12500   12732   1.8
+9       27926   28165   0.8
+10      58578   58682   0.2
 
-(the overall process could be faster than a git bisect....)
+Is there an explanation for this behaviour?  More to the point, could
+repeated runs also return 4% difference for order-0?
 
-Mathieu
-
-
-> Thanks,
-> Christian.
-> -- 
-> BOFH excuse #314:
->
-> You need to upgrade your VESA local bus to a MasterCard local bus.
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Jörn
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+It does not require a majority to prevail, but rather an irate,
+tireless minority keen to set brush fires in people's minds.
+-- Samuel Adams
