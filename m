@@ -1,81 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762948AbXKMVwr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761581AbXKMV4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762948AbXKMVwr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 16:52:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761151AbXKMVwY
+	id S1761581AbXKMV4T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 16:56:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759560AbXKMV4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 16:52:24 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45741 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757611AbXKMVwV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 16:52:21 -0500
-Date: Tue, 13 Nov 2007 13:52:17 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-cc: Ray Lee <ray-lk@madrabbit.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Mel Gorman <mel@csn.ul.ie>, Andi Kleen <ak@suse.de>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: x86_64: Make sparsemem/vmemmap the default memory model
-In-Reply-To: <20071113204100.GB20167@lazybastard.org>
-Message-ID: <Pine.LNX.4.64.0711131349300.3714@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0711121549370.29178@schroedinger.engr.sgi.com>
- <200711130059.34346.ak@suse.de> <Pine.LNX.4.64.0711121615120.29328@schroedinger.engr.sgi.com>
- <200711130149.54852.ak@suse.de> <Pine.LNX.4.64.0711121940410.30269@schroedinger.engr.sgi.com>
- <2c0942db0711122027m5b11502cveded5705c0bc4f64@mail.gmail.com>
- <Pine.LNX.4.64.0711122040380.30724@schroedinger.engr.sgi.com>
- <20071113204100.GB20167@lazybastard.org>
+	Tue, 13 Nov 2007 16:56:08 -0500
+Received: from ns2.g-housing.de ([81.169.133.75]:41003 "EHLO mail.g-house.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759357AbXKMV4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 16:56:07 -0500
+Date: Tue, 13 Nov 2007 22:56:01 +0100 (CET)
+From: Christian Kujau <lists@nerdbynature.de>
+X-X-Sender: evil@sheep.housecafe.de
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: [BUG] New Kernel Bugs
+In-Reply-To: <20071113130411.26ccae12.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.0.99999.0711132239350.3960@sheep.housecafe.de>
+References: <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113.043207.44732743.davem@davemloft.net> <20071113110259.44c56d42.akpm@linux-foundation.org>
+ <alpine.DEB.0.9999.0711132055550.7865@sheep.housecafe.de> <20071113130411.26ccae12.akpm@linux-foundation.org>
+User-Agent: Alpine 0.99999 (DEB 796 2007-11-08)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1700579579-1724930940-1194990737=:3714"
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Tue, 13 Nov 2007, Andrew Morton wrote:
+> There are a number of process things we _could_ do.  Like
+> - have bugfix-only kernel releases
 
----1700579579-1724930940-1194990737=:3714
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Adrian Bunk does (did?) this with 2.6.16.x, although it always seemed to 
+me like an unrewarded one man show. AFAIK not even the big distros are 
+begging for bugfix-only versions, as they too want to have (sell) new 
+features. Mission critical systems might want to require such versions, 
+but I guess they're using heavily customized trees anyway.
 
-On Tue, 13 Nov 2007, J=F6rn Engel wrote:
+> - Just refuse to merge any non-bugfix patches for a subsystem when it is
+>  determined that the subsystem has "too many" regressions.
 
-> On Mon, 12 November 2007 20:41:10 -0800, Christoph Lameter wrote:
-> > On Mon, 12 Nov 2007, Ray Lee wrote:
-> >=20
-> > > Discontig obviously needs to die. However, FlatMem is consistently
-> > > faster, averaging about 2.1% better overall for your numbers above. I=
-s
-> > > the page allocator not, erm, a fast path, where that matters?
-> > >=20
-> > > Order=09Flat=09Sparse=09% diff
-> > > 0=09639=09641=090.3
-> >=20
-> > IMHO Order 0 currently matters most and the difference is negligible=20
-> > there.
->=20
-> Is it?  I am a bit concerned about the non-monotonic distribution.
-> Difference starts a near-0, grows to 4.4, drops to near-0, grows to 4.9,
-> drops to near-0.
+Hm, that's what I had in mind. Has this been tried already?
 
-The problem also is that the comparison here is between a SMP config for=20
-flatmem vs a NUMA config for sparsemem. There is additional overhead in=20
-the NUMA config.=20
+> - Create an "if you added a regression, you should fix some other bug
+>  too" rule.
 
-The effect may also be due to the system being able to place=20
-some pages in the same 2MB section as the memmap with flatmem. However,=20
-that is only feasable immeidately after bootup. In regular operations this=
-=20
-should vanish.
+Naah, I'm not really in favour of blaming someone. The kernel doesn't have 
+SLA contracts (yet), so no need for giving out penalties :)
 
-Could you run your own test to verify?
+> But we can't/shouldn't do any of that until it is generally agreed that we
+> have a problem and that the problem is of sufficient magnitude that process
+> changes are needed to address it.  We aren't at that stage yet.
 
-> Is there an explanation for this behaviour?  More to the point, could
-> repeated runs also return 4% difference for order-0?
+Keeping track of the (number of) regressions / bugs each release seems to 
+be a good start, IMHO.
 
-I hope I have given some above. The number of the page allocator suggests=
-=20
-that we have far too much fat in the allocation paths. IMHO reasonable=20
-numbers for an order-0 alloc should be ~100 cycles.
----1700579579-1724930940-1194990737=:3714--
+> process changes, they all would be aimed at a single thing: shifting some
+> of the developers' time away from <otherstuff> and onto bugfixing.
+
+True. Implementing "only bugfixes from now on" (i.e. a longer 
+freeze-window) would perhaps speed up the shifting a bit: $developer can 
+still do $otherstuff all day long, but it won't get merged anyway, because 
+we're in "only bugfixes from now on"-mode.
+
+> At this stage the only tool which is being deployed to attempt to bring
+> about that reprioritisation is suasion.  aka "lkml flamewar".
+
+True. But I just noticed that I have to distinguish between 
+"flamewars" and "fierce discussions": if I'd imagine a room with ~50 
+developers/bystanders brainstorming on a issue like this (at the same 
+time, without the wonderful delay of writing/sending an email), it'd
+feel much more uncomfortable.
+
+Christian.
+-- 
+BOFH excuse #433:
+
+error: one bad user found in front of screen
