@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762584AbXKMV60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763299AbXKMV6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762584AbXKMV60 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 16:58:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759425AbXKMV6N
+	id S1763299AbXKMV6p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 16:58:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762711AbXKMV6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 16:58:13 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43965 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755135AbXKMV6K convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 16:58:10 -0500
-Date: Tue, 13 Nov 2007 13:56:58 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: =?ISO-8859-1?B?SvZybg==?= Engel <joern@logfs.org>
-Cc: Mark Lord <liml@rtr.ca>, Ingo Molnar <mingo@elte.hu>,
-       alsa-devel@alsa-project.org, netdev@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-       protasnb@gmail.com, linux-ide@vger.kernel.org,
-       bugme-daemon@bugzilla.kernel.org, linux-input@atrey.karlin.mff.cuni.cz,
-       David Miller <davem@davemloft.net>
-Subject: Re: [BUG] New Kernel Bugs
-Message-Id: <20071113135658.5c9ac7ba.akpm@linux-foundation.org>
-In-Reply-To: <20071113213358.GC20167@lazybastard.org>
-References: <20071113031553.3c7b5c16.akpm@linux-foundation.org>
-	<20071113.033946.114918709.davem@davemloft.net>
-	<20071113034916.2556edd7.akpm@linux-foundation.org>
-	<20071113.035824.40509981.davem@davemloft.net>
-	<20071113041259.79c9a8c5.akpm@linux-foundation.org>
-	<20071113134029.GA30978@elte.hu>
-	<4739AFE0.20705@rtr.ca>
-	<20071113193750.GD1356@flint.arm.linux.org.uk>
-	<473A067F.3090007@rtr.ca>
-	<20071113213358.GC20167@lazybastard.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 13 Nov 2007 16:58:34 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:58548 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762712AbXKMV6d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 16:58:33 -0500
+Date: Tue, 13 Nov 2007 14:58:30 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Linas Vepstas <linas@austin.ibm.com>
+Cc: Alex Chiang <achiang@hp.com>, Greg KH <greg@kroah.com>, gregkh@suse.de,
+       kristen.c.accardi@intel.com, lenb@kernel.org, rick.jones2@hp.com,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
+Message-ID: <20071113215830.GM17785@parisc-linux.org>
+References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113170129.GA20185@kroah.com> <20071113202424.GE8421@austin.ibm.com> <20071113205939.GC22812@ldl.fc.hp.com> <20071113214121.GC8509@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071113214121.GC8509@austin.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Nov 2007 22:33:58 +0100 Jörn Engel <joern@logfs.org> wrote:
+On Tue, Nov 13, 2007 at 03:41:21PM -0600, Linas Vepstas wrote:
+> /sys/bus/pci/slots
+> /sys/bus/pci/slots/control
+> /sys/bus/pci/slots/control/remove_slot
+> /sys/bus/pci/slots/control/add_slot
+> /sys/bus/pci/slots/0001:00:02.0
+> /sys/bus/pci/slots/0001:00:02.0/phy_location
 
-> On Tue, 13 November 2007 15:18:07 -0500, Mark Lord wrote:
-> > 
-> > I just find it weird that something can be known broken for several -rc*
-> > kernels before I happen to install it, discover it's broken on my own 
-> > machine,
-> > and then I track it down, fix it, and submit the patch, generally all 
-> > within a
-> > couple of hours.  Where the heck was the dude(ess) that broke it ??  AWOL.
-> > 
-> > And when I receive hostility from the "maintainers" of said code for fixing
-> > their bugs, well.. that really motivates me to continue reporting new ones..
-> 
-> Given a decent bug report, I agree that having the bug not looked at is
-> shameful.  But what can a developer do if a bug report effectively reads
-> "there is some bug somewhere in recent kernels"?  How can I know that in
-> this particular case it is my bug that I introduced?  It could just as
-> easily be 50 other people and none of them are eager to debug it unless
-> they suspect it to be their bug.
+Ugh.  Almost two years ago, paulus promised me he was going to fix the
+slot name for rpaphp.  Guess he didn't.
 
-It's relatively common that a regression in subsystem A will manifest as a
-failure in subsystem B, and the report initially lands on the desk of the
-subsystem B developers.
+This is one of the hateful things about the current design -- hotplug
+drivers do too much.  Instead of being just the interface between the
+Linux PCI code and the hardware, they create sysfs directories, add files,
+and generally have far too much freedom.
 
-But that's OK.  The subsystem B people are the ones with the expertise to
-be able to work out where the bug resides and to help the subsystem A
-people understand what went wrong.
+We have four different schemes currently for naming in slots/,
+1. slot number.  Used by cpqphp, ibmphp, acpiphp, pciehp, shpc.
+2. domain:bus:dev:fn.  Used by fakephp.
+3a. domain:bus:dev.  Used by rpaphp and sgihp.
+3b. Except that rpaphp uses phy_location to present the information that
+should be in the name and sgihp uses path.
 
-Alas, sometimes the B people will just roll eyes and do nothing because
-they know the problem wasn't in their code.  Sometimes.
+... I've forgotten what cpci uses.  And yenta doesn't use it.
+
+How is anyone supposed to write sane managability tools in the presence
+of such anarchy?
+
+> ~ # cat /sys/bus/pci/slots/0000:00:02.2/phy_location
+> U787A.001.DNZ00Z5-P1-C2
+
+Right.  This should look like:
+
+# cat /sys/bus/pci/slots/U787A.001.DNZ00Z5-P1-C2/address
+0000:00:02
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
