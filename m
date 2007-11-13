@@ -1,85 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763475AbXKMVer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763522AbXKMVfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763475AbXKMVer (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 16:34:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761992AbXKMVeQ
+	id S1763522AbXKMVfe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 16:35:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760724AbXKMVfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 16:34:16 -0500
-Received: from madara.hpl.hp.com ([192.6.19.124]:52566 "EHLO madara.hpl.hp.com"
+	Tue, 13 Nov 2007 16:35:21 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:59597 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760288AbXKMVeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 16:34:14 -0500
-Date: Tue, 13 Nov 2007 13:33:13 -0800
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Philip Mucci <mucci@cs.utk.edu>, William Cohen <wcohen@redhat.com>,
-       akpm@osdl.org, Robert Richter <robert.richter@amd.com>,
-       linux-kernel@vger.kernel.org, Perfmon <perfmon@napali.hpl.hp.com>,
-       Andi Kleen <andi@firstfloor.org>, perfmon2-devel@lists.sourceforge.net,
-       OSPAT devel <ospat-devel@cs.utk.edu>,
-       papi list <ptools-perfapi@cs.utk.edu>, perfmon@napali.hpl.hp.com
-Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
-Message-ID: <20071113213313.GD5747@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <20071107003454.GA13374@kroah.com> <20071109120627.60ec9ab4.akpm@linux-foundation.org> <20071109213829.GC28276@kroah.com> <p73abpl2654.fsf@bingen.suse.de> <20071113151718.GA3804@erda.amd.com> <4739C42F.8030208@redhat.com> <20071113175545.GD4319@frankl.hpl.hp.com> <53F4663B-CFBA-44E4-8283-BAAC8C8F1AFF@cs.utk.edu> <20071113185924.GA22748@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071113185924.GA22748@suse.de>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+	id S1760860AbXKMVfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 16:35:18 -0500
+Date: Tue, 13 Nov 2007 22:35:14 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: rolandd@cisco.com, mshefty@ichips.intel.com, halr@voltaire.com,
+       openib-general@openib.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 3/4] drivers/infiniband: Drop redundant includes of moduleparam.h
+Message-ID: <Pine.LNX.4.64.0711132234110.18337@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg,
+From: Julia Lawall <julia@diku.dk>
 
-On Tue, Nov 13, 2007 at 10:59:24AM -0800, Greg KH wrote:
-> On Tue, Nov 13, 2007 at 10:47:45AM -0800, Philip Mucci wrote:
-> > Hi folks,
-> >
-> > Well, I can say the mood here at supercomputing'07 is pretty somber in 
-> > regards to the latest exchange of messages regarding the perfmon patches. 
-> 
-> "somber"?
-> 
+Drop #include <linux/moduleparam.h> in files that also include #include
+<linux/module.h>.  module.h includes moduleparam.h already.
 
-I am the core developer of this and I am not as pessimistic as Phil. Yet I admit
-Phil has been asking for this kind of kernel interface for a very very long time ;-<
+The semantic patch implementing this change is as follows:
 
-> Why?
-> 
-> We (a number of the kernel developers) want to see the perfmon code make
-> it into the kernel tree, unfortunatly, in the current state it is in,
-> that's not going to happen.
-> 
-> Andi specified a way that this can happen, just refactor your patches
-> into smaller bits that can be reviewed and applied.
-> 
+@ includesmodule @
+@@
 
-I think I understand your concerns. I will work on this. I think it is possible to
-refactor. It will certainly be painful (for me), but I think it can be done within
-some reasonable delay. Of course, it would be help if you could better qualify what
-you mean by 'smaller'.
+#include <linux/module.h>
 
-> If you, or anyone else has any questions about this, please let us know.
-> So far, I have not seen any response to his message, so I'm guessing
-> that the perfmon developers either are off working on this, or don't
-> care.
-> 
+@ depends on includesmodule @
+@@
 
-I will start working on this once I fix the tickless/hrtimer issues.
+- #include <linux/moduleparam.h>
 
-> And if they don't care, then yes, I agree with your "somber" feeling...
-> 
+Signed-off-by: Julia Lawall <julia@diku.dk>
+---
 
-I do care a lot actually. Believe me, I do spend a lot of effort and energy
-on this project everyday, like many others around the world, and I intend for
-it to succeed. We have reached a point in the development of processor hardware
-where this kind of features is crucial and it is not just for HPC folks anymore.
+diff -u -p -b -B a/drivers/infiniband/hw/amso1100/c2.c b/drivers/infiniband/hw/amso1100/c2.c
+--- a/drivers/infiniband/hw/amso1100/c2.c 2007-10-22 11:25:09.000000000 +0200
++++ b/drivers/infiniband/hw/amso1100/c2.c 2007-11-13 17:50:03.000000000 +0100
+@@ -31,7 +31,6 @@
+   * SOFTWARE.
+   */
+  #include <linux/module.h>
+-#include <linux/moduleparam.h>
+  #include <linux/pci.h>
+  #include <linux/netdevice.h>
+  #include <linux/etherdevice.h>
+diff -u -p -b -B a/drivers/infiniband/hw/amso1100/c2_provider.c b/drivers/infiniband/hw/amso1100/c2_provider.c
+--- a/drivers/infiniband/hw/amso1100/c2_provider.c 2007-10-22 11:25:09.000000000 +0200
++++ b/drivers/infiniband/hw/amso1100/c2_provider.c 2007-11-13 17:50:05.000000000 +0100
+@@ -33,7 +33,6 @@
+   */
 
--- 
--Stephane
+  #include <linux/module.h>
+-#include <linux/moduleparam.h>
+  #include <linux/pci.h>
+  #include <linux/netdevice.h>
+  #include <linux/etherdevice.h>
+diff -u -p -b -B a/drivers/infiniband/hw/amso1100/c2_rnic.c b/drivers/infiniband/hw/amso1100/c2_rnic.c
+--- a/drivers/infiniband/hw/amso1100/c2_rnic.c 2007-02-09 17:34:09.000000000 +0100
++++ b/drivers/infiniband/hw/amso1100/c2_rnic.c 2007-11-13 17:50:06.000000000 +0100
+@@ -34,7 +34,6 @@
+
+
+  #include <linux/module.h>
+-#include <linux/moduleparam.h>
+  #include <linux/pci.h>
+  #include <linux/netdevice.h>
+  #include <linux/etherdevice.h>
+diff -u -p -b -B a/drivers/infiniband/hw/ehca/ehca_tools.h b/drivers/infiniband/hw/ehca/ehca_tools.h
+--- a/drivers/infiniband/hw/ehca/ehca_tools.h 2007-10-22 11:25:09.000000000 +0200
++++ b/drivers/infiniband/hw/ehca/ehca_tools.h 2007-11-13 17:50:06.000000000 +0100
+@@ -52,7 +52,6 @@
+  #include <linux/mm.h>
+  #include <linux/mman.h>
+  #include <linux/module.h>
+-#include <linux/moduleparam.h>
+  #include <linux/vmalloc.h>
+  #include <linux/version.h>
+  #include <linux/notifier.h>
+diff -u -p -b -B a/drivers/infiniband/hw/mthca/mthca_profile.c b/drivers/infiniband/hw/mthca/mthca_profile.c
+--- a/drivers/infiniband/hw/mthca/mthca_profile.c 2007-06-02 22:32:12.000000000 +0200
++++ b/drivers/infiniband/hw/mthca/mthca_profile.c 2007-11-13 17:50:23.000000000 +0100
+@@ -34,7 +34,6 @@
+   */
+
+  #include <linux/module.h>
+-#include <linux/moduleparam.h>
+  #include <linux/string.h>
+  #include <linux/slab.h>
+
+diff -u -p -b -B a/drivers/infiniband/hw/cxgb3/iwch.c b/drivers/infiniband/hw/cxgb3/iwch.c
+--- a/drivers/infiniband/hw/cxgb3/iwch.c 2007-06-02 22:32:12.000000000 +0200
++++ b/drivers/infiniband/hw/cxgb3/iwch.c 2007-11-13 17:50:25.000000000 +0100
+@@ -30,7 +30,6 @@
+   * SOFTWARE.
+   */
+  #include <linux/module.h>
+-#include <linux/moduleparam.h>
+
+  #include <rdma/ib_verbs.h>
+
+diff -u -p -b -B a/drivers/infiniband/hw/cxgb3/iwch_provider.c b/drivers/infiniband/hw/cxgb3/iwch_provider.c
+--- a/drivers/infiniband/hw/cxgb3/iwch_provider.c 2007-07-20 17:45:46.000000000 +0200
++++ b/drivers/infiniband/hw/cxgb3/iwch_provider.c 2007-11-13 17:50:27.000000000 +0100
+@@ -30,7 +30,6 @@
+   * SOFTWARE.
+   */
+  #include <linux/module.h>
+-#include <linux/moduleparam.h>
+  #include <linux/device.h>
+  #include <linux/netdevice.h>
+  #include <linux/etherdevice.h>
