@@ -1,88 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760181AbXKMSgk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759816AbXKMSjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760181AbXKMSgk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 13:36:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754952AbXKMSga
+	id S1759816AbXKMSjj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 13:39:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbXKMSj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 13:36:30 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:56563 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751896AbXKMSg2 (ORCPT
+	Tue, 13 Nov 2007 13:39:29 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:40068 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752658AbXKMSj1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 13:36:28 -0500
-Date: Tue, 13 Nov 2007 19:36:05 +0100
-From: Adrian Bunk <bunk@kernel.org>
+	Tue, 13 Nov 2007 13:39:27 -0500
+Date: Tue, 13 Nov 2007 11:39:25 -0700
+From: Matthew Wilcox <matthew@wil.cx>
 To: Mark Lord <liml@rtr.ca>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, protasnb@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
-       bugme-daemon@bugzilla.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, alsa-devel@alsa-project.org,
+       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org, protasnb@gmail.com,
+       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
 Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071113183605.GG4250@stusta.de>
-References: <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca> <20071113164650.GA28493@elte.hu> <4739E3D0.10201@rtr.ca> <20071113181228.GF4250@stusta.de> <4739EA83.5040006@rtr.ca>
+Message-ID: <20071113183925.GF17785@parisc-linux.org>
+References: <20071113031553.3c7b5c16.akpm@linux-foundation.org> <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca> <20071113164650.GA28493@elte.hu> <4739E3D0.10201@rtr.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4739EA83.5040006@rtr.ca>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <4739E3D0.10201@rtr.ca>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 01:18:43PM -0500, Mark Lord wrote:
-> Adrian Bunk wrote:
->> On Tue, Nov 13, 2007 at 12:50:08PM -0500, Mark Lord wrote:
->>> Ingo Molnar wrote:
->>>> for example git-bisect was godsent. I remember that years ago bisection 
->>>> of a bug was a very laborous task so that it was only used as a final, 
->>>> last-ditch approach for really nasty bugs. Today we can autonomouly 
->>>> bisect build bugs via a simple shell command around "git-bisect run", 
->>>> without any human interaction! This freed up testing resources 
->>> ..
->>>
->>> It's only a godsend for the few people who happen to be kernel developers
->>
->> It's also godsend for users who want a regression they observe fixed.
->>
->> If you can tell which patch broke it you often turned a very hard to debug 
->> problem into a relatively easy fixable problem.
-> ..
->
-> Oh yes, definitely.  When that use happens to be a kernel dev + git user,
-> it saves the *fool who broke it* a hell of a lot of time, because they can
-> slough it off onto the poor bloke who notices it.
+On Tue, Nov 13, 2007 at 12:50:08PM -0500, Mark Lord wrote:
+> It's a 540MByte download over a slow link for everyone else.
 
-"fool who broke it" are hard works. Bugs are part of software 
-development, so you'd have to name everyone who develops software
-a fool.
+Where do you get this number from?
+$ du -sh .git/objects/pack/
+249M    .git/objects/pack/
+$ du -sh .git/objects/
+253M    .git/objects/
 
-But the main point is that often you don't know who broke it until you 
-know which commit broke it.
-
-> Mind you, no arguing that this is effective when that poor bloke
-> has a day free to download the git-tree and build/reboot a dozen times.
-
-I did bisecting myself, and I know that it costs time and work.
-
-But the first point is the above one that it makes otherwise nearly 
-undebuggable problems debuggable and fixable.
-
-Another point is that it shifts the work from the few experienced 
-developers to the many users. Users (and voluntary testers) we have
-many, but developer time for debugging bug reports is a quite scarce 
-resource.
-
-And why "poor bloke"? Bisecting takes time, but that's not different 
-from e.g. writing code or cleaning up code or going through bug reports.
-
-cu
-Adrian
+ie about half what you claim.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
