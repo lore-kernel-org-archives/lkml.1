@@ -1,87 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759414AbXKNWHL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760915AbXKNWIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759414AbXKNWHL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 17:07:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753556AbXKNWHA
+	id S1760915AbXKNWIb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 17:08:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754101AbXKNWIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 17:07:00 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:56602 "EHLO pasmtpB.tele.dk"
+	Wed, 14 Nov 2007 17:08:23 -0500
+Received: from gate.crashing.org ([63.228.1.57]:44881 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752319AbXKNWG7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 17:06:59 -0500
-Date: Wed, 14 Nov 2007 23:08:40 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kconfig: use $K64BIT to set 64BIT with all*config targets
-Message-ID: <20071114220840.GB10920@uranus.ravnborg.org>
-References: <20071110204038.GA13140@uranus.ravnborg.org> <11947274093185-git-send-email-sam@ravnborg.org> <11947274091127-git-send-email-sam@ravnborg.org> <Pine.LNX.4.64.0711142116500.1818@scrub.home>
+	id S1753901AbXKNWIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 17:08:22 -0500
+Subject: Re: [patch 3/3] arch_rebalance_pgtables call
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: schwidefsky@de.ibm.com
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+In-Reply-To: <1195040986.9446.23.camel@localhost>
+References: <20071112143009.425807965@de.ibm.com>
+	 <20071112144010.052155135@de.ibm.com>
+	 <200711132333.38086.nickpiggin@yahoo.com.au>
+	 <1195032394.9446.6.camel@localhost>  <1195034796.28865.36.camel@pasglop>
+	 <1195040986.9446.23.camel@localhost>
+Content-Type: text/plain
+Date: Thu, 15 Nov 2007 09:07:33 +1100
+Message-Id: <1195078053.28865.47.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0711142116500.1818@scrub.home>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Roman
 
-On Wed, Nov 14, 2007 at 09:57:32PM +0100, Roman Zippel wrote:
-> Hi,
+On Wed, 2007-11-14 at 12:49 +0100, Martin Schwidefsky wrote:
 > 
-> On Sat, 10 Nov 2007, Sam Ravnborg wrote:
-> 
-> > +	if (p) {
-> > +		char warning[100];
-> > +		sprintf(warning, "Environment variable (%s = \"%s\")", env, p);
-> > +		conf_filename = warning;
-> > +		def_flags = SYMBOL_DEF << def;
-> > +		if (def == S_DEF_USER) {
-> > +			sym = sym_find(symname);
-> > +			if (!sym)
-> > +				return 1;
-> > +		} else {
-> > +			sym = sym_lookup(symname, 0);
-> > +			if (sym->type == S_UNKNOWN)
-> > +				sym->type = S_OTHER;
-> > +		}
-> > +		conf_set_sym_val(sym, def, def_flags, p);
-> > +	}
-> > +	return 0;
-> 
-> This is more complex than necessary, this should be enough:
-> 
-> 	sym = sym_find(symname);
-> 	if (sym)
-> 		sym_set_string_value(sym, p);
-> 
-> This is not a direct user interface, so the potential stricter error 
-> checking is not really needed.
-The value can be supplied on the command-line so we need to validate input.
-The code is a copy of what happen when reading a all.config file and
-the functionality should be equal.
-Can we make that part simpler too?
+> They all either have an arch override, call get_unmapped_area again or
+> are not relevant. So it should be possible to do the upgrade in
+> arch_get_unmapped_area. I still have my doubts though, all future uses
+> of the get_unmapped_area pointer have to be checked and I feel it is
+> easier to understand to do the upgrade / rebalance of the page table
+> at
+> the end of get_unmapped_area where every caller of mmap is guaranteed
+> to
+> pass through.
 
-By the way - I have never understood the purpose of the flags (S_DEF_USER etc.)
-Can we have a few comments added to their definition?
+Well, if something does what you are worried about, then it would be
+broken on powerpc as well (among others). We have various constraints on
+the address space layout that must be handled by our arch g_u_a (or our
+hugetlb one).
 
-> In general I think it's problematic that this is only checked, when the 
-> config system is called, i.e. with a configured kernel adding ARCH would 
-> have no effect, what makes this more confusing is that one can later omit 
-> the ARCH variable, since it's saved in the .config.
+Ben.
 
-The future plan is to set the architecture as part of the configuration step
-and not by ARCH=. The ARCH= notation will continue to be supported
-but will merely be a hint about the desired architecture.
 
-The only place where it will play a real effect is when generating
-allnoconfig, allyesconfig, allmodconfig, randconfig.
-
-Some consistency check will likely be added - but a pure 'make' will
-build the kernel with the configured ARCH and the configured CROSS_COMPILE
-setting.
-
-One of the blockers are that kconfig does not support more than one prompt
-for a choice symbol. Is this something you can fix - or sketch how to fix it?
-
-	Sam
