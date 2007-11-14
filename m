@@ -1,43 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760274AbXKND0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759993AbXKNDeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760274AbXKND0R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 22:26:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756014AbXKND0B
+	id S1759993AbXKNDeT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 22:34:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756156AbXKNDeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 22:26:01 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:34640 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754697AbXKND0A (ORCPT
+	Tue, 13 Nov 2007 22:34:11 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:21844 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755029AbXKNDeK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 22:26:00 -0500
-Date: Tue, 13 Nov 2007 19:26:07 -0800
-From: Greg KH <greg@kroah.com>
-To: Linas Vepstas <linas@austin.ibm.com>
-Cc: gregkh@suse.de, Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       Matthew Wilcox <matthew@wil.cx>, strosake@us.ibm.com,
-       Alex Chiang <achiang@hp.com>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, lenb@kernel.org, rick.jones2@hp.com,
-       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] pci hotplug: fix rpaphp directory naming
-Message-ID: <20071114032607.GA22438@kroah.com>
-References: <20071114003455.GD8509@austin.ibm.com>
+	Tue, 13 Nov 2007 22:34:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=muBVlwh+ul2fsXg893VyIkvKQa3LaddC18TnEMnMeaugRgqlU9uXLVlXatG3g7qXNdxamar5Vrjscal0Q2+rMsdi6F/Bn5ovTrYFAbLxkdTTAXXJt62K3cfbTVGWsoIRTvqX9sOXUEfEICjyUcZfYUxnvJB35wUHnqZ6E6tRakc=
+Message-ID: <3182720c0711131934t328440aey6e42a400a1c73a51@mail.gmail.com>
+Date: Wed, 14 Nov 2007 11:34:10 +0800
+From: "Wang Yu" <wangyuict@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: about ext3_readpage
+In-Reply-To: <3182720c0711131917i1596e883qb27041d830ba39b3@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071114003455.GD8509@austin.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <3182720c0711131917i1596e883qb27041d830ba39b3@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 06:34:55PM -0600, Linas Vepstas wrote:
-> 
-> 
-> Fix presentation of the slot number in the /sys/bus/pci/slots
-> directory to match that used in the majority of other drivers.
+Hi, all
+when I read ext3_readpage function following
+ext3_readpage->mpage_readpage->do_mpage_readpage, there are:
 
-We need a signed-off-by: to be able to apply this...
+nblocks = map_bh->b_size >> blkbits;
+        if (buffer_mapped(map_bh) && block_in_file > *first_logical_block &&
+                        block_in_file < (*first_logical_block + nblocks)) {
+                unsigned map_offset = block_in_file - *first_logical_block;
+                unsigned last = nblocks - map_offset;
 
-thanks,
+                for (relative_block = 0; ; relative_block++) {
+                        if (relative_block == last) {
+                                clear_buffer_mapped(map_bh);
+                                break;
+                        }
+                        if (page_block == blocks_per_page)
+                                break;
+                        blocks[page_block] = map_bh->b_blocknr + map_offset +
+                                                relative_block;
+                        page_block++;
+                        block_in_file++;
+                }
+                bdev = map_bh->b_bdev;
+        }
 
-greg k-h
+Since map_bh->b_size is the size of the block buffer, and blkbits is
+associated with the block in inode, why does he do the operation >> ?
+And what is the meaning and usage of  first_logical_block? the initial
+value of it is 0.
+
+Hope someone will help me!
+Thanks!
+
+-- 
+National Research Center for Intelligent Computing Systems
+Institute of Computing Technology, Chinese Academy of Sciences
