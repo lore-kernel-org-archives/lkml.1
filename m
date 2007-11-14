@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762864AbXKNAlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763823AbXKNAmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762864AbXKNAlp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 19:41:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760911AbXKNAle
+	id S1763823AbXKNAmY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 19:42:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761174AbXKNAmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 19:41:34 -0500
-Received: from py-out-1112.google.com ([64.233.166.176]:18996 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760438AbXKNAlc (ORCPT
+	Tue, 13 Nov 2007 19:42:13 -0500
+Received: from mga03.intel.com ([143.182.124.21]:15480 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760911AbXKNAmL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 19:41:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=VpzE6nviNwi4KRPBmtaAAQerIhmP7dPR3ZKU9SBMKMGXUgI9Um6snJIDqebIfJJEXY87rRW83giXWq9DLCa5Q6w8GG+R742y+avFLBvsDuAZNuBNP9xshrx+SjsKvJc2w5dhHtfGJGhN4WW+hQ0A0g22BOHbPhWDncwvGkCz4io=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Gabriel C <nix.or.die@googlemail.com>
-Subject: Re: [BUG] New Kernel Bugs
-Date: Tue, 13 Nov 2007 17:41:06 -0700
-User-Agent: KMail/1.9.1
-Cc: Adrian Bunk <bunk@kernel.org>, Theodore Tso <tytso@mit.edu>,
-       Benoit Boissinot <bboissin@gmail.com>, Mark Lord <liml@rtr.ca>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, protasnb@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
-       bugme-daemon@bugzilla.kernel.org
-References: <20071113031553.3c7b5c16.akpm@linux-foundation.org> <20071113175610.GE4250@stusta.de> <4739F399.2010605@googlemail.com>
-In-Reply-To: <4739F399.2010605@googlemail.com>
+	Tue, 13 Nov 2007 19:42:11 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,412,1188802800"; 
+   d="scan'208";a="317874778"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711131741.06509.vda.linux@googlemail.com>
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [kvm-devel] [PATCH 2/3] kvmclock - the host part.
+Date: Wed, 14 Nov 2007 08:41:16 +0800
+Message-ID: <10EA09EFD8728347A513008B6B0DA77A025DFCCF@pdsmsx411.ccr.corp.intel.com>
+In-Reply-To: <4739CD03.90406@qumranet.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [kvm-devel] [PATCH 2/3] kvmclock - the host part.
+Thread-Index: AcgmEQpyzGU3AnogSRGmKinC6f2kgwARYbcw
+References: <11945615632624-git-send-email-gcosta@redhat.com><11945615703593-git-send-email-gcosta@redhat.com> <11945615751747-git-send-email-gcosta@redhat.com> <10EA09EFD8728347A513008B6B0DA77A025DF8A2@pdsmsx411.ccr.corp.intel.com> <4739906B.2080103@redhat.com> <4739B916.4000405@qumranet.com> <10EA09EFD8728347A513008B6B0DA77A025DFB75@pdsmsx411.ccr.corp.intel.com> <4739CD03.90406@qumranet.com>
+From: "Dong, Eddie" <eddie.dong@intel.com>
+To: "Avi Kivity" <avi@qumranet.com>
+Cc: "Glauber de Oliveira Costa" <gcosta@redhat.com>,
+       <linux-kernel@vger.kernel.org>, <jeremy@goop.org>, <hollisb@us.ibm.com>,
+       <kvm-devel@lists.sourceforge.net>
+X-OriginalArrivalTime: 14 Nov 2007 00:41:33.0407 (UTC) FILETIME=[1AD276F0:01C82657]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 November 2007 11:57, Gabriel C wrote:
-> > The main problem is finding experienced developers who spend time on
-> > looking into bug reports.
->
-> There are already. IMO the problem is the development model.
->
-> There are tons new features in each new kernel release and 'tons new bugs'
-> which are not fixed during the release cycle nor in the .XX stable kernels.
->
-> Maybe after XX kernel releases there should be one just with bug-fixes
-> _without_ any new features , eg: cleaning bugs from bugzilla , know
-> regressions , cleaning up code , removing broken drivers and the like.
+>> 
+>> +	kvm_get_msr(vcpu, MSR_IA32_TIME_STAMP_COUNTER,
+>> +			  &vcpu->hv_clock.last_tsc);
+>> +
+>> +	ktime_get_ts(&ts);
+>> +	vcpu->hv_clock.now_ns = ts.tv_nsec + (NSEC_PER_SEC *
+>> (u64)ts.tv_sec); +	vcpu->hv_clock.wc_sec = get_seconds();
+>> 
+>> I am even thinking we have to disable interrupt between these lines,
+>> otherwise guest wall clock may see backward time source when
+>> calculating the delta TSC since last vcpu->hv_clock.now_ns update.
+>> 
+> 
+> That's true.  While we do need to handle vcpu migration and
+> descheduling, the code sequence you note needs to be as atomic as
+> possible. 
+> 
 
-Won't work. You cannot force people to work on things they don't
-find interesting, long-term.
---
-vda
+Yes VCPU migration is another issue. Since the physical platform TSC is 
+totally different across migration, so we can't expose host TSC to
+guest.
+For KVM, it should be simple to just use guest_TSC (=HOST_TSC + offset).
+
+thanks, eddie
