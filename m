@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762347AbXKNUY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764188AbXKNU0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762347AbXKNUY4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 15:24:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754555AbXKNUYt
+	id S1764188AbXKNU0S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 15:26:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754555AbXKNU0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 15:24:49 -0500
-Received: from nf-out-0910.google.com ([64.233.182.188]:17072 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754501AbXKNUYs (ORCPT
+	Wed, 14 Nov 2007 15:26:05 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:39456 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759509AbXKNU0E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 15:24:48 -0500
+	Wed, 14 Nov 2007 15:26:04 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=Rns59A+43IFjnxaw0tRn8n31qYbMovTSdzYSxnowiNXU5oXxElfV1rSdzKvlCh+Bnf+/b9uRfwx6hKi6fM7c+pw7liXUWmKpRgsJajV/W6ieO6kRr4EbSqDU+FRVpGo9rzmnl5Dzd1UEZn2JHVBcmcJUVuSig78Yj3++ksnKZcg=
-Message-ID: <473B5987.60904@gmail.com>
-Date: Wed, 14 Nov 2007 21:24:39 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=R+hvTdELDHyDLPuhMFJOfeXCEMfGq/DdDm4InbJmBoLA3bhFjKRKWJWp3Fmutmj6udxl6uNMvkrcUO3DLsPXN5lVhbiO12op8hIcYGI998NRkJ/ZOunxvdpFC43qcXgwNqX6X80qMcuwSkTimeVTbhzRheZv0hlBbqmLY6hXsd4=
+Message-ID: <19f34abd0711141226n60323630rdc4833db0bfb2eeb@mail.gmail.com>
+Date: Wed, 14 Nov 2007 21:26:01 +0100
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: psmouse.c: GlidePoint at isa0060/serio1/input0 lost sync at byte 1
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: broken suspend [Was: 2.6.24-rc2-mm1]
-References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
-In-Reply-To: <20071113175906.497a1a6a.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/14/2007 02:59 AM, Andrew Morton wrote:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc2/2.6.24-rc2-mm1/
+Hello,
 
-Doesn't suspend for me (neither broken-out-2007-11-13-04-14 did) on x86_64.
-echo mem >/sys/power/state
-causes shut down of disk(s) and blinking cursor on 1,1 position.
-The last working was 2.6.23-rc8-mm2. I haven't tested
-2.6.23-mm1, since it didn't work for me.
+With 2.6.23 kernel, the laptop middle button worked fine. With
+2.6.24-rc1, when I press the middle button, the cursor jumps around
+the screen and this appears in the kernel log (for each time I press
+the button):
 
-As usual, I don't know how to debug this and what other info is needed, any
-thoughts?
+psmouse.c: GlidePoint at isa0060/serio1/input0 lost sync at byte 1
+psmouse.c: GlidePoint at isa0060/serio1/input0 lost sync at byte 1
+psmouse.c: GlidePoint at isa0060/serio1/input0 - driver resynched.
 
-regards,
--- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
+Related dmesg:
+
+input: Macintosh mouse button emulation as /class/input/input0
+PNP: PS/2 Controller [PNP0303:KBC0,PNP0f13:MSE0] at 0x60,0x64 irq 1,12
+mice: PS/2 mouse device common for all mice
+input: PS/2 Mouse as /class/input/input2
+input: AlpsPS/2 ALPS GlidePoint as /class/input/input3
+
+Earlier dmesgs (2.6.23) had (only) this:
+
+input: Macintosh mouse button emulation as /class/input/input0
+PNP: PS/2 Controller [PNP0303:KBC0,PNP0f13:MSE0] at 0x60,0x64 irq 1,12
+mice: PS/2 mouse device common for all mice
+input: ImPS/2 Generic Wheel Mouse as /class/input/input2
+
+
+It seems that the driver used is different. What can I do to fix this?
+
+
+Kind regards,
+Vegard Nossum
