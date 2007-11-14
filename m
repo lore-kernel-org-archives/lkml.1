@@ -1,101 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762502AbXKNVgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759046AbXKNVkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762502AbXKNVgR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 16:36:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921AbXKNVgE
+	id S1759046AbXKNVkh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 16:40:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754381AbXKNVk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 16:36:04 -0500
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:58396 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753457AbXKNVgB (ORCPT
+	Wed, 14 Nov 2007 16:40:27 -0500
+Received: from an-out-0708.google.com ([209.85.132.244]:7583 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753484AbXKNVkZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 16:36:01 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAIb5OkdMROHU/2dsb2JhbACBXA
-Date: Wed, 14 Nov 2007 16:35:58 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 2/4] Add ARCH_SUPPORTS_OPROFILE
-Message-ID: <20071114213558.GB9010@Krystal>
-References: <20071113142609.103579906@polymtl.ca> <20071113142935.063097504@polymtl.ca> <20071114194142.GC10047@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 14 Nov 2007 16:40:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=cOM5UD9D82gzALPITHlZYzycQ6WFvVaJ/T1OpLSHBiZh3vG0mMkDVVHWtJJV/Asu6+7ESBpprSiOZyrdAlJY3Jw+33dKiQNQyApulzWTVRllWedysNWPjQNj3c5j3ryCvCE44ZbFG9rnXn6DXDaMziD8B2TljtWQoGsqr54687I=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Hannes Reinecke <hare@suse.de>, Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [BUG] New Kernel Bugs
+Date: Wed, 14 Nov 2007 14:39:58 -0700
+User-Agent: KMail/1.9.1
+Cc: Adrian Bunk <bunk@kernel.org>, Theodore Tso <tytso@mit.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       protasnb@gmail.com, linux-ide@vger.kernel.org,
+       Benoit Boissinot <bboissin@gmail.com>, Mark Lord <liml@rtr.ca>,
+       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>
+References: <20071113031553.3c7b5c16.akpm@linux-foundation.org> <20071114133034.GR17785@parisc-linux.org> <473AF9A5.50707@suse.de>
+In-Reply-To: <473AF9A5.50707@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071114194142.GC10047@uranus.ravnborg.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:34:18 up 11 days,  2:39,  5 users,  load average: 0.45, 0.58,
-	0.62
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200711141439.58200.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Sam Ravnborg (sam@ravnborg.org) wrote:
-> Hi Mathieu.
-> 
-> > 
-> > It would be much better to do
-> > 
-> >         depends on ARCH_SUPPORTS_KPROBES
-> > 
-> > in that generic file, and then architectures that do support it would just
-> > have a
-> > 
-> >         bool ARCH_SUPPORTS_KPROBES
-> >                 default y
-> 
-> The above suggestion is actually not exactly the best way to do it...
-> First the naming..
-> A quick grep shows following usage today (in Kconfig files)
-> ARCH_HAS	51
-> ARCH_SUPPORTS	4
-> HAVE_ARCH	7
-> 
-> ARCH_HAS is the clear winner.
-> 
-> 
-> In the common Kconfig file do:
-> 
-> config FOO
-> 	depends on ARCH_HAS_FOO
-> 	bool "bla bla" 
-> 
-> config ARCH_HAS_FOO
-> 	def_bool n
-> 
-> 
-> In the arch specific Kconfig file in a suitable place do:
-> 
-> config SUITABLE_OPTION
+hi Matthew,
 
-Since config KPROBES will already be used in the architecture
-independent Kconfig, I should find a different name for "config
-SUITABLE_OPTION". Would
+On Wednesday 14 November 2007 06:35, Hannes Reinecke wrote:
+> Matthew Wilcox wrote:
+> > On Wed, Nov 14, 2007 at 12:46:20AM -0700, Denys Vlasenko wrote:
+> >> Finally they replied and asked to rediff it against their
+> >> git tree. I did that and sent patches back. No reply since then.
+> >>
+> >> And mind you, the patch is not trying to do anything
+> >> complex, it mostly moves code around, removes 'inline',
+> >> adds 'const'. What should I think about it?
+> >
+> > I'm waiting for an ACK/NAK from Hannes, the maintainer.  What should I
+> > do?
 
-config KPROBES_SUPPORT
-  select ARCH_HAS_KPROBES
+You could have informed me about this, and I would talk to Hannes
+myself. This would free up your mind from keeping track of this
+particular patch.
+Parallelize development, prevent things from being forgotten.
 
-be ok ?
 
-> 	select ARCH_HAS_FOO
-> 
-> 
-> The naming of ARCH_HAS_ is fixed and shall be:
-> ARCH_HAS_<config option it will enable>
-> 
-> 
-> Only a single line added pr. architecture.
-> And we will end up with a (maybe even commented) list of trivial selects.
-> 
-> Sorry for providing late feedback on this!
-> 
-> 	Sam
+Hi Hannes,
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> I haven't actually been able to test it here (too busy, sorry). If someone
+> else confirms it does it's job then
+>
+> Acked-by: Hannes Reinecke <hare@suse.de>
+
+It's not in my mailbox on this machine, gladly we have lkml archived
+in the Net. Here is a positive tester report:
+
+http://lkml.org/lkml/2007/10/15/168:
+
+======================
+Date	Mon, 15 Oct 2007 15:53:08 +0200
+From	Gabriel C <>
+Subject	Re: [PATCH 0/3] debloat aic7xxx and aic79xx drivers
+
+>> Compile tested and applies cleanly to 2.6.23.
+>> I don't have this hardware anymore and cannot run test these patches.
+> 
+> I can test these patches on an aic7892 controller later on today if you 
+want.
+
+Works fine for me tested on :
+
+03:0e.0 SCSI storage controller [0100]: Adaptec AIC-7892P U160/m [9005:008f] 
+(rev 02)
+
+Gabriel
+=======================
+
+--
+vda
