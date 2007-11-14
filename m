@@ -1,81 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760482AbXKNQaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760222AbXKNQdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760482AbXKNQaK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 11:30:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756451AbXKNQ36
+	id S1760222AbXKNQdi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 11:33:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756018AbXKNQdb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 11:29:58 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:45371 "EHLO twin.jikos.cz"
+	Wed, 14 Nov 2007 11:33:31 -0500
+Received: from nic2.axis.se ([193.13.178.10]:49809 "EHLO krynn.se.axis.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754639AbXKNQ35 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 11:29:57 -0500
-Date: Wed, 14 Nov 2007 17:29:49 +0100 (CET)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc2-mm1
-In-Reply-To: <20071113175906.497a1a6a.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0711141728290.15844@twin.jikos.cz>
-References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
+	id S1755934AbXKNQda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 11:33:30 -0500
+Date: Wed, 14 Nov 2007 17:33:22 +0100
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Mikael Starvik <mikael.starvik@axis.com>,
+       Jesper Nilsson <jesper.nilsson@axis.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] CRIS tlb.h should include linux/pagemap.h
+Message-ID: <20071114163322.GM6347@axis.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Nov 2007, Andrew Morton wrote:
+Include linux/pagemap.h for release_pages and page_cache_release.
 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc2/2.6.24-rc2-mm1/
+Fixes compilation error in arch/cris/mm/init.c when CONFIG_SWAP is unset.
 
-Doesn't boot here:
+Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
 
-serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-00:02: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-Floppy drive(s): fd0 is 1.44M
-floppy0: Floppy io-port 0x03f2 in use
-INFO: trying to register non-static key.
-the code is fine but needs lockdep annotation.
-turning off the locking correctness validator.
+---
+ tlb.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Call Trace:
- [<ffffffff80251f88>] __lock_acquire+0x1b7/0xcd0
- [<ffffffff80252e8e>] lock_acquire+0x51/0x6c
- [<ffffffff8035bd62>] kobject_add+0x9b/0x197
- [<ffffffff80598ce2>] _spin_lock+0x1e/0x27
- [<ffffffff8035bd62>] kobject_add+0x9b/0x197
- [<ffffffff802c9a42>] register_disk+0x48/0x209
- [<ffffffff80355d14>] add_disk+0x34/0x3d
- [<ffffffff8083cdb4>] rd_init+0x172/0x1e1
- [<ffffffff8082063a>] kernel_init+0x175/0x2e6
- [<ffffffff8025194c>] trace_hardirqs_on+0x115/0x139
- [<ffffffff80598779>] trace_hardirqs_on_thunk+0x35/0x3a
- [<ffffffff8025194c>] trace_hardirqs_on+0x115/0x139
- [<ffffffff8020c628>] child_rip+0xa/0x12
- [<ffffffff8020bd3f>] restore_args+0x0/0x30
- [<ffffffff808204c5>] kernel_init+0x0/0x2e6
- [<ffffffff8020c61e>] child_rip+0x0/0x12
+diff --git a/include/asm-cris/tlb.h b/include/asm-cris/tlb.h
+index 6cc26de..7724246 100644
+--- a/include/asm-cris/tlb.h
++++ b/include/asm-cris/tlb.h
+@@ -1,6 +1,8 @@
+ #ifndef _CRIS_TLB_H
+ #define _CRIS_TLB_H
+ 
++#include <linux/pagemap.h>
++
+ #include <asm/arch/tlb.h>
+ 
+ /*
 
-INFO: lockdep is turned off.
-BUG: spinlock lockup on CPU#0, swapper/1, FFFF81001FA2BED0
-
-Call Trace:
- [<ffffffff80363632>] _raw_spin_lock+0xd1/0xf8
- [<ffffffff8035bd62>] kobject_add+0x9b/0x197
- [<ffffffff8035bd62>] kobject_add+0x9b/0x197
- [<ffffffff802c9a42>] register_disk+0x48/0x209
- [<ffffffff80355d14>] add_disk+0x34/0x3d
- [<ffffffff8083cdb4>] rd_init+0x172/0x1e1
- [<ffffffff8082063a>] kernel_init+0x175/0x2e6
- [<ffffffff8025194c>] trace_hardirqs_on+0x115/0x139
- [<ffffffff80598779>] trace_hardirqs_on_thunk+0x35/0x3a
- [<ffffffff8025194c>] trace_hardirqs_on+0x115/0x139
- [<ffffffff8020c628>] child_rip+0xa/0x12
- [<ffffffff8020bd3f>] restore_args+0x0/0x30
- [<ffffffff808204c5>] kernel_init+0x0/0x2e6
- [<ffffffff8020c61e>] child_rip+0x0/0x12
-
-INFO: lockdep is turned off.
-
-I will investigate.
-
--- 
-Jiri Kosina
+/^JN - Jesper Nilsson
+--
+               Jesper Nilsson -- jesper.nilsson@axis.com
