@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763003AbXKNSlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763330AbXKNSly@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763003AbXKNSlP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 13:41:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbXKNSlA
+	id S1763330AbXKNSly (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 13:41:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756955AbXKNSlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 13:41:00 -0500
-Received: from gw.goop.org ([64.81.55.164]:58353 "EHLO mail.goop.org"
+	Wed, 14 Nov 2007 13:41:46 -0500
+Received: from waste.org ([66.93.16.53]:47294 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752121AbXKNSk7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 13:40:59 -0500
-Message-ID: <473B4132.5030402@goop.org>
-Date: Wed, 14 Nov 2007 10:40:50 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       xen-devel@lists.xensource.com, LKML <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>, Chris Wright <chrisw@sous-sol.org>,
-       virtualization@lists.osdl.org,
+	id S1753223AbXKNSlq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 13:41:46 -0500
+Date: Wed, 14 Nov 2007 12:39:52 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Keir Fraser <keir@xensource.com>, Stable Kernel <stable@kernel.org>
-Subject: Re: [stable] [PATCH 00/12] xen/paravirt_ops patches for 2.6.24
-References: <20071015204840.074767068@goop.org> <20071015215406.GA1588@kroah.com> <4713E2D6.90801@goop.org> <20071113232258.GA10338@kroah.com>
-In-Reply-To: <20071113232258.GA10338@kroah.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [bug] SLOB crash, 2.6.24-rc2
+Message-ID: <20071114183952.GS19691@waste.org>
+References: <200711112058.28043.rjw@sisk.pl> <20071114112001.GA13870@elte.hu> <20071114173611.GR19691@waste.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071114173611.GR19691@waste.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> These don't apply now due to the x86 merge.  Care to backport them and
-> send them to the stable@kernel.org address so we can apply them
-> properly?
+On Wed, Nov 14, 2007 at 11:36:11AM -0600, Matt Mackall wrote:
+> On Wed, Nov 14, 2007 at 12:20:01PM +0100, Ingo Molnar wrote:
+> > 
+> > there's a new SLOB regression - the attached config crashes with:
+> > 
+> > [   61.245190] rc.sysinit used greatest stack depth: 1680 bytes left
+> > [   61.386859] list_add corruption. prev->next should be next (407d973c), but was 418cf818. (prev=41877098).
+> > [   61.396328] ------------[ cut here ]------------
+> > [   61.400910] kernel BUG at lib/list_debug.c:33!
+> > [   61.405330] invalid opcode: 0000 [#1] DEBUG_PAGEALLOC
+> > 
+> > looks like memory corruption of some sort and it's reproducible. Picking 
+> > CONFIG_SLUB makes the crash go away. Booting v2.6.23 with the same 
+> > .config works fine.
+> 
+> Hmmm, the changes in SLOB since v2.6.23 are all trivial. I'll try to
+> reproduce it with your config, but it doesn't seem promising.
 
-I'm a bit confused.  The patches you mailed out are against arch/i386. 
-Won't they apply to the stable tree as-is?
+Couldn't reproduce it here, let me know if you get anywhere with your bisect.
 
-> Although, it's not like anyone actually uses the in-kernel Xen on
-> 2.6.23, so it's probably not really worth it.
->   
-
-To be fair, those fixes were in response to bug reports raised on the
-released 2.6.23 kernel.  But it isn't screamingly urgent.
-
-    J
+-- 
+Mathematics is the supreme nostalgia of our time.
