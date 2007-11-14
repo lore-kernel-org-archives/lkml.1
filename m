@@ -1,43 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763097AbXKNGJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763602AbXKNGMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763097AbXKNGJy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 01:09:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757489AbXKNGJp
+	id S1763602AbXKNGMy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 01:12:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758432AbXKNGMo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 01:09:45 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:33305 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750779AbXKNGJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 01:09:44 -0500
-Date: Wed, 14 Nov 2007 07:09:40 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: khali@linux-fr.org, i2c@lm-sensors.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 1/4] drivers/i2c: Drop redundant includes of moduleparam.h
-In-Reply-To: <alpine.LFD.0.9999.0711131632490.26111@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0711140707120.25487@ask.diku.dk>
-References: <Pine.LNX.4.64.0711132231080.18337@ask.diku.dk>
- <alpine.LFD.0.9999.0711131632490.26111@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed, 14 Nov 2007 01:12:44 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41189
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757489AbXKNGMn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 01:12:43 -0500
+Date: Tue, 13 Nov 2007 22:12:42 -0800 (PST)
+Message-Id: <20071113.221242.153352652.davem@davemloft.net>
+To: nickpiggin@yahoo.com.au
+Cc: clameter@sgi.com, netdev@vger.kernel.org, herbert@gondor.apana.org.au,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc2: Network commit causes SLUB performance regression
+ with tbench
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200711140436.24492.nickpiggin@yahoo.com.au>
+References: <200711132241.59074.nickpiggin@yahoo.com.au>
+	<20071113.175804.151698768.davem@davemloft.net>
+	<200711140436.24492.nickpiggin@yahoo.com.au>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> From: Julia Lawall <julia@diku.dk>
->>
->> Drop #include <linux/moduleparam.h> in files that also include #include
->> <linux/module.h>.  module.h includes moduleparam.h already.
->
-> i'm not convinced that's a good idea.  while module.h does currently
-> (and unfortunately) include moduleparam.h, there may come a day when
-> those header files are refactored to actually make sense, at which
-> point all those missing moduleparam.h inclusions will cause all sorts
-> of bad things to happen.
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+Date: Wed, 14 Nov 2007 04:36:24 +1100
 
-They were removed from the drivers/media files in August:
-9c12224a607a4b22ab86784e3394b52810b9507c
-Perhaps they should be put back there then?
+> On Wednesday 14 November 2007 12:58, David Miller wrote:
+> > I suspect the issue is about having a huge skb->data linear area for
+> > TCP sends over loopback.  We're likely getting a much smaller
+> > skb->data linear data area after the patch in question, the rest using
+> > the sk_buff scatterlist pages which are a little bit more expensive to
+> > process.
+> 
+> It didn't seem to be noticeable at 1 client. Unless scatterlist
+> processing is going to cause cacheline bouncing, I don't see why this
+> hurts more as you add CPUs?
 
-julia
+Is your test system using HIGHMEM?
 
+That's one thing the page vector in the sk_buff can do a lot,
+kmaps.
