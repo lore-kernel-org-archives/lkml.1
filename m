@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760904AbXKNRV5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761291AbXKNRWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760904AbXKNRV5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 12:21:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754123AbXKNRVt
+	id S1761291AbXKNRWd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 12:22:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757371AbXKNRWW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 12:21:49 -0500
-Received: from rtr.ca ([76.10.145.34]:2059 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753870AbXKNRVr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 12:21:47 -0500
-Message-ID: <473B2EAA.4090802@rtr.ca>
-Date: Wed, 14 Nov 2007 12:21:46 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Wed, 14 Nov 2007 12:22:22 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:52523 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753855AbXKNRWV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 12:22:21 -0500
+X-IronPort-AV: E=Sophos;i="4.21,417,1188802800"; 
+   d="scan'208";a="470409"
+To: Takashi Iwai <tiwai@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: snd_hda_intel 2.6.24-rc2 bug: interrupts don't always work on Lenovo X60s
+X-Message-Flag: Warning: May contain useful information
+References: <ada1wb05p6n.fsf@cisco.com> <s5hbq9zyktm.wl%tiwai@suse.de>
+	<adak5on2yd6.fsf@cisco.com> <s5hwssnvaw1.wl%tiwai@suse.de>
+	<adafxzb2tf3.fsf@cisco.com> <s5hhcjqhkty.wl%tiwai@suse.de>
+	<ada3av8234o.fsf@cisco.com> <s5hlk91dkx3.wl%tiwai@suse.de>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Wed, 14 Nov 2007 09:22:18 -0800
+In-Reply-To: <s5hlk91dkx3.wl%tiwai@suse.de> (Takashi Iwai's message of "Wed, 14 Nov 2007 14:19:20 +0100")
+Message-ID: <adawsskzqr9.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-To: Sebastian Kemper <sebastian_ml@gmx.net>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: libata/PATA: GPCMD_SET_STREAMING via SG_IO does nothing
-References: <20071113164323.GA5252@section-eight> <20071113212230.77cadecd@the-village.bc.nu> <20071113232859.GA4681@section-eight> <473B219E.5060508@rtr.ca> <473B2541.10409@rtr.ca> <20071114171139.GA9387@section-eight>
-In-Reply-To: <20071114171139.GA9387@section-eight>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 14 Nov 2007 17:22:19.0324 (UTC) FILETIME=[E8FA47C0:01C826E2]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sebastian Kemper wrote:
-> Hi Mark!
-> 
-> On Wed, Nov 14, 2007 at 11:41:37AM -0500, Mark Lord wrote:
->> Ahh.. got it.  The host_status returned (not checked by that code) was 7,
->> which means "host error".
->>
->> In this case, that's because the cmd_len is (16), which is too large for 
->> ATAPI.
->> It needs to be changed to (12) instead.
-> 
-> I don't understand. You seem to use a cmd_len of 16 in hdparm yourself.
-..
+ > NWhat cmd more exactly?  The below is GET_DIGI_CONVERT.  So it must be
+ > related with SPDIF but it must be same as 2.6.23.  Or do you happen to
+ > set CONFIG_SND_HDA_POWER_SAVE=y?
 
-Really?  Where?
+The new error message is:
 
+    hda_intel: azx_get_response timeout, switching to polling mode: last cmd=0x002f0d00
 
-> And why does it work with the "old" ATA driver and not with libata if
-> 16 is too large for ATAPI in general?
-..
+so the cmd is 0x002f0d00.
 
-Now that *is* the question.
-And the answer appears to be that ide-cd.c ignores the passed-in cmd_len,
-and replaces it with:
+I'm not sure if I ever saw this with 2.6.23 or not -- it is rare
+enough that I may have missed it.  I do have
 
-   cmd_len = COMMAND_SIZE(rq->cmd[0]);
+    CONFIG_SND_HDA_POWER_SAVE=y
+    CONFIG_SND_HDA_POWER_SAVE_DEFAULT=5
 
-That's a SCSI macro to calculate the correct cmd_len based on the SCSI opcode,
-which is very appropriate here.   We should do that too (we don't) in libata.
+in my .config.  And I don't think that the X61s has anything
+SPDIF-related accessible on the outside... not sure what mmight be
+going on inside of course.
 
-But not exactly as IDE does it -- that's actually a bug:  the code needs to also
-check that the new cmd_len is no larger than the original, or we'll get an Oops.
-
-I'll cook up a patch for that shortly and try it before posting it here.
-
--ml
+Thanks,
+  Roland
