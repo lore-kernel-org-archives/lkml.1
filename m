@@ -1,64 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762281AbXKNAvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762840AbXKNAxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762281AbXKNAvN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 19:51:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759409AbXKNAu7
+	id S1762840AbXKNAxX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 19:53:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760438AbXKNAxL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 19:50:59 -0500
-Received: from nessie.weebeastie.net ([220.233.7.36]:60637 "EHLO
-	bunyip.lochness.weebeastie.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754450AbXKNAu6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 19:50:58 -0500
-Date: Wed, 14 Nov 2007 11:21:07 +1100
-From: CaT <cat@zip.com.au>
-To: Andi Kleen <ak@suse.de>
-Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [13/45] x86_64: Increase VDSO_TEXT_OFFSET for ancient binutils
-Message-ID: <20071114002107.GA24395@zip.com.au>
-References: <200709211044.901175000@suse.de> <20070921204454.B51F714EFF@wotan.suse.de>
+	Tue, 13 Nov 2007 19:53:11 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:57099 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759740AbXKNAxI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 19:53:08 -0500
+Message-ID: <473A46C1.3060000@redhat.com>
+Date: Tue, 13 Nov 2007 19:52:17 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070921204454.B51F714EFF@wotan.suse.de>
-Organisation: Furball Inc.
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Adrian Bunk <bunk@kernel.org>, Mark Lord <liml@rtr.ca>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, protasnb@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+References: <20071113134029.GA30978@elte.hu>	<4739AFE0.20705@rtr.ca>	<20071113164650.GA28493@elte.hu>	<4739E3D0.10201@rtr.ca>	<20071113181228.GF4250@stusta.de>	<4739EA83.5040006@rtr.ca>	<20071113183605.GG4250@stusta.de>	<4739F12E.5020807@rtr.ca>	<20071113190428.GH4250@stusta.de>	<4739FA4D.1050900@rtr.ca>	<20071113200028.GJ4250@stusta.de> <20071113211256.1d18fe1a@the-village.bc.nu>
+In-Reply-To: <20071113211256.1d18fe1a@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 21, 2007 at 10:44:54PM +0200, Andi Kleen wrote:
-> For some reason old binutils genertate larger headers so
-> increase the text offset of the vdso to avoid linker errors.
+On 11/13/2007 04:12 PM, Alan Cox wrote:
+>> Bug fixing is not about finding someone to blame, it's about getting the 
+>> bug fixed.
 > 
-> Signed-off-by: Andi Kleen <ak@suse.de>
-> 
-> ---
->  arch/x86_64/vdso/voffset.h |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux/arch/x86_64/vdso/voffset.h
-> ===================================================================
-> --- linux.orig/arch/x86_64/vdso/voffset.h
-> +++ linux/arch/x86_64/vdso/voffset.h
-> @@ -1 +1 @@
-> -#define VDSO_TEXT_OFFSET 0x500
-> +#define VDSO_TEXT_OFFSET 0x600
+> Partly - its also about understanding why the bug occurred and making it
+> not happen again.
 
-This still breaks under Debian sarge. There is this (german) forum
-thread about it:
-
-http://www.debianforum.de/forum/viewtopic.php?p=570102
-
-Robotic english translation:
-http://translate.google.com/translate?u=http%3A%2F%2Fwww.debianforum.de%2Fforum%2Fviewtopic.php%3Fp%3D569756%26sid%3D20278bfd231c5dac45fa0f2763c7ec54%23569756&langpair=de%7Cen&hl=en&ie=UTF-8
-
-And it indicates that 0x510 would be the better offset due to 0x600
-making it clash with the data section beneath. Indeed when I change it
-to 0x510 I can compile the kernel with binutils 2.15-6.
-
-I'm hoping this wont cause the kernel to eat my grandma. :)
-
--- 
-    "To the extent that we overreact, we proffer the terrorists the
-    greatest tribute."
-    	- High Court Judge Michael Kirby
+Very few people think about that part.
