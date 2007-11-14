@@ -1,75 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757436AbXKNC4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759435AbXKNDDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757436AbXKNC4R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 21:56:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754507AbXKNC4C
+	id S1759435AbXKNDDo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 22:03:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755786AbXKNDDh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 21:56:02 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41714 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753734AbXKNC4A (ORCPT
+	Tue, 13 Nov 2007 22:03:37 -0500
+Received: from ro-out-1112.google.com ([72.14.202.179]:59072 "EHLO
+	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755597AbXKNDDg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 21:56:00 -0500
-Date: Tue, 13 Nov 2007 18:55:26 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Joe Perches <joe@perches.com>
-cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] - [12/15] - remove defconfig ptr comparisons to 0 -
- include/asm-x86
-In-Reply-To: <1195005932.5163.98.camel@localhost>
-Message-ID: <alpine.LFD.0.9999.0711131844240.2786@woody.linux-foundation.org>
-References: <1195005932.5163.98.camel@localhost>
+	Tue, 13 Nov 2007 22:03:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=ZdG4NabXCPz8lMSBxYWvRX368L2EGUAQofgnZc8z0zjxUdGFZ9G/mhCd6pLyBXL6zc7JJ9CFEoLnAOxdXEh9kEgLjx5z2s+5LQv0Atib9EzdDm+fXLyzi3cIA2NIhNQQDjdo8T99o6FVc3Knyqi1wg8qRmoslOHQItX7DukR9R4=
+Date: Wed, 14 Nov 2007 11:01:27 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, trivial@kernel.org
+Subject: Re: [PATCH] Let 'make help' output info about includecheck
+Message-ID: <20071114030127.GA2506@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <200711120056.35359.jesper.juhl@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200711120056.35359.jesper.juhl@gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 13 Nov 2007, Joe Perches wrote:
+On Mon, Nov 12, 2007 at 12:56:35AM +0100, Jesper Juhl wrote:
+>From: Jesper Juhl <jesper.juhl@gmail.com>
 >
-> Remove defconfig ptr comparison to 0
-> 
-> The memcpy from memory location 0 sure looks odd.
+>'make includecheck' is useful and we want people to run it, so 
+>let 'make help' output information about its existence.
+>
+>
+>Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
 
-Btw, this is also very compiler-bug-prone.
+I think Randy Dunlap has done this[1]. ;)
 
-And sadly, the cast to "(void *)" doesn't help. This could easily be a 
-case where a compiler decides to play lawyer games, knowing that "NULL 
-pointers cannot be dereferenced", deciding that it's all totally undefined 
-behavior, and then just "optimizing" it all away.
+[1] http://lkml.org/lkml/2007/11/4/120
 
-> -	memcpy(&header, 0, sizeof(struct acpi_table_header));
-> +	memcpy(&header, (void *)0, sizeof(struct acpi_table_header));
+Regards.
 
-So to be safe from bogus compilers who care more about standards than the 
-obvious intention of the programmer, it might actually be better in the 
-long run to do something like
 
-	static inline void *create_pointer(unsigned long val)
-	{
-		void *result;
-		asm("":"=r" (result):"0" (val));
-		return result;
-	}
+ Cong
 
-and then use "create_pointer(0)" here.
-
-On that note: I'm not going to apply this series, because it's simply not 
-really appropriate any more. But when re-sending for 2.6.25-rc1, can you 
-make the subject lines have a slightly higher signal-to-noise ratio, ie 
-dropt he unnecessary stuff that doesn't add any value as a commit message 
-(eg "defconfig"? Is it really relevant?), and make it properly formatted?
-
-My scripts by default remove the stuff in between []'s, so the end result 
-for the commit message header from this subject line would be
-
-	"- remove defconfig ptr comparisons to 0 - include/asm-x86"
-
-which is strange and not very useful. It would read better as
-
- Subject: [PATCH 1/15] include/asm-x86: remove ptr comparisons to 0
-
-which would create a commit message header that is more readable.
-
-		Linus
