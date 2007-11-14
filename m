@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757734AbXKNN6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757358AbXKNOD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757734AbXKNN6T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 08:58:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbXKNN6L
+	id S1757358AbXKNOD4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 09:03:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbXKNODp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 08:58:11 -0500
-Received: from madara.hpl.hp.com ([192.6.19.124]:61777 "EHLO madara.hpl.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752545AbXKNN6K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 08:58:10 -0500
-Date: Wed, 14 Nov 2007 05:51:04 -0800
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: David Miller <davem@davemloft.net>, hch@infradead.org,
-       akpm@linux-foundation.org, gregkh@suse.de, mucci@cs.utk.edu,
-       wcohen@redhat.com, robert.richter@amd.com, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org
-Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
-Message-ID: <20071114135104.GE6557@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <20071114103805.GA16652@infradead.org> <18234.53558.883970.87414@cargo.ozlabs.ibm.com> <20071114110009.GA17833@infradead.org> <20071114.031216.11725447.davem@davemloft.net> <18234.57272.590960.860941@cargo.ozlabs.ibm.com>
+	Wed, 14 Nov 2007 09:03:45 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1959 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752098AbXKNODn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 09:03:43 -0500
+Date: Wed, 14 Nov 2007 13:24:48 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Natalie Protasevich <protasnb@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, alsa-devel@alsa-project.org,
+       linux-ide@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-input@atrey.karlin.mff.cuni.cz, bugme-daemon@bugzilla.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+Message-ID: <20071114132448.GA5183@ucw.cz>
+References: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com> <20071113031553.3c7b5c16.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <18234.57272.590960.860941@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+In-Reply-To: <20071113031553.3c7b5c16.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-On Wed, Nov 14, 2007 at 10:44:56PM +1100, Paul Mackerras wrote:
-> David Miller writes:
+> > Suspend to RAM resume hangs on a tickless (NO_HZ) kernel
+> > http://bugzilla.kernel.org/show_bug.cgi?id=9275
+> > Kernel: 2.6.23
+> > This is HP notebook nc6320 T2400 945GM
 > 
-> > This is my impression too, all of the things being done with
-> > a slew of system calls would be better served by real special
-> > files and appropriate fops.
-> 
-> Special files and fops really only work well if you can coerce the
-> interface into one where data flows predominantly one way.  I don't
-> think they work so well for something that is more like an RPC across
-> the user/kernel barrier.  For that a system call is better.
-> 
-> For instance, if you have something that kind-of looks like
-> 
-> 	read_pmds(int n, int *pmd_numbers, u64 *pmd_values);
-> 
-> where the caller supplies an array of PMD numbers and the function
-> returns their values (and you want that reading to be done atomically
-> in some sense), how would you do that using special files and fops?
-> 
-Yes, the read call could be simplified to the level proposed above by Paul.
+> No response from developers
 
+Maybe I'm optimistic, but I expected Ingo/Thomas to look after nohz
+problems. nohz=off highres=off fixes more than one suspend problem...
+
+...stuff I've seen with NOHZ even without suspend (cursor blinking
+irregulary) make me think that nohz perhaps should not be used in
+production just yet...
+
+							Pavel
 -- 
--Stephane
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
