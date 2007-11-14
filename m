@@ -1,78 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbXKNJMD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755394AbXKNJN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755267AbXKNJMD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 04:12:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbXKNJLs
+	id S1755394AbXKNJN2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 04:13:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753060AbXKNJNR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 04:11:48 -0500
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:36527 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753087AbXKNJLq (ORCPT
+	Wed, 14 Nov 2007 04:13:17 -0500
+Received: from moutng.kundenserver.de ([212.227.126.177]:59941 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752329AbXKNJNP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 04:11:46 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=RPUE516IntlaNepw2BurNsESVr+z78fLjV6u1gtbSbFBFrWIuaZ0tgwHNJIYH/hYdokHfQ1Zrqos3B7Ykfmm0VGdHgbui74FTJt0gWdwyde/1gY4+EDq3Oeh8ss5xkk0ewAhKTv9wgTIdUqBepFRlBiP127yrK5CIjXGr/taH/c=  ;
-X-YMail-OSG: rBmfcGMVM1mTVZ4csI9caPuTOlIawOPAe0VBLQ5d4CFPHFH2HoBVYj2jN43VhwE9pAx0t8SghQ--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch 2.6.24-rc2 1/3] generic gpio -- gpio_chip support
-Date: Wed, 14 Nov 2007 08:08:24 +1100
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Florian Fainelli <florian.fainelli@telecomint.eu>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-References: <200711091136.20051.david-b@pacbell.net> <200711140645.26363.nickpiggin@yahoo.com.au> <200711140037.58049.david-b@pacbell.net>
-In-Reply-To: <200711140037.58049.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 14 Nov 2007 04:13:15 -0500
+Date: Wed, 14 Nov 2007 10:12:51 +0100
+From: Chris Friedhoff <chris@friedhoff.org>
+To: "Serge E. Hallyn" <sergeh@us.ibm.com>
+Cc: "chris@friedhoff.org" <chris@friedhoff.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Posix file capabilities in 2.6.24rc2
+Message-Id: <20071114101251.a1f6214d.chris@friedhoff.org>
+In-Reply-To: <20071113235318.GA6477@sergelap.austin.ibm.com>
+References: <20071113230720.22c6a036.chris@friedhoff.org>
+	<20071113235318.GA6477@sergelap.austin.ibm.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.10.14; i486-slackware-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711140808.24994.nickpiggin@yahoo.com.au>
+X-Provags-ID: V01U2FsdGVkX1/o1ckD499DCU1ahvvam4UptntGUHQ42CKaq2e
+ exC0TGdmpTYNi9J9vw1hrPRMszPEEYg+QOiUKeQmjt2MtT8/bN
+ iKlFlLq7yHK/pp6DD/X6+qI0LF4FAoW
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 November 2007 19:37, David Brownell wrote:
-> On Tuesday 13 November 2007, Nick Piggin wrote:
+Hello Serge,
 
-> > Upstream, all spinlocks prevent preemption.
->
-> I chose my wording carefully though.  A preemption point is
-> more than just a small region where preemption isn't allowed.
->
-> It's one of those where preemption is *INVITED* ...
+I wanted only to express what I observed.
 
-With CONFIG_PREEMPT upstream, that's exactly the same (unless
-you're considering preempt breaking points, which you don't
-seem t obe).
+A "yes it should" confirms its ok.
 
+And yes, I haven't looked into the patches and the name and commentary
+of file-capabilities-clear-fcaps-on-inode-change.patch explains this
+already.
+I'm preparing to update my page http://www.friedhoff.org/fscaps.html
+for 2.6.24, and I also want to explain what one has to take into account
+or be beware off. If I stumble about this, I think others will also
+(imho).
 
-> Now, in the RT case, I believe the rationale for inviting
-> preemption when dropping a lock is largely related to the
-> way priority inversion is handled.  When lock contention can
-> block higher priority activities, dropping the lock must
-> be able to trigger the relevant activity switch.
-
-There is no specific inviting of preemption. The locks are
-preemptible -- they can be preempted even while being *held*
+I have written a script to change suid binaries and servers,
+automating the examples I give on the webpage.
+In the sequence of commands I was setting fscaps and than chown the
+binary. Now with the aforementioned patch the fscaps are removed when
+I chown and the script wasn't working anymore. My point is not my
+script, it's being surprised and being a bit at a loss. Documenting
+this helps to clarify things and users to adopt this feature.
 
 
-> ... and the raw spinlocks don't support that machinery,
-> while "normal" spinlocks become inversion-aware mutexes.
->
-> > But these ones
-> > are raw locks rather than normal locks probably because that
-> > they are trivially an innermost and correct lock.
->
-> As in the $SUBJECT case, I'd say.
->
-> Although another point is related to "trivial":  the data
-> is being protected through an operation too trivial to be
-> worth paying for any of that priority logic.
+The matter with "xinit:  Operation not permitted..." happens, when I
+(unprivileged user) close a from a console started X session. Similar to
+Andrew Morton'S http://lkml.org/lkml/2006/11/23/15 . The 2.6.24-rc2
+kernel has capabilties enabled but /usr/bin/xinit has no capabilities
+set. It remains the black screen with a cursor, the windowmanager is
+closed. Is this known? Is this a problem? Does anyone else observes
+this?
+As far as I understand, I dont have to grant / to use capabilities even
+when the kernel has capabilities enabled.
 
-A driver shouldn't get to decide that, IMO. And if there is
-some policy in the -rt tree allowing these decisions, then
-it's exactly the kind of thing we don't want upsream.
+
+Chris
+
+
+On Tue, 13 Nov 2007 17:53:18 -0600
+"Serge E. Hallyn" <sergeh@us.ibm.com> wrote:
+
+> Quoting Chris Friedhoff (chris@friedhoff.org):
+> > Hello,
+> > 
+> > everything works as expected, but ...
+> > 
+> > closing X and no capabilities set for xinit does shutdown only the
+> > windowmanager and not the X server (Xorg server 1.4)
+> > Consolemessage is:
+> > xinit:  Operation not permitted (errno 1): Can't kill X server
+> > 
+> > 
+> > the xattr capability is removed, when the file is chown'ed.
+> 
+> Hi Chris,
+> 
+> yes on chown the capability is removed.  I'm not quite sure what
+> you're asking?  Is your setup depending on being able to chown
+> while keeping file capabilities?  Can you give some more details?
+> 
+> thanks,
+> -serge
+
+
+--------------------
+Chris Friedhoff
+chris@friedhoff.org
