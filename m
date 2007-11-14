@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757777AbXKNMKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758044AbXKNMLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757777AbXKNMKe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 07:10:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754709AbXKNMKV
+	id S1758044AbXKNMLl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 07:11:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754881AbXKNMLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 07:10:21 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60408
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754677AbXKNMKU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 07:10:20 -0500
-Date: Wed, 14 Nov 2007 04:10:08 -0800 (PST)
-Message-Id: <20071114.041008.146131045.davem@davemloft.net>
-To: nickpiggin@yahoo.com.au
-Cc: herbert@gondor.apana.org.au, clameter@sgi.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc2: Network commit causes SLUB performance regression
- with tbench
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200711141102.11477.nickpiggin@yahoo.com.au>
-References: <20071114.031022.183117678.davem@davemloft.net>
-	<20071114114844.GA13927@gondor.apana.org.au>
-	<200711141102.11477.nickpiggin@yahoo.com.au>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Nov 2007 07:11:34 -0500
+Received: from mail.gmx.net ([213.165.64.20]:54217 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752949AbXKNMLd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 07:11:33 -0500
+X-Authenticated: #24128601
+X-Provags-ID: V01U2FsdGVkX18ueGwxrjAuDCPwjuLKJL/yIsNEv6Mghp/0rFgNr4
+	QLUx0sRj35Nh9N
+Date: Wed, 14 Nov 2007 13:11:33 +0100
+From: Sebastian Kemper <sebastian_ml@gmx.net>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: libata/PATA: GPCMD_SET_STREAMING via SG_IO does nothing
+Message-ID: <20071114121133.GA5253@section-eight>
+References: <20071113164323.GA5252@section-eight> <20071113212230.77cadecd@the-village.bc.nu> <20071113232859.GA4681@section-eight>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071113232859.GA4681@section-eight>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-Date: Wed, 14 Nov 2007 11:02:11 +1100
-
-> On Wednesday 14 November 2007 22:48, Herbert Xu wrote:
-> > On Wed, Nov 14, 2007 at 03:10:22AM -0800, David Miller wrote:
-> > > So the thing that's being effected here in TCP is
-> > > net/ipv4/tcp.c:select_size(), specifically the else branch:
-> >
-> > Thanks for the pointer.  Indeed there is a bug in that area.
-> > I'm not sure whether it's causing the problem at hand but it's
-> > certainly suboptimal.
-> >
-> > [TCP]: Fix size calculation in sk_stream_alloc_pskb
+On Wed, Nov 14, 2007 at 12:28:59AM +0100, Sebastian Kemper wrote:
+> http://svn.mplayerhq.hu/mplayer/trunk/stream/stream_dvd.c?view=markup
 > 
-> This looks like it fixes the problem!
+> See dvd_set_speed(). The drive I'm using is an Optiarc DVD RW AD-7170A.
+> With the "old" ATA driver dvd_set_speed() works, with libata it doesn't.
 
-Great, thanks for testing.  I'll apply Herbert's patch tomorrow
-as I've already sent Linus a bug fix pull request tonight.
+Hello Alan,
 
-> Still interested to know why SLAB didn't see the same thing...
+in the meantime I tried the kernels 2.6.23.1 as well as 2.6.24-rc2. Both
+show the same behaviour when using libata with AMD/NVIDIA PATA support:
+GPCMD_SET_STREAMING via SG_IO doesn't have any effect. With these two
+kernels I didn't try the "old" ATA driver - but I assume it would've
+worked out (changing your system from ATA to libata and vice versa
+turned out to be quite time consuming ;)).
 
-Yes, I wonder why too.  I bet objects just got packed differently.
-
-There is this fugly "LOOPBACK_OVERHEAD" macro define in
-drivers/net/loopback.c that is trying to figure out the
-various overheads that we should subtract from the loopback
-MTU we use by default.
-
-It's almost guarenteed to be wrong for the way the allocators
-work now.
+Regards
+Sebastian
