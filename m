@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756398AbXKNBaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756848AbXKNBdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756398AbXKNBaZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 20:30:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbXKNBaM
+	id S1756848AbXKNBdz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 20:33:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbXKNBdr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 20:30:12 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33841
+	Tue, 13 Nov 2007 20:33:47 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60426
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753075AbXKNBaK (ORCPT
+	by vger.kernel.org with ESMTP id S1753159AbXKNBdr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 20:30:10 -0500
-Date: Tue, 13 Nov 2007 17:30:09 -0800 (PST)
-Message-Id: <20071113.173009.247667472.davem@davemloft.net>
+	Tue, 13 Nov 2007 20:33:47 -0500
+Date: Tue, 13 Nov 2007 17:33:46 -0800 (PST)
+Message-Id: <20071113.173346.100252448.davem@davemloft.net>
 To: clameter@sgi.com
-Cc: akpm@linux-foundation.org, linux-mm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dada1@cosmosbay.com,
-       schwidefsky@de.ibm.com
+Cc: dada1@cosmosbay.com, akpm@linux-foundation.org, linux-mm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, schwidefsky@de.ibm.com
 Subject: Re: [patch 01/28] cpu alloc: The allocator
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0711131339240.3714@schroedinger.engr.sgi.com>
-References: <20071106195157.878563669@sgi.com>
-	<20071113.031510.151440585.davem@davemloft.net>
-	<Pine.LNX.4.64.0711131339240.3714@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0711131400050.3714@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0711131339240.3714@schroedinger.engr.sgi.com>
+	<473A1DEA.7000307@cosmosbay.com>
+	<Pine.LNX.4.64.0711131400050.3714@schroedinger.engr.sgi.com>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -30,18 +29,18 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Christoph Lameter <clameter@sgi.com>
-Date: Tue, 13 Nov 2007 13:40:19 -0800 (PST)
+Date: Tue, 13 Nov 2007 14:00:45 -0800 (PST)
 
-> On Tue, 13 Nov 2007, David Miller wrote:
+> On Tue, 13 Nov 2007, Eric Dumazet wrote:
 > 
-> > One thing you could do is simply use a vmalloc allocation in the
-> > non-virtualized case.
+> > Once you add in mm/vmalloc.c all needed helpers, no need to use BSS Megablob
+> > anymore ?
 > 
-> Yuck. Meaning to add more crappy code. The bss limitations to 8M is a bit 
-> strange though. Do other platforms have the same issues? 
+> Well I think all of this can be avoided by simply copying the existing 
+> vmemmap helper functions and providing a virtual address for sparc64.
 
-sparc32 has the same limit.
+I intend to do that in the end, but you miss my point.
+Requiring this is unreasonable.
 
-I'm surprised this is your reaction instead of "oh damn, sorry
-I bloated up the kernel image size by 8mb, I'll find a way to
-fix that."
+And nobody is going to do the virt stuff for platforms like sparc32.
+And I do mean nobody.
