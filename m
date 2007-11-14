@@ -1,51 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756188AbXKNKng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbXKNKtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756188AbXKNKng (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 05:43:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750867AbXKNKn2
+	id S1755931AbXKNKtR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 05:49:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750867AbXKNKtG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 05:43:28 -0500
-Received: from ozlabs.org ([203.10.76.45]:41497 "EHLO ozlabs.org"
+	Wed, 14 Nov 2007 05:49:06 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:8276 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750718AbXKNKn1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 05:43:27 -0500
+	id S1750718AbXKNKtF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 05:49:05 -0500
+Date: Wed, 14 Nov 2007 13:46:22 +0300
+From: Dmitry Monakhov <dmonakhov@sw.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Christoph Hellwig <hch@lst.de>
+Subject: Re: 2.6.24-rc2-mm1 -- mkfs failing on variety of fs types
+Message-ID: <20071114104622.GA20655@dmon-lap.sw.ru>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+	Christoph Hellwig <hch@lst.de>
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org> <20071114085549.GG12003@shadowen.org> <20071114022810.215a5e3a.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18234.53558.883970.87414@cargo.ozlabs.ibm.com>
-Date: Wed, 14 Nov 2007 21:43:02 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Philip Mucci <mucci@cs.utk.edu>, eranian@hpl.hp.com,
-       William Cohen <wcohen@redhat.com>,
-       Robert Richter <robert.richter@amd.com>, linux-kernel@vger.kernel.org,
-       Perfmon <perfmon@napali.hpl.hp.com>, Andi Kleen <andi@firstfloor.org>,
-       perfmon2-devel@lists.sourceforge.net,
-       OSPAT devel <ospat-devel@cs.utk.edu>,
-       papi list <ptools-perfapi@cs.utk.edu>
-Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
-In-Reply-To: <20071114103805.GA16652@infradead.org>
-References: <20071109120627.60ec9ab4.akpm@linux-foundation.org>
-	<20071109213829.GC28276@kroah.com>
-	<p73abpl2654.fsf@bingen.suse.de>
-	<20071113151718.GA3804@erda.amd.com>
-	<4739C42F.8030208@redhat.com>
-	<20071113175545.GD4319@frankl.hpl.hp.com>
-	<53F4663B-CFBA-44E4-8283-BAAC8C8F1AFF@cs.utk.edu>
-	<20071113185924.GA22748@suse.de>
-	<20071113120728.4342e7d7.akpm@linux-foundation.org>
-	<18234.41652.199520.31261@cargo.ozlabs.ibm.com>
-	<20071114103805.GA16652@infradead.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
+In-Reply-To: <20071114022810.215a5e3a.akpm@linux-foundation.org>
+Organization: SWsoft.
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig writes:
+On 02:28 Wed 14 Nov     , Andrew Morton wrote:
+> On Wed, 14 Nov 2007 08:56:01 +0000 Andy Whitcroft <apw@shadowen.org> wrote:
+> 
+[snip]
+> > We seem to have some general problem with mkfs for all filesystems.
+> > UUID: e9aa2dc4-dfc3-47e8-865b-693f28eac2e5
+> > Initializing journal - 0%....20%....40%....60%....80%....100%
+> > bwrite: write 4096 bytes returned -1 (block=360448, dev=3): No space left on device
+> 
+> It was mm-fix-blkdev-size-calculation-in-generic_write_checks.patch.
+Oh my ..., I'm truly sorry. When i've sent this patch to Andrew first time
+he ask me to remake it in order to make it less intrusive. When later 
+i've found what patch was buggy because of incorrect int to loff_t conversion
+isize = i_size_read(inode) & ~(blksize - 1);
+                              ^^^^^^^^^^^^^^
+Later i've missed when this patch was accepted some days ago :(.
+> 
+> Odd, I thought that looked OK.
+> 
+> 
+> Here's a revert (uploaded to hot-fixes/, too):
+> 
+> --- a/mm/filemap.c~revert-mm-fix-blkdev-size-calculation-in-generic_write_checks
+> +++ a/mm/filemap.c
+> @@ -1855,11 +1855,9 @@ inline int generic_write_checks(struct f
+>  	} else {
+>  #ifdef CONFIG_BLOCK
+>  		loff_t isize;
+> -		unsigned int blksize;
+>  		if (bdev_read_only(I_BDEV(inode)))
+>  			return -EPERM;
+> -		blksize = block_size(I_BDEV(inode));
+> -		isize = i_size_read(inode) & ~(blksize - 1);
+> +		isize = i_size_read(inode);
+>  		if (*pos >= isize) {
+>  			if (*count || *pos > isize)
+>  				return -ENOSPC;
+> _
+> 
 
-> Mine for example.  The whole userspace interface is just on crack,
-> and the code is full of complexities aswell.
-
-Could you give some _technical_ details of what you don't like?
-
-Paul.
