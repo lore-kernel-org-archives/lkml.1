@@ -1,75 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755731AbXKNVlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762353AbXKNVme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755731AbXKNVlh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 16:41:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756521AbXKNVlY
+	id S1762353AbXKNVme (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 16:42:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbXKNVmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 16:41:24 -0500
-Received: from pat.uio.no ([129.240.10.15]:51169 "EHLO pat.uio.no"
+	Wed, 14 Nov 2007 16:42:24 -0500
+Received: from palrel11.hp.com ([156.153.255.246]:39859 "EHLO palrel11.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755736AbXKNVlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 16:41:21 -0500
-Subject: Re: [PATCH 3/3] nfs: use ->mmap_prepare() to avoid an AB-BA
-	deadlock
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-arch@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <1195075905.22457.3.camel@lappy>
-References: <20071114200136.009242000@chello.nl>
-	 <20071114201528.514434000@chello.nl> <20071114212246.GA31048@wotan.suse.de>
-	 <1195075905.22457.3.camel@lappy>
-Content-Type: text/plain
-Date: Wed, 14 Nov 2007 16:41:25 -0500
-Message-Id: <1195076485.7584.66.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-ClamAV-Virus: No
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.4, required=12.0, autolearn=disabled, AWL=-0.397)
-X-UiO-Scanned: A3799A1FAD3D5436EB734A56D14358C5DFB97A1A
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -3 maxlevel 200 minaction 2 bait 0 mail/h: 703 total 5136702 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	id S1755714AbXKNVmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 16:42:23 -0500
+Date: Wed, 14 Nov 2007 14:42:21 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Greg KH <greg@kroah.com>
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-pci@atrey.karlin.mff.cuni.cz,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>, gregkh@suse.de,
+       lenb@kernel.org, matthew@wil.cx, rick.jones2@hp.com,
+       linux-kernel@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
+Message-ID: <20071114214221.GC6575@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Greg KH <greg@kroah.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+	linux-pci@atrey.karlin.mff.cuni.cz,
+	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+	gregkh@suse.de, lenb@kernel.org, matthew@wil.cx, rick.jones2@hp.com,
+	linux-kernel@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
+	linux-acpi@vger.kernel.org
+References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113202632.GA3227@kroah.com> <20071113145936.7e1c58fb.kristen.c.accardi@intel.com> <200711141037.09228.bjorn.helgaas@hp.com> <20071114175317.GB14994@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071114175317.GB14994@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2007-11-14 at 22:31 +0100, Peter Zijlstra wrote:
-> On Wed, 2007-11-14 at 22:22 +0100, Nick Piggin wrote:
-> > On Wed, Nov 14, 2007 at 09:01:39PM +0100, Peter Zijlstra wrote:
-> > > Normal locking order is:
-> > > 
-> > >   i_mutex
-> > >     mmap_sem
-> > > 
-> > > However NFS's ->mmap hook, which is called under mmap_sem, can take i_mutex.
-> > > Avoid this potential deadlock by doing the work that requires i_mutex from
-> > > the new ->mmap_prepare().
-> > > 
-> > > [ Is this sufficient, or does it introduce a race? ]
+* Greg KH <greg@kroah.com>:
+> On Wed, Nov 14, 2007 at 10:37:08AM -0700, Bjorn Helgaas wrote:
 > > 
-> > Seems like an OK patchset in my opinion. I don't know much about NFS
-> > unfortunately, but I wonder what prevents the condition fixed by
-> > nfs_revalidate_mapping from happening again while the mmap is active...?
+> > So I agree that the firmware kit has a clever hack that works
+> > on much existing x86 firmware, and it sounds like Tivoli
+> > might even rely on it.  But I don't feel good about it, and
+> > it could easily break when some BIOS writer needs to make
+> > _SUN slightly more complicated.
 > 
-> As the changelog might have suggested, I'm not overly sure of the nfs
-> requirements myself. I think it just does a best effort at getting the
-> pages coherent with other clients, and then hopes for the best.
-> 
-> I'll let Trond enlighten us further before I make an utter fool of
-> myself :-)
+> Do you know of such BIOSes out there that do this?  Will the
+> above scheme not work for the ia64 boxes that you know of that
+> are out in the world today?
 
-The NFS client needs to check the validity of already cached data before
-it allows those pages to be mmapped. If it finds out that the cache is
-stale, then we need to call invalidate_inode_pages2() to clear out the
-cache and refresh it from the server. The inode->i_mutex is necessary in
-order to prevent races between the new writes and the cache invalidation
-code.
+One last mail on this subject -- Bjorn has pointed out to me that
+the Dell pe6800 and rez1850 both implement _SUN as control
+methods today.
 
-Cheers
-  Trond
+Does Tivoli run on those machines? If so, how is it getting slot
+information?
+
+Thanks.
+
+/ac
 
