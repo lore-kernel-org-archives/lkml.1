@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759330AbXKNShT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762949AbXKNSiF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759330AbXKNShT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 13:37:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbXKNShE
+	id S1762949AbXKNSiF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 13:38:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755038AbXKNShx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 13:37:04 -0500
-Received: from hqemgate03.nvidia.com ([216.228.112.145]:18401 "EHLO
-	hqemgate03.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753021AbXKNShA convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 13:37:00 -0500
-X-PGP-Universal: processed;
-	by hqnvupgp03.nvidia.com on Wed, 14 Nov 2007 10:36:40 -0800
-X-MimeOLE: Produced By Microsoft Exchange V6.5
+	Wed, 14 Nov 2007 13:37:53 -0500
+Received: from rtr.ca ([76.10.145.34]:4910 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753699AbXKNShv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 13:37:51 -0500
+Message-ID: <473B407D.9020403@rtr.ca>
+Date: Wed, 14 Nov 2007 13:37:49 -0500
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Subject: RE: [PATCH] Add quirk to set AHCI mode on ICH boards
-Date: Wed, 14 Nov 2007 10:35:26 -0800
-Message-ID: <F72FA20C31DD4F4C997B91C5B3690A095054A7@hqemmail07.nvidia.com>
-In-Reply-To: <20071113152727.45b71939@the-village.bc.nu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] Add quirk to set AHCI mode on ICH boards
-Thread-Index: AcgmCdUd4aYdsYSmRvqUukjk60A+lwA31mOw
-References: <20071109020235.GA2031@ceren><20071109023129.GA25581@havoc.gtf.org><4733D421.7000505@rtr.ca><20071109034622.GB25581@havoc.gtf.org><20071109120425.543971bf@the-village.bc.nu><47351FE1.4000001@garzik.org><DBFABB80F7FD3143A911F9E6CFD477B0329351A3@hqemmail02.nvidia.com><473600B6.5070103@garzik.org><F72FA20C31DD4F4C997B91C5B3690A095054A2@hqemmail07.nvidia.com> <20071113152727.45b71939@the-village.bc.nu>
-From: "Allen Martin" <AMartin@nvidia.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Cc: "Jeff Garzik" <jeff@garzik.org>, "Mark Lord" <liml@rtr.ca>,
-       "Riki Oktarianto" <rkoktarianto@gmail.com>,
-       <linux-kernel@vger.kernel.org>, "Greg Kroah-Hartman" <gregkh@suse.de>,
-       <linux-ide@vger.kernel.org>
-X-OriginalArrivalTime: 14 Nov 2007 18:35:26.0907 (UTC) FILETIME=[202E50B0:01C826ED]
-Content-class: urn:content-classes:message
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+To: "Morrison, Tom" <tmorrison@empirix.com>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23.1 - sata_mv (7042) hang with large file operations
+References: <BD261180E6D35F4D9D32F3E44FD3D901053E84BD@EMPBEDEX.empirix.com> <45ED682A.9040408@garzik.org> <BD261180E6D35F4D9D32F3E44FD3D9010A7E1B45@EMPBEDEX.empirix.com> <4728A816.8020608@garzik.org> <BD261180E6D35F4D9D32F3E44FD3D9010AAE852F@EMPBEDEX.empirix.com> <473B36D7.8000205@rtr.ca> <BD261180E6D35F4D9D32F3E44FD3D9010AAE8585@EMPBEDEX.empirix.com>
+In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D9010AAE8585@EMPBEDEX.empirix.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > What I'm worred about is SMI traps implemented in the SBIOS for AHCI
-> > workarounds that may be disabled when in IDE mode.
+Morrison, Tom wrote:
+> -----Original Message-----
+> From: Mark Lord [mailto:liml@rtr.ca] 
+> Sent: Wednesday, November 14, 2007 12:57 PM
+> To: Morrison, Tom
+> Cc: Jeff Garzik; linux-ide@vger.kernel.org; linux-kernel@vger.kernel.org
+> Subject: Re: 2.6.23.1 - sata_mv (7042) hang with large file operations
 > 
-> For Nvidia devices those would only be present if there were problems
-> with the AHCI hardware right, which would mean you could 
-> simply tell us
-> what workarounds to implement.
+> Morrison, Tom wrote:
+> <snip >
+>> The problem comes ONLY when I am doing large file operations 
+>> (e.g.: just copying a file) to/from the SATA drives behind 
+>> the subject line 7042....it just hangs after about 10-15 
+>> seconds into the copy...
+>>
+>> How large a file causes the hang - you ask - well, somewhere 
+>> between 100Meg & 500Meg...
+..
 
-Errata for which there is an SBIOS workaround are generally only
-released to BIOS vendors and under NDA.  If Linux users were impacted by
-such a bug we would most likely release a patch, but a much more likely
-scenario is that it slips through the cracks because it's not a
-configuration we would test in our QA.  So a small minority of users
-that are running AHCI in class code 0101 would get some very rare but
-serious errors that would be impossible to debug.
+Oh yeah, Can I also please see the output of:
 
-> > I believe most of the issues with sata_nv have been due to lack of
-> > documentation of ADMA and swNCQ.  The NVIDA AHCI controllers that
-> 
-> I am glad Nvidia accept this point. It would be nice to see it fixed.
+   lspci -vv
 
-I don't have any say over that, but it's probably unlikely to be fixed.
-Going forward we're only using open standards for storage.
 
--Allen
------------------------------------------------------------------------------------
-This email message is for the sole use of the intended recipient(s) and may contain
-confidential information.  Any unauthorized review, use, disclosure or distribution
-is prohibited.  If you are not the intended recipient, please contact the sender by
-reply email and destroy all copies of the original message.
------------------------------------------------------------------------------------
+Thanks.
