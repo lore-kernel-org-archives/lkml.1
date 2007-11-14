@@ -1,58 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764745AbXKNUk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761136AbXKNUzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764745AbXKNUk1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 15:40:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760691AbXKNUkR
+	id S1761136AbXKNUzR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 15:55:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbXKNUzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 15:40:17 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:34810 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760533AbXKNUkP (ORCPT
+	Wed, 14 Nov 2007 15:55:00 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:10989 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751720AbXKNUy6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 15:40:15 -0500
-Date: Wed, 14 Nov 2007 12:40:08 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: mgross@linux.intel.com
-Cc: Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc2-mm1
-Message-Id: <20071114124008.095f307d.akpm@linux-foundation.org>
-In-Reply-To: <20071114202959.GA21049@linux.intel.com>
-References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
-	<473A678C.2020507@googlemail.com>
-	<473A76FA.4050701@googlemail.com>
-	<20071114202959.GA21049@linux.intel.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Nov 2007 15:54:58 -0500
+To: Julia Lawall <julia@diku.dk>
+Cc: rolandd@cisco.com, mshefty@ichips.intel.com, halr@voltaire.com,
+       openib-general@openib.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 3/4] drivers/infiniband: Drop redundant includes of moduleparam.h
+X-Message-Flag: Warning: May contain useful information
+References: <Pine.LNX.4.64.0711132234110.18337@ask.diku.dk>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Wed, 14 Nov 2007 12:54:52 -0800
+In-Reply-To: <Pine.LNX.4.64.0711132234110.18337@ask.diku.dk> (Julia Lawall's message of "Tue, 13 Nov 2007 22:35:14 +0100 (CET)")
+Message-ID: <adalk90zgwz.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 14 Nov 2007 20:54:52.0693 (UTC) FILETIME=[9A93F450:01C82700]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Nov 2007 12:29:59 -0800 mark gross <mgross@linux.intel.com> wrote:
+ > Drop #include <linux/moduleparam.h> in files that also include #include
+ > <linux/module.h>.  module.h includes moduleparam.h already.
 
-> > > [  102.366932]  =======================
-> > > [  108.552031] printk: 31 messages suppressed.
-> > 
-> > 
-> > All this BUG / WARNINGS are caused by *-qos* patches. Reverting this 3 patches makes the BUGs go away :
-> > 
-> > latencyc-use-qos-infrastructure.patch
-> > pm-qos-infrastructure-and-interface.patch
-> > pm-qos-infrastructure-and-interface-static-initialization-with-blocking-notifiers.patch
-> > 
-> > 
-> > Gabriel
-> > 
-> > 
-> This looks like the same issue Rafael saw.
-> 
-> Try the patch in the following post:
-> 
-> http://marc.info/?l=linux-kernel&m=119265627228498&w=2
-> 
+Do we want to make this sort of source code change?  I thought that
+the consensus about the kernel was that we wanted to avoid relying of
+implicit includes of <Y.h> by <X.h> -- in this case a better change
+would actually seem to be to explicitly include moduleparam.h in files
+using module parameters and then remove the include from module.h.
 
-Well that's not very good.  _I_ can go fishing in my lkml archives for random
-patches but not everyone is set up to do that.  And the diff to which you
-refer gets 100% rejects against rc2-mm1 anyway.
-
-Please prepare a tested, changelogged patch against rc2-mm1 asap.  
+ - R.
