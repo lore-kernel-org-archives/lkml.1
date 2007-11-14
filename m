@@ -1,232 +1,512 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764592AbXKNUaR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763418AbXKNUN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764592AbXKNUaR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 15:30:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760043AbXKNU37
+	id S1763418AbXKNUN0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 15:13:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762087AbXKNUNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 15:29:59 -0500
-Received: from mga09.intel.com ([134.134.136.24]:49183 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764282AbXKNU35 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 15:29:57 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,417,1188802800"; 
-   d="scan'208";a="204442751"
-Date: Wed, 14 Nov 2007 12:29:59 -0800
-From: mark gross <mgross@linux.intel.com>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc2-mm1
-Message-ID: <20071114202959.GA21049@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <20071113175906.497a1a6a.akpm@linux-foundation.org> <473A678C.2020507@googlemail.com> <473A76FA.4050701@googlemail.com>
+	Wed, 14 Nov 2007 15:13:08 -0500
+Received: from [12.38.203.54] ([12.38.203.54]:9099 "EHLO empbedex1.empirix.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1762195AbXKNUNB convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 15:13:01 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <473A76FA.4050701@googlemail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: 2.6.23.1 - sata_mv (7042) hang with large file operations
+Date: Wed, 14 Nov 2007 15:12:59 -0500
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D9010AAE886B@EMPBEDEX.empirix.com>
+In-Reply-To: <473B3ED9.40707@rtr.ca>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 2.6.23.1 - sata_mv (7042) hang with large file operations
+Thread-Index: Acgm7IWLiHygiMAxSUGYHmVy6dZ13QADRmgw
+References: <BD261180E6D35F4D9D32F3E44FD3D901053E84BD@EMPBEDEX.empirix.com> <45ED682A.9040408@garzik.org> <BD261180E6D35F4D9D32F3E44FD3D9010A7E1B45@EMPBEDEX.empirix.com> <4728A816.8020608@garzik.org> <BD261180E6D35F4D9D32F3E44FD3D9010AAE852F@EMPBEDEX.empirix.com> <473B36D7.8000205@rtr.ca> <BD261180E6D35F4D9D32F3E44FD3D9010AAE8585@EMPBEDEX.empirix.com> <473B3ED9.40707@rtr.ca>
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: "Mark Lord" <liml@rtr.ca>
+Cc: "Jeff Garzik" <jeff@garzik.org>, <linux-ide@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 14 Nov 2007 20:13:00.0263 (UTC) FILETIME=[C10D8F70:01C826FA]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 14, 2007 at 05:18:02AM +0100, Gabriel C wrote:
-> Gabriel C wrote:
-> > Andrew Morton wrote:
-> >> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc2/2.6.24-rc2-mm1/
-> > 
-> > I got it to boot but .. 
-> 
-> > 
-> > ...
-> > [   45.030261] input: Power Button (CM) as /devices/virtual/input/input4
-> > [   45.031331] BUG: sleeping function called from invalid context at kernel/rwsem.c:47
-> > [   45.031560] in_atomic():0, irqs_disabled():1
-> > [   45.031569] 1 lock held by modprobe/2105:
-> > [   45.031574]  #0:  (pm_qos_lock){....}, at: [<c0139b1c>] pm_qos_add_notifier+0x14/0x3c
-> > [   45.031606] irq event stamp: 4036
-> > [   45.031612] hardirqs last  enabled at (4035): [<c0140cc3>] debug_check_no_locks_freed+0xf9/0x105
-> > [   45.031632] hardirqs last disabled at (4036): [<c0333bf5>] _spin_lock_irqsave+0x10/0x55
-> > [   45.031653] softirqs last  enabled at (3710): [<c0128e96>] __do_softirq+0xe9/0xf1
-> > [   45.031670] softirqs last disabled at (3703): [<c0128ed8>] do_softirq+0x3a/0x52
-> > [   45.031685]  [<c0104e01>] show_trace_log_lvl+0x12/0x25
-> > [   45.031702]  [<c010562d>] show_trace+0xd/0x10
-> > [   45.031717]  [<c0105704>] dump_stack+0x16/0x18
-> > [   45.031728]  [<c011db69>] __might_sleep+0xc2/0xc9
-> > [   45.031740]  [<c0139093>] down_write+0x17/0x6f
-> > [   45.031754]  [<c013991e>] blocking_notifier_chain_register+0x26/0x3f
-> > [   45.031766]  [<c0139b2f>] pm_qos_add_notifier+0x27/0x3c
-> > [   45.031778]  [<e885bc77>] acpi_processor_power_init+0x4d/0x164 [processor]
-> > [   45.031802]  [<e885a5b3>] acpi_processor_start+0x503/0x556 [processor]
-> > [   45.031820]  [<c022125c>] acpi_start_single_object+0x20/0x3d
-> > [   45.031837]  [<c0222392>] acpi_device_probe+0x78/0x88
-> > [   45.031850]  [<c0244700>] driver_probe_device+0xb2/0x12d
-> > [   45.031866]  [<c02448a2>] __driver_attach+0x76/0xaf
-> > [   45.031878]  [<c0243cb0>] bus_for_each_dev+0x3e/0x60
-> > [   45.031889]  [<c0244588>] driver_attach+0x14/0x16
-> > [   45.031899]  [<c0243f9a>] bus_add_driver+0x7a/0x180
-> > [   45.031909]  [<c0244a9d>] driver_register+0x57/0x5c
-> > [   45.031918]  [<c022267e>] acpi_bus_register_driver+0x3a/0x3c
-> > [   45.031929]  [<e882f073>] acpi_processor_init+0x73/0xc5 [processor]
-> > [   45.031943]  [<c0148ec5>] sys_init_module+0x14e3/0x15ae
-> > [   45.031958]  [<c0103d86>] sysenter_past_esp+0x5f/0xa5
-> > [   45.031969]  =======================
-> > [   45.032213] ACPI: Invalid PBLK length [0]
-> > [   45.032465] ACPI: Invalid PBLK length [0]
-> > [   45.032656] ACPI: Invalid PBLK length [0]                                                                                               
-> > 
-> > ...
-> > 
-> > ...
-> > [  102.331554] BUG: sleeping function called from invalid context at kernel/rwsem.c:20
-> > [  102.331575] in_atomic():0, irqs_disabled():1
-> > [  102.331583] 1 lock held by artsd/4385:
-> > [  102.331589]  #0:  (pm_qos_lock){....}, at: [<c0139d4a>] pm_qos_add_requirement+0x5a/0x98
-> > [  102.331619] irq event stamp: 19022
-> > [  102.331624] hardirqs last  enabled at (19021): [<c0333d1a>] _spin_unlock_irqrestore+0x36/0x3c
-> > [  102.331641] hardirqs last disabled at (19022): [<c0333bf5>] _spin_lock_irqsave+0x10/0x55
-> > [  102.331655] softirqs last  enabled at (18846): [<c0128e96>] __do_softirq+0xe9/0xf1
-> > [  102.331672] softirqs last disabled at (18839): [<c0128ed8>] do_softirq+0x3a/0x52
-> > [  102.331688]  [<c0104e01>] show_trace_log_lvl+0x12/0x25
-> > [  102.331704]  [<c010562d>] show_trace+0xd/0x10
-> > [  102.331715]  [<c0105704>] dump_stack+0x16/0x18
-> > [  102.331727]  [<c011db69>] __might_sleep+0xc2/0xc9
-> > [  102.331739]  [<c0138fe7>] down_read+0x16/0x6a
-> > [  102.331750]  [<c0139872>] __blocking_notifier_call_chain+0x24/0x4c
-> > [  102.331761]  [<c01398a6>] blocking_notifier_call_chain+0xc/0xe
-> > [  102.331773]  [<c0139b82>] update_target+0x3e/0x43
-> > [  102.331784]  [<c0139d66>] pm_qos_add_requirement+0x76/0x98
-> > [  102.331795]  [<c02bd8a0>] snd_pcm_hw_params_user+0x2b1/0x302
-> > [  102.331811]  [<c02bdad9>] snd_pcm_common_ioctl1+0x17a/0xda3
-> > [  102.331825]  [<c02bee6b>] snd_pcm_playback_ioctl1+0x3ab/0x3c2
-> > [  102.331840]  [<c02bef06>] snd_pcm_playback_ioctl+0x27/0x35
-> > [  102.331853]  [<c01795ce>] vfs_ioctl+0x22/0x67
-> > [  102.331867]  [<c017986d>] do_vfs_ioctl+0x25a/0x268
-> > [  102.331878]  [<c01798a7>] sys_ioctl+0x2c/0x45
-> > [  102.331889]  [<c0103d86>] sysenter_past_esp+0x5f/0xa5
-> > [  102.331901]  =======================
-> > [  102.331911] WARNING: at arch/x86/kernel/smp_32.c:561 native_smp_call_function_mask()
-> > [  102.331920]  [<c0104e01>] show_trace_log_lvl+0x12/0x25
-> > [  102.331932]  [<c010562d>] show_trace+0xd/0x10
-> > [  102.331944]  [<c0105704>] dump_stack+0x16/0x18
-> > [  102.331955]  [<c0112f35>] native_smp_call_function_mask+0x39/0x11d
-> > [  102.331970]  [<c01142ef>] smp_call_function+0x18/0x1d
-> > [  102.331984]  [<e885b449>] acpi_processor_latency_notify+0x13/0x1a [processor]
-> > [  102.332011]  [<c01396e2>] notifier_call_chain+0x2b/0x4a
-> > [  102.332023]  [<c0139885>] __blocking_notifier_call_chain+0x37/0x4c
-> > [  102.332035]  [<c01398a6>] blocking_notifier_call_chain+0xc/0xe
-> > [  102.332047]  [<c0139b82>] update_target+0x3e/0x43
-> > [  102.332058]  [<c0139d66>] pm_qos_add_requirement+0x76/0x98
-> > [  102.332070]  [<c02bd8a0>] snd_pcm_hw_params_user+0x2b1/0x302
-> > [  102.332085]  [<c02bdad9>] snd_pcm_common_ioctl1+0x17a/0xda3
-> > [  102.332097]  [<c02bee6b>] snd_pcm_playback_ioctl1+0x3ab/0x3c2
-> > [  102.332111]  [<c02bef06>] snd_pcm_playback_ioctl+0x27/0x35
-> > [  102.332123]  [<c01795ce>] vfs_ioctl+0x22/0x67
-> > [  102.332134]  [<c017986d>] do_vfs_ioctl+0x25a/0x268
-> > [  102.332146]  [<c01798a7>] sys_ioctl+0x2c/0x45
-> > [  102.332156]  [<c0103d86>] sysenter_past_esp+0x5f/0xa5
-> > [  102.332167]  =======================
-> > [  102.357016] WARNING: at arch/x86/kernel/smp_32.c:561 native_smp_call_function_mask()
-> > [  102.357034]  [<c0104e01>] show_trace_log_lvl+0x12/0x25
-> > [  102.357058]  [<c010562d>] show_trace+0xd/0x10
-> > [  102.357072]  [<c0105704>] dump_stack+0x16/0x18
-> > [  102.357083]  [<c0112f35>] native_smp_call_function_mask+0x39/0x11d
-> > [  102.357100]  [<c01142ef>] smp_call_function+0x18/0x1d
-> > [  102.357113]  [<e885b449>] acpi_processor_latency_notify+0x13/0x1a [processor]
-> > [  102.357141]  [<c01396e2>] notifier_call_chain+0x2b/0x4a
-> > [  102.357155]  [<c0139885>] __blocking_notifier_call_chain+0x37/0x4c
-> > [  102.357166]  [<c01398a6>] blocking_notifier_call_chain+0xc/0xe
-> > [  102.357178]  [<c0139b82>] update_target+0x3e/0x43
-> > [  102.357190]  [<c0139bec>] pm_qos_remove_requirement+0x65/0x87
-> > [  102.357200]  [<c02bd865>] snd_pcm_hw_params_user+0x276/0x302
-> > [  102.357215]  [<c02bdad9>] snd_pcm_common_ioctl1+0x17a/0xda3
-> > [  102.357227]  [<c02bee6b>] snd_pcm_playback_ioctl1+0x3ab/0x3c2
-> > [  102.357239]  [<c02bef06>] snd_pcm_playback_ioctl+0x27/0x35
-> > [  102.357251]  [<c01795ce>] vfs_ioctl+0x22/0x67
-> > [  102.357264]  [<c017986d>] do_vfs_ioctl+0x25a/0x268
-> > [  102.357276]  [<c01798a7>] sys_ioctl+0x2c/0x45
-> > [  102.357286]  [<c0103d86>] sysenter_past_esp+0x5f/0xa5
-> > [  102.357296]  =======================
-> > [  102.357325] WARNING: at arch/x86/kernel/smp_32.c:561 native_smp_call_function_mask()
-> > [  102.357332]  [<c0104e01>] show_trace_log_lvl+0x12/0x25
-> > [  102.357345]  [<c010562d>] show_trace+0xd/0x10
-> > [  102.357356]  [<c0105704>] dump_stack+0x16/0x18
-> > [  102.357367]  [<c0112f35>] native_smp_call_function_mask+0x39/0x11d
-> > [  102.357378]  [<c01142ef>] smp_call_function+0x18/0x1d
-> > [  102.357391]  [<e885b449>] acpi_processor_latency_notify+0x13/0x1a [processor]
-> > [  102.357409]  [<c01396e2>] notifier_call_chain+0x2b/0x4a
-> > [  102.357421]  [<c0139885>] __blocking_notifier_call_chain+0x37/0x4c
-> > [  102.357433]  [<c01398a6>] blocking_notifier_call_chain+0xc/0xe
-> > [  102.357443]  [<c0139b82>] update_target+0x3e/0x43
-> > [  102.357454]  [<c0139d66>] pm_qos_add_requirement+0x76/0x98
-> > [  102.357465]  [<c02bd8a0>] snd_pcm_hw_params_user+0x2b1/0x302
-> > [  102.357477]  [<c02bdad9>] snd_pcm_common_ioctl1+0x17a/0xda3
-> > [  102.357488]  [<c02bee6b>] snd_pcm_playback_ioctl1+0x3ab/0x3c2
-> > [  102.357500]  [<c02bef06>] snd_pcm_playback_ioctl+0x27/0x35
-> > [  102.357511]  [<c01795ce>] vfs_ioctl+0x22/0x67
-> > [  102.357521]  [<c017986d>] do_vfs_ioctl+0x25a/0x268
-> > [  102.357532]  [<c01798a7>] sys_ioctl+0x2c/0x45
-> > [  102.357542]  [<c0103d86>] sysenter_past_esp+0x5f/0xa5
-> > [  102.357552]  =======================
-> > [  102.366346] WARNING: at arch/x86/kernel/smp_32.c:561 native_smp_call_function_mask()
-> > [  102.366358]  [<c0104e01>] show_trace_log_lvl+0x12/0x25
-> > [  102.366380]  [<c010562d>] show_trace+0xd/0x10
-> > [  102.366393]  [<c0105704>] dump_stack+0x16/0x18
-> > [  102.366404]  [<c0112f35>] native_smp_call_function_mask+0x39/0x11d
-> > [  102.366420]  [<c01142ef>] smp_call_function+0x18/0x1d
-> > [  102.366434]  [<e885b449>] acpi_processor_latency_notify+0x13/0x1a [processor]
-> > [  102.366460]  [<c01396e2>] notifier_call_chain+0x2b/0x4a
-> > [  102.366473]  [<c0139885>] __blocking_notifier_call_chain+0x37/0x4c
-> > [  102.366486]  [<c01398a6>] blocking_notifier_call_chain+0xc/0xe
-> > [  102.366498]  [<c0139b82>] update_target+0x3e/0x43
-> > [  102.366509]  [<c0139bec>] pm_qos_remove_requirement+0x65/0x87
-> > [  102.366521]  [<c02bd865>] snd_pcm_hw_params_user+0x276/0x302
-> > [  102.366537]  [<c02bdad9>] snd_pcm_common_ioctl1+0x17a/0xda3
-> > [  102.366550]  [<c02bee6b>] snd_pcm_playback_ioctl1+0x3ab/0x3c2
-> > [  102.366563]  [<c02bef06>] snd_pcm_playback_ioctl+0x27/0x35
-> > [  102.366574]  [<c01795ce>] vfs_ioctl+0x22/0x67
-> > [  102.366588]  [<c017986d>] do_vfs_ioctl+0x25a/0x268
-> > [  102.366600]  [<c01798a7>] sys_ioctl+0x2c/0x45
-> > [  102.366611]  [<c0103d86>] sysenter_past_esp+0x5f/0xa5
-> > [  102.366622]  =======================
-> > [  102.366690] WARNING: at arch/x86/kernel/smp_32.c:561 native_smp_call_function_mask()
-> > [  102.366698]  [<c0104e01>] show_trace_log_lvl+0x12/0x25
-> > [  102.366711]  [<c010562d>] show_trace+0xd/0x10
-> > [  102.366722]  [<c0105704>] dump_stack+0x16/0x18
-> > [  102.366733]  [<c0112f35>] native_smp_call_function_mask+0x39/0x11d
-> > [  102.366747]  [<c01142ef>] smp_call_function+0x18/0x1d
-> > [  102.366759]  [<e885b449>] acpi_processor_latency_notify+0x13/0x1a [processor]
-> > [  102.366778]  [<c01396e2>] notifier_call_chain+0x2b/0x4a
-> > [  102.366792]  [<c0139885>] __blocking_notifier_call_chain+0x37/0x4c
-> > [  102.366805]  [<c01398a6>] blocking_notifier_call_chain+0xc/0xe
-> > [  102.366817]  [<c0139b82>] update_target+0x3e/0x43
-> > [  102.366829]  [<c0139d66>] pm_qos_add_requirement+0x76/0x98
-> > [  102.366840]  [<c02bd8a0>] snd_pcm_hw_params_user+0x2b1/0x302
-> > [  102.366853]  [<c02bdad9>] snd_pcm_common_ioctl1+0x17a/0xda3
-> > [  102.366865]  [<c02bee6b>] snd_pcm_playback_ioctl1+0x3ab/0x3c2
-> > [  102.366879]  [<c02bef06>] snd_pcm_playback_ioctl+0x27/0x35
-> > [  102.366892]  [<c01795ce>] vfs_ioctl+0x22/0x67
-> > [  102.366902]  [<c017986d>] do_vfs_ioctl+0x25a/0x268
-> > [  102.366913]  [<c01798a7>] sys_ioctl+0x2c/0x45
-> > [  102.366922]  [<c0103d86>] sysenter_past_esp+0x5f/0xa5
-> > [  102.366932]  =======================
-> > [  108.552031] printk: 31 messages suppressed.
-> 
-> 
-> All this BUG / WARNINGS are caused by *-qos* patches. Reverting this 3 patches makes the BUGs go away :
-> 
-> latencyc-use-qos-infrastructure.patch
-> pm-qos-infrastructure-and-interface.patch
-> pm-qos-infrastructure-and-interface-static-initialization-with-blocking-notifiers.patch
-> 
-> 
-> Gabriel
-> 
-> 
-This looks like the same issue Rafael saw.
+OK:
 
-Try the patch in the following post:
+	32-bit linux - Large Physical Memory / Large PTE
+	(CONFIG_PTE_64BIT & CONFIG_PHYS_64BIT)
+	4 Gig of DDR RAM
 
-http://marc.info/?l=linux-kernel&m=119265627228498&w=2
+Here is the lspci -vv
 
---mgross
 
- 
+-bash-2.05b# lspci -vv
+00:00.0 Power PC: Unknown device 1957:0012 (rev 20)
+        !!! Invalid class 0b20 for header type 01
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR+ FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0
+        Bus: primary=00, secondary=01, subordinate=11, sec-latency=0
+        I/O behind bridge: 00000000-00000fff
+        Memory behind bridge: ea900000-eeffffff
+        BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+        Capabilities: [44] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA
+PME(D0+,D1+,D2+,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [4c] #10 [0041]
+
+01:00.0 PCI bridge: PLX Technology, Inc.: Unknown device 8532 (rev ba)
+(prog-if 00 [Normal decode])
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0
+        Region 0: Memory at eefe0000 (32-bit, non-prefetchable)
+[size=128K]
+        Bus: primary=01, secondary=02, subordinate=11, sec-latency=0
+        I/O behind bridge: 07ffe000-07ffffff
+        Memory behind bridge: ea900000-eeefffff
+        BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+        Capabilities: [40] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [48] Message Signalled Interrupts: 64bit+
+Queue=0/0 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [68] #10 [0051]
+
+02:01.0 PCI bridge: PLX Technology, Inc.: Unknown device 8532 (rev ba)
+(prog-if 00 [Normal decode])
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0
+        Bus: primary=02, secondary=03, subordinate=08, sec-latency=0
+        Memory behind bridge: ec000000-eeefffff
+        BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+        Capabilities: [40] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [48] Message Signalled Interrupts: 64bit+
+Queue=0/0 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [68] #10 [0161]
+
+02:02.0 PCI bridge: PLX Technology, Inc.: Unknown device 8532 (rev ba)
+(prog-if 00 [Normal decode])
+        Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Bus: primary=02, secondary=09, subordinate=09, sec-latency=0
+        BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+        Capabilities: [40] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [48] Message Signalled Interrupts: 64bit+
+Queue=0/0 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [68] #10 [0161]
+
+02:03.0 PCI bridge: PLX Technology, Inc.: Unknown device 8532 (rev ba)
+(prog-if 00 [Normal decode])
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0
+        Bus: primary=02, secondary=0a, subordinate=0b, sec-latency=0
+        Memory behind bridge: eac00000-ebffffff
+        BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+        Capabilities: [40] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [48] Message Signalled Interrupts: 64bit+
+Queue=0/0 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [68] #10 [0161]
+
+02:08.0 PCI bridge: PLX Technology, Inc.: Unknown device 8532 (rev ba)
+(prog-if 00 [Normal decode])
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0
+        Bus: primary=02, secondary=0c, subordinate=0c, sec-latency=0
+        I/O behind bridge: 07fff000-07ffffff
+        Memory behind bridge: eab00000-eabfffff
+        BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+        Capabilities: [40] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [48] Message Signalled Interrupts: 64bit+
+Queue=0/0 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [68] #10 [0161]
+
+02:09.0 PCI bridge: PLX Technology, Inc.: Unknown device 8532 (rev ba)
+(prog-if 00 [Normal decode])
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0
+        Bus: primary=02, secondary=0d, subordinate=0f, sec-latency=0
+        I/O behind bridge: 07ffe000-07ffefff
+        Memory behind bridge: ea900000-eaafffff
+        BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+        Capabilities: [40] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [48] Message Signalled Interrupts: 64bit+
+Queue=0/0 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [68] #10 [0161]
+
+02:0a.0 PCI bridge: PLX Technology, Inc.: Unknown device 8532 (rev ba)
+(prog-if 00 [Normal decode])
+        Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Bus: primary=02, secondary=10, subordinate=10, sec-latency=0
+        BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+        Capabilities: [40] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [48] Message Signalled Interrupts: 64bit+
+Queue=0/0 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [68] #10 [0161]
+
+02:0b.0 PCI bridge: PLX Technology, Inc.: Unknown device 8532 (rev ba)
+(prog-if 00 [Normal decode])
+        Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Bus: primary=02, secondary=11, subordinate=11, sec-latency=0
+        BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+        Capabilities: [40] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [48] Message Signalled Interrupts: 64bit+
+Queue=0/0 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [68] #10 [0161]
+
+03:00.0 PCI bridge: PLX Technology, Inc.: Unknown device 8508 (rev aa)
+(prog-if 00 [Normal decode])
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0
+        Region 0: Memory at eeee0000 (32-bit, non-prefetchable)
+[size=128K]
+        Bus: primary=03, secondary=04, subordinate=08, sec-latency=0
+        Memory behind bridge: ec000000-eedfffff
+        BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+        Capabilities: [40] Power Management version 3
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [48] Message Signalled Interrupts: 64bit+
+Queue=0/0 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [68] #10 [0051]
+
+04:01.0 PCI bridge: PLX Technology, Inc.: Unknown device 8508 (rev aa)
+(prog-if 00 [Normal decode])
+        Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Bus: primary=04, secondary=05, subordinate=05, sec-latency=0
+        BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+        Capabilities: [40] Power Management version 3
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [48] Message Signalled Interrupts: 64bit+
+Queue=0/0 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [68] #10 [0161]
+
+04:02.0 PCI bridge: PLX Technology, Inc.: Unknown device 8508 (rev aa)
+(prog-if 00 [Normal decode])
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0
+        Bus: primary=04, secondary=06, subordinate=06, sec-latency=0
+        Memory behind bridge: ec000000-eedfffff
+        BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+        Capabilities: [40] Power Management version 3
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [48] Message Signalled Interrupts: 64bit+
+Queue=0/0 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [68] #10 [0161]
+
+04:03.0 PCI bridge: PLX Technology, Inc.: Unknown device 8508 (rev aa)
+(prog-if 00 [Normal decode])
+        Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Bus: primary=04, secondary=07, subordinate=07, sec-latency=0
+        BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+        Capabilities: [40] Power Management version 3
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [48] Message Signalled Interrupts: 64bit+
+Queue=0/0 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [68] #10 [0161]
+
+04:04.0 PCI bridge: PLX Technology, Inc.: Unknown device 8508 (rev aa)
+(prog-if 00 [Normal decode])
+        Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Bus: primary=04, secondary=08, subordinate=08, sec-latency=0
+        BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+        Capabilities: [40] Power Management version 3
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [48] Message Signalled Interrupts: 64bit+
+Queue=0/0 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [68] #10 [0161]
+
+06:00.0 Bridge: PLX Technology, Inc.: Unknown device 8532 (rev ba)
+        Subsystem: PLX Technology, Inc.: Unknown device 8532
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0
+        Interrupt: pin A routed to IRQ 51
+        Region 0: Memory at eede0000 (32-bit, non-prefetchable)
+[size=128K]
+        Region 2: Memory at ec000000 (32-bit, non-prefetchable)
+[size=32M]
+        Capabilities: [40] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [48] Message Signalled Interrupts: 64bit+
+Queue=0/0 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [68] #10 [0001]
+
+0a:00.0 PCI bridge: PLX Technology, Inc.: Unknown device 8111 (rev 21)
+(prog-if 00 [Normal decode])
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0
+        Region 0: Memory at ebff0000 (64-bit, prefetchable) [size=64K]
+        Bus: primary=0a, secondary=0b, subordinate=0b, sec-latency=0
+        Memory behind bridge: eac00000-ebefffff
+        BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+        Capabilities: [40] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2- AuxCurrent=0mA
+PME(D0+,D1+,D2-,D3hot+,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME+
+        Capabilities: [50] Message Signalled Interrupts: 64bit+
+Queue=0/0 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [60] #10 [0071]
+
+0b:00.0 Class ff00: C-PORT Corp: Unknown device 0002 (rev 20)
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap- 66Mhz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 128
+        Interrupt: pin A routed to IRQ 51
+        Region 0: Memory at ebe00000 (32-bit, prefetchable) [size=1M]
+        Region 1: Memory at ebd00000 (32-bit, prefetchable) [size=1M]
+        Region 2: Memory at eb800000 (32-bit, prefetchable) [size=4M]
+        Region 3: Memory at eb400000 (32-bit, prefetchable) [size=4M]
+        Region 4: Memory at eb000000 (32-bit, prefetchable) [size=4M]
+        Region 5: Memory at eac00000 (32-bit, prefetchable) [size=4M]
+
+0c:00.0 SCSI storage controller: Galileo Technology Ltd.: Unknown device
+7042 (rev 02)
+        Subsystem: Galileo Technology Ltd.: Unknown device 11ab
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0, cache line size 08
+        Interrupt: pin A routed to IRQ 48
+        Region 0: Memory at eab00000 (64-bit, non-prefetchable)
+[size=1M]
+        Region 2: I/O ports at 7ffff00 [size=256]
+        Capabilities: [40] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [50] Message Signalled Interrupts: 64bit+
+Queue=0/0 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [60] #10 [0011]
+
+0d:00.0 PCI bridge: PLX Technology, Inc.: Unknown device 8508 (rev aa)
+(prog-if 00 [Normal decode])
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0
+        Region 0: Memory at eaae0000 (32-bit, non-prefetchable)
+[size=128K]
+        Bus: primary=0d, secondary=0e, subordinate=0f, sec-latency=0
+        I/O behind bridge: 07ffe000-07ffefff
+        Memory behind bridge: ea900000-ea9fffff
+        BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+        Capabilities: [40] Power Management version 3
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [48] Message Signalled Interrupts: 64bit+
+Queue=0/0 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [68] #10 [0051]
+
+0e:01.0 PCI bridge: PLX Technology, Inc.: Unknown device 8508 (rev aa)
+(prog-if 00 [Normal decode])
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0
+        Bus: primary=0e, secondary=0f, subordinate=0f, sec-latency=0
+        I/O behind bridge: 07ffe000-07ffefff
+        Memory behind bridge: ea900000-ea9fffff
+        BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+        Capabilities: [40] Power Management version 3
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [48] Message Signalled Interrupts: 64bit+
+Queue=0/0 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [68] #10 [0161]
+
+0f:00.0 Fibre Channel: QLogic Corp.: Unknown device 2432 (rev 02)
+        Subsystem: QLogic Corp.: Unknown device 0137
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0
+        Interrupt: pin A routed to IRQ 50
+        Region 0: I/O ports at 7ffef00 [size=256]
+        Region 1: Memory at ea9fc000 (64-bit, non-prefetchable)
+[size=16K]
+        Expansion ROM at <unassigned> [disabled] [size=256K]
+        Capabilities: [44] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [4c] #10 [0001]
+        Capabilities: [64] Message Signalled Interrupts: 64bit+
+Queue=0/4 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [74] Vital Product Data
+        Capabilities: [7c] #11 [000f]
+
+-bash-2.05b#
+
+
+-----Original Message-----
+From: Mark Lord [mailto:liml@rtr.ca] 
+Sent: Wednesday, November 14, 2007 1:31 PM
+To: Morrison, Tom
+Cc: Jeff Garzik; linux-ide@vger.kernel.org; linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23.1 - sata_mv (7042) hang with large file operations
+
+Morrison, Tom wrote:
+..
+> ::: Can you give me exact details of how to set up and reproduce this?
+> :::  -- Kernel version
+> 
+> 	Linux-2.6.23.1
+> 
+> 	NOTE: I am using ppc (arch/ppc instead of arch/powerpc)
+..
+
+Okay.  Is that 32-bit or 64-bit?  How much RAM ?
+
+My PPC machine is not currently set up for Linux,
+and has only PCIX (not PCIe) slots, so I'll try this
+first on an x86-32 box with PCIe.
+
+If it works for me there, then I may be able to try
+a PCIX card in my PPC-32 box later.  The PCIX card
+won't have a 7042 of course, so I'll use a 6081 instead.
+Those earlier Marvell chips are supposed to be extremely similar.
+
+> 
+> :::  -- number/config/model of drives
+> 
+> 	2x250GIG Western Digital - 3 partitions (largest (/dev/sda3
+> 	~200Gig - formatted to ext2).
+> 
+> 	7042 PEX on a MPC8548 Board
+> 
+> :::  -- exact command line sequence to cause the failure
+> 
+> 	NFS mount root file system (I am currently rebuild to take away
+> 	the NFS file system dependency) - /dev/sda3 is drive in
+> question...
+> 
+> 		a) mount /dev/sda3 /mnt/src 
+> 		b) cp large_500Meg_file /mnt/src/.
+> 
+> ==========================================================
+> ==========================================================
+> NOTE: this does NOT fail on a 2.6.11 kernel version!!!!
+> 	So I do NOT think it's a hardware problem!
+> 
+> 	It could be a PEX related problem with arch/ppc - I would
+> 	expect under heavy pounding with smaller files it would
+> 	fail as well - but it does NOT)
+> ==========================================================
+> ==========================================================
+> 
+> Anything else you need to know?
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-ide"
+in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
