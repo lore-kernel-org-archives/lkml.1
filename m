@@ -1,45 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764038AbXKNVXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762951AbXKNVY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764038AbXKNVXU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 16:23:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761738AbXKNVW7
+	id S1762951AbXKNVY0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 16:24:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754501AbXKNVYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 16:22:59 -0500
-Received: from mho-02-bos.mailhop.org ([63.208.196.179]:61635 "EHLO
-	mho-02-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760515AbXKNVW5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 16:22:57 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 209.94.135.27
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX18IIKuqt65R9Z/qO6U1z0sh
-Message-ID: <473B6725.5010503@reed.com>
-Date: Wed, 14 Nov 2007 16:22:45 -0500
-From: "David P. Reed" <dpreed@reed.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.5) Gecko/20070727 Fedora/2.0.0.5-2.fc7 Thunderbird/2.0.0.5 Mnenhy/0.7.5.0
+	Wed, 14 Nov 2007 16:24:14 -0500
+Received: from palrel11.hp.com ([156.153.255.246]:37827 "EHLO palrel11.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754102AbXKNVYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 16:24:13 -0500
+Date: Wed, 14 Nov 2007 14:24:11 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Greg KH <greg@kroah.com>
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-pci@atrey.karlin.mff.cuni.cz,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>, gregkh@suse.de,
+       lenb@kernel.org, matthew@wil.cx, rick.jones2@hp.com,
+       linux-kernel@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
+Message-ID: <20071114212411.GB6575@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Greg KH <greg@kroah.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+	linux-pci@atrey.karlin.mff.cuni.cz,
+	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+	gregkh@suse.de, lenb@kernel.org, matthew@wil.cx, rick.jones2@hp.com,
+	linux-kernel@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
+	linux-acpi@vger.kernel.org
+References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113202632.GA3227@kroah.com> <20071113145936.7e1c58fb.kristen.c.accardi@intel.com> <200711141037.09228.bjorn.helgaas@hp.com> <20071114175317.GB14994@kroah.com>
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Allessandro Zummo <a.zummo@towertech.it>
-Subject: Re: [PATCH] x86: fix locking and sync bugs in x86_64 RTC code in
- time_64.c
-References: <469578CD.3080609@reed.com> <1184216528.12353.203.camel@chaos> <1184218962.12353.209.camel@chaos> <46964352.7040301@reed.com> <1184253339.12353.223.camel@chaos> <469697C6.50903@reed.com> <1184274754.12353.254.camel@chaos> <47388586.7010509@reed.com> <alpine.LFD.0.9999.0711140826080.3265@localhost.localdomain> <473AF3BE.1010006@reed.com> <20071114182647.GA17536@waste.org>
-In-Reply-To: <20071114182647.GA17536@waste.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071114175317.GB14994@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cool. More reason to separate this into two.
+Hi Greg,
 
-Matt Mackall wrote:
-> On Wed, Nov 14, 2007 at 08:10:22AM -0500, David P. Reed wrote:
->   
->> Will make two patches and resend.
->>     
->
-> I've already got a set of patches brewing to fix the UIP problem across all
-> the affected arches (11+).
->
->   
+* Greg KH <greg@kroah.com>:
+> On Wed, Nov 14, 2007 at 10:37:08AM -0700, Bjorn Helgaas wrote:
+> > 
+> > So I agree that the firmware kit has a clever hack that works
+> > on much existing x86 firmware, and it sounds like Tivoli
+> > might even rely on it.  But I don't feel good about it, and
+> > it could easily break when some BIOS writer needs to make
+> > _SUN slightly more complicated.
+> 
+> Do you know of such BIOSes out there that do this?  Will the
+> above scheme not work for the ia64 boxes that you know of that
+> are out in the world today?
+
+Talked to some of our ia64 firmware folks, and they confirmed
+that our future platforms will implement _SUN as a control
+method.
+
+Thanks.
+
+/ac
+
