@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756206AbXKNKfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757143AbXKNKgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756206AbXKNKfc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 05:35:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbXKNKfZ
+	id S1757143AbXKNKgU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 05:36:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbXKNKgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 05:35:25 -0500
-Received: from de01egw01.freescale.net ([192.88.165.102]:55690 "EHLO
-	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750924AbXKNKfY (ORCPT
+	Wed, 14 Nov 2007 05:36:12 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:48838 "EHLO
+	dorka.pomaz.szeredi.hu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751697AbXKNKgM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 05:35:24 -0500
-From: Zhang Wei <wei.zhang@freescale.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, olof@lixom.net,
-       Zhang Wei <wei.zhang@freescale.com>
-Subject: [PATCH] Fix the issue of fsldma driver's VIRT_TO_BUS dependence in Kconfig.
-Date: Wed, 14 Nov 2007 18:44:29 +0800
-Message-Id: <119503706990-git-send-email-wei.zhang@freescale.com>
-X-Mailer: git-send-email 1.5.2
-X-OriginalArrivalTime: 14 Nov 2007 10:35:10.0783 (UTC) FILETIME=[086EBCF0:01C826AA]
+	Wed, 14 Nov 2007 05:36:12 -0500
+To: jdike@addtoit.com
+CC: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, mingo@elte.hu
+In-reply-to: <20071114011002.GA11477@c2.user-mode-linux.org> (message from
+	Jeff Dike on Tue, 13 Nov 2007 20:10:02 -0500)
+Subject: Re: uml doesn't work on 2.6.24-rc2
+References: <E1Is5FL-00078H-00@dorka.pomaz.szeredi.hu> <20071114011002.GA11477@c2.user-mode-linux.org>
+Message-Id: <E1IsFbA-0007y2-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 14 Nov 2007 11:35:56 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove virt_to_bus(), just using the saved phy address to match.
+> On Wed, Nov 14, 2007 at 12:32:43AM +0100, Miklos Szeredi wrote:
+> > UML doesn't run on 2.6.24-rc2 as host (config attached).  Guest is
+> > 2.6.23-mm1, but I guess it's irrelevant.  2.6.23 as host was OK.
+> > 
+> > When booting there are zillions of lines like this:
+> > 
+> > "arch_switch_tls failed, errno = EINVAL"
+> 
+> This is PTRACE_ARCH_PRCTL failing and the only EINVAL I see is
+> do_arch_prctl getting a bogus operation - something other than
+> ARCH_[GS]ET_[FG]S, which is strange because UML never would have
+> worked if it were passing in bogus arguments.
 
-Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
----
- drivers/dma/fsldma.c |   13 +++++++++----
- 1 files changed, 9 insertions(+), 4 deletions(-)
+Note, this is 32bit UML on 64bit host, to complicate matters.  So I
+think it's not PTRACE_ARCH_PRCTL, but PTRACE_SET_THREAD_AREA.
 
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index 71e1c32..899b0c0 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -495,15 +495,20 @@ static struct dma_async_tx_descriptor *fsl_dma_prep_memcpy(
-  */
- static void fsl_dma_update_completed_cookie(struct fsl_dma_chan *fsl_chan)
- {
--	struct fsl_desc_sw *cur_desc;
-+	struct fsl_desc_sw *cur_desc, *desc;
- 	dma_addr_t ld_phy;
- 
- 	ld_phy = get_cdar(fsl_chan) & FSL_DMA_NLDA_MASK;
- 
- 	if (ld_phy) {
--		cur_desc = (struct fsl_desc_sw *)bus_to_virt(ld_phy);
--
--		if (cur_desc->async_tx.cookie) {
-+		cur_desc = NULL;
-+		list_for_each_entry(desc, &fsl_chan->ld_queue, node)
-+			if (desc->async_tx.phys == ld_phy) {
-+				cur_desc = desc;
-+				break;
-+			}
-+
-+		if (cur_desc && cur_desc->async_tx.cookie) {
- 			if (dma_is_idle(fsl_chan))
- 				fsl_chan->completed_cookie =
- 					cur_desc->async_tx.cookie;
--- 
-1.5.2
+Maybe this is a fallout from the x86 architecture merge?
 
+Tglx and mingo cc-d.
+
+Miklos
