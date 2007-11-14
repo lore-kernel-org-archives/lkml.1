@@ -1,74 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757598AbXKNM0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756971AbXKNMab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757598AbXKNM0X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 07:26:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756845AbXKNM0D
+	id S1756971AbXKNMab (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 07:30:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754515AbXKNMaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 07:26:03 -0500
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:44291 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753901AbXKNMZ7 (ORCPT
+	Wed, 14 Nov 2007 07:30:23 -0500
+Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:38721 "HELO
+	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754714AbXKNMaW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 07:25:59 -0500
-X-Greylist: delayed 740 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Nov 2007 07:25:59 EST
-Message-ID: <473AE84A.4050004@keyaccess.nl>
-Date: Wed, 14 Nov 2007 13:21:30 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Wed, 14 Nov 2007 07:30:22 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=q/dz+ykCMCCkbTKfawDcBE9HalzS9R0VKr4lKyxCFUTh0w7AV0+3h1nU9560q2o/Jea/phAPiNIOnUEHO1ByInpH3uZGzqGtY6cUsM+XsgwUt+JbapJiFPKMHLi9CBIT4/2wB3oVNNEziyOFzX/8/VZwqqSdvDgDc5W0VCbJnXM=  ;
+X-YMail-OSG: 8jaaltEVM1nHKk6SWtB4sgW161yzUX61UpYVM_35hzfly7hf2zWkyCx0kldQUcuBqsncQTDsrw--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
+Date: Wed, 14 Nov 2007 11:25:17 +1100
+User-Agent: KMail/1.9.5
+Cc: paulus@samba.org, hch@infradead.org, akpm@linux-foundation.org,
+       gregkh@suse.de, mucci@cs.utk.edu, eranian@hpl.hp.com, wcohen@redhat.com,
+       robert.richter@amd.com, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org
+References: <20071114.031216.11725447.davem@davemloft.net> <200711141049.49154.nickpiggin@yahoo.com.au> <20071114.035850.202836100.davem@davemloft.net>
+In-Reply-To: <20071114.035850.202836100.davem@davemloft.net>
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: David Miller <davem@davemloft.net>, rmk+lkml@arm.linux.org.uk,
-       alsa-devel@alsa-project.org, netdev@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-       protasnb@gmail.com, linux-ide@vger.kernel.org,
-       bugme-daemon@bugzilla.kernel.org, linux-input@atrey.karlin.mff.cuni.cz,
-       akpm@linux-foundation.org, perex@suse.cz
-Subject: Re: Moderated list (Was: Re: [BUG] New Kernel Bugs)
-References: <20071114.020706.219917088.davem@davemloft.net>	<473AE010.4090806@keyaccess.nl>	<20071114.035657.121841024.davem@davemloft.net>	<20071114.040131.110718152.davem@davemloft.net> <s5h8x51fd2l.wl%tiwai@suse.de>
-In-Reply-To: <s5h8x51fd2l.wl%tiwai@suse.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Disposition: inline
+Message-Id: <200711141125.18568.nickpiggin@yahoo.com.au>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: 0.0 (/)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 14-11-07 09:25, Takashi Iwai wrote:
+On Wednesday 14 November 2007 22:58, David Miller wrote:
+> From: Nick Piggin <nickpiggin@yahoo.com.au>
+> Date: Wed, 14 Nov 2007 10:49:48 +1100
+>
+> > On Wednesday 14 November 2007 22:44, Paul Mackerras wrote:
+> > > David Miller writes:
+> > > > This is my impression too, all of the things being done with
+> > > > a slew of system calls would be better served by real special
+> > > > files and appropriate fops.
+> > >
+> > > Special files and fops really only work well if you can coerce the
+> > > interface into one where data flows predominantly one way.  I don't
+> > > think they work so well for something that is more like an RPC across
+> > > the user/kernel barrier.  For that a system call is better.
+> > >
+> > > For instance, if you have something that kind-of looks like
+> > >
+> > > 	read_pmds(int n, int *pmd_numbers, u64 *pmd_values);
+> > >
+> > > where the caller supplies an array of PMD numbers and the function
+> > > returns their values (and you want that reading to be done atomically
+> > > in some sense), how would you do that using special files and fops?
+> >
+> > Could you implement it with readv()?
+>
+> Sure, why not?  Just cook up an iovec.  pmd_numbers goes to offset
+> X and pmd_values goes to offset Y, with some helpers like what
+> we have in the networking already for recvmsg.
+>
+> But why would you want readv() for this?  The syscall thing
+> Paul asked me to translate into a read() doesn't provide
+> iovec-like behavior so I don't see why readv() is necessary
+> at all.
 
-> At Wed, 14 Nov 2007 04:01:31 -0800 (PST),
-> David Miller wrote:
->> From: David Miller <davem@davemloft.net>
->> Date: Wed, 14 Nov 2007 03:56:57 -0800 (PST)
->>
->>> The fact that it farts at me every time I post to this thread.
->> See?  I got another one and I have received at least 10 of the
->> following over the past 2 days.
->>
->> That's rediculious.
->>
->> And because a human adds the whitelist this is always going to
->> happen to someone when they start posting to the alsa list for
->> the first time.
-> 
-> ... if you give too many recipients in your post.  That is often
-> really annoying thing to me, together with keeping the unrelated
-> subject line ;)
-> 
-> I personally don't care whether it's a moderated or open list.
-> We chose it simply due to too bad S/N ratio at that time.  So, if the
-> current list annoys your or many others and the list management on
-> vger is so good, it'd be basically a good move, of course.  I'll
-> appreciate it.
-> 
-> The only confusion would be the change of ML address, but we can do it
-> slowly, too.
+Ah sorry, that's what I get for typing before I think: of course
+readv doesn't vectorise the right part of the equation.
 
-I'd love the lists at vger. Amazing spam-filtering. I'd like to request the 
-name alsa-devel@vger.kernel.org (and alsa-user@vger.kernel.org if at all 
-possible so we can open that one up as well) though.
+What I really mean is a readv-like syscall, but one that also
+vectorises the file offset. Maybe this is useful enough as a generic
+syscall that also helps Paul's example...
 
-There wouldn't need to be a forced ML address change if Jaroslov would then 
-just rewrite alsa-{devel,user}@alsa-project.org to vger.kernel.org same as 
-he did for alsa-devel and does for alsa-user to @lists.sf.net.
-
-Rene.
-
+Of course, I guess this all depends on whether the atomicity is an
+important requirement. If not, you can obviously just do it with
+multiple read syscalls...
