@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761322AbXKNRjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760651AbXKNRno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761322AbXKNRjm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 12:39:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756510AbXKNRjf
+	id S1760651AbXKNRno (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 12:43:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756648AbXKNRng
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 12:39:35 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:35695 "EHLO fieldses.org"
+	Wed, 14 Nov 2007 12:43:36 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:52501 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756132AbXKNRje (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 12:39:34 -0500
-Date: Wed, 14 Nov 2007 12:39:22 -0500
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Chris Wedgwood <cw@f00f.org>, linux-xfs@oss.sgi.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.24-rc2 XFS nfsd hang
-Message-ID: <20071114173922.GC14254@fieldses.org>
-References: <20071114070400.GA25708@puku.stupidest.org> <20071114152952.GA4210@infradead.org>
+	id S1756269AbXKNRnf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 12:43:35 -0500
+Date: Wed, 14 Nov 2007 18:38:28 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
+Subject: Re: 2.6.24-rc2-mm1
+In-Reply-To: <Pine.LNX.4.64.0711141758570.15844@twin.jikos.cz>
+Message-ID: <Pine.LNX.4.64.0711141837420.15844@twin.jikos.cz>
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0711141728290.15844@twin.jikos.cz>
+ <20071114083906.178232cb.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0711141740110.15844@twin.jikos.cz>
+ <Pine.LNX.4.64.0711141758570.15844@twin.jikos.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071114152952.GA4210@infradead.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 14, 2007 at 03:29:52PM +0000, Christoph Hellwig wrote:
-> On Tue, Nov 13, 2007 at 11:04:00PM -0800, Chris Wedgwood wrote:
-> > With 2.6.24-rc2 (amd64) I sometimes (usually but perhaps not always)
-> > see a hang when accessing some NFS exported XFS filesystems.  Local
-> > access to these filesystems ahead of time works without problems.
-> > 
-> > This does not occur with 2.6.23.1.  The filesystem does not appear to
-> > be corrupt.
-> > 
-> 
-> >     [ 1462.911360]  ffffffff80744020 ffffffff80746dc0 ffff81010129c140 ffff8101000ad100
-> >     [ 1462.911391] Call Trace:
-> >     [ 1462.911417]  [<ffffffff8052e638>] __down+0xe9/0x101
-> >     [ 1462.911437]  [<ffffffff8022cc80>] default_wake_function+0x0/0xe
-> >     [ 1462.911458]  [<ffffffff8052e275>] __down_failed+0x35/0x3a
-> >     [ 1462.911480]  [<ffffffff8035ac25>] _xfs_buf_find+0x84/0x24d
-> >     [ 1462.911501]  [<ffffffff8035ad34>] _xfs_buf_find+0x193/0x24d
-> >     [ 1462.911522]  [<ffffffff803599b1>] xfs_buf_lock+0x43/0x45
-> 
-> this is bp->b_sema which lookup wants.
-> 
-> >     [ 1462.915534]  [<ffffffff8032b6da>] xfs_readdir+0x91/0xb6
-> >     [ 1462.915557]  [<ffffffff8030415b>] nfs3svc_encode_entry_plus+0x0/0x13
-> >     [ 1462.915579]  [<ffffffff8035be9d>] xfs_file_readdir+0x31/0x40
-> >     [ 1462.915599]  [<ffffffff8028c9f8>] vfs_readdir+0x61/0x93
-> >     [ 1462.915619]  [<ffffffff8030415b>] nfs3svc_encode_entry_plus+0x0/0x13
-> >     [ 1462.915642]  [<ffffffff802fc78e>] nfsd_readdir+0x6d/0xc5
-> 
-> and this is the nasty nfsd case where a filldir callback calls back
-> into lookup.  I suspect we're somehow holding b_sema already.  Previously
-> this was okay because we weren't inside the actualy readdir code when
-> calling filldir but operate on a copy of the data.
-> 
-> This gem has bitten other filesystem before, I'll see if I can find a
-> way around it.
+On Wed, 14 Nov 2007, Jiri Kosina wrote:
 
-This must have come up before; feel free to remind me: is there any way
-to make the interface easier to use?  (E.g. would it help if the filldir
-callback could be passed a dentry?)
+> Well not that fine, I still see (which is the same backtrace that caused 
+> the lockup with plain -rc2-mm1, but doesn't make the machine hang):
+> floppy0: Floppy io-port 0x03f2 in use
+> WARNING: at lib/kref.c:33 kref_get()
+> Call Trace:
+>  [<ffffffff8035bd43>] kobject_add+0x9b/0x197
+>  [<ffffffff8035c6e1>] kref_get+0x2f/0x36
+>  [<ffffffff8035b82f>] kobject_get+0x12/0x17
+>  [<ffffffff8035bd55>] kobject_add+0xad/0x197
+>  [<ffffffff802c9a36>] register_disk+0x48/0x205
+>  [<ffffffff80355cf3>] add_disk+0x34/0x3d
+>  [<ffffffff8083cd99>] rd_init+0x172/0x1e1
+>  [<ffffffff8082063a>] kernel_init+0x175/0x2e6
+>  [<ffffffff8025193c>] trace_hardirqs_on+0x115/0x139
+>  [<ffffffff80598769>] trace_hardirqs_on_thunk+0x35/0x3a
+>  [<ffffffff8025193c>] trace_hardirqs_on+0x115/0x139
+>  [<ffffffff8020c628>] child_rip+0xa/0x12
+>  [<ffffffff8020bd3f>] restore_args+0x0/0x30
+>  [<ffffffff808204c5>] kernel_init+0x0/0x2e6
+>  [<ffffffff8020c61e>] child_rip+0x0/0x12
 
---b.
+And this goes away when 
+gregkh-driver-remove-struct-kobj_type-from-struct-kset is reverted.
+
+-- 
+Jiri Kosina
