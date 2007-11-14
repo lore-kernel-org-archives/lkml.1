@@ -1,213 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762913AbXKNScS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762170AbXKNSeM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762913AbXKNScS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 13:32:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758611AbXKNScI
+	id S1762170AbXKNSeM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 13:34:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbXKNSd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 13:32:08 -0500
-Received: from ns2.suse.de ([195.135.220.15]:50043 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753901AbXKNScG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 13:32:06 -0500
-From: Frank Seidel <fseidel@suse.de>
-Organization: SUSE LINUX Products GmbH
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH][RFC] drivers/firmware/dcdbas: rework to get uevents
-Date: Wed, 14 Nov 2007 19:32:01 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Matt Domsch <Matt_Domsch@dell.com>,
-       Michael E Brown <Michael_E_Brown@dell.com>,
-       Doug Warzecha <Douglas_Warzecha@dell.com>,
-       Dmitry Torokhov <dtor_core@ameritech.net>
+	Wed, 14 Nov 2007 13:33:56 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43324 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752759AbXKNSdz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 13:33:55 -0500
+Date: Wed, 14 Nov 2007 10:33:54 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: David Miller <davem@davemloft.net>
+cc: nickpiggin@yahoo.com.au, herbert@gondor.apana.org.au,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc2: Network commit causes SLUB performance regression
+ with tbench
+In-Reply-To: <20071114.041008.146131045.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0711141028390.12531@schroedinger.engr.sgi.com>
+References: <20071114.031022.183117678.davem@davemloft.net>
+ <20071114114844.GA13927@gondor.apana.org.au> <200711141102.11477.nickpiggin@yahoo.com.au>
+ <20071114.041008.146131045.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711141932.03190.fseidel@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 14 Nov 2007, David Miller wrote:
 
-this is a small trivial rework of the dcdbas driver so
-HAL can get uevents when platform devices are added or removed.
+> > Still interested to know why SLAB didn't see the same thing...
+> 
+> Yes, I wonder why too.  I bet objects just got packed differently.
 
-Its tested and seems to work without problem, but please bear in mind
-this is the work of a beginner.
+The objects are packed tightly in SLUB and SLUB can allocate smaller 
+objects (minimum is 8 SLAB mininum is 32).
 
-Any feedback is very welcome.
+On free a SLUB object goes directly back to the slab where it came from. 
+We have no queues in SLUB so we use the first word of the object as a 
+freepointer. In SLAB the objects first go onto queues and then are drained 
+later into the slab. On free in SLAB there is usually no need to touch the 
+object itself. The object pointer is simply moved onto the queue (works 
+well in SMP, in NUMA we have overhead identifying the queue and 
+overhead due to the number of queues needed).
 
-Thanks,
-Frank
----
-Trivial small rework to use of new platform platform_register_device to
-also get uevents on loading and unloading the driver.
-
-Signed-off-by: Frank Seidel <fseidel@suse.de>
----
- drivers/firmware/dcdbas.c |   57 +++++++++++++++++++++++++---------------------
- 1 files changed, 31 insertions(+), 26 deletions(-)
-
---- a/drivers/firmware/dcdbas.c
-+++ b/drivers/firmware/dcdbas.c
-@@ -40,16 +40,17 @@
- #include "dcdbas.h"
- 
- #define DRIVER_NAME		"dcdbas"
--#define DRIVER_VERSION		"5.6.0-3.2"
-+#define DRIVER_VERSION		"5.6.0-3.3"
- #define DRIVER_DESCRIPTION	"Dell Systems Management Base Driver"
- 
--static struct platform_device *dcdbas_pdev;
-+static struct platform_device dcdbas_pdev;
- 
- static u8 *smi_data_buf;
- static dma_addr_t smi_data_buf_handle;
- static unsigned long smi_data_buf_size;
- static u32 smi_data_buf_phys_addr;
- static DEFINE_MUTEX(smi_data_lock);
-+static char driver_name[] = DRIVER_NAME;
- 
- static unsigned int host_control_action;
- static unsigned int host_control_smi_type;
-@@ -63,10 +64,10 @@ static void smi_data_buf_free(void)
- 	if (!smi_data_buf)
- 		return;
- 
--	dev_dbg(&dcdbas_pdev->dev, "%s: phys: %x size: %lu\n",
-+	dev_dbg(&dcdbas_pdev.dev, "%s: phys: %x size: %lu\n",
- 		__FUNCTION__, smi_data_buf_phys_addr, smi_data_buf_size);
- 
--	dma_free_coherent(&dcdbas_pdev->dev, smi_data_buf_size, smi_data_buf,
-+	dma_free_coherent(&dcdbas_pdev.dev, smi_data_buf_size, smi_data_buf,
- 			  smi_data_buf_handle);
- 	smi_data_buf = NULL;
- 	smi_data_buf_handle = 0;
-@@ -89,9 +90,9 @@ static int smi_data_buf_realloc(unsigned
- 		return -EINVAL;
- 
- 	/* new buffer is needed */
--	buf = dma_alloc_coherent(&dcdbas_pdev->dev, size, &handle, GFP_KERNEL);
-+	buf = dma_alloc_coherent(&dcdbas_pdev.dev, size, &handle, GFP_KERNEL);
- 	if (!buf) {
--		dev_dbg(&dcdbas_pdev->dev,
-+		dev_dbg(&dcdbas_pdev.dev,
- 			"%s: failed to allocate memory size %lu\n",
- 			__FUNCTION__, size);
- 		return -ENOMEM;
-@@ -110,7 +111,7 @@ static int smi_data_buf_realloc(unsigned
- 	smi_data_buf_phys_addr = (u32) virt_to_phys(buf);
- 	smi_data_buf_size = size;
- 
--	dev_dbg(&dcdbas_pdev->dev, "%s: phys: %x size: %lu\n",
-+	dev_dbg(&dcdbas_pdev.dev, "%s: phys: %x size: %lu\n",
- 		__FUNCTION__, smi_data_buf_phys_addr, smi_data_buf_size);
- 
- 	return 0;
-@@ -256,7 +257,7 @@ static int smi_request(struct smi_cmd *s
- 	int ret = 0;
- 
- 	if (smi_cmd->magic != SMI_CMD_MAGIC) {
--		dev_info(&dcdbas_pdev->dev, "%s: invalid magic value\n",
-+		dev_info(&dcdbas_pdev.dev, "%s: invalid magic value\n",
- 			 __FUNCTION__);
- 		return -EBADR;
- 	}
-@@ -265,7 +266,7 @@ static int smi_request(struct smi_cmd *s
- 	old_mask = current->cpus_allowed;
- 	set_cpus_allowed(current, cpumask_of_cpu(0));
- 	if (smp_processor_id() != 0) {
--		dev_dbg(&dcdbas_pdev->dev, "%s: failed to get CPU 0\n",
-+		dev_dbg(&dcdbas_pdev.dev, "%s: failed to get CPU 0\n",
- 			__FUNCTION__);
- 		ret = -EBUSY;
- 		goto out;
-@@ -426,7 +427,7 @@ static int host_control_smi(void)
- 		break;
- 
- 	default:
--		dev_dbg(&dcdbas_pdev->dev, "%s: invalid SMI type %u\n",
-+		dev_dbg(&dcdbas_pdev.dev, "%s: invalid SMI type %u\n",
- 			__FUNCTION__, host_control_smi_type);
- 		return -ENOSYS;
- 	}
-@@ -455,12 +456,12 @@ static void dcdbas_host_control(void)
- 	host_control_action = HC_ACTION_NONE;
- 
- 	if (!smi_data_buf) {
--		dev_dbg(&dcdbas_pdev->dev, "%s: no SMI buffer\n", __FUNCTION__);
-+		dev_dbg(&dcdbas_pdev.dev, "%s: no SMI buffer\n", __FUNCTION__);
- 		return;
- 	}
- 
- 	if (smi_data_buf_size < sizeof(struct apm_cmd)) {
--		dev_dbg(&dcdbas_pdev->dev, "%s: SMI buffer too small\n",
-+		dev_dbg(&dcdbas_pdev.dev, "%s: SMI buffer too small\n",
- 			__FUNCTION__);
- 		return;
- 	}
-@@ -548,8 +549,8 @@ static int __devinit dcdbas_probe(struct
- 	 * BIOS SMI calls require buffer addresses be in 32-bit address space.
- 	 * This is done by setting the DMA mask below.
- 	 */
--	dcdbas_pdev->dev.coherent_dma_mask = DMA_32BIT_MASK;
--	dcdbas_pdev->dev.dma_mask = &dcdbas_pdev->dev.coherent_dma_mask;
-+	dcdbas_pdev.dev.coherent_dma_mask = DMA_32BIT_MASK;
-+	dcdbas_pdev.dev.dma_mask = &dcdbas_pdev.dev.coherent_dma_mask;
- 
- 	error = sysfs_create_group(&dev->dev.kobj, &dcdbas_attr_group);
- 	if (error)
-@@ -596,6 +597,15 @@ static struct platform_driver dcdbas_dri
- 	.remove		= __devexit_p(dcdbas_remove),
- };
- 
-+static void __devexit dcdbas_release(struct device *dev)
-+{
-+	struct platform_device *pd =
-+			container_of(dev, struct platform_device, dev);
-+
-+	kfree(dev->platform_data);
-+	kfree(pd->resource);
-+}
-+
- /**
-  * dcdbas_init: initialize driver
-  */
-@@ -607,21 +617,16 @@ static int __init dcdbas_init(void)
- 	if (error)
- 		return error;
- 
--	dcdbas_pdev = platform_device_alloc(DRIVER_NAME, -1);
--	if (!dcdbas_pdev) {
--		error = -ENOMEM;
--		goto err_unregister_driver;
--	}
--
--	error = platform_device_add(dcdbas_pdev);
-+	dcdbas_pdev.name = driver_name;
-+	dcdbas_pdev.id = -1;
-+	dcdbas_pdev.dev.release = dcdbas_release;
-+	error = platform_device_register(&dcdbas_pdev);
- 	if (error)
--		goto err_free_device;
-+		goto err_unregister_driver;
- 
- 	return 0;
- 
-- err_free_device:
--	platform_device_put(dcdbas_pdev);
-- err_unregister_driver:
-+err_unregister_driver:
- 	platform_driver_unregister(&dcdbas_driver);
- 	return error;
- }
-@@ -637,7 +642,7 @@ static void __exit dcdbas_exit(void)
- 	 */
- 	unregister_reboot_notifier(&dcdbas_reboot_nb);
- 	smi_data_buf_free();
--	platform_device_unregister(dcdbas_pdev);
-+	platform_device_unregister(&dcdbas_pdev);
- 	platform_driver_unregister(&dcdbas_driver);
- 
- 	/*
