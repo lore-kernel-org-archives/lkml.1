@@ -1,46 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764252AbXKNVBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764731AbXKNVDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764252AbXKNVBP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 16:01:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754891AbXKNVBA
+	id S1764731AbXKNVDX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 16:03:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755061AbXKNVDP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 16:01:00 -0500
-Received: from xenotime.net ([66.160.160.81]:54531 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752063AbXKNVA7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 16:00:59 -0500
-Date: Wed, 14 Nov 2007 13:00:52 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Julia Lawall <julia@diku.dk>, rolandd@cisco.com, mshefty@ichips.intel.com,
-       halr@voltaire.com, openib-general@openib.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 3/4] drivers/infiniband: Drop redundant includes of
- moduleparam.h
-Message-Id: <20071114130052.8118c397.rdunlap@xenotime.net>
-In-Reply-To: <adalk90zgwz.fsf@cisco.com>
-References: <Pine.LNX.4.64.0711132234110.18337@ask.diku.dk>
-	<adalk90zgwz.fsf@cisco.com>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 14 Nov 2007 16:03:15 -0500
+Received: from pils.linux-kernel.at ([213.129.242.82]:55032 "EHLO
+	mail.linux-kernel.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757760AbXKNVDO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 16:03:14 -0500
+X-Greylist: delayed 626 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Nov 2007 16:03:14 EST
+Message-ID: <473B600E.9030703@linux-kernel.at>
+Date: Wed, 14 Nov 2007 21:52:30 +0100
+From: Oliver Falk <oliver@linux-kernel.at>
+Organization: Linux kernel Austria
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070615 Fedora/2.0.0.4-1.fc7 Thunderbird/2.0.0.4 Mnenhy/0.7.5.666
+MIME-Version: 1.0
+To: Linux on Alpha processors <axp-list@redhat.com>,
+       linux-kernel@vger.kernel.org, Jay Estabrook <jay.estabrook@hp.com>
+Subject: Question about F_RDLCK and F_WRLCK on alpha
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-lkernAT-MailScanner-Information: Please contact the ISP for more information
+X-lkernAT-MailScanner: Found to be clean
+X-lkernAT-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-4.399, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -2.60)
+X-MailScanner-From: oliver@linux-kernel.at
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Nov 2007 12:54:52 -0800 Roland Dreier wrote:
+Hi!
 
->  > Drop #include <linux/moduleparam.h> in files that also include #include
->  > <linux/module.h>.  module.h includes moduleparam.h already.
-> 
-> Do we want to make this sort of source code change?  I thought that
-> the consensus about the kernel was that we wanted to avoid relying of
-> implicit includes of <Y.h> by <X.h> -- in this case a better change
-> would actually seem to be to explicitly include moduleparam.h in files
-> using module parameters and then remove the include from module.h.
+Can someone explain me, why we have different define's for WRLCK and
+RDLCK within alpha kernel headers:
 
-That's correct AFAIK (what Roland said).
+Alpha system:
 
----
-~Randy
+asm/fcntl.h:#define F_RDLCK             1
+asm-generic/fcntl.h:#ifndef F_RDLCK
+asm-generic/fcntl.h:#define F_RDLCK             0
+bits/fcntl.h:#define F_RDLCK            1       /* Read lock.  */
+
+Intel system:
+
+asm-generic/fcntl.h:#ifndef F_RDLCK
+asm-generic/fcntl.h:#define F_RDLCK             0
+bits/fcntl.h:#define F_RDLCK            0       /* Read lock.  */
+
+I would say F_RDLCK should better be 0 as in i386, but I also guess that
+changing this would break many things, wouldn't it?
+
+I don't want to tell you my (long) story, how I found that and why I was
+searching for it :-(
+
+(Jay, you know what I'm talkin' about, don't you?)
+
+
+Well, maybe my kernel headers are just packaged up like crap!?
+
+
+Best,
+ Oliver
+
