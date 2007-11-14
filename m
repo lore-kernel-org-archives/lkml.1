@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762792AbXKNXcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762377AbXKNXhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762792AbXKNXcZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 18:32:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755366AbXKNXcO
+	id S1762377AbXKNXhy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 18:37:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755366AbXKNXhq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 18:32:14 -0500
-Received: from mga02.intel.com ([134.134.136.20]:63105 "EHLO mga02.intel.com"
+	Wed, 14 Nov 2007 18:37:46 -0500
+Received: from waste.org ([66.93.16.53]:57373 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755222AbXKNXcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 18:32:13 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,418,1188802800"; 
-   d="scan'208";a="271236788"
-Message-ID: <473B852E.5010000@intel.com>
-Date: Wed, 14 Nov 2007 15:30:54 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
+	id S1751764AbXKNXhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 18:37:46 -0500
+Date: Wed, 14 Nov 2007 17:37:13 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: David Miller <davem@davemloft.net>
+Cc: mingo@elte.hu, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: [bug] SLOB crash, 2.6.24-rc2
+Message-ID: <20071114233713.GW19691@waste.org>
+References: <20071114190501.GA5768@elte.hu> <20071114.143938.23516450.davem@davemloft.net> <20071114225335.GV19691@waste.org> <20071114.151013.05582536.davem@davemloft.net>
 MIME-Version: 1.0
-To: Patrick McHardy <kaber@trash.net>
-CC: Herbert Xu <herbert@gondor.apana.org.au>,
-       David Miller <davem@davemloft.net>, joonwpark81@gmail.com, w@1wt.eu,
-       cfriesen@nortel.com, netdev@vger.kernel.org,
-       djohnson+linux-kernel@sw.starentnetworks.com,
-       linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net
-Subject: Re: [PATCH 2/2] [e1000 VLAN] Disable vlan hw accel when promiscuous
- mode
-References: <E1Irtdz-0000DX-00@gondolin.me.apana.org.au> <20071113.033611.73195922.davem@davemloft.net> <20071113120328.GB1086@gondor.apana.org.au> <20071113.040624.43544149.davem@davemloft.net> <20071113121647.GA1330@gondor.apana.org.au> <4739961E.90708@trash.net> <4739D3A5.4020503@intel.com> <4739DE29.2030507@trash.net> <4739DF29.6010901@intel.com> <473AC2EC.4060109@trash.net>
-In-Reply-To: <473AC2EC.4060109@trash.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 Nov 2007 23:31:17.0668 (UTC) FILETIME=[74757E40:01C82716]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071114.151013.05582536.davem@davemloft.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick McHardy wrote:
-> Kok, Auke wrote:
->> Patrick McHardy wrote:
->>> Kok, Auke wrote:
->>>> Patrick McHardy wrote:
->>>>
->>>>> I already posted a patch for this, not sure what happened to it.
->>>>> Auke, any news on merging the secondary unicast address support?
->>>> I dropped the ball on that one. Care to resend it and send me one for
->>>> e1000e as well?
->>> Patch for e1000 attached.
->>>
->>> Does e1000e also work with PCI cards if I add the proper IDs?
->>> Otherwise I could only send an untested patch.
->>>
->>
->> no, e1000e will only work with pci-e adapters. The code however is
->> largely the
->> same, so if you can dish me out (off-list) some test cases I can have
->> our labs do
->> the testing and add this to our test repertoire.
+On Wed, Nov 14, 2007 at 03:10:13PM -0800, David Miller wrote:
+> From: Matt Mackall <mpm@selenic.com>
+> Date: Wed, 14 Nov 2007 16:53:36 -0600
 > 
+> > He hit the bug using SLOB and there are no kmem (or any other) caches
+> > in SLOB.
 > 
-> Actually that part of the code is quite different. I'm not
-> sure I understand the entire intent behind the differences,
-> why does it use a packed array of addresses instead of simply
-> passing the netdev pointer to the callback? That would be
-> necessary for secondary unicast support since we have to
-> disable unicast filtering if either the address count exceeds
-> the number of filter slots or the device is in promiscous mode.
+> That's unfortunate, is there any user tracking facility at
+> all?
 
-the underlying code was not specifically developed with linux only in mind and is
-therefore not aware of the net_device struct, hence the specific netdev agnostic
-implementation. if this implementation is posing issues then we need to look at
-how to improve it or just code it specifically for linux in a better way.
+No, the usual strategy for debugging problems -outside- SLOB is to
+switch to another allocator with more extensive debugging facilities.
 
+It is of course possible to add redzoning, last user, etc., but there
+aren't many advantages to implementing these in SLOB compared to
+switching allocators, unless the bug disappears in those other
+allocators. In the case of random pointer fandango, such bugs are
+likely to disappear when you turn on debugging anyway.
 
-Auke
+The most likely thing you'll hit in SLOB vs SLUB/SLAB is that SLOB
+doesn't hand back power-of-two allocations for kmalloc. Instead, it
+has 2-byte granularity on most machines. So small pointer overruns on
+kmalloced objects will be somewhat more visible in SLOB than
+SLAB/SLUB. I don't think SLAB/SLUB debugging can detect overruns
+inside the not-requested-but-still-allocated region of objects.
+
+I've implemented redzoning and various other debugging checks for
+earlier versions of SLOB to find problems -in- the allocator, but
+those won't apply to current SLOB (which can be considered v2).
+
+-- 
+Mathematics is the supreme nostalgia of our time.
