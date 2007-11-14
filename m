@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760978AbXKNRq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761584AbXKNRtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760978AbXKNRq4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 12:46:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbXKNRqs
+	id S1761584AbXKNRtS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 12:49:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867AbXKNRtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 12:46:48 -0500
-Received: from cavan.codon.org.uk ([78.32.9.130]:50908 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751832AbXKNRqr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 12:46:47 -0500
-Date: Wed, 14 Nov 2007 17:44:01 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Greg KH <greg@kroah.com>
-Cc: Alex Chiang <achiang@hp.com>, gregkh@suse.de, kristen.c.accardi@intel.com,
-       lenb@kernel.org, matthew@wil.cx, rick.jones2@hp.com,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
-Message-ID: <20071114174401.GA4265@srcf.ucam.org>
-References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113170129.GA20185@kroah.com> <20071113202154.GA22812@ldl.fc.hp.com> <20071113202632.GA3227@kroah.com>
+	Wed, 14 Nov 2007 12:49:05 -0500
+Received: from rtr.ca ([76.10.145.34]:1221 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754473AbXKNRtE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 12:49:04 -0500
+Message-ID: <473B350F.3030003@rtr.ca>
+Date: Wed, 14 Nov 2007 12:49:03 -0500
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071113202632.GA3227@kroah.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+To: Sebastian Kemper <sebastian_ml@gmx.net>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: libata/PATA: GPCMD_SET_STREAMING via SG_IO does nothing
+References: <20071113164323.GA5252@section-eight> <20071113212230.77cadecd@the-village.bc.nu> <20071113232859.GA4681@section-eight> <473B219E.5060508@rtr.ca> <20071114171618.GB9387@section-eight>
+In-Reply-To: <20071114171618.GB9387@section-eight>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 12:26:32PM -0800, Greg KH wrote:
-
-> Doesn't /sys/firmware/acpi give you raw access to the correct tables
-> already?
+Sebastian Kemper wrote:
+> On Wed, Nov 14, 2007 at 11:26:06AM -0500, Mark Lord wrote:
+>> Another way to the same thing is with "hdparm -E",
+>> which contrary to my earlier posting actually does
+>> seem to work already with libata.
 > 
-> And isn't there some other tool that dumps the raw ACPI tables?  I
-> thought the acpi developers used it all the time when debugging things
-> with users.
+> Hi!
+> 
+> There are DVD-ROM drives that don't react to hdparm -E but do react to
+> SET_STREAMING, for instance some NEC drives.
+..
 
-Dumping raw ACPI tables isn't adequate - _SUN might be a complex ACPI 
-method with multiple reads and writes to raw hardware, and we really 
-don't want to do that in userspace. The only way to do this reliably is 
-in the kernel.
+Mmm.. that's possible.  The NEC drive I have here works with either.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+I wonder if an update to sr_select_speed() (inside the SCSI code) is needed?
+It currently uses GPCMD_SET_SPEED, with no fallback to GPCMD_SET_STREAMING.
+
+Or I suppose this is best left to userspace.
+I may change hdparm to try both opcodes.
