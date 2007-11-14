@@ -1,44 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759738AbXKNCEE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760980AbXKNCEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759738AbXKNCEE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 21:04:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755298AbXKNCDx
+	id S1760980AbXKNCEs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 21:04:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757075AbXKNCEi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 21:03:53 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:38100 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754534AbXKNCDw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 21:03:52 -0500
-Date: Tue, 13 Nov 2007 18:03:51 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: David Miller <davem@davemloft.net>
-cc: andi@firstfloor.org, akpm@linux-foundation.org, linux-mm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dada1@cosmosbay.com,
-       schwidefsky@de.ibm.com
-Subject: Re: [patch 01/28] cpu alloc: The allocator
-In-Reply-To: <20071113.180158.169883244.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0711131802480.6713@schroedinger.engr.sgi.com>
-References: <p73wssly6sr.fsf@bingen.suse.de> <20071113.175208.168903694.davem@davemloft.net>
- <Pine.LNX.4.64.0711131756180.6631@schroedinger.engr.sgi.com>
- <20071113.180158.169883244.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 13 Nov 2007 21:04:38 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:4736 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752921AbXKNCEi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 21:04:38 -0500
+Subject: [PATCH] - [0/15] - remove defconfig ptr comparisons to 0
+From: Joe Perches <joe@perches.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 13 Nov 2007 18:04:35 -0800
+Message-Id: <1195005876.5163.85.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Nov 2007, David Miller wrote:
+Remove defconfig ptr comparison to 0
 
-> From: Christoph Lameter <clameter@sgi.com>
-> Date: Tue, 13 Nov 2007 17:57:15 -0800 (PST)
-> 
-> > Hmmmm. cpu_alloc really does not need zeroed data. Just an address
-> > fixed by the compiler where stuff can be put. Can the loader do that
-> > somehow?
-> 
-> Yes, and I think IA64 uses such a scheme for it's 64KB fixed
-> per-cpu TLB mapping thing doesn't it?
-
-The per cpu TLB mapping is virtually mapped. The real memory allocation 
-behind it occurs dynamically from bootmem.
+Remove sparse warning: Using plain integer as NULL pointer
 
