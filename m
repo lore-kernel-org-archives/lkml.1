@@ -1,101 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764135AbXKNBPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764257AbXKNBQA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764135AbXKNBPa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 20:15:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759024AbXKNBPT
+	id S1764257AbXKNBQA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 20:16:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759024AbXKNBPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 20:15:19 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:59025 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761652AbXKNBPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 20:15:18 -0500
-Message-ID: <473A4C0F.6070504@redhat.com>
-Date: Tue, 13 Nov 2007 20:14:55 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Divide-by-zero in the 2.6.23 scheduler code
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 13 Nov 2007 20:15:50 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:17514 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761969AbXKNBPt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 20:15:49 -0500
+Date: Tue, 13 Nov 2007 17:15:07 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kevin Winchester <kjwinchester@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: mm snapshot broken-out-2007-11-13-04-14.tar.gz uploaded
+Message-Id: <20071113171507.8ce6ba1b.randy.dunlap@oracle.com>
+In-Reply-To: <20071113171113.06f2b26f.akpm@linux-foundation.org>
+References: <200711131215.lADCFfht009739@imap1.linux-foundation.org>
+	<200711132020.33124.kjwinchester@gmail.com>
+	<20071113171113.06f2b26f.akpm@linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-https://bugzilla.redhat.com/show_bug.cgi?id=340161
+On Tue, 13 Nov 2007 17:11:13 -0800 Andrew Morton wrote:
 
-The problem code has been removed in 2.6.24. The below patch disables
-SCHED_FEAT_PRECISE_CPU_LOAD which causes the offending code to be skipped
-but does not prevent the user from enabling it.
+> On Tue, 13 Nov 2007 20:20:32 -0400 Kevin Winchester <kjwinchester@gmail.com> wrote:
+> 
+> > On November 13, 2007 08:15:41 am akpm@linux-foundation.org wrote:
+> > > The mm snapshot broken-out-2007-11-13-04-14.tar.gz has been uploaded to
+> > >
+> > >   
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-11-13-
+> > >04-14.tar.gz
+> > >
+> > > It contains the following patches against 2.6.24-rc2:
+> > >
+> > 
+> > <snip>
+> > 
+> > How exactly do I go about trying out this snapshot?  I did the following:
+> > 
+> > - exported 2.6.24-rc2 from my cloned git tree to a separate folder
+> > - installed quilt
+> > - extracted the patches to the "patches" directory at the top level of the 
+> > 2.6.24-rc2 tree
+> > - copied the list of patches from your mail into a "series" file which I 
+> > placed in the "patches" directory
+> 
+> The tarball contains a copy of the series file.  For some reason LARGE
+> numbers of people miss it and ask me "hey, where's the series file?".  Odd.
 
-The divide-by-zero is here in kernel/sched.c:
+Raises hand.
 
-static void update_cpu_load(struct rq *this_rq)
-{
-	u64 fair_delta64, exec_delta64, idle_delta64, sample_interval64, tmp64;
-	unsigned long total_load = this_rq->ls.load.weight;
-	unsigned long this_load =  total_load;
-	struct load_stat *ls = &this_rq->ls;
-	int i, scale;
 
-	this_rq->nr_load_updates++;
-	if (unlikely(!(sysctl_sched_features & SCHED_FEAT_PRECISE_CPU_LOAD)))
-		goto do_avg;
+> >  Is 
+> > there a reason that there is no "series" file in the archive with the 
+> > patches?
+> 
+> It's in there ;)
+> 
+> btw, I put the patches in a directory called "broken-out" so that you can
+> untar them in your kernel tree and not have them stomped all over your
+> existing patches/ directory.  symlink it...
 
-	/* Update delta_fair/delta_exec fields first */
-	update_curr_load(this_rq);
-
-	fair_delta64 = ls->delta_fair + 1;
-	ls->delta_fair = 0;
-
-	exec_delta64 = ls->delta_exec + 1;
-	ls->delta_exec = 0;
-
-	sample_interval64 = this_rq->clock - ls->load_update_last;
-	ls->load_update_last = this_rq->clock;
-
-	if ((s64)sample_interval64 < (s64)TICK_NSEC)
-		sample_interval64 = TICK_NSEC;
-
-	if (exec_delta64 > sample_interval64)
-		exec_delta64 = sample_interval64;
-
-	idle_delta64 = sample_interval64 - exec_delta64;
-
-======>	tmp64 = div64_64(SCHED_LOAD_SCALE * exec_delta64, fair_delta64);
-	tmp64 = div64_64(tmp64 * exec_delta64, sample_interval64);
-
-	this_load = (unsigned long)tmp64;
-
-do_avg:
-
-	/* Update our load: */
-	for (i = 0, scale = 1; i < CPU_LOAD_IDX_MAX; i++, scale += scale) {
-		unsigned long old_load, new_load;
-
-		/* scale is effectively 1 << i now, and >> i divides by scale */
-
-		old_load = this_rq->cpu_load[i];
-		new_load = this_load;
-
-		this_rq->cpu_load[i] = (old_load*(scale-1) + new_load) >> i;
-	}
-}
-
+It's not at the same directory level as the patches.  For some reason,
+that would help me find it.
 
 ---
- kernel/sched_fair.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-2.6.23.noarch.orig/kernel/sched_fair.c
-+++ linux-2.6.23.noarch/kernel/sched_fair.c
-@@ -93,7 +93,7 @@ unsigned int sysctl_sched_features __rea
- 		SCHED_FEAT_FAIR_SLEEPERS	*1 |
- 		SCHED_FEAT_SLEEPER_AVG		*0 |
- 		SCHED_FEAT_SLEEPER_LOAD_AVG	*1 |
--		SCHED_FEAT_PRECISE_CPU_LOAD	*1 |
-+		SCHED_FEAT_PRECISE_CPU_LOAD	*0 |
- 		SCHED_FEAT_START_DEBIT		*1 |
- 		SCHED_FEAT_SKIP_INITIAL		*0;
- 
+~Randy
