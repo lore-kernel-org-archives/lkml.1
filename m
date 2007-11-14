@@ -1,173 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764735AbXKNVvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765002AbXKNVv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764735AbXKNVvk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 16:51:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763121AbXKNVvM
+	id S1765002AbXKNVv7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 16:51:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764801AbXKNVvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 16:51:12 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:52960 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762896AbXKNVvK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 16:51:10 -0500
-Subject: Re: [PATCH][RFC] kprobes: Add user entry-handler in kretprobes
-From: Jim Keniston <jkenisto@us.ibm.com>
-To: Abhishek Sagar <sagar.abhishek@gmail.com>
-Cc: Srinivasa Ds <srinivasa@in.ibm.com>, linux-kernel@vger.kernel.org,
-       prasanna@in.ibm.com, davem@davemloft.net,
-       anil.s.keshavamurthy@intel.com,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-In-Reply-To: <863e9df20711140530h69df9107g38e293aab278686a@mail.gmail.com>
-References: <47389BEB.1000901@gmail.com>
-	 <863e9df20711121039t5352a993xc9eeb6bfea123805@mail.gmail.com>
-	 <863e9df20711130247g45d3d541j10c76434e9c65b00@mail.gmail.com>
-	 <473AAA75.2050900@in.ibm.com>
-	 <863e9df20711140049q3ad486ben7ace2edab0a2ca41@mail.gmail.com>
-	 <473ACCBE.9010308@in.ibm.com>
-	 <863e9df20711140530h69df9107g38e293aab278686a@mail.gmail.com>
+	Wed, 14 Nov 2007 16:51:44 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:33196 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762921AbXKNVvl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 16:51:41 -0500
+Subject: Re: [PATCH 3/3] nfs: use ->mmap_prepare() to avoid an AB-BA
+	deadlock
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-arch@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>
+In-Reply-To: <1195076485.7584.66.camel@heimdal.trondhjem.org>
+References: <20071114200136.009242000@chello.nl>
+	 <20071114201528.514434000@chello.nl> <20071114212246.GA31048@wotan.suse.de>
+	 <1195075905.22457.3.camel@lappy>
+	 <1195076485.7584.66.camel@heimdal.trondhjem.org>
 Content-Type: text/plain
-Date: Wed, 14 Nov 2007 14:51:04 -0800
-Message-Id: <1195080664.5781.78.camel@dyn9047018096.beaverton.ibm.com>
+Date: Wed, 14 Nov 2007 22:50:34 +0100
+Message-Id: <1195077034.22457.6.camel@lappy>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-11-14 at 19:00 +0530, Abhishek Sagar wrote:
 
-First of all, some general comments.  We seem to be trying to solve two
-problems here:
-1. Prevent the asymmetry in entry- vs. return-handler calls that can
-develop when we temporarily run out of kretprobe_instances.  E.g., if we
-have m kretprobe "misses", we may report n calls but only (n-m) returns.
-2. Simplify the task of correlating data (e.g., timestamps) between
-function entry and function return.
-
-Problem #1 wouldn't exist if we could solve problem #1a:
-1a. Ensure that we never run out of kretprobe_instances (for some
-appropriate value of "never").
-
-I've thought of various approaches to #1a -- e.g., allocate
-kretprobe_instances from GFP_ATOMIC memory when we're out of
-preallocated instances -- but I've never found time to pursue them.
-This might be a good time to brainstorm solutions to that problem.
-
-Lacking a solution to #1a, I think Abhishek's approach provides a
-reasonable solution to problem #1.
-
-I don't think it takes us very far toward solving #2, though.  I agree
-with Srinivasa that it would be more helpful if we could store the data
-collected at function-entry time right in the kretprobe_instance.  Kevin
-Stafford prototyped this "data pouch" idea a couple of years ago --
-http://sourceware.org/ml/systemtap/2005-q3/msg00593.html
--- but an analogous feature was implemented at a higher level in
-SystemTap.  Either approach -- in kprobes or SystemTap -- would benefit
-from a fix to #1 (or #1a).
-
-Review of Abhishek's patch:
-
-I see no reason to save a copy of *regs and pass that to the entry
-handler.  Passing the real regs pointer is good enough for other kprobe
-handlers.  And if a handler on i386 uses &regs->esp as the value of the
-stack pointer (which is correct -- long story), it'll get the wrong
-value if its regs arg points at the copy.
-
-More comments below.
-
-> On Nov 14, 2007 3:53 PM, Srinivasa Ds <srinivasa@in.ibm.com> wrote:
-...
+On Wed, 2007-11-14 at 16:41 -0500, Trond Myklebust wrote:
+> On Wed, 2007-11-14 at 22:31 +0100, Peter Zijlstra wrote:
+> > On Wed, 2007-11-14 at 22:22 +0100, Nick Piggin wrote:
+> > > On Wed, Nov 14, 2007 at 09:01:39PM +0100, Peter Zijlstra wrote:
+> > > > Normal locking order is:
+> > > > 
+> > > >   i_mutex
+> > > >     mmap_sem
+> > > > 
+> > > > However NFS's ->mmap hook, which is called under mmap_sem, can take i_mutex.
+> > > > Avoid this potential deadlock by doing the work that requires i_mutex from
+> > > > the new ->mmap_prepare().
+> > > > 
+> > > > [ Is this sufficient, or does it introduce a race? ]
+> > > 
+> > > Seems like an OK patchset in my opinion. I don't know much about NFS
+> > > unfortunately, but I wonder what prevents the condition fixed by
+> > > nfs_revalidate_mapping from happening again while the mmap is active...?
+> > 
+> > As the changelog might have suggested, I'm not overly sure of the nfs
+> > requirements myself. I think it just does a best effort at getting the
+> > pages coherent with other clients, and then hopes for the best.
+> > 
+> > I'll let Trond enlighten us further before I make an utter fool of
+> > myself :-)
 > 
-> > So entry_handler() which gets executed last doesn't guarantee
-> > that its return handler will be executed first(because it took a lot time
-> > to return).
-> 
-> Only if there are return instances pending belonging to different tasks.
+> The NFS client needs to check the validity of already cached data before
+> it allows those pages to be mmapped. If it finds out that the cache is
+> stale, then we need to call invalidate_inode_pages2() to clear out the
+> cache and refresh it from the server. The inode->i_mutex is necessary in
+> order to prevent races between the new writes and the cache invalidation
+> code.
 
-I agree with Abhishek here.
-...
-> 
-> Lets see how entry and return handlers can be matched up in three
-> different scenarios:-
-> 
-> 1. Multiple function entries from various tasks (the one you've just
-> pointed out).
-> 2. Multiple kretprobe registration on the same function.
-> 3. Nested calls of kretprobe'd function.
-> 
-> In cases 1 and 3, the following information can be used to match
-> corresponding entry and return handlers inside a user handler (if
-> needed):
-> 
-> (ri->task, ri->ret_addr)
-> where ri is struct kretprobe_instance *
-> 
-> This tuple should uniquely identify a return address (right?).
+Right, but I guess what Nick asked is, if pages could be stale to start
+with, how is that avoided in the future.
 
-But if it's a recursive function, there could be multiple instances in
-the same task with the same return address.  The stack pointer would be
-different, FWIW.
-
-> 
-> 
-> In case 2, entry and return handlers are anyways called in the right
-> order (taken care of by
-> trampoline_handler() due to LIFO insertion in ri->hlist).
-
-Yes.  And for case #2, ri->rp will be different for each
-kretprobe_instance anyway.
-
-> 
-> The fact that ri is passed to both handlers should allow any user
-> handler to identify each of these cases and take appropriate
-> synchronization action pertaining to its private data, if needed.
-
-I don't think Abhishek has made his case here.  See below.
-
-> 
-> > (Hence I feel sol a) would be nice).
-> 
-> With an entry-handler, any module aiming to profile running time of a
-> function (say) can simply do the following without being "return
-> instance" conscious. Note however that I'm not trying to address just
-> this scenario but trying to provide a general way to use
-> entry-handlers in kretprobes:
-> 
-> static unsigned  long flag = 0; /* use bit 0 as a global flag */
-> unsigned long long entry, exit;
-> 
-> int my_entry_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
-> {
->     if (!test_and_set_bit(0, &flag))
->     /* this instance claims the first entry to kretprobe'd function */
->         entry = sched_clock();
->         /* do other stuff */
->         return 0; /* right on! */
->     }
->     return 1; /* error: no return instance to be allocated for this
-> function entry */
-> }
-> 
-> /* will only be called iff flag == 1 */
-> int my_return_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
-> {
->     BUG_ON(!flag);
->     exit = sched_clock();
->     set_bit(0, &flag);
-> }
-> 
-> I think something like this should do the trick for you.
-
-Since flag is static, it seems to me that if there were instances of the
-probed function active concurrently in multiple tasks, only the
-first-called instance would be  profiled.
-
-> 
-> > Thanks
-> >  Srinivasa DS
-> 
-> --
-> Thanks & Regards
-> Abhishek Sagar
-
-Jim Keniston
+The way I understand it, this re-validate is just a best effort at
+getting a coherent image.
 
