@@ -1,68 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761597AbXKNXVL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbXKNXVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761597AbXKNXVL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 18:21:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755274AbXKNXU5
+	id S1756887AbXKNXVo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 18:21:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbXKNXVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 18:20:57 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:48709 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755248AbXKNXU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 18:20:56 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: pm list <linux-pm@lists.linux-foundation.org>
-Subject: [RFC][PATCH] Freezer: Make freezing failures less verbose by default
-Date: Thu, 15 Nov 2007 00:38:06 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Arkadiusz Miskiewicz <arekm@maven.pl>, Pavel Machek <pavel@ucw.cz>,
-       LKML <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+	Wed, 14 Nov 2007 18:21:35 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43859
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752062AbXKNXVe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 18:21:34 -0500
+Date: Wed, 14 Nov 2007 15:21:34 -0800 (PST)
+Message-Id: <20071114.152134.266510129.davem@davemloft.net>
+To: paulus@samba.org
+Cc: hch@infradead.org, akpm@linux-foundation.org, gregkh@suse.de,
+       mucci@cs.utk.edu, eranian@hpl.hp.com, wcohen@redhat.com,
+       robert.richter@amd.com, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org
+Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <18235.32982.439970.359975@cargo.ozlabs.ibm.com>
+References: <18235.28062.309910.416774@cargo.ozlabs.ibm.com>
+	<20071114.150303.13732085.davem@davemloft.net>
+	<18235.32982.439970.359975@cargo.ozlabs.ibm.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711150038.07538.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+From: Paul Mackerras <paulus@samba.org>
+Date: Thu, 15 Nov 2007 10:12:22 +1100
 
-Currently freezing failures are extremely verbose which sometimes is
-unnecessary and prevents the user from seeing which task could not be frozen.
+> *I* never had a problem with a few extra system calls.  I don't
+>  understand why you (apparently) do.
 
-Make them less verbose by default (ie. if CONFIG_PM_VERBOSE is unset).
+We're stuck with them forever, they are hard to version and extend
+cleanly.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/process.c |   11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/kernel/power/process.c
-===================================================================
---- linux-2.6.orig/kernel/power/process.c
-+++ linux-2.6/kernel/power/process.c
-@@ -163,6 +163,15 @@ static void cancel_freezing(struct task_
- 	}
- }
- 
-+#ifdef CONFIG_PM_VERBOSE
-+static inline void freezer_show_state(void)
-+{
-+	show_state();
-+}
-+#else /* !CONFIG_PM_VERBOSE */
-+static inline void freezer_show_state(void) {}
-+#endif /* !CONFIG_PM_VERBOSE */
-+
- static int try_to_freeze_tasks(int freeze_user_space)
- {
- 	struct task_struct *g, *p;
-@@ -214,7 +223,7 @@ static int try_to_freeze_tasks(int freez
- 		printk(KERN_ERR "Freezing of tasks failed after %d.%02d seconds "
- 				"(%d tasks refusing to freeze):\n",
- 				elapsed_csecs / 100, elapsed_csecs % 100, todo);
--		show_state();
-+		freezer_show_state();
- 		read_lock(&tasklist_lock);
- 		do_each_thread(g, p) {
- 			task_lock(p);
+Those are my main objections.
