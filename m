@@ -1,80 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756859AbXKNKBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbXKNKHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756859AbXKNKBS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 05:01:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbXKNKBB
+	id S1756065AbXKNKHB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 05:07:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbXKNKGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 05:01:01 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:49036 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753147AbXKNKBA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 05:01:00 -0500
-Date: Wed, 14 Nov 2007 09:55:07 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, alsa-devel@alsa-project.org,
-       protasnb@gmail.com, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz
-Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071114095507.GA32595@flint.arm.linux.org.uk>
-Mail-Followup-To: David Miller <davem@davemloft.net>,
-	akpm@linux-foundation.org, netdev@vger.kernel.org,
-	linux-pcmcia@lists.infradead.org, alsa-devel@alsa-project.org,
-	protasnb@gmail.com, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
-	linux-input@atrey.karlin.mff.cuni.cz
-References: <20071113125222.9eb53ac8.akpm@linux-foundation.org> <20071113221801.GF1356@flint.arm.linux.org.uk> <20071113143201.9441c940.akpm@linux-foundation.org> <20071113.175551.131375600.davem@davemloft.net>
+	Wed, 14 Nov 2007 05:06:53 -0500
+Received: from gate.crashing.org ([63.228.1.57]:59031 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752529AbXKNKGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 05:06:52 -0500
+Subject: Re: [patch 3/3] arch_rebalance_pgtables call
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: schwidefsky@de.ibm.com
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+In-Reply-To: <1195032394.9446.6.camel@localhost>
+References: <20071112143009.425807965@de.ibm.com>
+	 <20071112144010.052155135@de.ibm.com>
+	 <200711132333.38086.nickpiggin@yahoo.com.au>
+	 <1195032394.9446.6.camel@localhost>
+Content-Type: text/plain
+Date: Wed, 14 Nov 2007 21:06:36 +1100
+Message-Id: <1195034796.28865.36.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071113.175551.131375600.davem@davemloft.net>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 05:55:51PM -0800, David Miller wrote:
-> From: Andrew Morton <akpm@linux-foundation.org>
-> Date: Tue, 13 Nov 2007 14:32:01 -0800
+
+On Wed, 2007-11-14 at 10:26 +0100, Martin Schwidefsky wrote:
+> That patch allows processes to have different number of page table
+> levels, 31 bit processes have 2 levels (2GB), normal 64 bit processes
+> have 3 levels (4TB) and really big 64 bit processes can have 4 levels
+> (8PB). The downgrade of a page table to use less levels than the
+> parent
+> process is done in arch_pick_mmap_layout. The upgrade is done by using
+> the arch_rebalance_pgtables call. I've considered using the
+> arch_get_unmapped_area but got scared by the indirection in
+> get_unmapped_area:
 > 
-> > On Tue, 13 Nov 2007 22:18:01 +0000 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-> > 
-> > > Find some other mailing list; I'm not hosting *nor* am I willing to run a
-> > > non-subscribers only mailing list.  Period.  Not negotiable, so don't even
-> > > try to change my mind.
-> > 
-> > Making a list subscribers-only will cause some bug reports to be lost.
-> > 
-> > Tradeoffs are involved, against which decisions must be made.  You have
-> > made yours.
-> 
-> Russell doesn't have to worry any more, he doesn't have to
-> host it, and he doesn't have to be willing to run a
-> non-subscribers-only mailing list.
-> 
-> Because I am.
-> 
-> I've created linux-arm@vger.kernel.org
+>         get_area = current->mm->get_unmapped_area;
+>         if (file && file->f_op && file->f_op->get_unmapped_area)
+>                 get_area = file->f_op->get_unmapped_area;
+>         addr = get_area(file, addr, len, pgoff, flags);
 
-By doing so you've just said (implicitly) that you can not tolerate
-someone having a different opinion from your own.
+Don't be, it's really only hugetlb and other arch specific stuff that
+hook in here on platforms with an MMU (It's also used by /dev/mem etc...
+for mmu-less platforms but you don't care).
 
-While I accept *your* right to run *your* lists how you please, you
-are unable to accept *my* right to run *my* lists how I see fit.
+Ben.
 
-Time will tell which lists will survive.  Whatever, I suspect that by
-doing what you've just done, you're going to create more confusion and
-problems. Instead of having one focused place for discussions and bug
-reports, they're going to be spread more thinly, meaning less people
-looking at such things, meaning more bugs get ignored.  Thus making
-the issue worse.
 
-So, when are you creating a replacement alsa-devel mailing list on
-vger?  That's also subscribers-only.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
