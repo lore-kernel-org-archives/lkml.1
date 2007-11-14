@@ -1,76 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763843AbXKNTk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763543AbXKNTnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763843AbXKNTk2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 14:40:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834AbXKNTkL
+	id S1763543AbXKNTnu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 14:43:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754517AbXKNTnn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 14:40:11 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:46486 "EHLO pasmtpA.tele.dk"
+	Wed, 14 Nov 2007 14:43:43 -0500
+Received: from waste.org ([66.93.16.53]:34157 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757320AbXKNTkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 14:40:10 -0500
-Date: Wed, 14 Nov 2007 20:41:42 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 2/4] Add ARCH_SUPPORTS_OPROFILE
-Message-ID: <20071114194142.GC10047@uranus.ravnborg.org>
-References: <20071113142609.103579906@polymtl.ca> <20071113142935.063097504@polymtl.ca>
-Mime-Version: 1.0
+	id S1753338AbXKNTnm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 14:43:42 -0500
+Date: Wed, 14 Nov 2007 13:42:24 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [bug] SLOB crash, 2.6.24-rc2
+Message-ID: <20071114194223.GT19691@waste.org>
+References: <200711112058.28043.rjw@sisk.pl> <20071114112001.GA13870@elte.hu> <20071114173611.GR19691@waste.org> <20071114183952.GS19691@waste.org> <20071114190501.GA5768@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071113142935.063097504@polymtl.ca>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20071114190501.GA5768@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mathieu.
-
+On Wed, Nov 14, 2007 at 08:05:01PM +0100, Ingo Molnar wrote:
 > 
-> It would be much better to do
+> * Matt Mackall <mpm@selenic.com> wrote:
 > 
->         depends on ARCH_SUPPORTS_KPROBES
+> > > > [   61.245190] rc.sysinit used greatest stack depth: 1680 bytes left
+> > > > [   61.386859] list_add corruption. prev->next should be next (407d973c), but was 418cf818. (prev=41877098).
+> > > > [   61.396328] ------------[ cut here ]------------
+> > > > [   61.400910] kernel BUG at lib/list_debug.c:33!
+> > > > [   61.405330] invalid opcode: 0000 [#1] DEBUG_PAGEALLOC
+> > > > 
+> > > > looks like memory corruption of some sort and it's reproducible. Picking 
+> > > > CONFIG_SLUB makes the crash go away. Booting v2.6.23 with the same 
+> > > > .config works fine.
+> > > 
+> > > Hmmm, the changes in SLOB since v2.6.23 are all trivial. I'll try to 
+> > > reproduce it with your config, but it doesn't seem promising.
+> > 
+> > Couldn't reproduce it here, let me know if you get anywhere with your 
+> > bisect.
 > 
-> in that generic file, and then architectures that do support it would just
-> have a
-> 
->         bool ARCH_SUPPORTS_KPROBES
->                 default y
+> the bug went away - and the only thing i did was a networking config 
+> tweak. So maybe something in networking corrupts memory? I'm not sure i 
+> can restore the old state. (i had lots of problems with net interface 
+> renaming not working in .24)
 
-The above suggestion is actually not exactly the best way to do it...
-First the naming..
-A quick grep shows following usage today (in Kconfig files)
-ARCH_HAS	51
-ARCH_SUPPORTS	4
-HAVE_ARCH	7
+Quite possible. SLOB is more sensitive to off by one bugs because it
+doesn't have the power-of-two buckets that SLAB/SLUB have. IIRC,
+SLAB/SLUB's debugging features won't detect when you request 28 bytes,
+get 32, then overwrite byte 29. But that will damage other objects or
+the free list in SLOB.
 
-ARCH_HAS is the clear winner.
+But this isn't the per-page SLOB list that's getting clobbered, this
+is the list of pages held in struct page.
 
-
-In the common Kconfig file do:
-
-config FOO
-	depends on ARCH_HAS_FOO
-	bool "bla bla" 
-
-config ARCH_HAS_FOO
-	def_bool n
-
-
-In the arch specific Kconfig file in a suitable place do:
-
-config SUITABLE_OPTION
-	select ARCH_HAS_FOO
-
-
-The naming of ARCH_HAS_ is fixed and shall be:
-ARCH_HAS_<config option it will enable>
-
-
-Only a single line added pr. architecture.
-And we will end up with a (maybe even commented) list of trivial selects.
-
-Sorry for providing late feedback on this!
-
-	Sam
+-- 
+Mathematics is the supreme nostalgia of our time.
