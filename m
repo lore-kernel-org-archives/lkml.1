@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757060AbXKNOmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759325AbXKNOmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757060AbXKNOmW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 09:42:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755896AbXKNOlz
+	id S1759325AbXKNOmu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 09:42:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755896AbXKNOmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 09:41:55 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:35364 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754771AbXKNOly (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 09:41:54 -0500
-Message-ID: <473B0317.6010603@linux.vnet.ibm.com>
-Date: Wed, 14 Nov 2007 19:45:51 +0530
-From: Ciju Rajan K <ciju@linux.vnet.ibm.com>
-Reply-To: ciju@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
+	Wed, 14 Nov 2007 09:42:40 -0500
+Received: from palrel10.hp.com ([156.153.255.245]:39147 "EHLO palrel10.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755363AbXKNOmj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 09:42:39 -0500
+Date: Wed, 14 Nov 2007 07:42:37 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Gary Hade <garyhade@us.ibm.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, Greg KH <greg@kroah.com>, gregkh@suse.de,
+       kristen.c.accardi@intel.com, lenb@kernel.org, rick.jones2@hp.com,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
+Message-ID: <20071114144237.GB7523@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Gary Hade <garyhade@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
+	Greg KH <greg@kroah.com>, gregkh@suse.de,
+	kristen.c.accardi@intel.com, lenb@kernel.org, rick.jones2@hp.com,
+	linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
+References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113170129.GA20185@kroah.com> <20071113183353.GE17785@parisc-linux.org> <20071113185122.GA22536@kroah.com> <20071113201102.GK17785@parisc-linux.org> <20071113230804.GA14570@us.ibm.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: wli@holomorphy.com, agl@us.ibm.com
-Subject: [RFC] [PATCH] hugetlbfs :shmget with SHM_HUGETLB only works as root
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071113230804.GA14570@us.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When a normal user is trying to allocate huge pages using shmget(), the 
-user is not able to get the memory even if the gid is present in 
-/proc/sys/vm/hugetlb_shm_group. The function user_shm_lock() is not 
-successful. The user does not have the capability to perform a 
-CAP_IPC_LOCK. A check is added here to see whether the gid is present in 
-hugetlb_shm_group. Please review the patch.
+Hi Gary,
 
-Signed-off-by: Ciju Rajan (ciju@linux.vnet.ibm.com)
----
---- linux-2.6.23/mm/mlock.c.orig    2007-11-14 17:35:02.000000000 +0530
-+++ linux-2.6.23/mm/mlock.c    2007-11-14 17:50:31.000000000 +0530
-@@ -8,6 +8,7 @@
- #include <linux/capability.h>
- #include <linux/mman.h>
- #include <linux/mm.h>
-+#include <linux/hugetlb.h>
- #include <linux/mempolicy.h>
- #include <linux/syscalls.h>
- #include <linux/sched.h>
-@@ -248,8 +249,14 @@ int user_shm_lock(size_t size, struct us
-         allowed = 1;
-     lock_limit >>= PAGE_SHIFT;
-     spin_lock(&shmlock_user_lock);
-+#ifdef CONFIG_HUGETLB_PAGE
-+    if (!allowed &&
-+        locked + user->locked_shm > lock_limit &&
-+        (!(capable(CAP_IPC_LOCK) || in_group_p(sysctl_hugetlb_shm_group))))
-+#else
-     if (!allowed &&
-         locked + user->locked_shm > lock_limit && !capable(CAP_IPC_LOCK))
-+#endif
-         goto out;
-     get_uid(user);
-     user->locked_shm += locked;
+* Gary Hade <garyhade@us.ibm.com>:
+> 
+> I am not fundamentally opposed to this new capability but share
+> the same concerns that Greg and others have expressed.  So far,
+> I have only tried the changes on one single node system (IBM
+> x3850) but the below NAK-worthy result supports the idea that
+> the changes need to be well and widely tested.
+
+Can you send me the lspci -vv and lspci -vt output from this
+machine?
+
+Thanks.
+
+/ac
+
