@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759949AbXKNQAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760288AbXKNQAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759949AbXKNQAR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 11:00:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756054AbXKNQAG
+	id S1760288AbXKNQAr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 11:00:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756894AbXKNQAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 11:00:06 -0500
-Received: from rtr.ca ([76.10.145.34]:4028 "EHLO mail.rtr.ca"
+	Wed, 14 Nov 2007 11:00:38 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41746 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755934AbXKNQAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 11:00:05 -0500
-Message-ID: <473B1B83.9020103@rtr.ca>
-Date: Wed, 14 Nov 2007 11:00:03 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	id S1756054AbXKNQAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 11:00:37 -0500
+Date: Wed, 14 Nov 2007 16:59:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Grant Wilson <grant.wilson@zen.co.uk>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: 2.6.24-rc1-gb4f5550 oops
+Message-ID: <20071114155923.GB18037@elte.hu>
+References: <20071114151708.GA12355@tv-sign.ru> <20071114152930.GA1690@elte.hu> <20071114155031.GA12398@tv-sign.ru>
 MIME-Version: 1.0
-To: Sebastian Kemper <sebastian_ml@gmx.net>
-Cc: Mark Lord <liml@rtr.ca>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: libata/PATA: GPCMD_SET_STREAMING via SG_IO does nothing
-References: <20071113164323.GA5252@section-eight> <20071113212230.77cadecd@the-village.bc.nu> <20071113232859.GA4681@section-eight> <473B0FA2.5000102@rtr.ca> <20071114153852.GA9019@section-eight>
-In-Reply-To: <20071114153852.GA9019@section-eight>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071114155031.GA12398@tv-sign.ru>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sebastian Kemper wrote:
-> On Wed, Nov 14, 2007 at 10:09:22AM -0500, Mark Lord wrote:
->> I think the problem here might be that libata doesn't actually support 
->> SG_IO
->> for ATAPI drives prior to 2.6.24 (ugh).
->>
->> Try it with a 2.6.24-rc* kernel from kernel.org, or back-patch the ATA_16
->> SG_IO support into your older kernel.
-> 
-> Hi Mark,
-> 
-> I already tried 2.6.24-rc2 and it didn't work, see my last reply:
-> http://marc.info/?l=linux-kernel&m=119504244805467&w=2
-..
-Yeah, I'm a bit drowsy this morning -- the set speed command
-doesn't use ATA_16, so it should work with any kernel.
 
-I'll try it here soon-ish, since I need to update "hdparm -E" for libata anyway.
+* Oleg Nesterov <oleg@tv-sign.ru> wrote:
 
-Cheers
+> > > I suspect I see the bug in that area, but I am not sure it can 
+> > > explain this trace completely.
+> > 
+> > there's a fix pending from Dmitry - please see below. It took days 
+> > for Grant to trigger the crash so it needs some time to be confirmed 
+> > but it could explain the crash in theory.
+> 
+> Yes I agree, it can explain the crash.
+> 
+> However, this patch can't fix the bug I was talking about (of course, 
+> unless I missed something). It is still possible that the 
+> "fair_sched_class" task can have ->se.cfs_rq/parent pointing to the 
+> freed memory, no?
+
+yeah, agreed. I've queued up your fix for merging - thanks!
+
+	Ingo
