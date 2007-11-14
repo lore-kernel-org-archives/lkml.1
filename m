@@ -1,85 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763030AbXKNTRM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763518AbXKNTR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763030AbXKNTRM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 14:17:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756652AbXKNTQ4
+	id S1763518AbXKNTR3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 14:17:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759248AbXKNTQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 14:16:56 -0500
-Received: from tomts25-srv.bellnexxia.net ([209.226.175.188]:55723 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752828AbXKNTQy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 14:16:54 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAD/YOkdMROHU/2dsb2JhbACBXA
-Date: Wed, 14 Nov 2007 14:16:52 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@muc.de>, Chuck Ebbert <cebbert@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-Subject: [PATCH] Add __discard section to x86
-Message-ID: <20071114191652.GA4438@Krystal>
-References: <20071113204033.GB7450@Krystal> <473A166E.3070708@zytor.com> <20071113220227.GB9057@Krystal> <473A26A2.7090007@zytor.com> <20071114003409.GA18032@Krystal> <473A4909.1020609@zytor.com> <20071114014445.GB19901@Krystal> <473A6471.4040700@zytor.com> <20071114185220.GA29533@Krystal> <473B45C4.5030501@zytor.com>
+	Wed, 14 Nov 2007 14:16:57 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:35041 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756279AbXKNTQz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 14:16:55 -0500
+Date: Wed, 14 Nov 2007 20:18:36 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-kbuild@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [Git Patch][Resend] Makefile: fix wrong dirs when making cscope
+Message-ID: <20071114191836.GA10047@uranus.ravnborg.org>
+References: <20071105120614.GA8245@hacking>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <473B45C4.5030501@zytor.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:16:05 up 11 days, 21 min,  3 users,  load average: 2.26, 1.09,
-	0.99
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20071105120614.GA8245@hacking>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a __discard sectionto the linker script. Code produced in this section will
-not be put in the vmlinux file. This is useful when we have to calculate the
-size of an instruction before actually declaring it (for alignment purposes for
-instance). This is used by the immediate values.
+Hi WANG.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Andi Kleen <ak@muc.de>
-CC: "H. Peter Anvin" <hpa@zytor.com>
-CC: Chuck Ebbert <cebbert@redhat.com>
-CC: Christoph Hellwig <hch@infradead.org>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Thomas Gleixner <tglx@linutronix.de>
-CC: Ingo Molnar <mingo@redhat.com>
----
- arch/x86/kernel/vmlinux_32.lds.S |    1 +
- arch/x86/kernel/vmlinux_64.lds.S |    1 +
- 2 files changed, 2 insertions(+)
+I ended up adding the following patch.
+It fixes both x86_64 and i386 and is simpler.
+Plus I included the ncscope.out thing in the same patch.
 
-Index: linux-2.6-lttng/arch/x86/kernel/vmlinux_32.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/x86/kernel/vmlinux_32.lds.S	2007-11-14 14:10:43.000000000 -0500
-+++ linux-2.6-lttng/arch/x86/kernel/vmlinux_32.lds.S	2007-11-14 14:11:32.000000000 -0500
-@@ -205,6 +205,7 @@ SECTIONS
-   /* Sections to be discarded */
-   /DISCARD/ : {
- 	*(.exitcall.exit)
-+	*(__discard)
- 	}
+	Sam
+
+commit 5683c81430f9cf2a2eaf71ce93291f00b528b6c4
+Author: WANG Cong <xiyou.wangcong@gmail.com>
+Date:   Thu Nov 8 17:22:11 2007 +0800
+
+    kbuild: fix cscope so it does not emit warnings
+    
+    This patch fixed the following errors when doing "make cscope" and
+    "make cscope ARCH=um".
+    
+      FILELST cscope.files
+    find: arch/i386: No such file or directory
+      MAKE    cscope.out
+    
+      FILELST cscope.files
+    find: include/asm-i386: No such file or directory
+      MAKE    cscope.out
+    
+    In addition it teach kbuild to delete ncscope.out at mrproper
+    
+    Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+    Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+
+diff --git a/Makefile b/Makefile
+index cb740d4..1d48b0f 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1086,7 +1086,7 @@ MRPROPER_DIRS  += include/config include2 usr/include
+ MRPROPER_FILES += .config .config.old include/asm .version .old_version \
+                   include/linux/autoconf.h include/linux/version.h      \
+                   include/linux/utsrelease.h                            \
+-		  Module.symvers tags TAGS cscope*
++		  Module.symvers tags TAGS *cscope*
  
-   STABS_DEBUG
-Index: linux-2.6-lttng/arch/x86/kernel/vmlinux_64.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/x86/kernel/vmlinux_64.lds.S	2007-11-14 14:10:46.000000000 -0500
-+++ linux-2.6-lttng/arch/x86/kernel/vmlinux_64.lds.S	2007-11-14 14:11:48.000000000 -0500
-@@ -227,6 +227,7 @@ SECTIONS
-   /DISCARD/ : {
- 	*(.exitcall.exit)
- 	*(.eh_frame)
-+	*(__discard)
- 	}
+ # clean - Delete most, but leave enough to build external modules
+ #
+@@ -1318,7 +1318,7 @@ endif
  
-   STABS_DEBUG
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+ ifeq ($(ALLSOURCE_ARCHS),)
+ ifeq ($(ARCH),um)
+-ALLINCLUDE_ARCHS := $(ARCH) $(SUBARCH)
++ALLINCLUDE_ARCHS := $(SRCARCH) $(SUBARCH)
+ else
+ ALLINCLUDE_ARCHS := $(SRCARCH)
+ endif
+@@ -1327,12 +1327,7 @@ else
+ ALLINCLUDE_ARCHS := $(ALLSOURCE_ARCHS)
+ endif
+ 
+-# Take care of arch/x86
+-ifeq ($(ARCH), $(SRCARCH))
+-ALLSOURCE_ARCHS := $(ARCH)
+-else
+-ALLSOURCE_ARCHS := $(ARCH) $(SRCARCH)
+-endif
++ALLSOURCE_ARCHS := $(SRCARCH)
+ 
+ define find-sources
+         ( for arch in $(ALLSOURCE_ARCHS) ; do \
