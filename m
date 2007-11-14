@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759964AbXKNP5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759949AbXKNQAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759964AbXKNP5W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 10:57:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755987AbXKNP5N
+	id S1759949AbXKNQAR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 11:00:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756054AbXKNQAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 10:57:13 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:43018 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754431AbXKNP5M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 10:57:12 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: David Miller <davem@davemloft.net>
-Cc: olof@lixom.net, akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix warning for token-ring from sysctl checker
-References: <20071113072313.GB16842@lixom.net>
-	<20071113.211540.97775009.davem@davemloft.net>
-Date: Wed, 14 Nov 2007 08:56:20 -0700
-In-Reply-To: <20071113.211540.97775009.davem@davemloft.net> (David Miller's
-	message of "Tue, 13 Nov 2007 21:15:40 -0800 (PST)")
-Message-ID: <m1r6is253v.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 14 Nov 2007 11:00:06 -0500
+Received: from rtr.ca ([76.10.145.34]:4028 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755934AbXKNQAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 11:00:05 -0500
+Message-ID: <473B1B83.9020103@rtr.ca>
+Date: Wed, 14 Nov 2007 11:00:03 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Sebastian Kemper <sebastian_ml@gmx.net>
+Cc: Mark Lord <liml@rtr.ca>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: libata/PATA: GPCMD_SET_STREAMING via SG_IO does nothing
+References: <20071113164323.GA5252@section-eight> <20071113212230.77cadecd@the-village.bc.nu> <20071113232859.GA4681@section-eight> <473B0FA2.5000102@rtr.ca> <20071114153852.GA9019@section-eight>
+In-Reply-To: <20071114153852.GA9019@section-eight>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller <davem@davemloft.net> writes:
+Sebastian Kemper wrote:
+> On Wed, Nov 14, 2007 at 10:09:22AM -0500, Mark Lord wrote:
+>> I think the problem here might be that libata doesn't actually support 
+>> SG_IO
+>> for ATAPI drives prior to 2.6.24 (ugh).
+>>
+>> Try it with a 2.6.24-rc* kernel from kernel.org, or back-patch the ATA_16
+>> SG_IO support into your older kernel.
+> 
+> Hi Mark,
+> 
+> I already tried 2.6.24-rc2 and it didn't work, see my last reply:
+> http://marc.info/?l=linux-kernel&m=119504244805467&w=2
+..
+Yeah, I'm a bit drowsy this morning -- the set speed command
+doesn't use ATA_16, so it should work with any kernel.
 
-> From: Olof Johansson <olof@lixom.net>
-> Date: Tue, 13 Nov 2007 01:23:13 -0600
->
->> As seen when booting ppc64_defconfig:
->> 
->> sysctl table check failed: /net/token-ring .3.14 procname does not match
-> binary path procname
->> 
->> 
->> Signed-off-by: Olof Johansson <olof@lixom.net>
->
-> Patch applied, thanks Olof.
+I'll try it here soon-ish, since I need to update "hdparm -E" for libata anyway.
 
-No objections but I think we already have this fixed in the -mm tree.
-
-Eric
-
+Cheers
