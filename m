@@ -1,54 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764148AbXKNBG1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763378AbXKNBGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764148AbXKNBG1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 20:06:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762227AbXKNBGK
+	id S1763378AbXKNBGo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 20:06:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764167AbXKNBGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 20:06:10 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:46585 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761759AbXKNBGI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 20:06:08 -0500
-Date: Tue, 13 Nov 2007 17:05:29 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Eric Schoeller <eric.schoeller@colorado.edu>, linux-kernel@vger.kernel.org
-Subject: Re: Enabling Magic SysRq Key on boot before INIT
-Message-Id: <20071113170529.5d19bedf.randy.dunlap@oracle.com>
-In-Reply-To: <473A476D.2000700@redhat.com>
-References: <473A07E4.3050004@colorado.edu>
-	<473A476D.2000700@redhat.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 13 Nov 2007 20:06:31 -0500
+Received: from mx1.suse.de ([195.135.220.2]:43838 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764163AbXKNBG3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 20:06:29 -0500
+To: David Miller <davem@davemloft.net>
+Cc: clameter@sgi.com, akpm@linux-foundation.org, linux-mm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dada1@cosmosbay.com,
+       schwidefsky@de.ibm.com
+Subject: Re: [patch 01/28] cpu alloc: The allocator
+From: Andi Kleen <andi@firstfloor.org>
+References: <20071106195144.983665861@sgi.com>
+	<20071106195157.878563669@sgi.com>
+	<20071113.031510.151440585.davem@davemloft.net>
+Date: Wed, 14 Nov 2007 02:06:28 +0100
+In-Reply-To: <20071113.031510.151440585.davem@davemloft.net> (David Miller's message of "Tue\, 13 Nov 2007 03\:15\:10 -0800 \(PST\)")
+Message-ID: <p73wssly6sr.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Nov 2007 19:55:09 -0500 Chuck Ebbert wrote:
+David Miller <davem@davemloft.net> writes:
+>
+> The problem is that for the non-virtualized case this patch bloats up
+> the BSS section to be more than 8MB in size.  Sparc64 kernel images
+> cannot be more than 8MB in size total due to various boot loader and
+> firmware limitations.
 
-> On 11/13/2007 03:24 PM, Eric Schoeller wrote:
-> > Hello,
-> > 
-> > I would like to enable the Magic SysRq key immediately when the linux
-> > kernel starts to boot, not when INIT begins. So, I am familiar with the
-> > sysctl command and /etc/sysctl.conf - but I'd like to modify these types
-> > of kernel variables earlier in the boot process. I thought that I could,
-> > perhaps, pass an argument to my "kernel" line in my bootloader (grub)
-> > configuration, but I have not been able to figure that out.
-> > 
-> 
-> sysrq_always_enabled
+I recently ran into a similar problem with x86-64 and large BSS from
+lockdep conflicting with a 16MB kdump kernel. Solution was to do
+another early allocator before bootmem and then move the tables into
+there.
 
-I thought that Eric was asking if it was possible to alter sysctls
-by adding boot command line arguments.. if he was, then the answer
-is no, it's not (in general).
+-Andi
 
----
-~Randy
