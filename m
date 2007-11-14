@@ -1,38 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbXKNNfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758035AbXKNNfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757340AbXKNNfU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 08:35:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753778AbXKNNfJ
+	id S1758035AbXKNNfw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 08:35:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbXKNNfk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 08:35:09 -0500
-Received: from mail12.tpgi.com.au ([203.12.160.162]:48744 "EHLO
-	mail12.tpgi.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752276AbXKNNfI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 08:35:08 -0500
-X-Greylist: delayed 911 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Nov 2007 08:35:08 EST
-X-TPG-Antivirus: Passed
-Subject: 2.6.24-rc2 panic: (non-exitent) NFS root f/s
-From: Shane <ibm-main@tpg.com.au>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 14 Nov 2007 23:19:53 +1000
-Message-Id: <1195046393.9513.19.camel@toshi>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Nov 2007 08:35:40 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:39580 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753778AbXKNNfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 08:35:39 -0500
+Message-ID: <473AF9A5.50707@suse.de>
+Date: Wed, 14 Nov 2007 14:35:33 +0100
+From: Hannes Reinecke <hare@suse.de>
+User-Agent: Thunderbird 1.5 (X11/20060317)
+MIME-Version: 1.0
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Denys Vlasenko <vda.linux@googlemail.com>, Adrian Bunk <bunk@kernel.org>,
+       alsa-devel@alsa-project.org, Theodore Tso <tytso@mit.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       bugme-daemon@bugzilla.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org, protasnb@gmail.com,
+       linux-ide@vger.kernel.org, Benoit Boissinot <bboissin@gmail.com>,
+       Mark Lord <liml@rtr.ca>, linux-input@atrey.karlin.mff.cuni.cz,
+       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>
+Subject: Re: [BUG] New Kernel Bugs
+References: <20071113031553.3c7b5c16.akpm@linux-foundation.org> <200711131739.45820.vda.linux@googlemail.com> <20071114072715.GO4250@stusta.de> <200711140046.20391.vda.linux@googlemail.com> <20071114133034.GR17785@parisc-linux.org>
+In-Reply-To: <20071114133034.GR17785@parisc-linux.org>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-New guy to this list. Long time lurker on CKRM - decided to test the
-control groups patches.
-Pulled 2.6.24.rc4 patch and migrated my (working) 2.6.23-rc4 config.
+Matthew Wilcox wrote:
+> On Wed, Nov 14, 2007 at 12:46:20AM -0700, Denys Vlasenko wrote:
+>> Finally they replied and asked to rediff it against their
+>> git tree. I did that and sent patches back. No reply since then.
+>>
+>> And mind you, the patch is not trying to do anything
+>> complex, it mostly moves code around, removes 'inline',
+>> adds 'const'. What should I think about it?
+> 
+> I'm waiting for an ACK/NAK from Hannes, the maintainer.  What should I
+> do?
+> 
+I haven't actually been able to test it here (too busy, sorry). If someone
+else confirms it does it's job then
 
-Panic'd because of NFS root not found - not too surprising as I don't
-have one.
-Any ideas why this option comes up selected ???. Same result if I "make
-oldconfig" or "make menuconfig" (after "make mrproper" in both cases).
-Maybe some weird combination of containers/cpusets/??? ...
+Acked-by: Hannes Reinecke <hare@suse.de>
 
-What should I be looking for to troubleshoot ???.
+Cheers,
 
+Hannes
+-- 
+Dr. Hannes Reinecke		      zSeries & Storage
+hare@suse.de			      +49 911 74053 688
+SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: Markus Rex, HRB 16746 (AG Nürnberg)
