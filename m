@@ -1,76 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754343AbXKNIUW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbXKNIXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754343AbXKNIUW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 03:20:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbXKNIUK
+	id S1753598AbXKNIXz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 03:23:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601AbXKNIXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 03:20:10 -0500
-Received: from [222.73.24.84] ([222.73.24.84]:59585 "EHLO song.cn.fujitsu.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751666AbXKNIUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 03:20:09 -0500
-Message-ID: <473AAF26.1030407@cn.fujitsu.com>
-Date: Wed, 14 Nov 2007 16:17:42 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: jkosina@suse.cz, linux-usb-devel@lists.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] HID: fix a potential bug in pointer casting
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Nov 2007 03:23:47 -0500
+Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:52523
+	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751598AbXKNIXq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 03:23:46 -0500
+Date: Wed, 14 Nov 2007 00:23:32 -0800
+From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: Greg KH <greg@kroah.com>, Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       bk@suse.de, khali@linux-fr.org
+Subject: Re: 2.6.24-rc2-mm1
+Message-ID: <20071114082332.GM6089@one-eyed-alien.net>
+Mail-Followup-To: Gabriel C <nix.or.die@googlemail.com>,
+	Greg KH <greg@kroah.com>, Alan Stern <stern@rowland.harvard.edu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, bk@suse.de, khali@linux-fr.org
+References: <473A678C.2020507@googlemail.com> <20071114034924.GA26048@kroah.com> <20071114043923.GK6089@one-eyed-alien.net> <473A88B3.3010303@googlemail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="M2Pxvdb9QxnGd/3e"
+Content-Disposition: inline
+In-Reply-To: <473A88B3.3010303@googlemail.com>
+User-Agent: Mutt/1.4.2.3i
+Organization: One Eyed Alien Networks
+X-Copyright: (C) 2007 Matthew Dharm, all rights reserved.
+X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Wed, 14 Nov 2007 00:23:34 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Don't directly cast list_head * to foo *, this works only when list
-is the first member of struct foo, and we should not make the assumption
-how members are ordered in the structure.
+--M2Pxvdb9QxnGd/3e
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-i.e. struct *f = (struct *f)pos will work if:
-	struct foo {
-		struct list_head list;
-		int i;
-	};
+On Wed, Nov 14, 2007 at 06:33:39AM +0100, Gabriel C wrote:
+> Matthew Dharm wrote:
+> > On Tue, Nov 13, 2007 at 07:49:24PM -0800, Greg KH wrote:
+> >> Matt, are these the errors you were worried about with the patch we we=
+re
+> >> just talking about tha tis in my tree?
+> >=20
+> > I can't tell from these logs.
+>=20
+> There is the dmesg with CONFIG_USB_STORAGE_DEBUG :
+>=20
+> http://194.231.229.228/dmesg-2.6.24-rc2-mm1
 
-but will fail if:
-	struct foo {
-		int i;
-		struct list_head list;
-	}
+Good news: This isn't the bug Greg was worried about.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Bad news: Something is seriously strange here.  Note the following from the
+logs:
 
----
- drivers/hid/usbhid/hid-tmff.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+Nov 14 06:07:43 lara [   41.890614] usb-storage: Bulk Status S 0x53425355 T=
+ 0xd R 0 Stat 0x0
+Nov 14 06:07:43 lara [   41.890616] usb-storage: -- unexpectedly short tran=
+sfer
 
-diff --git a/drivers/hid/usbhid/hid-tmff.c b/drivers/hid/usbhid/hid-tmff.c
-index 69882a7..144578b 100644
---- a/drivers/hid/usbhid/hid-tmff.c
-+++ b/drivers/hid/usbhid/hid-tmff.c
-@@ -137,7 +137,8 @@ static int hid_tmff_play(struct input_dev *dev, void *data, struct ff_effect *ef
- int hid_tmff_init(struct hid_device *hid)
- {
- 	struct tmff_device *tmff;
--	struct list_head *pos;
-+	struct hid_report *report;
-+	struct list_head *report_list;
- 	struct hid_input *hidinput = list_entry(hid->inputs.next, struct hid_input, list);
- 	struct input_dev *input_dev = hidinput->input;
- 	const signed short *ff_bits = ff_joystick;
-@@ -149,8 +150,8 @@ int hid_tmff_init(struct hid_device *hid)
- 		return -ENOMEM;
- 
- 	/* Find the report to use */
--	list_for_each(pos, &hid->report_enum[HID_OUTPUT_REPORT].report_list) {
--		struct hid_report *report = (struct hid_report *)pos;
-+	report_list = &hid->report_enum[HID_OUTPUT_REPORT].report_list;
-+	list_for_each_entry(report, report_list, list) {
- 		int fieldnum;
- 
- 		for (fieldnum = 0; fieldnum < report->maxfield; ++fieldnum) {
--- 
-1.5.3.rc7
+Note the 'R' value of zero -- this is the residue value.  It indicates a
+complete transfer, and that matches the log lines immediately previous
+which indicate a 4K transfer which completed properly.
 
+If residue is zero, then srb->resid should be zero.  Take a look in
+linux/usb/storage/transport.c in usb_stor_Bulk_transport()
+
+If srb->resid is zero, then you should NEVER get the "unexpectedly short
+transfer" message.  Look at usb_stor_invoke_transport() in the same file.
+
+In fact, every transfer I look at shows this error.  I didn't exhaustivly
+check every single one in the log, but a quick scan suggests that they all
+are bogus; good transfer, CSW residue of 0, and "unexpectedly short"
+message.
+
+Maybe I'm too tired at this hour, but I just don't see how this is
+possible.  Then again, I'm looking at 2.6.22 codebase (it's what I have
+handy).
+
+Hrm... does this tree have the "srb accessor" patches in it?  I'm wondering
+if somewhere the init srb->resid to 0 before invoking the transport got
+lost....
+
+Matt
+
+--=20
+Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
+net=20
+Maintainer, Linux USB Mass Storage Driver
+
+Somebody call an exorcist!
+					-- Dust Puppy
+User Friendly, 5/16/1998
+
+--M2Pxvdb9QxnGd/3e
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFHOrCEHL9iwnUZqnkRAgllAJ9k27+ieWtBHKw88yQM622Qaq8GXwCcCkyb
+GmzXw+Zq4nSafhWCv/+HHIU=
+=VdL7
+-----END PGP SIGNATURE-----
+
+--M2Pxvdb9QxnGd/3e--
