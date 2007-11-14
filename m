@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760066AbXKNE0l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761395AbXKNE2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760066AbXKNE0l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 23:26:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755566AbXKNE0e
+	id S1761395AbXKNE2S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 23:28:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbXKNE2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 23:26:34 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:35410 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754534AbXKNE0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 23:26:33 -0500
-Date: Tue, 13 Nov 2007 20:26:33 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: David Miller <davem@davemloft.net>
-cc: andi@firstfloor.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, dada1@cosmosbay.com,
-       schwidefsky@de.ibm.com
-Subject: Re: [patch 01/28] cpu alloc: The allocator
-In-Reply-To: <20071113.201853.40241484.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0711132023290.7631@schroedinger.engr.sgi.com>
-References: <20071113.031510.151440585.davem@davemloft.net>
- <p73wssly6sr.fsf@bingen.suse.de> <Pine.LNX.4.64.0711132011060.7528@schroedinger.engr.sgi.com>
- <20071113.201853.40241484.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 13 Nov 2007 23:28:07 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:54168 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755566AbXKNE2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 23:28:04 -0500
+Subject: Re: [PATCH] - [6/15] - remove defconfig ptr comparisons to 0 -
+	fs/jfs
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       jfs-discussion@lists.sourceforge.net
+In-Reply-To: <1195005914.5163.92.camel@localhost>
+References: <1195005914.5163.92.camel@localhost>
+Content-Type: text/plain
+Date: Tue, 13 Nov 2007 22:27:58 -0600
+Message-Id: <1195014478.6410.1.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 13 Nov 2007, David Miller wrote:
-
-> From: Christoph Lameter <clameter@sgi.com>
-> Date: Tue, 13 Nov 2007 20:15:55 -0800 (PST)
+On Tue, 2007-11-13 at 18:05 -0800, Joe Perches wrote:
+> Remove defconfig ptr comparison to 0
 > 
-> > Guess I need also to add an arch configuration guide to V2 as well so that 
-> > the other arches can do similar tricks and emphasize that the static 
-> > default that requires bss is only suitable for small systems.
+> Remove sparse warning: Using plain integer as NULL pointer
 > 
-> I'm going to be against your changes until you implement
-> a real fix for the BSS bloat problems.
-> 
-> It's worse than the per-cpu allocator we have now, much
-> worse.
+> Signed-off-by: Joe Perches <joe@perches.com>
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 
-You need to configure cpu_alloc for your arch and so far you seem 
-to not have had the time to understand how it works otherwise you would 
-not repeat these statements and ask me to implement what the 
-patch already provides.
+I've added this to the jfs git tree.
 
-The only problem that I see so far is a communication problem. Thus we 
-need more documentation.
+Thanks,
+Shaggy
+-- 
+David Kleikamp
+IBM Linux Technology Center
+
