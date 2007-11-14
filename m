@@ -1,76 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752314AbXKNIi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754732AbXKNImU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752314AbXKNIi3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 03:38:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbXKNIiB
+	id S1754732AbXKNImU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 03:42:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbXKNImL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 03:38:01 -0500
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:46960 "HELO
-	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751644AbXKNIiA (ORCPT
+	Wed, 14 Nov 2007 03:42:11 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47678 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751796AbXKNImK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 03:38:00 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=PMZnwRwU0Gvmk9oy9o8S4OS8xf9yE+APJ2bRScZF6EvMUaX7KZifw2n2owH0s3DdL9O+++55EGp3FTRKIB9RtVI33UC1MPRulci11dMTkuW9YbagR4q7HlSIn+aSk+I3lB2CnfQ5XhcI0JQ+Nq0fVsxIel0p27j9eeQUJW9fWj4=  ;
-X-YMail-OSG: 8mQQ4sMVM1m34N_ugGy7bM6gTZLSTUp60Yk5VpVzzciPfVzd.0BGscqp8V2aebMpkqV7PCol5g--
-From: David Brownell <david-b@pacbell.net>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [patch 2.6.24-rc2 1/3] generic gpio -- gpio_chip support
-Date: Wed, 14 Nov 2007 00:37:57 -0800
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Florian Fainelli <florian.fainelli@telecomint.eu>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-References: <200711091136.20051.david-b@pacbell.net> <200711132252.15872.david-b@pacbell.net> <200711140645.26363.nickpiggin@yahoo.com.au>
-In-Reply-To: <200711140645.26363.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200711140037.58049.david-b@pacbell.net>
+	Wed, 14 Nov 2007 03:42:10 -0500
+Date: Wed, 14 Nov 2007 00:41:29 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Dave Young" <hidave.darkstar@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>,
+       Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: 2.6.24-rc2-mm1
+Message-Id: <20071114004129.783fb98b.akpm@linux-foundation.org>
+In-Reply-To: <a8e1da0711132247jd440f8dgc9ac0442e90f2c34@mail.gmail.com>
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
+	<a8e1da0711132218h9d944d0p3c22ac313ee667a9@mail.gmail.com>
+	<20071113223802.2ace1a61.akpm@linux-foundation.org>
+	<a8e1da0711132247jd440f8dgc9ac0442e90f2c34@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 November 2007, Nick Piggin wrote:
-> On Wednesday 14 November 2007 17:52, David Brownell wrote:
-> > On Tuesday 13 November 2007, Andrew Morton wrote:
-> 
-> > > > I'll highlight the
-> > > > point that such bitops shouldn't be preemption points.
-> > >
-> > > Disagree.  *everything* should be a preemption point.
+On Wed, 14 Nov 2007 14:47:38 +0800 "Dave Young" <hidave.darkstar@gmail.com> wrote:
+
+> On Nov 14, 2007 2:38 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
 > >
-> > So it's wrong that <asm-generic/bitops/atomic.h> uses the
-> > same calls to prevent *those* bitops from being prempted?
+> > On Wed, 14 Nov 2007 14:18:39 +0800 "Dave Young" <hidave.darkstar@gmail.com> wrote:
+> >
+> > > Hi,
+> > > Boot failed on my machine. hand copy some messages.
+> > >
+> > > First with BLK_DEV_RAM=y
+> > >
+> > > BUG kmalloc-64 Poison overwritting:
+> > > Alloced in kset_create
+> > > Freed in kobject_cleanup
+> > >
+> > > --cut--
+> > > alloc_disk_node
+> > > rd_init
+> > > kernel_init
+> > > --cut--
+> > >
+> > > Then config ramdisk as module, build and reboot:
+> > >
+> > > BUG: unable handle paging resuest at 6b6b6b6b
+> > > EIP is kobject_add 0xc4/0x150
+> > >
+> > > --cut--
+> > > kobject_set_name
+> > > register_disk
+> > > add_disk
+> > > exact_match
+> > > exact_lock
+> > > loop_init
+> > > --cut--
+> > >
+> >
+> > erp.  Can you send the config over please?
+> >
+> > And which distro/version is that machine running?
+> >
 > 
-> Upstream, all spinlocks prevent preemption.
+> Hi,andrew
+> 
+> slackware 11
+> 
+> config as follows:
+> #
+> # Automatically generated make config: don't edit
+> # Linux kernel version: 2.6.24-rc2-mm1
+> # Wed Nov 14 13:50:01 2007
+> #
 
-I chose my wording carefully though.  A preemption point is
-more than just a small region where preemption isn't allowed.
+OK, I can reproduce that on the Vaio, thanks.
 
-It's one of those where preemption is *INVITED* ...
+oops: http://userweb.kernel.org/~akpm/dsc00037.jpg
+config: (what you sent)
+dmesg: http://userweb.kernel.org/~akpm/dmesg-sony.txt
 
-Now, in the RT case, I believe the rationale for inviting
-preemption when dropping a lock is largely related to the
-way priority inversion is handled.  When lock contention can
-block higher priority activities, dropping the lock must
-be able to trigger the relevant activity switch.
+An inspired guess led me to suspect the driver tree.  The offending patch
+is gregkh-driver-kset-convert-block_subsys-to-use-kset_create.patch.
 
-... and the raw spinlocks don't support that machinery,
-while "normal" spinlocks become inversion-aware mutexes.
-
-
-> But these ones 
-> are raw locks rather than normal locks probably because that
-> they are trivially an innermost and correct lock.
-
-As in the $SUBJECT case, I'd say.
-
-Although another point is related to "trivial":  the data
-is being protected through an operation too trivial to be
-worth paying for any of that priority logic.
+There's some kobject warning which comes out when
+gregkh-driver-kset-convert-block_subsys-to-use-kset_create.patch isn't
+applied.  More bisecting coming up..
 
