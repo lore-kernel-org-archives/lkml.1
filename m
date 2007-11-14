@@ -1,47 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764147AbXKNTsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761292AbXKNTvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764147AbXKNTsi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 14:48:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760502AbXKNTs1
+	id S1761292AbXKNTvS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 14:51:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754337AbXKNTvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 14:48:27 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58667
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754110AbXKNTs0 (ORCPT
+	Wed, 14 Nov 2007 14:51:05 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:45159 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754266AbXKNTvD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 14:48:26 -0500
-Date: Wed, 14 Nov 2007 11:48:19 -0800 (PST)
-Message-Id: <20071114.114819.97786038.davem@davemloft.net>
-To: andi@firstfloor.org
-Cc: hch@infradead.org, paulus@samba.org, akpm@linux-foundation.org,
-       gregkh@suse.de, mucci@cs.utk.edu, eranian@hpl.hp.com, wcohen@redhat.com,
-       robert.richter@amd.com, linux-kernel@vger.kernel.org,
-       perfmon@napali.hpl.hp.com, perfmon2-devel@lists.sourceforge.net,
-       ospat-devel@cs.utk.edu, ptools-perfapi@cs.utk.edu
-Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <p734pfp6lyp.fsf@bingen.suse.de>
-References: <18234.53558.883970.87414@cargo.ozlabs.ibm.com>
-	<20071114110009.GA17833@infradead.org>
-	<p734pfp6lyp.fsf@bingen.suse.de>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 14 Nov 2007 14:51:03 -0500
+Date: Wed, 14 Nov 2007 19:44:56 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: David Miller <davem@davemloft.net>
+Cc: alsa-devel@alsa-project.org, netdev@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+       protasnb@gmail.com, linux-ide@vger.kernel.org,
+       bugme-daemon@bugzilla.kernel.org, linux-input@atrey.karlin.mff.cuni.cz,
+       akpm@linux-foundation.org
+Subject: Re: [BUG] New Kernel Bugs
+Message-ID: <20071114194456.GC23221@flint.arm.linux.org.uk>
+Mail-Followup-To: David Miller <davem@davemloft.net>,
+	alsa-devel@alsa-project.org, netdev@vger.kernel.org,
+	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+	protasnb@gmail.com, linux-ide@vger.kernel.org,
+	bugme-daemon@bugzilla.kernel.org,
+	linux-input@atrey.karlin.mff.cuni.cz, akpm@linux-foundation.org
+References: <20071113143201.9441c940.akpm@linux-foundation.org> <20071113.175551.131375600.davem@davemloft.net> <20071114095507.GA32595@flint.arm.linux.org.uk> <20071114.020706.219917088.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071114.020706.219917088.davem@davemloft.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andi Kleen <andi@firstfloor.org>
-Date: Wed, 14 Nov 2007 13:38:38 +0100
+On Wed, Nov 14, 2007 at 02:07:06AM -0800, David Miller wrote:
+> From: Russell King <rmk+lkml@arm.linux.org.uk>
+> Date: Wed, 14 Nov 2007 09:55:07 +0000
+> 
+> > On Tue, Nov 13, 2007 at 05:55:51PM -0800, David Miller wrote:
+> > > I've created linux-arm@vger.kernel.org
+> > 
+> > By doing so you've just said (implicitly) that you can not tolerate
+> > someone having a different opinion from your own.
+> 
+> I created a mailing list on a machine where I provide such services.
+> 
+> People can choose to use or not use the new list, it is their choice.
+> 
+> > While I accept *your* right to run *your* lists how you please, you
+> > are unable to accept *my* right to run *my* lists how I see fit.
+> 
+> I didn't tell you to take your list down or to run it in some other
+> way.  I didn't tell you to unsubscribe everyone and move them over
+> to the new list either.
 
-> At least for x86 and I suspect some 1other architectures we don't
-> initially need a syscall at all for this. There is an instruction
-> RDPMC who can read a performance counter just fine. It is also much
-> faster and generally preferable for the case where a process measures
-> events about itself. In fact it is essential for one of the use cases
-> I would like to see perfmon used (replacement of RDTSC for cycle
-> counting) 
+I didn't say that you were.
 
-I wouldn't even want to use a syscall for something like
-that on Sparc, I'd rather give this a dedicated software
-trap so that I can code it completely in assembler.
+> I've provided an alternative, and people can pick and choose how they
+> see fit.  I'm letting natural selection run it's course.  Are you
+> able to cope with the fact that people might not want to use your
+> list any longer?  Perhaps that is what bugs you so much about my
+> giving people a alternative choice.
+
+Absolutely, and if you'd have read my message you'd have seen that
+I'd said effectively the same thing that you're saying here.
+
+Having been flamed for not reading emails properly by AKPM shall
+I flame you for not reading my emails properly?  Oh no, it's merely
+human to occasionally have such misunderstandings.  Unless you're
+rmk.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
