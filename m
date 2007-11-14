@@ -1,81 +1,505 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756971AbXKNMab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883AbXKNMcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756971AbXKNMab (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 07:30:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754515AbXKNMaX
+	id S1756883AbXKNMcj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 07:32:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbXKNMcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 07:30:23 -0500
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:38721 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754714AbXKNMaW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 07:30:22 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=q/dz+ykCMCCkbTKfawDcBE9HalzS9R0VKr4lKyxCFUTh0w7AV0+3h1nU9560q2o/Jea/phAPiNIOnUEHO1ByInpH3uZGzqGtY6cUsM+XsgwUt+JbapJiFPKMHLi9CBIT4/2wB3oVNNEziyOFzX/8/VZwqqSdvDgDc5W0VCbJnXM=  ;
-X-YMail-OSG: 8jaaltEVM1nHKk6SWtB4sgW161yzUX61UpYVM_35hzfly7hf2zWkyCx0kldQUcuBqsncQTDsrw--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
-Date: Wed, 14 Nov 2007 11:25:17 +1100
-User-Agent: KMail/1.9.5
-Cc: paulus@samba.org, hch@infradead.org, akpm@linux-foundation.org,
-       gregkh@suse.de, mucci@cs.utk.edu, eranian@hpl.hp.com, wcohen@redhat.com,
-       robert.richter@amd.com, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org
-References: <20071114.031216.11725447.davem@davemloft.net> <200711141049.49154.nickpiggin@yahoo.com.au> <20071114.035850.202836100.davem@davemloft.net>
-In-Reply-To: <20071114.035850.202836100.davem@davemloft.net>
+	Wed, 14 Nov 2007 07:32:31 -0500
+Received: from sacred.ru ([62.205.161.221]:52085 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752865AbXKNMca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 07:32:30 -0500
+Message-ID: <473ADCDB.5040609@openvz.org>
+Date: Wed, 14 Nov 2007 14:32:43 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200711141125.18568.nickpiggin@yahoo.com.au>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andrew Morton <akpm@osdl.org>
+CC: Cedric Le Goater <clg@fr.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 3/6] Move the IPC namespace under IPC_NS option
+References: <473ADB5B.50902@openvz.org>
+In-Reply-To: <473ADB5B.50902@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 14 Nov 2007 14:34:02 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 November 2007 22:58, David Miller wrote:
-> From: Nick Piggin <nickpiggin@yahoo.com.au>
-> Date: Wed, 14 Nov 2007 10:49:48 +1100
->
-> > On Wednesday 14 November 2007 22:44, Paul Mackerras wrote:
-> > > David Miller writes:
-> > > > This is my impression too, all of the things being done with
-> > > > a slew of system calls would be better served by real special
-> > > > files and appropriate fops.
-> > >
-> > > Special files and fops really only work well if you can coerce the
-> > > interface into one where data flows predominantly one way.  I don't
-> > > think they work so well for something that is more like an RPC across
-> > > the user/kernel barrier.  For that a system call is better.
-> > >
-> > > For instance, if you have something that kind-of looks like
-> > >
-> > > 	read_pmds(int n, int *pmd_numbers, u64 *pmd_values);
-> > >
-> > > where the caller supplies an array of PMD numbers and the function
-> > > returns their values (and you want that reading to be done atomically
-> > > in some sense), how would you do that using special files and fops?
-> >
-> > Could you implement it with readv()?
->
-> Sure, why not?  Just cook up an iovec.  pmd_numbers goes to offset
-> X and pmd_values goes to offset Y, with some helpers like what
-> we have in the networking already for recvmsg.
->
-> But why would you want readv() for this?  The syscall thing
-> Paul asked me to translate into a read() doesn't provide
-> iovec-like behavior so I don't see why readv() is necessary
-> at all.
+Currently the IPC namespace management code is spread over
+the ipc/*.c files. I moved this code into ipc/namespace.c file
+which is compiled out when needed.
 
-Ah sorry, that's what I get for typing before I think: of course
-readv doesn't vectorise the right part of the equation.
+The linux/ipc_namespace.h file is used to store the
+prototypes of the functions in namespace.c and the stubs
+for NAMESPACES=n case. This is done so, because the stub
+for copy_ipc_namespace requires the knowledge of the
+CLONE_NEWIPC flag, which is in sched.h. But the linux/ipc.h
+file itself in included into many many .c files via the
+sys.h->sem.h sequence so adding the sched.h into it will
+make all these .c depend on sched.h which is not that good.
+On the other hand the knowledge about the namespaces stuff 
+is required in 4 .c files only.
 
-What I really mean is a readv-like syscall, but one that also
-vectorises the file offset. Maybe this is useful enough as a generic
-syscall that also helps Paul's example...
+Besides, this patch compiles out some auxiliary functions
+from ipc/sem.c, msg.c and shm.c files. It turned out that
+moving these functions into namespaces.c is not that easy
+because they use many other calls and macros from the original
+file. Moving them would make this patch complicated. On the
+other hand all these functions can be consolidated, so I
+will send a separate patch doing this a bit later.
 
-Of course, I guess this all depends on whether the atomicity is an
-important requirement. If not, you can obviously just do it with
-multiple read syscalls...
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+
+---
+
+diff --git a/include/linux/ipc.h b/include/linux/ipc.h
+index 408696e..b882610 100644
+--- a/include/linux/ipc.h
++++ b/include/linux/ipc.h
+@@ -100,58 +100,6 @@ struct kern_ipc_perm
+ 	void		*security;
+ };
+ 
+-struct ipc_ids;
+-struct ipc_namespace {
+-	struct kref	kref;
+-	struct ipc_ids	*ids[3];
+-
+-	int		sem_ctls[4];
+-	int		used_sems;
+-
+-	int		msg_ctlmax;
+-	int		msg_ctlmnb;
+-	int		msg_ctlmni;
+-	atomic_t	msg_bytes;
+-	atomic_t	msg_hdrs;
+-
+-	size_t		shm_ctlmax;
+-	size_t		shm_ctlall;
+-	int		shm_ctlmni;
+-	int		shm_tot;
+-};
+-
+-extern struct ipc_namespace init_ipc_ns;
+-
+-#ifdef CONFIG_SYSVIPC
+-#define INIT_IPC_NS(ns)		.ns		= &init_ipc_ns,
+-extern void free_ipc_ns(struct kref *kref);
+-extern struct ipc_namespace *copy_ipcs(unsigned long flags,
+-						struct ipc_namespace *ns);
+-#else
+-#define INIT_IPC_NS(ns)
+-static inline struct ipc_namespace *copy_ipcs(unsigned long flags,
+-						struct ipc_namespace *ns)
+-{
+-	return ns;
+-}
+-#endif
+-
+-static inline struct ipc_namespace *get_ipc_ns(struct ipc_namespace *ns)
+-{
+-#ifdef CONFIG_SYSVIPC
+-	if (ns)
+-		kref_get(&ns->kref);
+-#endif
+-	return ns;
+-}
+-
+-static inline void put_ipc_ns(struct ipc_namespace *ns)
+-{
+-#ifdef CONFIG_SYSVIPC
+-	kref_put(&ns->kref, free_ipc_ns);
+-#endif
+-}
+-
+ #endif /* __KERNEL__ */
+ 
+ #endif /* _LINUX_IPC_H */
+diff --git a/include/linux/ipc_namespace.h b/include/linux/ipc_namespace.h
+new file mode 100644
+index 0000000..a491fc9
+--- /dev/null
++++ b/include/linux/ipc_namespace.h
+@@ -0,0 +1,69 @@
++#ifndef __IPC_NAMESPACE_H__
++#define __IPC_NAMESPACE_H__
++
++#include <linux/err.h>
++
++struct ipc_ids;
++struct ipc_namespace {
++	struct kref	kref;
++	struct ipc_ids	*ids[3];
++
++	int		sem_ctls[4];
++	int		used_sems;
++
++	int		msg_ctlmax;
++	int		msg_ctlmnb;
++	int		msg_ctlmni;
++	atomic_t	msg_bytes;
++	atomic_t	msg_hdrs;
++
++	size_t		shm_ctlmax;
++	size_t		shm_ctlall;
++	int		shm_ctlmni;
++	int		shm_tot;
++};
++
++extern struct ipc_namespace init_ipc_ns;
++
++#ifdef CONFIG_SYSVIPC
++#define INIT_IPC_NS(ns)		.ns		= &init_ipc_ns,
++#else
++#define INIT_IPC_NS(ns)
++#endif
++
++#if defined(CONFIG_SYSVIPC) && defined(CONFIG_IPC_NS)
++extern void free_ipc_ns(struct kref *kref);
++extern struct ipc_namespace *copy_ipcs(unsigned long flags,
++						struct ipc_namespace *ns);
++
++static inline struct ipc_namespace *get_ipc_ns(struct ipc_namespace *ns)
++{
++	if (ns)
++		kref_get(&ns->kref);
++	return ns;
++}
++
++static inline void put_ipc_ns(struct ipc_namespace *ns)
++{
++	kref_put(&ns->kref, free_ipc_ns);
++}
++#else
++static inline struct ipc_namespace *copy_ipcs(unsigned long flags,
++		struct ipc_namespace *ns)
++{
++	if (flags & CLONE_NEWIPC)
++		return ERR_PTR(-EINVAL);
++
++	return ns;
++}
++
++static inline struct ipc_namespace *get_ipc_ns(struct ipc_namespace *ns)
++{
++	return ns;
++}
++
++static inline void put_ipc_ns(struct ipc_namespace *ns)
++{
++}
++#endif
++#endif
+diff --git a/init/Kconfig b/init/Kconfig
+index 2139218..fe73fe6 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -420,6 +420,13 @@ config UTS_NS
+ 	  In this namespace tasks see different info provided with the
+ 	  uname() system call
+ 
++config IPC_NS
++	bool "IPC namespace"
++	depends on NAMESPACES && SYSVIPC
++	help
++	  In this namespace tasks work with IPC ids which correspond to
++	  different IPC objects in different namespaces
++
+ config BLK_DEV_INITRD
+ 	bool "Initial RAM filesystem and RAM disk (initramfs/initrd) support"
+ 	depends on BROKEN || !FRV
+diff --git a/ipc/Makefile b/ipc/Makefile
+index b93bba6..5fc5e33 100644
+--- a/ipc/Makefile
++++ b/ipc/Makefile
+@@ -7,4 +7,5 @@ obj-$(CONFIG_SYSVIPC) += util.o msgutil.o msg.o sem.o shm.o
+ obj-$(CONFIG_SYSVIPC_SYSCTL) += ipc_sysctl.o
+ obj_mq-$(CONFIG_COMPAT) += compat_mq.o
+ obj-$(CONFIG_POSIX_MQUEUE) += mqueue.o msgutil.o $(obj_mq-y)
++obj-$(CONFIG_IPC_NS) += namespace.o
+ 
+diff --git a/ipc/ipc_sysctl.c b/ipc/ipc_sysctl.c
+index 79e24e8..7f4235b 100644
+--- a/ipc/ipc_sysctl.c
++++ b/ipc/ipc_sysctl.c
+@@ -14,6 +14,7 @@
+ #include <linux/nsproxy.h>
+ #include <linux/sysctl.h>
+ #include <linux/uaccess.h>
++#include <linux/ipc_namespace.h>
+ 
+ static void *get_ipc(ctl_table *table)
+ {
+diff --git a/ipc/msg.c b/ipc/msg.c
+index ec0c724..5879bfe 100644
+--- a/ipc/msg.c
++++ b/ipc/msg.c
+@@ -36,6 +36,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/rwsem.h>
+ #include <linux/nsproxy.h>
++#include <linux/ipc_namespace.h>
+ 
+ #include <asm/current.h>
+ #include <asm/uaccess.h>
+@@ -90,6 +91,7 @@ static void __msg_init_ns(struct ipc_namespace *ns, struct ipc_ids *ids)
+ 	ipc_init_ids(ids);
+ }
+ 
++#ifdef CONFIG_IPC_NS
+ int msg_init_ns(struct ipc_namespace *ns)
+ {
+ 	struct ipc_ids *ids;
+@@ -128,6 +130,7 @@ void msg_exit_ns(struct ipc_namespace *ns)
+ 	kfree(ns->ids[IPC_MSG_IDS]);
+ 	ns->ids[IPC_MSG_IDS] = NULL;
+ }
++#endif
+ 
+ void __init msg_init(void)
+ {
+diff --git a/ipc/namespace.c b/ipc/namespace.c
+new file mode 100644
+index 0000000..cef1139
+--- /dev/null
++++ b/ipc/namespace.c
+@@ -0,0 +1,73 @@
++/*
++ * linux/ipc/namespace.c
++ * Copyright (C) 2006 Pavel Emelyanov <xemul@openvz.org> OpenVZ, SWsoft Inc.
++ */
++
++#include <linux/ipc.h>
++#include <linux/msg.h>
++#include <linux/ipc_namespace.h>
++#include <linux/rcupdate.h>
++#include <linux/nsproxy.h>
++#include <linux/slab.h>
++
++#include "util.h"
++
++static struct ipc_namespace *clone_ipc_ns(struct ipc_namespace *old_ns)
++{
++	int err;
++	struct ipc_namespace *ns;
++
++	err = -ENOMEM;
++	ns = kmalloc(sizeof(struct ipc_namespace), GFP_KERNEL);
++	if (ns == NULL)
++		goto err_mem;
++
++	err = sem_init_ns(ns);
++	if (err)
++		goto err_sem;
++	err = msg_init_ns(ns);
++	if (err)
++		goto err_msg;
++	err = shm_init_ns(ns);
++	if (err)
++		goto err_shm;
++
++	kref_init(&ns->kref);
++	return ns;
++
++err_shm:
++	msg_exit_ns(ns);
++err_msg:
++	sem_exit_ns(ns);
++err_sem:
++	kfree(ns);
++err_mem:
++	return ERR_PTR(err);
++}
++
++struct ipc_namespace *copy_ipcs(unsigned long flags, struct ipc_namespace *ns)
++{
++	struct ipc_namespace *new_ns;
++
++	BUG_ON(!ns);
++	get_ipc_ns(ns);
++
++	if (!(flags & CLONE_NEWIPC))
++		return ns;
++
++	new_ns = clone_ipc_ns(ns);
++
++	put_ipc_ns(ns);
++	return new_ns;
++}
++
++void free_ipc_ns(struct kref *kref)
++{
++	struct ipc_namespace *ns;
++
++	ns = container_of(kref, struct ipc_namespace, kref);
++	sem_exit_ns(ns);
++	msg_exit_ns(ns);
++	shm_exit_ns(ns);
++	kfree(ns);
++}
+diff --git a/ipc/sem.c b/ipc/sem.c
+index d65e285..84c701f 100644
+--- a/ipc/sem.c
++++ b/ipc/sem.c
+@@ -82,6 +82,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/rwsem.h>
+ #include <linux/nsproxy.h>
++#include <linux/ipc_namespace.h>
+ 
+ #include <asm/uaccess.h>
+ #include "util.h"
+@@ -128,6 +129,7 @@ static void __sem_init_ns(struct ipc_namespace *ns, struct ipc_ids *ids)
+ 	ipc_init_ids(ids);
+ }
+ 
++#ifdef CONFIG_IPC_NS
+ int sem_init_ns(struct ipc_namespace *ns)
+ {
+ 	struct ipc_ids *ids;
+@@ -165,6 +167,7 @@ void sem_exit_ns(struct ipc_namespace *ns)
+ 	kfree(ns->ids[IPC_SEM_IDS]);
+ 	ns->ids[IPC_SEM_IDS] = NULL;
+ }
++#endif
+ 
+ void __init sem_init (void)
+ {
+diff --git a/ipc/shm.c b/ipc/shm.c
+index 65c3a29..07f4b7a 100644
+--- a/ipc/shm.c
++++ b/ipc/shm.c
+@@ -38,6 +38,7 @@
+ #include <linux/rwsem.h>
+ #include <linux/nsproxy.h>
+ #include <linux/mount.h>
++#include <linux/ipc_namespace.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -96,6 +97,7 @@ static void do_shm_rmid(struct ipc_namespace *ns, struct shmid_kernel *shp)
+ 		shm_destroy(ns, shp);
+ }
+ 
++#ifdef CONFIG_IPC_NS
+ int shm_init_ns(struct ipc_namespace *ns)
+ {
+ 	struct ipc_ids *ids;
+@@ -133,6 +135,7 @@ void shm_exit_ns(struct ipc_namespace *ns)
+ 	kfree(ns->ids[IPC_SHM_IDS]);
+ 	ns->ids[IPC_SHM_IDS] = NULL;
+ }
++#endif
+ 
+ void __init shm_init (void)
+ {
+diff --git a/ipc/util.c b/ipc/util.c
+index 76c1f34..5432b8e 100644
+--- a/ipc/util.c
++++ b/ipc/util.c
+@@ -33,6 +33,7 @@
+ #include <linux/audit.h>
+ #include <linux/nsproxy.h>
+ #include <linux/rwsem.h>
++#include <linux/ipc_namespace.h>
+ 
+ #include <asm/unistd.h>
+ 
+@@ -51,66 +52,6 @@ struct ipc_namespace init_ipc_ns = {
+ 	},
+ };
+ 
+-static struct ipc_namespace *clone_ipc_ns(struct ipc_namespace *old_ns)
+-{
+-	int err;
+-	struct ipc_namespace *ns;
+-
+-	err = -ENOMEM;
+-	ns = kmalloc(sizeof(struct ipc_namespace), GFP_KERNEL);
+-	if (ns == NULL)
+-		goto err_mem;
+-
+-	err = sem_init_ns(ns);
+-	if (err)
+-		goto err_sem;
+-	err = msg_init_ns(ns);
+-	if (err)
+-		goto err_msg;
+-	err = shm_init_ns(ns);
+-	if (err)
+-		goto err_shm;
+-
+-	kref_init(&ns->kref);
+-	return ns;
+-
+-err_shm:
+-	msg_exit_ns(ns);
+-err_msg:
+-	sem_exit_ns(ns);
+-err_sem:
+-	kfree(ns);
+-err_mem:
+-	return ERR_PTR(err);
+-}
+-
+-struct ipc_namespace *copy_ipcs(unsigned long flags, struct ipc_namespace *ns)
+-{
+-	struct ipc_namespace *new_ns;
+-
+-	BUG_ON(!ns);
+-	get_ipc_ns(ns);
+-
+-	if (!(flags & CLONE_NEWIPC))
+-		return ns;
+-
+-	new_ns = clone_ipc_ns(ns);
+-
+-	put_ipc_ns(ns);
+-	return new_ns;
+-}
+-
+-void free_ipc_ns(struct kref *kref)
+-{
+-	struct ipc_namespace *ns;
+-
+-	ns = container_of(kref, struct ipc_namespace, kref);
+-	sem_exit_ns(ns);
+-	msg_exit_ns(ns);
+-	shm_exit_ns(ns);
+-	kfree(ns);
+-}
+-
+ /**
+  *	ipc_init	-	initialise IPC subsystem
+  *
+diff --git a/ipc/util.h b/ipc/util.h
+index 9ffea40..fc6b729 100644
+--- a/ipc/util.h
++++ b/ipc/util.h
+@@ -20,6 +20,8 @@ void sem_init (void);
+ void msg_init (void);
+ void shm_init (void);
+ 
++struct ipc_namespace;
++
+ int sem_init_ns(struct ipc_namespace *ns);
+ int msg_init_ns(struct ipc_namespace *ns);
+ int shm_init_ns(struct ipc_namespace *ns);
+diff --git a/kernel/nsproxy.c b/kernel/nsproxy.c
+index 79f871b..f5d332c 100644
+--- a/kernel/nsproxy.c
++++ b/kernel/nsproxy.c
+@@ -21,6 +21,7 @@
+ #include <linux/utsname.h>
+ #include <linux/pid_namespace.h>
+ #include <net/net_namespace.h>
++#include <linux/ipc_namespace.h>
+ 
+ static struct kmem_cache *nsproxy_cachep;
+ 
+-- 
+1.5.3.4
+
