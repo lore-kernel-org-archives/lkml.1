@@ -1,195 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbXKNThl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763655AbXKNTh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756065AbXKNThl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 14:37:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbXKNThc
+	id S1763655AbXKNTh7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 14:37:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762006AbXKNThs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 14:37:32 -0500
-Received: from palrel12.hp.com ([156.153.255.237]:43246 "EHLO palrel12.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750912AbXKNThb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 14:37:31 -0500
-Date: Wed, 14 Nov 2007 12:37:29 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Gary Hade <garyhade@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
-       Greg KH <greg@kroah.com>, gregkh@suse.de, kristen.c.accardi@intel.com,
-       lenb@kernel.org, rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, kaneshige.kenji@jp.fujitsu.com,
-       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
-Subject: [PATCH 2/5] Construct one fakephp slot per pci slot
-Message-ID: <20071114193729.GC25002@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Gary Hade <garyhade@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
-	Greg KH <greg@kroah.com>, gregkh@suse.de,
-	kristen.c.accardi@intel.com, lenb@kernel.org, rick.jones2@hp.com,
-	linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	kaneshige.kenji@jp.fujitsu.com, pcihpd-discuss@lists.sourceforge.net,
-	linux-acpi@vger.kernel.org
-References: <20071114193605.GA25002@ldl.fc.hp.com>
+	Wed, 14 Nov 2007 14:37:48 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:39018 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763335AbXKNThr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 14:37:47 -0500
+Message-ID: <473B4D7F.5020708@zytor.com>
+Date: Wed, 14 Nov 2007 11:33:19 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071114193605.GA25002@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@muc.de>, Chuck Ebbert <cebbert@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
+Subject: Re: [PATCH] Add __discard section to x86
+References: <20071113204033.GB7450@Krystal> <473A166E.3070708@zytor.com> <20071113220227.GB9057@Krystal> <473A26A2.7090007@zytor.com> <20071114003409.GA18032@Krystal> <473A4909.1020609@zytor.com> <20071114014445.GB19901@Krystal> <473A6471.4040700@zytor.com> <20071114185220.GA29533@Krystal> <473B45C4.5030501@zytor.com> <20071114191652.GA4438@Krystal>
+In-Reply-To: <20071114191652.GA4438@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Register one slot per slot, rather than one slot per function.
-Change the name of the slot to fake%d instead of the pci address.
+Mathieu Desnoyers wrote:
+> Add a __discard sectionto the linker script. Code produced in this section will
+> not be put in the vmlinux file. This is useful when we have to calculate the
+> size of an instruction before actually declaring it (for alignment purposes for
+> instance). This is used by the immediate values.
+> 
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> CC: Andi Kleen <ak@muc.de>
+> CC: "H. Peter Anvin" <hpa@zytor.com>
+> CC: Chuck Ebbert <cebbert@redhat.com>
+> CC: Christoph Hellwig <hch@infradead.org>
+> CC: Jeremy Fitzhardinge <jeremy@goop.org>
+> CC: Thomas Gleixner <tglx@linutronix.de>
+> CC: Ingo Molnar <mingo@redhat.com>
 
-Signed-off-by: Alex Chiang <achiang@hp.com>
-Signed-off-by: Matthew Wilcox <matthew@wil.cx>
----
- drivers/pci/hotplug/fakephp.c |   82 ++++++++++++++++-------------------------
- 1 files changed, 32 insertions(+), 50 deletions(-)
-
-diff --git a/drivers/pci/hotplug/fakephp.c b/drivers/pci/hotplug/fakephp.c
-index 027f686..851796b 100644
---- a/drivers/pci/hotplug/fakephp.c
-+++ b/drivers/pci/hotplug/fakephp.c
-@@ -59,10 +59,13 @@
- #define DRIVER_AUTHOR	"Greg Kroah-Hartman <greg@kroah.com>"
- #define DRIVER_DESC	"Fake PCI Hot Plug Controller Driver"
- 
-+#define SLOT_NAME_SIZE KOBJ_NAME_LEN
-+
- struct dummy_slot {
- 	struct list_head node;
- 	struct hotplug_slot *slot;
- 	struct pci_dev *dev;
-+	char name[8];
- };
- 
- static int debug;
-@@ -93,6 +96,7 @@ static int add_slot(struct pci_dev *dev)
- 	struct dummy_slot *dslot;
- 	struct hotplug_slot *slot;
- 	int retval = -ENOMEM;
-+	static int count = 1;
- 
- 	slot = kzalloc(sizeof(struct hotplug_slot), GFP_KERNEL);
- 	if (!slot)
-@@ -106,13 +110,14 @@ static int add_slot(struct pci_dev *dev)
- 	slot->info->max_bus_speed = PCI_SPEED_UNKNOWN;
- 	slot->info->cur_bus_speed = PCI_SPEED_UNKNOWN;
- 
--	slot->name = &dev->dev.bus_id[0];
--	dbg("slot->name = %s\n", slot->name);
--
- 	dslot = kmalloc(sizeof(struct dummy_slot), GFP_KERNEL);
- 	if (!dslot)
- 		goto error_info;
- 
-+	slot->name = dslot->name;
-+	snprintf(slot->name, 8, "fake%d", count++);
-+	dbg("slot->name = %s\n", slot->name);
-+
- 	slot->ops = &dummy_hotplug_slot_ops;
- 	slot->release = &dummy_release;
- 	slot->private = dslot;
-@@ -141,17 +146,17 @@ error:
- static int __init pci_scan_buses(void)
- {
- 	struct pci_dev *dev = NULL;
--	int retval = 0;
-+	int lastslot = 0;
- 
- 	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
--		retval = add_slot(dev);
--		if (retval) {
--			pci_dev_put(dev);
--			break;
--		}
-+		if (PCI_FUNC(dev->devfn) > 0 &&
-+				lastslot == PCI_SLOT(dev->devfn))
-+			continue;
-+		lastslot = PCI_SLOT(dev->devfn);
-+		add_slot(dev);
- 	}
- 
--	return retval;
-+	return 0;
- }
- 
- static void remove_slot(struct dummy_slot *dslot)
-@@ -275,23 +280,9 @@ static int enable_slot(struct hotplug_slot *hotplug_slot)
- 	return -ENODEV;
- }
- 
--/* find the hotplug_slot for the pci_dev */
--static struct hotplug_slot *get_slot_from_dev(struct pci_dev *dev)
--{
--	struct dummy_slot *dslot;
--
--	list_for_each_entry(dslot, &slot_list, node) {
--		if (dslot->dev == dev)
--			return dslot->slot;
--	}
--	return NULL;
--}
--
--
- static int disable_slot(struct hotplug_slot *slot)
- {
- 	struct dummy_slot *dslot;
--	struct hotplug_slot *hslot;
- 	struct pci_dev *dev;
- 	int func;
- 
-@@ -301,36 +292,27 @@ static int disable_slot(struct hotplug_slot *slot)
- 
- 	dbg("%s - physical_slot = %s\n", __FUNCTION__, slot->name);
- 
--	/* don't disable bridged devices just yet, we can't handle them easily... */
--	if (dslot->dev->subordinate) {
--		err("Can't remove PCI devices with other PCI devices behind it yet.\n");
--		return -ENODEV;
--	}
--	/* search for subfunctions and disable them first */
--	if (!(dslot->dev->devfn & 7)) {
--		for (func = 1; func < 8; func++) {
--			dev = pci_get_slot(dslot->dev->bus,
--					dslot->dev->devfn + func);
--			if (dev) {
--				hslot = get_slot_from_dev(dev);
--				if (hslot)
--					disable_slot(hslot);
--				else {
--					err("Hotplug slot not found for subfunction of PCI device\n");
--					return -ENODEV;
--				}
--				pci_dev_put(dev);
--			} else
--				dbg("No device in slot found\n");
-+	for (func = 7; func >= 0; func--) {
-+		dev = pci_get_slot(dslot->dev->bus, dslot->dev->devfn + func);
-+		if (!dev)
-+			continue;
-+
-+		/* don't disable bridged devices just yet, we can't handle
-+		 * them easily... */
-+		if (dev->subordinate) {
-+			err("Can't remove PCI devices with other PCI devices behind it yet.\n");
-+			return -ENODEV;
- 		}
--	}
- 
--	/* remove the device from the pci core */
--	pci_remove_bus_device(dslot->dev);
- 
--	/* blow away this sysfs entry and other parts. */
--	remove_slot(dslot);
-+		/* remove the device from the pci core */
-+		pci_remove_bus_device(dslot->dev);
- 
-+		/* blow away this sysfs entry and other parts. */
-+		remove_slot(dslot);
-+
-+		pci_dev_put(dev);
-+	}
- 	return 0;
- }
- 
--- 
-1.5.3.1.1.g1e61
+Acked-by: H. Peter Anvin <hpa@zytor.com>
 
