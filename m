@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbXKNKtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755006AbXKNKzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755931AbXKNKtR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 05:49:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750867AbXKNKtG
+	id S1755006AbXKNKzR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 05:55:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbXKNKzF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 05:49:06 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:8276 "EHLO relay.sw.ru"
+	Wed, 14 Nov 2007 05:55:05 -0500
+Received: from www.tglx.de ([62.245.132.106]:33866 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750718AbXKNKtF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 05:49:05 -0500
-Date: Wed, 14 Nov 2007 13:46:22 +0300
-From: Dmitry Monakhov <dmonakhov@sw.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@lst.de>
-Subject: Re: 2.6.24-rc2-mm1 -- mkfs failing on variety of fs types
-Message-ID: <20071114104622.GA20655@dmon-lap.sw.ru>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-	Christoph Hellwig <hch@lst.de>
-References: <20071113175906.497a1a6a.akpm@linux-foundation.org> <20071114085549.GG12003@shadowen.org> <20071114022810.215a5e3a.akpm@linux-foundation.org>
+	id S1751452AbXKNKzD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 05:55:03 -0500
+Date: Wed, 14 Nov 2007 11:54:50 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Joe Perches <joe@perches.com>
+cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] - [12/15] - remove defconfig ptr comparisons to 0 -
+ include/asm-x86
+In-Reply-To: <1195005932.5163.98.camel@localhost>
+Message-ID: <alpine.LFD.0.9999.0711141055050.3265@localhost.localdomain>
+References: <1195005932.5163.98.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071114022810.215a5e3a.akpm@linux-foundation.org>
-Organization: SWsoft.
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02:28 Wed 14 Nov     , Andrew Morton wrote:
-> On Wed, 14 Nov 2007 08:56:01 +0000 Andy Whitcroft <apw@shadowen.org> wrote:
-> 
-[snip]
-> > We seem to have some general problem with mkfs for all filesystems.
-> > UUID: e9aa2dc4-dfc3-47e8-865b-693f28eac2e5
-> > Initializing journal - 0%....20%....40%....60%....80%....100%
-> > bwrite: write 4096 bytes returned -1 (block=360448, dev=3): No space left on device
-> 
-> It was mm-fix-blkdev-size-calculation-in-generic_write_checks.patch.
-Oh my ..., I'm truly sorry. When i've sent this patch to Andrew first time
-he ask me to remake it in order to make it less intrusive. When later 
-i've found what patch was buggy because of incorrect int to loff_t conversion
-isize = i_size_read(inode) & ~(blksize - 1);
-                              ^^^^^^^^^^^^^^
-Later i've missed when this patch was accepted some days ago :(.
-> 
-> Odd, I thought that looked OK.
-> 
-> 
-> Here's a revert (uploaded to hot-fixes/, too):
-> 
-> --- a/mm/filemap.c~revert-mm-fix-blkdev-size-calculation-in-generic_write_checks
-> +++ a/mm/filemap.c
-> @@ -1855,11 +1855,9 @@ inline int generic_write_checks(struct f
->  	} else {
->  #ifdef CONFIG_BLOCK
->  		loff_t isize;
-> -		unsigned int blksize;
->  		if (bdev_read_only(I_BDEV(inode)))
->  			return -EPERM;
-> -		blksize = block_size(I_BDEV(inode));
-> -		isize = i_size_read(inode) & ~(blksize - 1);
-> +		isize = i_size_read(inode);
->  		if (*pos >= isize) {
->  			if (*count || *pos > isize)
->  				return -ENOSPC;
-> _
-> 
+Joe,
 
+can you please CC the relevant maintainers on patches ?
+
+On Tue, 13 Nov 2007, Joe Perches wrote:
+
+> Remove defconfig ptr comparison to 0
+>
+> The memcpy from memory location 0 sure looks odd.
+
+The memcpy from 0 is completely bogus.
+
+I bet this should have been a memset(&header, 0, ....), which is not
+necessary at all, when the return value of acpi_get_table_header()
+would be evaluated.
+
+/me wonders why this never exploded
+
+    tglx
+
+> Remove sparse warning: Using plain integer as NULL pointer
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> 
+> ---
+> 
+> diff --git a/include/asm-x86/mach-es7000/mach_mpparse.h b/include/asm-x86/mach-es7000/mach_mpparse.h
+> index 8aa1054..a1dd66f 100644
+> --- a/include/asm-x86/mach-es7000/mach_mpparse.h
+> +++ b/include/asm-x86/mach-es7000/mach_mpparse.h
+> @@ -29,7 +29,7 @@ extern int mps_oem_check(struct mp_config_table *mpc, char *oem,
+>  static inline int es7000_check_dsdt(void)
+>  {
+>  	struct acpi_table_header header;
+> -	memcpy(&header, 0, sizeof(struct acpi_table_header));
+> +	memcpy(&header, (void *)0, sizeof(struct acpi_table_header));
+>  	acpi_get_table_header(ACPI_SIG_DSDT, 0, &header);
+>  	if (!strncmp(header.oem_id, "UNISYS", 6))
+>  		return 1;
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
