@@ -1,99 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755462AbXKNJWu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100AbXKNJXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755462AbXKNJWu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 04:22:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbXKNJWg
+	id S1756100AbXKNJXe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 04:23:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753946AbXKNJXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 04:22:36 -0500
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:48493 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750816AbXKNJWf (ORCPT
+	Wed, 14 Nov 2007 04:23:19 -0500
+Received: from nf-out-0910.google.com ([64.233.182.188]:62750 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753940AbXKNJXQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 04:22:35 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=fyvk7VvzGj8zawsI7u/LO1a3jIcLj+mIgq8ADgfqofpoGsN8mTkzTw0p5COe1UjCN5mUIaxA6X9U1QHDVO8yc+CgQcAZ8Alts+u2AdTzocY2ItVYPnChe/+4IO+jwWhkFXfvgk/JlyUJvJccuywnS5AfVnVF2d1I4UFmFrCzx+M=  ;
-X-YMail-OSG: WUA66dIVM1nHnC7N6DpPg1CoIUWLRNxNFCUXJDvYZGmkjEBd
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch 2.6.24-rc2 1/3] generic gpio -- gpio_chip support
-Date: Wed, 14 Nov 2007 08:18:59 +1100
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Florian Fainelli <florian.fainelli@telecomint.eu>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-References: <200711091136.20051.david-b@pacbell.net> <200711132325.53846.nickpiggin@yahoo.com.au> <200711140020.46764.david-b@pacbell.net>
-In-Reply-To: <200711140020.46764.david-b@pacbell.net>
+	Wed, 14 Nov 2007 04:23:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=g+25xEDTXhLuLwl1iCi/XV9+Huhga8WZUyfrTu1RfFLZVIj88luzIZZzTn3qh9sKXt2Vthpd6/hyQbMfuZ+n9mCBP6bifNfZpPX7t2V8qlYFfO2AsFDIYy1mvXjve3Zvgz0DZWgMJ4NAaLwjLu+vRcppO1OuaFG8xUEjm8cmTs4=
+Message-ID: <473ABE7D.6060703@googlemail.com>
+Date: Wed, 14 Nov 2007 10:23:09 +0100
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071004)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
+CC: Gabriel C <nix.or.die@googlemail.com>, Greg KH <greg@kroah.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       bk@suse.de, khali@linux-fr.org, Boaz Harrosh <bharrosh@panasas.com>,
+       James <James.Bottomley@HansenPartnership.com>
+Subject: Re: 2.6.24-rc2-mm1
+References: <473A678C.2020507@googlemail.com> <20071114034924.GA26048@kroah.com> <20071114043923.GK6089@one-eyed-alien.net> <473A88B3.3010303@googlemail.com> <20071114082332.GM6089@one-eyed-alien.net>
+In-Reply-To: <20071114082332.GM6089@one-eyed-alien.net>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711140818.59714.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 November 2007 19:20, David Brownell wrote:
-> On Tuesday 13 November 2007, Nick Piggin wrote:
+Matthew Dharm wrote:
+> On Wed, Nov 14, 2007 at 06:33:39AM +0100, Gabriel C wrote:
+>> Matthew Dharm wrote:
+>>> On Tue, Nov 13, 2007 at 07:49:24PM -0800, Greg KH wrote:
+>>>> Matt, are these the errors you were worried about with the patch we were
+>>>> just talking about tha tis in my tree?
+>>> I can't tell from these logs.
+>> There is the dmesg with CONFIG_USB_STORAGE_DEBUG :
+>>
+>> http://194.231.229.228/dmesg-2.6.24-rc2-mm1
+> 
+> Good news: This isn't the bug Greg was worried about.
+> 
+> Bad news: Something is seriously strange here.  Note the following from the
+> logs:
+> 
+> Nov 14 06:07:43 lara [   41.890614] usb-storage: Bulk Status S 0x53425355 T 0xd R 0 Stat 0x0
+> Nov 14 06:07:43 lara [   41.890616] usb-storage: -- unexpectedly short transfer
+> 
+> Note the 'R' value of zero -- this is the residue value.  It indicates a
+> complete transfer, and that matches the log lines immediately previous
+> which indicate a 4K transfer which completed properly.
+> 
+> If residue is zero, then srb->resid should be zero.  Take a look in
+> linux/usb/storage/transport.c in usb_stor_Bulk_transport()
+> 
+> If srb->resid is zero, then you should NEVER get the "unexpectedly short
+> transfer" message.  Look at usb_stor_invoke_transport() in the same file.
 
-> > I mean, if you have a
-> > timing critical operation, then you should ensure you have priorities
-> > set correctly so that you simply don't get preempted.
->
-> Which is why bitops like <asm-generic/bitops/atomic.h> use
-> normal spinlocks.  Oh, wait, no they don't ...
+That code got replaced recently but I have no idea about it.
 
-No it isn't. It's nothing to do with that because upstream raw
-spinlocks disable preemption as well; the reason for using raw
-spinlocks in atomic.h is completely different.
+( http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=shortlog  see the patches from Boaz Harrosh) 
 
-Anyway, this whole line of argument is flawed. Even if the atomic.h
-code is crap, that doesn't give any license to introduce more bad
-code.
+srb->resid got replaced by scsi_get_resid() it I see that right.
 
+I'm CC'ing the author , he will know I think.
 
-> > By using a raw_spinlock_t, you're saying that you're more important
-> > than anyone else (for the period of the critical section) including
-> > processes which the user has explicitly set to a higher priority.
->
-> Nope.  Just saying that the relevant instructions (three, in the
-> hot path I looked at, and not a case where priority inversion
-> scenarios should be a concern) shouldn't be forcibly morphed into
-> preemption points.  Any more than other bitops were (not).
-
-Don't raw_spinlock_t's quite explictly disallow preemption in the
-critical section? Eg. as opposed to spinlock_t, which does not, in 
--rt.
-
-
-> If a higher priority task needs that CPU, nothing prevents it
-> from being immediately descheduled.  Ditto handling a hardirq.
->
-> All this does is prevent constant and needless checking for
-> "do you want to preempt me now?" "now?" "now?" in "now?" the
-> middle "now?" of "now?" i/o "now?" loops.
-
-Actually that's wrong. By disabling preemption, you have to
-explicitly check whether you should be preempted when you enable
-it again. If you don't disable preemption then you don't have to
-check anything -- you'll simply be preempted by asynchronous
-events.
-
-> > > Any reason that stuff shouldn't move into mainline?
-> >
-> > This sort of raw_spinlock_t arms race throughout drivers/ would be
-> > a huge reason not to move it into mainline.
->
-> This isn't driver code...
-
-Semantics. It's not something like the scheduler or interrupt handler
-or something that might have real reasons to use raw locks.
+> 
+> In fact, every transfer I look at shows this error.  I didn't exhaustivly
+> check every single one in the log, but a quick scan suggests that they all
+> are bogus; good transfer, CSW residue of 0, and "unexpectedly short"
+> message.
+> 
+> Maybe I'm too tired at this hour, but I just don't see how this is
+> possible.  Then again, I'm looking at 2.6.22 codebase (it's what I have
+> handy).
+> 
+> Hrm... does this tree have the "srb accessor" patches in it?  I'm wondering
+> if somewhere the init srb->resid to 0 before invoking the transport got
+> lost....
+> 
+> Matt
+> 
 
 
-> I think you've just presented an argument why that stuff
-> shouldn't really exist in -rt either... :)
-
-Anyway, I'm not going to argue about -rt specific stuff any longer.
-Whatever. It shouldn't go upstream like this though.
+Gabriel
