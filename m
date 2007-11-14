@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758901AbXKNBwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755030AbXKNB4K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758901AbXKNBwf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 20:52:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755601AbXKNBwN
+	id S1755030AbXKNB4K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 20:56:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755163AbXKNBzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 20:52:13 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:56014 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755429AbXKNBwM (ORCPT
+	Tue, 13 Nov 2007 20:55:53 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35172
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751961AbXKNBzw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 20:52:12 -0500
-Date: Wed, 14 Nov 2007 02:52:10 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Philip Mucci <mucci@cs.utk.edu>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Stephane Eranian <eranian@hpl.hp.com>,
-       William Cohen <wcohen@redhat.com>,
-       Robert Richter <robert.richter@amd.com>, linux-kernel@vger.kernel.org,
-       Perfmon <perfmon@napali.hpl.hp.com>,
-       perfmon2-devel@lists.sourceforge.net,
-       papi list <ptools-perfapi@cs.utk.edu>
-Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
-Message-ID: <20071114015210.GA20365@one.firstfloor.org>
-References: <20071109213829.GC28276@kroah.com> <p73abpl2654.fsf@bingen.suse.de> <20071113151718.GA3804@erda.amd.com> <4739C42F.8030208@redhat.com> <20071113175545.GD4319@frankl.hpl.hp.com> <53F4663B-CFBA-44E4-8283-BAAC8C8F1AFF@cs.utk.edu> <20071113185924.GA22748@suse.de> <20071113120728.4342e7d7.akpm@linux-foundation.org> <20071113203645.GA17145@one.firstfloor.org> <9FF72994-F55A-4B36-9EAA-CB1D2360A6F5@cs.utk.edu>
+	Tue, 13 Nov 2007 20:55:52 -0500
+Date: Tue, 13 Nov 2007 17:55:51 -0800 (PST)
+Message-Id: <20071113.175551.131375600.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: rmk+lkml@arm.linux.org.uk, alsa-devel@alsa-project.org,
+       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org, protasnb@gmail.com,
+       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: [BUG] New Kernel Bugs
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071113143201.9441c940.akpm@linux-foundation.org>
+References: <20071113125222.9eb53ac8.akpm@linux-foundation.org>
+	<20071113221801.GF1356@flint.arm.linux.org.uk>
+	<20071113143201.9441c940.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9FF72994-F55A-4B36-9EAA-CB1D2360A6F5@cs.utk.edu>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 04:28:52PM -0800, Philip Mucci wrote:
-> I know you don't want to hear this, but we actually use all of the  
-> features of perfmon, because a) we wanted to use the best methods  
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Tue, 13 Nov 2007 14:32:01 -0800
 
-That is hard to believe.
+> On Tue, 13 Nov 2007 22:18:01 +0000 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+> 
+> > Find some other mailing list; I'm not hosting *nor* am I willing to run a
+> > non-subscribers only mailing list.  Period.  Not negotiable, so don't even
+> > try to change my mind.
+> 
+> Making a list subscribers-only will cause some bug reports to be lost.
+> 
+> Tradeoffs are involved, against which decisions must be made.  You have
+> made yours.
 
-But let's go for it temporarily for the argument. 
+Russell doesn't have to worry any more, he doesn't have to
+host it, and he doesn't have to be willing to run a
+non-subscribers-only mailing list.
 
-Can you instead prioritize features.  What is most essential, what is 
-important, what is just nice to have, what is rarely used? 
+Because I am.
 
-> Note that PAPI is just middleware. The tools built upon it are what  
+I've created linux-arm@vger.kernel.org
 
-Surely the tools on top cannot use more than the middleware provides.
-
-> 	- providing virtualized 64-bit counters per-thread
-> 	- providing notification (buffered or non) on interrupt/overflow of  
-> the above.
-
-Ok that makes sense and should be possible with a reasonable simple
-interface.
-
-> If you'd like to outline further what you'd like to hear from the  
-> community, I can arrange that. I seem to remember going through this  
-> once before, but I'd be happy to do it again. For reference, here's a  
-> quick list from memory of some of the tools in active use and built  
-> on this infrastructure. These are used heavily around the globe.  
-
-Please list concrete features, throwing around random names is not useful.
-
--Andi
-
+Enjoy.
