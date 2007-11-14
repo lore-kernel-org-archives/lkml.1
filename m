@@ -1,87 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756915AbXKNHr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755601AbXKNHuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756915AbXKNHr6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 02:47:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbXKNHru
+	id S1755601AbXKNHuT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 02:50:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbXKNHuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 02:47:50 -0500
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:29552 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750964AbXKNHrt convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 02:47:49 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=c31lCinS1veXNXIYh++A0gRXmBpuHl6Hk3eSCKIgr9Xb6/KSdLw+Y8EcaJsaPO8hK7nDdLQiKGP3UKDOLmgZf4LQmJPoJjcmt/3xMlY3Np6HeghzyWkN4XJJWyFXwZM30x3BynOv9QHHG2eeIPykZUHfkhPtFK9Je6XdEQlp1Eo=  ;
-X-YMail-OSG: oCXMCL8VM1n3Ikj2Bu15oX6UJlCeAdkEo4W2W3w5C8jLUlxjaWYWSVd00F.BICHjaG5E93qFSw--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch 2.6.24-rc2 1/3] generic gpio -- gpio_chip support
-Date: Wed, 14 Nov 2007 06:45:26 +1100
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Florian Fainelli <florian.fainelli@telecomint.eu>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-References: <200711091136.20051.david-b@pacbell.net> <20071113124656.3c333bdd.akpm@linux-foundation.org> <200711132252.15872.david-b@pacbell.net>
-In-Reply-To: <200711132252.15872.david-b@pacbell.net>
+	Wed, 14 Nov 2007 02:50:07 -0500
+Received: from www.tglx.de ([62.245.132.106]:46131 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751350AbXKNHuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 02:50:06 -0500
+Date: Wed, 14 Nov 2007 08:49:50 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "David P. Reed" <dpreed@reed.com>
+cc: linux-kernel@vger.kernel.org, Allessandro Zummo <a.zummo@towertech.it>
+Subject: Re: [PATCH] x86: fix locking and sync bugs in x86_64 RTC code in
+ time_64.c
+In-Reply-To: <47388586.7010509@reed.com>
+Message-ID: <alpine.LFD.0.9999.0711140826080.3265@localhost.localdomain>
+References: <466F0941.9060201@reed.com> <1181682498.8176.224.camel@chaos>  <469578CD.3080609@reed.com>  <1184216528.12353.203.camel@chaos>  <1184218962.12353.209.camel@chaos>  <46964352.7040301@reed.com>  <1184253339.12353.223.camel@chaos>  <469697C6.50903@reed.com>
+ <1184274754.12353.254.camel@chaos> <47388586.7010509@reed.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200711140645.26363.nickpiggin@yahoo.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 November 2007 17:52, David Brownell wrote:
-> On Tuesday 13 November 2007, Andrew Morton wrote:
+David,
 
-> > > I'll highlight the
-> > > point that such bitops shouldn't be preemption points.
-> >
-> > Disagree.  *everything* should be a preemption point.
+On Mon, 12 Nov 2007, David P. Reed wrote:
+
+> From: David P. Reed
+> 
+> Fix two bugs in arch/x86/kernel/time_64.c that affect the x86_64 kernel. 1) a
+> repeatable hard freeze due to interrupts when the ntpd service calls
+> update_persistent_clock(), 2) potentially unstable PC RTC timer values when
+> timer is read.
+
+1) Please send separate patches for separate problems.
+
+2) Your patch is white space damaged and does not apply. Please run it
+   through scripts/checkpatch.pl before submitting, maybe send it to
+   yourself first and verify that it applies correctly.
+
+> Signed-off-by: David P. Reed <dpreed@reed.com>
+> ---
+> More explanation:
+> 1) A repeatable but randomly timed freeze has been happening in Fedora 6 and 7
+> for the last year, whenever I run the ntpd service on my AMD64x2 HP Pavilion
+> dv9000z laptop.  This freeze is due to the use of spin_lock(&rtc_lock) under
+> the assumption (per a bad comment) that set_rtc_mmss is called only with
+> interrupts disabled.  The call from ntp.c to update_persistent_clock is made
+> with interrupts enabled.
+
+Good catch.
+ 
+> 2) the use of an incorrect technique for reading the standard PC RTC timer,
+> which is documented to "disconnect" time registers from the bus while updates
+> are in progress.  The use of UIP flag while interrupts are disabled to protect
+> a 244 microsecond window is one of the Motorola spec sheet's documented ways
+> to read the RTC time registers reliably.  I realize that not all "clones" of
+> the
+
+of the what ?
+
+Also put the detailed description into the patch comment, please.
+
+> The patch updates the misleading comments and minimizes the amount of time
+> that the kernel disables interrupts.
+> 
+> I have thoroughly tested this patch on a number of x86_64 machines with
+> various numbers of cores and chipsets, using 2.6.24rc2 kernel source. Note
+> that while testing the ntp code I found another bug in kernel/time/ntp.c which
+> is independent of this fix - neither patch requires the other.
 >
-> So it's wrong that <asm-generic/bitops/atomic.h> uses the
-> same calls to prevent *those* bitops from being prempted?
+> If possible, I'd love to see the patch merged with 2.6.24, and even with
+> 2.6.23.
 
-Upstream, all spinlocks prevent preemption. But these ones
-are raw locks rather than normal locks probably because that
-they are trivially an innermost and correct lock. It's not
-going to be very helpful to bloat it and slow it down when
-debugging is turned on (atomic operations are _very_ frequent).
+Care to resend ?
 
-For -rt, who knows. They probably don't even run on parisc
-or sparc so don't really care at this point.
+Thanks,
 
-
-> Thus, that code should switch over to normal spinlocks...
-
-For upstream, there is little reason to switch them over, and
-some reasons not to.
-
-
-> I believe that if I submitted patches to do that, there'd
-> be a not-so-small riot.  And the arguments would all boil
-> down to much the same ones applying to *these* bitops...
-
-I don't think you have valid reasons. Also, core/arch code has
-some different considerations to driver code.
-
-
-> > For internal-implementation
-> > details we do need to disable preemtion sometimes
-> > (to prevent deadlocks and to protect per-cpu resources).
->
-> You're certainly talking about "internal-implementation
-> details" in this case.  It's not like the lock is used
-> outside of those routines.  Or as if other implementations
-> would even *need* such a lock.  (Just like the IRQ table,
-> if the entries can't be removed and are all set up very
-> early, locking would be pointless.)
-
-Internal implementation details, as in: spin lock code has to
-disable preemption otherwise they deadlock; get_cpu_var() has
-to disable preemption to give coherent access to the variable
-etc.
+     tglx
