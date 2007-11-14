@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758619AbXKNL6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758456AbXKNL7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758619AbXKNL6a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 06:58:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754223AbXKNL6W
+	id S1758456AbXKNL7I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 06:59:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754850AbXKNL65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 06:58:22 -0500
-Received: from mail.station1.mxsweep.com ([212.147.136.149]:1736 "EHLO
-	smtp2.mxsweep.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753090AbXKNL6V convert rfc822-to-8bit (ORCPT
+	Wed, 14 Nov 2007 06:58:57 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51546
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754614AbXKNL64 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 06:58:21 -0500
-Message-ID: <473AE2CC.4080609@draigBrady.com>
-Date: Wed, 14 Nov 2007 11:58:04 +0000
-From: =?ISO-8859-1?Q?P=E1draig_Brady?= <P@draigBrady.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
-MIME-Version: 1.0
-To: "Ravinandan Arakali (rarakali)" <rarakali@cisco.com>
-CC: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Question about free/used memory on Linux
-References: <FA6FB5FA4DA6BF4386D129273B2E3EC3024B847B@xmb-sjc-214.amer.cisco.com> <471BA1D1.5040905@linux.vnet.ibm.com> <FA6FB5FA4DA6BF4386D129273B2E3EC3024B847C@xmb-sjc-214.amer.cisco.com> <471C3A17.5020400@linux.vnet.ibm.com> <FA6FB5FA4DA6BF4386D129273B2E3EC3024B859E@xmb-sjc-214.amer.cisco.com>
-In-Reply-To: <FA6FB5FA4DA6BF4386D129273B2E3EC3024B859E@xmb-sjc-214.amer.cisco.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 14 Nov 2007 11:58:12.0318 (UTC) FILETIME=[A1A8A7E0:01C826B5]
-x-MXSweep-CtasdSpam: Unknown
-x-MXSweep-CtasdVirus: Unknown
-x-MXSweep-KeywordsCount: 0
-x-MXSweep-spf: None
-x-MXPurifier-SpamScore: 5
-x-MXPurifier-VirusScore: 0
-X-MXUniqueID: 9db1d281-ffb1-4e01-a41d-b3b23ae921c8
-X-MXSweep-Threat: Clean
+	Wed, 14 Nov 2007 06:58:56 -0500
+Date: Wed, 14 Nov 2007 03:58:50 -0800 (PST)
+Message-Id: <20071114.035850.202836100.davem@davemloft.net>
+To: nickpiggin@yahoo.com.au
+Cc: paulus@samba.org, hch@infradead.org, akpm@linux-foundation.org,
+       gregkh@suse.de, mucci@cs.utk.edu, eranian@hpl.hp.com, wcohen@redhat.com,
+       robert.richter@amd.com, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org
+Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200711141049.49154.nickpiggin@yahoo.com.au>
+References: <20071114.031216.11725447.davem@davemloft.net>
+	<18234.57272.590960.860941@cargo.ozlabs.ibm.com>
+	<200711141049.49154.nickpiggin@yahoo.com.au>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ravinandan Arakali (rarakali) wrote:
-> Hi Vaidy,
-> What do you think is the right way to get the memory usage of a
-> process, I mean the actual physical memory used ? Basically,
-> I'm interested in the incremental cost of a process, which
-> means, I don't want to include the text segments of shared
-> libraries which would remain even after the process is killed
-> (since it would be used by other processes).
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+Date: Wed, 14 Nov 2007 10:49:48 +1100
+
+> On Wednesday 14 November 2007 22:44, Paul Mackerras wrote:
+> > David Miller writes:
+> > > This is my impression too, all of the things being done with
+> > > a slew of system calls would be better served by real special
+> > > files and appropriate fops.
+> >
+> > Special files and fops really only work well if you can coerce the
+> > interface into one where data flows predominantly one way.  I don't
+> > think they work so well for something that is more like an RPC across
+> > the user/kernel barrier.  For that a system call is better.
+> >
+> > For instance, if you have something that kind-of looks like
+> >
+> > 	read_pmds(int n, int *pmd_numbers, u64 *pmd_values);
+> >
+> > where the caller supplies an array of PMD numbers and the function
+> > returns their values (and you want that reading to be done atomically
+> > in some sense), how would you do that using special files and fops?
 > 
-> Is the RSS field of "ps aux" command the right one or use 
-> "pmap" command and look at the "writeable" segments ?
+> Could you implement it with readv()?
 
-I already commented on this thread with a python script
-for reporting RAM usage for programs.
+Sure, why not?  Just cook up an iovec.  pmd_numbers goes to offset
+X and pmd_values goes to offset Y, with some helpers like what
+we have in the networking already for recvmsg.
 
-RSS = Private and Shared Resident pages.
-You can get the shared value for a process from /proc/$$/smaps
-(as is done in the script)
-
-Pádraig.
+But why would you want readv() for this?  The syscall thing
+Paul asked me to translate into a read() doesn't provide
+iovec-like behavior so I don't see why readv() is necessary
+at all.
