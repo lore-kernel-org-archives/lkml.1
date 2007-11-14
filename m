@@ -1,93 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758278AbXKNWhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760852AbXKNWjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758278AbXKNWhJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 17:37:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751702AbXKNWg5
+	id S1760852AbXKNWjS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 17:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754449AbXKNWjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 17:36:57 -0500
-Received: from holomorphy.com ([66.93.40.71]:48364 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751142AbXKNWg4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 17:36:56 -0500
-X-Greylist: delayed 2237 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Nov 2007 17:36:56 EST
-Date: Wed, 14 Nov 2007 14:00:38 -0800
-From: William Lee Irwin III <wli@holomorphy.com>
-To: aglitke <agl@us.ibm.com>
-Cc: ciju@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH] hugetlbfs :shmget with SHM_HUGETLB only works as root
-Message-ID: <20071114220038.GD1806@holomorphy.com>
-References: <473B0317.6010603@linux.vnet.ibm.com> <1195054301.18047.20.camel@localhost.localdomain>
-MIME-Version: 1.0
+	Wed, 14 Nov 2007 17:39:05 -0500
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:49938 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751702AbXKNWjE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 17:39:04 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAEoIO0dMROHU/2dsb2JhbACBXA
+Date: Wed, 14 Nov 2007 17:38:58 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: LTTng (Linux kernel tracer) tarball, 0.10.0-pre26
+Message-ID: <20071114223858.GA13005@Krystal>
+References: <20071113202002.GA6286@Krystal> <20071113204917.GD7450@Krystal>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1195054301.18047.20.camel@localhost.localdomain>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20071113204917.GD7450@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 17:35:04 up 11 days,  3:40,  5 users,  load average: 0.26, 0.70,
+	0.79
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 14, 2007 at 09:31:41AM -0600, aglitke wrote:
-> ... if the user's locked limit (ulimit -l) is set to unlimited, allowed
-> (above) is set to 1.  In that case, the second part of that if() is
-> bypassed, and the function grants permission.  Therefore, the easy
-> solution is to make sure your user's lock_limit is RLIM_INFINITY.
+* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
+> * Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
+> > Hi,
+> > 
+> > I have seen a few threads about unfixed kernel regression lately. I
+> > strongly believe that many kernel developers and users could help
+> > pinpointing the cause of those bugs much more efficiently by using a
+> > tool like LTTng.
+> > 
+> > If you want to find the code I just released (both for -mm inclusion and
+> > as a RFC) tied up in a single tarball, you will find the patchset at the
+> > beginning of the LTTng series file there :
+> > 
+> > http://ltt.polymtl.ca/lttng/patch-2.6.24-rc2-git3-lttng-0.10-pre24.tar.bz2
+> > 
+> 
+> Newer version available, includes the fixes resulting from Peter Anvin's
+> comments about immediate values :
+> 
+> http://ltt.polymtl.ca/lttng/patch-2.6.24-rc2-git3-lttng-0.10-pre25.tar.bz2
+>
 
-This function deserves a minor cleanup and a bit more commenting.
+The pre26 version :
 
-Reading user->locked_shm within shmlock_user_lock would be nice, too.
+http://ltt.polymtl.ca/lttng/patch-2.6.24-rc2-git3-lttng-0.10-pre26.tar.bz2
 
-Maybe something like this (untested, uncompiled) would do.
+Contains the latest modifications resulting from Peter Anvin's comments
+on the immediate values and Sam Ravnborg's instrumentation menu
+comments.
+
+Mathieu
 
 
--- wli
+> Mathieu
+> 
+> > This LTTng "pre" version can be used with the following userspace packages :
+> > http://ltt.polymtl.ca/lttng/ltt-control-0.46-06112007.tar.gz
+> > http://ltt.polymtl.ca/packages/lttv-0.10.0-pre2-07112007.tar.gz
+> > 
+> > Mathieu
+> > 
+> > -- 
+> > Mathieu Desnoyers
+> > Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> > -
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> > 
+> 
+> -- 
+> Mathieu Desnoyers
+> Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
 
-
-diff --git a/mm/mlock.c b/mm/mlock.c
-index 7b26560..5f51792 100644
---- a/mm/mlock.c
-+++ b/mm/mlock.c
-@@ -234,6 +234,12 @@ asmlinkage long sys_munlockall(void)
- /*
-  * Objects with different lifetime than processes (SHM_LOCK and SHM_HUGETLB
-  * shm segments) get accounted against the user_struct instead.
-+ * First, user_shm_lock() checks that the user has permission to lock
-+ * enough memory; then if so, the locked shm is accounted to the user's
-+ * system-wide state. shmlock_user_lock protects the per-user field
-+ * tracking how much locked_shm is in use within the struct user_struct.
-+ * shmlock_user_lock is taken early to guard the read-only check that
-+ * user->locked_shm is in-bounds against updates to user->locked_shm.
-  */
- static DEFINE_SPINLOCK(shmlock_user_lock);
- 
-@@ -242,19 +248,22 @@ int user_shm_lock(size_t size, struct user_struct *user)
- 	unsigned long lock_limit, locked;
- 	int allowed = 0;
- 
-+	spin_lock(&shmlock_user_lock);
- 	locked = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
- 	lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
- 	if (lock_limit == RLIM_INFINITY)
- 		allowed = 1;
--	lock_limit >>= PAGE_SHIFT;
--	spin_lock(&shmlock_user_lock);
--	if (!allowed &&
--	    locked + user->locked_shm > lock_limit && !capable(CAP_IPC_LOCK))
--		goto out;
--	get_uid(user);
--	user->locked_shm += locked;
--	allowed = 1;
--out:
-+	else {
-+		lock_limit >>= PAGE_SHIFT;
-+		if (locked + user->locked_shm <= lock_limit)
-+			allowed = 1;
-+		else if (capable(CAP_IPC_LOCK))
-+			allowed = 1;
-+	}
-+	if (allowed) {
-+		get_uid(user);
-+		user->locked_shm += locked;
-+	}
- 	spin_unlock(&shmlock_user_lock);
- 	return allowed;
- }
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
