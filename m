@@ -1,87 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762235AbXKNEha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762103AbXKNEji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762235AbXKNEha (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 23:37:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757456AbXKNEgy
+	id S1762103AbXKNEji (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 23:39:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755775AbXKNEj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 23:36:54 -0500
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:32131 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756846AbXKNEgx (ORCPT
+	Tue, 13 Nov 2007 23:39:29 -0500
+Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:38405
+	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754534AbXKNEj2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 23:36:53 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=z1xQ/fwdlYcom7MyPweecBfl+Hd+d/mgatsUbJvAQGeeM8oa1xs7DQ21p+Wx6799+9KXb3fyFbQoWBC6IXxoDCSlcULs5iQb21BNLjwphq6oAsa+Ta1mx0F2ITSWa6P1JoT7WFVFuEyE8rUQE1HRXzgIeGB6w4p/7PEC1LYtGzM=  ;
-X-YMail-OSG: t.z5nbgVM1mz8J5EvEKD1dSmaVg2ombt7HjzVWeDGyvPWLhVhP8VE88pQPjaMOlAwZKXxZ7rUA--
-From: David Brownell <david-b@pacbell.net>
-To: "eric miao" <eric.y.miao@gmail.com>
-Subject: Re: [patch/rfc 1/4] GPIO implementation framework
-Date: Tue, 13 Nov 2007 20:36:13 -0800
-User-Agent: KMail/1.9.6
-Cc: "Linux Kernel list" <linux-kernel@vger.kernel.org>,
-       "Felipe Balbi" <felipebalbi@users.sourceforge.net>,
-       "Bill Gatliff" <bgat@billgatliff.com>,
-       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
-       "Andrew Victor" <andrew@sanpeople.com>,
-       "Tony Lindgren" <tony@atomide.com>, "Jean Delvare" <khali@linux-fr.org>,
-       "Kevin Hilman" <khilman@mvista.com>, "Paul Mundt" <lethal@linux-sh.org>,
-       "Ben Dooks" <ben@trinity.fluff.org>
-References: <200710291809.29936.david-b@pacbell.net> <f17812d70711131704r4de82efat757dbb5479273ce2@mail.gmail.com> <f17812d70711131704l6b0562ffmec6e7e1981130898@mail.gmail.com>
-In-Reply-To: <f17812d70711131704l6b0562ffmec6e7e1981130898@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Nov 2007 23:39:28 -0500
+Date: Tue, 13 Nov 2007 20:39:23 -0800
+From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
+To: Greg KH <greg@kroah.com>
+Cc: Gabriel C <nix.or.die@googlemail.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       bk@suse.de, khali@linux-fr.org
+Subject: Re: 2.6.24-rc2-mm1
+Message-ID: <20071114043923.GK6089@one-eyed-alien.net>
+Mail-Followup-To: Greg KH <greg@kroah.com>,
+	Gabriel C <nix.or.die@googlemail.com>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, bk@suse.de, khali@linux-fr.org
+References: <473A678C.2020507@googlemail.com> <20071114034924.GA26048@kroah.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="wIc/V6YLA2QdyfT4"
 Content-Disposition: inline
-Message-Id: <200711132036.14927.david-b@pacbell.net>
+In-Reply-To: <20071114034924.GA26048@kroah.com>
+User-Agent: Mutt/1.4.2.3i
+Organization: One Eyed Alien Networks
+X-Copyright: (C) 2007 Matthew Dharm, all rights reserved.
+X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Tue, 13 Nov 2007 20:39:24 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 November 2007, eric miao wrote:
-> Subject: [PATCH 5/5] move per GPIO "requested" to "struct gpio_desc"
-> 
 
->  struct gpio_desc {
->  	struct gpio_chip *chip;
->  	unsigned is_out:1;
-> +	unsigned requested:1;
-> +#ifdef CONFIG_DEBUG_FS
-> +	const char *requested_str;
-> +#endif
+--wIc/V6YLA2QdyfT4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-A better name for this would be "label", matching what's
-passed from gpio_request().  Ndls abrviatns r bd.
+On Tue, Nov 13, 2007 at 07:49:24PM -0800, Greg KH wrote:
+>=20
+> Matt, are these the errors you were worried about with the patch we were
+> just talking about tha tis in my tree?
 
+I can't tell from these logs.
 
-Note that this means (on typical 32-bit embedded hardware)
-twelve bytes per GPIO, which if you assume 256 GPIOs means
-an extra 3 KB static memory compared to the patch I sent.
+The key question (in relation to the allow_restart patch) is this:  Was
+everything working fine until a START_STOP was sent to the device?
 
+The SCSI layers used to send devices START_STOP to almost every device as
+part of initialization.  I think we switched all of that to use
+TEST_UNIT_READY instead.
 
-> @@ -43,20 +43,19 @@ static inline int gpio_is_onchip(unsigned gpio,
-> struct gpio_chip *chip)
->  /* Warn when drivers omit gpio_request() calls -- legal but
->   * ill-advised when setting direction, and otherwise illegal.
->   */
-> -static void gpio_ensure_requested(struct gpio_chip *chip, unsigned offset)
-> +static void gpio_ensure_requested(unsigned gpio)
+The patch you've got should re-enable START_STOP to be sent.  The SCSI
+layers (I'm told, but haven't verified myself) only send START_STOP if the
+device reports that it needs a startup command.
 
-Simpler to pass a gpio_desc pointer ...
+CONFIG_USB_STORAGE_DEBUG will generate a *lot* of debug output.  But, it
+should be pretty easy to see if START_STOP was sent at all, and if it
+caused the problems.
 
+Matt
 
->  	if (!requested)
-> -		printk(KERN_DEBUG "GPIO-%d autorequested\n",
-> -				chip->base + offset);
-> +		pr_debug("GPIO-%d autorequested\n", gpio);
+P.S. Worst case, the issue we're talking about here would only cause the
+device firmware to crash, which would eventually lead to a disconnect.
+That shouldn't have caused the much more severe problems shown in the log
+you sent.
 
-Leave the printk in ... this is the sort of thing we want
-to see fixed, which becomes unlikely once you hide such
-diagnostics.  And for that matter, what would be enabling
-the "-DDEBUG" that would trigger a pr_debug() message?
+--=20
+Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
+net=20
+Maintainer, Linux USB Mass Storage Driver
 
+DP: And judging from the scores, Stef has the sma... =20
+T:  LET'S NOT GO THERE!
+					-- Dust Puppy and Tanya
+User Friendly, 12/11/1997
 
+--wIc/V6YLA2QdyfT4
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
-... overall the main downside of these patches seems to
-be that it consumes more static memory.  
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFHOnv7HL9iwnUZqnkRAtobAKCei6IOdRUhI+raOAxlH0J0+uCwkgCfS70a
+x0BIH8kdm6sMKVVCoec8V/s=
+=ZvFb
+-----END PGP SIGNATURE-----
+
+--wIc/V6YLA2QdyfT4--
