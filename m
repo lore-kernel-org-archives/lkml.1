@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764825AbXKNU4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764958AbXKNU5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764825AbXKNU4j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 15:56:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763683AbXKNUzw
+	id S1764958AbXKNU5w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 15:57:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755243AbXKNU5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 15:55:52 -0500
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:58338
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758432AbXKNUzu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 15:55:50 -0500
-Date: Wed, 14 Nov 2007 13:05:26 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Ingo Molnar <mingo@elte.hu>
-cc: David Miller <davem@davemloft.net>, rdunlap@xenotime.net,
-       akpm@linux-foundation.org, protasnb@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [BUG] New Kernel Bugs
-In-Reply-To: <20071114204840.GB20606@elte.hu>
-Message-ID: <Pine.LNX.4.64.0711141303210.29641@asgard.lang.hm>
-References: <20071113134029.GA30978@elte.hu> <20071113085514.3414aa52.rdunlap@xenotime.net>
- <20071114140847.GA11489@elte.hu> <20071114.115601.00715073.davem@davemloft.net>
- <20071114204840.GB20606@elte.hu>
+	Wed, 14 Nov 2007 15:57:39 -0500
+Received: from scrub.xs4all.nl ([194.109.195.176]:2363 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755155AbXKNU5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 15:57:38 -0500
+Date: Wed, 14 Nov 2007 21:57:32 +0100 (CET)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] kconfig: use $K64BIT to set 64BIT with all*config targets
+In-Reply-To: <11947274091127-git-send-email-sam@ravnborg.org>
+Message-ID: <Pine.LNX.4.64.0711142116500.1818@scrub.home>
+References: <20071110204038.GA13140@uranus.ravnborg.org>
+ <11947274093185-git-send-email-sam@ravnborg.org> <11947274091127-git-send-email-sam@ravnborg.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Nov 2007, Ingo Molnar wrote:
+Hi,
 
->> Dumping even more crap on lkml is not the answer.
->
-> that "crap" that i'd like to see dumped upon lkml would be netdev
-> traffic mainly - most of the other kernel development lists (and i'm
-> subscribed to many of them) are low-traffic. netdev is the main reason
-> why we cannot do a "one common discussion forum" approach.
+On Sat, 10 Nov 2007, Sam Ravnborg wrote:
 
-hmm, how much work would it be to tweak the mail software on vger to have 
-a linux-all@vger.kernel.org that got a copy of any linux-* list hosted by 
-vger.
+> +	if (p) {
+> +		char warning[100];
+> +		sprintf(warning, "Environment variable (%s = \"%s\")", env, p);
+> +		conf_filename = warning;
+> +		def_flags = SYMBOL_DEF << def;
+> +		if (def == S_DEF_USER) {
+> +			sym = sym_find(symname);
+> +			if (!sym)
+> +				return 1;
+> +		} else {
+> +			sym = sym_lookup(symname, 0);
+> +			if (sym->type == S_UNKNOWN)
+> +				sym->type = S_OTHER;
+> +		}
+> +		conf_set_sym_val(sym, def, def_flags, p);
+> +	}
+> +	return 0;
 
-this would solve half the problem (people on linux-kernel not seeing 
-discussions on the other lists)
+This is more complex than necessary, this should be enough:
 
-David Lang
+	sym = sym_find(symname);
+	if (sym)
+		sym_set_string_value(sym, p);
+
+This is not a direct user interface, so the potential stricter error 
+checking is not really needed.
+
+In general I think it's problematic that this is only checked, when the 
+config system is called, i.e. with a configured kernel adding ARCH would 
+have no effect, what makes this more confusing is that one can later omit 
+the ARCH variable, since it's saved in the .config. I think it would be 
+better to check for this directly in the Makefile and then use a separate 
+tool to set the variable directly (which could be simply sed or a simple 
+helper program).
+
+bye, Roman
