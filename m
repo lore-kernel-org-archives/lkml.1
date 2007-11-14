@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762353AbXKNVme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760868AbXKNVox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762353AbXKNVme (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 16:42:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbXKNVmY
+	id S1760868AbXKNVox (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 16:44:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbXKNVoo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 16:42:24 -0500
-Received: from palrel11.hp.com ([156.153.255.246]:39859 "EHLO palrel11.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755714AbXKNVmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 16:42:23 -0500
-Date: Wed, 14 Nov 2007 14:42:21 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Greg KH <greg@kroah.com>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-pci@atrey.karlin.mff.cuni.cz,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>, gregkh@suse.de,
-       lenb@kernel.org, matthew@wil.cx, rick.jones2@hp.com,
-       linux-kernel@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
-Message-ID: <20071114214221.GC6575@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Greg KH <greg@kroah.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-	linux-pci@atrey.karlin.mff.cuni.cz,
-	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-	gregkh@suse.de, lenb@kernel.org, matthew@wil.cx, rick.jones2@hp.com,
-	linux-kernel@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
-	linux-acpi@vger.kernel.org
-References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113202632.GA3227@kroah.com> <20071113145936.7e1c58fb.kristen.c.accardi@intel.com> <200711141037.09228.bjorn.helgaas@hp.com> <20071114175317.GB14994@kroah.com>
+	Wed, 14 Nov 2007 16:44:44 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:42564 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753072AbXKNVon (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 16:44:43 -0500
+Date: Wed, 14 Nov 2007 22:42:00 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH] Hibernation: Fix lockdep report (v2)
+Message-ID: <20071114224200.GB7367@ucw.cz>
+References: <200711142225.58033.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20071114175317.GB14994@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200711142225.58033.rjw@sisk.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Greg KH <greg@kroah.com>:
-> On Wed, Nov 14, 2007 at 10:37:08AM -0700, Bjorn Helgaas wrote:
-> > 
-> > So I agree that the firmware kit has a clever hack that works
-> > on much existing x86 firmware, and it sounds like Tivoli
-> > might even rely on it.  But I don't feel good about it, and
-> > it could easily break when some BIOS writer needs to make
-> > _SUN slightly more complicated.
+On Wed 2007-11-14 22:25:57, Rafael J. Wysocki wrote:
+> [Andrew, please consider this as 2.6.24 material, thanks.]
+> ---
+> From: Johannes Berg <johannes@sipsolutions.net>
 > 
-> Do you know of such BIOSes out there that do this?  Will the
-> above scheme not work for the ia64 boxes that you know of that
-> are out in the world today?
+> Lockdep reports a circular locking dependency in the hibernate code
+> because
+>  - during system boot hibernate code (from an initcall) locks pm_mutex
+>    and then a sysfs buffer mutex via name_to_dev_t
+>  - during regular operation hibernate code locks pm_mutex under a
+>    sysfs buffer mutex because it's called from sysfs methods.
+> 
+> The deadlock can never happen because during initcall invocation nothing
+> can write to sysfs yet. This removes the lockdep report by marking the
+> initcall locking as being in a different class.
+> 
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> Cc: Alan Stern <stern@rowland.harvard.edu>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Cc: Pavel Machek <pavel@ucw.cz>
 
-One last mail on this subject -- Bjorn has pointed out to me that
-the Dell pe6800 and rez1850 both implement _SUN as control
-methods today.
+ACK...
 
-Does Tivoli run on those machines? If so, how is it getting slot
-information?
-
-Thanks.
-
-/ac
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
