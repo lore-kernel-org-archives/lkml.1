@@ -1,90 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758210AbXKNLtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758591AbXKNLtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758210AbXKNLtU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 06:49:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754714AbXKNLtI
+	id S1758591AbXKNLtc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 06:49:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756864AbXKNLtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 06:49:08 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:1996 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754330AbXKNLtG (ORCPT
+	Wed, 14 Nov 2007 06:49:12 -0500
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:30753 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754851AbXKNLtJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 06:49:06 -0500
-Date: Wed, 14 Nov 2007 19:48:44 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: David Miller <davem@davemloft.net>
-Cc: nickpiggin@yahoo.com.au, clameter@sgi.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc2: Network commit causes SLUB performance regression with tbench
-Message-ID: <20071114114844.GA13927@gondor.apana.org.au>
-References: <200711140514.28159.nickpiggin@yahoo.com.au> <20071113.223726.40898879.davem@davemloft.net> <200711140927.39796.nickpiggin@yahoo.com.au> <20071114.031022.183117678.davem@davemloft.net>
-Mime-Version: 1.0
+	Wed, 14 Nov 2007 06:49:09 -0500
+X-YMail-OSG: 3BM2TUgVM1kDu47611Df_i9KFswRZEP.gTBtpmJcXfTvKu4sTQCHvfCKZUeZ842fBORefL3B1g--
+Date: Wed, 14 Nov 2007 03:49:07 -0800
+From: Chris Wedgwood <cw@f00f.org>
+To: linux-xfs@oss.sgi.com, Christoph Hellwig <hch@infradead.org>,
+       David Chinner <dgc@sgi.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Benny Halevy <bhalevy@panasas.com>,
+       Christian Kujau <lists@nerdbynature.de>
+Subject: 2.6.24-rc2 XFS nfsd hang --- filldir change responsible?
+Message-ID: <20071114114907.GA31466@puku.stupidest.org>
+References: <20071114070400.GA25708@puku.stupidest.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071114.031022.183117678.davem@davemloft.net>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20071114070400.GA25708@puku.stupidest.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 14, 2007 at 03:10:22AM -0800, David Miller wrote:
-> 
-> So the thing that's being effected here in TCP is
-> net/ipv4/tcp.c:select_size(), specifically the else branch:
+On Tue, Nov 13, 2007 at 11:04:00PM -0800, Chris Wedgwood wrote:
 
-Thanks for the pointer.  Indeed there is a bug in that area.
-I'm not sure whether it's causing the problem at hand but it's
-certainly suboptimal.
+> With 2.6.24-rc2 (amd64) I sometimes (usually but perhaps not always)
+> see a hang when accessing some NFS exported XFS filesystems.  Local
+> access to these filesystems ahead of time works without problems.
+>
+> This does not occur with 2.6.23.1.  The filesystem does not appear
+> to be corrupt.
 
-[TCP]: Fix size calculation in sk_stream_alloc_pskb
+After some bisection pain (sg broken in the middle and XFS not
+compiling in other places) the regression seems to be:
 
-We round up the header size in sk_stream_alloc_pskb so that
-TSO packets get zero tail room.  Unfortunately this rounding
-up is not coordinated with the select_size() function used by
-TCP to calculate the second parameter of sk_stream_alloc_pskb.
+    commit 051e7cd44ab8f0f7c2958371485b4a1ff64a8d1b
+    Author: Christoph Hellwig <hch@infradead.org>
+    Date:   Tue Aug 28 13:58:24 2007 +1000
 
-As a result, we may allocate more than a page of data in the
-non-TSO case when exactly one page is desired.
+	[XFS] use filldir internally
 
-In fact, rounding up the head room is detrimental in the non-TSO
-case because it makes memory that would otherwise be available to
-the payload head room.  TSO doesn't need this either, all it wants
-is the guarantee that there is no tail room.
+There have been a lot of changes since this so reverting it and
+retesting as-is won't work. I'll have to see what I can come up with
+after some sleep.
 
-So this patch fixes this by adjusting the skb_reserve call so that
-exactly the requested amount (which all callers have calculated in
-a precise way) is made available as tail room.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-diff --git a/include/net/sock.h b/include/net/sock.h
-index 5504fb9..567e468 100644
---- a/include/net/sock.h
-+++ b/include/net/sock.h
-@@ -1235,14 +1235,16 @@ static inline struct sk_buff *sk_stream_alloc_pskb(struct sock *sk,
- 						   gfp_t gfp)
- {
- 	struct sk_buff *skb;
--	int hdr_len;
- 
--	hdr_len = SKB_DATA_ALIGN(sk->sk_prot->max_header);
--	skb = alloc_skb_fclone(size + hdr_len, gfp);
-+	skb = alloc_skb_fclone(size + sk->sk_prot->max_header, gfp);
- 	if (skb) {
- 		skb->truesize += mem;
- 		if (sk_stream_wmem_schedule(sk, skb->truesize)) {
--			skb_reserve(skb, hdr_len);
-+			/*
-+			 * Make sure that we have exactly size bytes
-+			 * available to the caller, no more, no less.
-+			 */
-+			skb_reserve(skb, skb_tailroom(skb) - size);
- 			return skb;
- 		}
- 		__kfree_skb(skb);
+I'm not building/testing with dmapi --- perhaps that makes a
+difference here?  I would think it would have broken with xfsqa but
+the number of bug reports seems small so far.
