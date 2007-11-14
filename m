@@ -1,134 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758969AbXKNRh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761615AbXKNRih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758969AbXKNRh7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 12:37:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758734AbXKNRh2
+	id S1761615AbXKNRih (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 12:38:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756125AbXKNRiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 12:37:28 -0500
-Received: from saraswathi.solana.com ([198.99.130.12]:43598 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758046AbXKNRh1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 12:37:27 -0500
-Date: Wed, 14 Nov 2007 12:36:39 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@elte.hu
-Subject: Re: uml doesn't work on 2.6.24-rc2
-Message-ID: <20071114173639.GA7899@c2.user-mode-linux.org>
-References: <E1Is5FL-00078H-00@dorka.pomaz.szeredi.hu> <20071114011002.GA11477@c2.user-mode-linux.org> <E1IsFbA-0007y2-00@dorka.pomaz.szeredi.hu> <20071114142247.GA5848@c2.user-mode-linux.org> <E1IsK83-0008CJ-00@dorka.pomaz.szeredi.hu>
+	Wed, 14 Nov 2007 12:38:25 -0500
+Received: from xenotime.net ([66.160.160.81]:49485 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755852AbXKNRiX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 12:38:23 -0500
+Date: Wed, 14 Nov 2007 09:38:20 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, protasnb@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+Message-Id: <20071114093820.ff3ad8f9.rdunlap@xenotime.net>
+In-Reply-To: <20071114140847.GA11489@elte.hu>
+References: <20071113031553.3c7b5c16.akpm@linux-foundation.org>
+	<20071113.033946.114918709.davem@davemloft.net>
+	<20071113034916.2556edd7.akpm@linux-foundation.org>
+	<20071113.035824.40509981.davem@davemloft.net>
+	<20071113041259.79c9a8c5.akpm@linux-foundation.org>
+	<20071113134029.GA30978@elte.hu>
+	<20071113085514.3414aa52.rdunlap@xenotime.net>
+	<20071114140847.GA11489@elte.hu>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1IsK83-0008CJ-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.4.2.3i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 14, 2007 at 04:26:11PM +0100, Miklos Szeredi wrote:
-> This one fixed the EINVAL messages, and now UML boots, but consumes
-> 100% CPU constantly.
+On Wed, 14 Nov 2007 15:08:47 +0100 Ingo Molnar wrote:
 
-Can you strace it and see if you are seeing zero-length nanosleeps,
-and then send me your config file?  I've had one other report of this,
-but haven't reproduced it here.
-
-> > You'll also need f86f9e6d66027bdcdc9b40c06d431ee53ea0d509 for a
-> > separate problem.
 > 
-> I can't find this in -linus.  Which tree is it?
+> * Randy Dunlap <rdunlap@xenotime.net> wrote:
+> 
+> > > (and this is in no way directed at the networking folks - it holds 
+> > > for all of us. I have one main complaint about networking: the 
+> > > separate netdev list is a bad idea - networking regressions should 
+> > > be discussed and fixed on lkml, like most other subsystems are. Any 
+> > > artificial split of the lk discussion space is bad.)
+> > 
+> > but here I disagree.  LKML is already too busy and noisy. Major 
+> > subsystems need their own discussion areas.
+> 
+> That's a stupid argument. We lose much more by forced isolation of 
+> discussion than what we win by having less traffic! It's _MUCH_ easier 
+> to narrow down information (by filter by threads, by topics, by people, 
+> etc.) than it is to gobble information together from various fractured 
+> sources. We learned it _again and again_ that isolation of kernel 
+> discussions causes bad things.
+> 
+> In fact this thread is the very example: David points out that on netdev 
+> some of those bugs were already discussed and resolved. Had it been all 
+> on lkml we'd all be aware of it.
 
-My private tree, sorry - I looked at git-log output too quickly.  The
-patch is below.  It's also in -mm.
+or had <someone> been on netdev.
 
-> Never seen anything like this until 2.6.24.  Strange...
+> this is a single kernel project that is released together as one 
+> codebase, so a central place of discussion is obvious and common-sense.
 
-It breaks ptrace on 6-argument system calls made by 32-bit sysenter.
+Central doesn't have to mean one-and-only-one-list-for-everything.
 
-				Jeff
+> so please stop this "too busy and too noisy" nonsense already. It was 
+> nonsense 10 years ago and it's nonsense today. In 10 years the kernel 
+> grew from a 1 million lines codebase to an 8 million lines codebase, so 
+> what? Deal with it and be intelligent about filtering your information 
+> influx instead of imposing a hard pre-filtering criteria that restricts 
+> intelligent processing of information.
 
--- 
-Work email - jdike at linux dot intel dot com
+So you have a preferred method of handling email.  Please don't
+force it on the rest of us.
 
-commit f86f9e6d66027bdcdc9b40c06d431ee53ea0d509
-Author: Jeff Dike <jdike@addtoit.com>
-Date:   Wed Nov 7 10:40:07 2007 -0500
+I'll plan to use lkml-list-only when you have convinced DaveM to drop
+all of the other mailing lists at vger.kernel.org.  Yeah, sure.
 
-    From: Chuck Ebbert <76306.1226@compuserve.com>
-    
-    [ jdike - Pushing Chuck's patch - see http://lkml.org/lkml/2005/9/16/261 ]
-    
-    When the 32-bit vDSO is used to make a system call, the %ebp register for
-    the 6th syscall arg has to be loaded from the user stack (where it's pushed
-    by the vDSO user code).  The native i386 kernel always does this before
-    stopping for syscall tracing, so %ebp can be seen and modified via ptrace
-    to access the 6th syscall argument.  The x86-64 kernel fails to do this,
-    presenting the stack address to ptrace instead.  This makes the %rbp value
-    seen by 64-bit ptrace of a 32-bit process, and the %ebp value seen by a
-    32-bit caller of ptrace, both differ from the native i386 behavior.
-    
-    This patch fixes the problem by putting the word loaded from the user stack
-    into %rbp before calling syscall_trace_enter, and reloading the 6th syscall
-    argument from there afterwards (so ptrace can change it).  This makes the
-    behavior match that of i386 kernels.
-    
-    Signed-off-by: Chuck Ebbert <76306.1226@compuserve.com>
-    Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-    Original-Patch-By: Roland McGrath <roland@redhat.com>
-    ---
-     arch/x86_64/ia32/ia32entry.S |   19 ++++++-------------
-     1 file changed, 6 insertions(+), 13 deletions(-)
-
-diff --git a/arch/x86/ia32/ia32entry.S b/arch/x86/ia32/ia32entry.S
-index 18b2318..df588f0 100644
---- a/arch/x86/ia32/ia32entry.S
-+++ b/arch/x86/ia32/ia32entry.S
-@@ -159,20 +159,16 @@ sysenter_do_call:
- 
- sysenter_tracesys:
- 	CFI_RESTORE_STATE
-+	xchgl	%r9d,%ebp
- 	SAVE_REST
- 	CLEAR_RREGS
-+	movq	%r9,R9(%rsp)
- 	movq	$-ENOSYS,RAX(%rsp)	/* really needed? */
- 	movq	%rsp,%rdi        /* &pt_regs -> arg1 */
- 	call	syscall_trace_enter
- 	LOAD_ARGS32 ARGOFFSET  /* reload args from stack in case ptrace changed it */
- 	RESTORE_REST
--	movl	%ebp, %ebp
--	/* no need to do an access_ok check here because rbp has been
--	   32bit zero extended */ 
--1:	movl	(%rbp),%r9d
--	.section __ex_table,"a"
--	.quad 1b,ia32_badarg
--	.previous
-+	xchgl	%ebp,%r9d
- 	jmp	sysenter_do_call
- 	CFI_ENDPROC
- ENDPROC(ia32_sysenter_target)
-@@ -262,20 +258,17 @@ cstar_do_call:
- 	
- cstar_tracesys:	
- 	CFI_RESTORE_STATE
-+	xchgl %r9d,%ebp
- 	SAVE_REST
- 	CLEAR_RREGS
-+	movq %r9,R9(%rsp)
- 	movq $-ENOSYS,RAX(%rsp)	/* really needed? */
- 	movq %rsp,%rdi        /* &pt_regs -> arg1 */
- 	call syscall_trace_enter
- 	LOAD_ARGS32 ARGOFFSET  /* reload args from stack in case ptrace changed it */
- 	RESTORE_REST
-+	xchgl %ebp,%r9d
- 	movl RSP-ARGOFFSET(%rsp), %r8d
--	/* no need to do an access_ok check here because r8 has been
--	   32bit zero extended */ 
--1:	movl	(%r8),%r9d
--	.section __ex_table,"a"
--	.quad 1b,ia32_badarg
--	.previous
- 	jmp cstar_do_call
- END(ia32_cstar_target)
- 				
+---
+~Randy
