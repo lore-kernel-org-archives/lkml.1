@@ -1,44 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762140AbXKNRvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbXKNRvm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762140AbXKNRvY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 12:51:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761846AbXKNRvF
+	id S1756757AbXKNRvm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 12:51:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760283AbXKNRv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 12:51:05 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:39313 "EHLO mail.screens.ru"
+	Wed, 14 Nov 2007 12:51:29 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:47399 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761742AbXKNRvD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 12:51:03 -0500
-Date: Wed, 14 Nov 2007 20:48:40 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Grant Wilson <grant.wilson@zen.co.uk>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc1-gb4f5550 oops
-Message-ID: <20071114174840.GA14193@tv-sign.ru>
-References: <20071114151708.GA12355@tv-sign.ru> <20071114163749.GH3359@linux.vnet.ibm.com>
+	id S1762149AbXKNRv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 12:51:27 -0500
+Date: Wed, 14 Nov 2007 12:50:28 -0500
+From: Alan Cox <alan@redhat.com>
+To: Mark Lord <liml@rtr.ca>
+Cc: Tejun Heo <htejun@gmail.com>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Sebastian Kemper <sebastian_ml@gmx.net>,
+       Jeff Garzik <jgarzik@pobox.com>, Alan Cox <alan@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] libata-scsi:  be tolerant of 12-byte ATAPI commands in 16-byte CDBs
+Message-ID: <20071114175028.GA9546@devserv.devel.redhat.com>
+References: <20071113164323.GA5252@section-eight> <20071113212230.77cadecd@the-village.bc.nu> <20071113232859.GA4681@section-eight> <473B0FA2.5000102@rtr.ca> <20071114153852.GA9019@section-eight> <473B1B83.9020103@rtr.ca> <473B33F7.7030708@rtr.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071114163749.GH3359@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <473B33F7.7030708@rtr.ca>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/14, Srivatsa Vaddagiri wrote:
->
-> On Wed, Nov 14, 2007 at 06:17:08PM +0300, Oleg Nesterov wrote:
-> > Suppose that old user_struct/task_group is freed/reused, and the task does
+On Wed, Nov 14, 2007 at 12:44:23PM -0500, Mark Lord wrote:
+> Sebastian Kemper reported that issuing CD/DVD commands under libata
+> is not fully compatible with ide-scsi.  In particular, the 
+> GPCMD_SET_STREAMING
+> was being rejected at the host level in some instances.
 > 
-> Shouldn't this old user actually be the root user_struct?
+> The reason is that libata-scsi insists upon the cmd_len field exactly 
+> matching
+> the SCSI opcode being issued, whereas ide-scsi tolerates 12-byte commands
+> contained within a 16-byte (cmd_len) CDB.
+> 
+> There doesn't seem to be a good reason for us to not be compatible there,
+> so here is a patch to fix libata-scsi to permit SCSI opcodes so long as
+> they fit within whatever size CDB is provided.
+> 
+> Signed-off-by: Mark Lord <mlord@pobox.com>
 
-Well, the S_ISUID application can switch ->user from !root_user (note that
-setuid exec doesn't change ->user), and we also have CAP_SETUID...
-
-But yes, I agree, this all is very unlikely.
-
-Oleg.
+Acked-by: Alan Cox <alan@redhat.com>
 
