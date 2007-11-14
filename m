@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761354AbXKNFJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762540AbXKNFLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761354AbXKNFJj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 00:09:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750893AbXKNFJ2
+	id S1762540AbXKNFLR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 00:11:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750984AbXKNFLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 00:09:28 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52217
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750779AbXKNFJ1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 00:09:27 -0500
-Date: Tue, 13 Nov 2007 21:09:26 -0800 (PST)
-Message-Id: <20071113.210926.97725854.davem@davemloft.net>
-To: jochen@scram.de
-Cc: linuxppc-embedded@ozlabs.org, marcelo@kvack.org, scottwood@freescale.com,
-       linux-kernel@vger.kernel.org, jeff@garzik.org, netdev@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] powerpc: Fix fs_enet module build
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4739EDA8.6020800@scram.de>
-References: <4739EDA8.6020800@scram.de>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 14 Nov 2007 00:11:06 -0500
+Received: from [212.12.190.148] ([212.12.190.148]:49848 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750893AbXKNFLE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 00:11:04 -0500
+From: Al Boldi <a1426z@gawab.com>
+To: Valdis.Kletnieks@vt.edu
+Subject: Re: mm snapshot broken-out-2007-11-13-04-14.tar.gz uploaded
+Date: Wed, 14 Nov 2007 08:09:51 +0300
+User-Agent: KMail/1.5
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+References: <200711131821.54056.a1426z@gawab.com> <200711131942.10195.a1426z@gawab.com> <5021.1194990201@turing-police.cc.vt.edu>
+In-Reply-To: <5021.1194990201@turing-police.cc.vt.edu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711140809.51644.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jochen Friedrich <jochen@scram.de>
-Date: Tue, 13 Nov 2007 19:32:08 +0100
+Valdis.Kletnieks@vt.edu wrote:
+> On Tue, 13 Nov 2007 19:42:10 +0300, Al Boldi said:
+> > Oh.  What about breaking out a stable-mm snapshot against the latest
+> > stable kernel?
+>
+> You can roll your own of those.
+>
+> Get a 2.6.23.N kernel tarball.
+> patch -R the 23.N patch against that, giving you a 23.0 tree.
+> Apply patch-2.6.24-rc2 to that.
+>
+> Now apply the snapshot.
 
-> If fs_enet is build as module, on PPC_CPM_NEW_BINDING platforms
-> mii-fec/mii-bitbang should be build as module, as well. On other
-> platforms, mii-fec/mii-bitbang must be included into the main module.
-> Otherwise some symbols remain undefined. Additionally, fs_enet uses
-> libphy, so add a select PHYLIB.
-> 
->   Building modules, stage 2.
->   MODPOST 5 modules
-> ERROR: "fs_scc_ops" [drivers/net/fs_enet/fs_enet.ko] undefined!
-> make[1]: *** [__modpost] Error 1
-> make: *** [modules] Error 2
-> 
-> Signed-off-by: Jochen Friedrich <jochen@scram.de>
+Ok, but I was thinking of allowing a more selective approach.  First, break 
+out an mm snapshot that only contain patch-sets that are deemed stable, but 
+still not ready for rc.  Then, a tool may allow to selectively apply a 
+specific patch-set against the latest stable kernel, not the rc.  This could 
+possibly improve longer-term testing, instead of just relying on crunch-time 
+rc testing.
 
-This is truly ugly and creates an unnecessarily hard to
-maintain and complex driver.
 
-Please find a way to fix this for real, so that the
-PPC_CPM_NEW_BINDING ifdef is not necessary at all and
-things get built modular or not naturally as we handle
-things for other cases like this.
+Thanks!
 
-THanks.
+--
+Al
+
