@@ -1,71 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759557AbXKNMEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756915AbXKNMGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759557AbXKNMEp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 07:04:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756163AbXKNMEf
+	id S1756915AbXKNMGy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 07:06:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbXKNMGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 07:04:35 -0500
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:42519 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753147AbXKNMEe (ORCPT
+	Wed, 14 Nov 2007 07:06:46 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38388 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751926AbXKNMGp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 07:04:34 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=iCIosJf3xCJX3nwF+VqPnF3oH+wMhOmL2vccjDKrzc6JEjeu6Qfywfxpsvce32/RxLa4rGVpEe7Dpj0zntSqbv6pO57RHm8cpTRZiKVmlqSyY97KUaM5dVVS2rMoJOBYRsHonEpPSZu3dkVvFE6jEjKwCBLrNtoATk4gqBu5x/0=  ;
-X-YMail-OSG: SbDkBnUVM1nnCwZyVA1Pmi4td7IES484S2fFyqQxWlbCBIEA9U9XB6DUWw1_miGSku3lXd862Q--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: 2.6.24-rc2: Network commit causes SLUB performance regression with tbench
-Date: Wed, 14 Nov 2007 11:02:11 +1100
-User-Agent: KMail/1.9.5
-Cc: David Miller <davem@davemloft.net>, clameter@sgi.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200711140514.28159.nickpiggin@yahoo.com.au> <20071114.031022.183117678.davem@davemloft.net> <20071114114844.GA13927@gondor.apana.org.au>
-In-Reply-To: <20071114114844.GA13927@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 14 Nov 2007 07:06:45 -0500
+Date: Wed, 14 Nov 2007 12:05:42 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH 2/2] sata_nv: fix ATAPI issues with memory over 4GB (v3)
+Message-ID: <20071114120542.02b0b6da@the-village.bc.nu>
+In-Reply-To: <473A7677.6080007@shaw.ca>
+References: <473A7677.6080007@shaw.ca>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711141102.11477.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 November 2007 22:48, Herbert Xu wrote:
-> On Wed, Nov 14, 2007 at 03:10:22AM -0800, David Miller wrote:
-> > So the thing that's being effected here in TCP is
-> > net/ipv4/tcp.c:select_size(), specifically the else branch:
->
-> Thanks for the pointer.  Indeed there is a bug in that area.
-> I'm not sure whether it's causing the problem at hand but it's
-> certainly suboptimal.
->
-> [TCP]: Fix size calculation in sk_stream_alloc_pskb
+On Tue, 13 Nov 2007 22:15:51 -0600
+Robert Hancock <hancockr@shaw.ca> wrote:
 
-This looks like it fixes the problem!
+> This fixes some problems with ATAPI devices on nForce4 controllers in ADMA mode
+> on systems with memory located above 4GB. We need to delay setting the 64-bit
+> DMA mask until the PRD table and padding buffer are allocated so that they don't
+> get allocated above 4GB and break legacy mode (which is needed for ATAPI
+> devices).
+> 
+> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
 
-Still interested to know why SLAB didn't see the same thing...
-
-
-> We round up the header size in sk_stream_alloc_pskb so that
-> TSO packets get zero tail room.  Unfortunately this rounding
-> up is not coordinated with the select_size() function used by
-> TCP to calculate the second parameter of sk_stream_alloc_pskb.
->
-> As a result, we may allocate more than a page of data in the
-> non-TSO case when exactly one page is desired.
->
-> In fact, rounding up the head room is detrimental in the non-TSO
-> case because it makes memory that would otherwise be available to
-> the payload head room.  TSO doesn't need this either, all it wants
-> is the guarantee that there is no tail room.
->
-> So this patch fixes this by adjusting the skb_reserve call so that
-> exactly the requested amount (which all callers have calculated in
-> a precise way) is made available as tail room.
->
-> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
->
-> Cheers,
+Acked-by: Alan Cox <alan@redhat.com>
