@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761597AbXKNAKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761974AbXKNAL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761597AbXKNAKZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 19:10:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758081AbXKNAKM
+	id S1761974AbXKNAL0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 19:11:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755571AbXKNALS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 19:10:12 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:49298 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753192AbXKNAKK (ORCPT
+	Tue, 13 Nov 2007 19:11:18 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:36201 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754450AbXKNALR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 19:10:10 -0500
-Date: Tue, 13 Nov 2007 17:10:08 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Cc: Greg KH <gregkh@suse.de>, Rick Jones <rick.jones2@hp.com>,
-       Greg KH <greg@kroah.com>, Alex Chiang <achiang@hp.com>, lenb@kernel.org,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
-Message-ID: <20071114001008.GQ17785@parisc-linux.org>
-References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113170129.GA20185@kroah.com> <20071113202154.GA22812@ldl.fc.hp.com> <20071113202632.GA3227@kroah.com> <473A2A61.7030303@hp.com> <20071113225605.GA2589@suse.de> <20071113230400.GP17785@parisc-linux.org> <20071113153314.ba46cdf0.kristen.c.accardi@intel.com>
+	Tue, 13 Nov 2007 19:11:17 -0500
+Date: Tue, 13 Nov 2007 16:00:30 -0800
+From: Greg KH <greg@kroah.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       xen-devel@lists.xensource.com, LKML <linux-kernel@vger.kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>, virtualization@lists.osdl.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Keir Fraser <keir@xensource.com>, Stable Kernel <stable@kernel.org>
+Subject: Re: [stable] [PATCH 00/12] xen/paravirt_ops patches for 2.6.24
+Message-ID: <20071114000030.GA30402@kroah.com>
+References: <20071015204840.074767068@goop.org> <4713E2D6.90801@goop.org> <20071113232258.GA10338@kroah.com> <200711140053.33584.ak@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071113153314.ba46cdf0.kristen.c.accardi@intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200711140053.33584.ak@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 03:33:14PM -0800, Kristen Carlson Accardi wrote:
-> As far as being able to retrieve the slot number (which it seemed from
-> the HP manageablity application perspective is the goal here), that
-> information is available from userspace as well for at least standard PCI
-> and pcie based systems for occupied slots.  For standard pci, you have
-> to make something up anyway - for shpchp we just use an incremental 
-> number and combine it with the bus number to represent the slot.  For
-> pcie, you can get this info from the slot capabilities register.
+On Wed, Nov 14, 2007 at 12:53:33AM +0100, Andi Kleen wrote:
+> 
+> > > Subject: [PATCH 12/12] xfs: eagerly remove vmap mappings to avoid
+> > > upsetting Xen
+> 
+> This patch was the wrong fix anyways as discussed; David Chinner
+> finally came up with a better one.
 
-Ummm ... that's not what the /spec/ says.  I've never worked on any shpc
-machines, but the shpc driver reads the slot values from the SLOT_CONFIG
-register, just like the spec says to.
+Ok, that's good to know, if someone wants to send me the correct one,
+that would be appreciated.
 
-I don't understand how you're supposed to get the slot number for
-standard PCI for occupied slots.  Could you explain?
+Although, it's not like anyone actually uses the in-kernel Xen on
+2.6.23, so it's probably not really worth it.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+thanks,
+
+greg k-h
