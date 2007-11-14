@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755608AbXKNFBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759046AbXKNFHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755608AbXKNFBb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 00:01:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750727AbXKNFBX
+	id S1759046AbXKNFHi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 00:07:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbXKNFH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 00:01:23 -0500
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:40310 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750722AbXKNFBW (ORCPT
+	Wed, 14 Nov 2007 00:07:27 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40382
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750727AbXKNFH0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 00:01:22 -0500
-Date: Wed, 14 Nov 2007 10:30:54 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, tigran@aivazian.fsnet.co.uk,
-       apw@shadowen.org
-Subject: [PATCH] 2.6.24-rc2-mm1 - Build Fail - fs/bfs/inode.c
-Message-ID: <20071114050054.GB12453@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 14 Nov 2007 00:07:26 -0500
+Date: Tue, 13 Nov 2007 21:07:26 -0800 (PST)
+Message-Id: <20071113.210726.39231381.davem@davemloft.net>
+To: mbligh@google.com
+Cc: James.Bottomley@hansenpartnership.com, akpm@linux-foundation.org,
+       protasnb@gmail.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <33307c790711130946j3ae10dcx9d776bc9671710f7@mail.gmail.com>
+References: <20071113031553.3c7b5c16.akpm@linux-foundation.org>
+	<1194968001.3416.12.camel@localhost.localdomain>
+	<33307c790711130946j3ae10dcx9d776bc9671710f7@mail.gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+From: "Martin Bligh" <mbligh@google.com>
+Date: Tue, 13 Nov 2007 09:46:08 -0800
 
-The kernel build fails, with following error
+> This is a technical issue with vger.kernel.org mailing lists that I've tried
+> addressing before - maybe davem can help fix it?
 
-fs/bfs/inode.c: In function ‘bfs_iget’:
-fs/bfs/inode.c:37: error: ‘ino’ redeclared as different kind of symbol
-fs/bfs/inode.c:35: error: previous definition of ‘ino’ was here
-fs/bfs/inode.c:37: error: ‘inode’ undeclared (first use in this function)
-fs/bfs/inode.c:37: error: (Each undeclared identifier is reported onlyonce
-fs/bfs/inode.c:37: error: for each function it appears in.)
-make[2]: *** [fs/bfs/inode.o] Error 1
-make[1]: *** [fs/bfs] Error 2
-make: *** [fs] Error 2
+I think the problem is that certain mail headers show up multiple
+times and this makes it look like a looping email so we toss it.
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
---
---- linux-2.6.24-rc2/fs/bfs/inode.c	2007-11-14 09:53:41.000000000 +0530
-+++ linux-2.6.24-rc2/fs/bfs/~inode.c	2007-11-14 10:21:06.000000000 +0530
-@@ -34,7 +34,6 @@ void dump_imap(const char *prefix, struc
- 
- struct inode *bfs_iget(struct super_block *sb, unsigned long ino)
- {
--	unsigned long ino = inode->i_ino;
- 	struct bfs_inode *di;
- 	struct inode *inode;
- 	struct buffer_head *bh;
+I suspect the one you really need to block out is X-MailingList
+or similar.
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Why don't you do a few tries and I'll try to remember to keep an
+eye out for the bounces?
+
+Thanks.
