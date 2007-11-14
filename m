@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759848AbXKNQMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760218AbXKNQOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759848AbXKNQMR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 11:12:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756559AbXKNQMB
+	id S1760218AbXKNQOS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 11:14:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756559AbXKNQOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 11:12:01 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:39920 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754563AbXKNQMA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 11:12:00 -0500
-Message-ID: <473B1E4D.40800@schaufler-ca.com>
-Date: Wed, 14 Nov 2007 08:11:57 -0800
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: akpm@osdl.org, torvalds@osdl.org
-Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] For -mm only - inode_getsecurity rework
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Nov 2007 11:14:08 -0500
+Received: from madara.hpl.hp.com ([192.6.19.124]:52247 "EHLO madara.hpl.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756132AbXKNQOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 11:14:07 -0500
+Date: Wed, 14 Nov 2007 08:13:25 -0800
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: William Cohen <wcohen@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>, akpm@osdl.org,
+       Robert Richter <robert.richter@amd.com>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
+Message-ID: <20071114161325.GL6557@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <20071113212902.GA17593@one.firstfloor.org> <20071113214628.GE5747@frankl.hpl.hp.com> <20071113215056.GB17593@one.firstfloor.org> <20071113222234.GH5747@frankl.hpl.hp.com> <20071113222534.GC17145@one.firstfloor.org> <20071113225848.GK5747@frankl.hpl.hp.com> <20071114020702.GB20365@one.firstfloor.org> <20071114130909.GB6557@frankl.hpl.hp.com> <20071114142411.GD17145@one.firstfloor.org> <473B17D4.5050702@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <473B17D4.5050702@redhat.com>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Casey Schaufler <casey@schaufler-ca.com>
 
-This represents the rework required for changes to inode_getsecurity.
-It is relative to smack24rc2v11, which is the version added to -mm,
-but subsequently removed because of the change to inode_getsecurity
+On Wed, Nov 14, 2007 at 10:44:20AM -0500, William Cohen wrote:
+> Andi Kleen wrote:
+> 
+> >>One approach does not prevent the other. Assuming you allow cr4.pce, then 
+> >>nothing prevents
+> >>a self-monitoring thread from reading the counters directly. You'll just 
+> >>get the
+> >>lower 32-bit of it. So if you read frequently enough, you should not have 
+> >>a problem.
+> >
+> >Hmm? RDPMC is 64bit.
+> 
+> There are a number of processors that have 32-bit counters such as the IBM 
+> power processors. On many x86 processors the upper bits of the counter are 
+> sign extended from the lower 32 bits. Thus, one can only assume the lower 
+> 32-bit are available. Roll over of values is quite possible (<2 seconds of 
+> cycle count), so additional work needs to be done to obtain a valid value.
+> 
 
-Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
+Exactly, on Intel's only the bottom 32-bit actually are useable, the rest is
+sign-extension. That's why it is okay for measuring small sections of code,
+but that's it. On AMD, I think it is better. On Itanium you get the 47-bit worth.
+Don't know about Power or Cell.
 
----
-
- security/smack/smack_lsm.c |   12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
-
-diff -uprN -X linux-2.6.24-rc2-base/Documentation/dontdiff linux-2.6.24-rc2-smack/security/smack/smack_lsm.c linux-2.6.24-rc2-mm1-smack/security/smack/smack_lsm.c
---- linux-2.6.24-rc2-smack/security/smack/smack_lsm.c	2007-11-07 21:35:41.000000000 -0800
-+++ linux-2.6.24-rc2-mm1-smack/security/smack/smack_lsm.c	2007-11-12 22:49:16.000000000 -0800
-@@ -673,8 +673,8 @@ static int smack_inode_removexattr(struc
-  * Returns the size of the attribute or an error code
-  */
- static int smack_inode_getsecurity(const struct inode *inode,
--				   const char *name, void *buffer,
--				   size_t size, int err)
-+				   const char *name, void **buffer,
-+				   bool alloc)
- {
- 	struct socket_smack *ssp;
- 	struct socket *sock;
-@@ -687,9 +687,7 @@ static int smack_inode_getsecurity(const
- 	if (strcmp(name, XATTR_SMACK_SUFFIX) == 0) {
- 		isp = smk_of_inode(inode);
- 		ilen = strlen(isp) + 1;
--		if (ilen > size)
--			return -EINVAL;
--		strncpy(buffer, isp, ilen);
-+		*buffer = isp;
- 		return ilen;
- 	}
- 
-@@ -714,10 +712,8 @@ static int smack_inode_getsecurity(const
- 		return -EOPNOTSUPP;
- 
- 	ilen = strlen(isp) + 1;
--	if (ilen > size)
--		rc = -EINVAL;
- 	if (rc == 0) {
--		strncpy(buffer, isp, ilen);
-+		*buffer = isp;
- 		rc = ilen;
- 	}
- 
-
-
-
-
+-- 
+-Stephane
