@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763683AbXKNUgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764891AbXKNU4y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763683AbXKNUgg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 15:36:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755890AbXKNUg2
+	id S1764891AbXKNU4y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 15:56:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764113AbXKNU4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 15:36:28 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43229 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760549AbXKNUg1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 15:36:27 -0500
-Date: Wed, 14 Nov 2007 12:36:19 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: broken suspend [Was: 2.6.24-rc2-mm1]
-Message-Id: <20071114123619.9c058a44.akpm@linux-foundation.org>
-In-Reply-To: <473B5987.60904@gmail.com>
-References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
-	<473B5987.60904@gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Nov 2007 15:56:00 -0500
+Received: from palrel12.hp.com ([156.153.255.237]:38092 "EHLO palrel12.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762075AbXKNUz6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 15:55:58 -0500
+Date: Wed, 14 Nov 2007 13:55:55 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Gary Hade <garyhade@us.ibm.com>, Greg KH <greg@kroah.com>, gregkh@suse.de,
+       kristen.c.accardi@intel.com, lenb@kernel.org, rick.jones2@hp.com,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       kaneshige.kenji@jp.fujitsu.com, pcihpd-discuss@lists.sourceforge.net,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 2/5] Construct one fakephp slot per pci slot
+Message-ID: <20071114205555.GH25002@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Matthew Wilcox <matthew@wil.cx>, Gary Hade <garyhade@us.ibm.com>,
+	Greg KH <greg@kroah.com>, gregkh@suse.de,
+	kristen.c.accardi@intel.com, lenb@kernel.org, rick.jones2@hp.com,
+	linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	kaneshige.kenji@jp.fujitsu.com, pcihpd-discuss@lists.sourceforge.net,
+	linux-acpi@vger.kernel.org
+References: <20071114193605.GA25002@ldl.fc.hp.com> <20071114193729.GC25002@ldl.fc.hp.com> <20071114201246.GZ17785@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071114201246.GZ17785@parisc-linux.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Nov 2007 21:24:39 +0100 Jiri Slaby <jirislaby@gmail.com> wrote:
+* Matthew Wilcox <matthew@wil.cx>:
+> On Wed, Nov 14, 2007 at 12:37:29PM -0700, Alex Chiang wrote:
+> > Register one slot per slot, rather than one slot per function.
+> > Change the name of the slot to fake%d instead of the pci address.
+> 
+> > +#define SLOT_NAME_SIZE KOBJ_NAME_LEN
+> 
+> Defined, then never used ... how about s/KOBJ_NAME_LEN/8/, then use
+> SLOT_NAME_SIZE throughout?
 
-> On 11/14/2007 02:59 AM, Andrew Morton wrote:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc2/2.6.24-rc2-mm1/
-> 
-> Doesn't suspend for me (neither broken-out-2007-11-13-04-14 did) on x86_64.
-> echo mem >/sys/power/state
-> causes shut down of disk(s) and blinking cursor on 1,1 position.
-> The last working was 2.6.23-rc8-mm2. I haven't tested
-> 2.6.23-mm1, since it didn't work for me.
-> 
-> As usual, I don't know how to debug this and what other info is needed, any
-> thoughts?
-> 
+Whoops, good catch. I had a braino there.
 
-http://www.zip.com.au/~akpm/linux/patches/stuff/bisecting-mm-trees.txt
-would be ideal, please.  It's pretty quick.  I did it about six times
-yesterday evening :(
+Thanks.
+
+/ac
+
