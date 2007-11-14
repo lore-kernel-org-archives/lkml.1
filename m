@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761077AbXKNSH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761928AbXKNSIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761077AbXKNSH5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 13:07:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbXKNSHs
+	id S1761928AbXKNSIv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 13:08:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbXKNSIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 13:07:48 -0500
-Received: from cavan.codon.org.uk ([78.32.9.130]:60492 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751807AbXKNSHr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 13:07:47 -0500
-Date: Wed, 14 Nov 2007 18:03:56 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Greg KH <greg@kroah.com>
-Cc: Alex Chiang <achiang@hp.com>, gregkh@suse.de, kristen.c.accardi@intel.com,
-       lenb@kernel.org, matthew@wil.cx, rick.jones2@hp.com,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
-Message-ID: <20071114180355.GB4265@srcf.ucam.org>
-References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113170129.GA20185@kroah.com> <20071113202154.GA22812@ldl.fc.hp.com> <20071113202632.GA3227@kroah.com> <20071114174401.GA4265@srcf.ucam.org> <20071114175151.GA14994@kroah.com>
+	Wed, 14 Nov 2007 13:08:44 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:54541 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751526AbXKNSIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 13:08:43 -0500
+Date: Wed, 14 Nov 2007 13:08:38 -0500
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Chris Wedgwood <cw@f00f.org>, linux-xfs@oss.sgi.com,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24-rc2 XFS nfsd hang
+Message-ID: <20071114180838.GE14254@fieldses.org>
+References: <20071114070400.GA25708@puku.stupidest.org> <20071114152952.GA4210@infradead.org> <20071114173922.GC14254@fieldses.org> <20071114174419.GA15271@infradead.org> <20071114175322.GD14254@fieldses.org> <20071114180241.GA16656@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071114175151.GA14994@kroah.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+In-Reply-To: <20071114180241.GA16656@infradead.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 14, 2007 at 09:51:51AM -0800, Greg KH wrote:
-> On Wed, Nov 14, 2007 at 05:44:01PM +0000, Matthew Garrett wrote:
-> > Dumping raw ACPI tables isn't adequate - _SUN might be a complex ACPI 
-> > method with multiple reads and writes to raw hardware, and we really 
-> > don't want to do that in userspace. The only way to do this reliably is 
-> > in the kernel.
+On Wed, Nov 14, 2007 at 06:02:41PM +0000, Christoph Hellwig wrote:
+> On Wed, Nov 14, 2007 at 12:53:22PM -0500, J. Bruce Fields wrote:
+> > On Wed, Nov 14, 2007 at 05:44:19PM +0000, Christoph Hellwig wrote:
+> > > On Wed, Nov 14, 2007 at 12:39:22PM -0500, J. Bruce Fields wrote:
+> > > > This must have come up before; feel free to remind me: is there any way
+> > > > to make the interface easier to use?  (E.g. would it help if the filldir
+> > > > callback could be passed a dentry?)
+> > > 
+> > > The best thing for the filesystem would be to have a readdirplus
+> > > (or have it folded into readdir) instead of calling into lookup
+> > > from ->filldir.
+> > 
+> > And the readdirplus would pass a dentry to its equivalent of ->filldir?
+> > Or something else?
 > 
-> But it really isn't, as the firmware kit has proven...
+> Personally I'd prefer it to only grow a struct stat or rather it's members
+> But the nfsd code currently expects a dentry so this might require some
+> major refactoring.
 
-The firmware toolkit will only work if the _SUN method merely returns a 
-hardcoded value. The spec doesn't require that that be the case, and 
-it's easy to imagine situations where it won't.
+Well, we need to check for mountpoints, for example, so I don't see any
+way out of needing a dentry.  What's the drawback?
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+--b.
