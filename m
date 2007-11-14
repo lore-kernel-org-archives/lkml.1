@@ -1,54 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760604AbXKNQgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760575AbXKNQjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760604AbXKNQgS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 11:36:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756887AbXKNQgI
+	id S1760575AbXKNQjS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 11:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbXKNQjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 11:36:08 -0500
-Received: from nic2.axis.se ([193.13.178.10]:49852 "EHLO krynn.se.axis.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756755AbXKNQgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 11:36:07 -0500
-Date: Wed, 14 Nov 2007 17:35:22 +0100
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Mikael Starvik <mikael.starvik@axis.com>,
-       Jesper Nilsson <jesper.nilsson@axis.com>, linux-kernel@vger.kernel.org,
-       jgarzik@pobox.com
-Subject: [PATCH] CRISv10 Ethernet declare mac fix
-Message-ID: <20071114163522.GN6347@axis.com>
+	Wed, 14 Nov 2007 11:39:06 -0500
+Received: from sj-iport-4.cisco.com ([171.68.10.86]:22041 "EHLO
+	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750767AbXKNQjF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 11:39:05 -0500
+X-IronPort-AV: E=Sophos;i="4.21,417,1188802800"; 
+   d="scan'208";a="15562532"
+To: Takashi Iwai <tiwai@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: snd_hda_intel 2.6.24-rc2 bug: interrupts don't always work on Lenovo X60s
+X-Message-Flag: Warning: May contain useful information
+References: <ada1wb05p6n.fsf@cisco.com> <s5hbq9zyktm.wl%tiwai@suse.de>
+	<adak5on2yd6.fsf@cisco.com> <s5hwssnvaw1.wl%tiwai@suse.de>
+	<adafxzb2tf3.fsf@cisco.com> <s5hhcjqhkty.wl%tiwai@suse.de>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Wed, 14 Nov 2007 08:39:03 -0800
+In-Reply-To: <s5hhcjqhkty.wl%tiwai@suse.de> (Takashi Iwai's message of "Tue, 13 Nov 2007 04:43:05 +0100")
+Message-ID: <ada3av8234o.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 14 Nov 2007 16:39:04.0292 (UTC) FILETIME=[DE37D240:01C826DC]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Declare mac using DECLARE_MAC_BUF for use when calling print_mac().
+ > Roland Dreier wrote:
+ > > > >     [ 2311.759856] ACPI: PCI Interrupt 0000:00:1b.0[B] -> GSI 17 (level, low) -> IRQ 21
+ > > > >     [ 2311.759866] hda_intel: probe_mask set to 0x1 for device 17aa:2010
+ > > > >     [ 2311.759886] PCI: Setting latency timer of device 0000:00:1b.0 to 64
+ > > > >     [ 2312.911309] hda_intel: azx_get_response timeout, switching to polling mode: last cmd=0x003f000c
 
-This fixes compile error where mac was undeclared.
-Also, remove unused variable i.
+ > Anyway, could you try the patch below?  As far as I see, it's the only
+ > part that may access PINCAP verb for that NID.
 
-Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
+This seems to help in that I don't see the "azx_get_response timeout"
+message on every module load as I do with mainline, but I still see a
+problem with a different cmd after a few load-unload cycles:
 
----
- eth_v10.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+[  257.503143] ACPI: PCI interrupt for device 0000:00:1b.0 disabled
+[  259.215359] ACPI: PCI Interrupt 0000:00:1b.0[B] -> GSI 17 (level, low) -> IRQ 22
+[  259.215372] hda_intel: probe_mask set to 0x1 for device 17aa:2010
+[  259.215398] PCI: Setting latency timer of device 0000:00:1b.0 to 64
+[  263.418591] ACPI: PCI interrupt for device 0000:00:1b.0 disabled
+[  265.626093] ACPI: PCI Interrupt 0000:00:1b.0[B] -> GSI 17 (level, low) -> IRQ 22
+[  265.626105] hda_intel: probe_mask set to 0x1 for device 17aa:2010
+[  265.626133] PCI: Setting latency timer of device 0000:00:1b.0 to 64
+[  320.898290] ACPI: PCI interrupt for device 0000:00:1b.0 disabled
+[  322.874182] ACPI: PCI Interrupt 0000:00:1b.0[B] -> GSI 17 (level, low) -> IRQ 22
+[  322.874196] hda_intel: probe_mask set to 0x1 for device 17aa:2010
+[  322.874228] PCI: Setting latency timer of device 0000:00:1b.0 to 64
+[  333.087177] ACPI: PCI interrupt for device 0000:00:1b.0 disabled
+[  334.024358] ACPI: PCI Interrupt 0000:00:1b.0[B] -> GSI 17 (level, low) -> IRQ 22
+[  334.024371] hda_intel: probe_mask set to 0x1 for device 17aa:2010
+[  334.024395] PCI: Setting latency timer of device 0000:00:1b.0 to 64
+[  335.422296] hda_intel: azx_get_response timeout, switching to polling mode: last cmd=0x002f0d00
 
-diff --git a/drivers/net/cris/eth_v10.c b/drivers/net/cris/eth_v10.c
-index 5dc984a..917b7b4 100644
---- a/drivers/net/cris/eth_v10.c
-+++ b/drivers/net/cris/eth_v10.c
-@@ -630,7 +630,7 @@ e100_set_mac_address(struct net_device *dev, void *p)
- {
- 	struct net_local *np = netdev_priv(dev);
- 	struct sockaddr *addr = p;
--	int i;
-+	DECLARE_MAC_BUF(mac);
- 
- 	spin_lock(&np->lock); /* preemption protection */
- 
-
-/^JN - Jesper Nilsson
---
-               Jesper Nilsson -- jesper.nilsson@axis.com
+Thanks,
+  Roland
