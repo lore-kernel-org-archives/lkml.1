@@ -1,58 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760868AbXKNVox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759968AbXKNVu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760868AbXKNVox (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 16:44:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbXKNVoo
+	id S1759968AbXKNVu7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 16:50:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754501AbXKNVut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 16:44:44 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:42564 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753072AbXKNVon (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 16:44:43 -0500
-Date: Wed, 14 Nov 2007 22:42:00 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH] Hibernation: Fix lockdep report (v2)
-Message-ID: <20071114224200.GB7367@ucw.cz>
-References: <200711142225.58033.rjw@sisk.pl>
+	Wed, 14 Nov 2007 16:50:49 -0500
+Received: from ozlabs.org ([203.10.76.45]:49459 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753556AbXKNVut (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 16:50:49 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200711142225.58033.rjw@sisk.pl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18235.28062.309910.416774@cargo.ozlabs.ibm.com>
+Date: Thu, 15 Nov 2007 08:50:22 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: David Miller <davem@davemloft.net>
+Cc: hch@infradead.org, akpm@linux-foundation.org, gregkh@suse.de,
+       mucci@cs.utk.edu, eranian@hpl.hp.com, wcohen@redhat.com,
+       robert.richter@amd.com, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org
+Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
+In-Reply-To: <20071114.040758.101673950.davem@davemloft.net>
+References: <18234.57272.590960.860941@cargo.ozlabs.ibm.com>
+	<20071114.035236.84619893.davem@davemloft.net>
+	<18234.58380.400222.329961@cargo.ozlabs.ibm.com>
+	<20071114.040758.101673950.davem@davemloft.net>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2007-11-14 22:25:57, Rafael J. Wysocki wrote:
-> [Andrew, please consider this as 2.6.24 material, thanks.]
-> ---
-> From: Johannes Berg <johannes@sipsolutions.net>
-> 
-> Lockdep reports a circular locking dependency in the hibernate code
-> because
->  - during system boot hibernate code (from an initcall) locks pm_mutex
->    and then a sysfs buffer mutex via name_to_dev_t
->  - during regular operation hibernate code locks pm_mutex under a
->    sysfs buffer mutex because it's called from sysfs methods.
-> 
-> The deadlock can never happen because during initcall invocation nothing
-> can write to sysfs yet. This removes the lockdep report by marking the
-> initcall locking as being in a different class.
-> 
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> Cc: Alan Stern <stern@rowland.harvard.edu>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Pavel Machek <pavel@ucw.cz>
+David Miller writes:
 
-ACK...
+> > You're suggesting that the behaviour of a read() should depend on what
+> > was in the buffer before the read?  Gack!  Surely you have better
+> > taste than that?
+> 
+> Absolutely that's what I mean, it's atomic and gives you exactly what
+> you need.
+> 
+> I see nothing wrong or gross with these semantics.  Nothing in the
+> "book of UNIX" specifies that for a device or special file the passed
+> in buffer cannot contain input control data.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Ohhhhh.... kayyyyy.... *shudders*
+
+It really violates the abstract model of "read" pretty badly.  "Read"
+is "fill in the buffer with data from the device", not "do some
+arbitrary stuff with this area of memory".
+
+I'd prefer to have a transaction() system call like I suggested to
+Nick rather than overloading read() like this.
+
+> > Then you end up with two system calls to get the data rather than one
+> > (one to send the request and another to read the reply).  For
+> > something that needs to be quick that is a suboptimal interface.
+> 
+> Not necessarily, consider the possibility of using recvmsg() control
+> message data.  With that it could be done in one go.
+> 
+> This also suggests that it could be implemented as it's own protocol
+> family.
+
+There's all sorts of possible ways that it could be implemented.  On
+the one hand we have an actual proposed implementation, and on the
+other we have various people saying "oh but it could be implemented
+this other way" without providing any actual code.
+
+Now if those people can show that their way of doing it is
+significantly simpler and better than the existing implementation,
+then that's useful.  I really don't think that doing a whole new
+net protocol family is a simpler and better way of doing a performance
+monitor interface, though.
+
+Paul.
