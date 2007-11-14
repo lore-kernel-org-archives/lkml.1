@@ -1,107 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758096AbXKNOuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756866AbXKNOvm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758096AbXKNOuV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 09:50:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758760AbXKNOt4
+	id S1756866AbXKNOvm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 09:51:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754265AbXKNOvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 09:49:56 -0500
-Received: from mail.sf-mail.de ([62.27.20.61]:48857 "EHLO mail.sf-mail.de"
+	Wed, 14 Nov 2007 09:51:31 -0500
+Received: from v32413.1blu.de ([88.84.155.73]:47829 "EHLO mail.lenk.info"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758391AbXKNOty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 09:49:54 -0500
-From: Rolf Eike Beer <eike-hotplug@sf-tec.de>
-To: Alex Chiang <achiang@hp.com>
-Subject: Re: [Pcihpd-discuss] [PATCH 2/5] Construct one fakephp slot per pci slot
-Date: Wed, 14 Nov 2007 15:49:42 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: pcihpd-discuss@lists.sourceforge.net, gregkh@suse.de,
-       kristen.c.accardi@intel.com, lenb@kernel.org, matthew@wil.cx,
-       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
-References: <20071113000853.GA13341@ldl.fc.hp.com> <200711141339.31839.eike-hotplug@sf-tec.de> <20071114141755.GA7523@ldl.fc.hp.com>
-In-Reply-To: <20071114141755.GA7523@ldl.fc.hp.com>
+	id S1753167AbXKNOva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 09:51:30 -0500
+From: Frank Lichtenheld <frank@lichtenheld.de>
+To: Karsten Keil <kkeil@suse.de>
+Cc: linux-kernel@vger.kernel.org, Frank Lichtenheld <frank@lichtenheld.de>
+Subject: [PATCH] [ISDN] sc: Fix sndpkt to have the correct number of arguments
+Date: Wed, 14 Nov 2007 15:46:21 +0100
+Message-Id: <1195051581-15842-2-git-send-email-frank@lichtenheld.de>
+X-Mailer: git-send-email 1.5.3.4
+In-Reply-To: <1195051581-15842-1-git-send-email-frank@lichtenheld.de>
+References: <1195051581-15842-1-git-send-email-frank@lichtenheld.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2911031.OJdFHeQFKC";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200711141549.50433.eike-hotplug@sf-tec.de>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2911031.OJdFHeQFKC
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+isdn_if.writebuf_skb has an additional ack flag argument which
+was missing from sndpkt leading to the following warning:
+  CC [M]  drivers/isdn/sc/init.o
+drivers/isdn/sc/init.c: In function ‘sc_init’:
+drivers/isdn/sc/init.c:281: warning: assignment from incompatible pointer type
 
-Am Mittwoch, 14. November 2007 schrieb Alex Chiang:
-> Hi Eike,
->
-> * Rolf Eike Beer <eike-hotplug@sf-tec.de>:
-> > Alex Chiang wrote:
-> > > --- a/drivers/pci/hotplug/fakephp.c
-> > > +++ b/drivers/pci/hotplug/fakephp.c
-> > > @@ -93,6 +93,7 @@ static int add_slot(struct pci_dev *dev)
-> > >  	struct dummy_slot *dslot;
-> > >  	struct hotplug_slot *slot;
-> > >  	int retval =3D -ENOMEM;
-> > > +	static int count =3D 1;
-> > >
-> > >  	slot =3D kzalloc(sizeof(struct hotplug_slot), GFP_KERNEL);
-> > >  	if (!slot)
-> > > @@ -106,7 +107,8 @@ static int add_slot(struct pci_dev *dev)
-> > >  	slot->info->max_bus_speed =3D PCI_SPEED_UNKNOWN;
-> > >  	slot->info->cur_bus_speed =3D PCI_SPEED_UNKNOWN;
-> > >
-> > > -	slot->name =3D &dev->dev.bus_id[0];
-> > > +	slot->name =3D kmalloc(8, GFP_KERNEL);
-> > > +	sprintf(slot->name, "fake%d", count++);
-> > >  	dbg("slot->name =3D %s\n", slot->name);
-> > >
-> > >  	dslot =3D kmalloc(sizeof(struct dummy_slot), GFP_KERNEL);
-> >
-> > This is ugly. Please do it the way we already do e.g. for
-> > acpiphp: add a char[8] to "struct dummy_slot" and just
-> > reference that here.
->
-> I took at look at the code in acpiphp you're talking about, and
-> I'm not sure why you think the above is "ugly". We're talking
-> about a runtime vs compile time storage for the name, and doing a
-> kmalloc/sprintf is a pretty standard idiom.
->
-> BTW, I did incorporate both Linas' and Willy's comments, by
-> changing the kmalloc size to an explicit 32, and using snprintf
-> instead.
->
-> In any case, for your particular comment, I think I'm going to
-> leave it alone for now, and let Greg weigh in with the final
-> recommendation.
+Note that this doesn't actually do anything with the flag, it
+just fixes the warning (and probably accessing the last argument).
 
-Because we have another allocation of very small size for every slot here.
+Signed-off-by: Frank Lichtenheld <frank@lichtenheld.de>
+---
+ drivers/isdn/sc/card.h   |    2 +-
+ drivers/isdn/sc/packet.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-struct dummy_slot has a size of 4 pointers, that's 16 byte for 32 bit=20
-architectures. Putting 8 byte of additional storage here would save a=20
-complete allocation on 32 bit platforms. For 64 bit platforms the memory=20
-usage is the same but we do less allocations (i.e. less points to fail) and=
-=20
-less memory fragmentation.
+diff --git a/drivers/isdn/sc/card.h b/drivers/isdn/sc/card.h
+index 5992f63..0120bcf 100644
+--- a/drivers/isdn/sc/card.h
++++ b/drivers/isdn/sc/card.h
+@@ -109,7 +109,7 @@ void memcpy_fromshmem(int card, void *dest, const void *src, size_t n);
+ int get_card_from_id(int driver);
+ int indicate_status(int card, int event, ulong Channel, char *Data);
+ irqreturn_t interrupt_handler(int interrupt, void *cardptr);
+-int sndpkt(int devId, int channel, struct sk_buff *data);
++int sndpkt(int devId, int channel, int ack, struct sk_buff *data);
+ void rcvpkt(int card, RspMessage *rcvmsg);
+ int command(isdn_ctrl *cmd);
+ int reset(int card);
+diff --git a/drivers/isdn/sc/packet.c b/drivers/isdn/sc/packet.c
+index 92016a2..5ff6ae8 100644
+--- a/drivers/isdn/sc/packet.c
++++ b/drivers/isdn/sc/packet.c
+@@ -20,7 +20,7 @@
+ #include "message.h"
+ #include "card.h"
+ 
+-int sndpkt(int devId, int channel, struct sk_buff *data)
++int sndpkt(int devId, int channel, int ack, struct sk_buff *data)
+ {
+ 	LLData	ReqLnkWrite;
+ 	int status;
+-- 
+1.5.3.4
 
-Btw: your code lacks a check if kmalloc() returns NULL.
-
-Eike
-
---nextPart2911031.OJdFHeQFKC
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-
-iD8DBQBHOwsOXKSJPmm5/E4RAiQwAJ9ZuP2yY/8ny+cUt54EhT8g9otzaQCgg/Qt
-V+4g92h1i2GWQGu2aUFAUbM=
-=wQuR
------END PGP SIGNATURE-----
-
---nextPart2911031.OJdFHeQFKC--
