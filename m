@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757880AbXKNL1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756163AbXKNLaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757880AbXKNL1a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 06:27:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753598AbXKNL1I
+	id S1756163AbXKNLaj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 06:30:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbXKNLab
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 06:27:08 -0500
-Received: from s200aog17.obsmtp.com ([207.126.144.131]:52488 "EHLO
-	s200aog17.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbXKNL1G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 06:27:06 -0500
-X-Greylist: delayed 1366 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Nov 2007 06:27:05 EST
-Message-ID: <473AD62E.2030805@st.com>
-Date: Wed, 14 Nov 2007 12:04:14 +0100
-From: Richard MUSIL <richard.musil@st.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 14 Nov 2007 06:30:31 -0500
+Received: from sacred.ru ([62.205.161.221]:38032 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751268AbXKNLaa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 06:30:30 -0500
+Message-ID: <473ADBD1.6080702@openvz.org>
+Date: Wed, 14 Nov 2007 14:28:17 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Problem with http access to stable git - linux-2.6.23.y
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
+To: Andrew Morton <akpm@osdl.org>
+CC: Cedric Le Goater <clg@fr.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/6] Add the NAMESPACES config option
+References: <473ADB5B.50902@openvz.org>
+In-Reply-To: <473ADB5B.50902@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 14 Nov 2007 14:28:17 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am experiencing problem when accessing 2.6.23.y stable git over http.
-In my config I have:
+The option is selectable if EMBEDDED is chosen only. When
+the EMBEDDED is off namespaces will be on.
 
-[core]
-        repositoryformatversion = 0
-        filemode = true
-        bare = false
-        logallrefupdates = true
-[remote "origin"]
-        url = http://www.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-        fetch = +refs/heads/*:refs/remotes/origin/*
-[branch "master"]
-        remote = origin
-        merge = refs/heads/master
-[remote "linux-2.6.22.y"]
-        url = http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.22.y.git
-        fetch = +refs/heads/*:refs/remotes/linux-2.6.22.y/*
-[remote "linux-2.6.23.y"]
-        url = http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.23.y.git
-        fetch = +refs/heads/*:refs/remotes/linux-2.6.23.y/*
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
-Which basically means I am cloning Linus' git and fetching stable branches.
-For linux-2.6.22.y it has been working fine so far, but for linux-2.6.23.y
-I am getting:
+---
 
-> git fetch linux-2.6.23.y
-Cannot get the repository state from http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.23.y.git
+diff --git a/init/Kconfig b/init/Kconfig
+index 96fba82..4ccc1a0 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -404,6 +404,15 @@ config RELAY
+ 
+ 	  If unsure, say N.
+ 
++config NAMESPACES
++	bool "Namespaces support" if EMBEDDED
++	default !EMBEDDED
++	help
++	  Provides the way to make tasks work with different objects using
++	  the same id. For example same IPC id may refer to different objects
++	  or same user id or pid may refer to different tasks when used in
++	  different namespaces.
++
+ config BLK_DEV_INITRD
+ 	bool "Initial RAM filesystem and RAM disk (initramfs/initrd) support"
+ 	depends on BROKEN || !FRV
+-- 
+1.5.3.4
 
-I wonder if I have misconfigured something or there is some difference
-between 2.6.22.y and 2.6.23.y on server side.
-
-Please note, I cannot use git or ssh instead of http, because I am behind
-corporate firewall/proxy.
-
-Richard
