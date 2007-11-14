@@ -1,67 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755618AbXKNJcg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756088AbXKNJg5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755618AbXKNJcg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 04:32:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753129AbXKNJc2
+	id S1756088AbXKNJg5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 04:36:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbXKNJgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 04:32:28 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39068 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752455AbXKNJc1 (ORCPT
+	Wed, 14 Nov 2007 04:36:50 -0500
+Received: from wr-out-0506.google.com ([64.233.184.227]:21546 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750824AbXKNJgt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 04:32:27 -0500
-Date: Wed, 14 Nov 2007 01:32:17 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Dave Young" <hidave.darkstar@gmail.com>, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>
+	Wed, 14 Nov 2007 04:36:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Vf4hy2ub9Sh5MkDrM/9IBryLVlucrRId0aVDY9bFYV4VmgE9gSUq9Ri22FjMiT8hn6JLT/5e1r3Pxrc55gkfsCoqwztJG/A0sUYC63EQB2etFf5PrGJkT7/cDtjiOzicILS7Sdtcv1xEHaY1kp9UtBv7ZyPmEPnCXLjRkNldbDs=
+Message-ID: <a8e1da0711140136i1e441371j306e7b2888de104e@mail.gmail.com>
+Date: Wed, 14 Nov 2007 17:36:48 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
 Subject: Re: 2.6.24-rc2-mm1
-Message-Id: <20071114013217.7739f3fe.akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, "Greg KH" <greg@kroah.com>,
+       "Kay Sievers" <kay.sievers@vrfy.org>
 In-Reply-To: <20071114004129.783fb98b.akpm@linux-foundation.org>
-References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
-	<a8e1da0711132218h9d944d0p3c22ac313ee667a9@mail.gmail.com>
-	<20071113223802.2ace1a61.akpm@linux-foundation.org>
-	<a8e1da0711132247jd440f8dgc9ac0442e90f2c34@mail.gmail.com>
-	<20071114004129.783fb98b.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
+	 <a8e1da0711132218h9d944d0p3c22ac313ee667a9@mail.gmail.com>
+	 <20071113223802.2ace1a61.akpm@linux-foundation.org>
+	 <a8e1da0711132247jd440f8dgc9ac0442e90f2c34@mail.gmail.com>
+	 <20071114004129.783fb98b.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Nov 2007 00:41:29 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+On Nov 14, 2007 4:41 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+>
+> On Wed, 14 Nov 2007 14:47:38 +0800 "Dave Young" <hidave.darkstar@gmail.com> wrote:
+>
+> > On Nov 14, 2007 2:38 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > >
+> > > On Wed, 14 Nov 2007 14:18:39 +0800 "Dave Young" <hidave.darkstar@gmail.com> wrote:
+> > >
+> > > > Hi,
+> > > > Boot failed on my machine. hand copy some messages.
+> > > >
+> > > > First with BLK_DEV_RAM=y
+> > > >
+> > > > BUG kmalloc-64 Poison overwritting:
+> > > > Alloced in kset_create
+> > > > Freed in kobject_cleanup
+> > > >
+> > > > --cut--
+> > > > alloc_disk_node
+> > > > rd_init
+> > > > kernel_init
+> > > > --cut--
+> > > >
+> > > > Then config ramdisk as module, build and reboot:
+> > > >
+> > > > BUG: unable handle paging resuest at 6b6b6b6b
+> > > > EIP is kobject_add 0xc4/0x150
+> > > >
+> > > > --cut--
+> > > > kobject_set_name
+> > > > register_disk
+> > > > add_disk
+> > > > exact_match
+> > > > exact_lock
+> > > > loop_init
+> > > > --cut--
+> > > >
+> > >
+> > > erp.  Can you send the config over please?
+> > >
+> > > And which distro/version is that machine running?
+> > >
+> >
+> > Hi,andrew
+> >
+> > slackware 11
+> >
+> > config as follows:
+> > #
+> > # Automatically generated make config: don't edit
+> > # Linux kernel version: 2.6.24-rc2-mm1
+> > # Wed Nov 14 13:50:01 2007
+> > #
+>
+> OK, I can reproduce that on the Vaio, thanks.
+>
+> oops: http://userweb.kernel.org/~akpm/dsc00037.jpg
+> config: (what you sent)
+> dmesg: http://userweb.kernel.org/~akpm/dmesg-sony.txt
+>
+> An inspired guess led me to suspect the driver tree.  The offending patch
+> is gregkh-driver-kset-convert-block_subsys-to-use-kset_create.patch.
+>
+Hi,
+I do some printk debug, the problem hide in the kobject.c line 256 in
+kobject_add
+seems  at
+list_add_tail(&kobj->entry,&kobj->kset->list);
 
-> There's some kobject warning which comes out when
-> gregkh-driver-kset-convert-block_subsys-to-use-kset_create.patch isn't
-> applied.  More bisecting coming up..
-
-
-[   11.863390] ACPI: AC Adapter [ACAD] (on-line)
-[   11.868004] ACPI: Battery Slot [BAT1] (battery present)
-[   11.922945] Real Time Clock Driver v1.12ac
-[   11.923078] intel_rng: FWH not detected
-[   11.923160] Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing enabled
-[   14.934078] floppy0: no floppy controllers found
-[   14.934616] WARNING: at lib/kref.c:33 kref_get()
-[   14.934690]  [<c0242810>] kref_get+0x40/0x50
-[   14.934766]  [<c024185f>] kobject_get+0xf/0x20
-[   14.934839]  [<c0241e7f>] kobject_add+0x14f/0x1a0
-[   14.934917]  [<c0241c8e>] kobject_set_name+0x7e/0xc0
-[   14.934998]  [<c01b82af>] register_disk+0x3f/0x200
-[   14.935078]  [<c02392ff>] blk_register_region+0x2f/0x40
-[   14.935164]  [<c0239349>] add_disk+0x39/0x50
-[   14.935234]  [<c0238b80>] exact_match+0x0/0x10
-[   14.935306]  [<c0239120>] exact_lock+0x0/0x10
-[   14.935378]  [<c051b73b>] loop_init+0x13b/0x190
-[   14.935453]  [<c0500570>] kernel_init+0x130/0x300
-[   14.935532]  [<c010428e>] ret_from_fork+0x6/0x1c
-[   14.938302]  [<c0500440>] kernel_init+0x0/0x300
-[   14.941033]  [<c0500440>] kernel_init+0x0/0x300
-[   14.943732]  [<c0104f8f>] kernel_thread_helper+0x7/0x18
-[   14.946436]  =======================
-[   14.949535] loop: module loaded
-[   14.952336] e100: Intel(R) PRO/100 Network Driver, 3.5.23-k4-NAPI
-[   14.955022] e100: Copyright(c) 1999-2006 Intel Corporation
-[   14.957813] ACPI: PCI Interrupt 0000:06:08.0[A] -> GSI 20 (level, low) -> IRQ
-
-Caused by gregkh-driver-remove-struct-kobj_type-from-struct-kset.patch
+Regards
+dave
