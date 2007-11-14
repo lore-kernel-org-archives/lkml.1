@@ -1,113 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754284AbXKNIiP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752314AbXKNIi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754284AbXKNIiP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 03:38:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751787AbXKNIiB
+	id S1752314AbXKNIi3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 03:38:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbXKNIiB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 14 Nov 2007 03:38:01 -0500
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:46952 "HELO
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:46960 "HELO
 	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751501AbXKNIiA (ORCPT
+	by vger.kernel.org with SMTP id S1751644AbXKNIiA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 14 Nov 2007 03:38:00 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=mpKRFIlycmGuANE2TjSZdbuuDndNsok2wQkTe6Ad9RB4OBZYO30EAmUCqCOobcJRlAc3gLTXlLRIduHmqA7qjMIKjJfVaok0iUvHEE/xdPrACf0aNCkUhdoBsB+ng5E0v45kJ/x70nF0yhYNP3OhQJenAtfO7+Hp2Colfi01LEg=  ;
-X-YMail-OSG: sZ24jR0VM1lI2Rw.Ikx3YK2B5T__6LcZripXu10Q8FXyO6qIMQyw_clchLzefisvla6Bit38dA--
+  b=PMZnwRwU0Gvmk9oy9o8S4OS8xf9yE+APJ2bRScZF6EvMUaX7KZifw2n2owH0s3DdL9O+++55EGp3FTRKIB9RtVI33UC1MPRulci11dMTkuW9YbagR4q7HlSIn+aSk+I3lB2CnfQ5XhcI0JQ+Nq0fVsxIel0p27j9eeQUJW9fWj4=  ;
+X-YMail-OSG: 8mQQ4sMVM1m34N_ugGy7bM6gTZLSTUp60Yk5VpVzzciPfVzd.0BGscqp8V2aebMpkqV7PCol5g--
 From: David Brownell <david-b@pacbell.net>
 To: Nick Piggin <nickpiggin@yahoo.com.au>
 Subject: Re: [patch 2.6.24-rc2 1/3] generic gpio -- gpio_chip support
-Date: Wed, 14 Nov 2007 00:20:46 -0800
+Date: Wed, 14 Nov 2007 00:37:57 -0800
 User-Agent: KMail/1.9.6
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
        Linux Kernel list <linux-kernel@vger.kernel.org>,
        Florian Fainelli <florian.fainelli@telecomint.eu>,
        Haavard Skinnemoen <hskinnemoen@atmel.com>
-References: <200711091136.20051.david-b@pacbell.net> <200711131122.45950.david-b@pacbell.net> <200711132325.53846.nickpiggin@yahoo.com.au>
-In-Reply-To: <200711132325.53846.nickpiggin@yahoo.com.au>
+References: <200711091136.20051.david-b@pacbell.net> <200711132252.15872.david-b@pacbell.net> <200711140645.26363.nickpiggin@yahoo.com.au>
+In-Reply-To: <200711140645.26363.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-Message-Id: <200711140020.46764.david-b@pacbell.net>
+Message-Id: <200711140037.58049.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Tuesday 13 November 2007, Nick Piggin wrote:
-> > > > I'd be happy if, as originally presented, it were possible to just
-> > > > pass a raw_spinlock_t to spin_lock_irqsave() and friends.
+> On Wednesday 14 November 2007 17:52, David Brownell wrote:
+> > On Tuesday 13 November 2007, Andrew Morton wrote:
+> 
+> > > > I'll highlight the
+> > > > point that such bitops shouldn't be preemption points.
 > > >
-> > > that's a spinlock type abstraction of PREEMPT_RT, not of mainline.
+> > > Disagree.  *everything* should be a preemption point.
+> >
+> > So it's wrong that <asm-generic/bitops/atomic.h> uses the
+> > same calls to prevent *those* bitops from being prempted?
 > 
-> Even when you're talking about the -rt tree, I suspect you really
-> shouldn't be using raw spinlocks, right?
+> Upstream, all spinlocks prevent preemption.
 
-That's one subject of discussion here.  I got the expected
-knee-jerk responses (saying just that) -- right, ignore those
-and aim for ones that look at the actual issues.
+I chose my wording carefully though.  A preemption point is
+more than just a small region where preemption isn't allowed.
 
+It's one of those where preemption is *INVITED* ...
 
-> I mean, if you have a 
-> timing critical operation, then you should ensure you have priorities
-> set correctly so that you simply don't get preempted.
+Now, in the RT case, I believe the rationale for inviting
+preemption when dropping a lock is largely related to the
+way priority inversion is handled.  When lock contention can
+block higher priority activities, dropping the lock must
+be able to trigger the relevant activity switch.
 
-Which is why bitops like <asm-generic/bitops/atomic.h> use
-normal spinlocks.  Oh, wait, no they don't ...
-
-
-Today, platform GPIO logic has no preemption points.
-
-There are a few dozen implementations in the tree, not all
-using the generic calls (yet!), none radically different.
-
-Certainly when gpio_set_value() is inlined, it works very
-much like set_bit()/clear_bit() on hardware with atomic ops.
-Not a preemption point
-
-But it often turns into a function call that needs to map
-from GPIO number to GPIO bank, and then to a bitslice through
-that bank's registers.  I know of only one platform which
-even has any locking on those code paths(*) ... so again
-those calls aren't preemption points.
+... and the raw spinlocks don't support that machinery,
+while "normal" spinlocks become inversion-aware mutexes.
 
 
-> By using a raw_spinlock_t, you're saying that you're more important
-> than anyone else (for the period of the critical section) including
-> processes which the user has explicitly set to a higher priority.
+> But these ones 
+> are raw locks rather than normal locks probably because that
+> they are trivially an innermost and correct lock.
 
-Nope.  Just saying that the relevant instructions (three, in the
-hot path I looked at, and not a case where priority inversion
-scenarios should be a concern) shouldn't be forcibly morphed into
-preemption points.  Any more than other bitops were (not).
+As in the $SUBJECT case, I'd say.
 
-If a higher priority task needs that CPU, nothing prevents it
-from being immediately descheduled.  Ditto handling a hardirq.
-
-All this does is prevent constant and needless checking for
-"do you want to preempt me now?" "now?" "now?" in "now?" the
-middle "now?" of "now?" i/o "now?" loops.
-
-
-> > Any reason that stuff shouldn't move into mainline?
-> 
-> This sort of raw_spinlock_t arms race throughout drivers/ would be
-> a huge reason not to move it into mainline.
-
-This isn't driver code...
-
-I think you've just presented an argument why that stuff
-shouldn't really exist in -rt either... :)
-
-- Dave
-
-(*)  Exception, arch/arm/plat-omap/gpio.c uses spinlocks.
-     Maybe I should say "misuses"; ISTR getting various
-     lockdep complaints about the same spinlock being used
-     both from IRQ and non-IRQ contexts.  In some common
-     cases that lock could probably be eliminated, but
-     if you look at the code you'll know why nobody's much
-     wanted to clean it up.
-
+Although another point is related to "trivial":  the data
+is being protected through an operation too trivial to be
+worth paying for any of that priority logic.
 
