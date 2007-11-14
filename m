@@ -1,51 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763962AbXKNCKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762242AbXKNCKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763962AbXKNCKe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 21:10:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761794AbXKNCFl
+	id S1762242AbXKNCKu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 21:10:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761377AbXKNCFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 21:05:41 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:4792 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761727AbXKNCFj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 21:05:39 -0500
-Subject: [PATCH] - [15/15] - remove defconfig ptr comparisons to 0 -
-	net/sunrpc
-From: Joe Perches <joe@perches.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "J. Bruce Fields" <bfields@fieldses.org>, Neil Brown <neilb@suse.de>,
-       Networking Team <netdev@vger.kernel.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>, nfs@lists.sourceforge.net
-Content-Type: text/plain
-Date: Tue, 13 Nov 2007 18:05:39 -0800
-Message-Id: <1195005939.5163.101.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Nov 2007 21:05:49 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55745 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761315AbXKNCFs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 21:05:48 -0500
+Date: Tue, 13 Nov 2007 18:05:48 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: David Miller <davem@davemloft.net>
+cc: akpm@linux-foundation.org, linux-mm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dada1@cosmosbay.com,
+       schwidefsky@de.ibm.com
+Subject: Re: [patch 01/28] cpu alloc: The allocator
+In-Reply-To: <20071113.180009.56326652.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0711131803530.6713@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0711131418560.4363@schroedinger.engr.sgi.com>
+ <20071113.173718.112153027.davem@davemloft.net>
+ <Pine.LNX.4.64.0711131748570.6539@schroedinger.engr.sgi.com>
+ <20071113.180009.56326652.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove defconfig ptr comparison to 0
+On Tue, 13 Nov 2007, David Miller wrote:
 
-Remove sparse warning: Using plain integer as NULL pointer
+> The idea about doling out vmalloc space seemed the most promising.
 
-Signed-off-by: Joe Perches <joe@perches.com>
-
----
-
-diff --git a/net/sunrpc/clnt.c b/net/sunrpc/clnt.c
-index 76be83e..1600df2 100644
---- a/net/sunrpc/clnt.c
-+++ b/net/sunrpc/clnt.c
-@@ -157,7 +157,7 @@ static struct rpc_clnt * rpc_new_client(struct rpc_xprt *xprt, char *servname, s
- 	clnt->cl_server = clnt->cl_inline_name;
- 	if (len > sizeof(clnt->cl_inline_name)) {
- 		char *buf = kmalloc(len, GFP_KERNEL);
--		if (buf != 0)
-+		if (buf)
- 			clnt->cl_server = buf;
- 		else
- 			len = sizeof(clnt->cl_inline_name);
-
+Well that is basically the same as the virtual mode. Just ditch the 
+fallback mode? vmalloc directly does not guarantee a fixed address.
 
