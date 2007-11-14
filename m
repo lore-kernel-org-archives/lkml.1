@@ -1,48 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764822AbXKNWzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761375AbXKNXCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764822AbXKNWzl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 17:55:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153AbXKNWzd
+	id S1761375AbXKNXCn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 18:02:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153AbXKNXCf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 17:55:33 -0500
-Received: from waste.org ([66.93.16.53]:53094 "EHLO waste.org"
+	Wed, 14 Nov 2007 18:02:35 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:33091 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753843AbXKNWzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 17:55:33 -0500
-Date: Wed, 14 Nov 2007 16:53:36 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: David Miller <davem@davemloft.net>
-Cc: mingo@elte.hu, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: [bug] SLOB crash, 2.6.24-rc2
-Message-ID: <20071114225335.GV19691@waste.org>
-References: <20071114173611.GR19691@waste.org> <20071114183952.GS19691@waste.org> <20071114190501.GA5768@elte.hu> <20071114.143938.23516450.davem@davemloft.net>
+	id S1754123AbXKNXCf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 18:02:35 -0500
+Message-ID: <473B7D07.6030901@redhat.com>
+Date: Wed, 14 Nov 2007 17:56:07 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071114.143938.23516450.davem@davemloft.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Paul Mackerras <paulus@samba.org>, David Miller <davem@davemloft.net>,
+       hch@infradead.org, akpm@linux-foundation.org, gregkh@suse.de,
+       mucci@cs.utk.edu, eranian@hpl.hp.com, wcohen@redhat.com,
+       robert.richter@amd.com, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org
+Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
+References: <20071114.031216.11725447.davem@davemloft.net> <200711141125.18568.nickpiggin@yahoo.com.au> <18235.26873.437786.651828@cargo.ozlabs.ibm.com> <200711142117.56352.nickpiggin@yahoo.com.au>
+In-Reply-To: <200711142117.56352.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 14, 2007 at 02:39:38PM -0800, David Miller wrote:
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Wed, 14 Nov 2007 20:05:01 +0100
+On 11/14/2007 05:17 AM, Nick Piggin wrote:
 > 
-> > the bug went away - and the only thing i did was a networking config 
-> > tweak. So maybe something in networking corrupts memory?
+> But in general, for special files, I guess the response is usually
+> some structured data (that is not visible at the syscall layer).
+> So I don't see a big problem to have a similarly arbitrarily
+> structured request.
 > 
-> This wouldn't surprise me at all.
 > 
-> I think we can make some headway on this bug, the next time
-> you trigger it, if the list debugging was a little less terse.
-> 
-> For example, a backtrace and perhaps even feeding the bad list
-> pointers in question to the SLAB/SLUB debug helpers that can
-> identify a kmem cache from a given pointer would help.
 
-He hit the bug using SLOB and there are no kmem (or any other) caches
-in SLOB.
-
--- 
-Mathematics is the supreme nostalgia of our time.
+IOW, an ioctl.
