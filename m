@@ -1,70 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763768AbXKNFjF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763922AbXKNFlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763768AbXKNFjF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 00:39:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758813AbXKNFiw
+	id S1763922AbXKNFlW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 00:41:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758986AbXKNFlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 00:38:52 -0500
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:41287 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758738AbXKNFiu (ORCPT
+	Wed, 14 Nov 2007 00:41:14 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:51843 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759770AbXKNFlN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 00:38:50 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=vReAqtJRNI5PPCYSXqmUBPWyi54JYf9BrN8MZH3Ui7Sk2N9r1z+59T9ftvVfHgSlQZ0QJExTXTjLO6BUIypP4Clcno/mXjm3xEp6njDmUXnCzW21sQjlifuH/E4YshHTnUH9nqVLvAGrpEwqV3KNi/AhEykvP8+YUoDVQ5WK1KM=  ;
-X-YMail-OSG: wWrjJQQVM1l3gFTOqeVJmPHIGPDniP3E5wJoJqEBIgSZ9SfZJis.uEhRgma.MAS9B66YvPdcZw--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Miller <davem@davemloft.net>
-Subject: Re: 2.6.24-rc2: Network commit causes SLUB performance regression with tbench
-Date: Wed, 14 Nov 2007 04:36:24 +1100
-User-Agent: KMail/1.9.5
-Cc: clameter@sgi.com, netdev@vger.kernel.org, herbert@gondor.apana.org.au,
-       linux-kernel@vger.kernel.org
-References: <200711101229.35822.nickpiggin@yahoo.com.au> <200711132241.59074.nickpiggin@yahoo.com.au> <20071113.175804.151698768.davem@davemloft.net>
-In-Reply-To: <20071113.175804.151698768.davem@davemloft.net>
+	Wed, 14 Nov 2007 00:41:13 -0500
+Message-ID: <473A83CF.90104@linux.vnet.ibm.com>
+Date: Wed, 14 Nov 2007 10:42:47 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711140436.24492.nickpiggin@yahoo.com.au>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       nfs@lists.sourceforge.net, apw@shadowen.org
+Subject: Re: [PATCH] 2.6.24-rc2-mm1 - Build fails - in nsfd/vfs.c
+References: <20071114044904.GA12453@linux.vnet.ibm.com>
+In-Reply-To: <20071114044904.GA12453@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 November 2007 12:58, David Miller wrote:
-> From: Nick Piggin <nickpiggin@yahoo.com.au>
-> Date: Tue, 13 Nov 2007 22:41:58 +1100
->
-> > On Tuesday 13 November 2007 06:44, Christoph Lameter wrote:
-> > > On Sat, 10 Nov 2007, Nick Piggin wrote:
-> > > > BTW. your size-2048 kmalloc cache is order-1 in the default setup,
-> > > > wheras kmalloc(1024) or kmalloc(4096) will be order-0 allocations.
-> > > > And SLAB also uses order-0 for size-2048. It would be nice if SLUB
-> > > > did the same...
-> > >
-> > > You can try to see the effect that order 0 would have by booting with
-> > >
-> > > slub_max_order=0
-> >
-> > Yeah, that didn't help much, but in general I think it would give
-> > more consistent and reliable behaviour from slub.
->
-> Just a note that I'm not ignoring this issue, I just don't have time
-> to get to it yet.
+Kamalesh Babulal wrote:
+> Hi Andrew,
+> 
+> The Kernel build fails, with error
+> 
+>   CC      fs/nfsd/vfs.o
+> fs/nfsd/vfs.c: In function ‘nfsd_rename’:
+> fs/nfsd/vfs.c:1695: error: request for member ‘mnt’ in something not a structure or union
+> make[2]: *** [fs/nfsd/vfs.o] Error 1
+> make[1]: *** [fs/nfsd] Error 2
+> make: *** [fs] Error 2
+> 
+> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> --
+> --- linux-2.6.24-rc2/fs/nfsd/vfs.c	2007-11-13 22:16:18.000000000 -0500
+> +++ linux-2.6.24-rc2/fs/nfsd/~vfs.c	2007-11-13 23:10:18.000000000 -0500
+> @@ -1692,7 +1692,7 @@ nfsd_rename(struct svc_rqst *rqstp, stru
+>  		if (!host_err)
+>  			host_err = nfsd_sync_dir(fdentry);
+>  	}
+> -	mnt_drop_write(ffhp->fh_export->ex_path.mnt);
+> +	mnt_drop_write(ffhp->fh_export->ex_mnt);
+> 
+>   out_dput_new:
+>  	dput(ndentry);
+> 
+Sorry, for the report, its compiles fine, my box had the wrong
+mm patches.
 
-No problem. I would like to have helped more, but it's slow going given
-my lack of network stack knowledge. If I get any more interesting data,
-I'll send it.
-
-
-> I suspect the issue is about having a huge skb->data linear area for
-> TCP sends over loopback.  We're likely getting a much smaller
-> skb->data linear data area after the patch in question, the rest using
-> the sk_buff scatterlist pages which are a little bit more expensive to
-> process.
-
-It didn't seem to be noticeable at 1 client. Unless scatterlist
-processing is going to cause cacheline bouncing, I don't see why this
-hurts more as you add CPUs?
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
