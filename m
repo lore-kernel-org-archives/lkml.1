@@ -1,65 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764538AbXKNGiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764380AbXKNGj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764538AbXKNGiX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 01:38:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758835AbXKNGiL
+	id S1764380AbXKNGj4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 01:39:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759620AbXKNGjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 01:38:11 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36724 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759968AbXKNGiK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 01:38:10 -0500
-Date: Tue, 13 Nov 2007 22:38:02 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Dave Young" <hidave.darkstar@gmail.com>
+	Wed, 14 Nov 2007 01:39:49 -0500
+Received: from ozlabs.org ([203.10.76.45]:44225 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758835AbXKNGjs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 01:39:48 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH] Attempt to get eject failures back to ioctl(CDROMEJECT)
+Date: Wed, 14 Nov 2007 17:39:46 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc2-mm1
-Message-Id: <20071113223802.2ace1a61.akpm@linux-foundation.org>
-In-Reply-To: <a8e1da0711132218h9d944d0p3c22ac313ee667a9@mail.gmail.com>
-References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
-	<a8e1da0711132218h9d944d0p3c22ac313ee667a9@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711141739.46960.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Nov 2007 14:18:39 +0800 "Dave Young" <hidave.darkstar@gmail.com> wrote:
+Hi Jens,
 
-> Hi,
-> Boot failed on my machine. hand copy some messages.
-> 
-> First with BLK_DEV_RAM=y
-> 
-> BUG kmalloc-64 Poison overwritting:
-> Alloced in kset_create
-> Freed in kobject_cleanup
-> 
-> --cut--
-> alloc_disk_node
-> rd_init
-> kernel_init
-> --cut--
-> 
-> Then config ramdisk as module, build and reboot:
-> 
-> BUG: unable handle paging resuest at 6b6b6b6b
-> EIP is kobject_add 0xc4/0x150
-> 
-> --cut--
-> kobject_set_name
-> register_disk
-> add_disk
-> exact_match
-> exact_lock
-> loop_init
-> --cut--
-> 
+    As you asked for some time ago.  Of course, it turns out that the eject
+command ignores the error anyway, but it's nice that it now errors.
 
-erp.  Can you send the config over please?
+    Not entirely comfortable with this patch: there's a req->errors but
+that seems to have some existing semantics I'm not sure of, so I simply
+added a new way of flagging an error.
 
-And which distro/version is that machine running?
+Cheers,
+Rusty.
+---
 
-Thanks.
+Currently the CDROMEJECT ioctl always succeeds; it'd be nice if we
+managed to get the errno passed back through the request.
+
+This patch tries to do that.
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+diff -r a7da575b248f block/ll_rw_blk.c
+--- a/block/ll_rw_blk.c	Wed Nov 14 15:44:39 2007 +1100
++++ b/block/ll_rw_blk.c	Wed Nov 14 17:33:55 2007 +1100
+@@ -261,6 +261,7 @@ static void rq_init(struct request_queue
+ 	rq->end_io_data = NULL;
+ 	rq->completion_data = NULL;
+ 	rq->next_rq = NULL;
++	rq->errno = 0;
+ }
+ 
+ /**
+@@ -2657,7 +2658,9 @@ int blk_execute_rq(struct request_queue 
+ 	blk_execute_rq_nowait(q, bd_disk, rq, at_head, blk_end_sync_rq);
+ 	wait_for_completion(&wait);
+ 
+-	if (rq->errors)
++	if (rq->errno)
++		err = rq->errno;
++	else if (rq->errors)
+ 		err = -EIO;
+ 
+ 	return err;
+@@ -3427,8 +3430,10 @@ static int __end_that_request_first(stru
+ 	 * extend uptodate bool to allow < 0 value to be direct io error
+ 	 */
+ 	error = 0;
+-	if (end_io_error(uptodate))
++	if (end_io_error(uptodate)) {
++		req->errno = uptodate;
+ 		error = !uptodate ? -EIO : uptodate;
++	}
+ 
+ 	/*
+ 	 * for a REQ_BLOCK_PC request, we want to carry any eventual
+diff -r a7da575b248f drivers/block/virtio_blk.c
+--- a/drivers/block/virtio_blk.c	Wed Nov 14 15:44:39 2007 +1100
++++ b/drivers/block/virtio_blk.c	Wed Nov 14 17:33:55 2007 +1100
+@@ -51,7 +51,7 @@ static bool blk_done(struct virtqueue *v
+ 			uptodate = 1;
+ 			break;
+ 		case VIRTIO_BLK_S_UNSUPP:
+-			uptodate = -ENOTTY;
++			uptodate = -ENOSYS;
+ 			break;
+ 		default:
+ 			uptodate = 0;
+diff -r a7da575b248f include/linux/blkdev.h
+--- a/include/linux/blkdev.h	Wed Nov 14 15:44:39 2007 +1100
++++ b/include/linux/blkdev.h	Wed Nov 14 17:33:55 2007 +1100
+@@ -281,6 +281,8 @@ struct request {
+ 
+ 	int tag;
+ 	int errors;
++	/* If this isn't set, assume -EIO. */
++	int errno;
+ 
+ 	int ref_count;
+ 
