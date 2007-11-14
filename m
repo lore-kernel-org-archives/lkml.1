@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759906AbXKNC32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757968AbXKNCiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759906AbXKNC32 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 21:29:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754534AbXKNC3U
+	id S1757968AbXKNCiX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 21:38:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbXKNCiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 21:29:20 -0500
-Received: from emerald.lightlink.com ([205.232.34.14]:16952 "EHLO
-	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753734AbXKNC3T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 21:29:19 -0500
-Date: Tue, 13 Nov 2007 21:24:39 -0500
-From: "Mark M. Hoffman" <mhoffman@lightlink.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>
-Subject: Re: [lm-sensors] [GIT PATCH] hwmon updates against v2.6.24-rc2
-Message-ID: <20071114022439.GD2674@jupiter.solarsys.private>
-References: <20071113131210.GA2674@jupiter.solarsys.private> <20071113220030.6dd5e0d7@hyperion.delvare>
+	Tue, 13 Nov 2007 21:38:14 -0500
+Received: from cantor.suse.de ([195.135.220.2]:54527 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754534AbXKNCiN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 21:38:13 -0500
+From: Neil Brown <neilb@suse.de>
+To: Joe Perches <joe@perches.com>
+Date: Wed, 14 Nov 2007 13:38:05 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071113220030.6dd5e0d7@hyperion.delvare>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18234.24461.192099.360005@notabene.brown>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "J. Bruce Fields" <bfields@fieldses.org>, nfs@lists.sourceforge.net
+Subject: Re: [PATCH] - [9/15] - remove defconfig ptr comparisons to 0 - fs/nfsd
+In-Reply-To: message from Joe Perches on Tuesday November 13
+References: <1195005925.5163.95.camel@localhost>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean:
+On Tuesday November 13, joe@perches.com wrote:
+> Remove defconfig ptr comparison to 0
+> 
+> Remove sparse warning: Using plain integer as NULL pointer
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> 
+> ---
+> 
+> diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
+> index d019918..07b38cf 100644
+> --- a/fs/nfsd/vfs.c
+> +++ b/fs/nfsd/vfs.c
+> @@ -987,7 +987,7 @@ nfsd_vfs_write(struct svc_rqst *rqstp, struct svc_fh *fhp, struct file *file,
+>  	 * flushing the data to disk is handled separately below.
+>  	 */
+>  
+> -	if (file->f_op->fsync == 0) {/* COMMIT3 cannot work */
+> +	if (!file->f_op->fsync) {/* COMMIT3 cannot work */
+>  	       stable = 2;
+>  	       *stablep = 2; /* FILE_SYNC */
+>  	}
+> 
 
-> On Tue, 13 Nov 2007 08:12:10 -0500, Mark M. Hoffman wrote:
-> > Hi Linus:
-> > 
-> > Please pull from:
-> > 	git://lm-sensors.org/kernel/mhoffman/hwmon-2.6.git release
-> > 
-> > You'll get one new driver, a few cleanups, and a few bugfixes.  This
-> > takes care of all known regressions; hopefully it's the last you hear
-> > from me before 2.6.24-final.
-> > 
-> > Note: the f75375s/n2100 patches especially are critical to avoid
-> > possible overheating problems on that platform (yay crappy BIOS).
-> > 
-> > All of these patches have spent considerable time in -mm.
+Personally, I would much rather these were changed to "== NULL".
+Different people have different preferences on whether to use
+    ! foo
+or
+    foo == NULL
 
-* Jean Delvare <khali@linux-fr.org> [2007-11-13 22:00:30 +0100]:
-> Let me have a doubt, considering that the last public -mm kernel was
-> released over a month ago (October 12th), which is before your previous
-> pull request (October 14th). I don't think that any of these patches
-> has been in even one public -mm tree, so in practice they probably
-> didn't receive any public testing at all.
+and the person who wrote that code is presumably showing a preference
+for the later.  Changing it from "== 0" to "== NULL" is clearly a
+valuable improvement.  Changing from "== 0" to "! " is a stylistic
+change that should not be made lightly.
 
-Well, zero is a "considerable" number. ;)
+I personally often use and prefer the explicit comparison to NULL.
 
-Seriously though, my bad.  In my (weak) defense, I will point out that
-all but a couple of these patches were *available* for -mm on my testing
-branch for at least two weeks; Oct 28 was the most recent addition.
-
-> Now let's hope that nothing breaks.
-
-I admit: post-rc2 was later than it should have been for some of this.
-But there was no rocket science in any of these.  I think we'll be OK.
-
-Regards,
-
--- 
-Mark M. Hoffman
-mhoffman@lightlink.com
-
+NeilBrown
