@@ -1,44 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762006AbXKNUM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764252AbXKNVBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762006AbXKNUM7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 15:12:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbXKNUMv
+	id S1764252AbXKNVBP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 16:01:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754891AbXKNVBA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 15:12:51 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:57413 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752736AbXKNUMu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 15:12:50 -0500
-Date: Wed, 14 Nov 2007 13:12:47 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Alex Chiang <achiang@hp.com>, Gary Hade <garyhade@us.ibm.com>,
-       Greg KH <greg@kroah.com>, gregkh@suse.de, kristen.c.accardi@intel.com,
-       lenb@kernel.org, rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, kaneshige.kenji@jp.fujitsu.com,
-       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 2/5] Construct one fakephp slot per pci slot
-Message-ID: <20071114201246.GZ17785@parisc-linux.org>
-References: <20071114193605.GA25002@ldl.fc.hp.com> <20071114193729.GC25002@ldl.fc.hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071114193729.GC25002@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 14 Nov 2007 16:01:00 -0500
+Received: from xenotime.net ([66.160.160.81]:54531 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752063AbXKNVA7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 16:00:59 -0500
+Date: Wed, 14 Nov 2007 13:00:52 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Julia Lawall <julia@diku.dk>, rolandd@cisco.com, mshefty@ichips.intel.com,
+       halr@voltaire.com, openib-general@openib.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 3/4] drivers/infiniband: Drop redundant includes of
+ moduleparam.h
+Message-Id: <20071114130052.8118c397.rdunlap@xenotime.net>
+In-Reply-To: <adalk90zgwz.fsf@cisco.com>
+References: <Pine.LNX.4.64.0711132234110.18337@ask.diku.dk>
+	<adalk90zgwz.fsf@cisco.com>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 14, 2007 at 12:37:29PM -0700, Alex Chiang wrote:
-> Register one slot per slot, rather than one slot per function.
-> Change the name of the slot to fake%d instead of the pci address.
+On Wed, 14 Nov 2007 12:54:52 -0800 Roland Dreier wrote:
 
-> +#define SLOT_NAME_SIZE KOBJ_NAME_LEN
+>  > Drop #include <linux/moduleparam.h> in files that also include #include
+>  > <linux/module.h>.  module.h includes moduleparam.h already.
+> 
+> Do we want to make this sort of source code change?  I thought that
+> the consensus about the kernel was that we wanted to avoid relying of
+> implicit includes of <Y.h> by <X.h> -- in this case a better change
+> would actually seem to be to explicitly include moduleparam.h in files
+> using module parameters and then remove the include from module.h.
 
-Defined, then never used ... how about s/KOBJ_NAME_LEN/8/, then use
-SLOT_NAME_SIZE throughout?
+That's correct AFAIK (what Roland said).
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+---
+~Randy
