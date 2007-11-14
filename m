@@ -1,88 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764965AbXKNX2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762792AbXKNXcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764965AbXKNX2b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 18:28:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762146AbXKNX2P
+	id S1762792AbXKNXcZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 18:32:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755366AbXKNXcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 18:28:15 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:50677 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761563AbXKNX2O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 18:28:14 -0500
-Date: Thu, 15 Nov 2007 00:25:31 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Arkadiusz Miskiewicz <arekm@maven.pl>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] Freezer: Make freezing failures less verbose by default
-Message-ID: <20071115002531.GA2343@ucw.cz>
-References: <200711150038.07538.rjw@sisk.pl>
+	Wed, 14 Nov 2007 18:32:14 -0500
+Received: from mga02.intel.com ([134.134.136.20]:63105 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755222AbXKNXcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 18:32:13 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,418,1188802800"; 
+   d="scan'208";a="271236788"
+Message-ID: <473B852E.5010000@intel.com>
+Date: Wed, 14 Nov 2007 15:30:54 -0800
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200711150038.07538.rjw@sisk.pl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Patrick McHardy <kaber@trash.net>
+CC: Herbert Xu <herbert@gondor.apana.org.au>,
+       David Miller <davem@davemloft.net>, joonwpark81@gmail.com, w@1wt.eu,
+       cfriesen@nortel.com, netdev@vger.kernel.org,
+       djohnson+linux-kernel@sw.starentnetworks.com,
+       linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net
+Subject: Re: [PATCH 2/2] [e1000 VLAN] Disable vlan hw accel when promiscuous
+ mode
+References: <E1Irtdz-0000DX-00@gondolin.me.apana.org.au> <20071113.033611.73195922.davem@davemloft.net> <20071113120328.GB1086@gondor.apana.org.au> <20071113.040624.43544149.davem@davemloft.net> <20071113121647.GA1330@gondor.apana.org.au> <4739961E.90708@trash.net> <4739D3A5.4020503@intel.com> <4739DE29.2030507@trash.net> <4739DF29.6010901@intel.com> <473AC2EC.4060109@trash.net>
+In-Reply-To: <473AC2EC.4060109@trash.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Nov 2007 23:31:17.0668 (UTC) FILETIME=[74757E40:01C82716]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+Patrick McHardy wrote:
+> Kok, Auke wrote:
+>> Patrick McHardy wrote:
+>>> Kok, Auke wrote:
+>>>> Patrick McHardy wrote:
+>>>>
+>>>>> I already posted a patch for this, not sure what happened to it.
+>>>>> Auke, any news on merging the secondary unicast address support?
+>>>> I dropped the ball on that one. Care to resend it and send me one for
+>>>> e1000e as well?
+>>> Patch for e1000 attached.
+>>>
+>>> Does e1000e also work with PCI cards if I add the proper IDs?
+>>> Otherwise I could only send an untested patch.
+>>>
+>>
+>> no, e1000e will only work with pci-e adapters. The code however is
+>> largely the
+>> same, so if you can dish me out (off-list) some test cases I can have
+>> our labs do
+>> the testing and add this to our test repertoire.
 > 
-> Currently freezing failures are extremely verbose which sometimes is
-> unnecessary and prevents the user from seeing which task could not be frozen.
 > 
-> Make them less verbose by default (ie. if CONFIG_PM_VERBOSE is unset).
-> 
+> Actually that part of the code is quite different. I'm not
+> sure I understand the entire intent behind the differences,
+> why does it use a packed array of addresses instead of simply
+> passing the netdev pointer to the callback? That would be
+> necessary for secondary unicast support since we have to
+> disable unicast filtering if either the address count exceeds
+> the number of filter slots or the device is in promiscous mode.
 
-I don't think compile time option is right thing to do.
+the underlying code was not specifically developed with linux only in mind and is
+therefore not aware of the net_device struct, hence the specific netdev agnostic
+implementation. if this implementation is posing issues then we need to look at
+how to improve it or just code it specifically for linux in a better way.
 
-Dump just the stacks of the non-frozen tasks?
 
-acpi_sleep=verbose?
-
-Reorder dmesg so that you get backtraces, and _then_ list of the
-tasks?
-
-							Pavel
-
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  kernel/power/process.c |   11 ++++++++++-
->  1 file changed, 10 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/kernel/power/process.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/power/process.c
-> +++ linux-2.6/kernel/power/process.c
-> @@ -163,6 +163,15 @@ static void cancel_freezing(struct task_
->  	}
->  }
->  
-> +#ifdef CONFIG_PM_VERBOSE
-> +static inline void freezer_show_state(void)
-> +{
-> +	show_state();
-> +}
-> +#else /* !CONFIG_PM_VERBOSE */
-> +static inline void freezer_show_state(void) {}
-> +#endif /* !CONFIG_PM_VERBOSE */
-> +
->  static int try_to_freeze_tasks(int freeze_user_space)
->  {
->  	struct task_struct *g, *p;
-> @@ -214,7 +223,7 @@ static int try_to_freeze_tasks(int freez
->  		printk(KERN_ERR "Freezing of tasks failed after %d.%02d seconds "
->  				"(%d tasks refusing to freeze):\n",
->  				elapsed_csecs / 100, elapsed_csecs % 100, todo);
-> -		show_state();
-> +		freezer_show_state();
->  		read_lock(&tasklist_lock);
->  		do_each_thread(g, p) {
->  			task_lock(p);
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Auke
