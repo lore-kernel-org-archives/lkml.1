@@ -1,68 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763112AbXKNA2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763626AbXKNA3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763112AbXKNA2Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 19:28:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760075AbXKNA2Q
+	id S1763626AbXKNA3Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 19:29:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761409AbXKNA3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 19:28:16 -0500
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:30702 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755374AbXKNA2P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 19:28:15 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=4CcKLJicJP32ydTAbnW5t8tSYBye3vkaiSgsjMtU6BKdXVb7iR+OvZf0vymw0eBod5iupSdQnj61NwvKhpLnFgJJIrTJ/HYvn+z5U6gZ3JhuYsRfX9ci+HpJmtD8QX74o0FfLwfp3FBOv+1i7s8z0km6RN7Z9iEz9dn6XNVT+/o=  ;
-X-YMail-OSG: r7uyKK4VM1nu4bDz8twj0TarjgCsFpe7asi8H6MATTGQGLdstpBt.ZqFyriyLdaaBmfhHzApBg--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch 2.6.24-rc2 1/3] generic gpio -- gpio_chip support
-Date: Tue, 13 Nov 2007 23:25:53 +1100
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Florian Fainelli <florian.fainelli@telecomint.eu>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-References: <200711091136.20051.david-b@pacbell.net> <20071113093414.GA5270@elte.hu> <200711131122.45950.david-b@pacbell.net>
-In-Reply-To: <200711131122.45950.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 13 Nov 2007 19:29:11 -0500
+Received: from shu.cs.utk.edu ([160.36.56.39]:43897 "EHLO shu.cs.utk.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761408AbXKNA3K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 19:29:10 -0500
+In-Reply-To: <20071113203645.GA17145@one.firstfloor.org>
+References: <20071107003454.GA13374@kroah.com> <20071109120627.60ec9ab4.akpm@linux-foundation.org> <20071109213829.GC28276@kroah.com> <p73abpl2654.fsf@bingen.suse.de> <20071113151718.GA3804@erda.amd.com> <4739C42F.8030208@redhat.com> <20071113175545.GD4319@frankl.hpl.hp.com> <53F4663B-CFBA-44E4-8283-BAAC8C8F1AFF@cs.utk.edu> <20071113185924.GA22748@suse.de> <20071113120728.4342e7d7.akpm@linux-foundation.org> <20071113203645.GA17145@one.firstfloor.org>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <9FF72994-F55A-4B36-9EAA-CB1D2360A6F5@cs.utk.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
+       Stephane Eranian <eranian@hpl.hp.com>,
+       William Cohen <wcohen@redhat.com>,
+       Robert Richter <robert.richter@amd.com>, linux-kernel@vger.kernel.org,
+       Perfmon <perfmon@napali.hpl.hp.com>,
+       perfmon2-devel@lists.sourceforge.net,
+       papi list <ptools-perfapi@cs.utk.edu>
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711132325.53846.nickpiggin@yahoo.com.au>
+From: Philip Mucci <mucci@cs.utk.edu>
+Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
+Date: Tue, 13 Nov 2007 16:28:52 -0800
+To: Andi Kleen <andi@firstfloor.org>
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 November 2007 06:22, David Brownell wrote:
-> On Tuesday 13 November 2007, Ingo Molnar wrote:
-> > * David Brownell <david-b@pacbell.net> wrote:
-> > > > > I speculate that either the design has changed (without fanfare),
-> > > > > or else that stuff is in RT kernels and has not yet gone upstream.
-> > > >
-> > > > Well whatever.  We shouldn't have to resort to caller-side party
-> > > > tricks like this to get acceptable performance.
-> > >
-> > > I'd be happy if, as originally presented, it were possible to just
-> > > pass a raw_spinlock_t to spin_lock_irqsave() and friends.
-> >
-> > that's a spinlock type abstraction of PREEMPT_RT, not of mainline.
+Hi Andi,
 
-Even when you're talking about the -rt tree, I suspect you really
-shouldn't be using raw spinlocks, right? I mean, if you have a
-timing critical operation, then you should ensure you have priorities
-set correctly so that you simply don't get preempted.
+pfmon is a single tool and fairly low level, the HPC folks don't use  
+it so much because it isn't parallel aware and is meant for power- 
+users. It is not representative of the tools used in HPC at all. Our  
+community uses tools built on the infrastructure provided by libpfm  
+and PAPI for the most part.
 
-By using a raw_spinlock_t, you're saying that you're more important
-than anyone else (for the period of the critical section) including
-processes which the user has explicitly set to a higher priority.
+I know you don't want to hear this, but we actually use all of the  
+features of perfmon, because a) we wanted to use the best methods  
+available and b) areas where user level solutions could be made (like  
+multiplexing) introduced too much noise and overhead to be of use.  
+For years we relied on PerfCtr which did 'just enough' for us. But  
+when Perfmon2 became available, we adopted technology where it meant  
+a significant increase in accuracy for the resulting measurements,  
+specifically for us that meant, kernel multiplexing and sample buffers.
+Note that PAPI is just middleware. The tools built upon it are what  
+people use...some of those are commercial tools like Vampir but most  
+are Open Source. These tools are cross platform, as such they run on  
+nearly everything...although intel/amd/ppc systems dominate the HPC  
+market.
 
-If you get preempted, then you should be happy, because <standard
-RTOS nuclear power plant scenario> didn't occur.
+The usage cases are always the same and can be broken down into  
+simple counting and sampling:
 
+	- providing virtualized 64-bit counters per-thread
+	- providing notification (buffered or non) on interrupt/overflow of  
+the above.
 
-> Any reason that stuff shouldn't move into mainline?
+If you'd like to outline further what you'd like to hear from the  
+community, I can arrange that. I seem to remember going through this  
+once before, but I'd be happy to do it again. For reference, here's a  
+quick list from memory of some of the tools in active use and built  
+on this infrastructure. These are used heavily around the globe.  
+You'll see that each basically follows one of the 2 usage models above.
 
-This sort of raw_spinlock_t arms race throughout drivers/ would be
-a huge reason not to move it into mainline.
+- HPCToolkit (Rice)
+- PerfSuite (NCSA)
+- Vampir (Dresden)
+- Kojak (Juelich)
+- TAU (UOregon)
+- PAPIEX (me)
+- GPTL (NCAR)
+- HPM-Linux (IBM)
+- Paraver (Barcelona)
+
+Time to go give a talk here at a tools session at SC'07 about this  
+very subject.
+
+Phil
+
+On Nov 13, 2007, at 12:36 PM, Andi Kleen wrote:
+
+>> He speaks for quite a few people - they have serious need for this  
+>> feature
+>
+> Most likely they have serious need for a very small subset of  
+> perfmon2.
+> The point of my proposal was to get this very small subset in quickly.
+>
+> Phil, how many of the command line options of pfmon do you
+> actually use? How many do the people at your conference use? Or what
+> functions, what performance counters etc. in PAPI or whatever
+> library you use?
+>
+> Make use understand the use cases better, that would already help a  
+> lot
+> in merging by concentrating on what people actually really need.
+>
+> -Andi
+>
+
