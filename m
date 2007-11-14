@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764312AbXKNGRB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764209AbXKNGSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764312AbXKNGRB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 01:17:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760488AbXKNGQv
+	id S1764209AbXKNGSt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 01:18:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760488AbXKNGSl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 01:16:51 -0500
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:30700 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750727AbXKNGQu (ORCPT
+	Wed, 14 Nov 2007 01:18:41 -0500
+Received: from wr-out-0506.google.com ([64.233.184.225]:45596 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758432AbXKNGSl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 01:16:50 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=yeMeHbBlSBVPtBgwxhGld8M6Uyg2K/e7KUjQjyM9C3ROgLJgXuJ6L82Of1N9lbDWDB0EyDn8yT4gxAW6LGuO9jGflr39huak4jeE7tLleb3F09pm/K+xHMGtZ0p7uPN2xm1ybB/PmLzpDIvLyGt4SpK8wMFe1N8ySb+eu2mYAqU=  ;
-X-YMail-OSG: CK4n.3AVM1k80puSAQ.owsJvAg9pvTfY6SWwObdFbWfTfi0EfBZ9FBG3Ro.pnie0HsNKreon6A--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Miller <davem@davemloft.net>
-Subject: Re: 2.6.24-rc2: Network commit causes SLUB performance regression with tbench
-Date: Wed, 14 Nov 2007 05:14:27 +1100
-User-Agent: KMail/1.9.5
-Cc: clameter@sgi.com, netdev@vger.kernel.org, herbert@gondor.apana.org.au,
-       linux-kernel@vger.kernel.org
-References: <200711132241.59074.nickpiggin@yahoo.com.au> <200711140436.24492.nickpiggin@yahoo.com.au> <20071113.221242.153352652.davem@davemloft.net>
-In-Reply-To: <20071113.221242.153352652.davem@davemloft.net>
+	Wed, 14 Nov 2007 01:18:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Aa/TlgPRHZSsnmm5X3nCP7IuEocDUVpZ3VL1LOL6LEK3TumQQSl2go57d88eWR/GRduY1GK+jbNTTU2/VuNNEE6mVHV0lVo1+zr2mb+sgR8xwiAMSjz+ml4GOD4bGl4OiSyDRXZJEYW9feSe5r0xLXzta4HbT2Q7nZzYUZOsyAs=
+Message-ID: <a8e1da0711132218h9d944d0p3c22ac313ee667a9@mail.gmail.com>
+Date: Wed, 14 Nov 2007 14:18:39 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: 2.6.24-rc2-mm1
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20071113175906.497a1a6a.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711140514.28159.nickpiggin@yahoo.com.au>
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 November 2007 17:12, David Miller wrote:
-> From: Nick Piggin <nickpiggin@yahoo.com.au>
-> Date: Wed, 14 Nov 2007 04:36:24 +1100
->
-> > On Wednesday 14 November 2007 12:58, David Miller wrote:
-> > > I suspect the issue is about having a huge skb->data linear area for
-> > > TCP sends over loopback.  We're likely getting a much smaller
-> > > skb->data linear data area after the patch in question, the rest using
-> > > the sk_buff scatterlist pages which are a little bit more expensive to
-> > > process.
-> >
-> > It didn't seem to be noticeable at 1 client. Unless scatterlist
-> > processing is going to cause cacheline bouncing, I don't see why this
-> > hurts more as you add CPUs?
->
-> Is your test system using HIGHMEM?
->
-> That's one thing the page vector in the sk_buff can do a lot,
-> kmaps.
+Hi,
+Boot failed on my machine. hand copy some messages.
 
-No, it's an x86-64, so no highmem.
+First with BLK_DEV_RAM=y
 
-What's also interesting is that SLAB apparently doesn't have this
-condition. The first thing that sprung to mind is that SLAB caches
-order > 0 allocations, while SLUB does not. However if anything,
-that should actually favour the SLUB numbers if network is avoiding
-order > 0 allocations.
+BUG kmalloc-64 Poison overwritting:
+Alloced in kset_create
+Freed in kobject_cleanup
 
-I'm doing some oprofile runs now to see if I can get any more info.
+--cut--
+alloc_disk_node
+rd_init
+kernel_init
+--cut--
+
+Then config ramdisk as module, build and reboot:
+
+BUG: unable handle paging resuest at 6b6b6b6b
+EIP is kobject_add 0xc4/0x150
+
+--cut--
+kobject_set_name
+register_disk
+add_disk
+exact_match
+exact_lock
+loop_init
+--cut--
+
+Regards
+dave
+--cut--
