@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763719AbXKNU3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762347AbXKNUY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763719AbXKNU3r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 15:29:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760043AbXKNU3g
+	id S1762347AbXKNUY4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 15:24:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754555AbXKNUYt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 15:29:36 -0500
-Received: from xenotime.net ([66.160.160.81]:38776 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1758360AbXKNU3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 15:29:34 -0500
-Date: Wed, 14 Nov 2007 12:29:32 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, protasnb@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [BUG] New Kernel Bugs
-Message-Id: <20071114122932.bc3bec04.rdunlap@xenotime.net>
-In-Reply-To: <20071114201639.GA17182@elte.hu>
-References: <20071113031553.3c7b5c16.akpm@linux-foundation.org>
-	<20071113.033946.114918709.davem@davemloft.net>
-	<20071113034916.2556edd7.akpm@linux-foundation.org>
-	<20071113.035824.40509981.davem@davemloft.net>
-	<20071113041259.79c9a8c5.akpm@linux-foundation.org>
-	<20071113134029.GA30978@elte.hu>
-	<20071113085514.3414aa52.rdunlap@xenotime.net>
-	<20071114140847.GA11489@elte.hu>
-	<20071114093820.ff3ad8f9.rdunlap@xenotime.net>
-	<20071114201639.GA17182@elte.hu>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 14 Nov 2007 15:24:49 -0500
+Received: from nf-out-0910.google.com ([64.233.182.188]:17072 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754501AbXKNUYs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 15:24:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Rns59A+43IFjnxaw0tRn8n31qYbMovTSdzYSxnowiNXU5oXxElfV1rSdzKvlCh+Bnf+/b9uRfwx6hKi6fM7c+pw7liXUWmKpRgsJajV/W6ieO6kRr4EbSqDU+FRVpGo9rzmnl5Dzd1UEZn2JHVBcmcJUVuSig78Yj3++ksnKZcg=
+Message-ID: <473B5987.60904@gmail.com>
+Date: Wed, 14 Nov 2007 21:24:39 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: broken suspend [Was: 2.6.24-rc2-mm1]
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
+In-Reply-To: <20071113175906.497a1a6a.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Nov 2007 21:16:39 +0100 Ingo Molnar wrote:
+On 11/14/2007 02:59 AM, Andrew Morton wrote:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc2/2.6.24-rc2-mm1/
 
+Doesn't suspend for me (neither broken-out-2007-11-13-04-14 did) on x86_64.
+echo mem >/sys/power/state
+causes shut down of disk(s) and blinking cursor on 1,1 position.
+The last working was 2.6.23-rc8-mm2. I haven't tested
+2.6.23-mm1, since it didn't work for me.
 
-> countered by the underlined sentences above, just in case you missed it.
+As usual, I don't know how to debug this and what other info is needed, any
+thoughts?
 
-I didn't miss your claim.
-
-
----
-~Randy
+regards,
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
