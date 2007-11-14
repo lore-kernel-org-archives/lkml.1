@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762113AbXKNThX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbXKNThl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762113AbXKNThX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 14:37:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750912AbXKNThK
+	id S1756065AbXKNThl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 14:37:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbXKNThc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 14:37:10 -0500
-Received: from palrel10.hp.com ([156.153.255.245]:42539 "EHLO palrel10.hp.com"
+	Wed, 14 Nov 2007 14:37:32 -0500
+Received: from palrel12.hp.com ([156.153.255.237]:43246 "EHLO palrel12.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751222AbXKNThI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 14:37:08 -0500
-Date: Wed, 14 Nov 2007 12:37:06 -0700
+	id S1750912AbXKNThb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 14:37:31 -0500
+Date: Wed, 14 Nov 2007 12:37:29 -0700
 From: Alex Chiang <achiang@hp.com>
 To: Gary Hade <garyhade@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
        Greg KH <greg@kroah.com>, gregkh@suse.de, kristen.c.accardi@intel.com,
        lenb@kernel.org, rick.jones2@hp.com, linux-kernel@vger.kernel.org,
        linux-pci@atrey.karlin.mff.cuni.cz, kaneshige.kenji@jp.fujitsu.com,
        pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
-Subject: [PATCH 1/5] Remove path attribute from sgi_hotplug
-Message-ID: <20071114193706.GB25002@ldl.fc.hp.com>
+Subject: [PATCH 2/5] Construct one fakephp slot per pci slot
+Message-ID: <20071114193729.GC25002@ldl.fc.hp.com>
 Mail-Followup-To: Alex Chiang <achiang@hp.com>,
 	Gary Hade <garyhade@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
 	Greg KH <greg@kroah.com>, gregkh@suse.de,
@@ -34,85 +34,162 @@ User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Rename the slot to be the contents of the 'path' sysfs attribute, and
-delete the attribute.  The mapping from pci address to slot name is
-supposed to be done through the 'address' file, which will be provided
-automatically later in this series of patches.
+Register one slot per slot, rather than one slot per function.
+Change the name of the slot to fake%d instead of the pci address.
 
 Signed-off-by: Alex Chiang <achiang@hp.com>
 Signed-off-by: Matthew Wilcox <matthew@wil.cx>
 ---
- drivers/pci/hotplug/sgi_hotplug.c |   32 +-------------------------------
- 1 files changed, 1 insertions(+), 31 deletions(-)
+ drivers/pci/hotplug/fakephp.c |   82 ++++++++++++++++-------------------------
+ 1 files changed, 32 insertions(+), 50 deletions(-)
 
-diff --git a/drivers/pci/hotplug/sgi_hotplug.c b/drivers/pci/hotplug/sgi_hotplug.c
-index ef07c36..693519e 100644
---- a/drivers/pci/hotplug/sgi_hotplug.c
-+++ b/drivers/pci/hotplug/sgi_hotplug.c
-@@ -91,21 +91,6 @@ static struct hotplug_slot_ops sn_hotplug_slot_ops = {
+diff --git a/drivers/pci/hotplug/fakephp.c b/drivers/pci/hotplug/fakephp.c
+index 027f686..851796b 100644
+--- a/drivers/pci/hotplug/fakephp.c
++++ b/drivers/pci/hotplug/fakephp.c
+@@ -59,10 +59,13 @@
+ #define DRIVER_AUTHOR	"Greg Kroah-Hartman <greg@kroah.com>"
+ #define DRIVER_DESC	"Fake PCI Hot Plug Controller Driver"
  
- static DEFINE_MUTEX(sn_hotplug_mutex);
++#define SLOT_NAME_SIZE KOBJ_NAME_LEN
++
+ struct dummy_slot {
+ 	struct list_head node;
+ 	struct hotplug_slot *slot;
+ 	struct pci_dev *dev;
++	char name[8];
+ };
  
--static ssize_t path_show (struct hotplug_slot *bss_hotplug_slot,
--	       		  char *buf)
--{
--	int retval = -ENOENT;
--	struct slot *slot = bss_hotplug_slot->private;
+ static int debug;
+@@ -93,6 +96,7 @@ static int add_slot(struct pci_dev *dev)
+ 	struct dummy_slot *dslot;
+ 	struct hotplug_slot *slot;
+ 	int retval = -ENOMEM;
++	static int count = 1;
+ 
+ 	slot = kzalloc(sizeof(struct hotplug_slot), GFP_KERNEL);
+ 	if (!slot)
+@@ -106,13 +110,14 @@ static int add_slot(struct pci_dev *dev)
+ 	slot->info->max_bus_speed = PCI_SPEED_UNKNOWN;
+ 	slot->info->cur_bus_speed = PCI_SPEED_UNKNOWN;
+ 
+-	slot->name = &dev->dev.bus_id[0];
+-	dbg("slot->name = %s\n", slot->name);
 -
--	if (!slot)
--		return retval;
--
--	retval = sprintf (buf, "%s\n", slot->physical_path);
+ 	dslot = kmalloc(sizeof(struct dummy_slot), GFP_KERNEL);
+ 	if (!dslot)
+ 		goto error_info;
+ 
++	slot->name = dslot->name;
++	snprintf(slot->name, 8, "fake%d", count++);
++	dbg("slot->name = %s\n", slot->name);
++
+ 	slot->ops = &dummy_hotplug_slot_ops;
+ 	slot->release = &dummy_release;
+ 	slot->private = dslot;
+@@ -141,17 +146,17 @@ error:
+ static int __init pci_scan_buses(void)
+ {
+ 	struct pci_dev *dev = NULL;
+-	int retval = 0;
++	int lastslot = 0;
+ 
+ 	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
+-		retval = add_slot(dev);
+-		if (retval) {
+-			pci_dev_put(dev);
+-			break;
+-		}
++		if (PCI_FUNC(dev->devfn) > 0 &&
++				lastslot == PCI_SLOT(dev->devfn))
++			continue;
++		lastslot = PCI_SLOT(dev->devfn);
++		add_slot(dev);
+ 	}
+ 
 -	return retval;
++	return 0;
+ }
+ 
+ static void remove_slot(struct dummy_slot *dslot)
+@@ -275,23 +280,9 @@ static int enable_slot(struct hotplug_slot *hotplug_slot)
+ 	return -ENODEV;
+ }
+ 
+-/* find the hotplug_slot for the pci_dev */
+-static struct hotplug_slot *get_slot_from_dev(struct pci_dev *dev)
+-{
+-	struct dummy_slot *dslot;
+-
+-	list_for_each_entry(dslot, &slot_list, node) {
+-		if (dslot->dev == dev)
+-			return dslot->slot;
+-	}
+-	return NULL;
 -}
 -
--static struct hotplug_slot_attribute sn_slot_path_attr = __ATTR_RO(path);
 -
- static int sn_pci_slot_valid(struct pci_bus *pci_bus, int device)
+ static int disable_slot(struct hotplug_slot *slot)
  {
- 	struct pcibus_info *pcibus_info;
-@@ -173,18 +158,10 @@ static int sn_hp_slot_private_alloc(struct hotplug_slot *bss_hotplug_slot,
- 		return -ENOMEM;
- 	bss_hotplug_slot->private = slot;
+ 	struct dummy_slot *dslot;
+-	struct hotplug_slot *hslot;
+ 	struct pci_dev *dev;
+ 	int func;
  
--	bss_hotplug_slot->name = kmalloc(SN_SLOT_NAME_SIZE, GFP_KERNEL);
--	if (!bss_hotplug_slot->name) {
--		kfree(bss_hotplug_slot->private);
--		return -ENOMEM;
+@@ -301,36 +292,27 @@ static int disable_slot(struct hotplug_slot *slot)
+ 
+ 	dbg("%s - physical_slot = %s\n", __FUNCTION__, slot->name);
+ 
+-	/* don't disable bridged devices just yet, we can't handle them easily... */
+-	if (dslot->dev->subordinate) {
+-		err("Can't remove PCI devices with other PCI devices behind it yet.\n");
+-		return -ENODEV;
 -	}
-+	bss_hotplug_slot->name = slot->physical_path;
+-	/* search for subfunctions and disable them first */
+-	if (!(dslot->dev->devfn & 7)) {
+-		for (func = 1; func < 8; func++) {
+-			dev = pci_get_slot(dslot->dev->bus,
+-					dslot->dev->devfn + func);
+-			if (dev) {
+-				hslot = get_slot_from_dev(dev);
+-				if (hslot)
+-					disable_slot(hslot);
+-				else {
+-					err("Hotplug slot not found for subfunction of PCI device\n");
+-					return -ENODEV;
+-				}
+-				pci_dev_put(dev);
+-			} else
+-				dbg("No device in slot found\n");
++	for (func = 7; func >= 0; func--) {
++		dev = pci_get_slot(dslot->dev->bus, dslot->dev->devfn + func);
++		if (!dev)
++			continue;
++
++		/* don't disable bridged devices just yet, we can't handle
++		 * them easily... */
++		if (dev->subordinate) {
++			err("Can't remove PCI devices with other PCI devices behind it yet.\n");
++			return -ENODEV;
+ 		}
+-	}
  
- 	slot->device_num = device;
- 	slot->pci_bus = pci_bus;
--	sprintf(bss_hotplug_slot->name, "%04x:%02x:%02x",
--		pci_domain_nr(pci_bus),
--		((u16)pcibus_info->pbi_buscommon.bs_persist_busnum),
--		device + 1);
+-	/* remove the device from the pci core */
+-	pci_remove_bus_device(dslot->dev);
  
- 	sn_generate_path(pci_bus, slot->physical_path);
+-	/* blow away this sysfs entry and other parts. */
+-	remove_slot(dslot);
++		/* remove the device from the pci core */
++		pci_remove_bus_device(dslot->dev);
  
-@@ -203,8 +180,6 @@ static struct hotplug_slot * sn_hp_destroy(void)
- 		bss_hotplug_slot = slot->hotplug_slot;
- 		list_del(&((struct slot *)bss_hotplug_slot->private)->
- 			 hp_list);
--		sysfs_remove_file(&bss_hotplug_slot->kobj,
--				  &sn_slot_path_attr.attr);
- 		break;
- 	}
- 	return bss_hotplug_slot;
-@@ -653,11 +628,6 @@ static int sn_hotplug_slot_register(struct pci_bus *pci_bus)
- 		rc = pci_hp_register(bss_hotplug_slot);
- 		if (rc)
- 			goto register_err;
--
--		rc = sysfs_create_file(&bss_hotplug_slot->kobj,
--				       &sn_slot_path_attr.attr);
--		if (rc)
--			goto register_err;
- 	}
- 	dev_dbg(&pci_bus->self->dev, "Registered bus with hotplug\n");
- 	return rc;
++		/* blow away this sysfs entry and other parts. */
++		remove_slot(dslot);
++
++		pci_dev_put(dev);
++	}
+ 	return 0;
+ }
+ 
 -- 
 1.5.3.1.1.g1e61
 
