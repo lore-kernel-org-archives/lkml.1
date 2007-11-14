@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764867AbXKNXq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763758AbXKNXvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764867AbXKNXq1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 18:46:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756226AbXKNXqS
+	id S1763758AbXKNXvZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 18:51:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755252AbXKNXvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 18:46:18 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35207
+	Wed, 14 Nov 2007 18:51:14 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57114
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755413AbXKNXqR (ORCPT
+	by vger.kernel.org with ESMTP id S1753584AbXKNXvM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 18:46:17 -0500
-Date: Wed, 14 Nov 2007 15:46:16 -0800 (PST)
-Message-Id: <20071114.154616.46285694.davem@davemloft.net>
-To: herbert@gondor.apana.org.au
-Cc: nickpiggin@yahoo.com.au, clameter@sgi.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc2: Network commit causes SLUB performance regression
- with tbench
+	Wed, 14 Nov 2007 18:51:12 -0500
+Date: Wed, 14 Nov 2007 15:51:12 -0800 (PST)
+Message-Id: <20071114.155112.34106808.davem@davemloft.net>
+To: jochen@scram.de
+Cc: linuxppc-embedded@ozlabs.org, marcelo@kvack.org, scottwood@freescale.com,
+       linux-kernel@vger.kernel.org, jeff@garzik.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] powerpc: Fix fs_enet module build
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071114114844.GA13927@gondor.apana.org.au>
-References: <200711140927.39796.nickpiggin@yahoo.com.au>
-	<20071114.031022.183117678.davem@davemloft.net>
-	<20071114114844.GA13927@gondor.apana.org.au>
+In-Reply-To: <473AE325.8070901@scram.de>
+References: <4739EDA8.6020800@scram.de>
+	<20071113.210926.97725854.davem@davemloft.net>
+	<473AE325.8070901@scram.de>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,28 +29,16 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
-Date: Wed, 14 Nov 2007 19:48:44 +0800
+From: Jochen Friedrich <jochen@scram.de>
+Date: Wed, 14 Nov 2007 12:59:33 +0100
 
-> [TCP]: Fix size calculation in sk_stream_alloc_pskb
-> 
-> We round up the header size in sk_stream_alloc_pskb so that
-> TSO packets get zero tail room.  Unfortunately this rounding
-> up is not coordinated with the select_size() function used by
-> TCP to calculate the second parameter of sk_stream_alloc_pskb.
-> 
-> As a result, we may allocate more than a page of data in the
-> non-TSO case when exactly one page is desired.
-> 
-> In fact, rounding up the head room is detrimental in the non-TSO
-> case because it makes memory that would otherwise be available to
-> the payload head room.  TSO doesn't need this either, all it wants
-> is the guarantee that there is no tail room.
-> 
-> So this patch fixes this by adjusting the skb_reserve call so that
-> exactly the requested amount (which all callers have calculated in
-> a precise way) is made available as tail room.
-> 
-> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+> I know it's ugly, however, module building is completely
+> broken right now and I just want to provide a quick and
+> ugly fix until both that ppc->powerpc transition and the
+> new binding transition are over. Noone wants to touch the
+> old stuff any more as it's a pita and it's already scheduled
+> for removal in a couple of months.
 
-Applied and I'll queue it up for -stable too.
+Fair enough, I'll apply the patch.
+
+Thanks for the explanation.
