@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763922AbXKNFlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763508AbXKNFp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763922AbXKNFlW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 00:41:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758986AbXKNFlO
+	id S1763508AbXKNFp4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 00:45:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760213AbXKNFpt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 00:41:14 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:51843 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759770AbXKNFlN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 00:41:13 -0500
-Message-ID: <473A83CF.90104@linux.vnet.ibm.com>
-Date: Wed, 14 Nov 2007 10:42:47 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Wed, 14 Nov 2007 00:45:49 -0500
+Received: from threatwall.zlynx.org ([199.45.143.218]:33082 "EHLO zlynx.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760083AbXKNFps (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 00:45:48 -0500
+Message-ID: <473A8B97.5050909@acm.org>
+Date: Tue, 13 Nov 2007 22:45:59 -0700
+From: Zan Lynx <zlynx@acm.org>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       nfs@lists.sourceforge.net, apw@shadowen.org
-Subject: Re: [PATCH] 2.6.24-rc2-mm1 - Build fails - in nsfd/vfs.c
-References: <20071114044904.GA12453@linux.vnet.ibm.com>
-In-Reply-To: <20071114044904.GA12453@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org,
+       Ulrich Drepper <drepper@redhat.com>, Roland McGrath <roland@redhat.com>
+Subject: Re: 2.6.24-rc2-mm1
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org>	<473A6E72.60503@googlemail.com> <20071113205544.2a7743b4.akpm@linux-foundation.org>
+In-Reply-To: <20071113205544.2a7743b4.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Envelope-From: zlynx@acm.org
+X-Spam-Id: 20071113/1IsB4G-0005Ug-Iy-linux-kernel@vger.kernel.org:zlynx@acm.org:199.45.143.218
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kamalesh Babulal wrote:
-> Hi Andrew,
+Andrew Morton wrote:
+[cut]
+> hm, that was supposed to shut itself off after 100 messages:
 > 
-> The Kernel build fails, with error
+> 	if (unlikely(clone_flags & (CLONE_DETACHED|CLONE_STOPPED))) {
+> 		static int __read_mostly count = 100;
 > 
->   CC      fs/nfsd/vfs.o
-> fs/nfsd/vfs.c: In function ‘nfsd_rename’:
-> fs/nfsd/vfs.c:1695: error: request for member ‘mnt’ in something not a structure or union
-> make[2]: *** [fs/nfsd/vfs.o] Error 1
-> make[1]: *** [fs/nfsd] Error 2
-> make: *** [fs] Error 2
+> 		if (count && printk_ratelimit()) {
+> 			char comm[TASK_COMM_LEN];
 > 
-> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-> --
-> --- linux-2.6.24-rc2/fs/nfsd/vfs.c	2007-11-13 22:16:18.000000000 -0500
-> +++ linux-2.6.24-rc2/fs/nfsd/~vfs.c	2007-11-13 23:10:18.000000000 -0500
-> @@ -1692,7 +1692,7 @@ nfsd_rename(struct svc_rqst *rqstp, stru
->  		if (!host_err)
->  			host_err = nfsd_sync_dir(fdentry);
->  	}
-> -	mnt_drop_write(ffhp->fh_export->ex_path.mnt);
-> +	mnt_drop_write(ffhp->fh_export->ex_mnt);
+> 			count--;
+> 			printk(KERN_INFO "fork(): process `%s' used deprecated "
+> 					"clone flags 0x%lx\n",
+> 				get_task_comm(comm, current),
+> 				clone_flags & (CLONE_DETACHED|CLONE_STOPPED));
+> 		}
+> 	}
 > 
->   out_dput_new:
->  	dput(ndentry);
-> 
-Sorry, for the report, its compiles fine, my box had the wrong
-mm patches.
+> I don't see how you got 151 instances.  I guess I'm having another stupid
+> day.
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+It looks like a simple race, two threads do count-- before doing 
+if(count), resulting in an almost infinite loop.  Probably.
+
+atomic_test_and_dec might work.
+
+
+
+
+
+
+
