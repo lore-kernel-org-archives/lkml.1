@@ -1,89 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764484AbXKNHJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764353AbXKNHKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764484AbXKNHJZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 02:09:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762134AbXKNHIy
+	id S1764353AbXKNHKu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 02:10:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761015AbXKNHKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 02:08:54 -0500
-Received: from smtp101.sbc.mail.mud.yahoo.com ([68.142.198.200]:24526 "HELO
-	smtp101.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1761015AbXKNHIw (ORCPT
+	Wed, 14 Nov 2007 02:10:42 -0500
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:41077 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760856AbXKNHKl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 02:08:52 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=YDzqhDmpbWUpVIj78OeT2adi4a3yy+w/y8lOltCul2PzaF1S//2l/W9aaEnrINi8rCkDpu7RaGU8KVTdNAtCbfXJEip3bs76DhejuRXcznm45Pss8S5zZNgs3q1GBO+KPTZGmixsEN0aT9VOpEW7dWWFOsCikuPPWGf7wfH8snI=  ;
-X-YMail-OSG: BLha8ZwVM1l_HkfJvZ3YkYt8ORj22oXSaTScFOxlWIlpvEef_I9KvuGMGviAjhaGiRDW0C2vGQ--
-From: David Brownell <david-b@pacbell.net>
-To: "eric miao" <eric.y.miao@gmail.com>
-Subject: Re: [patch/rfc 1/4] GPIO implementation framework
-Date: Tue, 13 Nov 2007 23:08:47 -0800
-User-Agent: KMail/1.9.6
-Cc: "Linux Kernel list" <linux-kernel@vger.kernel.org>,
-       "Felipe Balbi" <felipebalbi@users.sourceforge.net>,
-       "Bill Gatliff" <bgat@billgatliff.com>,
-       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
-       "Andrew Victor" <andrew@sanpeople.com>,
-       "Tony Lindgren" <tony@atomide.com>, "Jean Delvare" <khali@linux-fr.org>,
-       "Kevin Hilman" <khilman@mvista.com>, "Paul Mundt" <lethal@linux-sh.org>,
-       "Ben Dooks" <ben@trinity.fluff.org>
-References: <200710291809.29936.david-b@pacbell.net> <200711131930.19878.david-b@pacbell.net> <f17812d70711132240m359fcd5doac56ab06bfe76f69@mail.gmail.com>
-In-Reply-To: <f17812d70711132240m359fcd5doac56ab06bfe76f69@mail.gmail.com>
+	Wed, 14 Nov 2007 02:10:41 -0500
+X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Nov 2007 02:10:41 EST
+X-YMail-OSG: hjLDFe4VM1mWiJBz1UydZ63KEi1WEBH90fRVSqothaC7jHRXTsCdB3RCWNsvflFK0UEuLMUKgw--
+Date: Tue, 13 Nov 2007 23:04:00 -0800
+From: Chris Wedgwood <cw@f00f.org>
+To: linux-xfs@oss.sgi.com
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: 2.6.24-rc2 XFS nfsd hang
+Message-ID: <20071114070400.GA25708@puku.stupidest.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711132308.48779.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 November 2007, eric miao wrote:
-> > > > We "can" do most anything. What would that improve though?
-> >
-> > ... What would that improve, though?  Your followup posts
-> > still don't answer that question for me.  I see the code,
-> > but don't have an answer to that question.
-> >
-> 
-> to be honest, I don't feel like the holes. Put restrictions on
-> the numbering of GPIOs might not be a good idea either.
+With 2.6.24-rc2 (amd64) I sometimes (usually but perhaps not always)
+see a hang when accessing some NFS exported XFS filesystems.  Local
+access to these filesystems ahead of time works without problems.
 
-So the point of these is to make it easier for platforms
-(or even just boards) to make sure the GPIO number space
-is densely packed, rather than loosely so?  Paying about
-2KBytes for that privilege.  (Assuming a 32 bit system
-with 256 GPIOs.)
-
-I could see that being a reasonable tradeoff.  I wouldn't
-have started there myself, but you know how that goes!
-
-Does anyone else have any comments on that issue?
+This does not occur with 2.6.23.1.  The filesystem does not appear to
+be corrupt.
 
 
-One point you haven't really brought up in this thread is
-your concern about the impact of this on IRQs.  One issue
-being that for GPIOs used as IRQs, with linear mappings
-resembling
+The call chain for the wedged process is:
 
-	static inline int gpio_to_irq(unsigned gpio)
-	{
-		if (gpio >= LAST_IRQ_CAPABLE_GPIO)
-			return -EINVAL;
-		return irq + FIRST_GPIO_IRQ_NUMBER;
-	}
+    [ 1462.911256] nfsd          D ffffffff80547840  4760  2966      2
+    [ 1462.911283]  ffff81010414d4d0 0000000000000046 0000000000000000 ffff81010414d610
+    [ 1462.911322]  ffff810104cbc6e0 ffff81010414d480 ffffffff80746dc0 ffffffff80746dc0
+    [ 1462.911360]  ffffffff80744020 ffffffff80746dc0 ffff81010129c140 ffff8101000ad100
+    [ 1462.911391] Call Trace:
+    [ 1462.911417]  [<ffffffff8052e638>] __down+0xe9/0x101
+    [ 1462.911437]  [<ffffffff8022cc80>] default_wake_function+0x0/0xe
+    [ 1462.911458]  [<ffffffff8052e275>] __down_failed+0x35/0x3a
+    [ 1462.911480]  [<ffffffff8035ac25>] _xfs_buf_find+0x84/0x24d
+    [ 1462.911501]  [<ffffffff8035ad34>] _xfs_buf_find+0x193/0x24d
+    [ 1462.911522]  [<ffffffff803599b1>] xfs_buf_lock+0x43/0x45
+    [ 1462.911543]  [<ffffffff8035ad5b>] _xfs_buf_find+0x1ba/0x24d
+    [ 1462.911564]  [<ffffffff8035ae48>] xfs_buf_get_flags+0x5a/0x14b
+    [ 1462.911586]  [<ffffffff8035b490>] xfs_buf_read_flags+0x12/0x86
+    [ 1462.911607]  [<ffffffff8034ecf6>] xfs_trans_read_buf+0x4c/0x2cf
+    [ 1462.911629]  [<ffffffff803292be>] xfs_da_do_buf+0x41b/0x65b
+    [ 1462.911652]  [<ffffffff80329568>] xfs_da_read_buf+0x24/0x29
+    [ 1462.911673]  [<ffffffff8032be40>] xfs_dir2_block_lookup_int+0x4d/0x1ab
+    [ 1462.911694]  [<ffffffff8032be40>] xfs_dir2_block_lookup_int+0x4d/0x1ab
+    [ 1462.911717]  [<ffffffff8032c718>] xfs_dir2_block_lookup+0x15/0x8e
+    [ 1462.911738]  [<ffffffff8032b8e1>] xfs_dir_lookup+0xd2/0x12c
+    [ 1462.911761]  [<ffffffff8036d658>] submit_bio+0x10d/0x114
+    [ 1462.911781]  [<ffffffff8034fb56>] xfs_dir_lookup_int+0x2c/0xc5
+    [ 1462.911802]  [<ffffffff802507a2>] lockdep_init_map+0x90/0x495
+    [ 1462.911823]  [<ffffffff80353436>] xfs_lookup+0x44/0x6f
+    [ 1462.911843]  [<ffffffff8035e364>] xfs_vn_lookup+0x29/0x60
+    [ 1462.915246]  [<ffffffff8028856c>] __lookup_hash+0xe5/0x109
+    [ 1462.915267]  [<ffffffff802893dd>] lookup_one_len+0x41/0x4e
+    [ 1462.915289]  [<ffffffff80303d05>] compose_entry_fh+0xc1/0x117
+    [ 1462.915311]  [<ffffffff80303f4c>] encode_entry+0x17c/0x38b
+    [ 1462.915333]  [<ffffffff80261e4e>] find_or_create_page+0x3f/0xc9
+    [ 1462.915355]  [<ffffffff8035a2c0>] _xfs_buf_lookup_pages+0x2c1/0x2f6
+    [ 1462.915377]  [<ffffffff8052ec6b>] _spin_unlock+0x1f/0x49
+    [ 1462.915399]  [<ffffffff8027e632>] cache_alloc_refill+0x1ba/0x4b9
+    [ 1462.915424]  [<ffffffff8030415b>] nfs3svc_encode_entry_plus+0x0/0x13
+    [ 1462.915448]  [<ffffffff8030416b>] nfs3svc_encode_entry_plus+0x10/0x13
+    [ 1462.915469]  [<ffffffff8032c67c>] xfs_dir2_block_getdents+0x15b/0x1e2
+    [ 1462.915491]  [<ffffffff8030415b>] nfs3svc_encode_entry_plus+0x0/0x13
+    [ 1462.915514]  [<ffffffff8030415b>] nfs3svc_encode_entry_plus+0x0/0x13
+    [ 1462.915534]  [<ffffffff8032b6da>] xfs_readdir+0x91/0xb6
+    [ 1462.915557]  [<ffffffff8030415b>] nfs3svc_encode_entry_plus+0x0/0x13
+    [ 1462.915579]  [<ffffffff8035be9d>] xfs_file_readdir+0x31/0x40
+    [ 1462.915599]  [<ffffffff8028c9f8>] vfs_readdir+0x61/0x93
+    [ 1462.915619]  [<ffffffff8030415b>] nfs3svc_encode_entry_plus+0x0/0x13
+    [ 1462.915642]  [<ffffffff802fc78e>] nfsd_readdir+0x6d/0xc5
+    [ 1462.915663]  [<ffffffff80303158>] nfsd3_proc_readdirplus+0x114/0x204
+    [ 1462.915686]  [<ffffffff802f8b82>] nfsd_dispatch+0xde/0x1b6
+    [ 1462.915706]  [<ffffffff805215cd>] svc_process+0x3f8/0x717
+    [ 1462.915729]  [<ffffffff802f9148>] nfsd+0x1a9/0x2c1
+    [ 1462.915749]  [<ffffffff8020c648>] child_rip+0xa/0x12
+    [ 1462.915769]  [<ffffffff80520af8>] __svc_create_thread+0xea/0x1eb
+    [ 1462.915792]  [<ffffffff802f8f9f>] nfsd+0x0/0x2c1
+    [ 1462.915812]  [<ffffffff8020c63e>] child_rip+0x0/0x12
 
-then tightly packed GPIOs mean less space wasted for IRQ
-descriptors that would never be used.
+Over time other processes pile up beind this.
 
-And since an irq_desc bigger than your gpio_desc, there's
-a tradeoff between wasting space on unused gpio_desc structs
-versus unused irq_desc structs.  2 KBytes would cost about
-only 35 irq_desc structs, vs 256 gpio_desc structs.
+    [ 1462.910728] nfsd          D ffffffffffffffff  5440  2965      2
+    [ 1462.910769]  ffff8101040cdd40 0000000000000046 0000000000000001 ffff810103471900
+    [ 1462.910812]  ffff8101029a72c0 ffff8101040cdcf0 ffffffff80746dc0 ffffffff80746dc0
+    [ 1462.910852]  ffffffff80744020 ffffffff80746dc0 ffff81010008e0c0 ffff8101012a1040
+    [ 1462.910882] Call Trace:
+    [ 1462.910909]  [<ffffffff802fbadf>] nfsd_permission+0x95/0xeb
+    [ 1462.910931]  [<ffffffff8028c9dd>] vfs_readdir+0x46/0x93
+    [ 1462.910950]  [<ffffffff8052d729>] mutex_lock_nested+0x165/0x27c
+    [ 1462.910971]  [<ffffffff8052ec6b>] _spin_unlock+0x1f/0x49
+    [ 1462.910994]  [<ffffffff8030415b>] nfs3svc_encode_entry_plus+0x0/0x13
+    [ 1462.911015]  [<ffffffff8028c9dd>] vfs_readdir+0x46/0x93
+    [ 1462.911037]  [<ffffffff8030415b>] nfs3svc_encode_entry_plus+0x0/0x13
+    [ 1462.911057]  [<ffffffff802fc78e>] nfsd_readdir+0x6d/0xc5
+    [ 1462.911079]  [<ffffffff80303158>] nfsd3_proc_readdirplus+0x114/0x204
+    [ 1462.911102]  [<ffffffff802f8b82>] nfsd_dispatch+0xde/0x1b6
+    [ 1462.911122]  [<ffffffff805215cd>] svc_process+0x3f8/0x717
+    [ 1462.911143]  [<ffffffff802f9148>] nfsd+0x1a9/0x2c1
+    [ 1462.911165]  [<ffffffff8020c648>] child_rip+0xa/0x12
+    [ 1462.911184]  [<ffffffff80520af8>] __svc_create_thread+0xea/0x1eb
+    [ 1462.911206]  [<ffffffff802f8f9f>] nfsd+0x0/0x2c1
+    [ 1462.911225]  [<ffffffff8020c63e>] child_rip+0x0/0x12
 
-I'm guessing that's why you care about dense packing for
-the GPIO numbers...
 
-- Dave
-
+Any suggestions other than to bisect this?  (Bisection might be
+painful as it crosses the x86-merge.)
