@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761928AbXKNDsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762209AbXKNDsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761928AbXKNDsA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 22:48:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760007AbXKNDrt
+	id S1762209AbXKNDsh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 22:48:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756975AbXKNDs2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 22:47:49 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40799
+	Tue, 13 Nov 2007 22:48:28 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39315
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755775AbXKNDrr (ORCPT
+	by vger.kernel.org with ESMTP id S1757288AbXKNDs1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 22:47:47 -0500
-Date: Tue, 13 Nov 2007 19:47:46 -0800 (PST)
-Message-Id: <20071113.194746.47688258.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: rmk+lkml@arm.linux.org.uk, alsa-devel@alsa-project.org,
-       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-kernel@vger.kernel.org, protasnb@gmail.com,
-       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz
-Subject: Re: [BUG] New Kernel Bugs
+	Tue, 13 Nov 2007 22:48:27 -0500
+Date: Tue, 13 Nov 2007 19:48:26 -0800 (PST)
+Message-Id: <20071113.194826.197093902.davem@davemloft.net>
+To: andi@firstfloor.org
+Cc: clameter@sgi.com, akpm@linux-foundation.org, linux-mm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dada1@cosmosbay.com,
+       schwidefsky@de.ibm.com
+Subject: Re: [patch 01/28] cpu alloc: The allocator
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071113182700.ef821d0f.akpm@linux-foundation.org>
-References: <20071113143201.9441c940.akpm@linux-foundation.org>
-	<20071113.175551.131375600.davem@davemloft.net>
-	<20071113182700.ef821d0f.akpm@linux-foundation.org>
+In-Reply-To: <20071114022832.GC20365@one.firstfloor.org>
+References: <p73wssly6sr.fsf@bingen.suse.de>
+	<20071113.175208.168903694.davem@davemloft.net>
+	<20071114022832.GC20365@one.firstfloor.org>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -31,20 +29,21 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Tue, 13 Nov 2007 18:27:00 -0800
+From: Andi Kleen <andi@firstfloor.org>
+Date: Wed, 14 Nov 2007 03:28:32 +0100
 
-> Let me just say - I'm astonished at how little spam gets though the vger
-> lists.  Considering how many times those email addresses must have been
-> added to spam databases.
+> ftp://firstfloor.org/pub/ak/x86_64/quilt/patches/early-reserve
+> ftp://firstfloor.org/pub/ak/x86_64/quilt/patches/early-alloc 
+> ftp://firstfloor.org/pub/ak/x86_64/quilt/patches/lockdep-early-alloc
 > 
-> It must be a lot of work, and whoever is doing it does it well.
-> 
-> I don't even know.  Is it Matti?  You?
+> I didn't plan to submit it for .24, just .25. Or do you need it 
+> urgently?
 
-Matti gets all the credit for setting up the bayesian et al.
-filters we have and training it as needed.
+I don't need it urgently, 2.6.25 is perfectly fine.
 
-> <contemplates linux-kernel@lists.sourceforge.net.  Shudders.>
+> Also it would require you to write a sparc specific arch_early_alloc()
+> of course.  I've only done the x86-64 version.
 
-Yes, sourceforge is a complete joke.
+I'll be sure to take care of that when it hits .25
+
+Thanks Andi.
