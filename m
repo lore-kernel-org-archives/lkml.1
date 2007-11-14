@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755006AbXKNKzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754882AbXKNLA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755006AbXKNKzR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 05:55:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbXKNKzF
+	id S1754882AbXKNLA3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 06:00:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbXKNLAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 05:55:05 -0500
-Received: from www.tglx.de ([62.245.132.106]:33866 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751452AbXKNKzD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 05:55:03 -0500
-Date: Wed, 14 Nov 2007 11:54:50 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Joe Perches <joe@perches.com>
-cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] - [12/15] - remove defconfig ptr comparisons to 0 -
- include/asm-x86
-In-Reply-To: <1195005932.5163.98.camel@localhost>
-Message-ID: <alpine.LFD.0.9999.0711141055050.3265@localhost.localdomain>
-References: <1195005932.5163.98.camel@localhost>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 14 Nov 2007 06:00:19 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:47016 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751747AbXKNLAR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 06:00:17 -0500
+Date: Wed, 14 Nov 2007 11:00:09 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
+       Philip Mucci <mucci@cs.utk.edu>, eranian@hpl.hp.com,
+       William Cohen <wcohen@redhat.com>,
+       Robert Richter <robert.richter@amd.com>, linux-kernel@vger.kernel.org,
+       Perfmon <perfmon@napali.hpl.hp.com>, Andi Kleen <andi@firstfloor.org>,
+       perfmon2-devel@lists.sourceforge.net,
+       OSPAT devel <ospat-devel@cs.utk.edu>,
+       papi list <ptools-perfapi@cs.utk.edu>
+Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
+Message-ID: <20071114110009.GA17833@infradead.org>
+References: <p73abpl2654.fsf@bingen.suse.de> <20071113151718.GA3804@erda.amd.com> <4739C42F.8030208@redhat.com> <20071113175545.GD4319@frankl.hpl.hp.com> <53F4663B-CFBA-44E4-8283-BAAC8C8F1AFF@cs.utk.edu> <20071113185924.GA22748@suse.de> <20071113120728.4342e7d7.akpm@linux-foundation.org> <18234.41652.199520.31261@cargo.ozlabs.ibm.com> <20071114103805.GA16652@infradead.org> <18234.53558.883970.87414@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18234.53558.883970.87414@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe,
-
-can you please CC the relevant maintainers on patches ?
-
-On Tue, 13 Nov 2007, Joe Perches wrote:
-
-> Remove defconfig ptr comparison to 0
->
-> The memcpy from memory location 0 sure looks odd.
-
-The memcpy from 0 is completely bogus.
-
-I bet this should have been a memset(&header, 0, ....), which is not
-necessary at all, when the return value of acpi_get_table_header()
-would be evaluated.
-
-/me wonders why this never exploded
-
-    tglx
-
-> Remove sparse warning: Using plain integer as NULL pointer
+On Wed, Nov 14, 2007 at 09:43:02PM +1100, Paul Mackerras wrote:
+> Christoph Hellwig writes:
 > 
-> Signed-off-by: Joe Perches <joe@perches.com>
+> > Mine for example.  The whole userspace interface is just on crack,
+> > and the code is full of complexities aswell.
 > 
-> ---
-> 
-> diff --git a/include/asm-x86/mach-es7000/mach_mpparse.h b/include/asm-x86/mach-es7000/mach_mpparse.h
-> index 8aa1054..a1dd66f 100644
-> --- a/include/asm-x86/mach-es7000/mach_mpparse.h
-> +++ b/include/asm-x86/mach-es7000/mach_mpparse.h
-> @@ -29,7 +29,7 @@ extern int mps_oem_check(struct mp_config_table *mpc, char *oem,
->  static inline int es7000_check_dsdt(void)
->  {
->  	struct acpi_table_header header;
-> -	memcpy(&header, 0, sizeof(struct acpi_table_header));
-> +	memcpy(&header, (void *)0, sizeof(struct acpi_table_header));
->  	acpi_get_table_header(ACPI_SIG_DSDT, 0, &header);
->  	if (!strncmp(header.oem_id, "UNISYS", 6))
->  		return 1;
-> 
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> Could you give some _technical_ details of what you don't like?
+
+I've done this a gazillion times before, so maybe instead of beeing a lazy
+bastard you could look up mailinglist archive.  It's not like this is the
+first discussion of perfmon.  But to get start look at the systems calls,
+many of them are beasts like:
+
+  int pfm_read_pmds(int fd, pfarg_pmd_t *pmds, int n)
+
+This is basically a read(2) (or for other syscalls a write) on something
+else than the file descriptor provided to the system call.   The right thing
+to do is obviously have a pmds and pmcs file in procfs for the thread beeing
+monitored instead of these special-case files, with another set for global
+tracing.  Similarly I'm pretty sure we can get a much better interface
+if we introduce marching files in procfs for the other calls.
+
