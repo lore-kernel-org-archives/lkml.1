@@ -1,78 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757143AbXKNDzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760016AbXKNEMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757143AbXKNDzn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 22:55:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756865AbXKNDyt
+	id S1760016AbXKNEMc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 23:12:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbXKNEMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 22:54:49 -0500
-Received: from smtp114.sbc.mail.mud.yahoo.com ([68.142.198.213]:20707 "HELO
-	smtp114.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756644AbXKNDyr (ORCPT
+	Tue, 13 Nov 2007 23:12:23 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:36984 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750831AbXKNEMV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 22:54:47 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=0DDuFLRaLP5KePeawt7h4lcq0J8Qa5+2b0ntQHTiit5cfquUec97l9YBYvAsNsdxTzYFK5gfiuy/boNePk7QnXJorv6zODPRfhX4Z3TiXvJaeqbOk2Y4vzMYnLBYWa2qd9us9VOWIhNTtQHHdMixnXRCTkyHol0Gm40laX+F8CI=  ;
-X-YMail-OSG: 2BdHjAEVM1myTgMbydqG786lNdsr2W6iDX6ulOqeCh.72b0MZaFMOy0y_XJMmzsGVqsZb8Z4uDsuUGQV6uqSOb0WqOmhyiKAH7G3XzOpT48J45WyG8s-
-From: David Brownell <david-b@pacbell.net>
-To: "eric miao" <eric.y.miao@gmail.com>
-Subject: Re: [patch/rfc 1/4] GPIO implementation framework
-Date: Tue, 13 Nov 2007 19:53:40 -0800
-User-Agent: KMail/1.9.6
-Cc: "Linux Kernel list" <linux-kernel@vger.kernel.org>,
-       "Felipe Balbi" <felipebalbi@users.sourceforge.net>,
-       "Bill Gatliff" <bgat@billgatliff.com>,
-       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
-       "Andrew Victor" <andrew@sanpeople.com>,
-       "Tony Lindgren" <tony@atomide.com>, "Jean Delvare" <khali@linux-fr.org>,
-       "Kevin Hilman" <khilman@mvista.com>, "Paul Mundt" <lethal@linux-sh.org>,
-       "Ben Dooks" <ben@trinity.fluff.org>
-References: <200710291809.29936.david-b@pacbell.net> <f17812d70711131700n74236a8naa6dbfc5cb62e42d@mail.gmail.com> <200711131925.11734.david-b@pacbell.net>
-In-Reply-To: <200711131925.11734.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200711131953.41752.david-b@pacbell.net>
+	Tue, 13 Nov 2007 23:12:21 -0500
+Date: Tue, 13 Nov 2007 22:11:56 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH] sata_nv: fix ADMA ATAPI issues with memory over 4GB
+In-reply-to: <47392B3D.1020101@gmail.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
+Message-id: <473A758C.1020105@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <4738DE21.8090702@shaw.ca> <47390B2F.7090105@gmail.com>
+ <47392768.3030509@shaw.ca> <47392B3D.1020101@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 November 2007, David Brownell wrote:
->   http://marc.info/?l=linux-kernel&m=119463810905330&w=2
->   http://marc.info/?l=linux-kernel&m=119463811005344&w=2
->   http://marc.info/?l=linux-kernel&m=119463811105352&w=2
+Tejun Heo wrote:
+>> Could be done.. but, I don't want to constrain the ADMA APRD/CPB area in
+>> that way (there are some dual-socket Opteron boxes with this controller,
+>> forcing an allocation below 4GB for this could force a non-optimal node
+>> allocation I think..) To do this I'd have to raise the mask for the APRD
+>> allocation, drop it again, then raise it again in ADMA mode, which is
+>> kind of ugly.
 > 
-> Plus the appended tweak. 
+> I don't think it really matters.  The table isn't too big and it's not
+> like access to the table has any processor locality.  Maybe it's better
+> to allocate to the same node as the irq but raising DMA mask doesn't
+> help at all.
 
--ENOPATCH ... ;)
+It's quite possible that restricting the DMA mask will also restrict 
+what node that can get allocated on. I'm not so much thinking of the CPU 
+access to the table but the controller's banging on the thing several 
+times for each command..
 
-==========
-Minor fixups to the gpiolib code.
+> 
+> I think performance impact is nil either way but even in highly unlikely
+> case it has any impact, allocating PRDs under 4G should be better as it
+> avoids DAC cycles on the bus.  But again, this is just irrelevant.
+> 
+> I'd say just allocate everything under 4G.
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
- lib/gpiolib.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+The DAC issue shouldn't matter as these controllers are integrated into 
+the chipset so it will be using all HT bus transactions, not PCI.
 
---- g26.orig/lib/gpiolib.c	2007-11-12 15:06:45.000000000 -0800
-+++ g26/lib/gpiolib.c	2007-11-12 15:07:36.000000000 -0800
-@@ -28,7 +28,7 @@
- #define	extra_checks	0
- #endif
- 
--/* gpio_lock protects the table of chips and to gpio_chip->requested.
-+/* gpio_lock protects the table of chips and gpio_chip->requested.
-  * While any gpio is requested, its gpio_chip is not removable.  It's
-  * a raw spinlock to ensure safe access from hardirq contexts, and to
-  * shrink bitbang overhead:  per-bit preemption would be very wrong.
-@@ -533,6 +533,6 @@ static int __init gpiolib_debugfs_init(v
- 				NULL, NULL, &gpiolib_operations);
- 	return 0;
- }
--postcore_initcall(gpiolib_debugfs_init);
-+subsys_initcall(gpiolib_debugfs_init);
- 
- #endif	/* DEBUG_FS */
+We can do it without all that mess in slave_config though, just by 
+delaying raising the DMA mask until after the PRD/pad buffers are allocated.
 
+> 
+>> Also, I'd rather not allocate the legacy PRD at all if we're in ADMA
+>> mode. That way, if some bug causes us to try and do legacy DMA in ADMA
+>> mode, we'll crash from null pointer dereference instead of potentially
+>> transferring incorrect data (as we had in this case) and corrupting things.
+> 
+> Yeap, I can agree with this.  But can you add BUG_ON()/WARN_ON() at
+> places instead?  I know blanking pointers feel safer but I think it's
+> best to keep resource allocation / release in ->port_start/stop().
+
+Yeah, I've got rid of that stuff now and added some BUG_ONs for this. 
+Will submit the patches shortly.
