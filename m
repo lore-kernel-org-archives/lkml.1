@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764891AbXKNU4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764675AbXKNUiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764891AbXKNU4y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 15:56:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764113AbXKNU4A
+	id S1764675AbXKNUiW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 15:38:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760523AbXKNUiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 15:56:00 -0500
-Received: from palrel12.hp.com ([156.153.255.237]:38092 "EHLO palrel12.hp.com"
+	Wed, 14 Nov 2007 15:38:10 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43949 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762075AbXKNUz6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 15:55:58 -0500
-Date: Wed, 14 Nov 2007 13:55:55 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Gary Hade <garyhade@us.ibm.com>, Greg KH <greg@kroah.com>, gregkh@suse.de,
-       kristen.c.accardi@intel.com, lenb@kernel.org, rick.jones2@hp.com,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       kaneshige.kenji@jp.fujitsu.com, pcihpd-discuss@lists.sourceforge.net,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 2/5] Construct one fakephp slot per pci slot
-Message-ID: <20071114205555.GH25002@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Matthew Wilcox <matthew@wil.cx>, Gary Hade <garyhade@us.ibm.com>,
-	Greg KH <greg@kroah.com>, gregkh@suse.de,
-	kristen.c.accardi@intel.com, lenb@kernel.org, rick.jones2@hp.com,
-	linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	kaneshige.kenji@jp.fujitsu.com, pcihpd-discuss@lists.sourceforge.net,
-	linux-acpi@vger.kernel.org
-References: <20071114193605.GA25002@ldl.fc.hp.com> <20071114193729.GC25002@ldl.fc.hp.com> <20071114201246.GZ17785@parisc-linux.org>
+	id S1760565AbXKNUiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 15:38:08 -0500
+Date: Wed, 14 Nov 2007 21:37:37 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, protasnb@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+Message-ID: <20071114203737.GA20606@elte.hu>
+References: <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <20071113085514.3414aa52.rdunlap@xenotime.net> <20071114140847.GA11489@elte.hu> <20071114093820.ff3ad8f9.rdunlap@xenotime.net> <20071114201639.GA17182@elte.hu> <20071114122932.bc3bec04.rdunlap@xenotime.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071114201246.GZ17785@parisc-linux.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20071114122932.bc3bec04.rdunlap@xenotime.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Matthew Wilcox <matthew@wil.cx>:
-> On Wed, Nov 14, 2007 at 12:37:29PM -0700, Alex Chiang wrote:
-> > Register one slot per slot, rather than one slot per function.
-> > Change the name of the slot to fake%d instead of the pci address.
+
+* Randy Dunlap <rdunlap@xenotime.net> wrote:
+
+> On Wed, 14 Nov 2007 21:16:39 +0100 Ingo Molnar wrote:
 > 
-> > +#define SLOT_NAME_SIZE KOBJ_NAME_LEN
+> > countered by the underlined sentences above, just in case you missed 
+> > it.
 > 
-> Defined, then never used ... how about s/KOBJ_NAME_LEN/8/, then use
-> SLOT_NAME_SIZE throughout?
+> I didn't miss your claim.
 
-Whoops, good catch. I had a braino there.
+ok, then you conceded it by not replying to it? good ;-)
 
-Thanks.
-
-/ac
-
+	Ingo
