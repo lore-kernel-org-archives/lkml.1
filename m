@@ -1,40 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764001AbXKNBIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761793AbXKNBKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764001AbXKNBIR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 20:08:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761476AbXKNBIA
+	id S1761793AbXKNBKa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 20:10:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761232AbXKNBKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 20:08:00 -0500
-Received: from mx2.suse.de ([195.135.220.15]:49295 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761377AbXKNBH7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 20:07:59 -0500
-To: Greg KH <greg@kroah.com>
-Cc: Alex Chiang <achiang@hp.com>, gregkh@suse.de, kristen.c.accardi@intel.com,
-       lenb@kernel.org, matthew@wil.cx, richard.jones2@hp.com,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
-From: Andi Kleen <andi@firstfloor.org>
-References: <20071113000853.GA13341@ldl.fc.hp.com>
-	<20071113170129.GA20185@kroah.com>
-Date: Wed, 14 Nov 2007 02:07:56 +0100
-In-Reply-To: <20071113170129.GA20185@kroah.com> (Greg KH's message of "Tue\, 13 Nov 2007 09\:01\:29 -0800")
-Message-ID: <p73sl39y6qb.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
+	Tue, 13 Nov 2007 20:10:21 -0500
+Received: from saraswathi.solana.com ([198.99.130.12]:39097 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761057AbXKNBKU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 20:10:20 -0500
+Date: Tue, 13 Nov 2007 20:10:02 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: uml doesn't work on 2.6.24-rc2
+Message-ID: <20071114011002.GA11477@c2.user-mode-linux.org>
+References: <E1Is5FL-00078H-00@dorka.pomaz.szeredi.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1Is5FL-00078H-00@dorka.pomaz.szeredi.hu>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <greg@kroah.com> writes:
->
-> Also, some companies already provide userspace tools to get all of this
-> information about the different slots in a system and what is where,
-> from userspace, no kernel changes are needed.  So, why add all this
-> extra complexity to the kernel if it is not needed?
+On Wed, Nov 14, 2007 at 12:32:43AM +0100, Miklos Szeredi wrote:
+> UML doesn't run on 2.6.24-rc2 as host (config attached).  Guest is
+> 2.6.23-mm1, but I guess it's irrelevant.  2.6.23 as host was OK.
+> 
+> When booting there are zillions of lines like this:
+> 
+> "arch_switch_tls failed, errno = EINVAL"
 
-It's not only complexity. Each new sysfs entry costs memory.
-Memory is not free. There should be always a good reason for those.
+This is PTRACE_ARCH_PRCTL failing and the only EINVAL I see is
+do_arch_prctl getting a bogus operation - something other than
+ARCH_[GS]ET_[FG]S, which is strange because UML never would have
+worked if it were passing in bogus arguments.
 
--Andi
+				Jeff
+
+-- 
+Work email - jdike at linux dot intel dot com
