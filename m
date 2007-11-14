@@ -1,60 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762951AbXKNVY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764812AbXKNVYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762951AbXKNVY0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 16:24:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754501AbXKNVYO
+	id S1764812AbXKNVYk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 16:24:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759461AbXKNVYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 16:24:14 -0500
-Received: from palrel11.hp.com ([156.153.255.246]:37827 "EHLO palrel11.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754102AbXKNVYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 16:24:13 -0500
-Date: Wed, 14 Nov 2007 14:24:11 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Greg KH <greg@kroah.com>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-pci@atrey.karlin.mff.cuni.cz,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>, gregkh@suse.de,
-       lenb@kernel.org, matthew@wil.cx, rick.jones2@hp.com,
-       linux-kernel@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
-Message-ID: <20071114212411.GB6575@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Greg KH <greg@kroah.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-	linux-pci@atrey.karlin.mff.cuni.cz,
-	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-	gregkh@suse.de, lenb@kernel.org, matthew@wil.cx, rick.jones2@hp.com,
-	linux-kernel@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
-	linux-acpi@vger.kernel.org
-References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113202632.GA3227@kroah.com> <20071113145936.7e1c58fb.kristen.c.accardi@intel.com> <200711141037.09228.bjorn.helgaas@hp.com> <20071114175317.GB14994@kroah.com>
+	Wed, 14 Nov 2007 16:24:21 -0500
+Received: from empbedex1.empirix.com ([12.38.203.54]:13580 "EHLO
+	empbedex1.empirix.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758894AbXKNVYU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 16:24:20 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071114175317.GB14994@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: 2.6.23.1 - sata_mv (7042) hang with large file operations
+Date: Wed, 14 Nov 2007 16:12:21 -0500
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D9010AAE89CA@EMPBEDEX.empirix.com>
+In-Reply-To: <473B44CB.6010209@rtr.ca>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 2.6.23.1 - sata_mv (7042) hang with large file operations
+Thread-Index: Acgm8BfGy+LYypAzRlqMVmh3tUUhwwAEmdkA
+References: <BD261180E6D35F4D9D32F3E44FD3D901053E84BD@EMPBEDEX.empirix.com> <45ED682A.9040408@garzik.org> <BD261180E6D35F4D9D32F3E44FD3D9010A7E1B45@EMPBEDEX.empirix.com> <4728A816.8020608@garzik.org> <BD261180E6D35F4D9D32F3E44FD3D9010AAE852F@EMPBEDEX.empirix.com> <473B36D7.8000205@rtr.ca> <BD261180E6D35F4D9D32F3E44FD3D9010AAE8585@EMPBEDEX.empirix.com> <473B44CB.6010209@rtr.ca>
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: "Mark Lord" <liml@rtr.ca>
+Cc: "Jeff Garzik" <jeff@garzik.org>, <linux-ide@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 14 Nov 2007 21:12:28.0444 (UTC) FILETIME=[0FDAC5C0:01C82703]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+I have gotten it to boot from those hard-drives and it 
+has the same behavior:
 
-* Greg KH <greg@kroah.com>:
-> On Wed, Nov 14, 2007 at 10:37:08AM -0700, Bjorn Helgaas wrote:
-> > 
-> > So I agree that the firmware kit has a clever hack that works
-> > on much existing x86 firmware, and it sounds like Tivoli
-> > might even rely on it.  But I don't feel good about it, and
-> > it could easily break when some BIOS writer needs to make
-> > _SUN slightly more complicated.
+  	Copying a large file to the same partition (>150MEG) 
+  	causes the system to hang (no I/O - no input/output - 
+  	nothing - complete freeze - like a primary resource 
+  	is locked up or interrupts got completely & totally 
+  	turned off in an ISR and its pending for something?
+
+Only way to get out of this is to power-cycle the box!
+
+@#$@#$#@
+
+
+
+
+
+-----Original Message-----
+
+> ::: Can you give me exact details of how to set up and reproduce this?
+> :::  -- Kernel version
 > 
-> Do you know of such BIOSes out there that do this?  Will the
-> above scheme not work for the ia64 boxes that you know of that
-> are out in the world today?
+> 	Linux-2.6.23.1
+> 
+> 	NOTE: I am using ppc (arch/ppc instead of arch/powerpc)
+> 
+> :::  -- number/config/model of drives
+> 
+> 	2x250GIG Western Digital - 3 partitions (largest (/dev/sda3
+> 	~200Gig - formatted to ext2).
+> 
+> 	7042 PEX on a MPC8548 Board
+> 
+> :::  -- exact command line sequence to cause the failure
+> 
+> 	NFS mount root file system (I am currently rebuild to take away
+> 	the NFS file system dependency) - /dev/sda3 is drive in
+question...
+..
 
-Talked to some of our ia64 firmware folks, and they confirmed
-that our future platforms will implement _SUN as a control
-method.
+MMmm.. I'd like to see that again without the rootfs-on-NFS.
 
-Thanks.
+What exactly do you mean when you say "it just hangs" ?
+Everything (dead system)?
 
-/ac
 
+-
+To unsubscribe from this list: send the line "unsubscribe linux-ide" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
