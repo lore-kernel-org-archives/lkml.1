@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbXKNXVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762916AbXKNXX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756887AbXKNXVo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 18:21:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbXKNXVf
+	id S1762916AbXKNXX3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 18:23:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755816AbXKNXXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 18:21:35 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43859
+	Wed, 14 Nov 2007 18:23:17 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40015
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752062AbXKNXVe (ORCPT
+	by vger.kernel.org with ESMTP id S1755274AbXKNXXQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 18:21:34 -0500
-Date: Wed, 14 Nov 2007 15:21:34 -0800 (PST)
-Message-Id: <20071114.152134.266510129.davem@davemloft.net>
-To: paulus@samba.org
-Cc: hch@infradead.org, akpm@linux-foundation.org, gregkh@suse.de,
-       mucci@cs.utk.edu, eranian@hpl.hp.com, wcohen@redhat.com,
-       robert.richter@amd.com, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org
-Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
+	Wed, 14 Nov 2007 18:23:16 -0500
+Date: Wed, 14 Nov 2007 15:23:15 -0800 (PST)
+Message-Id: <20071114.152315.134994547.davem@davemloft.net>
+To: tiwai@suse.de
+Cc: rene.herman@keyaccess.nl, rmk+lkml@arm.linux.org.uk,
+       alsa-devel@alsa-project.org, netdev@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+       protasnb@gmail.com, linux-ide@vger.kernel.org,
+       bugme-daemon@bugzilla.kernel.org, linux-input@atrey.karlin.mff.cuni.cz,
+       akpm@linux-foundation.org, perex@suse.cz
+Subject: Re: Moderated list
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <18235.32982.439970.359975@cargo.ozlabs.ibm.com>
-References: <18235.28062.309910.416774@cargo.ozlabs.ibm.com>
-	<20071114.150303.13732085.davem@davemloft.net>
-	<18235.32982.439970.359975@cargo.ozlabs.ibm.com>
+In-Reply-To: <s5h3av9f9ac.wl%tiwai@suse.de>
+References: <s5h8x51fd2l.wl%tiwai@suse.de>
+	<473AE84A.4050004@keyaccess.nl>
+	<s5h3av9f9ac.wl%tiwai@suse.de>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -30,13 +32,12 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Mackerras <paulus@samba.org>
-Date: Thu, 15 Nov 2007 10:12:22 +1100
+From: Takashi Iwai <tiwai@suse.de>
+Date: Wed, 14 Nov 2007 10:47:39 +0100
 
-> *I* never had a problem with a few extra system calls.  I don't
->  understand why you (apparently) do.
+> I think alsa-user can stay as is.  It's no place for dragging many
+> other addresses like alsa-devel.
+> 
+> BTW, I also prefer keeping the name alsa-devel@.  It's been so.
 
-We're stuck with them forever, they are hard to version and extend
-cleanly.
-
-Those are my main objections.
+That's fine with me, I've changed it alsa-devel@vger.kernel.org
