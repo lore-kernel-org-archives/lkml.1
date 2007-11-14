@@ -1,96 +1,255 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761146AbXKNAel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763107AbXKNAfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761146AbXKNAel (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 19:34:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763048AbXKNAeW
+	id S1763107AbXKNAfZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 19:35:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761587AbXKNAfD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 19:34:22 -0500
-Received: from an-out-0708.google.com ([209.85.132.249]:28683 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762533AbXKNAeT (ORCPT
+	Tue, 13 Nov 2007 19:35:03 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:40653 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761190AbXKNAe7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 19:34:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=LYoqwBEUd9yZ0rvGwdP42oA6zH5E68YhtmYlFtG/xdV/SQUF+pOzG36Xi1oADzkRyNWdKsInATGuRjTzH3ZEu3Ue51p/OgI/JhW1HAH7nJ1P6jlnolc2wm5IjMqn5zb49XVh36c3Qb+/lnzGcc6mNhPTLTuS9axse2KxvTJkuhk=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Mark Lord <liml@rtr.ca>
-Subject: Re: [BUG] New Kernel Bugs
-Date: Tue, 13 Nov 2007 17:34:11 -0700
-User-Agent: KMail/1.9.1
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, protasnb@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
-       bugme-daemon@bugzilla.kernel.org
-References: <20071113031553.3c7b5c16.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca>
-In-Reply-To: <4739AFE0.20705@rtr.ca>
+	Tue, 13 Nov 2007 19:34:59 -0500
+Date: Tue, 13 Nov 2007 18:34:55 -0600
+To: Greg KH <greg@kroah.com>, gregkh@suse.de,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, strosake@us.ibm.com,
+       Alex Chiang <achiang@hp.com>, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, lenb@kernel.org, rick.jones2@hp.com,
+       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: [PATCH] pci hotplug: fix rpaphp directory naming
+Message-ID: <20071114003455.GD8509@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711131734.11353.vda.linux@googlemail.com>
+User-Agent: Mutt/1.5.11
+From: linas@austin.ibm.com (Linas Vepstas)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 November 2007 07:08, Mark Lord wrote:
-> Ingo Molnar wrote:
-> ..
+
+
+Fix presentation of the slot number in the /sys/bus/pci/slots
+directory to match that used in the majority of other drivers.
+
+------
+
+On Tue, Nov 13, 2007 at 02:58:30PM -0700, Matthew Wilcox wrote:
+> On Tue, Nov 13, 2007 at 03:41:21PM -0600, Linas Vepstas wrote:
+> > /sys/bus/pci/slots
+> > /sys/bus/pci/slots/control
+> > /sys/bus/pci/slots/control/remove_slot
+> > /sys/bus/pci/slots/control/add_slot
+> > /sys/bus/pci/slots/0001:00:02.0
+> > /sys/bus/pci/slots/0001:00:02.0/phy_location
 >
-> > This is all QA-101 that _cannot be argued against on a rational basis_,
-> > it's just that these sorts of things have been largely ignored for
-> > years, in favor of the all-too-easy "open source means many eyeballs and
-> > that is our QA" answer, which is a _good_ answer but by far not the most
-> > intelligent answer! Today "many eyeballs" is simply not good enough and
-> > nature (and other OS projects) will route us around if we dont change.
+> Ugh.  Almost two years ago, paulus promised me he was going to fix the
+> slot name for rpaphp.  Guess he didn't.
+
+You have to ask the right person. :-) I've been defacto mainaining
+the rpaphp code for unpteen years now. On the other hand, I am also
+much, much better at promising than delivering.
+
+> This is one of the hateful things about the current design -- hotplug
+> drivers do too much.  Instead of being just the interface between the
+> Linux PCI code and the hardware, they create sysfs directories, add
+> files,
+> and generally have far too much freedom.
+
+I chopped out several hundred LOC from rpaphp a year ago,
+and hopefuly that might make furthre simplification easier 
+someday.
+
+> We have four different schemes currently for naming in slots/,
+> 1. slot number.  Used by cpqphp, ibmphp, acpiphp, pciehp, shpc.
+> 2. domain:bus:dev:fn.  Used by fakephp.
+> 3a. domain:bus:dev.  Used by rpaphp and sgihp.
+> 3b. Except that rpaphp uses phy_location to present the information
+> that
+> should be in the name and sgihp uses path.
 >
-> ..
+> ... I've forgotten what cpci uses.  And yenta doesn't use it.
 >
-> QA-101 and "many eyeballs" are not at all in opposition.
-> The latter is how we find out about bugs on uncommon hardware,
-> and the former is what we need to track them and overall quality.
+> How is anyone supposed to write sane managability tools in the
+> presence
+> of such anarchy?
 >
-> A HUGE problem I have with current "efforts", is that once someone
-> reports a bug, the onus seems to be 99% on the *reporter* to find
-> the exact line of code or commit.  Ghad what a repressive method.
-
-This is the only method that scales.
-
-Developer has only 24 hours in each day, and sometimes he needs to eat,
-sleep, and maybe even pay attention to e.g. his kids.
-
-But bug reporters are much more numerous and they have more
-hours in one day combined.
-
-BUT - it means that developers should try to increase user base,
-not scare users away.
-
-> And if the "developer" who broke the damn thing, or who at least
-> "claims" to be supporting that code, cannot "reproduce" the bug,
-> they drop it completely.
-
-Developer should let reporter know that reporter needs to help
-a bit here. Sometimes a bit of hand holding is needed, but it
-pays off because you breed more qualified testers/bug reporters.
-
-> Contrast that flawed approach with how Linus does things..
-> he thinks through the symptoms, matches them to the code,
-> and figures out what the few possibilities might be,
-> and feeds back some trial balloon patches for the bug reporter to try.
+> > ~ # cat /sys/bus/pci/slots/0000:00:02.2/phy_location
+> > U787A.001.DNZ00Z5-P1-C2
 >
-> MUCH better.
+> Right.  This should look like:
 >
-> And remember, *I'm* an old-time Linux kernel developer.. just think about
-> the people reporting bugs who haven't been around here since 1992..
+> # cat /sys/bus/pci/slots/U787A.001.DNZ00Z5-P1-C2/address
+> 0000:00:02
 
-Yes. Developers should not grow more and more unhelpful
-and arrogant towards their users just because inexperienced
-users send incomplete/poorly written bug reports.
-They need to provide help, not humiliate/ignore.
+This patch implements exactly what you describe. Boot tested.
+I assume you really mean it -- if so, then please review and
+ack the patch !?
 
-I think we agree here.
---
-vda
+I have absolutely no clue if this breaks any existing IBM tools.
+I'm pretty sure it doesn't ... but attention Mike Strosaker! does it?
+
+
+ drivers/pci/hotplug/rpaphp.h      |    1 
+ drivers/pci/hotplug/rpaphp_pci.c  |   14 -----------
+ drivers/pci/hotplug/rpaphp_slot.c |   47 +++++++++++++++++++-------------------
+ 3 files changed, 24 insertions(+), 38 deletions(-)
+
+Index: linux-2.6.23-rc8-mm1/drivers/pci/hotplug/rpaphp_pci.c
+===================================================================
+--- linux-2.6.23-rc8-mm1.orig/drivers/pci/hotplug/rpaphp_pci.c	2007-07-08 18:32:17.000000000 -0500
++++ linux-2.6.23-rc8-mm1/drivers/pci/hotplug/rpaphp_pci.c	2007-11-13 17:52:10.000000000 -0600
+@@ -64,19 +64,6 @@ int rpaphp_get_sensor_state(struct slot 
+ 	return rc;
+ }
+ 
+-static void set_slot_name(struct slot *slot)
+-{
+-	struct pci_bus *bus = slot->bus;
+-	struct pci_dev *bridge;
+-
+-	bridge = bus->self;
+-	if (bridge)
+-		strcpy(slot->name, pci_name(bridge));
+-	else
+-		sprintf(slot->name, "%04x:%02x:00.0", pci_domain_nr(bus),
+-			bus->number);
+-}
+-
+ /**
+  * rpaphp_enable_slot - record slot state, config pci device
+  *
+@@ -114,7 +101,6 @@ int rpaphp_enable_slot(struct slot *slot
+ 	info->adapter_status = EMPTY;
+ 	slot->bus = bus;
+ 	slot->pci_devs = &bus->devices;
+-	set_slot_name(slot);
+ 
+ 	/* if there's an adapter in the slot, go add the pci devices */
+ 	if (state == PRESENT) {
+Index: linux-2.6.23-rc8-mm1/drivers/pci/hotplug/rpaphp_slot.c
+===================================================================
+--- linux-2.6.23-rc8-mm1.orig/drivers/pci/hotplug/rpaphp_slot.c	2007-07-08 18:32:17.000000000 -0500
++++ linux-2.6.23-rc8-mm1/drivers/pci/hotplug/rpaphp_slot.c	2007-11-13 18:05:13.000000000 -0600
+@@ -33,23 +33,31 @@
+ #include <asm/rtas.h>
+ #include "rpaphp.h"
+ 
+-static ssize_t location_read_file (struct hotplug_slot *php_slot, char *buf)
++static ssize_t address_read_file (struct hotplug_slot *php_slot, char *buf)
+ {
+-	char *value;
+-	int retval = -ENOENT;
++	int retval;
+ 	struct slot *slot = (struct slot *)php_slot->private;
++	struct pci_bus *bus;
+ 
+ 	if (!slot)
+-		return retval;
++		return -ENOENT;
+ 
+-	value = slot->location;
+-	retval = sprintf (buf, "%s\n", value);
++	bus = slot->bus;
++	if (!bus)
++		return -ENOENT;
++
++	if (bus->self)
++		retval = sprintf(buf, pci_name(bus->self));
++	else
++		retval = sprintf(buf, "%04x:%02x:00.0", 
++		        pci_domain_nr(bus), bus->number);
++	
+ 	return retval;
+ }
+ 
+-static struct hotplug_slot_attribute php_attr_location = {
+-	.attr = {.name = "phy_location", .mode = S_IFREG | S_IRUGO},
+-	.show = location_read_file,
++static struct hotplug_slot_attribute php_attr_address = {
++	.attr = {.name = "address", .mode = S_IFREG | S_IRUGO},
++	.show = address_read_file,
+ };
+ 
+ /* free up the memory used by a slot */
+@@ -64,7 +72,6 @@ void dealloc_slot_struct(struct slot *sl
+ 	kfree(slot->hotplug_slot->info);
+ 	kfree(slot->hotplug_slot->name);
+ 	kfree(slot->hotplug_slot);
+-	kfree(slot->location);
+ 	kfree(slot);
+ }
+ 
+@@ -83,16 +90,13 @@ struct slot *alloc_slot_struct(struct de
+ 					   GFP_KERNEL);
+ 	if (!slot->hotplug_slot->info)
+ 		goto error_hpslot;
+-	slot->hotplug_slot->name = kmalloc(BUS_ID_SIZE + 1, GFP_KERNEL);
++	slot->hotplug_slot->name = kmalloc(strlen(drc_name) + 1, GFP_KERNEL);
+ 	if (!slot->hotplug_slot->name)
+ 		goto error_info;	
+-	slot->location = kmalloc(strlen(drc_name) + 1, GFP_KERNEL);
+-	if (!slot->location)
+-		goto error_name;
+ 	slot->name = slot->hotplug_slot->name;
++	strcpy(slot->name, drc_name);
+ 	slot->dn = dn;
+ 	slot->index = drc_index;
+-	strcpy(slot->location, drc_name);
+ 	slot->power_domain = power_domain;
+ 	slot->hotplug_slot->private = slot;
+ 	slot->hotplug_slot->ops = &rpaphp_hotplug_slot_ops;
+@@ -100,8 +104,6 @@ struct slot *alloc_slot_struct(struct de
+ 	
+ 	return (slot);
+ 
+-error_name:
+-	kfree(slot->hotplug_slot->name);
+ error_info:
+ 	kfree(slot->hotplug_slot->info);
+ error_hpslot:
+@@ -133,8 +135,8 @@ int rpaphp_deregister_slot(struct slot *
+ 
+ 	list_del(&slot->rpaphp_slot_list);
+ 	
+-	/* remove "phy_location" file */
+-	sysfs_remove_file(&php_slot->kobj, &php_attr_location.attr);
++	/* remove "address" file */
++	sysfs_remove_file(&php_slot->kobj, &php_attr_address.attr);
+ 
+ 	retval = pci_hp_deregister(php_slot);
+ 	if (retval)
+@@ -166,8 +168,8 @@ int rpaphp_register_slot(struct slot *sl
+ 		return retval;
+ 	}
+ 
+-	/* create "phy_location" file */
+-	retval = sysfs_create_file(&php_slot->kobj, &php_attr_location.attr);
++	/* create "address" file */
++	retval = sysfs_create_file(&php_slot->kobj, &php_attr_address.attr);
+ 	if (retval) {
+ 		err("sysfs_create_file failed with error %d\n", retval);
+ 		goto sysfs_fail;
+@@ -175,8 +177,7 @@ int rpaphp_register_slot(struct slot *sl
+ 
+ 	/* add slot to our internal list */
+ 	list_add(&slot->rpaphp_slot_list, &rpaphp_slot_head);
+-	info("Slot [%s](PCI location=%s) registered\n", slot->name,
+-			slot->location);
++	info("Slot [%s] registered\n", slot->name);
+ 	return 0;
+ 
+ sysfs_fail:
+Index: linux-2.6.23-rc8-mm1/drivers/pci/hotplug/rpaphp.h
+===================================================================
+--- linux-2.6.23-rc8-mm1.orig/drivers/pci/hotplug/rpaphp.h	2007-07-08 18:32:17.000000000 -0500
++++ linux-2.6.23-rc8-mm1/drivers/pci/hotplug/rpaphp.h	2007-11-13 18:06:16.000000000 -0600
+@@ -74,7 +74,6 @@ struct slot {
+ 	u32 type;
+ 	u32 power_domain;
+ 	char *name;
+-	char *location;
+ 	struct device_node *dn;
+ 	struct pci_bus *bus;
+ 	struct list_head *pci_devs;
