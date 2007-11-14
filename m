@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760432AbXKNS4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762589AbXKNS4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760432AbXKNS4Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 13:56:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbXKNS4O
+	id S1762589AbXKNS4i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 13:56:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760743AbXKNS4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 13:56:14 -0500
-Received: from rtr.ca ([76.10.145.34]:2097 "EHLO mail.rtr.ca"
+	Wed, 14 Nov 2007 13:56:23 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34629 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752631AbXKNS4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 13:56:13 -0500
-Message-ID: <473B44CB.6010209@rtr.ca>
-Date: Wed, 14 Nov 2007 13:56:11 -0500
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: "Morrison, Tom" <tmorrison@empirix.com>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+	id S1760432AbXKNS4W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 13:56:22 -0500
+Date: Wed, 14 Nov 2007 19:55:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
+       Rik van Riel <riel@redhat.com>, jens.axboe@oracle.com,
        linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23.1 - sata_mv (7042) hang with large file operations
-References: <BD261180E6D35F4D9D32F3E44FD3D901053E84BD@EMPBEDEX.empirix.com> <45ED682A.9040408@garzik.org> <BD261180E6D35F4D9D32F3E44FD3D9010A7E1B45@EMPBEDEX.empirix.com> <4728A816.8020608@garzik.org> <BD261180E6D35F4D9D32F3E44FD3D9010AAE852F@EMPBEDEX.empirix.com> <473B36D7.8000205@rtr.ca> <BD261180E6D35F4D9D32F3E44FD3D9010AAE8585@EMPBEDEX.empirix.com>
-In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D9010AAE8585@EMPBEDEX.empirix.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: Re: [patch] Give kjournald a IOPRIO_CLASS_RT io priority
+Message-ID: <20071114185526.GB4943@elte.hu>
+References: <20071015104647.14e60bc5@laptopd505.fenrus.org> <20071015114738.6b5a25c7.akpm@linux-foundation.org> <20071015161315.4fe18e07@bree.surriel.com> <20071015141236.62b075c6.akpm@linux-foundation.org> <473B18BA.5000709@hp.com> <20071114091451.d4b110db.akpm@linux-foundation.org> <20071114171805.GA20959@elte.hu> <20071114095151.43c5e576@laptopd505.fenrus.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071114095151.43c5e576@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Morrison, Tom wrote:
-> -----Original Message-----
-> From: Mark Lord [mailto:liml@rtr.ca] 
-> Sent: Wednesday, November 14, 2007 12:57 PM
-> To: Morrison, Tom
-> Cc: Jeff Garzik; linux-ide@vger.kernel.org; linux-kernel@vger.kernel.org
-> Subject: Re: 2.6.23.1 - sata_mv (7042) hang with large file operations
-> 
-> Morrison, Tom wrote:
-> <snip >
->> The problem comes ONLY when I am doing large file operations 
->> (e.g.: just copying a file) to/from the SATA drives behind 
->> the subject line 7042....it just hangs after about 10-15 
->> seconds into the copy...
->>
->> How large a file causes the hang - you ask - well, somewhere 
->> between 100Meg & 500Meg...
->>
-> <snip other drivel>
-> 
-> 
-> ::: Can you give me exact details of how to set up and reproduce this?
-> :::  -- Kernel version
-> 
-> 	Linux-2.6.23.1
-> 
-> 	NOTE: I am using ppc (arch/ppc instead of arch/powerpc)
-> 
-> :::  -- number/config/model of drives
-> 
-> 	2x250GIG Western Digital - 3 partitions (largest (/dev/sda3
-> 	~200Gig - formatted to ext2).
-> 
-> 	7042 PEX on a MPC8548 Board
-> 
-> :::  -- exact command line sequence to cause the failure
-> 
-> 	NFS mount root file system (I am currently rebuild to take away
-> 	the NFS file system dependency) - /dev/sda3 is drive in question...
-..
 
-MMmm.. I'd like to see that again without the rootfs-on-NFS.
+* Arjan van de Ven <arjan@infradead.org> wrote:
 
-What exactly do you mean when you say "it just hangs" ?
-Everything (dead system)?
+> > > >     * The read-a-different-kernel-tree task, average over 10 runs:
+> > > >           o 2.6.24 - 46.8145945549 seconds
+> > > >           o 2.6.24 + Arjan's patch - 39.6430601119 seconds
+> > > > 
+> > > >     * The large-linear-read task (on an 8GiB file), average over
+> > > > 10 runs: o 2.6.24 - 290.32522 seconds
+> > > >           o 2.6.24 + Arjan's patch - 386.34860 seconds
+> > > 
+> > > These are *large* differences, making this a very signifcant
+> > > patch. Much care is needed now.
+> > 
+> > and the numbers suggest it's mostly a severe performance regression. 
+> > That's not what i have expected - ho hum. Apologies for my earlier 
+> > "please merge it already!" whining.
+> 
+> that's.. not automatic; it depends on what the right thing is :-( What 
+> for sure changes is that who gets to do IO changes. Some of the tests 
+> we ran internally (we didn't publish yet because we saw REALLY large 
+> variations for most of them even without any patch) show for example 
+> that "dbench" got slower. But.. dbench gets slower when things get 
+> more fair, and faster when things get unfair. What conclusion you draw 
+> out of that is a whole different matter and depends on exactly what 
+> the test is doing, and what is the right thing for the OS to do in 
+> terms of who gets to do the IO.
 
+yeah, i'd agree to not too much faith into dbench results.
 
+	Ingo
