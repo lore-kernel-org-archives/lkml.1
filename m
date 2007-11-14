@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758042AbXKNL5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758619AbXKNL6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758042AbXKNL5V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 06:57:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbXKNL5G
+	id S1758619AbXKNL6a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 06:58:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754223AbXKNL6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 06:57:06 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49976
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750925AbXKNL5D (ORCPT
+	Wed, 14 Nov 2007 06:58:22 -0500
+Received: from mail.station1.mxsweep.com ([212.147.136.149]:1736 "EHLO
+	smtp2.mxsweep.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753090AbXKNL6V convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 06:57:03 -0500
-Date: Wed, 14 Nov 2007 03:56:57 -0800 (PST)
-Message-Id: <20071114.035657.121841024.davem@davemloft.net>
-To: rene.herman@keyaccess.nl
-Cc: rmk+lkml@arm.linux.org.uk, alsa-devel@alsa-project.org,
-       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-kernel@vger.kernel.org, protasnb@gmail.com,
-       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz, akpm@linux-foundation.org,
-       perex@suse.cz, tiwai@suse.de
-Subject: Re: [alsa-devel] [BUG] New Kernel Bugs
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <473AE010.4090806@keyaccess.nl>
-References: <20071114095507.GA32595@flint.arm.linux.org.uk>
-	<20071114.020706.219917088.davem@davemloft.net>
-	<473AE010.4090806@keyaccess.nl>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Nov 2007 06:58:21 -0500
+Message-ID: <473AE2CC.4080609@draigBrady.com>
+Date: Wed, 14 Nov 2007 11:58:04 +0000
+From: =?ISO-8859-1?Q?P=E1draig_Brady?= <P@draigBrady.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
+MIME-Version: 1.0
+To: "Ravinandan Arakali (rarakali)" <rarakali@cisco.com>
+CC: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Question about free/used memory on Linux
+References: <FA6FB5FA4DA6BF4386D129273B2E3EC3024B847B@xmb-sjc-214.amer.cisco.com> <471BA1D1.5040905@linux.vnet.ibm.com> <FA6FB5FA4DA6BF4386D129273B2E3EC3024B847C@xmb-sjc-214.amer.cisco.com> <471C3A17.5020400@linux.vnet.ibm.com> <FA6FB5FA4DA6BF4386D129273B2E3EC3024B859E@xmb-sjc-214.amer.cisco.com>
+In-Reply-To: <FA6FB5FA4DA6BF4386D129273B2E3EC3024B859E@xmb-sjc-214.amer.cisco.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 14 Nov 2007 11:58:12.0318 (UTC) FILETIME=[A1A8A7E0:01C826B5]
+x-MXSweep-CtasdSpam: Unknown
+x-MXSweep-CtasdVirus: Unknown
+x-MXSweep-KeywordsCount: 0
+x-MXSweep-spf: None
+x-MXPurifier-SpamScore: 5
+x-MXPurifier-VirusScore: 0
+X-MXUniqueID: 9db1d281-ffb1-4e01-a41d-b3b23ae921c8
+X-MXSweep-Threat: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rene Herman <rene.herman@keyaccess.nl>
-Date: Wed, 14 Nov 2007 12:46:24 +0100
+Ravinandan Arakali (rarakali) wrote:
+> Hi Vaidy,
+> What do you think is the right way to get the memory usage of a
+> process, I mean the actual physical memory used ? Basically,
+> I'm interested in the incremental cost of a process, which
+> means, I don't want to include the text segments of shared
+> libraries which would remain even after the process is killed
+> (since it would be used by other processes).
+> 
+> Is the RSS field of "ps aux" command the right one or use 
+> "pmap" command and look at the "writeable" segments ?
 
-> alsa-devel@alsa-project.org is not subscriber-only. Same as that arm list, 
-> it's _moderated_ for non-subscribers and given that I and other moderators 
-> have been doing our best to moderate quickly (I tend to stay logged in to 
-> the moderation interface all day for example) what specifically bugged the 
-> crap out of you? It's not something a poster needs to concern himself with.
+I already commented on this thread with a python script
+for reporting RAM usage for programs.
 
-The fact that it farts at me every time I post to this thread.  That's
-rude and annoying.
+RSS = Private and Shared Resident pages.
+You can get the shared value for a process from /proc/$$/smaps
+(as is done in the script)
 
-> Also for alsa-devel the moderators tend to add any valid non-subcribers to 
-> a whitelist after landing in the queue the first time meaning even a delay 
-> is just a one-time thing normally. So what's the trouble? Basically, noone 
-> need even notice...
-
-That sucks for new people taking part in the conversation.
-
-There is no reason for moderation at all, it isn't necessary
-for spam prevention and it does nothing but annoy new posters
-and make work for the moderator.
+Pádraig.
