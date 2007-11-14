@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764958AbXKNU5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763683AbXKNUgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764958AbXKNU5w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 15:57:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755243AbXKNU5j
+	id S1763683AbXKNUgg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 15:36:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755890AbXKNUg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 15:57:39 -0500
-Received: from scrub.xs4all.nl ([194.109.195.176]:2363 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755155AbXKNU5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 15:57:38 -0500
-Date: Wed, 14 Nov 2007 21:57:32 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kconfig: use $K64BIT to set 64BIT with all*config targets
-In-Reply-To: <11947274091127-git-send-email-sam@ravnborg.org>
-Message-ID: <Pine.LNX.4.64.0711142116500.1818@scrub.home>
-References: <20071110204038.GA13140@uranus.ravnborg.org>
- <11947274093185-git-send-email-sam@ravnborg.org> <11947274091127-git-send-email-sam@ravnborg.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 14 Nov 2007 15:36:28 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43229 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760549AbXKNUg1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 15:36:27 -0500
+Date: Wed, 14 Nov 2007 12:36:19 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: broken suspend [Was: 2.6.24-rc2-mm1]
+Message-Id: <20071114123619.9c058a44.akpm@linux-foundation.org>
+In-Reply-To: <473B5987.60904@gmail.com>
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
+	<473B5987.60904@gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 14 Nov 2007 21:24:39 +0100 Jiri Slaby <jirislaby@gmail.com> wrote:
 
-On Sat, 10 Nov 2007, Sam Ravnborg wrote:
+> On 11/14/2007 02:59 AM, Andrew Morton wrote:
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc2/2.6.24-rc2-mm1/
+> 
+> Doesn't suspend for me (neither broken-out-2007-11-13-04-14 did) on x86_64.
+> echo mem >/sys/power/state
+> causes shut down of disk(s) and blinking cursor on 1,1 position.
+> The last working was 2.6.23-rc8-mm2. I haven't tested
+> 2.6.23-mm1, since it didn't work for me.
+> 
+> As usual, I don't know how to debug this and what other info is needed, any
+> thoughts?
+> 
 
-> +	if (p) {
-> +		char warning[100];
-> +		sprintf(warning, "Environment variable (%s = \"%s\")", env, p);
-> +		conf_filename = warning;
-> +		def_flags = SYMBOL_DEF << def;
-> +		if (def == S_DEF_USER) {
-> +			sym = sym_find(symname);
-> +			if (!sym)
-> +				return 1;
-> +		} else {
-> +			sym = sym_lookup(symname, 0);
-> +			if (sym->type == S_UNKNOWN)
-> +				sym->type = S_OTHER;
-> +		}
-> +		conf_set_sym_val(sym, def, def_flags, p);
-> +	}
-> +	return 0;
-
-This is more complex than necessary, this should be enough:
-
-	sym = sym_find(symname);
-	if (sym)
-		sym_set_string_value(sym, p);
-
-This is not a direct user interface, so the potential stricter error 
-checking is not really needed.
-
-In general I think it's problematic that this is only checked, when the 
-config system is called, i.e. with a configured kernel adding ARCH would 
-have no effect, what makes this more confusing is that one can later omit 
-the ARCH variable, since it's saved in the .config. I think it would be 
-better to check for this directly in the Makefile and then use a separate 
-tool to set the variable directly (which could be simply sed or a simple 
-helper program).
-
-bye, Roman
+http://www.zip.com.au/~akpm/linux/patches/stuff/bisecting-mm-trees.txt
+would be ideal, please.  It's pretty quick.  I did it about six times
+yesterday evening :(
