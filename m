@@ -1,113 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763751AbXKNF4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764056AbXKNF60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763751AbXKNF4w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 00:56:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbXKNF4p
+	id S1764056AbXKNF60 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 00:58:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbXKNF6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 00:56:45 -0500
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:27202 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751611AbXKNF4o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 00:56:44 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=uvVeeVkAD7aLfCGxYjpHSRVjRJI6vi4m5SrzqhdNzSDs7zr1xNfx4fe+3FpwiihhquLJEAf2xNFmoS/0qV9I7/62/J2wmkX3LdLMvAX+Lj46a4gi9D7VzvZf1+9ejiZ2nnQvSrz9jejS71jjIXz1/5ENmrwfCdFphG1gNWgohnw=  ;
-X-YMail-OSG: 0LnS6H8VM1mw0c26tgIXinc.WpB0Dg1cqpWS_8riA4lIcAOcpznpy.8HT3HAK4PmQyZi1bgZQkM1Vm4cm7ouW5QlkqByZewC55ctuvY91XqdUrUoOloI0HL5DQH91w--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Marc Donner <donner@dbd-breitband.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: kernel BUG at mm/prio_tree.c:125
-Date: Wed, 14 Nov 2007 04:54:20 +1100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <200711140004.55369.donner@dbd-breitband.de>
-In-Reply-To: <200711140004.55369.donner@dbd-breitband.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Nov 2007 00:58:14 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:38556 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751784AbXKNF6N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 00:58:13 -0500
+Date: Wed, 14 Nov 2007 06:59:54 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, alsa-devel@alsa-project.org,
+       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org, protasnb@gmail.com,
+       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: [BUG] New Kernel Bugs
+Message-ID: <20071114055954.GB5458@uranus.ravnborg.org>
+References: <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113.043207.44732743.davem@davemloft.net> <20071113193219.GC1356@flint.arm.linux.org.uk> <20071113125222.9eb53ac8.akpm@linux-foundation.org> <20071113221801.GF1356@flint.arm.linux.org.uk> <20071114055606.GA5458@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711140454.21187.nickpiggin@yahoo.com.au>
+In-Reply-To: <20071114055606.GA5458@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 November 2007 10:04, Marc Donner wrote:
-> hi
->
-> i got this kernel bug on our production system, which is running since last
-> saturday.
->
-> anybody an idea??
+On Wed, Nov 14, 2007 at 06:56:06AM +0100, Sam Ravnborg wrote:
+> > 
+> > > If so, MANITAINERS claims that it is subscribers-only.  That would cause
+> > > some bug reporters to give up and go away.
+> > 
+> > Find some other mailing list; I'm not hosting *nor* am I willing to run a
+> > non-subscribers only mailing list.  Period.  Not negotiable, so don't even
+> > try to change my mind.
+> 
+> The postmasters at vger is pretty good at running mailing lists.
+> For linux-kbuild my effort so far has been to request it.
+> Thats not a big deal.
+> 
+> So if they accept it you could have linux-arm@vger.kernel.org for zero
+> overhead for you.
 
-Hugh might be of most help here, cc'ed.
+And in a later mail I saw davem already created it.
 
-But for the preliminary questions -- Is the bug reproduceable? And
-if it is possible for you to test, is it reproduceable on the latest
-kernel.org kernel? (2.6.23 or 2.6.24 prerelease) Does the machine
-have ECC RAM or does it survive memtest?
-
-Thanks for reporting,
-Nick
-
->
-> Marc
->
-> uname -a
-> Linux files 2.6.18-5-686-bigmem #1 SMP Thu Aug 30 03:25:44 UTC 2007 i686
-> GNU/Linux
->
-> Nov 13 16:55:24 files kernel: ------------[ cut here ]------------
-> Nov 13 16:55:24 files kernel: kernel BUG at mm/prio_tree.c:125!
-> Nov 13 16:55:24 files kernel: invalid opcode: 0000 [#1]
-> Nov 13 16:55:24 files kernel: SMP
-> Nov 13 16:55:24 files kernel: Modules linked in: button ac battery ipv6
-> dm_snapshot dm_mirror dm_mod loop snd_via82xx gameport snd_ac97_codec
-> snd_ac97_bus sn
-> d_pcm snd_timer snd_page_alloc snd_mpu401_uart evdev snd_rawmidi
-> snd_seq_device snd serio_raw via82cxxx_audio uart401 sound soundcore
-> i2c_viapro ac97_codec p
-> smouse i2c_core rtc pcspkr via_agp agpgart shpchp pci_hotplug raid10
-> raid456 xor multipath linear ide_generic via_rhine mii ehci_hcd uhci_hcd
-> usbcore ide_dis
-> k thermal fan freq_table processor raid1 raid0 md_mod ahci sata_nv sata_sil
-> sata_via libata via82cxxx ide_core 3w_9xxx 3w_xxxx scsi_mod xfs ext3 jbd
-> ext2 mbc
-> ache reiserfs
-> Nov 13 16:55:24 files kernel: CPU:    0
-> Nov 13 16:55:24 files kernel: EIP:    0060:[<c0147ad5>]    Not tainted VLI
-> Nov 13 16:55:24 files kernel: EFLAGS: 00210217   (2.6.18-5-686-bigmem #1)
-> Nov 13 16:55:24 files kernel: EIP is at vma_prio_tree_remove+0x46/0xcd
-> Nov 13 16:55:24 files kernel: eax: ee09238c   ebx: f2806b58   ecx: ee09238c
-> edx: f2806b70
-> Nov 13 16:55:24 files kernel: esi: c85c0f40   edi: f3970524   ebp: b69f4000
-> esp: d8e95f1c
-> Nov 13 16:55:24 files kernel: ds: 007b   es: 007b   ss: 0068
-> Nov 13 16:55:24 files kernel: Process apache (pid: 31369, ti=d8e94000
-> task=f7cffaa0 task.ti=d8e94000)
-> Nov 13 16:55:24 files kernel: Stack: f2806b70 f2806b58 c85c0f40 ee09238c
-> b69f4000 c014cce1 c17e5ee0 ee09238c
-> Nov 13 16:55:24 files kernel:        f37a238c c014bec2 b69f4000 d8e95f6c
-> c17e5ee0 f3cd4740 ee092b1c f37a243c
-> Nov 13 16:55:24 files kernel:        c014c9f7 b6d87000 ee09238c 000000d7
-> c17e5ee0 f3cd4740 ee0925f4 ee09238c
-> Nov 13 16:55:24 files kernel: Call Trace:
-> Nov 13 16:55:24 files kernel:  [<c014cce1>] unlink_file_vma+0x25/0x2e
-> Nov 13 16:55:24 files kernel:  [<c014bec2>] free_pgtables+0x26/0x78
-> Nov 13 16:55:24 files kernel:  [<c014c9f7>] unmap_region+0xbb/0xf3
-> Nov 13 16:55:24 files kernel:  [<c014d2d7>] do_munmap+0x148/0x19b
-> Nov 13 16:55:24 files kernel:  [<c014d35d>] sys_munmap+0x33/0x41
-> Nov 13 16:55:24 files kernel:  [<c0102c0d>] sysenter_past_esp+0x56/0x79
-> Nov 13 16:55:24 files kernel: Code: 16 8b 50 28 8b 43 04 89 42 04 89 10 89
-> 5b 04 89 59 28 e9 92 00 00 00 8b 04 24 89 da 59 5b 5e 5f 5d e9 a4 04 07 00
-> 39 47 3
-> 4 74 08 <0f> 0b 7d 00 5e a2 29 c0 83 79 30 00 74 38 8b 77 28 8d 57 28 8d
-> Nov 13 16:55:24 files kernel: EIP: [<c0147ad5>]
-> vma_prio_tree_remove+0x46/0xcd SS:ESP 0068:d8e95f1c
->
-> Nov 13 16:55:37 files postfix/master[3582]: warning: process
-> /usr/lib/postfix/smtpd pid 1044 killed by signal 11
-> Nov 13 16:55:37 files postfix/master[3582]: warning:
-> /usr/lib/postfix/smtpd: bad command startup -- throttling
+	Sam
