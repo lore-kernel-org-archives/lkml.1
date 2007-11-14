@@ -1,107 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756088AbXKNJg5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755810AbXKNJmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756088AbXKNJg5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 04:36:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbXKNJgu
+	id S1755810AbXKNJmd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 04:42:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753701AbXKNJmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 04:36:50 -0500
-Received: from wr-out-0506.google.com ([64.233.184.227]:21546 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750824AbXKNJgt (ORCPT
+	Wed, 14 Nov 2007 04:42:23 -0500
+Received: from stinky.trash.net ([213.144.137.162]:39294 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753129AbXKNJmV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 04:36:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Vf4hy2ub9Sh5MkDrM/9IBryLVlucrRId0aVDY9bFYV4VmgE9gSUq9Ri22FjMiT8hn6JLT/5e1r3Pxrc55gkfsCoqwztJG/A0sUYC63EQB2etFf5PrGJkT7/cDtjiOzicILS7Sdtcv1xEHaY1kp9UtBv7ZyPmEPnCXLjRkNldbDs=
-Message-ID: <a8e1da0711140136i1e441371j306e7b2888de104e@mail.gmail.com>
-Date: Wed, 14 Nov 2007 17:36:48 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.24-rc2-mm1
-Cc: linux-kernel@vger.kernel.org, "Greg KH" <greg@kroah.com>,
-       "Kay Sievers" <kay.sievers@vrfy.org>
-In-Reply-To: <20071114004129.783fb98b.akpm@linux-foundation.org>
+	Wed, 14 Nov 2007 04:42:21 -0500
+Message-ID: <473AC2EC.4060109@trash.net>
+Date: Wed, 14 Nov 2007 10:42:04 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+CC: Herbert Xu <herbert@gondor.apana.org.au>,
+       David Miller <davem@davemloft.net>, joonwpark81@gmail.com, w@1wt.eu,
+       cfriesen@nortel.com, netdev@vger.kernel.org,
+       djohnson+linux-kernel@sw.starentnetworks.com,
+       linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net
+Subject: Re: [PATCH 2/2] [e1000 VLAN] Disable vlan hw accel when promiscuous
+ mode
+References: <E1Irtdz-0000DX-00@gondolin.me.apana.org.au> <20071113.033611.73195922.davem@davemloft.net> <20071113120328.GB1086@gondor.apana.org.au> <20071113.040624.43544149.davem@davemloft.net> <20071113121647.GA1330@gondor.apana.org.au> <4739961E.90708@trash.net> <4739D3A5.4020503@intel.com> <4739DE29.2030507@trash.net> <4739DF29.6010901@intel.com>
+In-Reply-To: <4739DF29.6010901@intel.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
-	 <a8e1da0711132218h9d944d0p3c22ac313ee667a9@mail.gmail.com>
-	 <20071113223802.2ace1a61.akpm@linux-foundation.org>
-	 <a8e1da0711132247jd440f8dgc9ac0442e90f2c34@mail.gmail.com>
-	 <20071114004129.783fb98b.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 14, 2007 4:41 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
->
-> On Wed, 14 Nov 2007 14:47:38 +0800 "Dave Young" <hidave.darkstar@gmail.com> wrote:
->
-> > On Nov 14, 2007 2:38 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > >
-> > > On Wed, 14 Nov 2007 14:18:39 +0800 "Dave Young" <hidave.darkstar@gmail.com> wrote:
-> > >
-> > > > Hi,
-> > > > Boot failed on my machine. hand copy some messages.
-> > > >
-> > > > First with BLK_DEV_RAM=y
-> > > >
-> > > > BUG kmalloc-64 Poison overwritting:
-> > > > Alloced in kset_create
-> > > > Freed in kobject_cleanup
-> > > >
-> > > > --cut--
-> > > > alloc_disk_node
-> > > > rd_init
-> > > > kernel_init
-> > > > --cut--
-> > > >
-> > > > Then config ramdisk as module, build and reboot:
-> > > >
-> > > > BUG: unable handle paging resuest at 6b6b6b6b
-> > > > EIP is kobject_add 0xc4/0x150
-> > > >
-> > > > --cut--
-> > > > kobject_set_name
-> > > > register_disk
-> > > > add_disk
-> > > > exact_match
-> > > > exact_lock
-> > > > loop_init
-> > > > --cut--
-> > > >
-> > >
-> > > erp.  Can you send the config over please?
-> > >
-> > > And which distro/version is that machine running?
-> > >
-> >
-> > Hi,andrew
-> >
-> > slackware 11
-> >
-> > config as follows:
-> > #
-> > # Automatically generated make config: don't edit
-> > # Linux kernel version: 2.6.24-rc2-mm1
-> > # Wed Nov 14 13:50:01 2007
-> > #
->
-> OK, I can reproduce that on the Vaio, thanks.
->
-> oops: http://userweb.kernel.org/~akpm/dsc00037.jpg
-> config: (what you sent)
-> dmesg: http://userweb.kernel.org/~akpm/dmesg-sony.txt
->
-> An inspired guess led me to suspect the driver tree.  The offending patch
-> is gregkh-driver-kset-convert-block_subsys-to-use-kset_create.patch.
->
-Hi,
-I do some printk debug, the problem hide in the kobject.c line 256 in
-kobject_add
-seems  at
-list_add_tail(&kobj->entry,&kobj->kset->list);
+Kok, Auke wrote:
+> Patrick McHardy wrote:
+>> Kok, Auke wrote:
+>>> Patrick McHardy wrote:
+>>>
+>>>> I already posted a patch for this, not sure what happened to it.
+>>>> Auke, any news on merging the secondary unicast address support?
+>>> I dropped the ball on that one. Care to resend it and send me one for
+>>> e1000e as well?
+>> Patch for e1000 attached.
+>>
+>> Does e1000e also work with PCI cards if I add the proper IDs?
+>> Otherwise I could only send an untested patch.
+>>
+> 
+> no, e1000e will only work with pci-e adapters. The code however is largely the
+> same, so if you can dish me out (off-list) some test cases I can have our labs do
+> the testing and add this to our test repertoire.
 
-Regards
-dave
+
+Actually that part of the code is quite different. I'm not
+sure I understand the entire intent behind the differences,
+why does it use a packed array of addresses instead of simply
+passing the netdev pointer to the callback? That would be
+necessary for secondary unicast support since we have to
+disable unicast filtering if either the address count exceeds
+the number of filter slots or the device is in promiscous mode.
+
