@@ -1,129 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764551AbXKNCLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764477AbXKNCM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764551AbXKNCLe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 21:11:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761671AbXKNCHI
+	id S1764477AbXKNCM0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 21:12:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761671AbXKNCMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 21:07:08 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:44945 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761862AbXKNCHE (ORCPT
+	Tue, 13 Nov 2007 21:12:00 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:34392 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758686AbXKNCL5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 21:07:04 -0500
-Date: Wed, 14 Nov 2007 03:07:02 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Stephane Eranian <eranian@hpl.hp.com>
-Cc: Andi Kleen <andi@firstfloor.org>, akpm@osdl.org,
-       Robert Richter <robert.richter@amd.com>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, William Cohen <wcohen@redhat.com>
-Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
-Message-ID: <20071114020702.GB20365@one.firstfloor.org>
-References: <4739C42F.8030208@redhat.com> <20071113175545.GD4319@frankl.hpl.hp.com> <4739EE13.2090006@redhat.com> <20071113211345.GB5747@frankl.hpl.hp.com> <20071113212902.GA17593@one.firstfloor.org> <20071113214628.GE5747@frankl.hpl.hp.com> <20071113215056.GB17593@one.firstfloor.org> <20071113222234.GH5747@frankl.hpl.hp.com> <20071113222534.GC17145@one.firstfloor.org> <20071113225848.GK5747@frankl.hpl.hp.com>
+	Tue, 13 Nov 2007 21:11:57 -0500
+Date: Tue, 13 Nov 2007 18:10:34 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Adrian Bunk <bunk@kernel.org>, Mark Lord <liml@rtr.ca>,
+       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       protasnb@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, alsa-devel@alsa-project.org,
+       linux-ide@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-input@atrey.karlin.mff.cuni.cz, bugme-daemon@bugzilla.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+Message-Id: <20071113181034.4ed733fa.akpm@linux-foundation.org>
+In-Reply-To: <20071113171136.75ba098d@freepuppy.rosehill>
+References: <20071113134029.GA30978@elte.hu>
+	<4739AFE0.20705@rtr.ca>
+	<20071113164650.GA28493@elte.hu>
+	<4739E3D0.10201@rtr.ca>
+	<20071113181228.GF4250@stusta.de>
+	<4739EA83.5040006@rtr.ca>
+	<20071113183605.GG4250@stusta.de>
+	<4739F12E.5020807@rtr.ca>
+	<20071113190428.GH4250@stusta.de>
+	<4739FA4D.1050900@rtr.ca>
+	<20071113200028.GJ4250@stusta.de>
+	<20071113211256.1d18fe1a@the-village.bc.nu>
+	<473A46C1.3060000@redhat.com>
+	<20071113171136.75ba098d@freepuppy.rosehill>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071113225848.GK5747@frankl.hpl.hp.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 13 Nov 2007 17:11:36 -0800 Stephen Hemminger <shemminger@linux-foundation.org> wrote:
 
-[dropped all these bouncing email lists. Adding closed lists to public
-cc lists is just a bad idea]
-
-> int
-> main(int argc, char **argv)
-> {
-> 	int ctx_fd;
-> 	pfarg_pmd_t pd[1];
-> 	pfarg_pmc_t pc[1];
-> 	pfarg_ctx_t ctx;
-> 	pfarg_load_t load_args;
+> On Tue, 13 Nov 2007 19:52:17 -0500
+> Chuck Ebbert <cebbert@redhat.com> wrote:
 > 
-> 	memset(&ctx, 0, sizeof(ctx));
-> 	memset(pc, 0, sizeof(pc));
-> 	memset(pd, 0, sizeof(pd));
+> > On 11/13/2007 04:12 PM, Alan Cox wrote:
+> > >> Bug fixing is not about finding someone to blame, it's about getting the 
+> > >> bug fixed.
+> > > 
+> > > Partly - its also about understanding why the bug occurred and making it
+> > > not happen again.
+> > 
+> > Very few people think about that part.
 > 
-> 	/* create session (context) and get file descriptor back (identifier) */
-> 	ctx_fd = pfm_create_context(&ctx, NULL, NULL, 0);
+> Why does the kernel have very few useful tests?
 
-There's nothing in your example that makes the file descriptor needed.
+Tests would of course be nice, but they aren't very useful(!)
 
-> 
-> 	/* setup one config register (PMC0) */
-> 	pc[0].reg_num   = 0
-> 	pc[0].reg_value = 0x1234;
+Looking at this list which Natalie has generated I see around thirty which
+are dependent on the right hardware and ten which are not.  This ratio is
+typical, I think.  In fact I'd say that more than 75% of reported bugs are
+dependent on hardware.
 
-That would be nicer if it was just two arguments.
+So the best test of all for the kernel is "run it on a different machine". 
+This is why we are sooooo dependent upon our volunteer testers/reporters to
+be able to do kernel development.
 
-> 
-> 	/* setup one data register (PMD0) */
-> 	pd[0].reg_num = 0;
-> 	pd[0].reg_value = 0;
+>  Lack of interest? resources? expertise?
+> Ideally each new feature would just be a small add on to an existing test.
 
-Why do you need to set the data register? Wouldn't it make
-more sense to let the kernel handle that and just return one.
+Sure.  For system-call-visible features it would be good to do that.
 
-> 
-> 	/* program the registers */
-> 	pfm_write_pmcs(ctx_fd, pc, 1);
-> 	pfm_write_pmds(ctx_fd, pd, 1);
-> 
-> 	/* attach the context to self */
-> 	load_args.load_pid = getpid();
-> 	pfm_load_context(ctx_fd, &load_args);
+But this tends not to be where bugs get exposed.  Because the original
+developer can 100% exercise such code.  That isn't the case with
+driver/arch/platform changes.
 
-My replacement would be to just add a flags argument to write_pmcs 
-with one flag bit meaning "GLOBAL CONTEXT" versus "MY CONTEXT"
-> 
-> 	/* activate monitoring */
-> 	pfm_start(ctx_fd, NULL);
+> Unlike developing new features which seems to grow well with more developers.
+> Bug fixing also seems to be a scarcity process. There often seems to be
+> a very few people that understand the problem well enough or have the necessary
+> hardware to reproduce and fix the problem.
 
-Why can't that be done by the call setting up the register?
+We're 100% dead if "having the hardware" is a prerequisite to fixing a bug.
+The terminal state there is that the kernel runs on about 200 machines
+worldwide.  We have to work with reporters via email to fix these sorts of
+things.  As we of course do.
 
-Or if someone needs to do it for a specific region they can read
-the register before and then afterwards.
+> Recent changes like tickless and scheduler rework were well thought out and caused
+> very little impact to 90% of the users. The problem is the 10% who do have problems.
+> Worse, the developers often only hear about the a small sample of those.
 
-> 
-> 	/*
-> 	 * run code to measure
-> 	 */
-> 
-> 	/* stop monitoring */
-> 	pfm_stop(ctx_fd);
-> 
-> 	/* read data register */
-> 	pfm_read_pmds(ctx_fd, pd, 1);
-
-On x86 i think it would be much simpler to just let the set/alloc
-register call return a number and then use RDPMC directly. That would
-be actually faster and be much simpler too.
-
-I suppose most architectures have similar facilities, if not a call could be 
-added for them but it's not really essential. The call might be also needed
-for event multiplexing, but frankly I would just leave that out for now.
-
-e.g. here is one use case I would personally see as useful. We need
-a replacement for simple cycle counting since RDTSC doesn't do that anymore
-on modern x86 CPUs.  It could be something like:
-
-	/* 0 is the initial value */
-
-	/* could be either library or syscall */
-	event = get_event(COUNTER_CYCLES); 
-	if (event < 0) 
-		/* CPU has no cycle counter */
-
-	reg = setup_perfctr(event, 0 /* value */, LOCAL_EVENT); /* syscall */
-
-	rdpmc(reg, start);
-	.... some code to run ...
-	rdpmc(reg, end);
-
-	free_perfctr(reg);	/* syscall */
-
-On other architectures rdpmc would be different of course, but 
-the rest could be probably similar.
-
--Andi
+Yes.  An unknown number of people just shrug and go back to an old kernel.
 
