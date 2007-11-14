@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762179AbXKNATZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762622AbXKNATn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762179AbXKNATZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 19:19:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760986AbXKNAS4
+	id S1762622AbXKNATn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 19:19:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761190AbXKNAS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 19:18:56 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:51309 "EHLO mx1.redhat.com"
+	Tue, 13 Nov 2007 19:18:57 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:51311 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760743AbXKNASx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 19:18:53 -0500
+	id S1760911AbXKNASz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 19:18:55 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 1/9] AOUT: Move STACK_TOP[_MAX] to asm/processor.h [try #6]
+Subject: [PATCH 2/9] AOUT: Mark arches that support A.OUT format [try #6]
 To: torvalds@osdl.org, akpm@linux-foundation.org, dwmw2@infradead.org
 Cc: linux-kernel@vger.kernel.org, linux-am33-list@redhat.com,
        dhowells@redhat.com
-Date: Wed, 14 Nov 2007 00:18:37 +0000
-Message-ID: <20071114001837.27662.46685.stgit@warthog.procyon.org.uk>
+Date: Wed, 14 Nov 2007 00:18:42 +0000
+Message-ID: <20071114001842.27662.66081.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20071114001832.27662.8437.stgit@warthog.procyon.org.uk>
 References: <20071114001832.27662.8437.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -29,772 +29,373 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move STACK_TOP[_MAX] out of asm/a.out.h and into asm/processor.h as they're
-required whether or not A.OUT format is available.
+Mark arches that support A.OUT format by including the following in their
+master Kconfig files:
+
+	config ARCH_SUPPORTS_AOUT
+		def_bool y
+
+This should also be set if the arch provides compatibility A.OUT support for
+an older arch, for instance x86_64 for i386 or sparc64 for sparc.
+
+I've guessed at which arches don't, based on comments in the code, however I'm
+sure that some of the ones I've marked as 'yes' actually should be 'no'.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- include/asm-alpha/a.out.h          |    8 +-------
- include/asm-alpha/processor.h      |    5 +++++
- include/asm-arm/a.out.h            |    6 ------
- include/asm-arm/processor.h        |    6 ++++++
- include/asm-avr32/a.out.h          |    7 -------
- include/asm-avr32/processor.h      |    5 +++++
- include/asm-blackfin/a.out.h       |    6 ------
- include/asm-blackfin/processor.h   |    4 ++++
- include/asm-cris/a.out.h           |    6 ------
- include/asm-cris/processor.h       |    3 +++
- include/asm-h8300/a.out.h          |    7 -------
- include/asm-h8300/processor.h      |    5 +++++
- include/asm-ia64/a.out.h           |    3 ---
- include/asm-m32r/a.out.h           |    7 -------
- include/asm-m32r/processor.h       |    5 +++++
- include/asm-m68k/a.out.h           |    7 -------
- include/asm-m68k/processor.h       |    5 +++++
- include/asm-mips/a.out.h           |   13 -------------
- include/asm-mips/processor.h       |    7 +++++++
- include/asm-parisc/a.out.h         |   10 ----------
- include/asm-parisc/processor.h     |   10 ++++++++++
- include/asm-powerpc/a.out.h        |   19 -------------------
- include/asm-powerpc/processor.h    |   19 +++++++++++++++++++
- include/asm-s390/a.out.h           |    7 -------
- include/asm-s390/processor.h       |    7 +++++++
- include/asm-sh/a.out.h             |    7 -------
- include/asm-sh/processor.h         |    7 +++++++
- include/asm-sh64/a.out.h           |    7 -------
- include/asm-sparc/a.out.h          |    9 ---------
- include/asm-sparc/processor.h      |    4 ++++
- include/asm-sparc64/a.out.h        |   12 ------------
- include/asm-sparc64/processor.h    |   12 ++++++++++++
- include/asm-sparc64/user.h         |    2 +-
- include/asm-um/a.out.h             |   13 -------------
- include/asm-um/processor-generic.h |    8 ++++++++
- include/asm-x86/a.out.h            |   10 ----------
- include/asm-x86/processor_32.h     |    2 ++
- include/asm-x86/processor_64.h     |    2 ++
- include/asm-xtensa/a.out.h         |    5 -----
- include/asm-xtensa/processor.h     |    2 ++
- 40 files changed, 120 insertions(+), 169 deletions(-)
+ arch/alpha/Kconfig     |    3 +++
+ arch/arm/Kconfig       |    3 +++
+ arch/avr32/Kconfig     |    3 +++
+ arch/blackfin/Kconfig  |    3 +++
+ arch/cris/Kconfig      |    3 +++
+ arch/frv/Kconfig       |    3 +++
+ arch/h8300/Kconfig     |    3 +++
+ arch/ia64/Kconfig      |    3 +++
+ arch/m32r/Kconfig      |    3 +++
+ arch/m68k/Kconfig      |    3 +++
+ arch/m68knommu/Kconfig |    3 +++
+ arch/mips/Kconfig      |    3 +++
+ arch/parisc/Kconfig    |    3 +++
+ arch/powerpc/Kconfig   |    3 +++
+ arch/ppc/Kconfig       |    3 +++
+ arch/s390/Kconfig      |    3 +++
+ arch/sh/Kconfig        |    3 +++
+ arch/sh64/Kconfig      |    3 +++
+ arch/sparc/Kconfig     |    3 +++
+ arch/sparc64/Kconfig   |    3 +++
+ arch/um/Kconfig.i386   |    2 ++
+ arch/um/Kconfig.x86_64 |    2 ++
+ arch/v850/Kconfig      |    3 +++
+ arch/xtensa/Kconfig    |    3 +++
+ 24 files changed, 70 insertions(+), 0 deletions(-)
 
-diff --git a/include/asm-alpha/a.out.h b/include/asm-alpha/a.out.h
-index e43cf61..02ce847 100644
---- a/include/asm-alpha/a.out.h
-+++ b/include/asm-alpha/a.out.h
-@@ -98,11 +98,5 @@ struct exec
- 	set_personality (((BFPM->sh_bang || EX.ah.entry < 0x100000000L \
- 			   ? ADDR_LIMIT_32BIT : 0) | PER_OSF4))
+diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
+index 4c002ba..92e0c9f 100644
+--- a/arch/alpha/Kconfig
++++ b/arch/alpha/Kconfig
+@@ -66,6 +66,9 @@ config AUTO_IRQ_AFFINITY
+ 	depends on SMP
+ 	default y
  
--#define STACK_TOP \
--  (current->personality & ADDR_LIMIT_32BIT ? 0x80000000 : 0x00120000000UL)
--
--#define STACK_TOP_MAX	0x00120000000UL
--
--#endif
--
-+#endif /* __KERNEL__ */
- #endif /* __A_OUT_GNU_H__ */
-diff --git a/include/asm-alpha/processor.h b/include/asm-alpha/processor.h
-index 425b7b6..94afe58 100644
---- a/include/asm-alpha/processor.h
-+++ b/include/asm-alpha/processor.h
-@@ -20,6 +20,11 @@
-  */
- #define TASK_SIZE (0x40000000000UL)
- 
-+#define STACK_TOP \
-+  (current->personality & ADDR_LIMIT_32BIT ? 0x80000000 : 0x00120000000UL)
++config ARCH_SUPPORTS_AOUT
++	def_bool y
 +
-+#define STACK_TOP_MAX	0x00120000000UL
+ source "init/Kconfig"
+ 
+ 
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index a0cdaaf..ded0725 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -114,6 +114,9 @@ config GENERIC_CALIBRATE_DELAY
+ 	bool
+ 	default y
+ 
++config ARCH_SUPPORTS_AOUT
++	def_bool y
 +
- /* This decides where the kernel will search for a free chunk of vm
-  * space during mmap's.
-  */
-diff --git a/include/asm-arm/a.out.h b/include/asm-arm/a.out.h
-index d7165e8..79489fd 100644
---- a/include/asm-arm/a.out.h
-+++ b/include/asm-arm/a.out.h
-@@ -27,12 +27,6 @@ struct exec
+ config ARCH_MAY_HAVE_PC_FDC
+ 	bool
  
- #define M_ARM 103
+diff --git a/arch/avr32/Kconfig b/arch/avr32/Kconfig
+index bbecbd8..6ee54d9 100644
+--- a/arch/avr32/Kconfig
++++ b/arch/avr32/Kconfig
+@@ -70,6 +70,9 @@ config GENERIC_BUG
+ 	default y
+ 	depends on BUG
  
--#ifdef __KERNEL__
--#define STACK_TOP	((current->personality == PER_LINUX_32BIT) ? \
--			 TASK_SIZE : TASK_SIZE_26)
--#define STACK_TOP_MAX	TASK_SIZE
--#endif
--
- #ifndef LIBRARY_START_TEXT
- #define LIBRARY_START_TEXT	(0x00c00000)
- #endif
-diff --git a/include/asm-arm/processor.h b/include/asm-arm/processor.h
-index 1bbf161..bd8029e 100644
---- a/include/asm-arm/processor.h
-+++ b/include/asm-arm/processor.h
-@@ -22,6 +22,12 @@
- #include <asm/ptrace.h>
- #include <asm/types.h>
- 
-+#ifdef __KERNEL__
-+#define STACK_TOP	((current->personality == PER_LINUX_32BIT) ? \
-+			 TASK_SIZE : TASK_SIZE_26)
-+#define STACK_TOP_MAX	TASK_SIZE
-+#endif
++config ARCH_SUPPORTS_AOUT
++	def_bool y
 +
- union debug_insn {
- 	u32	arm;
- 	u16	thumb;
-diff --git a/include/asm-avr32/a.out.h b/include/asm-avr32/a.out.h
-index 9f398ab..e46375a 100644
---- a/include/asm-avr32/a.out.h
-+++ b/include/asm-avr32/a.out.h
-@@ -17,11 +17,4 @@ struct exec
- #define N_DRSIZE(a)	((a).a_drsize)
- #define N_SYMSIZE(a)	((a).a_syms)
+ source "init/Kconfig"
  
--#ifdef __KERNEL__
--
--#define STACK_TOP	TASK_SIZE
--#define STACK_TOP_MAX	STACK_TOP
--
--#endif
--
- #endif /* __ASM_AVR32_A_OUT_H */
-diff --git a/include/asm-avr32/processor.h b/include/asm-avr32/processor.h
-index 6a64833..545520e 100644
---- a/include/asm-avr32/processor.h
-+++ b/include/asm-avr32/processor.h
-@@ -13,6 +13,11 @@
+ menu "System Type and features"
+diff --git a/arch/blackfin/Kconfig b/arch/blackfin/Kconfig
+index 9f9de3e..b184c06 100644
+--- a/arch/blackfin/Kconfig
++++ b/arch/blackfin/Kconfig
+@@ -69,6 +69,9 @@ config GENERIC_CALIBRATE_DELAY
+ 	bool
+ 	default y
  
- #define TASK_SIZE	0x80000000
- 
-+#ifdef __KERNEL__
-+#define STACK_TOP	TASK_SIZE
-+#define STACK_TOP_MAX	STACK_TOP
-+#endif
++config ARCH_SUPPORTS_AOUT
++	def_bool n
 +
- #ifndef __ASSEMBLY__
+ config IRQCHIP_DEMUX_GPIO
+ 	bool
+ 	depends on (BF52x || BF53x || BF561 || BF54x)
+diff --git a/arch/cris/Kconfig b/arch/cris/Kconfig
+index 21900a9..74ce4c1 100644
+--- a/arch/cris/Kconfig
++++ b/arch/cris/Kconfig
+@@ -47,6 +47,9 @@ config IRQ_PER_CPU
+ config NO_IOPORT
+ 	def_bool y
  
- static inline void *current_text_addr(void)
-diff --git a/include/asm-blackfin/a.out.h b/include/asm-blackfin/a.out.h
-index d37a684..6c3d652 100644
---- a/include/asm-blackfin/a.out.h
-+++ b/include/asm-blackfin/a.out.h
-@@ -16,10 +16,4 @@ struct exec {
- #define N_DRSIZE(a)	((a).a_drsize)
- #define N_SYMSIZE(a)	((a).a_syms)
- 
--#ifdef __KERNEL__
--
--#define STACK_TOP	TASK_SIZE
--
--#endif
--
- #endif				/* __BFIN_A_OUT_H__ */
-diff --git a/include/asm-blackfin/processor.h b/include/asm-blackfin/processor.h
-index c571e95..1033e5c 100644
---- a/include/asm-blackfin/processor.h
-+++ b/include/asm-blackfin/processor.h
-@@ -30,6 +30,10 @@ static inline void wrusp(unsigned long usp)
- extern unsigned long memory_end;
- #define TASK_SIZE	(memory_end)
- 
-+#ifdef __KERNEL__
-+#define STACK_TOP	TASK_SIZE
-+#endif
++config ARCH_SUPPORTS_AOUT
++	def_bool n
 +
- #define TASK_UNMAPPED_BASE	0
+ config CRIS
+ 	bool
+ 	default y
+diff --git a/arch/frv/Kconfig b/arch/frv/Kconfig
+index 43153e7..49056a9 100644
+--- a/arch/frv/Kconfig
++++ b/arch/frv/Kconfig
+@@ -57,6 +57,9 @@ config ARCH_HAS_ILOG2_U64
+ 	bool
+ 	default y
  
- struct thread_struct {
-diff --git a/include/asm-cris/a.out.h b/include/asm-cris/a.out.h
-index 919b34a..c82e9f9 100644
---- a/include/asm-cris/a.out.h
-+++ b/include/asm-cris/a.out.h
-@@ -6,11 +6,6 @@
-  * wants to know about a.out even if there is no interpreter available...
-  */
- 
--/* grabbed from the intel stuff  */   
--#define STACK_TOP TASK_SIZE
--#define STACK_TOP_MAX	STACK_TOP
--
--
- struct exec
- {
-   unsigned long a_info;		/* Use macros N_MAGIC, etc for access */
-@@ -28,5 +23,4 @@ struct exec
- #define N_DRSIZE(a)	((a).a_drsize)
- #define N_SYMSIZE(a)	((a).a_syms)
- 
--
- #endif
-diff --git a/include/asm-cris/processor.h b/include/asm-cris/processor.h
-index 568da1d..cdc0c1d 100644
---- a/include/asm-cris/processor.h
-+++ b/include/asm-cris/processor.h
-@@ -17,6 +17,9 @@
- 
- struct task_struct;
- 
-+#define STACK_TOP	TASK_SIZE
-+#define STACK_TOP_MAX	STACK_TOP
++config ARCH_SUPPORTS_AOUT
++	def_bool n
 +
- /* This decides where the kernel will search for a free chunk of vm
-  * space during mmap's.
-  */
-diff --git a/include/asm-h8300/a.out.h b/include/asm-h8300/a.out.h
-index aa5d227..ded780f 100644
---- a/include/asm-h8300/a.out.h
-+++ b/include/asm-h8300/a.out.h
-@@ -17,11 +17,4 @@ struct exec
- #define N_DRSIZE(a)	((a).a_drsize)
- #define N_SYMSIZE(a)	((a).a_syms)
+ mainmenu "Fujitsu FR-V Kernel Configuration"
  
--#ifdef __KERNEL__
--
--#define STACK_TOP	TASK_SIZE
--#define STACK_TOP_MAX	STACK_TOP
--
--#endif
--
- #endif /* __H8300_A_OUT_H__ */
-diff --git a/include/asm-h8300/processor.h b/include/asm-h8300/processor.h
-index 49fc886..69e8a34 100644
---- a/include/asm-h8300/processor.h
-+++ b/include/asm-h8300/processor.h
-@@ -39,6 +39,11 @@ static inline void wrusp(unsigned long usp) {
-  */
- #define TASK_SIZE	(0xFFFFFFFFUL)
+ source "init/Kconfig"
+diff --git a/arch/h8300/Kconfig b/arch/h8300/Kconfig
+index ff6a871..7009b0e 100644
+--- a/arch/h8300/Kconfig
++++ b/arch/h8300/Kconfig
+@@ -65,6 +65,9 @@ config TIME_LOW_RES
+ 	bool
+ 	default y
  
-+#ifdef __KERNEL__
-+#define STACK_TOP	TASK_SIZE
-+#define STACK_TOP_MAX	STACK_TOP
-+#endif
++config ARCH_SUPPORTS_AOUT
++	def_bool y
 +
- /*
-  * This decides where the kernel will search for a free chunk of vm
-  * space during mmap's. We won't be using it
-diff --git a/include/asm-ia64/a.out.h b/include/asm-ia64/a.out.h
-index 7293ac1..193dcfb 100644
---- a/include/asm-ia64/a.out.h
-+++ b/include/asm-ia64/a.out.h
-@@ -29,7 +29,4 @@ struct exec {
- #define N_SYMSIZE(x)	0
- #define N_TXTOFF(x)	0
+ config NO_IOPORT
+ 	def_bool y
  
--#ifdef __KERNEL__
--#include <asm/ustack.h>
--#endif
- #endif /* _ASM_IA64_A_OUT_H */
-diff --git a/include/asm-m32r/a.out.h b/include/asm-m32r/a.out.h
-index 6a1b5d4..ab150f5 100644
---- a/include/asm-m32r/a.out.h
-+++ b/include/asm-m32r/a.out.h
-@@ -17,11 +17,4 @@ struct exec
- #define N_DRSIZE(a)	((a).a_drsize)
- #define N_SYMSIZE(a)	((a).a_syms)
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index bef4772..02793f0 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -99,6 +99,9 @@ config AUDIT_ARCH
+ 	bool
+ 	default y
  
--#ifdef __KERNEL__
--
--#define STACK_TOP	TASK_SIZE
--#define STACK_TOP_MAX	STACK_TOP
--
--#endif
--
- #endif /* _ASM_M32R_A_OUT_H */
-diff --git a/include/asm-m32r/processor.h b/include/asm-m32r/processor.h
-index 32755bf..1a997fc 100644
---- a/include/asm-m32r/processor.h
-+++ b/include/asm-m32r/processor.h
-@@ -60,6 +60,11 @@ extern struct cpuinfo_m32r cpu_data[];
- #define TASK_SIZE  (0x00400000UL)
- #endif
- 
-+#ifdef __KERNEL__
-+#define STACK_TOP	TASK_SIZE
-+#define STACK_TOP_MAX	STACK_TOP
-+#endif
++config ARCH_SUPPORTS_AOUT
++	def_bool n
 +
- /* This decides where the kernel will search for a free chunk of vm
-  * space during mmap's.
-  */
-diff --git a/include/asm-m68k/a.out.h b/include/asm-m68k/a.out.h
-index 6fc86a2..3885fe4 100644
---- a/include/asm-m68k/a.out.h
-+++ b/include/asm-m68k/a.out.h
-@@ -17,11 +17,4 @@ struct exec
- #define N_DRSIZE(a)	((a).a_drsize)
- #define N_SYMSIZE(a)	((a).a_syms)
+ choice
+ 	prompt "System type"
+ 	default IA64_GENERIC
+diff --git a/arch/m32r/Kconfig b/arch/m32r/Kconfig
+index ab9a264..7c96765 100644
+--- a/arch/m32r/Kconfig
++++ b/arch/m32r/Kconfig
+@@ -34,6 +34,9 @@ config NO_IOPORT
+ config NO_DMA
+ 	def_bool y
  
--#ifdef __KERNEL__
--
--#define STACK_TOP	TASK_SIZE
--#define STACK_TOP_MAX	STACK_TOP
--
--#endif
--
- #endif /* __M68K_A_OUT_H__ */
-diff --git a/include/asm-m68k/processor.h b/include/asm-m68k/processor.h
-index 4453ec3..1f61ef5 100644
---- a/include/asm-m68k/processor.h
-+++ b/include/asm-m68k/processor.h
-@@ -41,6 +41,11 @@ static inline void wrusp(unsigned long usp)
- #define TASK_SIZE	(0x0E000000UL)
- #endif
- 
-+#ifdef __KERNEL__
-+#define STACK_TOP	TASK_SIZE
-+#define STACK_TOP_MAX	STACK_TOP
-+#endif
++config ARCH_SUPPORTS_AOUT
++	def_bool y
 +
- /* This decides where the kernel will search for a free chunk of vm
-  * space during mmap's.
-  */
-diff --git a/include/asm-mips/a.out.h b/include/asm-mips/a.out.h
-index bf55a5b..cad8371 100644
---- a/include/asm-mips/a.out.h
-+++ b/include/asm-mips/a.out.h
-@@ -32,17 +32,4 @@ struct exec
- #define N_DRSIZE(a)	((a).a_drsize)
- #define N_SYMSIZE(a)	((a).a_syms)
+ source "init/Kconfig"
  
--#ifdef __KERNEL__
--
--#ifdef CONFIG_32BIT
--#define STACK_TOP	TASK_SIZE
--#endif
--#ifdef CONFIG_64BIT
--#define STACK_TOP	\
--      (test_thread_flag(TIF_32BIT_ADDR) ? TASK_SIZE32 : TASK_SIZE)
--#endif
--#define STACK_TOP_MAX	TASK_SIZE
--
--#endif
--
- #endif /* _ASM_A_OUT_H */
-diff --git a/include/asm-mips/processor.h b/include/asm-mips/processor.h
-index 83bc945..612f99e 100644
---- a/include/asm-mips/processor.h
-+++ b/include/asm-mips/processor.h
-@@ -39,6 +39,7 @@ extern unsigned int vced_count, vcei_count;
-  * so don't change it unless you know what you are doing.
-  */
- #define TASK_SIZE	0x7fff8000UL
-+#define STACK_TOP	TASK_SIZE
  
- /*
-  * This decides where the kernel will search for a free chunk of vm
-@@ -57,6 +58,8 @@ extern unsigned int vced_count, vcei_count;
-  */
- #define TASK_SIZE32	0x7fff8000UL
- #define TASK_SIZE	0x10000000000UL
-+#define STACK_TOP	\
-+      (test_thread_flag(TIF_32BIT_ADDR) ? TASK_SIZE32 : TASK_SIZE)
+diff --git a/arch/m68k/Kconfig b/arch/m68k/Kconfig
+index 01dee84..8d35d9d 100644
+--- a/arch/m68k/Kconfig
++++ b/arch/m68k/Kconfig
+@@ -52,6 +52,9 @@ config NO_IOPORT
+ config NO_DMA
+ 	def_bool SUN3
  
- /*
-  * This decides where the kernel will search for a free chunk of vm
-@@ -67,6 +70,10 @@ extern unsigned int vced_count, vcei_count;
- 		PAGE_ALIGN(TASK_SIZE32 / 3) : PAGE_ALIGN(TASK_SIZE / 3))
- #endif
- 
-+#ifdef __KERNEL__
-+#define STACK_TOP_MAX	TASK_SIZE
-+#endif
++config ARCH_SUPPORTS_AOUT
++	def_bool y
 +
- #define NUM_FPU_REGS	32
+ mainmenu "Linux/68k Kernel Configuration"
  
- typedef __u64 fpureg_t;
-diff --git a/include/asm-parisc/a.out.h b/include/asm-parisc/a.out.h
-index 23e2c90..eb04e34 100644
---- a/include/asm-parisc/a.out.h
-+++ b/include/asm-parisc/a.out.h
-@@ -17,14 +17,4 @@ struct exec
- #define N_DRSIZE(a)	((a).a_drsize)
- #define N_SYMSIZE(a)	((a).a_syms)
+ source "init/Kconfig"
+diff --git a/arch/m68knommu/Kconfig b/arch/m68knommu/Kconfig
+index f4b582c..8de61df 100644
+--- a/arch/m68knommu/Kconfig
++++ b/arch/m68knommu/Kconfig
+@@ -60,6 +60,9 @@ config TIME_LOW_RES
+ config NO_IOPORT
+ 	def_bool y
  
--#ifdef __KERNEL__
--
--/* XXX: STACK_TOP actually should be STACK_BOTTOM for parisc.
-- * prumpf */
--
--#define STACK_TOP	TASK_SIZE
--#define STACK_TOP_MAX	DEFAULT_TASK_SIZE
--
--#endif
--
- #endif /* __A_OUT_GNU_H__ */
-diff --git a/include/asm-parisc/processor.h b/include/asm-parisc/processor.h
-index 6b294fb..802c86c 100644
---- a/include/asm-parisc/processor.h
-+++ b/include/asm-parisc/processor.h
-@@ -46,6 +46,16 @@
- #define DEFAULT_MAP_BASE	DEFAULT_MAP_BASE32
- #endif
- 
-+#ifdef __KERNEL__
++config ARCH_SUPPORTS_AOUT
++	def_bool y
 +
-+/* XXX: STACK_TOP actually should be STACK_BOTTOM for parisc.
-+ * prumpf */
+ source "init/Kconfig"
+ 
+ menu "Processor type and features"
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index 2c7d6c2..b6e0418 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -722,6 +722,9 @@ config GENERIC_HARDIRQS_NO__DO_IRQ
+ 	bool
+ 	default n
+ 
++config ARCH_SUPPORTS_AOUT
++	def_bool y
 +
-+#define STACK_TOP	TASK_SIZE
-+#define STACK_TOP_MAX	DEFAULT_TASK_SIZE
+ #
+ # Select some configuration options automatically based on user selections.
+ #
+diff --git a/arch/parisc/Kconfig b/arch/parisc/Kconfig
+index b8ef178..da0dc3d 100644
+--- a/arch/parisc/Kconfig
++++ b/arch/parisc/Kconfig
+@@ -69,6 +69,9 @@ config IRQ_PER_CPU
+ 	bool
+ 	default y
+ 
++config ARCH_SUPPORTS_AOUT
++	def_bool y
 +
-+#endif
+ # unless you want to implement ACPI on PA-RISC ... ;-)
+ config PM
+ 	bool
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 18f397c..28931a0 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -76,6 +76,9 @@ config GENERIC_FIND_NEXT_BIT
+ config ARCH_NO_VIRT_TO_BUS
+ 	def_bool PPC64
+ 
++config ARCH_SUPPORTS_AOUT
++	def_bool y
 +
- #ifndef __ASSEMBLY__
+ config PPC
+ 	bool
+ 	default y
+diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
+index 6473fa7..f389338 100644
+--- a/arch/ppc/Kconfig
++++ b/arch/ppc/Kconfig
+@@ -39,6 +39,9 @@ config GENERIC_CALIBRATE_DELAY
+ 	bool
+ 	default y
  
- /*
-diff --git a/include/asm-powerpc/a.out.h b/include/asm-powerpc/a.out.h
-index 5c5ea83..89cead6 100644
---- a/include/asm-powerpc/a.out.h
-+++ b/include/asm-powerpc/a.out.h
-@@ -17,23 +17,4 @@ struct exec
- #define N_DRSIZE(a)	((a).a_drsize)
- #define N_SYMSIZE(a)	((a).a_syms)
- 
--#ifdef __KERNEL__
--#ifdef __powerpc64__
--
--#define STACK_TOP_USER64 TASK_SIZE_USER64
--#define STACK_TOP_USER32 TASK_SIZE_USER32
--
--#define STACK_TOP (test_thread_flag(TIF_32BIT) ? \
--		   STACK_TOP_USER32 : STACK_TOP_USER64)
--
--#define STACK_TOP_MAX STACK_TOP_USER64
--
--#else /* __powerpc64__ */
--
--#define STACK_TOP TASK_SIZE
--#define STACK_TOP_MAX	STACK_TOP
--
--#endif /* __powerpc64__ */
--#endif /* __KERNEL__ */
--
- #endif /* _ASM_POWERPC_A_OUT_H */
-diff --git a/include/asm-powerpc/processor.h b/include/asm-powerpc/processor.h
-index dba7c94..a16d4a2 100644
---- a/include/asm-powerpc/processor.h
-+++ b/include/asm-powerpc/processor.h
-@@ -112,6 +112,25 @@ extern struct task_struct *last_task_used_spe;
- 		TASK_UNMAPPED_BASE_USER32 : TASK_UNMAPPED_BASE_USER64 )
- #endif
- 
-+#ifdef __KERNEL__
-+#ifdef __powerpc64__
++config ARCH_SUPPORTS_AOUT
++	def_bool n
 +
-+#define STACK_TOP_USER64 TASK_SIZE_USER64
-+#define STACK_TOP_USER32 TASK_SIZE_USER32
+ config PPC
+ 	bool
+ 	default y
+diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+index 1330061..baa9287 100644
+--- a/arch/s390/Kconfig
++++ b/arch/s390/Kconfig
+@@ -47,6 +47,9 @@ config NO_IOMEM
+ config NO_DMA
+ 	def_bool y
+ 
++config ARCH_SUPPORTS_AOUT
++	def_bool n
 +
-+#define STACK_TOP (test_thread_flag(TIF_32BIT) ? \
-+		   STACK_TOP_USER32 : STACK_TOP_USER64)
+ mainmenu "Linux Kernel Configuration"
+ 
+ config S390
+diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
+index 22a3eb3..d9e9512 100644
+--- a/arch/sh/Kconfig
++++ b/arch/sh/Kconfig
+@@ -93,6 +93,9 @@ config ARCH_HAS_ILOG2_U64
+ config ARCH_NO_VIRT_TO_BUS
+ 	def_bool y
+ 
++config ARCH_SUPPORTS_AOUT
++	def_bool y
 +
-+#define STACK_TOP_MAX STACK_TOP_USER64
+ source "init/Kconfig"
+ 
+ menu "System type"
+diff --git a/arch/sh64/Kconfig b/arch/sh64/Kconfig
+index 6884d5a..07e6ac4 100644
+--- a/arch/sh64/Kconfig
++++ b/arch/sh64/Kconfig
+@@ -58,6 +58,9 @@ config ARCH_HAS_ILOG2_U64
+ config ARCH_NO_VIRT_TO_BUS
+ 	def_bool y
+ 
++config ARCH_SUPPORTS_AOUT
++	def_bool y
 +
-+#else /* __powerpc64__ */
+ source init/Kconfig
+ 
+ menu "System type"
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index 527adc8..95d09b3 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -27,6 +27,9 @@ config ARCH_NO_VIRT_TO_BUS
+ config OF
+ 	def_bool y
+ 
++config ARCH_SUPPORTS_AOUT
++	def_bool y
 +
-+#define STACK_TOP TASK_SIZE
-+#define STACK_TOP_MAX	STACK_TOP
+ source "init/Kconfig"
+ 
+ menu "General machine setup"
+diff --git a/arch/sparc64/Kconfig b/arch/sparc64/Kconfig
+index 10b212a..5cafe37 100644
+--- a/arch/sparc64/Kconfig
++++ b/arch/sparc64/Kconfig
+@@ -76,6 +76,9 @@ config GENERIC_HARDIRQS_NO__DO_IRQ
+ 	bool
+ 	def_bool y
+ 
++config ARCH_SUPPORTS_AOUT
++	def_bool y
 +
-+#endif /* __powerpc64__ */
-+#endif /* __KERNEL__ */
+ choice
+ 	prompt "Kernel page size"
+ 	default SPARC64_PAGE_SIZE_8KB
+diff --git a/arch/um/Kconfig.i386 b/arch/um/Kconfig.i386
+index e0ac74e..a0af34e 100644
+--- a/arch/um/Kconfig.i386
++++ b/arch/um/Kconfig.i386
+@@ -77,3 +77,5 @@ config GENERIC_HWEIGHT
+ 	bool
+ 	default y
+ 
++config ARCH_SUPPORTS_AOUT
++	def_bool y
+diff --git a/arch/um/Kconfig.x86_64 b/arch/um/Kconfig.x86_64
+index d632e9a..b438f0e 100644
+--- a/arch/um/Kconfig.x86_64
++++ b/arch/um/Kconfig.x86_64
+@@ -39,3 +39,5 @@ config GENERIC_HWEIGHT
+ 	bool
+ 	default y
+ 
++config ARCH_SUPPORTS_AOUT
++	def_bool y
+diff --git a/arch/v850/Kconfig b/arch/v850/Kconfig
+index b6a50b8..dcf4b8e 100644
+--- a/arch/v850/Kconfig
++++ b/arch/v850/Kconfig
+@@ -53,6 +53,9 @@ config ARCH_HAS_ILOG2_U64
+ 	bool
+ 	default n
+ 
++config ARCH_SUPPORTS_AOUT
++	def_bool y
 +
- typedef struct {
- 	unsigned long seg;
- } mm_segment_t;
-diff --git a/include/asm-s390/a.out.h b/include/asm-s390/a.out.h
-index 46158dc..8d6bd9c 100644
---- a/include/asm-s390/a.out.h
-+++ b/include/asm-s390/a.out.h
-@@ -29,11 +29,4 @@ struct exec
- #define N_DRSIZE(a)	((a).a_drsize)
- #define N_SYMSIZE(a)	((a).a_syms)
+ # Turn off some random 386 crap that can affect device config
+ config ISA
+ 	bool
+diff --git a/arch/xtensa/Kconfig b/arch/xtensa/Kconfig
+index d3cb3d6..69295bd 100644
+--- a/arch/xtensa/Kconfig
++++ b/arch/xtensa/Kconfig
+@@ -49,6 +49,9 @@ config ARCH_HAS_ILOG2_U64
+ config NO_IOPORT
+ 	def_bool y
  
--#ifdef __KERNEL__
--
--#define STACK_TOP	TASK_SIZE
--#define STACK_TOP_MAX	DEFAULT_TASK_SIZE
--
--#endif
--
- #endif /* __A_OUT_GNU_H__ */
-diff --git a/include/asm-s390/processor.h b/include/asm-s390/processor.h
-index 21d40a1..3ade4c4 100644
---- a/include/asm-s390/processor.h
-+++ b/include/asm-s390/processor.h
-@@ -80,6 +80,13 @@ extern struct task_struct *last_task_used_math;
- 
- #endif /* __s390x__ */
- 
-+#ifdef __KERNEL__
++config ARCH_SUPPORTS_AOUT
++	def_bool n
 +
-+#define STACK_TOP		TASK_SIZE
-+#define STACK_TOP_MAX		DEFAULT_TASK_SIZE
-+
-+#endif
-+
- #define HAVE_ARCH_PICK_MMAP_LAYOUT
+ source "init/Kconfig"
  
- typedef struct {
-diff --git a/include/asm-sh/a.out.h b/include/asm-sh/a.out.h
-index 685d0f6..1f93130 100644
---- a/include/asm-sh/a.out.h
-+++ b/include/asm-sh/a.out.h
-@@ -17,11 +17,4 @@ struct exec
- #define N_DRSIZE(a)	((a).a_drsize)
- #define N_SYMSIZE(a)	((a).a_syms)
- 
--#ifdef __KERNEL__
--
--#define STACK_TOP	TASK_SIZE
--#define STACK_TOP_MAX	STACK_TOP
--
--#endif
--
- #endif /* __ASM_SH_A_OUT_H */
-diff --git a/include/asm-sh/processor.h b/include/asm-sh/processor.h
-index ab0028d..97e77d9 100644
---- a/include/asm-sh/processor.h
-+++ b/include/asm-sh/processor.h
-@@ -85,6 +85,13 @@ extern struct sh_cpuinfo cpu_data[];
-  */
- #define TASK_SIZE	0x7c000000UL
- 
-+#ifdef __KERNEL__
-+
-+#define STACK_TOP	TASK_SIZE
-+#define STACK_TOP_MAX	STACK_TOP
-+
-+#endif
-+
- /* This decides where the kernel will search for a free chunk of vm
-  * space during mmap's.
-  */
-diff --git a/include/asm-sh64/a.out.h b/include/asm-sh64/a.out.h
-index 237ee4e..c55b85b 100644
---- a/include/asm-sh64/a.out.h
-+++ b/include/asm-sh64/a.out.h
-@@ -28,11 +28,4 @@ struct exec
- #define N_DRSIZE(a)	((a).a_drsize)
- #define N_SYMSIZE(a)	((a).a_syms)
- 
--#ifdef __KERNEL__
--
--#define STACK_TOP	TASK_SIZE
--#define STACK_TOP_MAX	STACK_TOP
--
--#endif
--
- #endif /* __ASM_SH64_A_OUT_H */
-diff --git a/include/asm-sparc/a.out.h b/include/asm-sparc/a.out.h
-index 917e042..744cfe6 100644
---- a/include/asm-sparc/a.out.h
-+++ b/include/asm-sparc/a.out.h
-@@ -87,13 +87,4 @@ struct relocation_info /* used when header.a_machtype == M_SPARC */
- 
- #define N_RELOCATION_INFO_DECLARED 1
- 
--#ifdef __KERNEL__
--
--#include <asm/page.h>
--
--#define STACK_TOP	(PAGE_OFFSET - PAGE_SIZE)
--#define STACK_TOP_MAX	STACK_TOP
--
--#endif /* __KERNEL__ */
--
- #endif /* __SPARC_A_OUT_H__ */
-diff --git a/include/asm-sparc/processor.h b/include/asm-sparc/processor.h
-index 6fbb3f0..40b1e41 100644
---- a/include/asm-sparc/processor.h
-+++ b/include/asm-sparc/processor.h
-@@ -33,6 +33,10 @@
-  * we can make our access_ok test faster
-  */
- #define TASK_SIZE	PAGE_OFFSET
-+#ifdef __KERNEL__
-+#define STACK_TOP	(PAGE_OFFSET - PAGE_SIZE)
-+#define STACK_TOP_MAX	STACK_TOP
-+#endif /* __KERNEL__ */
- 
- struct task_struct;
- 
-diff --git a/include/asm-sparc64/a.out.h b/include/asm-sparc64/a.out.h
-index 902e07f..53c95bd 100644
---- a/include/asm-sparc64/a.out.h
-+++ b/include/asm-sparc64/a.out.h
-@@ -93,18 +93,6 @@ struct relocation_info /* used when header.a_machtype == M_SPARC */
- 
- #define N_RELOCATION_INFO_DECLARED 1
- 
--#ifdef __KERNEL__
--
--#define STACK_TOP32	((1UL << 32UL) - PAGE_SIZE)
--#define STACK_TOP64	(0x0000080000000000UL - (1UL << 32UL))
--
--#define STACK_TOP (test_thread_flag(TIF_32BIT) ? \
--		   STACK_TOP32 : STACK_TOP64)
--
--#define STACK_TOP_MAX STACK_TOP64
--
--#endif
--
- #endif /* !(__ASSEMBLY__) */
- 
- #endif /* !(__SPARC64_A_OUT_H__) */
-diff --git a/include/asm-sparc64/processor.h b/include/asm-sparc64/processor.h
-index 66dd2fa..48e7496 100644
---- a/include/asm-sparc64/processor.h
-+++ b/include/asm-sparc64/processor.h
-@@ -36,7 +36,19 @@
- #else
- #define VPTE_SIZE	(1 << (VA_BITS - PAGE_SHIFT + 3))
- #endif
-+
- #define TASK_SIZE	((unsigned long)-VPTE_SIZE)
-+#ifdef __KERNEL__
-+
-+#define STACK_TOP32	((1UL << 32UL) - PAGE_SIZE)
-+#define STACK_TOP64	(0x0000080000000000UL - (1UL << 32UL))
-+
-+#define STACK_TOP	(test_thread_flag(TIF_32BIT) ? \
-+			 STACK_TOP32 : STACK_TOP64)
-+
-+#define STACK_TOP_MAX	STACK_TOP64
-+
-+#endif
- 
- #ifndef __ASSEMBLY__
- 
-diff --git a/include/asm-sparc64/user.h b/include/asm-sparc64/user.h
-index fce4e85..02b1389 100644
---- a/include/asm-sparc64/user.h
-+++ b/include/asm-sparc64/user.h
-@@ -8,7 +8,7 @@
- #ifndef _SPARC64_USER_H
- #define _SPARC64_USER_H
- 
--#include <asm/a.out.h>
-+#include <linux/a.out.h>
- struct sunos_regs {
- 	unsigned int psr, pc, npc, y;
- 	unsigned int regs[15];
-diff --git a/include/asm-um/a.out.h b/include/asm-um/a.out.h
-index 9281dd8..754181e 100644
---- a/include/asm-um/a.out.h
-+++ b/include/asm-um/a.out.h
-@@ -8,17 +8,4 @@
- 
- #include "asm/arch/a.out.h"
- 
--#undef STACK_TOP
--#undef STACK_TOP_MAX
--
--extern unsigned long stacksizelim;
--
--extern unsigned long host_task_size;
--
--#define STACK_ROOM (stacksizelim)
--
--#define STACK_TOP task_size
--
--#define STACK_TOP_MAX STACK_TOP
--
- #endif
-diff --git a/include/asm-um/processor-generic.h b/include/asm-um/processor-generic.h
-index 78c0599..4b4bb18 100644
---- a/include/asm-um/processor-generic.h
-+++ b/include/asm-um/processor-generic.h
-@@ -98,9 +98,17 @@ static inline void mm_copy_segments(struct mm_struct *from_mm,
-  * User space process size: 3GB (default).
-  */
- extern unsigned long task_size;
-+extern unsigned long stacksizelim;
-+extern unsigned long host_task_size;
- 
- #define TASK_SIZE	(task_size)
- 
-+#undef STACK_TOP
-+#undef STACK_TOP_MAX
-+#define STACK_TOP	TASK_SIZE
-+#define STACK_TOP_MAX	STACK_TOP
-+#define STACK_ROOM	(stacksizelim)
-+
- /* This decides where the kernel will search for a free chunk of vm
-  * space during mmap's.
-  */
-diff --git a/include/asm-x86/a.out.h b/include/asm-x86/a.out.h
-index a62443e..4684f97 100644
---- a/include/asm-x86/a.out.h
-+++ b/include/asm-x86/a.out.h
-@@ -17,14 +17,4 @@ struct exec
- #define N_DRSIZE(a)	((a).a_drsize)
- #define N_SYMSIZE(a)	((a).a_syms)
- 
--#ifdef __KERNEL__
--# include <linux/thread_info.h>
--# define STACK_TOP	TASK_SIZE
--# ifdef CONFIG_X86_32
--#  define STACK_TOP_MAX	STACK_TOP
--# else
--#  define STACK_TOP_MAX	TASK_SIZE64
--# endif
--#endif
--
- #endif /* _ASM_X86_A_OUT_H */
-diff --git a/include/asm-x86/processor_32.h b/include/asm-x86/processor_32.h
-index 13976b0..7976787 100644
---- a/include/asm-x86/processor_32.h
-+++ b/include/asm-x86/processor_32.h
-@@ -214,6 +214,8 @@ extern int bootloader_type;
-  * User space process size: 3GB (default).
-  */
- #define TASK_SIZE	(PAGE_OFFSET)
-+#define STACK_TOP	TASK_SIZE
-+#define STACK_TOP_MAX	STACK_TOP
- 
- /* This decides where the kernel will search for a free chunk of vm
-  * space during mmap's.
-diff --git a/include/asm-x86/processor_64.h b/include/asm-x86/processor_64.h
-index e4f1997..6b9b33f 100644
---- a/include/asm-x86/processor_64.h
-+++ b/include/asm-x86/processor_64.h
-@@ -148,6 +148,8 @@ static inline void clear_in_cr4 (unsigned long mask)
- #define TASK_SIZE_OF(child) 	((test_tsk_thread_flag(child, TIF_IA32)) ? IA32_PAGE_OFFSET : TASK_SIZE64)
- 
- #define TASK_UNMAPPED_BASE	PAGE_ALIGN(TASK_SIZE/3)
-+#define STACK_TOP		TASK_SIZE
-+#define STACK_TOP_MAX		TASK_SIZE64
- 
- /*
-  * Size of io_bitmap.
-diff --git a/include/asm-xtensa/a.out.h b/include/asm-xtensa/a.out.h
-index 05a2f67..fdf1370 100644
---- a/include/asm-xtensa/a.out.h
-+++ b/include/asm-xtensa/a.out.h
-@@ -14,11 +14,6 @@
- #ifndef _XTENSA_A_OUT_H
- #define _XTENSA_A_OUT_H
- 
--/* Note: the kernel needs the a.out definitions, even if only ELF is used. */
--
--#define STACK_TOP	TASK_SIZE
--#define STACK_TOP_MAX	STACK_TOP
--
- struct exec
- {
-   unsigned long a_info;
-diff --git a/include/asm-xtensa/processor.h b/include/asm-xtensa/processor.h
-index 35145bc..96408f4 100644
---- a/include/asm-xtensa/processor.h
-+++ b/include/asm-xtensa/processor.h
-@@ -34,6 +34,8 @@
-  */
- 
- #define TASK_SIZE	__XTENSA_UL_CONST(0x40000000)
-+#define STACK_TOP	TASK_SIZE
-+#define STACK_TOP_MAX	STACK_TOP
- 
- /*
-  * General exception cause assigned to debug exceptions. Debug exceptions go
+ menu "Processor type and features"
 
