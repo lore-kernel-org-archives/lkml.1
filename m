@@ -1,67 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbXKNO7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758096AbXKNPAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758683AbXKNO7T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 09:59:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755460AbXKNO6w
+	id S1758096AbXKNPAf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 10:00:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbXKNPA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 09:58:52 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:33212 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755026AbXKNO6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 09:58:51 -0500
-Date: Wed, 14 Nov 2007 08:58:46 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Andrew Morton <akpm@osdl.org>, Cedric Le Goater <clg@fr.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/6] A config option to compile out some namespaces
-	code (v4)
-Message-ID: <20071114145846.GC17106@sergelap.austin.ibm.com>
-References: <473ADB5B.50902@openvz.org>
+	Wed, 14 Nov 2007 10:00:27 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:48522 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752767AbXKNPA1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 10:00:27 -0500
+Date: Wed, 14 Nov 2007 08:00:25 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Greg KH <greg@kroah.com>, Alex Chiang <achiang@hp.com>, gregkh@suse.de,
+       kristen.c.accardi@intel.com, lenb@kernel.org, richard.jones2@hp.com,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
+Message-ID: <20071114150025.GU17785@parisc-linux.org>
+References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113170129.GA20185@kroah.com> <p73sl39y6qb.fsf@bingen.suse.de> <20071114141751.GS17785@parisc-linux.org> <20071114143533.GF17145@one.firstfloor.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <473ADB5B.50902@openvz.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20071114143533.GF17145@one.firstfloor.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Pavel Emelyanov (xemul@openvz.org):
-> Change against v3: rebased on 2.6.24-rc2-mm1
-> 
-> There were some questions like "do I need this on my cellphone"
-> in reply to different namespaces patches. Indeed, the namespaces
-> are not useful for most of the embedded systems, but the code
-> creating and releasing them weights a lot.
-> 
-> So I propose to add a config option which will help embedded
-> people to reduce the vmlinux size. This option simply compiles
-> out the namespaces cloning and releasing code *only*, but keeps
-> all the other logic untouched (e.g. the notion of init_ns).
-> 
-> Moreover, some of the namespaces might be not 100% ready by
-> the time of Linux-2.6.xxx release (like user namespaces or pid 
-> namespaces are now). Since each namespace has its own option, 
-> which depends on the NAMESPACES, it can be mrked with "depends
-> on EXPERIMENTAL/BROKEN/ANYTHING_ELSE" not to release the
-> functionality that is not 100% ready yet.
-> 
-> When someone tries to clone some namespace with their support
-> turned off, he will receive an EINVAL error.
-> 
-> This patchset can save more than 2KB from the vmlinux when
-> turning the config option "NAMESPACES" to "n".
-> 
-> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+On Wed, Nov 14, 2007 at 03:35:33PM +0100, Andi Kleen wrote:
+> It becomes much more when someone does a find /sys. dentries are 
+> expensive. They eventually can get pruned again, but it's still
+> costly to do that.
 
-Pretty sure I did this a few versions ago, but
+Again, if this is a big concern for you, there are better places to look
+at for savings.
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-
-for the whole set.
-
-thanks,
--serge
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
