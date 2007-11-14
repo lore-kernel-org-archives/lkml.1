@@ -1,61 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763508AbXKNFp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762729AbXKNFxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763508AbXKNFp4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 00:45:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760213AbXKNFpt
+	id S1762729AbXKNFxS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 00:53:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbXKNFxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 00:45:49 -0500
-Received: from threatwall.zlynx.org ([199.45.143.218]:33082 "EHLO zlynx.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760083AbXKNFps (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 00:45:48 -0500
-Message-ID: <473A8B97.5050909@acm.org>
-Date: Tue, 13 Nov 2007 22:45:59 -0700
-From: Zan Lynx <zlynx@acm.org>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org,
-       Ulrich Drepper <drepper@redhat.com>, Roland McGrath <roland@redhat.com>
-Subject: Re: 2.6.24-rc2-mm1
-References: <20071113175906.497a1a6a.akpm@linux-foundation.org>	<473A6E72.60503@googlemail.com> <20071113205544.2a7743b4.akpm@linux-foundation.org>
-In-Reply-To: <20071113205544.2a7743b4.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 14 Nov 2007 00:53:09 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55817
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750727AbXKNFxI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 00:53:08 -0500
+Date: Tue, 13 Nov 2007 21:53:06 -0800 (PST)
+Message-Id: <20071113.215306.78239549.davem@davemloft.net>
+To: clameter@sgi.com
+Cc: andi@firstfloor.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, dada1@cosmosbay.com,
+       schwidefsky@de.ibm.com
+Subject: Re: [patch 01/28] cpu alloc: The allocator
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0711132023290.7631@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0711132011060.7528@schroedinger.engr.sgi.com>
+	<20071113.201853.40241484.davem@davemloft.net>
+	<Pine.LNX.4.64.0711132023290.7631@schroedinger.engr.sgi.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Envelope-From: zlynx@acm.org
-X-Spam-Id: 20071113/1IsB4G-0005Ug-Iy-linux-kernel@vger.kernel.org:zlynx@acm.org:199.45.143.218
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-[cut]
-> hm, that was supposed to shut itself off after 100 messages:
-> 
-> 	if (unlikely(clone_flags & (CLONE_DETACHED|CLONE_STOPPED))) {
-> 		static int __read_mostly count = 100;
-> 
-> 		if (count && printk_ratelimit()) {
-> 			char comm[TASK_COMM_LEN];
-> 
-> 			count--;
-> 			printk(KERN_INFO "fork(): process `%s' used deprecated "
-> 					"clone flags 0x%lx\n",
-> 				get_task_comm(comm, current),
-> 				clone_flags & (CLONE_DETACHED|CLONE_STOPPED));
-> 		}
-> 	}
-> 
-> I don't see how you got 151 instances.  I guess I'm having another stupid
-> day.
+From: Christoph Lameter <clameter@sgi.com>
+Date: Tue, 13 Nov 2007 20:26:33 -0800 (PST)
 
-It looks like a simple race, two threads do count-- before doing 
-if(count), resulting in an almost infinite loop.  Probably.
+> The only problem that I see so far is a communication problem. Thus
+> we need more documentation.
 
-atomic_test_and_dec might work.
-
-
-
-
-
-
-
+Fair enough, I'll look more closely at the next rev of
+your patch set.
