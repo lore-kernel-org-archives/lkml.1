@@ -1,67 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764205AbXKNT6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764333AbXKNT7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764205AbXKNT6O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 14:58:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757380AbXKNT57
+	id S1764333AbXKNT7S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 14:59:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757380AbXKNT7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 14:57:59 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:45575 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756412AbXKNT56 (ORCPT
+	Wed, 14 Nov 2007 14:59:12 -0500
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:37669 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753680AbXKNT7L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 14:57:58 -0500
-Date: Wed, 14 Nov 2007 19:52:08 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>, alsa-devel@alsa-project.org,
-       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-kernel@vger.kernel.org, Natalie Protasevich <protasnb@gmail.com>,
-       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz
-Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071114195208.GD23221@flint.arm.linux.org.uk>
-Mail-Followup-To: Pavel Machek <pavel@ucw.cz>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	alsa-devel@alsa-project.org, netdev@vger.kernel.org,
-	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-	Natalie Protasevich <protasnb@gmail.com>, linux-ide@vger.kernel.org,
-	bugme-daemon@bugzilla.kernel.org,
-	linux-input@atrey.karlin.mff.cuni.cz
-References: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com> <20071113031553.3c7b5c16.akpm@linux-foundation.org> <20071114132448.GA5183@ucw.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071114132448.GA5183@ucw.cz>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 14 Nov 2007 14:59:11 -0500
+X-Greylist: delayed 609 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Nov 2007 14:59:11 EST
+Message-ID: <473B52DB.9050600@hp.com>
+Date: Wed, 14 Nov 2007 14:56:11 -0500
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Rik van Riel <riel@redhat.com>, arjan@infradead.org,
+       Jens Axboe <jens.axboe@oracle.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] Give kjournald a IOPRIO_CLASS_RT io priority
+References: <20071015104647.14e60bc5@laptopd505.fenrus.org>	<20071015114738.6b5a25c7.akpm@linux-foundation.org>	<20071015161315.4fe18e07@bree.surriel.com>	<20071015141236.62b075c6.akpm@linux-foundation.org>	<473B18BA.5000709@hp.com> <20071114091451.d4b110db.akpm@linux-foundation.org> <473B4B53.9090507@hp.com>
+In-Reply-To: <473B4B53.9090507@hp.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 14, 2007 at 01:24:48PM +0000, Pavel Machek wrote:
-> Hi!
-> 
-> > > Suspend to RAM resume hangs on a tickless (NO_HZ) kernel
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=9275
-> > > Kernel: 2.6.23
-> > > This is HP notebook nc6320 T2400 945GM
-> > 
-> > No response from developers
-> 
-> Maybe I'm optimistic, but I expected Ingo/Thomas to look after nohz
-> problems. nohz=off highres=off fixes more than one suspend problem...
-> 
-> ...stuff I've seen with NOHZ even without suspend (cursor blinking
-> irregulary) make me think that nohz perhaps should not be used in
-> production just yet...
+Oh, and the runs were done in single-user mode...
 
-It appears that bug 9229 has been solved, and the reporter of that
-bug now says that:
-
-  If I unset NO_TZ suspend/resume works.
-  If I set it suspend/resume doesn't works.
-
-So I think this guy is now suffering from bug #9275
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Alan
