@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758710AbXKNWOE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759260AbXKNWRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758710AbXKNWOE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 17:14:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbXKNWNv
+	id S1759260AbXKNWRc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 17:17:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753538AbXKNWRY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 17:13:51 -0500
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:42709 "EHLO
-	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752720AbXKNWNu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 17:13:50 -0500
-Date: Wed, 14 Nov 2007 23:11:19 +0100
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Rainer Jochem <rainer.jochem@mpi-sb.mpg.de>
-Cc: Patrick McHardy <kaber@trash.net>, davem@davemloft.net,
-       kuznet@ms2.inr.ac.ru, jmorris@namei.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, pcernko@mpi-sws.mpg.de
-Subject: Re: [PATCH] ipconfig.c : implement DHCP Class-identifier
-Message-ID: <20071114221119.GA20108@electric-eye.fr.zoreil.com>
-References: <20071108143205.GA22490@mpi-sb.mpg.de> <47332F1F.5040401@trash.net> <20071114084420.GA29241@mpi-sb.mpg.de> <473AB82F.8050801@trash.net> <20071114094508.GA6004@mpi-sb.mpg.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071114094508.GA6004@mpi-sb.mpg.de>
-X-Organisation: Land of Sunshine Inc.
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Wed, 14 Nov 2007 17:17:24 -0500
+Received: from gate.crashing.org ([63.228.1.57]:37358 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753465AbXKNWRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 17:17:23 -0500
+Subject: Re: [PATCH] Align PCI memory regions to page size (4K) - Fix
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Grant Grundler <grundler@parisc-linux.org>
+Cc: David Miller <davem@davemloft.net>, gregkh@suse.de, barak@neocleus.com,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       guy@neocleus.com
+In-Reply-To: <20071114215538.GA14588@colo.lackof.org>
+References: <20071028193104.GA13956@suse.de>
+	 <9392A06CB0FDC847B3A530B3DC174E7B03C96F36@mse10be1.mse10.exchange.ms>
+	 <20071028200336.GA14563@suse.de>
+	 <20071028.180807.165828961.davem@davemloft.net>
+	 <1194988653.28605.4.camel@pasglop> <20071114062157.GA30203@colo.lackof.org>
+	 <1195028178.28865.32.camel@pasglop>
+	 <20071114215538.GA14588@colo.lackof.org>
+Content-Type: text/plain
+Date: Thu, 15 Nov 2007 09:16:43 +1100
+Message-Id: <1195078603.28865.51.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rainer Jochem <rainer.jochem@mpi-sb.mpg.de> :
-[...]
-> --- net/ipv4/ipconfig.c.orig	2007-11-14 09:16:15.800566536 +0100
-> +++ net/ipv4/ipconfig.c	2007-11-14 10:34:22.471219274 +0100
-> @@ -139,6 +139,8 @@ __be32 ic_servaddr = NONE;	/* Boot serve
->  __be32 root_server_addr = NONE;	/* Address of NFS server */
->  u8 root_server_path[256] = { 0, };	/* Path to mount as root */
->  
-> +static char vendor_class_identifier[253]; /* vendor class identifier */
-> +
 
-ic_dhcp_init_options is __init. Should it not be __initdata ?
+On Wed, 2007-11-14 at 14:55 -0700, Grant Grundler wrote:
 
--- 
-Ueimor
+> Ah ok.. I was assuming there was only a "Hypervisor" and all the "guests"
+> were equal. If one OS instance is "Host" and can see the device before hand,
+> then yeah, it makes sense to "hide" the device from the normal device drivers.
+
+The "Host" is the hypervisor in something like KVM or lguest which is
+all I really care about :-) On Xen, it would be dom0 I suppose.
+
+Ben.
+
+
