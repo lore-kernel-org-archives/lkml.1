@@ -1,77 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764779AbXKNUSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763972AbXKNURM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764779AbXKNUSf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 15:18:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764067AbXKNURU
+	id S1763972AbXKNURM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 15:17:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbXKNUQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 15:17:20 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50103 "EHLO mx3.mail.elte.hu"
+	Wed, 14 Nov 2007 15:16:52 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:33410 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763999AbXKNURR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 15:17:17 -0500
-Date: Wed, 14 Nov 2007 21:16:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, protasnb@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071114201639.GA17182@elte.hu>
-References: <20071113031553.3c7b5c16.akpm@linux-foundation.org> <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <20071113085514.3414aa52.rdunlap@xenotime.net> <20071114140847.GA11489@elte.hu> <20071114093820.ff3ad8f9.rdunlap@xenotime.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071114093820.ff3ad8f9.rdunlap@xenotime.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1753258AbXKNUQv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 15:16:51 -0500
+Message-Id: <20071114201528.514434000@chello.nl>
+References: <20071114200136.009242000@chello.nl>
+User-Agent: quilt/0.45-1
+Date: Wed, 14 Nov 2007 21:01:39 +0100
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Nick Piggin <npiggin@suse.de>, Hugh Dickins <hugh@veritas.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH 3/3] nfs: use ->mmap_prepare() to avoid an AB-BA deadlock
+Content-Disposition: inline; filename=mmap_prepare_nfs.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Normal locking order is:
 
-* Randy Dunlap <rdunlap@xenotime.net> wrote:
+  i_mutex
+    mmap_sem
 
-> On Wed, 14 Nov 2007 15:08:47 +0100 Ingo Molnar wrote:
-> 
-> > 
-> > * Randy Dunlap <rdunlap@xenotime.net> wrote:
-> > 
-> > > > (and this is in no way directed at the networking folks - it holds 
-> > > > for all of us. I have one main complaint about networking: the 
-> > > > separate netdev list is a bad idea - networking regressions should 
-> > > > be discussed and fixed on lkml, like most other subsystems are. Any 
-> > > > artificial split of the lk discussion space is bad.)
-> > > 
-> > > but here I disagree.  LKML is already too busy and noisy. Major 
-> > > subsystems need their own discussion areas.
-> > 
-> > That's a stupid argument. We lose much more by forced isolation of 
-> > discussion than what we win by having less traffic! It's _MUCH_ 
-                                                        ^^^^^^^^^^^^
-> > easier to narrow down information (by filter by threads, by topics, 
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> > by people, etc.) than it is to gobble information together from 
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> > various fractured sources. We learned it _again and again_ that 
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> > isolation of kernel discussions causes bad things.
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> > 
-> > In fact this thread is the very example: David points out that on 
-> > netdev some of those bugs were already discussed and resolved. Had 
-> > it been all on lkml we'd all be aware of it.
-> 
-> or had <someone> been on netdev.
+However NFS's ->mmap hook, which is called under mmap_sem, can take i_mutex.
+Avoid this potential deadlock by doing the work that requires i_mutex from
+the new ->mmap_prepare().
 
-countered by the underlined sentences above, just in case you missed it.
+[ Is this sufficient, or does it introduce a race? ]
 
-	Ingo
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ fs/nfs/file.c |   25 +++++++++++++++++--------
+ 1 file changed, 17 insertions(+), 8 deletions(-)
+
+Index: linux-2.6/fs/nfs/file.c
+===================================================================
+--- linux-2.6.orig/fs/nfs/file.c
++++ linux-2.6/fs/nfs/file.c
+@@ -41,6 +41,9 @@
+ static int nfs_file_open(struct inode *, struct file *);
+ static int nfs_file_release(struct inode *, struct file *);
+ static loff_t nfs_file_llseek(struct file *file, loff_t offset, int origin);
++static int
++nfs_file_mmap_prepare(struct file * file, unsigned long len,
++		unsigned long prot, unsigned long flags, unsigned long pgoff);
+ static int  nfs_file_mmap(struct file *, struct vm_area_struct *);
+ static ssize_t nfs_file_splice_read(struct file *filp, loff_t *ppos,
+ 					struct pipe_inode_info *pipe,
+@@ -64,6 +67,7 @@ const struct file_operations nfs_file_op
+ 	.write		= do_sync_write,
+ 	.aio_read	= nfs_file_read,
+ 	.aio_write	= nfs_file_write,
++	.mmap_prepare	= nfs_file_mmap_prepare,
+ 	.mmap		= nfs_file_mmap,
+ 	.open		= nfs_file_open,
+ 	.flush		= nfs_file_flush,
+@@ -270,7 +274,8 @@ nfs_file_splice_read(struct file *filp, 
+ }
+ 
+ static int
+-nfs_file_mmap(struct file * file, struct vm_area_struct * vma)
++nfs_file_mmap_prepare(struct file * file, unsigned long len,
++		unsigned long prot, unsigned long flags, unsigned long pgoff)
+ {
+ 	struct dentry *dentry = file->f_path.dentry;
+ 	struct inode *inode = dentry->d_inode;
+@@ -279,13 +284,17 @@ nfs_file_mmap(struct file * file, struct
+ 	dfprintk(VFS, "nfs: mmap(%s/%s)\n",
+ 		dentry->d_parent->d_name.name, dentry->d_name.name);
+ 
+-	status = nfs_revalidate_mapping(inode, file->f_mapping);
+-	if (!status) {
+-		vma->vm_ops = &nfs_file_vm_ops;
+-		vma->vm_flags |= VM_CAN_NONLINEAR;
+-		file_accessed(file);
+-	}
+-	return status;
++	return nfs_revalidate_mapping(inode, file->f_mapping);
++}
++
++static int
++nfs_file_mmap(struct file *file, struct vm_area_struct *vma)
++{
++	vma->vm_ops = &nfs_file_vm_ops;
++	vma->vm_flags |= VM_CAN_NONLINEAR;
++	file_accessed(file);
++
++	return 0;
+ }
+ 
+ /*
+
+--
+
