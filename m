@@ -1,74 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763500AbXKNBOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764135AbXKNBPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763500AbXKNBOr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 20:14:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761101AbXKNBOg
+	id S1764135AbXKNBPa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 20:15:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759024AbXKNBPT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 20:14:36 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59342 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759450AbXKNBOe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 20:14:34 -0500
-Date: Tue, 13 Nov 2007 17:11:36 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@kernel.org>,
-       Mark Lord <liml@rtr.ca>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, protasnb@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071113171136.75ba098d@freepuppy.rosehill>
-In-Reply-To: <473A46C1.3060000@redhat.com>
-References: <20071113134029.GA30978@elte.hu>
-	<4739AFE0.20705@rtr.ca>
-	<20071113164650.GA28493@elte.hu>
-	<4739E3D0.10201@rtr.ca>
-	<20071113181228.GF4250@stusta.de>
-	<4739EA83.5040006@rtr.ca>
-	<20071113183605.GG4250@stusta.de>
-	<4739F12E.5020807@rtr.ca>
-	<20071113190428.GH4250@stusta.de>
-	<4739FA4D.1050900@rtr.ca>
-	<20071113200028.GJ4250@stusta.de>
-	<20071113211256.1d18fe1a@the-village.bc.nu>
-	<473A46C1.3060000@redhat.com>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 13 Nov 2007 20:15:19 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59025 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761652AbXKNBPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 20:15:18 -0500
+Message-ID: <473A4C0F.6070504@redhat.com>
+Date: Tue, 13 Nov 2007 20:14:55 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: linux-kernel <linux-kernel@vger.kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Divide-by-zero in the 2.6.23 scheduler code
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Nov 2007 19:52:17 -0500
-Chuck Ebbert <cebbert@redhat.com> wrote:
+https://bugzilla.redhat.com/show_bug.cgi?id=340161
 
-> On 11/13/2007 04:12 PM, Alan Cox wrote:
-> >> Bug fixing is not about finding someone to blame, it's about getting the 
-> >> bug fixed.
-> > 
-> > Partly - its also about understanding why the bug occurred and making it
-> > not happen again.
-> 
-> Very few people think about that part.
+The problem code has been removed in 2.6.24. The below patch disables
+SCHED_FEAT_PRECISE_CPU_LOAD which causes the offending code to be skipped
+but does not prevent the user from enabling it.
 
-Why does the kernel have very few useful tests?
- Lack of interest? resources? expertise?
-Ideally each new feature would just be a small add on to an existing test.
+The divide-by-zero is here in kernel/sched.c:
 
-Unlike developing new features which seems to grow well with more developers.
-Bug fixing also seems to be a scarcity process. There often seems to be
-a very few people that understand the problem well enough or have the necessary
-hardware to reproduce and fix the problem.
+static void update_cpu_load(struct rq *this_rq)
+{
+	u64 fair_delta64, exec_delta64, idle_delta64, sample_interval64, tmp64;
+	unsigned long total_load = this_rq->ls.load.weight;
+	unsigned long this_load =  total_load;
+	struct load_stat *ls = &this_rq->ls;
+	int i, scale;
 
-Recent changes like tickless and scheduler rework were well thought out and caused
-very little impact to 90% of the users. The problem is the 10% who do have problems.
-Worse, the developers often only hear about the a small sample of those.
+	this_rq->nr_load_updates++;
+	if (unlikely(!(sysctl_sched_features & SCHED_FEAT_PRECISE_CPU_LOAD)))
+		goto do_avg;
 
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+	/* Update delta_fair/delta_exec fields first */
+	update_curr_load(this_rq);
+
+	fair_delta64 = ls->delta_fair + 1;
+	ls->delta_fair = 0;
+
+	exec_delta64 = ls->delta_exec + 1;
+	ls->delta_exec = 0;
+
+	sample_interval64 = this_rq->clock - ls->load_update_last;
+	ls->load_update_last = this_rq->clock;
+
+	if ((s64)sample_interval64 < (s64)TICK_NSEC)
+		sample_interval64 = TICK_NSEC;
+
+	if (exec_delta64 > sample_interval64)
+		exec_delta64 = sample_interval64;
+
+	idle_delta64 = sample_interval64 - exec_delta64;
+
+======>	tmp64 = div64_64(SCHED_LOAD_SCALE * exec_delta64, fair_delta64);
+	tmp64 = div64_64(tmp64 * exec_delta64, sample_interval64);
+
+	this_load = (unsigned long)tmp64;
+
+do_avg:
+
+	/* Update our load: */
+	for (i = 0, scale = 1; i < CPU_LOAD_IDX_MAX; i++, scale += scale) {
+		unsigned long old_load, new_load;
+
+		/* scale is effectively 1 << i now, and >> i divides by scale */
+
+		old_load = this_rq->cpu_load[i];
+		new_load = this_load;
+
+		this_rq->cpu_load[i] = (old_load*(scale-1) + new_load) >> i;
+	}
+}
+
+
+---
+ kernel/sched_fair.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-2.6.23.noarch.orig/kernel/sched_fair.c
++++ linux-2.6.23.noarch/kernel/sched_fair.c
+@@ -93,7 +93,7 @@ unsigned int sysctl_sched_features __rea
+ 		SCHED_FEAT_FAIR_SLEEPERS	*1 |
+ 		SCHED_FEAT_SLEEPER_AVG		*0 |
+ 		SCHED_FEAT_SLEEPER_LOAD_AVG	*1 |
+-		SCHED_FEAT_PRECISE_CPU_LOAD	*1 |
++		SCHED_FEAT_PRECISE_CPU_LOAD	*0 |
+ 		SCHED_FEAT_START_DEBIT		*1 |
+ 		SCHED_FEAT_SKIP_INITIAL		*0;
+ 
