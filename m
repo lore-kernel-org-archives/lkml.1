@@ -1,63 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760764AbXKNDka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760902AbXKNDlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760764AbXKNDka (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 22:40:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbXKNDkV
+	id S1760902AbXKNDlk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 22:41:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756846AbXKNDl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 22:40:21 -0500
-Received: from pythia.bakeyournoodle.com ([203.82.209.197]:40671 "EHLO
-	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754675AbXKNDkU (ORCPT
+	Tue, 13 Nov 2007 22:41:29 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:43144 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756086AbXKNDl2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 22:40:20 -0500
-Date: Wed, 14 Nov 2007 14:40:19 +1100
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Roland Dreier <rolandd@cisco.com>
-Cc: Linux Kernel ML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Fix build failure when CONFIG_INFINIBAND_IPOIB_CM is not defined.
-Message-ID: <20071114034019.GI24243@bakeyournoodle.com>
-References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
+	Tue, 13 Nov 2007 22:41:28 -0500
+Date: Tue, 13 Nov 2007 19:43:25 -0800
+From: Greg KH <greg@kroah.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: NeilBrown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-raid@vger.kernel.org, M@suse.de, linux-kernel@vger.kernel.org,
+       Stable <stable@kernel.org>
+Subject: Re: [stable] [PATCH 000 of 2] md: Fixes for md in 2.6.23
+Message-ID: <20071114034325.GA25558@kroah.com>
+References: <20071022171426.31103.patches@notabene> <20071114002214.GA31928@kroah.com> <20071114002308.GB31928@kroah.com> <e9c3a7c20711131936t3c5f858cm8937b24d97fe998c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/mixed; boundary="h31gzZEtNLTqOjlF"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20071113175906.497a1a6a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: tony@bakeyournoodle.com (Tony Breeds)
+In-Reply-To: <e9c3a7c20711131936t3c5f858cm8937b24d97fe998c@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixes:
-  CC [M]  drivers/infiniband/ulp/ipoib/ipoib_main.o
-drivers/infiniband/ulp/ipoib/ipoib_main.c: In function ‘ipoib_init_module’:
-drivers/infiniband/ulp/ipoib/ipoib_main.c:1269: error: invalid lvalue in assignment
 
-In the case where CONFIG_INFINIBAND_IPOIB_CM is not defined ipoib_max_conn_qp is #defined to 0.
+--h31gzZEtNLTqOjlF
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+On Tue, Nov 13, 2007 at 08:36:05PM -0700, Dan Williams wrote:
+> On Nov 13, 2007 5:23 PM, Greg KH <greg@kroah.com> wrote:
+> > On Tue, Nov 13, 2007 at 04:22:14PM -0800, Greg KH wrote:
+> > > On Mon, Oct 22, 2007 at 05:15:27PM +1000, NeilBrown wrote:
+> > > >
+> > > > It appears that a couple of bugs slipped in to md for 2.6.23.
+> > > > These two patches fix them and are appropriate for 2.6.23.y as well
+> > > > as 2.6.24-rcX
+> > > >
+> > > > Thanks,
+> > > > NeilBrown
+> > > >
+> > > >  [PATCH 001 of 2] md: Fix an unsigned compare to allow creation of bitmaps with v1.0 metadata.
+> > > >  [PATCH 002 of 2] md: raid5: fix clearing of biofill operations
+> > >
+> > > I don't see these patches in 2.6.24-rcX, are they there under some other
+> > > subject?
+> >
+> > Oh nevermind, I found them, sorry for the noise...
+> >
+> 
+> Careful, it looks like you cherry picked commit 4ae3f847 "md: raid5:
+> fix clearing of biofill operations" which ended up misapplied in
+> Linus' tree,  You should either also pick up def6ae26 "md: fix
+> misapplied patch in raid5.c" or I can resend the original "raid5: fix
+> clearing of biofill operations."
+> 
+> The other patch for -stable "raid5: fix unending write sequence" is
+> currently in -mm.
+
+Hm, I've attached the two patches that I have right now in the -stable
+tree so far (still have over 100 patches to go, so I might not have
+gotten to them yet if you have sent them).  These were sent to me by
+Andrew on their way to Linus.  if I should drop either one, or add
+another one, please let me know.
+
+thanks,
+
+greg k-h
+
+--h31gzZEtNLTqOjlF
+Content-Type: text/x-patch; charset=us-ascii
+Content-Disposition: attachment; filename="md-fix-an-unsigned-compare-to-allow-creation-of-bitmaps-with-v1.0-metadata.patch"
+
+>From stable-bounces@linux.kernel.org Mon Oct 22 20:45:35 2007
+From: akpm@linux-foundation.org
+Date: Mon, 22 Oct 2007 20:45:11 -0700
+Subject: md: fix an unsigned compare to allow creation of bitmaps with v1.0 metadata
+To: torvalds@linux-foundation.org
+Cc: neilb@suse.de, akpm@linux-foundation.org, stable@kernel.org
+Message-ID: <200710230345.l9N3jB65030288@imap1.linux-foundation.org>
+
+
+From: NeilBrown <neilb@suse.de>
+
+patch 85bfb4da8cad483a4e550ec89060d05a4daf895b in mainline.
+
+As page->index is unsigned, this all becomes an unsigned comparison, which
+ almost always returns an error.
+
+Signed-off-by: Neil Brown <neilb@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
+ drivers/md/bitmap.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- drivers/infiniband/ulp/ipoib/ipoib_main.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+--- a/drivers/md/bitmap.c
++++ b/drivers/md/bitmap.c
+@@ -274,7 +274,7 @@ static int write_sb_page(struct bitmap *
+ 			if (bitmap->offset < 0) {
+ 				/* DATA  BITMAP METADATA  */
+ 				if (bitmap->offset
+-				    + page->index * (PAGE_SIZE/512)
++				    + (long)(page->index * (PAGE_SIZE/512))
+ 				    + size/512 > 0)
+ 					/* bitmap runs in to metadata */
+ 					return -EINVAL;
 
-diff --git a/drivers/infiniband/ulp/ipoib/ipoib_main.c b/drivers/infiniband/ulp/ipoib/ipoib_main.c
-index 623458e..aeb5a01 100644
---- a/drivers/infiniband/ulp/ipoib/ipoib_main.c
-+++ b/drivers/infiniband/ulp/ipoib/ipoib_main.c
-@@ -1265,8 +1265,9 @@ static int __init ipoib_init_module(void)
- 	ipoib_sendq_size = roundup_pow_of_two(ipoib_sendq_size);
- 	ipoib_sendq_size = min(ipoib_sendq_size, IPOIB_MAX_QUEUE_SIZE);
- 	ipoib_sendq_size = max(ipoib_sendq_size, IPOIB_MIN_QUEUE_SIZE);
--
-+#ifdef CONFIG_INFINIBAND_IPOIB_CM
- 	ipoib_max_conn_qp = min(ipoib_max_conn_qp, IPOIB_CM_MAX_CONN_QP);
-+#endif
+--h31gzZEtNLTqOjlF
+Content-Type: text/x-patch; charset=us-ascii
+Content-Disposition: attachment; filename="md-raid5-fix-clearing-of-biofill-operations.patch"
+
+>From stable-bounces@linux.kernel.org Mon Oct 22 20:45:44 2007
+From: Dan Williams <dan.j.williams@intel.com>
+Date: Mon, 22 Oct 2007 20:45:11 -0700
+Subject: md: raid5: fix clearing of biofill operations
+To: torvalds@linux-foundation.org
+Cc: joel.bertrand@systella.fr, neilb@suse.de, akpm@linux-foundation.org, dan.j.williams@intel.com, stable@kernel.org
+Message-ID: <200710230345.l9N3jC2M030292@imap1.linux-foundation.org>
+
+From: Dan Williams <dan.j.williams@intel.com>
+
+patch 4ae3f847e49e3787eca91bced31f8fd328d50496 in mainline.
+
+ops_complete_biofill() runs outside of spin_lock(&sh->lock) and clears the
+'pending' and 'ack' bits.  Since the test_and_ack_op() macro only checks
+against 'complete' it can get an inconsistent snapshot of pending work.
+
+Move the clearing of these bits to handle_stripe5(), under the lock.
+
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Tested-by: Joel Bertrand <joel.bertrand@systella.fr>
+Signed-off-by: Neil Brown <neilb@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/md/raid5.c |   17 ++++++++++++++---
+ 1 file changed, 14 insertions(+), 3 deletions(-)
+
+--- a/drivers/md/raid5.c
++++ b/drivers/md/raid5.c
+@@ -377,7 +377,12 @@ static unsigned long get_stripe_work(str
+ 		ack++;
  
- 	ret = ipoib_register_debugfs();
- 	if (ret)
+ 	sh->ops.count -= ack;
+-	BUG_ON(sh->ops.count < 0);
++	if (unlikely(sh->ops.count < 0)) {
++		printk(KERN_ERR "pending: %#lx ops.pending: %#lx ops.ack: %#lx "
++			"ops.complete: %#lx\n", pending, sh->ops.pending,
++			sh->ops.ack, sh->ops.complete);
++		BUG();
++	}
+ 
+ 	return pending;
+ }
+@@ -551,8 +556,7 @@ static void ops_complete_biofill(void *s
+ 			}
+ 		}
+ 	}
+-	clear_bit(STRIPE_OP_BIOFILL, &sh->ops.ack);
+-	clear_bit(STRIPE_OP_BIOFILL, &sh->ops.pending);
++	set_bit(STRIPE_OP_BIOFILL, &sh->ops.complete);
+ 
+ 	return_io(return_bi);
+ 
+@@ -2903,6 +2907,13 @@ static void handle_stripe6(struct stripe
+ 	s.expanded = test_bit(STRIPE_EXPAND_READY, &sh->state);
+ 	/* Now to look around and see what can be done */
+ 
++	/* clean-up completed biofill operations */
++	if (test_bit(STRIPE_OP_BIOFILL, &sh->ops.complete)) {
++		clear_bit(STRIPE_OP_BIOFILL, &sh->ops.pending);
++		clear_bit(STRIPE_OP_BIOFILL, &sh->ops.ack);
++		clear_bit(STRIPE_OP_BIOFILL, &sh->ops.complete);
++	}
++
+ 	rcu_read_lock();
+ 	for (i=disks; i--; ) {
+ 		mdk_rdev_t *rdev;
 
-Yours Tony
-
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+--h31gzZEtNLTqOjlF--
