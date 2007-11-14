@@ -1,89 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763987AbXKNHJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764484AbXKNHJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763987AbXKNHJA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 02:09:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761511AbXKNHIw
+	id S1764484AbXKNHJZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 02:09:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762134AbXKNHIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 02:08:52 -0500
-Received: from smtp101.sbc.mail.mud.yahoo.com ([68.142.198.200]:24520 "HELO
+	Wed, 14 Nov 2007 02:08:54 -0500
+Received: from smtp101.sbc.mail.mud.yahoo.com ([68.142.198.200]:24526 "HELO
 	smtp101.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760883AbXKNHIv (ORCPT
+	by vger.kernel.org with SMTP id S1761015AbXKNHIw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 02:08:51 -0500
+	Wed, 14 Nov 2007 02:08:52 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=QbxkDNaJeLMTjIm383V+nnuRFM0Keg3O0Rw6EzH33p9Az5m9MMUoKnAzAKaXZHhLa10Me/Zrj9DglaStJ+YtmycwNZuFNhp/0WLqNO3X776Zjnh75R6//1qYgnCIBNcyheWLLJBi50KSO9WEVEJC0MnfmM9lACBt5Pl2tGAc1Fw=  ;
-X-YMail-OSG: VUW_nHgVM1keSnf1Ww2KiobGK2HkK6B5FRi5kIpTO.UEbPz8pVlD7XryW0o3FIH1j0s52QJCEw--
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=YDzqhDmpbWUpVIj78OeT2adi4a3yy+w/y8lOltCul2PzaF1S//2l/W9aaEnrINi8rCkDpu7RaGU8KVTdNAtCbfXJEip3bs76DhejuRXcznm45Pss8S5zZNgs3q1GBO+KPTZGmixsEN0aT9VOpEW7dWWFOsCikuPPWGf7wfH8snI=  ;
+X-YMail-OSG: BLha8ZwVM1l_HkfJvZ3YkYt8ORj22oXSaTScFOxlWIlpvEef_I9KvuGMGviAjhaGiRDW0C2vGQ--
 From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 2.6.24-rc2 1/3] generic gpio -- gpio_chip support
-Date: Tue, 13 Nov 2007 22:52:15 -0800
+To: "eric miao" <eric.y.miao@gmail.com>
+Subject: Re: [patch/rfc 1/4] GPIO implementation framework
+Date: Tue, 13 Nov 2007 23:08:47 -0800
 User-Agent: KMail/1.9.6
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Florian Fainelli <florian.fainelli@telecomint.eu>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-References: <200711091136.20051.david-b@pacbell.net> <200711131122.45950.david-b@pacbell.net> <20071113124656.3c333bdd.akpm@linux-foundation.org>
-In-Reply-To: <20071113124656.3c333bdd.akpm@linux-foundation.org>
+Cc: "Linux Kernel list" <linux-kernel@vger.kernel.org>,
+       "Felipe Balbi" <felipebalbi@users.sourceforge.net>,
+       "Bill Gatliff" <bgat@billgatliff.com>,
+       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
+       "Andrew Victor" <andrew@sanpeople.com>,
+       "Tony Lindgren" <tony@atomide.com>, "Jean Delvare" <khali@linux-fr.org>,
+       "Kevin Hilman" <khilman@mvista.com>, "Paul Mundt" <lethal@linux-sh.org>,
+       "Ben Dooks" <ben@trinity.fluff.org>
+References: <200710291809.29936.david-b@pacbell.net> <200711131930.19878.david-b@pacbell.net> <f17812d70711132240m359fcd5doac56ab06bfe76f69@mail.gmail.com>
+In-Reply-To: <f17812d70711132240m359fcd5doac56ab06bfe76f69@mail.gmail.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200711132252.15872.david-b@pacbell.net>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200711132308.48779.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 November 2007, Andrew Morton wrote:
+On Tuesday 13 November 2007, eric miao wrote:
+> > > > We "can" do most anything. What would that improve though?
+> >
+> > ... What would that improve, though?  Your followup posts
+> > still don't answer that question for me.  I see the code,
+> > but don't have an answer to that question.
+> >
 > 
-> > >      Why do you want to use raw_spinlock_t?
-> > 
-> > Already answered elsewhere in this thread ...
-> 
-> Can't say I really understood the answer.  I don't think we
-> actually know where all of this extra time is being spent?
+> to be honest, I don't feel like the holes. Put restrictions on
+> the numbering of GPIOs might not be a good idea either.
 
-Reading that, one could think performance was the only factor.
-But it isn't, and wasn't the one which really persuaded me.
+So the point of these is to make it easier for platforms
+(or even just boards) to make sure the GPIO number space
+is densely packed, rather than loosely so?  Paying about
+2KBytes for that privilege.  (Assuming a 32 bit system
+with 256 GPIOs.)
 
-And yes we do where that time went.  Although it seems that
-repeating that info once again won't help...
+I could see that being a reasonable tradeoff.  I wouldn't
+have started there myself, but you know how that goes!
 
-
-> > I'll highlight the
-> > point that such bitops shouldn't be preemption points.
-> 
-> Disagree.  *everything* should be a preemption point.
-
-So it's wrong that <asm-generic/bitops/atomic.h> uses the
-same calls to prevent *those* bitops from being prempted?
-
-Thus, that code should switch over to normal spinlocks...
-
-I believe that if I submitted patches to do that, there'd
-be a not-so-small riot.  And the arguments would all boil
-down to much the same ones applying to *these* bitops...
+Does anyone else have any comments on that issue?
 
 
-> For internal-implementation
-> details we do need to disable preemtion sometimes 
-> (to prevent deadlocks and to protect per-cpu resources).
+One point you haven't really brought up in this thread is
+your concern about the impact of this on IRQs.  One issue
+being that for GPIOs used as IRQs, with linear mappings
+resembling
 
-You're certainly talking about "internal-implementation
-details" in this case.  It's not like the lock is used
-outside of those routines.  Or as if other implementations
-would even *need* such a lock.  (Just like the IRQ table,
-if the entries can't be removed and are all set up very
-early, locking would be pointless.)
+	static inline int gpio_to_irq(unsigned gpio)
+	{
+		if (gpio >= LAST_IRQ_CAPABLE_GPIO)
+			return -EINVAL;
+		return irq + FIRST_GPIO_IRQ_NUMBER;
+	}
 
+then tightly packed GPIOs mean less space wasted for IRQ
+descriptors that would never be used.
 
-> But those 
-> preemption-off periods should be minimised.
+And since an irq_desc bigger than your gpio_desc, there's
+a tradeoff between wasting space on unused gpio_desc structs
+versus unused irq_desc structs.  2 KBytes would cost about
+only 35 irq_desc structs, vs 256 gpio_desc structs.
 
-Like the three instructions in the "hot paths" for getting
-and setting GPIO values, when using raw spinlocks ... check.
+I'm guessing that's why you care about dense packing for
+the GPIO numbers...
 
 - Dave
 
