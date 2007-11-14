@@ -1,112 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761688AbXKNVW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764038AbXKNVXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761688AbXKNVW7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 16:22:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755050AbXKNVWt
+	id S1764038AbXKNVXU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 16:23:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761738AbXKNVW7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 16:22:49 -0500
-Received: from ns1.suse.de ([195.135.220.2]:45637 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754153AbXKNVWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 16:22:48 -0500
-Date: Wed, 14 Nov 2007 22:22:46 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH 3/3] nfs: use ->mmap_prepare() to avoid an AB-BA deadlock
-Message-ID: <20071114212246.GA31048@wotan.suse.de>
-References: <20071114200136.009242000@chello.nl> <20071114201528.514434000@chello.nl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071114201528.514434000@chello.nl>
-User-Agent: Mutt/1.5.9i
+	Wed, 14 Nov 2007 16:22:59 -0500
+Received: from mho-02-bos.mailhop.org ([63.208.196.179]:61635 "EHLO
+	mho-02-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760515AbXKNVW5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 16:22:57 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 209.94.135.27
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX18IIKuqt65R9Z/qO6U1z0sh
+Message-ID: <473B6725.5010503@reed.com>
+Date: Wed, 14 Nov 2007 16:22:45 -0500
+From: "David P. Reed" <dpreed@reed.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.5) Gecko/20070727 Fedora/2.0.0.5-2.fc7 Thunderbird/2.0.0.5 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+To: Matt Mackall <mpm@selenic.com>
+CC: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Allessandro Zummo <a.zummo@towertech.it>
+Subject: Re: [PATCH] x86: fix locking and sync bugs in x86_64 RTC code in
+ time_64.c
+References: <469578CD.3080609@reed.com> <1184216528.12353.203.camel@chaos> <1184218962.12353.209.camel@chaos> <46964352.7040301@reed.com> <1184253339.12353.223.camel@chaos> <469697C6.50903@reed.com> <1184274754.12353.254.camel@chaos> <47388586.7010509@reed.com> <alpine.LFD.0.9999.0711140826080.3265@localhost.localdomain> <473AF3BE.1010006@reed.com> <20071114182647.GA17536@waste.org>
+In-Reply-To: <20071114182647.GA17536@waste.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 14, 2007 at 09:01:39PM +0100, Peter Zijlstra wrote:
-> Normal locking order is:
-> 
->   i_mutex
->     mmap_sem
-> 
-> However NFS's ->mmap hook, which is called under mmap_sem, can take i_mutex.
-> Avoid this potential deadlock by doing the work that requires i_mutex from
-> the new ->mmap_prepare().
-> 
-> [ Is this sufficient, or does it introduce a race? ]
+Cool. More reason to separate this into two.
 
-Seems like an OK patchset in my opinion. I don't know much about NFS
-unfortunately, but I wonder what prevents the condition fixed by
-nfs_revalidate_mapping from happening again while the mmap is active...?
-
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  fs/nfs/file.c |   25 +++++++++++++++++--------
->  1 file changed, 17 insertions(+), 8 deletions(-)
-> 
-> Index: linux-2.6/fs/nfs/file.c
-> ===================================================================
-> --- linux-2.6.orig/fs/nfs/file.c
-> +++ linux-2.6/fs/nfs/file.c
-> @@ -41,6 +41,9 @@
->  static int nfs_file_open(struct inode *, struct file *);
->  static int nfs_file_release(struct inode *, struct file *);
->  static loff_t nfs_file_llseek(struct file *file, loff_t offset, int origin);
-> +static int
-> +nfs_file_mmap_prepare(struct file * file, unsigned long len,
-> +		unsigned long prot, unsigned long flags, unsigned long pgoff);
->  static int  nfs_file_mmap(struct file *, struct vm_area_struct *);
->  static ssize_t nfs_file_splice_read(struct file *filp, loff_t *ppos,
->  					struct pipe_inode_info *pipe,
-> @@ -64,6 +67,7 @@ const struct file_operations nfs_file_op
->  	.write		= do_sync_write,
->  	.aio_read	= nfs_file_read,
->  	.aio_write	= nfs_file_write,
-> +	.mmap_prepare	= nfs_file_mmap_prepare,
->  	.mmap		= nfs_file_mmap,
->  	.open		= nfs_file_open,
->  	.flush		= nfs_file_flush,
-> @@ -270,7 +274,8 @@ nfs_file_splice_read(struct file *filp, 
->  }
->  
->  static int
-> -nfs_file_mmap(struct file * file, struct vm_area_struct * vma)
-> +nfs_file_mmap_prepare(struct file * file, unsigned long len,
-> +		unsigned long prot, unsigned long flags, unsigned long pgoff)
->  {
->  	struct dentry *dentry = file->f_path.dentry;
->  	struct inode *inode = dentry->d_inode;
-> @@ -279,13 +284,17 @@ nfs_file_mmap(struct file * file, struct
->  	dfprintk(VFS, "nfs: mmap(%s/%s)\n",
->  		dentry->d_parent->d_name.name, dentry->d_name.name);
->  
-> -	status = nfs_revalidate_mapping(inode, file->f_mapping);
-> -	if (!status) {
-> -		vma->vm_ops = &nfs_file_vm_ops;
-> -		vma->vm_flags |= VM_CAN_NONLINEAR;
-> -		file_accessed(file);
-> -	}
-> -	return status;
-> +	return nfs_revalidate_mapping(inode, file->f_mapping);
-> +}
-> +
-> +static int
-> +nfs_file_mmap(struct file *file, struct vm_area_struct *vma)
-> +{
-> +	vma->vm_ops = &nfs_file_vm_ops;
-> +	vma->vm_flags |= VM_CAN_NONLINEAR;
-> +	file_accessed(file);
-> +
-> +	return 0;
->  }
->  
->  /*
-> 
-> --
+Matt Mackall wrote:
+> On Wed, Nov 14, 2007 at 08:10:22AM -0500, David P. Reed wrote:
+>   
+>> Will make two patches and resend.
+>>     
+>
+> I've already got a set of patches brewing to fix the UIP problem across all
+> the affected arches (11+).
+>
+>   
