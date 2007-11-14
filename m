@@ -1,55 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbXKNKX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755230AbXKNK3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756057AbXKNKX7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 05:23:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbXKNKXw
+	id S1755230AbXKNK3b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 05:29:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbXKNK3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 05:23:52 -0500
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:54850 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751020AbXKNKXv (ORCPT
+	Wed, 14 Nov 2007 05:29:23 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53601 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751091AbXKNK3W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 05:23:51 -0500
-Message-ID: <473ACCBE.9010308@in.ibm.com>
-Date: Wed, 14 Nov 2007 15:53:58 +0530
-From: Srinivasa Ds <srinivasa@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Abhishek Sagar <sagar.abhishek@gmail.com>
-CC: linux-kernel@vger.kernel.org, prasanna@in.ibm.com, davem@davemloft.net,
-       anil.s.keshavamurthy@intel.com, Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [PATCH][RFC] kprobes: Add user entry-handler in kretprobes
-References: <47389BEB.1000901@gmail.com> <863e9df20711121039t5352a993xc9eeb6bfea123805@mail.gmail.com> <863e9df20711130247g45d3d541j10c76434e9c65b00@mail.gmail.com> <473AAA75.2050900@in.ibm.com> <863e9df20711140049q3ad486ben7ace2edab0a2ca41@mail.gmail.com>
-In-Reply-To: <863e9df20711140049q3ad486ben7ace2edab0a2ca41@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 14 Nov 2007 05:29:22 -0500
+Date: Wed, 14 Nov 2007 02:28:10 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: linux-kernel@vger.kernel.org,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Dmitry Monakhov <dmonakhov@openvz.org>, Christoph Hellwig <hch@lst.de>
+Subject: Re: 2.6.24-rc2-mm1 -- mkfs failing on variety of fs types
+Message-Id: <20071114022810.215a5e3a.akpm@linux-foundation.org>
+In-Reply-To: <20071114085549.GG12003@shadowen.org>
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
+	<20071114085549.GG12003@shadowen.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Abhishek Sagar wrote:
+On Wed, 14 Nov 2007 08:56:01 +0000 Andy Whitcroft <apw@shadowen.org> wrote:
 
-> the entry handler is called with the appropriate return instance. I
-> haven't put any explicit "match" test here for ri. The reason is that
-> the correct ri would be passed to both the entry and return handlers
-> as trampoline_handler() explicitly matches them to the correct task.
-> Note that all pending return instances of a function are chained in
-> LIFO order. S the entry-handler which gets called last, should have
-> its return handler called first (in case of multiple pending return
-> instances).
+> We seem to have some general problem with mkfs for all filesystems.
+> I am seeing this across at least three test systems although
+> most are unable to compile this kernel :(, even with the hotfix.
+> Basically, all mkfs operations for any filsystem type are failing,
+> ext2 reports this as "short write", various others are mentioning
+> pwrite and pwrite64 returning bad things:
 > 
+> ext2: Could not write 8 blocks in inode table starting at 851970:
+> 	Attempt to write block from filesystem resulted in short
+> 	write
+> 
+> reiserfs: bwrite: write 4096 bytes returned -1 (block=851968,
+> 	dev=3): No space left on device
+> 
+> xfs: mkfs.xfs: pwrite64 failed: No space left on device
+> 
+> Nothing is reported in dmesg at the time as far as I can tell.  From the
+> ext2 log I would swear we get this error on a block number far below that
+> which is reported written successfully, though I cannot say I trust mkfs.
+> 
+> Nothing obvious has changed pwrite or block/* to my eye, so heck knows
+> where this is coming from.  2.6.24-rc2 works on these same systems as
+> goes the latest 2.6.24-rc2-git5.
+> 
+> Full mkfs output below.
+> 
+> -apw
+> 
+> *** elm3b6, x86_64:
+> 
+> mke2fs 1.37 (21-Mar-2005)
+> Filesystem label=
+> OS type: Linux
+> Block size=4096 (log=2)
+> Fragment size=4096 (log=2)
+> 1465920 inodes, 2929854 blocks
+> 146492 blocks (5.00%) reserved for the super user
+> First data block=0
+> 90 block groups
+> 32768 blocks per group, 32768 fragments per group
+> 16288 inodes per group
+> Superblock backups stored on blocks: 
+> 	32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632, 2654208
+> 
+> mkfs.ext2: Attempt to write block from filesystem resulted in short write while zeroing block 2929824 at end of filesystem
+> Writing inode tables: 
+> Could not write 8 blocks in inode table starting at 851970: Attempt to write block from filesystem resulted in short write
+> ===
+> mkfs.jfs version 1.1.7, 22-Jul-2004
+> The specified disk did not finish formatting.
+> ===
+> mkfs.reiserfs 3.6.19 (2003 www.namesys.com)
+> [...]
+> Guessing about desired format.. Kernel 2.6.24-rc2-mm1-autokern1 is running.
+> Format 3.6 with standard journal
+> Count of blocks on the device: 2929840
+> Number of blocks consumed by mkreiserfs formatting process: 8301
+> Blocksize: 4096
+> Hash function used to sort names: "r5"
+> Journal Size 8193 blocks (first block 18)
+> Journal Max transaction length 1024
+> inode generation number: 0
+> UUID: c759e218-681b-4891-b4c4-33466d4eb4f0
+> Initializing journal - 0%....20%....40%....60%....80%....100%
+> bwrite: write 4096 bytes returned -1 (block=851968, dev=3): No space left on device
+> ===
+> mkfs.xfs: pwrite64 failed: No space left on device
+> meta-data=/dev/sdb2              isize=256    agcount=16, agsize=183115 blks
+>          =                       sectsz=512  
+> data     =                       bsize=4096   blocks=2929840, imaxpct=25
+>          =                       sunit=0      swidth=0 blks, unwritten=1
+> naming   =version 2              bsize=4096  
+> log      =internal log           bsize=4096   blocks=2560, version=1
+>          =                       sectsz=512   sunit=0 blks
+> realtime =none                   extsz=65536  blocks=0, rtextents=0
+> 
+> 
+> *** elm3b239, x86_64:
+> 
+> mke2fs 1.38 (30-Jun-2005)
+> Filesystem label=
+> OS type: Linux
+> Block size=4096 (log=2)
+> Fragment size=4096 (log=2)
+> 2410624 inodes, 4819500 blocks
+> 240975 blocks (5.00%) reserved for the super user
+> First data block=0
+> 148 block groups
+> 32768 blocks per group, 32768 fragments per group
+> 16288 inodes per group
+> Superblock backups stored on blocks: 
+> 	32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632, 2654208, 
+> 	4096000
+> 
+> mkfs.ext2: Attempt to write block from filesystem resulted in short write while zeroing block 4819472 at end of filesystem
+> Writing inode tables: 
+> Could not write 8 blocks in inode table starting at 655362: Attempt to write block from filesystem resulted in short write
+> 
+> 
+> *** pSeries-101, ppc64
+> 
+> mke2fs 1.38 (30-Jun-2005)
+> Filesystem label=
+> OS type: Linux
+> Block size=4096 (log=2)
+> Fragment size=4096 (log=2)
+> 1281696 inodes, 2560000 blocks
+> 128000 blocks (5.00%) reserved for the super user
+> First data block=0
+> 79 block groups
+> 32768 blocks per group, 32768 fragments per group
+> 16224 inodes per group
+> Superblock backups stored on blocks: 
+> 	32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632
+> 
+> mkfs.ext2: Attempt to write block from filesystem resulted in short write while zeroing block 2559984 at end of filesystem
+> Writing inode tables: 
+> Could not write 8 blocks in inode table starting at 491522: Attempt to write block from filesystem resulted in short write
+> 
+> 
+> *** gekko-lp1, ppc64
+> 
+> mke2fs 1.38 (30-Jun-2005)
+> Filesystem label=
+> OS type: Linux
+> Block size=4096 (log=2)
+> Fragment size=4096 (log=2)
+> 1224000 inodes, 2443880 blocks
+> 122194 blocks (5.00%) reserved for the super user
+> First data block=0
+> 75 block groups
+> 32768 blocks per group, 32768 fragments per group
+> 16320 inodes per group
+> Superblock backups stored on blocks: 
+> 	32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632
+> 
+> mkfs.ext2: Attempt to write block from filesystem resulted in short write while zeroing block 2443856 at end of filesystem
+> Writing inode tables: 
+> Could not write 8 blocks in inode table starting at 360450: Attempt to write block from filesystem resulted in short write
+> ===
+> mkfs.xfs: pwrite64 failed: No space left on device
+> meta-data=/dev/sda7              isize=256    agcount=16, agsize=152742 blks
+>          =                       sectsz=512   attr=0
+> data     =                       bsize=4096   blocks=2443872, imaxpct=25
+>          =                       sunit=0      swidth=0 blks, unwritten=1
+> naming   =version 2              bsize=4096  
+> log      =internal log           bsize=4096   blocks=2560, version=1
+>          =                       sectsz=512   sunit=0 blks
+> realtime =none                   extsz=65536  blocks=0, rtextents=0
+> ===
+> mkfs.reiserfs 3.6.19 (2003 www.namesys.com)
+> [...]
+> Guessing about desired format.. Kernel 2.6.24-rc2-mm1-autokern1 is running.
+> Format 3.6 with standard journal
+> Count of blocks on the device: 2443872
+> Number of blocks consumed by mkreiserfs formatting process: 8286
+> Blocksize: 4096
+> Hash function used to sort names: "r5"
+> Journal Size 8193 blocks (first block 18)
+> Journal Max transaction length 1024
+> inode generation number: 0
+> UUID: e9aa2dc4-dfc3-47e8-865b-693f28eac2e5
+> Initializing journal - 0%....20%....40%....60%....80%....100%
+> bwrite: write 4096 bytes returned -1 (block=360448, dev=3): No space left on device
 
-No, eventhough return instances are chained in an order, order of execution of 
-return handler entirely depends on which process returns first(some process may 
-return from 2 line of the function and some process may return from last line
-of the function). So entry_handler() which gets executed last doesn't guarantee 
-that its return handler will be executed first(because it took a lot time
-to return).
+It was mm-fix-blkdev-size-calculation-in-generic_write_checks.patch.
 
-So only thing to match the entry_handler() with its return_handler() is 
-return probe instance(ri)'s address, which user has to take care explicitly 
-(Hence I feel sol a) would be nice). 
+Odd, I thought that looked OK.
 
-Thanks
- Srinivasa DS
+
+Here's a revert (uploaded to hot-fixes/, too):
+
+--- a/mm/filemap.c~revert-mm-fix-blkdev-size-calculation-in-generic_write_checks
++++ a/mm/filemap.c
+@@ -1855,11 +1855,9 @@ inline int generic_write_checks(struct f
+ 	} else {
+ #ifdef CONFIG_BLOCK
+ 		loff_t isize;
+-		unsigned int blksize;
+ 		if (bdev_read_only(I_BDEV(inode)))
+ 			return -EPERM;
+-		blksize = block_size(I_BDEV(inode));
+-		isize = i_size_read(inode) & ~(blksize - 1);
++		isize = i_size_read(inode);
+ 		if (*pos >= isize) {
+ 			if (*count || *pos > isize)
+ 				return -ENOSPC;
+_
 
