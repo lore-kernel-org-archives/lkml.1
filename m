@@ -1,59 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761590AbXKNTOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762060AbXKNTQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761590AbXKNTOR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 14:14:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbXKNTOG
+	id S1762060AbXKNTQO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 14:16:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbXKNTP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 14:14:06 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:52037 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752058AbXKNTOD (ORCPT
+	Wed, 14 Nov 2007 14:15:59 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:59235 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753223AbXKNTP7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 14:14:03 -0500
-Date: Wed, 14 Nov 2007 11:03:35 -0800
-From: Greg KH <greg@kroah.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       xen-devel@lists.xensource.com, LKML <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>, Chris Wright <chrisw@sous-sol.org>,
-       virtualization@lists.osdl.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Keir Fraser <keir@xensource.com>, Stable Kernel <stable@kernel.org>
-Subject: Re: [stable] [PATCH 00/12] xen/paravirt_ops patches for 2.6.24
-Message-ID: <20071114190335.GA10024@kroah.com>
-References: <20071015204840.074767068@goop.org> <20071015215406.GA1588@kroah.com> <4713E2D6.90801@goop.org> <20071113232258.GA10338@kroah.com> <473B4132.5030402@goop.org>
-MIME-Version: 1.0
+	Wed, 14 Nov 2007 14:15:59 -0500
+Date: Wed, 14 Nov 2007 20:15:56 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Philippe Elie <phil.el@wanadoo.fr>
+Cc: William Cohen <wcohen@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       Stephane Eranian <eranian@hpl.hp.com>, akpm@osdl.org,
+       Robert Richter <robert.richter@amd.com>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
+Message-ID: <20071114191556.GA32238@one.firstfloor.org>
+References: <20071113214628.GE5747@frankl.hpl.hp.com> <20071113215056.GB17593@one.firstfloor.org> <20071113222234.GH5747@frankl.hpl.hp.com> <20071113222534.GC17145@one.firstfloor.org> <20071113225848.GK5747@frankl.hpl.hp.com> <20071114020702.GB20365@one.firstfloor.org> <20071114130909.GB6557@frankl.hpl.hp.com> <20071114142411.GD17145@one.firstfloor.org> <473B17D4.5050702@redhat.com> <20071114185340.GB2894@zaniah>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <473B4132.5030402@goop.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20071114185340.GB2894@zaniah>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 14, 2007 at 10:40:50AM -0800, Jeremy Fitzhardinge wrote:
-> Greg KH wrote:
-> > These don't apply now due to the x86 merge.  Care to backport them and
-> > send them to the stable@kernel.org address so we can apply them
-> > properly?
-> 
-> I'm a bit confused.  The patches you mailed out are against arch/i386. 
-> Won't they apply to the stable tree as-is?
+> BTW, isn't rdpmc only enable for ring 0 on linux ? I remember a patch
+> to disable it, dunno if it has been applied.
 
-Was this second series a new set, or a different one?  I was assuming
-they were new patches, and that they too needed to be applied.
+Obviously -- without a system call to set up performance counters it
+would be fairly useless. But of course once such system calls are in
+they should be able to trigger the bit for each process.
 
-These patches were sent against the merged x86 tree, not the -stable
-tree with i386.
-
-> > Although, it's not like anyone actually uses the in-kernel Xen on
-> > 2.6.23, so it's probably not really worth it.
-> >   
-> 
-> To be fair, those fixes were in response to bug reports raised on the
-> released 2.6.23 kernel.  But it isn't screamingly urgent.
-
-Ok, that's fine, but can you send some patches that I can apply?  :)
-
-thanks,
-
-greg k-h
+-Andi
