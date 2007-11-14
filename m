@@ -1,80 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762171AbXKNBLa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763500AbXKNBOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762171AbXKNBLa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 20:11:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761011AbXKNBLU
+	id S1763500AbXKNBOr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 20:14:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761101AbXKNBOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 20:11:20 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59545 "EHLO
+	Tue, 13 Nov 2007 20:14:36 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59342 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764137AbXKNBLT (ORCPT
+	by vger.kernel.org with ESMTP id S1759450AbXKNBOe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 20:11:19 -0500
-Date: Tue, 13 Nov 2007 17:11:13 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kevin Winchester <kjwinchester@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: mm snapshot broken-out-2007-11-13-04-14.tar.gz uploaded
-Message-Id: <20071113171113.06f2b26f.akpm@linux-foundation.org>
-In-Reply-To: <200711132020.33124.kjwinchester@gmail.com>
-References: <200711131215.lADCFfht009739@imap1.linux-foundation.org>
-	<200711132020.33124.kjwinchester@gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 13 Nov 2007 20:14:34 -0500
+Date: Tue, 13 Nov 2007 17:11:36 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@kernel.org>,
+       Mark Lord <liml@rtr.ca>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, protasnb@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+Message-ID: <20071113171136.75ba098d@freepuppy.rosehill>
+In-Reply-To: <473A46C1.3060000@redhat.com>
+References: <20071113134029.GA30978@elte.hu>
+	<4739AFE0.20705@rtr.ca>
+	<20071113164650.GA28493@elte.hu>
+	<4739E3D0.10201@rtr.ca>
+	<20071113181228.GF4250@stusta.de>
+	<4739EA83.5040006@rtr.ca>
+	<20071113183605.GG4250@stusta.de>
+	<4739F12E.5020807@rtr.ca>
+	<20071113190428.GH4250@stusta.de>
+	<4739FA4D.1050900@rtr.ca>
+	<20071113200028.GJ4250@stusta.de>
+	<20071113211256.1d18fe1a@the-village.bc.nu>
+	<473A46C1.3060000@redhat.com>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Nov 2007 20:20:32 -0400 Kevin Winchester <kjwinchester@gmail.com> wrote:
+On Tue, 13 Nov 2007 19:52:17 -0500
+Chuck Ebbert <cebbert@redhat.com> wrote:
 
-> On November 13, 2007 08:15:41 am akpm@linux-foundation.org wrote:
-> > The mm snapshot broken-out-2007-11-13-04-14.tar.gz has been uploaded to
-> >
-> >   
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-11-13-
-> >04-14.tar.gz
-> >
-> > It contains the following patches against 2.6.24-rc2:
-> >
+> On 11/13/2007 04:12 PM, Alan Cox wrote:
+> >> Bug fixing is not about finding someone to blame, it's about getting the 
+> >> bug fixed.
+> > 
+> > Partly - its also about understanding why the bug occurred and making it
+> > not happen again.
 > 
-> <snip>
-> 
-> How exactly do I go about trying out this snapshot?  I did the following:
-> 
-> - exported 2.6.24-rc2 from my cloned git tree to a separate folder
-> - installed quilt
-> - extracted the patches to the "patches" directory at the top level of the 
-> 2.6.24-rc2 tree
-> - copied the list of patches from your mail into a "series" file which I 
-> placed in the "patches" directory
+> Very few people think about that part.
 
-The tarball contains a copy of the series file.  For some reason LARGE
-numbers of people miss it and ask me "hey, where's the series file?".  Odd.
+Why does the kernel have very few useful tests?
+ Lack of interest? resources? expertise?
+Ideally each new feature would just be a small add on to an existing test.
 
-> - ran "quilt push -a"
-> 
-> The result was that all of the patches seem to have been applied, but there 
-> were many offsets and at least one fuzzed patch.  Should they have applied 
-> cleanly?  Is quilt the way I am supposed to be applying these patches?
+Unlike developing new features which seems to grow well with more developers.
+Bug fixing also seems to be a scarcity process. There often seems to be
+a very few people that understand the problem well enough or have the necessary
+hardware to reproduce and fix the problem.
 
-Yes, the -mm patches contain large amount of fuzz.  I'll occasionally go in
-and do a mass defuzzing (shaving?) but it all goes fuzzy again within a
-day.
+Recent changes like tickless and scheduler rework were well thought out and caused
+very little impact to 90% of the users. The problem is the 10% who do have problems.
+Worse, the developers often only hear about the a small sample of those.
 
-I _could_ rediff all the time, but I keep all the patches under revision
-control and I often need to grab the previous version of a patch (when I've
-just dropped an earlier patch, and that earlier patch had caused me to redo
-this patch).  Having lots of revisions due to unnecessary rediffing would
-complicate that.
-
->  Is 
-> there a reason that there is no "series" file in the archive with the 
-> patches?
-
-It's in there ;)
-
-btw, I put the patches in a directory called "broken-out" so that you can
-untar them in your kernel tree and not have them stomped all over your
-existing patches/ directory.  symlink it...
-
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
