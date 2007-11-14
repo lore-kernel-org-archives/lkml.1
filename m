@@ -1,66 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761125AbXKNWZD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762426AbXKNW1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761125AbXKNWZD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 17:25:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754465AbXKNWYv
+	id S1762426AbXKNW1P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 17:27:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbXKNW1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 17:24:51 -0500
-Received: from mx2.suse.de ([195.135.220.15]:47817 "EHLO mx2.suse.de"
+	Wed, 14 Nov 2007 17:27:00 -0500
+Received: from gate.crashing.org ([63.228.1.57]:55629 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751142AbXKNWYu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 17:24:50 -0500
-Date: Wed, 14 Nov 2007 23:24:48 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-arch@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH 3/3] nfs: use ->mmap_prepare() to avoid an AB-BA deadlock
-Message-ID: <20071114222448.GE31048@wotan.suse.de>
-References: <20071114200136.009242000@chello.nl> <20071114201528.514434000@chello.nl> <20071114212246.GA31048@wotan.suse.de> <1195075905.22457.3.camel@lappy> <1195076485.7584.66.camel@heimdal.trondhjem.org> <1195077034.22457.6.camel@lappy> <1195078730.7584.86.camel@heimdal.trondhjem.org>
+	id S1751615AbXKNW1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 17:27:00 -0500
+Subject: Re: [PATCH] prom_find_machine_type typo breaks pSeries lpar boot
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: "B. N. Poornima" <poornima@in.ibm.com>
+Cc: Nathan Lynch <ntl@pobox.com>, Andrew Morton <akpm@osdl.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       ppc64 dev list <linuxppc64-dev@ozlabs.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Martin J. Bligh" <mbligh@mbligh.org>, roland@topspin.com
+In-Reply-To: <473AE9BE.8070001@in.ibm.com>
+References: <374360000.1117810369@[10.10.2.4]> <52is0vwd49.fsf@topspin.com>
+	 <20050603182725.GB11355@otto> <52vf4vuum5.fsf@topspin.com>
+	 <20050603192525.GC11355@otto> <1117839500.31082.188.camel@gaston>
+	 <473AE9BE.8070001@in.ibm.com>
+Content-Type: text/plain
+Date: Thu, 15 Nov 2007 09:13:02 +1100
+Message-Id: <1195078382.28865.49.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1195078730.7584.86.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 14, 2007 at 05:18:50PM -0500, Trond Myklebust wrote:
-> 
-> On Wed, 2007-11-14 at 22:50 +0100, Peter Zijlstra wrote:
-> > Right, but I guess what Nick asked is, if pages could be stale to start
-> > with, how is that avoided in the future.
-> > 
-> > The way I understand it, this re-validate is just a best effort at
-> > getting a coherent image.
-> 
-> The normal convention for NFS is to use a close-to-open cache
-> consistency model. In that model, applications must agree never to open
-> the file for reading or writing if an application on a different NFS
-> client already holds it open for writing.
-> 
-> However there is no standard locking model for _enforcing_ such an
-> agreement, so some setups do violate it. One obvious model that we try
-> to support is that where the applications are using POSIX locking in
-> order to ensure exclusive access to the data when requires.
-> 
-> Another model is to rely rather on synchronous writes and heavy
-> attribute revalidation to detect when a competing application has
-> written to the file (the 'noac' mount option). While such a model is
-> obviously deficient in that it can never guarantee cache coherency, we
-> do attempt to ensure that it works on a per-operation basis (IOW: we
-> check cache coherency before each call to read(), to mmap(), etc) since
-> it is by far the easiest model to apply if you have applications that
-> cannot be rewritten and that satisfy the requirement that they rarely
-> conflict.
 
-mmap()s can be different from read in that the syscall may have little
-relation to when the data gets used. But I guess it's still a best
-effort thing. Fair enough.
+On Wed, 2007-11-14 at 17:57 +0530, B. N. Poornima wrote:
+> Benjamin Herrenschmidt wrote:
+> > On Fri, 2005-06-03 at 14:25 -0500, Nathan Lynch wrote:
+> >   
+> >> Typo in prom_find_machine_type from Ben's recent patch "ppc64: Fix
+> >> result code handling in prom_init" prevents pSeries LPAR systems from
+> >> booting.
+> >>
+> >> Tested on a pSeries 570 and OpenPower 720 (both Power5 LPAR).
+> >>     
+> >
+> > Damn ! I'm certain I tested it on P5 ! I must have forgotten to "quilt
+> > ref" before sending the patch (as I did notice this typo and fixed it
+> > just before sending).
+> >
+> > Sorry!
+> >
+> > Ben.
+> >
+> >
+> > -
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> >
+> >
+> >   
+> Hello,
+> Same typo has creped in again from 2.6.17 kernel onwards and causing 
+> open firmware exception in pSeries systems.
 
-Thanks,
-Nick
+Can you forward the patch ?
+
+> =====================================================================================
+> 
+> Welcome to yaboot version 10.1.21-r910.SuSE
+> booted from '/vdevice/v-scsi@30000003/disk@8100000000000000'
+> Enter "help" to get some basic usage information
+> boot: 2.6.23.1
+> Please wait, loading kernel...
+> Allocated 03500000 bytes for kernel @ 01c00000
+>    Elf64 kernel loaded...
+> Loading ramdisk...
+> ramdisk loaded 0020d000 @ 06b00000
+> DEFAULT CATCH!, exception-handler=fff00300 
+> at   %SRR0: c00000000202705c   %SRR1: 8000000000003002 
+> Open Firmware exception handler entered from non-OF code
+> 
+> Client's Fix Pt Regs:
+>  00 0223100003080000 00000000018bfac0 0000000004bbeaf8 00000000018bfb48
+>  04 00000000018bfc90 0000000000c39a48 0000000000000000 5c3a03080000a0fa
+>  08 0000000000000001 0000000000000000 05910000194c0223 000000005cae0000
+>  0c 0000000003f1eaf8 0000000000000000 0000000000000000 0000000000000000
+>  10 0000000000000000 0000000000c39a48 0000000000000000 00000000018bfc90
+>  14 0000000000c00000 000000000020d000 0000000000000000 0000000008b00000
+>  18 0000000000280004 00000000018bff04 0000000000000001 0000000000000000
+>  1c 0000000008b00000 0000000000c39a48 c000000004d1e530 0000000008b00000
+> Special Regs:
+>     %IV: 00000300     %CR: 44000028    %XER: 00000000  %DSISR: 08000000 
+>   %SRR0: c00000000202705c   %SRR1: 8000000000003002 
+>     %LR: c000000002027428    %CTR: c0000000020273f0 
+>    %DAR: 05910000194c02eb 
+> Virtual PID = 0 
+> PFW: Unable to send error log!
+>  ofdbg
+> 0 > 
+> 
+> ===========================================================================================
+> The patch that is provided solves the problem.
+> 
+> Regards,
+> Poornima.
+
