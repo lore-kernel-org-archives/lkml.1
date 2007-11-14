@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759325AbXKNOmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758585AbXKNOtx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759325AbXKNOmu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 09:42:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755896AbXKNOmk
+	id S1758585AbXKNOtx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 09:49:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754312AbXKNOtj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 09:42:40 -0500
-Received: from palrel10.hp.com ([156.153.255.245]:39147 "EHLO palrel10.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755363AbXKNOmj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 09:42:39 -0500
-Date: Wed, 14 Nov 2007 07:42:37 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Gary Hade <garyhade@us.ibm.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, Greg KH <greg@kroah.com>, gregkh@suse.de,
-       kristen.c.accardi@intel.com, lenb@kernel.org, rick.jones2@hp.com,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
-Message-ID: <20071114144237.GB7523@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Gary Hade <garyhade@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
-	Greg KH <greg@kroah.com>, gregkh@suse.de,
-	kristen.c.accardi@intel.com, lenb@kernel.org, rick.jones2@hp.com,
-	linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
-References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113170129.GA20185@kroah.com> <20071113183353.GE17785@parisc-linux.org> <20071113185122.GA22536@kroah.com> <20071113201102.GK17785@parisc-linux.org> <20071113230804.GA14570@us.ibm.com>
+	Wed, 14 Nov 2007 09:49:39 -0500
+Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:60431 "EHLO
+	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752585AbXKNOti (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 09:49:38 -0500
+Message-ID: <473B0AFB.2080400@lwfinger.net>
+Date: Wed, 14 Nov 2007 08:49:31 -0600
+From: Larry Finger <larry.finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071113230804.GA14570@us.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Mark Lord <liml@rtr.ca>, alsa-devel@alsa-project.org,
+       Matthew Wilcox <matthew@wil.cx>, netdev@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+       protasnb@gmail.com, linux-ide@vger.kernel.org,
+       bugme-daemon@bugzilla.kernel.org, linux-input@atrey.karlin.mff.cuni.cz,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [BUG] New Kernel Bugs
+References: <20071113.035824.40509981.davem@davemloft.net>	<20071113041259.79c9a8c5.akpm@linux-foundation.org>	<20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca>	<20071113164650.GA28493@elte.hu> <4739E3D0.10201@rtr.ca>	<20071113183925.GF17785@parisc-linux.org> <4739F069.6050102@rtr.ca>	<20071113184902.GG17785@parisc-linux.org> <4739F2DD.5050802@rtr.ca> <20071114143040.GA31025@elte.hu>
+In-Reply-To: <20071114143040.GA31025@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Gary,
-
-* Gary Hade <garyhade@us.ibm.com>:
+Ingo Molnar wrote:
+> * Mark Lord <liml@rtr.ca> wrote:
 > 
-> I am not fundamentally opposed to this new capability but share
-> the same concerns that Greg and others have expressed.  So far,
-> I have only tried the changes on one single node system (IBM
-> x3850) but the below NAK-worthy result supports the idea that
-> the changes need to be well and widely tested.
+>>> You're assuming that everything in linux-2.6 was downloaded; that's 
+>>> not true.  Everything in linux-2.6/.git was downloaded; but then you 
+>>> do a checkout which happens to approximately double the size of the 
+>>> linux-2.6 directory.
+>> ..
+>>
+>> Ah, I wondered why it took only half an hour to download.
+> 
+> and you can get even lower than the 260MB by downloading a shallow clone 
+> of v2.6.23 and then populating the git tree from tht point on. (see the 
+> --depth parameter of git-clone) [because most of the time you want to 
+> bisect back to the last stable release, not back to 2 years of git 
+> history.]
 
-Can you send me the lspci -vv and lspci -vt output from this
-machine?
+When creating additional git trees (Linville's wireless-2.6 tree, for example) for driver
+development, you can save a lot of download bandwidth by using the --reference parameter of git-clone.
 
-Thanks.
-
-/ac
-
+Larry
