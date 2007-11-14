@@ -1,71 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758112AbXKNMiu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758410AbXKNMjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758112AbXKNMiu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 07:38:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754771AbXKNMil
+	id S1758410AbXKNMjq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 07:39:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755225AbXKNMjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 07:38:41 -0500
-Received: from mail.suse.de ([195.135.220.2]:35171 "EHLO mx1.suse.de"
+	Wed, 14 Nov 2007 07:39:37 -0500
+Received: from mail.sf-mail.de ([62.27.20.61]:58652 "EHLO mail.sf-mail.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753021AbXKNMik (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 07:38:40 -0500
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Philip Mucci <mucci@cs.utk.edu>, eranian@hpl.hp.com,
-       William Cohen <wcohen@redhat.com>,
-       Robert Richter <robert.richter@amd.com>, linux-kernel@vger.kernel.org,
-       Perfmon <perfmon@napali.hpl.hp.com>, Andi Kleen <andi@firstfloor.org>,
-       perfmon2-devel@lists.sourceforge.net,
-       OSPAT devel <ospat-devel@cs.utk.edu>,
-       papi list <ptools-perfapi@cs.utk.edu>
-Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
-From: Andi Kleen <andi@firstfloor.org>
-References: <p73abpl2654.fsf@bingen.suse.de>
-	<20071113151718.GA3804@erda.amd.com> <4739C42F.8030208@redhat.com>
-	<20071113175545.GD4319@frankl.hpl.hp.com>
-	<53F4663B-CFBA-44E4-8283-BAAC8C8F1AFF@cs.utk.edu>
-	<20071113185924.GA22748@suse.de>
-	<20071113120728.4342e7d7.akpm@linux-foundation.org>
-	<18234.41652.199520.31261@cargo.ozlabs.ibm.com>
-	<20071114103805.GA16652@infradead.org>
-	<18234.53558.883970.87414@cargo.ozlabs.ibm.com>
-	<20071114110009.GA17833@infradead.org>
-Date: Wed, 14 Nov 2007 13:38:38 +0100
-In-Reply-To: <20071114110009.GA17833@infradead.org> (Christoph Hellwig's message of "Wed\, 14 Nov 2007 11\:00\:09 +0000")
-Message-ID: <p734pfp6lyp.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	id S1753889AbXKNMjg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 07:39:36 -0500
+From: Rolf Eike Beer <eike-hotplug@sf-tec.de>
+To: pcihpd-discuss@lists.sourceforge.net
+Subject: Re: [Pcihpd-discuss] [PATCH 2/5] Construct one fakephp slot per pci slot
+Date: Wed, 14 Nov 2007 13:39:26 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Alex Chiang <achiang@hp.com>, gregkh@suse.de, kristen.c.accardi@intel.com,
+       lenb@kernel.org, matthew@wil.cx, rick.jones2@hp.com,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-acpi@vger.kernel.org
+References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113001336.GC13341@ldl.fc.hp.com>
+In-Reply-To: <20071113001336.GC13341@ldl.fc.hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed;
+  boundary="nextPart1206831.H0q6VCQRHC";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200711141339.31839.eike-hotplug@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig <hch@infradead.org> writes:
+--nextPart1206831.H0q6VCQRHC
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+Alex Chiang wrote:
+> Register one slot per slot, rather than one slot per function.
+> Change the name of the slot to fake%d instead of the pci address.
 >
-> I've done this a gazillion times before, so maybe instead of beeing a lazy
-> bastard you could look up mailinglist archive.  It's not like this is the
-> first discussion of perfmon.  But to get start look at the systems calls,
-> many of them are beasts like:
+> Signed-off-by: Alex Chiang <achiang@hp.com>
+> Signed-off-by: Matthew Wilcox <matthew@wil.cx>
+> ---
+>  drivers/pci/hotplug/fakephp.c |   75
+> +++++++++++++++-------------------------- 1 files changed, 27
+> insertions(+), 48 deletions(-)
 >
->   int pfm_read_pmds(int fd, pfarg_pmd_t *pmds, int n)
+> diff --git a/drivers/pci/hotplug/fakephp.c b/drivers/pci/hotplug/fakephp.c
+> index 027f686..828335e 100644
+> --- a/drivers/pci/hotplug/fakephp.c
+> +++ b/drivers/pci/hotplug/fakephp.c
+> @@ -93,6 +93,7 @@ static int add_slot(struct pci_dev *dev)
+>  	struct dummy_slot *dslot;
+>  	struct hotplug_slot *slot;
+>  	int retval =3D -ENOMEM;
+> +	static int count =3D 1;
 >
-> This is basically a read(2) (or for other syscalls a write) on something
+>  	slot =3D kzalloc(sizeof(struct hotplug_slot), GFP_KERNEL);
+>  	if (!slot)
+> @@ -106,7 +107,8 @@ static int add_slot(struct pci_dev *dev)
+>  	slot->info->max_bus_speed =3D PCI_SPEED_UNKNOWN;
+>  	slot->info->cur_bus_speed =3D PCI_SPEED_UNKNOWN;
+>
+> -	slot->name =3D &dev->dev.bus_id[0];
+> +	slot->name =3D kmalloc(8, GFP_KERNEL);
+> +	sprintf(slot->name, "fake%d", count++);
+>  	dbg("slot->name =3D %s\n", slot->name);
+>
+>  	dslot =3D kmalloc(sizeof(struct dummy_slot), GFP_KERNEL);
 
-At least for x86 and I suspect some 1other architectures we don't
-initially need a syscall at all for this. There is an instruction
-RDPMC who can read a performance counter just fine. It is also much
-faster and generally preferable for the case where a process measures
-events about itself. In fact it is essential for one of the use cases
-I would like to see perfmon used (replacement of RDTSC for cycle
-counting) 
+This is ugly. Please do it the way we already do e.g. for acpiphp: add a=20
+char[8] to "struct dummy_slot" and just reference that here. Or better do=20
+what this name suggests: kill fakephp completely and use dummyphp[1] instea=
+d.
 
-Later a syscall might be needed with event multiplexing, but that seems
-more like a far away non essential feature.
+Eike
 
-> else than the file descriptor provided to the system call.   The right thing
+1) http://opensource.sf-tec.de/kernel/
 
-I don't like read/write for this too much. I think it's better to
-have individual syscalls.  After all that is CPU state and having
-syscalls for that does seem reasonable.
+--nextPart1206831.H0q6VCQRHC
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
--Andi
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+
+iD8DBQBHOuyDXKSJPmm5/E4RAkxCAJ9RdALyQDDbvh0KLyl8zHRqDiK4fwCglC6S
+zUbLhcwUg92z/D2QV/hdWds=
+=ZVtV
+-----END PGP SIGNATURE-----
+
+--nextPart1206831.H0q6VCQRHC--
