@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759549AbXKNB6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760140AbXKNB6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759549AbXKNB6X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 20:58:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756542AbXKNB6H
+	id S1760140AbXKNB6j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 20:58:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756825AbXKNB6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 20:58:07 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32789
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755158AbXKNB6E (ORCPT
+	Tue, 13 Nov 2007 20:58:09 -0500
+Received: from rv-out-0910.google.com ([209.85.198.187]:14664 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755412AbXKNB6G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 20:58:04 -0500
-Date: Tue, 13 Nov 2007 17:58:04 -0800 (PST)
-Message-Id: <20071113.175804.151698768.davem@davemloft.net>
-To: nickpiggin@yahoo.com.au
-Cc: clameter@sgi.com, netdev@vger.kernel.org, herbert@gondor.apana.org.au,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc2: Network commit causes SLUB performance regression
- with tbench
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200711132241.59074.nickpiggin@yahoo.com.au>
-References: <200711101229.35822.nickpiggin@yahoo.com.au>
-	<Pine.LNX.4.64.0711121144001.26936@schroedinger.engr.sgi.com>
-	<200711132241.59074.nickpiggin@yahoo.com.au>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 13 Nov 2007 20:58:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=AFLT66y3KrR3tt8FuLYxDA9oEHKcjwYAKVFvSbh2qitFM4Pt3/YRbXDlBQWcX8BbYG+CFIC0ju22akquXfZ3NbTEfv6JikJ7MwajzHtZrpNp3veVQ6vQ7JutAGjSRwylDvEvvGEZ5G2o/ZdFJu8QQ/2ftPYkIaGV7ytQz3AYxIM=
+Message-ID: <473A5626.7040008@gmail.com>
+Date: Wed, 14 Nov 2007 10:57:58 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Mark Lord <liml@rtr.ca>
+CC: Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH] sata_nv: fix ADMA ATAPI issues with memory over 4GB
+References: <4738DE21.8090702@shaw.ca> <47390B2F.7090105@gmail.com> <47392768.3030509@shaw.ca> <47392B3D.1020101@gmail.com> <4739B0E5.2010303@rtr.ca>
+In-Reply-To: <4739B0E5.2010303@rtr.ca>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-Date: Tue, 13 Nov 2007 22:41:58 +1100
-
-> On Tuesday 13 November 2007 06:44, Christoph Lameter wrote:
-> > On Sat, 10 Nov 2007, Nick Piggin wrote:
-> > > BTW. your size-2048 kmalloc cache is order-1 in the default setup,
-> > > wheras kmalloc(1024) or kmalloc(4096) will be order-0 allocations. And
-> > > SLAB also uses order-0 for size-2048. It would be nice if SLUB did the
-> > > same...
-> >
-> > You can try to see the effect that order 0 would have by booting with
-> >
-> > slub_max_order=0
+Mark Lord wrote:
+> Tejun Heo wrote:
+>> Robert Hancock wrote:
+>>> Tejun Heo wrote:
+> ..
+>>> Yes, it should likely do something with these return values. Though
+>>> theoretically it shouldn't fail, since the DMA mask is either 32-bit,
+>>> which shouldn't fail, or one that was successfully set before. Also I
+>>> don't think the SCSI layer actually checks the slave_config return
+>>> value.. sigh.
+>>
+>> Then please at least add WARN_ON() && another reason why allocating /
+>> deallocating resources from ->slave_config isn't such a good idea.
+> ..
 > 
-> Yeah, that didn't help much, but in general I think it would give
-> more consistent and reliable behaviour from slub.
+> The entire point of "slave_configure" is to provide a point for the LLD
+> to do per-device data structure allocation/init.
+> 
+> And yes, SCSI does check the return code.  Whether the code around that
+> check
+> is buggy or not is another question, but it's always worked for me.
 
-Just a note that I'm not ignoring this issue, I just don't have time
-to get to it yet.
+I see but I still prefer having PRD, pad buf allocation/release in
+->port_start/stop() primarily for consistency.  Robert, what do you think?
 
-I suspect the issue is about having a huge skb->data linear area for
-TCP sends over loopback.  We're likely getting a much smaller
-skb->data linear data area after the patch in question, the rest using
-the sk_buff scatterlist pages which are a little bit more expensive to
-process.
-
+-- 
+tejun
