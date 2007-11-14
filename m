@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758522AbXKNOb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757852AbXKNOfq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758522AbXKNOb0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 09:31:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbXKNObO
+	id S1757852AbXKNOfq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 09:35:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754772AbXKNOfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 09:31:14 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38797 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754197AbXKNObN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 09:31:13 -0500
-Date: Wed, 14 Nov 2007 15:30:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mark Lord <liml@rtr.ca>
-Cc: Matthew Wilcox <matthew@wil.cx>, alsa-devel@alsa-project.org,
-       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-kernel@vger.kernel.org, protasnb@gmail.com,
-       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071114143040.GA31025@elte.hu>
-References: <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca> <20071113164650.GA28493@elte.hu> <4739E3D0.10201@rtr.ca> <20071113183925.GF17785@parisc-linux.org> <4739F069.6050102@rtr.ca> <20071113184902.GG17785@parisc-linux.org> <4739F2DD.5050802@rtr.ca>
-MIME-Version: 1.0
+	Wed, 14 Nov 2007 09:35:37 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:60086 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754276AbXKNOfh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 09:35:37 -0500
+Date: Wed, 14 Nov 2007 15:35:33 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Andi Kleen <andi@firstfloor.org>, Greg KH <greg@kroah.com>,
+       Alex Chiang <achiang@hp.com>, gregkh@suse.de,
+       kristen.c.accardi@intel.com, lenb@kernel.org, richard.jones2@hp.com,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
+Message-ID: <20071114143533.GF17145@one.firstfloor.org>
+References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113170129.GA20185@kroah.com> <p73sl39y6qb.fsf@bingen.suse.de> <20071114141751.GS17785@parisc-linux.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4739F2DD.5050802@rtr.ca>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20071114141751.GS17785@parisc-linux.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Nov 14, 2007 at 07:17:51AM -0700, Matthew Wilcox wrote:
+> On Wed, Nov 14, 2007 at 02:07:56AM +0100, Andi Kleen wrote:
+> > It's not only complexity. Each new sysfs entry costs memory.
+> > Memory is not free. There should be always a good reason for those.
+> 
+> It's not a lot of memory; it's one directory and a couple of files for
+> each PCI slot in the system.  Even huge systems have maybe 200 slots.
+> In order for this to take up as much as one page of ram on a typical PC
+> with six slots, this would have to consume 680 bytes per directory.  I
+> don't think sysfs is that inefficient (and if it is, maybe this feature
+> is not where the problem is, given the 'power' directory per device, the
+> 19 files per scsi device, the huge numbers of symlinks, etc).
 
-* Mark Lord <liml@rtr.ca> wrote:
+It becomes much more when someone does a find /sys. dentries are 
+expensive. They eventually can get pruned again, but it's still
+costly to do that.
 
->> You're assuming that everything in linux-2.6 was downloaded; that's 
->> not true.  Everything in linux-2.6/.git was downloaded; but then you 
->> do a checkout which happens to approximately double the size of the 
->> linux-2.6 directory.
-> ..
->
-> Ah, I wondered why it took only half an hour to download.
-
-and you can get even lower than the 260MB by downloading a shallow clone 
-of v2.6.23 and then populating the git tree from tht point on. (see the 
---depth parameter of git-clone) [because most of the time you want to 
-bisect back to the last stable release, not back to 2 years of git 
-history.]
-
-	Ingo
-
+-Andi
