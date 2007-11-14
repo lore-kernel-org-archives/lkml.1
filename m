@@ -1,47 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762170AbXKNSeM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761183AbXKNSgi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762170AbXKNSeM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 13:34:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbXKNSd4
+	id S1761183AbXKNSgi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 13:36:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbXKNSg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 13:33:56 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43324 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752759AbXKNSdz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 13:33:55 -0500
-Date: Wed, 14 Nov 2007 10:33:54 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: David Miller <davem@davemloft.net>
-cc: nickpiggin@yahoo.com.au, herbert@gondor.apana.org.au,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc2: Network commit causes SLUB performance regression
- with tbench
-In-Reply-To: <20071114.041008.146131045.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0711141028390.12531@schroedinger.engr.sgi.com>
-References: <20071114.031022.183117678.davem@davemloft.net>
- <20071114114844.GA13927@gondor.apana.org.au> <200711141102.11477.nickpiggin@yahoo.com.au>
- <20071114.041008.146131045.davem@davemloft.net>
+	Wed, 14 Nov 2007 13:36:29 -0500
+Received: from palrel12.hp.com ([156.153.255.237]:50689 "EHLO palrel12.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752631AbXKNSg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 13:36:28 -0500
+Date: Wed, 14 Nov 2007 11:36:25 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Gary Hade <garyhade@us.ibm.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, Greg KH <greg@kroah.com>, gregkh@suse.de,
+       kristen.c.accardi@intel.com, lenb@kernel.org, rick.jones2@hp.com,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
+Message-ID: <20071114183625.GC17112@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Gary Hade <garyhade@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
+	Greg KH <greg@kroah.com>, gregkh@suse.de,
+	kristen.c.accardi@intel.com, lenb@kernel.org, rick.jones2@hp.com,
+	linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
+References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113170129.GA20185@kroah.com> <20071113183353.GE17785@parisc-linux.org> <20071113185122.GA22536@kroah.com> <20071113201102.GK17785@parisc-linux.org> <20071113230804.GA14570@us.ibm.com> <20071114144237.GB7523@ldl.fc.hp.com> <20071114181337.GA6269@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071114181337.GA6269@us.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Nov 2007, David Miller wrote:
+Hi Gary,
 
-> > Still interested to know why SLAB didn't see the same thing...
+* Gary Hade <garyhade@us.ibm.com>:
+> On Wed, Nov 14, 2007 at 07:42:37AM -0700, Alex Chiang wrote:
+> > Hi Gary,
+> > 
+> > * Gary Hade <garyhade@us.ibm.com>:
+> > > 
+> > > I am not fundamentally opposed to this new capability but share
+> > > the same concerns that Greg and others have expressed.  So far,
+> > > I have only tried the changes on one single node system (IBM
+> > > x3850) but the below NAK-worthy result supports the idea that
+> > > the changes need to be well and widely tested.
+> > 
+> > Can you send me the lspci -vv and lspci -vt output from this
+> > machine?
 > 
-> Yes, I wonder why too.  I bet objects just got packed differently.
+> Alex, I added some slot number hints to the below `lspci -vt`
+> output.
 
-The objects are packed tightly in SLUB and SLUB can allocate smaller 
-objects (minimum is 8 SLAB mininum is 32).
+Thanks.
 
-On free a SLUB object goes directly back to the slab where it came from. 
-We have no queues in SLUB so we use the first word of the object as a 
-freepointer. In SLAB the objects first go onto queues and then are drained 
-later into the slab. On free in SLAB there is usually no need to touch the 
-object itself. The object pointer is simply moved onto the queue (works 
-well in SMP, in NUMA we have overhead identifying the queue and 
-overhead due to the number of queues needed).
+> I am still looking at your other message and will have some 
+> hopefully helpful comments soon.  I did apply all 5 patches,
+> 4 was a typo.
+
+Actually, I just reworked my patch this morning, and believe that
+I have a much cleaner implementation now that should fix a lot of
+the errors you saw.
+
+Incoming!
+
+Thanks.
+
+/ac
 
