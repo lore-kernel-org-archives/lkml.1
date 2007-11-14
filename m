@@ -1,66 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761096AbXKNUJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762006AbXKNUM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761096AbXKNUJe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 15:09:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbXKNUJX
+	id S1762006AbXKNUM7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 15:12:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbXKNUMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 15:09:23 -0500
-Received: from accolon.hansenpartnership.com ([64.109.89.108]:35699 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751806AbXKNUJV (ORCPT
+	Wed, 14 Nov 2007 15:12:51 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:57413 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752736AbXKNUMu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 15:09:21 -0500
-Subject: Re: [BUG] New Kernel Bugs
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: David Miller <davem@davemloft.net>
-Cc: mingo@elte.hu, rdunlap@xenotime.net, akpm@linux-foundation.org,
-       protasnb@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, alsa-devel@alsa-project.org,
-       linux-ide@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-input@atrey.karlin.mff.cuni.cz, bugme-daemon@bugzilla.kernel.org
-In-Reply-To: <20071114.115601.00715073.davem@davemloft.net>
-References: <20071113134029.GA30978@elte.hu>
-	 <20071113085514.3414aa52.rdunlap@xenotime.net>
-	 <20071114140847.GA11489@elte.hu>
-	 <20071114.115601.00715073.davem@davemloft.net>
-Content-Type: text/plain
-Date: Wed, 14 Nov 2007 14:09:14 -0600
-Message-Id: <1195070954.8364.41.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Nov 2007 15:12:50 -0500
+Date: Wed, 14 Nov 2007 13:12:47 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Alex Chiang <achiang@hp.com>, Gary Hade <garyhade@us.ibm.com>,
+       Greg KH <greg@kroah.com>, gregkh@suse.de, kristen.c.accardi@intel.com,
+       lenb@kernel.org, rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, kaneshige.kenji@jp.fujitsu.com,
+       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 2/5] Construct one fakephp slot per pci slot
+Message-ID: <20071114201246.GZ17785@parisc-linux.org>
+References: <20071114193605.GA25002@ldl.fc.hp.com> <20071114193729.GC25002@ldl.fc.hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071114193729.GC25002@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-11-14 at 11:56 -0800, David Miller wrote:
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Wed, 14 Nov 2007 15:08:47 +0100
-> 
-> > In fact this thread is the very example: David points out that on netdev 
-> > some of those bugs were already discussed and resolved. Had it been all 
-> > on lkml we'd all be aware of it.
-> 
-> That's a rediculious argument.
-> 
-> One other reason these bugs are resolved, is that the networking
-> developers only need to subscribe to netdev and not have to listen to
-> all the noise on lkml.
-> 
-> People who want to manage bugs know what list to look on and
-> contact about problems.
-> 
-> Dumping even more crap on lkml is not the answer.
+On Wed, Nov 14, 2007 at 12:37:29PM -0700, Alex Chiang wrote:
+> Register one slot per slot, rather than one slot per function.
+> Change the name of the slot to fake%d instead of the pci address.
 
-I agree totally with David, and this goes for SCSI too.  If it's not
-reported on linux-scsi, there's a significant chance of us missing the
-bug report.  The fact that some people notice bugs go past on LKML and
-forward them to linux-scsi is a happy accident and not necessarily
-something to rely on.
+> +#define SLOT_NAME_SIZE KOBJ_NAME_LEN
 
-LKML has 10-20x the traffic of linux-scsi and a much smaller signal to
-noise ratio.  Having a specialist list where all the experts in the
-field hangs out actually enhances our ability to fix bugs.
+Defined, then never used ... how about s/KOBJ_NAME_LEN/8/, then use
+SLOT_NAME_SIZE throughout?
 
-James
- 
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
