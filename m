@@ -1,79 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762780AbXKNUzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764536AbXKNU4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762780AbXKNUzl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 15:55:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754401AbXKNUzE
+	id S1764536AbXKNU4Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 15:56:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761969AbXKNUzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 15:55:04 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39537 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753356AbXKNUy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 15:54:59 -0500
-Date: Wed, 14 Nov 2007 21:54:30 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: David Miller <davem@davemloft.net>, rdunlap@xenotime.net,
-       akpm@linux-foundation.org, protasnb@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071114205427.GC20606@elte.hu>
-References: <20071113134029.GA30978@elte.hu> <20071113085514.3414aa52.rdunlap@xenotime.net> <20071114140847.GA11489@elte.hu> <20071114.115601.00715073.davem@davemloft.net> <1195070954.8364.41.camel@localhost.localdomain>
+	Wed, 14 Nov 2007 15:55:24 -0500
+Received: from py-out-1112.google.com ([64.233.166.183]:29461 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761478AbXKNUzT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 15:55:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HFlUy15IM/sg+AO5eGzXA1yRYBObyhgOvkX3uvtxzc3T4MYaoI/3Kq40ooG+KmyOox8uyZ39yLWpTJWhLEyKQFn07oTzJqLq++ZmxDoKtZJBoY5VfIMQ/jqoX+NzAzc16LgAaQ/xVcEpqdpeP8VF6y3e1BSuR1aaJQ081XBZ8Vc=
+Message-ID: <64bb37e0711141255p4f54e055s76fd2f61ed105961@mail.gmail.com>
+Date: Wed, 14 Nov 2007 21:55:11 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: 2.6.24-rc2-mm1
+Cc: linux-kernel@vger.kernel.org, "J. Bruce Fields" <bfields@fieldses.org>,
+       "Trond Myklebust" <trond.myklebust@fys.uio.no>
+In-Reply-To: <20071114122939.7b4ee194.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1195070954.8364.41.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
+	 <64bb37e0711141116h5ea9ed8cs7f2afbabe73f07bb@mail.gmail.com>
+	 <20071114122939.7b4ee194.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Nov 14, 2007 9:29 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Wed, 14 Nov 2007 20:16:09 +0100 "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
+>
+> > On Nov 14, 2007 2:59 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > >
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc2/2.6.24-rc2-mm1/
+> >
+> > Breaks nfsv4 in a rather funny way:
+> >
+> > treogen ~ # cd /usr/portage/x
+> > treogen x # touch bla
+> > touch: cannot touch `bla': File exists
+> > treogen x # mkdir bla
+> > treogen x # touch bla/bla
+> > touch: cannot touch `bla/bla': File exists
+> > treogen x # ls -lad *
+> > drwxr-xr-x 2 root root 6 Nov 14 20:03 bla
+> > treogen x # ls -la *
+> > total 0
+> > drwxr-xr-x 2 root root  6 Nov 14 20:03 .
+> > drwxr-xr-x 3 root root 16 Nov 14 20:03 ..
+> > treogen x #
+> >
+> > So I can create new directories, but not new files. Reading files works normal.
+> >>
+> > The client is 2.6.24-rc2-mm1, the server 2.6.22-gentoo-r9.
+> > The fstab-line from the client:
+> > 192.168.2.4:/portage    /usr/portage            nfs4
+> > rw,noatime,nodiratime,intr 0 0
+> >
+> > 2.6.23-mm1 as client worked, some 2.6.24-rc1-git? also.
+>
+> hm.  I guess that means I get to do yet another git-bisect.  Either the nfs
+> changes or r-o-bind-mounts, I bet.
 
-* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+treogen mm-test # git bisect good
+Bisecting: 1245 revisions left to test after this
+[4d88b06571b9d45e9cb52d8ad5dbf196ba280ff3] git-scsi-misc
 
-> On Wed, 2007-11-14 at 11:56 -0800, David Miller wrote:
-> > From: Ingo Molnar <mingo@elte.hu>
-> > Date: Wed, 14 Nov 2007 15:08:47 +0100
-> > 
-> > > In fact this thread is the very example: David points out that on netdev 
-> > > some of those bugs were already discussed and resolved. Had it been all 
-> > > on lkml we'd all be aware of it.
-> > 
-> > That's a rediculious argument.
-> > 
-> > One other reason these bugs are resolved, is that the networking 
-> > developers only need to subscribe to netdev and not have to listen 
-> > to all the noise on lkml.
-> > 
-> > People who want to manage bugs know what list to look on and contact 
-> > about problems.
-> > 
-> > Dumping even more crap on lkml is not the answer.
-> 
-> I agree totally with David, and this goes for SCSI too.  If it's not 
-> reported on linux-scsi, there's a significant chance of us missing the 
-> bug report.  The fact that some people notice bugs go past on LKML and 
-> forward them to linux-scsi is a happy accident and not necessarily 
-> something to rely on.
-> 
-> LKML has 10-20x the traffic of linux-scsi and a much smaller signal to 
-> noise ratio.  Having a specialist list where all the experts in the 
-> field hangs out actually enhances our ability to fix bugs.
+I'm working on it... ;)
 
-you are actually proving my point. People have to scan lkml for SCSI 
-regressions _anyway_, because otherwise _you_ would miss them. In the 
-case a user is fortunate enough to realize that a regression is SCSI 
-related, and he is lucky enough to pre-select the SCSI mailing list in 
-the first go, he might get a fix from you. That already reduces the 
-number of useful bugreports by about an order of magnitude.
-
-	Ingo
+Torsten
