@@ -1,73 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762690AbXKNTxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763925AbXKNTyJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762690AbXKNTxY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 14:53:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756817AbXKNTxP
+	id S1763925AbXKNTyJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 14:54:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758475AbXKNTx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 14:53:15 -0500
-Received: from palrel11.hp.com ([156.153.255.246]:43648 "EHLO palrel11.hp.com"
+	Wed, 14 Nov 2007 14:53:57 -0500
+Received: from gw.goop.org ([64.81.55.164]:33597 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756065AbXKNTxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 14:53:13 -0500
-Date: Wed, 14 Nov 2007 12:53:11 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Greg KH <greg@kroah.com>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-pci@atrey.karlin.mff.cuni.cz,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>, gregkh@suse.de,
-       lenb@kernel.org, matthew@wil.cx, rick.jones2@hp.com,
-       linux-kernel@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
-Message-ID: <20071114195311.GG25002@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Greg KH <greg@kroah.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-	linux-pci@atrey.karlin.mff.cuni.cz,
-	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-	gregkh@suse.de, lenb@kernel.org, matthew@wil.cx, rick.jones2@hp.com,
-	linux-kernel@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
-	linux-acpi@vger.kernel.org
-References: <20071113000853.GA13341@ldl.fc.hp.com> <20071113202632.GA3227@kroah.com> <20071113145936.7e1c58fb.kristen.c.accardi@intel.com> <200711141037.09228.bjorn.helgaas@hp.com> <20071114175317.GB14994@kroah.com>
+	id S1756817AbXKNTx4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 14:53:56 -0500
+Message-ID: <473B5242.5050606@goop.org>
+Date: Wed, 14 Nov 2007 11:53:38 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071114175317.GB14994@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Greg KH <greg@kroah.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, xen-devel@lists.xensource.com,
+       Keir Fraser <keir@xensource.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>, Chris Wright <chrisw@sous-sol.org>,
+       virtualization@lists.osdl.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Stable Kernel <stable@kernel.org>
+Subject: Re: [stable] [PATCH 00/12] xen/paravirt_ops patches for 2.6.24
+References: <20071015204840.074767068@goop.org>	<20071015215406.GA1588@kroah.com> <4713E2D6.90801@goop.org>	<20071113232258.GA10338@kroah.com> <473B4132.5030402@goop.org> <20071114190335.GA10024@kroah.com>
+In-Reply-To: <20071114190335.GA10024@kroah.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+Greg KH wrote:
+> Ok, that's fine, but can you send some patches that I can apply?  :)
 
-* Greg KH <greg@kroah.com>:
-> On Wed, Nov 14, 2007 at 10:37:08AM -0700, Bjorn Helgaas wrote:
-> > 
-> > So I agree that the firmware kit has a clever hack that works
-> > on much existing x86 firmware, and it sounds like Tivoli
-> > might even rely on it.  But I don't feel good about it, and
-> > it could easily break when some BIOS writer needs to make
-> > _SUN slightly more complicated.
-> 
-> Do you know of such BIOSes out there that do this?  Will the
-> above scheme not work for the ia64 boxes that you know of that
-> are out in the world today?
+The patches you've already queued for stable are all that's needed. 
+Including the xfs one, despite Andi's reservations about it; Dave
+Chinner has a better fix, but as far as I know he hasn't submitted it
+for stable, and the workaround is enough to get things going.
 
-Matthew and Bjorn have already been hinting at this, but I'd like
-to voice my concern as well.
+I have one additional patch; I'll send it shortly (once Linus picks it
+up...).
 
-Even if no one is implementing _SUN as a complicated AML control
-method today, that is no guarantee that prevents future firmware
-vendors from doing so. The spec allows it, so in my opinion,
-pointing to existing implementations and claiming that it all
-just works is somewhat unfair (and scary).
-
-If/when the first vendor implements an AML version of _SUN, the
-firmware kit will break, and Tivoli will have to react.
-
-I was initially intrigued with you and Kristen pointed out this
-tool, but after thinking about it some more, I am not convinced
-it is a viable alternative, due to the unknown nature of future
-firmware implementations.
-
-Thanks.
-
-/ac
-
+    J
