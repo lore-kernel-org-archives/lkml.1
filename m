@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760328AbXKNDgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760764AbXKNDka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760328AbXKNDgU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 22:36:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756634AbXKNDgJ
+	id S1760764AbXKNDka (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 22:40:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbXKNDkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 22:36:09 -0500
-Received: from wr-out-0506.google.com ([64.233.184.229]:28550 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754534AbXKNDgH (ORCPT
+	Tue, 13 Nov 2007 22:40:21 -0500
+Received: from pythia.bakeyournoodle.com ([203.82.209.197]:40671 "EHLO
+	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754675AbXKNDkU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 22:36:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=XC+ht+M46/g5IoqXxkS204etsN2Ew2DSOnh8b3Ih/rL6uk0jzzU13aZ2Ofo3g17fO2oP+nS4eV0XPxERdXDXi8nUXM7K22LKq9AoxfSoTAanH+pRkyMmkdp/lmh2MPhZBrF4ivAHioMRrquX4zVnnk9rMMQ9E4Noq/zonUWsaZQ=
-Message-ID: <e9c3a7c20711131936t3c5f858cm8937b24d97fe998c@mail.gmail.com>
-Date: Tue, 13 Nov 2007 20:36:05 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: [stable] [PATCH 000 of 2] md: Fixes for md in 2.6.23
-Cc: NeilBrown <neilb@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-raid@vger.kernel.org, M@suse.de, linux-kernel@vger.kernel.org,
-       Stable <stable@kernel.org>
-In-Reply-To: <20071114002308.GB31928@kroah.com>
+	Tue, 13 Nov 2007 22:40:20 -0500
+Date: Wed, 14 Nov 2007 14:40:19 +1100
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Roland Dreier <rolandd@cisco.com>
+Cc: Linux Kernel ML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Fix build failure when CONFIG_INFINIBAND_IPOIB_CM is not defined.
+Message-ID: <20071114034019.GI24243@bakeyournoodle.com>
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <20071022171426.31103.patches@notabene>
-	 <20071114002214.GA31928@kroah.com> <20071114002308.GB31928@kroah.com>
-X-Google-Sender-Auth: 6da7651dd88d8617
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071113175906.497a1a6a.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: tony@bakeyournoodle.com (Tony Breeds)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 13, 2007 5:23 PM, Greg KH <greg@kroah.com> wrote:
-> On Tue, Nov 13, 2007 at 04:22:14PM -0800, Greg KH wrote:
-> > On Mon, Oct 22, 2007 at 05:15:27PM +1000, NeilBrown wrote:
-> > >
-> > > It appears that a couple of bugs slipped in to md for 2.6.23.
-> > > These two patches fix them and are appropriate for 2.6.23.y as well
-> > > as 2.6.24-rcX
-> > >
-> > > Thanks,
-> > > NeilBrown
-> > >
-> > >  [PATCH 001 of 2] md: Fix an unsigned compare to allow creation of bitmaps with v1.0 metadata.
-> > >  [PATCH 002 of 2] md: raid5: fix clearing of biofill operations
-> >
-> > I don't see these patches in 2.6.24-rcX, are they there under some other
-> > subject?
->
-> Oh nevermind, I found them, sorry for the noise...
->
+Fixes:
+  CC [M]  drivers/infiniband/ulp/ipoib/ipoib_main.o
+drivers/infiniband/ulp/ipoib/ipoib_main.c: In function ‘ipoib_init_module’:
+drivers/infiniband/ulp/ipoib/ipoib_main.c:1269: error: invalid lvalue in assignment
 
-Careful, it looks like you cherry picked commit 4ae3f847 "md: raid5:
-fix clearing of biofill operations" which ended up misapplied in
-Linus' tree,  You should either also pick up def6ae26 "md: fix
-misapplied patch in raid5.c" or I can resend the original "raid5: fix
-clearing of biofill operations."
+In the case where CONFIG_INFINIBAND_IPOIB_CM is not defined ipoib_max_conn_qp is #defined to 0.
 
-The other patch for -stable "raid5: fix unending write sequence" is
-currently in -mm.
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 
-> greg k-h
+---
 
-Regards,
-Dan
+ drivers/infiniband/ulp/ipoib/ipoib_main.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/infiniband/ulp/ipoib/ipoib_main.c b/drivers/infiniband/ulp/ipoib/ipoib_main.c
+index 623458e..aeb5a01 100644
+--- a/drivers/infiniband/ulp/ipoib/ipoib_main.c
++++ b/drivers/infiniband/ulp/ipoib/ipoib_main.c
+@@ -1265,8 +1265,9 @@ static int __init ipoib_init_module(void)
+ 	ipoib_sendq_size = roundup_pow_of_two(ipoib_sendq_size);
+ 	ipoib_sendq_size = min(ipoib_sendq_size, IPOIB_MAX_QUEUE_SIZE);
+ 	ipoib_sendq_size = max(ipoib_sendq_size, IPOIB_MIN_QUEUE_SIZE);
+-
++#ifdef CONFIG_INFINIBAND_IPOIB_CM
+ 	ipoib_max_conn_qp = min(ipoib_max_conn_qp, IPOIB_CM_MAX_CONN_QP);
++#endif
+ 
+ 	ret = ipoib_register_debugfs();
+ 	if (ret)
+
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
