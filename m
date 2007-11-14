@@ -1,97 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756368AbXKNWbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758278AbXKNWhJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756368AbXKNWbq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 17:31:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbXKNWbh
+	id S1758278AbXKNWhJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 17:37:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751702AbXKNWg5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 17:31:37 -0500
-Received: from ns2.g-housing.de ([81.169.133.75]:47732 "EHLO mail.g-house.de"
+	Wed, 14 Nov 2007 17:36:57 -0500
+Received: from holomorphy.com ([66.93.40.71]:48364 "EHLO holomorphy.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751702AbXKNWbg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 17:31:36 -0500
-Date: Wed, 14 Nov 2007 23:31:12 +0100 (CET)
-From: Christian Kujau <lists@nerdbynature.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: "J. Bruce Fields" <bfields@fieldses.org>
-cc: Benny Halevy <bhalevy@panasas.com>, Chris Wedgwood <cw@f00f.org>,
-       linux-xfs@oss.sgi.com, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.24-rc2 XFS nfsd hang
-In-Reply-To: <20071114125907.GB4010@fieldses.org>
-Message-ID: <alpine.DEB.0.99999.0711142317010.12443@sheep.housecafe.de>
-References: <20071114070400.GA25708@puku.stupidest.org> <473AA72C.6020308@panasas.com> <20071114125907.GB4010@fieldses.org>
-User-Agent: Alpine 0.99999 (DEB 796 2007-11-08)
+	id S1751142AbXKNWg4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 17:36:56 -0500
+X-Greylist: delayed 2237 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Nov 2007 17:36:56 EST
+Date: Wed, 14 Nov 2007 14:00:38 -0800
+From: William Lee Irwin III <wli@holomorphy.com>
+To: aglitke <agl@us.ibm.com>
+Cc: ciju@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] [PATCH] hugetlbfs :shmget with SHM_HUGETLB only works as root
+Message-ID: <20071114220038.GD1806@holomorphy.com>
+References: <473B0317.6010603@linux.vnet.ibm.com> <1195054301.18047.20.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1195054301.18047.20.camel@localhost.localdomain>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Nov 2007, J. Bruce Fields wrote:
-> On Wed, Nov 14, 2007 at 09:43:40AM +0200, Benny Halevy wrote:
->> I wonder if this is a similar hang to what Christian was seeing here:
->> http://lkml.org/lkml/2007/11/13/319
->
-> Ah, thanks for noticing that.  Christian Kujau, is /data an xfs
-> partition?
+On Wed, Nov 14, 2007 at 09:31:41AM -0600, aglitke wrote:
+> ... if the user's locked limit (ulimit -l) is set to unlimited, allowed
+> (above) is set to 1.  In that case, the second part of that if() is
+> bypassed, and the function grants permission.  Therefore, the easy
+> solution is to make sure your user's lock_limit is RLIM_INFINITY.
 
-Sorry for the late reply :\
+This function deserves a minor cleanup and a bit more commenting.
 
-Yes, the nfsd process only got stuck when I did ls(1) (with or without -l) 
-on a NFS share which contained a XFS partition. I did not care for the 
-underlying fs first so I just ls'ed my shares and noticed that it got 
-stuck. Now that you mention it I tried again, with a (git-wise) current 
-2.6 kernel and the same .config: http://nerdbynature.de/bits/2.6.24-rc2/nfsd/
+Reading user->locked_shm within shmlock_user_lock would be nice, too.
 
-Running ls on a ext3 or jfs backed nfs share did succeed, running ls on an 
-xfs backed nfs share did not. The sysrq-t (see dmesg.2.gz please) looks 
-like yours (to my untrained eye):
-
-nfsd          D c04131c0     0  8535      2
-       e7ea97b8 00000046 e7ea9000 c04131c0 e7ea97b8 e697e7e0 00000282 e697e7e8
-       e7ea97e4 c0409ebc f71f3500 00000001 f71f3500 c0115540 e697e804 e697e804
-       e697e7e0 8f082000 00000001 e7ea97f4 c0409cc2 00000004 00000062 e7ea9800
-Nov 14 23:07:14 sheep kernel: [ 1870.124185] Call Trace:
-[<c0409ebc>] __down+0x7c/0xd0
-[<c0409cc2>] __down_failed+0xa/0x10
-[<c0296d46>] xfs_buf_lock+0x46/0x50
-[<c02985a2>] _xfs_buf_find+0xf2/0x190
-[<c0298694>] xfs_buf_get_flags+0x54/0x120
-[<c029877d>] xfs_buf_read_flags+0x1d/0x80
-[<c0289afa>] xfs_trans_read_buf+0x4a/0x350
-[<c025e049>] xfs_da_do_buf+0x409/0x760
-[<c025e42f>] xfs_da_read_buf+0x2f/0x40
-[<c02634f2>] xfs_dir2_leaf_lookup_int+0x172/0x270
-[<c02637ce>] xfs_dir2_leaf_lookup+0x1e/0x90
-[<c02608e4>] xfs_dir_lookup+0xe4/0x100
-[<c028abde>] xfs_dir_lookup_int+0x2e/0x100
-[<c028eee2>] xfs_lookup+0x62/0x90
-[<c029b644>] xfs_vn_lookup+0x34/0x70
-[<c016de06>] __lookup_hash+0xb6/0x100
-[<c016ee6e>] lookup_one_len+0x4e/0x50
-[<f9037769>] compose_entry_fh+0x59/0x120 [nfsd]
-[<f9037c29>] encode_entry+0x329/0x3c0 [nfsd]
-[<f9037cfb>] nfs3svc_encode_entry_plus+0x3b/0x50 [nfsd]
-[<c02639b4>] xfs_dir2_leaf_getdents+0x174/0x900
-[<c026070a>] xfs_readdir+0xba/0xd0
-[<c0298d74>] xfs_file_readdir+0x44/0x70
-[<c01726ae>] vfs_readdir+0x7e/0xa0
-[<f902e6b3>] nfsd_readdir+0x73/0xe0 [nfsd]
-[<f9036eea>] nfsd3_proc_readdirplus+0xda/0x200 [nfsd]
-[<f902a2db>] nfsd_dispatch+0x11b/0x210 [nfsd]
-[<f920f2ac>] svc_process+0x41c/0x760 [sunrpc]
-[<f902a8c4>] nfsd+0x164/0x2a0 [nfsd]
-[<c0103507>] kernel_thread_helper+0x7/0x10
+Maybe something like this (untested, uncompiled) would do.
 
 
->> Any suggestions other than to bisect this?  (Bisection might be
->> painful as it crosses the x86-merge.)
+-- wli
 
-Make that "impossible" for me, as I could not boot the bisected kernel and 
-marking versions as "bad" for unrelated things seems to invalidate the 
-results. However, from ~2500 revisions (2.6.24-rc2 to 2.6.23.1) down to 
-~20 or so in just 10 builds, that's pretty awesome.
 
-Christian.
--- 
-BOFH excuse #321:
-
-Scheduled global CPU outage
+diff --git a/mm/mlock.c b/mm/mlock.c
+index 7b26560..5f51792 100644
+--- a/mm/mlock.c
++++ b/mm/mlock.c
+@@ -234,6 +234,12 @@ asmlinkage long sys_munlockall(void)
+ /*
+  * Objects with different lifetime than processes (SHM_LOCK and SHM_HUGETLB
+  * shm segments) get accounted against the user_struct instead.
++ * First, user_shm_lock() checks that the user has permission to lock
++ * enough memory; then if so, the locked shm is accounted to the user's
++ * system-wide state. shmlock_user_lock protects the per-user field
++ * tracking how much locked_shm is in use within the struct user_struct.
++ * shmlock_user_lock is taken early to guard the read-only check that
++ * user->locked_shm is in-bounds against updates to user->locked_shm.
+  */
+ static DEFINE_SPINLOCK(shmlock_user_lock);
+ 
+@@ -242,19 +248,22 @@ int user_shm_lock(size_t size, struct user_struct *user)
+ 	unsigned long lock_limit, locked;
+ 	int allowed = 0;
+ 
++	spin_lock(&shmlock_user_lock);
+ 	locked = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
+ 	lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
+ 	if (lock_limit == RLIM_INFINITY)
+ 		allowed = 1;
+-	lock_limit >>= PAGE_SHIFT;
+-	spin_lock(&shmlock_user_lock);
+-	if (!allowed &&
+-	    locked + user->locked_shm > lock_limit && !capable(CAP_IPC_LOCK))
+-		goto out;
+-	get_uid(user);
+-	user->locked_shm += locked;
+-	allowed = 1;
+-out:
++	else {
++		lock_limit >>= PAGE_SHIFT;
++		if (locked + user->locked_shm <= lock_limit)
++			allowed = 1;
++		else if (capable(CAP_IPC_LOCK))
++			allowed = 1;
++	}
++	if (allowed) {
++		get_uid(user);
++		user->locked_shm += locked;
++	}
+ 	spin_unlock(&shmlock_user_lock);
+ 	return allowed;
+ }
