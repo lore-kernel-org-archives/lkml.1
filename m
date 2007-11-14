@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758483AbXKNFUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761096AbXKNFZW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758483AbXKNFUd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 00:20:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbXKNFUZ
+	id S1761096AbXKNFZW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 00:25:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbXKNFZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 00:20:25 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:40649 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751399AbXKNFUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 00:20:24 -0500
-Date: Wed, 14 Nov 2007 06:22:01 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Frans Pop <elendil@planet.nl>
-Cc: Jeff Garzik <jeff@garzik.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <rdunlap@xenotime.net>, david@lang.hm,
-       Christoph Hellwig <hch@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH revised] enable make ARCH=x86 (and stay backward compatible)
-Message-ID: <20071114052201.GA5252@uranus.ravnborg.org>
-References: <20071112205451.GA22528@uranus.ravnborg.org> <200711132323.23835.elendil@planet.nl>
+	Wed, 14 Nov 2007 00:25:10 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:59115 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750771AbXKNFZI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 00:25:08 -0500
+Date: Tue, 13 Nov 2007 21:23:31 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
+       linux-kernel@vger.kernel.org, steved@redhat.com,
+       trond.myklebust@fys.uio.no, bfields@fieldses.org, hch@lst.de,
+       viro@zeniv.linux.org.uk, apw@shadowen.org
+Subject: Re: mm snapshot broken-out-2007-11-13-04-14 Build Fails - linking
+ when !CONFIG_NFS_V4
+Message-Id: <20071113212331.a2f34e10.randy.dunlap@oracle.com>
+In-Reply-To: <20071113195136.GA16890@linux.vnet.ibm.com>
+References: <200711131215.lADCFfht009739@imap1.linux-foundation.org>
+	<20071113195136.GA16890@linux.vnet.ibm.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200711132323.23835.elendil@planet.nl>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 14 Nov 2007 01:21:36 +0530 Kamalesh Babulal wrote:
+
+> Hi Andrew,
 > 
-> I've just built v2.6.24-rc2-409-g9418d5d + your patchset for both amd64 and 
-> i386 using Debian's kernel-package and both went without problems.
+> The kernel build fails, with the following error
+> 
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> fs/built-in.o(.text+0x5d632): In function `nfs_free_unlinkdata':
+> fs/nfs/unlink.c:32: undefined reference to `nfs_sb_deactive'
+> fs/built-in.o(.rodata+0x5c5c): In function `do_execve':
+> fs/exec.c:1355: undefined reference to `nfs_put_super'
+> make: *** [.tmp_vmlinux1] Error 1
+> 
+> I suspect nfs-stop-sillyname-renames-and-unmounts-from-racing.patch,
+> is causing the problem. The definition of the function is between
+> CONFIG_NFS_V4 in fs/nfs/super.c.
+> 
+> During the compilation # CONFIG_NFS_V4 is not set.
 
-Thanks for testing!
+Reported and hopefully fixed.  Patch is here:
+http://lkml.org/lkml/2007/11/13/211
 
-> One (minor) issue. If I start out with a .config for i386, the first make 
-> oldconfig will ask to set 64-BIT:
->     64-bit kernel (64BIT) [N/y/?] (NEW)
-> It would be nice if that could be avoided somehow.
-
-I do not see this can be avoided.
-The typical response is just to accept the default which is N
-so we are safe in most cases anyway because default is 'N'.
-
-	Sam
+---
+~Randy
