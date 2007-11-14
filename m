@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763540AbXKNA5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763172AbXKNBA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763540AbXKNA5d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 19:57:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbXKNA5Z
+	id S1763172AbXKNBA5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 20:00:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759110AbXKNBAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 19:57:25 -0500
-Received: from nz-out-0506.google.com ([64.233.162.235]:8271 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753192AbXKNA5X (ORCPT
+	Tue, 13 Nov 2007 20:00:49 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:33413 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752594AbXKNBAr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 19:57:23 -0500
+	Tue, 13 Nov 2007 20:00:47 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AArnnpjjbwOEaFe1NVKy7dH3/7OvCmuoJhvZwTDxVJBWZBa8ypqI2fUAwtp/+4tYFjqt2OovSPGPdJ+mg/0D1bxuqao3hVyckxs4sDa1iFTEL20lk64RJ00qeWch2NqhoNfWuBW98UFtqrc/AktbeZJ2tU8zrCWXr51Goz3yei4=
-Message-ID: <f17812d70711131657wbdcc089kadb6024a47ad4a3@mail.gmail.com>
-Date: Wed, 14 Nov 2007 08:57:21 +0800
+        b=KCI66vzXxkFDh9HqHJ08p4GAsZw7AJ63xQfKtVkvMtTOBFRjlGDVvECWQp6ZGpulRwG+ya3i4eUzmTibq6+54SB1NHszsHz03fxl/Eu9u4D8ifXGT4FvG7j+CdUytTw0i4wW2LkSod16Ucy8q7zH5+Uf5N+7o9op5pgdWuDshD8=
+Message-ID: <f17812d70711131700n74236a8naa6dbfc5cb62e42d@mail.gmail.com>
+Date: Wed, 14 Nov 2007 09:00:46 +0800
 From: "eric miao" <eric.y.miao@gmail.com>
 To: "David Brownell" <david-b@pacbell.net>
 Subject: Re: [patch/rfc 1/4] GPIO implementation framework
@@ -27,7 +27,7 @@ Cc: "Linux Kernel list" <linux-kernel@vger.kernel.org>,
        "Tony Lindgren" <tony@atomide.com>, "Jean Delvare" <khali@linux-fr.org>,
        "Kevin Hilman" <khilman@mvista.com>, "Paul Mundt" <lethal@linux-sh.org>,
        "Ben Dooks" <ben@trinity.fluff.org>
-In-Reply-To: <200711131106.11277.david-b@pacbell.net>
+In-Reply-To: <f17812d70711131657wbdcc089kadb6024a47ad4a3@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
@@ -36,160 +36,95 @@ References: <200710291809.29936.david-b@pacbell.net>
 	 <200711051305.13980.david-b@pacbell.net>
 	 <f17812d70711121828k49fe25b4ycf538061d0fb33b4@mail.gmail.com>
 	 <200711131106.11277.david-b@pacbell.net>
+	 <f17812d70711131657wbdcc089kadb6024a47ad4a3@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 14, 2007 3:06 AM, David Brownell <david-b@pacbell.net> wrote:
-> On Monday 12 November 2007, eric miao wrote:
-> > Hi David,
-> >
-> > I hope I was not late giving my humble feedback on this framework :-)
-> >
-> > Can we use "per gpio based" structure instead of "per gpio_chip" based one,
-> > just like what the generic IRQ layer is doing nowadays?
->
-> We "can" do most anything.  What would that improve though?
->
-> Each irq_chip handles multiple IRQs ... just like this patch
-> has each gpio_chip handling multiple GPIOs.  (Not that I think
-> GPIO code should closely model IRQ code; they need to address
-> very different problems.)
->
-> I can't tell what you intend to suggest as a "per-GPIO" data
-> structure; since I can think of at least three different ways
-> to do such a thing, you should be more concrete.  I'd think it
-> should be in *addition* to a gpio_chip structure though.
->
+Here comes a bunch of patches to illustrate my idea, some are not related to
+the point I mentioned, and they are not mature for now :-)
 
-exactly, I'd say a "struct gpio_desc" as
+Subject: [PATCH 1/5] add gpio_is_onchip() for commonly used gpio range checking
 
+---
+ lib/gpiolib.c |   32 ++++++++++++++++++++++----------
+ 1 files changed, 22 insertions(+), 10 deletions(-)
 
->
-> > So that
-> >
-> > a. you don't have to declare per gpio_chip "can_sleep", "is_out" and
-> > "requested".
-> > Those will be just bits of properties of a single GPIO.
->
-> The can_sleep value is a per-controller thing.  The other bits are
-> indeed per-GPIO.
->
-> So do you mean a structure with two bits, plus a pointer to a
-> gpio_chip, plus likely other stuff (what?) to make it work?
-> What would the hot-path costs be (for getting/setting values of
-> an on-chip GPIO)?
->
+diff --git a/lib/gpiolib.c b/lib/gpiolib.c
+index f2ae689..c627efb 100644
+--- a/lib/gpiolib.c
++++ b/lib/gpiolib.c
+@@ -33,6 +33,14 @@ static DEFINE_SPINLOCK(gpio_lock);
+ static struct gpio_chip *chips[DIV_ROUND_UP(ARCH_NR_GPIOS,
+ 					ARCH_GPIOS_PER_CHIP)];
 
-the cost is as trivial as the current one.
++static inline int gpio_is_onchip(unsigned gpio, struct gpio_chip *chip)
++{
++	if (chip && gpio >= chip->base && gpio < chip->base + chip->ngpio)
++		return 1;
++	else
++		return 0;
++}
++
+ /* Warn when drivers omit gpio_request() calls -- legal but
+  * ill-advised when setting direction, and otherwise illegal.
+  */
+@@ -139,11 +147,11 @@ int gpio_request(unsigned gpio, const char *label)
 
->
-> > b. and furthur more, one can avoid the use of ARCH_GPIOS_PER_CHIP, which
-> > leads to many holes
->
-> Why should holes (in the GPIO number sequence) be a problem?  In
-> this code, they don't cost much space at all.  They'd cost more
-> if there were a per-GPIO structure though...
->
+ 	spin_lock_irqsave(&gpio_lock, flags);
+ 	chip = gpio_to_chip(gpio);
+-	if (!chip)
++
++	if (!gpio_is_onchip(gpio, chip))
+ 		goto done;
++
+ 	gpio -= chip->base;
+-	if (gpio >= chip->ngpio)
+-		goto done;
 
-well, I don't think holes are problems, but think about the restriction
-ARCH_GPIOS_PER_CHIP enforces the numbering of GPIOs, don't
-you think we need a more flexible numbering scheme, so one can
-later adjust gpio_to_irq() and irq_to_gpio() easily??
+ 	/* NOTE:  gpio_request() can be called in early boot,
+ 	 * before IRQs are enabled.
+@@ -176,11 +184,11 @@ void gpio_free(unsigned gpio)
+ 	spin_lock_irqsave(&gpio_lock, flags);
 
-> The only downside of GPIOS_PER_CHIP that I know of right now
-> is that it complicates mixing gpio bank sizes; it's a ceiling,
-> some controllers would allocate more than they need.  The
-> upside of that is efficiency, and a closer match to how
-> underlying hardware works.
->
-> Of course, GPIOS_PER_CHIP *could* be decoupled from how the
-> table of gpio_chip pointers is managed.  If the table were to
-> group GPIOs in units of 8, a gpio_chip with 32 GPIOs could
-> take four adjacent entries while an 8-bit GPIO expander could
-> take just one.  That'd be a very easy patch, supporting a more
-> dense allocation of GPIO numbers... although it would increase
-> static memory consumption by typically NR_GPIOS/4 pointers.
->
->
-> > c. gpio_to_chip() will be made easy and straight forward
->
-> I'd say "return chips[gpio / ARCH_GPIOS_PER_CHIP]" already meets
-> both criteria!
->
-> There's also "efficient" to consider; this way doesn't cost much
-> memory or add levels of indirection (compared to most platforms,
-> which already use a similar array).
->
->
-> > d. granularity of spin_lock()/_unlock() can be made small
-> > (per GPIO instead of per gpio_chip)
->
-> Why would per-GPIO locking be needed though?  Look again...
->
-> The locking is there fundamentally because gpio_chip structures
-> may need to be unregistered; that's not a per-gpio issue.
-> Even when a gpio is marked in chip->requested under that lock,
-> that's part of ensuring that the unregistration is prevented so
-> long as the GPIO is in active use.
->
-> Plus, fine grained locking is rarely a good idea; it normally
-> increases locking overhead by involving multiple locks.  Only
-> add extra locks if a single lock sees too much contention; and
-> even then, only if that contention can't be removed by using a
-> smarter design.
->
+ 	chip = gpio_to_chip(gpio);
+-	if (!chip)
++
++	if (!gpio_is_onchip(gpio, chip))
+ 		goto done;
++
+ 	gpio -= chip->base;
+-	if (gpio >= chip->ngpio)
+-		goto done;
 
-well, I don't see much benefit for now, either. But binding/unbinding
-the gpio_chip to the gpio_desc could possibly be made locking free
-(RCU maybe), since removing a gpio_chip is really *rare*.
+ #ifdef CONFIG_DEBUG_FS
+ 	if (chip->requested[gpio])
+@@ -218,9 +226,11 @@ int gpio_direction_input(unsigned gpio)
+ 	chip = gpio_to_chip(gpio);
+ 	if (!chip || !chip->get || !chip->direction_input)
+ 		goto fail;
+-	gpio -= chip->base;
+-	if (gpio >= chip->ngpio)
++
++	if (!gpio_is_onchip(gpio, chip))
+ 		goto fail;
++
++	gpio -= chip->base;
+ 	gpio_ensure_requested(chip, gpio);
 
-> - Dave
->
->
->
->
-> > What do you think?
-> >
-> > - eric
-> >
-> > On Nov 6, 2007 5:05 AM, David Brownell <david-b@pacbell.net> wrote:
-> > > On Monday 29 October 2007, David Brownell wrote:
-> > > >
-> > > > Provides new implementation infrastructure that platforms may choose to use
-> > > > when implementing the GPIO programming interface. Platforms can update their
-> > > > GPIO support to use this. The downside is slower access to non-inlined GPIOs;
-> > > > rarely a problem except when bitbanging some protocol.
-> > >
-> > > I was asked just what that overhead *is* ... and it surprised me.
-> > > A summary of the results is appended to this note.
-> > >
-> > > Fortuntely it turns out those problems all go away if the gpiolib
-> > > code uses a *raw* spinlock to guard its table lookups.  With a raw
-> > > spinlock, any performance impact of gpiolib seems to be well under
-> > > a microsecond in this bitbang context (and not objectionable).
-> > > Preempt became free; enabling debug options had only a minor cost.
-> > >
-> > > That's as it should be, since the only substantive changes were to
-> > > grab and release a lock, do one table lookup a bit differently, and
-> > > add one indirection function call ... changes which should not have
-> > > any visible performance impact on per-bit codepaths, and one might
-> > > expect to cost on the order of one dozen instructions.
-> > >
-> > >
-> > > So the next version of this code will include a few minor bugfixes,
-> > > and will also use a raw spinlock to protect that table.  A raw lock
-> > > seems appropriate there in any case, since non-sleeping GPIOs should
-> > > be accessible from hardirq contexts even on RT kernels.
-> > >
-> > > If anyone has any strong arguments against using a raw spinlock
-> > > to protect that table, it'd be nice to know them sooner rather
-> > > than later.
-> > >
-> > > - Dave
-> > >
-> >
->
+ 	/* now we know the gpio is valid and chip won't vanish */
+@@ -250,9 +260,11 @@ int gpio_direction_output(unsigned gpio, int value)
+ 	chip = gpio_to_chip(gpio);
+ 	if (!chip || !chip->get || !chip->direction_output)
+ 		goto fail;
+-	gpio -= chip->base;
+-	if (gpio >= chip->ngpio)
++	
++	if (!gpio_is_onchip(gpio, chip))
+ 		goto fail;
++
++	gpio -= chip->base;
+ 	gpio_ensure_requested(chip, gpio);
 
+ 	/* now we know the gpio is valid and chip won't vanish */
 -- 
-Cheers
-- eric
+1.5.2.5.GIT
