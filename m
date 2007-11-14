@@ -1,65 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763543AbXKNTnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754337AbXKNTqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763543AbXKNTnu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 14:43:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754517AbXKNTnn
+	id S1754337AbXKNTqH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 14:46:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757062AbXKNTpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 14:43:43 -0500
-Received: from waste.org ([66.93.16.53]:34157 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753338AbXKNTnm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 14:43:42 -0500
-Date: Wed, 14 Nov 2007 13:42:24 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [bug] SLOB crash, 2.6.24-rc2
-Message-ID: <20071114194223.GT19691@waste.org>
-References: <200711112058.28043.rjw@sisk.pl> <20071114112001.GA13870@elte.hu> <20071114173611.GR19691@waste.org> <20071114183952.GS19691@waste.org> <20071114190501.GA5768@elte.hu>
+	Wed, 14 Nov 2007 14:45:55 -0500
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:2641 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753743AbXKNTpy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 14:45:54 -0500
+X-Greylist: delayed 530 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Nov 2007 14:45:54 EST
+Message-ID: <473B4FE5.7000601@hp.com>
+Date: Wed, 14 Nov 2007 14:43:33 -0500
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071114190501.GA5768@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] Give kjournald a IOPRIO_CLASS_RT io priority
+References: <20071015104647.14e60bc5@laptopd505.fenrus.org>	<20071015114738.6b5a25c7.akpm@linux-foundation.org>	<20071015161315.4fe18e07@bree.surriel.com>	<20071015141236.62b075c6.akpm@linux-foundation.org>	<473B18BA.5000709@hp.com>	<20071114091451.d4b110db.akpm@linux-foundation.org>	<20071114171805.GA20959@elte.hu> <20071114095151.43c5e576@laptopd505.fenrus.org>
+In-Reply-To: <20071114095151.43c5e576@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 14, 2007 at 08:05:01PM +0100, Ingo Molnar wrote:
-> 
-> * Matt Mackall <mpm@selenic.com> wrote:
-> 
-> > > > [   61.245190] rc.sysinit used greatest stack depth: 1680 bytes left
-> > > > [   61.386859] list_add corruption. prev->next should be next (407d973c), but was 418cf818. (prev=41877098).
-> > > > [   61.396328] ------------[ cut here ]------------
-> > > > [   61.400910] kernel BUG at lib/list_debug.c:33!
-> > > > [   61.405330] invalid opcode: 0000 [#1] DEBUG_PAGEALLOC
-> > > > 
-> > > > looks like memory corruption of some sort and it's reproducible. Picking 
-> > > > CONFIG_SLUB makes the crash go away. Booting v2.6.23 with the same 
-> > > > .config works fine.
-> > > 
-> > > Hmmm, the changes in SLOB since v2.6.23 are all trivial. I'll try to 
-> > > reproduce it with your config, but it doesn't seem promising.
-> > 
-> > Couldn't reproduce it here, let me know if you get anywhere with your 
-> > bisect.
-> 
-> the bug went away - and the only thing i did was a networking config 
-> tweak. So maybe something in networking corrupts memory? I'm not sure i 
-> can restore the old state. (i had lots of problems with net interface 
-> renaming not working in .24)
+Arjan van de Ven wrote:
+> On Wed, 14 Nov 2007 18:18:05 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
+>
+>   
+>> * Andrew Morton <akpm@linux-foundation.org> wrote:
+>>
+>>     
+>>> ooh, more performance testing.  Thanks
+>>>
+>>>       
+>>>>     * The overwriter task (on an 8GiB file), average over 10 runs:
+>>>>           o 2.6.24 - 300.88226 seconds
+>>>>           o 2.6.24 + Arjan's patch - 403.85505 seconds
+>>>>
+>>>>     * The read-a-different-kernel-tree task, average over 10 runs:
+>>>>           o 2.6.24 - 46.8145945549 seconds
+>>>>           o 2.6.24 + Arjan's patch - 39.6430601119 seconds
+>>>>
+>>>>     * The large-linear-read task (on an 8GiB file), average over
+>>>> 10 runs: o 2.6.24 - 290.32522 seconds
+>>>>           o 2.6.24 + Arjan's patch - 386.34860 seconds
+>>>>         
+>>> These are *large* differences, making this a very signifcant
+>>> patch. Much care is needed now.
+>>>       
+>> and the numbers suggest it's mostly a severe performance regression. 
+>> That's not what i have expected - ho hum. Apologies for my earlier 
+>> "please merge it already!" whining.
+>>     
+>
+> that's.. not automatic; it depends on what the right thing is :-(
+> What for sure changes is that who gets to do IO changes. Some of the
+> tests we ran internally (we didn't publish yet because we saw REALLY
+> large variations for most of them even without any patch) show for
+> example that "dbench" got slower. But.. dbench gets slower when things
+> get more fair, and faster when things get unfair. What conclusion you
+> draw out of that is a whole different matter and depends on exactly
+> what the test is doing, and what is the right thing for the OS to do in
+> terms of who gets to do the IO.
+>
+> THis makes the patch more tricky than the one line change suggests, and
+> this is also why I haven't published a ton of data yet; it's hard to
+> get useful tests for this (and the variation of the 2.6.23+ kernels
+> makes it even harder to do anything meaningful ;-( )
+>
+>
+>   
+I'd also like to point out here that the run-to-run deviation was indeed 
+quite large for both the unpatched- and patched-kernels, I'll report on 
+that information with the next set of results...
 
-Quite possible. SLOB is more sensitive to off by one bugs because it
-doesn't have the power-of-two buckets that SLAB/SLUB have. IIRC,
-SLAB/SLUB's debugging features won't detect when you request 28 bytes,
-get 32, then overwrite byte 29. But that will damage other objects or
-the free list in SLOB.
-
-But this isn't the per-page SLOB list that's getting clobbered, this
-is the list of pages held in struct page.
-
--- 
-Mathematics is the supreme nostalgia of our time.
+Alan
