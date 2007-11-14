@@ -1,49 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758850AbXKNLua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759340AbXKNLvP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758850AbXKNLua (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 06:50:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756684AbXKNLuU
+	id S1759340AbXKNLvP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 06:51:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756684AbXKNLu4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 06:50:20 -0500
-Received: from main.gmane.org ([80.91.229.2]:42042 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754677AbXKNLuS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 06:50:18 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Benny Amorsen <benny+usenet@amorsen.dk>
-Subject: Re: [PATCH 2/2] [e1000 VLAN] Disable vlan hw accel when promiscuous mode
-Date: Wed, 14 Nov 2007 12:48:04 +0100
-Message-ID: <m3sl39yrnv.fsf@ursa.amorsen.dk>
-References: <47365200.0f10240a.0686.2173@mx.google.com> <47388988.1000506@intel.com> <47388B9F.7050308@trash.net> <20071112.143342.10809862.davem@davemloft.net> <4738D70C.4060404@nortel.com> <4738D9AB.8080408@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: hd5b9080a.c45-01-12.sta.perspektivbredband.net
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-Cancel-Lock: sha1:vFMOmgeFmH3onhs2gVRcWmGk114=
-Cc: e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org
-Cc: e1000-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+	Wed, 14 Nov 2007 06:50:56 -0500
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:49907 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754881AbXKNLuz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 06:50:55 -0500
+Message-ID: <473AE010.4090806@keyaccess.nl>
+Date: Wed, 14 Nov 2007 12:46:24 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: rmk+lkml@arm.linux.org.uk, alsa-devel@alsa-project.org,
+       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org, protasnb@gmail.com,
+       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz, akpm@linux-foundation.org,
+       Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>
+Subject: Re: [alsa-devel] [BUG] New Kernel Bugs
+References: <20071113143201.9441c940.akpm@linux-foundation.org>	<20071113.175551.131375600.davem@davemloft.net>	<20071114095507.GA32595@flint.arm.linux.org.uk> <20071114.020706.219917088.davem@davemloft.net>
+In-Reply-To: <20071114.020706.219917088.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: 0.0 (/)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "AK" == Kok, Auke <auke-jan.h.kok@intel.com> writes:
+On 14-11-07 11:07, David Miller wrote:
 
-AK> actually the impact can be quite negative, imagine doing a tcpdump
-AK> on a 10gig interface with vlan's enabled - all of a sudden you
-AK> might accidentally flood the system with a 100-fold increase in
-AK> traffic and force the stack to dump all those packets for you.
+Added Jaroslav and Takashi to the already extensive CC....
 
-Why is the switch sending you all that traffic for VLAN's you don't
-care about? I have a hard time imagining such a scenario. Sure, you
-could have forgotten to limit the VLAN range sent to a particular
-host, or even have decided that it's administratively easier to just
-allow everything, but the switch still won't send unicast traffic out
-that port unless the destination MAC matches. If broadcast or
-non-solicited multicast takes up most of your bandwidth, you have
-other problems.
+> From: Russell King <rmk+lkml@arm.linux.org.uk>
 
+>> So, when are you creating a replacement alsa-devel mailing list on
+>> vger?  That's also subscribers-only.
+> 
+> The operative term is "alternative" rather than "replacement".
+> Perhaps this misunderstanding is what you're so upset about.
+> 
+> And yes, that alsa list bugs the crap out of me too.  I'm more than
+> happy to provide an alternative for that one as well.
 
-/Benny
+alsa-devel@alsa-project.org is not subscriber-only. Same as that arm list, 
+it's _moderated_ for non-subscribers and given that I and other moderators 
+have been doing our best to moderate quickly (I tend to stay logged in to 
+the moderation interface all day for example) what specifically bugged the 
+crap out of you? It's not something a poster needs to concern himself with.
 
+Also for alsa-devel the moderators tend to add any valid non-subcribers to 
+a whitelist after landing in the queue the first time meaning even a delay 
+is just a one-time thing normally. So what's the trouble? Basically, noone 
+need even notice...
+
+> In fact, *poof*, there it is, linux-alsa@vger.kernel.org is there and
+> available for anyone who wants to use it.
+
+Not that I think that moving alsa-devel over to vger wouldn't be a good idea 
+mind you; when the list moved from sourceforge, asking you to host it was my 
+preferred option. I do somewhat suspect that Jaroslav would like to keep the 
+alsa-devel@ name (and I'd like to ask you to then also host alsa-user@) and 
+would then rewrite mail to those lists @alsa-project.org to vger.
+
+But what is the problem you speak of with the alsa-devel list? While I would 
+not mind loosing it, moderation hasn't been overly laborious and I'm not 
+aware of any serious problems.
+
+Rene.
 
