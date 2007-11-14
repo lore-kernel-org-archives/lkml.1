@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761652AbXKNCFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762124AbXKNCGG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761652AbXKNCFp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 21:05:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761280AbXKNCEy
+	id S1762124AbXKNCGG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 21:06:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761310AbXKNCE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 21:04:54 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:4742 "EHLO perches.com"
+	Tue, 13 Nov 2007 21:04:58 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:4746 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761251AbXKNCEw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 21:04:52 -0500
-Subject: [PATCH] - [2/15] - remove defconfig ptr comparisons to 0 -
-	drivers/net
+	id S1758882AbXKNCEz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 21:04:55 -0500
+Subject: [PATCH] - [3/15] - remove defconfig ptr comparisons to 0 -
+	drivers/scsi/aic7xxx
 From: Joe Perches <joe@perches.com>
 To: linux-kernel <linux-kernel@vger.kernel.org>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Michael Chan <mchan@broadcom.com>, Jeff Garzik <jgarzik@pobox.com>,
-       netdev <netdev@vger.kernel.org>
+       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+       linux-scsi@vger.kernel.org
 Content-Type: text/plain
-Date: Tue, 13 Nov 2007 18:04:50 -0800
-Message-Id: <1195005890.5163.88.camel@localhost>
+Date: Tue, 13 Nov 2007 18:04:56 -0800
+Message-Id: <1195005896.5163.89.camel@localhost>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.0-2mdv2008.0 
 Content-Transfer-Encoding: 7bit
@@ -33,40 +33,27 @@ Signed-off-by: Joe Perches <joe@perches.com>
 
 ---
 
-diff --git a/drivers/net/bnx2.c b/drivers/net/bnx2.c
-index da767d3..cec3cb4 100644
---- a/drivers/net/bnx2.c
-+++ b/drivers/net/bnx2.c
-@@ -2495,7 +2495,7 @@ reuse_rx:
- 		}
- 
- #ifdef BCM_VLAN
--		if ((status & L2_FHDR_STATUS_L2_VLAN_TAG) && (bp->vlgrp != 0)) {
-+		if ((status & L2_FHDR_STATUS_L2_VLAN_TAG) && bp->vlgrp) {
- 			vlan_hwaccel_receive_skb(skb, bp->vlgrp,
- 				rx_hdr->l2_fhdr_vlan_tag);
- 		}
-@@ -5134,7 +5134,7 @@ bnx2_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 		vlan_tag_flags |= TX_BD_FLAGS_TCP_UDP_CKSUM;
- 	}
- 
--	if (bp->vlgrp != 0 && vlan_tx_tag_present(skb)) {
-+	if (bp->vlgrp && vlan_tx_tag_present(skb)) {
- 		vlan_tag_flags |=
- 			(TX_BD_FLAGS_VLAN_TAG | (vlan_tx_tag_get(skb) << 16));
- 	}
-diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
-index 4942f7d..b189c47 100644
---- a/drivers/net/tg3.c
-+++ b/drivers/net/tg3.c
-@@ -12576,7 +12576,7 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
- 		tg3reg_len = pci_resource_len(pdev, 2);
- 
- 		tp->aperegs = ioremap_nocache(tg3reg_base, tg3reg_len);
--		if (tp->aperegs == 0UL) {
-+		if (!tp->aperegs) {
- 			printk(KERN_ERR PFX "Cannot map APE registers, "
- 			       "aborting.\n");
- 			err = -ENOMEM;
+diff --git a/drivers/scsi/aic7xxx/aic7xxx_osm_pci.c b/drivers/scsi/aic7xxx/aic7xxx_osm_pci.c
+index 4488946..223bad1 100644
+--- a/drivers/scsi/aic7xxx/aic7xxx_osm_pci.c
++++ b/drivers/scsi/aic7xxx/aic7xxx_osm_pci.c
+@@ -310,7 +310,7 @@ ahc_linux_pci_reserve_io_region(struct ahc_softc *ahc, u_long *base)
+ 	*base = pci_resource_start(ahc->dev_softc, 0);
+ 	if (*base == 0)
+ 		return (ENOMEM);
+-	if (request_region(*base, 256, "aic7xxx") == 0)
++	if (!request_region(*base, 256, "aic7xxx"))
+ 		return (ENOMEM);
+ 	return (0);
+ }
+@@ -327,7 +327,7 @@ ahc_linux_pci_reserve_mem_region(struct ahc_softc *ahc,
+ 	start = pci_resource_start(ahc->dev_softc, 1);
+ 	if (start != 0) {
+ 		*bus_addr = start;
+-		if (request_mem_region(start, 0x1000, "aic7xxx") == 0)
++		if (!request_mem_region(start, 0x1000, "aic7xxx"))
+ 			error = ENOMEM;
+ 		if (error == 0) {
+ 			*maddr = ioremap_nocache(start, 256);
 
 
