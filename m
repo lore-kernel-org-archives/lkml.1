@@ -1,76 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765002AbXKNVv7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764591AbXKNVwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765002AbXKNVv7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 16:51:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764801AbXKNVvo
+	id S1764591AbXKNVwx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 16:52:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755109AbXKNVwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 16:51:44 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:33196 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762921AbXKNVvl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 16:51:41 -0500
-Subject: Re: [PATCH 3/3] nfs: use ->mmap_prepare() to avoid an AB-BA
-	deadlock
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-arch@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <1195076485.7584.66.camel@heimdal.trondhjem.org>
-References: <20071114200136.009242000@chello.nl>
-	 <20071114201528.514434000@chello.nl> <20071114212246.GA31048@wotan.suse.de>
-	 <1195075905.22457.3.camel@lappy>
-	 <1195076485.7584.66.camel@heimdal.trondhjem.org>
-Content-Type: text/plain
-Date: Wed, 14 Nov 2007 22:50:34 +0100
-Message-Id: <1195077034.22457.6.camel@lappy>
+	Wed, 14 Nov 2007 16:52:45 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:57143 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755296AbXKNVwo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 16:52:44 -0500
+Date: Wed, 14 Nov 2007 22:54:25 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 2/4] Add ARCH_SUPPORTS_OPROFILE
+Message-ID: <20071114215425.GA10920@uranus.ravnborg.org>
+References: <20071113142609.103579906@polymtl.ca> <20071113142935.063097504@polymtl.ca> <20071114194142.GC10047@uranus.ravnborg.org> <20071114213558.GB9010@Krystal>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071114213558.GB9010@Krystal>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2007-11-14 at 16:41 -0500, Trond Myklebust wrote:
-> On Wed, 2007-11-14 at 22:31 +0100, Peter Zijlstra wrote:
-> > On Wed, 2007-11-14 at 22:22 +0100, Nick Piggin wrote:
-> > > On Wed, Nov 14, 2007 at 09:01:39PM +0100, Peter Zijlstra wrote:
-> > > > Normal locking order is:
-> > > > 
-> > > >   i_mutex
-> > > >     mmap_sem
-> > > > 
-> > > > However NFS's ->mmap hook, which is called under mmap_sem, can take i_mutex.
-> > > > Avoid this potential deadlock by doing the work that requires i_mutex from
-> > > > the new ->mmap_prepare().
-> > > > 
-> > > > [ Is this sufficient, or does it introduce a race? ]
-> > > 
-> > > Seems like an OK patchset in my opinion. I don't know much about NFS
-> > > unfortunately, but I wonder what prevents the condition fixed by
-> > > nfs_revalidate_mapping from happening again while the mmap is active...?
 > > 
-> > As the changelog might have suggested, I'm not overly sure of the nfs
-> > requirements myself. I think it just does a best effort at getting the
-> > pages coherent with other clients, and then hopes for the best.
 > > 
-> > I'll let Trond enlighten us further before I make an utter fool of
-> > myself :-)
+> > In the arch specific Kconfig file in a suitable place do:
+> > 
+> > config SUITABLE_OPTION
 > 
-> The NFS client needs to check the validity of already cached data before
-> it allows those pages to be mmapped. If it finds out that the cache is
-> stale, then we need to call invalidate_inode_pages2() to clear out the
-> cache and refresh it from the server. The inode->i_mutex is necessary in
-> order to prevent races between the new writes and the cache invalidation
-> code.
+> Since config KPROBES will already be used in the architecture
+> independent Kconfig, I should find a different name for "config
+> SUITABLE_OPTION". Would
+> 
+> config KPROBES_SUPPORT
+>   select ARCH_HAS_KPROBES
+> 
+> be ok ?
 
-Right, but I guess what Nick asked is, if pages could be stale to start
-with, how is that avoided in the future.
+I should have been more specific here.
 
-The way I understand it, this re-validate is just a best effort at
-getting a coherent image.
+We do NOT want a dedicated config symbol just for this.
+For x86 use X86
+For arm use ARM
+For sparc64 use SPARC64
+For sparc use SPARC32
 
+etc. you get the picture.
+
+For x86 (where I spend a fair amount of time recently)
+there are several candidates to be moved to such a select
+list.
+Only reason not to do it then was to keep changes minimal.
+
+It would look like this:
+
+config X86
+	select ARCH_HAS_KPROBES        # yada yada
+	select ARCH_HAS_FOO            # more yada yada
+
+If you select an undefined symbol kconfig will warn you so keep
+an eye out for this (among all the other warnings kconfig spits out).
+
+arm uses this for the different boards as a good example.
+But they do not have the common-prefix rule in place.
+
+	Sam
