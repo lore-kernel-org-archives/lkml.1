@@ -1,91 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100AbXKNJXe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbXKNJZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756100AbXKNJXe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 04:23:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753946AbXKNJXT
+	id S1756040AbXKNJZh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 04:25:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbXKNJZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 04:23:19 -0500
-Received: from nf-out-0910.google.com ([64.233.182.188]:62750 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753940AbXKNJXQ (ORCPT
+	Wed, 14 Nov 2007 04:25:25 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:58124 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753446AbXKNJZX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 04:23:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=g+25xEDTXhLuLwl1iCi/XV9+Huhga8WZUyfrTu1RfFLZVIj88luzIZZzTn3qh9sKXt2Vthpd6/hyQbMfuZ+n9mCBP6bifNfZpPX7t2V8qlYFfO2AsFDIYy1mvXjve3Zvgz0DZWgMJ4NAaLwjLu+vRcppO1OuaFG8xUEjm8cmTs4=
-Message-ID: <473ABE7D.6060703@googlemail.com>
-Date: Wed, 14 Nov 2007 10:23:09 +0100
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071004)
+	Wed, 14 Nov 2007 04:25:23 -0500
+Date: Wed, 14 Nov 2007 04:21:51 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Julia Lawall <julia@diku.dk>
+cc: khali@linux-fr.org, i2c@lm-sensors.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 1/4] drivers/i2c: Drop redundant includes of
+ moduleparam.h
+In-Reply-To: <Pine.LNX.4.64.0711140707120.25487@ask.diku.dk>
+Message-ID: <alpine.LFD.0.9999.0711140416160.4673@localhost.localdomain>
+References: <Pine.LNX.4.64.0711132231080.18337@ask.diku.dk> <alpine.LFD.0.9999.0711131632490.26111@localhost.localdomain> <Pine.LNX.4.64.0711140707120.25487@ask.diku.dk>
 MIME-Version: 1.0
-To: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
-CC: Gabriel C <nix.or.die@googlemail.com>, Greg KH <greg@kroah.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       bk@suse.de, khali@linux-fr.org, Boaz Harrosh <bharrosh@panasas.com>,
-       James <James.Bottomley@HansenPartnership.com>
-Subject: Re: 2.6.24-rc2-mm1
-References: <473A678C.2020507@googlemail.com> <20071114034924.GA26048@kroah.com> <20071114043923.GK6089@one-eyed-alien.net> <473A88B3.3010303@googlemail.com> <20071114082332.GM6089@one-eyed-alien.net>
-In-Reply-To: <20071114082332.GM6089@one-eyed-alien.net>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Dharm wrote:
-> On Wed, Nov 14, 2007 at 06:33:39AM +0100, Gabriel C wrote:
->> Matthew Dharm wrote:
->>> On Tue, Nov 13, 2007 at 07:49:24PM -0800, Greg KH wrote:
->>>> Matt, are these the errors you were worried about with the patch we were
->>>> just talking about tha tis in my tree?
->>> I can't tell from these logs.
->> There is the dmesg with CONFIG_USB_STORAGE_DEBUG :
->>
->> http://194.231.229.228/dmesg-2.6.24-rc2-mm1
-> 
-> Good news: This isn't the bug Greg was worried about.
-> 
-> Bad news: Something is seriously strange here.  Note the following from the
-> logs:
-> 
-> Nov 14 06:07:43 lara [   41.890614] usb-storage: Bulk Status S 0x53425355 T 0xd R 0 Stat 0x0
-> Nov 14 06:07:43 lara [   41.890616] usb-storage: -- unexpectedly short transfer
-> 
-> Note the 'R' value of zero -- this is the residue value.  It indicates a
-> complete transfer, and that matches the log lines immediately previous
-> which indicate a 4K transfer which completed properly.
-> 
-> If residue is zero, then srb->resid should be zero.  Take a look in
-> linux/usb/storage/transport.c in usb_stor_Bulk_transport()
-> 
-> If srb->resid is zero, then you should NEVER get the "unexpectedly short
-> transfer" message.  Look at usb_stor_invoke_transport() in the same file.
+On Wed, 14 Nov 2007, Julia Lawall wrote:
 
-That code got replaced recently but I have no idea about it.
+> > > From: Julia Lawall <julia@diku.dk>
+> > >
+> > > Drop #include <linux/moduleparam.h> in files that also include #include
+> > > <linux/module.h>.  module.h includes moduleparam.h already.
+> >
+> > i'm not convinced that's a good idea.  while module.h does
+> > currently (and unfortunately) include moduleparam.h, there may
+> > come a day when those header files are refactored to actually make
+> > sense, at which point all those missing moduleparam.h inclusions
+> > will cause all sorts of bad things to happen.
+>
+> They were removed from the drivers/media files in August:
+> 9c12224a607a4b22ab86784e3394b52810b9507c
+> Perhaps they should be put back there then?
 
-( http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=shortlog  see the patches from Boaz Harrosh) 
+i went down this road before a few months back, checking on how many
+source files were unnecessarily including moduleparam.h, and the
+result was literally *hundreds*.  i took a shot at cleaning that up,
+and even factoring the non-parameter-related content out of that file,
+but the change would have been hugely disruptive.
 
-srb->resid got replaced by scsi_get_resid() it I see that right.
+as it is now, since module.h includes moduleparam.h, there is (as you
+can see) no reason whatever for *anyone* to include moduleparam.h.
+at least right now.
 
-I'm CC'ing the author , he will know I think.
+but if anyone ever aspires to tidy up this chaos, then all you'd end
+up doing is putting all those includes back in.  so unless there's a
+long-term goal here, it would seem safest to just leave things the way
+they are.  but that's someone else's decision, not mine.  i'm just
+reporting on how quickly things got unpleasant when *i* tried to do
+something with this once upon a time.
 
-> 
-> In fact, every transfer I look at shows this error.  I didn't exhaustivly
-> check every single one in the log, but a quick scan suggests that they all
-> are bogus; good transfer, CSW residue of 0, and "unexpectedly short"
-> message.
-> 
-> Maybe I'm too tired at this hour, but I just don't see how this is
-> possible.  Then again, I'm looking at 2.6.22 codebase (it's what I have
-> handy).
-> 
-> Hrm... does this tree have the "srb accessor" patches in it?  I'm wondering
-> if somewhere the init srb->resid to 0 before invoking the transport got
-> lost....
-> 
-> Matt
-> 
+rday
+--
 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-Gabriel
+http://crashcourse.ca
+========================================================================
