@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764435AbXKNGhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764538AbXKNGiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764435AbXKNGhl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 01:37:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764202AbXKNGh2
+	id S1764538AbXKNGiX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 01:38:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758835AbXKNGiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 01:37:28 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52554
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1764157AbXKNGh0 (ORCPT
+	Wed, 14 Nov 2007 01:38:11 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36724 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759968AbXKNGiK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 01:37:26 -0500
-Date: Tue, 13 Nov 2007 22:37:26 -0800 (PST)
-Message-Id: <20071113.223726.40898879.davem@davemloft.net>
-To: nickpiggin@yahoo.com.au
-Cc: clameter@sgi.com, netdev@vger.kernel.org, herbert@gondor.apana.org.au,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc2: Network commit causes SLUB performance regression
- with tbench
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200711140514.28159.nickpiggin@yahoo.com.au>
-References: <200711140436.24492.nickpiggin@yahoo.com.au>
-	<20071113.221242.153352652.davem@davemloft.net>
-	<200711140514.28159.nickpiggin@yahoo.com.au>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 14 Nov 2007 01:38:10 -0500
+Date: Tue, 13 Nov 2007 22:38:02 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Dave Young" <hidave.darkstar@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc2-mm1
+Message-Id: <20071113223802.2ace1a61.akpm@linux-foundation.org>
+In-Reply-To: <a8e1da0711132218h9d944d0p3c22ac313ee667a9@mail.gmail.com>
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
+	<a8e1da0711132218h9d944d0p3c22ac313ee667a9@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-Date: Wed, 14 Nov 2007 05:14:27 +1100
+On Wed, 14 Nov 2007 14:18:39 +0800 "Dave Young" <hidave.darkstar@gmail.com> wrote:
 
-> On Wednesday 14 November 2007 17:12, David Miller wrote:
-> > Is your test system using HIGHMEM?
-> >
-> > That's one thing the page vector in the sk_buff can do a lot,
-> > kmaps.
+> Hi,
+> Boot failed on my machine. hand copy some messages.
 > 
-> No, it's an x86-64, so no highmem.
-
-Ok.
-
-> What's also interesting is that SLAB apparently doesn't have this
-> condition. The first thing that sprung to mind is that SLAB caches
-> order > 0 allocations, while SLUB does not. However if anything,
-> that should actually favour the SLUB numbers if network is avoiding
-> order > 0 allocations.
+> First with BLK_DEV_RAM=y
 > 
-> I'm doing some oprofile runs now to see if I can get any more info.
+> BUG kmalloc-64 Poison overwritting:
+> Alloced in kset_create
+> Freed in kobject_cleanup
+> 
+> --cut--
+> alloc_disk_node
+> rd_init
+> kernel_init
+> --cut--
+> 
+> Then config ramdisk as module, build and reboot:
+> 
+> BUG: unable handle paging resuest at 6b6b6b6b
+> EIP is kobject_add 0xc4/0x150
+> 
+> --cut--
+> kobject_set_name
+> register_disk
+> add_disk
+> exact_match
+> exact_lock
+> loop_init
+> --cut--
+> 
 
-Here are some other things you can play around with:
+erp.  Can you send the config over please?
 
-1) Monitor the values of skb->len and skb->data_len for packets
-   going over loopback.
+And which distro/version is that machine running?
 
-2) Try removing NETIF_F_SG in drivers/net/loopback.c's dev->feastures
-   setting.
+Thanks.
