@@ -1,87 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758330AbXKNDXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759634AbXKNDZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758330AbXKNDXR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 22:23:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755158AbXKNDXJ
+	id S1759634AbXKNDZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 22:25:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754697AbXKNDZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 22:23:09 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:36660 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755134AbXKNDXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 22:23:08 -0500
-Date: Tue, 13 Nov 2007 22:23:05 -0500
-To: Christian Kujau <lists@nerdbynature.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: stuck nfsd processes with 2.6.24-rc2
-Message-ID: <20071114032305.GA28856@fieldses.org>
-References: <alpine.DEB.0.9999.0711131955530.27452@sheep.housecafe.de> <20071113194113.GA22590@fieldses.org> <alpine.DEB.0.99999.0711132219280.3960@sheep.housecafe.de> <alpine.DEB.0.99999.0711140230080.5703@sheep.housecafe.de>
+	Tue, 13 Nov 2007 22:25:16 -0500
+Received: from smtp113.sbc.mail.mud.yahoo.com ([68.142.198.212]:44778 "HELO
+	smtp113.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754675AbXKNDZP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Nov 2007 22:25:15 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=PPxa4ln9mRKMETe/Hm/8LRHODA1eh7ukImhMS1mF/CnXH2poyZoZEZ9pkgWPC9ZHTvnTIsedjRx193NcAX9Jp5vwnxOybnVN4C/BImP1dfzpU3ktCK8VMQlKq0y47fbw4+COBzrH5E+xwEaIByxWbPoHo+D8b7MDQeY2LKefoV8=  ;
+X-YMail-OSG: 1UiBph8VM1nW9UGhvGCn4MN.RKK9fUPUGqWebte29X10B1xAO5tmPxv97nSsLbkt2OT8Cbv4LdKJcGEB5Er4mibwQ_H0zV3Qld_.BqraOm.GB7Vw.Bs-
+From: David Brownell <david-b@pacbell.net>
+To: "eric miao" <eric.y.miao@gmail.com>
+Subject: Re: [patch/rfc 1/4] GPIO implementation framework
+Date: Tue, 13 Nov 2007 19:25:10 -0800
+User-Agent: KMail/1.9.6
+Cc: "Linux Kernel list" <linux-kernel@vger.kernel.org>,
+       "Felipe Balbi" <felipebalbi@users.sourceforge.net>,
+       "Bill Gatliff" <bgat@billgatliff.com>,
+       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
+       "Andrew Victor" <andrew@sanpeople.com>,
+       "Tony Lindgren" <tony@atomide.com>, "Jean Delvare" <khali@linux-fr.org>,
+       "Kevin Hilman" <khilman@mvista.com>, "Paul Mundt" <lethal@linux-sh.org>,
+       "Ben Dooks" <ben@trinity.fluff.org>
+References: <200710291809.29936.david-b@pacbell.net> <f17812d70711131657wbdcc089kadb6024a47ad4a3@mail.gmail.com> <f17812d70711131700n74236a8naa6dbfc5cb62e42d@mail.gmail.com>
+In-Reply-To: <f17812d70711131700n74236a8naa6dbfc5cb62e42d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.0.99999.0711140230080.5703@sheep.housecafe.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Message-Id: <200711131925.11734.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 14, 2007 at 02:36:18AM +0100, Christian Kujau wrote:
-> On Tue, 13 Nov 2007, Christian Kujau wrote:
->> Ah, I forgot about that. Will do as soon as I get a working kernel again. 
->> I'm in the middle of git-bisecting and I had to mark the last 2 versions 
->> as "bad" but only because they 1) Oopsed during boot or 2) could not load 
->> the kernel image:
->
-> Same again: after 3 working versions I have to mark yet another one as 
-> "bad" - not because the NFS bug showed up, but I was unable to boot again 
-> ("linux 'zimage' kernel too big" message again). So now I am at:
+On Tuesday 13 November 2007, eric miao wrote:
+> 
+> Here comes a bunch of patches to illustrate my idea, some are not related to
+> the point I mentioned, and they are not mature for now :-)
+> 
+> Subject: [PATCH 1/5] add gpio_is_onchip() for commonly used gpio range checking
 
-Hm, so assuming I got the gitk invocation right.  (I basically just ran
-gitk ^goodsha1 ^goodsha2 ...etc... badsha1 badsha2 ... fs/nfsd include/linux/nfsd net/sunrpc /include/linux/sunrpc),
-nothing really obvious pops out from that list.  I think the only
-nonobvious changes that touch code you're likely to be hitting are the
-exportfs rewrite.
+I'll send substantive comments later, but meanwhile note
+that the *CURRENT* version was posted last Friday:
 
-Have you checked that the filesystem itself is OK?  (If you 'ls
-/path/to/exported/filesystem' on the server does that work?)
+  http://marc.info/?l=linux-kernel&m=119463810905330&w=2
+  http://marc.info/?l=linux-kernel&m=119463811005344&w=2
+  http://marc.info/?l=linux-kernel&m=119463811105352&w=2
 
-Anyway if you get the git-bisect results, that'll be very helpful.  Till
-then, yeah, sysrq-T is probably still the first thing to try.
-
---b.
+Plus the appended tweak.  It's more useful to send patches
+against current code, so applying them doesn't provide a
+small avalanche of rejects.  :)
 
 
->
-> -------------------------------------
-> git-bisect start
-> # bad: [6e800af233e0bdf108efb7bd23c11ea6fa34cdeb] ACPI: add documentation for deprecated /proc/acpi/battery in ACPI_PROCFS
-> git-bisect bad 6e800af233e0bdf108efb7bd23c11ea6fa34cdeb
-> # good: [bbf25010f1a6b761914430f5fca081ec8c7accd1] Linux 2.6.23
-> git-bisect good bbf25010f1a6b761914430f5fca081ec8c7accd1
-> # good: [fba956c46a72f9e7503fd464ffee43c632307e31] Map volume and brightness events on thinkpads
-> git-bisect good fba956c46a72f9e7503fd464ffee43c632307e31
-> # bad: [7b1915a989ea4d426d0fd98974ab80f30ef1d779] mm/oom_kill.c: Use list_for_each_entry instead of list_for_each
-> git-bisect bad 7b1915a989ea4d426d0fd98974ab80f30ef1d779
-> # bad: [c223701cf6c706f42840631c1ca919a18e6e2800] ide: add "hdx=nodma" kernel parameter
-> git-bisect bad c223701cf6c706f42840631c1ca919a18e6e2800
-> # good: [1d677a6dfaac1d1cf51a7f58847077240985faf2] pm3fb: hardware cursor support
-> git-bisect good 1d677a6dfaac1d1cf51a7f58847077240985faf2
-> # good: [291702f017efdfe556cb87b8530eb7d1ff08cbae] [ALSA] Support ASUS P701 eeepc [0x1043 0x82a1] support
-> git-bisect good 291702f017efdfe556cb87b8530eb7d1ff08cbae
-> # good: [92d15c2ccbb3e31a3fc71ad28fdb55e1319383c0] Merge branch 'for-linus' of git://git.kernel.dk/data/git/linux-2.6-block
-> git-bisect good 92d15c2ccbb3e31a3fc71ad28fdb55e1319383c0
-> # bad: [f77bf01425b11947eeb3b5b54685212c302741b8] kbuild: introduce ccflags-y, asflags-y and ldflags-y
-> git-bisect bad f77bf01425b11947eeb3b5b54685212c302741b8
-> -------------------------------------
->
-> I'm not sure wether it's sane to continue at all ("only 19 revisions 
-> left!"); but this has to wait until tomorrow anyway...
->
-> @Bruce: sysrq-t will have to wait too, sorry.
->
->
-> thanks for any ideas,
-> Christian.
-> -- 
-> BOFH excuse #70:
->
-> nesting roaches shorted out the ether cable
+With respect to this patch adding gpio_is_onchip(), I
+don't see a point.  The "gpio >= chip->base" check
+is basically "are the data structures corrupted?" and
+so it should only be done if "extra_checks" is defined.
+(And IMO, not then ...)  And combining the other two tests
+that way doesn't make anything more clear to me.  That's
+somewhat of a style issue, I guess, unless you're like
+me and don't much trust GCC to avoid extra instructions.
+
+- Dave
+
