@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760222AbXKNQdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760604AbXKNQgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760222AbXKNQdi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 11:33:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756018AbXKNQdb
+	id S1760604AbXKNQgS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 11:36:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756887AbXKNQgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 11:33:31 -0500
-Received: from nic2.axis.se ([193.13.178.10]:49809 "EHLO krynn.se.axis.com"
+	Wed, 14 Nov 2007 11:36:08 -0500
+Received: from nic2.axis.se ([193.13.178.10]:49852 "EHLO krynn.se.axis.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755934AbXKNQda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 11:33:30 -0500
-Date: Wed, 14 Nov 2007 17:33:22 +0100
+	id S1756755AbXKNQgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 11:36:07 -0500
+Date: Wed, 14 Nov 2007 17:35:22 +0100
 From: Jesper Nilsson <jesper.nilsson@axis.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
        Mikael Starvik <mikael.starvik@axis.com>,
-       Jesper Nilsson <jesper.nilsson@axis.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] CRIS tlb.h should include linux/pagemap.h
-Message-ID: <20071114163322.GM6347@axis.com>
+       Jesper Nilsson <jesper.nilsson@axis.com>, linux-kernel@vger.kernel.org,
+       jgarzik@pobox.com
+Subject: [PATCH] CRISv10 Ethernet declare mac fix
+Message-ID: <20071114163522.GN6347@axis.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,29 +24,30 @@ User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Include linux/pagemap.h for release_pages and page_cache_release.
+Declare mac using DECLARE_MAC_BUF for use when calling print_mac().
 
-Fixes compilation error in arch/cris/mm/init.c when CONFIG_SWAP is unset.
+This fixes compile error where mac was undeclared.
+Also, remove unused variable i.
 
 Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
 
 ---
- tlb.h |    2 ++
- 1 file changed, 2 insertions(+)
+ eth_v10.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/include/asm-cris/tlb.h b/include/asm-cris/tlb.h
-index 6cc26de..7724246 100644
---- a/include/asm-cris/tlb.h
-+++ b/include/asm-cris/tlb.h
-@@ -1,6 +1,8 @@
- #ifndef _CRIS_TLB_H
- #define _CRIS_TLB_H
+diff --git a/drivers/net/cris/eth_v10.c b/drivers/net/cris/eth_v10.c
+index 5dc984a..917b7b4 100644
+--- a/drivers/net/cris/eth_v10.c
++++ b/drivers/net/cris/eth_v10.c
+@@ -630,7 +630,7 @@ e100_set_mac_address(struct net_device *dev, void *p)
+ {
+ 	struct net_local *np = netdev_priv(dev);
+ 	struct sockaddr *addr = p;
+-	int i;
++	DECLARE_MAC_BUF(mac);
  
-+#include <linux/pagemap.h>
-+
- #include <asm/arch/tlb.h>
+ 	spin_lock(&np->lock); /* preemption protection */
  
- /*
 
 /^JN - Jesper Nilsson
 --
