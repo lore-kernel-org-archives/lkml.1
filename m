@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762181AbXKNAsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762281AbXKNAvN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762181AbXKNAsQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Nov 2007 19:48:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758943AbXKNAsB
+	id S1762281AbXKNAvN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Nov 2007 19:51:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759409AbXKNAu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Nov 2007 19:48:01 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:47947 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757483AbXKNAsA (ORCPT
+	Tue, 13 Nov 2007 19:50:59 -0500
+Received: from nessie.weebeastie.net ([220.233.7.36]:60637 "EHLO
+	bunyip.lochness.weebeastie.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754450AbXKNAu6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Nov 2007 19:48:00 -0500
-Subject: Re: [PATCH] x86/paravirt: revert exports to restore old behaviour
-From: Zachary Amsden <zach@vmware.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Tobias Powalowski <t.powa@gmx.de>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20071113222212.GA1322@infradead.org>
-References: <200711131139.42791.t.powa@gmx.de> <473A073C.2020201@goop.org>
-	 <20071113222212.GA1322@infradead.org>
-Content-Type: text/plain
-Date: Tue, 13 Nov 2007 16:51:04 -0800
-Message-Id: <1195001464.6352.109.camel@bodhitayantram.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Nov 2007 19:50:58 -0500
+Date: Wed, 14 Nov 2007 11:21:07 +1100
+From: CaT <cat@zip.com.au>
+To: Andi Kleen <ak@suse.de>
+Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [13/45] x86_64: Increase VDSO_TEXT_OFFSET for ancient binutils
+Message-ID: <20071114002107.GA24395@zip.com.au>
+References: <200709211044.901175000@suse.de> <20070921204454.B51F714EFF@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070921204454.B51F714EFF@wotan.suse.de>
+Organisation: Furball Inc.
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-11-13 at 22:22 +0000, Christoph Hellwig wrote:
-> On Tue, Nov 13, 2007 at 12:21:16PM -0800, Jeremy Fitzhardinge wrote:
-> > Subject: x86/paravirt: revert exports to restore old behaviour
-> > 
-> > Subdividing the paravirt_ops structure caused a regression in certain
-> > non-GPL modules which try to use mmu_ops and cpu_ops.  This restores
-> > the old behaviour, and makes it consistent with the
-> > non-CONFIG_PARAVIRT case.
+On Fri, Sep 21, 2007 at 10:44:54PM +0200, Andi Kleen wrote:
+> For some reason old binutils genertate larger headers so
+> increase the text offset of the vdso to avoid linker errors.
 > 
-> NACK, both of these are internal and graphics drivers should not be
-> using them.
+> Signed-off-by: Andi Kleen <ak@suse.de>
+> 
+> ---
+>  arch/x86_64/vdso/voffset.h |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux/arch/x86_64/vdso/voffset.h
+> ===================================================================
+> --- linux.orig/arch/x86_64/vdso/voffset.h
+> +++ linux/arch/x86_64/vdso/voffset.h
+> @@ -1 +1 @@
+> -#define VDSO_TEXT_OFFSET 0x500
+> +#define VDSO_TEXT_OFFSET 0x600
 
-Some of them are internal, but some are not, they just happened to be
-privileged CPU operations available to anyone.
+This still breaks under Debian sarge. There is this (german) forum
+thread about it:
 
-Does anyone know what hooks they are actually using?  Something like
-reading MSRs is not internal at all, it is CPU specific, and the
-graphics drivers might have very good reasons to read them to figure out
-how AGP is configured for example.
+http://www.debianforum.de/forum/viewtopic.php?p=570102
 
-The graphics drivers most certainly don't need to be paravirtualized
-however, so they could always work around this with raw asm constructs.
+Robotic english translation:
+http://translate.google.com/translate?u=http%3A%2F%2Fwww.debianforum.de%2Fforum%2Fviewtopic.php%3Fp%3D569756%26sid%3D20278bfd231c5dac45fa0f2763c7ec54%23569756&langpair=de%7Cen&hl=en&ie=UTF-8
 
-The mmu_ops hook is more debatable.  But until someone figures out what
-hooks they want, we can't know whether they are internal or not.  In any
-case, this is a regression.
+And it indicates that 0x510 would be the better offset due to 0x600
+making it clash with the data section beneath. Indeed when I change it
+to 0x510 I can compile the kernel with binutils 2.15-6.
 
-Zach
+I'm hoping this wont cause the kernel to eat my grandma. :)
 
+-- 
+    "To the extent that we overreact, we proffer the terrorists the
+    greatest tribute."
+    	- High Court Judge Michael Kirby
