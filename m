@@ -1,260 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764490AbXKNUbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764592AbXKNUaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764490AbXKNUbr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 15:31:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760163AbXKNUbh
+	id S1764592AbXKNUaR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 15:30:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760043AbXKNU37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 15:31:37 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:53891 "EHLO e6.ny.us.ibm.com"
+	Wed, 14 Nov 2007 15:29:59 -0500
+Received: from mga09.intel.com ([134.134.136.24]:49183 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753651AbXKNUbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 15:31:35 -0500
-Date: Wed, 14 Nov 2007 14:31:26 -0600
-To: Greg KH <greg@kroah.com>
-Cc: gregkh@suse.de, Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       Matthew Wilcox <matthew@wil.cx>, strosake@us.ibm.com,
-       Alex Chiang <achiang@hp.com>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, lenb@kernel.org, rick.jones2@hp.com,
-       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: [PATCH v2] pci hotplug: fix rpaphp directory naming
-Message-ID: <20071114203126.GC18745@austin.ibm.com>
-References: <20071114003455.GD8509@austin.ibm.com> <20071114032607.GA22438@kroah.com>
+	id S1764282AbXKNU35 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 15:29:57 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,417,1188802800"; 
+   d="scan'208";a="204442751"
+Date: Wed, 14 Nov 2007 12:29:59 -0800
+From: mark gross <mgross@linux.intel.com>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc2-mm1
+Message-ID: <20071114202959.GA21049@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org> <473A678C.2020507@googlemail.com> <473A76FA.4050701@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071114032607.GA22438@kroah.com>
-User-Agent: Mutt/1.5.11
-From: linas@austin.ibm.com (Linas Vepstas)
+In-Reply-To: <473A76FA.4050701@googlemail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix presentation of the slot number in the /sys/bus/pci/slots
-directory to match that used in the majority of other drivers.
+On Wed, Nov 14, 2007 at 05:18:02AM +0100, Gabriel C wrote:
+> Gabriel C wrote:
+> > Andrew Morton wrote:
+> >> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc2/2.6.24-rc2-mm1/
+> > 
+> > I got it to boot but .. 
+> 
+> > 
+> > ...
+> > [   45.030261] input: Power Button (CM) as /devices/virtual/input/input4
+> > [   45.031331] BUG: sleeping function called from invalid context at kernel/rwsem.c:47
+> > [   45.031560] in_atomic():0, irqs_disabled():1
+> > [   45.031569] 1 lock held by modprobe/2105:
+> > [   45.031574]  #0:  (pm_qos_lock){....}, at: [<c0139b1c>] pm_qos_add_notifier+0x14/0x3c
+> > [   45.031606] irq event stamp: 4036
+> > [   45.031612] hardirqs last  enabled at (4035): [<c0140cc3>] debug_check_no_locks_freed+0xf9/0x105
+> > [   45.031632] hardirqs last disabled at (4036): [<c0333bf5>] _spin_lock_irqsave+0x10/0x55
+> > [   45.031653] softirqs last  enabled at (3710): [<c0128e96>] __do_softirq+0xe9/0xf1
+> > [   45.031670] softirqs last disabled at (3703): [<c0128ed8>] do_softirq+0x3a/0x52
+> > [   45.031685]  [<c0104e01>] show_trace_log_lvl+0x12/0x25
+> > [   45.031702]  [<c010562d>] show_trace+0xd/0x10
+> > [   45.031717]  [<c0105704>] dump_stack+0x16/0x18
+> > [   45.031728]  [<c011db69>] __might_sleep+0xc2/0xc9
+> > [   45.031740]  [<c0139093>] down_write+0x17/0x6f
+> > [   45.031754]  [<c013991e>] blocking_notifier_chain_register+0x26/0x3f
+> > [   45.031766]  [<c0139b2f>] pm_qos_add_notifier+0x27/0x3c
+> > [   45.031778]  [<e885bc77>] acpi_processor_power_init+0x4d/0x164 [processor]
+> > [   45.031802]  [<e885a5b3>] acpi_processor_start+0x503/0x556 [processor]
+> > [   45.031820]  [<c022125c>] acpi_start_single_object+0x20/0x3d
+> > [   45.031837]  [<c0222392>] acpi_device_probe+0x78/0x88
+> > [   45.031850]  [<c0244700>] driver_probe_device+0xb2/0x12d
+> > [   45.031866]  [<c02448a2>] __driver_attach+0x76/0xaf
+> > [   45.031878]  [<c0243cb0>] bus_for_each_dev+0x3e/0x60
+> > [   45.031889]  [<c0244588>] driver_attach+0x14/0x16
+> > [   45.031899]  [<c0243f9a>] bus_add_driver+0x7a/0x180
+> > [   45.031909]  [<c0244a9d>] driver_register+0x57/0x5c
+> > [   45.031918]  [<c022267e>] acpi_bus_register_driver+0x3a/0x3c
+> > [   45.031929]  [<e882f073>] acpi_processor_init+0x73/0xc5 [processor]
+> > [   45.031943]  [<c0148ec5>] sys_init_module+0x14e3/0x15ae
+> > [   45.031958]  [<c0103d86>] sysenter_past_esp+0x5f/0xa5
+> > [   45.031969]  =======================
+> > [   45.032213] ACPI: Invalid PBLK length [0]
+> > [   45.032465] ACPI: Invalid PBLK length [0]
+> > [   45.032656] ACPI: Invalid PBLK length [0]                                                                                               
+> > 
+> > ...
+> > 
+> > ...
+> > [  102.331554] BUG: sleeping function called from invalid context at kernel/rwsem.c:20
+> > [  102.331575] in_atomic():0, irqs_disabled():1
+> > [  102.331583] 1 lock held by artsd/4385:
+> > [  102.331589]  #0:  (pm_qos_lock){....}, at: [<c0139d4a>] pm_qos_add_requirement+0x5a/0x98
+> > [  102.331619] irq event stamp: 19022
+> > [  102.331624] hardirqs last  enabled at (19021): [<c0333d1a>] _spin_unlock_irqrestore+0x36/0x3c
+> > [  102.331641] hardirqs last disabled at (19022): [<c0333bf5>] _spin_lock_irqsave+0x10/0x55
+> > [  102.331655] softirqs last  enabled at (18846): [<c0128e96>] __do_softirq+0xe9/0xf1
+> > [  102.331672] softirqs last disabled at (18839): [<c0128ed8>] do_softirq+0x3a/0x52
+> > [  102.331688]  [<c0104e01>] show_trace_log_lvl+0x12/0x25
+> > [  102.331704]  [<c010562d>] show_trace+0xd/0x10
+> > [  102.331715]  [<c0105704>] dump_stack+0x16/0x18
+> > [  102.331727]  [<c011db69>] __might_sleep+0xc2/0xc9
+> > [  102.331739]  [<c0138fe7>] down_read+0x16/0x6a
+> > [  102.331750]  [<c0139872>] __blocking_notifier_call_chain+0x24/0x4c
+> > [  102.331761]  [<c01398a6>] blocking_notifier_call_chain+0xc/0xe
+> > [  102.331773]  [<c0139b82>] update_target+0x3e/0x43
+> > [  102.331784]  [<c0139d66>] pm_qos_add_requirement+0x76/0x98
+> > [  102.331795]  [<c02bd8a0>] snd_pcm_hw_params_user+0x2b1/0x302
+> > [  102.331811]  [<c02bdad9>] snd_pcm_common_ioctl1+0x17a/0xda3
+> > [  102.331825]  [<c02bee6b>] snd_pcm_playback_ioctl1+0x3ab/0x3c2
+> > [  102.331840]  [<c02bef06>] snd_pcm_playback_ioctl+0x27/0x35
+> > [  102.331853]  [<c01795ce>] vfs_ioctl+0x22/0x67
+> > [  102.331867]  [<c017986d>] do_vfs_ioctl+0x25a/0x268
+> > [  102.331878]  [<c01798a7>] sys_ioctl+0x2c/0x45
+> > [  102.331889]  [<c0103d86>] sysenter_past_esp+0x5f/0xa5
+> > [  102.331901]  =======================
+> > [  102.331911] WARNING: at arch/x86/kernel/smp_32.c:561 native_smp_call_function_mask()
+> > [  102.331920]  [<c0104e01>] show_trace_log_lvl+0x12/0x25
+> > [  102.331932]  [<c010562d>] show_trace+0xd/0x10
+> > [  102.331944]  [<c0105704>] dump_stack+0x16/0x18
+> > [  102.331955]  [<c0112f35>] native_smp_call_function_mask+0x39/0x11d
+> > [  102.331970]  [<c01142ef>] smp_call_function+0x18/0x1d
+> > [  102.331984]  [<e885b449>] acpi_processor_latency_notify+0x13/0x1a [processor]
+> > [  102.332011]  [<c01396e2>] notifier_call_chain+0x2b/0x4a
+> > [  102.332023]  [<c0139885>] __blocking_notifier_call_chain+0x37/0x4c
+> > [  102.332035]  [<c01398a6>] blocking_notifier_call_chain+0xc/0xe
+> > [  102.332047]  [<c0139b82>] update_target+0x3e/0x43
+> > [  102.332058]  [<c0139d66>] pm_qos_add_requirement+0x76/0x98
+> > [  102.332070]  [<c02bd8a0>] snd_pcm_hw_params_user+0x2b1/0x302
+> > [  102.332085]  [<c02bdad9>] snd_pcm_common_ioctl1+0x17a/0xda3
+> > [  102.332097]  [<c02bee6b>] snd_pcm_playback_ioctl1+0x3ab/0x3c2
+> > [  102.332111]  [<c02bef06>] snd_pcm_playback_ioctl+0x27/0x35
+> > [  102.332123]  [<c01795ce>] vfs_ioctl+0x22/0x67
+> > [  102.332134]  [<c017986d>] do_vfs_ioctl+0x25a/0x268
+> > [  102.332146]  [<c01798a7>] sys_ioctl+0x2c/0x45
+> > [  102.332156]  [<c0103d86>] sysenter_past_esp+0x5f/0xa5
+> > [  102.332167]  =======================
+> > [  102.357016] WARNING: at arch/x86/kernel/smp_32.c:561 native_smp_call_function_mask()
+> > [  102.357034]  [<c0104e01>] show_trace_log_lvl+0x12/0x25
+> > [  102.357058]  [<c010562d>] show_trace+0xd/0x10
+> > [  102.357072]  [<c0105704>] dump_stack+0x16/0x18
+> > [  102.357083]  [<c0112f35>] native_smp_call_function_mask+0x39/0x11d
+> > [  102.357100]  [<c01142ef>] smp_call_function+0x18/0x1d
+> > [  102.357113]  [<e885b449>] acpi_processor_latency_notify+0x13/0x1a [processor]
+> > [  102.357141]  [<c01396e2>] notifier_call_chain+0x2b/0x4a
+> > [  102.357155]  [<c0139885>] __blocking_notifier_call_chain+0x37/0x4c
+> > [  102.357166]  [<c01398a6>] blocking_notifier_call_chain+0xc/0xe
+> > [  102.357178]  [<c0139b82>] update_target+0x3e/0x43
+> > [  102.357190]  [<c0139bec>] pm_qos_remove_requirement+0x65/0x87
+> > [  102.357200]  [<c02bd865>] snd_pcm_hw_params_user+0x276/0x302
+> > [  102.357215]  [<c02bdad9>] snd_pcm_common_ioctl1+0x17a/0xda3
+> > [  102.357227]  [<c02bee6b>] snd_pcm_playback_ioctl1+0x3ab/0x3c2
+> > [  102.357239]  [<c02bef06>] snd_pcm_playback_ioctl+0x27/0x35
+> > [  102.357251]  [<c01795ce>] vfs_ioctl+0x22/0x67
+> > [  102.357264]  [<c017986d>] do_vfs_ioctl+0x25a/0x268
+> > [  102.357276]  [<c01798a7>] sys_ioctl+0x2c/0x45
+> > [  102.357286]  [<c0103d86>] sysenter_past_esp+0x5f/0xa5
+> > [  102.357296]  =======================
+> > [  102.357325] WARNING: at arch/x86/kernel/smp_32.c:561 native_smp_call_function_mask()
+> > [  102.357332]  [<c0104e01>] show_trace_log_lvl+0x12/0x25
+> > [  102.357345]  [<c010562d>] show_trace+0xd/0x10
+> > [  102.357356]  [<c0105704>] dump_stack+0x16/0x18
+> > [  102.357367]  [<c0112f35>] native_smp_call_function_mask+0x39/0x11d
+> > [  102.357378]  [<c01142ef>] smp_call_function+0x18/0x1d
+> > [  102.357391]  [<e885b449>] acpi_processor_latency_notify+0x13/0x1a [processor]
+> > [  102.357409]  [<c01396e2>] notifier_call_chain+0x2b/0x4a
+> > [  102.357421]  [<c0139885>] __blocking_notifier_call_chain+0x37/0x4c
+> > [  102.357433]  [<c01398a6>] blocking_notifier_call_chain+0xc/0xe
+> > [  102.357443]  [<c0139b82>] update_target+0x3e/0x43
+> > [  102.357454]  [<c0139d66>] pm_qos_add_requirement+0x76/0x98
+> > [  102.357465]  [<c02bd8a0>] snd_pcm_hw_params_user+0x2b1/0x302
+> > [  102.357477]  [<c02bdad9>] snd_pcm_common_ioctl1+0x17a/0xda3
+> > [  102.357488]  [<c02bee6b>] snd_pcm_playback_ioctl1+0x3ab/0x3c2
+> > [  102.357500]  [<c02bef06>] snd_pcm_playback_ioctl+0x27/0x35
+> > [  102.357511]  [<c01795ce>] vfs_ioctl+0x22/0x67
+> > [  102.357521]  [<c017986d>] do_vfs_ioctl+0x25a/0x268
+> > [  102.357532]  [<c01798a7>] sys_ioctl+0x2c/0x45
+> > [  102.357542]  [<c0103d86>] sysenter_past_esp+0x5f/0xa5
+> > [  102.357552]  =======================
+> > [  102.366346] WARNING: at arch/x86/kernel/smp_32.c:561 native_smp_call_function_mask()
+> > [  102.366358]  [<c0104e01>] show_trace_log_lvl+0x12/0x25
+> > [  102.366380]  [<c010562d>] show_trace+0xd/0x10
+> > [  102.366393]  [<c0105704>] dump_stack+0x16/0x18
+> > [  102.366404]  [<c0112f35>] native_smp_call_function_mask+0x39/0x11d
+> > [  102.366420]  [<c01142ef>] smp_call_function+0x18/0x1d
+> > [  102.366434]  [<e885b449>] acpi_processor_latency_notify+0x13/0x1a [processor]
+> > [  102.366460]  [<c01396e2>] notifier_call_chain+0x2b/0x4a
+> > [  102.366473]  [<c0139885>] __blocking_notifier_call_chain+0x37/0x4c
+> > [  102.366486]  [<c01398a6>] blocking_notifier_call_chain+0xc/0xe
+> > [  102.366498]  [<c0139b82>] update_target+0x3e/0x43
+> > [  102.366509]  [<c0139bec>] pm_qos_remove_requirement+0x65/0x87
+> > [  102.366521]  [<c02bd865>] snd_pcm_hw_params_user+0x276/0x302
+> > [  102.366537]  [<c02bdad9>] snd_pcm_common_ioctl1+0x17a/0xda3
+> > [  102.366550]  [<c02bee6b>] snd_pcm_playback_ioctl1+0x3ab/0x3c2
+> > [  102.366563]  [<c02bef06>] snd_pcm_playback_ioctl+0x27/0x35
+> > [  102.366574]  [<c01795ce>] vfs_ioctl+0x22/0x67
+> > [  102.366588]  [<c017986d>] do_vfs_ioctl+0x25a/0x268
+> > [  102.366600]  [<c01798a7>] sys_ioctl+0x2c/0x45
+> > [  102.366611]  [<c0103d86>] sysenter_past_esp+0x5f/0xa5
+> > [  102.366622]  =======================
+> > [  102.366690] WARNING: at arch/x86/kernel/smp_32.c:561 native_smp_call_function_mask()
+> > [  102.366698]  [<c0104e01>] show_trace_log_lvl+0x12/0x25
+> > [  102.366711]  [<c010562d>] show_trace+0xd/0x10
+> > [  102.366722]  [<c0105704>] dump_stack+0x16/0x18
+> > [  102.366733]  [<c0112f35>] native_smp_call_function_mask+0x39/0x11d
+> > [  102.366747]  [<c01142ef>] smp_call_function+0x18/0x1d
+> > [  102.366759]  [<e885b449>] acpi_processor_latency_notify+0x13/0x1a [processor]
+> > [  102.366778]  [<c01396e2>] notifier_call_chain+0x2b/0x4a
+> > [  102.366792]  [<c0139885>] __blocking_notifier_call_chain+0x37/0x4c
+> > [  102.366805]  [<c01398a6>] blocking_notifier_call_chain+0xc/0xe
+> > [  102.366817]  [<c0139b82>] update_target+0x3e/0x43
+> > [  102.366829]  [<c0139d66>] pm_qos_add_requirement+0x76/0x98
+> > [  102.366840]  [<c02bd8a0>] snd_pcm_hw_params_user+0x2b1/0x302
+> > [  102.366853]  [<c02bdad9>] snd_pcm_common_ioctl1+0x17a/0xda3
+> > [  102.366865]  [<c02bee6b>] snd_pcm_playback_ioctl1+0x3ab/0x3c2
+> > [  102.366879]  [<c02bef06>] snd_pcm_playback_ioctl+0x27/0x35
+> > [  102.366892]  [<c01795ce>] vfs_ioctl+0x22/0x67
+> > [  102.366902]  [<c017986d>] do_vfs_ioctl+0x25a/0x268
+> > [  102.366913]  [<c01798a7>] sys_ioctl+0x2c/0x45
+> > [  102.366922]  [<c0103d86>] sysenter_past_esp+0x5f/0xa5
+> > [  102.366932]  =======================
+> > [  108.552031] printk: 31 messages suppressed.
+> 
+> 
+> All this BUG / WARNINGS are caused by *-qos* patches. Reverting this 3 patches makes the BUGs go away :
+> 
+> latencyc-use-qos-infrastructure.patch
+> pm-qos-infrastructure-and-interface.patch
+> pm-qos-infrastructure-and-interface-static-initialization-with-blocking-notifiers.patch
+> 
+> 
+> Gabriel
+> 
+> 
+This looks like the same issue Rafael saw.
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+Try the patch in the following post:
 
-------
-On Tue, Nov 13, 2007 at 07:26:07PM -0800, Greg KH wrote:
-> We need a signed-off-by: to be able to apply this...
+http://marc.info/?l=linux-kernel&m=119265627228498&w=2
 
-Whoops. See above. Same patch as list time, no changes.
+--mgross
 
-On Tue, Nov 13, 2007 at 02:58:30PM -0700, Matthew Wilcox wrote:
-> On Tue, Nov 13, 2007 at 03:41:21PM -0600, Linas Vepstas wrote:
-> > /sys/bus/pci/slots
-> > /sys/bus/pci/slots/control
-> > /sys/bus/pci/slots/control/remove_slot
-> > /sys/bus/pci/slots/control/add_slot
-> > /sys/bus/pci/slots/0001:00:02.0
-> > /sys/bus/pci/slots/0001:00:02.0/phy_location
->
-> Ugh.  Almost two years ago, paulus promised me he was going to fix the
-> slot name for rpaphp.  Guess he didn't.
-
-You have to ask the right person. :-) I've been defacto mainaining
-the rpaphp code for unpteen years now. On the other hand, I am also
-much, much better at promising than delivering.
-
-> This is one of the hateful things about the current design -- hotplug
-> drivers do too much.  Instead of being just the interface between the
-> Linux PCI code and the hardware, they create sysfs directories, add
-> files,
-> and generally have far too much freedom.
-
-I chopped out several hundred LOC from rpaphp a year ago,
-and hopefuly that might make furthre simplification easier 
-someday.
-
-> We have four different schemes currently for naming in slots/,
-> 1. slot number.  Used by cpqphp, ibmphp, acpiphp, pciehp, shpc.
-> 2. domain:bus:dev:fn.  Used by fakephp.
-> 3a. domain:bus:dev.  Used by rpaphp and sgihp.
-> 3b. Except that rpaphp uses phy_location to present the information
-> that
-> should be in the name and sgihp uses path.
->
-> ... I've forgotten what cpci uses.  And yenta doesn't use it.
->
-> How is anyone supposed to write sane managability tools in the
-> presence
-> of such anarchy?
->
-> > ~ # cat /sys/bus/pci/slots/0000:00:02.2/phy_location
-> > U787A.001.DNZ00Z5-P1-C2
->
-> Right.  This should look like:
->
-> # cat /sys/bus/pci/slots/U787A.001.DNZ00Z5-P1-C2/address
-> 0000:00:02
-
-This patch implements exactly what you describe. Boot tested.
-I assume you really mean it -- if so, then please review and
-ack the patch !?
-
-I have absolutely no clue if this breaks any existing IBM tools.
-I'm pretty sure it doesn't ... but attention Mike Strosaker! does it?
-
-
- drivers/pci/hotplug/rpaphp.h      |    1 
- drivers/pci/hotplug/rpaphp_pci.c  |   14 -----------
- drivers/pci/hotplug/rpaphp_slot.c |   47 +++++++++++++++++++-------------------
- 3 files changed, 24 insertions(+), 38 deletions(-)
-
-Index: linux-2.6.23-rc8-mm1/drivers/pci/hotplug/rpaphp_pci.c
-===================================================================
---- linux-2.6.23-rc8-mm1.orig/drivers/pci/hotplug/rpaphp_pci.c	2007-07-08 18:32:17.000000000 -0500
-+++ linux-2.6.23-rc8-mm1/drivers/pci/hotplug/rpaphp_pci.c	2007-11-13 17:52:10.000000000 -0600
-@@ -64,19 +64,6 @@ int rpaphp_get_sensor_state(struct slot 
- 	return rc;
- }
  
--static void set_slot_name(struct slot *slot)
--{
--	struct pci_bus *bus = slot->bus;
--	struct pci_dev *bridge;
--
--	bridge = bus->self;
--	if (bridge)
--		strcpy(slot->name, pci_name(bridge));
--	else
--		sprintf(slot->name, "%04x:%02x:00.0", pci_domain_nr(bus),
--			bus->number);
--}
--
- /**
-  * rpaphp_enable_slot - record slot state, config pci device
-  *
-@@ -114,7 +101,6 @@ int rpaphp_enable_slot(struct slot *slot
- 	info->adapter_status = EMPTY;
- 	slot->bus = bus;
- 	slot->pci_devs = &bus->devices;
--	set_slot_name(slot);
- 
- 	/* if there's an adapter in the slot, go add the pci devices */
- 	if (state == PRESENT) {
-Index: linux-2.6.23-rc8-mm1/drivers/pci/hotplug/rpaphp_slot.c
-===================================================================
---- linux-2.6.23-rc8-mm1.orig/drivers/pci/hotplug/rpaphp_slot.c	2007-07-08 18:32:17.000000000 -0500
-+++ linux-2.6.23-rc8-mm1/drivers/pci/hotplug/rpaphp_slot.c	2007-11-13 18:05:13.000000000 -0600
-@@ -33,23 +33,31 @@
- #include <asm/rtas.h>
- #include "rpaphp.h"
- 
--static ssize_t location_read_file (struct hotplug_slot *php_slot, char *buf)
-+static ssize_t address_read_file (struct hotplug_slot *php_slot, char *buf)
- {
--	char *value;
--	int retval = -ENOENT;
-+	int retval;
- 	struct slot *slot = (struct slot *)php_slot->private;
-+	struct pci_bus *bus;
- 
- 	if (!slot)
--		return retval;
-+		return -ENOENT;
- 
--	value = slot->location;
--	retval = sprintf (buf, "%s\n", value);
-+	bus = slot->bus;
-+	if (!bus)
-+		return -ENOENT;
-+
-+	if (bus->self)
-+		retval = sprintf(buf, pci_name(bus->self));
-+	else
-+		retval = sprintf(buf, "%04x:%02x:00.0", 
-+		        pci_domain_nr(bus), bus->number);
-+	
- 	return retval;
- }
- 
--static struct hotplug_slot_attribute php_attr_location = {
--	.attr = {.name = "phy_location", .mode = S_IFREG | S_IRUGO},
--	.show = location_read_file,
-+static struct hotplug_slot_attribute php_attr_address = {
-+	.attr = {.name = "address", .mode = S_IFREG | S_IRUGO},
-+	.show = address_read_file,
- };
- 
- /* free up the memory used by a slot */
-@@ -64,7 +72,6 @@ void dealloc_slot_struct(struct slot *sl
- 	kfree(slot->hotplug_slot->info);
- 	kfree(slot->hotplug_slot->name);
- 	kfree(slot->hotplug_slot);
--	kfree(slot->location);
- 	kfree(slot);
- }
- 
-@@ -83,16 +90,13 @@ struct slot *alloc_slot_struct(struct de
- 					   GFP_KERNEL);
- 	if (!slot->hotplug_slot->info)
- 		goto error_hpslot;
--	slot->hotplug_slot->name = kmalloc(BUS_ID_SIZE + 1, GFP_KERNEL);
-+	slot->hotplug_slot->name = kmalloc(strlen(drc_name) + 1, GFP_KERNEL);
- 	if (!slot->hotplug_slot->name)
- 		goto error_info;	
--	slot->location = kmalloc(strlen(drc_name) + 1, GFP_KERNEL);
--	if (!slot->location)
--		goto error_name;
- 	slot->name = slot->hotplug_slot->name;
-+	strcpy(slot->name, drc_name);
- 	slot->dn = dn;
- 	slot->index = drc_index;
--	strcpy(slot->location, drc_name);
- 	slot->power_domain = power_domain;
- 	slot->hotplug_slot->private = slot;
- 	slot->hotplug_slot->ops = &rpaphp_hotplug_slot_ops;
-@@ -100,8 +104,6 @@ struct slot *alloc_slot_struct(struct de
- 	
- 	return (slot);
- 
--error_name:
--	kfree(slot->hotplug_slot->name);
- error_info:
- 	kfree(slot->hotplug_slot->info);
- error_hpslot:
-@@ -133,8 +135,8 @@ int rpaphp_deregister_slot(struct slot *
- 
- 	list_del(&slot->rpaphp_slot_list);
- 	
--	/* remove "phy_location" file */
--	sysfs_remove_file(&php_slot->kobj, &php_attr_location.attr);
-+	/* remove "address" file */
-+	sysfs_remove_file(&php_slot->kobj, &php_attr_address.attr);
- 
- 	retval = pci_hp_deregister(php_slot);
- 	if (retval)
-@@ -166,8 +168,8 @@ int rpaphp_register_slot(struct slot *sl
- 		return retval;
- 	}
- 
--	/* create "phy_location" file */
--	retval = sysfs_create_file(&php_slot->kobj, &php_attr_location.attr);
-+	/* create "address" file */
-+	retval = sysfs_create_file(&php_slot->kobj, &php_attr_address.attr);
- 	if (retval) {
- 		err("sysfs_create_file failed with error %d\n", retval);
- 		goto sysfs_fail;
-@@ -175,8 +177,7 @@ int rpaphp_register_slot(struct slot *sl
- 
- 	/* add slot to our internal list */
- 	list_add(&slot->rpaphp_slot_list, &rpaphp_slot_head);
--	info("Slot [%s](PCI location=%s) registered\n", slot->name,
--			slot->location);
-+	info("Slot [%s] registered\n", slot->name);
- 	return 0;
- 
- sysfs_fail:
-Index: linux-2.6.23-rc8-mm1/drivers/pci/hotplug/rpaphp.h
-===================================================================
---- linux-2.6.23-rc8-mm1.orig/drivers/pci/hotplug/rpaphp.h	2007-07-08 18:32:17.000000000 -0500
-+++ linux-2.6.23-rc8-mm1/drivers/pci/hotplug/rpaphp.h	2007-11-13 18:06:16.000000000 -0600
-@@ -74,7 +74,6 @@ struct slot {
- 	u32 type;
- 	u32 power_domain;
- 	char *name;
--	char *location;
- 	struct device_node *dn;
- 	struct pci_bus *bus;
- 	struct list_head *pci_devs;
