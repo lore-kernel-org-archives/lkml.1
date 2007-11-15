@@ -1,43 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765003AbXKOBqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764939AbXKOBrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765003AbXKOBqV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 20:46:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbXKOBqM
+	id S1764939AbXKOBrs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 20:47:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753734AbXKOBrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 20:46:12 -0500
-Received: from nz-out-0506.google.com ([64.233.162.229]:1235 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755461AbXKOBqL (ORCPT
+	Wed, 14 Nov 2007 20:47:40 -0500
+Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:43681 "HELO
+	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751322AbXKOBrj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 20:46:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=hwtikHa9krL7wDzdL+XjRs4H22E9OvTAVrobHtKBZozHse2/bVlEpGYADhiQKsR49qQ95M5a3w8Sj2QItwZUUApDUy3jVt63j/WNg9TaKN2WYjaTKCccjtnOSo45umwQdmAlCbCSX0KG/t9Uy8tE2hGbYRpiJdsRCR7m8QhYHO8=
-Message-ID: <473BA4D8.508@gmail.com>
-Date: Thu, 15 Nov 2007 10:46:00 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 14 Nov 2007 20:47:39 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=k8a90RErpUZ0ztwGj6vtUm1q11mtoiZqKdijeDmGYw6IQZ4t0oYHcuWyvjXJoUkATw9bipbRnxIGR07p/kpAn9Pmr7EAvm7/3s69WG3ESHiT85gCZnU4AJJ5lcgL9SYmBLvOr9bocQ2ymVsp6LWkNvy4dKNOgSF2/Ye4jlWd2hg=  ;
+X-YMail-OSG: wf5Qs6YVM1lPRdJzSKmn0VJk50sIlzO2rm5lFqbnZusXNS1jA1RpHtuIwlNmYBCGBEkySY2NSQ--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: 2.6.24-rc2: Network commit causes SLUB performance regression with tbench
+Date: Thu, 15 Nov 2007 12:47:29 +1100
+User-Agent: KMail/1.9.5
+Cc: Christoph Lameter <clameter@sgi.com>, David Miller <davem@davemloft.net>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200711140927.39796.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0711141650150.21965@schroedinger.engr.sgi.com> <20071115011110.GB21193@gondor.apana.org.au>
+In-Reply-To: <20071115011110.GB21193@gondor.apana.org.au>
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH 1/2] sata_nv: don't use legacy DMA in ADMA mode
-References: <473A7628.3010907@shaw.ca> <473BA447.6090909@gmail.com>
-In-Reply-To: <473BA447.6090909@gmail.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711151247.29424.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> If so, can you please add that switching into register mode is okay as
-> long as there's no other ADMA commands in flight and add
-> WARN_ON((qc->flags & ATA_QCFLAG_RESULT_TF) && link->sactive)?
+On Thursday 15 November 2007 12:11, Herbert Xu wrote:
+> On Wed, Nov 14, 2007 at 05:03:25PM -0800, Christoph Lameter wrote:
+> > Well this is likely the result of the SLUB regression. If you allocate an
+> > order 1 page then the zone locks need to be taken. SLAB queues the a
 
-More accurately, link->sactive test can be substituted with
-(ap->qc_allocated & ~(1 << qc->tag)).
+Yeah, it appears this is what happened. The lockless page allocator
+fastpath appears on the list and the slowpaths disappear after
+Herbert's patches. SLAB is doing its own thing, so it avoids that
+pitfall.
 
--- 
-tejun
+
+> > couple of higher order pages and can so serve a couple of requests
+> > without going into the page allocator whereas SLUB has to go directly to
+> > the page allocator for allocate and free. I guess that needs fixing in
+> > the page allocator. Or do I need to add a mechanism to buffer higher
+> > order page allcoations to SLUB?
+>
+> Actually this serves to discourage people from using high-order
+> allocations which IMHO is a good thing :)
+
+Yeah I completely agree. The right fix is in the caller...
+The bug / suboptimal allocation would not have been found in tcp
+if not for this ;)
+
