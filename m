@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764052AbXKOAYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763377AbXKOA1X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764052AbXKOAYR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 19:24:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbXKOAYG
+	id S1763377AbXKOA1X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 19:27:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755952AbXKOA1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 19:24:06 -0500
-Received: from ozlabs.org ([203.10.76.45]:36180 "EHLO ozlabs.org"
+	Wed, 14 Nov 2007 19:27:08 -0500
+Received: from lixom.net ([66.141.50.11]:51783 "EHLO mail.lixom.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753363AbXKOAYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 19:24:05 -0500
+	id S1754247AbXKOA1H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 19:27:07 -0500
+Date: Wed, 14 Nov 2007 18:28:10 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix warning for token-ring from sysctl checker
+Message-ID: <20071115002810.GA7337@lixom.net>
+References: <20071113072313.GB16842@lixom.net> <20071113.211540.97775009.davem@davemloft.net> <m1r6is253v.fsf@ebiederm.dsl.xmission.com> <20071114084528.0f092739.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18235.37249.823703.12168@cargo.ozlabs.ibm.com>
-Date: Thu, 15 Nov 2007 11:23:29 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Stephane Eranian <eranian@hpl.hp.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Philip Mucci <mucci@cs.utk.edu>, William Cohen <wcohen@redhat.com>,
-       Robert Richter <robert.richter@amd.com>, linux-kernel@vger.kernel.org,
-       Perfmon <perfmon@napali.hpl.hp.com>,
-       perfmon2-devel@lists.sourceforge.net,
-       OSPAT devel <ospat-devel@cs.utk.edu>,
-       papi list <ptools-perfapi@cs.utk.edu>
-Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
-In-Reply-To: <20071114142629.GE17145@one.firstfloor.org>
-References: <20071113175545.GD4319@frankl.hpl.hp.com>
-	<53F4663B-CFBA-44E4-8283-BAAC8C8F1AFF@cs.utk.edu>
-	<20071113185924.GA22748@suse.de>
-	<20071113120728.4342e7d7.akpm@linux-foundation.org>
-	<18234.41652.199520.31261@cargo.ozlabs.ibm.com>
-	<20071114103805.GA16652@infradead.org>
-	<18234.53558.883970.87414@cargo.ozlabs.ibm.com>
-	<20071114110009.GA17833@infradead.org>
-	<p734pfp6lyp.fsf@bingen.suse.de>
-	<20071114141342.GH6557@frankl.hpl.hp.com>
-	<20071114142629.GE17145@one.firstfloor.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
+In-Reply-To: <20071114084528.0f092739.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen writes:
-
-> > This only works when counting (not sampling) and only for self-monitoring.
+On Wed, Nov 14, 2007 at 08:45:28AM -0800, Randy Dunlap wrote:
+> On Wed, 14 Nov 2007 08:56:20 -0700 Eric W. Biederman wrote:
 > 
-> It works for global monitoring too.
+> > David Miller <davem@davemloft.net> writes:
+> > 
+> > > From: Olof Johansson <olof@lixom.net>
+> > > Date: Tue, 13 Nov 2007 01:23:13 -0600
+> > >
+> > >> As seen when booting ppc64_defconfig:
+> > >> 
+> > >> sysctl table check failed: /net/token-ring .3.14 procname does not match
+> > > binary path procname
+> > >> 
+> > >> 
+> > >> Signed-off-by: Olof Johansson <olof@lixom.net>
+> > >
+> > > Patch applied, thanks Olof.
+> > 
+> > No objections but I think we already have this fixed in the -mm tree.
+> 
+> Yes, I patched it several weeks ago and it's been in -mm for a while
+> now.  Apparently too long.
 
-How would you provide access to the counters of another process?
-Through an extension to ptrace perhaps?
+Ah, sorry for the duplicate patch then. I must have missed it at the
+original posting (and didn't search that far back and/or -mm before
+posting it myself).
 
-Paul.
+
+-Olof
