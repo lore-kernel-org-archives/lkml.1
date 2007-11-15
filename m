@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764164AbXKOGWG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764229AbXKOGWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764164AbXKOGWG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:22:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762745AbXKOGQr
+	id S1764229AbXKOGWq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:22:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758941AbXKOGQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:16:47 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:51111 "EHLO
+	Thu, 15 Nov 2007 01:16:50 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:51122 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762686AbXKOGQp (ORCPT
+	with ESMTP id S1762766AbXKOGQs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:16:45 -0500
-Date: Wed, 14 Nov 2007 22:15:10 -0800
+	Thu, 15 Nov 2007 01:16:48 -0500
+Date: Wed, 14 Nov 2007 22:15:13 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,14 +21,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andi Kleen <ak@suse.de>
-Subject: [patch 15/19] x86: fix global_flush_tlb() bug
-Message-ID: <20071115061510.GP7980@kroah.com>
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [patch 16/19] x86 setup: handle boot loaders which set up the
+	stack incorrectly
+Message-ID: <20071115061513.GQ7980@kroah.com>
 References: <20071115054813.977066477@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-fix-global_flush_tlb-bug.patch"
+Content-Disposition: inline; filename="x86-setup-handle-boot-loaders-which-set-up-the-stack-incorrectly.patch"
 In-Reply-To: <20071115061415.GA7980@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -38,70 +38,124 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Ingo Molnar <mingo@elte.hu>
+From: H. Peter Anvin <hpa@zytor.com>
 
-patch 9a24d04a3c26c223f22493492c5c9085b8773d4a upstream
+patch 6b6815c6d5d1dc209701d1661a7a0e09a295db2f in mainline.
 
-While we were reviewing pageattr_32/64.c for unification,
-Thomas Gleixner noticed the following serious SMP bug in
-global_flush_tlb():
+Apparently some specific versions of LILO enter the kernel with a
+stack pointer that doesn't match the rest of the segments.  Make our
+best attempt at untangling the resulting mess.
 
-	down_read(&init_mm.mmap_sem);
-	list_replace_init(&deferred_pages, &l);
-	up_read(&init_mm.mmap_sem);
-
-this is SMP-unsafe because list_replace_init() done on two CPUs in
-parallel can corrupt the list.
-
-This bug has been introduced about a year ago in the 64-bit tree:
-
-       commit ea7322decb974a4a3e804f96a0201e893ff88ce3
-       Author: Andi Kleen <ak@suse.de>
-       Date:   Thu Dec 7 02:14:05 2006 +0100
-
-       [PATCH] x86-64: Speed and clean up cache flushing in change_page_attr
-
-                down_read(&init_mm.mmap_sem);
-        -       dpage = xchg(&deferred_pages, NULL);
-        +       list_replace_init(&deferred_pages, &l);
-                up_read(&init_mm.mmap_sem);
-
-the xchg() based version was SMP-safe, but list_replace_init() is not.
-So this "cleanup" introduced a nasty bug.
-
-why this bug never become prominent is a mystery - it can probably be
-explained with the (still) relative obscurity of the x86_64 architecture.
-
-the safe fix for now is to write-lock init_mm.mmap_sem.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andi Kleen <ak@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86_64/mm/pageattr.c |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ arch/i386/boot/boot.h   |    4 +--
+ arch/i386/boot/header.S |   62 ++++++++++++++++++++++++++++++++++--------------
+ 2 files changed, 46 insertions(+), 20 deletions(-)
 
---- a/arch/x86_64/mm/pageattr.c
-+++ b/arch/x86_64/mm/pageattr.c
-@@ -229,9 +229,14 @@ void global_flush_tlb(void)
- 	struct page *pg, *next;
- 	struct list_head l;
+--- a/arch/i386/boot/boot.h
++++ b/arch/i386/boot/boot.h
+@@ -17,6 +17,8 @@
+ #ifndef BOOT_BOOT_H
+ #define BOOT_BOOT_H
  
--	down_read(&init_mm.mmap_sem);
-+	/*
-+	 * Write-protect the semaphore, to exclude two contexts
-+	 * doing a list_replace_init() call in parallel and to
-+	 * exclude new additions to the deferred_pages list:
-+	 */
-+	down_write(&init_mm.mmap_sem);
- 	list_replace_init(&deferred_pages, &l);
--	up_read(&init_mm.mmap_sem);
-+	up_write(&init_mm.mmap_sem);
++#define STACK_SIZE	512	/* Minimum number of bytes for stack */
++
+ #ifndef __ASSEMBLY__
  
- 	flush_map(&l);
+ #include <stdarg.h>
+@@ -198,8 +200,6 @@ static inline int isdigit(int ch)
+ }
  
+ /* Heap -- available for dynamic lists. */
+-#define STACK_SIZE	512	/* Minimum number of bytes for stack */
+-
+ extern char _end[];
+ extern char *HEAP;
+ extern char *heap_end;
+--- a/arch/i386/boot/header.S
++++ b/arch/i386/boot/header.S
+@@ -173,7 +173,8 @@ ramdisk_size:	.long	0		# its size in byt
+ bootsect_kludge:
+ 		.long	0		# obsolete
+ 
+-heap_end_ptr:	.word	_end+1024	# (Header version 0x0201 or later)
++heap_end_ptr:	.word	_end+STACK_SIZE-512
++					# (Header version 0x0201 or later)
+ 					# space from here (exclusive) down to
+ 					# end of setup code can be used by setup
+ 					# for local heap purposes.
+@@ -225,28 +226,53 @@ start_of_setup:
+ 	int	$0x13
+ #endif
+ 
+-# We will have entered with %cs = %ds+0x20, normalize %cs so
+-# it is on par with the other segments.
+-	pushw	%ds
+-	pushw	$setup2
+-	lretw
+-
+-setup2:
+ # Force %es = %ds
+ 	movw	%ds, %ax
+ 	movw	%ax, %es
+ 	cld
+ 
+-# Stack paranoia: align the stack and make sure it is good
+-# for both 16- and 32-bit references.  In particular, if we
+-# were meant to have been using the full 16-bit segment, the
+-# caller might have set %sp to zero, which breaks %esp-based
+-# references.
+-	andw	$~3, %sp	# dword align (might as well...)
+-	jnz	1f
+-	movw	$0xfffc, %sp	# Make sure we're not zero
+-1:	movzwl	%sp, %esp	# Clear upper half of %esp
+-	sti
++# Apparently some ancient versions of LILO invoked the kernel
++# with %ss != %ds, which happened to work by accident for the
++# old code.  If the CAN_USE_HEAP flag is set in loadflags, or
++# %ss != %ds, then adjust the stack pointer.
++
++	# Smallest possible stack we can tolerate
++	movw	$(_end+STACK_SIZE), %cx
++
++	movw	heap_end_ptr, %dx
++	addw	$512, %dx
++	jnc	1f
++	xorw	%dx, %dx	# Wraparound - whole segment available
++1:	testb	$CAN_USE_HEAP, loadflags
++	jnz	2f
++
++	# No CAN_USE_HEAP
++	movw	%ss, %dx
++	cmpw	%ax, %dx	# %ds == %ss?
++	movw	%sp, %dx
++	# If so, assume %sp is reasonably set, otherwise use
++	# the smallest possible stack.
++	jne	4f		# -> Smallest possible stack...
++
++	# Make sure the stack is at least minimum size.  Take a value
++	# of zero to mean "full segment."
++2:
++	andw	$~3, %dx	# dword align (might as well...)
++	jnz	3f
++	movw	$0xfffc, %dx	# Make sure we're not zero
++3:	cmpw	%cx, %dx
++	jnb	5f
++4:	movw	%cx, %dx	# Minimum value we can possibly use
++5:	movw	%ax, %ss
++	movzwl	%dx, %esp	# Clear upper half of %esp
++	sti			# Now we should have a working stack
++
++# We will have entered with %cs = %ds+0x20, normalize %cs so
++# it is on par with the other segments.
++	pushw	%ds
++	pushw	$6f
++	lretw
++6:
+ 
+ # Check signature at end of setup
+ 	cmpl	$0x5a5aaa55, setup_sig
 
 -- 
