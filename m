@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932208AbXKOG3s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932244AbXKOGaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932208AbXKOG3s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:29:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764708AbXKOGWX
+	id S932244AbXKOGaT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:30:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764745AbXKOGW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:22:23 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:46007 "EHLO
+	Thu, 15 Nov 2007 01:22:28 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46023 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764427AbXKOGWV (ORCPT
+	with ESMTP id S1763156AbXKOGWY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:22:21 -0500
-Date: Wed, 14 Nov 2007 22:20:51 -0800
+	Thu, 15 Nov 2007 01:22:24 -0500
+Date: Wed, 14 Nov 2007 22:20:54 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,128 +20,123 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@kernel.org,
-       Patrick McHardy <kaber@trash.net>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 15/23] Fix netlink timeouts.
-Message-ID: <20071115062051.GP8282@kroah.com>
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Netfilter Development Mailinglist 
+	<netfilter-devel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Krzysztof Piotr Oledzki <ole@ans.pl>,
+       Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>,
+       Patrick McHardy <kaber@trash.net>
+Subject: [patch 16/23] NETFILTER: nf_conntrack_tcp: fix connection reopening
+Message-ID: <20071115062054.GQ8282@kroah.com>
 References: <20071115055238.692814352@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-netlink-timeouts.patch"
+Content-Disposition: inline; filename="netfilter-nf_conntrack_tcp-fix-connection-reopening.patch"
 In-Reply-To: <20071115061806.GA8282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Patrick McHardy <kaber@trash.net>
 
-[NETLINK]: Fix unicast timeouts
+From: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
 
-[ Upstream commit: c3d8d1e30cace31fed6186a4b8c6b1401836d89c ]
+Upstream commits: 17311393 + bc34b841 merged together.  Merge done by
+Patrick McHardy <kaber@trash.net>
 
-Commit ed6dcf4a in the history.git tree broke netlink_unicast timeouts
-by moving the schedule_timeout() call to a new function that doesn't
-propagate the remaining timeout back to the caller. This means on each
-retry we start with the full timeout again.
+[NETFILTER]: nf_conntrack_tcp: fix connection reopening
 
-ipc/mqueue.c seems to actually want to wait indefinitely so this
-behaviour is retained.
+With your description I could reproduce the bug and actually you were
+completely right: the code above is incorrect. Somehow I was able to
+misread RFC1122 and mixed the roles :-(:
 
+   When a connection is >>closed actively<<, it MUST linger in
+   TIME-WAIT state for a time 2xMSL (Maximum Segment Lifetime).
+   However, it MAY >>accept<< a new SYN from the remote TCP to
+   reopen the connection directly from TIME-WAIT state, if it:
+   [...]
+
+The fix is as follows: if the receiver initiated an active close, then the
+sender may reopen the connection - otherwise try to figure out if we hold
+a dead connection.
+
+Signed-off-by: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
+Tested-by: Krzysztof Piotr Oledzki <ole@ans.pl>
 Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- include/linux/netlink.h  |    2 +-
- ipc/mqueue.c             |    6 ++++--
- net/netlink/af_netlink.c |   10 +++++-----
- 3 files changed, 10 insertions(+), 8 deletions(-)
 
---- a/include/linux/netlink.h
-+++ b/include/linux/netlink.h
-@@ -175,7 +175,7 @@ extern int netlink_unregister_notifier(s
- /* finegrained unicast helpers: */
- struct sock *netlink_getsockbyfilp(struct file *filp);
- int netlink_attachskb(struct sock *sk, struct sk_buff *skb, int nonblock,
--		long timeo, struct sock *ssk);
-+		      long *timeo, struct sock *ssk);
- void netlink_detachskb(struct sock *sk, struct sk_buff *skb);
- int netlink_sendskb(struct sock *sk, struct sk_buff *skb, int protocol);
+---
+ net/netfilter/nf_conntrack_proto_tcp.c |   38 ++++++++++++++-------------------
+ 1 file changed, 17 insertions(+), 21 deletions(-)
+
+--- a/net/netfilter/nf_conntrack_proto_tcp.c
++++ b/net/netfilter/nf_conntrack_proto_tcp.c
+@@ -831,6 +831,22 @@ static int tcp_packet(struct nf_conn *co
+ 	tuple = &conntrack->tuplehash[dir].tuple;
  
---- a/ipc/mqueue.c
-+++ b/ipc/mqueue.c
-@@ -1014,6 +1014,8 @@ asmlinkage long sys_mq_notify(mqd_t mqde
- 			return -EINVAL;
- 		}
- 		if (notification.sigev_notify == SIGEV_THREAD) {
-+			long timeo;
-+
- 			/* create the notify skb */
- 			nc = alloc_skb(NOTIFY_COOKIE_LEN, GFP_KERNEL);
- 			ret = -ENOMEM;
-@@ -1042,8 +1044,8 @@ retry:
- 				goto out;
- 			}
+ 	switch (new_state) {
++	case TCP_CONNTRACK_SYN_SENT:
++		if (old_state < TCP_CONNTRACK_TIME_WAIT)
++			break;
++		if ((conntrack->proto.tcp.seen[!dir].flags &
++			IP_CT_TCP_FLAG_CLOSE_INIT)
++		    || (conntrack->proto.tcp.last_dir == dir
++		        && conntrack->proto.tcp.last_index == TCP_RST_SET)) {
++			/* Attempt to reopen a closed/aborted connection.
++			 * Delete this connection and look up again. */
++			write_unlock_bh(&tcp_lock);
++			if (del_timer(&conntrack->timeout))
++				conntrack->timeout.function((unsigned long)
++							    conntrack);
++			return -NF_REPEAT;
++		}
++		/* Fall through */
+ 	case TCP_CONNTRACK_IGNORE:
+ 		/* Ignored packets:
+ 		 *
+@@ -879,27 +895,6 @@ static int tcp_packet(struct nf_conn *co
+ 			nf_log_packet(pf, 0, skb, NULL, NULL, NULL,
+ 				  "nf_ct_tcp: invalid state ");
+ 		return -NF_ACCEPT;
+-	case TCP_CONNTRACK_SYN_SENT:
+-		if (old_state < TCP_CONNTRACK_TIME_WAIT)
+-			break;
+-		if ((conntrack->proto.tcp.seen[dir].flags &
+-			IP_CT_TCP_FLAG_CLOSE_INIT)
+-		    || after(ntohl(th->seq),
+-			     conntrack->proto.tcp.seen[dir].td_end)) {
+-			/* Attempt to reopen a closed connection.
+-			* Delete this connection and look up again. */
+-			write_unlock_bh(&tcp_lock);
+-			if (del_timer(&conntrack->timeout))
+-				conntrack->timeout.function((unsigned long)
+-							    conntrack);
+-			return -NF_REPEAT;
+-		} else {
+-			write_unlock_bh(&tcp_lock);
+-			if (LOG_INVALID(IPPROTO_TCP))
+-				nf_log_packet(pf, 0, skb, NULL, NULL,
+-					      NULL, "nf_ct_tcp: invalid SYN");
+-			return -NF_ACCEPT;
+-		}
+ 	case TCP_CONNTRACK_CLOSE:
+ 		if (index == TCP_RST_SET
+ 		    && ((test_bit(IPS_SEEN_REPLY_BIT, &conntrack->status)
+@@ -932,6 +927,7 @@ static int tcp_packet(struct nf_conn *co
+      in_window:
+ 	/* From now on we have got in-window packets */
+ 	conntrack->proto.tcp.last_index = index;
++	conntrack->proto.tcp.last_dir = dir;
  
--			ret = netlink_attachskb(sock, nc, 0,
--					MAX_SCHEDULE_TIMEOUT, NULL);
-+			timeo = MAX_SCHEDULE_TIMEOUT;
-+			ret = netlink_attachskb(sock, nc, 0, &timeo, NULL);
- 			if (ret == 1)
- 		       		goto retry;
- 			if (ret) {
---- a/net/netlink/af_netlink.c
-+++ b/net/netlink/af_netlink.c
-@@ -744,7 +744,7 @@ struct sock *netlink_getsockbyfilp(struc
-  * 1: repeat lookup - reference dropped while waiting for socket memory.
-  */
- int netlink_attachskb(struct sock *sk, struct sk_buff *skb, int nonblock,
--		long timeo, struct sock *ssk)
-+		      long *timeo, struct sock *ssk)
- {
- 	struct netlink_sock *nlk;
- 
-@@ -753,7 +753,7 @@ int netlink_attachskb(struct sock *sk, s
- 	if (atomic_read(&sk->sk_rmem_alloc) > sk->sk_rcvbuf ||
- 	    test_bit(0, &nlk->state)) {
- 		DECLARE_WAITQUEUE(wait, current);
--		if (!timeo) {
-+		if (!*timeo) {
- 			if (!ssk || nlk_sk(ssk)->pid == 0)
- 				netlink_overrun(sk);
- 			sock_put(sk);
-@@ -767,7 +767,7 @@ int netlink_attachskb(struct sock *sk, s
- 		if ((atomic_read(&sk->sk_rmem_alloc) > sk->sk_rcvbuf ||
- 		     test_bit(0, &nlk->state)) &&
- 		    !sock_flag(sk, SOCK_DEAD))
--			timeo = schedule_timeout(timeo);
-+			*timeo = schedule_timeout(*timeo);
- 
- 		__set_current_state(TASK_RUNNING);
- 		remove_wait_queue(&nlk->wait, &wait);
-@@ -775,7 +775,7 @@ int netlink_attachskb(struct sock *sk, s
- 
- 		if (signal_pending(current)) {
- 			kfree_skb(skb);
--			return sock_intr_errno(timeo);
-+			return sock_intr_errno(*timeo);
- 		}
- 		return 1;
- 	}
-@@ -839,7 +839,7 @@ retry:
- 		kfree_skb(skb);
- 		return PTR_ERR(sk);
- 	}
--	err = netlink_attachskb(sk, skb, nonblock, timeo, ssk);
-+	err = netlink_attachskb(sk, skb, nonblock, &timeo, ssk);
- 	if (err == 1)
- 		goto retry;
- 	if (err)
+ 	pr_debug("tcp_conntracks: ");
+ 	NF_CT_DUMP_TUPLE(tuple);
 
 -- 
