@@ -1,33 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761853AbXKOGNg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761337AbXKOGNy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761853AbXKOGNg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:13:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758631AbXKOGKz
+	id S1761337AbXKOGNy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:13:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758644AbXKOGK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:10:55 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:36550 "EHLO
+	Thu, 15 Nov 2007 01:10:56 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:36555 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751946AbXKOGKx (ORCPT
+	with ESMTP id S1752312AbXKOGKz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:10:53 -0500
-Date: Wed, 14 Nov 2007 22:09:45 -0800
+	Thu, 15 Nov 2007 01:10:55 -0500
+Date: Wed, 14 Nov 2007 22:09:52 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, mingo@elte.hu, jeremy@goop.org
-Subject: [patch 09/13] fix the softlockup watchdog to actually work
-Message-ID: <20071115060945.GJ7602@kroah.com>
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@kernel.org,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 11/13] Fix compat futex hangs.
+Message-ID: <20071115060952.GL7602@kroah.com>
 References: <20071115042610.731859958@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-the-softlockup-watchdog-to-actually-work.patch"
+Content-Disposition: inline; filename="fix-compat-futex-hangs.patch"
 In-Reply-To: <20071115060544.GA7602@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -37,57 +37,107 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
+From: David Miller <davem@davemloft.net>
 
-From: Ingo Molnar <mingo@elte.hu>
+[FUTEX]: Fix address computation in compat code.
 
-patch a115d5caca1a2905ba7a32b408a6042b20179aaa in mainline.
+[ Upstream commit: 3c5fd9c77d609b51c0bab682c9d40cbb496ec6f1 ]
 
-this Xen related commit:
+compat_exit_robust_list() computes a pointer to the
+futex entry in userspace as follows:
 
-   commit 966812dc98e6a7fcdf759cbfa0efab77500a8868
-   Author: Jeremy Fitzhardinge <jeremy@goop.org>
-   Date:   Tue May 8 00:28:02 2007 -0700
+	(void __user *)entry + futex_offset
 
-       Ignore stolen time in the softlockup watchdog
+'entry' is a 'struct robust_list __user *', and
+'futex_offset' is a 'compat_long_t' (typically a 's32').
 
-broke the softlockup watchdog to never report any lockups. (!)
+Things explode if the 32-bit sign bit is set in futex_offset.
 
-print_timestamp defaults to 0, this makes the following condition
-always true:
+Type promotion sign extends futex_offset to a 64-bit value before
+adding it to 'entry'.
 
-	if (print_timestamp < (touch_timestamp + 1) ||
+This triggered a problem on sparc64 running 32-bit applications which
+would lock up a cpu looping forever in the fault handling for the
+userspace load in handle_futex_death().
 
-and we'll in essence never report soft lockups.
+Compat userspace runs with address masking (wherein the cpu zeros out
+the top 32-bits of every effective address given to a memory operation
+instruction) so the sparc64 fault handler accounts for this by
+zero'ing out the top 32-bits of the fault address too.
 
-apparently the functionality of the soft lockup watchdog was never
-actually tested with that patch applied ...
+Since the kernel properly uses the compat_uptr interfaces, kernel side
+accesses to compat userspace work too since they will only use
+addresses with the top 32-bit clear.
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Because of this compat futex layer bug we get into the following loop
+when executing the get_user() load near the top of handle_futex_death():
+
+1) load from address '0xfffffffff7f16bd8', FAULT
+2) fault handler clears upper 32-bits, processes fault
+   for address '0xf7f16bd8' which succeeds
+3) goto #1
+
+I want to thank Bernd Zeimetz, Josip Rodin, and Fabio Massimo Di Nitto
+for their tireless efforts helping me track down this bug.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/softlockup.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ kernel/futex_compat.c |   27 ++++++++++++++++++++-------
+ 1 file changed, 20 insertions(+), 7 deletions(-)
 
---- a/kernel/softlockup.c
-+++ b/kernel/softlockup.c
-@@ -80,10 +80,11 @@ void softlockup_tick(void)
- 	print_timestamp = per_cpu(print_timestamp, this_cpu);
+--- a/kernel/futex_compat.c
++++ b/kernel/futex_compat.c
+@@ -29,6 +29,15 @@ fetch_robust_entry(compat_uptr_t *uentry
+ 	return 0;
+ }
  
- 	/* report at most once a second */
--	if (print_timestamp < (touch_timestamp + 1) ||
--		did_panic ||
--			!per_cpu(watchdog_task, this_cpu))
-+	if ((print_timestamp >= touch_timestamp &&
-+			print_timestamp < (touch_timestamp + 1)) ||
-+			did_panic || !per_cpu(watchdog_task, this_cpu)) {
- 		return;
++static void __user *futex_uaddr(struct robust_list *entry,
++				compat_long_t futex_offset)
++{
++	compat_uptr_t base = ptr_to_compat(entry);
++	void __user *uaddr = compat_ptr(base + futex_offset);
++
++	return uaddr;
++}
++
+ /*
+  * Walk curr->robust_list (very carefully, it's a userspace list!)
+  * and mark any locks found there dead, and notify any waiters.
+@@ -75,11 +84,13 @@ void compat_exit_robust_list(struct task
+ 		 * A pending lock might already be on the list, so
+ 		 * dont process it twice:
+ 		 */
+-		if (entry != pending)
+-			if (handle_futex_death((void __user *)entry + futex_offset,
+-						curr, pi))
+-				return;
++		if (entry != pending) {
++			void __user *uaddr = futex_uaddr(entry,
++							 futex_offset);
+ 
++			if (handle_futex_death(uaddr, curr, pi))
++				return;
++		}
+ 		if (rc)
+ 			return;
+ 		uentry = next_uentry;
+@@ -93,9 +104,11 @@ void compat_exit_robust_list(struct task
+ 
+ 		cond_resched();
+ 	}
+-	if (pending)
+-		handle_futex_death((void __user *)pending + futex_offset,
+-				   curr, pip);
++	if (pending) {
++		void __user *uaddr = futex_uaddr(pending, futex_offset);
++
++		handle_futex_death(uaddr, curr, pip);
 +	}
+ }
  
- 	/* do not print during early bootup: */
- 	if (unlikely(system_state != SYSTEM_RUNNING)) {
+ asmlinkage long
 
 -- 
