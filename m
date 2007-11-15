@@ -1,56 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932244AbXKOVD3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932980AbXKOVGp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932244AbXKOVD3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 16:03:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754726AbXKOVDV
+	id S932980AbXKOVGp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 16:06:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763585AbXKOVGi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 16:03:21 -0500
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:35154 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753756AbXKOVDV (ORCPT
+	Thu, 15 Nov 2007 16:06:38 -0500
+Received: from billgribble.com ([65.99.215.30]:50760 "EHLO
+	server.billgribble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755019AbXKOVGh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 16:03:21 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=OmKIg+aE5g5CEmqho52ZalId4OFxHouqCdjK8ND3d8VKydYcXbfTQVYthWzzcXR51LwDMR+4PE0XJ6+ReYW87Th2MB5i28EDgfyoVLlnqEI5IgNXZK8ttyVhWvYVf/CnL7xmnQbrBdUOOCUsNCmlU+S4deotlZ6NX3uh0quoPwI=  ;
-X-YMail-OSG: nPAIZPsVM1mabjGLwcwENc73YQPbX8dvvL6FHUHyZEa1b2fbyfSDAfXzHHODkM.Q8WmUjoFf0w--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] slob: fix memory corruption
-Date: Fri, 16 Nov 2007 07:25:12 +1100
-User-Agent: KMail/1.9.5
-Cc: David Miller <davem@davemloft.net>, mpm@selenic.com, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
-References: <20071114225335.GV19691@waste.org> <20071115113204.GA24463@elte.hu> <20071115124844.GA6606@elte.hu>
-In-Reply-To: <20071115124844.GA6606@elte.hu>
+	Thu, 15 Nov 2007 16:06:37 -0500
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc2 libertas_sdio fails to initialize Marvell SD8686
+References: <87bq9x264q.fsf@serrano.home.billgribble.com>
+	<20071114190247.4f42aa05@poseidon.drzeus.cx>
+From: Bill Gribble <grib@billgribble.com>
+Date: Thu, 15 Nov 2007 16:06:23 -0500
+In-Reply-To: <20071114190247.4f42aa05@poseidon.drzeus.cx> (Pierre Ossman's message of "Wed\, 14 Nov 2007 19\:02\:47 +0100")
+Message-ID: <87ejernrqo.fsf@serrano.home.billgribble.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711160725.13067.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=us-ascii
+X-DSPAM-Result: Innocent
+X-DSPAM-Processed: Thu Nov 15 15:06:31 2007
+X-DSPAM-Confidence: 1.0000
+X-DSPAM-Probability: 0.0023
+X-DSPAM-Signature: 473cb4d712631010016558
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 November 2007 23:48, Ingo Molnar wrote:
-> > From: Nick Piggin <npiggin@suse.de>
-> >
-> > -		if (free_slob_pages.next != prev->next)
-> > +		if (prev != free_slob_pages.prev &&
-> > +				free_slob_pages.next != prev->next)
-> >  			list_move_tail(&free_slob_pages, prev->next);
+Pierre Ossman <drzeus-mmc@drzeus.cx> writes:
 >
-> btw., exactly how did you find this bug? User-space simulation of SLOB?
+>> Nov 13 14:40:09 pequin kernel: mmc0: starting CMD53 arg 9a000002 flags 000001b5
+>> Nov 13 14:40:09 pequin kernel: mmc0:     blksz 32 blocks 2 flags 00000100 tsac 1000 ms nsac 0
+>> Nov 13 14:40:09 pequin kernel: sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00000001
+>> Nov 13 14:40:11 pequin kernel: sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00108000
+>> Nov 13 14:40:11 pequin kernel: mmc0: req done (CMD53): 0: 00002000 00000000 00000000 00000000
+>> Nov 13 14:40:11 pequin kernel: mmc0:     32 bytes transferred: -110
+>
+> Your problem is here. The card chokes for some reason and times out when it's supposed to receive a chunk of the firmware. Odd, as the loading loop first queries the card if it is ready for more data.
+>
+> You could try adding a delay to the helper firmware loading loop (if_sdio_prog_helper() in if_sdio.c). Add an msleep(100); in there and see if that gets things further. Loading will be slow as hell though.
 
-Yes. It was very useful in developing the improvements to the freelist
-handling. The only reason why I don't release/run the code more often
-is that my test harness work is pretty ugly (ie. it isn't just a simple
-cp mm/slob.c ../blah/).
+OK, that seems to at least change the failure a little :) I added an
+msleep after line 466 of if_sdio.c (at the very bottom of the loop).
 
-After that, just a loop of N iterations, within each iteration, there is
-a chance of a single allocation of a random size, a single free of a
-random outstanding allocation, a run of allocating MAX allocations, or
-a run of freeing all previously allocated memory. It's a bit crude, but
-it showed up your list head corruption in a second or two.
+Now I don't get the final "32 bytes transferred: -110" error:
+
+Nov 15 11:52:31 pequin kernel: mmc0: req done (CMD53): 0: 00002000 00000000 00000000 00000000
+Nov 15 11:52:31 pequin kernel: mmc0:     64 bytes transferred: 0
+Nov 15 11:52:31 pequin kernel: mmc0: starting CMD53 arg 9a000002 flags 000001b5
+Nov 15 11:52:31 pequin kernel: mmc0:     blksz 32 blocks 2 flags 00000100 tsac 1000 ms nsac 0
+Nov 15 11:52:31 pequin kernel: sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00000001
+Nov 15 11:52:31 pequin kernel: sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00000002
+Nov 15 11:52:31 pequin kernel: mmc0: req done (CMD53): 0: 00002000 00000000 00000000 00000000
+Nov 15 11:52:31 pequin kernel: mmc0:     64 bytes transferred: 0
+Nov 15 11:52:31 pequin kernel: mmc0: starting CMD52 arg 10002000 flags 00000195
+Nov 15 11:52:31 pequin kernel: sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00000001
+Nov 15 11:52:31 pequin kernel: mmc0: req done (CMD52): 0: 00001000 00000000 00000000 00000000
+Nov 15 11:52:31 pequin kernel: mmc0: starting CMD52 arg 10002200 flags 00000195
+Nov 15 11:52:31 pequin kernel: sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00000001
+Nov 15 11:52:31 pequin kernel: mmc0: req done (CMD52): 0: 00001000 00000000 00000000 00000000
+Nov 15 11:52:31 pequin kernel: mmc0: starting CMD52 arg 10002000 flags 00000195
+Nov 15 11:52:31 pequin kernel: sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00000001
+Nov 15 11:52:31 pequin kernel: mmc0: req done (CMD52): 0: 00001000 00000000 00000000 00000000
+Nov 15 11:52:31 pequin kernel: mmc0: starting CMD52 arg 10002200 flags 00000195
+
+
+This block gets repeated about 200 times: 
+
+Nov 15 11:52:31 pequin kernel: sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00000001
+Nov 15 11:52:31 pequin kernel: mmc0: req done (CMD52): 0: 00001000 00000000 00000000 00000000
+Nov 15 11:52:31 pequin kernel: mmc0: starting CMD52 arg 10002000 flags 00000195
+
+Then:
+
+Nov 15 11:52:32 pequin kernel: sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00000001
+Nov 15 11:52:32 pequin kernel: mmc0: req done (CMD52): 0: 00001000 00000000 00000000 00000000
+Nov 15 11:52:32 pequin kernel: mmc0: starting CMD52 arg 80022201 flags 00000195
+Nov 15 11:52:32 pequin kernel: sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00000001
+Nov 15 11:52:32 pequin kernel: mmc0: req done (CMD52): 0: 00001001 00000000 00000000 00000000
+Nov 15 11:52:32 pequin kernel: libertas: failed to load helper firmware
+Nov 15 11:52:32 pequin kernel: SDIO: Disabling IRQ for mmc0:0001:1...
+Nov 15 11:52:32 pequin kernel: mmc0: IRQ thread exiting with code 0
+Nov 15 11:52:32 pequin kernel: mmc0: starting CMD52 arg 00000800 flags 00000195
+Nov 15 11:52:32 pequin kernel: sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00000001
+Nov 15 11:52:32 pequin kernel: mmc0: req done (CMD52): 0: 00001003 00000000 00000000 00000000
+Nov 15 11:52:32 pequin kernel: mmc0: starting CMD52 arg 80000800 flags 00000195
+Nov 15 11:52:32 pequin kernel: sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00000001
+Nov 15 11:52:32 pequin kernel: mmc0: req done (CMD52): 0: 00001000 00000000 00000000 00000000
+Nov 15 11:52:32 pequin kernel: SDIO: Disabling device mmc0:0001:1...
+Nov 15 11:52:32 pequin kernel: mmc0: starting CMD52 arg 00000400 flags 00000195
+Nov 15 11:52:32 pequin kernel: sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00000001
+Nov 15 11:52:32 pequin kernel: mmc0: req done (CMD52): 0: 00001002 00000000 00000000 00000000
+Nov 15 11:52:32 pequin kernel: mmc0: starting CMD52 arg 80000400 flags 00000195
+Nov 15 11:52:32 pequin kernel: sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00000001
+Nov 15 11:52:32 pequin kernel: mmc0: req done (CMD52): 0: 00001000 00000000 00000000 00000000
+Nov 15 11:52:32 pequin kernel: SDIO: Disabled device mmc0:0001:1
+Nov 15 11:52:32 pequin kernel: libertas_sdio: probe of mmc0:0001:1 failed with error -110
+
+Does that make any sense?  
+
+Thanks,
+Bill Gribble
+
+!DSPAM:473cb4d712631010016558!
+
+
