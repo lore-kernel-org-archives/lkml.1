@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762879AbXKOB1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765321AbXKOB2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762879AbXKOB1c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 20:27:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbXKOB1Y
+	id S1765321AbXKOB2W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 20:28:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755973AbXKOB2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 20:27:24 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49383
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753232AbXKOB1X (ORCPT
+	Wed, 14 Nov 2007 20:28:13 -0500
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:34515 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757465AbXKOB2M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 20:27:23 -0500
-Date: Wed, 14 Nov 2007 17:27:22 -0800 (PST)
-Message-Id: <20071114.172722.71465976.davem@davemloft.net>
-To: paulus@samba.org
-Cc: hch@infradead.org, akpm@linux-foundation.org, gregkh@suse.de,
-       mucci@cs.utk.edu, eranian@hpl.hp.com, wcohen@redhat.com,
-       robert.richter@amd.com, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org
-Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <18235.40110.831730.847548@cargo.ozlabs.ibm.com>
-References: <18235.32982.439970.359975@cargo.ozlabs.ibm.com>
-	<20071114.152134.266510129.davem@davemloft.net>
-	<18235.40110.831730.847548@cargo.ozlabs.ibm.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Nov 2007 20:28:12 -0500
+Date: Wed, 14 Nov 2007 20:27:33 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Tim Bird <tim.bird@am.sony.com>
+cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       John Cooper <john.cooper@third-harmonic.com>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: rt-preempt: problem compiling rt-preempt 2.6.23.1-rt11 on MIPS
+In-Reply-To: <473B9EC1.4060908@am.sony.com>
+Message-ID: <Pine.LNX.4.58.0711142026290.1557@gandalf.stny.rr.com>
+References: <473B8F91.20704@am.sony.com> <alpine.LFD.0.9999.0711150143220.3265@localhost.localdomain>
+ <Pine.LNX.4.58.0711142004080.1364@gandalf.stny.rr.com> <473B9EC1.4060908@am.sony.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Mackerras <paulus@samba.org>
-Date: Thu, 15 Nov 2007 12:11:10 +1100
 
-> The third (hard to extend cleanly) is a good point, and is a valid
-> criticism of the current set of perfmon2 system calls, I think.
-> However, the goal of being able to extend the interface tends to be in
-> opposition to the goal of having strong typing of the interface.
-> Things like a multiplexed syscall or an ioctl are much easier to
-> extend but that is at the expense of losing strong typing.
+On Wed, 14 Nov 2007, Tim Bird wrote:
 
-I disagree.
+> > I'm just about to release 2.6.24-rc2-rt1 and I'm sure mips as well as
+> > powrepc is badly broken.  Any help in getting these back up and working
+> > would be greatly appreciated.
+>
+> I'll probably have some pretty basic questions.
+> If you don't mind an RT newbie helping, I'll do what I can. :-)
 
-With netlink we can just add new attributes when a new need arises for
-a particular interface.  The attribute code describes the type
-precisely, so there is no loss of strong typing at all.
+We can use all the help we can get :-)
+
+> BTW - I was just trying to cross-compile the IBM test programs
+> (rt-test-0.6) today, and had some problems.  I didn't want to
+> bug anyone until I took a closer look at it, but would it be
+> best to report problems with that here on LKML, on
+> linux-rt-users, or just directly to Darren Hart?
+
+
+Things related to rt-test should go to Darren Hart and to linux-rt-users.
+We only CC LKML on RT kernel issues.
+
+-- Steve
+
