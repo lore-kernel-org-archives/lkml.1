@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764939AbXKOBrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757538AbXKOC0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764939AbXKOBrs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 20:47:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753734AbXKOBrk
+	id S1757538AbXKOC0Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 21:26:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755073AbXKOC0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 20:47:40 -0500
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:43681 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751322AbXKOBrj (ORCPT
+	Wed, 14 Nov 2007 21:26:16 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:21224 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752055AbXKOC0P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 20:47:39 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=k8a90RErpUZ0ztwGj6vtUm1q11mtoiZqKdijeDmGYw6IQZ4t0oYHcuWyvjXJoUkATw9bipbRnxIGR07p/kpAn9Pmr7EAvm7/3s69WG3ESHiT85gCZnU4AJJ5lcgL9SYmBLvOr9bocQ2ymVsp6LWkNvy4dKNOgSF2/Ye4jlWd2hg=  ;
-X-YMail-OSG: wf5Qs6YVM1lPRdJzSKmn0VJk50sIlzO2rm5lFqbnZusXNS1jA1RpHtuIwlNmYBCGBEkySY2NSQ--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: 2.6.24-rc2: Network commit causes SLUB performance regression with tbench
-Date: Thu, 15 Nov 2007 12:47:29 +1100
-User-Agent: KMail/1.9.5
-Cc: Christoph Lameter <clameter@sgi.com>, David Miller <davem@davemloft.net>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200711140927.39796.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0711141650150.21965@schroedinger.engr.sgi.com> <20071115011110.GB21193@gondor.apana.org.au>
-In-Reply-To: <20071115011110.GB21193@gondor.apana.org.au>
+	Wed, 14 Nov 2007 21:26:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=DFqa86VdJoVqRfReDtEXqiAQpGowdM940omc3BOBms0FqE5aHuNTm9fFsyBqpfxNj+/IYDFcJtseyoG1YZHNltT6EpKFnPXU50YVJq4XSNNlxKV8ai7rr4zV175bMQvyu7jk5DoGIPAuMUzcVrxNzXQ1XEFq2trOv4CC07eIT3c=
+Message-ID: <473BAE3B.2050906@gmail.com>
+Date: Thu, 15 Nov 2007 11:26:03 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Mark Lord <liml@rtr.ca>
+CC: IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Sebastian Kemper <sebastian_ml@gmx.net>,
+       Jeff Garzik <jgarzik@pobox.com>, Alan Cox <alan@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] libata-scsi:  be tolerant of 12-byte ATAPI commands in
+ 16-byte CDBs
+References: <20071113164323.GA5252@section-eight> <20071113212230.77cadecd@the-village.bc.nu> <20071113232859.GA4681@section-eight> <473B0FA2.5000102@rtr.ca> <20071114153852.GA9019@section-eight> <473B1B83.9020103@rtr.ca> <473B33F7.7030708@rtr.ca>
+In-Reply-To: <473B33F7.7030708@rtr.ca>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711151247.29424.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 November 2007 12:11, Herbert Xu wrote:
-> On Wed, Nov 14, 2007 at 05:03:25PM -0800, Christoph Lameter wrote:
-> > Well this is likely the result of the SLUB regression. If you allocate an
-> > order 1 page then the zone locks need to be taken. SLAB queues the a
+Mark Lord wrote:
+> Sebastian Kemper reported that issuing CD/DVD commands under libata
+> is not fully compatible with ide-scsi.  In particular, the
+> GPCMD_SET_STREAMING
+> was being rejected at the host level in some instances.
+> 
+> The reason is that libata-scsi insists upon the cmd_len field exactly
+> matching
+> the SCSI opcode being issued, whereas ide-scsi tolerates 12-byte commands
+> contained within a 16-byte (cmd_len) CDB.
+> 
+> There doesn't seem to be a good reason for us to not be compatible there,
+> so here is a patch to fix libata-scsi to permit SCSI opcodes so long as
+> they fit within whatever size CDB is provided.
+> 
+> Signed-off-by: Mark Lord <mlord@pobox.com>
 
-Yeah, it appears this is what happened. The lockless page allocator
-fastpath appears on the list and the slowpaths disappear after
-Herbert's patches. SLAB is doing its own thing, so it avoids that
-pitfall.
+applied to #tj-upstream-fixes.
 
-
-> > couple of higher order pages and can so serve a couple of requests
-> > without going into the page allocator whereas SLUB has to go directly to
-> > the page allocator for allocate and free. I guess that needs fixing in
-> > the page allocator. Or do I need to add a mechanism to buffer higher
-> > order page allcoations to SLUB?
->
-> Actually this serves to discourage people from using high-order
-> allocations which IMHO is a good thing :)
-
-Yeah I completely agree. The right fix is in the caller...
-The bug / suboptimal allocation would not have been found in tcp
-if not for this ;)
-
+-- 
+tejun
