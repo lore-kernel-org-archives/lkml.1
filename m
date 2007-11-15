@@ -1,57 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932330AbXKOSbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932272AbXKOSdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932330AbXKOSbM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 13:31:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759861AbXKOSa5
+	id S932272AbXKOSdu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 13:33:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756889AbXKOSdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 13:30:57 -0500
-Received: from lobo.ruivo.org ([66.92.68.119]:42405 "EHLO lobo.ruivo.org"
+	Thu, 15 Nov 2007 13:33:38 -0500
+Received: from mms2.broadcom.com ([216.31.210.18]:3723 "EHLO mms2.broadcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757811AbXKOSa5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 13:30:57 -0500
-Date: Thu, 15 Nov 2007 13:30:46 -0500
-From: Aristeu Rozanski <aris@ruivo.org>
-To: Dan Aloni <da-x@monatomic.org>
-Cc: Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: fix a deadlock in set_rtc_mmss()
-Message-ID: <20071115183046.GD8068@cathedrallabs.org>
-References: <20071115165528.GA25520@localdomain>
+	id S1755171AbXKOSdh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 13:33:37 -0500
+X-Server-Uuid: A6C4E0AE-A7F0-449F-BAE7-7FA0D737AC76
+Subject: Re: tg3: strange errors and non-working-ness
+From: "Michael Chan" <mchan@broadcom.com>
+To: "Jarek Poplawski" <jarkao2@o2.pl>
+cc: "Jon Nelson" <jnelson@jamponi.net>, "netdev" <netdev@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071115094728.GB2366@ff.dom.local>
+References: <20071115094728.GB2366@ff.dom.local>
+Date: Thu, 15 Nov 2007 11:23:23 -0800
+Message-ID: <1195154603.6360.9.camel@dell>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071115165528.GA25520@localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Mailer: Evolution 2.0.2 (2.0.2-8)
+X-WSS-ID: 6B224F703BS938464-01-01
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Dan,
-> Patch is valid only for 2.6.23.x, guessing from the recent arch/ changes 
-> in 2.6.24-rc.
+On Thu, 2007-11-15 at 10:47 +0100, Jarek Poplawski wrote:
+> On 13-11-2007 19:57, Jon Nelson wrote:
+> > The best info I've got is this:
+
+It looks like the card is being reset periodically.  Every time the card
+gets reset, you'll see those PM messages in the version of the driver
+you're using.  Do you see NETDEV WATCHDOG message as well in the dmesg
+log?
+
+> > 
+> > Nov 10 22:21:19 frank kernel: tg3.c:v3.65 (August 07, 2006)
+> > Nov 10 22:21:19 frank kernel: ACPI: PCI Interrupt 0000:00:0b.0[A] ->
+> > Link [LNKB] -> GSI 3 (level, low) -> IRQ 3
+> > Nov 10 22:21:19 frank kernel: eth0: Tigon3 [partno(AC91002A1) rev 0105
+> > PHY(5701)] (PCI:33MHz:32-bit) 10/100/1000BaseT Ethernet
+> > 00:09:5b:09:b1:69
+> > Nov 10 22:21:19 frank kernel: eth0: RXcsums[1] LinkChgREG[0] MIirq[0]
+> > ASF[0] Split[0] WireSpeed[1] TSOcap[0]
+> > Nov 10 22:21:19 frank kernel: eth0: dma_rwctrl[76ff000f] dma_mask[64-bit]
+> > Nov 10 22:21:19 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset b (was 164514e4, writing 302a1385)
+> > Nov 10 22:21:19 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 3 (was 0, writing 4008)
+> > Nov 10 22:21:19 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 2 (was 2000000, writing 2000015)
+> > Nov 10 22:21:19 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 1 (was 2b00000, writing 2b00106)
+> > Nov 10 22:21:20 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 0 (was 164514e4, writing 3ea173b)
+> > Nov 10 22:21:20 frank kernel: tg3: eth0: Link is up at 1000 Mbps, full duplex.
+> > Nov 10 22:21:20 frank kernel: tg3: eth0: Flow control is on for TX and
+> > on for RX.
+> > Nov 10 22:21:20 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset b (was 164514e4, writing 302a1385)
+> > Nov 10 22:21:20 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 3 (was 0, writing 4008)
+> > Nov 10 22:21:20 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 2 (was 2000000, writing 2000015)
+> > Nov 10 22:21:20 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 1 (was 2b00000, writing 2b00106)
+> > Nov 10 22:21:20 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 0 (was 164514e4, writing 3ea173b)
+> > Nov 10 22:21:20 frank kernel: ACPI: PCI interrupt for device
+> > 0000:00:0b.0 disabled
+> > Nov 10 22:21:20 frank kernel: PCI: Enabling device 0000:00:0b.0 (0100 -> 0102)
+> > Nov 10 22:21:20 frank kernel: ACPI: PCI Interrupt 0000:00:0b.0[A] ->
+> > Link [LNKB] -> GSI 3 (level, low) -> IRQ 3
+> > Nov 10 22:21:20 frank kernel: eth0: Tigon3 [partno(AC91002A1) rev 0105
+> > PHY(5701)] (PCI:33MHz:32-bit) 10/100/1000BaseT Ethernet
+> > 00:09:5b:09:b1:69
+> > Nov 10 22:21:20 frank kernel: eth0: RXcsums[1] LinkChgREG[0] MIirq[0]
+> > ASF[0] Split[0] WireSpeed[1] TSOcap[0]
+> > Nov 10 22:21:20 frank kernel: eth0: dma_rwctrl[76ff000f] dma_mask[64-bit]
+> > Nov 10 22:21:20 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset b (was 164514e4, writing 302a1385)
+> > Nov 10 22:21:20 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 3 (was 0, writing 4008)
+> > Nov 10 22:21:20 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 2 (was 2000000, writing 2000015)
+> > Nov 10 22:21:20 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 1 (was 2b00000, writing 2b00106)
+> > Nov 10 22:21:20 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 0 (was 164514e4, writing 3ea173b)
+> > Nov 10 22:21:20 frank kernel: tg3: eth0: Link is up at 1000 Mbps, full duplex.
+> > Nov 10 22:21:20 frank kernel: tg3: eth0: Flow control is on for TX and
+> > on for RX.
+> > Nov 10 22:21:20 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset b (was 164514e4, writing 302a1385)
+> > Nov 10 22:21:20 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 3 (was 0, writing 4008)
+> > Nov 10 22:21:20 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 2 (was 2000000, writing 2000015)
+> > Nov 10 22:21:20 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 1 (was 2b00000, writing 2b00106)
+> > Nov 10 22:21:20 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 0 (was 164514e4, writing 3ea173b)
+> > Nov 10 22:21:20 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset b (was 164514e4, writing 302a1385)
+> > Nov 10 22:21:20 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 3 (was 0, writing 4008)
+> > Nov 10 22:21:20 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 2 (was 2000000, writing 2000015)
+> > Nov 10 22:21:20 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 1 (was 2b00000, writing 2b00106)
+> > Nov 10 22:21:20 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 0 (was 164514e4, writing 3ea173b)
+> > Nov 10 22:21:20 frank kernel: tg3: eth0: Link is up at 1000 Mbps, full duplex.
+> > Nov 10 22:21:20 frank kernel: tg3: eth0: Flow control is on for TX and
+> > on for RX.
+> > Nov 10 22:24:40 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset b (was 164514e4, writing 302a1385)
+> > Nov 10 22:24:40 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 3 (was 0, writing 4008)
+> > Nov 10 22:24:40 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 2 (was 2000000, writing 2000015)
+> > Nov 10 22:24:40 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 1 (was 2b00000, writing 2b00106)
+> > Nov 10 22:24:40 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 0 (was 164514e4, writing 3ea173b)
+> > Nov 10 22:24:40 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset b (was 164514e4, writing 302a1385)
+> > Nov 10 22:24:40 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 3 (was 0, writing 4008)
+> > Nov 10 22:24:40 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 2 (was 2000000, writing 2000015)
+> > Nov 10 22:24:40 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 1 (was 2b00000, writing 2b00106)
+> > Nov 10 22:24:40 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 0 (was 164514e4, writing 3ea173b)
+> > Nov 10 22:41:48 frank kernel: nfs: server 192.168.2.1 not responding, timed out
+> > Nov 10 22:41:48 frank kernel: nfs: server 192.168.2.1 not responding, timed out
+> > Nov 10 22:41:48 frank kernel: nfs: server 192.168.2.1 not responding, timed out
+> > Nov 10 22:41:48 frank kernel: nfs: server 192.168.2.1 not responding, timed out
+> > Nov 10 22:41:48 frank kernel: nfs: server 192.168.2.1 not responding, timed out
+> > Nov 10 22:41:49 frank kernel: nfs: server 192.168.2.1 not responding, timed out
+> > Nov 10 22:41:49 frank kernel: nfs: server 192.168.2.1 not responding, timed out
+> > Nov 10 22:41:49 frank kernel: nfs: server 192.168.2.1 not responding, timed out
+> > Nov 10 22:41:49 frank kernel: nfs: server 192.168.2.1 not responding, timed out
+> > Nov 10 22:43:02 frank kernel: nfs: server 192.168.2.1 not responding, timed out
+> > Nov 10 22:45:52 frank kernel: NETDEV WATCHDOG: eth0: transmit timed out
+> > Nov 10 22:45:52 frank kernel: tg3: eth0: transmit timed out, resetting
+> > Nov 10 22:45:52 frank kernel: tg3: tg3_stop_block timed out, ofs=1400
+> > enable_bit=2
+> > Nov 10 22:45:52 frank kernel: tg3: tg3_stop_block timed out, ofs=c00
+> > enable_bit=2
+> > Nov 10 22:45:52 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset b (was 164514e4, writing 302a1385)
+> > Nov 10 22:45:52 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 3 (was 0, writing 4008)
+> > Nov 10 22:45:52 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 2 (was 2000000, writing 2000015)
+> > Nov 10 22:45:52 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 1 (was 2b00000, writing 2b00106)
+> > Nov 10 22:45:52 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 0 (was 164514e4, writing 3ea173b)
+> > Nov 10 22:45:52 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset b (was 164514e4, writing 302a1385)
+> > Nov 10 22:45:52 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 3 (was 0, writing 4008)
+> > Nov 10 22:45:52 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 2 (was 2000000, writing 2000015)
+> > Nov 10 22:45:52 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 1 (was 2b00000, writing 2b00106)
+> > Nov 10 22:45:52 frank kernel: PM: Writing back config space on device
+> > 0000:00:0b.0 at offset 0 (was 164514e4, writing 3ea173b)
+> > Nov 10 22:45:52 frank kernel: tg3: eth0: Link is down.
+> > Nov 10 22:45:56 frank kernel: tg3: eth0: Link is up at 1000 Mbps, full duplex.
+> > Nov 10 22:45:56 frank kernel: tg3: eth0: Flow control is on for TX and
+> > on for RX.
+> > Nov 10 22:47:49 frank kernel: nfs: server 192.168.2.1 not responding, timed out
+> > Nov 10 22:47:49 frank kernel: nfs: server 192.168.2.1 not responding, timed out
+> > Nov 10 22:47:49 frank kernel: nfs: server 192.168.2.1 not responding, timed out
+> > Nov 10 22:49:02 frank kernel: nfs: server 192.168.2.1 not responding, timed out
+> > 
+> > Other gig-e cards work OK in this box.
+> > I have a *pair* of the TG3 boards and they both do the same thing.
+> > 
+> -
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > 
-> set_rtc_mmss() was used to be called from interrupt context in 2.6.22,
-> however in 2.6.23, it is called from a timer context, where interrupts
-> are enabled. This patch ensures that rtc_interrupt() won't dead-lock 
-> with set_rtc_mmss().
-
-> diff --git a/arch/x86_64/kernel/time.c b/arch/x86_64/kernel/time.c
-> index 6241b50..8414236 100644
-> --- a/arch/x86_64/kernel/time.c
-> +++ b/arch/x86_64/kernel/time.c
-> @@ -87,13 +87,14 @@ static int set_rtc_mmss(unsigned long nowtime)
->  	int retval = 0;
->  	int real_seconds, real_minutes, cmos_minutes;
->  	unsigned char control, freq_select;
-> +	unsigned long flags;
->  
->  /*
->   * IRQs are disabled when we're called from the timer interrupt,
->   * no need for spin_lock_irqsave()
->   */
->  
-> -	spin_lock(&rtc_lock);
-> +	spin_lock_irqsave(&rtc_lock, flags);
-I think it's a good idea to update or just remove the comment above.
-
--- 
-Aristeu
 
