@@ -1,102 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764940AbXKORH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765213AbXKORKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764940AbXKORH5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 12:07:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbXKORHu
+	id S1765213AbXKORKH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 12:10:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756296AbXKORJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 12:07:50 -0500
-Received: from rtr.ca ([76.10.145.34]:3836 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752480AbXKORHt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 12:07:49 -0500
-Message-ID: <473C7CE4.5000702@rtr.ca>
-Date: Thu, 15 Nov 2007 12:07:48 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 15 Nov 2007 12:09:57 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:49496 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753568AbXKORJ4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 12:09:56 -0500
+Date: Thu, 15 Nov 2007 09:06:34 -0800
+From: Greg KH <greg@kroah.com>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Jiri Kosina <jikos@jikos.cz>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc2-mm1
+Message-ID: <20071115170634.GA24587@kroah.com>
+References: <a8e1da0711132247jd440f8dgc9ac0442e90f2c34@mail.gmail.com> <20071114004129.783fb98b.akpm@linux-foundation.org> <a8e1da0711140136i1e441371j306e7b2888de104e@mail.gmail.com> <20071114165906.GB13889@kroah.com> <1195065493.2168.31.camel@lov.site> <Pine.LNX.4.64.0711142018390.15844@twin.jikos.cz> <1195075663.2609.2.camel@lov.site> <a8e1da0711141701xc66109dv93ad2c3d2b76ebec@mail.gmail.com> <1195094293.2731.14.camel@lov.site> <20071115081407.GA3688@darkstar.te-china.tietoenator.com>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-Cc: Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
-Subject: Re: EIP is at device_shutdown+0x32/0x60
-References: <20071115091158.GB6216@localhost.sw.ru> <20071115014446.f943d835.akpm@linux-foundation.org> <20071115213345.B3C1.Y-GOTO@jp.fujitsu.com> <20071115163435.GC24087@suse.de>
-In-Reply-To: <20071115163435.GC24087@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071115081407.GA3688@darkstar.te-china.tietoenator.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Thu, Nov 15, 2007 at 09:55:34PM +0900, Yasunori Goto wrote:
->>> On Thu, 15 Nov 2007 12:11:58 +0300 Alexey Dobriyan <adobriyan@sw.ru> wrote:
->>>
->>>> Three boxes rarely oops during reboot or poweroff with 2.6.24-rc2-mm1
->>>> (1) and during 2.6.24 cycle (2):
->>>>
->>>> 	kernel_restart
->>>> 	sys_reboot
->>>> 	[garbage]
->>>> Code: 8b 88 a8 00 00 00 85 c9 74 04 89
->>>> EIP is at device_shutdown+0x32/0x60
->>> Yes, all my test boxes did that - it's what I referred to in the releaee
->>> notes.  Greg is pondering the problem - seem he's the only person who
->>> cannot reproduce it ;)
->> Fortunately, my ia64 box reproduces this oops "every time". 
->> So, I could chase it.
->>
->> device_shutdown() function in drivers/base/power/shutdown.c
->> is followings.
->> -----------
->> /**
->>  * device_shutdown - call ->shutdown() on each device to shutdown.
->>  */
->> void device_shutdown(void)
->> {
->>         struct device * dev, *devn;
->>
->>         list_for_each_entry_safe_reverse(dev, devn, &devices_kset->list,
->>                                 kobj.entry) {
->>                 if (dev->bus && dev->bus->shutdown) {
->>                         dev_dbg(dev, "shutdown\n");
->>                         dev->bus->shutdown(dev);
->>                 } else if (dev->driver && dev->driver->shutdown) {
->>                         dev_dbg(dev, "shutdown\n");
->>                         dev->driver->shutdown(dev);
->>                 }
->>         }
->> }
->> --------
->> When oops occured, dev->driver pointed kset_ktype's address,
->> and dev->driver->shutdown was the address of bus_type_list.
->> So, Oops was caused by "Illegal operation fault".
->> kset_ktypes is pointed by system_kset.
->>
->> If my understanding is correct, this loop can't distinguish between
->> struct device and struct kset, but both are connected in this list,
->> right? It may be the cause of this.
+On Thu, Nov 15, 2007 at 04:14:07PM +0800, Dave Young wrote:
+> On Thu, Nov 15, 2007 at 03:38:13AM +0100, Kay Sievers wrote:
+> > On Thu, 2007-11-15 at 09:01 +0800, Dave Young wrote:
+> > > On Nov 15, 2007 5:27 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> > > > On Wed, 2007-11-14 at 20:19 +0100, Jiri Kosina wrote:
+> > > > > On Wed, 14 Nov 2007, Kay Sievers wrote:
+> > > > >
+> > > > > > Could it be an init-order problem, where something tries to use the
+> > > > > > block subsystem? Before it is initialized with:
+> > > > > >   block/genhd.c :: subsys_initcall(genhd_device_init);
+> > > > > > If that's the case, we have an old bug that nobody noticed with static
+> > > > > > structures, which are zeroed that time, but definitely not properly
+> > > > > > initialized. I'll try to build loop non-modular now, and see if that
+> > > > > > makes the bug appear here.
+> > > >
+> > > > > my .config with which I reproduc this on 2.6.24-rc2-mm1 reliably can be
+> > > > > obtained from http://www.jikos.cz/jikos/junk/.config
+> > > >
+> > > > Hmm, that config doesn't do anything here, and if I make it boot, it
+> > > > does not show the bug.
+> > > >
+> > > > Could you possibly enable kobject debugging and see if that exposes
+> > > > something, maybe something goes wrong with the kset refcount and it gets
+> > > > released while in use.
+> > > >
+> > > Hi,
+> > > I would do that.
+> > 
+> > That would be great.
+> > 
+> > > BTW, The bug report as EIP  at __list_add with CONFIG_DEBUG_LIST=y
+> > 
+> > Yeah, that hints that the kset, which contains the list, is not
+> > allocated at the time it is used, or it is already released (kfree)
+> > again by some buggy logic.
+> Yes, I debugged it, there's some new findings.
+> It is freed by put_disk.
+> The floppy driver alloc_disk and then call put_disk without register_disk.
+> in kobject_cleanup line 551:
+> if(s)
+> 	kset_put(s);
+> Now the kset is set in alloc_disk after kobject_init, so it is not refereced yet.
+> please try this patch:
+>  
+> block/genhd.c |    2 +-
+> 1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> Hm, no, it should just be a list of devices for the kset, but I'll go
-> verify that this is correct.
-> 
-> And yeah, I can duplicate this problem here too...
-..
+> diff -upr linux/block/genhd.c linux.new/block/genhd.c
+> --- linux/block/genhd.c	2007-11-15 15:59:11.000000000 +0800
+> +++ linux.new/block/genhd.c	2007-11-15 15:59:39.000000000 +0800
+> @@ -718,9 +718,9 @@ struct gendisk *alloc_disk_node(int mino
+>  			}
+>  		}
+>  		disk->minors = minors;
+> -		kobject_init(&disk->kobj);
+>  		disk->kobj.kset = block_kset;
+>  		disk->kobj.ktype = &ktype_block;
+> +		kobject_init(&disk->kobj);
+>  		rand_initialize_disk(disk);
+>  		INIT_WORK(&disk->async_notify,
+>  			media_change_notify_thread);
 
-Greg, I don't know if this is relevant or not,
-but x86 has bugs in the halt/reboot code for SMP.
+Ah, yes, that is a bug, and it's my fault, let me go fix that in my
+patch series.  Thanks a lot for finding this.
 
-Specifically, in native_smp_send_stop() the code now uses
-spin_trylock() to "lock" the shared call buffers,
-but then ignores the result.
+Does this patch fix your problem?
 
-This means that multiple CPUs can/will clobber each other
-in that code.
+thanks,
 
-The second bug, is that this code does not wait for the
-target CPUs to actually stop before it continues.
-
-This was the real cause of the failure-to-poweroff problems
-I was having with 2.6.23, which we fixed by using CPU hotplug
-to disable_nonboot_cpus() before the above code ever got run.
-
-Maybe it's related, maybe not.
-
+greg k-h
