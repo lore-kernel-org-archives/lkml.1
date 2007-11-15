@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762021AbXKOMTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762967AbXKOMY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762021AbXKOMTn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 07:19:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbXKOMTf
+	id S1762967AbXKOMY7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 07:24:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbXKOMYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 07:19:35 -0500
-Received: from smtp-104-thursday.noc.nerim.net ([62.4.17.104]:3077 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750921AbXKOMTf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 07:19:35 -0500
-Date: Thu, 15 Nov 2007 13:19:15 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: Julia Lawall <julia@diku.dk>, i2c@lm-sensors.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 1/4] drivers/i2c: Drop redundant includes of 
- moduleparam.h
-Message-ID: <20071115131915.0eb34c98@hyperion.delvare>
-In-Reply-To: <alpine.LFD.0.9999.0711140416160.4673@localhost.localdomain>
-References: <Pine.LNX.4.64.0711132231080.18337@ask.diku.dk>
-	<alpine.LFD.0.9999.0711131632490.26111@localhost.localdomain>
-	<Pine.LNX.4.64.0711140707120.25487@ask.diku.dk>
-	<alpine.LFD.0.9999.0711140416160.4673@localhost.localdomain>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Nov 2007 07:24:51 -0500
+Received: from zakalwe.fi ([80.83.5.154]:39315 "EHLO zakalwe.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756077AbXKOMYu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 07:24:50 -0500
+Date: Thu, 15 Nov 2007 14:24:48 +0200
+From: Heikki Orsila <shdl@zakalwe.fi>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       shemminger@linux-foundation.org
+Subject: Re: [patch 00/16] 2.6.23-stable review, network driver changes
+Message-ID: <20071115122448.GK8865@zakalwe.fi>
+References: <20071115063921.GA18827@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20071115063921.GA18827@kroah.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Wed, Nov 14, 2007 at 10:39:21PM -0800, Greg KH wrote:
+> This is the start of the stable review cycle for the 2.6.23.X release.
+> There are 16 patches in this series, all will be posted as a response to
+> this one.  If anyone has any issues with these being applied, please let
+> us know.
+> ...
+>  drivers/net/skge.c                     |  141 +++++++++++++++++----------------
+>  drivers/net/skge.h                     |    6 -
 
-On Wed, 14 Nov 2007 04:21:51 -0500 (EST), Robert P. J. Day wrote:
-> On Wed, 14 Nov 2007, Julia Lawall wrote:
-> 
-> > > > From: Julia Lawall <julia@diku.dk>
-> > > >
-> > > > Drop #include <linux/moduleparam.h> in files that also include #include
-> > > > <linux/module.h>.  module.h includes moduleparam.h already.
-> > >
-> > > i'm not convinced that's a good idea.  while module.h does
-> > > currently (and unfortunately) include moduleparam.h, there may
-> > > come a day when those header files are refactored to actually make
-> > > sense, at which point all those missing moduleparam.h inclusions
-> > > will cause all sorts of bad things to happen.
+I found a regression when I applied drivers/net/skge.[ch] patches on top 
+of 2.6.23.1 at stable tree (4367388f04eea72e78347dc9b299698bf4275f92). 
+It hangs the network on high speed transfers.
 
-I share Robert's point of view here. Relying on header files including
-each other is usually not a good idea, as build then breaks when the
-headers are cleaned up or reorganized.
+This the same regression that happened for 2.6.24-rc*:
 
-> > They were removed from the drivers/media files in August:
-> > 9c12224a607a4b22ab86784e3394b52810b9507c
-> > Perhaps they should be put back there then?
-> 
-> i went down this road before a few months back, checking on how many
-> source files were unnecessarily including moduleparam.h, and the
-> result was literally *hundreds*.  i took a shot at cleaning that up,
-> and even factoring the non-parameter-related content out of that file,
-> but the change would have been hugely disruptive.
-> 
-> as it is now, since module.h includes moduleparam.h, there is (as you
-> can see) no reason whatever for *anyone* to include moduleparam.h.
-> at least right now.
-> 
-> but if anyone ever aspires to tidy up this chaos, then all you'd end
-> up doing is putting all those includes back in.  so unless there's a
-> long-term goal here, it would seem safest to just leave things the way
-> they are.  but that's someone else's decision, not mine.  i'm just
-> reporting on how quickly things got unpleasant when *i* tried to do
-> something with this once upon a time.
+	http://bugzilla.kernel.org/show_bug.cgi?id=9321
 
-If there's a fundamental reason why module.h has to include
-moduleparam.h, then both headers should be merged in a single file. If
-not, then both header files should be clearly split and drivers should
-include each of them as needed. Either way, header files must be fixed
-first, and drivers adjusted in consequence. So, I'm not taking this
-patch, sorry.
+The driver in 2.6.23.1 works for me. Afaik, Stephen Hemminger is working 
+on it.
 
 -- 
-Jean Delvare
+Heikki Orsila			Barbie's law:
+heikki.orsila@iki.fi		"Math is hard, let's go shopping!"
+http://www.iki.fi/shd
