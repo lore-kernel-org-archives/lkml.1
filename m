@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761916AbXKOPfS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761354AbXKOPie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761916AbXKOPfS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 10:35:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755924AbXKOPfG
+	id S1761354AbXKOPie (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 10:38:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755427AbXKOPi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 10:35:06 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46228 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753215AbXKOPfF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 10:35:05 -0500
-Date: Thu, 15 Nov 2007 16:25:58 +0100
-From: Ingo Molnar <mingo@elte.hu>
+	Thu, 15 Nov 2007 10:38:26 -0500
+Received: from ftp.linux-mips.org ([194.74.144.162]:44738 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752298AbXKOPiZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 10:38:25 -0500
+Date: Thu, 15 Nov 2007 15:37:48 +0000
+From: Ralf Baechle DL5RB <ralf@linux-mips.org>
 To: Gautham R Shenoy <ego@in.ibm.com>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        Rusty Russel <rusty@rustcorp.com.au>,
        Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Paul E McKenney <paulmck@us.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Paul E McKenney <paulmck@us.ibm.com>,
        Richard Gooch <rgooch@atnf.csiro.au>,
        Tigran Aivazian <tigran@aivazian.fs.co.uk>,
-       Shoahua Li <shaohua.li@linux.com>, Ralf Baechle <ralf@linux-mips.org>,
+       Shoahua Li <shaohua.li@linux.com>,
        Heiko Carstens <heiko.carstens@de.ibm.com>,
        Nathan Lynch <ntl@pobox.com>, Paul Jackson <pj@sgi.com>,
        Christoph Lameter <clameter@sgi.com>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Akinobu Mita <akinobu.mita@gmail.com>
-Subject: Re: [RFC PATCH 1/3] cpu-hotplug: Refcount Based Cpu Hotplug
-	implementation
-Message-ID: <20071115152558.GA22599@elte.hu>
-References: <20071115134924.GA15282@in.ibm.com> <20071115135108.GA15462@in.ibm.com> <20071115141501.GB28857@elte.hu>
+Subject: Re: [RFC PATCH 2/3] cpu-hotplug: Replace lock_cpu_hotplug() with
+	get_online_cpus()
+Message-ID: <20071115153748.GD4973@linux-mips.org>
+References: <20071115134924.GA15282@in.ibm.com> <20071115135202.GB15462@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071115141501.GB28857@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20071115135202.GB15462@in.ibm.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Nov 15, 2007 at 07:22:02PM +0530, Gautham R Shenoy wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> * Gautham R Shenoy <ego@in.ibm.com> wrote:
+> Replace all lock_cpu_hotplug/unlock_cpu_hotplug from the kernel and use
+> get_online_cpus and put_online_cpus instead as it highlights
+> the refcount semantics in these operations.
 > 
-> >  void lock_cpu_hotplug(void)
-> >  {
-> > -	struct task_struct *tsk = current;
-> > -
-> > -	if (tsk == recursive) {
-> > -		static int warnings = 10;
-> > -		if (warnings) {
-> > -			printk(KERN_ERR "Lukewarm IQ detected in hotplug locking\n");
-> > -			WARN_ON(1);
-> > -			warnings--;
-> > -		}
-> > -		recursive_depth++;
+> The new API guarantees protection against the cpu-hotplug operation,
+> but it doesn't guarantee serialized access to any of the local data
+> structures. Hence the changes needs to be reviewed.
 > 
-> i nominate it for a 2.6.24 merge due to it fixing the above 
-> regression. I've seen regular instances of the "Lukewarm IQ" message.
+> In case of pseries_add_processor/pseries_remove_processor, use
+> cpu_maps_update_begin()/cpu_maps_update_done() as we're modifying the
+> cpu_present_map there.
+> 
+> Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+> ---
+>  Documentation/cpu-hotplug.txt                |   11 ++++++-----
+>  arch/mips/kernel/mips-mt-fpaff.c             |   10 +++++-----
 
-FYI, i've put these 3 patches into the scheduler git tree and it's 
-looking very good so far. So unless Andrew or Linus objects to put this 
-into v2.6.24, or there's serious questions during review, could we merge 
-it this way?
+Acked-by: Ralf Baechle <ralf@linux-mips.org>
 
-	Ingo
+for the MIPS part.
+
+  Ralf
