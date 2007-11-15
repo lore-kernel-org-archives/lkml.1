@@ -1,34 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762288AbXKOGOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762571AbXKOGPB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762288AbXKOGOm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:14:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758713AbXKOGK7
+	id S1762571AbXKOGPB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:15:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758753AbXKOGLE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:10:59 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:36568 "EHLO
+	Thu, 15 Nov 2007 01:11:04 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:36583 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758670AbXKOGK5 (ORCPT
+	with ESMTP id S1753073AbXKOGLA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:10:57 -0500
-Date: Wed, 14 Nov 2007 22:09:55 -0800
+	Thu, 15 Nov 2007 01:11:00 -0500
+Date: Wed, 14 Nov 2007 22:09:58 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, penberg@cs.helsinki.fi, hugh@veritas.com,
-       ezk@cs.sunysb.edu
-Subject: [patch 12/13] fix tmpfs BUG and AOP_WRITEPAGE_ACTIVATE
-Message-ID: <20071115060955.GM7602@kroah.com>
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: [patch 13/13] BLOCK: Fix bad sharing of tag busy list on queues
+	with shared tag maps
+Message-ID: <20071115060958.GN7602@kroah.com>
 References: <20071115042610.731859958@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-tmpfs-bug-and-aop_writepage_activate.patch"
+Content-Disposition: inline; filename="block-fix-bad-sharing-of-tag-busy-list-on-queues-with-shared-tag-maps.patch"
 In-Reply-To: <20071115060544.GA7602@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -38,64 +38,100 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
+From: Jens Axboe <jens.axboe@oracle.com>
 
-From: Hugh Dickins <hugh@veritas.com>
+patch 6eca9004dfcb274a502438a591df5b197690afb1 in mainline.
 
-patch 487e9bf25cbae11b131d6a14bdbb3a6a77380837 in mainline.
+For the locking to work, only the tag map and tag bit map may be shared
+(incidentally, I was just explaining this to Nick yesterday, but I
+apparently didn't review the code well enough myself). But we also share
+the busy list!  The busy_list must be queue private, or we need a
+block_queue_tag covering lock as well.
 
-It's possible to provoke unionfs (not yet in mainline, though in mm and
-some distros) to hit shmem_writepage's BUG_ON(page_mapped(page)).  I expect
-it's possible to provoke the 2.6.23 ecryptfs in the same way (but the
-2.6.24 ecryptfs no longer calls lower level's ->writepage).
+So we have to move the busy_list to the queue. This'll work fine, and
+it'll actually also fix a problem with blk_queue_invalidate_tags() which
+will invalidate tags across all shared queues. This is a bit confusing,
+the low level driver should call it for each queue seperately since
+otherwise you cannot kill tags on just a single queue for eg a hard
+drive that stops responding. Since the function has no callers
+currently, it's not an issue.
 
-This came to light with the recent find that AOP_WRITEPAGE_ACTIVATE could
-leak from tmpfs via write_cache_pages and unionfs to userspace.  There's
-already a fix (e423003028183df54f039dfda8b58c49e78c89d7 - writeback: don't
-propagate AOP_WRITEPAGE_ACTIVATE) in the tree for that, and it's okay so
-far as it goes; but insufficient because it doesn't address the underlying
-issue, that shmem_writepage expects to be called only by vmscan (relying on
-backing_dev_info capabilities to prevent the normal writeback path from
-ever approaching it).
+This is fixed with commit 6eca9004dfcb274a502438a591df5b197690afb1 in
+Linus' tree.
 
-That's an increasingly fragile assumption, and ramdisk_writepage (the other
-source of AOP_WRITEPAGE_ACTIVATEs) is already careful to check
-wbc->for_reclaim before returning it.  Make the same check in
-shmem_writepage, thereby sidestepping the page_mapped BUG also.
-
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>
-Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/shmem.c |   15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ block/ll_rw_blk.c      |    8 +++-----
+ include/linux/blkdev.h |    2 +-
+ 2 files changed, 4 insertions(+), 6 deletions(-)
 
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -916,6 +916,21 @@ static int shmem_writepage(struct page *
- 	struct inode *inode;
+--- a/block/ll_rw_blk.c
++++ b/block/ll_rw_blk.c
+@@ -819,7 +819,6 @@ static int __blk_free_tags(struct blk_qu
+ 	retval = atomic_dec_and_test(&bqt->refcnt);
+ 	if (retval) {
+ 		BUG_ON(bqt->busy);
+-		BUG_ON(!list_empty(&bqt->busy_list));
  
- 	BUG_ON(!PageLocked(page));
-+	/*
-+	 * shmem_backing_dev_info's capabilities prevent regular writeback or
-+	 * sync from ever calling shmem_writepage; but a stacking filesystem
-+	 * may use the ->writepage of its underlying filesystem, in which case
-+	 * we want to do nothing when that underlying filesystem is tmpfs
-+	 * (writing out to swap is useful as a response to memory pressure, but
-+	 * of no use to stabilize the data) - just redirty the page, unlock it
-+	 * and claim success in this case.  AOP_WRITEPAGE_ACTIVATE, and the
-+	 * page_mapped check below, must be avoided unless we're in reclaim.
-+	 */
-+	if (!wbc->for_reclaim) {
-+		set_page_dirty(page);
-+		unlock_page(page);
-+		return 0;
-+	}
- 	BUG_ON(page_mapped(page));
+ 		kfree(bqt->tag_index);
+ 		bqt->tag_index = NULL;
+@@ -931,7 +930,6 @@ static struct blk_queue_tag *__blk_queue
+ 	if (init_tag_map(q, tags, depth))
+ 		goto fail;
  
- 	mapping = page->mapping;
+-	INIT_LIST_HEAD(&tags->busy_list);
+ 	tags->busy = 0;
+ 	atomic_set(&tags->refcnt, 1);
+ 	return tags;
+@@ -982,6 +980,7 @@ int blk_queue_init_tags(struct request_q
+ 	 */
+ 	q->queue_tags = tags;
+ 	q->queue_flags |= (1 << QUEUE_FLAG_QUEUED);
++	INIT_LIST_HEAD(&q->tag_busy_list);
+ 	return 0;
+ fail:
+ 	kfree(tags);
+@@ -1152,7 +1151,7 @@ int blk_queue_start_tag(struct request_q
+ 	rq->tag = tag;
+ 	bqt->tag_index[tag] = rq;
+ 	blkdev_dequeue_request(rq);
+-	list_add(&rq->queuelist, &bqt->busy_list);
++	list_add(&rq->queuelist, &q->tag_busy_list);
+ 	bqt->busy++;
+ 	return 0;
+ }
+@@ -1173,11 +1172,10 @@ EXPORT_SYMBOL(blk_queue_start_tag);
+  **/
+ void blk_queue_invalidate_tags(struct request_queue *q)
+ {
+-	struct blk_queue_tag *bqt = q->queue_tags;
+ 	struct list_head *tmp, *n;
+ 	struct request *rq;
+ 
+-	list_for_each_safe(tmp, n, &bqt->busy_list) {
++	list_for_each_safe(tmp, n, &q->tag_busy_list) {
+ 		rq = list_entry_rq(tmp);
+ 
+ 		if (rq->tag == -1) {
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -356,7 +356,6 @@ enum blk_queue_state {
+ struct blk_queue_tag {
+ 	struct request **tag_index;	/* map of busy tags */
+ 	unsigned long *tag_map;		/* bit map of free/busy tags */
+-	struct list_head busy_list;	/* fifo list of busy tags */
+ 	int busy;			/* current depth */
+ 	int max_depth;			/* what we will send to device */
+ 	int real_max_depth;		/* what the array can hold */
+@@ -451,6 +450,7 @@ struct request_queue
+ 	unsigned int		dma_alignment;
+ 
+ 	struct blk_queue_tag	*queue_tags;
++	struct list_head	tag_busy_list;
+ 
+ 	unsigned int		nr_sorted;
+ 	unsigned int		in_flight;
 
 -- 
