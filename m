@@ -1,106 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761680AbXKOSSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764139AbXKOSUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761680AbXKOSSy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 13:18:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754840AbXKOSSr
+	id S1764139AbXKOSUU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 13:20:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754840AbXKOSUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 13:18:47 -0500
-Received: from ns1.suse.de ([195.135.220.2]:52439 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755894AbXKOSSq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 13:18:46 -0500
-Date: Thu, 15 Nov 2007 10:18:34 -0800
-From: Greg KH <gregkh@suse.de>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
-Subject: Re: EIP is at device_shutdown+0x32/0x60
-Message-ID: <20071115181834.GE24531@suse.de>
-References: <20071115091158.GB6216@localhost.sw.ru> <20071115014446.f943d835.akpm@linux-foundation.org> <20071115213345.B3C1.Y-GOTO@jp.fujitsu.com> <20071115163435.GC24087@suse.de> <3ae72650711150950k74fdb37eu108bb360a594ffe8@mail.gmail.com>
+	Thu, 15 Nov 2007 13:20:09 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:46504 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751407AbXKOSUH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 13:20:07 -0500
+Date: Thu, 15 Nov 2007 19:19:46 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: [2.6 patch] x86: revert X86_HT semantics change
+Message-ID: <20071115181945.GS4250@stusta.de>
+References: <20071115161703.GR4250@stusta.de> <20071115180436.GA23517@uranus.ravnborg.org> <alpine.LFD.0.9999.0711151904300.3112@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <3ae72650711150950k74fdb37eu108bb360a594ffe8@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <alpine.LFD.0.9999.0711151904300.3112@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 15, 2007 at 06:50:06PM +0100, Kay Sievers wrote:
-> On Nov 15, 2007 5:34 PM, Greg KH <gregkh@suse.de> wrote:
-> > On Thu, Nov 15, 2007 at 09:55:34PM +0900, Yasunori Goto wrote:
-> > > > On Thu, 15 Nov 2007 12:11:58 +0300 Alexey Dobriyan <adobriyan@sw.ru> wrote:
-> > > >
-> > > > > Three boxes rarely oops during reboot or poweroff with 2.6.24-rc2-mm1
-> > > > > (1) and during 2.6.24 cycle (2):
-> > > > >
-> > > > >   kernel_restart
-> > > > >   sys_reboot
-> > > > >   [garbage]
-> > > > > Code: 8b 88 a8 00 00 00 85 c9 74 04 89
-> > > > > EIP is at device_shutdown+0x32/0x60
-> > > >
-> > > > Yes, all my test boxes did that - it's what I referred to in the releaee
-> > > > notes.  Greg is pondering the problem - seem he's the only person who
-> > > > cannot reproduce it ;)
-> > >
-> > > Fortunately, my ia64 box reproduces this oops "every time".
-> > > So, I could chase it.
-> > >
-> > > device_shutdown() function in drivers/base/power/shutdown.c
-> > > is followings.
-> > > -----------
-> > > /**
-> > >  * device_shutdown - call ->shutdown() on each device to shutdown.
-> > >  */
-> > > void device_shutdown(void)
-> > > {
-> > >         struct device * dev, *devn;
-> > >
-> > >         list_for_each_entry_safe_reverse(dev, devn, &devices_kset->list,
-> > >                                 kobj.entry) {
-> > >                 if (dev->bus && dev->bus->shutdown) {
-> > >                         dev_dbg(dev, "shutdown\n");
-> > >                         dev->bus->shutdown(dev);
-> > >                 } else if (dev->driver && dev->driver->shutdown) {
-> > >                         dev_dbg(dev, "shutdown\n");
-> > >                         dev->driver->shutdown(dev);
-> > >                 }
-> > >         }
-> > > }
-> > > --------
-> > > When oops occured, dev->driver pointed kset_ktype's address,
-> > > and dev->driver->shutdown was the address of bus_type_list.
-> > > So, Oops was caused by "Illegal operation fault".
-> > > kset_ktypes is pointed by system_kset.
-> > >
-> > > If my understanding is correct, this loop can't distinguish between
-> > > struct device and struct kset, but both are connected in this list,
-> > > right? It may be the cause of this.
-> >
-> > Hm, no, it should just be a list of devices for the kset, but I'll go
-> > verify that this is correct.
+On Thu, Nov 15, 2007 at 07:07:11PM +0100, Thomas Gleixner wrote:
+> On Thu, 15 Nov 2007, Sam Ravnborg wrote:
 > 
-> Care to try this:
->   +       system_kset = kset_create_and_register("system", NULL,
->   +                                              &devices_kset->kobj, NULL);
+> > On Thu, Nov 15, 2007 at 05:17:03PM +0100, Adrian Bunk wrote:
+> > > The x86 unification resulted in CONFIG_X86_HT no longer being
+> > > set if (X86_32 && MK8).
+> > Yup - my bad. I wrongly assumed MK8 was an X86_64 thing.
+> > 
+> > Thanks for fixing this.
+> > > 
+> > > After grep'ing through the tree I think the problem is that different 
+> > > places have different assumptions about the semantics of CONFIG_X86_HT,
+> > > either:
+> > > - hyperthreading or
+> > > - multicore
+> > > and the SCHED_SMT and SCHED_MC dependencies are just one of the 
+> > > symptoms.
+> > > 
+> > > This should be sorted out properly, but until then we should keep the 
+> > > 2.6.23 status quo.
+> > > 
+> > > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> > 
+> > I assume Thomas & Co will forward the patch.
 > 
-> We should not join the kset, only use it as a parent.
+> After looking what does what and fixing it. 
+> 
+> Right now this patch is not a 1:1 replacement of the .23 status quo,
+> as it now makes SCHED_SMT and SCHED_HT depend on !MK8 for 64bit.
 
-ARGH!
+*searches brown paperbag*
 
-<snip loads of curse words...>
+Thanks for spotting, fixed patch below.
 
-that should do it, let me go test.
+>      tglx
 
-Actually, once that is changed, the whole kset_create_and_register can
-drop that last argument, we never want to create a kset as part of
-another one...
+cu
+Adrian
 
-The kset's kobject should not belong to any kset at all, I really messed
-that one up.
 
-Yet another reason why this patchset really matters, this crap isn't
-even understood well by the people trying to maintain it...
+<--  snip  -->
 
-greg k-h
+
+The x86 unification resulted in CONFIG_X86_HT no longer being
+set if (X86_32 && MK8).
+
+After grep'ing through the tree I think the problem is that different
+places have different assumptions about the semantics of CONFIG_X86_HT,
+either
+- hyperthreading or
+- multicore
+
+This should be sorted out properly, but until then we should keep the
+2.6.23 status quo.
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+480a5ae48036f6825a5a111db87da05e298327d6 
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index af1b1ca..5871b44 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -148,7 +148,8 @@ config X86_SMP
+ 
+ config X86_HT
+ 	bool
+-	depends on SMP && !(X86_VISWS || X86_VOYAGER || MK8)
++	depends on SMP
++	depends on (X86_32 && !(X86_VISWS || X86_VOYAGER)) || (X86_64 && !MK8)
+ 	default y
+ 
+ config X86_BIOS_REBOOT
+
