@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932244AbXKOGaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760787AbXKOGaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932244AbXKOGaT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:30:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764745AbXKOGW2
+	id S1760787AbXKOGaq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:30:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764735AbXKOGW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:22:28 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:46023 "EHLO
+	Thu, 15 Nov 2007 01:22:29 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46033 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763156AbXKOGWY (ORCPT
+	with ESMTP id S1764427AbXKOGW1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:22:24 -0500
-Date: Wed, 14 Nov 2007 22:20:54 -0800
+	Thu, 15 Nov 2007 01:22:27 -0500
+Date: Wed, 14 Nov 2007 22:20:57 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,122 +21,51 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Netfilter Development Mailinglist 
-	<netfilter-devel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Krzysztof Piotr Oledzki <ole@ans.pl>,
-       Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>,
-       Patrick McHardy <kaber@trash.net>
-Subject: [patch 16/23] NETFILTER: nf_conntrack_tcp: fix connection reopening
-Message-ID: <20071115062054.GQ8282@kroah.com>
+       Johannes Berg <johannes@sipsolutions.net>,
+       linux-wireless@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 17/23] ieee80211: fix TKIP QoS bug
+Message-ID: <20071115062057.GR8282@kroah.com>
 References: <20071115055238.692814352@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="netfilter-nf_conntrack_tcp-fix-connection-reopening.patch"
+Content-Disposition: inline; filename="ieee80211-fix-tkip-qos-bug.patch"
 In-Reply-To: <20071115061806.GA8282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
 
-From: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
+From: Johannes Berg <johannes@sipsolutions.net>
 
-Upstream commits: 17311393 + bc34b841 merged together.  Merge done by
-Patrick McHardy <kaber@trash.net>
+patch e797aa1b7da6bfcb2e19a10ae5ead9aa7aea732b in mainline.
 
-[NETFILTER]: nf_conntrack_tcp: fix connection reopening
+The commit 65b6a277 titled "ieee80211: Fix header->qos_ctl endian issue"
+*introduced* an endianness bug. Partially revert it.
 
-With your description I could reproduce the bug and actually you were
-completely right: the code above is incorrect. Somehow I was able to
-misread RFC1122 and mixed the roles :-(:
-
-   When a connection is >>closed actively<<, it MUST linger in
-   TIME-WAIT state for a time 2xMSL (Maximum Segment Lifetime).
-   However, it MAY >>accept<< a new SYN from the remote TCP to
-   reopen the connection directly from TIME-WAIT state, if it:
-   [...]
-
-The fix is as follows: if the receiver initiated an active close, then the
-sender may reopen the connection - otherwise try to figure out if we hold
-a dead connection.
-
-Signed-off-by: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
-Tested-by: Krzysztof Piotr Oledzki <ole@ans.pl>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- net/netfilter/nf_conntrack_proto_tcp.c |   38 ++++++++++++++-------------------
- 1 file changed, 17 insertions(+), 21 deletions(-)
+ net/ieee80211/ieee80211_crypt_tkip.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/net/netfilter/nf_conntrack_proto_tcp.c
-+++ b/net/netfilter/nf_conntrack_proto_tcp.c
-@@ -831,6 +831,22 @@ static int tcp_packet(struct nf_conn *co
- 	tuple = &conntrack->tuplehash[dir].tuple;
+--- a/net/ieee80211/ieee80211_crypt_tkip.c
++++ b/net/ieee80211/ieee80211_crypt_tkip.c
+@@ -584,7 +584,7 @@ static void michael_mic_hdr(struct sk_bu
+ 	if (stype & IEEE80211_STYPE_QOS_DATA) {
+ 		const struct ieee80211_hdr_3addrqos *qoshdr =
+ 			(struct ieee80211_hdr_3addrqos *)skb->data;
+-		hdr[12] = qoshdr->qos_ctl & cpu_to_le16(IEEE80211_QCTL_TID);
++		hdr[12] = le16_to_cpu(qoshdr->qos_ctl) & IEEE80211_QCTL_TID;
+ 	} else
+ 		hdr[12] = 0;		/* priority */
  
- 	switch (new_state) {
-+	case TCP_CONNTRACK_SYN_SENT:
-+		if (old_state < TCP_CONNTRACK_TIME_WAIT)
-+			break;
-+		if ((conntrack->proto.tcp.seen[!dir].flags &
-+			IP_CT_TCP_FLAG_CLOSE_INIT)
-+		    || (conntrack->proto.tcp.last_dir == dir
-+		        && conntrack->proto.tcp.last_index == TCP_RST_SET)) {
-+			/* Attempt to reopen a closed/aborted connection.
-+			 * Delete this connection and look up again. */
-+			write_unlock_bh(&tcp_lock);
-+			if (del_timer(&conntrack->timeout))
-+				conntrack->timeout.function((unsigned long)
-+							    conntrack);
-+			return -NF_REPEAT;
-+		}
-+		/* Fall through */
- 	case TCP_CONNTRACK_IGNORE:
- 		/* Ignored packets:
- 		 *
-@@ -879,27 +895,6 @@ static int tcp_packet(struct nf_conn *co
- 			nf_log_packet(pf, 0, skb, NULL, NULL, NULL,
- 				  "nf_ct_tcp: invalid state ");
- 		return -NF_ACCEPT;
--	case TCP_CONNTRACK_SYN_SENT:
--		if (old_state < TCP_CONNTRACK_TIME_WAIT)
--			break;
--		if ((conntrack->proto.tcp.seen[dir].flags &
--			IP_CT_TCP_FLAG_CLOSE_INIT)
--		    || after(ntohl(th->seq),
--			     conntrack->proto.tcp.seen[dir].td_end)) {
--			/* Attempt to reopen a closed connection.
--			* Delete this connection and look up again. */
--			write_unlock_bh(&tcp_lock);
--			if (del_timer(&conntrack->timeout))
--				conntrack->timeout.function((unsigned long)
--							    conntrack);
--			return -NF_REPEAT;
--		} else {
--			write_unlock_bh(&tcp_lock);
--			if (LOG_INVALID(IPPROTO_TCP))
--				nf_log_packet(pf, 0, skb, NULL, NULL,
--					      NULL, "nf_ct_tcp: invalid SYN");
--			return -NF_ACCEPT;
--		}
- 	case TCP_CONNTRACK_CLOSE:
- 		if (index == TCP_RST_SET
- 		    && ((test_bit(IPS_SEEN_REPLY_BIT, &conntrack->status)
-@@ -932,6 +927,7 @@ static int tcp_packet(struct nf_conn *co
-      in_window:
- 	/* From now on we have got in-window packets */
- 	conntrack->proto.tcp.last_index = index;
-+	conntrack->proto.tcp.last_dir = dir;
- 
- 	pr_debug("tcp_conntracks: ");
- 	NF_CT_DUMP_TUPLE(tuple);
 
 -- 
