@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933392AbXKOWoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934034AbXKOWpf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933392AbXKOWoh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 17:44:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762230AbXKOWo2
+	id S934034AbXKOWpf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 17:45:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762230AbXKOWp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 17:44:28 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:58608 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759439AbXKOWo1 (ORCPT
+	Thu, 15 Nov 2007 17:45:27 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43225 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754376AbXKOWp0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 17:44:27 -0500
-Message-ID: <473CCB66.2080601@zytor.com>
-Date: Thu, 15 Nov 2007 14:42:46 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       William Lee Irwin III <wli@holomorphy.com>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Why preallocate pmd in x86 32-bit PAE?
-References: <473CC0AC.3020500@goop.org> <alpine.LFD.0.9999.0711151403000.4260@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.9999.0711151403000.4260@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 15 Nov 2007 17:45:26 -0500
+Date: Thu, 15 Nov 2007 14:44:08 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: dhowells@redhat.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, sam@ravnborg.org
+Subject: Re: [PATCH] FRV: Fix the extern declaration of kallsyms_num_syms
+ [try #2]
+Message-Id: <20071115144408.ba545d99.akpm@linux-foundation.org>
+In-Reply-To: <20071115144007.08760570.akpm@linux-foundation.org>
+References: <20071113165316.18700.67752.stgit@warthog.procyon.org.uk>
+	<20071115144007.08760570.akpm@linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+On Thu, 15 Nov 2007 14:40:07 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> But it all strikes me as a bit fragile and grotty.  Perhaps longer-term it
+> would be better if scripts/kallsyms.c were to also emit a header file which
+> declares all the things which that program emits the definitions of, no?
 > 
-> IIRC, the present bit is ignored in the magic 4-entry PGD.  All entries 
-> have to be present.
-> 
+> I guess that means that we'd need to run the program twice - once at the
+> start of compilation in generate-the-header-file mode and once at the end
+> of compilation in generate-the-symbols mode.
 
-This is true, although you could point a PGD to an all-zero page if you 
-really wanted to.  You have to re-load CR3 after modifying the top-level 
-entries.
-
-> What earlier CPU's did was to basically load all four values into the CPU 
-> when you loaded %cr3. There was no "three-level page table walker" at all: 
-> it was still a two-level page table walker, there were just for magic 
-> internal page tables that were indexed off the two high bits.
-
-They still are.  Loading CR3 in PAE really loads four registers from 
-memory.  x86-64 is different, of course.
-
-	-hpa
+Although given that this header file will be the same each time that
+program is run, we might as well just type the thing in.  And remember to
+keep it in sync with changes to scritps/kallsyms output?
