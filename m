@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763601AbXKORBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764607AbXKORCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763601AbXKORBX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 12:01:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbXKORBP
+	id S1764607AbXKORCw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 12:02:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758703AbXKORCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 12:01:15 -0500
-Received: from rtr.ca ([76.10.145.34]:3334 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752969AbXKORBP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 12:01:15 -0500
-Message-ID: <473C7B59.7030601@rtr.ca>
-Date: Thu, 15 Nov 2007 12:01:13 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 15 Nov 2007 12:02:45 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48543 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758688AbXKORCo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 12:02:44 -0500
+Date: Thu, 15 Nov 2007 09:02:02 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ulrich Drepper <drepper@redhat.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 2/4] x86&x86-64 support for sys_indirect
+In-Reply-To: <200711151641.lAFGfMow024336@devserv.devel.redhat.com>
+Message-ID: <alpine.LFD.0.9999.0711150852470.2786@woody.linux-foundation.org>
+References: <200711151641.lAFGfMow024336@devserv.devel.redhat.com>
 MIME-Version: 1.0
-To: Raymano Garibaldi <raymano@faunos.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6.23-1] [USB Mass Storage] [USB_PERSIST] Losing mounted USB
- storage after resume
-References: <1618816c0711150657p35744001ic6d4ea22d5651a63@mail.gmail.com>
-In-Reply-To: <1618816c0711150657p35744001ic6d4ea22d5651a63@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Raymano Garibaldi wrote:
-> Hi,
-> 
-> Is there a way/patch that would revert the USB mass storage
-> suspend/resume behavior to the way things worked on and prior to
-> kernel 2.6.21?
-> 
-> The problem is mounting a usb drive, suspending while mounted,
-> detaching the usb drive during suspend, reattaching usb drive during
-> suspend before resume, and resuming.
-> 
-> In this case the mount is lost and the drive has to be remounted after
-> resume. If the device remains attached while the computer is
-> suspended, USB_PERSIST works as expected and the device remains
-> mounted when the computer resumes. Kernel 2.6.21-x would leave the
-> mount point intact whether the device was left attached or was
-> detached and reattached while the computer was suspend.
-> 
-> We need this functionality particularly in read-only live USB distros.
-> In this case the USB device is read-only and can not change while the
-> computer is suspended even if it gets detached and is reattached
-> before resume.
-..
 
-Some kind of boot flag would cure this one nicely.
+[ Ingo, Thomas - see the whole series on linux-kernel ]
 
-I have the same issue here:  boot/run notebook from USB stick,
-eventually suspend the notebook and unplug the stick so it can
-be packed into the case for travel.
+On Thu, 15 Nov 2007, Ulrich Drepper wrote:
+>
+> This part adds support for sys_indirect on x86 and x86-64.
 
-Unpack at the other end, replug the stick, and resume from suspend.
-This should be doable, perhaps with a boot parameter override or something.
+The thing is, not all system calls can do this.
 
-???
+Some system calls are magic, and don't just take the arguments in 
+registers: they also care about the actual stack pointer and the whole 
+pt_regs struct when returning to user mode. 
+
+So this does need more infrastructure: some way of marking which system 
+calls cannot be executed indirectly.
+
+The magic system calls are things like:
+
+ - sys_iopl() - this one changes the eflags value restored on iret
+ - execve/clone/vfork() - need direct access to pt_regs
+ - vm86() - does magic with the stack, cares about pt_regs
+ - sigreturn - magic pt_regs accesses again
+
+and there may be others I have forgotten about.
+
+Calling these system calls from C code will just corrupt the kernel stack, 
+and is a big big no-no.
+
+		Linus
