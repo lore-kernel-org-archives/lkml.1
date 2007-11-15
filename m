@@ -1,77 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934207AbXKOXip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934255AbXKOXlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934207AbXKOXip (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 18:38:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934000AbXKOXia
+	id S934255AbXKOXlS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 18:41:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759098AbXKOXlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 18:38:30 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:46822 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932478AbXKOXi3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 18:38:29 -0500
-Date: Thu, 15 Nov 2007 15:38:17 -0800
-From: Gary Hade <garyhade@us.ibm.com>
-To: Alex Chiang <achiang@hp.com>
-Cc: Gary Hade <garyhade@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
-       Greg KH <greg@kroah.com>, gregkh@suse.de, kristen.c.accardi@intel.com,
-       lenb@kernel.org, rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 0/5][RFC] Physical PCI slot objects
-Message-ID: <20071115233817.GD5928@us.ibm.com>
-References: <20071115004039.GC6269@us.ibm.com> <20071115173613.GG7541@ldl.fc.hp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071115173613.GG7541@ldl.fc.hp.com>
-User-Agent: Mutt/1.4.1i
+	Thu, 15 Nov 2007 18:41:08 -0500
+Received: from tetsuo.zabbo.net ([207.173.201.20]:44704 "EHLO tetsuo.zabbo.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762609AbXKOXlG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 18:41:06 -0500
+Message-ID: <473CD907.6030007@oracle.com>
+Date: Thu, 15 Nov 2007 15:40:55 -0800
+From: Zach Brown <zach.brown@oracle.com>
+User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
+MIME-Version: 1.0
+To: Ulrich Drepper <drepper@redhat.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 0/4] sys_indirect system call
+References: <200711151641.lAFGfM8R024330@devserv.devel.redhat.com> <473CC604.5050804@oracle.com> <alpine.LFD.0.9999.0711151431220.4260@woody.linux-foundation.org> <473CD6A3.2070306@redhat.com>
+In-Reply-To: <473CD6A3.2070306@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 15, 2007 at 10:36:13AM -0700, Alex Chiang wrote:
-  < snip >
 
-> Ok, so all that said, after re-implementing my ACPI-PCI slot
-> driver, we get all the correct answers, but with the additional
-> appearance of slots 1 and 2 (which aren't hotpluggable):
+> BTW, I've botched the x86-on-x86_64 support.  I have a patch but need to
+> patch it before I'll submit v3 of the patch set.  If you want to work on
+> the patch and get syslet support going, let me know, I'll send the
+> latest version.
 
-Yea, looks much better.  Nice to see that the addresses
-for slots below the p2p bridges now include the child
-instead of the parent bus number. :)
+I probably won't come around to trying sys_indirect with syslets until
+next week, so it's probably fine for me to just wait for you to get v3
+out.  (and I'm more likely to test native i386 or x86_64 anyway, so.. :))
 
-  < snip >
-
-> So if you could try out v2 of my patch series when you get access
-> to your machine back, I'd much appreciate it. 
-
-Will do.  It still looks like I will not get the box back
-until early next week.  I will only be working Monday and
-Tuesday due to holiday/vacation but that will hopefully not
-be a problem.
-
-> I feel a lot better about it compared to v1.
-
-I haven't tried it yet but I feel better seeing that you
-are now testing on a system having a PCI topology that
-appears similar to some of our systems.
-
-  < snip >
-
-> Here is some dmesg and lspci -vt output in case you want to
-> double-check my work:
-
-Well, I didn't see any obvious warts but I'm pretty skilled
-at missing problems when looking at that kind of info.
-
-Thanks,
-Gary
-
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
-
+- z
