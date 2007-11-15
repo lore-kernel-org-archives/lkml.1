@@ -1,64 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757935AbXKOEMF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756994AbXKOEQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757935AbXKOEMF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 23:12:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755433AbXKOELy
+	id S1756994AbXKOEQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 23:16:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbXKOEQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 23:11:54 -0500
-Received: from wa-out-1112.google.com ([209.85.146.178]:63248 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754342AbXKOELw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 23:11:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=BnbMQUngwWi8D2x6dOQDjSf8v5JJUN9VzOH3TZxqckcZ64DTaroiBWOVhpX/dAc1iDIhwLUypQiqRBd84SAFn52n2D10svqK+GkBajLJiAK2ZS+1ahHiAXl+auPW0Gzs2eukBY6mcTIYqTX7V8TFMETwL5+18FH2VZSc0cy1PgI=
-Message-ID: <473BC6FE.8090700@gmail.com>
-Date: Thu, 15 Nov 2007 13:11:42 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 14 Nov 2007 23:16:18 -0500
+Received: from paragon.brong.net ([74.52.187.94]:45728 "EHLO paragon.brong.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751745AbXKOEQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 23:16:17 -0500
+X-Greylist: delayed 546 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Nov 2007 23:16:17 EST
+Date: Thu, 15 Nov 2007 15:16:13 +1100
+From: Bron Gondwana <brong@fastmail.fm>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: David Miller <davem@davemloft.net>, rmk+lkml@arm.linux.org.uk,
+       alsa-devel@alsa-project.org, netdev@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+       protasnb@gmail.com, linux-ide@vger.kernel.org,
+       bugme-daemon@bugzilla.kernel.org, linux-input@atrey.karlin.mff.cuni.cz,
+       akpm@linux-foundation.org, Jaroslav Kysela <perex@suse.cz>,
+       Takashi Iwai <tiwai@suse.de>
+Subject: Re: [alsa-devel] [BUG] New Kernel Bugs
+Message-ID: <20071115041613.GC15302@brong.net>
+References: <20071113143201.9441c940.akpm@linux-foundation.org> <20071113.175551.131375600.davem@davemloft.net> <20071114095507.GA32595@flint.arm.linux.org.uk> <20071114.020706.219917088.davem@davemloft.net> <473AE010.4090806@keyaccess.nl>
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH 2/2] sata_nv: fix ATAPI issues with memory over 4GB (v3)
-References: <473A7677.6080007@shaw.ca> <473BA332.9030406@gmail.com> <473BC5DF.1040302@shaw.ca>
-In-Reply-To: <473BC5DF.1040302@shaw.ca>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <473AE010.4090806@keyaccess.nl>
+Organization: brong.net
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Tejun Heo wrote:
->> Robert Hancock wrote:
->>> This fixes some problems with ATAPI devices on nForce4 controllers in
->>> ADMA mode
->>> on systems with memory located above 4GB. We need to delay setting
->>> the 64-bit
->>> DMA mask until the PRD table and padding buffer are allocated so that
->>> they don't
->>> get allocated above 4GB and break legacy mode (which is needed for ATAPI
->>> devices).
->>>
->>> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
->>
->> applied to #tj-upstream-fixes.
->>
-> 
-> I have a report that these patches crashed but the previous patch worked:
-> 
-> https://bugzilla.redhat.com/show_bug.cgi?id=351451
-> 
-> So there may still be a problem here.
+On Wed, Nov 14, 2007 at 12:46:24PM +0100, Rene Herman wrote:
+> On 14-11-07 11:07, David Miller wrote:
+>
+> Added Jaroslav and Takashi to the already extensive CC....
+>
+>> From: Russell King <rmk+lkml@arm.linux.org.uk>
+>
+>>> So, when are you creating a replacement alsa-devel mailing list on
+>>> vger?  That's also subscribers-only.
+>> The operative term is "alternative" rather than "replacement".
+>> Perhaps this misunderstanding is what you're so upset about.
+>> And yes, that alsa list bugs the crap out of me too.  I'm more than
+>> happy to provide an alternative for that one as well.
+>
+> alsa-devel@alsa-project.org is not subscriber-only. Same as that arm list, 
+> it's _moderated_ for non-subscribers and given that I and other moderators 
+> have been doing our best to moderate quickly (I tend to stay logged in to 
+> the moderation interface all day for example) what specifically bugged the 
+> crap out of you? It's not something a poster needs to concern himself with.
 
-Hmmm... The change seemed safe to me.  Anyways, dropping the patch for
-now.  Please re-send later.  Also, please format patch description such
-that it fits in 80c.
+Totally unrelated - I sent something to the kolab mailing list a couple
+of days ago (it's moderated for non subscribers) informing them that I
+had found the cause of some Cyrus bugs that they had problems with in
+the past and providing a link to my post to the cyrus list with the
+patches attached.
 
-Thanks.
+It sat in the moderation queue and then was rejected with "non
+subscriber post to subscription only list".  Not only was the reponse a
+day later when I had moved on to other things, but it got me really
+pissed off that I had put some effort into providing a good quality post
+that outlined the specific issues and how they applied to their project,
+and had been summarily dismissed, probably without the effort being put
+in.
 
--- 
-tejun
+There's no way for a non-subscriber to know in advance if the list they
+are trying to post to will do that to them, completely negating the
+effort put in to writing something worthwhile to inform that community.
+It's insular, and it sucks.
+
+So yeah, my attitude now is that the Kolab folks can go screw themselves
+and track down the fix on their own or wait until I've convinced
+upstream to accept the fixes (likely) and they have moved to the new
+version (unlikely for a long time, and meanwhile they're missing out on
+the performance increases that having a more stable skiplist library 
+would give them)
+
+I'm sure if I had something that I considered worth informing the ALSA
+project of, I'd be wary of spending the same effort writing a good
+post knowing it may be dropped in between the by a list moderator just
+selecing all and bouncing them.
+
+Bron.
