@@ -1,131 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756326AbXKOFn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755427AbXKOFx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756326AbXKOFn0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 00:43:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751085AbXKOFnR
+	id S1755427AbXKOFx5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 00:53:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbXKOFxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 00:43:17 -0500
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:41001 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750895AbXKOFnQ (ORCPT
+	Thu, 15 Nov 2007 00:53:48 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39851 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750860AbXKOFxr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 00:43:16 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAMJrO0dMROHU/2dsb2JhbACBXI5w
-Date: Thu, 15 Nov 2007 00:37:51 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@muc.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 5/8] Immediate Values - x86 Optimization
-Message-ID: <20071115053751.GB26338@Krystal>
-References: <20071113185800.436425570@polymtl.ca> <200711151408.46030.rusty@rustcorp.com.au> <20071115040610.GA23443@Krystal> <200711151545.19359.rusty@rustcorp.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <200711151545.19359.rusty@rustcorp.com.au>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 00:08:44 up 11 days, 10:14,  4 users,  load average: 0.04, 0.21,
-	0.27
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Thu, 15 Nov 2007 00:53:47 -0500
+Date: Wed, 14 Nov 2007 21:53:38 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Bron Gondwana <brong@fastmail.fm>
+cc: Christian Kujau <lists@nerdbynature.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+In-Reply-To: <alpine.LFD.0.9999.0711142130090.2786@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.9999.0711142148380.2786@woody.linux-foundation.org>
+References: <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113.043207.44732743.davem@davemloft.net> <20071113110259.44c56d42.akpm@linux-foundation.org>
+ <alpine.DEB.0.9999.0711132055550.7865@sheep.housecafe.de> <20071113130411.26ccae12.akpm@linux-foundation.org> <alpine.DEB.0.99999.0711132239350.3960@sheep.housecafe.de> <20071115040708.GB15302@brong.net> <alpine.LFD.0.9999.0711142020220.2786@woody.linux-foundation.org>
+ <20071115052538.GA21522@brong.net> <alpine.LFD.0.9999.0711142130090.2786@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rusty Russell (rusty@rustcorp.com.au) wrote:
-> On Thursday 15 November 2007 15:06:10 Mathieu Desnoyers wrote:
-> > * Rusty Russell (rusty@rustcorp.com.au) wrote:
-> > > A stop_machine (or lightweight variant using IPI) would be sufficient and
-> > > vastly simpler.  Trying to patch NMI handlers while they're running is
-> > > already crazy.
-> >
-> > I wouldn't mind if it was limited to the code within do_nmi(), but then
-> > we would have to accept potential GPF if
-> >
-> > A - the NMI or MCE code calls any external kernel code (printk,
-> >   notify_die, spin_lock/unlock, die_nmi, lapic_wd_event (perfctr code,
-> >   calls printk too for debugging)...
+
+
+On Wed, 14 Nov 2007, Linus Torvalds wrote:
 > 
-> Sure, but as I pointed out previously, such calls are already best effort.  
-> You can do very little safely from do_nmi(), and calling printk isn't one of 
-> them,
+> So even at 100% dirty limits, it won't let you dirty more than 1GB on the 
+> default 32-bit setup.
 
-yes and no.. do_nmi uses the "bust spinlocks" exactly for this. So this
-is ok by design. Other than this, we can end up mixing up the console
-data output with different sources of characters, but I doubt something
-really bad can happen (like a deadlock).
+Side note: all of these are obviously still just heuristics. If you really 
+*do* run on a 32-bit kernel, and you want to have the pain, I'm sure you 
+can just disable the dirty limits with a one-liner kernel mod. And if it's 
+useful enough, we can certainly expose flags like that.. Not that I expect 
+that much anybody else will ever care, but it's not like it's wrong to 
+expose the silly heuristics the kernel has to users that have very 
+specific loads.
 
-> nor is grabbing a spinlock (well, actually you could as long as it's 
-> *only* used by NMI handlers.  See any of those?).
+That said, I still do hope you aren't actually using HIGHMEM64G. I was 
+really hoping that the people who had enough moolah to buy >4GB of RAM had 
+long since also upgraded to a 64-bit machine ;)
 
-Yup, see arch/x86/kernel/nmi_64.c : nmi_watchdog_tick()
-
-It defines a spinlock to "Serialise the printks". I guess it's good to
-protect against other nmi watchdogs running on other CPUs concurrently,
-I guess.
-
-> 
-> > Therefore, if one decides to use the immediate values to
-> > leave dormant spinlock instrumentation in the kernel, I wouldn't want it
-> > to have undesirable side-effects (GPF) when the instrumentation is
-> > being enabled, as rare as it could be.
-> 
-> It's overengineered, since it's less likely than deadlock already.
-> 
-
-So should we put a warning telling "enabling tracing or profiling on a
-production system that also uses NMI watchdog could potentially cause a
-crash" ? The rarer a bug is, the more difficult it is to debug. It does
-not make the bug hurt less when it happens.
-
-The normal thing to do when a potential deadlock is detected is to fix
-it, not to leave it there under the premise that it doesn't matter since
-it happens rarely. In our case, where we know there is a potential race,
-I don't see any reason not to make sure it never happens. What's the
-cost of it ?
-
-arch/x86/kernel/immediate.o : 2.4K
-
-let's compare..
-
-kernel/stop_machine.o : 3.9K
-
-so I think that code size is not an issue there, especially since the
-immediate values are not meant to be deployed on embedded systems.
-
-> > > I'd keep this version up your sleeve for they day when it's needed.
-> >
-> > If we choose to go this way, stop_machine would have to do a sync_core()
-> > on every CPU before it reactivates interrupts for this to respect
-> > Intel's errata.
-> 
-> Yes, I don't think stop_machine is actually what you want anyway, since you 
-> are happy to run in interrupt context.  An IPI-based scheme is probably 
-> better, and also has the side effect of iret doing the sync you need, IIUC.
-> 
-
-Yup, looping in IPIs with interrupts disabled should do the job there.
-It's just awful for interrupt latency on large SMP systems :( Being
-currently bad at it is not a reason to make it worse. If we have a CPU
-that is within a high latency irq disable region when we send the IPI,
-we can easily end up waiting for this critical section to end with
-interrupts disabled on all CPUs. The fact that we would wait for the
-longest interrupt disable region with IRQs disabled implies that we
-increase the maximum latency of the system, by design. I'm not sure I
-would like to be the new longest record-beating IRQ off region.
-
-Mathieu
-
-> Hope that clarifies,
-> Rusty.
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+		Linus
