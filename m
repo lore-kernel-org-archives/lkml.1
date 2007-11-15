@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932311AbXKOGbo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932264AbXKOGcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932311AbXKOGbo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:31:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764431AbXKOGWh
+	id S932264AbXKOGcR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:32:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764891AbXKOGWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:22:37 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:46060 "EHLO
+	Thu, 15 Nov 2007 01:22:39 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46074 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764850AbXKOGWd (ORCPT
+	with ESMTP id S1763395AbXKOGWg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:22:33 -0500
-Date: Wed, 14 Nov 2007 22:21:04 -0800
+	Thu, 15 Nov 2007 01:22:36 -0500
+Date: Wed, 14 Nov 2007 22:21:07 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,12 +23,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        linux-wireless@vger.kernel.org,
        "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 19/23] mac80211: store channel info in sta_bss_list
-Message-ID: <20071115062104.GT8282@kroah.com>
+Subject: [patch 20/23] mac80211: store SSID in sta_bss_list
+Message-ID: <20071115062107.GU8282@kroah.com>
 References: <20071115055238.692814352@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mac80211-store-channel-info-in-sta_bss_list.patch"
+Content-Disposition: inline; filename="mac80211-store-ssid-in-sta_bss_list.patch"
 In-Reply-To: <20071115061806.GA8282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -39,176 +39,192 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
+
 From: John W. Linville <linville@tuxdriver.com>
 
-patch 65c107ab3befc37b21d1c970a6159525bc0121b8 in mainline.
+patch cffdd30d20d163343b1c6de25bcb0cc978a1ebf9 in mainline.
 
-Some AP equipment "in the wild" uses the same BSSID on multiple channels
-(particularly "a" vs. "b/g").  This patch changes the key of sta_bss_list
-to include both the BSSID and the channel so as to prevent a BSSID on
-one channel from eclipsing the same BSSID on another channel.
+Some AP equipment "in the wild" services multiple SSIDs using the
+same BSSID.  This patch changes the key of sta_bss_list to include
+the SSID as well as the BSSID and the channel so as to prevent one
+SSID from eclipsing another SSID with the same BSSID.
 
 Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/mac80211/ieee80211_sta.c |   35 ++++++++++++++++++++---------------
- 1 file changed, 20 insertions(+), 15 deletions(-)
+ net/mac80211/ieee80211_sta.c |   54 ++++++++++++++++++++++++++-----------------
+ 1 file changed, 33 insertions(+), 21 deletions(-)
 
 --- a/net/mac80211/ieee80211_sta.c
 +++ b/net/mac80211/ieee80211_sta.c
-@@ -61,7 +61,7 @@
+@@ -12,7 +12,6 @@
+  */
+ 
+ /* TODO:
+- * BSS table: use <BSSID,SSID> as the key to support multi-SSID APs
+  * order BSS list by RSSI(?) ("quality of AP")
+  * scan result table filtering (by capability (privacy, IBSS/BSS, WPA/RSN IE,
+  *    SSID)
+@@ -61,7 +60,8 @@
  static void ieee80211_send_probe_req(struct net_device *dev, u8 *dst,
  				     u8 *ssid, size_t ssid_len);
  static struct ieee80211_sta_bss *
--ieee80211_rx_bss_get(struct net_device *dev, u8 *bssid);
-+ieee80211_rx_bss_get(struct net_device *dev, u8 *bssid, int channel);
+-ieee80211_rx_bss_get(struct net_device *dev, u8 *bssid, int channel);
++ieee80211_rx_bss_get(struct net_device *dev, u8 *bssid, int channel,
++		     u8 *ssid, u8 ssid_len);
  static void ieee80211_rx_bss_put(struct net_device *dev,
  				 struct ieee80211_sta_bss *bss);
  static int ieee80211_sta_find_ibss(struct net_device *dev,
-@@ -387,6 +387,7 @@ static void ieee80211_set_associated(str
- 				     struct ieee80211_if_sta *ifsta, int assoc)
- {
- 	union iwreq_data wrqu;
-+	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
- 	struct ieee80211_sub_if_data *sdata = IEEE80211_DEV_TO_SUB_IF(dev);
- 
- 	if (ifsta->associated == assoc)
-@@ -401,7 +402,8 @@ static void ieee80211_set_associated(str
- 		if (sdata->type != IEEE80211_IF_TYPE_STA)
+@@ -403,7 +403,8 @@ static void ieee80211_set_associated(str
  			return;
  
--		bss = ieee80211_rx_bss_get(dev, ifsta->bssid);
-+		bss = ieee80211_rx_bss_get(dev, ifsta->bssid,
-+					   local->hw.conf.channel);
+ 		bss = ieee80211_rx_bss_get(dev, ifsta->bssid,
+-					   local->hw.conf.channel);
++					   local->hw.conf.channel,
++					   ifsta->ssid, ifsta->ssid_len);
  		if (bss) {
  			if (bss->has_erp_value)
  				ieee80211_handle_erp_ie(dev, bss->erp_value);
-@@ -543,7 +545,7 @@ static void ieee80211_send_assoc(struct 
+@@ -545,7 +546,8 @@ static void ieee80211_send_assoc(struct 
  		capab |= WLAN_CAPABILITY_SHORT_SLOT_TIME |
  			WLAN_CAPABILITY_SHORT_PREAMBLE;
  	}
--	bss = ieee80211_rx_bss_get(dev, ifsta->bssid);
-+	bss = ieee80211_rx_bss_get(dev, ifsta->bssid, local->hw.conf.channel);
+-	bss = ieee80211_rx_bss_get(dev, ifsta->bssid, local->hw.conf.channel);
++	bss = ieee80211_rx_bss_get(dev, ifsta->bssid, local->hw.conf.channel,
++				   ifsta->ssid, ifsta->ssid_len);
  	if (bss) {
  		if (bss->capability & WLAN_CAPABILITY_PRIVACY)
  			capab |= WLAN_CAPABILITY_PRIVACY;
-@@ -695,6 +697,7 @@ static void ieee80211_send_disassoc(stru
- static int ieee80211_privacy_mismatch(struct net_device *dev,
- 				      struct ieee80211_if_sta *ifsta)
- {
-+	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
- 	struct ieee80211_sta_bss *bss;
- 	int res = 0;
- 
-@@ -702,7 +705,7 @@ static int ieee80211_privacy_mismatch(st
+@@ -705,7 +707,8 @@ static int ieee80211_privacy_mismatch(st
  	    ifsta->key_mgmt != IEEE80211_KEY_MGMT_NONE)
  		return 0;
  
--	bss = ieee80211_rx_bss_get(dev, ifsta->bssid);
-+	bss = ieee80211_rx_bss_get(dev, ifsta->bssid, local->hw.conf.channel);
+-	bss = ieee80211_rx_bss_get(dev, ifsta->bssid, local->hw.conf.channel);
++	bss = ieee80211_rx_bss_get(dev, ifsta->bssid, local->hw.conf.channel,
++				   ifsta->ssid, ifsta->ssid_len);
  	if (!bss)
  		return 0;
  
-@@ -1211,7 +1214,8 @@ static void ieee80211_rx_mgmt_assoc_resp
- 	 * update our stored copy */
+@@ -1215,7 +1218,8 @@ static void ieee80211_rx_mgmt_assoc_resp
  	if (elems.erp_info && elems.erp_info_len >= 1) {
  		struct ieee80211_sta_bss *bss
--			= ieee80211_rx_bss_get(dev, ifsta->bssid);
-+			= ieee80211_rx_bss_get(dev, ifsta->bssid,
-+					       local->hw.conf.channel);
+ 			= ieee80211_rx_bss_get(dev, ifsta->bssid,
+-					       local->hw.conf.channel);
++					       local->hw.conf.channel,
++					       ifsta->ssid, ifsta->ssid_len);
  		if (bss) {
  			bss->erp_value = elems.erp_info[0];
  			bss->has_erp_value = 1;
-@@ -1241,7 +1245,8 @@ static void ieee80211_rx_mgmt_assoc_resp
- 			       " AP\n", dev->name);
+@@ -1246,7 +1250,8 @@ static void ieee80211_rx_mgmt_assoc_resp
  			return;
  		}
--		bss = ieee80211_rx_bss_get(dev, ifsta->bssid);
-+		bss = ieee80211_rx_bss_get(dev, ifsta->bssid,
-+					   local->hw.conf.channel);
+ 		bss = ieee80211_rx_bss_get(dev, ifsta->bssid,
+-					   local->hw.conf.channel);
++					   local->hw.conf.channel,
++					   ifsta->ssid, ifsta->ssid_len);
  		if (bss) {
  			sta->last_rssi = bss->rssi;
  			sta->last_signal = bss->signal;
-@@ -1322,7 +1327,7 @@ static void __ieee80211_rx_bss_hash_del(
+@@ -1327,7 +1332,8 @@ static void __ieee80211_rx_bss_hash_del(
  
  
  static struct ieee80211_sta_bss *
--ieee80211_rx_bss_add(struct net_device *dev, u8 *bssid)
-+ieee80211_rx_bss_add(struct net_device *dev, u8 *bssid, int channel)
+-ieee80211_rx_bss_add(struct net_device *dev, u8 *bssid, int channel)
++ieee80211_rx_bss_add(struct net_device *dev, u8 *bssid, int channel,
++		     u8 *ssid, u8 ssid_len)
  {
  	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
  	struct ieee80211_sta_bss *bss;
-@@ -1333,6 +1338,7 @@ ieee80211_rx_bss_add(struct net_device *
- 	atomic_inc(&bss->users);
+@@ -1339,6 +1345,10 @@ ieee80211_rx_bss_add(struct net_device *
  	atomic_inc(&bss->users);
  	memcpy(bss->bssid, bssid, ETH_ALEN);
-+	bss->channel = channel;
+ 	bss->channel = channel;
++	if (ssid && ssid_len <= IEEE80211_MAX_SSID_LEN) {
++		memcpy(bss->ssid, ssid, ssid_len);
++		bss->ssid_len = ssid_len;
++	}
  
  	spin_lock_bh(&local->sta_bss_lock);
  	/* TODO: order by RSSI? */
-@@ -1344,7 +1350,7 @@ ieee80211_rx_bss_add(struct net_device *
+@@ -1350,7 +1360,8 @@ ieee80211_rx_bss_add(struct net_device *
  
  
  static struct ieee80211_sta_bss *
--ieee80211_rx_bss_get(struct net_device *dev, u8 *bssid)
-+ieee80211_rx_bss_get(struct net_device *dev, u8 *bssid, int channel)
+-ieee80211_rx_bss_get(struct net_device *dev, u8 *bssid, int channel)
++ieee80211_rx_bss_get(struct net_device *dev, u8 *bssid, int channel,
++		     u8 *ssid, u8 ssid_len)
  {
  	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
  	struct ieee80211_sta_bss *bss;
-@@ -1352,7 +1358,8 @@ ieee80211_rx_bss_get(struct net_device *
+@@ -1358,8 +1369,10 @@ ieee80211_rx_bss_get(struct net_device *
  	spin_lock_bh(&local->sta_bss_lock);
  	bss = local->sta_bss_hash[STA_HASH(bssid)];
  	while (bss) {
--		if (memcmp(bss->bssid, bssid, ETH_ALEN) == 0) {
-+		if (memcmp(bss->bssid, bssid, ETH_ALEN) == 0 &&
-+		    bss->channel == channel) {
+-		if (memcmp(bss->bssid, bssid, ETH_ALEN) == 0 &&
+-		    bss->channel == channel) {
++		if (!memcmp(bss->bssid, bssid, ETH_ALEN) &&
++		    bss->channel == channel &&
++		    bss->ssid_len == ssid_len &&
++		    (ssid_len == 0 || !memcmp(bss->ssid, ssid, ssid_len))) {
  			atomic_inc(&bss->users);
  			break;
  		}
-@@ -1520,9 +1527,9 @@ static void ieee80211_rx_bss_info(struct
+@@ -1527,9 +1540,11 @@ static void ieee80211_rx_bss_info(struct
  	else
  		channel = rx_status->channel;
  
--	bss = ieee80211_rx_bss_get(dev, mgmt->bssid);
-+	bss = ieee80211_rx_bss_get(dev, mgmt->bssid, channel);
+-	bss = ieee80211_rx_bss_get(dev, mgmt->bssid, channel);
++	bss = ieee80211_rx_bss_get(dev, mgmt->bssid, channel,
++				   elems.ssid, elems.ssid_len);
  	if (!bss) {
--		bss = ieee80211_rx_bss_add(dev, mgmt->bssid);
-+		bss = ieee80211_rx_bss_add(dev, mgmt->bssid, channel);
+-		bss = ieee80211_rx_bss_add(dev, mgmt->bssid, channel);
++		bss = ieee80211_rx_bss_add(dev, mgmt->bssid, channel,
++					   elems.ssid, elems.ssid_len);
  		if (!bss)
  			return;
  	} else {
-@@ -1622,7 +1629,6 @@ static void ieee80211_rx_bss_info(struct
+@@ -1555,10 +1570,6 @@ static void ieee80211_rx_bss_info(struct
  
+ 	bss->beacon_int = le16_to_cpu(mgmt->u.beacon.beacon_int);
+ 	bss->capability = le16_to_cpu(mgmt->u.beacon.capab_info);
+-	if (elems.ssid && elems.ssid_len <= IEEE80211_MAX_SSID_LEN) {
+-		memcpy(bss->ssid, elems.ssid, elems.ssid_len);
+-		bss->ssid_len = elems.ssid_len;
+-	}
  
- 	bss->hw_mode = rx_status->phymode;
--	bss->channel = channel;
- 	bss->freq = rx_status->freq;
- 	if (channel != rx_status->channel &&
- 	    (bss->hw_mode == MODE_IEEE80211G ||
-@@ -2355,7 +2361,7 @@ static int ieee80211_sta_create_ibss(str
+ 	bss->supp_rates_len = 0;
+ 	if (elems.supp_rates) {
+@@ -2339,7 +2350,7 @@ static int ieee80211_sta_create_ibss(str
+ {
+ 	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
+ 	struct ieee80211_sta_bss *bss;
+-	struct ieee80211_sub_if_data *sdata;
++	struct ieee80211_sub_if_data *sdata = IEEE80211_DEV_TO_SUB_IF(dev);
+ 	struct ieee80211_hw_mode *mode;
+ 	u8 bssid[ETH_ALEN], *pos;
+ 	int i;
+@@ -2361,11 +2372,11 @@ static int ieee80211_sta_create_ibss(str
  	printk(KERN_DEBUG "%s: Creating new IBSS network, BSSID " MAC_FMT "\n",
  	       dev->name, MAC_ARG(bssid));
  
--	bss = ieee80211_rx_bss_add(dev, bssid);
-+	bss = ieee80211_rx_bss_add(dev, bssid, local->hw.conf.channel);
+-	bss = ieee80211_rx_bss_add(dev, bssid, local->hw.conf.channel);
++	bss = ieee80211_rx_bss_add(dev, bssid, local->hw.conf.channel,
++				   sdata->u.sta.ssid, sdata->u.sta.ssid_len);
  	if (!bss)
  		return -ENOMEM;
  
-@@ -2366,7 +2372,6 @@ static int ieee80211_sta_create_ibss(str
- 		local->hw.conf.beacon_int = 100;
- 	bss->beacon_int = local->hw.conf.beacon_int;
- 	bss->hw_mode = local->hw.conf.phymode;
--	bss->channel = local->hw.conf.channel;
- 	bss->freq = local->hw.conf.freq;
- 	bss->last_update = jiffies;
- 	bss->capability = WLAN_CAPABILITY_IBSS;
-@@ -2426,7 +2431,7 @@ static int ieee80211_sta_find_ibss(struc
+-	sdata = IEEE80211_DEV_TO_SUB_IF(dev);
+ 	mode = local->oper_hw_mode;
+ 
+ 	if (local->hw.conf.beacon_int == 0)
+@@ -2431,7 +2442,8 @@ static int ieee80211_sta_find_ibss(struc
  	       MAC_FMT "\n", MAC_ARG(bssid), MAC_ARG(ifsta->bssid));
  #endif /* CONFIG_MAC80211_IBSS_DEBUG */
  	if (found && memcmp(ifsta->bssid, bssid, ETH_ALEN) != 0 &&
--	    (bss = ieee80211_rx_bss_get(dev, bssid))) {
-+	    (bss = ieee80211_rx_bss_get(dev, bssid, local->hw.conf.channel))) {
+-	    (bss = ieee80211_rx_bss_get(dev, bssid, local->hw.conf.channel))) {
++	    (bss = ieee80211_rx_bss_get(dev, bssid, local->hw.conf.channel,
++					ifsta->ssid, ifsta->ssid_len))) {
  		printk(KERN_DEBUG "%s: Selected IBSS BSSID " MAC_FMT
  		       " based on configured SSID\n",
  		       dev->name, MAC_ARG(bssid));
