@@ -1,99 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762874AbXKOLGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765530AbXKOLGq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762874AbXKOLGT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 06:06:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313AbXKOLGH
+	id S1765530AbXKOLGq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 06:06:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754720AbXKOLGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 06:06:07 -0500
-Received: from ozlabs.org ([203.10.76.45]:33425 "EHLO ozlabs.org"
+	Thu, 15 Nov 2007 06:06:37 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:41468 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755920AbXKOLGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 06:06:05 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [patch 5/8] Immediate Values - x86 Optimization
-Date: Thu, 15 Nov 2007 22:06:06 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@muc.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20071113185800.436425570@polymtl.ca> <200711151545.19359.rusty@rustcorp.com.au> <20071115053751.GB26338@Krystal>
-In-Reply-To: <20071115053751.GB26338@Krystal>
+	id S1751313AbXKOLGg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 06:06:36 -0500
+Date: Thu, 15 Nov 2007 11:06:34 +0000
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org, sfr@canb.auug.org.au, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix boot problem with iSeries lacking hugepage support
+Message-ID: <20071115110633.GE5128@skynet.ie>
+References: <20071115101322.GA5128@skynet.ie> <20071115023216.44002c28.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-Message-Id: <200711152206.07519.rusty@rustcorp.com.au>
+In-Reply-To: <20071115023216.44002c28.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 November 2007 16:37:51 Mathieu Desnoyers wrote:
-> * Rusty Russell (rusty@rustcorp.com.au) wrote:
-> > On Thursday 15 November 2007 15:06:10 Mathieu Desnoyers wrote:
-> > > A - the NMI or MCE code calls any external kernel code (printk,
-> > >   notify_die, spin_lock/unlock, die_nmi, lapic_wd_event (perfctr code,
-> > >   calls printk too for debugging)...
-> >
-> > Sure, but as I pointed out previously, such calls are already best
-> > effort. You can do very little safely from do_nmi(), and calling printk
-> > isn't one of them,
->
-> yes and no.. do_nmi uses the "bust spinlocks" exactly for this. So this
-> is ok by design.
+On (15/11/07 02:32), Andrew Morton didst pronounce:
+> On Thu, 15 Nov 2007 10:13:22 +0000 mel@skynet.ie (Mel Gorman) wrote:
+> 
+> > This patch is a fix for 2.6.24.
+> > 
+> > Ordinarily the size of a pageblock is determined at compile-time based on the
+> > hugepage size. On PPC64, the hugepage size is determined at runtime based on
+> > what is supported by the machine. With legacy machines such as iSeries that do
+> > not support hugepages, HPAGE_SHIFT becomes 0. This results in pageblock_order
+> > being set to -PAGE_SHIFT and a crash results shortly afterwards.
+> > 
+> > This patch sets HUGETLB_PAGE_SIZE_VARIABLE for PPC64 and adds a function
+> > to select a sensible value for pageblock order by default.  It checks that
+> > HPAGE_SHIFT is a sensible value before using the hugepage size; if it is
+> > not MAX_ORDER-1 is used.
+> > 
+> > Credit goes to Stephen Rothwell for identifying the bug and testing candidate
+> > patches.  Additional credit goes to Andy Whitcroft for spotting a problem
+> > with respects to IA-64 before releasing. Additional credit to David Gibson
+> > for testing with the libhugetlbfs test suite.
+> > 
+> 
+> umm.
+> 
+> > +
+> > +/* Return a sensible default order for the pageblock size. */
+> > +static inline int __init pageblock_default_order(void)
+> 
+> inline and __init doesn't make sense.
+> 
 
-Yeah, in the "machine is dying" case, we do make best effort to get the 
-message out.  Worrying about a GPF on the off chance we happen to be 
-modifying an immediate in that case seems crazy.
+I know the __init is meaningless in this context. It is there as a guide
+if someone decides to drop the inline for some reason that it should
+remain as __init. I can post a version with just the inline.
 
-> > nor is grabbing a spinlock (well, actually you could as long as it's
-> > *only* used by NMI handlers.  See any of those?).
->
-> Yup, see arch/x86/kernel/nmi_64.c : nmi_watchdog_tick()
->
-> It defines a spinlock to "Serialise the printks". I guess it's good to
-> protect against other nmi watchdogs running on other CPUs concurrently,
-> I guess.
+> > +{
+> > +	if (HPAGE_SHIFT > PAGE_SHIFT)
+> > +		return HUGETLB_PAGE_ORDER;
+> > +
+> > +	return MAX_ORDER-1;
+> > +}
+> > +
+> >  /* Initialise the number of pages represented by NR_PAGEBLOCK_BITS */
+> >  static inline void __init set_pageblock_order(unsigned int order)
+> >  {
+> > @@ -3357,7 +3367,7 @@ static inline void __init set_pageblock_
+> >  }
+> >  #else /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
+> >  
+> > -/* Defined this way to avoid accidently referencing HUGETLB_PAGE_ORDER */
+> > +#define pageblock_default_order(x) (0)
+> 
+> that won't compile.
+> 
 
-So that when it's printing a backtrace from an NMI.
+It's never used so it could have been anything and still compiled. I admit
+this is confusing.  I've posted a version below that changes this to a static
+inline, returns MAX_ORDER-1 which is a sensible value even if unused and
+comments on what is happening.
 
-> > > Therefore, if one decides to use the immediate values to
-> > > leave dormant spinlock instrumentation in the kernel, I wouldn't want
-> > > it to have undesirable side-effects (GPF) when the instrumentation is
-> > > being enabled, as rare as it could be.
-> >
-> > It's overengineered, since it's less likely than deadlock already.
->
-> So should we put a warning telling "enabling tracing or profiling on a
-> production system that also uses NMI watchdog could potentially cause a
-> crash"
+> >  #define set_pageblock_order(x)	do {} while (0)
+> >  
+> >  #endif /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
+> > @@ -3442,7 +3452,7 @@ static void __meminit free_area_init_cor
+> >  		if (!size)
+> >  			continue;
+> >  
+> > -		set_pageblock_order(HUGETLB_PAGE_ORDER);
+> > +		set_pageblock_order(pageblock_default_order());
+> >  		setup_usemap(pgdat, zone, size);
+> >  		ret = init_currently_empty_zone(zone, zone_start_pfn,
+> 
+> 
+> --- a/mm/page_alloc.c~fix-boot-problem-with-iseries-lacking-hugepage-support-fix
+> +++ a/mm/page_alloc.c
+> @@ -3268,7 +3268,7 @@ static void inline setup_usemap(struct p
+>  #ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
+>  
+>  /* Return a sensible default order for the pageblock size. */
+> -static inline int __init pageblock_default_order(void)
+> +static inline int pageblock_default_order(void)
+>  {
+>  	if (HPAGE_SHIFT > PAGE_SHIFT)
+>  		return HUGETLB_PAGE_ORDER;
+> @@ -3291,7 +3291,11 @@ static inline void __init set_pageblock_
+>  }
+>  #else /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
+>  
+> -#define pageblock_default_order(x) (0)
+> +static inline int pageblock_default_order(void)
+> +{
+> +	return 0;
+> +}
+> +
+>  #define set_pageblock_order(x)	do {} while (0)
+>  
+>  #endif /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
+> _
+> 
+> 
+> please avoid adding macros when C could have been used.  C is nicer to look
+> at and has typechecking and stuff.
+> 
 
-Or, "if your system is crashing, this may make it worse".
+Understood. Here is an updated version. It is functionally equivilant to
+the earlier patch but may be easier on the eye
 
-> arch/x86/kernel/immediate.o : 2.4K
->
-> let's compare..
->
-> kernel/stop_machine.o : 3.9K
->
-> so I think that code size is not an issue there, especially since the
-> immediate values are not meant to be deployed on embedded systems.
+===
 
-stop_machine is necessary (although it could use simplification, patches 
-pending).
+Ordinarily the size of a pageblock is determined at compile-time based on the
+hugepage size. On PPC64, the hugepage size is determined at runtime based on
+what is supported by the machine. With legacy machines such as iSeries that
+do not support hugepages, HPAGE_SHIFT is 0. This results in pageblock_order
+being set to -PAGE_SHIFT and a crash results shortly afterwards.
 
-> Yup, looping in IPIs with interrupts disabled should do the job there.
-> It's just awful for interrupt latency on large SMP systems :(
+This patch adds a function to select a sensible value for pageblock order by
+default when HUGETLB_PAGE_SIZE_VARIABLE is set. It checks that HPAGE_SHIFT
+is a sensible value before using the hugepage size; if it is not MAX_ORDER-1
+is used.
 
-Yet you could have implemented it in the time it took us to have this 
-conversation.
+This is a fix for 2.6.24.
 
-Just because code is clever doesn't mean it should go in.  There are enough 
-things in the kernel which have to be complex that we should always be on the 
-lookout for things which can be made simpler.
+Credit goes to Stephen Rothwell for identifying the bug and testing candidate
+patches.  Additional credit goes to Andy Whitcroft for spotting a problem
+with respects to IA-64 before releasing. Additional credit to David Gibson
+for testing with the libhugetlbfs test suite.
 
-Cheers,
-Rusty.
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Tested-by: Stephen Rothwell <sfr@canb.auug.org.au>
+
+--- 
+ arch/powerpc/Kconfig |    5 +++++
+ mm/page_alloc.c      |   23 +++++++++++++++++++++--
+ 2 files changed, 26 insertions(+), 2 deletions(-)
+
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc2-mm1-clean/arch/powerpc/Kconfig linux-2.6.24-rc2-mm1-varpage-fix/arch/powerpc/Kconfig
+--- linux-2.6.24-rc2-mm1-clean/arch/powerpc/Kconfig	2007-11-14 11:38:05.000000000 +0000
++++ linux-2.6.24-rc2-mm1-varpage-fix/arch/powerpc/Kconfig	2007-11-15 10:44:38.000000000 +0000
+@@ -187,6 +187,11 @@ config FORCE_MAX_ZONEORDER
+ 	default "9" if PPC_64K_PAGES
+ 	default "13"
+ 
++config HUGETLB_PAGE_SIZE_VARIABLE
++	bool
++	depends on HUGETLB_PAGE
++	default y
++
+ config MATH_EMULATION
+ 	bool "Math emulation"
+ 	depends on 4xx || 8xx || E200 || PPC_MPC832x || E500
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc2-mm1-clean/mm/page_alloc.c linux-2.6.24-rc2-mm1-varpage-fix/mm/page_alloc.c
+--- linux-2.6.24-rc2-mm1-clean/mm/page_alloc.c	2007-11-14 11:38:08.000000000 +0000
++++ linux-2.6.24-rc2-mm1-varpage-fix/mm/page_alloc.c	2007-11-15 11:01:13.000000000 +0000
+@@ -3342,6 +3342,16 @@ static void inline setup_usemap(struct p
+ #endif /* CONFIG_SPARSEMEM */
+ 
+ #ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
++
++/* Return a sensible default order for the pageblock size. */
++static inline int pageblock_default_order(void)
++{
++	if (HPAGE_SHIFT > PAGE_SHIFT)
++		return HUGETLB_PAGE_ORDER;
++
++	return MAX_ORDER-1;
++}
++
+ /* Initialise the number of pages represented by NR_PAGEBLOCK_BITS */
+ static inline void __init set_pageblock_order(unsigned int order)
+ {
+@@ -3357,7 +3367,16 @@ static inline void __init set_pageblock_
+ }
+ #else /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
+ 
+-/* Defined this way to avoid accidently referencing HUGETLB_PAGE_ORDER */
++/*
++ * When CONFIG_HUGETLB_PAGE_SIZE_VARIABLE is not set, set_pageblock_order()
++ * and pageblock_default_order() are unused as pageblock_order is set
++ * at compile-time. See include/linux/pageblock-flags.h for the values of
++ * pageblock_order based on the kernel config
++ */
++static inline int pageblock_default_order(unsigned int order)
++{
++	return MAX_ORDER-1;
++}
+ #define set_pageblock_order(x)	do {} while (0)
+ 
+ #endif /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
+@@ -3442,7 +3461,7 @@ static void __meminit free_area_init_cor
+ 		if (!size)
+ 			continue;
+ 
+-		set_pageblock_order(HUGETLB_PAGE_ORDER);
++		set_pageblock_order(pageblock_default_order());
+ 		setup_usemap(pgdat, zone, size);
+ 		ret = init_currently_empty_zone(zone, zone_start_pfn,
+ 						size, MEMMAP_EARLY);
+
+
+
+-- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
