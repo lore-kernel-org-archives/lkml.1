@@ -1,142 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932133AbXKOSXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765904AbXKOSYB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932133AbXKOSXj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 13:23:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765678AbXKOSW6
+	id S1765904AbXKOSYB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 13:24:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765666AbXKOSW7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 13:22:58 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:41672 "EHLO mx1.redhat.com"
+	Thu, 15 Nov 2007 13:22:59 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:41675 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765666AbXKOSW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1765653AbXKOSW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 15 Nov 2007 13:22:57 -0500
 Date: Thu, 15 Nov 2007 13:22:31 -0500
 From: Ulrich Drepper <drepper@redhat.com>
-Message-Id: <200711151822.lAFIMVJn028584@devserv.devel.redhat.com>
+Message-Id: <200711151822.lAFIMVvW028590@devserv.devel.redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCHv2 0/4] sys_indirect system call
+Subject: [PATCHv2 2/4] x86&x86-64 support for sys_indirect
 Cc: akpm@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de,
        torvalds@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following patches provide an alternative implementation of the
-sys_indirect system call which has been discussed a few times.
-This no system call allows us to extend existing system call
-interfaces with adding more system calls.
+This part adds support for sys_indirect on x86 and x86-64.
 
-Davide's previous implementation is IMO far more complex than
-warranted.  This code here is trivial, as you can see.  I've
-discussed this approach with Linus last week and for a brief moment
-we actually agreed on something.
+ arch/x86/ia32/ia32entry.S            |    1 +
+ b/arch/x86/kernel/syscall_table_32.S |    1 +
+ b/include/asm-x86/indirect.h         |    5 +++++
+ b/include/asm-x86/indirect_32.h      |   23 +++++++++++++++++++++++
+ b/include/asm-x86/indirect_64.h      |   24 ++++++++++++++++++++++++
+ b/include/asm-x86/unistd_32.h        |    3 ++-
+ b/include/asm-x86/unistd_64.h        |    2 ++
+ 7 files changed, 58 insertions(+), 1 deletion(-)
 
-*=*=* CHANGED
-We pass an additional block of data to the kernel, it is copied into
-the task_struct, and then it is up to the function implementing the system
-call to interpret the data.  Each system call, which is meant to be
-extended this way, has to be white-listed in sys_indirect.  The
-alternative is to filter out those system calls which absolutely cannot
-be handled using sys_indirect (like clone, execve) since they require
-the stack layout of an ordinary system call.  This is more dangerous
-since it is too easy to miss a call.
-*=*=* END CHANGED
-
-The code for x86 and x86-64 gets by without a single line of assembly
-code.  This is likely to be true for most/all the other archs as well.
-There is architecture-dependent code, though.  For x86 and x86-64 I've
-also fixed up UML (although only x86-64 is tested, that's my setup).
-
-The last patch shows the first application of the functionality.  It is by
-far not complete, more will follow, but I want to see how these patches are
-received before I spend more time on it.  This code is enough to test the
-implementation with the following test program.  Adjust it for architectures
-other than x86 and x86-64.
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#include <fcntl.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/syscall.h>
-
-typedef uint32_t __u32;
-typedef uint64_t __u64;
-
-union indirect_params {
-  struct {
-    int flags;
-  } file_flags;
-};
-
-#ifdef __x86_64__
-# define __NR_indirect 286
-struct indirect_registers {
-  __u64 rax;
-  __u64 rdi;
-  __u64 rsi;
-  __u64 rdx;
-  __u64 r10;
-  __u64 r8;
-  __u64 r9;
-};
-#elif defined __i386__
-# define __NR_indirect 325
-struct indirect_registers {
-  __u32 eax;
-  __u32 ebx;
-  __u32 ecx;
-  __u32 edx;
-  __u32 esi;
-  __u32 edi;
-  __u32 ebp;
-};
-#else
-# error "need to define __NR_indirect and struct indirect_params"
-#endif
-
-#define FILL_IN(var, values...) \
-  var = (struct indirect_registers) { values }
-
-int
-main (void)
-{
-  int fd = socket (AF_INET, SOCK_DGRAM, IPPROTO_IP);
-  int s1 = fcntl (fd, F_GETFD);
-  printf ("old: FD_CLOEXEC %s set\n", s1 == 0 ? "not" : "is");
-  close (fd);
-
-  union indirect_params i;
-  i.file_flags.flags = O_CLOEXEC;
-
-  struct indirect_registers r;
-  FILL_IN (r, __NR_socket, AF_INET, SOCK_DGRAM, IPPROTO_IP);
-
-  fd = syscall (__NR_indirect, &r, &i, sizeof (i));
-  int s2 = fcntl (fd, F_GETFD);
-  printf ("new: FD_CLOEXEC %s set\n", s2 == 0 ? "not" : "is");
-  close (fd);
-
-  return s1 != 0 || s2 == 0;
-}
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-Signed-off-by: Ulrich Drepper <drepper@redhat.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
- arch/x86/ia32/ia32entry.S          |    1 
- arch/x86/kernel/syscall_table_32.S |    1 
- include/asm-um/indirect.h          |    6 ++++
- include/asm-x86/indirect.h         |    5 ++++
- include/asm-x86/indirect_32.h      |   23 ++++++++++++++++++
- include/asm-x86/indirect_64.h      |   24 +++++++++++++++++++
- include/asm-x86/unistd_32.h        |    3 +-
- include/asm-x86/unistd_64.h        |    2 +
- include/linux/indirect.h           |   13 ++++++++++
- include/linux/sched.h              |    4 +++
- include/linux/syscalls.h           |    3 ++
- kernel/Makefile                    |    2 -
- kernel/indirect.c                  |   46 +++++++++++++++++++++++++++++++++++++
- net/socket.c                       |   21 ++++++++++------
- 14 files changed, 144 insertions(+), 10 deletions(-)
+--- a/arch/x86/ia32/ia32entry.S
++++ b/arch/x86/ia32/ia32entry.S
+@@ -726,4 +726,5 @@ ia32_sys_call_table:
+ 	.quad compat_sys_timerfd
+ 	.quad sys_eventfd
+ 	.quad sys32_fallocate
++	.quad sys_indirect		/* 325  */
+ ia32_syscall_end:
+diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
+index 8344c70..92095b2 100644
+--- a/arch/x86/kernel/syscall_table_32.S
++++ b/arch/x86/kernel/syscall_table_32.S
+@@ -324,3 +324,4 @@ ENTRY(sys_call_table)
+ 	.long sys_timerfd
+ 	.long sys_eventfd
+ 	.long sys_fallocate
++	.long sys_indirect		/* 325 */
+diff --git a/include/asm-x86/unistd_32.h b/include/asm-x86/unistd_32.h
+index 9b15545..8ee0b20 100644
+--- a/include/asm-x86/unistd_32.h
++++ b/include/asm-x86/unistd_32.h
+@@ -330,10 +330,11 @@
+ #define __NR_timerfd		322
+ #define __NR_eventfd		323
+ #define __NR_fallocate		324
++#define __NR_indirect		325
+ 
+ #ifdef __KERNEL__
+ 
+-#define NR_syscalls 325
++#define NR_syscalls 326
+ 
+ #define __ARCH_WANT_IPC_PARSE_VERSION
+ #define __ARCH_WANT_OLD_READDIR
+diff --git a/include/asm-x86/unistd_64.h b/include/asm-x86/unistd_64.h
+index 5ff4d3e..66eab33 100644
+--- a/include/asm-x86/unistd_64.h
++++ b/include/asm-x86/unistd_64.h
+@@ -635,6 +635,8 @@ __SYSCALL(__NR_timerfd, sys_timerfd)
+ __SYSCALL(__NR_eventfd, sys_eventfd)
+ #define __NR_fallocate				285
+ __SYSCALL(__NR_fallocate, sys_fallocate)
++#define __NR_indirect				286
++__SYSCALL(__NR_indirect, sys_indirect)
+ 
+ #ifndef __NO_STUBS
+ #define __ARCH_WANT_OLD_READDIR
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index ee800e7..e4e8a22 100644
+--- /dev/null	2007-09-23 16:36:38.465394704 -0700
++++ b/include/asm-x86/indirect_32.h	2007-11-15 09:52:47.000000000 -0800
+@@ -0,0 +1,23 @@
++#ifndef _ASM_X86_INDIRECT_32_H
++#define _ASM_X86_INDIRECT_32_H
++
++struct indirect_registers {
++  __u32 eax;
++  __u32 ebx;
++  __u32 ecx;
++  __u32 edx;
++  __u32 esi;
++  __u32 edi;
++  __u32 ebp;
++};
++
++#define INDIRECT_SYSCALL(regs) (regs)->eax
++
++#define CALL_INDIRECT(regs) \
++  ({ extern long (*sys_call_table[]) (__u32, __u32, __u32, __u32, __u32, __u32); \
++     sys_call_table[INDIRECT_SYSCALL(regs)->eax] ((regs)->ebx, (regs)->ecx, \
++						  (regs)->edx, (regs)->esi, \
++						  (regs)->edi, (regs)->ebp); \
++     })
++
++#endif
+--- /dev/null	2007-09-23 16:36:38.465394704 -0700
++++ b/include/asm-x86/indirect_64.h	2007-11-15 09:54:55.000000000 -0800
+@@ -0,0 +1,24 @@
++#ifndef _ASM_X86_INDIRECT_64_H
++#define _ASM_X86_INDIRECT_64_H
++
++struct indirect_registers {
++  __u64 rax;
++  __u64 rdi;
++  __u64 rsi;
++  __u64 rdx;
++  __u64 r10;
++  __u64 r8;
++  __u64 r9;
++};
++
++
++#define INDIRECT_SYSCALL(regs) (regs)->rax
++
++#define CALL_INDIRECT(regs) \
++  ({ extern long (*sys_call_table[]) (__u64, __u64, __u64, __u64, __u64, __u64); \
++     sys_call_table[INDIRECT_SYSCALL(regs)] ((regs)->rdi, (regs)->rsi, \
++					     (regs)->rdx, (regs)->r10, \
++					     (regs)->r8, (regs)->r9); \
++     })
++
++#endif
+--- /dev/null	2007-09-23 16:36:38.465394704 -0700
++++ b/include/asm-x86/indirect.h	2007-11-14 17:15:58.000000000 -0800
+@@ -0,0 +1,5 @@
++#ifdef CONFIG_X86_32
++# include "indirect_32.h"
++#else
++# include "indirect_64.h"
++#endif
