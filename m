@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765634AbXKOSke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932187AbXKOSl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765634AbXKOSke (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 13:40:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757249AbXKOSk0
+	id S932187AbXKOSl2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 13:41:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758669AbXKOSlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 13:40:26 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:37382 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756889AbXKOSkZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 13:40:25 -0500
-Date: Thu, 15 Nov 2007 10:34:37 -0800
-From: Greg KH <greg@kroah.com>
-To: Heikki Orsila <shdl@zakalwe.fi>
-Cc: Greg KH <gregkh@suse.de>, "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>, torvalds@linux-foundation.org,
-       shemminger@linux-foundation.org, Justin Forbes <jmforbes@linuxtx.org>,
-       linux-kernel@vger.kernel.org, Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Domenico Andreoli <cavokz@gmail.com>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
-       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 00/16] 2.6.23-stable review, network driver
-	changes
-Message-ID: <20071115183437.GB14500@kroah.com>
-References: <20071115063921.GA18827@kroah.com> <20071115122448.GK8865@zakalwe.fi>
-MIME-Version: 1.0
+	Thu, 15 Nov 2007 13:41:20 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:43909 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756817AbXKOSlU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 13:41:20 -0500
+Date: Thu, 15 Nov 2007 19:42:55 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Adrian Bunk <bunk@kernel.org>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] x86: revert X86_HT semantics change
+Message-ID: <20071115184255.GB23914@uranus.ravnborg.org>
+References: <20071115161703.GR4250@stusta.de> <20071115180436.GA23517@uranus.ravnborg.org> <alpine.LFD.0.9999.0711151904300.3112@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071115122448.GK8865@zakalwe.fi>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <alpine.LFD.0.9999.0711151904300.3112@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 15, 2007 at 02:24:48PM +0200, Heikki Orsila wrote:
-> On Wed, Nov 14, 2007 at 10:39:21PM -0800, Greg KH wrote:
-> > This is the start of the stable review cycle for the 2.6.23.X release.
-> > There are 16 patches in this series, all will be posted as a response to
-> > this one.  If anyone has any issues with these being applied, please let
-> > us know.
-> > ...
-> >  drivers/net/skge.c                     |  141 +++++++++++++++++----------------
-> >  drivers/net/skge.h                     |    6 -
+On Thu, Nov 15, 2007 at 07:07:11PM +0100, Thomas Gleixner wrote:
+> On Thu, 15 Nov 2007, Sam Ravnborg wrote:
 > 
-> I found a regression when I applied drivers/net/skge.[ch] patches on top 
-> of 2.6.23.1 at stable tree (4367388f04eea72e78347dc9b299698bf4275f92). 
-> It hangs the network on high speed transfers.
+> > On Thu, Nov 15, 2007 at 05:17:03PM +0100, Adrian Bunk wrote:
+> > > The x86 unification resulted in CONFIG_X86_HT no longer being
+> > > set if (X86_32 && MK8).
+> > Yup - my bad. I wrongly assumed MK8 was an X86_64 thing.
+> > 
+> > Thanks for fixing this.
+> > > 
+> > > After grep'ing through the tree I think the problem is that different 
+> > > places have different assumptions about the semantics of CONFIG_X86_HT,
+> > > either:
+> > > - hyperthreading or
+> > > - multicore
+> > > and the SCHED_SMT and SCHED_MC dependencies are just one of the 
+> > > symptoms.
+> > > 
+> > > This should be sorted out properly, but until then we should keep the 
+> > > 2.6.23 status quo.
+> > > 
+> > > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> > 
+> > I assume Thomas & Co will forward the patch.
 > 
-> This the same regression that happened for 2.6.24-rc*:
+> After looking what does what and fixing it. 
 > 
-> 	http://bugzilla.kernel.org/show_bug.cgi?id=9321
-> 
-> The driver in 2.6.23.1 works for me. Afaik, Stephen Hemminger is working 
-> on it.
+> Right now this patch is not a 1:1 replacement of the .23 status quo,
+> as it now makes SCHED_SMT and SCHED_HT depend on !MK8 for 64bit.
 
-Thanks, I've removed the offending patch, as has Linus from his tree.
+I assumed this was intentional - Adrian?
 
-greg k-h
+	Sam
