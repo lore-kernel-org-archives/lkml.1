@@ -1,96 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764943AbXKOQj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763730AbXKOQli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764943AbXKOQj2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 11:39:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759057AbXKOQjF
+	id S1763730AbXKOQli (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 11:41:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758669AbXKOQl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 11:39:05 -0500
-Received: from rtr.ca ([76.10.145.34]:4678 "EHLO mail.rtr.ca"
+	Thu, 15 Nov 2007 11:41:29 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56262 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758729AbXKOQjC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 11:39:02 -0500
-Message-ID: <473C7625.2040300@rtr.ca>
-Date: Thu, 15 Nov 2007 11:39:01 -0500
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: "Morrison, Tom" <tmorrison@empirix.com>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23.1 - sata_mv (7042) hang with large file operations
-References: <BD261180E6D35F4D9D32F3E44FD3D901053E84BD@EMPBEDEX.empirix.com> <45ED682A.9040408@garzik.org> <BD261180E6D35F4D9D32F3E44FD3D9010A7E1B45@EMPBEDEX.empirix.com> <4728A816.8020608@garzik.org> <BD261180E6D35F4D9D32F3E44FD3D9010AAE852F@EMPBEDEX.empirix.com> <473B36D7.8000205@rtr.ca> <BD261180E6D35F4D9D32F3E44FD3D9010AAE8585@EMPBEDEX.empirix.com> <473B44CB.6010209@rtr.ca> <BD261180E6D35F4D9D32F3E44FD3D9010AAE89CA@EMPBEDEX.empirix.com> <473B76E0.7010500@rtr.ca> <BD261180E6D35F4D9D32F3E44FD3D9010AAE911D@EMPBEDEX.empirix.com>
-In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D9010AAE911D@EMPBEDEX.empirix.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1758606AbXKOQl1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 11:41:27 -0500
+Date: Thu, 15 Nov 2007 11:41:22 -0500
+From: Ulrich Drepper <drepper@redhat.com>
+Message-Id: <200711151641.lAFGfMow024336@devserv.devel.redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 2/4] x86&x86-64 support for sys_indirect
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Morrison, Tom wrote:
-> Additional information - the ~file size this is caused 
-> is somewhere close to 260Mbytesfiles. 
-> 
-> If I create a ~260Mbytes file - my program finishes creating
-> the file - but ~5 seconds later (I timed this by hitting enter
-> on the console every second after completion of the command 
-> that should have done a fsync of the created file before exiting)...
-> It hangs...
-> 
-> I did a little playing around with /proc/sys/dev/scsi/logging_level
-> (set to 0x7) - and it seems that the kernel/box locks up after
-> this line:
-> 
->>> scsi_add_timer: scmd: efca83c0, time: 7500, (c0160660)
->>> scsi_delete_timer: scmd: efca83c0, rtn: 1
->>> scsi_add_timer: scmd: efca8840, time: 7500, (c0160660)
-> 
-> 
-> Further analysis (setting logging level to 65535 (0xFFFF) 
-> Has the following behavior down low) - 
-> 
->>> scsi_add_timer: scmd: efca8960, time: 7500, (c0160660)
->>> sd 0:0:0:0: [sda] Send: 0xefca8960
->>> sd 0:0:0:0: [sda] CDB: Write(10): 2a 00 00 47 92 27 00 01 48 00
->>> buffer = 0xc0553040, bufflen = 167936, done = 0xc016b194,
-> queuecommand
->       0xc017ed34
->>> leaving scsi_dispatch_cmnd()
->>> scsi_delete_timer: scmd: efca8960, rtn: 1
->>> sd 0:0:0:0: [sda] Done: 0xefca8960 SUCCESS
->>> sd 0:0:0:0: [sda] Result: hostbyte=DID_OK
-> driverbyte=DRIVER_OK,SUGGEST_OK
->>> sd 0:0:0:0: [sda] CDB: Write(10): 2a 00 00 47 92 27 00 01 48 00
->>> sd 0:0:0:0: [sda] scsi host busy 1 failed 0
->>> sd 0:0:0:0: Notifying upper driver of completion (result 0)
->>>
->>> scsi_add_timer: scmd: efca82a0, time: 7500, (c0160660)
->>> sd 0:0:0:0: [sda] Send: 0xefca82a0
->>> sd 0:0:0:0: [sda] CDB: Write(10): 2a 00 00 47 93 6f 00 02 40 00
->>> buffer = 0xef5734c0, bufflen = 294912, done = 0xc016b194,
-> queuecommand
->       0xc017ed34
->>> leaving scsi_dispatch_cmnd()
-> 
-> Nothing more - it hangs!
-> 
-> This is really a nasty problem!!!!
-..
+This part adds support for sys_indirect on x86 and x86-64.
 
-Yes.  It's particularly nasty because, as of yet, I haven't seen anything
-to lead me to conclude *which* kernel subsystem is locking up.
+ b/arch/x86/ia32/ia32entry.S          |    1 +
+ b/arch/x86/kernel/syscall_table_32.S |    1 +
+ b/include/asm-x86/indirect.h         |    5 +++++
+ b/include/asm-x86/indirect_32.h      |   27 +++++++++++++++++++++++++++
+ b/include/asm-x86/indirect_64.h      |   30 ++++++++++++++++++++++++++++++
+ b/include/asm-x86/unistd_32.h        |    3 ++-
+ b/include/asm-x86/unistd_64.h        |    2 ++
+ 7 files changed, 68 insertions(+), 1 deletion(-)
 
-It could be the block layer.
-It could be some PPC arch bug.
-It could be mm.
-It could even be the CPU scheduler.
 
-Those messages above could help.
-Now we just need somebody to interpret them,
-and examine the code paths that follow to see
-where it might be possible to get stuck.
-
-The SCSI/libata layers by themselves could lock up the I/O,
-but not the entire machine..
-
-Cheers
+--- a/arch/x86/ia32/ia32entry.S
++++ b/arch/x86/ia32/ia32entry.S
+@@ -726,4 +726,5 @@ ia32_sys_call_table:
+ 	.quad compat_sys_timerfd
+ 	.quad sys_eventfd
+ 	.quad sys32_fallocate
++	.quad sys_indirect		/* 325  */
+ ia32_syscall_end:
+diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
+index 8344c70..92095b2 100644
+--- a/arch/x86/kernel/syscall_table_32.S
++++ b/arch/x86/kernel/syscall_table_32.S
+@@ -324,3 +324,4 @@ ENTRY(sys_call_table)
+ 	.long sys_timerfd
+ 	.long sys_eventfd
+ 	.long sys_fallocate
++	.long sys_indirect		/* 325 */
+diff --git a/include/asm-x86/unistd_32.h b/include/asm-x86/unistd_32.h
+index 9b15545..8ee0b20 100644
+--- a/include/asm-x86/unistd_32.h
++++ b/include/asm-x86/unistd_32.h
+@@ -330,10 +330,11 @@
+ #define __NR_timerfd		322
+ #define __NR_eventfd		323
+ #define __NR_fallocate		324
++#define __NR_indirect		325
  
-
+ #ifdef __KERNEL__
+ 
+-#define NR_syscalls 325
++#define NR_syscalls 326
+ 
+ #define __ARCH_WANT_IPC_PARSE_VERSION
+ #define __ARCH_WANT_OLD_READDIR
+diff --git a/include/asm-x86/unistd_64.h b/include/asm-x86/unistd_64.h
+index 5ff4d3e..66eab33 100644
+--- a/include/asm-x86/unistd_64.h
++++ b/include/asm-x86/unistd_64.h
+@@ -635,6 +635,8 @@ __SYSCALL(__NR_timerfd, sys_timerfd)
+ __SYSCALL(__NR_eventfd, sys_eventfd)
+ #define __NR_fallocate				285
+ __SYSCALL(__NR_fallocate, sys_fallocate)
++#define __NR_indirect				286
++__SYSCALL(__NR_indirect, sys_indirect)
+ 
+ #ifndef __NO_STUBS
+ #define __ARCH_WANT_OLD_READDIR
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index ee800e7..e4e8a22 100644
+--- /dev/null	2007-09-23 16:36:38.465394704 -0700
++++ b/include/asm-x86/indirect_32.h	2007-11-14 22:16:50.000000000 -0800
+@@ -0,0 +1,27 @@
++#ifndef _ASM_X86_INDIRECT_32_H
++#define _ASM_X86_INDIRECT_32_H
++
++struct indirect_registers {
++  __u32 eax;
++  __u32 ebx;
++  __u32 ecx;
++  __u32 edx;
++  __u32 esi;
++  __u32 edi;
++  __u32 ebp;
++};
++
++#define CALL_INDIRECT(regs) \
++  ({ long res; \
++     if (unlikely((regs)->eax > NR_syscalls)) \
++	res = -ENOSYS; \
++     else if (unlikely((regs)->eax == __NR_indirect)) \
++	res = -EINVAL; \
++     else { \
++	extern long (*sys_call_table[]) (__u32, __u32, __u32, __u32, __u32, __u32); \
++	res = sys_call_table[(regs)->eax] ((regs)->ebx, (regs)->ecx, (regs)->edx, \
++					   (regs)->esi, (regs)->edi, (regs)->ebp); \
++     } \
++     res; })
++
++#endif
+--- /dev/null	2007-09-23 16:36:38.465394704 -0700
++++ b/include/asm-x86/indirect_64.h	2007-11-14 22:17:43.000000000 -0800
+@@ -0,0 +1,30 @@
++#ifndef _ASM_X86_INDIRECT_64_H
++#define _ASM_X86_INDIRECT_64_H
++
++struct indirect_registers {
++  __u64 rax;
++  __u64 rdi;
++  __u64 rsi;
++  __u64 rdx;
++  __u64 r10;
++  __u64 r8;
++  __u64 r9;
++};
++
++
++#define CALL_INDIRECT(regs) \
++  CALL_INDIRECT_WMAX(regs, __NR_syscall_max)
++#define CALL_INDIRECT_WMAX(regs, max) \
++  ({ long res; \
++     if (unlikely((regs)->rax > max)) \
++	res = -ENOSYS; \
++     else if (unlikely((regs)->rax == __NR_indirect)) \
++	res = -EINVAL; \
++     else { \
++	extern long (*sys_call_table[]) (__u64, __u64, __u64, __u64, __u64, __u64); \
++	res = sys_call_table[(regs)->rax] ((regs)->rdi, (regs)->rsi, (regs)->rdx, \
++					   (regs)->r10, (regs)->r8, (regs)->r9); \
++     } \
++     res; })
++
++#endif
+--- /dev/null	2007-09-23 16:36:38.465394704 -0700
++++ b/include/asm-x86/indirect.h	2007-11-14 17:15:58.000000000 -0800
+@@ -0,0 +1,5 @@
++#ifdef CONFIG_X86_32
++# include "indirect_32.h"
++#else
++# include "indirect_64.h"
++#endif
