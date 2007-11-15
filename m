@@ -1,53 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934114AbXKOWhG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933797AbXKOWmH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934114AbXKOWhG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 17:37:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762230AbXKOWgz
+	id S933797AbXKOWmH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 17:42:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762693AbXKOWlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 17:36:55 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:34545 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761242AbXKOWgx (ORCPT
+	Thu, 15 Nov 2007 17:41:55 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55784 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757835AbXKOWly (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 17:36:53 -0500
-Date: Thu, 15 Nov 2007 23:37:16 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: rusty@rustycorp.com.au, vatsa@in.ibm.com, zwane@arm.linux.org.uk,
-       kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: cpu hotplug strangeness in 2.6.24-rc2 (was Re: cpu hotplug support
-	broken in 2.6.23-rc3)
-Message-ID: <20071115223716.GA8446@elf.ucw.cz>
-References: <20070827104350.GA2073@elf.ucw.cz> <20070829080827.GD6832@in.ibm.com> <20070903035854.GD3655@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070903035854.GD3655@ucw.cz>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Thu, 15 Nov 2007 17:41:54 -0500
+Date: Thu, 15 Nov 2007 14:40:07 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       dhowells@redhat.com, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] FRV: Fix the extern declaration of kallsyms_num_syms
+ [try #2]
+Message-Id: <20071115144007.08760570.akpm@linux-foundation.org>
+In-Reply-To: <20071113165316.18700.67752.stgit@warthog.procyon.org.uk>
+References: <20071113165316.18700.67752.stgit@warthog.procyon.org.uk>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Tue, 13 Nov 2007 16:53:16 +0000
+David Howells <dhowells@redhat.com> wrote:
 
-> > > Plus I guess it would be nice to add CPU HOTPLUG into MAINTAINERS
-> > > file:
-> > > 
-> > 
-> > There is a list of maintainers in the Documentation/cpu-hotplug.txt, 
-> > which includes maintainers for different platforms as well.
-> > 
-> > It's a good idea to add that info to the MAINTAINERS file as well.
+> From: David Howells <dhowells@redhat.com>
 > 
-> Yes, please.
+> Fix the extern declaration of kallsyms_num_syms to indicate that the symbol
+> does not reside in the small-data storage space, and so may not be accessed
+> relative to the small data base register.
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> ---
+> 
+>  kernel/kallsyms.c |    7 ++++++-
+>  1 files changed, 6 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
+> index 474219a..2fc2581 100644
+> --- a/kernel/kallsyms.c
+> +++ b/kernel/kallsyms.c
+> @@ -32,9 +32,14 @@
+>  
+>  /* These will be re-linked against their real values during the second link stage */
+>  extern const unsigned long kallsyms_addresses[] __attribute__((weak));
+> -extern const unsigned long kallsyms_num_syms __attribute__((weak));
+>  extern const u8 kallsyms_names[] __attribute__((weak));
+>  
+> +/* tell the compiler that the count isn't in the small data section if the arch
+> + * has one (eg: FRV)
+> + */
+> +extern const unsigned long kallsyms_num_syms
+> +__attribute__((weak, section(".rodata")));
+> +
+>  extern const u8 kallsyms_token_table[] __attribute__((weak));
+>  extern const u16 kallsyms_token_index[] __attribute__((weak));
+>  
 
-Just an update... In 2.6.24-rc2, cpu hotplug basically works, _but_:
+hm, OK, so it lines up with what scripts/kallsyms.c presently does.
 
-if I do echo 0 > online; echo 0 > online; at same cpu, I get error,
-and can't up anything any more. It is not serious, but it is not
-pretty, either.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+But it all strikes me as a bit fragile and grotty.  Perhaps longer-term it
+would be better if scripts/kallsyms.c were to also emit a header file which
+declares all the things which that program emits the definitions of, no?
+
+I guess that means that we'd need to run the program twice - once at the
+start of compilation in generate-the-header-file mode and once at the end
+of compilation in generate-the-symbols mode.
+
+Or something like that.
+
