@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763424AbXKORWY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762764AbXKORZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763424AbXKORWY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 12:22:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755113AbXKORWQ
+	id S1762764AbXKORZb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 12:25:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbXKORZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 12:22:16 -0500
-Received: from mga09.intel.com ([134.134.136.24]:14148 "EHLO mga09.intel.com"
+	Thu, 15 Nov 2007 12:25:23 -0500
+Received: from mga09.intel.com ([134.134.136.24]:50257 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753570AbXKORWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 12:22:15 -0500
+	id S1755819AbXKORZW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 12:25:22 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.21,421,1188802800"; 
-   d="scan'208";a="205426731"
-Date: Thu, 15 Nov 2007 09:22:21 -0800
+   d="scan'208";a="271902509"
+Date: Thu, 15 Nov 2007 09:23:52 -0800
 From: mark gross <mgross@linux.intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org
 Subject: Re: 2.6.24-rc2-mm1
-Message-ID: <20071115172221.GA24837@linux.intel.com>
+Message-ID: <20071115172352.GB24837@linux.intel.com>
 Reply-To: mgross@linux.intel.com
 References: <20071113175906.497a1a6a.akpm@linux-foundation.org> <473A678C.2020507@googlemail.com> <473A76FA.4050701@googlemail.com> <20071114202959.GA21049@linux.intel.com> <20071114124008.095f307d.akpm@linux-foundation.org>
 MIME-Version: 1.0
@@ -58,7 +58,7 @@ On Wed, Nov 14, 2007 at 12:40:08PM -0800, Andrew Morton wrote:
 > 
 > Please prepare a tested, changelogged patch against rc2-mm1 asap.  
 
-I'm sorry for not being clear, this patch is already in your tree from a
-few weeks ago.  I was pointing Gabriel at the fix from back then.
+my bad.  I didn't catch the 24-rc2-mm1 baseline for this issue.  I'll
+look at this right way.
 
 --mgross
