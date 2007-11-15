@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763360AbXKOGSQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762822AbXKOGSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763360AbXKOGSQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:18:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761703AbXKOGQU
+	id S1762822AbXKOGSj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:18:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761978AbXKOGQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:16:20 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:51006 "EHLO
+	Thu, 15 Nov 2007 01:16:21 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:51011 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761384AbXKOGQS (ORCPT
+	with ESMTP id S1761638AbXKOGQT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:16:18 -0500
-Date: Wed, 14 Nov 2007 22:14:38 -0800
+	Thu, 15 Nov 2007 01:16:19 -0500
+Date: Wed, 14 Nov 2007 22:14:41 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,13 +21,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Kumar Gala <galak@kernel.crashing.org>
-Subject: [patch 05/19] POWERPC: Fix handling of stfiwx math emulation
-Message-ID: <20071115061438.GF7980@kroah.com>
+       Michael Ellerman <michael@ellerman.id.au>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [patch 06/19] POWERPC: Make sure to of_node_get() the result of
+	pci_device_to_OF_node()
+Message-ID: <20071115061441.GG7980@kroah.com>
 References: <20071115054813.977066477@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="powerpc-fix-handling-of-stfiwx-math-emulation.patch"
+Content-Disposition: inline; filename="powerpc-make-sure-to-of_node_get-the-result-of-pci_device_to_of_node.patch"
 In-Reply-To: <20071115061415.GA7980@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -37,46 +40,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Kumar Gala <galak@kernel.crashing.org>
+From: Michael Ellerman <michael@ellerman.id.au>
 
-patch ba02946a903015840ef672ccc9dc8620a7e83de6 in mainline
+patch db220b234da9f183b127b9c3077c253b94756e35 in mainline.
 
-Its legal for the stfiwx instruction to have RA = 0 as part of its
-effective address calculation.  This is illegal for all other XE
-form instructions.
+pci_device_to_OF_node() returns the device node attached to a PCI device,
+but doesn't actually grab a reference - we need to do it ourselves.
 
-Add code to compute the proper effective address for stfiwx if
-RA = 0 rather than treating it as illegal.
-
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/powerpc/math-emu/math.c |   13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/cell/axon_msi.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/arch/powerpc/math-emu/math.c
-+++ b/arch/powerpc/math-emu/math.c
-@@ -407,11 +407,16 @@ do_mathemu(struct pt_regs *regs)
+--- a/arch/powerpc/platforms/cell/axon_msi.c
++++ b/arch/powerpc/platforms/cell/axon_msi.c
+@@ -126,7 +126,7 @@ static struct axon_msic *find_msi_transl
+ 	const phandle *ph;
+ 	struct axon_msic *msic = NULL;
  
- 	case XE:
- 		idx = (insn >> 16) & 0x1f;
--		if (!idx)
--			goto illegal;
--
- 		op0 = (void *)&current->thread.fpr[(insn >> 21) & 0x1f];
--		op1 = (void *)(regs->gpr[idx] + regs->gpr[(insn >> 11) & 0x1f]);
-+		if (!idx) {
-+			if (((insn >> 1) & 0x3ff) == STFIWX)
-+				op1 = (void *)(regs->gpr[(insn >> 11) & 0x1f]);
-+			else
-+				goto illegal;
-+		} else {
-+			op1 = (void *)(regs->gpr[idx] + regs->gpr[(insn >> 11) & 0x1f]);
-+		}
-+
- 		break;
+-	dn = pci_device_to_OF_node(dev);
++	dn = of_node_get(pci_device_to_OF_node(dev));
+ 	if (!dn) {
+ 		dev_dbg(&dev->dev, "axon_msi: no pci_dn found\n");
+ 		return NULL;
+@@ -183,7 +183,7 @@ static int setup_msi_msg_address(struct 
+ 	int len;
+ 	const u32 *prop;
  
- 	case XEU:
+-	dn = pci_device_to_OF_node(dev);
++	dn = of_node_get(pci_device_to_OF_node(dev));
+ 	if (!dn) {
+ 		dev_dbg(&dev->dev, "axon_msi: no pci_dn found\n");
+ 		return -ENODEV;
 
 -- 
