@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764965AbXKOKlE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763591AbXKOKoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764965AbXKOKlE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 05:41:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760593AbXKOKkx
+	id S1763591AbXKOKoT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 05:44:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758800AbXKOKoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 05:40:53 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:51623 "EHLO mgw2.diku.dk"
+	Thu, 15 Nov 2007 05:44:10 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56797 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759137AbXKOKkw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 05:40:52 -0500
-Date: Thu, 15 Nov 2007 11:40:49 +0100 (MET)
-From: Julia Lawall <julia@diku.dk>
-To: thomas@winischhofer.net, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/2]: drivers/video: remove unnecessary pci_dev_put
-Message-ID: <Pine.LNX.4.58.0711151140100.1184@pc-041.diku.dk>
+	id S1757601AbXKOKoJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 05:44:09 -0500
+Date: Thu, 15 Nov 2007 11:43:32 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: mpm@selenic.com, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: [bug] SLOB crash, 2.6.24-rc2
+Message-ID: <20071115104331.GA11390@elte.hu>
+References: <20071114225335.GV19691@waste.org> <20071114.151013.05582536.davem@davemloft.net> <20071114233713.GW19691@waste.org> <20071114.154143.112110604.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071114.154143.112110604.davem@davemloft.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
 
-pci_get_class implicitly does a pci_dev_put on its second argument, so
-pci_dev_put is only needed if there is a break out of the loop.
+* David Miller <davem@davemloft.net> wrote:
 
-The semantic match detecting this problem is as follows:
+> From: Matt Mackall <mpm@selenic.com>
+> Date: Wed, 14 Nov 2007 17:37:13 -0600
+> 
+> > No, the usual strategy for debugging problems -outside- SLOB is to
+> > switch to another allocator with more extensive debugging facilities.
+> 
+> Ok, so the thing we still can do is do a dump_stack() at the list 
+> debugging assertion trigger points.
 
-// <smpl>
-@@
-expression dev;
-expression E;
-@@
+ok, i'll first try to trigger it again.
 
-* pci_dev_put(dev)
-  ... when != dev = E
-(
-* pci_get_device(...,dev)
-|
-* pci_get_device_reverse(...,dev)
-|
-* pci_get_subsys(...,dev)
-|
-* pci_get_class(...,dev)
-)
-// </smpl>
+it's a bzImage kernel with fixed order of eth0 and eth1 detection. What 
+i did was to twiddle the /etc/sysconfig/network-scripts/ifcfg-eth* 
+configs to address a network-does-not-show-up bug that .24 introduced. 
+The crash logs contain this:
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
----
+ VFS: Mounted root (ext3 filesystem) readonly.
+ Freeing unused kernel memory: 396k freed
+ Write protecting the kernel read-only data: 2056k
+ udev: renamed network interface eth1 to eth0
+ udev: renamed network interface eth0_rename to eth1
+ eth0: link down
+ ADDRCONF(NETDEV_UP): eth0: link is not ready
+ EXT3 FS on sda6, internal journal
+ kjournald starting.  Commit interval 5 seconds
 
-diff -up a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
---- a/drivers/video/sis/sis_main.c	2007-11-15 07:33:31.000000000 +0100
-+++ b/drivers/video/sis/sis_main.c	2007-11-15 07:38:48.000000000 +0100
-@@ -4620,9 +4620,9 @@ sisfb_find_host_bridge(struct sis_video_
+followed by the crash shortly afterwards (but not immediately). With the 
+non-crashing kernel i dont get those "renamed network interface" 
+messages.
 
- 	while((pdev = pci_get_class(PCI_CLASS_BRIDGE_HOST, pdev))) {
- 		temp = pdev->vendor;
--		pci_dev_put(pdev);
- 		if(temp == pcivendor) {
- 			ret = 1;
-+			pci_dev_put(pdev);
- 			break;
- 		}
- 	}
+network interface renaming has been a historic source of pain for me so 
+i frequently have to 'twiddle' the networking config to make it work 
+again on new kernels. Perhaps because i'm using bzImage kernels. 
+User-space is Fedora 8, so fairly recent.
+
+	Ingo
