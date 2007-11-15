@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765370AbXKOHd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763907AbXKOHgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765370AbXKOHd0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 02:33:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757624AbXKOHdR
+	id S1763907AbXKOHgW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 02:36:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757705AbXKOHgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 02:33:17 -0500
-Received: from www.tglx.de ([62.245.132.106]:42500 "EHLO www.tglx.de"
+	Thu, 15 Nov 2007 02:36:12 -0500
+Received: from www.tglx.de ([62.245.132.106]:50473 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752586AbXKOHdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 02:33:16 -0500
-Date: Thu, 15 Nov 2007 08:32:43 +0100 (CET)
+	id S1751604AbXKOHgL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 02:36:11 -0500
+Date: Thu, 15 Nov 2007 08:35:42 +0100 (CET)
 From: Thomas Gleixner <tglx@linutronix.de>
 To: David Brownell <david-b@pacbell.net>
 cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -18,46 +18,45 @@ cc: Andrew Morton <akpm@linux-foundation.org>,
        Haavard Skinnemoen <hskinnemoen@atmel.com>, Ingo Molnar <mingo@elte.hu>,
        Nick Piggin <nickpiggin@yahoo.com.au>
 Subject: Re: [patch 2.6.24-rc2 1/3] generic gpio -- gpio_chip support
-In-Reply-To: <200711142302.02498.david-b@pacbell.net>
-Message-ID: <alpine.LFD.0.9999.0711150824480.3265@localhost.localdomain>
-References: <200711091136.20051.david-b@pacbell.net> <200711121726.39263.david-b@pacbell.net> <alpine.LFD.0.9999.0711141228210.3265@localhost.localdomain> <200711142302.02498.david-b@pacbell.net>
+In-Reply-To: <200711142317.14230.david-b@pacbell.net>
+Message-ID: <alpine.LFD.0.9999.0711150833250.3265@localhost.localdomain>
+References: <200711091136.20051.david-b@pacbell.net> <200711121726.39263.david-b@pacbell.net> <alpine.LFD.0.9999.0711141228210.3265@localhost.localdomain> <200711142317.14230.david-b@pacbell.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Wed, 14 Nov 2007, David Brownell wrote:
-> > The protection of the chip list can be converted to a mutex and
-> > does not need to be a spinlock at all.
+
+> On Wednesday 14 November 2007, Thomas Gleixner wrote:
+> > struct gpio_desc {
+> > 	   struct gpio_chip *chip;
+> > 	   int pinoffset;
+> > };
 > 
-> No, we still need to use a spinlock to protect table changes.
-> The reason for that is briefly:
+> Eric Miao has a different notion of "gpio_desc" more analagous to
+> the "irq_desc", so I'll not use that name for such a structure.
 > 
->   - gpio_request()/gpio_free() have so far been optional.  Most
->     platforms implement them as NOPs, not all drivers use them.
->     (Having gpiolib in place should help change that ...)
+> Let me call yours a "struct gpio_pin" instead -- purely for some
+> discussion here.
+>
+> 
+> There's been some desire for a "gpio_pin" struct for entirely
+> different reasons ... as the identifiers passed into a slightly
+> different type of GPIO programming interface.  So for example
+> 
+>   static inline void gpiopin_set_value(struct gpio_pin *p, int v)
+>   {
+> 	p->chip->set(p->chip, p->pinoffset, v);
+>   }
+> 
+> One reason to be interested in gpio_chip is that it it would
+> easily support interoperation between traditional GPIO ID schemes
+> (numbered to match the SOC at the heart of a given board) and
+> more dynamic ones that might be needed to use curiousities like
+> a set of USB-to-GPIO adapters.
 
-By magically doing the request of the pin ? See below.
+So can we please do this right from the beginning instead of adding a
+new library first which suffers from bad design compromises.
 
->   - gpio_direction_input()/gpio_direction_output() implicitly
->     request the pins, if they weren't already requested.
-
-Eek, that's completely wrong. Allowing to access a resource _before_
-it is assigned and then doing the assignment implicit is a really bad
-idea.
-
->   - Those input/output direction-setting calls may be called
->     in IRQ contexts, which means (on non-RT kernels) no mutex.
-
-There is no reason to do that if you actually have a useful reference
-to the chip _before_ accessing the pin.
- 
-> So we're actually in good shape; just take out a bit of code
-> (or turn it into debugging instrumentation) and I don't think
-> anyone will complain about the locking any more.
-
-This still does not solve the lookup, which is done for each operation
-on a pin (direction setting, read, write).
-
-     	 tglx
-
+    tglx
