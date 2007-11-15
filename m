@@ -1,73 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764588AbXKOBL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758591AbXKOBLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764588AbXKOBL3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 20:11:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756648AbXKOBLS
+	id S1758591AbXKOBLm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 20:11:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757524AbXKOBLU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 14 Nov 2007 20:11:20 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:4384 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755461AbXKOBLS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 14 Nov 2007 20:11:18 -0500
-Received: from ozlabs.org ([203.10.76.45]:38982 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754807AbXKOBLS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 20:11:18 -0500
-MIME-Version: 1.0
+Date: Thu, 15 Nov 2007 09:11:10 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: David Miller <davem@davemloft.net>, nickpiggin@yahoo.com.au,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc2: Network commit causes SLUB performance regression with tbench
+Message-ID: <20071115011110.GB21193@gondor.apana.org.au>
+References: <200711140927.39796.nickpiggin@yahoo.com.au> <20071114.031022.183117678.davem@davemloft.net> <20071114114844.GA13927@gondor.apana.org.au> <20071114.154616.46285694.davem@davemloft.net> <Pine.LNX.4.64.0711141650150.21965@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18235.40110.831730.847548@cargo.ozlabs.ibm.com>
-Date: Thu, 15 Nov 2007 12:11:10 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: David Miller <davem@davemloft.net>
-Cc: hch@infradead.org, akpm@linux-foundation.org, gregkh@suse.de,
-       mucci@cs.utk.edu, eranian@hpl.hp.com, wcohen@redhat.com,
-       robert.richter@amd.com, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org
-Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
-In-Reply-To: <20071114.152134.266510129.davem@davemloft.net>
-References: <18235.28062.309910.416774@cargo.ozlabs.ibm.com>
-	<20071114.150303.13732085.davem@davemloft.net>
-	<18235.32982.439970.359975@cargo.ozlabs.ibm.com>
-	<20071114.152134.266510129.davem@davemloft.net>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0711141650150.21965@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller writes:
-
-> From: Paul Mackerras <paulus@samba.org>
-> Date: Thu, 15 Nov 2007 10:12:22 +1100
+On Wed, Nov 14, 2007 at 05:03:25PM -0800, Christoph Lameter wrote:
 > 
-> > *I* never had a problem with a few extra system calls.  I don't
-> >  understand why you (apparently) do.
-> 
-> We're stuck with them forever, they are hard to version and extend
-> cleanly.
-> 
-> Those are my main objections.
+> Well this is likely the result of the SLUB regression. If you allocate an 
+> order 1 page then the zone locks need to be taken. SLAB queues the a 
+> couple of higher order pages and can so serve a couple of requests without 
+> going into the page allocator whereas SLUB has to go directly to the page 
+> allocator for allocate and free. I guess that needs fixing in the page 
+> allocator. Or do I need to add a mechanism to buffer higher order page 
+> allcoations to SLUB?
 
-The first is valid (for suitable values of "forever") but applies to
-any user/kernel interface, not just system calls.
+Actually this serves to discourage people from using high-order
+allocations which IMHO is a good thing :)
 
-As for the second (hard to version) I don't see why it applies to
-syscalls specifically more than to other interfaces.  It's just a
-matter of designing it correctly in the first place.  For example, the
-sys_swapcontext system call we have on powerpc takes an argument which
-is the size of the ucontext_t that userland is using, which allows us
-to extend it in future if necessary.  (Note that I'm not saying that
-the current perfmon2 interfaces are well-designed in this respect.)
-
-The third (hard to extend cleanly) is a good point, and is a valid
-criticism of the current set of perfmon2 system calls, I think.
-However, the goal of being able to extend the interface tends to be in
-opposition to the goal of having strong typing of the interface.
-Things like a multiplexed syscall or an ioctl are much easier to
-extend but that is at the expense of losing strong typing.  Something
-like my transaction() (or your weird kind of read() :) also provides
-extensibility but loses type safety to some degree.
-
-Also, as Andi says, this is core CPU state that we are dealing with,
-not some I/O device, so treating the whole of perfmon2 (or any
-performance monitoring infrastructure) as a driver doesn't fit very
-well, and in fact system calls are appropriate.  Just like we don't
-try to make access to debugging facilities fit into a driver, we
-shouldn't make performance monitoring fit into a driver either.
-
-Paul.
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
