@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761236AbXKOHn5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760281AbXKOHtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761236AbXKOHn5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 02:43:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755125AbXKOHns
+	id S1760281AbXKOHtn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 02:49:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757410AbXKOHte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 02:43:48 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:48723 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752586AbXKOHnr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 02:43:47 -0500
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Russell Leighton <russ@elegant-software.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: OT: Does Linux have any "Perfect Code"
-From: Andi Kleen <andi@firstfloor.org>
-References: <c9d133bdb3481fbc01a572d948049f5e@elegant-software.com>
-	<473BE75B.9070701@cosmosbay.com>
-Date: Thu, 15 Nov 2007 08:43:46 +0100
-In-Reply-To: <473BE75B.9070701@cosmosbay.com> (Eric Dumazet's message of "Thu\, 15 Nov 2007 07\:29\:47 +0100")
-Message-ID: <p73mytgc5sd.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 15 Nov 2007 02:49:34 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:3636 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756466AbXKOHtd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 02:49:33 -0500
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: paulus@samba.org (Paul Mackerras)
+Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
+Cc: davem@davemloft.net, hch@infradead.org, akpm@linux-foundation.org,
+       gregkh@suse.de, mucci@cs.utk.edu, eranian@hpl.hp.com, wcohen@redhat.com,
+       robert.richter@amd.com, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org
+Organization: Core
+In-Reply-To: <18235.45103.397753.321892@cargo.ozlabs.ibm.com>
+X-Newsgroups: apana.lists.os.linux.kernel
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1IsZSP-0006MY-00@gondolin.me.apana.org.au>
+Date: Thu, 15 Nov 2007 15:48:13 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet <dada1@cosmosbay.com> writes:
+Paul Mackerras <paulus@samba.org> wrote:
 >
-> http://cvs.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/uts/common/os/timers.c#1106
->
-> I would say this code was OK 10 years ago.
+> Well you must mean something different by "strong typing" from the
+> rest of us.  Strong typing means that the compiler can check that you
+> have passed in the correct types of arguments, but the compiler
+> doesn't have any visibility into what structures are valid in netlink
+> messages.
 
-I would have expected 1997 compilers to already do these standard muliplication
-optimizations. 
+That's strong static typing.  Netlink is 90% strong static
+typing plus 10% strong dynamic typing.  That is, it'll tell
+you at run-time if you give it the wrong netlink attribute.
 
-> Now that a processor (say an Opteron in 64 bits mode, used on SUN
-> hardware), can perform a multiply in few cycles, ts2hrt() could use a
-> normal multiply and an addition.
+The types within each netlink attribute is checked at compile
+time.
 
-To be fair Linux runs on a lot of CPUs which are not quite as fast
-at multiplying as an Opteron, especially not for 64bit multiplies.
-So some optimizations might be still a good idea.  For divisions
-at least Linux also actively does this.
-
-On the other hand compilers also get worse. Modern gccs now turn
-
-while (nsec >= NANOSEC) {
-      nsec -= NANOSEC;
-      sec++;
-}
-
-into a division which is actually much slower. Or insert unnecessary
-cache misses randomly. See the recent gcc thread safety discussion
-where it turned out that the thread breaking optimization is actually
-more a general pessimization.
-
--Andi
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
