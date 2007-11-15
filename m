@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763907AbXKOHgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761236AbXKOHn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763907AbXKOHgW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 02:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757705AbXKOHgM
+	id S1761236AbXKOHn5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 02:43:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755125AbXKOHns
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 02:36:12 -0500
-Received: from www.tglx.de ([62.245.132.106]:50473 "EHLO www.tglx.de"
+	Thu, 15 Nov 2007 02:43:48 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:48723 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751604AbXKOHgL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 02:36:11 -0500
-Date: Thu, 15 Nov 2007 08:35:42 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: David Brownell <david-b@pacbell.net>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Florian Fainelli <florian.fainelli@telecomint.eu>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>, Ingo Molnar <mingo@elte.hu>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [patch 2.6.24-rc2 1/3] generic gpio -- gpio_chip support
-In-Reply-To: <200711142317.14230.david-b@pacbell.net>
-Message-ID: <alpine.LFD.0.9999.0711150833250.3265@localhost.localdomain>
-References: <200711091136.20051.david-b@pacbell.net> <200711121726.39263.david-b@pacbell.net> <alpine.LFD.0.9999.0711141228210.3265@localhost.localdomain> <200711142317.14230.david-b@pacbell.net>
+	id S1752586AbXKOHnr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 02:43:47 -0500
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Russell Leighton <russ@elegant-software.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: OT: Does Linux have any "Perfect Code"
+From: Andi Kleen <andi@firstfloor.org>
+References: <c9d133bdb3481fbc01a572d948049f5e@elegant-software.com>
+	<473BE75B.9070701@cosmosbay.com>
+Date: Thu, 15 Nov 2007 08:43:46 +0100
+In-Reply-To: <473BE75B.9070701@cosmosbay.com> (Eric Dumazet's message of "Thu\, 15 Nov 2007 07\:29\:47 +0100")
+Message-ID: <p73mytgc5sd.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Nov 2007, David Brownell wrote:
-
-> On Wednesday 14 November 2007, Thomas Gleixner wrote:
-> > struct gpio_desc {
-> > 	   struct gpio_chip *chip;
-> > 	   int pinoffset;
-> > };
-> 
-> Eric Miao has a different notion of "gpio_desc" more analagous to
-> the "irq_desc", so I'll not use that name for such a structure.
-> 
-> Let me call yours a "struct gpio_pin" instead -- purely for some
-> discussion here.
+Eric Dumazet <dada1@cosmosbay.com> writes:
 >
-> 
-> There's been some desire for a "gpio_pin" struct for entirely
-> different reasons ... as the identifiers passed into a slightly
-> different type of GPIO programming interface.  So for example
-> 
->   static inline void gpiopin_set_value(struct gpio_pin *p, int v)
->   {
-> 	p->chip->set(p->chip, p->pinoffset, v);
->   }
-> 
-> One reason to be interested in gpio_chip is that it it would
-> easily support interoperation between traditional GPIO ID schemes
-> (numbered to match the SOC at the heart of a given board) and
-> more dynamic ones that might be needed to use curiousities like
-> a set of USB-to-GPIO adapters.
+> http://cvs.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/uts/common/os/timers.c#1106
+>
+> I would say this code was OK 10 years ago.
 
-So can we please do this right from the beginning instead of adding a
-new library first which suffers from bad design compromises.
+I would have expected 1997 compilers to already do these standard muliplication
+optimizations. 
 
-    tglx
+> Now that a processor (say an Opteron in 64 bits mode, used on SUN
+> hardware), can perform a multiply in few cycles, ts2hrt() could use a
+> normal multiply and an addition.
+
+To be fair Linux runs on a lot of CPUs which are not quite as fast
+at multiplying as an Opteron, especially not for 64bit multiplies.
+So some optimizations might be still a good idea.  For divisions
+at least Linux also actively does this.
+
+On the other hand compilers also get worse. Modern gccs now turn
+
+while (nsec >= NANOSEC) {
+      nsec -= NANOSEC;
+      sec++;
+}
+
+into a division which is actually much slower. Or insert unnecessary
+cache misses randomly. See the recent gcc thread safety discussion
+where it turned out that the thread breaking optimization is actually
+more a general pessimization.
+
+-Andi
