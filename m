@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932692AbXKOGvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932869AbXKOGvm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932692AbXKOGvS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:51:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932323AbXKOGqb
+	id S932869AbXKOGvm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:51:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932477AbXKOGqe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:46:31 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:57792 "EHLO
+	Thu, 15 Nov 2007 01:46:34 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:57795 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765771AbXKOGqa (ORCPT
+	with ESMTP id S1765938AbXKOGqd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:46:30 -0500
-Date: Wed, 14 Nov 2007 22:43:02 -0800
+	Thu, 15 Nov 2007 01:46:33 -0500
+Date: Wed, 14 Nov 2007 22:43:55 -0800
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,80 +20,133 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/40] 2.6.23-stable review, driver (sans network) changes
-Message-ID: <20071115064302.GA19218@kroah.com>
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [patch 01/40] POWERPC: Fix platinumfb framebuffer
+Message-ID: <20071115064355.GB19218@kroah.com>
+References: <20071115062710.885284510@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Disposition: inline; filename="powerpc-fix-platinumfb-framebuffer.patch"
+In-Reply-To: <20071115064302.GA19218@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.23.X release.
-There are 40 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
 
-These patches are sent out with a number of different people on the Cc:
-line.  If you wish to be a reviewer, please email stable@kernel.org to
-add your name to the list.  If you want to be off the reviewer list,
-also email us.
+-stable review patch.  If anyone has any objections, please let us know.
 
-Responses should be made by Friday 00:00:00 UTC.  Anything received
-after that time might be too late.
+------------------
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-This set of patches focuses on drivers except for networking (those were
-in a different series).
+Patch 4c2a54b09ba35a409afc34bd331a57a994921664 in mailine.
 
-The diffstat of this review series is included below.
+Current kernels have a non-working platinumfb due to some resource
+management issues.  This fixes it.
 
-thanks,
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-greg k-h
+---
+ drivers/video/platinumfb.c |   48 ++++++++++++++++++++++++---------------------
+ 1 file changed, 26 insertions(+), 22 deletions(-)
 
------
+--- a/drivers/video/platinumfb.c
++++ b/drivers/video/platinumfb.c
+@@ -17,6 +17,8 @@
+  *  more details.
+  */
+ 
++#undef DEBUG
++
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/errno.h>
+@@ -535,33 +537,35 @@ static int __devinit platinumfb_probe(st
+ 	volatile __u8		*fbuffer;
+ 	int			bank0, bank1, bank2, bank3, rc;
+ 
+-	printk(KERN_INFO "platinumfb: Found Apple Platinum video hardware\n");
++	dev_info(&odev->dev, "Found Apple Platinum video hardware\n");
+ 
+ 	info = framebuffer_alloc(sizeof(*pinfo), &odev->dev);
+-	if (info == NULL)
++	if (info == NULL) {
++		dev_err(&odev->dev, "Failed to allocate fbdev !\n");
+ 		return -ENOMEM;
++	}
+ 	pinfo = info->par;
+ 
+ 	if (of_address_to_resource(dp, 0, &pinfo->rsrc_reg) ||
+ 	    of_address_to_resource(dp, 1, &pinfo->rsrc_fb)) {
+-		printk(KERN_ERR "platinumfb: Can't get resources\n");
+-		framebuffer_release(info);
+-		return -ENXIO;
+-	}
+-	if (!request_mem_region(pinfo->rsrc_reg.start,
+-				pinfo->rsrc_reg.start -
+-				pinfo->rsrc_reg.end + 1,
+-				"platinumfb registers")) {
++		dev_err(&odev->dev, "Can't get resources\n");
+ 		framebuffer_release(info);
+ 		return -ENXIO;
+ 	}
++	dev_dbg(&odev->dev, " registers  : 0x%llx...0x%llx\n",
++		(unsigned long long)pinfo->rsrc_reg.start,
++		(unsigned long long)pinfo->rsrc_reg.end);
++	dev_dbg(&odev->dev, " framebuffer: 0x%llx...0x%llx\n",
++		(unsigned long long)pinfo->rsrc_fb.start,
++		(unsigned long long)pinfo->rsrc_fb.end);
++
++	/* Do not try to request register space, they overlap with the
++	 * northbridge and that can fail. Only request framebuffer
++	 */
+ 	if (!request_mem_region(pinfo->rsrc_fb.start,
+-				pinfo->rsrc_fb.start
+-				- pinfo->rsrc_fb.end + 1,
++				pinfo->rsrc_fb.end - pinfo->rsrc_fb.start + 1,
+ 				"platinumfb framebuffer")) {
+-		release_mem_region(pinfo->rsrc_reg.start,
+-				   pinfo->rsrc_reg.end -
+-				   pinfo->rsrc_reg.start + 1);
++		printk(KERN_ERR "platinumfb: Can't request framebuffer !\n");
+ 		framebuffer_release(info);
+ 		return -ENXIO;
+ 	}
+@@ -600,7 +604,8 @@ static int __devinit platinumfb_probe(st
+ 	bank2 = fbuffer[0x200000] == 0x56;
+ 	bank3 = fbuffer[0x300000] == 0x78;
+ 	pinfo->total_vram = (bank0 + bank1 + bank2 + bank3) * 0x100000;
+-	printk(KERN_INFO "platinumfb: Total VRAM = %dMB (%d%d%d%d)\n", (int) (pinfo->total_vram / 1024 / 1024),
++	printk(KERN_INFO "platinumfb: Total VRAM = %dMB (%d%d%d%d)\n",
++	       (unsigned int) (pinfo->total_vram / 1024 / 1024),
+ 	       bank3, bank2, bank1, bank0);
+ 
+ 	/*
+@@ -644,16 +649,15 @@ static int __devexit platinumfb_remove(s
+         unregister_framebuffer (info);
+ 	
+ 	/* Unmap frame buffer and registers */
++	iounmap(pinfo->frame_buffer);
++	iounmap(pinfo->platinum_regs);
++	iounmap(pinfo->cmap_regs);
++
+ 	release_mem_region(pinfo->rsrc_fb.start,
+ 			   pinfo->rsrc_fb.end -
+ 			   pinfo->rsrc_fb.start + 1);
+-	release_mem_region(pinfo->rsrc_reg.start,
+-			   pinfo->rsrc_reg.end -
+-			   pinfo->rsrc_reg.start + 1);
+-	iounmap(pinfo->frame_buffer);
+-	iounmap(pinfo->platinum_regs);
++
+ 	release_mem_region(pinfo->cmap_regs_phys, 0x1000);
+-	iounmap(pinfo->cmap_regs);
+ 
+ 	framebuffer_release(info);
+ 
 
- drivers/acpi/sleep/main.c               |    5 -
- drivers/ata/ahci.c                      |  143 ++++++++++++++++++++++++++++++++
- drivers/ata/libata-core.c               |    9 +-
- drivers/ata/libata-eh.c                 |   32 +++++--
- drivers/char/drm/i915_irq.c             |    2 
- drivers/char/drm/radeon_cp.c            |    5 -
- drivers/char/drm/radeon_drv.h           |    1 
- drivers/char/moxa.c                     |    4 
- drivers/char/rocket.c                   |   14 ++-
- drivers/hwmon/lm87.c                    |    4 
- drivers/hwmon/w83627hf.c                |   78 +++++++++--------
- drivers/ide/pci/cs5535.c                |    2 
- drivers/ide/pci/serverworks.c           |    1 
- drivers/ide/pci/siimage.c               |    2 
- drivers/infiniband/core/uverbs_cmd.c    |    8 +
- drivers/infiniband/hw/mthca/mthca_cmd.c |    6 +
- drivers/isdn/hardware/avm/b1.c          |   28 ++----
- drivers/isdn/hardware/avm/c4.c          |   14 ++-
- drivers/md/bitmap.c                     |    2 
- drivers/md/dm-delay.c                   |    2 
- drivers/md/dm.c                         |    4 
- drivers/md/raid5.c                      |   17 +++
- drivers/pci/msi.c                       |    2 
- drivers/scsi/hptiop.c                   |    5 -
- drivers/usb/core/hcd.h                  |    8 +
- drivers/usb/core/hub.c                  |   15 +++
- drivers/usb/core/quirks.c               |   81 ------------------
- drivers/usb/core/urb.c                  |    2 
- drivers/usb/gadget/ether.c              |   12 ++
- drivers/usb/host/ehci-hcd.c             |    8 +
- drivers/usb/serial/generic.c            |    7 -
- drivers/video/platinumfb.c              |   48 +++++-----
- include/linux/ide.h                     |    7 +
- include/linux/libata.h                  |    2 
- include/linux/usb/quirks.h              |    7 -
- sound/core/Makefile                     |    3 
- sound/core/memalloc.c                   |    6 +
- sound/pci/emu10k1/emumixer.c            |    4 
- sound/pci/hda/patch_sigmatel.c          |   29 ++++--
- sound/pci/rme9652/hdsp.c                |    3 
- sound/usb/usbmixer.c                    |    2 
- 41 files changed, 418 insertions(+), 216 deletions(-)
+-- 
