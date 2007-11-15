@@ -1,84 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760409AbXKOQ0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762255AbXKOQ3i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760409AbXKOQ0W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 11:26:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755113AbXKOQ0K
+	id S1762255AbXKOQ3i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 11:29:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756365AbXKOQ33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 11:26:10 -0500
-Received: from empbedex1.empirix.com ([12.38.203.54]:9696 "EHLO
-	empbedex1.empirix.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752724AbXKOQ0J convert rfc822-to-8bit (ORCPT
+	Thu, 15 Nov 2007 11:29:29 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47690 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754567AbXKOQ33 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 11:26:09 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 15 Nov 2007 11:29:29 -0500
+Message-ID: <473C736D.2040307@linux-foundation.org>
+Date: Thu, 15 Nov 2007 08:27:25 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Organization: Linux Foundation
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: 2.6.23.1 - sata_mv (7042) hang with large file operations
-Date: Thu, 15 Nov 2007 11:26:02 -0500
-Message-ID: <BD261180E6D35F4D9D32F3E44FD3D9010AAE911D@EMPBEDEX.empirix.com>
-In-Reply-To: <473B76E0.7010500@rtr.ca>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 2.6.23.1 - sata_mv (7042) hang with large file operations
-Thread-Index: AcgnDfCDcFTk2S3PRzW9Z2OXUgvbiQAkZOhA
-References: <BD261180E6D35F4D9D32F3E44FD3D901053E84BD@EMPBEDEX.empirix.com> <45ED682A.9040408@garzik.org> <BD261180E6D35F4D9D32F3E44FD3D9010A7E1B45@EMPBEDEX.empirix.com> <4728A816.8020608@garzik.org> <BD261180E6D35F4D9D32F3E44FD3D9010AAE852F@EMPBEDEX.empirix.com> <473B36D7.8000205@rtr.ca> <BD261180E6D35F4D9D32F3E44FD3D9010AAE8585@EMPBEDEX.empirix.com> <473B44CB.6010209@rtr.ca> <BD261180E6D35F4D9D32F3E44FD3D9010AAE89CA@EMPBEDEX.empirix.com> <473B76E0.7010500@rtr.ca>
-From: "Morrison, Tom" <tmorrison@empirix.com>
-To: "Mark Lord" <liml@rtr.ca>
-Cc: "Jeff Garzik" <jeff@garzik.org>, <linux-ide@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 15 Nov 2007 16:26:07.0709 (UTC) FILETIME=[39C068D0:01C827A4]
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Jeff Garzik <jeff@garzik.org>
+Subject: Re: [patch 08/16] skge: fix ram buffer size calculation
+References: <20071115060353.071060513@mini.kroah.org> <20071115064037.GH18951@kroah.com> <alpine.LFD.0.9999.0711150810130.2786@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.9999.0711150810130.2786@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Additional information - the ~file size this is caused 
-is somewhere close to 260Mbytesfiles. 
-
-If I create a ~260Mbytes file - my program finishes creating
-the file - but ~5 seconds later (I timed this by hitting enter
-on the console every second after completion of the command 
-that should have done a fsync of the created file before exiting)...
-It hangs...
-
-I did a little playing around with /proc/sys/dev/scsi/logging_level
-(set to 0x7) - and it seems that the kernel/box locks up after
-this line:
-
->> scsi_add_timer: scmd: efca83c0, time: 7500, (c0160660)
->> scsi_delete_timer: scmd: efca83c0, rtn: 1
->> scsi_add_timer: scmd: efca8840, time: 7500, (c0160660)
-
-
-Further analysis (setting logging level to 65535 (0xFFFF) 
-Has the following behavior down low) - 
-
->> scsi_add_timer: scmd: efca8960, time: 7500, (c0160660)
->> sd 0:0:0:0: [sda] Send: 0xefca8960
->> sd 0:0:0:0: [sda] CDB: Write(10): 2a 00 00 47 92 27 00 01 48 00
->> buffer = 0xc0553040, bufflen = 167936, done = 0xc016b194,
-queuecommand
-      0xc017ed34
->> leaving scsi_dispatch_cmnd()
->> scsi_delete_timer: scmd: efca8960, rtn: 1
->> sd 0:0:0:0: [sda] Done: 0xefca8960 SUCCESS
->> sd 0:0:0:0: [sda] Result: hostbyte=DID_OK
-driverbyte=DRIVER_OK,SUGGEST_OK
->> sd 0:0:0:0: [sda] CDB: Write(10): 2a 00 00 47 92 27 00 01 48 00
->> sd 0:0:0:0: [sda] scsi host busy 1 failed 0
->> sd 0:0:0:0: Notifying upper driver of completion (result 0)
+Linus Torvalds wrote:
+> On Wed, 14 Nov 2007, Greg KH wrote:
+>   
+>> -stable review patch.  If anyone has any objections, please let us know.
 >>
->> scsi_add_timer: scmd: efca82a0, time: 7500, (c0160660)
->> sd 0:0:0:0: [sda] Send: 0xefca82a0
->> sd 0:0:0:0: [sda] CDB: Write(10): 2a 00 00 47 93 6f 00 02 40 00
->> buffer = 0xef5734c0, bufflen = 294912, done = 0xc016b194,
-queuecommand
-      0xc017ed34
->> leaving scsi_dispatch_cmnd()
-
-Nothing more - it hangs!
-
-This is really a nasty problem!!!!
-
-
+>> ------------------
+>> From: Stephen Hemminger <shemminger@linux-foundation.org>
+>>
+>> patch 7fb7ac241162dc51ec0f7644d4a97b2855213c32 in mainline.
+>>
+>> This fixes problems with transmit hangs on older fiber based SysKonnect boards.
+>>
+>> Adjust ram buffer sizing calculation to make it correct on all boards
+>> and make it like the code in sky2 driver.
+>>     
+>
+> This one is getting reverted in mainline in about five minutes (unless I 
+> find an email from Stephen to address the reported regression - I haven't 
+> gone through all my emails yet), so I don't think it should make it into 
+> stable.
+>
+> 			Linus
+>   
+I can't reproduce the users problem with the hardware I have. And 
+without the patch the dual
+port board doesn't work. So it is a question of regression, versus 
+fixing pre-existing bugs.
+I am okay with reverting the patch, as a temporary state, but concerned 
+with how
+to make progress in fixing this.
