@@ -1,45 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759105AbXKOP1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760755AbXKOPbu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759105AbXKOP1m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 10:27:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbXKOP1d
+	id S1760755AbXKOPbu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 10:31:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755427AbXKOPbj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 10:27:33 -0500
-Received: from smtp-out002.kontent.com ([81.88.40.216]:40625 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751734AbXKOP1c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 10:27:32 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: question on odd APIC behavior
-Date: Thu, 15 Nov 2007 16:27:25 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org
-References: <200711150054.34312.oliver@neukum.org> <Pine.LNX.4.64N.0711151313410.19041@blysk.ds.pg.gda.pl>
-In-Reply-To: <Pine.LNX.4.64N.0711151313410.19041@blysk.ds.pg.gda.pl>
+	Thu, 15 Nov 2007 10:31:39 -0500
+Received: from thunk.org ([69.25.196.29]:48249 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752033AbXKOPbi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 10:31:38 -0500
+Date: Thu, 15 Nov 2007 10:30:57 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Daniel Barkalow <barkalow@iabervon.org>
+Cc: Benoit Boissinot <bboissin@gmail.com>, Mark Lord <liml@rtr.ca>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, protasnb@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+Message-ID: <20071115153057.GE17180@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Daniel Barkalow <barkalow@iabervon.org>,
+	Benoit Boissinot <bboissin@gmail.com>, Mark Lord <liml@rtr.ca>,
+	Ingo Molnar <mingo@elte.hu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Miller <davem@davemloft.net>, protasnb@gmail.com,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
+	linux-pcmcia@lists.infradead.org,
+	linux-input@atrey.karlin.mff.cuni.cz,
+	bugme-daemon@bugzilla.kernel.org
+References: <20071113031553.3c7b5c16.akpm@linux-foundation.org> <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca> <40f323d00711130752k19cab8eauc3456721274b3267@mail.gmail.com> <20071113171356.GA25824@thunk.org> <Pine.LNX.4.64.0711141810110.12193@iabervon.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711151627.25622.oliver@neukum.org>
+In-Reply-To: <Pine.LNX.4.64.0711141810110.12193@iabervon.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag 15 November 2007 schrieb Maciej W. Rozycki:
-> On Thu, 15 Nov 2007, Oliver Neukum wrote:
-> 
-> > is there a way to so misprogramm an APIC that a physical interrupt results
-> > in two interrupts delivered?
-> 
->  Certainly.  One possibility is to have multiple processors marked as the 
-> destination, e.g. a logical delivery mode destination programmed with 
-> multiple bits set.
+On Wed, Nov 14, 2007 at 06:23:34PM -0500, Daniel Barkalow wrote:
+> I don't see any reason that we couldn't have a tool accessible to Ubuntu 
+> users that does a real "git bisect". Git is really good at being scripted 
+> by fancy GUIs. It should be easy enough to have a drop down with all of 
+> the Ubuntu kernel package releases, where the user selects what works and 
+> what doesn't.
 
-What would be the consequences?
-I am seeing an interrupt for an UHCI on #20 CPU1 also arriving on
-#19 CPU0, triggering the spurious interrupt detection.
+It's possible users who haven't yet downloaded a git repository have
+to surmount some obstacles that might cause them to lose interest.
+First, they have to download some 190 megs of git repository, and if
+they have a slow link, that can take a while, and then they have to
+build each kernel, which can take a while.  A full kernel build with
+everything selected can take good 30 minutes or more, and that's on a
+fast dual-core machine with 4gigs of memory and 7200rpm disk drives.
+On a slower, memory limited laptop, doing a single kernel build can
+take more time than the user has patiences; multiply that by 7 or 8
+build and test boots, and it starts to get tiresome.  
 
-	Regards
-		Oliver
+And then on top of that there are the issues about whether there is
+enough support for dealing with hitting kernel revisions that fail due
+to other bugs getting merged in during the -rc1 process, etc.
+
+I agree that a tool that automated the bisection process and walked
+the user through it would be helpful, but I believe it would be
+possible for us do better.
+
+						- Ted
