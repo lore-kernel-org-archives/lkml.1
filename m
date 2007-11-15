@@ -1,47 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758591AbXKOBLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765211AbXKOBNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758591AbXKOBLm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 20:11:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757524AbXKOBLU
+	id S1765211AbXKOBNd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 20:13:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755706AbXKOBNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 20:11:20 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:4384 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755461AbXKOBLS (ORCPT
+	Wed, 14 Nov 2007 20:13:22 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58063 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755288AbXKOBNV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 20:11:18 -0500
-Date: Thu, 15 Nov 2007 09:11:10 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: David Miller <davem@davemloft.net>, nickpiggin@yahoo.com.au,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc2: Network commit causes SLUB performance regression with tbench
-Message-ID: <20071115011110.GB21193@gondor.apana.org.au>
-References: <200711140927.39796.nickpiggin@yahoo.com.au> <20071114.031022.183117678.davem@davemloft.net> <20071114114844.GA13927@gondor.apana.org.au> <20071114.154616.46285694.davem@davemloft.net> <Pine.LNX.4.64.0711141650150.21965@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
+	Wed, 14 Nov 2007 20:13:21 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Olof Johansson <olof@lixom.net>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, David Miller <davem@davemloft.net>,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix warning for token-ring from sysctl checker
+References: <20071113072313.GB16842@lixom.net>
+	<20071113.211540.97775009.davem@davemloft.net>
+	<m1r6is253v.fsf@ebiederm.dsl.xmission.com>
+	<20071114084528.0f092739.randy.dunlap@oracle.com>
+	<20071115002810.GA7337@lixom.net>
+Date: Wed, 14 Nov 2007 18:12:22 -0700
+In-Reply-To: <20071115002810.GA7337@lixom.net> (Olof Johansson's message of
+	"Wed, 14 Nov 2007 18:28:10 -0600")
+Message-ID: <m18x50z4zt.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0711141650150.21965@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 14, 2007 at 05:03:25PM -0800, Christoph Lameter wrote:
-> 
-> Well this is likely the result of the SLUB regression. If you allocate an 
-> order 1 page then the zone locks need to be taken. SLAB queues the a 
-> couple of higher order pages and can so serve a couple of requests without 
-> going into the page allocator whereas SLUB has to go directly to the page 
-> allocator for allocate and free. I guess that needs fixing in the page 
-> allocator. Or do I need to add a mechanism to buffer higher order page 
-> allcoations to SLUB?
+Olof Johansson <olof@lixom.net> writes:
 
-Actually this serves to discourage people from using high-order
-allocations which IMHO is a good thing :)
+> On Wed, Nov 14, 2007 at 08:45:28AM -0800, Randy Dunlap wrote:
+>> On Wed, 14 Nov 2007 08:56:20 -0700 Eric W. Biederman wrote:
+>> 
+>> > David Miller <davem@davemloft.net> writes:
+>> > 
+>> > > From: Olof Johansson <olof@lixom.net>
+>> > > Date: Tue, 13 Nov 2007 01:23:13 -0600
+>> > >
+>> > >> As seen when booting ppc64_defconfig:
+>> > >> 
+>> > >> sysctl table check failed: /net/token-ring .3.14 procname does not match
+>> > > binary path procname
+>> > >> 
+>> > >> 
+>> > >> Signed-off-by: Olof Johansson <olof@lixom.net>
+>> > >
+>> > > Patch applied, thanks Olof.
+>> > 
+>> > No objections but I think we already have this fixed in the -mm tree.
+>> 
+>> Yes, I patched it several weeks ago and it's been in -mm for a while
+>> now.  Apparently too long.
+>
+> Ah, sorry for the duplicate patch then. I must have missed it at the
+> original posting (and didn't search that far back and/or -mm before
+> posting it myself).
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+As long as the patch gets merged and makes it's way upstream so people
+can use the token-ring code I don't really care who posts it.
+
+Eric
