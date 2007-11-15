@@ -1,49 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756697AbXKODyp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758117AbXKOEGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756697AbXKODyp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 22:54:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbXKODyh
+	id S1758117AbXKOEGW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 23:06:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754849AbXKOEGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 22:54:37 -0500
-Received: from pool-71-247-7-55.nycmny.east.verizon.net ([71.247.7.55]:57707
-	"HELO gatworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755127AbXKODyg (ORCPT
+	Wed, 14 Nov 2007 23:06:14 -0500
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:33892 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752161AbXKOEGM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 22:54:36 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Nov 2007 22:54:35 EST
-Message-ID: <473BC168.4000206@gatworks.com>
-Date: Wed, 14 Nov 2007 22:47:52 -0500
-From: "U. George" <netbeans@gatworks.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Linux on Alpha processors <axp-list@redhat.com>
-CC: linux-kernel@vger.kernel.org, Jay Estabrook <jay.estabrook@hp.com>
-Subject: Re: Question about F_RDLCK and F_WRLCK on alpha
-References: <473B600E.9030703@linux-kernel.at>
-In-Reply-To: <473B600E.9030703@linux-kernel.at>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 14 Nov 2007 23:06:12 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAO9UO0dMROHU/2dsb2JhbACBXI5w
+Date: Wed, 14 Nov 2007 23:06:10 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@muc.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 5/8] Immediate Values - x86 Optimization
+Message-ID: <20071115040610.GA23443@Krystal>
+References: <20071113185800.436425570@polymtl.ca> <20071113190040.740103668@polymtl.ca> <200711151408.46030.rusty@rustcorp.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <200711151408.46030.rusty@rustcorp.com.au>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 22:34:40 up 11 days,  8:40,  5 users,  load average: 0.05, 0.18,
+	0.29
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I suppose this can be better analyzed if the cpp output is presented to 
-show exactly how rdlck/wrlck is included/defined .
-
-But the only requirement is that the flags are unique. solong as wrlck 
-!= rdlck != unlck every is happy.
-
-There is no expectation that an i386 binary will run on an alpha machine.
-
-there might be an issue if the i386 source code uses "0" or "1" 
-constants instead of the WRLCK/RDLCK. And then compiled on the alpha. 
-Then it would be out of sync.
-
-I suppose they are different bec the folks at OSF had it defined that 
-way. And there was some need to run OSF/alpha bins on a linux/alpha ( 
-just a guess on my part )
-
-Oliver Falk wrote:
-> Hi!
+* Rusty Russell (rusty@rustcorp.com.au) wrote:
+> On Wednesday 14 November 2007 05:58:05 Mathieu Desnoyers wrote:
+> > x86 optimization of the immediate values which uses a movl with code
+> > patching to set/unset the value used to populate the register used as
+> > variable source.
 > 
-> Can someone explain me, why we have different define's for WRLCK and
-> RDLCK within alpha kernel headers:
+> For the record, I think the patching code gross overkill.
+> 
+> A stop_machine (or lightweight variant using IPI) would be sufficient and 
+> vastly simpler.  Trying to patch NMI handlers while they're running is 
+> already crazy.
+> 
+
+I wouldn't mind if it was limited to the code within do_nmi(), but then
+we would have to accept potential GPF if
+
+A - the NMI or MCE code calls any external kernel code (printk,
+  notify_die, spin_lock/unlock, die_nmi, lapic_wd_event (perfctr code,
+  calls printk too for debugging)...
+
+B - we try to patch this code at the wrong moment
+
+I could live with that, but I would prefer to have a solid, non flaky
+solution. My goal is to help the kernel quality _improve_ rather than
+deteriorate. Therefore, if one decides to use the immediate values to
+leave dormant spinlock instrumentation in the kernel, I wouldn't want it
+to have undesirable side-effects (GPF) when the instrumentation is
+being enabled, as rare as it could be.
+
+> I'd keep this version up your sleeve for they day when it's needed.
+> 
+
+If we choose to go this way, stop_machine would have to do a sync_core()
+on every CPU before it reactivates interrupts for this to respect
+Intel's errata. It's not just a matter of not executing the code while
+it is modified; the issue here is that we must insure that we don't have
+an incoherent trace cache.  So, as is, stop_machine would not respect
+the errata.
+
+Mathieu
+
+> Rusty.
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
