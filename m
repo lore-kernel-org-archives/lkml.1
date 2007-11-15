@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765728AbXKOGrF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764343AbXKOGrp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765728AbXKOGrF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:47:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756896AbXKOGm5
+	id S1764343AbXKOGrp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:47:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757512AbXKOGm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:42:57 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55114 "EHLO
+	Thu, 15 Nov 2007 01:42:58 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55131 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761837AbXKOGmy (ORCPT
+	with ESMTP id S1761932AbXKOGm4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:42:54 -0500
-Date: Wed, 14 Nov 2007 22:40:48 -0800
+	Thu, 15 Nov 2007 01:42:56 -0500
+Date: Wed, 14 Nov 2007 22:40:52 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,12 +23,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Stephen Hemminger <shemminger@linux-foundation.org>,
        Jeff Garzik <jeff@garzik.org>
-Subject: [patch 09/16] skge: XM PHY handling fixes
-Message-ID: <20071115064048.GI18951@kroah.com>
+Subject: [patch 10/16] sky2: status ring race fix
+Message-ID: <20071115064052.GJ18951@kroah.com>
 References: <20071115060353.071060513@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="skge-xm-phy-poll.patch"
+Content-Disposition: inline; filename="sky2-status-race.patch"
 In-Reply-To: <20071115063921.GA18827@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -39,251 +39,63 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
+
 From: Stephen Hemminger <shemminger@linux-foundation.org>
 
-patch 501fb72d052d2a302b423bef7dec98d9d98c8a36 in mainline.
+patch ab5adecb2d02f3688719dfb5936a82833fcc3955 in mainline.
 
-Change how PHY is managed on SysKonnect fibre based boards.
-Poll for PHY coming up 1 per second, but use interrupt to detect loss.
+The D-Link PCI-X board (and maybe others) can lie about status
+ring entries. It seems it will update the register for last status
+index before completing the DMA for the ring entry. To avoid reading
+stale data, zap the old entry and check.
 
 Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
 Signed-off-by: Jeff Garzik <jeff@garzik.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/skge.c |   90 ++++++++++++++++++++++++++++-------------------------
- drivers/net/skge.h |    6 +--
- 2 files changed, 51 insertions(+), 45 deletions(-)
+ drivers/net/sky2.c |   12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
---- a/drivers/net/skge.c
-+++ b/drivers/net/skge.c
-@@ -57,7 +57,7 @@
- #define TX_WATCHDOG		(5 * HZ)
- #define NAPI_WEIGHT		64
- #define BLINK_MS		250
--#define LINK_HZ			(HZ/2)
-+#define LINK_HZ			HZ
- 
- MODULE_DESCRIPTION("SysKonnect Gigabit Ethernet driver");
- MODULE_AUTHOR("Stephen Hemminger <shemminger@linux-foundation.org>");
-@@ -992,19 +992,15 @@ static void xm_link_down(struct skge_hw 
- {
- 	struct net_device *dev = hw->dev[port];
- 	struct skge_port *skge = netdev_priv(dev);
--	u16 cmd, msk;
-+	u16 cmd = xm_read16(hw, port, XM_MMU_CMD);
- 
--	if (hw->phy_type == SK_PHY_XMAC) {
--		msk = xm_read16(hw, port, XM_IMSK);
--		msk |= XM_IS_INP_ASS | XM_IS_LIPA_RC | XM_IS_RX_PAGE | XM_IS_AND;
--		xm_write16(hw, port, XM_IMSK, msk);
--	}
-+	xm_write16(hw, port, XM_IMSK, XM_IMSK_DISABLE);
- 
--	cmd = xm_read16(hw, port, XM_MMU_CMD);
- 	cmd &= ~(XM_MMU_ENA_RX | XM_MMU_ENA_TX);
- 	xm_write16(hw, port, XM_MMU_CMD, cmd);
+--- a/drivers/net/sky2.c
++++ b/drivers/net/sky2.c
+@@ -2246,20 +2246,26 @@ static int sky2_status_intr(struct sky2_
+ 	while (hw->st_idx != hwidx) {
+ 		struct sky2_port *sky2;
+ 		struct sky2_status_le *le  = hw->st_le + hw->st_idx;
+-		unsigned port = le->css & CSS_LINK_BIT;
++		unsigned port;
+ 		struct net_device *dev;
+ 		struct sk_buff *skb;
+ 		u32 status;
+ 		u16 length;
++		u8 opcode = le->opcode;
 +
- 	/* dummy read to ensure writing */
--	(void) xm_read16(hw, port, XM_MMU_CMD);
-+	xm_read16(hw, port, XM_MMU_CMD);
++		if (!(opcode & HW_OWNER))
++			break;
  
- 	if (netif_carrier_ok(dev))
- 		skge_link_down(skge);
-@@ -1100,7 +1096,7 @@ static void genesis_reset(struct skge_hw
+ 		hw->st_idx = RING_NEXT(hw->st_idx, STATUS_RING_SIZE);
  
- 	/* reset the statistics module */
- 	xm_write32(hw, port, XM_GP_PORT, XM_GP_RES_STAT);
--	xm_write16(hw, port, XM_IMSK, 0xffff);	/* disable XMAC IRQs */
-+	xm_write16(hw, port, XM_IMSK, XM_IMSK_DISABLE);
- 	xm_write32(hw, port, XM_MODE, 0);		/* clear Mode Reg */
- 	xm_write16(hw, port, XM_TX_CMD, 0);	/* reset TX CMD Reg */
- 	xm_write16(hw, port, XM_RX_CMD, 0);	/* reset RX CMD Reg */
-@@ -1138,7 +1134,7 @@ static void bcom_check_link(struct skge_
- 	u16 status;
++		port = le->css & CSS_LINK_BIT;
+ 		dev = hw->dev[port];
+ 		sky2 = netdev_priv(dev);
+ 		length = le16_to_cpu(le->length);
+ 		status = le32_to_cpu(le->status);
  
- 	/* read twice because of latch */
--	(void) xm_phy_read(hw, port, PHY_BCOM_STAT);
-+	xm_phy_read(hw, port, PHY_BCOM_STAT);
- 	status = xm_phy_read(hw, port, PHY_BCOM_STAT);
- 
- 	if ((status & PHY_ST_LSYNC) == 0) {
-@@ -1339,7 +1335,7 @@ static void xm_phy_init(struct skge_port
- 	mod_timer(&skge->link_timer, jiffies + LINK_HZ);
- }
- 
--static void xm_check_link(struct net_device *dev)
-+static int xm_check_link(struct net_device *dev)
- {
- 	struct skge_port *skge = netdev_priv(dev);
- 	struct skge_hw *hw = skge->hw;
-@@ -1347,25 +1343,25 @@ static void xm_check_link(struct net_dev
- 	u16 status;
- 
- 	/* read twice because of latch */
--	(void) xm_phy_read(hw, port, PHY_XMAC_STAT);
-+	xm_phy_read(hw, port, PHY_XMAC_STAT);
- 	status = xm_phy_read(hw, port, PHY_XMAC_STAT);
- 
- 	if ((status & PHY_ST_LSYNC) == 0) {
- 		xm_link_down(hw, port);
--		return;
-+		return 0;
- 	}
- 
- 	if (skge->autoneg == AUTONEG_ENABLE) {
- 		u16 lpa, res;
- 
- 		if (!(status & PHY_ST_AN_OVER))
--			return;
-+			return 0;
- 
- 		lpa = xm_phy_read(hw, port, PHY_XMAC_AUNE_LP);
- 		if (lpa & PHY_B_AN_RF) {
- 			printk(KERN_NOTICE PFX "%s: remote fault\n",
- 			       dev->name);
--			return;
-+			return 0;
- 		}
- 
- 		res = xm_phy_read(hw, port, PHY_XMAC_RES_ABI);
-@@ -1381,7 +1377,7 @@ static void xm_check_link(struct net_dev
+-		switch (le->opcode & ~HW_OWNER) {
++		le->opcode = 0;
++		switch (opcode & ~HW_OWNER) {
+ 		case OP_RXSTAT:
+ 			++rx[port];
+ 			skb = sky2_receive(dev, length, status);
+@@ -2352,7 +2358,7 @@ static int sky2_status_intr(struct sky2_
  		default:
- 			printk(KERN_NOTICE PFX "%s: duplex mismatch\n",
- 			       dev->name);
--			return;
-+			return 0;
+ 			if (net_ratelimit())
+ 				printk(KERN_WARNING PFX
+-				       "unknown status opcode 0x%x\n", le->opcode);
++				       "unknown status opcode 0x%x\n", opcode);
  		}
- 
- 		/* We are using IEEE 802.3z/D5.0 Table 37-4 */
-@@ -1405,11 +1401,14 @@ static void xm_check_link(struct net_dev
- 
- 	if (!netif_carrier_ok(dev))
- 		genesis_link_up(skge);
-+	return 1;
- }
- 
- /* Poll to check for link coming up.
-+ *
-  * Since internal PHY is wired to a level triggered pin, can't
-- * get an interrupt when carrier is detected.
-+ * get an interrupt when carrier is detected, need to poll for
-+ * link coming up.
-  */
- static void xm_link_timer(unsigned long arg)
- {
-@@ -1417,29 +1416,35 @@ static void xm_link_timer(unsigned long 
- 	struct net_device *dev = skge->netdev;
-  	struct skge_hw *hw = skge->hw;
- 	int port = skge->port;
-+	int i;
-+	unsigned long flags;
- 
- 	if (!netif_running(dev))
- 		return;
- 
--	if (netif_carrier_ok(dev)) {
-+	spin_lock_irqsave(&hw->phy_lock, flags);
-+
-+	/*
-+	 * Verify that the link by checking GPIO register three times.
-+	 * This pin has the signal from the link_sync pin connected to it.
-+	 */
-+	for (i = 0; i < 3; i++) {
-+		if (xm_read16(hw, port, XM_GP_PORT) & XM_GP_INP_ASS)
-+			goto link_down;
-+	}
-+
-+        /* Re-enable interrupt to detect link down */
-+	if (xm_check_link(dev)) {
-+		u16 msk = xm_read16(hw, port, XM_IMSK);
-+		msk &= ~XM_IS_INP_ASS;
-+		xm_write16(hw, port, XM_IMSK, msk);
- 		xm_read16(hw, port, XM_ISRC);
--		if (!(xm_read16(hw, port, XM_ISRC) & XM_IS_INP_ASS))
--			goto nochange;
- 	} else {
--		if (xm_read32(hw, port, XM_GP_PORT) & XM_GP_INP_ASS)
--			goto nochange;
--		xm_read16(hw, port, XM_ISRC);
--		if (xm_read16(hw, port, XM_ISRC) & XM_IS_INP_ASS)
--			goto nochange;
-+link_down:
-+		mod_timer(&skge->link_timer,
-+			  round_jiffies(jiffies + LINK_HZ));
- 	}
--
--	spin_lock(&hw->phy_lock);
--	xm_check_link(dev);
--	spin_unlock(&hw->phy_lock);
--
--nochange:
--	if (netif_running(dev))
--		mod_timer(&skge->link_timer, jiffies + LINK_HZ);
-+	spin_unlock_irqrestore(&hw->phy_lock, flags);
- }
- 
- static void genesis_mac_init(struct skge_hw *hw, int port)
-@@ -1683,14 +1688,16 @@ static void genesis_mac_intr(struct skge
- 		printk(KERN_DEBUG PFX "%s: mac interrupt status 0x%x\n",
- 		       skge->netdev->name, status);
- 
--	if (hw->phy_type == SK_PHY_XMAC &&
--	    (status & (XM_IS_INP_ASS | XM_IS_LIPA_RC)))
--		xm_link_down(hw, port);
-+	if (hw->phy_type == SK_PHY_XMAC && (status & XM_IS_INP_ASS)) {
-+  		xm_link_down(hw, port);
-+		mod_timer(&skge->link_timer, jiffies + 1);
-+	}
- 
- 	if (status & XM_IS_TXF_UR) {
- 		xm_write32(hw, port, XM_MODE, XM_MD_FTF);
- 		++skge->net_stats.tx_fifo_errors;
- 	}
-+
- 	if (status & XM_IS_RXF_OV) {
- 		xm_write32(hw, port, XM_MODE, XM_MD_FRF);
- 		++skge->net_stats.rx_fifo_errors;
-@@ -1750,11 +1757,12 @@ static void genesis_link_up(struct skge_
  	}
  
- 	xm_write32(hw, port, XM_MODE, mode);
--	msk = XM_DEF_MSK;
--	if (hw->phy_type != SK_PHY_XMAC)
--		msk |= XM_IS_INP_ASS;	/* disable GP0 interrupt bit */
- 
-+	/* Turn on detection of Tx underrun, Rx overrun */
-+	msk = xm_read16(hw, port, XM_IMSK);
-+	msk &= ~(XM_IS_RXF_OV | XM_IS_TXF_UR);
- 	xm_write16(hw, port, XM_IMSK, msk);
-+
- 	xm_read16(hw, port, XM_ISRC);
- 
- 	/* get MMU Command Reg. */
-@@ -2185,7 +2193,7 @@ static void yukon_mac_intr(struct skge_h
- 	u8 status = skge_read8(hw, SK_REG(port, GMAC_IRQ_SRC));
- 
- 	if (netif_msg_intr(skge))
--		printk(KERN_DEBUG PFX "%s: mac interrupt status 0x%x\n",
-+		printk(KERN_DEBUG PFX "%s: yukon mac interrupt status 0x%x\n",
- 		       dev->name, status);
- 
- 	if (status & GM_IS_RX_FF_OR) {
---- a/drivers/net/skge.h
-+++ b/drivers/net/skge.h
-@@ -2193,11 +2193,9 @@ enum {
- 	XM_IS_TXF_UR	= 1<<2,	/* Bit  2:	Transmit FIFO Underrun */
- 	XM_IS_TX_COMP	= 1<<1,	/* Bit  1:	Frame Tx Complete */
- 	XM_IS_RX_COMP	= 1<<0,	/* Bit  0:	Frame Rx Complete */
--};
--
--#define XM_DEF_MSK	(~(XM_IS_INP_ASS | XM_IS_LIPA_RC | \
--			   XM_IS_RXF_OV | XM_IS_TXF_UR))
- 
-+	XM_IMSK_DISABLE	= 0xffff,
-+};
- 
- /*	XM_HW_CFG	16 bit r/w	Hardware Config Register */
- enum {
 
 -- 
