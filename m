@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765540AbXKOR7G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762691AbXKOSDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765540AbXKOR7G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 12:59:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764371AbXKOR6v
+	id S1762691AbXKOSDS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 13:03:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbXKOSDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 12:58:51 -0500
-Received: from mx2.suse.de ([195.135.220.15]:33703 "EHLO mx2.suse.de"
+	Thu, 15 Nov 2007 13:03:07 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:58728 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764195AbXKOR6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 12:58:49 -0500
-Date: Thu, 15 Nov 2007 09:58:10 -0800
-From: Greg KH <gregkh@suse.de>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Dave Young <hidave.darkstar@gmail.com>, Greg KH <greg@kroah.com>
-Subject: Re: [patch 04/13] param_sysfs_builtin memchr argument fix
-Message-ID: <20071115175810.GC24531@suse.de>
-References: <20071115042610.731859958@mini.kroah.org> <20071115060927.GE7602@kroah.com> <473C6FCF.6010501@redhat.com>
-MIME-Version: 1.0
+	id S1755241AbXKOSDG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 13:03:06 -0500
+Date: Thu, 15 Nov 2007 19:04:36 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] x86: revert X86_HT semantics change
+Message-ID: <20071115180436.GA23517@uranus.ravnborg.org>
+References: <20071115161703.GR4250@stusta.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <473C6FCF.6010501@redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20071115161703.GR4250@stusta.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 15, 2007 at 11:11:59AM -0500, Chuck Ebbert wrote:
-> On 11/15/2007 01:09 AM, Greg KH wrote:
-> > -stable review patch.  If anyone has any objections, please let us know.
-> > 
-> > ------------------
-> > From: Dave Young <hidave.darkstar@gmail.com>
-> > 
-> > patch faf8c714f4508207a9c81cc94dafc76ed6680b44 in mainline.
-> > 
-> > If memchr argument is longer than strlen(kp->name), there will be some
-> > weird result.
-> > 
-> > It will casuse duplicate filenames in sysfs for the "nousb".  kernel
-> > warning messages are as bellow:
-> > 
+On Thu, Nov 15, 2007 at 05:17:03PM +0100, Adrian Bunk wrote:
+> The x86 unification resulted in CONFIG_X86_HT no longer being
+> set if (X86_32 && MK8).
+Yup - my bad. I wrongly assumed MK8 was an X86_64 thing.
+
+Thanks for fixing this.
 > 
-> Needs an additional fix:
+> After grep'ing through the tree I think the problem is that different 
+> places have different assumptions about the semantics of CONFIG_X86_HT,
+> either:
+> - hyperthreading or
+> - multicore
+> and the SCHED_SMT and SCHED_MC dependencies are just one of the 
+> symptoms.
 > 
-> Commit:     22800a2830ec07e7cc5c837999890ac47cc7f5de
-> fix param_sysfs_builtin name length check
+> This should be sorted out properly, but until then we should keep the 
+> 2.6.23 status quo.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
 
-That just went in yesterday, right?  If so, it will have to wait until
-the next -stable review cycle, unless it's totally broken without that
-change.
+I assume Thomas & Co will forward the patch.
 
-Is it?
-
-thanks,
-
-greg k-h
+	Sam
