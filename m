@@ -1,84 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759954AbXKOM5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758293AbXKONFx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759954AbXKOM5U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 07:57:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbXKOM5D
+	id S1758293AbXKONFx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 08:05:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbXKONFm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 07:57:03 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41230 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751039AbXKOM5B (ORCPT
+	Thu, 15 Nov 2007 08:05:42 -0500
+Received: from lazybastard.de ([212.112.238.170]:46384 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750806AbXKONFl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 07:57:01 -0500
-Date: Thu, 15 Nov 2007 21:55:34 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: EIP is at device_shutdown+0x32/0x60
-Cc: Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>
-In-Reply-To: <20071115014446.f943d835.akpm@linux-foundation.org>
-References: <20071115091158.GB6216@localhost.sw.ru> <20071115014446.f943d835.akpm@linux-foundation.org>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20071115213345.B3C1.Y-GOTO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.27 [ja]
+	Thu, 15 Nov 2007 08:05:41 -0500
+Date: Thu, 15 Nov 2007 14:00:20 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Bron Gondwana <brong@fastmail.fm>, David Miller <davem@davemloft.net>,
+       rmk+lkml@arm.linux.org.uk, alsa-devel@alsa-project.org,
+       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org, protasnb@gmail.com,
+       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz, akpm@linux-foundation.org,
+       Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>
+Subject: Re: [alsa-devel] [BUG] New Kernel Bugs
+Message-ID: <20071115130019.GB10165@lazybastard.org>
+References: <20071113143201.9441c940.akpm@linux-foundation.org> <20071113.175551.131375600.davem@davemloft.net> <20071114095507.GA32595@flint.arm.linux.org.uk> <20071114.020706.219917088.davem@davemloft.net> <473AE010.4090806@keyaccess.nl> <20071115041613.GC15302@brong.net> <473BE046.8070804@keyaccess.nl> <20071115120232.GB8297@brong.net> <473C3B0B.30206@keyaccess.nl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <473C3B0B.30206@keyaccess.nl>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 15 Nov 2007 12:11:58 +0300 Alexey Dobriyan <adobriyan@sw.ru> wrote:
+On Thu, 15 November 2007 13:26:51 +0100, Rene Herman wrote:
 > 
-> > Three boxes rarely oops during reboot or poweroff with 2.6.24-rc2-mm1
-> > (1) and during 2.6.24 cycle (2):
-> > 
-> > 	kernel_restart
-> > 	sys_reboot
-> > 	[garbage]
-> > Code: 8b 88 a8 00 00 00 85 c9 74 04 89
-> > EIP is at device_shutdown+0x32/0x60
-> 
-> Yes, all my test boxes did that - it's what I referred to in the releaee
-> notes.  Greg is pondering the problem - seem he's the only person who
-> cannot reproduce it ;)
+> Can you please just shelve this crap? You have a way of knowing that "ALSA 
+> will accept you" and that is knowing or assuming that the ALSA project 
+> doesn't consist of drooling retards.
 
-Fortunately, my ia64 box reproduces this oops "every time". 
-So, I could chase it.
+Well, my experience with moderation has been that moderated mails are
+stuck in some queue for weeks.  Two seperate lists, neither of them was
+alsa.  If also is doing a better job, great.  But it still has to live
+with the general reputation of non-subscriber moderation.
 
-device_shutdown() function in drivers/base/power/shutdown.c
-is followings.
------------
-/**
- * device_shutdown - call ->shutdown() on each device to shutdown.
- */
-void device_shutdown(void)
-{
-        struct device * dev, *devn;
+> When a project list goes to the difficulty of moderating non-subscribers it 
+> has made the explicit choice to _not_ become subscriber only. Then refusing 
+> valid non-subscribers after all makes no sense whatsoever. I'm sorry you 
+> got your feelings hurt by that other list but it was no doubt an accident; 
+> take it up with them.
 
-        list_for_each_entry_safe_reverse(dev, devn, &devices_kset->list,
-                                kobj.entry) {
-                if (dev->bus && dev->bus->shutdown) {
-                        dev_dbg(dev, "shutdown\n");
-                        dev->bus->shutdown(dev);
-                } else if (dev->driver && dev->driver->shutdown) {
-                        dev_dbg(dev, "shutdown\n");
-                        dev->driver->shutdown(dev);
-                }
-        }
-}
---------
-When oops occured, dev->driver pointed kset_ktype's address,
-and dev->driver->shutdown was the address of bus_type_list.
-So, Oops was caused by "Illegal operation fault".
-kset_ktypes is pointed by system_kset.
+Been there, done that.  In spite of people not being drooling retards,
+the amount of time and effort they invest into either moderation or
+improving the ruleset is quite limited.  Problems persist.
 
-If my understanding is correct, this loop can't distinguish between
-struct device and struct kset, but both are connected in this list,
-right? It may be the cause of this.
+And even without mails being held hostage for weeks, every single
+moderation mail is annoying.  Like the one I'm sure to receive after
+sending this out.
 
-Bye.
+Jörn
 
 -- 
-Yasunori Goto 
-
-
+Joern's library part 5:
+http://www.faqs.org/faqs/compression-faq/part2/section-9.html
