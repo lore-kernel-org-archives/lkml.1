@@ -1,52 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764630AbXKOMgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758540AbXKOMk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764630AbXKOMgp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 07:36:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757024AbXKOMgi
+	id S1758540AbXKOMk3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 07:40:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755701AbXKOMkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 07:36:38 -0500
-Received: from ozlabs.org ([203.10.76.45]:35669 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756297AbXKOMgh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 07:36:37 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH] ata_sg_setup_one vs ata_sg_setup?
-Date: Thu, 15 Nov 2007 23:36:34 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
-References: <200711141540.58658.rusty@rustcorp.com.au> <473BC620.9020204@gmail.com>
-In-Reply-To: <473BC620.9020204@gmail.com>
+	Thu, 15 Nov 2007 07:40:21 -0500
+Received: from host86-138-52-41.range86-138.btcentralplus.com ([86.138.52.41]:50282
+	"EHLO oak.selfip.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753271AbXKOMkU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 07:40:20 -0500
+X-Greylist: delayed 1295 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Nov 2007 07:40:20 EST
+Message-ID: <473C3900.8010508@oak.selfip.net>
+Date: Thu, 15 Nov 2007 12:18:08 +0000
+From: Dave Haywood <tla@oak.selfip.net>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>, David Miller <davem@davemloft.net>,
+       mpm@selenic.com, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [bug] SLOB crash, 2.6.24-rc2
+References: <20071114225335.GV19691@waste.org> <20071114.154143.112110604.davem@davemloft.net> <20071115104331.GA11390@elte.hu> <200711152157.59409.nickpiggin@yahoo.com.au> <20071115112820.GA18228@elte.hu>
+In-Reply-To: <20071115112820.GA18228@elte.hu>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711152336.34708.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 November 2007 15:08:00 Tejun Heo wrote:
-> Rusty Russell wrote:
-> > Hi Jeff,
-> >
-> >     Was looking through libata, and it seems to me that ata_sg_setup is a
-> > superset of ata_sg_setup_one.  Am I missing something?  Seems like it
-> > could be simplified.
-> >
-> > My machine never seems to do an ata_sg_setup_one, so this patch isn't
-> > really tested...
+Ingo Molnar wrote:
+> * Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 >
-> I have about the same patch queued here which also kills
-> ata_sg_init_one() completely and replaces
-> ATA_QCFLAG_SG/ATA_QCFLAG_SINGLE with ATA_QCFLAG_DMAMAP (now a single
-> flag).  I'll compare your version and mine and see if mine is missing
-> something.
+>   
+>> On Thursday 15 November 2007 21:43, Ingo Molnar wrote:
+>>     
+>>> * David Miller <davem@davemloft.net> wrote:
+>>>       
+>>>> From: Matt Mackall <mpm@selenic.com>
+>>>> Date: Wed, 14 Nov 2007 17:37:13 -0600
+>>>>
+>>>>         
+>>>>> No, the usual strategy for debugging problems -outside- SLOB is to
+>>>>> switch to another allocator with more extensive debugging facilities.
+>>>>>           
+>>>> Ok, so the thing we still can do is do a dump_stack() at the list
+>>>> debugging assertion trigger points.
+>>>>         
+>>> ok, i'll first try to trigger it again.
+>>>       
+>> I had implemented SLOB in userspace, so I resynched and think I found 
+>> your problem. Sorry for the attachment format -- this mailer isn't the 
+>> best. I'm really computer illiterate when it comes to userspace...
+>>     
 >
-> Thanks.
+> thx, i'll try your fix in a minute.
+>
+>   
+>> Anyway, I'm really happy to see you're testing and using SLOB upstream
+>> :) Is there any particular reason that you're using it?
+>>     
+>
+> i sometimes test SLOB for -rt, but this time it's the result of my 
+> "automated random QA" effort, as part of arch/x86 maintainance/QA.
+>
+> the main trick is to build and booting random "make randconfig" 
+> bzImages. That finds build bugs and a good deal of boot hang and crash 
+> bugs as well. (it also found a compiler bug already) I can build and 
+> boot about 1000 random kernels in 24 hours, and it's all fully 
+> automated. I usually run it overnight - when a kernel does not come up 
+> due to a bootup hang or crash (or the kernel log signals any exception 
+> condition) then the script stops and i can fix it in the morning.
+>
+> The first step towards this was to get allyesconfig bzImage kernels to 
+> build and boot fine. That effort took months (we had many problems in 
+> this area) - i think you saw bugreports and fixes from me about that on 
+> lkml.
+>
+> Once that worked reasonably well i made a small Kconfig patch that 
+> forcibly selects a "minimum set" of drivers and kernel subsystems that 
+> are needed to boot up a testsystem. Once a "make allnoconfig" and a 
+> "make allyesconfig" bzImage kernel boots up fine on the testbox all 
+> randconfig configs "inbetween" are supposed to build and boot fine as 
+> well.
+>
+> I also have a patch that adds all the x86 boot options like nosmp, 
+> maxcpus=1, nohz=off, hpet=disable to be selectable as .config options - 
+> so those boot options are randomized as well.
+>
+> I also have a small patch that disables half a dozen drivers/features 
+> that are not expected to work out of box in a bzImage kernel. (such as 
+> ISA drivers that assume the presence of hardware, or root filesystem 
+> features such as NFSROOT)
+>
+> the resulting make randconfig kernel still has 99% of the degrees of 
+> freedom that a stock make randconfig kernel has, so by all practical 
+> purposes it's a fully random kernel - it just happens to boot on my 
+> testsystem all the time.
+>
+> A successful bootup means the test system is able to boot up into a 
+> stock Fedora 8 userspace and is able to bring up its network interfaces 
+> and ssh out (automatically) to the build box to signal the completion of 
+> a successful test cycle. The logs are also analyzed for lockdep 
+> assertions (if lockdep is enabled - which it is in about 20% of the 
+> randconfig kernels) and other kernel bugs.
+>
+> (just in case you were wondering about one of the reasons why the 
+> arch/x86 unification merge went so smoothly, with nary a regression ;-) 
+> Thomas is doing other types of automated QA of the x86 queue as well.)
+>
+> this method found the SG-list corruption bugs the following night after 
+> Linus committed Jen's SG-list changes, so it's pretty good at finding 
+> regressions as early as possible.
+>
+> 	Ingo
+>   
 
-Great, thanks for the feedback.  I'd guess mine is more likely missing 
-something than yours though...
+  How complete is the QA testing?  I was reading this interesting thread
+and it occurred to me that this sounds like a useful distributed
+computing application.  ie a central server with all valid Kconfig
+combinations (how many are there?) for a particular release (-rc or
+otherwise) across all architectures.  These are allocated to clients on
+request to be built / booted etc.  Any errors are fed back to the
+central server.  I guess this would be a useful resource for
+developers.  More importantly (and I don't know if this is the case
+already!) a new Linux release (2.6.x) could be "certified" with some
+level of testing on known hardware / architectures.
 
-Cheers,
-Rusty.
+  tbh, I feel sorry for Ingo's machine compiling 1000 random kernels in
+24h!  I'm surprised it hasn't called the Samaritans...
+
+Dave.
+
