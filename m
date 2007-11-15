@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764407AbXKOGXI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765287AbXKOGX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764407AbXKOGXI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:23:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760085AbXKOGQx
+	id S1765287AbXKOGX2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:23:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762811AbXKOGQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:16:53 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:51129 "EHLO
+	Thu, 15 Nov 2007 01:16:57 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:51149 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762788AbXKOGQv (ORCPT
+	with ESMTP id S1760418AbXKOGQy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:16:51 -0500
-Date: Wed, 14 Nov 2007 22:15:22 -0800
+	Thu, 15 Nov 2007 01:16:54 -0500
+Date: Wed, 14 Nov 2007 22:15:25 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,13 +21,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [patch 17/19] x86 setup: sizeof() is unsigned, unbreak comparisons
-Message-ID: <20071115061522.GR7980@kroah.com>
+       Dave Johnson <djohnson@sw.starentnetworks.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch 18/19] x86: fix TSC clock source calibration error
+Message-ID: <20071115061525.GS7980@kroah.com>
 References: <20071115054813.977066477@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-setup-sizeof-is-unsigned-unbreak-comparisons.patch"
+Content-Disposition: inline; filename="x86-fix-tsc-clock-source-calibration-error.patch"
 In-Reply-To: <20071115061415.GA7980@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -37,72 +38,103 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: H. Peter Anvin <hpa@zytor.com>
+From: Dave Johnson <djohnson@sw.starentnetworks.com>
 
-patch e6e1ace9904b72478f0c5a5aa7bd174cb6f62561 in mainline.
+patch edaf420fdc122e7a42326fe39274c8b8c9b19d41 in mainline.
 
+I ran into this problem on a system that was unable to obtain NTP sync
+because the clock was running very slow (over 10000ppm slow). ntpd had
+declared all of its peers 'reject' with 'peer_dist' reason.
 
-We use signed values for limit checking since the values can go
-negative under certain circumstances.  However, sizeof() is unsigned
-and forces the comparison to be unsigned, so move the comparison into
-the heap_free() macros so we can ensure it is a signed comparison.
+On investigation, the tsc_khz variable was significantly incorrect
+causing xtime to run slow.  After a reboot tsc_khz was correct so I
+did a reboot test to see how often the problem occurred:
 
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Test was done on a 2000 Mhz Xeon system.  Of 689 reboots, 8 of them
+had unacceptable tsc_khz values (>500ppm):
+
+ range of tsc_khz  # of boots  % of boots
+ ----------------  ----------  ----------
+        < 1999750           0      0.000%
+1999750 - 1999800          21      3.048%
+1999800 - 1999850         166     24.128%
+1999850 - 1999900         241     35.029%
+1999900 - 1999950         211     30.669%
+1999950 - 2000000          42      6.105%
+2000000 - 2000000           0      0.000%
+2000050 - 2000100           0      0.000%
+                   [...]
+2000100 - 2015000           1      0.145%  << BAD
+2015000 - 2030000           6      0.872%  << BAD
+2030000 - 2045000           1      0.145%  << BAD
+2045000 <                   0      0.000%
+
+The worst boot was 2032.577 Mhz, over 1.5% off!
+
+It appears that on rare occasions, mach_countup() is taking longer to
+complete than necessary.
+
+I suspect that this is caused by the CPU taking a periodic SMI
+interrupt right at the end of the 30ms calibration loop.  This would
+cause the loop to delay while the SMI BIOS hander runs. The resulting
+TSC value is beyond what it actually should be resulting in a higher
+tsc_khz.
+
+The below patch makes native_calculate_cpu_khz() take the best
+(shortest duration, lowest khz) run of it's 3 calibration loops.  If a
+SMI goes off causing a bad result (long duration, higher khz) it will
+be discarded.
+
+With the patch applied, 300 boots of the same system produce good
+results:
+
+ range of tsc_khz  # of boots  % of boots
+ ----------------  ----------  ----------
+        < 1999750           0      0.000%
+1999750 - 1999800          30     10.000%
+1999800 - 1999850         166     55.333%
+1999850 - 1999900          89     29.667%
+1999900 - 1999950          15      5.000%
+1999950 <                   0      0.000%
+
+Problem was found and tested against 2.6.18.  Patch is against 2.6.22.
+
+Signed-off-by: Dave Johnson <djohnson@sw.starentnetworks.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/i386/boot/boot.h       |    4 ++--
- arch/i386/boot/video-bios.c |    2 +-
- arch/i386/boot/video-vesa.c |    2 +-
- arch/i386/boot/video.c      |    2 +-
- 4 files changed, 5 insertions(+), 5 deletions(-)
+ arch/i386/kernel/tsc.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
---- a/arch/i386/boot/boot.h
-+++ b/arch/i386/boot/boot.h
-@@ -216,9 +216,9 @@ static inline char *__get_heap(size_t s,
- #define GET_HEAP(type, n) \
- 	((type *)__get_heap(sizeof(type),__alignof__(type),(n)))
- 
--static inline int heap_free(void)
-+static inline bool heap_free(size_t n)
+--- a/arch/i386/kernel/tsc.c
++++ b/arch/i386/kernel/tsc.c
+@@ -137,7 +137,7 @@ unsigned long native_calculate_cpu_khz(v
  {
--	return heap_end-HEAP;
-+	return (int)(heap_end-HEAP) >= (int)n;
- }
+ 	unsigned long long start, end;
+ 	unsigned long count;
+-	u64 delta64;
++	u64 delta64 = (u64)ULLONG_MAX;
+ 	int i;
+ 	unsigned long flags;
  
- /* copy.S */
---- a/arch/i386/boot/video-bios.c
-+++ b/arch/i386/boot/video-bios.c
-@@ -79,7 +79,7 @@ static int bios_probe(void)
- 	video_bios.modes = GET_HEAP(struct mode_info, 0);
+@@ -149,6 +149,7 @@ unsigned long native_calculate_cpu_khz(v
+ 		rdtscll(start);
+ 		mach_countup(&count);
+ 		rdtscll(end);
++		delta64 = min(delta64, (end - start));
+ 	}
+ 	/*
+ 	 * Error: ECTCNEVERSET
+@@ -159,8 +160,6 @@ unsigned long native_calculate_cpu_khz(v
+ 	if (count <= 1)
+ 		goto err;
  
- 	for (mode = 0x14; mode <= 0x7f; mode++) {
--		if (heap_free() < sizeof(struct mode_info))
-+		if (!heap_free(sizeof(struct mode_info)))
- 			break;
- 
- 		if (mode_defined(VIDEO_FIRST_BIOS+mode))
---- a/arch/i386/boot/video-vesa.c
-+++ b/arch/i386/boot/video-vesa.c
-@@ -57,7 +57,7 @@ static int vesa_probe(void)
- 	while ((mode = rdfs16(mode_ptr)) != 0xffff) {
- 		mode_ptr += 2;
- 
--		if (heap_free() < sizeof(struct mode_info))
-+		if (!heap_free(sizeof(struct mode_info)))
- 			break;	/* Heap full, can't save mode info */
- 
- 		if (mode & ~0x1ff)
---- a/arch/i386/boot/video.c
-+++ b/arch/i386/boot/video.c
-@@ -371,7 +371,7 @@ static void save_screen(void)
- 	saved.curx = boot_params.screen_info.orig_x;
- 	saved.cury = boot_params.screen_info.orig_y;
- 
--	if (heap_free() < saved.x*saved.y*sizeof(u16)+512)
-+	if (!heap_free(saved.x*saved.y*sizeof(u16)+512))
- 		return;		/* Not enough heap to save the screen */
- 
- 	saved.data = GET_HEAP(u16, saved.x*saved.y);
+-	delta64 = end - start;
+-
+ 	/* cpu freq too fast: */
+ 	if (delta64 > (1ULL<<32))
+ 		goto err;
 
 -- 
