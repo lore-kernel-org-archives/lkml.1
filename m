@@ -1,67 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933026AbXKOHTG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762788AbXKOH1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933026AbXKOHTG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 02:19:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbXKOHRY
+	id S1762788AbXKOH1Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 02:27:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbXKOH1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 02:17:24 -0500
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:22065 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752381AbXKOHRW (ORCPT
+	Thu, 15 Nov 2007 02:27:09 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:37216 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752507AbXKOH1H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 02:17:22 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=jPKPJqI0/rNl1n4LzzdCAbbvFGZuto11xjTtZByeHSMzHdCVWs1qc5LH5lsAQA0VvTt2D+RSsXlJ0vsxl40isYdyRnLCBzwJIletW5ZNAMMamHijMqq9SSaBvwq9jFkkaEFcpApIq0qOyVFt+n7+Lq+uk4WC5aj6sz3mPdXMzhA=  ;
-X-YMail-OSG: zVj9jq0VM1nFBidPuK.Q2Qx6xdT.mBDLF6QHijQeYeYRDeygaBcYJJW5q0OC9A3_EhNg4dw7gw--
-From: David Brownell <david-b@pacbell.net>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 2.6.24-rc2 1/3] generic gpio -- gpio_chip support
-Date: Wed, 14 Nov 2007 23:17:13 -0800
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Florian Fainelli <florian.fainelli@telecomint.eu>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>, Ingo Molnar <mingo@elte.hu>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-References: <200711091136.20051.david-b@pacbell.net> <200711121726.39263.david-b@pacbell.net> <alpine.LFD.0.9999.0711141228210.3265@localhost.localdomain>
-In-Reply-To: <alpine.LFD.0.9999.0711141228210.3265@localhost.localdomain>
+	Thu, 15 Nov 2007 02:27:07 -0500
+Message-ID: <473BF4C5.4080909@zytor.com>
+Date: Wed, 14 Nov 2007 23:27:01 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200711142317.14230.david-b@pacbell.net>
+To: Greg KH <gregkh@suse.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 16/19] x86 setup: handle boot loaders which set up the
+ stack incorrectly
+References: <20071115054813.977066477@mini.kroah.org> <20071115061513.GQ7980@kroah.com>
+In-Reply-To: <20071115061513.GQ7980@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 November 2007, Thomas Gleixner wrote:
-> struct gpio_desc {
->        struct gpio_chip *chip;
->        int pinoffset;
-> };
+Greg KH wrote:
+> -stable review patch.  If anyone has any objections, please let us know.
+> 
+> ------------------
+> From: H. Peter Anvin <hpa@zytor.com>
+> 
+> patch 6b6815c6d5d1dc209701d1661a7a0e09a295db2f in mainline.
+> 
+> Apparently some specific versions of LILO enter the kernel with a
+> stack pointer that doesn't match the rest of the segments.  Make our
+> best attempt at untangling the resulting mess.
+> 
+> Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-Eric Miao has a different notion of "gpio_desc" more analagous to
-the "irq_desc", so I'll not use that name for such a structure.
+Just FYI:
 
-Let me call yours a "struct gpio_pin" instead -- purely for some
-discussion here.
+It has been reported that while this patch fixes old LILO, and possibly 
+some other boot loaders (unknown), it has also broken older versions of 
+SYSLINUX: they still boot, but the command line is truncated (exactly 
+how much depends on the BIOS, but typical values are around 130 bytes.)
 
+This is definitely traceable to a bug in SYSLINUX that was already fixed 
+in release 3.50 (the current version of SYSLINUX is 3.52).
 
-There's been some desire for a "gpio_pin" struct for entirely
-different reasons ... as the identifiers passed into a slightly
-different type of GPIO programming interface.  So for example
+I have chosen to leave the patch in mainline, rather than trying yet 
+another recipe and hope it doesn't break on some other random 
+combination of bootloaders, since:
 
-  static inline void gpiopin_set_value(struct gpio_pin *p, int v)
-  {
-	p->chip->set(p->chip, p->pinoffset, v);
-  }
+a) SYSLINUX is generally easily updated, compared to other bootloaders;
+b) The failure mode is less severe (it still boots.)
 
-One reason to be interested in gpio_chip is that it it would
-easily support interoperation between traditional GPIO ID schemes
-(numbered to match the SOC at the heart of a given board) and
-more dynamic ones that might be needed to use curiousities like
-a set of USB-to-GPIO adapters.
+... however, you may choose to call differently.
 
-- Dave
+	-hpa
