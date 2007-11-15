@@ -1,81 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760799AbXKOChr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759356AbXKOCvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760799AbXKOChr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 21:37:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755813AbXKOChj
+	id S1759356AbXKOCvW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 21:51:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756412AbXKOCvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 21:37:39 -0500
-Received: from moutng.kundenserver.de ([212.227.126.177]:61598 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754667AbXKOChi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 21:37:38 -0500
-Subject: Re: 2.6.24-rc2-mm1
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Jiri Kosina <jikos@jikos.cz>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <a8e1da0711141701xc66109dv93ad2c3d2b76ebec@mail.gmail.com>
-References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
-	 <a8e1da0711132218h9d944d0p3c22ac313ee667a9@mail.gmail.com>
-	 <20071113223802.2ace1a61.akpm@linux-foundation.org>
-	 <a8e1da0711132247jd440f8dgc9ac0442e90f2c34@mail.gmail.com>
-	 <20071114004129.783fb98b.akpm@linux-foundation.org>
-	 <a8e1da0711140136i1e441371j306e7b2888de104e@mail.gmail.com>
-	 <20071114165906.GB13889@kroah.com> <1195065493.2168.31.camel@lov.site>
-	 <Pine.LNX.4.64.0711142018390.15844@twin.jikos.cz>
-	 <1195075663.2609.2.camel@lov.site>
-	 <a8e1da0711141701xc66109dv93ad2c3d2b76ebec@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 15 Nov 2007 03:38:13 +0100
-Message-Id: <1195094293.2731.14.camel@lov.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Wed, 14 Nov 2007 21:51:06 -0500
+Received: from cantor.suse.de ([195.135.220.2]:56013 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755973AbXKOCvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 21:51:04 -0500
+From: Neil Brown <neilb@suse.de>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Date: Thu, 15 Nov 2007 13:50:43 +1100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/1/zpUm31kT988Cs78nSUq9OjDKaYFYOlKgH3
- 4DcUBQyjnAxf/SiCdEaKfwAuRRc3jBQUH9LC29bfBomKzBaD7r
- P63AkmfeiHWi+oYu5HP9lmecYpoYd6m
+Message-ID: <18235.46083.293604.560507@notabene.brown>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, protasnb@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz, bugme-daemon@bugzilla.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+In-Reply-To: message from J. Bruce Fields on Wednesday November 14
+References: <20071113031553.3c7b5c16.akpm@linux-foundation.org>
+	<20071113.033946.114918709.davem@davemloft.net>
+	<20071113034916.2556edd7.akpm@linux-foundation.org>
+	<20071113.035824.40509981.davem@davemloft.net>
+	<20071113041259.79c9a8c5.akpm@linux-foundation.org>
+	<20071113134029.GA30978@elte.hu>
+	<20071113085514.3414aa52.rdunlap@xenotime.net>
+	<20071114140847.GA11489@elte.hu>
+	<20071114093820.ff3ad8f9.rdunlap@xenotime.net>
+	<20071114182351.GI14254@fieldses.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-11-15 at 09:01 +0800, Dave Young wrote:
-> On Nov 15, 2007 5:27 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
-> > On Wed, 2007-11-14 at 20:19 +0100, Jiri Kosina wrote:
-> > > On Wed, 14 Nov 2007, Kay Sievers wrote:
-> > >
-> > > > Could it be an init-order problem, where something tries to use the
-> > > > block subsystem? Before it is initialized with:
-> > > >   block/genhd.c :: subsys_initcall(genhd_device_init);
-> > > > If that's the case, we have an old bug that nobody noticed with static
-> > > > structures, which are zeroed that time, but definitely not properly
-> > > > initialized. I'll try to build loop non-modular now, and see if that
-> > > > makes the bug appear here.
-> >
-> > > my .config with which I reproduc this on 2.6.24-rc2-mm1 reliably can be
-> > > obtained from http://www.jikos.cz/jikos/junk/.config
-> >
-> > Hmm, that config doesn't do anything here, and if I make it boot, it
-> > does not show the bug.
-> >
-> > Could you possibly enable kobject debugging and see if that exposes
-> > something, maybe something goes wrong with the kset refcount and it gets
-> > released while in use.
-> >
-> Hi,
-> I would do that.
+On Wednesday November 14, bfields@fieldses.org wrote:
+> On Wed, Nov 14, 2007 at 09:38:20AM -0800, Randy Dunlap wrote:
+> > On Wed, 14 Nov 2007 15:08:47 +0100 Ingo Molnar wrote:
+> > > so please stop this "too busy and too noisy" nonsense already. It was 
+> > > nonsense 10 years ago and it's nonsense today. In 10 years the kernel 
+> > > grew from a 1 million lines codebase to an 8 million lines codebase, so 
+> > > what? Deal with it and be intelligent about filtering your information 
+> > > influx instead of imposing a hard pre-filtering criteria that restricts 
+> > > intelligent processing of information.
+> > 
+> > So you have a preferred method of handling email.  Please don't
+> > force it on the rest of us.
+> 
+> I'd be curious for any pointers on tools, actually.  I "read" (ok, skim)
+> lkml but still overlook relevant bug reports occasionally.
+> (Fortunately, between Trond and Andrew and others forwarding things it's
+> not actually a problem, but I'm still curious).
 
-That would be great.
+Virtual Folders.
 
-> BTW, The bug report as EIP  at __list_add with CONFIG_DEBUG_LIST=y
+I use VM mode in EMACS, but I believe some other mail readers have the
+same functionality.
+I have a virtual folder called "nfs" which shows me all mail in my
+inbox which has the string 'nfs' or 'lockd' in a To, Cc, or Subject
+field.  When I visit that folder, I see all mail about nfs, whether it
+was sent to me personally, or to a relevant list, or to lkml.
 
-Yeah, that hints that the kset, which contains the list, is not
-allocated at the time it is used, or it is already released (kfree)
-again by some buggy logic.
+Admittedly if someone doesn't bother to choose a meaningful Subject,
+then I might miss that.  I think this mostly happens when Andrew sends
+a "-mm" announcement, asked people to change the subject line when
+following up, and someone follows up without changing the subject line
+and say "NFS doesn't work any more".
 
-All this could not happen before, as the kset was statically in memory.
-It may be an old bug, that just never crashed anything. We already fixed
-a bunch of similar things, that showed up while doing this patch set.
+I have another virtual folder which matches "md" and "raid" and
+"mdadm" in any header (so when the people from coraid.com talk about
+ATA over Ethernet, that gets badly filed, but it is a small cost).
 
-Thanks,
-Kay
+Then I have the "bkernel" (boring kernel) folder for all mail from
+lkml that doesn't mention nfs or raid or md, and isn't from or to
+me.  That folder I skim every week or so and just read the juicy
+debates and look for interesting tidbits from interesting people -
+then delete the whole folder, mostly unread.
 
+I don't think I could cope with mail without virtual folders.
+
+NeilBrown
