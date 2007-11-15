@@ -1,118 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762000AbXKOI3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761088AbXKOIcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762000AbXKOI3h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 03:29:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756315AbXKOI32
+	id S1761088AbXKOIcw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 03:32:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756410AbXKOIco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 03:29:28 -0500
-Received: from madara.hpl.hp.com ([192.6.19.124]:62438 "EHLO madara.hpl.hp.com"
+	Thu, 15 Nov 2007 03:32:44 -0500
+Received: from smtp25.orange.fr ([193.252.22.21]:29359 "EHLO smtp25.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755578AbXKOI31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 03:29:27 -0500
-Date: Thu, 15 Nov 2007 00:29:03 -0800
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: mucci@cs.utk.edu, wcohen@redhat.com, robert.richter@amd.com,
-       linux-kernel@vger.kernel.org, andi@firstfloor.org,
-       Stephane Eranian <eranian@hpl.hp.com>
-Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
-Message-ID: <20071115082903.GA8603@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <18235.28062.309910.416774@cargo.ozlabs.ibm.com> <20071114.150303.13732085.davem@davemloft.net> <18235.32982.439970.359975@cargo.ozlabs.ibm.com> <20071114.152134.266510129.davem@davemloft.net> <18235.40110.831730.847548@cargo.ozlabs.ibm.com>
+	id S1756254AbXKOIcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 03:32:43 -0500
+X-ME-UUID: 20071115083240617.96C371C00086@mwinf2542.orange.fr
+Date: Thu, 15 Nov 2007 09:27:46 +0100
+From: Philippe Elie <phil.el@wanadoo.fr>
+To: Russell Leighton <russ@elegant-software.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: OT: Does Linux have any "Perfect Code"
+Message-ID: <20071115082746.GA2885@zaniah>
+References: <c9d133bdb3481fbc01a572d948049f5e@elegant-software.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <18235.40110.831730.847548@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+In-Reply-To: <c9d133bdb3481fbc01a572d948049f5e@elegant-software.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 14 Nov 2007 at 20:21 +0000, Russell Leighton wrote:
 
-On Thu, Nov 15, 2007 at 12:11:10PM +1100, Paul Mackerras wrote:
-> David Miller writes:
 > 
-> > From: Paul Mackerras <paulus@samba.org>
-> > Date: Thu, 15 Nov 2007 10:12:22 +1100
-> > 
-> > > *I* never had a problem with a few extra system calls.  I don't
-> > >  understand why you (apparently) do.
-> > 
-> > We're stuck with them forever, they are hard to version and extend
-> > cleanly.
-> > 
-> > Those are my main objections.
+> Bryan Cantrill of Sun (ala DTrace) has a notion of perfect code:
 > 
-> The first is valid (for suitable values of "forever") but applies to
-> any user/kernel interface, not just system calls.
+> 	http://blogs.sun.com/bmc/entry/on_i_dreaming_in_code
 > 
-Agreed.
-
-> As for the second (hard to version) I don't see why it applies to
-> syscalls specifically more than to other interfaces.  It's just a
-> matter of designing it correctly in the first place.  For example, the
-> sys_swapcontext system call we have on powerpc takes an argument which
-> is the size of the ucontext_t that userland is using, which allows us
-> to extend it in future if necessary.  (Note that I'm not saying that
-> the current perfmon2 interfaces are well-designed in this respect.)
+> He also has some examples (from bottom comment section of above):
 > 
-> The third (hard to extend cleanly) is a good point, and is a valid
-> criticism of the current set of perfmon2 system calls, I think.
-> However, the goal of being able to extend the interface tends to be in
-> opposition to the goal of having strong typing of the interface.
-> Things like a multiplexed syscall or an ioctl are much easier to
-> extend but that is at the expense of losing strong typing.  Something
-> like my transaction() (or your weird kind of read() :) also provides
-> extensibility but loses type safety to some degree.
+> >
+> >
+> >Can you list a small number of examples of "software perfection"?
+> >
+> >Posted by Russell Leighton on November 14, 2007 at 04:02 AM PST #
+> >
+> >Russell,
+> >
+> >My canonical small example of perfection in Solaris would be Jeff  
+> >Bonwick's mod-by-a-billion code in hrt2ts():
+> >
+> >http://cvs.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/uts/ 
+> >common/os/timers.c#875
+> >
+> >Solaris of course has lots of bigger, more complicated examples. Now  
+> >on the one hand, one wants to refrain from pointing to thousands of  
+> >lines of code and saying that there are no bugs therein, but on the  
+> >other, there are many subsystems that have been in place and in heavy  
+> >use for years without defect or modification. At the risk of being  
+> >egocentric, the cyclic subsystem (which is executed at least 100 times  
+> >per second on every Solaris system) had its last substantial fix over  
+> >six years ago, and its last fix of any flavor over three years ago:
+> >
+> >http://cvs.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/uts/ 
+> >common/os/cyclic.c
+> >
+> >Modesty (and the lack, of course, of a proof of its correctness)  
+> >prevents me from calling the cyclic subsystem perfect -- but such as  
+> >unknown defects remain, there are damn few of them, and we can say  
+> >that they must be a result of highly usual (or at least, heretofore  
+> >unseen) circumstances.
+> >
+> >A non-Solaris example -- and one that I've been known to use as the  
+> >canonical example of the persistence of software -- is Super Mario  
+> >Kart. This is a game that was developed (to its completion) fifteen  
+> >years ago for the Super Nintendo console. Source code, to the best of  
+> >my knowledge, is not publicly available and may indeed be lost -- but  
+> >the binaries persist and (if my coworkers are any indication) remain  
+> >in active use. Given the longevity of, say, Homer's Odyssey, there is  
+> >reason to believe that Super Mario Kart will survive in perpetuity --  
+> >that thousands of years from now, twenty-somethings somewhere will be  
+> >using the software exactly as it is used today. Is this perfection?  
+> >Perhaps not -- but it also might not be discernible from perfection...
+> >
+> >Posted by Bryan Cantrill on November 14, 2007 at 07:51 AM PST #
 > 
-In the initial design there was only one perfmon syscall perfmonctl()
-and it was a multiplexing call. People objected to it and thus I split it
-up into multiple system calls. I like the strong typing but I agree that
-it is harder to extend without creating new syscalls. In the current
-state, all perfmon syscalls take a pointer to structs which have reserved
-fields for future extensions. If you specify that reserved fields must be
-zeroed, then it leaves you *some* flexibility for extending the structs.
+> Does Linux have any such examples true software perfection?
 
-Another alternative, similar to your ucontext, would be to pass the size
-of the structure. If we assume we drop the vector arguments, we could do:
+This code is far to be perfect, some part is outdated, bcopy() use instead
+of memcpy() for example. More annoying are the comment, the file is 3306
+lines while there is only 1640 line of code, nothing bad per se but looking
+some comments:
 
-	pfm_write_pmcs(fd, &pmc, sizeof(pmc));
-instead of
-	pfm_write_pmcs(fd, &pmc);
-
-Should the sizeof(pmc) need to change we could demultiplex inside the
-kernel. Another, probably cleaner, possibility is to version structures
-that are passed:
-	union pfarg_pmc {
-		int version;
-		struct {
-			int version;
-			int reg_num;
-			u64 reg_value;
-		}
-	}
-
-But that seems overkill. I think versioning could be passed when the session
-is created instead of at every call:
-
-	fd = pfm_create_session(version, &ctx, ....);
+ 		/*
+ 		 * Before we begin this operation, disable kernel preemption.
+ 		 */
+ 		kpreempt_disable();
 
 
-> Also, as Andi says, this is core CPU state that we are dealing with,
-> not some I/O device, so treating the whole of perfmon2 (or any
-> performance monitoring infrastructure) as a driver doesn't fit very
-> well, and in fact system calls are appropriate.  Just like we don't
-> try to make access to debugging facilities fit into a driver, we
-> shouldn't make performance monitoring fit into a driver either.
-> 
+uhh...
 
-Agreed 100%. This is especially true because we support per-thread
-monitoring.
+or 
+
+ 	if (cyclic->cy_pend != 0) {
+		/*
+ 		 * The pend is non-zero; ...
+
+I will never guessed that, w/o the comment :)
+
+ 		/*
+ 		 * We have both a left and a right child.  We need to compare
+ 		 * the expiration times of the children to determine which
+ 		 * expires earlier.
+ 		 */
+ 		if (cyclics[right].cy_expire < cyclics[left].cy_expire) {
+
+writing array[index] in C is already a promise than index is in
+[0-array size)
 
 -- 
--Stephane
+Phe
+
