@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932079AbXKOGXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764651AbXKOGVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932079AbXKOGXq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:23:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbXKOGRD
+	id S1764651AbXKOGVZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:21:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762671AbXKOGQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:17:03 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:51170 "EHLO
+	Thu, 15 Nov 2007 01:16:41 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:51088 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760899AbXKOGRA (ORCPT
+	with ESMTP id S1762658AbXKOGQj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:17:00 -0500
-Date: Wed, 14 Nov 2007 22:15:28 -0800
+	Thu, 15 Nov 2007 01:16:39 -0500
+Date: Wed, 14 Nov 2007 22:15:03 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,15 +21,19 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Zou Nan hai <nanhai.zou@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: [patch 19/19] revert "x86_64: allocate sparsemem memmap above 4G"
-Message-ID: <20071115061528.GT7980@kroah.com>
+       xen-devel@lists.xensource.com, virtualization@lists.osdl.org,
+       Mark Williamson <mark.williamson@cl.cam.ac.uk>,
+       Morten B?geskov <xen-users@morten.bogeskov.dk>,
+       Chris Wright <chrisw@sous-sol.org>, Andi Kleen <ak@muc.de>,
+       Keir Fraser <keir@xensource.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>
+Subject: [patch 13/19] xen: fix incorrect vcpu_register_vcpu_info hypercall
+	argument
+Message-ID: <20071115061503.GN7980@kroah.com>
 References: <20071115054813.977066477@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="revert-x86_64-allocate-sparsemem-memmap-above-4g.patch"
+Content-Disposition: inline; filename="xen-fix-register_vcpu_info.patch"
 In-Reply-To: <20071115061415.GA7980@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -39,97 +43,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: Jeremy Fitzhardinge <jeremy@goop.org>
 
-Reverted upstream by commit 6a22c57b8d2a62dea7280a6b2ac807a539ef0716
+patch e3d2697669abbe26c08dc9b95e2a71c634d096ed in mainline.
 
-Revert this commit:
+The kernel's copy of struct vcpu_register_vcpu_info was out of date,
+at best causing the hypercall to fail and the guest kernel to fall
+back to the old mechanism, or worse, causing random memory corruption.
 
-	commit 2e1c49db4c640b35df13889b86b9d62215ade4b6
-	Author: Zou Nan hai <nanhai.zou@intel.com>
-	Date:   Fri Jun 1 00:46:28 2007 -0700
-	
-	x86_64: allocate sparsemem memmap above 4G
-
-This reverts commit 2e1c49db4c640b35df13889b86b9d62215ade4b6.
-
-First off, testing in Fedora has shown it to cause boot failures,
-bisected down by Martin Ebourne, and reported by Dave Jobes.  So the
-commit will likely be reverted in the 2.6.23 stable kernels.
-
-Secondly, in the 2.6.24 model, x86-64 has now grown support for
-SPARSEMEM_VMEMMAP, which disables the relevant code anyway, so while the
-bug is not visible any more, it's become invisible due to the code just
-being irrelevant and no longer enabled on the only architecture that
-this ever affected.
-
-Reported-by: Dave Jones <davej@redhat.com>
-Tested-by: Martin Ebourne <fedora@ebourne.me.uk>
-Cc: Zou Nan hai <nanhai.zou@intel.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Acked-by: Andy Whitcroft <apw@shadowen.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Stable Kernel <stable@kernel.org>
+Cc: Morten =?utf-8?q?B=C3=B8geskov?= <xen-users@morten.bogeskov.dk>
+Cc: Mark Williamson <mark.williamson@cl.cam.ac.uk>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86_64/mm/init.c   |    6 ------
- include/linux/bootmem.h |    1 -
- mm/sparse.c             |   11 -----------
- 3 files changed, 18 deletions(-)
+ arch/i386/xen/enlighten.c    |    2 +-
+ include/xen/interface/vcpu.h |    5 +++--
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
---- a/arch/x86_64/mm/init.c
-+++ b/arch/x86_64/mm/init.c
-@@ -734,12 +734,6 @@ int in_gate_area_no_task(unsigned long a
- 	return (addr >= VSYSCALL_START) && (addr < VSYSCALL_END);
- }
+--- a/arch/i386/xen/enlighten.c
++++ b/arch/i386/xen/enlighten.c
+@@ -116,7 +116,7 @@ static void __init xen_vcpu_setup(int cp
+ 	info.mfn = virt_to_mfn(vcpup);
+ 	info.offset = offset_in_page(vcpup);
  
--void * __init alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
--{
--	return __alloc_bootmem_core(pgdat->bdata, size,
--			SMP_CACHE_BYTES, (4UL*1024*1024*1024), 0);
--}
--
- const char *arch_vma_name(struct vm_area_struct *vma)
- {
- 	if (vma->vm_mm && vma->vm_start == (long)vma->vm_mm->context.vdso)
---- a/include/linux/bootmem.h
-+++ b/include/linux/bootmem.h
-@@ -59,7 +59,6 @@ extern void *__alloc_bootmem_core(struct
- 				  unsigned long align,
- 				  unsigned long goal,
- 				  unsigned long limit);
--extern void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size);
+-	printk(KERN_DEBUG "trying to map vcpu_info %d at %p, mfn %x, offset %d\n",
++	printk(KERN_DEBUG "trying to map vcpu_info %d at %p, mfn %llx, offset %d\n",
+ 	       cpu, vcpup, info.mfn, info.offset);
  
- #ifndef CONFIG_HAVE_ARCH_BOOTMEM_NODE
- extern void reserve_bootmem(unsigned long addr, unsigned long size);
---- a/mm/sparse.c
-+++ b/mm/sparse.c
-@@ -215,12 +215,6 @@ static int __meminit sparse_init_one_sec
- 	return 1;
- }
+ 	/* Check to see if the hypervisor will put the vcpu_info
+--- a/include/xen/interface/vcpu.h
++++ b/include/xen/interface/vcpu.h
+@@ -160,8 +160,9 @@ struct vcpu_set_singleshot_timer {
+  */
+ #define VCPUOP_register_vcpu_info   10  /* arg == struct vcpu_info */
+ struct vcpu_register_vcpu_info {
+-    uint32_t mfn;               /* mfn of page to place vcpu_info */
+-    uint32_t offset;            /* offset within page */
++    uint64_t mfn;    /* mfn of page to place vcpu_info */
++    uint32_t offset; /* offset within page */
++    uint32_t rsvd;   /* unused */
+ };
  
--__attribute__((weak)) __init
--void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
--{
--	return NULL;
--}
--
- static struct page __init *sparse_early_mem_map_alloc(unsigned long pnum)
- {
- 	struct page *map;
-@@ -231,11 +225,6 @@ static struct page __init *sparse_early_
- 	if (map)
- 		return map;
- 
--  	map = alloc_bootmem_high_node(NODE_DATA(nid),
--                       sizeof(struct page) * PAGES_PER_SECTION);
--	if (map)
--		return map;
--
- 	map = alloc_bootmem_node(NODE_DATA(nid),
- 			sizeof(struct page) * PAGES_PER_SECTION);
- 	if (map)
+ #endif /* __XEN_PUBLIC_VCPU_H__ */
 
 -- 
