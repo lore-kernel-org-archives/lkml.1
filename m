@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933690AbXKOHFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757722AbXKOHGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933690AbXKOHFq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 02:05:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932602AbXKOGsA
+	id S1757722AbXKOHGV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 02:06:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932608AbXKOGsD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:48:00 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:58173 "EHLO
+	Thu, 15 Nov 2007 01:48:03 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:58187 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764448AbXKOGr6 (ORCPT
+	with ESMTP id S1764448AbXKOGsA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:47:58 -0500
-Date: Wed, 14 Nov 2007 22:45:32 -0800
+	Thu, 15 Nov 2007 01:48:00 -0500
+Date: Wed, 14 Nov 2007 22:45:36 -0800
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,13 +25,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Andrew Morton <akpm@osdl.org>,
        Sergei Shtylyov <sshtylyov@ru.mvista.com>,
        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [patch 30/40] ide: Fix siimage driver accessing beyond array
+Subject: [patch 31/40] ide: Fix cs5535 driver accessing beyond array
 	boundary
-Message-ID: <20071115064532.GE19218@kroah.com>
+Message-ID: <20071115064536.GF19218@kroah.com>
 References: <20071115062710.885284510@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ide-fix-siimage-driver-accessing-beyond-array-boundary.patch"
+Content-Disposition: inline; filename="ide-fix-cs5535-driver-accessing-beyond-array-boundary.patch"
 In-Reply-To: <20071115064302.GA19218@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -44,9 +44,10 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-patch a87a87ccdc541e0a0cc8c7d01a365be8d9153a7b in mainline.
 
-The siimage uses an incorrect construct to access the other drive of a pair,
+patch 15d8061bf02aa299b2447f7a22fd18b4a503ea9d in mainline.
+
+The cs5535 uses an incorrect construct to access the other drive of a pair,
 causing it to access beyond an array boundary on the secondary interface.
 
 This fixes it by using the new ide_get_paired_drive() helper instead.
@@ -60,19 +61,19 @@ Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ide/pci/siimage.c |    2 +-
+ drivers/ide/pci/cs5535.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/ide/pci/siimage.c
-+++ b/drivers/ide/pci/siimage.c
-@@ -180,7 +180,7 @@ static void sil_tune_pio(ide_drive_t *dr
- 	const u16 data_speed[]	= { 0x328a, 0x2283, 0x1104, 0x10c3, 0x10c1 };
+--- a/drivers/ide/pci/cs5535.c
++++ b/drivers/ide/pci/cs5535.c
+@@ -84,7 +84,7 @@ static void cs5535_set_speed(ide_drive_t
  
- 	ide_hwif_t *hwif	= HWIF(drive);
--	ide_drive_t *pair	= &hwif->drives[drive->dn ^ 1];
-+	ide_drive_t *pair	= ide_get_paired_drive(drive);
- 	u32 speedt		= 0;
- 	u16 speedp		= 0;
- 	unsigned long addr	= siimage_seldev(drive, 0x04);
+ 	/* Set the PIO timings */
+ 	if ((speed & XFER_MODE) == XFER_PIO) {
+-		ide_drive_t *pair = &drive->hwif->drives[drive->dn ^ 1];
++		ide_drive_t *pair = ide_get_paired_drive(drive);
+ 		u8 cmd, pioa;
+ 
+ 		cmd = pioa = speed - XFER_PIO_0;
 
 -- 
