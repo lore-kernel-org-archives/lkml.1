@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932560AbXKOX20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932897AbXKOXaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932560AbXKOX20 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 18:28:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756389AbXKOX2P
+	id S932897AbXKOXaw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 18:30:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759277AbXKOXao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 18:28:15 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56513
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755180AbXKOX2O (ORCPT
+	Thu, 15 Nov 2007 18:30:44 -0500
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:64997 "EHLO
+	outbound7-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755451AbXKOXan (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 18:28:14 -0500
-Date: Thu, 15 Nov 2007 15:28:13 -0800 (PST)
-Message-Id: <20071115.152813.89410917.davem@davemloft.net>
-To: the.sator@gmail.com
-Cc: kuznet@ms2.inr.ac.ru, linux-kernel@vger.kernel.org, jmorris@namei.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] net/ipv4/arp.c: Fix arp reply when sender ip 0
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <cac0ab7d0711151340l1cc91a2dw5ebf36e166d16d7a@mail.gmail.com>
-References: <cac0ab7d0711150340p58eda94ah92894072ba328205@mail.gmail.com>
-	<20071115154032.GA30391@ms2.inr.ac.ru>
-	<cac0ab7d0711151340l1cc91a2dw5ebf36e166d16d7a@mail.gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 15 Nov 2007 18:30:43 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.66.75;Service: EHS
+Message-ID: <473CD6E1.1060607@am.sony.com>
+Date: Thu, 15 Nov 2007 15:31:45 -0800
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
+MIME-Version: 1.0
+To: john cooper <john.cooper@third-harmonic.com>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@redhat.com>, Steven Rostedt <rostedt@goodmis.org>
+Subject: MIPS RT debug support
+References: <473B8F91.20704@am.sony.com> <alpine.LFD.0.9999.0711150143220.3265@localhost.localdomain> <473BADD4.5030400@third-harmonic.com>
+In-Reply-To: <473BADD4.5030400@third-harmonic.com>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Nov 2007 23:30:35.0302 (UTC) FILETIME=[859EB460:01C827DF]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Jonas Danielsson" <the.sator@gmail.com>
-Date: Thu, 15 Nov 2007 22:40:13 +0100
+john cooper wrote:
+> The more daunting problem stems from limitations in the MIPS
+> ABI which makes the latency trace support problematic.
+> Rather than rehash the issue:
+> 
+>     http://lists.linuxcoding.com/kernel/2005-q4/msg10163.html
+> 
+> Until we have a usable instrumentation solution in place,
+> characterization, debug, and support of PREEMPT_RT for MIPS
+> is going to be a challenge.
 
-> Is there a reason that the target hardware address isn't the target
-> hardware address?
+Agreed.  I have been using KFT (Kernel Function Trace)
+on MIPS, and it has decent support for function traceback
+reporting, but it's not currently integrated with latency-trace
+at all.   We should discuss if this could possibly be
+used to debug RT-preempt.  It is much heavier weight than
+the mcount stuff, but uses similar (but not identical)
+gcc profiling instrumentation.  I'm not sure if the
+two can be turned on together, or how hard it would
+be to move latency-trace onto -finstrument_functions.
 
-Linux subscribes to the host based addressing model rather
-than an interface based addressing model.  Both approaches
-are valid by RFCs.
+But it's probably worth researching a little.  We'll
+need something to give insight into the problem paths.
+ -- Tim
 
-Because of this, in cases where a choice can be made Linux will
-advertise what is most likely to result in successful communication.
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
-This is likely why we are changing that target address to the one of
-the interface actually sending back the reply rather than the zero
-value you used.
-
-In fact I think this information can be useful to the sender of
-the DAD request.
