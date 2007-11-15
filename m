@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763936AbXKOMdE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764432AbXKOMe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763936AbXKOMdE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 07:33:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757024AbXKOMcx
+	id S1764432AbXKOMe0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 07:34:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757024AbXKOMeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 07:32:53 -0500
-Received: from stargate.chelsio.com ([12.22.49.110]:9290 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755526AbXKOMcw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 07:32:52 -0500
-X-Greylist: delayed 3227 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Nov 2007 07:32:51 EST
-From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH] chelsio - Fix skb->dev setting
-To: jeff@garzik.org
-Cc: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Thu, 15 Nov 2007 03:38:57 -0800
-Message-ID: <20071115113857.10170.87392.stgit@speedy5>
-User-Agent: StGIT/0.12
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Nov 2007 07:34:18 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:63353 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753762AbXKOMeS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 07:34:18 -0500
+Date: Thu, 15 Nov 2007 13:33:52 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+Subject: Re: [PATCH] More CFI fixups for Atmel chips
+Message-ID: <20071115133352.4bf0bba2@dhcp-255-175.norway.atmel.com>
+In-Reply-To: <1193758387-9325-1-git-send-email-hskinnemoen@atmel.com>
+References: <1193758387-9325-1-git-send-email-hskinnemoen@atmel.com>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.1.0-rc1 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
+On Tue, 30 Oct 2007 16:33:07 +0100
+Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
 
-eth_type_trans() now sets skb->dev. 
-Access skb->def after it gets set.
+> This patch (or some variation of it) has been posted a couple of times
+> before to the MTD list, and I find myself applying it over and over
+> again when testing stuff against the latest mainline tree. I'd
+> appreciate if you could either apply it or thoroughly NAK it, as MTD
+> on the ATNGW100 board is currently broken.
 
-Signed-off-by: Divy Le Ray <divy@chelsio.com>
----
+Ok, can I just get a quick ACK or NAK then? I'd really like to get this
+fixed in mainline. It's causing real data corruption problems on real
+boards that are otherwise nicely supported in mainline.
 
- drivers/net/chelsio/sge.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/chelsio/sge.c b/drivers/net/chelsio/sge.c
-index ffa7e64..4436662 100644
---- a/drivers/net/chelsio/sge.c
-+++ b/drivers/net/chelsio/sge.c
-@@ -1379,11 +1379,11 @@ static void sge_rx(struct sge *sge, struct freelQ *fl, unsigned int len)
- 	}
- 	__skb_pull(skb, sizeof(*p));
- 
--	skb->dev->last_rx = jiffies;
- 	st = per_cpu_ptr(sge->port_stats[p->iff], smp_processor_id());
- 	st->rx_packets++;
- 
- 	skb->protocol = eth_type_trans(skb, adapter->port[p->iff].dev);
-+	skb->dev->last_rx = jiffies;
- 	if ((adapter->flags & RX_CSUM_ENABLED) && p->csum == 0xffff &&
- 	    skb->protocol == htons(ETH_P_IP) &&
- 	    (skb->data[9] == IPPROTO_TCP || skb->data[9] == IPPROTO_UDP)) {
+Håvard
