@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934219AbXKOHOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762972AbXKOHRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934219AbXKOHOY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 02:14:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765123AbXKOHMD
+	id S1762972AbXKOHRc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 02:17:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754998AbXKOHRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 02:12:03 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35449
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S933999AbXKOHL5 (ORCPT
+	Thu, 15 Nov 2007 02:17:20 -0500
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:21971 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751682AbXKOHRT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 02:11:57 -0500
-Date: Wed, 14 Nov 2007 23:11:47 -0800 (PST)
-Message-Id: <20071114.231147.223986050.davem@davemloft.net>
-To: dada1@cosmosbay.com
-Cc: russ@elegant-software.com, linux-kernel@vger.kernel.org
-Subject: Re: OT: Does Linux have any "Perfect Code"
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <473BE75B.9070701@cosmosbay.com>
-References: <c9d133bdb3481fbc01a572d948049f5e@elegant-software.com>
-	<473BE75B.9070701@cosmosbay.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 15 Nov 2007 02:17:19 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=olvGvAVb5pr07NWUYU/Uehm7M1M4Wq58/RD3DvYQ8YuytZbNy3dNnzieZ0y6XrrNSQtj4iRPwZoB8m5xRzyWQDFQZjUQT3x+0cDXkfyTbKjYYBwpbVKueydMhgLDORTfgqot0ay6Y74oB73ONvURaDN0bo6MzLo50SibRGHYavc=  ;
+X-YMail-OSG: iusfRw4VM1mUai2FkgCr3C5GTo_85Y0RLmHdxoWWCVW7DqW_iGVSU8emZdA5Yfptf_PH9hDmzw--
+From: David Brownell <david-b@pacbell.net>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [patch 2.6.24-rc2 1/3] generic gpio -- gpio_chip support
+Date: Wed, 14 Nov 2007 22:28:10 -0800
+User-Agent: KMail/1.9.6
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Florian Fainelli <florian.fainelli@telecomint.eu>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+References: <200711091136.20051.david-b@pacbell.net> <200711140020.46764.david-b@pacbell.net> <200711140818.59714.nickpiggin@yahoo.com.au>
+In-Reply-To: <200711140818.59714.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711142228.10934.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Dumazet <dada1@cosmosbay.com>
-Date: Thu, 15 Nov 2007 07:29:47 +0100
-
-> hrtime_t
-> ts2hrt(const timestruc_t *tsp)
-> {
-> return tsp->tv_sec * NANOSEC + tsp->tv_nsec;
-> }
+On Tuesday 13 November 2007, Nick Piggin wrote:
+> > All this does is prevent constant and needless checking for
+> > "do you want to preempt me now?" "now?" "now?" in "now?" the
+> > middle "now?" of "now?" i/o "now?" loops.
 > 
-> can be inlined as it is trivial (and much faster than Solaris version)
-> 
->          movq    (%rdi), %rdx
->          mov     8(%rdi), %eax
->          imulq   $1000000000, %rdx, %rdx
->          addq    %rdx, %rax
+> Actually that's wrong.
 
-This is exactly the kind of thing that is not happening to the Solaris
-code base.  These gradual improvements that are being done constantly
-to every nook and cranny of the Linux kernel.
+Certainly it's right for the mainstream kernel.  Dropping a
+lock (other than a raw spinlock) does that checking; when a
+loop needs to acquire then drop such a lock, that's exactly
+what's going on.
 
-Code sits untouched for 6+ years in the Solaris tree not because it's
-perfect and bug free, but rather because Sun simply does not have the
-environment and resources with which to make the kinds of ongoing
-improvements Linux can.
+And in the RT kernel, it's got to do the same thing ...
+because dropping that lock may mean that a higher priority
+task should immediately run and grab the lock.
 
-The things Sun is trying to say is so great about the Solaris code
-base is actually, as shown by Eric, it's greatest weakness.
-Development is glacial and a lot of stuff simply does not get looked
-at.
-
-Someone who really wants to get some kind of idea on what scale Linux
-development is compared to Solaris should sit down with a current
-Linux git tree and a current OpenSolaris mercurial checkout and do
-some comparisons.
-
-Here is one you could ferret out that I am pretty sure of.  I bet that
-in the 2.6.24 merge window (1.5 weeks of merging patches) we had more
-individual contributors to the Linux kernel than OpenSolaris has had
-in it's entire existence.
