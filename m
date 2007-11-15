@@ -1,145 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760650AbXKOSPJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761680AbXKOSSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760650AbXKOSPJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 13:15:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbXKOSO5
+	id S1761680AbXKOSSy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 13:18:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754840AbXKOSSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 13:14:57 -0500
-Received: from sa10.bezeqint.net ([192.115.104.24]:50237 "EHLO
-	sa10.bezeqint.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752072AbXKOSO4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 13:14:56 -0500
-Message-ID: <473C8C97.9030707@panasas.com>
-Date: Thu, 15 Nov 2007 20:14:47 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 15 Nov 2007 13:18:47 -0500
+Received: from ns1.suse.de ([195.135.220.2]:52439 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755894AbXKOSSq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 13:18:46 -0500
+Date: Thu, 15 Nov 2007 10:18:34 -0800
+From: Greg KH <gregkh@suse.de>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
+Subject: Re: EIP is at device_shutdown+0x32/0x60
+Message-ID: <20071115181834.GE24531@suse.de>
+References: <20071115091158.GB6216@localhost.sw.ru> <20071115014446.f943d835.akpm@linux-foundation.org> <20071115213345.B3C1.Y-GOTO@jp.fujitsu.com> <20071115163435.GC24087@suse.de> <3ae72650711150950k74fdb37eu108bb360a594ffe8@mail.gmail.com>
 MIME-Version: 1.0
-To: Gabriel C <nix.or.die@googlemail.com>, Greg KH <greg@kroah.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       bk@suse.de, khali@linux-fr.org,
-       James <James.Bottomley@HansenPartnership.com>
-Subject: Re: 2.6.24-rc2-mm1
-References: <473A678C.2020507@googlemail.com> <20071114034924.GA26048@kroah.com> <20071114043923.GK6089@one-eyed-alien.net> <473A88B3.3010303@googlemail.com> <20071114082332.GM6089@one-eyed-alien.net> <473ABE7D.6060703@googlemail.com> <20071115171508.GQ6089@one-eyed-alien.net>
-In-Reply-To: <20071115171508.GQ6089@one-eyed-alien.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3ae72650711150950k74fdb37eu108bb360a594ffe8@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 15 2007 at 19:15 +0200, Matthew Dharm <mdharm-kernel@one-eyed-alien.net> wrote:
-> On Wed, Nov 14, 2007 at 10:23:09AM +0100, Gabriel C wrote:
->> Matthew Dharm wrote:
->>> On Wed, Nov 14, 2007 at 06:33:39AM +0100, Gabriel C wrote:
->>>> Matthew Dharm wrote:
->>>>> On Tue, Nov 13, 2007 at 07:49:24PM -0800, Greg KH wrote:
->>>>>> Matt, are these the errors you were worried about with the patch we were
->>>>>> just talking about tha tis in my tree?
->>>>> I can't tell from these logs.
->>>> There is the dmesg with CONFIG_USB_STORAGE_DEBUG :
->>>>
->>>> http://194.231.229.228/dmesg-2.6.24-rc2-mm1
->>> Good news: This isn't the bug Greg was worried about.
->>>
->>> Bad news: Something is seriously strange here.  Note the following from the
->>> logs:
->>>
->>> Nov 14 06:07:43 lara [   41.890614] usb-storage: Bulk Status S 0x53425355 T 0xd R 0 Stat 0x0
->>> Nov 14 06:07:43 lara [   41.890616] usb-storage: -- unexpectedly short transfer
->>>
->>> Note the 'R' value of zero -- this is the residue value.  It indicates a
->>> complete transfer, and that matches the log lines immediately previous
->>> which indicate a 4K transfer which completed properly.
->>>
->>> If residue is zero, then srb->resid should be zero.  Take a look in
->>> linux/usb/storage/transport.c in usb_stor_Bulk_transport()
->>>
->>> If srb->resid is zero, then you should NEVER get the "unexpectedly short
->>> transfer" message.  Look at usb_stor_invoke_transport() in the same file.
->> That code got replaced recently but I have no idea about it.
->>
->> ( http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=shortlog  see the patches from Boaz Harrosh) 
->>
->> srb->resid got replaced by scsi_get_resid() it I see that right.
->>
->> I'm CC'ing the author , he will know I think.
+On Thu, Nov 15, 2007 at 06:50:06PM +0100, Kay Sievers wrote:
+> On Nov 15, 2007 5:34 PM, Greg KH <gregkh@suse.de> wrote:
+> > On Thu, Nov 15, 2007 at 09:55:34PM +0900, Yasunori Goto wrote:
+> > > > On Thu, 15 Nov 2007 12:11:58 +0300 Alexey Dobriyan <adobriyan@sw.ru> wrote:
+> > > >
+> > > > > Three boxes rarely oops during reboot or poweroff with 2.6.24-rc2-mm1
+> > > > > (1) and during 2.6.24 cycle (2):
+> > > > >
+> > > > >   kernel_restart
+> > > > >   sys_reboot
+> > > > >   [garbage]
+> > > > > Code: 8b 88 a8 00 00 00 85 c9 74 04 89
+> > > > > EIP is at device_shutdown+0x32/0x60
+> > > >
+> > > > Yes, all my test boxes did that - it's what I referred to in the releaee
+> > > > notes.  Greg is pondering the problem - seem he's the only person who
+> > > > cannot reproduce it ;)
+> > >
+> > > Fortunately, my ia64 box reproduces this oops "every time".
+> > > So, I could chase it.
+> > >
+> > > device_shutdown() function in drivers/base/power/shutdown.c
+> > > is followings.
+> > > -----------
+> > > /**
+> > >  * device_shutdown - call ->shutdown() on each device to shutdown.
+> > >  */
+> > > void device_shutdown(void)
+> > > {
+> > >         struct device * dev, *devn;
+> > >
+> > >         list_for_each_entry_safe_reverse(dev, devn, &devices_kset->list,
+> > >                                 kobj.entry) {
+> > >                 if (dev->bus && dev->bus->shutdown) {
+> > >                         dev_dbg(dev, "shutdown\n");
+> > >                         dev->bus->shutdown(dev);
+> > >                 } else if (dev->driver && dev->driver->shutdown) {
+> > >                         dev_dbg(dev, "shutdown\n");
+> > >                         dev->driver->shutdown(dev);
+> > >                 }
+> > >         }
+> > > }
+> > > --------
+> > > When oops occured, dev->driver pointed kset_ktype's address,
+> > > and dev->driver->shutdown was the address of bus_type_list.
+> > > So, Oops was caused by "Illegal operation fault".
+> > > kset_ktypes is pointed by system_kset.
+> > >
+> > > If my understanding is correct, this loop can't distinguish between
+> > > struct device and struct kset, but both are connected in this list,
+> > > right? It may be the cause of this.
+> >
+> > Hm, no, it should just be a list of devices for the kset, but I'll go
+> > verify that this is correct.
 > 
-> The replacement looks, to my eye, to be logically correct.  The patch was
-> pretty clean.
+> Care to try this:
+>   +       system_kset = kset_create_and_register("system", NULL,
+>   +                                              &devices_kset->kobj, NULL);
 > 
-> Then again, I haven't looked at what is "under the hood" of the accessor
-> functions.  Perhaps there is a side-effect somewhere in there?
-> 
-> Perhaps a quick debugging test -- print the value of scsi_get_resid(srb)
-> just after it's initialized to zero at the top of
-> usb_stor_invoke_transport(), and then just after the call to
-> us->transport().
-> 
+> We should not join the kset, only use it as a parent.
 
-I have found the bug. My bad sorry about that. Patch below
-It is because I switched from use of usb_stor_bulk_transfer_sg()
-to usb_stor_bulk_transfer_sglist, but forgot the residual handling.
+ARGH!
 
-(Please send scsi bugs to scsi list. My lkml mental filters are
-much higher, Sorry for not seeing this yesterday)
+<snip loads of curse words...>
 
-----
-From: Boaz Harrosh <bharrosh@panasas.com>
-Date: Thu, 15 Nov 2007 20:07:56 +0200
-Subject: [PATCH] Fix bug in last usb accessor patch
+that should do it, let me go test.
 
->>> Bad news: Something is seriously strange here.  Note the following from the
->>> logs:
->>>
->>> Nov 14 06:07:43 lara [   41.890614] usb-storage: Bulk Status S 0x53425355 T 0xd R 0 Stat 0x0
->>> Nov 14 06:07:43 lara [   41.890616] usb-storage: -- unexpectedly short transfer
->>>
->>> Note the 'R' value of zero -- this is the residue value.  It indicates a
->>> complete transfer, and that matches the log lines immediately previous
->>> which indicate a 4K transfer which completed properly.
->>>
->>> If residue is zero, then srb->resid should be zero.  Take a look in
->>> linux/usb/storage/transport.c in usb_stor_Bulk_transport()
->>>
->>> If srb->resid is zero, then you should NEVER get the "unexpectedly short
->>> transfer" message.  Look at usb_stor_invoke_transport() in the same file.
->> That code got replaced recently but I have no idea about it.
+Actually, once that is changed, the whole kset_create_and_register can
+drop that last argument, we never want to create a kset as part of
+another one...
 
-  wrong resid handling fixed
+The kset's kobject should not belong to any kset at all, I really messed
+that one up.
 
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
----
- drivers/usb/storage/transport.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+Yet another reason why this patchset really matters, this crap isn't
+even understood well by the people trying to maintain it...
 
-diff --git a/drivers/usb/storage/transport.c b/drivers/usb/storage/transport.c
-index d3a84a2..d9f4912 100644
---- a/drivers/usb/storage/transport.c
-+++ b/drivers/usb/storage/transport.c
-@@ -465,11 +465,12 @@ static int usb_stor_bulk_transfer_sglist(struct us_data *us, unsigned int pipe,
- int usb_stor_bulk_srb(struct us_data* us, unsigned int pipe,
- 		      struct scsi_cmnd* srb)
- {
--	int resid = scsi_get_resid(srb);
-+	unsigned int partial;
- 	int result = usb_stor_bulk_transfer_sglist(us, pipe, scsi_sglist(srb),
- 				      scsi_sg_count(srb), scsi_bufflen(srb),
--				      &resid);
--	scsi_set_resid(srb, resid);
-+				      &partial);
-+
-+	scsi_set_resid(srb, scsi_bufflen(srb) - partial);
- 	return result;
- }
- 
--- 
-1.5.3.1
-
-
-
-
-
-
-
-
+greg k-h
