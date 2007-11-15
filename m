@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933478AbXKOHCm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765736AbXKOHDK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933478AbXKOHCm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 02:02:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932562AbXKOGrn
+	id S1765736AbXKOHDK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 02:03:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932571AbXKOGro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:47:43 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:58087 "EHLO
+	Thu, 15 Nov 2007 01:47:44 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:58099 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932555AbXKOGrl (ORCPT
+	with ESMTP id S932560AbXKOGrn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:47:41 -0500
-Date: Wed, 14 Nov 2007 22:45:13 -0800
+	Thu, 15 Nov 2007 01:47:43 -0500
+Date: Wed, 14 Nov 2007 22:45:17 -0800
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,15 +21,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jiri Kosina <jkosina@suse.cz>, Larry Finger <larry.finger@lwfinger.net>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: [patch 24/40] USB: usbserial - fix potential deadlock between
-	write() and IRQ
-Message-ID: <20071115064513.GY19218@kroah.com>
+       Takashi Iwai <tiwai@suse.de>
+Subject: [patch 25/40] ALSA: hda-codec - Add array terminator for dmic in
+	STAC codec
+Message-ID: <20071115064517.GZ19218@kroah.com>
 References: <20071115062710.885284510@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-usbserial-fix-potential-deadlock-between-write-and-irq.patch"
+Content-Disposition: inline; filename="alsa-hda-codec-add-array-terminator-for-dmic-in-stac-codec.patch"
 In-Reply-To: <20071115064302.GA19218@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -40,45 +39,67 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jiri Kosina <jkosina@suse.cz>
+From: Takashi Iwai <tiwai@suse.de>
 
-patch acd2a847e7fee7df11817f67dba75a2802793e5d in mainline.
+patch f6e9852ad05fa28301c83d4e2b082620de010358 in mainline.
 
-USB: usbserial - fix potential deadlock between write() and IRQ
+[ALSA] hda-codec - Add array terminator for dmic in STAC codec
 
-usb_serial_generic_write() doesn't disable interrupts when taking port->lock,
-and could therefore deadlock with usb_serial_generic_read_bulk_callback()
-being called from interrupt, taking the same lock. Fix it.
+Reported by Jan-Marek Glogowski.
 
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-Acked-by: Larry Finger <larry.finger@lwfinger.net>
-Cc: Marcin Slusarz <marcin.slusarz@gmail.com>
+The dmic array is passed to snd_hda_parse_pin_def_config() and
+should be zero-terminated.
+
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/generic.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ sound/pci/hda/patch_sigmatel.c |   14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
---- a/drivers/usb/serial/generic.c
-+++ b/drivers/usb/serial/generic.c
-@@ -208,14 +208,15 @@ int usb_serial_generic_write(struct usb_
+--- a/sound/pci/hda/patch_sigmatel.c
++++ b/sound/pci/hda/patch_sigmatel.c
+@@ -162,8 +162,9 @@ static hda_nid_t stac925x_dac_nids[1] = 
+         0x02,
+ };
  
- 	/* only do something if we have a bulk out endpoint */
- 	if (serial->num_bulk_out) {
--		spin_lock_bh(&port->lock);
-+		unsigned long flags;
-+		spin_lock_irqsave(&port->lock, flags);
- 		if (port->write_urb_busy) {
--			spin_unlock_bh(&port->lock);
-+			spin_unlock_irqrestore(&port->lock, flags);
- 			dbg("%s - already writing", __FUNCTION__);
- 			return 0;
- 		}
- 		port->write_urb_busy = 1;
--		spin_unlock_bh(&port->lock);
-+		spin_unlock_irqrestore(&port->lock, flags);
+-static hda_nid_t stac925x_dmic_nids[1] = {
+-	0x15, 
++#define STAC925X_NUM_DMICS	1
++static hda_nid_t stac925x_dmic_nids[STAC925X_NUM_DMICS + 1] = {
++	0x15, 0
+ };
  
- 		count = (count > port->bulk_out_size) ? port->bulk_out_size : count;
+ static hda_nid_t stac922x_adc_nids[2] = {
+@@ -190,8 +191,9 @@ static hda_nid_t stac9205_mux_nids[2] = 
+         0x19, 0x1a
+ };
  
+-static hda_nid_t stac9205_dmic_nids[2] = {
+-        0x17, 0x18,
++#define STAC9205_NUM_DMICS	2
++static hda_nid_t stac9205_dmic_nids[STAC9205_NUM_DMICS + 1] = {
++        0x17, 0x18, 0
+ };
+ 
+ static hda_nid_t stac9200_pin_nids[8] = {
+@@ -2063,7 +2065,7 @@ static int patch_stac925x(struct hda_cod
+ 	case 0x83847633: /* STAC9202D */
+ 	case 0x83847636: /* STAC9251  */
+ 	case 0x83847637: /* STAC9251D */
+-		spec->num_dmics = 1;
++		spec->num_dmics = STAC925X_NUM_DMICS;
+ 		spec->dmic_nids = stac925x_dmic_nids;
+ 		break;
+ 	default:
+@@ -2307,7 +2309,7 @@ static int patch_stac9205(struct hda_cod
+ 	spec->mux_nids = stac9205_mux_nids;
+ 	spec->num_muxes = ARRAY_SIZE(stac9205_mux_nids);
+ 	spec->dmic_nids = stac9205_dmic_nids;
+-	spec->num_dmics = ARRAY_SIZE(stac9205_dmic_nids);
++	spec->num_dmics = STAC9205_NUM_DMICS;
+ 	spec->dmux_nid = 0x1d;
+ 
+ 	spec->init = stac9205_core_init;
 
 -- 
