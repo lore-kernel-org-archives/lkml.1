@@ -1,127 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761470AbXKOJi6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762731AbXKOJjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761470AbXKOJi6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 04:38:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757226AbXKOJit
+	id S1762731AbXKOJjk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 04:39:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757216AbXKOJjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 04:38:49 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:16226 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756970AbXKOJir (ORCPT
+	Thu, 15 Nov 2007 04:39:31 -0500
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4723 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760309AbXKOJj3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 04:38:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=i2M+ZL4Mn4e1dKML52fYu+B0KV9QoQkTWjH2AmW2TEfXZdmMAt/kZZR1Pw/9HJN4AHyWw9mbRi3BBWex/DUNF+kR0boDAIdAprKFrVNtrNPmloY8yFdg6QEY7m+LdhEqF0Py345iW9Vje+FlNketG8vw2uaGAEExFxoJNsXX14Y=
-Message-ID: <473C0594.6030304@gmail.com>
-Date: Thu, 15 Nov 2007 09:38:44 +0100
-From: Jiri Olsa <olsajiri@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 15 Nov 2007 04:39:29 -0500
+Date: Thu, 15 Nov 2007 09:39:15 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc2-mm1 (memory hotplug x86_64/vmemmap  fix)
+Message-ID: <20071115093851.GA2513@shadowen.org>
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org> <20071115132919.f2bf4946.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: kernel-janitors@vger.kernel.org
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       joel.becker@oracle.com
-Subject: [PATCH] fs: remove dead config CONFIG_HAS_COMPAT_EPOLL_EVENT symbol
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071115132919.f2bf4946.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-remove dead config CONFIG_HAS_COMPAT_EPOLL_EVENT symbol
-Signed-off-by: Jiri Olsa <olsajiri@gmail.com>
+On Thu, Nov 15, 2007 at 01:29:19PM +0900, KAMEZAWA Hiroyuki wrote:
+> Fixes for memory hotplug compile and .section handling.
+> 
+> This patch fixes following bugs
+> ==
+> WARNING: vmlinux.o(.text+0x1d07c): Section mismatch: reference to .init.text:f
+> ind_e820_area (between 'init_memory_mapping' and 'arch_add_memory')
+> WARNING: vmlinux.o(.text+0x946b5): Section mismatch: reference to .init.text:
+> __alloc_bootmem_node (between 'vmemmap_alloc_block' and 'vmemmap_pgd_populate')
+> 
+> ERROR: "memory_add_physaddr_to_nid" [drivers/acpi/acpi_memhotplug.ko] undefined!
+> make[1]: *** [__modpost
+> ==
+> 
+> This patch does
+>  1. export memory_add_physaddr_to_nid().
+>  2. changes __init to __init_refok find_early_table_space() (x86/mm/init_64.c)
+>  3. changes __init_refok to __meminit in mm/sparse.c (This is bug.)
 
----
- fs/compat.c            |   49 ------------------------------------------------
- include/linux/compat.h |    8 -------
- 2 files changed, 0 insertions(+), 57 deletions(-)
+Can you explain "this is bug" for me.  The routine was __init_refok and
+therefore ! __init and therefore always present.  The logic there must
+guarentee it only calls the bootmem allocator in early boot, and the logic
+has not changed with the annotation change so it should have been safe.
+If by "this is bug" you are saying this is the cause of the warning then
+yes that is true, else could you elaborate.
 
-diff --git a/fs/compat.c b/fs/compat.c
-index 15078ce..009109d 100644
---- a/fs/compat.c
-+++ b/fs/compat.c
-@@ -2087,51 +2087,6 @@ long asmlinkage compat_sys_nfsservctl(int cmd, void *notused, void *notused2)
- 
- #ifdef CONFIG_EPOLL
- 
--#ifdef CONFIG_HAS_COMPAT_EPOLL_EVENT
--asmlinkage long compat_sys_epoll_ctl(int epfd, int op, int fd,
--			struct compat_epoll_event __user *event)
--{
--	long err = 0;
--	struct compat_epoll_event user;
--	struct epoll_event __user *kernel = NULL;
--
--	if (event) {
--		if (copy_from_user(&user, event, sizeof(user)))
--			return -EFAULT;
--		kernel = compat_alloc_user_space(sizeof(struct epoll_event));
--		err |= __put_user(user.events, &kernel->events);
--		err |= __put_user(user.data, &kernel->data);
--	}
--
--	return err ? err : sys_epoll_ctl(epfd, op, fd, kernel);
--}
--
--
--asmlinkage long compat_sys_epoll_wait(int epfd,
--			struct compat_epoll_event __user *events,
--			int maxevents, int timeout)
--{
--	long i, ret, err = 0;
--	struct epoll_event __user *kbuf;
--	struct epoll_event ev;
--
--	if ((maxevents <= 0) ||
--			(maxevents > (INT_MAX / sizeof(struct epoll_event))))
--		return -EINVAL;
--	kbuf = compat_alloc_user_space(sizeof(struct epoll_event) * maxevents);
--	ret = sys_epoll_wait(epfd, kbuf, maxevents, timeout);
--	for (i = 0; i < ret; i++) {
--		err |= __get_user(ev.events, &kbuf[i].events);
--		err |= __get_user(ev.data, &kbuf[i].data);
--		err |= __put_user(ev.events, &events->events);
--		err |= __put_user_unaligned(ev.data, &events->data);
--		events++;
--	}
--
--	return err ? -EFAULT: ret;
--}
--#endif	/* CONFIG_HAS_COMPAT_EPOLL_EVENT */
--
- #ifdef TIF_RESTORE_SIGMASK
- asmlinkage long compat_sys_epoll_pwait(int epfd,
- 			struct compat_epoll_event __user *events,
-@@ -2157,11 +2112,7 @@ asmlinkage long compat_sys_epoll_pwait(int epfd,
- 		sigprocmask(SIG_SETMASK, &ksigmask, &sigsaved);
- 	}
- 
--#ifdef CONFIG_HAS_COMPAT_EPOLL_EVENT
--	err = compat_sys_epoll_wait(epfd, events, maxevents, timeout);
--#else
- 	err = sys_epoll_wait(epfd, events, maxevents, timeout);
--#endif
- 
- 	/*
- 	 * If we changed the signal mask, we need to restore the original one.
-diff --git a/include/linux/compat.h b/include/linux/compat.h
-index 0e69d2c..27143be 100644
---- a/include/linux/compat.h
-+++ b/include/linux/compat.h
-@@ -242,16 +242,8 @@ asmlinkage long compat_sys_migrate_pages(compat_pid_t pid,
- /*
-  * epoll (fs/eventpoll.c) compat bits follow ...
-  */
--#ifndef CONFIG_HAS_COMPAT_EPOLL_EVENT
- struct epoll_event;
- #define compat_epoll_event	epoll_event
--#else
--asmlinkage long compat_sys_epoll_ctl(int epfd, int op, int fd,
--			struct compat_epoll_event __user *event);
--asmlinkage long compat_sys_epoll_wait(int epfd,
--			struct compat_epoll_event __user *events,
--			int maxevents, int timeout);
--#endif
- asmlinkage long compat_sys_epoll_pwait(int epfd,
- 			struct compat_epoll_event __user *events,
- 			int maxevents, int timeout,
+>  4. add wrapper function to call bootmem allocator without warning.
+> 
+>  After seeing "3", I thought simple __init_refok is dangerous and decided to
+>  add wrapper function to call bootmem, is this style acceptable ?
+
+The point of that wrapper being you only allow calls to that one function
+to be __init_refok, and all other function calls in the calling function
+will be checked as that function remains __init/__meminit or not as
+appropriate.  That seems like a good idea.
+
+Also any code which is __init_refok is implicitly in its own section.
+I assume that means it cannot be __init, ie any function so declared will
+never be freed even if otherwise it might be __init.  In this case the
+calling function would naturally be __meminit, ie __init if hotplug is
+not enabled.  Moving the one call to a separate function makes the code
+non-__init'able smaller.  That sounds good too.
+
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+>  arch/x86/mm/init_64.c |    2 +-
+>  arch/x86/mm/srat_64.c |    1 +
+>  mm/sparse-vmemmap.c   |   13 ++++++++++++-
+>  mm/sparse.c           |   12 ++++++++++--
+>  4 files changed, 24 insertions(+), 4 deletions(-)
+> 
+> Index: linux-2.6.24-rc2-mm1/arch/x86/mm/srat_64.c
+> ===================================================================
+> --- linux-2.6.24-rc2-mm1.orig/arch/x86/mm/srat_64.c
+> +++ linux-2.6.24-rc2-mm1/arch/x86/mm/srat_64.c
+> @@ -562,3 +562,4 @@ int memory_add_physaddr_to_nid(u64 start
+>  	return ret;
+>  }
+>  
+> +EXPORT_SYMBOL_GPL(memory_add_physaddr_to_nid);
+> Index: linux-2.6.24-rc2-mm1/arch/x86/mm/init_64.c
+> ===================================================================
+> --- linux-2.6.24-rc2-mm1.orig/arch/x86/mm/init_64.c
+> +++ linux-2.6.24-rc2-mm1/arch/x86/mm/init_64.c
+> @@ -319,7 +319,7 @@ static void __meminit phys_pud_init(pud_
+>  	__flush_tlb();
+>  } 
+>  
+> -static void __init find_early_table_space(unsigned long end)
+> +static void __init_refok find_early_table_space(unsigned long end)
+>  {
+>  	unsigned long puds, pmds, tables, start;
+>  
+> Index: linux-2.6.24-rc2-mm1/mm/sparse.c
+> ===================================================================
+> --- linux-2.6.24-rc2-mm1.orig/mm/sparse.c
+> +++ linux-2.6.24-rc2-mm1/mm/sparse.c
+> @@ -55,7 +55,15 @@ static inline void set_section_nid(unsig
+>  #endif
+>  
+>  #ifdef CONFIG_SPARSEMEM_EXTREME
+> -static struct mem_section noinline __init_refok *sparse_index_alloc(int nid)
+> +/*
+> + * for avoiding section mismatch.
+> + */
+> +static void __init_refok *__call_bootmem_alloc(int nid, int array_size)
+
+This indirect makes sense for the sparse safety aspect, only letting the
+caller use this one routine.  I wonder if the name should be more
+explicit.  earlyonly_bootmem_alloc() or something, so that a later
+reader knows from the call site that this is magical and care needs to
+be exercised here.
+
+As this is local to this file, this should also be static I presume.  Or
+indeed perhaps if we picked a namespace such as the proposed earlyonly_
+for functions with this annotation we could have just one copy, and
+reduce code size.
+
+> +{
+> +	return alloc_bootmem_node(NODE_DATA(nid), array_size);
+> +}
+> +
+> +static struct mem_section noinline __meminit *sparse_index_alloc(int nid)
+>  {
+>  	struct mem_section *section = NULL;
+>  	unsigned long array_size = SECTIONS_PER_ROOT *
+> @@ -64,7 +72,7 @@ static struct mem_section noinline __ini
+>  	if (slab_is_available())
+>  		section = kmalloc_node(array_size, GFP_KERNEL, nid);
+>  	else
+> -		section = alloc_bootmem_node(NODE_DATA(nid), array_size);
+> +		section = __call_bootmem_alloc(nid, array_size);
+>  
+>  	if (section)
+>  		memset(section, 0, array_size);
+> Index: linux-2.6.24-rc2-mm1/mm/sparse-vmemmap.c
+> ===================================================================
+> --- linux-2.6.24-rc2-mm1.orig/mm/sparse-vmemmap.c
+> +++ linux-2.6.24-rc2-mm1/mm/sparse-vmemmap.c
+> @@ -30,6 +30,17 @@
+>  #include <asm/pgtable.h>
+>  
+>  /*
+> + * wrapper for calling bootmem alloc from __meminit code.
+> + */
+> +void __init_refok *__call_alloc_bootmem(int node,
+> +			int size, int align, int goal)
+> +{
+> +	return __alloc_bootmem_node(NODE_DATA(node), size, align, goal);
+> +}
+> +
+
+Same comment on naming here, static etc.
+
+> +
+> +
+> +/*
+>   * Allocate a block of memory to be used to back the virtual memory map
+>   * or to back the page tables that are used to create the mapping.
+>   * Uses the main allocators if they are available, else bootmem.
+> @@ -44,7 +55,7 @@ void * __meminit vmemmap_alloc_block(uns
+>  			return page_address(page);
+>  		return NULL;
+>  	} else
+> -		return __alloc_bootmem_node(NODE_DATA(node), size, size,
+> +		return __call_alloc_bootmem(node, size, size,
+>  				__pa(MAX_DMA_ADDRESS));
+>  }
+
+Reviewed-by: Andy Whitcroft <apw@shadowen.org>
+
+-apw
