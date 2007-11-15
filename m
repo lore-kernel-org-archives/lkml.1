@@ -1,42 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764051AbXKOAKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762816AbXKOAOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764051AbXKOAKs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 19:10:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753751AbXKOAKk
+	id S1762816AbXKOAOX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 19:14:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbXKOAOP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 19:10:40 -0500
-Received: from waste.org ([66.93.16.53]:35690 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755022AbXKOAKj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 19:10:39 -0500
-Date: Wed, 14 Nov 2007 18:09:17 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: David Miller <davem@davemloft.net>
-Cc: mingo@elte.hu, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: [bug] SLOB crash, 2.6.24-rc2
-Message-ID: <20071115000917.GX19691@waste.org>
-References: <20071114225335.GV19691@waste.org> <20071114.151013.05582536.davem@davemloft.net> <20071114233713.GW19691@waste.org> <20071114.154143.112110604.davem@davemloft.net>
+	Wed, 14 Nov 2007 19:14:15 -0500
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:28362 "EHLO
+	outbound6-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754831AbXKOAOO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 19:14:14 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.66.75;Service: EHS
+Message-ID: <473B8F91.20704@am.sony.com>
+Date: Wed, 14 Nov 2007 16:15:13 -0800
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071114.154143.112110604.davem@davemloft.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux kernel <linux-kernel@vger.kernel.org>
+CC: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: rt-preempt: problem compiling rt-preempt 2.6.23.1-rt11 on MIPS
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Nov 2007 00:14:06.0988 (UTC) FILETIME=[6FE49CC0:01C8271C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 14, 2007 at 03:41:43PM -0800, David Miller wrote:
-> From: Matt Mackall <mpm@selenic.com>
-> Date: Wed, 14 Nov 2007 17:37:13 -0600
-> 
-> > No, the usual strategy for debugging problems -outside- SLOB is to
-> > switch to another allocator with more extensive debugging facilities.
-> 
-> Ok, so the thing we still can do is do a dump_stack() at the
-> list debugging assertion trigger points.
+I applied the patches in patch-2.6.23.1-rt11-broken-out.tar.bz2
+to a Linux kernel version 2.6.23.1 (along with a few other
+board specific patches).
 
-It's also pretty easy to add some debugging code to make SLOB walk all
-its lists at alloc/free time.
+I got the following compilation error:
 
--- 
-Mathematics is the supreme nostalgia of our time.
+  GEN     /home/tbird/work/rt-preempt/build/tx49/Makefile
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  CALL    /home/tbird/work/rt-preempt/linux-2.6.23.1-rt11/scripts/checksyscalls.sh
+  CHK     include/linux/compile.h
+  CC      kernel/latency_trace.o
+/home/tbird/work/rt-preempt/linux-2.6.23.1-rt11/kernel/latency_trace.c:28:21: error: asm/rtc.h: No such file or directory
+make[2]: *** [kernel/latency_trace.o] Error 1
+make[1]: *** [kernel] Error 2
+make: *** [vmlinux] Error 2
+
+Indeed, there is no include/asm-mips/rtc.h.
+
+I commented out the include line in latency_trace.c, and everything
+compiled fine.  I'm not sure what is needed in an arch-specific rtc.h,
+but compiling without it for the mips arch caused no problems.
+Should I create a patch with a stub for rtc.h for mips?
+
+As an aside, this has me worried.  Is anyone else doing any
+RT Preempt testing or work on MIPS platforms, or am I forging
+new ground? :-)
+
+ -- Tim
+
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
+
