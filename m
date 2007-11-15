@@ -1,96 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932182AbXKOV1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933177AbXKOV3K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932182AbXKOV1g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 16:27:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbXKOV10
+	id S933177AbXKOV3K (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 16:29:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759522AbXKOV24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 16:27:26 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:42684 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751984AbXKOV1Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 16:27:25 -0500
-Subject: Re: mmap dirty limits on 32 bit kernels (Was: [BUG] New Kernel
-	Bugs)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Bron Gondwana <brong@fastmail.fm>, Christian Kujau <lists@nerdbynature.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       robm@fastmail.fm, riel <riel@redhat.com>,
-       Anton Altaparmakov <aia21@cam.ac.uk>
-In-Reply-To: <alpine.LFD.0.9999.0711151300250.4260@woody.linux-foundation.org>
-References: <20071113.043207.44732743.davem@davemloft.net>
-	 <20071113110259.44c56d42.akpm@linux-foundation.org>
-	 <alpine.DEB.0.9999.0711132055550.7865@sheep.housecafe.de>
-	 <20071113130411.26ccae12.akpm@linux-foundation.org>
-	 <alpine.DEB.0.99999.0711132239350.3960@sheep.housecafe.de>
-	 <20071115040708.GB15302@brong.net>
-	 <alpine.LFD.0.9999.0711142020220.2786@woody.linux-foundation.org>
-	 <20071115052538.GA21522@brong.net>
-	 <alpine.LFD.0.9999.0711142130090.2786@woody.linux-foundation.org>
-	 <alpine.LFD.0.9999.0711142148380.2786@woody.linux-foundation.org>
-	 <20071115115049.GA8297@brong.net>
-	 <alpine.LFD.0.9999.0711150818320.2786@woody.linux-foundation.org>
-	 <1195155601.22457.25.camel@lappy> <1195159457.22457.35.camel@lappy>
-	 <alpine.LFD.0.9999.0711151252340.4260@woody.linux-foundation.org>
-	 <alpine.LFD.0.9999.0711151300250.4260@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 15 Nov 2007 22:26:54 +0100
-Message-Id: <1195162015.22457.52.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Nov 2007 16:28:56 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:38183 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759288AbXKOV24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 16:28:56 -0500
+Date: Thu, 15 Nov 2007 13:28:55 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Micah Dowty <micah@vmware.com>
+cc: Kyle Moffett <mrmacman_g4@mac.com>, Cyrus Massoumi <cyrusm@gmx.net>,
+       LKML Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@osdl.org>, Mike Galbraith <efault@gmx.de>,
+       Paul Menage <menage@google.com>
+Subject: Re: High priority tasks break SMP balancer?
+In-Reply-To: <20071115202425.GC4914@vmware.com>
+Message-ID: <Pine.LNX.4.64.0711151328090.29711@schroedinger.engr.sgi.com>
+References: <20071109223417.GB16250@vmware.com> <4734F397.7080802@gmx.net>
+ <20071110001103.GD16250@vmware.com> <2FAA6826-653E-482F-A037-C539BAEEA1DA@mac.com>
+ <20071115191408.GA4914@vmware.com> <Pine.LNX.4.64.0711151206370.28639@schroedinger.engr.sgi.com>
+ <20071115202425.GC4914@vmware.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 15 Nov 2007, Micah Dowty wrote:
 
-On Thu, 2007-11-15 at 13:14 -0800, Linus Torvalds wrote:
-> 
-> On Thu, 15 Nov 2007, Linus Torvalds wrote:
-> > 
-> > Unacceptable. We used to do exactly what your patch does, and it got fixed 
-> > once. We're not introducing that fundamentally broken concept again.
-> 
-> Examples of non-broken solutions:
->  (a) always use lowmem sizes (what we do now)
->  (b) always use total mem sizes (sane but potentially dangerous: but the 
->      VM pressure should work! It has serious bounce-buffer issues, though, 
->      which is why I think it's crazy even if it's otherwise consistent)
->  (c) make all dirty counting be *purely* per-bdi, so that everybody can 
->      disagree on what the limits are, but at least they also then use 
->      different counters
+> Yes, the Python test harness crashes, not the kernel. It's just
+> because on a kernel which exhibits this SMP balancer bug, within a
+> couple of test iterations I'll hit a case where cpu1 was almost
+> totally idle and the test harness divides by zero when calculating the
+> imbalance.
 
-I think that (c) is doable. If its worth the effort, who knows,
-apparently there still are people using 32bit kernels on boxen with
-mucho memory.
-
-> So it's just the "different writers look at the same dirty counts but then 
-> interpret it to mean totally different things" that I think is so 
-> fundamentally bogus. I'm not claiming that what we do now is the only way 
-> to do things, I just don't think your approach is tenable.
-
-Agreed, the per mapping thing was utter crap.
-
-> I'd also like to point out that while the "bounce buffer" issue is not so 
-> much a HIGHMEM issue on its own (it's really about the device DMA limits, 
-> which are _independent_ of HIGHMEM, of course), the reason HIGHMEM is 
-> special is that without HIGHMEM the bounce buffers generally work 
-> perfectly fine.
-> 
-> The problem with HIGHMEM is that it causes various metadata (dentries, 
-> inodes, page struct tables etc) to eat up memory "prime real estate" under 
-> the same kind of conditions that also dirty a lot of memory. So the reason 
-> we disallow HIGHMEM from dirty limits is only *partly* the per-device or 
-> mapping DMA limits, and to a large degree the fact that non-highmem memory 
-> is special in general, and it is usually the non-highmem areas that are 
-> constrained - and need to be protected.
-
-But this problem is already an issue, Anton recently had a case where a
-12GB highmem box locked up due to NTFS running out of lowmem - or
-something like that.
-
-And I think that with the targeted slab reclaim (or slab defrag as its
-apparently still called) we can properly fix this side of the problem. I
-think Rik was looking into doing so.
+I still have some problem understanding what you are complaining about? 
+The patch that you bisected had some issues that were fixed later by 
+Siddha.
 
