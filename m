@@ -1,64 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764897AbXKOVVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933197AbXKOVYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764897AbXKOVVo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 16:21:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754796AbXKOVVb
+	id S933197AbXKOVYW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 16:24:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbXKOVYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 16:21:31 -0500
-Received: from trinity.fluff.org ([89.145.97.151]:50433 "EHLO
-	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763429AbXKOVV3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 16:21:29 -0500
-X-Greylist: delayed 3851 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Nov 2007 16:21:29 EST
-Date: Thu, 15 Nov 2007 20:16:56 +0000
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>, Thomas Gleixner <tglx@linutronix.de>,
-       Mark Lord <liml@rtr.ca>, alsa-devel@alsa-project.org,
-       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-kernel@vger.kernel.org, Natalie Protasevich <protasnb@gmail.com>,
-       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071115201656.GD11305@trinity.fluff.org>
-References: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com> <20071113031553.3c7b5c16.akpm@linux-foundation.org> <4739ADA2.4060604@rtr.ca> <alpine.LFD.0.9999.0711131521590.3265@localhost.localdomain> <20071113181053.GB1356@flint.arm.linux.org.uk> <20071113182516.250de873@the-village.bc.nu> <20071113223437.GG1356@flint.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071113223437.GG1356@flint.arm.linux.org.uk>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.9i
-From: Ben Dooks <ben@trinity.fluff.org>
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+	Thu, 15 Nov 2007 16:24:14 -0500
+Received: from scrub.xs4all.nl ([194.109.195.176]:4690 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754796AbXKOVYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 16:24:13 -0500
+Date: Thu, 15 Nov 2007 22:24:05 +0100 (CET)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] kconfig: use $K64BIT to set 64BIT with all*config targets
+In-Reply-To: <20071115204520.GA24851@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.64.0711152158310.1817@scrub.home>
+References: <20071110204038.GA13140@uranus.ravnborg.org>
+ <11947274093185-git-send-email-sam@ravnborg.org> <11947274091127-git-send-email-sam@ravnborg.org>
+ <Pine.LNX.4.64.0711142116500.1818@scrub.home> <20071114220840.GB10920@uranus.ravnborg.org>
+ <Pine.LNX.4.64.0711151616330.1817@scrub.home> <20071115192555.GD23914@uranus.ravnborg.org>
+ <Pine.LNX.4.64.0711152036430.1817@scrub.home> <20071115204520.GA24851@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 13, 2007 at 10:34:37PM +0000, Russell King wrote:
-> On Tue, Nov 13, 2007 at 06:25:16PM +0000, Alan Cox wrote:
-> > > Given the wide range of ARM platforms today, it is utterly idiotic to
-> > > expect a single person to be able to provide responses for all ARM bugs.
-> > > I for one wish I'd never *VOLUNTEERED* to be a part of the kernel
-> > > bugzilla, and really *WISH* I could pull out of that function.
-> > 
-> > You can. Perhaps that bugzilla needs to point to some kind of
-> > arm-maintainers@vger.kernel.org list for the various ARM platform
-> > maintainers ?
+Hi,
+
+On Thu, 15 Nov 2007, Sam Ravnborg wrote:
+
+> > Can we please can get some consistency in this?
+> > We have a .config file for a reason, what's wrong with using it?
 > 
-> That might work - though it would be hard to get all the platform
-> maintainers to be signed up to yet another mailing list, I'm sure
-> sufficient would do.
+> We need to set a selected few values in a few cases where we do
+> not have a .config file.
+> allmodconfig for x86 for instance. We would like to generate a
+> 32-bit and a 64-bit version.
 
-As long as it would just be bug reports, I'm sure that most of us
-could be persuaded to subscribe. Adding another list for general
-discussions is probably not going to be read, the current list
-provides more than enough to keep us busy.
+This can already be set via all.config/allmod.config.
+Where is this need coming from? The point is that I don't like to add an 
+interface, which is maybe used by two people, who should be perfectly 
+capable using an existing superior mechanism.
 
--- 
-Ben
+> > > > Please revert the K64BIT changes and use this instead.
+> > > 
+> > > I will finish up your patch and target it for next merge window.
+> > 
+> > Why can't this be fixed properly now? You don't even need this patch, just 
+> > use ARCH to set 64BIT in the Kconfig as I've shown.
+> Because the patch is in mainline and has been tested by a lot of people
+> during the last week. And as the functionality is almost equal I do not
+> see it as a big deal to have the less-perfect solution in one kernel release.
+> 
+> And the only reason the patch were applied to mainline was to fix the build
+> of the merged x86 architecute - otherwise it was in no way -rc material.
 
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
+I showed you a solution, which requires no patch at all, while your patch 
+adds extra functionality which is questionable.
+Why is a quick hack preferable over a proper solution? 
+Either explain why my solution isn't usable or _please_ revert the K64BIT 
+changes.
 
+> > > > These are two different uses, when reading a .config only the basic syntax 
+> > > > is checked, but not the value itself.
+> > > This is wrong considering the amount of people that hand edit the .config file.
+> > 
+> > It's not, the actual symbol value is set later depending on the dependency 
+> > constraints.
+> My point is that the .config file is handedited so the syntax should be checked
+> to best possible extent. If someone specify CONFIG_64BIT=64 we should error out.
+
+The other function doesn't complain about it either. There is already 
+only limited error checking, e.g. there is no complaint that the value 
+isn't really set (because it was selected by something else), otherwise 
+the .config check during a kernel upgrades would be a lot noisier than it 
+already is. Anyone directly editing .config should know what he is doing.
+
+bye, Roman
