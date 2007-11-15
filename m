@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760787AbXKOGaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762270AbXKOGbM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760787AbXKOGaq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:30:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764735AbXKOGW3
+	id S1762270AbXKOGbM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:31:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755994AbXKOGWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:22:29 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:46033 "EHLO
+	Thu, 15 Nov 2007 01:22:33 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46045 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764427AbXKOGW1 (ORCPT
+	with ESMTP id S1764737AbXKOGWa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:22:27 -0500
-Date: Wed, 14 Nov 2007 22:20:57 -0800
+	Thu, 15 Nov 2007 01:22:30 -0500
+Date: Wed, 14 Nov 2007 22:21:01 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Johannes Berg <johannes@sipsolutions.net>,
        linux-wireless@vger.kernel.org,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 17/23] ieee80211: fix TKIP QoS bug
-Message-ID: <20071115062057.GR8282@kroah.com>
+       "John W. Linville" <linville@tuxdriver.com>,
+       Michael Wu <flamingice@sourmilk.net>
+Subject: [patch 18/23] mac80211: reorder association debug output
+Message-ID: <20071115062100.GS8282@kroah.com>
 References: <20071115055238.692814352@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ieee80211-fix-tkip-qos-bug.patch"
+Content-Disposition: inline; filename="mac80211-reorder-association-debug-output.patch"
 In-Reply-To: <20071115061806.GA8282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -43,29 +44,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Johannes Berg <johannes@sipsolutions.net>
 
-patch e797aa1b7da6bfcb2e19a10ae5ead9aa7aea732b in mainline.
+patch 1dd84aa213d0f98a91a1ec9be2f750f5f48e75a0 in mainline.
 
-The commit 65b6a277 titled "ieee80211: Fix header->qos_ctl endian issue"
-*introduced* an endianness bug. Partially revert it.
+There's no reason to warn about an invalid AID field when the
+association was denied.
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Acked-by: Michael Wu <flamingice@sourmilk.net>
 Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ieee80211/ieee80211_crypt_tkip.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/mac80211/ieee80211_sta.c |   11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
---- a/net/ieee80211/ieee80211_crypt_tkip.c
-+++ b/net/ieee80211/ieee80211_crypt_tkip.c
-@@ -584,7 +584,7 @@ static void michael_mic_hdr(struct sk_bu
- 	if (stype & IEEE80211_STYPE_QOS_DATA) {
- 		const struct ieee80211_hdr_3addrqos *qoshdr =
- 			(struct ieee80211_hdr_3addrqos *)skb->data;
--		hdr[12] = qoshdr->qos_ctl & cpu_to_le16(IEEE80211_QCTL_TID);
-+		hdr[12] = le16_to_cpu(qoshdr->qos_ctl) & IEEE80211_QCTL_TID;
- 	} else
- 		hdr[12] = 0;		/* priority */
+--- a/net/mac80211/ieee80211_sta.c
++++ b/net/mac80211/ieee80211_sta.c
+@@ -1174,15 +1174,11 @@ static void ieee80211_rx_mgmt_assoc_resp
+ 	capab_info = le16_to_cpu(mgmt->u.assoc_resp.capab_info);
+ 	status_code = le16_to_cpu(mgmt->u.assoc_resp.status_code);
+ 	aid = le16_to_cpu(mgmt->u.assoc_resp.aid);
+-	if ((aid & (BIT(15) | BIT(14))) != (BIT(15) | BIT(14)))
+-		printk(KERN_DEBUG "%s: invalid aid value %d; bits 15:14 not "
+-		       "set\n", dev->name, aid);
+-	aid &= ~(BIT(15) | BIT(14));
  
+ 	printk(KERN_DEBUG "%s: RX %sssocResp from " MAC_FMT " (capab=0x%x "
+ 	       "status=%d aid=%d)\n",
+ 	       dev->name, reassoc ? "Rea" : "A", MAC_ARG(mgmt->sa),
+-	       capab_info, status_code, aid);
++	       capab_info, status_code, aid & ~(BIT(15) | BIT(14)));
+ 
+ 	if (status_code != WLAN_STATUS_SUCCESS) {
+ 		printk(KERN_DEBUG "%s: AP denied association (code=%d)\n",
+@@ -1192,6 +1188,11 @@ static void ieee80211_rx_mgmt_assoc_resp
+ 		return;
+ 	}
+ 
++	if ((aid & (BIT(15) | BIT(14))) != (BIT(15) | BIT(14)))
++		printk(KERN_DEBUG "%s: invalid aid value %d; bits 15:14 not "
++		       "set\n", dev->name, aid);
++	aid &= ~(BIT(15) | BIT(14));
++
+ 	pos = mgmt->u.assoc_resp.variable;
+ 	if (ieee802_11_parse_elems(pos, len - (pos - (u8 *) mgmt), &elems)
+ 	    == ParseFailed) {
 
 -- 
