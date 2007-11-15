@@ -1,98 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764587AbXKOKwP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765116AbXKOKwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764587AbXKOKwP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 05:52:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756100AbXKOKwA
+	id S1765116AbXKOKwt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 05:52:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755184AbXKOKwl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 05:52:00 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40602
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1758155AbXKOKv7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 05:51:59 -0500
-Date: Thu, 15 Nov 2007 02:51:58 -0800 (PST)
-Message-Id: <20071115.025158.254212538.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: mpm@selenic.com, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: [bug] SLOB crash, 2.6.24-rc2
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071115104331.GA11390@elte.hu>
-References: <20071114233713.GW19691@waste.org>
-	<20071114.154143.112110604.davem@davemloft.net>
-	<20071115104331.GA11390@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Nov 2007 05:52:41 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:54264 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758668AbXKOKwk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 05:52:40 -0500
+Date: Thu, 15 Nov 2007 10:52:38 +0000
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org, sfr@canb.auug.org.au, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix boot problem with iSeries lacking hugepage support
+Message-ID: <20071115105237.GD5128@skynet.ie>
+References: <20071115101322.GA5128@skynet.ie> <20071115023943.a54b0464.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20071115023943.a54b0464.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Thu, 15 Nov 2007 11:43:32 +0100
-
-> The crash logs contain this:
+On (15/11/07 02:39), Andrew Morton didst pronounce:
+> On Thu, 15 Nov 2007 10:13:22 +0000 mel@skynet.ie (Mel Gorman) wrote:
 > 
->  VFS: Mounted root (ext3 filesystem) readonly.
->  Freeing unused kernel memory: 396k freed
->  Write protecting the kernel read-only data: 2056k
->  udev: renamed network interface eth1 to eth0
->  udev: renamed network interface eth0_rename to eth1
->  eth0: link down
->  ADDRCONF(NETDEV_UP): eth0: link is not ready
->  EXT3 FS on sda6, internal journal
->  kjournald starting.  Commit interval 5 seconds
+> > This patch is a fix for 2.6.24.
+> > 
+> > Ordinarily the size of a pageblock is determined at compile-time based on the
+> > hugepage size. On PPC64, the hugepage size is determined at runtime based on
+> > what is supported by the machine. With legacy machines such as iSeries that do
+> > not support hugepages, HPAGE_SHIFT becomes 0. This results in pageblock_order
+> > being set to -PAGE_SHIFT and a crash results shortly afterwards.
+> > 
+> > This patch sets HUGETLB_PAGE_SIZE_VARIABLE for PPC64 and adds a function
+> > to select a sensible value for pageblock order by default.  It checks that
+> > HPAGE_SHIFT is a sensible value before using the hugepage size; if it is
+> > not MAX_ORDER-1 is used.
+> > 
+> > Credit goes to Stephen Rothwell for identifying the bug and testing candidate
+> > patches.  Additional credit goes to Andy Whitcroft for spotting a problem
+> > with respects to IA-64 before releasing. Additional credit to David Gibson
+> > for testing with the libhugetlbfs test suite.
+> > 
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > Tested-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> > 
+> > --- 
+> >  arch/powerpc/Kconfig |    5 +++++
+> >  mm/page_alloc.c      |   14 ++++++++++++--
+> >  2 files changed, 17 insertions(+), 2 deletions(-)
+> > 
+> > diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc2-mm1-clean/arch/powerpc/Kconfig linux-2.6.24-rc2-005_iSeries_fix/arch/powerpc/Kconfig
+> > --- linux-2.6.24-rc2-mm1-clean/arch/powerpc/Kconfig	2007-11-14 11:38:05.000000000 +0000
+> > +++ linux-2.6.24-rc2-005_iSeries_fix/arch/powerpc/Kconfig	2007-11-14 11:39:12.000000000 +0000
+> > @@ -187,6 +187,11 @@ config FORCE_MAX_ZONEORDER
+> >  	default "9" if PPC_64K_PAGES
+> >  	default "13"
+> >  
+> > +config HUGETLB_PAGE_SIZE_VARIABLE
+> > +	bool
+> > +	depends on HUGETLB_PAGE
+> > +	default y
+> > +
+> >  config MATH_EMULATION
+> >  	bool "Math emulation"
+> >  	depends on 4xx || 8xx || E200 || PPC_MPC832x || E500
+> > diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc2-mm1-clean/mm/page_alloc.c linux-2.6.24-rc2-005_iSeries_fix/mm/page_alloc.c
+> > --- linux-2.6.24-rc2-mm1-clean/mm/page_alloc.c	2007-11-14 11:38:08.000000000 +0000
+> > +++ linux-2.6.24-rc2-005_iSeries_fix/mm/page_alloc.c	2007-11-14 13:45:19.000000000 +0000
+> > @@ -3342,6 +3342,16 @@ static void inline setup_usemap(struct p
+> >  #endif /* CONFIG_SPARSEMEM */
+> >  
+> >  #ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
+> > +
+> > +/* Return a sensible default order for the pageblock size. */
+> > +static inline int __init pageblock_default_order(void)
+> > +{
+> > +	if (HPAGE_SHIFT > PAGE_SHIFT)
+> > +		return HUGETLB_PAGE_ORDER;
+> > +
+> > +	return MAX_ORDER-1;
+> > +}
+> > +
+> >  /* Initialise the number of pages represented by NR_PAGEBLOCK_BITS */
+> >  static inline void __init set_pageblock_order(unsigned int order)
+> >  {
+> > @@ -3357,7 +3367,7 @@ static inline void __init set_pageblock_
+> >  }
+> >  #else /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
+> >  
+> > -/* Defined this way to avoid accidently referencing HUGETLB_PAGE_ORDER */
+> > +#define pageblock_default_order(x) (0)
 > 
-> followed by the crash shortly afterwards (but not immediately). With the 
-> non-crashing kernel i dont get those "renamed network interface" 
-> messages.
+> Shouldn't this have been HUGETLB_PAGE_ORDER?
 > 
-> network interface renaming has been a historic source of pain for me so 
-> i frequently have to 'twiddle' the networking config to make it work 
-> again on new kernels. Perhaps because i'm using bzImage kernels. 
-> User-space is Fedora 8, so fairly recent.
 
-Yeah I wish udev would just leave the damn devices alone.
+As a #define, possibly but as a static inline - definitly not.
 
-It even does things like try to rename a network device to the same
-name it already has, and other strange stuff.
+In this context, the define is not used because set_pageblock_order()
+is a no-op when CONFIG_HUGETLB_PAGE_SIZE_VARIABLE is unset.
+pageblock_default_order() is only defined for symmetry as set_pageblock_order()
+is defined in both contexts. However, as a #define it might make more sense
+to a casual reader to see HUGETLB_PAGE_ORDER even if it has no effect. I
+can send a version of the patch that does this with a comment explaining
+what is going on with set_pageblock_order() if you like.
 
-But that log difference is a good clue.
+However, in a follow-up fix, you make pageblock_default_order() a static
+inline. If it tries to return HUGETLB_PAGE_ORDER, it will fail to compile
+when CONFIG_HUGETLB_PAGE is not set.
 
-Because udev can try to rename a network device stupidly to a name the
-device already has we added a patch to just short circuit this case in
-the networking.  We did this because otherwise the generic device
-layer gives an ugly stack backtrace via dev_rename().
+Which would you prefer?
 
-Therefore, you might want to see if reverting that patch (attached
-below) has some effect, once you are able to trigger it again.
+> >  #define set_pageblock_order(x)	do {} while (0)
+> >  
+> >  #endif /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
+> > @@ -3442,7 +3452,7 @@ static void __meminit free_area_init_cor
+> >  		if (!size)
+> >  			continue;
+> >  
+> > -		set_pageblock_order(HUGETLB_PAGE_ORDER);
+> > +		set_pageblock_order(pageblock_default_order());
+> >  		setup_usemap(pgdat, zone, size);
+> >  		ret = init_currently_empty_zone(zone, zone_start_pfn,
+> >  						size, MEMMAP_EARLY);
+> > -- 
+> > -- 
+> > Mel Gorman
+> > Part-time Phd Student                          Linux Technology Center
+> > University of Limerick                         IBM Dublin Software Lab
+> 
 
-Thanks Ingo.
-
-commit c8d90dca3211966ba5189e0f3d4bccd558d9ae08
-Author: Stephen Hemminger <shemminger@linux-foundation.org>
-Date:   Fri Oct 26 03:53:42 2007 -0700
-
-    [NET] dev_change_name: ignore changes to same name
-    
-    Prevent error/backtrace from dev_rename() when changing
-    name of network device to the same name. This is a common
-    situation with udev and other scripts that bind addr to device.
-    
-    Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/net/core/dev.c b/net/core/dev.c
-index f1647d7..ddfef3b 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -883,6 +883,9 @@ int dev_change_name(struct net_device *dev, char *newname)
- 	if (!dev_valid_name(newname))
- 		return -EINVAL;
- 
-+	if (strncmp(newname, dev->name, IFNAMSIZ) == 0)
-+		return 0;
-+
- 	memcpy(oldname, dev->name, IFNAMSIZ);
- 
- 	if (strchr(newname, '%')) {
+-- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
