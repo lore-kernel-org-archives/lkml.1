@@ -1,108 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758776AbXKOGLG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759311AbXKOGL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758776AbXKOGLG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:11:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbXKOGK2
+	id S1759311AbXKOGL1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:11:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbXKOGKc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:10:28 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:36467 "EHLO
+	Thu, 15 Nov 2007 01:10:32 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:36470 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751570AbXKOGK0 (ORCPT
+	with ESMTP id S1752079AbXKOGK2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:10:26 -0500
-Date: Wed, 14 Nov 2007 22:09:17 -0800
+	Thu, 15 Nov 2007 01:10:28 -0500
+Date: Wed, 14 Nov 2007 22:09:21 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Gregory Haskins <ghaskins@novell.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 01/13] lockdep: fix mismatched lockdep_depth/curr_chain_hash
-Message-ID: <20071115060917.GB7602@kroah.com>
+       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "George G. Davis" <gdavis@mvista.com>,
+       linux-fsdevel@vger.kernel.org,
+       "J. Bruce Fields" <bfields@citi.umich.edu>, Alan Cox <alan@redhat.com>
+Subject: [patch 02/13] locks: fix possible infinite loop in posix deadlock
+	detection
+Message-ID: <20071115060921.GC7602@kroah.com>
 References: <20071115042610.731859958@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="lockdep-fix-mismatched-lockdep_depth-curr_chain_hash.patch"
+Content-Disposition: inline; filename="locks-fix-possible-infinite-loop-in-posix-deadlock-detection.patch"
 In-Reply-To: <20071115060544.GA7602@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Gregory Haskins <ghaskins@novell.com>
+From: J. Bruce Fields <bfields@citi.umich.edu>
 
-patch 3aa416b07f0adf01c090baab26fb70c35ec17623 in mainline.
+patch 97855b49b6bac0bd25f16b017883634d13591d00 in mainline.
 
-It is possible for the current->curr_chain_key to become inconsistent
-with the current index if the chain fails to validate.  The end result
-is that future lock_acquire() operations may inadvertently fail to find
-a hit in the cache resulting in a new node being added to the graph for
-every acquire.
+It's currently possible to send posix_locks_deadlock() into an infinite
+loop (under the BKL).
 
+For now, fix this just by bailing out after a few iterations.  We may
+want to fix this in a way that better clarifies the semantics of
+deadlock detection.  But that will take more time, and this minimal fix
+is probably adequate for any realistic scenario, and is simple enough to
+be appropriate for applying to stable kernels now.
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Cc: Chuck Ebbert <cebbert@redhat.com>
+Thanks to George Davis for reporting the problem.
+
+Cc: "George G. Davis" <gdavis@mvista.com>
+Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+Acked-by: Alan Cox <alan@redhat.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/lockdep.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ fs/locks.c |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -1521,7 +1521,7 @@ cache_hit:
- }
- 
- static int validate_chain(struct task_struct *curr, struct lockdep_map *lock,
--	       	struct held_lock *hlock, int chain_head)
-+	       	struct held_lock *hlock, int chain_head, u64 chain_key)
+--- a/fs/locks.c
++++ b/fs/locks.c
+@@ -694,11 +694,20 @@ EXPORT_SYMBOL(posix_test_lock);
+  * Note: the above assumption may not be true when handling lock requests
+  * from a broken NFS client. But broken NFS clients have a lot more to
+  * worry about than proper deadlock detection anyway... --okir
++ *
++ * However, the failure of this assumption (also possible in the case of
++ * multiple tasks sharing the same open file table) also means there's no
++ * guarantee that the loop below will terminate.  As a hack, we give up
++ * after a few iterations.
+  */
++
++#define MAX_DEADLK_ITERATIONS 10
++
+ static int posix_locks_deadlock(struct file_lock *caller_fl,
+ 				struct file_lock *block_fl)
  {
- 	/*
- 	 * Trylock needs to maintain the stack of held locks, but it
-@@ -1534,7 +1534,7 @@ static int validate_chain(struct task_st
- 	 * graph_lock for us)
- 	 */
- 	if (!hlock->trylock && (hlock->check == 2) &&
--			lookup_chain_cache(curr->curr_chain_key, hlock->class)) {
-+			lookup_chain_cache(chain_key, hlock->class)) {
- 		/*
- 		 * Check whether last held lock:
- 		 *
-@@ -1576,7 +1576,7 @@ static int validate_chain(struct task_st
- #else
- static inline int validate_chain(struct task_struct *curr,
- 	       	struct lockdep_map *lock, struct held_lock *hlock,
--		int chain_head)
-+		int chain_head, u64 chain_key)
- {
- 	return 1;
- }
-@@ -2450,11 +2450,11 @@ static int __lock_acquire(struct lockdep
- 		chain_head = 1;
- 	}
- 	chain_key = iterate_chain_key(chain_key, id);
--	curr->curr_chain_key = chain_key;
+ 	struct list_head *tmp;
++	int i = 0;
  
--	if (!validate_chain(curr, lock, hlock, chain_head))
-+	if (!validate_chain(curr, lock, hlock, chain_head, chain_key))
- 		return 0;
- 
-+	curr->curr_chain_key = chain_key;
- 	curr->lockdep_depth++;
- 	check_chain_key(curr);
- #ifdef CONFIG_DEBUG_LOCKDEP
+ next_task:
+ 	if (posix_same_owner(caller_fl, block_fl))
+@@ -706,6 +715,8 @@ next_task:
+ 	list_for_each(tmp, &blocked_list) {
+ 		struct file_lock *fl = list_entry(tmp, struct file_lock, fl_link);
+ 		if (posix_same_owner(fl, block_fl)) {
++			if (i++ > MAX_DEADLK_ITERATIONS)
++				return 0;
+ 			fl = fl->fl_next;
+ 			block_fl = fl;
+ 			goto next_task;
 
 -- 
