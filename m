@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932282AbXKOGep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760078AbXKOGmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932282AbXKOGep (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:34:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932230AbXKOGb1
+	id S1760078AbXKOGmq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:42:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbXKOGmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:31:27 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:2632 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932089AbXKOGbZ (ORCPT
+	Thu, 15 Nov 2007 01:42:32 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55062 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751370AbXKOGmb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:31:25 -0500
-Date: Thu, 15 Nov 2007 14:29:39 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
+	Thu, 15 Nov 2007 01:42:31 -0500
+Date: Wed, 14 Nov 2007 22:39:21 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@kernel.org,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [patch 06/23] Fix SKB_WITH_OVERHEAD calculations.
-Message-ID: <20071115062939.GA23579@gondor.apana.org.au>
-References: <20071115055238.692814352@mini.kroah.org> <20071115062022.GG8282@kroah.com>
-Mime-Version: 1.0
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/16] 2.6.23-stable review, network driver changes
+Message-ID: <20071115063921.GA18827@kroah.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071115062022.GG8282@kroah.com>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 14, 2007 at 10:20:22PM -0800, Greg KH wrote:
-> -stable review patch.  If anyone has any objections, please let us know.
-> 
-> ------------------
-> 
-> From: Herbert Xu <herbert@gondor.apana.org.au>
-> 
-> patch deea84b0ae3d26b41502ae0a39fe7fe134e703d0 in mainline.
-> 
-> [NET]: Fix SKB_WITH_OVERHEAD calculation
+This is the start of the stable review cycle for the 2.6.23.X release.
+There are 16 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-Although this is correct as it is, it tirggers a latent bug
-which is fixed by
+These patches are sent out with a number of different people on the Cc:
+line.  If you wish to be a reviewer, please email stable@kernel.org to
+add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-commit fb93134dfc2a6e6fbedc7c270a31da03fce88db9
-Author: Herbert Xu <herbert@gondor.apana.org.au>
-Date:   Wed Nov 14 15:45:21 2007 -0800
+Responses should be made by Friday 00:00:00 UTC.  Anything received
+after that time might be too late.
 
-    [TCP]: Fix size calculation in sk_stream_alloc_pskb
+This set of patches focuses on only networking drivers.
 
-So please postpone it to the next round such that both patches
-can be included together.
+The diffstat of this review series is included below.
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+thanks,
+
+greg k-h
+
+-----
+
+ drivers/net/ehea/ehea_qmr.c            |   20 +---
+ drivers/net/ehea/ehea_qmr.h            |    2 
+ drivers/net/forcedeth.c                |   35 ++++++--
+ drivers/net/pppol2tp.c                 |   25 ++++-
+ drivers/net/skge.c                     |  141 +++++++++++++++++----------------
+ drivers/net/skge.h                     |    6 -
+ drivers/net/sky2.c                     |   87 ++++++++++++++++----
+ drivers/net/tg3.c                      |   10 +-
+ drivers/net/wireless/ipw2100.c         |   39 +++++++++
+ drivers/net/wireless/ipw2100.h         |    4 
+ drivers/net/wireless/libertas/11d.c    |    2 
+ drivers/net/wireless/libertas/cmd.c    |    6 -
+ drivers/net/wireless/libertas/wext.c   |    8 -
+ drivers/net/wireless/rtl8187_dev.c     |   31 +++----
+ drivers/net/wireless/zd1201.c          |    4 
+ drivers/net/wireless/zd1211rw/zd_usb.c |    7 +
+ include/linux/pci_ids.h                |    4 
+ 17 files changed, 283 insertions(+), 148 deletions(-)
