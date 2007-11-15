@@ -1,116 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933230AbXKOVke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933636AbXKOVkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933230AbXKOVke (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 16:40:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760146AbXKOVkY
+	id S933636AbXKOVkt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 16:40:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932889AbXKOVkc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 16:40:24 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:33036 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753562AbXKOVkW (ORCPT
+	Thu, 15 Nov 2007 16:40:32 -0500
+Received: from py-out-1112.google.com ([64.233.166.182]:12548 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932302AbXKOVkb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 16:40:22 -0500
+	Thu, 15 Nov 2007 16:40:31 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=haWO2lve7aipnjuVIJ9aKT+gKVBBM/tL2l4ga/+OfBO5isR02ure9p27k6edP5oQYEoa6jtEHOdbrLSzdKOYIIHV4u14eVjDnSVIgVzVT1WzYxiApZKRS/IwQxJ50i6+BexlQuzKRrbslOWbRsGLoyDjPfeH63LgfhuINVa8R/8=
-Message-ID: <473CBCBE.1060001@googlemail.com>
-Date: Thu, 15 Nov 2007 22:40:14 +0100
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071004)
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZpR1bXp19CiaovbnRQm2ENp2JxpMmorDeCgV7ezkwDb3nsS8zsLUkQCwDI1qyoPMK8plOjHDEApd+nNJBce7UqhM0o1JnwzxIBXjJfXw+GcJY/bSMDW0GxzHG1dJ7Gn/cLtDQ6p8Bupdd6n9ig/xiyLyTk6cazL5OTB+KFF+mFg=
+Message-ID: <cac0ab7d0711151340l1cc91a2dw5ebf36e166d16d7a@mail.gmail.com>
+Date: Thu, 15 Nov 2007 22:40:13 +0100
+From: "Jonas Danielsson" <the.sator@gmail.com>
+To: "Alexey Kuznetsov" <kuznet@ms2.inr.ac.ru>
+Subject: Re: [PATCH] net/ipv4/arp.c: Fix arp reply when sender ip 0 (was: Strange behavior in arp probe reply, bug or feature?)
+Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, jmorris@namei.org,
+       netdev@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <20071115154032.GA30391@ms2.inr.ac.ru>
 MIME-Version: 1.0
-To: mgross@linux.intel.com
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc2-mm1
-References: <20071113175906.497a1a6a.akpm@linux-foundation.org> <473A678C.2020507@googlemail.com> <473A76FA.4050701@googlemail.com> <20071114202959.GA21049@linux.intel.com> <20071114124008.095f307d.akpm@linux-foundation.org> <20071115191950.GA8002@linux.intel.com>
-In-Reply-To: <20071115191950.GA8002@linux.intel.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <cac0ab7d0711150340p58eda94ah92894072ba328205@mail.gmail.com>
+	 <20071115154032.GA30391@ms2.inr.ac.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mark gross wrote:
-> On Wed, Nov 14, 2007 at 12:40:08PM -0800, Andrew Morton wrote:
->> On Wed, 14 Nov 2007 12:29:59 -0800 mark gross <mgross@linux.intel.com> wrote:
->>
->>>>> [  102.366932]  =======================
->>>>> [  108.552031] printk: 31 messages suppressed.
->>>>
->>>> All this BUG / WARNINGS are caused by *-qos* patches. Reverting this 3 patches makes the BUGs go away :
->>>>
->>>> latencyc-use-qos-infrastructure.patch
->>>> pm-qos-infrastructure-and-interface.patch
->>>> pm-qos-infrastructure-and-interface-static-initialization-with-blocking-notifiers.patch
->>>>
->>>>
->>>> Gabriel
->>>>
->>>>
->>> This looks like the same issue Rafael saw.
->>>
->>> Try the patch in the following post:
->>>
->>> http://marc.info/?l=linux-kernel&m=119265627228498&w=2
->>>
->> Well that's not very good.  _I_ can go fishing in my lkml archives for random
->> patches but not everyone is set up to do that.  And the diff to which you
->> refer gets 100% rejects against rc2-mm1 anyway.
->>
->> Please prepare a tested, changelogged patch against rc2-mm1 asap.  
-> 
-> I'm having difficulty coming up with a .config that boots, I'll continue
-> working on this but the following is what I'm pretty confident will fix
-> the warnings.
+Hi,
 
-Yes your patch fixes the warnings / problems here. Thx.
+I started to look at this code when I was working on a project of
+rewriting a dhcp-client.
+I wanted to make the client use arp to determine if the offered
+address was free or in use.
+Thats when I  noticed that linux machines responded in this, for me, odd way.
 
+The problem is not really the target ip address in the reply, it is
+the fact that the target hardware address is set to the hardware
+address of the machines that is sending the reply.
+The target hardware address should be the same as the destination
+address in the ethernet frame.
 
-> 
-> You should hold off until I get a system booting 2.6.24-rc2-mm1 before
-> taking this.
-> 
-> pm-qos-remove-locks-around-blocking-notifier-registration.patch
-> 
-> Changelog: 
-> Remove spin locking around blocking notifier calls that can sleep.
-> 
-> --mgross
-> 
-> Signed-off-by: mark gross <mgross@linux.intel.com>
-> 
-> 
-> 
-> 
-> Index: linux-2.6.24-rc2-mm1/kernel/pm_qos_params.c
-> ===================================================================
-> --- linux-2.6.24-rc2-mm1.orig/kernel/pm_qos_params.c	2007-11-15 11:09:27.000000000 -0800
-> +++ linux-2.6.24-rc2-mm1/kernel/pm_qos_params.c	2007-11-15 11:10:08.000000000 -0800
-> @@ -319,13 +319,10 @@
->   */
->   int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier)
->  {
-> -	unsigned long flags;
->  	int retval;
->  
-> -	spin_lock_irqsave(&pm_qos_lock, flags);
->  	retval = blocking_notifier_chain_register(
->  			pm_qos_array[pm_qos_class]->notifiers, notifier);
-> -	spin_unlock_irqrestore(&pm_qos_lock, flags);
->  
->  	return retval;
->  }
-> @@ -341,13 +338,10 @@
->   */
->  int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier)
->  {
-> -	unsigned long flags;
->  	int retval;
->  
-> -	spin_lock_irqsave(&pm_qos_lock, flags);
->  	retval = blocking_notifier_chain_unregister(
->  			pm_qos_array[pm_qos_class]->notifiers, notifier);
-> -	spin_unlock_irqrestore(&pm_qos_lock, flags);
->  
->  	return retval;
->  }
-> 
+The dhcp clients I examined, and the implementation of the arpcheck
+that I use will compare the target hardware field of the arp-reply and
+match it against its own mac, to verify the reply. And this fails with
+the current implementation in the kernel.
+
+As for the the target ip set to 0, that is the behavior I saw in
+Windows and OpenBSD machines and figured it was a valid approach. The
+main thing is however that the target machine address in the arp reply
+in this case will confuse dhcp-clients trying to verify the reply.
+
+And even if your arping implementation will work with any variant,
+other implementation of this approach of duplicate ip detection
+expects a differeant behavior.
+
+Is there a reason that the target hardware address isn't the target
+hardware address?
+
+-Jonas
+
+2007/11/15, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>:
+> Hello!
+>
+> > Send a correct arp reply instead of one with sender ip and sender
+> > hardware adress in target fields.
+>
+> I do not see anything more legal in setting target address to 0.
+>
+>
+> Actually, semantics of target address in ARP reply is ambiguous.
+> If it is a reply to some real request, it is set to address of requestor
+> and protocol requires recipient of this arp reply to test that the address
+> matches its own address before creating new entry triggered by unsolicited
+> arp reply. That's all.
+>
+> In the case of duplicate address detection, requestor does not have
+> any address, so that it is absolutely not essential what we use as target
+> address. The only place, which could depend on this is the tool, which
+> tests for duplicate address. At least, arping written by me, should
+> work with any variant.
+>
+> So, please, could you explain what did force you to think that use of 0
+> is better?
+>
+> Alexey
+>
