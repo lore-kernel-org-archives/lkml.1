@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932625AbXKOStw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932169AbXKOSvI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932625AbXKOStw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 13:49:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764788AbXKOStk
+	id S932169AbXKOSvI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 13:51:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760572AbXKOSu5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 13:49:40 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:37948 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759533AbXKOStj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 13:49:39 -0500
-Date: Thu, 15 Nov 2007 10:49:37 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Jonathan Corbet <corbet@lwn.net>
-cc: andi@firstfloor.org, David Miller <davem@davemloft.net>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       dada1@cosmosbay.com, schwidefsky@de.ibm.com
-Subject: Re: [patch 01/28] cpu alloc: The allocator
-In-Reply-To: <20071113.215306.78239549.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0711151045060.28051@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0711132011060.7528@schroedinger.engr.sgi.com>
- <20071113.201853.40241484.davem@davemloft.net>
- <Pine.LNX.4.64.0711132023290.7631@schroedinger.engr.sgi.com>
- <20071113.215306.78239549.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 15 Nov 2007 13:50:57 -0500
+Received: from smtp-104-thursday.noc.nerim.net ([62.4.17.104]:4316 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759604AbXKOSu4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 13:50:56 -0500
+Date: Thu, 15 Nov 2007 19:50:54 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux I2C <i2c@lm-sensors.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] i2c fixes for 2.6.24
+Message-ID: <20071115195054.1a91df5a@hyperion.delvare>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well there is an LWN article now that also claims that the cpu_alloc 
-patchset requires a large bss space. Sigh. See
+Linus,
 
-http://lwn.net/Articles/257828/
+Please pull the i2c subsystem fixes for Linux 2.6.24 from:
 
-Not true! 44 bytes is reasonable.
+git://jdelvare.pck.nerim.net/jdelvare-2.6 i2c-for-linus
 
-christoph@stapp:~/linux-2.6$ size mm/cpu_alloc.o
-   text    data     bss     dec     hex filename
-   5625      36      44    5705    1649 mm/cpu_alloc.o
+There are fixes to the i2c-dev, i2c-pasemi and eeprom drivers, and
+comment updates.
 
-Need to separate out the virtualization into a separate patch in V2 to 
-make clear that it is there.
+ drivers/i2c/busses/i2c-pasemi.c |    7 +++-
+ drivers/i2c/chips/eeprom.c      |   37 +++++++++++------
+ drivers/i2c/i2c-core.c          |    3 +-
+ drivers/i2c/i2c-dev.c           |   86 ++++++++++++++++++++++++++++++++++++++-
+ include/linux/i2c.h             |    5 --
+ 5 files changed, 115 insertions(+), 23 deletions(-)
 
+---------------
 
+David Brownell (1):
+      i2c-dev: "how does it work" comments
+
+Jean Delvare (4):
+      i2c-dev: Unbound new-style i2c clients aren't busy
+      i2c: Make i2c_check_addr static
+      i2c/eeprom: Hide Sony Vaio serial numbers
+      i2c/eeprom: Recognize VGN as a valid Sony Vaio name prefix
+
+Olof Johansson (1):
+      i2c-pasemi: Fix NACK detection
+
+Robert P. J. Day (1):
+      i2c-pasemi: Replace obsolete "driverfs" reference with "sysfs"
+
+Thanks,
+-- 
+Jean Delvare
