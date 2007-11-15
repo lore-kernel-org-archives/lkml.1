@@ -1,118 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765966AbXKOTei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762693AbXKOTff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765966AbXKOTei (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 14:34:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759131AbXKOTeb
+	id S1762693AbXKOTff (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 14:35:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757693AbXKOTf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 14:34:31 -0500
-Received: from www.tglx.de ([62.245.132.106]:45376 "EHLO www.tglx.de"
+	Thu, 15 Nov 2007 14:35:27 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35318 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752665AbXKOTea (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 14:34:30 -0500
-Date: Thu, 15 Nov 2007 20:33:54 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "David P. Reed" <dpreed@reed.com>
-cc: linux-kernel@vger.kernel.org, Allessandro Zummo <a.zummo@towertech.it>,
-       Matt Mackall <mpm@selenic.com>
-Subject: Re: [PATCH] x86: on x86_64, correct reading of PC RTC when update
- in progress in time_64.c
-In-Reply-To: <473B9D8A.5000006@reed.com>
-Message-ID: <alpine.LFD.0.9999.0711152021270.3112@localhost.localdomain>
-References: <466F0941.9060201@reed.com> <1181682498.8176.224.camel@chaos>  <469578CD.3080609@reed.com>  <1184216528.12353.203.camel@chaos>  <1184218962.12353.209.camel@chaos>  <46964352.7040301@reed.com>  <1184253339.12353.223.camel@chaos>  <469697C6.50903@reed.com>
- <1184274754.12353.254.camel@chaos> <473B9D8A.5000006@reed.com>
+	id S1757071AbXKOTf0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 14:35:26 -0500
+Date: Thu, 15 Nov 2007 20:34:24 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Pavel Machek <pavel@ucw.cz>, Mark Lord <liml@rtr.ca>,
+       Thomas Gleixner <tglx@linutronix.de>, len.brown@intel.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, rjw@sisk.pl
+Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
+Message-ID: <20071115193424.GA31691@elte.hu>
+References: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com> <20071113031553.3c7b5c16.akpm@linux-foundation.org> <4739ADA2.4060604@rtr.ca> <alpine.LFD.0.9999.0711131521590.3265@localhost.localdomain> <4739E347.30406@rtr.ca> <473C7495.40805@rtr.ca> <20071115181418.GA6603@ucw.cz> <473C825E.3030307@rtr.ca>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <473C825E.3030307@rtr.ca>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Nov 2007, David P. Reed wrote:
 
-Still whitespace wreckage in your patches. I guess the kernel tree you
-made your patches against is already white space wrecked.
+* Mark Lord <lkml@rtr.ca> wrote:
 
-I fixed that up manually, but please be more careful about that next
-time.
+>> Can you try nohz=off highres=off? Strange stuff is happening with 
+>> nohz.
+>
+> (added Ingo to CC: list: maybe this is some weird interaction with CFS 
+> and jiffies being reset to 0 on resume ??)
 
-> Correct potentially unstable PC RTC time register reading in time_64.c
-> 
-> Stop the use of an incorrect technique for reading the standard PC RTC
-> timer, which is documented to "disconnect" time registers from the bus
-> while updates are in progress.  The use of UIP flag while interrupts
-> are disabled to protect a 244 microsecond window is one of the
-> Motorola spec sheet's documented ways to read the RTC time registers
-> reliably.
-> 
-> The patch updates the misleading comments and also minimizes the amount of
-> time that the kernel disables interrupts during the reading.
+hm, CFS should have no impact here. To see what's happening you could 
+try to use the latency tracer of the -rt patch and do a cross-resume 
+trace.
 
-While I think that the UIP change is correct and a must have, the
-locking change is not really useful. read_persistent_clock is called
-from exactly three places:
+pick up the latest latency tracer patch from:
 
-Right after boot, right before suspend and right after resume. None of
-those places is a hot path, where we really care about the interrupt
-enable/disable. IIRC, this is even called with interrupts disabled
-most of the time, so no real gain here.
+  http://redhat.com/~mingo/private/latency-tracer-v2.6.24-rc2-git5-combo.patch
 
-Another reason not to do the locking change is the paravirt stuff
-which is coming for 64bit. I looked into the existing 32bit code and
-doing the same lock thing would introduce a real nasty hackery, which
-is definitely not worth the trouble.
+apply it and enable CONFIG_FUNCTION_TRACING, then pick up trace-cmd.c:
 
-Thanks,
+  http://redhat.com/~mingo/private/trace-cmd.c
 
-	tglx
+and do something like:
 
-> Signed-off-by: David P. Reed <dpreed@reed.com>
-> ---
-> Index: linux-2.6/arch/x86/kernel/time_64.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/time_64.c
-> +++ linux-2.6/arch/x86/kernel/time_64.c
-> @@ -160,22 +160,30 @@ unsigned long read_persistent_clock(void
->  	unsigned long flags;
->  	unsigned century = 0;
-> 
-> -	spin_lock_irqsave(&rtc_lock, flags);
-> + retry:	spin_lock_irqsave(&rtc_lock, flags);
-> +	/* if UIP is clear, then we have >= 244 microseconds before RTC
-> +	 * registers will be updated.  Spec sheet says that this is the
-> +	 * reliable way to read RTC - registers invalid (off bus) during
-> update
-> +	 */
-> +	if ((CMOS_READ(RTC_FREQ_SELECT) & RTC_UIP)) {
-> +	  spin_unlock_irqrestore(&rtc_lock, flags);
-> +	  cpu_relax();
-> +	  goto retry;
-> +	}
-> 
-> -	do {
-> -		sec = CMOS_READ(RTC_SECONDS);
-> -		min = CMOS_READ(RTC_MINUTES);
-> -		hour = CMOS_READ(RTC_HOURS);
-> -		day = CMOS_READ(RTC_DAY_OF_MONTH);
-> -		mon = CMOS_READ(RTC_MONTH);
-> -		year = CMOS_READ(RTC_YEAR);
-> +	/* now read all RTC registers while stable with interrupts disabled */
-> +
-> +	sec = CMOS_READ(RTC_SECONDS);
-> +	min = CMOS_READ(RTC_MINUTES);
-> +	hour = CMOS_READ(RTC_HOURS);
-> +	day = CMOS_READ(RTC_DAY_OF_MONTH);
-> +	mon = CMOS_READ(RTC_MONTH);
-> +	year = CMOS_READ(RTC_YEAR);
->  #ifdef CONFIG_ACPI
-> -		if (acpi_gbl_FADT.header.revision >= FADT2_REVISION_ID &&
-> -					acpi_gbl_FADT.century)
-> -			century = CMOS_READ(acpi_gbl_FADT.century);
-> +	if (acpi_gbl_FADT.header.revision >= FADT2_REVISION_ID &&
-> +				acpi_gbl_FADT.century)
-> +		century = CMOS_READ(acpi_gbl_FADT.century);
->  #endif
-> -	} while (sec != CMOS_READ(RTC_SECONDS));
-> -
->  	spin_unlock_irqrestore(&rtc_lock, flags);
-> 
->  	/*
-> 
-> 
+  ./trace-cmd pm-suspend > trace.txt
+
+or:
+
+  ./trace-cmd /bin/bash -c "echo ram > /sys/power/state" > trace.txt
+
+this should trigger suspend - then you should do the resume. If 
+everything goes well then trace.txt should contain a pretty large trace 
+of all the stuff we do during a suspend+resume.
+
+and wait for such a pause and send us the resulting trace.txt.
+
+if it's an SMP box then first do:
+
+  echo 1 > /proc/sys/kernel/trace_all_cpus
+
+to get a global trace. Let me know if something doesnt work with this 
+scheme.
+
+	Ingo
