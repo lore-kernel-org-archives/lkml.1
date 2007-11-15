@@ -1,100 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932447AbXKOHSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933250AbXKOHSm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932447AbXKOHSS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 02:18:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757826AbXKOHRW
+	id S933250AbXKOHSm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 02:18:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758546AbXKOHRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 02:17:22 -0500
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:22000 "HELO
+	Thu, 15 Nov 2007 02:17:23 -0500
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:22053 "HELO
 	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752381AbXKOHRT (ORCPT
+	by vger.kernel.org with SMTP id S1752507AbXKOHRT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 15 Nov 2007 02:17:19 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=D3rsHj0FpfiKFiJPkV4Je3aQ5TReMC7dUPUaUzANidXLMK92Nd7gHg5a+lRjkDN8ziRHp7VAUHYEfeh86rlTQVGgMIFdxb8W6dYagXPVWCdtjm45fTkT/ueZxkruKCw3rtyE3ZCmYD8X/uXSjnFbKI3OIhjsDkIhdzgyI9ZQZa0=  ;
-X-YMail-OSG: b62g.bUVM1mHtdQwbr6dYIhx32tPewIa8rZTdTDmVoisCmiRSMotoWgYSfjNVEjFJByW.515uw--
+  b=fV67RNC5bAhM5Nfe+E9IN6nfFHwMT4i1aSLIf31lLxBu828EizydDAk5Wkwteo3+YvuzmOo3Uueslo1zentwyanR7Cwhm0eK6K3cHElqpz7fMMjRacROjbrtmluJPChhZJzdyOakKs5/n16YVZWgkxwvjIe1LdkNS8GOzIP8VO0=  ;
+X-YMail-OSG: ROn5KvEVM1lYf6.uSsvb3rXhUfu_v7jafZYLSahGbQf_eEwubrAUHuuEbh..Yn7wqlnCUnb_oA--
 From: David Brownell <david-b@pacbell.net>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: [patch 2.6.24-rc2 1/3] generic gpio -- gpio_chip support
-Date: Wed, 14 Nov 2007 22:50:17 -0800
+Date: Wed, 14 Nov 2007 23:02:01 -0800
 User-Agent: KMail/1.9.6
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+Cc: Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Florian Fainelli <florian.fainelli@telecomint.eu>
-References: <200711091136.20051.david-b@pacbell.net> <200711140037.58049.david-b@pacbell.net> <20071114105441.2d01018f@dhcp-255-175.norway.atmel.com>
-In-Reply-To: <20071114105441.2d01018f@dhcp-255-175.norway.atmel.com>
+       Florian Fainelli <florian.fainelli@telecomint.eu>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>, Ingo Molnar <mingo@elte.hu>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+References: <200711091136.20051.david-b@pacbell.net> <200711121726.39263.david-b@pacbell.net> <alpine.LFD.0.9999.0711141228210.3265@localhost.localdomain>
+In-Reply-To: <alpine.LFD.0.9999.0711141228210.3265@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711142250.18392.david-b@pacbell.net>
+Message-Id: <200711142302.02498.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 November 2007, Haavard Skinnemoen wrote:
-> On Wed, 14 Nov 2007 00:37:57 -0800
-> David Brownell <david-b@pacbell.net> wrote:
+On Wednesday 14 November 2007, Thomas Gleixner wrote:
+> On Mon, 12 Nov 2007, David Brownell wrote:
+> > > I'm still trying to understand what you've observed here.  Is it the case
+> > > that a single gpio operation went from 6.4 up to 11.2 usecs?
+> > 
+> > That was a single bitbanged I2C bit transfer, with embedded udelay()s.
+> > I believe that was four gpio operations, as summarized at the end of
+> > that email above.  Enabling preempt + debug increased the cost of
+> > each GPIO call from whatever it was (reasonable) by 1.2 usecs.
 > 
-> > Although another point is related to "trivial":  the data
-> > is being protected through an operation too trivial to be
-> > worth paying for any of that priority logic.
+> This raw lock change is just pampering over the design problem of the
+> gpio lib:
 > 
-> But isn't there any way we can remove the lock from the fast path
-> altogether? What is it really protecting?
+> There is no need to check for every single access to a GPIO pin,
+> whether the pin has a valid number and the chip, which provides access
+> to the pin, is still registered.
 
-The integrity of the table.  Entries can be added and removed
-(both operations being *RARE* which is good!) at any time.
-
-
-> Since this is the code that runs under the lock
-
-No, there's more than that.  This is what runs under it in
-the hot paths, yes, but the gpio request/free paths do
-more work than this.  (That includes direction setting,
-since that can be an implicit request.)
+As Haavard had noted.  The "requested" flag is actually serving
+as a longterm bit-level lock, which -- assuming well-behaved
+callers, and no debug instrumentation -- obviates any need to
+grab a spinlock in hot paths.
 
 
-> (excluding the "extra checks" case):
+> Each driver, which wants to access a pin, needs to make sure that
 > 
-> +static inline struct gpio_chip *gpio_to_chip(unsigned gpio)
-> +{
-> +	return chips[gpio / ARCH_GPIOS_PER_CHIP];
-> +}
+> - the pin is available
+> - the pin is associated to this driver
+> - the chip reference count is incremented
 > 
-> I'd say it protects against chips being removed in the middle of the
-> operation. However, this comment says that chips cannot be removed
-> while any gpio on it is requested:
-> 
-> +/* gpio_lock protects the table of chips and to gpio_chip->requested.
-> + * While any gpio is requested, its gpio_chip is not removable.  It's
-> + * a raw spinlock to ensure safe access from hardirq contexts, and to
-> + * shrink bitbang overhead:  per-bit preemption would be very wrong.
-> + */
->
-> And since we drop the lock before calling the actual get/set bit
-> operation, we would be screwed anyway if the chip was removed during
-> the call to __gpio_set_value(). So what does the lock really buy us?
+> _before_ it starts to do anything with the pin. Once this is done the
+> access to the pin is completely lock free except for the protection of
+> the chip hardware itself.
 
-The get/set bit calls are the hot paths.  Locking on those paths
-buys us a consistent locking policy, which is obviously correct.
-It's consistent with the request/free paths.
+That's what the gpio_request() call does, although it's using
+something isomorphic to a refcount, not an actual refcount.
 
-But I think what you're suggesting is that the "requested" flag
-is effectively a long-term lock, so grabbing the spinlock on
-those paths is not necessary.  Right?
+The key observation here is that we already *have* a bit which
+is serving as a per-gpio lock.  It's just never been viewed as
+a lock before.  :)
 
-Hmm ... that makes some sense.  I hadn't started out thinking of
-that "requested" flag as a lock bit, but in fact that's what it
-ended up becoming.
 
-Removing the spinlock from those paths -- at least in the "no
-extra checks case" -- would let us avoid all this flamage about
-whether raw spinlocks are ever OK.
+> The protection of the chip list can be converted to a mutex and
+> does not need to be a spinlock at all.
 
-I think I forsee a patch coming...
+No, we still need to use a spinlock to protect table changes.
+The reason for that is briefly:
+
+  - gpio_request()/gpio_free() have so far been optional.  Most
+    platforms implement them as NOPs, not all drivers use them.
+    (Having gpiolib in place should help change that ...)
+
+  - gpio_direction_input()/gpio_direction_output() implicitly
+    request the pins, if they weren't already requested.
+
+  - Those input/output direction-setting calls may be called
+    in IRQ contexts, which means (on non-RT kernels) no mutex.
+
+
+So we're actually in good shape; just take out a bit of code
+(or turn it into debugging instrumentation) and I don't think
+anyone will complain about the locking any more.
 
 - Dave
+
