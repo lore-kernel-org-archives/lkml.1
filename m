@@ -1,58 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763192AbXKOQgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763590AbXKOQjP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763192AbXKOQgr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 11:36:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757188AbXKOQgj
+	id S1763590AbXKOQjP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 11:39:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757752AbXKOQjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 11:36:39 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:52003 "EHLO mail.screens.ru"
+	Thu, 15 Nov 2007 11:39:00 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:52342 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757160AbXKOQgi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 11:36:38 -0500
-Date: Thu, 15 Nov 2007 19:36:19 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Rusty Russel <rusty@rustcorp.com.au>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Paul E McKenney <paulmck@us.ibm.com>,
-       Richard Gooch <rgooch@atnf.csiro.au>,
-       Tigran Aivazian <tigran@aivazian.fs.co.uk>,
-       Shoahua Li <shaohua.li@linux.com>, Ralf Baechle <ralf@linux-mips.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Nathan Lynch <ntl@pobox.com>, Paul Jackson <pj@sgi.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Akinobu Mita <akinobu.mita@gmail.com>
-Subject: Re: [RFC PATCH 3/3] cpu-hotplug: Replace per-subsystem mutexes with get_online_cpus()
-Message-ID: <20071115163619.GA110@tv-sign.ru>
-References: <20071115134924.GA15282@in.ibm.com> <20071115135336.GC15462@in.ibm.com>
-Mime-Version: 1.0
+	id S1756299AbXKOQi7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 11:38:59 -0500
+Date: Thu, 15 Nov 2007 08:34:35 -0800
+From: Greg KH <gregkh@suse.de>
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
+Subject: Re: EIP is at device_shutdown+0x32/0x60
+Message-ID: <20071115163435.GC24087@suse.de>
+References: <20071115091158.GB6216@localhost.sw.ru> <20071115014446.f943d835.akpm@linux-foundation.org> <20071115213345.B3C1.Y-GOTO@jp.fujitsu.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071115135336.GC15462@in.ibm.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20071115213345.B3C1.Y-GOTO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/15, Gautham R Shenoy wrote:
->
-> This patch converts the known per-subsystem mutexes to get_online_cpus
-> put_online_cpus. It also eliminates the CPU_LOCK_ACQUIRE
-> and CPU_LOCK_RELEASE hotplug notification events.
+On Thu, Nov 15, 2007 at 09:55:34PM +0900, Yasunori Goto wrote:
+> > On Thu, 15 Nov 2007 12:11:58 +0300 Alexey Dobriyan <adobriyan@sw.ru> wrote:
+> > 
+> > > Three boxes rarely oops during reboot or poweroff with 2.6.24-rc2-mm1
+> > > (1) and during 2.6.24 cycle (2):
+> > > 
+> > > 	kernel_restart
+> > > 	sys_reboot
+> > > 	[garbage]
+> > > Code: 8b 88 a8 00 00 00 85 c9 74 04 89
+> > > EIP is at device_shutdown+0x32/0x60
+> > 
+> > Yes, all my test boxes did that - it's what I referred to in the releaee
+> > notes.  Greg is pondering the problem - seem he's the only person who
+> > cannot reproduce it ;)
 > 
-> Signed-off-by: Gautham  R Shenoy <ego@in.ibm.com>
-> ---
->  include/linux/notifier.h |    4 +---
->  kernel/cpu.c             |    4 ----
->  kernel/sched.c           |   25 +++++++++----------------
->  kernel/workqueue.c       |   35 +++++++++++++++--------------------
->  mm/slab.c                |   18 +++++++++++-------
+> Fortunately, my ia64 box reproduces this oops "every time". 
+> So, I could chase it.
+> 
+> device_shutdown() function in drivers/base/power/shutdown.c
+> is followings.
+> -----------
+> /**
+>  * device_shutdown - call ->shutdown() on each device to shutdown.
+>  */
+> void device_shutdown(void)
+> {
+>         struct device * dev, *devn;
+> 
+>         list_for_each_entry_safe_reverse(dev, devn, &devices_kset->list,
+>                                 kobj.entry) {
+>                 if (dev->bus && dev->bus->shutdown) {
+>                         dev_dbg(dev, "shutdown\n");
+>                         dev->bus->shutdown(dev);
+>                 } else if (dev->driver && dev->driver->shutdown) {
+>                         dev_dbg(dev, "shutdown\n");
+>                         dev->driver->shutdown(dev);
+>                 }
+>         }
+> }
+> --------
+> When oops occured, dev->driver pointed kset_ktype's address,
+> and dev->driver->shutdown was the address of bus_type_list.
+> So, Oops was caused by "Illegal operation fault".
+> kset_ktypes is pointed by system_kset.
+> 
+> If my understanding is correct, this loop can't distinguish between
+> struct device and struct kset, but both are connected in this list,
+> right? It may be the cause of this.
 
-Can't really comment the changes outside the workqueue.c, but imho the
-whole series is very good.
+Hm, no, it should just be a list of devices for the kset, but I'll go
+verify that this is correct.
 
-Oleg.
+And yeah, I can duplicate this problem here too...
 
+thanks,
+
+greg k-h
