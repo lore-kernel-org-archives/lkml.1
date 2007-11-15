@@ -1,96 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932367AbXKOTYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932097AbXKOT1L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932367AbXKOTYY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 14:24:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759300AbXKOTYQ
+	id S932097AbXKOT1L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 14:27:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759580AbXKOT04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 14:24:16 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:49422 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757493AbXKOTYP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 14:24:15 -0500
-Date: Thu, 15 Nov 2007 20:25:55 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kconfig: use $K64BIT to set 64BIT with all*config targets
-Message-ID: <20071115192555.GD23914@uranus.ravnborg.org>
-References: <20071110204038.GA13140@uranus.ravnborg.org> <11947274093185-git-send-email-sam@ravnborg.org> <11947274091127-git-send-email-sam@ravnborg.org> <Pine.LNX.4.64.0711142116500.1818@scrub.home> <20071114220840.GB10920@uranus.ravnborg.org> <Pine.LNX.4.64.0711151616330.1817@scrub.home>
-Mime-Version: 1.0
+	Thu, 15 Nov 2007 14:26:56 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60792 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751026AbXKOT0z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 14:26:55 -0500
+Date: Thu, 15 Nov 2007 11:23:19 -0800
+From: Greg KH <greg@kroah.com>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc2-mm1
+Message-ID: <20071115192319.GA30186@kroah.com>
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org> <Pine.LNX.4.64.0711141728290.15844@twin.jikos.cz> <20071114083906.178232cb.akpm@linux-foundation.org> <Pine.LNX.4.64.0711141740110.15844@twin.jikos.cz> <Pine.LNX.4.64.0711141758570.15844@twin.jikos.cz> <20071114181948.GA15240@kroah.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0711151616330.1817@scrub.home>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20071114181948.GA15240@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 15, 2007 at 04:43:03PM +0100, Roman Zippel wrote:
-> Hi,
+On Wed, Nov 14, 2007 at 10:19:48AM -0800, Greg KH wrote:
+> On Wed, Nov 14, 2007 at 06:02:07PM +0100, Jiri Kosina wrote:
+> > On Wed, 14 Nov 2007, Jiri Kosina wrote:
+> > 
+> > > > I'd suspect the driver tree.  I think I'll need to do a quick -mm2 
+> > > > without that tree present.
+> > > I am just verifying whether reverting kset changes fixes this, will let 
+> > > you know soon.
+> > 
+> > OK, so I reverted 
+> > gregkh-driver-kset-convert-block_subsys-to-use-kset_create (which made me 
+> > also revert gregkh-driver-kobject-remove-subsystem_register-functions and 
+> > gregkh-driver-kset-remove-decl_subsys-macro so that we compile). Both the 
+> > error message from lockdep and more importantly the spinlock lockup have 
+> > gone, and the system with these patches reverted boots for me fine.
+> > 
+> > Well not that fine, I still see (which is the same backtrace that caused 
+> > the lockup with plain -rc2-mm1, but doesn't make the machine hang):
+> > 
+> > floppy0: Floppy io-port 0x03f2 in use
+> > WARNING: at lib/kref.c:33 kref_get()
+> > 
+> > Call Trace:
+> >  [<ffffffff8035bd43>] kobject_add+0x9b/0x197
+> >  [<ffffffff8035c6e1>] kref_get+0x2f/0x36
+> >  [<ffffffff8035b82f>] kobject_get+0x12/0x17
+> >  [<ffffffff8035bd55>] kobject_add+0xad/0x197
+> >  [<ffffffff802c9a36>] register_disk+0x48/0x205
+> >  [<ffffffff80355cf3>] add_disk+0x34/0x3d
+> >  [<ffffffff8083cd99>] rd_init+0x172/0x1e1
+> >  [<ffffffff8082063a>] kernel_init+0x175/0x2e6
+> >  [<ffffffff8025193c>] trace_hardirqs_on+0x115/0x139
+> >  [<ffffffff80598769>] trace_hardirqs_on_thunk+0x35/0x3a
+> >  [<ffffffff8025193c>] trace_hardirqs_on+0x115/0x139
+> >  [<ffffffff8020c628>] child_rip+0xa/0x12
+> >  [<ffffffff8020bd3f>] restore_args+0x0/0x30
+> >  [<ffffffff808204c5>] kernel_init+0x0/0x2e6
+> >  [<ffffffff8020c61e>] child_rip+0x0/0x12
 > 
-> On Wed, 14 Nov 2007, Sam Ravnborg wrote:
+> someone is trying to call kref_get on a kobject that has not been
+> initialized yet, which could be the reason the newer patches break
+> something, as the pointers are not set up properly with a call to
+> kobject_init() first.
 > 
-> > The value can be supplied on the command-line so we need to validate input.
+> But, alloc_disk() should have been called on this gendisk for it to work
+> properly at all, unless something is trashing that structure?
 > 
-> Is there a need for this?
-Yes. We would like to set 64BIT or not in other than x86 cases.
-And way forward was not to override ARCH as in the x86 case.
+> I'm way confused...
+
+This patch, as found by Dave Young, should fix the issue:
+
+I'll roll it into my larger patchset so that Andrew will get it
+automatically next release, but here it is for people to use now.
+
+thanks,
+
+greg k-h
+
+--------------
+
+From: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: fix bug with adding new block devices in -mm
+
+need to set the kset before initializing the kobject.
 
 
-> BTW ARCH was already available as a value in the Kconfig files, so setting 
-> the 64BIT option was already possible without any changes the kconfig 
-> system, e.g.:
-> 
-> config 64BIT
-> 	bool "64 Bit kernel" if ARCH!="i386" && ARCH!="x86_64"
-> 	default ARCH="x86_64"
+---
+ block/genhd.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I thought this was not possible but it must have been the limitation
-of choice symbols I have hit when I played with it.
-
-
-> The patch below adds some features to it:
-> - it allows to import any environment variable by specifying "option env=..."
-> - it generates a dependency on it, so the kernel config is updated if it 
-> changes.
-> 
-> Please revert the K64BIT changes and use this instead.
-
-I will finish up your patch and target it for next merge window.
-Thanks.
-
-> 
-> > The code is a copy of what happen when reading a all.config file and
-> > the functionality should be equal.
-> > Can we make that part simpler too?
-> 
-> These are two different uses, when reading a .config only the basic syntax 
-> is checked, but not the value itself.
-This is wrong considering the amount of people that hand edit the .config file.
-
-
-> > By the way - I have never understood the purpose of the flags (S_DEF_USER etc.)
-> > Can we have a few comments added to their definition?
-> 
-> It allows to hold multiple configs, a user of it is conf_split_config() 
-> which loads another config and compares to the current config and updates 
-> the files under include/config as needed.
-> It could also be used by front ends to display what actually changed 
-> compared to e.g. the saved config.
-
-Took a deeper look.
-So we can have 4 different set of vlaues where the value indexed by S_DEF_USER
-is the one that is actually used and the other three can be used to hold values.
-
-I will try to document this in expr.h
-Patch will be sent to you for review.
-
-> > One of the blockers are that kconfig does not support more than one prompt
-> > for a choice symbol. Is this something you can fix - or sketch how to fix it?
-> 
-> The basic idea is to add a name to the choice, so multiple choices can be 
-> grouped together. This requires some changes to the dependency check to 
-> make sure one choice option doesn't depend on another (which is currently 
-> enforced by the syntax).
-Do you have any suggestions how to properly fix this?
-
-	Sam
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -718,9 +718,9 @@ struct gendisk *alloc_disk_node(int mino
+ 			}
+ 		}
+ 		disk->minors = minors;
+-		kobject_init(&disk->kobj);
+ 		disk->kobj.kset = block_kset;
+ 		disk->kobj.ktype = &ktype_block;
++		kobject_init(&disk->kobj);
+ 		rand_initialize_disk(disk);
+ 		INIT_WORK(&disk->async_notify,
+ 			media_change_notify_thread);
