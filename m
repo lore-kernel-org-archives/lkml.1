@@ -1,112 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765892AbXKORQL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765717AbXKORRN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765892AbXKORQL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 12:16:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762624AbXKORPu
+	id S1765717AbXKORRN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 12:17:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760559AbXKORQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 12:15:50 -0500
-Received: from moutng.kundenserver.de ([212.227.126.174]:59803 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761649AbXKORPs (ORCPT
+	Thu, 15 Nov 2007 12:16:58 -0500
+Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:50513
+	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760235AbXKORQ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 12:15:48 -0500
+	Thu, 15 Nov 2007 12:16:56 -0500
+Date: Thu, 15 Nov 2007 09:15:08 -0800
+From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: Greg KH <greg@kroah.com>, Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       bk@suse.de, khali@linux-fr.org, Boaz Harrosh <bharrosh@panasas.com>,
+       James <James.Bottomley@HansenPartnership.com>
 Subject: Re: 2.6.24-rc2-mm1
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Greg KH <greg@kroah.com>
-Cc: Dave Young <hidave.darkstar@gmail.com>, Jiri Kosina <jikos@jikos.cz>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20071115170634.GA24587@kroah.com>
-References: <a8e1da0711132247jd440f8dgc9ac0442e90f2c34@mail.gmail.com>
-	 <20071114004129.783fb98b.akpm@linux-foundation.org>
-	 <a8e1da0711140136i1e441371j306e7b2888de104e@mail.gmail.com>
-	 <20071114165906.GB13889@kroah.com> <1195065493.2168.31.camel@lov.site>
-	 <Pine.LNX.4.64.0711142018390.15844@twin.jikos.cz>
-	 <1195075663.2609.2.camel@lov.site>
-	 <a8e1da0711141701xc66109dv93ad2c3d2b76ebec@mail.gmail.com>
-	 <1195094293.2731.14.camel@lov.site>
-	 <20071115081407.GA3688@darkstar.te-china.tietoenator.com>
-	 <20071115170634.GA24587@kroah.com>
-Content-Type: text/plain
-Date: Thu, 15 Nov 2007 18:16:24 +0100
-Message-Id: <1195146984.2748.3.camel@lov.site>
+Message-ID: <20071115171508.GQ6089@one-eyed-alien.net>
+Mail-Followup-To: Gabriel C <nix.or.die@googlemail.com>,
+	Greg KH <greg@kroah.com>, Alan Stern <stern@rowland.harvard.edu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, bk@suse.de, khali@linux-fr.org,
+	Boaz Harrosh <bharrosh@panasas.com>,
+	James <James.Bottomley@HansenPartnership.com>
+References: <473A678C.2020507@googlemail.com> <20071114034924.GA26048@kroah.com> <20071114043923.GK6089@one-eyed-alien.net> <473A88B3.3010303@googlemail.com> <20071114082332.GM6089@one-eyed-alien.net> <473ABE7D.6060703@googlemail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18Lc86Gm/bZYqVRaKwcGurOtzXRrVfbIMb75r/
- YBXlKVWq/VkCpdjfcom4Dbem86oDRvd4J/Bke4/W02Prj0W1gk
- zXaNqBMcmEN9cfkfNyo/vlCt/1aBxp4
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="FcSpk3Icpd/Pbul4"
+Content-Disposition: inline
+In-Reply-To: <473ABE7D.6060703@googlemail.com>
+User-Agent: Mutt/1.4.2.3i
+Organization: One Eyed Alien Networks
+X-Copyright: (C) 2007 Matthew Dharm, all rights reserved.
+X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Thu, 15 Nov 2007 09:15:13 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-11-15 at 09:06 -0800, Greg KH wrote:
-> On Thu, Nov 15, 2007 at 04:14:07PM +0800, Dave Young wrote:
-> > On Thu, Nov 15, 2007 at 03:38:13AM +0100, Kay Sievers wrote:
-> > > On Thu, 2007-11-15 at 09:01 +0800, Dave Young wrote:
-> > > > On Nov 15, 2007 5:27 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
-> > > > > On Wed, 2007-11-14 at 20:19 +0100, Jiri Kosina wrote:
-> > > > > > On Wed, 14 Nov 2007, Kay Sievers wrote:
-> > > > > >
-> > > > > > > Could it be an init-order problem, where something tries to use the
-> > > > > > > block subsystem? Before it is initialized with:
-> > > > > > >   block/genhd.c :: subsys_initcall(genhd_device_init);
-> > > > > > > If that's the case, we have an old bug that nobody noticed with static
-> > > > > > > structures, which are zeroed that time, but definitely not properly
-> > > > > > > initialized. I'll try to build loop non-modular now, and see if that
-> > > > > > > makes the bug appear here.
-> > > > >
-> > > > > > my .config with which I reproduc this on 2.6.24-rc2-mm1 reliably can be
-> > > > > > obtained from http://www.jikos.cz/jikos/junk/.config
-> > > > >
-> > > > > Hmm, that config doesn't do anything here, and if I make it boot, it
-> > > > > does not show the bug.
-> > > > >
-> > > > > Could you possibly enable kobject debugging and see if that exposes
-> > > > > something, maybe something goes wrong with the kset refcount and it gets
-> > > > > released while in use.
-> > > > >
-> > > > Hi,
-> > > > I would do that.
-> > > 
-> > > That would be great.
-> > > 
-> > > > BTW, The bug report as EIP  at __list_add with CONFIG_DEBUG_LIST=y
-> > > 
-> > > Yeah, that hints that the kset, which contains the list, is not
-> > > allocated at the time it is used, or it is already released (kfree)
-> > > again by some buggy logic.
-> > Yes, I debugged it, there's some new findings.
-> > It is freed by put_disk.
-> > The floppy driver alloc_disk and then call put_disk without register_disk.
-> > in kobject_cleanup line 551:
-> > if(s)
-> > 	kset_put(s);
-> > Now the kset is set in alloc_disk after kobject_init, so it is not refereced yet.
-> > please try this patch:
-> >  
-> > block/genhd.c |    2 +-
-> > 1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff -upr linux/block/genhd.c linux.new/block/genhd.c
-> > --- linux/block/genhd.c	2007-11-15 15:59:11.000000000 +0800
-> > +++ linux.new/block/genhd.c	2007-11-15 15:59:39.000000000 +0800
-> > @@ -718,9 +718,9 @@ struct gendisk *alloc_disk_node(int mino
-> >  			}
-> >  		}
-> >  		disk->minors = minors;
-> > -		kobject_init(&disk->kobj);
-> >  		disk->kobj.kset = block_kset;
-> >  		disk->kobj.ktype = &ktype_block;
-> > +		kobject_init(&disk->kobj);
-> >  		rand_initialize_disk(disk);
-> >  		INIT_WORK(&disk->async_notify,
-> >  			media_change_notify_thread);
-> 
-> Ah, yes, that is a bug, and it's my fault, let me go fix that in my
-> patch series.
 
-Oh, this is an old bug, that just didn't crash with the static ksets, it
-did all the refcounting wrong, but nobody noticed it because the kset
-data was still there.
+--FcSpk3Icpd/Pbul4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Kay
+On Wed, Nov 14, 2007 at 10:23:09AM +0100, Gabriel C wrote:
+> Matthew Dharm wrote:
+> > On Wed, Nov 14, 2007 at 06:33:39AM +0100, Gabriel C wrote:
+> >> Matthew Dharm wrote:
+> >>> On Tue, Nov 13, 2007 at 07:49:24PM -0800, Greg KH wrote:
+> >>>> Matt, are these the errors you were worried about with the patch we =
+were
+> >>>> just talking about tha tis in my tree?
+> >>> I can't tell from these logs.
+> >> There is the dmesg with CONFIG_USB_STORAGE_DEBUG :
+> >>
+> >> http://194.231.229.228/dmesg-2.6.24-rc2-mm1
+> >=20
+> > Good news: This isn't the bug Greg was worried about.
+> >=20
+> > Bad news: Something is seriously strange here.  Note the following from=
+ the
+> > logs:
+> >=20
+> > Nov 14 06:07:43 lara [   41.890614] usb-storage: Bulk Status S 0x534253=
+55 T 0xd R 0 Stat 0x0
+> > Nov 14 06:07:43 lara [   41.890616] usb-storage: -- unexpectedly short =
+transfer
+> >=20
+> > Note the 'R' value of zero -- this is the residue value.  It indicates a
+> > complete transfer, and that matches the log lines immediately previous
+> > which indicate a 4K transfer which completed properly.
+> >=20
+> > If residue is zero, then srb->resid should be zero.  Take a look in
+> > linux/usb/storage/transport.c in usb_stor_Bulk_transport()
+> >=20
+> > If srb->resid is zero, then you should NEVER get the "unexpectedly short
+> > transfer" message.  Look at usb_stor_invoke_transport() in the same fil=
+e.
+>=20
+> That code got replaced recently but I have no idea about it.
+>=20
+> ( http://git.kernel.org/?p=3Dlinux/kernel/git/jejb/scsi-misc-2.6.git;a=3D=
+shortlog  see the patches from Boaz Harrosh)=20
+>=20
+> srb->resid got replaced by scsi_get_resid() it I see that right.
+>=20
+> I'm CC'ing the author , he will know I think.
 
+The replacement looks, to my eye, to be logically correct.  The patch was
+pretty clean.
+
+Then again, I haven't looked at what is "under the hood" of the accessor
+functions.  Perhaps there is a side-effect somewhere in there?
+
+Perhaps a quick debugging test -- print the value of scsi_get_resid(srb)
+just after it's initialized to zero at the top of
+usb_stor_invoke_transport(), and then just after the call to
+us->transport().
+
+The first print should show a value of zero.  The debug log says that the
+transport should have left it as zero.  If it's actually coming back from
+us->transport() as a non-zero value, then we'll need to check all the
+modifications to usb_stor_Bulk_transport to see where srb->resid is being
+changed.
+
+Matt
+
+--=20
+Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
+net=20
+Maintainer, Linux USB Mass Storage Driver
+
+A:  The most ironic oxymoron wins ...
+DP: "Microsoft Works"
+A:  Uh, okay, you win.
+					-- A.J. & Dust Puppy
+User Friendly, 1/18/1998
+
+--FcSpk3Icpd/Pbul4
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFHPH6cHL9iwnUZqnkRAoqcAJ9hlKyjoi5c5fyyDKhu4tPJxqODgQCdGCaF
+eXRF3h87NcS01OBYNrnP9Nc=
+=ainC
+-----END PGP SIGNATURE-----
+
+--FcSpk3Icpd/Pbul4--
