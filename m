@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932390AbXKOGtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932598AbXKOGuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932390AbXKOGtk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:49:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762853AbXKOGnM
+	id S932598AbXKOGuL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:50:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758685AbXKOGnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:43:12 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:57682 "EHLO
+	Thu, 15 Nov 2007 01:43:15 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:57691 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762652AbXKOGnJ (ORCPT
+	with ESMTP id S1762718AbXKOGnL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:43:09 -0500
-Date: Wed, 14 Nov 2007 22:41:16 -0800
+	Thu, 15 Nov 2007 01:43:11 -0500
+Date: Wed, 14 Nov 2007 22:41:19 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,14 +21,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Dan Williams <dcbw@redhat.com>, linux-wireless@vger.kernel.org,
+       Michael Wu <flamingice@sourmilk.net>, linux-wireless@vger.kernel.org,
        "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 14/16] ipw2100: send WEXT scan events
-Message-ID: <20071115064116.GO18951@kroah.com>
+Subject: [patch 15/16] rtl8187: Fix more frag bit checking, rts duration
+	calc
+Message-ID: <20071115064119.GP18951@kroah.com>
 References: <20071115060353.071060513@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ipw2100-send-wext-scan-events.patch"
+Content-Disposition: inline; filename="rtl8187-fix-more-frag-bit-checking-rts-duration-calc.patch"
 In-Reply-To: <20071115063921.GA18827@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -41,111 +42,75 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Dan Williams <dcbw@redhat.com>
+From: Michael Wu <flamingice@sourmilk.net>
 
-patch d20c678a450a25c1c12925f60c1b4cc040acc17d in mainline
+patch 98798f4875b7149db4eb7d0a126fc6dcd9637821 in mainline.
 
-ipw2100 wasn't sending WEXT scan events at all on scan completion.  And
-like ipw2200, the driver aggressively auto-scans, requiring
-non-user-requested scan events to be batched together and sent at
-specific intervals instead of many times per seconds.
+The wrong pointer is passed to ieee80211_get_morefrag. Fix this.
 
-Signed-off-by: Dan Williams <dcbw@redhat.com>
+While we're at it, reorder things so they look better and the rts duration
+calculation is done with the right length.
+
+Thanks to Christoph Hellwig for finding the ieee80211_get_morefrag issue.
+
+Signed-off-by: Michael Wu <flamingice@sourmilk.net>
 Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/ipw2100.c |   39 +++++++++++++++++++++++++++++++++++++++
- drivers/net/wireless/ipw2100.h |    4 ++++
- 2 files changed, 43 insertions(+)
+ drivers/net/wireless/rtl8187_dev.c |   31 ++++++++++++++++---------------
+ 1 file changed, 16 insertions(+), 15 deletions(-)
 
---- a/drivers/net/wireless/ipw2100.c
-+++ b/drivers/net/wireless/ipw2100.c
-@@ -2102,12 +2102,46 @@ static void isr_indicate_rf_kill(struct 
- 	queue_delayed_work(priv->workqueue, &priv->rf_kill, round_jiffies(HZ));
- }
+--- a/drivers/net/wireless/rtl8187_dev.c
++++ b/drivers/net/wireless/rtl8187_dev.c
+@@ -78,7 +78,8 @@ static int rtl8187_tx(struct ieee80211_h
+ 	struct rtl8187_tx_hdr *hdr;
+ 	struct rtl8187_tx_info *info;
+ 	struct urb *urb;
+-	u32 tmp;
++	__le16 rts_dur = 0;
++	u32 flags;
  
-+static void send_scan_event(void *data)
-+{
-+	struct ipw2100_priv *priv = data;
-+	union iwreq_data wrqu;
-+
-+	wrqu.data.length = 0;
-+	wrqu.data.flags = 0;
-+	wireless_send_event(priv->net_dev, SIOCGIWSCAN, &wrqu, NULL);
-+}
-+
-+static void ipw2100_scan_event_later(struct work_struct *work)
-+{
-+	send_scan_event(container_of(work, struct ipw2100_priv,
-+					scan_event_later.work));
-+}
-+
-+static void ipw2100_scan_event_now(struct work_struct *work)
-+{
-+	send_scan_event(container_of(work, struct ipw2100_priv,
-+					scan_event_now));
-+}
-+
- static void isr_scan_complete(struct ipw2100_priv *priv, u32 status)
- {
- 	IPW_DEBUG_SCAN("scan complete\n");
- 	/* Age the scan results... */
- 	priv->ieee->scans++;
- 	priv->status &= ~STATUS_SCANNING;
-+
-+	/* Only userspace-requested scan completion events go out immediately */
-+	if (!priv->user_requested_scan) {
-+		if (!delayed_work_pending(&priv->scan_event_later))
-+			queue_delayed_work(priv->workqueue,
-+					&priv->scan_event_later,
-+					round_jiffies(msecs_to_jiffies(4000)));
-+	} else {
-+		priv->user_requested_scan = 0;
-+		cancel_delayed_work(&priv->scan_event_later);
-+		queue_work(priv->workqueue, &priv->scan_event_now);
-+	}
- }
- 
- #ifdef CONFIG_IPW2100_DEBUG
-@@ -4376,6 +4410,7 @@ static void ipw2100_kill_workqueue(struc
- 		cancel_delayed_work(&priv->wx_event_work);
- 		cancel_delayed_work(&priv->hang_check);
- 		cancel_delayed_work(&priv->rf_kill);
-+		cancel_delayed_work(&priv->scan_event_later);
- 		destroy_workqueue(priv->workqueue);
- 		priv->workqueue = NULL;
- 	}
-@@ -6118,6 +6153,8 @@ static struct net_device *ipw2100_alloc_
- 	INIT_DELAYED_WORK(&priv->wx_event_work, ipw2100_wx_event_work);
- 	INIT_DELAYED_WORK(&priv->hang_check, ipw2100_hang_check);
- 	INIT_DELAYED_WORK(&priv->rf_kill, ipw2100_rf_kill);
-+	INIT_WORK(&priv->scan_event_now, ipw2100_scan_event_now);
-+	INIT_DELAYED_WORK(&priv->scan_event_later, ipw2100_scan_event_later);
- 
- 	tasklet_init(&priv->irq_tasklet, (void (*)(unsigned long))
- 		     ipw2100_irq_tasklet, (unsigned long)priv);
-@@ -7427,6 +7464,8 @@ static int ipw2100_wx_set_scan(struct ne
+ 	urb = usb_alloc_urb(0, GFP_ATOMIC);
+ 	if (!urb) {
+@@ -86,24 +87,24 @@ static int rtl8187_tx(struct ieee80211_h
+ 		return 0;
  	}
  
- 	IPW_DEBUG_WX("Initiating scan...\n");
+-	hdr = (struct rtl8187_tx_hdr *)skb_push(skb, sizeof(*hdr));
+-	tmp = skb->len - sizeof(*hdr);
+-	tmp |= RTL8187_TX_FLAG_NO_ENCRYPT;
+-	tmp |= control->rts_cts_rate << 19;
+-	tmp |= control->tx_rate << 24;
+-	if (ieee80211_get_morefrag((struct ieee80211_hdr *)skb))
+-		tmp |= RTL8187_TX_FLAG_MORE_FRAG;
++	flags = skb->len;
++	flags |= RTL8187_TX_FLAG_NO_ENCRYPT;
++	flags |= control->rts_cts_rate << 19;
++	flags |= control->tx_rate << 24;
++	if (ieee80211_get_morefrag((struct ieee80211_hdr *)skb->data))
++		flags |= RTL8187_TX_FLAG_MORE_FRAG;
+ 	if (control->flags & IEEE80211_TXCTL_USE_RTS_CTS) {
+-		tmp |= RTL8187_TX_FLAG_RTS;
+-		hdr->rts_duration =
+-			ieee80211_rts_duration(dev, skb->len, control);
++		flags |= RTL8187_TX_FLAG_RTS;
++		rts_dur = ieee80211_rts_duration(dev, skb->len, control);
+ 	}
+ 	if (control->flags & IEEE80211_TXCTL_USE_CTS_PROTECT)
+-		tmp |= RTL8187_TX_FLAG_CTS;
+-	hdr->flags = cpu_to_le32(tmp);
++		flags |= RTL8187_TX_FLAG_CTS;
 +
-+	priv->user_requested_scan = 1;
- 	if (ipw2100_set_scan_options(priv) || ipw2100_start_scan(priv)) {
- 		IPW_DEBUG_WX("Start scan failed.\n");
++	hdr = (struct rtl8187_tx_hdr *)skb_push(skb, sizeof(*hdr));
++	hdr->flags = cpu_to_le32(flags);
+ 	hdr->len = 0;
+-	tmp = control->retry_limit << 8;
+-	hdr->retry = cpu_to_le32(tmp);
++	hdr->rts_duration = rts_dur;
++	hdr->retry = cpu_to_le32(control->retry_limit << 8);
  
---- a/drivers/net/wireless/ipw2100.h
-+++ b/drivers/net/wireless/ipw2100.h
-@@ -588,6 +588,10 @@ struct ipw2100_priv {
- 	struct delayed_work wx_event_work;
- 	struct delayed_work hang_check;
- 	struct delayed_work rf_kill;
-+	struct work_struct scan_event_now;
-+	struct delayed_work scan_event_later;
-+
-+	int user_requested_scan;
- 
- 	u32 interrupts;
- 	int tx_interrupts;
+ 	info = (struct rtl8187_tx_info *)skb->cb;
+ 	info->control = kmemdup(control, sizeof(*control), GFP_ATOMIC);
 
 -- 
