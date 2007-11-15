@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758909AbXKOIoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760196AbXKOIrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758909AbXKOIoV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 03:44:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756410AbXKOIoE
+	id S1760196AbXKOIrT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 03:47:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756531AbXKOIrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 03:44:04 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:57924 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755980AbXKOIoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 03:44:03 -0500
-Date: Thu, 15 Nov 2007 09:43:00 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Florian Fainelli <florian.fainelli@telecomint.eu>
-Subject: Re: [patch 2.6.24-rc2 1/3] generic gpio -- gpio_chip support
-Message-ID: <20071115094300.31752b54@dhcp-255-175.norway.atmel.com>
-In-Reply-To: <200711142250.18392.david-b@pacbell.net>
-References: <200711091136.20051.david-b@pacbell.net>
-	<200711140037.58049.david-b@pacbell.net>
-	<20071114105441.2d01018f@dhcp-255-175.norway.atmel.com>
-	<200711142250.18392.david-b@pacbell.net>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.1.0-rc1 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Thu, 15 Nov 2007 03:47:10 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:21956 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755771AbXKOIrJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 03:47:09 -0500
+Date: Thu, 15 Nov 2007 09:47:05 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Attempt to get eject failures back to ioctl(CDROMEJECT)
+Message-ID: <20071115084705.GE638@kernel.dk>
+References: <200711141739.46960.rusty@rustcorp.com.au> <20071114123931.GF5064@kernel.dk> <200711151335.53053.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200711151335.53053.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Nov 2007 22:50:17 -0800
-David Brownell <david-b@pacbell.net> wrote:
-
-> > Since this is the code that runs under the lock  
+On Thu, Nov 15 2007, Rusty Russell wrote:
+> On Wednesday 14 November 2007 23:39:31 Jens Axboe wrote:
+> > On Wed, Nov 14 2007, Rusty Russell wrote:
+> > > Hi Jens,
+> > >
+> > >     As you asked for some time ago.  Of course, it turns out that the
+> > > eject command ignores the error anyway, but it's nice that it now errors.
+> > >
+> > >     Not entirely comfortable with this patch: there's a req->errors but
+> > > that seems to have some existing semantics I'm not sure of, so I simply
+> > > added a new way of flagging an error.
+> >
+> > It is a bit of a hack, but it's not really your fault. ->errors is
+> > somewhat messy and has different meaning depending on the request type.
+> > I'll add your patch and then do a sanitize on top of it, so that we can
+> > switch things over to a unified ->errno instead.
 > 
-> No, there's more than that.  This is what runs under it in
-> the hot paths, yes, but the gpio request/free paths do
-> more work than this.  (That includes direction setting,
-> since that can be an implicit request.)
-
-Yeah, I was talking about the hot paths. That's the only place where
-raw vs. non-raw performance matters.
-
-> The get/set bit calls are the hot paths.  Locking on those paths
-> buys us a consistent locking policy, which is obviously correct.
-> It's consistent with the request/free paths.
+> Thanks!
 > 
-> But I think what you're suggesting is that the "requested" flag
-> is effectively a long-term lock, so grabbing the spinlock on
-> those paths is not necessary.  Right?
+> Oh, I also noticed this in scsi_tgt_lib:
+> 
+> From: Rusty Russell <rusty@rustcorp.com.au>
+> Date: Fri, 9 Nov 2007 20:04:54 +1100
+> Subject: [PATCH] scsi_tgt_lib: BUG_ON() impossible condition.
+> 
+> If blk_rq_map_sg returns more than was allocated, it's a bug, and something's
+> already been overwritten.  BUG_ON() is probably the right thing here.
 
-Exactly. If we add two (quite reasonable) restrictions:
-  * The GPIO framework must ensure that GPIO chips cannot be removed
-    when one or more pins have been assigned to a client.
-  * The client must ensure that it never calls gpio_free()
-    simultaneously with gpio_[sg]et_value(), adding locking of its own if
-    necessary.
+It really just means that it mapped more segments than the block layer
+said it would. Usually that wont overwrite memory here since scsi rounds
+up on allocating the sg list, but it indeed can. Similar code has been
+in scsi_lib.c for ages, I'd suggest covering that in the same patch.
 
-this should be safe.
+-- 
+Jens Axboe
 
-Håvard
