@@ -1,63 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763273AbXKOLkg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762680AbXKOLvD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763273AbXKOLkg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 06:40:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758047AbXKOLkY
+	id S1762680AbXKOLvD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 06:51:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755341AbXKOLux
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 06:40:24 -0500
-Received: from rv-out-0910.google.com ([209.85.198.184]:27171 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757164AbXKOLkX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 06:40:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=hqCfUR4CDQMELayC9pPCFWXYdokv3Te3kcZsv9MpXNPz5kQ2TwdcumEeMdPlgmFm7ZErOCZG7d76ihY5z7sxE2sm9rFGpD56hxPgXHU5YHj8hyztZJKcMijUNb43XHHRgnZ3Lg66suy1cAwkkcFAOKaItOw0ar/wFNJFPQxddCQ=
-Message-ID: <cac0ab7d0711150340p58eda94ah92894072ba328205@mail.gmail.com>
-Date: Thu, 15 Nov 2007 12:40:22 +0100
-From: "Jonas Danielsson" <the.sator@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] net/ipv4/arp.c: Fix arp reply when sender ip 0 (was: Strange behavior in arp probe reply, bug or feature?)
-Cc: davem@davemloft.net, kuznet@ms2.inr.ac.ru, jmorris@namei.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org
+	Thu, 15 Nov 2007 06:50:53 -0500
+Received: from paragon.brong.net ([74.52.187.94]:57470 "EHLO paragon.brong.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752090AbXKOLuw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 06:50:52 -0500
+Date: Thu, 15 Nov 2007 22:50:49 +1100
+From: Bron Gondwana <brong@fastmail.fm>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Bron Gondwana <brong@fastmail.fm>, Christian Kujau <lists@nerdbynature.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       robm@fastmail.fm
+Subject: mmap dirty limits on 32 bit kernels (Was: [BUG] New Kernel Bugs)
+Message-ID: <20071115115049.GA8297@brong.net>
+References: <20071113.043207.44732743.davem@davemloft.net> <20071113110259.44c56d42.akpm@linux-foundation.org> <alpine.DEB.0.9999.0711132055550.7865@sheep.housecafe.de> <20071113130411.26ccae12.akpm@linux-foundation.org> <alpine.DEB.0.99999.0711132239350.3960@sheep.housecafe.de> <20071115040708.GB15302@brong.net> <alpine.LFD.0.9999.0711142020220.2786@woody.linux-foundation.org> <20071115052538.GA21522@brong.net> <alpine.LFD.0.9999.0711142130090.2786@woody.linux-foundation.org> <alpine.LFD.0.9999.0711142148380.2786@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.9999.0711142148380.2786@woody.linux-foundation.org>
+Organization: brong.net
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix arp reply when received arp probe with sender ip 0.
+On Wed, Nov 14, 2007 at 09:53:38PM -0800, Linus Torvalds wrote:
+> 
+> 
+> On Wed, 14 Nov 2007, Linus Torvalds wrote:
+> > 
+> > So even at 100% dirty limits, it won't let you dirty more than 1GB on the 
+> > default 32-bit setup.
+> 
+> Side note: all of these are obviously still just heuristics. If you really 
+> *do* run on a 32-bit kernel, and you want to have the pain, I'm sure you 
+> can just disable the dirty limits with a one-liner kernel mod. And if it's 
+> useful enough, we can certainly expose flags like that.. Not that I expect 
+> that much anybody else will ever care, but it's not like it's wrong to 
+> expose the silly heuristics the kernel has to users that have very 
+> specific loads.
+> 
+> That said, I still do hope you aren't actually using HIGHMEM64G. I was 
+> really hoping that the people who had enough moolah to buy >4GB of RAM had 
+> long since also upgraded to a 64-bit machine ;)
 
-Can't find any ground in RFC2131 to send a non-valid arp-reply in
-the special case of sender ip being set to 0.
+I'm afraid we are, which probably explains it.
 
-- Bug fix for arp handling when sender ip is set to 0.
-Send a correct arp reply instead of one with sender ip and sender
-hardware adress in target fields.
+We have a bunch of 64 bit machines, but this particular machine
+is one of our somewhat more ancient IBM x235 machines.  It's
+got stacks of fast SCSI drives and a couple of hyperthreading
+Xeons in it.  Very nice machine in its day, and very reliable
+which is why we have kept them, even though at 6RU it chews
+through disk space.
 
-Now sends target ip and target hw as received in arp probe.
+Unfortunately none of the 64 bit machines are world facing,
+and we're running HIGHMEM64G on a bunch of machines both for
+consistency value and because we only have one machine left
+with only 2Gb.
 
-Signed-off-by: Jonas Danielsson <the.sator@gmail.com>
+I guess we'll be doing the one-liner kernel mod and testing
+that then.  I'd certainly like to build a test case anyway
+so I'm not spending too much time rebooting that machine,
+it's also our outbound SMTP gateway.
 
----
-arp.c |    3 ++-
-1 file changed, 2 insertions(+), 1 deletion(-)
+And I'll keep in mind finding a 64 bit capable machine for
+the role when I can.
 
-Index: arp.c
-===================================================================
-RCS file: /usr/local/cvs/linux/os/linux-2.6/net/ipv4/arp.c,v
-retrieving revision 1.22
-diff -u -w -r1.22 arp.c
---- arp.c	13 Oct 2006 12:45:47 -0000	1.22
-+++ arp.c	15 Nov 2007 10:34:44 -0000
-@@ -827,7 +827,8 @@
- 		if (arp->ar_op == htons(ARPOP_REQUEST) &&
- 		    inet_addr_type(tip) == RTN_LOCAL &&
- 		    !arp_ignore(in_dev,dev,sip,tip))
--			arp_send(ARPOP_REPLY,ETH_P_ARP,tip,dev,tip,sha,dev->dev_addr,dev->dev_addr);
-+			arp_send(ARPOP_REPLY, ETH_P_ARP, sip, dev, tip, sha,
-+				 dev->dev_addr, sha);
- 		goto out;
- 	}
+Thanks for the feedback on this - I'll come back with more
+details once we've done some testing, but this sounds likely,
+and I don't think DCC is going to change how it works, so
+we're stuck supporting it.
+
+Bron.
