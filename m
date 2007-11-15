@@ -1,112 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932156AbXKOTTw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765607AbXKOTXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932156AbXKOTTw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 14:19:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758170AbXKOTTo
+	id S1765607AbXKOTXZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 14:23:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758921AbXKOTXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 14:19:44 -0500
-Received: from mga05.intel.com ([192.55.52.89]:42045 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756763AbXKOTTo (ORCPT
+	Thu, 15 Nov 2007 14:23:15 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60742 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750959AbXKOTXO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 14:19:44 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,421,1188802800"; 
-   d="scan'208";a="385461244"
-Date: Thu, 15 Nov 2007 11:19:50 -0800
-From: mark gross <mgross@linux.intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc2-mm1
-Message-ID: <20071115191950.GA8002@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <20071113175906.497a1a6a.akpm@linux-foundation.org> <473A678C.2020507@googlemail.com> <473A76FA.4050701@googlemail.com> <20071114202959.GA21049@linux.intel.com> <20071114124008.095f307d.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071114124008.095f307d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Thu, 15 Nov 2007 14:23:14 -0500
+Subject: Re: [RFC] fuse writable mmap design
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <E1IshIR-0000fE-00@dorka.pomaz.szeredi.hu>
+References: <E1IshIR-0000fE-00@dorka.pomaz.szeredi.hu>
+Content-Type: text/plain
+Date: Thu, 15 Nov 2007 20:22:10 +0100
+Message-Id: <1195154530.22457.16.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 14, 2007 at 12:40:08PM -0800, Andrew Morton wrote:
-> On Wed, 14 Nov 2007 12:29:59 -0800 mark gross <mgross@linux.intel.com> wrote:
+
+On Thu, 2007-11-15 at 17:10 +0100, Miklos Szeredi wrote:
+
+> Fuse page writeback design
+> --------------------------
 > 
-> > > > [  102.366932]  =======================
-> > > > [  108.552031] printk: 31 messages suppressed.
-> > > 
-> > > 
-> > > All this BUG / WARNINGS are caused by *-qos* patches. Reverting this 3 patches makes the BUGs go away :
-> > > 
-> > > latencyc-use-qos-infrastructure.patch
-> > > pm-qos-infrastructure-and-interface.patch
-> > > pm-qos-infrastructure-and-interface-static-initialization-with-blocking-notifiers.patch
-> > > 
-> > > 
-> > > Gabriel
-> > > 
-> > > 
-> > This looks like the same issue Rafael saw.
-> > 
-> > Try the patch in the following post:
-> > 
-> > http://marc.info/?l=linux-kernel&m=119265627228498&w=2
-> > 
+> fuse_writepage() allocates a new temporary page with
+> GFP_NOFS|__GFP_HIGHMEM.  It copies the contents of the original page,
+> and queues a WRITE request to the userspace filesystem using this temp
+> page.
 > 
-> Well that's not very good.  _I_ can go fishing in my lkml archives for random
-> patches but not everyone is set up to do that.  And the diff to which you
-> refer gets 100% rejects against rc2-mm1 anyway.
+> From the VM's point of view, the writeback is finished instantly: the
+> page is removed from the radix trees, and the PageDirty and
+> PageWriteback flags are cleared.
 > 
-> Please prepare a tested, changelogged patch against rc2-mm1 asap.  
+> The per-bdi writeback count is not decremented until the writeback
+> truly completes.  And there's a new 'nr_writeback_temp' counter, that
+> is used to track the global count of these writebacks instead of the
+> per-zone NR_WRITEBACK (it could be a new per-zone counter in vm_stat,
+> but for simplicity, current code just uses a single atomic counter).
+> 
+> If the writeout was due to memory pressure, in effect this migrates
+> data from a full zone to a less full zone.
+> 
+> On dirtying the page, fuse waits for a previous write to finish before
+> proceeding.  This makes sure, there can only be one temporary page used
+> at a time for one cached page.
+> 
+> This approach is wasteful in both memory and CPU bandwidth, so why is
+> this complication needed?
+> 
+> The basic problem is that there can be no guarantee about the time in
+> which the userspace filesystem will complete a write.  It may be buggy
+> or even malicious, and fail to complete WRITE requests.  We don't want
+> unrelated parts of the system to grind to a halt in such cases.
+> 
+> Also a filesystem may need additional resources (particularly memory)
+> to complete a WRITE request.  There's a great danger of a deadlock if
+> that allocation may wait for the writepage to finish.
+> 
+> Currently there are several cases where the kernel can block on page
+> writeback:
+> 
+>   - allocation order is larger than PAGE_ALLOC_COSTLY_ORDER
+>   - page migration
+>   - throttle_vm_writeout (through NR_WRITEBACK)
+>   - sync(2)
+> 
+> Of course in some cases (fsync, msync) we explicitly want to allow
+> blocking.  So for these cases new code has to be added to fuse, since
+> the VM is not tracking writeback pages for us any more.
 
-I'm having difficulty coming up with a .config that boots, I'll continue
-working on this but the following is what I'm pretty confident will fix
-the warnings.  
+I'm somewhat confused by the complexity. Currently we can already have a
+lot of dirty pages from FUSE (up to the per BDI dirty limit - so
+basically up to the total dirty limit).
 
-You should hold off until I get a system booting 2.6.24-rc2-mm1 before
-taking this.
-
-pm-qos-remove-locks-around-blocking-notifier-registration.patch
-
-Changelog: 
-Remove spin locking around blocking notifier calls that can sleep.
-
---mgross
-
-Signed-off-by: mark gross <mgross@linux.intel.com>
+How is having them dirty from mmap'ed writes different?
 
 
 
-
-Index: linux-2.6.24-rc2-mm1/kernel/pm_qos_params.c
-===================================================================
---- linux-2.6.24-rc2-mm1.orig/kernel/pm_qos_params.c	2007-11-15 11:09:27.000000000 -0800
-+++ linux-2.6.24-rc2-mm1/kernel/pm_qos_params.c	2007-11-15 11:10:08.000000000 -0800
-@@ -319,13 +319,10 @@
-  */
-  int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier)
- {
--	unsigned long flags;
- 	int retval;
- 
--	spin_lock_irqsave(&pm_qos_lock, flags);
- 	retval = blocking_notifier_chain_register(
- 			pm_qos_array[pm_qos_class]->notifiers, notifier);
--	spin_unlock_irqrestore(&pm_qos_lock, flags);
- 
- 	return retval;
- }
-@@ -341,13 +338,10 @@
-  */
- int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier)
- {
--	unsigned long flags;
- 	int retval;
- 
--	spin_lock_irqsave(&pm_qos_lock, flags);
- 	retval = blocking_notifier_chain_unregister(
- 			pm_qos_array[pm_qos_class]->notifiers, notifier);
--	spin_unlock_irqrestore(&pm_qos_lock, flags);
- 
- 	return retval;
- }
