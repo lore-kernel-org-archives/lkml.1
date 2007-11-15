@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762788AbXKOH1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764476AbXKOHcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762788AbXKOH1Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 02:27:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbXKOH1J
+	id S1764476AbXKOHcT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 02:32:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758239AbXKOHcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 02:27:09 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:37216 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752507AbXKOH1H (ORCPT
+	Thu, 15 Nov 2007 02:32:07 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:3489 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757092AbXKOHcG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 02:27:07 -0500
-Message-ID: <473BF4C5.4080909@zytor.com>
-Date: Wed, 14 Nov 2007 23:27:01 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 16/19] x86 setup: handle boot loaders which set up the
- stack incorrectly
-References: <20071115054813.977066477@mini.kroah.org> <20071115061513.GQ7980@kroah.com>
-In-Reply-To: <20071115061513.GQ7980@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Nov 2007 02:32:06 -0500
+Date: Thu, 15 Nov 2007 15:31:22 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, stable@kernel.org,
+       jmforbes@linuxtx.org, zwane@arm.linux.org.uk, tytso@mit.edu,
+       rdunlap@xenotime.net, davej@redhat.com, chuckw@quantumlinux.com,
+       reviews@ml.cw.f00f.org, mkrufky@linuxtv.org, cebbert@redhat.com,
+       cavokz@gmail.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@kernel.org
+Subject: Re: [patch 06/23] Fix SKB_WITH_OVERHEAD calculations.
+Message-ID: <20071115073122.GA24246@gondor.apana.org.au>
+References: <20071115055238.692814352@mini.kroah.org> <20071115062022.GG8282@kroah.com> <20071115062939.GA23579@gondor.apana.org.au> <20071114.230039.114721276.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071114.230039.114721276.davem@davemloft.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> -stable review patch.  If anyone has any objections, please let us know.
+On Wed, Nov 14, 2007 at 11:00:39PM -0800, David Miller wrote:
+>
+> I was just about to mention this and what I think we should do
+> instead is keep the SKB_WITH_OVERHEAD calculation fix in there
+> (it fixes a serious bug which users are hitting) and add the
+> fix for the second bug fix this round as well.
 > 
-> ------------------
-> From: H. Peter Anvin <hpa@zytor.com>
-> 
-> patch 6b6815c6d5d1dc209701d1661a7a0e09a295db2f in mainline.
-> 
-> Apparently some specific versions of LILO enter the kernel with a
-> stack pointer that doesn't match the rest of the segments.  Make our
-> best attempt at untangling the resulting mess.
-> 
-> Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> Therefore, Greg please keep the patch add the following one as it will
+> address all of the issues.
 
-Just FYI:
+I agree.  If the stable team could make an exception for this
+it would be great.
 
-It has been reported that while this patch fixes old LILO, and possibly 
-some other boot loaders (unknown), it has also broken older versions of 
-SYSLINUX: they still boot, but the command line is truncated (exactly 
-how much depends on the BIOS, but typical values are around 130 bytes.)
-
-This is definitely traceable to a bug in SYSLINUX that was already fixed 
-in release 3.50 (the current version of SYSLINUX is 3.52).
-
-I have chosen to leave the patch in mainline, rather than trying yet 
-another recipe and hope it doesn't break on some other random 
-combination of bootloaders, since:
-
-a) SYSLINUX is generally easily updated, compared to other bootloaders;
-b) The failure mode is less severe (it still boots.)
-
-... however, you may choose to call differently.
-
-	-hpa
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
