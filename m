@@ -1,85 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765059AbXKOQOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764743AbXKOQPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765059AbXKOQOq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 11:14:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759664AbXKOQOh
+	id S1764743AbXKOQPa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 11:15:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758611AbXKOQPR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 11:14:37 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:15538 "EHLO relay.sw.ru"
+	Thu, 15 Nov 2007 11:15:17 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34829 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758859AbXKOQOg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 11:14:36 -0500
-Date: Thu, 15 Nov 2007 19:13:50 +0300
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, devel@openvz.org
-Subject: [PATCH] proc: prototypes redux
-Message-ID: <20071115161350.GG6216@localhost.sw.ru>
-Mime-Version: 1.0
+	id S1754012AbXKOQPP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 11:15:15 -0500
+Date: Thu, 15 Nov 2007 17:05:20 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Rusty Russel <rusty@rustcorp.com.au>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Paul E McKenney <paulmck@us.ibm.com>,
+       Richard Gooch <rgooch@atnf.csiro.au>,
+       Tigran Aivazian <tigran@aivazian.fs.co.uk>,
+       Shoahua Li <shaohua.li@linux.com>, Ralf Baechle <ralf@linux-mips.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Nathan Lynch <ntl@pobox.com>, Paul Jackson <pj@sgi.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Akinobu Mita <akinobu.mita@gmail.com>
+Subject: Re: [RFC PATCH 1/3] cpu-hotplug: Refcount Based Cpu Hotplug
+	implementation
+Message-ID: <20071115160520.GA3969@elte.hu>
+References: <20071115134924.GA15282@in.ibm.com> <20071115135108.GA15462@in.ibm.com> <20071115141501.GB28857@elte.hu> <20071115152558.GA22599@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20071115152558.GA22599@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> FYI, i've put these 3 patches into the scheduler git tree and it's 
+> looking very good so far. So unless Andrew or Linus objects to put 
+> this into v2.6.24, or there's serious questions during review, could 
+> we merge it this way?
+
+i've got this trivial build fix for !SMP - otherwise it's still looking 
+good.
+
+	Ingo
+
+------------------>
+Subject: cpu hotplug: fix build on !CONFIG_SMP
+From: Ingo Molnar <mingo@elte.hu>
+
+fix build on !CONFIG_SMP.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
+ include/linux/cpu.h |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
- fs/proc/generic.c  |   18 ++++++------------
- fs/proc/proc_tty.c |    3 ---
- 2 files changed, 6 insertions(+), 15 deletions(-)
-
---- a/fs/proc/generic.c
-+++ b/fs/proc/generic.c
-@@ -25,12 +25,6 @@
+Index: linux/include/linux/cpu.h
+===================================================================
+--- linux.orig/include/linux/cpu.h
++++ linux/include/linux/cpu.h
+@@ -71,19 +71,25 @@ static inline void unregister_cpu_notifi
  
- #include "internal.h"
+ int cpu_up(unsigned int cpu);
  
--static ssize_t proc_file_read(struct file *file, char __user *buf,
--			      size_t nbytes, loff_t *ppos);
--static ssize_t proc_file_write(struct file *file, const char __user *buffer,
--			       size_t count, loff_t *ppos);
--static loff_t proc_file_lseek(struct file *, loff_t, int);
--
- DEFINE_SPINLOCK(proc_subdir_lock);
- 
- static int proc_match(int len, const char *name, struct proc_dir_entry *de)
-@@ -40,12 +34,6 @@ static int proc_match(int len, const char *name, struct proc_dir_entry *de)
- 	return !memcmp(name, de->name, len);
- }
- 
--static const struct file_operations proc_file_operations = {
--	.llseek		= proc_file_lseek,
--	.read		= proc_file_read,
--	.write		= proc_file_write,
--};
--
- /* buffer size is one page but our output routines use some slack for overruns */
- #define PROC_BLOCK_SIZE	(PAGE_SIZE - 1024)
- 
-@@ -233,6 +221,12 @@ proc_file_lseek(struct file *file, loff_t offset, int orig)
- 	return retval;
- }
- 
-+static const struct file_operations proc_file_operations = {
-+	.llseek		= proc_file_lseek,
-+	.read		= proc_file_read,
-+	.write		= proc_file_write,
-+};
++extern void cpu_hotplug_init(void);
 +
- static int proc_notify_change(struct dentry *dentry, struct iattr *iattr)
- {
- 	struct inode *inode = dentry->d_inode;
---- a/fs/proc/proc_tty.c
-+++ b/fs/proc/proc_tty.c
-@@ -15,9 +15,6 @@
- #include <linux/seq_file.h>
- #include <linux/bitops.h>
+ #else
  
--static int tty_ldiscs_read_proc(char *page, char **start, off_t off,
--				int count, int *eof, void *data);
--
- /*
-  * The /proc/tty directory inodes...
-  */
-
+ static inline int register_cpu_notifier(struct notifier_block *nb)
+ {
+ 	return 0;
+ }
++
+ static inline void unregister_cpu_notifier(struct notifier_block *nb)
+ {
+ }
+ 
++static inline void cpu_hotplug_init(void)
++{
++}
++
+ #endif /* CONFIG_SMP */
+ extern struct sysdev_class cpu_sysdev_class;
+-extern void cpu_hotplug_init(void);
+ extern void cpu_maps_update_begin(void);
+ extern void cpu_maps_update_done(void);
+ 
