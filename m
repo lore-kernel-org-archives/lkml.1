@@ -1,135 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932415AbXKOGeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932282AbXKOGep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932415AbXKOGeW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:34:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932186AbXKOGaR
+	id S932282AbXKOGep (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:34:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932230AbXKOGb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:30:17 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:49228 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932168AbXKOGaP (ORCPT
+	Thu, 15 Nov 2007 01:31:27 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:2632 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932089AbXKOGbZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:30:15 -0500
-Message-ID: <473BE75B.9070701@cosmosbay.com>
-Date: Thu, 15 Nov 2007 07:29:47 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Russell Leighton <russ@elegant-software.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: OT: Does Linux have any "Perfect Code"
-References: <c9d133bdb3481fbc01a572d948049f5e@elegant-software.com>
-In-Reply-To: <c9d133bdb3481fbc01a572d948049f5e@elegant-software.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Thu, 15 Nov 2007 07:29:54 +0100 (CET)
+	Thu, 15 Nov 2007 01:31:25 -0500
+Date: Thu, 15 Nov 2007 14:29:39 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@kernel.org,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [patch 06/23] Fix SKB_WITH_OVERHEAD calculations.
+Message-ID: <20071115062939.GA23579@gondor.apana.org.au>
+References: <20071115055238.692814352@mini.kroah.org> <20071115062022.GG8282@kroah.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071115062022.GG8282@kroah.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell Leighton a écrit :
+On Wed, Nov 14, 2007 at 10:20:22PM -0800, Greg KH wrote:
+> -stable review patch.  If anyone has any objections, please let us know.
 > 
-> Bryan Cantrill of Sun (ala DTrace) has a notion of perfect code:
+> ------------------
 > 
->     http://blogs.sun.com/bmc/entry/on_i_dreaming_in_code
+> From: Herbert Xu <herbert@gondor.apana.org.au>
 > 
-> He also has some examples (from bottom comment section of above):
+> patch deea84b0ae3d26b41502ae0a39fe7fe134e703d0 in mainline.
 > 
->>
->>
->> Can you list a small number of examples of "software perfection"?
->>
->> Posted by Russell Leighton on November 14, 2007 at 04:02 AM PST #
->>
->> Russell,
->>
->> My canonical small example of perfection in Solaris would be Jeff 
->> Bonwick's mod-by-a-billion code in hrt2ts():
->>
->> http://cvs.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/uts/common/os/timers.c#875 
->>
->>
->> Solaris of course has lots of bigger, more complicated examples. Now 
->> on the one hand, one wants to refrain from pointing to thousands of 
->> lines of code and saying that there are no bugs therein, but on the 
->> other, there are many subsystems that have been in place and in heavy 
->> use for years without defect or modification. At the risk of being 
->> egocentric, the cyclic subsystem (which is executed at least 100 times 
->> per second on every Solaris system) had its last substantial fix over 
->> six years ago, and its last fix of any flavor over three years ago:
->>
->> http://cvs.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/uts/common/os/cyclic.c 
->>
->>
->> Modesty (and the lack, of course, of a proof of its correctness) 
->> prevents me from calling the cyclic subsystem perfect -- but such as 
->> unknown defects remain, there are damn few of them, and we can say 
->> that they must be a result of highly usual (or at least, heretofore 
->> unseen) circumstances.
->>
->> A non-Solaris example -- and one that I've been known to use as the 
->> canonical example of the persistence of software -- is Super Mario 
->> Kart. This is a game that was developed (to its completion) fifteen 
->> years ago for the Super Nintendo console. Source code, to the best of 
->> my knowledge, is not publicly available and may indeed be lost -- but 
->> the binaries persist and (if my coworkers are any indication) remain 
->> in active use. Given the longevity of, say, Homer's Odyssey, there is 
->> reason to believe that Super Mario Kart will survive in perpetuity -- 
->> that thousands of years from now, twenty-somethings somewhere will be 
->> using the software exactly as it is used today. Is this perfection? 
->> Perhaps not -- but it also might not be discernible from perfection...
->>
->> Posted by Bryan Cantrill on November 14, 2007 at 07:51 AM PST #
-> 
-> Does Linux have any such examples true software perfection?
-> 
+> [NET]: Fix SKB_WITH_OVERHEAD calculation
 
-I dont know, (what a strange idea is it anyway ?) but reading two Solaris 
-functions just gave me the example of non true software perfection.
+Although this is correct as it is, it tirggers a latent bug
+which is fixed by
 
-http://cvs.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/uts/common/os/timers.c#1106
+commit fb93134dfc2a6e6fbedc7c270a31da03fce88db9
+Author: Herbert Xu <herbert@gondor.apana.org.au>
+Date:   Wed Nov 14 15:45:21 2007 -0800
 
-I would say this code was OK 10 years ago.
+    [TCP]: Fix size calculation in sk_stream_alloc_pskb
 
-Now that a processor (say an Opteron in 64 bits mode, used on SUN hardware), 
-can perform a multiply in few cycles, ts2hrt() could use a normal multiply and 
-an addition.
+So please postpone it to the next round such that both patches
+can be included together.
 
-Processors are improving, compilers are improving, memory sizes are 
-increasing, source code (and algorithms) should be changed accordingly.
-
-(gcc for example already knows the reciprocal division trick and so can 
-compile this :
-
-hrt2ts_div(hrtime_t hrt, timestruc_t *tsp)
-{
-     tsp->tv_nsec = do_div(hrt, NANOSEC);
-     tsp->tv_sec = hrt;
-}
-
-to :
-
-         movq    %rdi, %rdx
-         movabsq $19342813113834067, %rax
-         shrq    $9, %rdx
-         mulq    %rdx
-         shrq    $11, %rdx
-         imulq   $1000000000, %rdx, %rax
-         movq    %rdx, (%rsi)
-         subq    %rax, %rdi
-         movl    %edi, 8(%rsi)
-
-while
-
-hrtime_t
-ts2hrt(const timestruc_t *tsp)
-{
-return tsp->tv_sec * NANOSEC + tsp->tv_nsec;
-}
-
-can be inlined as it is trivial (and much faster than Solaris version)
-
-         movq    (%rdi), %rdx
-         mov     8(%rdi), %eax
-         imulq   $1000000000, %rdx, %rdx
-         addq    %rdx, %rax
-
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
