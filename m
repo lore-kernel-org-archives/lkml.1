@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764822AbXKOUCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765507AbXKOUFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764822AbXKOUCU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 15:02:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759439AbXKOUCJ
+	id S1765507AbXKOUFh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 15:05:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757348AbXKOUF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 15:02:09 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:60086 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759426AbXKOUCI (ORCPT
+	Thu, 15 Nov 2007 15:05:29 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52877 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752409AbXKOUF2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 15:02:08 -0500
-Subject: Re: [RFC] fuse writable mmap design
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <E1Iskpw-0000qY-00@dorka.pomaz.szeredi.hu>
-References: <E1IshIR-0000fE-00@dorka.pomaz.szeredi.hu>
-	 <1195154530.22457.16.camel@lappy>
-	 <E1IskWl-0000oJ-00@dorka.pomaz.szeredi.hu>
-	 <1195155759.22457.29.camel@lappy>
-	 <E1Iskpw-0000qY-00@dorka.pomaz.szeredi.hu>
-Content-Type: text/plain
-Date: Thu, 15 Nov 2007 21:01:39 +0100
-Message-Id: <1195156900.22457.32.camel@lappy>
+	Thu, 15 Nov 2007 15:05:28 -0500
+Date: Thu, 15 Nov 2007 12:05:19 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: mgross@linux.intel.com
+Cc: Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc2-mm1
+Message-Id: <20071115120519.49a948c4.akpm@linux-foundation.org>
+In-Reply-To: <20071115172221.GA24837@linux.intel.com>
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
+	<473A678C.2020507@googlemail.com>
+	<473A76FA.4050701@googlemail.com>
+	<20071114202959.GA21049@linux.intel.com>
+	<20071114124008.095f307d.akpm@linux-foundation.org>
+	<20071115172221.GA24837@linux.intel.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 15 Nov 2007 09:22:21 -0800 mark gross <mgross@linux.intel.com> wrote:
 
-On Thu, 2007-11-15 at 20:57 +0100, Miklos Szeredi wrote:
-> > The next point then, I'd expect your fuse_page_mkwrite() to push
-> > writeout of your 32-odd mmap pages instead of poll.
+> On Wed, Nov 14, 2007 at 12:40:08PM -0800, Andrew Morton wrote:
+> > On Wed, 14 Nov 2007 12:29:59 -0800 mark gross <mgross@linux.intel.com> wrote:
+> > 
+> > > > > [  102.366932]  =======================
+> > > > > [  108.552031] printk: 31 messages suppressed.
+> > > > 
+> > > > 
+> > > > All this BUG / WARNINGS are caused by *-qos* patches. Reverting this 3 patches makes the BUGs go away :
+> > > > 
+> > > > latencyc-use-qos-infrastructure.patch
+> > > > pm-qos-infrastructure-and-interface.patch
+> > > > pm-qos-infrastructure-and-interface-static-initialization-with-blocking-notifiers.patch
+> > > > 
+> > > > 
+> > > > Gabriel
+> > > > 
+> > > > 
+> > > This looks like the same issue Rafael saw.
+> > > 
+> > > Try the patch in the following post:
+> > > 
+> > > http://marc.info/?l=linux-kernel&m=119265627228498&w=2
+> > > 
+> > 
+> > Well that's not very good.  _I_ can go fishing in my lkml archives for random
+> > patches but not everyone is set up to do that.  And the diff to which you
+> > refer gets 100% rejects against rc2-mm1 anyway.
+> > 
+> > Please prepare a tested, changelogged patch against rc2-mm1 asap.  
 > 
-> You're talking about this:
+> I'm sorry for not being clear, this patch is already in your tree from a
+> few weeks ago.  I was pointing Gabriel at the fix from back then.
 > 
-> +	wait_event(fc->writeback_waitq,
-> +		   fc->numwrite < FUSE_WRITEBACK_THRESHOLD);
-> 
-> right?  It's one of the things I need to clean out, there's no point
-> in fc->numwrite, which is essentially the same as the BDI_WRITEBACK
-> counter.
-> 
-> OTOH, I'm thinking about adding a per-fs limit (adjustable for
-> privileged mounts) of dirty+writeback.
-> 
-> I'm not sure how hard would it be to add support for this into
-> balance_dirty_pages().  So I'm thinking of a parameter in struct
-> backing_dev_info that is used to clip the calculated per-bdi threshold
-> below this maximum.
-> 
-> How would that affect the proportions algorithm?  What would happen to
-> the unused portion?  Would it adapt to the slowed writeback and
-> allocate it to some other writer?
 
-The unused part is gone, I've not yet found a way to re-distribute this
-fairly.
-
-[ It's one of my open-problems, I can do a min_ratio per bdi, but not
-  yet a max_ratio ]
-
+But this bug report is against 2.6.24-rc2-mm1, released two days ago?
