@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932442AbXKOG7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933288AbXKOG7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932442AbXKOG7R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:59:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932186AbXKOGrV
+	id S933288AbXKOG7j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:59:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932443AbXKOGrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:47:21 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:57984 "EHLO
+	Thu, 15 Nov 2007 01:47:24 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:58001 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762378AbXKOGrT (ORCPT
+	with ESMTP id S1762378AbXKOGrW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:47:19 -0500
-Date: Wed, 14 Nov 2007 22:44:47 -0800
+	Thu, 15 Nov 2007 01:47:22 -0500
+Date: Wed, 14 Nov 2007 22:44:51 -0800
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org,
        torvalds@linux-foundation.org
@@ -21,14 +21,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, neilb@suse.de
-Subject: [patch 17/40] md: fix an unsigned compare to allow creation of
-	bitmaps with v1.0 metadata
-Message-ID: <20071115064447.GR19218@kroah.com>
+       alan@lxorguk.ukuu.org.uk, joel.bertrand@systella.fr, neilb@suse.de,
+       dan.j.williams@intel.com
+Subject: [patch 18/40] md: raid5: fix clearing of biofill operations
+Message-ID: <20071115064451.GS19218@kroah.com>
 References: <20071115062710.885284510@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="md-fix-an-unsigned-compare-to-allow-creation-of-bitmaps-with-v1.0-metadata.patch"
+Content-Disposition: inline; filename="md-raid5-not-raid6-fix-clearing-of-biofill-operations.patch"
 In-Reply-To: <20071115064302.GA19218@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -36,36 +36,71 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: NeilBrown <neilb@suse.de>
 
-patch 85bfb4da8cad483a4e550ec89060d05a4daf895b in mainline.
+From: Dan Williams <dan.j.williams@intel.com>
 
-As page->index is unsigned, this all becomes an unsigned comparison, which
- almost always returns an error.
+raid5: fix clearing of biofill operations
 
+This is the correct merge of the two upstream patches for this issue (it
+was mis-merged...)
+
+ops_complete_biofill() runs outside of spin_lock(&sh->lock) and clears the
+'pending' and 'ack' bits.  Since the test_and_ack_op() macro only checks
+against 'complete' it can get an inconsistent snapshot of pending work.
+
+Move the clearing of these bits to handle_stripe5(), under the lock.
+
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Tested-by: Joel Bertrand <joel.bertrand@systella.fr>
 Signed-off-by: Neil Brown <neilb@suse.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/bitmap.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/md/raid5.c |   17 ++++++++++++++---
+ 1 file changed, 14 insertions(+), 3 deletions(-)
 
---- a/drivers/md/bitmap.c
-+++ b/drivers/md/bitmap.c
-@@ -274,7 +274,7 @@ static int write_sb_page(struct bitmap *
- 			if (bitmap->offset < 0) {
- 				/* DATA  BITMAP METADATA  */
- 				if (bitmap->offset
--				    + page->index * (PAGE_SIZE/512)
-+				    + (long)(page->index * (PAGE_SIZE/512))
- 				    + size/512 > 0)
- 					/* bitmap runs in to metadata */
- 					return -EINVAL;
+--- a/drivers/md/raid5.c
++++ b/drivers/md/raid5.c
+@@ -377,7 +377,12 @@ static unsigned long get_stripe_work(str
+ 		ack++;
+ 
+ 	sh->ops.count -= ack;
+-	BUG_ON(sh->ops.count < 0);
++	if (unlikely(sh->ops.count < 0)) {
++		printk(KERN_ERR "pending: %#lx ops.pending: %#lx ops.ack: %#lx "
++			"ops.complete: %#lx\n", pending, sh->ops.pending,
++			sh->ops.ack, sh->ops.complete);
++		BUG();
++	}
+ 
+ 	return pending;
+ }
+@@ -551,8 +556,7 @@ static void ops_complete_biofill(void *s
+ 			}
+ 		}
+ 	}
+-	clear_bit(STRIPE_OP_BIOFILL, &sh->ops.ack);
+-	clear_bit(STRIPE_OP_BIOFILL, &sh->ops.pending);
++	set_bit(STRIPE_OP_BIOFILL, &sh->ops.complete);
+ 
+ 	return_io(return_bi);
+ 
+@@ -2630,6 +2634,13 @@ static void handle_stripe5(struct stripe
+ 	s.expanded = test_bit(STRIPE_EXPAND_READY, &sh->state);
+ 	/* Now to look around and see what can be done */
+ 
++	/* clean-up completed biofill operations */
++	if (test_bit(STRIPE_OP_BIOFILL, &sh->ops.complete)) {
++		clear_bit(STRIPE_OP_BIOFILL, &sh->ops.pending);
++		clear_bit(STRIPE_OP_BIOFILL, &sh->ops.ack);
++		clear_bit(STRIPE_OP_BIOFILL, &sh->ops.complete);
++	}
++
+ 	rcu_read_lock();
+ 	for (i=disks; i--; ) {
+ 		mdk_rdev_t *rdev;
 
 -- 
