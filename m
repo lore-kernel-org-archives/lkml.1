@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762335AbXKOGQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762775AbXKOGQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762335AbXKOGQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:16:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbXKOGQE
+	id S1762775AbXKOGQs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:16:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759112AbXKOGQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:16:04 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:50958 "EHLO
+	Thu, 15 Nov 2007 01:16:06 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:50963 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751357AbXKOGQB (ORCPT
+	with ESMTP id S1751699AbXKOGQE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:16:01 -0500
-Date: Wed, 14 Nov 2007 22:14:15 -0800
+	Thu, 15 Nov 2007 01:16:04 -0500
+Date: Wed, 14 Nov 2007 22:14:26 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,73 +20,87 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/19] 2.6.23-stable review, arch specific stuff
-Message-ID: <20071115061415.GA7980@kroah.com>
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@kernel.org,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 01/19] Fix sparc64 niagara optimized RAID xor asm
+Message-ID: <20071115061426.GB7980@kroah.com>
+References: <20071115054813.977066477@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Disposition: inline; filename="fix-sparc64-niagara-optimized-raid-xor-asm.patch"
+In-Reply-To: <20071115061415.GA7980@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.23.X release.
-There are 19 patches in this series, all will be posted as a response
-to this one.  If anyone has any issues with these being applied, please
-let us know.  If anyone is a maintainer of the proper subsystem, and
-wants to add a Signed-off-by: line to the patch, please respond with it.
+-stable review patch.  If anyone has any objections, please let us know.
 
-These patches are sent out with a number of different people on the
-Cc: line.  If you wish to be a reviewer, please email stable@kernel.org
-to add your name to the list.  If you want to be off the reviewer list,
-also email us.
+------------------
+From: David Miller <davem@davemloft.net>
 
-Responses should be made by Friday 00:00:00 UTC.  Anything received
-after that time might be too late.
+patch d060db63fd38a8a75f666576ef9999c28cdc31cf in mainline.
 
-This set of patches focuses on arch specific changes.
+[SPARC64]: Fix register usage in xor_raid_4().
 
-The diffstat of this review series is included below.
+Some typos led to using %i6/%i7 instead of %l6/%l7 in loads which is
+really really bad because those are the frame pointer and return PC.
 
-thanks,
+Based upon a raid5 crash report by Bertrand Joel.
 
-greg k-h
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
------
+---
+ arch/sparc64/lib/xor.S |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
- arch/i386/boot/boot.h                  |    8 ++--
- arch/i386/boot/header.S                |   62 +++++++++++++++++++++++----------
- arch/i386/boot/video-bios.c            |    2 -
- arch/i386/boot/video-vesa.c            |    2 -
- arch/i386/boot/video.c                 |    2 -
- arch/i386/kernel/tsc.c                 |    5 +-
- arch/i386/xen/enlighten.c              |   57 ++++++++++++++++++++----------
- arch/i386/xen/mmu.c                    |   29 +++++++++++++--
- arch/i386/xen/multicalls.c             |   29 +++++++++++++--
- arch/i386/xen/multicalls.h             |    3 +
- arch/i386/xen/xen-ops.h                |    1 
- arch/mips/mm/c-r4k.c                   |   21 +++++++++--
- arch/powerpc/math-emu/math.c           |   13 ++++--
- arch/powerpc/platforms/cell/axon_msi.c |    4 +-
- arch/sparc64/kernel/sys_sparc.c        |    2 -
- arch/sparc64/lib/xor.S                 |   12 +++---
- arch/um/Makefile                       |    3 +
- arch/um/include/common-offsets.h       |    1 
- arch/um/include/sysdep-i386/stub.h     |    3 -
- arch/um/kernel/skas/clone.c            |    1 
- arch/um/os-Linux/main.c                |    1 
- arch/um/os-Linux/skas/mem.c            |    1 
- arch/um/os-Linux/skas/process.c        |    2 -
- arch/um/os-Linux/start_up.c            |    1 
- arch/um/os-Linux/tt.c                  |    1 
- arch/um/os-Linux/util.c                |   38 ++++++++++++++++++++
- arch/um/sys-i386/user-offsets.c        |    6 +--
- arch/um/sys-x86_64/user-offsets.c      |    9 ----
- arch/x86_64/mm/init.c                  |    6 ---
- arch/x86_64/mm/pageattr.c              |    9 +++-
- fs/xfs/linux-2.6/xfs_buf.c             |   13 ++++++
- include/asm-mips/hazards.h             |   54 ++++++++++++++++++++++++++++
- include/linux/bootmem.h                |    1 
- include/xen/interface/vcpu.h           |    5 +-
- mm/sparse.c                            |   11 -----
- 35 files changed, 307 insertions(+), 111 deletions(-)
+--- a/arch/sparc64/lib/xor.S
++++ b/arch/sparc64/lib/xor.S
+@@ -491,12 +491,12 @@ xor_niagara_4:		/* %o0=bytes, %o1=dest, 
+ 	ldda		[%i1 + 0x10] %asi, %i2	/* %i2/%i3 = src1 + 0x10 */
+ 	xor		%g2, %i4, %g2
+ 	xor		%g3, %i5, %g3
+-	ldda		[%i7 + 0x10] %asi, %i4	/* %i4/%i5 = src2 + 0x10 */
++	ldda		[%l7 + 0x10] %asi, %i4	/* %i4/%i5 = src2 + 0x10 */
+ 	xor		%l0, %g2, %l0
+ 	xor		%l1, %g3, %l1
+ 	stxa		%l0, [%i0 + 0x00] %asi
+ 	stxa		%l1, [%i0 + 0x08] %asi
+-	ldda		[%i6 + 0x10] %asi, %g2	/* %g2/%g3 = src3 + 0x10 */
++	ldda		[%l6 + 0x10] %asi, %g2	/* %g2/%g3 = src3 + 0x10 */
+ 	ldda		[%i0 + 0x10] %asi, %l0	/* %l0/%l1 = dest + 0x10 */
+ 
+ 	xor		%i4, %i2, %i4
+@@ -504,12 +504,12 @@ xor_niagara_4:		/* %o0=bytes, %o1=dest, 
+ 	ldda		[%i1 + 0x20] %asi, %i2	/* %i2/%i3 = src1 + 0x20 */
+ 	xor		%g2, %i4, %g2
+ 	xor		%g3, %i5, %g3
+-	ldda		[%i7 + 0x20] %asi, %i4	/* %i4/%i5 = src2 + 0x20 */
++	ldda		[%l7 + 0x20] %asi, %i4	/* %i4/%i5 = src2 + 0x20 */
+ 	xor		%l0, %g2, %l0
+ 	xor		%l1, %g3, %l1
+ 	stxa		%l0, [%i0 + 0x10] %asi
+ 	stxa		%l1, [%i0 + 0x18] %asi
+-	ldda		[%i6 + 0x20] %asi, %g2	/* %g2/%g3 = src3 + 0x20 */
++	ldda		[%l6 + 0x20] %asi, %g2	/* %g2/%g3 = src3 + 0x20 */
+ 	ldda		[%i0 + 0x20] %asi, %l0	/* %l0/%l1 = dest + 0x20 */
+ 
+ 	xor		%i4, %i2, %i4
+@@ -517,12 +517,12 @@ xor_niagara_4:		/* %o0=bytes, %o1=dest, 
+ 	ldda		[%i1 + 0x30] %asi, %i2	/* %i2/%i3 = src1 + 0x30 */
+ 	xor		%g2, %i4, %g2
+ 	xor		%g3, %i5, %g3
+-	ldda		[%i7 + 0x30] %asi, %i4	/* %i4/%i5 = src2 + 0x30 */
++	ldda		[%l7 + 0x30] %asi, %i4	/* %i4/%i5 = src2 + 0x30 */
+ 	xor		%l0, %g2, %l0
+ 	xor		%l1, %g3, %l1
+ 	stxa		%l0, [%i0 + 0x20] %asi
+ 	stxa		%l1, [%i0 + 0x28] %asi
+-	ldda		[%i6 + 0x30] %asi, %g2	/* %g2/%g3 = src3 + 0x30 */
++	ldda		[%l6 + 0x30] %asi, %g2	/* %g2/%g3 = src3 + 0x30 */
+ 	ldda		[%i0 + 0x30] %asi, %l0	/* %l0/%l1 = dest + 0x30 */
+ 
+ 	prefetch	[%i1 + 0x40], #one_read
+
+-- 
