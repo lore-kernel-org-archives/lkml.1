@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932651AbXKOTnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932825AbXKOTnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932651AbXKOTnV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 14:43:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763493AbXKOTnJ
+	id S932825AbXKOTnj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 14:43:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932091AbXKOTna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 14:43:09 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:43065 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752288AbXKOTnG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 14:43:06 -0500
-Subject: Re: [RFC] fuse writable mmap design
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <E1IskWl-0000oJ-00@dorka.pomaz.szeredi.hu>
-References: <E1IshIR-0000fE-00@dorka.pomaz.szeredi.hu>
-	 <1195154530.22457.16.camel@lappy>
-	 <E1IskWl-0000oJ-00@dorka.pomaz.szeredi.hu>
-Content-Type: text/plain
-Date: Thu, 15 Nov 2007 20:42:38 +0100
-Message-Id: <1195155759.22457.29.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Nov 2007 14:43:30 -0500
+Received: from scrub.xs4all.nl ([194.109.195.176]:3060 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763302AbXKOTn3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 14:43:29 -0500
+Date: Thu, 15 Nov 2007 20:43:27 +0100 (CET)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] kconfig: use $K64BIT to set 64BIT with all*config targets
+In-Reply-To: <20071115192555.GD23914@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.64.0711152036430.1817@scrub.home>
+References: <20071110204038.GA13140@uranus.ravnborg.org>
+ <11947274093185-git-send-email-sam@ravnborg.org> <11947274091127-git-send-email-sam@ravnborg.org>
+ <Pine.LNX.4.64.0711142116500.1818@scrub.home> <20071114220840.GB10920@uranus.ravnborg.org>
+ <Pine.LNX.4.64.0711151616330.1817@scrub.home> <20071115192555.GD23914@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-On Thu, 2007-11-15 at 20:37 +0100, Miklos Szeredi wrote:
-> > I'm somewhat confused by the complexity. Currently we can already have a
-> > lot of dirty pages from FUSE (up to the per BDI dirty limit - so
-> > basically up to the total dirty limit).
+On Thu, 15 Nov 2007, Sam Ravnborg wrote:
+
+> > > The value can be supplied on the command-line so we need to validate input.
 > > 
-> > How is having them dirty from mmap'ed writes different?
+> > Is there a need for this?
+> Yes. We would like to set 64BIT or not in other than x86 cases.
+> And way forward was not to override ARCH as in the x86 case.
+
+Can we please can get some consistency in this?
+We have a .config file for a reason, what's wrong with using it?
+
+> > Please revert the K64BIT changes and use this instead.
 > 
-> Nope, fuse never had dirty pages.  It does normal writes
-> synchronously, just updating the cache.
-> 
-> The dirty accounting and then the per-bdi throttling basically made it
-> possible _at_all_ to have a chance at a writepage implementation which
-> is not deadlocky (so thanks for those ;).
-> 
-> But there's still the throttle_vm_writeout() thing, and the other
-> places where the kernel is waiting for a write to complete, which just
-> cannot be done within a constrained time if an unprivileged userspace
-> process is involved.
+> I will finish up your patch and target it for next merge window.
 
-Ah, ok, your initial story missed this part (not being intimately
-familiar with FUSE made all that somewhat obscure).
+Why can't this be fixed properly now? You don't even need this patch, just 
+use ARCH to set 64BIT in the Kconfig as I've shown.
 
-The next point then, I'd expect your fuse_page_mkwrite() to push
-writeout of your 32-odd mmap pages instead of poll.
+> > These are two different uses, when reading a .config only the basic syntax 
+> > is checked, but not the value itself.
+> This is wrong considering the amount of people that hand edit the .config file.
 
+It's not, the actual symbol value is set later depending on the dependency 
+constraints.
 
-
+bye, Roman
