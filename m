@@ -1,41 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765907AbXKOQxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763601AbXKORBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765907AbXKOQxw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 11:53:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765198AbXKOQxe
+	id S1763601AbXKORBX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 12:01:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbXKORBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 11:53:34 -0500
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:53357 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764016AbXKOQxc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 11:53:32 -0500
-Message-ID: <473C7B16.3050700@linux.vnet.ibm.com>
-Date: Thu, 15 Nov 2007 22:30:06 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
+	Thu, 15 Nov 2007 12:01:15 -0500
+Received: from rtr.ca ([76.10.145.34]:3334 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752969AbXKORBP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 12:01:15 -0500
+Message-ID: <473C7B59.7030601@rtr.ca>
+Date: Thu, 15 Nov 2007 12:01:13 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Anton Blanchard <anton@samba.org>
-CC: lkml <linux-kernel@vger.kernel.org>, linuxppc <linuxppc-dev@ozlabs.org>
-Subject: Re: 2.6.24-rc1 on PPC64: machine check exception
-References: <472F1F4C.3010507@linux.vnet.ibm.com> <20071105154055.GA4746@kryten> <472F5C5E.4030607@linux.vnet.ibm.com>
-In-Reply-To: <472F5C5E.4030607@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Raymano Garibaldi <raymano@faunos.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6.23-1] [USB Mass Storage] [USB_PERSIST] Losing mounted USB
+ storage after resume
+References: <1618816c0711150657p35744001ic6d4ea22d5651a63@mail.gmail.com>
+In-Reply-To: <1618816c0711150657p35744001ic6d4ea22d5651a63@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Raymano Garibaldi wrote:
+> Hi,
 > 
->> http://patchwork.ozlabs.org/linuxppc/patch?id=14475
+> Is there a way/patch that would revert the USB mass storage
+> suspend/resume behavior to the way things worked on and prior to
+> kernel 2.6.21?
 > 
-> Thanks for pointing me to this patch.  I will try out and let you know if
-> this fixed the problem.
+> The problem is mounting a usb drive, suspending while mounted,
+> detaching the usb drive during suspend, reattaching usb drive during
+> suspend before resume, and resuming.
+> 
+> In this case the mount is lost and the drive has to be remounted after
+> resume. If the device remains attached while the computer is
+> suspended, USB_PERSIST works as expected and the device remains
+> mounted when the computer resumes. Kernel 2.6.21-x would leave the
+> mount point intact whether the device was left attached or was
+> detached and reattached while the computer was suspend.
+> 
+> We need this functionality particularly in read-only live USB distros.
+> In this case the USB device is read-only and can not change while the
+> computer is suspended even if it gets detached and is reattached
+> before resume.
+..
 
-Hi Anton,
+Some kind of boot flag would cure this one nicely.
 
-This patch fixed the problem.  I am able to run and profile ebizzy on 128-way
-PPC64.  However this fix is not included in 2.6.24-rc2 as well.
-I will watch for inclusion of this fix in 2.6.24.
+I have the same issue here:  boot/run notebook from USB stick,
+eventually suspend the notebook and unplug the stick so it can
+be packed into the case for travel.
 
---Vaidy
+Unpack at the other end, replug the stick, and resume from suspend.
+This should be doable, perhaps with a boot parameter override or something.
+
+???
