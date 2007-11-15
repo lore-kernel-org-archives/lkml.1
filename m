@@ -1,44 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762317AbXKOAV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764052AbXKOAYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762317AbXKOAV4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 19:21:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756233AbXKOAVq
+	id S1764052AbXKOAYR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 19:24:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbXKOAYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 19:21:46 -0500
-Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:41121 "HELO
-	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755890AbXKOAVp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 19:21:45 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=r0JkADGL4VTAWr8bjIWLSKmaK+rdS49B5In3P/1V8Ho7xu0pjRVnf7aRlZkdwfIBzxmiMbFC0orfG1sBYbOm1BpXKcXMLFBgMtYVU9x1igwtilEM2OMQu/JRoHoSfzmiPURKq32hqThFdIoQ49fPAoe294eS47FOZSK1Mio+H9U=  ;
-X-YMail-OSG: o9GKwaYVM1mZMjrEXhVtGII4Oy7QK6w8avZFbctKQHshXd9k
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Miller <davem@davemloft.net>
-Subject: Re: 2.6.24-rc2: Network commit causes SLUB performance regression with tbench
-Date: Thu, 15 Nov 2007 11:21:36 +1100
-User-Agent: KMail/1.9.5
-Cc: herbert@gondor.apana.org.au, clameter@sgi.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200711140927.39796.nickpiggin@yahoo.com.au> <20071114114844.GA13927@gondor.apana.org.au> <20071114.154616.46285694.davem@davemloft.net>
-In-Reply-To: <20071114.154616.46285694.davem@davemloft.net>
+	Wed, 14 Nov 2007 19:24:06 -0500
+Received: from ozlabs.org ([203.10.76.45]:36180 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753363AbXKOAYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 19:24:05 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711151121.37080.nickpiggin@yahoo.com.au>
+Message-ID: <18235.37249.823703.12168@cargo.ozlabs.ibm.com>
+Date: Thu, 15 Nov 2007 11:23:29 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Stephane Eranian <eranian@hpl.hp.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
+       Philip Mucci <mucci@cs.utk.edu>, William Cohen <wcohen@redhat.com>,
+       Robert Richter <robert.richter@amd.com>, linux-kernel@vger.kernel.org,
+       Perfmon <perfmon@napali.hpl.hp.com>,
+       perfmon2-devel@lists.sourceforge.net,
+       OSPAT devel <ospat-devel@cs.utk.edu>,
+       papi list <ptools-perfapi@cs.utk.edu>
+Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
+In-Reply-To: <20071114142629.GE17145@one.firstfloor.org>
+References: <20071113175545.GD4319@frankl.hpl.hp.com>
+	<53F4663B-CFBA-44E4-8283-BAAC8C8F1AFF@cs.utk.edu>
+	<20071113185924.GA22748@suse.de>
+	<20071113120728.4342e7d7.akpm@linux-foundation.org>
+	<18234.41652.199520.31261@cargo.ozlabs.ibm.com>
+	<20071114103805.GA16652@infradead.org>
+	<18234.53558.883970.87414@cargo.ozlabs.ibm.com>
+	<20071114110009.GA17833@infradead.org>
+	<p734pfp6lyp.fsf@bingen.suse.de>
+	<20071114141342.GH6557@frankl.hpl.hp.com>
+	<20071114142629.GE17145@one.firstfloor.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 November 2007 10:46, David Miller wrote:
-> From: Herbert Xu <herbert@gondor.apana.org.au>
-> Date: Wed, 14 Nov 2007 19:48:44 +0800
+Andi Kleen writes:
 
-> > Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
->
-> Applied and I'll queue it up for -stable too.
+> > This only works when counting (not sampling) and only for self-monitoring.
+> 
+> It works for global monitoring too.
 
-Good result. Thanks, everyone!
+How would you provide access to the counters of another process?
+Through an extension to ptrace perhaps?
+
+Paul.
