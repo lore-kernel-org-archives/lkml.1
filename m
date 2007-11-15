@@ -1,93 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761782AbXKOIvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762172AbXKOIw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761782AbXKOIvd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 03:51:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756547AbXKOIvX
+	id S1762172AbXKOIw3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 03:52:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756547AbXKOIwU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 03:51:23 -0500
-Received: from moutng.kundenserver.de ([212.227.126.179]:53091 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755516AbXKOIvW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 03:51:22 -0500
-Subject: Re: 2.6.24-rc2-mm1
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Jiri Kosina <jikos@jikos.cz>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20071115081407.GA3688@darkstar.te-china.tietoenator.com>
-References: <20071113223802.2ace1a61.akpm@linux-foundation.org>
-	 <a8e1da0711132247jd440f8dgc9ac0442e90f2c34@mail.gmail.com>
-	 <20071114004129.783fb98b.akpm@linux-foundation.org>
-	 <a8e1da0711140136i1e441371j306e7b2888de104e@mail.gmail.com>
-	 <20071114165906.GB13889@kroah.com> <1195065493.2168.31.camel@lov.site>
-	 <Pine.LNX.4.64.0711142018390.15844@twin.jikos.cz>
-	 <1195075663.2609.2.camel@lov.site>
-	 <a8e1da0711141701xc66109dv93ad2c3d2b76ebec@mail.gmail.com>
-	 <1195094293.2731.14.camel@lov.site>
-	 <20071115081407.GA3688@darkstar.te-china.tietoenator.com>
-Content-Type: text/plain
-Date: Thu, 15 Nov 2007 09:51:52 +0100
-Message-Id: <1195116712.3837.5.camel@lov.site>
+	Thu, 15 Nov 2007 03:52:20 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:50499 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753344AbXKOIwT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 03:52:19 -0500
+Date: Thu, 15 Nov 2007 09:51:23 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Florian Fainelli <florian.fainelli@telecomint.eu>,
+       Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [patch 2.6.24-rc2 1/3] generic gpio -- gpio_chip support
+Message-ID: <20071115095123.3f595b62@dhcp-255-175.norway.atmel.com>
+In-Reply-To: <200711150020.33887.david-b@pacbell.net>
+References: <200711091136.20051.david-b@pacbell.net>
+	<200711142302.02498.david-b@pacbell.net>
+	<alpine.LFD.0.9999.0711150824480.3265@localhost.localdomain>
+	<200711150020.33887.david-b@pacbell.net>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.1.0-rc1 (GTK+ 2.12.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1+F9N6/hON/Xwalv5H5VadMpLf+sWd0pgL4bOV
- 8atWgVAIE2rchUDHnWlKmpfPs2hfRRLHLFsB8cY62t5p+VWoFW
- z/gEEJd8SvRrIeJ2jXIvo1B9WAX0K1b
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 15 Nov 2007 00:20:33 -0800
+David Brownell <david-b@pacbell.net> wrote:
 
-On Thu, 2007-11-15 at 16:14 +0800, Dave Young wrote:
-> On Thu, Nov 15, 2007 at 03:38:13AM +0100, Kay Sievers wrote:
-> > On Thu, 2007-11-15 at 09:01 +0800, Dave Young wrote:
-> > > On Nov 15, 2007 5:27 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
-> > > > On Wed, 2007-11-14 at 20:19 +0100, Jiri Kosina wrote:
-> > > > > On Wed, 14 Nov 2007, Kay Sievers wrote:
-> > > > >
-> > > > > > Could it be an init-order problem, where something tries to use the
-> > > > > > block subsystem? Before it is initialized with:
-> > > > > >   block/genhd.c :: subsys_initcall(genhd_device_init);
-> > > > > > If that's the case, we have an old bug that nobody noticed with static
-> > > > > > structures, which are zeroed that time, but definitely not properly
-> > > > > > initialized. I'll try to build loop non-modular now, and see if that
-> > > > > > makes the bug appear here.
-> > > >
-> > > > > my .config with which I reproduc this on 2.6.24-rc2-mm1 reliably can be
-> > > > > obtained from http://www.jikos.cz/jikos/junk/.config
-> > > >
-> > > > Hmm, that config doesn't do anything here, and if I make it boot, it
-> > > > does not show the bug.
-> > > >
-> > > > Could you possibly enable kobject debugging and see if that exposes
-> > > > something, maybe something goes wrong with the kset refcount and it gets
-> > > > released while in use.
-> > > >
-> > > Hi,
-> > > I would do that.
+> > >   - gpio_direction_input()/gpio_direction_output() implicitly
+> > >     request the pins, if they weren't already requested.  
 > > 
-> > That would be great.
-> > 
-> > > BTW, The bug report as EIP  at __list_add with CONFIG_DEBUG_LIST=y
-> > 
-> > Yeah, that hints that the kset, which contains the list, is not
-> > allocated at the time it is used, or it is already released (kfree)
-> > again by some buggy logic.
+> > Eek, that's completely wrong. Allowing to access a resource _before_
+> > it is assigned and then doing the assignment implicit is a really bad
+> > idea.  
+> 
+> This is an artifact of making the GPIO interface easy to adopt,
+> by letting all the initial adopters wrap "legacy" SOC-specific
+> GPIO interfaces instead of creating a bunch of new platform code.
 
-> Yes, I debugged it, there's some new findings.
-> It is freed by put_disk.
-> The floppy driver alloc_disk and then call put_disk without register_disk.
-> in kobject_cleanup line 551:
-> if(s)
-> 	kset_put(s);
-> Now the kset is set in alloc_disk after kobject_init, so it is not refereced yet.
+It's still ok for platforms that do not use gpiolib to provide NOP
+gpio_request() and gpio_free() functions if they don't care about
+tracking gpio usage. That doesn't mean we shouldn't require all drivers
+to use those calls -- if they are implemented as empty inlines, it
+won't cost anything to call them.
 
-Yeah, that looks like it.
+I'd rather speed up the gpio_direction_* functions a bit by removing
+the implicit gpio_request() since they may be called a lot more
+frequently and, as you pointed out, possibly from atomic context.
 
-It still does not fail here, but I can simulate the behavior of
-floppy.c, and that gets fixed by your patch. Great!
-
-Thanks a lot,
-Kay
-
+Håvard
