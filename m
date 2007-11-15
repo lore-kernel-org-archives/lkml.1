@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933265AbXKOHAG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765768AbXKOHAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933265AbXKOHAG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 02:00:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764449AbXKOGrb
+	id S1765768AbXKOHAn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 02:00:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932520AbXKOGrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:47:31 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:58032 "EHLO
+	Thu, 15 Nov 2007 01:47:33 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:58043 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763977AbXKOGra (ORCPT
+	with ESMTP id S932518AbXKOGrb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:47:30 -0500
-Date: Wed, 14 Nov 2007 22:44:54 -0800
+	Thu, 15 Nov 2007 01:47:31 -0500
+Date: Wed, 14 Nov 2007 22:45:02 -0800
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz
+       linux-usb-devel@lists.sourceforge.net
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,15 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Roland Dreier <roland@digitalvampire.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [patch 19/40] MSI: Use correct data offset for 32-bit MSI in
-	read_msi_msg()
-Message-ID: <20071115064454.GT19218@kroah.com>
+       Benedikt Spranger <bene@linutronix.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: [patch 21/40] usb-gadget-ether: prevent oops caused by error
+	interrupt race
+Message-ID: <20071115064502.GV19218@kroah.com>
 References: <20071115062710.885284510@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="msi-use-correct-data-offset-for-32-bit-msi-in-read_msi_msg.patch"
+Content-Disposition: inline; filename="usb-gadget-ether-prevent-oops-caused-by-error-interrupt-race.patch"
 In-Reply-To: <20071115064302.GA19218@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -42,33 +43,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Roland Dreier <roland@digitalvampire.org>
+From: Benedikt Spranger <bene@linutronix.de>
 
-patch cbf5d9e6b9bcf03291cbb51db144b3e2773a8a2d in mainline.
+patch 5395353e0c8272fe73ac914acd7e4add0da2bef0 in mainline.
 
-While reading the MSI code trying to find a reason why MSI wouldn't
-work for devices that have a 32-bit MSI address capability, I noticed
-that read_msi_msg() seems to read the message data from the wrong
-offset in this case.
+Fix a longstanding race in the Ethernet gadget driver, which can cause an
+oops on device disconnect.  The fix is just to make the TX path check
+whether its freelist is empty.  That check is otherwise not necessary,
+since the queue is always stopped when that list empties (and restarted
+when request completion puts an entry back on that freelist).
 
-Signed-off-by: Roland Dreier <roland@digitalvampire.org>
-Acked-by: Eric W. Biederman <ebiederm@xmission.com>
+The race window starts when the network code decides to transmit a packet,
+and ends when hard_start_xmit() grabs the freelist lock.  When disconnect()
+is called inside that window, it shuts down the TX queue and breaks the
+otherwise-solid assumption that packets are never sent through a TX queue
+that's stopped.
+
+Signed-off-by: Benedikt Spranger <bene@linutronix.de>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/pci/msi.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/usb/gadget/ether.c |   12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -132,7 +132,7 @@ void read_msi_msg(unsigned int irq, stru
- 			pci_read_config_word(dev, msi_data_reg(pos, 1), &data);
- 		} else {
- 			msg->address_hi = 0;
--			pci_read_config_word(dev, msi_data_reg(pos, 1), &data);
-+			pci_read_config_word(dev, msi_data_reg(pos, 0), &data);
- 		}
- 		msg->data = data;
- 		break;
+--- a/drivers/usb/gadget/ether.c
++++ b/drivers/usb/gadget/ether.c
+@@ -1989,8 +1989,20 @@ static int eth_start_xmit (struct sk_buf
+ 	}
+ 
+ 	spin_lock_irqsave(&dev->req_lock, flags);
++	/*
++	 * this freelist can be empty if an interrupt triggered disconnect()
++	 * and reconfigured the gadget (shutting down this queue) after the
++	 * network stack decided to xmit but before we got the spinlock.
++	 */
++	if (list_empty(&dev->tx_reqs)) {
++		spin_unlock_irqrestore(&dev->req_lock, flags);
++		return 1;
++	}
++
+ 	req = container_of (dev->tx_reqs.next, struct usb_request, list);
+ 	list_del (&req->list);
++
++	/* temporarily stop TX queue when the freelist empties */
+ 	if (list_empty (&dev->tx_reqs))
+ 		netif_stop_queue (net);
+ 	spin_unlock_irqrestore(&dev->req_lock, flags);
 
 -- 
