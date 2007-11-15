@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765675AbXKOQmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765545AbXKOQn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765675AbXKOQmv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 11:42:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760194AbXKOQld
+	id S1765545AbXKOQn1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 11:43:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759045AbXKOQnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 11:41:33 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56263 "EHLO mx1.redhat.com"
+	Thu, 15 Nov 2007 11:43:08 -0500
+Received: from ns.suse.de ([195.135.220.2]:40096 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758836AbXKOQla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 11:41:30 -0500
-Date: Thu, 15 Nov 2007 11:41:22 -0500
-From: Ulrich Drepper <drepper@redhat.com>
-Message-Id: <200711151641.lAFGfMm6024339@devserv.devel.redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/4] x86&x86-64 UML support for sys_indirect
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org
+	id S1758758AbXKOQnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 11:43:06 -0500
+Date: Thu, 15 Nov 2007 08:42:14 -0800
+From: Greg KH <gregkh@suse.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 16/19] x86 setup: handle boot loaders which set up the
+	stack incorrectly
+Message-ID: <20071115164214.GF24087@suse.de>
+References: <20071115054813.977066477@mini.kroah.org> <20071115061513.GQ7980@kroah.com> <473BF4C5.4080909@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <473BF4C5.4080909@zytor.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This part adds support for sys_indirect on UML on x86 and x86-64.
+On Wed, Nov 14, 2007 at 11:27:01PM -0800, H. Peter Anvin wrote:
+> Greg KH wrote:
+>> -stable review patch.  If anyone has any objections, please let us know.
+>> ------------------
+>> From: H. Peter Anvin <hpa@zytor.com>
+>> patch 6b6815c6d5d1dc209701d1661a7a0e09a295db2f in mainline.
+>> Apparently some specific versions of LILO enter the kernel with a
+>> stack pointer that doesn't match the rest of the segments.  Make our
+>> best attempt at untangling the resulting mess.
+>> Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+>> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+>
+> Just FYI:
+>
+> It has been reported that while this patch fixes old LILO, and possibly 
+> some other boot loaders (unknown), it has also broken older versions of 
+> SYSLINUX: they still boot, but the command line is truncated (exactly how 
+> much depends on the BIOS, but typical values are around 130 bytes.)
+>
+> This is definitely traceable to a bug in SYSLINUX that was already fixed in 
+> release 3.50 (the current version of SYSLINUX is 3.52).
+>
+> I have chosen to leave the patch in mainline, rather than trying yet 
+> another recipe and hope it doesn't break on some other random combination 
+> of bootloaders, since:
+>
+> a) SYSLINUX is generally easily updated, compared to other bootloaders;
+> b) The failure mode is less severe (it still boots.)
+>
+> ... however, you may choose to call differently.
 
- b/arch/um/Makefile                 |    2 +-
- b/include/asm-um/indirect-i386.h   |    6 ++++++
- b/include/asm-um/indirect-x86_64.h |   10 ++++++++++
- 3 files changed, 17 insertions(+), 1 deletion(-)
+I have no objection to keeping this patch in the tree, as it fixes a
+real problem, and matches the upstream kernel version.
 
+thanks,
 
---- a/arch/um/Makefile
-+++ b/arch/um/Makefile
-@@ -20,7 +20,7 @@ core-y			+= $(ARCH_DIR)/kernel/		\
- 
- # Have to precede the include because the included Makefiles reference them.
- SYMLINK_HEADERS := archparam.h system.h sigcontext.h processor.h ptrace.h \
--	module.h vm-flags.h elf.h host_ldt.h
-+	module.h vm-flags.h elf.h host_ldt.h indirect.h
- SYMLINK_HEADERS := $(foreach header,$(SYMLINK_HEADERS),include/asm-um/$(header))
- 
- # XXX: The "os" symlink is only used by arch/um/include/os.h, which includes
-diff --git a/arch/x86/ia32/ia32entry.S b/arch/x86/ia32/ia32entry.S
-index df588f0..ed21ebe 100644
---- /dev/null	2007-09-23 16:36:38.465394704 -0700
-+++ b/include/asm-um/indirect-i386.h	2007-11-14 22:20:40.000000000 -0800
-@@ -0,0 +1,6 @@
-+#ifndef __UM_INDIRECT_I386_H
-+#define __UM_INDIRECT_I386_H
-+
-+#include "asm/arch/indirect_32.h"
-+
-+#endif
---- /dev/null	2007-09-23 16:36:38.465394704 -0700
-+++ b/include/asm-um/indirect-x86_64.h	2007-11-14 22:20:58.000000000 -0800
-@@ -0,0 +1,10 @@
-+#ifndef __UM_INDIRECT_X86_64_H
-+#define __UM_INDIRECT_X86_64_H
-+
-+#include "asm/arch/indirect_64.h"
-+
-+#undef CALL_INDIRECT
-+#define CALL_INDIRECT(regs) \
-+  CALL_INDIRECT_WMAX(regs, UM_NR_syscall_max)
-+
-+#endif
+greg k-h
