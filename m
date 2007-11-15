@@ -1,148 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933516AbXKOVnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933278AbXKOVrI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933516AbXKOVnU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 16:43:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764755AbXKOVnD
+	id S933278AbXKOVrI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 16:47:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757360AbXKOVqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 16:43:03 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:38706 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751620AbXKOVnA (ORCPT
+	Thu, 15 Nov 2007 16:46:55 -0500
+Received: from empbedex1.empirix.com ([12.38.203.54]:29808 "EHLO
+	empbedex1.empirix.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755678AbXKOVqx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 16:43:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=CBU7FEY7WPGDYgBBeA8tLpA42Rr7NzxIi3Vd+eU9JnE6ooVRwBBYjwQ1GDIUpXuuNplcF+iOIQbDloqKWhI9YpWSKMxsoUfDQT2ymsQno09zFD7G8+O9AZT8Qsecy21K5TUDZpfVry6KR4zW95Pi8kFwANlEBplLTd5fWO9GwRM=
-Message-ID: <473CBD5D.5060407@googlemail.com>
-Date: Thu, 15 Nov 2007 22:42:53 +0100
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071004)
+	Thu, 15 Nov 2007 16:46:53 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: Greg KH <greg@kroah.com>, Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       bk@suse.de, khali@linux-fr.org,
-       James <James.Bottomley@HansenPartnership.com>,
-       linux-scsi@vger.kernel.org
-Subject: Re: 2.6.24-rc2-mm1
-References: <473A678C.2020507@googlemail.com> <20071114034924.GA26048@kroah.com> <20071114043923.GK6089@one-eyed-alien.net> <473A88B3.3010303@googlemail.com> <20071114082332.GM6089@one-eyed-alien.net> <473ABE7D.6060703@googlemail.com> <20071115171508.GQ6089@one-eyed-alien.net> <473C8C97.9030707@panasas.com>
-In-Reply-To: <473C8C97.9030707@panasas.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: 2.6.23.1 - sata_mv (7042) hang with large file operations
+Date: Thu, 15 Nov 2007 16:46:46 -0500
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D9010AB2CFF0@EMPBEDEX.empirix.com>
+In-Reply-To: <473C7625.2040300@rtr.ca>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 2.6.23.1 - sata_mv (7042) hang with large file operations
+Thread-Index: AcgnphXoE+ssdgM9QVmtKbMWrNAvDwAJ9HEA
+References: <BD261180E6D35F4D9D32F3E44FD3D901053E84BD@EMPBEDEX.empirix.com> <45ED682A.9040408@garzik.org> <BD261180E6D35F4D9D32F3E44FD3D9010A7E1B45@EMPBEDEX.empirix.com> <4728A816.8020608@garzik.org> <BD261180E6D35F4D9D32F3E44FD3D9010AAE852F@EMPBEDEX.empirix.com> <473B36D7.8000205@rtr.ca> <BD261180E6D35F4D9D32F3E44FD3D9010AAE8585@EMPBEDEX.empirix.com> <473B44CB.6010209@rtr.ca> <BD261180E6D35F4D9D32F3E44FD3D9010AAE89CA@EMPBEDEX.empirix.com> <473B76E0.7010500@rtr.ca> <BD261180E6D35F4D9D32F3E44FD3D9010AAE911D@EMPBEDEX.empirix.com> <473C7625.2040300@rtr.ca>
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: "Mark Lord" <liml@rtr.ca>
+Cc: "Jeff Garzik" <jeff@garzik.org>, <linux-ide@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 15 Nov 2007 21:46:52.0570 (UTC) FILETIME=[089527A0:01C827D1]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Boaz Harrosh wrote:
-> On Thu, Nov 15 2007 at 19:15 +0200, Matthew Dharm <mdharm-kernel@one-eyed-alien.net> wrote:
->> On Wed, Nov 14, 2007 at 10:23:09AM +0100, Gabriel C wrote:
->>> Matthew Dharm wrote:
->>>> On Wed, Nov 14, 2007 at 06:33:39AM +0100, Gabriel C wrote:
->>>>> Matthew Dharm wrote:
->>>>>> On Tue, Nov 13, 2007 at 07:49:24PM -0800, Greg KH wrote:
->>>>>>> Matt, are these the errors you were worried about with the patch we were
->>>>>>> just talking about tha tis in my tree?
->>>>>> I can't tell from these logs.
->>>>> There is the dmesg with CONFIG_USB_STORAGE_DEBUG :
->>>>>
->>>>> http://194.231.229.228/dmesg-2.6.24-rc2-mm1
->>>> Good news: This isn't the bug Greg was worried about.
->>>>
->>>> Bad news: Something is seriously strange here.  Note the following from the
->>>> logs:
->>>>
->>>> Nov 14 06:07:43 lara [   41.890614] usb-storage: Bulk Status S 0x53425355 T 0xd R 0 Stat 0x0
->>>> Nov 14 06:07:43 lara [   41.890616] usb-storage: -- unexpectedly short transfer
->>>>
->>>> Note the 'R' value of zero -- this is the residue value.  It indicates a
->>>> complete transfer, and that matches the log lines immediately previous
->>>> which indicate a 4K transfer which completed properly.
->>>>
->>>> If residue is zero, then srb->resid should be zero.  Take a look in
->>>> linux/usb/storage/transport.c in usb_stor_Bulk_transport()
->>>>
->>>> If srb->resid is zero, then you should NEVER get the "unexpectedly short
->>>> transfer" message.  Look at usb_stor_invoke_transport() in the same file.
->>> That code got replaced recently but I have no idea about it.
+The plot thickens - it looks like it might be some type 
+of problem interacting with the setup of my 4Gig DDR memory
+and how I setup some translation windows in my MPC8548E
+
+I realized this morning that I have an inbound/ output PEX window
+Translation Setup for mapping all from/to PEX bus to outside 
+the physical 4GIG memory space (i.e.: up at 0xC_xxxx_xxxx). Thus,
+all output operations that translation from 0xC_xxxx_xxxx to 
+the pci 32 bit address of xxxx_xxxx) - and vice versa for for
+the inbound. Note: we also have a straight 1:1 translation mapping 
+as well for the lower 4Gig - so that's why this worked without
+the below mentioned change...
+
+So, I changed the Request & Response Hi Addresses (which were
+Being shifted by 32 bits down anyways) and 'OR' that with my 
+0xC (so the effective 64bit DMA address is 0xC_xxxx_xxxx (where 
+Xxxx_xxxx is the effective address). This was what we did to 
+solve the problem with the Marvel Linux driver that we got from
+the Marvel site....
+
+This all works just fine with ONLY 2 gig of memory in the system
+(and still have these inbound/output pex translation windows), 
+but fails when I put back the 4 Gig (and the 8Gig) DDR memory.
+
+Unfortunately, this still hasn't solved the problem though - 
+so there is something else which I am not seeing?
+
+I have a couple more ideas - but this is a toughy
+
+
+
+-----Original Message-----
+
+Morrison, Tom wrote:
+> Additional information - the ~file size this is caused 
+> is somewhere close to 260Mbytesfiles. 
+> 
+> If I create a ~260Mbytes file - my program finishes creating
+> the file - but ~5 seconds later (I timed this by hitting enter
+> on the console every second after completion of the command 
+> that should have done a fsync of the created file before exiting)...
+> It hangs...
+> 
+> I did a little playing around with /proc/sys/dev/scsi/logging_level
+> (set to 0x7) - and it seems that the kernel/box locks up after
+> this line:
+> 
+>>> scsi_add_timer: scmd: efca83c0, time: 7500, (c0160660)
+>>> scsi_delete_timer: scmd: efca83c0, rtn: 1
+>>> scsi_add_timer: scmd: efca8840, time: 7500, (c0160660)
+> 
+> 
+> Further analysis (setting logging level to 65535 (0xFFFF) 
+> Has the following behavior down low) - 
+> 
+>>> scsi_add_timer: scmd: efca8960, time: 7500, (c0160660)
+>>> sd 0:0:0:0: [sda] Send: 0xefca8960
+>>> sd 0:0:0:0: [sda] CDB: Write(10): 2a 00 00 47 92 27 00 01 48 00
+>>> buffer = 0xc0553040, bufflen = 167936, done = 0xc016b194,
+> queuecommand
+>       0xc017ed34
+>>> leaving scsi_dispatch_cmnd()
+>>> scsi_delete_timer: scmd: efca8960, rtn: 1
+>>> sd 0:0:0:0: [sda] Done: 0xefca8960 SUCCESS
+>>> sd 0:0:0:0: [sda] Result: hostbyte=DID_OK
+> driverbyte=DRIVER_OK,SUGGEST_OK
+>>> sd 0:0:0:0: [sda] CDB: Write(10): 2a 00 00 47 92 27 00 01 48 00
+>>> sd 0:0:0:0: [sda] scsi host busy 1 failed 0
+>>> sd 0:0:0:0: Notifying upper driver of completion (result 0)
 >>>
->>> ( http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=shortlog  see the patches from Boaz Harrosh) 
->>>
->>> srb->resid got replaced by scsi_get_resid() it I see that right.
->>>
->>> I'm CC'ing the author , he will know I think.
->> The replacement looks, to my eye, to be logically correct.  The patch was
->> pretty clean.
->>
->> Then again, I haven't looked at what is "under the hood" of the accessor
->> functions.  Perhaps there is a side-effect somewhere in there?
->>
->> Perhaps a quick debugging test -- print the value of scsi_get_resid(srb)
->> just after it's initialized to zero at the top of
->> usb_stor_invoke_transport(), and then just after the call to
->> us->transport().
->>
+>>> scsi_add_timer: scmd: efca82a0, time: 7500, (c0160660)
+>>> sd 0:0:0:0: [sda] Send: 0xefca82a0
+>>> sd 0:0:0:0: [sda] CDB: Write(10): 2a 00 00 47 93 6f 00 02 40 00
+>>> buffer = 0xef5734c0, bufflen = 294912, done = 0xc016b194,
+> queuecommand
+>       0xc017ed34
+>>> leaving scsi_dispatch_cmnd()
 > 
-> I have found the bug. My bad sorry about that. Patch below
-> It is because I switched from use of usb_stor_bulk_transfer_sg()
-> to usb_stor_bulk_transfer_sglist, but forgot the residual handling.
+> Nothing more - it hangs!
+> 
+> This is really a nasty problem!!!!
+..
 
+Yes.  It's particularly nasty because, as of yet, I haven't seen
+anything
+to lead me to conclude *which* kernel subsystem is locking up.
 
-Your patch fixes the problem. Thx.
+It could be the block layer.
+It could be some PPC arch bug.
+It could be mm.
+It could even be the CPU scheduler.
 
-> 
-> (Please send scsi bugs to scsi list. My lkml mental filters are
-> much higher, Sorry for not seeing this yesterday)
+Those messages above could help.
+Now we just need somebody to interpret them,
+and examine the code paths that follow to see
+where it might be possible to get stuck.
 
-Uhh sorry I forgot to CC linux-scsi =)
+The SCSI/libata layers by themselves could lock up the I/O,
+but not the entire machine..
 
+Cheers
+ 
 
-> 
-> ----
-> From: Boaz Harrosh <bharrosh@panasas.com>
-> Date: Thu, 15 Nov 2007 20:07:56 +0200
-> Subject: [PATCH] Fix bug in last usb accessor patch
-> 
->>>> Bad news: Something is seriously strange here.  Note the following from the
->>>> logs:
->>>>
->>>> Nov 14 06:07:43 lara [   41.890614] usb-storage: Bulk Status S 0x53425355 T 0xd R 0 Stat 0x0
->>>> Nov 14 06:07:43 lara [   41.890616] usb-storage: -- unexpectedly short transfer
->>>>
->>>> Note the 'R' value of zero -- this is the residue value.  It indicates a
->>>> complete transfer, and that matches the log lines immediately previous
->>>> which indicate a 4K transfer which completed properly.
->>>>
->>>> If residue is zero, then srb->resid should be zero.  Take a look in
->>>> linux/usb/storage/transport.c in usb_stor_Bulk_transport()
->>>>
->>>> If srb->resid is zero, then you should NEVER get the "unexpectedly short
->>>> transfer" message.  Look at usb_stor_invoke_transport() in the same file.
->>> That code got replaced recently but I have no idea about it.
-> 
->   wrong resid handling fixed
-> 
-> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
-> ---
->  drivers/usb/storage/transport.c |    7 ++++---
->  1 files changed, 4 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/usb/storage/transport.c b/drivers/usb/storage/transport.c
-> index d3a84a2..d9f4912 100644
-> --- a/drivers/usb/storage/transport.c
-> +++ b/drivers/usb/storage/transport.c
-> @@ -465,11 +465,12 @@ static int usb_stor_bulk_transfer_sglist(struct us_data *us, unsigned int pipe,
->  int usb_stor_bulk_srb(struct us_data* us, unsigned int pipe,
->  		      struct scsi_cmnd* srb)
->  {
-> -	int resid = scsi_get_resid(srb);
-> +	unsigned int partial;
->  	int result = usb_stor_bulk_transfer_sglist(us, pipe, scsi_sglist(srb),
->  				      scsi_sg_count(srb), scsi_bufflen(srb),
-> -				      &resid);
-> -	scsi_set_resid(srb, resid);
-> +				      &partial);
-> +
-> +	scsi_set_resid(srb, scsi_bufflen(srb) - partial);
->  	return result;
->  }
->  
