@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765158AbXKOA1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763616AbXKOAk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765158AbXKOA1j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 19:27:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757578AbXKOA1Q
+	id S1763616AbXKOAk3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 19:40:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755513AbXKOAkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 19:27:16 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57717
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757228AbXKOA1O (ORCPT
+	Wed, 14 Nov 2007 19:40:16 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:54496 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755462AbXKOAkO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 19:27:14 -0500
-Date: Wed, 14 Nov 2007 16:27:14 -0800 (PST)
-Message-Id: <20071114.162714.88176942.davem@davemloft.net>
-To: nickpiggin@yahoo.com.au
-Cc: herbert@gondor.apana.org.au, clameter@sgi.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc2: Network commit causes SLUB performance regression
- with tbench
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200711151121.37080.nickpiggin@yahoo.com.au>
-References: <20071114114844.GA13927@gondor.apana.org.au>
-	<20071114.154616.46285694.davem@davemloft.net>
-	<200711151121.37080.nickpiggin@yahoo.com.au>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 14 Nov 2007 19:40:14 -0500
+Date: Wed, 14 Nov 2007 16:39:54 -0800
+From: Gary Hade <garyhade@us.ibm.com>
+To: Alex Chiang <achiang@hp.com>
+Cc: Gary Hade <garyhade@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
+       Greg KH <greg@kroah.com>, gregkh@suse.de, kristen.c.accardi@intel.com,
+       lenb@kernel.org, rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, kaneshige.kenji@jp.fujitsu.com,
+       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 0/5, v2] Physical PCI slot objects
+Message-ID: <20071115003954.GB6269@us.ibm.com>
+References: <20071114193605.GA25002@ldl.fc.hp.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071114193605.GA25002@ldl.fc.hp.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-Date: Thu, 15 Nov 2007 11:21:36 +1100
+On Wed, Nov 14, 2007 at 12:36:05PM -0700, Alex Chiang wrote:
+> * Alex Chiang <achiang@hp.com>:
+> > 
+> > Actually, I just reworked my patch this morning, and believe that
+> > I have a much cleaner implementation now that should fix a lot of
+> > the errors you saw.
 
-> On Thursday 15 November 2007 10:46, David Miller wrote:
-> > From: Herbert Xu <herbert@gondor.apana.org.au>
-> > Date: Wed, 14 Nov 2007 19:48:44 +0800
-> 
-> > > Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-> >
-> > Applied and I'll queue it up for -stable too.
-> 
-> Good result. Thanks, everyone!
+Sorry, I lost access to the x3850 that I was using and 
+may not be able to get back on it until early next week.
 
-This case is a good example to use the next time a stupid thread
-starts up about bug reports not being looked into.  To me it's
-seems clearly more a matter of the quality of the bug report.
+I think I will go ahead and send you the comments
+in response to your earlier message that I was going
+to hold off on until I tried your revised patches.
+It may contain something you haven't considered.
+
+Gary
+
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
