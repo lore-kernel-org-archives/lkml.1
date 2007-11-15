@@ -1,51 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763181AbXKOPA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759198AbXKOPLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763181AbXKOPA1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 10:00:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758225AbXKOPAQ
+	id S1759198AbXKOPLR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 10:11:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060AbXKOPLE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 10:00:16 -0500
-Received: from wa-out-1112.google.com ([209.85.146.178]:15638 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757288AbXKOPAO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 10:00:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=V01YLlT9t4059sBy2Tu1K14CDDQCB8LR9QIgwdPKhEXJGrLDugOjnYq9uiqdrqLeL004Ow7+eOFmznDTAOY64FmWfjVcAdRHbOVFQZB3RKBfRrq3uPPkwbZ5kkBtO9Z9xopun7C6qj9UHBATOR6zWCLRwfwzI9DUw5H0cnqf1W4=
-Message-ID: <863e9df20711150700i3c84374ava108f5b585e8498b@mail.gmail.com>
-Date: Thu, 15 Nov 2007 20:30:13 +0530
-From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
-To: "Jim Keniston" <jkenisto@us.ibm.com>
-Subject: Re: [PATCH][RFC] kprobes: Add user entry-handler in kretprobes
-Cc: "Srinivasa Ds" <srinivasa@in.ibm.com>, linux-kernel@vger.kernel.org,
-       prasanna@in.ibm.com, davem@davemloft.net,
-       anil.s.keshavamurthy@intel.com,
-       "Ananth N Mavinakayanahalli" <ananth@in.ibm.com>
-In-Reply-To: <1195080664.5781.78.camel@dyn9047018096.beaverton.ibm.com>
+	Thu, 15 Nov 2007 10:11:04 -0500
+Received: from iabervon.org ([66.92.72.58]:37375 "EHLO iabervon.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754630AbXKOPLD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 10:11:03 -0500
+Date: Thu, 15 Nov 2007 10:10:59 -0500 (EST)
+From: Daniel Barkalow <barkalow@iabervon.org>
+To: Michael Gerdau <mgerdau@tiscali.de>
+cc: Philippe Elie <phil.el@wanadoo.fr>,
+       Russell Leighton <russ@elegant-software.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: OT: Does Linux have any "Perfect Code"
+In-Reply-To: <200711151416.54570.mgerdau@tiscali.de>
+Message-ID: <Pine.LNX.4.64.0711150940560.12193@iabervon.org>
+References: <c9d133bdb3481fbc01a572d948049f5e@elegant-software.com>
+ <20071115082746.GA2885@zaniah> <200711151416.54570.mgerdau@tiscali.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47389BEB.1000901@gmail.com>
-	 <863e9df20711121039t5352a993xc9eeb6bfea123805@mail.gmail.com>
-	 <863e9df20711130247g45d3d541j10c76434e9c65b00@mail.gmail.com>
-	 <473AAA75.2050900@in.ibm.com>
-	 <863e9df20711140049q3ad486ben7ace2edab0a2ca41@mail.gmail.com>
-	 <473ACCBE.9010308@in.ibm.com>
-	 <863e9df20711140530h69df9107g38e293aab278686a@mail.gmail.com>
-	 <1195080664.5781.78.camel@dyn9047018096.beaverton.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 15, 2007 4:21 AM, Jim Keniston <jkenisto@us.ibm.com> wrote:
-> 2. Simplify the task of correlating data (e.g., timestamps) between
-> function entry and function return.
+On Thu, 15 Nov 2007, Michael Gerdau wrote:
 
-Would adding of data and len fields in ri help? Instead of "pouching"
-data in one go at registration time, this would let user handlers do
-the allocation and allow them to use different kinds of data
-structures per-instance.
+> > This code is far to be perfect, some part is outdated, bcopy() use instead
+> > of memcpy() for example. More annoying are the comment, the file is 3306
+> > lines while there is only 1640 line of code, nothing bad per se but looking
+> > some comments:
+> > 
+> >  		/*
+> >  		 * Before we begin this operation, disable kernel preemption.
+> >  		 */
+> >  		kpreempt_disable();
+> 
+> <disclaimer>
+> I'm not a kernel developer.
+> </disclaimer>
+> 
+> That having said:
+> I really do like such obvious (as in: for those knowing the stuff anyway)
+> comments when looking at code and probably concepts I'm not familiar with.
+>
+> ...
+> 
+> I mean, isn't the whole purpose of comments to help those not familiar
+> with the code to understand it's purpose and possibly the intention of
+> the author (just in case the author had coded a bug) ?
 
-- Abhishek Sagar
+That's the problem with really obvious comments. In the example above, 
+that function had better disable kernel preemption with a name like that, 
+and, assuming it's before the code begins the operation in sequence, we 
+know when we're doing it. But the comment fails to explain why we need to 
+disable kernel preemption before beginning the operation, just that we are 
+doing so. Having the comment merely distracts the reader from the fact 
+that the purpose of the code and the intention of the author are 
+completely undocumented. And there's a realy chance that this comment or 
+ones like it cause this statement and the place in the code where things 
+would go wrong if preemption weren't disabled to not fit on the reader's 
+screen together, so it is not only unclear what the author's intention 
+was, but it is harder to figure out from looking at the code than it would 
+be without comments, because fewer clues are actually visible at the same 
+time, since each of them takes up extra screen space.
+
+The code itself should be written to tell the reader everything there is 
+to know about what it does, and the comments in code should only tell the 
+reader why it does that.
+
+	-Daniel
+*This .sig left intentionally blank*
