@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932714AbXKOWuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933136AbXKOWzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932714AbXKOWuu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 17:50:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759096AbXKOWul
+	id S933136AbXKOWzw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 17:55:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756519AbXKOWzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 17:50:41 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35470 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754913AbXKOWuk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 17:50:40 -0500
-Date: Thu, 15 Nov 2007 14:50:22 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de,
-       linux-usb-devel@lists.sourceforge.net, hjlipp@web.de, kkeil@suse.de,
-       i4ldeveloper@listserv.isdn4linux.de
-Subject: Re: [PATCH 3/4] bas_gigaset: suspend support (v2)
-Message-Id: <20071115145022.99f9abbc.akpm@linux-foundation.org>
-In-Reply-To: <20071112-patch3@xenon.ts.pxnet.com>
-References: <20071112-patch0@xenon.ts.pxnet.com>
-	<20071112-patch3@xenon.ts.pxnet.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Nov 2007 17:55:45 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:41417 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753795AbXKOWzo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 17:55:44 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20071115144007.08760570.akpm@linux-foundation.org>
+References: <20071115144007.08760570.akpm@linux-foundation.org> <20071113165316.18700.67752.stgit@warthog.procyon.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dhowells@redhat.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] FRV: Fix the extern declaration of kallsyms_num_syms [try #2]
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Thu, 15 Nov 2007 22:55:37 +0000
+Message-ID: <16597.1195167337@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Nov 2007 18:30:30 +0100 (CET)
-Tilman Schmidt <tilman@imap.cc> wrote:
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> From: Tilman Schmidt <tilman@imap.cc>
-> 
-> This patch adds basic suspend/resume support to the bas_gigaset ISDN
-> driver for the Siemens Gigaset SX255 series of ISDN DECT bases.
-> 
-> Only the USB aspects are handled so far; the ISDN subsystem is not
-> notified  in any way, for lack of information about how to do that.
-> The driver will refuse to suspend if a connection is active.
-> 
-> ...
->
-> +	if (atomic_read(&cs->hw.bas->basstate) & BS_SUSPEND) {
+> hm, OK, so it lines up with what scripts/kallsyms.c presently does.
 
-that's pretty peculiar.  We'd only expect to see atomics being used in
-conjunction with atomic_add/sub/inc/etc.  Here the driver is using an
-atomic_t as a state variable.  And here's the magic bit:
+I'm sure there's a way to pass the kallsyms_num_syms value directly by way of
+the linker rather than consigning it to a bit of memory.
 
-	spin_lock_irqsave(&ucs->lock, flags);
-	state = atomic_read(&ucs->basstate);
-	atomic_set(&ucs->basstate, (state & ~clear) | set);
-	spin_unlock_irqrestore(&ucs->lock, flags);
+The immediately obvious way is to declare it to be at an address that it the
+symbol count value, and then C can do "&kallsyms_num_syms" to get at it.
+Horrible, I know, but I'm not sure it's worse than some of the other stuff we
+do.
 
-I'm suspecting that a plain old `int' would be more appropriate here.
+David
