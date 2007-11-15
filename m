@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763161AbXKOL60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764071AbXKOMCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763161AbXKOL60 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 06:58:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbXKOL6Q
+	id S1764071AbXKOMCr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 07:02:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758529AbXKOMCg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 06:58:16 -0500
-Received: from mail.sf-mail.de ([62.27.20.61]:44739 "EHLO mail.sf-mail.de"
+	Thu, 15 Nov 2007 07:02:36 -0500
+Received: from paragon.brong.net ([74.52.187.94]:55892 "EHLO paragon.brong.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755701AbXKOL6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 06:58:15 -0500
-From: Rolf Eike Beer <eike-hotplug@sf-tec.de>
-To: Alex Chiang <achiang@hp.com>
-Subject: Re: [PATCH 2/5] Construct one fakephp slot per pci slot
-Date: Thu, 15 Nov 2007 12:57:56 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Matthew Wilcox <matthew@wil.cx>, Gary Hade <garyhade@us.ibm.com>,
-       Greg KH <greg@kroah.com>, gregkh@suse.de, kristen.c.accardi@intel.com,
-       lenb@kernel.org, rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, kaneshige.kenji@jp.fujitsu.com,
-       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
-References: <20071114193605.GA25002@ldl.fc.hp.com> <20071114201246.GZ17785@parisc-linux.org> <20071114205555.GH25002@ldl.fc.hp.com>
-In-Reply-To: <20071114205555.GH25002@ldl.fc.hp.com>
+	id S1755341AbXKOMCf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 07:02:35 -0500
+Date: Thu, 15 Nov 2007 23:02:32 +1100
+From: Bron Gondwana <brong@fastmail.fm>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Bron Gondwana <brong@fastmail.fm>, David Miller <davem@davemloft.net>,
+       rmk+lkml@arm.linux.org.uk, alsa-devel@alsa-project.org,
+       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org, protasnb@gmail.com,
+       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz, akpm@linux-foundation.org,
+       Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>
+Subject: Re: [alsa-devel] [BUG] New Kernel Bugs
+Message-ID: <20071115120232.GB8297@brong.net>
+References: <20071113143201.9441c940.akpm@linux-foundation.org> <20071113.175551.131375600.davem@davemloft.net> <20071114095507.GA32595@flint.arm.linux.org.uk> <20071114.020706.219917088.davem@davemloft.net> <473AE010.4090806@keyaccess.nl> <20071115041613.GC15302@brong.net> <473BE046.8070804@keyaccess.nl>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2096403.2qAC2VgN9l";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200711151258.02696.eike-hotplug@sf-tec.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <473BE046.8070804@keyaccess.nl>
+Organization: brong.net
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2096403.2qAC2VgN9l
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-Am Mittwoch, 14. November 2007 schrieb Alex Chiang:
-> * Matthew Wilcox <matthew@wil.cx>:
-> > On Wed, Nov 14, 2007 at 12:37:29PM -0700, Alex Chiang wrote:
-> > > Register one slot per slot, rather than one slot per function.
-> > > Change the name of the slot to fake%d instead of the pci address.
-> > >
-> > > +#define SLOT_NAME_SIZE KOBJ_NAME_LEN
-> >
-> > Defined, then never used ... how about s/KOBJ_NAME_LEN/8/, then use
-> > SLOT_NAME_SIZE throughout?
+On Thu, Nov 15, 2007 at 06:59:34AM +0100, Rene Herman wrote:
+> On 15-11-07 05:16, Bron Gondwana wrote:
 >
-> Whoops, good catch. I had a braino there.
+>> Totally unrelated - I sent something to the kolab mailing list a couple
+>
+> [ ... ]
+>
+>> I'm sure if I had something that I considered worth informing the ALSA 
+>> project of, I'd be wary of spending the same effort writing a good post
+>> knowing it may be dropped in between the by a list moderator just selecing 
+>> all and bouncing them.
+>
+> Totally unrelated indeed so why are spouting crap? If the kohab list has a 
+> problem take it up with them but keep ALSA out of it. alsa-devel has only 
+> ever moderated out spam -- nothing else.
 
-Just drop it and use sizeof(dslot->name) in snprintf(). Just be careful not=
- to=20
-use slot->name there as it would always be sizeof(void*)!
+As an outsider to the list, how do I know what your policy will be
+other than "I've been rejected out of hand by someone else's list, 
+so my experience is that member only lists aren't willing to listen
+to something I have to say unless I make the effort to sign up and
+have yet another folder accumulating unread messages".  I don't.
 
-Eike
+Well, ok - maybe I do here since I've let myself be dragged in to
+the debate.  Oops.
 
---nextPart2096403.2qAC2VgN9l
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+I get the same information from both project websites: "moderated
+for non-members, public archives" - no way of knowing that ALSA
+will accept me informing them of something they would be interested
+without committing to reading or bit-bucketing their list.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+The alternative is to subscribe just long enough to send something
+and then unsubscribe again.... or cold-email a member and ask them
+to pass a message along.  Or post and hope it doesn't get rejected,
+not even knowing for a day or so.
 
-iD8DBQBHPDRKXKSJPmm5/E4RAlD8AJsHvbDUszM1hxiF1ejjsiXfTEFrQACfXEn5
-Mg8iJNoYdp4qGPoWNWGjKGA=
-=7xfM
------END PGP SIGNATURE-----
-
---nextPart2096403.2qAC2VgN9l--
+Bron.
