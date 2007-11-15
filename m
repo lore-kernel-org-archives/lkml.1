@@ -1,85 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763590AbXKOQjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764943AbXKOQj2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763590AbXKOQjP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 11:39:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757752AbXKOQjA
+	id S1764943AbXKOQj2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 11:39:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759057AbXKOQjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 11:39:00 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:52342 "EHLO mx2.suse.de"
+	Thu, 15 Nov 2007 11:39:05 -0500
+Received: from rtr.ca ([76.10.145.34]:4678 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756299AbXKOQi7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 11:38:59 -0500
-Date: Thu, 15 Nov 2007 08:34:35 -0800
-From: Greg KH <gregkh@suse.de>
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
-Subject: Re: EIP is at device_shutdown+0x32/0x60
-Message-ID: <20071115163435.GC24087@suse.de>
-References: <20071115091158.GB6216@localhost.sw.ru> <20071115014446.f943d835.akpm@linux-foundation.org> <20071115213345.B3C1.Y-GOTO@jp.fujitsu.com>
+	id S1758729AbXKOQjC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 11:39:02 -0500
+Message-ID: <473C7625.2040300@rtr.ca>
+Date: Thu, 15 Nov 2007 11:39:01 -0500
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071115213345.B3C1.Y-GOTO@jp.fujitsu.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: "Morrison, Tom" <tmorrison@empirix.com>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23.1 - sata_mv (7042) hang with large file operations
+References: <BD261180E6D35F4D9D32F3E44FD3D901053E84BD@EMPBEDEX.empirix.com> <45ED682A.9040408@garzik.org> <BD261180E6D35F4D9D32F3E44FD3D9010A7E1B45@EMPBEDEX.empirix.com> <4728A816.8020608@garzik.org> <BD261180E6D35F4D9D32F3E44FD3D9010AAE852F@EMPBEDEX.empirix.com> <473B36D7.8000205@rtr.ca> <BD261180E6D35F4D9D32F3E44FD3D9010AAE8585@EMPBEDEX.empirix.com> <473B44CB.6010209@rtr.ca> <BD261180E6D35F4D9D32F3E44FD3D9010AAE89CA@EMPBEDEX.empirix.com> <473B76E0.7010500@rtr.ca> <BD261180E6D35F4D9D32F3E44FD3D9010AAE911D@EMPBEDEX.empirix.com>
+In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D9010AAE911D@EMPBEDEX.empirix.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 15, 2007 at 09:55:34PM +0900, Yasunori Goto wrote:
-> > On Thu, 15 Nov 2007 12:11:58 +0300 Alexey Dobriyan <adobriyan@sw.ru> wrote:
-> > 
-> > > Three boxes rarely oops during reboot or poweroff with 2.6.24-rc2-mm1
-> > > (1) and during 2.6.24 cycle (2):
-> > > 
-> > > 	kernel_restart
-> > > 	sys_reboot
-> > > 	[garbage]
-> > > Code: 8b 88 a8 00 00 00 85 c9 74 04 89
-> > > EIP is at device_shutdown+0x32/0x60
-> > 
-> > Yes, all my test boxes did that - it's what I referred to in the releaee
-> > notes.  Greg is pondering the problem - seem he's the only person who
-> > cannot reproduce it ;)
+Morrison, Tom wrote:
+> Additional information - the ~file size this is caused 
+> is somewhere close to 260Mbytesfiles. 
 > 
-> Fortunately, my ia64 box reproduces this oops "every time". 
-> So, I could chase it.
+> If I create a ~260Mbytes file - my program finishes creating
+> the file - but ~5 seconds later (I timed this by hitting enter
+> on the console every second after completion of the command 
+> that should have done a fsync of the created file before exiting)...
+> It hangs...
 > 
-> device_shutdown() function in drivers/base/power/shutdown.c
-> is followings.
-> -----------
-> /**
->  * device_shutdown - call ->shutdown() on each device to shutdown.
->  */
-> void device_shutdown(void)
-> {
->         struct device * dev, *devn;
+> I did a little playing around with /proc/sys/dev/scsi/logging_level
+> (set to 0x7) - and it seems that the kernel/box locks up after
+> this line:
 > 
->         list_for_each_entry_safe_reverse(dev, devn, &devices_kset->list,
->                                 kobj.entry) {
->                 if (dev->bus && dev->bus->shutdown) {
->                         dev_dbg(dev, "shutdown\n");
->                         dev->bus->shutdown(dev);
->                 } else if (dev->driver && dev->driver->shutdown) {
->                         dev_dbg(dev, "shutdown\n");
->                         dev->driver->shutdown(dev);
->                 }
->         }
-> }
-> --------
-> When oops occured, dev->driver pointed kset_ktype's address,
-> and dev->driver->shutdown was the address of bus_type_list.
-> So, Oops was caused by "Illegal operation fault".
-> kset_ktypes is pointed by system_kset.
+>>> scsi_add_timer: scmd: efca83c0, time: 7500, (c0160660)
+>>> scsi_delete_timer: scmd: efca83c0, rtn: 1
+>>> scsi_add_timer: scmd: efca8840, time: 7500, (c0160660)
 > 
-> If my understanding is correct, this loop can't distinguish between
-> struct device and struct kset, but both are connected in this list,
-> right? It may be the cause of this.
+> 
+> Further analysis (setting logging level to 65535 (0xFFFF) 
+> Has the following behavior down low) - 
+> 
+>>> scsi_add_timer: scmd: efca8960, time: 7500, (c0160660)
+>>> sd 0:0:0:0: [sda] Send: 0xefca8960
+>>> sd 0:0:0:0: [sda] CDB: Write(10): 2a 00 00 47 92 27 00 01 48 00
+>>> buffer = 0xc0553040, bufflen = 167936, done = 0xc016b194,
+> queuecommand
+>       0xc017ed34
+>>> leaving scsi_dispatch_cmnd()
+>>> scsi_delete_timer: scmd: efca8960, rtn: 1
+>>> sd 0:0:0:0: [sda] Done: 0xefca8960 SUCCESS
+>>> sd 0:0:0:0: [sda] Result: hostbyte=DID_OK
+> driverbyte=DRIVER_OK,SUGGEST_OK
+>>> sd 0:0:0:0: [sda] CDB: Write(10): 2a 00 00 47 92 27 00 01 48 00
+>>> sd 0:0:0:0: [sda] scsi host busy 1 failed 0
+>>> sd 0:0:0:0: Notifying upper driver of completion (result 0)
+>>>
+>>> scsi_add_timer: scmd: efca82a0, time: 7500, (c0160660)
+>>> sd 0:0:0:0: [sda] Send: 0xefca82a0
+>>> sd 0:0:0:0: [sda] CDB: Write(10): 2a 00 00 47 93 6f 00 02 40 00
+>>> buffer = 0xef5734c0, bufflen = 294912, done = 0xc016b194,
+> queuecommand
+>       0xc017ed34
+>>> leaving scsi_dispatch_cmnd()
+> 
+> Nothing more - it hangs!
+> 
+> This is really a nasty problem!!!!
+..
 
-Hm, no, it should just be a list of devices for the kset, but I'll go
-verify that this is correct.
+Yes.  It's particularly nasty because, as of yet, I haven't seen anything
+to lead me to conclude *which* kernel subsystem is locking up.
 
-And yeah, I can duplicate this problem here too...
+It could be the block layer.
+It could be some PPC arch bug.
+It could be mm.
+It could even be the CPU scheduler.
 
-thanks,
+Those messages above could help.
+Now we just need somebody to interpret them,
+and examine the code paths that follow to see
+where it might be possible to get stuck.
 
-greg k-h
+The SCSI/libata layers by themselves could lock up the I/O,
+but not the entire machine..
+
+Cheers
+ 
+
