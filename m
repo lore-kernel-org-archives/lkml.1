@@ -1,64 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762764AbXKORZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760807AbXKORbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762764AbXKORZb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 12:25:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbXKORZX
+	id S1760807AbXKORbY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 12:31:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbXKORbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 12:25:23 -0500
-Received: from mga09.intel.com ([134.134.136.24]:50257 "EHLO mga09.intel.com"
+	Thu, 15 Nov 2007 12:31:15 -0500
+Received: from rtr.ca ([76.10.145.34]:3304 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755819AbXKORZW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 12:25:22 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,421,1188802800"; 
-   d="scan'208";a="271902509"
-Date: Thu, 15 Nov 2007 09:23:52 -0800
-From: mark gross <mgross@linux.intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc2-mm1
-Message-ID: <20071115172352.GB24837@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <20071113175906.497a1a6a.akpm@linux-foundation.org> <473A678C.2020507@googlemail.com> <473A76FA.4050701@googlemail.com> <20071114202959.GA21049@linux.intel.com> <20071114124008.095f307d.akpm@linux-foundation.org>
+	id S1757024AbXKORbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 12:31:14 -0500
+Message-ID: <473C825E.3030307@rtr.ca>
+Date: Thu, 15 Nov 2007 12:31:10 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071114124008.095f307d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Mark Lord <liml@rtr.ca>, Thomas Gleixner <tglx@linutronix.de>,
+       len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       rjw@sisk.pl, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
+References: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com> <20071113031553.3c7b5c16.akpm@linux-foundation.org> <4739ADA2.4060604@rtr.ca> <alpine.LFD.0.9999.0711131521590.3265@localhost.localdomain> <4739E347.30406@rtr.ca> <473C7495.40805@rtr.ca> <20071115181418.GA6603@ucw.cz>
+In-Reply-To: <20071115181418.GA6603@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 14, 2007 at 12:40:08PM -0800, Andrew Morton wrote:
-> On Wed, 14 Nov 2007 12:29:59 -0800 mark gross <mgross@linux.intel.com> wrote:
+> Hi!
 > 
-> > > > [  102.366932]  =======================
-> > > > [  108.552031] printk: 31 messages suppressed.
-> > > 
-> > > 
-> > > All this BUG / WARNINGS are caused by *-qos* patches. Reverting this 3 patches makes the BUGs go away :
-> > > 
-> > > latencyc-use-qos-infrastructure.patch
-> > > pm-qos-infrastructure-and-interface.patch
-> > > pm-qos-infrastructure-and-interface-static-initialization-with-blocking-notifiers.patch
-> > > 
-> > > 
-> > > Gabriel
-> > > 
-> > > 
-> > This looks like the same issue Rafael saw.
-> > 
-> > Try the patch in the following post:
-> > 
-> > http://marc.info/?l=linux-kernel&m=119265627228498&w=2
-> > 
+>> > I have been reporting this off and on since 2.6.23 was released.
+>> > This problem was not apparent up to perhaps 2.6.23-rc8,
+>> > but definitely became common in 2.6.23 and 2.6.23.1.
+>> > 
+>> > Most of the time, a resume-from-RAM on my notebook takes about 2.1 seconds
+>> > of kernel time to complete.
+>> > 
+>> > Once in a while, it takes *much* longer, in the 14-20 second range.
+>> > These long events *seem* to be mostly after the notebook has been
+>> > in suspend for a longish time, but there's really nothing consistent here.
+>> > 
+>> > So git-bisect isn't going to work for this one.   I recently rebuilt the 
+>> > kernel
+>> > to include printk timestamps, and then it went 2 days without the issue 
+>> > happening,
+>> > until this morning (after an overnight suspend) finally.
+>> > 
+>> > The machine is a Dell Inspiron 9400, Intel chipset + Core2Duo 2.1GHZ w/3GB 
+>> > DDR2.
+>> > PCIe express chipset, ATI graphics, SATA hard drive.
+>> > 
+>> > 00:00.0 Host bridge: Intel Corporation Mobile 945GM/PM/GMS/940GML and 945GT 
+>> > Express Memory Controller Hub (rev 03)
+>> > 00:01.0 PCI bridge: Intel Corporation Mobile 945GM/PM/GMS/940GML and 945GT 
+>> > Express PCI Express Root Port (rev 03)
+>> > 00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High 
+>> > Definition Audio Controller (rev 01)
+>> > 00:1c.0 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 
+>> > 1 (rev 01)
+>> > 00:1c.1 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 
+>> > 2 (rev 01)
+>> > 00:1c.3 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 
+>> > 4 (rev 01)
+>> > 00:1d.0 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #1 
+>> > (rev 01)
+>> > 00:1d.1 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #2 
+>> > (rev 01)
+>> > 00:1d.2 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #3 
+>> > (rev 01)
+>> > 00:1d.3 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #4 
+>> > (rev 01)
+>> > 00:1d.7 USB Controller: Intel Corporation 82801G (ICH7 Family) USB2 EHCI 
+>> > Controller (rev 01)
+>> > 00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev e1)
+>> > 00:1f.0 ISA bridge: Intel Corporation 82801GBM (ICH7-M) LPC Interface 
+>> > Bridge (rev 01)
+>> > 00:1f.2 IDE interface: Intel Corporation 82801GBM/GHM (ICH7 Family) Serial 
+>> > ATA Storage Controller IDE (rev 01)
+>> > 00:1f.3 SMBus: Intel Corporation 82801G (ICH7 Family) SMBus Controller (rev 
+>> > 01)
+>> > 01:00.0 VGA compatible controller: ATI Technologies Inc Radeon Mobility 
+>> > X1400
+>> > 03:00.0 Ethernet controller: Broadcom Corporation BCM4401-B0 100Base-TX 
+>> > (rev 02)
+>> > 03:01.0 FireWire (IEEE 1394): Ricoh Co Ltd Unknown device 0832
+>> > 03:01.1 Generic system peripheral [0805]: Ricoh Co Ltd R5C822 
+>> > SD/SDIO/MMC/MS/MSPro Host Adapter (rev 19)
+>> > 03:01.2 System peripheral: Ricoh Co Ltd Unknown device 0843 (rev 01)
+>> > 03:01.3 System peripheral: Ricoh Co Ltd R5C592 Memory Stick Bus Host 
+>> > Adapter (rev 0a)
+>> > 03:01.4 System peripheral: Ricoh Co Ltd xD-Picture Card Controller (rev 05)
+>> > 0c:00.0 Network controller: Intel Corporation PRO/Wireless 3945ABG Network 
+>> > Connection (rev 02)
+>> > 
+>> > There's also a USB2 hub connected, with the Logitech mouse being the
+>> > only thing plugged into it at present.
+>> > 
+>> > The best clue I have of what is happening, other than that it was first
+>> > seen during the late 2.6.23-rc* series, are the following two sets of
+>> > kernel logs.  The first set is from a "normal" fast wake-up,
+>> > and the second set is from the "slow" wake-up seen this morning.
+>> > 
+>> > Both logs show the same information, in pretty much the same order.
+>> > The BIG difference is a bunch of unexplained pauses of exactly 1-second
+>> > each that occur during the slow wakeup.
+>> > 
+>> > The only other difference is that the SATA disk messages are placed
+>> > differently within the two logs.  I'm thinking on that one but it
+>> > doesn't look significant to me.
+>> > 
+>> > The real question is, why the 1-sec pauses?
 > 
-> Well that's not very good.  _I_ can go fishing in my lkml archives for random
-> patches but not everyone is set up to do that.  And the diff to which you
-> refer gets 100% rejects against rc2-mm1 anyway.
-> 
-> Please prepare a tested, changelogged patch against rc2-mm1 asap.  
+> Can you try nohz=off highres=off? Strange stuff is happening with
+> nohz.
+..
 
-my bad.  I didn't catch the 24-rc2-mm1 baseline for this issue.  I'll
-look at this right way.
+(added Ingo to CC: list:  maybe this is some weird interaction with CFS
+and jiffies being reset to 0 on resume ??)
 
---mgross
+I can try it, but it won't help debug the problem much.
+Remember, this happens very inconsistently, maybe 3-4 times a day,
+or not at all for 3-4 days.
+
+But if somebody has a specific bug-fix patch that could explain this,
+then I'll happily apply it here.
+
+Cheers
