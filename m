@@ -1,74 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760787AbXKOOYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760160AbXKOOet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760787AbXKOOYu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 09:24:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756683AbXKOOYn
+	id S1760160AbXKOOet (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 09:34:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756934AbXKOOef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 09:24:43 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:52309 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756674AbXKOOYm (ORCPT
+	Thu, 15 Nov 2007 09:34:35 -0500
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:41434 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756683AbXKOOed (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 09:24:42 -0500
-Date: Thu, 15 Nov 2007 19:19:24 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Rusty Russel <rusty@rustcorp.com.au>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Paul E McKenney <paulmck@us.ibm.com>,
-       Richard Gooch <rgooch@atnf.csiro.au>,
-       Tigran Aivazian <tigran@aivazian.fs.co.uk>,
-       Shoahua Li <shaohua.li@linux.com>, Ralf Baechle <ralf@linux-mips.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Nathan Lynch <ntl@pobox.com>, Paul Jackson <pj@sgi.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Akinobu Mita <akinobu.mita@gmail.com>
-Subject: [RFC PATCH 0/3] Refcount Based Cpu Hotplug V3
-Message-ID: <20071115134924.GA15282@in.ibm.com>
-Reply-To: ego@in.ibm.com
+	Thu, 15 Nov 2007 09:34:33 -0500
+Message-ID: <473C57E2.1080306@keyaccess.nl>
+Date: Thu, 15 Nov 2007 15:29:54 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: =?ISO-8859-15?Q?J=F6rn_Engel?= <joern@logfs.org>
+CC: Bron Gondwana <brong@fastmail.fm>, David Miller <davem@davemloft.net>,
+       rmk+lkml@arm.linux.org.uk, alsa-devel@alsa-project.org,
+       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org, protasnb@gmail.com,
+       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz, akpm@linux-foundation.org,
+       Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>
+Subject: Re: [alsa-devel] [BUG] New Kernel Bugs
+References: <20071113143201.9441c940.akpm@linux-foundation.org> <20071113.175551.131375600.davem@davemloft.net> <20071114095507.GA32595@flint.arm.linux.org.uk> <20071114.020706.219917088.davem@davemloft.net> <473AE010.4090806@keyaccess.nl> <20071115041613.GC15302@brong.net> <473BE046.8070804@keyaccess.nl> <20071115120232.GB8297@brong.net> <473C3B0B.30206@keyaccess.nl> <20071115130019.GB10165@lazybastard.org>
+In-Reply-To: <20071115130019.GB10165@lazybastard.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: 0.0 (/)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, 
-This is Try #3 for the Refcount + Waitqueue based implementation
-for cpu-hotplug locking. The earlier versions can be found at
+On 15-11-07 14:00, Jörn Engel wrote:
 
-http://lkml.org/lkml/2007/10/24/36
-and
-http://lkml.org/lkml/2007/10/16/118.
+> And even without mails being held hostage for weeks, every single 
+> moderation mail is annoying.  Like the one I'm sure to receive after 
+> sending this out.
 
-This version drops the patch 4 from the earlier series, 
-which was basically removing the CPU_DEAD and CPU_UP_CANCELLED
-event handling in the workqueue subsystem. This was based on 
-Oleg Nestertov's comments since the problem which the patch
-was attempting to solve was more complicated and needs to be looked
-into seperately.
+Certainly. Upto this thread I wasn't actually aware the list was doing that. 
+While it might be informative once, getting it each time quickly gets old. 
+Don't know if mailman can do anything like it but I'd suggest anyone running 
+a non-subscriber-moderation list configure it to send such messages at most 
+once a <time-period> per address or some such. And just disable the message 
+if it cannot do that.
 
-The patch series is against v2.6.24-rc2 and has survived 
-overnight kern_bench + cpu-offline-online tests on 
-- 8 way x86, 
-- 8 way x86_64,
-- 128 way ppc64 boxes.
+Fortunately, alsa-devel is (almost) no longer such a list anyway as it's 
+moving to vger. Hurrah. David -- thanks.
 
-The patch series has gone through many iterations 
-and looks to have matured in the process.
+Rene.
 
-Andrew, could you please consider it for the next -mm
-release if there are no objections ?
-
-Thanks and Regards
-gautham.
-
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
