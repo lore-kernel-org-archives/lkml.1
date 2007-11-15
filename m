@@ -1,86 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933873AbXKOWFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933282AbXKOWJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933873AbXKOWFh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 17:05:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765790AbXKOWFB
+	id S933282AbXKOWJZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 17:09:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762603AbXKOWJP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 17:05:01 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:42744 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757809AbXKOWFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 17:05:00 -0500
-Date: Thu, 15 Nov 2007 23:06:40 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kconfig: use $K64BIT to set 64BIT with all*config targets
-Message-ID: <20071115220640.GA25265@uranus.ravnborg.org>
-References: <20071110204038.GA13140@uranus.ravnborg.org> <11947274093185-git-send-email-sam@ravnborg.org> <11947274091127-git-send-email-sam@ravnborg.org> <Pine.LNX.4.64.0711142116500.1818@scrub.home> <20071114220840.GB10920@uranus.ravnborg.org> <Pine.LNX.4.64.0711151616330.1817@scrub.home> <20071115192555.GD23914@uranus.ravnborg.org> <Pine.LNX.4.64.0711152036430.1817@scrub.home> <20071115204520.GA24851@uranus.ravnborg.org> <Pine.LNX.4.64.0711152158310.1817@scrub.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0711152158310.1817@scrub.home>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 15 Nov 2007 17:09:15 -0500
+Received: from mx2.go2.pl ([193.17.41.42]:57935 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762053AbXKOWJO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 17:09:14 -0500
+Message-ID: <473CC3FE.5080509@o2.pl>
+Date: Thu, 15 Nov 2007 23:11:10 +0100
+From: Jarek Poplawski <jarkao2@o2.pl>
+User-Agent: Icedove 1.5.0.14pre (X11/20071020)
+MIME-Version: 1.0
+To: Jon Nelson <jnelson@jamponi.net>
+CC: Michael Chan <mchan@broadcom.com>, netdev <netdev@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: tg3: strange errors and non-working-ness
+References: <20071115094728.GB2366@ff.dom.local> <1195154603.6360.9.camel@dell>	 <cccedfc60711151117v70b285fbl79bbc92ced176d54@mail.gmail.com>	 <1195158200.6360.17.camel@dell> <cccedfc60711151221p322894f8i94c540fefb0e4827@mail.gmail.com>
+In-Reply-To: <cccedfc60711151221p322894f8i94c540fefb0e4827@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 15, 2007 at 10:24:05PM +0100, Roman Zippel wrote:
-> Hi,
-> 
-> On Thu, 15 Nov 2007, Sam Ravnborg wrote:
-> 
-> > > Can we please can get some consistency in this?
-> > > We have a .config file for a reason, what's wrong with using it?
-> > 
-> > We need to set a selected few values in a few cases where we do
-> > not have a .config file.
-> > allmodconfig for x86 for instance. We would like to generate a
-> > 32-bit and a 64-bit version.
-> 
-> This can already be set via all.config/allmod.config.
-> Where is this need coming from? The point is that I don't like to add an 
-> interface, which is maybe used by two people, who should be perfectly 
-> capable using an existing superior mechanism.
+Jon Nelson wrote, On 11/15/2007 09:21 PM:
+...
 
-When you say "two people" I am afraid we are not talking about the same case.
+> NOTE: to avoid list noise, I can make a bug out of this on
+> bugzilla.kernel.org and we can proceed from there if that is
+> preferred.
 
-> 
-> > > > > Please revert the K64BIT changes and use this instead.
-> > > > 
-> > > > I will finish up your patch and target it for next merge window.
-> > > 
-> > > Why can't this be fixed properly now? You don't even need this patch, just 
-> > > use ARCH to set 64BIT in the Kconfig as I've shown.
-> > Because the patch is in mainline and has been tested by a lot of people
-> > during the last week. And as the functionality is almost equal I do not
-> > see it as a big deal to have the less-perfect solution in one kernel release.
-> > 
-> > And the only reason the patch were applied to mainline was to fix the build
-> > of the merged x86 architecute - otherwise it was in no way -rc material.
-> 
-> I showed you a solution, which requires no patch at all, while your patch 
-> adds extra functionality which is questionable.
-> Why is a quick hack preferable over a proper solution? 
-> Either explain why my solution isn't usable or _please_ revert the K64BIT 
-> changes.
-You suggest just to check ARCH value and not apply your patch. This was
-not my initial understanding as was hopefully obvious from my reply.
+Why avoid list noise? These lists are made just for this. But, since
+this case needs a lot of space for your configs, maybe a lot of time,
+and maybe a bit more people to have a look at this as well, bugzilla
+could be very useful.
 
-So you suggest to make the ARCH= setting on the command line mandatory
-again even for a configured kernel which is a step backward.
+Of course, like Michael said, it would be better if you could do
+at least short test with a version as new as possible.
 
-I assume your patch also has this drawback - no?
+Regards,
+Jarek P.
 
-If user did NOT specify ARCH we should use the kernel configuration - which
-your solution fail to do.
-
-If user did specify ARCH and the kernel is configured then what?
--> Ignore the ARCH= setting
--> Warn if they do not match
--> Always adhere to the ARCH setting
-
-Accepting the solution where we check the ARCH as you suggested and
-loose the benefits of letting the configuration be the master should
-be OK for upcoming kernel release.
-
-	Sam
+PS: I've forgot to mention: lspci -vv, cat /proc/interrupts
+and maybe the same for these other, working gig-e cards.
