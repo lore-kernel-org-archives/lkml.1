@@ -1,72 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757148AbXKOGDW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757955AbXKOGE3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757148AbXKOGDW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:03:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751174AbXKOGDO
+	id S1757955AbXKOGE3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:04:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751370AbXKOGES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:03:14 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:34803 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751283AbXKOGDN (ORCPT
+	Thu, 15 Nov 2007 01:04:18 -0500
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:44358 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751337AbXKOGER (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:03:13 -0500
-Date: Wed, 14 Nov 2007 22:02:55 -0800
-From: Greg KH <greg@kroah.com>
-To: Rob Landley <rob@landley.net>
-Cc: linux-kernel@vger.kernel.org, Jeff Dike <jdike@addtoit.com>,
-       akpm@linux-foundation.org, Chris Wright <chrisw@sous-sol.org>
-Subject: Re: User Mode Linux still broken in 2.6.23.1
-Message-ID: <20071115060255.GA4837@kroah.com>
-References: <200711032351.52977.rob@landley.net> <20071114185444.GB14450@kroah.com> <200711142358.16072.rob@landley.net>
+	Thu, 15 Nov 2007 01:04:17 -0500
+Message-ID: <473BE046.8070804@keyaccess.nl>
+Date: Thu, 15 Nov 2007 06:59:34 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200711142358.16072.rob@landley.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Bron Gondwana <brong@fastmail.fm>
+CC: David Miller <davem@davemloft.net>, rmk+lkml@arm.linux.org.uk,
+       alsa-devel@alsa-project.org, netdev@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+       protasnb@gmail.com, linux-ide@vger.kernel.org,
+       bugme-daemon@bugzilla.kernel.org, linux-input@atrey.karlin.mff.cuni.cz,
+       akpm@linux-foundation.org, Jaroslav Kysela <perex@suse.cz>,
+       Takashi Iwai <tiwai@suse.de>
+Subject: Re: [alsa-devel] [BUG] New Kernel Bugs
+References: <20071113143201.9441c940.akpm@linux-foundation.org> <20071113.175551.131375600.davem@davemloft.net> <20071114095507.GA32595@flint.arm.linux.org.uk> <20071114.020706.219917088.davem@davemloft.net> <473AE010.4090806@keyaccess.nl> <20071115041613.GC15302@brong.net>
+In-Reply-To: <20071115041613.GC15302@brong.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: 0.0 (/)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 14, 2007 at 11:58:15PM -0600, Rob Landley wrote:
-> On Wednesday 14 November 2007 12:54:44 Greg KH wrote:
-> > On Sat, Nov 03, 2007 at 11:51:50PM -0500, Rob Landley wrote:
-> > > Building with the attached .config on x86-64, it does this:
-> > >
-> > >   CC      arch/um/kernel/smp.o
-> > > In file included from include/asm/arch/tlb.h:11,
-> > >                  from include/asm/tlb.h:4,
-> > >                  from arch/um/kernel/smp.c:8:
-> > > include/asm-generic/tlb.h: In function ???tlb_flush_mmu???:
-> > > include/asm-generic/tlb.h:76: error: implicit declaration of function
-> > > ???release_pages??? include/asm-generic/tlb.h: In function
-> > > ???tlb_remove_page???:
-> > > include/asm-generic/tlb.h:105: error: implicit declaration of function
-> > > ???page_cache_release??? make[1]: *** [arch/um/kernel/smp.o] Error 1
-> > > make: *** [arch/um/kernel] Error 2
-> > >
-> > > I've been doing the following to fix it.  I know it's not the right fix,
-> > > (see the earlier thread about it at http://lkml.org/lkml/2007/8/24/441 )
-> > > but could the one line fix go into the -stable queue 2.6.23 while a
-> > > proper fix goes into 2.6.24?
-> >
-> > I think the patches that I have just added to the stable queue for
-> > 2.6.23.2 will fix this.  If not, please let me know after testing.
-> 
-> Where do I find these patches to test?  I know where to find the stable 
-> releases, but not the "stable queue".
-> 
-> Documentation/stable_kernel_rules.txt just says there _is_ a stable queue, not 
-> where to access it.  Google's first hit for "linux stable queue" was
-> http://git.kernel.org/?p=linux/kernel/git/chrisw/stable-queue.git;a=shortlog 
-> which apparently stopped updating in march...
-> 
-> Happy to test the patch you mentioned, if I can figure out where to find it...
+On 15-11-07 05:16, Bron Gondwana wrote:
 
-It's at:
-	http://git.kernel.org/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+> Totally unrelated - I sent something to the kolab mailing list a couple
 
-Chris and I used to have separate queues, but that got messy, I suppose
-we should just delete those old copies...
+[ ... ]
 
-thanks,
+> I'm sure if I had something that I considered worth informing the ALSA 
+> project of, I'd be wary of spending the same effort writing a good post
+> knowing it may be dropped in between the by a list moderator just 
+> selecing all and bouncing them.
 
-greg k-h
+Totally unrelated indeed so why are spouting crap? If the kohab list has a 
+problem take it up with them but keep ALSA out of it. alsa-devel has only 
+ever moderated out spam -- nothing else.
+
+ene
