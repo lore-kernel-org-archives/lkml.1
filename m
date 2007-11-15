@@ -1,84 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765033AbXKOBHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764588AbXKOBL3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765033AbXKOBHh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 20:07:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757360AbXKOBH3
+	id S1764588AbXKOBL3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 20:11:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756648AbXKOBLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 20:07:29 -0500
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:56053 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755462AbXKOBH2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 20:07:28 -0500
-Date: Wed, 14 Nov 2007 20:06:52 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Tim Bird <tim.bird@am.sony.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@redhat.com>,
-       John Cooper <john.cooper@third-harmonic.com>
-Subject: Re: rt-preempt: problem compiling rt-preempt 2.6.23.1-rt11 on MIPS
-In-Reply-To: <alpine.LFD.0.9999.0711150143220.3265@localhost.localdomain>
-Message-ID: <Pine.LNX.4.58.0711142004080.1364@gandalf.stny.rr.com>
-References: <473B8F91.20704@am.sony.com> <alpine.LFD.0.9999.0711150143220.3265@localhost.localdomain>
+	Wed, 14 Nov 2007 20:11:18 -0500
+Received: from ozlabs.org ([203.10.76.45]:38982 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754807AbXKOBLS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 20:11:18 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18235.40110.831730.847548@cargo.ozlabs.ibm.com>
+Date: Thu, 15 Nov 2007 12:11:10 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: David Miller <davem@davemloft.net>
+Cc: hch@infradead.org, akpm@linux-foundation.org, gregkh@suse.de,
+       mucci@cs.utk.edu, eranian@hpl.hp.com, wcohen@redhat.com,
+       robert.richter@amd.com, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org
+Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
+In-Reply-To: <20071114.152134.266510129.davem@davemloft.net>
+References: <18235.28062.309910.416774@cargo.ozlabs.ibm.com>
+	<20071114.150303.13732085.davem@davemloft.net>
+	<18235.32982.439970.359975@cargo.ozlabs.ibm.com>
+	<20071114.152134.266510129.davem@davemloft.net>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Miller writes:
 
+> From: Paul Mackerras <paulus@samba.org>
+> Date: Thu, 15 Nov 2007 10:12:22 +1100
+> 
+> > *I* never had a problem with a few extra system calls.  I don't
+> >  understand why you (apparently) do.
+> 
+> We're stuck with them forever, they are hard to version and extend
+> cleanly.
+> 
+> Those are my main objections.
 
-On Thu, 15 Nov 2007, Thomas Gleixner wrote:
+The first is valid (for suitable values of "forever") but applies to
+any user/kernel interface, not just system calls.
 
-> On Wed, 14 Nov 2007, Tim Bird wrote:
->
-> Added Steven and John to CC
->
-> > I applied the patches in patch-2.6.23.1-rt11-broken-out.tar.bz2
-> > to a Linux kernel version 2.6.23.1 (along with a few other
-> > board specific patches).
-> >
-> > I got the following compilation error:
-> >
-> >   GEN     /home/tbird/work/rt-preempt/build/tx49/Makefile
-> >   CHK     include/linux/version.h
-> >   CHK     include/linux/utsrelease.h
-> >   CALL    /home/tbird/work/rt-preempt/linux-2.6.23.1-rt11/scripts/checksyscalls.sh
-> >   CHK     include/linux/compile.h
-> >   CC      kernel/latency_trace.o
-> > /home/tbird/work/rt-preempt/linux-2.6.23.1-rt11/kernel/latency_trace.c:28:21: error: asm/rtc.h: No such file or directory
-> > make[2]: *** [kernel/latency_trace.o] Error 1
-> > make[1]: *** [kernel] Error 2
-> > make: *** [vmlinux] Error 2
-> >
-> > Indeed, there is no include/asm-mips/rtc.h.
+As for the second (hard to version) I don't see why it applies to
+syscalls specifically more than to other interfaces.  It's just a
+matter of designing it correctly in the first place.  For example, the
+sys_swapcontext system call we have on powerpc takes an argument which
+is the size of the ucontext_t that userland is using, which allows us
+to extend it in future if necessary.  (Note that I'm not saying that
+the current perfmon2 interfaces are well-designed in this respect.)
 
-Looks like that may be just an artifact from older days.
+The third (hard to extend cleanly) is a good point, and is a valid
+criticism of the current set of perfmon2 system calls, I think.
+However, the goal of being able to extend the interface tends to be in
+opposition to the goal of having strong typing of the interface.
+Things like a multiplexed syscall or an ioctl are much easier to
+extend but that is at the expense of losing strong typing.  Something
+like my transaction() (or your weird kind of read() :) also provides
+extensibility but loses type safety to some degree.
 
-I'll do some more tests, and it it truely is, I'll go and remove the added
-headers.
+Also, as Andi says, this is core CPU state that we are dealing with,
+not some I/O device, so treating the whole of perfmon2 (or any
+performance monitoring infrastructure) as a driver doesn't fit very
+well, and in fact system calls are appropriate.  Just like we don't
+try to make access to debugging facilities fit into a driver, we
+shouldn't make performance monitoring fit into a driver either.
 
-> >
-> > I commented out the include line in latency_trace.c, and everything
-> > compiled fine.  I'm not sure what is needed in an arch-specific rtc.h,
-> > but compiling without it for the mips arch caused no problems.
-> > Should I create a patch with a stub for rtc.h for mips?
->
-> Hm, dunno why the rtc.h include was added.
->
-> > As an aside, this has me worried.  Is anyone else doing any
-> > RT Preempt testing or work on MIPS platforms, or am I forging
-> > new ground? :-)
->
-> I fear you are the one who is in charge to get mips working again :)
-> But as always, there are bad news and good news:  As far as I heard
-> last week John Cooper is looking into this as well.
-
-
-I'm just about to release 2.6.24-rc2-rt1 and I'm sure mips as well as
-powrepc is badly broken.  Any help in getting these back up and working
-would be greatly appreciated.
-
--- Steve
-
+Paul.
