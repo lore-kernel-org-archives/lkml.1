@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760072AbXKOR5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764083AbXKOR6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760072AbXKOR5r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 12:57:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbXKOR5i
+	id S1764083AbXKOR6t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 12:58:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757431AbXKOR6l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 12:57:38 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:40358 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751718AbXKOR5h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 12:57:37 -0500
-Date: Thu, 15 Nov 2007 12:57:33 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Chuck Ebbert <cebbert@redhat.com>
-cc: Greg Kroah-Hartman <gregkh@suse.de>, <linux-kernel@vger.kernel.org>,
-       <stable@kernel.org>, <linux-usb-devel@lists.sourceforge.net>,
+	Thu, 15 Nov 2007 12:58:41 -0500
+Received: from mail.suse.de ([195.135.220.2]:49927 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752562AbXKOR6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 12:58:41 -0500
+Date: Thu, 15 Nov 2007 09:57:30 -0800
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
        Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>,
-       Domenico Andreoli <cavokz@gmail.com>, <torvalds@linux-foundation.org>,
-       <akpm@linux-foundation.org>, <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [patch 20/40] USB: remove USB_QUIRK_NO_AUTOSUSPEND
-In-Reply-To: <473C6AAF.5020901@redhat.com>
-Message-ID: <Pine.LNX.4.44L0.0711151256370.14061-100000@iolanthe.rowland.org>
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: [patch 08/16] skge: fix ram buffer size calculation
+Message-ID: <20071115175730.GB24531@suse.de>
+References: <20071115060353.071060513@mini.kroah.org> <20071115064037.GH18951@kroah.com> <alpine.LFD.0.9999.0711150810130.2786@woody.linux-foundation.org> <20071115163201.GA24087@suse.de> <alpine.LFD.0.9999.0711150846280.2786@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.9999.0711150846280.2786@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Nov 2007, Chuck Ebbert wrote:
-
-> On 11/15/2007 01:44 AM, Greg Kroah-Hartman wrote:
-> > 
-> > -stable review patch.  If anyone has any objections, please let us know.
-> > 
-> > ------------------
-> > From: Alan Stern <stern@rowland.harvard.edu>
-> > 
-> > patch a691efa9888e71232dfb4088fb8a8304ffc7b0f9 in mainline.
-> > 
-> > This patch (as995) cleans up the remains of the former NO_AUTOSUSPEND
-> > quirk.  Since autosuspend is disabled by default, we will let
-> > userspace worry about which devices can safely be suspended.  Thus the
+On Thu, Nov 15, 2007 at 08:48:58AM -0800, Linus Torvalds wrote:
 > 
-> How is it disabled by default? I still see a default timeout of 2 in
-> the code before this patch is applied.
+> 
+> On Thu, 15 Nov 2007, Greg KH wrote:
+> 
+> > On Thu, Nov 15, 2007 at 08:11:30AM -0800, Linus Torvalds wrote:
+> > > > 
+> > > > patch 7fb7ac241162dc51ec0f7644d4a97b2855213c32 in mainline.
+> > > 
+> > > This one is getting reverted in mainline in about five minutes (unless I 
+> > > find an email from Stephen to address the reported regression - I haven't 
+> > > gone through all my emails yet), so I don't think it should make it into 
+> > > stable.
+> > 
+> > Thanks for letting me know which patch is causing the problem, I just
+> > got another report of the skge driver not working with all of these
+> > patches applied.
+> 
+> I suspect that's the same report.
+> 
+> > It looks like I'll just drop this one from the patch list, unless
+> > Stephen has a better idea.
+> 
+> This is my commit message for the revert - note the suggested possible 
+> fix (but also why I didn't apply it, and why things got reverted).
 
-It's supposed to be disabled by having the "power/level" attribute
-automatically set to "on".
+Ok, I've now dropped this patch from the stable queue.  Stephen, if you
+get something that works, and is in Linus's tree, feel free to resend it
+to stable@kernel.org.
 
-Alan Stern
+thanks,
 
+greg k-h
