@@ -1,80 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765018AbXKOBVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762879AbXKOB1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765018AbXKOBVZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 20:21:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757914AbXKOBVR
+	id S1762879AbXKOB1c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 20:27:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbXKOB1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 20:21:17 -0500
-Received: from vms040pub.verizon.net ([206.46.252.40]:36971 "EHLO
-	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757082AbXKOBVQ (ORCPT
+	Wed, 14 Nov 2007 20:27:24 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49383
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753232AbXKOB1X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 20:21:16 -0500
-Date: Wed, 14 Nov 2007 20:21:04 -0500
-From: Russell Leighton <russ@elegant-software.com>
-Subject: OT: Does Linux have any "Perfect Code"
-To: LKML <linux-kernel@vger.kernel.org>
-Message-id: <c9d133bdb3481fbc01a572d948049f5e@elegant-software.com>
-MIME-version: 1.0 (Apple Message framework v624)
-X-Mailer: Apple Mail (2.624)
-Content-type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Content-transfer-encoding: 7bit
+	Wed, 14 Nov 2007 20:27:23 -0500
+Date: Wed, 14 Nov 2007 17:27:22 -0800 (PST)
+Message-Id: <20071114.172722.71465976.davem@davemloft.net>
+To: paulus@samba.org
+Cc: hch@infradead.org, akpm@linux-foundation.org, gregkh@suse.de,
+       mucci@cs.utk.edu, eranian@hpl.hp.com, wcohen@redhat.com,
+       robert.richter@amd.com, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org
+Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <18235.40110.831730.847548@cargo.ozlabs.ibm.com>
+References: <18235.32982.439970.359975@cargo.ozlabs.ibm.com>
+	<20071114.152134.266510129.davem@davemloft.net>
+	<18235.40110.831730.847548@cargo.ozlabs.ibm.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Paul Mackerras <paulus@samba.org>
+Date: Thu, 15 Nov 2007 12:11:10 +1100
 
-Bryan Cantrill of Sun (ala DTrace) has a notion of perfect code:
+> The third (hard to extend cleanly) is a good point, and is a valid
+> criticism of the current set of perfmon2 system calls, I think.
+> However, the goal of being able to extend the interface tends to be in
+> opposition to the goal of having strong typing of the interface.
+> Things like a multiplexed syscall or an ioctl are much easier to
+> extend but that is at the expense of losing strong typing.
 
-	http://blogs.sun.com/bmc/entry/on_i_dreaming_in_code
+I disagree.
 
-He also has some examples (from bottom comment section of above):
-
->
->
-> Can you list a small number of examples of "software perfection"?
->
-> Posted by Russell Leighton on November 14, 2007 at 04:02 AM PST #
->
-> Russell,
->
-> My canonical small example of perfection in Solaris would be Jeff  
-> Bonwick's mod-by-a-billion code in hrt2ts():
->
-> http://cvs.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/uts/ 
-> common/os/timers.c#875
->
-> Solaris of course has lots of bigger, more complicated examples. Now  
-> on the one hand, one wants to refrain from pointing to thousands of  
-> lines of code and saying that there are no bugs therein, but on the  
-> other, there are many subsystems that have been in place and in heavy  
-> use for years without defect or modification. At the risk of being  
-> egocentric, the cyclic subsystem (which is executed at least 100 times  
-> per second on every Solaris system) had its last substantial fix over  
-> six years ago, and its last fix of any flavor over three years ago:
->
-> http://cvs.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/uts/ 
-> common/os/cyclic.c
->
-> Modesty (and the lack, of course, of a proof of its correctness)  
-> prevents me from calling the cyclic subsystem perfect -- but such as  
-> unknown defects remain, there are damn few of them, and we can say  
-> that they must be a result of highly usual (or at least, heretofore  
-> unseen) circumstances.
->
-> A non-Solaris example -- and one that I've been known to use as the  
-> canonical example of the persistence of software -- is Super Mario  
-> Kart. This is a game that was developed (to its completion) fifteen  
-> years ago for the Super Nintendo console. Source code, to the best of  
-> my knowledge, is not publicly available and may indeed be lost -- but  
-> the binaries persist and (if my coworkers are any indication) remain  
-> in active use. Given the longevity of, say, Homer's Odyssey, there is  
-> reason to believe that Super Mario Kart will survive in perpetuity --  
-> that thousands of years from now, twenty-somethings somewhere will be  
-> using the software exactly as it is used today. Is this perfection?  
-> Perhaps not -- but it also might not be discernible from perfection...
->
-> Posted by Bryan Cantrill on November 14, 2007 at 07:51 AM PST #
-
-Does Linux have any such examples true software perfection?
-
-
+With netlink we can just add new attributes when a new need arises for
+a particular interface.  The attribute code describes the type
+precisely, so there is no loss of strong typing at all.
