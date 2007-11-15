@@ -1,56 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764933AbXKOSHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760650AbXKOSPJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764933AbXKOSHl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 13:07:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758061AbXKOSHd
+	id S1760650AbXKOSPJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 13:15:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbXKOSO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 13:07:33 -0500
-Received: from www.tglx.de ([62.245.132.106]:58470 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757613AbXKOSHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 13:07:32 -0500
-Date: Thu, 15 Nov 2007 19:07:11 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Adrian Bunk <bunk@kernel.org>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] x86: revert X86_HT semantics change
-In-Reply-To: <20071115180436.GA23517@uranus.ravnborg.org>
-Message-ID: <alpine.LFD.0.9999.0711151904300.3112@localhost.localdomain>
-References: <20071115161703.GR4250@stusta.de> <20071115180436.GA23517@uranus.ravnborg.org>
+	Thu, 15 Nov 2007 13:14:57 -0500
+Received: from sa10.bezeqint.net ([192.115.104.24]:50237 "EHLO
+	sa10.bezeqint.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752072AbXKOSO4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 13:14:56 -0500
+Message-ID: <473C8C97.9030707@panasas.com>
+Date: Thu, 15 Nov 2007 20:14:47 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Gabriel C <nix.or.die@googlemail.com>, Greg KH <greg@kroah.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       bk@suse.de, khali@linux-fr.org,
+       James <James.Bottomley@HansenPartnership.com>
+Subject: Re: 2.6.24-rc2-mm1
+References: <473A678C.2020507@googlemail.com> <20071114034924.GA26048@kroah.com> <20071114043923.GK6089@one-eyed-alien.net> <473A88B3.3010303@googlemail.com> <20071114082332.GM6089@one-eyed-alien.net> <473ABE7D.6060703@googlemail.com> <20071115171508.GQ6089@one-eyed-alien.net>
+In-Reply-To: <20071115171508.GQ6089@one-eyed-alien.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Nov 2007, Sam Ravnborg wrote:
-
-> On Thu, Nov 15, 2007 at 05:17:03PM +0100, Adrian Bunk wrote:
-> > The x86 unification resulted in CONFIG_X86_HT no longer being
-> > set if (X86_32 && MK8).
-> Yup - my bad. I wrongly assumed MK8 was an X86_64 thing.
+On Thu, Nov 15 2007 at 19:15 +0200, Matthew Dharm <mdharm-kernel@one-eyed-alien.net> wrote:
+> On Wed, Nov 14, 2007 at 10:23:09AM +0100, Gabriel C wrote:
+>> Matthew Dharm wrote:
+>>> On Wed, Nov 14, 2007 at 06:33:39AM +0100, Gabriel C wrote:
+>>>> Matthew Dharm wrote:
+>>>>> On Tue, Nov 13, 2007 at 07:49:24PM -0800, Greg KH wrote:
+>>>>>> Matt, are these the errors you were worried about with the patch we were
+>>>>>> just talking about tha tis in my tree?
+>>>>> I can't tell from these logs.
+>>>> There is the dmesg with CONFIG_USB_STORAGE_DEBUG :
+>>>>
+>>>> http://194.231.229.228/dmesg-2.6.24-rc2-mm1
+>>> Good news: This isn't the bug Greg was worried about.
+>>>
+>>> Bad news: Something is seriously strange here.  Note the following from the
+>>> logs:
+>>>
+>>> Nov 14 06:07:43 lara [   41.890614] usb-storage: Bulk Status S 0x53425355 T 0xd R 0 Stat 0x0
+>>> Nov 14 06:07:43 lara [   41.890616] usb-storage: -- unexpectedly short transfer
+>>>
+>>> Note the 'R' value of zero -- this is the residue value.  It indicates a
+>>> complete transfer, and that matches the log lines immediately previous
+>>> which indicate a 4K transfer which completed properly.
+>>>
+>>> If residue is zero, then srb->resid should be zero.  Take a look in
+>>> linux/usb/storage/transport.c in usb_stor_Bulk_transport()
+>>>
+>>> If srb->resid is zero, then you should NEVER get the "unexpectedly short
+>>> transfer" message.  Look at usb_stor_invoke_transport() in the same file.
+>> That code got replaced recently but I have no idea about it.
+>>
+>> ( http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=shortlog  see the patches from Boaz Harrosh) 
+>>
+>> srb->resid got replaced by scsi_get_resid() it I see that right.
+>>
+>> I'm CC'ing the author , he will know I think.
 > 
-> Thanks for fixing this.
-> > 
-> > After grep'ing through the tree I think the problem is that different 
-> > places have different assumptions about the semantics of CONFIG_X86_HT,
-> > either:
-> > - hyperthreading or
-> > - multicore
-> > and the SCHED_SMT and SCHED_MC dependencies are just one of the 
-> > symptoms.
-> > 
-> > This should be sorted out properly, but until then we should keep the 
-> > 2.6.23 status quo.
-> > 
-> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> The replacement looks, to my eye, to be logically correct.  The patch was
+> pretty clean.
 > 
-> I assume Thomas & Co will forward the patch.
+> Then again, I haven't looked at what is "under the hood" of the accessor
+> functions.  Perhaps there is a side-effect somewhere in there?
+> 
+> Perhaps a quick debugging test -- print the value of scsi_get_resid(srb)
+> just after it's initialized to zero at the top of
+> usb_stor_invoke_transport(), and then just after the call to
+> us->transport().
+> 
 
-After looking what does what and fixing it. 
+I have found the bug. My bad sorry about that. Patch below
+It is because I switched from use of usb_stor_bulk_transfer_sg()
+to usb_stor_bulk_transfer_sglist, but forgot the residual handling.
 
-Right now this patch is not a 1:1 replacement of the .23 status quo,
-as it now makes SCHED_SMT and SCHED_HT depend on !MK8 for 64bit.
+(Please send scsi bugs to scsi list. My lkml mental filters are
+much higher, Sorry for not seeing this yesterday)
 
-     tglx
+----
+From: Boaz Harrosh <bharrosh@panasas.com>
+Date: Thu, 15 Nov 2007 20:07:56 +0200
+Subject: [PATCH] Fix bug in last usb accessor patch
+
+>>> Bad news: Something is seriously strange here.  Note the following from the
+>>> logs:
+>>>
+>>> Nov 14 06:07:43 lara [   41.890614] usb-storage: Bulk Status S 0x53425355 T 0xd R 0 Stat 0x0
+>>> Nov 14 06:07:43 lara [   41.890616] usb-storage: -- unexpectedly short transfer
+>>>
+>>> Note the 'R' value of zero -- this is the residue value.  It indicates a
+>>> complete transfer, and that matches the log lines immediately previous
+>>> which indicate a 4K transfer which completed properly.
+>>>
+>>> If residue is zero, then srb->resid should be zero.  Take a look in
+>>> linux/usb/storage/transport.c in usb_stor_Bulk_transport()
+>>>
+>>> If srb->resid is zero, then you should NEVER get the "unexpectedly short
+>>> transfer" message.  Look at usb_stor_invoke_transport() in the same file.
+>> That code got replaced recently but I have no idea about it.
+
+  wrong resid handling fixed
+
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+---
+ drivers/usb/storage/transport.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/usb/storage/transport.c b/drivers/usb/storage/transport.c
+index d3a84a2..d9f4912 100644
+--- a/drivers/usb/storage/transport.c
++++ b/drivers/usb/storage/transport.c
+@@ -465,11 +465,12 @@ static int usb_stor_bulk_transfer_sglist(struct us_data *us, unsigned int pipe,
+ int usb_stor_bulk_srb(struct us_data* us, unsigned int pipe,
+ 		      struct scsi_cmnd* srb)
+ {
+-	int resid = scsi_get_resid(srb);
++	unsigned int partial;
+ 	int result = usb_stor_bulk_transfer_sglist(us, pipe, scsi_sglist(srb),
+ 				      scsi_sg_count(srb), scsi_bufflen(srb),
+-				      &resid);
+-	scsi_set_resid(srb, resid);
++				      &partial);
++
++	scsi_set_resid(srb, scsi_bufflen(srb) - partial);
+ 	return result;
+ }
+ 
+-- 
+1.5.3.1
+
+
+
+
+
+
+
+
