@@ -1,73 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765047AbXKOVO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932989AbXKOVVE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765047AbXKOVO7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 16:14:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757794AbXKOVOu
+	id S932989AbXKOVVE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 16:21:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763480AbXKOVUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 16:14:50 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45375 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752409AbXKOVOt (ORCPT
+	Thu, 15 Nov 2007 16:20:54 -0500
+Received: from fmmailgate03.web.de ([217.72.192.234]:38638 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763225AbXKOVUw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 16:14:49 -0500
-Date: Thu, 15 Nov 2007 13:14:32 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Bron Gondwana <brong@fastmail.fm>, Christian Kujau <lists@nerdbynature.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       robm@fastmail.fm
-Subject: Re: mmap dirty limits on 32 bit kernels (Was: [BUG] New Kernel
- Bugs)
-In-Reply-To: <alpine.LFD.0.9999.0711151252340.4260@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.0.9999.0711151300250.4260@woody.linux-foundation.org>
-References: <20071113.043207.44732743.davem@davemloft.net>  <20071113110259.44c56d42.akpm@linux-foundation.org>  <alpine.DEB.0.9999.0711132055550.7865@sheep.housecafe.de>  <20071113130411.26ccae12.akpm@linux-foundation.org>  <alpine.DEB.0.99999.0711132239350.3960@sheep.housecafe.de>
-  <20071115040708.GB15302@brong.net>  <alpine.LFD.0.9999.0711142020220.2786@woody.linux-foundation.org>  <20071115052538.GA21522@brong.net>  <alpine.LFD.0.9999.0711142130090.2786@woody.linux-foundation.org>  <alpine.LFD.0.9999.0711142148380.2786@woody.linux-foundation.org>
-  <20071115115049.GA8297@brong.net>  <alpine.LFD.0.9999.0711150818320.2786@woody.linux-foundation.org>  <1195155601.22457.25.camel@lappy> <1195159457.22457.35.camel@lappy> <alpine.LFD.0.9999.0711151252340.4260@woody.linux-foundation.org>
+	Thu, 15 Nov 2007 16:20:52 -0500
+Message-ID: <473CB82F.8060204@web.de>
+Date: Thu, 15 Nov 2007 22:20:47 +0100
+From: Jan Kiszka <jan.kiszka@web.de>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Dave Young <hidave.darkstar@gmail.com>, Greg KH <greg@kroah.com>
+Subject: Re: [patch 04/13] param_sysfs_builtin memchr argument fix
+References: <20071115042610.731859958@mini.kroah.org> <20071115060927.GE7602@kroah.com> <473C6FCF.6010501@redhat.com> <20071115175810.GC24531@suse.de> <473CB03D.6000404@redhat.com>
+In-Reply-To: <473CB03D.6000404@redhat.com>
+X-Enigmail-Version: 0.94.4.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig2B91C0A08253F84412DC622B"
+X-Provags-ID: V01U2FsdGVkX18PAZO+ngk4u+kqR7+pm/SUofxoARot1DTp3XIh
+	o5o1fUAt3nKw9Nmwk/0cbXpS5S7b+pde+FwDdBCXnYyxU5j426
+	+mf8jvs8c=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig2B91C0A08253F84412DC622B
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Chuck Ebbert wrote:
+> On 11/15/2007 12:58 PM, Greg KH wrote:
+>> On Thu, Nov 15, 2007 at 11:11:59AM -0500, Chuck Ebbert wrote:
+>>> On 11/15/2007 01:09 AM, Greg KH wrote:
+>>>> -stable review patch.  If anyone has any objections, please let us k=
+now.
+>>>>
+>>>> ------------------
+>>>> From: Dave Young <hidave.darkstar@gmail.com>
+>>>>
+>>>> patch faf8c714f4508207a9c81cc94dafc76ed6680b44 in mainline.
+>>>>
+>>>> If memchr argument is longer than strlen(kp->name), there will be so=
+me
+>>>> weird result.
+>>>>
+>>>> It will casuse duplicate filenames in sysfs for the "nousb".  kernel=
+
+>>>> warning messages are as bellow:
+>>>>
+>>> Needs an additional fix:
+>>>
+>>> Commit:     22800a2830ec07e7cc5c837999890ac47cc7f5de
+>>> fix param_sysfs_builtin name length check
+>> That just went in yesterday, right?  If so, it will have to wait until=
+
+>> the next -stable review cycle, unless it's totally broken without that=
+
+>> change.
+>>
+>> Is it?
+>>
+>=20
+> Yeah, pretty much AFAICT. Maybe Jan can say exactly what happened, but
+> it looks like the patch would cause more problems than it solves.
+>=20
+
+If you have a module parameter like
+"my_module.uses_long_parameter_names", Dave's patch caused it to be
+rejected if that module was built into the kernel, although "my_module"
+is far shorter than MAX_KBUILD_MODNAME, thus perfectly legal.
+
+I noticed this with out-of-tree stuff, but I would bet in-tree users are
+affected as well. Hmm... e.g. "nf_conntrack.expect_hashsize" should not
+longer exist if nf_conntrack is non-modular.
+
+Jan
 
 
-On Thu, 15 Nov 2007, Linus Torvalds wrote:
-> 
-> Unacceptable. We used to do exactly what your patch does, and it got fixed 
-> once. We're not introducing that fundamentally broken concept again.
+--------------enig2B91C0A08253F84412DC622B
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Examples of non-broken solutions:
- (a) always use lowmem sizes (what we do now)
- (b) always use total mem sizes (sane but potentially dangerous: but the 
-     VM pressure should work! It has serious bounce-buffer issues, though, 
-     which is why I think it's crazy even if it's otherwise consistent)
- (c) make all dirty counting be *purely* per-bdi, so that everybody can 
-     disagree on what the limits are, but at least they also then use 
-     different counters
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-So it's just the "different writers look at the same dirty counts but then 
-interpret it to mean totally different things" that I think is so 
-fundamentally bogus. I'm not claiming that what we do now is the only way 
-to do things, I just don't think your approach is tenable.
+iD8DBQFHPLgzniDOoMHTA+kRAr9SAJ9ydh8yVkpbwN1lFNss4oejsMX7bACeP9bZ
+uohN6+bLN7Q+WREFXR/l8pc=
+=f41C
+-----END PGP SIGNATURE-----
 
-Btw, I actually suspect that while (a) is what we do now, for the specific 
-case that Bron has, we could have a /proc/sys/vm option to just enable 
-(b). So we don't have to have just one consistent model, we can allow odd 
-users (and Bron sounds like one - sorry Bron ;) to just force other, odd, 
-but consistent models.
-
-I'd also like to point out that while the "bounce buffer" issue is not so 
-much a HIGHMEM issue on its own (it's really about the device DMA limits, 
-which are _independent_ of HIGHMEM, of course), the reason HIGHMEM is 
-special is that without HIGHMEM the bounce buffers generally work 
-perfectly fine.
-
-The problem with HIGHMEM is that it causes various metadata (dentries, 
-inodes, page struct tables etc) to eat up memory "prime real estate" under 
-the same kind of conditions that also dirty a lot of memory. So the reason 
-we disallow HIGHMEM from dirty limits is only *partly* the per-device or 
-mapping DMA limits, and to a large degree the fact that non-highmem memory 
-is special in general, and it is usually the non-highmem areas that are 
-constrained - and need to be protected.
-
-			Linus
+--------------enig2B91C0A08253F84412DC622B--
