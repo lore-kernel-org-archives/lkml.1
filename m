@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762691AbXKOSDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764276AbXKOSFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762691AbXKOSDS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 13:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbXKOSDH
+	id S1764276AbXKOSFW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 13:05:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756889AbXKOSFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 13:03:07 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:58728 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755241AbXKOSDG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 13:03:06 -0500
-Date: Thu, 15 Nov 2007 19:04:36 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] x86: revert X86_HT semantics change
-Message-ID: <20071115180436.GA23517@uranus.ravnborg.org>
-References: <20071115161703.GR4250@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 15 Nov 2007 13:05:10 -0500
+Received: from smtp-out002.kontent.com ([81.88.40.216]:52410 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753077AbXKOSFJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 13:05:09 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: question on odd APIC behavior
+Date: Thu, 15 Nov 2007 19:05:02 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org
+References: <200711150054.34312.oliver@neukum.org> <200711151627.25622.oliver@neukum.org> <Pine.LNX.4.64N.0711151637220.19041@blysk.ds.pg.gda.pl>
+In-Reply-To: <Pine.LNX.4.64N.0711151637220.19041@blysk.ds.pg.gda.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071115161703.GR4250@stusta.de>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200711151905.03005.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 15, 2007 at 05:17:03PM +0100, Adrian Bunk wrote:
-> The x86 unification resulted in CONFIG_X86_HT no longer being
-> set if (X86_32 && MK8).
-Yup - my bad. I wrongly assumed MK8 was an X86_64 thing.
+Am Donnerstag 15 November 2007 schrieb Maciej W. Rozycki:
+> On Thu, 15 Nov 2007, Oliver Neukum wrote:
 
-Thanks for fixing this.
+> > I am seeing an interrupt for an UHCI on #20 CPU1 also arriving on
+> > #19 CPU0, triggering the spurious interrupt detection.
 > 
-> After grep'ing through the tree I think the problem is that different 
-> places have different assumptions about the semantics of CONFIG_X86_HT,
-> either:
-> - hyperthreading or
-> - multicore
-> and the SCHED_SMT and SCHED_MC dependencies are just one of the 
-> symptoms.
+>  Well, if you see spurious interrupt detection triggered, then it is not a 
+> problem with the interrupt being delivered multiple times (that's handled 
+> silently by the interrupt dispatched), but likely the interrupt line being 
+> deasserted too late.  Does it happen frequently?  If your ERR counter in 
+> /proc/interrupts increments quite fast, then perhaps a driver does not 
+> handle interrupts well enough for your system.  Or there is noise on an 
+> interrupt line.
 > 
-> This should be sorted out properly, but until then we should keep the 
-> 2.6.23 status quo.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
+>  You would have to provide more information to get more accurate feedback.
 
-I assume Thomas & Co will forward the patch.
+On irq 20, there's an UHCI, on irq 19 is an EHCI. For every interrupt on 20
+there's a spurious interrupt on 19. USB devices on bus of the controller on 20
+work. So I know all interrupts are seen. ERR does not increase. Interrupts
+for devices on the bus of the controller on 19 arrive at 19 only.
+As far as I can determine there are really interrupts on both CPUs on
+different vectors for one physical interrupt request.
 
-	Sam
+	Regards
+		Oliver
