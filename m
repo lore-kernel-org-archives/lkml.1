@@ -1,71 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761273AbXKONQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762288AbXKONQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761273AbXKONQh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 08:16:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757662AbXKONQV
+	id S1762288AbXKONQx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 08:16:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758621AbXKONQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 08:16:21 -0500
-Received: from mtagate2.uk.ibm.com ([195.212.29.135]:56614 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757473AbXKONQT (ORCPT
+	Thu, 15 Nov 2007 08:16:24 -0500
+Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:40321 "EHLO
+	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757870AbXKONQW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 08:16:19 -0500
-Date: Thu, 15 Nov 2007 14:15:36 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: EIP is at device_shutdown+0x32/0x60
-Message-ID: <20071115141536.696e3611@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20071115213345.B3C1.Y-GOTO@jp.fujitsu.com>
-References: <20071115091158.GB6216@localhost.sw.ru>
-	<20071115014446.f943d835.akpm@linux-foundation.org>
-	<20071115213345.B3C1.Y-GOTO@jp.fujitsu.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.1.0-rc1 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Nov 2007 08:16:22 -0500
+Date: Thu, 15 Nov 2007 13:16:09 +0000 (GMT)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Oliver Neukum <oliver@neukum.org>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: question on odd APIC behavior
+In-Reply-To: <200711150054.34312.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.64N.0711151313410.19041@blysk.ds.pg.gda.pl>
+References: <200711150054.34312.oliver@neukum.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Nov 2007 21:55:34 +0900,
-Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
+On Thu, 15 Nov 2007, Oliver Neukum wrote:
 
-> /**
->  * device_shutdown - call ->shutdown() on each device to shutdown.
->  */
-> void device_shutdown(void)
-> {
->         struct device * dev, *devn;
-> 
->         list_for_each_entry_safe_reverse(dev, devn, &devices_kset->list,
->                                 kobj.entry) {
->                 if (dev->bus && dev->bus->shutdown) {
->                         dev_dbg(dev, "shutdown\n");
->                         dev->bus->shutdown(dev);
->                 } else if (dev->driver && dev->driver->shutdown) {
->                         dev_dbg(dev, "shutdown\n");
->                         dev->driver->shutdown(dev);
->                 }
->         }
-> }
-> --------
-> When oops occured, dev->driver pointed kset_ktype's address,
-> and dev->driver->shutdown was the address of bus_type_list.
-> So, Oops was caused by "Illegal operation fault".
-> kset_ktypes is pointed by system_kset.
-> 
-> If my understanding is correct, this loop can't distinguish between
-> struct device and struct kset, but both are connected in this list,
-> right? It may be the cause of this.
+> is there a way to so misprogramm an APIC that a physical interrupt results
+> in two interrupts delivered?
 
-Uh. This fits with my observations on s390 as well (the list is not
-corrupted, but it contains entities that are not devices...)
+ Certainly.  One possibility is to have multiple processors marked as the 
+destination, e.g. a logical delivery mode destination programmed with 
+multiple bits set.
 
-The other entries under /sys/devices (on my system css0, platform,
-qeth) are all struct devices. This sysdev stuff is headache-inducing :(
+  Maciej
