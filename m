@@ -1,62 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765191AbXKOQQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758688AbXKOQRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765191AbXKOQQY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 11:16:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757858AbXKOQQN
+	id S1758688AbXKOQRd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 11:17:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756148AbXKOQRZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 11:16:13 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:7780 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756385AbXKOQQM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 11:16:12 -0500
-Date: Thu, 15 Nov 2007 19:15:36 +0300
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, devel@openvz.org
-Subject: [PATCH] proc: remove useless checks in proc_register()
-Message-ID: <20071115161536.GI6216@localhost.sw.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 15 Nov 2007 11:17:25 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:43001 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751750AbXKOQRZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 11:17:25 -0500
+Date: Thu, 15 Nov 2007 17:17:03 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] x86: revert X86_HT semantics change
+Message-ID: <20071115161703.GR4250@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Before proc_register() all PDEs are created by proc_create() which
-doesn't set ->proc_iops and ->proc_fops -- they're NULL. So those
-branches in proc_register() always taken.
+The x86 unification resulted in CONFIG_X86_HT no longer being
+set if (X86_32 && MK8).
 
-Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+After grep'ing through the tree I think the problem is that different 
+places have different assumptions about the semantics of CONFIG_X86_HT,
+either:
+- hyperthreading or
+- multicore
+and the SCHED_SMT and SCHED_MC dependencies are just one of the 
+symptoms.
+
+This should be sorted out properly, but until then we should keep the 
+2.6.23 status quo.
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
 ---
 
- fs/proc/generic.c |   15 +++++----------
- 1 file changed, 5 insertions(+), 10 deletions(-)
+ arch/x86/Kconfig |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
---- a/fs/proc/generic.c
-+++ b/fs/proc/generic.c
-@@ -525,19 +525,14 @@ static int proc_register(struct proc_dir_entry * dir, struct proc_dir_entry * dp
- 	dp->low_ino = i;
+18fef247715449d36438fe4de59fdf430f1b5c37 
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 1eb5997..2c357f0 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -148,7 +148,8 @@ config X86_SMP
  
- 	if (S_ISDIR(dp->mode)) {
--		if (dp->proc_iops == NULL) {
--			dp->proc_fops = &proc_dir_operations;
--			dp->proc_iops = &proc_dir_inode_operations;
--		}
-+		dp->proc_fops = &proc_dir_operations;
-+		dp->proc_iops = &proc_dir_inode_operations;
- 		dir->nlink++;
- 	} else if (S_ISLNK(dp->mode)) {
--		if (dp->proc_iops == NULL)
--			dp->proc_iops = &proc_link_inode_operations;
-+		dp->proc_iops = &proc_link_inode_operations;
- 	} else if (S_ISREG(dp->mode)) {
--		if (dp->proc_fops == NULL)
--			dp->proc_fops = &proc_file_operations;
--		if (dp->proc_iops == NULL)
--			dp->proc_iops = &proc_file_inode_operations;
-+		dp->proc_fops = &proc_file_operations;
-+		dp->proc_iops = &proc_file_inode_operations;
- 	}
+ config X86_HT
+ 	bool
+-	depends on SMP && !(X86_VISWS || X86_VOYAGER || MK8)
++	depends on SMP
++	depends on (X86_32 && !(X86_VISWS || X86_VOYAGER)) || (X86_64 && !MK8)
+ 	default y
  
- 	spin_lock(&proc_subdir_lock);
+ config X86_BIOS_REBOOT
+@@ -476,7 +477,7 @@ config NR_CPUS
+ 
+ config SCHED_SMT
+ 	bool "SMT (Hyperthreading) scheduler support"
+-	depends on (X86_64 && SMP) || (X86_32 && X86_HT)
++	depends on X86_HT
+ 	help
+ 	  SMT scheduler support improves the CPU scheduler's decision making
+ 	  when dealing with Intel Pentium 4 chips with HyperThreading at a
+@@ -485,7 +486,7 @@ config SCHED_SMT
+ 
+ config SCHED_MC
+ 	bool "Multi-core scheduler support"
+-	depends on (X86_64 && SMP) || (X86_32 && X86_HT)
++	depends on X86_HT
+ 	default y
+ 	help
+ 	  Multi-core scheduler support improves the CPU scheduler's decision
 
