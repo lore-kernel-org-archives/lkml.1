@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932825AbXKOTnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763772AbXKOT5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932825AbXKOTnj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 14:43:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932091AbXKOTna
+	id S1763772AbXKOT5a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 14:57:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757688AbXKOT5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 14:43:30 -0500
-Received: from scrub.xs4all.nl ([194.109.195.176]:3060 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763302AbXKOTn3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 14:43:29 -0500
-Date: Thu, 15 Nov 2007 20:43:27 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kconfig: use $K64BIT to set 64BIT with all*config targets
-In-Reply-To: <20071115192555.GD23914@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.64.0711152036430.1817@scrub.home>
-References: <20071110204038.GA13140@uranus.ravnborg.org>
- <11947274093185-git-send-email-sam@ravnborg.org> <11947274091127-git-send-email-sam@ravnborg.org>
- <Pine.LNX.4.64.0711142116500.1818@scrub.home> <20071114220840.GB10920@uranus.ravnborg.org>
- <Pine.LNX.4.64.0711151616330.1817@scrub.home> <20071115192555.GD23914@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 15 Nov 2007 14:57:21 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:38511 "EHLO
+	dorka.pomaz.szeredi.hu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751554AbXKOT5U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 14:57:20 -0500
+To: a.p.zijlstra@chello.nl
+CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
+In-reply-to: <1195155759.22457.29.camel@lappy> (message from Peter Zijlstra on
+	Thu, 15 Nov 2007 20:42:38 +0100)
+Subject: Re: [RFC] fuse writable mmap design
+References: <E1IshIR-0000fE-00@dorka.pomaz.szeredi.hu>
+	 <1195154530.22457.16.camel@lappy>
+	 <E1IskWl-0000oJ-00@dorka.pomaz.szeredi.hu> <1195155759.22457.29.camel@lappy>
+Message-Id: <E1Iskpw-0000qY-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 15 Nov 2007 20:57:16 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> The next point then, I'd expect your fuse_page_mkwrite() to push
+> writeout of your 32-odd mmap pages instead of poll.
 
-On Thu, 15 Nov 2007, Sam Ravnborg wrote:
+You're talking about this:
 
-> > > The value can be supplied on the command-line so we need to validate input.
-> > 
-> > Is there a need for this?
-> Yes. We would like to set 64BIT or not in other than x86 cases.
-> And way forward was not to override ARCH as in the x86 case.
++	wait_event(fc->writeback_waitq,
++		   fc->numwrite < FUSE_WRITEBACK_THRESHOLD);
 
-Can we please can get some consistency in this?
-We have a .config file for a reason, what's wrong with using it?
+right?  It's one of the things I need to clean out, there's no point
+in fc->numwrite, which is essentially the same as the BDI_WRITEBACK
+counter.
 
-> > Please revert the K64BIT changes and use this instead.
-> 
-> I will finish up your patch and target it for next merge window.
+OTOH, I'm thinking about adding a per-fs limit (adjustable for
+privileged mounts) of dirty+writeback.
 
-Why can't this be fixed properly now? You don't even need this patch, just 
-use ARCH to set 64BIT in the Kconfig as I've shown.
+I'm not sure how hard would it be to add support for this into
+balance_dirty_pages().  So I'm thinking of a parameter in struct
+backing_dev_info that is used to clip the calculated per-bdi threshold
+below this maximum.
 
-> > These are two different uses, when reading a .config only the basic syntax 
-> > is checked, but not the value itself.
-> This is wrong considering the amount of people that hand edit the .config file.
+How would that affect the proportions algorithm?  What would happen to
+the unused portion?  Would it adapt to the slowed writeback and
+allocate it to some other writer?
 
-It's not, the actual symbol value is set later depending on the dependency 
-constraints.
-
-bye, Roman
+Miklos
