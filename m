@@ -1,106 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbXKOLcL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765233AbXKOLcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755184AbXKOLcL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 06:32:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbXKOLb6
+	id S1765233AbXKOLcl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 06:32:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757336AbXKOLcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 06:31:58 -0500
-Received: from ozlabs.org ([203.10.76.45]:57875 "EHLO ozlabs.org"
+	Thu, 15 Nov 2007 06:32:33 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37299 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751495AbXKOLb5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 06:31:57 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH] Attempt to get eject failures back to ioctl(CDROMEJECT)
-Date: Thu, 15 Nov 2007 22:32:02 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org
-References: <200711141739.46960.rusty@rustcorp.com.au> <200711151335.53053.rusty@rustcorp.com.au> <20071115084705.GE638@kernel.dk>
-In-Reply-To: <20071115084705.GE638@kernel.dk>
+	id S1759167AbXKOLcc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 06:32:32 -0500
+Date: Thu, 15 Nov 2007 12:32:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: David Miller <davem@davemloft.net>, mpm@selenic.com, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch] slob: fix memory corruption
+Message-ID: <20071115113204.GA24463@elte.hu>
+References: <20071114225335.GV19691@waste.org> <20071114.154143.112110604.davem@davemloft.net> <20071115104331.GA11390@elte.hu> <200711152157.59409.nickpiggin@yahoo.com.au> <20071115112820.GA18228@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711152232.02522.rusty@rustcorp.com.au>
+In-Reply-To: <20071115112820.GA18228@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 November 2007 19:47:05 Jens Axboe wrote:
-> On Thu, Nov 15 2007, Rusty Russell wrote:
-> > If blk_rq_map_sg returns more than was allocated, it's a bug, and
-> > something's already been overwritten.  BUG_ON() is probably the right
-> > thing here.
->
-> It really just means that it mapped more segments than the block layer
-> said it would. Usually that wont overwrite memory here since scsi rounds
-> up on allocating the sg list, but it indeed can. Similar code has been
-> in scsi_lib.c for ages, I'd suggest covering that in the same patch.
 
-Good point.  I assume that you've not seen these printks in recent memory?
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-This covers both cases:
+> > I had implemented SLOB in userspace, so I resynched and think I 
+> > found your problem. Sorry for the attachment format -- this mailer 
+> > isn't the best. I'm really computer illiterate when it comes to 
+> > userspace...
+> 
+> thx, i'll try your fix in a minute.
 
-Subject: [PATCH] scsi: BUG_ON() impossible condition.
+that did the trick! Nick, find an updated patch below. (reference to the 
+bugzilla added.)
 
-If blk_rq_map_sg wrote more than was allocated in the scatterlist,
-BUG_ON() is probably the right thing to do.
+	Ingo
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+-------------------->
+Subject: slob: fix memory corruption
+From: Nick Piggin <npiggin@suse.de>
+
+Previously, it would be possible for prev->next to point to
+&free_slob_pages, and thus we would try to move a list onto itself, and
+bad things would happen.
+
+It seems a bit hairy to be doing list operations with the list marker as
+an entry, rather than a head, but...
+
+this resolves the following crash:
+
+  http://bugzilla.kernel.org/show_bug.cgi?id=9379
+
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- drivers/scsi/scsi_tgt_lib.c |   11 +++--------
- 1 files changed, 3 insertions(+), 8 deletions(-)
+ mm/slob.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -1102,7 +1102,6 @@ void scsi_io_completion(struct scsi_cmnd
-  *
-  * Returns:     0 on success
-  *		BLKPREP_DEFER if the failure is retryable
-- *		BLKPREP_KILL if the failure is fatal
-  */
- static int scsi_init_io(struct scsi_cmnd *cmd)
- {
-@@ -1136,17 +1135,9 @@ static int scsi_init_io(struct scsi_cmnd
- 	 * each segment.
- 	 */
- 	count = blk_rq_map_sg(req->q, req, cmd->request_buffer);
--	if (likely(count <= cmd->use_sg)) {
--		cmd->use_sg = count;
--		return BLKPREP_OK;
--	}
--
--	printk(KERN_ERR "Incorrect number of segments after building list\n");
--	printk(KERN_ERR "counted %d, received %d\n", count, cmd->use_sg);
--	printk(KERN_ERR "req nr_sec %lu, cur_nr_sec %u\n", req->nr_sectors,
--			req->current_nr_sectors);
--
--	return BLKPREP_KILL;
-+	BUG_ON(count > cmd->use_sg);
-+	cmd->use_sg = count;
-+	return BLKPREP_OK;
- }
- 
- static struct scsi_cmnd *scsi_get_cmd_from_req(struct scsi_device *sdev,
-diff --git a/drivers/scsi/scsi_tgt_lib.c b/drivers/scsi/scsi_tgt_lib.c
---- a/drivers/scsi/scsi_tgt_lib.c
-+++ b/drivers/scsi/scsi_tgt_lib.c
-@@ -367,14 +367,9 @@ static int scsi_tgt_init_cmd(struct scsi
- 
- 	dprintk("cmd %p cnt %d %lu\n", cmd, cmd->use_sg, rq_data_dir(rq));
- 	count = blk_rq_map_sg(rq->q, rq, cmd->request_buffer);
--	if (likely(count <= cmd->use_sg)) {
--		cmd->use_sg = count;
--		return 0;
--	}
--
--	eprintk("cmd %p cnt %d\n", cmd, cmd->use_sg);
--	scsi_free_sgtable(cmd);
--	return -EINVAL;
-+	BUG_ON(count > cmd->use_sg);
-+	cmd->use_sg = count;
-+	return 0;
- }
- 
- /* TODO: test this crap and replace bio_map_user with new interface maybe */
+Index: linux/mm/slob.c
+===================================================================
+--- linux.orig/mm/slob.c
++++ linux/mm/slob.c
+@@ -321,7 +321,8 @@ static void *slob_alloc(size_t size, gfp
+ 		/* Improve fragment distribution and reduce our average
+ 		 * search time by starting our next search here. (see
+ 		 * Knuth vol 1, sec 2.5, pg 449) */
+-		if (free_slob_pages.next != prev->next)
++		if (prev != free_slob_pages.prev &&
++				free_slob_pages.next != prev->next)
+ 			list_move_tail(&free_slob_pages, prev->next);
+ 		break;
+ 	}
