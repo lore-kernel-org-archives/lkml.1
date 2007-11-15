@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932469AbXKOGqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765728AbXKOGrF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932469AbXKOGqc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:46:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762131AbXKOGmz
+	id S1765728AbXKOGrF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:47:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756896AbXKOGm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:42:55 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55117 "EHLO
+	Thu, 15 Nov 2007 01:42:57 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55114 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761932AbXKOGmy (ORCPT
+	with ESMTP id S1761837AbXKOGmy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 15 Nov 2007 01:42:54 -0500
-Date: Wed, 14 Nov 2007 22:40:02 -0800
+Date: Wed, 14 Nov 2007 22:40:48 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,13 +21,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jan-Bernd Themann <themann@de.ibm.com>, Jeff Garzik <jeff@garzik.org>
-Subject: [patch 03/16] ehea: 64K page kernel support fix
-Message-ID: <20071115064002.GC18951@kroah.com>
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: [patch 09/16] skge: XM PHY handling fixes
+Message-ID: <20071115064048.GI18951@kroah.com>
 References: <20071115060353.071060513@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ehea-64k-page-kernel-support-fix.patch"
+Content-Disposition: inline; filename="skge-xm-phy-poll.patch"
 In-Reply-To: <20071115063921.GA18827@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -38,94 +39,251 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
+From: Stephen Hemminger <shemminger@linux-foundation.org>
 
-based on 2c69448bbcedebeb8409ddb05fbc7d3fe1cfbda7 in mainline.
+patch 501fb72d052d2a302b423bef7dec98d9d98c8a36 in mainline.
 
-The current eHEA module compiled for 64K page kernels can not
-be loaded with insmod due to bad hypervisor call parameters.
-The patch is a subset of the follwing patch which has been applied
-for 2.6.24 upstream:
+Change how PHY is managed on SysKonnect fibre based boards.
+Poll for PHY coming up 1 per second, but use interrupt to detect loss.
 
-http://www.spinics.net/lists/netdev/msg42814.html
-
-Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
-Cc: Jeff Garzik <jeff@garzik.org>
+Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+Signed-off-by: Jeff Garzik <jeff@garzik.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/ehea/ehea_qmr.c |   20 ++++++++------------
- drivers/net/ehea/ehea_qmr.h |    2 +-
- 2 files changed, 9 insertions(+), 13 deletions(-)
+ drivers/net/skge.c |   90 ++++++++++++++++++++++++++++-------------------------
+ drivers/net/skge.h |    6 +--
+ 2 files changed, 51 insertions(+), 45 deletions(-)
 
---- a/drivers/net/ehea/ehea_qmr.c
-+++ b/drivers/net/ehea/ehea_qmr.c
-@@ -563,8 +563,7 @@ int ehea_destroy_qp(struct ehea_qp *qp)
- int ehea_create_busmap( void )
+--- a/drivers/net/skge.c
++++ b/drivers/net/skge.c
+@@ -57,7 +57,7 @@
+ #define TX_WATCHDOG		(5 * HZ)
+ #define NAPI_WEIGHT		64
+ #define BLINK_MS		250
+-#define LINK_HZ			(HZ/2)
++#define LINK_HZ			HZ
+ 
+ MODULE_DESCRIPTION("SysKonnect Gigabit Ethernet driver");
+ MODULE_AUTHOR("Stephen Hemminger <shemminger@linux-foundation.org>");
+@@ -992,19 +992,15 @@ static void xm_link_down(struct skge_hw 
  {
- 	u64 vaddr = EHEA_BUSMAP_START;
--	unsigned long abs_max_pfn = 0;
--	unsigned long sec_max_pfn;
-+	unsigned long high_section_index = 0;
- 	int i;
+ 	struct net_device *dev = hw->dev[port];
+ 	struct skge_port *skge = netdev_priv(dev);
+-	u16 cmd, msk;
++	u16 cmd = xm_read16(hw, port, XM_MMU_CMD);
  
- 	/*
-@@ -574,14 +573,10 @@ int ehea_create_busmap( void )
- 	ehea_bmap.valid_sections = 0;
+-	if (hw->phy_type == SK_PHY_XMAC) {
+-		msk = xm_read16(hw, port, XM_IMSK);
+-		msk |= XM_IS_INP_ASS | XM_IS_LIPA_RC | XM_IS_RX_PAGE | XM_IS_AND;
+-		xm_write16(hw, port, XM_IMSK, msk);
+-	}
++	xm_write16(hw, port, XM_IMSK, XM_IMSK_DISABLE);
  
- 	for (i = 0; i < NR_MEM_SECTIONS; i++)
--		if (valid_section_nr(i)) {
--			sec_max_pfn = section_nr_to_pfn(i);
--			if (sec_max_pfn > abs_max_pfn)
--				abs_max_pfn = sec_max_pfn;
--			ehea_bmap.valid_sections++;
--		}
-+		if (valid_section_nr(i))
-+			high_section_index = i;
+-	cmd = xm_read16(hw, port, XM_MMU_CMD);
+ 	cmd &= ~(XM_MMU_ENA_RX | XM_MMU_ENA_TX);
+ 	xm_write16(hw, port, XM_MMU_CMD, cmd);
++
+ 	/* dummy read to ensure writing */
+-	(void) xm_read16(hw, port, XM_MMU_CMD);
++	xm_read16(hw, port, XM_MMU_CMD);
  
--	ehea_bmap.entries = abs_max_pfn / EHEA_PAGES_PER_SECTION + 1;
-+	ehea_bmap.entries = high_section_index + 1;
- 	ehea_bmap.vaddr = vmalloc(ehea_bmap.entries * sizeof(*ehea_bmap.vaddr));
+ 	if (netif_carrier_ok(dev))
+ 		skge_link_down(skge);
+@@ -1100,7 +1096,7 @@ static void genesis_reset(struct skge_hw
  
- 	if (!ehea_bmap.vaddr)
-@@ -593,6 +588,7 @@ int ehea_create_busmap( void )
- 		if (pfn_valid(pfn)) {
- 			ehea_bmap.vaddr[i] = vaddr;
- 			vaddr += EHEA_SECTSIZE;
-+			ehea_bmap.valid_sections++;
- 		} else
- 			ehea_bmap.vaddr[i] = 0;
+ 	/* reset the statistics module */
+ 	xm_write32(hw, port, XM_GP_PORT, XM_GP_RES_STAT);
+-	xm_write16(hw, port, XM_IMSK, 0xffff);	/* disable XMAC IRQs */
++	xm_write16(hw, port, XM_IMSK, XM_IMSK_DISABLE);
+ 	xm_write32(hw, port, XM_MODE, 0);		/* clear Mode Reg */
+ 	xm_write16(hw, port, XM_TX_CMD, 0);	/* reset TX CMD Reg */
+ 	xm_write16(hw, port, XM_RX_CMD, 0);	/* reset RX CMD Reg */
+@@ -1138,7 +1134,7 @@ static void bcom_check_link(struct skge_
+ 	u16 status;
+ 
+ 	/* read twice because of latch */
+-	(void) xm_phy_read(hw, port, PHY_BCOM_STAT);
++	xm_phy_read(hw, port, PHY_BCOM_STAT);
+ 	status = xm_phy_read(hw, port, PHY_BCOM_STAT);
+ 
+ 	if ((status & PHY_ST_LSYNC) == 0) {
+@@ -1339,7 +1335,7 @@ static void xm_phy_init(struct skge_port
+ 	mod_timer(&skge->link_timer, jiffies + LINK_HZ);
+ }
+ 
+-static void xm_check_link(struct net_device *dev)
++static int xm_check_link(struct net_device *dev)
+ {
+ 	struct skge_port *skge = netdev_priv(dev);
+ 	struct skge_hw *hw = skge->hw;
+@@ -1347,25 +1343,25 @@ static void xm_check_link(struct net_dev
+ 	u16 status;
+ 
+ 	/* read twice because of latch */
+-	(void) xm_phy_read(hw, port, PHY_XMAC_STAT);
++	xm_phy_read(hw, port, PHY_XMAC_STAT);
+ 	status = xm_phy_read(hw, port, PHY_XMAC_STAT);
+ 
+ 	if ((status & PHY_ST_LSYNC) == 0) {
+ 		xm_link_down(hw, port);
+-		return;
++		return 0;
  	}
-@@ -637,7 +633,7 @@ int ehea_reg_kernel_mr(struct ehea_adapt
  
- 	mr_len = ehea_bmap.valid_sections * EHEA_SECTSIZE;
+ 	if (skge->autoneg == AUTONEG_ENABLE) {
+ 		u16 lpa, res;
  
--	pt =  kzalloc(EHEA_MAX_RPAGE * sizeof(u64), GFP_KERNEL);
-+	pt =  kzalloc(PAGE_SIZE, GFP_KERNEL);
- 	if (!pt) {
- 		ehea_error("no mem");
- 		ret = -ENOMEM;
-@@ -660,8 +656,8 @@ int ehea_reg_kernel_mr(struct ehea_adapt
- 			void *sectbase = __va(i << SECTION_SIZE_BITS);
- 			unsigned long k = 0;
+ 		if (!(status & PHY_ST_AN_OVER))
+-			return;
++			return 0;
  
--			for (j = 0; j < (PAGES_PER_SECTION / EHEA_MAX_RPAGE);
--			      j++) {
-+			for (j = 0; j < (EHEA_PAGES_PER_SECTION /
-+					 EHEA_MAX_RPAGE); j++) {
+ 		lpa = xm_phy_read(hw, port, PHY_XMAC_AUNE_LP);
+ 		if (lpa & PHY_B_AN_RF) {
+ 			printk(KERN_NOTICE PFX "%s: remote fault\n",
+ 			       dev->name);
+-			return;
++			return 0;
+ 		}
  
- 				for (m = 0; m < EHEA_MAX_RPAGE; m++) {
- 					pg = sectbase + ((k++) * EHEA_PAGESIZE);
---- a/drivers/net/ehea/ehea_qmr.h
-+++ b/drivers/net/ehea/ehea_qmr.h
-@@ -39,7 +39,7 @@
- #define EHEA_PAGESHIFT         12
- #define EHEA_PAGESIZE          (1UL << EHEA_PAGESHIFT)
- #define EHEA_SECTSIZE          (1UL << 24)
--#define EHEA_PAGES_PER_SECTION (EHEA_SECTSIZE >> PAGE_SHIFT)
-+#define EHEA_PAGES_PER_SECTION (EHEA_SECTSIZE >> EHEA_PAGESHIFT)
+ 		res = xm_phy_read(hw, port, PHY_XMAC_RES_ABI);
+@@ -1381,7 +1377,7 @@ static void xm_check_link(struct net_dev
+ 		default:
+ 			printk(KERN_NOTICE PFX "%s: duplex mismatch\n",
+ 			       dev->name);
+-			return;
++			return 0;
+ 		}
  
- #if (1UL << SECTION_SIZE_BITS) < EHEA_SECTSIZE
- #error eHEA module can't work if kernel sectionsize < ehea sectionsize
+ 		/* We are using IEEE 802.3z/D5.0 Table 37-4 */
+@@ -1405,11 +1401,14 @@ static void xm_check_link(struct net_dev
+ 
+ 	if (!netif_carrier_ok(dev))
+ 		genesis_link_up(skge);
++	return 1;
+ }
+ 
+ /* Poll to check for link coming up.
++ *
+  * Since internal PHY is wired to a level triggered pin, can't
+- * get an interrupt when carrier is detected.
++ * get an interrupt when carrier is detected, need to poll for
++ * link coming up.
+  */
+ static void xm_link_timer(unsigned long arg)
+ {
+@@ -1417,29 +1416,35 @@ static void xm_link_timer(unsigned long 
+ 	struct net_device *dev = skge->netdev;
+  	struct skge_hw *hw = skge->hw;
+ 	int port = skge->port;
++	int i;
++	unsigned long flags;
+ 
+ 	if (!netif_running(dev))
+ 		return;
+ 
+-	if (netif_carrier_ok(dev)) {
++	spin_lock_irqsave(&hw->phy_lock, flags);
++
++	/*
++	 * Verify that the link by checking GPIO register three times.
++	 * This pin has the signal from the link_sync pin connected to it.
++	 */
++	for (i = 0; i < 3; i++) {
++		if (xm_read16(hw, port, XM_GP_PORT) & XM_GP_INP_ASS)
++			goto link_down;
++	}
++
++        /* Re-enable interrupt to detect link down */
++	if (xm_check_link(dev)) {
++		u16 msk = xm_read16(hw, port, XM_IMSK);
++		msk &= ~XM_IS_INP_ASS;
++		xm_write16(hw, port, XM_IMSK, msk);
+ 		xm_read16(hw, port, XM_ISRC);
+-		if (!(xm_read16(hw, port, XM_ISRC) & XM_IS_INP_ASS))
+-			goto nochange;
+ 	} else {
+-		if (xm_read32(hw, port, XM_GP_PORT) & XM_GP_INP_ASS)
+-			goto nochange;
+-		xm_read16(hw, port, XM_ISRC);
+-		if (xm_read16(hw, port, XM_ISRC) & XM_IS_INP_ASS)
+-			goto nochange;
++link_down:
++		mod_timer(&skge->link_timer,
++			  round_jiffies(jiffies + LINK_HZ));
+ 	}
+-
+-	spin_lock(&hw->phy_lock);
+-	xm_check_link(dev);
+-	spin_unlock(&hw->phy_lock);
+-
+-nochange:
+-	if (netif_running(dev))
+-		mod_timer(&skge->link_timer, jiffies + LINK_HZ);
++	spin_unlock_irqrestore(&hw->phy_lock, flags);
+ }
+ 
+ static void genesis_mac_init(struct skge_hw *hw, int port)
+@@ -1683,14 +1688,16 @@ static void genesis_mac_intr(struct skge
+ 		printk(KERN_DEBUG PFX "%s: mac interrupt status 0x%x\n",
+ 		       skge->netdev->name, status);
+ 
+-	if (hw->phy_type == SK_PHY_XMAC &&
+-	    (status & (XM_IS_INP_ASS | XM_IS_LIPA_RC)))
+-		xm_link_down(hw, port);
++	if (hw->phy_type == SK_PHY_XMAC && (status & XM_IS_INP_ASS)) {
++  		xm_link_down(hw, port);
++		mod_timer(&skge->link_timer, jiffies + 1);
++	}
+ 
+ 	if (status & XM_IS_TXF_UR) {
+ 		xm_write32(hw, port, XM_MODE, XM_MD_FTF);
+ 		++skge->net_stats.tx_fifo_errors;
+ 	}
++
+ 	if (status & XM_IS_RXF_OV) {
+ 		xm_write32(hw, port, XM_MODE, XM_MD_FRF);
+ 		++skge->net_stats.rx_fifo_errors;
+@@ -1750,11 +1757,12 @@ static void genesis_link_up(struct skge_
+ 	}
+ 
+ 	xm_write32(hw, port, XM_MODE, mode);
+-	msk = XM_DEF_MSK;
+-	if (hw->phy_type != SK_PHY_XMAC)
+-		msk |= XM_IS_INP_ASS;	/* disable GP0 interrupt bit */
+ 
++	/* Turn on detection of Tx underrun, Rx overrun */
++	msk = xm_read16(hw, port, XM_IMSK);
++	msk &= ~(XM_IS_RXF_OV | XM_IS_TXF_UR);
+ 	xm_write16(hw, port, XM_IMSK, msk);
++
+ 	xm_read16(hw, port, XM_ISRC);
+ 
+ 	/* get MMU Command Reg. */
+@@ -2185,7 +2193,7 @@ static void yukon_mac_intr(struct skge_h
+ 	u8 status = skge_read8(hw, SK_REG(port, GMAC_IRQ_SRC));
+ 
+ 	if (netif_msg_intr(skge))
+-		printk(KERN_DEBUG PFX "%s: mac interrupt status 0x%x\n",
++		printk(KERN_DEBUG PFX "%s: yukon mac interrupt status 0x%x\n",
+ 		       dev->name, status);
+ 
+ 	if (status & GM_IS_RX_FF_OR) {
+--- a/drivers/net/skge.h
++++ b/drivers/net/skge.h
+@@ -2193,11 +2193,9 @@ enum {
+ 	XM_IS_TXF_UR	= 1<<2,	/* Bit  2:	Transmit FIFO Underrun */
+ 	XM_IS_TX_COMP	= 1<<1,	/* Bit  1:	Frame Tx Complete */
+ 	XM_IS_RX_COMP	= 1<<0,	/* Bit  0:	Frame Rx Complete */
+-};
+-
+-#define XM_DEF_MSK	(~(XM_IS_INP_ASS | XM_IS_LIPA_RC | \
+-			   XM_IS_RXF_OV | XM_IS_TXF_UR))
+ 
++	XM_IMSK_DISABLE	= 0xffff,
++};
+ 
+ /*	XM_HW_CFG	16 bit r/w	Hardware Config Register */
+ enum {
 
 -- 
