@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764071AbXKOMCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762021AbXKOMTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764071AbXKOMCr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 07:02:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758529AbXKOMCg
+	id S1762021AbXKOMTn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 07:19:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbXKOMTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 07:02:36 -0500
-Received: from paragon.brong.net ([74.52.187.94]:55892 "EHLO paragon.brong.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755341AbXKOMCf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 07:02:35 -0500
-Date: Thu, 15 Nov 2007 23:02:32 +1100
-From: Bron Gondwana <brong@fastmail.fm>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Cc: Bron Gondwana <brong@fastmail.fm>, David Miller <davem@davemloft.net>,
-       rmk+lkml@arm.linux.org.uk, alsa-devel@alsa-project.org,
-       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-kernel@vger.kernel.org, protasnb@gmail.com,
-       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz, akpm@linux-foundation.org,
-       Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>
-Subject: Re: [alsa-devel] [BUG] New Kernel Bugs
-Message-ID: <20071115120232.GB8297@brong.net>
-References: <20071113143201.9441c940.akpm@linux-foundation.org> <20071113.175551.131375600.davem@davemloft.net> <20071114095507.GA32595@flint.arm.linux.org.uk> <20071114.020706.219917088.davem@davemloft.net> <473AE010.4090806@keyaccess.nl> <20071115041613.GC15302@brong.net> <473BE046.8070804@keyaccess.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <473BE046.8070804@keyaccess.nl>
-Organization: brong.net
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Thu, 15 Nov 2007 07:19:35 -0500
+Received: from smtp-104-thursday.noc.nerim.net ([62.4.17.104]:3077 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750921AbXKOMTf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 07:19:35 -0500
+Date: Thu, 15 Nov 2007 13:19:15 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Julia Lawall <julia@diku.dk>, i2c@lm-sensors.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 1/4] drivers/i2c: Drop redundant includes of 
+ moduleparam.h
+Message-ID: <20071115131915.0eb34c98@hyperion.delvare>
+In-Reply-To: <alpine.LFD.0.9999.0711140416160.4673@localhost.localdomain>
+References: <Pine.LNX.4.64.0711132231080.18337@ask.diku.dk>
+	<alpine.LFD.0.9999.0711131632490.26111@localhost.localdomain>
+	<Pine.LNX.4.64.0711140707120.25487@ask.diku.dk>
+	<alpine.LFD.0.9999.0711140416160.4673@localhost.localdomain>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 15, 2007 at 06:59:34AM +0100, Rene Herman wrote:
-> On 15-11-07 05:16, Bron Gondwana wrote:
->
->> Totally unrelated - I sent something to the kolab mailing list a couple
->
-> [ ... ]
->
->> I'm sure if I had something that I considered worth informing the ALSA 
->> project of, I'd be wary of spending the same effort writing a good post
->> knowing it may be dropped in between the by a list moderator just selecing 
->> all and bouncing them.
->
-> Totally unrelated indeed so why are spouting crap? If the kohab list has a 
-> problem take it up with them but keep ALSA out of it. alsa-devel has only 
-> ever moderated out spam -- nothing else.
+Hi all,
 
-As an outsider to the list, how do I know what your policy will be
-other than "I've been rejected out of hand by someone else's list, 
-so my experience is that member only lists aren't willing to listen
-to something I have to say unless I make the effort to sign up and
-have yet another folder accumulating unread messages".  I don't.
+On Wed, 14 Nov 2007 04:21:51 -0500 (EST), Robert P. J. Day wrote:
+> On Wed, 14 Nov 2007, Julia Lawall wrote:
+> 
+> > > > From: Julia Lawall <julia@diku.dk>
+> > > >
+> > > > Drop #include <linux/moduleparam.h> in files that also include #include
+> > > > <linux/module.h>.  module.h includes moduleparam.h already.
+> > >
+> > > i'm not convinced that's a good idea.  while module.h does
+> > > currently (and unfortunately) include moduleparam.h, there may
+> > > come a day when those header files are refactored to actually make
+> > > sense, at which point all those missing moduleparam.h inclusions
+> > > will cause all sorts of bad things to happen.
 
-Well, ok - maybe I do here since I've let myself be dragged in to
-the debate.  Oops.
+I share Robert's point of view here. Relying on header files including
+each other is usually not a good idea, as build then breaks when the
+headers are cleaned up or reorganized.
 
-I get the same information from both project websites: "moderated
-for non-members, public archives" - no way of knowing that ALSA
-will accept me informing them of something they would be interested
-without committing to reading or bit-bucketing their list.
+> > They were removed from the drivers/media files in August:
+> > 9c12224a607a4b22ab86784e3394b52810b9507c
+> > Perhaps they should be put back there then?
+> 
+> i went down this road before a few months back, checking on how many
+> source files were unnecessarily including moduleparam.h, and the
+> result was literally *hundreds*.  i took a shot at cleaning that up,
+> and even factoring the non-parameter-related content out of that file,
+> but the change would have been hugely disruptive.
+> 
+> as it is now, since module.h includes moduleparam.h, there is (as you
+> can see) no reason whatever for *anyone* to include moduleparam.h.
+> at least right now.
+> 
+> but if anyone ever aspires to tidy up this chaos, then all you'd end
+> up doing is putting all those includes back in.  so unless there's a
+> long-term goal here, it would seem safest to just leave things the way
+> they are.  but that's someone else's decision, not mine.  i'm just
+> reporting on how quickly things got unpleasant when *i* tried to do
+> something with this once upon a time.
 
-The alternative is to subscribe just long enough to send something
-and then unsubscribe again.... or cold-email a member and ask them
-to pass a message along.  Or post and hope it doesn't get rejected,
-not even knowing for a day or so.
+If there's a fundamental reason why module.h has to include
+moduleparam.h, then both headers should be merged in a single file. If
+not, then both header files should be clearly split and drivers should
+include each of them as needed. Either way, header files must be fixed
+first, and drivers adjusted in consequence. So, I'm not taking this
+patch, sorry.
 
-Bron.
+-- 
+Jean Delvare
