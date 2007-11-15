@@ -1,93 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933277AbXKOVJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932733AbXKOVKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933277AbXKOVJl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 16:09:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932227AbXKOVJa
+	id S932733AbXKOVKA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 16:10:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933256AbXKOVJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 16:09:30 -0500
-Received: from wr-out-0506.google.com ([64.233.184.226]:55773 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932196AbXKOVJ3 (ORCPT
+	Thu, 15 Nov 2007 16:09:39 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56467 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933243AbXKOVJi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 16:09:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=rmz8o8ppRk/06zMaRaFYzIlNQY+1h/OtJADrkZujX4yMY2VnH5STVu09Kk76OabzwFkiNBIe6ADN9gVCkEn3JTO7N4xLvZO2QHx5r37TrBg9XSIBF8l/KaMPwXwbbGoecxTgAceYJ3+5rl4l8eLS/CnX/i7uZkoCxJNV0OJQB/I=
-Message-ID: <5bdc1c8b0711151309q6a6b1de6q328710a3b009b3ec@mail.gmail.com>
-Date: Thu, 15 Nov 2007 13:09:28 -0800
-From: "Mark Knecht" <markknecht@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: 2.6.24-rc2-rt1
-Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Gregory Haskins" <ghaskins@novell.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Daniel Walker" <dwalker@mvista.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-In-Reply-To: <Pine.LNX.4.58.0711151551570.27347@gandalf.stny.rr.com>
+	Thu, 15 Nov 2007 16:09:38 -0500
+Date: Thu, 15 Nov 2007 13:06:08 -0800
+From: Greg KH <greg@kroah.com>
+To: Rob Landley <rob@landley.net>
+Cc: linux-kernel@vger.kernel.org, Jeff Dike <jdike@addtoit.com>,
+       akpm@linux-foundation.org, Chris Wright <chrisw@sous-sol.org>
+Subject: Re: User Mode Linux still broken in 2.6.23.1
+Message-ID: <20071115210608.GA12213@kroah.com>
+References: <200711032351.52977.rob@landley.net> <200711142358.16072.rob@landley.net> <20071115060255.GA4837@kroah.com> <200711151457.22395.rob@landley.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1195152030.13982.48.camel@localhost.localdomain>
-	 <5bdc1c8b0711151241j5f1b8427w38d2a286eb6ebb7f@mail.gmail.com>
-	 <Pine.LNX.4.58.0711151551570.27347@gandalf.stny.rr.com>
+In-Reply-To: <200711151457.22395.rob@landley.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sent.
+On Thu, Nov 15, 2007 at 02:57:21PM -0600, Rob Landley wrote:
+> On Thursday 15 November 2007 00:02:55 Greg KH wrote:
+> > On Wed, Nov 14, 2007 at 11:58:15PM -0600, Rob Landley wrote:
+> > > On Wednesday 14 November 2007 12:54:44 Greg KH wrote:
+> > > > On Sat, Nov 03, 2007 at 11:51:50PM -0500, Rob Landley wrote:
+> > > > > Building with the attached .config on x86-64, it does this:
+> > > > >
+> > > > >   CC      arch/um/kernel/smp.o
+> > > > > In file included from include/asm/arch/tlb.h:11,
+> > > > >                  from include/asm/tlb.h:4,
+> > > > >                  from arch/um/kernel/smp.c:8:
+> > > > > include/asm-generic/tlb.h: In function ???tlb_flush_mmu???:
+> > > > > include/asm-generic/tlb.h:76: error: implicit declaration of function
+> > > > > ???release_pages??? include/asm-generic/tlb.h: In function
+> > > > > ???tlb_remove_page???:
+> > > > > include/asm-generic/tlb.h:105: error: implicit declaration of
+> > > > > function ???page_cache_release??? make[1]: *** [arch/um/kernel/smp.o]
+> > > > > Error 1 make: *** [arch/um/kernel] Error 2
+> > > > >
+> > > > > I've been doing the following to fix it.  I know it's not the right
+> > > > > fix, (see the earlier thread about it at
+> > > > > http://lkml.org/lkml/2007/8/24/441 ) but could the one line fix go
+> > > > > into the -stable queue 2.6.23 while a proper fix goes into 2.6.24?
+> > > >
+> > > > I think the patches that I have just added to the stable queue for
+> > > > 2.6.23.2 will fix this.  If not, please let me know after testing.
+> > >
+> > > Where do I find these patches to test?  I know where to find the stable
+> > > releases, but not the "stable queue".
+> > >
+> > > Documentation/stable_kernel_rules.txt just says there _is_ a stable
+> > > queue, not where to access it.  Google's first hit for "linux stable
+> > > queue" was
+> > > http://git.kernel.org/?p=linux/kernel/git/chrisw/stable-queue.git;a=short
+> > >log which apparently stopped updating in march...
+> > >
+> > > Happy to test the patch you mentioned, if I can figure out where to find
+> > > it...
+> >
+> > It's at:
+> > 	http://git.kernel.org/?p=linux/kernel/git/stable/stable-queue.git;a=summar
+> >y
+> >
+> > Chris and I used to have separate queues, but that got messy, I suppose
+> > we should just delete those old copies...
+> 
+> In a freshly extracted 2.6.23 tarball, I applied the 4 uml-*.patch files from 
+> stable-queue/review-2.6.23-2 in sequence (all applied cleanly), and then did 
+> the following:
+> 
+> cat > mini.conf << EOF &&
+> CONFIG_BINFMT_ELF=y
+> CONFIG_HOSTFS=y
+> CONFIG_LBD=y
+> CONFIG_BLK_DEV=y
+> CONFIG_BLK_DEV_LOOP=y
+> CONFIG_STDERR_CONSOLE=y
+> CONFIG_UNIX98_PTYS=y
+> CONFIG_EXT2_FS=y
+> EOF
+> make ARCH=um allnoconfig KCONFIG_ALLCONFIG=mini.conf 
+> 
+> Then I did:
+> 
+> make -j 2 ARCH=um
+> 
+> And it still breaks:
+> 
+>   CC      arch/um/kernel/smp.o
+> In file included from include/asm/arch/tlb.h:11,
+>                  from include/asm/tlb.h:4,
+>                  from arch/um/kernel/smp.c:8:
+> include/asm-generic/tlb.h: In function ???tlb_flush_mmu???:
+> include/asm-generic/tlb.h:76: error: implicit declaration of 
+> function ???release_pages???
+> include/asm-generic/tlb.h: In function ???tlb_remove_page???:
+> include/asm-generic/tlb.h:105: error: implicit declaration of 
+> function ???page_cache_release???
+> make[1]: *** [arch/um/kernel/smp.o] Error 1
+> make: *** [arch/um/kernel] Error 2
+> make: *** Waiting for unfinished jobs....
+> 
+> My .config is attached.
 
-On Nov 15, 2007 12:54 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
->
->
-> On Thu, 15 Nov 2007, Mark Knecht wrote:
->
-> > On Nov 15, 2007 10:40 AM, Steven Rostedt <rostedt@goodmis.org> wrote:
-> > > Finally!
-> > >
-> > > We are pleased to announce 2.6.24-rc2-rt1.
-> > >
-> > <SNIP>
-> >
-> > Hi Steve,
->
-> <snip!>
->
-> >
-> >    As always thanks the the rt-kernel team for all you do.
->
-> On behalf of the rt-kernel team, you are welcome ;-)
->
-> >
-> > Cheers,
-> > Mark
-> >
-> >   CC      ipc/mqueue.o
-> >   CC      ipc/compat_mq.o
-> >   LD      ipc/built-in.o
-> >   CC      security/security.o
-> >   CC      security/dummy.o
-> >   CC      security/inode.o
-> >   LD      security/built-in.o
-> >   CC [M]  security/commoncap.o
-> >   CC [M]  security/realcap.o
-> > security/realcap.c: In function 'realtime_exit':
-> > security/realcap.c:129: error: implicit declaration of function
-> > 'mod_unreg_security'
-> > security/realcap.c:133: error: implicit declaration of function
-> > 'unregister_security'
-> > make[1]: *** [security/realcap.o] Error 1
-> > make: *** [security] Error 2
-> > lightning linux #
->
-> Definitely looks like a config bug. You can send me your config off
-> list.
->
-> Hmm, I need to do a allyesconfig, but I'm not even sure 2.6.24-rc2 would
-> compile with that.
->
-> Thanks,
->
-> -- Steve
->
+Hm, not good.  I'll let Jeff handle this :)
+
+thanks,
+
+greg k-h
