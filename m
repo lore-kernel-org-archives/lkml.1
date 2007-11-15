@@ -1,53 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934123AbXKOXbd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933447AbXKOXg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934123AbXKOXbd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 18:31:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765450AbXKOXbN
+	id S933447AbXKOXg1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 18:36:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754795AbXKOXgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 18:31:13 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:42473 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764979AbXKOXbL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 18:31:11 -0500
-Message-ID: <473CD6A3.2070306@redhat.com>
-Date: Thu, 15 Nov 2007 15:30:43 -0800
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Thu, 15 Nov 2007 18:36:18 -0500
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1263 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754774AbXKOXgR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 18:36:17 -0500
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.24-rc2-mm1: undefined reference to `local_apic_timer_c2_ok'
+Date: Fri, 16 Nov 2007 00:35:58 +0100
+User-Agent: KMail/1.9.7
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org> <200711152325.36541.m.kozlowski@tuxland.pl> <200711151749.03950.lenb@kernel.org>
+In-Reply-To: <200711151749.03950.lenb@kernel.org>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Zach Brown <zach.brown@oracle.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 0/4] sys_indirect system call
-References: <200711151641.lAFGfM8R024330@devserv.devel.redhat.com> <473CC604.5050804@oracle.com> <alpine.LFD.0.9999.0711151431220.4260@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.9999.0711151431220.4260@woody.linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711160036.00595.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Hello,
 
-Linus Torvalds wrote:
-> Uli doesn't care that much about async syscalls,
+> > local_apic_timer_c2_ok
+> 
+> hmm, looks like you're missing CONFIG_X86_LOCAL_APIC
+> so does this go away when you add CONFIG_SMP
+> or CONFIG_X86_UP_APIC?
 
-At the moment I just care a lot more about getting the API straightened
-out.  An asynchronous incomplete/unsafe API is still an
-incomplete/unsafe API.
+Yes it does. In both cases.
 
-BTW, I've botched the x86-on-x86_64 support.  I have a patch but need to
-patch it before I'll submit v3 of the patch set.  If you want to work on
-the patch and get syslet support going, let me know, I'll send the
-latest version.
+Regards,
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFHPNaj2ijCOnn/RHQRAqNCAJ9eO8px9NTgXBuAR1ueVpQaY3gdnwCgke3g
-hqtO6djA2fNZTQS2qDq8w2A=
-=AInz
------END PGP SIGNATURE-----
+	Mariusz
