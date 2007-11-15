@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762838AbXKOGRb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762891AbXKOGRu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762838AbXKOGRb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:17:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757953AbXKOGQN
+	id S1762891AbXKOGRu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:17:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761305AbXKOGQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:16:13 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:50988 "EHLO
+	Thu, 15 Nov 2007 01:16:15 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:50991 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760928AbXKOGQM (ORCPT
+	with ESMTP id S1755510AbXKOGQM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 15 Nov 2007 01:16:12 -0500
-Date: Wed, 14 Nov 2007 22:14:32 -0800
+Date: Wed, 14 Nov 2007 22:14:35 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,12 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Ralf Baechle <ralf@linux-mips.org>
-Subject: [patch 03/19] MIPS: MT: Fix bug in multithreaded kernels.
-Message-ID: <20071115061432.GD7980@kroah.com>
+Subject: [patch 04/19] MIPS: R1: Fix hazard barriers to make kernels work
+	on R2 also.
+Message-ID: <20071115061435.GE7980@kroah.com>
 References: <20071115054813.977066477@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mips-mt-fix-bug-in-multithreaded-kernels.patch"
+Content-Disposition: inline; filename="mips-r1-fix-hazard-barriers-to-make-kernels-work-on-r2-also.patch"
 In-Reply-To: <20071115061415.GA7980@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -39,99 +40,92 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Ralf Baechle <ralf@linux-mips.org>
 
-patch a76ab5c10d99bdf458067cb495e72c0ee5f09909 in mainline.
+patch 572afc248c33c902760f6f24a72c180f0e4f1719 in mainline.
 
-When GDB writes a breakpoint into address area of inferior process the
-kernel needs to invalidate the modified memory in the inferior which
-is done by calling flush_cache_page which in turns calls
-r4k_flush_cache_page and local_r4k_flush_cache_page for VSMP or SMTC
-kernel via r4k_on_each_cpu().
-
-As the VSMP and SMTC SMP kernels for 34K are running on a single shared
-caches it is possible to get away without interprocessor function calls.
-This optimization is implemented in r4k_on_each_cpu, so
-local_r4k_flush_cache_page is only ever called on the local CPU.
-
-This is where the following code in local_r4k_flush_cache_page() strikes:
-
-        /*
-         * If ownes no valid ASID yet, cannot possibly have gotten
-         * this page into the cache.
-         */
-        if (cpu_context(smp_processor_id(), mm) == 0)
-                return;
-
-On VSMP and SMTC had a function of cpu_context() for each CPU(TC).
-
-So in case another CPU than the CPU executing local_r4k_cache_flush_page
-has not accessed the mm but one of the other CPUs has there may be data
-to be flushed in the cache yet local_r4k_cache_flush_page will falsely
-return leaving the I-cache inconsistent for the breakpoint.
-
-While the issue was discovered with GDB it also exists in
-local_r4k_flush_cache_range() and local_r4k_flush_cache().
-
-Fixed by introducing a new function has_valid_asid which on MT kernels
-returns true if a mm is active on any processor in the system.
-
-This is relativly expensive since for memory acccesses in that loop
-cache misses have to be assumed but it seems the most viable solution
-for 2.6.23 and older -stable kernels.
+Tested with Malta; inflates malta_defconfig by 3932 bytes.  Ideally there
+should be additional configuration to allow getting rid of this overhead
+but that would be too much complexity at this stage of the release cycle.
 
 Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/mips/mm/c-r4k.c |   21 ++++++++++++++++++---
- 1 file changed, 18 insertions(+), 3 deletions(-)
+ include/asm-mips/hazards.h |   54 ++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 53 insertions(+), 1 deletion(-)
 
---- a/arch/mips/mm/c-r4k.c
-+++ b/arch/mips/mm/c-r4k.c
-@@ -360,11 +360,26 @@ static void r4k___flush_cache_all(void)
- 	r4k_on_each_cpu(local_r4k___flush_cache_all, NULL, 1, 1);
- }
+--- a/include/asm-mips/hazards.h
++++ b/include/asm-mips/hazards.h
+@@ -10,11 +10,12 @@
+ #ifndef _ASM_HAZARDS_H
+ #define _ASM_HAZARDS_H
  
-+static inline int has_valid_asid(const struct mm_struct *mm)
-+{
-+#if defined(CONFIG_MIPS_MT_SMP) || defined(CONFIG_MIPS_MT_SMTC)
-+	int i;
+-
+ #ifdef __ASSEMBLY__
+ #define ASMMACRO(name, code...) .macro name; code; .endm
+ #else
+ 
++#include <asm/cpu-features.h>
 +
-+	for_each_online_cpu(i)
-+		if (cpu_context(i, mm))
-+			return 1;
+ #define ASMMACRO(name, code...)						\
+ __asm__(".macro " #name "; " #code "; .endm");				\
+ 									\
+@@ -86,6 +87,57 @@ do {									\
+ 	: "=r" (tmp));							\
+ } while (0)
+ 
++#elif defined(CONFIG_CPU_MIPSR1)
 +
-+	return 0;
-+#else
-+	return cpu_context(smp_processor_id(), mm);
-+#endif
-+}
++/*
++ * These are slightly complicated by the fact that we guarantee R1 kernels to
++ * run fine on R2 processors.
++ */
++ASMMACRO(mtc0_tlbw_hazard,
++	_ssnop; _ssnop; _ehb
++	)
++ASMMACRO(tlbw_use_hazard,
++	_ssnop; _ssnop; _ssnop; _ehb
++	)
++ASMMACRO(tlb_probe_hazard,
++	 _ssnop; _ssnop; _ssnop; _ehb
++	)
++ASMMACRO(irq_enable_hazard,
++	 _ssnop; _ssnop; _ssnop; _ehb
++	)
++ASMMACRO(irq_disable_hazard,
++	_ssnop; _ssnop; _ssnop; _ehb
++	)
++ASMMACRO(back_to_back_c0_hazard,
++	 _ssnop; _ssnop; _ssnop; _ehb
++	)
++/*
++ * gcc has a tradition of misscompiling the previous construct using the
++ * address of a label as argument to inline assembler.  Gas otoh has the
++ * annoying difference between la and dla which are only usable for 32-bit
++ * rsp. 64-bit code, so can't be used without conditional compilation.
++ * The alterantive is switching the assembler to 64-bit code which happens
++ * to work right even for 32-bit code ...
++ */
++#define __instruction_hazard()						\
++do {									\
++	unsigned long tmp;						\
++									\
++	__asm__ __volatile__(						\
++	"	.set	mips64r2				\n"	\
++	"	dla	%0, 1f					\n"	\
++	"	jr.hb	%0					\n"	\
++	"	.set	mips0					\n"	\
++	"1:							\n"	\
++	: "=r" (tmp));							\
++} while (0)
 +
- static inline void local_r4k_flush_cache_range(void * args)
- {
- 	struct vm_area_struct *vma = args;
++#define instruction_hazard()						\
++do {									\
++	if (cpu_has_mips_r2)						\
++		__instruction_hazard();					\
++} while (0)
++
+ #elif defined(CONFIG_CPU_R10000)
  
--	if (!(cpu_context(smp_processor_id(), vma->vm_mm)))
-+	if (!(has_valid_asid(vma->vm_mm)))
- 		return;
- 
- 	r4k_blast_dcache();
-@@ -383,7 +398,7 @@ static inline void local_r4k_flush_cache
- {
- 	struct mm_struct *mm = args;
- 
--	if (!cpu_context(smp_processor_id(), mm))
-+	if (!has_valid_asid(mm))
- 		return;
- 
- 	/*
-@@ -434,7 +449,7 @@ static inline void local_r4k_flush_cache
- 	 * If ownes no valid ASID yet, cannot possibly have gotten
- 	 * this page into the cache.
- 	 */
--	if (cpu_context(smp_processor_id(), mm) == 0)
-+	if (!has_valid_asid(mm))
- 		return;
- 
- 	addr &= PAGE_MASK;
+ /*
 
 -- 
