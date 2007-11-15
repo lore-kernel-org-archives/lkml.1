@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932800AbXKOXyg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933762AbXKOX74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932800AbXKOXyg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 18:54:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757936AbXKOXy2
+	id S933762AbXKOX74 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 18:59:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757584AbXKOX7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 18:54:28 -0500
-Received: from sitemail2.everyone.net ([216.200.145.36]:35744 "EHLO
-	omta18.mta.everyone.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757240AbXKOXy1 (ORCPT
+	Thu, 15 Nov 2007 18:59:48 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:57216 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754726AbXKOX7r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 18:54:27 -0500
-X-Eon-Dm: dm43
-X-Eon-Sig: AQEbFf9HPNwym+FDtwIAAAAD,3de2f6f5e8e20b2213090a64b7cbf7d4
-Message-ID: <473CDC30.9050405@us.ibm.com>
-Date: Thu, 15 Nov 2007 15:54:24 -0800
-From: Mike Mason <mmlnx@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Thu, 15 Nov 2007 18:59:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Gd+7S6PPrzTbwMhz9xlMWCxGWOlBXLNbq+3JjgAMo8yww4kxiHbhQ++OZfaJLlcopXwaADW9C0GyaVPAq1VFz/kvWpStRO4DVqWHnTg3ktklQE+sDm0RNkTZDz9vhRCwUGNCX7KTKTuviTqZgBOSrkgpuqeTmoFiU7ZFAiyvSrM=
+Message-ID: <473CDD6D.8080008@gmail.com>
+Date: Fri, 16 Nov 2007 00:59:41 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC 4/7] LTTng instrumentation kernel
-References: <20071113193349.214098508@polymtl.ca> <20071113194024.837009055@polymtl.ca> <473CD6A1.6050008@us.ibm.com>
-In-Reply-To: <473CD6A1.6050008@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Subject: Re: broken suspend [Was: 2.6.24-rc2-mm1]
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org> <473B5987.60904@gmail.com> <200711142248.59547.rjw@sisk.pl>
+In-Reply-To: <200711142248.59547.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-snip
+On 11/14/2007 10:48 PM, Rafael J. Wysocki wrote:
+> On Wednesday, 14 of November 2007, Jiri Slaby wrote:
+>> On 11/14/2007 02:59 AM, Andrew Morton wrote:
+>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc2/2.6.24-rc2-mm1/
+>> Doesn't suspend for me (neither broken-out-2007-11-13-04-14 did) on x86_64.
+>> echo mem >/sys/power/state
+>> causes shut down of disk(s) and blinking cursor on 1,1 position.
+>> The last working was 2.6.23-rc8-mm2. I haven't tested
+>> 2.6.23-mm1, since it didn't work for me.
 > 
-> +void list_modules(void *call_data)
-> +{
-> +    /* Enumerate loaded modules */
-> +    struct list_head    *i;
-> +    struct module        *mod;
-> +    unsigned long refcount = 0;
-> +
-> +    mutex_lock(&module_mutex);
-> +    list_for_each(i, &modules) {
-> +        mod = list_entry(i, struct module, list);
-> +#ifdef CONFIG_MODULE_UNLOAD
-> +        refcount = local_read(&mod->ref[0].count);
-> +#endif
-> +        __trace_mark(0, list_module, call_data,
-> +                "name %s state %d refcount %lu",
-> +                mod->name, mod->state, refcount);
-> +    }
-> +    mutex_unlock(&module_mutex);
-> +}
-> +EXPORT_SYMBOL_GPL(list_modules);
-> +
-> /* Given an address, look for it in the module exception tables. */
-> const struct exception_table_entry *search_module_extables(unsigned long 
-> addr)
-> {
+> Does the current mainline work?
 
-What is the purpose of list_modules() in this patch?  Seems outside the scope of the patches' intent.  I assume LTTng uses it for some purpose, but it's not required to use the markers added by the patch.
+Yes.
 
-Also, if list_modules() remains, the 0 should be removed from "__trace_mark(0, ..." 
+The offending -mm patch is
+gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch
 
-Mike Mason
+2.6.24-rc2-mm1 minus it works just fine; PROVE_LOCKING shows nothing new when
+the patch is applied.
+
+regards,
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
+
