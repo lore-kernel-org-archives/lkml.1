@@ -1,85 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932861AbXKOXvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932800AbXKOXyg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932861AbXKOXvT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 18:51:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757592AbXKOXvJ
+	id S932800AbXKOXyg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 18:54:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757936AbXKOXy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 18:51:09 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:51142 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755696AbXKOXvI (ORCPT
+	Thu, 15 Nov 2007 18:54:28 -0500
+Received: from sitemail2.everyone.net ([216.200.145.36]:35744 "EHLO
+	omta18.mta.everyone.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757240AbXKOXy1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 18:51:08 -0500
-X-Sasl-enc: +TlrtByyWHjPRtKhhbe3qzHK5iPfg5VBxhVkxnvSoKuh 1195170665
-Message-ID: <473CDB91.8010808@imap.cc>
-Date: Fri, 16 Nov 2007 00:51:45 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
+	Thu, 15 Nov 2007 18:54:27 -0500
+X-Eon-Dm: dm43
+X-Eon-Sig: AQEbFf9HPNwym+FDtwIAAAAD,3de2f6f5e8e20b2213090a64b7cbf7d4
+Message-ID: <473CDC30.9050405@us.ibm.com>
+Date: Thu, 15 Nov 2007 15:54:24 -0800
+From: Mike Mason <mmlnx@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, gregkh@suse.de,
-       linux-usb-devel@lists.sourceforge.net, hjlipp@web.de, kkeil@suse.de,
-       i4ldeveloper@listserv.isdn4linux.de
-Subject: Re: [PATCH 3/4] bas_gigaset: suspend support (v2)
-References: <20071112-patch0@xenon.ts.pxnet.com>	<20071112-patch3@xenon.ts.pxnet.com> <20071115145022.99f9abbc.akpm@linux-foundation.org>
-In-Reply-To: <20071115145022.99f9abbc.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.1
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigE5926063426471DB186232A4"
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 4/7] LTTng instrumentation kernel
+References: <20071113193349.214098508@polymtl.ca> <20071113194024.837009055@polymtl.ca> <473CD6A1.6050008@us.ibm.com>
+In-Reply-To: <473CD6A1.6050008@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigE5926063426471DB186232A4
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+snip
+> 
+> +void list_modules(void *call_data)
+> +{
+> +    /* Enumerate loaded modules */
+> +    struct list_head    *i;
+> +    struct module        *mod;
+> +    unsigned long refcount = 0;
+> +
+> +    mutex_lock(&module_mutex);
+> +    list_for_each(i, &modules) {
+> +        mod = list_entry(i, struct module, list);
+> +#ifdef CONFIG_MODULE_UNLOAD
+> +        refcount = local_read(&mod->ref[0].count);
+> +#endif
+> +        __trace_mark(0, list_module, call_data,
+> +                "name %s state %d refcount %lu",
+> +                mod->name, mod->state, refcount);
+> +    }
+> +    mutex_unlock(&module_mutex);
+> +}
+> +EXPORT_SYMBOL_GPL(list_modules);
+> +
+> /* Given an address, look for it in the module exception tables. */
+> const struct exception_table_entry *search_module_extables(unsigned long 
+> addr)
+> {
 
-Am 15.11.2007 23:50 schrieb Andrew Morton:
->> ...
->>
->> +	if (atomic_read(&cs->hw.bas->basstate) & BS_SUSPEND) {
->=20
-> that's pretty peculiar.  We'd only expect to see atomics being used in
-> conjunction with atomic_add/sub/inc/etc.  Here the driver is using an
-> atomic_t as a state variable.  And here's the magic bit:
->=20
-> 	spin_lock_irqsave(&ucs->lock, flags);
-> 	state =3D atomic_read(&ucs->basstate);
-> 	atomic_set(&ucs->basstate, (state & ~clear) | set);
-> 	spin_unlock_irqrestore(&ucs->lock, flags);
->=20
-> I'm suspecting that a plain old `int' would be more appropriate here.
+What is the purpose of list_modules() in this patch?  Seems outside the scope of the patches' intent.  I assume LTTng uses it for some purpose, but it's not required to use the markers added by the patch.
 
-You're right. That's a prehistoric leftover. That variable was
-originally accessed using atomic_set_mask() and atomic_clear_mask()
-which are unfortunately x86 platform specific.
+Also, if list_modules() remains, the 0 should be removed from "__trace_mark(0, ..." 
 
-I'll prepare a cleanup patch.
-
-Thanks,
-Tilman
-
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enigE5926063426471DB186232A4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFHPNubMdB4Whm86/kRAg+jAJsGQwziVlJ4/qOuorGbWAf1JjULaQCfZ8Tc
-v3qH/XYtx4CGE5zaGI+VNpw=
-=J3wk
------END PGP SIGNATURE-----
-
---------------enigE5926063426471DB186232A4--
+Mike Mason
