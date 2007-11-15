@@ -1,30 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934167AbXKOHNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934219AbXKOHOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934167AbXKOHNu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 02:13:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933340AbXKOHAx
+	id S934219AbXKOHOY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 02:14:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765123AbXKOHMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 02:00:53 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51520
+	Thu, 15 Nov 2007 02:12:03 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35449
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S933341AbXKOHAv (ORCPT
+	by vger.kernel.org with ESMTP id S933999AbXKOHL5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 02:00:51 -0500
-Date: Wed, 14 Nov 2007 23:00:39 -0800 (PST)
-Message-Id: <20071114.230039.114721276.davem@davemloft.net>
-To: herbert@gondor.apana.org.au
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, stable@kernel.org,
-       jmforbes@linuxtx.org, zwane@arm.linux.org.uk, tytso@mit.edu,
-       rdunlap@xenotime.net, davej@redhat.com, chuckw@quantumlinux.com,
-       reviews@ml.cw.f00f.org, mkrufky@linuxtv.org, cebbert@redhat.com,
-       cavokz@gmail.com, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@kernel.org
-Subject: Re: [patch 06/23] Fix SKB_WITH_OVERHEAD calculations.
+	Thu, 15 Nov 2007 02:11:57 -0500
+Date: Wed, 14 Nov 2007 23:11:47 -0800 (PST)
+Message-Id: <20071114.231147.223986050.davem@davemloft.net>
+To: dada1@cosmosbay.com
+Cc: russ@elegant-software.com, linux-kernel@vger.kernel.org
+Subject: Re: OT: Does Linux have any "Perfect Code"
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071115062939.GA23579@gondor.apana.org.au>
-References: <20071115055238.692814352@mini.kroah.org>
-	<20071115062022.GG8282@kroah.com>
-	<20071115062939.GA23579@gondor.apana.org.au>
+In-Reply-To: <473BE75B.9070701@cosmosbay.com>
+References: <c9d133bdb3481fbc01a572d948049f5e@elegant-software.com>
+	<473BE75B.9070701@cosmosbay.com>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -32,86 +26,42 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
-Date: Thu, 15 Nov 2007 14:29:39 +0800
+From: Eric Dumazet <dada1@cosmosbay.com>
+Date: Thu, 15 Nov 2007 07:29:47 +0100
 
-> On Wed, Nov 14, 2007 at 10:20:22PM -0800, Greg KH wrote:
-> > -stable review patch.  If anyone has any objections, please let us know.
-> > 
-> > ------------------
-> > 
-> > From: Herbert Xu <herbert@gondor.apana.org.au>
-> > 
-> > patch deea84b0ae3d26b41502ae0a39fe7fe134e703d0 in mainline.
-> > 
-> > [NET]: Fix SKB_WITH_OVERHEAD calculation
+> hrtime_t
+> ts2hrt(const timestruc_t *tsp)
+> {
+> return tsp->tv_sec * NANOSEC + tsp->tv_nsec;
+> }
 > 
-> Although this is correct as it is, it tirggers a latent bug
-> which is fixed by
+> can be inlined as it is trivial (and much faster than Solaris version)
 > 
-> commit fb93134dfc2a6e6fbedc7c270a31da03fce88db9
-> Author: Herbert Xu <herbert@gondor.apana.org.au>
-> Date:   Wed Nov 14 15:45:21 2007 -0800
-> 
->     [TCP]: Fix size calculation in sk_stream_alloc_pskb
-> 
-> So please postpone it to the next round such that both patches
-> can be included together.
+>          movq    (%rdi), %rdx
+>          mov     8(%rdi), %eax
+>          imulq   $1000000000, %rdx, %rdx
+>          addq    %rdx, %rax
 
-I was just about to mention this and what I think we should do
-instead is keep the SKB_WITH_OVERHEAD calculation fix in there
-(it fixes a serious bug which users are hitting) and add the
-fix for the second bug fix this round as well.
+This is exactly the kind of thing that is not happening to the Solaris
+code base.  These gradual improvements that are being done constantly
+to every nook and cranny of the Linux kernel.
 
-Therefore, Greg please keep the patch add the following one as it will
-address all of the issues.
+Code sits untouched for 6+ years in the Solaris tree not because it's
+perfect and bug free, but rather because Sun simply does not have the
+environment and resources with which to make the kinds of ongoing
+improvements Linux can.
 
-[TCP]: Fix size calculation in sk_stream_alloc_pskb
+The things Sun is trying to say is so great about the Solaris code
+base is actually, as shown by Eric, it's greatest weakness.
+Development is glacial and a lot of stuff simply does not get looked
+at.
 
-[ Upstream commit: fb93134dfc2a6e6fbedc7c270a31da03fce88db9 ]
+Someone who really wants to get some kind of idea on what scale Linux
+development is compared to Solaris should sit down with a current
+Linux git tree and a current OpenSolaris mercurial checkout and do
+some comparisons.
 
-We round up the header size in sk_stream_alloc_pskb so that
-TSO packets get zero tail room.  Unfortunately this rounding
-up is not coordinated with the select_size() function used by
-TCP to calculate the second parameter of sk_stream_alloc_pskb.
-
-As a result, we may allocate more than a page of data in the
-non-TSO case when exactly one page is desired.
-
-In fact, rounding up the head room is detrimental in the non-TSO
-case because it makes memory that would otherwise be available to
-the payload head room.  TSO doesn't need this either, all it wants
-is the guarantee that there is no tail room.
-
-So this patch fixes this by adjusting the skb_reserve call so that
-exactly the requested amount (which all callers have calculated in
-a precise way) is made available as tail room.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/include/net/sock.h b/include/net/sock.h
-index 5504fb9..567e468 100644
---- a/include/net/sock.h
-+++ b/include/net/sock.h
-@@ -1235,14 +1235,16 @@ static inline struct sk_buff *sk_stream_alloc_pskb(struct sock *sk,
- 						   gfp_t gfp)
- {
- 	struct sk_buff *skb;
--	int hdr_len;
- 
--	hdr_len = SKB_DATA_ALIGN(sk->sk_prot->max_header);
--	skb = alloc_skb_fclone(size + hdr_len, gfp);
-+	skb = alloc_skb_fclone(size + sk->sk_prot->max_header, gfp);
- 	if (skb) {
- 		skb->truesize += mem;
- 		if (sk_stream_wmem_schedule(sk, skb->truesize)) {
--			skb_reserve(skb, hdr_len);
-+			/*
-+			 * Make sure that we have exactly size bytes
-+			 * available to the caller, no more, no less.
-+			 */
-+			skb_reserve(skb, skb_tailroom(skb) - size);
- 			return skb;
- 		}
- 		__kfree_skb(skb);
+Here is one you could ferret out that I am pretty sure of.  I bet that
+in the 2.6.24 merge window (1.5 weeks of merging patches) we had more
+individual contributors to the Linux kernel than OpenSolaris has had
+in it's entire existence.
