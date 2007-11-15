@@ -1,141 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765116AbXKOKwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762891AbXKOK6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765116AbXKOKwt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 05:52:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755184AbXKOKwl
+	id S1762891AbXKOK6U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 05:58:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbXKOK6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 05:52:41 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:54264 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758668AbXKOKwk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 05:52:40 -0500
-Date: Thu, 15 Nov 2007 10:52:38 +0000
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, sfr@canb.auug.org.au, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix boot problem with iSeries lacking hugepage support
-Message-ID: <20071115105237.GD5128@skynet.ie>
-References: <20071115101322.GA5128@skynet.ie> <20071115023943.a54b0464.akpm@linux-foundation.org>
+	Thu, 15 Nov 2007 05:58:08 -0500
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:44315 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751049AbXKOK6H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 05:58:07 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Message-Id;
+  b=C6RAyeseM+rx/NIOchpCk0dnu8UsNpNq1e5BanpEFvqdQlsuYsMPZPLmN4nW/wZ9m3flgQ9G/TbW1WHIvSov6HsEnbx4Fu26AVyJjxKJJSd7tcpLa77P/yIIxQ9LskXKkRiHTYYTRE8+7Lhz1T3Cj7es3X8qdKB3J1AcGyPeq3g=  ;
+X-YMail-OSG: 9ZGtixcVM1nAx3l249vGOoL6uUulkOH3B2YNVm5C4qTD9G9rD19MIYEC2PAG.N.njoNC44tkBg--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [bug] SLOB crash, 2.6.24-rc2
+Date: Thu, 15 Nov 2007 21:57:59 +1100
+User-Agent: KMail/1.9.5
+Cc: David Miller <davem@davemloft.net>, mpm@selenic.com, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+References: <20071114225335.GV19691@waste.org> <20071114.154143.112110604.davem@davemloft.net> <20071115104331.GA11390@elte.hu>
+In-Reply-To: <20071115104331.GA11390@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20071115023943.a54b0464.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_3YCPHlD4iawrIK8"
+Message-Id: <200711152157.59409.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (15/11/07 02:39), Andrew Morton didst pronounce:
-> On Thu, 15 Nov 2007 10:13:22 +0000 mel@skynet.ie (Mel Gorman) wrote:
-> 
-> > This patch is a fix for 2.6.24.
-> > 
-> > Ordinarily the size of a pageblock is determined at compile-time based on the
-> > hugepage size. On PPC64, the hugepage size is determined at runtime based on
-> > what is supported by the machine. With legacy machines such as iSeries that do
-> > not support hugepages, HPAGE_SHIFT becomes 0. This results in pageblock_order
-> > being set to -PAGE_SHIFT and a crash results shortly afterwards.
-> > 
-> > This patch sets HUGETLB_PAGE_SIZE_VARIABLE for PPC64 and adds a function
-> > to select a sensible value for pageblock order by default.  It checks that
-> > HPAGE_SHIFT is a sensible value before using the hugepage size; if it is
-> > not MAX_ORDER-1 is used.
-> > 
-> > Credit goes to Stephen Rothwell for identifying the bug and testing candidate
-> > patches.  Additional credit goes to Andy Whitcroft for spotting a problem
-> > with respects to IA-64 before releasing. Additional credit to David Gibson
-> > for testing with the libhugetlbfs test suite.
-> > 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > Tested-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> > 
-> > --- 
-> >  arch/powerpc/Kconfig |    5 +++++
-> >  mm/page_alloc.c      |   14 ++++++++++++--
-> >  2 files changed, 17 insertions(+), 2 deletions(-)
-> > 
-> > diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc2-mm1-clean/arch/powerpc/Kconfig linux-2.6.24-rc2-005_iSeries_fix/arch/powerpc/Kconfig
-> > --- linux-2.6.24-rc2-mm1-clean/arch/powerpc/Kconfig	2007-11-14 11:38:05.000000000 +0000
-> > +++ linux-2.6.24-rc2-005_iSeries_fix/arch/powerpc/Kconfig	2007-11-14 11:39:12.000000000 +0000
-> > @@ -187,6 +187,11 @@ config FORCE_MAX_ZONEORDER
-> >  	default "9" if PPC_64K_PAGES
-> >  	default "13"
-> >  
-> > +config HUGETLB_PAGE_SIZE_VARIABLE
-> > +	bool
-> > +	depends on HUGETLB_PAGE
-> > +	default y
-> > +
-> >  config MATH_EMULATION
-> >  	bool "Math emulation"
-> >  	depends on 4xx || 8xx || E200 || PPC_MPC832x || E500
-> > diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc2-mm1-clean/mm/page_alloc.c linux-2.6.24-rc2-005_iSeries_fix/mm/page_alloc.c
-> > --- linux-2.6.24-rc2-mm1-clean/mm/page_alloc.c	2007-11-14 11:38:08.000000000 +0000
-> > +++ linux-2.6.24-rc2-005_iSeries_fix/mm/page_alloc.c	2007-11-14 13:45:19.000000000 +0000
-> > @@ -3342,6 +3342,16 @@ static void inline setup_usemap(struct p
-> >  #endif /* CONFIG_SPARSEMEM */
-> >  
-> >  #ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
-> > +
-> > +/* Return a sensible default order for the pageblock size. */
-> > +static inline int __init pageblock_default_order(void)
-> > +{
-> > +	if (HPAGE_SHIFT > PAGE_SHIFT)
-> > +		return HUGETLB_PAGE_ORDER;
-> > +
-> > +	return MAX_ORDER-1;
-> > +}
-> > +
-> >  /* Initialise the number of pages represented by NR_PAGEBLOCK_BITS */
-> >  static inline void __init set_pageblock_order(unsigned int order)
-> >  {
-> > @@ -3357,7 +3367,7 @@ static inline void __init set_pageblock_
-> >  }
-> >  #else /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
-> >  
-> > -/* Defined this way to avoid accidently referencing HUGETLB_PAGE_ORDER */
-> > +#define pageblock_default_order(x) (0)
-> 
-> Shouldn't this have been HUGETLB_PAGE_ORDER?
-> 
+--Boundary-00=_3YCPHlD4iawrIK8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-As a #define, possibly but as a static inline - definitly not.
+On Thursday 15 November 2007 21:43, Ingo Molnar wrote:
+> * David Miller <davem@davemloft.net> wrote:
+> > From: Matt Mackall <mpm@selenic.com>
+> > Date: Wed, 14 Nov 2007 17:37:13 -0600
+> >
+> > > No, the usual strategy for debugging problems -outside- SLOB is to
+> > > switch to another allocator with more extensive debugging facilities.
+> >
+> > Ok, so the thing we still can do is do a dump_stack() at the list
+> > debugging assertion trigger points.
+>
+> ok, i'll first try to trigger it again.
 
-In this context, the define is not used because set_pageblock_order()
-is a no-op when CONFIG_HUGETLB_PAGE_SIZE_VARIABLE is unset.
-pageblock_default_order() is only defined for symmetry as set_pageblock_order()
-is defined in both contexts. However, as a #define it might make more sense
-to a casual reader to see HUGETLB_PAGE_ORDER even if it has no effect. I
-can send a version of the patch that does this with a comment explaining
-what is going on with set_pageblock_order() if you like.
+I had implemented SLOB in userspace, so I resynched and think I
+found your problem. Sorry for the attachment format -- this mailer
+isn't the best. I'm really computer illiterate when it comes to
+userspace...
 
-However, in a follow-up fix, you make pageblock_default_order() a static
-inline. If it tries to return HUGETLB_PAGE_ORDER, it will fail to compile
-when CONFIG_HUGETLB_PAGE is not set.
+Anyway, I'm really happy to see you're testing and using SLOB
+upstream :) Is there any particular reason that you're using it?
 
-Which would you prefer?
+Thanks,
+Nick
 
-> >  #define set_pageblock_order(x)	do {} while (0)
-> >  
-> >  #endif /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
-> > @@ -3442,7 +3452,7 @@ static void __meminit free_area_init_cor
-> >  		if (!size)
-> >  			continue;
-> >  
-> > -		set_pageblock_order(HUGETLB_PAGE_ORDER);
-> > +		set_pageblock_order(pageblock_default_order());
-> >  		setup_usemap(pgdat, zone, size);
-> >  		ret = init_currently_empty_zone(zone, zone_start_pfn,
-> >  						size, MEMMAP_EARLY);
-> > -- 
-> > -- 
-> > Mel Gorman
-> > Part-time Phd Student                          Linux Technology Center
-> > University of Limerick                         IBM Dublin Software Lab
-> 
+--Boundary-00=_3YCPHlD4iawrIK8
+Content-Type: text/x-diff;
+  charset="iso-8859-1";
+  name="slob-rotate-fix.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="slob-rotate-fix.patch"
 
--- 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Previously, it would be possible for prev->next to point to &free_slob_pages,
+and thus we would try to move a list onto itself, and bad things would
+happen.
+
+It seems a bit hairy to be doing list operations with the list marker as an
+entry, rather than a head, but...
+
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+---
+Index: linux-2.6/mm/slob.c
+===================================================================
+--- linux-2.6.orig/mm/slob.c
++++ linux-2.6/mm/slob.c
+@@ -321,7 +321,8 @@ static void *slob_alloc(size_t size, gfp
+ 		/* Improve fragment distribution and reduce our average
+ 		 * search time by starting our next search here. (see
+ 		 * Knuth vol 1, sec 2.5, pg 449) */
+-		if (free_slob_pages.next != prev->next)
++		if (prev != free_slob_pages.prev &&
++				free_slob_pages.next != prev->next)
+ 			list_move_tail(&free_slob_pages, prev->next);
+ 		break;
+ 	}
+
+--Boundary-00=_3YCPHlD4iawrIK8--
