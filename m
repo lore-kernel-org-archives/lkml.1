@@ -1,61 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757461AbXKOH6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757634AbXKOIIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757461AbXKOH6m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 02:58:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbXKOH6d
+	id S1757634AbXKOIIT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 03:08:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbXKOIII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 02:58:33 -0500
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:23578 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751265AbXKOH6c (ORCPT
+	Thu, 15 Nov 2007 03:08:08 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:38959 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752587AbXKOIIH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 02:58:32 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=S44tBAjZBmNTKWUw+LfwgWGZrS2w/6ldQFK77WgJBFOMCU2xWToxcbaOuCptPenq06K+hHvigQcz6s0hg5cebUNs9JH6x3oacFEjm7/XZ6QXMyL2OnwhM9JhvBGvOR+7zooC7zoyCajxmJaEDlVUJVDG7CYQGLvnq9HT/2dAmE8=  ;
-X-YMail-OSG: LuHYxQcVM1lEB864DHAHzJ6kQCLbM4RI8icakXVVkGab37uQ
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch 2.6.24-rc2 1/3] generic gpio -- gpio_chip support
-Date: Thu, 15 Nov 2007 05:51:53 +1100
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Florian Fainelli <florian.fainelli@telecomint.eu>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-References: <200711091136.20051.david-b@pacbell.net> <200711140818.59714.nickpiggin@yahoo.com.au> <200711142228.10934.david-b@pacbell.net>
-In-Reply-To: <200711142228.10934.david-b@pacbell.net>
+	Thu, 15 Nov 2007 03:08:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=htDyKrJ2v5vwHD4aTGDolw6gRaAZUigSpjqbLE31BYsTObxtBcHcYm2jolGR+NxDJqDb+hd1Uw2kK+O9HED4IuBfJCEsNWSbKv4oL0HB/GuugkwdWh1aAMKfQYk6gXzYbqDUKQaVLaySAB2iD5H83yDW9+bYxU+vyCsH/7OUpB8=
+Date: Thu, 15 Nov 2007 16:14:07 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Jiri Kosina <jikos@jikos.cz>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc2-mm1
+Message-ID: <20071115081407.GA3688@darkstar.te-china.tietoenator.com>
+References: <20071113223802.2ace1a61.akpm@linux-foundation.org> <a8e1da0711132247jd440f8dgc9ac0442e90f2c34@mail.gmail.com> <20071114004129.783fb98b.akpm@linux-foundation.org> <a8e1da0711140136i1e441371j306e7b2888de104e@mail.gmail.com> <20071114165906.GB13889@kroah.com> <1195065493.2168.31.camel@lov.site> <Pine.LNX.4.64.0711142018390.15844@twin.jikos.cz> <1195075663.2609.2.camel@lov.site> <a8e1da0711141701xc66109dv93ad2c3d2b76ebec@mail.gmail.com> <1195094293.2731.14.camel@lov.site>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711150551.54230.nickpiggin@yahoo.com.au>
+In-Reply-To: <1195094293.2731.14.camel@lov.site>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 November 2007 17:28, David Brownell wrote:
-> On Tuesday 13 November 2007, Nick Piggin wrote:
-> > > All this does is prevent constant and needless checking for
-> > > "do you want to preempt me now?" "now?" "now?" in "now?" the
-> > > middle "now?" of "now?" i/o "now?" loops.
-> >
-> > Actually that's wrong.
->
-> Certainly it's right for the mainstream kernel.  Dropping a
-> lock (other than a raw spinlock) does that checking; when a
-> loop needs to acquire then drop such a lock, that's exactly
-> what's going on.
+On Thu, Nov 15, 2007 at 03:38:13AM +0100, Kay Sievers wrote:
+> On Thu, 2007-11-15 at 09:01 +0800, Dave Young wrote:
+> > On Nov 15, 2007 5:27 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> > > On Wed, 2007-11-14 at 20:19 +0100, Jiri Kosina wrote:
+> > > > On Wed, 14 Nov 2007, Kay Sievers wrote:
+> > > >
+> > > > > Could it be an init-order problem, where something tries to use the
+> > > > > block subsystem? Before it is initialized with:
+> > > > >   block/genhd.c :: subsys_initcall(genhd_device_init);
+> > > > > If that's the case, we have an old bug that nobody noticed with static
+> > > > > structures, which are zeroed that time, but definitely not properly
+> > > > > initialized. I'll try to build loop non-modular now, and see if that
+> > > > > makes the bug appear here.
+> > >
+> > > > my .config with which I reproduc this on 2.6.24-rc2-mm1 reliably can be
+> > > > obtained from http://www.jikos.cz/jikos/junk/.config
+> > >
+> > > Hmm, that config doesn't do anything here, and if I make it boot, it
+> > > does not show the bug.
+> > >
+> > > Could you possibly enable kobject debugging and see if that exposes
+> > > something, maybe something goes wrong with the kset refcount and it gets
+> > > released while in use.
+> > >
+> > Hi,
+> > I would do that.
+> 
+> That would be great.
+> 
+> > BTW, The bug report as EIP  at __list_add with CONFIG_DEBUG_LIST=y
+> 
+> Yeah, that hints that the kset, which contains the list, is not
+> allocated at the time it is used, or it is already released (kfree)
+> again by some buggy logic.
+Yes, I debugged it, there's some new findings.
+It is freed by put_disk.
+The floppy driver alloc_disk and then call put_disk without register_disk.
+in kobject_cleanup line 551:
+if(s)
+	kset_put(s);
+Now the kset is set in alloc_disk after kobject_init, so it is not refereced yet.
+please try this patch:
+ 
+block/genhd.c |    2 +-
+1 file changed, 1 insertion(+), 1 deletion(-)
 
-Obviously a raw spinlock is no different from a regular
-spinlock upstream.
-
-
-> And in the RT kernel, it's got to do the same thing ...
-> because dropping that lock may mean that a higher priority
-> task should immediately run and grab the lock.
-
-No, it wakes up the highest priority waiter. If that wakeup
-causes a preemption, then that's fine, but it does not have
-to explicitly check preemption when dropping the lock.
+diff -upr linux/block/genhd.c linux.new/block/genhd.c
+--- linux/block/genhd.c	2007-11-15 15:59:11.000000000 +0800
++++ linux.new/block/genhd.c	2007-11-15 15:59:39.000000000 +0800
+@@ -718,9 +718,9 @@ struct gendisk *alloc_disk_node(int mino
+ 			}
+ 		}
+ 		disk->minors = minors;
+-		kobject_init(&disk->kobj);
+ 		disk->kobj.kset = block_kset;
+ 		disk->kobj.ktype = &ktype_block;
++		kobject_init(&disk->kobj);
+ 		rand_initialize_disk(disk);
+ 		INIT_WORK(&disk->async_notify,
+ 			media_change_notify_thread);
