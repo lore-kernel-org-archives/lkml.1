@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757839AbXKOGKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758776AbXKOGLG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757839AbXKOGKl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:10:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbXKOGKX
+	id S1758776AbXKOGLG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:11:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbXKOGK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:10:23 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:36464 "EHLO
+	Thu, 15 Nov 2007 01:10:28 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:36467 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751206AbXKOGKW (ORCPT
+	with ESMTP id S1751570AbXKOGK0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:10:22 -0500
-Date: Wed, 14 Nov 2007 22:05:44 -0800
+	Thu, 15 Nov 2007 01:10:26 -0500
+Date: Wed, 14 Nov 2007 22:09:17 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,55 +20,89 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/13] 2.6.23-stable review, core kernel changes
-Message-ID: <20071115060544.GA7602@kroah.com>
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Gregory Haskins <ghaskins@novell.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 01/13] lockdep: fix mismatched lockdep_depth/curr_chain_hash
+Message-ID: <20071115060917.GB7602@kroah.com>
+References: <20071115042610.731859958@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Disposition: inline; filename="lockdep-fix-mismatched-lockdep_depth-curr_chain_hash.patch"
+In-Reply-To: <20071115060544.GA7602@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.23.X release.
-There are 13 patches in this series, all will be posted as a response
-to this one.  If anyone has any issues with these being applied, please
-let us know.  If anyone is a maintainer of the proper subsystem, and
-wants to add a Signed-off-by: line to the patch, please respond with it.
 
-These patches are sent out with a number of different people on the
-Cc: line.  If you wish to be a reviewer, please email stable@kernel.org
-to add your name to the list.  If you want to be off the reviewer list,
-also email us.
+-stable review patch.  If anyone has any objections, please let us know.
 
-Responses should be made by Friday 00:00:00 UTC.  Anything received
-after that time might be too late.
+------------------
 
-This set of patches focuses on only the core kernel.  Other sets of
-patches will follow if you are interested in those instead.
+From: Gregory Haskins <ghaskins@novell.com>
 
-The diffstat of this review series is included below.
+patch 3aa416b07f0adf01c090baab26fb70c35ec17623 in mainline.
 
-thanks,
+It is possible for the current->curr_chain_key to become inconsistent
+with the current index if the chain fails to validate.  The end result
+is that future lock_acquire() operations may inadvertently fail to find
+a hit in the cache resulting in a new node being added to the graph for
+every acquire.
 
-greg k-h
 
----------------
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
- Documentation/ja_JP/HOWTO |   84 ++++++++++++++++++++++++----------------------
- block/ll_rw_blk.c         |    8 +---
- fs/locks.c                |   11 ++++++
- fs/proc/array.c           |    6 ++-
- fs/splice.c               |    2 -
- include/linux/blkdev.h    |    2 -
- include/linux/sched.h     |    1 
- kernel/fork.c             |    2 +
- kernel/futex_compat.c     |   27 ++++++++++----
- kernel/lockdep.c          |   10 ++---
- kernel/params.c           |    8 +++-
- kernel/softlockup.c       |    7 ++-
- mm/filemap.c              |   13 +------
- mm/page-writeback.c       |    4 +-
- mm/shmem.c                |   15 ++++++++
- mm/slub.c                 |   22 ------------
- 16 files changed, 125 insertions(+), 97 deletions(-)
+---
+ kernel/lockdep.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -1521,7 +1521,7 @@ cache_hit:
+ }
+ 
+ static int validate_chain(struct task_struct *curr, struct lockdep_map *lock,
+-	       	struct held_lock *hlock, int chain_head)
++	       	struct held_lock *hlock, int chain_head, u64 chain_key)
+ {
+ 	/*
+ 	 * Trylock needs to maintain the stack of held locks, but it
+@@ -1534,7 +1534,7 @@ static int validate_chain(struct task_st
+ 	 * graph_lock for us)
+ 	 */
+ 	if (!hlock->trylock && (hlock->check == 2) &&
+-			lookup_chain_cache(curr->curr_chain_key, hlock->class)) {
++			lookup_chain_cache(chain_key, hlock->class)) {
+ 		/*
+ 		 * Check whether last held lock:
+ 		 *
+@@ -1576,7 +1576,7 @@ static int validate_chain(struct task_st
+ #else
+ static inline int validate_chain(struct task_struct *curr,
+ 	       	struct lockdep_map *lock, struct held_lock *hlock,
+-		int chain_head)
++		int chain_head, u64 chain_key)
+ {
+ 	return 1;
+ }
+@@ -2450,11 +2450,11 @@ static int __lock_acquire(struct lockdep
+ 		chain_head = 1;
+ 	}
+ 	chain_key = iterate_chain_key(chain_key, id);
+-	curr->curr_chain_key = chain_key;
+ 
+-	if (!validate_chain(curr, lock, hlock, chain_head))
++	if (!validate_chain(curr, lock, hlock, chain_head, chain_key))
+ 		return 0;
+ 
++	curr->curr_chain_key = chain_key;
+ 	curr->lockdep_depth++;
+ 	check_chain_key(curr);
+ #ifdef CONFIG_DEBUG_LOCKDEP
+
+-- 
