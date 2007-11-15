@@ -1,118 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933000AbXKOVwD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933085AbXKOVyg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933000AbXKOVwD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 16:52:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760969AbXKOVvv
+	id S933085AbXKOVyg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 16:54:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756092AbXKOVy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 16:51:51 -0500
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:45399 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752915AbXKOVvu (ORCPT
+	Thu, 15 Nov 2007 16:54:28 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47171 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754617AbXKOVy1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 16:51:50 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FANdOPEdMROHU/2dsb2JhbACBXI50
-Date: Thu, 15 Nov 2007 16:51:42 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, mbligh@google.com
-Subject: Re: [RFC 5/7] LTTng instrumentation mm
-Message-ID: <20071115215142.GA7825@Krystal>
-References: <20071113193349.214098508@polymtl.ca> <20071113194025.150641834@polymtl.ca> <1195160783.7078.203.camel@localhost>
+	Thu, 15 Nov 2007 16:54:27 -0500
+Date: Thu, 15 Nov 2007 13:53:32 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: greg@kroah.com, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc2-mm1
+Message-Id: <20071115135332.5a007334.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0711152238180.19853@twin.jikos.cz>
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0711141728290.15844@twin.jikos.cz>
+	<20071114083906.178232cb.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0711141740110.15844@twin.jikos.cz>
+	<Pine.LNX.4.64.0711141758570.15844@twin.jikos.cz>
+	<20071114181948.GA15240@kroah.com>
+	<20071115192319.GA30186@kroah.com>
+	<Pine.LNX.4.64.0711152238180.19853@twin.jikos.cz>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1195160783.7078.203.camel@localhost>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:34:54 up 12 days,  2:40,  7 users,  load average: 0.10, 0.56,
-	0.74
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Dave Hansen (haveblue@us.ibm.com) wrote:
-> > On Tue, 2007-11-13 at 14:33 -0500, Mathieu Desnoyers wrote:
-> >  linux-2.6-lttng/mm/page_io.c        2007-11-13 09:49:35.000000000 -0500
-> > @@ -114,6 +114,7 @@ int swap_writepage(struct page *page, st
-> >                 rw |= (1 << BIO_RW_SYNC);
-> >         count_vm_event(PSWPOUT);
-> >         set_page_writeback(page);
-> > +       trace_mark(mm_swap_out, "address %p", page_address(page));
-> >         unlock_page(page);
-> >         submit_bio(rw, bio);
-> >  out:
+On Thu, 15 Nov 2007 22:41:41 +0100 (CET)
+Jiri Kosina <jikos@jikos.cz> wrote:
+
+> On Thu, 15 Nov 2007, Greg KH wrote:
 > 
-> I'm not sure all this page_address() stuff makes any sense on highmem
-> systems.  How about page_to_pfn()?
+> > This patch, as found by Dave Young, should fix the issue: I'll roll it 
+> > into my larger patchset so that Andrew will get it automatically next 
+> > release, but here it is for people to use now.
 > 
-
-Hrm, maybe both ?
-
-Knowing which page frame number has been swapped out is not always as
-relevant as knowing the page's virtual address (when it has one). Saving
-both the PFN and the page's virtual address could give us useful
-information when the page is not mapped.
-
-We face two possible approaches : either we save both the address and
-the pfn at each event and later have the information at once in the
-trace, or we instrument the kernel virtual addresses map/unmap
-operations and let the trace analyzer figure out the mappings.
-
-It is sometimes a big benefit traffic-wise to let the userspace tool do
-recreate the kernel structures from the traced information, but it
-involved specialized treatment in the userspace tools. If we chose this
-solution, we could simply save the PFN in the event, as you propose.
-
-
-> I also have to wonder if you should be hooking into count_vm_event() and
-> using those.  Could you give a high-level overview of exactly why you
-> need these hooks, and perhaps what you expect from future people adding
-> things to the VM?
+> Hmm, something strange going on here. With this patch applied on top of 
+> 2.6.24-rc2-mm1, I can't see no lockup or warning from kobjects code, which 
+> is good. But this happens:
 > 
-
-Yep, I guess we could put useful markers beside the count_vm_events
-inline function calls.
-
-High level overview :
-
-We currently have a "LTTng statedump", which iterates on the mappings of
-all tasks at trace start time to dump them in the trace. We also
-instrument memory allocation/free. We therefore have much of the
-information needed to recreate the memory mappings in the kernel at any
-point during the trace by "replaying" the trace.
-
-Having the events that helps us to recreate it
-- precisely
-- efficiently
-- with a level of generality that should not break "too much" between
-  kernel versions
-
-would be useful to us.
-
-Then we could start creating plugins in our userspace trace analysis
-tool to analyze fun stuff such as sources of memory fragmentation.
-
-Then coupling that with, eventually, performance counter, we could start
-doing really fun things with cache misses...
-
-It can also be useful to you guys to find our problems by adding ad-hoc
-instrumentation to the VM code when pinpointing the cause of a problem.
-Martin Bligh made interesting things applying a tracer to the vm,
-described in "Linux Kernel Debugging on Google-sized clusters" in
-OLS2007 proceedings.
-
-(https://ols2006.108.redhat.com/2007/Reprints/OLS2007-Proceedings-V1.pdf)
-
-Mathieu
-
-> -- Dave
+> ...
+> Creating device nodes with udev
+> resume device  not found (ignoring)
+> Waiting for device 
+> /dev/disk/by-id/scsi-SATA_HDS722516VLSA80_VN6D3ECDE5BD9D-part6 to appear:  
+> ok
+> showconsole: Warning: the ioctl TIOCGDEV is not known by the kernel
+> fsck 1.40.2 (12-Jul-2007)
+> [/sbin/fsck.ext3 (1) -- /] fsck.ext3 -a 
+> /dev/disk/by-id/scsi-SATA_HDS722516VLSA80_VN6D3ECDE5BD9D-part6
+> Error writing block 1542 (Attempt to write block from filesystem resulted 
+> in short write).
 > 
+> /dev/disk/by-id/scsi-SATA_HDS722516VLSA80_VN6D3ECDE5BD9D-part6: UNEXPECTED 
+> INCONSISTENCY; RUN fsck MANUALLY.
+>         (i.e., without -a or -p options)
+> Error writing block 1542 (Attempt to write block from filesystem resulted in short write).                                                                                         
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Yup.  Please apply the fix from
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc2/2.6.24-rc2-mm1/hot-fixes
