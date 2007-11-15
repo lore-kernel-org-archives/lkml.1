@@ -1,81 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760273AbXKOOuA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760121AbXKOO5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760273AbXKOOuA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 09:50:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757561AbXKOOtv
+	id S1760121AbXKOO5x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 09:57:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757288AbXKOO5p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 09:49:51 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:59908 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757541AbXKOOtu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 09:49:50 -0500
-Date: Thu, 15 Nov 2007 14:49:47 +0000
-To: Tony Breeds <tony@bakeyournoodle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Roland Dreier <rolandd@cisco.com>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Fix build failure when CONFIG_INFINIBAND_IPOIB_CM is not defined.
-Message-ID: <20071115144946.GJ5128@skynet.ie>
-References: <20071113175906.497a1a6a.akpm@linux-foundation.org> <20071114034019.GI24243@bakeyournoodle.com>
+	Thu, 15 Nov 2007 09:57:45 -0500
+Received: from py-out-1112.google.com ([64.233.166.182]:22084 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752408AbXKOO5p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 09:57:45 -0500
+Message-ID: <1618816c0711150657p35744001ic6d4ea22d5651a63@mail.gmail.com>
+Date: Thu, 15 Nov 2007 07:57:44 -0700
+From: "Raymano Garibaldi" <raymano@faunos.com>
+To: linux-kernel@vger.kernel.org
+Subject: [2.6.23-1] [USB Mass Storage] [USB_PERSIST] Losing mounted USB storage after resume
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071114034019.GI24243@bakeyournoodle.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (14/11/07 14:40), Tony Breeds didst pronounce:
-> Fixes:
->   CC [M]  drivers/infiniband/ulp/ipoib/ipoib_main.o
-> drivers/infiniband/ulp/ipoib/ipoib_main.c: In function ???ipoib_init_module???:
-> drivers/infiniband/ulp/ipoib/ipoib_main.c:1269: error: invalid lvalue in assignment
-> 
-> In the case where CONFIG_INFINIBAND_IPOIB_CM is not defined ipoib_max_conn_qp is #defined to 0.
-> 
-> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
-> 
-> ---
-> 
->  drivers/infiniband/ulp/ipoib/ipoib_main.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/infiniband/ulp/ipoib/ipoib_main.c b/drivers/infiniband/ulp/ipoib/ipoib_main.c
-> index 623458e..aeb5a01 100644
-> --- a/drivers/infiniband/ulp/ipoib/ipoib_main.c
-> +++ b/drivers/infiniband/ulp/ipoib/ipoib_main.c
-> @@ -1265,8 +1265,9 @@ static int __init ipoib_init_module(void)
->  	ipoib_sendq_size = roundup_pow_of_two(ipoib_sendq_size);
->  	ipoib_sendq_size = min(ipoib_sendq_size, IPOIB_MAX_QUEUE_SIZE);
->  	ipoib_sendq_size = max(ipoib_sendq_size, IPOIB_MIN_QUEUE_SIZE);
-> -
-> +#ifdef CONFIG_INFINIBAND_IPOIB_CM
->  	ipoib_max_conn_qp = min(ipoib_max_conn_qp, IPOIB_CM_MAX_CONN_QP);
-> +#endif
+Hi,
 
-The patch fixes the compile although having a variable name #defined as 0
-seems a bit of an unexpected suprise.
+Is there a way/patch that would revert the USB mass storage
+suspend/resume behavior to the way things worked on and prior to
+kernel 2.6.21?
 
-Either way, when applied with the hotfixes, bl6-13 on
-http://test.kernel.org successfully boots.
+The problem is mounting a usb drive, suspending while mounted,
+detaching the usb drive during suspend, reattaching usb drive during
+suspend before resume, and resuming.
 
->  
->  	ret = ipoib_register_debugfs();
->  	if (ret)
-> 
-> Yours Tony
-> 
->   linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
->   Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+In this case the mount is lost and the drive has to be remounted after
+resume. If the device remains attached while the computer is
+suspended, USB_PERSIST works as expected and the device remains
+mounted when the computer resumes. Kernel 2.6.21-x would leave the
+mount point intact whether the device was left attached or was
+detached and reattached while the computer was suspend.
 
--- 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+We need this functionality particularly in read-only live USB distros.
+In this case the USB device is read-only and can not change while the
+computer is suspended even if it gets detached and is reattached
+before resume.
+
+Thank you,
+Raymano G.
