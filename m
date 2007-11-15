@@ -1,96 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765275AbXKOBPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763857AbXKOBT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765275AbXKOBPU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 20:15:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758432AbXKOBPE
+	id S1763857AbXKOBT0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 20:19:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754274AbXKOBTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 20:15:04 -0500
-Received: from mho-02-bos.mailhop.org ([63.208.196.179]:63714 "EHLO
-	mho-02-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756954AbXKOBPB (ORCPT
+	Wed, 14 Nov 2007 20:19:18 -0500
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:36047 "EHLO
+	outbound7-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754776AbXKOBTR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 20:15:01 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 209.94.135.27
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX18zsGTH86xTJAWy8jdETC94
-Message-ID: <473B9D8A.5000006@reed.com>
-Date: Wed, 14 Nov 2007 20:14:50 -0500
-From: "David P. Reed" <dpreed@reed.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.5) Gecko/20070727 Fedora/2.0.0.5-2.fc7 Thunderbird/2.0.0.5 Mnenhy/0.7.5.0
+	Wed, 14 Nov 2007 20:19:17 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.66.75;Service: EHS
+Message-ID: <473B9EC1.4060908@am.sony.com>
+Date: Wed, 14 Nov 2007 17:20:01 -0800
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-CC: Allessandro Zummo <a.zummo@towertech.it>, Matt Mackall <mpm@selenic.com>
-Subject: [PATCH] x86: on x86_64, correct reading of PC RTC when update in
- progress in time_64.c
-References: <466F0941.9060201@reed.com> <1181682498.8176.224.camel@chaos>	 <469578CD.3080609@reed.com>  <1184216528.12353.203.camel@chaos>	 <1184218962.12353.209.camel@chaos>  <46964352.7040301@reed.com>	 <1184253339.12353.223.camel@chaos>  <469697C6.50903@reed.com> <1184274754.12353.254.camel@chaos>
-In-Reply-To: <1184274754.12353.254.camel@chaos>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       John Cooper <john.cooper@third-harmonic.com>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: rt-preempt: problem compiling rt-preempt 2.6.23.1-rt11 on MIPS
+References: <473B8F91.20704@am.sony.com> <alpine.LFD.0.9999.0711150143220.3265@localhost.localdomain> <Pine.LNX.4.58.0711142004080.1364@gandalf.stny.rr.com>
+In-Reply-To: <Pine.LNX.4.58.0711142004080.1364@gandalf.stny.rr.com>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Nov 2007 01:18:54.0410 (UTC) FILETIME=[7CFA22A0:01C82725]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Correct potentially unstable PC RTC time register reading in time_64.c
+Steven Rostedt wrote:
+> Looks like that may be just an artifact from older days.
+> 
+> I'll do some more tests, and it it truely is, I'll go and remove the added
+> headers.
 
-Stop the use of an incorrect technique for reading the standard PC RTC
-timer, which is documented to "disconnect" time registers from the bus
-while updates are in progress.  The use of UIP flag while interrupts
-are disabled to protect a 244 microsecond window is one of the
-Motorola spec sheet's documented ways to read the RTC time registers
-reliably.
+Thanks.
 
-The patch updates the misleading comments and also minimizes the amount of
-time that the kernel disables interrupts during the reading.
+> I'm just about to release 2.6.24-rc2-rt1 and I'm sure mips as well as
+> powrepc is badly broken.  Any help in getting these back up and working
+> would be greatly appreciated.
 
-Signed-off-by: David P. Reed <dpreed@reed.com>
----
-Index: linux-2.6/arch/x86/kernel/time_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/time_64.c
-+++ linux-2.6/arch/x86/kernel/time_64.c
-@@ -160,22 +160,30 @@ unsigned long read_persistent_clock(void
-  	unsigned long flags;
-  	unsigned century = 0;
+I'll probably have some pretty basic questions.
+If you don't mind an RT newbie helping, I'll do what I can. :-)
 
--	spin_lock_irqsave(&rtc_lock, flags);
-+ retry:	spin_lock_irqsave(&rtc_lock, flags);
-+	/* if UIP is clear, then we have >= 244 microseconds before RTC
-+	 * registers will be updated.  Spec sheet says that this is the
-+	 * reliable way to read RTC - registers invalid (off bus) during update
-+	 */
-+	if ((CMOS_READ(RTC_FREQ_SELECT) & RTC_UIP)) {
-+	  spin_unlock_irqrestore(&rtc_lock, flags);
-+	  cpu_relax();
-+	  goto retry;
-+	}
+ -- Tim
 
--	do {
--		sec = CMOS_READ(RTC_SECONDS);
--		min = CMOS_READ(RTC_MINUTES);
--		hour = CMOS_READ(RTC_HOURS);
--		day = CMOS_READ(RTC_DAY_OF_MONTH);
--		mon = CMOS_READ(RTC_MONTH);
--		year = CMOS_READ(RTC_YEAR);
-+	/* now read all RTC registers while stable with interrupts disabled */
-+
-+	sec = CMOS_READ(RTC_SECONDS);
-+	min = CMOS_READ(RTC_MINUTES);
-+	hour = CMOS_READ(RTC_HOURS);
-+	day = CMOS_READ(RTC_DAY_OF_MONTH);
-+	mon = CMOS_READ(RTC_MONTH);
-+	year = CMOS_READ(RTC_YEAR);
-  #ifdef CONFIG_ACPI
--		if (acpi_gbl_FADT.header.revision >= FADT2_REVISION_ID &&
--					acpi_gbl_FADT.century)
--			century = CMOS_READ(acpi_gbl_FADT.century);
-+	if (acpi_gbl_FADT.header.revision >= FADT2_REVISION_ID &&
-+				acpi_gbl_FADT.century)
-+		century = CMOS_READ(acpi_gbl_FADT.century);
-  #endif
--	} while (sec != CMOS_READ(RTC_SECONDS));
--
-  	spin_unlock_irqrestore(&rtc_lock, flags);
+BTW - I was just trying to cross-compile the IBM test programs
+(rt-test-0.6) today, and had some problems.  I didn't want to
+bug anyone until I took a closer look at it, but would it be
+best to report problems with that here on LKML, on
+linux-rt-users, or just directly to Darren Hart?
+ -- Tim
 
-  	/*
-
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
