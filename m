@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933788AbXKOHKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933918AbXKOHK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933788AbXKOHKh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 02:10:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932533AbXKOGsb
+	id S933918AbXKOHK5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 02:10:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932589AbXKOGsd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:48:31 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:43788 "EHLO
+	Thu, 15 Nov 2007 01:48:33 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:43798 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932626AbXKOGs1 (ORCPT
+	with ESMTP id S932476AbXKOGs3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:48:27 -0500
-Date: Wed, 14 Nov 2007 22:46:00 -0800
+	Thu, 15 Nov 2007 01:48:29 -0500
+Date: Wed, 14 Nov 2007 22:46:03 -0800
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,12 +24,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Len Brown <len.brown@intel.com>,
        Alexey Starikovskiy <astarikovskiy@suse.de>,
        "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [patch 39/40] ACPI: sleep: Fix GPE suspend cleanup
-Message-ID: <20071115064600.GN19218@kroah.com>
+Subject: [patch 40/40] ACPI: suspend: Wrong order of GPE restore.
+Message-ID: <20071115064603.GO19218@kroah.com>
 References: <20071115062710.885284510@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpi-sleep-fix-gpe-suspend-cleanup.patch"
+Content-Disposition: inline; filename="acpi-suspend-wrong-order-of-gpe-restore.patch"
 In-Reply-To: <20071115064302.GA19218@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -42,15 +42,15 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Alexey Starikovskiy <astarikovskiy@suse.de>
 
-patch is 9c1c6a1ba786d58bd03e27ee49f89a5685e8e07b in mainline.
+commit 1dbc1fda5d8ca907f320b806005d4a447977d26a in mainline.
 
-ACPI: sleep: Fix GPE suspend cleanup
+ACPI: suspend: Wrong order of GPE restore.
 
-Commit 9b039330808b83acac3597535da26f47ad1862ce removed
-acpi_gpe_sleep_prepare(), the only function used at S5 transition
-Add call to generic acpi_enable_wake_device().
+acpi_leave_sleep_state() should have correct list of wake and
+runtime GPEs, which is available only after disable_wakeup_device()
+is called.
 
-Reference: https://bugzilla.novell.com/show_bug.cgi?id=299882
+[cebbert@redhat.com: backport to 2.6.23]
 
 Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
 Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
@@ -59,18 +59,30 @@ Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/sleep/main.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/acpi/sleep/main.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 --- a/drivers/acpi/sleep/main.c
 +++ b/drivers/acpi/sleep/main.c
-@@ -389,6 +389,7 @@ static void acpi_power_off(void)
- 	/* acpi_sleep_prepare(ACPI_STATE_S5) should have already been called */
- 	printk("%s called\n", __FUNCTION__);
- 	local_irq_disable();
-+	acpi_enable_wakeup_device(ACPI_STATE_S5);
- 	acpi_enter_sleep_state(ACPI_STATE_S5);
- }
+@@ -170,8 +170,8 @@ static int acpi_pm_finish(suspend_state_
+ {
+ 	u32 acpi_state = acpi_target_sleep_state;
  
+-	acpi_leave_sleep_state(acpi_state);
+ 	acpi_disable_wakeup_device(acpi_state);
++	acpi_leave_sleep_state(acpi_state);
+ 
+ 	/* reset firmware waking vector */
+ 	acpi_set_firmware_waking_vector((acpi_physical_address) 0);
+@@ -256,8 +256,8 @@ static int acpi_hibernation_enter(void)
+ 
+ static void acpi_hibernation_finish(void)
+ {
+-	acpi_leave_sleep_state(ACPI_STATE_S4);
+ 	acpi_disable_wakeup_device(ACPI_STATE_S4);
++	acpi_leave_sleep_state(ACPI_STATE_S4);
+ 
+ 	/* reset firmware waking vector */
+ 	acpi_set_firmware_waking_vector((acpi_physical_address) 0);
 
 -- 
