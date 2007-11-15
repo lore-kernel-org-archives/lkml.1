@@ -1,35 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762288AbXKONQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760048AbXKONRw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762288AbXKONQx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 08:16:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758621AbXKONQY
+	id S1760048AbXKONRw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 08:17:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756386AbXKONRn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 08:16:24 -0500
-Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:40321 "EHLO
-	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757870AbXKONQW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 08:16:22 -0500
-Date: Thu, 15 Nov 2007 13:16:09 +0000 (GMT)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Oliver Neukum <oliver@neukum.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: question on odd APIC behavior
-In-Reply-To: <200711150054.34312.oliver@neukum.org>
-Message-ID: <Pine.LNX.4.64N.0711151313410.19041@blysk.ds.pg.gda.pl>
-References: <200711150054.34312.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 15 Nov 2007 08:17:43 -0500
+Received: from dspnet.fr.eu.org ([213.186.44.138]:4423 "EHLO dspnet.fr.eu.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754404AbXKONRm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 08:17:42 -0500
+Date: Thu, 15 Nov 2007 14:17:27 +0100
+From: Olivier Galibert <galibert@pobox.com>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Bron Gondwana <brong@fastmail.fm>, David Miller <davem@davemloft.net>,
+       rmk+lkml@arm.linux.org.uk, alsa-devel@alsa-project.org,
+       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org, protasnb@gmail.com,
+       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz, akpm@linux-foundation.org,
+       Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>
+Subject: Re: [alsa-devel] [BUG] New Kernel Bugs
+Message-ID: <20071115131727.GA13312@dspnet.fr.eu.org>
+Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
+	Rene Herman <rene.herman@keyaccess.nl>,
+	Bron Gondwana <brong@fastmail.fm>,
+	David Miller <davem@davemloft.net>, rmk+lkml@arm.linux.org.uk,
+	alsa-devel@alsa-project.org, netdev@vger.kernel.org,
+	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+	protasnb@gmail.com, linux-ide@vger.kernel.org,
+	bugme-daemon@bugzilla.kernel.org,
+	linux-input@atrey.karlin.mff.cuni.cz, akpm@linux-foundation.org,
+	Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>
+References: <20071113143201.9441c940.akpm@linux-foundation.org> <20071113.175551.131375600.davem@davemloft.net> <20071114095507.GA32595@flint.arm.linux.org.uk> <20071114.020706.219917088.davem@davemloft.net> <473AE010.4090806@keyaccess.nl> <20071115041613.GC15302@brong.net> <473BE046.8070804@keyaccess.nl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <473BE046.8070804@keyaccess.nl>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Nov 2007, Oliver Neukum wrote:
+On Thu, Nov 15, 2007 at 06:59:34AM +0100, Rene Herman wrote:
+> Totally unrelated indeed so why are spouting crap? If the kohab list has a 
+> problem take it up with them but keep ALSA out of it. alsa-devel has only 
+> ever moderated out spam -- nothing else.
 
-> is there a way to so misprogramm an APIC that a physical interrupt results
-> in two interrupts delivered?
+That is incorrect.  Hopefully it is the case now though, since my
+experience of the subject was years ago.
 
- Certainly.  One possibility is to have multiple processors marked as the 
-destination, e.g. a logical delivery mode destination programmed with 
-multiple bits set.
-
-  Maciej
+  OG.
