@@ -1,63 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763857AbXKOBT0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765018AbXKOBVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763857AbXKOBT0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 20:19:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754274AbXKOBTS
+	id S1765018AbXKOBVZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 20:21:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757914AbXKOBVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 20:19:18 -0500
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:36047 "EHLO
-	outbound7-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754776AbXKOBTR (ORCPT
+	Wed, 14 Nov 2007 20:21:17 -0500
+Received: from vms040pub.verizon.net ([206.46.252.40]:36971 "EHLO
+	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757082AbXKOBVQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 20:19:17 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.66.75;Service: EHS
-Message-ID: <473B9EC1.4060908@am.sony.com>
-Date: Wed, 14 Nov 2007 17:20:01 -0800
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       John Cooper <john.cooper@third-harmonic.com>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: rt-preempt: problem compiling rt-preempt 2.6.23.1-rt11 on MIPS
-References: <473B8F91.20704@am.sony.com> <alpine.LFD.0.9999.0711150143220.3265@localhost.localdomain> <Pine.LNX.4.58.0711142004080.1364@gandalf.stny.rr.com>
-In-Reply-To: <Pine.LNX.4.58.0711142004080.1364@gandalf.stny.rr.com>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 15 Nov 2007 01:18:54.0410 (UTC) FILETIME=[7CFA22A0:01C82725]
+	Wed, 14 Nov 2007 20:21:16 -0500
+Date: Wed, 14 Nov 2007 20:21:04 -0500
+From: Russell Leighton <russ@elegant-software.com>
+Subject: OT: Does Linux have any "Perfect Code"
+To: LKML <linux-kernel@vger.kernel.org>
+Message-id: <c9d133bdb3481fbc01a572d948049f5e@elegant-software.com>
+MIME-version: 1.0 (Apple Message framework v624)
+X-Mailer: Apple Mail (2.624)
+Content-type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Content-transfer-encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> Looks like that may be just an artifact from older days.
-> 
-> I'll do some more tests, and it it truely is, I'll go and remove the added
-> headers.
 
-Thanks.
+Bryan Cantrill of Sun (ala DTrace) has a notion of perfect code:
 
-> I'm just about to release 2.6.24-rc2-rt1 and I'm sure mips as well as
-> powrepc is badly broken.  Any help in getting these back up and working
-> would be greatly appreciated.
+	http://blogs.sun.com/bmc/entry/on_i_dreaming_in_code
 
-I'll probably have some pretty basic questions.
-If you don't mind an RT newbie helping, I'll do what I can. :-)
+He also has some examples (from bottom comment section of above):
 
- -- Tim
+>
+>
+> Can you list a small number of examples of "software perfection"?
+>
+> Posted by Russell Leighton on November 14, 2007 at 04:02 AM PST #
+>
+> Russell,
+>
+> My canonical small example of perfection in Solaris would be Jeff  
+> Bonwick's mod-by-a-billion code in hrt2ts():
+>
+> http://cvs.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/uts/ 
+> common/os/timers.c#875
+>
+> Solaris of course has lots of bigger, more complicated examples. Now  
+> on the one hand, one wants to refrain from pointing to thousands of  
+> lines of code and saying that there are no bugs therein, but on the  
+> other, there are many subsystems that have been in place and in heavy  
+> use for years without defect or modification. At the risk of being  
+> egocentric, the cyclic subsystem (which is executed at least 100 times  
+> per second on every Solaris system) had its last substantial fix over  
+> six years ago, and its last fix of any flavor over three years ago:
+>
+> http://cvs.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/uts/ 
+> common/os/cyclic.c
+>
+> Modesty (and the lack, of course, of a proof of its correctness)  
+> prevents me from calling the cyclic subsystem perfect -- but such as  
+> unknown defects remain, there are damn few of them, and we can say  
+> that they must be a result of highly usual (or at least, heretofore  
+> unseen) circumstances.
+>
+> A non-Solaris example -- and one that I've been known to use as the  
+> canonical example of the persistence of software -- is Super Mario  
+> Kart. This is a game that was developed (to its completion) fifteen  
+> years ago for the Super Nintendo console. Source code, to the best of  
+> my knowledge, is not publicly available and may indeed be lost -- but  
+> the binaries persist and (if my coworkers are any indication) remain  
+> in active use. Given the longevity of, say, Homer's Odyssey, there is  
+> reason to believe that Super Mario Kart will survive in perpetuity --  
+> that thousands of years from now, twenty-somethings somewhere will be  
+> using the software exactly as it is used today. Is this perfection?  
+> Perhaps not -- but it also might not be discernible from perfection...
+>
+> Posted by Bryan Cantrill on November 14, 2007 at 07:51 AM PST #
 
-BTW - I was just trying to cross-compile the IBM test programs
-(rt-test-0.6) today, and had some problems.  I didn't want to
-bug anyone until I took a closer look at it, but would it be
-best to report problems with that here on LKML, on
-linux-rt-users, or just directly to Darren Hart?
- -- Tim
+Does Linux have any such examples true software perfection?
 
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
 
