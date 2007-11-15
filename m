@@ -1,39 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759356AbXKOCvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757782AbXKODHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759356AbXKOCvW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Nov 2007 21:51:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756412AbXKOCvG
+	id S1757782AbXKODHZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Nov 2007 22:07:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755584AbXKODHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Nov 2007 21:51:06 -0500
-Received: from cantor.suse.de ([195.135.220.2]:56013 "EHLO mx1.suse.de"
+	Wed, 14 Nov 2007 22:07:12 -0500
+Received: from cantor.suse.de ([195.135.220.2]:57035 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755973AbXKOCvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Nov 2007 21:51:04 -0500
+	id S1755521AbXKODHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Nov 2007 22:07:10 -0500
 From: Neil Brown <neilb@suse.de>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Date: Thu, 15 Nov 2007 13:50:43 +1100
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Date: Thu, 15 Nov 2007 14:06:58 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18235.46083.293604.560507@notabene.brown>
-Cc: Randy Dunlap <rdunlap@xenotime.net>, Ingo Molnar <mingo@elte.hu>,
+Message-ID: <18235.47058.757009.665849@notabene.brown>
+Cc: Mark Lord <liml@rtr.ca>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
        David Miller <davem@davemloft.net>, protasnb@gmail.com,
        linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
        alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
        linux-input@atrey.karlin.mff.cuni.cz, bugme-daemon@bugzilla.kernel.org
 Subject: Re: [BUG] New Kernel Bugs
-In-Reply-To: message from J. Bruce Fields on Wednesday November 14
+In-Reply-To: message from Denys Vlasenko on Tuesday November 13
 References: <20071113031553.3c7b5c16.akpm@linux-foundation.org>
-	<20071113.033946.114918709.davem@davemloft.net>
-	<20071113034916.2556edd7.akpm@linux-foundation.org>
-	<20071113.035824.40509981.davem@davemloft.net>
-	<20071113041259.79c9a8c5.akpm@linux-foundation.org>
 	<20071113134029.GA30978@elte.hu>
-	<20071113085514.3414aa52.rdunlap@xenotime.net>
-	<20071114140847.GA11489@elte.hu>
-	<20071114093820.ff3ad8f9.rdunlap@xenotime.net>
-	<20071114182351.GI14254@fieldses.org>
+	<4739AFE0.20705@rtr.ca>
+	<200711131734.11353.vda.linux@googlemail.com>
 X-Mailer: VM 7.19 under Emacs 21.4.1
 X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
 	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
@@ -41,49 +35,94 @@ X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday November 14, bfields@fieldses.org wrote:
-> On Wed, Nov 14, 2007 at 09:38:20AM -0800, Randy Dunlap wrote:
-> > On Wed, 14 Nov 2007 15:08:47 +0100 Ingo Molnar wrote:
-> > > so please stop this "too busy and too noisy" nonsense already. It was 
-> > > nonsense 10 years ago and it's nonsense today. In 10 years the kernel 
-> > > grew from a 1 million lines codebase to an 8 million lines codebase, so 
-> > > what? Deal with it and be intelligent about filtering your information 
-> > > influx instead of imposing a hard pre-filtering criteria that restricts 
-> > > intelligent processing of information.
-> > 
-> > So you have a preferred method of handling email.  Please don't
-> > force it on the rest of us.
+On Tuesday November 13, vda.linux@googlemail.com wrote:
+> On Tuesday 13 November 2007 07:08, Mark Lord wrote:
+> > Ingo Molnar wrote:
+> > ..
+> >
+> > > This is all QA-101 that _cannot be argued against on a rational basis_,
+> > > it's just that these sorts of things have been largely ignored for
+> > > years, in favor of the all-too-easy "open source means many eyeballs and
+> > > that is our QA" answer, which is a _good_ answer but by far not the most
+> > > intelligent answer! Today "many eyeballs" is simply not good enough and
+> > > nature (and other OS projects) will route us around if we dont change.
+> >
+> > ..
+> >
+> > QA-101 and "many eyeballs" are not at all in opposition.
+> > The latter is how we find out about bugs on uncommon hardware,
+> > and the former is what we need to track them and overall quality.
+> >
+> > A HUGE problem I have with current "efforts", is that once someone
+> > reports a bug, the onus seems to be 99% on the *reporter* to find
+> > the exact line of code or commit.  Ghad what a repressive method.
 > 
-> I'd be curious for any pointers on tools, actually.  I "read" (ok, skim)
-> lkml but still overlook relevant bug reports occasionally.
-> (Fortunately, between Trond and Andrew and others forwarding things it's
-> not actually a problem, but I'm still curious).
+> This is the only method that scales.
 
-Virtual Folders.
+That sounds overly hash, and the rest of you mail sounds much more
+moderate and sensible - I can only assume you were using hyperbole??
 
-I use VM mode in EMACS, but I believe some other mail readers have the
-same functionality.
-I have a virtual folder called "nfs" which shows me all mail in my
-inbox which has the string 'nfs' or 'lockd' in a To, Cc, or Subject
-field.  When I visit that folder, I see all mail about nfs, whether it
-was sent to me personally, or to a relevant list, or to lkml.
+Putting the "onus on the reporter" is simply not going to work unless
+you have a business relationship.  In the community, we are all
+volunteering our time (well, maybe my employer is volunteering my time
+to do community support, but the effect is the same).
 
-Admittedly if someone doesn't bother to choose a meaningful Subject,
-then I might miss that.  I think this mostly happens when Andrew sends
-a "-mm" announcement, asked people to change the subject line when
-following up, and someone follows up without changing the subject line
-and say "NFS doesn't work any more".
+I would hope that the focus of developers is to empower bug reporters
+to provide further information (and as has been said, "git bisect" is
+a great empowerer).  Some people will be incredibly help, especially
+if you ask politely and say thankyou.  Others won't for any of a
+number of reasons - and maybe that means their bug won't get fixed.
 
-I have another virtual folder which matches "md" and "raid" and
-"mdadm" in any header (so when the people from coraid.com talk about
-ATA over Ethernet, that gets badly filed, but it is a small cost).
+To my eyes, the "only method that scales" is investing effort in
+encouraging and training bug reporters.  Some of that effort might not
+produce results, but when others among those you have encouraged start
+answering the newbee questions on the list and save you the time, you
+get a distinct feeling that it was all worth while.
 
-Then I have the "bkernel" (boring kernel) folder for all mail from
-lkml that doesn't mention nfs or raid or md, and isn't from or to
-me.  That folder I skim every week or so and just read the juicy
-debates and look for interesting tidbits from interesting people -
-then delete the whole folder, mostly unread.
 
-I don't think I could cope with mail without virtual folders.
+I think we are in agreement - I just wanted to take issue with that
+one sentence :-)  The rest is great.
 
 NeilBrown
+
+> 
+> Developer has only 24 hours in each day, and sometimes he needs to eat,
+> sleep, and maybe even pay attention to e.g. his kids.
+> 
+> But bug reporters are much more numerous and they have more
+> hours in one day combined.
+> 
+> BUT - it means that developers should try to increase user base,
+> not scare users away.
+> 
+> > And if the "developer" who broke the damn thing, or who at least
+> > "claims" to be supporting that code, cannot "reproduce" the bug,
+> > they drop it completely.
+> 
+> Developer should let reporter know that reporter needs to help
+> a bit here. Sometimes a bit of hand holding is needed, but it
+> pays off because you breed more qualified testers/bug reporters.
+> 
+> > Contrast that flawed approach with how Linus does things..
+> > he thinks through the symptoms, matches them to the code,
+> > and figures out what the few possibilities might be,
+> > and feeds back some trial balloon patches for the bug reporter to try.
+> >
+> > MUCH better.
+> >
+> > And remember, *I'm* an old-time Linux kernel developer.. just think about
+> > the people reporting bugs who haven't been around here since 1992..
+> 
+> Yes. Developers should not grow more and more unhelpful
+> and arrogant towards their users just because inexperienced
+> users send incomplete/poorly written bug reports.
+> They need to provide help, not humiliate/ignore.
+> 
+> I think we agree here.
+> --
+> vda
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
