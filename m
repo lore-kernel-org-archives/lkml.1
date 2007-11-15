@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932598AbXKOGuL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932790AbXKOGuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932598AbXKOGuL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:50:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758685AbXKOGnP
+	id S932790AbXKOGuq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:50:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758874AbXKOGnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:43:15 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:57691 "EHLO
+	Thu, 15 Nov 2007 01:43:17 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:57706 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762718AbXKOGnL (ORCPT
+	with ESMTP id S1758458AbXKOGnO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:43:11 -0500
-Date: Wed, 14 Nov 2007 22:41:19 -0800
+	Thu, 15 Nov 2007 01:43:14 -0500
+Date: Wed, 14 Nov 2007 22:41:23 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,15 +21,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Michael Wu <flamingice@sourmilk.net>, linux-wireless@vger.kernel.org,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 15/16] rtl8187: Fix more frag bit checking, rts duration
-	calc
-Message-ID: <20071115064119.GP18951@kroah.com>
+       linux-wireless@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Marc Pignat <marc.pignat@hevs.ch>, Daniel Drake <dsd@gentoo.org>
+Subject: [patch 16/16] zd1211rw, fix oops when ejecting install media
+Message-ID: <20071115064123.GQ18951@kroah.com>
 References: <20071115060353.071060513@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="rtl8187-fix-more-frag-bit-checking-rts-duration-calc.patch"
+Content-Disposition: inline; filename="zd1211rw-fix-oops-when-ejecting-install-media.patch"
 In-Reply-To: <20071115063921.GA18827@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -42,75 +42,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Michael Wu <flamingice@sourmilk.net>
+From: Marc Pignat <marc.pignat@hevs.ch>
 
-patch 98798f4875b7149db4eb7d0a126fc6dcd9637821 in mainline.
+patch e0579d576cb894a4cf3c5af04fbf38e8c1281738 in mainline.
 
-The wrong pointer is passed to ieee80211_get_morefrag. Fix this.
+The disconnect function can dereference the net_device structure when it
+is never allocated. This is the case when ejecting the device installer.
 
-While we're at it, reorder things so they look better and the rts duration
-calculation is done with the right length.
-
-Thanks to Christoph Hellwig for finding the ieee80211_get_morefrag issue.
-
-Signed-off-by: Michael Wu <flamingice@sourmilk.net>
+Signed-off-by: Marc Pignat <marc.pignat@hevs.ch>
+Acked-by: Daniel Drake <dsd@gentoo.org>
 Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/rtl8187_dev.c |   31 ++++++++++++++++---------------
- 1 file changed, 16 insertions(+), 15 deletions(-)
+ drivers/net/wireless/zd1211rw/zd_usb.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
---- a/drivers/net/wireless/rtl8187_dev.c
-+++ b/drivers/net/wireless/rtl8187_dev.c
-@@ -78,7 +78,8 @@ static int rtl8187_tx(struct ieee80211_h
- 	struct rtl8187_tx_hdr *hdr;
- 	struct rtl8187_tx_info *info;
- 	struct urb *urb;
--	u32 tmp;
-+	__le16 rts_dur = 0;
-+	u32 flags;
+--- a/drivers/net/wireless/zd1211rw/zd_usb.c
++++ b/drivers/net/wireless/zd1211rw/zd_usb.c
+@@ -1041,14 +1041,17 @@ error:
+ static void disconnect(struct usb_interface *intf)
+ {
+ 	struct net_device *netdev = zd_intf_to_netdev(intf);
+-	struct zd_mac *mac = zd_netdev_mac(netdev);
+-	struct zd_usb *usb = &mac->chip.usb;
++	struct zd_mac *mac;
++	struct zd_usb *usb;
  
- 	urb = usb_alloc_urb(0, GFP_ATOMIC);
- 	if (!urb) {
-@@ -86,24 +87,24 @@ static int rtl8187_tx(struct ieee80211_h
- 		return 0;
- 	}
+ 	/* Either something really bad happened, or we're just dealing with
+ 	 * a DEVICE_INSTALLER. */
+ 	if (netdev == NULL)
+ 		return;
  
--	hdr = (struct rtl8187_tx_hdr *)skb_push(skb, sizeof(*hdr));
--	tmp = skb->len - sizeof(*hdr);
--	tmp |= RTL8187_TX_FLAG_NO_ENCRYPT;
--	tmp |= control->rts_cts_rate << 19;
--	tmp |= control->tx_rate << 24;
--	if (ieee80211_get_morefrag((struct ieee80211_hdr *)skb))
--		tmp |= RTL8187_TX_FLAG_MORE_FRAG;
-+	flags = skb->len;
-+	flags |= RTL8187_TX_FLAG_NO_ENCRYPT;
-+	flags |= control->rts_cts_rate << 19;
-+	flags |= control->tx_rate << 24;
-+	if (ieee80211_get_morefrag((struct ieee80211_hdr *)skb->data))
-+		flags |= RTL8187_TX_FLAG_MORE_FRAG;
- 	if (control->flags & IEEE80211_TXCTL_USE_RTS_CTS) {
--		tmp |= RTL8187_TX_FLAG_RTS;
--		hdr->rts_duration =
--			ieee80211_rts_duration(dev, skb->len, control);
-+		flags |= RTL8187_TX_FLAG_RTS;
-+		rts_dur = ieee80211_rts_duration(dev, skb->len, control);
- 	}
- 	if (control->flags & IEEE80211_TXCTL_USE_CTS_PROTECT)
--		tmp |= RTL8187_TX_FLAG_CTS;
--	hdr->flags = cpu_to_le32(tmp);
-+		flags |= RTL8187_TX_FLAG_CTS;
++	mac = zd_netdev_mac(netdev);
++	usb = &mac->chip.usb;
 +
-+	hdr = (struct rtl8187_tx_hdr *)skb_push(skb, sizeof(*hdr));
-+	hdr->flags = cpu_to_le32(flags);
- 	hdr->len = 0;
--	tmp = control->retry_limit << 8;
--	hdr->retry = cpu_to_le32(tmp);
-+	hdr->rts_duration = rts_dur;
-+	hdr->retry = cpu_to_le32(control->retry_limit << 8);
+ 	dev_dbg_f(zd_usb_dev(usb), "\n");
  
- 	info = (struct rtl8187_tx_info *)skb->cb;
- 	info->control = kmemdup(control, sizeof(*control), GFP_ATOMIC);
+ 	zd_netdev_disconnect(netdev);
 
 -- 
