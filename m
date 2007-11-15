@@ -1,137 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762571AbXKOGPB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762174AbXKOGPh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762571AbXKOGPB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 01:15:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758753AbXKOGLE
+	id S1762174AbXKOGPh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 01:15:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761305AbXKOGN4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 01:11:04 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:36583 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753073AbXKOGLA (ORCPT
+	Thu, 15 Nov 2007 01:13:56 -0500
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:34674 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759338AbXKOGNx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 01:11:00 -0500
-Date: Wed, 14 Nov 2007 22:09:58 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [patch 13/13] BLOCK: Fix bad sharing of tag busy list on queues
-	with shared tag maps
-Message-ID: <20071115060958.GN7602@kroah.com>
-References: <20071115042610.731859958@mini.kroah.org>
+	Thu, 15 Nov 2007 01:13:53 -0500
+Message-ID: <473BE290.1000707@keyaccess.nl>
+Date: Thu, 15 Nov 2007 07:09:20 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="block-fix-bad-sharing-of-tag-busy-list-on-queues-with-shared-tag-maps.patch"
-In-Reply-To: <20071115060544.GA7602@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+To: David Miller <davem@davemloft.net>, perex@suse.cz
+CC: tiwai@suse.de, rmk+lkml@arm.linux.org.uk, alsa-devel@alsa-project.org,
+       netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org, protasnb@gmail.com,
+       linux-ide@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz, akpm@linux-foundation.org
+Subject: Re: Moderated list
+References: <s5h8x51fd2l.wl%tiwai@suse.de>	<473AE84A.4050004@keyaccess.nl>	<s5h3av9f9ac.wl%tiwai@suse.de> <20071114.152315.134994547.davem@davemloft.net>
+In-Reply-To: <20071114.152315.134994547.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: 0.0 (/)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
+On 15-11-07 00:23, David Miller wrote:
 
-------------------
-From: Jens Axboe <jens.axboe@oracle.com>
+> From: Takashi Iwai <tiwai@suse.de>
 
-patch 6eca9004dfcb274a502438a591df5b197690afb1 in mainline.
+>> BTW, I also prefer keeping the name alsa-devel@.  It's been so.
+> 
+> That's fine with me, I've changed it alsa-devel@vger.kernel.org
 
-For the locking to work, only the tag map and tag bit map may be shared
-(incidentally, I was just explaining this to Nick yesterday, but I
-apparently didn't review the code well enough myself). But we also share
-the busy list!  The busy_list must be queue private, or we need a
-block_queue_tag covering lock as well.
+Great, thanks. Jaroslav -- given that this list won't need moderation I'd 
+consider it the main/only alsa-devel. The alsa-devel subscriber database was 
+cleansed only a couple of months ago when moving from sourceforge so it 
+should now be okay to just transfer all subscriptions.
 
-So we have to move the busy_list to the queue. This'll work fine, and
-it'll actually also fix a problem with blk_queue_invalidate_tags() which
-will invalidate tags across all shared queues. This is a bit confusing,
-the low level driver should call it for each queue seperately since
-otherwise you cannot kill tags on just a single queue for eg a hard
-drive that stops responding. Since the function has no callers
-currently, it's not an issue.
+Or maybe you're already moving things; mailman.alsa-project.org seems to be 
+down at least....
 
-This is fixed with commit 6eca9004dfcb274a502438a591df5b197690afb1 in
-Linus' tree.
+Rene.
 
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- block/ll_rw_blk.c      |    8 +++-----
- include/linux/blkdev.h |    2 +-
- 2 files changed, 4 insertions(+), 6 deletions(-)
-
---- a/block/ll_rw_blk.c
-+++ b/block/ll_rw_blk.c
-@@ -819,7 +819,6 @@ static int __blk_free_tags(struct blk_qu
- 	retval = atomic_dec_and_test(&bqt->refcnt);
- 	if (retval) {
- 		BUG_ON(bqt->busy);
--		BUG_ON(!list_empty(&bqt->busy_list));
- 
- 		kfree(bqt->tag_index);
- 		bqt->tag_index = NULL;
-@@ -931,7 +930,6 @@ static struct blk_queue_tag *__blk_queue
- 	if (init_tag_map(q, tags, depth))
- 		goto fail;
- 
--	INIT_LIST_HEAD(&tags->busy_list);
- 	tags->busy = 0;
- 	atomic_set(&tags->refcnt, 1);
- 	return tags;
-@@ -982,6 +980,7 @@ int blk_queue_init_tags(struct request_q
- 	 */
- 	q->queue_tags = tags;
- 	q->queue_flags |= (1 << QUEUE_FLAG_QUEUED);
-+	INIT_LIST_HEAD(&q->tag_busy_list);
- 	return 0;
- fail:
- 	kfree(tags);
-@@ -1152,7 +1151,7 @@ int blk_queue_start_tag(struct request_q
- 	rq->tag = tag;
- 	bqt->tag_index[tag] = rq;
- 	blkdev_dequeue_request(rq);
--	list_add(&rq->queuelist, &bqt->busy_list);
-+	list_add(&rq->queuelist, &q->tag_busy_list);
- 	bqt->busy++;
- 	return 0;
- }
-@@ -1173,11 +1172,10 @@ EXPORT_SYMBOL(blk_queue_start_tag);
-  **/
- void blk_queue_invalidate_tags(struct request_queue *q)
- {
--	struct blk_queue_tag *bqt = q->queue_tags;
- 	struct list_head *tmp, *n;
- 	struct request *rq;
- 
--	list_for_each_safe(tmp, n, &bqt->busy_list) {
-+	list_for_each_safe(tmp, n, &q->tag_busy_list) {
- 		rq = list_entry_rq(tmp);
- 
- 		if (rq->tag == -1) {
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -356,7 +356,6 @@ enum blk_queue_state {
- struct blk_queue_tag {
- 	struct request **tag_index;	/* map of busy tags */
- 	unsigned long *tag_map;		/* bit map of free/busy tags */
--	struct list_head busy_list;	/* fifo list of busy tags */
- 	int busy;			/* current depth */
- 	int max_depth;			/* what we will send to device */
- 	int real_max_depth;		/* what the array can hold */
-@@ -451,6 +450,7 @@ struct request_queue
- 	unsigned int		dma_alignment;
- 
- 	struct blk_queue_tag	*queue_tags;
-+	struct list_head	tag_busy_list;
- 
- 	unsigned int		nr_sorted;
- 	unsigned int		in_flight;
-
--- 
