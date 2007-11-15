@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753314AbXKOFga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbXKOFgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753314AbXKOFga (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 00:36:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751093AbXKOFgW
+	id S1756150AbXKOFgz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 00:36:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbXKOFgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 00:36:22 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36603 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751074AbXKOFgV (ORCPT
+	Thu, 15 Nov 2007 00:36:46 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:34685 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751144AbXKOFgp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 00:36:21 -0500
-Date: Wed, 14 Nov 2007 21:35:53 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Bron Gondwana <brong@fastmail.fm>
-cc: Christian Kujau <lists@nerdbynature.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] New Kernel Bugs
-In-Reply-To: <20071115052538.GA21522@brong.net>
-Message-ID: <alpine.LFD.0.9999.0711142130090.2786@woody.linux-foundation.org>
-References: <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113.043207.44732743.davem@davemloft.net> <20071113110259.44c56d42.akpm@linux-foundation.org>
- <alpine.DEB.0.9999.0711132055550.7865@sheep.housecafe.de> <20071113130411.26ccae12.akpm@linux-foundation.org> <alpine.DEB.0.99999.0711132239350.3960@sheep.housecafe.de> <20071115040708.GB15302@brong.net> <alpine.LFD.0.9999.0711142020220.2786@woody.linux-foundation.org>
- <20071115052538.GA21522@brong.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 15 Nov 2007 00:36:45 -0500
+Date: Thu, 15 Nov 2007 06:36:39 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Max Asbock <masbock@us.ibm.com>
+Cc: Andi Kleen <andi@firstfloor.org>, lkml <linux-kernel@vger.kernel.org>,
+       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
+Subject: Re: x86 32-bit machine check handler
+Message-ID: <20071115053639.GA7552@one.firstfloor.org>
+References: <1194899975.9979.7.camel@w-amax.beaverton.ibm.com> <p73abpiz0x8.fsf@bingen.suse.de> <1195088771.9979.31.camel@w-amax.beaverton.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1195088771.9979.31.camel@w-amax.beaverton.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> I found patch from about three years ago that implemented a 32-bit
+> version of the x86_64 machine check handler. Do you know of any newer
+> attempts?
 
+No.
 
-On Thu, 15 Nov 2007, Bron Gondwana wrote:
-> 
-> So we've already been running those settings for a while.  They didn't
-> help.
+> However, given the merge of x86, a single implementation should be able
+> to handle both the 32-bit and 64-bit cases. I tried to build the 64-bit
+> machine check handler (mce_64.c) for 32-bit to see what kind problems it
+> would run into. So far I found a few things:
+> - there is no idle_notifier_register in 32-bit x86
 
-Ok, so something else is up. If the mmap file is 2G, and you have 6G of 
-RAM, you shouldn't be hitting the dirty limits with those setups.
+There used to be one, just needs to be readded.
 
-Of course, it may still be that some accounting thing is simply off, and 
-the dirty limits trigger *despite* all the proper config settings ;)
+> - there is no oops_begin in 32-bit x86
+> - register names are different (rip, cs)
 
-> Guess we'd better get on to figuring building a simple test app.
+regs->rip -> instruction_pointer() 
+->cs just needs a similar macro
 
-Yeah, if you have something that others can see in action, that is sure 
-going to get more people to look at it. 
+> So it looks like giving 32-bit x86 the same machine check support as in
+> 64-bit is both feasible and desirable.
 
-That said - I'm sincerely hoping that you're not running on a 32-bit 
-kernel. Because if so, those percentages are percentages of *normal* 
-memory, not highmem (that got changed at one point after people ran out of 
-lowmem).
+Yep.
 
-So even at 100% dirty limits, it won't let you dirty more than 1GB on the 
-default 32-bit setup.
-
-		Linus
+-Andi
