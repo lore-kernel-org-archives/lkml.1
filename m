@@ -1,103 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759405AbXKOJgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761470AbXKOJi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759405AbXKOJgI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 04:36:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756421AbXKOJfz
+	id S1761470AbXKOJi6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 04:38:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757226AbXKOJit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 04:35:55 -0500
-Received: from anubis.medic.chalmers.se ([129.16.30.218]:50259 "EHLO
-	anubis.medic.chalmers.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751605AbXKOJfy (ORCPT
+	Thu, 15 Nov 2007 04:38:49 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:16226 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756970AbXKOJir (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 04:35:54 -0500
-X-Greylist: delayed 1698 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Nov 2007 04:35:53 EST
-Message-ID: <473C0CCE.40407@ce.chalmers.se>
-Date: Thu, 15 Nov 2007 10:09:34 +0100
-From: Patric Karlsson <patric@ce.chalmers.se>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Thu, 15 Nov 2007 04:38:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=i2M+ZL4Mn4e1dKML52fYu+B0KV9QoQkTWjH2AmW2TEfXZdmMAt/kZZR1Pw/9HJN4AHyWw9mbRi3BBWex/DUNF+kR0boDAIdAprKFrVNtrNPmloY8yFdg6QEY7m+LdhEqF0Py345iW9Vje+FlNketG8vw2uaGAEExFxoJNsXX14Y=
+Message-ID: <473C0594.6030304@gmail.com>
+Date: Thu, 15 Nov 2007 09:38:44 +0100
+From: Jiri Olsa <olsajiri@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel,gmane.linux.ide
-To: Grzegorz Kulewski <kangur@polcom.net>
-CC: Tejun Heo <htejun@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: libata_uli puts second channel to PIO4 on 2.6.18
-References: <Pine.LNX.4.63.0702030231150.6097@alpha.polcom.net> <45C96174.2030407@gmail.com> <Pine.LNX.4.63.0702110512010.15871@alpha.polcom.net>
-In-Reply-To: <Pine.LNX.4.63.0702110512010.15871@alpha.polcom.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: kernel-janitors@vger.kernel.org
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       joel.becker@oracle.com
+Subject: [PATCH] fs: remove dead config CONFIG_HAS_COMPAT_EPOLL_EVENT symbol
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Grzegorz Kulewski wrote:
-> On Wed, 7 Feb 2007, Tejun Heo wrote:
->> Grzegorz Kulewski wrote:
->>>  It worked very well for half a year but with one disk (IIRC it was even
->>>  plugged into second channel but I wont bet on it). Now I have second 
->>> disk
->>>  (very similar) and it is always put into PIO4 mode:
->>>
->>>  [   17.404451] libata version 2.00 loaded.
->>>  [   17.404916] sata_uli 0000:00:04.0: version 1.0
->>>  [   17.405009] ACPI: PCI Interrupt 0000:00:04.0[A] -> GSI 18 (level, 
->>> low)
->>>  -> IRQ 185
->>>  [   17.405223] ata1: SATA max UDMA/133 cmd 0xD400 ctl 0xD002 bmdma 
->>> 0xB000
->>>  irq 185
->>>  [   17.405385] ata2: SATA max UDMA/133 cmd 0xB800 ctl 0xB402 bmdma 
->>> 0xB008
->>>  irq 185
->>>  [   17.405519] scsi2 : sata_uli
->>>  [   17.858803] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
->>>  [   17.880541] ata1.00: ATA-7, max UDMA/133, 488397168 sectors: 
->>> LBA48 NCQ
->>>  (depth 0/32)
->>>  [   17.880660] ata1.00: ata1: dev 0 multi count 16
->>>  [   17.888858] ata1.00: configured for UDMA/133
->>>  [   17.888941] scsi3 : sata_uli
->>>  [   18.342469] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
->>>  [   18.343573] ata2.00: ATA-7, max UDMA/133, 488397168 sectors: 
->>> LBA48 NCQ
->>>  (depth 0/32)
->>>  [   18.343691] ata2.00: ata2: dev 0 multi count 16
->>>  [   18.344972] ata2.00: configured for PIO4
->>
->> Some uli controllers have simplex bit stuck high indicating that they
->> can't perform DMA transfers simultaneously on both channels.  In this
->> case, libata configures the second channel as PIO only.  This has been
->> worked around by the following commit.
->>
->> commit b2a8bbe67d73631c71492fd60b757fc50a87f182
->> Author: Tejun Heo <htejun@gmail.com>
->> Date:   Thu Jan 25 19:40:05 2007 +0900
->>
->>   libata: implement ATA_FLAG_IGN_SIMPLEX and use it in sata_uli
->>
->>    Some uli controllers have stuck SIMPLEX bit which can't be cleared
->>    with ata_pci_clear_simplex(), but the controller is capable of doing
->>    DMAs on both channels simultaneously.  Implement ATA_FLAG_IGN_SIMPLEX
->>    which makes libata ignore the simplex bit and use it in sata_uli.
->>
->>    Signed-off-by: Tejun Heo <htejun@gmail.com>
->>    Signed-off-by: Jeff Garzik <jeff@garzik.org>
->>
->> For quick fix, just comment out lines which set ATA_HOST_SIMPLEX in
->> drivers/scsi/libata-bmdma.c.  e.g.
->>
->>      /*if (inb(bmdma + 2) & 0x80)
->>          probe_ent->host_set_flags |= ATA_HOST_SIMPLEX;*/
-> 
-> Thanks! After this fix it is working ok. Any chance to see the proper 
-> fix in -stable kernels for at least 2.6.18.x and 2.6.19.x?
-> 
-> 
-> Thanks,
-> 
-> Grzegorz Kulewski
-> 
+remove dead config CONFIG_HAS_COMPAT_EPOLL_EVENT symbol
+Signed-off-by: Jiri Olsa <olsajiri@gmail.com>
 
-I was wondering the same thing. While I could patch the kernel, and make 
-a custom build. I prefer not to, and just upgrade to a newer version.
+---
+ fs/compat.c            |   49 ------------------------------------------------
+ include/linux/compat.h |    8 -------
+ 2 files changed, 0 insertions(+), 57 deletions(-)
 
-/Patric
+diff --git a/fs/compat.c b/fs/compat.c
+index 15078ce..009109d 100644
+--- a/fs/compat.c
++++ b/fs/compat.c
+@@ -2087,51 +2087,6 @@ long asmlinkage compat_sys_nfsservctl(int cmd, void *notused, void *notused2)
+ 
+ #ifdef CONFIG_EPOLL
+ 
+-#ifdef CONFIG_HAS_COMPAT_EPOLL_EVENT
+-asmlinkage long compat_sys_epoll_ctl(int epfd, int op, int fd,
+-			struct compat_epoll_event __user *event)
+-{
+-	long err = 0;
+-	struct compat_epoll_event user;
+-	struct epoll_event __user *kernel = NULL;
+-
+-	if (event) {
+-		if (copy_from_user(&user, event, sizeof(user)))
+-			return -EFAULT;
+-		kernel = compat_alloc_user_space(sizeof(struct epoll_event));
+-		err |= __put_user(user.events, &kernel->events);
+-		err |= __put_user(user.data, &kernel->data);
+-	}
+-
+-	return err ? err : sys_epoll_ctl(epfd, op, fd, kernel);
+-}
+-
+-
+-asmlinkage long compat_sys_epoll_wait(int epfd,
+-			struct compat_epoll_event __user *events,
+-			int maxevents, int timeout)
+-{
+-	long i, ret, err = 0;
+-	struct epoll_event __user *kbuf;
+-	struct epoll_event ev;
+-
+-	if ((maxevents <= 0) ||
+-			(maxevents > (INT_MAX / sizeof(struct epoll_event))))
+-		return -EINVAL;
+-	kbuf = compat_alloc_user_space(sizeof(struct epoll_event) * maxevents);
+-	ret = sys_epoll_wait(epfd, kbuf, maxevents, timeout);
+-	for (i = 0; i < ret; i++) {
+-		err |= __get_user(ev.events, &kbuf[i].events);
+-		err |= __get_user(ev.data, &kbuf[i].data);
+-		err |= __put_user(ev.events, &events->events);
+-		err |= __put_user_unaligned(ev.data, &events->data);
+-		events++;
+-	}
+-
+-	return err ? -EFAULT: ret;
+-}
+-#endif	/* CONFIG_HAS_COMPAT_EPOLL_EVENT */
+-
+ #ifdef TIF_RESTORE_SIGMASK
+ asmlinkage long compat_sys_epoll_pwait(int epfd,
+ 			struct compat_epoll_event __user *events,
+@@ -2157,11 +2112,7 @@ asmlinkage long compat_sys_epoll_pwait(int epfd,
+ 		sigprocmask(SIG_SETMASK, &ksigmask, &sigsaved);
+ 	}
+ 
+-#ifdef CONFIG_HAS_COMPAT_EPOLL_EVENT
+-	err = compat_sys_epoll_wait(epfd, events, maxevents, timeout);
+-#else
+ 	err = sys_epoll_wait(epfd, events, maxevents, timeout);
+-#endif
+ 
+ 	/*
+ 	 * If we changed the signal mask, we need to restore the original one.
+diff --git a/include/linux/compat.h b/include/linux/compat.h
+index 0e69d2c..27143be 100644
+--- a/include/linux/compat.h
++++ b/include/linux/compat.h
+@@ -242,16 +242,8 @@ asmlinkage long compat_sys_migrate_pages(compat_pid_t pid,
+ /*
+  * epoll (fs/eventpoll.c) compat bits follow ...
+  */
+-#ifndef CONFIG_HAS_COMPAT_EPOLL_EVENT
+ struct epoll_event;
+ #define compat_epoll_event	epoll_event
+-#else
+-asmlinkage long compat_sys_epoll_ctl(int epfd, int op, int fd,
+-			struct compat_epoll_event __user *event);
+-asmlinkage long compat_sys_epoll_wait(int epfd,
+-			struct compat_epoll_event __user *events,
+-			int maxevents, int timeout);
+-#endif
+ asmlinkage long compat_sys_epoll_pwait(int epfd,
+ 			struct compat_epoll_event __user *events,
+ 			int maxevents, int timeout,
