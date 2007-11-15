@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932745AbXKOUVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932828AbXKOUYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932745AbXKOUVU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 15:21:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757159AbXKOUVF
+	id S932828AbXKOUYf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 15:24:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762023AbXKOUY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 15:21:05 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:27533 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757149AbXKOUVE (ORCPT
+	Thu, 15 Nov 2007 15:24:27 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:55306 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751665AbXKOUY0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 15:21:04 -0500
-Message-ID: <cccedfc60711151221p322894f8i94c540fefb0e4827@mail.gmail.com>
-Date: Thu, 15 Nov 2007 14:21:01 -0600
-From: "Jon Nelson" <jnelson@jamponi.net>
-To: "Michael Chan" <mchan@broadcom.com>
-Subject: Re: tg3: strange errors and non-working-ness
-Cc: "Jarek Poplawski" <jarkao2@o2.pl>, netdev <netdev@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1195158200.6360.17.camel@dell>
+	Thu, 15 Nov 2007 15:24:26 -0500
+Date: Thu, 15 Nov 2007 12:24:25 -0800
+From: Micah Dowty <micah@vmware.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Kyle Moffett <mrmacman_g4@mac.com>, Cyrus Massoumi <cyrusm@gmx.net>,
+       LKML Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@osdl.org>, Mike Galbraith <efault@gmx.de>,
+       Paul Menage <menage@google.com>
+Subject: Re: High priority tasks break SMP balancer?
+Message-ID: <20071115202425.GC4914@vmware.com>
+References: <20071109223417.GB16250@vmware.com> <4734F397.7080802@gmx.net> <20071110001103.GD16250@vmware.com> <2FAA6826-653E-482F-A037-C539BAEEA1DA@mac.com> <20071115191408.GA4914@vmware.com> <Pine.LNX.4.64.0711151206370.28639@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20071115094728.GB2366@ff.dom.local> <1195154603.6360.9.camel@dell>
-	 <cccedfc60711151117v70b285fbl79bbc92ced176d54@mail.gmail.com>
-	 <1195158200.6360.17.camel@dell>
+In-Reply-To: <Pine.LNX.4.64.0711151206370.28639@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/15/07, Michael Chan <mchan@broadcom.com> wrote:
-> On Thu, 2007-11-15 at 13:17 -0600, Jon Nelson wrote:
->
-> > Is this what you mean? I pulled this from the quoted text:
-> >
-> > Nov 10 22:45:52 frank kernel: NETDEV WATCHDOG: eth0: transmit timed out
-> >
->
-> Right.  This explains the reset at 22:45:52, but not the earlier reset
-> at 22:24:40.  Link never came up after that earlier reset.
->
-> Is this a new problem introduced by a new driver?  I notice you are
-> using tg3 3.65.  Have you used newer versions or older versions?
+On Thu, Nov 15, 2007 at 12:07:47PM -0800, Christoph Lameter wrote:
+> On Thu, 15 Nov 2007, Micah Dowty wrote:
+> 
+> > For reference, the exact test I used with git-bisect is attached. The
+> > C program (priosched) starts two busy-looping threads and a
+> > high-priority high-frequency thread which uses relatively little
+> > CPU. The Python program repeatedly starts the C program, runs it for a
+> > half second, and measures the resulting imbalance in CPU usage. On
+> > kernels prior to the above commit, this reports values within about
+> > 10% of 1.0. On later kernels, it crashes within a couple iterations
+> > due to a divide-by-zero error :)
+> 
+> The kernel crashes? Sounds like your application crashes with a divide by 
+> zero?
 
-This is not a new problem - these cards have done this or something
-like it for as long as I've had them*. They work just fine in 100 MBit
-mode but not in all of my machines, and in none of them at gig-e.
-I've tried every version of the driver since SUSE 9.1 without much
-luck (at least as far back as 2.6.9). I'd try a newer driver, esp. if
-I could make it compile on 2.6.22.12 (I prefer but do not require to
-stay with the stock distro kernel, modules notwithstanding).
+Yes, the Python test harness crashes, not the kernel. It's just
+because on a kernel which exhibits this SMP balancer bug, within a
+couple of test iterations I'll hit a case where cpu1 was almost
+totally idle and the test harness divides by zero when calculating the
+imbalance.
 
-NOTE: to avoid list noise, I can make a bug out of this on
-bugzilla.kernel.org and we can proceed from there if that is
-preferred.
-
-[*] Actually, they worked OK in 2.4.something way-back-when but only
-for short durations at gig-e speeds.
-
--- 
-Jon
+--Micah
