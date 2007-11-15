@@ -1,62 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932483AbXKOUlO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932995AbXKOUlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932483AbXKOUlO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 15:41:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbXKOUk7
+	id S932995AbXKOUlg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 15:41:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757732AbXKOUlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 15:40:59 -0500
-Received: from smtp108.plus.mail.mud.yahoo.com ([68.142.206.241]:22557 "HELO
-	smtp108.plus.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750959AbXKOUk7 (ORCPT
+	Thu, 15 Nov 2007 15:41:24 -0500
+Received: from wr-out-0506.google.com ([64.233.184.239]:38479 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754617AbXKOUlX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 15:40:59 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
-  b=Fgdp1ldkj0lROVenoYQYgJxbgXE4/AhZtZfNhzmBDv0aZ0iAr5hazsRM+wssR8OYjbpizGm15WiowPJTdpV4JS3blRfyJUjvS+omtjaj60KRCqqZbIwivr0iJalM6gl3uaFdxPH2SoDmIUMkyIs+EyMqCMkMc7KVaY5w+WBXqBA=  ;
-X-YMail-OSG: wxk16NsVM1lS0DgiSSkHFy_5JbUKMvsBE1EJtQcHkd0tOWHozFxXeDP7q5cAHih1n_vWnJlqVA--
-Date: Thu, 15 Nov 2007 21:40:47 +0100
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: Lucy McCoy <lucy@keyspan.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] keyspan: init termios properly
-Message-ID: <20071115204047.GA5766@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
-References: <20071103100301.GA5615@gollum.tnic> <473C86A2.1060505@keyspan.com>
+	Thu, 15 Nov 2007 15:41:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=i1mR8lE9wAssjFvACZ7ANxTHqqZzaRU5VugAnr43atf3n7QpPMYtolK8TMhYyuTxbPrN0zTSWnemIM1OfM05lAnJpS7jUZXK1rE38Kk4kxG+rFrLEqfBBSZO3+8HMiw4ClTOLvmXmIFek1a4vvv+JED4g+tb6OaexL2DteYwTWs=
+Message-ID: <5bdc1c8b0711151241j5f1b8427w38d2a286eb6ebb7f@mail.gmail.com>
+Date: Thu, 15 Nov 2007 12:41:21 -0800
+From: "Mark Knecht" <markknecht@gmail.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: 2.6.24-rc2-rt1
+Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Gregory Haskins" <ghaskins@novell.com>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Daniel Walker" <dwalker@mvista.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+In-Reply-To: <1195152030.13982.48.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <473C86A2.1060505@keyspan.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <1195152030.13982.48.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 15, 2007 at 09:49:22AM -0800, Lucy McCoy wrote:
-> Greg & Boris,
+On Nov 15, 2007 10:40 AM, Steven Rostedt <rostedt@goodmis.org> wrote:
+> Finally!
 >
-> I've been out of town and just saw this.
+> We are pleased to announce 2.6.24-rc2-rt1.
 >
-> This patch will work with the 19HS but WILL BREAK all other Keyspan
-> adapters.  It will take me a few days to get to looking at a correct fix but
-> that keyspan_send_setup(port, 1) (and the '1' is the important part) must 
-> happen once
-> when the port is first opened.  The cflag can just be set to whatever the 
-> normal default
-> is for your serial environment.  What are the defaults?
+<SNIP>
 
-Hi Lucy,
+Hi Steve,
+   Not sure I've ever posted on this list. Always looking to help out
+at my low level.
 
-sorry but i don't have the other usb-to-serial models to test them too, i guess
-you're in the position to do that :) Well, from what i've unterstood from
-reading the code, you can still do the keyspan_send_setup() call since the
-switch-case-statement is not handling the 19s series so while this call won't have any
-influence on them, it'll still init the others properly, no? Anyway, you can send me your
-fix for testing.
+   Anyway, I tried building the kernel. My 1st two attempts, done
+running make menuconfig from scratch, didn't boot. I gave up on that
+for now and tried using make oldconfig from my 2.6.23-rt1 kernel (I'm
+so far behind!!) and ended up with this error. Not sure it's enough
+for you to find the bug. If you want/need more or want the config file
+let me know.
 
-Thanks.
+   I'm sure this is just me setting inappropriate bits but I figured I
+might as well send along the info. >/dev/null if it's inappropriate
+but let me know how to move forward if possible.
 
--- 
-Regards/Gruﬂ,
-    Boris.
+   As always thanks the the rt-kernel team for all you do.
+
+Cheers,
+Mark
+
+  CC      ipc/mqueue.o
+  CC      ipc/compat_mq.o
+  LD      ipc/built-in.o
+  CC      security/security.o
+  CC      security/dummy.o
+  CC      security/inode.o
+  LD      security/built-in.o
+  CC [M]  security/commoncap.o
+  CC [M]  security/realcap.o
+security/realcap.c: In function 'realtime_exit':
+security/realcap.c:129: error: implicit declaration of function
+'mod_unreg_security'
+security/realcap.c:133: error: implicit declaration of function
+'unregister_security'
+make[1]: *** [security/realcap.o] Error 1
+make: *** [security] Error 2
+lightning linux #
