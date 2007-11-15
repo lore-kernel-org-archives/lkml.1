@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764476AbXKOHcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765370AbXKOHd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764476AbXKOHcT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 02:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758239AbXKOHcH
+	id S1765370AbXKOHd0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 02:33:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757624AbXKOHdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 02:32:07 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:3489 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757092AbXKOHcG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 02:32:06 -0500
-Date: Thu, 15 Nov 2007 15:31:22 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: David Miller <davem@davemloft.net>
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, stable@kernel.org,
-       jmforbes@linuxtx.org, zwane@arm.linux.org.uk, tytso@mit.edu,
-       rdunlap@xenotime.net, davej@redhat.com, chuckw@quantumlinux.com,
-       reviews@ml.cw.f00f.org, mkrufky@linuxtv.org, cebbert@redhat.com,
-       cavokz@gmail.com, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@kernel.org
-Subject: Re: [patch 06/23] Fix SKB_WITH_OVERHEAD calculations.
-Message-ID: <20071115073122.GA24246@gondor.apana.org.au>
-References: <20071115055238.692814352@mini.kroah.org> <20071115062022.GG8282@kroah.com> <20071115062939.GA23579@gondor.apana.org.au> <20071114.230039.114721276.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071114.230039.114721276.davem@davemloft.net>
-User-Agent: Mutt/1.5.9i
+	Thu, 15 Nov 2007 02:33:17 -0500
+Received: from www.tglx.de ([62.245.132.106]:42500 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752586AbXKOHdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 02:33:16 -0500
+Date: Thu, 15 Nov 2007 08:32:43 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: David Brownell <david-b@pacbell.net>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Florian Fainelli <florian.fainelli@telecomint.eu>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>, Ingo Molnar <mingo@elte.hu>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [patch 2.6.24-rc2 1/3] generic gpio -- gpio_chip support
+In-Reply-To: <200711142302.02498.david-b@pacbell.net>
+Message-ID: <alpine.LFD.0.9999.0711150824480.3265@localhost.localdomain>
+References: <200711091136.20051.david-b@pacbell.net> <200711121726.39263.david-b@pacbell.net> <alpine.LFD.0.9999.0711141228210.3265@localhost.localdomain> <200711142302.02498.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 14, 2007 at 11:00:39PM -0800, David Miller wrote:
->
-> I was just about to mention this and what I think we should do
-> instead is keep the SKB_WITH_OVERHEAD calculation fix in there
-> (it fixes a serious bug which users are hitting) and add the
-> fix for the second bug fix this round as well.
+On Wed, 14 Nov 2007, David Brownell wrote:
+> > The protection of the chip list can be converted to a mutex and
+> > does not need to be a spinlock at all.
 > 
-> Therefore, Greg please keep the patch add the following one as it will
-> address all of the issues.
+> No, we still need to use a spinlock to protect table changes.
+> The reason for that is briefly:
+> 
+>   - gpio_request()/gpio_free() have so far been optional.  Most
+>     platforms implement them as NOPs, not all drivers use them.
+>     (Having gpiolib in place should help change that ...)
 
-I agree.  If the stable team could make an exception for this
-it would be great.
+By magically doing the request of the pin ? See below.
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+>   - gpio_direction_input()/gpio_direction_output() implicitly
+>     request the pins, if they weren't already requested.
+
+Eek, that's completely wrong. Allowing to access a resource _before_
+it is assigned and then doing the assignment implicit is a really bad
+idea.
+
+>   - Those input/output direction-setting calls may be called
+>     in IRQ contexts, which means (on non-RT kernels) no mutex.
+
+There is no reason to do that if you actually have a useful reference
+to the chip _before_ accessing the pin.
+ 
+> So we're actually in good shape; just take out a bit of code
+> (or turn it into debugging instrumentation) and I don't think
+> anyone will complain about the locking any more.
+
+This still does not solve the lookup, which is done for each operation
+on a pin (direction setting, read, write).
+
+     	 tglx
+
