@@ -1,102 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933689AbXKPOaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934743AbXKPOav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933689AbXKPOaZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 09:30:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933485AbXKPOZp
+	id S934743AbXKPOav (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 09:30:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934402AbXKPO2W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 09:25:45 -0500
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:55615 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760533AbXKPOZ3 (ORCPT
+	Fri, 16 Nov 2007 09:28:22 -0500
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:35588 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934397AbXKPO2T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 09:25:29 -0500
-Message-Id: <20071116142526.604069427@de.ibm.com>
-References: <20071116142441.484714036@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 16 Nov 2007 15:24:45 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 04/10] cmm: remove unused binary sysctls.
-Content-Disposition: inline; filename=004-cmm.diff
+	Fri, 16 Nov 2007 09:28:19 -0500
+Message-ID: <473DA25B.2000702@linux.vnet.ibm.com>
+Date: Fri, 16 Nov 2007 19:29:55 +0530
+From: Ciju Rajan K <ciju@linux.vnet.ibm.com>
+Reply-To: ciju@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
+MIME-Version: 1.0
+To: aglitke <agl@us.ibm.com>
+CC: linux-kernel@vger.kernel.org, wli@holomorphy.com
+Subject: Re: [RFC] [PATCH] hugetlbfs :shmget with SHM_HUGETLB only works as
+ root
+References: <473B0317.6010603@linux.vnet.ibm.com> <1195054301.18047.20.camel@localhost.localdomain>
+In-Reply-To: <1195054301.18047.20.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+Hi  Adam,
+ If this condition check is not included, the root user have to use the 
+function
+ setrlimit() to set the lock_limit of a normal user to RLIM_INFINITY.  I 
+think
+ the /proc interface 'hugetlb_shm_group' is introduced to avoid these 
+difficulties.
+ Please correct me, if I am wrong.
 
-Remove binary sysctls that never worked due to missing strategy functions.
+ Regarding the problem with the 'if' condition, I feel that even in the 
+case of
+ user's lock_limit is set to unlimited, he could use unlimited hugepages and
+ normal page shm segments. So what is the advantage in this scenario.
 
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+ I tried to avoid the #ifdef statements. But the variable 
+sysctl_hugetlb_shm_group is defined
+ in fs/hugetlbfs/inode.c, this segment is enabled only when the config 
+parameter
+ CONFIG_HUGETLBFS is set to yes. If the hugetlbfs is  not selected while 
+configuring,
+ there would be a compilation error.
 
- arch/s390/mm/cmm.c     |    3 ---
- include/linux/sysctl.h |    5 -----
- kernel/sysctl_check.c  |    3 ---
- 3 files changed, 11 deletions(-)
+ Is there any better way so that the root user can configure the gid in 
+'hugetlb_shm_group'
+ and the user is able to access the huge pages using shmget().
 
-diff -urpN linux-2.6/arch/s390/mm/cmm.c linux-2.6-patched/arch/s390/mm/cmm.c
---- linux-2.6/arch/s390/mm/cmm.c	2007-11-16 14:27:30.000000000 +0100
-+++ linux-2.6-patched/arch/s390/mm/cmm.c	2007-11-16 14:27:41.000000000 +0100
-@@ -341,19 +341,16 @@ cmm_timeout_handler(ctl_table *ctl, int 
- 
- static struct ctl_table cmm_table[] = {
- 	{
--		.ctl_name	= VM_CMM_PAGES,
- 		.procname	= "cmm_pages",
- 		.mode		= 0644,
- 		.proc_handler	= &cmm_pages_handler,
- 	},
- 	{
--		.ctl_name	= VM_CMM_TIMED_PAGES,
- 		.procname	= "cmm_timed_pages",
- 		.mode		= 0644,
- 		.proc_handler	= &cmm_pages_handler,
- 	},
- 	{
--		.ctl_name	= VM_CMM_TIMEOUT,
- 		.procname	= "cmm_timeout",
- 		.mode		= 0644,
- 		.proc_handler	= &cmm_timeout_handler,
-diff -urpN linux-2.6/include/linux/sysctl.h linux-2.6-patched/include/linux/sysctl.h
---- linux-2.6/include/linux/sysctl.h	2007-11-16 14:27:34.000000000 +0100
-+++ linux-2.6-patched/include/linux/sysctl.h	2007-11-16 14:27:41.000000000 +0100
-@@ -207,11 +207,6 @@ enum
- 	VM_PANIC_ON_OOM=33,	/* panic at out-of-memory */
- 	VM_VDSO_ENABLED=34,	/* map VDSO into new processes? */
- 	VM_MIN_SLAB=35,		 /* Percent pages ignored by zone reclaim */
--
--	/* s390 vm cmm sysctls */
--	VM_CMM_PAGES=1111,
--	VM_CMM_TIMED_PAGES=1112,
--	VM_CMM_TIMEOUT=1113,
- };
- 
- 
-diff -urpN linux-2.6/kernel/sysctl_check.c linux-2.6-patched/kernel/sysctl_check.c
---- linux-2.6/kernel/sysctl_check.c	2007-11-16 14:27:35.000000000 +0100
-+++ linux-2.6-patched/kernel/sysctl_check.c	2007-11-16 14:27:41.000000000 +0100
-@@ -140,9 +140,6 @@ static struct trans_ctl_table trans_vm_t
- 	{ VM_PANIC_ON_OOM,		"panic_on_oom" },
- 	{ VM_VDSO_ENABLED,		"vdso_enabled" },
- 	{ VM_MIN_SLAB,			"min_slab_ratio" },
--	{ VM_CMM_PAGES,			"cmm_pages" },
--	{ VM_CMM_TIMED_PAGES,		"cmm_timed_pages" },
--	{ VM_CMM_TIMEOUT,		"cmm_timeout" },
- 
- 	{}
- };
+Thanks
+Ciju
 
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
+aglitke wrote:
+> Hi Ciju:
+>
+> I am still not exactly sure why this patch is needed.  As I read
+> user_shm_lock():
+>
+>   
+>> lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
+>> if (lock_limit == RLIM_INFINITY)
+>> 	allowed = 1;
+>> lock_limit >>= PAGE_SHIFT;
+>> spin_lock(&shmlock_user_lock);
+>> if (!allowed &&
+>>     locked + user->locked_shm > lock_limit && !capable(CAP_IPC_LOCK))
+>> 	goto out;
+>>     
+>
+> ... if the user's locked limit (ulimit -l) is set to unlimited, allowed
+> (above) is set to 1.  In that case, the second part of that if() is
+> bypassed, and the function grants permission.  Therefore, the easy
+> solution is to make sure your user's lock_limit is RLIM_INFINITY.
+>
+> On Wed, 2007-11-14 at 19:45 +0530, Ciju Rajan K wrote:
+> <snip>
+>   
+>> @@ -248,8 +249,14 @@ int user_shm_lock(size_t size, struct us
+>>          allowed = 1;
+>>      lock_limit >>= PAGE_SHIFT;
+>>      spin_lock(&shmlock_user_lock);
+>> +#ifdef CONFIG_HUGETLB_PAGE
+>> +    if (!allowed &&
+>> +        locked + user->locked_shm > lock_limit &&
+>> +        (!(capable(CAP_IPC_LOCK) || in_group_p(sysctl_hugetlb_shm_group))))
+>>     
+>
+> This will allow any user in hugetlb_shm_group to make unlimited use of
+> huge page shm segments _and_ normal page shm segments.  Definitely not
+> what you want.
+>
+>   
+>> +#else
+>>      if (!allowed &&
+>>          locked + user->locked_shm > lock_limit && !capable(CAP_IPC_LOCK))
+>> +#endif
+>>          goto out;
+>>      get_uid(user);
+>>      user->locked_shm += locked;
+>>
+>>     
+>
+> Please don't add new #ifdefs into .c files, headers only.
+>
+>   
 
