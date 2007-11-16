@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932855AbXKPSAX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763850AbXKPSAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932855AbXKPSAX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 13:00:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757144AbXKPSAK
+	id S1763850AbXKPSAq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 13:00:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761036AbXKPSAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 13:00:10 -0500
-Received: from smtp06.mtu.ru ([62.5.255.53]:50072 "EHLO smtp06.mtu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752704AbXKPSAJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 13:00:09 -0500
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: Suspend/Resume/Hibernation - bisecting or bug-logs?
-To: Kristoffer Ericson <kristoffer.ericson@gmail.com>,
-       linux-kernel@vger.kernel.org
-Date: Fri, 16 Nov 2007 21:00:02 +0300
-References: <20071116161420.e2c57ff6.Kristoffer.Ericson@Gmail.com>
-User-Agent: KNode/0.10.5
+	Fri, 16 Nov 2007 13:00:35 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:42250
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756132AbXKPSAe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 13:00:34 -0500
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Greg KH <greg@kroah.com>
+Subject: Re: [Patch] Fix UML broken (was Re: User Mode Linux still broken in 2.6.23.1)
+Date: Fri, 16 Nov 2007 12:00:25 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: WANG Cong <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org,
+       Jeff Dike <jdike@addtoit.com>, akpm@linux-foundation.org,
+       Chris Wright <chrisw@sous-sol.org>
+References: <200711032351.52977.rob@landley.net> <200711152301.44040.rob@landley.net> <20071116071527.GE31582@kroah.com>
+In-Reply-To: <20071116071527.GE31582@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <20071116180006.0029C87EE9C@smtp06.mtu.ru>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711161200.26619.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristoffer Ericson wrote:
+On Friday 16 November 2007 01:15:27 Greg KH wrote:
+> On Thu, Nov 15, 2007 at 11:01:43PM -0600, Rob Landley wrote:
+> > On Thursday 15 November 2007 21:08:32 WANG Cong wrote:
+> > > On Thu, Nov 15, 2007 at 01:06:08PM -0800, Greg KH wrote:
+> > > >Hm, not good.  I'll let Jeff handle this :)
+> > >
+> > > Could you please try this patch? Can it fix the error?
+> > >
+> > > Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+> >
+> > Oh what a good idea.
+> >
+> > Signed-off-by: Rob Landley <rob@landley.net>
+>
+> Heh, we came full circle here, this was Rob's original patch :)
 
-> Greetings,
-> 
-> Ive been following your discussion and documentation efforts concerning pm
-> in the kernel. This has in the past been a gray area which was hard to
-> find information about so kudos.
-> 
-> I maintain 2 handheld platforms that would benefit greatly from
-> implementing proper pm (mainly suspend) but Im having problems bugtracking
-> it. Currently the system tries to suspend but fails somewhere and then
-> tries to resume (which fails). The end result however is that Im unable to
-> see anything (bugmessages...) since the video driver gets deactivated by
-> pm.
-> 
-> My question is this: Is bisecting (turning off device support in kernel
-> until it works) the best approach when bugtracking pm suspend? Or is there
-> any other logging system that I can use?
-> 
+/me pleads the fifth.
 
-Good question. I could use advice too :)
+(I'm all for a better fix in .24, but for .23.x this is a one-liner...)
 
-Bisecting is good only if you have known good and known bad versions. From
-your description it sounds like it has never worked - so bisecting won't
-help. Also sometimes bisecting hits way too large commit (this happened to
-me when ACPI replaced mutex with spinlock).
+> Rob, I'll queue this up for the next cycle, now that you've verified
+> that it was not fixed already, thanks for testing.
 
+Thanks for fixing it.
+
+> greg k-h
+
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
