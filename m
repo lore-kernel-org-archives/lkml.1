@@ -1,86 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761130AbXKPRaR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759122AbXKPRgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761130AbXKPRaR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 12:30:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427AbXKPRaE
+	id S1759122AbXKPRgR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 12:36:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427AbXKPRgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 12:30:04 -0500
-Received: from nf-out-0910.google.com ([64.233.182.188]:43041 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754404AbXKPRaA (ORCPT
+	Fri, 16 Nov 2007 12:36:04 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40390 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754102AbXKPRgD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 12:30:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WBLVE5Rbb+VaxvDTg8eE5cnd94aNPuRli3gLOQV3Nk3x4Qmb3wQkUS3POO0GhyBawbeC0x/s25C/3XXQBHbAjsaBaWR4qdHOubjJBjzbJAtS2dfoKhgXHZgkBy+abUuJG2Mx5Pd7A7HJVVkgnFTD7/J1smC15zFiFDBBei/bF80=
-Message-ID: <cda58cb80711160929i4dbac6b7xb9d1bcc9223ddd7b@mail.gmail.com>
-Date: Fri, 16 Nov 2007 18:29:56 +0100
-From: "Franck Bui-Huu" <vagabon.xyz@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: apm emulation driver broken ?
-Cc: linux-pm@lists.linux-foundation.org, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <200711161720.50313.rjw@sisk.pl>
+	Fri, 16 Nov 2007 12:36:03 -0500
+Date: Fri, 16 Nov 2007 09:35:03 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: William Lee Irwin III <wli@holomorphy.com>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Why preallocate pmd in x86 32-bit PAE?
+In-Reply-To: <473DCF73.4070401@goop.org>
+Message-ID: <alpine.LFD.0.9999.0711160921510.4260@woody.linux-foundation.org>
+References: <473CC0AC.3020500@goop.org> <alpine.LFD.0.9999.0711151403000.4260@woody.linux-foundation.org> <473DCF73.4070401@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <cda58cb80711160706l2cfac2b1p81c7a1090f228f2e@mail.gmail.com>
-	 <200711161720.50313.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 16, 2007 5:20 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->
-> The freezer doesn't regard the current task as freezable.
->
 
 
-Hmm, I don't get your point.
+On Fri, 16 Nov 2007, Jeremy Fitzhardinge wrote:
+> >
+> > IIRC, the present bit is ignored in the magic 4-entry PGD.  All entries 
+> > have to be present.
+> 
+> Hm, do you recall what processors that might affect?  As far as I know,
+> current processors will ignore non-present top-level entries.
 
-If I understood this driver correctly, several processes can be
-waiting for a suspend event by reading /dev/apm_bios, apmd (the _user_
-space daemon) can be one of them.
+Are you sure?
 
-Then another process asks to suspend the system by calling 'apm -s',
-which results in a apm_ioctl() call. This process will basically
-execute:
+Anyway, this is not worth making a distinction for. Just pre-allocate all 
+of them. There really is just 4 PGD entries, and it really *is* different 
+from having a full three-level page table, and of the four PGD entries:
 
-	err = queue_suspend_event(APM_USER_SUSPEND, as);
-	flags = current->flags;
-	wait_event_interruptible(apm_suspend_waitqueue,
-			as->suspend_state == SUSPEND_DONE);
+ - one is used for the kernel mapping (assuming the regular 1:3 layout)
+ - AT LEAST two are required by user space anyway
 
-It's basically waiting for the waiters to ack the event. But it won't
-be the process that is going to suspend the system, right ?
+so pre-allocating is never going to waste more than one page.
 
-So now all waiting processes are waken up and need to acknolwedge the
-event for the system to actually suspend. So they need to call
-apm_ioctl(). They'll basically do:
+And you may feel that pre-allocating is a special case, but it's an 
+*easier* special case than the one that you are apparently thinking about 
+(which is to special-case according to CPU version).
 
-	flags = current->flags;
-	wait_event(apm_suspend_waitqueue,
-			as->suspend_state == SUSPEND_DONE);
+So don't do it. Just preallocate for the magic 4-entry PGD. You can make 
+the special case just be something like
 
-Except for the last acknowledging process which will do instead:
+	/* Preallocate for small PGD's */
+	#if PTRS_PER_PGD == 4
+		for (i = 0; i < USER_PTRS_PER_PGD; i++) {
+			pmd_t *pmd = pmd_alloc();
+			set_pgd(pgd+i, __pgd(PAGE_PRESENT | __pa(pmd));
+		}	
+	#endif
 
-	apm_suspend();
+or similar. 
 
-It's a call to pm_suspend().
+There is absolutely *zero* reason not to do this, and there is also zero 
+reason to make this be a "32-bit vs 64-bit" issue. The code can be there 
+in both, and the #if could even be all in C code (ie there may be reasons 
+to prefer writing it as
 
-So you can see that the process which initiates the suspend, the one
-that calls 'apm -s', is not the current process but is going to be
-waken up by the fake signal sent by freeze_task().
+	/* The old-style PAE PGD needs to be preallocated */
+	if (USER_PTRS_PER_PGD <= 4) {
+		...
+	}
 
-One of the consequence I can see is at this time 'as->result' won't be
-setup, so the return value of apm_ioctl() may be wrong.
+and the compiler should even compile it away entirely for all practical 
+cases even without using the preprocessor.
 
-As I said, I'm not familiar with this code, so please correct me if
-I'm wrong.
+> Anyway, we can point them not present to empty_zero_page, so testing the 
+> present bit will still be sufficient to tell if we need to allocate a 
+> new pmd, but if the hardware decides to follow the page reference 
+> there's no harm done.  (Hm, unless the hardware decides it wants to set 
+> A or D bits in empty_zero_page for some reason...)
 
-BTW, how does try_to_freeze_tasks() deal with user land thread waiting
-in the UNINTERRUPTIBLE state ?
+x86 page table walking never sets A/D bits on non-present entries.
 
-Thanks.
+That said, there's still a huge difference. 
 
-               Franck
+For "real" page table walking, you can always just insert entries without 
+flushing the cache if those entries weren't there before (because the TLB 
+is supposed to not cache negative entries). 
+
+Again, because of the way the mahic 4-entry PGD works, that isn't true for 
+it. It caches the entries regardless, so if you change it from non-present 
+to present, you have to flush the TLB (well, "reload %cr3", which is the 
+same thing in practice, although it's for a different *reason*).
+
+> That just means we need to reload cr3 after populating the pgd with a
+> new pmd, right?
+
+BUT ONLY FOR THIS CASE!
+
+And if you preallocate it, you make *that* special case go away. 
+
+So you're going to have special cases regardless. Do the simple and 
+really straightforward one, please! Nothing subtle.
+
+		Linus
