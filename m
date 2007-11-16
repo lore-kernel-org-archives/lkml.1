@@ -1,58 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765866AbXKPL5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761674AbXKPMaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765866AbXKPL5n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 06:57:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755071AbXKPL5e
+	id S1761674AbXKPMaR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 07:30:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756246AbXKPMaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 06:57:34 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:44312 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752310AbXKPL5d (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 06:57:33 -0500
-Subject: [PATCH][RT] 2.6.24-rc2-rt1 drivers/dma/ioat_dma.c compile fix
-From: Sven-Thorsten Dietrich <sdietrich@novell.com>
-To: RT Users List <linux-rt-users@vger.kernel.org>
-Cc: LKML <Linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Organization: Suse
-Date: Fri, 16 Nov 2007 03:57:25 -0800
-Message-Id: <1195214245.3241.37.camel@sx.thebigcorporation.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+	Fri, 16 Nov 2007 07:30:00 -0500
+Received: from proxy2.bredband.net ([195.54.101.72]:47687 "EHLO
+	proxy2.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751649AbXKPM37 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 07:29:59 -0500
+X-Greylist: delayed 1237 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Nov 2007 07:29:58 EST
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HACoXPUdV4pmXRmdsb2JhbAAMjnUBAQE3
+Message-ID: <473D88A5.306@purplescout.se>
+Date: Fri, 16 Nov 2007 13:10:13 +0100
+From: Jonas Stare <jonas.stare@purplescout.se>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH][RESUBMIT] drivers/ide/ide-probe.c, kernel 2.6.23.1
+References: <473434F1.50509@purplescout.se> <200711132303.28424.bzolnier@gmail.com> <473C08B2.1030004@purplescout.se> <200711152159.23607.bzolnier@gmail.com>
+In-Reply-To: <200711152159.23607.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Compile fix for new code in -rc2.
+Resubmit of IDE-probing-patch. It now checks hwif->drives[unit].present instead of
+forced_geom and there is also an if-statement so it doesn't change back to the master
+unless it have to. I choose to put it inside the if-statement that checks the return
+code from ide_wait_not_busy, since it shouldn't revert back to the master drive unless
+something is wrong and we have to leave the function. (I also left the old SELECT_DRIVE
+after the for-loop so that we will select the master if everything is ok.) Inside the
+if-statement or not makes not big difference until you get more than two drives on the
+ide-bus...but this code should be ready for it. :)
 
-I'm not positive about the insertion point...
+Signed-off-by: Jonas Stare <jonas.stare@purplescout.se>
 
-Subject: compile error fix (needs review)
-
-RT changes __list_splice to require prev and next pointers. 
-
-This changes the use in the new code to list_splice_tail, 
-but the optimal insertion point needs to be analyzed.
-
-Signed-off-by: Sven-Thorsten Dietrich <sdietrich@suse.de>
-
----
- drivers/dma/ioat_dma.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6.23/drivers/dma/ioat_dma.c
-===================================================================
---- linux-2.6.23.orig/drivers/dma/ioat_dma.c
-+++ linux-2.6.23/drivers/dma/ioat_dma.c
-@@ -244,7 +244,7 @@ static dma_cookie_t ioat_tx_submit(struc
- 	/* write address into NextDescriptor field of last desc in chain */
- 	to_ioat_desc(ioat_chan->used_desc.prev)->hw->next =
- 							first->async_tx.phys;
--	__list_splice(&new_chain, ioat_chan->used_desc.prev);
-+	list_splice_tail(&new_chain, ioat_chan->used_desc.prev);
+diff -u linux-2.6.23.1-orig/drivers/ide/ide-probe.c linux-2.6.23.1/drivers/ide/ide-probe.c 
+--- linux-2.6.23.1-orig/drivers/ide/ide-probe.c 2007-10-12 18:43:44.000000000 +0200
++++ linux-2.6.23.1/drivers/ide/ide-probe.c      2007-11-16 10:26:23.000000000 +0100
+@@ -643,6 +643,7 @@
+ static int wait_hwif_ready(ide_hwif_t *hwif)
+ {
+        int rc;
++       int unit;
  
- 	ioat_chan->pending += desc_count;
- 	if (ioat_chan->pending >= 4) {
-
+        printk(KERN_DEBUG "Probing IDE interface %s...\n", hwif->name);
+ 
+@@ -659,16 +660,25 @@
+                return rc;
+ 
+        /* Now make sure both master & slave are ready */
+-       SELECT_DRIVE(&hwif->drives[0]);
+-       hwif->OUTB(8, hwif->io_ports[IDE_CONTROL_OFFSET]);
+-       mdelay(2);
+-       rc = ide_wait_not_busy(hwif, 35000);
+-       if (rc)
+-               return rc;
+-       SELECT_DRIVE(&hwif->drives[1]);
+-       hwif->OUTB(8, hwif->io_ports[IDE_CONTROL_OFFSET]);
+-       mdelay(2);
+-       rc = ide_wait_not_busy(hwif, 35000);
++       for (unit = 0; unit < MAX_DRIVES; ++unit) {
++               /* Ignore disks that we will not probe for later. */
++               if (!hwif->drives[unit].noprobe ||
++                   hwif->drives[unit].present) {
++                       SELECT_DRIVE(&hwif->drives[unit]);
++                       hwif->OUTB(8, hwif->io_ports[IDE_CONTROL_OFFSET]);
++                       mdelay(2);
++                       rc = ide_wait_not_busy(hwif, 35000);
++                       if (rc) {
++                               /* Exit function with master reselected */
++                               if (unit != 0)
++                                       SELECT_DRIVE(&hwif->drives[0]);
++                               return rc;
++                       }
++               } else {
++                       printk(KERN_DEBUG "Skip ide_wait_not_busy for %s:%d\n",
++                               hwif->name, unit);
++               }
++       }
+ 
+        /* Exit function with master reselected (let's be sane) */
+        SELECT_DRIVE(&hwif->drives[0]);
 
