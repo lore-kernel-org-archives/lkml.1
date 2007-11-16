@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762326AbXKPC66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932669AbXKPC70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762326AbXKPC66 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 21:58:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756573AbXKPC6t
+	id S932669AbXKPC70 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 21:59:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762981AbXKPC64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 21:58:49 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:50823 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755641AbXKPC6t (ORCPT
+	Thu, 15 Nov 2007 21:58:56 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55714
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1761756AbXKPC6z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 21:58:49 -0500
-Message-ID: <473D0737.1040504@cosmosbay.com>
-Date: Fri, 16 Nov 2007 03:57:59 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: Ulrich Drepper <drepper@redhat.com>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       tglx@linutronix.de, torvalds@linux-foundation.org
-Subject: Re: [PATCHv2 4/4] first use of sys_indirect system call
-References: <200711151822.lAFIMVnJ028596@devserv.devel.redhat.com>
-In-Reply-To: <200711151822.lAFIMVnJ028596@devserv.devel.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Fri, 16 Nov 2007 03:58:07 +0100 (CET)
+	Thu, 15 Nov 2007 21:58:55 -0500
+Date: Thu, 15 Nov 2007 18:58:54 -0800 (PST)
+Message-Id: <20071115.185854.85318344.davem@davemloft.net>
+To: clameter@sgi.com
+Cc: corbet@lwn.net, andi@firstfloor.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, dada1@cosmosbay.com,
+       schwidefsky@de.ibm.com
+Subject: Re: [patch 01/28] cpu alloc: The allocator
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0711151851420.32046@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0711151816170.31691@schroedinger.engr.sgi.com>
+	<20071115.185051.159765071.davem@davemloft.net>
+	<Pine.LNX.4.64.0711151851420.32046@schroedinger.engr.sgi.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ulrich Drepper a écrit :
-> This is a first user of sys_indirect.  Several of the socket-related system
-> calls which produce a file handle now can be passed an additional parameter
-> to set the FD_CLOEXEC flag.
+From: Christoph Lameter <clameter@sgi.com>
+Date: Thu, 15 Nov 2007 18:55:21 -0800 (PST)
 
+> On Thu, 15 Nov 2007, David Miller wrote:
 > 
-> -	retval = sock_map_fd(sock);
-> +	retval = sock_map_fd_flags(sock, current->indirect_params.file_flags.flags);
+> > Sparc32 is still broken, as just one of several possible examples.
+> 
+> I have not looked at sparc32 sorry. If you simply set up a couple of 
+> configuration values in arch/sparc32/Kconfig then everything will be fine.
 
-Yes, we know now why you wanted sys_indirect so much :)
+There is assembler code to write, which as I stated several
+times nobody is going to work on or test.
 
-However, there should be a macro or something to ease reader mind...
+It is unreasonable to add this new VMEMMAP requirement in order for
+your patches to work properly.
 
-#define INDPARAM(SUBSYSNAME,PARAMNAME) \
-	(current->indirect_params.##SUBSYSNAME.##PARAMNAME)
+> > The BSS usage is still there for platforms that don't use VMEMMAP.
+> 
+> All MMU platforms can use the virtual mappings. The main use of the static 
+> configuration is for embedded systems.
 
- > +	retval = sock_map_fd_flags(sock, INDPARAM(file_flags,flags));
+Someone has to implement and test VMEMMAP now on all of these
+architectures, it is becomming a requirement unlike in the sparsemem
+patches case where it was optional.
 
+That's unreasonable.
