@@ -1,431 +1,361 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761103AbXKPR4F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762537AbXKPR4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761103AbXKPR4F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 12:56:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761014AbXKPRzh
+	id S1762537AbXKPR4X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 12:56:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761920AbXKPRzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 12:55:37 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:53475 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 16 Nov 2007 12:55:39 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:53461 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755665AbXKPRzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 12:55:33 -0500
-Message-Id: <20071116173529.826621737@I-love.SAKURA.ne.jp>
+	id S1755708AbXKPRze (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 12:55:34 -0500
+Message-Id: <20071116173528.447871904@I-love.SAKURA.ne.jp>
 References: <20071116173439.796600895@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Sat, 17 Nov 2007 02:34:57 +0900
+Date: Sat, 17 Nov 2007 02:34:53 +0900
 From: penguin-kernel@I-love.SAKURA.ne.jp
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #5 18/18] LSM expansion for TOMOYO Linux.
-Content-Disposition: inline; filename=tomoyo-lsm-expansion.diff
+Subject: [TOMOYO #5 14/18] Capability access control functions.
+Content-Disposition: inline; filename=tomoyo-capability.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-LSM hooks for sending signal:
-   * task_kill_unlocked is added in sys_kill
-   * task_tkill_unlocked is added in sys_tkill
-   * task_tgkill_unlocked is added in sys_tgkill
-LSM hooks for network accept and recv:
-   * socket_post_accept is modified to return int.
-   * post_recv_datagram is added in skb_recv_datagram.
+TOMOYO Linux checks permission for non-POSIX capability
+so that the number of capabilities won't be limited to 32 or 64.
 
-You can try TOMOYO Linux without this patch, but in that case, you
-can't use access control functionality for restricting signal
-transmission and incoming network data.
+Each permission can be automatically accumulated into
+the policy of each domain using 'learning mode'.
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
- include/linux/security.h |   74 +++++++++++++++++++++++++++++++++++++++++++----
- kernel/signal.c          |   17 ++++++++++
- net/core/datagram.c      |   22 +++++++++++++
- net/socket.c             |    7 +++-
- security/dummy.c         |   32 ++++++++++++++++++--
- security/security.c      |   25 ++++++++++++++-
- 6 files changed, 165 insertions(+), 12 deletions(-)
+ security/tomoyo/capability.c |  320 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 320 insertions(+)
 
---- linux-2.6-mm.orig/include/linux/security.h	2007-11-14 15:14:10.000000000 +0900
-+++ linux-2.6-mm/include/linux/security.h	2007-11-14 15:15:44.000000000 +0900
-@@ -657,6 +657,25 @@ struct request_sock;
-  *	@sig contains the signal value.
-  *	@secid contains the sid of the process where the signal originated
-  *	Return 0 if permission is granted.
-+ * @task_kill_unlocked:
-+ *	Check permission before sending signal @sig to the process of @pid
-+ *	with sys_kill.
-+ *	@pid contains the pid of target process.
-+ *	@sig contains the signal value.
-+ *	Return 0 if permission is granted.
-+ * @task_tkill_unlocked:
-+ *	Check permission before sending signal @sig to the process of @pid
-+ *	with sys_tkill.
-+ *	@pid contains the pid of target process.
-+ *	@sig contains the signal value.
-+ *	Return 0 if permission is granted.
-+ * @task_tgkill_unlocked:
-+ *	Check permission before sending signal @sig to the process of @pid
-+ *	with sys_tgkill.
-+ *	@tgid contains the thread group id.
-+ *	@pid contains the pid of target process.
-+ *	@sig contains the signal value.
-+ *	Return 0 if permission is granted.
-  * @task_wait:
-  *	Check permission before allowing a process to reap a child process @p
-  *	and collect its status information.
-@@ -778,8 +797,12 @@ struct request_sock;
-  * @socket_post_accept:
-  *	This hook allows a security module to copy security
-  *	information into the newly created socket's inode.
-+ *	This hook also allows a security module to filter connections
-+ *	from unwanted peers.
-+ *	The connection will be aborted if this hook returns nonzero.
-  *	@sock contains the listening socket structure.
-  *	@newsock contains the newly created server socket for connection.
-+ *	Return 0 if permission is granted.
-  * @socket_sendmsg:
-  *	Check permission before transmitting a message to another socket.
-  *	@sock contains the socket structure.
-@@ -793,6 +816,12 @@ struct request_sock;
-  *	@size contains the size of message structure.
-  *	@flags contains the operational flags.
-  *	Return 0 if permission is granted.  
-+ * @post_recv_datagram:
-+ *	Check permission after receiving a datagram.
-+ *	@sk contains the socket.
-+ *	@skb contains the socket buffer (may be NULL).
-+ *	@flags contains the operational flags.
-+ *	Return 0 if permission is granted.
-  * @socket_getsockname:
-  *	Check permission before the local address (name) of the socket object
-  *	@sock is retrieved.
-@@ -1319,6 +1348,9 @@ struct security_operations {
- 	int (*task_movememory) (struct task_struct * p);
- 	int (*task_kill) (struct task_struct * p,
- 			  struct siginfo * info, int sig, u32 secid);
-+	int (*task_kill_unlocked) (int pid, int sig);
-+	int (*task_tkill_unlocked) (int pid, int sig);
-+	int (*task_tgkill_unlocked) (int tgid, int pid, int sig);
- 	int (*task_wait) (struct task_struct * p);
- 	int (*task_prctl) (int option, unsigned long arg2,
- 			   unsigned long arg3, unsigned long arg4,
-@@ -1384,12 +1416,16 @@ struct security_operations {
- 			       struct sockaddr * address, int addrlen);
- 	int (*socket_listen) (struct socket * sock, int backlog);
- 	int (*socket_accept) (struct socket * sock, struct socket * newsock);
--	void (*socket_post_accept) (struct socket * sock,
--				    struct socket * newsock);
-+#define TMY_LSM_EXPANSION
-+	int (*socket_post_accept) (struct socket *sock,
-+				   struct socket *newsock);
- 	int (*socket_sendmsg) (struct socket * sock,
- 			       struct msghdr * msg, int size);
- 	int (*socket_recvmsg) (struct socket * sock,
- 			       struct msghdr * msg, int size, int flags);
-+	int (*post_recv_datagram) (struct sock *sk,
-+				   struct sk_buff *skb,
-+				   unsigned int flags);
- 	int (*socket_getsockname) (struct socket * sock);
- 	int (*socket_getpeername) (struct socket * sock);
- 	int (*socket_getsockopt) (struct socket * sock, int level, int optname);
-@@ -1567,6 +1603,9 @@ int security_task_getscheduler(struct ta
- int security_task_movememory(struct task_struct *p);
- int security_task_kill(struct task_struct *p, struct siginfo *info,
- 			int sig, u32 secid);
-+int security_task_kill_unlocked(int pid, int sig);
-+int security_task_tkill_unlocked(int pid, int sig);
-+int security_task_tgkill_unlocked(int tgid, int pid, int sig);
- int security_task_wait(struct task_struct *p);
- int security_task_prctl(int option, unsigned long arg2, unsigned long arg3,
- 			 unsigned long arg4, unsigned long arg5);
-@@ -2112,6 +2151,21 @@ static inline int security_task_kill (st
- 	return cap_task_kill(p, info, sig, secid);
- }
- 
-+static inline int security_task_kill_unlocked(int pid, int sig)
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-mm/security/tomoyo/capability.c	2007-11-14 15:15:44.000000000 +0900
+@@ -0,0 +1,320 @@
++/*
++ * security/tomoyo/capability.c
++ *
++ * Capability access control functions for TOMOYO Linux.
++ */
++
++#include "tomoyo.h"
++#include "realpath.h"
++
++static struct {
++	const char *keyword;
++	unsigned int current_value;
++	const char *capability_name;
++} capability_control_array[TMY_MAX_CAPABILITY_INDEX] = {
++	[TMY_INET_STREAM_SOCKET_CREATE]  = /* OK */
++	{ "inet_tcp_create", 0, "socket(PF_INET, SOCK_STREAM)" },
++	[TMY_INET_STREAM_SOCKET_LISTEN]  = /* OK */
++	{ "inet_tcp_listen", 0, "listen(PF_INET, SOCK_STREAM)" },
++	[TMY_INET_STREAM_SOCKET_CONNECT] = /* OK */
++	{ "inet_tcp_connect", 0, "connect(PF_INET, SOCK_STREAM)" },
++	[TMY_USE_INET_DGRAM_SOCKET]      = /* OK */
++	{ "use_inet_udp", 0, "socket(PF_INET, SOCK_DGRAM)" },
++	[TMY_USE_INET_RAW_SOCKET]        = /* OK */
++	{ "use_inet_ip", 0, "socket(PF_INET, SOCK_RAW)" },
++	[TMY_USE_ROUTE_SOCKET]           = /* OK */
++	{ "use_route", 0, "socket(PF_ROUTE)" },
++	[TMY_USE_PACKET_SOCKET]          = /* OK */
++	{ "use_packet", 0, "socket(PF_PACKET)" },
++	[TMY_SYS_MOUNT]                  = /* OK */
++	{ "SYS_MOUNT", 0, "sys_mount()" },
++	[TMY_SYS_UMOUNT]                 = /* OK */
++	{ "SYS_UMOUNT", 0, "sys_umount()" },
++	[TMY_SYS_REBOOT]                 = /* Too many hooks. */
++	{ "SYS_REBOOT", 0, "sys_reboot()" },
++	[TMY_SYS_CHROOT]                 = /* OK */
++	{ "SYS_CHROOT", 0, "sys_chroot()" },
++	[TMY_SYS_KILL]                   = /* No appropriate hook. */
++	{ "SYS_KILL", 0, "sys_kill()" },
++	[TMY_SYS_VHANGUP]                = /* Too many hooks. */
++	{ "SYS_VHANGUP", 0, "sys_vhangup()" },
++	[TMY_SYS_SETTIME]                = /* Too many hooks. */
++	{ "SYS_TIME", 0, "sys_settimeofday()" },
++	[TMY_SYS_NICE]                   = /* No appropriate hook. */
++	{ "SYS_NICE", 0, "sys_nice()" },
++	[TMY_SYS_SETHOSTNAME]            = /* No appropriate hook. */
++	{ "SYS_SETHOSTNAME", 0, "sys_sethostname()" },
++	[TMY_USE_KERNEL_MODULE]          = /* Too many hooks. */
++	{ "use_kernel_module", 0, "kernel_module" },
++	[TMY_CREATE_FIFO]                = /* OK */
++	{ "create_fifo", 0, "mknod(FIFO)" },
++	[TMY_CREATE_BLOCK_DEV]           = /* OK */
++	{ "create_block_dev", 0, "mknod(BDEV)" },
++	[TMY_CREATE_CHAR_DEV]            = /* OK */
++	{ "create_char_dev", 0, "mknod(CDEV)" },
++	[TMY_CREATE_UNIX_SOCKET]         = /* OK */
++	{ "create_unix_socket", 0, "mknod(SOCKET)" },
++	[TMY_SYS_LINK]                   = /* OK */
++	{ "SYS_LINK", 0, "sys_link()" },
++	[TMY_SYS_SYMLINK]                = /* OK */
++	{ "SYS_SYMLINK", 0, "sys_symlink()" },
++	[TMY_SYS_RENAME]                 = /* OK */
++	{ "SYS_RENAME", 0, "sys_rename()" },
++	[TMY_SYS_UNLINK]                 = /* OK */
++	{ "SYS_UNLINK", 0, "sys_unlink()" },
++	[TMY_SYS_CHMOD]                  = /* OK */
++	{ "SYS_CHMOD", 0, "sys_chmod()" },
++	[TMY_SYS_CHOWN]                  = /* OK */
++	{ "SYS_CHOWN", 0, "sys_chown()" },
++	[TMY_SYS_IOCTL]                  = /* Too many hooks. */
++	{ "SYS_IOCTL", 0, "sys_ioctl()" },
++	[TMY_SYS_KEXEC_LOAD]             = /* No appropriate hook. */
++	{ "SYS_KEXEC_LOAD", 0, "sys_kexec_load()" },
++	[TMY_SYS_PIVOT_ROOT]             = /* OK */
++	{ "SYS_PIVOT_ROOT", 0, "sys_pivot_root()" },
++};
++
++struct profile {
++	unsigned char value[TMY_MAX_CAPABILITY_INDEX];
++};
++
++static struct profile *profile_ptr[TMY_MAX_PROFILES];
++
++/*************************  UTILITY FUNCTIONS  *************************/
++
++const char *tmy_capability2keyword(const unsigned int capability)
 +{
-+	return 0;
++	return capability < TMY_MAX_CAPABILITY_INDEX ?
++		capability_control_array[capability].keyword : NULL;
 +}
 +
-+static inline int security_task_tkill_unlocked(int pid, int sig)
++static const char *tmy_capability2name(const unsigned int capability)
 +{
-+	return 0;
++	return capability < TMY_MAX_CAPABILITY_INDEX ?
++		capability_control_array[capability].capability_name : NULL;
 +}
 +
-+static inline int security_task_tgkill_unlocked(int tgid, int pid, int sig)
++/* Check whether the given capability control is enabled. */
++static unsigned int tmy_capability_flags(const unsigned int index)
 +{
-+	return 0;
++	const u8 profile = TMY_SECURITY->domain->profile;
++	/* All operations might sleep. See tmy_supervisor(). */
++	might_sleep();
++	if (in_interrupt())
++		return 0;
++	return sbin_init_started && index < TMY_MAX_CAPABILITY_INDEX
++#if TMY_MAX_PROFILES != 256
++		&& profile < TMY_MAX_PROFILES
++#endif
++		&& profile_ptr[profile] ?
++		profile_ptr[profile]->value[index] : 0;
 +}
 +
- static inline int security_task_wait (struct task_struct *p)
- {
- 	return 0;
-@@ -2294,10 +2348,12 @@ int security_socket_bind(struct socket *
- int security_socket_connect(struct socket *sock, struct sockaddr *address, int addrlen);
- int security_socket_listen(struct socket *sock, int backlog);
- int security_socket_accept(struct socket *sock, struct socket *newsock);
--void security_socket_post_accept(struct socket *sock, struct socket *newsock);
-+int security_socket_post_accept(struct socket *sock, struct socket *newsock);
- int security_socket_sendmsg(struct socket *sock, struct msghdr *msg, int size);
- int security_socket_recvmsg(struct socket *sock, struct msghdr *msg,
- 			    int size, int flags);
-+int security_post_recv_datagram(struct sock *sk, struct sk_buff *skb,
-+				unsigned int flags);
- int security_socket_getsockname(struct socket *sock);
- int security_socket_getpeername(struct socket *sock);
- int security_socket_getsockopt(struct socket *sock, int level, int optname);
-@@ -2373,9 +2429,10 @@ static inline int security_socket_accept
- 	return 0;
- }
- 
--static inline void security_socket_post_accept(struct socket * sock, 
--					       struct socket * newsock)
-+static inline int security_socket_post_accept(struct socket *sock,
-+					      struct socket *newsock)
- {
-+	return 0;
- }
- 
- static inline int security_socket_sendmsg(struct socket * sock, 
-@@ -2391,6 +2448,13 @@ static inline int security_socket_recvms
- 	return 0;
- }
- 
-+static inline int security_post_recv_datagram(struct sock *sk,
-+					      struct sk_buff *skb,
-+					      unsigned int flags)
++static struct profile *tmy_new_capability_profile(const unsigned int profile)
 +{
-+	return 0;
++	static DEFINE_MUTEX(mutex);
++	struct profile *ptr;
++	int i;
++	if (profile >= TMY_MAX_PROFILES)
++		return NULL;
++	mutex_lock(&mutex);
++	ptr = profile_ptr[profile];
++	if (ptr)
++		goto ok;
++	ptr = tmy_alloc_element(sizeof(*ptr));
++	if (!ptr)
++		goto ok;
++	for (i = 0; i < TMY_MAX_CAPABILITY_INDEX; i++)
++		ptr->value[i] = capability_control_array[i].current_value;
++	mb(); /* Avoid out-of-order execution. */
++	profile_ptr[profile] = ptr;
++ok: ;
++	mutex_unlock(&mutex);
++	return ptr;
 +}
 +
- static inline int security_socket_getsockname(struct socket * sock)
- {
- 	return 0;
---- linux-2.6-mm.orig/kernel/signal.c	2007-11-14 15:14:17.000000000 +0900
-+++ linux-2.6-mm/kernel/signal.c	2007-11-14 15:15:44.000000000 +0900
-@@ -2218,6 +2218,11 @@ asmlinkage long
- sys_kill(int pid, int sig)
- {
- 	struct siginfo info;
-+	int ret;
-+
-+	ret = security_task_kill_unlocked(pid, sig);
-+	if (ret)
-+		return ret;
- 
- 	info.si_signo = sig;
- 	info.si_errno = 0;
-@@ -2273,10 +2278,16 @@ static int do_tkill(int tgid, int pid, i
-  */
- asmlinkage long sys_tgkill(int tgid, int pid, int sig)
- {
-+	int ret;
-+
- 	/* This is only valid for single tasks */
- 	if (pid <= 0 || tgid <= 0)
- 		return -EINVAL;
- 
-+	ret = security_task_tgkill_unlocked(tgid, pid, sig);
-+	if (ret)
-+		return ret;
-+
- 	return do_tkill(tgid, pid, sig);
- }
- 
-@@ -2286,10 +2297,16 @@ asmlinkage long sys_tgkill(int tgid, int
- asmlinkage long
- sys_tkill(int pid, int sig)
- {
-+	int ret;
-+
- 	/* This is only valid for single tasks */
- 	if (pid <= 0)
- 		return -EINVAL;
- 
-+	ret = security_task_tkill_unlocked(pid, sig);
-+	if (ret)
-+		return ret;
-+
- 	return do_tkill(0, pid, sig);
- }
- 
---- linux-2.6-mm.orig/net/socket.c	2007-11-14 15:12:08.000000000 +0900
-+++ linux-2.6-mm/net/socket.c	2007-11-14 15:15:44.000000000 +0900
-@@ -1442,13 +1442,16 @@ asmlinkage long sys_accept(int fd, struc
- 			goto out_fd;
- 	}
- 
-+	/* Filter connections from unwanted peers like TCP Wrapper. */
-+	err = security_socket_post_accept(sock, newsock);
-+	if (err)
-+		goto out_fd;
-+
- 	/* File flags are not inherited via accept() unlike another OSes. */
- 
- 	fd_install(newfd, newfile);
- 	err = newfd;
- 
--	security_socket_post_accept(sock, newsock);
--
- out_put:
- 	fput_light(sock->file, fput_needed);
- out:
---- linux-2.6-mm.orig/security/dummy.c	2007-11-14 15:14:10.000000000 +0900
-+++ linux-2.6-mm/security/dummy.c	2007-11-14 15:15:44.000000000 +0900
-@@ -576,6 +576,21 @@ static int dummy_task_kill (struct task_
- 	return 0;
- }
- 
-+static int dummy_task_kill_unlocked(int pid, int sig)
++int tmy_set_capability_profile(const char *data, unsigned int value,
++			       const unsigned int profile)
 +{
-+	return 0;
++	int i;
++	struct profile *ptr;
++	ptr = tmy_new_capability_profile(profile);
++	if (!ptr)
++		return -EINVAL;
++	for (i = 0; i < TMY_MAX_CAPABILITY_INDEX; i++) {
++		if (strcmp(data, capability_control_array[i].keyword))
++			continue;
++		if (value > 3)
++			value = 3;
++		ptr->value[i] = value;
++		return 0;
++	}
++	return -EINVAL;
 +}
 +
-+static int dummy_task_tkill_unlocked(int pid, int sig)
++int tmy_read_capability_profile(struct io_buffer *head)
 +{
-+	return 0;
++	int step;
++	for (step = head->read_step;
++	     step < TMY_MAX_PROFILES * TMY_MAX_CAPABILITY_INDEX; step++) {
++		const int i = step / TMY_MAX_CAPABILITY_INDEX;
++		const int j = step % TMY_MAX_CAPABILITY_INDEX;
++		const struct profile *profile = profile_ptr[i];
++		head->read_step = step;
++		if (!profile)
++			continue;
++		if (tmy_io_printf(head, "%u-" TMY_MAC_FOR_CAPABILITY "%s=%u\n",
++				  i, capability_control_array[j].keyword,
++				  profile->value[j]))
++			break;
++	}
++	return step < TMY_MAX_PROFILES * TMY_MAX_CAPABILITY_INDEX ? -ENOMEM : 0;
 +}
 +
-+static int dummy_task_tgkill_unlocked(int tgid, int pid, int sig)
++/*************************  AUDIT FUNCTIONS  *************************/
++
++static int tmy_audit_capability_log(const unsigned int capability,
++				    const bool is_granted,
++				    const u8 profile, const unsigned int mode)
 +{
-+	return 0;
++	char *buf;
++	int len = 64 ;
++
++	if (is_granted) {
++		if (!tmy_audit_grant())
++			return 0;
++	} else {
++		if (!tmy_audit_reject())
++			return 0;
++	}
++
++	buf = tmy_init_audit_log(&len, profile, mode);
++
++	if (!buf)
++		return -ENOMEM;
++
++	snprintf(buf + strlen(buf),
++		 len - strlen(buf) - 1,
++		 TMY_ALLOW_CAPABILITY "%s\n",
++		 tmy_capability2keyword(capability));
++
++	return tmy_write_audit_log(buf, is_granted);
 +}
 +
- static int dummy_task_prctl (int option, unsigned long arg2, unsigned long arg3,
- 			     unsigned long arg4, unsigned long arg5)
- {
-@@ -753,10 +768,10 @@ static int dummy_socket_accept (struct s
- 	return 0;
- }
- 
--static void dummy_socket_post_accept (struct socket *sock, 
--				      struct socket *newsock)
-+static int dummy_socket_post_accept(struct socket *sock,
-+				    struct socket *newsock)
- {
--	return;
-+	return 0;
- }
- 
- static int dummy_socket_sendmsg (struct socket *sock, struct msghdr *msg,
-@@ -771,6 +786,13 @@ static int dummy_socket_recvmsg (struct 
- 	return 0;
- }
- 
-+static int dummy_post_recv_datagram(struct sock *sk,
-+				    struct sk_buff *skb,
-+				    unsigned int flags)
++/*************************  CAPABILITY ACL HANDLER  *************************/
++
++static int tmy_add_capability_acl(const unsigned int capability,
++				  struct domain_info *domain,
++				  const struct condition_list *condition,
++				  const bool is_delete)
 +{
-+	return 0;
-+}
++	struct acl_info *ptr;
++	struct capability_acl *acl;
++	int error = -ENOMEM;
++	const u16 hash = capability;
++	if (!domain)
++		return -EINVAL;
++	mutex_lock(&domain_acl_lock);
++	if (is_delete)
++		goto remove;
 +
- static int dummy_socket_getsockname (struct socket *sock)
- {
- 	return 0;
-@@ -1062,6 +1084,9 @@ void security_fixup_ops (struct security
- 	set_to_dummy_if_null(ops, task_movememory);
- 	set_to_dummy_if_null(ops, task_wait);
- 	set_to_dummy_if_null(ops, task_kill);
-+	set_to_dummy_if_null(ops, task_kill_unlocked);
-+	set_to_dummy_if_null(ops, task_tkill_unlocked);
-+	set_to_dummy_if_null(ops, task_tgkill_unlocked);
- 	set_to_dummy_if_null(ops, task_prctl);
- 	set_to_dummy_if_null(ops, task_reparent_to_init);
-  	set_to_dummy_if_null(ops, task_to_inode);
-@@ -1104,6 +1129,7 @@ void security_fixup_ops (struct security
- 	set_to_dummy_if_null(ops, socket_post_accept);
- 	set_to_dummy_if_null(ops, socket_sendmsg);
- 	set_to_dummy_if_null(ops, socket_recvmsg);
-+	set_to_dummy_if_null(ops, post_recv_datagram);
- 	set_to_dummy_if_null(ops, socket_getsockname);
- 	set_to_dummy_if_null(ops, socket_getpeername);
- 	set_to_dummy_if_null(ops, socket_setsockopt);
---- linux-2.6-mm.orig/net/core/datagram.c	2007-10-10 05:31:38.000000000 +0900
-+++ linux-2.6-mm/net/core/datagram.c	2007-11-14 15:15:44.000000000 +0900
-@@ -55,6 +55,7 @@
- #include <net/checksum.h>
- #include <net/sock.h>
- #include <net/tcp_states.h>
-+#include <linux/security.h>
- 
- /*
-  *	Is a socket 'connection oriented' ?
-@@ -178,6 +179,27 @@ struct sk_buff *skb_recv_datagram(struct
- 		} else
- 			skb = skb_dequeue(&sk->sk_receive_queue);
- 
-+		error = security_post_recv_datagram(sk, skb, flags);
-+		if (error) {
-+			unsigned long cpu_flags;
-+
-+			if (!(flags & MSG_PEEK))
-+				goto no_peek;
-+
-+			spin_lock_irqsave(&sk->sk_receive_queue.lock,
-+					  cpu_flags);
-+			if (skb == skb_peek(&sk->sk_receive_queue)) {
-+				__skb_unlink(skb,
-+					     &sk->sk_receive_queue);
-+				atomic_dec(&skb->users);
-+			}
-+			spin_unlock_irqrestore(&sk->sk_receive_queue.lock,
-+					       cpu_flags);
-+no_peek:
-+			skb_free_datagram(sk, skb);
-+			goto no_packet;
++	list_for_each_entry(ptr, &domain->acl_info_list, list) {
++		acl = (struct capability_acl *) ptr;
++		if (ptr->type == TMY_TYPE_CAPABILITY_ACL
++		    && acl->capability == hash
++		    && ptr->cond == condition) {
++			ptr->is_deleted = 0;
++			/* Found. Nothing to do. */
++			error = 0;
++			tmy_update_counter(TMY_UPDATE_DOMAINPOLICY);
++			goto ok;
 +		}
-+
- 		if (skb)
- 			return skb;
- 
---- linux-2.6-mm.orig/security/security.c	2007-11-14 15:14:10.000000000 +0900
-+++ linux-2.6-mm/security/security.c	2007-11-14 15:54:12.000000000 +0900
-@@ -662,6 +662,21 @@ int security_task_kill(struct task_struc
- 	return security_ops->task_kill(p, info, sig, secid);
- }
- 
-+int security_task_kill_unlocked(int pid, int sig)
-+{
-+	return security_ops->task_kill_unlocked(pid, sig);
++	}
++	/* Not found. Append it to the tail. */
++	acl = tmy_alloc_element(sizeof(*acl));
++	if (!acl)
++		goto ok;
++	acl->head.type = TMY_TYPE_CAPABILITY_ACL;
++	acl->head.cond = condition;
++	acl->capability = hash;
++	error = tmy_add_acl(domain, (struct acl_info *) acl);
++	goto ok;
++remove: ;
++	error = -ENOENT;
++	list_for_each_entry(ptr, &domain->acl_info_list, list) {
++		acl = (struct capability_acl *) ptr;
++		if (ptr->type != TMY_TYPE_CAPABILITY_ACL || ptr->is_deleted ||
++		    acl->capability != hash || ptr->cond != condition) continue;
++		error = tmy_del_acl(ptr);
++		break;
++	}
++ok: ;
++	mutex_unlock(&domain_acl_lock);
++	return error;
 +}
 +
-+int security_task_tkill_unlocked(int pid, int sig)
++/**
++ * tmy_capable - check permission for capability.
++ * @capability: capability index.
++ *
++ * Returns zero if permission granted.
++ * Returns nonzero if permission denied.
++ */
++int tmy_capable(const unsigned int capability)
 +{
-+	return security_ops->task_tkill_unlocked(pid, sig);
++	struct domain_info * const domain = TMY_SECURITY->domain;
++	struct acl_info *ptr;
++	const u8 profile = domain->profile;
++	const unsigned int mode = tmy_capability_flags(capability);
++	const bool is_enforce = (mode == 3);
++	const u16 hash = capability;
++	if (!mode)
++		return 0;
++	list_for_each_entry(ptr, &domain->acl_info_list, list) {
++		struct capability_acl *acl = (struct capability_acl *) ptr;
++		if (ptr->type != TMY_TYPE_CAPABILITY_ACL || ptr->is_deleted
++		    || acl->capability != hash
++		    || tmy_check_condition(ptr->cond, NULL))
++			continue;
++		tmy_audit_capability_log(capability, 1, profile, mode);
++		return 0;
++	}
++	if (tmy_flags(TMY_VERBOSE))
++		tmy_audit("TOMOYO-%s: %s denied for %s\n",
++			  tmy_getmsg(is_enforce),
++			  tmy_capability2name(capability),
++			  tmy_lastname(domain));
++	tmy_audit_capability_log(capability, 0, profile, mode);
++	if (is_enforce)
++		return tmy_supervisor("%s\n" TMY_ALLOW_CAPABILITY "%s\n",
++				      domain->domainname->name,
++				      tmy_capability2keyword(capability));
++	if (mode == 1 && tmy_quota())
++		tmy_add_capability_acl(capability, domain, NULL, 0);
++	return 0;
 +}
 +
-+int security_task_tgkill_unlocked(int tgid, int pid, int sig)
++/**
++ * tmy_add_capability_policy - add or delete capability policy.
++ * @data:      a line to parse.
++ * @domain:    pointer to "struct domain_info".
++ * @cond:      pointer to "struct condition_list". May be NULL.
++ * @is_delete: is this delete request?
++ *
++ * Returns zero on success.
++ * Returns nonzero on failure.
++ */
++int tmy_add_capability_policy(char *data, struct domain_info *domain,
++			      const struct condition_list *cond,
++			      const bool is_delete)
 +{
-+	return security_ops->task_tgkill_unlocked(tgid, pid, sig);
++	unsigned int capability;
++	for (capability = 0; capability < TMY_MAX_CAPABILITY_INDEX;
++	     capability++) {
++		if (strcmp(data, capability_control_array[capability].keyword))
++			continue;
++		return tmy_add_capability_acl(capability, domain,
++					      cond, is_delete);
++	}
++	return -EINVAL;
 +}
-+
- int security_task_wait(struct task_struct *p)
- {
- 	return security_ops->task_wait(p);
-@@ -869,9 +884,9 @@ int security_socket_accept(struct socket
- 	return security_ops->socket_accept(sock, newsock);
- }
- 
--void security_socket_post_accept(struct socket *sock, struct socket *newsock)
-+int security_socket_post_accept(struct socket *sock, struct socket *newsock)
- {
--	security_ops->socket_post_accept(sock, newsock);
-+	return security_ops->socket_post_accept(sock, newsock);
- }
- 
- int security_socket_sendmsg(struct socket *sock, struct msghdr *msg, int size)
-@@ -885,6 +900,12 @@ int security_socket_recvmsg(struct socke
- 	return security_ops->socket_recvmsg(sock, msg, size, flags);
- }
- 
-+int security_post_recv_datagram(struct sock *sk, struct sk_buff *skb,
-+				unsigned int flags)
-+{
-+	return security_ops->post_recv_datagram(sk, skb, flags);
-+}
-+
- int security_socket_getsockname(struct socket *sock)
- {
- 	return security_ops->socket_getsockname(sock);
 
 -- 
