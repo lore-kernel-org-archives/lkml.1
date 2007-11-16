@@ -1,130 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932616AbXKPSxi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934063AbXKPSyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932616AbXKPSxi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 13:53:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbXKPSx3
+	id S934063AbXKPSyS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 13:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758037AbXKPSx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 13:53:29 -0500
-Received: from ik-out-1112.google.com ([66.249.90.176]:31265 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751965AbXKPSx2 convert rfc822-to-8bit (ORCPT
+	Fri, 16 Nov 2007 13:53:59 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:44683 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752619AbXKPSx6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 13:53:28 -0500
+	Fri, 16 Nov 2007 13:53:58 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=HvJASL62SZHPK3X9fGMARpW0zR8U41zc6rlCwQ5KmilGsaKEpccvkGubgRnYzEUiqJ6FHMs89kJPmN6Iey6cUdfw5chRFzQo0/yqJeqP4bk/jo8xcw3S0aZZgTFD5qJ/+spnyjANAIrLAKm7Qhsfdn7V2tx7t3wflHndJBfftuE=
-From: Miguel =?utf-8?q?Bot=C3=B3n?= <mboton.lkml@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] mac80211: add power management support
-Date: Fri, 16 Nov 2007 19:53:26 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-wireless@vger.kernel.org, linville@tuxdriver.com, yi.zhu@intel.com
-References: <200711161929.36283.mboton.lkml@gmail.com>
-In-Reply-To: <200711161929.36283.mboton.lkml@gmail.com>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Kx0ne41D54k4zIDP65uP6LP+yz/S7Sk1KvFsZWNQqkuXkiBVT1i2B84ZRZlUPcNObq9ipfcVoXFkoH7xZRBceo9otTtoVfAoNM0vYn6kjyXbeUmR1H2ToRS5WsCJBYVgJjpxE7MMyRAOjpFEPJfJ009LV5n6mODDeVzkAzr4nk8=
+Message-ID: <863e9df20711161053q7f6ae3d5vb19b23d2ce6b20f7@mail.gmail.com>
+Date: Sat, 17 Nov 2007 00:23:57 +0530
+From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
+To: "Jim Keniston" <jkenisto@us.ibm.com>
+Subject: Re: [PATCH][RFC] kprobes: Add user entry-handler in kretprobes
+Cc: "Srinivasa Ds" <srinivasa@in.ibm.com>, linux-kernel@vger.kernel.org,
+       prasanna@in.ibm.com, davem@davemloft.net,
+       anil.s.keshavamurthy@intel.com,
+       "Ananth N Mavinakayanahalli" <ananth@in.ibm.com>
+In-Reply-To: <1195171644.3804.124.camel@dyn9047018096.beaverton.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711161953.26801.mboton.lkml@gmail.com>
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+References: <47389BEB.1000901@gmail.com>
+	 <863e9df20711121039t5352a993xc9eeb6bfea123805@mail.gmail.com>
+	 <863e9df20711130247g45d3d541j10c76434e9c65b00@mail.gmail.com>
+	 <473AAA75.2050900@in.ibm.com>
+	 <863e9df20711140049q3ad486ben7ace2edab0a2ca41@mail.gmail.com>
+	 <473ACCBE.9010308@in.ibm.com>
+	 <863e9df20711140530h69df9107g38e293aab278686a@mail.gmail.com>
+	 <1195080664.5781.78.camel@dyn9047018096.beaverton.ibm.com>
+	 <863e9df20711150700i3c84374ava108f5b585e8498b@mail.gmail.com>
+	 <1195171644.3804.124.camel@dyn9047018096.beaverton.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok, the previous patch had a little error.
+On Nov 16, 2007 5:37 AM, Jim Keniston <jkenisto@us.ibm.com> wrote:
+> On Thu, 2007-11-15 at 20:30 +0530, Abhishek Sagar wrote:
+> > On Nov 15, 2007 4:21 AM, Jim Keniston <jkenisto@us.ibm.com> wrote:
+> > > 2. Simplify the task of correlating data (e.g., timestamps) between
+> > > function entry and function return.
+> >
+> > Would adding of data and len fields in ri help? Instead of "pouching"
+> > data in one go at registration time, this would let user handlers do
+> > the allocation
+>
+> Yes and no.  Adding just a data field -- void*, or maybe unsigned long
+> long so it's big enought to accommodate big timestamps -- would be a big
+> improvement on your current proposal.  That would save the user the
+> drudgery of mapping the ri pointer to his/her per-instance data.
+> There's plenty of precedent for passing "private_data" values to
+> callbacks.
+>
+> I don't think a len field would help much.  If such info were needed, it
+> could be stored in the data structure pointed to by the data field.
+>
+> I still don't think "letting [i.e., requiring that] user handlers do the
+> allocation" is a win.  I'm still interested to see how this plays out in
+> real examples.
+>
+> > and allow them to use different kinds of data
+> > structures per-instance.
+>
+> I haven't been able to think of any scenarios where this would be
+> useful.  A "data pouch" could always contain a union, FWIW.
+
+I'm inlining a sample module which uses a data pointer in ri. I didn't
+go for a timestamp because it's not reliable. Some platforms might
+simply not have any h/w timestamp counters. For the same reason a lot
+of platforms (on ARM, say) have their sched_clock() mapped on jiffies.
+This may prevent timestamps from being distinct across function entry
+and exit. Plus a data pointer looks pretty harmless.
+
+--- test module ---
+
+#include <linux/kernel.h>
+#include <linux/version.h>
+#include <linux/module.h>
+#include <linux/kprobes.h>
+#include <linux/ktime.h>
+
+#define PRINT_DELAY (10 * HZ)
+
+/* This module calculates the total time and instances of func being called
+ * across all cpu's. An average is calculated every 10 seconds and displayed.
+ * Only one function instance per-task is monitored. This cuts out the
+ * possibility of measuring time for recursive and nested function
+ * invocations.
+ *
+ * Note: If compiling as a standalone module, make sure sched_clock() is
+ * exported in the kernel. */
+
+/* per-task data */
+struct prof_data {
+	struct task_struct *task;
+	struct list_head list;
+	unsigned long long entry_stamp;
+};
+
+static const char *func = "sys_open";
+static spinlock_t time_lock;
+static ktime_t total_time;
+static unsigned long hits;
+static LIST_HEAD(data_nodes); /* list of per-task data */
+static struct delayed_work work_print;
+
+static struct prof_data *get_per_task_data(struct task_struct *tsk)
+{
+	struct prof_data *p;
+
+	/* lookup prof_data corresponding to tsk */
+	list_for_each_entry(p, &data_nodes, list) {
+		if (p->task == tsk)
+			return p;
+	}
+	return NULL;
+}
+
+/* called with kretprobe_lock held */
+static int entry_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
+{
+	struct prof_data *stats;
+
+	stats = get_per_task_data(current);
+	if (stats)
+		return 1; /* recursive/nested call */
+
+	stats = kmalloc(sizeof(struct prof_data), GFP_ATOMIC);
+	if (!stats)
+		return 1;
+
+	stats->entry_stamp = sched_clock();
+	stats->task = current;
+	INIT_LIST_HEAD(&stats->list);
+	list_add(&stats->list, &data_nodes);
+	ri->data = stats;
+	return 0;
+}
+
+/* called with kretprobe_lock held */
+static int return_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
+{
+	unsigned long flags;
+	struct prof_data *stats = (struct prof_data *)ri->data;
+	u64 elapsed;
+
+	BUG_ON(ri->data == NULL);
+	elapsed = (long long)sched_clock() - (long long)stats->entry_stamp;
+
+	/* update stats */
+	spin_lock_irqsave(&time_lock, flags);
+	++hits;
+	total_time = ktime_add_ns(total_time, elapsed);
+	spin_unlock_irqrestore(&time_lock, flags);
+
+	list_del(&stats->list);
+	kfree(stats);
+	return 0;
+}
+
+static struct kretprobe my_kretprobe = {
+	.handler = return_handler,
+	.entry_handler = entry_handler,
+};
+
+/* called after every PRINT_DELAY seconds */
+static void print_time(struct work_struct *work)
+{
+	unsigned long flags;
+	s64 time_ns;
+	struct timespec ts;
+
+	BUG_ON(work != &work_print.work);
+	spin_lock_irqsave(&time_lock, flags);
+	time_ns = ktime_to_ns(total_time);
+	do_div(time_ns, hits);
+	spin_unlock_irqrestore(&time_lock, flags);
+
+	ts = ns_to_timespec(time_ns);
+	printk(KERN_DEBUG "Avg. running time of %s = %ld sec, %ld nsec\n",
+	       func, ts.tv_sec, ts.tv_nsec);
+	schedule_delayed_work(&work_print, PRINT_DELAY);
+}
+
+static int __init test_module_init(void)
+{
+	int ret;
+	my_kretprobe.kp.symbol_name = (char *)func;
+
+	spin_lock_init(&time_lock);
+	if ((ret = register_kretprobe(&my_kretprobe)) < 0) {
+		printk("Failed to register test kretprobe!\n");
+		return -1;
+	}
+	printk("Kretprobe active on %s\n", my_kretprobe.kp.symbol_name);
+	INIT_DELAYED_WORK(&work_print, print_time);
+	schedule_delayed_work(&work_print, PRINT_DELAY);
+	return 0;
+}
+
+static void __exit test_module_exit(void)
+{
+	unregister_kretprobe(&my_kretprobe);
+	printk("kretprobe unregistered\n");
+	printk("Missed probing %d instances of %s\n",
+		my_kretprobe.nmissed, func);
+}
+
+module_init(test_module_init)
+module_exit(test_module_exit)
+MODULE_LICENSE("GPL");
 
 --
-
-This patch adds power management support in mac80211.
-
-This allows us to enable power management through the "iwconfig <device> power 
-<off/on>" command.
-The code is based on "mac80211-10.0.0" but it is a little bit modified.
-
-Signed-off-by: Miguel Botón <mboton@gmail.com>
-
-diff --git a/include/net/mac80211.h b/include/net/mac80211.h
-index 5fcc4c1..c82b6fa 100644
---- a/include/net/mac80211.h
-+++ b/include/net/mac80211.h
-@@ -452,6 +452,8 @@ struct ieee80211_conf {
- 	u8 antenna_max;
- 	u8 antenna_sel_tx;
- 	u8 antenna_sel_rx;
-+
-+	u8 power_management_enable;     /* flag to enable/disable power management 
-*/
- };
- 
- /**
-diff --git a/net/mac80211/ieee80211_ioctl.c b/net/mac80211/ieee80211_ioctl.c
-index 6caa3ec..f5eebec 100644
---- a/net/mac80211/ieee80211_ioctl.c
-+++ b/net/mac80211/ieee80211_ioctl.c
-@@ -674,6 +687,51 @@ static int ieee80211_ioctl_giwtxpower(struct net_device 
-*dev,
- 	return 0;
- }
- 
-+static int ieee80211_ioctl_siwpower(struct net_device *dev,
-+				    struct iw_request_info *info,
-+				    union iwreq_data *wrqu,
-+				    char *extra)
-+{
-+	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
-+	struct ieee80211_conf *conf = &local->hw.conf;
-+
-+	if (wrqu->power.disabled) {
-+		conf->power_management_enable = 0;
-+		if (ieee80211_hw_config(local))
-+			return -EINVAL;
-+		return 0;
-+	}
-+
-+	switch (wrqu->power.flags & IW_POWER_MODE) {
-+	case IW_POWER_ON:       /* If not specified */
-+	case IW_POWER_MODE:     /* If set all mask */
-+	case IW_POWER_ALL_R:    /* If explicitely state all */
-+		break;
-+	default:                /* Otherwise we don't support it */
-+		return -EINVAL;
-+	}
-+
-+	conf->power_management_enable = 1;
-+
-+	if (ieee80211_hw_config(local))
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+static int ieee80211_ioctl_giwpower(struct net_device *dev,
-+				    struct iw_request_info *info,
-+				    union iwreq_data *wrqu,
-+				    char *extra)
-+{
-+	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
-+	struct ieee80211_conf *conf = &local->hw.conf;
-+
-+	wrqu->power.disabled = !conf->power_management_enable;
-+
-+	return 0;
-+}
-+
- static int ieee80211_ioctl_siwrts(struct net_device *dev,
- 				  struct iw_request_info *info,
- 				  struct iw_param *rts, char *extra)
-@@ -1111,8 +1166,8 @@ static const iw_handler ieee80211_handler[] =
- 	(iw_handler) ieee80211_ioctl_giwretry,		/* SIOCGIWRETRY */
- 	(iw_handler) ieee80211_ioctl_siwencode,		/* SIOCSIWENCODE */
- 	(iw_handler) ieee80211_ioctl_giwencode,		/* SIOCGIWENCODE */
--	(iw_handler) NULL,				/* SIOCSIWPOWER */
--	(iw_handler) NULL,				/* SIOCGIWPOWER */
-+	(iw_handler) ieee80211_ioctl_siwpower,		/* SIOCSIWPOWER */
-+	(iw_handler) ieee80211_ioctl_giwpower,		/* SIOCGIWPOWER */
- 	(iw_handler) NULL,				/* -- hole -- */
- 	(iw_handler) NULL,				/* -- hole -- */
- 	(iw_handler) ieee80211_ioctl_siwgenie,		/* SIOCSIWGENIE */
-
--- 
-	Miguel Botón
+Abhishek Sagar
