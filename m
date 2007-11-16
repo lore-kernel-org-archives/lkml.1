@@ -1,69 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932764AbXKPNlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764710AbXKPNxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932764AbXKPNlg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 08:41:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758895AbXKPNlO
+	id S1764710AbXKPNxe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 08:53:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757550AbXKPNxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 08:41:14 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:43768 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758217AbXKPNlN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 08:41:13 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 2/2] MN10300: Fix MTD JEDEC probe so that the ASB2303 bootprom
-	can be detected
-To: torvalds@osdl.org, akpm@linux-foundation.org, dwmw2@infradead.org
-Cc: linux-kernel@vger.kernel.org, linux-am33-list@redhat.com,
-       dhowells@redhat.com
-Date: Fri, 16 Nov 2007 13:41:05 +0000
-Message-ID: <20071116134105.3823.66507.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20071116134100.3823.12894.stgit@warthog.procyon.org.uk>
-References: <20071116134100.3823.12894.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.13
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Fri, 16 Nov 2007 08:53:25 -0500
+Received: from mail.gmx.net ([213.165.64.20]:52706 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756297AbXKPNxZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 08:53:25 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+4nvkmDtG4Tlt2AEqByyEY34OmfCj0Mf3MbBxj1I
+	EiOHhqc1Y2crdS
+Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
+From: Mike Galbraith <efault@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mark Lord <lkml@rtr.ca>, Pavel Machek <pavel@ucw.cz>,
+       Mark Lord <liml@rtr.ca>, Thomas Gleixner <tglx@linutronix.de>,
+       len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       rjw@sisk.pl, Len Brown <lenb@kernel.org>
+In-Reply-To: <20071116112317.GA12724@elte.hu>
+References: <4739E347.30406@rtr.ca> <473C7495.40805@rtr.ca>
+	 <20071115181418.GA6603@ucw.cz> <473C825E.3030307@rtr.ca>
+	 <20071115193424.GA31691@elte.hu> <20071115193612.GA751@elte.hu>
+	 <473CC6D4.2010909@rtr.ca> <20071116055531.GA16273@elte.hu>
+	 <20071116071522.GA1453@elte.hu> <20071116082146.GA14685@elte.hu>
+	 <20071116112317.GA12724@elte.hu>
+Content-Type: text/plain
+Date: Fri, 16 Nov 2007 06:53:13 -0500
+Message-Id: <1195213993.4037.21.camel@Knoppix>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix MTD JEDEC probe so that the ASB2303 bootprom can be accessed.  This is
-presumably required because the bootprom is normally write-protected and so
-the normal flash probes don't work as they require the ability to write to the
-flash to send it commands.
+On Fri, 2007-11-16 at 12:23 +0100, Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > once that tracer bug was fixed, the best method to generate a trace 
+> > was to do this:
+> > 
+> >    echo 1 > /proc/sys/kernel/stackframe_tracing
+> >    echo 1 > /proc/sys/kernel/syscall_tracing
+> >    ./trace-cmd bash -c "echo mem > /sys/power/state" > trace.txt
+> 
+> so here's an UP suspend+resume trace i did:
+> 
+>   http://redhat.com/~mingo/latency-tracing-patches/misc/trace-suspend-long.txt.bz2
+> 
+> tons of detail - which might be interesting to other folks as well. Fact 
+> is, our suspend-to-RAM+resume cycle is very, very slow, even on fast 
+> hardware - and this trace shows all the reasons why.
+> 
+> This was a fully cached system - i.e. i've done a suspend+resume before 
+> to warm up the caches. (not that suspend+resume does much IO normally.)
+> 
+> The trace shows that a suspend+resume cycle is 7.95 seconds long 
+> (without counting the time the box spent suspended) - ouch! This was a 
+> T60 with Core2Duo 1.83GHz.
 
-In the condition of the excluded if-statement, uaddr is 1.
+Ouch?  That's an order of magnitude faster than my 3GHz P4 :)
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- drivers/mtd/chips/jedec_probe.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/mtd/chips/jedec_probe.c b/drivers/mtd/chips/jedec_probe.c
-index a67b23b..734674d 100644
---- a/drivers/mtd/chips/jedec_probe.c
-+++ b/drivers/mtd/chips/jedec_probe.c
-@@ -1868,11 +1868,18 @@ static inline __u8 finfo_uaddr(const struct amd_flash_info *finfo, int device_ty
- 
- 	uaddr = finfo->uaddr[uaddr_idx];
- 
-+	/* the MN10300 ASB2303 board doesn't detect its bootprom if this test
-+	 * is allowed to take place, presumably because the flash is
-+	 * write-protected and so cannot be commanded for the purposes of
-+	 * probing
-+	 */
-+#ifndef CONFIG_MN10300_UNIT_ASB2303
- 	if (uaddr != MTD_UADDR_NOT_SUPPORTED ) {
- 		/* ASSERT("The unlock addresses for non-8-bit mode
- 		   are bollocks. We don't really need an array."); */
- 		uaddr = finfo->uaddr[0];
- 	}
-+#endif
- 
-  uaddr_done:
- 	return uaddr;
+	-Mike
 
