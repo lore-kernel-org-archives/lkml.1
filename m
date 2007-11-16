@@ -1,129 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765357AbXKPTCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933290AbXKPTDh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765357AbXKPTCU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 14:02:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbXKPTCH
+	id S933290AbXKPTDh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 14:03:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbXKPTDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 14:02:07 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:53205 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750798AbXKPTCE convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 14:02:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=aTWVdmEE9e9f7IdFOL35HatGoxljpOOn3iWVQERvQAgVvHR4rsAqp8yAIAh1o7v/2YnyUrlr07clzY1lFzInLTG6XLsjJIFZMNGu0e8qLWYoULguLMMoqWK2jxIGOKT0nLQBANdjpR1yP5a8cW/7dLi/eJesoWJH8vN0waSeTCM=
-From: Miguel =?utf-8?q?Bot=C3=B3n?= <mboton.lkml@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] mac80211: add power management support
-Date: Fri, 16 Nov 2007 20:02:01 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-wireless@vger.kernel.org, linville@tuxdriver.com, yi.zhu@intel.com
-References: <200711161929.36283.mboton.lkml@gmail.com> <200711161953.26801.mboton.lkml@gmail.com>
-In-Reply-To: <200711161953.26801.mboton.lkml@gmail.com>
+	Fri, 16 Nov 2007 14:03:30 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58051 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752002AbXKPTDa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 14:03:30 -0500
+Message-ID: <473DE8A6.2090100@redhat.com>
+Date: Fri, 16 Nov 2007 10:59:50 -0800
+From: Ulrich Drepper <drepper@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200711162002.01972.mboton.lkml@gmail.com>
+To: dean gaudet <dean@arctic.org>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       tglx@linutronix.de, torvalds@linux-foundation.org
+Subject: Re: [PATCHv2 4/4] first use of sys_indirect system call
+References: <200711151822.lAFIMVnJ028596@devserv.devel.redhat.com> <alpine.DEB.0.9999.0711161003310.15441@twinlark.arctic.org> <473DDF1B.5030706@redhat.com> <alpine.DEB.0.9999.0711161021420.15441@twinlark.arctic.org>
+In-Reply-To: <alpine.DEB.0.9999.0711161021420.15441@twinlark.arctic.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Today is not a good day for me... I sent the previous patch with wordwrap enabled.
-This one is the correct.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
---
+dean gaudet wrote:
+> i'm not suggesting the library set the global flag.  i'm suggesting that 
+> me as an app writer will do so.
+> 
+> it seems like both methods are useful.
 
-This patch adds power management support in mac80211.
+No, the global flag is hardly ever useful.  You almost never know the
+details of all the libraries you link to well enough to determine that
+they don't need FD_CLOEXEC disabled.  Even more problematic, you cannot
+know whether they will need it in future.
 
-This allows us to enable power management through the "iwconfig <device> power <off/on>" command.
-The code is based on "mac80211-10.0.0" but it is a little bit modified.
+For applications the solution is simple: wrap to appropriate calls.
+Apache has all these apr_ wrappers.  But them to some good news after all.
 
-Signed-off-by: Miguel Botón <mboton@gmail.com>
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
 
-diff --git a/include/net/mac80211.h b/include/net/mac80211.h
-index 5fcc4c1..c82b6fa 100644
---- a/include/net/mac80211.h
-+++ b/include/net/mac80211.h
-@@ -452,6 +452,8 @@ struct ieee80211_conf {
- 	u8 antenna_max;
- 	u8 antenna_sel_tx;
- 	u8 antenna_sel_rx;
-+
-+	u8 power_management_enable;     /* flag to enable/disable power management */
- };
- 
- /**
-diff --git a/net/mac80211/ieee80211_ioctl.c b/net/mac80211/ieee80211_ioctl.c
-index 6caa3ec..f5eebec 100644
---- a/net/mac80211/ieee80211_ioctl.c
-+++ b/net/mac80211/ieee80211_ioctl.c
-@@ -674,6 +687,51 @@ static int ieee80211_ioctl_giwtxpower(struct net_device *dev,
- 	return 0;
- }
- 
-+static int ieee80211_ioctl_siwpower(struct net_device *dev,
-+				    struct iw_request_info *info,
-+				    union iwreq_data *wrqu,
-+				    char *extra)
-+{
-+	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
-+	struct ieee80211_conf *conf = &local->hw.conf;
-+
-+	if (wrqu->power.disabled) {
-+		conf->power_management_enable = 0;
-+		if (ieee80211_hw_config(local))
-+			return -EINVAL;
-+		return 0;
-+	}
-+
-+	switch (wrqu->power.flags & IW_POWER_MODE) {
-+	case IW_POWER_ON:       /* If not specified */
-+	case IW_POWER_MODE:     /* If set all mask */
-+	case IW_POWER_ALL_R:    /* If explicitely state all */
-+		break;
-+	default:                /* Otherwise we don't support it */
-+		return -EINVAL;
-+	}
-+
-+	conf->power_management_enable = 1;
-+
-+	if (ieee80211_hw_config(local))
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+static int ieee80211_ioctl_giwpower(struct net_device *dev,
-+				    struct iw_request_info *info,
-+				    union iwreq_data *wrqu,
-+				    char *extra)
-+{
-+	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
-+	struct ieee80211_conf *conf = &local->hw.conf;
-+
-+	wrqu->power.disabled = !conf->power_management_enable;
-+
-+	return 0;
-+}
-+
- static int ieee80211_ioctl_siwrts(struct net_device *dev,
- 				  struct iw_request_info *info,
- 				  struct iw_param *rts, char *extra)
-@@ -1111,8 +1166,8 @@ static const iw_handler ieee80211_handler[] =
- 	(iw_handler) ieee80211_ioctl_giwretry,		/* SIOCGIWRETRY */
- 	(iw_handler) ieee80211_ioctl_siwencode,		/* SIOCSIWENCODE */
- 	(iw_handler) ieee80211_ioctl_giwencode,		/* SIOCGIWENCODE */
--	(iw_handler) NULL,				/* SIOCSIWPOWER */
--	(iw_handler) NULL,				/* SIOCGIWPOWER */
-+	(iw_handler) ieee80211_ioctl_siwpower,		/* SIOCSIWPOWER */
-+	(iw_handler) ieee80211_ioctl_giwpower,		/* SIOCGIWPOWER */
- 	(iw_handler) NULL,				/* -- hole -- */
- 	(iw_handler) NULL,				/* -- hole -- */
- 	(iw_handler) ieee80211_ioctl_siwgenie,		/* SIOCSIWGENIE */
-
-
--- 
-	Miguel Botón
+iD8DBQFHPeim2ijCOnn/RHQRAu8xAJsF/0Ir1PWMbHkVRaI5vKOGFS4tMACfVEs9
+pMYAiCAU1E2B+7QR0EP+/F8=
+=btt9
+-----END PGP SIGNATURE-----
