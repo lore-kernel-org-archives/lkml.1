@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763519AbXKPRrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933198AbXKPRsD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763519AbXKPRrs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 12:47:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757917AbXKPRrg
+	id S933198AbXKPRsD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 12:48:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762607AbXKPRrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 12:47:36 -0500
-Received: from pat.uio.no ([129.240.10.15]:39669 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754950AbXKPRre (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 12:47:34 -0500
-Subject: Re: [TOMOYO #5 02/18] Add wrapper functions for VFS helper
-	functions.
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: penguin-kernel@I-love.SAKURA.ne.jp
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <20071116173524.195366292@I-love.SAKURA.ne.jp>
-References: <20071116173439.796600895@I-love.SAKURA.ne.jp>
-	 <20071116173524.195366292@I-love.SAKURA.ne.jp>
-Content-Type: text/plain
-Date: Fri, 16 Nov 2007 12:47:35 -0500
-Message-Id: <1195235255.7653.69.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Fri, 16 Nov 2007 12:47:43 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:37604 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762194AbXKPRrl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 12:47:41 -0500
+Message-ID: <473DD74F.60800@zytor.com>
+Date: Fri, 16 Nov 2007 09:45:51 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       William Lee Irwin III <wli@holomorphy.com>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Why preallocate pmd in x86 32-bit PAE?
+References: <473CC0AC.3020500@goop.org> <alpine.LFD.0.9999.0711151403000.4260@woody.linux-foundation.org> <473DCF73.4070401@goop.org>
+In-Reply-To: <473DCF73.4070401@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-ClamAV-Virus: No
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.2, required=12.0, autolearn=disabled, AWL=-0.191)
-X-UiO-Scanned: DC0D362F728D089833747C1B131A0BB05B860920
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -1 maxlevel 200 minaction 2 bait 0 mail/h: 584 total 5185169 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeremy Fitzhardinge wrote:
+> 
+> Hm, do you recall what processors that might affect?  As far as I know,
+> current processors will ignore non-present top-level entries.  Anyway,
+> we can point them not present to empty_zero_page, so testing the present
+> bit will still be sufficient to tell if we need to allocate a new pmd,
+> but if the hardware decides to follow the page reference there's no harm
+> done.  (Hm, unless the hardware decides it wants to set A or D bits in
+> empty_zero_page for some reason...)
+> 
 
-On Sat, 2007-11-17 at 02:34 +0900, penguin-kernel@I-love.SAKURA.ne.jp
-wrote:
-> plain text document attachment
-> (add-wrapper-functions-for-vfs-helper-functions.patch)
-> This patch allows LSM hooks refer previously associated "struct vfsmount" parameter
-> so that they can calculate pathname of given "struct dentry".
+PDPTR is documented to have P bits but none of the other control bits, 
+unlike other levels of the hierarchy.
 
-NACK to this. Passing function parameters through the task_struct is
-definitely not an acceptable hack (unless you're doing it through the
-stack).
+The hardware never sets A or D bits on non-present pages, since all the 
+bits except P are reserved for the operating systems (and, besides, they 
+can never be accessed or dirty.)
 
-Trond
+>> What earlier CPU's did was to basically load all four values into the CPU 
+>> when you loaded %cr3. There was no "three-level page table walker" at all: 
+>> it was still a two-level page table walker, there were just for magic 
+>> internal page tables that were indexed off the two high bits.
+> 
+> That just means we need to reload cr3 after populating the pgd with a
+> new pmd, right?
+
+Yes.  And as Linus said, it would be a new special case.
+
+	-hpa
 
