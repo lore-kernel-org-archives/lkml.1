@@ -1,671 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933036AbXKPRks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764300AbXKPRlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933036AbXKPRks (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 12:40:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761078AbXKPRhd
+	id S1764300AbXKPRlO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 12:41:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762027AbXKPRhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 12:37:33 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:54722 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 16 Nov 2007 12:37:40 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:54698 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757414AbXKPRhB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757103AbXKPRhB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 Nov 2007 12:37:01 -0500
-Message-Id: <20071116173526.608621873@I-love.SAKURA.ne.jp>
+Message-Id: <20071116173525.533626615@I-love.SAKURA.ne.jp>
 References: <20071116173439.796600895@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Sat, 17 Nov 2007 02:34:48 +0900
+Date: Sat, 17 Nov 2007 02:34:45 +0900
 From: penguin-kernel@I-love.SAKURA.ne.jp
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #5 09/18] File access control functions.
-Content-Disposition: inline; filename=tomoyo-file.diff
+Subject: [TOMOYO #5 06/18] Utility functions and policy manipulation interface.
+Content-Disposition: inline; filename=tomoyo-common.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-TOMOYO Linux checks permission in
-open/creat/unlink/truncate/ftruncate/mknod/mkdir/
-rmdir/symlink/link/rename/uselib/sysctl .
+Common functions for TOMOYO Linux.
 
-Each permission can be automatically accumulated into
-the policy of each domain using 'learning mode'.
+TOMOYO Linux uses /sys/kernel/security/tomoyo interface for configuration.
+
+/sys/kernel/security/tomoyo/domain_policy is the domain-based access policy.
+Access control list for files, networks, argv[0], capabilities and signal is
+stored in domain_policy.
+
+/sys/kernel/security/tomoyo/system_policy is the system-wide access policy.
+Access control list for mount, umount and pivot_root is
+stored in system_policy.
+
+/sys/kernel/security/tomoyo/exception_policy is the other settings such as
+globally readable files, domain transition configurations
+or pre-defined patterned pathnames.
+
+/sys/kernel/security/tomoyo/profile has some profiles, which configure
+the access control level of TOMOYO Linux. A profile is assigned to a domain.
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
- security/tomoyo/file.c | 1471 +++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 1471 insertions(+)
+ security/tomoyo/common.c | 2391 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 2391 insertions(+)
 
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-mm/security/tomoyo/file.c	2007-11-14 15:15:44.000000000 +0900
-@@ -0,0 +1,1471 @@
++++ linux-2.6-mm/security/tomoyo/common.c	2007-11-14 15:57:51.000000000 +0900
+@@ -0,0 +1,2391 @@
 +/*
-+ * security/tomoyo/file.c
++ * security/tomoyo/common.c
 + *
-+ * File access control functions for TOMOYO Linux.
++ * Common functions for TOMOYO Linux.
 + */
 +
 +#include "tomoyo.h"
 +#include "realpath.h"
 +
-+#define ACC_MODE(x) ("\000\004\002\006"[(x)&O_ACCMODE])
++#define MAX_ACCEPT_ENTRY 2048
++
++static int tmy_read_control(struct file *file,
++			    char __user *buffer,
++			    const int buffer_len);
 +
 +/*************************  VARIABLES  *************************/
 +
-+/***** The structure for globally readable files. *****/
-+
-+struct globally_readable_file_entry {
-+	struct list_head list;
-+	const struct path_info *filename;
-+	bool is_deleted;
-+};
-+
-+/***** The structure for filename patterns. *****/
-+
-+struct pattern_entry {
-+	struct list_head list;
-+	const struct path_info *pattern;
-+	bool is_deleted;
-+};
-+
-+/***** The structure for non-rewritable-by-default file patterns. *****/
-+
-+struct no_rewrite_entry {
-+	struct list_head list;
-+	const struct path_info *pattern;
-+	bool is_deleted;
-+};
-+
-+/***** The structure for detailed write operations. *****/
++/* /sbin/init started? */
++bool sbin_init_started;
 +
 +static struct {
 +	const char *keyword;
-+	const int paths;
-+} acl_type_array[] = {
-+	{ "create",   1 }, /* TMY_TYPE_CREATE_ACL */
-+	{ "unlink",   1 }, /* TMY_TYPE_UNLINK_ACL */
-+	{ "mkdir",    1 }, /* TMY_TYPE_MKDIR_ACL */
-+	{ "rmdir",    1 }, /* TMY_TYPE_RMDIR_ACL */
-+	{ "mkfifo",   1 }, /* TMY_TYPE_MKFIFO_ACL */
-+	{ "mksock",   1 }, /* TMY_TYPE_MKSOCK_ACL */
-+	{ "mkblock",  1 }, /* TMY_TYPE_MKBLOCK_ACL */
-+	{ "mkchar",   1 }, /* TMY_TYPE_MKCHAR_ACL */
-+	{ "truncate", 1 }, /* TMY_TYPE_TRUNCATE_ACL */
-+	{ "symlink",  1 }, /* TMY_TYPE_SYMLINK_ACL */
-+	{ "link",     2 }, /* TMY_TYPE_LINK_ACL */
-+	{ "rename",   2 }, /* TMY_TYPE_RENAME_ACL */
-+	{ "rewrite",  1 }, /* TMY_TYPE_REWRITE_ACL */
-+	{ NULL, 0 }
++	unsigned int current_value;
++	const unsigned int max_value;
++} tmy_control[TMY_MAX_CONTROL_INDEX] = {
++	[TMY_COMMENT]             = { "COMMENT",             0, 0 },
++	[TMY_MAC_FOR_FILE]        = { "MAC_FOR_FILE",        0, 3 },
++	[TMY_MAC_FOR_ARGV0]       = { "MAC_FOR_ARGV0",       0, 3 },
++	[TMY_MAC_FOR_NETWORK]     = { "MAC_FOR_NETWORK",     0, 3 },
++	[TMY_MAC_FOR_SIGNAL]      = { "MAC_FOR_SIGNAL",      0, 3 },
++	[TMY_DENY_CONCEAL_MOUNT]  = { "DENY_CONCEAL_MOUNT",  0, 3 },
++	[TMY_RESTRICT_MOUNT]      = { "RESTRICT_MOUNT",      0, 3 },
++	[TMY_RESTRICT_UMOUNT]     = { "RESTRICT_UNMOUNT",    0, 3 },
++	[TMY_RESTRICT_PIVOT_ROOT] = { "RESTRICT_PIVOT_ROOT", 0, 3 },
++	[TMY_MAX_ACCEPT_ENTRY]    =
++	{ "MAX_ACCEPT_ENTRY", MAX_ACCEPT_ENTRY, INT_MAX },
++	[TMY_MAX_GRANT_LOG]       = { "MAX_GRANT_LOG",       1024, INT_MAX },
++	[TMY_MAX_REJECT_LOG]      = { "MAX_REJECT_LOG",      1024, INT_MAX },
++	[TMY_VERBOSE]             = { "TOMOYO_VERBOSE",      1, 1 },
++	[TMY_ALLOW_ENFORCE_GRACE] = { "ALLOW_ENFORCE_GRACE", 0, 1 },
 +};
++
++struct profile {
++	unsigned int value[TMY_MAX_CONTROL_INDEX];
++	const struct path_info *comment;
++};
++
++static struct profile *profile_ptr[TMY_MAX_PROFILES];
 +
 +/*************************  UTILITY FUNCTIONS  *************************/
 +
-+/**
-+ * tmy_acltype2keyword - get keyword from access control index.
-+ * @acl_type: index number.
-+ *
-+ * Returns keyword that corresponds with @acl_type .
-+ */
-+const char *tmy_acltype2keyword(const unsigned int acl_type)
++/* Is the current process running as root? */
++static int tmy_is_root(void)
 +{
-+	return (acl_type < ARRAY_SIZE(acl_type_array))
-+		? acl_type_array[acl_type].keyword : NULL;
++	return !current->uid && !current->euid;
 +}
 +
 +/**
-+ * tmy_acltype2paths - get number of arguments from access control index.
-+ * @acl_type: index number.
++ * tmy_normalize_line - make a line tidy.
++ * @buffer: the line to make tidy.
 + *
-+ * Returns number of arguments that corresponds with @acl_type .
-+ */
-+int tmy_acltype2paths(const unsigned int acl_type)
-+{
-+	return (acl_type < ARRAY_SIZE(acl_type_array))
-+		? acl_type_array[acl_type].paths : 0;
-+}
-+
-+static int tmy_strendswith(const char *name, const char *tail)
-+{
-+	int len;
-+
-+	if (!name || !tail)
-+		return 0;
-+
-+	len = strlen(name) - strlen(tail);
-+	return len >= 0 && strcmp(name + len, tail) == 0;
-+}
-+
-+static struct path_info *tmy_get_path(struct dentry *dentry,
-+				      struct vfsmount *mnt)
-+{
-+	/* sizeof(struct path_info_with_data) <= PAGE_SIZE */
-+	struct path_info_with_data {
-+		/* Keep this first, this pointer is passed to tmy_free(). */
-+		struct path_info head;
-+		char bariier1[16];
-+		char body[TMY_MAX_PATHNAME_LEN];
-+		char barrier2[16];
-+	} *buf = tmy_alloc(sizeof(*buf));
-+
-+	if (buf) {
-+		int error = tmy_realpath_dentry2(dentry,
-+						 mnt,
-+						 buf->body,
-+						 sizeof(buf->body) - 1);
-+
-+		if (error == 0) {
-+			buf->head.name = buf->body;
-+			tmy_fill_path_info(&buf->head);
-+			return &buf->head;
-+		}
-+
-+		tmy_free(buf);
-+		buf = NULL;
-+		printk(KERN_INFO "tmy_realpath_dentry = %d\n", error);
-+	}
-+
-+	return NULL;
-+}
-+
-+/*************************  PROTOTYPES  *************************/
-+
-+static int tmy_add_double_write_acl(const u8 type,
-+				    const char *filename1,
-+				    const char *filename2,
-+				    struct domain_info * const domain,
-+				    const struct condition_list *cond,
-+				    const bool is_delete);
-+static int tmy_add_single_write_acl(const u8 type,
-+				    const char *filename,
-+				    struct domain_info * const domain,
-+				    const struct condition_list *cond,
-+				    const bool is_delete);
-+
-+/*************************  AUDIT FUNCTIONS  *************************/
-+
-+static int tmy_audit_file_log(const struct path_info *filename,
-+			      const u8 perm,
-+			      const bool is_granted,
-+			      const u8 profile,
-+			      const unsigned int mode)
-+{
-+	char *buf;
-+	int len;
-+
-+	if (is_granted) {
-+		if (!tmy_audit_grant())
-+			return 0;
-+	} else {
-+		if (!tmy_audit_reject())
-+			return 0;
-+	}
-+
-+	len = filename->total_len + 8;
-+	buf = tmy_init_audit_log(&len, profile, mode);
-+
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	snprintf(buf + strlen(buf),
-+		 len - strlen(buf) - 1,
-+		 "%d %s\n",
-+		 perm,
-+		 filename->name);
-+
-+	return tmy_write_audit_log(buf, is_granted);
-+}
-+
-+static int tmy_audit_write_log(const char *operation,
-+			       const struct path_info *filename1,
-+			       const struct path_info *filename2,
-+			       const bool is_granted,
-+			       const u8 profile,
-+			       const unsigned int mode)
-+{
-+	char *buf;
-+	int len;
-+
-+	if (is_granted) {
-+		if (!tmy_audit_grant())
-+			return 0;
-+	} else {
-+		if (!tmy_audit_reject())
-+			return 0;
-+	}
-+
-+	len = strlen(operation) +
-+		filename1->total_len +
-+		(filename2 ? filename2->total_len : 0)
-+		+ 16;
-+
-+	buf = tmy_init_audit_log(&len, profile, mode);
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	snprintf(buf + strlen(buf), len - strlen(buf) - 1,
-+		 "allow_%s %s %s\n",
-+		 operation, filename1->name, filename2 ? filename2->name : "");
-+
-+	return tmy_write_audit_log(buf, is_granted);
-+}
-+
-+/**********************  GLOBALLY READABLE FILE HANDLER  **********************/
-+
-+static LIST_HEAD(globally_readable_list);
-+
-+static int tmy_add_globally_readable_entry(const char *filename,
-+					   const bool is_delete)
-+{
-+	struct globally_readable_file_entry *new_entry;
-+	struct globally_readable_file_entry *ptr;
-+	static DEFINE_MUTEX(mutex);
-+	const struct path_info *saved;
-+	int error = -ENOMEM;
-+
-+	if (!tmy_correct_path(filename, 1, -1, -1, __FUNCTION__))
-+		return -EINVAL; /* No patterns allowed. */
-+	saved = tmy_save_name(filename);
-+	if (!saved)
-+		return -ENOMEM;
-+
-+	mutex_lock(&mutex);
-+
-+	list_for_each_entry(ptr, &globally_readable_list, list) {
-+		if (ptr->filename == saved) {
-+			ptr->is_deleted = is_delete;
-+			error = 0;
-+			goto out;
-+		}
-+	}
-+	if (is_delete) {
-+		error = -ENOENT;
-+		goto out;
-+	}
-+
-+	new_entry = tmy_alloc_element(sizeof(*new_entry));
-+	if (!new_entry)
-+		goto out;
-+
-+	new_entry->filename = saved;
-+	list_add_tail_mb(&new_entry->list, &globally_readable_list);
-+	error = 0;
-+
-+out: ;
-+	mutex_unlock(&mutex);
-+
-+	return error;
-+}
-+
-+static int tmy_globally_readable(const struct path_info *filename)
-+{
-+	struct globally_readable_file_entry *ptr;
-+
-+	list_for_each_entry(ptr, &globally_readable_list, list) {
-+		if (!ptr->is_deleted &&
-+		    !tmy_pathcmp(filename, ptr->filename))
-+			return 1;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * tmy_add_globally_readable_policy - add or delete globally readable policy.
-+ * @filename:  pointer to filename to add ore remove.
-+ * @is_delete: is this delete request?
++ * All tokens (such as pathnames) used in TOMOYO Linux contains
++ * only ASCII printable (i.e. 0x21-0x7E) range characters.
++ * This allows policy files and auditing logs split monotonically
++ * using space (i.e. ' ') and new line (i.e. '\n') characters.
 + *
-+ * Returns zero on success.
-+ * Returns nonzero on failure.
++ * Remove leading and trailing non ASCII printable chracters and
++ * replace one or more non ASCII printable chracters with single space.
 + */
-+int tmy_add_globally_readable_policy(char *filename, const bool is_delete)
++static void tmy_normalize_line(unsigned char *buffer)
 +{
-+	return tmy_add_globally_readable_entry(filename, is_delete);
++	unsigned char *sp = buffer;
++	unsigned char *dp = buffer;
++	int first = 1;
++
++	while (*sp && (*sp <= 0x20 || *sp >= 0x7F))
++		sp++;
++
++	while (*sp) {
++		if (!first)
++			*dp++ = ' ';
++		first = 0;
++		while (*sp > 0x20 && *sp < 0x7F)
++			*dp++ = *sp++;
++		while (*sp && (*sp <= 0x20 || *sp >= 0x7F))
++			sp++;
++	}
++
++	*dp = '\0';
 +}
 +
-+/**
-+ * tmy_read_globally_readable_policy - read globally readable policy.
-+ * @head: pointer to "struct io_buffer".
-+ *
-+ * Returns nonzero if reading incomplete.
-+ * Returns zero otherwise.
-+ */
-+int tmy_read_globally_readable_policy(struct io_buffer *head)
++/* Is @c the first letter of "\ooo" expression? */
++static int tmy_char_is_0to3(const unsigned char c)
 +{
-+	struct list_head *pos;
-+	list_for_each_cookie(pos, head->read_var2, &globally_readable_list) {
-+		struct globally_readable_file_entry *ptr;
-+		ptr = list_entry(pos, struct globally_readable_file_entry,
-+				 list);
-+		if (ptr->is_deleted)
-+			continue;
-+		if (tmy_io_printf(head, TMY_ALLOW_READ "%s\n",
-+				  ptr->filename->name))
-+			return -ENOMEM;
-+	}
-+	return 0;
++	return c >= '0' && c <= '3';
 +}
 +
-+/*************************  FILE GROUP HANDLER  *************************/
-+
-+static LIST_HEAD(path_group_list);
-+
-+static int tmy_add_group_entry(const char *group_name,
-+			       const char *member_name,
-+			       const bool is_delete)
++/* Is @c the second or third letter of "\ooo" expression? */
++static int tmy_char_is_0to7(const unsigned char c)
 +{
-+	static DEFINE_MUTEX(mutex);
-+	struct path_group_entry *new_group;
-+	struct path_group_entry *group;
-+	struct path_group_member *new_member;
-+	struct path_group_member *member;
-+	const struct path_info *saved_group;
-+	const struct path_info *saved_member;
-+	int error = -ENOMEM;
-+	bool found = 0;
-+
-+	if (!tmy_correct_path(group_name, 0, 0, 0, __FUNCTION__) ||
-+	    !group_name[0] ||
-+	    !tmy_correct_path(member_name, 0, 0, 0, __FUNCTION__) ||
-+	    !member_name[0])
-+		return -EINVAL;
-+
-+	saved_group = tmy_save_name(group_name);
-+	saved_member = tmy_save_name(member_name);
-+
-+	if (!saved_group || !saved_member)
-+		return -ENOMEM;
-+
-+	mutex_lock(&mutex);
-+	list_for_each_entry(group, &path_group_list, list) {
-+		if (saved_group != group->group_name)
-+			continue;
-+		list_for_each_entry(member, &group->path_group_member_list,
-+				    list) {
-+			if (member->member_name == saved_member) {
-+				member->is_deleted = is_delete;
-+				error = 0;
-+				goto out;
-+			}
-+		}
-+		found = 1;
-+		break;
-+	}
-+
-+	if (is_delete) {
-+		error = -ENOENT;
-+		goto out;
-+	}
-+
-+	if (!found) {
-+		new_group = tmy_alloc_element(sizeof(*new_group));
-+		if (!new_group)
-+			goto out;
-+		INIT_LIST_HEAD(&new_group->path_group_member_list);
-+		new_group->group_name = saved_group;
-+		list_add_tail_mb(&new_group->list, &path_group_list);
-+		group = new_group;
-+	}
-+
-+	new_member = tmy_alloc_element(sizeof(*new_member));
-+	if (!new_member)
-+		goto out;
-+	new_member->member_name = saved_member;
-+	list_add_tail_mb(&new_member->list, &group->path_group_member_list);
-+	error = 0;
-+out: ;
-+	mutex_unlock(&mutex);
-+
-+	return error;
++	return c >= '0' && c <= '7';
 +}
 +
-+/**
-+ * tmy_add_group_policy - add or delete path group policy.
-+ * @data:      a line to parse.
-+ * @is_delete: is this delete request?
-+ *
-+ * Returns zero on success.
-+ * Returns nonzero on failure.
-+ */
-+int tmy_add_group_policy(char *data, const bool is_delete)
++/* Is @c a decimal letter? */
++static int tmy_char_is_0to9(const unsigned char c)
 +{
-+	char *cp = strchr(data, ' ');
-+
-+	if (!cp)
-+		return -EINVAL;
-+	*cp++ = '\0';
-+	return tmy_add_group_entry(data, cp, is_delete);
++	return c >= '0' && c <= '9';
 +}
 +
-+static struct path_group_entry *tmy_new_path_group(const char *group_name)
++/* Is @c a hexadecimal letter? */
++static int tmy_char_is_hex(const unsigned char c)
 +{
-+	int i;
-+	struct path_group_entry *group;
-+
-+	for (i = 0; i <= 1; i++) {
-+		list_for_each_entry(group, &path_group_list, list) {
-+			if (strcmp(group_name, group->group_name->name) == 0)
-+				return group;
-+		}
-+
-+		if (i == 0) {
-+			/*
-+			 * Add a dummy entry to create new path group
-+			 * and delete that entry.
-+			 */
-+			tmy_add_group_entry(group_name, "/", 0);
-+			tmy_add_group_entry(group_name, "/", 1);
-+		}
-+	}
-+
-+	return NULL;
++	return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')
++		|| (c >= 'a' && c <= 'f');
 +}
 +
-+static int tmy_path_match_group(const struct path_info *pathname,
-+				const struct path_group_entry *group,
-+				const int may_use_pattern)
++/* Is @c an alphabet letter? */
++static int tmy_char_is_alpha(const unsigned char c)
 +{
-+	struct path_group_member *member;
-+	list_for_each_entry(member, &group->path_group_member_list, list) {
-+		if (member->is_deleted)
-+			continue;
-+		if (!member->member_name->is_patterned) {
-+			if (!tmy_pathcmp(pathname, member->member_name))
-+				return 1;
-+		} else if (may_use_pattern) {
-+			if (tmy_path_match(pathname, member->member_name))
-+				return 1;
-+		}
-+	}
-+
-+	return 0;
++	return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
 +}
 +
-+/**
-+ * tmy_read_path_group_policy - read path group policy.
-+ * @head: pointer to "struct io_buffer".
-+ *
-+ * Returns nonzero if reading incomplete.
-+ * Returns zero otherwise.
-+ */
-+int tmy_read_path_group_policy(struct io_buffer *head)
++/* Convert \ooo style expression to a byte. */
++static unsigned char tmy_str2chr(const unsigned char c,
++				 const unsigned char d,
++				 const unsigned char e)
 +{
-+	struct list_head *gpos;
-+	struct list_head *mpos;
-+	list_for_each_cookie(gpos, head->read_var1, &path_group_list) {
-+		struct path_group_entry *group;
-+		group = list_entry(gpos, struct path_group_entry, list);
-+		list_for_each_cookie(mpos, head->read_var2,
-+				     &group->path_group_member_list) {
-+			struct path_group_member *member;
-+			member = list_entry(mpos, struct path_group_member,
-+					    list);
-+			if (member->is_deleted)
-+				continue;
-+			if (tmy_io_printf(head,
-+					  TMY_PATH_GROUP "%s %s\n",
-+					  group->group_name->name,
-+					  member->member_name->name))
-+				return -ENOMEM;
-+		}
-+	}
-+	return 0;
++	return (((unsigned char) (c - '0')) << 6) +
++		(((unsigned char) (d - '0')) << 3) +
++		(((unsigned char) (e - '0')));
 +}
 +
-+/*************************  FILE PATTERN HANDLER  *************************/
-+
-+static LIST_HEAD(pattern_list);
-+
-+static int tmy_add_pattern_entry(const char *pattern, const bool is_delete)
++/* Does the @src starts with @find? */
++static int tmy_strstarts(char **src, const char *find)
 +{
-+	struct pattern_entry *new_entry;
-+	struct pattern_entry *ptr;
-+	static DEFINE_MUTEX(mutex);
-+	const struct path_info *saved;
-+	int error = -ENOMEM;
++	const int len = strlen(find);
++	char *tmp = *src;
 +
-+	if (!tmy_correct_path(pattern, 0, 1, 0, __FUNCTION__))
-+		return -EINVAL;
-+
-+	saved = tmy_save_name(pattern);
-+	if (!saved)
-+		return -ENOMEM;
-+
-+	mutex_lock(&mutex);
-+
-+	list_for_each_entry(ptr, &pattern_list, list) {
-+		if (saved == ptr->pattern) {
-+			ptr->is_deleted = is_delete;
-+			error = 0;
-+			goto out;
-+		}
-+	}
-+
-+	if (is_delete) {
-+		error = -ENOENT;
-+		goto out;
-+	}
-+
-+	new_entry = tmy_alloc_element(sizeof(*new_entry));
-+
-+	if (!new_entry)
-+		goto out;
-+	new_entry->pattern = saved;
-+	list_add_tail_mb(&new_entry->list, &pattern_list);
-+	error = 0;
-+out: ;
-+	mutex_unlock(&mutex);
-+	return error;
-+}
-+
-+static const struct path_info *tmy_get_pattern(const struct path_info *filename)
-+{
-+	struct pattern_entry *ptr;
-+	const struct path_info *pattern = NULL;
-+
-+	list_for_each_entry(ptr, &pattern_list, list) {
-+		if (ptr->is_deleted)
-+			continue;
-+		if (!tmy_path_match(filename, ptr->pattern))
-+			continue;
-+		pattern = ptr->pattern;
-+		if (!tmy_strendswith(pattern->name, "/\\*"))
-+			break;
-+	}
-+
-+	if (pattern)
-+		filename = pattern;
-+
-+	return filename;
-+}
-+
-+/**
-+ * tmy_add_pattern_policy - add or delete file pattern policy.
-+ * @pattern:   pointer to file pattern entry.
-+ * @is_delete: is this delete request?
-+ *
-+ * Returns zero on success.
-+ * Returns nonzero on failure.
-+ */
-+int tmy_add_pattern_policy(char *pattern, const bool is_delete)
-+{
-+	return tmy_add_pattern_entry(pattern, is_delete);
-+}
-+
-+/**
-+ * tmy_read_pattern_policy - read file pattern policy.
-+ * @head: pointer to "struct io_buffer".
-+ *
-+ * Returns nonzero if reading incomplete.
-+ * Returns zero otherwise.
-+ */
-+int tmy_read_pattern_policy(struct io_buffer *head)
-+{
-+	struct list_head *pos;
-+	list_for_each_cookie(pos, head->read_var2, &pattern_list) {
-+		struct pattern_entry *ptr;
-+		ptr = list_entry(pos, struct pattern_entry, list);
-+		if (ptr->is_deleted)
-+			continue;
-+		if (tmy_io_printf(head, TMY_FILE_PATTERN "%s\n",
-+				  ptr->pattern->name))
-+			return -ENOMEM;
-+	}
-+	return 0;
-+}
-+
-+/***********************  NON REWRITABLE FILE HANDLER  ***********************/
-+
-+static LIST_HEAD(no_rewrite_list);
-+
-+static int tmy_add_no_rewrite_entry(const char *pattern, const bool is_delete)
-+{
-+	struct no_rewrite_entry *new_entry;
-+	struct no_rewrite_entry *ptr;
-+	static DEFINE_MUTEX(mutex);
-+	const struct path_info *saved;
-+	int error = -ENOMEM;
-+
-+	if (!tmy_correct_path(pattern, 0, 0, 0, __FUNCTION__))
-+		return -EINVAL;
-+	saved = tmy_save_name(pattern);
-+	if (!saved)
-+		return -ENOMEM;
-+
-+	mutex_lock(&mutex);
-+	list_for_each_entry(ptr, &no_rewrite_list, list) {
-+		if (ptr->pattern == saved) {
-+			ptr->is_deleted = is_delete;
-+			error = 0;
-+			goto out;
-+		}
-+	}
-+
-+	if (is_delete) {
-+		error = -ENOENT;
-+		goto out;
-+	}
-+
-+	new_entry = tmy_alloc_element(sizeof(*new_entry));
-+	if (!new_entry)
-+		goto out;
-+
-+	new_entry->pattern = saved;
-+	list_add_tail_mb(&new_entry->list, &no_rewrite_list);
-+	error = 0;
-+out: ;
-+	mutex_unlock(&mutex);
-+
-+	return error;
-+}
-+
-+static int tmy_is_no_rewrite_file(const struct path_info *filename)
-+{
-+	struct no_rewrite_entry *ptr;
-+
-+	list_for_each_entry(ptr, &no_rewrite_list, list) {
-+		if (ptr->is_deleted)
-+			continue;
-+		if (!tmy_path_match(filename, ptr->pattern))
-+			continue;
++	if (strncmp(tmp, find, len) == 0) {
++		tmp += len;
++		*src = tmp;
 +		return 1;
 +	}
 +
@@ -673,841 +198,2248 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +}
 +
 +/**
-+ * tmy_add_no_rewrite_policy - add or delete no-rewrite policy.
-+ * @pattern:   pointer to no-rewrite entry.
-+ * @is_delete: is this delete request?
++ * tmy_correct_path - validate a pathname.
++ * @filename:     the pathname to check
++ * @start_type:   1 if the pathname must start with '/'
++ *                -1 if the pathname must not start with '/'
++ *                0 if it does not matter
++ * @pattern_type: 1 if the pathname must contain patterns
++ *                -1 if the pathname must not contain patterns
++ *                0 if it does not matter
++ * @end_type:     1 if the pathname must end with '/'
++ *                -1 if the pathname must not end with '/'
++ *                0 if it does not matter
++ * @function:     string to display if the @filename is invalid
 + *
-+ * Returns zero on success.
-+ * Returns nonzero on failure.
++ * Returns true if the pathname is valid.
++ * Returns false otherwise.
++ *
++ * Check whether the given pathname follows the naming rules.
 + */
-+int tmy_add_no_rewrite_policy(char *pattern, const bool is_delete)
++bool tmy_correct_path(const char *filename,
++		     const int start_type,
++		     const int pattern_type,
++		     const int end_type,
++		     const char *function)
 +{
-+	return tmy_add_no_rewrite_entry(pattern, is_delete);
++	int contains_pattern = 0;
++	char c;
++	char d;
++	char e;
++	const char *original_filename = filename;
++
++	if (!filename)
++		goto out;
++
++	c = *filename;
++	if (start_type == 1) { /* Must start with '/' */
++		if (c != '/')
++			goto out;
++	} else if (start_type == -1) { /* Must not start with '/' */
++		if (c == '/')
++			goto out;
++	}
++
++	if (c)
++		c = *(strchr(filename, '\0') - 1);
++	if (end_type == 1) { /* Must end with '/' */
++		if (c != '/')
++			goto out;
++	} else if (end_type == -1) { /* Must not end with '/' */
++		if (c == '/')
++			goto out;
++	}
++
++	while ((c = *filename++) != '\0') {
++		if (c == '\\') {
++			unsigned char f;
++			switch ((c = *filename++)) {
++			case '\\':  /* "\\" */
++				continue;
++			case '$':   /* "\$" */
++			case '+':   /* "\+" */
++			case '?':   /* "\?" */
++			case '*':   /* "\*" */
++			case '@':   /* "\@" */
++			case 'x':   /* "\x" */
++			case 'X':   /* "\X" */
++			case 'a':   /* "\a" */
++			case 'A':   /* "\A" */
++			case '-':   /* "\-" */
++				if (pattern_type == -1)
++					goto out; /* Must not contain pattern */
++				contains_pattern = 1;
++				continue;
++			case '0':   /* "\ooo" */
++			case '1':
++			case '2':
++			case '3':
++				d = *filename++;
++				if (!tmy_char_is_0to7(d))
++					goto out;
++				e = *filename++;
++				if (!tmy_char_is_0to7(e))
++					goto out;
++				f = tmy_str2chr(c, d, e);
++				if (f && (f <= 0x20 || f >= 0x7F))
++					/* valid \ooo expression */
++					continue;
++			}
++			goto out;
++		} else if (c <= 0x20 || c >= 0x7F)
++			goto out;
++	}
++
++	if (pattern_type == 1) { /* Must contain pattern */
++		if (!contains_pattern)
++			goto out;
++	}
++
++	return 1;
++
++out: ;
++	printk(KERN_DEBUG "%s: Invalid pathname '%s'\n",
++	       function, original_filename);
++	return 0;
 +}
 +
 +/**
-+ * tmy_read_no_rewrite_policy - read no-rewrite policy.
-+ * @head: pointer to "struct io_buffer".
++ * tmy_is_correct_domain - validate a domainname.
++ * @domainname: the domainname to check.
++ * @function:   string to display if the @domainname is invalid.
 + *
-+ * Returns nonzero if reading incomplete.
-+ * Returns zero otherwise.
++ * Returns true if the domainname is valid.
++ * Returns false otherwise.
++ *
++ * Check whether the given domainname follows the naming rules.
 + */
-+int tmy_read_no_rewrite_policy(struct io_buffer *head)
++bool tmy_is_correct_domain(const unsigned char *domainname,
++			  const char *function)
++{
++	unsigned char c;
++	unsigned char d;
++	unsigned char e;
++	const char *org_domainname = domainname;
++
++	if (!domainname || !tmy_strstarts((char **) &domainname, TMY_ROOT_NAME))
++		goto out;
++
++	if (!*domainname)
++		return 1;
++
++	do {
++		/* 0x20 is a domainname separator. */
++		if (*domainname++ != ' ')
++			goto out;
++		/* Must starts with '/'. */
++		if (*domainname++ != '/')
++			goto out;
++		while ((c = *domainname) != '\0' && c != ' ') {
++			domainname++;
++			if (c == '\\') {
++				unsigned char f;
++				switch ((c = *domainname++)) {
++				case '\\':  /* "\\" */
++					continue;
++				case '0':   /* "\ooo" */
++				case '1':
++				case '2':
++				case '3':
++					d = *domainname++;
++					if (!tmy_char_is_0to7(d))
++						goto out;
++					e = *domainname++;
++					if (!tmy_char_is_0to7(e))
++						goto out;
++					f = tmy_str2chr(c, d, e);
++					if (f && (f <= 0x20 || f >= 0x7F))
++						continue;
++				}
++				goto out;
++			} else if (c < 0x20 || c >= 0x7F)
++				/* 0x20 is a domainname separator. */
++				goto out;
++		}
++	} while (*domainname);
++
++	return 1;
++
++out: ;
++	printk(KERN_DEBUG "%s: Invalid domainname '%s'\n",
++	       function, org_domainname);
++	return 0;
++}
++
++/**
++ * tmy_path_depth - evaluate the number of '/' characters in a token.
++ * @pathname: the token to evaluate.
++ *
++ * Each '/' character but the trailing '/' scores 2.
++ * The trailing '/' scores 1.
++ *
++ * If @pathname ends with '/', the return value is an odd integer.
++ * If @pathname does not end with '/', the return value is an even integer.
++ */
++static int tmy_path_depth(const char *pathname)
++{
++	int i = 0;
++
++	if (pathname) {
++		char *ep = strchr(pathname, '\0');
++
++		if (pathname < ep--) {
++			if (*ep != '/')
++				i++;
++			while (pathname <= ep)
++				if (*ep-- == '/')
++					i += 2;
++		}
++	}
++
++	return i;
++}
++
++/**
++ * tmy_const_part_length - calculate the constant part in a token.
++ * @filename: the token to calculate.
++ *
++ * Returns leading length of @filename that can be compared using strncmp().
++ */
++static int tmy_const_part_length(const char *filename)
++{
++	int len = 0;
++
++	if (filename) {
++		char c;
++
++		while ((c = *filename++) != '\0') {
++			if (c != '\\') {
++				len++;
++				continue;
++			}
++			switch (c = *filename++) {
++			case '\\':  /* "\\" */
++				len += 2;
++				continue;
++			case '0':   /* "\ooo" */
++			case '1':
++			case '2':
++			case '3':
++				if (!tmy_char_is_0to7(*filename++))
++					break;
++				if (!tmy_char_is_0to7(*filename++))
++					break;
++				len += 4;
++				continue;
++			}
++			break;
++		}
++	}
++
++	return len;
++}
++
++/**
++ * tmy_fill_path_info - fill "struct path_info" entry.
++ * @ptr: pointer to "struct path_info".
++ *
++ * Caller stores a token in "struct path_info"->name .
++ * This function will fill rest of "struct path_info" members.
++ */
++void tmy_fill_path_info(struct path_info *ptr)
++{
++	const char *name = ptr->name;
++	const int len = strlen(name);
++	ptr->total_len = len;
++	ptr->const_len = tmy_const_part_length(name);
++	ptr->is_dir = len && (name[len - 1] == '/');
++	ptr->is_patterned = (ptr->const_len < len);
++	ptr->hash = full_name_hash(name, len);
++	ptr->depth = tmy_path_depth(name);
++}
++
++/**
++ * tmy_file_match2 - internal function for tmy_path_match().
++ * @filename:     start address of the token.
++ * @filename_end: end address of the token.
++ * @pattern:      start address of the pattern.
++ * @pattern_end:  end address of the pattern.
++ *
++ * Handle all patterns other than '\-' pattern.
++ * Returns true if matches.
++ * Returns false otherwise.
++ *
++ * @filename and @pattern do not contain '/'.
++ * @filename and @pattern are not '\0'-terminated.
++ * @pattern does not contain '\-'.
++ */
++static bool tmy_file_match2(const char *filename,
++			   const char *filename_end,
++			   const char *pattern,
++			   const char *pattern_end)
++{
++	while (filename < filename_end && pattern < pattern_end) {
++		char c;
++		int i;
++		int j;
++
++		if (*pattern != '\\') {
++			if (*filename++ != *pattern++)
++				goto out;
++			continue;
++		}
++
++		c = *filename;
++		pattern++;
++
++		switch (*pattern) {
++		case '?':
++			if (c == '/')
++				goto out;
++			if (c != '\\')
++				break;
++			/* filename[0] != '\0' */
++			c = filename[1];
++			if (c == '\\')
++				filename++;
++			else if (tmy_char_is_0to3(c) &&
++				 /* filename[1] != '\0' */
++				 tmy_char_is_0to7(filename[2]) &&
++				 /* filename[2] != '\0' */
++				 tmy_char_is_0to7(filename[3]))
++				/* filename[3] != '\0' */
++				filename += 3;
++				/*
++				 * Why not "filename += 4;" here
++				 * because it processed 4 (i.e. "\ooo") bytes?
++				 * - Because "filename++;" is done
++				 * after "break;".
++				 */
++			else
++				goto out;
++			break;
++		case '\\':
++			if (c != '\\')
++				goto out;
++			/* filename[0] != '\0' */
++			if (*++filename != '\\')
++				goto out;
++			break;
++		case '+':
++			if (!tmy_char_is_0to9(c))
++				goto out;
++			break;
++		case 'x':
++			if (!tmy_char_is_hex(c))
++				goto out;
++			break;
++		case 'a':
++			if (!tmy_char_is_alpha(c))
++				goto out;
++			break;
++		case '0':
++		case '1':
++		case '2':
++		case '3':
++			if (c != '\\')
++				goto out;
++			/* filename[0] != '\0' */
++			c = filename[1];
++			if (!tmy_char_is_0to3(c) || c != *pattern)
++				goto out;
++			/* filename[1] != '\0' */
++			c = filename[2];
++			/* pattern[0] != '\0' */
++			if (!tmy_char_is_0to7(c) || c != pattern[1])
++				goto out;
++			/* filename[2] != '\0' */
++			c = filename[3];
++			/* pattern[1] != '\0' */
++			if (!tmy_char_is_0to7(c) || c != pattern[2])
++				goto out;
++			/* filename[3] != '\0' */
++			filename += 3;
++			/* pattern[2] != '\0' */
++			pattern += 2;
++			break;
++		case '*':
++		case '@':
++			for (i = 0; i <= filename_end - filename; i++) {
++				if (tmy_file_match2(filename + i,
++						    filename_end,
++						    pattern + 1,
++						    pattern_end))
++					return 1;
++				c = filename[i];
++				if (c == '.' && *pattern == '@')
++					break;
++				if (c != '\\')
++					continue;
++				/* filename[i] != '\0' */
++				c = filename[i + 1];
++				if (c == '\\')
++					/* filename[i + 1] != '\0' */
++					i++;
++				else if (tmy_char_is_0to3(c) &&
++					 /* filename[i + 1] != '\0' */
++					 tmy_char_is_0to7(filename[i + 2]) &&
++					 /* filename[i + 2] != '\0' */
++					 tmy_char_is_0to7(filename[i + 3]))
++					 /* filename[i + 3] != '\0' */
++					i += 3;
++				else
++					break; /* Bad pattern. */
++			}
++			goto out;
++		default:
++			j = 0;
++			/*
++			 * If j == 0, for() loop does nothing.
++			 * So I can use while() without checking first letter.
++			 */
++			c = *pattern;
++			if (c == '$')
++				while (tmy_char_is_0to9(filename[j]))
++					j++;
++			else if (c == 'X')
++				while (tmy_char_is_hex(filename[j]))
++					j++;
++			else if (c == 'A')
++				while (tmy_char_is_alpha(filename[j]))
++					j++;
++			for (i = 1; i <= j; i++)
++				if (tmy_file_match2(filename + i,
++						    filename_end,
++						    pattern + 1,
++						    pattern_end))
++					return 1;
++			goto out; /* Not matched or bad pattern. */
++		}
++		filename++; /* filename[0] != '\0' */
++		pattern++; /* pattern[0] != '\0' */
++	}
++
++	/* Skip trailing "\*" and "\@" patterns. */
++	while (*pattern == '\\' &&
++	       (*(pattern + 1) == '*' ||
++		*(pattern + 1) == '@'))
++		pattern += 2;
++
++	/* If both are at ending position, they are equals. */
++	return (filename == filename_end && pattern == pattern_end);
++out: ;
++	return 0;
++}
++
++/**
++ * tmy_file_match - internal function for tmy_path_match().
++ * @filename:     start address of the token.
++ * @filename_end: end address of the token.
++ * @pattern:      start address of the pattern.
++ * @pattern_end:  end address of the pattern.
++ *
++ * Handle patterns containing '\-' pattern.
++ * Returns true if matches.
++ * Returns false otherwise.
++ *
++ * @filename and @pattern do not contain '/'.
++ * @filename and @pattern are not '\0'-terminated.
++ */
++static bool tmy_file_match(const char *filename,
++			  const char *filename_end,
++			  const char *pattern,
++			  const char *pattern_end)
++{
++	const char *pattern_start = pattern;
++	bool first = 1;
++	bool result;
++
++	while (pattern < pattern_end - 1) {
++		/* Split at "\-" pattern. */
++		if (*pattern++ != '\\' || *pattern++ != '-')
++			continue;
++		result = tmy_file_match2(filename,
++					 filename_end,
++					 pattern_start,
++					 pattern - 2);
++		/* If before "\-" pattern, invert the result. */
++		if (first)
++			result = !result;
++		/*
++		 * If not matched before first "\-" pattern, return 0.
++		 * If matched after first "\-" pattern, return 0.
++		 */
++		if (result)
++			return 0;
++		first = 0;
++		pattern_start = pattern;
++	}
++
++	result = tmy_file_match2(filename,
++				 filename_end, pattern_start, pattern_end);
++	/* If after first "\-" pattern, invert the result. */
++	return first ? result : !result;
++}
++
++/**
++ * tmy_path_match - do a pattern matching.
++ * @pathname0: pointer to a token to compare.
++ * @pattern0:  pointer to a pattern to compare.
++ *
++ * Returns true if @pathname0 matches to @pattern0 .
++ * Returns false otherwise.
++ *
++ *
++ *  Check whether the given token matches to the given pattern.
++ *
++ *  The following patterns are available.
++ *    \\     \ itself.
++ *    \ooo   Octal representation of a byte.
++ *    \*     More than or equals to 0 character other than '/'.
++ *    \@     More than or equals to 0 character other than '/' or '.'.
++ *    \?     1 byte character other than '/'.
++ *    \$     More than or equals to 1 decimal digit.
++ *    \+     1 decimal digit.
++ *    \X     More than or equals to 1 hexadecimal digit.
++ *    \x     1 hexadecimal digit.
++ *    \A     More than or equals to 1 alphabet character.
++ *    \a     1 alphabet character.
++ *    \-     Subtraction operator.
++ */
++bool tmy_path_match(const struct path_info *pathname0,
++		   const struct path_info *pattern0)
++{
++	const char *pathname = pathname0->name;
++	const char *pattern = pattern0->name;
++	const int len = pattern0->const_len;
++
++	/* If it doesn't contains patterns, I can use tmy_pathcmp() */
++	if (!pattern0->is_patterned)
++		return !tmy_pathcmp(pathname0, pattern0);
++	/* Check the depth of directory. */
++	if (pathname0->depth != pattern0->depth)
++		return 0;
++	/* Use strncmp() for constant part. */
++	if (strncmp(pathname, pattern, len))
++		return 0;
++
++	pathname += len;
++	pattern += len;
++
++	/* Split at '/' character, and compare. */
++	while (*pathname && *pattern) {
++		const char *pathname_delimiter = strchr(pathname, '/');
++		const char *pattern_delimiter = strchr(pattern, '/');
++
++		if (!pathname_delimiter)
++			pathname_delimiter = strchr(pathname, '\0');
++		if (!pattern_delimiter)
++			pattern_delimiter = strchr(pattern, '\0');
++		if (!tmy_file_match(pathname,
++				    pathname_delimiter,
++				    pattern,
++				    pattern_delimiter))
++			return 0;
++
++		pathname = *pathname_delimiter ?
++			pathname_delimiter + 1 :
++			pathname_delimiter;
++		pattern = *pattern_delimiter ?
++			pattern_delimiter + 1 :
++			pattern_delimiter;
++	}
++
++	/* Skip trailing "\*" and "\@" patterns. */
++	while (*pattern == '\\' &&
++	       (*(pattern + 1) == '*' ||
++		*(pattern + 1) == '@'))
++		pattern += 2;
++
++	/* If both are at '\0' position, they are equals. */
++	return (!*pathname && !*pattern);
++}
++
++/**
++ * tmy_io_printf - transactional printf() for "struct io_buffer".
++ * @head: pointer to "struct io_buffer".
++ * @fmt:  format strings for printf().
++ *
++ * Returns zero on success.
++ * Returns nonzero otherwise.
++ *
++ * Transactional printf() to "struct io_buffer" structure.
++ * snprintf() will truncate, but tmy_io_printf() won't.
++ * This is needed because dumping partially truncated tokens
++ * is not acceptable for TOMOYO Linux.
++ */
++int tmy_io_printf(struct io_buffer *head, const char *fmt, ...)
++{
++	va_list args;
++	int len;
++	int pos = head->read_avail;
++	int size = head->readbuf_size - pos;
++
++	if (size <= 0)
++		return -ENOMEM;
++
++	va_start(args, fmt);
++	len = vsnprintf(head->read_buf + pos, size, fmt, args);
++	va_end(args);
++
++	if (pos + len >= head->readbuf_size)
++		return -ENOMEM;
++
++	head->read_avail += len;
++
++	return 0;
++}
++
++/**
++ * tmy_get_exe - get realpath of current process.
++ *
++ * Returns realpath(3) of current process on success.
++ * Returns NULL on failure.
++ *
++ * This function uses tmy_alloc(), so caller must tmy_free()
++ * if this function didn't return NULL.
++ */
++const char *tmy_get_exe(void)
++{
++	struct vm_area_struct *vma;
++
++	if (!current->mm)
++		return NULL;
++	for (vma = current->mm->mmap; vma; vma = vma->vm_next)
++		if ((vma->vm_flags & VM_EXECUTABLE) && vma->vm_file)
++			return tmy_realpath_dentry(vma->vm_file->f_dentry,
++						   vma->vm_file->f_vfsmnt);
++
++	return NULL;
++}
++
++/**
++ * tmy_lastname - get last part of domainname.
++ *
++ * Returns last part of domainname.
++ */
++const char *tmy_lastname(const struct domain_info *domain)
++{
++	const char *cp0 = domain->domainname->name;
++	const char *cp1 = strrchr(cp0, ' ');
++	if (cp1)
++		return cp1 + 1;
++	return cp0;
++}
++
++/**
++ * tmy_get_msg - get message from mode.
++ * @is_enforce: enforcing flag.
++ *
++ * Returns "ERROR" if enforcing, "WARNING" otherwise.
++ */
++const char *tmy_getmsg(bool is_enforce)
++{
++	return is_enforce ? "ERROR" : "WARNING";
++}
++
++/*************************  DOMAIN POLICY HANDLER  *************************/
++
++/**
++ * tmy_flags - get flags of given access control.
++ * @index: index to retrieve flags.
++ *
++ * Returns current value of given access control.
++ */
++unsigned int tmy_flags(const unsigned int index)
++{
++	const u8 profile =
++		TMY_SECURITY->domain->profile;
++
++	/* All operations might sleep. See tmy_supervisor(). */
++	might_sleep();
++	if (in_interrupt())
++		return 0;
++	return sbin_init_started && index < TMY_MAX_CONTROL_INDEX
++		&& profile_ptr[profile] ?
++		profile_ptr[profile]->value[index] :
++		0;
++}
++
++/**
++ * tmy_quota - check quota.
++ *
++ * Returns true if not quota has not exceeded.
++ * Returns false otherwise.
++ *
++ * This is a safeguard for "learning mode", for appending entries
++ * without limit dulls the system response and consumes much memory.
++ */
++bool tmy_quota(void)
++{
++	unsigned int count = 0;
++	struct acl_info *ptr;
++	struct domain_info * const domain = TMY_SECURITY->domain;
++	list_for_each_entry(ptr, &domain->acl_info_list, list) {
++		if (!ptr->is_deleted)
++			count++;
++	}
++	/* If there are so many entries, don't append any more. */
++	if (count < tmy_flags(TMY_MAX_ACCEPT_ENTRY))
++		return 1;
++	if (!domain->quota_warned) {
++		domain->quota_warned = 1;
++		printk(KERN_INFO
++		       "TOMOYO-WARNING: Domain '%s' has so many ACLs "
++		       "to hold. Stopped learning mode.\n",
++		       domain->domainname->name);
++	}
++	return 0;
++}
++
++/* Create a new profile. */
++static struct profile *tmy_find_new_profile(const unsigned int profile)
++{
++	static DEFINE_MUTEX(profile_lock);
++	struct profile *ptr = NULL;
++
++	mutex_lock(&profile_lock);
++
++	ptr = profile_ptr[profile];
++	if (profile < TMY_MAX_PROFILES && ptr == NULL) {
++		ptr = tmy_alloc_element(sizeof(*ptr));
++		if (ptr != NULL) {
++			int i;
++			for (i = 0; i < TMY_MAX_CONTROL_INDEX; i++)
++				ptr->value[i] = tmy_control[i].current_value;
++			mb(); /* Instead of using spinlock. */
++			profile_ptr[profile] = ptr;
++		}
++	}
++
++	mutex_unlock(&profile_lock);
++
++	return ptr;
++}
++
++/* Loading policy done? */
++static int profile_loaded;
++
++/* Update profile values. */
++static int tmy_set_profile(struct io_buffer *head)
++{
++	char *data = head->write_buf;
++	unsigned int i;
++	unsigned int value;
++	char *cp;
++	struct profile *profile;
++
++	if (!tmy_is_root())
++		return -EPERM;
++
++	/* If profile index is not given, assume 0. */
++	i = simple_strtoul(data, &cp, 10);
++	if (data != cp) {
++		if (*cp != '-')
++			return -EINVAL;
++		data = cp + 1;
++	}
++
++	profile = tmy_find_new_profile(i);
++	if (!profile)
++		return -EINVAL;
++	cp = strchr(data, '=');
++	if (!cp)
++		return -EINVAL;
++
++	*cp = '\0';
++	profile_loaded = 1;
++	tmy_update_counter(TMY_UPDATE_PROFILE);
++	if (strcmp(data, tmy_control[TMY_COMMENT].keyword) == 0) {
++		profile->comment = tmy_save_name(cp + 1);
++		return 0;
++	}
++
++	if (sscanf(cp + 1, "%u", &value) != 1)
++		return -EINVAL;
++
++	if (tmy_strstarts(&data, TMY_MAC_FOR_CAPABILITY))
++		return tmy_set_capability_profile(data, value, i);
++
++	for (i = 0; i < TMY_MAX_CONTROL_INDEX; i++) {
++		if (strcmp(data, tmy_control[i].keyword))
++			continue;
++		if (value > tmy_control[i].max_value)
++			value = tmy_control[i].max_value;
++		profile->value[i] = value;
++		return 0;
++	}
++
++	return -EINVAL;
++}
++
++/* Read profile values. */
++static int tmy_read_profile(struct io_buffer *head)
++{
++	int step;
++
++	if (head->read_eof)
++		return 0;
++	if (!tmy_is_root())
++		return -EPERM;
++
++	if (head->read_var1)
++		goto capability;
++
++	for (step = head->read_step;
++	     step < TMY_MAX_PROFILES * TMY_MAX_CONTROL_INDEX;
++	     step++) {
++		const int i = step / TMY_MAX_CONTROL_INDEX;
++		const int j = step % TMY_MAX_CONTROL_INDEX;
++		const struct profile *profile = profile_ptr[i];
++
++		head->read_step = step;
++		if (!profile)
++			continue;
++		if (j != TMY_COMMENT)
++			goto non_comment;
++		if (tmy_io_printf(head, "%u-%s=%s\n",
++				  i, tmy_control[TMY_COMMENT].keyword,
++				  profile->comment ?
++				  profile->comment->name : ""))
++			break;
++		goto comment_ok;
++non_comment: ;
++		if (tmy_io_printf(head, "%u-%s=%u\n",
++				  i, tmy_control[j].keyword,
++				  profile->value[j]))
++			break;
++comment_ok: ;
++	}
++
++	if (step == TMY_MAX_PROFILES * TMY_MAX_CONTROL_INDEX) {
++		head->read_var1 = (void *) "";
++		head->read_step = 0;
++		goto capability;
++	}
++	return 0;
++capability: ;
++	if (tmy_read_capability_profile(head) == 0)
++		head->read_eof = 1;
++	return 0;
++}
++
++/*************************  POLICY MANAGER HANDLER  *************************/
++
++struct policy_manager_entry {
++	struct list_head list;
++	const struct path_info *manager;
++	bool is_domain;
++	bool is_deleted;
++};
++
++static LIST_HEAD(policy_manager_list);
++
++/* Update manager list. */
++static int tmy_add_manager_entry(const char *manager, const bool is_delete)
++{
++	struct policy_manager_entry *new_entry;
++	struct policy_manager_entry *ptr;
++	static DEFINE_MUTEX(mutex);
++	const struct path_info *saved_manager;
++	int error = -ENOMEM;
++
++	bool is_domain = 0;
++	if (!tmy_is_root())
++		return -EPERM;
++	if (tmy_is_domain_def(manager)) {
++		if (!tmy_is_correct_domain(manager, __FUNCTION__))
++			return -EINVAL;
++		is_domain = 1;
++	} else {
++		if (!tmy_correct_path(manager, 1, -1, -1, __FUNCTION__))
++			return -EINVAL;
++	}
++
++	saved_manager = tmy_save_name(manager);
++	if (saved_manager == NULL)
++		return -ENOMEM;
++
++	mutex_lock(&mutex);
++
++	list_for_each_entry(ptr, &policy_manager_list, list) {
++		if (ptr->manager == saved_manager) {
++			ptr->is_deleted = is_delete;
++			error = 0;
++			goto out;
++		}
++	}
++
++	if (is_delete) {
++		error = -ENOENT;
++		goto out;
++	}
++
++	new_entry = tmy_alloc_element(sizeof(*new_entry));
++	if (new_entry == NULL)
++		goto out;
++	new_entry->manager = saved_manager;
++	new_entry->is_domain = is_domain;
++	list_add_tail_mb(&new_entry->list, &policy_manager_list);
++	error = 0;
++out: ;
++
++	mutex_unlock(&mutex);
++
++	if (!error)
++		tmy_update_counter(TMY_UPDATE_MANAGER);
++	return error;
++}
++
++/* Update manager list. */
++static int tmy_add_manager_policy(struct io_buffer *head)
++{
++	char *data = head->write_buf;
++	bool is_delete = 0;
++
++	if (!tmy_is_root())
++		return -EPERM;
++	if (tmy_strstarts(&data, TMY_DELETE))
++		is_delete = 1;
++	return tmy_add_manager_entry(data, is_delete);
++}
++
++/* Read manager list.*/
++static int tmy_read_manager_policy(struct io_buffer *head)
 +{
 +	struct list_head *pos;
-+	list_for_each_cookie(pos, head->read_var2, &no_rewrite_list) {
-+		struct no_rewrite_entry *ptr;
-+		ptr = list_entry(pos, struct no_rewrite_entry, list);
-+		if (ptr->is_deleted)
-+			continue;
-+		if (tmy_io_printf(head, TMY_DENY_REWRITE "%s\n",
-+				  ptr->pattern->name))
++	if (head->read_eof)
++		return 0;
++	if (!tmy_is_root())
++		return -EPERM;
++	list_for_each_cookie(pos, head->read_var2, &policy_manager_list) {
++		struct policy_manager_entry *ptr;
++		ptr = list_entry(pos, struct policy_manager_entry, list);
++		if (!ptr->is_deleted &&
++		    tmy_io_printf(head, "%s\n", ptr->manager->name))
++			break;
++	}
++	if (!head->read_var2)
++		head->read_eof = 1;
++	return 0;
++}
++
++/**
++ * tmy_is_policy_manager - check whether modifying policy is permitted.
++ *
++ * Returns nonzero if modifying policy is permitted.
++ * Returns zero otherwise.
++ *
++ * Only programs or domains registers as manager are permitted to modify
++ * policy via /sys/kernel/security/tomoyo/ interface.
++ * This function checks whether the current process is a policy manager.
++ * But policy manager is not the only processes that can modify policy;
++ * other process are permitted to add policy
++ * if their domains are assigned a profile for learning mode.
++ */
++static int tmy_is_policy_manager(void)
++{
++	struct policy_manager_entry *ptr;
++	const char *exe;
++	const struct path_info *domainname =
++		TMY_SECURITY->domain->domainname;
++	bool found = 0;
++
++	/* Everyone can modify policy before /sbin/init starts. */
++	if (!sbin_init_started)
++		return 1;
++
++	list_for_each_entry(ptr, &policy_manager_list, list) {
++		if (!ptr->is_deleted &&
++		    ptr->is_domain &&
++		    !tmy_pathcmp(domainname, ptr->manager))
++			return 1;
++	}
++
++	exe = tmy_get_exe();
++	if (!exe)
++		return 0;
++
++	list_for_each_entry(ptr, &policy_manager_list, list) {
++		if (!ptr->is_deleted &&
++		    !ptr->is_domain &&
++		    !strcmp(exe, ptr->manager->name)) {
++			found = 1;
++			break;
++		}
++	}
++
++	if (!found) { /* Reduce error messages. */
++		static pid_t last_pid;
++		const pid_t pid = current->pid;
++		if (last_pid != pid) {
++			printk(KERN_INFO
++			       "%s is not permitted to update policies.\n",
++			       exe);
++			last_pid = pid;
++		}
++	}
++
++	tmy_free(exe);
++	return found;
++}
++
++/*************************  DOMAIN POLICY HANDLER  *************************/
++
++/* Update domain policy. */
++static int tmy_add_domain_policy(struct io_buffer *head)
++{
++	char *data = head->write_buf;
++	char *cp;
++	const struct condition_list *cond = NULL;
++	struct domain_info *domain = head->write_var1;
++	bool is_delete = 0;
++	bool is_select = 0;
++	bool is_undelete = 0;
++	unsigned int profile;
++
++	if (!tmy_is_root())
++		return -EPERM;
++
++	if (tmy_strstarts(&data, TMY_DELETE))
++		is_delete = 1;
++	else if (tmy_strstarts(&data, TMY_SELECT))
++		is_select = 1;
++	else if (tmy_strstarts(&data, TMY_UNDELETE))
++		is_undelete = 1;
++
++	tmy_update_counter(TMY_UPDATE_DOMAINPOLICY);
++
++	if (tmy_is_domain_def(data)) {
++		if (is_delete) {
++			tmy_delete_domain(data);
++			domain = NULL;
++		} else if (is_select)
++			domain = tmy_find_domain(data);
++		else if (is_undelete)
++			domain = tmy_undelete_domain(data);
++		else
++			domain = tmy_new_domain(data, 0);
++		head->write_var1 = domain;
++		return 0;
++	}
++
++	if (!domain)
++		return -EINVAL;
++
++	if (sscanf(data, TMY_USE_PROFILE "%u", &profile) == 1 &&
++	    profile < TMY_MAX_PROFILES) {
++		if (profile_ptr[profile] || !sbin_init_started)
++			domain->profile = (u8) profile;
++		return 0;
++	}
++	cp = tmy_find_condition_part(data);
++	if (cp) {
++		cond = tmy_assign_condition(cp);
++		if (!cond)
++			return -EINVAL;
++	}
++	if (tmy_strstarts(&data, TMY_ALLOW_NETWORK))
++		return tmy_add_network_policy(data, domain, cond, is_delete);
++	else if (tmy_strstarts(&data, TMY_ALLOW_ARGV0))
++		return tmy_add_argv0_policy(data, domain, cond, is_delete);
++	else if (tmy_strstarts(&data, TMY_ALLOW_SIGNAL))
++		return tmy_add_signal_policy(data, domain, cond, is_delete);
++	else if (tmy_strstarts(&data, TMY_ALLOW_CAPABILITY))
++		return tmy_add_capability_policy(data, domain, cond, is_delete);
++	else
++		return tmy_add_file_policy(data, domain, cond, is_delete);
++
++	return -EINVAL;
++}
++
++/* Dump file's open ACL. */
++static inline int print_file_rwx_acl(struct io_buffer *head,
++				     struct acl_info *ptr)
++{
++	struct file_acl *ptr2 = (struct file_acl *) ptr;
++	const unsigned char b = ptr2->u_is_group;
++
++	if (tmy_io_printf(head, "%d %s%s",
++			  ptr2->perm, b ? "@" : "",
++			  b ? ptr2->u.group->group_name->name :
++			  ptr2->u.filename->name))
++		return -ENOMEM;
++	return 0;
++}
++
++/* Dump argv[0]'s ACL. */
++static inline int print_argv0_acl(struct io_buffer *head,
++				  struct acl_info *ptr)
++{
++	struct argv0_acl *ptr2 = (struct argv0_acl *) ptr;
++
++	if (tmy_io_printf(head, TMY_ALLOW_ARGV0 "%s %s",
++			  ptr2->filename->name, ptr2->argv0->name))
++		return -ENOMEM;
++	return 0;
++}
++
++/* Dump network's ACL. */
++static inline int print_network_acl(struct io_buffer *head,
++				    struct acl_info *ptr)
++{
++	struct net_acl *ptr2 = (struct net_acl *) ptr;
++	u8 record_type = ptr2->record_type;
++	u32 min_address;
++	u32 max_address;
++	char buf[64];
++	const u16 *min_address_ptr;
++	const u16 *max_address_ptr;
++	u16 min_port;
++	u16 max_port;
++
++	if (tmy_io_printf(head, TMY_ALLOW_NETWORK "%s ",
++			  tmy_network2keyword(ptr2->operation_type)))
++		goto out;
++	if (record_type != TMY_TYPE_ADDRESS_GROUP)
++		goto non_address_group;
++
++	if (tmy_io_printf(head, "@%s", ptr2->u.group->group_name->name))
++		goto out;
++	goto print_port;
++
++non_address_group: ;
++	if (record_type != TMY_TYPE_IPv4)
++		goto ipv6_address;
++
++	min_address = ptr2->u.ipv4.min;
++	max_address = ptr2->u.ipv4.max;
++	if (tmy_io_printf(head, NIPQUAD_FMT, HIPQUAD(min_address)))
++		goto out;
++	if (min_address != max_address &&
++	    tmy_io_printf(head, "-" NIPQUAD_FMT, HIPQUAD(max_address)))
++		goto out;
++	goto print_port;
++
++ipv6_address: ;
++	min_address_ptr = ptr2->u.ipv6.min;
++	max_address_ptr = ptr2->u.ipv6.max;
++	tmy_print_ipv6(buf, sizeof(buf), min_address_ptr);
++	if (tmy_io_printf(head, "%s", buf))
++		goto out;
++	if (memcmp(min_address_ptr, max_address_ptr, 16)) {
++		tmy_print_ipv6(buf, sizeof(buf), max_address_ptr);
++		if (tmy_io_printf(head, "-%s", buf))
++			goto out;
++	}
++
++print_port: ;
++	min_port = ptr2->min_port;
++	max_port = ptr2->max_port;
++	if (tmy_io_printf(head, " %u", min_port))
++		goto out;
++	if (min_port != max_port && tmy_io_printf(head, "-%u", max_port))
++		goto out;
++	return 0;
++out: ;
++	return -ENOMEM;
++}
++
++/* Dump signal's ACL. */
++static inline int print_signal_acl(struct io_buffer *head,
++				   struct acl_info *ptr)
++{
++	struct signal_acl *ptr2 = (struct signal_acl *) ptr;
++
++	if (tmy_io_printf(head, TMY_ALLOW_SIGNAL "%u %s",
++			  ptr2->sig, ptr2->domainname->name))
++		return -ENOMEM;
++	return 0;
++}
++
++/* Dump capability's ACL. */
++static inline int print_capability_acl(struct io_buffer *head,
++				       struct acl_info *ptr)
++{
++	struct capability_acl *ptr2 = (struct capability_acl *) ptr;
++
++	if (tmy_io_printf(head, TMY_ALLOW_CAPABILITY "%s",
++			  tmy_capability2keyword(ptr2->capability)))
++		return -ENOMEM;
++	return 0;
++}
++
++/* Dump file's non-open ACL. */
++static inline int print_file_other_acl(struct io_buffer *head,
++				       struct acl_info *ptr)
++{
++	const u8 acl_type = ptr->type;
++	const char *keyword = tmy_acltype2keyword(acl_type);
++
++	if (!keyword)
++		return 0; /* This must not happen. */
++
++	if (tmy_acltype2paths(acl_type) == 2) {
++		struct double_acl *ptr2 = (struct double_acl *) ptr;
++		const bool b1 = ptr2->u1_is_group;
++		const bool b2 = ptr2->u2_is_group;
++
++		if (tmy_io_printf(head,
++				  "allow_%s %s%s %s%s",
++				  keyword,
++				  b1 ? "@" : "",
++				  b1 ? ptr2->u1.group1->group_name->name :
++				  ptr2->u1.filename1->name,
++				  b2 ? "@" : "",
++				  b2 ? ptr2->u2.group2->group_name->name :
++				  ptr2->u2.filename2->name))
++			return -ENOMEM;
++	} else {
++		struct single_acl *ptr2 = (struct single_acl *) ptr;
++		const bool b = ptr2->u_is_group;
++
++		if (tmy_io_printf(head,
++				  "allow_%s %s%s",
++				  keyword,
++				  b ? "@" : "",
++				  b ? ptr2->u.group->group_name->name :
++				  ptr2->u.filename->name))
 +			return -ENOMEM;
 +	}
 +	return 0;
 +}
 +
-+/*************************  FILE ACL HANDLER  *************************/
-+
-+static int tmy_add_file_acl(const char *filename,
-+			    u8 perm,
-+			    struct domain_info * const domain,
-+			    const struct condition_list *cond,
-+			    const bool is_delete)
++/* Read domain policy. */
++static int tmy_read_domain_policy(struct io_buffer *head)
 +{
-+	const struct path_info *saved;
-+	struct acl_info *ptr;
-+	struct file_acl *acl;
-+	int error = -ENOMEM;
-+	bool is_group = 0;
++	struct list_head *dpos;
++	struct list_head *apos;
 +
-+	if (!domain)
-+		return -EINVAL;
-+	if (perm > 7 || !perm) {
-+		printk(KERN_DEBUG "%s: Invalid permission '%d %s'\n",
-+		       __FUNCTION__, perm, filename);
-+		return -EINVAL;
++	if (head->read_eof)
++		return 0;
++
++	if (head->read_step == 0) {
++		if (!tmy_is_root())
++			return -EPERM;
++		head->read_step = 1;
 +	}
-+	if (!tmy_correct_path(filename, 0, 0, 0, __FUNCTION__))
-+		return -EINVAL;
-+
-+	if (filename[0] == '@') {
-+		/* This cast is OK because I don't dereference. */
-+		saved = (struct path_info *) tmy_new_path_group(filename + 1);
-+		if (!saved)
-+			return -ENOMEM;
-+		is_group = 1;
-+	} else {
-+
-+		if (tmy_strendswith(filename, "/"))
-+			/*
-+			 * Valid permissions for directory are
-+			 * only 'allow_mkdir' and 'allow_rmdir'.
-+			 */
++	list_for_each_cookie(dpos, head->read_var1, &domain_list) {
++		struct domain_info *domain;
++		domain = list_entry(dpos, struct domain_info, list);
++		if (head->read_step != 1)
++			goto acl_loop;
++		if (domain->is_deleted)
++			continue;
++		if (tmy_io_printf(head,
++				  "%s\n" TMY_USE_PROFILE "%u\n%s\n",
++				  domain->domainname->name,
++				  domain->profile,
++				  domain->quota_warned ?
++				  "quota_exceeded\n" : ""))
 +			return 0;
-+
-+		saved = tmy_save_name(filename);
-+		if (!saved)
-+			return -ENOMEM;
-+
-+		if (!is_delete && perm == 4 &&
-+		    tmy_globally_readable(saved))
-+			return 0;
-+
-+	}
-+
-+	mutex_lock(&domain_acl_lock);
-+
-+	if (is_delete)
-+		goto remove;
-+
-+	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		acl = (struct file_acl *) ptr;
-+		if ((ptr->type == TMY_TYPE_FILE_ACL) &&
-+		    ptr->cond == cond &&
-+		    (acl->u.filename == saved)) {
-+			if (ptr->is_deleted) {
-+				acl->perm = 0;
-+				mb(); /* Avoid out-of-order execution. */
-+				ptr->is_deleted = 0;
++		head->read_step = 2;
++acl_loop: ;
++		if (head->read_step == 3)
++			goto tail_mark;
++		list_for_each_cookie(apos, head->read_var2,
++				     &domain->acl_info_list) {
++			struct acl_info *ptr;
++			int pos;
++			u8 acl_type;
++			ptr = list_entry(apos, struct acl_info, list);
++			if (ptr->is_deleted)
++				continue;
++			pos = head->read_avail;
++			acl_type = ptr->type;
++			if (acl_type == TMY_TYPE_FILE_ACL) {
++				if (print_file_rwx_acl(head, ptr))
++					goto print_acl_rollback;
++			} else if (acl_type == TMY_TYPE_ARGV0_ACL) {
++				if (print_argv0_acl(head, ptr))
++					goto print_acl_rollback;
++			} else if (acl_type == TMY_TYPE_IP_NETWORK_ACL) {
++				if (print_network_acl(head, ptr))
++					goto print_acl_rollback;
++			} else if (acl_type == TMY_TYPE_SIGNAL_ACL) {
++				if (print_signal_acl(head, ptr))
++					goto print_acl_rollback;
++			} else if (acl_type == TMY_TYPE_CAPABILITY_ACL) {
++				if (print_capability_acl(head, ptr))
++					goto print_acl_rollback;
++			} else
++				if (print_file_other_acl(head, ptr))
++					goto print_acl_rollback;
++			if (tmy_dump_condition(head, ptr->cond)) {
++print_acl_rollback: ;
++				head->read_avail = pos;
++				return 0;
 +			}
-+			/* Found. Just 'OR' the permission bits. */
-+			acl->perm |= perm;
-+			error = 0;
-+			tmy_update_counter(TMY_UPDATE_DOMAINPOLICY);
-+			goto ok;
 +		}
++		head->read_step = 3;
++tail_mark: ;
++		if (tmy_io_printf(head, "\n"))
++			return 0;
++		head->read_step = 1;
 +	}
-+	/* Not found. Append it to the tail. */
-+	acl = tmy_alloc_element(sizeof(*acl));
-+	if (!acl)
-+		goto ok;
-+
-+	acl->head.type = TMY_TYPE_FILE_ACL;
-+	acl->head.cond = cond;
-+	acl->perm = perm;
-+	acl->u_is_group = is_group;
-+	acl->u.filename = saved;
-+	error = tmy_add_acl(domain, (struct acl_info *) acl);
-+	goto ok;
-+remove: ;
-+	error = -ENOENT;
-+	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		acl = (struct file_acl *) ptr;
-+		if (ptr->type != TMY_TYPE_FILE_ACL ||
-+		    ptr->cond != cond ||
-+		    ptr->is_deleted ||
-+		    acl->perm != perm ||
-+		    acl->u.filename != saved)
-+			continue;
-+		error = tmy_del_acl(ptr);
-+		break;
-+	}
-+ok: ;
-+	mutex_unlock(&domain_acl_lock);
-+	return error;
++	head->read_eof = 1;
++	return 0;
 +}
 +
-+static int tmy_file_acl(const struct path_info *filename, const u8 perm,
-+			struct obj_info *obj)
++/* Read domainname and its profile values. */
++static int tmy_read_domain_profile(struct io_buffer *head)
 +{
-+	const struct domain_info *domain = TMY_SECURITY->domain;
-+	struct acl_info *ptr;
-+	const int may_use_pat = ((perm & 1) == 0);
-+
-+	if (!tmy_flags(TMY_MAC_FOR_FILE))
++	struct list_head *pos;
++	if (head->read_eof)
 +		return 0;
-+	if (!filename->is_dir) {
-+		if (perm == 4 && tmy_globally_readable(filename))
++	if (!tmy_is_root())
++		return -EPERM;
++	list_for_each_cookie(pos, head->read_var1, &domain_list) {
++		struct domain_info *domain;
++		domain = list_entry(pos, struct domain_info, list);
++		if (domain->is_deleted)
++			continue;
++		if (tmy_io_printf(head, "%u %s\n",
++				  domain->profile, domain->domainname->name))
 +			return 0;
 +	}
-+
-+	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		struct file_acl *acl = (struct file_acl *) ptr;
-+
-+		if (ptr->type != TMY_TYPE_FILE_ACL ||
-+		    ptr->is_deleted ||
-+		    (acl->perm & perm) != perm ||
-+		    tmy_check_condition(ptr->cond, obj))
-+			continue;
-+
-+		if (acl->u_is_group) {
-+			if (tmy_path_match_group(filename,
-+						 acl->u.group,
-+						 may_use_pat))
-+				return 0;
-+		} else {
-+			if ((may_use_pat || !acl->u.filename->is_patterned) &&
-+			    tmy_path_match(filename, acl->u.filename))
-+				return 0;
-+		}
-+	}
-+
-+	return -EPERM;
++	head->read_eof = 1;
++	return 0;
 +}
 +
-+static int tmy_file_perm2(const struct path_info *filename,
-+			  const u8 perm,
-+			  struct obj_info *obj,
-+			  const char *operation)
++/* Set PID to report. Non manager process is permitted to call this function. */
++static int tmy_write_pid(struct io_buffer *head)
 +{
-+	int error = 0;
-+	struct domain_info * const domain = TMY_SECURITY->domain;
-+	const u8 profile = domain->profile;
-+	const unsigned int mode = tmy_flags(TMY_MAC_FOR_FILE);
-+	const bool is_enforce = (mode == 3);
++	head->read_step = (int) simple_strtoul(head->write_buf, NULL, 10);
++	head->read_eof = 0;
++	return 0;
++}
 +
-+	if (!filename)
++/* Read domainname and its profile values. */
++static int tmy_read_pid(struct io_buffer *head)
++{
++	const int pid = head->read_step;
++	struct task_struct *p;
++	struct domain_info *domain = NULL;
++
++	/* If PID is not set via tmy_write_pid(), do nothing. */
++	if (head->read_avail || head->read_eof)
 +		return 0;
 +
-+	error = tmy_file_acl(filename, perm, obj);
-+
-+	tmy_audit_file_log(filename, perm, !error, profile, mode);
-+
-+	if (!error)
-+		return error;
-+
-+	if (tmy_flags(TMY_VERBOSE))
-+		tmy_audit("TOMOYO-%s: Access %d(%s) to %s denied for %s\n",
-+			  tmy_getmsg(is_enforce), perm, operation,
-+			  filename->name, tmy_lastname(domain));
-+
-+	if (is_enforce)
-+		error =	tmy_supervisor("%s\n%d %s\n",
-+				       domain->domainname->name,
-+				       perm, filename->name);
-+
-+	else if (mode == 1 && tmy_quota()) {
-+		/* Don't use patterns if execution bit is on. */
-+		const struct path_info *patterned =
-+			((perm & 1) == 0) ?
-+			tmy_get_pattern(filename) : filename;
-+		tmy_add_file_acl(patterned->name, perm, domain, NULL, 0);
++	/***** CRITICAL SECTION START *****/
++	read_lock(&tasklist_lock);
++	p = find_task_by_pid(pid);
++	if (p) {
++		/* "struct task_struct"->security is not NULL. */
++		domain = ((struct tmy_security *) p->security)->domain;
 +	}
++	read_unlock(&tasklist_lock);
++	/***** CRITICAL SECTION END *****/
 +
-+	if (!is_enforce)
-+		error = 0;
++	if (domain)
++		tmy_io_printf(head, "%d %u %s",
++			      pid, domain->profile, domain->domainname->name);
++	head->read_eof = 1;
 +
-+	return error;
++	return 0;
 +}
 +
-+/**
-+ * tmy_file_perm - check permission for sysctl(2) operation.
-+ * @filename0: pointer to filename returned by sysctlpath_from_table().
-+ * @perm:      mode (read = 4, write = 2, read-write = 6).
-+ * @operation: pointer to error message.
-+ *
-+ * Returns zero if permission granted.
-+ * Returns nonzero if permission denied.
-+ */
-+int tmy_file_perm(const char *filename0, const u8 perm, const char *operation)
++/* Update profile values for domains. */
++static int tmy_update_domain_profile(struct io_buffer *head)
 +{
-+	struct path_info filename;
++	char *data = head->write_buf;
++	char *cp = strchr(data, ' ');
++	struct domain_info *domain;
++	unsigned int profile;
 +
-+	if (!tmy_flags(TMY_MAC_FOR_FILE))
-+		return 0;
-+
-+	filename.name = filename0;
-+	tmy_fill_path_info(&filename);
-+
-+	return tmy_file_perm2(&filename, perm, NULL, operation);
-+}
-+
-+/**
-+ * tmy_add_file_policy - add or delete file policy.
-+ * @data:      a line to parse.
-+ * @domain:    pointer to "struct domain_info".
-+ * @cond:      pointer to "struct condition_list". May be NULL.
-+ * @is_delete: is this delete request?
-+ *
-+ * Returns zero on success.
-+ * Returns nonzero on failure.
-+ */
-+int tmy_add_file_policy(char *data,
-+			struct domain_info *domain,
-+			const struct condition_list *cond,
-+			const bool is_delete)
-+{
-+	char *filename = strchr(data, ' ');
-+	unsigned int perm;
-+	u8 type;
-+
-+	if (!filename)
++	if (!tmy_is_root())
++		return -EPERM;
++	if (!cp)
 +		return -EINVAL;
-+	*filename++ = '\0';
 +
-+	if (sscanf(data, "%u", &perm) == 1)
-+		return tmy_add_file_acl(filename, (u8) perm, domain, cond,
-+					is_delete);
++	*cp = '\0';
++	domain = tmy_find_domain(cp + 1);
++	profile = simple_strtoul(data, NULL, 10);
++	if (domain && profile < TMY_MAX_PROFILES &&
++	    (profile_ptr[profile] || !sbin_init_started))
++		domain->profile = (u8) profile;
++	tmy_update_counter(TMY_UPDATE_DOMAINPOLICY);
 +
-+	if (strncmp(data, "allow_", 6))
-+		goto out;
++	return 0;
++}
 +
-+	data += 6;
++/*************************  SYSTEM POLICY HANDLER  *************************/
 +
-+	for (type = 0; acl_type_array[type].keyword; type++) {
-+		if (strcmp(data, acl_type_array[type].keyword))
-+			continue;
++/* Update system policy. */
++static int tmy_add_system_policy(struct io_buffer *head)
++{
++	char *data = head->write_buf;
++	bool is_delete = 0;
 +
-+		if (acl_type_array[type].paths == 2) {
-+			char *filename2 = strchr(filename, ' ');
++	if (!tmy_is_root())
++		return -EPERM;
 +
-+			if (!filename2)
-+				break;
-+			*filename2++ = '\0';
-+			return tmy_add_double_write_acl(type, filename,
-+							filename2,
-+							domain, cond,
-+							is_delete);
-+		} else
-+			return tmy_add_single_write_acl(type, filename,
-+							domain, cond,
-+							is_delete);
++	tmy_update_counter(TMY_UPDATE_SYSTEMPOLICY);
 +
-+		break;
-+	}
-+out: ;
++	if (tmy_strstarts(&data, TMY_DELETE))
++		is_delete = 1;
++	if (tmy_strstarts(&data, TMY_ALLOW_MOUNT))
++		return tmy_add_mount_policy(data, is_delete);
++	if (tmy_strstarts(&data, TMY_DENY_UNMOUNT))
++		return tmy_add_no_umount_policy(data, is_delete);
++	if (tmy_strstarts(&data, TMY_ALLOW_PIVOT_ROOT))
++		return tmy_add_pivot_root_policy(data, is_delete);
++
 +	return -EINVAL;
 +}
 +
-+static int tmy_add_single_write_acl(const u8 type,
-+				    const char *filename,
-+				    struct domain_info * const domain,
-+				    const struct condition_list *cond,
-+				    const bool is_delete)
++/* Read system policy. */
++static int tmy_read_system_policy(struct io_buffer *head)
 +{
-+	const struct path_info *saved;
-+	struct acl_info *ptr;
-+	struct single_acl *acl;
-+	int error = -ENOMEM;
-+	bool is_group = 0;
-+
-+	if (!domain)
++	if (head->read_eof)
++		return 0;
++	switch (head->read_step) {
++	case 0:
++		if (!tmy_is_root())
++			return -EPERM;
++		head->read_step = 1;
++	case 1:
++		if (tmy_read_mount_policy(head))
++			break;
++		head->read_step = 2;
++	case 2:
++		if (tmy_read_no_umount_policy(head))
++			break;
++		head->read_step = 3;
++	case 3:
++		if (tmy_read_pivot_root_policy(head))
++			break;
++		head->read_eof = 1;
++		break;
++	default:
 +		return -EINVAL;
-+	if (!tmy_correct_path(filename, 0, 0, 0, __FUNCTION__))
-+		return -EINVAL;
++	}
++	return 0;
++}
 +
-+	if (filename[0] == '@') {
-+		/* This cast is OK because I don't dereference. */
-+		saved = (struct path_info *) tmy_new_path_group(filename + 1);
-+		if (!saved)
-+			return -ENOMEM;
-+		is_group = 1;
-+	} else {
-+		saved = tmy_save_name(filename);
-+		if (!saved)
-+			return -ENOMEM;
++/*************************  EXCEPTION POLICY HANDLER  *************************/
++/* Update exception policy. */
++static int tmy_add_exception_policy(struct io_buffer *head)
++{
++	char *data = head->write_buf;
++	bool is_delete = 0;
++
++	if (!tmy_is_root())
++		return -EPERM;
++
++	tmy_update_counter(TMY_UPDATE_EXCEPTIONPOLICY);
++
++	if (tmy_strstarts(&data, TMY_DELETE))
++		is_delete = 1;
++	if (tmy_strstarts(&data, TMY_KEEP_DOMAIN))
++		return tmy_add_domain_keeper_policy(data, 0, is_delete);
++	if (tmy_strstarts(&data, TMY_NO_KEEP_DOMAIN))
++		return tmy_add_domain_keeper_policy(data, 1, is_delete);
++	if (tmy_strstarts(&data, TMY_INITIALIZE_DOMAIN))
++		return tmy_add_domain_initializer_policy(data, 0, is_delete);
++	if (tmy_strstarts(&data, TMY_NO_INITIALIZE_DOMAIN))
++		return tmy_add_domain_initializer_policy(data, 1, is_delete);
++	if (tmy_strstarts(&data, TMY_ALIAS))
++		return tmy_add_alias_policy(data, is_delete);
++	if (tmy_strstarts(&data, TMY_AGGREGATOR))
++		return tmy_add_aggregator_policy(data, is_delete);
++	if (tmy_strstarts(&data, TMY_ALLOW_READ))
++		return tmy_add_globally_readable_policy(data, is_delete);
++	if (tmy_strstarts(&data, TMY_FILE_PATTERN))
++		return tmy_add_pattern_policy(data, is_delete);
++	if (tmy_strstarts(&data, TMY_PATH_GROUP))
++		return tmy_add_group_policy(data, is_delete);
++	if (tmy_strstarts(&data, TMY_DENY_REWRITE))
++		return tmy_add_no_rewrite_policy(data, is_delete);
++	if (tmy_strstarts(&data, TMY_ADDRESS_GROUP))
++		return tmy_add_address_group_policy(data, is_delete);
++
++	return -EINVAL;
++}
++
++/* Read exception policy. */
++static int tmy_read_exception_policy(struct io_buffer *head)
++{
++	if (head->read_eof)
++		return 0;
++	switch (head->read_step) {
++	case 0:
++		if (!tmy_is_root())
++			return -EPERM;
++		head->read_step = 1;
++	case 1:
++		if (tmy_read_domain_keeper_policy(head))
++			break;
++		head->read_step = 2;
++	case 2:
++		if (tmy_read_globally_readable_policy(head))
++			break;
++		head->read_step = 3;
++	case 3:
++		if (tmy_read_domain_initializer_policy(head))
++			break;
++		head->read_step = 4;
++	case 4:
++		if (tmy_read_alias_policy(head))
++			break;
++		head->read_step = 5;
++	case 5:
++		if (tmy_read_aggregator_policy(head))
++			break;
++		head->read_step = 6;
++	case 6:
++		if (tmy_read_pattern_policy(head))
++			break;
++		head->read_step = 7;
++	case 7:
++		if (tmy_read_no_rewrite_policy(head))
++			break;
++		head->read_step = 8;
++	case 8:
++		if (tmy_read_path_group_policy(head))
++			break;
++		head->read_step = 9;
++	case 9:
++		if (tmy_read_address_group_policy(head))
++			break;
++		head->read_eof = 1;
++		break;
++	default:
++		return -EINVAL;
++	}
++	return 0;
++}
++
++/*************************  POLICY LOADER  *************************/
++
++/**
++ * tmy_load_policy - load policy and activate access control.
++ * @filename: program to be executed.
++ *
++ * This function calls /sbin/tomoyo-init using call_usermodehelper()
++ * to load policy
++ * if "execution of /sbin/init is requested" and "/sbin/tomoyo-init exists".
++ */
++void tmy_load_policy(const char *filename)
++{
++	if (sbin_init_started)
++		return;
++	if (strcmp(filename, "/sbin/init") != 0)
++		return;
++
++	/*
++	 * Don't activate MAC if the path '/sbin/tomoyo-init' doesn't exist.
++	 * If initrd.img includes /sbin/init but real-root-dev has not
++	 * mounted on / yet, activating MAC will block the system
++	 * since policies are not loaded yet.
++	 * So let do_execve() call this function everytime.
++	 */
++	if (!profile_loaded) {
++		const char *tmy_loader = "/sbin/tomoyo-init";
++		struct nameidata nd;
++		char *argv[2];
++		char *envp[3];
++
++		if (path_lookup(tmy_loader, LOOKUP_FOLLOW, &nd)) {
++			printk("TOMOYO: Not activating Mandatory Access Control"
++			       " now since %s doesn't exist.\n", tmy_loader);
++			return;
++		}
++		path_put(&nd.path);
++		argv[0] = (char *) tmy_loader;
++		argv[1] = NULL;
++		envp[0] = "HOME=/";
++		envp[1] = "PATH=/sbin:/bin:/usr/sbin:/usr/bin";
++		envp[2] = NULL;
++		call_usermodehelper(argv[0], argv, envp, 1);
 +	}
 +
-+	mutex_lock(&domain_acl_lock);
-+	if (is_delete)
-+		goto remove;
++	printk(KERN_INFO "TOMOYO: %s   2007/11/11\n", TOMOYO_VERSION_CODE);
 +
-+	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		acl = (struct single_acl *) ptr;
-+		if (ptr->type == type && ptr->cond == cond) {
-+			if (acl->u.filename == saved) {
-+				ptr->is_deleted = 0;
-+				/* Found. Nothing to do. */
-+				error = 0;
-+				goto ok;
-+			}
++	if (!profile_loaded)
++		panic("TOMOYO: No profiles loaded.\n");
++
++	printk(KERN_INFO "TOMOYO: Mandatory Access Control activated.\n");
++	sbin_init_started = 1;
++
++	{ /* Check all profiles currently assigned to domains are defined. */
++		struct domain_info *domain;
++		list_for_each_entry(domain, &domain_list, list) {
++			const u8 profile = domain->profile;
++			if (profile_ptr[profile])
++				continue;
++			panic("TOMOYO: Profile %u (used by '%s') "
++			      "not defined.\n",
++			      profile,
++			      domain->domainname->name);
 +		}
 +	}
-+	/* Not found. Append it to the tail. */
-+	acl = tmy_alloc_element(sizeof(*acl));
-+	if (!acl)
-+		goto ok;
++}
 +
-+	acl->head.type = type;
-+	acl->head.cond = cond;
-+	acl->u_is_group = is_group;
-+	acl->u.filename = saved;
-+	error = tmy_add_acl(domain, (struct acl_info *) acl);
-+	goto ok;
-+remove: ;
-+	error = -ENOENT;
-+	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		acl = (struct single_acl *) ptr;
 +
-+		if (ptr->type != type || ptr->is_deleted ||
-+		    ptr->cond != cond || acl->u.filename != saved)
-+			continue;
++/*************************  MAC Decision Delayer  *************************/
 +
-+		error = tmy_del_acl(ptr);
++static DECLARE_WAIT_QUEUE_HEAD(query_wait);
++
++static DEFINE_SPINLOCK(query_lock);
++
++struct query_entry {
++	struct list_head list;
++	char *query;
++	int query_len;
++	unsigned int serial;
++	int timer;
++	int answer;
++};
++
++static LIST_HEAD(query_list);
++static atomic_t queryd_watcher = ATOMIC_INIT(0);
++
++/**
++ * tmy_supervisor - ask for supervisors decision.
++ * @fmt: format strings for printf().
++ *
++ * Returns zero if administrator allowed.
++ * Returns nonzero otherwise.
++ *
++ * This is one of TOMOYO Linux's feature.
++ * Normally, access requests that violates policy is rejected immediately.
++ * But this behavior is inconvenient when developing policy.
++ * TOMOYO Linux allows administrators handle access requests that violated
++ * policy in enforce mode to adjust policy.
++ *
++ * This function blocks a process who is requesting access that violated policy
++ * and tell it via /sys/kernel/security/tomoyo/query and wait for supervisor's
++ * decision.
++ */
++int tmy_supervisor(const char *fmt, ...)
++{
++	va_list args;
++	int error = -EPERM;
++	int pos;
++	int len;
++	static unsigned int serial;
++	struct query_entry *query_entry;
++
++	if (!tmy_flags(TMY_ALLOW_ENFORCE_GRACE))
++		return -EPERM;
++	if (!atomic_read(&queryd_watcher))
++		return -EPERM;
++
++	va_start(args, fmt);
++	len = vsnprintf((char *) &pos, sizeof(pos) - 1, fmt, args) + 32;
++	va_end(args);
++
++	query_entry = tmy_alloc(sizeof(*query_entry));
++	if (!query_entry)
++		goto out;
++	query_entry->query = tmy_alloc(len);
++	if (!query_entry->query)
++		goto out;
++
++	INIT_LIST_HEAD(&query_entry->list);
++
++	/***** CRITICAL SECTION START *****/
++	spin_lock(&query_lock);
++	query_entry->serial = serial++;
++	spin_unlock(&query_lock);
++	/***** CRITICAL SECTION END *****/
++
++	pos = snprintf(query_entry->query, len - 1,
++		       "Q%u\n", query_entry->serial);
++	va_start(args, fmt);
++	vsnprintf(query_entry->query + pos, len - 1 - pos, fmt, args);
++	query_entry->query_len = strlen(query_entry->query) + 1;
++	va_end(args);
++
++	/***** CRITICAL SECTION START *****/
++	spin_lock(&query_lock);
++	list_add_tail(&query_entry->list, &query_list);
++	spin_unlock(&query_lock);
++	/***** CRITICAL SECTION END *****/
++
++	tmy_update_counter(TMY_UPDATE_QUERY);
++
++	/* Give 10 seconds for supervisor's opinion. */
++	for (query_entry->timer = 0;
++	     atomic_read(&queryd_watcher) &&
++		     tmy_flags(TMY_ALLOW_ENFORCE_GRACE) &&
++		     query_entry->timer < 100;
++	     query_entry->timer++) {
++		wake_up(&query_wait);
++		set_current_state(TASK_INTERRUPTIBLE);
++		schedule_timeout(HZ / 10);
++		if (query_entry->answer)
++			break;
++	}
++
++	tmy_update_counter(TMY_UPDATE_QUERY);
++
++	/***** CRITICAL SECTION START *****/
++	spin_lock(&query_lock);
++	list_del(&query_entry->list);
++	spin_unlock(&query_lock);
++	/***** CRITICAL SECTION END *****/
++
++	switch (query_entry->answer) {
++	case 1:
++		/* Granted by administrator. */
++		error = 0;
++		break;
++	case 0:
++		/* Timed out. */
++		break;
++	default:
++		/* Rejected by administrator. */
 +		break;
 +	}
-+ok: ;
-+	mutex_unlock(&domain_acl_lock);
 +
++out: ;
++	if (query_entry)
++		tmy_free(query_entry->query);
++	tmy_free(query_entry);
 +	return error;
 +}
 +
-+static int tmy_add_double_write_acl(const u8 type,
-+				    const char *filename1,
-+				    const char *filename2,
-+				    struct domain_info * const domain,
-+				    const struct condition_list *cond,
-+				    const bool is_delete)
++/* Check for pending access requests. */
++static int tmy_poll_query(struct file *file, poll_table *wait)
 +{
-+	const struct path_info *saved1;
-+	const struct path_info *saved2;
-+	struct acl_info *ptr;
-+	struct double_acl *acl;
-+	int error = -ENOMEM;
-+	bool is_group1 = 0;
-+	bool is_group2 = 0;
++	int found;
 +
-+	if (!domain)
-+		return -EINVAL;
-+	if (!tmy_correct_path(filename1, 0, 0, 0, __FUNCTION__) ||
-+	    !tmy_correct_path(filename2, 0, 0, 0, __FUNCTION__))
-+		return -EINVAL;
++	/***** CRITICAL SECTION START *****/
++	spin_lock(&query_lock);
++	found = !list_empty(&query_list);
++	spin_unlock(&query_lock);
++	/***** CRITICAL SECTION END *****/
 +
-+	if (filename1[0] == '@') {
-+		/* This cast is OK because I don't dereference. */
-+		saved1 = (struct path_info *) tmy_new_path_group(filename1 + 1);
-+		if (!saved1)
-+			return -ENOMEM;
-+		is_group1 = 1;
-+	} else {
-+		saved1 = tmy_save_name(filename1);
-+		if (!saved1)
-+			return -ENOMEM;
++	if (found)
++		return POLLIN | POLLRDNORM;
++	poll_wait(file, &query_wait, wait);
++
++	/***** CRITICAL SECTION START *****/
++	spin_lock(&query_lock);
++	found = !list_empty(&query_list);
++	spin_unlock(&query_lock);
++	/***** CRITICAL SECTION END *****/
++
++	if (found)
++		return POLLIN | POLLRDNORM;
++	return 0;
++}
++
++/* Read pending access requests. */
++static int tmy_read_query(struct io_buffer *head)
++{
++	struct list_head *tmp;
++	int pos = 0;
++	int len = 0;
++	char *buf;
++
++	if (head->read_avail)
++		return 0;
++	if (head->read_buf) {
++		tmy_free(head->read_buf);
++		head->read_buf = NULL;
++		head->readbuf_size = 0;
 +	}
 +
-+	if (filename2[0] == '@') {
-+		/* This cast is OK because I don't dereference. */
-+		saved2 = (struct path_info *) tmy_new_path_group(filename2 + 1);
-+		if (!saved2)
-+			return -ENOMEM;
-+		is_group2 = 1;
-+	} else {
-+		saved2 = tmy_save_name(filename2);
-+		if (!saved2)
-+			return -ENOMEM;
-+	}
-+
-+	mutex_lock(&domain_acl_lock);
-+
-+	if (is_delete)
-+		goto remove;
-+
-+	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		acl = (struct double_acl *) ptr;
-+		if (ptr->type == type && ptr->cond == cond) {
-+			if (acl->u1.filename1 == saved1 &&
-+			    acl->u2.filename2 == saved2) {
-+				ptr->is_deleted = 0;
-+				/* Found. Nothing to do. */
-+				error = 0;
-+				goto ok;
-+			}
++	/***** CRITICAL SECTION START *****/
++	spin_lock(&query_lock);
++	list_for_each(tmp, &query_list) {
++		struct query_entry *ptr
++			= list_entry(tmp, struct query_entry, list);
++		if (pos++ == head->read_step) {
++			len = ptr->query_len;
++			break;
 +		}
 +	}
-+	/* Not found. Append it to the tail. */
-+	acl = tmy_alloc_element(sizeof(*acl));
-+	if (!acl)
-+		goto ok;
++	spin_unlock(&query_lock);
++	/***** CRITICAL SECTION END *****/
 +
-+	acl->head.type = type;
-+	acl->head.cond = cond;
-+	acl->u1_is_group = is_group1;
-+	acl->u2_is_group = is_group2;
-+	acl->u1.filename1 = saved1;
-+	acl->u2.filename2 = saved2;
-+	error = tmy_add_acl(domain,
-+			    (struct acl_info *) acl);
-+	goto ok;
-+remove: ;
-+	error = -ENOENT;
-+	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		acl = (struct double_acl *) ptr;
-+		if (ptr->type != type || ptr->is_deleted ||
-+		    ptr->cond != cond ||
-+		    acl->u1.filename1 != saved1 ||
-+		    acl->u2.filename2 != saved2)
++	if (!len) {
++		head->read_step = 0;
++		return 0;
++	}
++	buf = tmy_alloc(len);
++	if (buf) {
++		pos = 0;
++
++		/***** CRITICAL SECTION START *****/
++		spin_lock(&query_lock);
++		list_for_each(tmp, &query_list) {
++			struct query_entry *ptr
++				= list_entry(tmp, struct query_entry, list);
++			if (pos++ == head->read_step) {
++				/* Some query can be skiipped because
++				 * query_list can change, but I don't care.
++				 */
++				if (len == ptr->query_len)
++					memmove(buf, ptr->query, len);
++				break;
++			}
++		}
++		spin_unlock(&query_lock);
++		/***** CRITICAL SECTION END *****/
++
++		if (buf[0]) {
++			head->readbuf_size = len;
++			head->read_avail = len;
++			head->read_buf = buf;
++			head->read_step++;
++		} else
++			tmy_free(buf);
++	}
++
++	return 0;
++}
++
++/* Reply to pending access requests. */
++static int tmy_write_answer(struct io_buffer *head)
++{
++	char *data = head->write_buf;
++	struct list_head *tmp;
++	unsigned int serial;
++	unsigned int answer;
++
++	/***** CRITICAL SECTION START *****/
++	spin_lock(&query_lock);
++	list_for_each(tmp, &query_list) {
++		struct query_entry *ptr
++			= list_entry(tmp, struct query_entry, list);
++		ptr->timer = 0;
++	}
++	spin_unlock(&query_lock);
++	/***** CRITICAL SECTION END *****/
++
++	if (sscanf(data, "A%u=%u", &serial, &answer) != 2)
++		return -EINVAL;
++
++	/***** CRITICAL SECTION START *****/
++	spin_lock(&query_lock);
++	list_for_each(tmp, &query_list) {
++		struct query_entry *ptr
++			= list_entry(tmp, struct query_entry, list);
++		if (ptr->serial != serial)
 +			continue;
-+		error = tmy_del_acl(ptr);
++		if (!ptr->answer)
++			ptr->answer = answer;
 +		break;
 +	}
-+ ok: ;
-+	mutex_unlock(&domain_acl_lock);
-+	return error;
++	spin_unlock(&query_lock);
++	/***** CRITICAL SECTION END *****/
++
++	return 0;
 +}
 +
-+static int tmy_single_write_acl(const u8 type,
-+				const struct path_info *filename,
-+				struct obj_info *obj)
-+{
-+	const struct domain_info *domain = TMY_SECURITY->domain;
-+	struct acl_info *ptr;
++/******************  /sys/kernel/security INTERFACE HANDLER  ******************/
 +
-+	if (!tmy_flags(TMY_MAC_FOR_FILE))
++/* Policy updates counter. */
++static unsigned int updates_counter[TMY_MAX_UPDATES_COUNTER];
++static DEFINE_SPINLOCK(updates_counter_lock);
++
++/**
++ * tmy_update_counter - notify userland that policy is changed.
++ * @index: index to update counter.
++ *
++ * This is for userland process who is monitoring policy changes.
++ */
++void tmy_update_counter(const unsigned char index)
++{
++	/***** CRITICAL SECTION START *****/
++	spin_lock(&updates_counter_lock);
++	if (index < TMY_MAX_UPDATES_COUNTER)
++		updates_counter[index]++;
++	spin_unlock(&updates_counter_lock);
++	/***** CRITICAL SECTION END *****/
++}
++
++/* Read policy update counter. */
++static int tmy_read_updates_counter(struct io_buffer *head)
++{
++	unsigned int counter[TMY_MAX_UPDATES_COUNTER];
++	if (head->read_eof)
 +		return 0;
 +
-+	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		struct single_acl *acl = (struct single_acl *) ptr;
++	/***** CRITICAL SECTION START *****/
++	spin_lock(&updates_counter_lock);
++	memmove(counter, updates_counter, sizeof(updates_counter));
++	memset(updates_counter, 0, sizeof(updates_counter));
++	spin_unlock(&updates_counter_lock);
++	/***** CRITICAL SECTION END *****/
 +
-+		if (ptr->type != type || ptr->is_deleted ||
-+		    tmy_check_condition(ptr->cond, obj))
++	tmy_io_printf(head,
++		      "/sys/kernel/security/tomoyo/system_policy:    %10u\n"
++		      "/sys/kernel/security/tomoyo/domain_policy:    %10u\n"
++		      "/sys/kernel/security/tomoyo/exception_policy: %10u\n"
++		      "/sys/kernel/security/tomoyo/profile:          %10u\n"
++		      "/sys/kernel/security/tomoyo/query:            %10u\n"
++		      "/sys/kernel/security/tomoyo/manager:          %10u\n"
++		      "/sys/kernel/security/tomoyo/grant_log:        %10u\n"
++		      "/sys/kernel/security/tomoyo/reject_log:       %10u\n",
++		      counter[TMY_UPDATE_SYSTEMPOLICY],
++		      counter[TMY_UPDATE_DOMAINPOLICY],
++		      counter[TMY_UPDATE_EXCEPTIONPOLICY],
++		      counter[TMY_UPDATE_PROFILE],
++		      counter[TMY_UPDATE_QUERY],
++		      counter[TMY_UPDATE_MANAGER],
++		      counter[TMY_UPDATE_GRANT_LOG],
++		      counter[TMY_UPDATE_REJECT_LOG]);
++
++	head->read_eof = 1;
++
++	return 0;
++}
++
++/* Read how much memory is used. */
++static int tmy_read_memory_counter(struct io_buffer *head)
++{
++	int shared;
++	int private;
++	int dynamic;
++
++	if (head->read_eof)
++		return 0;
++	shared = tmy_get_memory_used_for_save_name();
++	private = tmy_get_memory_used_for_elements();
++	dynamic = tmy_get_memory_used_for_dynamic();
++	if (tmy_io_printf(head,
++			  "Shared:  %10u\n"
++			  "Private: %10u\n"
++			  "Dynamic: %10u\n"
++			  "Total:   %10u\n",
++			  shared,
++			  private,
++			  dynamic,
++			  shared + private + dynamic) == 0)
++		head->read_eof = 1;
++	return 0;
++}
++
++/* Read TOMOYO Linux's version. */
++static int tmy_read_version(struct io_buffer *head)
++{
++	if (!head->read_eof) {
++		tmy_io_printf(head, TOMOYO_VERSION_CODE "\n");
++		head->read_eof = 1;
++	}
++	return 0;
++}
++
++/* Read current process's domainname. */
++static int tmy_read_self_domain(struct io_buffer *head)
++{
++	if (!head->read_eof) {
++		tmy_io_printf(head,
++			      "%s",
++			      TMY_SECURITY->domain->domainname->name);
++		head->read_eof = 1;
++	}
++
++	return 0;
++}
++
++/* This is /sys/kernel/security/tomoyo/ interface. */
++static int tmy_open_control(const int type, struct file *file)
++{
++	struct io_buffer *head = tmy_alloc(sizeof(*head));
++
++	if (!head)
++		return -ENOMEM;
++	mutex_init(&head->read_mutex);
++	mutex_init(&head->write_mutex);
++
++	switch (type) {
++	case TMY_DOMAINPOLICY:
++		head->write = tmy_add_domain_policy;
++		head->read = tmy_read_domain_policy;
++		break;
++	case TMY_SYSTEMPOLICY:
++		head->write = tmy_add_system_policy;
++		head->read = tmy_read_system_policy;
++		break;
++	case TMY_EXCEPTIONPOLICY:
++		head->write = tmy_add_exception_policy;
++		head->read = tmy_read_exception_policy;
++		break;
++	case TMY_DOMAIN_STATUS:
++		head->write = tmy_update_domain_profile;
++		head->read = tmy_read_domain_profile;
++		break;
++	case TMY_PROCESS_STATUS:
++		head->write = tmy_write_pid;
++		head->read = tmy_read_pid;
++		break;
++	case TMY_SELFDOMAIN:
++		head->read = tmy_read_self_domain;
++		break;
++	case TMY_MEMINFO:
++		head->read = tmy_read_memory_counter;
++		head->readbuf_size = 128;
++		break;
++	case TMY_PROFILE:
++		head->write = tmy_set_profile;
++		head->read = tmy_read_profile;
++		break;
++	case TMY_QUERY:
++		head->poll = tmy_poll_query;
++		head->write = tmy_write_answer;
++		head->read = tmy_read_query;
++		break;
++	case TMY_MANAGER:
++		head->write = tmy_add_manager_policy;
++		head->read = tmy_read_manager_policy;
++		break;
++	case TMY_UPDATESCOUNTER:
++		head->read = tmy_read_updates_counter;
++		break;
++	case TMY_VERSION:
++		head->read = tmy_read_version;
++		break;
++	case TMY_GRANT_LOG:
++		head->read = tmy_read_grant_log;
++		head->poll = tmy_poll_grant_log;
++		break;
++	case TMY_REJECT_LOG:
++		head->read = tmy_read_reject_log;
++		head->poll = tmy_poll_reject_log;
++		break;
++	}
++
++	if (type != TMY_QUERY) {
++		if (!head->readbuf_size)
++			head->readbuf_size = PAGE_SIZE * 2;
++		head->read_buf = tmy_alloc(head->readbuf_size);
++		if (!head->read_buf) {
++			tmy_free(head);
++			return -ENOMEM;
++		}
++	}
++
++	if (head->write) {
++		head->writebuf_size = PAGE_SIZE * 2;
++		head->write_buf = tmy_alloc(head->writebuf_size);
++		if (!head->write_buf) {
++			tmy_free(head->read_buf);
++			tmy_free(head);
++			return -ENOMEM;
++		}
++	}
++
++	file->private_data = head;
++
++	if (type == TMY_SELFDOMAIN)
++		tmy_read_control(file, NULL, 0);
++	else if (head->write == tmy_write_answer)
++		atomic_inc(&queryd_watcher);
++
++	return 0;
++}
++
++/* Copy read data to userland buffer. */
++static int tmy_copy_to_user(struct io_buffer *head, char __user *buffer,
++			    int buffer_len)
++{
++	int len = head->read_avail;
++	char *cp = head->read_buf;
++
++	if (len > buffer_len)
++		len = buffer_len;
++	if (len) {
++		if (copy_to_user(buffer, cp, len))
++			return -EFAULT;
++		head->read_avail -= len;
++		memmove(cp, cp + len, head->read_avail);
++	}
++
++	return len;
++}
++
++/* Check for pending requests. */
++static int tmy_poll_control(struct file *file, poll_table *wait)
++{
++	struct io_buffer *head = (struct io_buffer *) file->private_data;
++	if (!head->poll)
++		return -ENOSYS;
++	return head->poll(file, wait);
++}
++
++/* Read policy. */
++static int tmy_read_control(struct file *file, char __user *buffer,
++			    const int buffer_len)
++{
++	int len = 0;
++	struct io_buffer *head = (struct io_buffer *) file->private_data;
++
++	if (!head->read)
++		return -ENOSYS;
++	if (!access_ok(VERIFY_WRITE, buffer, buffer_len))
++		return -EFAULT;
++	if (mutex_lock_interruptible(&head->read_mutex))
++		return -EINTR;
++	len = head->read(head);
++	if (len >= 0)
++		len = tmy_copy_to_user(head, buffer, buffer_len);
++	mutex_unlock(&head->read_mutex);
++
++	return len;
++}
++
++/* Update policy. */
++static int tmy_write_control(struct file *file, const char __user *buffer,
++			     const int buffer_len)
++{
++	struct io_buffer *head = (struct io_buffer *) file->private_data;
++	int error = buffer_len;
++	int avail_len = buffer_len;
++	char *cp0 = head->write_buf;
++
++	if (!head->write)
++		return -ENOSYS;
++	if (!access_ok(VERIFY_READ, buffer, buffer_len))
++		return -EFAULT;
++	if (!tmy_is_root())
++		return -EPERM;
++	if (head->write != tmy_write_pid && !tmy_is_policy_manager())
++		/* Forbid updating policies for non manager programs. */
++		return -EPERM;
++
++	if (mutex_lock_interruptible(&head->write_mutex))
++		return -EINTR;
++	while (avail_len > 0) {
++		char c;
++		if (head->write_avail >= head->writebuf_size - 1) {
++			error = -ENOMEM;
++			break;
++		} else if (get_user(c, buffer)) {
++			error = -EFAULT;
++			break;
++		}
++		buffer++;
++		avail_len--;
++		cp0[head->write_avail++] = c;
++		if (c != '\n')
 +			continue;
-+
-+		if (acl->u_is_group) {
-+			if (!tmy_path_match_group(filename, acl->u.group, 1))
-+				continue;
-+		} else {
-+			if (!tmy_path_match(filename, acl->u.filename))
-+				continue;
-+		}
-+		return 0;
++		cp0[head->write_avail - 1] = '\0';
++		head->write_avail = 0;
++		tmy_normalize_line(cp0);
++		head->write(head);
 +	}
-+
-+	return -EPERM;
-+}
-+
-+static int tmy_double_write_acl(const u8 type,
-+				const struct path_info *filename1,
-+				const struct path_info *filename2,
-+				struct obj_info *obj)
-+{
-+	const struct domain_info *domain = TMY_SECURITY->domain;
-+	struct acl_info *ptr;
-+
-+	if (!tmy_flags(TMY_MAC_FOR_FILE))
-+		return 0;
-+
-+	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		struct double_acl *acl = (struct double_acl *) ptr;
-+
-+		if (ptr->type != type || ptr->is_deleted ||
-+		    tmy_check_condition(ptr->cond, obj))
-+			continue;
-+
-+		if (acl->u1_is_group) {
-+			if (!tmy_path_match_group(filename1,
-+						  acl->u1.group1, 1))
-+				continue;
-+		} else {
-+			if (!tmy_path_match(filename1, acl->u1.filename1))
-+				continue;
-+		}
-+
-+		if (acl->u2_is_group) {
-+			if (!tmy_path_match_group(filename2,
-+						  acl->u2.group2, 1))
-+				continue;
-+		} else {
-+			if (!tmy_path_match(filename2, acl->u2.filename2))
-+				continue;
-+		}
-+
-+		return 0;
-+	}
-+
-+	return -EPERM;
-+}
-+
-+static int tmy_single_write_perm2(const unsigned int operation,
-+				  const struct path_info *filename,
-+				  struct obj_info *obj)
-+{
-+	int error;
-+	struct domain_info * const domain = TMY_SECURITY->domain;
-+	const u8 profile = domain->profile;
-+	const unsigned int mode = tmy_flags(TMY_MAC_FOR_FILE);
-+	const bool is_enforce = (mode == 3);
-+
-+	if (!mode)
-+		return 0;
-+
-+	error = tmy_single_write_acl(operation, filename, obj);
-+
-+	tmy_audit_write_log(tmy_acltype2keyword(operation),
-+			    filename, NULL, !error, profile, mode);
-+
-+	if (!error)
-+		goto ok;
-+
-+	if (tmy_flags(TMY_VERBOSE))
-+		tmy_audit("TOMOYO-%s: Access '%s %s' denied for %s\n",
-+			  tmy_getmsg(is_enforce),
-+			  tmy_acltype2keyword(operation), filename->name,
-+			  tmy_lastname(domain));
-+
-+	if (is_enforce)
-+		error = tmy_supervisor("%s\nallow_%s %s\n",
-+				       domain->domainname->name,
-+				       tmy_acltype2keyword(operation),
-+				       filename->name);
-+
-+	else if (mode == 1 && tmy_quota())
-+		tmy_add_single_write_acl(operation,
-+					 tmy_get_pattern(filename)->name,
-+					 domain, NULL, 0);
-+
-+	if (!is_enforce)
-+		error = 0;
-+
-+ok: ;
-+	if (!error && operation == TMY_TYPE_TRUNCATE_ACL &&
-+	    tmy_is_no_rewrite_file(filename))
-+		error = tmy_single_write_perm2(TMY_TYPE_REWRITE_ACL,
-+					       filename, obj);
++	mutex_unlock(&head->write_mutex);
 +
 +	return error;
 +}
 +
-+/**
-+ * tmy_exec_perm - check permission for execve(2) operation.
-+ * @filename: pointer to filename to execute.
-+ * @filp:     pointer to "struct file".
-+ *
-+ * Returns zero if permission granted.
-+ * Returns nonzero if permission denied.
-+ */
-+int tmy_exec_perm(const struct path_info *filename, struct file *filp)
++/* Close /sys/kernel/security/tomoyo/ interface. */
++static int tmy_close_control(struct file *file)
 +{
-+	struct obj_info obj;
-+	if (!tmy_flags(TMY_MAC_FOR_FILE))
-+		return 0;
-+	memset(&obj, 0, sizeof(obj));
-+	obj.path1_dentry = filp->f_dentry;
-+	obj.path1_vfsmnt = filp->f_vfsmnt;
-+	return tmy_file_perm2(filename, 1, &obj, "do_execve");
++	struct io_buffer *head = file->private_data;
++
++	if (head->write == tmy_write_answer)
++		atomic_dec(&queryd_watcher);
++
++	tmy_free(head->read_buf);
++	head->read_buf = NULL;
++	tmy_free(head->write_buf);
++	head->write_buf = NULL;
++	tmy_free(head);
++	head = NULL;
++	file->private_data = NULL;
++	return 0;
++}
++
++/* open() operation for /sys/kernel/security/tomoyo/ interface. */
++static int tmy_open(struct inode *inode, struct file *file)
++{
++	return tmy_open_control(((u8 *) file->f_dentry->d_inode->i_private)
++				- ((u8 *) NULL), file);
++}
++
++/* close() operation for /sys/kernel/security/tomoyo/ interface. */
++static int tmy_release(struct inode *inode, struct file *file)
++{
++	return tmy_close_control(file);
++}
++
++/* poll() operation for /sys/kernel/security/tomoyo/ interface. */
++static unsigned int tmy_poll(struct file *file, poll_table *wait)
++{
++	return tmy_poll_control(file, wait);
++}
++
++/* read() operation for /sys/kernel/security/tomoyo/ interface. */
++static ssize_t tmy_read(struct file *file, char __user *buf,
++			size_t count, loff_t *ppos)
++{
++	return tmy_read_control(file, buf, count);
++}
++
++/* write() operation for /sys/kernel/security/tomoyo/ interface. */
++static ssize_t tmy_write(struct file *file, const char __user *buf,
++			 size_t count, loff_t *ppos)
++{
++	return tmy_write_control(file, buf, count);
++}
++
++static struct file_operations tmy_operations = {
++	.open 	 = tmy_open,
++	.release = tmy_release,
++	.poll 	 = tmy_poll,
++	.read 	 = tmy_read,
++	.write 	 = tmy_write
++};
++
++/* Associate /sys/kernel/security/tomoyo/ interface with key. */
++static void __init tmy_create_entry(const char *name,
++			     const mode_t mode,
++			     struct dentry *parent,
++			     const int key)
++{
++	securityfs_create_file(name, mode, parent, ((u8 *) NULL) + key,
++			       &tmy_operations);
 +}
 +
 +/**
-+ * tmy_open_perm - check permission for open(2) operation.
-+ * @dentry: pointer to "struct dentry".
-+ * @mnt:    pointer to "struct vfsmount".
-+ * @flag:   open flags.
-+ *
-+ * Returns zero if permission granted.
-+ * Returns nonzero if permission denied.
++ * tmy_interface_init - initialize /sys/kernel/security/tomoyo/ interface.
 + */
-+int tmy_open_perm(struct dentry *dentry,
-+		  struct vfsmount *mnt,
-+		  const int flag)
++static int __init tmy_interface_init(void)
 +{
-+	struct obj_info obj;
-+	const int acc_mode = ACC_MODE(flag);
-+	int error = -ENOMEM;
-+	struct path_info *buf;
-+	const unsigned int mode = tmy_flags(TMY_MAC_FOR_FILE);
-+	const bool is_enforce = (mode == 3);
-+
-+	if (!mode)
-+		return 0;
-+	if (acc_mode == 0)
-+		return 0;
-+	if (dentry->d_inode && S_ISDIR(dentry->d_inode->i_mode))
-+		/* I don't check directories here             */
-+		/* because mkdir() and rmdir() don't call me. */
-+		return 0;
-+
-+	buf = tmy_get_path(dentry, mnt);
-+
-+	if (!buf)
-+		goto out;
-+
-+	memset(&obj, 0, sizeof(obj));
-+	obj.path1_dentry = dentry;
-+	obj.path1_vfsmnt = mnt;
-+
-+	error = 0;
-+	if ((acc_mode & MAY_WRITE) &&
-+	    ((flag & O_TRUNC) || !(flag & O_APPEND)) &&
-+	    tmy_is_no_rewrite_file(buf))
-+		error = tmy_single_write_perm2(TMY_TYPE_REWRITE_ACL,
-+					       buf, &obj);
-+
-+	if (error == 0)
-+		error = tmy_file_perm2(buf, acc_mode, &obj, "open");
-+
-+	if (error == 0 && (flag & O_TRUNC))
-+		error = tmy_single_write_perm2(TMY_TYPE_TRUNCATE_ACL,
-+					       buf, &obj);
-+
-+	tmy_free(buf);
-+
-+out: ;
-+	if (!is_enforce)
-+		error = 0;
-+	return error;
++	struct dentry *tmy_dir;
++	tmy_dir = securityfs_create_dir("tomoyo", NULL);
++	tmy_create_entry("query",            0600, tmy_dir,
++			 TMY_QUERY);
++	tmy_create_entry("domain_policy",    0600, tmy_dir,
++			 TMY_DOMAINPOLICY);
++	tmy_create_entry("system_policy",    0600, tmy_dir,
++			 TMY_SYSTEMPOLICY);
++	tmy_create_entry("exception_policy", 0600, tmy_dir,
++			 TMY_EXCEPTIONPOLICY);
++	tmy_create_entry(".domain_status",   0600, tmy_dir,
++			 TMY_DOMAIN_STATUS);
++	tmy_create_entry(".process_status",  0400, tmy_dir,
++			 TMY_PROCESS_STATUS);
++	tmy_create_entry("self_domain",      0400, tmy_dir,
++			 TMY_SELFDOMAIN);
++	tmy_create_entry("meminfo",          0400, tmy_dir,
++			 TMY_MEMINFO);
++	tmy_create_entry("profile",          0600, tmy_dir,
++			 TMY_PROFILE);
++	tmy_create_entry("manager",          0600, tmy_dir,
++			 TMY_MANAGER);
++	tmy_create_entry(".updates_counter", 0400, tmy_dir,
++			 TMY_UPDATESCOUNTER);
++	tmy_create_entry("version",          0400, tmy_dir,
++			 TMY_VERSION);
++	tmy_create_entry("grant_log",        0400, tmy_dir,
++			 TMY_GRANT_LOG);
++	tmy_create_entry("reject_log",       0400, tmy_dir,
++			 TMY_REJECT_LOG);
++	return 0;
 +}
 +
-+/**
-+ * tmy_single_write_perm - check permission for create(2) etc. operation.
-+ * @operation: operation index number.
-+ * @dentry:    pointer to "struct dentry".
-+ * @mnt:       pointer to "struct vfsmount".
-+ *
-+ * Returns zero if permission granted.
-+ * Returns nonzero if permission denied.
-+ */
-+int tmy_single_write_perm(const unsigned int operation,
-+			  struct dentry *dentry,
-+			  struct vfsmount *mnt)
-+{
-+	struct obj_info obj;
-+	int error = -ENOMEM;
-+	struct path_info *buf;
-+	const unsigned int mode = tmy_flags(TMY_MAC_FOR_FILE);
-+	const bool is_enforce = (mode == 3);
-+
-+	if (!mode)
-+		return 0;
-+
-+	buf = tmy_get_path(dentry, mnt);
-+
-+	if (!buf)
-+		goto out;
-+
-+	memset(&obj, 0, sizeof(obj));
-+	obj.path1_dentry = dentry;
-+	obj.path1_vfsmnt = mnt;
-+
-+	switch (operation) {
-+	case TMY_TYPE_MKDIR_ACL:
-+	case TMY_TYPE_RMDIR_ACL:
-+		if (!buf->is_dir) {
-+			strcat((char *) buf->name, "/");
-+			tmy_fill_path_info(buf);
-+		}
-+	}
-+	error = tmy_single_write_perm2(operation, buf, &obj);
-+	tmy_free(buf);
-+
-+out: ;
-+	if (!is_enforce)
-+		error = 0;
-+
-+	return error;
-+}
-+
-+/**
-+ * tmy_rewrite_perm - check permission for truncate/overwrite operation.
-+ * @filp: pointer to "struct file".
-+ *
-+ * Returns zero if permission granted.
-+ * Returns nonzero if permission denied.
-+ */
-+int tmy_rewrite_perm(struct file *filp)
-+{
-+	int error = -ENOMEM;
-+	const unsigned int mode = tmy_flags(TMY_MAC_FOR_FILE);
-+	const bool is_enforce = (mode == 3);
-+	struct path_info *buf;
-+
-+	if (!mode)
-+		return 0;
-+
-+	buf = tmy_get_path(filp->f_dentry, filp->f_vfsmnt);
-+	if (!buf)
-+		goto out;
-+
-+	if (tmy_is_no_rewrite_file(buf)) {
-+		struct obj_info obj;
-+		memset(&obj, 0, sizeof(obj));
-+		obj.path1_dentry = filp->f_dentry;
-+		obj.path1_vfsmnt = filp->f_vfsmnt;
-+		error = tmy_single_write_perm2(TMY_TYPE_REWRITE_ACL,
-+					       buf, &obj);
-+	} else
-+		error = 0;
-+
-+	tmy_free(buf);
-+
-+out: ;
-+	if (!is_enforce)
-+		error = 0;
-+	return error;
-+}
-+
-+/**
-+ * tmy_double_write_perm - check permission for link(2)/rename(2) operation.
-+ * @operation: operation index number.
-+ * @dentry1:   pointer to "struct dentry".
-+ * @mnt1:      pointer to "struct vfsmount".
-+ * @dentry2:   pointer to "struct dentry".
-+ * @mnt2:      pointer to "struct vfsmount".
-+ *
-+ * Returns zero if permission granted.
-+ * Returns nonzero if permission denied.
-+ */
-+int tmy_double_write_perm(const unsigned int operation,
-+			  struct dentry *dentry1,
-+			  struct vfsmount *mnt1,
-+			  struct dentry *dentry2,
-+			  struct vfsmount *mnt2)
-+{
-+	struct obj_info obj;
-+	int error = -ENOMEM;
-+	struct path_info *buf1;
-+	struct path_info *buf2;
-+	struct domain_info * const domain = TMY_SECURITY->domain;
-+	const u8 profile = domain->profile;
-+	const unsigned int mode = tmy_flags(TMY_MAC_FOR_FILE);
-+	const bool is_enforce = (mode == 3);
-+
-+	if (!mode)
-+		return 0;
-+	buf1 = tmy_get_path(dentry1, mnt1);
-+	buf2 = tmy_get_path(dentry2, mnt2);
-+
-+	if (!buf1 || !buf2)
-+		goto out;
-+
-+	memset(&obj, 0, sizeof(obj));
-+	obj.path1_dentry = dentry1;
-+	obj.path1_vfsmnt = mnt1;
-+	obj.path2_dentry = dentry2;
-+	obj.path2_vfsmnt = mnt2;
-+	if (operation == TMY_TYPE_RENAME_ACL) {
-+		/* TMY_TYPE_LINK_ACL can't reach here for directory. */
-+		if (dentry1->d_inode && S_ISDIR(dentry1->d_inode->i_mode)) {
-+			if (!buf1->is_dir) {
-+				strcat((char *) buf1->name, "/");
-+				tmy_fill_path_info(buf1);
-+			}
-+			if (!buf2->is_dir) {
-+				strcat((char *) buf2->name, "/");
-+				tmy_fill_path_info(buf2);
-+			}
-+		}
-+	}
-+	error = tmy_double_write_acl(operation, buf1, buf2, &obj);
-+
-+	tmy_audit_write_log(tmy_acltype2keyword(operation),
-+			    buf1, buf2, !error, profile, mode);
-+
-+	if (!error)
-+		goto out;
-+
-+	if (tmy_flags(TMY_VERBOSE))
-+		tmy_audit("TOMOYO-%s: Access '%s %s %s' denied for %s\n",
-+			  tmy_getmsg(is_enforce),
-+			  tmy_acltype2keyword(operation),
-+			  buf1->name, buf2->name, tmy_lastname(domain));
-+
-+	if (is_enforce)
-+		error = tmy_supervisor("%s\nallow_%s %s %s\n",
-+				       domain->domainname->name,
-+				       tmy_acltype2keyword(operation),
-+				       buf1->name, buf2->name);
-+	else if (mode == 1 && tmy_quota())
-+		tmy_add_double_write_acl(operation,
-+					 tmy_get_pattern(buf1)->name,
-+					 tmy_get_pattern(buf2)->name,
-+					 domain, NULL, 0);
-+
-+out: ;
-+	tmy_free(buf1);
-+	tmy_free(buf2);
-+	if (!is_enforce)
-+		error = 0;
-+	return error;
-+}
++postcore_initcall(tmy_interface_init);
 
 -- 
