@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757546AbXKPDK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756439AbXKPDKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757546AbXKPDK3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 22:10:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbXKPDKR
+	id S1756439AbXKPDKp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 22:10:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756870AbXKPDKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 22:10:17 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:50590 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754154AbXKPDKP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 22:10:15 -0500
-Date: Thu, 15 Nov 2007 19:10:15 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: David Miller <davem@davemloft.net>
-cc: corbet@lwn.net, andi@firstfloor.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, dada1@cosmosbay.com,
-       schwidefsky@de.ibm.com
-Subject: Re: [patch 01/28] cpu alloc: The allocator
-In-Reply-To: <20071115.185854.85318344.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0711151902130.322@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0711151816170.31691@schroedinger.engr.sgi.com>
- <20071115.185051.159765071.davem@davemloft.net>
- <Pine.LNX.4.64.0711151851420.32046@schroedinger.engr.sgi.com>
- <20071115.185854.85318344.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 15 Nov 2007 22:10:25 -0500
+Received: from tomts25.bellnexxia.net ([209.226.175.188]:34107 "EHLO
+	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756574AbXKPDKX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 22:10:23 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAJqYPEdMROHU/2dsb2JhbACBX453
+Date: Thu, 15 Nov 2007 22:10:21 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [patch 2/4] Add ARCH_SUPPORTS_OPROFILE
+Message-ID: <20071116031021.GF16953@Krystal>
+References: <20071116015925.175012068@polymtl.ca> <20071116020027.207316215@polymtl.ca> <20071115180830.106d594c.akpm@linux-foundation.org> <20071116022319.GD16953@Krystal> <20071115183043.25197ad1.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20071115183043.25197ad1.akpm@linux-foundation.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 22:09:29 up 12 days,  8:14,  8 users,  load average: 0.92, 0.75,
+	0.84
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Nov 2007, David Miller wrote:
-
-> > I have not looked at sparc32 sorry. If you simply set up a couple of 
-> > configuration values in arch/sparc32/Kconfig then everything will be fine.
+* Andrew Morton (akpm@linux-foundation.org) wrote:
+> On Thu, 15 Nov 2007 21:23:19 -0500 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 > 
-> There is assembler code to write, which as I stated several
-> times nobody is going to work on or test.
-
-There is no assembly code required. I overdid it in the patch that I sent 
-you trying to make sparc64 use large mappings like x86_64 NUMA. You really 
-do not need that. Look at the IA64 and i386 configurations. There is no C 
-code required. The x86_64 code only adds some special C code for the NUMA 
-case.
-
-> > All MMU platforms can use the virtual mappings. The main use of the static 
-> > configuration is for embedded systems.
+> > * Andrew Morton (akpm@linux-foundation.org) wrote:
+> > > On Thu, 15 Nov 2007 20:59:27 -0500 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> > > 
+> > > >  arch/x86/Kconfig.i386          |    1 +
+> > > >  arch/x86/Kconfig.x86_64        |    1 +
+> > > 
+> > > these no longer exist.
+> > 
+> > Ok, should I prepare a fix or is it duplicated work ?
 > 
-> Someone has to implement and test VMEMMAP now on all of these
-> architectures, it is becomming a requirement unlike in the sparsemem
-> patches case where it was optional.
+> I fixed the new patches, then had a go at fixing the thus-broken kprobes
+> ones and the resulting mess caused me to give up and drop both patchsets.
 > 
-> That's unreasonable.
+> 
 
-VMEMMAP is something different from the cpu allocator. All MMU platforms 
-have vmalloc support and you even suggested the use of vmalloc.
+Arg.. yet another change of mid from Sam.. he prefers 
+
+HAVE_* to ARCH_HAS_*.
+
+will it ever stop...... ?
+
+Please don't merge my previous patchset, I'll resend them. I will adapt
+them accordingly.
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
