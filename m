@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933290AbXKPTDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932535AbXKPTHA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933290AbXKPTDh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 14:03:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbXKPTDa
+	id S932535AbXKPTHA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 14:07:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755970AbXKPTGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 14:03:30 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58051 "EHLO mx1.redhat.com"
+	Fri, 16 Nov 2007 14:06:53 -0500
+Received: from rtr.ca ([76.10.145.34]:2182 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752002AbXKPTDa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 14:03:30 -0500
-Message-ID: <473DE8A6.2090100@redhat.com>
-Date: Fri, 16 Nov 2007 10:59:50 -0800
-From: Ulrich Drepper <drepper@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1753370AbXKPTGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 14:06:52 -0500
+Message-ID: <473DEA4A.2030606@rtr.ca>
+Date: Fri, 16 Nov 2007 14:06:50 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: dean gaudet <dean@arctic.org>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       tglx@linutronix.de, torvalds@linux-foundation.org
-Subject: Re: [PATCHv2 4/4] first use of sys_indirect system call
-References: <200711151822.lAFIMVnJ028596@devserv.devel.redhat.com> <alpine.DEB.0.9999.0711161003310.15441@twinlark.arctic.org> <473DDF1B.5030706@redhat.com> <alpine.DEB.0.9999.0711161021420.15441@twinlark.arctic.org>
-In-Reply-To: <alpine.DEB.0.9999.0711161021420.15441@twinlark.arctic.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pavel Machek <pavel@ucw.cz>, Mark Lord <liml@rtr.ca>,
+       Thomas Gleixner <tglx@linutronix.de>, len.brown@intel.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, rjw@sisk.pl
+Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
+References: <4739ADA2.4060604@rtr.ca> <alpine.LFD.0.9999.0711131521590.3265@localhost.localdomain> <4739E347.30406@rtr.ca> <473C7495.40805@rtr.ca> <20071115181418.GA6603@ucw.cz> <473C825E.3030307@rtr.ca> <20071115193424.GA31691@elte.hu> <20071115193612.GA751@elte.hu> <473CC6D4.2010909@rtr.ca> <20071116055531.GA16273@elte.hu> <20071116071522.GA1453@elte.hu>
+In-Reply-To: <20071116071522.GA1453@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-dean gaudet wrote:
-> i'm not suggesting the library set the global flag.  i'm suggesting that 
-> me as an app writer will do so.
+Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> it seems like both methods are useful.
+>>> Is there a version of these that works with 2.6.23.1 ?
+>> yes, i've backported it and have uploaded the v2.6.23 version to:
+>>
+>>   http://redhat.com/~mingo/latency-tracing-patches/latency-tracer-v2.6.23.1-combo.patch
+..
 
-No, the global flag is hardly ever useful.  You almost never know the
-details of all the libraries you link to well enough to determine that
-they don't need FD_CLOEXEC disabled.  Even more problematic, you cannot
-know whether they will need it in future.
+> ok, i experimented around with the latency tracer, trying to capture the 
+> trace of a full suspend+resume cycle, and it needed the tracer fix below 
+> (GTOD clocksource suspend/resume would otherwise confuse the tracer and 
+> you'd get no trace output as a result).
+> 
+> once that tracer bug was fixed, the best method to generate a trace was 
+> to do this:
+> 
+>    echo 1 > /proc/sys/kernel/stackframe_tracing
+>    echo 1 > /proc/sys/kernel/syscall_tracing
+>    ./trace-cmd bash -c "echo mem > /sys/power/state" > trace.txt
+..
 
-For applications the solution is simple: wrap to appropriate calls.
-Apache has all these apr_ wrappers.  But them to some good news after all.
+I've applied the tracer for 2.6.23.1 patch, plus the bugfix,
+and now I just get blinking-LEDs (black screen of death) on resume.
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFHPeim2ijCOnn/RHQRAu8xAJsF/0Ir1PWMbHkVRaI5vKOGFS4tMACfVEs9
-pMYAiCAU1E2B+7QR0EP+/F8=
-=btt9
------END PGP SIGNATURE-----
+Cheers
