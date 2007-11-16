@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756342AbXKPGNx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753508AbXKPGYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756342AbXKPGNx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 01:13:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbXKPGNp
+	id S1753508AbXKPGYf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 01:24:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750994AbXKPGY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 01:13:45 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50060 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751131AbXKPGNo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 01:13:44 -0500
-Date: Fri, 16 Nov 2007 07:13:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: x86: disable preemption in delay_tsc()
-Message-ID: <20071116061332.GF16273@elte.hu>
-References: <200711150400.lAF40lIr020160@hera.kernel.org> <20071115194116.12c7a0f6@laptopd505.fenrus.org> <20071115195234.2dc8406d.akpm@linux-foundation.org>
+	Fri, 16 Nov 2007 01:24:27 -0500
+Received: from smtp119.plus.mail.mud.yahoo.com ([209.191.106.150]:47978 "HELO
+	smtp119.plus.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750862AbXKPGY0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 01:24:26 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
+  b=tEpVCCQUi92Kzvb5YB4tFr7BcO8lay/+8sM6B+4AW0RtEmS5Uj006DicQUdviCXODso13OiLzNaO/wU/5BXfhYkva8hK3Vt5PRDVE3EZRZIEPkF7ul0QO7E/gHzioREPmcAUb60P3wxBHHbyqJyAoH7l7xCAWR4Ar6ClbXU8HHU=  ;
+X-YMail-OSG: _pNE3q4VM1mn.QuZBdKeewcLyUfhv8g.JioLwZQOoDy6iXDS89vwMYJqS8Tw_a8AH72v5svcf975iYz9i7G60YhaOe00GXBYPDRTzMie4TDhAedmwf4tBa_ghXrNug--
+Date: Fri, 16 Nov 2007 07:24:13 +0100
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: Lucy McCoy <lucy@keyspan.com>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] keyspan: init termios properly
+Message-ID: <20071116062413.GA6765@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+References: <46954.192.168.1.71.1195161016.webmail@192.168.1.71>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20071115195234.2dc8406d.akpm@linux-foundation.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <46954.192.168.1.71.1195161016.webmail@192.168.1.71>
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Nov 15, 2007 at 01:10:16PM -0800, Lucy McCoy wrote:
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+Hi Lucy,
+> I'm not familiar with the termios stuff on Linux so can you take a look
+> at the following modified code to see if this solves your NULL ptr problem?
+will test the patch tomorrow and get back to you with results.
+ 
+> Does cflag need to be set to anything other than CS8?  
+i'm not that familiar with serial port settings either, but IIRC the cflag is
+used to set the requested byte size of the transferred chars (cf
+http://en.wikipedia.org/wiki/Serial_port#Data_Bits). Thus, according to the
+above CS8 is used for setting up transfer of any kind of data over the serial connection.
 
-> > >     x86: disable preemption in delay_tsc()
-> > >     
-> > >     Marin Mitov points out that delay_tsc() can misbehave if it is 
-> > > preempted and rescheduled on a different CPU which has a skewed 
-> > > TSC. Fix it by disabling preemption.
-> > >  
-> > 
-> > this worries me.. this appears to effectively disable preemption 
-> > during udelay() and mdelay() loops... which are very obvious latency 
-> > inducers.
-> > 
-> > Now you can argue that if you're preemptible you should have used 
-> > msleep() and co, and I'll totally buy that.
-> > 
-> > 
-> > Maybe we should just check if we're still on the same cpu or 
-> > something, or have a cheap way to pin a process to a cpu.... but 
-> > both are longer term solutions.
-> 
-> Yes, we can do better.
-> 
-> But this bug can cause very rare failures in probably a large number 
-> of device drivers on a minorty of machines.  Ugly.  So I felt it best 
-> to plug it fast while people think about more sophisticated fixes.
-
-how about using usleep() transparently if high-res timers are active and 
-we have !preempt_count()? That would be a sufficient solution and would 
-avoid all the calibration and per-cpu-ness problems.
-
-	Ingo
+> Is keyspan_open_port() always followed by a keyspan_set_termios()?
+err, you mean keyspan_open() ...
+..and yes, almost all of the usb to serial converter drivers call their own
+*_set_termios-routine so that they could "synchronize" the line discipline user
+settings with those of the converter.
+-- 
+Regards/Gruﬂ,
+    Boris.
