@@ -1,697 +1,281 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765757AbXKPRjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932285AbXKPRjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765757AbXKPRjS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 12:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756188AbXKPRhP
+	id S932285AbXKPRjd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 12:39:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756029AbXKPRhT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 12:37:15 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:54697 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 16 Nov 2007 12:37:19 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:54708 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756969AbXKPRhB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757429AbXKPRhB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 Nov 2007 12:37:01 -0500
-Message-Id: <20071116173525.213278452@I-love.SAKURA.ne.jp>
+Message-Id: <20071116173526.245952658@I-love.SAKURA.ne.jp>
 References: <20071116173439.796600895@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Sat, 17 Nov 2007 02:34:44 +0900
+Date: Sat, 17 Nov 2007 02:34:47 +0900
 From: penguin-kernel@I-love.SAKURA.ne.jp
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #5 05/18] Memory and pathname management functions.
-Content-Disposition: inline; filename=tomoyo-realpath.diff
+Subject: [TOMOYO #5 08/18] Auditing interface.
+Content-Disposition: inline; filename=tomoyo-audit.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Basic functions to get canonicalized absolute pathnames
-for TOMOYO Linux. Even the requested pathname is symlink()ed
-or chroot()ed, TOMOYO Linux uses the original pathname.
+TOMOYO Linux uses /sys/kernel/security/tomoyo/ interface
+for reporting access logs in domain policy format.
+One is 'grant_log', used for auditing accesses which are
+granted in the TOMOYO Linux policy.
+The other is 'reject_log', used for auditing accesses which
+are not granted in the TOMOYO Linux policy.
+The userland daemon /usr/lib/ccs/ccs-auditd will save these logs.
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
- security/tomoyo/realpath.c |  658 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 658 insertions(+)
+ security/tomoyo/audit.c |  238 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 238 insertions(+)
 
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-mm/security/tomoyo/realpath.c	2007-11-14 15:58:58.000000000 +0900
-@@ -0,0 +1,658 @@
++++ linux-2.6-mm/security/tomoyo/audit.c	2007-11-14 15:15:44.000000000 +0900
+@@ -0,0 +1,238 @@
 +/*
-+ * security/tomoyo/realpath.c
++ * security/tomoyo/audit.c
 + *
-+ * Get the canonicalized absolute pathnames.
-+ * The basis for TOMOYO Linux.
++ * Audit functions for TOMOYO Linux
 + */
 +
 +#include "tomoyo.h"
-+#include "realpath.h"
 +
-+/***** realpath handler *****/
-+
-+static int tmy_print_ascii(const char *sp, const char *cp,
-+			   int *buflen0, char **end0)
-+{
-+	int buflen = *buflen0;
-+	char *end = *end0;
-+
-+	while (sp <= cp) {
-+		unsigned char c;
-+
-+		c = *(unsigned char *) cp;
-+		if (c == '\\') {
-+			buflen -= 2;
-+			if (buflen < 0)
-+				goto out;
-+			*--end = '\\';
-+			*--end = '\\';
-+		} else if (c > ' ' && c < 127) {
-+			if (--buflen < 0)
-+				goto out;
-+			*--end = (char) c;
-+		} else {
-+			buflen -= 4;
-+			if (buflen < 0)
-+				goto out;
-+			*--end = (c & 7) + '0';
-+			*--end = ((c >> 3) & 7) + '0';
-+			*--end = (c >> 6) + '0';
-+			*--end = '\\';
-+		}
-+		cp--;
-+	}
-+
-+	*buflen0 = buflen;
-+	*end0 = end;
-+
-+	return 0;
-+out: ;
-+	return -ENOMEM;
-+}
-+
++#ifdef CONFIG_SECURITY_TOMOYO_USE_AUDITD
 +/**
-+ * tmy_get_absolute_path - return the realpath of a dentry.
-+ * @dentry: pointer to "struct dentry".
-+ * @vfsmnt: pointer to "struct vfsmount" to which the @dentry belongs.
-+ * @buffer: size of buffer to save the result.
-+ * @buflen: size of @buffer .
++ * tmy_audit - write audit log.
++ * @fmt:  format strings for printf().
 + *
 + * Returns zero on success.
 + * Returns nonzero on failure.
 + *
-+ * Caller holds the dcache_lock.
-+ * Based on __d_path() in fs/dcache.c
-+ *
-+ * Unlike d_path(), this function traverses upto the root directory of
-+ * process's namespace.
-+ *
-+ * If @dentry is a directory, trailing '/' is appended.
-+ * Characters other than ' ' < c < 127 are converted to \ooo style octal string.
-+ * Character \ is converted to \\ string.
++ * Write audit log.
 + */
-+static int tmy_get_absolute_path(struct dentry *dentry,
-+				 struct vfsmount *vfsmnt,
-+				 char *buffer,
-+				 int buflen)
++int tmy_audit(const char *fmt, ...)
 +{
-+	char *start = buffer;
-+	char *end = buffer + buflen;
-+	bool is_dir = (dentry->d_inode && S_ISDIR(dentry->d_inode->i_mode));
-+	const char *sp;
-+	const char *cp;
-+
-+	if (buflen < 256)
-+		goto out;
-+
-+	*--end = '\0';
-+	buflen--;
-+
-+	while (1) {
-+		struct dentry *parent;
-+
-+		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
-+			/* Global root? */
-+			spin_lock(&vfsmount_lock);
-+			if (vfsmnt->mnt_parent == vfsmnt) {
-+				spin_unlock(&vfsmount_lock);
-+				break;
-+			}
-+			dentry = vfsmnt->mnt_mountpoint;
-+			vfsmnt = vfsmnt->mnt_parent;
-+			spin_unlock(&vfsmount_lock);
-+			continue;
-+		}
-+
-+		if (is_dir) {
-+			is_dir = 0;
-+			*--end = '/';
-+			buflen--;
-+		}
-+
-+		parent = dentry->d_parent;
-+		sp = dentry->d_name.name;
-+		cp = sp + dentry->d_name.len - 1;
-+
-+		/* Exception: Use /proc/self/ rather than */
-+		/* /proc/\$/ for current process. */
-+		if (IS_ROOT(parent) &&
-+		    *sp > '0' && *sp <= '9' && parent->d_sb &&
-+		    parent->d_sb->s_magic == PROC_SUPER_MAGIC) {
-+
-+			char *ep;
-+			const pid_t pid = (pid_t) simple_strtoul(sp, &ep, 10);
-+
-+			if (!*ep && pid == current->tgid) {
-+				sp = "self";
-+				cp = sp + 3;
-+			}
-+
-+		}
-+
-+		if (tmy_print_ascii(sp, cp, &buflen, &end))
-+			goto out;
-+
-+		if (--buflen < 0)
-+			goto out;
-+		*--end = '/';
-+
-+		dentry = parent;
-+	}
-+	if (*end == '/') {
-+		buflen++;
-+		end++;
-+	}
-+
-+	sp = dentry->d_name.name;
-+	cp = sp + dentry->d_name.len - 1;
-+
-+	if (tmy_print_ascii(sp, cp, &buflen, &end))
-+		goto out;
-+
-+	/* Move the pathname to the top of the buffer. */
-+	memmove(start, end, strlen(end) + 1);
-+	return 0;
-+out: ;
-+	return -ENOMEM;
-+}
-+
-+/**
-+ * tmy_realpath_dentry2 - return the realpath of a dentry.
-+ * @dentry:      pointer to "struct dentry".
-+ * @mnt:         pointer to "struct vfsmount" to which the @dentry belongs.
-+ * @newname:     buffer to save the result.
-+ * @newname_len: size of @newname .
-+ *
-+ * Returns zero on success.
-+ * Returns nonzero on failure.
-+ */
-+int tmy_realpath_dentry2(struct dentry *dentry,
-+			 struct vfsmount *mnt,
-+			 char *newname,
-+			 int newname_len)
-+{
-+	int error;
-+	struct dentry *d_dentry;
-+	struct vfsmount *d_mnt;
-+
-+	if (!dentry || !mnt || !newname || newname_len <= 0)
-+		return -EINVAL;
-+
-+	d_dentry = dget(dentry);
-+	d_mnt = mntget(mnt);
-+
-+	/***** CRITICAL SECTION START *****/
-+	spin_lock(&dcache_lock);
-+	error = tmy_get_absolute_path(d_dentry, d_mnt, newname, newname_len);
-+	spin_unlock(&dcache_lock);
-+	/***** CRITICAL SECTION END *****/
-+
-+	dput(d_dentry);
-+	mntput(d_mnt);
-+	return error;
-+}
-+
-+/**
-+ * tmy_realpath_dentry - return the realpath of a dentry.
-+ * @dentry: pointer to "struct dentry".
-+ * @mnt:    pointer to "struct vfsmount" to which the @dentry belongs.
-+ *
-+ * Returns realpath(3) of the @dentry on success.
-+ * Returns NULL on failure.
-+ *
-+ * This function uses tmy_alloc(), so caller must call tmy_free()
-+ * if this function didn't return NULL.
-+ */
-+char *tmy_realpath_dentry(struct dentry *dentry, struct vfsmount *mnt)
-+{
-+	char *buf = tmy_alloc(TMY_MAX_PATHNAME_LEN);
-+
-+	if (buf &&
-+	    tmy_realpath_dentry2(dentry, mnt, buf,
-+				 TMY_MAX_PATHNAME_LEN - 1) == 0)
-+		return buf;
-+
-+	tmy_free(buf);
-+	return NULL;
-+}
-+
-+/**
-+ * tmy_realpath - return the realpath of a pathname.
-+ * @pathname: pathname to report.
-+ *
-+ * Returns realpath(3) of the @pathname on success.
-+ * Returns NULL on failure.
-+ *
-+ * This function uses tmy_alloc(), so caller must call tmy_free()
-+ * if this function didn't return NULL.
-+ */
-+char *tmy_realpath(const char *pathname)
-+{
-+	struct nameidata nd;
-+
-+	if (pathname && path_lookup(pathname, LOOKUP_FOLLOW, &nd) == 0) {
-+		char *buf = tmy_realpath_dentry(nd.path.dentry, nd.path.mnt);
-+
-+		path_put(&nd.path);
-+		return buf;
-+	}
-+
-+	return NULL;
-+}
-+
-+/**
-+ * tmy_realpath_nofollow - return the realpath of a pathname.
-+ * @pathname: pathname to report.
-+ *
-+ * Returns realpath(3) of the @pathname on success.
-+ * Returns NULL on failure.
-+ *
-+ * Unlike tmy_realpath(), this function doesn't follow if @pathname is
-+ * a symbolic link.
-+ *
-+ * This function uses tmy_alloc(), so caller must call tmy_free()
-+ * if this function didn't return NULL.
-+ */
-+char *tmy_realpath_nofollow(const char *pathname)
-+{
-+	struct nameidata nd;
-+
-+	if (pathname && path_lookup(pathname, 0, &nd) == 0) {
-+		char *buf = tmy_realpath_dentry(nd.path.dentry, nd.path.mnt);
-+
-+		path_put(&nd.path);
-+		return buf;
-+	}
-+
-+	return NULL;
-+}
-+
-+/* tmy_get_absolute_path() for "struct ctl_table". */
-+static int tmy_sysctl_path(struct ctl_table *table, char *buffer, int buflen)
-+{
-+	char *end = buffer + buflen;
-+
-+	if (buflen < 256)
-+		goto out;
-+
-+	*--end = '\0';
-+	buflen--;
-+
-+	buflen -= 9; /* for "/proc/sys" prefix */
-+
-+	while (table) {
-+		char buf[32];
-+		const char *sp = table->procname;
-+		const char *cp;
-+
-+		if (!sp) {
-+			memset(buf, 0, sizeof(buf));
-+			snprintf(buf, sizeof(buf) - 1, "=%d=", table->ctl_name);
-+			sp = buf;
-+		}
-+		cp = strchr(sp, '\0') - 1;
-+
-+		if (tmy_print_ascii(sp, cp, &buflen, &end))
-+			goto out;
-+
-+		if (--buflen < 0)
-+			goto out;
-+
-+		*--end = '/';
-+		table = table->parent;
-+	}
-+
-+	/* Move the pathname to the top of the buffer. */
-+	memmove(buffer, "/proc/sys", 9);
-+	memmove(buffer + 9, end, strlen(end) + 1);
-+	return 0;
-+out: ;
-+	return -ENOMEM;
-+}
-+
-+/**
-+ * sysctlpath_from_table - return the realpath of a ctl_table.
-+ * @table: pointer to "struct ctl_table".
-+ *
-+ * Returns realpath(3) of the @table on success.
-+ * Returns NULL on failure.
-+ *
-+ * This function uses tmy_alloc(), so caller must call tmy_free()
-+ * if this function didn't return NULL.
-+ */
-+char *sysctlpath_from_table(struct ctl_table *table)
-+{
-+	char *buf = tmy_alloc(TMY_MAX_PATHNAME_LEN);
-+
-+	if (buf && tmy_sysctl_path(table, buf, TMY_MAX_PATHNAME_LEN - 1) == 0)
-+		return buf;
-+
-+	tmy_free(buf);
-+	return NULL;
-+}
-+
-+/***** Private memory allocator. *****/
-+
-+/*
-+ * Round up an integer so that the returned pointers are appropriately aligned.
-+ * FIXME: Are there more requirements that is needed for assigning value
-+ * atomically?
-+ */
-+static inline unsigned int tmy_roundup(const unsigned int size)
-+{
-+	if (sizeof(void *) >= sizeof(long))
-+		return ((size + sizeof(void *) - 1) / sizeof(void *))
-+			* sizeof(void *);
-+
-+	return ((size + sizeof(long) - 1) / sizeof(long)) * sizeof(long);
-+}
-+
-+static unsigned int allocated_memory_for_elements;
-+
-+/**
-+ * tmy_get_memory_used_for_elements - get memory usage for private data.
-+ *
-+ * Returns size of memory allocated for keeping individual ACL elements.
-+ */
-+unsigned int tmy_get_memory_used_for_elements(void)
-+{
-+	return allocated_memory_for_elements;
-+}
-+
-+/**
-+ * tmy_alloc_element - allocate memory for structures.
-+ * @size: requested size in bytes.
-+ *
-+ * Returns '\0'-initialized memory region on success.
-+ * Returns NULL on failure.
-+ *
-+ * This function allocates memory for keeping ACL entries.
-+ * The RAM is chunked, so NEVER try to kfree() the returned pointer.
-+ */
-+void *tmy_alloc_element(const unsigned int size)
-+{
-+	static DEFINE_MUTEX(mutex);
-+	static char *buf;
-+	static unsigned int buf_used_len = PAGE_SIZE;
-+	char *ptr = NULL;
-+	const unsigned int word_aligned_size = tmy_roundup(size);
-+
-+	if (word_aligned_size > PAGE_SIZE)
-+		return NULL;
-+
-+	mutex_lock(&mutex);
-+
-+	if (buf_used_len + word_aligned_size > PAGE_SIZE) {
-+		ptr = kzalloc(PAGE_SIZE, GFP_KERNEL);
-+
-+		if (!ptr) {
-+			printk(KERN_INFO "ERROR: "
-+			       "Out of memory for tmy_alloc_element().\n");
-+			if (!sbin_init_started)
-+				panic("MAC Initialization failed.\n");
-+		} else {
-+			buf = ptr;
-+			allocated_memory_for_elements += PAGE_SIZE;
-+			buf_used_len = word_aligned_size;
-+			ptr = buf;
-+		}
-+
-+	} else if (word_aligned_size) {
-+		unsigned int i;
-+
-+		ptr = buf + buf_used_len;
-+		buf_used_len += word_aligned_size;
-+
-+		for (i = 0; i < word_aligned_size; i++) {
-+			if (ptr[i]) { /* This must not happen! */
-+				printk(KERN_ERR
-+				       "WARNING: Reserved memory was tainted! "
-+				       "The system might go wrong.\n");
-+				ptr[i] = '\0';
-+			}
-+		}
-+
-+	}
-+
-+	mutex_unlock(&mutex);
-+	return ptr;
-+}
-+
-+/***** Shared memory allocator. *****/
-+
-+static unsigned int allocated_memory_for_savename;
-+
-+/**
-+ * tmy_get_memory_used_for_save_name - get memory usage for shared data.
-+ *
-+ * Returns size of memory allocated for keeping string tokens.
-+ */
-+unsigned int tmy_get_memory_used_for_save_name(void)
-+{
-+	return allocated_memory_for_savename;
-+}
-+
-+#define MAX_HASH 256
-+
-+/* List of tokens. */
-+struct name_entry {
-+	struct list_head list;
-+	struct path_info entry;
-+};
-+
-+/* List of free memory. */
-+struct free_memory_block {
-+	struct list_head list;
-+	char *ptr; /* Pointer to a free area. */
-+	int len;   /* Length of the area.     */
-+};
-+
-+/**
-+ * tmy_save_name - keep the given token on the RAM.
-+ * @name: the string token to remember.
-+ *
-+ * Returns pointer to memory region on success.
-+ * Returns NULL on failure.
-+ *
-+ * This function allocates memory for keeping any string data.
-+ * The RAM is shared, so NEVER try to modify or kfree() the returned name.
-+ */
-+const struct path_info *tmy_save_name(const char *name)
-+{
-+	static bool first_call = 1;
-+	static DEFINE_MUTEX(mutex);
-+	static LIST_HEAD(fmb_list);
-+	struct free_memory_block *fmb;
-+	static struct list_head name_list[MAX_HASH]; /* The list of names. */
-+	struct name_entry *ptr;
-+	unsigned int hash;
++	struct audit_buffer *ab;
 +	int len;
-+	bool found = 0;
-+	if (!name)
-+		return NULL;
-+	len = strlen(name) + 1;
-+	if (len > TMY_MAX_PATHNAME_LEN) {
-+		printk(KERN_INFO "ERROR: Name too long for tmy_save_name().\n");
-+		return NULL;
-+	}
-+	hash = full_name_hash((const unsigned char *) name, len - 1);
-+	/* List access in this function is protected by mutex. */
-+	mutex_lock(&mutex);
-+	if (first_call) {
-+		int i;
-+		first_call = 0;
-+		for (i = 0; i < MAX_HASH; i++)
-+			INIT_LIST_HEAD(&name_list[i]);
-+		if (TMY_MAX_PATHNAME_LEN > PAGE_SIZE)
-+			panic("Bad size.");
-+	}
-+	list_for_each_entry(ptr, &name_list[hash % MAX_HASH], list) {
-+		if (hash == ptr->entry.hash &&
-+		    strcmp(name, ptr->entry.name) == 0)
-+			goto out;
-+	}
-+	list_for_each_entry(fmb, &fmb_list, list) {
-+		if (len <= fmb->len) {
-+			found = 1;
-+			break;
-+		}
-+	}
-+	if (!found) {
-+		char *cp;
-+		cp = kzalloc(PAGE_SIZE, GFP_KERNEL);
-+		if (!cp)
-+			goto out2;
-+		fmb = kzalloc(sizeof(*fmb), GFP_KERNEL);
-+		if (!fmb) {
-+			kfree(cp);
-+out2: ;
-+			printk(KERN_INFO
-+			       "ERROR: Out of memory for tmy_save_name().\n");
-+			if (!sbin_init_started)
-+				panic("MAC Initialization failed.\n");
-+			ptr = NULL;
-+			goto out;
-+		}
-+		allocated_memory_for_savename += PAGE_SIZE;
-+		fmb->ptr = cp;
-+		fmb->len = PAGE_SIZE;
-+		list_add_tail(&fmb->list, &fmb_list);
-+	}
-+	ptr = tmy_alloc_element(sizeof(*ptr));
-+	if (!ptr)
++	va_list args;
++	char *buf;
++	char *cp;
++	ab = audit_log_start(current->audit_context, GFP_KERNEL, AUDIT_KERNEL);
++	if (!ab)
++		return -ENOMEM;
++	buf = kzalloc(PAGE_SIZE, GFP_KERNEL);
++	if (!buf)
 +		goto out;
-+	ptr->entry.name = fmb->ptr;
-+	memmove(fmb->ptr, name, len);
-+	tmy_fill_path_info(&ptr->entry);
-+	fmb->ptr += len;
-+	fmb->len -= len;
-+	list_add_tail(&ptr->list, &name_list[hash % MAX_HASH]);
-+	if (fmb->len == 0) {
-+		list_del(&fmb->list); /* Protected by mutex. */
-+		kfree(fmb);
++	va_start(args, fmt);
++	len = vsnprintf(buf, PAGE_SIZE - 1, fmt, args);
++	va_end(args);
++	if (len > PAGE_SIZE - 1) {
++		kfree(buf);
++		buf = kzalloc(len + 16, GFP_KERNEL);
++		if (!buf)
++			goto out;
++		va_start(args, fmt);
++		vsnprintf(buf, len + 15, fmt, args);
++		va_end(args);
 +	}
++	cp = strchr(buf, '\0') - 1;
++	if (cp >= buf && *cp == '\n')
++		*cp = '\0';
++	audit_log_format(ab, "TOMOYO: %s", buf);
++	kfree(buf);
 +out: ;
-+	mutex_unlock(&mutex);
-+	return ptr ? &ptr->entry : NULL;
++	audit_log_end(ab);
++	return buf ? 0 : -ENOMEM;
 +}
++#endif
 +
-+/***** Dynamic memory allocator. *****/
++static DECLARE_WAIT_QUEUE_HEAD(grant_log_wait);
++static DECLARE_WAIT_QUEUE_HEAD(reject_log_wait);
 +
-+/* List of temporary memory blocks. */
-+struct cache_entry {
++static DEFINE_SPINLOCK(audit_log_lock);
++
++struct log_entry {
 +	struct list_head list;
-+	void *ptr;
-+	int size;
++	char *log;
 +};
 +
-+static struct kmem_cache *tmy_cachep;
++static LIST_HEAD(grant_log);
++static LIST_HEAD(reject_log);
++
++static int grant_log_count;
++static int reject_log_count;
 +
 +/**
-+ * tmy_realpath_init - initialize memory allocator.
-+ */
-+static int __init tmy_realpath_init(void)
-+{
-+	tmy_cachep = kmem_cache_create("tomoyo_cache",
-+				       sizeof(struct cache_entry),
-+				       0, SLAB_PANIC, NULL);
-+	return 0;
-+}
-+postcore_initcall(tmy_realpath_init);
-+
-+static LIST_HEAD(cache_list);
-+static DEFINE_SPINLOCK(cache_list_lock);
-+static unsigned int dynamic_memory_size;
-+
-+/**
-+ * tmy_get_memory_used_for_dynamic - get memory usage for temporary purpose.
++ * tmy_audit_grant - get flags of auditing grant logs.
 + *
-+ * Returns size of memory allocated for keeping temporary purpose.
++ * Returns current value of auditing grant log flags.
 + */
-+unsigned int tmy_get_memory_used_for_dynamic(void)
++bool tmy_audit_grant(void)
 +{
-+	return dynamic_memory_size;
++	return grant_log_count < tmy_flags(TMY_MAX_GRANT_LOG);
 +}
 +
 +/**
-+ * tmy_alloc - allocate memory for temporary purpose.
-+ * @size: requested size in bytes.
++ * tmy_audit_reject - get flags of auditing reject logs.
 + *
-+ * Returns '\0'-initialized memory region on success.
++ * Returns current value of auditing reject log flags.
++ */
++bool tmy_audit_reject(void)
++{
++	return reject_log_count < tmy_flags(TMY_MAX_REJECT_LOG);
++}
++
++/**
++ * tmy_init_audit_log - allocate and initialize audit buffer.
++ * @len: pointer to length of requested size.
++ * @profile: profile number for this log.
++ * @mode: profile value for this log.
++ *
++ * Returns pointer to audit buffer on success. @len received allocated size.
 + * Returns NULL on failure.
 + *
-+ * This function allocates memory for keeping ACL entries.
-+ * The caller has to call tmy_free() the returned pointer
-+ * when memory is no longer needed.
++ * @len must not be a NULL.
 + */
-+void *tmy_alloc(const size_t size)
++char *tmy_init_audit_log(int *len, const u8 profile, const unsigned int mode)
 +{
-+	void *ret = kzalloc(size, GFP_KERNEL);
-+	struct cache_entry *new_entry;
-+
-+	if (!ret) {
-+		printk(KERN_INFO "ERROR: "
-+		       "kmalloc(): Out of memory for tmy_alloc().\n");
-+		return ret;
-+	}
-+
-+	new_entry = kmem_cache_alloc(tmy_cachep, GFP_KERNEL);
-+
-+	if (!new_entry) {
-+		printk(KERN_INFO "ERROR: "
-+		       "kmem_cache_alloc(): Out of memory for tmy_alloc().\n");
-+		kfree(ret);
-+		ret = NULL;
-+	} else {
-+		INIT_LIST_HEAD(&new_entry->list);
-+		new_entry->ptr = ret;
-+		new_entry->size = ksize(ret);
-+
-+		/***** CRITICAL SECTION START *****/
-+		spin_lock(&cache_list_lock);
-+		list_add_tail(&new_entry->list, &cache_list);
-+		dynamic_memory_size += new_entry->size;
-+		spin_unlock(&cache_list_lock);
-+		/***** CRITICAL SECTION END *****/
-+	}
-+
-+	return ret;
++	char *buf;
++	struct timeval tv;
++	struct task_struct *task = current;
++	const char *domainname = TMY_SECURITY->domain->domainname->name;
++	do_gettimeofday(&tv);
++	*len += strlen(domainname) + 256;
++	buf = tmy_alloc(*len);
++	if (!buf)
++		return NULL;
++	snprintf(buf, (*len) - 1, "#timestamp=%lu profile=%u mode=%u "
++		 "pid=%d uid=%d gid=%d euid=%d egid=%d "
++		 "suid=%d sgid=%d fsuid=%d fsgid=%d \n%s\n",
++		 tv.tv_sec, profile, mode,
++		 task->pid, task->uid, task->gid, task->euid, task->egid,
++		 task->suid, task->sgid, task->fsuid, task->fsgid, domainname);
++	return buf;
 +}
 +
 +/**
-+ * tmy_free - free memory allocated by tmy_alloc().
-+ * @p: pointer to memory block allocated by tmy_alloc().
++ * tmy_write_audit_log - write audit log.
++ * @buf:        pointer to access log contents.
++ * @is_granted: is the access request granted?
 + *
-+ * If caller calls this function for multiple times (i.e. double-free() bug) or
-+ * calls this function with invalid pointer, warning message will appear.
-+ * If caller forgets to call this function,
-+ * tmy_get_memory_used_for_dynamic() will indicate memory leaks.
++ * Returns zero on success.
++ * Returns nonzero on failure.
++ *
++ * Write audit log.
++ * Caller must allocate @buf with tmy_init_audit_log().
 + */
-+void tmy_free(const void *p)
++int tmy_write_audit_log(char *buf, const bool is_granted)
 +{
-+	struct list_head *v;
-+	struct cache_entry *entry = NULL;
-+	if (!p)
-+		return;
-+
-+	/***** CRITICAL SECTION START *****/
-+	spin_lock(&cache_list_lock);
-+	list_for_each_prev(v, &cache_list) {
-+		entry = list_entry(v, struct cache_entry, list);
-+		if (entry->ptr != p) {
-+			entry = NULL;
-+			continue;
-+		}
-+		list_del(&entry->list);
-+		dynamic_memory_size -= entry->size;
-+		break;
++	struct log_entry *new_entry;
++	new_entry = tmy_alloc(sizeof(*new_entry));
++	if (!new_entry) {
++		tmy_free(buf);
++		return -ENOMEM;
 +	}
-+	spin_unlock(&cache_list_lock);
++	INIT_LIST_HEAD(&new_entry->list);
++	new_entry->log = buf;
++	/***** CRITICAL SECTION START *****/
++	spin_lock(&audit_log_lock);
++	if (is_granted) {
++		list_add_tail(&new_entry->list, &grant_log);
++		grant_log_count++;
++		buf = NULL;
++		tmy_update_counter(TMY_UPDATE_GRANT_LOG);
++	} else {
++		list_add_tail(&new_entry->list, &reject_log);
++		reject_log_count++;
++		buf = NULL;
++		tmy_update_counter(TMY_UPDATE_REJECT_LOG);
++	}
++	spin_unlock(&audit_log_lock);
 +	/***** CRITICAL SECTION END *****/
++	if (is_granted)
++		wake_up(&grant_log_wait);
++	else
++		wake_up(&reject_log_wait);
++	return 0;
++}
 +
-+	if (entry) {
-+		kfree(p);
-+		kmem_cache_free(tmy_cachep, entry);
-+	} else
-+		printk(KERN_INFO "BUG: tmy_free() with invalid pointer.\n");
++int tmy_read_grant_log(struct io_buffer *head)
++{
++	struct log_entry *ptr = NULL;
++	if (head->read_avail) return 0;
++	if (head->read_buf) {
++		tmy_free(head->read_buf);
++		head->read_buf = NULL;
++		head->readbuf_size = 0;
++	}
++	/***** CRITICAL SECTION START *****/
++	spin_lock(&audit_log_lock);
++	if (!list_empty(&grant_log)) {
++		ptr = list_entry(grant_log.next, struct log_entry, list);
++		list_del(&ptr->list);
++		grant_log_count--;
++	}
++	spin_unlock(&audit_log_lock);
++	/***** CRITICAL SECTION END *****/
++	if (ptr) {
++		head->read_buf = ptr->log;
++		head->read_avail = strlen(ptr->log) + 1;
++		head->readbuf_size = head->read_avail;
++		tmy_free(ptr);
++	}
++	return 0;
++}
 +
++int tmy_poll_grant_log(struct file *file, poll_table *wait)
++{
++	if (grant_log_count)
++		return POLLIN | POLLRDNORM;
++	poll_wait(file, &grant_log_wait, wait);
++	if (grant_log_count)
++		return POLLIN | POLLRDNORM;
++	return 0;
++}
++
++int tmy_read_reject_log(struct io_buffer *head)
++{
++	struct log_entry *ptr = NULL;
++	if (head->read_avail)
++		return 0;
++	if (head->read_buf) {
++		tmy_free(head->read_buf);
++		head->read_buf = NULL;
++		head->readbuf_size = 0;
++	}
++	/***** CRITICAL SECTION START *****/
++	spin_lock(&audit_log_lock);
++	if (!list_empty(&reject_log)) {
++		ptr = list_entry(reject_log.next, struct log_entry, list);
++		list_del(&ptr->list);
++		reject_log_count--;
++	}
++	spin_unlock(&audit_log_lock);
++	/***** CRITICAL SECTION END *****/
++	if (ptr) {
++		head->read_buf = ptr->log;
++		head->read_avail = strlen(ptr->log) + 1;
++		head->readbuf_size = head->read_avail;
++		tmy_free(ptr);
++	}
++	return 0;
++}
++
++int tmy_poll_reject_log(struct file *file, poll_table *wait)
++{
++	if (reject_log_count)
++		return POLLIN | POLLRDNORM;
++	poll_wait(file, &reject_log_wait, wait);
++	if (reject_log_count)
++		return POLLIN | POLLRDNORM;
++	return 0;
 +}
 
 -- 
