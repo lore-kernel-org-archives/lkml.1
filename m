@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761687AbXKPWMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935046AbXKPWMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761687AbXKPWMS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 17:12:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757048AbXKPWMH
+	id S935046AbXKPWMy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 17:12:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758895AbXKPWMp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 17:12:07 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47266 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757310AbXKPWMG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 17:12:06 -0500
-Date: Fri, 16 Nov 2007 14:12:04 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Micah Dowty <micah@vmware.com>
-cc: Ingo Molnar <mingo@elte.hu>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Cyrus Massoumi <cyrusm@gmx.net>,
-       LKML Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Mike Galbraith <efault@gmx.de>,
-       Paul Menage <menage@google.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Peter Williams <pwil3058@bigpond.net.au>
-Subject: Re: High priority tasks break SMP balancer?
-In-Reply-To: <20071116104801.GA4585@vmware.com>
-Message-ID: <Pine.LNX.4.64.0711161410490.6633@schroedinger.engr.sgi.com>
-References: <20071110001103.GD16250@vmware.com> <2FAA6826-653E-482F-A037-C539BAEEA1DA@mac.com>
- <20071115191408.GA4914@vmware.com> <Pine.LNX.4.64.0711151206370.28639@schroedinger.engr.sgi.com>
- <20071115202425.GC4914@vmware.com> <Pine.LNX.4.64.0711151328090.29711@schroedinger.engr.sgi.com>
- <20071115213510.GA16079@vmware.com> <Pine.LNX.4.64.0711151830260.31691@schroedinger.engr.sgi.com>
- <20071116024408.GA20322@vmware.com> <20071116060700.GD16273@elte.hu>
- <20071116104801.GA4585@vmware.com>
+	Fri, 16 Nov 2007 17:12:45 -0500
+Received: from namei.org ([69.55.235.186]:54041 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757146AbXKPWMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 17:12:45 -0500
+Date: Sat, 17 Nov 2007 09:12:13 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Eric Paris <eparis@redhat.com>
+cc: linux-kernel@vger.kernel.org, sds@tycho.nsa.gov, selinux@tycho.nsa.gov,
+       alan@redhat.com, chrisw@redhat.com, hpa@zytor.com,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 3/3] security: allow capable check to permit mmap or low
+ vm space
+In-Reply-To: <1195250840.2924.113.camel@localhost.localdomain>
+Message-ID: <Xine.LNX.4.64.0711170911140.31014@us.intercode.com.au>
+References: <1195246545.2924.88.camel@localhost.localdomain> 
+ <Xine.LNX.4.64.0711170845050.22208@us.intercode.com.au> 
+ <1195250009.2924.103.camel@localhost.localdomain> 
+ <Xine.LNX.4.64.0711170856200.22208@us.intercode.com.au>
+ <1195250840.2924.113.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Nov 2007, Micah Dowty wrote:
+On Fri, 16 Nov 2007, Eric Paris wrote:
 
-> 2.6.17 -
-> 2.6.19 -
-> 2.6.19.7 -
-> 2.6.20 +
-> 2.6.21 +
-> 2.6.22 -
-> 2.6.23.1 +
+> When this protection was originally concieved it intentionally was
+> offing something even without an more 'full featured' LSM.  That was the
+> whole reason I had to drop the secondary stacking hook inside the
+> selinux code.
 > 
-> Here a "-" means that the problem does not occur (my test program uses
-> 100% of both CPUs) and a "+" means that the test program leaves one
-> CPU mostly idle.
-> 
-> Unless I've made a mistake, 2.6.22 seems like the outlier rather than
-> 2.6.23. Is this inconsistent with the scheduler tick hypothesis?
+> While I now understand the question, I think that this is the behavior
+> most people would want.  I'll revert the security enhancement for
+> non-LSM systems if others agree with James, but I think adding another
+> small bit of protection against kernel flaws for everyone who wants
+> security is a win.  (and remember, in kernel we still default this to
+> off so noone is going to 'accidentally' see and security checks in the
+> dummy hooks)
 
-Siddha fixed an issue with the jiffy accounting in for the softirq 
-approach in.22 (vague recall maybe not exactly that version). This may be 
-consistent with an issue that was fixed and now surfaces because of 
-something else.
+If it's off by default and generally useful across LSMs, why not just put 
+it in the base kernel code?
 
+
+- James
+-- 
+James Morris <jmorris@namei.org>
