@@ -1,65 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764998AbXKPNXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762607AbXKPNlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764998AbXKPNXQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 08:23:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757629AbXKPNXA
+	id S1762607AbXKPNlU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 08:41:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757243AbXKPNlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 08:23:00 -0500
-Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:46322 "EHLO
-	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757393AbXKPNXA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 08:23:00 -0500
-Date: Fri, 16 Nov 2007 14:22:56 +0100
-To: Pete Zaitcev <zaitcev@redhat.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>,
-       Kristoffer Ericson <kristoffer.ericson@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: Huawei E220 and usb storage
-Message-ID: <20071116132256.GA19251@gamma.logic.tuwien.ac.at>
-References: <20071030190945.GC32153@gamma.logic.tuwien.ac.at> <20071030211729.6a80a93a.Kristoffer.ericson@gmail.com> <20071030204720.GI8479@gamma.logic.tuwien.ac.at> <47279EF7.3040406@redhat.com> <20071030212213.GA13410@gamma.logic.tuwien.ac.at> <20071030152816.f2e8dd7c.zaitcev@redhat.com> <20071031061552.GH11722@gamma.logic.tuwien.ac.at>
+	Fri, 16 Nov 2007 08:41:12 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:43766 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757218AbXKPNlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 08:41:10 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 1/2] MN10300: Add platform MTD support for the ASB2303 board
+To: torvalds@osdl.org, akpm@linux-foundation.org, dwmw2@infradead.org
+Cc: linux-kernel@vger.kernel.org, linux-am33-list@redhat.com,
+       dhowells@redhat.com
+Date: Fri, 16 Nov 2007 13:41:00 +0000
+Message-ID: <20071116134100.3823.12894.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071031061552.GH11722@gamma.logic.tuwien.ac.at>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Norbert Preining <preining@logic.at>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Pete, dear all,
+Add platform MTD support for the ASB2303 board.
 
-On Mi, 31 Okt 2007, preining wrote:
-> On Di, 30 Okt 2007, Pete Zaitcev wrote:
-> > The difference with huaweiAktBbo.c seems that kernel uses a nonzero length.
-> > Can you try zero length with the kernel? It's the second argument to the last.
-> 
-> I tried with the git patch plus changing the penultimage argument from
-> 0x1 to 0.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-Ok, did new tests with 2.6.24-rc2:
-- with plain kernel the usb-storage modules attaches and detaches
-  permanently a virtual cd drive, I stopped after 30+ iterations.
+ arch/mn10300/configs/asb2303_defconfig |    5 +-
+ arch/mn10300/unit-asb2303/Makefile     |    2 -
+ arch/mn10300/unit-asb2303/flash.c      |  100 ++++++++++++++++++++++++++++++++
+ 3 files changed, 105 insertions(+), 2 deletions(-)
 
-- changing the penultimage argument in the usb_stor_huawei_e220_init
-  function from 0x1 to 0 stopped this misbehaviour, but
+diff --git a/arch/mn10300/configs/asb2303_defconfig b/arch/mn10300/configs/asb2303_defconfig
+index 0189a05..ca9876a 100644
+--- a/arch/mn10300/configs/asb2303_defconfig
++++ b/arch/mn10300/configs/asb2303_defconfig
+@@ -282,7 +282,10 @@ CONFIG_MTD_CFI_UTIL=y
+ # Mapping drivers for chip access
+ #
+ # CONFIG_MTD_COMPLEX_MAPPINGS is not set
+-# CONFIG_MTD_PHYSMAP is not set
++CONFIG_MTD_PHYSMAP=y
++CONFIG_MTD_PHYSMAP_START=0x8000000
++CONFIG_MTD_PHYSMAP_LEN=0x0
++CONFIG_MTD_PHYSMAP_BANKWIDTH=2
+ # CONFIG_MTD_PLATRAM is not set
+ 
+ #
+diff --git a/arch/mn10300/unit-asb2303/Makefile b/arch/mn10300/unit-asb2303/Makefile
+index 03e579f..38a5bb4 100644
+--- a/arch/mn10300/unit-asb2303/Makefile
++++ b/arch/mn10300/unit-asb2303/Makefile
+@@ -3,4 +3,4 @@
+ # Makefile for the ASB2303 board
+ #
+ ###############################################################################
+-obj-y   := unit-init.o smc91111.o leds.o
++obj-y   := unit-init.o smc91111.o flash.o leds.o
+diff --git a/arch/mn10300/unit-asb2303/flash.c b/arch/mn10300/unit-asb2303/flash.c
+new file mode 100644
+index 0000000..17fe083
+--- /dev/null
++++ b/arch/mn10300/unit-asb2303/flash.c
+@@ -0,0 +1,100 @@
++/* Handle mapping of the flash on the ASB2303 board
++ *
++ * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public Licence
++ * as published by the Free Software Foundation; either version
++ * 2 of the Licence, or (at your option) any later version.
++ */
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/mtd/partitions.h>
++#include <linux/mtd/physmap.h>
++
++#define ASB2303_PROM_ADDR	0xA0000000	/* Boot PROM */
++#define ASB2303_PROM_SIZE	(2 * 1024 * 1024)
++#define ASB2303_FLASH_ADDR	0xA4000000	/* System Flash */
++#define ASB2303_FLASH_SIZE	(32 * 1024 * 1024)
++#define ASB2303_CONFIG_ADDR	0xA6000000	/* System Config EEPROM */
++#define ASB2303_CONFIG_SIZE	(8 * 1024)
++
++/*
++ * default MTD partition table for both main flash devices, expected to be
++ * overridden by RedBoot
++ */
++static struct mtd_partition asb2303_partitions[] = {
++	{
++		.name		= "Bootloader",
++		.size		= 0x00040000,
++		.offset		= 0,
++		.mask_flags	= MTD_CAP_ROM /* force read-only */
++	}, {
++		.name		= "Kernel",
++		.size		= 0x00400000,
++		.offset		= 0x00040000,
++	}, {
++		.name		= "Filesystem",
++		.size		= MTDPART_SIZ_FULL,
++		.offset		= 0x00440000
++	}
++};
++
++/*
++ * the ASB2303 Boot PROM definition
++ */
++static struct physmap_flash_data asb2303_bootprom_data = {
++	.width		= 2,
++	.nr_parts	= 1,
++	.parts		= asb2303_partitions,
++};
++
++static struct resource asb2303_bootprom_resource = {
++	.start		= ASB2303_PROM_ADDR,
++	.end		= ASB2303_PROM_ADDR + ASB2303_PROM_SIZE,
++	.flags		= IORESOURCE_MEM,
++};
++
++static struct platform_device asb2303_bootprom = {
++	.name		= "physmap-flash",
++	.id		= 0,
++	.dev.platform_data = &asb2303_bootprom_data,
++	.num_resources	= 1,
++	.resource	= &asb2303_bootprom_resource,
++};
++
++/*
++ * the ASB2303 System Flash definition
++ */
++static struct physmap_flash_data asb2303_sysflash_data = {
++	.width		= 4,
++	.nr_parts	= 1,
++	.parts		= asb2303_partitions,
++};
++
++static struct resource asb2303_sysflash_resource = {
++	.start		= ASB2303_FLASH_ADDR,
++	.end		= ASB2303_FLASH_ADDR + ASB2303_FLASH_SIZE,
++	.flags		= IORESOURCE_MEM,
++};
++
++static struct platform_device asb2303_sysflash = {
++	.name		= "physmap-flash",
++	.id		= 1,
++	.dev.platform_data = &asb2303_sysflash_data,
++	.num_resources	= 1,
++	.resource	= &asb2303_sysflash_resource,
++};
++
++/*
++ * register the ASB2303 flashes
++ */
++static int __init asb2303_mtd_init(void)
++{
++	platform_device_register(&asb2303_bootprom);
++	platform_device_register(&asb2303_sysflash);
++	return 0;
++}
++
++module_init(asb2303_mtd_init);
 
-- with the change from 0x1 to 0 the initialization works automatically.
-
-Can we place change this 0x1 to 0?
-
-Best wishes
-
-Norbert
-
--------------------------------------------------------------------------------
-Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
-Debian Developer <preining@debian.org>                         Debian TeX Group
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
--------------------------------------------------------------------------------
-MOLESBY (n.)
-The kind of family that drives to the seaside and then sits in the car
-with all the windows closed, reading the Sunday Express and wearing
-sidcups (q.v.)
-			--- Douglas Adams, The Meaning of Liff
