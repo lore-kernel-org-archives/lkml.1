@@ -1,178 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763594AbXKPW1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933820AbXKPWjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763594AbXKPW1X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 17:27:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934982AbXKPW1L
+	id S933820AbXKPWjz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 17:39:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757728AbXKPWjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 17:27:11 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:42615 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934800AbXKPW1I (ORCPT
+	Fri, 16 Nov 2007 17:39:47 -0500
+Received: from mga10.intel.com ([192.55.52.92]:8253 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755029AbXKPWjq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 17:27:08 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=K96hcyqO2754vbeoKpqhF1d9T/H1YNGfYp7wMpLpDfVAdUFjSeDCA/t+wh3n2/yxS
-	3FO7J0n7lZcLdkfXCSXmQ==
-Message-ID: <d9885f0f0711161427u3ab41741kf5a0dc58def30c0@mail.gmail.com>
-Date: Fri, 16 Nov 2007 14:27:02 -0800
-From: "Abhishek Rai" <abhishekrai@google.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Clustering indirect blocks in Ext3
-Cc: "Andreas Dilger" <adilger@sun.com>, linux-kernel@vger.kernel.org,
-       "Ken Chen" <kenchen@google.com>, "Mike Waychison" <mikew@google.com>
-In-Reply-To: <20071115230219.1fe9338c.akpm@linux-foundation.org>
+	Fri, 16 Nov 2007 17:39:46 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,428,1188802800"; 
+   d="scan'208";a="207235625"
+Date: Fri, 16 Nov 2007 14:39:57 -0800
+From: mark gross <mgross@linux.intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, torvalds@linux-foundation.org
+Subject: [PATCH]intel-iommu-PMEN support
+Message-ID: <20071116223957.GA26796@linux.intel.com>
+Reply-To: mgross@linux.intel.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <d9885f0f0711152102h7a8270bfvd65605d8c00e6754@mail.gmail.com>
-	 <20071115230219.1fe9338c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 15, 2007 11:02 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
->
-> On Thu, 15 Nov 2007 21:02:46 -0800 "Abhishek Rai" <abhishekrai@google.com> wrote:
-> > One solution to this problem implemented in this patch is to cluster
-> > indirect blocks together on a per group basis, similar to how inodes
-> > and bitmaps are clustered.
->
-> So we have a section of blocks around the middle of the blockgroup which
-> are used for indirect blocks.
->
-> Presmably it starts around 50% of the way into the blockgroup?
->
-> How do you decide its size?
+The following patch adds support for protected memory enable bits by
+clearing them if they are set at startup time.  Some future boot loaders
+or firmware could have this bit set after it loads the kernel, and it
+needs to be cleared if DMA's are going to happen effectively.
 
-There are couple of factors to consider when choosing a size:
-1. The size cannot be too small, or the metacluster will fill up too
-quickly and then we'll have to fall back to regular indirect block
-allocation. E.g., if average file size of files in a block group is
-512KB, a default block group having 32K blocks of size 4KB will need
-~256 indirect blocks, one for each file.
-2. If number of indirect blocks is too high, there will be less space
-for data block allocation and so it'll make it more likely that we run
-out of data blocks and start using blocks from the metacluster which
-makes metaclustering useless.
+please apply
 
-Considering these factors, I think we should have <1% of blocks
-reserved for the metacluster. The current patch uses (blocks_per_group
-/ 128).
+--mgross
 
-> What happens when it fills up but we still have room for more data blocks
-> in that blockgroup?
+Signed-off-by: mark gross <mgross@intel.com>
 
-Metaclustering is honored only as long as we have free data blocks and
-free metacluster blocks. If we run out of either, we start using the
-other. Of course, once that happens indirect blocks may not be
-clustered anymore.
 
-> Can this reserved area cause disk space wastage (all data blocks used,
-> metacluster area not yet full).
-
-No because of above reason.
-
-> The file data block allocator now needs to avoid allocating blocks from
-> inside this reserved area.  How is this implemented?  It is awfully similar
-> to the existing reservations code - does it utilise that code?
-
-It is actually much simpler than the reservation code, so I haven't
-used it. The logic is implemented in <20 lines in
-ext3_try_to_allocate().
-
->
-> > Notation:
-> > - 'vanilla': regular ext3 without any changes
-> > - 'mc': metaclustering ext3
-> >
-> > Benchmark 1: Sequential write to a 10GB file followed by 'sync'
-> > 1. vanilla:
-> >   Total: 3m9.0s
-> >   User: 0.08
-> >   System: 23s-48s (very high variance)
->
-> hm, system time variance is weird.  You might have found an ext3 bug (or a
-> cpu time accounting bug).
->
-> Excecution profiling would tell, I guess.
-
-OK, I'll investigate this further.
-
-> > Benchmark 5: fsck
-> > Description: Prepare a newly formated 400GB disk as follows: create
-> > 200 files of 0.5GB each, 100 files of 1GB each, 40 files of 2.5GB ech,
-> > and 10 files of 10GB each. fsck command line: fsck -f -n
-> > 1. vanilla:
-> >   Total: 12m18.1s
-> >   User: 15.9s
-> >   System: 18.3s
-> > 2. mc:
-> >   Total: 4m47.0s
-> >   User: 16.0s
-> >   System: 17.1s
-> >
->
-> They're large files.  It would be interesting to see what the numbers are
-> for more and smaller files.
->
-
-kernbench below shows the behavior with small files. I'll also post
-results from running
-compilebench.
-
-> >
-> > Benchmark 6: kernbench (this was done on an 8cpu machine with 32GB RAM)
-> > 1. vanilla:
-> >   Elapsed: 35.60
-> >   User: 228.79
-> >   System: 21.10
-> > 2. mc:
-> >   Elapsed: 35.12
-> >   User: 228.47
-> >   System: 21.08
-> >
-> > Note:
-> > 1. This patch does not affect ext3 on-disk layout compatibility in any
-> > way. Existing disks continue to work with new code, and disks modified
-> > by new code continue to work with existing machines. In contrast, the
-> > extents patch will also probably solve this problem but it breaks on-disk
-> > compatibility.
-> > 2. Metaclustering is a mount time option (-o metacluster). This option
-> > only affects the write path, when this option is specified indirect
-> > blocks are allocated in clusters, when it is not specified they are
-> > allocated alongside data blocks. The read path is unaffected by the
-> > option, read behavior depends on the data layout on disk - if read
-> > discovers metaclusters on disk it will do prefetching otherwise it
-> > will not.
-> > 3. e2fsck speedup with metaclustering varies from disk
-> > to disk with most benefit coming from disks which have a large number
-> > of indirect blocks. For disks which have few indirect blocks, fsck
-> > usually doesn't take too long anyway and hence it's OK not to deliver
-> > a huge speedup there. But in all cases, metaclustering doesn't cause
-> > any degradation in IO performance as seen in the benchmarks above.
->
-> Less speedup, for more-and-smaller files, it appears.
-
-Not necessarily. If a lot of files use indirect blocks which happens when file
-length >48KB on a 4KB blocksize file system, then we have a lot of
-indirect blocks to read during fsck and hence this patch will be useful. But
-if most files are <= 48KB, then the speedup is less/none of course.
-
->
-> An important question is: how does it stand up over time?  Simply laying
-> files out a single time on a fresh fs is the easy case.  But what happens
-> if that disk has been in continuous create/delete/truncate/append usage for
-> six months?
-
-I'll post results of running compilebench shortly.
-
-> >
-> > [implementation]
-> >
->
-> We can get onto that later ;)
->
->
+Index: linux-2.6.23-rc2-iommu/drivers/pci/intel-iommu.c
+===================================================================
+--- linux-2.6.23-rc2-iommu.orig/drivers/pci/intel-iommu.c	2007-11-16 13:25:14.000000000 -0800
++++ linux-2.6.23-rc2-iommu/drivers/pci/intel-iommu.c	2007-11-16 13:26:07.000000000 -0800
+@@ -692,6 +692,23 @@
+ 		DMA_TLB_PSI_FLUSH, non_present_entry_flush);
+ }
+ 
++static void iommu_disable_protect_mem_regions(struct intel_iommu *iommu)
++{
++	u32 pmen;
++	unsigned long flags;
++
++	spin_lock_irqsave(&iommu->register_lock, flags);
++	pmen = readl(iommu->reg + DMAR_PMEN_REG);
++	pmen &= ~DMA_PMEN_EPM;
++	writel(pmen, iommu->reg + DMAR_PMEN_REG);
++
++	/* wait for the protected region status bit to clear */
++	IOMMU_WAIT_OP(iommu, DMAR_PMEN_REG,
++		readl, (pmen & DMA_PMEN_PRS), pmen);
++
++	spin_unlock_irqrestore(&iommu->register_lock, flags);
++}
++
+ static int iommu_enable_translation(struct intel_iommu *iommu)
+ {
+ 	u32 sts;
+@@ -745,7 +762,7 @@
+ 	"non-zero reserved fields in PTE",
+ 	"Unknown"
+ };
+-#define MAX_FAULT_REASON_IDX 	ARRAY_SIZE(fault_reason_strings) - 1
++#define MAX_FAULT_REASON_IDX 	(ARRAY_SIZE(fault_reason_strings) - 1)
+ 
+ char *dmar_get_fault_reason(u8 fault_reason)
+ {
+@@ -1730,6 +1747,8 @@
+ 		iommu_flush_context_global(iommu, 0);
+ 		iommu_flush_iotlb_global(iommu, 0);
+ 
++		iommu_disable_protect_mem_regions(iommu);
++
+ 		ret = iommu_enable_translation(iommu);
+ 		if (ret)
+ 			goto error;
+Index: linux-2.6.23-rc2-iommu/drivers/pci/intel-iommu.h
+===================================================================
+--- linux-2.6.23-rc2-iommu.orig/drivers/pci/intel-iommu.h	2007-11-16 13:26:01.000000000 -0800
++++ linux-2.6.23-rc2-iommu/drivers/pci/intel-iommu.h	2007-11-16 13:26:36.000000000 -0800
+@@ -71,7 +71,7 @@
+ 		hi = readl(dmar + reg + 4); \
+ 		(((u64) hi) << 32) + lo; })
+ */
+-static inline u64 dmar_readq(void *addr)
++static inline u64 dmar_readq(void __iomem *addr)
+ {
+ 	u32 lo, hi;
+ 	lo = readl(addr);
+@@ -139,6 +139,10 @@
+ #define DMA_TLB_IH_NONLEAF (((u64)1) << 6)
+ #define DMA_TLB_MAX_SIZE (0x3f)
+ 
++/* PMEN_REG */
++#define DMA_PMEN_EPM (((u32)1)<<31)
++#define DMA_PMEN_PRS (((u32)1)<<0)
++
+ /* GCMD_REG */
+ #define DMA_GCMD_TE (((u32)1) << 31)
+ #define DMA_GCMD_SRTP (((u32)1) << 30)
