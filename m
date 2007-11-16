@@ -1,52 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765354AbXKPUYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762506AbXKPUei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765354AbXKPUYT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 15:24:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755715AbXKPUYK
+	id S1762506AbXKPUei (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 15:34:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754941AbXKPUea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 15:24:10 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:41561 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754568AbXKPUYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 15:24:09 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 16 Nov 2007 15:34:30 -0500
+Received: from elasmtp-scoter.atl.sa.earthlink.net ([209.86.89.67]:53119 "EHLO
+	elasmtp-scoter.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754336AbXKPUe3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 15:34:29 -0500
+X-Greylist: delayed 4076 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Nov 2007 15:34:29 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=mindspring.com;
+  b=P5KSlTlI/3t4uTT/2GALvA8KSHlzMPJdbiGky4aEILK1jyphG0O0ZUVK94UJimrU;
+  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
+Date: Fri, 16 Nov 2007 14:26:19 -0500
+From: Bill Fink <billfink@mindspring.com>
+To: David Miller <davem@davemloft.net>
+Cc: the.sator@gmail.com, kuznet@ms2.inr.ac.ru, linux-kernel@vger.kernel.org,
+       jmorris@namei.org, netdev@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] net/ipv4/arp.c: Fix arp reply when sender ip 0
+Message-Id: <20071116142619.8746376e.billfink@mindspring.com>
+In-Reply-To: <20071116.010548.94286711.davem@davemloft.net>
+References: <cac0ab7d0711151340l1cc91a2dw5ebf36e166d16d7a@mail.gmail.com>
+	<20071115.152813.89410917.davem@davemloft.net>
+	<cac0ab7d0711160030w149c7a7s2db55ac56d0a05cc@mail.gmail.com>
+	<20071116.010548.94286711.davem@davemloft.net>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>, Kees Cook <kees@ubuntu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Scott James Remnant <scott@ubuntu.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] wait_task_stopped: tidy up the noreap case
-In-Reply-To: Oleg Nesterov's message of  Friday, 16 November 2007 20:24:13 +0300 <20071116172413.GA7296@tv-sign.ru>
-References: <20071116172413.GA7296@tv-sign.ru>
-X-Shopping-List: (1) Uninteresting distenders
-   (2) Frothy shrub infestations
-   (3) Lesser-known yarns
-Message-Id: <20071116202403.1CF0C26F8BA@magilla.localdomain>
-Date: Fri, 16 Nov 2007 12:24:03 -0800 (PST)
+X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4d6fea55f8fcb54e485ee9184cad14fa29350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 68.55.21.22
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is good, but not quite enough.  The original intent behind having the
-test was never to return mismatched stale/fresh data.  (Not that it ever
-really worked as intended.)  That is, it's fine if the task has woken up
-and done other things while WNOWAIT reports it as stopped--that's stale
-data, but it just means the waitid call happened "before" the resumption.
-However, it should not report anything that could not possibly have been
-true before the resumption.  i.e. a changed exit_code, which now means an
-normal termination status or a death signal, not the stop signal.  This
-also applies to the uid, in case the thread called setuid upon resuming
-(and even to ptracedness, not that that one really matters).  (It doesn't
-matter for rusage, since that's not really an exact change of state with
-reliable ordering anyway.)
+On Fri, 16 Nov 2007, David Miller wrote:
 
-So the setting of uid and why should also move before read_unlock.
-While you're at it, you could fix the status argument to wait_noreap_copyout.
-It should be just exit_code, not the WIFSTOPPED bit format it does now.
+> From: "Jonas Danielsson" <the.sator@gmail.com>
+> Date: Fri, 16 Nov 2007 09:30:11 +0100
+> 
+> > 2007/11/16, David Miller <davem@davemloft.net>:
+> > > From: "Jonas Danielsson" <the.sator@gmail.com>
+> > > Date: Thu, 15 Nov 2007 22:40:13 +0100
+> > >
+> > > > Is there a reason that the target hardware address isn't the target
+> > > > hardware address?
+> > 
+> > > Because of this, in cases where a choice can be made Linux will
+> > > advertise what is most likely to result in successful communication.
+> > >
+> > > This is likely why we are changing that target address to the one of
+> > > the interface actually sending back the reply rather than the zero
+> > > value you used.
+> > >
+> > > In fact I think this information can be useful to the sender of
+> > > the DAD request.
+> > >
+> > 
+> > There seem to be some confusion about what my patch really does. It
+> > does not set the hardware address to a zero value.
+> 
+> I knew you were talking about the IP address not the hardware
+> address.
+> 
+> > The reply from the Linux kernel in computer A, before the patch would look like:
+> > 
+> > Reply:
+> > Opcode: reply (0x0002)
+> > Sender HW: 00:AA.00:AA:00:AA
+> > Sender IP:   192.168.0.1
+> > Target HW:  00:AA:00:AA:00:AA
+> > Target IP:    192.168.0.1
+> 
+> And this is exactly a sensible response in my opinion.
 
+I don't see how you can say that, since it appears to be in violation
+of RFC 826:
 
-Thanks,
-Roland
+	"The target hardware address is included for completeness and
+	network monitoring.  It has no meaning in the request form,
+	since it is this number that the machine is requesting.  Its
+	meaning in the reply form is the address of the machine making
+	the request.  In some implementations (which do not get to look
+	at the 14.byte ethernet header, for example) this may save some
+	register shuffling or stack space by sending this field to the
+	hardware driver as the hardware destination address of the
+	packet."
+
+Since the MAC address of the machine making the request is
+00:BB:00:BB:00:BB, and not 00:AA:00:AA:00:AA, Linux appears to
+be in violation of the ARP RFC.
+
+Regarding the Target IP, RFC 826 says:
+
+	"The target protocol address is necessary in the request form
+	of the packet so that a machine can determine whether or not
+	to enter the sender information in a table or to send a reply.
+	It is not necessarily needed in the reply form if one assumes
+	a reply is only provoked by a request.  It is included for
+	completeness, network monitoring, and to simplify the suggested
+	processing algorithm described above (which does not look at
+	the opcode until AFTER putting the sender information in a
+	table).
+
+So it's ambiguous about the target IP address in an ARP reply packet,
+but a value of 0.0.0.0 makes more logical sense to me than using
+192.168.0.1 in this example case, since it should reflect the requestor
+IP address, which is unknown in this case.
+
+						-Bill
