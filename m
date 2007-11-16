@@ -1,120 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761393AbXKPQLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762171AbXKPQMK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761393AbXKPQLn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 11:11:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbXKPQLd
+	id S1762171AbXKPQMK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 11:12:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbXKPQL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 11:11:33 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:42096 "EHLO mx1.redhat.com"
+	Fri, 16 Nov 2007 11:11:56 -0500
+Received: from sacred.ru ([62.205.161.221]:56087 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753783AbXKPQLc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 11:11:32 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20071116134105.3823.66507.stgit@warthog.procyon.org.uk>
-References: <20071116134105.3823.66507.stgit@warthog.procyon.org.uk> <20071116134100.3823.12894.stgit@warthog.procyon.org.uk>
-Cc: dhowells@redhat.com, torvalds@osdl.org, akpm@linux-foundation.org,
-       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-       linux-am33-list@redhat.com
-Subject: Re: [PATCH 2/2] MN10300: Fix MTD JEDEC probe so that the ASB2303 bootprom can be detected
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Fri, 16 Nov 2007 16:11:23 +0000
-Message-ID: <9004.1195229483@redhat.com>
-To: unlisted-recipients:; (no To-header on input)
+	id S1751444AbXKPQLz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 11:11:55 -0500
+Message-ID: <473DC12D.3010401@openvz.org>
+Date: Fri, 16 Nov 2007 19:11:25 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Daniel Lezcano <dlezcano@fr.ibm.com>
+CC: Andrew Morton <akpm@osdl.org>, Theodore Tso <tytso@mit.edu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Cedric Le Goater <clg@fr.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH][DOCUMENTATION] The namespaces compatibility list doc
+References: <473D6434.5020201@openvz.org> <473DBCC2.70506@fr.ibm.com>
+In-Reply-To: <473DBCC2.70506@fr.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 16 Nov 2007 19:11:24 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells <dhowells@redhat.com> wrote:
+Daniel Lezcano wrote:
+> Pavel Emelyanov wrote:
+>> >From time to time people begin discussions about how the
+>> namespaces are working/going-to-work together.
+>>
+>> Ted T'so proposed to create some document that describes what
+>> problems user may have when he/she creates some new namespace,
+>> but keeps others shared. I liked this idea, so here's the 
+>> initial version of such a document with the problems I currently 
+>> have in mind and can describe somewhat audibly - the "namespaces 
+>> compatibility list".
+>>
+>> The Documentation/namespaces/ directory is about to contain more
+>> docs about the namespaces stuff.
+>>
+>> Thanks to Cedirc for notes and spell checks on the doc.
+>>
+>> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+>>
+>> ---
+>>
+>> commit 83061c56e1c4dcd54d48a62b108d219a7f5279a0
+>> Author: Pavel <pavel@xemulnb.sw.ru>
+>> Date:   Fri Nov 16 12:25:53 2007 +0300
+>>
+>>     Namespaces compatibility list
+>>
+>> diff --git a/Documentation/00-INDEX b/Documentation/00-INDEX
+>> index 910e511..3ead06b 100644
+>> --- a/Documentation/00-INDEX
+>> +++ b/Documentation/00-INDEX
+>> @@ -262,6 +262,8 @@ mtrr.txt
+>>  	- how to use PPro Memory Type Range Registers to increase performance.
+>>  mutex-design.txt
+>>  	- info on the generic mutex subsystem.
+>> +namespaces/
+>> +	- directory with various information about namespaces
+>>  nbd.txt
+>>  	- info on a TCP implementation of a network block device.
+>>  netlabel/
+>> diff --git a/Documentation/namespaces/compatibility-list.txt b/Documentation/namespaces/compatibility-list.txt
+>> new file mode 100644
+>> index 0000000..9c9e5c1
+>> --- /dev/null
+>> +++ b/Documentation/namespaces/compatibility-list.txt
+>> @@ -0,0 +1,33 @@
+>> +	Namespaces compatibility list
+>> +
+>> +This document contains the information about the problems user
+>> +may have when creating tasks living in different namespaces.
+>> +
+>> +Here's the summary. This matrix shows the known problems, that
+>> +occur when tasks share some namespace (the columns) while living
+>> +in different other namespaces (the rows):
+>> +
+>> +	UTS	IPC	VFS	PID	User	Net
+>> +UTS	 X
+>> +IPC		 X	 1               
+>> +VFS			 X
+>> +PID		 1	 1	 X               
+>> +User			 2		 X
+>> +Net						 
+>> +
+> 
+> 	UTS	IPC	VFS	PID	User	Net
+> UTS	 X
+> IPC		 X	 1               3
+> VFS			 X
+> PID		 1	 1	 X
+> User			 2		 X
+> Net						
+> 
+>> +1. Both the IPC and the PID namespaces provide IDs to address
+>> +   object inside the kernel. E.g. semaphore with ipcid or
+>> +   process group with pid.
+>> +
+>> +   In both cases, tasks shouldn't try exposing this id to some
+>> +   other task living in a different namespace via a shared filesystem
+>> +   or IPC shmem/message. The fact is that this ID is only valid
+>> +   within the namespace it was obtained in and may refer to some
+>> +   other object in another namespace.
+>> +
+>> +2. Intentionnaly, two equal user ids in different user namespaces
+>        Intentionaly
+>> +   should not be equal from the VFS point of view. In other
+>> +   words, user 10 in one user namespace shouldn't have the same
+>> +   access permissions to files, beloging to user 10 in another
+>                                     belonging
+>> +   namespace. But currently this is not so.
+>> +
+> 
+> 3. IPC and User
+> 
+> Two processes running in different user namespaces but with the same 
+> uids can access with the same permissions to the IPC created by one or 
+> other process
 
-> Fix MTD JEDEC probe so that the ASB2303 bootprom can be accessed.  This is
-> presumably required because the bootprom is normally write-protected and so
-> the normal flash probes don't work as they require the ability to write to the
-> flash to send it commands.
+Different user and equal IPC is where the row UID and column 
+IPC cross, not the vice versa.
 
-Actually, on re-checking the documentation, this particular board doesn't
-appear to have a write-enable for the flash, but rather an access-enable
-(which is obviously installed).  Furthermore, the probe does seem to manage to
-work out that the chip is an MBM29LV800TA, so write is apparently possible.
+Anything, thanks, please send an incremental patch if Andrew 
+accepts this one.
 
-So the problem appears to be something other than what I thought.
-
-Without the patch, the kernel log shows:
-
-| physmap platform flash device: 00200001 at a0000000
-| physmap-flash physmap-flash.0: map_probe failed
-| physmap platform flash device: 02000001 at a4000000
-| physmap-flash.1: Found 4 x16 devices at 0x0 in 32-bit bank
-|  Amd/Fujitsu Extended Query Table at 0x0040
-| physmap-flash.1: Swapping erase regions for broken CFI table.
-| number of CFI chips: 1
-| cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
-| cmdlinepart partition parsing not available
-| Searching for RedBoot partition table in physmap-flash.1 at offset 0xfc0000
-| 4 RedBoot partitions found on MTD device physmap-flash.1
-| Creating 4 MTD partitions on "physmap-flash.1":
-| 0x00000000-0x00040000 : "RedBoot"
-| mtd: Giving out device 0 to RedBoot
-| 0x00040000-0x00fc0000 : "unallocated"
-| mtd: Giving out device 1 to unallocated
-| 0x00fc0000-0x00fff000 : "FIS directory"
-| mtd: partition "FIS directory" doesn't end on an erase block -- force read-only
-| mtd: Giving out device 2 to FIS directory
-| 0x00fff000-0x01000000 : "RedBoot config"
-| mtd: partition "RedBoot config" doesn't start on an erase block boundary -- force read-only
-| mtd: Giving out device 3 to RedBoot config
-| 
-
-With the patch, it shows:
-
-| physmap platform flash device: 00200001 at a0000000
-| CFI: Found no physmap-flash.0 device at location zero
-| MTD: ASB2303: uaddr=1
-
-(Note I added a printk to display uaddr if it reached this point.)
-
-| Found: Fujitsu MBM29LV800TA
-| MTD: ASB2303: uaddr=1
-| physmap-flash.0: Found 1 x16 devices at 0x0 in 16-bit bank
-| physmap-flash.0: Found an alias at 0x100000 for the chip at 0x0
-| number of JEDEC chips: 1
-| cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
-| cmdlinepart partition parsing not available
-| Searching for RedBoot partition table in physmap-flash.0 at offset 0xf0000
-| 4 RedBoot partitions found on MTD device physmap-flash.0
-| Creating 4 MTD partitions on "physmap-flash.0":
-| 0x00000000-0x00040000 : "RedBoot"
-| mtd: Giving out device 0 to RedBoot
-| 0x00040000-0x000f0000 : "unallocated"
-| mtd: Giving out device 1 to unallocated
-| 0x000f0000-0x000ff000 : "FIS directory"
-| mtd: partition "FIS directory" doesn't end on an erase block -- force read-only
-| mtd: Giving out device 2 to FIS directory
-| 0x000ff000-0x00100000 : "RedBoot config"
-| mtd: partition "RedBoot config" doesn't start on an erase block boundary -- force read-only
-| mtd: Giving out device 3 to RedBoot config
-| physmap platform flash device: 02000001 at a4000000
-| physmap-flash.1: Found 4 x16 devices at 0x0 in 32-bit bank
-| physmap-flash.1: Found an alias at 0x1000000 for the chip at 0x0
-|  Amd/Fujitsu Extended Query Table at 0x0040
-| physmap-flash.1: Swapping erase regions for broken CFI table.
-| number of CFI chips: 1
-| cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
-| cmdlinepart partition parsing not available
-| Searching for RedBoot partition table in physmap-flash.1 at offset 0xfc0000
-| 4 RedBoot partitions found on MTD device physmap-flash.1
-| Creating 4 MTD partitions on "physmap-flash.1":
-| 0x00000000-0x00040000 : "RedBoot"
-| mtd: Giving out device 4 to RedBoot
-| 0x00040000-0x00fc0000 : "unallocated"
-| mtd: Giving out device 5 to unallocated
-| 0x00fc0000-0x00fff000 : "FIS directory"
-| mtd: partition "FIS directory" doesn't end on an erase block -- force read-only
-| mtd: Giving out device 6 to FIS directory
-| 0x00fff000-0x01000000 : "RedBoot config"
-| mtd: partition "RedBoot config" doesn't start on an erase block boundary -- force read-only
-| mtd: Giving out device 7 to RedBoot config
-
-David
+Thanks,
+Pavel
