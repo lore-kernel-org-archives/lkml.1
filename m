@@ -1,63 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934621AbXKPCoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934775AbXKPCow@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934621AbXKPCoV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 21:44:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757662AbXKPCoL
+	id S934775AbXKPCow (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 21:44:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757799AbXKPCol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 21:44:11 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:42153 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756435AbXKPCoJ (ORCPT
+	Thu, 15 Nov 2007 21:44:41 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:36979 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757662AbXKPCok (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 21:44:09 -0500
-Date: Thu, 15 Nov 2007 18:44:08 -0800
-From: Micah Dowty <micah@vmware.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Kyle Moffett <mrmacman_g4@mac.com>, Cyrus Massoumi <cyrusm@gmx.net>,
-       LKML Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@osdl.org>, Mike Galbraith <efault@gmx.de>,
-       Paul Menage <menage@google.com>
-Subject: Re: High priority tasks break SMP balancer?
-Message-ID: <20071116024408.GA20322@vmware.com>
-References: <20071109223417.GB16250@vmware.com> <4734F397.7080802@gmx.net> <20071110001103.GD16250@vmware.com> <2FAA6826-653E-482F-A037-C539BAEEA1DA@mac.com> <20071115191408.GA4914@vmware.com> <Pine.LNX.4.64.0711151206370.28639@schroedinger.engr.sgi.com> <20071115202425.GC4914@vmware.com> <Pine.LNX.4.64.0711151328090.29711@schroedinger.engr.sgi.com> <20071115213510.GA16079@vmware.com> <Pine.LNX.4.64.0711151830260.31691@schroedinger.engr.sgi.com>
+	Thu, 15 Nov 2007 21:44:40 -0500
+Message-ID: <473D03CB.4020409@cosmosbay.com>
+Date: Fri, 16 Nov 2007 03:43:23 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0711151830260.31691@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Ulrich Drepper <drepper@redhat.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       tglx@linutronix.de, torvalds@linux-foundation.org
+Subject: Re: [PATCHv2 1/4] actual sys_indirect code
+References: <200711151822.lAFIMVxP028587@devserv.devel.redhat.com>
+In-Reply-To: <200711151822.lAFIMVxP028587@devserv.devel.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Fri, 16 Nov 2007 03:43:29 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 15, 2007 at 06:31:49PM -0800, Christoph Lameter wrote:
-> On Thu, 15 Nov 2007, Micah Dowty wrote:
+Ulrich Drepper a écrit :
+> This is the actual architecture-independent part of the system call
+> implementation.
 > 
-> > On all kernels I've tested from after your patch was committed, I can
-> > reproduce a problem where a single high-priority thread which wakes up
-> > very frequently can artificially inflate the SMP balancer's load
-> > average for one CPU, causing other tasks to be migrated off that
-> > CPU. The result is that this high-priority thread (which may only use
-> > a few percent CPU) gets an entire CPU to itself. Even if there are
-> > several busy-looping threads running, this CPU will be mostly idle.
-> 
-> I am a bit at a loss as to how this could relate to the patch. This looks 
-> like a load balance logic issue that causes the load calculation to go 
-> wrong?
 
-My best guess is that this has something to do with the timing with
-which we sample the CPU's instantaneous load when calculating the load
-averages.. but I still understand only the basics of the scheduler and
-SMP balancer. All I really know for sure at this point regarding your
-patch is that git-bisect found it for me.
+> +
+> +long sys_indirect(struct indirect_registers __user *userregs,
+> +		  void __user *userparams, size_t paramslen)
+> +{
+> +	struct indirect_registers regs;
+> +	long result;
+> +
+> +	if (copy_from_user(&regs, userregs, sizeof(regs)))
+> +		return -EFAULT;
+> +
+> +	switch (INDIRECT_SYSCALL (&regs))
+> +	{
+> +#ifdef __NR_accept
+> +	case __NR_accept:
+> +#endif
+> +#ifdef __NR_socketpair
+> +	case __NR_socketpair:
+> +#endif
+> +#ifdef __NR_socket
+> +	case __NR_socket:
+> +#endif
+> +#ifdef __NR_socketcall
+> +	case __NR_socketcall:
+> +#endif
+> +		break;
+> +
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +
+> +	if (paramslen > sizeof(union indirect_params))
+> +		return -EINVAL;
+> +	if (copy_from_user(&current->indirect_params, userparams, paramslen))
 
-It almost seems like the load average algorithm is ignoring the CPU's
-idle time, and only accounting for the time that CPU spends running
-processes. One of the symptoms is that the mostly-idle CPU in my test
-has an instantaneous load which is usually zero, but a very high load
-average. (9000, 30000, etc.)
+Here, you should clear current->indirect_params before returning -EFAULT
+                 {
+                 memset(&current->indirect_params, 0, paramslen);
+> +		return -EFAULT;
+                 }
+copy_from_user could do a partial copy (so dirty first bytes of 
+indirect_params) and all furthers calls to socket()/open() and so on could be 
+broken.
 
-I want to help get to the bottom of this issue, but I was hoping that
-someone experienced with the Linux scheduler and SMP balancer would
-have some insight or some suggestions about what to try next.
+> +
+> +	result = CALL_INDIRECT(&regs);
+> +
+> +	memset(&current->indirect_params, '\0', paramslen);
+> +
+> +	return result;
+> +}
+> -
 
-Thanks,
---Micah
