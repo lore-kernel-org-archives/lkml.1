@@ -1,950 +1,269 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932653AbXKPRmD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933673AbXKPRmf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932653AbXKPRmD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 12:42:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763690AbXKPRhr
+	id S933673AbXKPRmf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 12:42:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762269AbXKPRhu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 12:37:47 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:54747 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 16 Nov 2007 12:37:50 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:54792 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762733AbXKPRhC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1762709AbXKPRhC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 Nov 2007 12:37:02 -0500
-Message-Id: <20071116173527.625535355@I-love.SAKURA.ne.jp>
+Message-Id: <20071116173527.974565972@I-love.SAKURA.ne.jp>
 References: <20071116173439.796600895@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Sat, 17 Nov 2007 02:34:51 +0900
+Date: Sat, 17 Nov 2007 02:34:52 +0900
 From: penguin-kernel@I-love.SAKURA.ne.jp
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #5 12/18] Namespace manipulation control functions.
-Content-Disposition: inline; filename=tomoyo-mount.diff
+Subject: [TOMOYO #5 13/18] Signal control functions.
+Content-Disposition: inline; filename=tomoyo-signal.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-TOMOYO Linux checks mount permission based on
-device name, mount point, filesystem type and optional flags.
-TOMOYO Linux also checks permission in umount and pivot_root.
+TOMOYO Linux checks sending signal by signal number and
+the domain of target process. In order to check signal
+permission, LSM expansion patch [TOMOYO 18/18] is needed.
 
 Each permission can be automatically accumulated into
-the policy using 'learning mode'.
+the policy of each domain using 'learning mode'.
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
- security/tomoyo/mount.c |  908 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 908 insertions(+)
+ security/tomoyo/signal.c |  227 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 227 insertions(+)
 
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-mm/security/tomoyo/mount.c	2007-11-14 15:59:44.000000000 +0900
-@@ -0,0 +1,908 @@
++++ linux-2.6-mm/security/tomoyo/signal.c	2007-11-14 15:15:44.000000000 +0900
+@@ -0,0 +1,227 @@
 +/*
-+ * security/tomoyo/mount.c
++ * security/tomoyo/signal.c
 + *
-+ * Mount access control functions for TOMOYO Linux.
++ * Signal access contol functions for TOMOYO Linux.
 + */
 +
 +#include "tomoyo.h"
 +#include "realpath.h"
 +
-+/***** KEYWORDS for mount restrictions. *****/
++/*************************  AUDIT FUNCTIONS  *************************/
 +
-+#define MOUNT_BIND_KEYWORD    	      "--bind"
-+#define MOUNT_MOVE_KEYWORD    	      "--move"
-+#define MOUNT_REMOUNT_KEYWORD 	      "--remount"
-+#define MOUNT_MAKE_UNBINDABLE_KEYWORD "--make-unbindable"
-+#define MOUNT_MAKE_PRIVATE_KEYWORD    "--make-private"
-+#define MOUNT_MAKE_SLAVE_KEYWORD      "--make-slave"
-+#define MOUNT_MAKE_SHARED_KEYWORD     "--make-shared"
-+
-+/***** The structure for mount restrictions. *****/
-+
-+struct mount_entry {
-+	struct list_head list;
-+	const struct path_info *dev_name;
-+	const struct path_info *dir_name;
-+	const struct path_info *fs_type;
-+	unsigned int flags; /* Mount flags. */
-+	bool is_deleted;
-+};
-+
-+struct no_umount_entry {
-+	struct list_head list;
-+	const struct path_info *dir;
-+	bool is_deleted;
-+};
-+
-+/************************  MOUNT RESTRICTION HANDLER  ************************/
-+
-+static LIST_HEAD(mount_list);
-+
-+/* Add or remove a mount entry. */
-+static int tmy_add_mount_acl(const char *dev_name,
-+			     const char *dir_name,
-+			     const char *fs_type,
-+			     const unsigned int flags,
-+			     const bool is_delete)
++static int tmy_audit_signal_log(const int signal,
++				const struct path_info *dest_domain,
++				const bool is_granted,
++				const u8 profile,
++				const unsigned int mode)
 +{
-+	struct mount_entry *new_entry;
-+	struct mount_entry  *ptr;
-+	const struct path_info *fs;
-+	const struct path_info *dev;
-+	const struct path_info *dir;
-+	static DEFINE_MUTEX(mutex);
-+	int error = -ENOMEM;
++	char *buf;
++	int len;
 +
-+	fs = tmy_save_name(fs_type);
-+	if (!fs)
-+		return -EINVAL;
-+
-+	if (!dev_name)
-+		/* Map dev_name to "<NULL>" for if no dev_name given. */
-+		dev_name = "<NULL>";
-+	if (strcmp(fs->name, MOUNT_REMOUNT_KEYWORD) == 0)
-+		/* Fix dev_name to "any" for remount permission. */
-+		dev_name = "any";
-+	if (strcmp(fs->name, MOUNT_MAKE_UNBINDABLE_KEYWORD) == 0 ||
-+	    strcmp(fs->name, MOUNT_MAKE_PRIVATE_KEYWORD) == 0 ||
-+	    strcmp(fs->name, MOUNT_MAKE_SLAVE_KEYWORD) == 0 ||
-+	    strcmp(fs->name, MOUNT_MAKE_SHARED_KEYWORD) == 0)
-+		dev_name = "any";
-+
-+	if (!tmy_correct_path(dev_name, 0, 0, 0, __FUNCTION__) ||
-+	    !tmy_correct_path(dir_name, 1, 0, 1, __FUNCTION__))
-+		return -EINVAL;
-+
-+	dev = tmy_save_name(dev_name);
-+	if (!dev)
-+		return -ENOMEM;
-+	dir = tmy_save_name(dir_name);
-+	if (!dir)
-+		return -ENOMEM;
-+
-+	mutex_lock(&mutex);
-+
-+	list_for_each_entry(ptr, &mount_list, list) {
-+		if (ptr->flags != flags ||
-+		    tmy_pathcmp(ptr->dev_name, dev) ||
-+		    tmy_pathcmp(ptr->dir_name, dir) ||
-+		    tmy_pathcmp(ptr->fs_type, fs))
-+			continue;
-+		ptr->is_deleted = is_delete;
-+		error = 0;
-+		goto out;
-+	}
-+
-+	if (is_delete) {
-+		error = -ENOENT;
-+		goto out;
-+	}
-+
-+	new_entry = tmy_alloc_element(sizeof(*new_entry));
-+	if (!new_entry)
-+		goto out;
-+
-+	new_entry->dev_name = dev;
-+	new_entry->dir_name = dir;
-+	new_entry->fs_type = fs;
-+	new_entry->flags = flags;
-+	list_add_tail_mb(&new_entry->list, &mount_list);
-+	error = 0;
-+out: ;
-+	mutex_unlock(&mutex);
-+	return error;
-+}
-+
-+/* Print error message for mount request. */
-+static inline int tmy_mount_perm_error(char *dev_name,
-+				       char *dir_name,
-+				       char *type,
-+				       unsigned long flags,
-+				       const u8 profile,
-+				       const unsigned int mode)
-+{
-+	int error = -EPERM;
-+	const char *realname1 = tmy_realpath(dev_name);
-+	const char *realname2 = tmy_realpath(dir_name);
-+	const char *exename = tmy_get_exe();
-+	const bool is_enforce = (mode == 3);
-+
-+	if (!strcmp(type, MOUNT_REMOUNT_KEYWORD)) {
-+		tmy_audit(KERN_WARNING "TOMOYO-%s: mount -o remount %s 0x%lX "
-+			  "(pid=%d:exe=%s): Permission denied.\n",
-+			  tmy_getmsg(is_enforce),
-+			  realname2 ? realname2 : dir_name, flags,
-+			  current->pid, exename);
-+		if (is_enforce &&
-+		    !tmy_supervisor("# %s is requesting\nmount -o remount %s\n",
-+				    exename, realname2 ? realname2 : dir_name))
-+			error = 0;
-+
-+	} else if (!strcmp(type, MOUNT_BIND_KEYWORD) ||
-+		   !strcmp(type, MOUNT_MOVE_KEYWORD)) {
-+		tmy_audit(KERN_WARNING "TOMOYO-%s: mount %s %s %s 0x%lX "
-+			  "(pid=%d:exe=%s): Permission denied.\n",
-+			  tmy_getmsg(is_enforce), type,
-+			  realname1 ? realname1 : dev_name,
-+			  realname2 ? realname2 : dir_name,
-+			  flags, current->pid, exename);
-+		if (is_enforce &&
-+		    tmy_supervisor("# %s is requesting\nmount %s %s %s 0x%lX\n",
-+				   exename, type,
-+				   realname1 ? realname1 : dev_name,
-+				   realname2 ? realname2 : dir_name,
-+				   flags) == 0)
-+			error = 0;
-+
-+	} else if (!strcmp(type, MOUNT_MAKE_UNBINDABLE_KEYWORD) ||
-+		   !strcmp(type, MOUNT_MAKE_PRIVATE_KEYWORD) ||
-+		   !strcmp(type, MOUNT_MAKE_SLAVE_KEYWORD) ||
-+		   !strcmp(type, MOUNT_MAKE_SHARED_KEYWORD)) {
-+		tmy_audit(KERN_WARNING "TOMOYO-%s: mount %s %s 0x%lX "
-+			  "(pid=%d:exe=%s): Permission denied.\n",
-+			  tmy_getmsg(is_enforce), type,
-+			  realname2 ? realname2 : dir_name,
-+			  flags, current->pid, exename);
-+		if (is_enforce &&
-+		    tmy_supervisor("# %s is requesting\nmount %s %s 0x%lX",
-+				   exename, type,
-+				   realname2 ? realname2 : dir_name,
-+				   flags) == 0)
-+			error = 0;
-+
++	if (is_granted) {
++		if (!tmy_audit_grant())
++			return 0;
 +	} else {
-+		tmy_audit(KERN_WARNING "TOMOYO-%s: mount -t %s %s %s 0x%lX "
-+			  "(pid=%d:exe=%s): Permission denied.\n",
-+			  tmy_getmsg(is_enforce), type,
-+			  realname1 ? realname1 : dev_name,
-+			  realname2 ? realname2 : dir_name,
-+			  flags, current->pid, exename);
-+		if (is_enforce &&
-+		    tmy_supervisor("# %s is requesting\n"
-+				   "mount -t %s %s %s 0x%lX\n",
-+				   exename, type,
-+				   realname1 ? realname1 : dev_name,
-+				   realname2 ? realname2 : dir_name,
-+				   flags) == 0)
-+			error = 0;
-+
++		if (!tmy_audit_reject())
++			return 0;
 +	}
 +
-+	tmy_free(exename);
-+	tmy_free(realname2);
-+	tmy_free(realname1);
-+	return error;
-+}
++	len = dest_domain->total_len;
++	buf = tmy_init_audit_log(&len, profile, mode);
 +
-+/**
-+ * tmy_mount_perm - check for mount permission.
-+ * @dev_name: pointer to device name. May be NULL.
-+ * @dir_name: pointer to mount point.
-+ * @type:     pointer to filesystem. May be NULL.
-+ * @flags:    mount flags.
-+ *
-+ * Returns zero if permission granted.
-+ * Returns nonzero if permission denied.
-+ */
-+int tmy_mount_perm(char *dev_name,
-+		   char *dir_name,
-+		   char *type,
-+		   unsigned long flags)
-+{
-+	const u8 profile = TMY_SECURITY->domain->profile;
-+	const unsigned int mode = tmy_flags(TMY_RESTRICT_MOUNT);
-+	const bool is_enforce = (mode == 3);
-+	int error = -EPERM;
-+
-+	if (!mode)
-+		return 0;
-+	if (!type)
-+		type = "<NULL>";
-+	if ((flags & MS_MGC_MSK) == MS_MGC_VAL)
-+		flags &= ~MS_MGC_MSK;
-+
-+	switch (flags & (MS_REMOUNT | MS_MOVE | MS_BIND)) {
-+	case MS_REMOUNT:
-+	case MS_MOVE:
-+	case MS_BIND:
-+	case 0:
-+		break;
-+	default:
-+		tmy_audit(KERN_WARNING "TOMOYO-ERROR: %s%s%sare given "
-+			  "for single mount operation.\n",
-+			  flags & MS_REMOUNT ? "'remount' " : "",
-+			  flags & MS_MOVE    ? "'move' " : "",
-+			  flags & MS_BIND    ? "'bind' " : "");
-+		return -EINVAL;
-+	}
-+
-+	switch (flags & (MS_UNBINDABLE | MS_PRIVATE | MS_SLAVE | MS_SHARED)) {
-+	case MS_UNBINDABLE:
-+	case MS_PRIVATE:
-+	case MS_SLAVE:
-+	case MS_SHARED:
-+	case 0:
-+		break;
-+	default:
-+		tmy_audit(KERN_WARNING "TOMOYO-ERROR: %s%s%s%sare given "
-+			  "for single mount operation.\n",
-+			  flags & MS_UNBINDABLE ? "'unbindable' " : "",
-+			  flags & MS_PRIVATE    ? "'private' " : "",
-+			  flags & MS_SLAVE      ? "'slave' " : "",
-+			  flags & MS_SHARED     ? "'shared' " : "");
-+		return -EINVAL;
-+	}
-+
-+	if (flags & MS_REMOUNT)
-+		error = tmy_mount_perm(dev_name, dir_name,
-+				       MOUNT_REMOUNT_KEYWORD,
-+				       flags & ~MS_REMOUNT);
-+	else if (flags & MS_MOVE)
-+		error = tmy_mount_perm(dev_name, dir_name,
-+				       MOUNT_MOVE_KEYWORD,
-+				       flags & ~MS_MOVE);
-+	else if (flags & MS_BIND)
-+		error = tmy_mount_perm(dev_name, dir_name,
-+				       MOUNT_BIND_KEYWORD,
-+				       flags & ~MS_BIND);
-+	else if (flags & MS_UNBINDABLE)
-+		error = tmy_mount_perm(dev_name, dir_name,
-+				       MOUNT_MAKE_UNBINDABLE_KEYWORD,
-+				       flags & ~MS_UNBINDABLE);
-+	else if (flags & MS_PRIVATE)
-+		error = tmy_mount_perm(dev_name, dir_name,
-+				       MOUNT_MAKE_PRIVATE_KEYWORD,
-+				       flags & ~MS_PRIVATE);
-+	else if (flags & MS_SLAVE)
-+		error = tmy_mount_perm(dev_name, dir_name,
-+				       MOUNT_MAKE_SLAVE_KEYWORD,
-+				       flags & ~MS_SLAVE);
-+	else if (flags & MS_SHARED)
-+		error = tmy_mount_perm(dev_name, dir_name,
-+				       MOUNT_MAKE_SHARED_KEYWORD,
-+				       flags & ~MS_SHARED);
-+	else {
-+		struct mount_entry *ptr;
-+		struct file_system_type *fstype = NULL;
-+		const char *requested_dir_name = NULL;
-+		const char *requested_dev_name = NULL;
-+		struct path_info rdev;
-+		struct path_info rdir;
-+		int need_dev = 0;
-+
-+		requested_dir_name = tmy_realpath(dir_name);
-+		if (!requested_dir_name) {
-+			error = -ENOENT;
-+			goto cleanup;
-+		}
-+		rdir.name = requested_dir_name;
-+		tmy_fill_path_info(&rdir);
-+
-+		/* Compare fs name. */
-+		fstype = get_fs_type(type);
-+		if (strcmp(type, MOUNT_REMOUNT_KEYWORD) == 0)
-+			/* Needn't to resolve dev_name */;
-+		else if (strcmp(type, MOUNT_MAKE_UNBINDABLE_KEYWORD) == 0 ||
-+			 strcmp(type, MOUNT_MAKE_PRIVATE_KEYWORD) == 0 ||
-+			 strcmp(type, MOUNT_MAKE_SLAVE_KEYWORD) == 0 ||
-+			 strcmp(type, MOUNT_MAKE_SHARED_KEYWORD) == 0)
-+			/* Needn't to resolve dev_name */;
-+		else if (strcmp(type, MOUNT_BIND_KEYWORD) == 0 ||
-+			 strcmp(type, MOUNT_MOVE_KEYWORD) == 0) {
-+			requested_dev_name = tmy_realpath(dev_name);
-+			if (!requested_dev_name) {
-+				error = -ENOENT;
-+				goto cleanup;
-+			}
-+			rdev.name = requested_dev_name;
-+			tmy_fill_path_info(&rdev);
-+			need_dev = -1;
-+		} else if (fstype) {
-+			if (fstype->fs_flags & FS_REQUIRES_DEV) {
-+				requested_dev_name = tmy_realpath(dev_name);
-+				if (!requested_dev_name) {
-+					error = -ENOENT;
-+					goto cleanup;
-+				}
-+				rdev.name = requested_dev_name;
-+				tmy_fill_path_info(&rdev);
-+				need_dev = 1;
-+			}
-+		} else {
-+			error = -ENODEV;
-+			goto cleanup;
-+		}
-+
-+		list_for_each_entry(ptr, &mount_list, list) {
-+			if (ptr->is_deleted)
-+				continue;
-+
-+			/* Compare options */
-+			if (ptr->flags != flags)
-+				continue;
-+
-+			/* Compare fs name. */
-+			if (strcmp(type, ptr->fs_type->name))
-+				continue;
-+
-+			/* Compare mount point. */
-+			if (tmy_path_match(&rdir, ptr->dir_name) == 0)
-+				continue;
-+
-+			/* Compare device name. */
-+			if (requested_dev_name &&
-+			    tmy_path_match(&rdev, ptr->dev_name) == 0)
-+				continue;
-+
-+			/* OK. */
-+			error = 0;
-+
-+			if (need_dev > 0)
-+				tmy_audit(KERN_DEBUG "TOMOYO-NOTICE: "
-+					  "'mount -t %s %s %s 0x%lX' "
-+					  "accepted.\n",
-+					  type, requested_dev_name,
-+					  requested_dir_name, flags);
-+			else if (need_dev < 0)
-+				tmy_audit(KERN_DEBUG "TOMOYO-NOTICE: "
-+					  "'mount %s %s %s 0x%lX' accepted.\n",
-+					  type, requested_dev_name,
-+					  requested_dir_name, flags);
-+			else if (!strcmp(type, MOUNT_REMOUNT_KEYWORD))
-+				tmy_audit(KERN_DEBUG "TOMOYO-NOTICE: "
-+					  "'mount -o remount %s 0x%lX' "
-+					  "accepted.\n",
-+					  requested_dir_name, flags);
-+			else if (!strcmp(type, MOUNT_MAKE_UNBINDABLE_KEYWORD) ||
-+				 !strcmp(type, MOUNT_MAKE_PRIVATE_KEYWORD) ||
-+				 !strcmp(type, MOUNT_MAKE_SLAVE_KEYWORD) ||
-+				 !strcmp(type, MOUNT_MAKE_SHARED_KEYWORD))
-+				tmy_audit(KERN_DEBUG "TOMOYO-NOTICE: "
-+					  "'mount %s %s 0x%lX' accepted.\n",
-+					  type, requested_dir_name, flags);
-+			else
-+				tmy_audit(KERN_DEBUG "TOMOYO-NOTICE: "
-+					  "'mount %s on %s 0x%lX' accepted.\n",
-+					  type, requested_dir_name, flags);
-+			break;
-+		}
-+
-+		if (error)
-+			error = tmy_mount_perm_error(dev_name, dir_name, type,
-+						     flags, profile, mode);
-+
-+		if (error && mode == 1) {
-+			tmy_add_mount_acl(need_dev ?
-+					  requested_dev_name : dev_name,
-+					  requested_dir_name, type, flags, 0);
-+			tmy_update_counter(TMY_UPDATE_SYSTEMPOLICY);
-+		}
-+
-+cleanup:
-+		tmy_free(requested_dev_name);
-+		tmy_free(requested_dir_name);
-+		if (fstype)
-+			put_filesystem(fstype);
-+
-+	}
-+
-+	if (!is_enforce)
-+		error = 0;
-+	return error;
-+
-+}
-+
-+/**
-+ * tmy_add_mount_policy - add or delete mount policy.
-+ * @data:      a line to parse.
-+ * @is_delete: is this delete request?
-+ *
-+ * Returns zero on success.
-+ * Returns nonzero on failure.
-+ */
-+int tmy_add_mount_policy(char *data, const bool is_delete)
-+{
-+	char *cp;
-+	char *cp2;
-+	const char *fs;
-+	const char *dev;
-+	const char *dir;
-+	unsigned int flags = 0;
-+
-+	cp2 = data;
-+	cp = strchr(cp2, ' ');
-+	if (!cp)
-+		return -EINVAL;
-+	*cp = '\0';
-+	dev = cp2;
-+
-+	cp2 = cp + 1;
-+	cp = strchr(cp2, ' ');
-+	if (!cp)
-+		return -EINVAL;
-+	*cp = '\0';
-+	dir = cp2;
-+
-+	cp2 = cp + 1;
-+	cp = strchr(cp2, ' ');
-+	if (!cp)
-+		return -EINVAL;
-+	*cp = '\0';
-+	fs = cp2;
-+
-+	flags = simple_strtoul(cp + 1, NULL, 0);
-+	return tmy_add_mount_acl(dev, dir, fs, flags, is_delete);
-+}
-+
-+/**
-+ * tmy_read_mount_policy - read mount policy.
-+ * @head: pointer to "struct io_buffer".
-+ *
-+ * Returns nonzero if reading incomplete.
-+ * Returns zero otherwise.
-+ */
-+int tmy_read_mount_policy(struct io_buffer *head)
-+{
-+	struct list_head *pos;
-+	list_for_each_cookie(pos, head->read_var2, &mount_list) {
-+		struct mount_entry *ptr;
-+		ptr = list_entry(pos, struct mount_entry, list);
-+		if (ptr->is_deleted)
-+			continue;
-+		if (tmy_io_printf(head, TMY_ALLOW_MOUNT "%s %s %s 0x%x\n",
-+				  ptr->dev_name->name, ptr->dir_name->name,
-+				  ptr->fs_type->name, ptr->flags))
-+			return -ENOMEM;
-+	}
-+	return 0;
-+}
-+
-+static int tmy_find_conceal(struct nameidata *nd,
-+			    struct vfsmount *vfsmnt,
-+			    struct dentry *dentry)
-+{
-+	int flag = 0;
-+
-+	if (IS_ROOT(dentry) || !d_unhashed(dentry)) {
-+		while (1) {
-+
-+			if (nd->path.mnt->mnt_root == vfsmnt->mnt_root &&
-+			    nd->path.dentry == dentry) {
-+				flag = 1;
-+				break;
-+			}
-+
-+			if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
-+
-+				spin_lock(&vfsmount_lock);
-+
-+				if (vfsmnt->mnt_parent == vfsmnt) {
-+					spin_unlock(&vfsmount_lock);
-+					break;
-+				}
-+				dentry = vfsmnt->mnt_mountpoint;
-+				vfsmnt = vfsmnt->mnt_parent;
-+
-+				spin_unlock(&vfsmount_lock);
-+
-+				continue;
-+			}
-+			dentry = dentry->d_parent;
-+
-+		}
-+	}
-+
-+	return flag;
-+}
-+
-+/**
-+ * tmy_conceal_mount - check for conceal mount permission.
-+ * @nd: pointer to "struct nameidata".
-+ *
-+ * Returns zero if permission granted.
-+ * Returns nonzero if permission denied.
-+ *
-+ * People seldom mount on directries that have submounts.
-+ * For example, you don't mount on /usr/ directory if /usr/local/ directory
-+ * is already mounted, do you?
-+ * This function forbids such mount requests.
-+ */
-+int tmy_conceal_mount(struct nameidata *nd)
-+{
-+	int flag = 0;
-+	const unsigned int mode = tmy_flags(TMY_DENY_CONCEAL_MOUNT);
-+	const bool is_enforce = (mode == 3);
-+	struct mnt_namespace *namespace = current->nsproxy->mnt_ns;
-+
-+	if (!mode)
-+		return 0;
-+
-+	if (namespace) {
-+		struct list_head *p;
-+
-+		list_for_each(p, &namespace->list) {
-+			struct vfsmount *vfsmnt =
-+				list_entry(p, struct vfsmount, mnt_list);
-+			struct dentry *dentry = vfsmnt->mnt_root;
-+
-+			spin_lock(&dcache_lock);
-+
-+			flag = tmy_find_conceal(nd, vfsmnt, dentry);
-+
-+			spin_unlock(&dcache_lock);
-+
-+			if (flag)
-+				break;
-+		}
-+	}
-+
-+
-+	if (flag) {
-+		int error = -EPERM;
-+		char *dir;
-+		dir = tmy_realpath_dentry(nd->path.dentry, nd->path.mnt);
-+		if (dir) {
-+			const char *exename = tmy_get_exe();
-+			tmy_audit("TOMOYO-%s: mount %s (pid=%d:exe=%s): "
-+				  "Permission denied.\n",
-+				  tmy_getmsg(is_enforce),
-+				  dir, current->pid, exename);
-+			if (is_enforce &&
-+			    tmy_supervisor("# %s is requesting\nmount on %s\n",
-+					   exename, dir) == 0)
-+				error = 0;
-+
-+			tmy_free(exename);
-+		}
-+		tmy_free(dir);
-+
-+		if (is_enforce)
-+			return error;
-+	}
-+
-+	return 0;
-+}
-+
-+/************************  UMOUNT RESTRICTION HANDLER  ************************/
-+
-+static LIST_HEAD(no_umount_list);
-+
-+/* Add or remove a no-unmount entry. */
-+static int tmy_add_no_umount_acl(const char *dir, const bool is_delete)
-+{
-+	struct no_umount_entry *new_entry;
-+	struct no_umount_entry *ptr;
-+	const struct path_info *saved_dir;
-+	static DEFINE_MUTEX(mutex);
-+	int error = -ENOMEM;
-+
-+	if (!tmy_correct_path(dir, 1, 0, 1, __FUNCTION__))
-+		return -EINVAL;
-+	saved_dir = tmy_save_name(dir);
-+	if (!saved_dir)
++	if (!buf)
 +		return -ENOMEM;
 +
-+	mutex_lock(&mutex);
++	snprintf(buf + strlen(buf),
++		 len - strlen(buf) - 1,
++		 "%s%d %s\n",
++		 TMY_ALLOW_SIGNAL, signal, dest_domain->name);
 +
-+	list_for_each_entry(ptr, &no_umount_list, list) {
-+		if (ptr->dir == saved_dir) {
-+			ptr->is_deleted = is_delete;
++	return tmy_write_audit_log(buf, is_granted);
++}
++
++/*************************  SIGNAL ACL HANDLER  *************************/
++
++static int tmy_add_signal_entry(const u16 sig, const char *dest_pattern,
++				struct domain_info *domain,
++				const struct condition_list *cond,
++				const bool is_delete)
++{
++	struct acl_info *ptr;
++	struct signal_acl *acl;
++	const struct path_info *saved_dest_pattern;
++	int error = -ENOMEM;
++
++	if (!domain)
++		return -EINVAL;
++	if (!dest_pattern ||
++	    !tmy_is_correct_domain(dest_pattern, __FUNCTION__))
++		return -EINVAL;
++
++	saved_dest_pattern = tmy_save_name(dest_pattern);
++	if (!saved_dest_pattern)
++		return -ENOMEM;
++
++	mutex_lock(&domain_acl_lock);
++
++	if (is_delete)
++		goto remove;
++
++	list_for_each_entry(ptr, &domain->acl_info_list, list) {
++		acl = (struct signal_acl *) ptr;
++
++		if (ptr->type == TMY_TYPE_SIGNAL_ACL && acl->sig == sig
++		    && ptr->cond == cond
++		    && !tmy_pathcmp(acl->domainname, saved_dest_pattern)) {
++			ptr->is_deleted = 0;
++			/* Found. Nothing to do. */
 +			error = 0;
-+			goto out;
++			goto ok;
 +		}
 +	}
++	/* Not found. Append it to the tail. */
++	acl = tmy_alloc_element(sizeof(*acl));
++	if (!acl)
++		goto ok;
 +
-+	if (is_delete) {
-+		error = -ENOENT;
-+		goto out;
++	acl->head.type = TMY_TYPE_SIGNAL_ACL;
++	acl->head.cond = cond;
++	acl->sig = sig;
++	acl->domainname = saved_dest_pattern;
++	error = tmy_add_acl(domain, (struct acl_info *) acl);
++	goto ok;
++remove: ;
++	error = -ENOENT;
++	list_for_each_entry(ptr, &domain->acl_info_list, list) {
++		acl = (struct signal_acl *) ptr;
++		if (ptr->type != TMY_TYPE_SIGNAL_ACL || ptr->cond != cond ||
++		    ptr->is_deleted || acl->sig != sig ||
++		    tmy_pathcmp(acl->domainname, saved_dest_pattern))
++			continue;
++		error = tmy_del_acl(ptr);
++		break;
 +	}
 +
-+	new_entry = tmy_alloc_element(sizeof(*new_entry));
-+	if (!new_entry)
-+		goto out;
-+
-+	new_entry->dir = saved_dir;
-+	list_add_tail_mb(&new_entry->list, &no_umount_list);
-+	error = 0;
-+out: ;
-+
-+	mutex_unlock(&mutex);
++ok: ;
++	mutex_unlock(&domain_acl_lock);
 +
 +	return error;
 +}
 +
 +/**
-+ * tmy_umount_perm - check for no-unmount permission.
-+ * @mnt: pointer to "struct vfsmount".
++ * tmy_signal_acl - check permission for kill(2)/tkill(2)/tgkill(2).
++ * @sig:  signal number.
++ * @pid:  pid of destination process.
 + *
 + * Returns zero if permission granted.
 + * Returns nonzero if permission denied.
 + */
-+int tmy_umount_perm(struct vfsmount *mnt)
++int tmy_signal_acl(const int sig, const int pid)
 +{
-+	int error = -EPERM;
-+	const char *dir0;
-+	const unsigned int mode = tmy_flags(TMY_RESTRICT_UMOUNT);
++	struct domain_info *domain = TMY_SECURITY->domain;
++	struct domain_info *dest = NULL;
++	const char *dest_pattern;
++	struct acl_info *ptr;
++	const u16 hash = sig;
++	const u8 profile = domain->profile;
++	const unsigned int mode = tmy_flags(TMY_MAC_FOR_SIGNAL);
 +	const bool is_enforce = (mode == 3);
++	bool found = 0;
 +
 +	if (!mode)
 +		return 0;
++	if (!sig)
++		return 0; /* No check for NULL signal. */
++	if (current->pid == pid) {
++		tmy_audit_signal_log(sig, domain->domainname, 1, profile, mode);
++		return 0; /* No check for self. */
++	}
 +
-+	dir0 = tmy_realpath_dentry(mnt->mnt_root, mnt);
++	{ /* Simplified checking. */
++		struct task_struct *p = NULL;
++		read_lock(&tasklist_lock);
++		if (pid > 0)
++			p = find_task_by_pid((pid_t) pid);
++		else if (pid == 0)
++			p = current;
++		else if (pid == -1)
++			dest = &KERNEL_DOMAIN;
++		else
++			p = find_task_by_pid((pid_t) -pid);
++		if (p)
++			/* "struct task_struct"->security is not NULL. */
++			dest = ((struct tmy_security *) p->security)->domain;
++		read_unlock(&tasklist_lock);
++		if (!dest)
++			return 0; /* I can't find destinatioin. */
++	}
 +
-+	if (dir0) {
-+		struct no_umount_entry *ptr;
-+		struct path_info dir;
-+		bool found = 0;
++	if (domain == dest) {
++		tmy_audit_signal_log(sig, dest->domainname, 1, profile, mode);
++		return 0;
++	}
 +
-+		dir.name = dir0;
-+		tmy_fill_path_info(&dir);
++	dest_pattern = dest->domainname->name;
++	list_for_each_entry(ptr, &domain->acl_info_list, list) {
++		struct signal_acl *acl = (struct signal_acl *) ptr;
 +
-+		list_for_each_entry(ptr, &no_umount_list, list) {
-+			if (ptr->is_deleted)
-+				continue;
-+			if (tmy_path_match(&dir, ptr->dir)) {
++		if (ptr->type == TMY_TYPE_SIGNAL_ACL && ptr->is_deleted == 0
++		    && acl->sig == hash &&
++		    tmy_check_condition(ptr->cond, NULL) == 0) {
++			const int len = acl->domainname->total_len;
++
++			if (strncmp(acl->domainname->name,
++				    dest_pattern, len) == 0
++			    && (dest_pattern[len] == ' ' ||
++				dest_pattern[len] == '\0')) {
 +				found = 1;
 +				break;
 +			}
 +		}
-+
-+		if (found) {
-+			const char *exename = tmy_get_exe();
-+			tmy_audit("TOMOYO-%s: umount %s (pid=%d:exe=%s): "
-+				  "Permission denied.\n",
-+				  tmy_getmsg(is_enforce),
-+				  dir0, current->pid, exename);
-+			if (is_enforce &&
-+			    tmy_supervisor("# %s is requesting\nunmount %s\n",
-+					   exename, dir0) == 0)
-+				error = 0;
-+
-+			tmy_free(exename);
-+		} else {
-+			error = 0;
-+		}
-+
-+		tmy_free(dir0);
 +	}
 +
-+	if (!is_enforce)
-+		error = 0;
-+	return error;
-+}
++	tmy_audit_signal_log(sig, dest->domainname, found, profile, mode);
 +
-+/**
-+ * tmy_add_no_umount_policy - add or delete no-unmount policy.
-+ * @data:      a line to parse.
-+ * @is_delete: is this delete request?
-+ *
-+ * Returns zero on success.
-+ * Returns nonzero on failure.
-+ */
-+int tmy_add_no_umount_policy(char *data, const bool is_delete)
-+{
-+	return tmy_add_no_umount_acl(data, is_delete);
-+}
-+
-+/**
-+ * tmy_read_no_umount_policy - read no-unmount policy.
-+ * @head: pointer to "struct io_buffer".
-+ *
-+ * Returns nonzero if reading incomplete.
-+ * Returns zero otherwise.
-+ */
-+int tmy_read_no_umount_policy(struct io_buffer *head)
-+{
-+	struct list_head *pos;
-+	list_for_each_cookie(pos, head->read_var2, &no_umount_list) {
-+		struct no_umount_entry *ptr;
-+		ptr = list_entry(pos, struct no_umount_entry, list);
-+		if (ptr->is_deleted)
-+			continue;
-+		if (tmy_io_printf(head, TMY_DENY_UNMOUNT "%s\n",
-+				  ptr->dir->name))
-+			return -ENOMEM;
-+	}
-+	return 0;
-+}
-+
-+/***** The structure for pivot_root restrictions. *****/
-+
-+struct pivot_root_entry {
-+	struct list_head list;
-+	const struct path_info *old_root;
-+	const struct path_info *new_root;
-+	bool is_deleted;
-+};
-+
-+/**********************  PIVOT_ROOT RESTRICTION HANDLER  **********************/
-+
-+static LIST_HEAD(pivot_root_list);
-+
-+/* Add or remove a pivot_root entry. */
-+static int tmy_add_pivot_root_acl(const char *old_root,
-+				  const char *new_root,
-+				  const bool is_delete)
-+{
-+	struct pivot_root_entry *new_entry;
-+	struct pivot_root_entry *ptr;
-+	const struct path_info *saved_old_root;
-+	const struct path_info *saved_new_root;
-+	static DEFINE_MUTEX(mutex);
-+	int error = -ENOMEM;
-+
-+	if (!tmy_correct_path(old_root, 1, 0, 1, __FUNCTION__) ||
-+	    !tmy_correct_path(new_root, 1, 0, 1, __FUNCTION__))
-+		return -EINVAL;
-+
-+	saved_old_root = tmy_save_name(old_root);
-+	if (!saved_old_root)
-+		return -ENOMEM;
-+	saved_new_root = tmy_save_name(new_root);
-+	if (!saved_new_root)
-+		return -ENOMEM;
-+
-+	mutex_lock(&mutex);
-+
-+	list_for_each_entry(ptr, &pivot_root_list, list) {
-+		if (ptr->old_root == saved_old_root &&
-+		    ptr->new_root == saved_new_root) {
-+			ptr->is_deleted = is_delete;
-+			error = 0;
-+			goto out;
-+		}
-+	}
-+
-+	if (is_delete) {
-+		error = -ENOENT;
-+		goto out;
-+	}
-+
-+	new_entry = tmy_alloc_element(sizeof(*new_entry));
-+	if (!new_entry)
-+		goto out;
-+
-+	new_entry->old_root = saved_old_root;
-+	new_entry->new_root = saved_new_root;
-+	list_add_tail_mb(&new_entry->list, &pivot_root_list);
-+	error = 0;
-+out: ;
-+
-+	mutex_unlock(&mutex);
-+
-+	return error;
-+}
-+
-+/**
-+ * tmy_pivot_root_perm - check for pivot_root permission.
-+ * @old_nd:  pointer to "struct nameidata".
-+ * @new_nd:  pointer to "struct nameidata".
-+ *
-+ * Returns zero if permission granted.
-+ * Returns nonzero if permission denied.
-+ */
-+int tmy_pivot_root_perm(struct nameidata *old_nd, struct nameidata *new_nd)
-+{
-+	int error = -EPERM;
-+	const unsigned int mode = tmy_flags(TMY_RESTRICT_PIVOT_ROOT);
-+	const bool is_enforce = (mode == 3);
-+	char *old_root;
-+	char *new_root;
-+	struct path_info old_root_dir;
-+	struct path_info new_root_dir;
-+
-+	if (!mode)
++	if (found)
 +		return 0;
 +
-+	old_root = tmy_realpath_dentry(old_nd->path.dentry, old_nd->path.mnt);
-+	new_root = tmy_realpath_dentry(new_nd->path.dentry, new_nd->path.mnt);
++	if (tmy_flags(TMY_VERBOSE))
++		tmy_audit("TOMOYO-%s: Signal %d to %s denied for %s\n",
++			  tmy_getmsg(is_enforce), sig,
++			  tmy_lastname(dest), tmy_lastname(domain));
 +
-+	if (!old_root || !new_root)
-+		goto out;
++	if (is_enforce)
++		return tmy_supervisor("%s\n" TMY_ALLOW_SIGNAL "%d %s\n",
++				      domain->domainname->name,
++				      sig, dest_pattern);
++	if (mode == 1 && tmy_quota())
++		tmy_add_signal_entry(sig, dest_pattern, domain, NULL, 0);
 +
-+	old_root_dir.name = old_root;
-+	tmy_fill_path_info(&old_root_dir);
-+	new_root_dir.name = new_root;
-+	tmy_fill_path_info(&new_root_dir);
-+
-+	if (old_root_dir.is_dir && new_root_dir.is_dir) {
-+		struct pivot_root_entry *ptr;
-+		list_for_each_entry(ptr, &pivot_root_list, list) {
-+			if (ptr->is_deleted)
-+				continue;
-+			if (tmy_path_match(&old_root_dir, ptr->old_root) &&
-+			    tmy_path_match(&new_root_dir, ptr->new_root)) {
-+				error = 0;
-+				break;
-+			}
-+		}
-+	}
-+
-+out: ;
-+	if (error) {
-+		const char *exename = tmy_get_exe();
-+		tmy_audit("TOMOYO-%s: pivot_root %s %s (pid=%d:exe=%s): "
-+			  "Permission denied.\n", tmy_getmsg(is_enforce),
-+			  new_root, old_root, current->pid, exename);
-+		if (is_enforce &&
-+		    tmy_supervisor("# %s is requesting\npivot_root %s %s\n",
-+				   exename, new_root, old_root) == 0)
-+			error = 0;
-+
-+		if (exename)
-+			tmy_free(exename);
-+
-+		if (!is_enforce && mode == 1 && old_root && new_root) {
-+			tmy_add_pivot_root_acl(old_root, new_root, 0);
-+			tmy_update_counter(TMY_UPDATE_SYSTEMPOLICY);
-+		}
-+
-+		if (!is_enforce)
-+			error = 0;
-+	}
-+
-+	tmy_free(old_root);
-+	tmy_free(new_root);
-+	return error;
++	return 0;
 +}
 +
 +/**
-+ * tmy_add_pivot_root_policy - add or delete pivot_root policy.
++ * tmy_add_signal_policy - add or delete signal policy.
 + * @data:      a line to parse.
++ * @domain:    pointer to "struct domain_info".
++ * @cond:      pointer to "struct condition_list". May be NULL.
 + * @is_delete: is this delete request?
 + *
 + * Returns zero on success.
 + * Returns nonzero on failure.
 + */
-+int tmy_add_pivot_root_policy(char *data, const bool is_delete)
++int tmy_add_signal_policy(char *data,
++			  struct domain_info *domain,
++			  const struct condition_list *cond,
++			  const bool is_delete)
 +{
-+	char *cp = strchr(data, ' ');
++	int sig;
++	char *domainname = strchr(data, ' ');
 +
-+	if (!cp)
-+		return -EINVAL;
-+	*cp++ = '\0';
++	if (sscanf(data, "%d", &sig) == 1 && domainname &&
++	    tmy_is_domain_def(domainname + 1))
++		return tmy_add_signal_entry(sig, domainname + 1, domain,
++					    cond, is_delete);
 +
-+	return tmy_add_pivot_root_acl(cp, data, is_delete);
-+}
-+
-+/**
-+ * tmy_read_pivot_root_policy - read pivot_root policy.
-+ * @head: pointer to "struct io_buffer".
-+ *
-+ * Returns nonzero if reading incomplete.
-+ * Returns zero otherwise.
-+ */
-+int tmy_read_pivot_root_policy(struct io_buffer *head)
-+{
-+	struct list_head *pos;
-+	list_for_each_cookie(pos, head->read_var2, &pivot_root_list) {
-+		struct pivot_root_entry *ptr;
-+		ptr = list_entry(pos, struct pivot_root_entry, list);
-+		if (ptr->is_deleted)
-+			continue;
-+		if (tmy_io_printf(head, TMY_ALLOW_PIVOT_ROOT "%s %s\n",
-+				  ptr->new_root->name, ptr->old_root->name))
-+			return -ENOMEM;
-+	}
-+	return 0;
++	return -EINVAL;
 +}
 
 -- 
