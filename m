@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934522AbXKPAok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934560AbXKPAps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934522AbXKPAok (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 19:44:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756844AbXKPAoc
+	id S934560AbXKPAps (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 19:45:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766005AbXKPAph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 19:44:32 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:50212 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764101AbXKPAob (ORCPT
+	Thu, 15 Nov 2007 19:45:37 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50324 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1765796AbXKPApf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 19:44:31 -0500
-Date: Thu, 15 Nov 2007 16:38:36 -0800
-From: Greg KH <greg@kroah.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Subject: Re: broken suspend [Was: 2.6.24-rc2-mm1]
-Message-ID: <20071116003836.GA24490@kroah.com>
-References: <20071113175906.497a1a6a.akpm@linux-foundation.org> <473B5987.60904@gmail.com> <200711142248.59547.rjw@sisk.pl> <473CDD6D.8080008@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <473CDD6D.8080008@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 15 Nov 2007 19:45:35 -0500
+Date: Thu, 15 Nov 2007 16:44:41 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kevin Winchester <kjwinchester@gmail.com>
+Cc: apw@shadowen.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       kamalesh@linux.vnet.ibm.com, Andrew Morgan <morgan@kernel.org>
+Subject: Re: 2.6.24-rc2-mm1 -- strange apparent network failures
+Message-Id: <20071115164441.67a8e2df.akpm@linux-foundation.org>
+In-Reply-To: <200711152028.29734.kjwinchester@gmail.com>
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
+	<20071115100209.GB2513@shadowen.org>
+	<200711152028.29734.kjwinchester@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 16, 2007 at 12:59:41AM +0100, Jiri Slaby wrote:
-> On 11/14/2007 10:48 PM, Rafael J. Wysocki wrote:
-> > On Wednesday, 14 of November 2007, Jiri Slaby wrote:
-> >> On 11/14/2007 02:59 AM, Andrew Morton wrote:
-> >>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc2/2.6.24-rc2-mm1/
-> >> Doesn't suspend for me (neither broken-out-2007-11-13-04-14 did) on x86_64.
-> >> echo mem >/sys/power/state
-> >> causes shut down of disk(s) and blinking cursor on 1,1 position.
-> >> The last working was 2.6.23-rc8-mm2. I haven't tested
-> >> 2.6.23-mm1, since it didn't work for me.
-> > 
-> > Does the current mainline work?
-> 
-> Yes.
-> 
-> The offending -mm patch is
-> gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch
-> 
-> 2.6.24-rc2-mm1 minus it works just fine; PROVE_LOCKING shows nothing new when
-> the patch is applied.
+On Thu, 15 Nov 2007 20:28:29 -0400
+Kevin Winchester <kjwinchester@gmail.com> wrote:
 
-Thanks for tracking this down.  Alan, any thoughts?
+> On November 15, 2007 06:02:09 am Andy Whitcroft wrote:
+> > When testing some of the later 2.6.24-rc2-mm1+hotfix combinations on three
+> > of our test systems one job from each batch (1/4) failed.  In each case the
+> > machine appears to have booted normally all the way to a login: prompt.
+> > However in the failed boots the networking though apparently initialised
+> > completely and correctly (as far as I can tell from the console output), is
+> > reported as not responding to ssh connections.  The network interface seems
+> > to have been initialised on the right port, and the ssh daemons started.
+> >
+> > Two of the machines are powerpc boxes, the other an older x86_64.
+> > One machine is 4/4 in testing, just one.  Most of the other machines are
+> > still not able to compile this stack so do not contribute to our knowledge.
+> >
+> > Any ideas?
+> >
+> 
+> I see this as well - the computer boots fine but no network.  The only clues 
+> in the dmesg are:
+> 
+> [  294.097876] warning: process `dhclient' gets w/ old libcap
+> [  294.097893] warning: process `dhclient' sets w/ old libcap
+> 
+> So I'll try backing up the patch series to before:
+> 
+> add-64-bit-capability-support-to-the-kernel.patch
 
-thanks,
+Yes, that's a good one to suspect.
 
-greg k-h
+What a peculiar error message.
+
+> or so, and see if that's the problem.  If anyone has any other ideas, let me 
+> know.
+
