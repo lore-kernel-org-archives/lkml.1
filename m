@@ -1,39 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762123AbXKPRQM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762807AbXKPRQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762123AbXKPRQM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 12:16:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbXKPRP6
+	id S1762807AbXKPRQx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 12:16:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbXKPRQr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 12:15:58 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:37890 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753555AbXKPRP6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 12:15:58 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20071116163645.GA7855@fluff.org.uk>
-References: <20071116163645.GA7855@fluff.org.uk> <20071116134105.3823.66507.stgit@warthog.procyon.org.uk> <20071116134100.3823.12894.stgit@warthog.procyon.org.uk> <9004.1195229483@redhat.com>
-To: Ben Dooks <ben@fluff.org>
-Cc: dhowells@redhat.com, torvalds@osdl.org, akpm@linux-foundation.org,
-       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-       linux-am33-list@redhat.com
-Subject: Re: [PATCH 2/2] MN10300: Fix MTD JEDEC probe so that the ASB2303 bootprom can be detected
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Fri, 16 Nov 2007 17:15:20 +0000
-Message-ID: <9555.1195233320@redhat.com>
+	Fri, 16 Nov 2007 12:16:47 -0500
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:37838 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754628AbXKPRQq (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 12:16:46 -0500
+Date: Fri, 16 Nov 2007 12:16:29 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: "Nelson, Shannon" <shannon.nelson@intel.com>
+cc: linux-rt-users@vger.kernel.org, Linux-kernel@vger.kernel.org,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>
+Subject: Re: [PATCH][RT] 2.6.24-rc2-rt1 drivers/dma/ioat_dma.c compile fix
+In-Reply-To: <BAE9DCEF64577A439B3A37F36F9B691C0371E3E3@orsmsx418.amr.corp.intel.com>
+Message-ID: <Pine.LNX.4.58.0711161214480.24276@gandalf.stny.rr.com>
+References: <BAE9DCEF64577A439B3A37F36F9B691C0371E3E3@orsmsx418.amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Dooks <ben@fluff.org> wrote:
 
-> Often write protect on flash chips is a seperate pin that disables
-> the cell writing circuitry, not the nWE pin.
+On Fri, 16 Nov 2007, Nelson, Shannon wrote:
+> first->async_tx.phys;
+> > -       __list_splice(&new_chain, ioat_chan->used_desc.prev);
+> > +       list_splice_tail(&new_chain, ioat_chan->used_desc.prev);
+> >
+>
+> NAK.
+>
+> These functions do insertions differently.  The 'prev' is pointing to
+> the last valid descriptor in the queue and you really want to get the
+> new_chain stuck on after this.  Your list_splice_tail() will insert the
+> new_chain just before it which will muck up the order of the DMA
+> requests.
+>
+> You might have more success with
+> 	list_splice_tail(&new_chain, ioat_chan->used_desc);
+> where used_desc points to the whole list, rather than using the .prev
+> pointer to a specific node.
+>
+> Please copy me on future ioatdma related comments.
+>
 
-That may be true, but the board documentation in this particular case doesn't
-list any way of write-enabling the flash.  I have another, different board
-based on the same CPU that does have a write enable for its bootprom.
+And people wonder why we post RT related patches to LKML. This is exactly
+why!
 
-David
+Thanks for the response Shannon!
+
+-- Steve
+
