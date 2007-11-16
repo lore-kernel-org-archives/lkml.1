@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761140AbXKPJGO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761282AbXKPJRp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761140AbXKPJGO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 04:06:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752907AbXKPJF4
+	id S1761282AbXKPJRp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 04:17:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754365AbXKPJRb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 04:05:56 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43092
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752619AbXKPJFx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 04:05:53 -0500
-Date: Fri, 16 Nov 2007 01:05:48 -0800 (PST)
-Message-Id: <20071116.010548.94286711.davem@davemloft.net>
-To: the.sator@gmail.com
-Cc: kuznet@ms2.inr.ac.ru, linux-kernel@vger.kernel.org, jmorris@namei.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] net/ipv4/arp.c: Fix arp reply when sender ip 0
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <cac0ab7d0711160030w149c7a7s2db55ac56d0a05cc@mail.gmail.com>
-References: <cac0ab7d0711151340l1cc91a2dw5ebf36e166d16d7a@mail.gmail.com>
-	<20071115.152813.89410917.davem@davemloft.net>
-	<cac0ab7d0711160030w149c7a7s2db55ac56d0a05cc@mail.gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Nov 2007 04:17:31 -0500
+Received: from ns2.g-housing.de ([81.169.133.75]:42793 "EHLO mail.g-house.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754407AbXKPJRa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 04:17:30 -0500
+Message-ID: <59468.62.180.231.196.1195204637.squirrel@housecafe.dyndns.org>
+In-Reply-To: <20071116003410.GA16797@puku.stupidest.org>
+References: <20071114070400.GA25708@puku.stupidest.org>
+    <473AA72C.6020308@panasas.com> <20071114125907.GB4010@fieldses.org>
+    <alpine.DEB.0.99999.0711142317010.12443@sheep.housecafe.de>
+    <alpine.DEB.0.99999.0711150840340.12443@sheep.housecafe.de>
+    <20071116003410.GA16797@puku.stupidest.org>
+Date: Fri, 16 Nov 2007 10:17:17 +0100 (CET)
+Subject: Re: 2.6.24-rc2 XFS nfsd hang
+From: "Christian Kujau" <lists@nerdbynature.de>
+To: "Chris Wedgwood" <cw@f00f.org>
+Cc: "LKML" <linux-kernel@vger.kernel.org>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       "Benny Halevy" <bhalevy@panasas.com>, linux-xfs@oss.sgi.com
+User-Agent: SquirrelMail/1.5.2 [SVN]
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Jonas Danielsson" <the.sator@gmail.com>
-Date: Fri, 16 Nov 2007 09:30:11 +0100
+On Fri, November 16, 2007 01:34, Chris Wedgwood wrote:
+> I'm not sure what you're doing here, but a viable work-around for now
+> might be to use nfsv2 mounts, something like
+>
+> mount -o vers=2 ...
+> or to keep v3 and disable readdirplus doing something like:
+> mount -o vers=3,nordirplus ...
 
-> 2007/11/16, David Miller <davem@davemloft.net>:
-> > From: "Jonas Danielsson" <the.sator@gmail.com>
-> > Date: Thu, 15 Nov 2007 22:40:13 +0100
-> >
-> > > Is there a reason that the target hardware address isn't the target
-> > > hardware address?
-> >
-> 
-> 
-> > Because of this, in cases where a choice can be made Linux will
-> > advertise what is most likely to result in successful communication.
-> >
-> > This is likely why we are changing that target address to the one of
-> > the interface actually sending back the reply rather than the zero
-> > value you used.
-> >
-> > In fact I think this information can be useful to the sender of
-> > the DAD request.
-> >
-> 
-> There seem to be some confusion about what my patch really does. It
-> does not set the hardware address to a zero value.
+OK, I'll try this. I hope this can be fixed somehow before 2.6.24...
 
-I knew you were talking about the IP address not the hardware
-address.
+Thank you for your time,
+Christian.
+-- 
+BOFH excuse #442:
 
-> The reply from the Linux kernel in computer A, before the patch would look like:
-> 
-> Reply:
-> Opcode: reply (0x0002)
-> Sender HW: 00:AA.00:AA:00:AA
-> Sender IP:   192.168.0.1
-> Target HW:  00:AA:00:AA:00:AA
-> Target IP:    192.168.0.1
+Trojan horse ran out of hay
 
-And this is exactly a sensible response in my opinion.
