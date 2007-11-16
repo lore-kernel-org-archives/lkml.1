@@ -1,361 +1,719 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762537AbXKPR4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762483AbXKPR4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762537AbXKPR4X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 12:56:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761920AbXKPRzj
+	id S1762483AbXKPR4k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 12:56:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762032AbXKPRzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 12:55:39 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:53461 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 16 Nov 2007 12:55:42 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:53480 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755708AbXKPRze (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755806AbXKPRze (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 Nov 2007 12:55:34 -0500
-Message-Id: <20071116173528.447871904@I-love.SAKURA.ne.jp>
+Message-Id: <20071116173529.153608923@I-love.SAKURA.ne.jp>
 References: <20071116173439.796600895@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Sat, 17 Nov 2007 02:34:53 +0900
+Date: Sat, 17 Nov 2007 02:34:55 +0900
 From: penguin-kernel@I-love.SAKURA.ne.jp
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #5 14/18] Capability access control functions.
-Content-Disposition: inline; filename=tomoyo-capability.diff
+Subject: [TOMOYO #5 16/18] Conditional permission support.
+Content-Disposition: inline; filename=tomoyo-condition.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-TOMOYO Linux checks permission for non-POSIX capability
-so that the number of capabilities won't be limited to 32 or 64.
-
-Each permission can be automatically accumulated into
-the policy of each domain using 'learning mode'.
+This patch allows administrators use conditional permission.
+TOMOYO Linux supports conditional permission based on
+process's UID,GID etc. and/or requested pathname's UID/GID.
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
- security/tomoyo/capability.c |  320 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 320 insertions(+)
+ security/tomoyo/condition.c |  680 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 680 insertions(+)
 
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-mm/security/tomoyo/capability.c	2007-11-14 15:15:44.000000000 +0900
-@@ -0,0 +1,320 @@
++++ linux-2.6-mm/security/tomoyo/condition.c	2007-11-14 15:15:44.000000000 +0900
+@@ -0,0 +1,680 @@
 +/*
-+ * security/tomoyo/capability.c
++ * security/tomoyo/condition.c
 + *
-+ * Capability access control functions for TOMOYO Linux.
++ * Functions to support conditional access control for TOMOYO Linux.
 + */
 +
 +#include "tomoyo.h"
 +#include "realpath.h"
 +
-+static struct {
-+	const char *keyword;
-+	unsigned int current_value;
-+	const char *capability_name;
-+} capability_control_array[TMY_MAX_CAPABILITY_INDEX] = {
-+	[TMY_INET_STREAM_SOCKET_CREATE]  = /* OK */
-+	{ "inet_tcp_create", 0, "socket(PF_INET, SOCK_STREAM)" },
-+	[TMY_INET_STREAM_SOCKET_LISTEN]  = /* OK */
-+	{ "inet_tcp_listen", 0, "listen(PF_INET, SOCK_STREAM)" },
-+	[TMY_INET_STREAM_SOCKET_CONNECT] = /* OK */
-+	{ "inet_tcp_connect", 0, "connect(PF_INET, SOCK_STREAM)" },
-+	[TMY_USE_INET_DGRAM_SOCKET]      = /* OK */
-+	{ "use_inet_udp", 0, "socket(PF_INET, SOCK_DGRAM)" },
-+	[TMY_USE_INET_RAW_SOCKET]        = /* OK */
-+	{ "use_inet_ip", 0, "socket(PF_INET, SOCK_RAW)" },
-+	[TMY_USE_ROUTE_SOCKET]           = /* OK */
-+	{ "use_route", 0, "socket(PF_ROUTE)" },
-+	[TMY_USE_PACKET_SOCKET]          = /* OK */
-+	{ "use_packet", 0, "socket(PF_PACKET)" },
-+	[TMY_SYS_MOUNT]                  = /* OK */
-+	{ "SYS_MOUNT", 0, "sys_mount()" },
-+	[TMY_SYS_UMOUNT]                 = /* OK */
-+	{ "SYS_UMOUNT", 0, "sys_umount()" },
-+	[TMY_SYS_REBOOT]                 = /* Too many hooks. */
-+	{ "SYS_REBOOT", 0, "sys_reboot()" },
-+	[TMY_SYS_CHROOT]                 = /* OK */
-+	{ "SYS_CHROOT", 0, "sys_chroot()" },
-+	[TMY_SYS_KILL]                   = /* No appropriate hook. */
-+	{ "SYS_KILL", 0, "sys_kill()" },
-+	[TMY_SYS_VHANGUP]                = /* Too many hooks. */
-+	{ "SYS_VHANGUP", 0, "sys_vhangup()" },
-+	[TMY_SYS_SETTIME]                = /* Too many hooks. */
-+	{ "SYS_TIME", 0, "sys_settimeofday()" },
-+	[TMY_SYS_NICE]                   = /* No appropriate hook. */
-+	{ "SYS_NICE", 0, "sys_nice()" },
-+	[TMY_SYS_SETHOSTNAME]            = /* No appropriate hook. */
-+	{ "SYS_SETHOSTNAME", 0, "sys_sethostname()" },
-+	[TMY_USE_KERNEL_MODULE]          = /* Too many hooks. */
-+	{ "use_kernel_module", 0, "kernel_module" },
-+	[TMY_CREATE_FIFO]                = /* OK */
-+	{ "create_fifo", 0, "mknod(FIFO)" },
-+	[TMY_CREATE_BLOCK_DEV]           = /* OK */
-+	{ "create_block_dev", 0, "mknod(BDEV)" },
-+	[TMY_CREATE_CHAR_DEV]            = /* OK */
-+	{ "create_char_dev", 0, "mknod(CDEV)" },
-+	[TMY_CREATE_UNIX_SOCKET]         = /* OK */
-+	{ "create_unix_socket", 0, "mknod(SOCKET)" },
-+	[TMY_SYS_LINK]                   = /* OK */
-+	{ "SYS_LINK", 0, "sys_link()" },
-+	[TMY_SYS_SYMLINK]                = /* OK */
-+	{ "SYS_SYMLINK", 0, "sys_symlink()" },
-+	[TMY_SYS_RENAME]                 = /* OK */
-+	{ "SYS_RENAME", 0, "sys_rename()" },
-+	[TMY_SYS_UNLINK]                 = /* OK */
-+	{ "SYS_UNLINK", 0, "sys_unlink()" },
-+	[TMY_SYS_CHMOD]                  = /* OK */
-+	{ "SYS_CHMOD", 0, "sys_chmod()" },
-+	[TMY_SYS_CHOWN]                  = /* OK */
-+	{ "SYS_CHOWN", 0, "sys_chown()" },
-+	[TMY_SYS_IOCTL]                  = /* Too many hooks. */
-+	{ "SYS_IOCTL", 0, "sys_ioctl()" },
-+	[TMY_SYS_KEXEC_LOAD]             = /* No appropriate hook. */
-+	{ "SYS_KEXEC_LOAD", 0, "sys_kexec_load()" },
-+	[TMY_SYS_PIVOT_ROOT]             = /* OK */
-+	{ "SYS_PIVOT_ROOT", 0, "sys_pivot_root()" },
-+};
-+
-+struct profile {
-+	unsigned char value[TMY_MAX_CAPABILITY_INDEX];
-+};
-+
-+static struct profile *profile_ptr[TMY_MAX_PROFILES];
-+
-+/*************************  UTILITY FUNCTIONS  *************************/
-+
-+const char *tmy_capability2keyword(const unsigned int capability)
++/**
++ * tmy_find_condition_part - check whether a line contains condition part.
++ * @data: a line to check.
++ *
++ * Returns pointer to condition part if found.
++ * Returns NULL if not found.
++ *
++ * Since the trailing spaces are removed by tmy_normalize_line(),
++ * the last "\040if\040" sequence corresponds to condition part.
++ */
++char *tmy_find_condition_part(char *data)
 +{
-+	return capability < TMY_MAX_CAPABILITY_INDEX ?
-+		capability_control_array[capability].keyword : NULL;
-+}
-+
-+static const char *tmy_capability2name(const unsigned int capability)
-+{
-+	return capability < TMY_MAX_CAPABILITY_INDEX ?
-+		capability_control_array[capability].capability_name : NULL;
-+}
-+
-+/* Check whether the given capability control is enabled. */
-+static unsigned int tmy_capability_flags(const unsigned int index)
-+{
-+	const u8 profile = TMY_SECURITY->domain->profile;
-+	/* All operations might sleep. See tmy_supervisor(). */
-+	might_sleep();
-+	if (in_interrupt())
-+		return 0;
-+	return sbin_init_started && index < TMY_MAX_CAPABILITY_INDEX
-+#if TMY_MAX_PROFILES != 256
-+		&& profile < TMY_MAX_PROFILES
-+#endif
-+		&& profile_ptr[profile] ?
-+		profile_ptr[profile]->value[index] : 0;
-+}
-+
-+static struct profile *tmy_new_capability_profile(const unsigned int profile)
-+{
-+	static DEFINE_MUTEX(mutex);
-+	struct profile *ptr;
-+	int i;
-+	if (profile >= TMY_MAX_PROFILES)
-+		return NULL;
-+	mutex_lock(&mutex);
-+	ptr = profile_ptr[profile];
-+	if (ptr)
-+		goto ok;
-+	ptr = tmy_alloc_element(sizeof(*ptr));
-+	if (!ptr)
-+		goto ok;
-+	for (i = 0; i < TMY_MAX_CAPABILITY_INDEX; i++)
-+		ptr->value[i] = capability_control_array[i].current_value;
-+	mb(); /* Avoid out-of-order execution. */
-+	profile_ptr[profile] = ptr;
-+ok: ;
-+	mutex_unlock(&mutex);
-+	return ptr;
-+}
-+
-+int tmy_set_capability_profile(const char *data, unsigned int value,
-+			       const unsigned int profile)
-+{
-+	int i;
-+	struct profile *ptr;
-+	ptr = tmy_new_capability_profile(profile);
-+	if (!ptr)
-+		return -EINVAL;
-+	for (i = 0; i < TMY_MAX_CAPABILITY_INDEX; i++) {
-+		if (strcmp(data, capability_control_array[i].keyword))
-+			continue;
-+		if (value > 3)
-+			value = 3;
-+		ptr->value[i] = value;
-+		return 0;
++	char *cp = strstr(data, " if ");
++	if (cp) {
++		char *cp2;
++		while ((cp2 = strstr(cp + 3, " if ")) != NULL)
++			cp = cp2;
++		*cp++ = '\0';
 +	}
-+	return -EINVAL;
++	return cp;
 +}
 +
-+int tmy_read_capability_profile(struct io_buffer *head)
++#define VALUE_TYPE_DECIMAL     1 /* 01 */
++#define VALUE_TYPE_OCTAL       2 /* 10 */
++#define VALUE_TYPE_HEXADECIMAL 3 /* 11 */
++
++static int tmy_parse_ulong(unsigned long *result, const char **str)
 +{
-+	int step;
-+	for (step = head->read_step;
-+	     step < TMY_MAX_PROFILES * TMY_MAX_CAPABILITY_INDEX; step++) {
-+		const int i = step / TMY_MAX_CAPABILITY_INDEX;
-+		const int j = step % TMY_MAX_CAPABILITY_INDEX;
-+		const struct profile *profile = profile_ptr[i];
-+		head->read_step = step;
-+		if (!profile)
-+			continue;
-+		if (tmy_io_printf(head, "%u-" TMY_MAC_FOR_CAPABILITY "%s=%u\n",
-+				  i, capability_control_array[j].keyword,
-+				  profile->value[j]))
-+			break;
-+	}
-+	return step < TMY_MAX_PROFILES * TMY_MAX_CAPABILITY_INDEX ? -ENOMEM : 0;
-+}
-+
-+/*************************  AUDIT FUNCTIONS  *************************/
-+
-+static int tmy_audit_capability_log(const unsigned int capability,
-+				    const bool is_granted,
-+				    const u8 profile, const unsigned int mode)
-+{
-+	char *buf;
-+	int len = 64 ;
-+
-+	if (is_granted) {
-+		if (!tmy_audit_grant())
-+			return 0;
-+	} else {
-+		if (!tmy_audit_reject())
-+			return 0;
-+	}
-+
-+	buf = tmy_init_audit_log(&len, profile, mode);
-+
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	snprintf(buf + strlen(buf),
-+		 len - strlen(buf) - 1,
-+		 TMY_ALLOW_CAPABILITY "%s\n",
-+		 tmy_capability2keyword(capability));
-+
-+	return tmy_write_audit_log(buf, is_granted);
-+}
-+
-+/*************************  CAPABILITY ACL HANDLER  *************************/
-+
-+static int tmy_add_capability_acl(const unsigned int capability,
-+				  struct domain_info *domain,
-+				  const struct condition_list *condition,
-+				  const bool is_delete)
-+{
-+	struct acl_info *ptr;
-+	struct capability_acl *acl;
-+	int error = -ENOMEM;
-+	const u16 hash = capability;
-+	if (!domain)
-+		return -EINVAL;
-+	mutex_lock(&domain_acl_lock);
-+	if (is_delete)
-+		goto remove;
-+
-+	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		acl = (struct capability_acl *) ptr;
-+		if (ptr->type == TMY_TYPE_CAPABILITY_ACL
-+		    && acl->capability == hash
-+		    && ptr->cond == condition) {
-+			ptr->is_deleted = 0;
-+			/* Found. Nothing to do. */
-+			error = 0;
-+			tmy_update_counter(TMY_UPDATE_DOMAINPOLICY);
-+			goto ok;
++	const char *cp = *str;
++	char *ep;
++	int base = 10;
++	if (*cp == '0') {
++		char c = *(cp + 1);
++		if (c == 'x' || c == 'X') {
++			base = 16; cp += 2;
++		} else if (c >= '0' && c <= '7') {
++			base = 8; cp++;
 +		}
 +	}
-+	/* Not found. Append it to the tail. */
-+	acl = tmy_alloc_element(sizeof(*acl));
-+	if (!acl)
-+		goto ok;
-+	acl->head.type = TMY_TYPE_CAPABILITY_ACL;
-+	acl->head.cond = condition;
-+	acl->capability = hash;
-+	error = tmy_add_acl(domain, (struct acl_info *) acl);
-+	goto ok;
-+remove: ;
-+	error = -ENOENT;
-+	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		acl = (struct capability_acl *) ptr;
-+		if (ptr->type != TMY_TYPE_CAPABILITY_ACL || ptr->is_deleted ||
-+		    acl->capability != hash || ptr->cond != condition) continue;
-+		error = tmy_del_acl(ptr);
-+		break;
-+	}
-+ok: ;
-+	mutex_unlock(&domain_acl_lock);
-+	return error;
++	*result = simple_strtoul(cp, &ep, base);
++	if (cp == ep) return 0; /* 00 */
++	*str = ep;
++	return (base == 16 ? VALUE_TYPE_HEXADECIMAL :
++		(base == 8 ? VALUE_TYPE_OCTAL : VALUE_TYPE_DECIMAL));
 +}
 +
-+/**
-+ * tmy_capable - check permission for capability.
-+ * @capability: capability index.
-+ *
-+ * Returns zero if permission granted.
-+ * Returns nonzero if permission denied.
-+ */
-+int tmy_capable(const unsigned int capability)
++static void tmy_print_ulong(char *buffer, const int buffer_len,
++			const unsigned long value, const int type)
 +{
-+	struct domain_info * const domain = TMY_SECURITY->domain;
-+	struct acl_info *ptr;
-+	const u8 profile = domain->profile;
-+	const unsigned int mode = tmy_capability_flags(capability);
-+	const bool is_enforce = (mode == 3);
-+	const u16 hash = capability;
-+	if (!mode)
-+		return 0;
-+	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		struct capability_acl *acl = (struct capability_acl *) ptr;
-+		if (ptr->type != TMY_TYPE_CAPABILITY_ACL || ptr->is_deleted
-+		    || acl->capability != hash
-+		    || tmy_check_condition(ptr->cond, NULL))
-+			continue;
-+		tmy_audit_capability_log(capability, 1, profile, mode);
-+		return 0;
++	if (type == VALUE_TYPE_DECIMAL)
++		snprintf(buffer, buffer_len, "%lu", value);
++	else if (type == VALUE_TYPE_OCTAL)
++		snprintf(buffer, buffer_len, "0%lo", value);
++	else
++		snprintf(buffer, buffer_len, "0x%lX", value);
++}
++
++/* List of conditins. */
++static struct condition_list {
++	struct condition_list *next;
++	int length;
++	/* "unsigned long condition[length]" comes here.*/
++} head;
++
++#define TASK_UID          0
++#define TASK_EUID         1
++#define TASK_SUID         2
++#define TASK_FSUID        3
++#define TASK_GID          4
++#define TASK_EGID         5
++#define TASK_SGID         6
++#define TASK_FSGID        7
++#define TASK_PID          8
++#define TASK_PPID         9
++#define PATH1_UID        10
++#define PATH1_GID        11
++#define PATH1_INO        12
++#define PATH1_PARENT_UID 13
++#define PATH1_PARENT_GID 14
++#define PATH1_PARENT_INO 15
++#define PATH2_PARENT_UID 16
++#define PATH2_PARENT_GID 17
++#define PATH2_PARENT_INO 18
++#define MAX_KEYWORD      19
++
++static struct {
++	const char *keyword;
++	const int keyword_len; /* strlen(keyword) */
++} cc_keyword[MAX_KEYWORD] = {
++	[TASK_UID]         = { "task.uid",           8 },
++	[TASK_EUID]        = { "task.euid",          9 },
++	[TASK_SUID]        = { "task.suid",          9 },
++	[TASK_FSUID]       = { "task.fsuid",        10 },
++	[TASK_GID]         = { "task.gid",           8 },
++	[TASK_EGID]        = { "task.egid",          9 },
++	[TASK_SGID]        = { "task.sgid",          9 },
++	[TASK_FSGID]       = { "task.fsgid",        10 },
++	[TASK_PID]         = { "task.pid",           8 },
++	[TASK_PPID]        = { "task.ppid",          9 },
++	[PATH1_UID]        = { "path1.uid",          9 },
++	[PATH1_GID]        = { "path1.gid",          9 },
++	[PATH1_INO]        = { "path1.ino",          9 },
++	[PATH1_PARENT_UID] = { "path1.parent.uid",  16 },
++	[PATH1_PARENT_GID] = { "path1.parent.gid",  16 },
++	[PATH1_PARENT_INO] = { "path1.parent.ino",  16 },
++	[PATH2_PARENT_UID] = { "path2.parent.uid",  16 },
++	[PATH2_PARENT_GID] = { "path2.parent.gid",  16 },
++	[PATH2_PARENT_INO] = { "path2.parent.ino",  16 }
++};
++
++/**
++ * tmy_assign_condition - create condition part.
++ * @condition: pointer to condition part.
++ *
++ * Returns pointer to "struct condition_list" on success.
++ * Returns NULL on failure.
++ */
++const struct condition_list *tmy_assign_condition(const char *condition)
++{
++	const char *start;
++	struct condition_list *ptr;
++	struct condition_list *new_ptr;
++	unsigned long *ptr2;
++	int counter = 0;
++	int size;
++	int left;
++	int right;
++	unsigned long left_min = 0;
++	unsigned long left_max = 0;
++	unsigned long right_min = 0;
++	unsigned long right_max = 0;
++	if (strncmp(condition, "if ", 3))
++		return NULL;
++	condition += 3;
++	start = condition;
++	while (*condition) {
++		if (*condition == ' ')
++			condition++;
++		for (left = 0; left < MAX_KEYWORD; left++) {
++			if (strncmp(condition, cc_keyword[left].keyword,
++				    cc_keyword[left].keyword_len))
++				continue;
++			condition += cc_keyword[left].keyword_len;
++			break;
++		}
++		if (left == MAX_KEYWORD) {
++			if (!tmy_parse_ulong(&left_min, &condition))
++				goto out;
++			counter++; /* body */
++			if (*condition != '-')
++				goto not_range1;
++			condition++;
++			if (!tmy_parse_ulong(&left_max, &condition)
++			    || left_min > left_max)
++				goto out;
++			counter++; /* body */
++not_range1: ;
++		}
++		if (strncmp(condition, "!=", 2) == 0)
++			condition += 2;
++		else if (*condition == '=')
++			condition++;
++		else
++			goto out;
++		counter++; /* header */
++		for (right = 0; right < MAX_KEYWORD; right++) {
++			if (strncmp(condition, cc_keyword[right].keyword,
++				    cc_keyword[right].keyword_len))
++				continue;
++			condition += cc_keyword[right].keyword_len;
++			break;
++		}
++		if (right == MAX_KEYWORD) {
++			if (!tmy_parse_ulong(&right_min, &condition))
++				goto out;
++			counter++; /* body */
++			if (*condition != '-')
++				goto not_range2;
++			condition++;
++			if (!tmy_parse_ulong(&right_max, &condition)
++			    || right_min > right_max)
++				goto out;
++			counter++; /* body */
++not_range2: ;
++		}
 +	}
-+	if (tmy_flags(TMY_VERBOSE))
-+		tmy_audit("TOMOYO-%s: %s denied for %s\n",
-+			  tmy_getmsg(is_enforce),
-+			  tmy_capability2name(capability),
-+			  tmy_lastname(domain));
-+	tmy_audit_capability_log(capability, 0, profile, mode);
-+	if (is_enforce)
-+		return tmy_supervisor("%s\n" TMY_ALLOW_CAPABILITY "%s\n",
-+				      domain->domainname->name,
-+				      tmy_capability2keyword(capability));
-+	if (mode == 1 && tmy_quota())
-+		tmy_add_capability_acl(capability, domain, NULL, 0);
-+	return 0;
++	size = sizeof(*new_ptr) + counter * sizeof(unsigned long);
++	new_ptr = tmy_alloc(size);
++	if (!new_ptr)
++		return NULL;
++	new_ptr->length = counter;
++	ptr2 = (unsigned long *) (((u8 *) new_ptr) + sizeof(*new_ptr));
++	condition = start;
++	while (*condition) {
++		unsigned int match = 0;
++		if (*condition == ' ')
++			condition++;
++		for (left = 0; left < MAX_KEYWORD; left++) {
++			if (strncmp(condition, cc_keyword[left].keyword,
++			    cc_keyword[left].keyword_len))
++				continue;
++			condition += cc_keyword[left].keyword_len;
++			break;
++		}
++		if (left == MAX_KEYWORD) {
++			match |= tmy_parse_ulong(&left_min, &condition) << 2;
++			counter--; /* body */
++			if (*condition != '-')
++				goto not_range3;
++			condition++;
++			match |= tmy_parse_ulong(&left_max, &condition) << 4;
++			counter--; /* body */
++			left++;
++not_range3: ;
++		}
++		if (strncmp(condition, "!=", 2) == 0)
++			condition += 2;
++		else if (*condition == '=') {
++			match |= 1; condition++;
++		} else
++			goto out2;
++		counter--; /* header */
++		for (right = 0; right < MAX_KEYWORD; right++) {
++			if (strncmp(condition, cc_keyword[right].keyword,
++			    cc_keyword[right].keyword_len))
++				continue;
++			condition += cc_keyword[right].keyword_len;
++			break;
++		}
++		if (right == MAX_KEYWORD) {
++			match |= tmy_parse_ulong(&right_min, &condition) << 6;
++			counter--; /* body */
++			if (*condition != '-')
++				goto not_range4;
++			condition++;
++			match |= tmy_parse_ulong(&right_max, &condition) << 8;
++			counter--; /* body */
++			right++;
++not_range4: ;
++		}
++		if (counter < 0)
++			goto out2;
++		*ptr2++ = (match << 16) | (left << 8) | right;
++		if (left >= MAX_KEYWORD)
++			*ptr2++ = left_min;
++		if (left == MAX_KEYWORD + 1)
++			*ptr2++ = left_max;
++		if (right >= MAX_KEYWORD)
++			*ptr2++ = right_min;
++		if (right == MAX_KEYWORD + 1)
++			*ptr2++ = right_max;
++	}
++	{
++		static DEFINE_MUTEX(mutex);
++		struct condition_list *prev = NULL;
++		mutex_lock(&mutex);
++		for (ptr = &head; ptr; prev = ptr, ptr = ptr->next) {
++			/* Don't compare if size differs. */
++			if (ptr->length != new_ptr->length)
++				continue;
++			/*
++			 * Compare ptr and new_ptr
++			 * except ptr->next and new_ptr->next .
++			 */
++			if (memcmp(((u8 *) ptr) + sizeof(ptr->next),
++				   ((u8 *) new_ptr) + sizeof(new_ptr->next),
++				   size - sizeof(ptr->next)))
++				continue;
++			/* Same entry found. Share this entry. */
++			tmy_free(new_ptr);
++			new_ptr = ptr;
++			goto ok;
++		}
++		/* Same entry not found. Save this entry. */
++		ptr = tmy_alloc_element(size);
++		if (ptr)
++			memmove(ptr, new_ptr, size);
++		tmy_free(new_ptr);
++		new_ptr = ptr;
++		/* Append to chain. */
++		prev->next = new_ptr;
++ok: ;
++		mutex_unlock(&mutex);
++	}
++	return new_ptr;
++out2: ;
++	tmy_free(new_ptr);
++out: ;
++	return NULL;
++}
++
++/* Get inode's attribute information. */
++static void tmy_get_attributes(struct obj_info *obj)
++{
++	struct vfsmount *mnt;
++	struct dentry *dentry;
++	struct inode *inode;
++	struct kstat stat;
++
++	mnt = obj->path1_vfsmnt;
++	dentry = obj->path1_dentry;
++	inode = dentry->d_inode;
++	if (inode) {
++		if (!inode->i_op || vfs_getattr(mnt, dentry, &stat)) {
++			/* Nothing to do. */
++		} else {
++			obj->path1_stat.uid = stat.uid;
++			obj->path1_stat.gid = stat.gid;
++			obj->path1_stat.ino = stat.ino;
++			obj->path1_valid = 1;
++		}
++	}
++
++	dentry = dget_parent(obj->path1_dentry);
++	inode = dentry->d_inode;
++	if (inode) {
++		if (!inode->i_op || vfs_getattr(mnt, dentry, &stat)) {
++			/* Nothing to do. */
++		} else {
++			obj->path1_parent_stat.uid = stat.uid;
++			obj->path1_parent_stat.gid = stat.gid;
++			obj->path1_parent_stat.ino = stat.ino;
++			obj->path1_parent_valid = 1;
++		}
++	}
++	dput(dentry);
++
++	mnt = obj->path2_vfsmnt;
++	if (mnt) {
++		dentry = dget_parent(obj->path2_dentry);
++		inode = dentry->d_inode;
++		if (inode) {
++			if (!inode->i_op || vfs_getattr(mnt, dentry, &stat)) {
++				/* Nothing to do. */
++			} else {
++				obj->path2_parent_stat.uid = stat.uid;
++				obj->path2_parent_stat.gid = stat.gid;
++				obj->path2_parent_stat.ino = stat.ino;
++				obj->path2_parent_valid = 1;
++			}
++		}
++		dput(dentry);
++	}
 +}
 +
 +/**
-+ * tmy_add_capability_policy - add or delete capability policy.
-+ * @data:      a line to parse.
-+ * @domain:    pointer to "struct domain_info".
-+ * @cond:      pointer to "struct condition_list". May be NULL.
-+ * @is_delete: is this delete request?
++ * tmy_check_condition - check condition part.
++ * @ptr: pointer to "struct condition_list".
++ * @obj: pointer to "struct obj_info". May be NULL.
 + *
 + * Returns zero on success.
 + * Returns nonzero on failure.
 + */
-+int tmy_add_capability_policy(char *data, struct domain_info *domain,
-+			      const struct condition_list *cond,
-+			      const bool is_delete)
++int tmy_check_condition(const struct condition_list *ptr, struct obj_info *obj)
 +{
-+	unsigned int capability;
-+	for (capability = 0; capability < TMY_MAX_CAPABILITY_INDEX;
-+	     capability++) {
-+		if (strcmp(data, capability_control_array[capability].keyword))
-+			continue;
-+		return tmy_add_capability_acl(capability, domain,
-+					      cond, is_delete);
++	struct task_struct *task = current;
++	int i;
++	unsigned long left_min = 0;
++	unsigned long left_max = 0;
++	unsigned long right_min = 0;
++	unsigned long right_max = 0;
++	const unsigned long *ptr2;
++	if (!ptr)
++		return 0;
++	ptr2 = (unsigned long *) (((u8 *) ptr) + sizeof(*ptr));
++	for (i = 0; i < ptr->length; i++) {
++		const bool match = ((*ptr2) >> 16) & 1;
++		const u8 left = (*ptr2) >> 8;
++		const u8 right = *ptr2;
++		ptr2++;
++		if ((left >= PATH1_UID && left < MAX_KEYWORD)
++		    || (right >= PATH1_UID && right < MAX_KEYWORD)) {
++			if (!obj)
++				goto out;
++			if (!obj->validate_done) {
++				tmy_get_attributes(obj);
++				obj->validate_done = 1;
++			}
++		}
++		switch (left) {
++		case TASK_UID:
++			left_min = task->uid;
++			left_max = left_min;
++			break;
++		case TASK_EUID:
++			left_min = task->euid;
++			left_max = left_min;
++			break;
++		case TASK_SUID:
++			left_min = task->suid;
++			left_max = left_min;
++			break;
++		case TASK_FSUID:
++			left_min = task->fsuid;
++			left_max = left_min;
++			break;
++		case TASK_GID:
++			left_min = task->gid;
++			left_max = left_min;
++			break;
++		case TASK_EGID:
++			left_min = task->egid;
++			left_max = left_min;
++			break;
++		case TASK_SGID:
++			left_min = task->sgid;
++			left_max = left_min;
++			break;
++		case TASK_FSGID:
++			left_min = task->fsgid;
++			left_max = left_min;
++			break;
++		case TASK_PID:
++			left_min = task->pid;
++			left_max = left_min;
++			break;
++		case TASK_PPID:
++			left_min = sys_getppid();
++			left_max = left_min;
++			break;
++		case PATH1_UID:
++			if (!obj->path1_valid)
++				goto out;
++			left_min = obj->path1_stat.uid;
++			left_max = left_min;
++			break;
++		case PATH1_GID:
++			if (!obj->path1_valid)
++				goto out;
++			left_min = obj->path1_stat.gid;
++			left_max = left_min;
++			break;
++		case PATH1_INO:
++			if (!obj->path1_valid)
++				goto out;
++			left_min = obj->path1_stat.ino;
++			left_max = left_min;
++			break;
++		case PATH1_PARENT_UID:
++			if (!obj->path1_parent_valid)
++				goto out;
++			left_min = obj->path1_parent_stat.uid;
++			left_max = left_min;
++			break;
++		case PATH1_PARENT_GID:
++			if (!obj->path1_parent_valid)
++				goto out;
++			left_min = obj->path1_parent_stat.gid;
++			left_max = left_min;
++			break;
++		case PATH1_PARENT_INO:
++			if (!obj->path1_parent_valid)
++				goto out;
++			left_min = obj->path1_parent_stat.ino;
++			left_max = left_min;
++			break;
++		case PATH2_PARENT_UID:
++			if (!obj->path2_parent_valid)
++				goto out;
++			left_min = obj->path2_parent_stat.uid;
++			left_max = left_min;
++			break;
++		case PATH2_PARENT_GID:
++			if (!obj->path2_parent_valid)
++				goto out;
++			left_min = obj->path2_parent_stat.gid;
++			left_max = left_min;
++			break;
++		case PATH2_PARENT_INO:
++			if (!obj->path2_parent_valid)
++				goto out;
++			left_min = obj->path2_parent_stat.ino;
++			left_max = left_min;
++			break;
++		case MAX_KEYWORD:
++			left_min = *ptr2++;
++			left_max = left_min;
++			i++;
++			break;
++		case MAX_KEYWORD + 1:
++			left_min = *ptr2++;
++			left_max = *ptr2++;
++			i += 2;
++			break;
++		}
++		switch (right) {
++		case TASK_UID:
++			right_min = task->uid;
++			right_max = right_min;
++			break;
++		case TASK_EUID:
++			right_min = task->euid;
++			right_max = right_min;
++			break;
++		case TASK_SUID:
++			right_min = task->suid;
++			right_max = right_min;
++			break;
++		case TASK_FSUID:
++			right_min = task->fsuid;
++			right_max = right_min;
++			break;
++		case TASK_GID:
++			right_min = task->gid;
++			right_max = right_min;
++			break;
++		case TASK_EGID:
++			right_min = task->egid;
++			right_max = right_min;
++			break;
++		case TASK_SGID:
++			right_min = task->sgid;
++			right_max = right_min;
++			break;
++		case TASK_FSGID:
++			right_min = task->fsgid;
++			right_max = right_min;
++			break;
++		case TASK_PID:
++			right_min = task->pid;
++			right_max = right_min;
++			break;
++		case TASK_PPID:
++			right_min = sys_getppid();
++			right_max = right_min;
++			break;
++		case PATH1_UID:
++			if (!obj->path1_valid)
++				goto out;
++			right_min = obj->path1_stat.uid;
++			right_max = right_min;
++			break;
++		case PATH1_GID:
++			if (!obj->path1_valid)
++				goto out;
++			right_min = obj->path1_stat.gid;
++			right_max = right_min;
++			break;
++		case PATH1_INO:
++			if (!obj->path1_valid)
++				goto out;
++			right_min = obj->path1_stat.ino;
++			right_max = right_min;
++			break;
++		case PATH1_PARENT_UID:
++			if (!obj->path1_parent_valid)
++				goto out;
++			right_min = obj->path1_parent_stat.uid;
++			right_max = right_min;
++			break;
++		case PATH1_PARENT_GID:
++			if (!obj->path1_parent_valid)
++				goto out;
++			right_min = obj->path1_parent_stat.gid;
++			right_max = right_min;
++			break;
++		case PATH1_PARENT_INO:
++			if (!obj->path1_parent_valid)
++				goto out;
++			right_min = obj->path1_parent_stat.ino;
++			right_max = right_min;
++			break;
++		case PATH2_PARENT_UID:
++			if (!obj->path2_parent_valid)
++				goto out;
++			right_min = obj->path2_parent_stat.uid;
++			right_max = right_min;
++			break;
++		case PATH2_PARENT_GID:
++			if (!obj->path2_parent_valid)
++				goto out;
++			right_min = obj->path2_parent_stat.gid;
++			right_max = right_min;
++			break;
++		case PATH2_PARENT_INO:
++			if (!obj->path2_parent_valid)
++				goto out;
++			right_min = obj->path2_parent_stat.ino;
++			right_max = right_min;
++			break;
++		case MAX_KEYWORD:
++			right_min = *ptr2++;
++			right_max = right_min;
++			i++;
++			break;
++		case MAX_KEYWORD + 1:
++			right_min = *ptr2++;
++			right_max = *ptr2++;
++			i += 2;
++			break;
++		}
++		if (match) {
++			if (left_min <= right_max && left_max >= right_min)
++				continue;
++		} else {
++			if (left_min > right_max || left_max < right_min)
++				continue;
++		}
++out: ;
++		return -EPERM;
 +	}
-+	return -EINVAL;
++	return 0;
++}
++
++/**
++ * tmy_dump_condition - dump condition part.
++ * @head: pointer to "struct io_buffer".
++ * @ptr:  pointer to "struct condition_list". May be NULL.
++ *
++ * Returns nonzero if reading incomplete.
++ * Returns zero otherwise.
++ */
++int tmy_dump_condition(struct io_buffer *head, const struct condition_list *ptr)
++{
++	int i;
++	const unsigned long *ptr2;
++	char buffer[32];
++	if (!ptr)
++		goto last;
++	ptr2 = (unsigned long *) (((u8 *) ptr) + sizeof(*ptr));
++	memset(buffer, 0, sizeof(buffer));
++	for (i = 0; i < ptr->length; i++) {
++		const u16 match = (*ptr2) >> 16;
++		const u8 left = (*ptr2) >> 8;
++		const u8 right = *ptr2;
++		ptr2++;
++		if (tmy_io_printf(head, "%s", i ? " " : " if "))
++			break;
++		if (left < MAX_KEYWORD) {
++			if (tmy_io_printf(head, "%s", cc_keyword[left].keyword))
++				break;
++		} else {
++			tmy_print_ulong(buffer, sizeof(buffer) - 1, *ptr2++,
++					(match >> 2) & 3);
++			if (tmy_io_printf(head, "%s", buffer))
++				break;
++			i++;
++			if (left == MAX_KEYWORD + 1) {
++				tmy_print_ulong(buffer, sizeof(buffer) - 1,
++						*ptr2++, (match >> 4) & 3);
++				if (tmy_io_printf(head, "-%s", buffer))
++					break;
++				i++;
++			}
++		}
++		if (tmy_io_printf(head, "%s", (match & 1) ? "=" : "!="))
++			break;
++		if (right < MAX_KEYWORD) {
++			if (tmy_io_printf(head, "%s",
++					  cc_keyword[right].keyword))
++				break;
++		} else {
++			tmy_print_ulong(buffer, sizeof(buffer) - 1, *ptr2++,
++					(match >> 6) & 3);
++			if (tmy_io_printf(head, "%s", buffer))
++				break;
++			i++;
++			if (right == MAX_KEYWORD + 1) {
++				tmy_print_ulong(buffer, sizeof(buffer) - 1,
++						*ptr2++, (match >> 8) & 3);
++				if (tmy_io_printf(head, "-%s", buffer))
++					break;
++				i++;
++			}
++		}
++	}
++	if (i < ptr->length)
++		return -ENOMEM;
++last: ;
++	return tmy_io_printf(head, "\n") ? -ENOMEM : 0;
 +}
 
 -- 
