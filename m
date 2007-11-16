@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763598AbXKPTQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762196AbXKPTVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763598AbXKPTQn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 14:16:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755374AbXKPTQg
+	id S1762196AbXKPTVu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 14:21:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbXKPTVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 14:16:36 -0500
-Received: from koto.vergenet.net ([210.128.90.7]:39742 "EHLO koto.vergenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754717AbXKPTQf convert rfc822-to-8bit (ORCPT
+	Fri, 16 Nov 2007 14:21:37 -0500
+Received: from stargate.chelsio.com ([12.22.49.110]:20404 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752082AbXKPTVg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 14:16:35 -0500
-Date: Fri, 16 Nov 2007 11:16:30 -0800
-From: Simon Horman <horms@verge.net.au>
-To: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
-Cc: lkml <linux-kernel@vger.kernel.org>, kexec-ml <kexec@lists.infradead.org>
-Subject: Re: [PATCH 5/5] Add the array length of "free_list" for filtering free pages
-Message-ID: <20071116191624.GD8971@verge.net.au>
-References: <473CFE14.3010400@mxs.nes.nec.co.jp> <473D0176.6090702@mxs.nes.nec.co.jp>
+	Fri, 16 Nov 2007 14:21:36 -0500
+Message-ID: <473DED5B.5070802@chelsio.com>
+Date: Fri, 16 Nov 2007 11:19:55 -0800
+From: Divy Le Ray <divy@chelsio.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <473D0176.6090702@mxs.nes.nec.co.jp>
-User-Agent: mutt-ng/devel-r804 (Debian)
+To: Jeff Garzik <jeff@garzik.org>
+CC: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Steve Wise <swise@opengridcomputing.com>,
+       Wen Xiong <wenxiong@us.ibm.com>
+Subject: [PATCH 0/9] cxgb3 - driver update
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Nov 2007 19:20:02.0718 (UTC) FILETIME=[AFEA2BE0:01C82885]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 16, 2007 at 11:33:26AM +0900, Ken'ichi Ohmichi wrote:
-> 
-> This patch adds the array length of "free_area.free_list" to the vmcoreinfo
-> data so that makedumpfile (dump filtering command) can exclude all free pages
-> in linux-2.6.24.
-> 
-> makedumpfile creates a small dumpfile by excluding unnecessary pages for the
-> analysis. To distinguish unnecessary pages, makedumpfile gets the vmcoreinfo
-> data which has the minimum debugging information only for dump filtering.
-> 
-> In 2.6.24-rc1 or later, the free_area.free_list is an array which has one list
-> for each migrate types instead of a single list. makedumpfile needs the array
-> length of "free_area.free_list" and the vmcoreinfo data should contain it.
-> 
-> 
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
-> Tested-by: Ken'ichi Ohmichi <oomichi@mxs.nes.nec.co.jp>
+Jeff, Dave,
 
-This seems fine to me. Though from a point of maintainability
-would it be better if VMCOREINFO_LENGTH derived the length
-from the element of the type in question. Just a thought,
-I haven't hacked it up to see how practical it might be.
+I'm submitting a patch series for inclusion in 2.6.25.
+The patches are built against netdev#upstream.
 
-Acked-by: Simon Horman <horms@verge.net.au>
+Here is a brief description:
+- Fix error path when requesting MSI-X resources
+- Use wild card for PCI Vendor ID
+- Fix sysfs resource release
+- Add PCI error recovery support
+- FW upgrade
+- Fix interaction with pktgen
+- Remove unused argument in sysfs related methods
+- HW setup update
+- Synchronize I/O access on Tx path
+
+Cheers,
+Divy
+
+
