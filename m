@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934719AbXKPXL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934853AbXKPXMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934719AbXKPXL3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 18:11:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761675AbXKPXLH
+	id S934853AbXKPXMQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 18:12:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762583AbXKPXLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 18:11:07 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51781 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757364AbXKPXLC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 18:11:09 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:39537 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757402AbXKPXLC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 Nov 2007 18:11:02 -0500
-Message-Id: <20071116230920.278761667@sgi.com>
+Message-Id: <20071116231101.838704757@sgi.com>
+References: <20071116230920.278761667@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 16 Nov 2007 15:09:20 -0800
+Date: Fri, 16 Nov 2007 15:09:21 -0800
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
 Cc: linux-arch@vger.kernel.org
@@ -20,238 +20,360 @@ Cc: linux-kernel@vger.kernel.org
 Cc: David Miller <davem@davemloft.net>
 Cc: Eric Dumazet <dada1@cosmosbay.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
-Subject: [patch 00/30] cpu alloc v2: Optimize by removing arrays of pointers to per cpu objects
+Subject: [patch 01/30] cpu alloc: Simple version of the allocator (static allocations)
+Content-Disposition: inline; filename=cpu_alloc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Note arch maintainers: Some configuration variables in arch/*/Kconfig needed
-for large users of per cpu space (large NUMA mostly, or lots of processors)]
-and in order to make optimal use of cpu_alloc.
+The core portion of the cpu allocator.
+
+The per cpu allocator allows dynamic allocation of memory on all
+processor simultaneously. A bitmap is used to track used areas.
+The allocator implements tight packing to reduce the cache footprint
+and increase speed since cacheline contention is typically not a concern
+for memory mainly used by a single cpu. Small objects will fill up gaps
+left by larger allocations that required alignments.
+
+This is a limited version of the cpu allocator that only performs a
+static allocation of a single page for each processor. This is enough
+for the use of the cpu allocator in the slab and page allocator for most
+of the common configurations. The configuration will be useful for
+embedded systems to reduce memory requirements. However, there is a hard limit
+of the size of the per cpu structures and so the default configuration of an
+order 0 allocation can only support up to 150 slab caches (most systems that
+I got use 70) and probably not more than 16 or so NUMA nodes. The size of the
+statically configured area can be changed via make menuconfig etc.
+
+The cpu allocator virtualization patch is needed in order to support the dynamically
+extending per cpu areas.
 
 V1->V2:
-- Split off patch for virtualization. Patch has some instructions on
-  how to configure an arch for cpu_alloc.
-- uiuc patch is upstream so leave it out.
-- There was an article on LWN.net on cpu_alloc.
-- Add a sparc64 config
-- Against current git that merged the Kconfigs for x86_64 and i386.
+- Split off the dynamic extendable cpu area feature to make it clear that it exists.\
+- Remove useless variables.
+- Add boot_cpu_alloc for bootime cpu area reservations (allows the folding in of
+  per cpu areas and other arch specific per cpu stuff during boot).
 
-In various places the kernel maintains arrays of pointers indexed by
-processor numbers. These are used to locate objects that need to be used
-when executing on a specirfic processor. Both the slab allocator
-and the page allocator use these arrays and there the arrays are used in
-performance critical code. The allocpercpu functionality is a simple
-allocator to provide these arrays. However, there are certain drawbacks
-in using such arrays:
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+---
+ include/linux/percpu.h |   59 +++++++++++++++
+ include/linux/vmstat.h |    2 
+ mm/Kconfig             |    7 +
+ mm/Makefile            |    2 
+ mm/cpu_alloc.c         |  184 +++++++++++++++++++++++++++++++++++++++++++++++++
+ mm/vmstat.c            |    1 
+ 6 files changed, 253 insertions(+), 2 deletions(-)
+ create mode 100644 include/linux/cpu_alloc.h
+ create mode 100644 mm/cpu_alloc.c
 
-1. The arrays become huge for large systems and may be very sparsely
-   populated (if they are dimensionied for NR_CPUS) on an architecture
-   like IA64 that allows up to 4k cpus if a kernel is then booted on a
-   machine that only supports 8 processors. We could nr_cpu_ids there
-   but we would still have to allocate all possible processors up to
-   the number of processor ids. cpu_alloc can deal with sparse cpu_maps.
-
-2. The arrays cause surrounding variables to no longer fit into a single
-   cacheline. The layout of core data structure is typically optimized so
-   that variables frequently used together are placed in the same cacheline.
-   Arrays of pointers move these variables far apart and destroy this effect.
-
-3. A processor frequently follows only one pointer for its own use. Thus
-   that cacheline with that pointer has to be kept in memory. The neighboring
-   pointers are all to other processors that are rarely used. So a whole
-   cacheline of 128 bytes may be consumed but only 8 bytes of information
-   is constant use. It would be better to be able to place more information
-   in this cacheline.
-
-4. The lookup of the per cpu object is expensive and requires multiple
-   memory accesses to:
-
-   A) smp_processor_id()
-   B) pointer to the base of the per cpu pointer array
-   C) pointer to the per cpu object in the pointer array
-   D) the per cpu object itself.
-
-5. Each use of allocper requires its own per cpu array. On large
-   system large arrays have to be allocated again and again.
-
-6. Processor hotplug cannot effectively track the per cpu objects
-   since the VM cannot find all memory that was allocated for
-   a specific cpu. It is impossible to add or remove objects in
-   a consistent way. Although the allocpercpu subsystem was extended
-   to add that capability is not used since use would require adding
-   cpu hotplug callbacks to each and every use of allocpercpu in
-   the kernel.
-
-The patchset here provides an cpu allocator that arranges data differently.
-Objects are placed tightly in linear areas reserved for each processor.
-The areas are of a fixed size so that address calculation can be used
-instead of a lookup. This means that
-
-6. The VM knows where all the per cpu variables are and it could remove
-   or add cpu areas as cpus come online or go offline.
-
-5. There is no need for per cpu pointer arrays.
-
-4. The lookup of a per cpu object is easy and requires memory access to:
-
-   A) smp_processor_id()
-   B) cpu pointer to the object
-   C) the per cpu object itself.
-
-3. So one access to the not very friendly cacheline that only contains
-   a single useful pointer is avoided. The cache footprint is reduced.
-
-2. Surrounding variables can be placed in the same cacheline.
-   This allow f.e. in SLUB to avoid caching objects in per cpu structures
-   since the kmem_cache structure is finally available without the need
-   to access a cache cold cacheline.
-
-1. A single pointer can be used regardless of the number of processors
-   in the system.
-
-The cpu allocator managed data beginning at CPU_AREA_BASE. The pointer to
-access item DATA on processor X can then be calculated using
-
-POINTER = CPU_AREA_BASE + DATA + (X << CPU_AREA_ORDER)
-
-This makes the allocator rely on a fixed address of the cpu area and on
-a fixed size of memory for each processor (similar to S/390s
-way of addressing percpu variables).
-
-The allocator can be configured in two ways:
-
-1. Static configuration
-
-	The cpu areas are directly mapped memory addresses. Thus
-	the memory in the cpu areas is fixed and is allocated
-	as a static variable.
-
-	The default configuration of the cpu allocator (if no arch code
-	changes the settings) is to reserve a 32k area for each processor.
-
-2. Virtual configuration
-
-	The cpu areas are virtualized. Memory in cpu areas is allocated
-	on demand. The MMU is used to map memory allocated into the
-	cpu areas (in same way that the virtual memmap functionality does it).
-
-	The maximum sizes for the cpu areas is only dependent on the amount
-	of virtual memory available. The virtualization can use large
-	mappings (PMDs f.e.) in order to avoid TLB pressure that could occur
-	on system that only have a small page when heavy use of cpu areas
-	is made.
-
-
-This patch increases the speed of the SLUB fastpath and it is likely that
-similar results can be obtained for other kernel subsystems :
-
-
-Allocation of 10000 objects of each size. Measurement of the cycles
-for each action:
-
-Size  SLUBmm	cpu alloc
--------------------------
-   8  45	38
-  16  49	43
-  32  61	53
-  64  82	75
- 128  188	176
- 256  207	204
- 512  260	250
-1024  398	391
-2048  530	511
-4096  342	376
-
-Allocation and then immeidate freeing of an object. Measured in cycles
-for each alloc/free action:
-
-alloc/free test
-    SLUBmm	cpu alloc
-    68-72	56-58
-
-The cpu allocator also removes the difference in handling SMP, UP and NUMA in
-the slab and page allocate and simplifies code. It is advantageous even for UP
-to place per cpu data from different zones or different slabs in the same
-cacheline. Cpu alloc makes uniform handling of cpu data on all three different
-types of configurations possible.
-
-The cpu allocator also decreases the memory needs for per cpu storage.
-
-On a classic configuration with SLAB, 32 processors and the allocation of a 4 byte
-counter via allocpercpu one needs the following on a 64 bit platform:
-
-32 * 8		256	Array indexed by processor
-32 * 32		1024	32 objects. The minimum allocation size of SLAB is 32.
-------------------------------------------------------------------------------
-Total		1280 bytes
-
-cpu alloc needs
-
-32 * 4		128 bytes
-
-This is one tenth of storage. Granted this is the worst case scenario for a
-32 processor system but it shows the savings that can be had. cpu alloc can
-allocate 10 counters in the same cacheline for the price of one with
-allocpercpu. The allocpercpu counters are likely dispersed over all of
-memory. So multiple cachelines (in the worst case 10) need to be kept in
-memory if those counters need constant updating. cpu alloc will keep the
-10 counter in a single cacheline. cpu alloc can keep up to 16 counters
-in the same cacheline if the machine has a 64 byte cacheline size.
-
-The use of the cpu area is usually pretty minimal. 32 bit SMP systems typicaly
-use about 8k of cpu area space after bootup. 64 bit SMP around 16k. Small NUMA
-systems (8p 4node) use about 64k. Large NUMA system may need a megabyte of
-cpu area.
-
-The usage of the per cpu areas typically increases by
-
-1. New slabs being created (needs about 12 bytes per slab on 32 bit, 20 on 64 bit)
-2. New devices being mounted that need cpu data for statistics
-3. Network devices statistics
-4. Special network features (Dave needs to run 100000 IP tunnels)
-
-The current use of the cpu area can be seen in the field
-
-	cpu_bytes
-
-in /proc/vmstat
-
-Drawbacks:
-
-1. The per cpu area size is fixed
-
-   If we use a virtually mapped area then this is not a problem if there
-   is sufficient virtual space. The 100000 IP tunnels are only realistic
-   with a virtually mapped cpu area.
-
-2. The cpu allocator cannot control allocation of individual objects like
-   allocpercpu may. This is in actuality never used except in net/iucv/iucv.c
-   where we have a single case of a per cpu allocation being used to allocate
-   GFP_DMA structures(!). A patch is provided that replaces the use of
-   allocpercpu with explicit calls to allocators for each object in iucv.c
-
-TODO:
-- Currently only i386, ia64 and x86_64 arch definitions are provided.
-  Other arches fall back to 64k static configurations.
-- Cpu hotplug support. Current we simply allocate for all possible processors.
-  We could reduce this to only online processors if we could allocate the
-  cpu area for the new processor before the callbacks are run and if we could
-  free the cpu areas for a processor going down after all the callbacks for
-  that were run.
-
-The patchset implements cpu alloc and then gradually replaces all uses of
-allocpercpu in the kernel. The last patch removes the allocpercpu support.
-If the last patch is not applied then allocpercpu can coexist with cpu alloc.
-
-The patchset is available also via
-
-git pull git://git.kernel.org/pub/scm/linux/kernel/git/christoph/slab.git cpu_alloc
-
-
-The following patches are based on the linux-2.6 git tree +
-
-git://git.kernel.org/pub/scm/linux/kernel/git/christoph/slab.git performance
-
-(which is the mm version of SLUB)
+Index: linux-2.6/include/linux/vmstat.h
+===================================================================
+--- linux-2.6.orig/include/linux/vmstat.h	2007-11-16 14:51:29.326681524 -0800
++++ linux-2.6/include/linux/vmstat.h	2007-11-16 14:51:47.569430596 -0800
+@@ -36,7 +36,7 @@ enum vm_event_item { PGPGIN, PGPGOUT, PS
+ 		FOR_ALL_ZONES(PGSCAN_KSWAPD),
+ 		FOR_ALL_ZONES(PGSCAN_DIRECT),
+ 		PGINODESTEAL, SLABS_SCANNED, KSWAPD_STEAL, KSWAPD_INODESTEAL,
+-		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
++		PAGEOUTRUN, ALLOCSTALL, PGROTATED, CPU_BYTES,
+ 		NR_VM_EVENT_ITEMS
+ };
+ 
+Index: linux-2.6/mm/Kconfig
+===================================================================
+--- linux-2.6.orig/mm/Kconfig	2007-11-16 14:51:29.338681182 -0800
++++ linux-2.6/mm/Kconfig	2007-11-16 14:53:31.614680913 -0800
+@@ -194,3 +194,10 @@ config NR_QUICK
+ config VIRT_TO_BUS
+ 	def_bool y
+ 	depends on !ARCH_NO_VIRT_TO_BUS
++
++config CPU_AREA_ORDER
++	int "Maximum size (order) of CPU area"
++	default "3"
++	help
++	  Sets the maximum amount of memory that can be allocated via cpu_alloc
++	  The size is set in page order, so 0 = PAGE_SIZE, 1 = PAGE_SIZE << 1 etc.
+Index: linux-2.6/mm/Makefile
+===================================================================
+--- linux-2.6.orig/mm/Makefile	2007-11-16 14:51:29.346681415 -0800
++++ linux-2.6/mm/Makefile	2007-11-16 14:51:47.569430596 -0800
+@@ -11,7 +11,7 @@ obj-y			:= bootmem.o filemap.o mempool.o
+ 			   page_alloc.o page-writeback.o pdflush.o \
+ 			   readahead.o swap.o truncate.o vmscan.o \
+ 			   prio_tree.o util.o mmzone.o vmstat.o backing-dev.o \
+-			   page_isolation.o $(mmu-y)
++			   page_isolation.o cpu_alloc.o $(mmu-y)
+ 
+ obj-$(CONFIG_BOUNCE)	+= bounce.o
+ obj-$(CONFIG_SWAP)	+= page_io.o swap_state.o swapfile.o thrash.o
+Index: linux-2.6/mm/cpu_alloc.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/mm/cpu_alloc.c	2007-11-16 14:51:47.573430967 -0800
+@@ -0,0 +1,184 @@
++/*
++ * Cpu allocator - Manage objects allocated for each processor
++ *
++ * (C) 2007 SGI, Christoph Lameter <clameter@sgi.com>
++ * 	Basic implementation with allocation and free from a dedicated per
++ * 	cpu area.
++ *
++ * The per cpu allocator allows dynamic allocation of memory on all
++ * processor simultaneously. A bitmap is used to track used areas.
++ * The allocator implements tight packing to reduce the cache footprint
++ * and increase speed since cacheline contention is typically not a concern
++ * for memory mainly used by a single cpu. Small objects will fill up gaps
++ * left by larger allocations that required alignments.
++ */
++#include <linux/mm.h>
++#include <linux/mmzone.h>
++#include <linux/module.h>
++#include <linux/percpu.h>
++#include <linux/bitmap.h>
++
++/*
++ * Basic allocation unit. A bit map is created to track the use of each
++ * UNIT_SIZE element in the cpu area.
++ */
++
++#define UNIT_SIZE sizeof(int)
++#define UNITS (ALLOC_SIZE / UNIT_SIZE)
++
++/*
++ * How many units are needed for an object of a given size
++ */
++static int size_to_units(unsigned long size)
++{
++	return DIV_ROUND_UP(size, UNIT_SIZE);
++}
++
++/*
++ * Lock to protect the bitmap and the meta data for the cpu allocator.
++ */
++static DEFINE_SPINLOCK(cpu_alloc_map_lock);
++static unsigned long units_reserved;	/* Units reserved by boot allocations */
++
++/*
++ * Static configuration. The cpu areas are of a fixed size and
++ * cannot be extended. Such configurations are mainly useful on
++ * machines that do not have MMU support. Note that we have to use
++ * bss space for the static declarations. The combination of a large number
++ * of processors and a large cpu area may cause problems with the size
++ * of the bss segment.
++ */
++#define ALLOC_SIZE (1UL << (CONFIG_CPU_AREA_ORDER + PAGE_SHIFT))
++
++static u8 cpu_area[NR_CPUS * ALLOC_SIZE];
++static DECLARE_BITMAP(cpu_alloc_map, UNITS);
++
++void * __init boot_cpu_alloc(unsigned long size)
++{
++	unsigned long x = units_reserved;
++
++	units_reserved += size_to_units(size);
++	BUG_ON(units_reserved > UNITS);
++	return cpu_area + x * UNIT_SIZE;
++}
++
++static int first_free;		/* First known free unit */
++
++/*
++ * Mark an object as used in the cpu_alloc_map
++ *
++ * Must hold cpu_alloc_map_lock
++ */
++static void set_map(int start, int length)
++{
++	while (length-- > 0)
++		__set_bit(start++, cpu_alloc_map);
++}
++
++/*
++ * Mark an area as freed.
++ *
++ * Must hold cpu_alloc_map_lock
++ */
++static void clear_map(int start, int length)
++{
++	while (length-- > 0)
++		__clear_bit(start++, cpu_alloc_map);
++}
++
++/*
++ * Allocate an object of a certain size
++ *
++ * Returns a special pointer that can be used with CPU_PTR to find the
++ * address of the object for a certain cpu.
++ */
++void *cpu_alloc(unsigned long size, gfp_t gfpflags, unsigned long align)
++{
++	unsigned long start;
++	int units = size_to_units(size);
++	void *ptr;
++	int first;
++	unsigned long flags;
++
++	BUG_ON(gfpflags & ~(GFP_RECLAIM_MASK | __GFP_ZERO));
++
++	spin_lock_irqsave(&cpu_alloc_map_lock, flags);
++
++	first = 1;
++	start = first_free;
++
++	for ( ; ; ) {
++
++		start = find_next_zero_bit(cpu_alloc_map, ALLOC_SIZE, start);
++		if (start >= UNITS - units_reserved)
++			goto out_of_memory;
++
++		if (first)
++			first_free = start;
++
++		/*
++		 * Check alignment and that there is enough space after
++		 * the starting unit.
++		 */
++		if ((start + units_reserved) % (align / UNIT_SIZE) == 0 &&
++			find_next_bit(cpu_alloc_map, ALLOC_SIZE, start + 1)
++							>= start + units)
++				break;
++		start++;
++		first = 0;
++	}
++
++	if (first)
++		first_free = start + units;
++
++	if (start + units > UNITS - units_reserved)
++		goto out_of_memory;
++
++	set_map(start, units);
++	__count_vm_events(CPU_BYTES, units * UNIT_SIZE);
++
++	spin_unlock_irqrestore(&cpu_alloc_map_lock, flags);
++
++	ptr = cpu_area + (start + units_reserved) * UNIT_SIZE;
++
++	if (gfpflags & __GFP_ZERO) {
++		int cpu;
++
++		for_each_possible_cpu(cpu)
++			memset(CPU_PTR(ptr, cpu), 0, size);
++	}
++
++	return ptr;
++
++out_of_memory:
++	spin_unlock_irqrestore(&cpu_alloc_map_lock, flags);
++	return NULL;
++}
++EXPORT_SYMBOL(cpu_alloc);
++
++/*
++ * Free an object. The pointer must be a cpu pointer allocated
++ * via cpu_alloc.
++ */
++void cpu_free(void *start, unsigned long size)
++{
++	int units = size_to_units(size);
++	int index;
++	u8 *p = start;
++	unsigned long flags;
++
++	BUG_ON(p < (cpu_area + units_reserved * UNIT_SIZE));
++	index = (p - cpu_area) / UNIT_SIZE - units_reserved;
++	BUG_ON(!test_bit(index, cpu_alloc_map) ||
++			index >= UNITS - units_reserved);
++
++	spin_lock_irqsave(&cpu_alloc_map_lock, flags);
++
++	clear_map(index, units);
++	__count_vm_events(CPU_BYTES, -units * UNIT_SIZE);
++	if (index < first_free)
++		first_free = index;
++
++	spin_unlock_irqrestore(&cpu_alloc_map_lock, flags);
++}
++EXPORT_SYMBOL(cpu_free);
+Index: linux-2.6/mm/vmstat.c
+===================================================================
+--- linux-2.6.orig/mm/vmstat.c	2007-11-16 14:51:43.522430963 -0800
++++ linux-2.6/mm/vmstat.c	2007-11-16 14:51:47.578181134 -0800
+@@ -639,6 +639,7 @@ static const char * const vmstat_text[] 
+ 	"allocstall",
+ 
+ 	"pgrotated",
++	"cpu_bytes",
+ #endif
+ };
+ 
+Index: linux-2.6/include/linux/percpu.h
+===================================================================
+--- linux-2.6.orig/include/linux/percpu.h	2007-11-16 14:51:29.334681520 -0800
++++ linux-2.6/include/linux/percpu.h	2007-11-16 14:51:47.578181134 -0800
+@@ -110,4 +110,63 @@ static inline void percpu_free(void *__p
+ #define free_percpu(ptr)	percpu_free((ptr))
+ #define per_cpu_ptr(ptr, cpu)	percpu_ptr((ptr), (cpu))
+ 
++
++/*
++ * cpu allocator definitions
++ *
++ * The cpu allocator allows allocating an array of objects on all processors.
++ * A single pointer can then be used to access the instance of the object
++ * on a particular processor.
++ *
++ * Cpu objects are typically small. The allocator packs them tightly
++ * to increase the chance on each access that a per cpu object is already
++ * cached. Alignments may be specified but the intent is to align the data
++ * properly due to cpu alignment constraints and not to avoid cacheline
++ * contention. Any holes left by aligning objects are filled up with smaller
++ * objects that are allocated later.
++ *
++ * Cpu data can be allocated using CPU_ALLOC. The resulting pointer is
++ * pointing to the instance of the variable on cpu 0. It is generally an
++ * error to use the pointer directly unless we are running on cpu 0. So
++ * the use is valid during boot for example.
++ *
++ * The GFP flags have their usual function: __GFP_ZERO zeroes the object
++ * and other flags may be used to control reclaim behavior if the cpu
++ * areas have to be extended. However, zones cannot be selected nor
++ * can locality constraint flags be used.
++ *
++ * CPU_PTR() may be used to calculate the pointer for a specific processor.
++ * CPU_PTR is highly scalable since it simply adds the shifted value of
++ * smp_processor_id() to the base.
++ *
++ * Note: Synchronization is up to caller. If preemption is disabled then
++ * it is generally safe to access cpu variables (unless they are also
++ * handled from an interrupt context).
++ */
++
++#define CPU_OFFSET(__cpu) \
++	((unsigned long)(__cpu) << (CONFIG_CPU_AREA_ORDER + PAGE_SHIFT))
++
++#define CPU_PTR(__p, __cpu) ((__typeof__(__p))((void *)(__p) + \
++							CPU_OFFSET(__cpu)))
++
++#define CPU_ALLOC(type, flags)	cpu_alloc(sizeof(type), flags, \
++					__alignof__(type))
++#define CPU_FREE(pointer)	cpu_free(pointer, sizeof(*(pointer)))
++
++#define THIS_CPU(__p)	CPU_PTR(__p, smp_processor_id())
++#define __THIS_CPU(__p)	CPU_PTR(__p, raw_smp_processor_id())
++
++/*
++ * Raw calls
++ */
++void *cpu_alloc(unsigned long size, gfp_t gfp, unsigned long align);
++void cpu_free(void *cpu_pointer, unsigned long size);
++
++/*
++ * Early boot allocator for per_cpu variables and special per cpu areas.
++ * Allocations are not tracked and cannot be freed.
++ */
++void *boot_cpu_alloc(unsigned long size);
++
+ #endif /* __LINUX_PERCPU_H */
 
 -- 
