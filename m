@@ -1,52 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762952AbXKPJ4k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763261AbXKPKCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762952AbXKPJ4k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 04:56:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755548AbXKPJ4b
+	id S1763261AbXKPKCX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 05:02:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbXKPKCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 04:56:31 -0500
-Received: from ns4.abinetworks.biz ([216.218.212.66]:50139 "EHLO
-	ns4.abinetworks.biz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754161AbXKPJ4a (ORCPT
+	Fri, 16 Nov 2007 05:02:15 -0500
+Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:59305 "EHLO
+	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751896AbXKPKCO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 04:56:30 -0500
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Nov 2007 04:56:30 EST
-Message-ID: <473D6703.9090904@abinetworks.biz>
-Date: Fri, 16 Nov 2007 10:46:43 +0100
-From: Gianluca Alberici <gianluca@abinetworks.biz>
-User-Agent: Mozilla Thunderbird 1.0.2 (X11/20050317)
-X-Accept-Language: en-us, en
+	Fri, 16 Nov 2007 05:02:14 -0500
+Date: Fri, 16 Nov 2007 10:02:03 +0000 (GMT)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Oliver Neukum <oliver@neukum.org>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: question on odd APIC behavior
+In-Reply-To: <200711151905.03005.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.64N.0711160959010.25869@blysk.ds.pg.gda.pl>
+References: <200711150054.34312.oliver@neukum.org> <200711151627.25622.oliver@neukum.org>
+ <Pine.LNX.4.64N.0711151637220.19041@blysk.ds.pg.gda.pl>
+ <200711151905.03005.oliver@neukum.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: NFS Bug in 2.6.23 ?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Thu, 15 Nov 2007, Oliver Neukum wrote:
 
-Got problems with CFS after a kernel upgrade from 2.6.20 to 2.6.23.
-After a certain amount of time since cattach i get:
+> On irq 20, there's an UHCI, on irq 19 is an EHCI. For every interrupt on 20
+> there's a spurious interrupt on 19. USB devices on bus of the controller on 20
+> work. So I know all interrupts are seen. ERR does not increase. Interrupts
+> for devices on the bus of the controller on 19 arrive at 19 only.
 
-ios:~$ ls /opt/clear/
-ls: /opt/clear/: Not a directory
+ I suggest you try to sort it out with the maintainers of the UHCI and 
+EHCI drivers then.
 
-stracing the command i get stat64() returning ENOTDIR.
-Applications won't find the directory.
-
-If i cd into it and ls it is like doing a refresh: everything works
-again for a certain amount of time, then, again. It reminds me an old
-version of CFS which used to claim: 'stale NFS file handle'.
-
-I didnt see any NFS changes in the changeslog of 2.6.23.1 so i decided
-to POST.
-
-SOmebody can help ?
-
-TIA
-
-Gianluca
-
-
-
+  Maciej
