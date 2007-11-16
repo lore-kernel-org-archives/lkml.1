@@ -1,35 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765354AbXKPWZg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934979AbXKPWZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765354AbXKPWZg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 17:25:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756637AbXKPWZ2
+	id S934979AbXKPWZw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 17:25:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758053AbXKPWZ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 16 Nov 2007 17:25:29 -0500
+Received: from mx2.suse.de ([195.135.220.15]:37363 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756649AbXKPWZ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 Nov 2007 17:25:28 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:56193 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752082AbXKPWZ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 17:25:27 -0500
-Date: Fri, 16 Nov 2007 14:25:26 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] PERCPU : __percpu_alloc_mask() can dynamically size
- percpu_data storage
-In-Reply-To: <473E168A.9060305@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0711161424540.6758@schroedinger.engr.sgi.com>
-References: <473E168A.9060305@cosmosbay.com>
+To: devzero@web.de
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: distro specific kernels vs vanilla kernel and how to compare among each other
+From: Andi Kleen <andi@firstfloor.org>
+References: <2089856624@web.de>
+Date: Fri, 16 Nov 2007 23:25:27 +0100
+In-Reply-To: <2089856624@web.de> (devzero@web.de's message of "Fri\, 16 Nov 2007 20\:45\:28 +0100")
+Message-ID: <p73tznlbzfs.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Nov 2007, Eric Dumazet wrote:
+devzero@web.de writes:
 
-> Instead of allocating a fix sized array of NR_CPUS pointers for percpu_data,
-> we can use nr_cpu_ids, which is generally < NR_CPUS.
+> does somebody know if there is a website or a project for giving comfortable and deeper insight into what`s specific to distro`s kernels and what`s their difference to vanilla kernel ?
+>
+> i mean some way to have some transparancy to what different distro vendors add to vanilla kernel sources and thus turning it into their own specific version. 
 
-Yes we can. Could you either use [] or [0] instead of the index there? 
-Somehow the patch vanished when I replied to it.
+There used to be such a page at kernelnewbies, but at some point it disappeared.
+
+I agree it would be a useful resource.
+
+-Andi
