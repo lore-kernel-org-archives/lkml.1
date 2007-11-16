@@ -1,92 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933789AbXKPUzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934140AbXKPUzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933789AbXKPUzS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 15:55:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755234AbXKPUzD
+	id S934140AbXKPUzn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 15:55:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757572AbXKPUzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 15:55:03 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:55249 "EHLO mx1.redhat.com"
+	Fri, 16 Nov 2007 15:55:06 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:55256 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755151AbXKPUzA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 15:55:00 -0500
-Subject: [PATCH 2/3] mmap: round mmap hint address above mmap_min_addr
+	id S1755715AbXKPUzE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 15:55:04 -0500
+Subject: [PATCH 1/3] mmap: protect from stack expantion into low vm
+	addresses
 From: Eric Paris <eparis@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: jmorris@namei.org, sds@tycho.nsa.gov, selinux@tycho.nsa.gov,
        alan@redhat.com, chrisw@redhat.com, hpa@zytor.com,
        akpm@linux-foundation.org
 Content-Type: text/plain
-Date: Fri, 16 Nov 2007 15:54:46 -0500
-Message-Id: <1195246486.2924.87.camel@localhost.localdomain>
+Date: Fri, 16 Nov 2007 15:54:39 -0500
+Message-Id: <1195246479.2924.86.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If mmap_min_addr is set and a process attempts to mmap (not fixed) with
-a non-null hint address less than mmap_min_addr the mapping will fail
-the security checks.  Since this is just a hint address this patch will
-round such a hint address above mmap_min_addr.
-
-gcj was found to try to be very frugal with vm usage and give hint
-addresses in the 8k-32k range.  Without this patch all such programs
-failed and with the patch they happily get a higher address.
-
-This patch is wrappad in CONFIG_SECURITY since mmap_min_addr doesn't
-exist without it and there would be no security check possible no matter
-what.  So we should not both compiling in this rounding if it is just a
-waste of time.
+When adding the new security hooks into mmap to enhance protection
+against NULL pointers in the kernel I overlooked that a user may be able
+to expand the stack all the way down to low addresses.  This flaw was
+pointed out by a PaX/grsecurity developer and this patch should provide
+protection against this missed code path.
 
 Signed-off-by: Eric Paris <eparis@redhat.com>
 
 ---
 
- mm/mmap.c  |   10 ++++++++++
- mm/nommu.c |   10 ++++++++++
- 2 files changed, 20 insertions(+), 0 deletions(-)
+** Be very careful applying/rediffing this patch.  Standard 3 lines of
+context from git diff will misapply the first hunk to expand_upwards
+instead of properly in expand_downwards.  This patch was generated using
+-U 4 to make sure it applies in the correct place.  **
 
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 938313c..0c3ff74 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -912,6 +912,16 @@ unsigned long do_mmap_pgoff(struct file * file, unsigned long addr,
- 	if (!len)
- 		return -EINVAL;
- 
-+#ifdef CONFIG_SECURITY
-+	/*
-+	 * If a hint addr is less than mmap_min_addr change addr to be as
-+	 * low as possible but still greater than mmap_min_addr
-+	 */
-+	if (!(flags & MAP_FIXED) && ((void *)addr != NULL) &&
-+	    (addr < mmap_min_addr))
-+		addr = PAGE_ALIGN(mmap_min_addr);
-+#endif
+ mm/mmap.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+--- kernel-1/mm/mmap.c
++++ kernel-2/mm/mmap.c
+@@ -1614,17 +1614,21 @@ static inline int expand_downwards(struc
+ 	 * so that the anon_vma locking is not a noop.
+ 	 */
+ 	if (unlikely(anon_vma_prepare(vma)))
+ 		return -ENOMEM;
 +
- 	error = arch_mmap_check(addr, len, flags);
- 	if (error)
- 		return error;
-diff --git a/mm/nommu.c b/mm/nommu.c
-index 35622c5..ea4d20a 100644
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -829,6 +829,16 @@ unsigned long do_mmap_pgoff(struct file *file,
- 	void *result;
- 	int ret;
- 
-+#ifdef CONFIG_SECURITY
-+	/*
-+	 * If a hint addr is less than mmap_min_addr change addr to be as
-+	 * low as possible, but still greater than mmap_min_addr
-+	 */
-+	if (!(flags & MAP_FIXED) && ((void *)addr != NULL) &&
-+	    (addr < mmap_min_addr))
-+		addr = PAGE_ALIGN(mmap_min_addr);
-+#endif
++	address &= PAGE_MASK;
++	error = security_file_mmap(0, 0, 0, 0, address, 1);
++	if (error)
++		return error;
 +
- 	/* decide whether we should attempt the mapping, and if so what sort of
- 	 * mapping */
- 	ret = validate_mmap_request(file, addr, len, prot, flags, pgoff,
+ 	anon_vma_lock(vma);
+ 
+ 	/*
+ 	 * vma->vm_start/vm_end cannot change under us because the caller
+ 	 * is required to hold the mmap_sem in read mode.  We need the
+ 	 * anon_vma lock to serialize against concurrent expand_stacks.
+ 	 */
+-	address &= PAGE_MASK;
+-	error = 0;
+ 
+ 	/* Somebody else might have raced and expanded it already */
+ 	if (address < vma->vm_start) {
+ 		unsigned long size, grow;
 
 
