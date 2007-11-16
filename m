@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757765AbXKPHYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758824AbXKPH05@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757765AbXKPHYT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 02:24:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751606AbXKPHYK
+	id S1758824AbXKPH05 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 02:26:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbXKPH0u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 02:24:10 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:36644 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751591AbXKPHYK (ORCPT
+	Fri, 16 Nov 2007 02:26:50 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45817 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751645AbXKPH0t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 02:24:10 -0500
-Date: Thu, 15 Nov 2007 23:15:27 -0800
-From: Greg KH <greg@kroah.com>
-To: Rob Landley <rob@landley.net>
-Cc: WANG Cong <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org,
-       Jeff Dike <jdike@addtoit.com>, akpm@linux-foundation.org,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [Patch] Fix UML broken (was Re: User Mode Linux still broken
-	in 2.6.23.1)
-Message-ID: <20071116071527.GE31582@kroah.com>
-References: <200711032351.52977.rob@landley.net> <20071115210608.GA12213@kroah.com> <20071116030832.GB2563@hacking> <200711152301.44040.rob@landley.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200711152301.44040.rob@landley.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 16 Nov 2007 02:26:49 -0500
+Date: Thu, 15 Nov 2007 23:26:35 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: x86: disable preemption in delay_tsc()
+Message-Id: <20071115232635.d190acd7.akpm@linux-foundation.org>
+In-Reply-To: <20071116071708.GA2103@elte.hu>
+References: <200711150400.lAF40lIr020160@hera.kernel.org>
+	<20071115194116.12c7a0f6@laptopd505.fenrus.org>
+	<20071115195234.2dc8406d.akpm@linux-foundation.org>
+	<20071116061332.GF16273@elte.hu>
+	<20071115230859.d9ccea20.akpm@linux-foundation.org>
+	<20071116071708.GA2103@elte.hu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 15, 2007 at 11:01:43PM -0600, Rob Landley wrote:
-> On Thursday 15 November 2007 21:08:32 WANG Cong wrote:
-> > On Thu, Nov 15, 2007 at 01:06:08PM -0800, Greg KH wrote:
-> > >Hm, not good.  I'll let Jeff handle this :)
-> >
-> > Could you please try this patch? Can it fix the error?
-> >
-> > Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+On Fri, 16 Nov 2007 08:17:08 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+
 > 
-> Oh what a good idea.
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> Signed-off-by: Rob Landley <rob@landley.net>
+> > It sounds like it would work OK.  What is the setup cost for a usleep?  
+> > I'd have thought that code which does something like
+> > 
+> > 	while (i++ < 1000) {
+> > 		foo();
+> > 		udelay(1);
+> > 	}
+> > 
+> > would take qiute a bit longer with such a change?
+> 
+> full roundtrip cost ought to be below 10 usecs, depending on the system. 
 
-Heh, we came full circle here, this was Rob's original patch :)
+Ow.  So the above timeout would take 10x longer.  That probably won't break
+anything, but quite a few drivers do udelay(1) for post-IO settling times
+and they might not like it.
 
-Rob, I'll queue this up for the next cycle, now that you've verified
-that it was not fixed already, thanks for testing.
+> There's no problem doing a non-preemptible udelay up to 10 usecs and we
+> could use usleep above that.
 
-greg k-h
+Yup, with a few smarts in there we could work out which is the best to use,
+and also compensate for the setup costs.
+
+It doesn't sound very 2.6.24ish though.
+
+As a quicky things perhaps we could only do the preempt_disable()/preempt_enable()
+if the TSCs are unsynced?  Do we reliably know that?  I guess not..
