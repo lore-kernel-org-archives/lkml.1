@@ -1,75 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765357AbXKPUUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765354AbXKPUYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765357AbXKPUUc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 15:20:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbXKPUUX
+	id S1765354AbXKPUYT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 15:24:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755715AbXKPUYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 15:20:23 -0500
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:48005 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752203AbXKPUUW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 15:20:22 -0500
-Date: Fri, 16 Nov 2007 15:20:05 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Remy Bohmer <linux@bohmer.net>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       RT <linux-rt-users@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG on PREEMPT_RT, 2.6.23.1-rt5] in rt-mutex code and signals
-In-Reply-To: <3efb10970711160751l279fe99dl9f3a130a4373a449@mail.gmail.com>
-Message-ID: <Pine.LNX.4.58.0711161516580.25989@gandalf.stny.rr.com>
-References: <3efb10970711160751l279fe99dl9f3a130a4373a449@mail.gmail.com>
+	Fri, 16 Nov 2007 15:24:10 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:41561 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754568AbXKPUYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 15:24:09 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, Kees Cook <kees@ubuntu.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Scott James Remnant <scott@ubuntu.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] wait_task_stopped: tidy up the noreap case
+In-Reply-To: Oleg Nesterov's message of  Friday, 16 November 2007 20:24:13 +0300 <20071116172413.GA7296@tv-sign.ru>
+References: <20071116172413.GA7296@tv-sign.ru>
+X-Shopping-List: (1) Uninteresting distenders
+   (2) Frothy shrub infestations
+   (3) Lesser-known yarns
+Message-Id: <20071116202403.1CF0C26F8BA@magilla.localdomain>
+Date: Fri, 16 Nov 2007 12:24:03 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is good, but not quite enough.  The original intent behind having the
+test was never to return mismatched stale/fresh data.  (Not that it ever
+really worked as intended.)  That is, it's fine if the task has woken up
+and done other things while WNOWAIT reports it as stopped--that's stale
+data, but it just means the waitid call happened "before" the resumption.
+However, it should not report anything that could not possibly have been
+true before the resumption.  i.e. a changed exit_code, which now means an
+normal termination status or a death signal, not the stop signal.  This
+also applies to the uid, in case the thread called setuid upon resuming
+(and even to ptracedness, not that that one really matters).  (It doesn't
+matter for rusage, since that's not really an exact change of state with
+reliable ordering anyway.)
+
+So the setting of uid and why should also move before read_unlock.
+While you're at it, you could fix the status argument to wait_noreap_copyout.
+It should be just exit_code, not the WIFSTOPPED bit format it does now.
 
 
-On Fri, 16 Nov 2007, Remy Bohmer wrote:
-
-> Hello All,
->
-> I have a problem with the RT-mutex code and signals. The problem is
-> very easily reproducible, but I do not have found the root-cause yet.
-> I hope someone can help me on this one.
->
-> This is what I am doing:
-> * I have a simple character driver with a read call.(called spi_read()
-> in the logging below )
-> * The read call blocks on a semaphore until some condition in hardware
-> is reached. (in the routine wait_for_io_level(), see logging below)
-> * I use a down_interruptible() call on a 'struct semaphore' type
-> semaphore, which eventually blocks on a mutex. (the semaphore is, of
-> course, initialised with sema_init() )
-
-The above sounds more like you need a completion. What's used to wake up
-the caller of down_interruptible?
-
-Can you post some code to see what you are doing. That would make it much
-easier to analyze.
-
--- Steve
-
-
->
-> What happens is that when a user-space RT-thread is waiting on the
-> semaphore through the spi_read() call, and a signal arrives during the
-> wait at this thread (like e.g. CTRL-C), the kernel starts oopsing
-> until it is as good as brain-dead.
->
-> If I do NOT sent a posix-signal the code/mutex/semaphore is working
-> properly for days,
-> So, it seems to be related by waking up from a blocking situation,
-> because of a pending posix-signal.
->
-> I tried also the types 'struct compat_semaphore', and mutexes; none of
-> them work.
-> In fact the real Mutex type, declared with init_MUTEX() has the same problem.
->
-> Anyone an idea?
-> Below the kernel oops output. (I run on ARM, but I think that should
-> not matter for this problem)
->
+Thanks,
+Roland
