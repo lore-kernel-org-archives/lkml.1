@@ -1,64 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758824AbXKPH05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759104AbXKPH3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758824AbXKPH05 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 02:26:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbXKPH0u
+	id S1759104AbXKPH3n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 02:29:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbXKPH3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 02:26:50 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45817 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751645AbXKPH0t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 02:26:49 -0500
-Date: Thu, 15 Nov 2007 23:26:35 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: x86: disable preemption in delay_tsc()
-Message-Id: <20071115232635.d190acd7.akpm@linux-foundation.org>
-In-Reply-To: <20071116071708.GA2103@elte.hu>
-References: <200711150400.lAF40lIr020160@hera.kernel.org>
-	<20071115194116.12c7a0f6@laptopd505.fenrus.org>
-	<20071115195234.2dc8406d.akpm@linux-foundation.org>
-	<20071116061332.GF16273@elte.hu>
-	<20071115230859.d9ccea20.akpm@linux-foundation.org>
-	<20071116071708.GA2103@elte.hu>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Fri, 16 Nov 2007 02:29:35 -0500
+Received: from mga01.intel.com ([192.55.52.88]:37658 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751606AbXKPH3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 02:29:34 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,425,1188802800"; 
+   d="scan'208";a="386477128"
+Subject: [PATCH]: PNP: Increase the value of PNP constant
+From: Zhao Yakui <yakui.zhao@intel.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, shaohua.li@intel.com
+Content-Type: text/plain
+Date: Fri, 16 Nov 2007 15:39:58 +0800
+Message-Id: <1195198798.2460.18.camel@yakui_zhao.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Nov 2007 08:17:08 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+Subject: PNP: Increase the value of PNP constant
+From: Zhao Yakui  <yakui.zhao@intel.com>
 
-> 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > It sounds like it would work OK.  What is the setup cost for a usleep?  
-> > I'd have thought that code which does something like
-> > 
-> > 	while (i++ < 1000) {
-> > 		foo();
-> > 		udelay(1);
-> > 	}
-> > 
-> > would take qiute a bit longer with such a change?
-> 
-> full roundtrip cost ought to be below 10 usecs, depending on the system. 
+On some systems the number of resources(IO,MEM) returnedy by PNP
+device is greater than the PNP constant, for example motherboard devices. 
+It brings that some resources can't be reserved and resource confilicts.
+This will cause PCI resources are assigned wrongly in some systems, and
+cause hang. This is a regression since we deleted ACPI motherboard
+driver and use PNP system driver.
 
-Ow.  So the above timeout would take 10x longer.  That probably won't break
-anything, but quite a few drivers do udelay(1) for post-IO settling times
-and they might not like it.
+Andrew, I thought this is an urgent issue and should be fixed ASAP, and
+this is a good candidate for -stable tree
 
-> There's no problem doing a non-preemptible udelay up to 10 usecs and we
-> could use usleep above that.
+Signed-off-by: Li Shaohua <shaohua.li@intel.com>
+Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
 
-Yup, with a few smarts in there we could work out which is the best to use,
-and also compensate for the setup costs.
+---
+ drivers/pnp/pnpacpi/rsparser.c |   18 ++++++++++++++++--
+ include/linux/pnp.h            |    4 ++--
+ 2 files changed, 18 insertions(+), 4 deletions(-)
 
-It doesn't sound very 2.6.24ish though.
-
-As a quicky things perhaps we could only do the preempt_disable()/preempt_enable()
-if the TSCs are unsynced?  Do we reliably know that?  I guess not..
+Index: linux-2.6.24-rc2/include/linux/pnp.h
+===================================================================
+--- linux-2.6.24-rc2.orig/include/linux/pnp.h
++++ linux-2.6.24-rc2/include/linux/pnp.h
+@@ -13,8 +13,8 @@
+ #include <linux/errno.h>
+ #include <linux/mod_devicetable.h>
+ 
+-#define PNP_MAX_PORT		8
+-#define PNP_MAX_MEM		4
++#define PNP_MAX_PORT		24
++#define PNP_MAX_MEM		12
+ #define PNP_MAX_IRQ		2
+ #define PNP_MAX_DMA		2
+ #define PNP_NAME_LEN		50
+Index: linux-2.6.24-rc2/drivers/pnp/pnpacpi/rsparser.c
+===================================================================
+--- linux-2.6.24-rc2.orig/drivers/pnp/pnpacpi/rsparser.c
++++ linux-2.6.24-rc2/drivers/pnp/pnpacpi/rsparser.c
+@@ -82,9 +82,11 @@ static void pnpacpi_parse_allocated_irqr
+ 	while (!(res->irq_resource[i].flags & IORESOURCE_UNSET) &&
+ 	       i < PNP_MAX_IRQ)
+ 		i++;
+-	if (i >= PNP_MAX_IRQ)
++	if (i >= PNP_MAX_IRQ) {
++		printk(KERN_ERR "Exceed the max number of IRQ resource: "
++				"%d \n",PNP_MAX_IRQ);
+ 		return;
+-
++	}
+ #ifdef CONFIG_X86
+ 	if (gsi < 16 && (triggering != ACPI_EDGE_SENSITIVE ||
+ 				polarity != ACPI_ACTIVE_HIGH)) {
+@@ -173,6 +175,10 @@ static void pnpacpi_parse_allocated_dmar
+ 		}
+ 		res->dma_resource[i].start = dma;
+ 		res->dma_resource[i].end = dma;
++	} else {
++		printk(KERN_ERR "Exceed the max number of DMA resource: "
++				"%d \n",PNP_MAX_DMA);
++		return;
+ 	}
+ }
+ 
+@@ -194,6 +200,10 @@ static void pnpacpi_parse_allocated_iore
+ 		}
+ 		res->port_resource[i].start = io;
+ 		res->port_resource[i].end = io + len - 1;
++	} else {
++		printk(KERN_ERR "Exceed the max number of IO Resource: "
++				"%d \n",PNP_MAX_PORT);
++		return;
+ 	}
+ }
+ 
+@@ -217,6 +227,10 @@ static void pnpacpi_parse_allocated_memr
+ 
+ 		res->mem_resource[i].start = mem;
+ 		res->mem_resource[i].end = mem + len - 1;
++	} else {
++		printk(KERN_ERR "Exceed the max number of Mem Resource: "
++				"%d \n",PNP_MAX_MEM);
++		return;
+ 	}
+ }
+ 
