@@ -1,131 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933696AbXKPUDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933924AbXKPUDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933696AbXKPUDZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 15:03:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763946AbXKPUB4
+	id S933924AbXKPUDp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 15:03:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765356AbXKPUCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 15:01:56 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:38604 "EHLO smtp.polymtl.ca"
+	Fri, 16 Nov 2007 15:02:05 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:38714 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760075AbXKPUBx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 15:01:53 -0500
-Message-Id: <20071116200139.134470826@polymtl.ca>
+	id S1765213AbXKPUCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 15:02:04 -0500
+Message-Id: <20071116200137.673861165@polymtl.ca>
 References: <20071116195747.448703304@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Fri, 16 Nov 2007 14:57:54 -0500
+Date: Fri, 16 Nov 2007 14:57:50 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>, prasanna@in.ibm.com,
-       anil.s.keshavamurthy@intel.com, davem@davemloft.net
-Subject: [rfc-patch 07/11] Text Edit Lock - kprobes architecture independent support
-Content-Disposition: inline; filename=text-edit-lock-kprobes-architecture-independent.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri, 16 Nov 2007 20:01:43 +0000
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>, hch@infradead.org,
+       prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com,
+       davem@davemloft.net
+Subject: [rfc-patch 03/11] Kprobes - declare kprobe_mutex static
+Content-Disposition: inline; filename=kprobes-declare-kprobes-mutex-static.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri, 16 Nov 2007 20:01:41 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the mutual exclusion provided by the text edit lock in the kprobes code. It
-allows coherent manipulation of the kernel code by other subsystems.
+Since it will not be used by other kernel objects, it makes sense to declare it
+static.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+CC: hch@infradead.org
 CC: prasanna@in.ibm.com
-CC: ananth@in.ibm.com
 CC: anil.s.keshavamurthy@intel.com
 CC: davem@davemloft.net
 ---
- kernel/kprobes.c |   19 +++++++++++++------
- 1 file changed, 13 insertions(+), 6 deletions(-)
+ kernel/kprobes.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 Index: linux-2.6-lttng/kernel/kprobes.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/kprobes.c	2007-09-07 10:12:06.000000000 -0400
-+++ linux-2.6-lttng/kernel/kprobes.c	2007-09-07 10:13:09.000000000 -0400
-@@ -43,6 +43,7 @@
- #include <linux/seq_file.h>
- #include <linux/debugfs.h>
- #include <linux/kdebug.h>
-+#include <linux/memory.h>
+--- linux-2.6-lttng.orig/kernel/kprobes.c	2007-08-19 09:09:15.000000000 -0400
++++ linux-2.6-lttng/kernel/kprobes.c	2007-08-19 17:18:07.000000000 -0400
+@@ -68,7 +68,7 @@ static struct hlist_head kretprobe_inst_
+ /* NOTE: change this value only with kprobe_mutex held */
+ static bool kprobe_enabled;
  
- #include <asm-generic/sections.h>
- #include <asm/cacheflush.h>
-@@ -568,9 +569,10 @@ static int __kprobes __register_kprobe(s
- 		goto out;
- 	}
+-DEFINE_MUTEX(kprobe_mutex);		/* Protects kprobe_table */
++static DEFINE_MUTEX(kprobe_mutex);	/* Protects kprobe_table */
+ DEFINE_SPINLOCK(kretprobe_lock);	/* Protects kretprobe_inst_table */
+ static DEFINE_PER_CPU(struct kprobe *, kprobe_instance) = NULL;
  
-+	kernel_text_lock();
- 	ret = arch_prepare_kprobe(p);
- 	if (ret)
--		goto out;
-+		goto out_unlock_text;
- 
- 	INIT_HLIST_NODE(&p->hlist);
- 	hlist_add_head_rcu(&p->hlist,
-@@ -578,7 +580,8 @@ static int __kprobes __register_kprobe(s
- 
- 	if (kprobe_enabled)
- 		arch_arm_kprobe(p);
--
-+out_unlock_text:
-+	kernel_text_unlock();
- out:
- 	mutex_unlock(&kprobe_mutex);
- 
-@@ -621,8 +624,11 @@ valid_p:
- 		 * enabled - otherwise, the breakpoint would already have
- 		 * been removed. We save on flushing icache.
- 		 */
--		if (kprobe_enabled)
-+		if (kprobe_enabled) {
-+			kernel_text_lock();
- 			arch_disarm_kprobe(p);
-+			kernel_text_unlock();
-+		}
- 		hlist_del_rcu(&old_p->hlist);
- 		cleanup_p = 1;
- 	} else {
-@@ -644,9 +650,7 @@ valid_p:
- 			list_del_rcu(&p->list);
- 			kfree(old_p);
- 		}
--		mutex_lock(&kprobe_mutex);
- 		arch_remove_kprobe(p);
--		mutex_unlock(&kprobe_mutex);
- 	} else {
- 		mutex_lock(&kprobe_mutex);
- 		if (p->break_handler)
-@@ -717,7 +721,6 @@ static int __kprobes pre_handler_kretpro
- 		ri->rp = rp;
- 		ri->task = current;
- 		arch_prepare_kretprobe(ri, regs);
--
- 		/* XXX(hch): why is there no hlist_move_head? */
- 		hlist_del(&ri->uflist);
- 		hlist_add_head(&ri->uflist, &ri->rp->used_instances);
-@@ -940,8 +943,10 @@ static void __kprobes enable_all_kprobes
- 
- 	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
- 		head = &kprobe_table[i];
-+		kernel_text_lock();
- 		hlist_for_each_entry_rcu(p, node, head, hlist)
- 			arch_arm_kprobe(p);
-+		kernel_text_unlock();
- 	}
- 
- 	kprobe_enabled = true;
-@@ -969,10 +974,12 @@ static void __kprobes disable_all_kprobe
- 	printk(KERN_INFO "Kprobes globally disabled\n");
- 	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
- 		head = &kprobe_table[i];
-+		kernel_text_lock();
- 		hlist_for_each_entry_rcu(p, node, head, hlist) {
- 			if (!arch_trampoline_kprobe(p))
- 				arch_disarm_kprobe(p);
- 		}
-+		kernel_text_unlock();
- 	}
- 
- 	mutex_unlock(&kprobe_mutex);
 
 -- 
 Mathieu Desnoyers
