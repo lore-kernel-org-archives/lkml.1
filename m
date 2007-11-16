@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762537AbXKPSIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761171AbXKPSUM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762537AbXKPSIu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 13:08:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755183AbXKPSIn
+	id S1761171AbXKPSUM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 13:20:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbXKPST7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 13:08:43 -0500
-Received: from twinlark.arctic.org ([207.29.250.54]:39929 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755409AbXKPSIm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 13:08:42 -0500
-Date: Fri, 16 Nov 2007 10:08:41 -0800 (PST)
-From: dean gaudet <dean@arctic.org>
-To: Ulrich Drepper <drepper@redhat.com>
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+	Fri, 16 Nov 2007 13:19:59 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:46342 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752579AbXKPST6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 13:19:58 -0500
+Message-ID: <473DDF1B.5030706@redhat.com>
+Date: Fri, 16 Nov 2007 10:19:07 -0800
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: dean gaudet <dean@arctic.org>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
        tglx@linutronix.de, torvalds@linux-foundation.org
 Subject: Re: [PATCHv2 4/4] first use of sys_indirect system call
-In-Reply-To: <200711151822.lAFIMVnJ028596@devserv.devel.redhat.com>
-Message-ID: <alpine.DEB.0.9999.0711161003310.15441@twinlark.arctic.org>
-References: <200711151822.lAFIMVnJ028596@devserv.devel.redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+References: <200711151822.lAFIMVnJ028596@devserv.devel.redhat.com> <alpine.DEB.0.9999.0711161003310.15441@twinlark.arctic.org>
+In-Reply-To: <alpine.DEB.0.9999.0711161003310.15441@twinlark.arctic.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-you know... i understand the need for FD_CLOEXEC -- in fact i tried 
-petitioning for CLOEXEC options to all the fd creating syscalls something 
-like 7 years ago when i was banging my head against the wall trying to 
-figure out how to thread apache... but even still i'm not convinced that 
-extending every system call which creates an fd is the way to do this.  
-honestly i think there should be a per-task flag which indicates whether 
-fds are by default F_CLOEXEC or not.  my reason:  third party libraries.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-i can control all my own code in a threaded program, but i can't control 
-all the code which is linked in.  fds are going to leak.
+dean gaudet wrote:
+> honestly i think there should be a per-task flag which indicates whether 
+> fds are by default F_CLOEXEC or not.  my reason:  third party libraries.
 
-if i set a per task flag then the only thing which would break are third 
-party libraries which use fork/exec and aren't aware they may need to 
-unset F_CLOEXEC.  personally i'd rather break that than leak fds to 
-another program.
+Only somebody who thinks exclusively about applications as opposed to
+runtimes/libraries can say something like that.  Library writers don't
+have the luxury of being able to modify any global state.  This has all
+been discussed here before.
 
-but hey i'm happy to see this sort of thing is finally being fixed, 
-thanks.
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
--dean
+iD8DBQFHPd8b2ijCOnn/RHQRAuPPAKCm5mcOl8dycDenxi7BNFdrf2IfWgCgmaXQ
+Fj7V13HU1vX6fM9bRumxRpk=
+=UIi1
+-----END PGP SIGNATURE-----
