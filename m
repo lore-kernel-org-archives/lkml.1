@@ -1,29 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763567AbXKPUBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932076AbXKPUCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763567AbXKPUBz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 15:01:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755509AbXKPUBp
+	id S932076AbXKPUCR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 15:02:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755970AbXKPUBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 16 Nov 2007 15:01:45 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:38493 "EHLO smtp.polymtl.ca"
+Received: from smtp.polymtl.ca ([132.207.4.11]:38506 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751319AbXKPUBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752203AbXKPUBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 Nov 2007 15:01:44 -0500
-Message-Id: <20071116195747.448703304@polymtl.ca>
+Message-Id: <20071116200138.041007977@polymtl.ca>
+References: <20071116195747.448703304@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Fri, 16 Nov 2007 14:57:47 -0500
+Date: Fri, 16 Nov 2007 14:57:51 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: linux-kernel@vger.kernel.org
-Subject: [rfc-patch 00/11] Text Edit Lock for 2.6.24-rc2-git5
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri, 16 Nov 2007 20:01:41 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [rfc-patch 04/11] Add INIT_ARRAY() to kernel.h
+Content-Disposition: inline; filename=declare-array.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri, 16 Nov 2007 20:01:42 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is the text edit lock patchset updated for 2.6.24-rc2-git5. It is posted as
-an RFC. Comments are welcome. Will post as a patch once everybody comes to an
-agreement.
+Add initialization of an array, which needs brackets that would pollute kernel
+code, to kernel.h. It is used to declare arguments passed as function parameters
+such as:
+text_poke(addr, INIT_ARRAY(unsigned char, 0xf0, len), len);
 
-Mathieu
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ include/linux/kernel.h |    2 ++
+ 1 file changed, 2 insertions(+)
+
+Index: linux-2.6-lttng/include/linux/kernel.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/kernel.h	2007-11-13 09:25:29.000000000 -0500
++++ linux-2.6-lttng/include/linux/kernel.h	2007-11-13 09:45:38.000000000 -0500
+@@ -421,4 +421,6 @@ struct sysinfo {
+ #define NUMA_BUILD 0
+ #endif
+ 
++#define INIT_ARRAY(type, val, len) ((type [len]) { [0 ... (len)-1] = (val) })
++
+ #endif
 
 -- 
 Mathieu Desnoyers
