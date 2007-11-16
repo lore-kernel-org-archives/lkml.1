@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932535AbXKPTHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761649AbXKPTN5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932535AbXKPTHA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 14:07:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755970AbXKPTGx
+	id S1761649AbXKPTN5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 14:13:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbXKPTNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 14:06:53 -0500
-Received: from rtr.ca ([76.10.145.34]:2182 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753370AbXKPTGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 14:06:52 -0500
-Message-ID: <473DEA4A.2030606@rtr.ca>
-Date: Fri, 16 Nov 2007 14:06:50 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Fri, 16 Nov 2007 14:13:49 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:34203 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752014AbXKPTNs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 14:13:48 -0500
+Message-ID: <473DEBDD.2010706@davidnewall.com>
+Date: Sat, 17 Nov 2007 05:43:33 +1030
+From: David Newall <david@davidnewall.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pavel Machek <pavel@ucw.cz>, Mark Lord <liml@rtr.ca>,
-       Thomas Gleixner <tglx@linutronix.de>, len.brown@intel.com,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, rjw@sisk.pl
-Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
-References: <4739ADA2.4060604@rtr.ca> <alpine.LFD.0.9999.0711131521590.3265@localhost.localdomain> <4739E347.30406@rtr.ca> <473C7495.40805@rtr.ca> <20071115181418.GA6603@ucw.cz> <473C825E.3030307@rtr.ca> <20071115193424.GA31691@elte.hu> <20071115193612.GA751@elte.hu> <473CC6D4.2010909@rtr.ca> <20071116055531.GA16273@elte.hu> <20071116071522.GA1453@elte.hu>
-In-Reply-To: <20071116071522.GA1453@elte.hu>
+To: Micah Dowty <micah@vmware.com>
+CC: Kyle Moffett <mrmacman_g4@mac.com>, Cyrus Massoumi <cyrusm@gmx.net>,
+       LKML Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@osdl.org>, Mike Galbraith <efault@gmx.de>,
+       Paul Menage <menage@google.com>, Christoph Lameter <clameter@sgi.com>
+Subject: Re: High priority tasks break SMP balancer?
+References: <20071109223417.GB16250@vmware.com> <4734F397.7080802@gmx.net> <20071110001103.GD16250@vmware.com> <2FAA6826-653E-482F-A037-C539BAEEA1DA@mac.com> <20071115191408.GA4914@vmware.com>
+In-Reply-To: <20071115191408.GA4914@vmware.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
->>> Is there a version of these that works with 2.6.23.1 ?
->> yes, i've backported it and have uploaded the v2.6.23 version to:
->>
->>   http://redhat.com/~mingo/latency-tracing-patches/latency-tracer-v2.6.23.1-combo.patch
-..
+There are a couple of points I would make about your python test 
+harness.  Your program compares real+system jiffies for both cpus; an 
+ideal result would be 1.00.  The measurement is taken over a relatively 
+short period of approximately a half-second, and you kill the CPU hogs 
+before taking final measurements, even wait for them to die first.  You 
+repeat this measurement, starting and killing CPU hogs each time.  Why 
+do you do that?
 
-> ok, i experimented around with the latency tracer, trying to capture the 
-> trace of a full suspend+resume cycle, and it needed the tracer fix below 
-> (GTOD clocksource suspend/resume would otherwise confuse the tracer and 
-> you'd get no trace output as a result).
-> 
-> once that tracer bug was fixed, the best method to generate a trace was 
-> to do this:
-> 
->    echo 1 > /proc/sys/kernel/stackframe_tracing
->    echo 1 > /proc/sys/kernel/syscall_tracing
->    ./trace-cmd bash -c "echo mem > /sys/power/state" > trace.txt
-..
+What happens if you start the hogs and take the baseline outside of the 
+loop?
 
-I've applied the tracer for 2.6.23.1 patch, plus the bugfix,
-and now I just get blinking-LEDs (black screen of death) on resume.
+    from __future__ import division
+    import sys, os, time
 
-Cheers
+    def getCpuTimes():
+        cpu0 = 0
+        cpu1 = 1
+        for line in open("/proc/stat"):
+            tokens = line.split()
+            if tokens[0] == "cpu0":
+                cpu0 = int(tokens[1]) + int(tokens[3])
+            elif tokens[0] == "cpu1":
+                cpu1 = int(tokens[1]) + int(tokens[3])
+        return cpu0, cpu1
+
+    pid = os.spawnl(os.P_NOWAIT, "./priosched")
+    baseline = getCpuTimes()
+    while True:
+        time.sleep(0.5)
+        current = getCpuTimes()
+        print "%.04f" % (current[0] - baseline[0]) / (current[1] -
+    baseline[1])
+
