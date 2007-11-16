@@ -1,201 +1,281 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765149AbXKPRkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933036AbXKPRks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765149AbXKPRkV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 12:40:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756630AbXKPRh2
+	id S933036AbXKPRks (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 12:40:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761078AbXKPRhd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 12:37:28 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:54709 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 16 Nov 2007 12:37:33 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:54722 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757614AbXKPRhB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757414AbXKPRhB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 Nov 2007 12:37:01 -0500
-Message-Id: <20071116173525.895720772@I-love.SAKURA.ne.jp>
+Message-Id: <20071116173526.608621873@I-love.SAKURA.ne.jp>
 References: <20071116173439.796600895@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Sat, 17 Nov 2007 02:34:46 +0900
+Date: Sat, 17 Nov 2007 02:34:48 +0900
 From: penguin-kernel@I-love.SAKURA.ne.jp
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #5 07/18] Domain transition functions.
-Content-Disposition: inline; filename=tomoyo-domain.diff
+Subject: [TOMOYO #5 09/18] File access control functions.
+Content-Disposition: inline; filename=tomoyo-file.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Every process belongs to a domain in TOMOYO Linux.
-Domain transition occurs when execve(2) is called
-and the domain is expressed as 'process invocation history',
-such as '<kernel> /sbin/init /etc/init.d/rc'.
-Domain information is stored in task_struct->security.
+TOMOYO Linux checks permission in
+open/creat/unlink/truncate/ftruncate/mknod/mkdir/
+rmdir/symlink/link/rename/uselib/sysctl .
+
+Each permission can be automatically accumulated into
+the policy of each domain using 'learning mode'.
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
- security/tomoyo/domain.c | 1168 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 1168 insertions(+)
+ security/tomoyo/file.c | 1471 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 1471 insertions(+)
 
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-mm/security/tomoyo/domain.c	2007-11-14 15:15:44.000000000 +0900
-@@ -0,0 +1,1168 @@
++++ linux-2.6-mm/security/tomoyo/file.c	2007-11-14 15:15:44.000000000 +0900
+@@ -0,0 +1,1471 @@
 +/*
-+ * security/tomoyo/domain.c
++ * security/tomoyo/file.c
 + *
-+ * Domain transition functions for TOMOYO Linux.
++ * File access control functions for TOMOYO Linux.
 + */
 +
 +#include "tomoyo.h"
 +#include "realpath.h"
 +
++#define ACC_MODE(x) ("\000\004\002\006"[(x)&O_ACCMODE])
++
 +/*************************  VARIABLES  *************************/
 +
-+/* The initial domain. */
-+struct domain_info KERNEL_DOMAIN;
++/***** The structure for globally readable files. *****/
 +
-+/* Lock for appending domain's ACL. */
-+DEFINE_MUTEX(domain_acl_lock);
-+
-+/* Domain creation lock. */
-+static DEFINE_MUTEX(new_domain_assign_lock);
-+
-+/***** The structure for program files to force domain reconstruction. *****/
-+
-+struct domain_initializer_entry {
++struct globally_readable_file_entry {
 +	struct list_head list;
-+	const struct path_info *domainname;    /* This may be NULL */
-+	const struct path_info *program;
-+	bool is_deleted;
-+	bool is_not;
-+	bool is_last_name;
-+};
-+
-+/***** The structure for domains to not to transit domains. *****/
-+
-+struct domain_keeper_entry {
-+	struct list_head list;
-+	const struct path_info *domainname;
-+	const struct path_info *program;       /* This may be NULL */
-+	bool is_deleted;
-+	bool is_not;
-+	bool is_last_name;
-+};
-+
-+/***** The structure for program files that should be aggregated. *****/
-+
-+struct aggregator_entry {
-+	struct list_head list;
-+	const struct path_info *original_name;
-+	const struct path_info *aggregated_name;
++	const struct path_info *filename;
 +	bool is_deleted;
 +};
 +
-+/***** The structure for program files that should be aliased. *****/
++/***** The structure for filename patterns. *****/
 +
-+struct alias_entry {
++struct pattern_entry {
 +	struct list_head list;
-+	const struct path_info *original_name;
-+	const struct path_info *aliased_name;
++	const struct path_info *pattern;
 +	bool is_deleted;
++};
++
++/***** The structure for non-rewritable-by-default file patterns. *****/
++
++struct no_rewrite_entry {
++	struct list_head list;
++	const struct path_info *pattern;
++	bool is_deleted;
++};
++
++/***** The structure for detailed write operations. *****/
++
++static struct {
++	const char *keyword;
++	const int paths;
++} acl_type_array[] = {
++	{ "create",   1 }, /* TMY_TYPE_CREATE_ACL */
++	{ "unlink",   1 }, /* TMY_TYPE_UNLINK_ACL */
++	{ "mkdir",    1 }, /* TMY_TYPE_MKDIR_ACL */
++	{ "rmdir",    1 }, /* TMY_TYPE_RMDIR_ACL */
++	{ "mkfifo",   1 }, /* TMY_TYPE_MKFIFO_ACL */
++	{ "mksock",   1 }, /* TMY_TYPE_MKSOCK_ACL */
++	{ "mkblock",  1 }, /* TMY_TYPE_MKBLOCK_ACL */
++	{ "mkchar",   1 }, /* TMY_TYPE_MKCHAR_ACL */
++	{ "truncate", 1 }, /* TMY_TYPE_TRUNCATE_ACL */
++	{ "symlink",  1 }, /* TMY_TYPE_SYMLINK_ACL */
++	{ "link",     2 }, /* TMY_TYPE_LINK_ACL */
++	{ "rename",   2 }, /* TMY_TYPE_RENAME_ACL */
++	{ "rewrite",  1 }, /* TMY_TYPE_REWRITE_ACL */
++	{ NULL, 0 }
 +};
 +
 +/*************************  UTILITY FUNCTIONS  *************************/
 +
 +/**
-+ * tmy_is_domain_def - check if the line is likely a domain definition.
-+ * @buffer: the line to check.
++ * tmy_acltype2keyword - get keyword from access control index.
++ * @acl_type: index number.
 + *
-+ * Returns true if @buffer is likely a domain definition.
-+ * Returns false otherwise.
-+ *
-+ * For complete validation check, use tmy_is_correct_domain().
++ * Returns keyword that corresponds with @acl_type .
 + */
-+bool tmy_is_domain_def(const unsigned char *buffer)
++const char *tmy_acltype2keyword(const unsigned int acl_type)
 +{
-+	return strncmp(buffer, TMY_ROOT_NAME, TMY_ROOT_NAME_LEN) == 0;
++	return (acl_type < ARRAY_SIZE(acl_type_array))
++		? acl_type_array[acl_type].keyword : NULL;
 +}
 +
 +/**
-+ * tmy_add_acl - add an entry to a domain.
-+ * @domain: pointer to "struct domain_info".
-+ * @acl: pointer to "struct acl_info" to add.
++ * tmy_acltype2paths - get number of arguments from access control index.
++ * @acl_type: index number.
 + *
-+ * Returns zero.
++ * Returns number of arguments that corresponds with @acl_type .
 + */
-+int tmy_add_acl(struct domain_info *domain,
-+		struct acl_info *acl)
++int tmy_acltype2paths(const unsigned int acl_type)
 +{
-+	list_add_tail_mb(&acl->list, &domain->acl_info_list);
-+	tmy_update_counter(TMY_UPDATE_DOMAINPOLICY);
-+	return 0;
++	return (acl_type < ARRAY_SIZE(acl_type_array))
++		? acl_type_array[acl_type].paths : 0;
 +}
 +
-+/**
-+ * tmy_del_acl - remove an entry from a domain
-+ * @ptr: pointer to "struct acl_info" to remove.
-+ *
-+ * Returns zero.
-+ *
-+ * TOMOYO Linux doesn't free memory used by policy because policies are not
-+ * so frequently changed after entring into enforcing mode.
-+ * This makes the code free of read-lock.
-+ * The caller uses "down(&domain_acl_lock);" as write-lock.
-+ */
-+int tmy_del_acl(struct acl_info *ptr)
++static int tmy_strendswith(const char *name, const char *tail)
 +{
-+	ptr->is_deleted = 1;
-+	tmy_update_counter(TMY_UPDATE_DOMAINPOLICY);
-+	return 0;
++	int len;
++
++	if (!name || !tail)
++		return 0;
++
++	len = strlen(name) - strlen(tail);
++	return len >= 0 && strcmp(name + len, tail) == 0;
 +}
 +
-+/************************  DOMAIN INITIALIZER HANDLER  ************************/
-+
-+static LIST_HEAD(domain_initializer_list);
-+
-+/* Update domain initializer list. */
-+static int tmy_add_domain_initializer_entry(const char *domainname,
-+					    const char *program,
-+					    const bool is_not,
-+					    const bool is_delete)
++static struct path_info *tmy_get_path(struct dentry *dentry,
++				      struct vfsmount *mnt)
 +{
-+	struct domain_initializer_entry *new_entry;
-+	struct domain_initializer_entry *ptr;
++	/* sizeof(struct path_info_with_data) <= PAGE_SIZE */
++	struct path_info_with_data {
++		/* Keep this first, this pointer is passed to tmy_free(). */
++		struct path_info head;
++		char bariier1[16];
++		char body[TMY_MAX_PATHNAME_LEN];
++		char barrier2[16];
++	} *buf = tmy_alloc(sizeof(*buf));
++
++	if (buf) {
++		int error = tmy_realpath_dentry2(dentry,
++						 mnt,
++						 buf->body,
++						 sizeof(buf->body) - 1);
++
++		if (error == 0) {
++			buf->head.name = buf->body;
++			tmy_fill_path_info(&buf->head);
++			return &buf->head;
++		}
++
++		tmy_free(buf);
++		buf = NULL;
++		printk(KERN_INFO "tmy_realpath_dentry = %d\n", error);
++	}
++
++	return NULL;
++}
++
++/*************************  PROTOTYPES  *************************/
++
++static int tmy_add_double_write_acl(const u8 type,
++				    const char *filename1,
++				    const char *filename2,
++				    struct domain_info * const domain,
++				    const struct condition_list *cond,
++				    const bool is_delete);
++static int tmy_add_single_write_acl(const u8 type,
++				    const char *filename,
++				    struct domain_info * const domain,
++				    const struct condition_list *cond,
++				    const bool is_delete);
++
++/*************************  AUDIT FUNCTIONS  *************************/
++
++static int tmy_audit_file_log(const struct path_info *filename,
++			      const u8 perm,
++			      const bool is_granted,
++			      const u8 profile,
++			      const unsigned int mode)
++{
++	char *buf;
++	int len;
++
++	if (is_granted) {
++		if (!tmy_audit_grant())
++			return 0;
++	} else {
++		if (!tmy_audit_reject())
++			return 0;
++	}
++
++	len = filename->total_len + 8;
++	buf = tmy_init_audit_log(&len, profile, mode);
++
++	if (!buf)
++		return -ENOMEM;
++
++	snprintf(buf + strlen(buf),
++		 len - strlen(buf) - 1,
++		 "%d %s\n",
++		 perm,
++		 filename->name);
++
++	return tmy_write_audit_log(buf, is_granted);
++}
++
++static int tmy_audit_write_log(const char *operation,
++			       const struct path_info *filename1,
++			       const struct path_info *filename2,
++			       const bool is_granted,
++			       const u8 profile,
++			       const unsigned int mode)
++{
++	char *buf;
++	int len;
++
++	if (is_granted) {
++		if (!tmy_audit_grant())
++			return 0;
++	} else {
++		if (!tmy_audit_reject())
++			return 0;
++	}
++
++	len = strlen(operation) +
++		filename1->total_len +
++		(filename2 ? filename2->total_len : 0)
++		+ 16;
++
++	buf = tmy_init_audit_log(&len, profile, mode);
++	if (!buf)
++		return -ENOMEM;
++
++	snprintf(buf + strlen(buf), len - strlen(buf) - 1,
++		 "allow_%s %s %s\n",
++		 operation, filename1->name, filename2 ? filename2->name : "");
++
++	return tmy_write_audit_log(buf, is_granted);
++}
++
++/**********************  GLOBALLY READABLE FILE HANDLER  **********************/
++
++static LIST_HEAD(globally_readable_list);
++
++static int tmy_add_globally_readable_entry(const char *filename,
++					   const bool is_delete)
++{
++	struct globally_readable_file_entry *new_entry;
++	struct globally_readable_file_entry *ptr;
 +	static DEFINE_MUTEX(mutex);
-+	const struct path_info *saved_program;
-+	const struct path_info *saved_domainname = NULL;
++	const struct path_info *saved;
 +	int error = -ENOMEM;
-+	bool is_last_name = 0;
 +
-+	if (!tmy_correct_path(program, 1, -1, -1, __FUNCTION__))
++	if (!tmy_correct_path(filename, 1, -1, -1, __FUNCTION__))
 +		return -EINVAL; /* No patterns allowed. */
-+
-+	if (domainname) {
-+		if (!tmy_is_domain_def(domainname) &&
-+		    tmy_correct_path(domainname, 1, -1, -1, __FUNCTION__))
-+			is_last_name = 1;
-+
-+		else if (!tmy_is_correct_domain(domainname, __FUNCTION__))
-+			return -EINVAL;
-+
-+		saved_domainname = tmy_save_name(domainname);
-+		if (!saved_domainname)
-+			return -ENOMEM;
-+	}
-+
-+	saved_program = tmy_save_name(program);
-+	if (!saved_program)
++	saved = tmy_save_name(filename);
++	if (!saved)
 +		return -ENOMEM;
 +
 +	mutex_lock(&mutex);
 +
-+	list_for_each_entry(ptr, &domain_initializer_list, list) {
-+		if (ptr->is_not == is_not &&
-+		    ptr->domainname == saved_domainname &&
-+		    ptr->program == saved_program) {
++	list_for_each_entry(ptr, &globally_readable_list, list) {
++		if (ptr->filename == saved) {
 +			ptr->is_deleted = is_delete;
 +			error = 0;
 +			goto out;
 +		}
 +	}
-+
 +	if (is_delete) {
 +		error = -ENOENT;
 +		goto out;
@@ -205,1005 +285,1229 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +	if (!new_entry)
 +		goto out;
 +
-+	new_entry->domainname = saved_domainname;
-+	new_entry->program = saved_program;
-+	new_entry->is_not = is_not;
-+	new_entry->is_last_name = is_last_name;
-+	list_add_tail_mb(&new_entry->list, &domain_initializer_list);
++	new_entry->filename = saved;
++	list_add_tail_mb(&new_entry->list, &globally_readable_list);
 +	error = 0;
-+out: ;
 +
++out: ;
 +	mutex_unlock(&mutex);
++
 +	return error;
 +}
 +
++static int tmy_globally_readable(const struct path_info *filename)
++{
++	struct globally_readable_file_entry *ptr;
++
++	list_for_each_entry(ptr, &globally_readable_list, list) {
++		if (!ptr->is_deleted &&
++		    !tmy_pathcmp(filename, ptr->filename))
++			return 1;
++	}
++
++	return 0;
++}
++
 +/**
-+ * tmy_read_domain_initializer_policy - read domain initializer policy.
++ * tmy_add_globally_readable_policy - add or delete globally readable policy.
++ * @filename:  pointer to filename to add ore remove.
++ * @is_delete: is this delete request?
++ *
++ * Returns zero on success.
++ * Returns nonzero on failure.
++ */
++int tmy_add_globally_readable_policy(char *filename, const bool is_delete)
++{
++	return tmy_add_globally_readable_entry(filename, is_delete);
++}
++
++/**
++ * tmy_read_globally_readable_policy - read globally readable policy.
 + * @head: pointer to "struct io_buffer".
 + *
 + * Returns nonzero if reading incomplete.
 + * Returns zero otherwise.
 + */
-+int tmy_read_domain_initializer_policy(struct io_buffer *head)
++int tmy_read_globally_readable_policy(struct io_buffer *head)
 +{
 +	struct list_head *pos;
-+	list_for_each_cookie(pos, head->read_var2, &domain_initializer_list) {
-+		struct domain_initializer_entry *ptr;
-+		ptr = list_entry(pos, struct domain_initializer_entry, list);
++	list_for_each_cookie(pos, head->read_var2, &globally_readable_list) {
++		struct globally_readable_file_entry *ptr;
++		ptr = list_entry(pos, struct globally_readable_file_entry,
++				 list);
 +		if (ptr->is_deleted)
 +			continue;
-+		if (ptr->domainname) {
-+			if (tmy_io_printf(head, "%s" TMY_INITIALIZE_DOMAIN
-+					  "%s from %s\n",
-+					  ptr->is_not ? "no_" : "",
-+					  ptr->program->name,
-+					  ptr->domainname->name))
-+				return -ENOMEM;
-+		} else {
-+			if (tmy_io_printf(head, "%s" TMY_INITIALIZE_DOMAIN
-+					  "%s\n",
-+					  ptr->is_not ? "no_" : "",
-+					  ptr->program->name))
-+				return -ENOMEM;
-+		}
-+	}
-+	return 0;
-+}
-+
-+/**
-+ * tmy_add_domain_initializer_policy - add domain initializer policy
-+ * @data:      a line to parse.
-+ * @is_not:    is this overriding?
-+ * @is_delete: is this remove request?
-+ *
-+ * Returns zero on success.
-+ * Returns nonzero on failure.
-+ *
-+ * This function adds or removes a domain initializer entry.
-+ */
-+int tmy_add_domain_initializer_policy(char *data,
-+				      const bool is_not,
-+				      const bool is_delete)
-+{
-+	char *cp = strstr(data, " from ");
-+
-+	if (cp) {
-+		*cp = '\0';
-+		return tmy_add_domain_initializer_entry(cp + 6,	data, is_not,
-+							is_delete);
-+	}
-+
-+	return tmy_add_domain_initializer_entry(NULL, data, is_not, is_delete);
-+}
-+
-+/* Should I transit to a domain under "<kernel>" domain? */
-+static int tmy_is_domain_initializer(const struct path_info *domainname,
-+				     const struct path_info *program,
-+				     const struct path_info *last_name)
-+{
-+	struct domain_initializer_entry *ptr;
-+	int flag = 0;
-+	list_for_each_entry(ptr,  &domain_initializer_list, list) {
-+		if (ptr->is_deleted)
-+			continue;
-+		if (ptr->domainname) {
-+			if (!ptr->is_last_name) {
-+				if (ptr->domainname != domainname)
-+					continue;
-+			} else {
-+				if (tmy_pathcmp(ptr->domainname, last_name))
-+					continue;
-+			}
-+		}
-+		if (tmy_pathcmp(ptr->program, program))
-+			continue;
-+		if (ptr->is_not)
-+			return 0;
-+		flag = 1;
-+	}
-+	return flag;
-+}
-+
-+/*************************  DOMAIN KEEPER HANDLER  *************************/
-+
-+static LIST_HEAD(domain_keeper_list);
-+
-+/* Update domain keeper list. */
-+static int tmy_add_domain_keeper_entry(const char *domainname,
-+				       const char *program,
-+				       const bool is_not,
-+				       const bool is_delete)
-+{
-+	struct domain_keeper_entry *new_entry;
-+	struct domain_keeper_entry *ptr;
-+	const struct path_info *saved_domainname;
-+	const struct path_info *saved_program = NULL;
-+	static DEFINE_MUTEX(mutex);
-+	int error = -ENOMEM;
-+	bool is_last_name = 0;
-+
-+	if (!tmy_is_domain_def(domainname) &&
-+	    tmy_correct_path(domainname, 1, -1, -1, __FUNCTION__))
-+		is_last_name = 1;
-+
-+	else if (!tmy_is_correct_domain(domainname, __FUNCTION__))
-+		return -EINVAL;
-+
-+	if (program) {
-+		if (!tmy_correct_path(program, 1, -1, -1, __FUNCTION__))
-+			return -EINVAL;
-+
-+		saved_program = tmy_save_name(program);
-+		if (!saved_program)
++		if (tmy_io_printf(head, TMY_ALLOW_READ "%s\n",
++				  ptr->filename->name))
 +			return -ENOMEM;
 +	}
-+
-+	saved_domainname = tmy_save_name(domainname);
-+	if (!saved_domainname)
-+		return -ENOMEM;
-+
-+	mutex_lock(&mutex);
-+	list_for_each_entry(ptr, &domain_keeper_list, list) {
-+		if (ptr->is_not == is_not &&
-+		    ptr->domainname == saved_domainname &&
-+		    ptr->program == saved_program) {
-+			ptr->is_deleted = is_delete;
-+			error = 0;
-+			goto out;
-+		}
-+	}
-+
-+	if (is_delete) {
-+		error = -ENOENT;
-+		goto out;
-+	}
-+
-+	new_entry = tmy_alloc_element(sizeof(*new_entry));
-+	if (!new_entry)
-+		goto out;
-+
-+	new_entry->domainname = saved_domainname;
-+	new_entry->program = saved_program;
-+	new_entry->is_not = is_not;
-+	new_entry->is_last_name = is_last_name;
-+	list_add_tail_mb(&new_entry->list, &domain_keeper_list);
-+	error = 0;
-+
-+out: ;
-+
-+	mutex_unlock(&mutex);
-+	return error;
-+}
-+
-+/**
-+ * tmy_add_domain_keeper_policy - add domain keeper policy.
-+ * @data:      a line to parse.
-+ * @is_not:    is this overriding?
-+ * @is_delete: is this remove request?
-+ *
-+ * Returns zero on success.
-+ * Returns nonzero on failure.
-+ *
-+ * This function adds or removes a domain keeper entry.
-+ *
-+ */
-+int tmy_add_domain_keeper_policy(char *data,
-+				 const bool is_not,
-+				 const bool is_delete)
-+{
-+	char *cp = strstr(data, " from ");
-+
-+	if (cp) {
-+		*cp = '\0';
-+		return tmy_add_domain_keeper_entry(cp + 6, data,
-+						   is_not, is_delete);
-+	}
-+
-+	return tmy_add_domain_keeper_entry(data, NULL, is_not, is_delete);
-+}
-+
-+/**
-+ * tmy_read_domain_keeper_policy - read domain keeper policy.
-+ * @head: pointer to "struct io_buffer".
-+ *
-+ * Returns nonzero if reading incomplete.
-+ * Returns zero otherwise.
-+ */
-+int tmy_read_domain_keeper_policy(struct io_buffer *head)
-+{
-+	struct list_head *pos;
-+	list_for_each_cookie(pos, head->read_var2, &domain_keeper_list) {
-+		struct domain_keeper_entry *ptr;
-+		ptr = list_entry(pos, struct domain_keeper_entry, list);
-+		if (ptr->is_deleted)
-+			continue;
-+		if (ptr->program) {
-+			if (tmy_io_printf(head,
-+					  "%s" TMY_KEEP_DOMAIN
-+					  "%s from %s\n",
-+					  ptr->is_not ? "no_" : "",
-+					  ptr->program->name,
-+					  ptr->domainname->name))
-+				return -ENOMEM;
-+		} else {
-+			if (tmy_io_printf(head,
-+					  "%s" TMY_KEEP_DOMAIN
-+					  "%s\n",
-+					  ptr->is_not ? "no_" : "",
-+					  ptr->domainname->name))
-+				return -ENOMEM;
-+		}
-+	}
 +	return 0;
 +}
 +
-+/* Should I remain in current domain? */
-+static int tmy_is_domain_keeper(const struct path_info *domainname,
-+				const struct path_info *program,
-+				const struct path_info *last_name)
-+{
-+	struct domain_keeper_entry *ptr;
-+	int flag = 0;
-+	list_for_each_entry(ptr, &domain_keeper_list, list) {
-+		if (ptr->is_deleted)
-+			continue;
-+		if (!ptr->is_last_name) {
-+			if (ptr->domainname != domainname)
-+				continue;
-+		} else {
-+			if (tmy_pathcmp(ptr->domainname, last_name))
-+				continue;
-+		}
-+		if (ptr->program && tmy_pathcmp(ptr->program, program))
-+			continue;
-+		if (ptr->is_not)
-+			return 0;
-+		flag = 1;
-+	}
-+	return flag;
-+}
++/*************************  FILE GROUP HANDLER  *************************/
 +
-+/*********************  SYMBOLIC LINKED PROGRAM HANDLER  *********************/
++static LIST_HEAD(path_group_list);
 +
-+static LIST_HEAD(alias_list);
-+
-+/* Update alias list. */
-+static int tmy_add_alias_entry(const char *original_name,
-+			       const char *aliased_name,
++static int tmy_add_group_entry(const char *group_name,
++			       const char *member_name,
 +			       const bool is_delete)
 +{
-+	struct alias_entry *new_entry;
-+	struct alias_entry *ptr;
 +	static DEFINE_MUTEX(mutex);
-+	const struct path_info *saved_original_name;
-+	const struct path_info *saved_aliased_name;
++	struct path_group_entry *new_group;
++	struct path_group_entry *group;
++	struct path_group_member *new_member;
++	struct path_group_member *member;
++	const struct path_info *saved_group;
++	const struct path_info *saved_member;
 +	int error = -ENOMEM;
++	bool found = 0;
 +
-+	if (!tmy_correct_path(original_name, 1, -1, -1, __FUNCTION__) ||
-+	    !tmy_correct_path(aliased_name, 1, -1, -1, __FUNCTION__))
-+		return -EINVAL; /* No patterns allowed. */
++	if (!tmy_correct_path(group_name, 0, 0, 0, __FUNCTION__) ||
++	    !group_name[0] ||
++	    !tmy_correct_path(member_name, 0, 0, 0, __FUNCTION__) ||
++	    !member_name[0])
++		return -EINVAL;
 +
-+	saved_original_name = tmy_save_name(original_name);
-+	saved_aliased_name = tmy_save_name(aliased_name);
-+	if (!saved_original_name || !saved_aliased_name)
++	saved_group = tmy_save_name(group_name);
++	saved_member = tmy_save_name(member_name);
++
++	if (!saved_group || !saved_member)
 +		return -ENOMEM;
 +
 +	mutex_lock(&mutex);
-+
-+	list_for_each_entry(ptr, &alias_list, list) {
-+		if (ptr->original_name == saved_original_name &&
-+		    ptr->aliased_name == saved_aliased_name) {
-+			ptr->is_deleted = is_delete;
-+			error = 0;
-+			goto out;
-+		}
-+	}
-+
-+	if (is_delete) {
-+		error = -ENOENT;
-+		goto out;
-+	}
-+
-+	new_entry = tmy_alloc_element(sizeof(*new_entry));
-+	if (!new_entry)
-+		goto out;
-+
-+	new_entry->original_name = saved_original_name;
-+	new_entry->aliased_name = saved_aliased_name;
-+	list_add_tail_mb(&new_entry->list, &alias_list);
-+	error = 0;
-+out: ;
-+	mutex_unlock(&mutex);
-+	return error;
-+}
-+
-+/**
-+ * tmy_read_alias_policy - read alias policy.
-+ * @head: pointer to "struct io_buffer".
-+ *
-+ * Returns nonzero if reading incomplete.
-+ * Returns zero otherwise.
-+ */
-+int tmy_read_alias_policy(struct io_buffer *head)
-+{
-+	struct list_head *pos;
-+	list_for_each_cookie(pos, head->read_var2, &alias_list) {
-+		struct alias_entry *ptr;
-+		ptr = list_entry(pos, struct alias_entry, list);
-+		if (ptr->is_deleted)
++	list_for_each_entry(group, &path_group_list, list) {
++		if (saved_group != group->group_name)
 +			continue;
-+		if (tmy_io_printf(head,
-+				  TMY_ALIAS "%s %s\n",
-+				  ptr->original_name->name,
-+				  ptr->aliased_name->name))
-+			return -ENOMEM;
-+	}
-+	return 0;
-+}
-+
-+/**
-+ * tmy_add_alias_policy - add alias policy.
-+ * @data:      a line to parse.
-+ * @is_delete: is this remove request?
-+ *
-+ * Returns zero on success.
-+ * Returns nonzero on failure.
-+ *
-+ * This function adds or removes an alias entry.
-+ */
-+int tmy_add_alias_policy(char *data, const bool is_delete)
-+{
-+	char *cp = strchr(data, ' ');
-+
-+	if (!cp)
-+		return -EINVAL;
-+	*cp++ = '\0';
-+
-+	return tmy_add_alias_entry(data, cp, is_delete);
-+}
-+
-+/************************  DOMAIN AGGREGATOR HANDLER  ************************/
-+
-+static LIST_HEAD(aggregator_list);
-+
-+/* Update aggregator list. */
-+static int tmy_add_aggregator_entry(const char *original_name,
-+				    const char *aggregated_name,
-+				    const bool is_delete)
-+{
-+	struct aggregator_entry *new_entry;
-+	struct aggregator_entry *ptr;
-+	static DEFINE_MUTEX(mutex);
-+	const struct path_info *saved_original_name;
-+	const struct path_info *saved_aggregated_name;
-+	int error = -ENOMEM;
-+
-+	if (!tmy_correct_path(original_name, 1, 0, -1, __FUNCTION__) ||
-+	    !tmy_correct_path(aggregated_name, 1, -1, -1, __FUNCTION__))
-+		return -EINVAL;
-+
-+	saved_original_name = tmy_save_name(original_name);
-+	saved_aggregated_name = tmy_save_name(aggregated_name);
-+	if (!saved_original_name || !saved_aggregated_name)
-+		return -ENOMEM;
-+
-+	mutex_lock(&mutex);
-+
-+	list_for_each_entry(ptr, &aggregator_list, list) {
-+		if (ptr->original_name == saved_original_name &&
-+		    ptr->aggregated_name == saved_aggregated_name) {
-+			ptr->is_deleted = is_delete;
-+			error = 0;
-+			goto out;
++		list_for_each_entry(member, &group->path_group_member_list,
++				    list) {
++			if (member->member_name == saved_member) {
++				member->is_deleted = is_delete;
++				error = 0;
++				goto out;
++			}
 +		}
-+	}
-+
-+	if (is_delete) {
-+		error = -ENOENT;
-+		goto out;
-+	}
-+
-+	new_entry = tmy_alloc_element(sizeof(*new_entry));
-+	if (!new_entry)
-+		goto out;
-+
-+	new_entry->original_name = saved_original_name;
-+	new_entry->aggregated_name = saved_aggregated_name;
-+	list_add_tail_mb(&new_entry->list, &aggregator_list);
-+	error = 0;
-+out: ;
-+
-+	mutex_unlock(&mutex);
-+
-+	return error;
-+}
-+
-+/**
-+ * tmy_read_aggregator_policy - read aggregator policy.
-+ * @head: pointer to "struct io_buffer".
-+ *
-+ * Returns nonzero if reading incomplete.
-+ * Returns zero otherwise.
-+ */
-+int tmy_read_aggregator_policy(struct io_buffer *head)
-+{
-+	struct list_head *pos;
-+	list_for_each_cookie(pos, head->read_var2, &aggregator_list) {
-+		struct aggregator_entry *ptr;
-+		ptr = list_entry(pos, struct aggregator_entry, list);
-+		if (ptr->is_deleted)
-+			continue;
-+		if (tmy_io_printf(head,
-+				  TMY_AGGREGATOR "%s %s\n",
-+				  ptr->original_name->name,
-+				  ptr->aggregated_name->name))
-+			return -ENOMEM;
-+	}
-+	return 0;
-+}
-+
-+/**
-+ * tmy_add_aggregator_policy - add aggregator policy.
-+ * @data:      a line to parse.
-+ * @is_delete: is this remove request?
-+ *
-+ * Returns zero on success.
-+ * Returns nonzero on failure.
-+ *
-+ * This function adds or removes an aggregator entry.
-+ */
-+int tmy_add_aggregator_policy(char *data, const bool is_delete)
-+{
-+	char *cp = strchr(data, ' ');
-+
-+	if (!cp)
-+		return -EINVAL;
-+	*cp++ = '\0';
-+
-+	return tmy_add_aggregator_entry(data, cp, is_delete);
-+}
-+
-+/*************************  DOMAIN DELETION HANDLER  *************************/
-+
-+/**
-+ * tmy_delete_domain - delete a domain.
-+ * @domainname0: domainname to delete.
-+ *
-+ * Returns zero.
-+ *
-+ * This function deletes domains.
-+ * The behavior of deleting domain is like deleting files on Linux's
-+ * filesystem. A process transits to different domain upon do_execve(),
-+ * and the process can refer the deleted domains after the domain is deleted,
-+ * like a process opens a file and the process can read()/write() the deleted
-+ * file after the file is deleted.
-+ * This avoids processes from crashing due to referring non-existent domains.
-+ * Administrator manually terminates processes thet are referring deleted
-+ * domains after deleting domains.
-+ * Also, undeleting domains is supported. See tmy_undelete_domain().
-+ */
-+int tmy_delete_domain(char *domainname0)
-+{
-+	struct domain_info *domain;
-+	struct path_info domainname;
-+
-+	domainname.name = domainname0;
-+	tmy_fill_path_info(&domainname);
-+
-+	mutex_lock(&new_domain_assign_lock);
-+	/* Is there an active domain? */ /* Never delete KERNEL_DOMAIN */
-+	list_for_each_entry(domain, &domain_list, list) {
-+		struct domain_info *domain2;
-+		if (domain == &KERNEL_DOMAIN ||
-+		    domain->is_deleted ||
-+		    tmy_pathcmp(domain->domainname, &domainname))
-+			continue;
-+		/* Mark already deleted domains as non undeletable. */
-+		list_for_each_entry(domain2, &domain_list, list) {
-+			if (!domain2->is_deleted ||
-+			    tmy_pathcmp(domain2->domainname, &domainname))
-+				continue;
-+			domain2->is_deleted = 255;
-+		}
-+		/* Delete and mark active domain as undeletable. */
-+		domain->is_deleted = 1;
++		found = 1;
 +		break;
 +	}
-+	mutex_unlock(&new_domain_assign_lock);
-+	return 0;
-+}
 +
-+/**
-+ * tmy_undelete_domain - undelete a domain.
-+ * @domainname0: domainname to undelete.
-+ *
-+ * Returns pointer to undeleted "struct domain_info" on success.
-+ * Returns NULL on failure.
-+ *
-+ * This function undeletes domains.
-+ * Not only the domain previously deleted by tmy_delete_domain()
-+ * but also all domains deleted by tmy_delete_domain() are undeletable.
-+ * If there is no deleted domain named @domainname0 or
-+ * a not-yet-deleted domain named @domainname0 exists, undelete fails.
-+ * Otherwise, previously deleted domain named @domainname0 is undeleted.
-+ */
-+struct domain_info *tmy_undelete_domain(const char *domainname0)
-+{
-+	struct domain_info *domain;
-+	struct domain_info *candidate_domain = NULL;
-+	struct path_info domainname;
-+
-+	domainname.name = domainname0;
-+	tmy_fill_path_info(&domainname);
-+
-+	mutex_lock(&new_domain_assign_lock);
-+
-+	list_for_each_entry(domain, &domain_list, list) {
-+		if (tmy_pathcmp(&domainname, domain->domainname))
-+			continue;
-+
-+		if (!domain->is_deleted) {
-+			/* This domain is active. I can't undelete. */
-+			candidate_domain = NULL;
-+			break;
-+		}
-+
-+		/* Is this domain undeletable? */
-+		if (domain->is_deleted == 1)
-+			candidate_domain = domain;
-+	}
-+	if (candidate_domain)
-+		candidate_domain->is_deleted = 0;
-+
-+	mutex_unlock(&new_domain_assign_lock);
-+
-+	return candidate_domain;
-+}
-+
-+/************************  DOMAIN TRANSITION HANDLER  ************************/
-+
-+/**
-+ * tmy_find_domain - find a domain with given domainname.
-+ * @domainname0: the domainname to find.
-+ *
-+ * Returns pointer to "struct domain_info" on success.
-+ * Returns NULL on failure.
-+ *
-+ * This function does not create a new domain
-+ * if a domain named @domainname0 does not exist.
-+ */
-+struct domain_info *tmy_find_domain(const char *domainname0)
-+{
-+	struct domain_info *domain;
-+	static int first = 1;
-+	struct path_info domainname;
-+
-+	domainname.name = domainname0;
-+	tmy_fill_path_info(&domainname);
-+
-+	if (first) {
-+		KERNEL_DOMAIN.domainname = tmy_save_name(TMY_ROOT_NAME);
-+		first = 0;
-+	}
-+
-+	list_for_each_entry(domain, &domain_list, list) {
-+		if (!domain->is_deleted &&
-+		    !tmy_pathcmp(&domainname, domain->domainname))
-+			return domain;
-+	}
-+
-+	return NULL;
-+}
-+
-+/**
-+ * tmy_new_domain - find or assign a domain with given domainname.
-+ * @domainname: the domainname to find.
-+ * @profile:    profile number to assign if newly created.
-+ *
-+ * Returns pointer to "struct domain_info" on success.
-+ * Returns NULL on failure.
-+ *
-+ * This function creates a new domain if a domain named @domainname0
-+ * does not exist.
-+ */
-+struct domain_info *tmy_new_domain(const char *domainname,
-+				   const u8 profile)
-+{
-+	struct domain_info *domain = NULL;
-+	const struct path_info *saved_domainname;
-+
-+	mutex_lock(&new_domain_assign_lock);
-+
-+	domain = tmy_find_domain(domainname);
-+	if (domain)
-+		goto out;
-+
-+	if (!tmy_is_correct_domain(domainname, __FUNCTION__))
-+		goto out;
-+
-+	saved_domainname = tmy_save_name(domainname);
-+	if (!saved_domainname)
-+		goto out;
-+
-+	/* Can I reuse memory of deleted domain? */
-+	list_for_each_entry(domain, &domain_list, list) {
-+		struct task_struct *p;
-+		struct acl_info *ptr;
-+		int flag;
-+
-+		if (!domain->is_deleted ||
-+		    domain->domainname != saved_domainname)
-+			continue;
-+		flag = 0;
-+
-+		/***** CRITICAL SECTION START *****/
-+		read_lock(&tasklist_lock);
-+		for_each_process(p) {
-+			/* "struct task_struct"->security is not NULL. */
-+			if (((struct tmy_security *) p->security)->domain
-+			    == domain) {
-+				flag = 1;
-+				break;
-+			}
-+		}
-+		read_unlock(&tasklist_lock);
-+		/***** CRITICAL SECTION END *****/
-+
-+		/* Somebody is still referring this deleted domain. */
-+		if (flag)
-+			continue;
-+
-+		/* OK. Let's reuse memory for this deleted domain. */
-+
-+		/* Delete all entries in this deleted domain. */
-+		list_for_each_entry(ptr, &domain->acl_info_list, list)
-+			ptr->is_deleted = 1;
-+
-+		domain->profile = profile;
-+		domain->quota_warned = 0;
-+
-+		mb(); /* Avoid out-of-order execution. */
-+		/* Undelete this deleted domain. */
-+		domain->is_deleted = 0;
++	if (is_delete) {
++		error = -ENOENT;
 +		goto out;
 +	}
 +
-+	/* No memory reusable. Create using new memory. */
-+	domain = tmy_alloc_element(sizeof(*domain));
-+	if (domain) {
-+		INIT_LIST_HEAD(&domain->acl_info_list);
-+		domain->domainname = saved_domainname;
-+		domain->profile = profile;
-+		list_add_tail_mb(&domain->list, &domain_list);
-+	}
-+out: ;
-+	mutex_unlock(&new_domain_assign_lock);
-+
-+	return domain;
-+}
-+
-+/* Convert non ASCII printable characters to ASCII printable characters. */
-+static int tmy_escape(char *dest, const char *src, int dest_len)
-+{
-+	while (*src) {
-+		const unsigned char c = *(const unsigned char *) src;
-+
-+		if (c == '\\') {
-+			dest_len -= 2;
-+			if (dest_len <= 0)
-+				goto out;
-+			*dest++ = '\\';
-+			*dest++ = '\\';
-+		} else if (c > ' ' && c < 127) {
-+			if (--dest_len <= 0)
-+				goto out;
-+			*dest++ = c;
-+		} else {
-+			dest_len -= 4;
-+			if (dest_len <= 0)
-+				goto out;
-+			*dest++ = '\\';
-+			*dest++ = (c >> 6) + '0';
-+			*dest++ = ((c >> 3) & 7) + '0';
-+			*dest++ = (c & 7) + '0';
-+		}
-+		src++;
-+	}
-+
-+	if (--dest_len <= 0)
-+		goto out;
-+	*dest = '\0';
-+
-+	return 0;
-+out: ;
-+	return -ENOMEM;
-+}
-+
-+/* Get argv[0] of "struct linux_binprm". */
-+static char *tmy_get_argv0(struct linux_binprm *bprm)
-+{
-+	char *arg_ptr;
-+	int arg_len = 0;
-+	unsigned long pos = bprm->p;
-+	int i = pos / PAGE_SIZE;
-+	int offset = pos % PAGE_SIZE;
-+
-+	if (bprm->argc <= 0)
-+		return NULL;
-+
-+	arg_ptr = tmy_alloc(PAGE_SIZE);
-+
-+	if (!arg_ptr)
-+		goto out;
-+
-+	while (1) {
-+		struct page *page;
-+		const char *kaddr;
-+		char *tmp_arg;
-+
-+#ifdef CONFIG_MMU
-+		if (get_user_pages(current, bprm->mm, pos,
-+				   1, 0, 1, &page, NULL) <= 0)
++	if (!found) {
++		new_group = tmy_alloc_element(sizeof(*new_group));
++		if (!new_group)
 +			goto out;
-+#else
-+		page = bprm->page[i];
-+#endif
-+		kaddr = kmap(page);
-+		if (!kaddr) { /* Mapping failed. */
-+#ifdef CONFIG_MMU
-+			put_page(page);
-+#endif
-+			goto out;
-+		}
-+
-+		memmove(arg_ptr + arg_len, kaddr + offset, PAGE_SIZE - offset);
-+		kunmap(page);
-+
-+#ifdef CONFIG_MMU
-+		put_page(page);
-+		pos += PAGE_SIZE - offset;
-+#endif
-+
-+		arg_len += PAGE_SIZE - offset;
-+
-+		if (memchr(arg_ptr, '\0', arg_len))
-+			break;
-+
-+		tmp_arg = tmy_alloc(arg_len + PAGE_SIZE);
-+		if (!tmp_arg)
-+			goto out;
-+
-+		memmove(tmp_arg, arg_ptr, arg_len);
-+		tmy_free(arg_ptr);
-+		arg_ptr = tmp_arg;
-+		i++;
-+		offset = 0;
++		INIT_LIST_HEAD(&new_group->path_group_member_list);
++		new_group->group_name = saved_group;
++		list_add_tail_mb(&new_group->list, &path_group_list);
++		group = new_group;
 +	}
-+	return arg_ptr;
-+out: ;
-+	tmy_free(arg_ptr);
 +
-+	return NULL;
++	new_member = tmy_alloc_element(sizeof(*new_member));
++	if (!new_member)
++		goto out;
++	new_member->member_name = saved_member;
++	list_add_tail_mb(&new_member->list, &group->path_group_member_list);
++	error = 0;
++out: ;
++	mutex_unlock(&mutex);
++
++	return error;
 +}
 +
 +/**
-+ * tmy_find_next_domain - find a domain to transit to if do_execve() succeeds.
-+ * @bprm:        pointer to "struct linux_binprm".
-+ * @next_domain: pointer to pointer to "struct domain_info".
++ * tmy_add_group_policy - add or delete path group policy.
++ * @data:      a line to parse.
++ * @is_delete: is this delete request?
 + *
-+ * Returns zero if success. @next_domain receives new domain to transit to.
++ * Returns zero on success.
 + * Returns nonzero on failure.
-+ *
-+ * This function handles TOMOYO Linux's domain transition.
-+ * New domains are automatically created unless the domain the caller process
-+ * belongs to is assigned a profile for enforcing mode.
 + */
-+int tmy_find_next_domain(struct linux_binprm *bprm,
-+			 struct domain_info **next_domain)
++int tmy_add_group_policy(char *data, const bool is_delete)
 +{
-+	/* This function assumes that the size of buffer returned */
-+	/* by tmy_realpath() = TMY_MAX_PATHNAME_LEN. */
-+	struct domain_info *old_domain = TMY_SECURITY->domain;
-+	struct domain_info *domain = NULL;
-+	const char *old_domain_name = old_domain->domainname->name;
-+	const char *original_name = bprm->filename;
-+	struct file *filp = bprm->file;
-+	char *new_domain_name = NULL;
-+	char *real_program_name = NULL;
-+	char *symlink_program_name = NULL;
-+	const bool is_enforce = (tmy_flags(TMY_MAC_FOR_FILE) == 3);
-+	int retval;
-+	struct path_info r;
-+	struct path_info s;
-+	struct path_info l;
++	char *cp = strchr(data, ' ');
 +
-+	/*
-+	 * Built-in initializers.
-+	 * This is needed because policies are not loaded
-+	 * until starting /sbin/init .
-+	 */
-+	static int first = 1;
-+	if (first) {
-+		tmy_add_domain_initializer_entry(NULL, "/sbin/hotplug", 0, 0);
-+		tmy_add_domain_initializer_entry(NULL, "/sbin/modprobe", 0, 0);
-+		tmy_add_domain_initializer_entry(NULL, "/sbin/udevd", 0, 0);
-+		first = 0;
++	if (!cp)
++		return -EINVAL;
++	*cp++ = '\0';
++	return tmy_add_group_entry(data, cp, is_delete);
++}
++
++static struct path_group_entry *tmy_new_path_group(const char *group_name)
++{
++	int i;
++	struct path_group_entry *group;
++
++	for (i = 0; i <= 1; i++) {
++		list_for_each_entry(group, &path_group_list, list) {
++			if (strcmp(group_name, group->group_name->name) == 0)
++				return group;
++		}
++
++		if (i == 0) {
++			/*
++			 * Add a dummy entry to create new path group
++			 * and delete that entry.
++			 */
++			tmy_add_group_entry(group_name, "/", 0);
++			tmy_add_group_entry(group_name, "/", 1);
++		}
 +	}
 +
-+	/* Get realpath of program. */
-+	/* I hope tmy_realpath() won't fail with -ENOMEM. */
-+	retval = -ENOENT;
-+	real_program_name = tmy_realpath(original_name);
++	return NULL;
++}
 +
-+	if (!real_program_name)
-+		goto out;
++static int tmy_path_match_group(const struct path_info *pathname,
++				const struct path_group_entry *group,
++				const int may_use_pattern)
++{
++	struct path_group_member *member;
++	list_for_each_entry(member, &group->path_group_member_list, list) {
++		if (member->is_deleted)
++			continue;
++		if (!member->member_name->is_patterned) {
++			if (!tmy_pathcmp(pathname, member->member_name))
++				return 1;
++		} else if (may_use_pattern) {
++			if (tmy_path_match(pathname, member->member_name))
++				return 1;
++		}
++	}
 +
-+	/* Get realpath of symbolic link. */
-+	symlink_program_name = tmy_realpath_nofollow(original_name);
-+	if (!symlink_program_name)
-+		goto out;
++	return 0;
++}
 +
-+	r.name = real_program_name;
-+	tmy_fill_path_info(&r);
-+	s.name = symlink_program_name;
-+	tmy_fill_path_info(&s);
-+	l.name = strrchr(old_domain_name, ' ');
-+
-+	if (l.name)
-+		l.name++;
-+	else
-+		l.name = old_domain_name;
-+	tmy_fill_path_info(&l);
-+
-+	/* Check 'alias' directive. */
-+	if (tmy_pathcmp(&r, &s)) {
-+		struct alias_entry *ptr;
-+
-+		/* Is this program allowed to be called via symbolic links? */
-+		list_for_each_entry(ptr, &alias_list, list) {
-+			if (ptr->is_deleted ||
-+			    tmy_pathcmp(&r, ptr->original_name) ||
-+			    tmy_pathcmp(&s, ptr->aliased_name))
++/**
++ * tmy_read_path_group_policy - read path group policy.
++ * @head: pointer to "struct io_buffer".
++ *
++ * Returns nonzero if reading incomplete.
++ * Returns zero otherwise.
++ */
++int tmy_read_path_group_policy(struct io_buffer *head)
++{
++	struct list_head *gpos;
++	struct list_head *mpos;
++	list_for_each_cookie(gpos, head->read_var1, &path_group_list) {
++		struct path_group_entry *group;
++		group = list_entry(gpos, struct path_group_entry, list);
++		list_for_each_cookie(mpos, head->read_var2,
++				     &group->path_group_member_list) {
++			struct path_group_member *member;
++			member = list_entry(mpos, struct path_group_member,
++					    list);
++			if (member->is_deleted)
 +				continue;
-+			memset(real_program_name, 0, TMY_MAX_PATHNAME_LEN);
-+			strncpy(real_program_name,
-+				ptr->aliased_name->name,
-+				TMY_MAX_PATHNAME_LEN - 1);
-+			tmy_fill_path_info(&r);
-+			break;
++			if (tmy_io_printf(head,
++					  TMY_PATH_GROUP "%s %s\n",
++					  group->group_name->name,
++					  member->member_name->name))
++				return -ENOMEM;
 +		}
 +	}
++	return 0;
++}
 +
-+	/* Compare basename of real_program_name and argv[0] */
-+	if (bprm->argc > 0 && tmy_flags(TMY_MAC_FOR_ARGV0)) {
++/*************************  FILE PATTERN HANDLER  *************************/
 +
-+		char *org_argv0 = tmy_get_argv0(bprm);
++static LIST_HEAD(pattern_list);
 +
-+		retval = -ENOMEM;
-+		if (org_argv0) {
++static int tmy_add_pattern_entry(const char *pattern, const bool is_delete)
++{
++	struct pattern_entry *new_entry;
++	struct pattern_entry *ptr;
++	static DEFINE_MUTEX(mutex);
++	const struct path_info *saved;
++	int error = -ENOMEM;
 +
-+			const int len = strlen(org_argv0);
-+			char *printable_argv0 = tmy_alloc(len * 4 + 8);
++	if (!tmy_correct_path(pattern, 0, 1, 0, __FUNCTION__))
++		return -EINVAL;
 +
-+			if (printable_argv0 &&
-+			    !tmy_escape(printable_argv0, org_argv0,
-+					len * 4 + 8)) {
-+				const char *base_argv0;
-+				const char *base_filename;
++	saved = tmy_save_name(pattern);
++	if (!saved)
++		return -ENOMEM;
 +
-+				base_argv0 = strrchr(printable_argv0, '/');
-+				if (!base_argv0)
-+					base_argv0 = printable_argv0;
-+				else
-+					base_argv0++;
++	mutex_lock(&mutex);
 +
-+				base_filename = strrchr(real_program_name, '/');
-+				if (!base_filename)
-+					base_filename = real_program_name;
-+				else
-+					base_filename++;
-+
-+				if (strcmp(base_argv0, base_filename))
-+					retval = tmy_argv0_perm(&r, base_argv0);
-+				else
-+					retval = 0;
-+			}
-+
-+			tmy_free(printable_argv0);
-+			tmy_free(org_argv0);
-+		}
-+
-+		if (retval)
++	list_for_each_entry(ptr, &pattern_list, list) {
++		if (saved == ptr->pattern) {
++			ptr->is_deleted = is_delete;
++			error = 0;
 +			goto out;
-+
-+	}
-+
-+
-+	/* Check 'aggregator' directive. */
-+	{
-+		struct aggregator_entry *ptr;
-+
-+		/* Is this program allowed to be aggregated? */
-+		list_for_each_entry(ptr, &aggregator_list, list) {
-+			if (ptr->is_deleted ||
-+			    !tmy_path_match(&r, ptr->original_name))
-+				continue;
-+			memset(real_program_name, 0, TMY_MAX_PATHNAME_LEN);
-+			strncpy(real_program_name,
-+				ptr->aggregated_name->name,
-+				TMY_MAX_PATHNAME_LEN - 1);
-+			tmy_fill_path_info(&r);
-+			break;
 +		}
 +	}
 +
-+	/* Check execute permission. */
-+	retval = tmy_exec_perm(&r, filp);
-+	if (retval < 0)
++	if (is_delete) {
++		error = -ENOENT;
++		goto out;
++	}
++
++	new_entry = tmy_alloc_element(sizeof(*new_entry));
++
++	if (!new_entry)
++		goto out;
++	new_entry->pattern = saved;
++	list_add_tail_mb(&new_entry->list, &pattern_list);
++	error = 0;
++out: ;
++	mutex_unlock(&mutex);
++	return error;
++}
++
++static const struct path_info *tmy_get_pattern(const struct path_info *filename)
++{
++	struct pattern_entry *ptr;
++	const struct path_info *pattern = NULL;
++
++	list_for_each_entry(ptr, &pattern_list, list) {
++		if (ptr->is_deleted)
++			continue;
++		if (!tmy_path_match(filename, ptr->pattern))
++			continue;
++		pattern = ptr->pattern;
++		if (!tmy_strendswith(pattern->name, "/\\*"))
++			break;
++	}
++
++	if (pattern)
++		filename = pattern;
++
++	return filename;
++}
++
++/**
++ * tmy_add_pattern_policy - add or delete file pattern policy.
++ * @pattern:   pointer to file pattern entry.
++ * @is_delete: is this delete request?
++ *
++ * Returns zero on success.
++ * Returns nonzero on failure.
++ */
++int tmy_add_pattern_policy(char *pattern, const bool is_delete)
++{
++	return tmy_add_pattern_entry(pattern, is_delete);
++}
++
++/**
++ * tmy_read_pattern_policy - read file pattern policy.
++ * @head: pointer to "struct io_buffer".
++ *
++ * Returns nonzero if reading incomplete.
++ * Returns zero otherwise.
++ */
++int tmy_read_pattern_policy(struct io_buffer *head)
++{
++	struct list_head *pos;
++	list_for_each_cookie(pos, head->read_var2, &pattern_list) {
++		struct pattern_entry *ptr;
++		ptr = list_entry(pos, struct pattern_entry, list);
++		if (ptr->is_deleted)
++			continue;
++		if (tmy_io_printf(head, TMY_FILE_PATTERN "%s\n",
++				  ptr->pattern->name))
++			return -ENOMEM;
++	}
++	return 0;
++}
++
++/***********************  NON REWRITABLE FILE HANDLER  ***********************/
++
++static LIST_HEAD(no_rewrite_list);
++
++static int tmy_add_no_rewrite_entry(const char *pattern, const bool is_delete)
++{
++	struct no_rewrite_entry *new_entry;
++	struct no_rewrite_entry *ptr;
++	static DEFINE_MUTEX(mutex);
++	const struct path_info *saved;
++	int error = -ENOMEM;
++
++	if (!tmy_correct_path(pattern, 0, 0, 0, __FUNCTION__))
++		return -EINVAL;
++	saved = tmy_save_name(pattern);
++	if (!saved)
++		return -ENOMEM;
++
++	mutex_lock(&mutex);
++	list_for_each_entry(ptr, &no_rewrite_list, list) {
++		if (ptr->pattern == saved) {
++			ptr->is_deleted = is_delete;
++			error = 0;
++			goto out;
++		}
++	}
++
++	if (is_delete) {
++		error = -ENOENT;
++		goto out;
++	}
++
++	new_entry = tmy_alloc_element(sizeof(*new_entry));
++	if (!new_entry)
 +		goto out;
 +
-+	/* Allocate memory for calcurating domain name. */
-+	retval = -ENOMEM;
-+	new_domain_name = tmy_alloc(TMY_MAX_PATHNAME_LEN + 16);
-+	if (!new_domain_name)
-+		goto out;
++	new_entry->pattern = saved;
++	list_add_tail_mb(&new_entry->list, &no_rewrite_list);
++	error = 0;
++out: ;
++	mutex_unlock(&mutex);
 +
-+	if (tmy_is_domain_initializer(old_domain->domainname, &r, &l))
-+		/* Transit to the child of KERNEL_DOMAIN domain. */
-+		snprintf(new_domain_name, TMY_MAX_PATHNAME_LEN + 1,
-+			 TMY_ROOT_NAME " " "%s", real_program_name);
-+	else if (old_domain == &KERNEL_DOMAIN && !sbin_init_started)
-+		/*
-+		 * Needn't to transit from kernel domain
-+		 * before starting /sbin/init .
-+		 * But transit from kernel domain if executing initializers,
-+		 * for they might start before /sbin/init .
-+		 */
-+		domain = old_domain;
-+	else if (tmy_is_domain_keeper(old_domain->domainname, &r, &l))
-+		/* Keep current domain. */
-+		domain = old_domain;
-+	else
-+		/* Normal domain transition. */
-+		snprintf(new_domain_name,
-+			 TMY_MAX_PATHNAME_LEN + 1,
-+			 "%s %s",
-+			 old_domain_name,
-+			 real_program_name);
++	return error;
++}
 +
-+	if (domain || strlen(new_domain_name) >= TMY_MAX_PATHNAME_LEN)
++static int tmy_is_no_rewrite_file(const struct path_info *filename)
++{
++	struct no_rewrite_entry *ptr;
++
++	list_for_each_entry(ptr, &no_rewrite_list, list) {
++		if (ptr->is_deleted)
++			continue;
++		if (!tmy_path_match(filename, ptr->pattern))
++			continue;
++		return 1;
++	}
++
++	return 0;
++}
++
++/**
++ * tmy_add_no_rewrite_policy - add or delete no-rewrite policy.
++ * @pattern:   pointer to no-rewrite entry.
++ * @is_delete: is this delete request?
++ *
++ * Returns zero on success.
++ * Returns nonzero on failure.
++ */
++int tmy_add_no_rewrite_policy(char *pattern, const bool is_delete)
++{
++	return tmy_add_no_rewrite_entry(pattern, is_delete);
++}
++
++/**
++ * tmy_read_no_rewrite_policy - read no-rewrite policy.
++ * @head: pointer to "struct io_buffer".
++ *
++ * Returns nonzero if reading incomplete.
++ * Returns zero otherwise.
++ */
++int tmy_read_no_rewrite_policy(struct io_buffer *head)
++{
++	struct list_head *pos;
++	list_for_each_cookie(pos, head->read_var2, &no_rewrite_list) {
++		struct no_rewrite_entry *ptr;
++		ptr = list_entry(pos, struct no_rewrite_entry, list);
++		if (ptr->is_deleted)
++			continue;
++		if (tmy_io_printf(head, TMY_DENY_REWRITE "%s\n",
++				  ptr->pattern->name))
++			return -ENOMEM;
++	}
++	return 0;
++}
++
++/*************************  FILE ACL HANDLER  *************************/
++
++static int tmy_add_file_acl(const char *filename,
++			    u8 perm,
++			    struct domain_info * const domain,
++			    const struct condition_list *cond,
++			    const bool is_delete)
++{
++	const struct path_info *saved;
++	struct acl_info *ptr;
++	struct file_acl *acl;
++	int error = -ENOMEM;
++	bool is_group = 0;
++
++	if (!domain)
++		return -EINVAL;
++	if (perm > 7 || !perm) {
++		printk(KERN_DEBUG "%s: Invalid permission '%d %s'\n",
++		       __FUNCTION__, perm, filename);
++		return -EINVAL;
++	}
++	if (!tmy_correct_path(filename, 0, 0, 0, __FUNCTION__))
++		return -EINVAL;
++
++	if (filename[0] == '@') {
++		/* This cast is OK because I don't dereference. */
++		saved = (struct path_info *) tmy_new_path_group(filename + 1);
++		if (!saved)
++			return -ENOMEM;
++		is_group = 1;
++	} else {
++
++		if (tmy_strendswith(filename, "/"))
++			/*
++			 * Valid permissions for directory are
++			 * only 'allow_mkdir' and 'allow_rmdir'.
++			 */
++			return 0;
++
++		saved = tmy_save_name(filename);
++		if (!saved)
++			return -ENOMEM;
++
++		if (!is_delete && perm == 4 &&
++		    tmy_globally_readable(saved))
++			return 0;
++
++	}
++
++	mutex_lock(&domain_acl_lock);
++
++	if (is_delete)
++		goto remove;
++
++	list_for_each_entry(ptr, &domain->acl_info_list, list) {
++		acl = (struct file_acl *) ptr;
++		if ((ptr->type == TMY_TYPE_FILE_ACL) &&
++		    ptr->cond == cond &&
++		    (acl->u.filename == saved)) {
++			if (ptr->is_deleted) {
++				acl->perm = 0;
++				mb(); /* Avoid out-of-order execution. */
++				ptr->is_deleted = 0;
++			}
++			/* Found. Just 'OR' the permission bits. */
++			acl->perm |= perm;
++			error = 0;
++			tmy_update_counter(TMY_UPDATE_DOMAINPOLICY);
++			goto ok;
++		}
++	}
++	/* Not found. Append it to the tail. */
++	acl = tmy_alloc_element(sizeof(*acl));
++	if (!acl)
 +		goto ok;
 +
-+	if (is_enforce) {
-+		domain = tmy_find_domain(new_domain_name);
-+		if (!domain &&
-+		    tmy_supervisor("#Need to create domain\n%s\n",
-+				   new_domain_name) == 0) {
-+			const u8 profile = TMY_SECURITY->domain->profile;
-+			domain = tmy_new_domain(new_domain_name, profile);
-+		}
-+	} else {
-+		const u8 profile = TMY_SECURITY->domain->profile;
-+		domain = tmy_new_domain(new_domain_name, profile);
++	acl->head.type = TMY_TYPE_FILE_ACL;
++	acl->head.cond = cond;
++	acl->perm = perm;
++	acl->u_is_group = is_group;
++	acl->u.filename = saved;
++	error = tmy_add_acl(domain, (struct acl_info *) acl);
++	goto ok;
++remove: ;
++	error = -ENOENT;
++	list_for_each_entry(ptr, &domain->acl_info_list, list) {
++		acl = (struct file_acl *) ptr;
++		if (ptr->type != TMY_TYPE_FILE_ACL ||
++		    ptr->cond != cond ||
++		    ptr->is_deleted ||
++		    acl->perm != perm ||
++		    acl->u.filename != saved)
++			continue;
++		error = tmy_del_acl(ptr);
++		break;
++	}
++ok: ;
++	mutex_unlock(&domain_acl_lock);
++	return error;
++}
++
++static int tmy_file_acl(const struct path_info *filename, const u8 perm,
++			struct obj_info *obj)
++{
++	const struct domain_info *domain = TMY_SECURITY->domain;
++	struct acl_info *ptr;
++	const int may_use_pat = ((perm & 1) == 0);
++
++	if (!tmy_flags(TMY_MAC_FOR_FILE))
++		return 0;
++	if (!filename->is_dir) {
++		if (perm == 4 && tmy_globally_readable(filename))
++			return 0;
 +	}
 +
-+ok: ;
++	list_for_each_entry(ptr, &domain->acl_info_list, list) {
++		struct file_acl *acl = (struct file_acl *) ptr;
 +
-+	if (!domain) {
-+		printk(KERN_INFO "TOMOYO-ERROR: Domain '%s' not defined.\n",
-+		       new_domain_name);
-+		if (is_enforce)
-+			retval = -EPERM;
-+	} else
-+		retval = 0;
++		if (ptr->type != TMY_TYPE_FILE_ACL ||
++		    ptr->is_deleted ||
++		    (acl->perm & perm) != perm ||
++		    tmy_check_condition(ptr->cond, obj))
++			continue;
++
++		if (acl->u_is_group) {
++			if (tmy_path_match_group(filename,
++						 acl->u.group,
++						 may_use_pat))
++				return 0;
++		} else {
++			if ((may_use_pat || !acl->u.filename->is_patterned) &&
++			    tmy_path_match(filename, acl->u.filename))
++				return 0;
++		}
++	}
++
++	return -EPERM;
++}
++
++static int tmy_file_perm2(const struct path_info *filename,
++			  const u8 perm,
++			  struct obj_info *obj,
++			  const char *operation)
++{
++	int error = 0;
++	struct domain_info * const domain = TMY_SECURITY->domain;
++	const u8 profile = domain->profile;
++	const unsigned int mode = tmy_flags(TMY_MAC_FOR_FILE);
++	const bool is_enforce = (mode == 3);
++
++	if (!filename)
++		return 0;
++
++	error = tmy_file_acl(filename, perm, obj);
++
++	tmy_audit_file_log(filename, perm, !error, profile, mode);
++
++	if (!error)
++		return error;
++
++	if (tmy_flags(TMY_VERBOSE))
++		tmy_audit("TOMOYO-%s: Access %d(%s) to %s denied for %s\n",
++			  tmy_getmsg(is_enforce), perm, operation,
++			  filename->name, tmy_lastname(domain));
++
++	if (is_enforce)
++		error =	tmy_supervisor("%s\n%d %s\n",
++				       domain->domainname->name,
++				       perm, filename->name);
++
++	else if (mode == 1 && tmy_quota()) {
++		/* Don't use patterns if execution bit is on. */
++		const struct path_info *patterned =
++			((perm & 1) == 0) ?
++			tmy_get_pattern(filename) : filename;
++		tmy_add_file_acl(patterned->name, perm, domain, NULL, 0);
++	}
++
++	if (!is_enforce)
++		error = 0;
++
++	return error;
++}
++
++/**
++ * tmy_file_perm - check permission for sysctl(2) operation.
++ * @filename0: pointer to filename returned by sysctlpath_from_table().
++ * @perm:      mode (read = 4, write = 2, read-write = 6).
++ * @operation: pointer to error message.
++ *
++ * Returns zero if permission granted.
++ * Returns nonzero if permission denied.
++ */
++int tmy_file_perm(const char *filename0, const u8 perm, const char *operation)
++{
++	struct path_info filename;
++
++	if (!tmy_flags(TMY_MAC_FOR_FILE))
++		return 0;
++
++	filename.name = filename0;
++	tmy_fill_path_info(&filename);
++
++	return tmy_file_perm2(&filename, perm, NULL, operation);
++}
++
++/**
++ * tmy_add_file_policy - add or delete file policy.
++ * @data:      a line to parse.
++ * @domain:    pointer to "struct domain_info".
++ * @cond:      pointer to "struct condition_list". May be NULL.
++ * @is_delete: is this delete request?
++ *
++ * Returns zero on success.
++ * Returns nonzero on failure.
++ */
++int tmy_add_file_policy(char *data,
++			struct domain_info *domain,
++			const struct condition_list *cond,
++			const bool is_delete)
++{
++	char *filename = strchr(data, ' ');
++	unsigned int perm;
++	u8 type;
++
++	if (!filename)
++		return -EINVAL;
++	*filename++ = '\0';
++
++	if (sscanf(data, "%u", &perm) == 1)
++		return tmy_add_file_acl(filename, (u8) perm, domain, cond,
++					is_delete);
++
++	if (strncmp(data, "allow_", 6))
++		goto out;
++
++	data += 6;
++
++	for (type = 0; acl_type_array[type].keyword; type++) {
++		if (strcmp(data, acl_type_array[type].keyword))
++			continue;
++
++		if (acl_type_array[type].paths == 2) {
++			char *filename2 = strchr(filename, ' ');
++
++			if (!filename2)
++				break;
++			*filename2++ = '\0';
++			return tmy_add_double_write_acl(type, filename,
++							filename2,
++							domain, cond,
++							is_delete);
++		} else
++			return tmy_add_single_write_acl(type, filename,
++							domain, cond,
++							is_delete);
++
++		break;
++	}
 +out: ;
++	return -EINVAL;
++}
 +
-+	tmy_free(new_domain_name);
-+	tmy_free(real_program_name);
-+	tmy_free(symlink_program_name);
-+	*next_domain = domain ? domain : old_domain;
++static int tmy_add_single_write_acl(const u8 type,
++				    const char *filename,
++				    struct domain_info * const domain,
++				    const struct condition_list *cond,
++				    const bool is_delete)
++{
++	const struct path_info *saved;
++	struct acl_info *ptr;
++	struct single_acl *acl;
++	int error = -ENOMEM;
++	bool is_group = 0;
 +
-+	return retval;
++	if (!domain)
++		return -EINVAL;
++	if (!tmy_correct_path(filename, 0, 0, 0, __FUNCTION__))
++		return -EINVAL;
++
++	if (filename[0] == '@') {
++		/* This cast is OK because I don't dereference. */
++		saved = (struct path_info *) tmy_new_path_group(filename + 1);
++		if (!saved)
++			return -ENOMEM;
++		is_group = 1;
++	} else {
++		saved = tmy_save_name(filename);
++		if (!saved)
++			return -ENOMEM;
++	}
++
++	mutex_lock(&domain_acl_lock);
++	if (is_delete)
++		goto remove;
++
++	list_for_each_entry(ptr, &domain->acl_info_list, list) {
++		acl = (struct single_acl *) ptr;
++		if (ptr->type == type && ptr->cond == cond) {
++			if (acl->u.filename == saved) {
++				ptr->is_deleted = 0;
++				/* Found. Nothing to do. */
++				error = 0;
++				goto ok;
++			}
++		}
++	}
++	/* Not found. Append it to the tail. */
++	acl = tmy_alloc_element(sizeof(*acl));
++	if (!acl)
++		goto ok;
++
++	acl->head.type = type;
++	acl->head.cond = cond;
++	acl->u_is_group = is_group;
++	acl->u.filename = saved;
++	error = tmy_add_acl(domain, (struct acl_info *) acl);
++	goto ok;
++remove: ;
++	error = -ENOENT;
++	list_for_each_entry(ptr, &domain->acl_info_list, list) {
++		acl = (struct single_acl *) ptr;
++
++		if (ptr->type != type || ptr->is_deleted ||
++		    ptr->cond != cond || acl->u.filename != saved)
++			continue;
++
++		error = tmy_del_acl(ptr);
++		break;
++	}
++ok: ;
++	mutex_unlock(&domain_acl_lock);
++
++	return error;
++}
++
++static int tmy_add_double_write_acl(const u8 type,
++				    const char *filename1,
++				    const char *filename2,
++				    struct domain_info * const domain,
++				    const struct condition_list *cond,
++				    const bool is_delete)
++{
++	const struct path_info *saved1;
++	const struct path_info *saved2;
++	struct acl_info *ptr;
++	struct double_acl *acl;
++	int error = -ENOMEM;
++	bool is_group1 = 0;
++	bool is_group2 = 0;
++
++	if (!domain)
++		return -EINVAL;
++	if (!tmy_correct_path(filename1, 0, 0, 0, __FUNCTION__) ||
++	    !tmy_correct_path(filename2, 0, 0, 0, __FUNCTION__))
++		return -EINVAL;
++
++	if (filename1[0] == '@') {
++		/* This cast is OK because I don't dereference. */
++		saved1 = (struct path_info *) tmy_new_path_group(filename1 + 1);
++		if (!saved1)
++			return -ENOMEM;
++		is_group1 = 1;
++	} else {
++		saved1 = tmy_save_name(filename1);
++		if (!saved1)
++			return -ENOMEM;
++	}
++
++	if (filename2[0] == '@') {
++		/* This cast is OK because I don't dereference. */
++		saved2 = (struct path_info *) tmy_new_path_group(filename2 + 1);
++		if (!saved2)
++			return -ENOMEM;
++		is_group2 = 1;
++	} else {
++		saved2 = tmy_save_name(filename2);
++		if (!saved2)
++			return -ENOMEM;
++	}
++
++	mutex_lock(&domain_acl_lock);
++
++	if (is_delete)
++		goto remove;
++
++	list_for_each_entry(ptr, &domain->acl_info_list, list) {
++		acl = (struct double_acl *) ptr;
++		if (ptr->type == type && ptr->cond == cond) {
++			if (acl->u1.filename1 == saved1 &&
++			    acl->u2.filename2 == saved2) {
++				ptr->is_deleted = 0;
++				/* Found. Nothing to do. */
++				error = 0;
++				goto ok;
++			}
++		}
++	}
++	/* Not found. Append it to the tail. */
++	acl = tmy_alloc_element(sizeof(*acl));
++	if (!acl)
++		goto ok;
++
++	acl->head.type = type;
++	acl->head.cond = cond;
++	acl->u1_is_group = is_group1;
++	acl->u2_is_group = is_group2;
++	acl->u1.filename1 = saved1;
++	acl->u2.filename2 = saved2;
++	error = tmy_add_acl(domain,
++			    (struct acl_info *) acl);
++	goto ok;
++remove: ;
++	error = -ENOENT;
++	list_for_each_entry(ptr, &domain->acl_info_list, list) {
++		acl = (struct double_acl *) ptr;
++		if (ptr->type != type || ptr->is_deleted ||
++		    ptr->cond != cond ||
++		    acl->u1.filename1 != saved1 ||
++		    acl->u2.filename2 != saved2)
++			continue;
++		error = tmy_del_acl(ptr);
++		break;
++	}
++ ok: ;
++	mutex_unlock(&domain_acl_lock);
++	return error;
++}
++
++static int tmy_single_write_acl(const u8 type,
++				const struct path_info *filename,
++				struct obj_info *obj)
++{
++	const struct domain_info *domain = TMY_SECURITY->domain;
++	struct acl_info *ptr;
++
++	if (!tmy_flags(TMY_MAC_FOR_FILE))
++		return 0;
++
++	list_for_each_entry(ptr, &domain->acl_info_list, list) {
++		struct single_acl *acl = (struct single_acl *) ptr;
++
++		if (ptr->type != type || ptr->is_deleted ||
++		    tmy_check_condition(ptr->cond, obj))
++			continue;
++
++		if (acl->u_is_group) {
++			if (!tmy_path_match_group(filename, acl->u.group, 1))
++				continue;
++		} else {
++			if (!tmy_path_match(filename, acl->u.filename))
++				continue;
++		}
++		return 0;
++	}
++
++	return -EPERM;
++}
++
++static int tmy_double_write_acl(const u8 type,
++				const struct path_info *filename1,
++				const struct path_info *filename2,
++				struct obj_info *obj)
++{
++	const struct domain_info *domain = TMY_SECURITY->domain;
++	struct acl_info *ptr;
++
++	if (!tmy_flags(TMY_MAC_FOR_FILE))
++		return 0;
++
++	list_for_each_entry(ptr, &domain->acl_info_list, list) {
++		struct double_acl *acl = (struct double_acl *) ptr;
++
++		if (ptr->type != type || ptr->is_deleted ||
++		    tmy_check_condition(ptr->cond, obj))
++			continue;
++
++		if (acl->u1_is_group) {
++			if (!tmy_path_match_group(filename1,
++						  acl->u1.group1, 1))
++				continue;
++		} else {
++			if (!tmy_path_match(filename1, acl->u1.filename1))
++				continue;
++		}
++
++		if (acl->u2_is_group) {
++			if (!tmy_path_match_group(filename2,
++						  acl->u2.group2, 1))
++				continue;
++		} else {
++			if (!tmy_path_match(filename2, acl->u2.filename2))
++				continue;
++		}
++
++		return 0;
++	}
++
++	return -EPERM;
++}
++
++static int tmy_single_write_perm2(const unsigned int operation,
++				  const struct path_info *filename,
++				  struct obj_info *obj)
++{
++	int error;
++	struct domain_info * const domain = TMY_SECURITY->domain;
++	const u8 profile = domain->profile;
++	const unsigned int mode = tmy_flags(TMY_MAC_FOR_FILE);
++	const bool is_enforce = (mode == 3);
++
++	if (!mode)
++		return 0;
++
++	error = tmy_single_write_acl(operation, filename, obj);
++
++	tmy_audit_write_log(tmy_acltype2keyword(operation),
++			    filename, NULL, !error, profile, mode);
++
++	if (!error)
++		goto ok;
++
++	if (tmy_flags(TMY_VERBOSE))
++		tmy_audit("TOMOYO-%s: Access '%s %s' denied for %s\n",
++			  tmy_getmsg(is_enforce),
++			  tmy_acltype2keyword(operation), filename->name,
++			  tmy_lastname(domain));
++
++	if (is_enforce)
++		error = tmy_supervisor("%s\nallow_%s %s\n",
++				       domain->domainname->name,
++				       tmy_acltype2keyword(operation),
++				       filename->name);
++
++	else if (mode == 1 && tmy_quota())
++		tmy_add_single_write_acl(operation,
++					 tmy_get_pattern(filename)->name,
++					 domain, NULL, 0);
++
++	if (!is_enforce)
++		error = 0;
++
++ok: ;
++	if (!error && operation == TMY_TYPE_TRUNCATE_ACL &&
++	    tmy_is_no_rewrite_file(filename))
++		error = tmy_single_write_perm2(TMY_TYPE_REWRITE_ACL,
++					       filename, obj);
++
++	return error;
++}
++
++/**
++ * tmy_exec_perm - check permission for execve(2) operation.
++ * @filename: pointer to filename to execute.
++ * @filp:     pointer to "struct file".
++ *
++ * Returns zero if permission granted.
++ * Returns nonzero if permission denied.
++ */
++int tmy_exec_perm(const struct path_info *filename, struct file *filp)
++{
++	struct obj_info obj;
++	if (!tmy_flags(TMY_MAC_FOR_FILE))
++		return 0;
++	memset(&obj, 0, sizeof(obj));
++	obj.path1_dentry = filp->f_dentry;
++	obj.path1_vfsmnt = filp->f_vfsmnt;
++	return tmy_file_perm2(filename, 1, &obj, "do_execve");
++}
++
++/**
++ * tmy_open_perm - check permission for open(2) operation.
++ * @dentry: pointer to "struct dentry".
++ * @mnt:    pointer to "struct vfsmount".
++ * @flag:   open flags.
++ *
++ * Returns zero if permission granted.
++ * Returns nonzero if permission denied.
++ */
++int tmy_open_perm(struct dentry *dentry,
++		  struct vfsmount *mnt,
++		  const int flag)
++{
++	struct obj_info obj;
++	const int acc_mode = ACC_MODE(flag);
++	int error = -ENOMEM;
++	struct path_info *buf;
++	const unsigned int mode = tmy_flags(TMY_MAC_FOR_FILE);
++	const bool is_enforce = (mode == 3);
++
++	if (!mode)
++		return 0;
++	if (acc_mode == 0)
++		return 0;
++	if (dentry->d_inode && S_ISDIR(dentry->d_inode->i_mode))
++		/* I don't check directories here             */
++		/* because mkdir() and rmdir() don't call me. */
++		return 0;
++
++	buf = tmy_get_path(dentry, mnt);
++
++	if (!buf)
++		goto out;
++
++	memset(&obj, 0, sizeof(obj));
++	obj.path1_dentry = dentry;
++	obj.path1_vfsmnt = mnt;
++
++	error = 0;
++	if ((acc_mode & MAY_WRITE) &&
++	    ((flag & O_TRUNC) || !(flag & O_APPEND)) &&
++	    tmy_is_no_rewrite_file(buf))
++		error = tmy_single_write_perm2(TMY_TYPE_REWRITE_ACL,
++					       buf, &obj);
++
++	if (error == 0)
++		error = tmy_file_perm2(buf, acc_mode, &obj, "open");
++
++	if (error == 0 && (flag & O_TRUNC))
++		error = tmy_single_write_perm2(TMY_TYPE_TRUNCATE_ACL,
++					       buf, &obj);
++
++	tmy_free(buf);
++
++out: ;
++	if (!is_enforce)
++		error = 0;
++	return error;
++}
++
++/**
++ * tmy_single_write_perm - check permission for create(2) etc. operation.
++ * @operation: operation index number.
++ * @dentry:    pointer to "struct dentry".
++ * @mnt:       pointer to "struct vfsmount".
++ *
++ * Returns zero if permission granted.
++ * Returns nonzero if permission denied.
++ */
++int tmy_single_write_perm(const unsigned int operation,
++			  struct dentry *dentry,
++			  struct vfsmount *mnt)
++{
++	struct obj_info obj;
++	int error = -ENOMEM;
++	struct path_info *buf;
++	const unsigned int mode = tmy_flags(TMY_MAC_FOR_FILE);
++	const bool is_enforce = (mode == 3);
++
++	if (!mode)
++		return 0;
++
++	buf = tmy_get_path(dentry, mnt);
++
++	if (!buf)
++		goto out;
++
++	memset(&obj, 0, sizeof(obj));
++	obj.path1_dentry = dentry;
++	obj.path1_vfsmnt = mnt;
++
++	switch (operation) {
++	case TMY_TYPE_MKDIR_ACL:
++	case TMY_TYPE_RMDIR_ACL:
++		if (!buf->is_dir) {
++			strcat((char *) buf->name, "/");
++			tmy_fill_path_info(buf);
++		}
++	}
++	error = tmy_single_write_perm2(operation, buf, &obj);
++	tmy_free(buf);
++
++out: ;
++	if (!is_enforce)
++		error = 0;
++
++	return error;
++}
++
++/**
++ * tmy_rewrite_perm - check permission for truncate/overwrite operation.
++ * @filp: pointer to "struct file".
++ *
++ * Returns zero if permission granted.
++ * Returns nonzero if permission denied.
++ */
++int tmy_rewrite_perm(struct file *filp)
++{
++	int error = -ENOMEM;
++	const unsigned int mode = tmy_flags(TMY_MAC_FOR_FILE);
++	const bool is_enforce = (mode == 3);
++	struct path_info *buf;
++
++	if (!mode)
++		return 0;
++
++	buf = tmy_get_path(filp->f_dentry, filp->f_vfsmnt);
++	if (!buf)
++		goto out;
++
++	if (tmy_is_no_rewrite_file(buf)) {
++		struct obj_info obj;
++		memset(&obj, 0, sizeof(obj));
++		obj.path1_dentry = filp->f_dentry;
++		obj.path1_vfsmnt = filp->f_vfsmnt;
++		error = tmy_single_write_perm2(TMY_TYPE_REWRITE_ACL,
++					       buf, &obj);
++	} else
++		error = 0;
++
++	tmy_free(buf);
++
++out: ;
++	if (!is_enforce)
++		error = 0;
++	return error;
++}
++
++/**
++ * tmy_double_write_perm - check permission for link(2)/rename(2) operation.
++ * @operation: operation index number.
++ * @dentry1:   pointer to "struct dentry".
++ * @mnt1:      pointer to "struct vfsmount".
++ * @dentry2:   pointer to "struct dentry".
++ * @mnt2:      pointer to "struct vfsmount".
++ *
++ * Returns zero if permission granted.
++ * Returns nonzero if permission denied.
++ */
++int tmy_double_write_perm(const unsigned int operation,
++			  struct dentry *dentry1,
++			  struct vfsmount *mnt1,
++			  struct dentry *dentry2,
++			  struct vfsmount *mnt2)
++{
++	struct obj_info obj;
++	int error = -ENOMEM;
++	struct path_info *buf1;
++	struct path_info *buf2;
++	struct domain_info * const domain = TMY_SECURITY->domain;
++	const u8 profile = domain->profile;
++	const unsigned int mode = tmy_flags(TMY_MAC_FOR_FILE);
++	const bool is_enforce = (mode == 3);
++
++	if (!mode)
++		return 0;
++	buf1 = tmy_get_path(dentry1, mnt1);
++	buf2 = tmy_get_path(dentry2, mnt2);
++
++	if (!buf1 || !buf2)
++		goto out;
++
++	memset(&obj, 0, sizeof(obj));
++	obj.path1_dentry = dentry1;
++	obj.path1_vfsmnt = mnt1;
++	obj.path2_dentry = dentry2;
++	obj.path2_vfsmnt = mnt2;
++	if (operation == TMY_TYPE_RENAME_ACL) {
++		/* TMY_TYPE_LINK_ACL can't reach here for directory. */
++		if (dentry1->d_inode && S_ISDIR(dentry1->d_inode->i_mode)) {
++			if (!buf1->is_dir) {
++				strcat((char *) buf1->name, "/");
++				tmy_fill_path_info(buf1);
++			}
++			if (!buf2->is_dir) {
++				strcat((char *) buf2->name, "/");
++				tmy_fill_path_info(buf2);
++			}
++		}
++	}
++	error = tmy_double_write_acl(operation, buf1, buf2, &obj);
++
++	tmy_audit_write_log(tmy_acltype2keyword(operation),
++			    buf1, buf2, !error, profile, mode);
++
++	if (!error)
++		goto out;
++
++	if (tmy_flags(TMY_VERBOSE))
++		tmy_audit("TOMOYO-%s: Access '%s %s %s' denied for %s\n",
++			  tmy_getmsg(is_enforce),
++			  tmy_acltype2keyword(operation),
++			  buf1->name, buf2->name, tmy_lastname(domain));
++
++	if (is_enforce)
++		error = tmy_supervisor("%s\nallow_%s %s %s\n",
++				       domain->domainname->name,
++				       tmy_acltype2keyword(operation),
++				       buf1->name, buf2->name);
++	else if (mode == 1 && tmy_quota())
++		tmy_add_double_write_acl(operation,
++					 tmy_get_pattern(buf1)->name,
++					 tmy_get_pattern(buf2)->name,
++					 domain, NULL, 0);
++
++out: ;
++	tmy_free(buf1);
++	tmy_free(buf2);
++	if (!is_enforce)
++		error = 0;
++	return error;
 +}
 
 -- 
