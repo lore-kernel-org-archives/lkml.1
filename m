@@ -1,66 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765177AbXKPDxK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933544AbXKPDxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765177AbXKPDxK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 22:53:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756047AbXKPDw4
+	id S933544AbXKPDxi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 22:53:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758773AbXKPDx3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 22:52:56 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41351 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755804AbXKPDwz (ORCPT
+	Thu, 15 Nov 2007 22:53:29 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:49926 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758072AbXKPDx2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 22:52:55 -0500
-Date: Thu, 15 Nov 2007 19:52:34 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
+	Thu, 15 Nov 2007 22:53:28 -0500
+Message-ID: <473D131A.5000200@cosmosbay.com>
+Date: Fri, 16 Nov 2007 04:48:42 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
 To: Arjan van de Ven <arjan@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mingo@elte.hu
-Subject: Re: x86: disable preemption in delay_tsc()
-Message-Id: <20071115195234.2dc8406d.akpm@linux-foundation.org>
-In-Reply-To: <20071115194116.12c7a0f6@laptopd505.fenrus.org>
-References: <200711150400.lAF40lIr020160@hera.kernel.org>
-	<20071115194116.12c7a0f6@laptopd505.fenrus.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       davem@davemloft.net
+Subject: Re: [NET]: rt_check_expire() can take a long time, add a cond_resched()
+References: <200711150401.lAF41mSs021898@hera.kernel.org> <20071115193802.4ec64eef@laptopd505.fenrus.org>
+In-Reply-To: <20071115193802.4ec64eef@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Fri, 16 Nov 2007 04:48:48 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Nov 2007 19:41:16 -0800 Arjan van de Ven <arjan@infradead.org> wrote:
-
-> On Thu, 15 Nov 2007 04:00:47 GMT
+Arjan van de Ven a écrit :
+> On Thu, 15 Nov 2007 04:01:48 GMT
 > Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
 > 
-> > Gitweb:
-> > http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=35d5d08a085c56f153458c3f5d8ce24123617faf
-> > Commit:     35d5d08a085c56f153458c3f5d8ce24123617faf Parent:
-> > 7eea436433b7b18045f272562e256976f593f7c0 Author:     Andrew Morton
-> > <akpm@linux-foundation.org> AuthorDate: Wed Nov 14 17:00:41 2007 -0800
-> > Committer:  Linus Torvalds <torvalds@woody.linux-foundation.org>
-> > CommitDate: Wed Nov 14 18:45:44 2007 -0800
-> > 
-> >     x86: disable preemption in delay_tsc()
-> >     
-> >     Marin Mitov points out that delay_tsc() can misbehave if it is
-> > preempted and rescheduled on a different CPU which has a skewed TSC.
-> > Fix it by disabling preemption.
-> >  
+>> Gitweb:
+>> http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d90bf5a976793edfa88d3bb2393f0231eb8ce1e5
+>> Commit:     d90bf5a976793edfa88d3bb2393f0231eb8ce1e5 Parent:
+>> 66ba886254edbbd9442d30f1eef6f6fb0145027d Author:     Eric Dumazet
+>> <dada1@cosmosbay.com> AuthorDate: Wed Nov 14 16:14:05 2007 -0800
+>> Committer:  David S. Miller <davem@davemloft.net>
+>> CommitDate: Wed Nov 14 16:14:05 2007 -0800
+>>
+>>     [NET]: rt_check_expire() can take a long time, add a
+>> cond_resched() 
+>>     On commit 39c90ece7565f5c47110c2fa77409d7a9478bd5b:
 > 
-> this worries me.. this appears to effectively disable preemption during
-> udelay() and mdelay() loops... which are very obvious latency inducers.
+>>     When the IP route cache is big, rt_check_expire() can take a long
+>> time to run.  (default settings : 20% of the hash table is scanned at
+>> each invocation)
+>>     
+>>     Adding cond_resched() helps giving cpu to higher priority tasks if
+>>     necessary.
+>>     
+>>     Using a "if (need_resched())" test before calling
+>> "cond_resched();" is necessary to avoid spending too much time doing
+>> the resched check. 
 > 
-> Now you can argue that if you're preemptible you should have used
-> msleep() and co, and I'll totally buy that. 
+> int __sched cond_resched(void)
+> {
+>         if (need_resched() &&  .....
 > 
-> 
-> Maybe we should just check if we're still on the same cpu or something,
-> or have a cheap way to pin a process to a cpu.... but both are longer
-> term solutions.
-> 
+> somehow I wonder why the second if() is useful at all; it's another
+> spot for a branch predictor to miss... and a void function call is
+> really really cheap... 
 
-Yes, we can do better.
+Its not that cheap. The ChangeLog included my own numbers, on a Pentium M 
+machine. (i686, 1.6 GHz, 1.5 GB ram)
 
-But this bug can cause very rare failures in probably a large number of
-device drivers on a minorty of machines.  Ugly.  So I felt it best to
-plug it fast while people think about more sophisticated fixes.
+Without "if (need_resched())" (so calling need_resched() X.XXX.XXX times), 
+each run takes 88ms
+
+With the extra check (and *much* less function calls), each run takes 25ms
+
 
