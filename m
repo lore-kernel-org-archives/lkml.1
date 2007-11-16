@@ -1,51 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762121AbXKPT6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763567AbXKPUBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762121AbXKPT6Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 14:58:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXKPT6S
+	id S1763567AbXKPUBz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 15:01:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755509AbXKPUBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 14:58:18 -0500
-Received: from waste.org ([66.93.16.53]:48411 "EHLO waste.org"
+	Fri, 16 Nov 2007 15:01:45 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:38493 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751869AbXKPT6R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 14:58:17 -0500
-Date: Fri, 16 Nov 2007 13:57:45 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Matti Aarnio <matti.aarnio@zmailer.org>
-Cc: Mark Lord <lkml@rtr.ca>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.23.2
-Message-ID: <20071116195745.GC17536@waste.org>
-References: <20071116183752.GA9807@kroah.com> <20071116183940.GC9807@kroah.com> <473DF101.3010501@rtr.ca> <20071116193958.GJ6372@mea-ext.zmailer.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071116193958.GJ6372@mea-ext.zmailer.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1751319AbXKPUBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 15:01:44 -0500
+Message-Id: <20071116195747.448703304@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Fri, 16 Nov 2007 14:57:47 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: linux-kernel@vger.kernel.org
+Subject: [rfc-patch 00/11] Text Edit Lock for 2.6.24-rc2-git5
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri, 16 Nov 2007 20:01:41 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 16, 2007 at 09:39:58PM +0200, Matti Aarnio wrote:
-> On Fri, Nov 16, 2007 at 02:35:29PM -0500, Mark Lord wrote:
-> > Greg Kroah-Hartman wrote:
-> >> We (the -stable team) are announcing the release of the 2.6.23.2 kernel.
-> >> It contains a number of bugfixes for the core kernel code.
-> >> I'll also be replying to this message with a copy of the patch between
-> >> 2.6.23.1 and 2.6.23.2
-> > ..
-> >> Tsugikazu Shibata (1):
-> >>       HOWTO: update ja_JP/HOWTO with latest changes
-> > ..
-> >
-> > So what is the magic command to apply this patch successfully?
-> > It keeps rejecting the Documentation/ja_JP/HOWTO updates here.
-> 
-> Hammer GIT coders into sensibility to add proper MIME headers
-> on these patch post.  Then, perhaps, things will just work.
+Here is the text edit lock patchset updated for 2.6.24-rc2-git5. It is posted as
+an RFC. Comments are welcome. Will post as a patch once everybody comes to an
+agreement.
 
-What is the proper encoding for a patch that contains hunks in
-multiple character sets?
+Mathieu
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
