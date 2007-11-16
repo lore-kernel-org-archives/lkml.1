@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934487AbXKPAnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934522AbXKPAok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934487AbXKPAnZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 19:43:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755878AbXKPAnQ
+	id S934522AbXKPAok (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 19:44:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756844AbXKPAoc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 19:43:16 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:39126 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752815AbXKPAnQ (ORCPT
+	Thu, 15 Nov 2007 19:44:32 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:50212 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764101AbXKPAob (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 19:43:16 -0500
-Message-ID: <473CE72C.4060209@zytor.com>
-Date: Thu, 15 Nov 2007 16:41:16 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Thu, 15 Nov 2007 19:44:31 -0500
+Date: Thu, 15 Nov 2007 16:38:36 -0800
+From: Greg KH <greg@kroah.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Subject: Re: broken suspend [Was: 2.6.24-rc2-mm1]
+Message-ID: <20071116003836.GA24490@kroah.com>
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org> <473B5987.60904@gmail.com> <200711142248.59547.rjw@sisk.pl> <473CDD6D.8080008@gmail.com>
 MIME-Version: 1.0
-To: William Lee Irwin III <wli@holomorphy.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Why preallocate pmd in x86 32-bit PAE?
-References: <473CC0AC.3020500@goop.org> <alpine.LFD.0.9999.0711151403000.4260@woody.linux-foundation.org> <473CCB66.2080601@zytor.com> <20071116004012.GE1806@holomorphy.com>
-In-Reply-To: <20071116004012.GE1806@holomorphy.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <473CDD6D.8080008@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Lee Irwin III wrote:
+On Fri, Nov 16, 2007 at 12:59:41AM +0100, Jiri Slaby wrote:
+> On 11/14/2007 10:48 PM, Rafael J. Wysocki wrote:
+> > On Wednesday, 14 of November 2007, Jiri Slaby wrote:
+> >> On 11/14/2007 02:59 AM, Andrew Morton wrote:
+> >>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc2/2.6.24-rc2-mm1/
+> >> Doesn't suspend for me (neither broken-out-2007-11-13-04-14 did) on x86_64.
+> >> echo mem >/sys/power/state
+> >> causes shut down of disk(s) and blinking cursor on 1,1 position.
+> >> The last working was 2.6.23-rc8-mm2. I haven't tested
+> >> 2.6.23-mm1, since it didn't work for me.
+> > 
+> > Does the current mainline work?
 > 
-> There may be bigger fish to fry in terms of per-process overhead, if
-> you're trying to cut that down. The trouble with trying to address
-> some of those is that there is mutual antagonism between compactness
-> and expansibility in the process address space layout, so you'll end
-> up instantiating a lot more than you want barring some sort of provision
-> for a compact address space layout. Pagetable sharing is a far more
-> powerful resource scalability method, though it also needs cooperation
-> in user address space layout to reap its gains.
+> Yes.
 > 
-> There are other overheads, of course, though they're more typically
-> per-something besides processes.
+> The offending -mm patch is
+> gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch
 > 
+> 2.6.24-rc2-mm1 minus it works just fine; PROVE_LOCKING shows nothing new when
+> the patch is applied.
 
-I think Jeremy's question was due to trying to reduce the 32/64-bit 
-differences.  Performance-wise, it might add a small amount to user 
-setup time (a typical 32-bit process will need all four, for the main 
-binary, libraries, stack and kernel, respectively) but it is probably 
-not significant (although I'd like to see numbers just in case).
+Thanks for tracking this down.  Alan, any thoughts?
 
-	-hpa
+thanks,
 
+greg k-h
