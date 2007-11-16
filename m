@@ -1,40 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935591AbXKPXeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934794AbXKPXet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935591AbXKPXeS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 18:34:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762796AbXKPXeH
+	id S934794AbXKPXet (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 18:34:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761164AbXKPXef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 18:34:07 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:56128 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752368AbXKPXeD (ORCPT
+	Fri, 16 Nov 2007 18:34:35 -0500
+Received: from mga11.intel.com ([192.55.52.93]:5141 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759883AbXKPXee convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 18:34:03 -0500
-Message-ID: <473E28E0.8050307@zytor.com>
-Date: Fri, 16 Nov 2007 15:33:52 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Fri, 16 Nov 2007 18:34:34 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,428,1188802800"; 
+   d="scan'208";a="387911558"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Andreas Herrmann <aherrman@arcor.de>, linux-kbuild@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Kconfig: ARCH=x86 causes wrong utsname.machine
-References: <20071116111446.GA16968@devil> <20071116123747.GA12086@devil> <473DB52F.2040703@zytor.com> <20071116221535.GA1810@uranus.ravnborg.org> <473E209A.7080806@zytor.com>
-In-Reply-To: <473E209A.7080806@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [patch 07/30] cpu alloc: IA64 support
+Date: Fri, 16 Nov 2007 15:32:41 -0800
+Message-ID: <617E1C2C70743745A92448908E030B2A02F944FB@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <20071116231103.808561432@sgi.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch 07/30] cpu alloc: IA64 support
+Thread-Index: Acgopq/9s3oKpJHvTJe+56jZ9D7M1QAAfY7g
+References: <20071116230920.278761667@sgi.com> <20071116231103.808561432@sgi.com>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Christoph Lameter" <clameter@sgi.com>, <akpm@linux-foundation.org>
+Cc: <linux-arch@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       "David Miller" <davem@davemloft.net>,
+       "Eric Dumazet" <dada1@cosmosbay.com>,
+       "Peter Zijlstra" <peterz@infradead.org>
+X-OriginalArrivalTime: 16 Nov 2007 23:32:42.0639 (UTC) FILETIME=[FBEE89F0:01C828A8]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
->>
->> Should we report a "make ARCH=x86" as uname -m == x86??
->>
-> 
-> That would break 5 years of a stable ABI.  I don't think that is even 
-> remotely feasible.
-> 
++# Maximum of 128 MB cpu_alloc space per cpu
++config CPU_AREA_ORDER
++	int
++	default "13"
 
-Make that 5 years for x86-64, 16 years for i386...
+Comment only matches code when page size is 16K ... and we are (slowly)
+moving to 64k as the default (which with order 13 allocation would mean
+512M)
 
-	-hpa
+-Tony
