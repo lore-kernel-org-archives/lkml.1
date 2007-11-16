@@ -1,36 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934979AbXKPWZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934637AbXKPW1F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934979AbXKPWZw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 17:25:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758053AbXKPWZ3
+	id S934637AbXKPW1F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 17:27:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755708AbXKPW0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 17:25:29 -0500
-Received: from mx2.suse.de ([195.135.220.15]:37363 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756649AbXKPWZ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 17:25:28 -0500
-To: devzero@web.de
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: distro specific kernels vs vanilla kernel and how to compare among each other
-From: Andi Kleen <andi@firstfloor.org>
-References: <2089856624@web.de>
-Date: Fri, 16 Nov 2007 23:25:27 +0100
-In-Reply-To: <2089856624@web.de> (devzero@web.de's message of "Fri\, 16 Nov 2007 20\:45\:28 +0100")
-Message-ID: <p73tznlbzfs.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Fri, 16 Nov 2007 17:26:53 -0500
+Received: from stargate.chelsio.com ([12.22.49.110]:30851 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756878AbXKPW0w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 17:26:52 -0500
+From: Divy Le Ray <divy@chelsio.com>
+Subject: [PATCH 2/9 RESEND] cxgb3 - Use wild card for PCI subdevice ID match
+To: jeff@garzik.org
+Cc: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com, wenxiong@us.ibm.com
+Date: Fri, 16 Nov 2007 14:26:44 -0800
+Message-ID: <20071116222644.533.66665.stgit@speedy5>
+User-Agent: StGIT/0.12
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-devzero@web.de writes:
+From: Divy Le Ray <divy@chelsio.com>
 
-> does somebody know if there is a website or a project for giving comfortable and deeper insight into what`s specific to distro`s kernels and what`s their difference to vanilla kernel ?
->
-> i mean some way to have some transparancy to what different distro vendors add to vanilla kernel sources and thus turning it into their own specific version. 
+Subdevice ID is not necessarily set to 1. 
+Use wild card for PCI device matching
 
-There used to be such a page at kernelnewbies, but at some point it disappeared.
+Signed-off-by: Divy Le Ray <divy@chelsio.com>
+---
 
-I agree it would be a useful resource.
+ drivers/net/cxgb3/cxgb3_main.c |   24 ++++++++++++------------
+ 1 files changed, 12 insertions(+), 12 deletions(-)
 
--Andi
+diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
+index bb0d1c8..d92da8f 100644
+--- a/drivers/net/cxgb3/cxgb3_main.c
++++ b/drivers/net/cxgb3/cxgb3_main.c
+@@ -76,20 +76,20 @@ enum {
+ 
+ #define EEPROM_MAGIC 0x38E2F10C
+ 
+-#define CH_DEVICE(devid, ssid, idx) \
+-	{ PCI_VENDOR_ID_CHELSIO, devid, PCI_ANY_ID, ssid, 0, 0, idx }
++#define CH_DEVICE(devid, idx) \
++	{ PCI_VENDOR_ID_CHELSIO, devid, PCI_ANY_ID, PCI_ANY_ID, 0, 0, idx }
+ 
+ static const struct pci_device_id cxgb3_pci_tbl[] = {
+-	CH_DEVICE(0x20, 1, 0),	/* PE9000 */
+-	CH_DEVICE(0x21, 1, 1),	/* T302E */
+-	CH_DEVICE(0x22, 1, 2),	/* T310E */
+-	CH_DEVICE(0x23, 1, 3),	/* T320X */
+-	CH_DEVICE(0x24, 1, 1),	/* T302X */
+-	CH_DEVICE(0x25, 1, 3),	/* T320E */
+-	CH_DEVICE(0x26, 1, 2),	/* T310X */
+-	CH_DEVICE(0x30, 1, 2),	/* T3B10 */
+-	CH_DEVICE(0x31, 1, 3),	/* T3B20 */
+-	CH_DEVICE(0x32, 1, 1),	/* T3B02 */
++	CH_DEVICE(0x20, 0),	/* PE9000 */
++	CH_DEVICE(0x21, 1),	/* T302E */
++	CH_DEVICE(0x22, 2),	/* T310E */
++	CH_DEVICE(0x23, 3),	/* T320X */
++	CH_DEVICE(0x24, 1),	/* T302X */
++	CH_DEVICE(0x25, 3),	/* T320E */
++	CH_DEVICE(0x26, 2),	/* T310X */
++	CH_DEVICE(0x30, 2),	/* T3B10 */
++	CH_DEVICE(0x31, 3),	/* T3B20 */
++	CH_DEVICE(0x32, 1),	/* T3B02 */
+ 	{0,}
+ };
+ 
