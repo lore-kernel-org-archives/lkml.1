@@ -1,66 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765647AbXKPSdY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765287AbXKPSfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765647AbXKPSdY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 13:33:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757210AbXKPSdQ
+	id S1765287AbXKPSfH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 13:35:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750772AbXKPSex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 13:33:16 -0500
-Received: from pat.uio.no ([129.240.10.15]:44063 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753525AbXKPSdO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 13:33:14 -0500
-Subject: Re: [TOMOYO #5 02/18] Add wrapper functions for VFS
-	helperfunctions.
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <200711170320.GCD21875.OSVJFOHtMQFFLO@I-love.SAKURA.ne.jp>
-References: <20071116173439.796600895@I-love.SAKURA.ne.jp>
-	 <20071116173524.195366292@I-love.SAKURA.ne.jp>
-	 <1195235255.7653.69.camel@heimdal.trondhjem.org>
-	 <200711170320.GCD21875.OSVJFOHtMQFFLO@I-love.SAKURA.ne.jp>
-Content-Type: text/plain
-Date: Fri, 16 Nov 2007 13:33:16 -0500
-Message-Id: <1195237996.7653.86.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-ClamAV-Virus: No
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.140)
-X-UiO-Scanned: 3D2217E9E65158758EC73271440202CAF33EC403
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 306 total 5185589 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	Fri, 16 Nov 2007 13:34:53 -0500
+Received: from an-out-0708.google.com ([209.85.132.246]:19771 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754532AbXKPSew convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 13:34:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=KWFgpUWy0Ywd5itbDSrqnlPBdTJD6h4CjgfJ9UF4q91MTLoJVDismUUFNqLcdYz1Nr50qz0mLbUm3A0XIFyOXCwImwcsZ/6t9QvLxNTD1kNchJm0VJjJ8FPqBSiZjw/JGtQi2GpwGp7BGajFFjPi5ncgEMA+yrvY3dx5j42eMoE=
+From: Miguel =?utf-8?q?Bot=C3=B3n?= <mboton.lkml@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] mac80211: add power management support
+Date: Fri, 16 Nov 2007 19:29:36 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-wireless@vger.kernel.org, linville@tuxdriver.com, yi.zhu@intel.com
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200711161929.36283.mboton.lkml@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch adds power management support in mac80211.
 
-On Sat, 2007-11-17 at 03:20 +0900, Tetsuo Handa wrote:
-> Hello.
-> 
-> Trond Myklebust wrote:
-> > > This patch allows LSM hooks refer previously associated "struct vfsmount" parameter
-> > > so that they can calculate pathname of given "struct dentry".
-> > 
-> > NACK to this. Passing function parameters through the task_struct is
-> > definitely not an acceptable hack (unless you're doing it through the
-> > stack).
-> 
-> Thanks for your advise.
-> But I don't know why it is not acceptable.
-> The topmost vfsmount's address is retrievable through the task_struct,
-> and non-topmost vfsmount's address (if any) are stored on the stack memory.
-> Could you show me why this is bad?
+This allows us to enable power management through the "iwconfig <device> power <off/on>" command.
+The code is based on "mac80211-10.0.0" but it is a little bit modified.
 
-The problem is that you have thrown away the main tool for documenting
-the requirement, and for enforcing correctness (i.e. function argument
-checking by the compiler).
-The old functions are still there, are still exported, and still take
-the same arguments as before, but you have now added a hidden
-requirement that I have to set last_vfsmount when I call them. If I
-haven't read your patch, and just call one of those vfs_* functions as
-before, without setting last_vfsmount, I break your model, and I won't
-find out until someone reports an obscure bug at runtime.
+Signed-off-by: Miguel Botón <mboton@gmail.com>
 
-Trond
+diff --git a/net/mac80211/ieee80211_ioctl.c b/net/mac80211/ieee80211_ioctl.c
+index 6caa3ec..f5eebec 100644
+--- a/net/mac80211/ieee80211_ioctl.c
++++ b/net/mac80211/ieee80211_ioctl.c
+@@ -674,6 +687,51 @@ static int ieee80211_ioctl_giwtxpower(struct net_device *dev,
+ 	return 0;
+ }
+ 
++static int ieee80211_ioctl_siwpower(struct net_device *dev,
++				    struct iw_request_info *info,
++				    union iwreq_data *wrqu,
++				    char *extra)
++{
++	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
++	struct ieee80211_conf *conf = &local->hw.conf;
++
++	if (wrqu->power.disabled) {
++		conf->power_management_enable = 0;
++		if (ieee80211_hw_config(local))
++			return -EINVAL;
++		return 0;
++	}
++
++	switch (wrqu->power.flags & IW_POWER_MODE) {
++	case IW_POWER_ON:       /* If not specified */
++	case IW_POWER_MODE:     /* If set all mask */
++	case IW_POWER_ALL_R:    /* If explicitely state all */
++		break;
++	default:                /* Otherwise we don't support it */
++		return -EINVAL;
++	}
++
++	conf->power_management_enable = 1;
++
++	if (ieee80211_hw_config(local))
++		return -EINVAL;
++
++	return 0;
++}
++
++static int ieee80211_ioctl_giwpower(struct net_device *dev,
++				    struct iw_request_info *info,
++				    union iwreq_data *wrqu,
++				    char *extra)
++{
++	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
++	struct ieee80211_conf *conf = &local->hw.conf;
++
++	wrqu->power.disabled = !conf->power_management_enable;
++
++	return 0;
++}
++
+ static int ieee80211_ioctl_siwrts(struct net_device *dev,
+ 				  struct iw_request_info *info,
+ 				  struct iw_param *rts, char *extra)
+@@ -1111,8 +1166,8 @@ static const iw_handler ieee80211_handler[] =
+ 	(iw_handler) ieee80211_ioctl_giwretry,		/* SIOCGIWRETRY */
+ 	(iw_handler) ieee80211_ioctl_siwencode,		/* SIOCSIWENCODE */
+ 	(iw_handler) ieee80211_ioctl_giwencode,		/* SIOCGIWENCODE */
+-	(iw_handler) NULL,				/* SIOCSIWPOWER */
+-	(iw_handler) NULL,				/* SIOCGIWPOWER */
++	(iw_handler) ieee80211_ioctl_siwpower,		/* SIOCSIWPOWER */
++	(iw_handler) ieee80211_ioctl_giwpower,		/* SIOCGIWPOWER */
+ 	(iw_handler) NULL,				/* -- hole -- */
+ 	(iw_handler) NULL,				/* -- hole -- */
+ 	(iw_handler) ieee80211_ioctl_siwgenie,		/* SIOCSIWGENIE */
 
+
+-- 
+	Miguel Botón
