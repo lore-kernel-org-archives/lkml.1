@@ -1,89 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757960AbXKPQ2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757429AbXKPQfj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757960AbXKPQ2Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 11:28:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbXKPQ2Q
+	id S1757429AbXKPQfj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 11:35:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946AbXKPQfb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 11:28:16 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:47306 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751868AbXKPQ2Q (ORCPT
+	Fri, 16 Nov 2007 11:35:31 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:36444 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751798AbXKPQfa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 11:28:16 -0500
-Date: Fri, 16 Nov 2007 17:28:13 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Stephane Eranian <eranian@hpl.hp.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Philip Mucci <mucci@cs.utk.edu>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       William Cohen <wcohen@redhat.com>,
-       Robert Richter <robert.richter@amd.com>, linux-kernel@vger.kernel.org
-Subject: Re: perfmon2 merge news
-Message-ID: <20071116162813.GA29644@one.firstfloor.org>
-References: <20071113175545.GD4319@frankl.hpl.hp.com> <53F4663B-CFBA-44E4-8283-BAAC8C8F1AFF@cs.utk.edu> <20071113185924.GA22748@suse.de> <20071113120728.4342e7d7.akpm@linux-foundation.org> <20071113203645.GA17145@one.firstfloor.org> <9FF72994-F55A-4B36-9EAA-CB1D2360A6F5@cs.utk.edu> <20071114015210.GA20365@one.firstfloor.org> <A42C2398-2EAB-460C-95C7-686A34A76F82@cs.utk.edu> <p737ikicjbn.fsf@bingen.suse.de> <20071116160056.GF10616@frankl.hpl.hp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071116160056.GF10616@frankl.hpl.hp.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 16 Nov 2007 11:35:30 -0500
+X-Greylist: delayed 559 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Nov 2007 11:35:30 EST
+Message-ID: <473DC496.6010805@hp.com>
+Date: Fri, 16 Nov 2007 11:25:58 -0500
+From: "Alan D. Brunelle" <alan.brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Rik van Riel <riel@redhat.com>, arjan@infradead.org, jens.axboe@oracle.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [patch] Give kjournald a IOPRIO_CLASS_RT io priority
+References: <20071015104647.14e60bc5@laptopd505.fenrus.org>	<20071015114738.6b5a25c7.akpm@linux-foundation.org>	<20071015161315.4fe18e07@bree.surriel.com>	<20071015141236.62b075c6.akpm@linux-foundation.org>	<473B18BA.5000709@hp.com> <20071114091451.d4b110db.akpm@linux-foundation.org>
+In-Reply-To: <20071114091451.d4b110db.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 16, 2007 at 08:00:56AM -0800, Stephane Eranian wrote:
-> No, he is talking about something similar to what was in perfctr.
-> The kernel emulates 64-bit counters in software and that is you
-> get back when you read the counters. If you read via RDPMC, you
-> get 40 bits. To reconstruct the full 64-bit value from user land
-> you need the upper bits. One approach is for the kernel to allow
-> you to remap a page that has the 64-bit (software) counters. With
-> that and a bit of mask/shifting you can reconstruct the full value.
+Here are the results for the latest tests, some notes:
 
-You mean the page contains the upper [40;63] bits? 
+o  The machine actually has 8GiB of RAM, so the tests still may end up 
+using (some) page cache. (But at least it was the same for both kernels! 
+:-) )
 
-Sounds reasonable, although I don't remember seeing that when I looked
-at the perfmon code last.
+o  Sorry the results took so long - the updated tree size caused the 
+runs to take > 12 hours...
 
-> 
-> > I'm considering that an essential feature too. I wasn't aware
-> > it was dropped.
-> > 
-> What I dropped is the cr4.pce enabled for self-monitoring sessions.
+o  The longer runs seemed to bring down the standard deviation a bit, 
+although they are still quite large.
 
-That sounds bad.
+o  10 runs per test (read large file, read a tree, overwrite large 
+file), with averages presented.
 
-> Perfmon2 allows you to have an in-kernel sampling buffer. The idea is
+o  1st 4 columns (min, avg, max, std dev) refer to the average run 
+lengths for the tests - real time, in seconds
 
-... you also didn't say *why* that is needed.
+o  The last 3 columns are extracted from iostat results over the course 
+of the whole run.
 
-Can you give a concrete use case for something that cannot be done
-without custom buffer formats? 
+o  The read a tree test certainly stands out - the other 2 large file 
+manipulations have the two kernels within a couple of percent, but the 
+read a tree test has Arjan's patch taking about 47%(!) longer on 
+average. The increased %iowait & %system time in all 3 cases is interesting.
 
-> Using this mechanism, for instance, we were able to connect the
-> Oprofile kernel code to perfmon2 on Itanium with a 100 lines of
-> code. The exact same approach would also work on X86 Oprofile as well.
 
-The existing oprofile code works already fine on x86, no real
-need for another one.
+Read large file:
 
-> > e.g. PEBS and so on pretty much fix the in memory sample format in hardware,
-> > so they only way to get a custom format would be to use a separate buffer.
-> > 
-> 
-> This is also how we support PEBS because, as you said, the format of the
-> samples is not under your control. if you want zero-copy PEBS support,
-> you have to follow the PEBS format.
+Kernel  Min    Avg    Max   Std Dev    %user  %system  %iowait
+--------------------------------------------------------------
+base :  201.6  215.1  275.5   22.8     0.26%    4.69%   33.54%
+arjan:  198.0  210.3  261.5   18.5     0.33%   10.24%   54.00%
 
-Exactly that makes the support for random custom buffers questionable.
+Read a tree:
 
-e.g. as I can see the main advantage of perfmon over existing setups
-is that it support PEBS etc., but with your custom buffer formats which
-are by definition incompatible with PEBS you would negate that advantage
-again.
+Kernel  Min    Avg    Max   Std Dev    %user  %system  %iowait
+--------------------------------------------------------------
+base : 3518.2 4631.3 5991.3  784.6     0.19%    3.29%   23.56%
+arjan: 5731.6 6849.8 7777.4  731.6     0.32%    9.90%   52.70%
 
-Ok IBS will probably need some special handling.
+Overwrite large file:
 
-> Yes, you could do that without changing the core implementation of
-> perfmon2.
+Kernel  Min    Avg    Max   Std Dev    %user  %system  %iowait
+--------------------------------------------------------------
+base :  104.2  147.7  239.5   38.4      0.02%    0.05%   1.08%
+arjan:  106.2  149.7  239.2   38.4      0.25%    0.79%  14.97%
 
-Why this insistence against changing anything?
+Let me know if there is anything else I can do to elaborate, or if you 
+have suggestions for further testing.
 
--Andi
+Alan
