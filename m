@@ -1,90 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbXKPTZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934459AbXKPT0G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756620AbXKPTZp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 14:25:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932722AbXKPTW3
+	id S934459AbXKPT0G (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 14:26:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933155AbXKPTWn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 14:22:29 -0500
-Received: from stargate.chelsio.com ([12.22.49.110]:23379 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932641AbXKPTW1 (ORCPT
+	Fri, 16 Nov 2007 14:22:43 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37066 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764960AbXKPTWl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 14:22:27 -0500
-From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH 9/9] cxgb3 - Fix I/O synchronization
-To: jeff@garzik.org
-Cc: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com, wenxiong@us.ibm.com
-Date: Fri, 16 Nov 2007 11:22:21 -0800
-Message-ID: <20071116192221.31168.15389.stgit@speedy5>
-User-Agent: StGIT/0.12
+	Fri, 16 Nov 2007 14:22:41 -0500
+Date: Fri, 16 Nov 2007 11:22:10 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: William Lee Irwin III <wli@holomorphy.com>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Why preallocate pmd in x86 32-bit PAE?
+In-Reply-To: <473DEC1C.8080506@goop.org>
+Message-ID: <alpine.LFD.0.9999.0711161118160.4260@woody.linux-foundation.org>
+References: <473CC0AC.3020500@goop.org> <alpine.LFD.0.9999.0711151403000.4260@woody.linux-foundation.org> <473DCF73.4070401@goop.org> <alpine.LFD.0.9999.0711160921510.4260@woody.linux-foundation.org> <473DEC1C.8080506@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
 
-Synchronize memory access before ringing 
-the Tx door bell.
 
-Signed-off-by: Divy Le Ray <divy@chelsio.com>
----
+On Fri, 16 Nov 2007, Jeremy Fitzhardinge wrote:
+> 
+> If you happened to do a 1G munmap, it may end up freeing and 
+> reallocating them, but that's going to be very rare.
 
- drivers/net/cxgb3/sge.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+I don't think we ever free the pmd's now, do we?
 
-diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
-index 7b13d8a..666c317 100644
---- a/drivers/net/cxgb3/sge.c
-+++ b/drivers/net/cxgb3/sge.c
-@@ -174,6 +174,7 @@ static inline struct sge_qset *txq_to_qset(const struct sge_txq *q, int qidx)
- static inline void refill_rspq(struct adapter *adapter,
- 			       const struct sge_rspq *q, unsigned int credits)
- {
-+	rmb();
- 	t3_write_reg(adapter, A_SG_RSPQ_CREDIT_RETURN,
- 		     V_RSPQ(q->cntxt_id) | V_CREDITS(credits));
- }
-@@ -458,7 +459,7 @@ nomem:				q->alloc_failed++;
- 		}
- 		q->credits++;
- 	}
--
-+	wmb();
- 	t3_write_reg(adap, A_SG_KDOORBELL, V_EGRCNTX(q->cntxt_id));
- }
- 
-@@ -1353,6 +1354,7 @@ static void restart_ctrlq(unsigned long data)
- 	}
- 
- 	spin_unlock(&q->lock);
-+	wmb();
- 	t3_write_reg(qs->adap, A_SG_KDOORBELL,
- 		     F_SELEGRCNTX | V_EGRCNTX(q->cntxt_id));
- }
-@@ -1572,6 +1574,7 @@ static void restart_offloadq(unsigned long data)
- 	set_bit(TXQ_RUNNING, &q->flags);
- 	set_bit(TXQ_LAST_PKT_DB, &q->flags);
- #endif
-+	wmb();
- 	t3_write_reg(adap, A_SG_KDOORBELL,
- 		     F_SELEGRCNTX | V_EGRCNTX(q->cntxt_id));
- }
-@@ -1737,7 +1740,6 @@ static inline int rx_offload(struct t3cdev *tdev, struct sge_rspq *rq,
- 			     struct sk_buff *skb, struct sk_buff *rx_gather[],
- 			     unsigned int gather_idx)
- {
--	rq->offload_pkts++;
- 	skb_reset_mac_header(skb);
- 	skb_reset_network_header(skb);
- 	skb_reset_transport_header(skb);
-@@ -2031,6 +2033,7 @@ no_mem:
- 			if (eth)
- 				rx_eth(adap, q, skb, ethpad);
- 			else {
-+				q->offload_pkts++;
- 				/* Preserve the RSS info in csum & priority */
- 				skb->csum = rss_hi;
- 				skb->priority = rss_lo;
+(Except for the *final* free, of course, when we release the whole VM).
+
+		Linus
