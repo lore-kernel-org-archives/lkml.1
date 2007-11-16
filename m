@@ -1,113 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762506AbXKPUei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765251AbXKPUgk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762506AbXKPUei (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 15:34:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754941AbXKPUea
+	id S1765251AbXKPUgk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 15:36:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754941AbXKPUgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 15:34:30 -0500
-Received: from elasmtp-scoter.atl.sa.earthlink.net ([209.86.89.67]:53119 "EHLO
-	elasmtp-scoter.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754336AbXKPUe3 (ORCPT
+	Fri, 16 Nov 2007 15:36:33 -0500
+Received: from static-72-72-73-123.bstnma.east.verizon.net ([72.72.73.123]:38148
+	"EHLO mail1.sicortex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754336AbXKPUgc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 15:34:29 -0500
-X-Greylist: delayed 4076 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Nov 2007 15:34:29 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=mindspring.com;
-  b=P5KSlTlI/3t4uTT/2GALvA8KSHlzMPJdbiGky4aEILK1jyphG0O0ZUVK94UJimrU;
-  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
-Date: Fri, 16 Nov 2007 14:26:19 -0500
-From: Bill Fink <billfink@mindspring.com>
-To: David Miller <davem@davemloft.net>
-Cc: the.sator@gmail.com, kuznet@ms2.inr.ac.ru, linux-kernel@vger.kernel.org,
-       jmorris@namei.org, netdev@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] net/ipv4/arp.c: Fix arp reply when sender ip 0
-Message-Id: <20071116142619.8746376e.billfink@mindspring.com>
-In-Reply-To: <20071116.010548.94286711.davem@davemloft.net>
-References: <cac0ab7d0711151340l1cc91a2dw5ebf36e166d16d7a@mail.gmail.com>
-	<20071115.152813.89410917.davem@davemloft.net>
-	<cac0ab7d0711160030w149c7a7s2db55ac56d0a05cc@mail.gmail.com>
-	<20071116.010548.94286711.davem@davemloft.net>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 16 Nov 2007 15:36:32 -0500
+X-Greylist: delayed 1168 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Nov 2007 15:36:32 EST
+In-Reply-To: <p737ikicjbn.fsf@bingen.suse.de>
+References: <20071109213829.GC28276@kroah.com> <p73abpl2654.fsf@bingen.suse.de> <20071113151718.GA3804@erda.amd.com> <4739C42F.8030208@redhat.com> <20071113175545.GD4319@frankl.hpl.hp.com> <53F4663B-CFBA-44E4-8283-BAAC8C8F1AFF@cs.utk.edu> <20071113185924.GA22748@suse.de> <20071113120728.4342e7d7.akpm@linux-foundation.org> <20071113203645.GA17145@one.firstfloor.org> <9FF72994-F55A-4B36-9EAA-CB1D2360A6F5@cs.utk.edu> <20071114015210.GA20365@one.firstfloor.org> <A42C2398-2EAB-460C-95C7-686A34A76F82@cs.utk.edu> <p737ikicjbn.fsf@bingen.suse.de>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <BFC49780-73B0-47AB-BC95-516ABF557D95@sicortex.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
+       Stephane Eranian <eranian@hpl.hp.com>,
+       William Cohen <wcohen@redhat.com>,
+       Robert Richter <robert.richter@amd.com>, linux-kernel@vger.kernel.org,
+       papi list <ptools-perfapi@cs.utk.edu>
 Content-Transfer-Encoding: 7bit
-X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4d6fea55f8fcb54e485ee9184cad14fa29350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 68.55.21.22
+From: Philip Mucci <phil@sicortex.com>
+Subject: Re: perfmon2 merge news
+Date: Fri, 16 Nov 2007 12:16:50 -0800
+To: Andi Kleen <andi@firstfloor.org>
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Nov 2007, David Miller wrote:
 
-> From: "Jonas Danielsson" <the.sator@gmail.com>
-> Date: Fri, 16 Nov 2007 09:30:11 +0100
-> 
-> > 2007/11/16, David Miller <davem@davemloft.net>:
-> > > From: "Jonas Danielsson" <the.sator@gmail.com>
-> > > Date: Thu, 15 Nov 2007 22:40:13 +0100
-> > >
-> > > > Is there a reason that the target hardware address isn't the target
-> > > > hardware address?
-> > 
-> > > Because of this, in cases where a choice can be made Linux will
-> > > advertise what is most likely to result in successful communication.
-> > >
-> > > This is likely why we are changing that target address to the one of
-> > > the interface actually sending back the reply rather than the zero
-> > > value you used.
-> > >
-> > > In fact I think this information can be useful to the sender of
-> > > the DAD request.
-> > >
-> > 
-> > There seem to be some confusion about what my patch really does. It
-> > does not set the hardware address to a zero value.
-> 
-> I knew you were talking about the IP address not the hardware
-> address.
-> 
-> > The reply from the Linux kernel in computer A, before the patch would look like:
-> > 
-> > Reply:
-> > Opcode: reply (0x0002)
-> > Sender HW: 00:AA.00:AA:00:AA
-> > Sender IP:   192.168.0.1
-> > Target HW:  00:AA:00:AA:00:AA
-> > Target IP:    192.168.0.1
-> 
-> And this is exactly a sensible response in my opinion.
+> Yes it is for everybody. I've been rather questioning if the slow
+> ways (complicated syscalls) to get the counter information are really
+> needed.
 
-I don't see how you can say that, since it appears to be in violation
-of RFC 826:
+I suppose by complicated here, your referring to the gather semantics  
+of the
+pfm_read/write_pmds/pmcs calls. Many processors may have 100's of  
+registers
+(IA64, BG/P, SiCortex), some of which have different access times. So a
+naive syscall of 'give me all the registers you've got' isn't going  
+to cut it.
+However, any additional simplicity (performance) we can squeeze out  
+of this
+particular primitive is a huge win as it sits in the critical path of  
+the user
+tools (unless one is sampling).
 
-	"The target hardware address is included for completeness and
-	network monitoring.  It has no meaning in the request form,
-	since it is this number that the machine is requesting.  Its
-	meaning in the reply form is the address of the machine making
-	the request.  In some implementations (which do not get to look
-	at the 14.byte ethernet header, for example) this may save some
-	register shuffling or stack space by sending this field to the
-	hardware driver as the hardware destination address of the
-	packet."
+>> referring to the concept of eventsets. Having multiplexing is
+>> important.
+>
+> Why is it important?
+>
 
-Since the MAC address of the machine making the request is
-00:BB:00:BB:00:BB, and not 00:AA:00:AA:00:AA, Linux appears to
-be in violation of the ARP RFC.
+Performance and noise. See the earlier message about our user-land  
+implementation versus kernel mode implementations. Any any useful  
+granularity, you begin to seriously affect the counts with noise as  
+well as dilate the run-time. But let's punt on this one until after  
+we get the basics in. It's a non-essential feature at this point.
 
-Regarding the Target IP, RFC 826 says:
+>> - Custom sample formats would be considered not often used in our
+>> community, largely
+>> because the tools run on all HPC/Linux architectures. PAPI uses the
+>> default sample
+>> format which has been sufficient for our needs. However, the lack of
+>> custom sample
+>> formats preclude the dev of the specialized tools that access the
+>> sampling
+>> hardware as found on the IA64, PPC64, the Barcelona and the SiCortex
+>> node chip.
+>> pfmon exports this functionality quite well, and it does get used.
+>
+> What do you mean with custom sample formats exactly?  What information
+> do you want in there? And why?
 
-	"The target protocol address is necessary in the request form
-	of the packet so that a machine can determine whether or not
-	to enter the sender information in a table or to send a reply.
-	It is not necessarily needed in the reply form if one assumes
-	a reply is only provoked by a request.  It is included for
-	completeness, network monitoring, and to simplify the suggested
-	processing algorithm described above (which does not look at
-	the opcode until AFTER putting the sender information in a
-	table).
+By custom here, I mean the ability to have the kernel take samples  
+containing
+more than just the IP, the PID and a bitmask of which registers  
+overflowed at this
+point. Myself and others have worked hard to get effective address  
+sampling into the
+hardware (there are registers that contain EA's of misses as well as  
+branch mispredict
+data on the PPC, IA64, Barcelona and SiCortex) that are handled  
+through the use
+of a format that gathers up that information at interrupt time for  
+deposit into
+the sample buffer. We are not wedded to Perfmon2's implementation of  
+these formats, we
+are however, wedded to having this information collected at interrupt  
+time as the data
+may change by the time you get back to user-mode. This hardware is  
+not obscure any more,
+it's the norm, as we've learned at thus simple aggregate counters,  
+even those with precise
+interrupt abilities, are not sufficient to satisfy all of our needs.
 
-So it's ambiguous about the target IP address in an ARP reply packet,
-but a value of 0.0.0.0 makes more logical sense to me than using
-192.168.0.1 in this example case, since it should reflect the requestor
-IP address, which is unknown in this case.
+> e.g. PEBS and so on pretty much fix the in memory sample format in  
+> hardware,
+> so they only way to get a custom format would be to use a separate  
+> buffer.
+>
+> I can think of one reason why the kernel should add more information
+> in a separate buffer (log the instruction bytes so that it can
+> be disassembled and a address histogram be generated using the PEBS
+> register values), but it is a relatively obscure one and definitely
+> not a essential feature. Unfortunately it is also hard to implement  
+> completely
+> race-free.
+>
 
-						-Bill
+>> This is kind of comment that makes the Linux/HPC folks 'somber'. What
+>> isn't useful, is being dismissive of an entire community that moves a
+>> heck of a lot of Linux DVD's.
+>
+> Sorry, but these kind of non technical BS arguments will just make
+> you be ignored in mainline Linux lands. They might work if you pay
+> a lot of money to specific Linux companies (do you?), but here
+> on linux-kernel you have to convince with purely technical arguments.
+
+I love it when kernel folks refer to their own revenue streams
+(and yes, we do, ask your VP of sales) and the needs of a user  
+community as
+"BS non-technical arguments".
+
+But let's get back to basics here. We can sort that out over a beer  
+sometime.
+At this point, let's try and agree on the minimum set of
+functionality acceptable for a first round of patches.
+
+- per-CPU (system-wide) and per-thread 64-bit virtualized counters
+- dispatch of interrupt on overflow via a signal
+- first (self) and third-party (attach) semantics
+- extensible to new lines within an architecture without repatching
+   (By this I mean that through the use of modules that contain PMU
+    description tables, i.e. patches don't have to be issued for  
+every new rev
+    of HW that Intel releases)
+
+To be considered later:
+- Sample buffers and formats
+- Multiplexing (by event threshold and time slicing)
+- fast-read support if the hardware supports it (mmap + user rdpmc)
+
+I think(?) we are all clear now why oprofile is not sufficient, i.e.
+simultaneous usage by non-root users, each with different counter  
+configurations,
+lack of read/write access  etc. Oprofile is however, a very important  
+tool
+and any initial set of functionality should allow for a very simple  
+port to
+each version of the infrastructure along the way. I'd happily port
+incremental versions of PAPI to the patches, so the performance tools  
+can be
+accessible to the LKML community while testing/benchmarking the
+patchset on a variety of architectures. If we can agree on the  
+starting point,
+we can move the discussion of the API to the Perfmon2 mailing list  
+and with your
+input, finally 'get it right' in terms of acceptance.
+
+If there's anything we do have in common at the moment, it's momentum.
+We (speaking for the HPC community/vendors again) are not in favor of  
+useless bloat, every
+TLB slot, mispredict, miss, timer-tick or pipeline bubble, we care  
+about, kernel
+space or not. It's precisely why this type of infrastructure has  
+become so
+vital to us over the years.
+
+-Phil
