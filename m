@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759122AbXKPKqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752411AbXKPKsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759122AbXKPKqa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 05:46:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500AbXKPKqV
+	id S1752411AbXKPKsR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 05:48:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338AbXKPKsD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 05:46:21 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48006 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752470AbXKPKqU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 05:46:20 -0500
-Date: Fri, 16 Nov 2007 11:45:57 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Micah Dowty <micah@vmware.com>
+	Fri, 16 Nov 2007 05:48:03 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:41076 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752178AbXKPKsC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 05:48:02 -0500
+Date: Fri, 16 Nov 2007 02:48:01 -0800
+From: Micah Dowty <micah@vmware.com>
+To: Ingo Molnar <mingo@elte.hu>
 Cc: Christoph Lameter <clameter@sgi.com>, Kyle Moffett <mrmacman_g4@mac.com>,
        Cyrus Massoumi <cyrusm@gmx.net>,
        LKML Kernel <linux-kernel@vger.kernel.org>,
@@ -20,46 +21,53 @@ Cc: Christoph Lameter <clameter@sgi.com>, Kyle Moffett <mrmacman_g4@mac.com>,
        Dmitry Adamushko <dmitry.adamushko@gmail.com>,
        Peter Williams <pwil3058@bigpond.net.au>
 Subject: Re: High priority tasks break SMP balancer?
-Message-ID: <20071116104557.GA5453@elte.hu>
-References: <2FAA6826-653E-482F-A037-C539BAEEA1DA@mac.com> <20071115191408.GA4914@vmware.com> <Pine.LNX.4.64.0711151206370.28639@schroedinger.engr.sgi.com> <20071115202425.GC4914@vmware.com> <Pine.LNX.4.64.0711151328090.29711@schroedinger.engr.sgi.com> <20071115213510.GA16079@vmware.com> <Pine.LNX.4.64.0711151830260.31691@schroedinger.engr.sgi.com> <20071116024408.GA20322@vmware.com> <20071116060700.GD16273@elte.hu> <20071116091904.GB31219@vmware.com>
+Message-ID: <20071116104801.GA4585@vmware.com>
+References: <20071110001103.GD16250@vmware.com> <2FAA6826-653E-482F-A037-C539BAEEA1DA@mac.com> <20071115191408.GA4914@vmware.com> <Pine.LNX.4.64.0711151206370.28639@schroedinger.engr.sgi.com> <20071115202425.GC4914@vmware.com> <Pine.LNX.4.64.0711151328090.29711@schroedinger.engr.sgi.com> <20071115213510.GA16079@vmware.com> <Pine.LNX.4.64.0711151830260.31691@schroedinger.engr.sgi.com> <20071116024408.GA20322@vmware.com> <20071116060700.GD16273@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071116091904.GB31219@vmware.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20071116060700.GD16273@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Micah Dowty <micah@vmware.com> wrote:
-
-> On Fri, Nov 16, 2007 at 07:07:00AM +0100, Ingo Molnar wrote:
-> > > My best guess is that this has something to do with the timing with 
-> > > which we sample the CPU's instantaneous load when calculating the load 
-> > > averages.. but I still understand only the basics of the scheduler and 
-> > > SMP balancer. All I really know for sure at this point regarding your 
-> > > patch is that git-bisect found it for me.
+On Fri, Nov 16, 2007 at 07:07:00AM +0100, Ingo Molnar wrote:
+> 
+> * Micah Dowty <micah@vmware.com> wrote:
+> 
+> > > I am a bit at a loss as to how this could relate to the patch. This 
+> > > looks like a load balance logic issue that causes the load 
+> > > calculation to go wrong?
 > > 
-> > hm, your code uses timeouts for this, right? The CPU load average that 
-> > is used for SMP load balancing is sampled from the scheduler tick - and 
-> > has been sampled from the scheduler tick for eons. v2.6.23 defaulted to 
-> > a different method but v2.6.24 samples it from the tick again. So my 
-> > guess is, your testcode behave similarly on 2.6.22 too, correct?
+> > My best guess is that this has something to do with the timing with 
+> > which we sample the CPU's instantaneous load when calculating the load 
+> > averages.. but I still understand only the basics of the scheduler and 
+> > SMP balancer. All I really know for sure at this point regarding your 
+> > patch is that git-bisect found it for me.
 > 
-> My sample program (and the VMware code which I originally observed
-> this behaviour with) wakes up frequently using /dev/rtc.
-> 
-> I know the problem occurs on 2.6.20 and 2.6.23.1. I haven't tried 
-> 2.6.22 yet, but I'll do so as soon as I can.
+> hm, your code uses timeouts for this, right? The CPU load average that 
+> is used for SMP load balancing is sampled from the scheduler tick - and 
+> has been sampled from the scheduler tick for eons. v2.6.23 defaulted to 
+> a different method but v2.6.24 samples it from the tick again. So my 
+> guess is, your testcode behave similarly on 2.6.22 too, correct?
 
-ok, if you see it on .20 then no need to try .22.
+Interesting.. here are the kernels I've tested so far, not including
+the git-bisect run I did between 2.6.19 and 2.6.20:
 
-	Ingo
+2.6.17 -
+2.6.19 -
+2.6.19.7 -
+2.6.20 +
+2.6.21 +
+2.6.22 -
+2.6.23.1 +
+
+Here a "-" means that the problem does not occur (my test program uses
+100% of both CPUs) and a "+" means that the test program leaves one
+CPU mostly idle.
+
+Unless I've made a mistake, 2.6.22 seems like the outlier rather than
+2.6.23. Is this inconsistent with the scheduler tick hypothesis?
+
+Thanks,
+--Micah
