@@ -1,252 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932853AbXKPB2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932648AbXKPBiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932853AbXKPB2X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 20:28:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754685AbXKPB2O
+	id S932648AbXKPBiS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 20:38:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756393AbXKPBiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 20:28:14 -0500
-Received: from scrub.xs4all.nl ([194.109.195.176]:2551 "EHLO scrub.xs4all.nl"
+	Thu, 15 Nov 2007 20:38:06 -0500
+Received: from ns2.suse.de ([195.135.220.15]:55344 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754511AbXKPB2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 20:28:12 -0500
-Date: Fri, 16 Nov 2007 02:28:09 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kconfig: use $K64BIT to set 64BIT with all*config targets
-In-Reply-To: <20071115220640.GA25265@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.64.0711160205340.1817@scrub.home>
-References: <20071110204038.GA13140@uranus.ravnborg.org>
- <11947274093185-git-send-email-sam@ravnborg.org> <11947274091127-git-send-email-sam@ravnborg.org>
- <Pine.LNX.4.64.0711142116500.1818@scrub.home> <20071114220840.GB10920@uranus.ravnborg.org>
- <Pine.LNX.4.64.0711151616330.1817@scrub.home> <20071115192555.GD23914@uranus.ravnborg.org>
- <Pine.LNX.4.64.0711152036430.1817@scrub.home> <20071115204520.GA24851@uranus.ravnborg.org>
- <Pine.LNX.4.64.0711152158310.1817@scrub.home> <20071115220640.GA25265@uranus.ravnborg.org>
+	id S1754037AbXKPBiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 20:38:05 -0500
+Date: Thu, 15 Nov 2007 17:22:11 -0800
+From: Greg KH <gregkh@suse.de>
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
+Subject: Re: EIP is at device_shutdown+0x32/0x60
+Message-ID: <20071116012211.GA7365@suse.de>
+References: <3ae72650711150950k74fdb37eu108bb360a594ffe8@mail.gmail.com> <20071115190124.GA29599@suse.de> <20071116100930.5A78.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463811837-1617905413-1195176489=:1817"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071116100930.5A78.Y-GOTO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Fri, Nov 16, 2007 at 10:13:42AM +0900, Yasunori Goto wrote:
+> > > 
+> > > Care to try this:
+> > >   +       system_kset = kset_create_and_register("system", NULL,
+> > >   +                                              &devices_kset->kobj, NULL);
+> > > 
+> > > We should not join the kset, only use it as a parent.
+> > 
+> > Yes, that fixes the problem for me!
+> > 
+> > Can anyone else verify this?
+> 
+> I confirmed it fixed the problem. :-)
 
----1463811837-1617905413-1195176489=:1817
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Thanks for testing, the next -mm should have this fix.
 
-Hi,
-
-On Thu, 15 Nov 2007, Sam Ravnborg wrote:
-
-> You suggest just to check ARCH value and not apply your patch. This was
-> not my initial understanding as was hopefully obvious from my reply.
-
-This patch only adds some extra features.
-
-> If user did NOT specify ARCH we should use the kernel configuration - which
-> your solution fail to do.
-
-To make this easy I attached the patch which reverts the problematic 
-changes and then you only need this simple change to force the 64BIT value 
-for ARCH={i386,x86_64}, otherwise it's set by the user:
-
-bye, Roman
-
-Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
-
----
- Makefile         |    3 ++-
- arch/x86/Kconfig |    4 ++--
- 2 files changed, 4 insertions(+), 3 deletions(-)
-
-Index: linux-2.6/Makefile
-===================================================================
---- linux-2.6.orig/Makefile
-+++ linux-2.6/Makefile
-@@ -165,7 +165,8 @@ export srctree objtree VPATH TOPDIR
- # then ARCH is assigned, getting whatever value it gets normally, and 
- # SUBARCH is subsequently ignored.
- 
--SUBARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ \
-+SUBARCH := $(shell uname -m | sed -e s/i.86/x86/ -e s/x86_64/x86/ \
-+				  -e s/sun4u/sparc64/ \
- 				  -e s/arm.*/arm/ -e s/sa110/arm/ \
- 				  -e s/s390x/s390/ -e s/parisc64/parisc/ \
- 				  -e s/ppc.*/powerpc/ -e s/mips.*/mips/ \
-Index: linux-2.6/arch/x86/Kconfig
-===================================================================
---- linux-2.6.orig/arch/x86/Kconfig
-+++ linux-2.6/arch/x86/Kconfig
-@@ -3,8 +3,8 @@ mainmenu "Linux Kernel Configuration for
- 
- # Select 32 or 64 bit
- config 64BIT
--	bool "64-bit kernel"
--	default n
-+	bool "64-bit kernel" if ARCH="x86"
-+	default ARCH="x86_64"
- 	help
- 	  Say yes to build a 64-bit kernel - formerly known as x86_64
- 	  Say no to build a 32-bit kernel - formerly known as i386
----1463811837-1617905413-1195176489=:1817
-Content-Type: TEXT/PLAIN; charset=US-ASCII; name=revert_k64bit
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.LNX.4.64.0711160228090.1817@scrub.home>
-Content-Description: 
-Content-Disposition: attachment; filename=revert_k64bit
-
-UmV2ZXJ0DQoNCjljOTAwYTljOWQ5MzUxZTU1YWI2YTg0ZTEyZTNhNTJjNDc0
-YzdjOGINCjBmODU1YWE2NGIzZjYzZDM1YTg5MTUxMGNmN2RiOTMyYTQzNWMx
-MTYNCjJhMTEzMjgxZjVjZDJmZWJiYWIyMWE5M2M4OTQzZjhkM2VlY2U0ZDMN
-Cg0KYW5kIEs2NEJJVCBwYXJ0cyBvZg0KDQpkYWE5M2ZhYjgyNGYyYjhjMzVi
-ZDExNjcwYzdmYWIyZjMyYjJkZTVmDQoNClNpZ25lZC1vZmYtYnk6IFJvbWFu
-IFppcHBlbCA8emlwcGVsQGxpbnV4LW02OGsub3JnPg0KDQotLS0NCiBNYWtl
-ZmlsZSAgICAgICAgICAgICAgICAgICAgfCAgICA0IC0NCiBSRUFETUUgICAg
-ICAgICAgICAgICAgICAgICAgfCAgICAyIA0KIHNjcmlwdHMva2NvbmZpZy9j
-b25mLmMgICAgICB8ICAgIDEgDQogc2NyaXB0cy9rY29uZmlnL2NvbmZkYXRh
-LmMgIHwgIDE0NiArKysrKysrKysrKysrKysrLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLQ0KIHNjcmlwdHMva2NvbmZpZy9sa2NfcHJvdG8uaCB8ICAg
-IDEgDQogNSBmaWxlcyBjaGFuZ2VkLCA1NiBpbnNlcnRpb25zKCspLCA5OCBk
-ZWxldGlvbnMoLSkNCg0KSW5kZXg6IGxpbnV4LTIuNi9NYWtlZmlsZQ0KPT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PQ0KLS0tIGxpbnV4LTIuNi5vcmlnL01ha2Vm
-aWxlDQorKysgbGludXgtMi42L01ha2VmaWxlDQpAQCAtMjAwLDExICsyMDAs
-OSBAQCBTUkNBUkNIIAk6PSAkKEFSQ0gpDQogIyBBZGRpdGlvbmFsIEFSQ0gg
-c2V0dGluZ3MgZm9yIHg4Ng0KIGlmZXEgKCQoQVJDSCksaTM4NikNCiAgICAg
-ICAgIFNSQ0FSQ0ggOj0geDg2DQotICAgICAgICBLNjRCSVQgIDo9IG4NCiBl
-bmRpZg0KIGlmZXEgKCQoQVJDSCkseDg2XzY0KQ0KICAgICAgICAgU1JDQVJD
-SCA6PSB4ODYNCi0gICAgICAgIEs2NEJJVCAgOj0geQ0KIGVuZGlmDQogDQog
-S0NPTkZJR19DT05GSUcJPz0gLmNvbmZpZw0KQEAgLTM0MSw3ICszMzksNyBA
-QCBLRVJORUxSRUxFQVNFID0gJChzaGVsbCBjYXQgaW5jbHVkZS9jb25mDQog
-S0VSTkVMVkVSU0lPTiA9ICQoVkVSU0lPTikuJChQQVRDSExFVkVMKS4kKFNV
-QkxFVkVMKSQoRVhUUkFWRVJTSU9OKQ0KIA0KIGV4cG9ydCBWRVJTSU9OIFBB
-VENITEVWRUwgU1VCTEVWRUwgS0VSTkVMUkVMRUFTRSBLRVJORUxWRVJTSU9O
-DQotZXhwb3J0IEFSQ0ggU1JDQVJDSCBLNjRCSVQgQ09ORklHX1NIRUxMIEhP
-U1RDQyBIT1NUQ0ZMQUdTIENST1NTX0NPTVBJTEUgQVMgTEQgQ0MNCitleHBv
-cnQgQVJDSCBTUkNBUkNIIENPTkZJR19TSEVMTCBIT1NUQ0MgSE9TVENGTEFH
-UyBDUk9TU19DT01QSUxFIEFTIExEIENDDQogZXhwb3J0IENQUCBBUiBOTSBT
-VFJJUCBPQkpDT1BZIE9CSkRVTVAgTUFLRSBBV0sgR0VOS1NZTVMgUEVSTCBV
-VFNfTUFDSElORQ0KIGV4cG9ydCBIT1NUQ1hYIEhPU1RDWFhGTEFHUyBMREZM
-QUdTX01PRFVMRSBDSEVDSyBDSEVDS0ZMQUdTDQogDQpJbmRleDogbGludXgt
-Mi42L1JFQURNRQ0KPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQ0KLS0tIGxpbnV4
-LTIuNi5vcmlnL1JFQURNRQ0KKysrIGxpbnV4LTIuNi9SRUFETUUNCkBAIC0x
-OTQsOCArMTk0LDYgQEAgQ09ORklHVVJJTkcgdGhlIGtlcm5lbDoNCiAgICAi
-bWFrZSAqY29uZmlnIiBjaGVja3MgZm9yIGEgZmlsZSBuYW1lZCAiYWxse3ll
-cy9tb2Qvbm8vcmFuZG9tfS5jb25maWciDQogICAgZm9yIHN5bWJvbCB2YWx1
-ZXMgdGhhdCBhcmUgdG8gYmUgZm9yY2VkLiAgSWYgdGhpcyBmaWxlIGlzIG5v
-dCBmb3VuZCwNCiAgICBpdCBjaGVja3MgZm9yIGEgZmlsZSBuYW1lZCAiYWxs
-LmNvbmZpZyIgdG8gY29udGFpbiBmb3JjZWQgdmFsdWVzLg0KLSAgIEZpbmFs
-bHkgaXQgY2hlY2tzIHRoZSBlbnZpcm9ubWVudCB2YXJpYWJsZSBLNjRCSVQg
-YW5kIGlmIGZvdW5kLCBzZXRzDQotICAgdGhlIGNvbmZpZyBzeW1ib2wgIjY0
-QklUIiB0byB0aGUgdmFsdWUgb2YgdGhlIEs2NEJJVCB2YXJpYWJsZS4NCiAg
-ICANCiAJTk9URVMgb24gIm1ha2UgY29uZmlnIjoNCiAJLSBoYXZpbmcgdW5u
-ZWNlc3NhcnkgZHJpdmVycyB3aWxsIG1ha2UgdGhlIGtlcm5lbCBiaWdnZXIs
-IGFuZCBjYW4NCkluZGV4OiBsaW51eC0yLjYvc2NyaXB0cy9rY29uZmlnL2Nv
-bmYuYw0KPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PQ0KLS0tIGxpbnV4LTIuNi5v
-cmlnL3NjcmlwdHMva2NvbmZpZy9jb25mLmMNCisrKyBsaW51eC0yLjYvc2Ny
-aXB0cy9rY29uZmlnL2NvbmYuYw0KQEAgLTU5MSw3ICs1OTEsNiBAQCBpbnQg
-bWFpbihpbnQgYWMsIGNoYXIgKiphdikNCiAJCQljb25mX3JlYWRfc2ltcGxl
-KG5hbWUsIFNfREVGX1VTRVIpOw0KIAkJZWxzZSBpZiAoIXN0YXQoImFsbC5j
-b25maWciLCAmdG1wc3RhdCkpDQogCQkJY29uZl9yZWFkX3NpbXBsZSgiYWxs
-LmNvbmZpZyIsIFNfREVGX1VTRVIpOw0KLQkJY29uZl9zZXRfZW52X3N5bSgi
-SzY0QklUIiwgIjY0QklUIiwgU19ERUZfVVNFUik7DQogCQlicmVhazsNCiAJ
-ZGVmYXVsdDoNCiAJCWJyZWFrOw0KSW5kZXg6IGxpbnV4LTIuNi9zY3JpcHRz
-L2tjb25maWcvY29uZmRhdGEuYw0KPT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQ0K
-LS0tIGxpbnV4LTIuNi5vcmlnL3NjcmlwdHMva2NvbmZpZy9jb25mZGF0YS5j
-DQorKysgbGludXgtMi42L3NjcmlwdHMva2NvbmZpZy9jb25mZGF0YS5jDQpA
-QCAtODMsOTUgKzgzLDYgQEAgY2hhciAqY29uZl9nZXRfZGVmYXVsdF9jb25m
-bmFtZSh2b2lkKQ0KIAlyZXR1cm4gbmFtZTsNCiB9DQogDQotc3RhdGljIGlu
-dCBjb25mX3NldF9zeW1fdmFsKHN0cnVjdCBzeW1ib2wgKnN5bSwgaW50IGRl
-ZiwgaW50IGRlZl9mbGFncywgY2hhciAqcCkNCi17DQotCWNoYXIgKnAyOw0K
-LQ0KLQlzd2l0Y2ggKHN5bS0+dHlwZSkgew0KLQljYXNlIFNfVFJJU1RBVEU6
-DQotCQlpZiAocFswXSA9PSAnbScpIHsNCi0JCQlzeW0tPmRlZltkZWZdLnRy
-aSA9IG1vZDsNCi0JCQlzeW0tPmZsYWdzIHw9IGRlZl9mbGFnczsNCi0JCQli
-cmVhazsNCi0JCX0NCi0JY2FzZSBTX0JPT0xFQU46DQotCQlpZiAocFswXSA9
-PSAneScpIHsNCi0JCQlzeW0tPmRlZltkZWZdLnRyaSA9IHllczsNCi0JCQlz
-eW0tPmZsYWdzIHw9IGRlZl9mbGFnczsNCi0JCQlicmVhazsNCi0JCX0NCi0J
-CWlmIChwWzBdID09ICduJykgew0KLQkJCXN5bS0+ZGVmW2RlZl0udHJpID0g
-bm87DQotCQkJc3ltLT5mbGFncyB8PSBkZWZfZmxhZ3M7DQotCQkJYnJlYWs7
-DQotCQl9DQotCQljb25mX3dhcm5pbmcoInN5bWJvbCB2YWx1ZSAnJXMnIGlu
-dmFsaWQgZm9yICVzIiwgcCwgc3ltLT5uYW1lKTsNCi0JCWJyZWFrOw0KLQlj
-YXNlIFNfT1RIRVI6DQotCQlpZiAoKnAgIT0gJyInKSB7DQotCQkJZm9yIChw
-MiA9IHA7ICpwMiAmJiAhaXNzcGFjZSgqcDIpOyBwMisrKQ0KLQkJCQk7DQot
-CQkJc3ltLT50eXBlID0gU19TVFJJTkc7DQotCQkJZ290byBkb25lOw0KLQkJ
-fQ0KLQljYXNlIFNfU1RSSU5HOg0KLQkJaWYgKCpwKysgIT0gJyInKQ0KLQkJ
-CWJyZWFrOw0KLQkJZm9yIChwMiA9IHA7IChwMiA9IHN0cnBicmsocDIsICJc
-IlxcIikpOyBwMisrKSB7DQotCQkJaWYgKCpwMiA9PSAnIicpIHsNCi0JCQkJ
-KnAyID0gMDsNCi0JCQkJYnJlYWs7DQotCQkJfQ0KLQkJCW1lbW1vdmUocDIs
-IHAyICsgMSwgc3RybGVuKHAyKSk7DQotCQl9DQotCQlpZiAoIXAyKSB7DQot
-CQkJY29uZl93YXJuaW5nKCJpbnZhbGlkIHN0cmluZyBmb3VuZCIpOw0KLQkJ
-CXJldHVybiAxOw0KLQkJfQ0KLQljYXNlIFNfSU5UOg0KLQljYXNlIFNfSEVY
-Og0KLQlkb25lOg0KLQkJaWYgKHN5bV9zdHJpbmdfdmFsaWQoc3ltLCBwKSkg
-ew0KLQkJCXN5bS0+ZGVmW2RlZl0udmFsID0gc3RyZHVwKHApOw0KLQkJCXN5
-bS0+ZmxhZ3MgfD0gZGVmX2ZsYWdzOw0KLQkJfSBlbHNlIHsNCi0JCQljb25m
-X3dhcm5pbmcoInN5bWJvbCB2YWx1ZSAnJXMnIGludmFsaWQgZm9yICVzIiwg
-cCwgc3ltLT5uYW1lKTsNCi0JCQlyZXR1cm4gMTsNCi0JCX0NCi0JCWJyZWFr
-Ow0KLQlkZWZhdWx0Og0KLQkJOw0KLQl9DQotCXJldHVybiAwOw0KLX0NCi0N
-Ci0vKiBSZWFkIGFuIGVudmlyb25tZW50IHZhcmlhYmxlIGFuZCBhc3NpZ24g
-dGhlIHZhbHVlIHRvIHRoZSBzeW1ib2wgKi8NCi1pbnQgY29uZl9zZXRfZW52
-X3N5bShjb25zdCBjaGFyICplbnYsIGNvbnN0IGNoYXIgKnN5bW5hbWUsIGlu
-dCBkZWYpDQotew0KLQlzdHJ1Y3Qgc3ltYm9sICpzeW07DQotCWNoYXIgKnA7
-DQotCWludCBkZWZfZmxhZ3M7DQotDQotCXAgPSBnZXRlbnYoZW52KTsNCi0J
-aWYgKHApIHsNCi0JCWNoYXIgd2FybmluZ1syMDBdOw0KLQkJc3ByaW50Zih3
-YXJuaW5nLCAiRW52aXJvbm1lbnQgdmFyaWFibGUgKCVzID0gXCIlc1wiKSIs
-IGVudiwgcCk7DQotCQljb25mX2ZpbGVuYW1lID0gd2FybmluZzsNCi0JCWRl
-Zl9mbGFncyA9IFNZTUJPTF9ERUYgPDwgZGVmOw0KLQkJaWYgKGRlZiA9PSBT
-X0RFRl9VU0VSKSB7DQotCQkJc3ltID0gc3ltX2ZpbmQoc3ltbmFtZSk7DQot
-CQkJaWYgKCFzeW0pDQotCQkJCXJldHVybiAxOw0KLQkJfSBlbHNlIHsNCi0J
-CQlzeW0gPSBzeW1fbG9va3VwKHN5bW5hbWUsIDApOw0KLQkJCWlmIChzeW0t
-PnR5cGUgPT0gU19VTktOT1dOKQ0KLQkJCQlzeW0tPnR5cGUgPSBTX09USEVS
-Ow0KLQkJfQ0KLQkJY29uZl9zZXRfc3ltX3ZhbChzeW0sIGRlZiwgZGVmX2Zs
-YWdzLCBwKTsNCi0JfQ0KLQlyZXR1cm4gMDsNCi19DQotDQogaW50IGNvbmZf
-cmVhZF9zaW1wbGUoY29uc3QgY2hhciAqbmFtZSwgaW50IGRlZikNCiB7DQog
-CUZJTEUgKmluID0gTlVMTDsNCkBAIC0zMDIsOCArMjEzLDYxIEBAIGxvYWQ6
-DQogCQkJCWNvbmZfd2FybmluZygidHJ5aW5nIHRvIHJlYXNzaWduIHN5bWJv
-bCAlcyIsIHN5bS0+bmFtZSk7DQogCQkJCWJyZWFrOw0KIAkJCX0NCi0JCQlp
-ZiAoY29uZl9zZXRfc3ltX3ZhbChzeW0sIGRlZiwgZGVmX2ZsYWdzLCBwKSkN
-Ci0JCQkJY29udGludWU7DQorCQkJc3dpdGNoIChzeW0tPnR5cGUpIHsNCisJ
-CQljYXNlIFNfVFJJU1RBVEU6DQorCQkJCWlmIChwWzBdID09ICdtJykgew0K
-KwkJCQkJc3ltLT5kZWZbZGVmXS50cmkgPSBtb2Q7DQorCQkJCQlzeW0tPmZs
-YWdzIHw9IGRlZl9mbGFnczsNCisJCQkJCWJyZWFrOw0KKwkJCQl9DQorCQkJ
-Y2FzZSBTX0JPT0xFQU46DQorCQkJCWlmIChwWzBdID09ICd5Jykgew0KKwkJ
-CQkJc3ltLT5kZWZbZGVmXS50cmkgPSB5ZXM7DQorCQkJCQlzeW0tPmZsYWdz
-IHw9IGRlZl9mbGFnczsNCisJCQkJCWJyZWFrOw0KKwkJCQl9DQorCQkJCWlm
-IChwWzBdID09ICduJykgew0KKwkJCQkJc3ltLT5kZWZbZGVmXS50cmkgPSBu
-bzsNCisJCQkJCXN5bS0+ZmxhZ3MgfD0gZGVmX2ZsYWdzOw0KKwkJCQkJYnJl
-YWs7DQorCQkJCX0NCisJCQkJY29uZl93YXJuaW5nKCJzeW1ib2wgdmFsdWUg
-JyVzJyBpbnZhbGlkIGZvciAlcyIsIHAsIHN5bS0+bmFtZSk7DQorCQkJCWJy
-ZWFrOw0KKwkJCWNhc2UgU19PVEhFUjoNCisJCQkJaWYgKCpwICE9ICciJykg
-ew0KKwkJCQkJZm9yIChwMiA9IHA7ICpwMiAmJiAhaXNzcGFjZSgqcDIpOyBw
-MisrKQ0KKwkJCQkJCTsNCisJCQkJCXN5bS0+dHlwZSA9IFNfU1RSSU5HOw0K
-KwkJCQkJZ290byBkb25lOw0KKwkJCQl9DQorCQkJY2FzZSBTX1NUUklORzoN
-CisJCQkJaWYgKCpwKysgIT0gJyInKQ0KKwkJCQkJYnJlYWs7DQorCQkJCWZv
-ciAocDIgPSBwOyAocDIgPSBzdHJwYnJrKHAyLCAiXCJcXCIpKTsgcDIrKykg
-ew0KKwkJCQkJaWYgKCpwMiA9PSAnIicpIHsNCisJCQkJCQkqcDIgPSAwOw0K
-KwkJCQkJCWJyZWFrOw0KKwkJCQkJfQ0KKwkJCQkJbWVtbW92ZShwMiwgcDIg
-KyAxLCBzdHJsZW4ocDIpKTsNCisJCQkJfQ0KKwkJCQlpZiAoIXAyKSB7DQor
-CQkJCQljb25mX3dhcm5pbmcoImludmFsaWQgc3RyaW5nIGZvdW5kIik7DQor
-CQkJCQljb250aW51ZTsNCisJCQkJfQ0KKwkJCWNhc2UgU19JTlQ6DQorCQkJ
-Y2FzZSBTX0hFWDoNCisJCQlkb25lOg0KKwkJCQlpZiAoc3ltX3N0cmluZ192
-YWxpZChzeW0sIHApKSB7DQorCQkJCQlzeW0tPmRlZltkZWZdLnZhbCA9IHN0
-cmR1cChwKTsNCisJCQkJCXN5bS0+ZmxhZ3MgfD0gZGVmX2ZsYWdzOw0KKwkJ
-CQl9IGVsc2Ugew0KKwkJCQkJY29uZl93YXJuaW5nKCJzeW1ib2wgdmFsdWUg
-JyVzJyBpbnZhbGlkIGZvciAlcyIsIHAsIHN5bS0+bmFtZSk7DQorCQkJCQlj
-b250aW51ZTsNCisJCQkJfQ0KKwkJCQlicmVhazsNCisJCQlkZWZhdWx0Og0K
-KwkJCQk7DQorCQkJfQ0KIAkJCWJyZWFrOw0KIAkJY2FzZSAnXHInOg0KIAkJ
-Y2FzZSAnXG4nOg0KSW5kZXg6IGxpbnV4LTIuNi9zY3JpcHRzL2tjb25maWcv
-bGtjX3Byb3RvLmgNCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0NCi0tLSBsaW51
-eC0yLjYub3JpZy9zY3JpcHRzL2tjb25maWcvbGtjX3Byb3RvLmgNCisrKyBs
-aW51eC0yLjYvc2NyaXB0cy9rY29uZmlnL2xrY19wcm90by5oDQpAQCAtMSw3
-ICsxLDYgQEANCiANCiAvKiBjb25mZGF0YS5jICovDQogUChjb25mX3BhcnNl
-LHZvaWQsKGNvbnN0IGNoYXIgKm5hbWUpKTsNCi1QKGNvbmZfc2V0X2Vudl9z
-eW0saW50LChjb25zdCBjaGFyICplbnZuYW1lLCBjb25zdCBjaGFyICpzeW1u
-YW1lLCBpbnQgZGVmKSk7DQogUChjb25mX3JlYWQsaW50LChjb25zdCBjaGFy
-ICpuYW1lKSk7DQogUChjb25mX3JlYWRfc2ltcGxlLGludCwoY29uc3QgY2hh
-ciAqbmFtZSwgaW50KSk7DQogUChjb25mX3dyaXRlLGludCwoY29uc3QgY2hh
-ciAqbmFtZSkpOw0K
-
----1463811837-1617905413-1195176489=:1817--
+greg k-h
