@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935707AbXKPXQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934882AbXKPXRZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935707AbXKPXQx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 18:16:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762112AbXKPXLb
+	id S934882AbXKPXRZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 18:17:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934848AbXKPXLd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 18:11:31 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:39561 "EHLO relay.sgi.com"
+	Fri, 16 Nov 2007 18:11:33 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:39563 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761498AbXKPXLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1761532AbXKPXLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 Nov 2007 18:11:05 -0500
-Message-Id: <20071116231104.048130087@sgi.com>
+Message-Id: <20071116231104.987155995@sgi.com>
 References: <20071116230920.278761667@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 16 Nov 2007 15:09:28 -0800
+Date: Fri, 16 Nov 2007 15:09:32 -0800
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
 Cc: linux-arch@vger.kernel.org
@@ -20,60 +20,107 @@ Cc: linux-kernel@vger.kernel.org
 Cc: David Miller <davem@davemloft.net>
 Cc: Eric Dumazet <dada1@cosmosbay.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
-Subject: [patch 08/30] cpu_alloc: Sparc64 support
-Content-Disposition: inline; filename=cpu_alloc_sparc64
+Subject: [patch 12/30] cpu alloc: ACPI cstate handling conversion
+Content-Disposition: inline; filename=0022-cpu-alloc-ACPI-cstate-handling-conversion.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Enable a simple virtual configuration with 32MB available per cpu so that
-we do not use a static area on sparc64.
-
-[Not tested. I have no sparc64]
-
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
 ---
- arch/sparc64/Kconfig          |   15 +++++++++++++++
- include/asm-sparc64/pgtable.h |    1 +
- 2 files changed, 16 insertions(+)
+ arch/x86/kernel/acpi/cstate.c              |    9 +++++----
+ arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |    7 ++++---
+ drivers/acpi/processor_perflib.c           |    4 ++--
+ 3 files changed, 11 insertions(+), 9 deletions(-)
 
-Index: linux-2.6/arch/sparc64/Kconfig
+Index: linux-2.6/arch/x86/kernel/acpi/cstate.c
 ===================================================================
---- linux-2.6.orig/arch/sparc64/Kconfig	2007-11-15 21:24:46.942815842 -0800
-+++ linux-2.6/arch/sparc64/Kconfig	2007-11-15 21:25:27.790904212 -0800
-@@ -103,6 +103,21 @@ config SPARC64_PAGE_SIZE_4MB
+--- linux-2.6.orig/arch/x86/kernel/acpi/cstate.c	2007-11-15 21:18:09.238904115 -0800
++++ linux-2.6/arch/x86/kernel/acpi/cstate.c	2007-11-15 21:25:30.499154221 -0800
+@@ -87,7 +87,7 @@ int acpi_processor_ffh_cstate_probe(unsi
+ 	if (reg->bit_offset != NATIVE_CSTATE_BEYOND_HALT)
+ 		return -1;
  
- endchoice
+-	percpu_entry = per_cpu_ptr(cpu_cstate_entry, cpu);
++	percpu_entry = CPU_PTR(cpu_cstate_entry, cpu);
+ 	percpu_entry->states[cx->index].eax = 0;
+ 	percpu_entry->states[cx->index].ecx = 0;
  
-+config CPU_AREA_VIRTUAL
-+	bool
-+	default y
-+
-+config CPU_AREA_ORDER
-+	int
-+	default "11" if SPARC64_PAGE_SIZE_8KB
-+	default "9" if SPARC64_PAGE_SIZE_64KB
-+	default "6" if SPARC64_PAGE_SIZE_512KB
-+	default "3" if SPARC64_PAGE_SIZE_4MB
-+
-+config CPU_AREA_ALLOC_ORDER
-+	int
-+	default "0"
-+
- config SECCOMP
- 	bool "Enable seccomp to safely compute untrusted bytecode"
- 	depends on PROC_FS
-Index: linux-2.6/include/asm-sparc64/pgtable.h
+@@ -138,7 +138,7 @@ void acpi_processor_ffh_cstate_enter(str
+ 	unsigned int cpu = smp_processor_id();
+ 	struct cstate_entry *percpu_entry;
+ 
+-	percpu_entry = per_cpu_ptr(cpu_cstate_entry, cpu);
++	percpu_entry = CPU_PTR(cpu_cstate_entry, cpu);
+ 	mwait_idle_with_hints(percpu_entry->states[cx->index].eax,
+ 	                      percpu_entry->states[cx->index].ecx);
+ }
+@@ -150,13 +150,14 @@ static int __init ffh_cstate_init(void)
+ 	if (c->x86_vendor != X86_VENDOR_INTEL)
+ 		return -1;
+ 
+-	cpu_cstate_entry = alloc_percpu(struct cstate_entry);
++	cpu_cstate_entry = CPU_ALLOC(struct cstate_entry,
++					GFP_KERNEL|__GFP_ZERO);
+ 	return 0;
+ }
+ 
+ static void __exit ffh_cstate_exit(void)
+ {
+-	free_percpu(cpu_cstate_entry);
++	CPU_FREE(cpu_cstate_entry);
+ 	cpu_cstate_entry = NULL;
+ }
+ 
+Index: linux-2.6/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
 ===================================================================
---- linux-2.6.orig/include/asm-sparc64/pgtable.h	2007-11-15 21:24:46.950904404 -0800
-+++ linux-2.6/include/asm-sparc64/pgtable.h	2007-11-15 21:25:27.794904145 -0800
-@@ -43,6 +43,7 @@
- #define VMALLOC_START		_AC(0x0000000100000000,UL)
- #define VMALLOC_END		_AC(0x0000000200000000,UL)
- #define VMEMMAP_BASE		_AC(0x0000000200000000,UL)
-+#define CPU_AREA_BASE		_AC(0x0000000300000000,UL)
+--- linux-2.6.orig/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c	2007-11-15 21:18:09.246904080 -0800
++++ linux-2.6/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c	2007-11-15 21:25:30.499154221 -0800
+@@ -513,7 +513,8 @@ static int __init acpi_cpufreq_early_ini
+ {
+ 	dprintk("acpi_cpufreq_early_init\n");
  
- #define vmemmap			((struct page *)VMEMMAP_BASE)
+-	acpi_perf_data = alloc_percpu(struct acpi_processor_performance);
++	acpi_perf_data = CPU_ALLOC(struct acpi_processor_performance,
++						GFP_KERNEL|__GFP_ZERO);
+ 	if (!acpi_perf_data) {
+ 		dprintk("Memory allocation error for acpi_perf_data.\n");
+ 		return -ENOMEM;
+@@ -569,7 +570,7 @@ static int acpi_cpufreq_cpu_init(struct 
+ 	if (!data)
+ 		return -ENOMEM;
  
+-	data->acpi_data = percpu_ptr(acpi_perf_data, cpu);
++	data->acpi_data = CPU_PTR(acpi_perf_data, cpu);
+ 	drv_data[cpu] = data;
+ 
+ 	if (cpu_has(c, X86_FEATURE_CONSTANT_TSC))
+@@ -782,7 +783,7 @@ static void __exit acpi_cpufreq_exit(voi
+ 
+ 	cpufreq_unregister_driver(&acpi_cpufreq_driver);
+ 
+-	free_percpu(acpi_perf_data);
++	CPU_FREE(acpi_perf_data);
+ 
+ 	return;
+ }
+Index: linux-2.6/drivers/acpi/processor_perflib.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/processor_perflib.c	2007-11-15 21:18:09.254904773 -0800
++++ linux-2.6/drivers/acpi/processor_perflib.c	2007-11-15 21:25:30.499154221 -0800
+@@ -567,12 +567,12 @@ int acpi_processor_preregister_performan
+ 			continue;
+ 		}
+ 
+-		if (!performance || !percpu_ptr(performance, i)) {
++		if (!performance || !CPU_PTR(performance, i)) {
+ 			retval = -EINVAL;
+ 			continue;
+ 		}
+ 
+-		pr->performance = percpu_ptr(performance, i);
++		pr->performance = CPU_PTR(performance, i);
+ 		cpu_set(i, pr->performance->shared_cpu_map);
+ 		if (acpi_processor_get_psd(pr)) {
+ 			retval = -EINVAL;
 
 -- 
