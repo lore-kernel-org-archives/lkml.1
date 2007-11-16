@@ -1,46 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932298AbXKPOPW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932962AbXKPOQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932298AbXKPOPW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 09:15:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759485AbXKPOPI
+	id S932962AbXKPOQX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 09:16:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760132AbXKPOQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 09:15:08 -0500
-Received: from main.gmane.org ([80.91.229.2]:33673 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759481AbXKPOPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 09:15:07 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Benny Amorsen <benny+usenet@amorsen.dk>
-Subject: Re: [PATCH] net/ipv4/arp.c: Fix arp reply when sender ip 0
-Date: Fri, 16 Nov 2007 15:13:01 +0100
-Message-ID: <m3r6iqffde.fsf@ursa.amorsen.dk>
-References: <cac0ab7d0711151340l1cc91a2dw5ebf36e166d16d7a@mail.gmail.com> <20071115.152813.89410917.davem@davemloft.net> <cac0ab7d0711160030w149c7a7s2db55ac56d0a05cc@mail.gmail.com> <20071116.010548.94286711.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: hd5b9080a.c45-01-12.sta.perspektivbredband.net
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-Cancel-Lock: sha1:RsP8v45WmLMwkmW6bGpNWJAkmek=
-Cc: netdev@vger.kernel.org
+	Fri, 16 Nov 2007 09:16:09 -0500
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:35339 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932566AbXKPOQG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 09:16:06 -0500
+Message-ID: <473DA608.1020804@linux.vnet.ibm.com>
+Date: Fri, 16 Nov 2007 19:45:36 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       nfs@lists.sourceforge.net, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: [BUG] 2.6.24-rc2-mm1 - kernel bug on nfs v4 
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "DM" == David Miller <davem@davemloft.net> writes:
+Hi Andrew,
 
->> Reply:
->> Opcode: reply (0x0002)
->> Sender HW: 00:AA.00:AA:00:AA
->> Sender IP:   192.168.0.1
->> Target HW:  00:AA:00:AA:00:AA
->> Target IP:    192.168.0.1
+The kernel enters the xmon state while running the file system
+stress on nfs v4 mounted partition.
+ 
+0:mon> e
+cpu 0x0: Vector: 300 (Data Access) at [c0000000dbd4f820]
+    pc: c000000000065be4: .__wake_up_common+0x44/0xe8
+    lr: c000000000069768: .__wake_up+0x54/0x88
+    sp: c0000000dbd4faa0
+   msr: 8000000000001032
+   dar: 0
+ dsisr: 40010000
+  current = 0xc0000000dfb6f680
+  paca    = 0xc000000000574580
+    pid   = 1865, comm = rpciod/0
+0:mon> t
+[c0000000dbd4fb50] c000000000069768 .__wake_up+0x54/0x88
+[c0000000dbd4fc00] d00000000086b890 .nfs_sb_deactive+0x44/0x58 [nfs]
+[c0000000dbd4fc80] d000000000872658 .nfs_free_unlinkdata+0x2c/0x74 [nfs]
+[c0000000dbd4fd10] d000000000598510 .rpc_release_calldata+0x50/0x74 [sunrpc]
+[c0000000dbd4fda0] c00000000008d960 .run_workqueue+0x10c/0x1f4
+[c0000000dbd4fe50] c00000000008ec70 .worker_thread+0x118/0x138
+[c0000000dbd4ff00] c0000000000939f4 .kthread+0x78/0xc4
+[c0000000dbd4ff90] c00000000002b060 .kernel_thread+0x4c/0x68
+0:mon> r
+R00 = c000000000069768   R16 = 4000000001c00000
+R01 = c0000000dbd4faa0   R17 = c0000000004410c0
+R02 = c0000000006752d8   R18 = 0000000000000000
+R03 = c0000000ace4ffc0   R19 = 000000000019c000
+R04 = 0000000000000003   R20 = c00000000050af08
+R05 = 0000000000000001   R21 = 000000000210af08
+R06 = 0000000000000000   R22 = 000000000210b178
+R07 = 0000000000000000   R23 = c00000000050b178
+R08 = 0000000000000000   R24 = 0000000000000003
+R09 = 0000000000000000   R25 = 0000000000000000
+R10 = 0000000000000001   R26 = 0000000000000000
+R11 = ffffffffffffffe8   R27 = c0000000ace4ffc0
+R12 = 0000000000004000   R28 = 0000000000000001
+R13 = c000000000574580   R29 = 0000000000000003
+R14 = 0000000000000000   R30 = c00000000061bad8
+R15 = c000000000442888   R31 = d0000000008baa50
+pc  = c000000000065be4 .__wake_up_common+0x44/0xe8
+lr  = c000000000069768 .__wake_up+0x54/0x88
+msr = 8000000000001032   cr  = 24000022
+ctr = 80000000001af404   xer = 0000000000000002   trap =  300
+dar = 0000000000000000   dsisr = 40010000
+0:mon>
 
-DM> And this is exactly a sensible response in my opinion.
-
-Why send the reply at all? Sending a unicast packet with yourself as
-destination MAC seems a bit useless. Do switches propagate it?
-
-
-/Benny
-
-
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
