@@ -1,89 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762041AbXKPMvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764894AbXKPMyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762041AbXKPMvn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 07:51:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756657AbXKPMvf
+	id S1764894AbXKPMyR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 07:54:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757544AbXKPMyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 07:51:35 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.155]:5388 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754439AbXKPMve (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 07:51:34 -0500
-Message-ID: <473D9261.6080209@ru.mvista.com>
-Date: Fri, 16 Nov 2007 15:51:45 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Fri, 16 Nov 2007 07:54:05 -0500
+Received: from scrub.xs4all.nl ([194.109.195.176]:4117 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756297AbXKPMyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 07:54:04 -0500
+Date: Fri, 16 Nov 2007 13:54:00 +0100 (CET)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] kconfig: use $K64BIT to set 64BIT with all*config targets
+In-Reply-To: <20071116054126.GA28606@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.64.0711161337380.1817@scrub.home>
+References: <11947274091127-git-send-email-sam@ravnborg.org>
+ <Pine.LNX.4.64.0711142116500.1818@scrub.home> <20071114220840.GB10920@uranus.ravnborg.org>
+ <Pine.LNX.4.64.0711151616330.1817@scrub.home> <20071115192555.GD23914@uranus.ravnborg.org>
+ <Pine.LNX.4.64.0711152036430.1817@scrub.home> <20071115204520.GA24851@uranus.ravnborg.org>
+ <Pine.LNX.4.64.0711152158310.1817@scrub.home> <20071115220640.GA25265@uranus.ravnborg.org>
+ <Pine.LNX.4.64.0711160205340.1817@scrub.home> <20071116054126.GA28606@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Jonas Stare <jonas.stare@purplescout.se>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH][RESUBMIT] drivers/ide/ide-probe.c, kernel 2.6.23.1
-References: <473434F1.50509@purplescout.se> <200711132303.28424.bzolnier@gmail.com> <473C08B2.1030004@purplescout.se> <200711152159.23607.bzolnier@gmail.com> <473D88A5.306@purplescout.se>
-In-Reply-To: <473D88A5.306@purplescout.se>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jonas Stare wrote:
+Hi,
 
-> diff -u linux-2.6.23.1-orig/drivers/ide/ide-probe.c linux-2.6.23.1/drivers/ide/ide-probe.c 
-> --- linux-2.6.23.1-orig/drivers/ide/ide-probe.c 2007-10-12 18:43:44.000000000 +0200
-> +++ linux-2.6.23.1/drivers/ide/ide-probe.c      2007-11-16 10:26:23.000000000 +0100
-> @@ -643,6 +643,7 @@
->  static int wait_hwif_ready(ide_hwif_t *hwif)
->  {
->         int rc;
-> +       int unit;
->  
->         printk(KERN_DEBUG "Probing IDE interface %s...\n", hwif->name);
->  
-> @@ -659,16 +660,25 @@
->                 return rc;
->  
->         /* Now make sure both master & slave are ready */
-> -       SELECT_DRIVE(&hwif->drives[0]);
-> -       hwif->OUTB(8, hwif->io_ports[IDE_CONTROL_OFFSET]);
-> -       mdelay(2);
-> -       rc = ide_wait_not_busy(hwif, 35000);
-> -       if (rc)
-> -               return rc;
-> -       SELECT_DRIVE(&hwif->drives[1]);
-> -       hwif->OUTB(8, hwif->io_ports[IDE_CONTROL_OFFSET]);
-> -       mdelay(2);
-> -       rc = ide_wait_not_busy(hwif, 35000);
-> +       for (unit = 0; unit < MAX_DRIVES; ++unit) {
-> +               /* Ignore disks that we will not probe for later. */
-> +               if (!hwif->drives[unit].noprobe ||
-> +                   hwif->drives[unit].present) {
+On Fri, 16 Nov 2007, Sam Ravnborg wrote:
 
-    Why not:
+> 1) make all*config, randconfig, defconfig is broken on 64-bit boxes
 
-		if (hwif->drives[unit].noprobe || !hwif->drives[unit].present) {
-                 	printk(KERN_DEBUG "Skip ide_wait_not_busy for %s:%d\n",
-                                hwif->name, unit);
-			continue;
-		}
-                 SELECT_DRIVE(&hwif->drives[unit]);
-                 hwif->OUTB(8, hwif->io_ports[IDE_CONTROL_OFFSET]);
-                 mdelay(2);
-                 rc = ide_wait_not_busy(hwif, 35000);
-                 if (rc) {
-			/* Exit function with master reselected */
-                         if (unit != 0)
-                         	SELECT_DRIVE(&hwif->drives[0]);
-                         return rc;
-         	}
-	}
->  
->         /* Exit function with master reselected (let's be sane) */
->         SELECT_DRIVE(&hwif->drives[0]);
+With your approach you made it impossible to set 64BIT from all*.config,
+which is the proper way to set the defaults.
 
-MBR, Sergei
+> 2) A pure code refactoring patch is reverted for no obvious reason
+
+It was done for the wrong reasons, otherwise the warning before it should 
+have been included as well and then the function could have been reused 
+for the "# ... is not set" case as well.
+
+> 3) Behavioral changes are not documented:
+>    - 32-bit/64-bit can only be selected in config is you specify ARCH=x86
+
+Which is now the default and thus it behaves more like other archs.
+
+>    - ARCH= takes precedence over kernel config for a configured kernel
+
+What point is there in being able to specify ARCH=x86_64 and then still 
+produce a 32bit kernel?
+
+> 4) The changelogs miss title on reverted patches
+
+Seriously?
+
+bye, Roman
