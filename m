@@ -1,52 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933200AbXKPVKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934017AbXKPVLy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933200AbXKPVKZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 16:10:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755383AbXKPVKL
+	id S934017AbXKPVLy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 16:11:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755687AbXKPVLp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 16:10:11 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:61102 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753194AbXKPVKK (ORCPT
+	Fri, 16 Nov 2007 16:11:45 -0500
+Received: from crystal.sipsolutions.net ([195.210.38.204]:54430 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752174AbXKPVLo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 16:10:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=jjUjhpsZT6jYJJMAAJM7tbaD/5oHwTrkT3VpmYk5bfJmyTAaiyalUwFO+6jsRzedrZuduJmP+8YmbJL7JguQBNHwoirxOvjYkNYWDTU0Tf/L1Ek4gMJTXru2Pal2H99Fen9fB7XaVItwRhlsg1Rzzbo9QrTh2QczK60uQfPXGIU=
-Date: Sat, 17 Nov 2007 00:10:02 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC] PPC: add for_each_node_child() macro
-Message-ID: <20071116211002.GC7710@cvg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 16 Nov 2007 16:11:44 -0500
+Subject: Re: [PATCH 1/2] mac80211: add power management support
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Miguel =?ISO-8859-1?Q?Bot=F3n?= <mboton.lkml@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org, linville@tuxdriver.com,
+       yi.zhu@intel.com
+In-Reply-To: <200711162002.01972.mboton.lkml@gmail.com> (sfid-20071116_190212_726540_E9A85A6C)
+References: <200711161929.36283.mboton.lkml@gmail.com>
+	 <200711161953.26801.mboton.lkml@gmail.com>
+	 <200711162002.01972.mboton.lkml@gmail.com>
+	 (sfid-20071116_190212_726540_E9A85A6C)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-BS27lmm0qgQr/81lsx8g"
+Date: Fri, 16 Nov 2007 22:13:01 +0100
+Message-Id: <1195247581.26571.5.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds usefull macro to iterate over a node childs.
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
-TODO: convert all for(...) cycles to this macro.
+--=-BS27lmm0qgQr/81lsx8g
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
- include/linux/of.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/of.h b/include/linux/of.h
-index 5c39b92..a93e2aa 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -46,6 +46,8 @@ extern struct device_node *of_find_node_by_phandle(phandle handle);
- extern struct device_node *of_get_parent(const struct device_node *node);
- extern struct device_node *of_get_next_child(const struct device_node *node,
- 					     struct device_node *prev);
-+#define for_each_node_child(dn, child) \
-+	for (child = NULL; (child = of_get_next_child(dn, child)); )
- extern struct property *of_find_property(const struct device_node *np,
- 					 const char *name,
-					 int *lenp);
+
+> +	if (ieee80211_hw_config(local))
+> +		return -EINVAL;
+
+-EINVAL seems not right. Doesn't that already return an error code?
+
+johannes
+
+--=-BS27lmm0qgQr/81lsx8g
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUARz4H3KVg1VMiehFYAQLRCA/+IipQQpYM7dTjwnmJY0Ahcw0s7Z1vrf17
+LgQpndp7NBF8txCOXZ77cqAQ7/g/5/HxUZEGFE9DgN5a4ok3d9ZtIGsnAJYvrzBM
+cONV7vEcxOZXQiLvUQUMdclL6S2dGeWf2yxDQ0G7enr5TJsZ1Mu+aAzjmre5YNkb
+2f6SjHjQbxnEyhSpEeGHl7nRHWyeeZO83o1FeQI64o4pPJ5K1KweJZqujzntoTwW
+QS4pgW0y5VEA06p6W5gpYU2Pr5A9+ReHJXLK4ha42Vd2R2PmjSyawKOSPQVCZzAn
+ai69y5zu1oXPqoK1dCCS6UovsX++exxCBMt06VWwCtVgM0Gl2a1m/0RQjOp0aEZC
+CTNmMPT0rJR2puL7FmjS6S8kGkCfwWBHeUDF/YMVynX4YMtMPjHmQix7V8Vqmy38
+ITFOi7wM8lPOcLsZpCnkIKN45FU8a5OMnz9tzONzobBhHHbvYceFJu5jdUvJbxOR
+LD4je1L9fdhI5IsNhm70auy83STaj5jCqWuvo+B1pBEE8pO1d95Lc73hxDHtlkbl
+uuZ/fU0OeDHsMYRXwTx9DloJFwah/xCFJ17IcPWmbYhybSjP8tfmDLrgUi/QY+/M
+CT6y9wsYjhHHJEWIepZqIZ9V159lqL8p8AjbT4Gg7KF0JL/JHXuV34F0pBne8fhq
+xiLzljMgTfk=
+=2S64
+-----END PGP SIGNATURE-----
+
+--=-BS27lmm0qgQr/81lsx8g--
 
