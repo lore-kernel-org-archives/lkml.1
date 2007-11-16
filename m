@@ -1,115 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933160AbXKPDoq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765177AbXKPDxK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933160AbXKPDoq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 22:44:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757636AbXKPDoi
+	id S1765177AbXKPDxK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 22:53:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756047AbXKPDw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 22:44:38 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:59733 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757609AbXKPDoh (ORCPT
+	Thu, 15 Nov 2007 22:52:56 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41351 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755804AbXKPDwz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 22:44:37 -0500
-Date: Thu, 15 Nov 2007 19:44:12 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kconfig: use $K64BIT to set 64BIT with all*config
- targets
-Message-Id: <20071115194412.d7e076ec.randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.64.0711160205340.1817@scrub.home>
-References: <20071110204038.GA13140@uranus.ravnborg.org>
-	<11947274093185-git-send-email-sam@ravnborg.org>
-	<11947274091127-git-send-email-sam@ravnborg.org>
-	<Pine.LNX.4.64.0711142116500.1818@scrub.home>
-	<20071114220840.GB10920@uranus.ravnborg.org>
-	<Pine.LNX.4.64.0711151616330.1817@scrub.home>
-	<20071115192555.GD23914@uranus.ravnborg.org>
-	<Pine.LNX.4.64.0711152036430.1817@scrub.home>
-	<20071115204520.GA24851@uranus.ravnborg.org>
-	<Pine.LNX.4.64.0711152158310.1817@scrub.home>
-	<20071115220640.GA25265@uranus.ravnborg.org>
-	<Pine.LNX.4.64.0711160205340.1817@scrub.home>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Thu, 15 Nov 2007 22:52:55 -0500
+Date: Thu, 15 Nov 2007 19:52:34 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mingo@elte.hu
+Subject: Re: x86: disable preemption in delay_tsc()
+Message-Id: <20071115195234.2dc8406d.akpm@linux-foundation.org>
+In-Reply-To: <20071115194116.12c7a0f6@laptopd505.fenrus.org>
+References: <200711150400.lAF40lIr020160@hera.kernel.org>
+	<20071115194116.12c7a0f6@laptopd505.fenrus.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Nov 2007 02:28:09 +0100 (CET) Roman Zippel wrote:
+On Thu, 15 Nov 2007 19:41:16 -0800 Arjan van de Ven <arjan@infradead.org> wrote:
 
-> Hi,
+> On Thu, 15 Nov 2007 04:00:47 GMT
+> Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
 > 
-> On Thu, 15 Nov 2007, Sam Ravnborg wrote:
+> > Gitweb:
+> > http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=35d5d08a085c56f153458c3f5d8ce24123617faf
+> > Commit:     35d5d08a085c56f153458c3f5d8ce24123617faf Parent:
+> > 7eea436433b7b18045f272562e256976f593f7c0 Author:     Andrew Morton
+> > <akpm@linux-foundation.org> AuthorDate: Wed Nov 14 17:00:41 2007 -0800
+> > Committer:  Linus Torvalds <torvalds@woody.linux-foundation.org>
+> > CommitDate: Wed Nov 14 18:45:44 2007 -0800
+> > 
+> >     x86: disable preemption in delay_tsc()
+> >     
+> >     Marin Mitov points out that delay_tsc() can misbehave if it is
+> > preempted and rescheduled on a different CPU which has a skewed TSC.
+> > Fix it by disabling preemption.
+> >  
 > 
-> > You suggest just to check ARCH value and not apply your patch. This was
-> > not my initial understanding as was hopefully obvious from my reply.
+> this worries me.. this appears to effectively disable preemption during
+> udelay() and mdelay() loops... which are very obvious latency inducers.
 > 
-> This patch only adds some extra features.
+> Now you can argue that if you're preemptible you should have used
+> msleep() and co, and I'll totally buy that. 
 > 
-> > If user did NOT specify ARCH we should use the kernel configuration - which
-> > your solution fail to do.
 > 
-> To make this easy I attached the patch which reverts the problematic 
-> changes and then you only need this simple change to force the 64BIT value 
-> for ARCH={i386,x86_64}, otherwise it's set by the user:
+> Maybe we should just check if we're still on the same cpu or something,
+> or have a cheap way to pin a process to a cpu.... but both are longer
+> term solutions.
+> 
 
-Roman,
+Yes, we can do better.
 
-This all began (AFAIK) because some of us want to continue to be
-able to specify ARCH={i386,x86_64} on the (make) command line --
-not by using a .config file.  Taking away ARCH= on the command line
-is a regression (in some minds, at least), so Sam provided that
-capability.  Is that capability still present after this patch?
+But this bug can cause very rare failures in probably a large number of
+device drivers on a minorty of machines.  Ugly.  So I felt it best to
+plug it fast while people think about more sophisticated fixes.
 
-Thanks.
-
-
-> bye, Roman
-> 
-> Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
-> 
-> ---
->  Makefile         |    3 ++-
->  arch/x86/Kconfig |    4 ++--
->  2 files changed, 4 insertions(+), 3 deletions(-)
-> 
-> Index: linux-2.6/Makefile
-> ===================================================================
-> --- linux-2.6.orig/Makefile
-> +++ linux-2.6/Makefile
-> @@ -165,7 +165,8 @@ export srctree objtree VPATH TOPDIR
->  # then ARCH is assigned, getting whatever value it gets normally, and 
->  # SUBARCH is subsequently ignored.
->  
-> -SUBARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ \
-> +SUBARCH := $(shell uname -m | sed -e s/i.86/x86/ -e s/x86_64/x86/ \
-> +				  -e s/sun4u/sparc64/ \
->  				  -e s/arm.*/arm/ -e s/sa110/arm/ \
->  				  -e s/s390x/s390/ -e s/parisc64/parisc/ \
->  				  -e s/ppc.*/powerpc/ -e s/mips.*/mips/ \
-> Index: linux-2.6/arch/x86/Kconfig
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/Kconfig
-> +++ linux-2.6/arch/x86/Kconfig
-> @@ -3,8 +3,8 @@ mainmenu "Linux Kernel Configuration for
->  
->  # Select 32 or 64 bit
->  config 64BIT
-> -	bool "64-bit kernel"
-> -	default n
-> +	bool "64-bit kernel" if ARCH="x86"
-> +	default ARCH="x86_64"
->  	help
->  	  Say yes to build a 64-bit kernel - formerly known as x86_64
->  	  Say no to build a 32-bit kernel - formerly known as i386
-
-
----
-~Randy
