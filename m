@@ -1,129 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759026AbXKPP63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbXKPQBl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759026AbXKPP63 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 10:58:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbXKPP6V
+	id S1758683AbXKPQBl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 11:01:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbXKPQBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 10:58:21 -0500
-Received: from mtagate4.uk.ibm.com ([195.212.29.137]:49840 "EHLO
-	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751785AbXKPP6U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 10:58:20 -0500
-Message-ID: <473DBCC2.70506@fr.ibm.com>
-Date: Fri, 16 Nov 2007 16:52:34 +0100
-From: Daniel Lezcano <dlezcano@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Pavel Emelyanov <xemul@openvz.org>
-CC: Andrew Morton <akpm@osdl.org>, Theodore Tso <tytso@mit.edu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Cedric Le Goater <clg@fr.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH][DOCUMENTATION] The namespaces compatibility list doc
-References: <473D6434.5020201@openvz.org>
-In-Reply-To: <473D6434.5020201@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Nov 2007 11:01:33 -0500
+Received: from madara.hpl.hp.com ([192.6.19.124]:54014 "EHLO madara.hpl.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752076AbXKPQBc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 11:01:32 -0500
+Date: Fri, 16 Nov 2007 08:00:56 -0800
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Philip Mucci <mucci@cs.utk.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, William Cohen <wcohen@redhat.com>,
+       Robert Richter <robert.richter@amd.com>, linux-kernel@vger.kernel.org,
+       Stephane Eranian <eranian@hpl.hp.com>
+Subject: Re: perfmon2 merge news
+Message-ID: <20071116160056.GF10616@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <4739C42F.8030208@redhat.com> <20071113175545.GD4319@frankl.hpl.hp.com> <53F4663B-CFBA-44E4-8283-BAAC8C8F1AFF@cs.utk.edu> <20071113185924.GA22748@suse.de> <20071113120728.4342e7d7.akpm@linux-foundation.org> <20071113203645.GA17145@one.firstfloor.org> <9FF72994-F55A-4B36-9EAA-CB1D2360A6F5@cs.utk.edu> <20071114015210.GA20365@one.firstfloor.org> <A42C2398-2EAB-460C-95C7-686A34A76F82@cs.utk.edu> <p737ikicjbn.fsf@bingen.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <p737ikicjbn.fsf@bingen.suse.de>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelyanov wrote:
->>From time to time people begin discussions about how the
-> namespaces are working/going-to-work together.
-> 
-> Ted T'so proposed to create some document that describes what
-> problems user may have when he/she creates some new namespace,
-> but keeps others shared. I liked this idea, so here's the 
-> initial version of such a document with the problems I currently 
-> have in mind and can describe somewhat audibly - the "namespaces 
-> compatibility list".
-> 
-> The Documentation/namespaces/ directory is about to contain more
-> docs about the namespaces stuff.
-> 
-> Thanks to Cedirc for notes and spell checks on the doc.
-> 
-> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-> 
-> ---
-> 
-> commit 83061c56e1c4dcd54d48a62b108d219a7f5279a0
-> Author: Pavel <pavel@xemulnb.sw.ru>
-> Date:   Fri Nov 16 12:25:53 2007 +0300
-> 
->     Namespaces compatibility list
-> 
-> diff --git a/Documentation/00-INDEX b/Documentation/00-INDEX
-> index 910e511..3ead06b 100644
-> --- a/Documentation/00-INDEX
-> +++ b/Documentation/00-INDEX
-> @@ -262,6 +262,8 @@ mtrr.txt
->  	- how to use PPro Memory Type Range Registers to increase performance.
->  mutex-design.txt
->  	- info on the generic mutex subsystem.
-> +namespaces/
-> +	- directory with various information about namespaces
->  nbd.txt
->  	- info on a TCP implementation of a network block device.
->  netlabel/
-> diff --git a/Documentation/namespaces/compatibility-list.txt b/Documentation/namespaces/compatibility-list.txt
-> new file mode 100644
-> index 0000000..9c9e5c1
-> --- /dev/null
-> +++ b/Documentation/namespaces/compatibility-list.txt
-> @@ -0,0 +1,33 @@
-> +	Namespaces compatibility list
-> +
-> +This document contains the information about the problems user
-> +may have when creating tasks living in different namespaces.
-> +
-> +Here's the summary. This matrix shows the known problems, that
-> +occur when tasks share some namespace (the columns) while living
-> +in different other namespaces (the rows):
-> +
-> +	UTS	IPC	VFS	PID	User	Net
-> +UTS	 X
-> +IPC		 X	 1               
-> +VFS			 X
-> +PID		 1	 1	 X               
-> +User			 2		 X
-> +Net						 
-> +
+Andi,
 
-	UTS	IPC	VFS	PID	User	Net
-UTS	 X
-IPC		 X	 1               3
-VFS			 X
-PID		 1	 1	 X
-User			 2		 X
-Net						
+On Fri, Nov 16, 2007 at 04:15:56PM +0100, Andi Kleen wrote:
+> My impression so far is that you're not quite sure what you want,
+> otherwise you would be more concrete.
+> 
+> > - A feature which was dropped earlier by Stefane (only to satiate
+> > LKML), we consider
+> > very important. Allowing one tomapping of the kernels view of the
+> > PMD's, allowing
+> > user-space access to full 64-bit counts, if the architecture
+> > supports a user-level read instruction.
+> 
+> You mean returning the register number for RDPMC or equivalent
+> and a way to enable it for ring 3 access? 
+> 
+No, he is talking about something similar to what was in perfctr.
+The kernel emulates 64-bit counters in software and that is you
+get back when you read the counters. If you read via RDPMC, you
+get 40 bits. To reconstruct the full 64-bit value from user land
+you need the upper bits. One approach is for the kernel to allow
+you to remap a page that has the 64-bit (software) counters. With
+that and a bit of mask/shifting you can reconstruct the full value.
 
-> +1. Both the IPC and the PID namespaces provide IDs to address
-> +   object inside the kernel. E.g. semaphore with ipcid or
-> +   process group with pid.
-> +
-> +   In both cases, tasks shouldn't try exposing this id to some
-> +   other task living in a different namespace via a shared filesystem
-> +   or IPC shmem/message. The fact is that this ID is only valid
-> +   within the namespace it was obtained in and may refer to some
-> +   other object in another namespace.
-> +
-> +2. Intentionnaly, two equal user ids in different user namespaces
-       Intentionaly
-> +   should not be equal from the VFS point of view. In other
-> +   words, user 10 in one user namespace shouldn't have the same
-> +   access permissions to files, beloging to user 10 in another
-                                    belonging
-> +   namespace. But currently this is not so.
-> +
+> I'm considering that an essential feature too. I wasn't aware
+> it was dropped.
+> 
+What I dropped is the cr4.pce enabled for self-monitoring sessions.
 
-3. IPC and User
+> Yes it is for everybody. I've been rather questioning if the slow
+> ways (complicated syscalls) to get the counter information are really 
+> needed.
+> 
+> > referring to the concept of eventsets. Having multiplexing is
+> > important.
+> 
+> Why is it important? 
+> 
+Read my follow-up message to Dean's message.
 
-Two processes running in different user namespaces but with the same 
-uids can access with the same permissions to the IPC created by one or 
-other process
+> > - Custom sample formats would be considered not often used in our
+> > community, largely
+> > because the tools run on all HPC/Linux architectures. PAPI uses the
+> > default sample
+> > format which has been sufficient for our needs. However, the lack of
+> > custom sample
+> > formats preclude the dev of the specialized tools that access the
+> > sampling
+> > hardware as found on the IA64, PPC64, the Barcelona and the SiCortex
+> > node chip.
+> > pfmon exports this functionality quite well, and it does get used.
+> 
+> What do you mean with custom sample formats exactly?  What information
+> do you want in there? And why?
+> 
+Perfmon2 allows you to have an in-kernel sampling buffer. The idea is
+not new, Oprofile has this as well. The problem here is that if the
+buffer is in the kernel the format of the samples is fixed and it
+should have to. Tools may want to record samples in different formats
+and as you said some may need extra information gathered in the kernel.
+Some may want to aggregate samples in the kernel (Oprofile used to
+do that), some may want to use a double-buffer approach to minimize
+blind spots, others may simply use the counter overflow mechanism to
+record something that is non-PMU related, e.g, kernel call stack.
+I have built such a module and it was quite interesting to collect
+the call stack when you hit a last cache level miss.
 
+The idea behind customizable sampling format is simple: extract the
+format from the perfmon core and put this into a kernel module. The
+core provides a simple registration mechanism and the two communicate
+via a set of callbacks.
 
+Perfmon2 comes with a basic default format which works on all
+platforms. But it is possible to develop others without having to
+patch the kernel nor recompile nor reboot. At its core, each format provides
+a handler routine which is called on counter overflow. The handler routine
+controls what is recorded, how it is recorded, how it is exported to
+userland, and wheher overflow notifications need to be sent.
 
+Using this mechanism, for instance, we were able to connect the
+Oprofile kernel code to perfmon2 on Itanium with a 100 lines of
+code. The exact same approach would also work on X86 Oprofile as well.
+
+> e.g. PEBS and so on pretty much fix the in memory sample format in hardware,
+> so they only way to get a custom format would be to use a separate buffer.
+> 
+
+This is also how we support PEBS because, as you said, the format of the
+samples is not under your control. if you want zero-copy PEBS support,
+you have to follow the PEBS format.
+
+I am sure other processors haev and will have hardware buffers as well.
+
+> I can think of one reason why the kernel should add more information
+> in a separate buffer (log the instruction bytes so that it can
+> be disassembled and a address histogram be generated using the PEBS
+> register values), but it is a relatively obscure one and definitely
+> not a essential feature. Unfortunately it is also hard to implement
+> completely race-free.
+> 
+Yes, you could do that without changing the core implementation of
+perfmon2.
+
+-- 
+-Stephane
