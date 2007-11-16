@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935249AbXKPXNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762236AbXKPXNn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935249AbXKPXNT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 18:13:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764588AbXKPXLP
+	id S1762236AbXKPXNn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 18:13:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765664AbXKPXLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 18:11:15 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:39542 "EHLO relay.sgi.com"
+	Fri, 16 Nov 2007 18:11:18 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:39546 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760115AbXKPXLD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1760574AbXKPXLD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 Nov 2007 18:11:03 -0500
-Message-Id: <20071116231102.487589938@sgi.com>
+Message-Id: <20071116231102.831425301@sgi.com>
 References: <20071116230920.278761667@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 16 Nov 2007 15:09:23 -0800
+Date: Fri, 16 Nov 2007 15:09:24 -0800
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
 Cc: linux-arch@vger.kernel.org
@@ -20,196 +20,429 @@ Cc: linux-kernel@vger.kernel.org
 Cc: David Miller <davem@davemloft.net>
 Cc: Eric Dumazet <dada1@cosmosbay.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
-Subject: [patch 03/30] cpu alloc: Remove SLUB fields
-Content-Disposition: inline; filename=cpu_alloc_remove_slub_fields
+Subject: [patch 04/30] cpu alloc: page allocator conversion
+Content-Disposition: inline; filename=cpu_alloc_page_allocator_conversion
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the fields in kmem_cache_cpu that were used to cache data from
-kmem_cache when they were in different cachelines. The cacheline that holds
-the per cpu array pointer now also holds these values. We can cut down the
-kmem_cache_cpu size to almost half.
+Use the new cpu_alloc functionality to avoid per cpu arrays in struct zone.
+This drastically reduces the size of struct zone for systems with a large
+amounts of processors and allows placement of critical variables of struct
+zone in one cacheline even on very large systems.
 
-The get_freepointer() and set_freepointer() functions that used to be only
-intended for the slow path now are also useful for the hot path since access
-to the field does not require an additional cacheline anymore. This results
-in consistent use of setting the freepointer for objects throughout SLUB.
+Another effect is that the pagesets of one processor are placed near one
+another. If multiple pagesets from different zones fit into one cacheline
+then additional cacheline fetches can be avoided on the hot paths when
+allocating memory from multiple zones.
+
+Surprisingly this clears up much of the painful NUMA bringup. Bootstrap
+becomes simpler if we use the same scheme for UP, SMP, NUMA. #ifdefs are
+reduced and we can drop the zone_pcp macro.
+
+Hotplug handling is also simplified since cpu alloc can bring up and
+shut down cpu areas for a specific cpu as a whole. So there is no need to
+allocate or free individual pagesets.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- include/linux/slub_def.h |    3 --
- mm/slub.c                |   50 +++++++++++++++--------------------------------
- 2 files changed, 17 insertions(+), 36 deletions(-)
+ include/linux/mm.h     |    4 -
+ include/linux/mmzone.h |   12 ---
+ mm/page_alloc.c        |  161 ++++++++++++++++++-------------------------------
+ mm/vmstat.c            |   14 ++--
+ 4 files changed, 72 insertions(+), 119 deletions(-)
 
-Index: linux-2.6/include/linux/slub_def.h
+Index: linux-2.6/include/linux/mm.h
 ===================================================================
---- linux-2.6.orig/include/linux/slub_def.h	2007-11-15 21:25:07.622904866 -0800
-+++ linux-2.6/include/linux/slub_def.h	2007-11-15 21:25:10.335154196 -0800
-@@ -15,9 +15,6 @@ struct kmem_cache_cpu {
- 	void **freelist;
- 	struct page *page;
- 	int node;
--	unsigned int offset;
--	unsigned int objsize;
--	unsigned int objects;
- };
+--- linux-2.6.orig/include/linux/mm.h	2007-11-15 21:24:47.238154208 -0800
++++ linux-2.6/include/linux/mm.h	2007-11-15 21:25:12.735154250 -0800
+@@ -931,11 +931,7 @@ extern void show_mem(void);
+ extern void si_meminfo(struct sysinfo * val);
+ extern void si_meminfo_node(struct sysinfo *val, int nid);
  
- struct kmem_cache_node {
-Index: linux-2.6/mm/slub.c
+-#ifdef CONFIG_NUMA
+ extern void setup_per_cpu_pageset(void);
+-#else
+-static inline void setup_per_cpu_pageset(void) {}
+-#endif
+ 
+ /* prio_tree.c */
+ void vma_prio_tree_add(struct vm_area_struct *, struct vm_area_struct *old);
+Index: linux-2.6/include/linux/mmzone.h
 ===================================================================
---- linux-2.6.orig/mm/slub.c	2007-11-15 21:25:07.622904866 -0800
-+++ linux-2.6/mm/slub.c	2007-11-15 21:25:10.339154532 -0800
-@@ -273,13 +273,6 @@ static inline int check_valid_pointer(st
- 	return 1;
- }
- 
--/*
-- * Slow version of get and set free pointer.
-- *
-- * This version requires touching the cache lines of kmem_cache which
-- * we avoid to do in the fast alloc free paths. There we obtain the offset
-- * from the page struct.
-- */
- static inline void *get_freepointer(struct kmem_cache *s, void *object)
- {
- 	return *(void **)(object + s->offset);
-@@ -1438,10 +1431,10 @@ static void deactivate_slab(struct kmem_
- 
- 		/* Retrieve object from cpu_freelist */
- 		object = c->freelist;
--		c->freelist = c->freelist[c->offset];
-+		c->freelist = get_freepointer(s, c->freelist);
- 
- 		/* And put onto the regular freelist */
--		object[c->offset] = page->freelist;
-+		set_freepointer(s, object, page->freelist);
- 		page->freelist = object;
- 		page->inuse--;
- 	}
-@@ -1573,8 +1566,8 @@ load_freelist:
- 		goto debug;
- 
- 	object = c->page->freelist;
--	c->freelist = object[c->offset];
--	c->page->inuse = c->objects;
-+	c->freelist = get_freepointer(s, object);
-+	c->page->inuse = s->objects;
- 	c->page->freelist = c->page->end;
- 	c->node = page_to_nid(c->page);
- unlock_out:
-@@ -1602,7 +1595,7 @@ debug:
- 		goto another_slab;
- 
- 	c->page->inuse++;
--	c->page->freelist = object[c->offset];
-+	c->page->freelist = get_freepointer(s, object);
- 	c->node = -1;
- 	goto unlock_out;
- }
-@@ -1636,8 +1629,8 @@ static void __always_inline *slab_alloc(
- 			}
- 			break;
- 		}
--	} while (cmpxchg_local(&c->freelist, object, object[c->offset])
--								!= object);
-+	} while (cmpxchg_local(&c->freelist, object,
-+			get_freepointer(s, object)) != object);
- 	preempt_enable();
- #else
- 	unsigned long flags;
-@@ -1653,13 +1646,13 @@ static void __always_inline *slab_alloc(
- 		}
- 	} else {
- 		object = c->freelist;
--		c->freelist = object[c->offset];
-+		c->freelist = get_freepointer(s, object);
- 	}
- 	local_irq_restore(flags);
+--- linux-2.6.orig/include/linux/mmzone.h	2007-11-15 21:24:49.970154448 -0800
++++ linux-2.6/include/linux/mmzone.h	2007-11-15 21:25:12.735154250 -0800
+@@ -121,13 +121,7 @@ struct per_cpu_pageset {
+ 	s8 stat_threshold;
+ 	s8 vm_stat_diff[NR_VM_ZONE_STAT_ITEMS];
  #endif
- 
- 	if (unlikely((gfpflags & __GFP_ZERO)))
--		memset(object, 0, c->objsize);
-+		memset(object, 0, s->objsize);
- out:
- 	return object;
- }
-@@ -1687,7 +1680,7 @@ EXPORT_SYMBOL(kmem_cache_alloc_node);
-  * handling required then we can return immediately.
-  */
- static void __slab_free(struct kmem_cache *s, struct page *page,
--				void *x, void *addr, unsigned int offset)
-+				void *x, void *addr)
- {
- 	void *prior;
- 	void **object = (void *)x;
-@@ -1703,7 +1696,8 @@ static void __slab_free(struct kmem_cach
- 	if (unlikely(state & SLABDEBUG))
- 		goto debug;
- checks_ok:
--	prior = object[offset] = page->freelist;
-+	prior = page->freelist;
-+	set_freepointer(s, object, prior);
- 	page->freelist = object;
- 	page->inuse--;
- 
-@@ -1786,10 +1780,10 @@ static void __always_inline slab_free(st
- 		 * since the freelist pointers are unique per slab.
- 		 */
- 		if (unlikely(page != c->page || c->node < 0)) {
--			__slab_free(s, page, x, addr, c->offset);
-+			__slab_free(s, page, x, addr);
- 			break;
- 		}
--		object[c->offset] = freelist;
-+		set_freepointer(s, object, freelist);
- 	} while (cmpxchg_local(&c->freelist, freelist, object) != freelist);
- 	preempt_enable();
- #else
-@@ -1799,10 +1793,10 @@ static void __always_inline slab_free(st
- 	debug_check_no_locks_freed(object, s->objsize);
- 	c = THIS_CPU(s->cpu_slab);
- 	if (likely(page == c->page && c->node >= 0)) {
--		object[c->offset] = c->freelist;
-+		set_freepointer(s, object, c->freelist);
- 		c->freelist = object;
- 	} else
--		__slab_free(s, page, x, addr, c->offset);
-+		__slab_free(s, page, x, addr);
- 
- 	local_irq_restore(flags);
- #endif
-@@ -1984,9 +1978,6 @@ static void init_kmem_cache_cpu(struct k
- 	c->page = NULL;
- 	c->freelist = (void *)PAGE_MAPPING_ANON;
- 	c->node = 0;
--	c->offset = s->offset / sizeof(void *);
--	c->objsize = s->objsize;
--	c->objects = s->objects;
- }
- 
- static void init_kmem_cache_node(struct kmem_cache_node *n)
-@@ -2978,21 +2969,14 @@ struct kmem_cache *kmem_cache_create(con
- 	down_write(&slub_lock);
- 	s = find_mergeable(size, align, flags, name, ctor);
- 	if (s) {
--		int cpu;
+-} ____cacheline_aligned_in_smp;
 -
- 		s->refcount++;
-+
- 		/*
- 		 * Adjust the object sizes so that we clear
- 		 * the complete object on kzalloc.
- 		 */
- 		s->objsize = max(s->objsize, (int)size);
+-#ifdef CONFIG_NUMA
+-#define zone_pcp(__z, __cpu) ((__z)->pageset[(__cpu)])
+-#else
+-#define zone_pcp(__z, __cpu) (&(__z)->pageset[(__cpu)])
+-#endif
++};
  
--		/*
--		 * And then we need to update the object size in the
--		 * per cpu structures
--		 */
--		for_each_online_cpu(cpu)
--			CPU_PTR(s->cpu_slab, cpu)->objsize = s->objsize;
- 		s->inuse = max_t(int, s->inuse, ALIGN(size, sizeof(void *)));
- 		up_write(&slub_lock);
- 		if (sysfs_slab_alias(s, name))
+ enum zone_type {
+ #ifdef CONFIG_ZONE_DMA
+@@ -231,10 +225,8 @@ struct zone {
+ 	 */
+ 	unsigned long		min_unmapped_pages;
+ 	unsigned long		min_slab_pages;
+-	struct per_cpu_pageset	*pageset[NR_CPUS];
+-#else
+-	struct per_cpu_pageset	pageset[NR_CPUS];
+ #endif
++	struct per_cpu_pageset	*pageset;
+ 	/*
+ 	 * free areas of different sizes
+ 	 */
+Index: linux-2.6/mm/page_alloc.c
+===================================================================
+--- linux-2.6.orig/mm/page_alloc.c	2007-11-15 21:24:50.330904214 -0800
++++ linux-2.6/mm/page_alloc.c	2007-11-15 21:25:12.739154691 -0800
+@@ -892,7 +892,7 @@ static void __drain_pages(unsigned int c
+ 		if (!populated_zone(zone))
+ 			continue;
+ 
+-		pset = zone_pcp(zone, cpu);
++		pset = CPU_PTR(zone->pageset, cpu);
+ 
+ 		pcp = &pset->pcp;
+ 		local_irq_save(flags);
+@@ -988,8 +988,8 @@ static void fastcall free_hot_cold_page(
+ 	arch_free_page(page, 0);
+ 	kernel_map_pages(page, 1, 0);
+ 
+-	pcp = &zone_pcp(zone, get_cpu())->pcp;
+ 	local_irq_save(flags);
++	pcp = &THIS_CPU(zone->pageset)->pcp;
+ 	__count_vm_event(PGFREE);
+ 	if (cold)
+ 		list_add_tail(&page->lru, &pcp->list);
+@@ -1002,7 +1002,6 @@ static void fastcall free_hot_cold_page(
+ 		pcp->count -= pcp->batch;
+ 	}
+ 	local_irq_restore(flags);
+-	put_cpu();
+ }
+ 
+ void fastcall free_hot_page(struct page *page)
+@@ -1044,16 +1043,14 @@ static struct page *buffered_rmqueue(str
+ 	unsigned long flags;
+ 	struct page *page;
+ 	int cold = !!(gfp_flags & __GFP_COLD);
+-	int cpu;
+ 	int migratetype = allocflags_to_migratetype(gfp_flags);
+ 
+ again:
+-	cpu  = get_cpu();
+ 	if (likely(order == 0)) {
+ 		struct per_cpu_pages *pcp;
+ 
+-		pcp = &zone_pcp(zone, cpu)->pcp;
+ 		local_irq_save(flags);
++		pcp = &THIS_CPU(zone->pageset)->pcp;
+ 		if (!pcp->count) {
+ 			pcp->count = rmqueue_bulk(zone, 0,
+ 					pcp->batch, &pcp->list, migratetype);
+@@ -1092,7 +1089,6 @@ again:
+ 	__count_zone_vm_events(PGALLOC, zone, 1 << order);
+ 	zone_statistics(zonelist, zone);
+ 	local_irq_restore(flags);
+-	put_cpu();
+ 
+ 	VM_BUG_ON(bad_range(zone, page));
+ 	if (prep_new_page(page, order, gfp_flags))
+@@ -1101,7 +1097,6 @@ again:
+ 
+ failed:
+ 	local_irq_restore(flags);
+-	put_cpu();
+ 	return NULL;
+ }
+ 
+@@ -1795,7 +1790,7 @@ void show_free_areas(void)
+ 		for_each_online_cpu(cpu) {
+ 			struct per_cpu_pageset *pageset;
+ 
+-			pageset = zone_pcp(zone, cpu);
++			pageset = CPU_PTR(zone->pageset, cpu);
+ 
+ 			printk("CPU %4d: hi:%5d, btch:%4d usd:%4d\n",
+ 			       cpu, pageset->pcp.high,
+@@ -2621,82 +2616,33 @@ static void setup_pagelist_highmark(stru
+ 		pcp->batch = PAGE_SHIFT * 8;
+ }
+ 
+-
+-#ifdef CONFIG_NUMA
+ /*
+- * Boot pageset table. One per cpu which is going to be used for all
+- * zones and all nodes. The parameters will be set in such a way
+- * that an item put on a list will immediately be handed over to
+- * the buddy list. This is safe since pageset manipulation is done
+- * with interrupts disabled.
+- *
+- * Some NUMA counter updates may also be caught by the boot pagesets.
+- *
+- * The boot_pagesets must be kept even after bootup is complete for
+- * unused processors and/or zones. They do play a role for bootstrapping
+- * hotplugged processors.
+- *
+- * zoneinfo_show() and maybe other functions do
+- * not check if the processor is online before following the pageset pointer.
+- * Other parts of the kernel may not check if the zone is available.
++ * Dynamically allocate memory for the per cpu pageset array in struct zone.
+  */
+-static struct per_cpu_pageset boot_pageset[NR_CPUS];
+-
+-/*
+- * Dynamically allocate memory for the
+- * per cpu pageset array in struct zone.
+- */
+-static int __cpuinit process_zones(int cpu)
++static void __cpuinit process_zones(int cpu)
+ {
+-	struct zone *zone, *dzone;
++	struct zone *zone;
+ 	int node = cpu_to_node(cpu);
+ 
+ 	node_set_state(node, N_CPU);	/* this node has a cpu */
+ 
+ 	for_each_zone(zone) {
++		struct per_cpu_pageset *pcp =
++				CPU_PTR(zone->pageset, cpu);
+ 
+ 		if (!populated_zone(zone))
+ 			continue;
+ 
+-		zone_pcp(zone, cpu) = kmalloc_node(sizeof(struct per_cpu_pageset),
+-					 GFP_KERNEL, node);
+-		if (!zone_pcp(zone, cpu))
+-			goto bad;
+-
+-		setup_pageset(zone_pcp(zone, cpu), zone_batchsize(zone));
++		setup_pageset(pcp, zone_batchsize(zone));
+ 
+ 		if (percpu_pagelist_fraction)
+-			setup_pagelist_highmark(zone_pcp(zone, cpu),
+-			 	(zone->present_pages / percpu_pagelist_fraction));
+-	}
+-
+-	return 0;
+-bad:
+-	for_each_zone(dzone) {
+-		if (!populated_zone(dzone))
+-			continue;
+-		if (dzone == zone)
+-			break;
+-		kfree(zone_pcp(dzone, cpu));
+-		zone_pcp(dzone, cpu) = NULL;
+-	}
+-	return -ENOMEM;
+-}
++			setup_pagelist_highmark(pcp, zone->present_pages /
++						percpu_pagelist_fraction);
+ 
+-static inline void free_zone_pagesets(int cpu)
+-{
+-	struct zone *zone;
+-
+-	for_each_zone(zone) {
+-		struct per_cpu_pageset *pset = zone_pcp(zone, cpu);
+-
+-		/* Free per_cpu_pageset if it is slab allocated */
+-		if (pset != &boot_pageset[cpu])
+-			kfree(pset);
+-		zone_pcp(zone, cpu) = NULL;
+ 	}
+ }
+ 
++#ifdef CONFIG_SMP
+ static int __cpuinit pageset_cpuup_callback(struct notifier_block *nfb,
+ 		unsigned long action,
+ 		void *hcpu)
+@@ -2707,14 +2653,7 @@ static int __cpuinit pageset_cpuup_callb
+ 	switch (action) {
+ 	case CPU_UP_PREPARE:
+ 	case CPU_UP_PREPARE_FROZEN:
+-		if (process_zones(cpu))
+-			ret = NOTIFY_BAD;
+-		break;
+-	case CPU_UP_CANCELED:
+-	case CPU_UP_CANCELED_FROZEN:
+-	case CPU_DEAD:
+-	case CPU_DEAD_FROZEN:
+-		free_zone_pagesets(cpu);
++		process_zones(cpu);
+ 		break;
+ 	default:
+ 		break;
+@@ -2724,21 +2663,34 @@ static int __cpuinit pageset_cpuup_callb
+ 
+ static struct notifier_block __cpuinitdata pageset_notifier =
+ 	{ &pageset_cpuup_callback, NULL, 0 };
++#endif
+ 
+ void __init setup_per_cpu_pageset(void)
+ {
+-	int err;
+-
+-	/* Initialize per_cpu_pageset for cpu 0.
++	/*
++	 * Initialize per_cpu settings for the boot cpu.
+ 	 * A cpuup callback will do this for every cpu
+-	 * as it comes online
++	 * as it comes online.
++	 *
++	 * This is also initializing the cpu areas for the
++	 * pagesets.
+ 	 */
+-	err = process_zones(smp_processor_id());
+-	BUG_ON(err);
+-	register_cpu_notifier(&pageset_notifier);
+-}
++	struct zone *zone;
+ 
++	for_each_zone(zone) {
++
++		if (!populated_zone(zone))
++			continue;
++
++		zone->pageset = CPU_ALLOC(struct per_cpu_pageset,
++					GFP_KERNEL|__GFP_ZERO);
++		BUG_ON(!zone->pageset);
++	}
++	process_zones(smp_processor_id());
++#ifdef CONFIG_SMP
++	register_cpu_notifier(&pageset_notifier);
+ #endif
++}
+ 
+ static noinline __init_refok
+ int zone_wait_table_init(struct zone *zone, unsigned long zone_size_pages)
+@@ -2785,21 +2737,30 @@ int zone_wait_table_init(struct zone *zo
+ 
+ static __meminit void zone_pcp_init(struct zone *zone)
+ {
+-	int cpu;
+-	unsigned long batch = zone_batchsize(zone);
++	static struct per_cpu_pageset boot_pageset;
+ 
+-	for (cpu = 0; cpu < NR_CPUS; cpu++) {
+-#ifdef CONFIG_NUMA
+-		/* Early boot. Slab allocator not functional yet */
+-		zone_pcp(zone, cpu) = &boot_pageset[cpu];
+-		setup_pageset(&boot_pageset[cpu],0);
+-#else
+-		setup_pageset(zone_pcp(zone,cpu), batch);
+-#endif
+-	}
++	/*
++	 * Fake a cpu_alloc pointer that can take the required
++	 * offset to get to the boot pageset. This is only
++	 * needed for the boot pageset while bootstrapping
++	 * the new zone. In the course of zone bootstrap
++	 * setup_cpu_pagesets() will do the proper CPU_ALLOC and
++	 * set things up the right way.
++	 *
++	 * Deferral allows CPU_ALLOC() to use the boot pageset
++	 * to allocate the initial memory to get going and then provide
++	 * the proper memory when called from setup_cpu_pagesets() to
++	 * install the proper pagesets.
++	 *
++	 * Deferral also allows slab allocators to perform their
++	 * initialization without resorting to bootmem.
++	 */
++	zone->pageset = &boot_pageset - CPU_OFFSET(smp_processor_id());
++	setup_pageset(&boot_pageset, 0);
+ 	if (zone->present_pages)
+-		printk(KERN_DEBUG "  %s zone: %lu pages, LIFO batch:%lu\n",
+-			zone->name, zone->present_pages, batch);
++		printk(KERN_DEBUG "  %s zone: %lu pages, LIFO batch:%u\n",
++			zone->name, zone->present_pages,
++			zone_batchsize(zone));
+ }
+ 
+ __meminit int init_currently_empty_zone(struct zone *zone,
+@@ -4214,11 +4175,13 @@ int percpu_pagelist_fraction_sysctl_hand
+ 	ret = proc_dointvec_minmax(table, write, file, buffer, length, ppos);
+ 	if (!write || (ret == -EINVAL))
+ 		return ret;
+-	for_each_zone(zone) {
+-		for_each_online_cpu(cpu) {
++	for_each_online_cpu(cpu) {
++		for_each_zone(zone) {
+ 			unsigned long  high;
++
+ 			high = zone->present_pages / percpu_pagelist_fraction;
+-			setup_pagelist_highmark(zone_pcp(zone, cpu), high);
++			setup_pagelist_highmark(CPU_PTR(zone->pageset, cpu),
++									high);
+ 		}
+ 	}
+ 	return 0;
+Index: linux-2.6/mm/vmstat.c
+===================================================================
+--- linux-2.6.orig/mm/vmstat.c	2007-11-15 21:24:50.730654207 -0800
++++ linux-2.6/mm/vmstat.c	2007-11-15 21:25:12.739154691 -0800
+@@ -147,7 +147,8 @@ static void refresh_zone_stat_thresholds
+ 		threshold = calculate_threshold(zone);
+ 
+ 		for_each_online_cpu(cpu)
+-			zone_pcp(zone, cpu)->stat_threshold = threshold;
++			CPU_PTR(zone->pageset, cpu)->stat_threshold
++							= threshold;
+ 	}
+ }
+ 
+@@ -157,7 +158,8 @@ static void refresh_zone_stat_thresholds
+ void __mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
+ 				int delta)
+ {
+-	struct per_cpu_pageset *pcp = zone_pcp(zone, smp_processor_id());
++	struct per_cpu_pageset *pcp = THIS_CPU(zone->pageset);
++
+ 	s8 *p = pcp->vm_stat_diff + item;
+ 	long x;
+ 
+@@ -210,7 +212,7 @@ EXPORT_SYMBOL(mod_zone_page_state);
+  */
+ void __inc_zone_state(struct zone *zone, enum zone_stat_item item)
+ {
+-	struct per_cpu_pageset *pcp = zone_pcp(zone, smp_processor_id());
++	struct per_cpu_pageset *pcp = THIS_CPU(zone->pageset);
+ 	s8 *p = pcp->vm_stat_diff + item;
+ 
+ 	(*p)++;
+@@ -231,7 +233,7 @@ EXPORT_SYMBOL(__inc_zone_page_state);
+ 
+ void __dec_zone_state(struct zone *zone, enum zone_stat_item item)
+ {
+-	struct per_cpu_pageset *pcp = zone_pcp(zone, smp_processor_id());
++	struct per_cpu_pageset *pcp = THIS_CPU(zone->pageset);
+ 	s8 *p = pcp->vm_stat_diff + item;
+ 
+ 	(*p)--;
+@@ -307,7 +309,7 @@ void refresh_cpu_vm_stats(int cpu)
+ 		if (!populated_zone(zone))
+ 			continue;
+ 
+-		p = zone_pcp(zone, cpu);
++		p = CPU_PTR(zone->pageset, cpu);
+ 
+ 		for (i = 0; i < NR_VM_ZONE_STAT_ITEMS; i++)
+ 			if (p->vm_stat_diff[i]) {
+@@ -680,7 +682,7 @@ static void zoneinfo_show_print(struct s
+ 	for_each_online_cpu(i) {
+ 		struct per_cpu_pageset *pageset;
+ 
+-		pageset = zone_pcp(zone, i);
++		pageset = CPU_PTR(zone->pageset, i);
+ 		seq_printf(m,
+ 			   "\n    cpu: %i"
+ 			   "\n              count: %i"
 
 -- 
