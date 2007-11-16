@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933872AbXKPVip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935025AbXKPVjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933872AbXKPVip (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 16:38:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762926AbXKPVia
+	id S935025AbXKPVjO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 16:39:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933302AbXKPVin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 16:38:30 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:38561 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932375AbXKPVi3 convert rfc822-to-8bit (ORCPT
+	Fri, 16 Nov 2007 16:38:43 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:37910 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S935056AbXKPVim (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 16:38:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=inoeusxa8UmE5PHpTBU1XjgVTQfFZ6tBr728y09XxKKhneWoUpJ30aVr++dct0tVwGlA4Jv3+Hl23OGiYmqkGWrDtsgeaRdLXkZfn4txKJgOtcLUK/1LV6LRh5FSAxiNS1HZK02q/cYDpsEdlkGm6wFPzcot4qFoCI1bPC6qwdU=
-Date: Fri, 16 Nov 2007 22:38:15 +0100
-From: Diego Calleja <diegocg@gmail.com>
-To: Martin Olsson <mnemo@minimum.se>
-Cc: linux-kernel@vger.kernel.org,
-       Ubuntu Devel Discuss <ubuntu-devel-discuss@lists.ubuntu.com>
-Subject: Re: Is it possible to give the user the option to cancel forkbombs?
-Message-Id: <20071116223815.f5042072.diegocg@gmail.com>
-In-Reply-To: <473E815F.30900@minimum.se>
-References: <473E815F.30900@minimum.se>
-X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 16 Nov 2007 16:38:42 -0500
+Date: Fri, 16 Nov 2007 13:38:40 -0800
+From: Micah Dowty <micah@vmware.com>
+To: David Newall <david@davidnewall.com>
+Cc: Kyle Moffett <mrmacman_g4@mac.com>, Cyrus Massoumi <cyrusm@gmx.net>,
+       LKML Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@osdl.org>, Mike Galbraith <efault@gmx.de>,
+       Paul Menage <menage@google.com>, Christoph Lameter <clameter@sgi.com>
+Subject: Re: High priority tasks break SMP balancer?
+Message-ID: <20071116213840.GA31527@vmware.com>
+References: <20071109223417.GB16250@vmware.com> <4734F397.7080802@gmx.net> <20071110001103.GD16250@vmware.com> <2FAA6826-653E-482F-A037-C539BAEEA1DA@mac.com> <20071115191408.GA4914@vmware.com> <473DEBDD.2010706@davidnewall.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <473DEBDD.2010706@davidnewall.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Fri, 16 Nov 2007 21:51:27 -0800, Martin Olsson <mnemo@minimum.se> escribió:
+On Sat, Nov 17, 2007 at 05:43:33AM +1030, David Newall wrote:
+> There are a couple of points I would make about your python test harness.  
+> Your program compares real+system jiffies for both cpus; an ideal result 
+> would be 1.00.  The measurement is taken over a relatively short period of 
+> approximately a half-second, and you kill the CPU hogs before taking final 
+> measurements, even wait for them to die first.  You repeat this 
+> measurement, starting and killing CPU hogs each time.  Why do you do that?
 
-> Dear kernel hackers,
-> 
-> This is a message from below 0x7FFFFFFF. Please look at this bug (it's 
-> not a new concept but still):
-> https://bugs.launchpad.net/ubuntu/+bug/163185
+The Python test harness is fairly artificial, but this is just the
+best way I found to reliably reproduce the problem in a short amount
+of time. It was just for convenience while running git-bisect. When
+running the C program directly, there seems to be a somewhat random
+chance that it will start up in the "bad" state. Once the single CPU
+is stuck in this mostly-idle mode, it seems to stay that way for a
+while.
 
-Can't see that page:
-----------------------
-Not allowed here
+> What happens if you start the hogs and take the baseline outside of the 
+> loop?
 
-Sorry, you don't have permission to access this page. 
-----------------
+The problem still occurs then, but killing/restarting the test app
+seems to trigger the problem more reliably. As I said in the original
+email about this, left to its own devices this problem will occur
+seemingly-randomly. In the original VMware code I observed this
+problem in, the same process would flip between the "good" and "bad"
+states seemingly randomly, every few seconds.
 
+Thanks,
+--Micah
 
-> CTRL-ALT-DEL to work. Maybe it's possible to set some kind of 
-> MAX_PROCESS_COUNT for each user (I don't know) but it looks like this is 
-> not done by default in many distros today?
-
-Per-user process limits have been there for a long time, most of distros don't
-use them and don't offer GUIs to configure them.
