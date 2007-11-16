@@ -1,86 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934553AbXKPObX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933523AbXKPOdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934553AbXKPObX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 09:31:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934670AbXKPOaZ
+	id S933523AbXKPOdm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 09:33:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758217AbXKPOdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 09:30:25 -0500
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:45059 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934441AbXKPOaX (ORCPT
+	Fri, 16 Nov 2007 09:33:24 -0500
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:54991 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751998AbXKPOdW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 09:30:23 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq4HAPo3PUdMROHU/2dsb2JhbACBX457
-Date: Fri, 16 Nov 2007 09:30:19 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, mbligh@google.com
-Subject: Re: [RFC 5/7] LTTng instrumentation mm
-Message-ID: <20071116143019.GA16082@Krystal>
-References: <20071113193349.214098508@polymtl.ca> <20071113194025.150641834@polymtl.ca> <1195160783.7078.203.camel@localhost> <20071115215142.GA7825@Krystal> <1195164977.27759.10.camel@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1195164977.27759.10.camel@localhost>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:20:04 up 12 days, 19:25,  4 users,  load average: 1.54, 1.16,
-	1.18
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Fri, 16 Nov 2007 09:33:22 -0500
+Message-Id: <20071116142942.978412023@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Fri, 16 Nov 2007 15:29:42 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Subject: [patch 0/6] Pending patches in the s390 2.6.25 merge queue.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Dave Hansen (haveblue@us.ibm.com) wrote:
-> On Thu, 2007-11-15 at 16:51 -0500, Mathieu Desnoyers wrote:
-> > * Dave Hansen (haveblue@us.ibm.com) wrote:
-> > > > On Tue, 2007-11-13 at 14:33 -0500, Mathieu Desnoyers wrote:
-> > > >  linux-2.6-lttng/mm/page_io.c        2007-11-13 09:49:35.000000000 -0500
-> > > > @@ -114,6 +114,7 @@ int swap_writepage(struct page *page, st
-> > > >                 rw |= (1 << BIO_RW_SYNC);
-> > > >         count_vm_event(PSWPOUT);
-> > > >         set_page_writeback(page);
-> > > > +       trace_mark(mm_swap_out, "address %p", page_address(page));
-> > > >         unlock_page(page);
-> > > >         submit_bio(rw, bio);
-> > > >  out:
-> > > 
-> > > I'm not sure all this page_address() stuff makes any sense on highmem
-> > > systems.  How about page_to_pfn()?
-> >
-> > Knowing which page frame number has been swapped out is not always as
-> > relevant as knowing the page's virtual address (when it has one). Saving
-> > both the PFN and the page's virtual address could give us useful
-> > information when the page is not mapped.
-> 
-> For most (all?) architectures, the PFN and the virtual address in the
-> kernel's linear are interchangeable with pretty trivial arithmetic.  All
-> pages have a pfn, but not all have a virtual address.  Thus, I suggested
-> using the pfn.  What kind of virtual addresses are you talking about?
-> 
+The current set of patches queue for the next merge window with more
+to come. The shortlog:
 
-Hum, the mappings I was referring to are the virual memory mappings of
-all processes, which is not at all what interests us here.
+Heiko Carstens (3):
+      [S390] sclp: call sclp_init() from start_kernel().
+      [S390] Standby cpu activation/deactivation.
+      [S390] sclp: convert channel path configure code to use sync interface.
 
-Let's use the PFN then.
+Michael Ernst (1):
+      [S390] sclp: sysfs interface for SCLP cpi
 
-I see that the standard macro to get the kernel address from a pfn is :
+Michael Holzheu (1):
+      [S390] kernel: Shutdown Actions Interface
 
-asm-x86/page_32.h:#define pfn_to_kaddr(pfn)      __va((pfn) << PAGE_SHIFT)
-
-The question might seem trivial, but I wonder how this deals with large
-pages ?
-
-Mathieu
-
-
-> -- Dave
-> 
+Peter Oberparleiter (1):
+      [S390] cio: Extend adapter interrupt interface.
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
