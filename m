@@ -1,84 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934416AbXKPUGJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934831AbXKPUGh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934416AbXKPUGJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 15:06:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932682AbXKPUC3
+	id S934831AbXKPUGh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 15:06:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934552AbXKPUFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 15:02:29 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:38932 "EHLO smtp.polymtl.ca"
+	Fri, 16 Nov 2007 15:05:17 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:46485 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932592AbXKPUC0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 15:02:26 -0500
-Message-Id: <20071116200140.866586731@polymtl.ca>
-References: <20071116195747.448703304@polymtl.ca>
+	id S933917AbXKPUFP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 15:05:15 -0500
+Message-Id: <20071116200238.740495156@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Fri, 16 Nov 2007 14:57:58 -0500
+Date: Fri, 16 Nov 2007 15:02:38 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andi Kleen <andi@firstfloor.org>, pageexec@freemail.hu,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [rfc-patch 11/11] Text Edit Lock - x86_64 standardize debug rodata
-Content-Disposition: inline; filename=text-edit-lock-x86_64-standardize-debug-rodata.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri, 16 Nov 2007 20:01:45 +0000
+Subject: [rfc-patch 0/9] Immediate Values for 2.6.24-rc2-git5
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri, 16 Nov 2007 20:05:13 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Standardize DEBUG_RODATA, removing special cases for hotplug and kprobes.
+Here are the updated immediate values following comments. The main changes :
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Andi Kleen <andi@firstfloor.org>
-CC: pageexec@freemail.hu
-CC: Thomas Gleixner <tglx@linutronix.de>
-CC: Ingo Molnar <mingo@redhat.com>
-CC: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86_64/mm/init.c |   23 +++++------------------
- 1 file changed, 5 insertions(+), 18 deletions(-)
+- Declares a packed __immediate section to use less space. Declare the "size" as
+  a char instead of an int.
+- Simplified x86 immediate values update, spinning with IRQs disabled instead of
+  using an lockless update algorithm. Is is simpler, but won't support NMI or
+  MCE code updates.
 
-Index: linux-2.6-lttng/arch/x86/mm/init_64.c
-===================================================================
---- linux-2.6-lttng.orig/arch/x86/mm/init_64.c	2007-09-24 11:00:01.000000000 -0400
-+++ linux-2.6-lttng/arch/x86/mm/init_64.c	2007-09-24 11:00:02.000000000 -0400
-@@ -592,25 +592,11 @@ void free_initmem(void)
- 
- void mark_rodata_ro(void)
- {
--	unsigned long start = (unsigned long)_stext, end;
-+	unsigned long start = PFN_ALIGN(_stext);
-+	unsigned long end = PFN_ALIGN(__end_rodata);
- 
--#ifdef CONFIG_HOTPLUG_CPU
--	/* It must still be possible to apply SMP alternatives. */
--	if (num_possible_cpus() > 1)
--		start = (unsigned long)_etext;
--#endif
--
--#ifdef CONFIG_KPROBES
--	start = (unsigned long)__start_rodata;
--#endif
--	
--	end = (unsigned long)__end_rodata;
--	start = (start + PAGE_SIZE - 1) & PAGE_MASK;
--	end &= PAGE_MASK;
--	if (end <= start)
--		return;
--
--	change_page_attr_addr(start, (end - start) >> PAGE_SHIFT, PAGE_KERNEL_RO);
-+	change_page_attr_addr(start, (end - start) >> PAGE_SHIFT,
-+				PAGE_KERNEL_RO);
- 
- 	printk(KERN_INFO "Write protecting the kernel read-only data: %luk\n",
- 	       (end - start) >> 10);
-@@ -623,6 +609,7 @@ void mark_rodata_ro(void)
- 	 */
- 	global_flush_tlb();
- }
-+
- #endif
- 
- #ifdef CONFIG_BLK_DEV_INITRD
+This is submitted for another round of comments.
+
+Mathieu
 
 -- 
 Mathieu Desnoyers
