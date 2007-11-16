@@ -1,110 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933859AbXKPXHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934773AbXKPXHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933859AbXKPXHY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 18:07:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760803AbXKPXHK
+	id S934773AbXKPXHo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 18:07:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761670AbXKPXHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 18:07:10 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:61800 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758710AbXKPXHH convert rfc822-to-8bit (ORCPT
+	Fri, 16 Nov 2007 18:07:13 -0500
+Received: from hu-out-0506.google.com ([72.14.214.226]:35159 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760574AbXKPXHJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 18:07:07 -0500
+	Fri, 16 Nov 2007 18:07:09 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=HXarIZc7uidjnJrdqTeDFUfxhZcWa1/1Y5urJMdmVO2P3UkakYnSsq1BY0OlmScANAR/gwjjFhxCOqzL1Y4c2LjEzhYQ7lHEJHChCpEqLQ8X1yotP++APYTSlzFfDgtRasmUlhec+im9yfa/2sB1sSkEgqcAsWH3kgBC3ANpMOY=
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=FUrV6J810BMZVwDuvOuEQwNL4+2vrtdM8VQbKqS0rRAcohhBBJaR2bqz61AZgFJuuCcHSDk5EvOdHXg9kqb+orE2WfOO8gka8/kuY0PLXB4bks8+qjuSjw+RcNOvTvyKIy+tpSLCcJZSnlE2kVOFB+3x4WEtpu2BSY8jdgowZTA=
 From: Miguel =?utf-8?q?Bot=C3=B3n?= <mboton.lkml@gmail.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] iwlwifi: add power management support -v2
-Date: Sat, 17 Nov 2007 00:06:49 +0100
+Subject: [PATCH 1/2] mac80211: add power management support -v2
+Date: Sat, 17 Nov 2007 00:07:01 +0100
 User-Agent: KMail/1.9.7
 Cc: linux-wireless@vger.kernel.org, linville@tuxdriver.com, yi.zhu@intel.com
 MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200711170007.01676.mboton.lkml@gmail.com>
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200711170006.49654.mboton.lkml@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds power management support in iwl3945 and iwl4965 drivers.
+This patch adds power management support in mac80211.
+
+This allows us to enable power management through the "iwconfig <device> power 
+<off/on>" command.
+The code is based on "mac80211-10.0.0" but it is a little bit modified.
 
 Signed-off-by: Miguel Botón <mboton@gmail.com>
 
-diff --git a/drivers/net/wireless/iwlwifi/iwl3945-base.c b/drivers/net/wireless/iwlwifi/iwl3945-base.c
-index 9baf8de..5c7b422 100644
---- a/drivers/net/wireless/iwlwifi/iwl3945-base.c
-+++ b/drivers/net/wireless/iwlwifi/iwl3945-base.c
-@@ -6951,6 +7187,7 @@ static int iwl3945_mac_config(struct ieee80211_hw *hw, struct ieee80211_conf *co
- 	struct iwl3945_priv *priv = hw->priv;
- 	const struct iwl3945_channel_info *ch_info;
- 	unsigned long flags;
-+	int power_mode;
- 
- 	mutex_lock(&priv->mutex);
- 	IWL_DEBUG_MAC80211("enter to channel %d\n", conf->channel);
-@@ -7001,6 +7238,23 @@ static int iwl3945_mac_config(struct ieee80211_hw *hw, struct ieee80211_conf *co
- 	}
- #endif
- 
-+	if (conf->power_management_enable)
-+		power_mode = IWL_POWER_BATTERY | IWL_POWER_ENABLED;
-+	else
-+		power_mode = IWL_POWER_AC;
+diff --git a/include/net/mac80211.h b/include/net/mac80211.h
+index 5fcc4c1..c82b6fa 100644
+--- a/include/net/mac80211.h
++++ b/include/net/mac80211.h
+@@ -452,6 +452,8 @@ struct ieee80211_conf {
+ 	u8 antenna_max;
+ 	u8 antenna_sel_tx;
+ 	u8 antenna_sel_rx;
 +
-+	if (priv->power_mode != power_mode) {
-+		int rc;
++	u8 power_management_enable;     /* flag to enable/disable power management 
+*/
+ };
+ 
+ /**
+diff --git a/net/mac80211/ieee80211_ioctl.c b/net/mac80211/ieee80211_ioctl.c
+index 6caa3ec..f5eebec 100644
+--- a/net/mac80211/ieee80211_ioctl.c
++++ b/net/mac80211/ieee80211_ioctl.c
+@@ -674,6 +687,46 @@ static int ieee80211_ioctl_giwtxpower(struct net_device 
+*dev,
+ 	return 0;
+ }
+ 
++static int ieee80211_ioctl_siwpower(struct net_device *dev,
++				    struct iw_request_info *info,
++				    union iwreq_data *wrqu,
++				    char *extra)
++{
++	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
++	struct ieee80211_conf *conf = &local->hw.conf;
 +
-+		rc = iwl3945_send_power_mode(priv, power_mode);
-+		if (rc) {
-+			IWL_DEBUG_MAC80211("failed setting power mode.\n");
-+			mutex_unlock(&priv->mutex);
-+			return -EINVAL;
-+		}
-+		priv->power_mode = power_mode;
++	if (wrqu->power.disabled) {
++		conf->power_management_enable = 0;
++		return ieee80211_hw_config(local);
 +	}
 +
- 	iwl3945_radio_kill_sw(priv, !conf->radio_enabled);
- 
- 	if (!conf->radio_enabled) {
-diff --git a/drivers/net/wireless/iwlwifi/iwl4965-base.c b/drivers/net/wireless/iwlwifi/iwl4965-base.c
-index df011ea..8d303c5 100644
---- a/drivers/net/wireless/iwlwifi/iwl4965-base.c
-+++ b/drivers/net/wireless/iwlwifi/iwl4965-base.c
-@@ -7352,6 +7352,7 @@ static int iwl4965_mac_config(struct ieee80211_hw *hw, struct ieee80211_conf *co
- 	struct iwl4965_priv *priv = hw->priv;
- 	const struct iwl4965_channel_info *ch_info;
- 	unsigned long flags;
-+	int power_mode;
- 
- 	mutex_lock(&priv->mutex);
- 	IWL_DEBUG_MAC80211("enter to channel %d\n", conf->channel);
-@@ -7414,6 +7415,23 @@ static int iwl4965_mac_config(struct ieee80211_hw *hw, struct ieee80211_conf *co
- 	}
- #endif
- 
-+	if (conf->power_management_enable)
-+		power_mode = IWL_POWER_BATTERY | IWL_POWER_ENABLED;
-+	else
-+		power_mode = IWL_POWER_AC;
-+
-+	if (priv->power_mode != power_mode) {
-+		int rc;
-+
-+		rc = iwl4965_send_power_mode(priv, power_mode);
-+		if (rc) {
-+			IWL_DEBUG_MAC80211("failed setting power mode.\n");
-+			mutex_unlock(&priv->mutex);
-+			return -EINVAL;
-+		}
-+		priv->power_mode = power_mode;
++	switch (wrqu->power.flags & IW_POWER_MODE) {
++	case IW_POWER_ON:       /* If not specified */
++	case IW_POWER_MODE:     /* If set all mask */
++	case IW_POWER_ALL_R:    /* If explicitely state all */
++		break;
++	default:                /* Otherwise we don't support it */
++		return -EINVAL;
 +	}
 +
- 	iwl4965_radio_kill_sw(priv, !conf->radio_enabled);
- 
- 	if (!conf->radio_enabled) {
++	conf->power_management_enable = 1;
++
++	return ieee80211_hw_config(local);
++}
++
++static int ieee80211_ioctl_giwpower(struct net_device *dev,
++				    struct iw_request_info *info,
++				    union iwreq_data *wrqu,
++				    char *extra)
++{
++	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
++	struct ieee80211_conf *conf = &local->hw.conf;
++
++	wrqu->power.disabled = !conf->power_management_enable;
++
++	return 0;
++}
++
+ static int ieee80211_ioctl_siwrts(struct net_device *dev,
+ 				  struct iw_request_info *info,
+ 				  struct iw_param *rts, char *extra)
+@@ -1111,8 +1166,8 @@ static const iw_handler ieee80211_handler[] =
+ 	(iw_handler) ieee80211_ioctl_giwretry,		/* SIOCGIWRETRY */
+ 	(iw_handler) ieee80211_ioctl_siwencode,		/* SIOCSIWENCODE */
+ 	(iw_handler) ieee80211_ioctl_giwencode,		/* SIOCGIWENCODE */
+-	(iw_handler) NULL,				/* SIOCSIWPOWER */
+-	(iw_handler) NULL,				/* SIOCGIWPOWER */
++	(iw_handler) ieee80211_ioctl_siwpower,		/* SIOCSIWPOWER */
++	(iw_handler) ieee80211_ioctl_giwpower,		/* SIOCGIWPOWER */
+ 	(iw_handler) NULL,				/* -- hole -- */
+ 	(iw_handler) NULL,				/* -- hole -- */
+ 	(iw_handler) ieee80211_ioctl_siwgenie,		/* SIOCSIWGENIE */
 
 
 -- 
