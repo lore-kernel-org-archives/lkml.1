@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934204AbXKPAEB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934270AbXKPAGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934204AbXKPAEB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 19:04:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764136AbXKPADw
+	id S934270AbXKPAGV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 19:06:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757584AbXKPAGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 19:03:52 -0500
-Received: from main.gmane.org ([80.91.229.2]:46324 "EHLO ciao.gmane.org"
+	Thu, 15 Nov 2007 19:06:06 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:33981 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755129AbXKPADv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 19:03:51 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Wes Felter <wesley@felter.org>
-Subject: Re: Treat disk space like memory space
-Date: Thu, 15 Nov 2007 18:03:16 -0600
-Message-ID: <fhimnu$5bm$1@ger.gmane.org>
-References: <jwvr6irqhn2.fsf-monnier+gmane.linux.kernel@gnu.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: bi01p1.co.us.ibm.com
-User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
-In-Reply-To: <jwvr6irqhn2.fsf-monnier+gmane.linux.kernel@gnu.org>
+	id S1754408AbXKPAGE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 19:06:04 -0500
+Date: Thu, 15 Nov 2007 19:05:39 -0500
+To: Neil Brown <neilb@suse.de>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, protasnb@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz, bugme-daemon@bugzilla.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+Message-ID: <20071116000539.GA3032@fieldses.org>
+References: <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <20071113085514.3414aa52.rdunlap@xenotime.net> <20071114140847.GA11489@elte.hu> <20071114093820.ff3ad8f9.rdunlap@xenotime.net> <20071114182351.GI14254@fieldses.org> <18235.46083.293604.560507@notabene.brown>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18235.46083.293604.560507@notabene.brown>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Monnier wrote:
+On Thu, Nov 15, 2007 at 01:50:43PM +1100, Neil Brown wrote:
+> Virtual Folders.
+> 
+> I use VM mode in EMACS, but I believe some other mail readers have the
+> same functionality.
+> I have a virtual folder called "nfs" which shows me all mail in my
+> inbox which has the string 'nfs' or 'lockd' in a To, Cc, or Subject
+> field.  When I visit that folder, I see all mail about nfs, whether it
+> was sent to me personally, or to a relevant list, or to lkml.
 
-> So I'd like to be able to say "these areas of my file-system hold data
-> that you can discard whenever you need space".  So I can freely fill up
-> my disk with such irrelevant data, safe in the knowledge that if I ever
-> need this disk space it'll be automatically reclaimed.
+Hm (googling around for "mutt" and "virtual folders"): looks like I can
+get most of the way there in mutt with some macros based on its "limit"
+command:
 
-James Cipar, Mark D. Corner, Emery D. Berger: TFS: A Transparent File 
-System for Contributory Storage.
+	http://www.tummy.com/journals/entries/jafo_20060303_044440
 
-"TFS provides background tasks with large amounts of unreliable 
-storage-all of the currently available space-without impacting the 
-performance of ordinary file access operations."
-
-http://www.usenix.org/event/fast07/tech/cipar.html
-http://prisms.cs.umass.edu/tcsm/
-
-It's intended for P2P but I could imagine using it for caches.
-
+Thanks.--b.
