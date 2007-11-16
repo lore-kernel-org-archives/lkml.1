@@ -1,123 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761581AbXKPKtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760414AbXKPKv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761581AbXKPKtA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 05:49:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751829AbXKPKsx
+	id S1760414AbXKPKv1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 05:51:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752632AbXKPKvT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 05:48:53 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:10350 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751581AbXKPKsv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 05:48:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KhNI2JGP2v1JCMw/sdYZZCpljcNa0U4pSMrLra27nCpVPWiPbUeG7vE7jmF0HIcsceHSr1rKwuNu9v/mX4YRZnt4NT6t2OmedLxMMKSTjil/eFRhRR9fXIJdxULGM8CM22L/VvJyjGfpRs4zf/M5VO5gXd6V99KNafGjdl2t10o=
-Message-ID: <b647ffbd0711160248v444d8f64ic72a17fcb56adc6d@mail.gmail.com>
-Date: Fri, 16 Nov 2007 11:48:50 +0100
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Micah Dowty" <micah@vmware.com>
-Subject: Re: High priority tasks break SMP balancer?
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Christoph Lameter" <clameter@sgi.com>,
-       "Kyle Moffett" <mrmacman_g4@mac.com>, "Cyrus Massoumi" <cyrusm@gmx.net>,
-       "LKML Kernel" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@osdl.org>, "Mike Galbraith" <efault@gmx.de>,
-       "Paul Menage" <menage@google.com>,
-       "Peter Williams" <pwil3058@bigpond.net.au>
-In-Reply-To: <20071116060700.GD16273@elte.hu>
+	Fri, 16 Nov 2007 05:51:19 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59230 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752406AbXKPKvS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 05:51:18 -0500
+Date: Fri, 16 Nov 2007 11:50:56 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Avi Kivity <avi@qumranet.com>, Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       akpm@linux-foundation.org
+Subject: Re: [patch] x86: make delay_tsc() preemptible again
+Message-ID: <20071116105056.GC5453@elte.hu>
+References: <200711150400.lAF40lIr020160@hera.kernel.org> <20071115194116.12c7a0f6@laptopd505.fenrus.org> <473D5016.4000105@qumranet.com> <20071116083627.GA18225@elte.hu> <20071116084741.GA20011@elte.hu> <1195205942.3059.1.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <4734F397.7080802@gmx.net>
-	 <2FAA6826-653E-482F-A037-C539BAEEA1DA@mac.com>
-	 <20071115191408.GA4914@vmware.com>
-	 <Pine.LNX.4.64.0711151206370.28639@schroedinger.engr.sgi.com>
-	 <20071115202425.GC4914@vmware.com>
-	 <Pine.LNX.4.64.0711151328090.29711@schroedinger.engr.sgi.com>
-	 <20071115213510.GA16079@vmware.com>
-	 <Pine.LNX.4.64.0711151830260.31691@schroedinger.engr.sgi.com>
-	 <20071116024408.GA20322@vmware.com> <20071116060700.GD16273@elte.hu>
+In-Reply-To: <1195205942.3059.1.camel@twins>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16/11/2007, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Micah Dowty <micah@vmware.com> wrote:
->
-> > > I am a bit at a loss as to how this could relate to the patch. This
-> > > looks like a load balance logic issue that causes the load
-> > > calculation to go wrong?
-> >
-> > My best guess is that this has something to do with the timing with
-> > which we sample the CPU's instantaneous load when calculating the load
-> > averages.. but I still understand only the basics of the scheduler and
-> > SMP balancer. All I really know for sure at this point regarding your
-> > patch is that git-bisect found it for me.
->
-> hm, your code uses timeouts for this, right? The CPU load average that
-> is used for SMP load balancing is sampled from the scheduler tick - and
-> has been sampled from the scheduler tick for eons. v2.6.23 defaulted to
-> a different method but v2.6.24 samples it from the tick again.
 
-yeah... but one of the kernels in question is actually 2.6.23.1, which
-does use the 'precise' accounting.
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-Micah,
+> > +		prev_cpu = smp_processor_id();
+> >  		rep_nop();
+> > +		preempt_enable();
+> 
+> Why not have the rep_nop() here between the enable, and disable ?
 
-could you try to change either :
+yes, indeed - fixed.
 
-cat /proc/sys/kernel/sched_stat_granularity
+> > +		/*
+> > +		 * If we preempted we skip this small amount of time:
+>                            ^ migrated, perhaps?
 
-put it to the value equal to a tick on your system
+yeah, fixed.
 
-or just remove bit #3 (which is responsible for 8 == 1000) here:
+updated patch below.
 
-cat /proc/sys/kernel/sched_features
+	Ingo
 
-(this one is enabled by default in 2.6.23.1)
+---------------->
+Subject: x86: make delay_tsc() preemptible again
+From: Ingo Molnar <mingo@elte.hu>
 
-anyway, when it comes to calculating rq->cpu_load[], a nice(0) cpu-hog
-task (on cpu_0) may generate a similar load (contribute to
-rq->cpu_load[]) as e.g. some negatively reniced task (on cpu_1) which
-runs only periodically (say, once in a tick for N ms., etc.) [*]
+make delay_tsc() preemptible again.
 
-The thing is that the higher a prio of the task, the bigger 'weight'
-it has (prio_to_wait[] table in sched.c) ... and roughly, the load it
-generates is not only 'proportional' to 'run-time per fixed interval
-of time' but also to its 'weight'. That's why the [*] above.
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ arch/x86/lib/delay_32.c |   27 ++++++++++++++++++++++-----
+ arch/x86/lib/delay_64.c |   29 +++++++++++++++++++++++------
+ 2 files changed, 45 insertions(+), 11 deletions(-)
 
-so you may have a situation :
-
-cpu_0 : e.g. a nice(-20) task running periodically every tick and
-generating, say ~10% cpu load ;
-
-cpu_1 : 2-3 nice(0) cpu-hog tasks ;
-
-both cpus may be seen with similar rq->load_cpu[]... yeah, one would
-argue that one of the cpu hogs could be migrated to cpu_0 and consume
-remaining 'time slots' and it would not "disturb" the nice(-20) task
-as :
-it's able to preempt the lower prio task whenever it want (provided,
-fine-grained kernel preemption) and we don't care that much of
-trashing of caches here.
-
-btw., without the precise load balancing, there can be situations when
-the nice(-20) (or say, a RT periodic task) can be even not seen (i.e.
-don't contribute to cpu_load[]) on cpu_0...
-we do sampling every tick (sched.c :: update_cpu_load()) and consider
-this_rq->ls.load.weight at this particular moment (that is the sum of
-'weights' for all runnable tasks on this rq)... and it may well be
-that the aforementioned high-priority task is just never (or likely,
-rarely) runnable at this particular moment (it runs for short interval
-of time in between ticks).
-
-
->
->         Ingo
->
-
--- 
-Best regards,
-Dmitry Adamushko
+Index: linux/arch/x86/lib/delay_32.c
+===================================================================
+--- linux.orig/arch/x86/lib/delay_32.c
++++ linux/arch/x86/lib/delay_32.c
+@@ -38,17 +38,34 @@ static void delay_loop(unsigned long loo
+ 		:"0" (loops));
+ }
+ 
+-/* TSC based delay: */
++/*
++ * TSC based delay:
++ *
++ * We are careful about preemption as TSC's are per-CPU.
++ */
+ static void delay_tsc(unsigned long loops)
+ {
+-	unsigned long bclock, now;
++	unsigned long prev, now;
++	long left = loops;
++	int prev_cpu, cpu;
+ 
+-	preempt_disable();		/* TSC's are per-cpu */
+-	rdtscl(bclock);
++	preempt_disable();
++	rdtscl(prev);
+ 	do {
++		prev_cpu = smp_processor_id();
++		preempt_enable();
+ 		rep_nop();
++		preempt_disable();
++		cpu = smp_processor_id();
+ 		rdtscl(now);
+-	} while ((now-bclock) < loops);
++		/*
++		 * If we migrated we skip this small amount of time:
++		 */
++		if (prev_cpu != cpu)
++			prev = now;
++		left -= now - prev;
++		prev = now;
++	} while (left > 0);
+ 	preempt_enable();
+ }
+ 
+Index: linux/arch/x86/lib/delay_64.c
+===================================================================
+--- linux.orig/arch/x86/lib/delay_64.c
++++ linux/arch/x86/lib/delay_64.c
+@@ -26,17 +26,34 @@ int read_current_timer(unsigned long *ti
+ 	return 0;
+ }
+ 
++/*
++ * TSC based delay:
++ *
++ * We are careful about preemption as TSC's are per-CPU.
++ */
+ void __delay(unsigned long loops)
+ {
+-	unsigned bclock, now;
++	unsigned long prev, now;
++	long left = loops;
++	int prev_cpu, cpu;
+ 
+-	preempt_disable();		/* TSC's are pre-cpu */
+-	rdtscl(bclock);
++	preempt_disable();
++	rdtscl(prev);
+ 	do {
+-		rep_nop(); 
++		prev_cpu = smp_processor_id();
++		preempt_enable();
++		rep_nop();
++		preempt_disable();
++		cpu = smp_processor_id();
+ 		rdtscl(now);
+-	}
+-	while ((now-bclock) < loops);
++		/*
++		 * If we migrated we skip this small amount of time:
++		 */
++		if (prev_cpu != cpu)
++			prev = now;
++		left -= now - prev;
++		prev = now;
++	} while (left > 0);
+ 	preempt_enable();
+ }
+ EXPORT_SYMBOL(__delay);
