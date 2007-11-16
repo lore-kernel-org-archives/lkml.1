@@ -1,755 +1,697 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763418AbXKPRix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765757AbXKPRjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763418AbXKPRix (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 12:38:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763368AbXKPRhL
+	id S1765757AbXKPRjS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 12:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756188AbXKPRhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 12:37:11 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:54653 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 16 Nov 2007 12:37:15 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:54697 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762679AbXKPRg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 12:36:59 -0500
-Message-Id: <20071116173524.835225078@I-love.SAKURA.ne.jp>
+	id S1756969AbXKPRhB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 12:37:01 -0500
+Message-Id: <20071116173525.213278452@I-love.SAKURA.ne.jp>
 References: <20071116173439.796600895@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Sat, 17 Nov 2007 02:34:43 +0900
+Date: Sat, 17 Nov 2007 02:34:44 +0900
 From: penguin-kernel@I-love.SAKURA.ne.jp
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #5 04/18] Data structures and prototype defitions.
-Content-Disposition: inline; filename=tomoyo-headers.diff
+Subject: [TOMOYO #5 05/18] Memory and pathname management functions.
+Content-Disposition: inline; filename=tomoyo-realpath.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Basic functions to get canonicalized absolute pathnames
+for TOMOYO Linux. Even the requested pathname is symlink()ed
+or chroot()ed, TOMOYO Linux uses the original pathname.
+
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
- security/tomoyo/include/realpath.h |   45 ++
- security/tomoyo/include/tomoyo.h   |  671 +++++++++++++++++++++++++++++++++++++
- 2 files changed, 716 insertions(+)
+ security/tomoyo/realpath.c |  658 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 658 insertions(+)
 
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-mm/security/tomoyo/include/realpath.h	2007-11-14 15:15:41.000000000 +0900
-@@ -0,0 +1,45 @@
++++ linux-2.6-mm/security/tomoyo/realpath.c	2007-11-14 15:58:58.000000000 +0900
+@@ -0,0 +1,658 @@
 +/*
-+ * security/tomoyo/include/realpath.h
++ * security/tomoyo/realpath.c
 + *
 + * Get the canonicalized absolute pathnames.
-+ * The basis for TOMOYO.
++ * The basis for TOMOYO Linux.
 + */
 +
-+#ifndef _TMY_REALPATH_H
-+#define _TMY_REALPATH_H
-+
 +#include "tomoyo.h"
++#include "realpath.h"
 +
-+struct path_info;
++/***** realpath handler *****/
 +
-+/* Returns realpath(3) of the given pathname but ignores chroot'ed root. */
++static int tmy_print_ascii(const char *sp, const char *cp,
++			   int *buflen0, char **end0)
++{
++	int buflen = *buflen0;
++	char *end = *end0;
++
++	while (sp <= cp) {
++		unsigned char c;
++
++		c = *(unsigned char *) cp;
++		if (c == '\\') {
++			buflen -= 2;
++			if (buflen < 0)
++				goto out;
++			*--end = '\\';
++			*--end = '\\';
++		} else if (c > ' ' && c < 127) {
++			if (--buflen < 0)
++				goto out;
++			*--end = (char) c;
++		} else {
++			buflen -= 4;
++			if (buflen < 0)
++				goto out;
++			*--end = (c & 7) + '0';
++			*--end = ((c >> 3) & 7) + '0';
++			*--end = (c >> 6) + '0';
++			*--end = '\\';
++		}
++		cp--;
++	}
++
++	*buflen0 = buflen;
++	*end0 = end;
++
++	return 0;
++out: ;
++	return -ENOMEM;
++}
++
++/**
++ * tmy_get_absolute_path - return the realpath of a dentry.
++ * @dentry: pointer to "struct dentry".
++ * @vfsmnt: pointer to "struct vfsmount" to which the @dentry belongs.
++ * @buffer: size of buffer to save the result.
++ * @buflen: size of @buffer .
++ *
++ * Returns zero on success.
++ * Returns nonzero on failure.
++ *
++ * Caller holds the dcache_lock.
++ * Based on __d_path() in fs/dcache.c
++ *
++ * Unlike d_path(), this function traverses upto the root directory of
++ * process's namespace.
++ *
++ * If @dentry is a directory, trailing '/' is appended.
++ * Characters other than ' ' < c < 127 are converted to \ooo style octal string.
++ * Character \ is converted to \\ string.
++ */
++static int tmy_get_absolute_path(struct dentry *dentry,
++				 struct vfsmount *vfsmnt,
++				 char *buffer,
++				 int buflen)
++{
++	char *start = buffer;
++	char *end = buffer + buflen;
++	bool is_dir = (dentry->d_inode && S_ISDIR(dentry->d_inode->i_mode));
++	const char *sp;
++	const char *cp;
++
++	if (buflen < 256)
++		goto out;
++
++	*--end = '\0';
++	buflen--;
++
++	while (1) {
++		struct dentry *parent;
++
++		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
++			/* Global root? */
++			spin_lock(&vfsmount_lock);
++			if (vfsmnt->mnt_parent == vfsmnt) {
++				spin_unlock(&vfsmount_lock);
++				break;
++			}
++			dentry = vfsmnt->mnt_mountpoint;
++			vfsmnt = vfsmnt->mnt_parent;
++			spin_unlock(&vfsmount_lock);
++			continue;
++		}
++
++		if (is_dir) {
++			is_dir = 0;
++			*--end = '/';
++			buflen--;
++		}
++
++		parent = dentry->d_parent;
++		sp = dentry->d_name.name;
++		cp = sp + dentry->d_name.len - 1;
++
++		/* Exception: Use /proc/self/ rather than */
++		/* /proc/\$/ for current process. */
++		if (IS_ROOT(parent) &&
++		    *sp > '0' && *sp <= '9' && parent->d_sb &&
++		    parent->d_sb->s_magic == PROC_SUPER_MAGIC) {
++
++			char *ep;
++			const pid_t pid = (pid_t) simple_strtoul(sp, &ep, 10);
++
++			if (!*ep && pid == current->tgid) {
++				sp = "self";
++				cp = sp + 3;
++			}
++
++		}
++
++		if (tmy_print_ascii(sp, cp, &buflen, &end))
++			goto out;
++
++		if (--buflen < 0)
++			goto out;
++		*--end = '/';
++
++		dentry = parent;
++	}
++	if (*end == '/') {
++		buflen++;
++		end++;
++	}
++
++	sp = dentry->d_name.name;
++	cp = sp + dentry->d_name.len - 1;
++
++	if (tmy_print_ascii(sp, cp, &buflen, &end))
++		goto out;
++
++	/* Move the pathname to the top of the buffer. */
++	memmove(start, end, strlen(end) + 1);
++	return 0;
++out: ;
++	return -ENOMEM;
++}
++
++/**
++ * tmy_realpath_dentry2 - return the realpath of a dentry.
++ * @dentry:      pointer to "struct dentry".
++ * @mnt:         pointer to "struct vfsmount" to which the @dentry belongs.
++ * @newname:     buffer to save the result.
++ * @newname_len: size of @newname .
++ *
++ * Returns zero on success.
++ * Returns nonzero on failure.
++ */
 +int tmy_realpath_dentry2(struct dentry *dentry,
 +			 struct vfsmount *mnt,
 +			 char *newname,
-+			 int newname_len);
-+
-+/* Returns realpath(3) of the given pathname but ignores chroot'ed root. */
-+/* These functions use tmy_alloc(), so caller must tmy_free() */
-+/* if these functions didn't return NULL. */
-+char *tmy_realpath(const char *pathname);
-+char *tmy_realpath_nofollow(const char *pathname);
-+char *tmy_realpath_dentry(struct dentry *dentry, struct vfsmount *mnt);
-+
-+/* Allocate memory for structures. */
-+/* The RAM is chunked, so NEVER try to kfree() the returned pointer. */
-+void *tmy_alloc_element(const unsigned int size);
-+
-+/* Get used RAM size for tmy_alloc_elements(). */
-+unsigned int tmy_get_memory_used_for_elements(void);
-+
-+/* Keep the given name on the RAM. */
-+/* The RAM is shared, so NEVER try to modify or kfree() the returned name. */
-+const struct path_info *tmy_save_name(const char *name);
-+
-+/* Get used RAM size for tmy_save_name(). */
-+unsigned int tmy_get_memory_used_for_save_name(void);
-+
-+unsigned int tmy_get_memory_used_for_dynamic(void);
-+char *sysctlpath_from_table(struct ctl_table *table);
-+
-+#endif
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-mm/security/tomoyo/include/tomoyo.h	2007-11-14 15:15:41.000000000 +0900
-@@ -0,0 +1,671 @@
-+/*
-+ * security/tomoyo/include/tomoyo.h
-+ *
-+ * Header for TOMOYO Linux.
-+ */
-+
-+#ifndef _TOMOYO_H
-+#define _TOMOYO_H
-+
-+#define TOMOYO_VERSION_CODE "2.1.0"
-+
-+#include <linux/kernel.h>
-+#include <linux/sched.h>
-+
-+#include <asm/ioctls.h>
-+#include <linux/audit.h>
-+#include <linux/binfmts.h>
-+#include <linux/delay.h>
-+#include <linux/file.h>
-+#include <linux/highmem.h>
-+#include <linux/init.h>
-+#include <linux/mm.h>
-+#include <linux/module.h>
-+#include <linux/mount.h>
-+#include <linux/namei.h>
-+#include <linux/net.h>
-+#include <linux/poll.h>
-+#include <linux/proc_fs.h>
-+#include <linux/security.h>
-+#include <linux/seq_file.h>
-+#include <linux/slab.h>
-+#include <linux/smp_lock.h>
-+#include <linux/string.h>
-+#include <linux/sysctl.h>
-+#include <linux/utime.h>
-+#include <linux/version.h>
-+#include <net/ip.h>
-+#include <net/ipv6.h>
-+#include <stdarg.h>
-+#include <linux/uaccess.h>
-+#include <linux/hardirq.h>
-+#include <linux/mount.h>
-+#include <linux/mnt_namespace.h>
-+
-+/**
-+ * list_for_each_cookie - iterate over a list with cookie.
-+ * @pos:        the &struct list_head to use as a loop cursor.
-+ * @cookie:     the &struct list_head to use as a cookie.
-+ * @head:       the head for your list.
-+ *
-+ * Same with list_for_each except that this primitive uses cookie
-+ * so that we can continue iteration.
-+ */
-+#define list_for_each_cookie(pos, cookie, head) \
-+	for ((cookie) || ((cookie) = (head)), pos = (cookie)->next; \
-+	     prefetch(pos->next), pos != (head) || ((cookie) = NULL); \
-+	     (cookie) = pos, pos = pos->next)
-+
-+/**
-+ * list_add_tail_mb - add a new entry with memory barrier.
-+ * @new: new entry to be added.
-+ * @head: list head to add it before.
-+ *
-+ * Same with list_add_tail_rcu() except that this primitive uses mb()
-+ * so that we can traverse forwards using list_for_each() and
-+ * list_for_each_cookie().
-+ */
-+static inline void list_add_tail_mb(struct list_head *new,
-+				    struct list_head *head)
++			 int newname_len)
 +{
-+	struct list_head *prev = head->prev;
-+	struct list_head *next = head;
-+	new->next = next;
-+	new->prev = prev;
-+	mb(); /* Avoid out-of-order execution. */
-+	next->prev = new;
-+	prev->next = new;
++	int error;
++	struct dentry *d_dentry;
++	struct vfsmount *d_mnt;
++
++	if (!dentry || !mnt || !newname || newname_len <= 0)
++		return -EINVAL;
++
++	d_dentry = dget(dentry);
++	d_mnt = mntget(mnt);
++
++	/***** CRITICAL SECTION START *****/
++	spin_lock(&dcache_lock);
++	error = tmy_get_absolute_path(d_dentry, d_mnt, newname, newname_len);
++	spin_unlock(&dcache_lock);
++	/***** CRITICAL SECTION END *****/
++
++	dput(d_dentry);
++	mntput(d_mnt);
++	return error;
 +}
 +
-+extern struct seq_operations mounts_op;
-+extern struct mutex domain_acl_lock;
-+extern bool sbin_init_started;
-+
-+struct tmy_security {
-+	struct domain_info *domain;
-+	struct domain_info *prev_domain;
-+	u32 flags;
-+};
-+
-+#define TMY_SECURITY ((struct tmy_security *) current->security)
-+
-+struct path_info {
-+	const char *name;
-+	u32 hash;        /* = full_name_hash(name, strlen(name)) */
-+	u16 total_len;   /* = strlen(name)                       */
-+	u16 const_len;   /* = tmy_const_part_length(name)        */
-+	bool is_dir;       /* = tmy_strendswith(name, "/")         */
-+	bool is_patterned; /* = PathContainsPattern(name)          */
-+	u16 depth;       /* = tmy_path_depth(name)               */
-+};
-+
-+#define TMY_MAX_PATHNAME_LEN 4000
-+
-+struct path_group_member {
-+	struct list_head list;
-+	const struct path_info *member_name;
-+	bool is_deleted;
-+};
-+
-+struct path_group_entry {
-+	struct list_head list;
-+	const struct path_info *group_name;
-+	struct list_head path_group_member_list;
-+};
-+
-+
-+struct mini_stat {
-+	uid_t uid;
-+	gid_t gid;
-+	ino_t ino;
-+};
-+struct dentry;
-+struct vfsmount;
-+struct obj_info {
-+	bool validate_done;
-+	bool path1_valid;
-+	bool path1_parent_valid;
-+	bool path2_parent_valid;
-+	struct dentry *path1_dentry;
-+	struct vfsmount *path1_vfsmnt;
-+	struct dentry *path2_dentry;
-+	struct vfsmount *path2_vfsmnt;
-+	struct mini_stat path1_stat;
-+	/* I don't handle path2_stat for rename operation. */
-+	struct mini_stat path1_parent_stat;
-+	struct mini_stat path2_parent_stat;
-+};
-+struct condition_list;
-+
-+struct linux_binprm;
-+struct pt_regs;
-+
-+/*
-+ *  TOMOYO uses the following structures.
-+ *  Memory allocated for these structures are never kfree()ed.
-+ *  Since no locks are used for reading,
-+ *  assignment must be performed atomically.
++/**
++ * tmy_realpath_dentry - return the realpath of a dentry.
++ * @dentry: pointer to "struct dentry".
++ * @mnt:    pointer to "struct vfsmount" to which the @dentry belongs.
++ *
++ * Returns realpath(3) of the @dentry on success.
++ * Returns NULL on failure.
++ *
++ * This function uses tmy_alloc(), so caller must call tmy_free()
++ * if this function didn't return NULL.
 + */
-+
-+/************************  The structure for domains.  ************************/
-+
-+struct acl_info {
-+	struct list_head list;
-+	const struct condition_list *cond;
-+	u8 type;
-+	bool is_deleted;
-+} __attribute__((__packed__));
-+
-+struct domain_info {
-+	struct list_head list;
-+	struct list_head acl_info_list;
-+	const struct path_info *domainname; /* Never NULL.   */
-+	u8 profile;
-+	u8 is_deleted; /* 0: active, 1:deleted, 255:deleted-permanently */
-+	bool quota_warned;
-+};
-+
-+#define TMY_MAX_PROFILES 256
-+
-+struct file_acl {
-+	/* type = TMY_TYPE_FILE_ACL */
-+	struct acl_info head;
-+	u8 perm;
-+	bool u_is_group;
-+	union {
-+		const struct path_info *filename;
-+		const struct path_group_entry *group;
-+	} u;
-+};
-+
-+struct argv0_acl {
-+	/* type = TMY_TYPE_ARGV0_ACL */
-+	struct acl_info head;
-+	const struct path_info *filename; /* Pointer to single pathname. */
-+	const struct path_info *argv0;    /* strrchr(argv[0], '/') + 1   */
-+};
-+
-+struct single_acl {
-+	/* type = TMY_TYPE_* */
-+	struct acl_info head;
-+	bool u_is_group;
-+	union {
-+		const struct path_info *filename;
-+		const struct path_group_entry *group;
-+	} u;
-+};
-+
-+struct double_acl {
-+	/* type = TMY_TYPE_RENAME_ACL or TMY_TYPE_LINK_ACL, */
-+	struct acl_info head;
-+	bool u1_is_group;
-+	bool u2_is_group;
-+	union {
-+		const struct path_info *filename1;
-+		const struct path_group_entry *group1;
-+	} u1;
-+	union {
-+		const struct path_info *filename2;
-+		const struct path_group_entry *group2;
-+	} u2;
-+};
-+
-+struct address_group_member {
-+	struct list_head list;
-+	union {
-+		u32 ipv4;    /* Host byte order    */
-+		u16 ipv6[8]; /* Network byte order */
-+	} min, max;
-+	bool is_deleted;
-+	bool is_ipv6;
-+};
-+
-+struct address_group_entry {
-+	struct list_head list;
-+	const struct path_info *group_name;
-+	struct list_head address_group_member_list;
-+};
-+
-+#define TMY_TYPE_ADDRESS_GROUP 0
-+#define TMY_TYPE_IPv4          1
-+#define TMY_TYPE_IPv6          2
-+
-+struct net_acl {
-+	/* type = TYPE_IP_NETWORK_ACL */
-+	struct acl_info head;
-+	u8 operation_type;
-+	u8 record_type;
-+	union {
-+		struct {
-+			u32 min;
-+			u32 max;
-+		} ipv4;
-+		struct {
-+			u16 min[8];
-+			u16 max[8];
-+		} ipv6;
-+		const struct address_group_entry *group;
-+	} u;
-+	u16 min_port;           /* Start of port number range. */
-+	u16 max_port;           /* End of port number range.   */
-+};
-+
-+struct signal_acl {
-+	/* type = TYPE_SIGNAL_ACL */
-+	struct acl_info head;
-+	u16 sig;
-+	/* Pointer to destination pattern.            */
-+	const struct path_info *domainname;
-+};
-+
-+struct capability_acl {
-+	/* type = TYPE_CAPABILITY_ACL */
-+	struct acl_info head;
-+	u16 capability;
-+};
-+
-+/*************************  Keywords for ACLs.  *************************/
-+
-+#define TMY_AGGREGATOR               	"aggregator "
-+#define TMY_AGGREGATOR_LEN           	(sizeof(TMY_AGGREGATOR) - 1)
-+#define TMY_ALIAS                    	"alias "
-+#define TMY_ALIAS_LEN                	(sizeof(TMY_ALIAS) - 1)
-+#define TMY_ALLOW_READ               	"allow_read "
-+#define TMY_ALLOW_READ_LEN           	(sizeof(TMY_ALLOW_READ) - 1)
-+#define TMY_DELETE                   	"delete "
-+#define TMY_DELETE_LEN               	(sizeof(TMY_DELETE) - 1)
-+#define TMY_DENY_REWRITE             	"deny_rewrite "
-+#define TMY_DENY_REWRITE_LEN         	(sizeof(TMY_DENY_REWRITE) - 1)
-+#define TMY_FILE_PATTERN             	"file_pattern "
-+#define TMY_FILE_PATTERN_LEN         	(sizeof(TMY_FILE_PATTERN) - 1)
-+#define TMY_INITIALIZE_DOMAIN        	"initialize_domain "
-+#define TMY_INITIALIZE_DOMAIN_LEN    	(sizeof(TMY_INITIALIZE_DOMAIN) - 1)
-+#define TMY_KEEP_DOMAIN              	"keep_domain "
-+#define TMY_KEEP_DOMAIN_LEN          	(sizeof(TMY_KEEP_DOMAIN) - 1)
-+#define TMY_NO_INITIALIZE_DOMAIN     	"no_initialize_domain "
-+#define TMY_NO_INITIALIZE_DOMAIN_LEN 	(sizeof(TMY_NO_INITIALIZE_DOMAIN) - 1)
-+#define TMY_NO_KEEP_DOMAIN           	"no_keep_domain "
-+#define TMY_NO_KEEP_DOMAIN_LEN       	(sizeof(TMY_NO_KEEP_DOMAIN) - 1)
-+#define TMY_PATH_GROUP               	"path_group "
-+#define TMY_PATH_GROUP_LEN           	(sizeof(TMY_PATH_GROUP) - 1)
-+#define TMY_SELECT                   	"select "
-+#define TMY_SELECT_LEN               	(sizeof(TMY_SELECT) - 1)
-+#define TMY_UNDELETE                 	"undelete "
-+#define TMY_UNDELETE_LEN             	(sizeof(TMY_UNDELETE) - 1)
-+
-+#define TMY_ALLOW_MOUNT                 "allow_mount "
-+#define TMY_ALLOW_MOUNT_LEN             (sizeof(TMY_ALLOW_MOUNT) - 1)
-+#define TMY_DENY_UNMOUNT                "deny_unmount "
-+#define TMY_DENY_UNMOUNT_LEN            (sizeof(TMY_DENY_UNMOUNT) - 1)
-+#define TMY_ALLOW_PIVOT_ROOT            "allow_pivot_root "
-+#define TMY_ALLOW_PIVOT_ROOT_LEN        (sizeof(TMY_ALLOW_PIVOT_ROOT) - 1)
-+
-+#define TMY_USE_PROFILE "use_profile "
-+
-+#define TMY_ROOT_NAME 		"<kernel>"
-+#define TMY_ROOT_NAME_LEN 	(sizeof(TMY_ROOT_NAME) - 1)
-+
-+#define TMY_ALLOW_ARGV0         "allow_argv0 "
-+#define TMY_ALLOW_ARGV0_LEN     (sizeof(TMY_ALLOW_ARGV0) - 1)
-+
-+#define TMY_ADDRESS_GROUP       "address_group "
-+#define TMY_ADDRESS_GROUP_LEN   (sizeof(TMY_ADDRESS_GROUP) - 1)
-+#define TMY_ALLOW_NETWORK       "allow_network "
-+#define TMY_ALLOW_NETWORK_LEN   (sizeof(TMY_ALLOW_NETWORK) - 1)
-+
-+#define TMY_ALLOW_SIGNAL        "allow_signal "
-+#define TMY_ALLOW_SIGNAL_LEN    (sizeof(TMY_ALLOW_SIGNAL) - 1)
-+
-+#define TMY_ALLOW_CAPABILITY    "allow_capability "
-+#define TMY_ALLOW_CAPABILITY_LEN  (sizeof(TMY_ALLOW_CAPABILITY) - 1)
-+#define TMY_MAC_FOR_CAPABILITY       "MAC_FOR_CAPABILITY::"
-+#define TMY_MAC_FOR_CAPABILITY_LEN   (sizeof(TMY_MAC_FOR_CAPABILITY) - 1)
-+
-+/********************  Index numbers for Access Controls.  ********************/
-+
-+#define TMY_COMMENT              0
-+#define TMY_MAC_FOR_FILE         1
-+#define TMY_MAC_FOR_ARGV0        2
-+#define TMY_MAC_FOR_NETWORK      3
-+#define TMY_MAC_FOR_SIGNAL       4
-+#define TMY_DENY_CONCEAL_MOUNT   5
-+#define TMY_RESTRICT_MOUNT       6
-+#define TMY_RESTRICT_UMOUNT      7
-+#define TMY_RESTRICT_PIVOT_ROOT  8
-+#define TMY_MAX_ACCEPT_ENTRY     9
-+#define TMY_MAX_GRANT_LOG       10
-+#define TMY_MAX_REJECT_LOG      11
-+#define TMY_VERBOSE             12
-+#define TMY_ALLOW_ENFORCE_GRACE 13
-+#define TMY_MAX_CONTROL_INDEX   14
-+
-+#define TMY_NETWORK_ACL_UDP_BIND    0
-+#define TMY_NETWORK_ACL_UDP_CONNECT 1
-+#define TMY_NETWORK_ACL_TCP_BIND    2
-+#define TMY_NETWORK_ACL_TCP_LISTEN  3
-+#define TMY_NETWORK_ACL_TCP_CONNECT 4
-+#define TMY_NETWORK_ACL_TCP_ACCEPT  5
-+#define TMY_NETWORK_ACL_RAW_BIND    6
-+#define TMY_NETWORK_ACL_RAW_CONNECT 7
-+
-+/*************  Index numbers for Capability Controls.  **********/
-+
-+/* socket(PF_INET or PF_INET6, SOCK_STREAM, *)                   */
-+#define TMY_INET_STREAM_SOCKET_CREATE         0
-+/* listen() for PF_INET or PF_INET6, SOCK_STREAM                 */
-+#define TMY_INET_STREAM_SOCKET_LISTEN         1
-+/* connect() for PF_INET or PF_INET6, SOCK_STREAM                */
-+#define TMY_INET_STREAM_SOCKET_CONNECT        2
-+/* socket(PF_INET or PF_INET6, SOCK_DGRAM, *)                    */
-+#define TMY_USE_INET_DGRAM_SOCKET             3
-+/* socket(PF_INET or PF_INET6, SOCK_RAW, *)                      */
-+#define TMY_USE_INET_RAW_SOCKET               4
-+/* socket(PF_ROUTE, *, *)                                        */
-+#define TMY_USE_ROUTE_SOCKET                  5
-+/* socket(PF_PACKET, *, *)                                       */
-+#define TMY_USE_PACKET_SOCKET                 6
-+/* sys_mount()                                                   */
-+#define TMY_SYS_MOUNT                         7
-+/* sys_umount()                                                  */
-+#define TMY_SYS_UMOUNT                        8
-+/* sys_reboot()                                                  */
-+#define TMY_SYS_REBOOT                        9
-+/* sys_chroot()                                                  */
-+#define TMY_SYS_CHROOT                       10
-+/* sys_kill(), sys_tkill(), sys_tgkill()                         */
-+#define TMY_SYS_KILL                         11
-+/* sys_vhangup()                                                 */
-+#define TMY_SYS_VHANGUP                      12
-+/* do_settimeofday(), sys_adjtimex()                             */
-+#define TMY_SYS_SETTIME                      13
-+/* sys_nice(), sys_setpriority()                                 */
-+#define TMY_SYS_NICE                         14
-+/* sys_sethostname(), sys_setdomainname()                        */
-+#define TMY_SYS_SETHOSTNAME                  15
-+/* sys_create_module(), sys_init_module(), sys_delete_module()   */
-+#define TMY_USE_KERNEL_MODULE                16
-+/* sys_mknod(S_IFIFO)                                            */
-+#define TMY_CREATE_FIFO                      17
-+/* sys_mknod(S_IFBLK)                                            */
-+#define TMY_CREATE_BLOCK_DEV                 18
-+/* sys_mknod(S_IFCHR)                                            */
-+#define TMY_CREATE_CHAR_DEV                  19
-+/* sys_mknod(S_IFSOCK)                                           */
-+#define TMY_CREATE_UNIX_SOCKET               20
-+/* sys_link()                                                    */
-+#define TMY_SYS_LINK                         21
-+/* sys_symlink()                                                 */
-+#define TMY_SYS_SYMLINK                      22
-+/* sys_rename()                                                  */
-+#define TMY_SYS_RENAME                       23
-+/* sys_unlink()                                                  */
-+#define TMY_SYS_UNLINK                       24
-+/* sys_chmod(), sys_fchmod()                                     */
-+#define TMY_SYS_CHMOD                        25
-+/* sys_chown(), sys_fchown(), sys_lchown()                       */
-+#define TMY_SYS_CHOWN                        26
-+/* sys_ioctl(), compat_sys_ioctl()                               */
-+#define TMY_SYS_IOCTL                        27
-+/* sys_kexec_load()                                              */
-+#define TMY_SYS_KEXEC_LOAD                   28
-+/* sys_pivot_root()                                              */
-+#define TMY_SYS_PIVOT_ROOT                   29
-+#define TMY_MAX_CAPABILITY_INDEX             30
-+
-+/********************  Index numbers for updates counter.  ********************/
-+
-+#define TMY_UPDATE_DOMAINPOLICY    0
-+#define TMY_UPDATE_SYSTEMPOLICY    1
-+#define TMY_UPDATE_EXCEPTIONPOLICY 2
-+#define TMY_UPDATE_PROFILE         3
-+#define TMY_UPDATE_QUERY           4
-+#define TMY_UPDATE_MANAGER         5
-+#define TMY_UPDATE_GRANT_LOG       6
-+#define TMY_UPDATE_REJECT_LOG      7
-+#define TMY_MAX_UPDATES_COUNTER    8
-+
-+/***************  Indexes for /sys/kernel/security interfaces.  ***************/
-+
-+#define TMY_DOMAINPOLICY     0
-+#define TMY_SYSTEMPOLICY     1
-+#define TMY_EXCEPTIONPOLICY  2
-+#define TMY_DOMAIN_STATUS    3
-+#define TMY_PROCESS_STATUS   4
-+#define TMY_MEMINFO          5
-+#define TMY_SELFDOMAIN       6
-+#define TMY_PROFILE          7
-+#define TMY_QUERY            8
-+#define TMY_MANAGER          9
-+#define TMY_UPDATESCOUNTER  10
-+#define TMY_GRANT_LOG       11
-+#define TMY_REJECT_LOG      12
-+#define TMY_VERSION         13
-+
-+/***************  The structure for /sys/kernel/security interfaces.  *********/
-+
-+struct io_buffer {
-+	int (*read) (struct io_buffer *);
-+	struct mutex read_mutex;      /* Lock for reading.                    */
-+	int (*write) (struct io_buffer *);
-+	struct mutex write_mutex;     /* Lock for updating.                   */
-+	int (*poll) (struct file *file, poll_table *wait);
-+	struct list_head *read_var1;  /* The position currently reading from. */
-+	struct list_head *read_var2;  /* Extra variables for reading.         */
-+	struct domain_info *write_var1; /* The position currently writing to. */
-+	int read_step;                /* The step for reading.                */
-+	char *read_buf;               /* Buffer for reading.                  */
-+	bool read_eof;                /* EOF flag for reading.                */
-+	int read_avail;               /* Bytes available for reading.         */
-+	int readbuf_size;             /* Size of read buffer.                 */
-+	char *write_buf;              /* Buffer for writing.                  */
-+	int write_avail;              /* Bytes available for writing.         */
-+	int writebuf_size;            /* Size of write buffer.                */
-+};
-+
-+/*************************  PROTOTYPES  *************************/
-+
-+char *tmy_find_condition_part(char *data);
-+const struct condition_list *tmy_assign_condition(const char *condition);
-+int tmy_check_condition(const struct condition_list *ptr,
-+			struct obj_info *obj);
-+int tmy_dump_condition(struct io_buffer *head,
-+		       const struct condition_list *ptr);
-+const char *tmy_get_exe(void);
-+const char *tmy_getmsg(bool is_enforce);
-+const char *tmy_lastname(const struct domain_info *domain);
-+const char *tmy_acltype2keyword(const unsigned int acl_type);
-+
-+int tmy_mount_perm(char *dev_name,
-+		   char *dir_name,
-+		   char *type,
-+		   unsigned long flags);
-+int tmy_conceal_mount(struct nameidata *nd);
-+int tmy_umount_perm(struct vfsmount *mnt);
-+int tmy_add_mount_policy(char *data, const bool is_delete);
-+int tmy_read_mount_policy(struct io_buffer *head);
-+int tmy_add_no_umount_policy(char *data, const bool is_delete);
-+int tmy_read_no_umount_policy(struct io_buffer *head);
-+int tmy_pivot_root_perm(struct nameidata *old_nd,
-+			struct nameidata *new_nd);
-+int tmy_add_pivot_root_policy(char *data, const bool is_delete);
-+int tmy_read_pivot_root_policy(struct io_buffer *head);
-+
-+int tmy_add_aggregator_policy(char *data, const bool is_delete);
-+int tmy_add_address_group_policy(char *data, const bool is_delete);
-+int tmy_add_alias_policy(char *data, const bool is_delete);
-+int tmy_add_argv0_policy(char *data,
-+			 struct domain_info *domain,
-+			 const struct condition_list *cond,
-+			 const bool is_delete);
-+int tmy_add_acl(struct domain_info *domain, struct acl_info *acl);
-+int tmy_add_capability_policy(char *data,
-+			      struct domain_info *domain,
-+			      const struct condition_list *cond,
-+			      const bool is_delete);
-+int tmy_add_domain_initializer_policy(char *data,
-+				      const bool is_not,
-+				      const bool is_delete);
-+int tmy_add_domain_keeper_policy(char *data,
-+				 const bool is_not,
-+				 const bool is_delete);
-+int tmy_file_perm(const char *filename0, const u8 perm, const char *operation);
-+int tmy_add_file_policy(char *data,
-+			struct domain_info *domain,
-+			const struct condition_list *cond,
-+			const bool is_delete);
-+int tmy_add_globally_readable_policy(char *data, const bool is_delete);
-+int tmy_add_group_policy(char *data, const bool is_delete);
-+int tmy_add_network_policy(char *data,
-+			   struct domain_info *domain,
-+			   const struct condition_list *cond,
-+			   const bool is_delete);
-+int tmy_add_no_rewrite_policy(char *pattern, const bool is_delete);
-+int tmy_add_pattern_policy(char *data, const bool is_delete);
-+int tmy_supervisor(const char *fmt, ...)
-+	__attribute__((format(printf, 1, 2)));
-+#ifdef CONFIG_SECURITY_TOMOYO_USE_AUDITD
-+int tmy_audit(const char *fmt, ...)
-+	__attribute__((format(printf, 1, 2)));
-+#else
-+#define tmy_audit printk
-+#endif
-+
-+int tmy_del_acl(struct acl_info *ptr);
-+int tmy_delete_domain(char *data);
-+bool tmy_is_correct_domain(const unsigned char *domainname,
-+			  const char *function);
-+bool tmy_correct_path(const char *filename,
-+		     const int start_type,
-+		     const int pattern_type,
-+		     const int end_type,
-+		     const char *function);
-+bool tmy_is_domain_def(const unsigned char *buffer);
-+bool tmy_path_match(const struct path_info *pathname0,
-+		   const struct path_info *pattern0);
-+int tmy_read_aggregator_policy(struct io_buffer *head);
-+int tmy_read_alias_policy(struct io_buffer *head);
-+int tmy_read_domain_initializer_policy(struct io_buffer *head);
-+int tmy_read_domain_keeper_policy(struct io_buffer *head);
-+int tmy_read_globally_readable_policy(struct io_buffer *head);
-+int tmy_read_path_group_policy(struct io_buffer *head);
-+int tmy_read_no_rewrite_policy(struct io_buffer *head);
-+int tmy_read_pattern_policy(struct io_buffer *head);
-+int tmy_read_address_group_policy(struct io_buffer *head);
-+int tmy_argv0_perm(const struct path_info *filename, const char *argv0);
-+int tmy_capable(const unsigned int capability);
-+int tmy_network_listen_acl(const bool is_ipv6,
-+			   const u8 *address,
-+			   const u16 port);
-+int tmy_network_connect_acl(const bool is_ipv6,
-+			    const int sock_type,
-+			    const u8 *address,
-+			    const u16 port);
-+int tmy_network_bind_acl(const bool is_ipv6,
-+			 const int sock_type,
-+			 const u8 *address,
-+			 const u16 port);
-+int tmy_network_sendmsg_acl(const bool is_ipv6,
-+			    const int sock_type,
-+			    const u8 *address,
-+			    const u16 port);
-+int tmy_network_accept_acl(const bool is_ipv6,
-+			   const u8 *address,
-+			   const u16 port);
-+int tmy_network_recvmsg_acl(const bool is_ipv6,
-+			    const int sock_type,
-+			    const u8 *address,
-+			    const u16 port);
-+
-+int tmy_signal_acl(int sig, int pid);
-+int tmy_add_signal_policy(char *data,
-+			  struct domain_info *domain,
-+			  const struct condition_list *cond,
-+			  const bool is_delete);
-+
-+char *tmy_init_audit_log(int *len, const u8 profile, const unsigned int mode);
-+int tmy_write_audit_log(char *log, const bool is_granted);
-+int tmy_acltype2paths(const unsigned int acl_type);
-+int tmy_io_printf(struct io_buffer *head, const char *fmt, ...)
-+	__attribute__((format(printf, 2, 3)));
-+struct domain_info *tmy_find_domain(const char *domainname);
-+struct domain_info *tmy_new_domain(const char *domainname, const u8 profile);
-+struct domain_info *tmy_undelete_domain(const char *domainname0);
-+bool tmy_quota(void);
-+unsigned int tmy_flags(const unsigned int index);
-+bool tmy_audit_grant(void);
-+bool tmy_audit_reject(void);
-+void tmy_update_counter(const unsigned char index);
-+void *tmy_alloc(const size_t size);
-+void tmy_free(const void *p);
-+void tmy_fill_path_info(struct path_info *ptr);
-+const char *tmy_capability2keyword(const unsigned int capability);
-+int tmy_read_capability_profile(struct io_buffer *head);
-+int tmy_set_capability_profile(const char *data, unsigned int value,
-+			       const unsigned int profile);
-+
-+int tmy_read_grant_log(struct io_buffer *head);
-+int tmy_poll_grant_log(struct file *file, poll_table *wait);
-+int tmy_read_reject_log(struct io_buffer *head);
-+int tmy_poll_reject_log(struct file *file, poll_table *wait);
-+
-+static inline bool tmy_pathcmp(const struct path_info *a,
-+			       const struct path_info *b)
++char *tmy_realpath_dentry(struct dentry *dentry, struct vfsmount *mnt)
 +{
-+	return a->hash != b->hash || strcmp(a->name, b->name);
++	char *buf = tmy_alloc(TMY_MAX_PATHNAME_LEN);
++
++	if (buf &&
++	    tmy_realpath_dentry2(dentry, mnt, buf,
++				 TMY_MAX_PATHNAME_LEN - 1) == 0)
++		return buf;
++
++	tmy_free(buf);
++	return NULL;
 +}
 +
-+extern struct domain_info KERNEL_DOMAIN;
-+extern struct list_head domain_list;
-+void tmy_load_policy(const char *filename);
-+int tmy_find_next_domain(struct linux_binprm *,
-+			 struct domain_info **);
++/**
++ * tmy_realpath - return the realpath of a pathname.
++ * @pathname: pathname to report.
++ *
++ * Returns realpath(3) of the @pathname on success.
++ * Returns NULL on failure.
++ *
++ * This function uses tmy_alloc(), so caller must call tmy_free()
++ * if this function didn't return NULL.
++ */
++char *tmy_realpath(const char *pathname)
++{
++	struct nameidata nd;
 +
-+struct path_info;
++	if (pathname && path_lookup(pathname, LOOKUP_FOLLOW, &nd) == 0) {
++		char *buf = tmy_realpath_dentry(nd.path.dentry, nd.path.mnt);
 +
-+int tmy_exec_perm(const struct path_info *filename, struct file *filp);
-+/* Check whether the given dentry is allowed to read/write/execute. */
-+int tmy_open_perm(struct dentry *dentry, struct vfsmount *mnt, const int flag);
-+/* Check whether the given dentry is allowed to write. */
-+int tmy_single_write_perm(const unsigned int operation,
-+			  struct dentry *dentry,
-+			  struct vfsmount *mnt);
-+int tmy_double_write_perm(const unsigned int operation,
-+			  struct dentry *dentry1,
-+			  struct vfsmount *mnt1,
-+			  struct dentry *dentry2,
-+			  struct vfsmount *mnt2);
-+int tmy_rewrite_perm(struct file *filp);
++		path_put(&nd.path);
++		return buf;
++	}
 +
-+struct inode;
++	return NULL;
++}
 +
-+/********************  Index numbers for Access Controls.  ********************/
++/**
++ * tmy_realpath_nofollow - return the realpath of a pathname.
++ * @pathname: pathname to report.
++ *
++ * Returns realpath(3) of the @pathname on success.
++ * Returns NULL on failure.
++ *
++ * Unlike tmy_realpath(), this function doesn't follow if @pathname is
++ * a symbolic link.
++ *
++ * This function uses tmy_alloc(), so caller must call tmy_free()
++ * if this function didn't return NULL.
++ */
++char *tmy_realpath_nofollow(const char *pathname)
++{
++	struct nameidata nd;
 +
-+#define TMY_TYPE_CREATE_ACL       0
-+#define TMY_TYPE_UNLINK_ACL       1
-+#define TMY_TYPE_MKDIR_ACL        2
-+#define TMY_TYPE_RMDIR_ACL        3
-+#define TMY_TYPE_MKFIFO_ACL       4
-+#define TMY_TYPE_MKSOCK_ACL       5
-+#define TMY_TYPE_MKBLOCK_ACL      6
-+#define TMY_TYPE_MKCHAR_ACL       7
-+#define TMY_TYPE_TRUNCATE_ACL     8
-+#define TMY_TYPE_SYMLINK_ACL      9
-+#define TMY_TYPE_LINK_ACL        10
-+#define TMY_TYPE_RENAME_ACL      11
-+#define TMY_TYPE_REWRITE_ACL     12
++	if (pathname && path_lookup(pathname, 0, &nd) == 0) {
++		char *buf = tmy_realpath_dentry(nd.path.dentry, nd.path.mnt);
 +
-+#define TMY_TYPE_FILE_ACL    	100
-+#define TMY_TYPE_ARGV0_ACL      101
-+#define TMY_TYPE_IP_NETWORK_ACL 103
-+#define TMY_TYPE_SIGNAL_ACL     104
-+#define TMY_TYPE_CAPABILITY_ACL 105
++		path_put(&nd.path);
++		return buf;
++	}
 +
-+#define TMY_CHECK_READ_FOR_OPEN_EXEC 1
++	return NULL;
++}
 +
-+char *tmy_print_ipv6(char *buffer, const int buffer_len, const u16 *ip);
-+const char *tmy_network2keyword(const unsigned int operation);
++/* tmy_get_absolute_path() for "struct ctl_table". */
++static int tmy_sysctl_path(struct ctl_table *table, char *buffer, int buflen)
++{
++	char *end = buffer + buflen;
 +
-+/* to check "if task.parent.pid" condition. */
-+extern asmlinkage long sys_getppid(void);
++	if (buflen < 256)
++		goto out;
 +
-+#endif
++	*--end = '\0';
++	buflen--;
++
++	buflen -= 9; /* for "/proc/sys" prefix */
++
++	while (table) {
++		char buf[32];
++		const char *sp = table->procname;
++		const char *cp;
++
++		if (!sp) {
++			memset(buf, 0, sizeof(buf));
++			snprintf(buf, sizeof(buf) - 1, "=%d=", table->ctl_name);
++			sp = buf;
++		}
++		cp = strchr(sp, '\0') - 1;
++
++		if (tmy_print_ascii(sp, cp, &buflen, &end))
++			goto out;
++
++		if (--buflen < 0)
++			goto out;
++
++		*--end = '/';
++		table = table->parent;
++	}
++
++	/* Move the pathname to the top of the buffer. */
++	memmove(buffer, "/proc/sys", 9);
++	memmove(buffer + 9, end, strlen(end) + 1);
++	return 0;
++out: ;
++	return -ENOMEM;
++}
++
++/**
++ * sysctlpath_from_table - return the realpath of a ctl_table.
++ * @table: pointer to "struct ctl_table".
++ *
++ * Returns realpath(3) of the @table on success.
++ * Returns NULL on failure.
++ *
++ * This function uses tmy_alloc(), so caller must call tmy_free()
++ * if this function didn't return NULL.
++ */
++char *sysctlpath_from_table(struct ctl_table *table)
++{
++	char *buf = tmy_alloc(TMY_MAX_PATHNAME_LEN);
++
++	if (buf && tmy_sysctl_path(table, buf, TMY_MAX_PATHNAME_LEN - 1) == 0)
++		return buf;
++
++	tmy_free(buf);
++	return NULL;
++}
++
++/***** Private memory allocator. *****/
++
++/*
++ * Round up an integer so that the returned pointers are appropriately aligned.
++ * FIXME: Are there more requirements that is needed for assigning value
++ * atomically?
++ */
++static inline unsigned int tmy_roundup(const unsigned int size)
++{
++	if (sizeof(void *) >= sizeof(long))
++		return ((size + sizeof(void *) - 1) / sizeof(void *))
++			* sizeof(void *);
++
++	return ((size + sizeof(long) - 1) / sizeof(long)) * sizeof(long);
++}
++
++static unsigned int allocated_memory_for_elements;
++
++/**
++ * tmy_get_memory_used_for_elements - get memory usage for private data.
++ *
++ * Returns size of memory allocated for keeping individual ACL elements.
++ */
++unsigned int tmy_get_memory_used_for_elements(void)
++{
++	return allocated_memory_for_elements;
++}
++
++/**
++ * tmy_alloc_element - allocate memory for structures.
++ * @size: requested size in bytes.
++ *
++ * Returns '\0'-initialized memory region on success.
++ * Returns NULL on failure.
++ *
++ * This function allocates memory for keeping ACL entries.
++ * The RAM is chunked, so NEVER try to kfree() the returned pointer.
++ */
++void *tmy_alloc_element(const unsigned int size)
++{
++	static DEFINE_MUTEX(mutex);
++	static char *buf;
++	static unsigned int buf_used_len = PAGE_SIZE;
++	char *ptr = NULL;
++	const unsigned int word_aligned_size = tmy_roundup(size);
++
++	if (word_aligned_size > PAGE_SIZE)
++		return NULL;
++
++	mutex_lock(&mutex);
++
++	if (buf_used_len + word_aligned_size > PAGE_SIZE) {
++		ptr = kzalloc(PAGE_SIZE, GFP_KERNEL);
++
++		if (!ptr) {
++			printk(KERN_INFO "ERROR: "
++			       "Out of memory for tmy_alloc_element().\n");
++			if (!sbin_init_started)
++				panic("MAC Initialization failed.\n");
++		} else {
++			buf = ptr;
++			allocated_memory_for_elements += PAGE_SIZE;
++			buf_used_len = word_aligned_size;
++			ptr = buf;
++		}
++
++	} else if (word_aligned_size) {
++		unsigned int i;
++
++		ptr = buf + buf_used_len;
++		buf_used_len += word_aligned_size;
++
++		for (i = 0; i < word_aligned_size; i++) {
++			if (ptr[i]) { /* This must not happen! */
++				printk(KERN_ERR
++				       "WARNING: Reserved memory was tainted! "
++				       "The system might go wrong.\n");
++				ptr[i] = '\0';
++			}
++		}
++
++	}
++
++	mutex_unlock(&mutex);
++	return ptr;
++}
++
++/***** Shared memory allocator. *****/
++
++static unsigned int allocated_memory_for_savename;
++
++/**
++ * tmy_get_memory_used_for_save_name - get memory usage for shared data.
++ *
++ * Returns size of memory allocated for keeping string tokens.
++ */
++unsigned int tmy_get_memory_used_for_save_name(void)
++{
++	return allocated_memory_for_savename;
++}
++
++#define MAX_HASH 256
++
++/* List of tokens. */
++struct name_entry {
++	struct list_head list;
++	struct path_info entry;
++};
++
++/* List of free memory. */
++struct free_memory_block {
++	struct list_head list;
++	char *ptr; /* Pointer to a free area. */
++	int len;   /* Length of the area.     */
++};
++
++/**
++ * tmy_save_name - keep the given token on the RAM.
++ * @name: the string token to remember.
++ *
++ * Returns pointer to memory region on success.
++ * Returns NULL on failure.
++ *
++ * This function allocates memory for keeping any string data.
++ * The RAM is shared, so NEVER try to modify or kfree() the returned name.
++ */
++const struct path_info *tmy_save_name(const char *name)
++{
++	static bool first_call = 1;
++	static DEFINE_MUTEX(mutex);
++	static LIST_HEAD(fmb_list);
++	struct free_memory_block *fmb;
++	static struct list_head name_list[MAX_HASH]; /* The list of names. */
++	struct name_entry *ptr;
++	unsigned int hash;
++	int len;
++	bool found = 0;
++	if (!name)
++		return NULL;
++	len = strlen(name) + 1;
++	if (len > TMY_MAX_PATHNAME_LEN) {
++		printk(KERN_INFO "ERROR: Name too long for tmy_save_name().\n");
++		return NULL;
++	}
++	hash = full_name_hash((const unsigned char *) name, len - 1);
++	/* List access in this function is protected by mutex. */
++	mutex_lock(&mutex);
++	if (first_call) {
++		int i;
++		first_call = 0;
++		for (i = 0; i < MAX_HASH; i++)
++			INIT_LIST_HEAD(&name_list[i]);
++		if (TMY_MAX_PATHNAME_LEN > PAGE_SIZE)
++			panic("Bad size.");
++	}
++	list_for_each_entry(ptr, &name_list[hash % MAX_HASH], list) {
++		if (hash == ptr->entry.hash &&
++		    strcmp(name, ptr->entry.name) == 0)
++			goto out;
++	}
++	list_for_each_entry(fmb, &fmb_list, list) {
++		if (len <= fmb->len) {
++			found = 1;
++			break;
++		}
++	}
++	if (!found) {
++		char *cp;
++		cp = kzalloc(PAGE_SIZE, GFP_KERNEL);
++		if (!cp)
++			goto out2;
++		fmb = kzalloc(sizeof(*fmb), GFP_KERNEL);
++		if (!fmb) {
++			kfree(cp);
++out2: ;
++			printk(KERN_INFO
++			       "ERROR: Out of memory for tmy_save_name().\n");
++			if (!sbin_init_started)
++				panic("MAC Initialization failed.\n");
++			ptr = NULL;
++			goto out;
++		}
++		allocated_memory_for_savename += PAGE_SIZE;
++		fmb->ptr = cp;
++		fmb->len = PAGE_SIZE;
++		list_add_tail(&fmb->list, &fmb_list);
++	}
++	ptr = tmy_alloc_element(sizeof(*ptr));
++	if (!ptr)
++		goto out;
++	ptr->entry.name = fmb->ptr;
++	memmove(fmb->ptr, name, len);
++	tmy_fill_path_info(&ptr->entry);
++	fmb->ptr += len;
++	fmb->len -= len;
++	list_add_tail(&ptr->list, &name_list[hash % MAX_HASH]);
++	if (fmb->len == 0) {
++		list_del(&fmb->list); /* Protected by mutex. */
++		kfree(fmb);
++	}
++out: ;
++	mutex_unlock(&mutex);
++	return ptr ? &ptr->entry : NULL;
++}
++
++/***** Dynamic memory allocator. *****/
++
++/* List of temporary memory blocks. */
++struct cache_entry {
++	struct list_head list;
++	void *ptr;
++	int size;
++};
++
++static struct kmem_cache *tmy_cachep;
++
++/**
++ * tmy_realpath_init - initialize memory allocator.
++ */
++static int __init tmy_realpath_init(void)
++{
++	tmy_cachep = kmem_cache_create("tomoyo_cache",
++				       sizeof(struct cache_entry),
++				       0, SLAB_PANIC, NULL);
++	return 0;
++}
++postcore_initcall(tmy_realpath_init);
++
++static LIST_HEAD(cache_list);
++static DEFINE_SPINLOCK(cache_list_lock);
++static unsigned int dynamic_memory_size;
++
++/**
++ * tmy_get_memory_used_for_dynamic - get memory usage for temporary purpose.
++ *
++ * Returns size of memory allocated for keeping temporary purpose.
++ */
++unsigned int tmy_get_memory_used_for_dynamic(void)
++{
++	return dynamic_memory_size;
++}
++
++/**
++ * tmy_alloc - allocate memory for temporary purpose.
++ * @size: requested size in bytes.
++ *
++ * Returns '\0'-initialized memory region on success.
++ * Returns NULL on failure.
++ *
++ * This function allocates memory for keeping ACL entries.
++ * The caller has to call tmy_free() the returned pointer
++ * when memory is no longer needed.
++ */
++void *tmy_alloc(const size_t size)
++{
++	void *ret = kzalloc(size, GFP_KERNEL);
++	struct cache_entry *new_entry;
++
++	if (!ret) {
++		printk(KERN_INFO "ERROR: "
++		       "kmalloc(): Out of memory for tmy_alloc().\n");
++		return ret;
++	}
++
++	new_entry = kmem_cache_alloc(tmy_cachep, GFP_KERNEL);
++
++	if (!new_entry) {
++		printk(KERN_INFO "ERROR: "
++		       "kmem_cache_alloc(): Out of memory for tmy_alloc().\n");
++		kfree(ret);
++		ret = NULL;
++	} else {
++		INIT_LIST_HEAD(&new_entry->list);
++		new_entry->ptr = ret;
++		new_entry->size = ksize(ret);
++
++		/***** CRITICAL SECTION START *****/
++		spin_lock(&cache_list_lock);
++		list_add_tail(&new_entry->list, &cache_list);
++		dynamic_memory_size += new_entry->size;
++		spin_unlock(&cache_list_lock);
++		/***** CRITICAL SECTION END *****/
++	}
++
++	return ret;
++}
++
++/**
++ * tmy_free - free memory allocated by tmy_alloc().
++ * @p: pointer to memory block allocated by tmy_alloc().
++ *
++ * If caller calls this function for multiple times (i.e. double-free() bug) or
++ * calls this function with invalid pointer, warning message will appear.
++ * If caller forgets to call this function,
++ * tmy_get_memory_used_for_dynamic() will indicate memory leaks.
++ */
++void tmy_free(const void *p)
++{
++	struct list_head *v;
++	struct cache_entry *entry = NULL;
++	if (!p)
++		return;
++
++	/***** CRITICAL SECTION START *****/
++	spin_lock(&cache_list_lock);
++	list_for_each_prev(v, &cache_list) {
++		entry = list_entry(v, struct cache_entry, list);
++		if (entry->ptr != p) {
++			entry = NULL;
++			continue;
++		}
++		list_del(&entry->list);
++		dynamic_memory_size -= entry->size;
++		break;
++	}
++	spin_unlock(&cache_list_lock);
++	/***** CRITICAL SECTION END *****/
++
++	if (entry) {
++		kfree(p);
++		kmem_cache_free(tmy_cachep, entry);
++	} else
++		printk(KERN_INFO "BUG: tmy_free() with invalid pointer.\n");
++
++}
 
 -- 
