@@ -1,51 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932874AbXKPRvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763658AbXKPRzr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932874AbXKPRvT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 12:51:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbXKPRvK
+	id S1763658AbXKPRzr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 12:55:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756603AbXKPRzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 12:51:10 -0500
-Received: from twinlark.arctic.org ([207.29.250.54]:38481 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755665AbXKPRvJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 12:51:09 -0500
-Date: Fri, 16 Nov 2007 09:51:08 -0800 (PST)
-From: dean gaudet <dean@arctic.org>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Philip Mucci <mucci@cs.utk.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, Stephane Eranian <eranian@hpl.hp.com>,
-       William Cohen <wcohen@redhat.com>,
-       Robert Richter <robert.richter@amd.com>, linux-kernel@vger.kernel.org,
-       papi list <ptools-perfapi@cs.utk.edu>
-Subject: Re: perfmon2 merge news
-In-Reply-To: <p737ikicjbn.fsf@bingen.suse.de>
-Message-ID: <alpine.DEB.0.9999.0711160943470.15441@twinlark.arctic.org>
-References: <20071109213829.GC28276@kroah.com> <p73abpl2654.fsf@bingen.suse.de> <20071113151718.GA3804@erda.amd.com> <4739C42F.8030208@redhat.com> <20071113175545.GD4319@frankl.hpl.hp.com> <53F4663B-CFBA-44E4-8283-BAAC8C8F1AFF@cs.utk.edu> <20071113185924.GA22748@suse.de>
- <20071113120728.4342e7d7.akpm@linux-foundation.org> <20071113203645.GA17145@one.firstfloor.org> <9FF72994-F55A-4B36-9EAA-CB1D2360A6F5@cs.utk.edu> <20071114015210.GA20365@one.firstfloor.org> <A42C2398-2EAB-460C-95C7-686A34A76F82@cs.utk.edu>
- <p737ikicjbn.fsf@bingen.suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 16 Nov 2007 12:55:35 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:53451 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753085AbXKPRzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 12:55:33 -0500
+Message-Id: <20071116173529.501540030@I-love.SAKURA.ne.jp>
+References: <20071116173439.796600895@I-love.SAKURA.ne.jp>
+User-Agent: quilt/0.46-1
+Date: Sat, 17 Nov 2007 02:34:56 +0900
+From: penguin-kernel@I-love.SAKURA.ne.jp
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Kentaro Takeda <takedakn@nttdata.co.jp>,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Subject: [TOMOYO #5 17/18] Kconfig and Makefile
+Content-Disposition: inline; filename=tomoyo-kconfig.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Nov 2007, Andi Kleen wrote:
+TOMOYO Linux is placed in security/tomoyo .
 
-> I didn't see a clear list. 
+Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+ security/Kconfig         |    1 +
+ security/Makefile        |    1 +
+ security/tomoyo/Kconfig  |   26 ++++++++++++++++++++++++++
+ security/tomoyo/Makefile |    2 ++
+ 4 files changed, 30 insertions(+)
 
-- cross platform extensible API for configuring perf counters
-- support for multiplexed counters
-- support for virtualized 64-bit counters
-- support for PC and call graph sampling at specific intervals
-- support for reading counters not necessarily with sampling
-- taskswitch support for counters
-- API available from userland
-- ability to self-monitor: need select/poll/etc interface
-- support for PEBS, IBS and whatever other new perf monitoring 
-  infrastructure the vendors through at us in the future
-- low overhead:  must minimize the "probe effect" of monitoring
-- low noise in measurements:  cannot achieve this in userland
+--- linux-2.6-mm.orig/security/Kconfig	2007-11-14 15:12:08.000000000 +0900
++++ linux-2.6-mm/security/Kconfig	2007-11-14 15:15:44.000000000 +0900
+@@ -104,6 +104,7 @@ config SECURITY_ROOTPLUG
+ 	  If you are unsure how to answer this question, answer N.
+ 
+ source security/selinux/Kconfig
++source security/tomoyo/Kconfig
+ 
+ endmenu
+ 
+--- linux-2.6-mm.orig/security/Makefile	2007-10-10 05:31:38.000000000 +0900
++++ linux-2.6-mm/security/Makefile	2007-11-14 15:15:44.000000000 +0900
+@@ -16,3 +16,4 @@ obj-$(CONFIG_SECURITY)			+= security.o d
+ obj-$(CONFIG_SECURITY_SELINUX)		+= selinux/built-in.o
+ obj-$(CONFIG_SECURITY_CAPABILITIES)	+= commoncap.o capability.o
+ obj-$(CONFIG_SECURITY_ROOTPLUG)		+= commoncap.o root_plug.o
++obj-$(CONFIG_SECURITY_TOMOYO)           += tomoyo/
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-mm/security/tomoyo/Kconfig	2007-11-14 15:15:44.000000000 +0900
+@@ -0,0 +1,26 @@
++config SECURITY_TOMOYO
++	bool "TOMOYO Linux support"
++	depends on SECURITY
++	select SECURITY_NETWORK
++	default n
++	help
++	  This selects TOMOYO Linux.
++
++	  TOMOYO Linux is a domain-based access control method using LSM.
++	  If you answer Y, you will need a policy loader program
++	  (/sbin/tomoyo-init) and some configuration files.
++	  You can get them from
++	  <http://tomoyo.sourceforge.jp/en/2.1.x/>
++
++	  TOMOYO Linux is also applicable to figuring out the behavior
++	  of your system, for TOMOYO uses the canonicalized absolute
++	  pathnames and TreeView style domain transitions.
++
++config SECURITY_TOMOYO_USE_AUDITD
++	bool "Use standard auditing subsystem"
++	depends on SECURITY_TOMOYO && AUDIT
++	default y
++	help
++	  This makes messages sent to auditing subsystem.
++
++	  If you say 'N' here, messages will be sent to printk().
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-mm/security/tomoyo/Makefile	2007-11-14 15:15:44.000000000 +0900
+@@ -0,0 +1,2 @@
++obj-$(CONFIG_SECURITY_TOMOYO) += tomoyo.o domain.o common.o realpath.o audit.o file.o exec.o net.o mount.o signal.o capability.o condition.o
++EXTRA_CFLAGS += -Isecurity/tomoyo/include
 
-permon2 has all of this and more i've probably neglected...
-
--dean
+-- 
