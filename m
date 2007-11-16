@@ -1,281 +1,259 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932285AbXKPRjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932511AbXKPRjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932285AbXKPRjd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 12:39:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756029AbXKPRhT
+	id S932511AbXKPRjt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 12:39:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763424AbXKPRhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 12:37:19 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:54708 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 16 Nov 2007 12:37:21 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:54723 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757429AbXKPRhB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754595AbXKPRhB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 Nov 2007 12:37:01 -0500
-Message-Id: <20071116173526.245952658@I-love.SAKURA.ne.jp>
+Message-Id: <20071116173526.933988548@I-love.SAKURA.ne.jp>
 References: <20071116173439.796600895@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Sat, 17 Nov 2007 02:34:47 +0900
+Date: Sat, 17 Nov 2007 02:34:49 +0900
 From: penguin-kernel@I-love.SAKURA.ne.jp
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #5 08/18] Auditing interface.
-Content-Disposition: inline; filename=tomoyo-audit.diff
+Subject: [TOMOYO #5 10/18] argv0 check functions.
+Content-Disposition: inline; filename=tomoyo-exec.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-TOMOYO Linux uses /sys/kernel/security/tomoyo/ interface
-for reporting access logs in domain policy format.
-One is 'grant_log', used for auditing accesses which are
-granted in the TOMOYO Linux policy.
-The other is 'reject_log', used for auditing accesses which
-are not granted in the TOMOYO Linux policy.
-The userland daemon /usr/lib/ccs/ccs-auditd will save these logs.
+If the executed program name and argv[0] is different,
+TOMOYO Linux checks permission.
+
+Each permission can be automatically accumulated into
+the policy of each domain using 'learning mode'.
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
- security/tomoyo/audit.c |  238 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 238 insertions(+)
+ security/tomoyo/exec.c |  218 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 218 insertions(+)
 
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-mm/security/tomoyo/audit.c	2007-11-14 15:15:44.000000000 +0900
-@@ -0,0 +1,238 @@
++++ linux-2.6-mm/security/tomoyo/exec.c	2007-11-14 15:15:44.000000000 +0900
+@@ -0,0 +1,218 @@
 +/*
-+ * security/tomoyo/audit.c
++ * security/tomoyo/exec.c
 + *
-+ * Audit functions for TOMOYO Linux
++ * Argv0 access control functions for TOMOYO Linux.
 + */
 +
 +#include "tomoyo.h"
++#include "realpath.h"
 +
-+#ifdef CONFIG_SECURITY_TOMOYO_USE_AUDITD
-+/**
-+ * tmy_audit - write audit log.
-+ * @fmt:  format strings for printf().
-+ *
-+ * Returns zero on success.
-+ * Returns nonzero on failure.
-+ *
-+ * Write audit log.
-+ */
-+int tmy_audit(const char *fmt, ...)
++/*************************  AUDIT FUNCTIONS  *************************/
++
++static int tmy_audit_argv0_log(const struct path_info *filename,
++			       const char *argv0,
++			       const bool is_granted,
++			       const u8 profile,
++			       const unsigned int mode)
 +{
-+	struct audit_buffer *ab;
++	char *buf;
 +	int len;
-+	va_list args;
-+	char *buf;
-+	char *cp;
-+	ab = audit_log_start(current->audit_context, GFP_KERNEL, AUDIT_KERNEL);
-+	if (!ab)
-+		return -ENOMEM;
-+	buf = kzalloc(PAGE_SIZE, GFP_KERNEL);
-+	if (!buf)
-+		goto out;
-+	va_start(args, fmt);
-+	len = vsnprintf(buf, PAGE_SIZE - 1, fmt, args);
-+	va_end(args);
-+	if (len > PAGE_SIZE - 1) {
-+		kfree(buf);
-+		buf = kzalloc(len + 16, GFP_KERNEL);
-+		if (!buf)
-+			goto out;
-+		va_start(args, fmt);
-+		vsnprintf(buf, len + 15, fmt, args);
-+		va_end(args);
++
++	if (is_granted) {
++		if (!tmy_audit_grant())
++			return 0;
++	} else {
++		if (!tmy_audit_reject())
++			return 0;
 +	}
-+	cp = strchr(buf, '\0') - 1;
-+	if (cp >= buf && *cp == '\n')
-+		*cp = '\0';
-+	audit_log_format(ab, "TOMOYO: %s", buf);
-+	kfree(buf);
-+out: ;
-+	audit_log_end(ab);
-+	return buf ? 0 : -ENOMEM;
-+}
-+#endif
 +
-+static DECLARE_WAIT_QUEUE_HEAD(grant_log_wait);
-+static DECLARE_WAIT_QUEUE_HEAD(reject_log_wait);
++	len = filename->total_len + strlen(argv0) + 8;
++	buf = tmy_init_audit_log(&len, profile, mode);
 +
-+static DEFINE_SPINLOCK(audit_log_lock);
-+
-+struct log_entry {
-+	struct list_head list;
-+	char *log;
-+};
-+
-+static LIST_HEAD(grant_log);
-+static LIST_HEAD(reject_log);
-+
-+static int grant_log_count;
-+static int reject_log_count;
-+
-+/**
-+ * tmy_audit_grant - get flags of auditing grant logs.
-+ *
-+ * Returns current value of auditing grant log flags.
-+ */
-+bool tmy_audit_grant(void)
-+{
-+	return grant_log_count < tmy_flags(TMY_MAX_GRANT_LOG);
-+}
-+
-+/**
-+ * tmy_audit_reject - get flags of auditing reject logs.
-+ *
-+ * Returns current value of auditing reject log flags.
-+ */
-+bool tmy_audit_reject(void)
-+{
-+	return reject_log_count < tmy_flags(TMY_MAX_REJECT_LOG);
-+}
-+
-+/**
-+ * tmy_init_audit_log - allocate and initialize audit buffer.
-+ * @len: pointer to length of requested size.
-+ * @profile: profile number for this log.
-+ * @mode: profile value for this log.
-+ *
-+ * Returns pointer to audit buffer on success. @len received allocated size.
-+ * Returns NULL on failure.
-+ *
-+ * @len must not be a NULL.
-+ */
-+char *tmy_init_audit_log(int *len, const u8 profile, const unsigned int mode)
-+{
-+	char *buf;
-+	struct timeval tv;
-+	struct task_struct *task = current;
-+	const char *domainname = TMY_SECURITY->domain->domainname->name;
-+	do_gettimeofday(&tv);
-+	*len += strlen(domainname) + 256;
-+	buf = tmy_alloc(*len);
 +	if (!buf)
-+		return NULL;
-+	snprintf(buf, (*len) - 1, "#timestamp=%lu profile=%u mode=%u "
-+		 "pid=%d uid=%d gid=%d euid=%d egid=%d "
-+		 "suid=%d sgid=%d fsuid=%d fsgid=%d \n%s\n",
-+		 tv.tv_sec, profile, mode,
-+		 task->pid, task->uid, task->gid, task->euid, task->egid,
-+		 task->suid, task->sgid, task->fsuid, task->fsgid, domainname);
-+	return buf;
++		return -ENOMEM;
++
++	snprintf(buf + strlen(buf),
++		 len - strlen(buf) - 1,
++		 TMY_ALLOW_ARGV0 "%s %s",
++		 filename->name,
++		 argv0);
++
++	return tmy_write_audit_log(buf, is_granted);
++}
++
++/*************************  ARGV0 MISMATCH HANDLER  *************************/
++
++static int tmy_add_argv0_entry(const char *filename,
++			       const char *argv0,
++			       struct domain_info *domain,
++			       const struct condition_list *cond,
++			       const bool is_delete)
++{
++	struct acl_info *ptr;
++	struct argv0_acl *acl;
++	const struct path_info *saved_filename;
++	const struct path_info *saved_argv0;
++	int error = -ENOMEM;
++
++	if (!tmy_correct_path(filename, 1, 0, -1, __FUNCTION__) ||
++	    !tmy_correct_path(argv0, -1, 0, -1, __FUNCTION__) ||
++	    strchr(argv0, '/'))
++		return -EINVAL;
++
++	saved_filename = tmy_save_name(filename);
++	saved_argv0 = tmy_save_name(argv0);
++	if (!saved_filename || !saved_argv0)
++		return -ENOMEM;
++
++	mutex_lock(&domain_acl_lock);
++
++	if (is_delete)
++		goto remove;
++
++	list_for_each_entry(ptr, &domain->acl_info_list, list) {
++		acl = (struct argv0_acl *) ptr;
++		if (ptr->type == TMY_TYPE_ARGV0_ACL && ptr->cond == cond &&
++		    acl->filename == saved_filename &&
++		    acl->argv0 == saved_argv0) {
++			ptr->is_deleted = 0;
++			/* Found. Nothing to do. */
++			error = 0;
++			goto ok;
++		}
++	}
++
++	/* Not found. Append it to the tail. */
++	acl = tmy_alloc_element(sizeof(*acl));
++	if (!acl)
++		goto ok;
++
++	acl->head.type = TMY_TYPE_ARGV0_ACL;
++	acl->head.cond = cond;
++	acl->filename = saved_filename;
++	acl->argv0 = saved_argv0;
++	error = tmy_add_acl(domain,
++			    (struct acl_info *) acl);
++	goto ok;
++remove: ;
++	error = -ENOENT;
++	list_for_each_entry(ptr, &domain->acl_info_list, list) {
++		acl = (struct argv0_acl *) ptr;
++		if (ptr->type != TMY_TYPE_ARGV0_ACL ||
++		    ptr->cond != cond || ptr->is_deleted ||
++		    acl->filename != saved_filename ||
++		    acl->argv0 != saved_argv0)
++			continue;
++
++		error = tmy_del_acl(ptr);
++		break;
++	}
++ok: ;
++	mutex_unlock(&domain_acl_lock);
++
++	return error;
++}
++
++static int tmy_argv0_acl(const struct path_info *filename,
++			 const char *argv0_)
++{
++	const struct domain_info *domain = TMY_SECURITY->domain;
++	int error = -EPERM;
++	struct acl_info *ptr;
++	struct path_info argv0;
++
++	if (!tmy_flags(TMY_MAC_FOR_ARGV0))
++		return 0;
++
++	argv0.name = argv0_;
++	tmy_fill_path_info(&argv0);
++
++	list_for_each_entry(ptr, &domain->acl_info_list, list) {
++		struct argv0_acl *acl = (struct argv0_acl *) ptr;
++
++		if (ptr->type == TMY_TYPE_ARGV0_ACL &&
++		    ptr->is_deleted == 0 &&
++		    tmy_check_condition(ptr->cond, NULL) == 0 &&
++		    tmy_path_match(filename, acl->filename) &&
++		    tmy_path_match(&argv0, acl->argv0)) {
++			error = 0;
++			break;
++		}
++	}
++
++	return error;
 +}
 +
 +/**
-+ * tmy_write_audit_log - write audit log.
-+ * @buf:        pointer to access log contents.
-+ * @is_granted: is the access request granted?
++ * tmy_argv0_perm - check for argv[0] permission.
++ * @filename: pointer to filename.
++ * @argv0:    pointer to basename of argv[0].
++ *
++ * Returns zero if permission granted.
++ * Returns nonzero if permission denied.
++ */
++int tmy_argv0_perm(const struct path_info *filename, const char *argv0)
++{
++	int error = 0;
++	const u8 profile = TMY_SECURITY->domain->profile;
++	const unsigned int mode = tmy_flags(TMY_MAC_FOR_ARGV0);
++	const bool is_enforce = (mode == 3);
++
++	if (!mode)
++		return 0;
++	if (!filename || !argv0 || !*argv0)
++		return 0;
++
++	error = tmy_argv0_acl(filename, argv0);
++
++	tmy_audit_argv0_log(filename, argv0, !error, profile, mode);
++
++	if (error) {
++		struct domain_info * const domain = TMY_SECURITY->domain;
++
++		if (tmy_flags(TMY_VERBOSE))
++			tmy_audit("TOMOYO-%s: Run %s as %s denied for %s\n",
++				  tmy_getmsg(is_enforce), filename->name, argv0,
++				  tmy_lastname(domain));
++
++		if (is_enforce)
++			error = tmy_supervisor("%s\n" TMY_ALLOW_ARGV0 "%s %s\n",
++					       domain->domainname->name,
++					       filename->name, argv0);
++
++		else if (mode == 1 && tmy_quota())
++			tmy_add_argv0_entry(filename->name, argv0, domain,
++					    NULL, 0);
++
++		if (!is_enforce)
++			error = 0;
++	}
++
++	return error;
++}
++
++/**
++ * tmy_add_argv0_policy - add or delete argv[0] policy.
++ * @data:      a line to parse.
++ * @domain:    pointer to "struct domain_info".
++ * @cond:      pointer to "struct condition_list". May be NULL.
++ * @is_delete: is this delete request?
 + *
 + * Returns zero on success.
 + * Returns nonzero on failure.
-+ *
-+ * Write audit log.
-+ * Caller must allocate @buf with tmy_init_audit_log().
 + */
-+int tmy_write_audit_log(char *buf, const bool is_granted)
++int tmy_add_argv0_policy(char *data,
++			 struct domain_info *domain,
++			 const struct condition_list *cond,
++			 const bool is_delete)
 +{
-+	struct log_entry *new_entry;
-+	new_entry = tmy_alloc(sizeof(*new_entry));
-+	if (!new_entry) {
-+		tmy_free(buf);
-+		return -ENOMEM;
-+	}
-+	INIT_LIST_HEAD(&new_entry->list);
-+	new_entry->log = buf;
-+	/***** CRITICAL SECTION START *****/
-+	spin_lock(&audit_log_lock);
-+	if (is_granted) {
-+		list_add_tail(&new_entry->list, &grant_log);
-+		grant_log_count++;
-+		buf = NULL;
-+		tmy_update_counter(TMY_UPDATE_GRANT_LOG);
-+	} else {
-+		list_add_tail(&new_entry->list, &reject_log);
-+		reject_log_count++;
-+		buf = NULL;
-+		tmy_update_counter(TMY_UPDATE_REJECT_LOG);
-+	}
-+	spin_unlock(&audit_log_lock);
-+	/***** CRITICAL SECTION END *****/
-+	if (is_granted)
-+		wake_up(&grant_log_wait);
-+	else
-+		wake_up(&reject_log_wait);
-+	return 0;
-+}
++	char *argv0 = strchr(data, ' ');
 +
-+int tmy_read_grant_log(struct io_buffer *head)
-+{
-+	struct log_entry *ptr = NULL;
-+	if (head->read_avail) return 0;
-+	if (head->read_buf) {
-+		tmy_free(head->read_buf);
-+		head->read_buf = NULL;
-+		head->readbuf_size = 0;
-+	}
-+	/***** CRITICAL SECTION START *****/
-+	spin_lock(&audit_log_lock);
-+	if (!list_empty(&grant_log)) {
-+		ptr = list_entry(grant_log.next, struct log_entry, list);
-+		list_del(&ptr->list);
-+		grant_log_count--;
-+	}
-+	spin_unlock(&audit_log_lock);
-+	/***** CRITICAL SECTION END *****/
-+	if (ptr) {
-+		head->read_buf = ptr->log;
-+		head->read_avail = strlen(ptr->log) + 1;
-+		head->readbuf_size = head->read_avail;
-+		tmy_free(ptr);
-+	}
-+	return 0;
-+}
++	if (!argv0)
++		return -EINVAL;
 +
-+int tmy_poll_grant_log(struct file *file, poll_table *wait)
-+{
-+	if (grant_log_count)
-+		return POLLIN | POLLRDNORM;
-+	poll_wait(file, &grant_log_wait, wait);
-+	if (grant_log_count)
-+		return POLLIN | POLLRDNORM;
-+	return 0;
-+}
++	*argv0++ = '\0';
 +
-+int tmy_read_reject_log(struct io_buffer *head)
-+{
-+	struct log_entry *ptr = NULL;
-+	if (head->read_avail)
-+		return 0;
-+	if (head->read_buf) {
-+		tmy_free(head->read_buf);
-+		head->read_buf = NULL;
-+		head->readbuf_size = 0;
-+	}
-+	/***** CRITICAL SECTION START *****/
-+	spin_lock(&audit_log_lock);
-+	if (!list_empty(&reject_log)) {
-+		ptr = list_entry(reject_log.next, struct log_entry, list);
-+		list_del(&ptr->list);
-+		reject_log_count--;
-+	}
-+	spin_unlock(&audit_log_lock);
-+	/***** CRITICAL SECTION END *****/
-+	if (ptr) {
-+		head->read_buf = ptr->log;
-+		head->read_avail = strlen(ptr->log) + 1;
-+		head->readbuf_size = head->read_avail;
-+		tmy_free(ptr);
-+	}
-+	return 0;
-+}
-+
-+int tmy_poll_reject_log(struct file *file, poll_table *wait)
-+{
-+	if (reject_log_count)
-+		return POLLIN | POLLRDNORM;
-+	poll_wait(file, &reject_log_wait, wait);
-+	if (reject_log_count)
-+		return POLLIN | POLLRDNORM;
-+	return 0;
++	return tmy_add_argv0_entry(data, argv0, domain, cond,
++				   is_delete);
 +}
 
 -- 
