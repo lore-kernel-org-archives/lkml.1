@@ -1,63 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763907AbXKPD3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763097AbXKPDc0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763907AbXKPD3A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 22:29:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756843AbXKPD2x
+	id S1763097AbXKPDc0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 22:32:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756425AbXKPDcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 22:28:53 -0500
-Received: from [222.73.24.84] ([222.73.24.84]:61508 "EHLO song.cn.fujitsu.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756810AbXKPD2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 22:28:52 -0500
-Message-ID: <473D0DD9.3000600@cn.fujitsu.com>
-Date: Fri, 16 Nov 2007 11:26:17 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Dan Aloni <da-x@monatomic.org>
-CC: Aristeu Rozanski <aris@ruivo.org>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: fix a deadlock in set_rtc_mmss()
-References: <20071115165528.GA25520@localdomain> <20071115183046.GD8068@cathedrallabs.org>
-In-Reply-To: <20071115183046.GD8068@cathedrallabs.org>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Nov 2007 22:32:17 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:38813 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755347AbXKPDcQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Nov 2007 22:32:16 -0500
+Message-Id: <20071116033057.304933306@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Thu, 15 Nov 2007 22:30:57 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [patch 0/4] Instrumentation menu removal (HAVE_* form)
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri, 16 Nov 2007 03:32:07 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Aristeu Rozanski wrote:
-> Hello Dan,
->> Patch is valid only for 2.6.23.x, guessing from the recent arch/ changes 
->> in 2.6.24-rc.
->>
->> set_rtc_mmss() was used to be called from interrupt context in 2.6.22,
->> however in 2.6.23, it is called from a timer context, where interrupts
->> are enabled. This patch ensures that rtc_interrupt() won't dead-lock 
->> with set_rtc_mmss().
-> 
->> diff --git a/arch/x86_64/kernel/time.c b/arch/x86_64/kernel/time.c
->> index 6241b50..8414236 100644
->> --- a/arch/x86_64/kernel/time.c
->> +++ b/arch/x86_64/kernel/time.c
->> @@ -87,13 +87,14 @@ static int set_rtc_mmss(unsigned long nowtime)
->>  	int retval = 0;
->>  	int real_seconds, real_minutes, cmos_minutes;
->>  	unsigned char control, freq_select;
->> +	unsigned long flags;
->>  
->>  /*
->>   * IRQs are disabled when we're called from the timer interrupt,
->>   * no need for spin_lock_irqsave()
->>   */
->>  
->> -	spin_lock(&rtc_lock);
->> +	spin_lock_irqsave(&rtc_lock, flags);
-> I think it's a good idea to update or just remove the comment above.
-> 
+Should hopefully be the final form.
 
-David P. Reed has sent a patch to fix this bug before you.
+Please wait 1-2 days before merge, just in case Sam changes his mind ;)
 
-http://lkml.org/lkml/2007/11/14/435
+Mathieu
 
-
-Li Zefan
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
