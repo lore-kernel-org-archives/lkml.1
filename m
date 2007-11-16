@@ -1,94 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934706AbXKPVMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765040AbXKPVQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934706AbXKPVMQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 16:12:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762641AbXKPVLt
+	id S1765040AbXKPVQg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 16:16:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbXKPVQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 16:11:49 -0500
-Received: from thunk.org ([69.25.196.29]:41315 "EHLO thunker.thunk.org"
+	Fri, 16 Nov 2007 16:16:28 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:58097 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759945AbXKPVLs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 16:11:48 -0500
-Date: Fri, 16 Nov 2007 16:11:33 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Abhishek Rai <abhishekrai@google.com>, Andreas Dilger <adilger@sun.com>,
-       linux-kernel@vger.kernel.org, Ken Chen <kenchen@google.com>,
-       Mike Waychison <mikew@google.com>
-Subject: Re: [PATCH] Clustering indirect blocks in Ext3
-Message-ID: <20071116211133.GJ11339@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Abhishek Rai <abhishekrai@google.com>,
-	Andreas Dilger <adilger@sun.com>, linux-kernel@vger.kernel.org,
-	Ken Chen <kenchen@google.com>, Mike Waychison <mikew@google.com>
-References: <d9885f0f0711152102h7a8270bfvd65605d8c00e6754@mail.gmail.com> <20071115230219.1fe9338c.akpm@linux-foundation.org>
+	id S1751752AbXKPVQ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 16:16:27 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: 2.6.24 regression:  hibernation hangs on "Suspending console" in low-battery condition
+Date: Fri, 16 Nov 2007 22:33:52 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       Alexey Starikovskiy <astarikovskiy@suse.de>
+References: <200711052201.17150.arvidjaar@mail.ru> <200711112010.24874.rjw@sisk.pl> <200711170001.46710.arvidjaar@mail.ru>
+In-Reply-To: <200711170001.46710.arvidjaar@mail.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071115230219.1fe9338c.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Message-Id: <200711162233.52910.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 15, 2007 at 11:02:19PM -0800, Andrew Morton wrote:
+On Friday, 16 of November 2007, Andrey Borzenkov wrote:
+> On Sunday 11 November 2007, Rafael J. Wysocki wrote:
+> > On Sunday, 11 of November 2007, Andrey Borzenkov wrote:
+> > > On Sunday 11 November 2007, Rafael J. Wysocki wrote:
+> > > > On Sunday, 11 of November 2007, Andrey Borzenkov wrote:
+> > > > > On Monday 05 November 2007, Andrey Borzenkov wrote:
+> > > > > > Notice "hung" not "hangs". This happened so far only once - when low battery 
+> > > > > > condition triggered suspend to disk. I was not able to reproduce it after 
+> > > > > > this running on AC.
+> > > > > > 
+> > > > > > Just in case it rings the bell for someone. This is not suspend regression 
+> > > > > > reported earlier by Jens - I do not even have SATA nor is using libata 
+> > > > > > drivers.
+> > > > > > 
+> > > > > 
+> > > > > This happened second time, now with 2.6.24-rc2. I have kpowersave configured
+> > > > > to initiate suspend-to-disk on low battery. Suspend-to-disk is initiated,
+> > > > > but system stops after Suspending console line. Suspend image is not created.
+> > > > > 
+> > > > > This did work before although I do not name exact version.
+> > > > > 
+> > > > > I am rather at loss how to proceed further ... any idea? dmesg and config
+> > > > > attached just in case. The problem is that hibernation works when I initiate
+> > > > > it manually ...
+> > > > 
+> > > > Have you tried it with the battery removed?
+> > > > 
+> > > > 
+> > > 
+> > > It works. Subjectively I have relatively long pause after first Suspending console
+> > > message (where it hangs otherwise), according to dmesg timestamp it is about
+> > > 1 second before next messages appear. Also last two times I tried it writeout
+> > > of suspend image was really slow; it was both with and without battery. Reading
+> > > on resume in really in order of magnitude faster.
+> > > 
+> > > But manual STD so far works both on AC (with or without battery) or on battery.
+> > > 
+> > > Of course it is possible that battery gets exhausted during STD, but system
+> > > is not switched off. Rather I would suspect something like ACPI notification
+> > > that comes during freeze ...
+> > 
+> > Frankly, I'm suspecting a deadlock in the ACPI code.
+> > 
+> > Please try to make kpowersave start hibernation a bit earlier and see what
+> > happens.
+> > 
+> > What's your critical time now?
+> > 
+> > 
 > 
-> Presmably it starts around 50% of the way into the blockgroup?
+> it was set to 5%. Setting it to 10% makes it work, but it just confirms what I
+> said before - suspend-to-RAM in normal battery conditions (or without battery)
+> works.
 
 Yes.
 
-> How do you decide its size?
-
-It's fixed at 1/128th (0.78%) of the blockgroup.
-
-> What happens when it fills up but we still have room for more data blocks
-> in that blockgroup?
-
-It does fall back, but it does so starting from the beginning of the
-block group by using the old-style allocation routines if it can't
-find any space in the metacluster region.  What I'd suggest that it do
-instead is to start searching from the end of metacluster region, and
-then wrap around to the beginning of the block group, and then if it
-can't find any blocks when it reaches the beginning of the metacluster
-region, then go to the next block group that would be used by
-ext3_new_blocks(), and start searching in the metacluster region ---
-that way a smart e2fsck that is doing clustering could just arrange to
-pre-read the metacluster region for each block group, and if it finds
-an indirect block that is another block group's metacluster region, it
-could try reading in those blocks too.
-
-In order to do this, I'd suggest considering to fold ext3_new_blocks
-and ext3_new_indirect_blocks() into the same function, with just a
-passed-in flag to indicate whether for each block group the
-metacluster region or the non-metacluster region should be searched
-first.  This would also make elimiate some duplicated code.
-
-> Can this reserved area cause disk space wastage (all data blocks used,
-> metacluster area not yet full).
-
-No, not as far as I can see.
-
-> Less speedup, for more-and-smaller files, it appears.
+> With 5% threshold I have visible indication of alarm from *firmware* -
+> battery LED flashing. 
 > 
-> An important question is: how does it stand up over time?  Simply laying
-> files out a single time on a fresh fs is the easy case.  But what happens
-> if that disk has been in continuous create/delete/truncate/append usage for
-> six months?
+> Something happens differently when battery is in dangerous state.
 
-Another question is how does it stand up if the average size of files
-is different from what you anticipate?  If the files are bigger than
-you expect, or smaller than you expect, then the ratio of indirect
-blocks to data blocks will be different, at which point allocations
-won't be perfectly split up between metacluster region.
+Yes, definitely.
 
-For this reason, the exact size of the metacluster region should
-probably be a superblock tunable --- and once we have the superblock
-tunable, I'd use the non-zero metacluster size to determine whether or
-not to enable this feature, and not to use a mount option.  Mount
-options really should be avoided whenever possible, in favor of
-settings in the superblock.
+> I tried patch 
+> 4c41d3ad6544f1c9aec37c441af04f5d0ad3a731 (got from ACPI tree) but it did not
+> change anything. It worked once when I left system on battery with artificial
+> load (find . -exec md5sum in linux tree in a loop) but I suspect it is just
+> because it just triggered limit earlier. (Frankly I do not know which percentage
+> kpowersave computes)
 
-						- Ted
+Well, do we have a bugzilla entry for this issue?
+
+Rafael
