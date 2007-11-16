@@ -1,54 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765205AbXKPLl5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765619AbXKPLpI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765205AbXKPLl5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 06:41:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756046AbXKPLlt
+	id S1765619AbXKPLpI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 06:45:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756297AbXKPLo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 06:41:49 -0500
-Received: from mail-in-01.arcor-online.net ([151.189.21.41]:39528 "EHLO
-	mail-in-01.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753029AbXKPLls (ORCPT
+	Fri, 16 Nov 2007 06:44:56 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:37942 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755838AbXKPLo4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 06:41:48 -0500
-Date: Fri, 16 Nov 2007 13:43:20 +0100
-From: Andreas Herrmann <aherrman@arcor.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Kconfig: ARCH=x86
-Message-ID: <20071116124320.GB12086@devil>
-References: <20071116111446.GA16968@devil>
-MIME-Version: 1.0
+	Fri, 16 Nov 2007 06:44:56 -0500
+Date: Fri, 16 Nov 2007 12:44:53 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       clameter@sgi.com, akpm@linux-foundation.org, linux-mm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dada1@cosmosbay.com,
+       schwidefsky@de.ibm.com, Ingo Molnar <mingo@elte.hu>
+Subject: Re: large lockdep bss (was: Re: [patch 01/28] cpu alloc: The allocator)
+Message-ID: <20071116114453.GA27185@one.firstfloor.org>
+References: <20071106195157.878563669@sgi.com> <20071113.031510.151440585.davem@davemloft.net> <p73wssly6sr.fsf@bingen.suse.de> <20071113.175208.168903694.davem@davemloft.net> <20071114022832.GC20365@one.firstfloor.org> <1195208633.3059.7.camel@twins>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071116111446.GA16968@devil>
-User-Agent: mutt-ng/devel-r804 (Linux)
+In-Reply-To: <1195208633.3059.7.camel@twins>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 16, 2007 at 12:14:46PM +0100, Andreas Herrmann wrote:
-> BTW, is the x86 kernel build documented somewhere?
-> At a first glance I didn't find anything suitable under Documentation/.
-> Maybe some explanation (like the above) should be added there.
+> How about moving this bit:
+> 
+> +#ifndef ARCH_HAS_EARLY_ALLOC
+> +#define LARGEVAR(x,y) { static typeof(*x) __ ## x[y];  x = __ ## x; }
+> +#else
+> +#define LARGEVAR(x,y) x = arch_early_alloc(sizeof(*x) * y)
+> +#endif
+> 
+> out of the lockdep code and into the generic early alloc code?
 
-When the ARCH=x86 build is documented, some words about
-cross-compilation should be added:
+Will do.
 
-  (1) To compile a 32-bit kernel on a 64-bit system you have to
-  Disable 64bit support in menuconfig (config, oldconfig etc.).  A
-  subsequent kernel compile will build a 32-bit kernel.  No cross
-  compiler is needed.
-
-  (2) To compile a 64-bit kernel on a 32-bit system you have to switch
-  on 64-bit support in menuconfig (or config, oldconfig, etc.).  For
-  the subsequent kernel compile a cross compiler (supporting 64-bit)
-  is needed. You have to use a command line like
-
-        # make CROSS_COMPILE=x86_64-pc-linux-gnu-
-
-  to cross compile your kernel.
-
-
-Regards,
-
-Andreas
-
+-Andi
