@@ -1,113 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934743AbXKPOav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934553AbXKPObX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934743AbXKPOav (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 09:30:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934402AbXKPO2W
+	id S934553AbXKPObX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 09:31:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934670AbXKPOaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 09:28:22 -0500
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:35588 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934397AbXKPO2T (ORCPT
+	Fri, 16 Nov 2007 09:30:25 -0500
+Received: from tomts36.bellnexxia.net ([209.226.175.93]:45059 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934441AbXKPOaX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 09:28:19 -0500
-Message-ID: <473DA25B.2000702@linux.vnet.ibm.com>
-Date: Fri, 16 Nov 2007 19:29:55 +0530
-From: Ciju Rajan K <ciju@linux.vnet.ibm.com>
-Reply-To: ciju@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
-MIME-Version: 1.0
-To: aglitke <agl@us.ibm.com>
-CC: linux-kernel@vger.kernel.org, wli@holomorphy.com
-Subject: Re: [RFC] [PATCH] hugetlbfs :shmget with SHM_HUGETLB only works as
- root
-References: <473B0317.6010603@linux.vnet.ibm.com> <1195054301.18047.20.camel@localhost.localdomain>
-In-Reply-To: <1195054301.18047.20.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 16 Nov 2007 09:30:23 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HAPo3PUdMROHU/2dsb2JhbACBX457
+Date: Fri, 16 Nov 2007 09:30:19 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, mbligh@google.com
+Subject: Re: [RFC 5/7] LTTng instrumentation mm
+Message-ID: <20071116143019.GA16082@Krystal>
+References: <20071113193349.214098508@polymtl.ca> <20071113194025.150641834@polymtl.ca> <1195160783.7078.203.camel@localhost> <20071115215142.GA7825@Krystal> <1195164977.27759.10.camel@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1195164977.27759.10.camel@localhost>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 09:20:04 up 12 days, 19:25,  4 users,  load average: 1.54, 1.16,
+	1.18
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi  Adam,
- If this condition check is not included, the root user have to use the 
-function
- setrlimit() to set the lock_limit of a normal user to RLIM_INFINITY.  I 
-think
- the /proc interface 'hugetlb_shm_group' is introduced to avoid these 
-difficulties.
- Please correct me, if I am wrong.
+* Dave Hansen (haveblue@us.ibm.com) wrote:
+> On Thu, 2007-11-15 at 16:51 -0500, Mathieu Desnoyers wrote:
+> > * Dave Hansen (haveblue@us.ibm.com) wrote:
+> > > > On Tue, 2007-11-13 at 14:33 -0500, Mathieu Desnoyers wrote:
+> > > >  linux-2.6-lttng/mm/page_io.c        2007-11-13 09:49:35.000000000 -0500
+> > > > @@ -114,6 +114,7 @@ int swap_writepage(struct page *page, st
+> > > >                 rw |= (1 << BIO_RW_SYNC);
+> > > >         count_vm_event(PSWPOUT);
+> > > >         set_page_writeback(page);
+> > > > +       trace_mark(mm_swap_out, "address %p", page_address(page));
+> > > >         unlock_page(page);
+> > > >         submit_bio(rw, bio);
+> > > >  out:
+> > > 
+> > > I'm not sure all this page_address() stuff makes any sense on highmem
+> > > systems.  How about page_to_pfn()?
+> >
+> > Knowing which page frame number has been swapped out is not always as
+> > relevant as knowing the page's virtual address (when it has one). Saving
+> > both the PFN and the page's virtual address could give us useful
+> > information when the page is not mapped.
+> 
+> For most (all?) architectures, the PFN and the virtual address in the
+> kernel's linear are interchangeable with pretty trivial arithmetic.  All
+> pages have a pfn, but not all have a virtual address.  Thus, I suggested
+> using the pfn.  What kind of virtual addresses are you talking about?
+> 
 
- Regarding the problem with the 'if' condition, I feel that even in the 
-case of
- user's lock_limit is set to unlimited, he could use unlimited hugepages and
- normal page shm segments. So what is the advantage in this scenario.
+Hum, the mappings I was referring to are the virual memory mappings of
+all processes, which is not at all what interests us here.
 
- I tried to avoid the #ifdef statements. But the variable 
-sysctl_hugetlb_shm_group is defined
- in fs/hugetlbfs/inode.c, this segment is enabled only when the config 
-parameter
- CONFIG_HUGETLBFS is set to yes. If the hugetlbfs is  not selected while 
-configuring,
- there would be a compilation error.
+Let's use the PFN then.
 
- Is there any better way so that the root user can configure the gid in 
-'hugetlb_shm_group'
- and the user is able to access the huge pages using shmget().
+I see that the standard macro to get the kernel address from a pfn is :
 
-Thanks
-Ciju
+asm-x86/page_32.h:#define pfn_to_kaddr(pfn)      __va((pfn) << PAGE_SHIFT)
 
-aglitke wrote:
-> Hi Ciju:
->
-> I am still not exactly sure why this patch is needed.  As I read
-> user_shm_lock():
->
->   
->> lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
->> if (lock_limit == RLIM_INFINITY)
->> 	allowed = 1;
->> lock_limit >>= PAGE_SHIFT;
->> spin_lock(&shmlock_user_lock);
->> if (!allowed &&
->>     locked + user->locked_shm > lock_limit && !capable(CAP_IPC_LOCK))
->> 	goto out;
->>     
->
-> ... if the user's locked limit (ulimit -l) is set to unlimited, allowed
-> (above) is set to 1.  In that case, the second part of that if() is
-> bypassed, and the function grants permission.  Therefore, the easy
-> solution is to make sure your user's lock_limit is RLIM_INFINITY.
->
-> On Wed, 2007-11-14 at 19:45 +0530, Ciju Rajan K wrote:
-> <snip>
->   
->> @@ -248,8 +249,14 @@ int user_shm_lock(size_t size, struct us
->>          allowed = 1;
->>      lock_limit >>= PAGE_SHIFT;
->>      spin_lock(&shmlock_user_lock);
->> +#ifdef CONFIG_HUGETLB_PAGE
->> +    if (!allowed &&
->> +        locked + user->locked_shm > lock_limit &&
->> +        (!(capable(CAP_IPC_LOCK) || in_group_p(sysctl_hugetlb_shm_group))))
->>     
->
-> This will allow any user in hugetlb_shm_group to make unlimited use of
-> huge page shm segments _and_ normal page shm segments.  Definitely not
-> what you want.
->
->   
->> +#else
->>      if (!allowed &&
->>          locked + user->locked_shm > lock_limit && !capable(CAP_IPC_LOCK))
->> +#endif
->>          goto out;
->>      get_uid(user);
->>      user->locked_shm += locked;
->>
->>     
->
-> Please don't add new #ifdefs into .c files, headers only.
->
->   
+The question might seem trivial, but I wonder how this deals with large
+pages ?
 
+Mathieu
+
+
+> -- Dave
+> 
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
