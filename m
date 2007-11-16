@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760345AbXKPPBu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761737AbXKPPGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760345AbXKPPBu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 10:01:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbXKPPBm
+	id S1761737AbXKPPGr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 10:06:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753968AbXKPPGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 10:01:42 -0500
-Received: from ausc60pc101.us.dell.com ([143.166.85.206]:50206 "EHLO
-	ausc60pc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751746AbXKPPBm (ORCPT
+	Fri, 16 Nov 2007 10:06:39 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:45329 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753954AbXKPPGi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 10:01:42 -0500
-DomainKey-Signature: s=smtpout; d=dell.com; c=nofws; q=dns; b=wlDWO66VV5CZTDe9oUxOS5AabwYD7dL7/ryi1O91jASrHoPIWTXVUe2TNBNUKL20d7zayT1DcU1pORZ0glXxL4CU9cBOm7gH5uxJWxObdEtJiZb4BY6Hdy0TtST83BoH;
-X-IronPort-AV: E=Sophos;i="4.21,426,1188795600"; 
-   d="scan'208";a="421995412"
-Date: Fri, 16 Nov 2007 09:01:16 -0600
-From: Matt Domsch <Matt_Domsch@dell.com>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
-       Matt Tolentino <matthew.e.tolentino@intel.com>
-Subject: Re: [PATCH 38/54] efivars: remove new_var and del_var files from sysfs
-Message-ID: <20071116150116.GA8901@auslistsprd01.us.dell.com>
-References: <20071102235758.GA9803@kroah.com> <1194047972-9850-38-git-send-email-gregkh@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 16 Nov 2007 10:06:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=dC6IwEA+kVR5H7H+vPT0eAH1PtxARFXtvxTIEdz8LgTfhXcUzP/wzqQUQoTtLKRl1nWwLcyczn2fZYCm69DBfsEThNLMNVcT8Gfpl4xsJKFFnlCaSSgrXDW79Vg5ZELps7mmRG6hDreAKKgfheDsnKQ7yXWv2YkcKva85OZ+2Ss=
+Message-ID: <cda58cb80711160706l2cfac2b1p81c7a1090f228f2e@mail.gmail.com>
+Date: Fri, 16 Nov 2007 16:06:36 +0100
+From: "Franck Bui-Huu" <vagabon.xyz@gmail.com>
+To: rjw@sisk.pl
+Subject: apm emulation driver broken ?
+Cc: linux-pm@lists.linux-foundation.org, lkml <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1194047972-9850-38-git-send-email-gregkh@suse.de>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 02, 2007 at 04:59:16PM -0700, Greg Kroah-Hartman wrote:
-> WTF?  Passing binary structures into a sysfs file, expecting it to be in
-> the correct format/endianness?  That's just wrong on so many levels.
-> 
-> So, these files are deleted.  If you want to add them back, please do so
-> in configfs, or in debugfs.  Or use text strings, which is what sysfs is
-> only for.
+Rafael,
 
+Looking at commit:
 
-I have tested gregkh's patches tree, which includes this patch, the
-patch to put these back as binary blob interfaces, as well as other
-cleanups, on an Itanium2 system.  The efibootmgr userspace application
-continues to work as it did before this patch series, which I claim is
-success.  For the patches that touch drivers/firmware/efivars.c I can
-say:
+	831441862956fffa17b9801db37e6ea1650b0f69
+	Freezer: make kernel threads nonfreezable by default
 
-Tested-by: Matt Domsch <Matt_Domsch@dell.com>
+it seems that you broke the apm emulation driver.
 
-Thanks,
-Matt
+You removed PF_NOFREEZE flag setting in apm_ioctl(), which is
+definitely not part of the apm kernel daemon but instead is called by
+user space proccesses...
 
--- 
-Matt Domsch
-Linux Technology Strategist, Dell Office of the CTO
-linux.dell.com & www.dell.com/linux
+I'm just reading this code for the first time so I can be wrong but it
+looks like it's not going to work anymore.
+
+Could you confirm ?
+
+		Franck
