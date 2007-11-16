@@ -1,56 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760262AbXKTQ2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761428AbXKTQ3K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760262AbXKTQ2f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 11:28:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756223AbXKTQ2Y
+	id S1761428AbXKTQ3K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 11:29:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760338AbXKTQ2z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 11:28:24 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:49393 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753536AbXKTQ2X (ORCPT
+	Tue, 20 Nov 2007 11:28:55 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:18083 "EHLO
+	outbound7-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760417AbXKTQ2x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 11:28:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=fy8PyiKHO+UF757G9m/Pvzv5d5hqgkXHvw8ebAsXJWWpIg2enM8AcrF/MeNNdfKSv/SoPsUIYRFkeEfbNL9AgJQqm/3vcAM072PhUiDXMHBqoXOdXj1KU9eDyWTbrcehIymllNTsew3nyy8ZqwflzgwFVgBiE6L2lqjHMphW+hs=
-Message-ID: <cac0ab7d0711200828n3548fadn48cce2837ed6a7c6@mail.gmail.com>
-Date: Tue, 20 Nov 2007 17:28:22 +0100
-From: "Jonas Danielsson" <the.sator@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH][v2] net/ipv4/arp.c: Fix arp reply when sender ip 0
-Cc: "David Miller" <davem@davemloft.net>,
-       "Alexey Kuznetsov" <kuznet@ms2.inr.ac.ru>, jmorris@namei.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org
+	Tue, 20 Nov 2007 11:28:53 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: D6C75999-9DAF-4D89-B9AC-C25E3A0BB76A
+From: "Robert Richter" <robert.richter@amd.com>
+Date: Fri, 16 Nov 2007 16:11:34 +0100
+Subject: [PATCH] Extended interrupt LVT support for AMD Barcelona
+To: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, "LKML" <linux-kernel@vger.kernel.org>
+Message-ID: <20071120162511.E1EF28098@erda.amd.com>
+X-OriginalArrivalTime: 20 Nov 2007 16:25:11.0987 (UTC)
+ FILETIME=[EC9AA830:01C82B91]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+X-WSS-ID: 6B5DD51B24S3093436-01-01
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix arp reply when received arp probe with sender ip 0.
+This patch adds extended interrupt support for AMD Barcelona CPUs. The
+patch provides functions to setup MCE and IBS interrupt
+vectors. Compared to the previous K8 implementation the vector offsets
+are centrally handled now in apic_64.c. Thus, the APIC setup code is
+responsible for vector mappings. The vector mapping is hardcoded for
+now.
 
-Send arp reply with target ip address 0.0.0.0 and target hardware address
-set to hardware address of requester. Previously sent reply with target
-ip address and target hardware address set to same as source fields.
+Also macro definitions in apicdef.h has been updated.
 
-
-Signed-off-by: Jonas Danielsson <the.sator@gmail.com>
-Acked-by: Alexey Kuznetov <kuznet@ms2.inr.ac.ru>
+The patch is relative to x86/cleanup tree.
 ---
-arp.c |    3 ++-
-1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/x86/kernel/apic_64.c               |   26 ++++++++++++++++++++++----
+ arch/x86/kernel/cpu/mcheck/mce_amd_64.c |   10 +++++-----
+ include/asm-x86/apic.h                  |    4 ++--
+ include/asm-x86/apicdef.h               |   19 ++++++++++++-------
+ 4 files changed, 41 insertions(+), 18 deletions(-)
 
---- a/net/ipv4/arp.c
-+++ b/net/ipv4/arp.c
-@@ -828,7 +828,8 @@ static int arp_process(struct sk_buff *skb)
-                if (arp->ar_op == htons(ARPOP_REQUEST) &&
-                    inet_addr_type(tip) == RTN_LOCAL &&
-                    !arp_ignore(in_dev,dev,sip,tip))
+diff --git a/arch/x86/kernel/apic_64.c b/arch/x86/kernel/apic_64.c
+index ffdc2e6..84cddf6 100644
+--- a/arch/x86/kernel/apic_64.c
++++ b/arch/x86/kernel/apic_64.c
+@@ -187,17 +187,35 @@ static void __setup_APIC_LVTT(unsigned int clocks, int oneshot, int irqen)
+ }
+ 
+ /*
+- * Setup extended LVT (K8 specific)
++ * Setup extended LVT, AMD specific (K8, family 10h)
++ *
++ * Vector mappings are hard coded. On K8 only offset 0 (APIC500) and
++ * MCE interrupts are supported. Thus MCE offset must be set to 0.
+  */
+-void setup_APIC_extended_lvt(unsigned char lvt_off, unsigned char vector,
+-			     unsigned char msg_type, unsigned char mask)
++
++#define APIC_EILVT_LVTOFF_MCE 0
++#define APIC_EILVT_LVTOFF_IBS 1
++
++static void setup_APIC_eilvt(u8 lvt_off, u8 vector, u8 msg_type, u8 mask)
+ {
+-	unsigned long reg = (lvt_off << 4) + K8_APIC_EXT_LVT_BASE;
++	unsigned long reg = (lvt_off << 4) + APIC_EILVT0;
+ 	unsigned int  v   = (mask << 16) | (msg_type << 8) | vector;
+ 
+ 	apic_write(reg, v);
+ }
+ 
++u8 setup_APIC_eilvt_mce(u8 vector, u8 msg_type, u8 mask)
++{
++	setup_APIC_eilvt(APIC_EILVT_LVTOFF_MCE, vector, msg_type, mask);
++	return APIC_EILVT_LVTOFF_MCE;
++}
++
++u8 setup_APIC_eilvt_ibs(u8 vector, u8 msg_type, u8 mask)
++{
++	setup_APIC_eilvt(APIC_EILVT_LVTOFF_IBS, vector, msg_type, mask);
++	return APIC_EILVT_LVTOFF_IBS;
++}
++
+ /*
+  * Program the next event, relative to now
+  */
+diff --git a/arch/x86/kernel/cpu/mcheck/mce_amd_64.c b/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
+index 752fb16..5cd7db5 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
++++ b/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
+@@ -118,6 +118,7 @@ void __cpuinit mce_amd_feature_init(struct cpuinfo_x86 *c)
+ {
+ 	unsigned int bank, block;
+ 	unsigned int cpu = smp_processor_id();
++	u8 lvt_off;
+ 	u32 low = 0, high = 0, address = 0;
+ 
+ 	for (bank = 0; bank < NR_BANKS; ++bank) {
+@@ -153,14 +154,13 @@ void __cpuinit mce_amd_feature_init(struct cpuinfo_x86 *c)
+ 			if (shared_bank[bank] && c->cpu_core_id)
+ 				break;
+ #endif
++			lvt_off = setup_APIC_eilvt_mce(THRESHOLD_APIC_VECTOR,
++						       APIC_EILVT_MSG_FIX, 0);
++
+ 			high &= ~MASK_LVTOFF_HI;
+-			high |= K8_APIC_EXT_LVT_ENTRY_THRESHOLD << 20;
++			high |= lvt_off << 20;
+ 			wrmsr(address, low, high);
+ 
+-			setup_APIC_extended_lvt(K8_APIC_EXT_LVT_ENTRY_THRESHOLD,
+-						THRESHOLD_APIC_VECTOR,
+-						K8_APIC_EXT_INT_MSG_FIX, 0);
 -
-arp_send(ARPOP_REPLY,ETH_P_ARP,tip,dev,tip,sha,dev->dev_addr,dev->dev_addr);
-+                       arp_send(ARPOP_REPLY, ETH_P_ARP, sip, dev, tip, sha,
-+                                dev->dev_addr, sha);
-                goto out;
-        }
+ 			threshold_defaults.address = address;
+ 			threshold_restart_bank(&threshold_defaults, 0, 0);
+ 		}
+diff --git a/include/asm-x86/apic.h b/include/asm-x86/apic.h
+index 679c111..3246115 100644
+--- a/include/asm-x86/apic.h
++++ b/include/asm-x86/apic.h
+@@ -125,8 +125,8 @@ extern void enable_NMI_through_LVT0(void *dummy);
+ extern void setup_apic_routing(void);
+ #endif
+ 
+-extern void setup_APIC_extended_lvt(unsigned char lvt_off, unsigned char vector,
+-				    unsigned char msg_type, unsigned char mask);
++extern u8 setup_APIC_eilvt_mce(u8 vector, u8 msg_type, u8 mask);
++extern u8 setup_APIC_eilvt_ibs(u8 vector, u8 msg_type, u8 mask);
+ 
+ extern int apic_is_clustered_box(void);
+ 
+diff --git a/include/asm-x86/apicdef.h b/include/asm-x86/apicdef.h
+index 5f7abe9..550af7a 100644
+--- a/include/asm-x86/apicdef.h
++++ b/include/asm-x86/apicdef.h
+@@ -116,13 +116,18 @@
+ #define		APIC_TDR_DIV_32		0x8
+ #define		APIC_TDR_DIV_64		0x9
+ #define		APIC_TDR_DIV_128	0xA
+-
+-#define K8_APIC_EXT_LVT_BASE		0x500
+-#define K8_APIC_EXT_INT_MSG_FIX		0x0
+-#define K8_APIC_EXT_INT_MSG_SMI		0x2
+-#define K8_APIC_EXT_INT_MSG_NMI		0x4
+-#define K8_APIC_EXT_INT_MSG_EXT		0x7
+-#define K8_APIC_EXT_LVT_ENTRY_THRESHOLD	0
++#define	APIC_EILVT0     0x500
++#define		APIC_EILVT_NR_AMD_K8	1	/* Number of extended interrupts */
++#define		APIC_EILVT_NR_AMD_10H	4
++#define		APIC_EILVT_LVTOFF(x)	(((x)>>4)&0xF)
++#define		APIC_EILVT_MSG_FIX	0x0
++#define		APIC_EILVT_MSG_SMI	0x2
++#define		APIC_EILVT_MSG_NMI	0x4
++#define		APIC_EILVT_MSG_EXT	0x7
++#define		APIC_EILVT_MASKED	(1<<16)
++#define	APIC_EILVT1     0x510
++#define	APIC_EILVT2     0x520
++#define	APIC_EILVT3     0x530
+ 
+ #define APIC_BASE (fix_to_virt(FIX_APIC_BASE))
+ 
+-- 
+1.5.1.6
+
+
+
