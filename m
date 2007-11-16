@@ -1,44 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764894AbXKPL2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765378AbXKPL2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764894AbXKPL2Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 06:28:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756643AbXKPL2A
+	id S1765378AbXKPL2y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 06:28:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756877AbXKPL2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 06:28:00 -0500
-Received: from cantor.suse.de ([195.135.220.2]:44644 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755575AbXKPL17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 06:27:59 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Why preallocate pmd in x86 32-bit PAE?
-Date: Fri, 16 Nov 2007 12:16:46 +0100
-User-Agent: KMail/1.9.6
-Cc: William Lee Irwin III <wli@holomorphy.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <473CC0AC.3020500@goop.org> <20071116004012.GE1806@holomorphy.com> <473CE72C.4060209@zytor.com>
-In-Reply-To: <473CE72C.4060209@zytor.com>
+	Fri, 16 Nov 2007 06:28:45 -0500
+Received: from mail.clusterfs.com ([74.0.229.162]:48421 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756469AbXKPL2o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 06:28:44 -0500
+Date: Fri, 16 Nov 2007 04:28:41 -0700
+From: Andreas Dilger <adilger@sun.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Abhishek Rai <abhishekrai@google.com>, linux-kernel@vger.kernel.org,
+       Ken Chen <kenchen@google.com>, Mike Waychison <mikew@google.com>
+Subject: Re: [PATCH] Clustering indirect blocks in Ext3
+Message-ID: <20071116112841.GS3966@webber.adilger.int>
+References: <d9885f0f0711152102h7a8270bfvd65605d8c00e6754@mail.gmail.com> <20071115230219.1fe9338c.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711161216.46733.ak@suse.de>
+In-Reply-To: <20071115230219.1fe9338c.akpm@linux-foundation.org>
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Nov 15, 2007  23:02 -0800, Andrew Morton wrote:
+> So we have a section of blocks around the middle of the blockgroup which
+> are used for indirect blocks.
+> 
+> Presmably it starts around 50% of the way into the blockgroup?
+> 
+> An important question is: how does it stand up over time?  Simply laying
+> files out a single time on a fresh fs is the easy case.  But what happens
+> if that disk has been in continuous create/delete/truncate/append usage for
+> six months?
 
-> I think Jeremy's question was due to trying to reduce the 32/64-bit 
-> differences.  Performance-wise, it might add a small amount to user 
-> setup time (a typical 32-bit process will need all four, for the main 
-> binary, libraries, stack and kernel, respectively) 
+In the ext4-devel discussion, I asked about placement of the reserved
+blocks.  Placement at the beginning of the group showed at worst
+marginally less performance and in some cases better performance.
+I suspect putting the reserved blocks at the beginning of the group
+would have a better long-term effect on performance because they are
+not in the middle of large contiguous allocations in the middle of
+the group.
 
-With the new top down mmap layout and standard 3:1 split it should typically 
-only need two.
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Software Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
--Andi
