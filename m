@@ -1,85 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934393AbXKPAx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934627AbXKPAy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934393AbXKPAx4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 19:53:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765600AbXKPAxr
+	id S934627AbXKPAy0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 19:54:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933658AbXKPAxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 19:53:47 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44136 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757658AbXKPAxq (ORCPT
+	Thu, 15 Nov 2007 19:53:52 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:39184 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932906AbXKPAxv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 19:53:46 -0500
-Date: Thu, 15 Nov 2007 16:53:30 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       apw@shadowen.org, kamalesh@linux.vnet.ibm.com
-Subject: Re: [PATCH][2.6.24-rc2-mm1] memory hotplug x86_64 fix [2/3] fix
- section mismatch in vmammap_allock_block
-Message-Id: <20071115165330.9448eab6.akpm@linux-foundation.org>
-In-Reply-To: <20071115193544.eb0629e1.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
-	<20071115132919.f2bf4946.kamezawa.hiroyu@jp.fujitsu.com>
-	<20071115005657.99856c28.akpm@linux-foundation.org>
-	<20071115181816.1f0cb905.kamezawa.hiroyu@jp.fujitsu.com>
-	<20071115193016.daabe91e.kamezawa.hiroyu@jp.fujitsu.com>
-	<20071115193544.eb0629e1.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Nov 2007 19:53:51 -0500
+Date: Thu, 15 Nov 2007 16:49:47 -0800
+From: Greg KH <greg@kroah.com>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: Jiri Kosina <jikos@jikos.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc2-mm1
+Message-ID: <20071116004947.GA24887@kroah.com>
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org> <Pine.LNX.4.64.0711141728290.15844@twin.jikos.cz> <20071114083906.178232cb.akpm@linux-foundation.org> <Pine.LNX.4.64.0711141740110.15844@twin.jikos.cz> <Pine.LNX.4.64.0711141758570.15844@twin.jikos.cz> <20071114181948.GA15240@kroah.com> <20071115192319.GA30186@kroah.com> <a8e1da0711151639q4be735d2kc8af9d2b5584d1ee@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a8e1da0711151639q4be735d2kc8af9d2b5584d1ee@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Nov 2007 19:35:44 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+On Fri, Nov 16, 2007 at 08:39:12AM +0800, Dave Young wrote:
+> On Nov 16, 2007 3:23 AM, Greg KH <greg@kroah.com> wrote:
+> >
+> > On Wed, Nov 14, 2007 at 10:19:48AM -0800, Greg KH wrote:
+> > > On Wed, Nov 14, 2007 at 06:02:07PM +0100, Jiri Kosina wrote:
+> > > > On Wed, 14 Nov 2007, Jiri Kosina wrote:
+> > > >
+> > > > > > I'd suspect the driver tree.  I think I'll need to do a quick -mm2
+> > > > > > without that tree present.
+> > > > > I am just verifying whether reverting kset changes fixes this, will let
+> > > > > you know soon.
+> > > >
+> > > > OK, so I reverted
+> > > > gregkh-driver-kset-convert-block_subsys-to-use-kset_create (which made me
+> > > > also revert gregkh-driver-kobject-remove-subsystem_register-functions and
+> > > > gregkh-driver-kset-remove-decl_subsys-macro so that we compile). Both the
+> > > > error message from lockdep and more importantly the spinlock lockup have
+> > > > gone, and the system with these patches reverted boots for me fine.
+> > > >
+> > > > Well not that fine, I still see (which is the same backtrace that caused
+> > > > the lockup with plain -rc2-mm1, but doesn't make the machine hang):
+> > > >
+> > > > floppy0: Floppy io-port 0x03f2 in use
+> > > > WARNING: at lib/kref.c:33 kref_get()
+> > > >
+> > > > Call Trace:
+> > > >  [<ffffffff8035bd43>] kobject_add+0x9b/0x197
+> > > >  [<ffffffff8035c6e1>] kref_get+0x2f/0x36
+> > > >  [<ffffffff8035b82f>] kobject_get+0x12/0x17
+> > > >  [<ffffffff8035bd55>] kobject_add+0xad/0x197
+> > > >  [<ffffffff802c9a36>] register_disk+0x48/0x205
+> > > >  [<ffffffff80355cf3>] add_disk+0x34/0x3d
+> > > >  [<ffffffff8083cd99>] rd_init+0x172/0x1e1
+> > > >  [<ffffffff8082063a>] kernel_init+0x175/0x2e6
+> > > >  [<ffffffff8025193c>] trace_hardirqs_on+0x115/0x139
+> > > >  [<ffffffff80598769>] trace_hardirqs_on_thunk+0x35/0x3a
+> > > >  [<ffffffff8025193c>] trace_hardirqs_on+0x115/0x139
+> > > >  [<ffffffff8020c628>] child_rip+0xa/0x12
+> > > >  [<ffffffff8020bd3f>] restore_args+0x0/0x30
+> > > >  [<ffffffff808204c5>] kernel_init+0x0/0x2e6
+> > > >  [<ffffffff8020c61e>] child_rip+0x0/0x12
+> > >
+> > > someone is trying to call kref_get on a kobject that has not been
+> > > initialized yet, which could be the reason the newer patches break
+> > > something, as the pointers are not set up properly with a call to
+> > > kobject_init() first.
+> > >
+> > > But, alloc_disk() should have been called on this gendisk for it to work
+> > > properly at all, unless something is trashing that structure?
+> > >
+> > > I'm way confused...
+> >
+> > This patch, as found by Dave Young, should fix the issue:
+> >
+> > I'll roll it into my larger patchset so that Andrew will get it
+> > automatically next release, but here it is for people to use now.
+> >
+> > thanks,
+> >
+> > greg k-h
+> >
+> > --------------
+> >
+> > From: Greg Kroah-Hartman <gregkh@suse.de>
+> > Subject: fix bug with adding new block devices in -mm
+> >
+> > need to set the kset before initializing the kobject.
+> >
+> >
+> > ---
+> >  block/genhd.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > --- a/block/genhd.c
+> > +++ b/block/genhd.c
+> > @@ -718,9 +718,9 @@ struct gendisk *alloc_disk_node(int mino
+> >                         }
+> >                 }
+> >                 disk->minors = minors;
+> > -               kobject_init(&disk->kobj);
+> >                 disk->kobj.kset = block_kset;
+> >                 disk->kobj.ktype = &ktype_block;
+> > +               kobject_init(&disk->kobj);
+> >                 rand_initialize_disk(disk);
+> >                 INIT_WORK(&disk->async_notify,
+> >                         media_change_notify_thread);
+> >
+> > -
+> Hi,
+> Could you please add signed-off by me?
+> 
+> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 
-> Fixes section mismatch below.
-> 
-> WARNING: vmlinux.o(.text+0x946b5): Section mismatch: reference to .init.text:'
-> __alloc_bootmem_node (between 'vmemmap_alloc_block' and 'vmemmap_pgd_populate')
-> 
-> Changelog
->  - changed bootmem alloc wrapper function's name to be
-> 	__earlyonly_bootmem_alloc().
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> 
->  mm/sparse-vmemmap.c |   12 +++++++++++-
->  1 file changed, 11 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6.24-rc2-mm1/mm/sparse-vmemmap.c
-> ===================================================================
-> --- linux-2.6.24-rc2-mm1.orig/mm/sparse-vmemmap.c
-> +++ linux-2.6.24-rc2-mm1/mm/sparse-vmemmap.c
-> @@ -34,6 +34,16 @@
->   * or to back the page tables that are used to create the mapping.
->   * Uses the main allocators if they are available, else bootmem.
->   */
-> +
-> +static void * __init_refok __earlyonly_bootmem_alloc(int node,
-> +				unsigned long size,
-> +				unsigned long align,
-> +				unsigned long goal)
-> +{
-> +	return __alloc_bootmem_node(NODE_DATA(node), size, align, goal);
-> +}
-> +
-> +
->  void * __meminit vmemmap_alloc_block(unsigned long size, int node)
->  {
->  	/* If the main allocator is up use that, fallback to bootmem. */
-> @@ -44,7 +54,7 @@ void * __meminit vmemmap_alloc_block(uns
->  			return page_address(page);
->  		return NULL;
->  	} else
-> -		return __alloc_bootmem_node(NODE_DATA(node), size, size,
-> +		return __earlyonly_bootmem_alloc(node, size, size,
->  				__pa(MAX_DMA_ADDRESS));
->  }
->  
+Sure, but I've modified the original patch to not include this bug in
+the first place, so there's really not much to sign off on there, sorry.
 
-AFACIT this is applicable to mainline?
+I will add your name as helping out with it, if that's ok.
 
+thanks,
+
+greg k-h
