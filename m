@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762236AbXKPXNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932112AbXKPXOH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762236AbXKPXNn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 18:13:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765664AbXKPXLS
+	id S932112AbXKPXOH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 18:14:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933677AbXKPXLU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 18:11:18 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:39546 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760574AbXKPXLD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 18:11:03 -0500
-Message-Id: <20071116231102.831425301@sgi.com>
+	Fri, 16 Nov 2007 18:11:20 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51790 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760625AbXKPXLE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 18:11:04 -0500
+Message-Id: <20071116231103.187459326@sgi.com>
 References: <20071116230920.278761667@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 16 Nov 2007 15:09:24 -0800
+Date: Fri, 16 Nov 2007 15:09:25 -0800
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
 Cc: linux-arch@vger.kernel.org
@@ -20,429 +21,470 @@ Cc: linux-kernel@vger.kernel.org
 Cc: David Miller <davem@davemloft.net>
 Cc: Eric Dumazet <dada1@cosmosbay.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
-Subject: [patch 04/30] cpu alloc: page allocator conversion
-Content-Disposition: inline; filename=cpu_alloc_page_allocator_conversion
+Subject: [patch 05/30] cpu_alloc: Implement dynamically extendable cpu areas
+Content-Disposition: inline; filename=cpu_alloc_virtual
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the new cpu_alloc functionality to avoid per cpu arrays in struct zone.
-This drastically reduces the size of struct zone for systems with a large
-amounts of processors and allows placement of critical variables of struct
-zone in one cacheline even on very large systems.
+Virtually map the cpu areas. This allows bigger maximum sizes and to only
+populate the virtual mappings on demand.
 
-Another effect is that the pagesets of one processor are placed near one
-another. If multiple pagesets from different zones fit into one cacheline
-then additional cacheline fetches can be avoided on the hot paths when
-allocating memory from multiple zones.
+In order to use the virtual mapping capability the arch must setup some
+configuration variables in arch/xxx/Kconfig:
 
-Surprisingly this clears up much of the painful NUMA bringup. Bootstrap
-becomes simpler if we use the same scheme for UP, SMP, NUMA. #ifdefs are
-reduced and we can drop the zone_pcp macro.
+CONFIG_CPU_AREA_VIRTUAL to y
 
-Hotplug handling is also simplified since cpu alloc can bring up and
-shut down cpu areas for a specific cpu as a whole. So there is no need to
-allocate or free individual pagesets.
+CONFIG_CPU_AREA_ORDER
+	to the largest allowed size that the per cpu area can grow to.
+
+CONFIG_CPU_AREA_ALLOC_ORDER
+	to the allocation size when the cpu area needs to grow. Use 0
+	here to guarantee order 0 allocations.
+
+The address to use must be defined in CPU_AREA_BASE. This is typically done
+in include/asm-xxx/pgtable.h. 
+
+The maximum space used by the cpu are is
+
+	NR_CPUS * (PAGE_SIZE << CONFIG_CPU_AREA_ORDER)
+
+An arch may provide its own population function for the virtual mappings
+(in order to exploit huge page mappings and other frills of the MMU of an
+architecture). The default populate function uses single page mappings.
+
+
+int cpu_area_populate(void *start, unsigned long size, gfp_t flags, int node)
+
+The list of cpu_area_xx functions exported in include/linux/mm.h may be used
+as helpers to generate the mapping that the arch needs.
+
+In the simplest form the arch code calls:
+
+	cpu_area_populate_basepages(start, size, flags, node);
+
+The arch code must call
+
+	cpu_area_alloc_block(unsigned long size, gfp_t flags, int node)
+
+for all its memory needs during the construction of the custom page table.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
----
- include/linux/mm.h     |    4 -
- include/linux/mmzone.h |   12 ---
- mm/page_alloc.c        |  161 ++++++++++++++++++-------------------------------
- mm/vmstat.c            |   14 ++--
- 4 files changed, 72 insertions(+), 119 deletions(-)
 
-Index: linux-2.6/include/linux/mm.h
+---
+ include/linux/mm.h |   13 ++
+ mm/Kconfig         |   10 +
+ mm/cpu_alloc.c     |  287 +++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 3 files changed, 299 insertions(+), 11 deletions(-)
+
+Index: linux-2.6/mm/cpu_alloc.c
 ===================================================================
---- linux-2.6.orig/include/linux/mm.h	2007-11-15 21:24:47.238154208 -0800
-+++ linux-2.6/include/linux/mm.h	2007-11-15 21:25:12.735154250 -0800
-@@ -931,11 +931,7 @@ extern void show_mem(void);
- extern void si_meminfo(struct sysinfo * val);
- extern void si_meminfo_node(struct sysinfo *val, int nid);
+--- linux-2.6.orig/mm/cpu_alloc.c	2007-11-16 14:54:29.890430938 -0800
++++ linux-2.6/mm/cpu_alloc.c	2007-11-16 14:54:37.106404761 -0800
+@@ -17,6 +17,12 @@
+ #include <linux/module.h>
+ #include <linux/percpu.h>
+ #include <linux/bitmap.h>
++#include <linux/vmalloc.h>
++#include <linux/bootmem.h>
++#include <linux/sched.h>	/* i386 definition of init_mm */
++#include <linux/highmem.h>	/* i386 dependency on highmem config */
++#include <asm/pgtable.h>
++#include <asm/pgalloc.h>
  
--#ifdef CONFIG_NUMA
- extern void setup_per_cpu_pageset(void);
--#else
--static inline void setup_per_cpu_pageset(void) {}
--#endif
- 
- /* prio_tree.c */
- void vma_prio_tree_add(struct vm_area_struct *, struct vm_area_struct *old);
-Index: linux-2.6/include/linux/mmzone.h
-===================================================================
---- linux-2.6.orig/include/linux/mmzone.h	2007-11-15 21:24:49.970154448 -0800
-+++ linux-2.6/include/linux/mmzone.h	2007-11-15 21:25:12.735154250 -0800
-@@ -121,13 +121,7 @@ struct per_cpu_pageset {
- 	s8 stat_threshold;
- 	s8 vm_stat_diff[NR_VM_ZONE_STAT_ITEMS];
- #endif
--} ____cacheline_aligned_in_smp;
--
--#ifdef CONFIG_NUMA
--#define zone_pcp(__z, __cpu) ((__z)->pageset[(__cpu)])
--#else
--#define zone_pcp(__z, __cpu) (&(__z)->pageset[(__cpu)])
--#endif
-+};
- 
- enum zone_type {
- #ifdef CONFIG_ZONE_DMA
-@@ -231,10 +225,8 @@ struct zone {
- 	 */
- 	unsigned long		min_unmapped_pages;
- 	unsigned long		min_slab_pages;
--	struct per_cpu_pageset	*pageset[NR_CPUS];
--#else
--	struct per_cpu_pageset	pageset[NR_CPUS];
- #endif
-+	struct per_cpu_pageset	*pageset;
- 	/*
- 	 * free areas of different sizes
- 	 */
-Index: linux-2.6/mm/page_alloc.c
-===================================================================
---- linux-2.6.orig/mm/page_alloc.c	2007-11-15 21:24:50.330904214 -0800
-+++ linux-2.6/mm/page_alloc.c	2007-11-15 21:25:12.739154691 -0800
-@@ -892,7 +892,7 @@ static void __drain_pages(unsigned int c
- 		if (!populated_zone(zone))
- 			continue;
- 
--		pset = zone_pcp(zone, cpu);
-+		pset = CPU_PTR(zone->pageset, cpu);
- 
- 		pcp = &pset->pcp;
- 		local_irq_save(flags);
-@@ -988,8 +988,8 @@ static void fastcall free_hot_cold_page(
- 	arch_free_page(page, 0);
- 	kernel_map_pages(page, 1, 0);
- 
--	pcp = &zone_pcp(zone, get_cpu())->pcp;
- 	local_irq_save(flags);
-+	pcp = &THIS_CPU(zone->pageset)->pcp;
- 	__count_vm_event(PGFREE);
- 	if (cold)
- 		list_add_tail(&page->lru, &pcp->list);
-@@ -1002,7 +1002,6 @@ static void fastcall free_hot_cold_page(
- 		pcp->count -= pcp->batch;
- 	}
- 	local_irq_restore(flags);
--	put_cpu();
- }
- 
- void fastcall free_hot_page(struct page *page)
-@@ -1044,16 +1043,14 @@ static struct page *buffered_rmqueue(str
- 	unsigned long flags;
- 	struct page *page;
- 	int cold = !!(gfp_flags & __GFP_COLD);
--	int cpu;
- 	int migratetype = allocflags_to_migratetype(gfp_flags);
- 
- again:
--	cpu  = get_cpu();
- 	if (likely(order == 0)) {
- 		struct per_cpu_pages *pcp;
- 
--		pcp = &zone_pcp(zone, cpu)->pcp;
- 		local_irq_save(flags);
-+		pcp = &THIS_CPU(zone->pageset)->pcp;
- 		if (!pcp->count) {
- 			pcp->count = rmqueue_bulk(zone, 0,
- 					pcp->batch, &pcp->list, migratetype);
-@@ -1092,7 +1089,6 @@ again:
- 	__count_zone_vm_events(PGALLOC, zone, 1 << order);
- 	zone_statistics(zonelist, zone);
- 	local_irq_restore(flags);
--	put_cpu();
- 
- 	VM_BUG_ON(bad_range(zone, page));
- 	if (prep_new_page(page, order, gfp_flags))
-@@ -1101,7 +1097,6 @@ again:
- 
- failed:
- 	local_irq_restore(flags);
--	put_cpu();
- 	return NULL;
- }
- 
-@@ -1795,7 +1790,7 @@ void show_free_areas(void)
- 		for_each_online_cpu(cpu) {
- 			struct per_cpu_pageset *pageset;
- 
--			pageset = zone_pcp(zone, cpu);
-+			pageset = CPU_PTR(zone->pageset, cpu);
- 
- 			printk("CPU %4d: hi:%5d, btch:%4d usd:%4d\n",
- 			       cpu, pageset->pcp.high,
-@@ -2621,82 +2616,33 @@ static void setup_pagelist_highmark(stru
- 		pcp->batch = PAGE_SHIFT * 8;
- }
- 
--
--#ifdef CONFIG_NUMA
  /*
-- * Boot pageset table. One per cpu which is going to be used for all
-- * zones and all nodes. The parameters will be set in such a way
-- * that an item put on a list will immediately be handed over to
-- * the buddy list. This is safe since pageset manipulation is done
-- * with interrupts disabled.
-- *
-- * Some NUMA counter updates may also be caught by the boot pagesets.
-- *
-- * The boot_pagesets must be kept even after bootup is complete for
-- * unused processors and/or zones. They do play a role for bootstrapping
-- * hotplugged processors.
-- *
-- * zoneinfo_show() and maybe other functions do
-- * not check if the processor is online before following the pageset pointer.
-- * Other parts of the kernel may not check if the zone is available.
-+ * Dynamically allocate memory for the per cpu pageset array in struct zone.
+  * Basic allocation unit. A bit map is created to track the use of each
+@@ -24,7 +30,7 @@
   */
--static struct per_cpu_pageset boot_pageset[NR_CPUS];
--
--/*
-- * Dynamically allocate memory for the
-- * per cpu pageset array in struct zone.
-- */
--static int __cpuinit process_zones(int cpu)
-+static void __cpuinit process_zones(int cpu)
- {
--	struct zone *zone, *dzone;
-+	struct zone *zone;
- 	int node = cpu_to_node(cpu);
  
- 	node_set_state(node, N_CPU);	/* this node has a cpu */
+ #define UNIT_SIZE sizeof(int)
+-#define UNITS (ALLOC_SIZE / UNIT_SIZE)
++#define UNITS_PER_BLOCK (ALLOC_SIZE / UNIT_SIZE)
  
- 	for_each_zone(zone) {
-+		struct per_cpu_pageset *pcp =
-+				CPU_PTR(zone->pageset, cpu);
+ /*
+  * How many units are needed for an object of a given size
+@@ -40,6 +46,249 @@ static int size_to_units(unsigned long s
+ static DEFINE_SPINLOCK(cpu_alloc_map_lock);
+ static unsigned long units_reserved;	/* Units reserved by boot allocations */
  
- 		if (!populated_zone(zone))
- 			continue;
- 
--		zone_pcp(zone, cpu) = kmalloc_node(sizeof(struct per_cpu_pageset),
--					 GFP_KERNEL, node);
--		if (!zone_pcp(zone, cpu))
--			goto bad;
--
--		setup_pageset(zone_pcp(zone, cpu), zone_batchsize(zone));
-+		setup_pageset(pcp, zone_batchsize(zone));
- 
- 		if (percpu_pagelist_fraction)
--			setup_pagelist_highmark(zone_pcp(zone, cpu),
--			 	(zone->present_pages / percpu_pagelist_fraction));
--	}
--
--	return 0;
--bad:
--	for_each_zone(dzone) {
--		if (!populated_zone(dzone))
--			continue;
--		if (dzone == zone)
--			break;
--		kfree(zone_pcp(dzone, cpu));
--		zone_pcp(dzone, cpu) = NULL;
--	}
--	return -ENOMEM;
--}
-+			setup_pagelist_highmark(pcp, zone->present_pages /
-+						percpu_pagelist_fraction);
- 
--static inline void free_zone_pagesets(int cpu)
--{
--	struct zone *zone;
--
--	for_each_zone(zone) {
--		struct per_cpu_pageset *pset = zone_pcp(zone, cpu);
--
--		/* Free per_cpu_pageset if it is slab allocated */
--		if (pset != &boot_pageset[cpu])
--			kfree(pset);
--		zone_pcp(zone, cpu) = NULL;
- 	}
- }
- 
-+#ifdef CONFIG_SMP
- static int __cpuinit pageset_cpuup_callback(struct notifier_block *nfb,
- 		unsigned long action,
- 		void *hcpu)
-@@ -2707,14 +2653,7 @@ static int __cpuinit pageset_cpuup_callb
- 	switch (action) {
- 	case CPU_UP_PREPARE:
- 	case CPU_UP_PREPARE_FROZEN:
--		if (process_zones(cpu))
--			ret = NOTIFY_BAD;
--		break;
--	case CPU_UP_CANCELED:
--	case CPU_UP_CANCELED_FROZEN:
--	case CPU_DEAD:
--	case CPU_DEAD_FROZEN:
--		free_zone_pagesets(cpu);
-+		process_zones(cpu);
- 		break;
- 	default:
- 		break;
-@@ -2724,21 +2663,34 @@ static int __cpuinit pageset_cpuup_callb
- 
- static struct notifier_block __cpuinitdata pageset_notifier =
- 	{ &pageset_cpuup_callback, NULL, 0 };
-+#endif
- 
- void __init setup_per_cpu_pageset(void)
- {
--	int err;
--
--	/* Initialize per_cpu_pageset for cpu 0.
-+	/*
-+	 * Initialize per_cpu settings for the boot cpu.
- 	 * A cpuup callback will do this for every cpu
--	 * as it comes online
-+	 * as it comes online.
-+	 *
-+	 * This is also initializing the cpu areas for the
-+	 * pagesets.
- 	 */
--	err = process_zones(smp_processor_id());
--	BUG_ON(err);
--	register_cpu_notifier(&pageset_notifier);
--}
-+	struct zone *zone;
- 
-+	for_each_zone(zone) {
++#ifdef CONFIG_CPU_AREA_VIRTUAL
 +
-+		if (!populated_zone(zone))
-+			continue;
++/*
++ * Virtualized cpu area. The cpu area can be extended if more space is needed.
++ */
 +
-+		zone->pageset = CPU_ALLOC(struct per_cpu_pageset,
-+					GFP_KERNEL|__GFP_ZERO);
-+		BUG_ON(!zone->pageset);
++#define cpu_area ((u8 *)(CPU_AREA_BASE))
++#define ALLOC_SIZE (1UL << (CONFIG_CPU_AREA_ALLOC_ORDER + PAGE_SHIFT))
++#define BOOT_ALLOC (1 << __GFP_BITS_SHIFT)
++
++
++/*
++ * The maximum number of blocks is the maximum size of the
++ * cpu area for one processor divided by the size of an allocation
++ * block.
++ */
++#define MAX_BLOCKS (1UL << (CONFIG_CPU_AREA_ORDER - \
++				CONFIG_CPU_AREA_ALLOC_ORDER))
++
++
++static unsigned long *cpu_alloc_map = NULL;
++static int cpu_alloc_map_order = -1;	/* Size of the bitmap in page order */
++static unsigned long active_blocks;	/* Number of block allocated on each cpu */
++static unsigned long units_total;	/* Total units that are managed */
++/*
++ * Allocate a block of memory to be used to provide cpu area memory
++ * or to extend the bitmap for the cpu map.
++ */
++void *cpu_area_alloc_block(unsigned long size, gfp_t flags, int node)
++{
++	if (!(flags & BOOT_ALLOC)) {
++		struct page *page = alloc_pages_node(node,
++			flags, get_order(size));
++
++		if (page)
++			return page_address(page);
++		return NULL;
++	} else
++		return __alloc_bootmem_node(NODE_DATA(node), size, size,
++				__pa(MAX_DMA_ADDRESS));
++}
++
++pte_t *cpu_area_pte_populate(pmd_t *pmd, unsigned long addr,
++						gfp_t flags, int node)
++{
++	pte_t *pte = pte_offset_kernel(pmd, addr);
++	if (pte_none(*pte)) {
++		pte_t entry;
++		void *p = cpu_area_alloc_block(PAGE_SIZE, flags, node);
++		if (!p)
++			return 0;
++		entry = pfn_pte(__pa(p) >> PAGE_SHIFT, PAGE_KERNEL);
++		set_pte_at(&init_mm, addr, pte, entry);
 +	}
-+	process_zones(smp_processor_id());
-+#ifdef CONFIG_SMP
-+	register_cpu_notifier(&pageset_notifier);
- #endif
++	return pte;
++}
++
++pmd_t *cpu_area_pmd_populate(pud_t *pud, unsigned long addr,
++						gfp_t flags, int node)
++{
++	pmd_t *pmd = pmd_offset(pud, addr);
++	if (pmd_none(*pmd)) {
++		void *p = cpu_area_alloc_block(PAGE_SIZE, flags, node);
++		if (!p)
++			return 0;
++		pmd_populate_kernel(&init_mm, pmd, p);
++	}
++	return pmd;
++}
++
++pud_t *cpu_area_pud_populate(pgd_t *pgd, unsigned long addr,
++						gfp_t flags, int node)
++{
++	pud_t *pud = pud_offset(pgd, addr);
++	if (pud_none(*pud)) {
++		void *p = cpu_area_alloc_block(PAGE_SIZE, flags, node);
++		if (!p)
++			return 0;
++		pud_populate(&init_mm, pud, p);
++	}
++	return pud;
++}
++
++pgd_t *cpu_area_pgd_populate(unsigned long addr, gfp_t flags, int node)
++{
++	pgd_t *pgd = pgd_offset_k(addr);
++	if (pgd_none(*pgd)) {
++		void *p = cpu_area_alloc_block(PAGE_SIZE, flags, node);
++		if (!p)
++			return 0;
++		pgd_populate(&init_mm, pgd, p);
++	}
++	return pgd;
++}
++
++int cpu_area_populate_basepages(void *start, unsigned long size,
++						gfp_t flags, int node)
++{
++	unsigned long addr = (unsigned long)start;
++	unsigned long end = addr + size;
++	pgd_t *pgd;
++	pud_t *pud;
++	pmd_t *pmd;
++	pte_t *pte;
++
++	for (; addr < end; addr += PAGE_SIZE) {
++		pgd = cpu_area_pgd_populate(addr, flags, node);
++		if (!pgd)
++			return -ENOMEM;
++		pud = cpu_area_pud_populate(pgd, addr, flags, node);
++		if (!pud)
++			return -ENOMEM;
++		pmd = cpu_area_pmd_populate(pud, addr, flags, node);
++		if (!pmd)
++			return -ENOMEM;
++		pte = cpu_area_pte_populate(pmd, addr, flags, node);
++		if (!pte)
++			return -ENOMEM;
++	}
++
++	return 0;
++}
++
++/*
++ * If no other population function is defined then this function will stand
++ * in and provide the capability to map PAGE_SIZE pages into the cpu area.
++ */
++int __attribute__((weak)) cpu_area_populate(void *start, unsigned long size,
++					gfp_t flags, int node)
++{
++	return cpu_area_populate_basepages(start, size, flags, node);
++}
++
++/*
++ * Extend the areas on all processors. This function may be called repeatedly
++ * until we have enough space to accomodate a newly allocated object.
++ *
++ * Must hold the cpu_alloc_map_lock on entry. Will drop the lock and then
++ * regain it.
++ */
++static int expand_cpu_area(gfp_t flags)
++{
++	unsigned long blocks = active_blocks;
++	unsigned long bits;
++	int cpu;
++	int err = -ENOMEM;
++	int map_order;
++	unsigned long *new_map = NULL;
++	void *start;
++
++	if (active_blocks == MAX_BLOCKS)
++		goto out;
++
++	spin_unlock(&cpu_alloc_map_lock);
++	if (flags & __GFP_WAIT)
++		local_irq_enable();
++
++	/*
++	 * Determine the size of the bit map needed
++	 */
++	bits = (blocks + 1) * UNITS_PER_BLOCK - units_reserved;
++
++	map_order = get_order(DIV_ROUND_UP(bits, 8));
++	BUG_ON(map_order >= MAX_ORDER);
++	start = cpu_area + \
++		(blocks << (PAGE_SHIFT + CONFIG_CPU_AREA_ALLOC_ORDER));
++
++	for_each_possible_cpu(cpu) {
++		err = cpu_area_populate(CPU_PTR(start, cpu), ALLOC_SIZE,
++			flags, cpu_to_node(cpu));
++
++		if (err) {
++			spin_lock(&cpu_alloc_map_lock);
++			goto out;
++		}
++	}
++
++	if (map_order > cpu_alloc_map_order) {
++		new_map = cpu_area_alloc_block(PAGE_SIZE << map_order,
++						flags | __GFP_ZERO, 0);
++		if (!new_map)
++			goto out;
++	}
++
++	if (flags & __GFP_WAIT)
++		local_irq_disable();
++	spin_lock(&cpu_alloc_map_lock);
++
++	/*
++	 * We dropped the lock. Another processor may have already extended
++	 * the cpu area size as needed.
++	 */
++	if (blocks != active_blocks) {
++		if (new_map)
++			free_pages((unsigned long)new_map,
++						map_order);
++		err = 0;
++		goto out;
++	}
++
++	if (new_map) {
++		/*
++		 * Need to extend the bitmap
++		 */
++		if (cpu_alloc_map)
++			memcpy(new_map, cpu_alloc_map,
++				PAGE_SIZE << cpu_alloc_map_order);
++		cpu_alloc_map = new_map;
++		cpu_alloc_map_order = map_order;
++	}
++
++	active_blocks++;
++	units_total += UNITS_PER_BLOCK;
++	err = 0;
++out:
++	return err;
++}
++
++void * __init boot_cpu_alloc(unsigned long size)
++{
++	unsigned long flags;
++	unsigned long x = units_reserved;
++	unsigned long units = size_to_units(size);
++
++	/*
++	 * Locking is really not necessary during boot
++	 * but expand_cpu_area() unlocks and relocks.
++	 * If we do not perform locking here then
++	 *
++	 * 1. The cpu_alloc_map_lock is locked when
++	 *    we exit boot causing a hang on the next cpu_alloc().
++	 * 2. lockdep will get upset if we do not consistently
++	 *    handle things.
++	 */
++	spin_lock_irqsave(&cpu_alloc_map_lock, flags);
++	while (units_reserved + units > units_total)
++		expand_cpu_area(BOOT_ALLOC);
++	units_reserved += units;
++	spin_unlock_irqrestore(&cpu_alloc_map_lock, flags);
++	return cpu_area + x * UNIT_SIZE;
++}
++#else
++
+ /*
+  * Static configuration. The cpu areas are of a fixed size and
+  * cannot be extended. Such configurations are mainly useful on
+@@ -51,16 +300,24 @@ static unsigned long units_reserved;	/* 
+ #define ALLOC_SIZE (1UL << (CONFIG_CPU_AREA_ORDER + PAGE_SHIFT))
+ 
+ static u8 cpu_area[NR_CPUS * ALLOC_SIZE];
+-static DECLARE_BITMAP(cpu_alloc_map, UNITS);
++static DECLARE_BITMAP(cpu_alloc_map, UNITS_PER_BLOCK);
++#define cpu_alloc_map_order CONFIG_CPU_AREA_ORDER
++#define units_total UNITS_PER_BLOCK
++
++static inline int expand_cpu_area(gfp_t flags)
++{
++	return -ENOSYS;
 +}
  
- static noinline __init_refok
- int zone_wait_table_init(struct zone *zone, unsigned long zone_size_pages)
-@@ -2785,21 +2737,30 @@ int zone_wait_table_init(struct zone *zo
- 
- static __meminit void zone_pcp_init(struct zone *zone)
+ void * __init boot_cpu_alloc(unsigned long size)
  {
--	int cpu;
--	unsigned long batch = zone_batchsize(zone);
-+	static struct per_cpu_pageset boot_pageset;
+ 	unsigned long x = units_reserved;
  
--	for (cpu = 0; cpu < NR_CPUS; cpu++) {
--#ifdef CONFIG_NUMA
--		/* Early boot. Slab allocator not functional yet */
--		zone_pcp(zone, cpu) = &boot_pageset[cpu];
--		setup_pageset(&boot_pageset[cpu],0);
--#else
--		setup_pageset(zone_pcp(zone,cpu), batch);
--#endif
--	}
-+	/*
-+	 * Fake a cpu_alloc pointer that can take the required
-+	 * offset to get to the boot pageset. This is only
-+	 * needed for the boot pageset while bootstrapping
-+	 * the new zone. In the course of zone bootstrap
-+	 * setup_cpu_pagesets() will do the proper CPU_ALLOC and
-+	 * set things up the right way.
-+	 *
-+	 * Deferral allows CPU_ALLOC() to use the boot pageset
-+	 * to allocate the initial memory to get going and then provide
-+	 * the proper memory when called from setup_cpu_pagesets() to
-+	 * install the proper pagesets.
-+	 *
-+	 * Deferral also allows slab allocators to perform their
-+	 * initialization without resorting to bootmem.
-+	 */
-+	zone->pageset = &boot_pageset - CPU_OFFSET(smp_processor_id());
-+	setup_pageset(&boot_pageset, 0);
- 	if (zone->present_pages)
--		printk(KERN_DEBUG "  %s zone: %lu pages, LIFO batch:%lu\n",
--			zone->name, zone->present_pages, batch);
-+		printk(KERN_DEBUG "  %s zone: %lu pages, LIFO batch:%u\n",
-+			zone->name, zone->present_pages,
-+			zone_batchsize(zone));
+ 	units_reserved += size_to_units(size);
+-	BUG_ON(units_reserved > UNITS);
++	BUG_ON(units_reserved > units_total);
+ 	return cpu_area + x * UNIT_SIZE;
  }
++#endif
  
- __meminit int init_currently_empty_zone(struct zone *zone,
-@@ -4214,11 +4175,13 @@ int percpu_pagelist_fraction_sysctl_hand
- 	ret = proc_dointvec_minmax(table, write, file, buffer, length, ppos);
- 	if (!write || (ret == -EINVAL))
- 		return ret;
--	for_each_zone(zone) {
--		for_each_online_cpu(cpu) {
-+	for_each_online_cpu(cpu) {
-+		for_each_zone(zone) {
- 			unsigned long  high;
+ static int first_free;		/* First known free unit */
+ 
+@@ -98,20 +355,30 @@ void *cpu_alloc(unsigned long size, gfp_
+ 	int units = size_to_units(size);
+ 	void *ptr;
+ 	int first;
++	unsigned long map_size;
+ 	unsigned long flags;
+ 
+ 	BUG_ON(gfpflags & ~(GFP_RECLAIM_MASK | __GFP_ZERO));
+ 
+ 	spin_lock_irqsave(&cpu_alloc_map_lock, flags);
+ 
++restart:
++	if (cpu_alloc_map_order >= 0)
++		map_size = PAGE_SIZE << cpu_alloc_map_order;
++	else
++		map_size = 0;
 +
- 			high = zone->present_pages / percpu_pagelist_fraction;
--			setup_pagelist_highmark(zone_pcp(zone, cpu), high);
-+			setup_pagelist_highmark(CPU_PTR(zone->pageset, cpu),
-+									high);
- 		}
- 	}
- 	return 0;
-Index: linux-2.6/mm/vmstat.c
+ 	first = 1;
+ 	start = first_free;
+ 
+ 	for ( ; ; ) {
+ 
+-		start = find_next_zero_bit(cpu_alloc_map, ALLOC_SIZE, start);
+-		if (start >= UNITS - units_reserved)
++		start = find_next_zero_bit(cpu_alloc_map, map_size, start);
++		if (start >= units_total - units_reserved) {
++			if (!expand_cpu_area(gfpflags))
++				goto restart;
+ 			goto out_of_memory;
++		}
+ 
+ 		if (first)
+ 			first_free = start;
+@@ -121,7 +388,7 @@ void *cpu_alloc(unsigned long size, gfp_
+ 		 * the starting unit.
+ 		 */
+ 		if ((start + units_reserved) % (align / UNIT_SIZE) == 0 &&
+-			find_next_bit(cpu_alloc_map, ALLOC_SIZE, start + 1)
++			find_next_bit(cpu_alloc_map, map_size, start + 1)
+ 							>= start + units)
+ 				break;
+ 		start++;
+@@ -131,8 +398,10 @@ void *cpu_alloc(unsigned long size, gfp_
+ 	if (first)
+ 		first_free = start + units;
+ 
+-	if (start + units > UNITS - units_reserved)
+-		goto out_of_memory;
++	while (start + units > units_total - units_reserved) {
++		if (expand_cpu_area(gfpflags))
++			goto out_of_memory;
++	}
+ 
+ 	set_map(start, units);
+ 	__count_vm_events(CPU_BYTES, units * UNIT_SIZE);
+@@ -170,7 +439,7 @@ void cpu_free(void *start, unsigned long
+ 	BUG_ON(p < (cpu_area + units_reserved * UNIT_SIZE));
+ 	index = (p - cpu_area) / UNIT_SIZE - units_reserved;
+ 	BUG_ON(!test_bit(index, cpu_alloc_map) ||
+-			index >= UNITS - units_reserved);
++			index >= units_total - units_reserved);
+ 
+ 	spin_lock_irqsave(&cpu_alloc_map_lock, flags);
+ 
+Index: linux-2.6/include/linux/mm.h
 ===================================================================
---- linux-2.6.orig/mm/vmstat.c	2007-11-15 21:24:50.730654207 -0800
-+++ linux-2.6/mm/vmstat.c	2007-11-15 21:25:12.739154691 -0800
-@@ -147,7 +147,8 @@ static void refresh_zone_stat_thresholds
- 		threshold = calculate_threshold(zone);
+--- linux-2.6.orig/include/linux/mm.h	2007-11-16 14:54:33.186431271 -0800
++++ linux-2.6/include/linux/mm.h	2007-11-16 14:54:37.106404761 -0800
+@@ -1137,5 +1137,18 @@ int vmemmap_populate_basepages(struct pa
+ 						unsigned long pages, int node);
+ int vmemmap_populate(struct page *start_page, unsigned long pages, int node);
  
- 		for_each_online_cpu(cpu)
--			zone_pcp(zone, cpu)->stat_threshold = threshold;
-+			CPU_PTR(zone->pageset, cpu)->stat_threshold
-+							= threshold;
- 	}
- }
- 
-@@ -157,7 +158,8 @@ static void refresh_zone_stat_thresholds
- void __mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
- 				int delta)
- {
--	struct per_cpu_pageset *pcp = zone_pcp(zone, smp_processor_id());
-+	struct per_cpu_pageset *pcp = THIS_CPU(zone->pageset);
++pgd_t *cpu_area_pgd_populate(unsigned long addr, gfp_t flags, int node);
++pud_t *cpu_area_pud_populate(pgd_t *pgd, unsigned long addr,
++						gfp_t flags, int node);
++pmd_t *cpu_area_pmd_populate(pud_t *pud, unsigned long addr,
++						gfp_t flags, int node);
++pte_t *cpu_area_pte_populate(pmd_t *pmd, unsigned long addr,
++						gfp_t flags, int node);
++void *cpu_area_alloc_block(unsigned long size, gfp_t flags, int node);
++int cpu_area_populate_basepages(void *start, unsigned long size,
++						gfp_t flags, int node);
++int cpu_area_populate(void *start, unsigned long size,
++						gfp_t flags, int node);
 +
- 	s8 *p = pcp->vm_stat_diff + item;
- 	long x;
+ #endif /* __KERNEL__ */
+ #endif /* _LINUX_MM_H */
+Index: linux-2.6/mm/Kconfig
+===================================================================
+--- linux-2.6.orig/mm/Kconfig	2007-11-16 14:54:29.890430938 -0800
++++ linux-2.6/mm/Kconfig	2007-11-16 14:55:07.364981597 -0800
+@@ -197,7 +197,13 @@ config VIRT_TO_BUS
  
-@@ -210,7 +212,7 @@ EXPORT_SYMBOL(mod_zone_page_state);
-  */
- void __inc_zone_state(struct zone *zone, enum zone_stat_item item)
- {
--	struct per_cpu_pageset *pcp = zone_pcp(zone, smp_processor_id());
-+	struct per_cpu_pageset *pcp = THIS_CPU(zone->pageset);
- 	s8 *p = pcp->vm_stat_diff + item;
- 
- 	(*p)++;
-@@ -231,7 +233,7 @@ EXPORT_SYMBOL(__inc_zone_page_state);
- 
- void __dec_zone_state(struct zone *zone, enum zone_stat_item item)
- {
--	struct per_cpu_pageset *pcp = zone_pcp(zone, smp_processor_id());
-+	struct per_cpu_pageset *pcp = THIS_CPU(zone->pageset);
- 	s8 *p = pcp->vm_stat_diff + item;
- 
- 	(*p)--;
-@@ -307,7 +309,7 @@ void refresh_cpu_vm_stats(int cpu)
- 		if (!populated_zone(zone))
- 			continue;
- 
--		p = zone_pcp(zone, cpu);
-+		p = CPU_PTR(zone->pageset, cpu);
- 
- 		for (i = 0; i < NR_VM_ZONE_STAT_ITEMS; i++)
- 			if (p->vm_stat_diff[i]) {
-@@ -680,7 +682,7 @@ static void zoneinfo_show_print(struct s
- 	for_each_online_cpu(i) {
- 		struct per_cpu_pageset *pageset;
- 
--		pageset = zone_pcp(zone, i);
-+		pageset = CPU_PTR(zone->pageset, i);
- 		seq_printf(m,
- 			   "\n    cpu: %i"
- 			   "\n              count: %i"
+ config CPU_AREA_ORDER
+ 	int "Maximum size (order) of CPU area"
+-	default "3"
++	default "10" if CPU_AREA_VIRTUAL
++	default "3" if !CPU_AREA_VIRTUAL
+ 	help
+ 	  Sets the maximum amount of memory that can be allocated via cpu_alloc
+-	  The size is set in page order, so 0 = PAGE_SIZE, 1 = PAGE_SIZE << 1 etc.
++	  The size is set in page order. The size set (times the maximum
++	  number of processors) determines the amount of virtual memory that
++	  is set aside for the per cpu areas for virtualized cpu areas or the
++	  amount of memory allocated in the bss segment for non virtualized
++	  cpu areas.
++
 
 -- 
