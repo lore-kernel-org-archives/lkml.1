@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764894AbXKPMyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765759AbXKPM5K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764894AbXKPMyR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 07:54:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757544AbXKPMyF
+	id S1765759AbXKPM5K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 07:57:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757764AbXKPM46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 07:54:05 -0500
-Received: from scrub.xs4all.nl ([194.109.195.176]:4117 "EHLO scrub.xs4all.nl"
+	Fri, 16 Nov 2007 07:56:58 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:50050 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756297AbXKPMyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 07:54:04 -0500
-Date: Fri, 16 Nov 2007 13:54:00 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kconfig: use $K64BIT to set 64BIT with all*config targets
-In-Reply-To: <20071116054126.GA28606@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.64.0711161337380.1817@scrub.home>
-References: <11947274091127-git-send-email-sam@ravnborg.org>
- <Pine.LNX.4.64.0711142116500.1818@scrub.home> <20071114220840.GB10920@uranus.ravnborg.org>
- <Pine.LNX.4.64.0711151616330.1817@scrub.home> <20071115192555.GD23914@uranus.ravnborg.org>
- <Pine.LNX.4.64.0711152036430.1817@scrub.home> <20071115204520.GA24851@uranus.ravnborg.org>
- <Pine.LNX.4.64.0711152158310.1817@scrub.home> <20071115220640.GA25265@uranus.ravnborg.org>
- <Pine.LNX.4.64.0711160205340.1817@scrub.home> <20071116054126.GA28606@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752106AbXKPM45 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 07:56:57 -0500
+Date: Fri, 16 Nov 2007 13:58:35 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andreas Herrmann <aherrman@arcor.de>
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Kconfig: ARCH=x86
+Message-ID: <20071116125835.GA31029@uranus.ravnborg.org>
+References: <20071116111446.GA16968@devil>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071116111446.GA16968@devil>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Andreas.
 
-On Fri, 16 Nov 2007, Sam Ravnborg wrote:
+On Fri, Nov 16, 2007 at 12:14:46PM +0100, Andreas Herrmann wrote:
+> Hi,
+> 
+> I have just some minor remarks wrt the commit message for
+> daa93fab824f2b8c35bd11670c7fab2f32b2de5f - 'x86: enable "make
+> ARCH=x86"'. (Based on my observations when testing the stuff on 64bit
+> and 32bit hosts with Linus' tree v2.6.24-rc2-640-g8c08634.)
+> 
+> For randconfig we have now the following behaviour.  (The table shows
+> whether the resulting configuration is for 32 or 64-bit.)
+> 
+> # make randconfig [ARCH=...] [K64BIT=]
+> 
+> option \ host arch      | 32bit         | 64bit
+> =====================================================
+> ./.                     | 32bit         | 64bit
+> ARCH=x86                | 32bit/64bit   | 32bit/64bit
+> ARCH=x86 K64BIT=n       | 32bit         | 32bit
+> ARCH=x86 K64BIT=y       | 64bit         | 64bit
+> ARCH=x86_64             | 64bit         | 64bit
+> ARCH=x86_64 K64BIT=n    | 32bit         | 32bit
+> ARCH=x86_64 K64BIT=y    | 64bit         | 64bit
 
-> 1) make all*config, randconfig, defconfig is broken on 64-bit boxes
+To make the table complete you need to consider
+make ARCH=i386
 
-With your approach you made it impossible to set 64BIT from all*.config,
-which is the proper way to set the defaults.
+Basically is goes like this:
+With x86 the default is 32 bit but can be set to 64-bit with K64BIT=y
+With x86_64 the default is 64-bit but K64BIT take precedence
+With i386 the default is 32 bit but K64BIT takes precedence
 
-> 2) A pure code refactoring patch is reverted for no obvious reason
 
-It was done for the wrong reasons, otherwise the warning before it should 
-have been included as well and then the function could have been reused 
-for the "# ... is not set" case as well.
+All that said I am going to revert the K64BIT possibility.
+Roman posted a patch earlier that allows us to based on ARCH setting
+select between 32-bit or 64-bit based on ARCH= alone.
 
-> 3) Behavioral changes are not documented:
->    - 32-bit/64-bit can only be selected in config is you specify ARCH=x86
-
-Which is now the default and thus it behaves more like other archs.
-
->    - ARCH= takes precedence over kernel config for a configured kernel
-
-What point is there in being able to specify ARCH=x86_64 and then still 
-produce a 32bit kernel?
-
-> 4) The changelogs miss title on reverted patches
-
-Seriously?
-
-bye, Roman
+	Sam
