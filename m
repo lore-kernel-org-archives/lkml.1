@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935159AbXKPVop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934993AbXKPVpN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935159AbXKPVop (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 16:44:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934821AbXKPVnA
+	id S934993AbXKPVpN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 16:45:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935070AbXKPVn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 16:43:00 -0500
-Received: from [198.99.130.12] ([198.99.130.12]:59858 "EHLO
+	Fri, 16 Nov 2007 16:43:29 -0500
+Received: from [198.99.130.12] ([198.99.130.12]:59881 "EHLO
 	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S934343AbXKPVm5 (ORCPT
+	with ESMTP id S935045AbXKPVn0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 16:42:57 -0500
-Date: Fri, 16 Nov 2007 16:42:27 -0500
+	Fri, 16 Nov 2007 16:43:26 -0500
+Date: Fri, 16 Nov 2007 16:42:25 -0500
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 6/8] UML - Clean up task size calculation
-Message-ID: <20071116214227.GA13872@c2.user-mode-linux.org>
+Subject: [PATCH 3/8] UML - Style cleanup
+Message-ID: <20071116214225.GA13867@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,251 +24,256 @@ User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clean up the calculation and use of the usable address space size on
-the host.
-
-task_size is gone, replaced with TASK_SIZE, which is calculated from
-CONFIG_TOP_ADDR.  get_kmem_end and set_task_sizes_skas are also gone.
-
-host_task_size, which refers to the entire address space usable by the
-UML kernel and which may be larger than the address space usable by a
-UML process, since that has to end on a pgdir boundary, is replaced by
-CONFIG_TOP_ADDR.
-
-STACK_TOP is now TASK_SIZE minus the two stub pages.
+Style fixes in elf-i386.h and arch/um/kernel/mem.c.
+      update the copyright
+      get rid of an emacs formatting comment
+      some formatting fixes
+      inclusion trimming
+      whitespace fixes
 
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 ---
- arch/um/include/as-layout.h        |   15 +++++++++++++--
- arch/um/include/common-offsets.h   |    3 +++
- arch/um/include/mem_user.h         |    4 ----
- arch/um/kernel/exec.c              |    2 +-
- arch/um/kernel/ksyms.c             |    3 ---
- arch/um/kernel/physmem.c           |   10 ----------
- arch/um/kernel/tlb.c               |    2 +-
- arch/um/kernel/um_arch.c           |   22 ++--------------------
- include/asm-um/fixmap.h            |    3 +--
- include/asm-um/processor-generic.h |    7 +++----
- 10 files changed, 24 insertions(+), 47 deletions(-)
+ arch/um/kernel/mem.c      |   86 +++++++++++++++++++++-------------------------
+ include/asm-um/elf-i386.h |   19 ++--------
+ 2 files changed, 45 insertions(+), 60 deletions(-)
 
-Index: linux-2.6.22/arch/um/include/as-layout.h
+Index: linux-2.6.22/include/asm-um/elf-i386.h
 ===================================================================
---- linux-2.6.22.orig/arch/um/include/as-layout.h	2007-11-16 13:14:39.000000000 -0500
-+++ linux-2.6.22/arch/um/include/as-layout.h	2007-11-16 14:39:39.000000000 -0500
-@@ -29,9 +29,20 @@
- #define _AC(X, Y)	__AC(X, Y)
- #endif
+--- linux-2.6.22.orig/include/asm-um/elf-i386.h	2007-11-16 15:16:54.000000000 -0500
++++ linux-2.6.22/include/asm-um/elf-i386.h	2007-11-16 15:21:20.000000000 -0500
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2000 - 2003 Jeff Dike (jdike@addtoit.com)
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ #ifndef __UM_ELF_I386_H
+@@ -46,7 +46,7 @@ typedef struct user_i387_struct elf_fpre
+ 	PT_REGS_EDI(regs) = 0; \
+ 	PT_REGS_EBP(regs) = 0; \
+ 	PT_REGS_EAX(regs) = 0; \
+-} while(0)
++} while (0)
  
-+/*
-+ * The "- 1"'s are to avoid gcc complaining about integer overflows
-+ * and unrepresentable decimal constants.  With 3-level page tables,
-+ * TASK_SIZE is 0x80000000, which gets turned into its signed decimal
-+ * equivalent in asm-offsets.s.  gcc then complains about that being
-+ * unsigned only in C90.  To avoid that, UM_TASK_SIZE is defined as
-+ * TASK_SIZE - 1.  To compensate, we need to add the 1 back here.
-+ * However, adding it back to UM_TASK_SIZE produces more gcc
-+ * complaints.  So, I adjust the thing being subtracted from
-+ * UM_TASK_SIZE instead.  Bah.
-+ */
- #define STUB_CODE _AC((unsigned long), \
--		      UML_CONFIG_TOP_ADDR - 2 * UM_KERN_PAGE_SIZE)
--#define STUB_DATA _AC((unsigned long), UML_CONFIG_TOP_ADDR - UM_KERN_PAGE_SIZE)
-+		      UM_TASK_SIZE - (2 * UM_KERN_PAGE_SIZE - 1))
-+#define STUB_DATA _AC((unsigned long), UM_TASK_SIZE - (UM_KERN_PAGE_SIZE - 1))
- #define STUB_START _AC(, STUB_CODE)
+ #define USE_ELF_CORE_DUMP
+ #define ELF_EXEC_PAGESIZE 4096
+@@ -74,7 +74,7 @@ typedef struct user_i387_struct elf_fpre
+ 	pr_reg[14] = PT_REGS_EFLAGS(regs);	\
+ 	pr_reg[15] = PT_REGS_SP(regs);		\
+ 	pr_reg[16] = PT_REGS_SS(regs);		\
+-} while(0);
++} while (0);
  
- #ifndef __ASSEMBLY__
-Index: linux-2.6.22/arch/um/include/common-offsets.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/common-offsets.h	2007-11-16 13:21:51.000000000 -0500
-+++ linux-2.6.22/arch/um/include/common-offsets.h	2007-11-16 14:39:39.000000000 -0500
-@@ -39,3 +39,6 @@ DEFINE(UM_HZ, HZ);
- DEFINE(UM_USEC_PER_SEC, USEC_PER_SEC);
- DEFINE(UM_NSEC_PER_SEC, NSEC_PER_SEC);
- DEFINE(UM_NSEC_PER_USEC, NSEC_PER_USEC);
-+
-+/* See as-layout.h for an explanation of the "- 1".  Bah. */
-+DEFINE(UM_TASK_SIZE, TASK_SIZE - 1);
-Index: linux-2.6.22/arch/um/include/mem_user.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/mem_user.h	2007-11-16 13:14:39.000000000 -0500
-+++ linux-2.6.22/arch/um/include/mem_user.h	2007-11-16 14:39:39.000000000 -0500
-@@ -46,9 +46,6 @@ extern int iomem_size;
+ extern int elf_core_copy_fpregs(struct task_struct *t, elf_fpregset_t *fpu);
  
- #define ROUND_4M(n) ((((unsigned long) (n)) + (1 << 22)) & ~((1 << 22) - 1))
+@@ -86,7 +86,7 @@ extern long elf_aux_hwcap;
+ extern char * elf_aux_platform;
+ #define ELF_PLATFORM (elf_aux_platform)
  
--extern unsigned long host_task_size;
--extern unsigned long task_size;
--
- extern int init_mem_user(void);
- extern void setup_memory(void *entry);
- extern unsigned long find_iomem(char *driver, unsigned long *len_out);
-@@ -62,6 +59,5 @@ extern unsigned long phys_offset(unsigne
- extern void unmap_physmem(void);
- extern void map_memory(unsigned long virt, unsigned long phys,
- 		       unsigned long len, int r, int w, int x);
--extern unsigned long get_kmem_end(void);
+-#define SET_PERSONALITY(ex, ibcs2) do ; while(0)
++#define SET_PERSONALITY(ex, ibcs2) do { } while (0)
  
- #endif
-Index: linux-2.6.22/arch/um/kernel/exec.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/exec.c	2007-11-16 13:14:39.000000000 -0500
-+++ linux-2.6.22/arch/um/kernel/exec.c	2007-11-16 14:39:39.000000000 -0500
-@@ -19,7 +19,7 @@
- void flush_thread(void)
- {
- 	void *data = NULL;
--	unsigned long end = proc_mm ? task_size : STUB_START;
-+	unsigned long end = proc_mm ? TASK_SIZE : STUB_START;
- 	int ret;
- 
- 	arch_flush_thread(&current->thread.arch);
-Index: linux-2.6.22/arch/um/kernel/ksyms.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/ksyms.c	2007-11-16 13:21:56.000000000 -0500
-+++ linux-2.6.22/arch/um/kernel/ksyms.c	2007-11-16 14:39:39.000000000 -0500
-@@ -17,11 +17,8 @@ EXPORT_SYMBOL(set_signals);
- EXPORT_SYMBOL(get_signals);
- EXPORT_SYMBOL(kernel_thread);
- EXPORT_SYMBOL(sys_waitpid);
--EXPORT_SYMBOL(task_size);
- EXPORT_SYMBOL(flush_tlb_range);
--EXPORT_SYMBOL(host_task_size);
- EXPORT_SYMBOL(arch_validate);
--EXPORT_SYMBOL(get_kmem_end);
- 
- EXPORT_SYMBOL(high_physmem);
- EXPORT_SYMBOL(empty_zero_page);
-Index: linux-2.6.22/arch/um/kernel/physmem.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/physmem.c	2007-11-16 13:14:39.000000000 -0500
-+++ linux-2.6.22/arch/um/kernel/physmem.c	2007-11-16 14:39:39.000000000 -0500
-@@ -55,16 +55,6 @@ int __init init_maps(unsigned long physm
- 	return 0;
+ extern unsigned long vsyscall_ehdr;
+ extern unsigned long vsyscall_end;
+@@ -161,14 +161,3 @@ if ( vsyscall_ehdr ) {							      \
  }
  
--/* Changed during early boot */
--static unsigned long kmem_top = 0;
+ #endif
 -
--unsigned long get_kmem_end(void)
--{
--	if (kmem_top == 0)
--		kmem_top = host_task_size - 1024 * 1024;
--	return kmem_top;
--}
--
- void map_memory(unsigned long virt, unsigned long phys, unsigned long len,
- 		int r, int w, int x)
- {
-Index: linux-2.6.22/arch/um/kernel/tlb.c
+-/*
+- * Overrides for Emacs so that we follow Linus's tabbing style.
+- * Emacs will notice this stuff at the end of the file and automatically
+- * adjust the settings for this buffer only.  This must remain at the end
+- * of the file.
+- * ---------------------------------------------------------------------------
+- * Local variables:
+- * c-file-style: "linux"
+- * End:
+- */
+Index: linux-2.6.22/arch/um/kernel/mem.c
 ===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tlb.c	2007-11-16 13:38:29.000000000 -0500
-+++ linux-2.6.22/arch/um/kernel/tlb.c	2007-11-16 14:53:08.000000000 -0500
-@@ -511,7 +511,7 @@ void flush_tlb_mm(struct mm_struct *mm)
- 	if (atomic_read(&mm->mm_users) == 0)
- 		return;
+--- linux-2.6.22.orig/arch/um/kernel/mem.c	2007-11-16 15:18:34.000000000 -0500
++++ linux-2.6.22/arch/um/kernel/mem.c	2007-11-16 15:33:46.000000000 -0500
+@@ -1,28 +1,22 @@
+ /*
+- * Copyright (C) 2000 - 2003 Jeff Dike (jdike@addtoit.com)
++ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
  
--	end = proc_mm ? task_size : STUB_START;
-+	end = proc_mm ? TASK_SIZE : STUB_START;
- 	fix_range(mm, 0, end, 0);
+-#include "linux/stddef.h"
+-#include "linux/kernel.h"
+-#include "linux/mm.h"
+-#include "linux/bootmem.h"
+-#include "linux/swap.h"
+-#include "linux/highmem.h"
+-#include "linux/gfp.h"
+-#include "asm/page.h"
+-#include "asm/fixmap.h"
+-#include "asm/pgalloc.h"
+-#include "kern_util.h"
++#include <linux/stddef.h>
++#include <linux/bootmem.h>
++#include <linux/gfp.h>
++#include <linux/highmem.h>
++#include <linux/mm.h>
++#include <linux/swap.h>
++#include <asm/fixmap.h>
++#include <asm/page.h>
+ #include "as-layout.h"
++#include "init.h"
+ #include "kern.h"
++#include "kern_util.h"
+ #include "mem_user.h"
+-#include "um_uaccess.h"
+ #include "os.h"
+-#include "linux/types.h"
+-#include "linux/string.h"
+-#include "init.h"
+-#include "kern_constants.h"
+ 
+ /* allocated in paging_init, zeroed in mem_init, and unchanged thereafter */
+ unsigned long *empty_zero_page = NULL;
+@@ -53,7 +47,7 @@ static void setup_highmem(unsigned long 
+ 	int i;
+ 
+ 	highmem_pfn = __pa(highmem_start) >> PAGE_SHIFT;
+-	for(i = 0; i < highmem_len >> PAGE_SHIFT; i++){
++	for (i = 0; i < highmem_len >> PAGE_SHIFT; i++) {
+ 		page = &mem_map[highmem_pfn + i];
+ 		ClearPageReserved(page);
+ 		init_page_count(page);
+@@ -85,7 +79,7 @@ void __init mem_init(void)
+ #endif
+ 	num_physpages = totalram_pages;
+ 	max_pfn = totalram_pages;
+-	printk(KERN_INFO "Memory: %luk available\n", 
++	printk(KERN_INFO "Memory: %luk available\n",
+ 	       (unsigned long) nr_free_pages() << (PAGE_SHIFT-10));
+ 	kmalloc_ok = 1;
+ 
+@@ -119,7 +113,7 @@ static void __init one_md_table_init(pud
+ #endif
  }
  
-Index: linux-2.6.22/arch/um/kernel/um_arch.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/um_arch.c	2007-11-16 13:21:55.000000000 -0500
-+++ linux-2.6.22/arch/um/kernel/um_arch.c	2007-11-16 14:39:39.000000000 -0500
-@@ -101,8 +101,6 @@ const struct seq_operations cpuinfo_op =
- };
- 
- /* Set in linux_main */
--unsigned long host_task_size;
--unsigned long task_size;
- unsigned long uml_physmem;
- unsigned long uml_reserved; /* Also modified in mem_init */
- unsigned long start_vm;
-@@ -234,20 +232,6 @@ EXPORT_SYMBOL(end_iomem);
- 
- extern char __binary_start;
- 
--static unsigned long set_task_sizes_skas(unsigned long *task_size_out)
--{
--	/* Round up to the nearest 4M */
--	unsigned long host_task_size = ROUND_4M((unsigned long)
--						&host_task_size);
--
--	if (!skas_needs_stub)
--		*task_size_out = host_task_size;
--	else
--		*task_size_out = STUB_START & PGDIR_MASK;
--
--	return host_task_size;
--}
--
- int __init linux_main(int argc, char **argv)
+-static void __init fixrange_init(unsigned long start, unsigned long end, 
++static void __init fixrange_init(unsigned long start, unsigned long end,
+ 				 pgd_t *pgd_base)
  {
- 	unsigned long avail, diff;
-@@ -278,8 +262,6 @@ int __init linux_main(int argc, char **a
+ 	pgd_t *pgd;
+@@ -206,7 +200,8 @@ static void __init fixaddr_user_init( vo
+ 	paddr = (unsigned long)alloc_bootmem_low_pages( size);
+ 	memcpy( (void *)paddr, (void *)FIXADDR_USER_START, size);
+ 	paddr = __pa(paddr);
+-	for ( ; size > 0; size-=PAGE_SIZE, vaddr+=PAGE_SIZE, paddr+=PAGE_SIZE){
++	for ( ; size > 0; size -= PAGE_SIZE, vaddr += PAGE_SIZE,
++		      paddr += PAGE_SIZE) {
+ 		pgd = swapper_pg_dir + pgd_index(vaddr);
+ 		pud = pud_offset(pgd, vaddr);
+ 		pmd = pmd_offset(pud, vaddr);
+@@ -223,7 +218,7 @@ void __init paging_init(void)
  
- 	printf("UML running in %s mode\n", mode);
+ 	empty_zero_page = (unsigned long *) alloc_bootmem_low_pages(PAGE_SIZE);
+ 	empty_bad_page = (unsigned long *) alloc_bootmem_low_pages(PAGE_SIZE);
+-	for(i = 0; i < ARRAY_SIZE(zones_size); i++)
++	for (i = 0; i < ARRAY_SIZE(zones_size); i++)
+ 		zones_size[i] = 0;
  
--	host_task_size = set_task_sizes_skas(&task_size);
--
- 	brk_start = (unsigned long) sbrk(0);
+ 	zones_size[ZONE_NORMAL] = (end_iomem >> PAGE_SHIFT) -
+@@ -253,26 +248,26 @@ struct page *arch_validate(struct page *
+ 	int i;
  
- 	/*
-@@ -304,7 +286,7 @@ int __init linux_main(int argc, char **a
+  again:
+-	if(page == NULL)
++	if (page == NULL)
+ 		return page;
+-	if(PageHighMem(page))
++	if (PageHighMem(page))
+ 		return page;
  
- 	highmem = 0;
- 	iomem_size = (iomem_size + PAGE_SIZE - 1) & PAGE_MASK;
--	max_physmem = get_kmem_end() - uml_physmem - iomem_size - MIN_VMALLOC;
-+	max_physmem = CONFIG_TOP_ADDR - uml_physmem - iomem_size - MIN_VMALLOC;
- 
- 	/*
- 	 * Zones have to begin on a 1 << MAX_ORDER page boundary,
-@@ -336,7 +318,7 @@ int __init linux_main(int argc, char **a
+ 	addr = (unsigned long) page_address(page);
+-	for(i = 0; i < (1 << order); i++){
++	for (i = 0; i < (1 << order); i++) {
+ 		current->thread.fault_addr = (void *) addr;
+-		if(__do_copy_to_user((void __user *) addr, &zero,
++		if (__do_copy_to_user((void __user *) addr, &zero,
+ 				     sizeof(zero),
+ 				     &current->thread.fault_addr,
+-				     &current->thread.fault_catcher)){
+-			if(!(mask & __GFP_WAIT))
++				     &current->thread.fault_catcher)) {
++			if (!(mask & __GFP_WAIT))
+ 				return NULL;
+ 			else break;
+ 		}
+ 		addr += PAGE_SIZE;
  	}
  
- 	virtmem_size = physmem_size;
--	avail = get_kmem_end() - start_vm;
-+	avail = CONFIG_TOP_ADDR - start_vm;
- 	if (physmem_size > avail)
- 		virtmem_size = avail;
- 	end_vm = start_vm + virtmem_size;
-Index: linux-2.6.22/include/asm-um/fixmap.h
-===================================================================
---- linux-2.6.22.orig/include/asm-um/fixmap.h	2007-11-16 13:51:13.000000000 -0500
-+++ linux-2.6.22/include/asm-um/fixmap.h	2007-11-16 14:39:39.000000000 -0500
-@@ -56,9 +56,8 @@ extern void __set_fixmap (enum fixed_add
-  * the start of the fixmap, and leave one page empty
-  * at the top of mem..
-  */
--extern unsigned long get_kmem_end(void);
+-	if(i == (1 << order))
++	if (i == (1 << order))
+ 		return page;
+ 	page = alloc_pages(mask, order);
+ 	goto again;
+@@ -291,8 +286,8 @@ void free_initmem(void)
+ void free_initrd_mem(unsigned long start, unsigned long end)
+ {
+ 	if (start < end)
+-		printk ("Freeing initrd memory: %ldk freed\n", 
+-			(end - start) >> 10);
++		printk(KERN_INFO "Freeing initrd memory: %ldk freed\n",
++		       (end - start) >> 10);
+ 	for (; start < end; start += PAGE_SIZE) {
+ 		ClearPageReserved(virt_to_page(start));
+ 		init_page_count(virt_to_page(start));
+@@ -309,27 +304,28 @@ void show_mem(void)
+ 	int highmem = 0;
+ 	struct page *page;
  
--#define FIXADDR_TOP	(get_kmem_end() - 0x2000)
-+#define FIXADDR_TOP	(CONFIG_TOP_ADDR - 2 * PAGE_SIZE)
- #define FIXADDR_SIZE	(__end_of_fixed_addresses << PAGE_SHIFT)
- #define FIXADDR_START	(FIXADDR_TOP - FIXADDR_SIZE)
+-	printk("Mem-info:\n");
++	printk(KERN_INFO "Mem-info:\n");
+ 	show_free_areas();
+-	printk("Free swap:       %6ldkB\n", nr_swap_pages<<(PAGE_SHIFT-10));
++	printk(KERN_INFO "Free swap:       %6ldkB\n",
++	       nr_swap_pages<<(PAGE_SHIFT-10));
+ 	pfn = max_mapnr;
+-	while(pfn-- > 0) {
++	while (pfn-- > 0) {
+ 		page = pfn_to_page(pfn);
+ 		total++;
+-		if(PageHighMem(page))
++		if (PageHighMem(page))
+ 			highmem++;
+-		if(PageReserved(page))
++		if (PageReserved(page))
+ 			reserved++;
+-		else if(PageSwapCache(page))
++		else if (PageSwapCache(page))
+ 			cached++;
+-		else if(page_count(page))
++		else if (page_count(page))
+ 			shared += page_count(page) - 1;
+ 	}
+-	printk("%d pages of RAM\n", total);
+-	printk("%d pages of HIGHMEM\n", highmem);
+-	printk("%d reserved pages\n", reserved);
+-	printk("%d pages shared\n", shared);
+-	printk("%d pages swap cached\n", cached);
++	printk(KERN_INFO "%d pages of RAM\n", total);
++	printk(KERN_INFO "%d pages of HIGHMEM\n", highmem);
++	printk(KERN_INFO "%d reserved pages\n", reserved);
++	printk(KERN_INFO "%d pages shared\n", shared);
++	printk(KERN_INFO "%d pages swap cached\n", cached);
+ }
  
-Index: linux-2.6.22/include/asm-um/processor-generic.h
-===================================================================
---- linux-2.6.22.orig/include/asm-um/processor-generic.h	2007-11-16 13:30:15.000000000 -0500
-+++ linux-2.6.22/include/asm-um/processor-generic.h	2007-11-16 14:39:39.000000000 -0500
-@@ -94,15 +94,14 @@ static inline void mm_copy_segments(stru
- /*
-  * User space process size: 3GB (default).
-  */
--extern unsigned long task_size;
- extern unsigned long stacksizelim;
--extern unsigned long host_task_size;
+ /* Allocate and free page tables. */
+@@ -340,8 +336,8 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
  
--#define TASK_SIZE	(task_size)
-+#define TASK_SIZE (CONFIG_TOP_ADDR & PGDIR_MASK)
- 
- #undef STACK_TOP
- #undef STACK_TOP_MAX
--#define STACK_TOP	TASK_SIZE
-+
-+#define STACK_TOP (TASK_SIZE - 2 * PAGE_SIZE)
- #define STACK_TOP_MAX	STACK_TOP
- #define STACK_ROOM	(stacksizelim)
- 
+ 	if (pgd) {
+ 		memset(pgd, 0, USER_PTRS_PER_PGD * sizeof(pgd_t));
+-		memcpy(pgd + USER_PTRS_PER_PGD, 
+-		       swapper_pg_dir + USER_PTRS_PER_PGD, 
++		memcpy(pgd + USER_PTRS_PER_PGD,
++		       swapper_pg_dir + USER_PTRS_PER_PGD,
+ 		       (PTRS_PER_PGD - USER_PTRS_PER_PGD) * sizeof(pgd_t));
+ 	}
+ 	return pgd;
