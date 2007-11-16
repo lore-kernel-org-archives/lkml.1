@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933924AbXKPUDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933624AbXKPUEH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933924AbXKPUDp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 15:03:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765356AbXKPUCF
+	id S933624AbXKPUEH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 15:04:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756746AbXKPUCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 15:02:05 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:38714 "EHLO smtp.polymtl.ca"
+	Fri, 16 Nov 2007 15:02:21 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:38878 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765213AbXKPUCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 15:02:04 -0500
-Message-Id: <20071116200137.673861165@polymtl.ca>
+	id S932090AbXKPUCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 15:02:19 -0500
+Message-Id: <20071116200139.505993203@polymtl.ca>
 References: <20071116195747.448703304@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Fri, 16 Nov 2007 14:57:50 -0500
+Date: Fri, 16 Nov 2007 14:57:55 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>, hch@infradead.org,
-       prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com,
-       davem@davemloft.net
-Subject: [rfc-patch 03/11] Kprobes - declare kprobe_mutex static
-Content-Disposition: inline; filename=kprobes-declare-kprobes-mutex-static.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri, 16 Nov 2007 20:01:41 +0000
+       Andi Kleen <andi@firstfloor.org>, prasanna@in.ibm.com,
+       ananth@in.ibm.com, anil.s.keshavamurthy@intel.com, davem@davemloft.net,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [rfc-patch 08/11] Text Edit Lock - kprobes x86_32
+Content-Disposition: inline; filename=text-edit-lock-kprobes-i386.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri, 16 Nov 2007 20:01:43 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since it will not be used by other kernel objects, it makes sense to declare it
-static.
+Make kprobes use INIT_ARRAY().
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-CC: hch@infradead.org
+Tested-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+CC: Andi Kleen <andi@firstfloor.org>
 CC: prasanna@in.ibm.com
+CC: ananth@in.ibm.com
 CC: anil.s.keshavamurthy@intel.com
 CC: davem@davemloft.net
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: Ingo Molnar <mingo@redhat.com>
+CC: H. Peter Anvin <hpa@zytor.com>
 ---
- kernel/kprobes.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/kernel/kprobes_32.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Index: linux-2.6-lttng/kernel/kprobes.c
+Index: linux-2.6-lttng/arch/x86/kernel/kprobes_32.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/kprobes.c	2007-08-19 09:09:15.000000000 -0400
-+++ linux-2.6-lttng/kernel/kprobes.c	2007-08-19 17:18:07.000000000 -0400
-@@ -68,7 +68,7 @@ static struct hlist_head kretprobe_inst_
- /* NOTE: change this value only with kprobe_mutex held */
- static bool kprobe_enabled;
+--- linux-2.6-lttng.orig/arch/x86/kernel/kprobes_32.c	2007-11-13 09:45:35.000000000 -0500
++++ linux-2.6-lttng/arch/x86/kernel/kprobes_32.c	2007-11-13 09:45:44.000000000 -0500
+@@ -176,12 +176,13 @@ int __kprobes arch_prepare_kprobe(struct
  
--DEFINE_MUTEX(kprobe_mutex);		/* Protects kprobe_table */
-+static DEFINE_MUTEX(kprobe_mutex);	/* Protects kprobe_table */
- DEFINE_SPINLOCK(kretprobe_lock);	/* Protects kretprobe_inst_table */
- static DEFINE_PER_CPU(struct kprobe *, kprobe_instance) = NULL;
+ void __kprobes arch_arm_kprobe(struct kprobe *p)
+ {
+-	text_poke(p->addr, ((unsigned char []){BREAKPOINT_INSTRUCTION}), 1);
++	text_poke(p->addr, INIT_ARRAY(unsigned char, BREAKPOINT_INSTRUCTION, 1),
++			1);
+ }
  
+ void __kprobes arch_disarm_kprobe(struct kprobe *p)
+ {
+-	text_poke(p->addr, &p->opcode, 1);
++	text_poke(p->addr, INIT_ARRAY(unsigned char, p->opcode, 1), 1);
+ }
+ 
+ void __kprobes arch_remove_kprobe(struct kprobe *p)
 
 -- 
 Mathieu Desnoyers
