@@ -1,50 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765503AbXKPBOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932594AbXKPBVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765503AbXKPBOt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 20:14:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbXKPBOm
+	id S932594AbXKPBVl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 20:21:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752409AbXKPBVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 20:14:42 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:33957 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752896AbXKPBOl (ORCPT
+	Thu, 15 Nov 2007 20:21:32 -0500
+Received: from rn-out-0910.google.com ([64.233.170.191]:54314 "EHLO
+	rn-out-0102.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752027AbXKPBVb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 20:14:41 -0500
-Date: Fri, 16 Nov 2007 10:13:42 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: EIP is at device_shutdown+0x32/0x60
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
-In-Reply-To: <20071115190124.GA29599@suse.de>
-References: <3ae72650711150950k74fdb37eu108bb360a594ffe8@mail.gmail.com> <20071115190124.GA29599@suse.de>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20071116100930.5A78.Y-GOTO@jp.fujitsu.com>
+	Thu, 15 Nov 2007 20:21:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jZT6mmfIcUnd+0+fsNZ/RTcTtDgquv07ZadFOj6UQnVDdnAnVjhVRb2G7C0olB9JL6f4fv2vSg3KuTRwC4gkmjDTWH1xQRacMs/YgxMe4d7LYy7pCq8sd7b4uf78OU8EMeAt7dK8PcXw1NLp8eQCU/+MOyLVUyi3A9vc+cpO3m8=
+Message-ID: <7d854fa0711151721q28e144fbt43bf7fc6ca03d5f9@mail.gmail.com>
+Date: Fri, 16 Nov 2007 09:21:29 +0800
+From: Tom <leiming.tom@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc2-mm1 -- strange apparent network failures
+In-Reply-To: <200711152028.29734.kjwinchester@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.27 [ja]
+Content-Disposition: inline
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
+	 <20071115100209.GB2513@shadowen.org>
+	 <200711152028.29734.kjwinchester@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 
-> > Care to try this:
-> >   +       system_kset = kset_create_and_register("system", NULL,
-> >   +                                              &devices_kset->kobj, NULL);
-> > 
-> > We should not join the kset, only use it as a parent.
-> 
-> Yes, that fixes the problem for me!
-> 
-> Can anyone else verify this?
-
-I confirmed it fixed the problem. :-)
-
-Thanks.
-
-
--- 
-Yasunori Goto 
-
-
+unsubscribe linux-kernel
