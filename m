@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964870AbXKPXV7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933167AbXKPXW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964870AbXKPXV7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 18:21:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934935AbXKPXLu
+	id S933167AbXKPXW3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 18:22:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934965AbXKPXLw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 18:11:50 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:39565 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761581AbXKPXLG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 18:11:06 -0500
-Message-Id: <20071116231105.462829683@sgi.com>
+	Fri, 16 Nov 2007 18:11:52 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51803 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761713AbXKPXLI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 18:11:08 -0500
+Message-Id: <20071116231107.817058594@sgi.com>
 References: <20071116230920.278761667@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 16 Nov 2007 15:09:34 -0800
+Date: Fri, 16 Nov 2007 15:09:43 -0800
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
 Cc: linux-arch@vger.kernel.org
@@ -20,55 +21,64 @@ Cc: linux-kernel@vger.kernel.org
 Cc: David Miller <davem@davemloft.net>
 Cc: Eric Dumazet <dada1@cosmosbay.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
-Subject: [patch 14/30] cpu alloc: blktrace conversion
-Content-Disposition: inline; filename=0024-cpu-alloc-blktrace-conversion.patch
+Subject: [patch 23/30] cpu alloc: veth conversion
+Content-Disposition: inline; filename=0033-cpu-alloc-veth-conversion.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- block/blktrace.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/net/veth.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-Index: linux-2.6/block/blktrace.c
+Index: linux-2.6/drivers/net/veth.c
 ===================================================================
---- linux-2.6.orig/block/blktrace.c	2007-11-15 21:17:24.586154116 -0800
-+++ linux-2.6/block/blktrace.c	2007-11-15 21:25:31.591154091 -0800
-@@ -155,7 +155,7 @@ void __blk_add_trace(struct blk_trace *b
- 	t = relay_reserve(bt->rchan, sizeof(*t) + pdu_len);
- 	if (t) {
- 		cpu = smp_processor_id();
--		sequence = per_cpu_ptr(bt->sequence, cpu);
-+		sequence = CPU_PTR(bt->sequence, cpu);
+--- linux-2.6.orig/drivers/net/veth.c	2007-11-15 21:17:24.010404318 -0800
++++ linux-2.6/drivers/net/veth.c	2007-11-15 21:25:36.483154219 -0800
+@@ -162,7 +162,7 @@ static int veth_xmit(struct sk_buff *skb
+ 	rcv_priv = netdev_priv(rcv);
  
- 		t->magic = BLK_IO_TRACE_MAGIC | BLK_IO_TRACE_VERSION;
- 		t->sequence = ++(*sequence);
-@@ -227,7 +227,7 @@ static void blk_trace_cleanup(struct blk
- 	relay_close(bt->rchan);
- 	debugfs_remove(bt->dropped_file);
- 	blk_remove_tree(bt->dir);
--	free_percpu(bt->sequence);
-+	CPU_FREE(bt->sequence);
- 	kfree(bt);
+ 	cpu = smp_processor_id();
+-	stats = per_cpu_ptr(priv->stats, cpu);
++	stats = CPU_PTR(priv->stats, cpu);
+ 
+ 	if (!(rcv->flags & IFF_UP))
+ 		goto outf;
+@@ -183,7 +183,7 @@ static int veth_xmit(struct sk_buff *skb
+ 	stats->tx_bytes += length;
+ 	stats->tx_packets++;
+ 
+-	stats = per_cpu_ptr(rcv_priv->stats, cpu);
++	stats = CPU_PTR(rcv_priv->stats, cpu);
+ 	stats->rx_bytes += length;
+ 	stats->rx_packets++;
+ 
+@@ -217,7 +217,7 @@ static struct net_device_stats *veth_get
+ 	dev_stats->tx_dropped = 0;
+ 
+ 	for_each_online_cpu(cpu) {
+-		stats = per_cpu_ptr(priv->stats, cpu);
++		stats = CPU_PTR(priv->stats, cpu);
+ 
+ 		dev_stats->rx_packets += stats->rx_packets;
+ 		dev_stats->tx_packets += stats->tx_packets;
+@@ -261,7 +261,7 @@ static int veth_dev_init(struct net_devi
+ 	struct veth_net_stats *stats;
+ 	struct veth_priv *priv;
+ 
+-	stats = alloc_percpu(struct veth_net_stats);
++	stats = CPU_ALLOC(struct veth_net_stats, GFP_KERNEL | __GFP_ZER);
+ 	if (stats == NULL)
+ 		return -ENOMEM;
+ 
+@@ -275,7 +275,7 @@ static void veth_dev_free(struct net_dev
+ 	struct veth_priv *priv;
+ 
+ 	priv = netdev_priv(dev);
+-	free_percpu(priv->stats);
++	CPU_FREE(priv->stats);
+ 	free_netdev(dev);
  }
  
-@@ -338,7 +338,7 @@ int do_blk_trace_setup(struct request_qu
- 	if (!bt)
- 		goto err;
- 
--	bt->sequence = alloc_percpu(unsigned long);
-+	bt->sequence = CPU_ALLOC(unsigned long, GFP_KERNEL | __GFP_ZERO);
- 	if (!bt->sequence)
- 		goto err;
- 
-@@ -387,7 +387,7 @@ err:
- 	if (bt) {
- 		if (bt->dropped_file)
- 			debugfs_remove(bt->dropped_file);
--		free_percpu(bt->sequence);
-+		CPU_FREE(bt->sequence);
- 		if (bt->rchan)
- 			relay_close(bt->rchan);
- 		kfree(bt);
 
 -- 
