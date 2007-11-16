@@ -1,37 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932849AbXKPCMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932289AbXKPCTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932849AbXKPCMV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 21:12:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757347AbXKPCMJ
+	id S932289AbXKPCTs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 21:19:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbXKPCTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 21:12:09 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:55246 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757271AbXKPCMH (ORCPT
+	Thu, 15 Nov 2007 21:19:40 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48011 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752232AbXKPCTj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 21:12:07 -0500
-Message-ID: <cccedfc60711151812x300fa9dcm2ef8f1c5447dd499@mail.gmail.com>
-Date: Thu, 15 Nov 2007 20:12:05 -0600
-From: "Jon Nelson" <jnelson@jamponi.net>
-To: "Jarek Poplawski" <jarkao2@o2.pl>
-Subject: Re: tg3: strange errors and non-working-ness
-Cc: "Michael Chan" <mchan@broadcom.com>, netdev <netdev@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <473CC3FE.5080509@o2.pl>
+	Thu, 15 Nov 2007 21:19:39 -0500
+Date: Thu, 15 Nov 2007 18:19:37 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: David Miller <davem@davemloft.net>
+cc: corbet@lwn.net, andi@firstfloor.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, dada1@cosmosbay.com,
+       schwidefsky@de.ibm.com
+Subject: Re: [patch 01/28] cpu alloc: The allocator
+In-Reply-To: <20071115.140305.137877909.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0711151816170.31691@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0711132023290.7631@schroedinger.engr.sgi.com>
+ <20071113.215306.78239549.davem@davemloft.net>
+ <Pine.LNX.4.64.0711151045060.28051@schroedinger.engr.sgi.com>
+ <20071115.140305.137877909.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071115094728.GB2366@ff.dom.local> <1195154603.6360.9.camel@dell>
-	 <cccedfc60711151117v70b285fbl79bbc92ced176d54@mail.gmail.com>
-	 <1195158200.6360.17.camel@dell>
-	 <cccedfc60711151221p322894f8i94c540fefb0e4827@mail.gmail.com>
-	 <473CC3FE.5080509@o2.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have created bug 9391 on bugzilla.kernel.org containing pretty much
-everything.
+On Thu, 15 Nov 2007, David Miller wrote:
 
--- 
-Jon
+> Well, the first version of the patch set, the one I tested, did
+> require a lot of BSS space.  And that's the one they are writing
+> about.
+
+I am running the same version that you also ran. The problem is that you 
+did not configure the stuff properly for your box and I did not include a 
+configuration for sparc64 since I did not know how it needed to be 
+configured for sparc64. You ignored the patch for sparc64 that I provided 
+to correct the problem.
+
+
+
+
