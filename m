@@ -1,52 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764221AbXKPKIe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764796AbXKPKNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764221AbXKPKIe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 05:08:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbXKPKIZ
+	id S1764796AbXKPKNT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 05:13:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756788AbXKPKNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 05:08:25 -0500
-Received: from ns4.abinetworks.biz ([216.218.212.66]:50186 "EHLO
-	ns4.abinetworks.biz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754454AbXKPKIZ (ORCPT
+	Fri, 16 Nov 2007 05:13:08 -0500
+Received: from mail-in-17.arcor-online.net ([151.189.21.57]:44885 "EHLO
+	mail-in-17.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756342AbXKPKNG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 05:08:25 -0500
-Message-ID: <473D6B5C.4090701@abinetworks.biz>
-Date: Fri, 16 Nov 2007 11:05:16 +0100
-From: Gianluca Alberici <gianluca@abinetworks.biz>
-User-Agent: Mozilla Thunderbird 1.0.2 (X11/20050317)
-X-Accept-Language: en-us, en
+	Fri, 16 Nov 2007 05:13:06 -0500
+Date: Fri, 16 Nov 2007 12:14:46 +0100
+From: Andreas Herrmann <aherrman@arcor.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Kconfig: ARCH=x86
+Message-ID: <20071116111446.GA16968@devil>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: NFS Bug in 2.6.23 ?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi,
 
-Got problems with CFS after a kernel upgrade from 2.6.20 to 2.6.23.
-After a certain amount of time since cattach i get:
+I have just some minor remarks wrt the commit message for
+daa93fab824f2b8c35bd11670c7fab2f32b2de5f - 'x86: enable "make
+ARCH=x86"'. (Based on my observations when testing the stuff on 64bit
+and 32bit hosts with Linus' tree v2.6.24-rc2-640-g8c08634.)
 
-ios:~$ ls /opt/clear/
-ls: /opt/clear/: Not a directory
+For randconfig we have now the following behaviour.  (The table shows
+whether the resulting configuration is for 32 or 64-bit.)
 
-stracing the command i get stat64() returning ENOTDIR.
-Applications won't find the directory.
+# make randconfig [ARCH=...] [K64BIT=]
 
-If i cd into it and ls it is like doing a refresh: everything works
-again for a certain amount of time, then, again. It reminds me an old
-version of CFS which used to claim: 'stale NFS file handle'.
+option \ host arch      | 32bit         | 64bit
+=====================================================
+./.                     | 32bit         | 64bit
+ARCH=x86                | 32bit/64bit   | 32bit/64bit
+ARCH=x86 K64BIT=n       | 32bit         | 32bit
+ARCH=x86 K64BIT=y       | 64bit         | 64bit
+ARCH=x86_64             | 64bit         | 64bit
+ARCH=x86_64 K64BIT=n    | 32bit         | 32bit
+ARCH=x86_64 K64BIT=y    | 64bit         | 64bit
 
-I didnt see any NFS changes in the changeslog of 2.6.23.1 so i decided
-to POST.
+Basically this means if you are addicted to randconfig (like I am) and
+want to compile-test the entire range of possible 32-bit _and_ 64-bit
+configurations you have to use "ARCH=x86" on te commmand line.
 
-SOmebody can help ?
+For menuconfig (config, oldconfig, silentoldconfig) we have the
+following default selections, depending on whether there exists an old
+.config file or not.  Especially this means that the default for
+CONFIG_64BIT does not depend on any command line option like "ARCH=x86
+K64BIT=y".
 
-TIA
+option \ host arch      | 32bit         | 64bit
+=================================================
+                        | (w/o any .config file)
+all relevant options    | 32bit         | 64bit
+-------------------------------------------------
+                        | (with old 32-bit .config)
+all relevant options    | 32bit         | 32bit
+------------------------+---------------+--------
+                        | (with old 64-bit .config)
+all relevant options    | 64bit         | 64bit
 
-Gianluca
+I don't know whether the above is the desired behaviour. But that's
+what I have observed on my machines. And now that I know how it works
+I can live with it ;-)
+
+BTW, is the x86 kernel build documented somewhere?
+At a first glance I didn't find anything suitable under Documentation/.
+Maybe some explanation (like the above) should be added there.
 
 
+Regards,
 
+Andreas
 
