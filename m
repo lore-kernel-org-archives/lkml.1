@@ -1,269 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933673AbXKPRmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763418AbXKPRpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933673AbXKPRmf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 12:42:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762269AbXKPRhu
+	id S1763418AbXKPRpb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 12:45:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754555AbXKPRpS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 12:37:50 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:54792 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762709AbXKPRhC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 12:37:02 -0500
-Message-Id: <20071116173527.974565972@I-love.SAKURA.ne.jp>
-References: <20071116173439.796600895@I-love.SAKURA.ne.jp>
-User-Agent: quilt/0.46-1
-Date: Sat, 17 Nov 2007 02:34:52 +0900
-From: penguin-kernel@I-love.SAKURA.ne.jp
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Kentaro Takeda <takedakn@nttdata.co.jp>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #5 13/18] Signal control functions.
-Content-Disposition: inline; filename=tomoyo-signal.diff
+	Fri, 16 Nov 2007 12:45:18 -0500
+Received: from proxy3.bredband.net ([195.54.101.73]:41955 "EHLO
+	proxy3.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756199AbXKPRpQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 12:45:16 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAOplPUdV4pmXRmdsb2JhbAAMhyeHUAEBATc
+Message-ID: <473DD778.30607@purplescout.se>
+Date: Fri, 16 Nov 2007 18:46:32 +0100
+From: Jonas Stare <jonas.stare@purplescout.se>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH][RESUBMIT] drivers/ide/ide-probe.c, kernel 2.6.23.1
+References: <473434F1.50509@purplescout.se> <200711132303.28424.bzolnier@gmail.com> <473C08B2.1030004@purplescout.se> <200711152159.23607.bzolnier@gmail.com> <473D88A5.306@purplescout.se> <473D9261.6080209@ru.mvista.com>
+In-Reply-To: <473D9261.6080209@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-TOMOYO Linux checks sending signal by signal number and
-the domain of target process. In order to check signal
-permission, LSM expansion patch [TOMOYO 18/18] is needed.
+Sergei Shtylyov wrote:
+> Jonas Stare wrote:
+> 
+>> diff -u linux-2.6.23.1-orig/drivers/ide/ide-probe.c
+>> linux-2.6.23.1/drivers/ide/ide-probe.c ---
+>> linux-2.6.23.1-orig/drivers/ide/ide-probe.c 2007-10-12
+>> 18:43:44.000000000 +0200
+>> +++ linux-2.6.23.1/drivers/ide/ide-probe.c      2007-11-16
+>> 10:26:23.000000000 +0100
+>> @@ -643,6 +643,7 @@
+>>  static int wait_hwif_ready(ide_hwif_t *hwif)
+>>  {
+>>         int rc;
+>> +       int unit;
+>>  
+>>         printk(KERN_DEBUG "Probing IDE interface %s...\n", hwif->name);
+>>  
+>> @@ -659,16 +660,25 @@
+>>                 return rc;
+>>  
+>>         /* Now make sure both master & slave are ready */
+>> -       SELECT_DRIVE(&hwif->drives[0]);
+>> -       hwif->OUTB(8, hwif->io_ports[IDE_CONTROL_OFFSET]);
+>> -       mdelay(2);
+>> -       rc = ide_wait_not_busy(hwif, 35000);
+>> -       if (rc)
+>> -               return rc;
+>> -       SELECT_DRIVE(&hwif->drives[1]);
+>> -       hwif->OUTB(8, hwif->io_ports[IDE_CONTROL_OFFSET]);
+>> -       mdelay(2);
+>> -       rc = ide_wait_not_busy(hwif, 35000);
+>> +       for (unit = 0; unit < MAX_DRIVES; ++unit) {
+>> +               /* Ignore disks that we will not probe for later. */
+>> +               if (!hwif->drives[unit].noprobe ||
+>> +                   hwif->drives[unit].present) {
+> 
+>    Why not:
+> 
+>         if (hwif->drives[unit].noprobe || !hwif->drives[unit].present) {
+>                     printk(KERN_DEBUG "Skip ide_wait_not_busy for %s:%d\n",
+>                                hwif->name, unit);
+>             continue;
+>         }
+>                 SELECT_DRIVE(&hwif->drives[unit]);
+>                 hwif->OUTB(8, hwif->io_ports[IDE_CONTROL_OFFSET]);
+>                 mdelay(2);
+>                 rc = ide_wait_not_busy(hwif, 35000);
+>                 if (rc) {
+>             /* Exit function with master reselected */
+>                         if (unit != 0)
+>                             SELECT_DRIVE(&hwif->drives[0]);
+>                         return rc;
+>             }
+>     }
 
-Each permission can be automatically accumulated into
-the policy of each domain using 'learning mode'.
+Hmmm, I was rather fond of my "wait for the disk unless we are specifically told not to"
+rather than "don't check unless there might be a disk there". ...on the other hand
+thats not what my comment said. :)
 
-Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
- security/tomoyo/signal.c |  227 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 227 insertions(+)
-
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-mm/security/tomoyo/signal.c	2007-11-14 15:15:44.000000000 +0900
-@@ -0,0 +1,227 @@
-+/*
-+ * security/tomoyo/signal.c
-+ *
-+ * Signal access contol functions for TOMOYO Linux.
-+ */
-+
-+#include "tomoyo.h"
-+#include "realpath.h"
-+
-+/*************************  AUDIT FUNCTIONS  *************************/
-+
-+static int tmy_audit_signal_log(const int signal,
-+				const struct path_info *dest_domain,
-+				const bool is_granted,
-+				const u8 profile,
-+				const unsigned int mode)
-+{
-+	char *buf;
-+	int len;
-+
-+	if (is_granted) {
-+		if (!tmy_audit_grant())
-+			return 0;
-+	} else {
-+		if (!tmy_audit_reject())
-+			return 0;
-+	}
-+
-+	len = dest_domain->total_len;
-+	buf = tmy_init_audit_log(&len, profile, mode);
-+
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	snprintf(buf + strlen(buf),
-+		 len - strlen(buf) - 1,
-+		 "%s%d %s\n",
-+		 TMY_ALLOW_SIGNAL, signal, dest_domain->name);
-+
-+	return tmy_write_audit_log(buf, is_granted);
-+}
-+
-+/*************************  SIGNAL ACL HANDLER  *************************/
-+
-+static int tmy_add_signal_entry(const u16 sig, const char *dest_pattern,
-+				struct domain_info *domain,
-+				const struct condition_list *cond,
-+				const bool is_delete)
-+{
-+	struct acl_info *ptr;
-+	struct signal_acl *acl;
-+	const struct path_info *saved_dest_pattern;
-+	int error = -ENOMEM;
-+
-+	if (!domain)
-+		return -EINVAL;
-+	if (!dest_pattern ||
-+	    !tmy_is_correct_domain(dest_pattern, __FUNCTION__))
-+		return -EINVAL;
-+
-+	saved_dest_pattern = tmy_save_name(dest_pattern);
-+	if (!saved_dest_pattern)
-+		return -ENOMEM;
-+
-+	mutex_lock(&domain_acl_lock);
-+
-+	if (is_delete)
-+		goto remove;
-+
-+	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		acl = (struct signal_acl *) ptr;
-+
-+		if (ptr->type == TMY_TYPE_SIGNAL_ACL && acl->sig == sig
-+		    && ptr->cond == cond
-+		    && !tmy_pathcmp(acl->domainname, saved_dest_pattern)) {
-+			ptr->is_deleted = 0;
-+			/* Found. Nothing to do. */
-+			error = 0;
-+			goto ok;
-+		}
-+	}
-+	/* Not found. Append it to the tail. */
-+	acl = tmy_alloc_element(sizeof(*acl));
-+	if (!acl)
-+		goto ok;
-+
-+	acl->head.type = TMY_TYPE_SIGNAL_ACL;
-+	acl->head.cond = cond;
-+	acl->sig = sig;
-+	acl->domainname = saved_dest_pattern;
-+	error = tmy_add_acl(domain, (struct acl_info *) acl);
-+	goto ok;
-+remove: ;
-+	error = -ENOENT;
-+	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		acl = (struct signal_acl *) ptr;
-+		if (ptr->type != TMY_TYPE_SIGNAL_ACL || ptr->cond != cond ||
-+		    ptr->is_deleted || acl->sig != sig ||
-+		    tmy_pathcmp(acl->domainname, saved_dest_pattern))
-+			continue;
-+		error = tmy_del_acl(ptr);
-+		break;
-+	}
-+
-+ok: ;
-+	mutex_unlock(&domain_acl_lock);
-+
-+	return error;
-+}
-+
-+/**
-+ * tmy_signal_acl - check permission for kill(2)/tkill(2)/tgkill(2).
-+ * @sig:  signal number.
-+ * @pid:  pid of destination process.
-+ *
-+ * Returns zero if permission granted.
-+ * Returns nonzero if permission denied.
-+ */
-+int tmy_signal_acl(const int sig, const int pid)
-+{
-+	struct domain_info *domain = TMY_SECURITY->domain;
-+	struct domain_info *dest = NULL;
-+	const char *dest_pattern;
-+	struct acl_info *ptr;
-+	const u16 hash = sig;
-+	const u8 profile = domain->profile;
-+	const unsigned int mode = tmy_flags(TMY_MAC_FOR_SIGNAL);
-+	const bool is_enforce = (mode == 3);
-+	bool found = 0;
-+
-+	if (!mode)
-+		return 0;
-+	if (!sig)
-+		return 0; /* No check for NULL signal. */
-+	if (current->pid == pid) {
-+		tmy_audit_signal_log(sig, domain->domainname, 1, profile, mode);
-+		return 0; /* No check for self. */
-+	}
-+
-+	{ /* Simplified checking. */
-+		struct task_struct *p = NULL;
-+		read_lock(&tasklist_lock);
-+		if (pid > 0)
-+			p = find_task_by_pid((pid_t) pid);
-+		else if (pid == 0)
-+			p = current;
-+		else if (pid == -1)
-+			dest = &KERNEL_DOMAIN;
-+		else
-+			p = find_task_by_pid((pid_t) -pid);
-+		if (p)
-+			/* "struct task_struct"->security is not NULL. */
-+			dest = ((struct tmy_security *) p->security)->domain;
-+		read_unlock(&tasklist_lock);
-+		if (!dest)
-+			return 0; /* I can't find destinatioin. */
-+	}
-+
-+	if (domain == dest) {
-+		tmy_audit_signal_log(sig, dest->domainname, 1, profile, mode);
-+		return 0;
-+	}
-+
-+	dest_pattern = dest->domainname->name;
-+	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		struct signal_acl *acl = (struct signal_acl *) ptr;
-+
-+		if (ptr->type == TMY_TYPE_SIGNAL_ACL && ptr->is_deleted == 0
-+		    && acl->sig == hash &&
-+		    tmy_check_condition(ptr->cond, NULL) == 0) {
-+			const int len = acl->domainname->total_len;
-+
-+			if (strncmp(acl->domainname->name,
-+				    dest_pattern, len) == 0
-+			    && (dest_pattern[len] == ' ' ||
-+				dest_pattern[len] == '\0')) {
-+				found = 1;
-+				break;
-+			}
-+		}
-+	}
-+
-+	tmy_audit_signal_log(sig, dest->domainname, found, profile, mode);
-+
-+	if (found)
-+		return 0;
-+
-+	if (tmy_flags(TMY_VERBOSE))
-+		tmy_audit("TOMOYO-%s: Signal %d to %s denied for %s\n",
-+			  tmy_getmsg(is_enforce), sig,
-+			  tmy_lastname(dest), tmy_lastname(domain));
-+
-+	if (is_enforce)
-+		return tmy_supervisor("%s\n" TMY_ALLOW_SIGNAL "%d %s\n",
-+				      domain->domainname->name,
-+				      sig, dest_pattern);
-+	if (mode == 1 && tmy_quota())
-+		tmy_add_signal_entry(sig, dest_pattern, domain, NULL, 0);
-+
-+	return 0;
-+}
-+
-+/**
-+ * tmy_add_signal_policy - add or delete signal policy.
-+ * @data:      a line to parse.
-+ * @domain:    pointer to "struct domain_info".
-+ * @cond:      pointer to "struct condition_list". May be NULL.
-+ * @is_delete: is this delete request?
-+ *
-+ * Returns zero on success.
-+ * Returns nonzero on failure.
-+ */
-+int tmy_add_signal_policy(char *data,
-+			  struct domain_info *domain,
-+			  const struct condition_list *cond,
-+			  const bool is_delete)
-+{
-+	int sig;
-+	char *domainname = strchr(data, ' ');
-+
-+	if (sscanf(data, "%d", &sig) == 1 && domainname &&
-+	    tmy_is_domain_def(domainname + 1))
-+		return tmy_add_signal_entry(sig, domainname + 1, domain,
-+					    cond, is_delete);
-+
-+	return -EINVAL;
-+}
-
--- 
+>>  
+>>         /* Exit function with master reselected (let's be sane) */
+>>         SELECT_DRIVE(&hwif->drives[0]);
+> 
+> MBR, Sergei
