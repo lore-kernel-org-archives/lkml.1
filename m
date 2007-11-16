@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934114AbXKPA2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934140AbXKPAeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934114AbXKPA2o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 19:28:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757460AbXKPA2g
+	id S934140AbXKPAeX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Nov 2007 19:34:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756731AbXKPAeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 19:28:36 -0500
-Received: from simmts5-srv.bellnexxia.net ([206.47.199.163]:57105 "EHLO
-	simmts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757186AbXKPA2f (ORCPT
+	Thu, 15 Nov 2007 19:34:14 -0500
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:41978 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756161AbXKPAeN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 19:28:35 -0500
-From: Kevin Winchester <kjwinchester@gmail.com>
-To: Andy Whitcroft <apw@shadowen.org>
-Subject: Re: 2.6.24-rc2-mm1 -- strange apparent network failures
-Date: Thu, 15 Nov 2007 20:28:29 -0400
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20071113175906.497a1a6a.akpm@linux-foundation.org> <20071115100209.GB2513@shadowen.org>
-In-Reply-To: <20071115100209.GB2513@shadowen.org>
+	Thu, 15 Nov 2007 19:34:13 -0500
+X-YMail-OSG: 4S.Jt38VM1lltsBlXxZITep4vUf5AeeCYaA.OFGU5liUk26.yAAu0UTnA4Mf3rUYDwtTRPJubw--
+Date: Thu, 15 Nov 2007 16:34:10 -0800
+From: Chris Wedgwood <cw@f00f.org>
+To: Christian Kujau <lists@nerdbynature.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Benny Halevy <bhalevy@panasas.com>, linux-xfs@oss.sgi.com
+Subject: Re: 2.6.24-rc2 XFS nfsd hang / smbd too
+Message-ID: <20071116003410.GA16797@puku.stupidest.org>
+References: <20071114070400.GA25708@puku.stupidest.org> <473AA72C.6020308@panasas.com> <20071114125907.GB4010@fieldses.org> <alpine.DEB.0.99999.0711142317010.12443@sheep.housecafe.de> <alpine.DEB.0.99999.0711150840340.12443@sheep.housecafe.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711152028.29734.kjwinchester@gmail.com>
+In-Reply-To: <alpine.DEB.0.99999.0711150840340.12443@sheep.housecafe.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On November 15, 2007 06:02:09 am Andy Whitcroft wrote:
-> When testing some of the later 2.6.24-rc2-mm1+hotfix combinations on three
-> of our test systems one job from each batch (1/4) failed.  In each case the
-> machine appears to have booted normally all the way to a login: prompt.
-> However in the failed boots the networking though apparently initialised
-> completely and correctly (as far as I can tell from the console output), is
-> reported as not responding to ssh connections.  The network interface seems
-> to have been initialised on the right port, and the ssh daemons started.
->
-> Two of the machines are powerpc boxes, the other an older x86_64.
-> One machine is 4/4 in testing, just one.  Most of the other machines are
-> still not able to compile this stack so do not contribute to our knowledge.
->
-> Any ideas?
->
+On Thu, Nov 15, 2007 at 08:51:36AM +0100, Christian Kujau wrote:
 
-I see this as well - the computer boots fine but no network.  The only clues 
-in the dmesg are:
+> [<c040914c>] mutex_lock_nested+0xcc/0x2c0
+> [<c016dc64>] do_lookup+0xa4/0x190
+> [<c016f6f9>] __link_path_walk+0x749/0xd10
+> [<c016fd04>] link_path_walk+0x44/0xc0
+> [<c016fd98>] path_walk+0x18/0x20
+> [<c016ff98>] do_path_lookup+0x78/0x1c0
+> [<c0170998>] __user_walk_fd+0x38/0x60
+> [<c0169bd1>] vfs_stat_fd+0x21/0x50
+> [<c0169ca1>] vfs_stat+0x11/0x20
+> [<c0169cc4>] sys_stat64+0x14/0x30
+> [<c01028d6>] sysenter_past_esp+0x5f/0xa5
 
-[  294.097876] warning: process `dhclient' gets w/ old libcap
-[  294.097893] warning: process `dhclient' sets w/ old libcap
+nfsd already wedged up and holds a lock, this is expected.
 
-So I'll try backing up the patch series to before:
 
-add-64-bit-capability-support-to-the-kernel.patch
+I'm not sure what you're doing here, but a viable work-around for now
+might be to use nfsv2 mounts, something like
 
-or so, and see if that's the problem.  If anyone has any other ideas, let me 
-know.
+  mount -o vers=2 ...
 
--- 
-Kevin Winchester
+or to keep v3 and disable readdirplus doing something like:
+
+  mount -o vers=3,nordirplus ...
+
+The later I didn't test but was suggested on #linuxfs.
