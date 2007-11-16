@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935870AbXKPXTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935840AbXKPXUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935870AbXKPXTz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 18:19:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762912AbXKPXLm
+	id S935840AbXKPXUd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 18:20:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934910AbXKPXLp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 18:11:42 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51803 "EHLO
+	Fri, 16 Nov 2007 18:11:45 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51798 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761751AbXKPXLH (ORCPT
+	with ESMTP id S1761650AbXKPXLG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 18:11:07 -0500
-Message-Id: <20071116231106.754876432@sgi.com>
+	Fri, 16 Nov 2007 18:11:06 -0500
+Message-Id: <20071116231105.937156196@sgi.com>
 References: <20071116230920.278761667@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 16 Nov 2007 15:09:39 -0800
+Date: Fri, 16 Nov 2007 15:09:36 -0800
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
 Cc: linux-arch@vger.kernel.org
@@ -21,64 +21,109 @@ Cc: linux-kernel@vger.kernel.org
 Cc: David Miller <davem@davemloft.net>
 Cc: Eric Dumazet <dada1@cosmosbay.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
-Subject: [patch 19/30] cpu alloc: tcp statistics
-Content-Disposition: inline; filename=0029-cpu-alloc-tcp-statistics.patch
+Subject: [patch 16/30] cpu alloc: XFS counters
+Content-Disposition: inline; filename=0026-cpu-alloc-XFS-counters.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Also remove the useless zeroing after allocation. Allocpercpu already
+zeroed the objects.
+
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- net/ipv4/tcp.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ fs/xfs/xfs_mount.c |   24 ++++++++----------------
+ 1 file changed, 8 insertions(+), 16 deletions(-)
 
-Index: linux-2.6/net/ipv4/tcp.c
+Index: linux-2.6/fs/xfs/xfs_mount.c
 ===================================================================
---- linux-2.6.orig/net/ipv4/tcp.c	2007-11-15 21:17:24.267654551 -0800
-+++ linux-2.6/net/ipv4/tcp.c	2007-11-15 21:25:34.214404334 -0800
-@@ -2273,7 +2273,7 @@ static void __tcp_free_md5sig_pool(struc
+--- linux-2.6.orig/fs/xfs/xfs_mount.c	2007-11-15 21:17:24.467654585 -0800
++++ linux-2.6/fs/xfs/xfs_mount.c	2007-11-15 21:25:32.643904117 -0800
+@@ -1924,7 +1924,7 @@ xfs_icsb_cpu_notify(
+ 
+ 	mp = (xfs_mount_t *)container_of(nfb, xfs_mount_t, m_icsb_notifier);
+ 	cntp = (xfs_icsb_cnts_t *)
+-			per_cpu_ptr(mp->m_sb_cnts, (unsigned long)hcpu);
++			CPU_PTR(mp->m_sb_cnts, (unsigned long)hcpu);
+ 	switch (action) {
+ 	case CPU_UP_PREPARE:
+ 	case CPU_UP_PREPARE_FROZEN:
+@@ -1976,10 +1976,7 @@ int
+ xfs_icsb_init_counters(
+ 	xfs_mount_t	*mp)
  {
- 	int cpu;
- 	for_each_possible_cpu(cpu) {
--		struct tcp_md5sig_pool *p = *per_cpu_ptr(pool, cpu);
-+		struct tcp_md5sig_pool *p = *CPU_PTR(pool, cpu);
- 		if (p) {
- 			if (p->md5_desc.tfm)
- 				crypto_free_hash(p->md5_desc.tfm);
-@@ -2281,7 +2281,7 @@ static void __tcp_free_md5sig_pool(struc
- 			p = NULL;
- 		}
+-	xfs_icsb_cnts_t *cntp;
+-	int		i;
+-
+-	mp->m_sb_cnts = alloc_percpu(xfs_icsb_cnts_t);
++	mp->m_sb_cnts = CPU_ALLOC(xfs_icsb_cnts_t, GFP_KERNEL | __GFP_ZERO);
+ 	if (mp->m_sb_cnts == NULL)
+ 		return -ENOMEM;
+ 
+@@ -1989,11 +1986,6 @@ xfs_icsb_init_counters(
+ 	register_hotcpu_notifier(&mp->m_icsb_notifier);
+ #endif /* CONFIG_HOTPLUG_CPU */
+ 
+-	for_each_online_cpu(i) {
+-		cntp = (xfs_icsb_cnts_t *)per_cpu_ptr(mp->m_sb_cnts, i);
+-		memset(cntp, 0, sizeof(xfs_icsb_cnts_t));
+-	}
+-
+ 	mutex_init(&mp->m_icsb_mutex);
+ 
+ 	/*
+@@ -2026,7 +2018,7 @@ xfs_icsb_destroy_counters(
+ {
+ 	if (mp->m_sb_cnts) {
+ 		unregister_hotcpu_notifier(&mp->m_icsb_notifier);
+-		free_percpu(mp->m_sb_cnts);
++		CPU_FREE(mp->m_sb_cnts);
  	}
--	free_percpu(pool);
-+	CPU_FREE(pool);
+ 	mutex_destroy(&mp->m_icsb_mutex);
  }
+@@ -2056,7 +2048,7 @@ xfs_icsb_lock_all_counters(
+ 	int		i;
  
- void tcp_free_md5sig_pool(void)
-@@ -2305,7 +2305,7 @@ static struct tcp_md5sig_pool **__tcp_al
- 	int cpu;
- 	struct tcp_md5sig_pool **pool;
- 
--	pool = alloc_percpu(struct tcp_md5sig_pool *);
-+	pool = CPU_ALLOC(struct tcp_md5sig_pool *, GFP_KERNEL);
- 	if (!pool)
- 		return NULL;
- 
-@@ -2316,7 +2316,7 @@ static struct tcp_md5sig_pool **__tcp_al
- 		p = kzalloc(sizeof(*p), GFP_KERNEL);
- 		if (!p)
- 			goto out_free;
--		*per_cpu_ptr(pool, cpu) = p;
-+		*CPU_PTR(pool, cpu) = p;
- 
- 		hash = crypto_alloc_hash("md5", 0, CRYPTO_ALG_ASYNC);
- 		if (!hash || IS_ERR(hash))
-@@ -2381,7 +2381,7 @@ struct tcp_md5sig_pool *__tcp_get_md5sig
- 	if (p)
- 		tcp_md5sig_users++;
- 	spin_unlock_bh(&tcp_md5sig_pool_lock);
--	return (p ? *per_cpu_ptr(p, cpu) : NULL);
-+	return (p ? *CPU_PTR(p, cpu) : NULL);
+ 	for_each_online_cpu(i) {
+-		cntp = (xfs_icsb_cnts_t *)per_cpu_ptr(mp->m_sb_cnts, i);
++		cntp = (xfs_icsb_cnts_t *)CPU_PTR(mp->m_sb_cnts, i);
+ 		xfs_icsb_lock_cntr(cntp);
+ 	}
  }
+@@ -2069,7 +2061,7 @@ xfs_icsb_unlock_all_counters(
+ 	int		i;
  
- EXPORT_SYMBOL(__tcp_get_md5sig_pool);
+ 	for_each_online_cpu(i) {
+-		cntp = (xfs_icsb_cnts_t *)per_cpu_ptr(mp->m_sb_cnts, i);
++		cntp = (xfs_icsb_cnts_t *)CPU_PTR(mp->m_sb_cnts, i);
+ 		xfs_icsb_unlock_cntr(cntp);
+ 	}
+ }
+@@ -2089,7 +2081,7 @@ xfs_icsb_count(
+ 		xfs_icsb_lock_all_counters(mp);
+ 
+ 	for_each_online_cpu(i) {
+-		cntp = (xfs_icsb_cnts_t *)per_cpu_ptr(mp->m_sb_cnts, i);
++		cntp = (xfs_icsb_cnts_t *)CPU_PTR(mp->m_sb_cnts, i);
+ 		cnt->icsb_icount += cntp->icsb_icount;
+ 		cnt->icsb_ifree += cntp->icsb_ifree;
+ 		cnt->icsb_fdblocks += cntp->icsb_fdblocks;
+@@ -2167,7 +2159,7 @@ xfs_icsb_enable_counter(
+ 
+ 	xfs_icsb_lock_all_counters(mp);
+ 	for_each_online_cpu(i) {
+-		cntp = per_cpu_ptr(mp->m_sb_cnts, i);
++		cntp = CPU_PTR(mp->m_sb_cnts, i);
+ 		switch (field) {
+ 		case XFS_SBS_ICOUNT:
+ 			cntp->icsb_icount = count + resid;
+@@ -2307,7 +2299,7 @@ xfs_icsb_modify_counters(
+ 	might_sleep();
+ again:
+ 	cpu = get_cpu();
+-	icsbp = (xfs_icsb_cnts_t *)per_cpu_ptr(mp->m_sb_cnts, cpu);
++	icsbp = (xfs_icsb_cnts_t *)CPU_PTR(mp->m_sb_cnts, cpu);
+ 
+ 	/*
+ 	 * if the counter is disabled, go to slow path
 
 -- 
