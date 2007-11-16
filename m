@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934513AbXKPWIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761687AbXKPWMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934513AbXKPWIq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 17:08:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757578AbXKPWIi
+	id S1761687AbXKPWMS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 17:12:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757048AbXKPWMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 17:08:38 -0500
-Received: from amber.ccs.neu.edu ([129.10.116.51]:45613 "EHLO
-	amber.ccs.neu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757918AbXKPWIh (ORCPT
+	Fri, 16 Nov 2007 17:12:07 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47266 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757310AbXKPWMG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 17:08:37 -0500
-X-Greylist: delayed 2262 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Nov 2007 17:08:37 EST
-Date: Fri, 16 Nov 2007 16:30:46 -0500 (EST)
-From: Jim Faulkner <jfaulkne@ccs.neu.edu>
-To: linux-kernel@vger.kernel.org
-cc: Jim Faulkner <jfaulkne@ccs.neu.edu>
-Subject: sb live (emu10k1) stops working between 2.6.23.1 and 2.6.23.7
-Message-ID: <Pine.GSO.4.58.0711161613070.9346@denali.ccs.neu.edu>
+	Fri, 16 Nov 2007 17:12:06 -0500
+Date: Fri, 16 Nov 2007 14:12:04 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Micah Dowty <micah@vmware.com>
+cc: Ingo Molnar <mingo@elte.hu>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Cyrus Massoumi <cyrusm@gmx.net>,
+       LKML Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Mike Galbraith <efault@gmx.de>,
+       Paul Menage <menage@google.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Peter Williams <pwil3058@bigpond.net.au>
+Subject: Re: High priority tasks break SMP balancer?
+In-Reply-To: <20071116104801.GA4585@vmware.com>
+Message-ID: <Pine.LNX.4.64.0711161410490.6633@schroedinger.engr.sgi.com>
+References: <20071110001103.GD16250@vmware.com> <2FAA6826-653E-482F-A037-C539BAEEA1DA@mac.com>
+ <20071115191408.GA4914@vmware.com> <Pine.LNX.4.64.0711151206370.28639@schroedinger.engr.sgi.com>
+ <20071115202425.GC4914@vmware.com> <Pine.LNX.4.64.0711151328090.29711@schroedinger.engr.sgi.com>
+ <20071115213510.GA16079@vmware.com> <Pine.LNX.4.64.0711151830260.31691@schroedinger.engr.sgi.com>
+ <20071116024408.GA20322@vmware.com> <20071116060700.GD16273@elte.hu>
+ <20071116104801.GA4585@vmware.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 16 Nov 2007, Micah Dowty wrote:
 
-Hello,
+> 2.6.17 -
+> 2.6.19 -
+> 2.6.19.7 -
+> 2.6.20 +
+> 2.6.21 +
+> 2.6.22 -
+> 2.6.23.1 +
+> 
+> Here a "-" means that the problem does not occur (my test program uses
+> 100% of both CPUs) and a "+" means that the test program leaves one
+> CPU mostly idle.
+> 
+> Unless I've made a mistake, 2.6.22 seems like the outlier rather than
+> 2.6.23. Is this inconsistent with the scheduler tick hypothesis?
 
-I have an SB Live Value card which uses the emu10k1 driver.  I use digital
-output to an external amplifier.  This has worked fine for many years, up
-to and including kernel 2.6.23.1.  Under 2.6.23.7, I have been unable
-to get any audio output.  I get the following errors when loading my
-asound.state under 2.6.23.7 using `alsactl restore`:
-alsactl: set_control:991: warning: name mismatch (IEC958 Playback
-Mask/IEC958 Playback Default) for control #222
-alsactl: set_control:993: warning: index mismatch (3/0) for control #222
-alsactl: set_control:993: warning: index mismatch (0/1) for control #223
-alsactl: set_control:993: warning: index mismatch (1/2) for control #224
-alsactl: set_control:985: warning: iface mismatch (3/2) for control #225
-alsactl: set_control:987: warning: device mismatch (2/0) for control #225
-alsactl: set_control:989: warning: subdevice mismatch (0/0) for control
-#225
-alsactl: set_control:991: warning: name mismatch (IEC958 Playback
-Default/SB Live Analog/Digital Output Jack) for control #225
-alsactl: set_control:993: warning: index mismatch (2/0) for control #225
-alsactl: set_control:995: failed to obtain info for control #225
-(Operation not permitted)
-
-I receive no errors when I load my asound.state under 2.6.23.1.
-
-Under 2.6.23.7, I get the message "No digital data" on my external
-amplifier, which normally I only see when the computer is powered down or
-rebooting.  I do not get that message under 2.6.23.1, even when no audio
-is being played.
-
-I've tried copying down my alsamixer settings under 2.6.23.1, and
-re-entering them under 2.6.23.7, however I have still been unable to get
-any audio output.
-
-Here is the relevant part of my `lspci -v`:
-05:0d.0 Multimedia audio controller: Creative Labs SB Live! EMU10k1 (rev
-08)
-        Subsystem: Creative Labs CT4780 SBLive! Value
-        Flags: bus master, medium devsel, latency 64, IRQ 23
-        I/O ports at dce0 [size=32]
-        Capabilities: [dc] Power Management version 2
-
-Please let me know if you need any more information, and please CC my
-e-mail address on any correspondence, since I am not subscribed to this
-list.
-
-thanks,
-Jim Faulkner
+Siddha fixed an issue with the jiffy accounting in for the softirq 
+approach in.22 (vague recall maybe not exactly that version). This may be 
+consistent with an issue that was fixed and now surfaces because of 
+something else.
 
