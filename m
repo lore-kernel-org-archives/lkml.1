@@ -1,90 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761920AbXKPRHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761063AbXKPRKz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761920AbXKPRHj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 12:07:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbXKPRHb
+	id S1761063AbXKPRKz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 12:10:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXKPRKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 12:07:31 -0500
-Received: from mga09.intel.com ([134.134.136.24]:4592 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752131AbXKPRHa convert rfc822-to-8bit (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 12:07:30 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,426,1188802800"; 
-   d="scan'208";a="206801218"
+	Fri, 16 Nov 2007 12:10:47 -0500
+Received: from empbedex1.empirix.com ([12.38.203.54]:19368 "EHLO
+	empbedex1.empirix.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753555AbXKPRKq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 12:10:46 -0500
 X-MimeOLE: Produced By Microsoft Exchange V6.5
 Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
-Subject: Re: [PATCH][RT] 2.6.24-rc2-rt1 drivers/dma/ioat_dma.c compile fix
-Date: Fri, 16 Nov 2007 09:07:29 -0800
-Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C0371E3E3@orsmsx418.amr.corp.intel.com>
+Subject: RE: 2.6.23.1 - sata_mv (7042) hang with large file operations
+Date: Fri, 16 Nov 2007 12:07:24 -0500
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D9010AB2D7CF@EMPBEDEX.empirix.com>
+In-Reply-To: <473CC4B8.4090607@rtr.ca>
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
-Thread-Topic: Re: [PATCH][RT] 2.6.24-rc2-rt1 drivers/dma/ioat_dma.c compile fix
-Thread-Index: AcgocuIH/9ndVZ4lTrWnMLERhY99xwAACP0A
-From: "Nelson, Shannon" <shannon.nelson@intel.com>
-To: <linux-rt-users@vger.kernel.org>, <Linux-kernel@vger.kernel.org>,
-       "Sven-Thorsten Dietrich" <sdietrich@novell.com>
-X-OriginalArrivalTime: 16 Nov 2007 17:07:29.0971 (UTC) FILETIME=[2BB54830:01C82873]
+Thread-Topic: 2.6.23.1 - sata_mv (7042) hang with large file operations
+Thread-Index: Acgn1Oi65dK9UaCqQO6yalNntaAc6gAnRQfQ
+References: <BD261180E6D35F4D9D32F3E44FD3D901053E84BD@EMPBEDEX.empirix.com> <45ED682A.9040408@garzik.org> <BD261180E6D35F4D9D32F3E44FD3D9010A7E1B45@EMPBEDEX.empirix.com> <4728A816.8020608@garzik.org> <BD261180E6D35F4D9D32F3E44FD3D9010AAE852F@EMPBEDEX.empirix.com> <473B36D7.8000205@rtr.ca> <BD261180E6D35F4D9D32F3E44FD3D9010AAE8585@EMPBEDEX.empirix.com> <473B44CB.6010209@rtr.ca> <BD261180E6D35F4D9D32F3E44FD3D9010AAE89CA@EMPBEDEX.empirix.com> <473B76E0.7010500@rtr.ca> <BD261180E6D35F4D9D32F3E44FD3D9010AAE911D@EMPBEDEX.empirix.com> <473C7625.2040300@rtr.ca> <BD261180E6D35F4D9D32F3E44FD3D9010AB2CFF0@EMPBEDEX.empirix.com> <473CC4B8.4090607@rtr.ca>
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: "Mark Lord" <liml@rtr.ca>
+Cc: "Jeff Garzik" <jeff@garzik.org>, <linux-ide@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 16 Nov 2007 17:07:29.0094 (UTC) FILETIME=[2B2F7660:01C82873]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 16, 2007 3:57 AM, Sven-Thorsten Dietrich <sdietrich@novell.com>
-wrote:
-> Compile fix for new code in -rc2.
-> 
-> I'm not positive about the insertion point...
-> 
-> Subject: compile error fix (needs review)
-> 
-> RT changes __list_splice to require prev and next pointers.
-> 
-> This changes the use in the new code to list_splice_tail,
-> but the optimal insertion point needs to be analyzed.
-> 
-> Signed-off-by: Sven-Thorsten Dietrich <sdietrich@suse.de>
-> 
-> ---
->  drivers/dma/ioat_dma.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6.23/drivers/dma/ioat_dma.c
-> ===================================================================
-> --- linux-2.6.23.orig/drivers/dma/ioat_dma.c
-> +++ linux-2.6.23/drivers/dma/ioat_dma.c
-> @@ -244,7 +244,7 @@ static dma_cookie_t ioat_tx_submit(struc
->         /* write address into NextDescriptor field of last desc in
-chain */
->         to_ioat_desc(ioat_chan->used_desc.prev)->hw->next =
->
-first->async_tx.phys;
-> -       __list_splice(&new_chain, ioat_chan->used_desc.prev);
-> +       list_splice_tail(&new_chain, ioat_chan->used_desc.prev);
-> 
+Mark,
 
-NAK.
+I've ported the old sataMV driver (version 3.6) to the 2.6.23.1 
+kernel - and it works - no problems with a full mem=4000M (4Gig). 
 
-These functions do insertions differently.  The 'prev' is pointing to
-the last valid descriptor in the queue and you really want to get the
-new_chain stuck on after this.  Your list_splice_tail() will insert the
-new_chain just before it which will muck up the order of the DMA
-requests.
+The only problem with this is that it is MUCH slower than the 
+sata_mv driver which - by this test - definitely has some 
+bug/dependency that gets broken when the physical memory 
+overlaps its memory I/O locations (and should be iomapped &
+dma mapped to a separate space up in 0xC_xxxx_xxxx)...
 
-You might have more success with
-	list_splice_tail(&new_chain, ioat_chan->used_desc);
-where used_desc points to the whole list, rather than using the .prev
-pointer to a specific node.
+Time to dig in and debug this driver! UGH!
 
-Please copy me on future ioatdma related comments.
+Tom
 
-Thanks,
-sln
---
-======================================================================
-Mr. Shannon Nelson                 LAN Access Division, Intel Corp.
-Shannon.Nelson@intel.com                I don't speak for Intel
-(503) 712-7659                    Parents can't afford to be squeamish.
+-----Original Message-----
+From: Mark Lord [mailto:liml@rtr.ca] 
+Sent: Thursday, November 15, 2007 5:14 PM
+To: Morrison, Tom
+Cc: Jeff Garzik; linux-ide@vger.kernel.org; linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23.1 - sata_mv (7042) hang with large file operations
+
+Morrison, Tom wrote:
+> The plot thickens - it looks like it might be some type 
+> of problem interacting with the setup of my 4Gig DDR memory
+> and how I setup some translation windows in my MPC8548E
+> 
+> I realized this morning that I have an inbound/ output PEX window
+> Translation Setup for mapping all from/to PEX bus to outside 
+> the physical 4GIG memory space (i.e.: up at 0xC_xxxx_xxxx). Thus,
+> all output operations that translation from 0xC_xxxx_xxxx to 
+> the pci 32 bit address of xxxx_xxxx) - and vice versa for for
+> the inbound. Note: we also have a straight 1:1 translation mapping 
+> as well for the lower 4Gig - so that's why this worked without
+> the below mentioned change...
+> 
+> So, I changed the Request & Response Hi Addresses (which were
+> Being shifted by 32 bits down anyways) and 'OR' that with my 
+> 0xC (so the effective 64bit DMA address is 0xC_xxxx_xxxx (where 
+> Xxxx_xxxx is the effective address). This was what we did to 
+> solve the problem with the Marvel Linux driver that we got from
+> the Marvel site....
+> 
+> This all works just fine with ONLY 2 gig of memory in the system
+> (and still have these inbound/output pex translation windows), 
+> but fails when I put back the 4 Gig (and the 8Gig) DDR memory.
+> 
+> Unfortunately, this still hasn't solved the problem though - 
+> so there is something else which I am not seeing?
+..
+<snip patch that has no affect>
