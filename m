@@ -1,90 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764123AbXKPLHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760910AbXKPLTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764123AbXKPLHW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 06:07:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755970AbXKPLHJ
+	id S1760910AbXKPLTw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 06:19:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752950AbXKPLTo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 06:07:09 -0500
-Received: from mail.gmx.net ([213.165.64.20]:37034 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755832AbXKPLHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 06:07:08 -0500
-X-Authenticated: #1172751
-X-Provags-ID: V01U2FsdGVkX19tPchVl+1tqTqqfwbc5OXCtDPK48l+WiIoe1V+UZ
-	seQ/yARrCVTZNY
-From: Rainer Koenig <Rainer.Koenig@gmx.de>
-To: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: How do I debug PCI resource allocation problems
-Date: Fri, 16 Nov 2007 12:07:03 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <fa.JiGBAZR3XiDynnIaclFCUaV7kUk@ifi.uio.no> <4733A109.8070405@shaw.ca>
-In-Reply-To: <4733A109.8070405@shaw.ca>
+	Fri, 16 Nov 2007 06:19:44 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:40558 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752705AbXKPLTn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 06:19:43 -0500
+Date: Fri, 16 Nov 2007 06:15:48 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: even *more* unused CONFIG variables at no extra charge
+Message-ID: <alpine.LFD.0.9999.0711160555530.13454@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711161207.03882.Rainer.Koenig@gmx.de>
-X-Y-GMX-Trusted: 0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, 9. November 2007 00:51  Robert Hancock wrote:
-> Rainer Koenig wrote:
-> >
-> > Ok, short description of the problem:
-> >
-> > I run 64-bit Linux using 2 GB of RAM, no problem at all. Then I turn off
-> > the machine, add 2 more GB so that now I have 4 GB of RAM. Turning it on
-> > I see the splashscreen of the boot loader, starting the kernel turns the
-> > screen black and that's it. The machine comes up, I can even ssh to it
-> > over the net. That is how I obtained the following data.
 
-Just for the minutes. Problem solved. It was caused by wrong e820 information 
-from the BIOS:
+  due to an embarrassing brain fart on my part, my script to find
+unused CONFIG variables in the source tree missed a whole whack of
+them.  (FYI, when checking Kconfig variable FUBAR, the fact that the
+corresponding reference to CONFIG_FUBAR is being used in a defconfig
+file somewhere does *not* count.  *sigh*.)
 
-> > <4> BIOS-e820: 00000000df800000 - 00000000e0100000 (reserved)
+  so i'll update the wiki page shortly but here's the abridged version
+for just the arch/* directories if you want to poke around yourself.
+as always, false positives are a distinct possibility.
 
-That one overlaps with e0000000-efffffff which is the resource that 
-then leads to this:
-> > <3>PCI: Cannot allocate resource region 2 of device 0000:00:02.0
+==== alpha ====
+>>>>> ALPHA_CORE_AGP
+>>>>> ALPHA_EV7
+>>>>> DEBUG_RWLOCK
+==== arm ====
+>>>>> ARCH_AT91SAM9260_SAM9XE
+>>>>> ARCH_CINTEGRATOR
+>>>>> ARCH_EBSA285_ADDIN
+>>>>> ARCH_IXCDP1100
+>>>>> CPU_CP15_MPU
+>>>>> DEBUG_ERRORS
+>>>>> DEBUG_S3C_PORT
+>>>>> H3600_SLEEVE
+>>>>> MACH_EP80219
+>>>>> MACH_IXDP28X5
+>>>>> MACH_S3C2413
+>>>>> MACH_SMDK2412
+>>>>> MACH_TRIZEPS4_ANY
+>>>>> OMAP_MCBSP
+>>>>> SMDK2440_CPU2440
+>>>>> SMDK2440_CPU2442
+==== avr32 ====
+>>>>> AP7000_8_BIT_SMC
+==== blackfin ====
+>>>>> BFIN_ALIVE_LED_DPORT
+>>>>> BFIN_ALIVE_LED_PORT
+>>>>> BFIN_IDLE_LED_DPORT
+>>>>> BFIN_IDLE_LED_PORT
+>>>>> LARGE_ALLOCS
+>>>>> SCHEDULE_L1
+==== cris ====
+>>>>> ETRAX_ETHERNET_HW_CSUM
+>>>>> ETRAX_ETHERNET_IFACE0
+>>>>> ETRAX_ETHERNET_IFACE1
+>>>>> ETRAX_IDE_DELAY
+>>>>> ETRAX_PA_BUTTON_BITMASK
+>>>>> ETRAX_PA_BUTTON_BITMASK
+>>>>> ETRAX_SER0_CD_BIT
+>>>>> ETRAX_SER0_DSR_BIT
+>>>>> ETRAX_SER0_DTR_BIT
+>>>>> ETRAX_SER0_RI_BIT
+>>>>> ETRAX_SER1_CD_BIT
+>>>>> ETRAX_SER1_DSR_BIT
+>>>>> ETRAX_SER1_DTR_BIT
+>>>>> ETRAX_SER1_RI_BIT
+>>>>> ETRAX_SER2_CD_BIT
+>>>>> ETRAX_SER2_DSR_BIT
+>>>>> ETRAX_SER2_DTR_BIT
+>>>>> ETRAX_SER2_RI_BIT
+>>>>> ETRAX_SER3_CD_BIT
+>>>>> ETRAX_SER3_DSR_BIT
+>>>>> ETRAX_SER3_DTR_BIT
+>>>>> ETRAX_SER3_RI_BIT
+>>>>> ETRAX_SERIAL_PORT1_DMA4_OUT
+>>>>> ETRAX_SERIAL_PORT1_DMA5_IN
+>>>>> ETRAX_SERIAL_PORT3_DMA8_OUT
+>>>>> ETRAX_SERIAL_PORT3_DMA9_IN
+>>>>> ETRAX_USB_HOST_PORT1
+>>>>> ETRAX_USB_HOST_PORT2
+==== frv ====
+>>>>> FRV_DEFL_CACHE_DISABLED
+>>>>> MB93091_NO_MB
+>>>>> UCPAGE_OFFSET_20000000
+>>>>> UCPAGE_OFFSET_40000000
+>>>>> UCPAGE_OFFSET_60000000
+>>>>> UCPAGE_OFFSET_80000000
+>>>>> UCPAGE_OFFSET_A0000000
+==== h8300 ====
+>>>>> UNIX98_PTY_COUNT
+==== m32r ====
+>>>>> NOHIGHMEM
+==== m68k ====
+>>>>> ADB_KEYBOARD
+>>>>> ATARI_SCC_DMA
+>>>>> GVPIOEXT_LP
+>>>>> GVPIOEXT_PLIP
+>>>>> MAC_ADBKEYCODES
+>>>>> MAC_HID
+>>>>> WHIPPET_SERIAL
+==== m68knommu ====
+>>>>> BDM_DISABLE
+>>>>> COBRA5329
+>>>>> DUMPTOFLASH
+>>>>> EMAC_INC
+>>>>> RAM16BIT
+>>>>> RAM32BIT
+>>>>> RAM8BIT
+>>>>> ROMFS_FROM_ROM
+>>>>> WILDFIREMOD
+==== mips ====
+>>>>> 64BIT_CONTEXT
+>>>>> ACER_PICA_61
+>>>>> CPU_SB1_PASS_2_112x
+>>>>> CPU_SB1_PASS_2_1250
+>>>>> CPU_SB1_PASS_3
+>>>>> CPU_SB1_PASS_4
+>>>>> DMA_IP32
+>>>>> MIPS_DISABLE_OBSOLETE_IDE
+>>>>> MIPS_INSANE_LARGE
+>>>>> MIPS_MT_DISABLED
+>>>>> MIPS_RM9122
+>>>>> SIBYTE_BCM1120
+>>>>> SIBYTE_BCM1125
+>>>>> SIBYTE_BCM1125H
+>>>>> SIBYTE_ENABLE_LDT_IF_PCI
+==== parisc ====
+>>>>> DEBUG_RWLOCK
+==== powerpc ====
+>>>>> MPC8XXFADS
+>>>>> PPC_MPC836x
+>>>>> XILINX_VIRTEX_II_PRO
+==== ppc ====
+>>>>> MPC8XXFADS
+>>>>> NONMONARCH_SUPPORT
+>>>>> PC_KEYBOARD
+>>>>> SPRUCE_BAUD_33M
+>>>>> UART1_DFLT_CONSOLE
+>>>>> UART1_DFLT_CONSOLE
+>>>>> WANT_EARLY_SERIAL
+>>>>> WINCEPT
+>>>>> XILINX_VIRTEX_II_PRO
+==== sh64 ====
+>>>>> DEVICE_MEMORY_START
+>>>>> FLASH_MEMORY_START
+>>>>> HDSP253_LED
+>>>>> PCI_BLOCK_START
+>>>>> PCIDEVICE_MEMORY_START
+==== sparc ====
+>>>>> UNIX98_PTY_COUNT
+==== um ====
+>>>>> DEFCONFIG_LIST
+>>>>> STDIO_CONSOLE
+==== x86 ====
+>>>>> NOHIGHMEM
+==== xtensa ====
+>>>>> KCORE_ELF
+>>>>> XTENSA_ISS_NETWORK
+>>>>> XTENSA_UNALIGNED_USER
 
-> Looks like the BIOS reserved part of that memory range already. Question
-> is why vesafb is trying to reserve that range in the first place though.
+rday
 
-Yep. 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-> > Question: Memory region 2 at 120000000? That is beyond the 4GB boundary
-> > and the BIOS guys I know told me that every PCI IOMEM region should
-> > reside within the first 4 GBs! When running the machine with 2 GB only
-> > lspci output looks like this for the VGA device:
->
-> 64-bit capable PCI devices can indeed have BARs which can be located
-> above 4GB. However, I can't see why lspci is detecting that from this
-> configuration space: the BAR contents for region 2 are 20000008, which
-> means prefetchable memory at 0x20000000 which can be located anywhere
-> within 32-bit memory space. That doesn't make any sense though, since
-> that's in the middle of RAM! Quite likely this bogus resource setting of
-> the graphics controller is a large part of your problem. Question is
-> who's doing this..
-
-I compiled a debug kernel with lots of verbosity about PCI. That then 
-reported:
-<7>  got res [120000000:12fffffff] bus [120000000:12fffffff] flags 1208 for 
-BAR 2 of 0000:00:02.0
-<7>PCI: moved device 0000:00:02.0 resource 2 (1208) to 20000000
-
-I guess that explains it a bit. Looks like with the "move" also the bytes that 
-lspci -xx prints out are affected. 
-
-Anyway, after we had enough information about what range was giving us 
-problems the BIOS development was able to find and fix  the bug quite 
-quickly. Installed new BIOS and problem was gone. :-)
-
-Thanks anyway for the comments. 
-
-Regards
-Rainer
--- 
-Rainer Koenig, Diplom-Informatiker (FH), Augsburg, Germany
+http://crashcourse.ca
+========================================================================
