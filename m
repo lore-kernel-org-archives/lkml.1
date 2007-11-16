@@ -1,103 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934435AbXKPVD3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758365AbXKPVDr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934435AbXKPVD3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 16:03:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757594AbXKPVDV
+	id S1758365AbXKPVDr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 16:03:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934512AbXKPVDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 16:03:21 -0500
-Received: from zakalwe.fi ([80.83.5.154]:46191 "EHLO zakalwe.fi"
+	Fri, 16 Nov 2007 16:03:35 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:58059 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757575AbXKPVDU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 16:03:20 -0500
-Date: Fri, 16 Nov 2007 23:03:19 +0200
-From: Heikki Orsila <shdl@zakalwe.fi>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: [patch 08/16] skge: fix ram buffer size calculation
-Message-ID: <20071116210318.GA7681@zakalwe.fi>
-References: <20071115060353.071060513@mini.kroah.org> <20071115064037.GH18951@kroah.com> <alpine.LFD.0.9999.0711150810130.2786@woody.linux-foundation.org> <20071115163201.GA24087@suse.de> <alpine.LFD.0.9999.0711150846280.2786@woody.linux-foundation.org>
+	id S1757594AbXKPVDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 16:03:34 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Franck Bui-Huu" <vagabon.xyz@gmail.com>
+Subject: Re: apm emulation driver broken ?
+Date: Fri, 16 Nov 2007 22:20:55 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-pm@lists.linux-foundation.org, lkml <linux-kernel@vger.kernel.org>
+References: <cda58cb80711160706l2cfac2b1p81c7a1090f228f2e@mail.gmail.com> <200711161720.50313.rjw@sisk.pl> <cda58cb80711160929i4dbac6b7xb9d1bcc9223ddd7b@mail.gmail.com>
+In-Reply-To: <cda58cb80711160929i4dbac6b7xb9d1bcc9223ddd7b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.9999.0711150846280.2786@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.11
+Message-Id: <200711162220.56494.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 15, 2007 at 08:48:58AM -0800, Linus Torvalds wrote:
-> This is my commit message for the revert - note the suggested possible 
-> fix (but also why I didn't apply it, and why things got reverted).
+On Friday, 16 of November 2007, Franck Bui-Huu wrote:
+> On Nov 16, 2007 5:20 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >
+> > The freezer doesn't regard the current task as freezable.
+> >
 > 
-> 		Linus
-> ---
-> commit 279e1dab949d33737557babfe9f74e0b74fbe39a
-> Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
-> Date:   Thu Nov 15 08:44:36 2007 -0800
 > 
->     Revert "skge: fix ram buffer size calculation"
->     
->     This reverts commit 7fb7ac241162dc51ec0f7644d4a97b2855213c32.
->     
->     Heikki Orsila reports that it causes a regression:
->     
->       "Doing
->     
->     	nc host port < /dev/zero
->     
->        on a sending machine (not skge) to an skge machine that is receiving:
->     
->     	nc -l -p port >/dev/null
->     
->        with ~60 MiB/s speed, causes the interface go malfunct. A slow
->        transfer doesn't cause a problem."
->     
->     See
->     
->     	http://bugzilla.kernel.org/show_bug.cgi?id=9321
->     
->     for some more information.
->     
->     There is a workaround (also reported by Heikki):
->     
->       "After some fiddling, I noticed that not changing the register write
->        order on patch:
->     
->        +       skge_write32(hw, RB_ADDR(q, RB_END), end);
->                skge_write32(hw, RB_ADDR(q, RB_WP), start);
->                skge_write32(hw, RB_ADDR(q, RB_RP), start);
->        -       skge_write32(hw, RB_ADDR(q, RB_END), end);
->     
->        fixes the visible effect..  Possibly not the root cause of the
->        problem, but changing the order back fixes networking here."
->     
->     but that has yet to be ack'ed or tested more widely, so the whole
->     problem-causing commit gets reverted until this is resolved properly.
->     
->     Bisected-and-requested-by: Heikki Orsila <shdl@zakalwe.fi>
->     Cc: Stephen Hemminger <shemminger@linux-foundation.org>
->     Cc: Jeff Garzik <jeff@garzik.org>
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> Hmm, I don't get your point.
 > 
->  drivers/net/skge.c |   51 +++++++++++++++++++++++++++------------------------
->  1 files changed, 27 insertions(+), 24 deletions(-)
+> If I understood this driver correctly, several processes can be
+> waiting for a suspend event by reading /dev/apm_bios, apmd (the _user_
+> space daemon) can be one of them.
+> 
+> Then another process asks to suspend the system by calling 'apm -s',
+> which results in a apm_ioctl() call. This process will basically
+> execute:
+> 
+> 	err = queue_suspend_event(APM_USER_SUSPEND, as);
+> 	flags = current->flags;
+> 	wait_event_interruptible(apm_suspend_waitqueue,
+> 			as->suspend_state == SUSPEND_DONE);
+> 
+> It's basically waiting for the waiters to ack the event. But it won't
+> be the process that is going to suspend the system, right ?
+> 
+> So now all waiting processes are waken up and need to acknolwedge the
+> event for the system to actually suspend. So they need to call
+> apm_ioctl(). They'll basically do:
+> 
+> 	flags = current->flags;
+> 	wait_event(apm_suspend_waitqueue,
+> 			as->suspend_state == SUSPEND_DONE);
+> 
+> Except for the last acknowledging process which will do instead:
+> 
+> 	apm_suspend();
+> 
+> It's a call to pm_suspend().
+> 
+> So you can see that the process which initiates the suspend, the one
+> that calls 'apm -s', is not the current process but is going to be
+> waken up by the fake signal sent by freeze_task().
+> 
+> One of the consequence I can see is at this time 'as->result' won't be
+> setup, so the return value of apm_ioctl() may be wrong.
 
-Thanks. I pulled
+Ah, that.  Yes, I see your point.
 
-commit 8c0863403f109a43d7000b4646da4818220d501f
+However, using PF_NOFREEZE to prevent this from happening doesn't seem to be
+a good idea.
 
-and now the skge driver works here.
+I'd probably use wait_event_freezable() (defined in include/linux/freezer.h)
+for that.
 
--- 
-Heikki Orsila			Barbie's law:
-heikki.orsila@iki.fi		"Math is hard, let's go shopping!"
-http://www.iki.fi/shd
+> As I said, I'm not familiar with this code, so please correct me if
+> I'm wrong.
+
+No, you're not wrong and I have overlooked the problem.
+
+> BTW, how does try_to_freeze_tasks() deal with user land thread waiting
+> in the UNINTERRUPTIBLE state ?
+
+It tries to send them fake signals and waits for them to freeze.  If they don't
+freeze within the timeout, it fails and clears their TIF_FREEZE bits.
+
+Greetings,
+Rafael
