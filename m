@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765696AbXKPKOE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762123AbXKPKYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765696AbXKPKOE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 05:14:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756393AbXKPKNz
+	id S1762123AbXKPKYS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 05:24:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756131AbXKPKYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 05:13:55 -0500
-Received: from [158.102.239.180] ([158.102.239.180]:50327 "EHLO
-	eureka.abinetworks.biz" rhost-flags-FAIL-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751962AbXKPKNy (ORCPT
+	Fri, 16 Nov 2007 05:24:05 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:40202 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756355AbXKPKYE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 05:13:54 -0500
-X-Greylist: delayed 1198 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Nov 2007 05:13:53 EST
-Message-ID: <473D626F.1030302@abinetworks.biz>
-Date: Fri, 16 Nov 2007 10:27:11 +0100
-From: Gianluca Alberici <gianluca@abinetworks.biz>
-User-Agent: Mozilla Thunderbird 1.0.2 (X11/20050317)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: NFS Bug in 2.6.23 ?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 16 Nov 2007 05:24:04 -0500
+Subject: large lockdep bss (was: Re: [patch 01/28] cpu alloc: The allocator)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: David Miller <davem@davemloft.net>, clameter@sgi.com,
+       akpm@linux-foundation.org, linux-mm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dada1@cosmosbay.com,
+       schwidefsky@de.ibm.com, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20071114022832.GC20365@one.firstfloor.org>
+References: <20071106195157.878563669@sgi.com>
+	 <20071113.031510.151440585.davem@davemloft.net>
+	 <p73wssly6sr.fsf@bingen.suse.de>
+	 <20071113.175208.168903694.davem@davemloft.net>
+	 <20071114022832.GC20365@one.firstfloor.org>
+Content-Type: text/plain
+Date: Fri, 16 Nov 2007 11:23:53 +0100
+Message-Id: <1195208633.3059.7.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-Got problems with CFS after a kernel upgrade from 2.6.20 to 2.6.23. 
-After a certain amount of time since cattach i get:
+On Wed, 2007-11-14 at 03:28 +0100, Andi Kleen wrote:
+> On Tue, Nov 13, 2007 at 05:52:08PM -0800, David Miller wrote:
+> > Yes, I've run into similar problems with lockdep as well.
+> > I had to build an ultra minimalized kernel to get it to
+> > boot on my Niagara boxes.
+> > 
+> > I think I even looked at the same lockdep code, and I'd
+> > appreciate it if you'd submit your fix for this if you
+> > haven't already.
+> 
+> ftp://firstfloor.org/pub/ak/x86_64/quilt/patches/early-reserve
+> ftp://firstfloor.org/pub/ak/x86_64/quilt/patches/early-alloc 
+> ftp://firstfloor.org/pub/ak/x86_64/quilt/patches/lockdep-early-alloc
+> 
+> I didn't plan to submit it for .24, just .25. Or do you need it 
+> urgently?
+> 
+> Also it would require you to write a sparc specific arch_early_alloc()
+> of course.  I've only done the x86-64 version.
 
-ios:~$ ls /opt/clear/
-ls: /opt/clear/: Not a directory
+Would've been nice to have heard about this lockdep problem. Anyway,
+thanks for tackling it.
 
-stracing the command i get stat64() returning ENOTDIR.
-Applications won't find the directory.
+How about moving this bit:
 
-If i cd into it and ls it is like doing a refresh: everything works 
-again for a certain amount of time, then, again. It reminds me an old 
-version of CFS which used to claim: 'stale NFS file handle'.
++#ifndef ARCH_HAS_EARLY_ALLOC
++#define LARGEVAR(x,y) { static typeof(*x) __ ## x[y];  x = __ ## x; }
++#else
++#define LARGEVAR(x,y) x = arch_early_alloc(sizeof(*x) * y)
++#endif
 
-I didnt see any NFS changes in the changeslog of 2.6.23.1 so i decided 
-to POST.
-
-SOmebody can help ?
-
-TIA
-
-Gianluca
-
+out of the lockdep code and into the generic early alloc code?
 
