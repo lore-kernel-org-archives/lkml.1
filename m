@@ -1,114 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759104AbXKPH3n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759713AbXKPHbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759104AbXKPH3n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 02:29:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbXKPH3f
+	id S1759713AbXKPHbj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 02:31:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbXKPHbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 02:29:35 -0500
-Received: from mga01.intel.com ([192.55.52.88]:37658 "EHLO mga01.intel.com"
+	Fri, 16 Nov 2007 02:31:31 -0500
+Received: from mga09.intel.com ([134.134.136.24]:11058 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751606AbXKPH3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 02:29:34 -0500
+	id S1751675AbXKPHba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 02:31:30 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.21,425,1188802800"; 
-   d="scan'208";a="386477128"
-Subject: [PATCH]: PNP: Increase the value of PNP constant
+   d="scan'208";a="206372020"
+Subject: [PATCH] PCI: Add PCI quirk function for some chipsets
 From: Zhao Yakui <yakui.zhao@intel.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, shaohua.li@intel.com
 Content-Type: text/plain
-Date: Fri, 16 Nov 2007 15:39:58 +0800
-Message-Id: <1195198798.2460.18.camel@yakui_zhao.sh.intel.com>
+Date: Fri, 16 Nov 2007 15:41:55 +0800
+Message-Id: <1195198915.2460.20.camel@yakui_zhao.sh.intel.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: PNP: Increase the value of PNP constant
+Subject: PCI: Add PCI quirk function for some chipsets
 From: Zhao Yakui  <yakui.zhao@intel.com>
 
-On some systems the number of resources(IO,MEM) returnedy by PNP
-device is greater than the PNP constant, for example motherboard devices. 
-It brings that some resources can't be reserved and resource confilicts.
-This will cause PCI resources are assigned wrongly in some systems, and
-cause hang. This is a regression since we deleted ACPI motherboard
-driver and use PNP system driver.
-
-Andrew, I thought this is an urgent issue and should be fixed ASAP, and
-this is a good candidate for -stable tree
+PCI quirk function is added for some chipsets so that the resources
+behind LPC bridge can be reserved.
 
 Signed-off-by: Li Shaohua <shaohua.li@intel.com>
 Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
 
 ---
- drivers/pnp/pnpacpi/rsparser.c |   18 ++++++++++++++++--
- include/linux/pnp.h            |    4 ++--
- 2 files changed, 18 insertions(+), 4 deletions(-)
+ drivers/pci/quirks.c    |    6 ++++++
+ include/linux/pci_ids.h |    2 ++
+ 2 files changed, 8 insertions(+)
 
-Index: linux-2.6.24-rc2/include/linux/pnp.h
+Index: linux-2.6.24-rc2/drivers/pci/quirks.c
 ===================================================================
---- linux-2.6.24-rc2.orig/include/linux/pnp.h
-+++ linux-2.6.24-rc2/include/linux/pnp.h
-@@ -13,8 +13,8 @@
- #include <linux/errno.h>
- #include <linux/mod_devicetable.h>
+--- linux-2.6.24-rc2.orig/drivers/pci/quirks.c
++++ linux-2.6.24-rc2/drivers/pci/quirks.c
+@@ -465,6 +465,12 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_I
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_ICH8_0, quirk_ich6_lpc_acpi );
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_ICH8_2, quirk_ich6_lpc_acpi );
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_ICH8_3, quirk_ich6_lpc_acpi );
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_ICH8_1, quirk_ich6_lpc_acpi );
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_ICH8_4, quirk_ich6_lpc_acpi );
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_ICH9_2, quirk_ich6_lpc_acpi );
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_ICH9_4, quirk_ich6_lpc_acpi );
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_ICH9_7, quirk_ich6_lpc_acpi );
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_ICH9_8, quirk_ich6_lpc_acpi );
  
--#define PNP_MAX_PORT		8
--#define PNP_MAX_MEM		4
-+#define PNP_MAX_PORT		24
-+#define PNP_MAX_MEM		12
- #define PNP_MAX_IRQ		2
- #define PNP_MAX_DMA		2
- #define PNP_NAME_LEN		50
-Index: linux-2.6.24-rc2/drivers/pnp/pnpacpi/rsparser.c
+ /*
+  * VIA ACPI: One IO region pointed to by longword at
+Index: linux-2.6.24-rc2/include/linux/pci_ids.h
 ===================================================================
---- linux-2.6.24-rc2.orig/drivers/pnp/pnpacpi/rsparser.c
-+++ linux-2.6.24-rc2/drivers/pnp/pnpacpi/rsparser.c
-@@ -82,9 +82,11 @@ static void pnpacpi_parse_allocated_irqr
- 	while (!(res->irq_resource[i].flags & IORESOURCE_UNSET) &&
- 	       i < PNP_MAX_IRQ)
- 		i++;
--	if (i >= PNP_MAX_IRQ)
-+	if (i >= PNP_MAX_IRQ) {
-+		printk(KERN_ERR "Exceed the max number of IRQ resource: "
-+				"%d \n",PNP_MAX_IRQ);
- 		return;
--
-+	}
- #ifdef CONFIG_X86
- 	if (gsi < 16 && (triggering != ACPI_EDGE_SENSITIVE ||
- 				polarity != ACPI_ACTIVE_HIGH)) {
-@@ -173,6 +175,10 @@ static void pnpacpi_parse_allocated_dmar
- 		}
- 		res->dma_resource[i].start = dma;
- 		res->dma_resource[i].end = dma;
-+	} else {
-+		printk(KERN_ERR "Exceed the max number of DMA resource: "
-+				"%d \n",PNP_MAX_DMA);
-+		return;
- 	}
- }
- 
-@@ -194,6 +200,10 @@ static void pnpacpi_parse_allocated_iore
- 		}
- 		res->port_resource[i].start = io;
- 		res->port_resource[i].end = io + len - 1;
-+	} else {
-+		printk(KERN_ERR "Exceed the max number of IO Resource: "
-+				"%d \n",PNP_MAX_PORT);
-+		return;
- 	}
- }
- 
-@@ -217,6 +227,10 @@ static void pnpacpi_parse_allocated_memr
- 
- 		res->mem_resource[i].start = mem;
- 		res->mem_resource[i].end = mem + len - 1;
-+	} else {
-+		printk(KERN_ERR "Exceed the max number of Mem Resource: "
-+				"%d \n",PNP_MAX_MEM);
-+		return;
- 	}
- }
- 
+--- linux-2.6.24-rc2.orig/include/linux/pci_ids.h
++++ linux-2.6.24-rc2/include/linux/pci_ids.h
+@@ -2314,6 +2314,8 @@
+ #define PCI_DEVICE_ID_INTEL_ICH9_4	0x2914
+ #define PCI_DEVICE_ID_INTEL_ICH9_5	0x2919
+ #define PCI_DEVICE_ID_INTEL_ICH9_6	0x2930
++#define PCI_DEVICE_ID_INTEL_ICH9_7	0x2916
++#define PCI_DEVICE_ID_INTEL_ICH9_8	0x2918
+ #define PCI_DEVICE_ID_INTEL_82855PM_HB	0x3340
+ #define PCI_DEVICE_ID_INTEL_82830_HB	0x3575
+ #define PCI_DEVICE_ID_INTEL_82830_CGC	0x3577
