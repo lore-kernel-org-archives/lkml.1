@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935621AbXKQBJN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935355AbXKQBTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935621AbXKQBJN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 20:09:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935566AbXKQBIb
+	id S935355AbXKQBTc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 20:19:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753525AbXKQBTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 20:08:31 -0500
-Received: from ns.suse.de ([195.135.220.2]:48659 "EHLO mx1.suse.de"
+	Fri, 16 Nov 2007 20:19:24 -0500
+Received: from aun.it.uu.se ([130.238.12.36]:34397 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935553AbXKQBIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 20:08:30 -0500
-Date: Fri, 16 Nov 2007 17:07:16 -0800
-From: Greg KH <gregkh@suse.de>
-To: David Miller <davem@davemloft.net>
-Cc: dean@arctic.org, andi@firstfloor.org, mucci@cs.utk.edu,
-       akpm@linux-foundation.org, eranian@hpl.hp.com, wcohen@redhat.com,
-       robert.richter@amd.com, linux-kernel@vger.kernel.org,
-       ptools-perfapi@cs.utk.edu
-Subject: Re: perfmon2 merge news
-Message-ID: <20071117010716.GA13708@suse.de>
-References: <A42C2398-2EAB-460C-95C7-686A34A76F82@cs.utk.edu> <p737ikicjbn.fsf@bingen.suse.de> <alpine.DEB.0.9999.0711160943470.15441@twinlark.arctic.org> <20071116.162905.143357955.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071116.162905.143357955.davem@davemloft.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1753169AbXKQBTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 20:19:24 -0500
+Date: Sat, 17 Nov 2007 02:15:05 +0100 (MET)
+Message-Id: <200711170115.lAH1F5kZ009153@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: gregkh@suse.de, linux-kernel@vger.kernel.org, timur@freescale.com
+Subject: Re: Add a private_data pointer to struct device_attribute
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 16, 2007 at 04:29:05PM -0800, David Miller wrote:
-> From: dean gaudet <dean@arctic.org>
-> Date: Fri, 16 Nov 2007 09:51:08 -0800 (PST)
+On Fri, 16 Nov 2007 18:11:00 -0600, Timur Tabi wrote:
+> A private data pointer in struct device_attribute allows the 'show' and 'store'
+> functions to access instance data.  This handy in situations where the
+> driver_data and platform_data pointers of 'struct device' are already used
+> for other purposes.
 > 
-> > On Fri, 16 Nov 2007, Andi Kleen wrote:
-> > 
-> > > I didn't see a clear list. 
-> > 
-> > - cross platform extensible API for configuring perf counters
-> > - support for multiplexed counters
-> > - support for virtualized 64-bit counters
-> > - support for PC and call graph sampling at specific intervals
-> > - support for reading counters not necessarily with sampling
-> > - taskswitch support for counters
-> > - API available from userland
-> > - ability to self-monitor: need select/poll/etc interface
-> > - support for PEBS, IBS and whatever other new perf monitoring 
-> >   infrastructure the vendors through at us in the future
-> > - low overhead:  must minimize the "probe effect" of monitoring
-> > - low noise in measurements:  cannot achieve this in userland
-> > 
-> > permon2 has all of this and more i've probably neglected...
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
 > 
-> I want to state that even though I've been a stickler on the system
-> call stuff, in general I want to see perfmon2 go into tree and I agree
-> with how most of the infrastructure is implemented and the features it
-> provides.
+> Greg, can you tell me if you think this patch is a good idea?  It doesn't
+> appear to do any harm, and I'm working on an ALSA driver that could benefit
+> for this patch.  I think 2.6.25 would be a good target.
+> 
+>  include/linux/device.h |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/device.h b/include/linux/device.h
+> index 2e15822..10708ee 100644
+> --- a/include/linux/device.h
+> +++ b/include/linux/device.h
+> @@ -344,6 +344,7 @@ struct device_attribute {
+>  			char *buf);
+>  	ssize_t (*store)(struct device *dev, struct device_attribute *attr,
+>  			 const char *buf, size_t count);
+> +	void *private_data;
+>  };
 
-Now if we only had a series of patches that we could actually review and
-apply to the -mm tree so that people can try them out... :)
+A common trick is to embed a generic struct inside a specific one
+containing add-on data fields, and then to map from the generic
+one to the specific one using container_of() in your ops (function
+pointers). This is both faster and less wasteful of memory than
+adding void *private all over the place.
 
-thanks,
-
-greg k-h
+Any reason that won't work here?
