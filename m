@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758023AbXKQN5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758449AbXKQOCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758023AbXKQN5n (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 08:57:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbXKQN5c
+	id S1758449AbXKQOCX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 09:02:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbXKQOCQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 08:57:32 -0500
-Received: from hellhawk.shadowen.org ([80.68.90.175]:1848 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752826AbXKQN5b (ORCPT
+	Sat, 17 Nov 2007 09:02:16 -0500
+Received: from az33egw01.freescale.net ([192.88.158.102]:58988 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752443AbXKQOCP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 08:57:31 -0500
-Date: Sat, 17 Nov 2007 13:57:00 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andrew Morgan <morgan@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kevin Winchester <kjwinchester@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, kamalesh@linux.vnet.ibm.com
-Subject: Re: 2.6.24-rc2-mm1 -- strange apparent network failures
-Message-ID: <20071117135640.GA22058@shadowen.org>
-References: <20071113175906.497a1a6a.akpm@linux-foundation.org> <20071115100209.GB2513@shadowen.org> <200711152028.29734.kjwinchester@gmail.com> <20071115164441.67a8e2df.akpm@linux-foundation.org> <473E794A.4060107@kernel.org>
+	Sat, 17 Nov 2007 09:02:15 -0500
+Message-ID: <473EF47E.8090402@freescale.com>
+Date: Sat, 17 Nov 2007 08:02:38 -0600
+From: Timur Tabi <timur@freescale.com>
+Organization: Freescale
+User-Agent: Mozilla/5.0 (Macintosh; U; PPC Mac OS X Mach-O; en-US; rv:1.8.1.8) Gecko/20071008 SeaMonkey/1.1.5
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <473E794A.4060107@kernel.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Mikael Pettersson <mikpe@it.uu.se>
+CC: gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: Add a private_data pointer to struct device_attribute
+References: <200711170115.lAH1F5kZ009153@harpo.it.uu.se>
+In-Reply-To: <200711170115.lAH1F5kZ009153@harpo.it.uu.se>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 16, 2007 at 09:16:58PM -0800, Andrew Morgan wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> Hi,
-> 
-> This warning is just saying that you might want to reconsider
-> recompiling your dhclient with a newer libcap - which has native support
-> for 64-bit capabilities. This is supposed to be informative, and not be
-> associated with any particular error.
-> 
-> - From your comments, you believe that this patch causes something in your
-> boot process to fail. Can you supply some detail about the version of
-> dhclient you are using? I'd like to understand exactly what it is doing
-> (via libcap).
-> 
-> Thanks
+Mikael Pettersson wrote:
 
-The machine which show this problem for me are using static network
-configurations, so I don't know if libcap is still in the mix there.
+> A common trick is to embed a generic struct inside a specific one
+> containing add-on data fields, and then to map from the generic
+> one to the specific one using container_of() in your ops (function
+> pointers). This is both faster and less wasteful of memory than
+> adding void *private all over the place.
+> 
+> Any reason that won't work here?
 
-I've just compared the boot logs from a successful and unsuccessful boot
-on this kernel, and I don't see that particular message, nor do I see
-any significant differences overall.
+Yes, that will work.  Sorry, I should have thought of that myself, since I've 
+used that trick a number of times before.
 
-Perlexed.
-
--apw
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
