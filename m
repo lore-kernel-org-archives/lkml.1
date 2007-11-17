@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765390AbXKQTZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765946AbXKQT0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765390AbXKQTZe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 14:25:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761187AbXKQTZ1
+	id S1765946AbXKQT0e (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 14:26:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760394AbXKQT01
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 14:25:27 -0500
-Received: from hera.kernel.org ([140.211.167.34]:51066 "EHLO hera.kernel.org"
+	Sat, 17 Nov 2007 14:26:27 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:59438 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760828AbXKQTZ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 14:25:26 -0500
-Date: Sat, 17 Nov 2007 19:25:25 +0000
-From: Willy Tarreau <wtarreau@hera.kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.4.35.4
-Message-ID: <20071117192525.GA2078@hera.kernel.org>
-Reply-To: w@1wt.eu
+	id S1759667AbXKQT00 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Nov 2007 14:26:26 -0500
+Date: Sat, 17 Nov 2007 20:28:06 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@tglx.de,
+       akpm@linux-foundation.org
+Subject: Re: [patch] Printk kernel version in WARN_ON
+Message-ID: <20071117192806.GB8568@uranus.ravnborg.org>
+References: <20071117101552.2a7f34cb@laptopd505.fenrus.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20071117101552.2a7f34cb@laptopd505.fenrus.org>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've just released Linux 2.4.35.4.
+On Sat, Nov 17, 2007 at 10:15:52AM -0800, Arjan van de Ven wrote:
+> Hi,
+> 
+> today, all oopses contain a version number of the kernel, which is nice
+> because the people who actually do bother to read the oops get this
+> vital bit of information always without having to ask the reporter in
+> another round trip.
+> 
+> However, WARN_ON() right now lacks this information; the patch below
+> adds this. This information is essential for getting people to use
+> their time effectively when looking at these things; in addition, it's
+> essential for tools that try to collect statistics about defects.
+> 
+> Please consider, maybe even for 2.6.24 since its so simple and
+> important for long term quality
 
-It fixes very minor issues, but some patches have been resting here
-for a long time, and there was no reason to hold them. Two minor
-old vulnerabilities were fixed :
- - CVE-2006-5823 would cause the kernel to oops on specially crafted
-   CRAMFS filesystems, though on 2.4.35 we never got more than an
-   error in the logs. The fix was merged anyway.
- - CVE-2004-2731 corresponds to an incorrect size check in sparc's
-   openprom driver. It was fixed in 2.5 but not in 2.4.
+With this change we will see zillions of files being rebuild each
+time we pick up another kernel version from git and friends.
 
-The patch and changelog will appear soon at the following locations:
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/patch-2.4.35.4.bz2
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/ChangeLog-2.4.35.4
+For me it looks like this right now:
+#define UTS_RELEASE "2.6.24-rc2-g99fee6d7-dirty"
 
-Git repository:
-   git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-v2.4.35.y.git
-  http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-v2.4.35.y.git
+committing my local changes made it look like:
+#define UTS_RELEASE "2.6.24-rc2-g99fee6d7"
 
-Git repository through the gitweb interface:
-  http://git.kernel.org/?p=linux/kernel/git/stable/linux-v2.4.35.y.git
+The above change will trigger a rebuild of all files
+that reference UTS_RELEASE as will all WARN_ON users.
 
+And this is with the default configuration.
 
-Regards,
-Willy
+So if we want this then we want to push that change to a
+seperate function so we rebuild less files for simple changes.
 
----
-
-Summary of changes from v2.4.35.3 to v2.4.35.4
-============================================
-
-Franck Bourdonnec (1):
-      fix missing MODULE_LICENSE in some drivers
-
-Gilles Espinasse (1):
-      fix unresolved symbols on alpha
-
-Moritz Muehlenhoff (1):
-      corrupted cramfs filesystems cause kernel oops (CVE-2006-5823)
-
-Tony Battersby (1):
-      sym53c8xx_2 SMP deadlock on driver load
-
-Willy Tarreau (2):
-      PPP: fix crash using usb-serial on high speed devices
-      Change VERSION to 2.4.35.4
-
-dann frazier (4):
-      [OpenPROM]: Fix signedness bug in openprom char driver
-      [OpenPROM]: Fix user-access checking bugs in openpromfs
-      [OpenPROM] Prevent overflow of sprintf buffer
-      [OpenPROM] Prevent unsigned roll-overs in
-
+	Sam
