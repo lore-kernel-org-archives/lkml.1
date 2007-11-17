@@ -1,89 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935173AbXKQBF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935380AbXKQBH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935173AbXKQBF1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 20:05:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbXKQBFP
+	id S935380AbXKQBH6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 20:07:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763712AbXKQBHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 20:05:15 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:45730 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754368AbXKQBFN (ORCPT
+	Fri, 16 Nov 2007 20:07:50 -0500
+Received: from mail8.dotsterhost.com ([66.11.233.1]:59601 "HELO
+	mail8.dotsterhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755517AbXKQBHt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 20:05:13 -0500
-Date: Fri, 16 Nov 2007 17:03:52 -0800
-From: Micah Dowty <micah@vmware.com>
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Christoph Lameter <clameter@sgi.com>,
-       Kyle Moffett <mrmacman_g4@mac.com>, Cyrus Massoumi <cyrusm@gmx.net>,
-       LKML Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Mike Galbraith <efault@gmx.de>,
-       Paul Menage <menage@google.com>,
-       Peter Williams <pwil3058@bigpond.net.au>
-Subject: Re: High priority tasks break SMP balancer?
-Message-ID: <20071117010352.GA13666@vmware.com>
-References: <Pine.LNX.4.64.0711151206370.28639@schroedinger.engr.sgi.com> <20071115202425.GC4914@vmware.com> <Pine.LNX.4.64.0711151328090.29711@schroedinger.engr.sgi.com> <20071115213510.GA16079@vmware.com> <Pine.LNX.4.64.0711151830260.31691@schroedinger.engr.sgi.com> <20071116024408.GA20322@vmware.com> <20071116060700.GD16273@elte.hu> <b647ffbd0711160248v444d8f64ic72a17fcb56adc6d@mail.gmail.com> <20071116221404.GC31527@vmware.com> <b647ffbd0711161526p2faf5abt2457084f1996c735@mail.gmail.com>
+	Fri, 16 Nov 2007 20:07:49 -0500
+Message-ID: <473E3EF3.7070008@crispincowan.com>
+Date: Fri, 16 Nov 2007 17:08:03 -0800
+From: Crispin Cowan <crispin@crispincowan.com>
+Organization: Crispin's Labs
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b647ffbd0711161526p2faf5abt2457084f1996c735@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Peter Dolding <oiaohm@gmail.com>
+CC: rmeijer@xs4all.nl, apparmor-dev@forge.novell.com,
+       LSM ML <linux-security-module@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: More LSM vs. Containers (having nothing at all to do with the AppArmor
+ Security Goal)
+References: <10657.80.126.27.205.1194933072.squirrel@webmail.xs4all.nl>	 <47395F00.6080507@crispincowan.com> <e7d8f83e0711151458t3d4349d0k1b7ce4b030db87af@mail.gmail.com>
+In-Reply-To: <e7d8f83e0711151458t3d4349d0k1b7ce4b030db87af@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 17, 2007 at 12:26:41AM +0100, Dmitry Adamushko wrote:
-> Let's say we change a pattern for the niced task: e.g. run for 100 ms.
-> and then sleep for 300 ms. (that's ~25% of cpu load) in the loop. Any
-> behavioral changes?
+Peter Dolding wrote:
+>>> What is left unspecified here is 'how' a child 'with its own profile' is
+>>> confined here. Are it is confined to just its own profile, it may that
+>>> the "complicit process" communication may need to be wider specified to
+>>> include this.
+>>>       
+> Sorry have to bring this up.  cgroups why not?
+Because I can't find any documentation for cgroups? :)
 
-For consistency, I tested this using /dev/rtc. I set the rtc frequency
-to 16 Hz, and replaced the main loop of my high (-19) priority thread
-with:
+>   Assign application to
+> a cgroup that contains there filesystem access permissions.   Done
+> right this could even be stacked.  Only give less access to
+> application unless LSM particularly overrides.
+>   
+This comes no where close to AppArmor's functionality:
 
-   while (1) {
-      unsigned long data;
+    * Can't do learning mode
+    * Can't do wildcards
+    * Sucks up huge loads of memory to do that much FS mounting (imagine
+      thousands of bind mounts)
+    * I'm not sure, but I don't think you can do file granularity, only
+      directories
 
-      for (i = 0; i < 3; i++) {
-         if (read(rtc, &data, sizeof data) != sizeof data) {
-            perror("read");
-            return 1;
-         }
-      }
 
-      fcntl(rtc, F_SETFL, O_NONBLOCK);
-      while (read(rtc, &data, sizeof data) < 0);
-      fcntl(rtc, F_SETFL, 0);
-   }
+> There are reasons why I keep on bring containers up it changes the
+> model.  Yes I know coming to a common agreement in these sections will
+> not be simple.   But at some point it has to be done.
+>   
+Containers and access controls provide related but different functions.
+Stop trying to force containers to be an access control system, it does
+not fit well at all.
 
-Now it's busy-looping for 62ms, and sleeping for three consecutive
-62.5ms chunks totalling 187.5ms.
+Rather, we need to ensure that LSM and containers play well together.
+What you proposed in the past was to have an LSM module per container,
+but I find that absurdly complex: if you want that, then use a real VMM
+like Xen or something. Containers are mostly used for massive virtual
+domain hosting, and what you want there is as much sharing as possible
+while maintaining isolation. so why would you corrupt that with separate
+LSM modules per container?
 
-The results aren't quite what I was expecting. I have only observed
-this so far in test cases where I have a very high wakeup frequency,
-so I wasn't expecting this to work. I did, however, still observe the
-problem where occasionally I get into a state where one CPU is mostly
-idle.
+What makes sense to me is to ensure that it is easy for an LSM module to
+have a policy per container. This is relatively easy to do, and maps
+very well to the primary use of containers for hosting virtual domains.
 
-Qualitatively, this feels a bit different. With the higher clock
-frequency it seemed like the CPU would easily get "stuck" in this
-state where it's mostly idle, and it would stay there for a long
-time. With the low wakeup frequency, I'm seeing it toggle between the
-busy and mostly-idle states more quickly.
+Crispin
 
-I tried a similar test using usleep() and gettimeofday() rather than
-/dev/rtc:
-
-   while (1) {
-      usleep(300000);
-
-      gettimeofday(&t1, NULL);
-      do {
-         gettimeofday(&t2, NULL);
-      } while (t2.tv_usec - t1.tv_usec +
-               (t2.tv_sec - t1.tv_sec) * 1000000 < 100000);
-   }
-
-With this test program, I haven't yet seen a CPU imbalance that lasts
-longer than a fraction of a second.
-
---Micah
+-- 
+Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin
+CEO, Mercenary Linux		   http://mercenarylinux.com/
+	       Itanium. Vista. GPLv3. Complexity at work
 
