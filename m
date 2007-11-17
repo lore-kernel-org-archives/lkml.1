@@ -1,40 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935173AbXKPXvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933911AbXKQAF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935173AbXKPXvk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 18:51:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761670AbXKPXvc
+	id S933911AbXKQAF2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 19:05:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755607AbXKQAFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 18:51:32 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57919 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761028AbXKPXvb (ORCPT
+	Fri, 16 Nov 2007 19:05:19 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54434 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751784AbXKQAFR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 18:51:31 -0500
-Date: Fri, 16 Nov 2007 23:49:02 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] NR_OPEN should be raised a litle bit
-Message-ID: <20071116234902.75fdef5c@the-village.bc.nu>
-In-Reply-To: <473E1144.9070404@cosmosbay.com>
-References: <473E1144.9070404@cosmosbay.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Nov 2007 19:05:17 -0500
+Date: Fri, 16 Nov 2007 16:05:15 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: "Luck, Tony" <tony.luck@intel.com>
+cc: akpm@linux-foundation.org, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: RE: [patch 07/30] cpu alloc: IA64 support
+In-Reply-To: <617E1C2C70743745A92448908E030B2A02F944FB@scsmsx411.amr.corp.intel.com>
+Message-ID: <Pine.LNX.4.64.0711161604450.9491@schroedinger.engr.sgi.com>
+References: <20071116230920.278761667@sgi.com> <20071116231103.808561432@sgi.com>
+ <617E1C2C70743745A92448908E030B2A02F944FB@scsmsx411.amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Nov 2007 22:53:08 +0100
-Eric Dumazet <dada1@cosmosbay.com> wrote:
+On Fri, 16 Nov 2007, Luck, Tony wrote:
 
-> Time has come to change NR_OPEN value, some production servers hit the
-> not so 'ridiculously high value' of 1024*1024 file descriptors per process.
+> +# Maximum of 128 MB cpu_alloc space per cpu
+> +config CPU_AREA_ORDER
+> +	int
+> +	default "13"
+> 
+> Comment only matches code when page size is 16K ... and we are (slowly)
+> moving to 64k as the default (which with order 13 allocation would mean
+> 512M)
 
-Why fiddle with the kernel defaults when every distribution can manage
-this in user space - including picking defaults by memory size or
-platform ?
+But the page table also grow so 512M may be okay?
+
