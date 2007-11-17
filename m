@@ -1,122 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761539AbXKQRJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758850AbXKQRSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761539AbXKQRJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 12:09:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758694AbXKQRJr
+	id S1758850AbXKQRSr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 12:18:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754727AbXKQRSj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 12:09:47 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:23074 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751153AbXKQRJp (ORCPT
+	Sat, 17 Nov 2007 12:18:39 -0500
+Received: from amber.ccs.neu.edu ([129.10.116.51]:56518 "EHLO
+	amber.ccs.neu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751707AbXKQRSi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 12:09:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=rAFmxOmDUZSxhYjAAqde0ladNjGSoGqvh1jQLqc1ObNri68UeUeZjaKdIYVHP/tDxZF648yakYBzbU97Fu3i36EOk9v1CQLJYj+1Ja41o4mspFNqiWyPLMDKkCNYcrcreQulrj7GQof5RYcSS/hOX7vc0+VpvIfqSCPOPGQFPLQ=
-Message-ID: <863e9df20711170909i7cb24f1aq743e1b645ef0e0b0@mail.gmail.com>
-Date: Sat, 17 Nov 2007 22:39:31 +0530
-From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
-To: "Jim Keniston" <jkenisto@us.ibm.com>
-Subject: Re: [PATCH][RFC] kprobes: Add user entry-handler in kretprobes
-Cc: "Srinivasa Ds" <srinivasa@in.ibm.com>, linux-kernel@vger.kernel.org,
-       prasanna@in.ibm.com, davem@davemloft.net,
-       anil.s.keshavamurthy@intel.com,
-       "Ananth N Mavinakayanahalli" <ananth@in.ibm.com>
-In-Reply-To: <1195254569.8520.37.camel@dyn9047018096.beaverton.ibm.com>
+	Sat, 17 Nov 2007 12:18:38 -0500
+Date: Sat, 17 Nov 2007 12:18:29 -0500 (EST)
+From: Jim Faulkner <jfaulkne@ccs.neu.edu>
+To: linux-kernel@vger.kernel.org
+cc: Jim Faulkner <jfaulkne@ccs.neu.edu>, tiwai@suse.de, gregkh@suse.de
+Subject: Re: sb live (emu10k1) stops working between 2.6.23.1 and 2.6.23.7
+In-Reply-To: <Pine.GSO.4.58.0711161613070.9346@denali.ccs.neu.edu>
+Message-ID: <Pine.GSO.4.58.0711171201260.20067@denali.ccs.neu.edu>
+References: <Pine.GSO.4.58.0711161613070.9346@denali.ccs.neu.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47389BEB.1000901@gmail.com> <473AAA75.2050900@in.ibm.com>
-	 <863e9df20711140049q3ad486ben7ace2edab0a2ca41@mail.gmail.com>
-	 <473ACCBE.9010308@in.ibm.com>
-	 <863e9df20711140530h69df9107g38e293aab278686a@mail.gmail.com>
-	 <1195080664.5781.78.camel@dyn9047018096.beaverton.ibm.com>
-	 <863e9df20711150700i3c84374ava108f5b585e8498b@mail.gmail.com>
-	 <1195171644.3804.124.camel@dyn9047018096.beaverton.ibm.com>
-	 <863e9df20711161053q7f6ae3d5vb19b23d2ce6b20f7@mail.gmail.com>
-	 <1195254569.8520.37.camel@dyn9047018096.beaverton.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 17, 2007 4:39 AM, Jim Keniston <jkenisto@us.ibm.com> wrote:
-> First of all, as promised, here's what would be different if it were
-> implemented using the data-pouch approach:
->
-> --- abhishek1.c 2007-11-16 13:57:13.000000000 -0800
-> +++ jim1.c      2007-11-16 14:20:39.000000000 -0800
-> @@ -50,15 +50,12 @@
->         if (stats)
->                 return 1; /* recursive/nested call */
->
-> -       stats = kmalloc(sizeof(struct prof_data), GFP_ATOMIC);
-> -       if (!stats)
-> -               return 1;
-> +       stats = (struct prof_data *) ri->entry_info;
->
->         stats->entry_stamp = sched_clock();
->         stats->task = current;
->         INIT_LIST_HEAD(&stats->list);
->         list_add(&stats->list, &data_nodes);
-> -       ri->data = stats;
->         return 0;
->  }
->
-> @@ -66,10 +63,9 @@
->  static int return_handler(struct kretprobe_instance *ri, struct pt_regs
-> *regs)
->  {
->         unsigned long flags;
-> -       struct prof_data *stats = (struct prof_data *)ri->data;
-> +       struct prof_data *stats = (struct prof_data *)ri->entry_info;
->         u64 elapsed;
->
-> -       BUG_ON(ri->data == NULL);
->         elapsed = (long long)sched_clock() - (long long)stats->entry_stamp;
->
->         /* update stats */
-> @@ -79,13 +75,13 @@
->         spin_unlock_irqrestore(&time_lock, flags);
->
->         list_del(&stats->list);
-> -       kfree(stats);
->         return 0;
->  }
->
->  static struct kretprobe my_kretprobe = {
->         .handler = return_handler,
->         .entry_handler = entry_handler,
-> +       .entry_info_sz = sizeof(struct prof_data)
->  };
->
->  /* called after every PRINT_DELAY seconds */
->
-> So the data-pouch approach saves you a little code and a kmalloc/kfree
-> round trip on each kretprobe hit.  A kmalloc/kfree round trip is about
-> 80 ns on my system, or about 20% of the base cost of a kretprobe hit.  I
-> don't know how important that is to people.
->
-> I also note that this particular example maintains a per-task list of
-> prof_data objects to avoid overcounting the time spent in a recursive
-> function.  That adds about 30% to the size of your module source (136
-> lines vs. 106, by my count).  I suspect that many instrumentation
-> modules wouldn't need such a list.  However, without your ri->data
-> pointer (or Kevin's ri->entry_info pouch), every instrumentation module
-> that uses your enhancement would need such a list in order to map the ri
-> to the per-instance.
 
-Those are interesting numbers. Will incorporate pouching in the next
-patch. Even with a data pointer or pouch, the mapping of ri (or
-ri->data) would sometimes be necessary. It's required to catch
-recursive/nested invocation cases. In case of time measurment test
-module, these invocations needed to be weeded out and therefore such a
-list was required. Other scenarios might not care for it. E.g a module
-which measures the change in some global system state across every
-call.
+I've done some more testing this morning, and it appears that the "ALSA:
+emu10k1 - Fix memory corruption" patch from 2.6.23.6 has broken digital
+output on my SB Live Value card.  Simply replacing the 2.6.23.7 emumixer.c
+with the version included in 2.6.23.1 I was able to get digital output
+working again under 2.6.23.7.
 
-Thanks for the comments.
+This does not appear to be a simple matter of adjusting the alsa mixer to
+compsensate for how the mixer controls are exposed to userspace.  I have
+duplicated all alsamixer settings between 2.6.23.1 and stock 2.6.23.7 in
+the "F5" view all controls mode, but still received no audio output.  I
+also tried adjusting other volume controls which normally do not need
+adjusting, but got nowhere.  It appears that the 2.6.23.6 emu10k1 patch
+broke digital output entirely on this card.
 
-> Jim
+Just to add to the information in my first message, the SB Live card is
+connected from the yellow jack on the card to the "Digital Coax Input"
+connector on my external amplifier.
 
-- Abhishek
+thanks,
+Jim Faulkner
+
+
+On Fri, 16 Nov 2007, Jim Faulkner wrote:
+
+>
+> Hello,
+>
+> I have an SB Live Value card which uses the emu10k1 driver.  I use digital
+> output to an external amplifier.  This has worked fine for many years, up
+> to and including kernel 2.6.23.1.  Under 2.6.23.7, I have been unable
+> to get any audio output.  I get the following errors when loading my
+> asound.state under 2.6.23.7 using `alsactl restore`:
+> alsactl: set_control:991: warning: name mismatch (IEC958 Playback
+> Mask/IEC958 Playback Default) for control #222
+> alsactl: set_control:993: warning: index mismatch (3/0) for control #222
+> alsactl: set_control:993: warning: index mismatch (0/1) for control #223
+> alsactl: set_control:993: warning: index mismatch (1/2) for control #224
+> alsactl: set_control:985: warning: iface mismatch (3/2) for control #225
+> alsactl: set_control:987: warning: device mismatch (2/0) for control #225
+> alsactl: set_control:989: warning: subdevice mismatch (0/0) for control
+> #225
+> alsactl: set_control:991: warning: name mismatch (IEC958 Playback
+> Default/SB Live Analog/Digital Output Jack) for control #225
+> alsactl: set_control:993: warning: index mismatch (2/0) for control #225
+> alsactl: set_control:995: failed to obtain info for control #225
+> (Operation not permitted)
+>
+> I receive no errors when I load my asound.state under 2.6.23.1.
+>
+> Under 2.6.23.7, I get the message "No digital data" on my external
+> amplifier, which normally I only see when the computer is powered down or
+> rebooting.  I do not get that message under 2.6.23.1, even when no audio
+> is being played.
+>
+> I've tried copying down my alsamixer settings under 2.6.23.1, and
+> re-entering them under 2.6.23.7, however I have still been unable to get
+> any audio output.
+>
+> Here is the relevant part of my `lspci -v`:
+> 05:0d.0 Multimedia audio controller: Creative Labs SB Live! EMU10k1 (rev
+> 08)
+>         Subsystem: Creative Labs CT4780 SBLive! Value
+>         Flags: bus master, medium devsel, latency 64, IRQ 23
+>         I/O ports at dce0 [size=32]
+>         Capabilities: [dc] Power Management version 2
+>
+> Please let me know if you need any more information, and please CC my
+> e-mail address on any correspondence, since I am not subscribed to this
+> list.
+>
+> thanks,
+> Jim Faulkner
+>
+>
