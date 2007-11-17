@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761416AbXKQPM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758285AbXKQPXL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761416AbXKQPM2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 10:12:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbXKQPMU
+	id S1758285AbXKQPXL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 10:23:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbXKQPW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 10:12:20 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:9262 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753853AbXKQPMT (ORCPT
+	Sat, 17 Nov 2007 10:22:58 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:4021 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752130AbXKQPW6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 10:12:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=VCI2tHKMvaqNjhktYOEM2DX3zGEPt07U8FqtRo0XxIuhGFWa9KC10UeO4EJWsTUwf+9cbPNBsIz2Ni8HZfBSdtCgI3ik5TRoQwdj9EqcicXjRU1Oo86YM86knBO2e1g/omFdTuhz6ATNtpfr6q+WgbN1mRcrGnp5F2DJilu/dmI=
-Message-ID: <473F04CB.70602@gmail.com>
-Date: Sat, 17 Nov 2007 16:12:11 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Subject: Re: broken suspend [Was: 2.6.24-rc2-mm1]
-References: <Pine.LNX.4.44L0.0711161058170.2738-100000@iolanthe.rowland.org> <473F03DF.4020306@gmail.com>
-In-Reply-To: <473F03DF.4020306@gmail.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Sat, 17 Nov 2007 10:22:58 -0500
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: andi@firstfloor.org (Andi Kleen)
+Subject: Re: [NET]: rt_check_expire() can take a long time, add a cond_resched()
+Cc: arjan@infradead.org, dada1@cosmosbay.com, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, netdev@vget.kernel.org, mingo@elte.hu
+Organization: Core
+In-Reply-To: <p73k5ohav4n.fsf@bingen.suse.de>
+X-Newsgroups: apana.lists.os.linux.kernel
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1ItPUJ-0005Ue-00@gondolin.me.apana.org.au>
+Date: Sat, 17 Nov 2007 23:21:39 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/17/2007 04:08 PM, Jiri Slaby wrote:
-> On 11/16/2007 05:10 PM, Alan Stern wrote:
->> If there's also a config 
->> option to prevent the console from being suspended, set it as well.  
+Andi Kleen <andi@firstfloor.org> wrote:
+>
+>>> > With the extra check (and *much* less function calls), each run
+>>> > takes 25ms
 > 
-> no_suspend_console kernel parameter has no effect (why?).
+> ms?!? The numbers sound wrong. Wrong unit? 
 
-Eh, no, this (/proc/cmdline):
-ro root=/dev/md1 reboo1 vga=1 2 no_console_suspend
+That's quite possible with a huge routing cache.  I think that's
+the reason Eric is doing this in the first place.
 
-regards,
+>> however... this is likely a good argument for making cond_resched() as a
+>> whole a #define (or inline) that does this test and then calls the out
+>> of line code (which then doesn't need to retest, so it avoids the
+>> double test)...
+> 
+> Disadvantage would be that might_sleep would be commonly skipped then
+> (unless you actually need to reschedule) 
+> But perhaps that's not a big issue.
+
+On a related note, would it be possible for cond_resched() to
+be compiled out completely if we're doing real preemption as
+opposed to voluntary preemption?
+
+Cheers,
 -- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
