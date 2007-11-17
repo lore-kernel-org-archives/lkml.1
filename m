@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762888AbXKQQIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759437AbXKQQNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762888AbXKQQIS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 11:08:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757434AbXKQQIH
+	id S1759437AbXKQQNf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 11:13:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbXKQQN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 11:08:07 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50191 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758532AbXKQQIG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 11:08:06 -0500
-Date: Sat, 17 Nov 2007 17:07:35 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>
-Subject: Re: Linux 2.6.24-rc3
-Message-ID: <20071117160735.GE3967@elte.hu>
-References: <alpine.LFD.0.9999.0711162123260.4260@woody.linux-foundation.org> <200711171114.16299.rjw@sisk.pl> <20071117021917.eed2f34c.akpm@linux-foundation.org>
+	Sat, 17 Nov 2007 11:13:28 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:4890 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751153AbXKQQN2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Nov 2007 11:13:28 -0500
+Date: Sat, 17 Nov 2007 11:13:24 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Subject: Re: broken suspend [Was: 2.6.24-rc2-mm1]
+In-Reply-To: <473F03DF.4020306@gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0711171053500.29002-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071117021917.eed2f34c.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 17 Nov 2007, Jiri Slaby wrote:
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> > > Nothing really exciting. A few things got reverted due to regressions, and
-> > > in general hopefully the regression counts are starting to shrink.
-> > 
-> > Yes, they are.
-> > 
-> > Speaking of which, would you mind merging the patch at:
-> > http://lkml.org/lkml/2007/11/1/246
-> > 
-> > To my eyes it's a regression fix, but no one has been pushing it upstream.
+> > The thing to do is figure out which driver is causing the problem.
+> > Jiri, try enabling CONFIG_DEBUG_DRIVER.  
 > 
-> There are three patches which affect that kernel function.  One is in 
-> git-x86 and the other two are in -mm.  I sent #2 and #3 to Thomas 
-> today and he's getting it all sorted out.
+> Sadly no output.
 
-FYI, Thomas sent out the git pull request for this (and other) fixes an 
-hour ago.
+Guess I'll have to try running 2.6.24-rc2-mm1 on my own system.  In the 
+meantime, you can try adding some printk statements to 
+drivers/base/power/main.c.  In particular, see whether 
+lock_all_devices() gets called from device_suspend(), whether it 
+returns, and how far dpm_suspend() manages to get.
 
-	Ingo
+Alan Stern
+
