@@ -1,120 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757587AbXKQIfM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758193AbXKQIo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757587AbXKQIfM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 03:35:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbXKQIe7
+	id S1758193AbXKQIo1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 03:44:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbXKQIoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 03:34:59 -0500
-Received: from delta.dailydns.net ([204.16.247.150]:49772 "EHLO
-	delta.dailydns.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752192AbXKQIe6 (ORCPT
+	Sat, 17 Nov 2007 03:44:19 -0500
+Received: from hoboe1bl1.telenet-ops.be ([195.130.137.72]:53604 "EHLO
+	hoboe1bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752304AbXKQIoS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 03:34:58 -0500
-Date: Sat, 17 Nov 2007 10:34:52 +0200
-From: Dan Aloni <da-x@monatomic.org>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Aristeu Rozanski <aris@ruivo.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: fix a deadlock in set_rtc_mmss()
-Message-ID: <20071117083452.GA8531@localdomain>
-References: <20071115165528.GA25520@localdomain> <20071115183046.GD8068@cathedrallabs.org> <473D0DD9.3000600@cn.fujitsu.com>
+	Sat, 17 Nov 2007 03:44:18 -0500
+Date: Sat, 17 Nov 2007 09:44:14 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Daniel Barkalow <barkalow@iabervon.org>
+Cc: Michael Gerdau <mgerdau@tiscali.de>, Philippe Elie <phil.el@wanadoo.fr>,
+       Russell Leighton <russ@elegant-software.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: OT: Does Linux have any "Perfect Code"
+In-Reply-To: <Pine.LNX.4.64.0711150940560.12193@iabervon.org>
+Message-ID: <Pine.LNX.4.64.0711170941340.32153@anakin>
+References: <c9d133bdb3481fbc01a572d948049f5e@elegant-software.com>
+ <20071115082746.GA2885@zaniah> <200711151416.54570.mgerdau@tiscali.de>
+ <Pine.LNX.4.64.0711150940560.12193@iabervon.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <473D0DD9.3000600@cn.fujitsu.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - delta.dailydns.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - monatomic.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 16, 2007 at 11:26:17AM +0800, Li Zefan wrote:
-> Aristeu Rozanski wrote:
-> > Hello Dan,
-> >> Patch is valid only for 2.6.23.x, guessing from the recent arch/ changes 
-> >> in 2.6.24-rc.
-> >>
-> >> set_rtc_mmss() was used to be called from interrupt context in 2.6.22,
-> >> however in 2.6.23, it is called from a timer context, where interrupts
-> >> are enabled. This patch ensures that rtc_interrupt() won't dead-lock 
-> >> with set_rtc_mmss().
+On Thu, 15 Nov 2007, Daniel Barkalow wrote:
+> On Thu, 15 Nov 2007, Michael Gerdau wrote:
+> > > This code is far to be perfect, some part is outdated, bcopy() use instead
+> > > of memcpy() for example. More annoying are the comment, the file is 3306
+> > > lines while there is only 1640 line of code, nothing bad per se but looking
+> > > some comments:
+> > > 
+> > >  		/*
+> > >  		 * Before we begin this operation, disable kernel preemption.
+> > >  		 */
+> > >  		kpreempt_disable();
 > > 
-> >> diff --git a/arch/x86_64/kernel/time.c b/arch/x86_64/kernel/time.c
-> >> index 6241b50..8414236 100644
-> >> --- a/arch/x86_64/kernel/time.c
-> >> +++ b/arch/x86_64/kernel/time.c
-> >> @@ -87,13 +87,14 @@ static int set_rtc_mmss(unsigned long nowtime)
-> >>  	int retval = 0;
-> >>  	int real_seconds, real_minutes, cmos_minutes;
-> >>  	unsigned char control, freq_select;
-> >> +	unsigned long flags;
-> >>  
-> >>  /*
-> >>   * IRQs are disabled when we're called from the timer interrupt,
-> >>   * no need for spin_lock_irqsave()
-> >>   */
-> >>  
-> >> -	spin_lock(&rtc_lock);
-> >> +	spin_lock_irqsave(&rtc_lock, flags);
-> > I think it's a good idea to update or just remove the comment above.
+> > <disclaimer>
+> > I'm not a kernel developer.
+> > </disclaimer>
 > > 
+> > That having said:
+> > I really do like such obvious (as in: for those knowing the stuff anyway)
+> > comments when looking at code and probably concepts I'm not familiar with.
+> >
+> > ...
+> > 
+> > I mean, isn't the whole purpose of comments to help those not familiar
+> > with the code to understand it's purpose and possibly the intention of
+> > the author (just in case the author had coded a bug) ?
 > 
-> David P. Reed has sent a patch to fix this bug before you.
+> That's the problem with really obvious comments. In the example above, 
+> that function had better disable kernel preemption with a name like that, 
+> and, assuming it's before the code begins the operation in sequence, we 
+> know when we're doing it. But the comment fails to explain why we need to 
+> disable kernel preemption before beginning the operation, just that we are 
+> doing so. Having the comment merely distracts the reader from the fact 
+> that the purpose of the code and the intention of the author are 
+> completely undocumented. And there's a realy chance that this comment or 
+> ones like it cause this statement and the place in the code where things 
+> would go wrong if preemption weren't disabled to not fit on the reader's 
+> screen together, so it is not only unclear what the author's intention 
+> was, but it is harder to figure out from looking at the code than it would 
+> be without comments, because fewer clues are actually visible at the same 
+> time, since each of them takes up extra screen space.
 > 
-> http://lkml.org/lkml/2007/11/14/435
+> The code itself should be written to tell the reader everything there is 
+> to know about what it does, and the comments in code should only tell the 
+> reader why it does that.
 
-Yes, missed by a day. Although that patch was aimed for 2.6.24-rc, 
-I am currently more concerned about the 2.6.23.x tree.
+Agreed!
 
-Greg, can this be added to 2.6.23-stable?
+At work we used to have a contractor who documented _every_ single statement
+with a literal C/C++-to-English translation. Nobody liked it, except
+him. It was completely unreadable.
+Of course a few of these comments went out-of-sync with the actual
+code...
 
-Signed-off-by: Dan Aloni <da-x@monatomic.org>
+Gr{oetje,eeting}s,
 
----
-commit 26c05aa66d10e95de63d95a348023ada4827ceed
-tree 7c12f2b35fcba31c9f62ba278b9d232406f80e83
-parent ad1765c56c2178a09e87d123548a35f221e1fc05
-author Dan Aloni <da-x@monatomic.org> Sat, 17 Nov 2007 10:31:01 +0200
-committer Dan Aloni <da-x@monatomic.org> Sat, 17 Nov 2007 10:31:01 +0200
+						Geert
 
- arch/x86_64/kernel/time.c |   10 +++-------
- 1 files changed, 3 insertions(+), 7 deletions(-)
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-diff --git a/arch/x86_64/kernel/time.c b/arch/x86_64/kernel/time.c
-index 6d48a4e..fde5796 100644
---- a/arch/x86_64/kernel/time.c
-+++ b/arch/x86_64/kernel/time.c
-@@ -87,13 +87,9 @@ static int set_rtc_mmss(unsigned long nowtime)
- 	int retval = 0;
- 	int real_seconds, real_minutes, cmos_minutes;
- 	unsigned char control, freq_select;
-+	unsigned long flags;
- 
--/*
-- * IRQs are disabled when we're called from the timer interrupt,
-- * no need for spin_lock_irqsave()
-- */
--
--	spin_lock(&rtc_lock);
-+	spin_lock_irqsave(&rtc_lock, flags);
- 
- /*
-  * Tell the clock it's being set and stop it.
-@@ -143,7 +139,7 @@ static int set_rtc_mmss(unsigned long nowtime)
- 	CMOS_WRITE(control, RTC_CONTROL);
- 	CMOS_WRITE(freq_select, RTC_FREQ_SELECT);
- 
--	spin_unlock(&rtc_lock);
-+	spin_unlock_irqrestore(&rtc_lock, flags);
- 
- 	return retval;
- }
-
-
--- 
-Dan Aloni
-XIV LTD, http://www.xivstorage.com
-da-x (at) monatomic.org, dan (at) xiv.co.il
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
