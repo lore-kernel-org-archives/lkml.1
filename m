@@ -1,92 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751401AbXKQG2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933643AbXKQG3K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751401AbXKQG2o (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 01:28:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760933AbXKQGYo
+	id S933643AbXKQG3K (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 01:29:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761430AbXKQGYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 01:24:44 -0500
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:38171 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759006AbXKQGYk (ORCPT
+	Sat, 17 Nov 2007 01:24:45 -0500
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:44634 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758973AbXKQGYk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 17 Nov 2007 01:24:40 -0500
-Message-Id: <20071117062403.217588003@goodmis.org>
+Message-Id: <20071117062404.828623332@goodmis.org>
 References: <20071117062104.177779113@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Sat, 17 Nov 2007 01:21:05 -0500
+Date: Sat, 17 Nov 2007 01:21:15 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Gregory Haskins <ghaskins@novell.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Christoph Lameter <clameter@sgi.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH v3 01/17] Add rt_nr_running accounting
-Content-Disposition: inline; filename=count-rt-queued.patch
+Subject: [PATCH v3 11/17] RT: Break out the search function
+Content-Disposition: inline; filename=0003-rt-balance-break-out-search.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds accounting to keep track of the number of RT tasks running
-on a runqueue. This information will be used in later patches.
+From: Gregory Haskins <ghaskins@novell.com>
 
+Isolate the search logic into a function so that it can be used later
+in places other than find_locked_lowest_rq().
+
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-
 ---
- kernel/sched.c    |    1 +
- kernel/sched_rt.c |   17 +++++++++++++++++
- 2 files changed, 18 insertions(+)
 
-Index: linux-compile.git/kernel/sched.c
-===================================================================
---- linux-compile.git.orig/kernel/sched.c	2007-11-16 11:16:38.000000000 -0500
-+++ linux-compile.git/kernel/sched.c	2007-11-16 21:48:48.000000000 -0500
-@@ -266,6 +266,7 @@ struct rt_rq {
- 	struct rt_prio_array active;
- 	int rt_load_balance_idx;
- 	struct list_head *rt_load_balance_head, *rt_load_balance_curr;
-+	unsigned long rt_nr_running;
- };
- 
- /*
+ kernel/sched_rt.c |   62 ++++++++++++++++++++++++++++++++----------------------
+ 1 file changed, 37 insertions(+), 25 deletions(-)
+
 Index: linux-compile.git/kernel/sched_rt.c
 ===================================================================
---- linux-compile.git.orig/kernel/sched_rt.c	2007-11-16 11:15:56.000000000 -0500
-+++ linux-compile.git/kernel/sched_rt.c	2007-11-16 21:48:48.000000000 -0500
-@@ -25,12 +25,27 @@ static void update_curr_rt(struct rq *rq
- 	curr->se.exec_start = rq->clock;
+--- linux-compile.git.orig/kernel/sched_rt.c	2007-11-16 22:23:39.000000000 -0500
++++ linux-compile.git/kernel/sched_rt.c	2007-11-16 22:23:43.000000000 -0500
+@@ -256,43 +256,55 @@ static struct task_struct *pick_next_hig
+ 	return next;
  }
  
-+static inline void inc_rt_tasks(struct task_struct *p, struct rq *rq)
-+{
-+	WARN_ON(!rt_task(p));
-+	rq->rt.rt_nr_running++;
-+}
-+
-+static inline void dec_rt_tasks(struct task_struct *p, struct rq *rq)
-+{
-+	WARN_ON(!rt_task(p));
-+	WARN_ON(!rq->rt.rt_nr_running);
-+	rq->rt.rt_nr_running--;
-+}
-+
- static void enqueue_task_rt(struct rq *rq, struct task_struct *p, int wakeup)
+-/* Will lock the rq it finds */
+-static struct rq *find_lock_lowest_rq(struct task_struct *task,
+-				      struct rq *rq)
++static int find_lowest_rq(struct task_struct *task)
  {
- 	struct rt_prio_array *array = &rq->rt.active;
+-	struct rq *lowest_rq = NULL;
+-	cpumask_t cpu_mask;
+ 	int cpu;
+-	int tries;
++	cpumask_t cpu_mask;
++	struct rq *lowest_rq = NULL;
  
- 	list_add_tail(&p->run_list, array->queue + p->prio);
- 	__set_bit(p->prio, array->bitmap);
+ 	cpus_and(cpu_mask, cpu_online_map, task->cpus_allowed);
+ 
+-	for (tries = 0; tries < RT_MAX_TRIES; tries++) {
+-		/*
+-		 * Scan each rq for the lowest prio.
+-		 */
+-		for_each_cpu_mask(cpu, cpu_mask) {
+-			struct rq *curr_rq = &per_cpu(runqueues, cpu);
++	/*
++	 * Scan each rq for the lowest prio.
++	 */
++	for_each_cpu_mask(cpu, cpu_mask) {
++		struct rq *rq = cpu_rq(cpu);
+ 
+-			if (cpu == rq->cpu)
+-				continue;
++		if (cpu == rq->cpu)
++			continue;
+ 
+-			/* We look for lowest RT prio or non-rt CPU */
+-			if (curr_rq->rt.highest_prio >= MAX_RT_PRIO) {
+-				lowest_rq = curr_rq;
+-				break;
+-			}
++		/* We look for lowest RT prio or non-rt CPU */
++		if (rq->rt.highest_prio >= MAX_RT_PRIO) {
++			lowest_rq = rq;
++			break;
++		}
+ 
+-			/* no locking for now */
+-			if (curr_rq->rt.highest_prio > task->prio &&
+-			    (!lowest_rq || curr_rq->rt.highest_prio > lowest_rq->rt.highest_prio)) {
+-				lowest_rq = curr_rq;
+-			}
++		/* no locking for now */
++		if (rq->rt.highest_prio > task->prio &&
++		    (!lowest_rq || rq->rt.highest_prio > lowest_rq->rt.highest_prio)) {
++			lowest_rq = rq;
+ 		}
++	}
 +
-+	inc_rt_tasks(p, rq);
- }
- 
- /*
-@@ -45,6 +60,8 @@ static void dequeue_task_rt(struct rq *r
- 	list_del(&p->run_list);
- 	if (list_empty(array->queue + p->prio))
- 		__clear_bit(p->prio, array->bitmap);
++	return lowest_rq ? lowest_rq->cpu : -1;
++}
 +
-+	dec_rt_tasks(p, rq);
- }
++/* Will lock the rq it finds */
++static struct rq *find_lock_lowest_rq(struct task_struct *task,
++				      struct rq *rq)
++{
++	struct rq *lowest_rq = NULL;
++	int cpu;
++	int tries;
++
++	for (tries = 0; tries < RT_MAX_TRIES; tries++) {
++		cpu = find_lowest_rq(task);
  
- /*
+-		if (!lowest_rq)
++		if (cpu == -1)
+ 			break;
+ 
++		lowest_rq = cpu_rq(cpu);
++
+ 		/* if the prio of this runqueue changed, try again */
+ 		if (double_lock_balance(rq, lowest_rq)) {
+ 			/*
 
 -- 
