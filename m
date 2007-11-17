@@ -1,61 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763713AbXKQSsK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764895AbXKQSu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763713AbXKQSsK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 13:48:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757929AbXKQSr5
+	id S1764895AbXKQSu0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 13:50:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758845AbXKQSuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 13:47:57 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51537 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757732AbXKQSr4 (ORCPT
+	Sat, 17 Nov 2007 13:50:14 -0500
+Received: from [198.99.130.12] ([198.99.130.12]:35764 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1757545AbXKQSuM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 13:47:56 -0500
-Date: Sat, 17 Nov 2007 10:46:52 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@tglx.de
-Subject: Re: [patch] Printk kernel version in WARN_ON
-Message-Id: <20071117104652.8240af62.akpm@linux-foundation.org>
-In-Reply-To: <20071117103947.5b2052f8@laptopd505.fenrus.org>
-References: <20071117101552.2a7f34cb@laptopd505.fenrus.org>
-	<20071117102720.251107d7.akpm@linux-foundation.org>
-	<20071117103947.5b2052f8@laptopd505.fenrus.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Sat, 17 Nov 2007 13:50:12 -0500
+Date: Sat, 17 Nov 2007 13:49:54 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: Re: [PATCH 7/8] UML - add virt_to_pte
+Message-ID: <20071117184954.GB8206@c2.user-mode-linux.org>
+References: <20071116214227.GA13877@c2.user-mode-linux.org> <473EC75F.5020208@tiscali.nl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <473EC75F.5020208@tiscali.nl>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 17 Nov 2007 10:39:47 -0800 Arjan van de Ven <arjan@infradead.org> wrote:
+On Sat, Nov 17, 2007 at 11:50:07AM +0100, Roel Kluin wrote:
+> > +	if (!pte_present(*pte))
+> > +		pte = NULL;
+> 
+> shouldn't you check again for (pte == NULL)?
 
-> On Sat, 17 Nov 2007 10:27:20 -0800
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Sat, 17 Nov 2007 10:15:52 -0800 Arjan van de Ven
-> > <arjan@infradead.org> wrote:
-> > 
-> > > @@ -35,8 +36,8 @@ struct bug_entry {
-> > >  #define WARN_ON(condition)
-> > > ({						\ int
-> > > __ret_warn_on = !!(condition);				\ if
-> > > (unlikely(__ret_warn_on)) {					\
-> > > -		printk("WARNING: at %s:%d %s()\n",
-> > > __FILE__,		\
-> > > -			__LINE__,
-> > > __FUNCTION__);			\
-> > > +		printk("WARNING: at %s:%d %s()  (%s)\n",
-> > > __FILE__,	\
-> > > +			__LINE__, __FUNCTION__,
-> > > UTS_RELEASE);		\
-> > > dump_stack();
-> > > \ }
-> > > \ unlikely(__ret_warn_on);					\
-> > 
-> > that made our 1100-odd WARN_ON sites fatter.
-> 
-> by ... not too much at least, gcc ought to be quite good at merging
-> same-strings into one, so it's just one extra pointer argument
-> 
+No, because if the page isn't mapped, handle_page_fault would have
+returned non-zero, and we would have already returned.
 
-I think I knew that.  At 1000 callsites.
+This is leaving aside issues of whether the page could have been
+unmapped by another CPU (which isn't an issue right now, and for which
+I have a patch to fix anyway).
+
+				Jeff
+
+-- 
+Work email - jdike at linux dot intel dot com
