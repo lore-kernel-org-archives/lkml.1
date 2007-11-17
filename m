@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752347AbXKQMcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbXKQMst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752347AbXKQMcj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 07:32:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750849AbXKQMcc
+	id S1756533AbXKQMst (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 07:48:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbXKQMsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 07:32:32 -0500
-Received: from fmmailgate09.web.de ([217.72.192.184]:52968 "EHLO
-	fmmailgate09.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750794AbXKQMcb convert rfc822-to-8bit (ORCPT
+	Sat, 17 Nov 2007 07:48:39 -0500
+Received: from simmts5-qfe0.srvr.bell.ca ([206.47.199.163]:55053 "EHLO
+	simmts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750849AbXKQMsi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 07:32:31 -0500
-Date: Sat, 17 Nov 2007 13:32:28 +0100
-Message-Id: <2090880485@web.de>
+	Sat, 17 Nov 2007 07:48:38 -0500
+From: Kevin Winchester <kjwinchester@gmail.com>
+To: Andrew Morgan <morgan@kernel.org>
+Subject: Re: 2.6.24-rc2-mm1 -- strange apparent network failures
+Date: Sat, 17 Nov 2007 08:48:35 -0400
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Andrew Morton <akpm@linux-foundation.org>, apw@shadowen.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       kamalesh@linux.vnet.ibm.com
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org> <20071115164441.67a8e2df.akpm@linux-foundation.org> <473E794A.4060107@kernel.org>
+In-Reply-To: <473E794A.4060107@kernel.org>
 MIME-Version: 1.0
-From: devzero@web.de
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: =?iso-8859-15?Q?Re:_distro_specific_kernels_vs_vanilla_kernel_and_how_?=
- =?iso-8859-15?Q?to_compare_among_each_other?=
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX191GFFcOoHiQkFezwfjPLFo4h1qwkKiK9Ng4KgUyHxQZ7OJ3
- pZphAi4yMYoRFdcwwdcEr26ImgMTYGNfrpAkjIS9nn79O1VzCo=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711170848.35726.kjwinchester@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-besides a web-browseable directory structure with all the single broken-out patches (which are typically part of src.rpm or similar) , i assume it would be good to put those patched and unpatched kernel sources online via lxr ? ( http://lxr.linux.no/ )
-  
-> -----Ursprüngliche Nachricht-----
-> Von: "Andi Kleen" <andi@firstfloor.org>
-> Gesendet: 16.11.07 23:25:29
-> An: devzero@web.de
-> CC: linux-kernel@vger.kernel.org
-> Betreff: Re: distro specific kernels vs vanilla kernel and how to compare among each other
+On November 17, 2007 01:16:58 am Andrew Morgan wrote:
+> Hi,
+>
+> This warning is just saying that you might want to reconsider
+> recompiling your dhclient with a newer libcap - which has native support
+> for 64-bit capabilities. This is supposed to be informative, and not be
+> associated with any particular error.
+>
+> From your comments, you believe that this patch causes something in your
+> boot process to fail. Can you supply some detail about the version of
+> dhclient you are using? I'd like to understand exactly what it is doing
+> (via libcap).
+>
+> Thanks
+>
 
+The boot succeeds (and appears to bring initialize the network adapter 
+properly - it autonegotiates a 100Mbps link speed), but the dhcp client is 
+never able to get an address.  However, applying the rc2-mm1 patch series up 
+to just before:
 
-> 
-> devzero@web.de writes:
-> 
-> > does somebody know if there is a website or a project for giving comfortable and deeper insight into what`s specific to distro`s kernels and what`s their difference to vanilla kernel ?
-> >
-> > i mean some way to have some transparancy to what different distro vendors add to vanilla kernel sources and thus turning it into their own specific version. 
-> 
-> There used to be such a page at kernelnewbies, but at some point it disappeared.
-> 
-> I agree it would be a useful resource.
-> 
-> -Andi
-> 
+  add-64-bit-capability-support-to-the-kernel.patch
 
+results in a working kernel.  Applying just this patch causes the failure.  To 
+be sure, I also tried applying the above patch plus the following ones:
 
-_____________________________________________________________________
-Der WEB.DE SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen!
-http://smartsurfer.web.de/?mc=100071&distributionid=000000000066
+  add-64-bit-capability-support-to-the-kernel-checkpatch-fixes.patch
+  add-64-bit-capability-support-to-the-kernel-fix.patch
+  add-64-bit-capability-support-to-the-kernel-fix-fix.patch
+  remove-unnecessary-include-from-include-linux-capabilityh.patch
 
+but the problem still occurs even with all of these.
+
+As to versions, I'm running Kubuntu gutsy, so I have the default:
+
+dhcp3-client           3.0.5-3ubuntu4
+libcap1                1:1.10-14build1
+
+packages installed.
+
+Let me know if you need any other information, or if you have a patch you 
+would like tested.
+
+-- 
+Kevin Winchester
