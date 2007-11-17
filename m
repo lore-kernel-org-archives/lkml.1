@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764132AbXKQSQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763727AbXKQSRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764132AbXKQSQT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 13:16:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758506AbXKQSQF
+	id S1763727AbXKQSRW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 13:17:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757583AbXKQSRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 13:16:05 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:34375 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756927AbXKQSQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 13:16:03 -0500
-Date: Sat, 17 Nov 2007 21:15:49 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] task_pid_nr_ns() breaks proc_pid_readdir()
-Message-ID: <20071117181549.GA1415@tv-sign.ru>
+	Sat, 17 Nov 2007 13:17:15 -0500
+Received: from homer.mvista.com ([63.81.120.158]:4604 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1755405AbXKQSRO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Nov 2007 13:17:14 -0500
+Subject: Re: [BUG on PREEMPT_RT, 2.6.23.1-rt5] in rt-mutex code and signals
+From: Daniel Walker <dwalker@mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Remy Bohmer <linux@bohmer.net>, Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       RT <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071117180430.GA10768@elte.hu>
+References: <3efb10970711160751l279fe99dl9f3a130a4373a449@mail.gmail.com>
+	 <Pine.LNX.4.58.0711161516580.25989@gandalf.stny.rr.com>
+	 <3efb10970711161502m6216bf5rc19a34184b4f3a2b@mail.gmail.com>
+	 <Pine.LNX.4.58.0711161830570.28002@gandalf.stny.rr.com>
+	 <3efb10970711170344n670d8b69w6679d494922c5bb@mail.gmail.com>
+	 <1195316550.25393.21.camel@imap.mvista.com>
+	 <3efb10970711170909n3acca605j70525e36faf8da7f@mail.gmail.com>
+	 <1195320569.25393.38.camel@imap.mvista.com>
+	 <20071117174608.GA30641@elte.hu>
+	 <1195322141.25393.41.camel@imap.mvista.com>
+	 <20071117180430.GA10768@elte.hu>
+Content-Type: text/plain
+Date: Sat, 17 Nov 2007 10:12:57 -0800
+Message-Id: <1195323177.25393.56.camel@imap.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-proc_pid_readdir:
+On Sat, 2007-11-17 at 19:04 +0100, Ingo Molnar wrote:
 
-	for (...; ...; task = next_tgid(tgid + 1, ns)) {
-		tgid = task_pid_nr_ns(task, ns);
-		... use tgid ...
+> 
+> split the list with you? Feel free to take any of those :-) dev->sem is 
+> nontrivial and probably not possible right now - and some of the others 
+> might be problematic too. But there might be fixable ones in the list. 
+> This shouldnt become like the BKL conversion - never truly finished.
 
-The first problem is that task_pid_nr_ns() can race with RCU and read the
-freed memory.
+If I said I was going to do some set, at least it's more likely that the
+work isn't duplicated..
 
-However, rcu_read_lock() can't help. next_tgid() returns a pinned task_struct,
-but the task can be released (and it's pid detached) before task_pid_nr_ns()
-reads the pid_t value. In that case task_pid_nr_ns() returns 0 thus breaking
-the whole logic.
+What specifically is wrong with dev->sem ?
 
-Make sure that task_pid_nr_ns() returns !0 before updating tgid. Note that
-next_tgid(tgid + 1) can find the same "struct pid" again, but we shouldn't
-go into the endless loop because pid_task(PIDTYPE_PID) must return NULL in
-this case, so next_tgid() can't return the same task.
-
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-
---- 24/fs/proc/base.c~pprd	2007-10-25 16:22:11.000000000 +0400
-+++ 24/fs/proc/base.c	2007-11-17 20:58:14.000000000 +0300
-@@ -2481,7 +2481,15 @@ int proc_pid_readdir(struct file * filp,
- 	for (task = next_tgid(tgid, ns);
- 	     task;
- 	     put_task_struct(task), task = next_tgid(tgid + 1, ns)) {
--		tgid = task_pid_nr_ns(task, ns);
-+		int nr;
-+
-+		rcu_read_lock();
-+		nr = task_pid_nr_ns(task, ns);
-+		rcu_read_unlock();
-+		if (!nr)
-+			continue;
-+
-+		tgid = nr;
- 		filp->f_pos = tgid + TGID_OFFSET;
- 		if (proc_pid_fill_cache(filp, dirent, filldir, task, tgid) < 0) {
- 			put_task_struct(task);
+Daniel
 
