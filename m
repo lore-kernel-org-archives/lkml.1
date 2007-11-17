@@ -1,92 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752209AbXKQFRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752682AbXKQFSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752209AbXKQFRT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 00:17:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750890AbXKQFRF
+	id S1752682AbXKQFSS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 00:18:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbXKQFSK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 00:17:05 -0500
-Received: from twinlark.arctic.org ([207.29.250.54]:44235 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750841AbXKQFRA (ORCPT
+	Sat, 17 Nov 2007 00:18:10 -0500
+Received: from hu-out-0506.google.com ([72.14.214.229]:33455 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750920AbXKQFSI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 00:17:00 -0500
-Message-ID: <473E794A.4060107@kernel.org>
-Date: Fri, 16 Nov 2007 21:16:58 -0800
-From: Andrew Morgan <morgan@kernel.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20071020)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Kevin Winchester <kjwinchester@gmail.com>, apw@shadowen.org
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       kamalesh@linux.vnet.ibm.com
-Subject: Re: 2.6.24-rc2-mm1 -- strange apparent network failures
-References: <20071113175906.497a1a6a.akpm@linux-foundation.org>	<20071115100209.GB2513@shadowen.org>	<200711152028.29734.kjwinchester@gmail.com> <20071115164441.67a8e2df.akpm@linux-foundation.org>
-In-Reply-To: <20071115164441.67a8e2df.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.4.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 17 Nov 2007 00:18:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:date:from:to:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type;
+        b=iZfJu+B1QIMbiOhBmdD5ryUlmGAmJsNVIqrm0Ur52VJX8KauoXc2I9K2PJLJlQZvpxldmqPSUnadGLbqc/oNMw/VsFQs6/hGARVoox0IIWLsLjMXxS3cvX7XM/4sr8aT91npsBwbnnmq7wBYqVIOab5SrMx8k9c7e+PShCLlyJE=
+Date: Sat, 17 Nov 2007 05:17:56 +0000
+From: ewanm89 <ewanm89@googlemail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: distro specific kernels vs vanilla kernel and how to compare
+ among each other
+Message-ID: <20071117051756.4b1d20da@ewanm89-laptop>
+In-Reply-To: <p73tznlbzfs.fsf@bingen.suse.de>
+References: <2089856624@web.de>
+ <p73tznlbzfs.fsf@bingen.suse.de>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary=Sig_pyhLRd8Z0ojbXKQ1uwtRm1L;
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+--Sig_pyhLRd8Z0ojbXKQ1uwtRm1L
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On Fri, 16 Nov 2007 23:25:27 +0100
+Andi Kleen <andi@firstfloor.org> wrote:
 
-This warning is just saying that you might want to reconsider
-recompiling your dhclient with a newer libcap - which has native support
-for 64-bit capabilities. This is supposed to be informative, and not be
-associated with any particular error.
+> devzero@web.de writes:
+>=20
+> > does somebody know if there is a website or a project for giving
+> > comfortable and deeper insight into what`s specific to distro`s
+> > kernels and what`s their difference to vanilla kernel ?
+> >
+> > i mean some way to have some transparancy to what different distro
+> > vendors add to vanilla kernel sources and thus turning it into
+> > their own specific version.=20
+>=20
+> There used to be such a page at kernelnewbies, but at some point it
+> disappeared.
+>=20
+> I agree it would be a useful resource.
+>=20
+> -Andi
+> -
+> To unsubscribe from this list: send the line "unsubscribe
+> linux-kernel" in the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-- From your comments, you believe that this patch causes something in your
-boot process to fail. Can you supply some detail about the version of
-dhclient you are using? I'd like to understand exactly what it is doing
-(via libcap).
+I would also like to see something like this, as some work I'm doing on
+working some funny networking (unfortunately IT department don't have
+common sense) across multiple distros. Tracking the kernel patche
+differences between the distros seems to be the hardest part (comparing
+them to find what's needed for all distros to work).
 
-Thanks
+--=20
+Ewan Marshall (ewanm89)
 
-Andrew
+Geek by nature, Linux by choice.
 
-Andrew Morton wrote:
-> On Thu, 15 Nov 2007 20:28:29 -0400
-> Kevin Winchester <kjwinchester@gmail.com> wrote:
-> 
->> On November 15, 2007 06:02:09 am Andy Whitcroft wrote:
->>> When testing some of the later 2.6.24-rc2-mm1+hotfix combinations on three
->>> of our test systems one job from each batch (1/4) failed.  In each case the
->>> machine appears to have booted normally all the way to a login: prompt.
->>> However in the failed boots the networking though apparently initialised
->>> completely and correctly (as far as I can tell from the console output), is
->>> reported as not responding to ssh connections.  The network interface seems
->>> to have been initialised on the right port, and the ssh daemons started.
->>>
->>> Two of the machines are powerpc boxes, the other an older x86_64.
->>> One machine is 4/4 in testing, just one.  Most of the other machines are
->>> still not able to compile this stack so do not contribute to our knowledge.
->>>
->>> Any ideas?
->>>
->> I see this as well - the computer boots fine but no network.  The only clues 
->> in the dmesg are:
->>
->> [  294.097876] warning: process `dhclient' gets w/ old libcap
->> [  294.097893] warning: process `dhclient' sets w/ old libcap
->>
->> So I'll try backing up the patch series to before:
->>
->> add-64-bit-capability-support-to-the-kernel.patch
-> 
-> Yes, that's a good one to suspect.
-> 
-> What a peculiar error message.
-> 
->> or so, and see if that's the problem.  If anyone has any other ideas, let me 
->> know.
-> 
+--Sig_pyhLRd8Z0ojbXKQ1uwtRm1L
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.6 (GNU/Linux)
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFHPnlIQheEq9QabfIRAlglAKCG2NG1xnwMT8G/Lk8GoEPwtBzq9QCdFLYi
-k+pt5Sd2AdtOJ+TjMIt1y6g=
-=5wpX
+iD8DBQFHPnmJD0+JBIHfEBMRAvHtAKDpSXa3j+KNTae4E6r4Cu8QNTcwewCg6Hds
++/IPeDZ7P1eVFdzpk5mtga8=
+=nNv7
 -----END PGP SIGNATURE-----
+
+--Sig_pyhLRd8Z0ojbXKQ1uwtRm1L--
