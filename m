@@ -1,56 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760939AbXKQEET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761379AbXKQEYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760939AbXKQEET (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 23:04:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756221AbXKQEEI
+	id S1761379AbXKQEYV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 23:24:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756608AbXKQEYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 23:04:08 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:65425 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756041AbXKQEEH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 23:04:07 -0500
-To: trond.myklebust@fys.uio.no
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [TOMOYO #5 02/18] Add wrapper functions for VFShelperfunctions.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <20071116173439.796600895@I-love.SAKURA.ne.jp>
-	<20071116173524.195366292@I-love.SAKURA.ne.jp>
-	<1195235255.7653.69.camel@heimdal.trondhjem.org>
-	<200711170320.GCD21875.OSVJFOHtMQFFLO@I-love.SAKURA.ne.jp>
-	<1195237996.7653.86.camel@heimdal.trondhjem.org>
-In-Reply-To: <1195237996.7653.86.camel@heimdal.trondhjem.org>
-Message-Id: <200711171304.JHD30277.tOHOOJFQSFLFMV@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Sat, 17 Nov 2007 13:04:02 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 16 Nov 2007 23:24:13 -0500
+Received: from mu-out-0910.google.com ([209.85.134.190]:55828 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756221AbXKQEYM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 23:24:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=e4wRtDbPC+Pk3kv3FzDkAhvDjBMT0Y2rTF3U5tDCO2K20unF4le33wBr3U+pm1ryGrF8fgB5ahYZVWrnqofREC1l/H8B34SP+06999cmVPrEw4C9yBirpl8Yutp/wwlT7WgtkuMnETrHU/+UDEuD7nyoJUn21/KKifKqqojpvMk=
+Message-ID: <473E6CE7.4010606@googlemail.com>
+Date: Sat, 17 Nov 2007 05:24:07 +0100
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071004)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>
+Subject: bug in scripts/setlocalversion 
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Hi,
 
-Trond Myklebust wrote:
-> The problem is that you have thrown away the main tool for documenting
-> the requirement, and for enforcing correctness (i.e. function argument
-> checking by the compiler).
-I'm sorry. I wanted to know whether the below approach is possible.
+I've build by 'accident' and stable kernel inside a git repo and noticed an strange bug.
 
-> The old functions are still there, are still exported, and still take
-> the same arguments as before, but you have now added a hidden
-> requirement that I have to set last_vfsmount when I call them. If I
-> haven't read your patch, and just call one of those vfs_* functions as
-> before, without setting last_vfsmount, I break your model, and I won't
-> find out until someone reports an obscure bug at runtime.
-I don't care if some kernel module calls vfs_* without setting last_vfsmount
-because there is no reason to reject requests from kernel code.
-Setting last_vfsmount is required for requests from userland process.
-This approach makes it possible to
-(1) tell whether the vfs_* calls are from userland or kernel
-and
-(2) leave kernel modules that are not called from userland unchanged.
-This is why this patch doesn't and needn't to modify fs/*/ files.
+setlocalversion will append a git revision to the kernel even is not an git one.
 
-Thanks.
+to reproduce create some dir and cd in there:
 
+git init 
+git config user.email "foo@email.com"
+git config user.name "blah"
+
+touch a b c
+git add *
+git commit -a
+
+git rev-parse --verify HEAD 2
+7e671bce0cdc4ace727794dc79d5b426551ae5b8
+
+now get any kernel tarball from kernel.org , unpack and build it with make V=1
+
+
+--($:/work/crazy/bug/linux-2.6.24-rc2)-- LC_ALL=C; ls -d .git
+/usr/bin/ls: cannot access .git: No such file or directory
+
+( we are not git )
+                                                                                                
+...
+
+--($:/work/crazy/bug/linux-2.6.24-rc2)-- make V=1
+rm -f include/config/kernel.release
+echo 2.6.24-rc2-g7e671bce > include/config/kernel.release <-- buggy
+
+...
+
+Possible fix is to add and check before :                                                                                           
+
+# Check for git and a git repo.
+if head=`git rev-parse --verify HEAD 2>/dev/null`; then
+
+which actually is missing the 'git' check ;)
+
+if [ -d ".git" ]; then 
+	if head=`git rev-parse --verify HEAD 2>/dev/null`; then
+	...
+fi
+
+
+or some git magic command I don't know yet =) 
+
+
+Regards,
+
+Gabriel 
