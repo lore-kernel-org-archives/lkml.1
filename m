@@ -1,67 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756848AbXKQM4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756850AbXKQNgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756848AbXKQM4U (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 07:56:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbXKQM4L
+	id S1756850AbXKQNgW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 08:36:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbXKQNgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 07:56:11 -0500
-Received: from mx1.suse.de ([195.135.220.2]:49019 "EHLO mx1.suse.de"
+	Sat, 17 Nov 2007 08:36:13 -0500
+Received: from ns.suse.de ([195.135.220.2]:53818 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752424AbXKQM4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 07:56:09 -0500
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Eric Dumazet <dada1@cosmosbay.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       davem@davemloft.net, netdev@vget.kernel.org
-Subject: Re: [NET]: rt_check_expire() can take a long time, add a cond_resched()
+	id S1752574AbXKQNgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Nov 2007 08:36:12 -0500
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Peter Zijlstra <peterz@infradead.org>, Dane Mutters <dmutters@gmail.com>,
+       Martin Olsson <mnemo@minimum.se>, linux-kernel@vger.kernel.org
+Subject: Re: Is it possible to give the user the option to cancel forkbombs?
 From: Andi Kleen <andi@firstfloor.org>
-References: <200711150401.lAF41mSs021898@hera.kernel.org>
-	<20071115193802.4ec64eef@laptopd505.fenrus.org>
-	<473D131A.5000200@cosmosbay.com> <473D18A5.2090309@cosmosbay.com>
-	<20071115215938.44233733@laptopd505.fenrus.org>
-Date: Sat, 17 Nov 2007 13:56:08 +0100
-In-Reply-To: <20071115215938.44233733@laptopd505.fenrus.org> (Arjan van de Ven's message of "Thu\, 15 Nov 2007 21\:59\:38 -0800")
-Message-ID: <p73k5ohav4n.fsf@bingen.suse.de>
+References: <473E815F.30900@minimum.se>
+	<20071116213137.6efe3f9e@the-village.bc.nu>
+	<473E9290.3040006@minimum.se> <1195281942.15929.5.camel@Orchestrator>
+	<1195285481.3059.12.camel@twins>
+	<20071117103922.12f3823b@the-village.bc.nu>
+Date: Sat, 17 Nov 2007 14:36:10 +0100
+In-Reply-To: <20071117103922.12f3823b@the-village.bc.nu> (Alan Cox's message of "Sat\, 17 Nov 2007 10\:39\:22 +0000")
+Message-ID: <p737ikhat9x.fsf@bingen.suse.de>
 User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven <arjan@infradead.org> writes:
->> > 
->> > Its not that cheap. The ChangeLog included my own numbers, on a
->> > Pentium M machine. (i686, 1.6 GHz, 1.5 GB ram)
->> > 
->> > Without "if (need_resched())" (so calling need_resched() X.XXX.XXX 
->> > times), each run takes 88ms
->> > 
->> > With the extra check (and *much* less function calls), each run
->> > takes 25ms
+Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 
-ms?!? The numbers sound wrong. Wrong unit? 
-
->> > 
+>> > I would like to see something done about this, with Ubuntu as popular as
+>> > it is, even as a server in some cases.  Is there a way that in the
+>> > future, one could simply download a package or click a box or something
+>> > and have a limit set, like the links suggest?  That would make things
+>> > just "that much" more convenient for system administrators (and might
+>> > help them/us to remember to set these limits, too...).
 >> 
->> Looking at cond_resched(), I think the extra cost comes from
->> "mov %esp,%edx ; and $0xffffe000,%edx" (current_thread_info())
->> 
->> I dont have oprofile numbers yet, but I suspect CPU may have some
->> delays to compute this pointer value, since %esp is probably 'busy'
->> because of the preceding "call"
+>> If you don't know which limits to set and need a package for them, your
+>> job title should not be system administrator.
 >
-> yeah the explicit reference makes the stack pointer tracking engine do a
-> commit I suspect which then also creates a data dependency in the code
-> flow.
+> Thats a very arrogant viewpoint. I don't have to be a TV engineer to use
+> my television.
 >
-> however... this is likely a good argument for making cond_resched() as a
-> whole a #define (or inline) that does this test and then calls the out
-> of line code (which then doesn't need to retest, so it avoids the
-> double test)...
+> Distributions should be providing sensible defaults out of the box. The
+> kernel already provides them the mechanisms.
 
-Disadvantage would be that might_sleep would be commonly skipped then
-(unless you actually need to reschedule) 
-But perhaps that's not a big issue.
+If you mean ulimits -- the current ulimits are not very useful imho.   Or 
+at least not for handling the general resource resumption problem. They
+work in some limited circumstances for well known special purpose workloads,
+but not more. 
+
+I don't know why people here always claiming they are (have they ever
+tried to use them on your desktop in general?).
+
+The equation to limit resources is something like:
+
+MAX_PROCESSES_PER_UID*(MAX_MEM_PER_PROCESS+MAX_FD_PER_PROCESS+...)=TOTAL_RESOURCES_UID
+
+To get an effective limit you either need MAX_PROCESSES or MAX_MEM to unusable
+low numbers breaking a lot of applications. And you cannot generally predict 
+in advance if the workload will need high MAX_MEM or high MAX_PROCESSES
+or a combination of both.
+
+That is why distributions usually don't set them. Or at least not for
+in a setup to protect the system fully because that is not possible.
+
+e.g. SUSE supports a optional default limit that sets the max memory
+per process to below the available memory, but the user can still
+easily circumvent that by starting multiple processes.
+
+And I'm not really talking about a general bean counter for all kernel
+objects here, just the "ordinary easy resources" like processes and virtual
+memory.
+
+Pretty much all the per process limits would need to be per uid to be really
+useful in general. I'm hoping that we'll get some of that out of the recent
+container work. e.g. if there was a "max mem per uid" then you could actually
+set it to a sensible value. Even better than max mem per uid would be probably
+"max total memory used as fraction of the system" or something like that --
+that would also handle things like memory hotplug etc. well. Probably
+would also need to be separated into swap space and real memory; at least
+as long as the Linux swap algorithms are so slow.
+
+Regarding the fork bomb problem: 
+
+the uid cgroup scheduler that went in recently should already help a little,
+although to be really effective against fork bombs for a desktop user you
+would probably need multiple cgroups per uid (so e.g. that the window
+manager is also protected against other processes running on the same
+uid and you can then still kill the nasty processes from it).
+
+That is why I didn't like hardcoding the uid in the scheduler too much.
 
 -Andi
-
