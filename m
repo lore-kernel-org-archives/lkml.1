@@ -1,122 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759196AbXKQKu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761518AbXKQKwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759196AbXKQKu3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 05:50:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbXKQKuV
+	id S1761518AbXKQKwA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 05:52:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbXKQKvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 05:50:21 -0500
-Received: from smtp-out3.tiscali.nl ([195.241.79.178]:35667 "EHLO
-	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752196AbXKQKuU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 05:50:20 -0500
-Message-ID: <473EC75F.5020208@tiscali.nl>
-Date: Sat, 17 Nov 2007 11:50:07 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Sat, 17 Nov 2007 05:51:52 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:59704 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752196AbXKQKvw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Nov 2007 05:51:52 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Franck Bui-Huu <vagabon.xyz@gmail.com>
+Subject: Re: apm emulation driver broken ?
+Date: Sat, 17 Nov 2007 12:09:07 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-pm@lists.linux-foundation.org, lkml <linux-kernel@vger.kernel.org>
+References: <cda58cb80711160706l2cfac2b1p81c7a1090f228f2e@mail.gmail.com> <473EAC1A.1000205@gmail.com> <200711171059.57462.rjw@sisk.pl>
+In-Reply-To: <200711171059.57462.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Jeff Dike <jdike@addtoit.com>
-CC: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: Re: [PATCH 7/8] UML - add virt_to_pte
-References: <20071116214227.GA13877@c2.user-mode-linux.org>
-In-Reply-To: <20071116214227.GA13877@c2.user-mode-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711171209.09985.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Dike wrote:
-> Turn um_virt_to_phys into virt_to_pte, cleaning up a horrid interface.
+On Saturday, 17 of November 2007, Rafael J. Wysocki wrote:
+> On Saturday, 17 of November 2007, Franck Bui-Huu wrote:
+> > Rafael J. Wysocki wrote:
+> > > However, using PF_NOFREEZE to prevent this from happening doesn't seem to be
+> > > a good idea.
+> > > 
+> > 
+> > Indeed but...
+> > 
+> > > I'd probably use wait_event_freezable() (defined in
+> > > include/linux/freezer.h) for that.
+> > 
+> > ...I would just revert this bits from now to make sure this driver
+> > work again for v2.6.24.
 > 
-> It's also made non-static and declared in pgtable.h because it'll be
-> needed when the stubs get a vma.
+> I'd prefer not to.
 > 
-> Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-> ---
->  arch/um/kernel/skas/uaccess.c |   56 +++++++++++++++++-------------------------
->  include/asm-um/pgtable.h      |    3 ++
->  2 files changed, 26 insertions(+), 33 deletions(-)
+> The PF_NOFREEZE was not present in 2.6.23 already and I wouldn't like to
+> reintroduce it now.
 > 
-> Index: linux-2.6.22/arch/um/kernel/skas/uaccess.c
-> ===================================================================
-> --- linux-2.6.22.orig/arch/um/kernel/skas/uaccess.c	2007-11-16 15:16:54.000000000 -0500
-> +++ linux-2.6.22/arch/um/kernel/skas/uaccess.c	2007-11-16 15:40:25.000000000 -0500
-> @@ -13,70 +13,60 @@
->  #include "kern_util.h"
->  #include "os.h"
->  
-> -static void *um_virt_to_phys(struct task_struct *task, unsigned long addr,
-> -			     pte_t *pte_out)
-> +pte_t *virt_to_pte(struct mm_struct *mm, unsigned long addr)
->  {
->  	pgd_t *pgd;
->  	pud_t *pud;
->  	pmd_t *pmd;
-> -	pte_t *pte;
-> -	pte_t ptent;
->  
-> -	if (task->mm == NULL)
-> -		return ERR_PTR(-EINVAL);
-> -	pgd = pgd_offset(task->mm, addr);
-> +	if (mm == NULL)
-> +		return NULL;
-> +
-> +	pgd = pgd_offset(mm, addr);
->  	if (!pgd_present(*pgd))
-> -		return ERR_PTR(-EINVAL);
-> +		return NULL;
->  
->  	pud = pud_offset(pgd, addr);
->  	if (!pud_present(*pud))
-> -		return ERR_PTR(-EINVAL);
-> +		return NULL;
->  
->  	pmd = pmd_offset(pud, addr);
->  	if (!pmd_present(*pmd))
-> -		return ERR_PTR(-EINVAL);
-> -
-> -	pte = pte_offset_kernel(pmd, addr);
-> -	ptent = *pte;
-> -	if (!pte_present(ptent))
-> -		return ERR_PTR(-EINVAL);
-> +		return NULL;
->  
-> -	if (pte_out != NULL)
-> -		*pte_out = ptent;
-> -	return (void *) (pte_val(ptent) & PAGE_MASK) + (addr & ~PAGE_MASK);
-> +	return pte_offset_kernel(pmd, addr);
->  }
->  
-> -static unsigned long maybe_map(unsigned long virt, int is_write)
-> +static pte_t *maybe_map(unsigned long virt, int is_write)
->  {
-> -	pte_t pte;
-> -	int err;
-> +	pte_t *pte = virt_to_pte(current->mm, virt);
-> +	int err, dummy_code;
->  
-> -	void *phys = um_virt_to_phys(current, virt, &pte);
-> -	int dummy_code;
-> -
-> -	if (IS_ERR(phys) || (is_write && !pte_write(pte))) {
-> +	if ((pte == NULL) || !pte_present(*pte) ||
-> +	    (is_write && !pte_write(*pte))) {
->  		err = handle_page_fault(virt, 0, is_write, 1, &dummy_code);
->  		if (err)
-> -			return -1UL;
-> -		phys = um_virt_to_phys(current, virt, NULL);
-> +			return NULL;
-> +		pte = virt_to_pte(current->mm, virt);
->  	}
-> -	if (IS_ERR(phys))
-> -		phys = (void *) -1;
-> +	if (!pte_present(*pte))
-> +		pte = NULL;
+> Why do you think that using wait_event_freezable() would not work, BTW?
+> 
+> > > It tries to send them fake signals and waits for them to freeze.  If
+> > > they don't freeze within the timeout, it fails and clears their
+> > > TIF_FREEZE bits.
+> > 
+> > But send_fake_signal() seems to wake up task in INTERRUPTIBLE state
+> > only. Looking at signal_wake_up(), it basically do:
+> > 
+> > 	wake_up_state(t, TASK_INTERRUPTIBLE);
+> > 
+> > What am I missing ?
+> 
+> Nothing. :-)
+> 
+> I didn't remember the change that made the freezer use TASK_INTERRUPTIBLE
+> explicitly in there (should have looked at the current code before replying).
 
-shouldn't you check again for (pte == NULL)?
+Actually, not even that one.  You're right anyway.
 
->  
-> -	return (unsigned long) phys;
-> +	return pte;
->  }
+Below is a patch that IMO should fix the issue with apm_ioctl().
+
+Greetings,
+Rafael
+
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+
+The code in apm_ioctl() allows user space tasks waiting for a suspend to
+complete to be woken up prematurely as a result of the thawing of tasks carried
+out by the freezer.  Fix it.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/char/apm-emulation.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6/drivers/char/apm-emulation.c
+===================================================================
+--- linux-2.6.orig/drivers/char/apm-emulation.c
++++ linux-2.6/drivers/char/apm-emulation.c
+@@ -364,7 +364,7 @@ apm_ioctl(struct inode * inode, struct f
+ 			 */
+ 			flags = current->flags;
+ 
+-			wait_event_interruptible(apm_suspend_waitqueue,
++			wait_event_freezable(apm_suspend_waitqueue,
+ 					 as->suspend_state == SUSPEND_DONE);
+ 		}
+ 
