@@ -1,83 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761379AbXKQEYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762032AbXKQEeM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761379AbXKQEYV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 23:24:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756608AbXKQEYN
+	id S1762032AbXKQEeM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 23:34:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756683AbXKQEd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 23:24:13 -0500
-Received: from mu-out-0910.google.com ([209.85.134.190]:55828 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756221AbXKQEYM (ORCPT
+	Fri, 16 Nov 2007 23:33:58 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:45942 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756635AbXKQEd5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 23:24:12 -0500
+	Fri, 16 Nov 2007 23:33:57 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=e4wRtDbPC+Pk3kv3FzDkAhvDjBMT0Y2rTF3U5tDCO2K20unF4le33wBr3U+pm1ryGrF8fgB5ahYZVWrnqofREC1l/H8B34SP+06999cmVPrEw4C9yBirpl8Yutp/wwlT7WgtkuMnETrHU/+UDEuD7nyoJUn21/KKifKqqojpvMk=
-Message-ID: <473E6CE7.4010606@googlemail.com>
-Date: Sat, 17 Nov 2007 05:24:07 +0100
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071004)
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>
-Subject: bug in scripts/setlocalversion 
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+        d=gmail.com; s=beta;
+        h=received:date:from:to:subject:message-id:mail-followup-to:mime-version:content-type:content-disposition:user-agent;
+        b=GUII8Kgm8gguAc0K2VPrKQEZd3zWJtp6gX/eM8ZnPm8LkJ+vtaYAtbjvwXwgBMhrKi471xQ5n1451k2bSYFEsj2IrQh9Kktbz9X+ggj/CvwiuFY5/cBRgq+lpsR4YGqDz2S5HwsMfYiuGJvPZ3wKnvgt02fpJrwx2+/1D/JlN30=
+Date: Sat, 17 Nov 2007 13:28:01 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] fs: use hlist_unhashed
+Message-ID: <20071117042801.GA4580@APFDCB5C>
+Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
+	linux-kernel@vger.kernel.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Use hlist_unhashed() instead of opencoded equivalent.
 
-I've build by 'accident' and stable kernel inside a git repo and noticed an strange bug.
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 
-setlocalversion will append a git revision to the kernel even is not an git one.
+---
+ fs/dcache.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-to reproduce create some dir and cd in there:
-
-git init 
-git config user.email "foo@email.com"
-git config user.name "blah"
-
-touch a b c
-git add *
-git commit -a
-
-git rev-parse --verify HEAD 2
-7e671bce0cdc4ace727794dc79d5b426551ae5b8
-
-now get any kernel tarball from kernel.org , unpack and build it with make V=1
-
-
---($:/work/crazy/bug/linux-2.6.24-rc2)-- LC_ALL=C; ls -d .git
-/usr/bin/ls: cannot access .git: No such file or directory
-
-( we are not git )
-                                                                                                
-...
-
---($:/work/crazy/bug/linux-2.6.24-rc2)-- make V=1
-rm -f include/config/kernel.release
-echo 2.6.24-rc2-g7e671bce > include/config/kernel.release <-- buggy
-
-...
-
-Possible fix is to add and check before :                                                                                           
-
-# Check for git and a git repo.
-if head=`git rev-parse --verify HEAD 2>/dev/null`; then
-
-which actually is missing the 'git' check ;)
-
-if [ -d ".git" ]; then 
-	if head=`git rev-parse --verify HEAD 2>/dev/null`; then
-	...
-fi
-
-
-or some git magic command I don't know yet =) 
-
-
-Regards,
-
-Gabriel 
+Index: 2.6-mm/fs/dcache.c
+===================================================================
+--- 2.6-mm.orig/fs/dcache.c
++++ 2.6-mm/fs/dcache.c
+@@ -89,7 +89,7 @@ static void d_free(struct dentry *dentry
+ 	if (dentry->d_op && dentry->d_op->d_release)
+ 		dentry->d_op->d_release(dentry);
+ 	/* if dentry was never inserted into hash, immediate free is OK */
+-	if (dentry->d_hash.pprev == NULL)
++	if (hlist_unhashed(&dentry->d_hash))
+ 		__d_free(dentry);
+ 	else
+ 		call_rcu(&dentry->d_u.d_rcu, d_callback);
