@@ -1,76 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757825AbXKQRJ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761539AbXKQRJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757825AbXKQRJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 12:09:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbXKQRJR
+	id S1761539AbXKQRJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 12:09:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758694AbXKQRJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 12:09:17 -0500
-Received: from py-out-1112.google.com ([64.233.166.180]:19853 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751153AbXKQRJQ (ORCPT
+	Sat, 17 Nov 2007 12:09:47 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:23074 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751153AbXKQRJp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 12:09:16 -0500
+	Sat, 17 Nov 2007 12:09:45 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=K+uQJMb5av4SzPtELHO1RpFHtslPumrU4pAE772yvxKm15l+jHkaqaLzEnhmOEDGdMvNbrqyhyRi80aPb2c++ems1HXr059o6DUxkllYdyGpV0i4A4Z64nlZ9stAzIl09vEWtFankbCNF29Zp3bkz8wOv3oARsuXYoVnD6sFzj0=
-Message-ID: <3efb10970711170909n3acca605j70525e36faf8da7f@mail.gmail.com>
-Date: Sat, 17 Nov 2007 18:09:15 +0100
-From: "Remy Bohmer" <linux@bohmer.net>
-To: "Daniel Walker" <dwalker@mvista.com>
-Subject: Re: [BUG on PREEMPT_RT, 2.6.23.1-rt5] in rt-mutex code and signals
-Cc: "Steven Rostedt" <rostedt@goodmis.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       RT <linux-rt-users@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1195316550.25393.21.camel@imap.mvista.com>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rAFmxOmDUZSxhYjAAqde0ladNjGSoGqvh1jQLqc1ObNri68UeUeZjaKdIYVHP/tDxZF648yakYBzbU97Fu3i36EOk9v1CQLJYj+1Ja41o4mspFNqiWyPLMDKkCNYcrcreQulrj7GQof5RYcSS/hOX7vc0+VpvIfqSCPOPGQFPLQ=
+Message-ID: <863e9df20711170909i7cb24f1aq743e1b645ef0e0b0@mail.gmail.com>
+Date: Sat, 17 Nov 2007 22:39:31 +0530
+From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
+To: "Jim Keniston" <jkenisto@us.ibm.com>
+Subject: Re: [PATCH][RFC] kprobes: Add user entry-handler in kretprobes
+Cc: "Srinivasa Ds" <srinivasa@in.ibm.com>, linux-kernel@vger.kernel.org,
+       prasanna@in.ibm.com, davem@davemloft.net,
+       anil.s.keshavamurthy@intel.com,
+       "Ananth N Mavinakayanahalli" <ananth@in.ibm.com>
+In-Reply-To: <1195254569.8520.37.camel@dyn9047018096.beaverton.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <3efb10970711160751l279fe99dl9f3a130a4373a449@mail.gmail.com>
-	 <Pine.LNX.4.58.0711161516580.25989@gandalf.stny.rr.com>
-	 <3efb10970711161502m6216bf5rc19a34184b4f3a2b@mail.gmail.com>
-	 <Pine.LNX.4.58.0711161830570.28002@gandalf.stny.rr.com>
-	 <3efb10970711170344n670d8b69w6679d494922c5bb@mail.gmail.com>
-	 <1195316550.25393.21.camel@imap.mvista.com>
-X-Google-Sender-Auth: 96530d51b4d1b182
+References: <47389BEB.1000901@gmail.com> <473AAA75.2050900@in.ibm.com>
+	 <863e9df20711140049q3ad486ben7ace2edab0a2ca41@mail.gmail.com>
+	 <473ACCBE.9010308@in.ibm.com>
+	 <863e9df20711140530h69df9107g38e293aab278686a@mail.gmail.com>
+	 <1195080664.5781.78.camel@dyn9047018096.beaverton.ibm.com>
+	 <863e9df20711150700i3c84374ava108f5b585e8498b@mail.gmail.com>
+	 <1195171644.3804.124.camel@dyn9047018096.beaverton.ibm.com>
+	 <863e9df20711161053q7f6ae3d5vb19b23d2ce6b20f7@mail.gmail.com>
+	 <1195254569.8520.37.camel@dyn9047018096.beaverton.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Daniel,
+On Nov 17, 2007 4:39 AM, Jim Keniston <jkenisto@us.ibm.com> wrote:
+> First of all, as promised, here's what would be different if it were
+> implemented using the data-pouch approach:
+>
+> --- abhishek1.c 2007-11-16 13:57:13.000000000 -0800
+> +++ jim1.c      2007-11-16 14:20:39.000000000 -0800
+> @@ -50,15 +50,12 @@
+>         if (stats)
+>                 return 1; /* recursive/nested call */
+>
+> -       stats = kmalloc(sizeof(struct prof_data), GFP_ATOMIC);
+> -       if (!stats)
+> -               return 1;
+> +       stats = (struct prof_data *) ri->entry_info;
+>
+>         stats->entry_stamp = sched_clock();
+>         stats->task = current;
+>         INIT_LIST_HEAD(&stats->list);
+>         list_add(&stats->list, &data_nodes);
+> -       ri->data = stats;
+>         return 0;
+>  }
+>
+> @@ -66,10 +63,9 @@
+>  static int return_handler(struct kretprobe_instance *ri, struct pt_regs
+> *regs)
+>  {
+>         unsigned long flags;
+> -       struct prof_data *stats = (struct prof_data *)ri->data;
+> +       struct prof_data *stats = (struct prof_data *)ri->entry_info;
+>         u64 elapsed;
+>
+> -       BUG_ON(ri->data == NULL);
+>         elapsed = (long long)sched_clock() - (long long)stats->entry_stamp;
+>
+>         /* update stats */
+> @@ -79,13 +75,13 @@
+>         spin_unlock_irqrestore(&time_lock, flags);
+>
+>         list_del(&stats->list);
+> -       kfree(stats);
+>         return 0;
+>  }
+>
+>  static struct kretprobe my_kretprobe = {
+>         .handler = return_handler,
+>         .entry_handler = entry_handler,
+> +       .entry_info_sz = sizeof(struct prof_data)
+>  };
+>
+>  /* called after every PRINT_DELAY seconds */
+>
+> So the data-pouch approach saves you a little code and a kmalloc/kfree
+> round trip on each kretprobe hit.  A kmalloc/kfree round trip is about
+> 80 ns on my system, or about 20% of the base cost of a kretprobe hit.  I
+> don't know how important that is to people.
+>
+> I also note that this particular example maintains a per-task list of
+> prof_data objects to avoid overcounting the time spent in a recursive
+> function.  That adds about 30% to the size of your module source (136
+> lines vs. 106, by my count).  I suspect that many instrumentation
+> modules wouldn't need such a list.  However, without your ri->data
+> pointer (or Kevin's ri->entry_info pouch), every instrumentation module
+> that uses your enhancement would need such a list in order to map the ri
+> to the per-instance.
 
-Thanks for looking into it also.
-Steven already made clear to me that the 'struct semaphore' type on
-the RT-kernel should not be used as a counting-semaphore, but as some
-sort of legacy-mutex... (The confusion that this will cause is clear
-by now...)
+Those are interesting numbers. Will incorporate pouching in the next
+patch. Even with a data pointer or pouch, the mapping of ri (or
+ri->data) would sometimes be necessary. It's required to catch
+recursive/nested invocation cases. In case of time measurment test
+module, these invocations needed to be weeded out and therefore such a
+list was required. Other scenarios might not care for it. E.g a module
+which measures the change in some global system state across every
+call.
 
-I still do not understand the problems I had with the
-interruptible-waits on a real rt-mutex, but I have to figure that out
-again on Monday. Maybe one confusion let to another...
+Thanks for the comments.
 
-(Note, A completion will not work for me, because they are not
-designed for reuse across several threads. The read/write runs in user
-context and as such it can be called by different threads, which would
-require a init of a completion before waiting on it, but that would be
-racy, I could miss the awake by the init)
+> Jim
 
-> So I converted your code to use a compat_semaphore, and no oops
-> happens.. Which makes sense because compat_semaphores are designed to
-> work the way your using them.
-
-Actually, IMO, compat_semaphores behave like semaphores should behave,
-and thus the same as they behave on a non-RT kernel, and at the
-locations where the semaphores are now misused as mutexes on RT, we
-should replace them by differently-named-mutex-type-semaphores, or
-better: real-RT-mutexes..
-IMO this wrong usage of semaphores is solved by modifying the code
-that actually made proper use of the semaphores, and I think that if
-the naming matches the mainline kernel, we only need to patch the
-files that really need to be patched during the integration in
-mainline of the RT-patch.
-
-Kind Regards,
-
-Remy Bohmer
+- Abhishek
