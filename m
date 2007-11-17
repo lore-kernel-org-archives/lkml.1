@@ -1,71 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762886AbXKQEqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752209AbXKQFRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762886AbXKQEqU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 23:46:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756765AbXKQEqM
+	id S1752209AbXKQFRT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 00:17:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750890AbXKQFRF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 23:46:12 -0500
-Received: from pat.uio.no ([129.240.10.15]:36898 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756683AbXKQEqK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 23:46:10 -0500
-Subject: Re: [TOMOYO #5 02/18] Add wrapper functions for VFShelperfunctions.
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <200711171304.JHD30277.tOHOOJFQSFLFMV@I-love.SAKURA.ne.jp>
-References: <20071116173439.796600895@I-love.SAKURA.ne.jp>
-	 <20071116173524.195366292@I-love.SAKURA.ne.jp>
-	 <1195235255.7653.69.camel@heimdal.trondhjem.org>
-	 <200711170320.GCD21875.OSVJFOHtMQFFLO@I-love.SAKURA.ne.jp>
-	 <1195237996.7653.86.camel@heimdal.trondhjem.org>
-	 <200711171304.JHD30277.tOHOOJFQSFLFMV@I-love.SAKURA.ne.jp>
-Content-Type: text/plain
-Date: Fri, 16 Nov 2007 23:46:28 -0500
-Message-Id: <1195274788.13488.8.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Sat, 17 Nov 2007 00:17:05 -0500
+Received: from twinlark.arctic.org ([207.29.250.54]:44235 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750841AbXKQFRA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Nov 2007 00:17:00 -0500
+Message-ID: <473E794A.4060107@kernel.org>
+Date: Fri, 16 Nov 2007 21:16:58 -0800
+From: Andrew Morgan <morgan@kernel.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071020)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Kevin Winchester <kjwinchester@gmail.com>, apw@shadowen.org
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       kamalesh@linux.vnet.ibm.com
+Subject: Re: 2.6.24-rc2-mm1 -- strange apparent network failures
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org>	<20071115100209.GB2513@shadowen.org>	<200711152028.29734.kjwinchester@gmail.com> <20071115164441.67a8e2df.akpm@linux-foundation.org>
+In-Reply-To: <20071115164441.67a8e2df.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.4.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-ClamAV-Virus: No
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.138)
-X-UiO-Scanned: 9828015CE67E43DB040B9A113FCB986854E5B70B
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 159 total 5189351 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-On Sat, 2007-11-17 at 13:04 +0900, Tetsuo Handa wrote:
-> Hello.
+Hi,
+
+This warning is just saying that you might want to reconsider
+recompiling your dhclient with a newer libcap - which has native support
+for 64-bit capabilities. This is supposed to be informative, and not be
+associated with any particular error.
+
+- From your comments, you believe that this patch causes something in your
+boot process to fail. Can you supply some detail about the version of
+dhclient you are using? I'd like to understand exactly what it is doing
+(via libcap).
+
+Thanks
+
+Andrew
+
+Andrew Morton wrote:
+> On Thu, 15 Nov 2007 20:28:29 -0400
+> Kevin Winchester <kjwinchester@gmail.com> wrote:
 > 
-> Trond Myklebust wrote:
-> > The problem is that you have thrown away the main tool for documenting
-> > the requirement, and for enforcing correctness (i.e. function argument
-> > checking by the compiler).
-> I'm sorry. I wanted to know whether the below approach is possible.
+>> On November 15, 2007 06:02:09 am Andy Whitcroft wrote:
+>>> When testing some of the later 2.6.24-rc2-mm1+hotfix combinations on three
+>>> of our test systems one job from each batch (1/4) failed.  In each case the
+>>> machine appears to have booted normally all the way to a login: prompt.
+>>> However in the failed boots the networking though apparently initialised
+>>> completely and correctly (as far as I can tell from the console output), is
+>>> reported as not responding to ssh connections.  The network interface seems
+>>> to have been initialised on the right port, and the ssh daemons started.
+>>>
+>>> Two of the machines are powerpc boxes, the other an older x86_64.
+>>> One machine is 4/4 in testing, just one.  Most of the other machines are
+>>> still not able to compile this stack so do not contribute to our knowledge.
+>>>
+>>> Any ideas?
+>>>
+>> I see this as well - the computer boots fine but no network.  The only clues 
+>> in the dmesg are:
+>>
+>> [  294.097876] warning: process `dhclient' gets w/ old libcap
+>> [  294.097893] warning: process `dhclient' sets w/ old libcap
+>>
+>> So I'll try backing up the patch series to before:
+>>
+>> add-64-bit-capability-support-to-the-kernel.patch
+> 
+> Yes, that's a good one to suspect.
+> 
+> What a peculiar error message.
+> 
+>> or so, and see if that's the problem.  If anyone has any other ideas, let me 
+>> know.
+> 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.6 (GNU/Linux)
 
-"Possible" is completely irrelevant. The question you _should_ be asking
-is "is it maintainable".
-
-> > The old functions are still there, are still exported, and still take
-> > the same arguments as before, but you have now added a hidden
-> > requirement that I have to set last_vfsmount when I call them. If I
-> > haven't read your patch, and just call one of those vfs_* functions as
-> > before, without setting last_vfsmount, I break your model, and I won't
-> > find out until someone reports an obscure bug at runtime.
-> I don't care if some kernel module calls vfs_* without setting last_vfsmount
-> because there is no reason to reject requests from kernel code.
-> Setting last_vfsmount is required for requests from userland process.
-> This approach makes it possible to
-> (1) tell whether the vfs_* calls are from userland or kernel
-> and
-> (2) leave kernel modules that are not called from userland unchanged.
-> This is why this patch doesn't and needn't to modify fs/*/ files.
-
-I'm confused. How do you tell the difference between a 'userland'
-request and a 'kernel' request, and why is the latter safe from a
-security perspective?
-
-Trond
-
+iD8DBQFHPnlIQheEq9QabfIRAlglAKCG2NG1xnwMT8G/Lk8GoEPwtBzq9QCdFLYi
+k+pt5Sd2AdtOJ+TjMIt1y6g=
+=5wpX
+-----END PGP SIGNATURE-----
