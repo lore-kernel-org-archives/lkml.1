@@ -1,83 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935380AbXKQBH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935550AbXKQBIa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935380AbXKQBH6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 20:07:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763712AbXKQBHu
+	id S935550AbXKQBIa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 20:08:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760271AbXKQBIW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 20:07:50 -0500
-Received: from mail8.dotsterhost.com ([66.11.233.1]:59601 "HELO
-	mail8.dotsterhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755517AbXKQBHt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 20:07:49 -0500
-Message-ID: <473E3EF3.7070008@crispincowan.com>
-Date: Fri, 16 Nov 2007 17:08:03 -0800
-From: Crispin Cowan <crispin@crispincowan.com>
-Organization: Crispin's Labs
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 16 Nov 2007 20:08:22 -0500
+Received: from mx2.suse.de ([195.135.220.15]:49210 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755304AbXKQBIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 20:08:21 -0500
+Date: Fri, 16 Nov 2007 17:03:08 -0800
+From: Greg KH <gregkh@suse.de>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Re: Linux 2.6.23.3
+Message-ID: <20071117010308.GA13659@suse.de>
+References: <20071116183752.GA9807@kroah.com> <20071116184430.GE9807@kroah.com> <473E247F.2090101@msgid.tls.msk.ru>
 MIME-Version: 1.0
-To: Peter Dolding <oiaohm@gmail.com>
-CC: rmeijer@xs4all.nl, apparmor-dev@forge.novell.com,
-       LSM ML <linux-security-module@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: More LSM vs. Containers (having nothing at all to do with the AppArmor
- Security Goal)
-References: <10657.80.126.27.205.1194933072.squirrel@webmail.xs4all.nl>	 <47395F00.6080507@crispincowan.com> <e7d8f83e0711151458t3d4349d0k1b7ce4b030db87af@mail.gmail.com>
-In-Reply-To: <e7d8f83e0711151458t3d4349d0k1b7ce4b030db87af@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <473E247F.2090101@msgid.tls.msk.ru>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Dolding wrote:
->>> What is left unspecified here is 'how' a child 'with its own profile' is
->>> confined here. Are it is confined to just its own profile, it may that
->>> the "complicit process" communication may need to be wider specified to
->>> include this.
->>>       
-> Sorry have to bring this up.  cgroups why not?
-Because I can't find any documentation for cgroups? :)
+On Sat, Nov 17, 2007 at 02:15:11AM +0300, Michael Tokarev wrote:
+> Greg Kroah-Hartman wrote:
+> > We (the -stable team) are announcing the release of the 2.6.23.3 kernel.
+> > It contains a number of bugfixes for a number of architecture specific
+> > issues.
+> [.4, .5, .6 and .7 follows after .2 and .3]
+> 
+> I've seen the bunch of patches posted for review - split to several
+> series.  But - out of curiocity - what's the reason to roll each
+> series into each own stable release?  Can't all .2...7 be combined
+> into a single release (not counting .8 wich contains urgent security
+> fixes)?  (I mean, not with already rolled out stuff, but the original
+> reasoning for split-releasing them (as opposed to split-reviewing))
 
->   Assign application to
-> a cgroup that contains there filesystem access permissions.   Done
-> right this could even be stacked.  Only give less access to
-> application unless LSM particularly overrides.
->   
-This comes no where close to AppArmor's functionality:
+Is there something "sacred" about version numbers that we need to be
+stingy with them as they are a finite resource?  :)
 
-    * Can't do learning mode
-    * Can't do wildcards
-    * Sucks up huge loads of memory to do that much FS mounting (imagine
-      thousands of bind mounts)
-    * I'm not sure, but I don't think you can do file granularity, only
-      directories
+This way, we have specific, easy to identify points in the development
+process to help users in case they report problems to let the developers
+easily narrow down the potential problem.
 
+That, and I couldn't think of some other way to name the -rc patches, so
+I used the minor version number.  Because of that, I was forced to name
+the final releases with the same minor number to keep everyone sane over
+time.
 
-> There are reasons why I keep on bring containers up it changes the
-> model.  Yes I know coming to a common agreement in these sections will
-> not be simple.   But at some point it has to be done.
->   
-Containers and access controls provide related but different functions.
-Stop trying to force containers to be an access control system, it does
-not fit well at all.
+thanks,
 
-Rather, we need to ensure that LSM and containers play well together.
-What you proposed in the past was to have an LSM module per container,
-but I find that absurdly complex: if you want that, then use a real VMM
-like Xen or something. Containers are mostly used for massive virtual
-domain hosting, and what you want there is as much sharing as possible
-while maintaining isolation. so why would you corrupt that with separate
-LSM modules per container?
-
-What makes sense to me is to ensure that it is easy for an LSM module to
-have a policy per container. This is relatively easy to do, and maps
-very well to the primary use of containers for hosting virtual domains.
-
-Crispin
-
--- 
-Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin
-CEO, Mercenary Linux		   http://mercenarylinux.com/
-	       Itanium. Vista. GPLv3. Complexity at work
-
+greg k-h
