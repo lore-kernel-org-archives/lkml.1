@@ -1,53 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935355AbXKQBTc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935180AbXKQB0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935355AbXKQBTc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Nov 2007 20:19:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753525AbXKQBTY
+	id S935180AbXKQB0S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Nov 2007 20:26:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbXKQB0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Nov 2007 20:19:24 -0500
-Received: from aun.it.uu.se ([130.238.12.36]:34397 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753169AbXKQBTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Nov 2007 20:19:24 -0500
-Date: Sat, 17 Nov 2007 02:15:05 +0100 (MET)
-Message-Id: <200711170115.lAH1F5kZ009153@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: gregkh@suse.de, linux-kernel@vger.kernel.org, timur@freescale.com
-Subject: Re: Add a private_data pointer to struct device_attribute
+	Fri, 16 Nov 2007 20:26:07 -0500
+Received: from py-out-1112.google.com ([64.233.166.181]:9193 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751285AbXKQB0G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Nov 2007 20:26:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=K5ufnLPJdsS2QkVj/Gv5Y2LfLjATHBxXP0hr47+2ZzfEV3QXQ5MQF73BrtsmY0mDMu1i4ugsz+06yc3bk27GA3rDcNRuKUUKhcuxFBEJNimmqg+LWd1ltKRlmwjg7NK1UBwbKwC9HrvZ8efzSIe2uFwmx6f/s3mqFnmQZtU0Fus=
+Message-ID: <43e72e890711161726m11682a2fwcaba31c2d093310f@mail.gmail.com>
+Date: Fri, 16 Nov 2007 20:26:04 -0500
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: libertas-dev@lists.infradead.org
+Subject: libertas ub8xxx - bcdDevice 30.06 - firmware issues?
+Cc: "Stefano Brivio" <stefano.brivio@polimi.it>,
+       "linux kernel" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Nov 2007 18:11:00 -0600, Timur Tabi wrote:
-> A private data pointer in struct device_attribute allows the 'show' and 'store'
-> functions to access instance data.  This handy in situations where the
-> driver_data and platform_data pointers of 'struct device' are already used
-> for other purposes.
-> 
-> Signed-off-by: Timur Tabi <timur@freescale.com>
-> ---
-> 
-> Greg, can you tell me if you think this patch is a good idea?  It doesn't
-> appear to do any harm, and I'm working on an ALSA driver that could benefit
-> for this patch.  I think 2.6.25 would be a good target.
-> 
->  include/linux/device.h |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/device.h b/include/linux/device.h
-> index 2e15822..10708ee 100644
-> --- a/include/linux/device.h
-> +++ b/include/linux/device.h
-> @@ -344,6 +344,7 @@ struct device_attribute {
->  			char *buf);
->  	ssize_t (*store)(struct device *dev, struct device_attribute *attr,
->  			 const char *buf, size_t count);
-> +	void *private_data;
->  };
+I have a USB libertas 1286:2001 with bcdDevice 30.06 (from lsusb -v).
+I tried downloading the firmware from marvell:
 
-A common trick is to embed a generic struct inside a specific one
-containing add-on data fields, and then to map from the generic
-one to the specific one using container_of() in your ops (function
-pointers). This is both faster and less wasteful of memory than
-adding void *private all over the place.
+https://www.marvell.com/drivers/driverDisplay.do?dId=160&pId=38
 
-Any reason that won't work here?
+renaming and to usb8388.bin and putting it in firmware dir. Is this
+the right firmware??
+
+Upon load this is what I get:
+
+17:58 < mcgrof> usb8xxx: URB in failure status: -71
+17:58 < mcgrof> usb 4-1: reset high speed USB device using ehci_hcd
+and address 3
+17:58 < mcgrof> usb 4-1: reset high speed USB device using ehci_hcd
+and address 3
+17:58 < mcgrof> usb 4-1: reset high speed USB device using ehci_hcd
+and address 3
+17:58 < mcgrof> usb 4-1: reset high speed USB device using ehci_hcd
+and address 3
+17:58 < mcgrof> usb 4-1: reset high speed USB device using ehci_hcd
+and address 3
+17:58 < mcgrof> usb 4-1: reset high speed USB device using ehci_hcd
+and address 3
+17:58 < mcgrof> usb 4-1: reset high speed USB device using ehci_hcd
+and address 3
+17:58 < mcgrof> usb 4-1: reset high speed USB device using ehci_hcd
+and address 3
+17:58 < mcgrof> usb 4-1: reset high speed USB device using ehci_hcd
+and address 3
+17:58 < mcgrof> usb 4-1: reset high speed USB device using ehci_hcd
+and address 3
+17:58 < mcgrof> usb 4-1: reset high speed USB device using ehci_hcd
+and address 3
+17:58 < mcgrof> usb8xxx: probe of 4-1:1.0 failed with error -12
+17:58 < mcgrof> usbcore: registered new interface driver usb8xxx
+
+I'm using the compatibility package from:
+
+http://linuxwireless.org/en/users/Download
+
+on 2.6.22. So this driver reflects what's on
+wireless2.6.git#everything. I tried looking on the wiki but well can't
+find much information. Can we please start adding some info about this
+driver to:
+
+http://linuxwireless.org/en/users/Drivers/libertas
+
+  Luis
