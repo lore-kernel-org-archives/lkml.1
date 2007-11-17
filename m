@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754980AbXKQV7C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754939AbXKQWNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754980AbXKQV7C (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 16:59:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbXKQV6y
+	id S1754939AbXKQWNS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 17:13:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbXKQWM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 16:58:54 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:2093 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750921AbXKQV6x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 16:58:53 -0500
-Date: Sat, 17 Nov 2007 16:58:52 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Jiri Slaby <jirislaby@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Subject: Re: broken suspend [Was: 2.6.24-rc2-mm1]
-In-Reply-To: <200711172137.18784.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0711171649100.7748-100000@netrider.rowland.org>
+	Sat, 17 Nov 2007 17:12:59 -0500
+Received: from mx10.go2.pl ([193.17.41.74]:49746 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751736AbXKQWM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Nov 2007 17:12:58 -0500
+Message-ID: <473F67AC.5020306@o2.pl>
+Date: Sat, 17 Nov 2007 23:14:04 +0100
+From: Jarek Poplawski <jarkao2@o2.pl>
+User-Agent: Icedove 1.5.0.14pre (X11/20071020)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Bill Fink <billfink@mindspring.com>
+CC: David Miller <davem@davemloft.net>, the.sator@gmail.com,
+       kuznet@ms2.inr.ac.ru, linux-kernel@vger.kernel.org, jmorris@namei.org,
+       netdev@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] net/ipv4/arp.c: Fix arp reply when sender ip 0
+References: <cac0ab7d0711151340l1cc91a2dw5ebf36e166d16d7a@mail.gmail.com>	<20071115.152813.89410917.davem@davemloft.net>	<cac0ab7d0711160030w149c7a7s2db55ac56d0a05cc@mail.gmail.com>	<20071116.010548.94286711.davem@davemloft.net> <20071116142619.8746376e.billfink@mindspring.com>
+In-Reply-To: <20071116142619.8746376e.billfink@mindspring.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 17 Nov 2007, Rafael J. Wysocki wrote:
+Bill Fink wrote, On 11/16/2007 08:26 PM:
+...
 
-> On Saturday, 17 of November 2007, Jiri Slaby wrote:
-> > On 11/16/2007 05:10 PM, Alan Stern wrote:
-> > > On Thu, 15 Nov 2007, Greg KH wrote:
-> > > 
-> > >>> The offending -mm patch is
-> > >>> gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch
-> > >>>
-> > >>> 2.6.24-rc2-mm1 minus it works just fine; PROVE_LOCKING shows nothing new when
-> > >>> the patch is applied.
-> > >> Thanks for tracking this down.  Alan, any thoughts?
-> > > 
-> > > It's a driver problem somewhere.  Probably not one of the most common 
-> > > drivers because I don't see the same problem here (but then I'm not 
-> > > testing -mm).
-> > > 
-> > > The thing to do is figure out which driver is causing the problem.
-> > > Jiri, try enabling CONFIG_DEBUG_DRIVER.  
-> > 
-> > Sadly no output.
-> > 
-> > > If there's also a config 
-> > > option to prevent the console from being suspended, set it as well.  
-> > 
-> > no_suspend_console kernel parameter has no effect (why?).
+> Regarding the Target IP, RFC 826 says:
 > 
-> I'm not sure.
+> 	"The target protocol address is necessary in the request form
+> 	of the packet so that a machine can determine whether or not
+> 	to enter the sender information in a table or to send a reply.
+> 	It is not necessarily needed in the reply form if one assumes
+> 	a reply is only provoked by a request.  It is included for
+> 	completeness, network monitoring, and to simplify the suggested
+> 	processing algorithm described above (which does not look at
+> 	the opcode until AFTER putting the sender information in a
+> 	table).
 > 
-> Please try to set CONFIG_PM_VERBOSE.
+> So it's ambiguous about the target IP address in an ARP reply packet,
+> but a value of 0.0.0.0 makes more logical sense to me than using
+> 192.168.0.1 in this example case, since it should reflect the requestor
+> IP address, which is unknown in this case.
 
-I finally got 2.6.24-rc2-mm1 working.  Andrew, how come those two
-recent patches from Greg and Kay (the ones changing alloc_disk_node()  
-and system_bus_init()) aren't in your hot-fixes directory?
+IMHO, you are mostly right, but, according to this, if it's ambiguous
+then only, if there is the target IP or no target IP, so here 0.0.0.0
+or 0.0.0.0...
 
-There's still a problem.  During bootup I get this:
-
-	floppy0: Floppy io-port 0x03f2 in use
-
-That's not supposed to happen; the floppy disk should be working 
-perfectly.  Is this a known problem?
-
-Back to the main topic...  My system hibernates and resumes with no
-apparent problem.  Jiri, it looks like you'll have to do some debug
-tracing of the routines in drivers/base/power/main.c.
-
-Alan Stern
-
+Regards,
+Jarek P.
