@@ -1,504 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760312AbXKQPfL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762598AbXKQPgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760312AbXKQPfL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 10:35:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbXKQPe7
+	id S1762598AbXKQPgU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 10:36:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754596AbXKQPgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 10:34:59 -0500
-Received: from www.tglx.de ([62.245.132.106]:35842 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752123AbXKQPe5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 10:34:57 -0500
-Date: Sat, 17 Nov 2007 16:34:31 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [GIT pull] x86 updates for 2.6.24
-Message-ID: <alpine.LFD.0.9999.0711171631320.7601@localhost.localdomain>
+	Sat, 17 Nov 2007 10:36:13 -0500
+Received: from py-out-1112.google.com ([64.233.166.182]:4314 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752244AbXKQPgK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Nov 2007 10:36:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=JHQ7Mq6z0nE/OuQZroPVhnDb+o6SVaduWzR3TDmSji2f1J3Pg+yp/y18/33QMwQd69VlmHKoHQ3kGDCsFoAHc2Qd31Bb5r+lEGNHGslV4nIbgcJBL3Xa3d7rE5cEO1mgDJpo3gyxiJsGmmevx9vQvjiaJ0hzzt3QMSk2+M8HbYk=
+Message-ID: <3efb10970711170736u469bbbc5p8c227ca2a12657dd@mail.gmail.com>
+Date: Sat, 17 Nov 2007 16:36:08 +0100
+From: "Remy Bohmer" <linux@bohmer.net>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: [BUG on PREEMPT_RT, 2.6.23.1-rt5] in rt-mutex code and signals
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       RT <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.58.0711170840130.4453@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3efb10970711160751l279fe99dl9f3a130a4373a449@mail.gmail.com>
+	 <Pine.LNX.4.58.0711161516580.25989@gandalf.stny.rr.com>
+	 <3efb10970711161502m6216bf5rc19a34184b4f3a2b@mail.gmail.com>
+	 <Pine.LNX.4.58.0711161830570.28002@gandalf.stny.rr.com>
+	 <3efb10970711170344n670d8b69w6679d494922c5bb@mail.gmail.com>
+	 <Pine.LNX.4.58.0711170840130.4453@gandalf.stny.rr.com>
+X-Google-Sender-Auth: 33f5398d18778eeb
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Hello Steven,
 
-please pull x86 updates for 2.6.24 from:
+> It should print out warnings, do you have CONFIG_DEBUG_RT_MUTEXES set?
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git master
+Nope, not yet... I will do that on Monday also. (On ARM I have as less
+as debug options enabled per default, because it eats too much
+CPU-power)
 
-Thanks,
+> > * PI should only take place if it is for 100% sure that the 'struct
+> > semaphore' is used as a mutex. And this is only the case when it is
+> > initialised with init_MUTEX().
+>
+> Well, we can't determine that with code ;-)  Remember, there are still
+> drivers out in the world that use semaphores as mutexes. So the PI
+> on semaphores is really more of a compatibility issue.
 
-	tglx
+Very strange, although there is now a real mutex in non-RT as in RT,
+all semaphores are still converted to some
+badly-implemented-recursive-but-not-recursive-callable-mutexes,
+because the assumption is made that semaphores are intentionally
+always used in the wrong way?!!
+So, the code that is written nicely must be adapted to prevent
+adaption of bad code?
 
-Andreas Herrmann (2):
-      x86: fix cpu-hotplug regression
-      x86: show cpuinfo only for online CPUs
+I would expect a more logical solution like the introduction of raw_
+types for the exceptions, just like what is done with spinlocks and so
+on.
 
-David P. Reed (3):
-      ntp: fix typo that makes sync_cmos_clock erratic
-      x86: fix freeze in x86_64 RTC update code in time_64.c
-      x86: on x86_64, correct reading of PC RTC when update in progress in time_64.c
+> > So, this is a regression if exactly the same driver is used in both
+> > non-preempt-rt patched kernel and preempt-rt patched kernels.
+>
+> Not really.  There are things that the preempt-rt kernels require. One, is
+> that things that need to keep semaphores instead of using them as mutexes,
+> they should be converted to compat_semaphores.  Perhaps now that we have
+> mutexes, we can remove the PI on semaphores, and out-of-tree drivers will
+> need to make sure they don't use semaphores as mutexes anymore.
 
-Denys (1):
-      x86: reboot fixup for wrap2c board
+Up to this semaphore implementation the standard was always that a
+driver written for a non-RT kernel should compile and work properly
+without any adaption on a RT-kernel, until there are some specific
+realtime requirements.
+When it comes to semaphores this is thus completely not true.
 
-Ingo Molnar (1):
-      x86: ignore the sys_getcpu() tcache parameter
+And this is where the whole thing confused me completely.
 
-Randy Dunlap (3):
-      x86: fix voyager_cat_init section
-      x86: fix smp init sections
-      x86: voyager use correct header file name
+> Yeah, that code is more of a hack to convert counting semaphores into
+> mutexes.
 
-Thomas Gleixner (4):
-      x86: fix bogus memcpy in es7000_check_dsdt()
-      x86: fixup cpu_info array conversion
-      Remove x86 merge artifact from top Makefile
-      x86: add hpet sanity checks
+Enough said...
 
-Truxton Fulton (1):
-      x86: fix reboot with no keyboard attached
+> But semaphores still need to have owners, and they should not
+> block on themselves. That may be where the bug is.
 
-Yinghai Lu (1):
-      x86: check boundary in count setup resource
+Or there should be a real recursive mutex implementation. But the need
+for recursive mutexes is usually a sign for bad locking, and should
+therefor be avoided.
 
- Makefile                                   |    7 +----
- arch/x86/kernel/acpi/boot.c                |   32 +++++++++++++++++++++
- arch/x86/kernel/cpu/mcheck/mce_64.c        |    2 +-
- arch/x86/kernel/cpu/proc.c                 |    8 ++---
- arch/x86/kernel/reboot_fixups_32.c         |    1 +
- arch/x86/kernel/setup_64.c                 |    9 ++----
- arch/x86/kernel/time_64.c                  |   41 +++++++++++++++-------------
- arch/x86/mach-voyager/voyager_cat.c        |    2 +-
- arch/x86/mach-voyager/voyager_smp.c        |    4 +-
- arch/x86/pci/acpi.c                        |    6 ++++
- arch/x86/vdso/vgetcpu.c                    |   19 +-----------
- include/asm-x86/mach-default/mach_reboot.h |    2 +-
- include/asm-x86/mach-es7000/mach_mpparse.h |    6 ++--
- include/asm-x86/mach-voyager/setup_arch.h  |    2 +-
- kernel/sys.c                               |   20 +-------------
- kernel/time/ntp.c                          |    2 +-
- 16 files changed, 81 insertions(+), 82 deletions(-)
-diff --git a/Makefile b/Makefile
-index 7f96930..11961a2 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1334,12 +1334,7 @@ else
- ALLINCLUDE_ARCHS := $(ALLSOURCE_ARCHS)
- endif
- 
--# Take care of arch/x86
--ifeq ($(ARCH), $(SRCARCH))
--ALLSOURCE_ARCHS := $(ARCH)
--else
--ALLSOURCE_ARCHS := $(ARCH) $(SRCARCH)
--endif
-+ALLSOURCE_ARCHS := $(SRCARCH)
- 
- define find-sources
-         ( for arch in $(ALLSOURCE_ARCHS) ; do \
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 289247d..0ca27c7 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -637,6 +637,38 @@ static int __init acpi_parse_hpet(struct acpi_table_header *table)
- 	}
- 
- 	hpet_address = hpet_tbl->address.address;
-+
-+	/*
-+	 * Some broken BIOSes advertise HPET at 0x0. We really do not
-+	 * want to allocate a resource there.
-+	 */
-+	if (!hpet_address) {
-+		printk(KERN_WARNING PREFIX
-+		       "HPET id: %#x base: %#lx is invalid\n",
-+		       hpet_tbl->id, hpet_address);
-+		return 0;
-+	}
-+#ifdef CONFIG_X86_64
-+	/*
-+	 * Some even more broken BIOSes advertise HPET at
-+	 * 0xfed0000000000000 instead of 0xfed00000. Fix it up and add
-+	 * some noise:
-+	 */
-+	if (hpet_address == 0xfed0000000000000UL) {
-+		if (!hpet_force_user) {
-+			printk(KERN_WARNING PREFIX "HPET id: %#x "
-+			       "base: 0xfed0000000000000 is bogus\n "
-+			       "try hpet=force on the kernel command line to "
-+			       "fix it up to 0xfed00000.\n", hpet_tbl->id);
-+			hpet_address = 0;
-+			return 0;
-+		}
-+		printk(KERN_WARNING PREFIX
-+		       "HPET id: %#x base: 0xfed0000000000000 fixed up "
-+		       "to 0xfed00000.\n", hpet_tbl->id);
-+		hpet_address >>= 32;
-+	}
-+#endif
- 	printk(KERN_INFO PREFIX "HPET id: %#x base: %#lx\n",
- 	       hpet_tbl->id, hpet_address);
- 
-diff --git a/arch/x86/kernel/cpu/mcheck/mce_64.c b/arch/x86/kernel/cpu/mcheck/mce_64.c
-index 447b351..4b21d29 100644
---- a/arch/x86/kernel/cpu/mcheck/mce_64.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce_64.c
-@@ -810,7 +810,7 @@ static __cpuinit int mce_create_device(unsigned int cpu)
- 	int err;
- 	int i;
- 
--	if (!mce_available(&cpu_data(cpu)))
-+	if (!mce_available(&boot_cpu_data))
- 		return -EIO;
- 
- 	memset(&per_cpu(device_mce, cpu).kobj, 0, sizeof(struct kobject));
-diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
-index 066f8c6..3900e46 100644
---- a/arch/x86/kernel/cpu/proc.c
-+++ b/arch/x86/kernel/cpu/proc.c
-@@ -89,8 +89,6 @@ static int show_cpuinfo(struct seq_file *m, void *v)
- 	int fpu_exception;
- 
- #ifdef CONFIG_SMP
--	if (!cpu_online(n))
--		return 0;
- 	n = c->cpu_index;
- #endif
- 	seq_printf(m, "processor\t: %d\n"
-@@ -177,14 +175,14 @@ static int show_cpuinfo(struct seq_file *m, void *v)
- static void *c_start(struct seq_file *m, loff_t *pos)
- {
- 	if (*pos == 0)	/* just in case, cpu 0 is not the first */
--		*pos = first_cpu(cpu_possible_map);
--	if ((*pos) < NR_CPUS && cpu_possible(*pos))
-+		*pos = first_cpu(cpu_online_map);
-+	if ((*pos) < NR_CPUS && cpu_online(*pos))
- 		return &cpu_data(*pos);
- 	return NULL;
- }
- static void *c_next(struct seq_file *m, void *v, loff_t *pos)
- {
--	*pos = next_cpu(*pos, cpu_possible_map);
-+	*pos = next_cpu(*pos, cpu_online_map);
- 	return c_start(m, pos);
- }
- static void c_stop(struct seq_file *m, void *v)
-diff --git a/arch/x86/kernel/reboot_fixups_32.c b/arch/x86/kernel/reboot_fixups_32.c
-index 1a07bbe..f452726 100644
---- a/arch/x86/kernel/reboot_fixups_32.c
-+++ b/arch/x86/kernel/reboot_fixups_32.c
-@@ -39,6 +39,7 @@ struct device_fixup {
- static struct device_fixup fixups_table[] = {
- { PCI_VENDOR_ID_CYRIX, PCI_DEVICE_ID_CYRIX_5530_LEGACY, cs5530a_warm_reset },
- { PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_CS5536_ISA, cs5536_warm_reset },
-+{ PCI_VENDOR_ID_NS, PCI_DEVICE_ID_NS_SC1100_BRIDGE, cs5530a_warm_reset },
- };
- 
- /*
-diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
-index 238633d..30d94d1 100644
---- a/arch/x86/kernel/setup_64.c
-+++ b/arch/x86/kernel/setup_64.c
-@@ -892,7 +892,6 @@ void __cpuinit early_identify_cpu(struct cpuinfo_x86 *c)
- 
- #ifdef CONFIG_SMP
- 	c->phys_proc_id = (cpuid_ebx(1) >> 24) & 0xff;
--	c->cpu_index = 0;
- #endif
- }
- 
-@@ -1078,8 +1077,6 @@ static int show_cpuinfo(struct seq_file *m, void *v)
- 
- 
- #ifdef CONFIG_SMP
--	if (!cpu_online(c->cpu_index))
--		return 0;
- 	cpu = c->cpu_index;
- #endif
- 
-@@ -1171,15 +1168,15 @@ static int show_cpuinfo(struct seq_file *m, void *v)
- static void *c_start(struct seq_file *m, loff_t *pos)
- {
- 	if (*pos == 0)	/* just in case, cpu 0 is not the first */
--		*pos = first_cpu(cpu_possible_map);
--	if ((*pos) < NR_CPUS && cpu_possible(*pos))
-+		*pos = first_cpu(cpu_online_map);
-+	if ((*pos) < NR_CPUS && cpu_online(*pos))
- 		return &cpu_data(*pos);
- 	return NULL;
- }
- 
- static void *c_next(struct seq_file *m, void *v, loff_t *pos)
- {
--	*pos = next_cpu(*pos, cpu_possible_map);
-+	*pos = next_cpu(*pos, cpu_online_map);
- 	return c_start(m, pos);
- }
- 
-diff --git a/arch/x86/kernel/time_64.c b/arch/x86/kernel/time_64.c
-index c821edc..368b194 100644
---- a/arch/x86/kernel/time_64.c
-+++ b/arch/x86/kernel/time_64.c
-@@ -82,18 +82,15 @@ static int set_rtc_mmss(unsigned long nowtime)
- 	int retval = 0;
- 	int real_seconds, real_minutes, cmos_minutes;
- 	unsigned char control, freq_select;
-+	unsigned long flags;
- 
- /*
-- * IRQs are disabled when we're called from the timer interrupt,
-- * no need for spin_lock_irqsave()
-+ * set_rtc_mmss is called when irqs are enabled, so disable irqs here
-  */
--
--	spin_lock(&rtc_lock);
--
-+	spin_lock_irqsave(&rtc_lock, flags);
- /*
-  * Tell the clock it's being set and stop it.
-  */
--
- 	control = CMOS_READ(RTC_CONTROL);
- 	CMOS_WRITE(control | RTC_SET, RTC_CONTROL);
- 
-@@ -138,7 +135,7 @@ static int set_rtc_mmss(unsigned long nowtime)
- 	CMOS_WRITE(control, RTC_CONTROL);
- 	CMOS_WRITE(freq_select, RTC_FREQ_SELECT);
- 
--	spin_unlock(&rtc_lock);
-+	spin_unlock_irqrestore(&rtc_lock, flags);
- 
- 	return retval;
- }
-@@ -164,21 +161,27 @@ unsigned long read_persistent_clock(void)
- 	unsigned century = 0;
- 
- 	spin_lock_irqsave(&rtc_lock, flags);
-+	/*
-+	 * if UIP is clear, then we have >= 244 microseconds before RTC
-+	 * registers will be updated.  Spec sheet says that this is the
-+	 * reliable way to read RTC - registers invalid (off bus) during update
-+	 */
-+	while ((CMOS_READ(RTC_FREQ_SELECT) & RTC_UIP))
-+		cpu_relax();
- 
--	do {
--		sec = CMOS_READ(RTC_SECONDS);
--		min = CMOS_READ(RTC_MINUTES);
--		hour = CMOS_READ(RTC_HOURS);
--		day = CMOS_READ(RTC_DAY_OF_MONTH);
--		mon = CMOS_READ(RTC_MONTH);
--		year = CMOS_READ(RTC_YEAR);
-+
-+	/* now read all RTC registers while stable with interrupts disabled */
-+	sec = CMOS_READ(RTC_SECONDS);
-+	min = CMOS_READ(RTC_MINUTES);
-+	hour = CMOS_READ(RTC_HOURS);
-+	day = CMOS_READ(RTC_DAY_OF_MONTH);
-+	mon = CMOS_READ(RTC_MONTH);
-+	year = CMOS_READ(RTC_YEAR);
- #ifdef CONFIG_ACPI
--		if (acpi_gbl_FADT.header.revision >= FADT2_REVISION_ID &&
--					acpi_gbl_FADT.century)
--			century = CMOS_READ(acpi_gbl_FADT.century);
-+	if (acpi_gbl_FADT.header.revision >= FADT2_REVISION_ID &&
-+				acpi_gbl_FADT.century)
-+		century = CMOS_READ(acpi_gbl_FADT.century);
- #endif
--	} while (sec != CMOS_READ(RTC_SECONDS));
--
- 	spin_unlock_irqrestore(&rtc_lock, flags);
- 
- 	/*
-diff --git a/arch/x86/mach-voyager/voyager_cat.c b/arch/x86/mach-voyager/voyager_cat.c
-index 26a2d4c..2132ca6 100644
---- a/arch/x86/mach-voyager/voyager_cat.c
-+++ b/arch/x86/mach-voyager/voyager_cat.c
-@@ -568,7 +568,7 @@ static voyager_module_t *voyager_initial_module;
-  * boot cpu *after* all memory initialisation has been done (so we can
-  * use kmalloc) but before smp initialisation, so we can probe the SMP
-  * configuration and pick up necessary information.  */
--void
-+void __init
- voyager_cat_init(void)
- {
- 	voyager_module_t **modpp = &voyager_initial_module;
-diff --git a/arch/x86/mach-voyager/voyager_smp.c b/arch/x86/mach-voyager/voyager_smp.c
-index 6937143..88124dd 100644
---- a/arch/x86/mach-voyager/voyager_smp.c
-+++ b/arch/x86/mach-voyager/voyager_smp.c
-@@ -1900,7 +1900,7 @@ voyager_smp_prepare_cpus(unsigned int max_cpus)
- 	smp_boot_cpus();
- }
- 
--static void __devinit voyager_smp_prepare_boot_cpu(void)
-+static void __cpuinit voyager_smp_prepare_boot_cpu(void)
- {
- 	init_gdt(smp_processor_id());
- 	switch_to_new_gdt();
-@@ -1911,7 +1911,7 @@ static void __devinit voyager_smp_prepare_boot_cpu(void)
- 	cpu_set(smp_processor_id(), cpu_present_map);
- }
- 
--static int __devinit
-+static int __cpuinit
- voyager_cpu_up(unsigned int cpu)
- {
- 	/* This only works at boot for x86.  See "rewrite" above. */
-diff --git a/arch/x86/pci/acpi.c b/arch/x86/pci/acpi.c
-index 2d88f7c..7e35078 100644
---- a/arch/x86/pci/acpi.c
-+++ b/arch/x86/pci/acpi.c
-@@ -77,6 +77,9 @@ count_resource(struct acpi_resource *acpi_res, void *data)
- 	struct acpi_resource_address64 addr;
- 	acpi_status status;
- 
-+	if (info->res_num >= PCI_BUS_NUM_RESOURCES)
-+		return AE_OK;
-+
- 	status = resource_to_addr(acpi_res, &addr);
- 	if (ACPI_SUCCESS(status))
- 		info->res_num++;
-@@ -93,6 +96,9 @@ setup_resource(struct acpi_resource *acpi_res, void *data)
- 	unsigned long flags;
- 	struct resource *root;
- 
-+	if (info->res_num >= PCI_BUS_NUM_RESOURCES)
-+		return AE_OK;
-+
- 	status = resource_to_addr(acpi_res, &addr);
- 	if (!ACPI_SUCCESS(status))
- 		return AE_OK;
-diff --git a/arch/x86/vdso/vgetcpu.c b/arch/x86/vdso/vgetcpu.c
-index 91f6e85..3b1ae1a 100644
---- a/arch/x86/vdso/vgetcpu.c
-+++ b/arch/x86/vdso/vgetcpu.c
-@@ -13,32 +13,17 @@
- #include <asm/vgtod.h>
- #include "vextern.h"
- 
--long __vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *tcache)
-+long __vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *unused)
- {
- 	unsigned int dummy, p;
--	unsigned long j = 0;
- 
--	/* Fast cache - only recompute value once per jiffies and avoid
--	   relatively costly rdtscp/cpuid otherwise.
--	   This works because the scheduler usually keeps the process
--	   on the same CPU and this syscall doesn't guarantee its
--	   results anyways.
--	   We do this here because otherwise user space would do it on
--	   its own in a likely inferior way (no access to jiffies).
--	   If you don't like it pass NULL. */
--	if (tcache && tcache->blob[0] == (j = *vdso_jiffies)) {
--		p = tcache->blob[1];
--	} else if (*vdso_vgetcpu_mode == VGETCPU_RDTSCP) {
-+	if (*vdso_vgetcpu_mode == VGETCPU_RDTSCP) {
- 		/* Load per CPU data from RDTSCP */
- 		rdtscp(dummy, dummy, p);
- 	} else {
- 		/* Load per CPU data from GDT */
- 		asm("lsl %1,%0" : "=r" (p) : "r" (__PER_CPU_SEG));
- 	}
--	if (tcache) {
--		tcache->blob[0] = j;
--		tcache->blob[1] = p;
--	}
- 	if (cpu)
- 		*cpu = p & 0xfff;
- 	if (node)
-diff --git a/include/asm-x86/mach-default/mach_reboot.h b/include/asm-x86/mach-default/mach_reboot.h
-index e23fd9f..6adee6a 100644
---- a/include/asm-x86/mach-default/mach_reboot.h
-+++ b/include/asm-x86/mach-default/mach_reboot.h
-@@ -49,7 +49,7 @@ static inline void mach_reboot(void)
- 		udelay(50);
- 		kb_wait();
- 		udelay(50);
--		outb(cmd | 0x04, 0x60);	/* set "System flag" */
-+		outb(cmd | 0x14, 0x60); /* set "System flag" and "Keyboard Disabled" */
- 		udelay(50);
- 		kb_wait();
- 		udelay(50);
-diff --git a/include/asm-x86/mach-es7000/mach_mpparse.h b/include/asm-x86/mach-es7000/mach_mpparse.h
-index 8aa1054..52ee75c 100644
---- a/include/asm-x86/mach-es7000/mach_mpparse.h
-+++ b/include/asm-x86/mach-es7000/mach_mpparse.h
-@@ -29,9 +29,9 @@ extern int mps_oem_check(struct mp_config_table *mpc, char *oem,
- static inline int es7000_check_dsdt(void)
- {
- 	struct acpi_table_header header;
--	memcpy(&header, 0, sizeof(struct acpi_table_header));
--	acpi_get_table_header(ACPI_SIG_DSDT, 0, &header);
--	if (!strncmp(header.oem_id, "UNISYS", 6))
-+
-+	if (ACPI_SUCCESS(acpi_get_table_header(ACPI_SIG_DSDT, 0, &header)) &&
-+	    !strncmp(header.oem_id, "UNISYS", 6))
- 		return 1;
- 	return 0;
- }
-diff --git a/include/asm-x86/mach-voyager/setup_arch.h b/include/asm-x86/mach-voyager/setup_arch.h
-index 1710ae1..71729ca 100644
---- a/include/asm-x86/mach-voyager/setup_arch.h
-+++ b/include/asm-x86/mach-voyager/setup_arch.h
-@@ -1,5 +1,5 @@
- #include <asm/voyager.h>
--#include <asm/setup_32.h>
-+#include <asm/setup.h>
- #define VOYAGER_BIOS_INFO ((struct voyager_bios_info *) \
- 			(&boot_params.apm_bios_info))
- 
-diff --git a/kernel/sys.c b/kernel/sys.c
-index 304b541..d1fe71e 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -1750,7 +1750,7 @@ asmlinkage long sys_prctl(int option, unsigned long arg2, unsigned long arg3,
- }
- 
- asmlinkage long sys_getcpu(unsigned __user *cpup, unsigned __user *nodep,
--	   		   struct getcpu_cache __user *cache)
-+			   struct getcpu_cache __user *unused)
- {
- 	int err = 0;
- 	int cpu = raw_smp_processor_id();
-@@ -1758,24 +1758,6 @@ asmlinkage long sys_getcpu(unsigned __user *cpup, unsigned __user *nodep,
- 		err |= put_user(cpu, cpup);
- 	if (nodep)
- 		err |= put_user(cpu_to_node(cpu), nodep);
--	if (cache) {
--		/*
--		 * The cache is not needed for this implementation,
--		 * but make sure user programs pass something
--		 * valid. vsyscall implementations can instead make
--		 * good use of the cache. Only use t0 and t1 because
--		 * these are available in both 32bit and 64bit ABI (no
--		 * need for a compat_getcpu). 32bit has enough
--		 * padding
--		 */
--		unsigned long t0, t1;
--		get_user(t0, &cache->blob[0]);
--		get_user(t1, &cache->blob[1]);
--		t0++;
--		t1++;
--		put_user(t0, &cache->blob[0]);
--		put_user(t1, &cache->blob[1]);
--	}
- 	return err ? -EFAULT : 0;
- }
- 
-diff --git a/kernel/time/ntp.c b/kernel/time/ntp.c
-index de6a2d6..14a2ecf 100644
---- a/kernel/time/ntp.c
-+++ b/kernel/time/ntp.c
-@@ -205,7 +205,7 @@ static void sync_cmos_clock(unsigned long dummy)
- 		return;
- 
- 	getnstimeofday(&now);
--	if (abs(xtime.tv_nsec - (NSEC_PER_SEC / 2)) <= tick_nsec / 2)
-+	if (abs(now.tv_nsec - (NSEC_PER_SEC / 2)) <= tick_nsec / 2)
- 		fail = update_persistent_clock(now);
- 
- 	next.tv_nsec = (NSEC_PER_SEC / 2) - now.tv_nsec;
+> OK, I wont be able to work on this this weekend, but I'll try to get to it
+> on Monday.  A better example to show the bug you are looking for is simply
+> create a mutex and create a thread that grabs that mutex and goes to
+> sleep. Have your driver read grab that mutex with
+> mutex_lock_interruptible. And if the signal code is broken with this, then
+> you definitely got a point that the inerruptible code is broken.
+
+I will work on an example like this on Monday.
+
+> This will keep the semantics clean and not obfuscate it with the semaphore
+> code.
+
+I agree.
+
+> I'll write up that example on Monday if you don't have the time.
+
+I will make time ;-)
+
+> Note, that the unloading of the module should wake up the thread that
+> grabbed the mutex so it can release it.
+
+Unloading of a module is not possible as long as there is still a
+handle open to it. So, it should be safe without waking up the thread.
+And returning from the read call and still have a mutex locked is not
+nice either.
+
+Thanks for the explanation. I will keep you informed on Monday.
+
+
+Have a nice weekend !
+
+
+Remy
