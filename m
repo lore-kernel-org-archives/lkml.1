@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758634AbXKQRZM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762234AbXKQRZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758634AbXKQRZM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 12:25:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbXKQRY7
+	id S1762234AbXKQRZj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 12:25:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756920AbXKQRZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 12:24:59 -0500
-Received: from ns4.abinetworks.biz ([216.218.212.66]:56343 "EHLO
-	ns4.abinetworks.biz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751652AbXKQRY6 (ORCPT
+	Sat, 17 Nov 2007 12:25:08 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:60294 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756660AbXKQRZH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 12:24:58 -0500
-Message-ID: <473F2464.3020905@abinetworks.biz>
-Date: Sat, 17 Nov 2007 18:27:00 +0100
-From: Gianluca Alberici <gianluca@abinetworks.biz>
-User-Agent: Mozilla Thunderbird 1.0.2 (X11/20050317)
-X-Accept-Language: en-us, en
+	Sat, 17 Nov 2007 12:25:07 -0500
+Date: Sat, 17 Nov 2007 18:24:46 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Andreas Mohr <andi@lisas.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH/RFC] eradicate bashisms in scripts/patch-kernel
+Message-ID: <20071117172446.GD4250@stusta.de>
+References: <20071031211321.GA8363@rhlx01.hs-esslingen.de>
 MIME-Version: 1.0
-To: Gianluca Alberici <gianluca@abinetworks.biz>
-CC: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       markus reichelt <ml@mareichelt.de>, linux-kernel@vger.kernel.org
-Subject: Re: NFS Bug in 2.6.23 ?
-References: <473D6B5C.4090701@abinetworks.biz>	 <20071116121148.GI4290@tatooine.rebelbase.local> <1195222863.7653.18.camel@heimdal.trondhjem.org> <473EEEC7.1070300@abinetworks.biz>
-In-Reply-To: <473EEEC7.1070300@abinetworks.biz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20071031211321.GA8363@rhlx01.hs-esslingen.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, Oct 31, 2007 at 10:13:21PM +0100, Andreas Mohr wrote:
 
-I have found out something new about the cfs problem:
+> Hello,
 
-1) on a 2.6.20, working good:
+Hi Andreas,
 
-after starting cfs, nothing cattach'd:
+> I was non-mildly horrified to find that the rather widely used patch-kernel
+> script seems to rely on bash despite specifying the interpreter as #!/bin/sh,
+> since my dash-using Debian install choked on it.
+> 
+> Thus I'm delivering a first, preliminary, non-reviewed change to make
+> patch-kernel (a little bit more?) POSIX-compatible. It now survives both
+> a dash and a bash run.
+>...
+> Comments?
+>...
 
-zeus:~# cat /proc/fs/nfsfs/volumes
-NV SERVER   PORT DEV     FSID
-v2 7f000001  be9 0:14    0:0
+if that's easyly possible it's OK.
 
-after cattaching (and at least once listing the directory, if not 
-everything remains as above):
+But if it becomes possible I'd strongly favour simply changing the 
+interpreter to #!/bin/bash which would also fix this problem.
 
-zeus:~# cat /proc/fs/nfsfs/volumes
-NV SERVER   PORT DEV     FSID
-v2 7f000001  be9 0:14    0:0
-v2 7f000001  be9 0:15    1:0
+> Thanks,
+> 
+> Andreas Mohr
+>...
 
-from now everything is OK forever....
+cu
+Adrian
 
-2) On 2.6.23  at cfsd restart
+-- 
 
-mars:~# cat /proc/fs/nfsfs/volumes
-NV SERVER   PORT DEV     FSID
-v2 7f000001  be9 0:14    0:0
-
-after cattaching i get
-
-mars:~# cat /proc/fs/nfsfs/volumes
-NV SERVER   PORT DEV     FSID
-v2 7f000001  be9 0:14    1:0
-v2 7f000001  be9 0:15    1:0
-
-The first FSID has chnaged and is 1:0 as the second while on 2.6.20 this 
-doesnt happens.
-I know nothing about NFS internals but isnt strange to have the same 
-FSID on 2 volumes ?
-
-BTW, the 2 machines have the same disk image. No diffs but the kernel.
-
-Maybe this means nothing, if so sorry for the noise.
-
-Gianluca
-
-
-
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
