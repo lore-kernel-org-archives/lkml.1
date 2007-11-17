@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765946AbXKQT0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764457AbXKQTeO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765946AbXKQT0e (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 14:26:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760394AbXKQT01
+	id S1764457AbXKQTeO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 14:34:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759101AbXKQTd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 14:26:27 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:59438 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759667AbXKQT00 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 14:26:26 -0500
-Date: Sat, 17 Nov 2007 20:28:06 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@tglx.de,
-       akpm@linux-foundation.org
-Subject: Re: [patch] Printk kernel version in WARN_ON
-Message-ID: <20071117192806.GB8568@uranus.ravnborg.org>
-References: <20071117101552.2a7f34cb@laptopd505.fenrus.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071117101552.2a7f34cb@laptopd505.fenrus.org>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 17 Nov 2007 14:33:59 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49701 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758975AbXKQTd6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Nov 2007 14:33:58 -0500
+Date: Sat, 17 Nov 2007 11:33:56 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Torsten Kaiser <just.for.lkml@googlemail.com>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       nfs@lists.sourceforge.net, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>
+Subject: Re: [BUG] 2.6.24-rc2-mm1 - kernel bug on nfs v4
+In-Reply-To: <20071117100507.912c5e5c.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0711171128530.7986@schroedinger.engr.sgi.com>
+References: <473DA608.1020804@linux.vnet.ibm.com>
+ <64bb37e0711170953p67d1be49lf4eaa190d662e2b4@mail.gmail.com>
+ <20071117100507.912c5e5c.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 17, 2007 at 10:15:52AM -0800, Arjan van de Ven wrote:
-> Hi,
+On Sat, 17 Nov 2007, Andrew Morton wrote:
+
+> > Don't know who to bug about that.
 > 
-> today, all oopses contain a version number of the kernel, which is nice
-> because the people who actually do bother to read the oops get this
-> vital bit of information always without having to ask the reporter in
-> another round trip.
-> 
-> However, WARN_ON() right now lacks this information; the patch below
-> adds this. This information is essential for getting people to use
-> their time effectively when looking at these things; in addition, it's
-> essential for tools that try to collect statistics about defects.
-> 
-> Please consider, maybe even for 2.6.24 since its so simple and
-> important for long term quality
+> That's slub.  It appears that list_lock is being taken from process context
+> in one place and from softirq in another.
 
-With this change we will see zillions of files being rebuild each
-time we pick up another kernel version from git and friends.
+I kicked out some weird interrupt disable code in mm that was only run during
+NUMA bootstrap.
 
-For me it looks like this right now:
-#define UTS_RELEASE "2.6.24-rc2-g99fee6d7-dirty"
+This should fix it but isnt there some mechanism to convince lockdep that 
+it is okay to do these things during bootstrap?
 
-committing my local changes made it look like:
-#define UTS_RELEASE "2.6.24-rc2-g99fee6d7"
+---
+ mm/slub.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-The above change will trigger a rebuild of all files
-that reference UTS_RELEASE as will all WARN_ON users.
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c	2007-11-17 11:31:21.044136631 -0800
++++ linux-2.6/mm/slub.c	2007-11-17 11:32:17.364386560 -0800
+@@ -2044,7 +2044,9 @@ static struct kmem_cache_node *early_kme
+ #endif
+ 	init_kmem_cache_node(n);
+ 	atomic_long_inc(&n->nr_slabs);
++	local_irq_disable();
+ 	add_partial(kmalloc_caches, page, 0);
++	local_irq_enable();
+ 	return n;
+ }
+ 
 
-And this is with the default configuration.
-
-So if we want this then we want to push that change to a
-seperate function so we rebuild less files for simple changes.
-
-	Sam
