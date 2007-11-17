@@ -1,86 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765583AbXKQThL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932331AbXKQThe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765583AbXKQThL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 14:37:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757443AbXKQTg7
+	id S932331AbXKQThe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 14:37:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764968AbXKQThJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 14:36:59 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46471 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755546AbXKQTg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 14:36:58 -0500
-Date: Sat, 17 Nov 2007 19:36:57 +0000
-From: Willy Tarreau <wtarreau@hera.kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.4.36-pre2
-Message-ID: <20071117193657.GA4233@hera.kernel.org>
-Reply-To: w@1wt.eu
+	Sat, 17 Nov 2007 14:37:09 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:39789 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763902AbXKQThH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Nov 2007 14:37:07 -0500
+Date: Sat, 17 Nov 2007 11:35:01 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@tglx.de
+Subject: Re: [patch] Printk kernel version in WARN_ON
+Message-ID: <20071117113501.5e3e0d43@laptopd505.fenrus.org>
+In-Reply-To: <20071117104652.8240af62.akpm@linux-foundation.org>
+References: <20071117101552.2a7f34cb@laptopd505.fenrus.org>
+	<20071117102720.251107d7.akpm@linux-foundation.org>
+	<20071117103947.5b2052f8@laptopd505.fenrus.org>
+	<20071117104652.8240af62.akpm@linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've just released Linux 2.4.36-pre2.
+On Sat, 17 Nov 2007 10:46:52 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Basically, it gets in sync with 2.4.35.4, and adds DMA support for
-2 PCI IDE chipsets (ICH7 and JMicron 20363).
+> > by ... not too much at least, gcc ought to be quite good at merging
+> > same-strings into one, so it's just one extra pointer argument
+> > 
+> 
+> I think I knew that.  At 1000 callsites.
 
-There's just the adutux driver pending before 2.4.36. I plan to issue
-2.4.36-rc1 in about 2-3 weeks (first week of december), and -final the
-following week if nothing goes wrong till there.
-
-The patch and changelog will appear soon at the following locations:
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/testing/
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/testing/patch-2.4.36-pre2.bz2
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/testing/patch-2.4.36.log
-
-Git repository:
-   git://git.kernel.org/pub/scm/linux/kernel/git/wtarreau/linux-2.4.git
-  http://www.kernel.org/pub/scm/linux/kernel/git/wtarreau/linux-2.4.git/
-
-Git repository through the gitweb interface:
-  http://git.kernel.org/?p=linux/kernel/git/wtarreau/linux-2.4.git
+ok so how about putting the same into dump_stack() instead? (see below)
+added bonus is that it's now present for all dumps that use
+dump_stack(), not just WARN_ON()
+(the format I copied from the exact line used by oopses)
 
 
-Regards,
-Willy
----
 
-Summary of changes from v2.4.36-pre1 to v2.4.36-pre2
-============================================
+Subject: printk kernel version in WARN_ON and other dump_stack users
+From: Arjan van de Ven <arjan@linux.intel.com>
 
-Andi Kleen (1):
-      x86_64: Make sure to validate all 64bits of ptrace information
+today, all oopses contain a version number of the kernel, which is nice
+because the people who actually do bother to read the oops get this
+vital bit of information always without having to ask the reporter in
+another round trip.
 
-Franck Bourdonnec (1):
-      fix missing MODULE_LICENSE in some drivers
+However, WARN_ON() and many other dump_stack() users right now lack this 
+information; the patch below adds this. This information is essential for 
+getting people to use their time effectively when looking at these things;
+in addition, it's essential for tools that try to collect statistics about defects.
 
-Gilles Espinasse (1):
-      fix unresolved symbols on alpha
+Please consider, maybe even for 2.6.24 since its so simple and
+important for long term quality processes
 
-Moritz Muehlenhoff (1):
-      corrupted cramfs filesystems cause kernel oops (CVE-2006-5823)
+The code is identical between 32/64 bit; a lot of this code should be unified over time,
+the patch keeps the identical-ness in tact.
 
-Stephen Hemminger (1):
-      Bridge STP timer fixes
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 
-Tony Battersby (1):
-      sym53c8xx_2 SMP deadlock on driver load
 
-Willy Tarreau (3):
-      ATM: avoid kernel panic upon access to /proc/net/atm/arp
-      PPP: fix crash using usb-serial on high speed devices
-      Change VERSION to 2.4.36-pre2
 
-dann frazier (4):
-      [OpenPROM]: Fix signedness bug in openprom char driver
-      [OpenPROM]: Fix user-access checking bugs in openpromfs
-      [OpenPROM] Prevent overflow of sprintf buffer
-      [OpenPROM] Prevent unsigned roll-overs in
+--- linux-2.6.24-rc3/arch/x86/kernel/traps_32.c.org	2007-11-17 11:26:17.000000000 -0800
++++ linux-2.6.24-rc3/arch/x86/kernel/traps_32.c	2007-11-17 11:29:12.000000000 -0800
+@@ -283,6 +283,11 @@ void dump_stack(void)
+ {
+ 	unsigned long stack;
+ 
++	printk("Pid: %d, comm: %.20s %s %s %.*s\n",
++		current->pid, current->comm, print_tainted(),
++		init_utsname()->release,
++		(int)strcspn(init_utsname()->version, " "),
++		init_utsname()->version);
+ 	show_trace(current, NULL, &stack);
+ }
+ 
+--- linux-2.6.24-rc3/arch/x86/kernel/traps_64.c.org	2007-11-17 11:26:25.000000000 -0800
++++ linux-2.6.24-rc3/arch/x86/kernel/traps_64.c	2007-11-17 11:29:22.000000000 -0800
+@@ -400,6 +400,12 @@ void show_stack(struct task_struct *tsk,
+ void dump_stack(void)
+ {
+ 	unsigned long dummy;
++
++	printk("Pid: %d, comm: %.20s %s %s %.*s\n",
++		current->pid, current->comm, print_tainted(),
++		init_utsname()->release,
++		(int)strcspn(init_utsname()->version, " "),
++		init_utsname()->version);
+ 	show_trace(NULL, NULL, &dummy);
+ }
+ 
 
-ivaylo@bglans.net (2):
-      IDE: enable support for JMicron 20363
-      IDE: enable PATA UDMA support for ICH7
 
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
