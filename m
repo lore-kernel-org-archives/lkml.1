@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763192AbXKQTKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764397AbXKQTTC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763192AbXKQTKs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 14:10:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756107AbXKQTKk
+	id S1764397AbXKQTTC (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 14:19:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759853AbXKQTSw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 14:10:40 -0500
-Received: from rn-out-0910.google.com ([64.233.170.189]:17697 "EHLO
-	rn-out-0102.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755424AbXKQTKj (ORCPT
+	Sat, 17 Nov 2007 14:18:52 -0500
+Received: from py-out-1112.google.com ([64.233.166.177]:3735 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759456AbXKQTSv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 14:10:39 -0500
+	Sat, 17 Nov 2007 14:18:51 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
+        d=googlemail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=f6i+aQlhrBwALmeUuR1xqspGC+RlXErn5GlX1ADctZdaBRrLcx8JXdXPdqcp9d3L3ceLF0pXhqSg0dWTxWTJ1Y5HDm/XS0+V/qZgMxcI70d2Q0/koJNn6IEVuO4znxQyt+MKBwzQCIGaUeuCvQfu2aEiP8V+bP2ZxlJxn2KR/Dc=
-Message-ID: <b647ffbd0711171110q9f695e1qb42ba73dc23b626d@mail.gmail.com>
-Date: Sat, 17 Nov 2007 20:10:35 +0100
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Micah Dowty" <micah@vmware.com>
-Subject: Re: High priority tasks break SMP balancer?
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Christoph Lameter" <clameter@sgi.com>,
-       "Kyle Moffett" <mrmacman_g4@mac.com>, "Cyrus Massoumi" <cyrusm@gmx.net>,
-       "LKML Kernel" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@osdl.org>, "Mike Galbraith" <efault@gmx.de>,
-       "Paul Menage" <menage@google.com>,
-       "Peter Williams" <pwil3058@bigpond.net.au>
-In-Reply-To: <20071117010352.GA13666@vmware.com>
+        b=ZtOtxSL3hYiq7HsWAJyMHe1bZ4JzXJ1gaKNXqO6aPT0xTByxtPr2gNM8VDLNz1CPEGVevIF5Nc5pXSCPxX9Z9Av2NDr+cHGCAG2nRa8hjbm19CdEQu6nf3wM20Ytns5PBZopH6lzPhQzCr/vrs7udw0PF5uioIWehCmIJvvg2Js=
+Message-ID: <64bb37e0711171118t73a7c619p1117a5b150f369b7@mail.gmail.com>
+Date: Sat, 17 Nov 2007 20:18:49 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Trond Myklebust" <trond.myklebust@fys.uio.no>
+Subject: Re: [BUG] 2.6.24-rc2-mm1 - kernel bug on nfs v4
+Cc: "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       nfs@lists.sourceforge.net, "Andy Whitcroft" <apw@shadowen.org>,
+       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "Jan Blunck" <jblunck@suse.de>
+In-Reply-To: <1195325920.7484.1.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0711151206370.28639@schroedinger.engr.sgi.com>
-	 <Pine.LNX.4.64.0711151328090.29711@schroedinger.engr.sgi.com>
-	 <20071115213510.GA16079@vmware.com>
-	 <Pine.LNX.4.64.0711151830260.31691@schroedinger.engr.sgi.com>
-	 <20071116024408.GA20322@vmware.com> <20071116060700.GD16273@elte.hu>
-	 <b647ffbd0711160248v444d8f64ic72a17fcb56adc6d@mail.gmail.com>
-	 <20071116221404.GC31527@vmware.com>
-	 <b647ffbd0711161526p2faf5abt2457084f1996c735@mail.gmail.com>
-	 <20071117010352.GA13666@vmware.com>
+References: <473DA608.1020804@linux.vnet.ibm.com>
+	 <64bb37e0711170953p67d1be49lf4eaa190d662e2b4@mail.gmail.com>
+	 <1195325920.7484.1.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Micah,
-
-ok, would it be possible to get "cat /proc/schedstat" output at the
-moment when you observe the 'problem'? So we could try to analyze
-behavior of the load balancer (yeah, we should have probably started
-with this step)
-
-something like this:
-
-(the problem appears)
-# cat /proc/schedstat
-
-... wait either a few seconds or until the problem disappears
-(whatever comes first)
-# cat /proc/schedstat
-
-
-TIA,
-
+On Nov 17, 2007 7:58 PM, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
 >
-> --Micah
+> On Sat, 2007-11-17 at 18:53 +0100, Torsten Kaiser wrote:
+> > On Nov 16, 2007 3:15 PM, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> > > Hi Andrew,
+> > >
+> > > The kernel enters the xmon state while running the file system
+> > > stress on nfs v4 mounted partition.
+> > [snip]
+> > > 0:mon> t
+> > > [c0000000dbd4fb50] c000000000069768 .__wake_up+0x54/0x88
+> > > [c0000000dbd4fc00] d00000000086b890 .nfs_sb_deactive+0x44/0x58 [nfs]
+> > > [c0000000dbd4fc80] d000000000872658 .nfs_free_unlinkdata+0x2c/0x74 [nfs]
+> > > [c0000000dbd4fd10] d000000000598510 .rpc_release_calldata+0x50/0x74 [sunrpc]
+> > > [c0000000dbd4fda0] c00000000008d960 .run_workqueue+0x10c/0x1f4
+> > > [c0000000dbd4fe50] c00000000008ec70 .worker_thread+0x118/0x138
+> > > [c0000000dbd4ff00] c0000000000939f4 .kthread+0x78/0xc4
+> > > [c0000000dbd4ff90] c00000000002b060 .kernel_thread+0x4c/0x68
 >
+> Could you try with the attached patch.
+[snip]
+> Fix is to move the call to nfs_sb_deactive() into
+> nfs_async_unlink_release().
 
--- 
-Best regards,
-Dmitry Adamushko
+I realley doubt that will fix it.
+
+My stacktrace was like:
+run_workqueue
+called: rpc_async_schedule
+  that called: rpc_release_calldata
+    which points to: nfs_async_unlink_release
+       that called: nfs_free_unlinkdata
+
+So it does not matter for me if nfs_sb_deactive is called one step earlier.
+
+Currently building with SLAB instead SLUB to see if lockdep tells something...
+
+Torsten
