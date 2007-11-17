@@ -1,92 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758193AbXKQIo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758942AbXKQIpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758193AbXKQIo1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 03:44:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbXKQIoT
+	id S1758942AbXKQIpp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 03:45:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbXKQIpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 03:44:19 -0500
-Received: from hoboe1bl1.telenet-ops.be ([195.130.137.72]:53604 "EHLO
-	hoboe1bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752304AbXKQIoS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 03:44:18 -0500
-Date: Sat, 17 Nov 2007 09:44:14 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Daniel Barkalow <barkalow@iabervon.org>
-Cc: Michael Gerdau <mgerdau@tiscali.de>, Philippe Elie <phil.el@wanadoo.fr>,
-       Russell Leighton <russ@elegant-software.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: OT: Does Linux have any "Perfect Code"
-In-Reply-To: <Pine.LNX.4.64.0711150940560.12193@iabervon.org>
-Message-ID: <Pine.LNX.4.64.0711170941340.32153@anakin>
-References: <c9d133bdb3481fbc01a572d948049f5e@elegant-software.com>
- <20071115082746.GA2885@zaniah> <200711151416.54570.mgerdau@tiscali.de>
- <Pine.LNX.4.64.0711150940560.12193@iabervon.org>
+	Sat, 17 Nov 2007 03:45:38 -0500
+Received: from dns2.fullrate.dk ([89.150.129.10]:51099 "EHLO dns2.fullrate.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752550AbXKQIph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Nov 2007 03:45:37 -0500
+Message-ID: <473F281B.60408@minimum.se>
+Date: Sat, 17 Nov 2007 09:42:51 -0800
+From: Martin Olsson <mnemo@minimum.se>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Dane Mutters <dmutters@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Is it possible to give the user the option to cancel forkbombs?
+References: <473E815F.30900@minimum.se>	 <20071116213137.6efe3f9e@the-village.bc.nu>  <473E9290.3040006@minimum.se>	 <1195281942.15929.5.camel@Orchestrator> <1195285481.3059.12.camel@twins>
+In-Reply-To: <1195285481.3059.12.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Nov 2007, Daniel Barkalow wrote:
-> On Thu, 15 Nov 2007, Michael Gerdau wrote:
-> > > This code is far to be perfect, some part is outdated, bcopy() use instead
-> > > of memcpy() for example. More annoying are the comment, the file is 3306
-> > > lines while there is only 1640 line of code, nothing bad per se but looking
-> > > some comments:
-> > > 
-> > >  		/*
-> > >  		 * Before we begin this operation, disable kernel preemption.
-> > >  		 */
-> > >  		kpreempt_disable();
-> > 
-> > <disclaimer>
-> > I'm not a kernel developer.
-> > </disclaimer>
-> > 
-> > That having said:
-> > I really do like such obvious (as in: for those knowing the stuff anyway)
-> > comments when looking at code and probably concepts I'm not familiar with.
-> >
-> > ...
-> > 
-> > I mean, isn't the whole purpose of comments to help those not familiar
-> > with the code to understand it's purpose and possibly the intention of
-> > the author (just in case the author had coded a bug) ?
+(taking this reply offline, so this is mostly intended for Alan)
+
+Peter Zijlstra wrote:
 > 
-> That's the problem with really obvious comments. In the example above, 
-> that function had better disable kernel preemption with a name like that, 
-> and, assuming it's before the code begins the operation in sequence, we 
-> know when we're doing it. But the comment fails to explain why we need to 
-> disable kernel preemption before beginning the operation, just that we are 
-> doing so. Having the comment merely distracts the reader from the fact 
-> that the purpose of the code and the intention of the author are 
-> completely undocumented. And there's a realy chance that this comment or 
-> ones like it cause this statement and the place in the code where things 
-> would go wrong if preemption weren't disabled to not fit on the reader's 
-> screen together, so it is not only unclear what the author's intention 
-> was, but it is harder to figure out from looking at the code than it would 
-> be without comments, because fewer clues are actually visible at the same 
-> time, since each of them takes up extra screen space.
+> If you don't know which limits to set and need a package for them, your
+> job title should not be system administrator.
 > 
-> The code itself should be written to tell the reader everything there is 
-> to know about what it does, and the comments in code should only tell the 
-> reader why it does that.
 
-Agreed!
+In theory I agree with you Peter but in practice a lot of low-skill 
+people have to install and administer servers. I think the pragmatic and 
+realistic approach would be to accept that many admins are not perfect, 
+far from it.
 
-At work we used to have a contractor who documented _every_ single statement
-with a literal C/C++-to-English translation. Nobody liked it, except
-him. It was completely unreadable.
-Of course a few of these comments went out-of-sync with the actual
-code...
+Also, this bug involves many aspects and it's possible to argue what 
+exactly is the bug. Even if we don't change any default values, we can 
+still change the kernel so that it survives a fork bomb. After all, the 
+Vista kernel does survive a fork bomb although the system as a whole 
+gets unusable.
 
-Gr{oetje,eeting}s,
+### On Ubuntu I currently see:
+1. Launch fork bomb
+2. System gets to a complete freeze (I can't move mouse and not a single 
+pixel is updated on the screen).
 
-						Geert
+### On Vista I currently see:
+1. Launch fork bomb
+2. System gets very slow to the point where the system is unusable (but 
+I can always mouse around the mouse freely with no sluggishness and the 
+screen updates continue to make progress even though it takes 1-3 
+seconds between each update). I can still open and close the start menu 
+if I got the patience to wait >45 seconds for it each time.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+I don't think that setting a max process count by default is a 
+good/viable solution. But the kernel could still be changed so that it 
+doesn't hose itself completely.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+
+
+		Martin
