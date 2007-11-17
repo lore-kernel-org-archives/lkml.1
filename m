@@ -1,184 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761674AbXKQRpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763269AbXKQRql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761674AbXKQRpZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 12:45:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755546AbXKQRpO
+	id S1763269AbXKQRql (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 12:46:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756850AbXKQRqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 12:45:14 -0500
-Received: from mcclure-nat.wal.novell.com ([130.57.22.22]:51137 "EHLO
-	mcclure.wal.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755472AbXKQRpM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 12:45:12 -0500
-Message-Id: <473EE151.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Sat, 17 Nov 2007 12:40:49 -0500
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>,
-       "LKML" <linux-kernel@vger.kernel.org>
-Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>, "Ingo Molnar" <mingo@elte.hu>,
-       "Steven Rostedt" <srostedt@redhat.com>,
-       "Christoph Lameter" <clameter@sgi.com>
-Subject: Re: [PATCH v3 16/17] Fix schedstat handling
-References: <20071117062104.177779113@goodmis.org>
- <20071117062405.634159013@goodmis.org>
-In-Reply-To: <20071117062405.634159013@goodmis.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Sat, 17 Nov 2007 12:46:33 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52297 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756590AbXKQRqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Nov 2007 12:46:32 -0500
+Date: Sat, 17 Nov 2007 18:46:08 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Remy Bohmer <linux@bohmer.net>, Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       RT <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG on PREEMPT_RT, 2.6.23.1-rt5] in rt-mutex code and signals
+Message-ID: <20071117174608.GA30641@elte.hu>
+References: <3efb10970711160751l279fe99dl9f3a130a4373a449@mail.gmail.com> <Pine.LNX.4.58.0711161516580.25989@gandalf.stny.rr.com> <3efb10970711161502m6216bf5rc19a34184b4f3a2b@mail.gmail.com> <Pine.LNX.4.58.0711161830570.28002@gandalf.stny.rr.com> <3efb10970711170344n670d8b69w6679d494922c5bb@mail.gmail.com> <1195316550.25393.21.camel@imap.mvista.com> <3efb10970711170909n3acca605j70525e36faf8da7f@mail.gmail.com> <1195320569.25393.38.camel@imap.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1195320569.25393.38.camel@imap.mvista.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Sat, Nov 17, 2007 at  1:21 AM, in message
-<20071117062405.634159013@goodmis.org>, Steven Rostedt <rostedt@goodmis.org>
-wrote: 
-> Gregory Haskins RT balancing broke sched domains.
 
-Doh! (though you mean s/domains/stats ;)
+* Daniel Walker <dwalker@mvista.com> wrote:
 
-> This is a fix to allow it to still work.
+> > Actually, IMO, compat_semaphores behave like semaphores should 
+> > behave, and thus the same as they behave on a non-RT kernel, and at 
+> > the locations where the semaphores are now misused as mutexes on RT, 
+> > we should replace them by differently-named-mutex-type-semaphores, 
+> > or better: real-RT-mutexes..
 > 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> 
-> ---
->  include/linux/sched.h   |    3 ++-
->  kernel/sched.c          |   17 ++++++++++++++---
->  kernel/sched_fair.c     |   19 ++++++++++++++-----
->  kernel/sched_idletask.c |    3 ++-
->  kernel/sched_rt.c       |    3 ++-
->  5 files changed, 34 insertions(+), 11 deletions(-)
-> 
-> Index: linux-compile.git/kernel/sched.c
-> ===================================================================
-> --- linux-compile.git.orig/kernel/sched.c	2007-11-17 00:15:57.000000000 -0500
-> +++ linux-compile.git/kernel/sched.c	2007-11-17 00:15:57.000000000 -0500
-> @@ -1453,6 +1453,7 @@ static int try_to_wake_up(struct task_st
->  	unsigned long flags;
->  	long old_state;
->  	struct rq *rq;
-> +	struct sched_domain *this_sd = NULL;
->  #ifdef CONFIG_SMP
->  	int new_cpu;
->  #endif
-> @@ -1476,10 +1477,20 @@ static int try_to_wake_up(struct task_st
->  	schedstat_inc(rq, ttwu_count);
->  	if (cpu == this_cpu)
->  		schedstat_inc(rq, ttwu_local);
-> -	else
-> -		schedstat_inc(rq->sd, ttwu_wake_remote);
-> +	else {
-> +#ifdef CONFIG_SCHEDSTATS
-> +		struct sched_domain *sd;
-> +		for_each_domain(this_cpu, sd) {
-> +			if (cpu_isset(cpu, sd->span)) {
-> +				schedstat_inc(sd, ttwu_wake_remote);
-> +				this_sd = sd;
-> +				break;
-> +			}
-> +		}
-> +#endif /* CONFIG_SCHEDSTATES */
-> +	}
->  
-> -	new_cpu = p->sched_class->select_task_rq(p, sync);
-> +	new_cpu = p->sched_class->select_task_rq(p, this_sd, sync);
+> The vast majority of semaphore are actually binary semaphores in the 
+> Linux kernel .. So it's easier to mass convert semaphores to mutexes, 
+> then address the ones that don't conform.. Usually they are converted 
+> to the complete API in mainline..
 
-I like this optimization, but I am thinking that the location of the stat update is now no longer relevant.  It should potentially go *after* the select_task_rq() so that we pick the sched_domain of the actual wake target, not the historical affinity.  If that is accurate, I'm sure you can finagle this optimization to work in that scenario too, but it will take a little re-work.
+right now there are 3992 mutex_lock() critical sections in the kernel 
+and only 351 down() based critical sections are left.
 
+fixing the top 20:
 
->  
->  	if (new_cpu != cpu) {
->  		set_task_cpu(p, new_cpu);
-> Index: linux-compile.git/include/linux/sched.h
-> ===================================================================
-> --- linux-compile.git.orig/include/linux/sched.h	2007-11-17 00:15:57.000000000 -0500
-> +++ linux-compile.git/include/linux/sched.h	2007-11-17 00:15:57.000000000 -0500
-> @@ -823,7 +823,8 @@ struct sched_class {
->  	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int wakeup);
->  	void (*dequeue_task) (struct rq *rq, struct task_struct *p, int sleep);
->  	void (*yield_task) (struct rq *rq);
-> -	int  (*select_task_rq)(struct task_struct *p, int sync);
-> +	int  (*select_task_rq)(struct task_struct *p,
-> +			       struct sched_domain *sd, int sync);
->  
->  	void (*check_preempt_curr) (struct rq *rq, struct task_struct *p);
->  
-> Index: linux-compile.git/kernel/sched_fair.c
-> ===================================================================
-> --- linux-compile.git.orig/kernel/sched_fair.c	2007-11-17 00:15:57.000000000 -0500
-> +++ linux-compile.git/kernel/sched_fair.c	2007-11-17 00:43:44.000000000 -0500
-> @@ -611,11 +611,12 @@ static inline int wake_idle(int cpu, str
->  #endif
->  
->  #ifdef CONFIG_SMP
-> -static int select_task_rq_fair(struct task_struct *p, int sync)
-> +static int select_task_rq_fair(struct task_struct *p,
-> +			       struct sched_domain *this_sd, int sync)
->  {
->  	int cpu, this_cpu;
->  	struct rq *rq;
-> -	struct sched_domain *sd, *this_sd = NULL;
-> +	struct sched_domain *sd;
->  	int new_cpu;
->  
->  	cpu      = task_cpu(p);
-> @@ -623,15 +624,23 @@ static int select_task_rq_fair(struct ta
->  	this_cpu = smp_processor_id();
->  	new_cpu  = cpu;
->  
-> +	if (cpu == this_cpu || unlikely(!cpu_isset(this_cpu, p->cpus_allowed)))
-> +		goto out_set_cpu;
-> +
-> +#ifndef CONFIG_SCHEDSTATS
-> +	/*
-> +	 * If SCHEDSTATS is configured, then this_sd would
-> +	 * have already been determined.
-> +	 */
->  	for_each_domain(this_cpu, sd) {
->  		if (cpu_isset(cpu, sd->span)) {
->  			this_sd = sd;
->  			break;
->  		}
->  	}
-> -
-> -	if (unlikely(!cpu_isset(this_cpu, p->cpus_allowed)))
-> -		goto out_set_cpu;
-> +#else
-> +	(void)sd; /* unused */
-> +#endif /* CONFIG_SCHEDSTATS */
->  
->  	/*
->  	 * Check for affine wakeup and passive balancing possibilities.
-> Index: linux-compile.git/kernel/sched_idletask.c
-> ===================================================================
-> --- linux-compile.git.orig/kernel/sched_idletask.c	2007-11-17 00:15:57.000000000 
-> -0500
-> +++ linux-compile.git/kernel/sched_idletask.c	2007-11-17 00:15:57.000000000 -0500
-> @@ -6,7 +6,8 @@
->   */
->  
->  #ifdef CONFIG_SMP
-> -static int select_task_rq_idle(struct task_struct *p, int sync)
-> +static int select_task_rq_idle(struct task_struct *p,
-> +			       struct sched_domain *sd, int sync)
->  {
->  	return task_cpu(p); /* IDLE tasks as never migrated */
->  }
-> Index: linux-compile.git/kernel/sched_rt.c
-> ===================================================================
-> --- linux-compile.git.orig/kernel/sched_rt.c	2007-11-17 00:15:57.000000000 -0500
-> +++ linux-compile.git/kernel/sched_rt.c	2007-11-17 00:44:31.000000000 -0500
-> @@ -46,7 +46,8 @@ static void update_rt_migration(struct r
->  
->  static int find_lowest_rq(struct task_struct *task);
->  
-> -static int select_task_rq_rt(struct task_struct *p, int sync)
-> +static int select_task_rq_rt(struct task_struct *p,
-> +			     struct sched_domain *sd, int sync)
->  {
->  	struct rq *rq = task_rq(p);
->  
-> 
-> -- 
+      4 &vuart_bus_priv.probe_mutex
+      5 &connections_lock
+      5 &irq_ptr->setting_up_sema
+      5 &kbd->sem
+      5 &pnp_res_mutex
+      5 &port->port_lock
+      5 &tq_init_sem
+      6 &adb_handler_sem
+      6 &dev->parent->sem
+      6 &driver_lock
+      6 &ha->vport_sem
+      7 &big_buffer_sem
+      8 &dir_f->sem
+      9 &c->alloc_sem
+     11 &dev->sem
+     11 &usbvision->lock
+     12 &c->erase_free_sem
+     15 &u132->scheduler_lock
+     16 &zfcp_data.config_sema
+     17 &f->sem
 
+would remove 164 of them, so it would convert half of the remaining 
+semaphore use in the kernel. So the job is almost finished - would 
+anyone like to go for the final grand feat: complete removal of 
+semaphores from the kernel? :-)
 
+	Ingo
