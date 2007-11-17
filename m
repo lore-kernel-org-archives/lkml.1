@@ -1,76 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764397AbXKQTTC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764930AbXKQTW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764397AbXKQTTC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 14:19:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759853AbXKQTSw
+	id S1764930AbXKQTW4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 14:22:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760033AbXKQTWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 14:18:52 -0500
-Received: from py-out-1112.google.com ([64.233.166.177]:3735 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759456AbXKQTSv (ORCPT
+	Sat, 17 Nov 2007 14:22:48 -0500
+Received: from web36610.mail.mud.yahoo.com ([209.191.85.27]:37322 "HELO
+	web36610.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758879AbXKQTWq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 14:18:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ZtOtxSL3hYiq7HsWAJyMHe1bZ4JzXJ1gaKNXqO6aPT0xTByxtPr2gNM8VDLNz1CPEGVevIF5Nc5pXSCPxX9Z9Av2NDr+cHGCAG2nRa8hjbm19CdEQu6nf3wM20Ytns5PBZopH6lzPhQzCr/vrs7udw0PF5uioIWehCmIJvvg2Js=
-Message-ID: <64bb37e0711171118t73a7c619p1117a5b150f369b7@mail.gmail.com>
-Date: Sat, 17 Nov 2007 20:18:49 +0100
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Trond Myklebust" <trond.myklebust@fys.uio.no>
-Subject: Re: [BUG] 2.6.24-rc2-mm1 - kernel bug on nfs v4
-Cc: "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-       nfs@lists.sourceforge.net, "Andy Whitcroft" <apw@shadowen.org>,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "Jan Blunck" <jblunck@suse.de>
-In-Reply-To: <1195325920.7484.1.camel@localhost.localdomain>
+	Sat, 17 Nov 2007 14:22:46 -0500
+X-YMail-OSG: zVNpq3kVM1lDph.Ko.xZ8hXm2mpso955CNnUFhuJZNzquV4CK9lOF0JX_OYqGilPL9dEfDlBmQ--
+X-RocketYMMF: rancidfat
+Date: Sat, 17 Nov 2007 11:22:45 -0800 (PST)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: More LSM vs. Containers (having nothing at all to do with the AppArmor Security Goal)
+To: Peter Dolding <oiaohm@gmail.com>, Crispin Cowan <crispin@crispincowan.com>
+Cc: rmeijer@xs4all.nl, apparmor-dev@forge.novell.com,
+       LSM ML <linux-security-module@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <e7d8f83e0711162357k8e06c0dqedaf0abd6c67e3fe@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <473DA608.1020804@linux.vnet.ibm.com>
-	 <64bb37e0711170953p67d1be49lf4eaa190d662e2b4@mail.gmail.com>
-	 <1195325920.7484.1.camel@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <757605.51592.qm@web36610.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 17, 2007 7:58 PM, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
->
-> On Sat, 2007-11-17 at 18:53 +0100, Torsten Kaiser wrote:
-> > On Nov 16, 2007 3:15 PM, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-> > > Hi Andrew,
+
+--- Peter Dolding <oiaohm@gmail.com> wrote:
+
+> On Nov 17, 2007 11:08 AM, Crispin Cowan <crispin@crispincowan.com> wrote:
+> > Peter Dolding wrote:
+> > >>> What is left unspecified here is 'how' a child 'with its own profile'
+> is
+> > >>> confined here. Are it is confined to just its own profile, it may that
+> > >>> the "complicit process" communication may need to be wider specified to
+> > >>> include this.
+> > >>>
+> > > Sorry have to bring this up.  cgroups why not?
+> > Because I can't find any documentation for cgroups? :)
+> >
+> > >   Assign application to
+> > > a cgroup that contains there filesystem access permissions.   Done
+> > > right this could even be stacked.  Only give less access to
+> > > application unless LSM particularly overrides.
 > > >
-> > > The kernel enters the xmon state while running the file system
-> > > stress on nfs v4 mounted partition.
-> > [snip]
-> > > 0:mon> t
-> > > [c0000000dbd4fb50] c000000000069768 .__wake_up+0x54/0x88
-> > > [c0000000dbd4fc00] d00000000086b890 .nfs_sb_deactive+0x44/0x58 [nfs]
-> > > [c0000000dbd4fc80] d000000000872658 .nfs_free_unlinkdata+0x2c/0x74 [nfs]
-> > > [c0000000dbd4fd10] d000000000598510 .rpc_release_calldata+0x50/0x74 [sunrpc]
-> > > [c0000000dbd4fda0] c00000000008d960 .run_workqueue+0x10c/0x1f4
-> > > [c0000000dbd4fe50] c00000000008ec70 .worker_thread+0x118/0x138
-> > > [c0000000dbd4ff00] c0000000000939f4 .kthread+0x78/0xc4
-> > > [c0000000dbd4ff90] c00000000002b060 .kernel_thread+0x4c/0x68
->
-> Could you try with the attached patch.
-[snip]
-> Fix is to move the call to nfs_sb_deactive() into
-> nfs_async_unlink_release().
+> > This comes no where close to AppArmor's functionality:
+> >
+> >     * Can't do learning mode
+> >     * Can't do wildcards
+> >     * Sucks up huge loads of memory to do that much FS mounting (imagine
+> >       thousands of bind mounts)
+> >     * I'm not sure, but I don't think you can do file granularity, only
+> >       directories
+> >
+> Ok sorry to say so far almost percent wrong.  Please note netlabels
+> falls into a control group.  All function of Apparmor is doable bar
+> exactly learning mode.   For learning mode that would have to be a
+> hook back to a LSM I would expect.
+> 
+> Done right should suck up no more memory than current apparmor.  But
+> it will required all LSM's doing file access to come to common
+> agreement how to do it.  Not just hooks into the kernel system any
+> more.
 
-I realley doubt that will fix it.
+The ability to provide alternative access control schemes is the
+purpose of LSM. The fact that we insane security people can't come
+to the agreement you require is why we have LSM. You can not have
+what you are asking for. Please suggest an alternative design.
 
-My stacktrace was like:
-run_workqueue
-called: rpc_async_schedule
-  that called: rpc_release_calldata
-    which points to: nfs_async_unlink_release
-       that called: nfs_free_unlinkdata
+> At the container entrance point there needs file granularity applied
+> for complete and correct container isolation to be done.
+> >
+> > > There are reasons why I keep on bring containers up it changes the
+> > > model.  Yes I know coming to a common agreement in these sections will
+> > > not be simple.   But at some point it has to be done.
+> > >
+> > Containers and access controls provide related but different functions.
+> > Stop trying to force containers to be an access control system, it does
+> > not fit well at all.
+> >
+> > Rather, we need to ensure that LSM and containers play well together.
+> > What you proposed in the past was to have an LSM module per container,
+> > but I find that absurdly complex: if you want that, then use a real VMM
+> > like Xen or something. Containers are mostly used for massive virtual
+> > domain hosting, and what you want there is as much sharing as possible
+> > while maintaining isolation. so why would you corrupt that with separate
+> > LSM modules per container?
+> 
+> Please stop being foolish.  Xen and the like don't share memory.   You
+> are basically saying blow out memory usage just because someone wants
+> to use a different LSM.
 
-So it does not matter for me if nfs_sb_deactive is called one step earlier.
+Yup. No one ever said security was cheap. Most real, serious security
+solutions implemented today rely on separate physical machines for
+isolation. Some progressive installations are using virtualization,
+and the lunatic fringe uses the sort of systems well served by LSM.
+Let's face it, people who really care are willing to pay a premium. 
 
-Currently building with SLAB instead SLUB to see if lockdep tells something...
+> Besides file access control is part of running containers isolated in
+> the first place and need to be LSM neutral.
 
-Torsten
+File access control is within the scope of the LSM. If your feature
+can't deal with that you need to fix your feature.
+
+> This is the problem current model just will not work.  Some features
+> are need in Linux kernel all the time and have to become LSM neutral
+> due to the features of containers.
+
+Sounds like a conflict in requirements.
+
+> Next big after filesystem most likely will be the common security
+> controls for devices.  These are just features need to complete
+> containers.  Basically to do containers LSM have to be cut up.  Or
+> containers function will be dependent on the current LSM to be use
+> completely.
+
+I would be perfectly happy without containers, just as I understand
+you don't give a rat's pitute about LSMs. If you want my cooperation
+and/or backing on containers, show me how they make my life better,
+and how cutting up LSM is to my advantage. I am perfectly willing
+to consider alternatives, but I confess that my natural reaction to
+confrontation is to fight back.
+
+
+Casey Schaufler
+casey@schaufler-ca.com
