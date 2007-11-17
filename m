@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762252AbXKQLC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761980AbXKQLDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762252AbXKQLC0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 06:02:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbXKQLCP
+	id S1761980AbXKQLDm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 06:03:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbXKQLDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 06:02:15 -0500
-Received: from mail12.tpgi.com.au ([203.12.160.162]:41895 "EHLO
-	mail12.tpgi.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761563AbXKQLCN (ORCPT
+	Sat, 17 Nov 2007 06:03:35 -0500
+Received: from wa-out-1112.google.com ([209.85.146.181]:53762 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753381AbXKQLDe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 06:02:13 -0500
-X-TPG-Antivirus: Passed
-Subject: Re: 2.6.24-rc2-git6: Reported regressions from 2.6.23
-From: Will Trives <will@trivescon.com.au>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1195296974.5149.11.camel@Athas>
-References: <1195296974.5149.11.camel@Athas>
-Content-Type: text/plain
-Date: Sat, 17 Nov 2007 21:58:34 +1100
-Message-Id: <1195297114.5149.13.camel@Athas>
+	Sat, 17 Nov 2007 06:03:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:subject:message-id:mail-followup-to:mime-version:content-type:content-disposition:user-agent;
+        b=HL+pVpU3C7MTnYrT88QYyvQUFogHQBuWva9zisGFyo+MqJorZXNG/wz7iMflHoqXWVbuqor20Asrp6UrKUN3r4xva+Ie02rJDMIwRvy7wa3zfKqN2n4teqtsOydvxG9P1bY/EwEbjHJEVyh2CxmMWkBnv4y+UsjScqmA20ki2vM=
+Date: Sat, 17 Nov 2007 19:57:38 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] partitions: use kasprintf
+Message-ID: <20071117105738.GB4861@APFDCB5C>
+Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
+	linux-kernel@vger.kernel.org
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry, I said 2.6.24-rc4 there, I meant 2.6.24-rc3.
+Use kasprintf instead of kmalloc()-strcpy()-strcat().
 
-On Sat, 2007-11-17 at 21:56 +1100, Will Trives wrote:
-> > Subject    :  cd/dvd inaccessible in 2.6.24-rc2 
-> > Submitter  :  Will Trives <will@trivescon.com.au> 
-> > References :  http://lkml.org/lkml/2007/11/9/290 
-> >               http://bugzilla.kernel.org/show_bug.cgi?id=9346 
-> > Handled-By :  Alan Cox <alan@lxorguk.ukuu.org.uk> 
-> >               Jeff Garzik <jeff@garzik.org>
-> 
-> > Not being handled by any more. 2.6.24-rc2 shows assorted IRQ delivery
-> > and IRQ assignment problems for IDE controllers which appear to be
-> > ACPI problems. Its one for the ACPI people to take a look at.
-> > 
-> 
-> I was wrong originally, the issue is acctually occuring whenever I try
-> to write to a cd. With wodim or k3b, I am unable to write to the drive.
-> The error shown in dmesg is what happened when I tried to blank a disc.
-> In 2.6.23 it works instantly, with 2.6.24-rc4 it sits there, then there
-> are those errors, then I cannot eject the dvd from the drive. With k3b
-> it takes an age just to load and when it does it reports no media in the
-> drive, I am also unable to eject the media from the drive.
-> 
-> I can mount a standard dvd without issue in 2.6.24-rc3. It's just
-> writing that fails.
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 
+---
+ fs/partitions/check.c |    7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
+Index: 2.6-mm/fs/partitions/check.c
+===================================================================
+--- 2.6-mm.orig/fs/partitions/check.c
++++ 2.6-mm/fs/partitions/check.c
+@@ -453,16 +453,11 @@ void add_partition(struct gendisk *disk,
+ static char *make_block_name(struct gendisk *disk)
+ {
+ 	char *name;
+-	static char *block_str = "block:";
+-	int size;
+ 	char *s;
+ 
+-	size = strlen(block_str) + strlen(disk->disk_name) + 1;
+-	name = kmalloc(size, GFP_KERNEL);
++	name = kasprintf(GFP_KERNEL, "block:%s", disk->disk_name);
+ 	if (!name)
+ 		return NULL;
+-	strcpy(name, block_str);
+-	strcat(name, disk->disk_name);
+ 	/* ewww... some of these buggers have / in name... */
+ 	s = strchr(name, '/');
+ 	if (s)
