@@ -1,95 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbXKQKDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758505AbXKQKRo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758224AbXKQKDt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 05:03:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbXKQKDl
+	id S1758505AbXKQKRo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 05:17:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbXKQKRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 05:03:41 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:48223 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751051AbXKQKDk (ORCPT
+	Sat, 17 Nov 2007 05:17:36 -0500
+Received: from smtp-out3.tiscali.nl ([195.241.79.178]:53799 "EHLO
+	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752396AbXKQKRf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 05:03:40 -0500
-Subject: Re: Is it possible to give the user the option to cancel forkbombs?
-From: Peter Zijlstra <peterz@infradead.org>
-To: Martin Olsson <mnemo@minimum.se>
-Cc: Dane Mutters <dmutters@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <473F281B.60408@minimum.se>
-References: <473E815F.30900@minimum.se>
-	 <20071116213137.6efe3f9e@the-village.bc.nu>  <473E9290.3040006@minimum.se>
-	 <1195281942.15929.5.camel@Orchestrator> <1195285481.3059.12.camel@twins>
-	 <473F281B.60408@minimum.se>
-Content-Type: text/plain
-Date: Sat, 17 Nov 2007 11:03:32 +0100
-Message-Id: <1195293812.6739.14.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Sat, 17 Nov 2007 05:17:35 -0500
+Message-ID: <473EBFBA.7080705@tiscali.nl>
+Date: Sat, 17 Nov 2007 11:17:30 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: linux-kernel@vger.kernel.org,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>, prasanna@in.ibm.com,
+       anil.s.keshavamurthy@intel.com, davem@davemloft.net
+Subject: Re: [rfc-patch 07/11] Text Edit Lock - kprobes architecture independent
+ support
+References: <20071116195747.448703304@polymtl.ca> <20071116200139.134470826@polymtl.ca>
+In-Reply-To: <20071116200139.134470826@polymtl.ca>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sat, 2007-11-17 at 09:42 -0800, Martin Olsson wrote:
-> (taking this reply offline, so this is mostly intended for Alan)
+Mathieu Desnoyers wrote:
+> Use the mutual exclusion provided by the text edit lock in the kprobes code. It
+> allows coherent manipulation of the kernel code by other subsystems.
 > 
-> Peter Zijlstra wrote:
-> > 
-> > If you don't know which limits to set and need a package for them, your
-> > job title should not be system administrator.
-> > 
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> CC: prasanna@in.ibm.com
+> CC: ananth@in.ibm.com
+> CC: anil.s.keshavamurthy@intel.com
+> CC: davem@davemloft.net
+> ---
+>  kernel/kprobes.c |   19 +++++++++++++------
+>  1 file changed, 13 insertions(+), 6 deletions(-)
 > 
-> In theory I agree with you Peter but in practice a lot of low-skill 
-> people have to install and administer servers. I think the pragmatic and 
-> realistic approach would be to accept that many admins are not perfect, 
-> far from it.
+> Index: linux-2.6-lttng/kernel/kprobes.c
+> ===================================================================
+> --- linux-2.6-lttng.orig/kernel/kprobes.c	2007-09-07 10:12:06.000000000 -0400
+> +++ linux-2.6-lttng/kernel/kprobes.c	2007-09-07 10:13:09.000000000 -0400
+> @@ -43,6 +43,7 @@
+>  #include <linux/seq_file.h>
+>  #include <linux/debugfs.h>
+>  #include <linux/kdebug.h>
+> +#include <linux/memory.h>
+>  
+>  #include <asm-generic/sections.h>
+>  #include <asm/cacheflush.h>
+> @@ -568,9 +569,10 @@ static int __kprobes __register_kprobe(s
+>  		goto out;
+>  	}
+>  
+> +	kernel_text_lock();
+>  	ret = arch_prepare_kprobe(p);
+>  	if (ret)
+> -		goto out;
+> +		goto out_unlock_text;
+>  
+>  	INIT_HLIST_NODE(&p->hlist);
+>  	hlist_add_head_rcu(&p->hlist,
+> @@ -578,7 +580,8 @@ static int __kprobes __register_kprobe(s
+>  
+>  	if (kprobe_enabled)
+>  		arch_arm_kprobe(p);
+> -
+> +out_unlock_text:
+> +	kernel_text_unlock();
+>  out:
+>  	mutex_unlock(&kprobe_mutex);
+>  
+> @@ -621,8 +624,11 @@ valid_p:
+>  		 * enabled - otherwise, the breakpoint would already have
+>  		 * been removed. We save on flushing icache.
+>  		 */
+> -		if (kprobe_enabled)
+> +		if (kprobe_enabled) {
+> +			kernel_text_lock();
+>  			arch_disarm_kprobe(p);
+> +			kernel_text_unlock();
+> +		}
+>  		hlist_del_rcu(&old_p->hlist);
+>  		cleanup_p = 1;
+>  	} else {
+> @@ -644,9 +650,7 @@ valid_p:
+>  			list_del_rcu(&p->list);
+>  			kfree(old_p);
+>  		}
+> -		mutex_lock(&kprobe_mutex);
+>  		arch_remove_kprobe(p);
+> -		mutex_unlock(&kprobe_mutex);
+>  	} else {
+>  		mutex_lock(&kprobe_mutex);
+>  		if (p->break_handler)
+> @@ -717,7 +721,6 @@ static int __kprobes pre_handler_kretpro
+>  		ri->rp = rp;
+>  		ri->task = current;
+>  		arch_prepare_kretprobe(ri, regs);
+> -
+>  		/* XXX(hch): why is there no hlist_move_head? */
+>  		hlist_del(&ri->uflist);
+>  		hlist_add_head(&ri->uflist, &ri->rp->used_instances);
+> @@ -940,8 +943,10 @@ static void __kprobes enable_all_kprobes
+>  
+>  	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
+>  		head = &kprobe_table[i];
+> +		kernel_text_lock();
+>  		hlist_for_each_entry_rcu(p, node, head, hlist)
+>  			arch_arm_kprobe(p);
+> +		kernel_text_unlock();
+>  	}
 
-Sure, I know that. But providing a package to tune a system setting
-doesn't sound like a sane option either. This low-skill admin will
-likely not know about this package either.
+isn't it better to put the kernel_text_lock around the for loop?
 
-And between: 'install this package and magic happens', or 'If you have
-problem A, fiddle know B so and so' I prefer the latter.
+>  
+>  	kprobe_enabled = true;
+> @@ -969,10 +974,12 @@ static void __kprobes disable_all_kprobe
+>  	printk(KERN_INFO "Kprobes globally disabled\n");
+>  	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
+>  		head = &kprobe_table[i];
+> +		kernel_text_lock();
+>  		hlist_for_each_entry_rcu(p, node, head, hlist) {
+>  			if (!arch_trampoline_kprobe(p))
+>  				arch_disarm_kprobe(p);
+>  		}
+> +		kernel_text_unlock();
+>  	}
 
-So my suggestion would be to provide good, simple and direct sys-ad 101
-documentation for your specific distro.
+same question here
 
-Of course, your -server distro might have different default settings
-from your desktop line.
-
-> Also, this bug involves many aspects and it's possible to argue what 
-> exactly is the bug. Even if we don't change any default values, we can 
-> still change the kernel so that it survives a fork bomb. After all, the 
-> Vista kernel does survive a fork bomb although the system as a whole 
-> gets unusable.
+>  
+>  	mutex_unlock(&kprobe_mutex);
 > 
-> ### On Ubuntu I currently see:
-> 1. Launch fork bomb
-> 2. System gets to a complete freeze (I can't move mouse and not a single 
-> pixel is updated on the screen).
-> 
-> ### On Vista I currently see:
-> 1. Launch fork bomb
-> 2. System gets very slow to the point where the system is unusable (but 
-> I can always mouse around the mouse freely with no sluggishness and the 
-> screen updates continue to make progress even though it takes 1-3 
-> seconds between each update). I can still open and close the start menu 
-> if I got the patience to wait >45 seconds for it each time.
-> 
-> I don't think that setting a max process count by default is a 
-> good/viable solution. But the kernel could still be changed so that it 
-> doesn't hose itself completely.
-
-Agreed, the kernel could perhaps handle it a little more graceful. Do
-you happen to know what makes current Linux suck? Is it the excess of
-tasks? (I've only ran a few thousand loops on CFS and that seemed to
-work). Or is it the memory trashing that causes most problems?
-
-My guess would be memory, and the problem is that the current overcommit
-settings allow for a good experience for a lot of things, the downside
-is this DoS scenario.
-
-Our OOM killer often killing totally irrelevant processes doesn't help
-either.
-
 
