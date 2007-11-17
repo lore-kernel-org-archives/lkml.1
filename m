@@ -1,76 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761651AbXKQM3P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752347AbXKQMcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761651AbXKQM3P (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 07:29:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754280AbXKQM3B
+	id S1752347AbXKQMcj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 07:32:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750849AbXKQMcc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 07:29:01 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59973 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750792AbXKQM3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 07:29:00 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Franck Bui-Huu <vagabon.xyz@gmail.com>
-Subject: Re: apm emulation driver broken ?
-Date: Sat, 17 Nov 2007 13:46:51 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-pm@lists.linux-foundation.org, lkml <linux-kernel@vger.kernel.org>
-References: <cda58cb80711160706l2cfac2b1p81c7a1090f228f2e@mail.gmail.com> <200711171059.57462.rjw@sisk.pl> <473ED715.9000004@gmail.com>
-In-Reply-To: <473ED715.9000004@gmail.com>
+	Sat, 17 Nov 2007 07:32:32 -0500
+Received: from fmmailgate09.web.de ([217.72.192.184]:52968 "EHLO
+	fmmailgate09.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750794AbXKQMcb convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Nov 2007 07:32:31 -0500
+Date: Sat, 17 Nov 2007 13:32:28 +0100
+Message-Id: <2090880485@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711171346.51363.rjw@sisk.pl>
+From: devzero@web.de
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: =?iso-8859-15?Q?Re:_distro_specific_kernels_vs_vanilla_kernel_and_how_?=
+ =?iso-8859-15?Q?to_compare_among_each_other?=
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX191GFFcOoHiQkFezwfjPLFo4h1qwkKiK9Ng4KgUyHxQZ7OJ3
+ pZphAi4yMYoRFdcwwdcEr26ImgMTYGNfrpAkjIS9nn79O1VzCo=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 17 of November 2007, Franck Bui-Huu wrote:
-> Rafael J. Wysocki wrote:
-> > On Saturday, 17 of November 2007, Franck Bui-Huu wrote:
-> >> Rafael J. Wysocki wrote:
-> >>> However, using PF_NOFREEZE to prevent this from happening doesn't seem to be
-> >>> a good idea.
-> >>>
-> >> Indeed but...
-> >>
-> >>> I'd probably use wait_event_freezable() (defined in
-> >>> include/linux/freezer.h) for that.
-> >> ...I would just revert this bits from now to make sure this driver
-> >> work again for v2.6.24.
-> > 
-> > I'd prefer not to.
-> > 
-> > The PF_NOFREEZE was not present in 2.6.23 already and I wouldn't like to
-> > reintroduce it now.
-> > 
-> > Why do you think that using wait_event_freezable() would not work, BTW?
-> > 
-> 
-> I've never claimed this. I just said it may be safer to revert the
-> changes for v2.6.24 and improve the current code for next releases.
-> 
-> >>> It tries to send them fake signals and waits for them to freeze.  If
-> >>> they don't freeze within the timeout, it fails and clears their
-> >>> TIF_FREEZE bits.
-> >> But send_fake_signal() seems to wake up task in INTERRUPTIBLE state
-> >> only. Looking at signal_wake_up(), it basically do:
-> >>
-> >> 	wake_up_state(t, TASK_INTERRUPTIBLE);
-> >>
-> >> What am I missing ?
-> > 
-> > Nothing. :-)
-> > 
-> > I didn't remember the change that made the freezer use TASK_INTERRUPTIBLE
-> > explicitly in there (should have looked at the current code before replying).
-> > 
-> 
-> ok so now we agreed on this point, can we assert that a user
-> land thread waiting for an event in an UNINTERRUPTIBLE state
-> will prevent a suspend to happen ?
+besides a web-browseable directory structure with all the single broken-out patches (which are typically part of src.rpm or similar) , i assume it would be good to put those patched and unpatched kernel sources online via lxr ? ( http://lxr.linux.no/ )
+  
+> -----Ursprüngliche Nachricht-----
+> Von: "Andi Kleen" <andi@firstfloor.org>
+> Gesendet: 16.11.07 23:25:29
+> An: devzero@web.de
+> CC: linux-kernel@vger.kernel.org
+> Betreff: Re: distro specific kernels vs vanilla kernel and how to compare among each other
 
-Yes.
 
-Rafael
+> 
+> devzero@web.de writes:
+> 
+> > does somebody know if there is a website or a project for giving comfortable and deeper insight into what`s specific to distro`s kernels and what`s their difference to vanilla kernel ?
+> >
+> > i mean some way to have some transparancy to what different distro vendors add to vanilla kernel sources and thus turning it into their own specific version. 
+> 
+> There used to be such a page at kernelnewbies, but at some point it disappeared.
+> 
+> I agree it would be a useful resource.
+> 
+> -Andi
+> 
+
+
+_____________________________________________________________________
+Der WEB.DE SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen!
+http://smartsurfer.web.de/?mc=100071&distributionid=000000000066
+
