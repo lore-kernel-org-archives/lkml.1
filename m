@@ -1,76 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765996AbXKQSzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764732AbXKQS7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765996AbXKQSzw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 13:55:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758694AbXKQSzo
+	id S1764732AbXKQS7J (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 13:59:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbXKQS65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 13:55:44 -0500
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:33819 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758626AbXKQSzo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 13:55:44 -0500
-Date: Sat, 17 Nov 2007 13:55:11 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Gregory Haskins <ghaskins@novell.com>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH v3 17/17] (Avoid overload)
-In-Reply-To: <473EE1AE.BA47.005A.0@novell.com>
-Message-ID: <Pine.LNX.4.58.0711171353030.12054@gandalf.stny.rr.com>
-References: <20071117062104.177779113@goodmis.org> <20071117062405.792778237@goodmis.org>
- <20071117063318.GA31442@goodmis.org> <473EE1AE.BA47.005A.0@novell.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 17 Nov 2007 13:58:57 -0500
+Received: from pat.uio.no ([129.240.10.15]:34908 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755816AbXKQS64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Nov 2007 13:58:56 -0500
+Subject: Re: [BUG] 2.6.24-rc2-mm1 - kernel bug on nfs v4
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Torsten Kaiser <just.for.lkml@googlemail.com>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       nfs@lists.sourceforge.net, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Jan Blunck <jblunck@suse.de>
+In-Reply-To: <64bb37e0711170953p67d1be49lf4eaa190d662e2b4@mail.gmail.com>
+References: <473DA608.1020804@linux.vnet.ibm.com>
+	 <64bb37e0711170953p67d1be49lf4eaa190d662e2b4@mail.gmail.com>
+Content-Type: multipart/mixed; boundary="=-JB8J0Rnqj+uhc3kuo5ga"
+Date: Sat, 17 Nov 2007 13:58:40 -0500
+Message-Id: <1195325920.7484.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+X-UiO-Resend: resent
+X-UiO-ClamAV-Virus: No
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.139)
+X-UiO-Scanned: A14B50A7BF138B6FA69EB5739ED1DD1678E494D5
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 373 total 5195828 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Sat, 17 Nov 2007, Gregory Haskins wrote:
+--=-JB8J0Rnqj+uhc3kuo5ga
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-> >>> On Sat, Nov 17, 2007 at  1:33 AM, in message
-> > This patch changes the searching for a run queue by a waking RT task
-> > to try to pick another runqueue if the currently running task
-> > is an RT task.
+
+On Sat, 2007-11-17 at 18:53 +0100, Torsten Kaiser wrote:
+> On Nov 16, 2007 3:15 PM, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> > Hi Andrew,
 > >
-> > The reason is that RT tasks behave different than normal
-> > tasks. Preempting a normal task to run a RT task to keep
-> > its cache hot is fine, because the preempted non-RT task
-> > may wait on that same runqueue to run again unless the
-> > migration thread comes along and pulls it off.
-> >
-> > RT tasks behave differently. If one is preempted, it makes
-> > an active effort to continue to run. So by having a high
-> > priority task preempt a lower priority RT task, that lower
-> > RT task will then quickly try to run on another runqueue.
-> > This will cause that lower RT task to replace its nice
-> > hot cache (and TLB) with a completely cold one. This is
-> > for the hope that the new high priority RT task will keep
-> >  its cache hot.
-> >
-> > Remeber that this high priority RT task was just woken up.
-> > So it may likely have been sleeping for several milliseconds,
-> > and will end up with a cold cache anyway. RT tasks run till
-> > they voluntarily stop, or are preempted by a higher priority
-> > task. This means that it is unlikely that the woken RT task
-> > will have a hot cache to wake up to. So pushing off a lower
-> > RT task is just killing its cache for no good reason.
->
-> You make some excellent points here.  Out of curiosity, have you tried a comparison to see if it helps?
+> > The kernel enters the xmon state while running the file system
+> > stress on nfs v4 mounted partition.
+> [snip]
+> > 0:mon> t
+> > [c0000000dbd4fb50] c000000000069768 .__wake_up+0x54/0x88
+> > [c0000000dbd4fc00] d00000000086b890 .nfs_sb_deactive+0x44/0x58 [nfs]
+> > [c0000000dbd4fc80] d000000000872658 .nfs_free_unlinkdata+0x2c/0x74 [nfs]
+> > [c0000000dbd4fd10] d000000000598510 .rpc_release_calldata+0x50/0x74 [sunrpc]
+> > [c0000000dbd4fda0] c00000000008d960 .run_workqueue+0x10c/0x1f4
+> > [c0000000dbd4fe50] c00000000008ec70 .worker_thread+0x118/0x138
+> > [c0000000dbd4ff00] c0000000000939f4 .kthread+0x78/0xc4
+> > [c0000000dbd4ff90] c00000000002b060 .kernel_thread+0x4c/0x68
 
-hehe, I was waiting for the "where's the numbers". Right now I don't have
-them. Mainly because I don't have boxes with more that 4 CPUs on them. And
-4 really doesn't make much of a difference.
+Could you try with the attached patch.
 
-If others out there would like to test, I'll write up a couple of versions
-of this code and that way we can really get numbers for them.
+Cheers
+  Trond
 
-Or perhaps someone would like to send me a 16way box. Although my wife
-would kill me. ;-)
+--=-JB8J0Rnqj+uhc3kuo5ga
+Content-Disposition: inline; filename=linux-2.6.24-007-fix_nfs_free_unlinkdata.dif
+Content-Type: message/rfc822; name=linux-2.6.24-007-fix_nfs_free_unlinkdata.dif
 
-Hmm, I'm sure I can get to our lab and run some tests too.
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+Date: Sat, 17 Nov 2007 13:52:36 -0500
+Subject: NFS: Fix nfs_free_unlinkdata()
+Message-Id: <1195325920.7484.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 
--- Steve
+We should really only be calling nfs_sb_deactive() at the end of an RPC
+call, to balance the nfs_sb_active() call in nfs_do_call_unlink(). OTOH,
+nfs_free_unlinkdata() can be called from a variety of other situations.
+
+Fix is to move the call to nfs_sb_deactive() into
+nfs_async_unlink_release().
+
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
+
+ fs/nfs/unlink.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/fs/nfs/unlink.c b/fs/nfs/unlink.c
+index b97d3bb..c90862a 100644
+--- a/fs/nfs/unlink.c
++++ b/fs/nfs/unlink.c
+@@ -31,7 +31,6 @@ struct nfs_unlinkdata {
+ static void
+ nfs_free_unlinkdata(struct nfs_unlinkdata *data)
+ {
+-	nfs_sb_deactive(NFS_SERVER(data->dir));
+ 	iput(data->dir);
+ 	put_rpccred(data->cred);
+ 	kfree(data->args.name.name);
+@@ -116,6 +115,7 @@ static void nfs_async_unlink_release(void *calldata)
+ 	struct nfs_unlinkdata	*data = calldata;
+ 
+ 	nfs_dec_sillycount(data->dir);
++	nfs_sb_deactive(NFS_SERVER(data->dir));
+ 	nfs_free_unlinkdata(data);
+ }
+ 
+
+--=-JB8J0Rnqj+uhc3kuo5ga--
 
