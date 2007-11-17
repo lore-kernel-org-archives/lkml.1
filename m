@@ -1,75 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762476AbXKQR0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761527AbXKQRd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762476AbXKQR0p (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 12:26:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbXKQR0h
+	id S1761527AbXKQRd4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 12:33:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbXKQRdr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 12:26:37 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:39233 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755233AbXKQR0h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 12:26:37 -0500
-Date: Sat, 17 Nov 2007 18:28:16 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andreas Mohr <andi@lisas.de>
-Cc: Randy Dunlap <rdunlap@xenotime.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH/RFC] eradicate bashisms in scripts/patch-kernel
-Message-ID: <20071117172816.GC7213@uranus.ravnborg.org>
-References: <20071101121133.GA14807@rhlx01.hs-esslingen.de> <20071101082457.ff9a5d67.randy.dunlap@oracle.com> <20071101221606.GA10116@rhlx01.hs-esslingen.de> <20071101160857.6e877307.rdunlap@xenotime.net> <20071102020118.GA13852@gondor.apana.org.au> <20071102200935.GA14153@rhlx01.hs-esslingen.de> <20071102131707.6023a5b7.rdunlap@xenotime.net> <20071105195827.GA24117@rhlx01.hs-esslingen.de> <20071114144627.8628f2dd.rdunlap@xenotime.net> <20071117163327.GA4296@rhlx01.hs-esslingen.de>
+	Sat, 17 Nov 2007 12:33:47 -0500
+Received: from homer.mvista.com ([63.81.120.158]:40843 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1752299AbXKQRdq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Nov 2007 12:33:46 -0500
+Subject: Re: [BUG on PREEMPT_RT, 2.6.23.1-rt5] in rt-mutex code and signals
+From: Daniel Walker <dwalker@mvista.com>
+To: Remy Bohmer <linux@bohmer.net>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       RT <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <3efb10970711170909n3acca605j70525e36faf8da7f@mail.gmail.com>
+References: <3efb10970711160751l279fe99dl9f3a130a4373a449@mail.gmail.com>
+	 <Pine.LNX.4.58.0711161516580.25989@gandalf.stny.rr.com>
+	 <3efb10970711161502m6216bf5rc19a34184b4f3a2b@mail.gmail.com>
+	 <Pine.LNX.4.58.0711161830570.28002@gandalf.stny.rr.com>
+	 <3efb10970711170344n670d8b69w6679d494922c5bb@mail.gmail.com>
+	 <1195316550.25393.21.camel@imap.mvista.com>
+	 <3efb10970711170909n3acca605j70525e36faf8da7f@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 17 Nov 2007 09:29:29 -0800
+Message-Id: <1195320569.25393.38.camel@imap.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071117163327.GA4296@rhlx01.hs-esslingen.de>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 17, 2007 at 05:33:27PM +0100, Andreas Mohr wrote:
-> Hi,
-> 
-> On Wed, Nov 14, 2007 at 02:46:27PM -0800, Randy Dunlap wrote:
-> > On Mon, 5 Nov 2007 20:58:27 +0100 Andreas Mohr wrote:
-> > > Feel free to go ahead, otherwise I'll try another patch sometime soon.
-> > > All I care about is that the result works on (at least)
-> > > one shell implementation _more_ than the current status ;)
-> > 
-> > Hi Andreas,
-> > 
-> > Can you comment on (or test) whether this patch is sufficient
-> > for your needs?  And if so, is the Signed-off-by: A.M. OK?
-> 
-> Sorry, no, using dash (0.5.3-5) there's still a remaining
-> 
-> $ linux-2.6.22/scripts/patch-kernel linux-2.6.22 /usr/src/patch-2.6
-> Current kernel version is 2.6.22 ( Holy Dancing Manatees, Batman!)
-> linux-2.6.22/scripts/patch-kernel: 207: Syntax error: Bad substitution
-> 
-> error in the
-> 
-> # strip EXTRAVERSION to just a number (drop leading '.' and trailing additions)
-> EXTRAVER=
-> if [ x$EXTRAVERSION != "x" ]
-> then
-> >>> [l.207]       if [ ${EXTRAVERSION:0:1} == "." ]; then
->                 EXTRAVER=${EXTRAVERSION:1}
->         else
->                 EXTRAVER=$EXTRAVERSION
->         fi
->         EXTRAVER=${EXTRAVER%%[[:punct:]]*}
->         #echo "$PNAME: changing EXTRAVERSION from $EXTRAVERSION to $EXTRAVER"
-> fi
-> 
-> part, which the sed expression (moderately successfully) tried to
-> take care of.
-> 
-> The good part of the story is that the current corrected almost fully
-> working version still works with bash (3.1dfsg-8), just like the
-> original patch-kernel version.
+On Sat, 2007-11-17 at 18:09 +0100, Remy Bohmer wrote:
 
-Could you (or Randy) fix it up with the comment from Herbert
-and submit the final version to me (with proper changelog and s-o-b).
+> Actually, IMO, compat_semaphores behave like semaphores should behave,
+> and thus the same as they behave on a non-RT kernel, and at the
+> locations where the semaphores are now misused as mutexes on RT, we
+> should replace them by differently-named-mutex-type-semaphores, or
+> better: real-RT-mutexes..
 
-Thanks,
-	Sam
+The vast majority of semaphore are actually binary semaphores in the
+Linux kernel .. So it's easier to mass convert semaphores to mutexes,
+then address the ones that don't conform.. Usually they are converted to
+the complete API in mainline..
+
+> IMO this wrong usage of semaphores is solved by modifying the code
+> that actually made proper use of the semaphores, and I think that if
+> the naming matches the mainline kernel, we only need to patch the
+> files that really need to be patched during the integration in
+> mainline of the RT-patch.
+
+As I say above, it's happen already.. Code is slowly getting converted
+to the complete API or the code gets converted to use a binary semaphore
+(or a mutex)..
+
+Daniel
+
