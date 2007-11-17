@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758847AbXKQJmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbXKQJ5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758847AbXKQJmY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 04:42:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbXKQJmQ
+	id S1755941AbXKQJ5F (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 04:57:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbXKQJ4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 04:42:16 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59545 "EHLO ogre.sisk.pl"
+	Sat, 17 Nov 2007 04:56:55 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:59573 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751854AbXKQJmP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 04:42:15 -0500
+	id S1750835AbXKQJ4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Nov 2007 04:56:54 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Franck Bui-Huu <vagabon.xyz@gmail.com>
-Subject: Re: apm emulation driver broken ?
-Date: Sat, 17 Nov 2007 10:59:56 +0100
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.24-rc3
+Date: Sat, 17 Nov 2007 11:14:15 +0100
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-pm@lists.linux-foundation.org, lkml <linux-kernel@vger.kernel.org>
-References: <cda58cb80711160706l2cfac2b1p81c7a1090f228f2e@mail.gmail.com> <200711162220.56494.rjw@sisk.pl> <473EAC1A.1000205@gmail.com>
-In-Reply-To: <473EAC1A.1000205@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Andreas Herrmann" <andreas.herrmann3@amd.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <alpine.LFD.0.9999.0711162123260.4260@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.9999.0711162123260.4260@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711171059.57462.rjw@sisk.pl>
+Message-Id: <200711171114.16299.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 17 of November 2007, Franck Bui-Huu wrote:
-> Rafael J. Wysocki wrote:
-> > However, using PF_NOFREEZE to prevent this from happening doesn't seem to be
-> > a good idea.
-> > 
+On Saturday, 17 of November 2007, Linus Torvalds wrote:
 > 
-> Indeed but...
+> Hmmm.. Lots of small fixes, some cleanups, and a few things like the cris 
+> updates that aren't really either, but which won't affect any normal user, 
+> and will hopefully make it easier to sync up in the future.
 > 
-> > I'd probably use wait_event_freezable() (defined in
-> > include/linux/freezer.h) for that.
+> Network driver fixes, some IDE and infiniband updates, some late cpufreq 
+> updates, and a hwmon update.
 > 
-> ...I would just revert this bits from now to make sure this driver
-> work again for v2.6.24.
-
-I'd prefer not to.
-
-The PF_NOFREEZE was not present in 2.6.23 already and I wouldn't like to
-reintroduce it now.
-
-Why do you think that using wait_event_freezable() would not work, BTW?
-
-> > It tries to send them fake signals and waits for them to freeze.  If
-> > they don't freeze within the timeout, it fails and clears their
-> > TIF_FREEZE bits.
+> On the architecture side, in addition to the afore-mentioned cris updates, 
+> there are some sh, arm, powerpc and mips updates, and also one final x86 
+> unification cleanup (and I really mean it - the rest can wait until after 
+> 2.6.24, but with this one the x86 configuration really is fairly merged, 
+> and both i386 and x86_64 are really just special cases of the "x86" 
+> architecture in the configurator).
 > 
-> But send_fake_signal() seems to wake up task in INTERRUPTIBLE state
-> only. Looking at signal_wake_up(), it basically do:
+> And cifs and ocfs2 filesystem updates to round it all up.
 > 
-> 	wake_up_state(t, TASK_INTERRUPTIBLE);
-> 
-> What am I missing ?
+> Nothing really exciting. A few things got reverted due to regressions, and
+> in general hopefully the regression counts are starting to shrink.
 
-Nothing. :-)
+Yes, they are.
 
-I didn't remember the change that made the freezer use TASK_INTERRUPTIBLE
-explicitly in there (should have looked at the current code before replying).
+Speaking of which, would you mind merging the patch at:
+http://lkml.org/lkml/2007/11/1/246
+
+To my eyes it's a regression fix, but no one has been pushing it upstream.
 
 Greetings,
 Rafael
