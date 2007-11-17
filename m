@@ -1,61 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763645AbXKQRz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762333AbXKQSAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763645AbXKQRz0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 12:55:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757606AbXKQRzM
+	id S1762333AbXKQSAO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 13:00:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755424AbXKQR76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 12:55:12 -0500
-Received: from rv-out-0910.google.com ([209.85.198.184]:23549 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757334AbXKQRzK (ORCPT
+	Sat, 17 Nov 2007 12:59:58 -0500
+Received: from homer.mvista.com ([63.81.120.158]:60426 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1755265AbXKQR75 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 12:55:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=tQn32x8pgTGNzm+T0DV4ii9sfolJ2xiubHjAeCsTAzETKwxAXYVUPsLq3/jPtK4pvotz+ztCv5h2KplOuGBg5AVc5qjhc4qfU1j5QwZrFxetTPzJYrfI8B0rlccnw+urB5z9GFCw6LvZEI4QbX/81yma7KbiyD4zArw8/9eMjE8=
-Subject: Re: Is it possible to give the user the option to cancel forkbombs?
-From: Dane Mutters <dmutters@gmail.com>
-To: Diego Calleja <diegocg@gmail.com>
-Cc: Martin Olsson <mnemo@minimum.se>, Peter Zijlstra <peterz@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-In-Reply-To: <20071117165325.3e5f571a.diegocg@gmail.com>
-References: <473E815F.30900@minimum.se>
-	 <20071116213137.6efe3f9e@the-village.bc.nu> <473E9290.3040006@minimum.se>
-	 <1195281942.15929.5.camel@Orchestrator> <1195285481.3059.12.camel@twins>
-	 <473F281B.60408@minimum.se>  <20071117165325.3e5f571a.diegocg@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Sat, 17 Nov 2007 09:55:01 -0800
-Message-Id: <1195322101.15120.3.camel@Orchestrator>
+	Sat, 17 Nov 2007 12:59:57 -0500
+Subject: Re: [BUG on PREEMPT_RT, 2.6.23.1-rt5] in rt-mutex code and signals
+From: Daniel Walker <dwalker@mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Remy Bohmer <linux@bohmer.net>, Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       RT <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071117174608.GA30641@elte.hu>
+References: <3efb10970711160751l279fe99dl9f3a130a4373a449@mail.gmail.com>
+	 <Pine.LNX.4.58.0711161516580.25989@gandalf.stny.rr.com>
+	 <3efb10970711161502m6216bf5rc19a34184b4f3a2b@mail.gmail.com>
+	 <Pine.LNX.4.58.0711161830570.28002@gandalf.stny.rr.com>
+	 <3efb10970711170344n670d8b69w6679d494922c5bb@mail.gmail.com>
+	 <1195316550.25393.21.camel@imap.mvista.com>
+	 <3efb10970711170909n3acca605j70525e36faf8da7f@mail.gmail.com>
+	 <1195320569.25393.38.camel@imap.mvista.com>
+	 <20071117174608.GA30641@elte.hu>
+Content-Type: text/plain
+Date: Sat, 17 Nov 2007 09:55:40 -0800
+Message-Id: <1195322141.25393.41.camel@imap.mvista.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sat, 2007-11-17 at 16:53 +0100, Diego Calleja wrote:
-> El Sat, 17 Nov 2007 09:42:51 -0800, Martin Olsson <mnemo@minimum.se> escribió:
+On Sat, 2007-11-17 at 18:46 +0100, Ingo Molnar wrote:
+> * Daniel Walker <dwalker@mvista.com> wrote:
 > 
-> > I don't think that setting a max process count by default is a 
-> > good/viable solution. 
+> > > Actually, IMO, compat_semaphores behave like semaphores should 
+> > > behave, and thus the same as they behave on a non-RT kernel, and at 
+> > > the locations where the semaphores are now misused as mutexes on RT, 
+> > > we should replace them by differently-named-mutex-type-semaphores, 
+> > > or better: real-RT-mutexes..
+> > 
+> > The vast majority of semaphore are actually binary semaphores in the 
+> > Linux kernel .. So it's easier to mass convert semaphores to mutexes, 
+> > then address the ones that don't conform.. Usually they are converted 
+> > to the complete API in mainline..
 > 
+> right now there are 3992 mutex_lock() critical sections in the kernel 
+> and only 351 down() based critical sections are left.
 > 
-> I don't see why...OS X had a default limit of 100 processes per uid (increased
-> to 266 in 10.5) and "it works" (many people notices it, but it's not surprising
-> since the limit is too restrictive).
+> fixing the top 20:
 > 
-> If you don't have limits, you can't avoid starvation easily. From my experience,
-> since I use CFS, fork/compile bombs (forgetting to put a number after make -j...)
-> are very sluggish mainly because the whole graphic subsystem is paged out.
+>       4 &vuart_bus_priv.probe_mutex
+>       5 &connections_lock
+>       5 &irq_ptr->setting_up_sema
+>       5 &kbd->sem
+>       5 &pnp_res_mutex
+>       5 &port->port_lock
+>       5 &tq_init_sem
+>       6 &adb_handler_sem
+>       6 &dev->parent->sem
+>       6 &driver_lock
+>       6 &ha->vport_sem
+>       7 &big_buffer_sem
+>       8 &dir_f->sem
+>       9 &c->alloc_sem
+>      11 &dev->sem
+>      11 &usbvision->lock
+>      12 &c->erase_free_sem
+>      15 &u132->scheduler_lock
+>      16 &zfcp_data.config_sema
+>      17 &f->sem
+> 
+> would remove 164 of them, so it would convert half of the remaining 
+> semaphore use in the kernel. So the job is almost finished - would 
+> anyone like to go for the final grand feat: complete removal of 
+> semaphores from the kernel? :-)
 
-I don't know if this is at all feasible, but is it possible to have a
-mechanism that would detect a fork bomb in progress and either stop the
-fork, or allow the user to cancel the operation?  For example, are there
-any legitimate processes (i.e. ones that really need to fork like crazy)
-that would need to generate 200+ processes in less than 1 second?
+Sure, you want to split the list?
 
-(Note: I'm not a programmer; I'm just throwing out the idea.)
-
--Dane
+Daniel
 
