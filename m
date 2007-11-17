@@ -1,63 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbXKQXpe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756598AbXKQXxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756767AbXKQXpe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 18:45:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbXKQXpZ
+	id S1756598AbXKQXxX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 18:53:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755603AbXKQXxI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 18:45:25 -0500
-Received: from ccerelrim01.cce.hp.com ([161.114.21.22]:24925 "EHLO
-	ccerelrim01.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754147AbXKQXpX (ORCPT
+	Sat, 17 Nov 2007 18:53:08 -0500
+Received: from twinlark.arctic.org ([207.29.250.54]:54002 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755550AbXKQXxH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 18:45:23 -0500
-X-Greylist: delayed 2108 seconds by postgrey-1.27 at vger.kernel.org; Sat, 17 Nov 2007 18:45:20 EST
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett Packard
-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Subject: Re: [TOMOYO #5 18/18] LSM expansion for TOMOYO Linux.
-Date: Sat, 17 Nov 2007 18:09:59 -0500
-User-Agent: KMail/1.9.7
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, takedakn@nttdata.co.jp
-References: <20071116173439.796600895@I-love.SAKURA.ne.jp> <200711161423.28065.paul.moore@hp.com> <200711171245.HFH05776.LQFOtVMHOSFOFJ@I-love.SAKURA.ne.jp>
-In-Reply-To: <200711171245.HFH05776.LQFOtVMHOSFOFJ@I-love.SAKURA.ne.jp>
+	Sat, 17 Nov 2007 18:53:07 -0500
+Message-ID: <473F7EDB.60701@kernel.org>
+Date: Sat, 17 Nov 2007 15:52:59 -0800
+From: Andrew Morgan <morgan@kernel.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071020)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Kevin Winchester <kjwinchester@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, apw@shadowen.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       kamalesh@linux.vnet.ibm.com
+Subject: Re: 2.6.24-rc2-mm1 -- strange apparent network failures
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org> <20071115164441.67a8e2df.akpm@linux-foundation.org> <473E794A.4060107@kernel.org> <200711170848.35726.kjwinchester@gmail.com>
+In-Reply-To: <200711170848.35726.kjwinchester@gmail.com>
+X-Enigmail-Version: 0.94.4.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711171810.00404.paul.moore@hp.com>
-X-PMX-Version: 5.3.1.294258, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2007.11.17.144310
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 16 November 2007 10:45:32 pm Tetsuo Handa wrote:
-> Paul Moore wrote:
-> > I might be missing something here, but why do you need to do a skb_peek()
-> > again?  You already have the skb and the sock, just do the unlink.
->
-> The skb might be already dequeued by other thread while I slept inside
-> security_post_recv_datagram().
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Okay, well if that is the case I think you are going to have another problem 
-in that you could end up throwing away skbs that haven't been through your 
-security_post_recv_datagram() hook because you _always_ throw away the result 
-of the second skb_peek().  Once again, if I'm wrong please correct me.
+Kevin,
 
-> > Second, why not move the 'no_peek' code to just before 'no_packet'?
->
-> Oh, I didn't notice I can insert here. Now I can also move the rest code
-> like
->
-> |		error = security_post_recv_datagram(sk, skb, flags);
-> |		if (error)
-> |                       goto force_dequeue;
-> |
-> |         } while (!wait_for_packet(sk, err, &timeo));
+Can you try this quick hack?
 
-Where did the 'if (skb) return skb;' code go?  Don't you need to do you LSM 
-call before you return the skb?
+diff --git a/kernel/capability.c b/kernel/capability.c
+index e57d1aa..4088610 100644
+- --- a/kernel/capability.c
++++ b/kernel/capability.c
+@@ -109,7 +109,7 @@ out:
+                        kdata[i].permitted = pP.cap[i];
+                        kdata[i].inheritable = pI.cap[i];
+                }
+- -               while (i < _LINUX_CAPABILITY_U32S) {
++               while (0 && (i < _LINUX_CAPABILITY_U32S)) {
+                        if (pE.cap[i] || pP.cap[i] || pP.cap[i]) {
+                                /* Cannot represent w/ legacy structure */
+                                return -ERANGE;
 
--- 
-paul moore
-linux security @ hp
+Thanks
+
+Andrew
+
+Kevin Winchester wrote:
+> On November 17, 2007 01:16:58 am Andrew Morgan wrote:
+>> Hi,
+>>
+>> This warning is just saying that you might want to reconsider
+>> recompiling your dhclient with a newer libcap - which has native support
+>> for 64-bit capabilities. This is supposed to be informative, and not be
+>> associated with any particular error.
+>>
+>> From your comments, you believe that this patch causes something in your
+>> boot process to fail. Can you supply some detail about the version of
+>> dhclient you are using? I'd like to understand exactly what it is doing
+>> (via libcap).
+>>
+>> Thanks
+>>
+> 
+> The boot succeeds (and appears to bring initialize the network adapter 
+> properly - it autonegotiates a 100Mbps link speed), but the dhcp client is 
+> never able to get an address.  However, applying the rc2-mm1 patch series up 
+> to just before:
+> 
+>   add-64-bit-capability-support-to-the-kernel.patch
+> 
+> results in a working kernel.  Applying just this patch causes the failure.  To 
+> be sure, I also tried applying the above patch plus the following ones:
+> 
+>   add-64-bit-capability-support-to-the-kernel-checkpatch-fixes.patch
+>   add-64-bit-capability-support-to-the-kernel-fix.patch
+>   add-64-bit-capability-support-to-the-kernel-fix-fix.patch
+>   remove-unnecessary-include-from-include-linux-capabilityh.patch
+> 
+> but the problem still occurs even with all of these.
+> 
+> As to versions, I'm running Kubuntu gutsy, so I have the default:
+> 
+> dhcp3-client           3.0.5-3ubuntu4
+> libcap1                1:1.10-14build1
+> 
+> packages installed.
+> 
+> Let me know if you need any other information, or if you have a patch you 
+> would like tested.
+> 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.6 (GNU/Linux)
+
+iD8DBQFHP37LQheEq9QabfIRAst5AJ9Nsw0RtF2NDuUAMvQZh5OFWEB4ugCeIxMH
+lp5/Ka7SJZLIrQpZDijrd1E=
+=GN18
+-----END PGP SIGNATURE-----
