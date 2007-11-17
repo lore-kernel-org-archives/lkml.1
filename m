@@ -1,61 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761527AbXKQRd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762792AbXKQRgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761527AbXKQRd4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 12:33:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbXKQRdr
+	id S1762792AbXKQRgg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 12:36:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755494AbXKQRg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 12:33:47 -0500
-Received: from homer.mvista.com ([63.81.120.158]:40843 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752299AbXKQRdq (ORCPT
+	Sat, 17 Nov 2007 12:36:29 -0500
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:42911 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755430AbXKQRg2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 12:33:46 -0500
-Subject: Re: [BUG on PREEMPT_RT, 2.6.23.1-rt5] in rt-mutex code and signals
-From: Daniel Walker <dwalker@mvista.com>
-To: Remy Bohmer <linux@bohmer.net>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       RT <linux-rt-users@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <3efb10970711170909n3acca605j70525e36faf8da7f@mail.gmail.com>
-References: <3efb10970711160751l279fe99dl9f3a130a4373a449@mail.gmail.com>
-	 <Pine.LNX.4.58.0711161516580.25989@gandalf.stny.rr.com>
-	 <3efb10970711161502m6216bf5rc19a34184b4f3a2b@mail.gmail.com>
-	 <Pine.LNX.4.58.0711161830570.28002@gandalf.stny.rr.com>
-	 <3efb10970711170344n670d8b69w6679d494922c5bb@mail.gmail.com>
-	 <1195316550.25393.21.camel@imap.mvista.com>
-	 <3efb10970711170909n3acca605j70525e36faf8da7f@mail.gmail.com>
-Content-Type: text/plain
-Date: Sat, 17 Nov 2007 09:29:29 -0800
-Message-Id: <1195320569.25393.38.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+	Sat, 17 Nov 2007 12:36:28 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=mX9rqSkP1IDRxI1k5Kee0cPaHKw6TE3Whrw9lKKNZehJW47kzryAwBbCkC7H+T/3AXcNrjf4S+XuLkGv11y2dvYuK2nMx+fHMc2drwE5sP3c6oLZ9YGMFH94i4FnWZItE0Db7zsngIu8iQqzHfEt2Mi/ACVVA19Bnr8WatiHY2I=  ;
+X-YMail-OSG: x6TTG94VM1kDuGtKQoaPYQXtoS4NP1TIWJrz5BRr.JkJYxTl.1AhtY0o5EJFjxKv3kfCRSEaSA--
+From: David Brownell <david-b@pacbell.net>
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [patch/rfc 1/4] GPIO implementation framework
+Date: Sat, 17 Nov 2007 09:36:24 -0800
+User-Agent: KMail/1.9.6
+Cc: "eric miao" <eric.y.miao@gmail.com>,
+       "Linux Kernel list" <linux-kernel@vger.kernel.org>,
+       "Felipe Balbi" <felipebalbi@users.sourceforge.net>,
+       "Bill Gatliff" <bgat@billgatliff.com>,
+       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
+       "Andrew Victor" <andrew@sanpeople.com>,
+       "Tony Lindgren" <tony@atomide.com>, "Kevin Hilman" <khilman@mvista.com>,
+       "Paul Mundt" <lethal@linux-sh.org>, "Ben Dooks" <ben@trinity.fluff.org>
+References: <200710291809.29936.david-b@pacbell.net> <200711132036.14927.david-b@pacbell.net> <20071117113855.7532e477@hyperion.delvare>
+In-Reply-To: <20071117113855.7532e477@hyperion.delvare>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711170936.25524.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-11-17 at 18:09 +0100, Remy Bohmer wrote:
+On Saturday 17 November 2007, Jean Delvare wrote:
+> On Tue, 13 Nov 2007 20:36:13 -0800, David Brownell wrote:
+> > On Tuesday 13 November 2007, eric miao wrote:
+> > >  	if (!requested)
+> > > -		printk(KERN_DEBUG "GPIO-%d autorequested\n",
+> > > -				chip->base + offset);
+> > > +		pr_debug("GPIO-%d autorequested\n", gpio);
+> > 
+> > Leave the printk in ... this is the sort of thing we want
+> > to see fixed, which becomes unlikely once you hide such
+> > diagnostics.  And for that matter, what would be enabling
+> > the "-DDEBUG" that would trigger a pr_debug() message?
+> 
+> The original code isn't correct either.
 
-> Actually, IMO, compat_semaphores behave like semaphores should behave,
-> and thus the same as they behave on a non-RT kernel, and at the
-> locations where the semaphores are now misused as mutexes on RT, we
-> should replace them by differently-named-mutex-type-semaphores, or
-> better: real-RT-mutexes..
+It's perfectly correct.  That it's an idiom you don't
+seem to *like* but is distinct from correctness.
 
-The vast majority of semaphore are actually binary semaphores in the
-Linux kernel .. So it's easier to mass convert semaphores to mutexes,
-then address the ones that don't conform.. Usually they are converted to
-the complete API in mainline..
 
-> IMO this wrong usage of semaphores is solved by modifying the code
-> that actually made proper use of the semaphores, and I think that if
-> the naming matches the mainline kernel, we only need to patch the
-> files that really need to be patched during the integration in
-> mainline of the RT-patch.
+> Either this is a debug message 
+> and indeed pr_debug() should be used, or it's not and KERN_DEBUG should
+> be replaced by a lower log level.
 
-As I say above, it's happen already.. Code is slowly getting converted
-to the complete API or the code gets converted to use a binary semaphore
-(or a mutex)..
+KERN_DEBUG is what says the message level is "debug".
+Both styles log messages at that priority level.
 
-Daniel
+Which is distinct from saying that the message should
+vanish from non-debug builds ... that's what pr_debug
+and friends do, by relying implicitly on "-DDEBUG".
 
+In this case, the original code was saying that the
+message should NOT just vanish.  One reason the patch
+was incorrect was that even on its own terms, it was
+wrong ... since it used the "-DDEBUG" mechanism wrong,
+and prevented the message from *EVER* appearing.
+
+- Dave
