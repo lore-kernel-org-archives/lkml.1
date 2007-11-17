@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760565AbXKQL5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758528AbXKQMUi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760565AbXKQL5Z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 06:57:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755086AbXKQL5R
+	id S1758528AbXKQMUi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 07:20:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750792AbXKQMUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 06:57:17 -0500
-Received: from mu-out-0910.google.com ([209.85.134.184]:31717 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755077AbXKQL5P (ORCPT
+	Sat, 17 Nov 2007 07:20:30 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:41419 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750749AbXKQMUa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 06:57:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=cF+jkmJ0o8Dx9X/yfdBLbdlBFNbNJSbewLenevF/hsg2YVKtR+sN402yzuX3TzW2O/qSFhzWPYXPSIUEjPvnkCVqBvVu7bgmfugQcUsqchlCxIqFAszsVOHdnP9T9KhgOr+ZfzY/lZUEaCP9D9loyku1y/uMPxvorHqUUGW3Nf8=
-Message-ID: <473ED715.9000004@gmail.com>
-Date: Sat, 17 Nov 2007 12:57:09 +0100
-From: Franck Bui-Huu <vagabon.xyz@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Sat, 17 Nov 2007 07:20:30 -0500
+Date: Sat, 17 Nov 2007 13:20:10 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Theodore Tso <tytso@mit.edu>, Daniel Barkalow <barkalow@iabervon.org>,
+       Romano Giannetti <romanol@upcomillas.es>,
+       Benoit Boissinot <bboissin@gmail.com>, Mark Lord <liml@rtr.ca>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, protasnb@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG] New Kernel Bugs
+Message-ID: <20071117122010.GC4250@stusta.de>
+References: <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca> <40f323d00711130752k19cab8eauc3456721274b3267@mail.gmail.com> <20071113171356.GA25824@thunk.org> <Pine.LNX.4.64.0711141810110.12193@iabervon.org> <20071115153057.GE17180@thunk.org> <Pine.LNX.4.64.0711151034340.12193@iabervon.org> <1195201202.13688.10.camel@localhost> <Pine.LNX.4.64.0711161303440.12193@iabervon.org> <20071116194617.GI11339@thunk.org>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: linux-pm@lists.linux-foundation.org, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: apm emulation driver broken ?
-References: <cda58cb80711160706l2cfac2b1p81c7a1090f228f2e@mail.gmail.com> <200711162220.56494.rjw@sisk.pl> <473EAC1A.1000205@gmail.com> <200711171059.57462.rjw@sisk.pl>
-In-Reply-To: <200711171059.57462.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20071116194617.GI11339@thunk.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Saturday, 17 of November 2007, Franck Bui-Huu wrote:
->> Rafael J. Wysocki wrote:
->>> However, using PF_NOFREEZE to prevent this from happening doesn't seem to be
->>> a good idea.
->>>
->> Indeed but...
->>
->>> I'd probably use wait_event_freezable() (defined in
->>> include/linux/freezer.h) for that.
->> ...I would just revert this bits from now to make sure this driver
->> work again for v2.6.24.
+On Fri, Nov 16, 2007 at 02:46:18PM -0500, Theodore Tso wrote:
+> On Fri, Nov 16, 2007 at 01:20:16PM -0500, Daniel Barkalow wrote:
+> > Compared to getting useful suggestions from a mailing list, especially 
+> > before you've gotten anybody's attention? Hours or overnight isn't 
+> > particularly long, and doesn't take up much of your time if you've got a 
+> > working kernel to use while it's working.
 > 
-> I'd prefer not to.
-> 
-> The PF_NOFREEZE was not present in 2.6.23 already and I wouldn't like to
-> reintroduce it now.
-> 
-> Why do you think that using wait_event_freezable() would not work, BTW?
-> 
+> But a bisect takes around 7 compiles.
+>...
 
-I've never claimed this. I just said it may be safer to revert the
-changes for v2.6.24 and improve the current code for next releases.
+I don't understand that number.
 
->>> It tries to send them fake signals and waits for them to freeze.  If
->>> they don't freeze within the timeout, it fails and clears their
->>> TIF_FREEZE bits.
->> But send_fake_signal() seems to wake up task in INTERRUPTIBLE state
->> only. Looking at signal_wake_up(), it basically do:
->>
->> 	wake_up_state(t, TASK_INTERRUPTIBLE);
->>
->> What am I missing ?
-> 
-> Nothing. :-)
-> 
-> I didn't remember the change that made the freezer use TASK_INTERRUPTIBLE
-> explicitly in there (should have looked at the current code before replying).
-> 
+The common case are regressions in -rc1, and a bisection of
+at about 7000 commits takes around 13 compiles.
 
-ok so now we agreed on this point, can we assert that a user
-land thread waiting for an event in an UNINTERRUPTIBLE state
-will prevent a suspend to happen ?
+>    	      	   	       		       	  - Ted
 
-		Franck
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
