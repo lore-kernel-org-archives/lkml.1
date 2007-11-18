@@ -1,66 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbXKRXNg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755644AbXKRXOe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755374AbXKRXNg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 18:13:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752869AbXKRXN2
+	id S1755644AbXKRXOe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 18:14:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753017AbXKRXOY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 18:13:28 -0500
-Received: from phunq.net ([64.81.85.152]:34736 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752807AbXKRXN2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 18:13:28 -0500
-From: Daniel Phillips <phillips@phunq.net>
-To: "Rob Mueller" <robm@fastmail.fm>
-Subject: Re: mmap dirty limits on 32 bit kernels (Was: [BUG] New Kernel Bugs)
-Date: Sun, 18 Nov 2007 16:13:18 -0700
-User-Agent: KMail/1.9.5
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Bron Gondwana" <brong@fastmail.fm>,
-       "Christian Kujau" <lists@nerdbynature.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "riel" <riel@redhat.com>, "Anton Altaparmakov" <aia21@cam.ac.uk>
-References: <20071113.043207.44732743.davem@davemloft.net> <alpine.LFD.0.9999.0711151342100.4260@woody.linux-foundation.org> <1ddf01c827d6$40106500$0a01a8c0@robmhp>
-In-Reply-To: <1ddf01c827d6$40106500$0a01a8c0@robmhp>
+	Sun, 18 Nov 2007 18:14:24 -0500
+Received: from sceptre.pobox.com ([207.106.133.20]:38405 "EHLO
+	sceptre.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752869AbXKRXOW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 18:14:22 -0500
+From: Junio C Hamano <gitster@pobox.com>
+To: git@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.5.3.6
+References: <7vpryugb7i.fsf@gitster.siamese.dyndns.org>
+Date: Sun, 18 Nov 2007 15:14:15 -0800
+In-Reply-To: <7vpryugb7i.fsf@gitster.siamese.dyndns.org> (Junio C. Hamano's
+	message of "Wed, 31 Oct 2007 15:40:01 -0700")
+Message-ID: <7vve7ztad4.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711181513.19559.phillips@phunq.net>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 November 2007 14:24, Rob Mueller wrote:
-> > That's my personal opinion, and I realize that some of the
-> > commercial vendors may care about their insane customers'
-> > satisfaction, but I'm simply not interested in insane users. If
-> > they have that much RAM (and bought it a few years ago when a
-> > 64-bit CPU wasn't an option), they can't be poor.
->
-> From our perspective, the main issue is that some of these machines
-> we spent quite a bit of money on the big RAM (for it's day) + lots of
-> 15k RPM SCSI drives + multi-year support contracts. They're highly IO
-> bound, and barely use 10-20% of their old 2.4Ghz Prestonia Xeon CPUs.
-> It's hard to justify junking those machines < 5 years.
->
-> We have a couple of 6G machines and some 8G machines using PAE. On
-> the whole, they actually have been working really well (hmmm, apart
-> from the recent dirty pages issue + reiserfs data=journal leaks +
-> inodes in lowmem limits)
+The latest maintenance release GIT 1.5.3.6 is available at the
+usual places:
 
-Junk everything except the 15K drives, you will be glad you did.  Too 
-bad about those multi-year support contracts, hopefully you got a deal 
-on them.
+  http://www.kernel.org/pub/software/scm/git/
 
-Prediction: after these dirty pages issues are gone, there will be more 
-dirty page issues because the notion of dirty page limit is 
-fundamentally broken.  Your smartest recourse is to re-motherboard to a 
-place where the dirty page limit borkage does not hurt as much, and in 
-the process you will get a cheap hardware upgrade.  Everybody will be 
-happy, the sun will come out, the birds will sing.
+  git-1.5.3.6.tar.{gz,bz2}			(tarball)
+  git-htmldocs-1.5.3.6.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.5.3.6.tar.{gz,bz2}		(preformatted docs)
+  RPMS/$arch/git-*-1.5.3.6-1.$arch.rpm	(RPM)
 
-Regards,
+----------------------------------------------------------------
+GIT v1.5.3.6 Release Notes
+==========================
 
-Daniel
+Fixes since v1.5.3.5
+--------------------
+
+ * git-cvsexportcommit handles root commits better.
+
+ * git-svn dcommit used to clobber when sending a series of
+   patches.
+
+ * git-svn dcommit failed after attempting to rebase when
+   started with a dirty index; now it stops upfront.
+
+ * git-grep sometimes refused to work when your index was
+   unmerged.
+
+ * "git-grep -A1 -B2" acted as if it was told to run "git -A1 -B21".
+
+ * git-hash-object did not honor configuration variables, such as
+   core.compression.
+
+ * git-index-pack choked on a huge pack on 32-bit machines, even when
+   large file offsets are supported.
+
+ * atom feeds from git-web said "10" for the month of November.
+
+ * a memory leak in commit walker was plugged.
+
+ * When git-send-email inserted the original author's From:
+   address in body, it did not mark the message with
+   Content-type: as needed.
+
+ * git-revert and git-cherry-pick incorrectly refused to start
+   when the work tree was dirty.
+
+ * git-clean did not honor core.excludesfile configuration.
+
+ * git-add mishandled ".gitignore" files when applying them to
+   subdirectories.
+
+ * While importing a too branchy history, git-fastimport did not
+   honor delta depth limit properly.
+
+ * Support for zlib implementations that lack ZLIB_VERNUM and definition
+   of deflateBound() has been added.
+
+ * Quite a lot of documentation clarifications.
+
+
+----------------------------------------------------------------
+
+Changes since v1.5.3.5 are as follows:
+
+Alex Riesen (1):
+      stop t1400 hiding errors in tests
+
+Ask Bjørn Hansen (1):
+      When exec() fails include the failing command in the error message
+
+Benoit Sigoure (2):
+      git-send-email: Change the prompt for the subject of the initial message.
+      git-svn: prevent dcommitting if the index is dirty.
+
+Brad King (1):
+      cvsexportcommit: fix for commits that do not have parents
+
+Christian Couder (1):
+      for-each-ref: fix off by one read.
+
+David D Kilzer (2):
+      RelNotes-1.5.3.5: fix typo
+      RelNotes-1.5.3.5: fix another typo
+
+David Symonds (1):
+      Improve accuracy of check for presence of deflateBound.
+
+Eric Wong (2):
+      git-svn: fix dcommit clobbering when committing a series of diffs
+      git-svn: t9114: verify merge commit message in test
+
+Gerrit Pape (4):
+      git-diff.txt: add section "output format" describing the diff formats
+      git-cvsimport: really convert underscores in branch names to dots with -u
+      git-daemon: fix remote port number in log entry
+      git-mailsplit: with maildirs not only process cur/, but also new/
+
+Jakub Narebski (1):
+      gitweb: Update config file example for snapshot feature in gitweb/INSTALL
+
+Jeff King (2):
+      git-branch: remove mention of non-existent '-b' option
+      git-send-email: add charset header if we add encoded 'From'
+
+Jing Xue (1):
+      replace reference to git-rm with git-reset in git-commit doc
+
+Johannes Schindelin (1):
+      Add Documentation/CodingGuidelines
+
+Jonas Fonseca (3):
+      Remove escaping of '|' in manpage option sections
+      instaweb: Minor cleanups and fixes for potential problems
+      Documentation: Fix man page breakage with DocBook XSL v1.72
+
+Jonathan del Strother (1):
+      Fixing path quoting in git-rebase
+
+Junio C Hamano (12):
+      grep with unmerged index
+      refresh_index_quietly(): express "optional" nature of index writing better
+      Makefile: add missing dependency on wt-status.h
+      Start preparing for 1.5.3.6
+      t/t3404: fix test for a bogus todo file.
+      revert/cherry-pick: allow starting from dirty work tree.
+      git-clean: honor core.excludesfile
+      core.excludesfile clean-up
+      Fix per-directory exclude handing for "git add"
+      Update draft release notes for 1.5.3.6
+      grep -An -Bm: fix invocation of external grep command
+      GIT 1.5.3.6
+
+Kristian Høgsberg (1):
+      Remove unecessary hard-coding of EDITOR=':' VISUAL=':' in some test suites.
+
+Marco Costalba (1):
+      Remove a couple of duplicated include
+
+Mike Hommey (1):
+      Delay pager setup in git blame
+
+Nicolas Pitre (3):
+      print warning/error/fatal messages in one shot
+      git-hash-object should honor config variables
+      fix index-pack with packs >4GB containing deltas on 32-bit machines
+
+Ralf Wildenhues (3):
+      git-clone.txt: Improve --depth description.
+      Avoid a few unportable, needlessly nested "...`...".
+      Fix sed string regex escaping in module_name.
+
+Sergei Organov (6):
+      git-filter-branch.txt: fix a typo.
+      git-format-patch.txt: fix explanation of an example.
+      Documentation: quote commit messages consistently.
+      SubmittingPatches: improve the 'Patch:' section of the checklist
+      core-tutorial.txt: Fix argument mistake in an example.
+      git-remote.txt: fix typo
+
+Shawn O. Pearce (2):
+      Fix memory leak in traverse_commit_list
+      Don't allow fast-import tree delta chains to exceed maximum depth
+
+Vincent Zanotti (1):
+      gitweb: correct month in date display for atom feeds
+
+Wincent Colaiuta (2):
+      Grammar fixes for gitattributes documentation
+      Fix t9101 test failure caused by Subversion "auto-props"
+
