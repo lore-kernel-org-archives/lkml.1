@@ -1,85 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752322AbXKRQsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753197AbXKRQti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752322AbXKRQsc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 11:48:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbXKRQsY
+	id S1753197AbXKRQti (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 11:49:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbXKRQtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 11:48:24 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:48123 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750984AbXKRQsX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 11:48:23 -0500
-Date: Sun, 18 Nov 2007 19:48:34 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] use __set_task_state() for TRACED/STOPPED tasks
-Message-ID: <20071118164834.GA3383@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Sun, 18 Nov 2007 11:49:31 -0500
+Received: from neopsis.com ([213.239.204.14]:49808 "EHLO
+	matterhorn.dbservice.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750984AbXKRQta (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 11:49:30 -0500
+Message-ID: <47406CFF.8070306@dbservice.com>
+Date: Sun, 18 Nov 2007 17:49:03 +0100
+From: Tomas Carnecky <tom@dbservice.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070802)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: laptop reboots right after hibernation
+References: <473730F6.2010900@dbservice.com> <20071118105214.GB7299@ucw.cz>
+In-Reply-To: <20071118105214.GB7299@ucw.cz>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Neopsis-MailScanner-Information: Neopsis MailScanner using ClamAV and Spaassassin
+X-Neopsis-MailScanner: Found to be clean
+X-Neopsis-MailScanner-SpamCheck: not spam, SpamAssassin (score=-2.285,
+	required 5, autolearn=spam, AWL 0.21, BAYES_00 -2.60,
+	RDNS_DYNAMIC 0.10)
+X-MailScanner-From: tom@dbservice.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-1. It is much easier to grep for ->state change if __set_task_state() is used
-   instead of the direct assignment.
+Pavel Machek wrote:
+> Hi!
+> 
+>> echo disk > /sys/power/state
+>>
+>> successfully saves that state to the disk, but just as the laptop is
+>> about to turn itself off, it reboots (successfully, so the
+>> hibernation/resume process works well, even with X running! which is
+>> awesome :) ). But I'd rather like the computer turned off after I
+>> hibernate it. Where could the problem be?
+>>
+>> It's a new laptop, TP X61 tablet, I tried ubuntu (7.10, gutsy) for a few
+>> days, both suspend and hibernate worked there (with one or two crashes,
+>> probably due to X, I've read that the intel driver got some
+>> suspend/resume improvements recently). Now I'm running gentoo, kernel
+>> 2.6.24-rc2. I'm using newer versions of almost all software now compared
+>> to the ubuntu system.
+> 
+> If it works in older ubuntu, you can probably do bisect. Does normal
+> shutdown work? You can try platform vs. shutdown mode...
 
-2. ptrace_stop() and handle_group_stop() use set_task_state() which adds the
-   unneeded mb() (btw even if we use mb() it is still possible that do_wait()
-   sees the new ->state but not ->exit_code, but this is ok).
+I forgot, normal shutdown (init 0) works, the 'shutdown' command fails
+somewhere in the gentoo init scripts, but that has nothing to do with
+the kernel. 'init 6' also works. Both regardless of where the notebook
+is (dock or outside).
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-
---- 24/kernel/fork.c~state	2007-11-09 12:57:31.000000000 +0300
-+++ 24/kernel/fork.c	2007-11-18 19:27:38.000000000 +0300
-@@ -1462,7 +1462,7 @@ long do_fork(unsigned long clone_flags,
- 		if (!(clone_flags & CLONE_STOPPED))
- 			wake_up_new_task(p, clone_flags);
- 		else
--			p->state = TASK_STOPPED;
-+			__set_task_state(p, TASK_STOPPED);
- 
- 		if (unlikely (trace)) {
- 			current->ptrace_message = nr;
---- 24/kernel/ptrace.c~state	2007-10-25 16:22:12.000000000 +0400
-+++ 24/kernel/ptrace.c	2007-11-18 19:30:20.000000000 +0300
-@@ -53,7 +53,7 @@ void ptrace_untrace(struct task_struct *
- 	spin_lock(&child->sighand->siglock);
- 	if (child->state == TASK_TRACED) {
- 		if (child->signal->flags & SIGNAL_STOP_STOPPED) {
--			child->state = TASK_STOPPED;
-+			__set_task_state(child, TASK_STOPPED);
- 		} else {
- 			signal_wake_up(child, 1);
- 		}
-@@ -104,7 +104,7 @@ int ptrace_check_attach(struct task_stru
- 		ret = 0;
- 		spin_lock_irq(&child->sighand->siglock);
- 		if (child->state == TASK_STOPPED) {
--			child->state = TASK_TRACED;
-+			__set_task_state(child, TASK_TRACED);
- 		} else if (child->state != TASK_TRACED && !kill) {
- 			ret = -ESRCH;
- 		}
---- 24/kernel/signal.c~state	2007-11-09 12:57:31.000000000 +0300
-+++ 24/kernel/signal.c	2007-11-18 19:33:19.000000000 +0300
-@@ -1617,7 +1617,7 @@ static void ptrace_stop(int exit_code, i
- 	current->exit_code = exit_code;
- 
- 	/* Let the debugger run.  */
--	set_current_state(TASK_TRACED);
-+	__set_current_state(TASK_TRACED);
- 	spin_unlock_irq(&current->sighand->siglock);
- 	try_to_freeze();
- 	read_lock(&tasklist_lock);
-@@ -1781,7 +1781,7 @@ static int handle_group_stop(void)
- 	if (stop_count == 0)
- 		current->signal->flags = SIGNAL_STOP_STOPPED;
- 	current->exit_code = current->signal->group_exit_code;
--	set_current_state(TASK_STOPPED);
-+	__set_current_state(TASK_STOPPED);
- 	spin_unlock_irq(&current->sighand->siglock);
- 	finish_stop(stop_count);
- 	return 1;
-
+tom
