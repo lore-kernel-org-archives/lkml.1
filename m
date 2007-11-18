@@ -1,105 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753603AbXKRRTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753908AbXKRRUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753603AbXKRRTU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 12:19:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbXKRRTM
+	id S1753908AbXKRRUx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 12:20:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbXKRRUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 12:19:12 -0500
-Received: from smtp116.plus.mail.re1.yahoo.com ([69.147.102.79]:47999 "HELO
-	smtp116.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751058AbXKRRTL (ORCPT
+	Sun, 18 Nov 2007 12:20:46 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:35908 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751042AbXKRRUp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 12:19:11 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
-  b=FDWTN9hw0nl3oD5eJ7LiBsK1NXJZsZobv3rpKazMbDro/kHb4/Isx8eJZwO5A57vSgHaeme6VIdsnp3CBhd8JfYOz1MslAD8PclvyiyCtdRGk6OKTNtplArrVKTyzmWmaFEAhPAyhF5d7suFrK0BXclxyi/dM0mqh1Mk/UynALo=  ;
-X-YMail-OSG: 3Fge69YVM1kxVDi0PHI6JFRLYMqTEV2QVKvMReR13vND.2y5P8Sv11xGVfbfQ7Nq9NjA3LLR1Q--
-Date: Sun, 18 Nov 2007 14:11:30 +0100
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: Lucy McCoy <lucy@keyspan.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] keyspan: init termios properly
-Message-ID: <20071118131130.GA3991@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
-References: <46954.192.168.1.71.1195161016.webmail@192.168.1.71>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <46954.192.168.1.71.1195161016.webmail@192.168.1.71>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sun, 18 Nov 2007 12:20:45 -0500
+Date: Sun, 18 Nov 2007 09:18:28 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, tglx@tglx.de
+Subject: Re: [patch] Printk kernel version in WARN_ON
+Message-ID: <20071118091828.4dc0dbbd@laptopd505.fenrus.org>
+In-Reply-To: <20071117165719.c8d7bb48.akpm@linux-foundation.org>
+References: <20071117101552.2a7f34cb@laptopd505.fenrus.org>
+	<20071117102720.251107d7.akpm@linux-foundation.org>
+	<20071117103947.5b2052f8@laptopd505.fenrus.org>
+	<20071117104652.8240af62.akpm@linux-foundation.org>
+	<20071117113501.5e3e0d43@laptopd505.fenrus.org>
+	<20071118004218.GA26865@elte.hu>
+	<20071117165719.c8d7bb48.akpm@linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 15, 2007 at 01:10:16PM -0800, Lucy McCoy wrote:
- 
-> static int keyspan_open (struct usb_serial_port *port, struct file *filp)
-> {
-> 	struct keyspan_port_private 	*p_priv;
-> 	struct keyspan_serial_private 	*s_priv;
-> 	struct usb_serial 		*serial = port->serial;
-> 	const struct keyspan_device_details	*d_details;
-> 	int				i, err;
-> 	struct urb			*urb;
-> 	
-> 	s_priv = usb_get_serial_data(serial);
-> 	p_priv = usb_get_serial_port_data(port);
-> 	d_details = p_priv->device_details;
-> 	
-> 	dbg("%s - port%d.", __FUNCTION__, port->number); 
+On Sat, 17 Nov 2007 16:57:19 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
 > 
-> 	/* Set some sane defaults */
-> 	p_priv->rts_state = 1;
-> 	p_priv->dtr_state = 1;
-> 	p_priv->baud = 9600;
+> Should be done for all architectures, methinks.
 > 
-> 	/* set CTS/RTS handshake etc. */
-> 	p_priv->cflag = CS8;   /* 8/N/1  */
-> 	p_priv->flow_control = flow_none;
+> If so, an appropriate way to do that would be to do
+> s/dump_stack/arch_dump_stack/ and do a single all-arch implementation
+> of dump_stack().  (Where we might add new goodies in the future).
 > 
-> 	/* force baud and lcr to be set on open */
-> 	p_priv->old_baud = 0;
-> 	p_priv->old_cflag = 0;
-> 
-> 	p_priv->out_flip = 0;
-> 	p_priv->in_flip = 0;
-> 
-> 	/* Reset low level data toggle and start reading from endpoints */
-> 	for (i = 0; i < 2; i++) {
-> 		if ((urb = p_priv->in_urbs[i]) == NULL)
-> 			continue;
-> 		urb->dev = serial->dev;
-> 
-> 		/* make sure endpoint data toggle is synchronized with the device */
-> 		
-> 		usb_clear_halt(urb->dev, urb->pipe);
-> 
-> 		if ((err = usb_submit_urb(urb, GFP_KERNEL)) != 0) {
-> 			dbg("%s - submit urb %d failed (%d)", __FUNCTION__, i, err);
-> 		}
-> 	}
-> 
-> 	/* Reset low level data toggle on out endpoints */
-> 	for (i = 0; i < 2; i++) {
-> 		if ((urb = p_priv->out_urbs[i]) == NULL)
-> 			continue;
-> 		urb->dev = serial->dev;
-> 		/* usb_settoggle(urb->dev, usb_pipeendpoint(urb->pipe), usb_pipeout(urb->pipe), 0); */
-> 	}
-> 
-> 	keyspan_send_setup(port, 1);
-> 	//mdelay(100);
-> 	//keyspan_set_termios(port, NULL);
-> 
-> 	return (0);
-> }
+> Problem is that this will add a new an pointless entry to all the
+> stack dumps, unless the arch_dump_stack() implementation is smart
+> enough to skip the innermost frame.
+
+it also adds a stackframe to the "oh my god I'm low on stack space lets
+get a dump out" codepath ;(
+
 > 
 
-yes, after testing this i can confirm that this one fixes the NULL ptr
-problem here so you might want to submit a proper patch to Greg.
 
 -- 
-Regards/Gruﬂ,
-    Boris.
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
