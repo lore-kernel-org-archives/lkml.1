@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754724AbXKROo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756238AbXKROqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754724AbXKROo5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 09:44:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752723AbXKROot
+	id S1756238AbXKROqa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 09:46:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbXKROqX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 09:44:49 -0500
-Received: from ns2.g-housing.de ([81.169.133.75]:44574 "EHLO mail.g-house.de"
+	Sun, 18 Nov 2007 09:46:23 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:34690 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752663AbXKROos (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 09:44:48 -0500
-Date: Sun, 18 Nov 2007 15:44:34 +0100 (CET)
-From: Christian Kujau <lists@nerdbynature.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: Chris Wedgwood <cw@f00f.org>
-cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Benny Halevy <bhalevy@panasas.com>, linux-xfs@oss.sgi.com
-Subject: Re: 2.6.24-rc2 XFS nfsd hang
-In-Reply-To: <20071116214327.GA9685@puku.stupidest.org>
-Message-ID: <alpine.DEB.0.99999.0711181541280.30603@sheep.housecafe.de>
-References: <20071114070400.GA25708@puku.stupidest.org> <473AA72C.6020308@panasas.com> <20071114125907.GB4010@fieldses.org> <alpine.DEB.0.99999.0711142317010.12443@sheep.housecafe.de> <alpine.DEB.0.99999.0711150840340.12443@sheep.housecafe.de>
- <20071116003410.GA16797@puku.stupidest.org> <59468.62.180.231.196.1195204637.squirrel@housecafe.dyndns.org> <20071116110315.GA27969@puku.stupidest.org> <1195222772.7653.16.camel@heimdal.trondhjem.org> <20071116214327.GA9685@puku.stupidest.org>
-User-Agent: Alpine 0.99999 (DEB 796 2007-11-08)
+	id S1752300AbXKROqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 09:46:22 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: broken suspend [Was: 2.6.24-rc2-mm1]
+Date: Sun, 18 Nov 2007 16:03:25 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0711171649100.7748-100000@netrider.rowland.org> <200711181442.09917.rjw@sisk.pl> <474043EC.4000700@gmail.com>
+In-Reply-To: <474043EC.4000700@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711181603.26522.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Nov 2007, Chris Wedgwood wrote:
-> Oops, I meant it for NFSD...  and I'm somewhat serious.  I'm not
-> saying it's a good long term solution, but a potentially safer
-> short-term workaround.
+On Sunday, 18 of November 2007, Jiri Slaby wrote:
+> On 11/18/2007 02:42 PM, Rafael J. Wysocki wrote:
+> > On Sunday, 18 of November 2007, Jiri Slaby wrote:
+> >> On 11/18/2007 01:42 PM, Jiri Slaby wrote:
+> >>> See shot of prints here:
+> >>> http://www.fi.muni.cz/~xslaby/sklad/susp_hang1.png
+> >> BTW output from that tree minus the patch:
+> > 
+> > Hm, it looks like one of the CPU hotplug notifiers is doing something wrong.
+> > 
+> > Can you try to see what happens (with the patch applied) if
+> > thermal_throttle_cpu_callback() is not registered?
+> 
+> After commenting out
+> //device_initcall(thermal_throttle_init_device);
+> it looks like this:
+> http://www.fi.muni.cz/~xslaby/sklad/susp_hang2.png
 
-I've opened http://bugzilla.kernel.org/show_bug.cgi?id=9400 to track this 
-one (and to not forget about it :)).
-
-I wonder why so few people are seeing this, I'd have assumed that
-NFSv3 && XFS is not sooo exotic...
-
-Christian.
--- 
-BOFH excuse #273:
-
-The cord jumped over and hit the power switch.
+Can you also make the new System-map available, please?
