@@ -1,123 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752633AbXKRQka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752322AbXKRQsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752633AbXKRQka (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 11:40:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751013AbXKRQkW
+	id S1752322AbXKRQsc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 11:48:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbXKRQsY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 11:40:22 -0500
-Received: from neopsis.com ([213.239.204.14]:49750 "EHLO
-	matterhorn.dbservice.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750910AbXKRQkV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 11:40:21 -0500
-Message-ID: <47406AEA.8080101@dbservice.com>
-Date: Sun, 18 Nov 2007 17:40:10 +0100
-From: Tomas Carnecky <tom@dbservice.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070802)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: laptop reboots right after hibernation
-References: <473730F6.2010900@dbservice.com> <20071118105214.GB7299@ucw.cz> <4740692E.7010801@dbservice.com>
-In-Reply-To: <4740692E.7010801@dbservice.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Neopsis-MailScanner-Information: Neopsis MailScanner using ClamAV and Spaassassin
-X-Neopsis-MailScanner: Found to be clean
-X-Neopsis-MailScanner-SpamCheck: not spam, SpamAssassin (score=-2.285,
-	required 5, autolearn=spam, AWL 0.21, BAYES_00 -2.60,
-	RDNS_DYNAMIC 0.10)
-X-MailScanner-From: tom@dbservice.com
+	Sun, 18 Nov 2007 11:48:24 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:48123 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750984AbXKRQsX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 11:48:23 -0500
+Date: Sun, 18 Nov 2007 19:48:34 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] use __set_task_state() for TRACED/STOPPED tasks
+Message-ID: <20071118164834.GA3383@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tomas Carnecky wrote:
-> Pavel Machek wrote:
->> Hi!
->>
->>> echo disk > /sys/power/state
->>>
->>> successfully saves that state to the disk, but just as the laptop is
->>> about to turn itself off, it reboots (successfully, so the
->>> hibernation/resume process works well, even with X running! which is
->>> awesome :) ). But I'd rather like the computer turned off after I
->>> hibernate it. Where could the problem be?
->>>
->>> It's a new laptop, TP X61 tablet, I tried ubuntu (7.10, gutsy) for a few
->>> days, both suspend and hibernate worked there (with one or two crashes,
->>> probably due to X, I've read that the intel driver got some
->>> suspend/resume improvements recently). Now I'm running gentoo, kernel
->>> 2.6.24-rc2. I'm using newer versions of almost all software now compared
->>> to the ubuntu system.
->> If it works in older ubuntu, you can probably do bisect. Does normal
->> shutdown work? You can try platform vs. shutdown mode...
->>
-> 
-> I don't have ubuntu anymore, though I'll try if hibernate works with the
-> livecd. One interesting thing I've found out: hibernate reboots the
-> laptop _only_ if it is in the docking station. If I hibernate while
-> outside of the docking station, it properly shuts down the laptop.
-> 
-> The default mode seems to be 'platform', after I echoed 'shutdown' to
-> /sys/power/disk the notebook correctly shuts down after hibernation!
-> 
-> Some interesting facts. All tests were done with 2.6.24-rc2, custom
-> tailored kernel with just the options needed for my notebook (ThinkPad
-> X61 Tablet) - without drm modules and bluetooth but with iwl4965 loaded.
-> All tests were done without X running, from the console. If I say
-> something 'works' it means I tested it at least three/four times in a
-> row (if not even more).
-> 
-> (1) Both STR and STD work correctly if I keep the notebook outside of
-> the docking station (both in platform and shutdown mode).
-> 
-> (2) Both STR and STD work correctly if I keep the notebook in the
-> docking station (both in platform and shutdown mode - with the small
-> glitch in platform mode that the notebook won't power off after
-> hibernation).
-> 
-> (3) Once the notebook was in the docking station (whether I boot it
-> while in the dock or boot it outside and then put it into the dock) and
-> I take it out (press the 'undock' button on the dock, wait for the green
-> led, then take out the notebook) things get interesting:
-> 
-> (a) I initiate STR, notebook correctly goes to sleep, but it only wakes
-> up if I have it in the docking station. If I try to wake it up outside
-> of the docking station it will fail.
+1. It is much easier to grep for ->state change if __set_task_state() is used
+   instead of the direct assignment.
 
-That fails with a non-blinking cursor in the top left screen, just like
-in point 3b.
+2. ptrace_stop() and handle_group_stop() use set_task_state() which adds the
+   unneeded mb() (btw even if we use mb() it is still possible that do_wait()
+   sees the new ->state but not ->exit_code, but this is ok).
 
-> 
-> (b) I initiate STD, and it locks up after a few seconds, at that time
-> only the cursor in the top left screen is visible (not blinking). If I
-> put the notebook in its locked up state into the dock, it will reboot
-> after a few seconds.
-> 
-> (4) If the notebook is in the dock and I initiate STR and then press the
-> undock button, it resumes (I assume that is 'working as intended').
-> 
-> (5) If the notebook is in the dock, I press the undock button and wait
-> for the green led then initiate STR, I can take the notebook out but
-> resuming doesn't work - unless I resume it while the notebook is back in
-> the docking station (see point 3a)
-> 
-> (6) If the notebook is in the dock, I press the undock button and wait
-> for the green led, then initiate STD:
-> 
-> (a) in platform mode: I can take the notebook out but resuming doesn't
-> work - unless I resume it while the notebook is back in the docking
-> station (contrary to point 3b). It seems as the notebook 'locks' itself
-> into the docking station during STD, I see the green led change into red
-> during the hibernation process (just before heavy HD activity starts).
-> 
-> (b) in shutdown mode: STD fails with a completely black screen, not even
-> the cursor is visible.
-> 
-> There doesn't seem to be a difference between platform and shutdown mode
-> other than the reboot glitch when the laptop is in the docking station
-> or as described in point 6.
-> 
-> tom
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+
+--- 24/kernel/fork.c~state	2007-11-09 12:57:31.000000000 +0300
++++ 24/kernel/fork.c	2007-11-18 19:27:38.000000000 +0300
+@@ -1462,7 +1462,7 @@ long do_fork(unsigned long clone_flags,
+ 		if (!(clone_flags & CLONE_STOPPED))
+ 			wake_up_new_task(p, clone_flags);
+ 		else
+-			p->state = TASK_STOPPED;
++			__set_task_state(p, TASK_STOPPED);
+ 
+ 		if (unlikely (trace)) {
+ 			current->ptrace_message = nr;
+--- 24/kernel/ptrace.c~state	2007-10-25 16:22:12.000000000 +0400
++++ 24/kernel/ptrace.c	2007-11-18 19:30:20.000000000 +0300
+@@ -53,7 +53,7 @@ void ptrace_untrace(struct task_struct *
+ 	spin_lock(&child->sighand->siglock);
+ 	if (child->state == TASK_TRACED) {
+ 		if (child->signal->flags & SIGNAL_STOP_STOPPED) {
+-			child->state = TASK_STOPPED;
++			__set_task_state(child, TASK_STOPPED);
+ 		} else {
+ 			signal_wake_up(child, 1);
+ 		}
+@@ -104,7 +104,7 @@ int ptrace_check_attach(struct task_stru
+ 		ret = 0;
+ 		spin_lock_irq(&child->sighand->siglock);
+ 		if (child->state == TASK_STOPPED) {
+-			child->state = TASK_TRACED;
++			__set_task_state(child, TASK_TRACED);
+ 		} else if (child->state != TASK_TRACED && !kill) {
+ 			ret = -ESRCH;
+ 		}
+--- 24/kernel/signal.c~state	2007-11-09 12:57:31.000000000 +0300
++++ 24/kernel/signal.c	2007-11-18 19:33:19.000000000 +0300
+@@ -1617,7 +1617,7 @@ static void ptrace_stop(int exit_code, i
+ 	current->exit_code = exit_code;
+ 
+ 	/* Let the debugger run.  */
+-	set_current_state(TASK_TRACED);
++	__set_current_state(TASK_TRACED);
+ 	spin_unlock_irq(&current->sighand->siglock);
+ 	try_to_freeze();
+ 	read_lock(&tasklist_lock);
+@@ -1781,7 +1781,7 @@ static int handle_group_stop(void)
+ 	if (stop_count == 0)
+ 		current->signal->flags = SIGNAL_STOP_STOPPED;
+ 	current->exit_code = current->signal->group_exit_code;
+-	set_current_state(TASK_STOPPED);
++	__set_current_state(TASK_STOPPED);
+ 	spin_unlock_irq(&current->sighand->siglock);
+ 	finish_stop(stop_count);
+ 	return 1;
 
