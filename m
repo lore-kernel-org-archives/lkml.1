@@ -1,130 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755947AbXKROUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754498AbXKROf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755947AbXKROUx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 09:20:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbXKROUo
+	id S1754498AbXKROf2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 09:35:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbXKROfP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 09:20:44 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:44489 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753604AbXKROUn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 09:20:43 -0500
-Date: Sun, 18 Nov 2007 17:20:47 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] task_pid_nr_ns() breaks proc_pid_readdir()
-Message-ID: <20071118142047.GA360@tv-sign.ru>
-References: <20071117181549.GA1415@tv-sign.ru> <m1bq9swqyu.fsf@ebiederm.dsl.xmission.com>
+	Sun, 18 Nov 2007 09:35:15 -0500
+Received: from accolon.hansenpartnership.com ([64.109.89.108]:43399 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752300AbXKROfN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 09:35:13 -0500
+Subject: Re: size of git repository (was Re: [BUG] New Kernel Bugs)
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Pavel Machek <pavel@ucw.cz>, Mark Lord <liml@rtr.ca>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, protasnb@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
+       bugme-daemon@bugzilla.kernel.org
+In-Reply-To: <474036EA.9040600@keyaccess.nl>
+References: <20071113031553.3c7b5c16.akpm@linux-foundation.org>
+	 <20071113.033946.114918709.davem@davemloft.net>
+	 <20071113034916.2556edd7.akpm@linux-foundation.org>
+	 <20071113.035824.40509981.davem@davemloft.net>
+	 <20071113041259.79c9a8c5.akpm@linux-foundation.org>
+	 <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca>
+	 <20071113164650.GA28493@elte.hu> <4739E3D0.10201@rtr.ca>
+	 <20071118124404.GA4037@ucw.cz>  <474036EA.9040600@keyaccess.nl>
+Content-Type: text/plain
+Date: Sun, 18 Nov 2007 08:35:07 -0600
+Message-Id: <1195396507.3288.4.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1bq9swqyu.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/17, Eric W. Biederman wrote:
->
-> Oleg Nesterov <oleg@tv-sign.ru> writes:
+
+On Sun, 2007-11-18 at 13:58 +0100, Rene Herman wrote:
+> On 18-11-07 13:44, Pavel Machek wrote:
 > 
-> > Make sure that task_pid_nr_ns() returns !0 before updating tgid. Note that
-> > next_tgid(tgid + 1) can find the same "struct pid" again, but we shouldn't
-> > go into the endless loop because pid_task(PIDTYPE_PID) must return NULL in
-> > this case, so next_tgid() can't return the same task.
-> >
-> Oleg I think I would rather update next_tgid to return the tgid (which
-> removes the need to call task_pid_nr_ns).  This keeps all of the task
-> iteration logic together in next_tgid.
+> > On Tue 2007-11-13 12:50:08, Mark Lord wrote:
+> 
+> >> It's a 540MByte download over a slow link for everyone 
+> >> else.
+> > 
+> > Hmmm, clean-cg is 7.7G on my machine, and yes I tried
+> > git-prune-packed. What am I doing wrong?
+> 
+> clean-cg? But failure to run "git repack -a -d" every once in a while?
 
-Yes sure, I think your patch is also correct, please use it.
+Actually, the best command is 
 
-<offtopic>
+git gc
 
-Personally, I hate the functions which use pointers to return another value.
-(yes, yes, I know, my taste is perverted). Why don't we return structure in
-this case? We can even make a common helper struct, say,
+which does a repack (into a single pack file rather than an incremenal),
+and then removes all the objects now in the pack.  If, like me, you work
+on temporary branches which you keep rebasing, you can add a --prune to
+gc which will erase all unreferenced objects as it packs (use this one
+with care.  I usually never use it but run a git prune -n just to see
+what would be removed, and then run git prune separately if it looks
+OK).
 
-	struct pair {
-		union {
-			long val1;
-			void *ptr1;
-		};
-		union {
-			long val2;
-			void *ptr2;
-		};
-	};
+James
 
-	#define PAIR(x1, x2)	(struct pair){{ . x1 }, { . x2 }}
-
-Now, next_tgid() can do
-
-	return PAIR(ptr1 = task, val2 = tgid);
-
-With -freg-struct-return the generated code is nice.
-
-Of course, another option is to rewrite the kernle in perl, in that case
-proc_pid_readdir() can just do
-
-	(task, tgid) = next_tgid();
-
-</offtopic>
-
-> Although looking at this in more detail, I'm half wondering if
-> proc_pid_make_inode() should take a struct pid instead of a task.
-
-Yes, I also thought about this. Needs more changes, and still not perfect.
-
-I am starting to think we need a more generic change. How about the patch
-below? With this change the stable task_struct implies we have the stable
-pids, this allows us to do a lot of cleanups.
-
-Oleg.
-
---- kernel/pid.c	2007-10-25 16:22:12.000000000 +0400
-+++ -	2007-11-18 16:56:30.682555454 +0300
-@@ -323,7 +323,7 @@ int fastcall attach_pid(struct task_stru
- 	struct pid_link *link;
- 
- 	link = &task->pids[type];
--	link->pid = pid;
-+	link->pid = get_pid(pid);
- 	hlist_add_head_rcu(&link->node, &pid->tasks[type]);
- 
- 	return 0;
-@@ -339,7 +339,6 @@ void fastcall detach_pid(struct task_str
- 	pid = link->pid;
- 
- 	hlist_del_rcu(&link->node);
--	link->pid = NULL;
- 
- 	for (tmp = PIDTYPE_MAX; --tmp >= 0; )
- 		if (!hlist_empty(&pid->tasks[tmp]))
-@@ -348,6 +347,14 @@ void fastcall detach_pid(struct task_str
- 	free_pid(pid);
- }
- 
-+void task_put_pids(struct pid_link *pids)
-+{
-+	int type = PIDTYPE_MAX;
-+
-+	while (type--)
-+		put_pid(pids[type].pid);
-+}
-+
- /* transfer_pid is an optimization of attach_pid(new), detach_pid(old) */
- void fastcall transfer_pid(struct task_struct *old, struct task_struct *new,
- 			   enum pid_type type)
---- kernel/fork.c	2007-11-09 12:57:31.000000000 +0300
-+++ -	2007-11-18 16:57:34.037105563 +0300
-@@ -121,6 +121,7 @@ void __put_task_struct(struct task_struc
- 	WARN_ON(atomic_read(&tsk->usage));
- 	WARN_ON(tsk == current);
- 
-+	task_put_pids(tsk->pids);
- 	security_task_free(tsk);
- 	free_uid(tsk->user);
- 	put_group_info(tsk->group_info);
 
