@@ -1,47 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754298AbXKRSpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753981AbXKRTKO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754298AbXKRSpd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 13:45:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751311AbXKRSp1
+	id S1753981AbXKRTKO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 14:10:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbXKRTKB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 13:45:27 -0500
-Received: from ns4.abinetworks.biz ([216.218.212.66]:34497 "EHLO
-	ns4.abinetworks.biz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751484AbXKRSp0 (ORCPT
+	Sun, 18 Nov 2007 14:10:01 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:20215 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751385AbXKRTKA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 13:45:26 -0500
-Message-ID: <474087F6.9030305@abinetworks.biz>
-Date: Sun, 18 Nov 2007 19:44:06 +0100
-From: Gianluca Alberici <gianluca@abinetworks.biz>
-User-Agent: Mozilla Thunderbird 1.0.2 (X11/20050317)
-X-Accept-Language: en-us, en
+	Sun, 18 Nov 2007 14:10:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=eegMsowBsfB3GW9Ltn0IWVFTltuyFAIbEr41yT7ESsjdETNRyhbDlvrjBIaG4F75w30+xqA2t6GtNhTP+xYgiFQaBrKVCy/kECsv+rAi/oF8DQ7RV7KdAVE4sJq6SY6h45G8xze+lZbCHLgIq5XJeDd62DHedSTIOgJfng94ON0=
+Message-ID: <47408DFF.9070701@gmail.com>
+Date: Sun, 18 Nov 2007 20:09:51 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-CC: Trond Myklebust <trond.myklebust@fys.uio.no>, linux-kernel@vger.kernel.org
-Subject: Re: NFS Bug in 2.6.23 ? SOLUTION ?
-References: <473D6B5C.4090701@abinetworks.biz>	 <20071116121148.GI4290@tatooine.rebelbase.local> <1195222863.7653.18.camel@heimdal.trondhjem.org> <473EEEC7.1070300@abinetworks.biz> <473F2464.3020905@abinetworks.biz>
-In-Reply-To: <473F2464.3020905@abinetworks.biz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Subject: Re: broken suspend [Was: 2.6.24-rc2-mm1]
+References: <Pine.LNX.4.44L0.0711181203220.5712-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0711181203220.5712-100000@netrider.rowland.org>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond,
+On 11/18/2007 06:07 PM, Alan Stern wrote:
+> You'll get more useful results if you redo your changes to 
+> notifier_call_chain().  Have it print out the address of the routine 
+> _before_ making the call, and don't limit it to 20.  That way you'll 
+> know exactly which notifier routine ends up hanging.
 
-The problem is in nfs_mountpoint_timeout. After this time 
-dentry_delete(/,4) removes the mountpoint, then it is very difficult to 
-automount (at least with CFSD), one has got to try 2 or three times 
-cd'ing into the mount point. Applications wont ever had the chance to 
-autoremount (ENOTDIR).
+The problem is, that notifier_call_chain is called again and again zillion times
+by somebody else...
 
-I have some questions:
+Anyway you led me to another idea:
+* _cpu_down
+        printk("%s: u\n", __func__);
+        BUBAK=1;
+        /* CPU is completely dead: tell everyone.  Too late to complain. */
+        if (raw_notifier_call_chain(&cpu_chain, CPU_DEAD | 0x88000 | mod,
+                                    hcpu) == NOTIFY_BAD)
+                BUG();
+        BUBAK=0;
+-----
+* notifier_call_chain
+        unsigned int a = val & 0x88000;
+        unsigned int yes = a == 0x88000;
 
-- nfs_mountpoint_timeout seems to be set in sysctl.c even if nfsv4 is 
-not. Is this correct ? I've read somewhere that it was introduced for v4.
-- Why this sysctl is not registered in my 2.6.20 kernel where it should 
-be registered ?
-- Why this parameter has not a 'disabled' value (i mean kind of -1) ?
+        nb = rcu_dereference(*nl);
 
-Thanks,
+        if (a && a != 0x88000)
+                printk("Somebody calls with val: %lx\n", val);
+        else
+                val &= ~0x88000;
 
-Gianluca
+        while (nb && nr_to_call) {
+                next_nb = rcu_dereference(nb->next);
+                if (unlikely(BUBAK && yes))
+                        printk("%s: %p\n", __func__, nb->notifier_call);
+                ret = nb->notifier_call(nb, val, v);
+-----
+gives coretemp_cpu_callback -> coretemp_device_remove ->
+platform_device_unregister, so coretemp seems to be what I have and you don't.
+
+
