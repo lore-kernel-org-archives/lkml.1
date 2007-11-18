@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753185AbXKRRh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753415AbXKRRk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753185AbXKRRh2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 12:37:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbXKRRhS
+	id S1753415AbXKRRk1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 12:40:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751262AbXKRRkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 12:37:18 -0500
-Received: from rtr.ca ([76.10.145.34]:4658 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751258AbXKRRhR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 12:37:17 -0500
-Message-ID: <4740784A.7090405@rtr.ca>
-Date: Sun, 18 Nov 2007 12:37:14 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mark Lord <liml@rtr.ca>, Thomas Gleixner <tglx@linutronix.de>,
-       len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, rjw@sisk.pl
-Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
-References: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com> <20071113031553.3c7b5c16.akpm@linux-foundation.org> <4739ADA2.4060604@rtr.ca> <alpine.LFD.0.9999.0711131521590.3265@localhost.localdomain> <4739E347.30406@rtr.ca> <473C7495.40805@rtr.ca> <47406400.5070804@rtr.ca> <20071118162126.GA29080@elte.hu>
-In-Reply-To: <20071118162126.GA29080@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 18 Nov 2007 12:40:20 -0500
+Received: from fencepost.gnu.org ([140.186.70.10]:42671 "EHLO
+	fencepost.gnu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751141AbXKRRkS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 12:40:18 -0500
+Subject: Need help with register_page_fault_notifier() replacement in 2.6.24
+From: Pavel Roskin <proski@gnu.org>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Sun, 18 Nov 2007 12:40:16 -0500
+Message-Id: <1195407616.26789.15.camel@dv>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mark Lord <lkml@rtr.ca> wrote:
-> 
->> Since Ingo's latency trace patches lock up the machine on resume, the 
->> next thing I'll try instead is to re-enable CONFIG_IRQBALANCE=y.
-> 
-> hm, which patch did you try? Could you check whether all chunks from the 
-> patch below are applied? (these are the fixed i did when i was doing 
-> cross-suspend traces - this is not something i've done before, so the 
-> tracer had to be adjusted)
-..
+Hello!
 
-Hi Ingo!
+I'm trying to update a special tracing version of madwifi (driver for
+Atheros wireless cards) for Linux 2.6.24.  This version was created to
+help reverse engineering the non-free part of the driver (also known as
+HAL, hardware abstraction layer).
 
-I was using your 2.6.23.1 version of the patches, plus the fix you posted.
+The problem is that functions register_page_fault_notifier() and
+unregister_page_fault_notifier() are gone in the current kernel git
+repository.
 
-The new patch you gave just now is for 2.6.24, which won't apply to
-the older kernel.  I'm not switching kernels yet, as doing so might mask
-the problem without actually resolving it for good.
+They are needed to intercept access to the card by causing page fault
+and intercepting it.
 
-Cheers
+Those functions were removed on i386 platform because kprobes now
+registers the flat handler directly.  The log says that other callers
+are supposed to use kprobes now.
+
+But what would be the right way to do it?  I can intercept
+do_page_fault() with kprobes, but that looks unsafe, since
+do_page_fault() is used by kprobes internally.
+
+Or maybe I should install a fault handler with register_kprobe()?  The
+problem is, it is only called for faults in kp->pre_handler and
+kp->post_handler and for single-stepping.  I don't want to single-step
+anything, and moving all driver functionality in kp->pre_handler would
+be strange.
+
+Perhaps I'm missing something obvious.  Any help will be appreciated.
+
+-- 
+Regards,
+Pavel Roskin
+
