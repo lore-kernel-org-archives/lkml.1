@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751429AbXKRPPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751883AbXKRPZH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751429AbXKRPPm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 10:15:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbXKRPP3
+	id S1751883AbXKRPZH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 10:25:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750735AbXKRPYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 10:15:29 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:5137 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752868AbXKRPP3 (ORCPT
+	Sun, 18 Nov 2007 10:24:53 -0500
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:46287 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750716AbXKRPYw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 10:15:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=bjE2QHEAm/ghg6s82pmXRXbRvZ1Izjwt6QhJLBNLz3YKTMnoXYprAcOri+OiqOShcu6gOFO6vqgBGbikHKxgfCkSL1CjI/24NKNqpiYMRsgTyTIEX6s1mndvf1xzjl4l2BCi9byp8XJbKsEw0dh7Nt6coDMsAh3Zy07U3jbvir8=
-Message-ID: <4740570A.5030101@gmail.com>
-Date: Sun, 18 Nov 2007 16:15:22 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
+	Sun, 18 Nov 2007 10:24:52 -0500
+Message-ID: <4740581C.6030206@keyaccess.nl>
+Date: Sun, 18 Nov 2007 16:19:56 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: =?UTF-8?B?IlJhZmHFgiBKLiBXeXNvY2tpIg==?= <rjwysocki@sisk.pl>
-CC: Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Subject: Re: broken suspend [Was: 2.6.24-rc2-mm1]
-References: <Pine.LNX.4.44L0.0711171649100.7748-100000@netrider.rowland.org> <200711181603.26522.rjw@sisk.pl> <474050EC.5080507@gmail.com> <200711181623.20029.rjwysocki@sisk.pl>
-In-Reply-To: <200711181623.20029.rjwysocki@sisk.pl>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Pavel Machek <pavel@ucw.cz>, Mark Lord <liml@rtr.ca>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, protasnb@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: size of git repository (was Re: [BUG] New Kernel Bugs)
+References: <20071113031553.3c7b5c16.akpm@linux-foundation.org>	 <20071113.033946.114918709.davem@davemloft.net>	 <20071113034916.2556edd7.akpm@linux-foundation.org>	 <20071113.035824.40509981.davem@davemloft.net>	 <20071113041259.79c9a8c5.akpm@linux-foundation.org>	 <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca>	 <20071113164650.GA28493@elte.hu> <4739E3D0.10201@rtr.ca>	 <20071118124404.GA4037@ucw.cz>  <474036EA.9040600@keyaccess.nl> <1195396507.3288.4.camel@localhost.localdomain>
+In-Reply-To: <1195396507.3288.4.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: 0.0 (/)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/18/2007 04:23 PM, Rafał J. Wysocki wrote:
-> On Sunday, 18 of November 2007, Jiri Slaby wrote:
->> On 11/18/2007 04:03 PM, Rafael J. Wysocki wrote:
->>> Can you also make the new System-map available, please?
->> Sure:
->> http://www.fi.muni.cz/~xslaby/sklad/System.map1
+On 18-11-07 15:35, James Bottomley wrote:
+
+>> clean-cg? But failure to run "git repack -a -d" every once in a while?
 > 
-> The last notifier called in http://www.fi.muni.cz/~xslaby/sklad/susp_hang2.png
-
-Last... Note, that it's only first 20 invokations of notifiers, there are
-bazillion of them when I remove the condition '< 20'.
-
-> is apparently cpu_swap_callback() which is not called in
-> http://www.fi.muni.cz/~xslaby/sklad/susp_hang1.png .
+> Actually, the best command is
 > 
-> Can you verify that cpu_swap_callback() gets called if the patch is not
-> applied?
+> git gc
+> 
+> which does a repack (into a single pack file rather than an incremenal), 
+> and then removes all the objects now in the pack.  If, like me, you work 
+> on temporary branches which you keep rebasing, you can add a --prune to 
+> gc which will erase all unreferenced objects as it packs (use this one 
+> with care.  I usually never use it but run a git prune -n just to see 
+> what would be removed, and then run git prune separately if it looks OK).
 
-Does this still apply?
+Thanks for the comment. That managed to indeed shave a few extra bytes off 
+my already "repack -a -d" packed repo still.
+
+Rene.
+
