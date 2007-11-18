@@ -1,239 +1,285 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753461AbXKRLfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753341AbXKRMGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753461AbXKRLfg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 06:35:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbXKRLf2
+	id S1753341AbXKRMGj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 07:06:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbXKRMGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 06:35:28 -0500
-Received: from rv-out-0910.google.com ([209.85.198.184]:22456 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751343AbXKRLfZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 06:35:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=aGJhwMqOE9Vdd+slEwiInpBZGlVH7hngB5SC8J+qCOQKmloT2leYBWyKKhv/fFadt7rW4TDIMcn1lxPHEI/CbuMyOwKCgRzJklA1+jwZZBU3bkhdeC2Fh3PHme3Jma5UAV9EXpH0Dv6zI5nkOs82LCn83uM6mfUtBBVBrj4lmbQ=
-Message-ID: <e7d8f83e0711180335s208b91b3tc112490a8c4f6fd7@mail.gmail.com>
-Date: Sun, 18 Nov 2007 21:35:25 +1000
-From: "Peter Dolding" <oiaohm@gmail.com>
-To: casey@schaufler-ca.com
-Subject: Re: More LSM vs. Containers (having nothing at all to do with the AppArmor Security Goal)
-Cc: "Crispin Cowan" <crispin@crispincowan.com>, rmeijer@xs4all.nl,
-       apparmor-dev@forge.novell.com,
-       "LSM ML" <linux-security-module@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Arjan van de Ven" <arjan@infradead.org>
-In-Reply-To: <757605.51592.qm@web36610.mail.mud.yahoo.com>
+	Sun, 18 Nov 2007 07:06:30 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:34374 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751366AbXKRMG2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 07:06:28 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Mark Lord <lkml@rtr.ca>
+Subject: Re: [PATCH] Fix PCIe double initialization bug
+Date: Sun, 18 Nov 2007 13:23:51 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: kristen.c.accardi@intel.com, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>, greg@kroah.com,
+       pcihpd-discuss@lists.sourceforge.net
+References: <4716CB9D.6080503@rtr.ca> <473F86E7.4020003@rtr.ca>
+In-Reply-To: <473F86E7.4020003@rtr.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <e7d8f83e0711162357k8e06c0dqedaf0abd6c67e3fe@mail.gmail.com>
-	 <757605.51592.qm@web36610.mail.mud.yahoo.com>
+Message-Id: <200711181323.52679.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 18, 2007 5:22 AM, Casey Schaufler <casey@schaufler-ca.com> wrote:
->
->
-> --- Peter Dolding <oiaohm@gmail.com> wrote:
->
-> > On Nov 17, 2007 11:08 AM, Crispin Cowan <crispin@crispincowan.com> wrote:
-> > > Peter Dolding wrote:
-> > > >>> What is left unspecified here is 'how' a child 'with its own profile'
-> > is
-> > > >>> confined here. Are it is confined to just its own profile, it may that
-> > > >>> the "complicit process" communication may need to be wider specified to
-> > > >>> include this.
-> > > >>>
-> > > > Sorry have to bring this up.  cgroups why not?
-> > > Because I can't find any documentation for cgroups? :)
-> > >
-> > > >   Assign application to
-> > > > a cgroup that contains there filesystem access permissions.   Done
-> > > > right this could even be stacked.  Only give less access to
-> > > > application unless LSM particularly overrides.
-> > > >
-> > > This comes no where close to AppArmor's functionality:
-> > >
-> > >     * Can't do learning mode
-> > >     * Can't do wildcards
-> > >     * Sucks up huge loads of memory to do that much FS mounting (imagine
-> > >       thousands of bind mounts)
-> > >     * I'm not sure, but I don't think you can do file granularity, only
-> > >       directories
-> > >
-> > Ok sorry to say so far almost percent wrong.  Please note netlabels
-> > falls into a control group.  All function of Apparmor is doable bar
-> > exactly learning mode.   For learning mode that would have to be a
-> > hook back to a LSM I would expect.
-> >
-> > Done right should suck up no more memory than current apparmor.  But
-> > it will required all LSM's doing file access to come to common
-> > agreement how to do it.  Not just hooks into the kernel system any
-> > more.
->
-> The ability to provide alternative access control schemes is the
-> purpose of LSM. The fact that we insane security people can't come
-> to the agreement you require is why we have LSM. You can not have
-> what you are asking for. Please suggest an alternative design.
+On Sunday, 18 of November 2007, Mark Lord wrote:
+> pciehp_fix_double_init_bug.patch:
+> 
+> Earlier patches to split out the hardware init for PCIe hotplug
+> resulted in some one-time initializations being redone on every
+> resume cycle.  Eg. irq/polling initialization.
+> 
+> This patch splits the hardware init into two parts,
+> and separates the one-time initializations from those
+> so that they only ever get done once, as intended.
+> 
+> Signed-off-by: Mark Lord <mlord@pobox.com>
 
-Part of the building the alternative design requires aggreeing to
-build sections common.
-Like the netlabels.  We need this for other parts like filesystems.
->
-> > At the container entrance point there needs file granularity applied
-> > for complete and correct container isolation to be done.
-> > >
-> > > > There are reasons why I keep on bring containers up it changes the
-> > > > model.  Yes I know coming to a common agreement in these sections will
-> > > > not be simple.   But at some point it has to be done.
-> > > >
-> > > Containers and access controls provide related but different functions.
-> > > Stop trying to force containers to be an access control system, it does
-> > > not fit well at all.
-> > >
-> > > Rather, we need to ensure that LSM and containers play well together.
-> > > What you proposed in the past was to have an LSM module per container,
-> > > but I find that absurdly complex: if you want that, then use a real VMM
-> > > like Xen or something. Containers are mostly used for massive virtual
-> > > domain hosting, and what you want there is as much sharing as possible
-> > > while maintaining isolation. so why would you corrupt that with separate
-> > > LSM modules per container?
-> >
-> > Please stop being foolish.  Xen and the like don't share memory.   You
-> > are basically saying blow out memory usage just because someone wants
-> > to use a different LSM.
->
-> Yup. No one ever said security was cheap. Most real, serious security
-> solutions implemented today rely on separate physical machines for
-> isolation. Some progressive installations are using virtualization,
-> and the lunatic fringe uses the sort of systems well served by LSM.
-> Let's face it, people who really care are willing to pay a premium.
+Which kernel is it against?
 
-Bigger problem Containers are processor neutral Xen and lot of the
-other solutions are not.  There are advantages for people who don't
-need full blown.  There needs to be two levels.  Ie VM for the heavy.
- Containers for where the security is needed but no to the point of
-needing two different kernels.  Now restricting what can be in a
-Container due to some poor reason that has not been attempted to be
-worked around is not a valid reason.   In theory using Containers you
-should be able to run every Linux distro on earth under one kernel as
-long as it supports that series kernel.  Ie 2.6 2.4...  Now that is
-only the base level of Containers.  More advanced Zones like solaris
-will see other platforms running in a container under the same kernel.
- Current designing around containers is not dealing with what I can
-do.  It more how will we hack it to work.  Not make sure it will
-support where Container design can go.
->
-> > Besides file access control is part of running containers isolated in
-> > the first place and need to be LSM neutral.
->
-> File access control is within the scope of the LSM. If your feature
-> can't deal with that you need to fix your feature.
+> ---
+> 
+> This patch is for -mm and for Kristen's queue.  Not for 2.6.24.
+> 
+>  drivers/pci/hotplug/pciehp.h      |    2
+>  drivers/pci/hotplug/pciehp_core.c |    2
+>  drivers/pci/hotplug/pciehp_hpc.c  |  119 +++++++++++++++-------------
+>  3 files changed, 69 insertions(+), 54 deletions(-)
+> 
+> --- linux/drivers/pci/hotplug/pciehp.h.orig	2007-11-13 23:57:09.000000000 -0500
+> +++ linux/drivers/pci/hotplug/pciehp.h	2007-11-17 19:10:01.000000000 -0500
+> @@ -163,7 +163,7 @@
+>  int pcie_init(struct controller *ctrl, struct pcie_device *dev);
+>  int pciehp_enable_slot(struct slot *p_slot);
+>  int pciehp_disable_slot(struct slot *p_slot);
+> -int pcie_init_hardware(struct controller *ctrl, struct pcie_device *dev);
+> +int pcie_init_hardware_part2(struct controller *ctrl, struct pcie_device *dev);
+>  
+>  static inline struct slot *pciehp_find_slot(struct controller *ctrl, u8 device)
+>  {
+> --- linux/drivers/pci/hotplug/pciehp_core.c.orig	2007-11-13 23:57:09.000000000 -0500
+> +++ linux/drivers/pci/hotplug/pciehp_core.c	2007-11-17 19:09:43.000000000 -0500
+> @@ -521,7 +521,7 @@
+>  		u8 status;
+>  
+>  		/* reinitialize the chipset's event detection logic */
+> -		pcie_init_hardware(ctrl, dev);
+> +		pcie_init_hardware_part2(ctrl, dev);
+>  
+>  		t_slot = pciehp_find_slot(ctrl, ctrl->slot_device_offset);
+>  
+> --- linux/drivers/pci/hotplug/pciehp_hpc.c.orig	2007-11-13 23:57:09.000000000 -0500
+> +++ linux/drivers/pci/hotplug/pciehp_hpc.c	2007-11-17 19:13:49.000000000 -0500
+> @@ -1067,28 +1067,25 @@
+>  }
+>  #endif
+>  
+> -int pcie_init_hardware(struct controller *ctrl, struct pcie_device *dev)
+> +static int pcie_init_hardware_part1(struct controller *ctrl,
+> +				    struct pcie_device *dev)
+>  {
+>  	int rc;
+>  	u16 temp_word;
+> -	u16 intr_enable = 0;
+>  	u32 slot_cap;
+>  	u16 slot_status;
+> -	struct pci_dev *pdev;
+> -
+> -	pdev = dev->port;
+>  
+>  	rc = pciehp_readl(ctrl, SLOTCAP, &slot_cap);
+>  	if (rc) {
+>  		err("%s: Cannot read SLOTCAP register\n", __FUNCTION__);
+> -		goto abort_free_ctlr;
+> +		return -1;
+>  	}
+>  
+>  	/* Mask Hot-plug Interrupt Enable */
+>  	rc = pciehp_readw(ctrl, SLOTCTRL, &temp_word);
+>  	if (rc) {
+>  		err("%s: Cannot read SLOTCTRL register\n", __FUNCTION__);
+> -		goto abort_free_ctlr;
+> +		return -1;
+>  	}
+>  
+>  	dbg("%s: SLOTCTRL %x value read %x\n",
+> @@ -1099,62 +1096,46 @@
+>  	rc = pciehp_writew(ctrl, SLOTCTRL, temp_word);
+>  	if (rc) {
+>  		err("%s: Cannot write to SLOTCTRL register\n", __FUNCTION__);
+> -		goto abort_free_ctlr;
+> +		return -1;
+>  	}
+>  
+>  	rc = pciehp_readw(ctrl, SLOTSTATUS, &slot_status);
+>  	if (rc) {
+>  		err("%s: Cannot read SLOTSTATUS register\n", __FUNCTION__);
+> -		goto abort_free_ctlr;
+> +		return -1;
+>  	}
+>  
+>  	temp_word = 0x1F; /* Clear all events */
+>  	rc = pciehp_writew(ctrl, SLOTSTATUS, temp_word);
+>  	if (rc) {
+>  		err("%s: Cannot write to SLOTSTATUS register\n", __FUNCTION__);
+> -		goto abort_free_ctlr;
+> +		return -1;
+>  	}
+> +	return 0;
+> +}
+>  
+> -	if (pciehp_poll_mode) {
+> -		/* Install interrupt polling timer. Start with 10 sec delay */
+> -		init_timer(&ctrl->poll_timer);
+> -		start_int_poll_timer(ctrl, 10);
+> -	} else {
+> -		/* Installs the interrupt handler */
+> -		rc = request_irq(ctrl->pci_dev->irq, pcie_isr, IRQF_SHARED,
+> -				 MY_NAME, (void *)ctrl);
+> -		dbg("%s: request_irq %d for hpc%d (returns %d)\n",
+> -		    __FUNCTION__, ctrl->pci_dev->irq,
+> -		    atomic_read(&pciehp_num_controllers), rc);
+> -		if (rc) {
+> -			err("Can't get irq %d for the hotplug controller\n",
+> -			    ctrl->pci_dev->irq);
+> -			goto abort_free_ctlr;
+> -		}
+> -	}
+> -	dbg("pciehp ctrl b:d:f:irq=0x%x:%x:%x:%x\n", pdev->bus->number,
+> -		PCI_SLOT(pdev->devfn), PCI_FUNC(pdev->devfn), dev->irq);
+> -
+> -	/*
+> -	 * If this is the first controller to be initialized,
+> -	 * initialize the pciehp work queue
+> -	 */
+> -	if (atomic_add_return(1, &pciehp_num_controllers) == 1) {
+> -		pciehp_wq = create_singlethread_workqueue("pciehpd");
+> -		if (!pciehp_wq) {
+> -			rc = -ENOMEM;
+> -			goto abort_free_irq;
+> -		}
+> -	}
+> +int pcie_init_hardware_part2(struct controller *ctrl, struct pcie_device *dev)
+> +{
+> +	int rc;
+> +	u16 temp_word;
+> +	u16 intr_enable = 0;
+> +	u32 slot_cap;
+> +	u16 slot_status;
+>  
+>  	rc = pciehp_readw(ctrl, SLOTCTRL, &temp_word);
+>  	if (rc) {
+>  		err("%s: Cannot read SLOTCTRL register\n", __FUNCTION__);
+> -		goto abort_free_irq;
+> +		goto abort;
+>  	}
+>  
+>  	intr_enable = intr_enable | PRSN_DETECT_ENABLE;
+>  
+> +	rc = pciehp_readl(ctrl, SLOTCAP, &slot_cap);
+> +	if (rc) {
+> +		err("%s: Cannot read SLOTCAP register\n", __FUNCTION__);
+> +		goto abort;
+> +	}
+> +
+>  	if (ATTN_BUTTN(slot_cap))
+>  		intr_enable = intr_enable | ATTN_BUTTN_ENABLE;
+>  
+> @@ -1179,7 +1160,7 @@
+>  	rc = pciehp_writew(ctrl, SLOTCTRL, temp_word);
+>  	if (rc) {
+>  		err("%s: Cannot write to SLOTCTRL register\n", __FUNCTION__);
+> -		goto abort_free_irq;
+> +		goto abort;
+>  	}
+>  	rc = pciehp_readw(ctrl, SLOTSTATUS, &slot_status);
+>  	if (rc) {
+> @@ -1214,14 +1195,7 @@
+>  	}
+>  	if (rc)
+>  		err("%s : disabling interrupts failed\n", __FUNCTION__);
+> -
+> -abort_free_irq:
+> -	if (pciehp_poll_mode)
+> -		del_timer_sync(&ctrl->poll_timer);
+> -	else
+> -		free_irq(ctrl->pci_dev->irq, ctrl);
+> -
+> -abort_free_ctlr:
+> +abort:
+>  	return -1;
+>  }
+>  
+> @@ -1318,11 +1292,52 @@
+>  	ctrl->first_slot = slot_cap >> 19;
+>  	ctrl->ctrlcap = slot_cap & 0x0000007f;
+>  
+> -	rc = pcie_init_hardware(ctrl, dev);
+> +	rc = pcie_init_hardware_part1(ctrl, dev);
+> +	if (rc)
+> +		goto abort;
+> +
+> +	if (pciehp_poll_mode) {
+> +		/* Install interrupt polling timer. Start with 10 sec delay */
+> +		init_timer(&ctrl->poll_timer);
+> +		start_int_poll_timer(ctrl, 10);
+> +	} else {
+> +		/* Installs the interrupt handler */
+> +		rc = request_irq(ctrl->pci_dev->irq, pcie_isr, IRQF_SHARED,
+> +				 MY_NAME, (void *)ctrl);
+> +		dbg("%s: request_irq %d for hpc%d (returns %d)\n",
+> +		    __FUNCTION__, ctrl->pci_dev->irq,
+> +		    atomic_read(&pciehp_num_controllers), rc);
+> +		if (rc) {
+> +			err("Can't get irq %d for the hotplug controller\n",
+> +			    ctrl->pci_dev->irq);
+> +			goto abort;
+> +		}
+> +	}
+> +	dbg("pciehp ctrl b:d:f:irq=0x%x:%x:%x:%x\n", pdev->bus->number,
+> +		PCI_SLOT(pdev->devfn), PCI_FUNC(pdev->devfn), dev->irq);
+> +
+> +	/*
+> +	 * If this is the first controller to be initialized,
+> +	 * initialize the pciehp work queue
+> +	 */
+> +	if (atomic_add_return(1, &pciehp_num_controllers) == 1) {
+> +		pciehp_wq = create_singlethread_workqueue("pciehpd");
+> +		if (!pciehp_wq) {
+> +			rc = -ENOMEM;
+> +			goto abort_free_irq;
+> +		}
+> +	}
+> +
+> +	rc = pcie_init_hardware_part2(ctrl, dev);
+>  	if (rc == 0) {
+>  		ctrl->hpc_ops = &pciehp_hpc_ops;
+>  		return 0;
+>  	}
+> +abort_free_irq:
+> +	if (pciehp_poll_mode)
+> +		del_timer_sync(&ctrl->poll_timer);
+> +	else
+> +		free_irq(ctrl->pci_dev->irq, ctrl);
+>  abort:
+>  	return -1;
+>  }
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
 
-This is the problem for containers File access controls need to be
-like netlabels common between LSM's.
 
-Yes this is going to get up noses.
->
-> > This is the problem current model just will not work.  Some features
-> > are need in Linux kernel all the time and have to become LSM neutral
-> > due to the features of containers.
->
-> Sounds like a conflict in requirements.
 
-This is the problem it is a conflict of requirements.
->
-> > Next big after filesystem most likely will be the common security
-> > controls for devices.  These are just features need to complete
-> > containers.  Basically to do containers LSM have to be cut up.  Or
-> > containers function will be dependent on the current LSM to be use
-> > completely.
->
-> I would be perfectly happy without containers, just as I understand
-> you don't give a rat's pitute about LSMs. If you want my cooperation
-> and/or backing on containers, show me how they make my life better,
-> and how cutting up LSM is to my advantage. I am perfectly willing
-> to consider alternatives, but I confess that my natural reaction to
-> confrontation is to fight back.
->
-Containers doing them will just require some parts becoming default no
-matter the LSM.  I am not exactly happy with LSM is due to the
-conflict.  Because there are features Containers will require no
-matter the LSM loaded.  At moment only LSM's provide them in different
-ways.  So running Containers becomes a lot harder than it should be to
-imposable to get what containers truly offers.
-
-Basic idea of containers and cgroups.  Is that everyone can use them
-directly.  Of course each layer should only be able to give less
-access than the layer above it.
-
-I hope segmenting LSM would allow focus and reduce code base size.
-Less mine is better than yours arguments comparing LSM to each other
-as a whole is basically imposable to come to a single solution due too
-many differences to fight over at one time.  So instead of selinux and
-apparmor and other LSM fighting over there complete system.  It would
-better to do it segment by segment.  This could allow common
-agreements for parts to be formed less code to look after.   Some
-answers will have to be both.  Current design of LSM has no chance of
-creating a single LSM that does everyones need effectively.  Instead
-current design of LSM allows duplication.  Its a design failure.
-
-cgroups provide things like memory usage limits, memory allocation
-preferences(What application gets to keep itself in ram), cpu access
-limits and so on as well .  Fully functional containers need to be
-able to contain whatever distro happens to be in there from the rest
-of the system.  Also it has to Independent to the LSM being used.  Too
-far independent means doubling of code.  What is needed is shared
-modules.  Modules used by LSM and Containers to do security.   The
-segments LSM makers fight over how to do become both container
-features and shared code.
-
-Its a hard thing to come to grips with is that containers is a
-security model in its own right.   If you can isolate something inside
-containers system it should be out of reach of the rest of the system
-if person using containers wish this.   Now if person uses containers
-might only want to  control one of memory, cpu, disk or device access
-this is perfectly acceptable too.
-
-Applications controlling containers in theory could model most
-security models.  Usermode testing of a security mode or even
-applications doing there own internal security models independent of
-distros.  PAM the login system can also use containers to limit user
-memory usage or cpu access now.  Could have pam forbid users from
-being able to switch to root at all or even put users in there own
-virtual space..   Security features no longer stop at the LSM.  PAM
-could be allocating them based on ldap or other user locations no
-matter the LSM in use.  Windows 2000 XP and Vista in a network can be
-secured from the ADS.  Same trick login system apply security.
-
-The major differences is flexibility, maintainability and standardisation.
-
-Other major issue with LSM how would you make it for Distro neutral
-programs like LSB programs be correctly secured on every Distro.
-
-Since system admins threw to users can be using containers
-applications can use them as well like firefox could use it to contain
-it scripts and the like from being able to do user harm without user
-consent.
-
-As everyone knows every person likes there own distro.  Making a user
-operate a distro they don't like will reduce there effectiveness.
-Current LSM does not address a completely secured network with mixed
-Distros.
-
-Basically LSM was designed pre Containers, pre Linux on a desktop and
-pre Linux applications needing to run and operate across distros and
-stay secure.  Its showing its age and soon its going to start being a
-bugger to operate with.  Its basically reached a redesign point for
-future need containers offer part of the solution.  LSM still have a
-place after Containers.  Just a different one to now.  Construction of
-the LSM needs to change.   Staying with status quo is just trouble.
-My ideas maybe not be the complete solution.  Outside of demons may
-stay the role of LSM alone..  The internals of applications and pam
-system on the common core of Containers.  In the process as much code
-as able shared.
-
-Peter Dolding
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
