@@ -1,64 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752978AbXKRJk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753561AbXKRJly@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752978AbXKRJk7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 04:40:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbXKRJks
+	id S1753561AbXKRJly (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 04:41:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbXKRJlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 04:40:48 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:57507 "EHLO mx1.redhat.com"
+	Sun, 18 Nov 2007 04:41:46 -0500
+Received: from s2.ukfsn.org ([217.158.120.143]:53487 "EHLO mail.ukfsn.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751192AbXKRJkq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 04:40:46 -0500
-Message-ID: <474007B3.30205@redhat.com>
-Date: Sun, 18 Nov 2007 01:36:51 -0800
-From: Ulrich Drepper <drepper@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1751151AbXKRJlp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 04:41:45 -0500
+From: Nick Warne <nick@ukfsn.org>
+Reply-To: nick@ukfsn.org
+To: linux-kernel@vger.kernel.org
+Subject: Re: sb live (emu10k1) stops working between 2.6.23.1 and 2.6.23.7
+Date: Sun, 18 Nov 2007 09:41:41 +0000
+User-Agent: KMail/1.9.7
+Cc: Jim Faulkner <jfaulkne@ccs.neu.edu>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       tglx@linutronix.de, torvalds@linux-foundation.org
-Subject: Re: [PATCHv3 0/4] sys_indirect system call
-References: <200711170531.lAH5VaXR025225@devserv.devel.redhat.com> <473FED5F.2010303@zytor.com>
-In-Reply-To: <473FED5F.2010303@zytor.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711180941.41399.nick@ukfsn.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+> I've done some more testing this morning, and it appears that the "ALSA:
+> emu10k1 - Fix memory corruption" patch from 2.6.23.6 has broken digital
+> output on my SB Live Value card.  Simply replacing the 2.6.23.7 emumixer.c
+> with the version included in 2.6.23.1 I was able to get digital output
+> working again under 2.6.23.7.
 
-H. Peter Anvin wrote:
-> It seems to me that we could accomplish the same thing by passing the
-> number of parameters in the upper bits of the system call number
-> register (%eax in the case of x86.)
+Hi Jim,
 
-This isn't really a generic solution.  The number of parameters is
-limited to six.  There are syscalls with six parameters already.  There
-are many more with five which could only handle one more parameter.
+Just to prove you are not alone, I also get the exactly the same issue:
 
-Also, is it really simpler?  You'd need to have another table which
-contains the default number of parameters a system call takes so that
-you can fill in the default value of zero.  This extra memory access has
-to be performed for every system call.
+lspci:
+00:0f.0 Multimedia audio controller: Creative Labs SB Live! EMU10k1 (rev 07)
 
-I think it is unlikely that this approach is faster.  To the contrary,
-I'd guess.
+log:
 
-I don't have much invested into this but it seems the sys_indirect
-approach is so much simpler.  Overhead is only paid if you really need
-it which is rarely the case.  Plus, you might have heard Linus and Zack
-talk about syslets again.  Starting syslets can be done using the same
-interface, I guess.
+Advanced Linux Sound Architecture Driver Version 1.0.14 (Fri Jul 20 09:12:58 
+2007 UTC).
+PCI: Found IRQ 5 for device 0000:00:0f.0
+ALSA device list: #0: SBLive 5.1 [SB0060] (rev.7, serial:0x80611102) at 
+0xe000, irq 5
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+I use a restore file at boot, so run /sbin/alsactl restore
 
-iD8DBQFHQAez2ijCOnn/RHQRAjoHAJ4/Qq4ygaZ4uq6uCIVNq4hfN1m2pACgpJFi
-Z/vBsGFpUc/EUz+VW66jEIY=
-=B19x
------END PGP SIGNATURE-----
+And updating this morning to 2.6.23.8 produces:
+
+/usr/sbin/alsactl: set_control:991: warning: name mismatch (IEC958 Playback 
+Mask/IEC958 Playback Default) for control #228
+/usr/sbin/alsactl: set_control:993: warning: index mismatch (3/0) for control 
+#228
+/usr/sbin/alsactl: set_control:993: warning: index mismatch (0/1) for control 
+#229
+/usr/sbin/alsactl: set_control:993: warning: index mismatch (1/2) for control 
+#230
+/usr/sbin/alsactl: set_control:985: warning: iface mismatch (3/2) for control 
+#231
+/usr/sbin/alsactl: set_control:987: warning: device mismatch (2/0) for control 
+#231
+/usr/sbin/alsactl: set_control:989: warning: subdevice mismatch (0/0) for 
+control #231
+/usr/sbin/alsactl: set_control:991: warning: name mismatch (IEC958 Playback 
+Default/SB Live Analog/Digital Output Jack) for control #231
+
+Nick
+
+
+
+
+> On Fri, 16 Nov 2007, Jim Faulkner wrote:
+
+>
+> Hello,
+>
+> I have an SB Live Value card which uses the emu10k1 driver.  I use digital
+> output to an external amplifier.  This has worked fine for many years, up
+> to and including kernel 2.6.23.1.  Under 2.6.23.7, I have been unable
+> to get any audio output.  I get the following errors when loading my
+> asound.state under 2.6.23.7 using `alsactl restore`:
+> alsactl: set_control:991: warning: name mismatch (IEC958 Playback
+> Mask/IEC958 Playback Default) for control #222
+> alsactl: set_control:993: warning: index mismatch (3/0) for control #222
+> alsactl: set_control:993: warning: index mismatch (0/1) for control #223
+> alsactl: set_control:993: warning: index mismatch (1/2) for control #224
+> alsactl: set_control:985: warning: iface mismatch (3/2) for control #225
+> alsactl: set_control:987: warning: device mismatch (2/0) for control #225
+> alsactl: set_control:989: warning: subdevice mismatch (0/0) for control
+> #225
+> alsactl: set_control:991: warning: name mismatch (IEC958 Playback
+> Default/SB Live Analog/Digital Output Jack) for control #225
+> alsactl: set_control:993: warning: index mismatch (2/0) for control #225
+> alsactl: set_control:995: failed to obtain info for control #225
+> (Operation not permitted)
+>
+> I receive no errors when I load my asound.state under 2.6.23.1.
+-- 
+Free Software Foundation Associate Member 5508
