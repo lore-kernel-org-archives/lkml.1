@@ -1,77 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759610AbXKRKTB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758961AbXKRKTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759610AbXKRKTB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 05:19:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756534AbXKRKPk
+	id S1758961AbXKRKTb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 05:19:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbXKRKPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 05:15:40 -0500
-Received: from hoboe1bl1.telenet-ops.be ([195.130.137.72]:37842 "EHLO
-	hoboe1bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752205AbXKRKPU (ORCPT
+	Sun, 18 Nov 2007 05:15:42 -0500
+Received: from adicia.telenet-ops.be ([195.130.132.56]:35056 "EHLO
+	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752148AbXKRKPT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 05:15:20 -0500
-Message-Id: <20071118101449.599255536@mail.of.borg>
+	Sun, 18 Nov 2007 05:15:19 -0500
+Message-Id: <20071118101449.090712866@mail.of.borg>
 References: <20071118101336.330321764@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Sun, 18 Nov 2007 11:13:49 +0100
+Date: Sun, 18 Nov 2007 11:13:47 +0100
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linux/m68k <linux-m68k@vger.kernel.org>,
        Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Stanislav Brabec <sbrabec@suse.cz>
-Subject: [patch 13/13] mac68k: remove dead MAC_ADBKEYCODES
-Content-Disposition: inline; filename=mac68k-remove-dead-MAC_ADBKEYCODES.diff
+       Finn Thain <fthain@telegraphics.com.au>
+Subject: [patch 11/13] mac68k: remove dead code
+Content-Disposition: inline; filename=mac68k-remove-dead-code.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stanislav Brabec <sbrabec@suse.cz>
+From: Finn Thain <fthain@telegraphics.com.au>
 
-It seems, that current kernel source code contains no traces of
-MAC_ADBKEYCODES and no reference to keyboard_sends_linux_keycodes any
-more.
+Remove dead code.
 
-Attached patch removes them from configuration files.
-
-Signed-off-by: Stanislav Brabec <sbrabec@suse.cz>
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- arch/m68k/Kconfig               |   14 --------------
- arch/m68k/configs/mac_defconfig |    1 -
- 2 files changed, 15 deletions(-)
+ arch/m68k/mac/config.c       |    2 --
+ include/asm-m68k/macintosh.h |    2 --
+ 2 files changed, 4 deletions(-)
 
---- a/arch/m68k/Kconfig
-+++ b/arch/m68k/Kconfig
-@@ -582,20 +582,6 @@ config MAC_HID
- 	depends on INPUT_ADBHID
- 	default y
+--- a/arch/m68k/mac/config.c
++++ b/arch/m68k/mac/config.c
+@@ -58,8 +58,6 @@ extern struct mem_info m68k_memory[NUM_M
  
--config MAC_ADBKEYCODES
--	bool "Support for ADB raw keycodes"
--	depends on INPUT_ADBHID
--	help
--	  This provides support for sending raw ADB keycodes to console
--	  devices.  This is the default up to 2.4.0, but in future this may be
--	  phased out in favor of generic Linux keycodes.  If you say Y here,
--	  you can dynamically switch via the
--	  /proc/sys/dev/mac_hid/keyboard_sends_linux_keycodes
--	  sysctl and with the "keyboard_sends_linux_keycodes=" kernel
--	  argument.
--
--	  If unsure, say Y here.
--
- config ADB_KEYBOARD
- 	bool "Support for ADB keyboard (old driver)"
- 	depends on MAC && !INPUT_ADBHID
---- a/arch/m68k/configs/mac_defconfig
-+++ b/arch/m68k/configs/mac_defconfig
-@@ -678,7 +678,6 @@ CONFIG_LOGO_MAC_CLUT224=y
- #
- CONFIG_MAC_SCC=y
- CONFIG_MAC_HID=y
--CONFIG_MAC_ADBKEYCODES=y
- CONFIG_SERIAL_CONSOLE=y
+ extern struct mem_info m68k_ramdisk;
  
- #
+-extern char m68k_command_line[CL_SIZE];
+-
+ void *mac_env;					/* Loaded by the boot asm */
+ 
+ /* The phys. video addr. - might be bogus on some machines */
+--- a/include/asm-m68k/macintosh.h
++++ b/include/asm-m68k/macintosh.h
+@@ -14,8 +14,6 @@ extern void mac_init_IRQ(void);
+ extern int mac_irq_pending(unsigned int);
+ extern void mac_identify(void);
+ extern void mac_report_hardware(void);
+-extern void mac_debugging_penguin(int);
+-extern void mac_boom(int);
+ 
+ /*
+  *	Floppy driver magic hook - probably shouldnt be here
 
 -- 
 Gr{oetje,eeting}s,
