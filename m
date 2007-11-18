@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754980AbXKRKNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756152AbXKRKNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754980AbXKRKNS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 05:13:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbXKRKMr
+	id S1756152AbXKRKNc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 05:13:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbXKRKMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 05:12:47 -0500
-Received: from astra.telenet-ops.be ([195.130.132.58]:49746 "EHLO
-	astra.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751376AbXKRKMo (ORCPT
+	Sun, 18 Nov 2007 05:12:48 -0500
+Received: from ananke.telenet-ops.be ([195.130.137.78]:32991 "EHLO
+	ananke.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751398AbXKRKMo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 18 Nov 2007 05:12:44 -0500
-Message-Id: <20071118101155.611569042@mail.of.borg>
+Message-Id: <20071118101155.881152613@mail.of.borg>
 References: <20071118101002.730422886@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Sun, 18 Nov 2007 11:10:03 +0100
+Date: Sun, 18 Nov 2007 11:10:04 +0100
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>
-Subject: [patch 1/3] m68k: export atari_keyb_init
-Content-Disposition: inline; filename=atari-export-atari_keyb_init.diff
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [patch 2/3] Amiga zorro bus: Add missing zorro_device_remove()
+Content-Disposition: inline; filename=zorro-add-missing-zorro_device_remove.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@kernel.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 
-m68k: export atari_keyb_init
+Amiga zorro bus: Add missing zorro_device_remove(). Without this ifconfig and
+/proc/net/dev oops after unloading a Zorro network device driver module.
 
-This patch fixes the following build error:
-
-<--  snip  -->
-
-..
-  MODPOST 25 modules
-ERROR: "atari_keyb_init" [drivers/input/mouse/atarimouse.ko] undefined!
-ERROR: "atari_keyb_init" [drivers/input/keyboard/atakbd.ko] undefined!
-make[2]: *** [__modpost] Error 1
-
-<--  snip  -->
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- arch/m68k/atari/atakeyb.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/zorro/zorro-driver.c |   15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
---- a/arch/m68k/atari/atakeyb.c
-+++ b/arch/m68k/atari/atakeyb.c
-@@ -565,7 +565,7 @@ void atari_kbd_leds(unsigned int leds)
- 
- static int atari_keyb_done = 0;
- 
--int __init atari_keyb_init(void)
-+int atari_keyb_init(void)
- {
- 	if (atari_keyb_done)
- 		return 0;
-@@ -631,6 +631,7 @@ int __init atari_keyb_init(void)
- 	atari_keyb_done = 1;
- 	return 0;
+--- a/drivers/zorro/zorro-driver.c
++++ b/drivers/zorro/zorro-driver.c
+@@ -60,6 +60,20 @@ static int zorro_device_probe(struct dev
  }
-+EXPORT_SYMBOL_GPL(atari_keyb_init);
  
- int atari_kbd_translate(unsigned char keycode, unsigned char *keycodep, char raw_mode)
- {
+ 
++static int zorro_device_remove(struct device *dev)
++{
++	struct zorro_dev *z = to_zorro_dev(dev);
++	struct zorro_driver *drv = to_zorro_driver(dev->driver);
++
++	if (drv) {
++		if (drv->remove)
++			drv->remove(z);
++		z->driver = NULL;
++	}
++	return 0;
++}
++
++
+     /**
+      *  zorro_register_driver - register a new Zorro driver
+      *  @drv: the driver structure to register
+@@ -128,6 +142,7 @@ struct bus_type zorro_bus_type = {
+ 	.name	= "zorro",
+ 	.match	= zorro_bus_match,
+ 	.probe	= zorro_device_probe,
++	.remove	= zorro_device_remove,
+ };
+ 
+ 
 
 -- 
 Gr{oetje,eeting}s,
