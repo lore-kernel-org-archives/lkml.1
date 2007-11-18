@@ -1,74 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753123AbXKRFgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752885AbXKRFkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753123AbXKRFgr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 00:36:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751262AbXKRFgj
+	id S1752885AbXKRFkg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 00:40:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbXKRFk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 00:36:39 -0500
-Received: from smtp.cs.utexas.edu ([128.83.120.210]:39791 "EHLO
-	smtp.cs.utexas.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750879AbXKRFgi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 00:36:38 -0500
-Date: Sat, 17 Nov 2007 23:36:26 -0600
-From: Don Porter <porterde@cs.utexas.edu>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Chris Snook <csnook@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC/PATCH] Optimize zone allocator synchronization
-Message-ID: <20071118053626.GC21569@olive-green.cs.utexas.edu>
-References: <20071104195212.GF16354@olive-green.cs.utexas.edu> <47303D07.4050404@redhat.com> <20071106221928.f629c69f.akpm@linux-foundation.org> <200711071632.00055.nickpiggin@yahoo.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200711071632.00055.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.4.1i
+	Sun, 18 Nov 2007 00:40:29 -0500
+Received: from gherkin.frus.com ([192.158.254.49]:39873 "EHLO gherkin.frus.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750856AbXKRFk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 00:40:28 -0500
+X-Greylist: delayed 1190 seconds by postgrey-1.27 at vger.kernel.org; Sun, 18 Nov 2007 00:40:28 EST
+Subject: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
+To: linux-kernel@vger.kernel.org
+Date: Sat, 17 Nov 2007 23:20:36 -0600 (CST)
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20071118052036.11B45DBA2@gherkin.frus.com>
+From: rct@gherkin.frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you all for your consideration and insightful responses to my
-posting.  I apologize for not responding sooner---I have been under a
-deadline.
+Completely reproducible... 2.6.23-rc3 kernel boots, and normal messages
+are seen on console as far as disks found and partitions on each.  However,
+once /dev is populated and the boottime scripts attempt to check filesystem
+status, no partitions on either of the two disks attached to the SCSI
+controller are seen.  Dropping into a single-user root shell confirms
+the sudden "blindness": fdisk can't open /dev/sda.
 
-It seems clear that further investigation will be needed to understand
-these performance numbers better.
+When I reboot on 2.6.24-rc2, everything works normally.
 
-To summarize, I understand that the following experiments will be helpful:
+System environment is Debian Etch.  Both 2.6.24-rc2 and -rc3 were built
+from the respective unaltered kernel.org source trees, using the same
+kernel configuration modulo saying "no" to CONFIG_SENSORS_I5K_AMB and
+CONFIG_PID_NS in -rc3.  No problems with -rc3 on a x86 box.
 
-1) Instrument the allocation code to determine the common size/order
-of the allocations for these workloads.
-
-2) Try to integrate these changes with ticket spinlocks
-
-3) Try placing the zone lock in its own cacheline
-
-4) Look for single-threaded regressions (dd benchmark).
-
-I'll do these at my first opportunity, hopefully within the next week.
-Please let me know if I misunderstood any of your comments.
-
-My intuition about the cost of ping-ponging the lock's cache line
-certainly matched yours, so I was very surprised to see these
-performance numbers.  
-
-On Wed, Nov 07, 2007 at 04:31:59PM +1100, Nick Piggin wrote:
-> It's funny, Dave Miller and I were just talking about the possible
-> reappearance of zone->lock contention with massively multi core and
-> multi threaded CPUs. I think the right way to fix this in the long run
-> if it turns into a real problem, is something like having a lock per
-> MAX_ORDER block, and having CPUs prefer to allocate from different
-> blocks. Anti-frag makes this pretty interesting to implement, but it
-> will be possible.
-
-As a bit of background, the zone lock is indeed one of the more
-contended locks in my target workloads so it was no accident that I
-was looking for ways to improve its scalability.  I am quite
-interested in Nick's ideas about how to split up the zone allocator's
-synchronization.
-
-Of course, these contention levels may not meet your definition of
-"real problem" (~.1% of the execution time).
-
-Best regards,
-Don
+-- 
+------------------------------------------------------------------------
+Bob Tracy          |  "They couldn't hit an elephant at this dist- "
+rct@frus.com       |   - Last words of Union General John Sedgwick,
+                   |  Battle of Spotsylvania Court House, U.S. Civil War
+------------------------------------------------------------------------
