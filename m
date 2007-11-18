@@ -1,66 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbXKRWFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbXKRWHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754656AbXKRWFZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 17:05:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbXKRWFN
+	id S1754825AbXKRWHn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 17:07:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbXKRWHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 17:05:13 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:35905 "EHLO ogre.sisk.pl"
+	Sun, 18 Nov 2007 17:07:35 -0500
+Received: from ns2.g-housing.de ([81.169.133.75]:45347 "EHLO mail.g-house.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752022AbXKRWFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 17:05:11 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Franck Bui-Huu <vagabon.xyz@gmail.com>
-Subject: Re: apm emulation driver broken ?
-Date: Sun, 18 Nov 2007 23:22:40 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-pm@lists.linux-foundation.org, lkml <linux-kernel@vger.kernel.org>
-References: <cda58cb80711160706l2cfac2b1p81c7a1090f228f2e@mail.gmail.com> <200711171346.51363.rjw@sisk.pl> <4740992D.9030906@gmail.com>
-In-Reply-To: <4740992D.9030906@gmail.com>
+	id S1751605AbXKRWHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 17:07:34 -0500
+Date: Sun, 18 Nov 2007 23:07:19 +0100 (CET)
+From: Christian Kujau <lists@nerdbynature.de>
+X-X-Sender: evil@sheep.housecafe.de
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+cc: Chris Wedgwood <cw@f00f.org>, Trond Myklebust <trond.myklebust@fys.uio.no>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Benny Halevy <bhalevy@panasas.com>, linux-xfs@oss.sgi.com
+Subject: Re: 2.6.24-rc2 XFS nfsd hang
+In-Reply-To: <Pine.LNX.4.64.0711181031110.29571@p34.internal.lan>
+Message-ID: <alpine.DEB.0.99999.0711182305510.7426@sheep.housecafe.de>
+References: <20071114070400.GA25708@puku.stupidest.org> <473AA72C.6020308@panasas.com> <20071114125907.GB4010@fieldses.org> <alpine.DEB.0.99999.0711142317010.12443@sheep.housecafe.de> <alpine.DEB.0.99999.0711150840340.12443@sheep.housecafe.de>
+ <20071116003410.GA16797@puku.stupidest.org> <59468.62.180.231.196.1195204637.squirrel@housecafe.dyndns.org> <20071116110315.GA27969@puku.stupidest.org> <1195222772.7653.16.camel@heimdal.trondhjem.org> <20071116214327.GA9685@puku.stupidest.org>
+ <alpine.DEB.0.99999.0711181541280.30603@sheep.housecafe.de> <Pine.LNX.4.64.0711181031110.29571@p34.internal.lan>
+User-Agent: Alpine 0.99999 (DEB 796 2007-11-08)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711182322.41354.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 18 of November 2007, Franck Bui-Huu wrote:
-> Rafael J. Wysocki wrote:
-> > On Saturday, 17 of November 2007, Franck Bui-Huu wrote:
-> >> ok so now we agreed on this point, can we assert that a user
-> >> land thread waiting for an event in an UNINTERRUPTIBLE state
-> >> will prevent a suspend to happen ?
-> > 
-> > Yes.
-> > 
-> 
-> So this driver seems really broken and actually I'm wondering if
-> it's used by anyone...
+On Sun, 18 Nov 2007, Justin Piszcz wrote:
+>> I wonder why so few people are seeing this, I'd have assumed that
+>> NFSv3 && XFS is not sooo exotic...
+> Still on 2.6.23.x here (also use nfsv3 + xfs).
 
-Well, it doesn't seem so.
+So, it's the "too few people are testing -rc kernels" issue again :(
 
-> See the call to wait_even() made by apm_ioctl(). If any processes
-> run this, it will prevent the system to suspend...
+Christian.
+-- 
+BOFH excuse #118:
 
-True, but does it actually happen in practice?
-
-> And no, I don't know why call wait_event() is called.
-
-I hope somebody knows. :-)
-
-At this point the second branch of the "if (as->suspend_state == SUSPEND_READ)"
-can be fixed by replacing wait_event_interruptible() with
-wait_event_freezable(), but the fix for the first branch depends on whether or
-not the wait_event() is really necessary.
-
-If it can be replaced with an interruptible sleep, we can use
-wait_event_freezable() in this case too.  Otherwise, the only woking fix would
-be to reintroduce the PF_NOFREEZE in there.
-
-Honestly, I'm leaning towards replacing wait_event() in apm_ioctl() with
-wait_event_freezable() and seeing what happens ...
-
-Greetings,
-Rafael
+the router thinks its a printer.
