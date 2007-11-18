@@ -1,47 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbXKRRPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753603AbXKRRTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753922AbXKRRPm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 12:15:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbXKRRPU
+	id S1753603AbXKRRTU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 12:19:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbXKRRTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 12:15:20 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:63105 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751187AbXKRRPR (ORCPT
+	Sun, 18 Nov 2007 12:19:12 -0500
+Received: from smtp116.plus.mail.re1.yahoo.com ([69.147.102.79]:47999 "HELO
+	smtp116.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751058AbXKRRTL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 12:15:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=m59k85L6pXk/nxeiM2GND/F9pxzVc5aPDY2G8xU2aUjQGTYDi3Drpf/m+3j1570VWyMMXmG03M0YaJs+PvsVeNNM4u8MEvHQrubu8nGW+XvsdORbZxvmsGkV134kGTs4H2dAMOUCqb0ix9ZE3ZLWw5HyPgTEKRR49cv7f5A0mpw=
-Message-ID: <dc5675e90711180915t45fa56c3le65b624161d4e09b@mail.gmail.com>
-Date: Sun, 18 Nov 2007 12:15:17 -0500
-From: "Richard Harman" <richard.harman@gmail.com>
-To: linux-kernel@vger.kernel.org, richard.harman@gmail.com
-Subject: HP Pavilion DV6408nr timer/irq related? hard lockup
+	Sun, 18 Nov 2007 12:19:11 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
+  b=FDWTN9hw0nl3oD5eJ7LiBsK1NXJZsZobv3rpKazMbDro/kHb4/Isx8eJZwO5A57vSgHaeme6VIdsnp3CBhd8JfYOz1MslAD8PclvyiyCtdRGk6OKTNtplArrVKTyzmWmaFEAhPAyhF5d7suFrK0BXclxyi/dM0mqh1Mk/UynALo=  ;
+X-YMail-OSG: 3Fge69YVM1kxVDi0PHI6JFRLYMqTEV2QVKvMReR13vND.2y5P8Sv11xGVfbfQ7Nq9NjA3LLR1Q--
+Date: Sun, 18 Nov 2007 14:11:30 +0100
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: Lucy McCoy <lucy@keyspan.com>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] keyspan: init termios properly
+Message-ID: <20071118131130.GA3991@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+References: <46954.192.168.1.71.1195161016.webmail@192.168.1.71>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <46954.192.168.1.71.1195161016.webmail@192.168.1.71>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(I'm not on the list, please CC me in your replies)
+On Thu, Nov 15, 2007 at 01:10:16PM -0800, Lucy McCoy wrote:
+ 
+> static int keyspan_open (struct usb_serial_port *port, struct file *filp)
+> {
+> 	struct keyspan_port_private 	*p_priv;
+> 	struct keyspan_serial_private 	*s_priv;
+> 	struct usb_serial 		*serial = port->serial;
+> 	const struct keyspan_device_details	*d_details;
+> 	int				i, err;
+> 	struct urb			*urb;
+> 	
+> 	s_priv = usb_get_serial_data(serial);
+> 	p_priv = usb_get_serial_port_data(port);
+> 	d_details = p_priv->device_details;
+> 	
+> 	dbg("%s - port%d.", __FUNCTION__, port->number); 
+> 
+> 	/* Set some sane defaults */
+> 	p_priv->rts_state = 1;
+> 	p_priv->dtr_state = 1;
+> 	p_priv->baud = 9600;
+> 
+> 	/* set CTS/RTS handshake etc. */
+> 	p_priv->cflag = CS8;   /* 8/N/1  */
+> 	p_priv->flow_control = flow_none;
+> 
+> 	/* force baud and lcr to be set on open */
+> 	p_priv->old_baud = 0;
+> 	p_priv->old_cflag = 0;
+> 
+> 	p_priv->out_flip = 0;
+> 	p_priv->in_flip = 0;
+> 
+> 	/* Reset low level data toggle and start reading from endpoints */
+> 	for (i = 0; i < 2; i++) {
+> 		if ((urb = p_priv->in_urbs[i]) == NULL)
+> 			continue;
+> 		urb->dev = serial->dev;
+> 
+> 		/* make sure endpoint data toggle is synchronized with the device */
+> 		
+> 		usb_clear_halt(urb->dev, urb->pipe);
+> 
+> 		if ((err = usb_submit_urb(urb, GFP_KERNEL)) != 0) {
+> 			dbg("%s - submit urb %d failed (%d)", __FUNCTION__, i, err);
+> 		}
+> 	}
+> 
+> 	/* Reset low level data toggle on out endpoints */
+> 	for (i = 0; i < 2; i++) {
+> 		if ((urb = p_priv->out_urbs[i]) == NULL)
+> 			continue;
+> 		urb->dev = serial->dev;
+> 		/* usb_settoggle(urb->dev, usb_pipeendpoint(urb->pipe), usb_pipeout(urb->pipe), 0); */
+> 	}
+> 
+> 	keyspan_send_setup(port, 1);
+> 	//mdelay(100);
+> 	//keyspan_set_termios(port, NULL);
+> 
+> 	return (0);
+> }
+> 
 
-I have a HP DV6409nr Pavilion notebook that came preloaded with
-Windows Vista that Linux doesn't seem to want to boot properly on.
+yes, after testing this i can confirm that this one fixes the NULL ptr
+problem here so you might want to submit a proper patch to Greg.
 
-Currently, 'noapic noirqdebug' sort-of works for x86_64 kernels, but
-Vista seems to be able to use the APIC just fine.  I've disassembled
-the BIOS to pull out the bios pirq and routing table and from what I
-can tell, it's pretty flexible -- Linux and Vista both set up the same
-IRQs when in APIC mode, save for the HPET.  Vista sticks the HPET on
-IRQ 0 and 8, Linux sticks it on 2, 8, and 31.  The two USB controllers
-get assigned IRQ 22 in both Vista and Linux, but under Linux a few
-seconds after accessing a USB device causes the system to lock up
-solid without an oops.  Most of all I'm trying to get this laptop
-running in APIC mode so I can run Xen.
-
-This system has no serial port, and USB seems to be problematic; can
-anyone suggest how to figure out what is causing the lock up?  When
-the system freezes, it locks up so solid that sysrq doesn't work.
+-- 
+Regards/Gruﬂ,
+    Boris.
