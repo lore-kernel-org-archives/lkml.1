@@ -1,41 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756085AbXKROjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754724AbXKROo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756085AbXKROjj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 09:39:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbXKROjc
+	id S1754724AbXKROo5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 09:44:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752723AbXKROot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 09:39:32 -0500
-Received: from rtr.ca ([76.10.145.34]:3698 "EHLO mail.rtr.ca"
+	Sun, 18 Nov 2007 09:44:49 -0500
+Received: from ns2.g-housing.de ([81.169.133.75]:44574 "EHLO mail.g-house.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752623AbXKROjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 09:39:31 -0500
-Message-ID: <47404EA1.5010902@rtr.ca>
-Date: Sun, 18 Nov 2007 09:39:29 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	id S1752663AbXKROos (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 09:44:48 -0500
+Date: Sun, 18 Nov 2007 15:44:34 +0100 (CET)
+From: Christian Kujau <lists@nerdbynature.de>
+X-X-Sender: evil@sheep.housecafe.de
+To: Chris Wedgwood <cw@f00f.org>
+cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Benny Halevy <bhalevy@panasas.com>, linux-xfs@oss.sgi.com
+Subject: Re: 2.6.24-rc2 XFS nfsd hang
+In-Reply-To: <20071116214327.GA9685@puku.stupidest.org>
+Message-ID: <alpine.DEB.0.99999.0711181541280.30603@sheep.housecafe.de>
+References: <20071114070400.GA25708@puku.stupidest.org> <473AA72C.6020308@panasas.com> <20071114125907.GB4010@fieldses.org> <alpine.DEB.0.99999.0711142317010.12443@sheep.housecafe.de> <alpine.DEB.0.99999.0711150840340.12443@sheep.housecafe.de>
+ <20071116003410.GA16797@puku.stupidest.org> <59468.62.180.231.196.1195204637.squirrel@housecafe.dyndns.org> <20071116110315.GA27969@puku.stupidest.org> <1195222772.7653.16.camel@heimdal.trondhjem.org> <20071116214327.GA9685@puku.stupidest.org>
+User-Agent: Alpine 0.99999 (DEB 796 2007-11-08)
 MIME-Version: 1.0
-To: kernel coder <lhrkernelcoder@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: increased number of cycles
-References: <f69849430711172131j41c21d84y2ac10759eff29eb7@mail.gmail.com>
-In-Reply-To: <f69849430711172131j41c21d84y2ac10759eff29eb7@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kernel coder wrote:
-> hi,
->         I'm trying to add some code to netif_receive_skb function in
-> dev.c file . The cycles consumed by that code was around 16 cycles on
-> Dual Core Opetron machine.I'm working on that code for last 6 months
-> now and the consumed cycles have always been around 16 cycles .I don't
-> touch any other part of kernel .
-> 
-> But for last 4 days the consumed cycles have suddenly increased to
-> around 35 cycles . I'm using RDTSC instruction to profile the
-> code.There is no change in code and the kernel version is also the
-> same .I am assuming that there  must be something wrong with hardware.
-..
+On Fri, 16 Nov 2007, Chris Wedgwood wrote:
+> Oops, I meant it for NFSD...  and I'm somewhat serious.  I'm not
+> saying it's a good long term solution, but a potentially safer
+> short-term workaround.
 
-A cache miss ?
+I've opened http://bugzilla.kernel.org/show_bug.cgi?id=9400 to track this 
+one (and to not forget about it :)).
+
+I wonder why so few people are seeing this, I'd have assumed that
+NFSv3 && XFS is not sooo exotic...
+
+Christian.
+-- 
+BOFH excuse #273:
+
+The cord jumped over and hit the power switch.
