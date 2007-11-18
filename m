@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755221AbXKRJq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753489AbXKRKD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755221AbXKRJq1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 04:46:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbXKRJqE
+	id S1753489AbXKRKD6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 05:03:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbXKRKDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 04:46:04 -0500
-Received: from paperboy.netsplit.com ([82.108.80.242]:34226 "EHLO
-	paperboy.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751398AbXKRJqB (ORCPT
+	Sun, 18 Nov 2007 05:03:52 -0500
+Received: from europa.telenet-ops.be ([195.130.137.75]:47515 "EHLO
+	europa.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751162AbXKRKDv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 04:46:01 -0500
-Subject: [PATCH] wait_task_stopped: pass correct exit_code to
-	wait_noreap_copyout
-From: Scott James Remnant <scott@ubuntu.com>
-To: linux-kernel@vger.kernel.org
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Roland McGrath <roland@redhat.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-EYBTzqzJ2Bql74elVsCH"
-Date: Sun, 18 Nov 2007 09:13:24 +0000
-Message-Id: <1195377204.6070.3.camel@wing-commander>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Sun, 18 Nov 2007 05:03:51 -0500
+Date: Sun, 18 Nov 2007 11:03:47 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Andy Whitcroft <apw@shadowen.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>
+Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] checkpatch: Print filenames of patches
+Message-ID: <Pine.LNX.4.64.0711181103070.1009@anakin>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+checkpatch: Print filenames of patches instead of the very uninformative
+`Your patch'.
 
---=-EYBTzqzJ2Bql74elVsCH
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+This patch is not `checkpatch' clean :-)
+Although I shortened 2 lines, they're still longer than 80 characters...
 
-In wait_task_stopped() exit_code already contains the right value for
-the si_status member of siginfo, and this is simply set in the non
-WNOWAIT case.
-   =20
-Pass it unchanged to wait_noreap_copyout();  we would only need to
-shift it and add 0x7f if we were returning it in the user status field
-and that isn't used for any function that permits WNOWAIT.
-   =20
-Signed-off-by: Scott James Remnant <scott@ubuntu.com>
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-Signed-off-by: Roland McGrath <roland@redhat.com>
+ scripts/checkpatch.pl |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -1389,7 +1389,7 @@ static int wait_task_stopped(struct task_struct
-*p, int delayed_group_leader,
- 		if (unlikely(!exit_code) || unlikely(p->exit_state))
- 			goto bail_ref;
- 		return wait_noreap_copyout(p, pid, uid,
--					   why, (exit_code << 8) | 0x7f,
-+					   why, exit_code,
- 					   infop, ru);
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -1408,10 +1408,10 @@ sub process {
+ 		}
  	}
-=20
+ 	if ($clean == 1 && $quiet == 0) {
+-		print "Your patch has no obvious style problems and is ready for submission.\n"
++		print "$filename has no obvious style problems and is ready for submission.\n"
+ 	}
+ 	if ($clean == 0 && $quiet == 0) {
+-		print "Your patch has style problems, please review.  If any of these errors\n";
++		print "$filename has style problems, please review.  If any of these errors\n";
+ 		print "are false positives report them to the maintainer, see\n";
+ 		print "CHECKPATCH in MAINTAINERS.\n";
+ 	}
 
+Gr{oetje,eeting}s,
 
---=-EYBTzqzJ2Bql74elVsCH
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+						Geert
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-iD8DBQBHQAI0SnQiFMl4yK4RApSrAKCtNzGkRN2cGS07o+314Y4GO7eBZQCdEbAE
-3k0PjEXoHN/fHtGfgvpixcw=
-=W0Tb
------END PGP SIGNATURE-----
-
---=-EYBTzqzJ2Bql74elVsCH--
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
