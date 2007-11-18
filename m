@@ -1,199 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755644AbXKRXOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbXKRXQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755644AbXKRXOe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 18:14:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753017AbXKRXOY
+	id S1755835AbXKRXQk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 18:16:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbXKRXQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 18:14:24 -0500
-Received: from sceptre.pobox.com ([207.106.133.20]:38405 "EHLO
-	sceptre.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752869AbXKRXOW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 18:14:22 -0500
-From: Junio C Hamano <gitster@pobox.com>
-To: git@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.5.3.6
-References: <7vpryugb7i.fsf@gitster.siamese.dyndns.org>
-Date: Sun, 18 Nov 2007 15:14:15 -0800
-In-Reply-To: <7vpryugb7i.fsf@gitster.siamese.dyndns.org> (Junio C. Hamano's
-	message of "Wed, 31 Oct 2007 15:40:01 -0700")
-Message-ID: <7vve7ztad4.fsf@gitster.siamese.dyndns.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+	Sun, 18 Nov 2007 18:16:32 -0500
+Received: from gate.crashing.org ([63.228.1.57]:37841 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753226AbXKRXQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 18:16:31 -0500
+Subject: Re: radeonfb i2c regression post-2.6.18.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Roger Leigh <rleigh@whinlatter.ukfsn.org>
+Cc: Jean Delvare <khali@linux-fr.org>, linux-kernel@vger.kernel.org,
+       Dennis Munsie <dmunsie@cecropia.com>, Michael Buesch <mb@bu3sch.de>
+Content-Type: text/plain
+Date: Mon, 19 Nov 2007 10:16:06 +1100
+Message-Id: <1195427766.7022.18.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latest maintenance release GIT 1.5.3.6 is available at the
-usual places:
 
-  http://www.kernel.org/pub/software/scm/git/
+On Sun, 2007-11-18 at 21:58 +0000, Roger Leigh wrote:
+> Hi folks,
+> 
+> I'm using an Apple Cinema Display connected via DVI to an Apple Mac
+> Mini with Radeon 9200 graphics. This used to work fine, but with
+> kernels >= 2.6.19, the monitor powers off as soon as the framebuffer
+> is initialised, making for a less than usable system. I've tested
+> with 2.6.(19|2[012]), and I didn't see any related changes in 2.6.23.
 
-  git-1.5.3.6.tar.{gz,bz2}			(tarball)
-  git-htmldocs-1.5.3.6.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.5.3.6.tar.{gz,bz2}		(preformatted docs)
-  RPMS/$arch/git-*-1.5.3.6-1.$arch.rpm	(RPM)
+   .../...
 
-----------------------------------------------------------------
-GIT v1.5.3.6 Release Notes
-==========================
+Can you try the patch from Jean that I pasted below and let us know if
+it helps ? It looks like the releasing of the i2c lines may have been
+done backward.
 
-Fixes since v1.5.3.5
---------------------
+(Also, Michel, can you check if it fixes your other problem with this
+code ? ie. your "hot crash")
 
- * git-cvsexportcommit handles root commits better.
+Cheers,
+Ben.
 
- * git-svn dcommit used to clobber when sending a series of
-   patches.
+-------- Forwarded Message --------
+From: Jean Delvare <khali@linux-fr.org>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Antonino Daplas
+<adaplas@gmail.com>
+Subject: [PATCH] fb_ddc: Fix DDC lines quirk
+Date: Sun, 18 Nov 2007 14:21:41 +0100
 
- * git-svn dcommit failed after attempting to rebase when
-   started with a dirty index; now it stops upfront.
+The code in fb_ddc_read() is said to be based on the implementation
+of the radeon driver:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=fc5891c8a3ba284f13994d7bc1f1bfa8283982de
 
- * git-grep sometimes refused to work when your index was
-   unmerged.
+However, comparing the old radeon driver code with the new fb_ddc code
+reveals some differences. Most notably, the I2C bus lines are held at
+the end of the function, while the original code was releasing them
+(as the comment above correctly says.)
 
- * "git-grep -A1 -B2" acted as if it was told to run "git -A1 -B21".
+There are a few other differences, which appear to be responsible for
+read failures on my system. While tracing low-level I2C code in
+i2c-algo-bit, I noticed that the initial attempt to read the EDID
+always failed. It takes one retry for the read to succeed. As we are
+about to remove this automatic retry property from i2c-algo-bit,
+reading the EDID would really fail.
 
- * git-hash-object did not honor configuration variables, such as
-   core.compression.
+As a summary, the I2C lines quirk which is supposedly needed to read
+EDID on some older monitors is currently breaking the (first) read on
+all other monitors (and might not even work with older ones - did
+anyone try since October 2006?)
 
- * git-index-pack choked on a huge pack on 32-bit machines, even when
-   large file offsets are supported.
+After applying the patch below, which makes the code in fb_ddc_read()
+really similar to what the radeon driver used to have, the first EDID
+read succeeds again.
 
- * atom feeds from git-web said "10" for the month of November.
+On top of that, as it appears that this code has been broken for one
+year now and nobody seems to have complained, I'm curious if it makes
+sense to keep this quirk in place. It makes the code more complex and
+slower just for the sake of monitors which I guess nobody uses
+anymore. Can't we just get rid of it?
 
- * a memory leak in commit walker was plugged.
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+---
+ drivers/video/fb_ddc.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
- * When git-send-email inserted the original author's From:
-   address in body, it did not mark the message with
-   Content-type: as needed.
+--- linux-2.6.24-rc3.orig/drivers/video/fb_ddc.c	2007-11-17 20:23:03.000000000 +0100
++++ linux-2.6.24-rc3/drivers/video/fb_ddc.c	2007-11-18 12:49:14.000000000 +0100
+@@ -56,13 +56,12 @@ unsigned char *fb_ddc_read(struct i2c_ad
+ 	int i, j;
+ 
+ 	algo_data->setscl(algo_data->data, 1);
+-	algo_data->setscl(algo_data->data, 0);
+ 
+ 	for (i = 0; i < 3; i++) {
+ 		/* For some old monitors we need the
+ 		 * following process to initialize/stop DDC
+ 		 */
+-		algo_data->setsda(algo_data->data, 0);
++		algo_data->setsda(algo_data->data, 1);
+ 		msleep(13);
+ 
+ 		algo_data->setscl(algo_data->data, 1);
+@@ -97,14 +96,15 @@ unsigned char *fb_ddc_read(struct i2c_ad
+ 		algo_data->setsda(algo_data->data, 1);
+ 		msleep(15);
+ 		algo_data->setscl(algo_data->data, 0);
++		algo_data->setsda(algo_data->data, 0);
+ 		if (edid)
+ 			break;
+ 	}
+ 	/* Release the DDC lines when done or the Apple Cinema HD display
+ 	 * will switch off
+ 	 */
+-	algo_data->setsda(algo_data->data, 0);
+-	algo_data->setscl(algo_data->data, 0);
++	algo_data->setsda(algo_data->data, 1);
++	algo_data->setscl(algo_data->data, 1);
+ 
+ 	return edid;
+ }
 
- * git-revert and git-cherry-pick incorrectly refused to start
-   when the work tree was dirty.
 
- * git-clean did not honor core.excludesfile configuration.
-
- * git-add mishandled ".gitignore" files when applying them to
-   subdirectories.
-
- * While importing a too branchy history, git-fastimport did not
-   honor delta depth limit properly.
-
- * Support for zlib implementations that lack ZLIB_VERNUM and definition
-   of deflateBound() has been added.
-
- * Quite a lot of documentation clarifications.
-
-
-----------------------------------------------------------------
-
-Changes since v1.5.3.5 are as follows:
-
-Alex Riesen (1):
-      stop t1400 hiding errors in tests
-
-Ask Bjørn Hansen (1):
-      When exec() fails include the failing command in the error message
-
-Benoit Sigoure (2):
-      git-send-email: Change the prompt for the subject of the initial message.
-      git-svn: prevent dcommitting if the index is dirty.
-
-Brad King (1):
-      cvsexportcommit: fix for commits that do not have parents
-
-Christian Couder (1):
-      for-each-ref: fix off by one read.
-
-David D Kilzer (2):
-      RelNotes-1.5.3.5: fix typo
-      RelNotes-1.5.3.5: fix another typo
-
-David Symonds (1):
-      Improve accuracy of check for presence of deflateBound.
-
-Eric Wong (2):
-      git-svn: fix dcommit clobbering when committing a series of diffs
-      git-svn: t9114: verify merge commit message in test
-
-Gerrit Pape (4):
-      git-diff.txt: add section "output format" describing the diff formats
-      git-cvsimport: really convert underscores in branch names to dots with -u
-      git-daemon: fix remote port number in log entry
-      git-mailsplit: with maildirs not only process cur/, but also new/
-
-Jakub Narebski (1):
-      gitweb: Update config file example for snapshot feature in gitweb/INSTALL
-
-Jeff King (2):
-      git-branch: remove mention of non-existent '-b' option
-      git-send-email: add charset header if we add encoded 'From'
-
-Jing Xue (1):
-      replace reference to git-rm with git-reset in git-commit doc
-
-Johannes Schindelin (1):
-      Add Documentation/CodingGuidelines
-
-Jonas Fonseca (3):
-      Remove escaping of '|' in manpage option sections
-      instaweb: Minor cleanups and fixes for potential problems
-      Documentation: Fix man page breakage with DocBook XSL v1.72
-
-Jonathan del Strother (1):
-      Fixing path quoting in git-rebase
-
-Junio C Hamano (12):
-      grep with unmerged index
-      refresh_index_quietly(): express "optional" nature of index writing better
-      Makefile: add missing dependency on wt-status.h
-      Start preparing for 1.5.3.6
-      t/t3404: fix test for a bogus todo file.
-      revert/cherry-pick: allow starting from dirty work tree.
-      git-clean: honor core.excludesfile
-      core.excludesfile clean-up
-      Fix per-directory exclude handing for "git add"
-      Update draft release notes for 1.5.3.6
-      grep -An -Bm: fix invocation of external grep command
-      GIT 1.5.3.6
-
-Kristian Høgsberg (1):
-      Remove unecessary hard-coding of EDITOR=':' VISUAL=':' in some test suites.
-
-Marco Costalba (1):
-      Remove a couple of duplicated include
-
-Mike Hommey (1):
-      Delay pager setup in git blame
-
-Nicolas Pitre (3):
-      print warning/error/fatal messages in one shot
-      git-hash-object should honor config variables
-      fix index-pack with packs >4GB containing deltas on 32-bit machines
-
-Ralf Wildenhues (3):
-      git-clone.txt: Improve --depth description.
-      Avoid a few unportable, needlessly nested "...`...".
-      Fix sed string regex escaping in module_name.
-
-Sergei Organov (6):
-      git-filter-branch.txt: fix a typo.
-      git-format-patch.txt: fix explanation of an example.
-      Documentation: quote commit messages consistently.
-      SubmittingPatches: improve the 'Patch:' section of the checklist
-      core-tutorial.txt: Fix argument mistake in an example.
-      git-remote.txt: fix typo
-
-Shawn O. Pearce (2):
-      Fix memory leak in traverse_commit_list
-      Don't allow fast-import tree delta chains to exceed maximum depth
-
-Vincent Zanotti (1):
-      gitweb: correct month in date display for atom feeds
-
-Wincent Colaiuta (2):
-      Grammar fixes for gitattributes documentation
-      Fix t9101 test failure caused by Subversion "auto-props"
 
