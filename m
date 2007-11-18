@@ -1,223 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752116AbXKRQWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752527AbXKRQdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752116AbXKRQWR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 11:22:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750945AbXKRQWD
+	id S1752527AbXKRQdT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 11:33:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751013AbXKRQdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 11:22:03 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46754 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750735AbXKRQWB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 11:22:01 -0500
-Date: Sun, 18 Nov 2007 17:21:26 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Mark Lord <liml@rtr.ca>, Thomas Gleixner <tglx@linutronix.de>,
-       len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, rjw@sisk.pl
-Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
-Message-ID: <20071118162126.GA29080@elte.hu>
-References: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com> <20071113031553.3c7b5c16.akpm@linux-foundation.org> <4739ADA2.4060604@rtr.ca> <alpine.LFD.0.9999.0711131521590.3265@localhost.localdomain> <4739E347.30406@rtr.ca> <473C7495.40805@rtr.ca> <47406400.5070804@rtr.ca>
+	Sun, 18 Nov 2007 11:33:05 -0500
+Received: from neopsis.com ([213.239.204.14]:49720 "EHLO
+	matterhorn.dbservice.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750997AbXKRQdE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 11:33:04 -0500
+Message-ID: <4740692E.7010801@dbservice.com>
+Date: Sun, 18 Nov 2007 17:32:46 +0100
+From: Tomas Carnecky <tom@dbservice.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070802)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47406400.5070804@rtr.ca>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Pavel Machek <pavel@ucw.cz>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: laptop reboots right after hibernation
+References: <473730F6.2010900@dbservice.com> <20071118105214.GB7299@ucw.cz>
+In-Reply-To: <20071118105214.GB7299@ucw.cz>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Neopsis-MailScanner-Information: Neopsis MailScanner using ClamAV and Spaassassin
+X-Neopsis-MailScanner: Found to be clean
+X-Neopsis-MailScanner-SpamCheck: not spam, SpamAssassin (score=-2.284,
+	required 5, autolearn=spam, AWL 0.21, BAYES_00 -2.60,
+	RDNS_DYNAMIC 0.10)
+X-MailScanner-From: tom@dbservice.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Pavel Machek wrote:
+> Hi!
+> 
+>> echo disk > /sys/power/state
+>>
+>> successfully saves that state to the disk, but just as the laptop is
+>> about to turn itself off, it reboots (successfully, so the
+>> hibernation/resume process works well, even with X running! which is
+>> awesome :) ). But I'd rather like the computer turned off after I
+>> hibernate it. Where could the problem be?
+>>
+>> It's a new laptop, TP X61 tablet, I tried ubuntu (7.10, gutsy) for a few
+>> days, both suspend and hibernate worked there (with one or two crashes,
+>> probably due to X, I've read that the intel driver got some
+>> suspend/resume improvements recently). Now I'm running gentoo, kernel
+>> 2.6.24-rc2. I'm using newer versions of almost all software now compared
+>> to the ubuntu system.
+> 
+> If it works in older ubuntu, you can probably do bisect. Does normal
+> shutdown work? You can try platform vs. shutdown mode...
+> 
 
-* Mark Lord <lkml@rtr.ca> wrote:
+I don't have ubuntu anymore, though I'll try if hibernate works with the
+livecd. One interesting thing I've found out: hibernate reboots the
+laptop _only_ if it is in the docking station. If I hibernate while
+outside of the docking station, it properly shuts down the laptop.
 
-> Since Ingo's latency trace patches lock up the machine on resume, the 
-> next thing I'll try instead is to re-enable CONFIG_IRQBALANCE=y.
+The default mode seems to be 'platform', after I echoed 'shutdown' to
+/sys/power/disk the notebook correctly shuts down after hibernation!
 
-hm, which patch did you try? Could you check whether all chunks from the 
-patch below are applied? (these are the fixed i did when i was doing 
-cross-suspend traces - this is not something i've done before, so the 
-tracer had to be adjusted)
+Some interesting facts. All tests were done with 2.6.24-rc2, custom
+tailored kernel with just the options needed for my notebook (ThinkPad
+X61 Tablet) - without drm modules and bluetooth but with iwl4965 loaded.
+All tests were done without X running, from the console. If I say
+something 'works' it means I tested it at least three/four times in a
+row (if not even more).
 
-i suspect if you turn off CONFIG_FUNCTION_TRACING then you wont get any 
-hung resume - and the resulting trace would still be pretty useful. (it 
-will show scheduling and irq activities, etc.)
+(1) Both STR and STD work correctly if I keep the notebook outside of
+the docking station (both in platform and shutdown mode).
 
-	Ingo
+(2) Both STR and STD work correctly if I keep the notebook in the
+docking station (both in platform and shutdown mode - with the small
+glitch in platform mode that the notebook won't power off after
+hibernation).
 
----
- arch/x86/kernel/stacktrace.c     |    2 +-
- arch/x86/power/cpu.c             |    3 ++-
- drivers/acpi/namespace/nsutils.c |    2 +-
- drivers/acpi/namespace/nswalk.c  |    2 +-
- include/linux/sched.h            |    2 ++
- kernel/latency_trace.c           |   26 +++++++++++++++++++++++---
- kernel/softirq.c                 |    6 +++---
- 7 files changed, 33 insertions(+), 10 deletions(-)
+(3) Once the notebook was in the docking station (whether I boot it
+while in the dock or boot it outside and then put it into the dock) and
+I take it out (press the 'undock' button on the dock, wait for the green
+led, then take out the notebook) things get interesting:
 
-Index: linux/arch/x86/kernel/stacktrace.c
-===================================================================
---- linux.orig/arch/x86/kernel/stacktrace.c
-+++ linux/arch/x86/kernel/stacktrace.c
-@@ -22,7 +22,7 @@ static int save_stack_stack(void *data, 
- 	return -1;
- }
- 
--static void save_stack_address(void *data, unsigned long addr)
-+static void notrace save_stack_address(void *data, unsigned long addr)
- {
- 	struct stack_trace *trace = (struct stack_trace *)data;
- 	if (trace->skip > 0) {
-Index: linux/arch/x86/power/cpu.c
-===================================================================
---- linux.orig/arch/x86/power/cpu.c
-+++ linux/arch/x86/power/cpu.c
-@@ -123,8 +123,9 @@ void __restore_processor_state(struct sa
- 	mcheck_init(&boot_cpu_data);
- }
- 
--void restore_processor_state(void)
-+void notrace restore_processor_state(void)
- {
-+	trace_resume();
- 	__restore_processor_state(&saved_context);
- }
- 
-Index: linux/drivers/acpi/namespace/nsutils.c
-===================================================================
---- linux.orig/drivers/acpi/namespace/nsutils.c
-+++ linux/drivers/acpi/namespace/nsutils.c
-@@ -923,7 +923,7 @@ struct acpi_namespace_node *acpi_ns_get_
-  *
-  ******************************************************************************/
- 
--struct acpi_namespace_node *acpi_ns_get_next_valid_node(struct
-+struct acpi_namespace_node * notrace acpi_ns_get_next_valid_node(struct
- 							acpi_namespace_node
- 							*node)
- {
-Index: linux/drivers/acpi/namespace/nswalk.c
-===================================================================
---- linux.orig/drivers/acpi/namespace/nswalk.c
-+++ linux/drivers/acpi/namespace/nswalk.c
-@@ -65,7 +65,7 @@ ACPI_MODULE_NAME("nswalk")
-  *              within Scope is returned.
-  *
-  ******************************************************************************/
--struct acpi_namespace_node *acpi_ns_get_next_node(acpi_object_type type, struct acpi_namespace_node
-+struct acpi_namespace_node * notrace acpi_ns_get_next_node(acpi_object_type type, struct acpi_namespace_node
- 						  *parent_node, struct acpi_namespace_node
- 						  *child_node)
- {
-Index: linux/include/linux/sched.h
-===================================================================
---- linux.orig/include/linux/sched.h
-+++ linux/include/linux/sched.h
-@@ -337,6 +337,7 @@ static inline void touch_all_softlockup_
-   extern long user_trace_stop(void);
-   extern void trace_cmdline(void);
-   extern void init_tracer(void);
-+  extern void trace_resume(void);
- #else
- # define mcount_enabled				0
- # define trace_enabled				0
-@@ -358,6 +359,7 @@ static inline void touch_all_softlockup_
- # define user_trace_stop()			do { } while (0)
- # define trace_cmdline()			do { } while (0)
- # define init_tracer()				do { } while (0)
-+# define trace_resume()				do { } while (0)
- #endif
- 
- #ifdef CONFIG_WAKEUP_TIMING
-Index: linux/kernel/latency_trace.c
-===================================================================
---- linux.orig/kernel/latency_trace.c
-+++ linux/kernel/latency_trace.c
-@@ -258,19 +258,28 @@ static struct cpu_trace cpu_traces[NR_CP
- #endif
-  } };
- 
--static notrace cycle_t now(struct cpu_trace *tr, int monotonic)
-+static inline notrace cycle_t __now(int monotonic)
- {
--	cycles_t now, delta, last = tr->last_cycles;
-+	cycles_t now;
- 
- 	if (trace_use_raw_cycles && !monotonic)
- 		now = get_cycles();
- 	else
- 		now = get_monotonic_cycles();
- 
-+	return now;
-+}
-+
-+static notrace cycle_t now(struct cpu_trace *tr, int monotonic)
-+{
-+	cycles_t now, delta, last = tr->last_cycles;
-+
-+	now = __now(monotonic);
-+
- 	/*
- 	 * Protect against time warps:
- 	 */
--	if (unlikely(now < last))
-+	if (unlikely(now < last || !last))
- 		delta = 1;
- 	else
- 		delta = now - last;
-@@ -281,6 +290,17 @@ static notrace cycle_t now(struct cpu_tr
- 	return tr->cycles;
- }
- 
-+/*
-+ * Resume callback - ignore any time spent resumed:
-+ * (the clocksource readout might be unreliable anyway)
-+ */
-+void notrace trace_resume(void)
-+{
-+	struct cpu_trace *tr = cpu_traces + raw_smp_processor_id();
-+
-+	tr->last_cycles = 0;
-+	mcount();
-+}
- 
- #ifdef CONFIG_EVENT_TRACE
- 
-Index: linux/kernel/softirq.c
-===================================================================
---- linux.orig/kernel/softirq.c
-+++ linux/kernel/softirq.c
-@@ -91,7 +91,7 @@ static inline void __local_bh_disable(un
- }
- #endif /* CONFIG_TRACE_IRQFLAGS */
- 
--void local_bh_disable(void)
-+void notrace local_bh_disable(void)
- {
- 	__local_bh_disable((unsigned long)__builtin_return_address(0));
- }
-@@ -129,7 +129,7 @@ void _local_bh_enable(void)
- 
- EXPORT_SYMBOL(_local_bh_enable);
- 
--void local_bh_enable(void)
-+void notrace local_bh_enable(void)
- {
- #ifdef CONFIG_TRACE_IRQFLAGS
- 	unsigned long flags;
-@@ -163,7 +163,7 @@ void local_bh_enable(void)
- }
- EXPORT_SYMBOL(local_bh_enable);
- 
--void local_bh_enable_ip(unsigned long ip)
-+void notrace local_bh_enable_ip(unsigned long ip)
- {
- #ifdef CONFIG_TRACE_IRQFLAGS
- 	unsigned long flags;
+(a) I initiate STR, notebook correctly goes to sleep, but it only wakes
+up if I have it in the docking station. If I try to wake it up outside
+of the docking station it will fail.
+
+(b) I initiate STD, and it locks up after a few seconds, at that time
+only the cursor in the top left screen is visible (not blinking). If I
+put the notebook in its locked up state into the dock, it will reboot
+after a few seconds.
+
+(4) If the notebook is in the dock and I initiate STR and then press the
+undock button, it resumes (I assume that is 'working as intended').
+
+(5) If the notebook is in the dock, I press the undock button and wait
+for the green led then initiate STR, I can take the notebook out but
+resuming doesn't work - unless I resume it while the notebook is back in
+the docking station (see point 3a)
+
+(6) If the notebook is in the dock, I press the undock button and wait
+for the green led, then initiate STD:
+
+(a) in platform mode: I can take the notebook out but resuming doesn't
+work - unless I resume it while the notebook is back in the docking
+station (contrary to point 3b). It seems as the notebook 'locks' itself
+into the docking station during STD, I see the green led change into red
+during the hibernation process (just before heavy HD activity starts).
+
+(b) in shutdown mode: STD fails with a completely black screen, not even
+the cursor is visible.
+
+There doesn't seem to be a difference between platform and shutdown mode
+other than the reboot glitch when the laptop is in the docking station
+or as described in point 6.
+
+tom
