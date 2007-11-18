@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757097AbXKRKNr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbXKRKPf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757097AbXKRKNr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 05:13:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbXKRKMu
+	id S1755965AbXKRKPf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 05:15:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbXKRKPQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 05:12:50 -0500
-Received: from adicia.telenet-ops.be ([195.130.132.56]:33454 "EHLO
-	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751405AbXKRKMo (ORCPT
+	Sun, 18 Nov 2007 05:15:16 -0500
+Received: from agave.telenet-ops.be ([195.130.137.77]:43737 "EHLO
+	agave.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751277AbXKRKPO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 05:12:44 -0500
-Message-Id: <20071118101156.148404242@mail.of.borg>
-References: <20071118101002.730422886@mail.of.borg>
+	Sun, 18 Nov 2007 05:15:14 -0500
+Message-Id: <20071118101336.330321764@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Sun, 18 Nov 2007 11:10:05 +0100
+Date: Sun, 18 Nov 2007 11:13:36 +0100
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Finn Thain <fthain@telegraphics.com.au>
-Subject: [patch 3/3] mac68k: mailing list addresss
-Content-Disposition: inline; filename=mac68k-mailing-list-addresss.diff
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [patch 00/13] m68k patches for 2.6.25
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Finn Thain <fthain@telegraphics.com.au>
+	Hi Andrew,
 
-The mail service for the mac.linux-m68k.org domain is defunct.
+Here are some m68k patches for 2.6.25:
+  [1] m68k: ARRAY_SIZE() cleanup
+  [2] dio: ARRAY_SIZE() cleanup
+  [3] m68k: Balance ioremap and iounmap in m68k/atari/hades-pci.c
+  [4] nubus: kill drivers/nubus/nubus_syms.c
+  [5] m68k: kill arch/m68k/mac/mac_ksyms.c
+  [6] m68k: kill arch/m68k/hp300/ksyms.c
+  [7] m68k: kill arch/m68k/amiga/amiga_ksyms.c
+  [8] m68k: kill arch/m68k/atari/atari_ksyms.c
+  [9] m68k: kill arch/m68k/mvme16x/mvme16x_ksyms.c
+  [10] mac68k: macii adb comment correction
+  [11] mac68k: remove dead code
+  [12] mac68k: add nubus card definitions and a typo fix
+  [13] mac68k: remove dead MAC_ADBKEYCODES
 
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- MAINTAINERS |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Please queue for 2.6.25. Thx!
 
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2446,7 +2446,7 @@ M68K ON APPLE MACINTOSH
- P:	Joshua Thompson
- M:	funaho@jurai.org
- W:	http://www.mac.linux-m68k.org/
--L:	linux-mac68k@mac.linux-m68k.org
-+L:	linux-m68k@lists.linux-m68k.org
- S:	Maintained
- 
- M68K ON HP9000/300
-
--- 
 Gr{oetje,eeting}s,
 
 						Geert
