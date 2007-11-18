@@ -1,127 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757740AbXKRKQr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758687AbXKRKRB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757740AbXKRKQr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 05:16:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754372AbXKRKP0
+	id S1758687AbXKRKRB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 05:17:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754707AbXKRKP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 05:15:26 -0500
-Received: from adicia.telenet-ops.be ([195.130.132.56]:35045 "EHLO
-	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751849AbXKRKPQ (ORCPT
+	Sun, 18 Nov 2007 05:15:28 -0500
+Received: from hoboe1bl1.telenet-ops.be ([195.130.137.72]:37818 "EHLO
+	hoboe1bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751366AbXKRKPQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 18 Nov 2007 05:15:16 -0500
-Message-Id: <20071118101447.046732847@mail.of.borg>
+Message-Id: <20071118101447.787517062@mail.of.borg>
 References: <20071118101336.330321764@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Sun, 18 Nov 2007 11:13:39 +0100
+Date: Sun, 18 Nov 2007 11:13:42 +0100
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linux/m68k <linux-m68k@vger.kernel.org>,
        Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Roel Kluin <12o3l@tiscali.nl>
-Subject: [patch 03/13] m68k: Balance ioremap and iounmap in m68k/atari/hades-pci.c
-Content-Disposition: inline; filename=atari-hades-pci-balance-iomap-and-iounmap.diff
+       Adrian Bunk <bunk@kernel.org>
+Subject: [patch 06/13] m68k: kill arch/m68k/hp300/ksyms.c
+Content-Disposition: inline; filename=m68k-kill-arch-m68k-hp300-ksyms-c.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roel Kluin <12o3l@tiscali.nl>
+From: Adrian Bunk <bunk@kernel.org>
 
-m68k: Balance ioremap and iounmap in m68k/atari/hades-pci.c
+m68k: kill arch/m68k/hp300/ksyms.c
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+It was empty.
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- arch/m68k/atari/hades-pci.c |   56 +++++++++++++++++++++-----------------------
- 1 file changed, 27 insertions(+), 29 deletions(-)
+ arch/m68k/hp300/Makefile |    2 +-
+ arch/m68k/hp300/ksyms.c  |    9 ---------
+ 2 files changed, 1 insertion(+), 10 deletions(-)
 
---- a/arch/m68k/atari/hades-pci.c
-+++ b/arch/m68k/atari/hades-pci.c
-@@ -376,8 +376,8 @@ struct pci_bus_info * __init init_hades_
- 	 */
+--- a/arch/m68k/hp300/Makefile
++++ b/arch/m68k/hp300/Makefile
+@@ -2,4 +2,4 @@
+ # Makefile for Linux arch/m68k/hp300 source directory
+ #
  
- 	bus = kzalloc(sizeof(struct pci_bus_info), GFP_KERNEL);
--	if (!bus)
--		return NULL;
-+	if (unlikely(!bus))
-+		goto iounmap_base_virt;
- 
- 	/*
- 	 * Claim resources. The m68k has no separate I/O space, both
-@@ -385,43 +385,25 @@ struct pci_bus_info * __init init_hades_
- 	 * the I/O resources are requested in memory space as well.
- 	 */
- 
--	if (request_resource(&iomem_resource, &config_space) != 0)
--	{
--		kfree(bus);
--		return NULL;
--	}
+-obj-y		:= ksyms.o config.o time.o reboot.o
++obj-y		:= config.o time.o reboot.o
+--- a/arch/m68k/hp300/ksyms.c
++++ /dev/null
+@@ -1,9 +0,0 @@
+-/*
+- *  linux/arch/m68k/hp300/ksyms.c
+- *
+- *  Copyright (C) 1998 Philip Blundell <philb@gnu.org>
+- *
+- *  This file contains the HP300-specific kernel symbols.  None yet. :-)
+- */
 -
--	if (request_resource(&iomem_resource, &io_space) != 0)
--	{
--		release_resource(&config_space);
--		kfree(bus);
--		return NULL;
--	}
-+	if (unlikely(request_resource(&iomem_resource, &config_space) != 0))
-+		goto free_bus;
-+
-+	if (unlikely(request_resource(&iomem_resource, &io_space) != 0))
-+		goto release_config_space;
- 
- 	bus->mem_space.start = HADES_MEM_BASE;
- 	bus->mem_space.end = HADES_MEM_BASE + HADES_MEM_SIZE - 1;
- 	bus->mem_space.name = pci_mem_name;
- #if 1
--	if (request_resource(&iomem_resource, &bus->mem_space) != 0)
--	{
--		release_resource(&io_space);
--		release_resource(&config_space);
--		kfree(bus);
--		return NULL;
--	}
-+	if (unlikely(request_resource(&iomem_resource, &bus->mem_space) != 0))
-+		goto release_io_space;
- #endif
- 	bus->io_space.start = pci_io_base_virt;
- 	bus->io_space.end = pci_io_base_virt + HADES_VIRT_IO_SIZE - 1;
- 	bus->io_space.name = pci_io_name;
- #if 1
--	if (request_resource(&ioport_resource, &bus->io_space) != 0)
--	{
--		release_resource(&bus->mem_space);
--		release_resource(&io_space);
--		release_resource(&config_space);
--		kfree(bus);
--		return NULL;
--	}
-+	if (unlikely(request_resource(&ioport_resource, &bus->io_space) != 0))
-+		goto release_bus_mem_space;
- #endif
- 	/*
- 	 * Set hardware dependent functions.
-@@ -438,5 +420,21 @@ struct pci_bus_info * __init init_hades_
- 	tt_mfp.active_edge &= ~0x27;
- 
- 	return bus;
-+
-+release_bus_mem_space:
-+	release_resource(&bus->mem_space);
-+release_io_space:
-+	release_resource(&io_space);
-+release_config_space:
-+	release_resource(&config_space);
-+free_bus:
-+	kfree(bus);
-+iounmap_base_virt:
-+	iounmap((void *)pci_io_base_virt);
-+
-+	for (i = 0; i < N_SLOTS; i++)
-+		iounmap((void *)pci_conf_base_virt[i]);
-+
-+	return NULL;
- }
- #endif
+-#include <linux/module.h>
 
 -- 
 Gr{oetje,eeting}s,
