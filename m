@@ -1,88 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759870AbXKRKTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755917AbXKRK2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759870AbXKRKTs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 05:19:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756708AbXKRKPn
+	id S1755917AbXKRK2p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 05:28:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbXKRK2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 05:15:43 -0500
-Received: from europa.telenet-ops.be ([195.130.137.75]:52928 "EHLO
-	europa.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752089AbXKRKPR (ORCPT
+	Sun, 18 Nov 2007 05:28:37 -0500
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:46162
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751505AbXKRK2g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 05:15:17 -0500
-Message-Id: <20071118101448.553584007@mail.of.borg>
-References: <20071118101336.330321764@mail.of.borg>
-User-Agent: quilt/0.46-1
-Date: Sun, 18 Nov 2007 11:13:45 +0100
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>
-Subject: [patch 09/13] m68k: kill arch/m68k/mvme16x/mvme16x_ksyms.c
-Content-Disposition: inline; filename=m68k-kill-arch-m68k-mvme16x-mvme16x_ksyms-c.diff
+	Sun, 18 Nov 2007 05:28:36 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: [RFC HIFN 00/02]: RNG support
+Date: Sun, 18 Nov 2007 11:27:27 +0100
+User-Agent: KMail/1.9.6
+Cc: Patrick McHardy <kaber@trash.net>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       linux-crypto@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20071117192949.19399.75523.sendpatchset@localhost.localdomain> <473FB1E0.600@trash.net> <20071118040401.GA25625@gondor.apana.org.au>
+In-Reply-To: <20071118040401.GA25625@gondor.apana.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711181127.28326.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@kernel.org>
+On Sunday 18 November 2007 05:04:01 Herbert Xu wrote:
+> On Sun, Nov 18, 2007 at 04:30:40AM +0100, Patrick McHardy wrote:
+> >
+> > On a related issue, I think the rng interface is not very suitable
+> > for chips like HIFN that have a constant random bandwidth, it would
+> > make a lot more sense to return the time to wait to the core, instead
+> > of waiting 10us in all cases. 256 cycles at a speed of 266MHz comes
+> > down to 0.96us, so we're waiting about 10 times as long as necessary.
+> > Since its busy waiting anyway, I'd think that from a performance POV
+> > constant polling or returning the exact amount of time would be more
+> > reasonable.
+> 
+> I agree, a better interface would be to let the hardware do the
+> blocking where necessary.
+> 
+> Michael, what do you think about this?
 
-m68k: kill arch/m68k/mvme16x/mvme16x_ksyms.c
-
-EXPORT_SYMBOL's belong to the actual code.
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- arch/m68k/mvme16x/Makefile        |    2 +-
- arch/m68k/mvme16x/config.c        |    2 ++
- arch/m68k/mvme16x/mvme16x_ksyms.c |    6 ------
- 3 files changed, 3 insertions(+), 7 deletions(-)
-
---- a/arch/m68k/mvme16x/Makefile
-+++ b/arch/m68k/mvme16x/Makefile
-@@ -2,4 +2,4 @@
- # Makefile for Linux arch/m68k/mvme16x source directory
- #
- 
--obj-y		:= config.o rtc.o mvme16x_ksyms.o
-+obj-y		:= config.o rtc.o
---- a/arch/m68k/mvme16x/config.c
-+++ b/arch/m68k/mvme16x/config.c
-@@ -25,6 +25,7 @@
- #include <linux/genhd.h>
- #include <linux/rtc.h>
- #include <linux/interrupt.h>
-+#include <linux/module.h>
- 
- #include <asm/bootinfo.h>
- #include <asm/system.h>
-@@ -58,6 +59,7 @@ static irq_handler_t tick_handler;
- 
- 
- unsigned short mvme16x_config;
-+EXPORT_SYMBOL(mvme16x_config);
- 
- 
- int mvme16x_parse_bootinfo(const struct bi_record *bi)
---- a/arch/m68k/mvme16x/mvme16x_ksyms.c
-+++ /dev/null
-@@ -1,6 +0,0 @@
--#include <linux/module.h>
--#include <linux/types.h>
--#include <asm/ptrace.h>
--#include <asm/mvme16xhw.h>
--
--EXPORT_SYMBOL(mvme16x_config);
+Patches are welcome. ;)
 
 -- 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Greetings Michael.
