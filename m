@@ -1,215 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752148AbXKRKQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757740AbXKRKQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752148AbXKRKQa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 05:16:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079AbXKRKPX
+	id S1757740AbXKRKQr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 05:16:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754372AbXKRKP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 05:15:23 -0500
-Received: from europa.telenet-ops.be ([195.130.137.75]:52913 "EHLO
-	europa.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751818AbXKRKPQ (ORCPT
+	Sun, 18 Nov 2007 05:15:26 -0500
+Received: from adicia.telenet-ops.be ([195.130.132.56]:35045 "EHLO
+	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751849AbXKRKPQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 18 Nov 2007 05:15:16 -0500
-Message-Id: <20071118101447.289390804@mail.of.borg>
+Message-Id: <20071118101447.046732847@mail.of.borg>
 References: <20071118101336.330321764@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Sun, 18 Nov 2007 11:13:40 +0100
+Date: Sun, 18 Nov 2007 11:13:39 +0100
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linux/m68k <linux-m68k@vger.kernel.org>,
        Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>
-Subject: [patch 04/13] nubus: kill drivers/nubus/nubus_syms.c
-Content-Disposition: inline; filename=nubus-kill-drivers-nubus-nubus_syms-c.diff
+       Roel Kluin <12o3l@tiscali.nl>
+Subject: [patch 03/13] m68k: Balance ioremap and iounmap in m68k/atari/hades-pci.c
+Content-Disposition: inline; filename=atari-hades-pci-balance-iomap-and-iounmap.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@kernel.org>
+From: Roel Kluin <12o3l@tiscali.nl>
 
-nubus: kill drivers/nubus/nubus_syms.c
+m68k: Balance ioremap and iounmap in m68k/atari/hades-pci.c
 
-EXPORT_SYMBOL's belong to the actual code.
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/nubus/Makefile     |    1 -
- drivers/nubus/nubus.c      |   13 +++++++++++++
- drivers/nubus/nubus_syms.c |   28 ----------------------------
- drivers/nubus/proc.c       |    4 ++++
- 4 files changed, 17 insertions(+), 29 deletions(-)
+ arch/m68k/atari/hades-pci.c |   56 +++++++++++++++++++++-----------------------
+ 1 file changed, 27 insertions(+), 29 deletions(-)
 
---- a/drivers/nubus/Makefile
-+++ b/drivers/nubus/Makefile
-@@ -4,5 +4,4 @@
+--- a/arch/m68k/atari/hades-pci.c
++++ b/arch/m68k/atari/hades-pci.c
+@@ -376,8 +376,8 @@ struct pci_bus_info * __init init_hades_
+ 	 */
  
- obj-y   := nubus.o
+ 	bus = kzalloc(sizeof(struct pci_bus_info), GFP_KERNEL);
+-	if (!bus)
+-		return NULL;
++	if (unlikely(!bus))
++		goto iounmap_base_virt;
  
--obj-$(CONFIG_MODULES) += nubus_syms.o 
- obj-$(CONFIG_PROC_FS) += proc.o
---- a/drivers/nubus/nubus.c
-+++ b/drivers/nubus/nubus.c
-@@ -14,6 +14,7 @@
- #include <linux/errno.h>
- #include <linux/init.h>
- #include <linux/delay.h>
-+#include <linux/module.h>
- #include <asm/setup.h>
- #include <asm/system.h>
- #include <asm/page.h>
-@@ -186,6 +187,7 @@ void nubus_get_rsrc_mem(void *dest, cons
- 		len--;
- 	}
- }
-+EXPORT_SYMBOL(nubus_get_rsrc_mem);
+ 	/*
+ 	 * Claim resources. The m68k has no separate I/O space, both
+@@ -385,43 +385,25 @@ struct pci_bus_info * __init init_hades_
+ 	 * the I/O resources are requested in memory space as well.
+ 	 */
  
- void nubus_get_rsrc_str(void *dest, const struct nubus_dirent* dirent,
- 			int len)
-@@ -200,6 +202,7 @@ void nubus_get_rsrc_str(void *dest, cons
- 		len--;
- 	}
- }
-+EXPORT_SYMBOL(nubus_get_rsrc_str);
- 
- int nubus_get_root_dir(const struct nubus_board* board,
- 		       struct nubus_dir* dir)
-@@ -209,6 +212,7 @@ int nubus_get_root_dir(const struct nubu
- 	dir->mask = board->lanes;
- 	return 0;
- }
-+EXPORT_SYMBOL(nubus_get_root_dir);
- 
- /* This is a slyly renamed version of the above */
- int nubus_get_func_dir(const struct nubus_dev* dev,
-@@ -219,6 +223,7 @@ int nubus_get_func_dir(const struct nubu
- 	dir->mask = dev->board->lanes;
- 	return 0;
- }
-+EXPORT_SYMBOL(nubus_get_func_dir);
- 
- int nubus_get_board_dir(const struct nubus_board* board,
- 			struct nubus_dir* dir)
-@@ -237,6 +242,7 @@ int nubus_get_board_dir(const struct nub
- 		return -1;
- 	return 0;
- }
-+EXPORT_SYMBOL(nubus_get_board_dir);
- 
- int nubus_get_subdir(const struct nubus_dirent *ent,
- 		     struct nubus_dir *dir)
-@@ -246,6 +252,7 @@ int nubus_get_subdir(const struct nubus_
- 	dir->mask = ent->mask;
- 	return 0;
- }
-+EXPORT_SYMBOL(nubus_get_subdir);
- 
- int nubus_readdir(struct nubus_dir *nd, struct nubus_dirent *ent)
- {
-@@ -274,12 +281,14 @@ int nubus_readdir(struct nubus_dir *nd, 
- 	ent->mask  = nd->mask;
- 	return 0;
- }
-+EXPORT_SYMBOL(nubus_readdir);
- 
- int nubus_rewinddir(struct nubus_dir* dir)
- {
- 	dir->ptr = dir->base;
- 	return 0;
- }
-+EXPORT_SYMBOL(nubus_rewinddir);
- 
- /* Driver interface functions, more or less like in pci.c */
- 
-@@ -303,6 +312,7 @@ nubus_find_device(unsigned short categor
- 	}
- 	return NULL;
- }
-+EXPORT_SYMBOL(nubus_find_device);
- 
- struct nubus_dev*
- nubus_find_type(unsigned short category,
-@@ -320,6 +330,7 @@ nubus_find_type(unsigned short category,
- 	}
- 	return NULL;
- }
-+EXPORT_SYMBOL(nubus_find_type);
- 
- struct nubus_dev*
- nubus_find_slot(unsigned int slot,
-@@ -335,6 +346,7 @@ nubus_find_slot(unsigned int slot,
- 	}
- 	return NULL;
- }
-+EXPORT_SYMBOL(nubus_find_slot);
- 
- int
- nubus_find_rsrc(struct nubus_dir* dir, unsigned char rsrc_type,
-@@ -346,6 +358,7 @@ nubus_find_rsrc(struct nubus_dir* dir, u
- 	}	
- 	return -1;
- }
-+EXPORT_SYMBOL(nubus_find_rsrc);
- 
- /* Initialization functions - decide which slots contain stuff worth
-    looking at, and print out lots and lots of information from the
---- a/drivers/nubus/nubus_syms.c
-+++ /dev/null
-@@ -1,28 +0,0 @@
--/* Exported symbols for NuBus services
+-	if (request_resource(&iomem_resource, &config_space) != 0)
+-	{
+-		kfree(bus);
+-		return NULL;
+-	}
 -
--   (c) 1999 David Huggins-Daines <dhd@debian.org> */
--
--#include <linux/module.h>
--#include <linux/types.h>
--#include <linux/nubus.h>
--
--#ifdef CONFIG_PROC_FS
--EXPORT_SYMBOL(nubus_proc_attach_device);
--EXPORT_SYMBOL(nubus_proc_detach_device);
--#endif
--
--MODULE_LICENSE("GPL");
--
--EXPORT_SYMBOL(nubus_find_device);
--EXPORT_SYMBOL(nubus_find_type);
--EXPORT_SYMBOL(nubus_find_slot);
--EXPORT_SYMBOL(nubus_get_root_dir);
--EXPORT_SYMBOL(nubus_get_board_dir);
--EXPORT_SYMBOL(nubus_get_func_dir);
--EXPORT_SYMBOL(nubus_readdir);
--EXPORT_SYMBOL(nubus_find_rsrc);
--EXPORT_SYMBOL(nubus_rewinddir);
--EXPORT_SYMBOL(nubus_get_subdir);
--EXPORT_SYMBOL(nubus_get_rsrc_mem);
--EXPORT_SYMBOL(nubus_get_rsrc_str);
--
---- a/drivers/nubus/proc.c
-+++ b/drivers/nubus/proc.c
-@@ -22,6 +22,8 @@
- #include <linux/nubus.h>
- #include <linux/proc_fs.h>
- #include <linux/init.h>
-+#include <linux/module.h>
+-	if (request_resource(&iomem_resource, &io_space) != 0)
+-	{
+-		release_resource(&config_space);
+-		kfree(bus);
+-		return NULL;
+-	}
++	if (unlikely(request_resource(&iomem_resource, &config_space) != 0))
++		goto free_bus;
 +
- #include <asm/uaccess.h>
- #include <asm/byteorder.h>
++	if (unlikely(request_resource(&iomem_resource, &io_space) != 0))
++		goto release_config_space;
  
-@@ -140,6 +142,7 @@ int nubus_proc_attach_device(struct nubu
+ 	bus->mem_space.start = HADES_MEM_BASE;
+ 	bus->mem_space.end = HADES_MEM_BASE + HADES_MEM_SIZE - 1;
+ 	bus->mem_space.name = pci_mem_name;
+ #if 1
+-	if (request_resource(&iomem_resource, &bus->mem_space) != 0)
+-	{
+-		release_resource(&io_space);
+-		release_resource(&config_space);
+-		kfree(bus);
+-		return NULL;
+-	}
++	if (unlikely(request_resource(&iomem_resource, &bus->mem_space) != 0))
++		goto release_io_space;
+ #endif
+ 	bus->io_space.start = pci_io_base_virt;
+ 	bus->io_space.end = pci_io_base_virt + HADES_VIRT_IO_SIZE - 1;
+ 	bus->io_space.name = pci_io_name;
+ #if 1
+-	if (request_resource(&ioport_resource, &bus->io_space) != 0)
+-	{
+-		release_resource(&bus->mem_space);
+-		release_resource(&io_space);
+-		release_resource(&config_space);
+-		kfree(bus);
+-		return NULL;
+-	}
++	if (unlikely(request_resource(&ioport_resource, &bus->io_space) != 0))
++		goto release_bus_mem_space;
+ #endif
+ 	/*
+ 	 * Set hardware dependent functions.
+@@ -438,5 +420,21 @@ struct pci_bus_info * __init init_hades_
+ 	tt_mfp.active_edge &= ~0x27;
  
- 	return 0;
+ 	return bus;
++
++release_bus_mem_space:
++	release_resource(&bus->mem_space);
++release_io_space:
++	release_resource(&io_space);
++release_config_space:
++	release_resource(&config_space);
++free_bus:
++	kfree(bus);
++iounmap_base_virt:
++	iounmap((void *)pci_io_base_virt);
++
++	for (i = 0; i < N_SLOTS; i++)
++		iounmap((void *)pci_conf_base_virt[i]);
++
++	return NULL;
  }
-+EXPORT_SYMBOL(nubus_proc_attach_device);
- 
- /* FIXME: this is certainly broken! */
- int nubus_proc_detach_device(struct nubus_dev *dev)
-@@ -154,6 +157,7 @@ int nubus_proc_detach_device(struct nubu
- 	}
- 	return 0;
- }
-+EXPORT_SYMBOL(nubus_proc_detach_device);
- 
- void __init proc_bus_nubus_add_devices(void)
- {
+ #endif
 
 -- 
 Gr{oetje,eeting}s,
