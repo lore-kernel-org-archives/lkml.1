@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbXKRKPf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757571AbXKRKPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755965AbXKRKPf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 05:15:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbXKRKPQ
+	id S1757571AbXKRKPv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 05:15:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752426AbXKRKPS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 05:15:16 -0500
-Received: from agave.telenet-ops.be ([195.130.137.77]:43737 "EHLO
+	Sun, 18 Nov 2007 05:15:18 -0500
+Received: from agave.telenet-ops.be ([195.130.137.77]:43746 "EHLO
 	agave.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751277AbXKRKPO (ORCPT
+	with ESMTP id S1751320AbXKRKPP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 05:15:14 -0500
-Message-Id: <20071118101336.330321764@mail.of.borg>
+	Sun, 18 Nov 2007 05:15:15 -0500
+Message-Id: <20071118101446.793269838@mail.of.borg>
+References: <20071118101336.330321764@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Sun, 18 Nov 2007 11:13:36 +0100
+Date: Sun, 18 Nov 2007 11:13:38 +0100
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: [patch 00/13] m68k patches for 2.6.25
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Alejandro Martinez Ruiz <alex@flawedcode.org>
+Subject: [patch 02/13] dio: ARRAY_SIZE() cleanup
+Content-Disposition: inline; filename=dio-ARRAY_SIZE-cleanup.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Hi Andrew,
+From: Alejandro Martinez Ruiz <alex@flawedcode.org>
 
-Here are some m68k patches for 2.6.25:
-  [1] m68k: ARRAY_SIZE() cleanup
-  [2] dio: ARRAY_SIZE() cleanup
-  [3] m68k: Balance ioremap and iounmap in m68k/atari/hades-pci.c
-  [4] nubus: kill drivers/nubus/nubus_syms.c
-  [5] m68k: kill arch/m68k/mac/mac_ksyms.c
-  [6] m68k: kill arch/m68k/hp300/ksyms.c
-  [7] m68k: kill arch/m68k/amiga/amiga_ksyms.c
-  [8] m68k: kill arch/m68k/atari/atari_ksyms.c
-  [9] m68k: kill arch/m68k/mvme16x/mvme16x_ksyms.c
-  [10] mac68k: macii adb comment correction
-  [11] mac68k: remove dead code
-  [12] mac68k: add nubus card definitions and a typo fix
-  [13] mac68k: remove dead MAC_ADBKEYCODES
+dio: ARRAY_SIZE() cleanup
 
-Please queue for 2.6.25. Thx!
+Signed-off-by: Alejandro Martinez Ruiz <alex@flawedcode.org>
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/dio/dio.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+--- a/drivers/dio/dio.c
++++ b/drivers/dio/dio.c
+@@ -88,7 +88,7 @@ static struct dioname names[] = 
+ #undef DIONAME
+ #undef DIOFBNAME
+ 
+-#define NUMNAMES (sizeof(names) / sizeof(struct dioname))
++#define NUMNAMES ARRAY_SIZE(names)
+ 
+ static const char *unknowndioname 
+         = "unknown DIO board -- please email <linux-m68k@lists.linux-m68k.org>!";
+
+-- 
 Gr{oetje,eeting}s,
 
 						Geert
