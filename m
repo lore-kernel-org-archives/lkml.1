@@ -1,90 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbXKRV6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbXKRWFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754429AbXKRV6p (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 16:58:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbXKRV6h
+	id S1754656AbXKRWFZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 17:05:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbXKRWFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 16:58:37 -0500
-Received: from s2.ukfsn.org ([217.158.120.143]:60638 "EHLO mail.ukfsn.org"
+	Sun, 18 Nov 2007 17:05:13 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:35905 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750941AbXKRV6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 16:58:37 -0500
-To: linux-kernel@vger.kernel.org
-Cc: Dennis Munsie <dmunsie@cecropia.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: radeonfb i2c regression post-2.6.18.
-From: Roger Leigh <rleigh@whinlatter.ukfsn.org>
-Date: Sun, 18 Nov 2007 21:58:26 +0000
-Message-ID: <87lk8vxlkt.fsf@hardknott.home>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	id S1752022AbXKRWFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 17:05:11 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Franck Bui-Huu <vagabon.xyz@gmail.com>
+Subject: Re: apm emulation driver broken ?
+Date: Sun, 18 Nov 2007 23:22:40 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-pm@lists.linux-foundation.org, lkml <linux-kernel@vger.kernel.org>
+References: <cda58cb80711160706l2cfac2b1p81c7a1090f228f2e@mail.gmail.com> <200711171346.51363.rjw@sisk.pl> <4740992D.9030906@gmail.com>
+In-Reply-To: <4740992D.9030906@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711182322.41354.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=-=-=
-Content-Transfer-Encoding: quoted-printable
+On Sunday, 18 of November 2007, Franck Bui-Huu wrote:
+> Rafael J. Wysocki wrote:
+> > On Saturday, 17 of November 2007, Franck Bui-Huu wrote:
+> >> ok so now we agreed on this point, can we assert that a user
+> >> land thread waiting for an event in an UNINTERRUPTIBLE state
+> >> will prevent a suspend to happen ?
+> > 
+> > Yes.
+> > 
+> 
+> So this driver seems really broken and actually I'm wondering if
+> it's used by anyone...
 
-Hi folks,
+Well, it doesn't seem so.
 
-I'm using an Apple Cinema Display connected via DVI to an Apple Mac
-Mini with Radeon 9200 graphics.  This used to work fine, but with
-kernels >=3D 2.6.19, the monitor powers off as soon as the framebuffer
-is initialised, making for a less than usable system.  I've tested
-with 2.6.(19|2[012]), and I didn't see any related changes in 2.6.23.
+> See the call to wait_even() made by apm_ioctl(). If any processes
+> run this, it will prevent the system to suspend...
 
-The breakage occured in this commit:
+True, but does it actually happen in practice?
 
-http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dcomm=
-itdiff;h=3D7a45093b7caa9d3d5421274b4ba80fba5da17e19
+> And no, I don't know why call wait_event() is called.
 
-Specifically, these lines:
+I hope somebody knows. :-)
 
-=2D       /* Release the DDC lines when done or the Apple Cinema HD display
-=2D        * will switch off
-=2D        */
-=2D       OUTREG(reg, INREG(reg) & ~(VGA_DDC_CLK_OUT_EN | VGA_DDC_DATA_OUT_=
-EN));
-=2D       (void)INREG(reg);
-+       u8 *edid =3D fb_ddc_read(&rinfo->i2c[conn-1].adapter);
+At this point the second branch of the "if (as->suspend_state == SUSPEND_READ)"
+can be fixed by replacing wait_event_interruptible() with
+wait_event_freezable(), but the fix for the first branch depends on whether or
+not the wait_event() is really necessary.
 
-BenH later applied a fix:
+If it can be replaced with an interruptible sleep, we can use
+wait_event_freezable() in this case too.  Otherwise, the only woking fix would
+be to reintroduce the PF_NOFREEZE in there.
 
-http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dcomm=
-itdiff;h=3D4f71c5de19c27f2198105d3b26b398494d5c353b
+Honestly, I'm leaning towards replacing wait_event() in apm_ioctl() with
+wait_event_freezable() and seeing what happens ...
 
-but I'm not sure if this is related to the above, or was for a
-separate problem.  Either way, the monitor is still getting powered
-off.
-
-Due to the code reorganisation when the i2c stuff got moved into the
-generic fbmon.c, I'm not sure where the workaround needs putting back
-(if indeed this is where the problem lies).
-
-I'm booting with video=3Dofonly to get a working system;
-video=3Dradeonfb:1680x1050-32@60 (with or without the additional
-parameters) always results in a dead monitor as soon as the
-framebuffer is set up.
-
-
-Regards,
-Roger
-
-=2D-=20
-  .''`.  Roger Leigh
- : :' :  Debian GNU/Linux             http://people.debian.org/~rleigh/
- `. `'   Printing on GNU/Linux?       http://gutenprint.sourceforge.net/
-   `-    GPG Public Key: 0x25BFB848   Please GPG sign your mail.
-
---=-=-=
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHQLWGVcFcaSW/uEgRAruKAKCesmaXdT/5njUd0A7S3I0Kqr1sAgCgvav0
-vrNwQKghrgTTEZ4OAZKA/eU=
-=zYSW
------END PGP SIGNATURE-----
---=-=-=--
+Greetings,
+Rafael
