@@ -1,60 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753190AbXKRSCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbXKRSUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753190AbXKRSCT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 13:02:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751311AbXKRSCJ
+	id S1753787AbXKRSUb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 13:20:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbXKRSUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 13:02:09 -0500
-Received: from thunk.org ([69.25.196.29]:50971 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751291AbXKRSCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 13:02:07 -0500
-Date: Sun, 18 Nov 2007 13:01:10 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Daniel Barkalow <barkalow@iabervon.org>,
-       Romano Giannetti <romanol@upcomillas.es>,
-       Benoit Boissinot <bboissin@gmail.com>, Mark Lord <liml@rtr.ca>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, protasnb@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUG] New Kernel Bugs
-Message-ID: <20071118180110.GA7037@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Adrian Bunk <bunk@kernel.org>,
-	Daniel Barkalow <barkalow@iabervon.org>,
-	Romano Giannetti <romanol@upcomillas.es>,
-	Benoit Boissinot <bboissin@gmail.com>, Mark Lord <liml@rtr.ca>,
-	Ingo Molnar <mingo@elte.hu>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Miller <davem@davemloft.net>, protasnb@gmail.com,
-	linux-kernel@vger.kernel.org
-References: <4739AFE0.20705@rtr.ca> <40f323d00711130752k19cab8eauc3456721274b3267@mail.gmail.com> <20071113171356.GA25824@thunk.org> <Pine.LNX.4.64.0711141810110.12193@iabervon.org> <20071115153057.GE17180@thunk.org> <Pine.LNX.4.64.0711151034340.12193@iabervon.org> <1195201202.13688.10.camel@localhost> <Pine.LNX.4.64.0711161303440.12193@iabervon.org> <20071116194617.GI11339@thunk.org> <20071117122010.GC4250@stusta.de>
+	Sun, 18 Nov 2007 13:20:17 -0500
+Received: from quail.cita.utoronto.ca ([128.100.76.6]:58746 "EHLO
+	quail.cita.utoronto.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751453AbXKRSUP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 13:20:15 -0500
+X-Greylist: delayed 566 seconds by postgrey-1.27 at vger.kernel.org; Sun, 18 Nov 2007 13:20:14 EST
+Date: Sun, 18 Nov 2007 13:09:33 -0500
+From: Robin Humble <rjh@cita.utoronto.ca>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Jeff Garzik <jeff@garzik.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
+Subject: Re: [PATCH 00/33] Swap over NFS -v14
+Message-ID: <20071118180933.GA17103@lemming.cita.utoronto.ca>
+References: <20071030160401.296770000@chello.nl> <200710311426.33223.nickpiggin@yahoo.com.au> <1193830033.27652.159.camel@twins> <47287220.8050804@garzik.org> <1193835413.27652.205.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071117122010.GC4250@stusta.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <1193835413.27652.205.camel@twins>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 17, 2007 at 01:20:10PM +0100, Adrian Bunk wrote:
-> > But a bisect takes around 7 compiles.
-> >...
-> 
-> I don't understand that number.
-> 
-> The common case are regressions in -rc1, and a bisection of
-> at about 7000 commits takes around 13 compiles.
+<apologies for being insanely late into this thread>
 
-Worst case it would take 13.  In practice I've seen less.  Part of it
-is I suspect that I'm starting with something more recent than the
-previous 2.6.23, but rather a daily -git13 or -git14 tree.  Part of it
-may be because git can sometimes be more efficient by cutting off
-entire branches with trail builds, since git history isn't completely
-linear, but rather pulls of various branches together.
+On Wed, Oct 31, 2007 at 01:56:53PM +0100, Peter Zijlstra wrote:
+>On Wed, 2007-10-31 at 08:16 -0400, Jeff Garzik wrote:
+>> Thoughts:
+>> 1) I absolutely agree that NFS is far more prominent and useful than any 
+>> network block device, at the present time.
+>> 
+>> 2) Nonetheless, swap over NFS is a pretty rare case.  I view this work 
+>> as interesting, but I really don't see a huge need, for swapping over 
+>> NBD or swapping over NFS.  I tend to think swapping to a remote resource 
+>> starts to approach "migration" rather than merely swapping.  Yes, we can 
+>> do it...  but given the lack of burning need one must examine the price.
+>
+>There is a large corporate demand for this, which is why I'm doing this.
+>
+>The typical usage scenarios are:
+> - cluster/blades, where having local disks is a cost issue (maintenance
+>   of failures, heat, etc)
 
-	    	   	    	    - Ted
+HPC clusters are increasingly diskless, especially at the high end.
+for all the reasons you mention, but also because networks are faster
+than disks.
+
+>But please, people who want this (I'm sure some of you are reading) do
+>speak up. I'm just the motivated corporate drone implementing the
+>feature :-)
+
+swap to iSCSI has worked well in the past with your anti-deadlock
+patches, and I'd definitely like to see that continue and to be merged
+into mainline!! swap-to-network is a highly desirable feature for
+modern clusters.
+
+performance and scalability of NFS is poor, so it's not a good option.
+
+actually swap to a file on Lustre(*) would be best, but iSER and iSCSI
+would be my next choices. iSER is better than iSCSI as it's ~5x faster
+in practice, and InfiniBand seems to be here to stay.
+
+hmmm - any idea what the issues are with RDMA in low memory situations?
+presumably if DMA regions are mapped early then there's not actually
+much of a problem? I might try it with tgtd's iSER...
+
+cheers,
+robin
+
+(*) obviously not your responsibility. although Lustre (Sun/CFS) could
+presumably use your infrastructure once you have it in mainline.
+
+
+>> 3) You note
+>> > Swap over network has the problem that the network subsystem does not use fixed
+>> > sized allocations, but heavily relies on kmalloc(). This makes mempools
+>> > unusable.
+>> 
+>> True, but IMO there are mitigating factors that should be researched and 
+>> taken into account:
+>> 
+>> a) To give you some net driver background/history, most mainstream net 
+>> drivers were coded to allocate RX skbs of size 1538, under the theory 
+>> that they would all be allocating out of the same underlying slab cache. 
+>>   It would not be difficult to update a great many of the [non-jumbo] 
+>> cases to create a fixed size allocation pattern.
+>
+>One issue that comes to mind is how to ensure we'd still overflow the
+>IP-reassembly buffers. Currently those are managed on the number of
+>bytes present, not the number of fragments.
+>
+>One of the goals of my approach was to not rewrite the network subsystem
+>to accomodate this feature (and I hope I succeeded).
+>
+>> b) Spare-time experiments and anecdotal evidence points to RX and TX skb 
+>> recycling as a potentially valuable area of research.  If you are able 
+>> to do something like that, then memory suddenly becomes a lot more 
+>> bounded and predictable.
+>> 
+>> 
+>> So my gut feeling is that taking a hard look at how net drivers function 
+>> in the field should give you a lot of good ideas that approach the 
+>> shared goal of making network memory allocations more predictable and 
+>> bounded.
+>
+>Note that being bounded only comes from dropping most packets before
+>trying them to a socket. That is the crucial part of the RX path, to
+>receive all packets from the NIC (regardless their size) but to not pass
+>them on to the network stack - unless they belong to a 'special' socket
+>that promises undelayed processing.
+>
+>Thanks for these ideas, I'll look into them.
+
+
