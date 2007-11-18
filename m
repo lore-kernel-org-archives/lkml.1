@@ -1,50 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756744AbXKRKQN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752148AbXKRKQa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756744AbXKRKQN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 05:16:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753112AbXKRKPV
+	id S1752148AbXKRKQa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 05:16:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079AbXKRKPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 05:15:21 -0500
-Received: from hoboe1bl1.telenet-ops.be ([195.130.137.72]:37810 "EHLO
-	hoboe1bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751571AbXKRKPP (ORCPT
+	Sun, 18 Nov 2007 05:15:23 -0500
+Received: from europa.telenet-ops.be ([195.130.137.75]:52913 "EHLO
+	europa.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751818AbXKRKPQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 05:15:15 -0500
-Message-Id: <20071118101446.579488651@mail.of.borg>
+	Sun, 18 Nov 2007 05:15:16 -0500
+Message-Id: <20071118101447.289390804@mail.of.borg>
 References: <20071118101336.330321764@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Sun, 18 Nov 2007 11:13:37 +0100
+Date: Sun, 18 Nov 2007 11:13:40 +0100
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linux/m68k <linux-m68k@vger.kernel.org>,
        Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Alejandro Martinez Ruiz <alex@flawedcode.org>
-Subject: [patch 01/13] m68k: ARRAY_SIZE() cleanup
-Content-Disposition: inline; filename=m68k-ARRAY_SIZE-cleanup.diff
+       Adrian Bunk <bunk@kernel.org>
+Subject: [patch 04/13] nubus: kill drivers/nubus/nubus_syms.c
+Content-Disposition: inline; filename=nubus-kill-drivers-nubus-nubus_syms-c.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alejandro Martinez Ruiz <alex@flawedcode.org>
+From: Adrian Bunk <bunk@kernel.org>
 
-m68k: ARRAY_SIZE() cleanup
+nubus: kill drivers/nubus/nubus_syms.c
 
-Signed-off-by: Alejandro Martinez Ruiz <alex@flawedcode.org>
+EXPORT_SYMBOL's belong to the actual code.
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- arch/m68k/amiga/amisound.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/nubus/Makefile     |    1 -
+ drivers/nubus/nubus.c      |   13 +++++++++++++
+ drivers/nubus/nubus_syms.c |   28 ----------------------------
+ drivers/nubus/proc.c       |    4 ++++
+ 4 files changed, 17 insertions(+), 29 deletions(-)
 
---- a/arch/m68k/amiga/amisound.c
-+++ b/arch/m68k/amiga/amisound.c
-@@ -21,7 +21,7 @@ static const signed char sine_data[] = {
- 	0,  39,  75,  103,  121,  127,  121,  103,  75,  39,
- 	0, -39, -75, -103, -121, -127, -121, -103, -75, -39
- };
--#define DATA_SIZE	(sizeof(sine_data)/sizeof(sine_data[0]))
-+#define DATA_SIZE	ARRAY_SIZE(sine_data)
+--- a/drivers/nubus/Makefile
++++ b/drivers/nubus/Makefile
+@@ -4,5 +4,4 @@
  
- #define custom amiga_custom
+ obj-y   := nubus.o
  
+-obj-$(CONFIG_MODULES) += nubus_syms.o 
+ obj-$(CONFIG_PROC_FS) += proc.o
+--- a/drivers/nubus/nubus.c
++++ b/drivers/nubus/nubus.c
+@@ -14,6 +14,7 @@
+ #include <linux/errno.h>
+ #include <linux/init.h>
+ #include <linux/delay.h>
++#include <linux/module.h>
+ #include <asm/setup.h>
+ #include <asm/system.h>
+ #include <asm/page.h>
+@@ -186,6 +187,7 @@ void nubus_get_rsrc_mem(void *dest, cons
+ 		len--;
+ 	}
+ }
++EXPORT_SYMBOL(nubus_get_rsrc_mem);
+ 
+ void nubus_get_rsrc_str(void *dest, const struct nubus_dirent* dirent,
+ 			int len)
+@@ -200,6 +202,7 @@ void nubus_get_rsrc_str(void *dest, cons
+ 		len--;
+ 	}
+ }
++EXPORT_SYMBOL(nubus_get_rsrc_str);
+ 
+ int nubus_get_root_dir(const struct nubus_board* board,
+ 		       struct nubus_dir* dir)
+@@ -209,6 +212,7 @@ int nubus_get_root_dir(const struct nubu
+ 	dir->mask = board->lanes;
+ 	return 0;
+ }
++EXPORT_SYMBOL(nubus_get_root_dir);
+ 
+ /* This is a slyly renamed version of the above */
+ int nubus_get_func_dir(const struct nubus_dev* dev,
+@@ -219,6 +223,7 @@ int nubus_get_func_dir(const struct nubu
+ 	dir->mask = dev->board->lanes;
+ 	return 0;
+ }
++EXPORT_SYMBOL(nubus_get_func_dir);
+ 
+ int nubus_get_board_dir(const struct nubus_board* board,
+ 			struct nubus_dir* dir)
+@@ -237,6 +242,7 @@ int nubus_get_board_dir(const struct nub
+ 		return -1;
+ 	return 0;
+ }
++EXPORT_SYMBOL(nubus_get_board_dir);
+ 
+ int nubus_get_subdir(const struct nubus_dirent *ent,
+ 		     struct nubus_dir *dir)
+@@ -246,6 +252,7 @@ int nubus_get_subdir(const struct nubus_
+ 	dir->mask = ent->mask;
+ 	return 0;
+ }
++EXPORT_SYMBOL(nubus_get_subdir);
+ 
+ int nubus_readdir(struct nubus_dir *nd, struct nubus_dirent *ent)
+ {
+@@ -274,12 +281,14 @@ int nubus_readdir(struct nubus_dir *nd, 
+ 	ent->mask  = nd->mask;
+ 	return 0;
+ }
++EXPORT_SYMBOL(nubus_readdir);
+ 
+ int nubus_rewinddir(struct nubus_dir* dir)
+ {
+ 	dir->ptr = dir->base;
+ 	return 0;
+ }
++EXPORT_SYMBOL(nubus_rewinddir);
+ 
+ /* Driver interface functions, more or less like in pci.c */
+ 
+@@ -303,6 +312,7 @@ nubus_find_device(unsigned short categor
+ 	}
+ 	return NULL;
+ }
++EXPORT_SYMBOL(nubus_find_device);
+ 
+ struct nubus_dev*
+ nubus_find_type(unsigned short category,
+@@ -320,6 +330,7 @@ nubus_find_type(unsigned short category,
+ 	}
+ 	return NULL;
+ }
++EXPORT_SYMBOL(nubus_find_type);
+ 
+ struct nubus_dev*
+ nubus_find_slot(unsigned int slot,
+@@ -335,6 +346,7 @@ nubus_find_slot(unsigned int slot,
+ 	}
+ 	return NULL;
+ }
++EXPORT_SYMBOL(nubus_find_slot);
+ 
+ int
+ nubus_find_rsrc(struct nubus_dir* dir, unsigned char rsrc_type,
+@@ -346,6 +358,7 @@ nubus_find_rsrc(struct nubus_dir* dir, u
+ 	}	
+ 	return -1;
+ }
++EXPORT_SYMBOL(nubus_find_rsrc);
+ 
+ /* Initialization functions - decide which slots contain stuff worth
+    looking at, and print out lots and lots of information from the
+--- a/drivers/nubus/nubus_syms.c
++++ /dev/null
+@@ -1,28 +0,0 @@
+-/* Exported symbols for NuBus services
+-
+-   (c) 1999 David Huggins-Daines <dhd@debian.org> */
+-
+-#include <linux/module.h>
+-#include <linux/types.h>
+-#include <linux/nubus.h>
+-
+-#ifdef CONFIG_PROC_FS
+-EXPORT_SYMBOL(nubus_proc_attach_device);
+-EXPORT_SYMBOL(nubus_proc_detach_device);
+-#endif
+-
+-MODULE_LICENSE("GPL");
+-
+-EXPORT_SYMBOL(nubus_find_device);
+-EXPORT_SYMBOL(nubus_find_type);
+-EXPORT_SYMBOL(nubus_find_slot);
+-EXPORT_SYMBOL(nubus_get_root_dir);
+-EXPORT_SYMBOL(nubus_get_board_dir);
+-EXPORT_SYMBOL(nubus_get_func_dir);
+-EXPORT_SYMBOL(nubus_readdir);
+-EXPORT_SYMBOL(nubus_find_rsrc);
+-EXPORT_SYMBOL(nubus_rewinddir);
+-EXPORT_SYMBOL(nubus_get_subdir);
+-EXPORT_SYMBOL(nubus_get_rsrc_mem);
+-EXPORT_SYMBOL(nubus_get_rsrc_str);
+-
+--- a/drivers/nubus/proc.c
++++ b/drivers/nubus/proc.c
+@@ -22,6 +22,8 @@
+ #include <linux/nubus.h>
+ #include <linux/proc_fs.h>
+ #include <linux/init.h>
++#include <linux/module.h>
++
+ #include <asm/uaccess.h>
+ #include <asm/byteorder.h>
+ 
+@@ -140,6 +142,7 @@ int nubus_proc_attach_device(struct nubu
+ 
+ 	return 0;
+ }
++EXPORT_SYMBOL(nubus_proc_attach_device);
+ 
+ /* FIXME: this is certainly broken! */
+ int nubus_proc_detach_device(struct nubus_dev *dev)
+@@ -154,6 +157,7 @@ int nubus_proc_detach_device(struct nubu
+ 	}
+ 	return 0;
+ }
++EXPORT_SYMBOL(nubus_proc_detach_device);
+ 
+ void __init proc_bus_nubus_add_devices(void)
+ {
 
 -- 
 Gr{oetje,eeting}s,
