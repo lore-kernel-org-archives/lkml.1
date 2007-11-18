@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755870AbXKRXqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbXKRXu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755870AbXKRXqx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 18:46:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753608AbXKRXqp
+	id S1755950AbXKRXu5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 18:50:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753739AbXKRXuu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 18:46:45 -0500
-Received: from ishtar.tlinx.org ([64.81.245.74]:40542 "EHLO ishtar.tlinx.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753527AbXKRXqo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 18:46:44 -0500
-Message-ID: <4740CEE4.8030800@tlinx.org>
-Date: Sun, 18 Nov 2007 15:46:44 -0800
-From: Lin Walsh <lkml@tlinx.org>
-User-Agent: Thunderbird 1.5.0.13 (Windows/20070809)
+	Sun, 18 Nov 2007 18:50:50 -0500
+Received: from moutng.kundenserver.de ([212.227.126.174]:58056 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753705AbXKRXut (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 18:50:49 -0500
+Date: Mon, 19 Nov 2007 00:50:27 +0100 (CET)
+From: Bodo Eggert <7eggert@gmx.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: 7eggert@gmx.de, Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH][retry-2] init: Introduce rootdir bootparm to select
+ which dir to sys_chroot
+In-Reply-To: <47409A48.3000409@zytor.com>
+Message-ID: <alpine.LSU.0.999.0711190042340.14144@be1.lrz>
+References: <9qVOO-4ZK-13@gated-at.bofh.it> <E1ItqCg-0003W2-Qu@be1.7eggert.dyndns.org>
+ <47409A48.3000409@zytor.com>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Config - general Q; default vs. suggested setting.
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX19ZQ3qnlKi1IeQ1UlFqYnnEbA56S1S+g7hYB+t
+ bkki/9BxTiapeQbavIjroQDgXYyD+F1OCZ9u1oq9ZPeIMXzQpy
+ SQd1FlgUCaoA9DKTEQ+Xg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-More than once in going through configs for different
-machines, I've noticed "oddities".  It's not clear which
-are intentional and which 'leftovers' from changes.
-Specifically, when I chose a new config by making
-the default config, some of the default options
-are different from what is recommended in the hint
-text.
+On Sun, 18 Nov 2007, H. Peter Anvin wrote:
+> Bodo Eggert wrote:
 
-I.e. the default will have the option "on", but in the
-hint(config) text, it says "this does xxyz, unless you know
-what you are doing, say "no" here.
-(or vice-versa)....  lets see; some examples:
+>> 1) This is useful for booting a rescue or test system, too. In those cases,
+>>    you might want to have the old root moved somewhere.
+>>    (Always "$rootdir/oldroot"? Additional parameter? I'm not sure ...)
+>> 
+>
+> Again, this is a good example of why this really shouldn't be additional 
+> hacks in kernel space.
 
-Automatic kernel module loading:
-Default=No, Text says "if unsure, say Y"
+ACK, but until kinit is default (and Godot arrives), this little hack does 
+seem to be useful.
 
-Under I/O Schedulers,
-Default = Anticipatory, but text says: "CFQ is default"
-
-SMT(Hyperthread)
-Default:Y, Text:"If unsure say N"
-Default:Y, Text:"If unsure say N"
-
-....etc, etc...several (or many?) more...
-
-So "Which is it"...or should there be a pattern?
-If comment says "if unsure say N", or "most
-users should say N", then should it be a bug
-if "make defconfig" sets it to "T"("Y")?
-
-Or should defconfig follow the help text (the answer
-is probably that it depends, but does that mean a bug
-should be filed against each instance?) 
-
-I would think that the help/hint text should agree with
-the default config or is there some reason for this not
-to be the case?
-
-
-Tnx,
-Lin
-
+-- 
+Top 100 things you don't want the sysadmin to say:
+63. Oracle will be down until 8pm, but you can come back in and finish your
+    work when it comes up tonight.
