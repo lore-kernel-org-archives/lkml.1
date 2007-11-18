@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751883AbXKRPZH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752083AbXKRPbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751883AbXKRPZH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 10:25:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750735AbXKRPYx
+	id S1752083AbXKRPbg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 10:31:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750854AbXKRPb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 10:24:53 -0500
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:46287 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750716AbXKRPYw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 10:24:52 -0500
-Message-ID: <4740581C.6030206@keyaccess.nl>
-Date: Sun, 18 Nov 2007 16:19:56 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sun, 18 Nov 2007 10:31:29 -0500
+Received: from lucidpixels.com ([75.144.35.66]:42646 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750735AbXKRPb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 10:31:28 -0500
+Date: Sun, 18 Nov 2007 10:31:26 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Christian Kujau <lists@nerdbynature.de>
+cc: Chris Wedgwood <cw@f00f.org>, Trond Myklebust <trond.myklebust@fys.uio.no>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Benny Halevy <bhalevy@panasas.com>, linux-xfs@oss.sgi.com
+Subject: Re: 2.6.24-rc2 XFS nfsd hang
+In-Reply-To: <alpine.DEB.0.99999.0711181541280.30603@sheep.housecafe.de>
+Message-ID: <Pine.LNX.4.64.0711181031110.29571@p34.internal.lan>
+References: <20071114070400.GA25708@puku.stupidest.org> <473AA72C.6020308@panasas.com>
+ <20071114125907.GB4010@fieldses.org> <alpine.DEB.0.99999.0711142317010.12443@sheep.housecafe.de>
+ <alpine.DEB.0.99999.0711150840340.12443@sheep.housecafe.de>
+ <20071116003410.GA16797@puku.stupidest.org>
+ <59468.62.180.231.196.1195204637.squirrel@housecafe.dyndns.org>
+ <20071116110315.GA27969@puku.stupidest.org> <1195222772.7653.16.camel@heimdal.trondhjem.org>
+ <20071116214327.GA9685@puku.stupidest.org> <alpine.DEB.0.99999.0711181541280.30603@sheep.housecafe.de>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Pavel Machek <pavel@ucw.cz>, Mark Lord <liml@rtr.ca>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, protasnb@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: size of git repository (was Re: [BUG] New Kernel Bugs)
-References: <20071113031553.3c7b5c16.akpm@linux-foundation.org>	 <20071113.033946.114918709.davem@davemloft.net>	 <20071113034916.2556edd7.akpm@linux-foundation.org>	 <20071113.035824.40509981.davem@davemloft.net>	 <20071113041259.79c9a8c5.akpm@linux-foundation.org>	 <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca>	 <20071113164650.GA28493@elte.hu> <4739E3D0.10201@rtr.ca>	 <20071118124404.GA4037@ucw.cz>  <474036EA.9040600@keyaccess.nl> <1195396507.3288.4.camel@localhost.localdomain>
-In-Reply-To: <1195396507.3288.4.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: 0.0 (/)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 18-11-07 15:35, James Bottomley wrote:
 
->> clean-cg? But failure to run "git repack -a -d" every once in a while?
-> 
-> Actually, the best command is
-> 
-> git gc
-> 
-> which does a repack (into a single pack file rather than an incremenal), 
-> and then removes all the objects now in the pack.  If, like me, you work 
-> on temporary branches which you keep rebasing, you can add a --prune to 
-> gc which will erase all unreferenced objects as it packs (use this one 
-> with care.  I usually never use it but run a git prune -n just to see 
-> what would be removed, and then run git prune separately if it looks OK).
 
-Thanks for the comment. That managed to indeed shave a few extra bytes off 
-my already "repack -a -d" packed repo still.
+On Sun, 18 Nov 2007, Christian Kujau wrote:
 
-Rene.
+> On Fri, 16 Nov 2007, Chris Wedgwood wrote:
+>> Oops, I meant it for NFSD...  and I'm somewhat serious.  I'm not
+>> saying it's a good long term solution, but a potentially safer
+>> short-term workaround.
+>
+> I've opened http://bugzilla.kernel.org/show_bug.cgi?id=9400 to track this one 
+> (and to not forget about it :)).
+>
+> I wonder why so few people are seeing this, I'd have assumed that
+> NFSv3 && XFS is not sooo exotic...
+Still on 2.6.23.x here (also use nfsv3 + xfs).
 
+>
+> Christian.
+> -- 
+> BOFH excuse #273:
+>
+> The cord jumped over and hit the power switch.
+>
+>
