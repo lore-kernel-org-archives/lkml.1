@@ -1,44 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbXKRWhV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbXKRWqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755530AbXKRWhV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 17:37:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbXKRWhG
+	id S1755243AbXKRWqa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 17:46:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbXKRWqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 17:37:06 -0500
-Received: from mail.gmx.net ([213.165.64.20]:35859 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753342AbXKRWhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 17:37:05 -0500
-X-Authenticated: #24222693
-X-Provags-ID: V01U2FsdGVkX18Rn0cHRSoRnwf7eK1iG3eN8XAQ9+jpyjR5gwclA9
-	fpnqfbyk6QAfLm
-From: Robert Gerlach <khnz@gmx.de>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: [PATCH] Fujitsu application panel driver
-Date: Sun, 18 Nov 2007 23:36:58 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Dmitry Torokhov <dtor@insightbb.com>, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-References: <20070702111724.43ee5b43@freepuppy.localdomain.hemminger.net> <200709161623.00286.dtor@insightbb.com> <20071023125555.38d63567@shemminger-laptop>
-In-Reply-To: <20071023125555.38d63567@shemminger-laptop>
+	Sun, 18 Nov 2007 17:46:22 -0500
+Received: from ishtar.tlinx.org ([64.81.245.74]:48680 "EHLO ishtar.tlinx.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752712AbXKRWqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 17:46:21 -0500
+Message-ID: <4740C0BC.8010303@tlinx.org>
+Date: Sun, 18 Nov 2007 14:46:20 -0800
+From: Linda Walsh <lkml@tlinx.org>
+User-Agent: Thunderbird 1.5.0.13 (Windows/20070809)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Config Q?: Preempt Model & Preempt Big Kern Lock
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711182336.59312.khnz@gmx.de>
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag 23 Oktober 2007 21:55:55 schrieb Stephen Hemminger:
-> +MODULE_ALIAS("dmi:*:svnFUJITSU:pnLifeBook*:pvr*:rvnFUJITSU:*");
-> +MODULE_ALIAS("dmi:*:svnFUJITSU:pnLifebook*:pvr*:rvnFUJITSU:*");
+Not big deal, just some config-validity questions regarding
+i386 preemption models and preemption of the big-kern lock.
+I.e. the relevant options are:
 
-Please make sure that this module is not autoload on Lifebook tablets (T 
-series and P1[56]10). It works fine, but only supports a subset of features 
-(4 of 7 buttons and no display orientation for my T4010).
+(PM) "Preemption model", there are 3 choices (i386):
+      (none) No Forced Preemption (Server)
+      (vol) Voluntary Preempt (Desktop)
+      (full) Preemptible Kernel (Low-Latency Desktop)
+(PBL) "Preempt The Big Kernel Lock" (hint: use Y for desktop, else N)
+
+===
+Are these all "valid" config states?  Should they all be valid?
+
+I.e., does it make sense to allow "PM==none && PBL==T" ?
+Does it makes sense to allow "(PM==full) && PBL==F" ?
+
+Is the issue of big-kernel-lock preemption of major consequence
+these days, or should it work in all cases?  Are there cases
+where one might want PBL==F?  Would they be limited to the
+"PM=none" case?
+
+Is this the right place or way to ask such questions, or to
+get information?
+
+In asking a similar information question, it seems that it
+was preferred that a bug be filed.  Is that the case here?
 
 Thanks,
-  Robert
+Lin
+
+
