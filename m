@@ -1,49 +1,267 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756474AbXKRAD3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755836AbXKRA1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756474AbXKRAD3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 19:03:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbXKRADU
+	id S1755836AbXKRA1b (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 19:27:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbXKRA1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 19:03:20 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42309
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753945AbXKRADT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 19:03:19 -0500
-Date: Sat, 17 Nov 2007 16:03:16 -0800 (PST)
-Message-Id: <20071117.160316.162501140.davem@davemloft.net>
-To: andi@firstfloor.org
-Cc: arjan@infradead.org, dada1@cosmosbay.com, linux-kernel@vger.kernel.org,
-       netdev@vget.kernel.org
-Subject: Re: [NET]: rt_check_expire() can take a long time, add a
- cond_resched()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <p73k5ohav4n.fsf@bingen.suse.de>
-References: <473D18A5.2090309@cosmosbay.com>
-	<20071115215938.44233733@laptopd505.fenrus.org>
-	<p73k5ohav4n.fsf@bingen.suse.de>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sat, 17 Nov 2007 19:27:22 -0500
+Received: from rtr.ca ([76.10.145.34]:2597 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751237AbXKRA1V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Nov 2007 19:27:21 -0500
+Message-ID: <473F86E7.4020003@rtr.ca>
+Date: Sat, 17 Nov 2007 19:27:19 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: kristen.c.accardi@intel.com
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>, greg@kroah.com,
+       pcihpd-discuss@lists.sourceforge.net
+Subject: [PATCH] Fix PCIe double initialization bug
+References: <4716CB9D.6080503@rtr.ca>
+In-Reply-To: <4716CB9D.6080503@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andi Kleen <andi@firstfloor.org>
-Date: Sat, 17 Nov 2007 13:56:08 +0100
+pciehp_fix_double_init_bug.patch:
 
-> Arjan van de Ven <arjan@infradead.org> writes:
-> >> > 
-> >> > Its not that cheap. The ChangeLog included my own numbers, on a
-> >> > Pentium M machine. (i686, 1.6 GHz, 1.5 GB ram)
-> >> > 
-> >> > Without "if (need_resched())" (so calling need_resched() X.XXX.XXX 
-> >> > times), each run takes 88ms
-> >> > 
-> >> > With the extra check (and *much* less function calls), each run
-> >> > takes 25ms
-> 
-> ms?!? The numbers sound wrong. Wrong unit? 
+Earlier patches to split out the hardware init for PCIe hotplug
+resulted in some one-time initializations being redone on every
+resume cycle.  Eg. irq/polling initialization.
 
-Read what Eric is saying.  He is saying "any entire run" purging
-the routing cache takes that long, not just one call.
+This patch splits the hardware init into two parts,
+and separates the one-time initializations from those
+so that they only ever get done once, as intended.
+
+Signed-off-by: Mark Lord <mlord@pobox.com>
+---
+
+This patch is for -mm and for Kristen's queue.  Not for 2.6.24.
+
+ drivers/pci/hotplug/pciehp.h      |    2
+ drivers/pci/hotplug/pciehp_core.c |    2
+ drivers/pci/hotplug/pciehp_hpc.c  |  119 +++++++++++++++-------------
+ 3 files changed, 69 insertions(+), 54 deletions(-)
+
+--- linux/drivers/pci/hotplug/pciehp.h.orig	2007-11-13 23:57:09.000000000 -0500
++++ linux/drivers/pci/hotplug/pciehp.h	2007-11-17 19:10:01.000000000 -0500
+@@ -163,7 +163,7 @@
+ int pcie_init(struct controller *ctrl, struct pcie_device *dev);
+ int pciehp_enable_slot(struct slot *p_slot);
+ int pciehp_disable_slot(struct slot *p_slot);
+-int pcie_init_hardware(struct controller *ctrl, struct pcie_device *dev);
++int pcie_init_hardware_part2(struct controller *ctrl, struct pcie_device *dev);
+ 
+ static inline struct slot *pciehp_find_slot(struct controller *ctrl, u8 device)
+ {
+--- linux/drivers/pci/hotplug/pciehp_core.c.orig	2007-11-13 23:57:09.000000000 -0500
++++ linux/drivers/pci/hotplug/pciehp_core.c	2007-11-17 19:09:43.000000000 -0500
+@@ -521,7 +521,7 @@
+ 		u8 status;
+ 
+ 		/* reinitialize the chipset's event detection logic */
+-		pcie_init_hardware(ctrl, dev);
++		pcie_init_hardware_part2(ctrl, dev);
+ 
+ 		t_slot = pciehp_find_slot(ctrl, ctrl->slot_device_offset);
+ 
+--- linux/drivers/pci/hotplug/pciehp_hpc.c.orig	2007-11-13 23:57:09.000000000 -0500
++++ linux/drivers/pci/hotplug/pciehp_hpc.c	2007-11-17 19:13:49.000000000 -0500
+@@ -1067,28 +1067,25 @@
+ }
+ #endif
+ 
+-int pcie_init_hardware(struct controller *ctrl, struct pcie_device *dev)
++static int pcie_init_hardware_part1(struct controller *ctrl,
++				    struct pcie_device *dev)
+ {
+ 	int rc;
+ 	u16 temp_word;
+-	u16 intr_enable = 0;
+ 	u32 slot_cap;
+ 	u16 slot_status;
+-	struct pci_dev *pdev;
+-
+-	pdev = dev->port;
+ 
+ 	rc = pciehp_readl(ctrl, SLOTCAP, &slot_cap);
+ 	if (rc) {
+ 		err("%s: Cannot read SLOTCAP register\n", __FUNCTION__);
+-		goto abort_free_ctlr;
++		return -1;
+ 	}
+ 
+ 	/* Mask Hot-plug Interrupt Enable */
+ 	rc = pciehp_readw(ctrl, SLOTCTRL, &temp_word);
+ 	if (rc) {
+ 		err("%s: Cannot read SLOTCTRL register\n", __FUNCTION__);
+-		goto abort_free_ctlr;
++		return -1;
+ 	}
+ 
+ 	dbg("%s: SLOTCTRL %x value read %x\n",
+@@ -1099,62 +1096,46 @@
+ 	rc = pciehp_writew(ctrl, SLOTCTRL, temp_word);
+ 	if (rc) {
+ 		err("%s: Cannot write to SLOTCTRL register\n", __FUNCTION__);
+-		goto abort_free_ctlr;
++		return -1;
+ 	}
+ 
+ 	rc = pciehp_readw(ctrl, SLOTSTATUS, &slot_status);
+ 	if (rc) {
+ 		err("%s: Cannot read SLOTSTATUS register\n", __FUNCTION__);
+-		goto abort_free_ctlr;
++		return -1;
+ 	}
+ 
+ 	temp_word = 0x1F; /* Clear all events */
+ 	rc = pciehp_writew(ctrl, SLOTSTATUS, temp_word);
+ 	if (rc) {
+ 		err("%s: Cannot write to SLOTSTATUS register\n", __FUNCTION__);
+-		goto abort_free_ctlr;
++		return -1;
+ 	}
++	return 0;
++}
+ 
+-	if (pciehp_poll_mode) {
+-		/* Install interrupt polling timer. Start with 10 sec delay */
+-		init_timer(&ctrl->poll_timer);
+-		start_int_poll_timer(ctrl, 10);
+-	} else {
+-		/* Installs the interrupt handler */
+-		rc = request_irq(ctrl->pci_dev->irq, pcie_isr, IRQF_SHARED,
+-				 MY_NAME, (void *)ctrl);
+-		dbg("%s: request_irq %d for hpc%d (returns %d)\n",
+-		    __FUNCTION__, ctrl->pci_dev->irq,
+-		    atomic_read(&pciehp_num_controllers), rc);
+-		if (rc) {
+-			err("Can't get irq %d for the hotplug controller\n",
+-			    ctrl->pci_dev->irq);
+-			goto abort_free_ctlr;
+-		}
+-	}
+-	dbg("pciehp ctrl b:d:f:irq=0x%x:%x:%x:%x\n", pdev->bus->number,
+-		PCI_SLOT(pdev->devfn), PCI_FUNC(pdev->devfn), dev->irq);
+-
+-	/*
+-	 * If this is the first controller to be initialized,
+-	 * initialize the pciehp work queue
+-	 */
+-	if (atomic_add_return(1, &pciehp_num_controllers) == 1) {
+-		pciehp_wq = create_singlethread_workqueue("pciehpd");
+-		if (!pciehp_wq) {
+-			rc = -ENOMEM;
+-			goto abort_free_irq;
+-		}
+-	}
++int pcie_init_hardware_part2(struct controller *ctrl, struct pcie_device *dev)
++{
++	int rc;
++	u16 temp_word;
++	u16 intr_enable = 0;
++	u32 slot_cap;
++	u16 slot_status;
+ 
+ 	rc = pciehp_readw(ctrl, SLOTCTRL, &temp_word);
+ 	if (rc) {
+ 		err("%s: Cannot read SLOTCTRL register\n", __FUNCTION__);
+-		goto abort_free_irq;
++		goto abort;
+ 	}
+ 
+ 	intr_enable = intr_enable | PRSN_DETECT_ENABLE;
+ 
++	rc = pciehp_readl(ctrl, SLOTCAP, &slot_cap);
++	if (rc) {
++		err("%s: Cannot read SLOTCAP register\n", __FUNCTION__);
++		goto abort;
++	}
++
+ 	if (ATTN_BUTTN(slot_cap))
+ 		intr_enable = intr_enable | ATTN_BUTTN_ENABLE;
+ 
+@@ -1179,7 +1160,7 @@
+ 	rc = pciehp_writew(ctrl, SLOTCTRL, temp_word);
+ 	if (rc) {
+ 		err("%s: Cannot write to SLOTCTRL register\n", __FUNCTION__);
+-		goto abort_free_irq;
++		goto abort;
+ 	}
+ 	rc = pciehp_readw(ctrl, SLOTSTATUS, &slot_status);
+ 	if (rc) {
+@@ -1214,14 +1195,7 @@
+ 	}
+ 	if (rc)
+ 		err("%s : disabling interrupts failed\n", __FUNCTION__);
+-
+-abort_free_irq:
+-	if (pciehp_poll_mode)
+-		del_timer_sync(&ctrl->poll_timer);
+-	else
+-		free_irq(ctrl->pci_dev->irq, ctrl);
+-
+-abort_free_ctlr:
++abort:
+ 	return -1;
+ }
+ 
+@@ -1318,11 +1292,52 @@
+ 	ctrl->first_slot = slot_cap >> 19;
+ 	ctrl->ctrlcap = slot_cap & 0x0000007f;
+ 
+-	rc = pcie_init_hardware(ctrl, dev);
++	rc = pcie_init_hardware_part1(ctrl, dev);
++	if (rc)
++		goto abort;
++
++	if (pciehp_poll_mode) {
++		/* Install interrupt polling timer. Start with 10 sec delay */
++		init_timer(&ctrl->poll_timer);
++		start_int_poll_timer(ctrl, 10);
++	} else {
++		/* Installs the interrupt handler */
++		rc = request_irq(ctrl->pci_dev->irq, pcie_isr, IRQF_SHARED,
++				 MY_NAME, (void *)ctrl);
++		dbg("%s: request_irq %d for hpc%d (returns %d)\n",
++		    __FUNCTION__, ctrl->pci_dev->irq,
++		    atomic_read(&pciehp_num_controllers), rc);
++		if (rc) {
++			err("Can't get irq %d for the hotplug controller\n",
++			    ctrl->pci_dev->irq);
++			goto abort;
++		}
++	}
++	dbg("pciehp ctrl b:d:f:irq=0x%x:%x:%x:%x\n", pdev->bus->number,
++		PCI_SLOT(pdev->devfn), PCI_FUNC(pdev->devfn), dev->irq);
++
++	/*
++	 * If this is the first controller to be initialized,
++	 * initialize the pciehp work queue
++	 */
++	if (atomic_add_return(1, &pciehp_num_controllers) == 1) {
++		pciehp_wq = create_singlethread_workqueue("pciehpd");
++		if (!pciehp_wq) {
++			rc = -ENOMEM;
++			goto abort_free_irq;
++		}
++	}
++
++	rc = pcie_init_hardware_part2(ctrl, dev);
+ 	if (rc == 0) {
+ 		ctrl->hpc_ops = &pciehp_hpc_ops;
+ 		return 0;
+ 	}
++abort_free_irq:
++	if (pciehp_poll_mode)
++		del_timer_sync(&ctrl->poll_timer);
++	else
++		free_irq(ctrl->pci_dev->irq, ctrl);
+ abort:
+ 	return -1;
+ }
