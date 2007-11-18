@@ -1,71 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755025AbXKRVnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbXKRV6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755025AbXKRVnS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 16:43:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751759AbXKRVnH
+	id S1754429AbXKRV6p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 16:58:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbXKRV6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 16:43:07 -0500
-Received: from main.gmane.org ([80.91.229.2]:41347 "EHLO ciao.gmane.org"
+	Sun, 18 Nov 2007 16:58:37 -0500
+Received: from s2.ukfsn.org ([217.158.120.143]:60638 "EHLO mail.ukfsn.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751265AbXKRVnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 16:43:06 -0500
-X-Injected-Via-Gmane: http://gmane.org/
+	id S1750941AbXKRV6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 16:58:37 -0500
 To: linux-kernel@vger.kernel.org
-From: Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH] Time-based RFC 4122 UUID generator
-Date: Sun, 18 Nov 2007 22:43:20 +0100
-Message-ID: <fhqbkn$ttt$1@ger.gmane.org>
-References: <200711182038.22055.deller@gmx.de> <20071118130503.7d5ec842.akpm@linux-foundation.org> <20071118213427.GB5696@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: mnhm-590daa25.pool.einsundeins.de
-User-Agent: KNode/0.10.5
+Cc: Dennis Munsie <dmunsie@cecropia.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: radeonfb i2c regression post-2.6.18.
+From: Roger Leigh <rleigh@whinlatter.ukfsn.org>
+Date: Sun, 18 Nov 2007 21:58:26 +0000
+Message-ID: <87lk8vxlkt.fsf@hardknott.home>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha1; protocol="application/pgp-signature"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
+--=-=-=
+Content-Transfer-Encoding: quoted-printable
 
-> On Sun, Nov 18, 2007 at 01:05:03PM -0800, Andrew Morton wrote:
->> On Sun, 18 Nov 2007 20:38:21 +0100 Helge Deller <deller@gmx.de> wrote:
->> 
->> > Title: Add time-based RFC 4122 UUID generator
->> > 
->> > The current Linux kernel currently contains the generate_random_uuid()
->> > function, which creates - based on RFC 4122 - truly random UUIDs and
->> > provides them to userspace through /proc/sys/kernel/random/boot_id and
->> > /proc/sys/kernel/random/uuid.
->> > 
->> > This patch additionally adds the "Time-based UUID" variant of RFC 4122,
->> > with which userspace applications can easily get real unique time-based
->> > UUIDs through /proc/sys/kernel/random/uuid_time.
->> > A new /proc/sys/kernel/random/uuid_time_clockseq sysfs entry is
->> > available, so that the clock_seq value can be retained across system
->> > bootups (which is required by RFC 4122).
->> > 
->> > The attached implementation uses getnstimeofday() to get very
->> > fine-grained granularity. This helps, so that userspace tools can get a
->> > lot more UUIDs (if needed) per time than before.
->> > A mutex takes care of the proper locking against a mistaken double
->> > creation of UUIDs for simultanious running processes.
->> 
->> Who will use this feature, and for what?
->> 
->> (In fact, who uses the existing UUID generators, and for what?)
-> 
-> I use libuuid and I assume libuuid uses some uuid generator support
-> from the kernel. 
+Hi folks,
 
-No, it does not. It's pure userspace and may produce double UUIDs.
+I'm using an Apple Cinema Display connected via DVI to an Apple Mac
+Mini with Radeon 9200 graphics.  This used to work fine, but with
+kernels >=3D 2.6.19, the monitor powers off as soon as the framebuffer
+is initialised, making for a less than usable system.  I've tested
+with 2.6.(19|2[012]), and I didn't see any related changes in 2.6.23.
 
-> libuuid comes from a package that Ted's maintain IIRC. 
-> 
-> I (my company) use uuid to uniquely identify objects in a distributed
-> database.
-> [Proprietary closed source stuff].
+The breakage occured in this commit:
 
-Same here.
+http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dcomm=
+itdiff;h=3D7a45093b7caa9d3d5421274b4ba80fba5da17e19
 
-Helge
+Specifically, these lines:
 
+=2D       /* Release the DDC lines when done or the Apple Cinema HD display
+=2D        * will switch off
+=2D        */
+=2D       OUTREG(reg, INREG(reg) & ~(VGA_DDC_CLK_OUT_EN | VGA_DDC_DATA_OUT_=
+EN));
+=2D       (void)INREG(reg);
++       u8 *edid =3D fb_ddc_read(&rinfo->i2c[conn-1].adapter);
+
+BenH later applied a fix:
+
+http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dcomm=
+itdiff;h=3D4f71c5de19c27f2198105d3b26b398494d5c353b
+
+but I'm not sure if this is related to the above, or was for a
+separate problem.  Either way, the monitor is still getting powered
+off.
+
+Due to the code reorganisation when the i2c stuff got moved into the
+generic fbmon.c, I'm not sure where the workaround needs putting back
+(if indeed this is where the problem lies).
+
+I'm booting with video=3Dofonly to get a working system;
+video=3Dradeonfb:1680x1050-32@60 (with or without the additional
+parameters) always results in a dead monitor as soon as the
+framebuffer is set up.
+
+
+Regards,
+Roger
+
+=2D-=20
+  .''`.  Roger Leigh
+ : :' :  Debian GNU/Linux             http://people.debian.org/~rleigh/
+ `. `'   Printing on GNU/Linux?       http://gutenprint.sourceforge.net/
+   `-    GPG Public Key: 0x25BFB848   Please GPG sign your mail.
+
+--=-=-=
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHQLWGVcFcaSW/uEgRAruKAKCesmaXdT/5njUd0A7S3I0Kqr1sAgCgvav0
+vrNwQKghrgTTEZ4OAZKA/eU=
+=zYSW
+-----END PGP SIGNATURE-----
+--=-=-=--
