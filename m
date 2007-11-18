@@ -1,58 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752083AbXKRPbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751898AbXKRPwz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752083AbXKRPbg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 10:31:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750854AbXKRPb3
+	id S1751898AbXKRPwz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 10:52:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbXKRPwr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 10:31:29 -0500
-Received: from lucidpixels.com ([75.144.35.66]:42646 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750735AbXKRPb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 10:31:28 -0500
-Date: Sun, 18 Nov 2007 10:31:26 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Christian Kujau <lists@nerdbynature.de>
-cc: Chris Wedgwood <cw@f00f.org>, Trond Myklebust <trond.myklebust@fys.uio.no>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Benny Halevy <bhalevy@panasas.com>, linux-xfs@oss.sgi.com
-Subject: Re: 2.6.24-rc2 XFS nfsd hang
-In-Reply-To: <alpine.DEB.0.99999.0711181541280.30603@sheep.housecafe.de>
-Message-ID: <Pine.LNX.4.64.0711181031110.29571@p34.internal.lan>
-References: <20071114070400.GA25708@puku.stupidest.org> <473AA72C.6020308@panasas.com>
- <20071114125907.GB4010@fieldses.org> <alpine.DEB.0.99999.0711142317010.12443@sheep.housecafe.de>
- <alpine.DEB.0.99999.0711150840340.12443@sheep.housecafe.de>
- <20071116003410.GA16797@puku.stupidest.org>
- <59468.62.180.231.196.1195204637.squirrel@housecafe.dyndns.org>
- <20071116110315.GA27969@puku.stupidest.org> <1195222772.7653.16.camel@heimdal.trondhjem.org>
- <20071116214327.GA9685@puku.stupidest.org> <alpine.DEB.0.99999.0711181541280.30603@sheep.housecafe.de>
+	Sun, 18 Nov 2007 10:52:47 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:34938 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750854AbXKRPwq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 10:52:46 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=msnlO+uHOcuqeq2Ewp/ZZxqwA+2Yv5Miyrf4IEpW/0o9e69+Vmmg0Xig19L90qHZ3
+	8zB5DgZO0Q5+kZNbsjigw==
+Message-ID: <d9885f0f0711180752o71561745h51f2a18d09709e27@mail.gmail.com>
+Date: Sun, 18 Nov 2007 07:52:36 -0800
+From: "Abhishek Rai" <abhishekrai@google.com>
+To: "Matt Mackall" <mpm@selenic.com>
+Subject: Re: [PATCH] Clustering indirect blocks in Ext3
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Andreas Dilger" <adilger@sun.com>, linux-kernel@vger.kernel.org,
+       "Ken Chen" <kenchen@google.com>, "Mike Waychison" <mikew@google.com>
+In-Reply-To: <20071116073716.GB17536@waste.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <d9885f0f0711152102h7a8270bfvd65605d8c00e6754@mail.gmail.com>
+	 <20071115230219.1fe9338c.akpm@linux-foundation.org>
+	 <20071116073716.GB17536@waste.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Thanks for the suggestion Matt.
 
+It took me some time to get compilebench working due to the known
+issue with drop_caches due to circular lock dependency between
+j_list_lock and inode_lock (compilebench triggers drop_caches quite
+frequently). Here are the results for compilebench run with options
+"-i 30 -r 30". I repeated the test 5 times on each of vanilla and mc
+configurations.
 
-On Sun, 18 Nov 2007, Christian Kujau wrote:
+Setup: 4 cpu, 8GB RAM, 400GB disk.
 
-> On Fri, 16 Nov 2007, Chris Wedgwood wrote:
->> Oops, I meant it for NFSD...  and I'm somewhat serious.  I'm not
->> saying it's a good long term solution, but a potentially safer
->> short-term workaround.
->
-> I've opened http://bugzilla.kernel.org/show_bug.cgi?id=9400 to track this one 
-> (and to not forget about it :)).
->
-> I wonder why so few people are seeing this, I'd have assumed that
-> NFSv3 && XFS is not sooo exotic...
-Still on 2.6.23.x here (also use nfsv3 + xfs).
+Average vanilla results
+==========================================================================
+intial create total runs 30 avg 46.49 MB/s (user 1.12s sys 2.25s)
+create total runs 5 avg 12.90 MB/s (user 1.08s sys 1.97s)
+patch total runs 4 avg 8.70 MB/s (user 0.60s sys 2.31s)
+compile total runs 7 avg 21.44 MB/s (user 0.32s sys 2.95s)
+clean total runs 4 avg 59.91 MB/s (user 0.05s sys 0.26s)
+read tree total runs 2 avg 21.85 MB/s (user 1.12s sys 2.89s)
+read compiled tree total runs 1 avg 23.47 MB/s (user 1.45s sys 4.89s)
+delete tree total runs 2 avg 13.18 seconds (user 0.64s sys 1.02s)
+no runs for delete compiled tree
+stat tree total runs 4 avg 4.76 seconds (user 0.70s sys 0.50s)
+stat compiled tree total runs 1 avg 7.84 seconds (user 0.74s sys 0.54s)
 
+Average metaclustering results
+==========================================================================
+intial create total runs 30 avg 45.04 MB/s (user 1.13s sys 2.42s)
+create total runs 5 avg 15.64 MB/s (user 1.08s sys 1.98s)
+patch total runs 4 avg 10.50 MB/s (user 0.61s sys 3.11s)
+compile total runs 7 avg 28.07 MB/s (user 0.33s sys 4.06s)
+clean total runs 4 avg 83.27 MB/s (user 0.04s sys 0.27s)
+read tree total runs 2 avg 21.17 MB/s (user 1.15s sys 2.91s)
+read compiled tree total runs 1 avg 22.79 MB/s (user 1.38s sys 4.89s)
+delete tree total runs 2 avg 9.23 seconds (user 0.62s sys 1.01s)
+no runs for delete compiled tree
+stat tree total runs 4 avg 4.72 seconds (user 0.71s sys 0.50s)
+stat compiled tree total runs 1 avg 6.50 seconds (user 0.79s sys 0.53s)
+
+Overall, metaclustering does better than vanilla except in a few cases.
+
+Thanks,
+Abhishek
+
+On Nov 15, 2007 11:37 PM, Matt Mackall <mpm@selenic.com> wrote:
+> On Thu, Nov 15, 2007 at 11:02:19PM -0800, Andrew Morton wrote:
+> > On Thu, 15 Nov 2007 21:02:46 -0800 "Abhishek Rai" <abhishekrai@google.com> wrote:
+> ...
+> > > 3. e2fsck speedup with metaclustering varies from disk
+> > > to disk with most benefit coming from disks which have a large number
+> > > of indirect blocks. For disks which have few indirect blocks, fsck
+> > > usually doesn't take too long anyway and hence it's OK not to deliver
+> > > a huge speedup there. But in all cases, metaclustering doesn't cause
+> > > any degradation in IO performance as seen in the benchmarks above.
+> >
+> > Less speedup, for more-and-smaller files, it appears.
+> >
+> > An important question is: how does it stand up over time?  Simply laying
+> > files out a single time on a fresh fs is the easy case.  But what happens
+> > if that disk has been in continuous create/delete/truncate/append usage for
+> > six months?
 >
-> Christian.
-> -- 
-> BOFH excuse #273:
+> Try Chris Mason's compilebench, which is a decent aging simulation.
 >
-> The cord jumped over and hit the power switch.
->
+> --
+> Mathematics is the supreme nostalgia of our time.
 >
