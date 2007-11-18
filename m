@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754955AbXKRWKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755198AbXKRWNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754955AbXKRWKu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 17:10:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752429AbXKRWKm
+	id S1755198AbXKRWNS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 17:13:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbXKRWNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 17:10:42 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:35932 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752499AbXKRWKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 17:10:42 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: broken suspend [Was: 2.6.24-rc2-mm1]
-Date: Sun, 18 Nov 2007 23:27:59 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Alan Stern <stern@rowland.harvard.edu>,
+	Sun, 18 Nov 2007 17:13:05 -0500
+Received: from an-out-0708.google.com ([209.85.132.247]:53608 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752429AbXKRWNE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 17:13:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=V2sIDLDfPmKLqxu9ZIuRCpyu3mxFbPyWkJGMNZqpV+AeLtH02QBejwbW8CkcFff4455+HOtal1qXu8xAgkBvF4wS6w8cfMWId32vuJdY4TxcaxbTU2CH3AFrirOGVQLhSlsfxCeqWavJx9MChsjEvuOxeVxCHK6E08DHIlkOe4s=
+Message-ID: <4740B8E9.4030903@gmail.com>
+Date: Sun, 18 Nov 2007 23:12:57 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Alan Stern <stern@rowland.harvard.edu>,
        Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
        Kernel development list <linux-kernel@vger.kernel.org>,
        Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0711181203220.5712-100000@netrider.rowland.org> <47408DFF.9070701@gmail.com>
-In-Reply-To: <47408DFF.9070701@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Subject: Re: broken suspend [Was: 2.6.24-rc2-mm1]
+References: <Pine.LNX.4.44L0.0711181203220.5712-100000@netrider.rowland.org> <47408DFF.9070701@gmail.com> <200711182328.00570.rjw@sisk.pl>
+In-Reply-To: <200711182328.00570.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711182328.00570.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 18 of November 2007, Jiri Slaby wrote:
-> On 11/18/2007 06:07 PM, Alan Stern wrote:
-> > You'll get more useful results if you redo your changes to 
-> > notifier_call_chain().  Have it print out the address of the routine 
-> > _before_ making the call, and don't limit it to 20.  That way you'll 
-> > know exactly which notifier routine ends up hanging.
-> 
-> The problem is, that notifier_call_chain is called again and again zillion times
-> by somebody else...
+On 11/18/2007 11:27 PM, Rafael J. Wysocki wrote:
+> You can use a global variable to switch the logging only before the CPU
+> hotunplug done by the suspend code.  You just need to hack
+> disable_nonboot_cpus() for that.
 
-You can use a global variable to switch the logging only before the CPU
-hotunplug done by the suspend code.  You just need to hack
-disable_nonboot_cpus() for that.
+If I understand you correctly, that's what BUBAK variable is there for. But it
+is still called again and again while the suspend code runs...
+
+regards,
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
