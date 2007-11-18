@@ -1,148 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752533AbXKRJTH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752978AbXKRJk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752533AbXKRJTH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 04:19:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbXKRJSz
+	id S1752978AbXKRJk7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 04:40:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbXKRJks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 04:18:55 -0500
-Received: from mail.issp.bas.bg ([195.96.236.10]:39585 "EHLO mail.issp.bas.bg"
+	Sun, 18 Nov 2007 04:40:48 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:57507 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750843AbXKRJSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 04:18:53 -0500
-From: Marin Mitov <mitov@issp.bas.bg>
-Organization: Institute of Solid State Physics
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH]new_TSC_based_delay_tsc()
-Date: Sun, 18 Nov 2007 11:20:27 +0200
-User-Agent: KMail/1.9.7
+	id S1751192AbXKRJkq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 04:40:46 -0500
+Message-ID: <474007B3.30205@redhat.com>
+Date: Sun, 18 Nov 2007 01:36:51 -0800
+From: Ulrich Drepper <drepper@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711181120.27459.mitov@issp.bas.bg>
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       tglx@linutronix.de, torvalds@linux-foundation.org
+Subject: Re: [PATCHv3 0/4] sys_indirect system call
+References: <200711170531.lAH5VaXR025225@devserv.devel.redhat.com> <473FED5F.2010303@zytor.com>
+In-Reply-To: <473FED5F.2010303@zytor.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-This is a patch based on the Ingo's idea/patch to track 
-delay_tsc() migration to another cpu by comparing 
-smp_processor_id(). It is against kernel-2.6.24-rc3.
+H. Peter Anvin wrote:
+> It seems to me that we could accomplish the same thing by passing the
+> number of parameters in the upper bits of the system call number
+> register (%eax in the case of x86.)
 
-What is different:
-1. Using unsigned (instead of long) to unify for i386/x86_64.
-2. Minimal preempt_disable/enable() critical sections
-   (more room for preemption)
-3. some statements have been rearranged, to account for
-    possible under/overflow of left/TSC
+This isn't really a generic solution.  The number of parameters is
+limited to six.  There are syscalls with six parameters already.  There
+are many more with five which could only handle one more parameter.
 
-Tested on both: 32/64 bit SMP PREEMPT kernel-2.6.24-rc3
+Also, is it really simpler?  You'd need to have another table which
+contains the default number of parameters a system call takes so that
+you can fill in the default value of zero.  This extra memory access has
+to be performed for every system call.
 
-Hope it is correct. Comments, please.
+I think it is unlikely that this approach is faster.  To the contrary,
+I'd guess.
 
-Signed-off-by: Marin Mitov <mitov@issp.bas.bg>
-=========================================
---- a/arch/x86/lib/delay_32.c	2007-11-18 10:20:45.000000000 +0200
-+++ b/arch/x86/lib/delay_32.c	2007-11-18 10:20:44.000000000 +0200
-@@ -38,18 +38,41 @@
- 		:"0" (loops));
- }
- 
--/* TSC based delay: */
-+/* TSC based delay:
-+ *
-+ * We are careful about preemption as TSC's are per-CPU.
-+ */
- static void delay_tsc(unsigned long loops)
- {
--	unsigned long bclock, now;
-+	unsigned prev, now;
-+	unsigned left = loops;
-+	unsigned prev_cpu, cpu;
-+
-+	preempt_disable();
-+	rdtscl(prev);
-+	prev_cpu = smp_processor_id();
-+	preempt_enable();
-+	now = prev;
- 
--	preempt_disable();		/* TSC's are per-cpu */
--	rdtscl(bclock);
- 	do {
- 		rep_nop();
-+
-+		left -= now - prev;
-+		prev = now;
-+
-+		preempt_disable();
- 		rdtscl(now);
--	} while ((now-bclock) < loops);
--	preempt_enable();
-+		cpu = smp_processor_id();
-+		preempt_enable();
-+
-+		if (prev_cpu != cpu){
-+			/*
-+			 * We have migrated, we skip this small amount of time:
-+			 */
-+			prev = now;
-+			prev_cpu = cpu;
-+		}
-+	} while ((now-prev) < left);
- }
- 
- /*
---- a/arch/x86/lib/delay_64.c	2007-11-18 10:20:44.000000000 +0200
-+++ b/arch/x86/lib/delay_64.c	2007-11-18 10:20:44.000000000 +0200
-@@ -26,18 +26,42 @@
- 	return 0;
- }
- 
-+/* TSC based delay:
-+ *
-+ * We are careful about preemption as TSC's are per-CPU.
-+ */
- void __delay(unsigned long loops)
- {
--	unsigned bclock, now;
-+	unsigned prev, now;
-+	unsigned left = loops;
-+	unsigned prev_cpu, cpu;
-+
-+	preempt_disable();
-+	rdtscl(prev);
-+	prev_cpu = smp_processor_id();
-+	preempt_enable();
-+	now = prev;
- 
--	preempt_disable();		/* TSC's are pre-cpu */
--	rdtscl(bclock);
- 	do {
--		rep_nop(); 
-+		rep_nop();
-+
-+		left -= now - prev;
-+		prev = now;
-+
-+		preempt_disable();
- 		rdtscl(now);
-+		cpu = smp_processor_id();
-+		preempt_enable();
-+
-+		if (prev_cpu != cpu){
-+			/*
-+			 * We have migrated, we skip this small amount of time:
-+			 */
-+			 prev = now;
-+			 prev_cpu = cpu;
-+		}
- 	}
--	while ((now-bclock) < loops);
--	preempt_enable();
-+	while ((now-prev) < left);
- }
- EXPORT_SYMBOL(__delay);
- 
+I don't have much invested into this but it seems the sys_indirect
+approach is so much simpler.  Overhead is only paid if you really need
+it which is rarely the case.  Plus, you might have heard Linus and Zack
+talk about syslets again.  Starting syslets can be done using the same
+interface, I guess.
 
- 
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFHQAez2ijCOnn/RHQRAjoHAJ4/Qq4ygaZ4uq6uCIVNq4hfN1m2pACgpJFi
+Z/vBsGFpUc/EUz+VW66jEIY=
+=B19x
+-----END PGP SIGNATURE-----
