@@ -1,122 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbXKRSUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbXKRSoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753787AbXKRSUb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 13:20:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbXKRSUR
+	id S1753787AbXKRSoa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 13:44:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbXKRSoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 13:20:17 -0500
-Received: from quail.cita.utoronto.ca ([128.100.76.6]:58746 "EHLO
-	quail.cita.utoronto.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751453AbXKRSUP (ORCPT
+	Sun, 18 Nov 2007 13:44:21 -0500
+Received: from py-out-1112.google.com ([64.233.166.181]:28737 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751484AbXKRSoU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 13:20:15 -0500
-X-Greylist: delayed 566 seconds by postgrey-1.27 at vger.kernel.org; Sun, 18 Nov 2007 13:20:14 EST
-Date: Sun, 18 Nov 2007 13:09:33 -0500
-From: Robin Humble <rjh@cita.utoronto.ca>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Jeff Garzik <jeff@garzik.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 00/33] Swap over NFS -v14
-Message-ID: <20071118180933.GA17103@lemming.cita.utoronto.ca>
-References: <20071030160401.296770000@chello.nl> <200710311426.33223.nickpiggin@yahoo.com.au> <1193830033.27652.159.camel@twins> <47287220.8050804@garzik.org> <1193835413.27652.205.camel@twins>
+	Sun, 18 Nov 2007 13:44:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=sWxpqnh6cnd5UxhYAGSWNFDC3Y3hUjLnTscRIAOd/TzjhNfHi6R4x2EXJc9IO2dbdL1zAQUsoQUOQTvTe/MDF73KVVuH8w9sSFYcl7CJHHishKJRMP0Xvc9CUQNlShrVxTNAdGtsYs9G19qdagBErrzmYz4jJo0nF2r6rW4ebPA=
+Message-ID: <64bb37e0711181044s75fd1081sdf44dac2e060d49a@mail.gmail.com>
+Date: Sun, 18 Nov 2007 19:44:19 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Subject: Re: [BUG] 2.6.24-rc2-mm1 - kernel bug on nfs v4
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       nfs@lists.sourceforge.net, "Andy Whitcroft" <apw@shadowen.org>,
+       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "Jan Blunck" <jblunck@suse.de>,
+       "Trond Myklebust" <trond.myklebust@fys.uio.no>, steved@redhat.com
+In-Reply-To: <20071117230508.GB25905@dyad>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1193835413.27652.205.camel@twins>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+References: <473DA608.1020804@linux.vnet.ibm.com>
+	 <64bb37e0711170953p67d1be49lf4eaa190d662e2b4@mail.gmail.com>
+	 <20071117180946.GA14055@elte.hu>
+	 <20071117101957.7562639d.akpm@linux-foundation.org>
+	 <64bb37e0711171140w5f1451e0qea081a4fbc7a45f7@mail.gmail.com>
+	 <20071117230508.GB25905@dyad>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<apologies for being insanely late into this thread>
+On Nov 18, 2007 12:05 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> I've been staring at this NFS code for a while an can't make any sense
+> out of it. It seems to correctly initialize the waitqueue. So this would
+> indicate corruption of some sort.
 
-On Wed, Oct 31, 2007 at 01:56:53PM +0100, Peter Zijlstra wrote:
->On Wed, 2007-10-31 at 08:16 -0400, Jeff Garzik wrote:
->> Thoughts:
->> 1) I absolutely agree that NFS is far more prominent and useful than any 
->> network block device, at the present time.
->> 
->> 2) Nonetheless, swap over NFS is a pretty rare case.  I view this work 
->> as interesting, but I really don't see a huge need, for swapping over 
->> NBD or swapping over NFS.  I tend to think swapping to a remote resource 
->> starts to approach "migration" rather than merely swapping.  Yes, we can 
->> do it...  but given the lack of burning need one must examine the price.
->
->There is a large corporate demand for this, which is why I'm doing this.
->
->The typical usage scenarios are:
-> - cluster/blades, where having local disks is a cost issue (maintenance
->   of failures, heat, etc)
+No, it does not "correctly" initialize the waitqueue. It doesn't even
+try to initialize it.
 
-HPC clusters are increasingly diskless, especially at the high end.
-for all the reasons you mention, but also because networks are faster
-than disks.
+I now found the guilty patch and what is wrong with it.
 
->But please, people who want this (I'm sure some of you are reading) do
->speak up. I'm just the motivated corporate drone implementing the
->feature :-)
+nfs-stop-sillyname-renames-and-unmounts-from-racing.patch adds:
 
-swap to iSCSI has worked well in the past with your anti-deadlock
-patches, and I'd definitely like to see that continue and to be merged
-into mainline!! swap-to-network is a highly desirable feature for
-modern clusters.
+@@ -110,8 +112,22 @@ struct nfs_server {
+                                                   filesystem */
+ #endif
+        void (*destroy)(struct nfs_server *);
++
++       atomic_t active; /* Keep trace of any activity to this server */
++       wait_queue_head_t active_wq;  /* Wait for any activity to stop  */
 
-performance and scalability of NFS is poor, so it's not a good option.
+and tries to initialize it:
+@@ -593,6 +593,10 @@ static int nfs_init_server(struct nfs_server *server,
+        server->namelen  = data->namlen;
+        /* Create a client RPC handle for the NFSv3 ACL management interface */
+        nfs_init_server_aclclient(server);
++
++       init_waitqueue_head(&server->active_wq);
++       atomic_set(&server->active, 0);
++
 
-actually swap to a file on Lustre(*) would be best, but iSER and iSCSI
-would be my next choices. iSER is better than iSCSI as it's ~5x faster
-in practice, and InfiniBand seems to be here to stay.
+and then uses it via nfs_sb_active and nfs_sb_deactive:
 
-hmmm - any idea what the issues are with RDMA in low memory situations?
-presumably if DMA regions are mapped early then there's not actually
-much of a problem? I might try it with tgtd's iSER...
-
-cheers,
-robin
-
-(*) obviously not your responsibility. although Lustre (Sun/CFS) could
-presumably use your infrastructure once you have it in mainline.
-
-
->> 3) You note
->> > Swap over network has the problem that the network subsystem does not use fixed
->> > sized allocations, but heavily relies on kmalloc(). This makes mempools
->> > unusable.
->> 
->> True, but IMO there are mitigating factors that should be researched and 
->> taken into account:
->> 
->> a) To give you some net driver background/history, most mainstream net 
->> drivers were coded to allocate RX skbs of size 1538, under the theory 
->> that they would all be allocating out of the same underlying slab cache. 
->>   It would not be difficult to update a great many of the [non-jumbo] 
->> cases to create a fixed size allocation pattern.
->
->One issue that comes to mind is how to ensure we'd still overflow the
->IP-reassembly buffers. Currently those are managed on the number of
->bytes present, not the number of fragments.
->
->One of the goals of my approach was to not rewrite the network subsystem
->to accomodate this feature (and I hope I succeeded).
->
->> b) Spare-time experiments and anecdotal evidence points to RX and TX skb 
->> recycling as a potentially valuable area of research.  If you are able 
->> to do something like that, then memory suddenly becomes a lot more 
->> bounded and predictable.
->> 
->> 
->> So my gut feeling is that taking a hard look at how net drivers function 
->> in the field should give you a lot of good ideas that approach the 
->> shared goal of making network memory allocations more predictable and 
->> bounded.
->
->Note that being bounded only comes from dropping most packets before
->trying them to a socket. That is the crucial part of the RX path, to
->receive all packets from the NIC (regardless their size) but to not pass
->them on to the network stack - unless they belong to a 'special' socket
->that promises undelayed processing.
->
->Thanks for these ideas, I'll look into them.
+@@ -29,6 +29,7 @@ struct nfs_unlinkdata {
+ static void
+ nfs_free_unlinkdata(struct nfs_unlinkdata *data)
+ {
++       nfs_sb_deactive(NFS_SERVER(data->dir));
+        iput(data->dir);
+        put_rpccred(data->cred);
+        kfree(data->args.name.name);
+@@ -151,6 +152,7 @@ static int nfs_do_call_unlink(struct dentry
+*parent, struct inode *dir, struct n
+                nfs_dec_sillycount(dir);
+                return 0;
+        }
++       nfs_sb_active(NFS_SERVER(dir));
+        data->args.fh = NFS_FH(dir);
+        nfs_fattr_init(&data->res.dir_attr);
 
 
+But it does not notice this:
+struct dentry_operations nfs_dentry_operations = {
+        .d_revalidate   = nfs_lookup_revalidate,
+        .d_delete       = nfs_dentry_delete,
+        .d_iput         = nfs_dentry_iput,
+};
+struct dentry_operations nfs4_dentry_operations = {
+        .d_revalidate   = nfs_open_revalidate,
+        .d_delete       = nfs_dentry_delete,
+        .d_iput         = nfs_dentry_iput,
+};
+
+NFSv2/3 and NFSv4 share the same dentry_iput and so share the same
+unlink and sillyrename logic.
+But they do not share nfs_init_server()!
+
+I wonder why this doesn't blow up more violently, but only hangs...
+
+But as I don't know if it is correct to add the workqueue
+initialization to nfs4_init_server() or remove the nfs_sb_active /
+nfs_sb_deactive for the NFSv4 case, I can't offer a patch to fix this.
+
+Torsten
