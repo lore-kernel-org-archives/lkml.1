@@ -1,43 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756857AbXKRBjF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756741AbXKRB5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756857AbXKRBjF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 20:39:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbXKRBiz
+	id S1756741AbXKRB5k (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 20:57:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753623AbXKRB5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 20:38:55 -0500
-Received: from khc.piap.pl ([195.187.100.11]:40327 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753507AbXKRBiy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 20:38:54 -0500
-To: Matt Mackall <mpm@selenic.com>
-Cc: Matti Aarnio <matti.aarnio@zmailer.org>, Mark Lord <lkml@rtr.ca>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.23.2
-References: <20071116183752.GA9807@kroah.com>
-	<20071116183940.GC9807@kroah.com> <473DF101.3010501@rtr.ca>
-	<20071116193958.GJ6372@mea-ext.zmailer.org>
-	<20071116195745.GC17536@waste.org>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sun, 18 Nov 2007 02:38:52 +0100
-In-Reply-To: <20071116195745.GC17536@waste.org> (Matt Mackall's message of "Fri, 16 Nov 2007 13:57:45 -0600")
-Message-ID: <m3mytcpc2b.fsf@maximus.localdomain>
+	Sat, 17 Nov 2007 20:57:30 -0500
+Received: from twinlark.arctic.org ([207.29.250.54]:36106 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753366AbXKRB53 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Nov 2007 20:57:29 -0500
+Message-ID: <473F9C02.1040401@kernel.org>
+Date: Sat, 17 Nov 2007 17:57:22 -0800
+From: Andrew Morgan <morgan@kernel.org>
+User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Kevin Winchester <kjwinchester@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, apw@shadowen.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       kamalesh@linux.vnet.ibm.com
+Subject: Re: 2.6.24-rc2-mm1 -- strange apparent network failures
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org> <20071115164441.67a8e2df.akpm@linux-foundation.org> <473E794A.4060107@kernel.org> <200711170848.35726.kjwinchester@gmail.com> <473F7EDB.60701@kernel.org> <473F8C46.4070308@gmail.com>
+In-Reply-To: <473F8C46.4070308@gmail.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall <mpm@selenic.com> writes:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> What is the proper encoding for a patch that contains hunks in
-> multiple character sets?
+Kevin Winchester wrote:
+> However, I got around the problem by making the code change manually -
+> and my network connection is now working.  Looking at the code being
+> bypassed:
+> 
+>     if (pE.cap[i] || pP.cap[i] || pP.cap[i])
+> 
+> looks somewhat weird as it is testing the same condition twice.  Should
+> it have been:
+> 
+>     if (pE.cap[i] || pP.cap[i] || pI.cap[i])
 
-8-bit binary encoding, the same for single charset patch - we don't
-want mail systems to change the encoding.
-Unfortunately you can't display anything like that inline I think.
-That means email may be unreliable in such cases (except maybe when
-both sides use UTF-8 and the patch contains only UTF-8), git/ftp/etc.
-will be fine.
--- 
-Krzysztof Halasa
+Yes, that was also a bug. However, upon reflection (and as per my "0 &&"
+hack), I now believe these few lines of code are problematic in general.
+
+Thanks for reporting this bug. I'll post a more clear patch (that isn't
+GPG'd).
+
+Cheers
+
+Andrew
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFHP5vy+bHCR3gb8jsRAliTAKCvCsfZuNN7Og57S0s8O4SZNveSUwCgq4VP
+vHUE/S+x09l5I24E2/rmLj4=
+=JaWT
+-----END PGP SIGNATURE-----
