@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756863AbXKRBEi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757315AbXKRBRZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756863AbXKRBEi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Nov 2007 20:04:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754151AbXKRBEa
+	id S1757315AbXKRBRZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Nov 2007 20:17:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754392AbXKRBRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 20:04:30 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50035 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753550AbXKRBE3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 20:04:29 -0500
-Date: Sun, 18 Nov 2007 02:04:08 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       tglx@tglx.de
-Subject: Re: [patch] Printk kernel version in WARN_ON
-Message-ID: <20071118010408.GE26865@elte.hu>
-References: <20071117101552.2a7f34cb@laptopd505.fenrus.org> <20071117102720.251107d7.akpm@linux-foundation.org> <20071117103947.5b2052f8@laptopd505.fenrus.org> <20071117104652.8240af62.akpm@linux-foundation.org> <20071117113501.5e3e0d43@laptopd505.fenrus.org> <20071118004218.GA26865@elte.hu> <20071117165719.c8d7bb48.akpm@linux-foundation.org>
+	Sat, 17 Nov 2007 20:17:15 -0500
+Received: from simmts6-srv.bellnexxia.net ([206.47.199.164]:61326 "EHLO
+	simmts6-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754288AbXKRBRP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Nov 2007 20:17:15 -0500
+Message-ID: <473F9298.7060401@gmail.com>
+Date: Sat, 17 Nov 2007 21:17:12 -0400
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071117165719.c8d7bb48.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andrew Morgan <morgan@kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, apw@shadowen.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       kamalesh@linux.vnet.ibm.com
+Subject: Re: 2.6.24-rc2-mm1 -- strange apparent network failures
+References: <20071113175906.497a1a6a.akpm@linux-foundation.org> <20071115164441.67a8e2df.akpm@linux-foundation.org> <473E794A.4060107@kernel.org> <200711170848.35726.kjwinchester@gmail.com> <473F7EDB.60701@kernel.org> <473F8C46.4070308@gmail.com>
+In-Reply-To: <473F8C46.4070308@gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> Should be done for all architectures, methinks.
+Kevin Winchester wrote:
+> Looking at the code being bypassed:
 > 
-> If so, an appropriate way to do that would be to do 
-> s/dump_stack/arch_dump_stack/ and do a single all-arch implementation 
-> of dump_stack().  (Where we might add new goodies in the future).
+>     if (pE.cap[i] || pP.cap[i] || pP.cap[i])
+> 
+> looks somewhat weird as it is testing the same condition twice.  Should
+> it have been:
+> 
+>     if (pE.cap[i] || pP.cap[i] || pI.cap[i])
+> 
+> ?
+> 
+> I'm about to test that change instead of bypassing the loop, so I'll let
+> you know the results.
+> 
 
-i agree we can clean this up - but this is a single-line thing that is 
-very useful for QA so i think utility warrants .24 inclusion. The oops 
-printouts are not generalized anyway.
+No, this still results in a dead network connection, although it is
+probably a correct change.  I suppose giving the loop even more reasons
+to return -ERANGE wasn't going to be helpful.
 
-> Problem is that this will add a new an pointless entry to all the 
-> stack dumps, unless the arch_dump_stack() implementation is smart 
-> enough to skip the innermost frame.
+- --
+Kevin Winchester
 
-x86 can skip stackframes via stacktrace.c.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-	Ingo
+iD8DBQFHP5KXKPGFQbiQ3tQRAilbAJ9h3qtO9sb9+ctVU0pxzCBjysy06QCdE1Wd
+M5V3+0BWyn04p0UeUq/KSlw=
+=663t
+-----END PGP SIGNATURE-----
