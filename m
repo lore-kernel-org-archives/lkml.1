@@ -1,40 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756275AbXKROta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755764AbXKRO5E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756275AbXKROta (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 09:49:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbXKROtW
+	id S1755764AbXKRO5E (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 09:57:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbXKRO4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 09:49:22 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:34567 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752723AbXKROtW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 09:49:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=UlKIA6riCHRVyWPLaQBE4Qbquj7RfBnUmsGZ3kXheMEVWqVEWX4wHTEJH6XBGlCR7k6SzwbDK4UqO7mi+fjTa4da319I+v8Ujn6viO2k22PLn88KhepU49S6/D/9nvRTxeJAi8xcZqe3fbI5qYLSUl7DZ2qvFbSpMjzFWPwtE6s=
-Message-ID: <474050EC.5080507@gmail.com>
-Date: Sun, 18 Nov 2007 15:49:16 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sun, 18 Nov 2007 09:56:50 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47044 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752530AbXKRO4s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 09:56:48 -0500
+Date: Sun, 18 Nov 2007 15:56:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Mark Lord <liml@rtr.ca>, Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, protasnb@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: size of git repository (was Re: [BUG] New Kernel Bugs)
+Message-ID: <20071118145611.GB22622@elte.hu>
+References: <20071113031553.3c7b5c16.akpm@linux-foundation.org> <20071113.033946.114918709.davem@davemloft.net> <20071113034916.2556edd7.akpm@linux-foundation.org> <20071113.035824.40509981.davem@davemloft.net> <20071113041259.79c9a8c5.akpm@linux-foundation.org> <20071113134029.GA30978@elte.hu> <4739AFE0.20705@rtr.ca> <20071113164650.GA28493@elte.hu> <4739E3D0.10201@rtr.ca> <20071118124404.GA4037@ucw.cz>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Subject: Re: broken suspend [Was: 2.6.24-rc2-mm1]
-References: <Pine.LNX.4.44L0.0711171649100.7748-100000@netrider.rowland.org> <200711181442.09917.rjw@sisk.pl> <474043EC.4000700@gmail.com> <200711181603.26522.rjw@sisk.pl>
-In-Reply-To: <200711181603.26522.rjw@sisk.pl>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071118124404.GA4037@ucw.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/18/2007 04:03 PM, Rafael J. Wysocki wrote:
-> Can you also make the new System-map available, please?
 
-Sure:
-http://www.fi.muni.cz/~xslaby/sklad/System.map1
+* Pavel Machek <pavel@ucw.cz> wrote:
+
+> On Tue 2007-11-13 12:50:08, Mark Lord wrote:
+> > Ingo Molnar wrote:
+> > >
+> > >for example git-bisect was godsent. I remember that 
+> > >years ago bisection of a bug was a very laborous task 
+> > >so that it was only used as a final, last-ditch 
+> > >approach for really nasty bugs. Today we can 
+> > >autonomouly bisect build bugs via a simple shell 
+> > >command around "git-bisect run", without any human 
+> > >interaction! This freed up testing resources 
+> > ..
+> > 
+> > It's only a godsend for the few people who happen to be 
+> > kernel developers
+> > and who happen to already use git.
+> > 
+> > It's a 540MByte download over a slow link for everyone 
+> > else.
+> 
+> Hmmm, clean-cg is 7.7G on my machine, and yes I tried 
+> git-prune-packed. What am I doing wrong?
+
+"git-repack -a -d" gives me ~220 MB:
+
+  $ du -s .git
+  222064  .git
+
+anyone who can download a 43 MB tar.bz2 tarball for a kernel release 
+should be able to afford a _one time_ download size of 250 MB (the size 
+of the current kernel.org git repository). If not, burning a CD or DVD 
+and carrying it home ought to do the trick. Git is very 
+bandwidth-efficient after that point - lots of people behind narrow 
+pipes are using it - it's just the initial clone that takes time. And 
+given all the history and metadata that the git repository carries (full 
+changelogs, annotations, etc.) it's a no-brainer that kernel developers 
+should be using it.
+
+(and you can shrink the 250 MB further down by using shallow clones, 
+etc.)
+
+yes, some people complained when distros stopped doing floppy installs. 
+Some people complained when distros stopped doing CD installs. Yes, i've 
+myself done a 250+ MB download over a 56 kbit modem in the past, and 
+while it indeed took overnight to finish, it's very much doable. It's 
+not really qualitatively different from the 1.5 hours a kernel tar.bz2 
+took to download.
+
+	Ingo
