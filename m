@@ -1,82 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752412AbXKSUUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752156AbXKSU1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752412AbXKSUUf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 15:20:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbXKSUU1
+	id S1752156AbXKSU1Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 15:27:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbXKSU1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 15:20:27 -0500
-Received: from tomts43.bellnexxia.net ([209.226.175.110]:46303 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751365AbXKSUU0 (ORCPT
+	Mon, 19 Nov 2007 15:27:16 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:33532 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751068AbXKSU1P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 15:20:26 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAKp9QUdMROHU/2dsb2JhbACBWw
-Date: Mon, 19 Nov 2007 15:20:23 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, mbligh@google.com
-Subject: Re: [PATCH] Cast page_to_pfn to unsigned long in CONFIG_SPARSEMEM
-Message-ID: <20071119202023.GA5086@Krystal>
-References: <20071113194025.150641834@polymtl.ca> <1195160783.7078.203.camel@localhost> <20071115215142.GA7825@Krystal> <1195164977.27759.10.camel@localhost> <20071116144742.GA17255@Krystal> <1195495626.27759.119.camel@localhost> <20071119185258.GA998@Krystal> <1195501381.27759.127.camel@localhost> <20071119195257.GA3440@Krystal> <1195502983.27759.134.camel@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1195502983.27759.134.camel@localhost>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 15:19:28 up 16 days,  1:24,  5 users,  load average: 0.34, 0.61,
-	0.74
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Mon, 19 Nov 2007 15:27:15 -0500
+Date: Mon, 19 Nov 2007 15:27:14 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Rudolf Marek <r.marek@assembler.cz>
+cc: Jiri Slaby <jirislaby@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       <lm-sensors@lm-sensors.org>
+Subject: Re: broken suspend [Was: 2.6.24-rc2-mm1]
+In-Reply-To: <4741EB91.9080000@assembler.cz>
+Message-ID: <Pine.LNX.4.44L0.0711191521170.3129-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Dave Hansen (haveblue@us.ibm.com) wrote:
-> The only thing I might suggest doing differently is actually using the
-> page_to_pfn() definition itself:
+On Mon, 19 Nov 2007, Rudolf Marek wrote:
+
+> Hello all,
+> >>> gives coretemp_cpu_callback -> coretemp_device_remove ->
+> >>> platform_device_unregister, so coretemp seems to be what I have and you don't.
+> > 
+> > Yes.
+> > 
+> > For the coretemp developers: coretemp_cpu_callback() needs to be more 
+> > careful about what it does.  During a system sleep transition (suspend, 
+> > hibernate, resume) it isn't possible to register or unregister a 
+> > device.  Attempts to register will fail and attempts to unregister will 
+> > block until the system sleep is over -- and for this callback that 
+> > means hanging.
 > 
-> memory_model.h:#define page_to_pfn __page_to_pfn
+> Well I wrote the driver. Thanks for the clarification. If I recall correctly I 
+> looked how this part should be done from others drivers. Now while checking
+> what happened to the file, seems Rafael added something related.
 > 
-> The full inline function version should do this already, and we
-> shouldn't have any real direct __page_to_pfn() users anyway.    
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8bb7844286fb8c9fce6f65d8288aeb09d03a5e0d
+
+That does look like it was meant for exactly this sort of situation.
+
+> > It's not clear what the best way is to fix this.  Perhaps the CPU 
+> > notification should be sent along with a special flag indicating that 
+> > the CPU transition is part of a system sleep (although this seems 
+> > racy).  Perhaps the driver should notice when a system sleep begins, 
+> > and defer all CPU-change handling until after the sleep is over.
 > 
+> maybe it does exist?  CPU_DOWN_PREPARE ?
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=Documentation/cpu-hotplug.txt;hb=HEAD
+> 
+> Unfortunately I'm not very familiar with this, calling the 
+> coretemp_device_remove from CPU_DOWN_PREPARE would help? Looking at microcode 
+> driver, seems it just hide sysfs interface from user.
 
-Like this then..
+I'm not sure exactly what you want to do here.  But it seems like a 
+waste to unregister the coretemp devices at the start of a system sleep 
+and then register them back at the end.
 
-Cast page_to_pfn to unsigned long in CONFIG_SPARSEMEM
+Could you simply leave the devices registered throughout the entire
+sleep?  Of course, at the end you would have to check that all the CPUs
+really did come back up, and unregister the devices for the CPUs that
+are still offline.
 
-Make sure the type returned by page_to_pfn is always unsigned long. If we
-don't cast it explicitly, it can be int on i386, but long on x86_64. This is
-especially inelegant for printks.
+Alan Stern
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Dave Hansen <haveblue@us.ibm.com>
-CC: linux-mm@kvack.org
-CC: linux-kernel@vger.kernel.org
----
- include/asm-generic/memory_model.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6-lttng/include/asm-generic/memory_model.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-generic/memory_model.h	2007-11-19 15:06:40.000000000 -0500
-+++ linux-2.6-lttng/include/asm-generic/memory_model.h	2007-11-19 15:18:57.000000000 -0500
-@@ -76,7 +76,7 @@ struct page;
- extern struct page *pfn_to_page(unsigned long pfn);
- extern unsigned long page_to_pfn(struct page *page);
- #else
--#define page_to_pfn __page_to_pfn
-+#define page_to_pfn ((unsigned long)__page_to_pfn)
- #define pfn_to_page __pfn_to_page
- #endif /* CONFIG_OUT_OF_LINE_PFN_TO_PAGE */
- 
-
-
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
