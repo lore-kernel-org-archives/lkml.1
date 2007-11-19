@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451AbXKSMbd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbXKSMcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753451AbXKSMbd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 07:31:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbXKSMbZ
+	id S1753997AbXKSMcx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 07:32:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbXKSMco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 07:31:25 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50384 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751875AbXKSMbY (ORCPT
+	Mon, 19 Nov 2007 07:32:44 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:49617 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751993AbXKSMcn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 07:31:24 -0500
-Date: Mon, 19 Nov 2007 12:29:36 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: raju@linux-delhi.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Query on kernel metrics available
-Message-ID: <20071119122936.6e209a18@the-village.bc.nu>
-In-Reply-To: <200711191259.26502.raju@linux-delhi.org>
-References: <200711191259.26502.raju@linux-delhi.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Nov 2007 07:32:43 -0500
+Date: Mon, 19 Nov 2007 05:32:40 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: Re: SCSI breakage on non-cache coherent architectures
+Message-ID: <20071119123240.GA12494@parisc-linux.org>
+References: <1195450523.7022.37.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1195450523.7022.37.camel@pasglop>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Nov 2007 12:59:26 +0530
-Raj Mathur <raju@linux-delhi.org> wrote:
+On Mon, Nov 19, 2007 at 04:35:23PM +1100, Benjamin Herrenschmidt wrote:
+> The other one I'm hitting now is that the SCSI layer nowadays embeds the
 
-> A competing OS vendor is claiming that the Linux kernel has no way to 
-> measure the following:
-> 
-> a. Time spent waiting for page faults in percent
-> 
-> b. Total transfer time for each auxiliary memory in percent
-> 
-> c. Time in percent when one or more tasks were blocked waiting for 
-> memory resources
-> 
-> d. Time spent waiting for page faults in percent
+'nowadays'?  It has always been so.
 
-a an d appear to be the same thing
+> sense_buffer inside the scsi_cmnd structure without any kind of
+> alignment whatsoever. I've been hitting irregulary is a crash on SCSI command
+> completion that seems to be related to corruption of the "request"
+> pointer in struct scsi_cmnd and I think it might be the cause.
+> I'm now trying to setup a proper repro-case.
 
-> I was wondering if the claims were pure FUD or are measurements 
-> possible -- whether they are actually implemented or not is not 
-> important (at least at this stage).  Apologies if the descriptions 
-> aren't very precise; OTOH that leaves us room to interpret the claims 
-> in a favourable (to us) manner :)
+What other drivers do is DMA to their own allocation and then memcpy to
+the sense buffer.
 
-Systemtap as shipped by most of the enterprise vendors can measure all of
-this quite easily. 
+There is a movement to allocate the sense data as its own sg list, but
+I don't think that patch has even been posted yet.
 
-Alan
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
