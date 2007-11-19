@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753803AbXKSS35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756426AbXKSSab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753803AbXKSS35 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 13:29:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750875AbXKSSWt
+	id S1756426AbXKSSab (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 13:30:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562AbXKSSWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 13:22:49 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:49401 "EHLO
+	Mon, 19 Nov 2007 13:22:52 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:49411 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752537AbXKSSWs (ORCPT
+	with ESMTP id S1751131AbXKSSWu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 13:22:48 -0500
-Date: Mon, 19 Nov 2007 10:19:33 -0800
+	Mon, 19 Nov 2007 13:22:50 -0500
+Date: Mon, 19 Nov 2007 10:19:35 -0800
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,13 +21,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Olof Johansson <olof@lixom.net>, Jean Delvare <khali@linux-fr.org>
-Subject: [patch 24/26] i2c-pasemi: Fix NACK detection
-Message-ID: <20071119181933.GY15425@kroah.com>
+       Jean Delvare <khali@linux-fr.org>
+Subject: [patch 25/26] i2c/eeprom: Hide Sony Vaio serial numbers
+Message-ID: <20071119181935.GZ15425@kroah.com>
 References: <20071119181438.617190424@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="i2c-pasemi-fix-nack-detection.patch"
+Content-Disposition: inline; filename="i2c-eeprom-hide-sony-vaio-serial-numbers.patch"
 In-Reply-To: <20071119181746.GA15425@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -40,42 +40,60 @@ know.
 ------------------
 From: Jean Delvare <khali@linux-fr.org>
 
-patch be8a1f7cd4501c3b4b32543577a33aee6d2193ac in mainline.
+patch 0f2cbd38aa377e30df3b7602abed69464d1970aa in mainline.
 
-Turns out we don't actually check the status to see if there was a
-device out there to talk to, just if we had a timeout when doing so.
+The sysfs interface to DMI data takes care to not make the system
+serial number and UUID world-readable, presumably due to privacy
+concerns. For consistency, we should not let the eeprom driver
+export these same strings to the world on Sony Vaio laptops.
+Instead, only make them readable by root, as we already do for BIOS
+passwords.
 
-Add the proper check, so we don't falsly think there are devices
-on the bus that are not there, etc.
-
-Signed-off-by: Olof Johansson <olof@lixom.net>
 Signed-off-by: Jean Delvare <khali@linux-fr.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/i2c/busses/i2c-pasemi.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/i2c/chips/eeprom.c |   23 +++++++++++++++--------
+ 1 file changed, 15 insertions(+), 8 deletions(-)
 
---- a/drivers/i2c/busses/i2c-pasemi.c
-+++ b/drivers/i2c/busses/i2c-pasemi.c
-@@ -51,6 +51,7 @@ struct pasemi_smbus {
- #define MRXFIFO_DATA_M	0x000000ff
+--- a/drivers/i2c/chips/eeprom.c
++++ b/drivers/i2c/chips/eeprom.c
+@@ -125,13 +125,20 @@ static ssize_t eeprom_read(struct kobjec
+ 	for (slice = off >> 5; slice <= (off + count - 1) >> 5; slice++)
+ 		eeprom_update_client(client, slice);
  
- #define SMSTA_XEN	0x08000000
-+#define SMSTA_MTN	0x00200000
- 
- #define CTL_MRR		0x00000400
- #define CTL_MTR		0x00000200
-@@ -98,6 +99,10 @@ static unsigned int pasemi_smb_waitready
- 		status = reg_read(smbus, REG_SMSTA);
- 	}
- 
-+	/* Got NACK? */
-+	if (status & SMSTA_MTN)
-+		return -ENXIO;
+-	/* Hide Vaio security settings to regular users (16 first bytes) */
+-	if (data->nature == VAIO && off < 16 && !capable(CAP_SYS_ADMIN)) {
+-		size_t in_row1 = 16 - off;
+-		in_row1 = min(in_row1, count);
+-		memset(buf, 0, in_row1);
+-		if (count - in_row1 > 0)
+-			memcpy(buf + in_row1, &data->data[16], count - in_row1);
++	/* Hide Vaio private settings to regular users:
++	   - BIOS passwords: bytes 0x00 to 0x0f
++	   - UUID: bytes 0x10 to 0x1f
++	   - Serial number: 0xc0 to 0xdf */
++	if (data->nature == VAIO && !capable(CAP_SYS_ADMIN)) {
++		int i;
 +
- 	if (timeout < 0) {
- 		dev_warn(&smbus->dev->dev, "Timeout, status 0x%08x\n", status);
- 		reg_write(smbus, REG_SMSTA, status);
++		for (i = 0; i < count; i++) {
++			if ((off + i <= 0x1f) ||
++			    (off + i >= 0xc0 && off + i <= 0xdf))
++				buf[i] = 0;
++			else
++				buf[i] = data->data[off + i];
++		}
+ 	} else {
+ 		memcpy(buf, &data->data[off], count);
+ 	}
+@@ -202,7 +209,7 @@ static int eeprom_detect(struct i2c_adap
+ 		 && i2c_smbus_read_byte(new_client) == 'G'
+ 		 && i2c_smbus_read_byte(new_client) == '-') {
+ 			dev_info(&new_client->dev, "Vaio EEPROM detected, "
+-				"enabling password protection\n");
++				 "enabling privacy protection\n");
+ 			data->nature = VAIO;
+ 		}
+ 	}
 
 -- 
