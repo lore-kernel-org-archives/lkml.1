@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbXKSS3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756414AbXKSS3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755849AbXKSS3Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 13:29:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752504AbXKSSWp
+	id S1756414AbXKSS3k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 13:29:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbXKSSWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 13:22:45 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:49378 "EHLO
+	Mon, 19 Nov 2007 13:22:47 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:49371 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751996AbXKSSWo (ORCPT
+	with ESMTP id S1752005AbXKSSWp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 13:22:44 -0500
-Date: Mon, 19 Nov 2007 10:19:31 -0800
+	Mon, 19 Nov 2007 13:22:45 -0500
+Date: Mon, 19 Nov 2007 10:19:10 -0800
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,81 +21,142 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Mark Fasheh <mark.fasheh@oracle.com>
-Subject: [patch 23/26] ocfs2: fix write() performance regression
-Message-ID: <20071119181931.GX15425@kroah.com>
+       Manfred Spraul <manfred@colorfullife.com>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: [patch 15/26] forcedeth msi bugfix
+Message-ID: <20071119181910.GP15425@kroah.com>
 References: <20071119181438.617190424@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ocfs2-fix-write-performance-regression.patch"
+Content-Disposition: inline; filename="forcedeth-msi-bugfix.patch"
 In-Reply-To: <20071119181746.GA15425@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.22-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Mark Fasheh <mark.fasheh@oracle.com>
+From: Manfred Spraul <manfred@colorfullife.com>
 
-ocfs2: fix write() performance regression
+patch a7475906bc496456ded9e4b062f94067fb93057a in mainline.
 
-patch 4e9563fd55ff4479f2b118d0757d121dd0cfc39c in mainline.
+pci_enable_msi() replaces the INTx irq number in pci_dev->irq with the
+new MSI irq number.
+The forcedeth driver did not update the copy in netdevice->irq and
+parts of the driver used the stale copy.
+See bugzilla.kernel.org, bug 9047.
 
-On file systems which don't support sparse files, Ocfs2_map_page_blocks()
-was reading blocks on appending writes. This caused write performance to
-suffer dramatically. Fix this by detecting an appending write on a nonsparse
-fs and skipping the read.
+The patch
+- updates netdevice->irq
+- replaces all accesses to netdevice->irq with pci_dev->irq.
 
-Signed-off-by: Mark Fasheh <mark.fasheh@oracle.com>
+The patch is against 2.6.23.1. IMHO suitable for both 2.6.23 and 2.6.24
+
+Signed-off-by: Manfred Spraul <manfred@colorfullife.com>
+Signed-off-by: Jeff Garzik <jeff@garzik.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ocfs2/aops.c |   24 +++++++++++++++++++++++-
- 1 file changed, 23 insertions(+), 1 deletion(-)
+ drivers/net/forcedeth.c |   19 +++++++++++--------
+ 1 file changed, 11 insertions(+), 8 deletions(-)
 
---- a/fs/ocfs2/aops.c
-+++ b/fs/ocfs2/aops.c
-@@ -661,6 +661,27 @@ static void ocfs2_clear_page_regions(str
- }
+--- a/drivers/net/forcedeth.c
++++ b/drivers/net/forcedeth.c
+@@ -987,7 +987,7 @@ static void nv_enable_irq(struct net_dev
+ 		if (np->msi_flags & NV_MSI_X_ENABLED)
+ 			enable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
+ 		else
+-			enable_irq(dev->irq);
++			enable_irq(np->pci_dev->irq);
+ 	} else {
+ 		enable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_RX].vector);
+ 		enable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_TX].vector);
+@@ -1003,7 +1003,7 @@ static void nv_disable_irq(struct net_de
+ 		if (np->msi_flags & NV_MSI_X_ENABLED)
+ 			disable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
+ 		else
+-			disable_irq(dev->irq);
++			disable_irq(np->pci_dev->irq);
+ 	} else {
+ 		disable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_RX].vector);
+ 		disable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_TX].vector);
+@@ -1600,7 +1600,7 @@ static void nv_do_rx_refill(unsigned lon
+ 		if (np->msi_flags & NV_MSI_X_ENABLED)
+ 			disable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
+ 		else
+-			disable_irq(dev->irq);
++			disable_irq(np->pci_dev->irq);
+ 	} else {
+ 		disable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_RX].vector);
+ 	}
+@@ -1618,7 +1618,7 @@ static void nv_do_rx_refill(unsigned lon
+ 		if (np->msi_flags & NV_MSI_X_ENABLED)
+ 			enable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
+ 		else
+-			enable_irq(dev->irq);
++			enable_irq(np->pci_dev->irq);
+ 	} else {
+ 		enable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_RX].vector);
+ 	}
+@@ -3556,10 +3556,12 @@ static int nv_request_irq(struct net_dev
+ 	if (ret != 0 && np->msi_flags & NV_MSI_CAPABLE) {
+ 		if ((ret = pci_enable_msi(np->pci_dev)) == 0) {
+ 			np->msi_flags |= NV_MSI_ENABLED;
++			dev->irq = np->pci_dev->irq;
+ 			if (request_irq(np->pci_dev->irq, handler, IRQF_SHARED, dev->name, dev) != 0) {
+ 				printk(KERN_INFO "forcedeth: request_irq failed %d\n", ret);
+ 				pci_disable_msi(np->pci_dev);
+ 				np->msi_flags &= ~NV_MSI_ENABLED;
++				dev->irq = np->pci_dev->irq;
+ 				goto out_err;
+ 			}
  
- /*
-+ * Nonsparse file systems fully allocate before we get to the write
-+ * code. This prevents ocfs2_write() from tagging the write as an
-+ * allocating one, which means ocfs2_map_page_blocks() might try to
-+ * read-in the blocks at the tail of our file. Avoid reading them by
-+ * testing i_size against each block offset.
-+ */
-+static int ocfs2_should_read_blk(struct inode *inode, struct page *page,
-+				 unsigned int block_start)
-+{
-+	u64 offset = page_offset(page) + block_start;
+@@ -3622,7 +3624,7 @@ static void nv_do_nic_poll(unsigned long
+ 		if (np->msi_flags & NV_MSI_X_ENABLED)
+ 			disable_irq_lockdep(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
+ 		else
+-			disable_irq_lockdep(dev->irq);
++			disable_irq_lockdep(np->pci_dev->irq);
+ 		mask = np->irqmask;
+ 	} else {
+ 		if (np->nic_poll_irq & NVREG_IRQ_RX_ALL) {
+@@ -3640,6 +3642,8 @@ static void nv_do_nic_poll(unsigned long
+ 	}
+ 	np->nic_poll_irq = 0;
+ 
++	/* disable_irq() contains synchronize_irq, thus no irq handler can run now */
 +
-+	if (ocfs2_sparse_alloc(OCFS2_SB(inode->i_sb)))
-+		return 1;
-+
-+	if (i_size_read(inode) > offset)
-+		return 1;
-+
-+	return 0;
-+}
-+
-+/*
-  * Some of this taken from block_prepare_write(). We already have our
-  * mapping by now though, and the entire write will be allocating or
-  * it won't, so not much need to use BH_New.
-@@ -711,7 +732,8 @@ int ocfs2_map_page_blocks(struct page *p
- 			if (!buffer_uptodate(bh))
- 				set_buffer_uptodate(bh);
- 		} else if (!buffer_uptodate(bh) && !buffer_delay(bh) &&
--		     (block_start < from || block_end > to)) {
-+			   ocfs2_should_read_blk(inode, page, block_start) &&
-+			   (block_start < from || block_end > to)) {
- 			ll_rw_block(READ, 1, &bh);
- 			*wait_bh++=bh;
+ 	if (np->recover_error) {
+ 		np->recover_error = 0;
+ 		printk(KERN_INFO "forcedeth: MAC in recoverable error state\n");
+@@ -3676,7 +3680,6 @@ static void nv_do_nic_poll(unsigned long
  		}
+ 	}
+ 
+-	/* FIXME: Do we need synchronize_irq(dev->irq) here? */
+ 
+ 	writel(mask, base + NvRegIrqMask);
+ 	pci_push(base);
+@@ -3689,7 +3692,7 @@ static void nv_do_nic_poll(unsigned long
+ 		if (np->msi_flags & NV_MSI_X_ENABLED)
+ 			enable_irq_lockdep(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
+ 		else
+-			enable_irq_lockdep(dev->irq);
++			enable_irq_lockdep(np->pci_dev->irq);
+ 	} else {
+ 		if (np->nic_poll_irq & NVREG_IRQ_RX_ALL) {
+ 			nv_nic_irq_rx(0, dev);
+@@ -4943,7 +4946,7 @@ static int nv_close(struct net_device *d
+ 	np->in_shutdown = 1;
+ 	spin_unlock_irq(&np->lock);
+ 	netif_poll_disable(dev);
+-	synchronize_irq(dev->irq);
++	synchronize_irq(np->pci_dev->irq);
+ 
+ 	del_timer_sync(&np->oom_kick);
+ 	del_timer_sync(&np->nic_poll);
 
 -- 
