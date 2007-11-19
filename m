@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbXKSSGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755602AbXKSSHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755528AbXKSSGX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 13:06:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754290AbXKSSGL
+	id S1755602AbXKSSHa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 13:07:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754590AbXKSSHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 13:06:11 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:54499 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754603AbXKSSGK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 13:06:10 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] do_task_stat: don't use task_pid_nr_ns() lockless
-References: <20071117183109.GA2605@tv-sign.ru>
-	<m1fxz4ws2z.fsf@ebiederm.dsl.xmission.com>
-	<474157A7.1060504@openvz.org>
-Date: Mon, 19 Nov 2007 11:04:55 -0700
-In-Reply-To: <474157A7.1060504@openvz.org> (Pavel Emelyanov's message of "Mon,
-	19 Nov 2007 12:30:15 +0300")
-Message-ID: <m1zlxaun5k.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 19 Nov 2007 13:07:18 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:48213 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754404AbXKSSHP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 13:07:15 -0500
+Subject: Re: [RFC 5/7] LTTng instrumentation mm
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, mbligh@google.com
+In-Reply-To: <20071116144742.GA17255@Krystal>
+References: <20071113193349.214098508@polymtl.ca>
+	 <20071113194025.150641834@polymtl.ca> <1195160783.7078.203.camel@localhost>
+	 <20071115215142.GA7825@Krystal> <1195164977.27759.10.camel@localhost>
+	 <20071116144742.GA17255@Krystal>
+Content-Type: text/plain
+Date: Mon, 19 Nov 2007 10:07:05 -0800
+Message-Id: <1195495626.27759.119.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelyanov <xemul@openvz.org> writes:
+On Fri, 2007-11-16 at 09:47 -0500, Mathieu Desnoyers wrote:
+> * Dave Hansen (haveblue@us.ibm.com) wrote:
+> > For most (all?) architectures, the PFN and the virtual address in the
+> > kernel's linear are interchangeable with pretty trivial arithmetic.  All
+> > pages have a pfn, but not all have a virtual address.  Thus, I suggested
+> > using the pfn.  What kind of virtual addresses are you talking about?
+> > 
+> 
+> Hrm, in asm-generic/memory_model.h, we have various versions of
+> __page_to_pfn. Normally they all cast the result to (unsigned long),
+> except for :
+> 
+> 
+> #elif defined(CONFIG_SPARSEMEM_VMEMMAP)
+> 
+> /* memmap is virtually contigious.  */
+> #define __pfn_to_page(pfn)      (vmemmap + (pfn))
+> #define __page_to_pfn(page)     ((page) - vmemmap)
+> 
+> So I guess the result is a pointer ? Should this be expected ?
 
-> Eric W. Biederman wrote:
->> We only get detached in release_task so it is a pretty small window
->> where we can return pid == 0.  Usually get_task_pid will fail first
->> and we will return -ESRCH.  Still the distance from open to 
->> 
->> There is another bug in here as well.  current->nsproxy->pid_ns is wrong.
->> What we want is: ns = dentry->d_sb->s_fs_info;
->
-> Actually I thought about this recently - if we produce the list
-> of tasks based on the sb's namespace, then we should fill the
-> tasks' files according to the sb's namespace as well, not according
-> to the current namespace.
+Nope.  'pointer - pointer' is an integer.  Just solve this equation for
+integer:
 
-Exactly.  That is the problem I was pointing out.  Patch in a bit.
-In do_proc_stat we are currently referencing current->nsproxy->pid_ns;
+	'pointer + integer = pointer'
 
->> Otherwise we will have file descriptor passing races and the like.
->
-> Can you elaborate?
+-- Dave
 
-Just the classic problem that if you use current at other then open
-time the contents of the file descriptor may depend on who is reading
-it which is problematic.
-
-Eric
