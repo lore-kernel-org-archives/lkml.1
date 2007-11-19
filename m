@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756429AbXKSPzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756083AbXKSP60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756429AbXKSPzg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 10:55:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbXKSPz2
+	id S1756083AbXKSP60 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 10:58:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbXKSP6T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 10:55:28 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:41659 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754166AbXKSPz1 (ORCPT
+	Mon, 19 Nov 2007 10:58:19 -0500
+Received: from ik-out-1112.google.com ([66.249.90.179]:21459 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754342AbXKSP6S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 10:55:27 -0500
-Date: Mon, 19 Nov 2007 15:55:07 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 21285: Report baud rate back via termios
-Message-ID: <20071119155507.GB30129@flint.arm.linux.org.uk>
-References: <20071119151222.6cfa9c4c@the-village.bc.nu> <20071119154137.GA30129@flint.arm.linux.org.uk> <20071119155007.6cfdce37@the-village.bc.nu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 19 Nov 2007 10:58:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Ig0p5jtqmqVgevtW61mgP6tCStXjealRX4UP/JIFztfMFRRkxCe07+wtr9z3+LR0HTu0GFjH0K8GHPXwF0xrutKnZlkC9y5Tg3BQxDd/5VdZWwSHIemMJmUeYuAECl/Uclt4PYBzYAlsRVOVb/MKeueI6PKcTqpUfF9nLZH4xAs=
+Message-ID: <3efb10970711190751k2c3ac639r6009b8b56e725650@mail.gmail.com>
+Date: Mon, 19 Nov 2007 16:51:39 +0100
+From: "Remy Bohmer" <linux@bohmer.net>
+To: "Daniel Walker" <dwalker@mvista.com>
+Subject: Re: [BUG on PREEMPT_RT, 2.6.23.1-rt5] in rt-mutex code and signals
+Cc: "Jon Masters" <jonathan@jonmasters.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Steven Rostedt" <rostedt@goodmis.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       RT <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1195486276.25393.65.camel@imap.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071119155007.6cfdce37@the-village.bc.nu>
-User-Agent: Mutt/1.4.2.1i
+References: <3efb10970711160751l279fe99dl9f3a130a4373a449@mail.gmail.com>
+	 <Pine.LNX.4.58.0711161830570.28002@gandalf.stny.rr.com>
+	 <3efb10970711170344n670d8b69w6679d494922c5bb@mail.gmail.com>
+	 <1195316550.25393.21.camel@imap.mvista.com>
+	 <3efb10970711170909n3acca605j70525e36faf8da7f@mail.gmail.com>
+	 <1195320569.25393.38.camel@imap.mvista.com>
+	 <20071117174608.GA30641@elte.hu>
+	 <1195322141.25393.41.camel@imap.mvista.com>
+	 <1195457078.11545.38.camel@jcmlaptop>
+	 <1195486276.25393.65.camel@imap.mvista.com>
+X-Google-Sender-Auth: c71b3407baea8dbf
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 19, 2007 at 03:50:07PM +0000, Alan Cox wrote:
-> On Mon, 19 Nov 2007 15:41:37 +0000
-> Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-> 
-> > On Mon, Nov 19, 2007 at 03:12:22PM +0000, Alan Cox wrote:
-> > > Currently reports back the requested rate not the result of the divides
-> > > but thats an easy fix for someone with h/w
-> > > 
-> > > Signed-off-by: Alan Cox <alan@redhat.com>
-> > 
-> > Ack for first hunk.  When can this be merged?  I assume it has to wait
-> > for tty_encode_baud_rate() to appear in mainline?
-> 
-> tty_termios_encode_baud-rate/tty_encode_baud_rate are now in mainline
+Hello Daniel,
 
-Great, I'll queue it for the next merge minus the 2nd hunk.
+Can we coordinate who is doing what somehow, to prevent double work?
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Remy
+
+2007/11/19, Daniel Walker <dwalker@mvista.com>:
+> On Mon, 2007-11-19 at 02:24 -0500, Jon Masters wrote:
+> > On Sat, 2007-11-17 at 09:55 -0800, Daniel Walker wrote:
+> >
+> > > Sure, you want to split the list?
+> >
+> > I'm happy to grab a few of these too. Let me know if either of you or
+> > Ingo is working on the whole lot and about to dump it on us ;-)
+>
+> I was planning to just try a few, so I think your safe..
+>
+> Daniel
+>
+>
