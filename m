@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754096AbXKSIyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752884AbXKSIyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754096AbXKSIyS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 03:54:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbXKSIyB
+	id S1752884AbXKSIyx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 03:54:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752261AbXKSIyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 03:54:01 -0500
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:27932 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752328AbXKSIyA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 03:54:00 -0500
-Subject: Re: [patch 1/6] sclp: sysfs interface for SCLP cpi
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       Michael Ernst <mernst@de.ibm.com>, Greg KH <greg@kroah.com>
-In-Reply-To: <3ae72650711160708m1855eb18q3a986998cfd87a3f@mail.gmail.com>
-References: <20071116142942.978412023@de.ibm.com>
-	 <20071116143320.980985765@de.ibm.com>
-	 <3ae72650711160708m1855eb18q3a986998cfd87a3f@mail.gmail.com>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Mon, 19 Nov 2007 09:53:56 +0100
-Message-Id: <1195462436.31281.3.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Nov 2007 03:54:45 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38985 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752206AbXKSIyo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 03:54:44 -0500
+Date: Mon, 19 Nov 2007 09:54:24 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Marin Mitov <mitov@issp.bas.bg>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] new TSC based delay_tsc()
+Message-ID: <20071119085424.GA10760@elte.hu>
+References: <200711181120.27459.mitov@issp.bas.bg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200711181120.27459.mitov@issp.bas.bg>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-11-16 at 16:08 +0100, Kay Sievers wrote:
-> On Nov 16, 2007 3:29 PM, Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
-> > +
-> > +static decl_subsys(cpi, NULL, NULL);
-> > +
+
+* Marin Mitov <mitov@issp.bas.bg> wrote:
+
+> Hi all,
 > 
-> decl_subsys() and all other static kset cruft called "subsys" will be
-> gone with 2.6.25.
-> The patch series doing this is in -mm, and this patch will need
-> (trivial) adaption to the
-> new interfaces.
+> This is a patch based on the Ingo's idea/patch to track delay_tsc() 
+> migration to another cpu by comparing smp_processor_id(). It is 
+> against kernel-2.6.24-rc3.
+> 
+> What is different:
+> 1. Using unsigned (instead of long) to unify for i386/x86_64.
+> 2. Minimal preempt_disable/enable() critical sections
+>    (more room for preemption)
+> 3. some statements have been rearranged, to account for
+>     possible under/overflow of left/TSC
+> 
+> Tested on both: 32/64 bit SMP PREEMPT kernel-2.6.24-rc3
+> 
+> Hope it is correct. Comments, please.
 
-The "trainwreck" how Andrew has called it..
-We have two git repositories with new code, both are against the
-mainline git. After both repositories are merged we have push another
-patch with the adaptions for the s390 code. The usual upstream fixing I
-would say. Thanks for the hint.
+thanks! The changes look certainly good to me.
 
--- 
-blue skies,
-  Martin.
+> Signed-off-by: Marin Mitov <mitov@issp.bas.bg>
 
-"Reality continues to ruin my life." - Calvin.
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-
+	Ingo
