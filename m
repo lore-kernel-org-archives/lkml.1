@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755061AbXKSIiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754096AbXKSIyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755061AbXKSIiT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 03:38:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbXKSIiE
+	id S1754096AbXKSIyS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 03:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbXKSIyB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 03:38:04 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52024
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752206AbXKSIiC (ORCPT
+	Mon, 19 Nov 2007 03:54:01 -0500
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:27932 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752328AbXKSIyA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 03:38:02 -0500
-Date: Mon, 19 Nov 2007 00:38:02 -0800 (PST)
-Message-Id: <20071119.003802.100741794.davem@davemloft.net>
-To: benh@kernel.crashing.org
-Cc: James.Bottomley@HansenPartnership.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, rmk@arm.linux.org.uk
-Subject: Re: SCSI breakage on non-cache coherent architectures
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1195450523.7022.37.camel@pasglop>
-References: <1195450523.7022.37.camel@pasglop>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 19 Nov 2007 03:54:00 -0500
+Subject: Re: [patch 1/6] sclp: sysfs interface for SCLP cpi
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       Michael Ernst <mernst@de.ibm.com>, Greg KH <greg@kroah.com>
+In-Reply-To: <3ae72650711160708m1855eb18q3a986998cfd87a3f@mail.gmail.com>
+References: <20071116142942.978412023@de.ibm.com>
+	 <20071116143320.980985765@de.ibm.com>
+	 <3ae72650711160708m1855eb18q3a986998cfd87a3f@mail.gmail.com>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Mon, 19 Nov 2007 09:53:56 +0100
+Message-Id: <1195462436.31281.3.camel@localhost>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 19 Nov 2007 16:35:23 +1100
-
-> I'm not sure what is the best way to fix that. Internally, I've done
-> some test whacking some ____cacheline_aligned in the scsi_cmnd data
-> structure to verify I no longer get random SLAB corruption when using my
-> USB but that significantly bloats the size of the structure on archs
-> such as ppc64 that don't need it and have a large cache line size.
+On Fri, 2007-11-16 at 16:08 +0100, Kay Sievers wrote:
+> On Nov 16, 2007 3:29 PM, Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+> > +
+> > +static decl_subsys(cpi, NULL, NULL);
+> > +
 > 
-> Unfortunately, I don't think there's any existing Kconfig symbol or arch
-> provided #define to tell us that we are on a non-coherent arch afaik
-> that could be used to make that conditional.
-> 
-> Another option would be to kmalloc the buffer (wasn't it the case before
-> btw ?) but I suppose some people will scream at the idea due to how the
-> command pools are done...
+> decl_subsys() and all other static kset cruft called "subsys" will be
+> gone with 2.6.25.
+> The patch series doing this is in -mm, and this patch will need
+> (trivial) adaption to the
+> new interfaces.
 
-You could make a ____dma_cacheline_aligned and use that.
-It seems pretty reasonable.
+The "trainwreck" how Andrew has called it..
+We have two git repositories with new code, both are against the
+mainline git. After both repositories are merged we have push another
+patch with the adaptions for the s390 code. The usual upstream fixing I
+would say. Thanks for the hint.
+
+-- 
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
