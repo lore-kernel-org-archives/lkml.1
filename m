@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbXKSPbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756220AbXKSPcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755453AbXKSPbz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 10:31:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbXKSPbs
+	id S1756220AbXKSPcW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 10:32:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754132AbXKSPcN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 10:31:48 -0500
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:51756 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754087AbXKSPbr convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 10:31:47 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAHs7QUdMROHU/2dsb2JhbACQXQ
-Date: Mon, 19 Nov 2007 10:31:39 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Borislav Petkov <bbpetkov@yahoo.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [rfc-patch 0/9] Immediate Values for 2.6.24-rc2-git5
-Message-ID: <20071119153139.GA24454@Krystal>
-References: <20071116200238.740495156@polymtl.ca> <20071117125007.GA4450@gollum.tnic>
+	Mon, 19 Nov 2007 10:32:13 -0500
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:25957 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755479AbXKSPcM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 10:32:12 -0500
+From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+To: Adam Litke <agl@us.ibm.com>
+Subject: Re: [PATCH] hugetlb: follow_hugetlb_page for write access
+Date: Mon, 19 Nov 2007 16:25:00 +0100
+User-Agent: KMail/1.8.2
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Ken Chen <kenchen@google.com>
+References: <20071107195142.13505.49398.stgit@kernel>
+In-Reply-To: <20071107195142.13505.49398.stgit@kernel>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20071117125007.GA4450@gollum.tnic>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 10:24:22 up 15 days, 20:29,  4 users,  load average: 3.75, 2.06,
-	1.31
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200711191625.00882.hnguyen@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Borislav Petkov (bbpetkov@yahoo.de) wrote:
-> On Fri, Nov 16, 2007 at 03:02:38PM -0500, Mathieu Desnoyers wrote:
-> Hi, 
-> just a conventions proposal: have you thought of shortening all those
-> "immediate_foo" prefixes to 'imm_foo', for example? This'll make the 
-> code much more readable, i think.
+On Wednesday 07 November 2007 20:51, Adam Litke wrote:
 > 
+> When calling get_user_pages(), a write flag is passed in by the caller to
+> indicate if write access is required on the faulted-in pages.  Currently,
+> follow_hugetlb_page() ignores this flag and always faults pages for
+> read-only access.  This can cause data corruption because a device driver
+> that calls get_user_pages() with write set will not expect COW faults to
+> occur on the returned pages.
+> 
+> This patch passes the write flag down to follow_hugetlb_page() and makes
+> sure hugetlb_fault() is called with the right write_access parameter.
+> 
+> Signed-off-by: Adam Litke <agl@us.ibm.com>
+Apologize for this late response.
+Tested on 2.6.23 with ehca and mthca. It works like a charm for me.
+Thanks!
+Nam
 
-Hrm, a quick grep in the kernel tree shows me that the imm_* namespace
-is already quite clobbered (although I do not detect any imm_read or
-imm_set). Although I like the imm_ idea, I would like to make sure we do
-not break any existing imm_read or imm_set users.
-
-But since I don't see any, I think it would make sense.
-
-> - 
-> Regards/Gruß,
->     Boris.
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
