@@ -1,70 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752988AbXKSLmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753275AbXKSLpU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752988AbXKSLmb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 06:42:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbXKSLmX
+	id S1753275AbXKSLpU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 06:45:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbXKSLpI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 06:42:23 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:48124 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751663AbXKSLmW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 06:42:22 -0500
-Date: Mon, 19 Nov 2007 06:42:05 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: Petr Tesarik <ptesarik@suse.cz>
-Cc: linux-cifs-client@lists.samba.org, Steve French <smfrench@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [linux-cifs-client] [CIFS] still incorrect cifs_reconnect fix?
-Message-ID: <20071119064205.419e0758@tleilax.poochiereds.net>
-In-Reply-To: <1195464645.29063.12.camel@elijah.suse.cz>
-References: <1195464645.29063.12.camel@elijah.suse.cz>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+	Mon, 19 Nov 2007 06:45:08 -0500
+Received: from moutng.kundenserver.de ([212.227.126.183]:51836 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752040AbXKSLpH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 06:45:07 -0500
+Subject: MMC sub-system: SDIO block-mode with increment address issue
+From: Dean Jenkins <djenkins@mvista.co.uk>
+Reply-To: djenkins@mvista.co.uk
+To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Organization: MontaVista
+Date: Mon, 19 Nov 2007 11:44:54 +0000
+Message-Id: <1195472694.18869.57.camel@libdev3.libertesoft.co.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.0 (2.8.0-33.0.1.el5) 
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19ZdPxT/oWp4LJLy6e8cwo8OZ6zViAK25B0nht
+ 1b0bAgVXZ704h6AXs932B4SlyhVvNEok5z71uI5APMS2MArJ5D
+ yZQqYmR4q/CHlvz7EazSg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Nov 2007 10:30:45 +0100
-Petr Tesarik <ptesarik@suse.cz> wrote:
+This E-mail is for the attention of Pierre Ossman (MMC sub-system
+maintainer)
 
-> Hi,
-> 
-> while merging commits f01d5e14e764b14b6bf5512678523d009254b209 and
-> 638b250766272fcaaa0f7ed2776f58f4ac701914 into SLES10, I've noticed
-> that there's apparently a bug. The code currently looks like this:
-> 
-> 		pdu_length = 4; /* enough to get RFC1001 header */
-> incomplete_rcv:
-> 		length =
-> 		    kernel_recvmsg(csocket, &smb_msg,
-> 				&iov, 1, pdu_length, 0 /* BB other
-> flags? */);
-> 
-> /* ... some irrelevant code left out ... */
-> 
-> 		} else if (length < 4) {	/* <----- HERE IS THE
-> PROBLEM cFYI(1, ("less than four bytes received (%d bytes)",
-> 			      length));
-> 			pdu_length -= length;
-> 			msleep(1);
-> 			goto incomplete_rcv;
-> 		}
-> 
-> I think we should be checking for length < pdu_length, not for length
-> < 4, because if we read 2 bytes in the first run and 2 bytes in the
-> second un, CIFS will still treat the second run as incomplete (and
-> possibly run in an infinite loop). Am I missing something obvious?
-> 
+Hi Pierre,
 
-I think you're right that the logic there is wrong, but I don't see an
-infinite loop happening. It looks like in this situation, that the next
-call to kernel_recvmsg will be called a size of 0, which should
-eventually return 0. It'll then fall into the previous condition -- do
-a reconnect and then go around the big loop again.
+I've being trying to get SDIO block-mode with incrementing address to
+work on an OMAP2430 based reference board with an SDIO card.
 
-A patch to clean that up would probably be a good thing. We likely
-don't need to do a reconnect here.
+Looking at the latest code ( as of 19/11/2007 ) on the mmc-git tree (I'm
+not a git expert so I'm not sure how to reference the codebase). I have
+a comment to make concerning the following code snippet...
 
---
-Jeff Layton <jlayton@redhat.com>
+In drivers/mmc/core/sdio_io.c
+
+Function: sdio_io_rw_ext_helper()
+
+<snip>
+
+219                         ret = mmc_io_rw_extended(func->card, write,
+220                                 func->num, addr, incr_addr, buf,
+221                                 blocks, func->cur_blksize);
+222                         if (ret)
+223                                 return ret;
+224 
+225                         remainder -= size;
+226                         buf += size;
+227                         if (incr_addr)
+228                                 addr += size;
+229                 }
+
+</snip>
+
+I think the lines
+
+227                         if (incr_addr)
+228                                 addr += size;
+
+are incorrect and should be removed. I think the SDIO increment address
+parameter relates to the internal operation of the SDIO card and NOT to
+the external register address of the FIFO. In other words, I think with
+incrementing address enabled in block mode, the register address of the
+FIFO in the SDIO function register space will be erroneously changed on
+the next block write and will fail (it seems to fail on my card). It
+seems strange to change the register address ?
+
+This also relates to byte mode.
+
+What do you think ?
+
+Also, do you have a bug reporting procedure for mmc-git tree ?
+
+Regards,
+Dean.
+
+
+-- 
+Dean Jenkins
+Embedded Software Engineer
+MontaVista Software (UK)
+Professional Services Division
+
