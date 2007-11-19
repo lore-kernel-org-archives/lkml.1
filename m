@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755819AbXKSTFr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755060AbXKSTH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755819AbXKSTFr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 14:05:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751588AbXKSTFh
+	id S1755060AbXKSTH3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 14:07:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbXKSTHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 14:05:37 -0500
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:43924
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750883AbXKSTFg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 14:05:36 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: Patrick McHardy <kaber@trash.net>
-Subject: Re: [HIFN 00/03]: RNG support v2
-Date: Mon, 19 Nov 2007 20:04:35 +0100
-User-Agent: KMail/1.9.6
-Cc: herbert@gondor.apana.org.au, johnpol@2ka.mipt.ru,
-       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20071118213241.9217.7696.sendpatchset@localhost.localdomain> <200711191919.42466.mb@bu3sch.de> <4741D515.3050900@trash.net>
-In-Reply-To: <4741D515.3050900@trash.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Mon, 19 Nov 2007 14:07:19 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:53282 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751756AbXKSTHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 14:07:18 -0500
+Date: Mon, 19 Nov 2007 20:07:12 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Bill Gribble <grib@billgribble.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc2 libertas_sdio fails to initialize Marvell SD8686
+Message-ID: <20071119200712.7b0295d3@poseidon.drzeus.cx>
+In-Reply-To: <87ejernrqo.fsf@serrano.home.billgribble.com>
+References: <87bq9x264q.fsf@serrano.home.billgribble.com>
+ <20071114190247.4f42aa05@poseidon.drzeus.cx>
+ <87ejernrqo.fsf@serrano.home.billgribble.com>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711192004.35489.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 19 November 2007 19:25:25 Patrick McHardy wrote:
-> Michael Buesch wrote:
-> > On Sunday 18 November 2007 22:32:52 Patrick McHardy wrote:
-> >> These patches add support for using the HIFN rng.
-> > 
-> > Acked-by: Michael Buesch <mb@bu3sch.de>
-> > 
-> > Patrick, can you send this patchset to Andrew for inclusion into -mm?
+On Thu, 15 Nov 2007 16:06:23 -0500
+Bill Gribble <grib@billgribble.com> wrote:
+
 > 
+> This block gets repeated about 200 times: 
 > 
-> I think he already pulls from Herbert's cryptodev-2.6 tree
-> (otherwise the patches useless anyway since the HIFN driver
-> is only in that tree).
+> Nov 15 11:52:31 pequin kernel: sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00000001
+> Nov 15 11:52:31 pequin kernel: mmc0: req done (CMD52): 0: 00001000 00000000 00000000 00000000
+> Nov 15 11:52:31 pequin kernel: mmc0: starting CMD52 arg 10002000 flags 00000195
 > 
+> Then:
 > 
+> Nov 15 11:52:32 pequin kernel: sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00000001
+> Nov 15 11:52:32 pequin kernel: mmc0: req done (CMD52): 0: 00001000 00000000 00000000 00000000
+> Nov 15 11:52:32 pequin kernel: mmc0: starting CMD52 arg 80022201 flags 00000195
+> Nov 15 11:52:32 pequin kernel: sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00000001
+> Nov 15 11:52:32 pequin kernel: mmc0: req done (CMD52): 0: 00001001 00000000 00000000 00000000
+> Nov 15 11:52:32 pequin kernel: libertas: failed to load helper firmware
+> 
+> Does that make any sense?  
 > 
 
-Ok, well. Then apply it to any tree you like and push it
-upstream somehow. I'm OK with it.
+Odd. I'd guess it is waiting for the firmware to boot, bu you should be getting the debug string "waiting for helper to boot..." in that case.
 
+Have you tried with the firmware that's supposed to be used with this board?
+
+Rgds
 -- 
-Greetings Michael.
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
