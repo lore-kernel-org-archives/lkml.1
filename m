@@ -1,89 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752799AbXKSVOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753524AbXKSVRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752799AbXKSVOp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 16:14:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbXKSVOf
+	id S1753524AbXKSVRS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 16:17:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbXKSVRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 16:14:35 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38464 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751144AbXKSVOc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 16:14:32 -0500
-Date: Mon, 19 Nov 2007 13:08:01 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: haveblue@us.ibm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       mbligh@google.com
-Subject: Re: [PATCH] Cast page_to_pfn to unsigned long in CONFIG_SPARSEMEM
-Message-Id: <20071119130801.bd7b7021.akpm@linux-foundation.org>
-In-Reply-To: <20071119202023.GA5086@Krystal>
-References: <20071113194025.150641834@polymtl.ca>
-	<1195160783.7078.203.camel@localhost>
-	<20071115215142.GA7825@Krystal>
-	<1195164977.27759.10.camel@localhost>
-	<20071116144742.GA17255@Krystal>
-	<1195495626.27759.119.camel@localhost>
-	<20071119185258.GA998@Krystal>
-	<1195501381.27759.127.camel@localhost>
-	<20071119195257.GA3440@Krystal>
-	<1195502983.27759.134.camel@localhost>
-	<20071119202023.GA5086@Krystal>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 19 Nov 2007 16:17:10 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:39835 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751710AbXKSVRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 16:17:09 -0500
+Subject: Re: [Patch] mm/sparse.c: Check the return value of
+	sparse_index_alloc().
+From: Dave Hansen <haveblue@us.ibm.com>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <clameter@sgi.com>, Andrew Morton <akpm@osdl.org>,
+       linux-mm@kvack.org
+In-Reply-To: <20071115135428.GE2489@hacking>
+References: <20071115135428.GE2489@hacking>
+Content-Type: text/plain
+Date: Mon, 19 Nov 2007 13:17:02 -0800
+Message-Id: <1195507022.27759.146.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Nov 2007 15:20:23 -0500
-Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-
-> * Dave Hansen (haveblue@us.ibm.com) wrote:
-> > The only thing I might suggest doing differently is actually using the
-> > page_to_pfn() definition itself:
-> > 
-> > memory_model.h:#define page_to_pfn __page_to_pfn
-> > 
-> > The full inline function version should do this already, and we
-> > shouldn't have any real direct __page_to_pfn() users anyway.    
-> > 
+On Thu, 2007-11-15 at 21:54 +0800, WANG Cong wrote:
+> Since sparse_index_alloc() can return NULL on memory allocation failure,
+> we must deal with the failure condition when calling it.
 > 
-> Like this then..
+> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+> Cc: Christoph Lameter <clameter@sgi.com>
+> Cc: Rik van Riel <riel@redhat.com>
 > 
-> Cast page_to_pfn to unsigned long in CONFIG_SPARSEMEM
-> 
-> Make sure the type returned by page_to_pfn is always unsigned long. If we
-> don't cast it explicitly, it can be int on i386, but long on x86_64.
-
-formally ptrdiff_t, I believe.
-
-> This is
-> especially inelegant for printks.
-> 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> CC: Dave Hansen <haveblue@us.ibm.com>
-> CC: linux-mm@kvack.org
-> CC: linux-kernel@vger.kernel.org
 > ---
->  include/asm-generic/memory_model.h |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> Index: linux-2.6-lttng/include/asm-generic/memory_model.h
-> ===================================================================
-> --- linux-2.6-lttng.orig/include/asm-generic/memory_model.h	2007-11-19 15:06:40.000000000 -0500
-> +++ linux-2.6-lttng/include/asm-generic/memory_model.h	2007-11-19 15:18:57.000000000 -0500
-> @@ -76,7 +76,7 @@ struct page;
->  extern struct page *pfn_to_page(unsigned long pfn);
->  extern unsigned long page_to_pfn(struct page *page);
->  #else
-> -#define page_to_pfn __page_to_pfn
-> +#define page_to_pfn ((unsigned long)__page_to_pfn)
->  #define pfn_to_page __pfn_to_page
->  #endif /* CONFIG_OUT_OF_LINE_PFN_TO_PAGE */
+> diff --git a/Makefile b/Makefile
+> diff --git a/mm/sparse.c b/mm/sparse.c
+> index e06f514..d245e59 100644
+> --- a/mm/sparse.c
+> +++ b/mm/sparse.c
+> @@ -83,6 +83,8 @@ static int __meminit sparse_index_init(unsigned long section_nr, int nid)
+>  		return -EEXIST;
+> 
+>  	section = sparse_index_alloc(nid);
+> +	if (!section)
+> +		return -ENOMEM;
+>  	/*
+>  	 * This lock keeps two different sections from
+>  	 * reallocating for the same index
 
-I'd have thought that __pfn_to_page() was the place to fix this: the
-lower-level point.  Because someone might later start using __pfn_to_page()
-for something.
+Oddly enough, sparse_add_one_section() doesn't seem to like to check
+its allocations.  The usemap is checked, but not freed on error.  If you
+want to fix this up, I think it needs a little more love than just two
+lines.  
 
-Heaven knows why though - why does __pfn_to_page() even exist?
+Do you want to try to add some actual error handling to
+sparse_add_one_section()?
+
+-- Dave
+
