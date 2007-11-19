@@ -1,61 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753835AbXKSNSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbXKSNXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753835AbXKSNSm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 08:18:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbXKSNSd
+	id S1754112AbXKSNXY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 08:23:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbXKSNXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 08:18:33 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:62750 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752637AbXKSNSc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 08:18:32 -0500
-To: hch@infradead.org, trond.myklebust@fys.uio.no
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [TOMOYO #5 02/18] Add wrapper functions for VFS helper functions.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <20071116173439.796600895@I-love.SAKURA.ne.jp>
-	<20071116173524.195366292@I-love.SAKURA.ne.jp>
-	<1195235255.7653.69.camel@heimdal.trondhjem.org>
-	<20071119125334.GC15942@infradead.org>
-In-Reply-To: <20071119125334.GC15942@infradead.org>
-Message-Id: <200711192218.GGB69793.VOQtMLFFOSHOJF@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Mon, 19 Nov 2007 22:18:24 +0900
+	Mon, 19 Nov 2007 08:23:17 -0500
+Received: from styx.suse.cz ([82.119.242.94]:47165 "EHLO elijah.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752547AbXKSNXQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 08:23:16 -0500
+Subject: Re: [linux-cifs-client] [PATCH] get rid of spurious session
+	reconnects
+From: Petr Tesarik <ptesarik@suse.cz>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: linux-cifs-client@lists.samba.org, Steve French <smfrench@gmail.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071119064205.419e0758@tleilax.poochiereds.net>
+References: <1195464645.29063.12.camel@elijah.suse.cz>
+	 <20071119064205.419e0758@tleilax.poochiereds.net>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: SuSE CR
+Date: Mon, 19 Nov 2007 14:23:13 +0100
+Message-Id: <1195478593.29063.24.camel@elijah.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.6.0 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Mon, 2007-11-19 at 06:42 -0500, Jeff Layton wrote:
+> On Mon, 19 Nov 2007 10:30:45 +0100
+> Petr Tesarik <ptesarik@suse.cz> wrote:
+> 
+> > Hi,
+> > 
+> > while merging commits f01d5e14e764b14b6bf5512678523d009254b209 and
+> > 638b250766272fcaaa0f7ed2776f58f4ac701914 into SLES10, I've noticed
+> > that there's apparently a bug. The code currently looks like this:
+> > 
+> > 		pdu_length = 4; /* enough to get RFC1001 header */
+> > incomplete_rcv:
+> > 		length =
+> > 		    kernel_recvmsg(csocket, &smb_msg,
+> > 				&iov, 1, pdu_length, 0 /* BB other
+> > flags? */);
+> > 
+> > /* ... some irrelevant code left out ... */
+> > 
+> > 		} else if (length < 4) {	/* <----- HERE IS THE
+> > PROBLEM cFYI(1, ("less than four bytes received (%d bytes)",
+> > 			      length));
+> > 			pdu_length -= length;
+> > 			msleep(1);
+> > 			goto incomplete_rcv;
+> > 		}
+> > 
+> > I think we should be checking for length < pdu_length, not for length
+> > < 4, because if we read 2 bytes in the first run and 2 bytes in the
+> > second un, CIFS will still treat the second run as incomplete (and
+> > possibly run in an infinite loop). Am I missing something obvious?
+> > 
+> 
+> I think you're right that the logic there is wrong, but I don't see an
+> infinite loop happening. It looks like in this situation, that the next
+> call to kernel_recvmsg will be called a size of 0, which should
+> eventually return 0. It'll then fall into the previous condition -- do
+> a reconnect and then go around the big loop again.
+> 
+> A patch to clean that up would probably be a good thing. We likely
+> don't need to do a reconnect here.
 
-Christoph Hellwig wrote:
-> > NACK to this. Passing function parameters through the task_struct is
-> > definitely not an acceptable hack
-> Exactly.  Having a vfsmount other than the current processes root or
-> current working directory in task_struct doesn't make any sense.
-The process's root and cwd vfsmounts are used permanently, but
-this last_vfsmount passed via task_struct behaves like temporary variable
-pushed on stack memory.
-In other words, last_vfsmount becomes NULL when it becomes invalid.
+OK, here we go:
 
-| static inline int vfs_create2(struct inode *dir, struct dentry *dentry,
-| 			      int mode, struct nameidata *nd)
-| {
-| 	int ret;
-| 	struct vfsmount *mnt = nd ? nd->path.mnt : NULL;
-| 	struct task_struct *task = current;
-| 	struct vfsmount *prev_mnt = task->last_vfsmount;
-| 	task->last_vfsmount = mntget(mnt);
-| 	ret = vfs_create(dir, dentry, mode, nd);
-| 	task->last_vfsmount = prev_mnt;
-| 	mntput(mnt);
-| 	return ret;
-| }
+When retrying kernel_recvmsg() because of a short read, check returned
+length against the remaining length, not against total length. This
+avoids unneeded session reconnects which would otherwise occur when
+kernel_recvmsg() finally returns zero when asked to read zero bytes.
 
-I agree that keeping last_vfsmount after it lost it's reference count is bad, but
-I don't understand why keeping last_vfsmount while it has it's reference count is bad too.
+Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
 
-Regards.
+ connect.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
+index c52a76f..f972ec9 100644
+--- a/fs/cifs/connect.c
++++ b/fs/cifs/connect.c
+@@ -438,7 +438,7 @@ incomplete_rcv:
+ 			csocket = server->ssocket;
+ 			wake_up(&server->response_q);
+ 			continue;
+-		} else if (length < 4) {
++		} else if (length < pdu_length) {
+ 			cFYI(1, ("less than four bytes received (%d bytes)",
+ 			      length));
+ 			pdu_length -= length;
 
