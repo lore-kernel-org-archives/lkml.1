@@ -1,66 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754381AbXKSWhM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbXKSWof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754381AbXKSWhM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 17:37:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbXKSWhA
+	id S1753916AbXKSWof (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 17:44:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbXKSWo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 17:37:00 -0500
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:38335 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751981AbXKSWg7 (ORCPT
+	Mon, 19 Nov 2007 17:44:28 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:55300 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752131AbXKSWo1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 17:36:59 -0500
-Date: Mon, 19 Nov 2007 17:36:39 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Bastian Blank <bastian@waldi.eu.org>
-cc: Glauber de Oliveira Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       glommer@gmail.com, tglx@linutronix.de, mingo@elte.hu,
-       rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
-       avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
-       kvm-devel@lists.sourceforge.net, zach@vmware.com,
-       jun.nakajima@intel.com
-Subject: Re: [PATCH 7/24] consolidate msr.h
-In-Reply-To: <20071119222151.GA11178@wavehammer.waldi.eu.org>
-Message-ID: <Pine.LNX.4.58.0711191734270.32296@gandalf.stny.rr.com>
-References: <11946337851964-git-send-email-gcosta@redhat.com>
- <11946337933104-git-send-email-gcosta@redhat.com>
- <11946337991750-git-send-email-gcosta@redhat.com>
- <11946338053158-git-send-email-gcosta@redhat.com>
- <11946338103068-git-send-email-gcosta@redhat.com> <1194633815833-git-send-email-gcosta@redhat.com>
- <11946338212915-git-send-email-gcosta@redhat.com>
- <11946338263902-git-send-email-gcosta@redhat.com> <20071119222151.GA11178@wavehammer.waldi.eu.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 19 Nov 2007 17:44:27 -0500
+Date: Mon, 19 Nov 2007 23:43:34 +0100
+From: Chris Friedhoff <chris@friedhoff.org>
+To: "chris@friedhoff.org" <chris@friedhoff.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.24-rc2 STD with s2disk fails to activate suspended system
+ after loading - now 2.6.24-rc3
+Message-Id: <20071119234334.2b955b92.chris@friedhoff.org>
+In-Reply-To: <200711191958.36570.rjw@sisk.pl>
+References: <20071110221629.1d180480.chris@friedhoff.org>
+	<200711111945.06745.rjw@sisk.pl>
+	<20071119144200.6026ce62.chris@friedhoff.org>
+	<200711191958.36570.rjw@sisk.pl>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.10.14; i486-slackware-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/irOujiMenJX6ZybyotXnmTkzBC4ErWXIckuU
+ acKvlLvr88Ip915Rf/vvE2uwFfKQqdrtp/otjh52yEEV63JKdh
+ jgz1xvThZ4eavSocOmiIdZaA1qOykuD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+dmesg output is added.
 
-On Mon, 19 Nov 2007, Bastian Blank wrote:
+increasing CONFIG_BLK_DEV_RAM_SIZE from 7777 to 131072 hasn't changed
+the non-functioning of 2.6.24-rc3
 
-> On Fri, Nov 09, 2007 at 04:42:48PM -0200, Glauber de Oliveira Costa wrote:
-> > -	wrmsrl(MSR_CSTAR, ia32_cstar_target);
-> > +	wrmsrl(MSR_CSTAR, (u64)ia32_cstar_target);
->
-> Hmm, why do you add explicit casts? The compiler should convert that
-> correctly on its own.
->
-> > +static inline void wrmsrl(unsigned int msr, unsigned long long val)
->
-> Hmm, long long is 64 bit on all x86, but why not use explicit u64 to
-> show that?
+s2disk works with 2.6.23.8 ; I tested 4 cycles in a row, 2 from console
+and 2 from within X
 
-(quick reply)
 
-With PVOPS on it gives compiler warnings without that explict cast.
-Without looking at the code, IIRC with non-PVOPS it is a macro directly
-into asm, so it didn't matter what the cast was. But with PVOPS as a
-function, it gave compiler warnings.
+Chris
 
-Take it out and try compiling it for both i386 and x86_64. One of them
-gave warnings. But maybe it's not a problem now.
 
--- Steve
+On Mon, 19 Nov 2007 19:58:36 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
+> On Monday, 19 of November 2007, Chris Friedhoff wrote:
+> > Hallo Rafael,
+> > 
+> > just to let you know: with 2.6.24-rc3 I have the same problem.
+> 
+> Thanks.
+>  
+> > On Sun, 11 Nov 2007 19:45:06 +0100
+> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > 
+> > > On Saturday, 10 of November 2007, Chris Friedhoff wrote:
+> > > > please cc me, I'm not not subscribed to LKML
+> > > > 
+> > > > Hello,
+> > > > 
+> > > > with kernel 2.6.24-rc2 STD with s2disk suspends the system to disk, but
+> > > > when I start the system and the suspended systemimage is loaded, it
+> > > > fails to "activate" this suspended systemimage and continues after some
+> > > > time with following the normal boot sequence.
+> 
+> Please add the dmesg output taken right after that as an attachment to the
+> bugzilla entry at http://bugzilla.kernel.org/show_bug.cgi?id=9345
+> 
+> Thanks,
+> Rafael
+
+
+--------------------
+Chris Friedhoff
+chris@friedhoff.org
