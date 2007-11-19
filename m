@@ -1,61 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbXKSEvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbXKSEwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755243AbXKSEvr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 23:51:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbXKSEvj
+	id S1754627AbXKSEwu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 23:52:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbXKSEwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 23:51:39 -0500
-Received: from fk-out-0910.google.com ([209.85.128.185]:7320 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751867AbXKSEvi (ORCPT
+	Sun, 18 Nov 2007 23:52:43 -0500
+Received: from IP-162-29.saranadata.com ([202.43.162.29]:50554 "EHLO
+	smtphop1.linuxindo.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751960AbXKSEwm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 23:51:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=iWVnFCkidLcGdQu5KDwrD6srdJtCb51JgbIc5LlO8DYvZ3pJce8wXQCFGJ+8pDl0LGFu+NQPfCYVatkUsG4TZ+LwZXqJ3qvLDIinrdZvGaJKka0OxwTd6219mLFwJRRNMsgOUQDNcxJxmMq1PblZCyoJOAwSZr4rAktrhsDlcMo=
-Date: Mon, 19 Nov 2007 12:57:33 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: linux-kernel@vger.kernel.org, bluez-devel@lists.sourceforge.net
-Subject: Re: [PATCH][another try]bluetooth rfcomm tty_close before destruct
-Message-ID: <20071119045733.GA3829@darkstar.te-china.tietoenator.com>
-References: <20071105045921.GA3556@darkstar.te-china.tietoenator.com> <20071119030005.GA3420@darkstar.te-china.tietoenator.com>
+	Sun, 18 Nov 2007 23:52:42 -0500
+X-Greylist: delayed 4106 seconds by postgrey-1.27 at vger.kernel.org; Sun, 18 Nov 2007 23:52:26 EST
+Date: 19 Nov 2007 03:07:34 -0000
+Message-ID: <20071119030734.22410.qmail@fakeplastic.linuxindo.com>
+To: linux-kernel@vger.kernel.org
+Subject: mutual trust in good faith
+From: mrs babara hanff <babara@info.web>
+Reply-To: mrs_babarahanff01@yahoo.pl
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071119030005.GA3420@darkstar.te-china.tietoenator.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Linuxindo-MailScanner: Found to be clean
+X-Linuxindo-MailScanner-From: root@linuxindo.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-This is the right patch which will not touch original tty logic. Please ignore last one submited by me.
 
-Regards
-dave
+Greetings to you,
+ 
+I am the above named person I was married to Dr. Peter Hanff who worked with erithean Embassy in Poland 
+as a diplomat and a bussiness man for over 6 years.I have a charitable project on ground which i want you as a sole person in charge.Please assure me that you will act accordingly as I stated herein.Please reply me through my private 
+email:mrs_babarahanff01@yahoo.pl, for more details on this charity project.
+Mrs Babara Hanff.
 
-Subject:
-rfcomm_dev_del could be called twice time in release function.
-one by rfcomm_tty_hangup, another by rfcomm_release_dev, this will cause the device being destructed before rfcomm_tty_close.
 
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
 
----
-tty.c |    4 ++--
-1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff -upr linux/net/bluetooth/rfcomm/tty.c linux.new/net/bluetooth/rfcomm/tty.c
---- linux/net/bluetooth/rfcomm/tty.c	2007-11-19 10:48:32.000000000 +0800
-+++ linux.new/net/bluetooth/rfcomm/tty.c	2007-11-19 12:48:10.000000000 +0800
-@@ -424,8 +424,8 @@ static int rfcomm_release_dev(void __use
- 	/* Shut down TTY synchronously before freeing rfcomm_dev */
- 	if (dev->tty)
- 		tty_vhangup(dev->tty);
--
--	rfcomm_dev_del(dev);
-+	else if (!test_bit(RFCOMM_RELEASE_ONHUP, &dev->flags))
-+		rfcomm_dev_del(dev);
- 	rfcomm_dev_put(dev);
- 	return 0;
- }
