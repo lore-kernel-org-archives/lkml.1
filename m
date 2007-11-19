@@ -1,83 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756287AbXKSQGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbXKSQPN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756287AbXKSQGT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 11:06:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206AbXKSQGH
+	id S1753984AbXKSQPN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 11:15:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbXKSQO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 11:06:07 -0500
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:32341 "EHLO
-	outbound3-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753706AbXKSQGF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 11:06:05 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
-X-Server-Uuid: DF9F24A0-1A5C-40A5-8B0A-DEB676E72ECF
-Date: Mon, 19 Nov 2007 17:00:24 +0100
-From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-To: "Sam Ravnborg" <sam@ravnborg.org>
-cc: "Andreas Herrmann" <aherrman@arcor.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Ingo Molnar" <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Roman Zippel" <zippel@linux-m68k.org>,
-       "LKML" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] x86: fix UTS_MACHINE to be i386 for 32-bit build
- and x86_64 for 64-bit build
-Message-ID: <20071119160024.GA11309@alberich.amd.com>
-References: <20071117143731.GA7129@uranus.ravnborg.org>
- <20071119093437.GA5104@devil>
- <20071119104129.GA10731@uranus.ravnborg.org>
-MIME-Version: 1.0
-In-Reply-To: <20071119104129.GA10731@uranus.ravnborg.org>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 19 Nov 2007 16:00:23.0113 (UTC)
- FILETIME=[4AC0C390:01C82AC5]
-X-WSS-ID: 6B5F6C9307S3019444-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
+	Mon, 19 Nov 2007 11:14:58 -0500
+Received: from pfx2.jmh.fr ([194.153.89.55]:44272 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751543AbXKSQO6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 11:14:58 -0500
+Date: Mon, 19 Nov 2007 17:14:55 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       tglx@linutronix.de, torvalds@linux-foundation.org
+Subject: Re: [PATCHv3 0/4] sys_indirect system call
+Message-Id: <20071119171455.c05793a0.dada1@cosmosbay.com>
+In-Reply-To: <4741B047.9080601@redhat.com>
+References: <200711170531.lAH5VaXR025225@devserv.devel.redhat.com>
+	<20071119145224.31ee5242.dada1@cosmosbay.com>
+	<4741A7DD.1030407@redhat.com>
+	<20071119164329.5a580b84.dada1@cosmosbay.com>
+	<4741B047.9080601@redhat.com>
+X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 19, 2007 at 11:41:29AM +0100, Sam Ravnborg wrote:
-> On Mon, Nov 19, 2007 at 10:34:37AM +0100, Andreas Herrmann wrote:
-> > On Sat, Nov 17, 2007 at 03:37:31PM +0100, Sam Ravnborg wrote:
-> > > 
-> > > Note: This patch does not fix the uname -m issue - to do so
-> > > Andreas' patch is needed.
-> > > 
-> > > 	Sam
-> > 
-> > Linus,
-> > 
-> > The issue Sam refers to is that UTS_MACHINE is set to "x86" instead of
-> > "i386" or "x86_64" when building with ARCH=x86. Thus the new kernel
-> > when booted will give either "x86" on x86_64 and many i386 systems or
-> > even "x66" on other i386 systems for 'uname -m'.
-> > 
-> > Many tools rely on the usual values of "x86_64", "i366" and "i686"
-> > here. So we shouldn't change this.
+On Mon, 19 Nov 2007 07:48:23 -0800
+Ulrich Drepper <drepper@redhat.com> wrote:
+
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 > 
-> Andreas - I will suggest you to submit a new patch with
-> a better changelog where you jsut describe what you fix.
-> The above explanations looks a bit weird if read stand alone.
-
-Ok, I'll resend the patch with an updated changelog asap.
-
-> You can always add additional comments after the line containing:
-> ---
+> Eric Dumazet wrote:
+> > So when you recompile your old program (as you post it and as I commented on),
+> > it will pass a >= 12 bytes data to kernel, with only first 4 bytes set to O_CLOEXEC.
+> > 
+> > Other bytes will contain junk 
 > 
-> In this way it is not included in the changelog but Linus can read it.
+> If you don't initialize the entire structure and you use it all, of
+> course you get undefined behavior.  That's nothing new.  The program I
+> attached is not an example, it's a test for the functionality in this patch.
 > 
-> Anyway - your patch has my ack.
+> Like with every kernel interface, you have to use it correctly.  The
+> good news is that user programs should never use this syscall directly
+> (just like don't for existing ones).
+> 
+> I see no problem at all here.
 
-Thanks,
+I do see a problem, because some readers will take your example as a reference,
+as it will probably sit in a page that google^Wsearch_engines will bring at the
+top of search results for next ten years or so. 
 
+(I bet for "sys_indirect syscall" -> http://lwn.net/Articles/258708/ )
 
-Andreas
+Next time you post it, please warn users that it will break in some years, or
+state clearly this should only be used internally by glibc.
 
-
-
+Thank you
