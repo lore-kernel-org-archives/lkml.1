@@ -1,125 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752701AbXKST2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752120AbXKSTep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752701AbXKST2i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 14:28:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbXKST23
+	id S1752120AbXKSTep (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 14:34:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750935AbXKSTeh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 14:28:29 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:34501 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750772AbXKST22 (ORCPT
+	Mon, 19 Nov 2007 14:34:37 -0500
+Received: from py-out-1112.google.com ([64.233.166.180]:19949 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750868AbXKSTeg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 14:28:28 -0500
-Date: Mon, 19 Nov 2007 19:04:57 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Greg Kroah-Hartman <gregkh@suse.de>
-cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Erez Zadok <ezk@cs.sunysb.edu>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [patch 04/26] writeback: dont propagate AOP_WRITEPAGE_ACTIVATE
-In-Reply-To: <20071119181825.GE15425@kroah.com>
-Message-ID: <Pine.LNX.4.64.0711191852070.14717@blonde.wat.veritas.com>
-References: <20071119181438.617190424@mini.kroah.org> <20071119181825.GE15425@kroah.com>
+	Mon, 19 Nov 2007 14:34:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Vfcxwm/a9cRMBr32faDCi4xfEljEzrK5YPyAKQUxW1MozjfbAVZqwSZEkQeLxC/jxFE0Yb7Vr2W2wVN7wxgpMSqAXcZauQ7db0VEkFaRGljevCFPVYGf0jmv+rHTpsmE3RNq0acPqMBrYPAuInZKK1jpii5aRgUQCnVeNCar6wI=
+Message-ID: <64bb37e0711191134l6dac07a2ie3b4258c43e1f1f0@mail.gmail.com>
+Date: Mon, 19 Nov 2007 20:34:34 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: 2.6.24-rc2-mm1: kcryptd vs lockdep
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071119075627.GB28432@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <64bb37e0711182323v1e2a1341tfc7f20df771b988@mail.gmail.com>
+	 <20071119075627.GB28432@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Nov 2007, Greg Kroah-Hartman wrote:
-> 
-> 2.6.22-stable review patch.  If anyone has any objections, please let us
-> know.
-> 
-> ------------------
-> From: Andrew Morton <akpm@linux-foundation.org>
-> 
-> patch e423003028183df54f039dfda8b58c49e78c89d7 in mainline.
-> 
-> This is a writeback-internal marker but we're propagating it all the way back
-> to userspace!.
-> 
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+On Nov 19, 2007 8:56 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
+>
+> > Trying the last NFSv4 patch (but that patch is only the cause, why I
+> > had lockdep enabled) I got this:
+> > [   64.550203]
+> > [   64.550205] =========================
+> > [   64.552213] [ BUG: held lock freed! ]
+> > [   64.553633] -------------------------
+> > [   64.555055] kcryptd/1022 is freeing memory
+> > FFFF81011EBEFB00-FFFF81011EBEFB3F, with a lock still held there!
+>
+> so kcryptd frees a live, still in use bio? That could be a receipe for
+> data corruption. Does SLUB_DEBUG (or SLAB_DEBUG) catch anything?
 
-It's fine by me that this should go into 2.6.22-stable, but then please
-also put in this related patch from 2.6.23-stable: it's arguable whether
-either are strictly needed (they were originally provoked by unionfs, in
-Ubuntu but not mainline), but more helpful to include than exclude them.
+I have SLUB_DEBUG=y, but not SLUB_DEBUG_ON.
+But apart from this message I did not the anything in the syslog.
+It seems to not be onetime event, as one the third boot it happend
+again. Stacktrace was identical.
+Sadly trying 3 boots with slub_debug=FZP and another one with only F
+did not trigger it.
 
-Thanks,
-Hugh
+But I don't think kcryptd is freeing a bio at that point.
+The message said about the freed lock: (kcryptd){--..}, at: [<ffffffff80247dd9>]
+(gdb) list *0xffffffff80247dd9
+0xffffffff80247dd9 is in run_workqueue (include/asm/bitops_64.h:69).
+64       * you should call smp_mb__before_clear_bit() and/or
+smp_mb__after_clear_bit()
+65       * in order to ensure changes are visible on other processors.
+66       */
+67      static inline void clear_bit(int nr, volatile void *addr)
+68      {
+69              __asm__ __volatile__( LOCK_PREFIX
+70                      "btrl %1,%0"
+71                      :ADDR
+72                      :"dIr" (nr));
+73      }
+increasing the addr a little bit shows:
+(gdb) list *0xffffffff80247ddf
+0xffffffff80247ddf is in run_workqueue (kernel/workqueue.c:275).
+270                     list_del_init(cwq->worklist.next);
+271                     spin_unlock_irq(&cwq->lock);
+272
+273                     BUG_ON(get_wq_data(work) != cwq);
+274                     work_clear_pending(work);
+275                     lock_acquire(&cwq->wq->lockdep_map, 0, 0, 0,
+2, _THIS_IP_);
+276                     lock_acquire(&lockdep_map, 0, 0, 0, 2, _THIS_IP_);
+277                     f(work);
+278                     lock_release(&lockdep_map, 1, _THIS_IP_);
+279                     lock_release(&cwq->wq->lockdep_map, 1, _THIS_IP_);
 
 
-Subject: [patch 12/13] fix tmpfs BUG and AOP_WRITEPAGE_ACTIVATE
+Above this acquire/release sequence is the following comment:
+#ifdef CONFIG_LOCKDEP
+                /*
+                 * It is permissible to free the struct work_struct
+                 * from inside the function that is called from it,
+                 * this we need to take into account for lockdep too.
+                 * To avoid bogus "held lock freed" warnings as well
+                 * as problems when looking into work->lockdep_map,
+                 * make a copy and use that here.
+                 */
+                struct lockdep_map lockdep_map = work->lockdep_map;
+#endif
 
--stable review patch.  If anyone has any objections, please let us know.
+Did something trigger this anyway?
 
-------------------
+Anything I could try, apart from more boots with slub_debug=F?
 
-From: Hugh Dickins <hugh@veritas.com>
-
-patch 487e9bf25cbae11b131d6a14bdbb3a6a77380837 in mainline.
-
-It's possible to provoke unionfs (not yet in mainline, though in mm and
-some distros) to hit shmem_writepage's BUG_ON(page_mapped(page)).  I expect
-it's possible to provoke the 2.6.23 ecryptfs in the same way (but the
-2.6.24 ecryptfs no longer calls lower level's ->writepage).
-
-This came to light with the recent find that AOP_WRITEPAGE_ACTIVATE could
-leak from tmpfs via write_cache_pages and unionfs to userspace.  There's
-already a fix (e423003028183df54f039dfda8b58c49e78c89d7 - writeback: don't
-propagate AOP_WRITEPAGE_ACTIVATE) in the tree for that, and it's okay so
-far as it goes; but insufficient because it doesn't address the underlying
-issue, that shmem_writepage expects to be called only by vmscan (relying on
-backing_dev_info capabilities to prevent the normal writeback path from
-ever approaching it).
-
-That's an increasingly fragile assumption, and ramdisk_writepage (the other
-source of AOP_WRITEPAGE_ACTIVATEs) is already careful to check
-wbc->for_reclaim before returning it.  Make the same check in
-shmem_writepage, thereby sidestepping the page_mapped BUG also.
-
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>
-Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- mm/shmem.c |   15 +++++++++++++++
- 1 file changed, 15 insertions(+)
-
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -916,6 +916,21 @@ static int shmem_writepage(struct page *
- 	struct inode *inode;
- 
- 	BUG_ON(!PageLocked(page));
-+	/*
-+	 * shmem_backing_dev_info's capabilities prevent regular writeback or
-+	 * sync from ever calling shmem_writepage; but a stacking filesystem
-+	 * may use the ->writepage of its underlying filesystem, in which case
-+	 * we want to do nothing when that underlying filesystem is tmpfs
-+	 * (writing out to swap is useful as a response to memory pressure, but
-+	 * of no use to stabilize the data) - just redirty the page, unlock it
-+	 * and claim success in this case.  AOP_WRITEPAGE_ACTIVATE, and the
-+	 * page_mapped check below, must be avoided unless we're in reclaim.
-+	 */
-+	if (!wbc->for_reclaim) {
-+		set_page_dirty(page);
-+		unlock_page(page);
-+		return 0;
-+	}
- 	BUG_ON(page_mapped(page));
- 
- 	mapping = page->mapping;
+Torsten
