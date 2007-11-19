@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754190AbXKSVAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754368AbXKSVBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754190AbXKSVAk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 16:00:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbXKSVAd
+	id S1754368AbXKSVBm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 16:01:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbXKSVBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 16:00:33 -0500
-Received: from madara.hpl.hp.com ([192.6.19.124]:63358 "EHLO madara.hpl.hp.com"
+	Mon, 19 Nov 2007 16:01:34 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:54028 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750921AbXKSVAc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 16:00:32 -0500
-Date: Mon, 19 Nov 2007 12:53:30 -0800
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: David Miller <davem@davemloft.net>
-Cc: paulus@samba.org, hch@infradead.org, akpm@linux-foundation.org,
-       gregkh@suse.de, mucci@cs.utk.edu, wcohen@redhat.com,
-       robert.richter@amd.com, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org, Stephane Eranian <eranian@hpl.hp.com>
-Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
-Message-ID: <20071119205330.GD27571@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <20071114.152134.266510129.davem@davemloft.net> <18235.40110.831730.847548@cargo.ozlabs.ibm.com> <20071114.172722.71465976.davem@davemloft.net> <20071119.050843.48408777.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071119.050843.48408777.davem@davemloft.net>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+	id S1750959AbXKSVBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 16:01:34 -0500
+Message-ID: <4741F97D.6090808@redhat.com>
+Date: Mon, 19 Nov 2007 22:00:45 +0100
+From: Milan Broz <mbroz@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Torsten Kaiser <just.for.lkml@googlemail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Alasdair G Kergon <agk@redhat.com>
+Subject: Re: 2.6.24-rc2-mm1: kcryptd vs lockdep
+References: <64bb37e0711182323v1e2a1341tfc7f20df771b988@mail.gmail.com>	 <20071119075627.GB28432@elte.hu> <64bb37e0711191134l6dac07a2ie3b4258c43e1f1f0@mail.gmail.com>
+In-Reply-To: <64bb37e0711191134l6dac07a2ie3b4258c43e1f1f0@mail.gmail.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David,
-
-On Mon, Nov 19, 2007 at 05:08:43AM -0800, David Miller wrote:
+Torsten Kaiser wrote:
+> On Nov 19, 2007 8:56 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>> * Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
+...
+> Above this acquire/release sequence is the following comment:
+> #ifdef CONFIG_LOCKDEP
+>                 /*
+>                  * It is permissible to free the struct work_struct
+>                  * from inside the function that is called from it,
+>                  * this we need to take into account for lockdep too.
+>                  * To avoid bogus "held lock freed" warnings as well
+>                  * as problems when looking into work->lockdep_map,
+>                  * make a copy and use that here.
+>                  */
+>                 struct lockdep_map lockdep_map = work->lockdep_map;
+> #endif
 > 
-> Instead of blabbering further about this topic, I decided to put my
-> code where my mouth is and spent the weekend porting the perfmon2
-> kernel bits, and the user bits (libpfm and pfmon) to sparc64.
+> Did something trigger this anyway?
 > 
+> Anything I could try, apart from more boots with slub_debug=F?
 
-I appreciate your effort. I am glad to see that the interface
-and implementation survived yet another architecture. I think at this
-point ARM is the only major architecture missing. In anycase, I would
-be happy to integrate your sparc64 patches.
+Please could you try which patch from the dm-crypt series cause this ?
+(agk-dm-dm-crypt* names.)
 
-> As a result I've found that perfmon2 is quite nice and allows
-> incredibly useful and powerful tools to be written.  The syscalls
-> aren't that bad and really I see not reason to block it's inclusion.
-> 
+I suspect agk-dm-dm-crypt-move-bio-submission-to-thread.patch because
+there is one work struct used subsequently in two threads...
+(io thread already started while crypt thread is processing lockdep_map
+after calling f(work)...)
 
-As I said earlier, I am not opposed to changing the syscalls. I have
-proposed a few schemes to address the issue of versioning. If vectors
-arguments are problematic, we can go with single register/call.
+(btw these patches prepare dm-crypt for next patchset introducing 
+async cryptoapi, so there should be no functional changes yet.)
 
-I think there are other areas where perfmon2 could benefit from the
-help of the LKML developers. I will post a list shortly.
+Milan
+--
+mbroz@redhat.com
 
-> I rescind all of my earlier objections, let's merge this soon :-)
 
-Thanks.
-
--- 
--Stephane
