@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756409AbXKSWE3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756537AbXKSWEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756409AbXKSWE3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 17:04:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755845AbXKSWEH
+	id S1756537AbXKSWEs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 17:04:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754335AbXKSWEX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 17:04:07 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:33896 "EHLO mx1.redhat.com"
+	Mon, 19 Nov 2007 17:04:23 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:33904 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756271AbXKSWEE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 17:04:04 -0500
+	id S1755889AbXKSWEV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 17:04:21 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -19,227 +19,136 @@ To: Andrew Morton <akpm@linux-foundation.org>,
        "H. Peter Anvin" <hpa@zytor.com>
 Cc: linux-kernel@vger.kernel.org
 X-Fcc: ~/Mail/linus
-Subject: [PATCH 04/18] x86 vDSO: new layout
+Subject: [PATCH 05/18] x86 vDSO: harmonize asm-offsets
 In-Reply-To: Roland McGrath's message of  Monday, 19 November 2007 13:59:43 -0800 <20071119215944.01B7C26F8BE@magilla.localdomain>
 References: <20071119215944.01B7C26F8BE@magilla.localdomain>
-X-Shopping-List: (1) Fantastic rotation livers
-   (2) Chromatic mauve logs
-   (3) Periodical pincushions
-Message-Id: <20071119220319.5C73426F8BE@magilla.localdomain>
-Date: Mon, 19 Nov 2007 14:03:19 -0800 (PST)
+X-Windows: the first fully modular software disaster.
+Message-Id: <20071119220346.10C8D26F8C1@magilla.localdomain>
+Date: Mon, 19 Nov 2007 14:03:46 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This revamps the vDSO linker script to lay things out with the best
-packing of the data and good, separate alignment of the code.  The
-rigid layout using VDSO_TEXT_OFFSET no longer matters to the kernel.
-I've moved the layout parts of the linker script into a new include
-file, vdso-layout.lds.S; this is in preparation for sharing the script
-for the 32-bit vDSO builds too.
+This change harmonizes the asm-offsets macros used in the 32-bit vDSO
+across 32-bit and 64-bit builds.  It's a purely cosmetic change for now,
+but it paves the way for consolidating the 32-bit vDSO builds.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- arch/x86/vdso/vdso-layout.lds.S |   64 ++++++++++++++++++++++++
- arch/x86/vdso/vdso.lds.S        |  102 ++++++++++-----------------------------
- arch/x86/vdso/voffset.h         |    1 -
- 3 files changed, 89 insertions(+), 78 deletions(-)
- create mode 100644 arch/x86/vdso/vdso-layout.lds.S
- delete mode 100644 arch/x86/vdso/voffset.h
+ arch/x86/kernel/asm-offsets_32.c        |   20 ++++++------
+ arch/x86/kernel/vsyscall-sigreturn_32.S |   54 +++++++++++++++---------------
+ 2 files changed, 37 insertions(+), 37 deletions(-)
 
-diff --git a/arch/x86/vdso/vdso-layout.lds.S b/arch/x86/vdso/vdso-layout.lds.S
-new file mode 100644
-index 0000000..634a2cf
---- /dev/null
-+++ b/arch/x86/vdso/vdso-layout.lds.S
-@@ -0,0 +1,64 @@
-+/*
-+ * Linker script for vDSO.  This is an ELF shared object prelinked to
-+ * its virtual address, and with only one read-only segment.
-+ * This script controls its layout.
-+ */
-+
-+SECTIONS
-+{
-+	. = VDSO_PRELINK + SIZEOF_HEADERS;
-+
-+	.hash		: { *(.hash) }			:text
-+	.gnu.hash	: { *(.gnu.hash) }
-+	.dynsym		: { *(.dynsym) }
-+	.dynstr		: { *(.dynstr) }
-+	.gnu.version	: { *(.gnu.version) }
-+	.gnu.version_d	: { *(.gnu.version_d) }
-+	.gnu.version_r	: { *(.gnu.version_r) }
-+
-+	.note		: { *(.note.*) }		:text	:note
-+
-+	.eh_frame_hdr	: { *(.eh_frame_hdr) }		:text	:eh_frame_hdr
-+	.eh_frame	: { KEEP (*(.eh_frame)) }	:text
-+
-+	.dynamic	: { *(.dynamic) }		:text	:dynamic
-+
-+	.rodata		: { *(.rodata*) }		:text
-+	.data		: {
-+	      *(.data*)
-+	      *(.sdata*)
-+	      *(.got.plt) *(.got)
-+	      *(.gnu.linkonce.d.*)
-+	      *(.bss*)
-+	      *(.dynbss*)
-+	      *(.gnu.linkonce.b.*)
-+	}
-+
-+	.altinstructions	: { *(.altinstructions) }
-+	.altinstr_replacement	: { *(.altinstr_replacement) }
-+
-+	/*
-+	 * Align the actual code well away from the non-instruction data.
-+	 * This is the best thing for the I-cache.
-+	 */
-+	. = ALIGN(0x100);
-+
-+	.text		: { *(.text*) }			:text	=0x90909090
-+}
-+
-+/*
-+ * Very old versions of ld do not recognize this name token; use the constant.
-+ */
-+#define PT_GNU_EH_FRAME	0x6474e550
-+
-+/*
-+ * We must supply the ELF program headers explicitly to get just one
-+ * PT_LOAD segment, and set the flags explicitly to make segments read-only.
-+ */
-+PHDRS
-+{
-+	text		PT_LOAD		FLAGS(5) FILEHDR PHDRS; /* PF_R|PF_X */
-+	dynamic		PT_DYNAMIC	FLAGS(4);		/* PF_R */
-+	note		PT_NOTE		FLAGS(4);		/* PF_R */
-+	eh_frame_hdr	PT_GNU_EH_FRAME;
-+}
-diff --git a/arch/x86/vdso/vdso.lds.S b/arch/x86/vdso/vdso.lds.S
-index d40d0e9..4e5dd3b 100644
---- a/arch/x86/vdso/vdso.lds.S
-+++ b/arch/x86/vdso/vdso.lds.S
-@@ -1,89 +1,37 @@
- /*
-- * Linker script for vsyscall DSO.  The vsyscall page is an ELF shared
-- * object prelinked to its virtual address, and with only one read-only
-- * segment (that fits in one page).  This script controls its layout.
-+ * Linker script for 64-bit vDSO.
-+ * We #include the file to define the layout details.
-+ * Here we only choose the prelinked virtual address.
-+ *
-+ * This file defines the version script giving the user-exported symbols in
-+ * the DSO.  We can define local symbols here called VDSO* to make their
-+ * values visible using the asm-x86/vdso.h macros from the kernel proper.
-  */
--#include <asm/asm-offsets.h>
--#include "voffset.h"
+diff --git a/arch/x86/kernel/asm-offsets_32.c b/arch/x86/kernel/asm-offsets_32.c
+index 0e45981..c578a2b 100644
+--- a/arch/x86/kernel/asm-offsets_32.c
++++ b/arch/x86/kernel/asm-offsets_32.c
+@@ -38,15 +38,15 @@ void foo(void);
  
- #define VDSO_PRELINK 0xffffffffff700000
-+#include "vdso-layout.lds.S"
+ void foo(void)
+ {
+-	OFFSET(SIGCONTEXT_eax, sigcontext, eax);
+-	OFFSET(SIGCONTEXT_ebx, sigcontext, ebx);
+-	OFFSET(SIGCONTEXT_ecx, sigcontext, ecx);
+-	OFFSET(SIGCONTEXT_edx, sigcontext, edx);
+-	OFFSET(SIGCONTEXT_esi, sigcontext, esi);
+-	OFFSET(SIGCONTEXT_edi, sigcontext, edi);
+-	OFFSET(SIGCONTEXT_ebp, sigcontext, ebp);
+-	OFFSET(SIGCONTEXT_esp, sigcontext, esp);
+-	OFFSET(SIGCONTEXT_eip, sigcontext, eip);
++	OFFSET(IA32_SIGCONTEXT_eax, sigcontext, eax);
++	OFFSET(IA32_SIGCONTEXT_ebx, sigcontext, ebx);
++	OFFSET(IA32_SIGCONTEXT_ecx, sigcontext, ecx);
++	OFFSET(IA32_SIGCONTEXT_edx, sigcontext, edx);
++	OFFSET(IA32_SIGCONTEXT_esi, sigcontext, esi);
++	OFFSET(IA32_SIGCONTEXT_edi, sigcontext, edi);
++	OFFSET(IA32_SIGCONTEXT_ebp, sigcontext, ebp);
++	OFFSET(IA32_SIGCONTEXT_esp, sigcontext, esp);
++	OFFSET(IA32_SIGCONTEXT_eip, sigcontext, eip);
+ 	BLANK();
  
- /*
-- * Symbols we define here called VDSO* get their values into vdso-syms.lds
-- * and become visible to the kernel itself.
-+ * This controls what userland symbols we export from the vDSO.
-  */
--VDSO64_PRELINK = VDSO_PRELINK;
--
--#define VEXTERN(x)	VDSO64_ ## x = vdso_ ## x;
--#include "vextern.h"
--#undef	VEXTERN
--
--SECTIONS
--{
--  . = VDSO_PRELINK + SIZEOF_HEADERS;
--
--  .hash           : { *(.hash) }		:text
--  .gnu.hash       : { *(.gnu.hash) }
--  .dynsym         : { *(.dynsym) }
--  .dynstr         : { *(.dynstr) }
--  .gnu.version    : { *(.gnu.version) }
--  .gnu.version_d  : { *(.gnu.version_d) }
--  .gnu.version_r  : { *(.gnu.version_r) }
--
--  /* This linker script is used both with -r and with -shared.
--     For the layouts to match, we need to skip more than enough
--     space for the dynamic symbol table et al.  If this amount
--     is insufficient, ld -shared will barf.  Just increase it here.  */
--  . = VDSO_PRELINK + VDSO_TEXT_OFFSET;
--
--  .text           : { *(.text*) }		:text
--  .rodata         : { *(.rodata*) }		:text
--  .data		  : {
--	*(.data*)
--	*(.sdata*)
--	*(.bss*)
--	*(.dynbss*)
--  }						:text
--
--  .altinstructions : { *(.altinstructions) }		:text
--  .altinstr_replacement  : { *(.altinstr_replacement) }	:text
--
--  .note		  : { *(.note.*) }		:text :note
--  .eh_frame_hdr   : { *(.eh_frame_hdr) }	:text :eh_frame_hdr
--  .eh_frame       : { KEEP (*(.eh_frame)) }	:text
--  .dynamic        : { *(.dynamic) }		:text :dynamic
--  .useless        : {
--  	*(.got.plt) *(.got)
--	*(.gnu.linkonce.d.*)
--	*(.gnu.linkonce.b.*)
--  }						:text
-+VERSION {
-+	LINUX_2.6 {
-+	global:
-+		clock_gettime;
-+		__vdso_clock_gettime;
-+		gettimeofday;
-+		__vdso_gettimeofday;
-+		getcpu;
-+		__vdso_getcpu;
-+	local: *;
-+	};
- }
+ 	OFFSET(CPUINFO_x86, cpuinfo_x86, x86);
+@@ -94,7 +94,7 @@ void foo(void)
+ 	BLANK();
  
--/*
-- * We must supply the ELF program headers explicitly to get just one
-- * PT_LOAD segment, and set the flags explicitly to make segments read-only.
-- */
--PHDRS
--{
--  text PT_LOAD FILEHDR PHDRS FLAGS(5); /* PF_R|PF_X */
--  dynamic PT_DYNAMIC FLAGS(4); /* PF_R */
--  note PT_NOTE FLAGS(4); /* PF_R */
--  eh_frame_hdr 0x6474e550; /* PT_GNU_EH_FRAME, but ld doesn't match the name */
--}
-+VDSO64_PRELINK = VDSO_PRELINK;
+ 	OFFSET(EXEC_DOMAIN_handler, exec_domain, handler);
+-	OFFSET(RT_SIGFRAME_sigcontext, rt_sigframe, uc.uc_mcontext);
++	OFFSET(IA32_RT_SIGFRAME_sigcontext, rt_sigframe, uc.uc_mcontext);
+ 	BLANK();
  
- /*
-- * This controls what symbols we export from the DSO.
-+ * Define VDSO64_x for each VEXTERN(x), for use via VDSO64_SYMBOL.
-  */
--VERSION
--{
--  LINUX_2.6 {
--    global:
--	clock_gettime;
--	__vdso_clock_gettime;
--	gettimeofday;
--	__vdso_gettimeofday;
--	getcpu;
--	__vdso_getcpu;
--    local: *;
--  };
--}
-+#define VEXTERN(x)	VDSO64_ ## x = vdso_ ## x;
-+#include "vextern.h"
-+#undef	VEXTERN
-diff --git a/arch/x86/vdso/voffset.h b/arch/x86/vdso/voffset.h
-deleted file mode 100644
-index 4af67c7..0000000
---- a/arch/x86/vdso/voffset.h
-+++ /dev/null
-@@ -1 +0,0 @@
--#define VDSO_TEXT_OFFSET 0x600
+ 	OFFSET(pbe_address, pbe, address);
+diff --git a/arch/x86/kernel/vsyscall-sigreturn_32.S b/arch/x86/kernel/vsyscall-sigreturn_32.S
+index a92262f..e939253 100644
+--- a/arch/x86/kernel/vsyscall-sigreturn_32.S
++++ b/arch/x86/kernel/vsyscall-sigreturn_32.S
+@@ -91,27 +91,27 @@ __kernel_rt_sigreturn:
+ 	.sleb128 offset;		/*       offset */		\
+ 1:
+ 
+-	do_cfa_expr(SIGCONTEXT_esp+4)
+-	do_expr(0, SIGCONTEXT_eax+4)
+-	do_expr(1, SIGCONTEXT_ecx+4)
+-	do_expr(2, SIGCONTEXT_edx+4)
+-	do_expr(3, SIGCONTEXT_ebx+4)
+-	do_expr(5, SIGCONTEXT_ebp+4)
+-	do_expr(6, SIGCONTEXT_esi+4)
+-	do_expr(7, SIGCONTEXT_edi+4)
+-	do_expr(8, SIGCONTEXT_eip+4)
++	do_cfa_expr(IA32_SIGCONTEXT_esp+4)
++	do_expr(0, IA32_SIGCONTEXT_eax+4)
++	do_expr(1, IA32_SIGCONTEXT_ecx+4)
++	do_expr(2, IA32_SIGCONTEXT_edx+4)
++	do_expr(3, IA32_SIGCONTEXT_ebx+4)
++	do_expr(5, IA32_SIGCONTEXT_ebp+4)
++	do_expr(6, IA32_SIGCONTEXT_esi+4)
++	do_expr(7, IA32_SIGCONTEXT_edi+4)
++	do_expr(8, IA32_SIGCONTEXT_eip+4)
+ 
+ 	.byte 0x42	/* DW_CFA_advance_loc 2 -- nop; popl eax. */
+ 
+-	do_cfa_expr(SIGCONTEXT_esp)
+-	do_expr(0, SIGCONTEXT_eax)
+-	do_expr(1, SIGCONTEXT_ecx)
+-	do_expr(2, SIGCONTEXT_edx)
+-	do_expr(3, SIGCONTEXT_ebx)
+-	do_expr(5, SIGCONTEXT_ebp)
+-	do_expr(6, SIGCONTEXT_esi)
+-	do_expr(7, SIGCONTEXT_edi)
+-	do_expr(8, SIGCONTEXT_eip)
++	do_cfa_expr(IA32_SIGCONTEXT_esp)
++	do_expr(0, IA32_SIGCONTEXT_eax)
++	do_expr(1, IA32_SIGCONTEXT_ecx)
++	do_expr(2, IA32_SIGCONTEXT_edx)
++	do_expr(3, IA32_SIGCONTEXT_ebx)
++	do_expr(5, IA32_SIGCONTEXT_ebp)
++	do_expr(6, IA32_SIGCONTEXT_esi)
++	do_expr(7, IA32_SIGCONTEXT_edi)
++	do_expr(8, IA32_SIGCONTEXT_eip)
+ 
+ 	.align 4
+ .LENDFDEDLSI1:
+@@ -128,15 +128,15 @@ __kernel_rt_sigreturn:
+ 	   slightly less complicated than the above, since we don't
+ 	   modify the stack pointer in the process.  */
+ 
+-	do_cfa_expr(RT_SIGFRAME_sigcontext-4 + SIGCONTEXT_esp)
+-	do_expr(0, RT_SIGFRAME_sigcontext-4 + SIGCONTEXT_eax)
+-	do_expr(1, RT_SIGFRAME_sigcontext-4 + SIGCONTEXT_ecx)
+-	do_expr(2, RT_SIGFRAME_sigcontext-4 + SIGCONTEXT_edx)
+-	do_expr(3, RT_SIGFRAME_sigcontext-4 + SIGCONTEXT_ebx)
+-	do_expr(5, RT_SIGFRAME_sigcontext-4 + SIGCONTEXT_ebp)
+-	do_expr(6, RT_SIGFRAME_sigcontext-4 + SIGCONTEXT_esi)
+-	do_expr(7, RT_SIGFRAME_sigcontext-4 + SIGCONTEXT_edi)
+-	do_expr(8, RT_SIGFRAME_sigcontext-4 + SIGCONTEXT_eip)
++	do_cfa_expr(IA32_RT_SIGFRAME_sigcontext-4 + IA32_SIGCONTEXT_esp)
++	do_expr(0, IA32_RT_SIGFRAME_sigcontext-4 + IA32_SIGCONTEXT_eax)
++	do_expr(1, IA32_RT_SIGFRAME_sigcontext-4 + IA32_SIGCONTEXT_ecx)
++	do_expr(2, IA32_RT_SIGFRAME_sigcontext-4 + IA32_SIGCONTEXT_edx)
++	do_expr(3, IA32_RT_SIGFRAME_sigcontext-4 + IA32_SIGCONTEXT_ebx)
++	do_expr(5, IA32_RT_SIGFRAME_sigcontext-4 + IA32_SIGCONTEXT_ebp)
++	do_expr(6, IA32_RT_SIGFRAME_sigcontext-4 + IA32_SIGCONTEXT_esi)
++	do_expr(7, IA32_RT_SIGFRAME_sigcontext-4 + IA32_SIGCONTEXT_edi)
++	do_expr(8, IA32_RT_SIGFRAME_sigcontext-4 + IA32_SIGCONTEXT_eip)
+ 
+ 	.align 4
+ .LENDFDEDLSI2:
