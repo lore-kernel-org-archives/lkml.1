@@ -1,86 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbXKSWKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754231AbXKSWKw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755364AbXKSWKa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 17:10:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756661AbXKSWHo
+	id S1754231AbXKSWKw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 17:10:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbXKSWIE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 17:07:44 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49374 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756838AbXKSWHm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 17:07:42 -0500
+	Mon, 19 Nov 2007 17:08:04 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:47471 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755027AbXKSWIB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 17:08:01 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: [PATCH 2/4] proc: Rewrite do_task_stat to correctly handle pid namespaces.
+References: <20071117183109.GA2605@tv-sign.ru>
+	<m1abp9vqua.fsf@ebiederm.dsl.xmission.com>
+	<m163zxvqm9.fsf_-_@ebiederm.dsl.xmission.com>
+Date: Mon, 19 Nov 2007 15:06:25 -0700
+In-Reply-To: <m163zxvqm9.fsf_-_@ebiederm.dsl.xmission.com> (Eric
+	W. Biederman's message of "Mon, 19 Nov 2007 15:04:46 -0700")
+Message-ID: <m11walvqji.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-X-Fcc: ~/Mail/linus
-Subject: [PATCH 18/18] x86 vDSO: makefile cleanup
-In-Reply-To: Roland McGrath's message of  Monday, 19 November 2007 13:59:43 -0800 <20071119215944.01B7C26F8BE@magilla.localdomain>
-References: <20071119215944.01B7C26F8BE@magilla.localdomain>
-X-Shopping-List: (1) Instant dramatic audition lips
-   (2) Sunburnt bugs
-   (3) Bicentennial breeze longitudes
-   (4) Licentious maternity warriors
-   (5) Hilarious friction
-Message-Id: <20071119220706.57F7226F8BE@magilla.localdomain>
-Date: Mon, 19 Nov 2007 14:07:06 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This cleans up the arch/x86/vdso/Makefile rules for vdso.so to
-share more code with the vdso32-*.so rules and remove old cruft.
+Currently (as pointed out by Oleg) do_task_stat has a race
+when calling task_pid_nr_ns with the task exiting.  In addition
+do_task_stat is not currently displaying information in the
+context of the pid namespace that mounted the /proc filesystem.
+So "cut -d' ' -f 1 /proc/<pid>/stat" may not equal <pid>.
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
+This patch fixes the problem by converting to a single_open
+seq_file show method.  Getting the pid namespace from the
+filesystem superblock instead of current, and simply using
+the the struct pid from the inode instead of attempting to get
+that same pid from the task.
+
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- arch/x86/vdso/Makefile |   19 ++++---------------
- 1 files changed, 4 insertions(+), 15 deletions(-)
+ fs/proc/array.c    |   24 ++++++++++++------------
+ fs/proc/base.c     |    4 ++--
+ fs/proc/internal.h |    4 ++--
+ 3 files changed, 16 insertions(+), 16 deletions(-)
 
-diff --git a/arch/x86/vdso/Makefile b/arch/x86/vdso/Makefile
-index 53f36bc..2d5bbbe 100644
---- a/arch/x86/vdso/Makefile
-+++ b/arch/x86/vdso/Makefile
-@@ -23,25 +23,15 @@ $(obj)/vdso.o: $(obj)/vdso.so
+diff --git a/fs/proc/array.c b/fs/proc/array.c
+index eba339e..e7d290f 100644
+--- a/fs/proc/array.c
++++ b/fs/proc/array.c
+@@ -77,6 +77,7 @@
+ #include <linux/cpuset.h>
+ #include <linux/rcupdate.h>
+ #include <linux/delayacct.h>
++#include <linux/seq_file.h>
+ #include <linux/pid_namespace.h>
  
- targets += vdso.so vdso.so.dbg vdso.lds $(vobjs-y)
+ #include <asm/pgtable.h>
+@@ -384,14 +385,14 @@ static cputime_t task_gtime(struct task_struct *p)
+ 	return p->gtime;
+ }
  
--# The DSO images are built using a special linker script.
--quiet_cmd_syscall = SYSCALL $@
--      cmd_syscall = $(CC) -m elf_x86_64 -nostdlib $(SYSCFLAGS_$(@F)) \
--		          -Wl,-T,$(filter-out FORCE,$^) -o $@
+-static int do_task_stat(struct task_struct *task, char *buffer, int whole)
++static int do_task_stat(struct seq_file *m, struct pid_namespace *ns,
++			struct pid *pid, struct task_struct *task, int whole)
+ {
+ 	unsigned long vsize, eip, esp, wchan = ~0UL;
+ 	long priority, nice;
+ 	int tty_pgrp = -1, tty_nr = 0;
+ 	sigset_t sigign, sigcatch;
+ 	char state;
+-	int res;
+ 	pid_t ppid = 0, pgid = -1, sid = -1;
+ 	int num_threads = 0;
+ 	struct mm_struct *mm;
+@@ -403,9 +404,6 @@ static int do_task_stat(struct task_struct *task, char *buffer, int whole)
+ 	unsigned long rsslim = 0;
+ 	char tcomm[sizeof(task->comm)];
+ 	unsigned long flags;
+-	struct pid_namespace *ns;
 -
- export CPPFLAGS_vdso.lds += -P -C
+-	ns = current->nsproxy->pid_ns;
  
--vdso-flags = -fPIC -shared -Wl,-soname=linux-vdso.so.1 \
--		 $(call ld-option, -Wl$(comma)--hash-style=sysv) \
--		-Wl,-z,max-page-size=4096 -Wl,-z,common-page-size=4096
--SYSCFLAGS_vdso.so = $(vdso-flags)
--SYSCFLAGS_vdso.so.dbg = $(vdso-flags)
-+VDSO_LDFLAGS_vdso.lds = -m elf_x86_64 -Wl,-soname=linux-vdso.so.1 \
-+		      	-Wl,-z,max-page-size=4096 -Wl,-z,common-page-size=4096
+ 	state = *get_task_state(task);
+ 	vsize = eip = esp = 0;
+@@ -492,10 +490,10 @@ static int do_task_stat(struct task_struct *task, char *buffer, int whole)
+ 	/* convert nsec -> ticks */
+ 	start_time = nsec_to_clock_t(start_time);
  
- $(obj)/vdso.o: $(src)/vdso.S $(obj)/vdso.so
+-	res = sprintf(buffer, "%d (%s) %c %d %d %d %d %d %u %lu \
++	seq_printf(m, "%d (%s) %c %d %d %d %d %d %u %lu \
+ %lu %lu %lu %lu %lu %ld %ld %ld %ld %d 0 %llu %lu %ld %lu %lu %lu %lu %lu \
+ %lu %lu %lu %lu %lu %lu %lu %lu %d %d %u %u %llu %lu %ld\n",
+-		task_pid_nr_ns(task, ns),
++		pid_nr_ns(pid, ns),
+ 		tcomm,
+ 		state,
+ 		ppid,
+@@ -544,17 +542,19 @@ static int do_task_stat(struct task_struct *task, char *buffer, int whole)
+ 		cputime_to_clock_t(cgtime));
+ 	if (mm)
+ 		mmput(mm);
+-	return res;
++	return 0;
+ }
  
--$(obj)/vdso.so: $(src)/vdso.lds $(vobjs) FORCE
--
- $(obj)/vdso.so.dbg: $(src)/vdso.lds $(vobjs) FORCE
--	$(call if_changed,syscall)
-+	$(call if_changed,vdso)
+-int proc_tid_stat(struct task_struct *task, char *buffer)
++int proc_tid_stat(struct seq_file *m, struct pid_namespace *ns,
++			struct pid *pid, struct task_struct *task)
+ {
+-	return do_task_stat(task, buffer, 0);
++	return do_task_stat(m, ns, pid, task, 0);
+ }
  
- $(obj)/%.so: OBJCOPYFLAGS := -S
- $(obj)/%.so: $(obj)/%.so.dbg FORCE
-@@ -49,8 +39,7 @@ $(obj)/%.so: $(obj)/%.so.dbg FORCE
+-int proc_tgid_stat(struct task_struct *task, char *buffer)
++int proc_tgid_stat(struct seq_file *m, struct pid_namespace *ns,
++			struct pid *pid, struct task_struct *task)
+ {
+-	return do_task_stat(task, buffer, 1);
++	return do_task_stat(m, ns, pid, task, 1);
+ }
  
- CFL := $(PROFILING) -mcmodel=small -fPIC -g0 -O2 -fasynchronous-unwind-tables -m64
+ int proc_pid_statm(struct task_struct *task, char *buffer)
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index e9ff77e..51f0e7a 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -2228,7 +2228,7 @@ static const struct pid_entry tgid_base_stuff[] = {
+ 	REG("sched",      S_IRUGO|S_IWUSR, pid_sched),
+ #endif
+ 	INF("cmdline",    S_IRUGO, pid_cmdline),
+-	INF("stat",       S_IRUGO, tgid_stat),
++	ONE("stat",       S_IRUGO, tgid_stat),
+ 	INF("statm",      S_IRUGO, pid_statm),
+ 	REG("maps",       S_IRUGO, maps),
+ #ifdef CONFIG_NUMA
+@@ -2549,7 +2549,7 @@ static const struct pid_entry tid_base_stuff[] = {
+ 	REG("sched",     S_IRUGO|S_IWUSR, pid_sched),
+ #endif
+ 	INF("cmdline",   S_IRUGO, pid_cmdline),
+-	INF("stat",      S_IRUGO, tid_stat),
++	ONE("stat",      S_IRUGO, tid_stat),
+ 	INF("statm",     S_IRUGO, pid_statm),
+ 	REG("maps",      S_IRUGO, maps),
+ #ifdef CONFIG_NUMA
+diff --git a/fs/proc/internal.h b/fs/proc/internal.h
+index 1b2b6c6..74bc772 100644
+--- a/fs/proc/internal.h
++++ b/fs/proc/internal.h
+@@ -46,8 +46,8 @@ extern int maps_protect;
  
--$(obj)/vclock_gettime.o: KBUILD_CFLAGS = $(CFL)
--$(obj)/vgetcpu.o: KBUILD_CFLAGS = $(CFL)
-+$(vobjs): KBUILD_CFLAGS = $(CFL)
+ extern void create_seq_entry(char *name, mode_t mode, const struct file_operations *f);
+ extern int proc_exe_link(struct inode *, struct dentry **, struct vfsmount **);
+-extern int proc_tid_stat(struct task_struct *,  char *);
+-extern int proc_tgid_stat(struct task_struct *, char *);
++extern int proc_tid_stat(struct seq_file *m, struct pid_namespace *ns, struct pid *pid, struct task_struct *task);
++extern int proc_tgid_stat(struct seq_file *m, struct pid_namespace *ns, struct pid *pid, struct task_struct *task);
+ extern int proc_pid_status(struct task_struct *, char *);
+ extern int proc_pid_statm(struct task_struct *, char *);
  
- targets += vdso-syms.lds
- obj-$(VDSO64-y)			+= vdso-syms.lds
+-- 
+1.5.3.rc6.17.g1911
+
