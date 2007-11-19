@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbXKSNG1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754297AbXKSNI1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754627AbXKSNG1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 08:06:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbXKSNGS
+	id S1754297AbXKSNI1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 08:08:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbXKSNIU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 08:06:18 -0500
-Received: from minus.inr.ac.ru ([194.67.69.97]:35652 "HELO ms2.inr.ac.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1752525AbXKSNGR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 08:06:17 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=ms2.inr.ac.ru;
-  b=S+dOzx5m+pbwDn3vOey+tipzQUbPa2ATKlSzx5xv0SeSoabl2bEWA9NWbgOMs0OW+jrPxCB1i2NZtURQ7xdNHIjB8XiAl4te7q57k69u4pqm7fMlxazrDsAdqEPo4ApZYa0RWzb2meqG97/dwExLHhvtMEcOGviJZFXl68tjrLg=;
-Date: Mon, 19 Nov 2007 16:06:10 +0300
-From: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-To: Jonas Danielsson <the.sator@gmail.com>
-Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, jmorris@namei.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] net/ipv4/arp.c: Fix arp reply when sender ip 0 (was: Strange behavior in arp probe reply, bug or feature?)
-Message-ID: <20071119130610.GB6952@ms2.inr.ac.ru>
-References: <cac0ab7d0711150340p58eda94ah92894072ba328205@mail.gmail.com> <20071115154032.GA30391@ms2.inr.ac.ru> <cac0ab7d0711151340l1cc91a2dw5ebf36e166d16d7a@mail.gmail.com>
-Mime-Version: 1.0
+	Mon, 19 Nov 2007 08:08:20 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51147 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752466AbXKSNIT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 08:08:19 -0500
+Date: Mon, 19 Nov 2007 14:08:03 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Cc: dmitry.adamushko@gmail.com, a.p.zijlstra@chello.nl,
+       dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, efault@gmx.de,
+       skumar@linux.vnet.ibm.com, Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [PATCH 1/2] sched: Minor cleanups
+Message-ID: <20071119130803.GA31491@elte.hu>
+References: <20071119122713.GA28777@linux.vnet.ibm.com> <20071119122828.GB28777@linux.vnet.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <cac0ab7d0711151340l1cc91a2dw5ebf36e166d16d7a@mail.gmail.com>
-User-Agent: Mutt/1.5.6i
+In-Reply-To: <20071119122828.GB28777@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
 
-> Is there a reason that the target hardware address isn't the target
-> hardware address?
+* Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
 
-It is bound only to the fact that linux uses protocol address
-of the machine, which responds. It would be highly confusing
-(more than confusing :-)), if we used our protocol address and hardware
-address of requestor.
+> Minor scheduler cleanups:
+> 
+> - Fix coding style
+> - remove obsolete comment
+> - Use list_for_each_entry_rcu when walking task group list
 
-But if you use zero protocol address as source, you really can use
-any hw address.
+>  #define for_each_leaf_cfs_rq(rq, cfs_rq) \
+> -	list_for_each_entry(cfs_rq, &rq->leaf_cfs_rq_list, leaf_cfs_rq_list)
+> +	list_for_each_entry_rcu(cfs_rq, &rq->leaf_cfs_rq_list, leaf_cfs_rq_list)
+>  
+>  /* Do the two (enqueued) entities belong to the same group ? */
+>  static inline int
+> @@ -1126,7 +1126,10 @@ static void print_cfs_stats(struct seq_f
+>  #ifdef CONFIG_FAIR_GROUP_SCHED
+>  	print_cfs_rq(m, cpu, &cpu_rq(cpu)->cfs);
+>  #endif
+> +
+> +	rcu_read_lock();
+>  	for_each_leaf_cfs_rq(cpu_rq(cpu), cfs_rq)
+>  		print_cfs_rq(m, cpu, cfs_rq);
+> +	rcu_read_unlock();
 
-> The dhcp clients I examined, and the implementation of the arpcheck
-> that I use will compare the target hardware field of the arp-reply and
-> match it against its own mac, to verify the reply. And this fails with
-> the current implementation in the kernel.
+hm, why is this a cleanup?
 
-1. Do not do this. Mainly, because you already know that this does not work
-   with linux. :-) Logically, target hw address in arp reply is just
-   a nonsensial redundancy, it should not be checked and even looked at.
-
-2. What's about your suggestion, I thought about this and I am going to agree.
-
-   Arguments, which convinced me are:
-
-   - arping still works.
-   - any piece of reasonable software should work.
-   - if Windows understands DaD (is it really true? I cannot believe)
-     and it is unhappy about our responce and does not block use
-     of duplicate address only due to this, we _must_ accomodate ASAP.
-   - if we do,we have to use 0 protocol address, no choice.
-
-Alexey
+	Ingo
