@@ -1,71 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753817AbXKSIVI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680AbXKSIW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753817AbXKSIVI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 03:21:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbXKSIU4
+	id S1754680AbXKSIW6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 03:22:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbXKSIWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 03:20:56 -0500
-Received: from rzcomm22.rz.tu-bs.de ([134.169.9.68]:48090 "EHLO
-	rzcomm22.rz.tu-bs.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751773AbXKSIU4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 03:20:56 -0500
-Message-ID: <47414764.1020501@l4x.org>
-Date: Mon, 19 Nov 2007 09:20:52 +0100
-From: Jan Dittmer <jdi@l4x.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
-MIME-Version: 1.0
-To: jesper.nilsson@axis.com
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: cris build fixes
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 19 Nov 2007 03:22:50 -0500
+Received: from gate.crashing.org ([63.228.1.57]:47249 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751800AbXKSIWt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 03:22:49 -0500
+Subject: Re: [PATCH 2/5] drivers/macintosh/via-pmu.c: Add missing
+	pci_dev_put
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Julia Lawall <julia@diku.dk>
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0711190903100.19198@ask.diku.dk>
+References: <Pine.LNX.4.64.0711190903100.19198@ask.diku.dk>
+Content-Type: text/plain
+Date: Mon, 19 Nov 2007 19:22:39 +1100
+Message-Id: <1195460559.7022.38.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I saw that you merged a lot of cris bug fixes into 2.6.24-rc3.
-Is the cris arch supposed to build again now? If yes which binutils
-and gcc version is needed? I'm getting the following error [1]:
+On Mon, 2007-11-19 at 09:03 +0100, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
+> 
+> There should be a pci_dev_put when breaking out of a loop that iterates
+> over calls to pci_get_device and similar functions.
+> 
+> In this case, the return under the #else case of #ifdef HACKED_PCI_SAVE
+> should have a pci_dev_put, just as the return in the case where
+> HACKED_PCI_SAVE is true does.
+> 
+> This was fixed using the following semantic patch.
 
-None -> 2.6.24-rc3-git1
-Unpacking linux-2.6.23.tar.bz2
-Applying patch-2.6.24-rc3.bz2
-Applying patch-2.6.24-rc3-git1.bz2
-rm -f timage vmlinux.bin decompress.bin rescue.bin cramfs.img
-rm -rf .tmp
-## make HOSTCC=gcc-4.0 ARCH=cris CROSS_COMPILE=cris-linux- CROSS32_COMPILE= 
-O=/tmp/tmp.XaDaD27156/out/cris defconfig
-   HOSTCC  scripts/basic/fixdep
-   HOSTCC  scripts/basic/docproc
-   GEN     /tmp/tmp.XaDaD27156/out/cris/Makefile
-   HOSTCC  scripts/kconfig/conf.o
-   HOSTCC  scripts/kconfig/kxgettext.o
-   SHIPPED scripts/kconfig/zconf.tab.c
-   SHIPPED scripts/kconfig/lex.zconf.c
-   SHIPPED scripts/kconfig/zconf.hash.c
-   HOSTCC  scripts/kconfig/zconf.tab.o
-   HOSTLD  scripts/kconfig/conf
-scripts/kconfig/conf -d arch/cris/Kconfig
-arch/cris/Kconfig:161: can't open file "arch/cris/arch/drivers/Kconfig"
-make[2]: *** [defconfig] Error 1
-make[1]: *** [defconfig] Error 2
-make: *** [sub-make] Error 2
-## make HOSTCC=gcc-4.0 ARCH=cris CROSS_COMPILE=cris-linux- CROSS32_COMPILE= 
-O=/tmp/tmp.XaDaD27156/out/cris
-   GEN     /tmp/tmp.XaDaD27156/out/cris/Makefile
-scripts/kconfig/conf -s arch/cris/Kconfig
-arch/cris/Kconfig:161: can't open file "arch/cris/arch/drivers/Kconfig"
-make[3]: *** [silentoldconfig] Error 1
-make[2]: *** [silentoldconfig] Error 2
-   Making include/asm-cris/arch -> include/asm-cris/arch-v10 symlink
-make[1]: *** No rule to make target `include/config/auto.conf', needed by 
-`include/config/kernel.release'.  Stop.
-make: *** [sub-make] Error 2
+I think most of that code is no longer necessary (and the lack of
+pci_dev_put() is mostly due to the fact that this code long predates the
+existence of pci_dev_put :-)
 
-Thanks,
+I want to try out without that PCI save/restore code on a couple of old
+machines see if we can just remove the whole thing.
 
-Jan
+Ben.
 
-[1] http://l4x.org/k/?36622
+
