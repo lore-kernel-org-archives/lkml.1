@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754237AbXKSS07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755527AbXKSS1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754237AbXKSS07 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 13:26:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbXKSSWY
+	id S1755527AbXKSS1a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 13:27:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbXKSSW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 13:22:24 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:49287 "EHLO
+	Mon, 19 Nov 2007 13:22:28 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:49302 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751192AbXKSSWW (ORCPT
+	with ESMTP id S1752164AbXKSSWZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 13:22:22 -0500
-Date: Mon, 19 Nov 2007 10:19:12 -0800
+	Mon, 19 Nov 2007 13:22:25 -0500
+Date: Mon, 19 Nov 2007 10:19:15 -0800
 From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       James.Bottomley@steeleye.com
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,59 +21,325 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       linux@highpoint-tech.com, linux-scsi@vger.kernel.org
-Subject: [patch 16/26] hptiop: avoid buffer overflow when returning sense
-	data
-Message-ID: <20071119181912.GQ15425@kroah.com>
+       Frank Seidel <fseidel@suse.de>
+Subject: [patch 17/26] USB: kobil_sct: trivial backport to fix libct
+Message-ID: <20071119181915.GR15425@kroah.com>
 References: <20071119181438.617190424@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="hptiop-avoid-buffer-overflow-when-returning-sense-data.patch"
+Content-Disposition: inline; filename="usb-kobil_sct-trivial-backport-to-fix-libct.patch"
 In-Reply-To: <20071119181746.GA15425@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.22-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: HighPoint Linux Team <linux@highpoint-tech.com>
+From: Frank Seidel <fseidel@suse.de>
 
-patch 0fec02c93f60fb44ba3a24a0d3e4a52521d34d3f in mainline.
+Backport of a patch by Alan Cox <alan@lxorguk.ukuu.org.uk> in the kernel tree
+with commit 94d0f7eac77a84da2cee41b8038796891f75f09e
 
-avoid buffer overflow when returning sense data.
+Original comments:
+	USB: kobil_sct: Rework driver
 
-With current adapter firmware the driver is working but future firmware
-updates may return sense data larger than 96 bytes, causing overflow on
-scp->sense_buffer and a kernel crash.
+	No hardware but this driver is currently totally broken so we can't make
+	it much worse. Remove all tbe broken invalid termios handling and replace
+	it with a proper set_termios method.
 
-This fix should be backported to earlier kernels.
+Frank's comments:
+	Without this patch the userspace libct (to access the cardreader)
+	segfaults.
 
-Signed-off-by: HighPoint Linux Team <linux@highpoint-tech.com>
-Signed-off-by: James Bottomley <James.Bottomley@steeleye.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Frank Seidel <fseidel@suse.de>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- drivers/scsi/hptiop.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
 
---- a/drivers/scsi/hptiop.c
-+++ b/drivers/scsi/hptiop.c
-@@ -377,8 +377,9 @@ static void hptiop_host_request_callback
- 		scp->result = SAM_STAT_CHECK_CONDITION;
- 		memset(&scp->sense_buffer,
- 				0, sizeof(scp->sense_buffer));
--		memcpy(&scp->sense_buffer,
--			&req->sg_list, le32_to_cpu(req->dataxfer_length));
-+		memcpy(&scp->sense_buffer, &req->sg_list,
-+				min(sizeof(scp->sense_buffer),
-+					le32_to_cpu(req->dataxfer_length)));
- 		break;
+---
+ drivers/usb/serial/kobil_sct.c |  170 ++++++++++++++++-------------------------
+ 1 file changed, 69 insertions(+), 101 deletions(-)
+
+--- a/drivers/usb/serial/kobil_sct.c
++++ b/drivers/usb/serial/kobil_sct.c
+@@ -82,6 +82,7 @@ static int  kobil_tiocmset(struct usb_se
+ 			   unsigned int set, unsigned int clear);
+ static void kobil_read_int_callback( struct urb *urb );
+ static void kobil_write_callback( struct urb *purb );
++static void kobil_set_termios(struct usb_serial_port *port, struct ktermios *old);
  
- 	default:
+ 
+ static struct usb_device_id id_table [] = {
+@@ -119,6 +120,7 @@ static struct usb_serial_driver kobil_de
+ 	.attach =		kobil_startup,
+ 	.shutdown =		kobil_shutdown,
+ 	.ioctl =		kobil_ioctl,
++	.set_termios =		kobil_set_termios,
+ 	.tiocmget =		kobil_tiocmget,
+ 	.tiocmset =		kobil_tiocmset,
+ 	.open =			kobil_open,
+@@ -137,7 +139,6 @@ struct kobil_private {
+ 	int cur_pos; // index of the next char to send in buf
+ 	__u16 device_type;
+ 	int line_state;
+-	struct ktermios internal_termios;
+ };
+ 
+ 
+@@ -216,7 +217,7 @@ static void kobil_shutdown (struct usb_s
+ 
+ static int kobil_open (struct usb_serial_port *port, struct file *filp)
+ {
+-	int i, result = 0;
++	int result = 0;
+ 	struct kobil_private *priv;
+ 	unsigned char *transfer_buffer;
+ 	int transfer_buffer_length = 8;
+@@ -242,16 +243,6 @@ static int kobil_open (struct usb_serial
+ 	port->tty->termios->c_iflag = IGNBRK | IGNPAR | IXOFF;
+ 	port->tty->termios->c_oflag &= ~ONLCR; // do NOT translate CR to CR-NL (0x0A -> 0x0A 0x0D)
+ 	
+-	// set up internal termios structure 
+-	priv->internal_termios.c_iflag = port->tty->termios->c_iflag;
+-	priv->internal_termios.c_oflag = port->tty->termios->c_oflag;
+-	priv->internal_termios.c_cflag = port->tty->termios->c_cflag;
+-	priv->internal_termios.c_lflag = port->tty->termios->c_lflag;
+-
+-	for (i=0; i<NCCS; i++) {
+-		priv->internal_termios.c_cc[i] = port->tty->termios->c_cc[i];
+-	}
+-	
+ 	// allocate memory for transfer buffer
+ 	transfer_buffer = kzalloc(transfer_buffer_length, GFP_KERNEL);
+ 	if (! transfer_buffer) {
+@@ -358,24 +349,26 @@ static void kobil_close (struct usb_seri
+ }
+ 
+ 
+-static void kobil_read_int_callback( struct urb *purb)
++static void kobil_read_int_callback(struct urb *urb)
+ {
+ 	int result;
+-	struct usb_serial_port *port = (struct usb_serial_port *) purb->context;
++	struct usb_serial_port *port = urb->context;
+ 	struct tty_struct *tty;
+-	unsigned char *data = purb->transfer_buffer;
++	unsigned char *data = urb->transfer_buffer;
++	int status = urb->status;
+ //	char *dbg_data;
+ 
+ 	dbg("%s - port %d", __FUNCTION__, port->number);
+ 
+-	if (purb->status) {
+-		dbg("%s - port %d Read int status not zero: %d", __FUNCTION__, port->number, purb->status);
++	if (status) {
++		dbg("%s - port %d Read int status not zero: %d",
++		    __FUNCTION__, port->number, status);
+ 		return;
+ 	}
+-	
+-	tty = port->tty; 
+-	if (purb->actual_length) {
+-		
++
++	tty = port->tty;
++	if (urb->actual_length) {
++
+ 		// BEGIN DEBUG
+ 		/*
+ 		  dbg_data = kzalloc((3 *  purb->actual_length + 10) * sizeof(char), GFP_KERNEL);
+@@ -390,15 +383,15 @@ static void kobil_read_int_callback( str
+ 		*/
+ 		// END DEBUG
+ 
+-		tty_buffer_request_room(tty, purb->actual_length);
+-		tty_insert_flip_string(tty, data, purb->actual_length);
++		tty_buffer_request_room(tty, urb->actual_length);
++		tty_insert_flip_string(tty, data, urb->actual_length);
+ 		tty_flip_buffer_push(tty);
+ 	}
+ 
+ 	// someone sets the dev to 0 if the close method has been called
+ 	port->interrupt_in_urb->dev = port->serial->dev;
+ 
+-	result = usb_submit_urb( port->interrupt_in_urb, GFP_ATOMIC ); 
++	result = usb_submit_urb(port->interrupt_in_urb, GFP_ATOMIC);
+ 	dbg("%s - port %d Send read URB returns: %i", __FUNCTION__, port->number, result);
+ }
+ 
+@@ -605,102 +598,79 @@ static int  kobil_tiocmset(struct usb_se
+ 	return (result < 0) ? result : 0;
+ }
+ 
+-
+-static int  kobil_ioctl(struct usb_serial_port *port, struct file *file,
+-			unsigned int cmd, unsigned long arg)
++static void kobil_set_termios(struct usb_serial_port *port, struct ktermios *old)
+ {
+ 	struct kobil_private * priv;
+ 	int result;
+ 	unsigned short urb_val = 0;
+-	unsigned char *transfer_buffer;
+-	int transfer_buffer_length = 8;
+-	char *settings;
+-	void __user *user_arg = (void __user *)arg;
++	int c_cflag = port->tty->termios->c_cflag;
++	speed_t speed;
++	void * settings;
+ 
+ 	priv = usb_get_serial_port_data(port);
+-	if ((priv->device_type == KOBIL_USBTWIN_PRODUCT_ID) || (priv->device_type == KOBIL_KAAN_SIM_PRODUCT_ID)) {
++	if (priv->device_type == KOBIL_USBTWIN_PRODUCT_ID || priv->device_type == KOBIL_KAAN_SIM_PRODUCT_ID)
+ 		// This device doesn't support ioctl calls
+-		return 0;
+-	}
+-
+-	switch (cmd) {
+-	case TCGETS:   // 0x5401
+-		if (!access_ok(VERIFY_WRITE, user_arg, sizeof(struct ktermios))) {
+-			dbg("%s - port %d Error in access_ok", __FUNCTION__, port->number);
+-			return -EFAULT;
+-		}
+-		if (kernel_termios_to_user_termios((struct ktermios __user *)arg,
+-						   &priv->internal_termios))
+-			return -EFAULT;
+-		return 0;
+-
+-	case TCSETS:   // 0x5402
+-		if (!(port->tty->termios)) {
+-			dbg("%s - port %d Error: port->tty->termios is NULL", __FUNCTION__, port->number);
+-			return -ENOTTY;
+-		}
+-		if (!access_ok(VERIFY_READ, user_arg, sizeof(struct ktermios))) {
+-			dbg("%s - port %d Error in access_ok", __FUNCTION__, port->number);
+-			return -EFAULT;
+-		}
+-		if (user_termios_to_kernel_termios(&priv->internal_termios,
+-						   (struct ktermios __user *)arg))
+-			return -EFAULT;
+-		
+-		settings = kzalloc(50, GFP_KERNEL);
+-		if (! settings) {
+-			return -ENOBUFS;
+-		}
++		return;
+ 
+-		switch (priv->internal_termios.c_cflag & CBAUD) {
+-		case B1200:
++	switch (speed = tty_get_baud_rate(port->tty)) {
++		case 1200:
+ 			urb_val = SUSBCR_SBR_1200;
+-			strcat(settings, "1200 ");
+ 			break;
+-		case B9600:
++		case 9600:
+ 		default:
+ 			urb_val = SUSBCR_SBR_9600;
+-			strcat(settings, "9600 ");
+ 			break;
+-		}
++	}
++	urb_val |= (c_cflag & CSTOPB) ? SUSBCR_SPASB_2StopBits : SUSBCR_SPASB_1StopBit;
+ 
+-		urb_val |= (priv->internal_termios.c_cflag & CSTOPB) ? SUSBCR_SPASB_2StopBits : SUSBCR_SPASB_1StopBit;
+-		strcat(settings, (priv->internal_termios.c_cflag & CSTOPB) ? "2 StopBits " : "1 StopBit ");
++	settings = kzalloc(50, GFP_KERNEL);
++	if (! settings)
++		return;
+ 
+-		if (priv->internal_termios.c_cflag & PARENB) {
+-			if  (priv->internal_termios.c_cflag & PARODD) {
+-				urb_val |= SUSBCR_SPASB_OddParity;
+-				strcat(settings, "Odd Parity");
+-			} else {
+-				urb_val |= SUSBCR_SPASB_EvenParity;
+-				strcat(settings, "Even Parity");
+-			}
++	sprintf(settings, "%d ", speed);
++
++	if (c_cflag & PARENB) {
++		if  (c_cflag & PARODD) {
++			urb_val |= SUSBCR_SPASB_OddParity;
++			strcat(settings, "Odd Parity");
+ 		} else {
+-			urb_val |= SUSBCR_SPASB_NoParity;
+-			strcat(settings, "No Parity");
++			urb_val |= SUSBCR_SPASB_EvenParity;
++			strcat(settings, "Even Parity");
+ 		}
+-		dbg("%s - port %d setting port to: %s", __FUNCTION__, port->number, settings );
++	} else {
++		urb_val |= SUSBCR_SPASB_NoParity;
++		strcat(settings, "No Parity");
++	}
+ 
+-		result = usb_control_msg( port->serial->dev, 
+-					  usb_rcvctrlpipe(port->serial->dev, 0 ), 
+-					  SUSBCRequest_SetBaudRateParityAndStopBits,
+-					  USB_TYPE_VENDOR | USB_RECIP_ENDPOINT | USB_DIR_OUT,
+-					  urb_val,
+-					  0,
+-					  settings,
+-					  0,
+-					  KOBIL_TIMEOUT
+-			);
++	result = usb_control_msg( port->serial->dev,
++				  usb_rcvctrlpipe(port->serial->dev, 0 ),
++				  SUSBCRequest_SetBaudRateParityAndStopBits,
++				  USB_TYPE_VENDOR | USB_RECIP_ENDPOINT | USB_DIR_OUT,
++				  urb_val,
++				  0,
++				  settings,
++				  0,
++				  KOBIL_TIMEOUT
++		);
++	kfree(settings);
++}
+ 
+-		dbg("%s - port %d Send set_baudrate URB returns: %i", __FUNCTION__, port->number, result);
+-		kfree(settings);
++static int kobil_ioctl(struct usb_serial_port *port, struct file * file, unsigned int cmd, unsigned long arg)
++{
++	struct kobil_private * priv = usb_get_serial_port_data(port);
++	unsigned char *transfer_buffer;
++	int transfer_buffer_length = 8;
++	int result;
++
++	if (priv->device_type == KOBIL_USBTWIN_PRODUCT_ID || priv->device_type == KOBIL_KAAN_SIM_PRODUCT_ID)
++		// This device doesn't support ioctl calls
+ 		return 0;
+ 
++	switch (cmd) {
+ 	case TCFLSH:   // 0x540B
+ 		transfer_buffer = kmalloc(transfer_buffer_length, GFP_KERNEL);
+-		if (! transfer_buffer) {
++		if (! transfer_buffer)
+ 		 	return -ENOBUFS;
+-		}
+ 
+ 		result = usb_control_msg( port->serial->dev, 
+ 		 			  usb_rcvctrlpipe(port->serial->dev, 0 ), 
+@@ -714,15 +684,13 @@ static int  kobil_ioctl(struct usb_seria
+ 			);
+ 		
+ 		dbg("%s - port %d Send reset_all_queues (FLUSH) URB returns: %i", __FUNCTION__, port->number, result);
+-
+ 		kfree(transfer_buffer);
+-		return ((result < 0) ? -EFAULT : 0);
+-
++		return (result < 0) ? -EFAULT : 0;
++	default:
++		return -ENOIOCTLCMD;
+ 	}
+-	return -ENOIOCTLCMD;
+ }
+ 
+-
+ static int __init kobil_init (void)
+ {
+ 	int retval;
 
 -- 
