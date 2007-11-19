@@ -1,66 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754368AbXKSVBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752390AbXKSVLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754368AbXKSVBm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 16:01:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbXKSVBe
+	id S1752390AbXKSVLX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 16:11:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbXKSVLP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 16:01:34 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:54028 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750959AbXKSVBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 16:01:34 -0500
-Message-ID: <4741F97D.6090808@redhat.com>
-Date: Mon, 19 Nov 2007 22:00:45 +0100
-From: Milan Broz <mbroz@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 19 Nov 2007 16:11:15 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45167 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751244AbXKSVLO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 16:11:14 -0500
+Date: Mon, 19 Nov 2007 22:11:42 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: kernel list <linux-kernel@vger.kernel.org>, tglx@linutronix.de
+Subject: Re: nohz and strange sleep latencies
+Message-ID: <20071119211142.GA1857@elf.ucw.cz>
+References: <20071119203152.GA1772@elf.ucw.cz> <20071119205555.GA28696@elte.hu>
 MIME-Version: 1.0
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Alasdair G Kergon <agk@redhat.com>
-Subject: Re: 2.6.24-rc2-mm1: kcryptd vs lockdep
-References: <64bb37e0711182323v1e2a1341tfc7f20df771b988@mail.gmail.com>	 <20071119075627.GB28432@elte.hu> <64bb37e0711191134l6dac07a2ie3b4258c43e1f1f0@mail.gmail.com>
-In-Reply-To: <64bb37e0711191134l6dac07a2ie3b4258c43e1f1f0@mail.gmail.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071119205555.GA28696@elte.hu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Torsten Kaiser wrote:
-> On Nov 19, 2007 8:56 AM, Ingo Molnar <mingo@elte.hu> wrote:
->> * Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
-...
-> Above this acquire/release sequence is the following comment:
-> #ifdef CONFIG_LOCKDEP
->                 /*
->                  * It is permissible to free the struct work_struct
->                  * from inside the function that is called from it,
->                  * this we need to take into account for lockdep too.
->                  * To avoid bogus "held lock freed" warnings as well
->                  * as problems when looking into work->lockdep_map,
->                  * make a copy and use that here.
->                  */
->                 struct lockdep_map lockdep_map = work->lockdep_map;
-> #endif
+Hi!
+
+> > On unloaded x60 system, 2.6.24-rc3 (tainted-pavel-so if someone can
+> > reproduce it, it would be helpful):
+> > 
+> > pavel@amd:~$ while true; do time sleep 0.01; done
+> > 0.00user 0.00system 0.01 (0m0.013s) elapsed 30.71%CPU
+> > 0.00user 0.00system 0.02 (0m0.024s) elapsed 8.36%CPU
+> > 0.00user 0.00system 0.01 (0m0.013s) elapsed 15.53%CPU
+> > 0.00user 0.00system 0.02 (0m0.026s) elapsed 7.75%CPU
+> > 0.00user 0.00system 0.01 (0m0.013s) elapsed 23.34%CPU
+> > 0.00user 0.00system 0.20 (0m0.207s) elapsed 1.45%CPU
+> > 0.00user 0.00system 0.01 (0m0.013s) elapsed 15.59%CPU
+> > 0.00user 0.00system 0.23 (0m0.230s) elapsed 1.30%CPU
+> > 0.00user 0.00system 0.01 (0m0.013s) elapsed 15.61%CPU
+> > 0.00user 0.00system 0.20 (0m0.201s) elapsed 1.48%CPU
+> > 0.00user 0.00system 0.01 (0m0.013s) elapsed 15.50%CPU
+> > 0.00user 0.00system 0.19 (0m0.190s) elapsed 1.05%CPU
+> > 0.00user 0.00system 0.01 (0m0.013s) elapsed 23.37%CPU
+> > 0.00user 0.00system 0.04 (0m0.049s) elapsed 4.09%CPU
+> > 0.00user 0.00system 0.01 (0m0.013s) elapsed 23.35%CPU
+> > 0.00user 0.00system 0.01 (0m0.017s) elapsed 11.89%CPU
+> > 0.00user 0.00system 0.01 (0m0.013s) elapsed 23.38%CPU
+> > 0.00user 0.00system 0.08 (0m0.081s) elapsed 3.71%CPU
+> > 0.00user 0.00system 0.01 (0m0.013s) elapsed 23.33%CPU
+> > 0.00user 0.00system 0.01 (0m0.019s) elapsed 15.92%CPU
+> > 
+> > nohz=off helps a lot. while true; do time sleep 0.0; done does not 
+> > have unexpected latencies.
 > 
-> Did something trigger this anyway?
-> 
-> Anything I could try, apart from more boots with slub_debug=F?
+> does hpet=disable on the boot line also help? (without nohz=off)
 
-Please could you try which patch from the dm-crypt series cause this ?
-(agk-dm-dm-crypt* names.)
+hpet-disable helps.. a bit. 200msec latencies are gone. (What is used
+for wakeups in this case?)
 
-I suspect agk-dm-dm-crypt-move-bio-submission-to-thread.patch because
-there is one work struct used subsequently in two threads...
-(io thread already started while crypt thread is processing lockdep_map
-after calling f(work)...)
-
-(btw these patches prepare dm-crypt for next patchset introducing 
-async cryptoapi, so there should be no functional changes yet.)
-
-Milan
---
-mbroz@redhat.com
-
-
+pavel@amd:~$ while true; do time sleep 0.01; done
+0.00user 0.00system 0.01 (0m0.013s) elapsed 22.96%CPU
+0.00user 0.00system 0.01 (0m0.018s) elapsed 11.05%CPU
+0.00user 0.00system 0.01 (0m0.013s) elapsed 15.54%CPU
+0.00user 0.00system 0.03 (0m0.037s) elapsed 8.05%CPU
+0.00user 0.00system 0.01 (0m0.013s) elapsed 23.34%CPU
+0.00user 0.00system 0.03 (0m0.037s) elapsed 8.14%CPU
+0.00user 0.00system 0.01 (0m0.013s) elapsed 23.33%CPU
+0.00user 0.00system 0.03 (0m0.037s) elapsed 8.16%CPU
+0.00user 0.00system 0.01 (0m0.013s) elapsed 23.30%CPU
+0.00user 0.00system 0.03 (0m0.037s) elapsed 5.47%CPU
+0.00user 0.00system 0.01 (0m0.013s) elapsed 23.25%CPU
+0.00user 0.00system 0.01 (0m0.013s) elapsed 15.54%CPU
+0.00user 0.00system 0.01 (0m0.013s) elapsed 15.56%CPU
+0.00user 0.00system 0.03 (0m0.036s) elapsed 5.49%CPU
+0.00user 0.00system 0.01 (0m0.013s) elapsed 23.35%CPU
+0.00user 0.00system 0.03 (0m0.037s) elapsed 8.14%CPU
+0.00user 0.00system 0.01 (0m0.013s) elapsed 23.35%CPU
+0.00user 0.00system 0.03 (0m0.037s) elapsed 8.14%CPU
+0.00user 0.00system 0.01 (0m0.013s) elapsed 23.34%CPU
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
