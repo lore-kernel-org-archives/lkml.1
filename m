@@ -1,36 +1,47 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765463AbXKQTLQ (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sat, 17 Nov 2007 14:11:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756107AbXKQTK5
+	id S1754803AbXKSJa2 (ORCPT <rfc822;ralf@linux-mips.org>);
+	Mon, 19 Nov 2007 04:30:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbXKSJaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Nov 2007 14:10:57 -0500
-Received: from mtai01.charter.net ([209.225.8.181]:60920 "EHLO
-	mtai01.charter.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763554AbXKQTK4 (ORCPT
+	Mon, 19 Nov 2007 04:30:14 -0500
+Received: from mta9.adelphia.net ([68.168.78.199]:63920 "EHLO
+	mta9.adelphia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751905AbXKSJaM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Nov 2007 14:10:56 -0500
-Message-ID: <20071117141054.N3XYW.120168.root@fepweb10>
-Date: Sat, 17 Nov 2007 11:10:54 -0800
-From: MICROSOFT END OF YEAR AWARD PROMO CENTER <msuk.4@charter.net>
-Reply-To: claims_timothykelvin@hotmail.com
-Subject: CONGRATULATIONS!!!
+	Mon, 19 Nov 2007 04:30:12 -0500
+Message-ID: <8369431.1195464610953.JavaMail.root@web15>
+Date: Mon, 19 Nov 2007 1:30:10 -0800
+From: MICROSOFT END OF YEAR PROMO 2007 <microsoft-award005@adelphia.net>
+Reply-To: microsoftagentfidelis@yahoo.dk
+Subject: =?utf-8?Q?Your_email_has_won_=C2=A3500,000?=
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 X-Priority: 3 (Normal)
 Sensitivity: Normal
-X-Originating-IP: 
-X-Chzlrs: 0
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1765463AbXKQTLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754803AbXKSJa2@vger.kernel.org>
 
-Attn,
-This is to inform you that your email address has won you1,000,000.00GBP of the microsoft email draw.Please fill the verfication below and your Ref#:BTD/968/07,Batch #:409978E
-FULL NAME/NATIONALITY
-GENDER/HOME/OFFICE ADDRESS
-TELEPHONE/AGE/MARITAL STATUS
-OCCUPATION/ANNUAL INCOME
-Forward your batch/ref number and information to Mr Timothy Kelvin timothykagent_ms@yahoo.de
 
+
+This is to inform you that your email has won a consulation prize of=20
+the Microsoft Corporation EMAIL .Your email has won =C2=A3500,000 (Five
+ hundred Thounsand Great Britain Pounds).To file your claims, please
+fill the form below, and forward your Ref: BTD/968/07:Batch: 409978E to=
+ your
+Assigned Claims/Fudiciary
+Agent: FIDELIS DERRECK:
+microsoftagentfidelis@yahoo.dk
++447045713422
+FULLNAME....ADDRESS.......OCCUPATION..............SEX...............AGE=
+..............
+COUNTRY..............MARITAL STATUS:.............BATCHNO...........
+
+-
+To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
+ in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
