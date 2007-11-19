@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754686AbXKSNMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753835AbXKSNSm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754686AbXKSNMW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 08:12:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbXKSNMO
+	id S1753835AbXKSNSm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 08:18:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbXKSNSd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 08:12:14 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34072 "EHLO mx3.mail.elte.hu"
+	Mon, 19 Nov 2007 08:18:33 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:62750 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752591AbXKSNMN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 08:12:13 -0500
-Date: Mon, 19 Nov 2007 14:12:01 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Cc: dmitry.adamushko@gmail.com, a.p.zijlstra@chello.nl,
-       dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, efault@gmx.de,
-       skumar@linux.vnet.ibm.com, Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [PATCH 2/2] sched: Improve fairness of cpu allocation for task
-	groups
-Message-ID: <20071119131201.GB31491@elte.hu>
-References: <20071119122713.GA28777@linux.vnet.ibm.com> <20071119123051.GC28777@linux.vnet.ibm.com>
-MIME-Version: 1.0
+	id S1752637AbXKSNSc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 08:18:32 -0500
+To: hch@infradead.org, trond.myklebust@fys.uio.no
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: [TOMOYO #5 02/18] Add wrapper functions for VFS helper functions.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <20071116173439.796600895@I-love.SAKURA.ne.jp>
+	<20071116173524.195366292@I-love.SAKURA.ne.jp>
+	<1195235255.7653.69.camel@heimdal.trondhjem.org>
+	<20071119125334.GC15942@infradead.org>
+In-Reply-To: <20071119125334.GC15942@infradead.org>
+Message-Id: <200711192218.GGB69793.VOQtMLFFOSHOJF@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Mon, 19 Nov 2007 22:18:24 +0900
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071119123051.GC28777@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
-* Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
+Christoph Hellwig wrote:
+> > NACK to this. Passing function parameters through the task_struct is
+> > definitely not an acceptable hack
+> Exactly.  Having a vfsmount other than the current processes root or
+> current working directory in task_struct doesn't make any sense.
+The process's root and cwd vfsmounts are used permanently, but
+this last_vfsmount passed via task_struct behaves like temporary variable
+pushed on stack memory.
+In other words, last_vfsmount becomes NULL when it becomes invalid.
 
-> The current load balancing scheme isn't good for group fairness.
+| static inline int vfs_create2(struct inode *dir, struct dentry *dentry,
+| 			      int mode, struct nameidata *nd)
+| {
+| 	int ret;
+| 	struct vfsmount *mnt = nd ? nd->path.mnt : NULL;
+| 	struct task_struct *task = current;
+| 	struct vfsmount *prev_mnt = task->last_vfsmount;
+| 	task->last_vfsmount = mntget(mnt);
+| 	ret = vfs_create(dir, dentry, mode, nd);
+| 	task->last_vfsmount = prev_mnt;
+| 	mntput(mnt);
+| 	return ret;
+| }
 
-> ---
->  include/linux/sched.h |    4 
->  kernel/sched.c        |  292 +++++++++++++++++++++++++++++++++++++++++++++-----
->  kernel/sched_fair.c   |   95 ++++++++++------
->  kernel/sched_rt.c     |    2 
->  kernel/sysctl.c       |   16 ++
->  5 files changed, 348 insertions(+), 61 deletions(-)
+I agree that keeping last_vfsmount after it lost it's reference count is bad, but
+I don't understand why keeping last_vfsmount while it has it's reference count is bad too.
 
-i'm leaning towards making this v2.6.25 material, as it affects the 
-non-group-scheduling bits too and is rather large. When i tested it, 
-group scheduling worked pretty well - at least for CPU bound tasks - and 
-on SMP too. Could we live with what we have for now and defer this patch 
-to v2.6.25? If not, could you split up this patch in a way to defer all 
-the FAIR_GROUP_SCHED relevant changes to a separate patch which will not 
-affect the !FAIR_GROUP_SCHED case at all? That will make the case much 
-clearer.
+Regards.
 
-	Ingo
